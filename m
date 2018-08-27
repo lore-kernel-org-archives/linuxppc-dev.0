@@ -1,25 +1,24 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
- [IPv6:2607:f8b0:4864:20::641])
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-vk0-f66.google.com (mail-vk0-f66.google.com
+ [209.85.213.66])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41zRBJ2cKZzDqSL
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Aug 2018 19:17:59 +1000 (AEST)
-Received: by mail-pl1-x641.google.com with SMTP id g23-v6so3898855plq.9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Aug 2018 02:17:59 -0700 (PDT)
-Date: Mon, 27 Aug 2018 19:17:51 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <pmac@au1.ibm.com>
-Subject: Re: [PATCH 2/2] powerpc/64s/radix: Explicitly flush ERAT with local
- LPID invalidation
-Message-ID: <20180827191751.6f4075ac@roar.ozlabs.ibm.com>
-In-Reply-To: <9fd2cb24976fc3b4534d7ab6186032ac4e27c9d5.camel@kernel.crashing.org>
-References: <20180827030302.17541-1-npiggin@gmail.com>
- <20180827030302.17541-3-npiggin@gmail.com>
- <9fd2cb24976fc3b4534d7ab6186032ac4e27c9d5.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41zS1T2ZxDzDrGC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Aug 2018 19:55:24 +1000 (AEST)
+Received: by mail-vk0-f66.google.com with SMTP id s6-v6so6143980vks.4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Aug 2018 02:55:24 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+References: <20180827094926.15512-1-geert@linux-m68k.org>
+In-Reply-To: <20180827094926.15512-1-geert@linux-m68k.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 27 Aug 2018 11:55:10 +0200
+Message-ID: <CAMuHMdVDmq+Kmi74jhL6CTS1cEt61xq-sX8cm208anYggUPWxg@mail.gmail.com>
+Subject: Re: Build regressions/improvements in v4.19-rc1
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Greentime Hu <green.hu@gmail.com>, Vincent Chen <deanbo422@gmail.com>,
+ sparclinux <sparclinux@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,79 +28,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 27 Aug 2018 18:16:05 +1000
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On Mon, Aug 27, 2018 at 11:50 AM Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> Below is the list of build error/warning regressions/improvements in
+> v4.19-rc1[1] compared to v4.18[2].
+>
+> Summarized:
+>   - build errors: +5/-3
+>   - build warnings: +14732/-179
+>
+> Note that there may be false regressions, as some logs are incomplete.
+> Still, they're build errors/warnings.
+>
+> Happy fixing! ;-)
+>
+> Thanks to the linux-next team for providing the build service.
+>
+> [1] http://kisskb.ellerman.id.au/kisskb/branch/linus/head/5b394b2ddf0347bef56e50c69a58773c94343ff3/ (all 240 configs)
+> [2] http://kisskb.ellerman.id.au/kisskb/branch/linus/head/94710cac0ef4ee177a63b5227664b38c95bbf703/ (239 out of 240 configs)
+>
+>
+> *** ERRORS ***
+>
+> 5 error regressions:
+>   + /kisskb/src/arch/nds32/include/asm/elf.h: error: expected '}' before ';' token:  => 126:29
 
-> On Mon, 2018-08-27 at 13:03 +1000, Nicholas Piggin wrote:
-> > Local radix TLB flush operations that operate on congruence classes
-> > have explicit ERAT flushes for POWER9. The process scoped LPID flush
-> > did not have a flush, so add it.  
-> 
-> Paul, is that an actual bug ? I think the ERAT is flushed on LPID
-> changes...
+nds32-allmodconfig, nds32-allyesconfig
 
-FWIW I'd like to add the following patch after these fixes. While I
-have your attention...
+>   + error: arch/sparc/kernel/.tmp_head_32.o: relocation truncated to fit: R_SPARC_WDISP22 against `.init.text':  => (.head.text+0x5100), (.head.text+0x5040)
+>   + error: arch/sparc/kernel/.tmp_head_32.o: relocation truncated to fit: R_SPARC_WDISP22 against symbol `leon_smp_cpu_startup' defined in .text section in arch/sparc/kernel/trampoline_32.o:  => (.init.text+0xa4)
+>   + error: arch/sparc/kernel/process_32.o: relocation truncated to fit: R_SPARC_WDISP22 against `.text':  => (.fixup+0x4), (.fixup+0xc)
+>   + error: arch/sparc/kernel/signal_32.o: relocation truncated to fit: R_SPARC_WDISP22 against `.text':  => (.fixup+0x0), (.fixup+0x8), (.fixup+0x10), (.fixup+0x18), (.fixup+0x20)
 
-[PATCH] powerpc/64s/radix: keep kernel ERAT over local process/guest
- invalidates
+sparc64/sparc-allmodconfig
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/include/asm/ppc-opcode.h | 10 +++++++++-
- arch/powerpc/mm/tlb-radix.c           |  6 +++---
- 2 files changed, 12 insertions(+), 4 deletions(-)
+> *** WARNINGS ***
+>
+> [Deleted 14564 lines about "warning: -ffunction-sections disabled; it makes profiling impossible [enabled by default]" on powerpc-all{mod,yes}config*]
 
-diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
-index 665af14850e4..5fe617ab680a 100644
---- a/arch/powerpc/include/asm/ppc-opcode.h
-+++ b/arch/powerpc/include/asm/ppc-opcode.h
-@@ -568,7 +568,15 @@
- 
- #define PPC_SLBIA(IH)	stringify_in_c(.long PPC_INST_SLBIA | \
- 				       ((IH & 0x7) << 21))
--#define PPC_INVALIDATE_ERAT	PPC_SLBIA(7)
-+
-+/*
-+ * These may only be used by ARCH_300.
-+ * GUEST/USER invalidates should only be used by radix mode, on HPT they also
-+ * invalidate SLBs so the SLBIA instruction should be used directly.
-+ */
-+#define PPC_INVALIDATE_ERAT		PPC_SLBIA(7)
-+#define PPC_INVALIDATE_GUEST_ERAT	PPC_SLBIA(6)
-+#define PPC_INVALIDATE_USER_ERAT	PPC_SLBIA(3)
- 
- #define VCMPEQUD_RC(vrt, vra, vrb)	stringify_in_c(.long PPC_INST_VCMPEQUD | \
- 			      ___PPC_RT(vrt) | ___PPC_RA(vra) | \
-diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
-index 4e798f33c530..6887e4b2568b 100644
---- a/arch/powerpc/mm/tlb-radix.c
-+++ b/arch/powerpc/mm/tlb-radix.c
-@@ -262,7 +262,7 @@ static inline void _tlbiel_pid(unsigned long pid, unsigned long ric)
- 		__tlbiel_pid(pid, set, RIC_FLUSH_TLB);
- 
- 	asm volatile("ptesync": : :"memory");
--	asm volatile(PPC_INVALIDATE_ERAT "; isync" : : :"memory");
-+	asm volatile(PPC_INVALIDATE_USER_ERAT "; isync" : : :"memory");
- }
- 
- static inline void _tlbie_pid(unsigned long pid, unsigned long ric)
-@@ -314,7 +314,7 @@ static inline void _tlbiel_lpid(unsigned long lpid, unsigned long ric)
- 		__tlbiel_lpid(lpid, set, RIC_FLUSH_TLB);
- 
- 	asm volatile("ptesync": : :"memory");
--	asm volatile(PPC_INVALIDATE_ERAT "; isync" : : :"memory");
-+	asm volatile(PPC_INVALIDATE_GUEST_ERAT "; isync" : : :"memory");
- }
- 
- static inline void _tlbie_lpid(unsigned long lpid, unsigned long ric)
-@@ -366,7 +366,7 @@ static inline void _tlbiel_lpid_guest(unsigned long lpid, unsigned long ric)
- 		__tlbiel_lpid_guest(lpid, set, RIC_FLUSH_TLB);
- 
- 	asm volatile("ptesync": : :"memory");
--	asm volatile(PPC_INVALIDATE_ERAT : : :"memory");
-+	asm volatile(PPC_INVALIDATE_GUEST_ERAT : : :"memory");
- }
- 
- 
+Parisc finally managed to get rid of these, and now powerpc got them :-(
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
 -- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
