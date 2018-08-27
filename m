@@ -1,31 +1,45 @@
-Return-Path: <konrad.r.wilk@gmail.com>
-Received: from mail-qk0-x244.google.com (mail-qk0-x244.google.com
- [IPv6:2607:f8b0:400d:c09::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <srs0=mams=lk=linux.vnet.ibm.com=mahesh@ozlabs.org>
+Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41zgBB4Hc7zDrS7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Aug 2018 04:18:38 +1000 (AEST)
-Received: by mail-qk0-x244.google.com with SMTP id 93-v6so11161402qks.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Aug 2018 11:18:38 -0700 (PDT)
-Sender: Konrad Rzeszutek Wilk <konrad.r.wilk@gmail.com>
-Date: Mon, 27 Aug 2018 14:18:31 -0400
-From: Konrad Rzeszutek Wilk <konrad@darnok.org>
-To: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, iommu@lists.linux-foundation.org,
- linux-kernel@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
- Anshuman Khandual <anshuman.linux@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Christoph Hellwig <hch@lst.de>, Michael Ellerman <mpe@ellerman.id.au>,
- Mike Anderson <andmike@linux.ibm.com>,
- Paul Mackerras <paulus@samba.org>, Ram Pai <linuxram@us.ibm.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH 11/11] powerpc/svm: Increase SWIOTLB buffer size
-Message-ID: <20180827181830.GB3834@0021ccb48c25>
-References: <20180824162535.22798-1-bauerman@linux.ibm.com>
- <20180824162535.22798-12-bauerman@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41zgTC4830zDrq6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Aug 2018 04:31:43 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 41zgTC3TX8z8tQV
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Aug 2018 04:31:43 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 41zgTB6vhqz9s55
+ for <linuxppc-dev@ozlabs.org>; Tue, 28 Aug 2018 04:31:42 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w7RIUR9c056035
+ for <linuxppc-dev@ozlabs.org>; Mon, 27 Aug 2018 14:31:40 -0400
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2m4ms3mmv6-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Mon, 27 Aug 2018 14:31:40 -0400
+Received: from localhost
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Mon, 27 Aug 2018 19:31:38 +0100
+Subject: [PATCH v9 0/5] powerpc/pseries: Machine check handler improvements.
+From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Cc: Michal Suchanek <msuchanek@suse.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Ananth Narayan <ananth@in.ibm.com>, Nicholas Piggin <npiggin@gmail.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Laurent Dufour <ldufour@linux.vnet.ibm.com>,
+ Michal Suchanek <msuchanek@suse.com>
+Date: Tue, 28 Aug 2018 00:01:33 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180824162535.22798-12-bauerman@linux.ibm.com>
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <153539459821.20001.16391636830334046461.stgit@jupiter.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,74 +49,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 24, 2018 at 01:25:35PM -0300, Thiago Jung Bauermann wrote:
-> From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-> 
-> SWIOTLB buffer default size (64MB) is not enough for large sequential write
-> operations which eventually leads to kernel crash like here.
-> 
-> virtio-pci 0000:00:05.0: swiotlb buffer is full (sz: 327680 bytes)
-> virtio-pci 0000:00:05.0: DMA: Out of SW-IOMMU space for 327680 bytes
-> Kernel panic - not syncing: DMA: Random memory could be DMA read
-> CPU: 12 PID: 3985 Comm: mkfs.ext4 Not tainted 4.18.0-rc4+ #285
-> Call Trace:
-> [c0000007d2a27020] [c000000000cfdffc] dump_stack+0xb0/0xf4 (unreliable)
-> [c0000007d2a27060] [c000000000112a98] panic+0x140/0x328
-> [c0000007d2a270f0] [c0000000001b4f88] swiotlb_full+0x108/0x130
-> [c0000007d2a27180] [c0000000001b5f6c] swiotlb_map_page+0x25c/0x2c0
-> [c0000007d2a271e0] [c0000000007bfaf8] vring_map_one_sg.isra.0+0x58/0x70
-> [c0000007d2a27200] [c0000000007c08dc] virtqueue_add_sgs+0x1bc/0x690
-> [c0000007d2a272f0] [d0000000042a1280] virtio_queue_rq+0x358/0x4a0 [virtio_blk]
-> [c0000007d2a273d0] [c0000000006b5d68] blk_mq_dispatch_rq_list+0x1f8/0x6d0
-> ..................
-> 
-> Increase the SWIOTLB size to 1GB on Ultravisor based secure guests.
+This patch series includes some improvement to Machine check handler
+for pSeries. First 3 patches from v7 revision are already in powerpc next.
+Posting rest of the patches with review comments. This patch series drops
+the sysctl knob patch that was proposed in v7. The SLB recovery code now
+uses flush_and_reload_slb() from mce_power.c.
 
-Gosh, that is huge.
+Patch 1 defines MCE error event section.
+Patch 2 implements a real mode mce handler and flushes the SLBs on SLB error.
+Patch 3 display's the MCE error details on console.
+Patch 4 saves and dumps the SLB contents on SLB MCE errors to improve the
+debugability.
+Patch 5 consolidates mce early real mode handling code.
 
-What about making the SWIOTLB be more dynamic? That is expand it's size
-dynamically if it can?
+Change in V9:
+- Move mce_exceptions counting to powernv's virtual mode handler.
+- Recover from ERAT errors.
+- Minor changes to fix few warnings/checks from checkpatch.pl
 
-> 
-> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-> Signed-off-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-> ---
->  arch/powerpc/Kconfig | 5 +++++
->  kernel/dma/swiotlb.c | 5 +++++
->  2 files changed, 10 insertions(+)
-> 
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 1466d1234723..fee7194ce9e4 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -457,6 +457,11 @@ config PPC_SVM
->  
->  	 If unsure, say "N".
->  
-> +config SWIOTLB_DEFAULT_SIZE
-> +       int "Size of Software I/O TLB buffer (in MiB)"
-> +       default "1024"
-> +       depends on PPC_SVM
-> +
->  config PPC_TRANSACTIONAL_MEM
->         bool "Transactional Memory support for POWERPC"
->         depends on PPC_BOOK3S_64
-> diff --git a/kernel/dma/swiotlb.c b/kernel/dma/swiotlb.c
-> index 04b68d9dffac..32dc67422d8a 100644
-> --- a/kernel/dma/swiotlb.c
-> +++ b/kernel/dma/swiotlb.c
-> @@ -146,8 +146,13 @@ void swiotlb_set_max_segment(unsigned int val)
->  		max_segment = rounddown(val, PAGE_SIZE);
->  }
->  
-> +#ifdef CONFIG_SWIOTLB_DEFAULT_SIZE
-> +#define IO_TLB_DEFAULT_SIZE ((unsigned long) CONFIG_SWIOTLB_DEFAULT_SIZE << 20)
-> +#else
->  /* default to 64MB */
->  #define IO_TLB_DEFAULT_SIZE (64UL<<20)
-> +#endif
-> +
->  unsigned long swiotlb_size_or_default(void)
->  {
->  	unsigned long size;
-> 
+Change in V8:
+- Move mce error log structure definition to ras.c
+- Use flush_and_reload_slb() from mce_power.c.
+- Limit the slb saving to single level of mce recursion.
+- Move mce_faulty_slbs and slb_save_cache_ptr under CONFIG_PPC_BOOK3S_64
+  instead of CONFIG_PPC_PSERIES.
+- Drop the sysctl knob patch.
+
+Change in V7:
+- Fold Michal's patch into patch 5
+- Handle MSR_RI=0 and evil context case in MC handler in patch 5.
+- Patch 7: Print slb cache ptr value and slb cache data.
+- Move patch 8 to patch 9.
+- Introduce patch 8 add sysctl knob for recovery action on recovered MCEs.
+
+Change in V6:
+- Introduce patch 8 to consolidate early real mode handling code.
+- Address Nick's comment on erroneous hunk.
+
+Change in V5:
+- Use min_t instead of max_t.
+- Fix an issue reported by kbuild test robot and address review comments.
+
+Change in V4:
+- Flush the SLBs in real mode mce handler to handle SLB errors for entry 0.
+- Allocate buffers per cpu to hold rtas error log and old slb contents.
+- Defer the logging of rtas error log to irq work queue.
+
+Change in V3:
+- Moved patch 5 to patch 2
+
+Change in V2:
+- patch 3: Display additional info (NIP and task info) in MCE error details.
+- patch 5: Fix endain bug while restoring of r3 in MCE handler.
+
+
+---
+
+Mahesh Salgaonkar (5):
+      powerpc/pseries: Define MCE error event section.
+      powerpc/pseries: flush SLB contents on SLB MCE errors.
+      powerpc/pseries: Display machine check error details.
+      powerpc/pseries: Dump the SLB contents on SLB MCE errors.
+      powernv/pseries: consolidate code for mce early handling.
+
+
+ arch/powerpc/include/asm/book3s/64/mmu-hash.h |    7 +
+ arch/powerpc/include/asm/machdep.h            |    1 
+ arch/powerpc/include/asm/mce.h                |    3 
+ arch/powerpc/include/asm/paca.h               |    6 
+ arch/powerpc/include/asm/rtas.h               |   13 +
+ arch/powerpc/kernel/exceptions-64s.S          |   42 +++
+ arch/powerpc/kernel/mce.c                     |    9 -
+ arch/powerpc/kernel/mce_power.c               |    2 
+ arch/powerpc/mm/slb.c                         |   72 ++++++
+ arch/powerpc/platforms/powernv/opal.c         |    2 
+ arch/powerpc/platforms/powernv/setup.c        |   11 +
+ arch/powerpc/platforms/pseries/pseries.h      |    1 
+ arch/powerpc/platforms/pseries/ras.c          |  303 +++++++++++++++++++++++++
+ arch/powerpc/platforms/pseries/setup.c        |   14 +
+ 14 files changed, 474 insertions(+), 12 deletions(-)
+
+--
+-Mahesh
