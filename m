@@ -1,30 +1,32 @@
-Return-Path: <sboyd@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <gromero@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 420Nx248sPzF0QC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 08:39:50 +1000 (AEST)
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 420R136r6RzF0QC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 10:13:27 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w7SN4CYn093106
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Aug 2018 19:08:38 -0400
+Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2m5f7w10cx-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Aug 2018 19:08:38 -0400
+Received: from localhost
+ by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gromero@linux.vnet.ibm.com>;
+ Tue, 28 Aug 2018 19:08:38 -0400
+Subject: Re: [PATCH] selftests/powerpc: Do not fail on TM_CAUSE_RESCHED
+To: Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org
+References: <1534877787-24359-1-git-send-email-leitao@debian.org>
+From: Gustavo Romero <gromero@linux.vnet.ibm.com>
+Date: Tue, 28 Aug 2018 20:08:33 -0300
 MIME-Version: 1.0
-To: Vabhav Sharma <vabhav.sharma@nxp.com>, arnd@arndb.de,
- catalin.marinas@arm.com,
- devicetree@vger.kernel.org, gregkh@linuxfoundation.org,
- kstewart@linuxfoundation.org, linux-arm-kernel@lists.infradead.org,
- linux-clk@vger.kernel.org, linux-kernel-owner@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, mark.rutland@arm.com, mturquette@baylibre.com,
- rjw@rjwysocki.net, robh+dt@kernel.org, viresh.kumar@linaro.org,
- will.deacon@arm.com, yamada.masahiro@socionext.com
-From: Stephen Boyd <sboyd@kernel.org>
-In-Reply-To: <1534747636-20064-4-git-send-email-vabhav.sharma@nxp.com>
-Cc: linux@armlinux.org.uk, V.Sethi@nxp.com, udit.kumar@nxp.com,
- Yogesh Gaur <yogeshnarayan.gaur@nxp.com>, Tang Yuantian <andy.tang@nxp.com>,
- Vabhav Sharma <vabhav.sharma@nxp.com>
-References: <1534747636-20064-1-git-send-email-vabhav.sharma@nxp.com>
- <1534747636-20064-4-git-send-email-vabhav.sharma@nxp.com>
-Message-ID: <153549598745.129321.12633089552143824401@swboyd.mtv.corp.google.com>
-Subject: Re: [PATCH 3/5] drivers: clk-qoriq: Add clockgen support for lx2160a
-Date: Tue, 28 Aug 2018 15:39:47 -0700
+In-Reply-To: <1534877787-24359-1-git-send-email-leitao@debian.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <3404db1f-cd5a-5ca1-0559-26d2ad08f410@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,18 +36,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Quoting Vabhav Sharma (2018-08-19 23:47:14)
-> From: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>
-> =
+Hi Breno,
 
-> Add clockgen support for lx2160a.
-> Added entry for compat 'fsl,lx2160a-clockgen'.
-> As LX2160A is 16 core, so modified value for NUM_CMUX
-> =
+On 08/21/2018 03:56 PM, Breno Leitao wrote:
+> There are cases where the test is not expecting to have the transaction
+> aborted, but, the test process might have been rescheduled, either in the OS
+> level or by KVM (if it is running on a KVM guest machine). The process
+> reschedule will cause a treclaim/recheckpoint which will cause the transaction
+> to doom, failing as soon as the process is rescheduled back to the CPU. This
+> might cause the test to fail, but this is not a failure in essence.
+> 
+> If that is the case, TEXASR[FC] is indicated with either
+> TM_CAUSE_RESCHEDULE or TM_CAUSE_KVM_RESCHEDULE for KVM interruptions.
+> 
+> In this scenario, ignore these two failures and avoid the whole test to return
+> failure.
+> 
+> Signed-off-by: Breno Leitao <leitao@debian.org>
 
-> Signed-off-by: Tang Yuantian <andy.tang@nxp.com>
-> Signed-off-by: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>
-> Signed-off-by: Vabhav Sharma <vabhav.sharma@nxp.com>
-> ---
+Thanks for improving the code.
 
-Acked-by: Stephen Boyd <sboyd@kernel.org>
+I understand that filtering out the aborts caused by the re-schedules is correct.
+
+Only a nit:
+
+> @@ -244,9 +245,12 @@ void *tm_una_ping(void *input)
+> 
+>   	/*
+>   	 * Check if TM failed due to the cause we were expecting. 0xda is a
+> -	 * TM_CAUSE_FAC_UNAV cause, otherwise it's an unexpected cause.
+> +	 * TM_CAUSE_FAC_UNAV cause, otherwise it's an unexpected cause, unless
+> +	 * it was caused by a reschedule.
+>   	 */
+> -	if (is_failure(cr_) && !failure_is_unavailable()) {
+> +
+> +	if (is_failure(cr_) && !failure_is_unavailable()
+> +	    & !failure_is_reschedule()) {
+
+             ^---
+
+It should read a short-circuit operator here instead of a bitwise operator.
+
+Otherwise it LGTM.
+
+Reviewed-by: Gustavo Romero <gromero@linux.ibm.com>
+
+
+Best regards,
+Gustavo
