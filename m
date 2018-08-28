@@ -1,24 +1,13 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
- [IPv6:2607:f8b0:4864:20::644])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4205sl0NPbzDrqP
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Aug 2018 21:20:58 +1000 (AEST)
-Received: by mail-pl1-x644.google.com with SMTP id b12-v6so591081plr.8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Aug 2018 04:20:58 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linux-mm@kvack.org
-Cc: Nicholas Piggin <npiggin@gmail.com>, linux-arch@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH 3/3] mm: optimise pte dirty/accessed bit setting by demand
- based pte insertion
-Date: Tue, 28 Aug 2018 21:20:34 +1000
-Message-Id: <20180828112034.30875-4-npiggin@gmail.com>
-In-Reply-To: <20180828112034.30875-1-npiggin@gmail.com>
-References: <20180828112034.30875-1-npiggin@gmail.com>
+Return-Path: <David.Gounaris@infinera.com>
+Received: from smtp.transmode.se (smtp.transmode.se [31.15.61.139])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4205ld3jJDzDrRN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Aug 2018 21:15:41 +1000 (AEST)
+From: David Gounaris <david.gounaris@infinera.com>
+To: qiang.zhao@nxp.com, netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: David Gounaris <david.gounaris@infinera.com>
+Subject: [PATCH 0/6] Ethernet over hdlc
+Date: Tue, 28 Aug 2018 13:09:15 +0200
+Message-Id: <20180828110921.2542-1-david.gounaris@infinera.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,99 +17,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Similarly to the previous patch, this tries to optimise dirty/accessed
-bits in ptes to avoid access costs of hardware setting them.
+Hello!
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- mm/huge_memory.c | 12 +++++++-----
- mm/memory.c      |  8 +++++---
- 2 files changed, 12 insertions(+), 8 deletions(-)
+I have a 83xx platform and I am using non tsa mode in the fsl hdlc driver to enable ethernet over hdlc. These patches are the minimal changes that I needed to do in order to get it to work with our legacy products that used old FSL SDK driver. Please review.
 
-diff --git a/mm/huge_memory.c b/mm/huge_memory.c
-index 5fb1a43e12e0..2c169041317f 100644
---- a/mm/huge_memory.c
-+++ b/mm/huge_memory.c
-@@ -1197,6 +1197,7 @@ static vm_fault_t do_huge_pmd_wp_page_fallback(struct vm_fault *vmf,
- 	for (i = 0; i < HPAGE_PMD_NR; i++, haddr += PAGE_SIZE) {
- 		pte_t entry;
- 		entry = mk_pte(pages[i], vma->vm_page_prot);
-+		entry = pte_mkyoung(entry);
- 		entry = maybe_mkwrite(pte_mkdirty(entry), vma);
- 		memcg = (void *)page_private(pages[i]);
- 		set_page_private(pages[i], 0);
-@@ -2067,7 +2068,7 @@ static void __split_huge_pmd_locked(struct vm_area_struct *vma, pmd_t *pmd,
- 	struct page *page;
- 	pgtable_t pgtable;
- 	pmd_t old_pmd, _pmd;
--	bool young, write, soft_dirty, pmd_migration = false;
-+	bool young, write, dirty, soft_dirty, pmd_migration = false;
- 	unsigned long addr;
- 	int i;
- 
-@@ -2145,8 +2146,7 @@ static void __split_huge_pmd_locked(struct vm_area_struct *vma, pmd_t *pmd,
- 		page = pmd_page(old_pmd);
- 	VM_BUG_ON_PAGE(!page_count(page), page);
- 	page_ref_add(page, HPAGE_PMD_NR - 1);
--	if (pmd_dirty(old_pmd))
--		SetPageDirty(page);
-+	dirty = pmd_dirty(old_pmd);
- 	write = pmd_write(old_pmd);
- 	young = pmd_young(old_pmd);
- 	soft_dirty = pmd_soft_dirty(old_pmd);
-@@ -2176,8 +2176,10 @@ static void __split_huge_pmd_locked(struct vm_area_struct *vma, pmd_t *pmd,
- 			entry = maybe_mkwrite(entry, vma);
- 			if (!write)
- 				entry = pte_wrprotect(entry);
--			if (!young)
--				entry = pte_mkold(entry);
-+			if (young)
-+				entry = pte_mkyoung(entry);
-+			if (dirty)
-+				entry = pte_mkdirty(entry);
- 			if (soft_dirty)
- 				entry = pte_mksoft_dirty(entry);
- 		}
-diff --git a/mm/memory.c b/mm/memory.c
-index 3d8bf8220bd0..d205ba69918c 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -1830,10 +1830,9 @@ static int insert_pfn(struct vm_area_struct *vma, unsigned long addr,
- 		entry = pte_mkspecial(pfn_t_pte(pfn, prot));
- 
- out_mkwrite:
--	if (mkwrite) {
--		entry = pte_mkyoung(entry);
-+	entry = pte_mkyoung(entry);
-+	if (mkwrite)
- 		entry = maybe_mkwrite(pte_mkdirty(entry), vma);
--	}
- 
- 	set_pte_at(mm, addr, pte, entry);
- 	update_mmu_cache(vma, addr, pte); /* XXX: why not for insert_page? */
-@@ -2560,6 +2559,7 @@ static vm_fault_t wp_page_copy(struct vm_fault *vmf)
- 		}
- 		flush_cache_page(vma, vmf->address, pte_pfn(vmf->orig_pte));
- 		entry = mk_pte(new_page, vma->vm_page_prot);
-+		entry = pte_mkyoung(entry);
- 		entry = maybe_mkwrite(pte_mkdirty(entry), vma);
- 		/*
- 		 * Clear the pte entry and flush it first, before updating the
-@@ -3069,6 +3069,7 @@ vm_fault_t do_swap_page(struct vm_fault *vmf)
- 	inc_mm_counter_fast(vma->vm_mm, MM_ANONPAGES);
- 	dec_mm_counter_fast(vma->vm_mm, MM_SWAPENTS);
- 	pte = mk_pte(page, vma->vm_page_prot);
-+	pte = pte_mkyoung(pte);
- 	if ((vmf->flags & FAULT_FLAG_WRITE) && reuse_swap_page(page, NULL)) {
- 		pte = maybe_mkwrite(pte_mkdirty(pte), vma);
- 		vmf->flags &= ~FAULT_FLAG_WRITE;
-@@ -3479,6 +3480,7 @@ vm_fault_t alloc_set_pte(struct vm_fault *vmf, struct mem_cgroup *memcg,
- 
- 	flush_icache_page(vma, page);
- 	entry = mk_pte(page, vma->vm_page_prot);
-+	entry = pte_mkyoung(entry);
- 	if (write)
- 		entry = maybe_mkwrite(pte_mkdirty(entry), vma);
- 	/* copy-on-write page */
+Best Regards,
+David Gounaris
+
+David Gounaris (6):
+  net/wan/fsl_ucc_hdlc: allow ucc index up to 4
+  net/wan/fsl_ucc_hdlc: allow PARITY_CRC16_PR0_CCITT parity
+  net/wan/fsl_ucc_hdlc: Adding ARPHRD_ETHER
+  net/wan/fsl_ucc_hdlc: default hmask value
+  net/wan/fsl_ucc_hdlc: GUMR for non tsa mode
+  net/wan/fsl_ucc_hdlc: tx timeout handler
+
+ drivers/net/wan/fsl_ucc_hdlc.c | 23 +++++++++++++++++++++--
+ drivers/net/wan/fsl_ucc_hdlc.h |  2 +-
+ 2 files changed, 22 insertions(+), 3 deletions(-)
+
 -- 
-2.18.0
+2.13.6
