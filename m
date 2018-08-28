@@ -1,21 +1,32 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <robherring2@gmail.com>
+Received: from mail-oi0-f44.google.com (mail-oi0-f44.google.com
+ [209.85.218.44])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4209tX3cpdzDrb6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 00:21:56 +1000 (AEST)
-Subject: Patch "usb/phy: fix PPC64 build errors in phy-fsl-usb.c" has been
- added to the 4.4-stable tree
-To: alexander.levin@microsoft.com, balbi@kernel.org,
- felipe.balbi@linux.intel.com, gregkh@linuxfoundation.org,
- linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, rdunlap@infradead.org
-Cc: <stable-commits@vger.kernel.org>
-From: <gregkh@linuxfoundation.org>
-Date: Tue, 28 Aug 2018 16:11:49 +0200
-Message-ID: <1535465509385@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ANSI_X3.4-1968
+ by lists.ozlabs.org (Postfix) with ESMTPS id 420Cjz0MdbzF09n
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 01:44:38 +1000 (AEST)
+Received: by mail-oi0-f44.google.com with SMTP id t68-v6so3624795oie.12
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Aug 2018 08:44:38 -0700 (PDT)
+From: Rob Herring <robh@kernel.org>
+To: linux-kernel@vger.kernel.org
+Cc: Andy Shevchenko <andy.shevchenko@gmail.com>, Timur Tabi <timur@kernel.org>,
+ Nicolin Chen <nicoleotsuka@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>,
+ Fabio Estevam <fabio.estevam@nxp.com>, Liam Girdwood <lgirdwood@gmail.com>,
+ Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
+ Takashi Iwai <tiwai@suse.com>, Carlo Caione <carlo@caione.org>,
+ Kevin Hilman <khilman@baylibre.com>,
+ Olivier Moysan <olivier.moysan@st.com>,
+ Arnaud Pouliquen <arnaud.pouliquen@st.com>,
+ Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+ Alexandre Torgue <alexandre.torgue@st.com>, alsa-devel@alsa-project.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ linux-amlogic@lists.infradead.org
+Subject: [PATCH v2] ASoC: Convert to using %pOFn instead of device_node.name
+Date: Tue, 28 Aug 2018 10:44:28 -0500
+Message-Id: <20180828154433.5693-2-robh@kernel.org>
+In-Reply-To: <20180828154433.5693-1-robh@kernel.org>
+References: <20180828154433.5693-1-robh@kernel.org>
+In-Reply-To: <20180828015252.28511-51-robh@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,99 +36,116 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+In preparation to remove the node name pointer from struct device_node,
+convert printf users to use the %pOFn format specifier.
 
-This is a note to let you know that I've just added the patch titled
-
-    usb/phy: fix PPC64 build errors in phy-fsl-usb.c
-
-to the 4.4-stable tree which can be found at:
-    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
-
-The filename of the patch is:
-     usb-phy-fix-ppc64-build-errors-in-phy-fsl-usb.c.patch
-and it can be found in the queue-4.4 subdirectory.
-
-If you, or anyone else, feels it should not be added to the stable tree,
-please let <stable@vger.kernel.org> know about it.
-
-
->From foo@baz Tue Aug 28 16:10:37 CEST 2018
-From: Randy Dunlap <rdunlap@infradead.org>
-Date: Sun, 15 Jul 2018 10:37:37 -0700
-Subject: usb/phy: fix PPC64 build errors in phy-fsl-usb.c
-
-From: Randy Dunlap <rdunlap@infradead.org>
-
-[ Upstream commit a39ba90a1cc7010edb0a7132e1b67f3d80b994e9 ]
-
-Fix build errors when built for PPC64:
-These variables are only used on PPC32 so they don't need to be
-initialized for PPC64.
-
-../drivers/usb/phy/phy-fsl-usb.c: In function 'usb_otg_start':
-../drivers/usb/phy/phy-fsl-usb.c:865:3: error: '_fsl_readl' undeclared (first use in this function); did you mean 'fsl_readl'?
-   _fsl_readl = _fsl_readl_be;
-../drivers/usb/phy/phy-fsl-usb.c:865:16: error: '_fsl_readl_be' undeclared (first use in this function); did you mean 'fsl_readl'?
-   _fsl_readl = _fsl_readl_be;
-../drivers/usb/phy/phy-fsl-usb.c:866:3: error: '_fsl_writel' undeclared (first use in this function); did you mean 'fsl_writel'?
-   _fsl_writel = _fsl_writel_be;
-../drivers/usb/phy/phy-fsl-usb.c:866:17: error: '_fsl_writel_be' undeclared (first use in this function); did you mean 'fsl_writel'?
-   _fsl_writel = _fsl_writel_be;
-../drivers/usb/phy/phy-fsl-usb.c:868:16: error: '_fsl_readl_le' undeclared (first use in this function); did you mean 'fsl_readl'?
-   _fsl_readl = _fsl_readl_le;
-../drivers/usb/phy/phy-fsl-usb.c:869:17: error: '_fsl_writel_le' undeclared (first use in this function); did you mean 'fsl_writel'?
-   _fsl_writel = _fsl_writel_le;
-
-and the sysfs "show" function return type should be ssize_t, not int:
-
-../drivers/usb/phy/phy-fsl-usb.c:1042:49: error: initialization of 'ssize_t (*)(struct device *, struct device_attribute *, char *)' {aka 'long int (*)(struct device *, struct device_attribute *, char *)'} from incompatible pointer type 'int (*)(struct device *, struct device_attribute *, char *)' [-Werror=incompatible-pointer-types]
- static DEVICE_ATTR(fsl_usb2_otg_state, S_IRUGO, show_fsl_usb2_otg_state, NULL);
-
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Cc: Felipe Balbi <balbi@kernel.org>
-Cc: linux-usb@vger.kernel.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Timur Tabi <timur@kernel.org>
+Cc: Nicolin Chen <nicoleotsuka@gmail.com>
+Cc: Xiubo Li <Xiubo.Lee@gmail.com>
+Cc: Fabio Estevam <fabio.estevam@nxp.com>
+Cc: Liam Girdwood <lgirdwood@gmail.com>
+Cc: Mark Brown <broonie@kernel.org>
+Cc: Jaroslav Kysela <perex@perex.cz>
+Cc: Takashi Iwai <tiwai@suse.com>
+Cc: Carlo Caione <carlo@caione.org>
+Cc: Kevin Hilman <khilman@baylibre.com>
+Cc: Olivier Moysan <olivier.moysan@st.com>
+Cc: Arnaud Pouliquen <arnaud.pouliquen@st.com>
+Cc: Maxime Coquelin <mcoquelin.stm32@gmail.com>
+Cc: Alexandre Torgue <alexandre.torgue@st.com>
+Cc: alsa-devel@alsa-project.org
 Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Felipe Balbi <felipe.balbi@linux.intel.com>
-Signed-off-by: Sasha Levin <alexander.levin@microsoft.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-amlogic@lists.infradead.org
+Signed-off-by: Rob Herring <robh@kernel.org>
 ---
- drivers/usb/phy/phy-fsl-usb.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+v2:
+- stm32_sai_sub: Unwrap now shorter line
 
---- a/drivers/usb/phy/phy-fsl-usb.c
-+++ b/drivers/usb/phy/phy-fsl-usb.c
-@@ -879,6 +879,7 @@ int usb_otg_start(struct platform_device
- 	if (pdata->init && pdata->init(pdev) != 0)
- 		return -EINVAL;
- 
-+#ifdef CONFIG_PPC32
- 	if (pdata->big_endian_mmio) {
- 		_fsl_readl = _fsl_readl_be;
- 		_fsl_writel = _fsl_writel_be;
-@@ -886,6 +887,7 @@ int usb_otg_start(struct platform_device
- 		_fsl_readl = _fsl_readl_le;
- 		_fsl_writel = _fsl_writel_le;
+ sound/soc/fsl/fsl_esai.c      | 2 +-
+ sound/soc/fsl/fsl_utils.c     | 4 ++--
+ sound/soc/meson/axg-card.c    | 2 +-
+ sound/soc/stm/stm32_sai.c     | 2 +-
+ sound/soc/stm/stm32_sai_sub.c | 7 +++----
+ 5 files changed, 8 insertions(+), 9 deletions(-)
+
+diff --git a/sound/soc/fsl/fsl_esai.c b/sound/soc/fsl/fsl_esai.c
+index c1d1d06783e5..57b484768a58 100644
+--- a/sound/soc/fsl/fsl_esai.c
++++ b/sound/soc/fsl/fsl_esai.c
+@@ -807,7 +807,7 @@ static int fsl_esai_probe(struct platform_device *pdev)
+ 		return -ENOMEM;
+
+ 	esai_priv->pdev = pdev;
+-	strncpy(esai_priv->name, np->name, sizeof(esai_priv->name) - 1);
++	snprintf(esai_priv->name, sizeof(esai_priv->name), "%pOFn", np);
+
+ 	/* Get the addresses and IRQ */
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+diff --git a/sound/soc/fsl/fsl_utils.c b/sound/soc/fsl/fsl_utils.c
+index 7f0fa4b52223..9981668ab590 100644
+--- a/sound/soc/fsl/fsl_utils.c
++++ b/sound/soc/fsl/fsl_utils.c
+@@ -57,8 +57,8 @@ int fsl_asoc_get_dma_channel(struct device_node *ssi_np,
+ 		of_node_put(dma_channel_np);
+ 		return ret;
  	}
-+#endif
- 
- 	/* request irq */
- 	p_otg->irq = platform_get_irq(pdev, 0);
-@@ -976,7 +978,7 @@ int usb_otg_start(struct platform_device
- /*
-  * state file in sysfs
-  */
--static int show_fsl_usb2_otg_state(struct device *dev,
-+static ssize_t show_fsl_usb2_otg_state(struct device *dev,
- 				   struct device_attribute *attr, char *buf)
- {
- 	struct otg_fsm *fsm = &fsl_otg_dev->fsm;
+-	snprintf((char *)dai->platform_name, DAI_NAME_SIZE, "%llx.%s",
+-		 (unsigned long long) res.start, dma_channel_np->name);
++	snprintf((char *)dai->platform_name, DAI_NAME_SIZE, "%llx.%pOFn",
++		 (unsigned long long) res.start, dma_channel_np);
 
+ 	iprop = of_get_property(dma_channel_np, "cell-index", NULL);
+ 	if (!iprop) {
+diff --git a/sound/soc/meson/axg-card.c b/sound/soc/meson/axg-card.c
+index 2914ba0d965b..b76a5f4f1785 100644
+--- a/sound/soc/meson/axg-card.c
++++ b/sound/soc/meson/axg-card.c
+@@ -478,7 +478,7 @@ static int axg_card_set_be_link(struct snd_soc_card *card,
 
-Patches currently in stable-queue which might be from rdunlap@infradead.org are
+ 	ret = axg_card_set_link_name(card, link, "be");
+ 	if (ret)
+-		dev_err(card->dev, "error setting %s link name\n", np->name);
++		dev_err(card->dev, "error setting %pOFn link name\n", np);
 
-queue-4.4/usb-phy-fix-ppc64-build-errors-in-phy-fsl-usb.c.patch
-queue-4.4/net-prevent-isa-drivers-from-building-on-ppc32.patch
-queue-4.4/arc-fix-build-errors-in-arc-include-asm-delay.h.patch
-queue-4.4/media-staging-omap4iss-include-asm-cacheflush.h-after-generic-includes.patch
-queue-4.4/arc-fix-type-warnings-in-arc-mm-cache.c.patch
+ 	return ret;
+ }
+diff --git a/sound/soc/stm/stm32_sai.c b/sound/soc/stm/stm32_sai.c
+index f22654253c43..d597eba61992 100644
+--- a/sound/soc/stm/stm32_sai.c
++++ b/sound/soc/stm/stm32_sai.c
+@@ -104,7 +104,7 @@ static int stm32_sai_set_sync(struct stm32_sai_data *sai_client,
+
+ 	if (!pdev) {
+ 		dev_err(&sai_client->pdev->dev,
+-			"Device not found for node %s\n", np_provider->name);
++			"Device not found for node %pOFn\n", np_provider);
+ 		return -ENODEV;
+ 	}
+
+diff --git a/sound/soc/stm/stm32_sai_sub.c b/sound/soc/stm/stm32_sai_sub.c
+index 06fba9650ac4..56a227e0bd71 100644
+--- a/sound/soc/stm/stm32_sai_sub.c
++++ b/sound/soc/stm/stm32_sai_sub.c
+@@ -1124,16 +1124,15 @@ static int stm32_sai_sub_parse_of(struct platform_device *pdev,
+ 	sai->sync = SAI_SYNC_NONE;
+ 	if (args.np) {
+ 		if (args.np == np) {
+-			dev_err(&pdev->dev, "%s sync own reference\n",
+-				np->name);
++			dev_err(&pdev->dev, "%pOFn sync own reference\n", np);
+ 			of_node_put(args.np);
+ 			return -EINVAL;
+ 		}
+
+ 		sai->np_sync_provider  = of_get_parent(args.np);
+ 		if (!sai->np_sync_provider) {
+-			dev_err(&pdev->dev, "%s parent node not found\n",
+-				np->name);
++			dev_err(&pdev->dev, "%pOFn parent node not found\n",
++				np);
+ 			of_node_put(args.np);
+ 			return -ENODEV;
+ 		}
+--
+2.17.1
