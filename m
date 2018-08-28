@@ -1,30 +1,21 @@
-Return-Path: <thierry.reding@gmail.com>
-Received: from mail-wm0-x243.google.com (mail-wm0-x243.google.com
- [IPv6:2a00:1450:400c:c09::243])
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
+ [IPv6:2607:f8b0:4864:20::442])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42053K5Vx3zDqC3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Aug 2018 20:44:09 +1000 (AEST)
-Received: by mail-wm0-x243.google.com with SMTP id c14-v6so1406009wmb.4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Aug 2018 03:44:09 -0700 (PDT)
-Date: Tue, 28 Aug 2018 12:44:05 +0200
-From: Thierry Reding <thierry.reding@gmail.com>
-To: Rob Herring <robh@kernel.org>
-Cc: linux-kernel@vger.kernel.org, Qiang Zhao <qiang.zhao@nxp.com>,
- Li Yang <leoyang.li@nxp.com>, Andy Gross <andy.gross@linaro.org>,
- David Brown <david.brown@linaro.org>, Heiko Stuebner <heiko@sntech.de>,
- Jonathan Hunter <jonathanh@nvidia.com>,
- Santosh Shilimkar <ssantosh@kernel.org>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- linux-soc@vger.kernel.org
-Subject: Re: [PATCH] soc: Convert to using %pOFn instead of device_node.name
-Message-ID: <20180828104405.GB9386@ulmo>
-References: <20180828015252.28511-1-robh@kernel.org>
- <20180828015252.28511-43-robh@kernel.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="Y7xTucakfITjPcLV"
-In-Reply-To: <20180828015252.28511-43-robh@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4205sW1ddPzDqC3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Aug 2018 21:20:47 +1000 (AEST)
+Received: by mail-pf1-x442.google.com with SMTP id h69-v6so572632pfd.4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Aug 2018 04:20:46 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linux-mm@kvack.org
+Cc: Nicholas Piggin <npiggin@gmail.com>, linux-arch@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH 0/3] mm: dirty/accessed pte optimisations
+Date: Tue, 28 Aug 2018 21:20:31 +1000
+Message-Id: <20180828112034.30875-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,58 +25,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Here are some patches that didn't get much comment last time. It
+looks like x86 might benefit too though, so that might get people
+interested. 
 
---Y7xTucakfITjPcLV
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I improved changelogs and added some comments, but no real logic
+changes.
 
-On Mon, Aug 27, 2018 at 08:52:44PM -0500, Rob Herring wrote:
-> In preparation to remove the node name pointer from struct device_node,
-> convert printf users to use the %pOFn format specifier.
->=20
-> Cc: Qiang Zhao <qiang.zhao@nxp.com>
-> Cc: Li Yang <leoyang.li@nxp.com>
-> Cc: Andy Gross <andy.gross@linaro.org>
-> Cc: David Brown <david.brown@linaro.org>
-> Cc: Heiko Stuebner <heiko@sntech.de>
-> Cc: Thierry Reding <thierry.reding@gmail.com>
-> Cc: Jonathan Hunter <jonathanh@nvidia.com>
-> Cc: Santosh Shilimkar <ssantosh@kernel.org>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: linux-soc@vger.kernel.org
-> Signed-off-by: Rob Herring <robh@kernel.org>
-> ---
->  drivers/soc/dove/pmu.c            |  8 +++---
->  drivers/soc/fsl/qe/qe_tdm.c       |  4 +--
->  drivers/soc/qcom/apr.c            |  2 +-
->  drivers/soc/rockchip/pm_domains.c | 44 +++++++++++++++----------------
->  drivers/soc/tegra/pmc.c           | 12 ++++-----
->  drivers/soc/ti/knav_dma.c         |  8 +++---
->  drivers/soc/ti/knav_qmss_queue.c  |  8 +++---
->  7 files changed, 43 insertions(+), 43 deletions(-)
+I hope I didn't get the x86 numbers wrong, they're more significant
+than I expected so it could quite well be a problem with my test
+(corrections welcome). Any data from other archs would be interesting
+too.
 
-Acked-by: Thierry Reding <treding@nvidia.com>
+Andrew perhaps if there aren't objections these could go in mm for
+a while. 
 
---Y7xTucakfITjPcLV
-Content-Type: application/pgp-signature; name="signature.asc"
+Thanks,
+Nick
 
------BEGIN PGP SIGNATURE-----
 
-iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAluFJ3UACgkQ3SOs138+
-s6GD5xAAwk8wk3MMJcqmINxPuZwkmqEhM9UEvObejj4eWhcJyTTaZVxWDSImevoN
-qlqEesIdQPZ/zqjTf9b0SHsIfRIEy+kUSjEajNaVPTy9WAuPl8H/34yO/e/nUU3U
-jnwt58kIpeoU1kMvVzTCloBRJE2JNRV6IdzhMp8Dr7XFZdKUxgFylx7KQRM3HcCH
-O07fktTO4MDKlhceR29zG70cnVVudfZ+IOrUFVKwwyh6G3RSBPsJIU70fWpUoyvN
-DHsLpfGPVHPy+uHerLL9BTCrq4cwpZydHUs5f7ehWda8h8pexx2DsSxzsStxzuW/
-2JhiCvQlZC9cMtTYYVQV/ewAA/AyR0Qk5GE8hkSUmmFqGVrEPqG+UWSQEJwi+NyG
-n+v8zJauq1LFYvvIcm/SMKmw9lhVfPtWVeaPF5WXdegWAHcmG6smtXcB6ObxCvEk
-kA0Y38kezs/DQzSrqyJzkU6L36Vl6UiBU5PKeL3CpKQ2XhOerw8d23Yk2FnGxCCf
-p/DyDWFLlb+ocQ/YSyheBKZ9xKFPFvNwMs6KOEjV4DrWI0AUNflRS9/0R022y1tH
-rPR9pGJ66CatN3iz207Q/w7XBpkVPqtVl5oBWlxsqRtcBsFV82Xcq5TiIGFLSWMR
-/EP9dvrfcBZ+62YR2ByJv09XoYgMBcFcdX5JqWVqlTwYGdM0qM0=
-=WnQr
------END PGP SIGNATURE-----
+Nicholas Piggin (3):
+  mm/cow: don't bother write protectig already write-protected huge
+    pages
+  mm/cow: optimise pte dirty/accessed bits handling in fork
+  mm: optimise pte dirty/accessed bit setting by demand based pte
+    insertion
 
---Y7xTucakfITjPcLV--
+ mm/huge_memory.c | 24 +++++++++++++++---------
+ mm/memory.c      | 18 ++++++++++--------
+ mm/vmscan.c      |  8 ++++++++
+ 3 files changed, 33 insertions(+), 17 deletions(-)
+
+-- 
+2.18.0
