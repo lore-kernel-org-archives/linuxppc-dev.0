@@ -1,34 +1,23 @@
-Return-Path: <srs0=mwxj=ll=gmail.com=nicholas.piggin@ozlabs.org>
-Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <peda@axentia.se>
+Received: from EUR03-VE1-obe.outbound.protection.outlook.com
+ (mail-eopbgr50126.outbound.protection.outlook.com [40.107.5.126])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41zwDk14xqzDqC3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Aug 2018 14:06:46 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 41zwDj5Btmz8tJj
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Aug 2018 14:06:45 +1000 (AEST)
-Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
- [IPv6:2607:f8b0:4864:20::643])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 41zwDh3KWpz9s47
- for <linuxppc-dev@ozlabs.org>; Tue, 28 Aug 2018 14:06:43 +1000 (AEST)
-Received: by mail-pl1-x643.google.com with SMTP id x6-v6so140222plv.10
- for <linuxppc-dev@ozlabs.org>; Mon, 27 Aug 2018 21:06:43 -0700 (PDT)
-Date: Tue, 28 Aug 2018 14:06:32 +1000
-From: Nicholas Piggin <nicholas.piggin@gmail.com>
-To: Andreas Schwab <schwab@linux-m68k.org>
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org, Ard Biesheuvel
- <ard.biesheuvel@linaro.org>, Jessica Yu <jeyu@kernel.org>, Michael Ellerman
- <mpe@ellerman.id.au>, Will Deacon <will.deacon@arm.com>, Ingo Molnar
- <mingo@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, linux-arch
- <linux-arch@vger.kernel.org>
-Subject: Re: Oops running iptables -F OUTPUT
-Message-ID: <20180828140632.593291cf@roar.ozlabs.ibm.com>
-In-Reply-To: <87bm9n68gq.fsf@igel.home>
-References: <87bm9n68gq.fsf@igel.home>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41zzTt2wLGzDqC3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Aug 2018 16:33:15 +1000 (AEST)
+Subject: Re: [PATCH] i2c: Convert to using %pOFn instead of device_node.name
+To: Rob Herring <robh@kernel.org>, linux-kernel@vger.kernel.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linux-i2c@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+References: <20180828015252.28511-1-robh@kernel.org>
+ <20180828015252.28511-21-robh@kernel.org>
+From: Peter Rosin <peda@axentia.se>
+Message-ID: <3fa33583-f748-1708-2274-0a6f4e81004b@axentia.se>
+Date: Tue, 28 Aug 2018 08:33:03 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <20180828015252.28511-21-robh@kernel.org>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,58 +27,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 27 Aug 2018 19:11:01 +0200
-Andreas Schwab <schwab@linux-m68k.org> wrote:
-
-> I'm getting this Oops when running iptables -F OUTPUT:
+On 2018-08-28 03:52, Rob Herring wrote:
+> In preparation to remove the node name pointer from struct device_node,
+> convert printf users to use the %pOFn format specifier.
 > 
-> [   91.139409] Unable to handle kernel paging request for data at address 0xd0000001fff12f34
-> [   91.139414] Faulting instruction address: 0xd0000000016a5718
-> [   91.139419] Oops: Kernel access of bad area, sig: 11 [#1]
-> [   91.139426] BE SMP NR_CPUS=2 PowerMac
-> [   91.139434] Modules linked in: iptable_filter ip_tables x_tables bpfilter nfsd auth_rpcgss lockd grace nfs_acl sunrpc tun af_packet snd_aoa_codec_tas snd_aoa_fabric_layout snd_aoa snd_aoa_i2sbus snd_aoa_soundbus snd_pcm_oss snd_pcm snd_seq snd_timer snd_seq_device snd_mixer_oss snd sungem sr_mod firewire_ohci cdrom sungem_phy soundcore firewire_core pata_macio crc_itu_t sg hid_generic usbhid linear md_mod ohci_pci ohci_hcd ehci_pci ehci_hcd usbcore usb_common dm_snapshot dm_bufio dm_mirror dm_region_hash dm_log dm_mod sata_svw
-> [   91.139522] CPU: 1 PID: 3620 Comm: iptables Not tainted 4.19.0-rc1 #1
-> [   91.139526] NIP:  d0000000016a5718 LR: d0000000016a569c CTR: c0000000006f560c
-> [   91.139531] REGS: c0000001fa577670 TRAP: 0300   Not tainted  (4.19.0-rc1)
-> [   91.139534] MSR:  900000000200b032 <SF,HV,VEC,EE,FP,ME,IR,DR,RI>  CR: 84002484  XER: 20000000
-> [   91.139553] DAR: d0000001fff12f34 DSISR: 40000000 IRQMASK: 0 
-> GPR00: d0000000016a569c c0000001fa5778f0 d0000000016b0400 0000000000000000 
-> GPR04: 0000000000000002 0000000000000000 80000001fa46418e c0000001fa0d05c8 
-> GPR08: d0000000016b0400 d00037fffff13000 00000001ff3e7000 d0000000016a6fb8 
-> GPR12: c0000000006f560c c00000000ffff780 0000000000000000 0000000000000000 
-> GPR16: 0000000011635010 00003fffa1b7aa68 0000000000000000 0000000000000000 
-> GPR20: 0000000000000003 0000000010013918 00000000116350c0 c000000000b88990 
-> GPR24: c000000000b88ba4 0000000000000000 d0000001fff12f34 0000000000000000 
-> GPR28: d0000000016b8000 c0000001fa20f400 c0000001fa20f440 0000000000000000 
-> [   91.139627] NIP [d0000000016a5718] .alloc_counters.isra.10+0xbc/0x140 [ip_tables]
-> [   91.139634] LR [d0000000016a569c] .alloc_counters.isra.10+0x40/0x140 [ip_tables]
-> [   91.139638] Call Trace:
-> [   91.139645] [c0000001fa5778f0] [d0000000016a569c] .alloc_counters.isra.10+0x40/0x140 [ip_tables] (unreliable)
-> [   91.139655] [c0000001fa5779b0] [d0000000016a5b54] .do_ipt_get_ctl+0x110/0x2ec [ip_tables]
-> [   91.139666] [c0000001fa577aa0] [c0000000006233e0] .nf_getsockopt+0x68/0x88
-> [   91.139674] [c0000001fa577b40] [c000000000631608] .ip_getsockopt+0xbc/0x128
-> [   91.139682] [c0000001fa577bf0] [c00000000065adf4] .raw_getsockopt+0x18/0x5c
-> [   91.139690] [c0000001fa577c60] [c0000000005b5f60] .sock_common_getsockopt+0x2c/0x40
-> [   91.139697] [c0000001fa577cd0] [c0000000005b3394] .__sys_getsockopt+0xa4/0xd0
-> [   91.139704] [c0000001fa577d80] [c0000000005b5ab0] .__se_sys_socketcall+0x238/0x2b4
-> [   91.139712] [c0000001fa577e30] [c00000000000a31c] system_call+0x5c/0x70
-> [   91.139716] Instruction dump:
-> [   91.139721] 39290040 7d3d4a14 7fbe4840 409cff98 81380000 2b890001 419d000c 393e0060 
-> [   91.139736] 48000010 7d57c82a e93e0060 7d295214 <815a0000> 794807e1 41e20010 7c210b78 
-> [   91.139752] ---[ end trace f5d1d5431651845d ]---
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Peter Rosin <peda@axentia.se>
+> Cc: linux-i2c@vger.kernel.org
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Signed-off-by: Rob Herring <robh@kernel.org>
+> ---
+>  drivers/i2c/busses/i2c-powermac.c | 15 ++++++++-------
+>  drivers/i2c/muxes/i2c-mux-gpmux.c |  4 ++--
+>  2 files changed, 10 insertions(+), 9 deletions(-)
+> 
+> diff --git a/drivers/i2c/busses/i2c-powermac.c b/drivers/i2c/busses/i2c-powermac.c
+> index f2a2067525ef..b706fd136ca5 100644
+> --- a/drivers/i2c/busses/i2c-powermac.c
+> +++ b/drivers/i2c/busses/i2c-powermac.c
+> @@ -390,7 +390,6 @@ static int i2c_powermac_probe(struct platform_device *dev)
+>  	struct pmac_i2c_bus *bus = dev_get_platdata(&dev->dev);
+>  	struct device_node *parent = NULL;
 
-This is due to 7290d58095 ("module: use relative references for
-__ksymtab entries"). This part of kernel/module.c -
+Lose the initializer...
 
-   /* Divert to percpu allocation if a percpu var. */
-   if (sym[i].st_shndx == info->index.pcpu)
-       secbase = (unsigned long)mod_percpu(mod);
-   else
-       secbase = info->sechdrs[sym[i].st_shndx].sh_addr;
-   sym[i].st_value += secbase;
+>  	struct i2c_adapter *adapter;
+> -	const char *basename;
+>  	int rc;
+>  
+>  	if (bus == NULL)
+> @@ -407,23 +406,25 @@ static int i2c_powermac_probe(struct platform_device *dev)
+>  		parent = of_get_parent(pmac_i2c_get_controller(bus));
+>  		if (parent == NULL)
+>  			return -EINVAL;
+> -		basename = parent->name;
+> +		snprintf(adapter->name, sizeof(adapter->name), "%pOFn %d", 
+> +			 parent,
+> +			 pmac_i2c_get_channel(bus));
 
-Causes the distance to the target to exceed 32-bits on powerpc, so
-it doesn't fit in a rel32 reloc. Not sure how other archs cope.
+...and I would have written "parent, pmac_i2c_get_channel(bus));" on one line,
+but maybe that's just me.
 
-Thanks,
-Nick
+Anyway, with the initializer fix,
+
+Reviewed-by: Peter Rosin <peda@axentia.se>
+
+(Wolfram, no need to split this, just take it in full.)
+
+Cheers,
+Peter
+
+> +		of_node_put(parent);
+>  		break;
+>  	case pmac_i2c_bus_pmu:
+> -		basename = "pmu";
+> +		snprintf(adapter->name, sizeof(adapter->name), "pmu %d",
+> +			 pmac_i2c_get_channel(bus));
+>  		break;
+>  	case pmac_i2c_bus_smu:
+>  		/* This is not what we used to do but I'm fixing drivers at
+>  		 * the same time as this change
+>  		 */
+> -		basename = "smu";
+> +		snprintf(adapter->name, sizeof(adapter->name), "smu %d",
+> +			 pmac_i2c_get_channel(bus));
+>  		break;
+>  	default:
+>  		return -EINVAL;
+>  	}
+> -	snprintf(adapter->name, sizeof(adapter->name), "%s %d", basename,
+> -		 pmac_i2c_get_channel(bus));
+> -	of_node_put(parent);
+>  
+>  	platform_set_drvdata(dev, adapter);
+>  	adapter->algo = &i2c_powermac_algorithm;
+> diff --git a/drivers/i2c/muxes/i2c-mux-gpmux.c b/drivers/i2c/muxes/i2c-mux-gpmux.c
+> index 92cf5f48afe6..f60b670deff7 100644
+> --- a/drivers/i2c/muxes/i2c-mux-gpmux.c
+> +++ b/drivers/i2c/muxes/i2c-mux-gpmux.c
+> @@ -120,8 +120,8 @@ static int i2c_mux_probe(struct platform_device *pdev)
+>  
+>  		ret = of_property_read_u32(child, "reg", &chan);
+>  		if (ret < 0) {
+> -			dev_err(dev, "no reg property for node '%s'\n",
+> -				child->name);
+> +			dev_err(dev, "no reg property for node '%pOFn'\n",
+> +				child);
+>  			goto err_children;
+>  		}
+>  
+> 
