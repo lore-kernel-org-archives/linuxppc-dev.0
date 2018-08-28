@@ -1,13 +1,13 @@
 Return-Path: <David.Gounaris@infinera.com>
 Received: from smtp.transmode.se (smtp.transmode.se [31.15.61.139])
- by lists.ozlabs.org (Postfix) with ESMTP id 4205ld3dgwzDrJ5
+ by lists.ozlabs.org (Postfix) with ESMTP id 4205ld3Sw6zDqC3
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Aug 2018 21:15:41 +1000 (AEST)
 From: David Gounaris <david.gounaris@infinera.com>
 To: qiang.zhao@nxp.com, netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Cc: David Gounaris <david.gounaris@infinera.com>
-Subject: [PATCH 4/6] net/wan/fsl_ucc_hdlc: default hmask value
-Date: Tue, 28 Aug 2018 13:09:19 +0200
-Message-Id: <20180828110921.2542-5-david.gounaris@infinera.com>
+Subject: [PATCH 3/6] net/wan/fsl_ucc_hdlc: Adding ARPHRD_ETHER
+Date: Tue, 28 Aug 2018 13:09:18 +0200
+Message-Id: <20180828110921.2542-4-david.gounaris@infinera.com>
 In-Reply-To: <20180828110921.2542-1-david.gounaris@infinera.com>
 References: <20180828110921.2542-1-david.gounaris@infinera.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -19,26 +19,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Set default HMASK to 0x0000 to use
-promiscuous mode in the hdlc controller.
+This was done to avoid discarding ethernet
+packets when using HDLC_ETH protocol.
 
 Signed-off-by: David Gounaris <david.gounaris@infinera.com>
 ---
- drivers/net/wan/fsl_ucc_hdlc.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/wan/fsl_ucc_hdlc.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/drivers/net/wan/fsl_ucc_hdlc.h b/drivers/net/wan/fsl_ucc_hdlc.h
-index c21134c1f180..5bc3d1a6ca6e 100644
---- a/drivers/net/wan/fsl_ucc_hdlc.h
-+++ b/drivers/net/wan/fsl_ucc_hdlc.h
-@@ -134,7 +134,7 @@ struct ucc_hdlc_private {
+diff --git a/drivers/net/wan/fsl_ucc_hdlc.c b/drivers/net/wan/fsl_ucc_hdlc.c
+index 963b3b5ae15e..54e2b2143e36 100644
+--- a/drivers/net/wan/fsl_ucc_hdlc.c
++++ b/drivers/net/wan/fsl_ucc_hdlc.c
+@@ -375,6 +375,10 @@ static netdev_tx_t ucc_hdlc_tx(struct sk_buff *skb, struct net_device *dev)
+ 		dev->stats.tx_bytes += skb->len;
+ 		break;
  
- #define HDLC_HEAD_MASK		0x0000
- #define DEFAULT_HDLC_HEAD	0xff44
--#define DEFAULT_ADDR_MASK	0x00ff
-+#define DEFAULT_ADDR_MASK	0x0000
- #define DEFAULT_HDLC_ADDR	0x00ff
++	case ARPHRD_ETHER:
++		dev->stats.tx_bytes += skb->len;
++		break;
++
+ 	default:
+ 		dev->stats.tx_dropped++;
+ 		dev_kfree_skb(skb);
+@@ -512,6 +516,8 @@ static int hdlc_rx_done(struct ucc_hdlc_private *priv, int rx_work_limit)
+ 			break;
  
- #define BMR_GBL			0x20000000
+ 		case ARPHRD_PPP:
++		case ARPHRD_ETHER:
++			
+ 			length -= HDLC_CRC_SIZE;
+ 
+ 			skb = dev_alloc_skb(length);
 -- 
 2.13.6
