@@ -1,22 +1,41 @@
-Return-Path: <darren@stevens-zone.net>
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.75])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <tyreld@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 420KjL1vLlzF0QC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 06:14:26 +1000 (AEST)
-From: Darren Stevens <darren@stevens-zone.net>
-To: Scott Wood <oss@buserror.net>
-CC: Christian Zigotzky <chzigotzky@xenosoft.de>, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 28 Aug 2018 20:13:59 +0100 (BST)
-Message-ID: <4c796dccb9b.4d269848@auth.smtp.1and1.co.uk>
-In-Reply-To: <07ad630cccbd33c81031f690fd17cdc30b662e49.camel@buserror.net>
-References: <0F797F4E-755B-499C-BA74-48CC03235393@xenosoft.de>
- <76A7B415-F6D4-4BF8-B4B7-B146C5337CF8@xenosoft.de>
- <196C6151-3085-4A42-B6D6-5891F4AF9759@xenosoft.de>
- <07ad630cccbd33c81031f690fd17cdc30b662e49.camel@buserror.net>
-Subject: Re: FSL/NXP P5020: USB problems with the latest Git kernels
+ by lists.ozlabs.org (Postfix) with ESMTPS id 420NMT0DyWzF0pD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 08:14:12 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w7SM9LxV109716
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Aug 2018 18:14:10 -0400
+Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2m5b6nrjdb-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Aug 2018 18:14:10 -0400
+Received: from localhost
+ by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
+ Tue, 28 Aug 2018 18:14:08 -0400
+Subject: Re: [PATCH] soc: Convert to using %pOFn instead of device_node.name
+To: Li Yang <leoyang.li@nxp.com>, Rob Herring <robh@kernel.org>
+Cc: Heiko Stuebner <heiko@sntech.de>, linux-soc@vger.kernel.org,
+ lkml <linux-kernel@vger.kernel.org>, Jon Hunter <jonathanh@nvidia.com>,
+ david.brown@linaro.org, thierry.reding@gmail.com,
+ Santosh Shilimkar <ssantosh@kernel.org>, andy.gross@linaro.org,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
+ <linux-arm-kernel@lists.infradead.org>, Zhao Qiang <qiang.zhao@nxp.com>
+References: <20180828015252.28511-1-robh@kernel.org>
+ <20180828015252.28511-43-robh@kernel.org>
+ <CADRPPNRvRKEuV=ZzH6yq6_7COvFSWy2ibAKoEt4YrzES2m9x2Q@mail.gmail.com>
+From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Date: Tue, 28 Aug 2018 15:14:00 -0700
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <CADRPPNRvRKEuV=ZzH6yq6_7COvFSWy2ibAKoEt4YrzES2m9x2Q@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <a8594a1c-0d10-74c6-0e40-15d49ff876a3@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,29 +45,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Scott
+On 08/28/2018 11:48 AM, Li Yang wrote:
+> On Mon, Aug 27, 2018 at 8:57 PM Rob Herring <robh@kernel.org> wrote:
+>>
+>> In preparation to remove the node name pointer from struct device_node,
+>> convert printf users to use the %pOFn format specifier.
+> 
+> Please forgive my ignorance, but what is this format specifier do
+> exactly?   I cannot find anything listed in the printf specification
+> matching this.  Is this something newly introduced?
+> 
+> Leo
+> 
 
-On 27/08/2018, Scott Wood wrote:
-> On Mon, 2018-08-27 at 20:15 +0200, Christian Zigotzky wrote:
->> Hello,
->> 
->> Our users tested the RC1 of kernel 4.19 on their P5020 boards today.
->> Unfortunately the USB bug still exists. With mem values bigger than 4096M,
->> the USB mouse and keyboard doesn't work. With the bootarg mem=4096M, the USB
->> devices work without any problems. Please compile the RC1 and test it on
->> your P5020 board. There is a problem with the memory management since
->> 22/08/18. 
->
-> I just tested 4.19-rc1 on a T4240 and got a similar problem with MMC.  MMC and
-> USB on these chips both have a 32-bit DMA limitation.  I'll look into it.
+>From Documentation/core-api/printk-formats.rst:
 
-I've run a bisect locally on my system and found the following bad commit:
+kobjects
+--------
 
-# first bad commit: [1b1eeca7e4c19fa76d409d4c7b338dba21f2df45] init: allow initcall tables to be emitted using relative references
+::
 
-I can't see why this would fail though, and it only seems to affect fsl machines, and on mine it killed the onboard sata as well.
+        %pOF[fnpPcCF]
 
-Hope this helps.
 
-Regards
-Darren
+For printing kobject based structs (device nodes). Default behaviour is
+equivalent to %pOFf.
+
+        - f - device node full_name
+        - n - device node name
+        - p - device node phandle
+        - P - device node path spec (name + @unit)
+        - F - device node flags
+        - c - major compatible string
+        - C - full compatible string
+
+
+-Tyrel
