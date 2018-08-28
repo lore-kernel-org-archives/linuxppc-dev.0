@@ -1,37 +1,22 @@
-Return-Path: <pku.leo@gmail.com>
-Received: from mail-io0-f196.google.com (mail-io0-f196.google.com
- [209.85.223.196])
+Return-Path: <darren@stevens-zone.net>
+Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.75])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 420Hnt5lQ7zF09c
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 04:48:15 +1000 (AEST)
-Received: by mail-io0-f196.google.com with SMTP id 75-v6so2331912iou.11
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Aug 2018 11:48:15 -0700 (PDT)
-Received: from mail-io0-f170.google.com (mail-io0-f170.google.com.
- [209.85.223.170])
- by smtp.gmail.com with ESMTPSA id b14-v6sm772752ioh.47.2018.08.28.11.48.12
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 28 Aug 2018 11:48:12 -0700 (PDT)
-Received: by mail-io0-f170.google.com with SMTP id q4-v6so2339164iob.8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Aug 2018 11:48:12 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 420KjL1vLlzF0QC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 06:14:26 +1000 (AEST)
+From: Darren Stevens <darren@stevens-zone.net>
+To: Scott Wood <oss@buserror.net>
+CC: Christian Zigotzky <chzigotzky@xenosoft.de>, linuxppc-dev@lists.ozlabs.org
+Date: Tue, 28 Aug 2018 20:13:59 +0100 (BST)
+Message-ID: <4c796dccb9b.4d269848@auth.smtp.1and1.co.uk>
+In-Reply-To: <07ad630cccbd33c81031f690fd17cdc30b662e49.camel@buserror.net>
+References: <0F797F4E-755B-499C-BA74-48CC03235393@xenosoft.de>
+ <76A7B415-F6D4-4BF8-B4B7-B146C5337CF8@xenosoft.de>
+ <196C6151-3085-4A42-B6D6-5891F4AF9759@xenosoft.de>
+ <07ad630cccbd33c81031f690fd17cdc30b662e49.camel@buserror.net>
+Subject: Re: FSL/NXP P5020: USB problems with the latest Git kernels
 MIME-Version: 1.0
-References: <20180828015252.28511-1-robh@kernel.org>
- <20180828015252.28511-43-robh@kernel.org>
-In-Reply-To: <20180828015252.28511-43-robh@kernel.org>
-From: Li Yang <leoyang.li@nxp.com>
-Date: Tue, 28 Aug 2018 13:48:01 -0500
-Message-ID: <CADRPPNRvRKEuV=ZzH6yq6_7COvFSWy2ibAKoEt4YrzES2m9x2Q@mail.gmail.com>
-Subject: Re: [PATCH] soc: Convert to using %pOFn instead of device_node.name
-To: Rob Herring <robh@kernel.org>
-Cc: lkml <linux-kernel@vger.kernel.org>, Zhao Qiang <qiang.zhao@nxp.com>,
- andy.gross@linaro.org, david.brown@linaro.org,
- Heiko Stuebner <heiko@sntech.de>, thierry.reding@gmail.com,
- Jon Hunter <jonathanh@nvidia.com>, Santosh Shilimkar <ssantosh@kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>, linux-soc@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,13 +26,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 27, 2018 at 8:57 PM Rob Herring <robh@kernel.org> wrote:
+Hello Scott
+
+On 27/08/2018, Scott Wood wrote:
+> On Mon, 2018-08-27 at 20:15 +0200, Christian Zigotzky wrote:
+>> Hello,
+>> 
+>> Our users tested the RC1 of kernel 4.19 on their P5020 boards today.
+>> Unfortunately the USB bug still exists. With mem values bigger than 4096M,
+>> the USB mouse and keyboard doesn't work. With the bootarg mem=4096M, the USB
+>> devices work without any problems. Please compile the RC1 and test it on
+>> your P5020 board. There is a problem with the memory management since
+>> 22/08/18. 
 >
-> In preparation to remove the node name pointer from struct device_node,
-> convert printf users to use the %pOFn format specifier.
+> I just tested 4.19-rc1 on a T4240 and got a similar problem with MMC.  MMC and
+> USB on these chips both have a 32-bit DMA limitation.  I'll look into it.
 
-Please forgive my ignorance, but what is this format specifier do
-exactly?   I cannot find anything listed in the printf specification
-matching this.  Is this something newly introduced?
+I've run a bisect locally on my system and found the following bad commit:
 
-Leo
+# first bad commit: [1b1eeca7e4c19fa76d409d4c7b338dba21f2df45] init: allow initcall tables to be emitted using relative references
+
+I can't see why this would fail though, and it only seems to affect fsl machines, and on mine it killed the onboard sata as well.
+
+Hope this helps.
+
+Regards
+Darren
