@@ -1,32 +1,24 @@
 Return-Path: <robherring2@gmail.com>
-Received: from mail-oi0-f44.google.com (mail-oi0-f44.google.com
- [209.85.218.44])
+Received: from mail-oi0-f43.google.com (mail-oi0-f43.google.com
+ [209.85.218.43])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 420Cjz0MdbzF09n
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 01:44:38 +1000 (AEST)
-Received: by mail-oi0-f44.google.com with SMTP id t68-v6so3624795oie.12
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Aug 2018 08:44:38 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 420Ck23rHxzF0Vv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 01:44:42 +1000 (AEST)
+Received: by mail-oi0-f43.google.com with SMTP id l202-v6so3645336oig.7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Aug 2018 08:44:42 -0700 (PDT)
 From: Rob Herring <robh@kernel.org>
 To: linux-kernel@vger.kernel.org
-Cc: Andy Shevchenko <andy.shevchenko@gmail.com>, Timur Tabi <timur@kernel.org>,
- Nicolin Chen <nicoleotsuka@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>,
- Fabio Estevam <fabio.estevam@nxp.com>, Liam Girdwood <lgirdwood@gmail.com>,
- Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
- Takashi Iwai <tiwai@suse.com>, Carlo Caione <carlo@caione.org>,
- Kevin Hilman <khilman@baylibre.com>,
- Olivier Moysan <olivier.moysan@st.com>,
- Arnaud Pouliquen <arnaud.pouliquen@st.com>,
- Maxime Coquelin <mcoquelin.stm32@gmail.com>,
- Alexandre Torgue <alexandre.torgue@st.com>, alsa-devel@alsa-project.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- linux-amlogic@lists.infradead.org
-Subject: [PATCH v2] ASoC: Convert to using %pOFn instead of device_node.name
-Date: Tue, 28 Aug 2018 10:44:28 -0500
-Message-Id: <20180828154433.5693-2-robh@kernel.org>
+Cc: Andy Shevchenko <andy.shevchenko@gmail.com>,
+ Johannes Berg <johannes@sipsolutions.net>,
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+ linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org
+Subject: [PATCH v2] sound: Convert to using %pOFn instead of device_node.name
+Date: Tue, 28 Aug 2018 10:44:31 -0500
+Message-Id: <20180828154433.5693-5-robh@kernel.org>
 In-Reply-To: <20180828154433.5693-1-robh@kernel.org>
 References: <20180828154433.5693-1-robh@kernel.org>
-In-Reply-To: <20180828015252.28511-51-robh@kernel.org>
+In-Reply-To: <20180828015252.28511-50-robh@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,113 +31,63 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 In preparation to remove the node name pointer from struct device_node,
 convert printf users to use the %pOFn format specifier.
 
-Cc: Timur Tabi <timur@kernel.org>
-Cc: Nicolin Chen <nicoleotsuka@gmail.com>
-Cc: Xiubo Li <Xiubo.Lee@gmail.com>
-Cc: Fabio Estevam <fabio.estevam@nxp.com>
-Cc: Liam Girdwood <lgirdwood@gmail.com>
-Cc: Mark Brown <broonie@kernel.org>
+Cc: Johannes Berg <johannes@sipsolutions.net>
 Cc: Jaroslav Kysela <perex@perex.cz>
 Cc: Takashi Iwai <tiwai@suse.com>
-Cc: Carlo Caione <carlo@caione.org>
-Cc: Kevin Hilman <khilman@baylibre.com>
-Cc: Olivier Moysan <olivier.moysan@st.com>
-Cc: Arnaud Pouliquen <arnaud.pouliquen@st.com>
-Cc: Maxime Coquelin <mcoquelin.stm32@gmail.com>
-Cc: Alexandre Torgue <alexandre.torgue@st.com>
-Cc: alsa-devel@alsa-project.org
 Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-amlogic@lists.infradead.org
+Cc: alsa-devel@alsa-project.org
 Signed-off-by: Rob Herring <robh@kernel.org>
 ---
 v2:
-- stm32_sai_sub: Unwrap now shorter line
+- Fix error in strncmp
 
- sound/soc/fsl/fsl_esai.c      | 2 +-
- sound/soc/fsl/fsl_utils.c     | 4 ++--
- sound/soc/meson/axg-card.c    | 2 +-
- sound/soc/stm/stm32_sai.c     | 2 +-
- sound/soc/stm/stm32_sai_sub.c | 7 +++----
- 5 files changed, 8 insertions(+), 9 deletions(-)
+ sound/aoa/soundbus/i2sbus/core.c | 15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
 
-diff --git a/sound/soc/fsl/fsl_esai.c b/sound/soc/fsl/fsl_esai.c
-index c1d1d06783e5..57b484768a58 100644
---- a/sound/soc/fsl/fsl_esai.c
-+++ b/sound/soc/fsl/fsl_esai.c
-@@ -807,7 +807,7 @@ static int fsl_esai_probe(struct platform_device *pdev)
- 		return -ENOMEM;
+diff --git a/sound/aoa/soundbus/i2sbus/core.c b/sound/aoa/soundbus/i2sbus/core.c
+index 000b58522106..bd7c5029fc59 100644
+--- a/sound/aoa/soundbus/i2sbus/core.c
++++ b/sound/aoa/soundbus/i2sbus/core.c
+@@ -157,18 +157,19 @@ static int i2sbus_add_dev(struct macio_dev *macio,
+ 	struct device_node *child = NULL, *sound = NULL;
+ 	struct resource *r;
+ 	int i, layout = 0, rlen, ok = force;
+-	static const char *rnames[] = { "i2sbus: %s (control)",
+-					"i2sbus: %s (tx)",
+-					"i2sbus: %s (rx)" };
++	char node_name[6];
++	static const char *rnames[] = { "i2sbus: %pOFn (control)",
++					"i2sbus: %pOFn (tx)",
++					"i2sbus: %pOFn (rx)" };
+ 	static irq_handler_t ints[] = {
+ 		i2sbus_bus_intr,
+ 		i2sbus_tx_intr,
+ 		i2sbus_rx_intr
+ 	};
 
- 	esai_priv->pdev = pdev;
--	strncpy(esai_priv->name, np->name, sizeof(esai_priv->name) - 1);
-+	snprintf(esai_priv->name, sizeof(esai_priv->name), "%pOFn", np);
+-	if (strlen(np->name) != 5)
++	if (snprintf(node_name, sizeof(node_name), "%pOFn", np) != 5)
+ 		return 0;
+-	if (strncmp(np->name, "i2s-", 4))
++	if (strncmp(node_name, "i2s-", 4))
+ 		return 0;
 
- 	/* Get the addresses and IRQ */
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-diff --git a/sound/soc/fsl/fsl_utils.c b/sound/soc/fsl/fsl_utils.c
-index 7f0fa4b52223..9981668ab590 100644
---- a/sound/soc/fsl/fsl_utils.c
-+++ b/sound/soc/fsl/fsl_utils.c
-@@ -57,8 +57,8 @@ int fsl_asoc_get_dma_channel(struct device_node *ssi_np,
- 		of_node_put(dma_channel_np);
- 		return ret;
+ 	dev = kzalloc(sizeof(struct i2sbus_dev), GFP_KERNEL);
+@@ -228,13 +229,13 @@ static int i2sbus_add_dev(struct macio_dev *macio,
+ 	dev->sound.pcmid = -1;
+ 	dev->macio = macio;
+ 	dev->control = control;
+-	dev->bus_number = np->name[4] - 'a';
++	dev->bus_number = node_name[4] - 'a';
+ 	INIT_LIST_HEAD(&dev->sound.codec_list);
+
+ 	for (i = aoa_resource_i2smmio; i <= aoa_resource_rxdbdma; i++) {
+ 		dev->interrupts[i] = -1;
+ 		snprintf(dev->rnames[i], sizeof(dev->rnames[i]),
+-			 rnames[i], np->name);
++			 rnames[i], np);
  	}
--	snprintf((char *)dai->platform_name, DAI_NAME_SIZE, "%llx.%s",
--		 (unsigned long long) res.start, dma_channel_np->name);
-+	snprintf((char *)dai->platform_name, DAI_NAME_SIZE, "%llx.%pOFn",
-+		 (unsigned long long) res.start, dma_channel_np);
-
- 	iprop = of_get_property(dma_channel_np, "cell-index", NULL);
- 	if (!iprop) {
-diff --git a/sound/soc/meson/axg-card.c b/sound/soc/meson/axg-card.c
-index 2914ba0d965b..b76a5f4f1785 100644
---- a/sound/soc/meson/axg-card.c
-+++ b/sound/soc/meson/axg-card.c
-@@ -478,7 +478,7 @@ static int axg_card_set_be_link(struct snd_soc_card *card,
-
- 	ret = axg_card_set_link_name(card, link, "be");
- 	if (ret)
--		dev_err(card->dev, "error setting %s link name\n", np->name);
-+		dev_err(card->dev, "error setting %pOFn link name\n", np);
-
- 	return ret;
- }
-diff --git a/sound/soc/stm/stm32_sai.c b/sound/soc/stm/stm32_sai.c
-index f22654253c43..d597eba61992 100644
---- a/sound/soc/stm/stm32_sai.c
-+++ b/sound/soc/stm/stm32_sai.c
-@@ -104,7 +104,7 @@ static int stm32_sai_set_sync(struct stm32_sai_data *sai_client,
-
- 	if (!pdev) {
- 		dev_err(&sai_client->pdev->dev,
--			"Device not found for node %s\n", np_provider->name);
-+			"Device not found for node %pOFn\n", np_provider);
- 		return -ENODEV;
- 	}
-
-diff --git a/sound/soc/stm/stm32_sai_sub.c b/sound/soc/stm/stm32_sai_sub.c
-index 06fba9650ac4..56a227e0bd71 100644
---- a/sound/soc/stm/stm32_sai_sub.c
-+++ b/sound/soc/stm/stm32_sai_sub.c
-@@ -1124,16 +1124,15 @@ static int stm32_sai_sub_parse_of(struct platform_device *pdev,
- 	sai->sync = SAI_SYNC_NONE;
- 	if (args.np) {
- 		if (args.np == np) {
--			dev_err(&pdev->dev, "%s sync own reference\n",
--				np->name);
-+			dev_err(&pdev->dev, "%pOFn sync own reference\n", np);
- 			of_node_put(args.np);
- 			return -EINVAL;
- 		}
-
- 		sai->np_sync_provider  = of_get_parent(args.np);
- 		if (!sai->np_sync_provider) {
--			dev_err(&pdev->dev, "%s parent node not found\n",
--				np->name);
-+			dev_err(&pdev->dev, "%pOFn parent node not found\n",
-+				np);
- 			of_node_put(args.np);
- 			return -ENODEV;
- 		}
+ 	for (i = aoa_resource_i2smmio; i <= aoa_resource_rxdbdma; i++) {
+ 		int irq = irq_of_parse_and_map(np, i);
 --
 2.17.1
