@@ -3,20 +3,18 @@ Received: from mail-oi0-f68.google.com (mail-oi0-f68.google.com
  [209.85.218.68])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41zsK423J4zDrYf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Aug 2018 11:55:20 +1000 (AEST)
-Received: by mail-oi0-f68.google.com with SMTP id l82-v6so1713970oih.11
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41zsK51dY8zDrb6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Aug 2018 11:55:21 +1000 (AEST)
+Received: by mail-oi0-f68.google.com with SMTP id t68-v6so1699679oie.12
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Aug 2018 18:55:20 -0700 (PDT)
 From: Rob Herring <robh@kernel.org>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Jiri Slaby <jslaby@suse.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linux-serial@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] tty: Convert to using %pOFn instead of device_node.name
-Date: Mon, 27 Aug 2018 20:52:47 -0500
-Message-Id: <20180828015252.28511-46-robh@kernel.org>
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+ linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org
+Subject: [PATCH] sound: Convert to using %pOFn instead of device_node.name
+Date: Mon, 27 Aug 2018 20:52:51 -0500
+Message-Id: <20180828015252.28511-50-robh@kernel.org>
 In-Reply-To: <20180828015252.28511-1-robh@kernel.org>
 References: <20180828015252.28511-1-robh@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,98 +29,60 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 In preparation to remove the node name pointer from struct device_node,
 convert printf users to use the %pOFn format specifier.
 
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Jiri Slaby <jslaby@suse.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linux-serial@vger.kernel.org
+Cc: Johannes Berg <johannes@sipsolutions.net>
+Cc: Jaroslav Kysela <perex@perex.cz>
+Cc: Takashi Iwai <tiwai@suse.com>
 Cc: linuxppc-dev@lists.ozlabs.org
+Cc: alsa-devel@alsa-project.org
 Signed-off-by: Rob Herring <robh@kernel.org>
 ---
- drivers/tty/ehv_bytechan.c                  | 12 ++++++------
- drivers/tty/serial/cpm_uart/cpm_uart_core.c |  8 ++++----
- drivers/tty/serial/pmac_zilog.c             |  4 ++--
- 3 files changed, 12 insertions(+), 12 deletions(-)
+ sound/aoa/soundbus/i2sbus/core.c | 15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/tty/ehv_bytechan.c b/drivers/tty/ehv_bytechan.c
-index eea4049b5dcc..769e0a5d1dfc 100644
---- a/drivers/tty/ehv_bytechan.c
-+++ b/drivers/tty/ehv_bytechan.c
-@@ -128,8 +128,8 @@ static int find_console_handle(void)
- 	 */
- 	iprop = of_get_property(np, "hv-handle", NULL);
- 	if (!iprop) {
--		pr_err("ehv-bc: no 'hv-handle' property in %s node\n",
--		       np->name);
-+		pr_err("ehv-bc: no 'hv-handle' property in %pOFn node\n",
-+		       np);
+diff --git a/sound/aoa/soundbus/i2sbus/core.c b/sound/aoa/soundbus/i2sbus/core.c
+index 000b58522106..bf32e1c74748 100644
+--- a/sound/aoa/soundbus/i2sbus/core.c
++++ b/sound/aoa/soundbus/i2sbus/core.c
+@@ -157,18 +157,19 @@ static int i2sbus_add_dev(struct macio_dev *macio,
+ 	struct device_node *child = NULL, *sound = NULL;
+ 	struct resource *r;
+ 	int i, layout = 0, rlen, ok = force;
+-	static const char *rnames[] = { "i2sbus: %s (control)",
+-					"i2sbus: %s (tx)",
+-					"i2sbus: %s (rx)" };
++	char node_name[6];
++	static const char *rnames[] = { "i2sbus: %pOFn (control)",
++					"i2sbus: %pOFn (tx)",
++					"i2sbus: %pOFn (rx)" };
+ 	static irq_handler_t ints[] = {
+ 		i2sbus_bus_intr,
+ 		i2sbus_tx_intr,
+ 		i2sbus_rx_intr
+ 	};
+ 
+-	if (strlen(np->name) != 5)
++	if (snprintf(node_name, sizeof(node_name), "%pOFn", np) != 5)
  		return 0;
- 	}
- 	stdout_bc = be32_to_cpu(*iprop);
-@@ -661,8 +661,8 @@ static int ehv_bc_tty_probe(struct platform_device *pdev)
+-	if (strncmp(np->name, "i2s-", 4))
++	if (strncmp(np, "i2s-", 4))
+ 		return 0;
  
- 	iprop = of_get_property(np, "hv-handle", NULL);
- 	if (!iprop) {
--		dev_err(&pdev->dev, "no 'hv-handle' property in %s node\n",
--			np->name);
-+		dev_err(&pdev->dev, "no 'hv-handle' property in %pOFn node\n",
-+			np);
- 		return -ENODEV;
- 	}
+ 	dev = kzalloc(sizeof(struct i2sbus_dev), GFP_KERNEL);
+@@ -228,13 +229,13 @@ static int i2sbus_add_dev(struct macio_dev *macio,
+ 	dev->sound.pcmid = -1;
+ 	dev->macio = macio;
+ 	dev->control = control;
+-	dev->bus_number = np->name[4] - 'a';
++	dev->bus_number = node_name[4] - 'a';
+ 	INIT_LIST_HEAD(&dev->sound.codec_list);
  
-@@ -682,8 +682,8 @@ static int ehv_bc_tty_probe(struct platform_device *pdev)
- 	bc->rx_irq = irq_of_parse_and_map(np, 0);
- 	bc->tx_irq = irq_of_parse_and_map(np, 1);
- 	if ((bc->rx_irq == NO_IRQ) || (bc->tx_irq == NO_IRQ)) {
--		dev_err(&pdev->dev, "no 'interrupts' property in %s node\n",
--			np->name);
-+		dev_err(&pdev->dev, "no 'interrupts' property in %pOFn node\n",
-+			np);
- 		ret = -ENODEV;
- 		goto error;
+ 	for (i = aoa_resource_i2smmio; i <= aoa_resource_rxdbdma; i++) {
+ 		dev->interrupts[i] = -1;
+ 		snprintf(dev->rnames[i], sizeof(dev->rnames[i]),
+-			 rnames[i], np->name);
++			 rnames[i], np);
  	}
-diff --git a/drivers/tty/serial/cpm_uart/cpm_uart_core.c b/drivers/tty/serial/cpm_uart/cpm_uart_core.c
-index 24a5f05e769b..ea7204d75022 100644
---- a/drivers/tty/serial/cpm_uart/cpm_uart_core.c
-+++ b/drivers/tty/serial/cpm_uart/cpm_uart_core.c
-@@ -1151,8 +1151,8 @@ static int cpm_uart_init_port(struct device_node *np,
- 	if (!pinfo->clk) {
- 		data = of_get_property(np, "fsl,cpm-brg", &len);
- 		if (!data || len != 4) {
--			printk(KERN_ERR "CPM UART %s has no/invalid "
--			                "fsl,cpm-brg property.\n", np->name);
-+			printk(KERN_ERR "CPM UART %pOFn has no/invalid "
-+			                "fsl,cpm-brg property.\n", np);
- 			return -EINVAL;
- 		}
- 		pinfo->brg = *data;
-@@ -1160,8 +1160,8 @@ static int cpm_uart_init_port(struct device_node *np,
- 
- 	data = of_get_property(np, "fsl,cpm-command", &len);
- 	if (!data || len != 4) {
--		printk(KERN_ERR "CPM UART %s has no/invalid "
--		                "fsl,cpm-command property.\n", np->name);
-+		printk(KERN_ERR "CPM UART %pOFn has no/invalid "
-+		                "fsl,cpm-command property.\n", np);
- 		return -EINVAL;
- 	}
- 	pinfo->command = *data;
-diff --git a/drivers/tty/serial/pmac_zilog.c b/drivers/tty/serial/pmac_zilog.c
-index 3d21790d961e..a4ec22d1f214 100644
---- a/drivers/tty/serial/pmac_zilog.c
-+++ b/drivers/tty/serial/pmac_zilog.c
-@@ -1566,9 +1566,9 @@ static int pmz_attach(struct macio_dev *mdev, const struct of_device_id *match)
- 	 * to work around bugs in ancient Apple device-trees
- 	 */
- 	if (macio_request_resources(uap->dev, "pmac_zilog"))
--		printk(KERN_WARNING "%s: Failed to request resource"
-+		printk(KERN_WARNING "%pOFn: Failed to request resource"
- 		       ", port still active\n",
--		       uap->node->name);
-+		       uap->node);
- 	else
- 		uap->flags |= PMACZILOG_FLAG_RSRC_REQUESTED;
- 
+ 	for (i = aoa_resource_i2smmio; i <= aoa_resource_rxdbdma; i++) {
+ 		int irq = irq_of_parse_and_map(np, i);
 -- 
 2.17.1
