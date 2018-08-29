@@ -1,27 +1,27 @@
-Return-Path: <peda@axentia.se>
-Received: from EUR01-HE1-obe.outbound.protection.outlook.com
- (mail-he1eur01on0117.outbound.protection.outlook.com [104.47.0.117])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <srs0=7foq=lm=buserror.net=oss@ozlabs.org>
+Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 420x9b0RhBzF31f
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Aug 2018 05:52:34 +1000 (AEST)
-Subject: Re: [PATCH] i2c: Convert to using %pOFn instead of device_node.name
-To: Rob Herring <robh@kernel.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Linux I2C <linux-i2c@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-References: <20180828015252.28511-1-robh@kernel.org>
- <20180828015252.28511-21-robh@kernel.org>
- <3fa33583-f748-1708-2274-0a6f4e81004b@axentia.se>
- <CAL_JsqJcDdntsi3D=neU=Dhx0Xku_XPFC_OCLRb8V==HTtviBQ@mail.gmail.com>
-From: Peter Rosin <peda@axentia.se>
-Message-ID: <d2736c07-d653-a855-401d-120b0650ae79@axentia.se>
-Date: Wed, 29 Aug 2018 21:52:22 +0200
-MIME-Version: 1.0
-In-Reply-To: <CAL_JsqJcDdntsi3D=neU=Dhx0Xku_XPFC_OCLRb8V==HTtviBQ@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 420xGV3gHtzF35q
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Aug 2018 05:56:50 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 420xGV32Ktz8w0l
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Aug 2018 05:56:50 +1000 (AEST)
+Received: from baldur.buserror.net (baldur.buserror.net [165.227.176.147])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 420xGT60kgz9ryn
+ for <linuxppc-dev@ozlabs.org>; Thu, 30 Aug 2018 05:56:49 +1000 (AEST)
+Message-ID: <8ca7e76b239a14e322f00cd1a0eac141472ab2bd.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: sgosavi1 <Sachin.Gosavi@emerson.com>, linuxppc-dev@ozlabs.org
+Date: Wed, 29 Aug 2018 14:16:23 -0500
+In-Reply-To: <1535541276673-0.post@n7.nabble.com>
+References: <1535541276673-0.post@n7.nabble.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Subject: Re: Not able to boot cuImage for the target board with MPC8270
+ processor
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,48 +31,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2018-08-29 20:42, Rob Herring wrote:
-> On Wed, Aug 29, 2018 at 1:03 PM Peter Rosin <peda@axentia.se> wrote:
->>
->> On 2018-08-28 03:52, Rob Herring wrote:
->>> In preparation to remove the node name pointer from struct device_node,
->>> convert printf users to use the %pOFn format specifier.
->>>
->>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->>> Cc: Paul Mackerras <paulus@samba.org>
->>> Cc: Michael Ellerman <mpe@ellerman.id.au>
->>> Cc: Peter Rosin <peda@axentia.se>
->>> Cc: linux-i2c@vger.kernel.org
->>> Cc: linuxppc-dev@lists.ozlabs.org
->>> Signed-off-by: Rob Herring <robh@kernel.org>
->>> ---
->>>  drivers/i2c/busses/i2c-powermac.c | 15 ++++++++-------
->>>  drivers/i2c/muxes/i2c-mux-gpmux.c |  4 ++--
->>>  2 files changed, 10 insertions(+), 9 deletions(-)
->>>
->>> diff --git a/drivers/i2c/busses/i2c-powermac.c b/drivers/i2c/busses/i2c-powermac.c
->>> index f2a2067525ef..b706fd136ca5 100644
->>> --- a/drivers/i2c/busses/i2c-powermac.c
->>> +++ b/drivers/i2c/busses/i2c-powermac.c
->>> @@ -390,7 +390,6 @@ static int i2c_powermac_probe(struct platform_device *dev)
->>>       struct pmac_i2c_bus *bus = dev_get_platdata(&dev->dev);
->>>       struct device_node *parent = NULL;
->>
->> Lose the initializer...
+On Wed, 2018-08-29 at 04:14 -0700, sgosavi1 wrote:
+> Press <foo> to STOP AUTOBOOT!:autoboot in 2 seconds
+> ## Booting image at ffc00000 ...
+>    Image Name:   Linux-4.15.13
+>    Created:      2018-08-29  10:45:39 UTC
+>    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+>    Data Size:    1166748 Bytes =  1.1 MB
+>    Load Address: 00400000
+>    Entry Point:  004007a4
+>    Verifying Checksum ... OK
+>    Uncompressing Kernel Image ... OK
 > 
-> That's pretty much unrelated though.
+> 
+> I also checked the kernel dump at location associated with "_log_buf" symbol
+> in the System.map file in RAM but did not get any debug info.
 
-I disagree. If you remove the need for the initializer, it's very much
-related to also remove the initializer.
+If you didn't get any output beyond this then it's probably[1] failing in the
+bootwrapper, not the kernel itself -- so neither _log_buf nor
+CONFIG_PPC_EARLY_DEBUG would help.
 
-> I'd have to write "Also, remove
-> the unnecessary parent pointer init" in the commit message and we all
-> know "Also" is a clue for belongs in a separate patch.
+> Please can anyone suggest if I am missing something here and how can I get
+> the debug output on my serial console during bootup.
 
-How about: "This makes the parent pointer initializer redundant, lose it."
+To debug, if you aren't able to use JTAG, add code to the bootwrapper to
+manually poke at known CPM serial addresses early on, to see how far it's
+progressing.
 
-See, no "Also" in there, and no separate patch needed. Or don't mention it
-at all.
+Are you sure the device tree you're using is correct for your board, including
+all addresses being where your U-Boot configured them?
 
-Cheers,
-Peter
+-Scott
+
+[1] Another possibility would be that it's booting, but serial output isn't
+working.
