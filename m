@@ -1,33 +1,31 @@
-Return-Path: <srs0=xuo0=lm=gmail.com=nicholas.piggin@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <krzk@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 420dZN5jWQzF2QL
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 18:09:32 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 420dZN4PkHz8t44
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 18:09:32 +1000 (AEST)
-Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
- [IPv6:2607:f8b0:4864:20::443])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 420dfL2X1PzF1RN
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 18:12:58 +1000 (AEST)
+Received: from mail-wm0-f54.google.com (mail-wm0-f54.google.com [74.125.82.54])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 420dZM6fkKz9s3Z
- for <linuxppc-dev@ozlabs.org>; Wed, 29 Aug 2018 18:09:31 +1000 (AEST)
-Received: by mail-pf1-x443.google.com with SMTP id b11-v6so1934548pfo.3
- for <linuxppc-dev@ozlabs.org>; Wed, 29 Aug 2018 01:09:31 -0700 (PDT)
-Date: Wed, 29 Aug 2018 18:09:12 +1000
-From: Nicholas Piggin <nicholas.piggin@gmail.com>
-To: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-Cc: linuxppc-dev@ozlabs.org, schwab@linux-m68k.org, jeyu@kernel.org,
- mpe@ellerman.id.au, will.deacon@arm.com, mingo@kernel.org,
- akpm@linux-foundation.org, linux-arch@vger.kernel.org, Linus Torvalds
- <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] powerpc: disable support for relative ksymtab references
-Message-ID: <20180829180912.7a7b39a6@roar.ozlabs.ibm.com>
-In-Reply-To: <20180829064753.7133-1-ard.biesheuvel@linaro.org>
-References: <20180829064753.7133-1-ard.biesheuvel@linaro.org>
+ by mail.kernel.org (Postfix) with ESMTPSA id 3F80B2089F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 08:12:56 +0000 (UTC)
+Received: by mail-wm0-f54.google.com with SMTP id n11-v6so4503791wmc.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 01:12:56 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+References: <1535527943-32566-1-git-send-email-krzk@kernel.org>
+ <CAJKOXPe-fY5T8DMTgjQfrJN=b_9JcytYeeqkX9rQw6EbQ_GiXA@mail.gmail.com>
+ <CA+7wUsxE5gUXuUzkZ5bjz_d5WXab8RQxF3bre_DAMpUW=QpKTg@mail.gmail.com>
+In-Reply-To: <CA+7wUsxE5gUXuUzkZ5bjz_d5WXab8RQxF3bre_DAMpUW=QpKTg@mail.gmail.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Date: Wed, 29 Aug 2018 10:12:43 +0200
+Message-ID: <CAJKOXPfFds9di8d+CHACTYLS8a1ZKc1KGAkL3z=ZyF-HEr-e+Q@mail.gmail.com>
+Subject: Re: [RFT] powerpc/boot: Fix missing crc32poly.h when building with
+ KERNEL_XZ
+To: malat@debian.org
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, mkubecek@suse.cz,
+ mroos@linux.ee
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,54 +35,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 29 Aug 2018 08:47:53 +0200
-Ard Biesheuvel <ard.biesheuvel@linaro.org> wrote:
+On Wed, 29 Aug 2018 at 10:06, Mathieu Malaterre <malat@debian.org> wrote:
+>
+> On Wed, Aug 29, 2018 at 9:59 AM Krzysztof Kozlowski <krzk@kernel.org> wrote:
+> >
+> > On Wed, 29 Aug 2018 at 09:32, Krzysztof Kozlowski <krzk@kernel.org> wrote:
+> > >
+> > > After commit faa16bc404d7 ("lib: Use existing define with
+> > > polynomial") the lib/xz/xz_crc32.c includes a header from include/linux
+> > > directory thus any other user of this code should define proper include
+> > > path.
+> > >
+> > > This fixes the build error on powerpc with CONFIG_KERNEL_XZ:
+> > >
+> > >     In file included from ../arch/powerpc/boot/../../../lib/decompress_unxz.c:233:0,
+> > >                      from ../arch/powerpc/boot/decompress.c:42:
+> > >     ../arch/powerpc/boot/../../../lib/xz/xz_crc32.c:18:29: fatal error: linux/crc32poly.h: No such file or directory
+> > >
+> > > Reported-by: Michal Kubecek <mkubecek@suse.cz>
+> >
+> > Reported earlier by Kbuild:
+> > https://lkml.org/lkml/2018/8/23/47
+> >
+> > for the credits:
+> > Reported-by: kbuild test robot <lkp@intel.com>
+>
+> Technically Meelis reported it earlier:
+>
+> https://lkml.org/lkml/2018/8/22/365
+>
+> ;)
 
-> The newly added code that emits ksymtab entries as pairs of 32-bit
-> relative references interacts poorly with the way powerpc lays out
-> its address space: when a module exports a per-CPU variable, the
-> primary module region covering the ksymtab entry -and thus the 32-bit
-> relative reference- is too far away from the actual per-CPU variable's
-> base address (to which the per-CPU offsets are applied to obtain the
-> respective address of each CPU's copy), resulting in corruption when
-> the module loader attempts to resolve symbol references of modules
-> that are loaded on top and link to the exported per-CPU symbol.
-> 
-> So let's disable this feature on powerpc. Even though it implements
-> CONFIG_RELOCATABLE, it does not implement CONFIG_RANDOMIZE_BASE and
-> so KASLR kernels (which are the main target of the feature) do not
-> exist on powerpc anyway.
+Oh, right... so for the full credits:
+Reported-by: Meelis Roos <mroos@linux.ee>
 
-Let's go with this for now. We have a bit more work to do with module
-loader, linker, percpu, or all of the above. Thanks everyone.
-
-Linus can you merge this? I think Michael is on vacation this week and
-things are pretty crashy without it here. Don't need to call him off
-the beach for it.
-
-Thanks,
-Nick
-
-> 
-> Reported-by: Andreas Schwab <schwab@linux-m68k.org>
-> Suggested-by: Nicholas Piggin <nicholas.piggin@gmail.com>
-> Signed-off-by: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-> ---
->  arch/powerpc/Kconfig | 1 -
->  1 file changed, 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index db0b6eebbfa5..a80669209155 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -177,7 +177,6 @@ config PPC
->  	select HAVE_ARCH_KGDB
->  	select HAVE_ARCH_MMAP_RND_BITS
->  	select HAVE_ARCH_MMAP_RND_COMPAT_BITS	if COMPAT
-> -	select HAVE_ARCH_PREL32_RELOCATIONS
->  	select HAVE_ARCH_SECCOMP_FILTER
->  	select HAVE_ARCH_TRACEHOOK
->  	select HAVE_CBPF_JIT			if !PPC64
-> -- 
-> 2.17.1
-> 
+Best regards,
+Krzysztof
