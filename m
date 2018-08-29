@@ -1,32 +1,29 @@
-Return-Path: <gromero@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <oss@buserror.net>
+Received: from baldur.buserror.net (baldur.buserror.net [165.227.176.147])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 420R136r6RzF0QC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 10:13:27 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w7SN4CYn093106
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Aug 2018 19:08:38 -0400
-Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2m5f7w10cx-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Aug 2018 19:08:38 -0400
-Received: from localhost
- by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gromero@linux.vnet.ibm.com>;
- Tue, 28 Aug 2018 19:08:38 -0400
-Subject: Re: [PATCH] selftests/powerpc: Do not fail on TM_CAUSE_RESCHED
-To: Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org
-References: <1534877787-24359-1-git-send-email-leitao@debian.org>
-From: Gustavo Romero <gromero@linux.vnet.ibm.com>
-Date: Tue, 28 Aug 2018 20:08:33 -0300
-MIME-Version: 1.0
-In-Reply-To: <1534877787-24359-1-git-send-email-leitao@debian.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <3404db1f-cd5a-5ca1-0559-26d2ad08f410@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 420RB05gv0zDrJ5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 10:21:12 +1000 (AEST)
+Message-ID: <4a9ea6b451683ec98c92e86a5ae6b91213a6afcf.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: Vabhav Sharma <vabhav.sharma@nxp.com>, linux-kernel@vger.kernel.org,
+ devicetree@vger.kernel.org, robh+dt@kernel.org, mark.rutland@arm.com,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ mturquette@baylibre.com, sboyd@kernel.org, rjw@rjwysocki.net,
+ viresh.kumar@linaro.org, linux-clk@vger.kernel.org,
+ linux-pm@vger.kernel.org,  linux-kernel-owner@vger.kernel.org,
+ catalin.marinas@arm.com, will.deacon@arm.com,  gregkh@linuxfoundation.org,
+ arnd@arndb.de, kstewart@linuxfoundation.org,  yamada.masahiro@socionext.com
+Cc: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>, Tang Yuantian
+ <andy.tang@nxp.com>,  udit.kumar@nxp.com, linux@armlinux.org.uk,
+ V.Sethi@nxp.com
+Date: Tue, 28 Aug 2018 19:18:50 -0500
+In-Reply-To: <1534747636-20064-4-git-send-email-vabhav.sharma@nxp.com>
+References: <1534747636-20064-1-git-send-email-vabhav.sharma@nxp.com>
+ <1534747636-20064-4-git-send-email-vabhav.sharma@nxp.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Subject: Re: [PATCH 3/5] drivers: clk-qoriq: Add clockgen support for lx2160a
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,51 +33,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Breno,
-
-On 08/21/2018 03:56 PM, Breno Leitao wrote:
-> There are cases where the test is not expecting to have the transaction
-> aborted, but, the test process might have been rescheduled, either in the OS
-> level or by KVM (if it is running on a KVM guest machine). The process
-> reschedule will cause a treclaim/recheckpoint which will cause the transaction
-> to doom, failing as soon as the process is rescheduled back to the CPU. This
-> might cause the test to fail, but this is not a failure in essence.
+On Mon, 2018-08-20 at 12:17 +0530, Vabhav Sharma wrote:
+> From: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>
 > 
-> If that is the case, TEXASR[FC] is indicated with either
-> TM_CAUSE_RESCHEDULE or TM_CAUSE_KVM_RESCHEDULE for KVM interruptions.
+> Add clockgen support for lx2160a.
+> Added entry for compat 'fsl,lx2160a-clockgen'.
+> As LX2160A is 16 core, so modified value for NUM_CMUX
 > 
-> In this scenario, ignore these two failures and avoid the whole test to return
-> failure.
+> Signed-off-by: Tang Yuantian <andy.tang@nxp.com>
+> Signed-off-by: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>
+> Signed-off-by: Vabhav Sharma <vabhav.sharma@nxp.com>
+> ---
+>  drivers/clk/clk-qoriq.c         | 14 +++++++++++++-
+>  drivers/cpufreq/qoriq-cpufreq.c |  1 +
+>  2 files changed, 14 insertions(+), 1 deletion(-)
 > 
-> Signed-off-by: Breno Leitao <leitao@debian.org>
+> diff --git a/drivers/clk/clk-qoriq.c b/drivers/clk/clk-qoriq.c
+> index 3a1812f..fc6e308 100644
+> --- a/drivers/clk/clk-qoriq.c
+> +++ b/drivers/clk/clk-qoriq.c
+> @@ -60,7 +60,7 @@ struct clockgen_muxinfo {
+>  };
+>  
+>  #define NUM_HWACCEL	5
+> -#define NUM_CMUX	8
+> +#define NUM_CMUX	16
+>  
+>  struct clockgen;
+>  
+> @@ -570,6 +570,17 @@ static const struct clockgen_chipinfo chipinfo[] = {
+>  		.flags = CG_VER3 | CG_LITTLE_ENDIAN,
+>  	},
+>  	{
+> +		.compat = "fsl,lx2160a-clockgen",
+> +		.cmux_groups = {
+> +			&clockgen2_cmux_cga12, &clockgen2_cmux_cgb
+> +		},
+> +		.cmux_to_group = {
+> +			0, 0, 0, 0, 1, 1, 1, 1, -1
+> +		},
+> +		.pll_mask = 0x37,
+> +		.flags = CG_VER3 | CG_LITTLE_ENDIAN,
+> +	},
 
-Thanks for improving the code.
+Why are you increasing NUM_CMUX beyond 8 for a chip that only has 8 entries in
+cmux_to_group?
 
-I understand that filtering out the aborts caused by the re-schedules is correct.
-
-Only a nit:
-
-> @@ -244,9 +245,12 @@ void *tm_una_ping(void *input)
-> 
->   	/*
->   	 * Check if TM failed due to the cause we were expecting. 0xda is a
-> -	 * TM_CAUSE_FAC_UNAV cause, otherwise it's an unexpected cause.
-> +	 * TM_CAUSE_FAC_UNAV cause, otherwise it's an unexpected cause, unless
-> +	 * it was caused by a reschedule.
->   	 */
-> -	if (is_failure(cr_) && !failure_is_unavailable()) {
-> +
-> +	if (is_failure(cr_) && !failure_is_unavailable()
-> +	    & !failure_is_reschedule()) {
-
-             ^---
-
-It should read a short-circuit operator here instead of a bitwise operator.
-
-Otherwise it LGTM.
-
-Reviewed-by: Gustavo Romero <gromero@linux.ibm.com>
-
-
-Best regards,
-Gustavo
+-Scott
