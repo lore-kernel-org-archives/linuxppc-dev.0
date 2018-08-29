@@ -1,23 +1,26 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <Joakim.Tjernlund@infinera.com>
+Received: from NAM02-CY1-obe.outbound.protection.outlook.com
+ (mail-cys01nam02on0078.outbound.protection.outlook.com [104.47.37.78])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 420cR24dqnzDrJ5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 17:18:06 +1000 (AEST)
-Subject: Re: [PATCH 4/6] net/wan/fsl_ucc_hdlc: default hmask value
-To: Qiang Zhao <qiang.zhao@nxp.com>,
- David Gounaris <david.gounaris@infinera.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 420cgH0wWkzF0PW
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 17:28:42 +1000 (AEST)
+From: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
+To: "christophe.leroy@c-s.fr" <christophe.leroy@c-s.fr>,
  "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "qiang.zhao@nxp.com" <qiang.zhao@nxp.com>, David Gounaris
+ <David.Gounaris@infinera.com>
+Subject: Re: [PATCH 4/6] net/wan/fsl_ucc_hdlc: default hmask value
+Date: Wed, 29 Aug 2018 07:28:34 +0000
+Message-ID: <6550fe35934eb22c3535009d660995a0ae196092.camel@infinera.com>
 References: <20180828110921.2542-1-david.gounaris@infinera.com>
  <20180828110921.2542-5-david.gounaris@infinera.com>
  <VI1PR04MB3247E6EBE63C39F5E1C792F191090@VI1PR04MB3247.eurprd04.prod.outlook.com>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <4244fe46-e8ed-9fd2-d243-cc84e7264a88@c-s.fr>
-Date: Wed, 29 Aug 2018 09:18:01 +0200
+ <4244fe46-e8ed-9fd2-d243-cc84e7264a88@c-s.fr>
+In-Reply-To: <4244fe46-e8ed-9fd2-d243-cc84e7264a88@c-s.fr>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-In-Reply-To: <VI1PR04MB3247E6EBE63C39F5E1C792F191090@VI1PR04MB3247.eurprd04.prod.outlook.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,60 +30,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-Le 29/08/2018 à 04:54, Qiang Zhao a écrit :
-> From: David Gounaris <david.gounaris@infinera.com>
-> Date: 2018/8/28 19:09
->> Subject: [PATCH 4/6] net/wan/fsl_ucc_hdlc: default hmask value
->>
->> Set default HMASK to 0x0000 to use
->> promiscuous mode in the hdlc controller.
-
-Why do you need to do that ?
-
-An HDLC frame encapsulating Ethernet should look like:
-
-HDLC Frame includes:
-– Opening Flag		7E hex
-– Address field		FF hex
-– Control field		03 hex
-– Information field	Original Ethernet Packet, 1522 octets max.
-– FCS CRC16		(2 bytes)
-– Closing Flag		7E hex
-
-What do you mean by 'promiscuous mode' ?
-
-In any case, should a filter mask be changed for promiscuous mode, I 
-believe the change should be done at the time you enter promiscuous 
-mode, not at all time.
-
-Christophe
-
->>
->> Signed-off-by: David Gounaris <david.gounaris@infinera.com>
->> ---
->>   drivers/net/wan/fsl_ucc_hdlc.h | 2 +-
->>   1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff --git a/drivers/net/wan/fsl_ucc_hdlc.h b/drivers/net/wan/fsl_ucc_hdlc.h
->> index c21134c1f180..5bc3d1a6ca6e 100644
->> --- a/drivers/net/wan/fsl_ucc_hdlc.h
->> +++ b/drivers/net/wan/fsl_ucc_hdlc.h
->> @@ -134,7 +134,7 @@ struct ucc_hdlc_private {
->>
->>   #define HDLC_HEAD_MASK		0x0000
->>   #define DEFAULT_HDLC_HEAD	0xff44
->> -#define DEFAULT_ADDR_MASK	0x00ff
->> +#define DEFAULT_ADDR_MASK	0x0000
->>   #define DEFAULT_HDLC_ADDR	0x00ff
->>
->>   #define BMR_GBL			0x20000000
->> --
-> 
-> It is not proper to set default HMASK to 0x0000, how about to add a new property standing for hmask into device tree,
-> If get this property from dtb, then set it with the value from dtb, otherwise, set it with default HMASK ox00ff?
-> 
-> Best Regards
-> Qiang Zhao
-> 
+T24gV2VkLCAyMDE4LTA4LTI5IGF0IDA5OjE4ICswMjAwLCBDaHJpc3RvcGhlIExFUk9ZIHdyb3Rl
+Og0KPiBDQVVUSU9OOiBUaGlzIGVtYWlsIG9yaWdpbmF0ZWQgZnJvbSBvdXRzaWRlIG9mIHRoZSBv
+cmdhbml6YXRpb24uIERvIG5vdCBjbGljayBsaW5rcyBvciBvcGVuIGF0dGFjaG1lbnRzIHVubGVz
+cyB5b3UgcmVjb2duaXplIHRoZSBzZW5kZXIgYW5kIGtub3cgdGhlIGNvbnRlbnQgaXMgc2FmZS4N
+Cj4gDQo+IA0KPiBMZSAyOS8wOC8yMDE4IMOgIDA0OjU0LCBRaWFuZyBaaGFvIGEgw6ljcml0IDoN
+Cj4gPiBGcm9tOiBEYXZpZCBHb3VuYXJpcyA8ZGF2aWQuZ291bmFyaXNAaW5maW5lcmEuY29tPg0K
+PiA+IERhdGU6IDIwMTgvOC8yOCAxOTowOQ0KPiA+ID4gU3ViamVjdDogW1BBVENIIDQvNl0gbmV0
+L3dhbi9mc2xfdWNjX2hkbGM6IGRlZmF1bHQgaG1hc2sgdmFsdWUNCj4gPiA+IA0KPiA+ID4gU2V0
+IGRlZmF1bHQgSE1BU0sgdG8gMHgwMDAwIHRvIHVzZQ0KPiA+ID4gcHJvbWlzY3VvdXMgbW9kZSBp
+biB0aGUgaGRsYyBjb250cm9sbGVyLg0KPiANCj4gV2h5IGRvIHlvdSBuZWVkIHRvIGRvIHRoYXQg
+Pw0KPiANCj4gQW4gSERMQyBmcmFtZSBlbmNhcHN1bGF0aW5nIEV0aGVybmV0IHNob3VsZCBsb29r
+IGxpa2U6DQo+IA0KPiBIRExDIEZyYW1lIGluY2x1ZGVzOg0KPiDigJMgT3BlbmluZyBGbGFnICAg
+ICAgICAgIDdFIGhleA0KPiDigJMgQWRkcmVzcyBmaWVsZCAgICAgICAgIEZGIGhleA0KPiDigJMg
+Q29udHJvbCBmaWVsZCAgICAgICAgIDAzIGhleA0KPiDigJMgSW5mb3JtYXRpb24gZmllbGQgICAg
+IE9yaWdpbmFsIEV0aGVybmV0IFBhY2tldCwgMTUyMiBvY3RldHMgbWF4Lg0KPiDigJMgRkNTIENS
+QzE2ICAgICAgICAgICAgICgyIGJ5dGVzKQ0KPiDigJMgQ2xvc2luZyBGbGFnICAgICAgICAgIDdF
+IGhleA0KDQpJbiBvdXIgY2FzZSB0aGUgRXRoIGZyYW1lIHN0YXJ0cyBkaXJlY3RseSBhZnRlciB0
+aGUgT3BlbmluZyBGbGFnIHNvDQp0aGVyZSBpcyBubyBGRiBhZGRyZXNzIGZpZWxkLg0KDQo+IA0K
+PiBXaGF0IGRvIHlvdSBtZWFuIGJ5ICdwcm9taXNjdW91cyBtb2RlJyA/DQoNCkp1c3QgdGhhdCB3
+ZSBkb24ndCB3YW50IGFueSBhZGRyZXNzIGZpbHRlcmluZyBvZiBwYWNrZXRzLiBJIGRvbid0IHRo
+aW5rIHRoaXMgd291bGQNCmJlIGEgcHJvYmxlbSBmb3IgcHVyZSBIRExDIGZyYW1lcyBlaXRoZXIs
+IGRvIHlvdT8NCg0KPiANCj4gSW4gYW55IGNhc2UsIHNob3VsZCBhIGZpbHRlciBtYXNrIGJlIGNo
+YW5nZWQgZm9yIHByb21pc2N1b3VzIG1vZGUsIEkNCj4gYmVsaWV2ZSB0aGUgY2hhbmdlIHNob3Vs
+ZCBiZSBkb25lIGF0IHRoZSB0aW1lIHlvdSBlbnRlciBwcm9taXNjdW91cw0KPiBtb2RlLCBub3Qg
+YXQgYWxsIHRpbWUuDQo+IA0KPiBDaHJpc3RvcGhlDQo+IA0KPiA+ID4gDQo+ID4gPiBTaWduZWQt
+b2ZmLWJ5OiBEYXZpZCBHb3VuYXJpcyA8ZGF2aWQuZ291bmFyaXNAaW5maW5lcmEuY29tPg0KPiA+
+ID4gLS0tDQo+ID4gPiAgIGRyaXZlcnMvbmV0L3dhbi9mc2xfdWNjX2hkbGMuaCB8IDIgKy0NCj4g
+PiA+ICAgMSBmaWxlIGNoYW5nZWQsIDEgaW5zZXJ0aW9uKCspLCAxIGRlbGV0aW9uKC0pDQo+ID4g
+PiANCj4gPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL25ldC93YW4vZnNsX3VjY19oZGxjLmggYi9k
+cml2ZXJzL25ldC93YW4vZnNsX3VjY19oZGxjLmgNCj4gPiA+IGluZGV4IGMyMTEzNGMxZjE4MC4u
+NWJjM2QxYTZjYTZlIDEwMDY0NA0KPiA+ID4gLS0tIGEvZHJpdmVycy9uZXQvd2FuL2ZzbF91Y2Nf
+aGRsYy5oDQo+ID4gPiArKysgYi9kcml2ZXJzL25ldC93YW4vZnNsX3VjY19oZGxjLmgNCj4gPiA+
+IEBAIC0xMzQsNyArMTM0LDcgQEAgc3RydWN0IHVjY19oZGxjX3ByaXZhdGUgew0KPiA+ID4gDQo+
+ID4gPiAgICNkZWZpbmUgSERMQ19IRUFEX01BU0sgICAgICAgICAgICAgMHgwMDAwDQo+ID4gPiAg
+ICNkZWZpbmUgREVGQVVMVF9IRExDX0hFQUQgIDB4ZmY0NA0KPiA+ID4gLSNkZWZpbmUgREVGQVVM
+VF9BRERSX01BU0sgICAweDAwZmYNCj4gPiA+ICsjZGVmaW5lIERFRkFVTFRfQUREUl9NQVNLICAg
+MHgwMDAwDQo+ID4gPiAgICNkZWZpbmUgREVGQVVMVF9IRExDX0FERFIgIDB4MDBmZg0KPiA+ID4g
+DQo+ID4gPiAgICNkZWZpbmUgQk1SX0dCTCAgICAgICAgICAgICAgICAgICAgMHgyMDAwMDAwMA0K
+PiA+ID4gLS0NCj4gPiANCj4gPiBJdCBpcyBub3QgcHJvcGVyIHRvIHNldCBkZWZhdWx0IEhNQVNL
+IHRvIDB4MDAwMCwgaG93IGFib3V0IHRvIGFkZCBhIG5ldyBwcm9wZXJ0eSBzdGFuZGluZyBmb3Ig
+aG1hc2sgaW50byBkZXZpY2UgdHJlZSwNCj4gPiBJZiBnZXQgdGhpcyBwcm9wZXJ0eSBmcm9tIGR0
+YiwgdGhlbiBzZXQgaXQgd2l0aCB0aGUgdmFsdWUgZnJvbSBkdGIsIG90aGVyd2lzZSwgc2V0IGl0
+IHdpdGggZGVmYXVsdCBITUFTSyBveDAwZmY/DQo+ID4gDQo+ID4gQmVzdCBSZWdhcmRzDQo+ID4g
+UWlhbmcgWmhhbw0KPiA+IA0KDQo=
