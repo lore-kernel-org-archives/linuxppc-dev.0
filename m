@@ -1,23 +1,29 @@
-Return-Path: <oss@buserror.net>
-Received: from baldur.buserror.net (baldur.buserror.net [165.227.176.147])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
+ [IPv6:2607:f8b0:4864:20::643])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42123G4vcHzF321
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Aug 2018 09:32:26 +1000 (AEST)
-Message-ID: <f98693387706211e2ced1de2606b7ac7dcd3fcb3.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: Darren Stevens <darren@stevens-zone.net>
-Cc: Christian Zigotzky <chzigotzky@xenosoft.de>, linuxppc-dev@lists.ozlabs.org
-Date: Wed, 29 Aug 2018 18:30:10 -0500
-In-Reply-To: <4c796dccb9b.4d269848@auth.smtp.1and1.co.uk>
-References: <0F797F4E-755B-499C-BA74-48CC03235393@xenosoft.de>
- <76A7B415-F6D4-4BF8-B4B7-B146C5337CF8@xenosoft.de>
- <196C6151-3085-4A42-B6D6-5891F4AF9759@xenosoft.de>
- <07ad630cccbd33c81031f690fd17cdc30b662e49.camel@buserror.net>
- <4c796dccb9b.4d269848@auth.smtp.1and1.co.uk>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Subject: Re: FSL/NXP P5020: USB problems with the latest Git kernels
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4212ch31JdzF346
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Aug 2018 09:57:55 +1000 (AEST)
+Received: by mail-pl1-x643.google.com with SMTP id b12-v6so2995531plr.8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 16:57:55 -0700 (PDT)
+Date: Thu, 30 Aug 2018 09:57:47 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-mm <linux-mm@kvack.org>, linux-arch <linux-arch@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ppc-dev
+ <linuxppc-dev@lists.ozlabs.org>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/3] mm/cow: optimise pte dirty/accessed bits handling
+ in fork
+Message-ID: <20180830095747.491f7770@roar.ozlabs.ibm.com>
+In-Reply-To: <CA+55aFzBHNsLNs4TfOrMQXTsV9u8=7yAu4GbsOM84AQb-OhJmg@mail.gmail.com>
+References: <20180828112034.30875-1-npiggin@gmail.com>
+ <20180828112034.30875-3-npiggin@gmail.com>
+ <CA+55aFwbZrsdZEh0ds1W3AWUeTamDRheQPKSi9O=--cEOSjr5g@mail.gmail.com>
+ <20180830091213.78b64354@roar.ozlabs.ibm.com>
+ <CA+55aFzBHNsLNs4TfOrMQXTsV9u8=7yAu4GbsOM84AQb-OhJmg@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,40 +33,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2018-08-28 at 20:13 +0100, Darren Stevens wrote:
-> Hello Scott
-> 
-> On 27/08/2018, Scott Wood wrote:
-> > On Mon, 2018-08-27 at 20:15 +0200, Christian Zigotzky wrote:
-> > > Hello,
-> > > 
-> > > Our users tested the RC1 of kernel 4.19 on their P5020 boards today.
-> > > Unfortunately the USB bug still exists. With mem values bigger than
-> > > 4096M,
-> > > the USB mouse and keyboard doesn't work. With the bootarg mem=4096M, the
-> > > USB
-> > > devices work without any problems. Please compile the RC1 and test it on
-> > > your P5020 board. There is a problem with the memory management since
-> > > 22/08/18. 
-> > 
-> > I just tested 4.19-rc1 on a T4240 and got a similar problem with MMC.  MMC
-> > and
-> > USB on these chips both have a 32-bit DMA limitation.  I'll look into it.
-> 
-> I've run a bisect locally on my system and found the following bad commit:
-> 
-> # first bad commit: [1b1eeca7e4c19fa76d409d4c7b338dba21f2df45] init: allow
-> initcall tables to be emitted using relative references
-> 
-> I can't see why this would fail though, and it only seems to affect fsl
-> machines, and on mine it killed the onboard sata as well.
-> 
-> Hope this helps.
+On Wed, 29 Aug 2018 16:15:37 -0700
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
+> On Wed, Aug 29, 2018 at 4:12 PM Nicholas Piggin <npiggin@gmail.com> wrote:
+> >
+> > Dirty micro fault seems to be the big one for my Skylake, takes 300
+> > nanoseconds per access. Accessed takes about 100. (I think, have to
+> > go over my benchmark a bit more carefully and re-test).  
+> 
+> Yeah, but they only happen for shared areas after fork, which sounds
+> like it shouldn't be a big deal in most cases.
 
-The patch is changing the order of initcalls.  swiotlb_setup_bus_notifier()
-and corenet_gen_publish_devices() are both machine_arch_initcall(), and if the
-latter happens before the former, then the bus notifier gets missed and
-swiotlb doesn't get used.
+You might be right there.
 
--Scott
+> 
+> And I'm not entirely objecting to your patch per se, I just would want
+> to keep the accessed bit changes separate from the dirty bit ones.
+> 
+> *If* somebody has bisectable issues with it (performance or not), it
+> will then be clearer what the exact issue is.
+
+Yeah that makes a lot of sense. I'll do a bit more testing and send
+Andrew a respin at least with those split (and a good comment for
+the dirty bit vs unmap handling that you pointed out).
+
+Thanks,
+Nick
