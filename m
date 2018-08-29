@@ -1,21 +1,19 @@
 Return-Path: <robherring2@gmail.com>
-Received: from mail-oi0-f66.google.com (mail-oi0-f66.google.com
- [209.85.218.66])
+Received: from mail-oi0-f65.google.com (mail-oi0-f65.google.com
+ [209.85.218.65])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 420xNx541LzF33P
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Aug 2018 06:02:24 +1000 (AEST)
-Received: by mail-oi0-f66.google.com with SMTP id k12-v6so11376910oiw.8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 13:02:24 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 420xRK0HHHzDrM8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Aug 2018 06:04:28 +1000 (AEST)
+Received: by mail-oi0-f65.google.com with SMTP id x197-v6so11427392oix.5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 13:04:28 -0700 (PDT)
 From: Rob Herring <robh@kernel.org>
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: linux-kernel@vger.kernel.org, Jean Delvare <jdelvare@suse.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linux-hwmon@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] hwmon: drop unnecessary OF name NULL checks
-Date: Wed, 29 Aug 2018 15:02:21 -0500
-Message-Id: <20180829200221.13492-1-robh@kernel.org>
+To: Qiang Zhao <qiang.zhao@nxp.com>
+Cc: linux-kernel@vger.kernel.org, Li Yang <leoyang.li@nxp.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Subject: [PATCH] soc: fsl/qe: Use of_get_child_by_name helper
+Date: Wed, 29 Aug 2018 15:04:25 -0500
+Message-Id: <20180829200425.16435-1-robh@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,44 +23,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Checking the child node names is pointless as the DT node name can
-never be NULL, so remove it.
+Use the of_get_child_by_name() helper instead of open coding searching
+for the 'firmware' child node. This removes directly accessing the name
+pointer as well.
 
-Cc: Jean Delvare <jdelvare@suse.com>
-Cc: Guenter Roeck <linux@roeck-us.net>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linux-hwmon@vger.kernel.org
+Cc: Qiang Zhao <qiang.zhao@nxp.com>
+Cc: Li Yang <leoyang.li@nxp.com>
 Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-arm-kernel@lists.infradead.org
 Signed-off-by: Rob Herring <robh@kernel.org>
 ---
- drivers/hwmon/ibmpowernv.c | 6 ------
- 1 file changed, 6 deletions(-)
+ drivers/soc/fsl/qe/qe.c | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
-diff --git a/drivers/hwmon/ibmpowernv.c b/drivers/hwmon/ibmpowernv.c
-index 4935897f1527..0ccca87f5271 100644
---- a/drivers/hwmon/ibmpowernv.c
-+++ b/drivers/hwmon/ibmpowernv.c
-@@ -458,9 +458,6 @@ static int populate_attr_groups(struct platform_device *pdev)
- 	for_each_child_of_node(opal, np) {
- 		const char *label;
+diff --git a/drivers/soc/fsl/qe/qe.c b/drivers/soc/fsl/qe/qe.c
+index 2ef6fc6487c1..612d9c551be5 100644
+--- a/drivers/soc/fsl/qe/qe.c
++++ b/drivers/soc/fsl/qe/qe.c
+@@ -588,11 +588,7 @@ struct qe_firmware_info *qe_get_firmware_info(void)
+ 	}
  
--		if (np->name == NULL)
--			continue;
+ 	/* Find the 'firmware' child node */
+-	for_each_child_of_node(qe, fw) {
+-		if (strcmp(fw->name, "firmware") == 0)
+-			break;
+-	}
 -
- 		type = get_sensor_type(np);
- 		if (type == MAX_SENSOR_TYPE)
- 			continue;
-@@ -589,9 +586,6 @@ static int create_device_attrs(struct platform_device *pdev)
- 		const char *label;
- 		enum sensors type;
++	fw = of_get_child_by_name(qe, "firmware");
+ 	of_node_put(qe);
  
--		if (np->name == NULL)
--			continue;
--
- 		type = get_sensor_type(np);
- 		if (type == MAX_SENSOR_TYPE)
- 			continue;
+ 	/* Did we find the 'firmware' node? */
 -- 
 2.17.1
