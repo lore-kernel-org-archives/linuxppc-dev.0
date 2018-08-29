@@ -1,19 +1,22 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
- [IPv6:2607:f8b0:4864:20::543])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mkubecek@suse.cz>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 420kd22jHWzF31M
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 21:57:10 +1000 (AEST)
-Received: by mail-pg1-x543.google.com with SMTP id e2-v6so2223177pgv.5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 04:57:09 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>,
-	Alan Modra <amodra@gmail.com>
-Subject: [RFC PATCH] powerpc/64/module: REL32 relocation range check
-Date: Wed, 29 Aug 2018 21:56:56 +1000
-Message-Id: <20180829115656.9878-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 420j2X4tJxzF31Q
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 20:45:33 +1000 (AEST)
+Date: Wed, 29 Aug 2018 12:45:28 +0200
+From: Michal Kubecek <mkubecek@suse.cz>
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFT] powerpc/boot: Fix missing crc32poly.h when building with
+ KERNEL_XZ
+Message-ID: <20180829104528.GA4444@unicorn.suse.cz>
+References: <1535527943-32566-1-git-send-email-krzk@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1535527943-32566-1-git-send-email-krzk@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,39 +26,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The recent module relocation overflow crash demonstrated that we
-have no range checking on REL32 relative relocations. This patch
-implements a basic check, the same kernel that previously oopsed
-and rebooted now continues with some of these errors when loading
-the module:
+On Wed, Aug 29, 2018 at 09:32:23AM +0200, Krzysztof Kozlowski wrote:
+> After commit faa16bc404d7 ("lib: Use existing define with
+> polynomial") the lib/xz/xz_crc32.c includes a header from include/linux
+> directory thus any other user of this code should define proper include
+> path.
+> 
+> This fixes the build error on powerpc with CONFIG_KERNEL_XZ:
+> 
+>     In file included from ../arch/powerpc/boot/../../../lib/decompress_unxz.c:233:0,
+>                      from ../arch/powerpc/boot/decompress.c:42:
+>     ../arch/powerpc/boot/../../../lib/xz/xz_crc32.c:18:29: fatal error: linux/crc32poly.h: No such file or directory
+> 
+> Reported-by: Michal Kubecek <mkubecek@suse.cz>
+> Fixes: faa16bc404d7 ("lib: Use existing define with polynomial")
+> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+> 
+> ---
+> 
+> Only compile tested.
+> ---
+>  arch/powerpc/boot/Makefile | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+> index 0fb96c26136f..ba4182fb185d 100644
+> --- a/arch/powerpc/boot/Makefile
+> +++ b/arch/powerpc/boot/Makefile
+> @@ -63,7 +63,7 @@ ifeq ($(call cc-option-yn, -fstack-protector),y)
+>  BOOTCFLAGS	+= -fno-stack-protector
+>  endif
+>  
+> -BOOTCFLAGS	+= -I$(objtree)/$(obj) -I$(srctree)/$(obj)
+> +BOOTCFLAGS	+= -I$(objtree)/$(obj) -I$(srctree)/$(obj) -I$(srctree)/include
+>  
+>  DTC_FLAGS	?= -p 1024
+>  
+> -- 
+> 2.7.4
+> 
 
-    module_64: x_tables: REL32 527703503449812 out of range!
+With this patch 4.19-rc1 builds and boots on ppc64le. Thank you.
 
-Question is whether other relocations (ADDR32, REL16, TOC16, etc.)
-should also have overflow checks.
----
- arch/powerpc/kernel/module_64.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
-index a2636c250b7b..2a2fb656d23b 100644
---- a/arch/powerpc/kernel/module_64.c
-+++ b/arch/powerpc/kernel/module_64.c
-@@ -678,7 +678,14 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
- 
- 		case R_PPC64_REL32:
- 			/* 32 bits relative (used by relative exception tables) */
--			*(u32 *)location = value - (unsigned long)location;
-+			/* Convert value to relative */
-+			value -= (unsigned long)location;
-+			if (value + 0x80000000 > 0xffffffff) {
-+				pr_err("%s: REL32 %li out of range!\n",
-+				       me->name, (long int)value);
-+				return -ENOEXEC;
-+			}
-+			*(u32 *)location = value;
- 			break;
- 
- 		case R_PPC64_TOCSAVE:
--- 
-2.18.0
+Tested-by: Michal Kubecek <mkubecek@suse.cz>
