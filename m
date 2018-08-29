@@ -1,35 +1,27 @@
-Return-Path: <pku.leo@gmail.com>
-Received: from mail-oi0-f66.google.com (mail-oi0-f66.google.com
- [209.85.218.66])
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
+ [IPv6:2607:f8b0:4864:20::541])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4210wc5FxTzF35K
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Aug 2018 08:41:36 +1000 (AEST)
-Received: by mail-oi0-f66.google.com with SMTP id t68-v6so12050398oie.12
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 15:41:35 -0700 (PDT)
-Received: from mail-oi0-f49.google.com (mail-oi0-f49.google.com.
- [209.85.218.49])
- by smtp.gmail.com with ESMTPSA id p7-v6sm4051542oif.35.2018.08.29.15.41.33
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Wed, 29 Aug 2018 15:41:33 -0700 (PDT)
-Received: by mail-oi0-f49.google.com with SMTP id 13-v6so12128433ois.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 15:41:33 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4211c93R6JzF321
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Aug 2018 09:12:25 +1000 (AEST)
+Received: by mail-pg1-x541.google.com with SMTP id y3-v6so1765414pgv.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 16:12:25 -0700 (PDT)
+Date: Thu, 30 Aug 2018 09:12:13 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-mm <linux-mm@kvack.org>, linux-arch <linux-arch@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ppc-dev
+ <linuxppc-dev@lists.ozlabs.org>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/3] mm/cow: optimise pte dirty/accessed bits handling
+ in fork
+Message-ID: <20180830091213.78b64354@roar.ozlabs.ibm.com>
+In-Reply-To: <CA+55aFwbZrsdZEh0ds1W3AWUeTamDRheQPKSi9O=--cEOSjr5g@mail.gmail.com>
+References: <20180828112034.30875-1-npiggin@gmail.com>
+ <20180828112034.30875-3-npiggin@gmail.com>
+ <CA+55aFwbZrsdZEh0ds1W3AWUeTamDRheQPKSi9O=--cEOSjr5g@mail.gmail.com>
 MIME-Version: 1.0
-References: <20180604115842.7c4vzge3igjbnblt@kili.mountain>
- <CA+7wUszWKm+qZQ7CQu3Kn7-aYeM-hSet03_PEh8EswNn141nyw@mail.gmail.com>
- <20180829093948.c7nbl27ju4uszrum@mwanda>
-In-Reply-To: <20180829093948.c7nbl27ju4uszrum@mwanda>
-From: Li Yang <leoyang.li@nxp.com>
-Date: Wed, 29 Aug 2018 17:41:21 -0500
-Message-ID: <CADRPPNSO6bWwaEm9j9VpsTqujroSHVS-=bkCvWzAC2B2oTcctQ@mail.gmail.com>
-Subject: Re: [PATCH] fsl/qe: ucc: copy and paste bug in
- ucc_get_tdm_sync_shift()
-To: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: malat@debian.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- kernel-janitors@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
- Zhao Qiang <qiang.zhao@nxp.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,19 +31,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 29, 2018 at 4:42 AM Dan Carpenter <dan.carpenter@oracle.com> wrote:
->
-> On Mon, Jun 04, 2018 at 02:06:45PM +0200, Mathieu Malaterre wrote:
-> > Where did the original go ?
-> >
-> > https://patchwork.ozlabs.org/patch/868158/
-> >
-> >
->
-> Btw, we still haven't pushed a patch for this bug.
+On Wed, 29 Aug 2018 08:42:09 -0700
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-I will combine Zhao Qiang's patch with your description which is
-better, and push as fix for 4.19.
+> On Tue, Aug 28, 2018 at 4:20 AM Nicholas Piggin <npiggin@gmail.com> wrote:
+> >
+> > fork clears dirty/accessed bits from new ptes in the child. This logic
+> > has existed since mapped page reclaim was done by scanning ptes when
+> > it may have been quite important. Today with physical based pte
+> > scanning, there is less reason to clear these bits.  
+> 
+> Can you humor me, and make the dirty/accessed bit patches separate?
 
-Regards,
-Leo
+Yeah sure.
+
+> There is actually a difference wrt the dirty bit: if we unmap an area
+> with dirty pages, we have to do the special synchronous flush.
+> 
+> So a clean page in the virtual mapping is _literally_ cheaper to have.
+
+Oh yeah true, that blasted thing. Good point.
+
+Dirty micro fault seems to be the big one for my Skylake, takes 300
+nanoseconds per access. Accessed takes about 100. (I think, have to
+go over my benchmark a bit more carefully and re-test).
+
+Dirty will happen less often though, particularly as most places we
+do write to (stack, heap, etc) will be write protected for COW anyway,
+I think. Worst case might be a big shared shm segment like a database
+buffer cache, but those kind of forks should happen very very
+infrequently I would hope.
+
+Yes maybe we can do that. I'll split them up and try to get some
+numbers for them individually.
+
+Thanks,
+Nick
