@@ -1,28 +1,12 @@
-Return-Path: <krzk@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 420dH06CCJzF0kx
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 17:56:12 +1000 (AEST)
-Received: from mail-wm0-f47.google.com (mail-wm0-f47.google.com [74.125.82.47])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 967EC2089D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 07:56:10 +0000 (UTC)
-Received: by mail-wm0-f47.google.com with SMTP id t25-v6so4457517wmi.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 00:56:10 -0700 (PDT)
-MIME-Version: 1.0
-References: <1535527943-32566-1-git-send-email-krzk@kernel.org>
-In-Reply-To: <1535527943-32566-1-git-send-email-krzk@kernel.org>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Wed, 29 Aug 2018 09:55:57 +0200
-Message-ID: <CAJKOXPe-fY5T8DMTgjQfrJN=b_9JcytYeeqkX9rQw6EbQ_GiXA@mail.gmail.com>
-Subject: Re: [RFT] powerpc/boot: Fix missing crc32poly.h when building with
- KERNEL_XZ
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Cc: mkubecek@suse.cz
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <Joakim.Tjernlund@infinera.com>
+Received: from smtp.transmode.se (smtp.transmode.se [31.15.61.139])
+ by lists.ozlabs.org (Postfix) with ESMTP id 420dN9424zzF13F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 18:00:41 +1000 (AEST)
+From: Joakim Tjernlund <joakim.tjernlund@infinera.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/time: Calculate proper wday
+Date: Wed, 29 Aug 2018 09:54:58 +0200
+Message-Id: <20180829075458.10145-1-joakim.tjernlund@infinera.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,26 +16,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 29 Aug 2018 at 09:32, Krzysztof Kozlowski <krzk@kernel.org> wrote:
->
-> After commit faa16bc404d7 ("lib: Use existing define with
-> polynomial") the lib/xz/xz_crc32.c includes a header from include/linux
-> directory thus any other user of this code should define proper include
-> path.
->
-> This fixes the build error on powerpc with CONFIG_KERNEL_XZ:
->
->     In file included from ../arch/powerpc/boot/../../../lib/decompress_unxz.c:233:0,
->                      from ../arch/powerpc/boot/decompress.c:42:
->     ../arch/powerpc/boot/../../../lib/xz/xz_crc32.c:18:29: fatal error: linux/crc32poly.h: No such file or directory
->
-> Reported-by: Michal Kubecek <mkubecek@suse.cz>
+to_tm() hardcodes wday to -1 as "No-one uses the day of the week".
+But recently rtc driver ds1307 does care and tries to correct wday.
 
-Reported earlier by Kbuild:
-https://lkml.org/lkml/2018/8/23/47
+Add wday calculation(stolen from rtc_time64_to_tm) to to_tm() to please ds1307.
 
-for the credits:
-Reported-by: kbuild test robot <lkp@intel.com>
+Signed-off-by: Joakim Tjernlund <joakim.tjernlund@infinera.com>
+---
+ arch/powerpc/kernel/time.c | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
-Best regards,
-Krzysztof
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index fe6f3a285455..f4a09ee01944 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -1160,6 +1160,9 @@ void to_tm(int tim, struct rtc_time * tm)
+ 	day = tim / SECDAY;
+ 	hms = tim % SECDAY;
+ 
++	/* day of the week, 1970-01-01 was a Thursday */
++	tm->tm_wday = (day + 4) % 7;
++
+ 	/* Hours, minutes, seconds are easy */
+ 	tm->tm_hour = hms / 3600;
+ 	tm->tm_min = (hms % 3600) / 60;
+@@ -1180,11 +1183,6 @@ void to_tm(int tim, struct rtc_time * tm)
+ 
+ 	/* Days are what is left over (+1) from all that. */
+ 	tm->tm_mday = day + 1;
+-
+-	/*
+-	 * No-one uses the day of the week.
+-	 */
+-	tm->tm_wday = -1;
+ }
+ EXPORT_SYMBOL(to_tm);
+ 
+-- 
+2.16.4
