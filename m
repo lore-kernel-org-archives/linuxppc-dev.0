@@ -1,27 +1,35 @@
-Return-Path: <groeck7@gmail.com>
-Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
- [IPv6:2607:f8b0:4864:20::441])
+Return-Path: <pku.leo@gmail.com>
+Received: from mail-oi0-f66.google.com (mail-oi0-f66.google.com
+ [209.85.218.66])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 420xxn69W4zF342
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Aug 2018 06:27:22 +1000 (AEST)
-Received: by mail-pf1-x441.google.com with SMTP id s13-v6so2782291pfi.7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 13:27:22 -0700 (PDT)
-Sender: Guenter Roeck <groeck7@gmail.com>
-Date: Wed, 29 Aug 2018 13:27:18 -0700
-From: Guenter Roeck <linux@roeck-us.net>
-To: Rob Herring <robh@kernel.org>
-Cc: linux-kernel@vger.kernel.org, Jean Delvare <jdelvare@suse.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linux-hwmon@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] hwmon: drop unnecessary OF name NULL checks
-Message-ID: <20180829202718.GB29801@roeck-us.net>
-References: <20180829200221.13492-1-robh@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4210wc5FxTzF35K
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Aug 2018 08:41:36 +1000 (AEST)
+Received: by mail-oi0-f66.google.com with SMTP id t68-v6so12050398oie.12
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 15:41:35 -0700 (PDT)
+Received: from mail-oi0-f49.google.com (mail-oi0-f49.google.com.
+ [209.85.218.49])
+ by smtp.gmail.com with ESMTPSA id p7-v6sm4051542oif.35.2018.08.29.15.41.33
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Wed, 29 Aug 2018 15:41:33 -0700 (PDT)
+Received: by mail-oi0-f49.google.com with SMTP id 13-v6so12128433ois.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 15:41:33 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180829200221.13492-1-robh@kernel.org>
+References: <20180604115842.7c4vzge3igjbnblt@kili.mountain>
+ <CA+7wUszWKm+qZQ7CQu3Kn7-aYeM-hSet03_PEh8EswNn141nyw@mail.gmail.com>
+ <20180829093948.c7nbl27ju4uszrum@mwanda>
+In-Reply-To: <20180829093948.c7nbl27ju4uszrum@mwanda>
+From: Li Yang <leoyang.li@nxp.com>
+Date: Wed, 29 Aug 2018 17:41:21 -0500
+Message-ID: <CADRPPNSO6bWwaEm9j9VpsTqujroSHVS-=bkCvWzAC2B2oTcctQ@mail.gmail.com>
+Subject: Re: [PATCH] fsl/qe: ucc: copy and paste bug in
+ ucc_get_tdm_sync_shift()
+To: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: malat@debian.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ kernel-janitors@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
+ Zhao Qiang <qiang.zhao@nxp.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,52 +39,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 29, 2018 at 03:02:21PM -0500, Rob Herring wrote:
-> Checking the child node names is pointless as the DT node name can
-> never be NULL, so remove it.
-> 
-> Cc: Jean Delvare <jdelvare@suse.com>
-> Cc: Guenter Roeck <linux@roeck-us.net>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: linux-hwmon@vger.kernel.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Signed-off-by: Rob Herring <robh@kernel.org>
+On Wed, Aug 29, 2018 at 4:42 AM Dan Carpenter <dan.carpenter@oracle.com> wrote:
+>
+> On Mon, Jun 04, 2018 at 02:06:45PM +0200, Mathieu Malaterre wrote:
+> > Where did the original go ?
+> >
+> > https://patchwork.ozlabs.org/patch/868158/
+> >
+> >
+>
+> Btw, we still haven't pushed a patch for this bug.
 
-Applied to hwmon-next.
+I will combine Zhao Qiang's patch with your description which is
+better, and push as fix for 4.19.
 
-Thanks,
-Guenter
-
-> ---
->  drivers/hwmon/ibmpowernv.c | 6 ------
->  1 file changed, 6 deletions(-)
-> 
-> diff --git a/drivers/hwmon/ibmpowernv.c b/drivers/hwmon/ibmpowernv.c
-> index 4935897f1527..0ccca87f5271 100644
-> --- a/drivers/hwmon/ibmpowernv.c
-> +++ b/drivers/hwmon/ibmpowernv.c
-> @@ -458,9 +458,6 @@ static int populate_attr_groups(struct platform_device *pdev)
->  	for_each_child_of_node(opal, np) {
->  		const char *label;
->  
-> -		if (np->name == NULL)
-> -			continue;
-> -
->  		type = get_sensor_type(np);
->  		if (type == MAX_SENSOR_TYPE)
->  			continue;
-> @@ -589,9 +586,6 @@ static int create_device_attrs(struct platform_device *pdev)
->  		const char *label;
->  		enum sensors type;
->  
-> -		if (np->name == NULL)
-> -			continue;
-> -
->  		type = get_sensor_type(np);
->  		if (type == MAX_SENSOR_TYPE)
->  			continue;
-> -- 
-> 2.17.1
-> 
+Regards,
+Leo
