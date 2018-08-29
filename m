@@ -1,29 +1,23 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 420cKT1dQZzF0Pd
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 17:13:17 +1000 (AEST)
-Message-ID: <3c36e64e64742e79b72faf1f52a3c1fb2b3d1983.camel@neuling.org>
-Subject: Re: [PATCH v7 1/2] powerpc: Detect the presence of big-cores via
- "ibm,thread-groups"
-From: Michael Neuling <mikey@neuling.org>
-To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, Srikar Dronamraju
- <srikar@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>, Vaidyanathan Srinivasan
- <svaidy@linux.vnet.ibm.com>, Akshay Adiga
- <akshay.adiga@linux.vnet.ibm.com>, Shilpasri G Bhat
- <shilpa.bhat@linux.vnet.ibm.com>, Oliver O'Halloran <oohall@gmail.com>,
- Nicholas Piggin <npiggin@gmail.com>, Murilo Opsfelder Araujo
- <muriloo@linux.ibm.com>, Anton Blanchard <anton@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Date: Wed, 29 Aug 2018 17:13:16 +1000
-In-Reply-To: <61048333bca549ffa275bf32eeb1a2480340a7e0.camel@neuling.org>
-References: <1534743704-4760-1-git-send-email-ego@linux.vnet.ibm.com>
- <1534743704-4760-2-git-send-email-ego@linux.vnet.ibm.com>
- <61048333bca549ffa275bf32eeb1a2480340a7e0.camel@neuling.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 420cR24dqnzDrJ5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 17:18:06 +1000 (AEST)
+Subject: Re: [PATCH 4/6] net/wan/fsl_ucc_hdlc: default hmask value
+To: Qiang Zhao <qiang.zhao@nxp.com>,
+ David Gounaris <david.gounaris@infinera.com>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+References: <20180828110921.2542-1-david.gounaris@infinera.com>
+ <20180828110921.2542-5-david.gounaris@infinera.com>
+ <VI1PR04MB3247E6EBE63C39F5E1C792F191090@VI1PR04MB3247.eurprd04.prod.outlook.com>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <4244fe46-e8ed-9fd2-d243-cc84e7264a88@c-s.fr>
+Date: Wed, 29 Aug 2018 09:18:01 +0200
+MIME-Version: 1.0
+In-Reply-To: <VI1PR04MB3247E6EBE63C39F5E1C792F191090@VI1PR04MB3247.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,15 +27,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-08-29 at 17:04 +1000, Michael Neuling wrote:
-> > +What: 		/sys/devices/system/cpu/cpu[0-9]+/small_core_siblings
->=20
-> Shouldn't we put this in the topology/ subdir with with the other items l=
-ike
-> it?
 
-Also, please follow the same format as *_sibilings files topology/ where th=
-ey
-are just a mask (this patch currently has it as a comma separated list).
 
-Mikey
+Le 29/08/2018 à 04:54, Qiang Zhao a écrit :
+> From: David Gounaris <david.gounaris@infinera.com>
+> Date: 2018/8/28 19:09
+>> Subject: [PATCH 4/6] net/wan/fsl_ucc_hdlc: default hmask value
+>>
+>> Set default HMASK to 0x0000 to use
+>> promiscuous mode in the hdlc controller.
+
+Why do you need to do that ?
+
+An HDLC frame encapsulating Ethernet should look like:
+
+HDLC Frame includes:
+– Opening Flag		7E hex
+– Address field		FF hex
+– Control field		03 hex
+– Information field	Original Ethernet Packet, 1522 octets max.
+– FCS CRC16		(2 bytes)
+– Closing Flag		7E hex
+
+What do you mean by 'promiscuous mode' ?
+
+In any case, should a filter mask be changed for promiscuous mode, I 
+believe the change should be done at the time you enter promiscuous 
+mode, not at all time.
+
+Christophe
+
+>>
+>> Signed-off-by: David Gounaris <david.gounaris@infinera.com>
+>> ---
+>>   drivers/net/wan/fsl_ucc_hdlc.h | 2 +-
+>>   1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/net/wan/fsl_ucc_hdlc.h b/drivers/net/wan/fsl_ucc_hdlc.h
+>> index c21134c1f180..5bc3d1a6ca6e 100644
+>> --- a/drivers/net/wan/fsl_ucc_hdlc.h
+>> +++ b/drivers/net/wan/fsl_ucc_hdlc.h
+>> @@ -134,7 +134,7 @@ struct ucc_hdlc_private {
+>>
+>>   #define HDLC_HEAD_MASK		0x0000
+>>   #define DEFAULT_HDLC_HEAD	0xff44
+>> -#define DEFAULT_ADDR_MASK	0x00ff
+>> +#define DEFAULT_ADDR_MASK	0x0000
+>>   #define DEFAULT_HDLC_ADDR	0x00ff
+>>
+>>   #define BMR_GBL			0x20000000
+>> --
+> 
+> It is not proper to set default HMASK to 0x0000, how about to add a new property standing for hmask into device tree,
+> If get this property from dtb, then set it with the value from dtb, otherwise, set it with default HMASK ox00ff?
+> 
+> Best Regards
+> Qiang Zhao
+> 
