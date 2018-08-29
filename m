@@ -2,21 +2,21 @@ Return-Path: <srs0=r+d+=lm=emerson.com=sachin.gosavi@ozlabs.org>
 Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 420ms24wJMzF09c
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 23:37:42 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 420ms23qrdz8w0l
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 23:37:42 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 420mwv6mKwzF31w
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 23:41:03 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 420mwv4z18z8t9h
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 23:41:03 +1000 (AEST)
 Received: from n7.nabble.com (n7.nabble.com [162.253.133.57])
- by ozlabs.org (Postfix) with ESMTP id 420ms21Hnmz9s1x
- for <linuxppc-dev@ozlabs.org>; Wed, 29 Aug 2018 23:37:41 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTP id 420mwt328rz9s1x
+ for <linuxppc-dev@ozlabs.org>; Wed, 29 Aug 2018 23:41:02 +1000 (AEST)
 Received: from n7.nabble.com (localhost [127.0.0.1])
- by n7.nabble.com (Postfix) with ESMTP id CC32A6A175B7
- for <linuxppc-dev@ozlabs.org>; Wed, 29 Aug 2018 06:37:39 -0700 (MST)
-Date: Wed, 29 Aug 2018 06:37:39 -0700 (MST)
+ by n7.nabble.com (Postfix) with ESMTP id 2BFEC6A17806
+ for <linuxppc-dev@ozlabs.org>; Wed, 29 Aug 2018 06:41:01 -0700 (MST)
+Date: Wed, 29 Aug 2018 06:41:01 -0700 (MST)
 From: sgosavi1 <Sachin.Gosavi@emerson.com>
 To: linuxppc-dev@ozlabs.org
-Message-ID: <1535549859780-0.post@n7.nabble.com>
+Message-ID: <1535550061122-0.post@n7.nabble.com>
 In-Reply-To: <1fd6324f-515b-4e9e-a942-c606ad919dec@c-s.fr>
 References: <1535541276673-0.post@n7.nabble.com>
  <1fd6324f-515b-4e9e-a942-c606ad919dec@c-s.fr>
@@ -33,8 +33,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Yes, both these config options are enabled as you can see from the below
-details from my .config file.
+Thanks for your reply. Yes, both the options are enabled in the kernel
+configuration for my board as seen below.
 
 CONFIG_PPC_EARLY_DEBUG=y
 CONFIG_PPC_EARLY_DEBUG_CPM=y
