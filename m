@@ -1,30 +1,28 @@
-Return-Path: <peterz@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mathieu.malaterre@gmail.com>
+Received: from mail-oi0-f67.google.com (mail-oi0-f67.google.com
+ [209.85.218.67])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 420dQH47NtzF2QL
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 18:02:31 +1000 (AEST)
-Date: Wed, 29 Aug 2018 10:02:19 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
- Mel Gorman <mgorman@techsingularity.net>, Rik van Riel <riel@surriel.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Suravee Suthikulpanit <suravee.suthikulpanit@amd.com>,
- Andre Wild <wild@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH 2/2] sched/topology: Expose numa_mask set/clear functions
- to arch
-Message-ID: <20180829080219.GN24124@hirez.programming.kicks-ass.net>
-References: <20180808081942.GA37418@linux.vnet.ibm.com>
- <1533920419-17410-1-git-send-email-srikar@linux.vnet.ibm.com>
- <1533920419-17410-2-git-send-email-srikar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 420dWS3hwNzF26J
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 18:07:00 +1000 (AEST)
+Received: by mail-oi0-f67.google.com with SMTP id l82-v6so7590410oih.11
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 01:06:59 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1533920419-17410-2-git-send-email-srikar@linux.vnet.ibm.com>
+References: <1535527943-32566-1-git-send-email-krzk@kernel.org>
+ <CAJKOXPe-fY5T8DMTgjQfrJN=b_9JcytYeeqkX9rQw6EbQ_GiXA@mail.gmail.com>
+In-Reply-To: <CAJKOXPe-fY5T8DMTgjQfrJN=b_9JcytYeeqkX9rQw6EbQ_GiXA@mail.gmail.com>
+From: Mathieu Malaterre <malat@debian.org>
+Date: Wed, 29 Aug 2018 10:06:46 +0200
+Message-ID: <CA+7wUsxE5gUXuUzkZ5bjz_d5WXab8RQxF3bre_DAMpUW=QpKTg@mail.gmail.com>
+Subject: Re: [RFT] powerpc/boot: Fix missing crc32poly.h when building with
+ KERNEL_XZ
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ LKML <linux-kernel@vger.kernel.org>, mkubecek@suse.cz,
+ Meelis Roos <mroos@linux.ee>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,42 +32,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 10, 2018 at 10:30:19PM +0530, Srikar Dronamraju wrote:
-> With commit 051f3ca02e46 ("sched/topology: Introduce NUMA identity node
-> sched domain") scheduler introduces an new numa level. However on shared
-> lpars like powerpc, this extra sched domain creation can lead to
-> repeated rcu stalls, sometimes even causing unresponsive systems on
-> boot. On such stalls, it was noticed that init_sched_groups_capacity()
-> (sg != sd->groups is always true).
-> 
-> INFO: rcu_sched self-detected stall on CPU
->  1-....: (240039 ticks this GP) idle=c32/1/4611686018427387906 softirq=782/782 fqs=80012
->   (t=240039 jiffies g=6272 c=6271 q=263040)
-> NMI backtrace for cpu 1
+On Wed, Aug 29, 2018 at 9:59 AM Krzysztof Kozlowski <krzk@kernel.org> wrote:
+>
+> On Wed, 29 Aug 2018 at 09:32, Krzysztof Kozlowski <krzk@kernel.org> wrote:
+> >
+> > After commit faa16bc404d7 ("lib: Use existing define with
+> > polynomial") the lib/xz/xz_crc32.c includes a header from include/linux
+> > directory thus any other user of this code should define proper include
+> > path.
+> >
+> > This fixes the build error on powerpc with CONFIG_KERNEL_XZ:
+> >
+> >     In file included from ../arch/powerpc/boot/../../../lib/decompress_unxz.c:233:0,
+> >                      from ../arch/powerpc/boot/decompress.c:42:
+> >     ../arch/powerpc/boot/../../../lib/xz/xz_crc32.c:18:29: fatal error: linux/crc32poly.h: No such file or directory
+> >
+> > Reported-by: Michal Kubecek <mkubecek@suse.cz>
+>
+> Reported earlier by Kbuild:
+> https://lkml.org/lkml/2018/8/23/47
+>
+> for the credits:
+> Reported-by: kbuild test robot <lkp@intel.com>
 
-> --- interrupt: 901 at __bitmap_weight+0x70/0x100
->     LR = __bitmap_weight+0x78/0x100
-> [c00000832132f9b0] [c0000000009bb738] __func__.61127+0x0/0x20 (unreliable)
-> [c00000832132fa00] [c00000000016c178] build_sched_domains+0xf98/0x13f0
-> [c00000832132fb30] [c00000000016d73c] partition_sched_domains+0x26c/0x440
-> [c00000832132fc20] [c0000000001ee284] rebuild_sched_domains_locked+0x64/0x80
-> [c00000832132fc50] [c0000000001f11ec] rebuild_sched_domains+0x3c/0x60
-> [c00000832132fc80] [c00000000007e1c4] topology_work_fn+0x24/0x40
-> [c00000832132fca0] [c000000000126704] process_one_work+0x1a4/0x470
-> [c00000832132fd30] [c000000000126a68] worker_thread+0x98/0x540
-> [c00000832132fdc0] [c00000000012f078] kthread+0x168/0x1b0
-> [c00000832132fe30] [c00000000000b65c]
-> ret_from_kernel_thread+0x5c/0x80
-> 
-> Similar problem was earlier also reported at
-> https://lwn.net/ml/linux-kernel/20180512100233.GB3738@osiris/
-> 
-> Allow arch to set and clear masks corresponding to numa sched domain.
+Technically Meelis reported it earlier:
 
-What this Changelog fails to do is explain the problem and motivate why
-this is the right solution.
+https://lkml.org/lkml/2018/8/22/365
 
-As-is, this reads like, something's buggered, I changed this random thing
-and it now works.
-
-So what is causing that domain construction error?
+;)
