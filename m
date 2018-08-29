@@ -1,29 +1,27 @@
-Return-Path: <srs0=r+d+=lm=emerson.com=sachin.gosavi@ozlabs.org>
-Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <linus971@gmail.com>
+Received: from mail-it0-x242.google.com (mail-it0-x242.google.com
+ [IPv6:2607:f8b0:4001:c0b::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 420mwv6mKwzF31w
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 23:41:03 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 420mwv4z18z8t9h
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 23:41:03 +1000 (AEST)
-Received: from n7.nabble.com (n7.nabble.com [162.253.133.57])
- by ozlabs.org (Postfix) with ESMTP id 420mwt328rz9s1x
- for <linuxppc-dev@ozlabs.org>; Wed, 29 Aug 2018 23:41:02 +1000 (AEST)
-Received: from n7.nabble.com (localhost [127.0.0.1])
- by n7.nabble.com (Postfix) with ESMTP id 2BFEC6A17806
- for <linuxppc-dev@ozlabs.org>; Wed, 29 Aug 2018 06:41:01 -0700 (MST)
-Date: Wed, 29 Aug 2018 06:41:01 -0700 (MST)
-From: sgosavi1 <Sachin.Gosavi@emerson.com>
-To: linuxppc-dev@ozlabs.org
-Message-ID: <1535550061122-0.post@n7.nabble.com>
-In-Reply-To: <1fd6324f-515b-4e9e-a942-c606ad919dec@c-s.fr>
-References: <1535541276673-0.post@n7.nabble.com>
- <1fd6324f-515b-4e9e-a942-c606ad919dec@c-s.fr>
-Subject: Re: Not able to boot cuImage for the target board with MPC8270
- processor
+ by lists.ozlabs.org (Postfix) with ESMTPS id 420qcv1dp2zF325
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Aug 2018 01:42:22 +1000 (AEST)
+Received: by mail-it0-x242.google.com with SMTP id j81-v6so8329629ite.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 08:42:22 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+References: <20180828112034.30875-1-npiggin@gmail.com>
+ <20180828112034.30875-3-npiggin@gmail.com>
+In-Reply-To: <20180828112034.30875-3-npiggin@gmail.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Wed, 29 Aug 2018 08:42:09 -0700
+Message-ID: <CA+55aFwbZrsdZEh0ds1W3AWUeTamDRheQPKSi9O=--cEOSjr5g@mail.gmail.com>
+Subject: Re: [PATCH 2/3] mm/cow: optimise pte dirty/accessed bits handling in
+ fork
+To: Nick Piggin <npiggin@gmail.com>
+Cc: linux-mm <linux-mm@kvack.org>, linux-arch <linux-arch@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,15 +31,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thanks for your reply. Yes, both the options are enabled in the kernel
-configuration for my board as seen below.
+On Tue, Aug 28, 2018 at 4:20 AM Nicholas Piggin <npiggin@gmail.com> wrote:
+>
+> fork clears dirty/accessed bits from new ptes in the child. This logic
+> has existed since mapped page reclaim was done by scanning ptes when
+> it may have been quite important. Today with physical based pte
+> scanning, there is less reason to clear these bits.
 
-CONFIG_PPC_EARLY_DEBUG=y
-CONFIG_PPC_EARLY_DEBUG_CPM=y
-# CONFIG_PPC_EARLY_DEBUG_MEMCONS is not set
-CONFIG_PPC_EARLY_DEBUG_CPM_ADDR=0x11a80
+Can you humor me, and make the dirty/accessed bit patches separate?
 
+There is actually a difference wrt the dirty bit: if we unmap an area
+with dirty pages, we have to do the special synchronous flush.
 
+So a clean page in the virtual mapping is _literally_ cheaper to have.
 
---
-Sent from: http://linuxppc.10917.n7.nabble.com/linuxppc-dev-f3.html
+> This eliminates a major source of faults powerpc/radix requires to set
+> dirty/accessed bits in ptes, speeding up a fork/exit microbenchmark by
+> about 5% on POWER9 (16600 -> 17500 fork/execs per second).
+
+I don't think the dirty bit matters.
+
+The accessed bit I think may be worth keeping, so by all means remove the mkold.
+
+                  Linus
