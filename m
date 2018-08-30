@@ -1,34 +1,44 @@
-Return-Path: <pku.leo@gmail.com>
-Received: from mail-oi0-f65.google.com (mail-oi0-f65.google.com
- [209.85.218.65])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <oss@buserror.net>
+Received: from baldur.buserror.net (baldur.buserror.net [165.227.176.147])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 421Tq747fYzF373
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Aug 2018 03:23:31 +1000 (AEST)
-Received: by mail-oi0-f65.google.com with SMTP id 13-v6so16862974ois.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Aug 2018 10:23:31 -0700 (PDT)
-Received: from mail-oi0-f43.google.com (mail-oi0-f43.google.com.
- [209.85.218.43])
- by smtp.gmail.com with ESMTPSA id o125-v6sm11927349oig.44.2018.08.30.10.23.28
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Thu, 30 Aug 2018 10:23:28 -0700 (PDT)
-Received: by mail-oi0-f43.google.com with SMTP id b15-v6so16784342oib.10
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Aug 2018 10:23:28 -0700 (PDT)
-MIME-Version: 1.0
-References: <20180829092746.30674-1-colin.king@canonical.com>
-In-Reply-To: <20180829092746.30674-1-colin.king@canonical.com>
-From: Li Yang <leoyang.li@nxp.com>
-Date: Thu, 30 Aug 2018 12:23:16 -0500
-Message-ID: <CADRPPNQxAZi4HahERZZdKDKpauh+pbw+PmDOe_nUXZvJbvJRng@mail.gmail.com>
-Subject: Re: [PATCH] fsl: remove redundant pointer 'priv'
-To: colin.king@canonical.com
-Cc: Roy Pledge <Roy.Pledge@nxp.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>, kernel-janitors@vger.kernel.org,
- lkml <linux-kernel@vger.kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 421VDd2V60zF36X
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Aug 2018 03:42:08 +1000 (AEST)
+Message-ID: <d2cfd49eb33a3ce74f0e78f2b53d3954d2cb3e76.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: Vabhav Sharma <vabhav.sharma@nxp.com>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org"
+ <devicetree@vger.kernel.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>,
+ "mark.rutland@arm.com"
+ <mark.rutland@arm.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "mturquette@baylibre.com"
+ <mturquette@baylibre.com>, "sboyd@kernel.org" <sboyd@kernel.org>,
+ "rjw@rjwysocki.net"
+ <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>,
+ "linux-clk@vger.kernel.org"
+ <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org"
+ <linux-pm@vger.kernel.org>, "linux-kernel-owner@vger.kernel.org"
+ <linux-kernel-owner@vger.kernel.org>, "catalin.marinas@arm.com"
+ <catalin.marinas@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>,
+ "gregkh@linuxfoundation.org"
+ <gregkh@linuxfoundation.org>, "arnd@arndb.de" <arnd@arndb.de>,
+ "kstewart@linuxfoundation.org"
+ <kstewart@linuxfoundation.org>, "yamada.masahiro@socionext.com"
+ <yamada.masahiro@socionext.com>
+Cc: Yogesh Narayan Gaur <yogeshnarayan.gaur@nxp.com>, Andy Tang
+ <andy.tang@nxp.com>, Udit Kumar <udit.kumar@nxp.com>,
+ "linux@armlinux.org.uk" <linux@armlinux.org.uk>, Varun Sethi
+ <V.Sethi@nxp.com>
+Date: Thu, 30 Aug 2018 12:39:44 -0500
+In-Reply-To: <VI1PR04MB4800E8B1E8541FCA9221A1CFF3080@VI1PR04MB4800.eurprd04.prod.outlook.com>
+References: <1534747636-20064-1-git-send-email-vabhav.sharma@nxp.com>
+ <1534747636-20064-4-git-send-email-vabhav.sharma@nxp.com>
+ <4a9ea6b451683ec98c92e86a5ae6b91213a6afcf.camel@buserror.net>
+ <VI1PR04MB4800E8B1E8541FCA9221A1CFF3080@VI1PR04MB4800.eurprd04.prod.outlook.com>
 Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Subject: Re: [PATCH 3/5] drivers: clk-qoriq: Add clockgen support for lx2160a
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,43 +48,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 29, 2018 at 4:29 AM Colin King <colin.king@canonical.com> wrote:
->
-> From: Colin Ian King <colin.king@canonical.com>
->
-> Pointer 'priv' is being assigned but is never used hence it is
-> redundant and can be removed.
->
-> Cleans up clang warning:
-> variable 'priv' set but not used [-Wunused-but-set-variable]
->
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+On Thu, 2018-08-30 at 07:36 +0000, Vabhav Sharma wrote:
+> > -----Original Message-----
+> > From: linux-kernel-owner@vger.kernel.org <linux-kernel-
+> > owner@vger.kernel.org> On Behalf Of Scott Wood
+> > Sent: Wednesday, August 29, 2018 5:49 AM
+> > To: Vabhav Sharma <vabhav.sharma@nxp.com>; linux-
+> > kernel@vger.kernel.org; devicetree@vger.kernel.org; robh+dt@kernel.org;
+> > mark.rutland@arm.com; linuxppc-dev@lists.ozlabs.org; linux-arm-
+> > kernel@lists.infradead.org; mturquette@baylibre.com; sboyd@kernel.org;
+> > rjw@rjwysocki.net; viresh.kumar@linaro.org; linux-clk@vger.kernel.org;
+> > linux-pm@vger.kernel.org; linux-kernel-owner@vger.kernel.org;
+> > catalin.marinas@arm.com; will.deacon@arm.com;
+> > gregkh@linuxfoundation.org; arnd@arndb.de;
+> > kstewart@linuxfoundation.org; yamada.masahiro@socionext.com
+> > Cc: Yogesh Narayan Gaur <yogeshnarayan.gaur@nxp.com>; Andy Tang
+> > <andy.tang@nxp.com>; Udit Kumar <udit.kumar@nxp.com>;
+> > linux@armlinux.org.uk; Varun Sethi <V.Sethi@nxp.com>
+> > Subject: Re: [PATCH 3/5] drivers: clk-qoriq: Add clockgen support for
+> > lx2160a
+> > 
+> > On Mon, 2018-08-20 at 12:17 +0530, Vabhav Sharma wrote:
+> > > From: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>
+> > > 
+> > > Add clockgen support for lx2160a.
+> > > Added entry for compat 'fsl,lx2160a-clockgen'.
+> > > As LX2160A is 16 core, so modified value for NUM_CMUX
+> > > 
+> > > Signed-off-by: Tang Yuantian <andy.tang@nxp.com>
+> > > Signed-off-by: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>
+> > > Signed-off-by: Vabhav Sharma <vabhav.sharma@nxp.com>
+> > > ---
+> > >  drivers/clk/clk-qoriq.c         | 14 +++++++++++++-
+> > >  drivers/cpufreq/qoriq-cpufreq.c |  1 +
+> > >  2 files changed, 14 insertions(+), 1 deletion(-)
+> > > 
+> > > diff --git a/drivers/clk/clk-qoriq.c b/drivers/clk/clk-qoriq.c index
+> > > 3a1812f..fc6e308 100644
+> > > --- a/drivers/clk/clk-qoriq.c
+> > > +++ b/drivers/clk/clk-qoriq.c
+> > > @@ -60,7 +60,7 @@ struct clockgen_muxinfo {  };
+> > > 
+> > >  #define NUM_HWACCEL	5
+> > > -#define NUM_CMUX	8
+> > > +#define NUM_CMUX	16
+> > > 
+> > >  struct clockgen;
+> > > 
+> > > @@ -570,6 +570,17 @@ static const struct clockgen_chipinfo chipinfo[] =
+> > > {
+> > >  		.flags = CG_VER3 | CG_LITTLE_ENDIAN,
+> > >  	},
+> > >  	{
+> > > +		.compat = "fsl,lx2160a-clockgen",
+> > > +		.cmux_groups = {
+> > > +			&clockgen2_cmux_cga12, &clockgen2_cmux_cgb
+> > > +		},
+> > > +		.cmux_to_group = {
+> > > +			0, 0, 0, 0, 1, 1, 1, 1, -1
+> > > +		},
+> > > +		.pll_mask = 0x37,
+> > > +		.flags = CG_VER3 | CG_LITTLE_ENDIAN,
+> > > +	},
+> > 
+> > Why are you increasing NUM_CMUX beyond 8 for a chip that only has 8
+> > entries in cmux_to_group?
+> 
+> Configuration is 16 cores,8 cluster with 2 cores in each cluster
 
-Merged for next after updated the title prefix.
+So?  This is about cmuxes, not cores.  You're increasing the array without
+ever using the new size.
 
-Thanks!
-> ---
->  drivers/soc/fsl/dpio/dpio-driver.c | 3 ---
->  1 file changed, 3 deletions(-)
->
-> diff --git a/drivers/soc/fsl/dpio/dpio-driver.c b/drivers/soc/fsl/dpio/dpio-driver.c
-> index b60b77bfaffa..e58fcc9096e8 100644
-> --- a/drivers/soc/fsl/dpio/dpio-driver.c
-> +++ b/drivers/soc/fsl/dpio/dpio-driver.c
-> @@ -50,13 +50,10 @@ static void unregister_dpio_irq_handlers(struct fsl_mc_device *dpio_dev)
->
->  static int register_dpio_irq_handlers(struct fsl_mc_device *dpio_dev, int cpu)
->  {
-> -       struct dpio_priv *priv;
->         int error;
->         struct fsl_mc_device_irq *irq;
->         cpumask_t mask;
->
-> -       priv = dev_get_drvdata(&dpio_dev->dev);
-> -
->         irq = dpio_dev->irqs[0];
->         error = devm_request_irq(&dpio_dev->dev,
->                                  irq->msi_desc->irq,
-> --
-> 2.17.1
->
+-Scott
