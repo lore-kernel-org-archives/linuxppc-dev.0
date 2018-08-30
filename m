@@ -1,37 +1,44 @@
 Return-Path: <Pavel.Tatashin@microsoft.com>
-Received: from NAM05-CO1-obe.outbound.protection.outlook.com
- (mail-eopbgr720127.outbound.protection.outlook.com [40.107.72.127])
+Received: from NAM02-CY1-obe.outbound.protection.outlook.com
+ (mail-cys01nam02on0716.outbound.protection.outlook.com
+ [IPv6:2a01:111:f400:fe45::716])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 421Rf11lqxzF374
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Aug 2018 01:45:28 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 421Rrc1FwvzF374
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Aug 2018 01:54:39 +1000 (AEST)
 From: Pasha Tatashin <Pavel.Tatashin@microsoft.com>
-To: Jiri Slaby <jslaby@suse.cz>
-CC: "mhocko@kernel.org" <mhocko@kernel.org>, Steven Sistare
- <steven.sistare@oracle.com>, Daniel Jordan <daniel.m.jordan@oracle.com>,
- "benh@kernel.crashing.org" <benh@kernel.crashing.org>, "paulus@samba.org"
- <paulus@samba.org>, Andrew Morton <akpm@linux-foundation.org>,
- "kirill.shutemov@linux.intel.com" <kirill.shutemov@linux.intel.com>, Reza
- Arbab <arbab@linux.vnet.ibm.com>, "schwidefsky@de.ibm.com"
- <schwidefsky@de.ibm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>,
- "x86@kernel.org" <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
- "tglx@linutronix.de" <tglx@linutronix.de>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, Linux Memory Management List
- <linux-mm@kvack.org>, "linux-s390@vger.kernel.org"
- <linux-s390@vger.kernel.org>, "mgorman@techsingularity.net"
- <mgorman@techsingularity.net>
-Subject: Re: [PATCH v1] mm: relax deferred struct page requirements
-Date: Thu, 30 Aug 2018 15:45:22 +0000
-Message-ID: <87516e50-a17c-6c80-e9b5-ba68eda9ce33@microsoft.com>
-References: <20171117014601.31606-1-pasha.tatashin@oracle.com>
- <20171121072416.v77vu4osm2s4o5sq@dhcp22.suse.cz>
- <b16029f0-ada0-df25-071b-cd5dba0ab756@suse.cz>
- <CAGM2rea=_VJJ26tohWQWgfwcFVkp0gb6j1edH1kVLjtxfugf5Q@mail.gmail.com>
- <CAGM2reYcwyOcKrO=WhB3Cf0FNL3ZearC=KvxmTNUU6rkWviQOg@mail.gmail.com>
- <83d035f1-40b4-bed8-6113-f4c5a0c4d22f@suse.cz>
- <c4d46b63-5237-d002-faf5-4e0749d825d7@suse.cz>
- <7aee9274-9e8e-4a40-a9e5-3c9ef28511b7@microsoft.com>
-In-Reply-To: <7aee9274-9e8e-4a40-a9e5-3c9ef28511b7@microsoft.com>
+To: David Hildenbrand <david@redhat.com>, "linux-mm@kvack.org"
+ <linux-mm@kvack.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+ "xen-devel@lists.xenproject.org" <xen-devel@lists.xenproject.org>,
+ "devel@linuxdriverproject.org" <devel@linuxdriverproject.org>, Andrew Morton
+ <akpm@linux-foundation.org>, Balbir Singh <bsingharora@gmail.com>, Benjamin
+ Herrenschmidt <benh@kernel.crashing.org>, Boris Ostrovsky
+ <boris.ostrovsky@oracle.com>, Dan Williams <dan.j.williams@intel.com>, Greg
+ Kroah-Hartman <gregkh@linuxfoundation.org>, Haiyang Zhang
+ <haiyangz@microsoft.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, John
+ Allen <jallen@linux.vnet.ibm.com>, Jonathan Corbet <corbet@lwn.net>, Joonsoo
+ Kim <iamjoonsoo.kim@lge.com>, Juergen Gross <jgross@suse.com>, Kate Stewart
+ <kstewart@linuxfoundation.org>, KY Srinivasan <kys@microsoft.com>, Len Brown
+ <lenb@kernel.org>, Martin Schwidefsky <schwidefsky@de.ibm.com>, Mathieu
+ Malaterre <malat@debian.org>, Michael Ellerman <mpe@ellerman.id.au>, Michael
+ Neuling <mikey@neuling.org>, Michal Hocko <mhocko@suse.com>, Nathan Fontenot
+ <nfont@linux.vnet.ibm.com>, Oscar Salvador <osalvador@suse.de>, Paul
+ Mackerras <paulus@samba.org>, Philippe Ombredanne <pombredanne@nexb.com>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rashmica Gupta
+ <rashmica.g@gmail.com>, Stephen Hemminger <sthemmin@microsoft.com>, Thomas
+ Gleixner <tglx@linutronix.de>, Vlastimil Babka <vbabka@suse.cz>, YASUAKI
+ ISHIMATSU <yasu.isimatu@gmail.com>
+Subject: Re: [PATCH RFCv2 0/6] mm: online/offline_pages called w.o.
+ mem_hotplug_lock
+Date: Thu, 30 Aug 2018 15:54:30 +0000
+Message-ID: <b9eb96e7-3846-1aaa-d257-895ca142b1ef@microsoft.com>
+References: <20180821104418.12710-1-david@redhat.com>
+ <37ea507e-b16d-ae8d-4da8-128b621869f2@redhat.com>
+In-Reply-To: <37ea507e-b16d-ae8d-4da8-128b621869f2@redhat.com>
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -43,52 +50,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGkgSmlyaSwNCg0KSSBiZWxpZXZlIHRoaXMgYnVnIGlzIGZpeGVkIHdpdGggdGhpcyBjaGFuZ2U6
-DQoNCmQzOWY4ZmI0Yjc3NzZkY2IwOWVjM2JmN2EzMjE1NDcwODMwNzhlZTMNCm1tOiBtYWtlIERF
-RkVSUkVEX1NUUlVDVF9QQUdFX0lOSVQgZXhwbGljaXRseSBkZXBlbmQgb24gU1BBUlNFTUVNDQoN
-CkkgYW0gbm90IGFibGUgdG8gcmVwcm9kdWNlIHRoaXMgcHJvYmxlbSBvbiB4ODYtMzIuDQoNClBh
-dmVsDQoNCk9uIDgvMzAvMTggMTA6MzUgQU0sIFBhdmVsIFRhdGFzaGluIHdyb3RlOg0KPiBUaGFu
-ayB5b3UgSmlyaSwgSSBhbSBzdHVkeWluZyBpdC4NCj4gDQo+IFBhdmVsDQo+IA0KPiBPbiA4LzI0
-LzE4IDM6NDQgQU0sIEppcmkgU2xhYnkgd3JvdGU6DQo+PiBwYXNoYS50YXRhc2hpbkBvcmFjbGUu
-Y29tIC0+IHBhdmVsLnRhdGFzaGluQG1pY3Jvc29mdC5jb20NCj4+DQo+PiBkdWUgdG8NCj4+ICA1
-NTAgNS4xLjEgVW5rbm93biByZWNpcGllbnQgYWRkcmVzcy4NCj4+DQo+Pg0KPj4gT24gMDgvMjQv
-MjAxOCwgMDk6MzIgQU0sIEppcmkgU2xhYnkgd3JvdGU6DQo+Pj4gT24gMDYvMTkvMjAxOCwgMDk6
-NTYgUE0sIFBhdmVsIFRhdGFzaGluIHdyb3RlOg0KPj4+PiBPbiBUdWUsIEp1biAxOSwgMjAxOCBh
-dCA5OjUwIEFNIFBhdmVsIFRhdGFzaGluDQo+Pj4+IDxwYXNoYS50YXRhc2hpbkBvcmFjbGUuY29t
-PiB3cm90ZToNCj4+Pj4+DQo+Pj4+PiBPbiBTYXQsIEp1biAxNiwgMjAxOCBhdCA0OjA0IEFNIEpp
-cmkgU2xhYnkgPGpzbGFieUBzdXNlLmN6PiB3cm90ZToNCj4+Pj4+Pg0KPj4+Pj4+IE9uIDExLzIx
-LzIwMTcsIDA4OjI0IEFNLCBNaWNoYWwgSG9ja28gd3JvdGU6DQo+Pj4+Pj4+IE9uIFRodSAxNi0x
-MS0xNyAyMDo0NjowMSwgUGF2ZWwgVGF0YXNoaW4gd3JvdGU6DQo+Pj4+Pj4+PiBUaGVyZSBpcyBu
-byBuZWVkIHRvIGhhdmUgQVJDSF9TVVBQT1JUU19ERUZFUlJFRF9TVFJVQ1RfUEFHRV9JTklULA0K
-Pj4+Pj4+Pj4gYXMgYWxsIHRoZSBwYWdlIGluaXRpYWxpemF0aW9uIGNvZGUgaXMgaW4gY29tbW9u
-IGNvZGUuDQo+Pj4+Pj4+Pg0KPj4+Pj4+Pj4gQWxzbywgdGhlcmUgaXMgbm8gbmVlZCB0byBkZXBl
-bmQgb24gTUVNT1JZX0hPVFBMVUcsIGFzIGluaXRpYWxpemF0aW9uIGNvZGUNCj4+Pj4+Pj4+IGRv
-ZXMgbm90IHJlYWxseSB1c2UgaG90cGx1ZyBtZW1vcnkgZnVuY3Rpb25hbGl0eS4gU28sIHdlIGNh
-biByZW1vdmUgdGhpcw0KPj4+Pj4+Pj4gcmVxdWlyZW1lbnQgYXMgd2VsbC4NCj4+Pj4+Pj4+DQo+
-Pj4+Pj4+PiBUaGlzIHBhdGNoIGFsbG93cyB0byB1c2UgZGVmZXJyZWQgc3RydWN0IHBhZ2UgaW5p
-dGlhbGl6YXRpb24gb24gYWxsDQo+Pj4+Pj4+PiBwbGF0Zm9ybXMgd2l0aCBtZW1ibG9jayBhbGxv
-Y2F0b3IuDQo+Pj4+Pj4+Pg0KPj4+Pj4+Pj4gVGVzdGVkIG9uIHg4NiwgYXJtNjQsIGFuZCBzcGFy
-Yy4gQWxzbywgdmVyaWZpZWQgdGhhdCBjb2RlIGNvbXBpbGVzIG9uDQo+Pj4+Pj4+PiBQUEMgd2l0
-aCBDT05GSUdfTUVNT1JZX0hPVFBMVUcgZGlzYWJsZWQuDQo+Pj4+Pj4+DQo+Pj4+Pj4+IFRoZXJl
-IGlzIHNsaWdodCByaXNrIHRoYXQgd2Ugd2lsbCBlbmNvdW50ZXIgY29ybmVyIGNhc2VzIG9uIHNv
-bWUNCj4+Pj4+Pj4gYXJjaGl0ZWN0dXJlcyB3aXRoIHdlaXJkIG1lbW9yeSBsYXlvdXQvdG9wb2xv
-Z3kNCj4+Pj4+Pg0KPj4+Pj4+IFdoaWNoIHg4Nl8zMi1wYWUgc2VlbXMgdG8gYmUuIE1hbnkgYmFk
-IHBhZ2Ugc3RhdGUgZXJyb3JzIGFyZSBlbWl0dGVkDQo+Pj4+Pj4gZHVyaW5nIGJvb3Qgd2hlbiB0
-aGlzIHBhdGNoIGlzIGFwcGxpZWQ6DQo+Pj4+Pg0KPj4+Pj4gSGkgSmlyaSwNCj4+Pj4+DQo+Pj4+
-PiBUaGFuayB5b3UgZm9yIHJlcG9ydGluZyB0aGlzIGJ1Zy4NCj4+Pj4+DQo+Pj4+PiBCZWNhdXNl
-IDMyLWJpdCBzeXN0ZW1zIGFyZSBsaW1pdGVkIGluIHRoZSBtYXhpbXVtIGFtb3VudCBvZiBwaHlz
-aWNhbA0KPj4+Pj4gbWVtb3J5LCB0aGV5IGRvbid0IG5lZWQgZGVmZXJyZWQgc3RydWN0IHBhZ2Vz
-LiBTbywgd2UgY2FuIGFkZCBkZXBlbmRzDQo+Pj4+PiBvbiA2NEJJVCB0byBERUZFUlJFRF9TVFJV
-Q1RfUEFHRV9JTklUIGluIG1tL0tjb25maWcuDQo+Pj4+Pg0KPj4+Pj4gSG93ZXZlciwgYmVmb3Jl
-IHdlIGRvIHRoaXMsIEkgd2FudCB0byB0cnkgcmVwcm9kdWNpbmcgdGhpcyBwcm9ibGVtIGFuZA0K
-Pj4+Pj4gcm9vdCBjYXVzZSBpdCwgYXMgaXQgbWlnaHQgZXhwb3NlIGEgZ2VuZXJhbCBwcm9ibGVt
-IHRoYXQgaXMgbm90IDMyLWJpdA0KPj4+Pj4gc3BlY2lmaWMuDQo+Pj4+DQo+Pj4+IEhpIEppcmks
-DQo+Pj4+DQo+Pj4+IENvdWxkIHlvdSBwbGVhc2UgYXR0YWNoIHlvdXIgY29uZmlnIGFuZCBmdWxs
-IHFlbXUgYXJndW1lbnRzIHRoYXQgeW91DQo+Pj4+IHVzZWQgdG8gcmVwcm9kdWNlIHRoaXMgYnVn
-Lg0KPj4+DQo+Pj4gSGksDQo+Pj4NCj4+PiBJIHNlZW0gSSBuZXZlciByZXBsaWVkLiBBdHRhY2hp
-bmcgLmNvbmZpZyBhbmQgdGhlIHFlbXUgY21kbGluZToNCj4+PiAkIHFlbXUta3ZtIC1tIDIwMDAg
-LWhkYSAvZGV2L251bGwgLWtlcm5lbCBiekltYWdlDQo+Pj4NCj4+PiAiLW0gMjAwMCIgaXMgaW1w
-b3J0YW50IHRvIHJlcHJvZHVjZS4NCj4+Pg0KPj4+IElmIEkgZGlzYWJsZSBDT05GSUdfREVGRVJS
-RURfU1RSVUNUX1BBR0VfSU5JVCAod2hpY2ggdGhlIHBhdGNoIGFsbG93ZWQNCj4+PiB0byBlbmFi
-bGUpLCB0aGUgZXJyb3IgZ29lcyBhd2F5LCBvZiBjb3Vyc2UuDQo+Pj4NCj4+PiB0aGFua3MsDQo+
-Pj4NCj4+DQo+Pg==
+DQoNCk9uIDgvMzAvMTggODozMSBBTSwgRGF2aWQgSGlsZGVuYnJhbmQgd3JvdGU6DQo+IE9uIDIx
+LjA4LjIwMTggMTI6NDQsIERhdmlkIEhpbGRlbmJyYW5kIHdyb3RlOg0KPj4gVGhpcyBpcyB0aGUg
+c2FtZSBhcHByb2FjaCBhcyBpbiB0aGUgZmlyc3QgUkZDLCBidXQgdGhpcyB0aW1lIHdpdGhvdXQN
+Cj4+IGV4cG9ydGluZyBkZXZpY2VfaG90cGx1Z19sb2NrIChyZXF1ZXN0ZWQgYnkgR3JlZykgYW5k
+IHdpdGggc29tZSBtb3JlDQo+PiBkZXRhaWxzIGFuZCBkb2N1bWVudGF0aW9uIHJlZ2FyZGluZyBs
+b2NraW5nLiBUZXN0ZWQgb25seSBvbiB4ODYgc28gZmFyLg0KPj4NCj4gDQo+IEknbGwgYmUgb24g
+dmFjYXRpb24gZm9yIHR3byB3ZWVrcyBzdGFydGluZyBvbiBTYXR1cmRheS4gSWYgdGhlcmUgYXJl
+IG5vDQo+IGNvbW1lbnRzIEknbGwgc2VuZCB0aGlzIGFzICFSRkMgb25jZSBJIHJldHVybi4NCj4N
+CkkgYW0gc3R1ZHlpbmcgdGhpcyBzZXJpZXMsIHdpbGwgc2VuZCBteSBjb21tZW50cyBsYXRlciB0
+b2RheS4NCg0KUGF2ZWw=
