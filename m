@@ -1,39 +1,21 @@
-Return-Path: <andy.shevchenko@gmail.com>
-Received: from mail-qk0-x243.google.com (mail-qk0-x243.google.com
- [IPv6:2607:f8b0:400d:c09::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <hofrat@osadl.org>
+Received: from www.osadl.org (www.osadl.org [62.245.132.105])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 421GR73VvtzF36v
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Aug 2018 18:50:27 +1000 (AEST)
-Received: by mail-qk0-x243.google.com with SMTP id d15-v6so5247942qkc.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Aug 2018 01:50:26 -0700 (PDT)
-MIME-Version: 1.0
-References: <cover.1534686484.git.lukas@wunner.de>
-In-Reply-To: <cover.1534686484.git.lukas@wunner.de>
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Thu, 30 Aug 2018 11:50:13 +0300
-Message-ID: <CAHp75Veby=mo5s7QvfEhVLjGYBEL9GDDD_CfBmgS3Y+sxRzwSA@mail.gmail.com>
-Subject: Re: [PATCH 0/9] PCI hotplug diet
-To: Lukas Wunner <lukas@wunner.de>
-Cc: Bjorn Helgaas <helgaas@kernel.org>, linux-pci@vger.kernel.org,
- okaya@kernel.org, Mika Westerberg <mika.westerberg@linux.intel.com>,
- Keith Busch <keith.busch@intel.com>, Oza Pawandeep <poza@codeaurora.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>,
- scott@spiteful.org,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- gwshan@linux.vnet.ibm.com,
- Sebastian Ott <sebott@linux.vnet.ibm.com>, gerald.schaefer@de.ibm.com,
- Corentin Chary <corentin.chary@gmail.com>, Darren Hart <dvhart@infradead.org>,
- Andy Shevchenko <andy@infradead.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, dan.zink@hpe.com,
- jshah@us.ibm.com, zubarev@us.ibm.com, prarit@redhat.com,
- ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-s390@vger.kernel.org,
- Platform Driver <platform-driver-x86@vger.kernel.org>,
- acpi4asus-user <acpi4asus-user@lists.sourceforge.net>,
- "open list:LINUX FOR POWERPC PA SEMI PWRFICIENT"
- <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 421KG42RPVzF35n
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Aug 2018 20:57:47 +1000 (AEST)
+From: Nicholas Mc Guire <hofrat@osadl.org>
+To: Li Yang <leoyang.li@nxp.com>
+Cc: Felipe Balbi <balbi@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Nicholas Mc Guire <hofrat@osadl.org>
+Subject: [PATCH 2/2] usb: gadget: fsl_udc_core: fixup struct_udc_setup
+ documentation
+Date: Thu, 30 Aug 2018 12:16:59 +0200
+Message-Id: <1535624219-17854-2-git-send-email-hofrat@osadl.org>
+In-Reply-To: <1535624219-17854-1-git-send-email-hofrat@osadl.org>
+References: <1535624219-17854-1-git-send-email-hofrat@osadl.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,89 +25,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Aug 19, 2018 at 5:35 PM Lukas Wunner <lukas@wunner.de> wrote:
->
-> Here's PCI hotplug material I've prepared for v4.20:
->
-> Patches [1/9] to [8/9] reduce the code by 488 lines.  There should be no
-> loss of functionality and no new features, just less and simpler code.
->
-> Patch [9/9] collects TODOs for hotplug drivers to spur contributions.
->
->
-> I've assumed that my patch "PCI: pciehp: Differentiate between surprise
-> and safe removal" (submitted July 31) gets merged before this series:
-> https://patchwork.ozlabs.org/patch/951386/
->
-> If that patch is not accepted or other pciehp-related patches are merged
-> before this series, I'll have to rebase patch [4/9] ("PCI: pciehp: Unify
-> controller and slot structs").  No big deal, just a heads-up.
->
+The original implementation from commit b504882da539
+("USB: add Freescale high-speed USB SOC device controller driver")
+returned NULL on failure and an allocated + initialized struct fsl_udc on
+success. The current code introduced in commit 4365831dadfe
+("USB: fsl_usb2_udc: Get max ep number from DCCPARAMS register") only
+provides partial initialization as well as returning 0 on success and -1
+on failures. The function documentation is updated accordingly.
 
-Acked-by: Andy Shevchenko <andy.shevchenko@gmail.com>
+Signed-off-by: Nicholas Mc Guire <hofrat@osadl.org>
+Fixes: 4365831dadfe ("USB: fsl_usb2_udc: Get max ep number from DCCPARAMS register")
+---
 
-for PDx86 bits
+Problem located during code-review
 
-> Thanks,
->
-> Lukas
->
->
-> Lukas Wunner (9):
->   PCI: Simplify disconnected marking
->   PCI: pciehp: Drop unnecessary includes
->   PCI: pciehp: Drop hotplug_slot_ops wrappers
->   PCI: pciehp: Unify controller and slot structs
->   PCI: pciehp: Reshuffle controller struct for clarity
->   PCI: hotplug: Constify hotplug_slot_ops
->   PCI: hotplug: Drop hotplug_slot_info
->   PCI: hotplug: Embed hotplug_slot
->   PCI: hotplug: Document TODOs
->
->  arch/powerpc/include/asm/pnv-pci.h      |   2 +-
->  drivers/pci/hotplug/TODO                |  74 +++++++
->  drivers/pci/hotplug/acpiphp.h           |  10 +-
->  drivers/pci/hotplug/acpiphp_core.c      |  36 +---
->  drivers/pci/hotplug/acpiphp_ibm.c       |   2 +-
->  drivers/pci/hotplug/cpci_hotplug.h      |  11 +-
->  drivers/pci/hotplug/cpci_hotplug_core.c | 105 +++-------
->  drivers/pci/hotplug/cpci_hotplug_pci.c  |   6 +-
->  drivers/pci/hotplug/cpqphp.h            |   9 +-
->  drivers/pci/hotplug/cpqphp_core.c       |  59 ++----
->  drivers/pci/hotplug/cpqphp_ctrl.c       |  31 +--
->  drivers/pci/hotplug/ibmphp.h            |   9 +-
->  drivers/pci/hotplug/ibmphp_core.c       | 121 ++++-------
->  drivers/pci/hotplug/ibmphp_ebda.c       |  70 +------
->  drivers/pci/hotplug/pci_hotplug_core.c  |  53 ++---
->  drivers/pci/hotplug/pciehp.h            | 138 ++++++-------
->  drivers/pci/hotplug/pciehp_core.c       | 127 +++---------
->  drivers/pci/hotplug/pciehp_ctrl.c       | 255 +++++++++++-------------
->  drivers/pci/hotplug/pciehp_hpc.c        | 127 ++++--------
->  drivers/pci/hotplug/pciehp_pci.c        |  24 +--
->  drivers/pci/hotplug/pnv_php.c           |  35 ++--
->  drivers/pci/hotplug/rpaphp.h            |  10 +-
->  drivers/pci/hotplug/rpaphp_core.c       |  20 +-
->  drivers/pci/hotplug/rpaphp_pci.c        |  11 +-
->  drivers/pci/hotplug/rpaphp_slot.c       |  22 +-
->  drivers/pci/hotplug/s390_pci_hpc.c      |  44 ++--
->  drivers/pci/hotplug/sgi_hotplug.c       |  63 +++---
->  drivers/pci/hotplug/shpchp.h            |   8 +-
->  drivers/pci/hotplug/shpchp_core.c       |  48 ++---
->  drivers/pci/hotplug/shpchp_ctrl.c       |  21 +-
->  drivers/pci/pci.c                       |   4 +-
->  drivers/pci/pcie/err.c                  |   8 +-
->  drivers/pci/slot.c                      |   2 +-
->  drivers/platform/x86/asus-wmi.c         |  39 +---
->  drivers/platform/x86/eeepc-laptop.c     |  43 ++--
->  include/linux/pci_hotplug.h             |  43 +---
->  36 files changed, 638 insertions(+), 1052 deletions(-)
->  create mode 100644 drivers/pci/hotplug/TODO
->
-> --
-> 2.18.0
->
+Patch is against 4.19-rc1 (localversion-next is next-20180830)
 
+ drivers/usb/gadget/udc/fsl_udc_core.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/usb/gadget/udc/fsl_udc_core.c b/drivers/usb/gadget/udc/fsl_udc_core.c
+index e637afb..680b46e 100644
+--- a/drivers/usb/gadget/udc/fsl_udc_core.c
++++ b/drivers/usb/gadget/udc/fsl_udc_core.c
+@@ -2234,8 +2234,10 @@ static void fsl_udc_release(struct device *dev)
+ 	Internal structure setup functions
+ *******************************************************************/
+ /*------------------------------------------------------------------
+- * init resource for globle controller
+- * Return the udc handle on success or NULL on failure
++ * init resource for global controller called by fsl_udc_probe()
++ * On success the udc handle is initialized, on failure it is
++ * unchanged (reset).
++ * Return 0 on success and -1 on allocation failure
+  ------------------------------------------------------------------*/
+ static int struct_udc_setup(struct fsl_udc *udc,
+ 		struct platform_device *pdev)
 -- 
-With Best Regards,
-Andy Shevchenko
+2.1.4
