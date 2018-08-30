@@ -1,23 +1,41 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <vabhav.sharma@nxp.com>
+Received: from EUR01-HE1-obe.outbound.protection.outlook.com
+ (mail-he1eur01on0083.outbound.protection.outlook.com [104.47.0.83])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42184y2ZbzzF36b
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Aug 2018 14:04:18 +1000 (AEST)
-Date: Thu, 30 Aug 2018 14:03:22 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
- Paul Mackerras <paulus@ozlabs.org>
-Subject: Re: [PATCH kernel 3/4] KVM: PPC: Validate TCEs against preregistered
- memory page sizes
-Message-ID: <20180830040322.GI2222@umbus.fritz.box>
-References: <20180830031647.34134-1-aik@ozlabs.ru>
- <20180830031647.34134-4-aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 421DpN50TXzF36r
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Aug 2018 17:36:56 +1000 (AEST)
+From: Vabhav Sharma <vabhav.sharma@nxp.com>
+To: Scott Wood <oss@buserror.net>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org"
+ <devicetree@vger.kernel.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>,
+ "mark.rutland@arm.com" <mark.rutland@arm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "mturquette@baylibre.com"
+ <mturquette@baylibre.com>, "sboyd@kernel.org" <sboyd@kernel.org>,
+ "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org"
+ <viresh.kumar@linaro.org>, "linux-clk@vger.kernel.org"
+ <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org"
+ <linux-pm@vger.kernel.org>, "linux-kernel-owner@vger.kernel.org"
+ <linux-kernel-owner@vger.kernel.org>, "catalin.marinas@arm.com"
+ <catalin.marinas@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>,
+ "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "arnd@arndb.de"
+ <arnd@arndb.de>, "kstewart@linuxfoundation.org"
+ <kstewart@linuxfoundation.org>, "yamada.masahiro@socionext.com"
+ <yamada.masahiro@socionext.com>
+CC: Yogesh Narayan Gaur <yogeshnarayan.gaur@nxp.com>, Andy Tang
+ <andy.tang@nxp.com>, Udit Kumar <udit.kumar@nxp.com>, "linux@armlinux.org.uk"
+ <linux@armlinux.org.uk>, Varun Sethi <V.Sethi@nxp.com>
+Subject: RE: [PATCH 3/5] drivers: clk-qoriq: Add clockgen support for lx2160a
+Date: Thu, 30 Aug 2018 07:36:48 +0000
+Message-ID: <VI1PR04MB4800E8B1E8541FCA9221A1CFF3080@VI1PR04MB4800.eurprd04.prod.outlook.com>
+References: <1534747636-20064-1-git-send-email-vabhav.sharma@nxp.com>
+ <1534747636-20064-4-git-send-email-vabhav.sharma@nxp.com>
+ <4a9ea6b451683ec98c92e86a5ae6b91213a6afcf.camel@buserror.net>
+In-Reply-To: <4a9ea6b451683ec98c92e86a5ae6b91213a6afcf.camel@buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="+ZmrHH5cGjskQnY1"
-In-Reply-To: <20180830031647.34134-4-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,229 +45,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
---+ZmrHH5cGjskQnY1
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, Aug 30, 2018 at 01:16:46PM +1000, Alexey Kardashevskiy wrote:
-> The userspace can request an arbitrary supported page size for a DMA
-> window and this works fine as long as the mapped memory is backed with
-> the pages of the same or bigger size; if this is not the case,
-> mm_iommu_ua_to_hpa{_rm}() fail and tables do not populated with
-> dangerously incorrect TCEs.
->=20
-> However since it is quite easy to misconfigure the KVM and we do not do
-> reverts to all changes made to TCE tables if an error happens in a middle,
-> we better do the acceptable page size validation before we even touch
-> the tables.
->=20
-> This enhances kvmppc_tce_validate() to check the hardware IOMMU page sizes
-> against the preregistered memory page sizes.
->=20
-> Since the new check uses real/virtual mode helpers, this renames
-> kvmppc_tce_validate() to kvmppc_rm_tce_validate() to handle the real mode
-> case and mirrors it for the virtual mode under the old name. The real
-> mode handler is not used for the virtual mode as:
-> 1. it uses _lockless() list traversing primitives instead of RCU;
-> 2. realmode's mm_iommu_ua_to_hpa_rm() uses vmalloc_to_phys() which
-> virtual mode does not have to use and since on POWER9+radix only virtual
-> mode handlers actually work, we do not want to slow down that path even
-> a bit.
->=20
-> This removes EXPORT_SYMBOL_GPL(kvmppc_tce_validate) as the validators
-> are static now.
->=20
-> >From now on the attempts on mapping IOMMU pages bigger than allowed will
-> result in KVM exit.
->=20
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
-
-> ---
->  arch/powerpc/include/asm/kvm_ppc.h  |  2 --
->  arch/powerpc/kvm/book3s_64_vio.c    | 42 +++++++++++++++++++++++++++++++=
-++++++
->  arch/powerpc/kvm/book3s_64_vio_hv.c | 30 +++++++++++++++++++-------
->  3 files changed, 65 insertions(+), 9 deletions(-)
->=20
-> diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/as=
-m/kvm_ppc.h
-> index e991821..2f5d431 100644
-> --- a/arch/powerpc/include/asm/kvm_ppc.h
-> +++ b/arch/powerpc/include/asm/kvm_ppc.h
-> @@ -194,8 +194,6 @@ extern struct kvmppc_spapr_tce_table *kvmppc_find_tab=
-le(
->  		(iommu_tce_check_ioba((stt)->page_shift, (stt)->offset, \
->  				(stt)->size, (ioba), (npages)) ?        \
->  				H_PARAMETER : H_SUCCESS)
-> -extern long kvmppc_tce_validate(struct kvmppc_spapr_tce_table *tt,
-> -		unsigned long tce);
->  extern long kvmppc_gpa_to_ua(struct kvm *kvm, unsigned long gpa,
->  		unsigned long *ua, unsigned long **prmap);
->  extern void kvmppc_tce_put(struct kvmppc_spapr_tce_table *tt,
-> diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_6=
-4_vio.c
-> index 3e8ac98..5cd2a66 100644
-> --- a/arch/powerpc/kvm/book3s_64_vio.c
-> +++ b/arch/powerpc/kvm/book3s_64_vio.c
-> @@ -363,6 +363,41 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
->  	return ret;
->  }
-> =20
-> +static long kvmppc_tce_validate(struct kvmppc_spapr_tce_table *stt,
-> +		unsigned long tce)
-> +{
-> +	unsigned long gpa =3D tce & ~(TCE_PCI_READ | TCE_PCI_WRITE);
-> +	enum dma_data_direction dir =3D iommu_tce_direction(tce);
-> +	struct kvmppc_spapr_tce_iommu_table *stit;
-> +	unsigned long ua =3D 0;
-> +
-> +	/* Allow userspace to poison TCE table */
-> +	if (dir =3D=3D DMA_NONE)
-> +		return H_SUCCESS;
-> +
-> +	if (iommu_tce_check_gpa(stt->page_shift, gpa))
-> +		return H_TOO_HARD;
-> +
-> +	if (kvmppc_gpa_to_ua(stt->kvm, tce & ~(TCE_PCI_READ | TCE_PCI_WRITE),
-> +				&ua, NULL))
-> +		return H_TOO_HARD;
-> +
-> +	list_for_each_entry_rcu(stit, &stt->iommu_tables, next) {
-> +		unsigned long hpa =3D 0;
-> +		struct mm_iommu_table_group_mem_t *mem;
-> +		long shift =3D stit->tbl->it_page_shift;
-> +
-> +		mem =3D mm_iommu_lookup(stt->kvm->mm, ua, 1ULL << shift);
-> +		if (!mem)
-> +			return H_TOO_HARD;
-> +
-> +		if (mm_iommu_ua_to_hpa(mem, ua, shift, &hpa))
-> +			return H_TOO_HARD;
-> +	}
-> +
-> +	return H_SUCCESS;
-> +}
-> +
->  static void kvmppc_clear_tce(struct iommu_table *tbl, unsigned long entr=
-y)
->  {
->  	unsigned long hpa =3D 0;
-> @@ -602,6 +637,13 @@ long kvmppc_h_put_tce_indirect(struct kvm_vcpu *vcpu,
->  	}
-> =20
->  	for (i =3D 0; i < npages; ++i) {
-> +		/*
-> +		 * This get_user() may produce a different result than few
-> +		 * lines in the validation loop above but we translate it
-> +		 * again little later anyway and if that fails, we simply stop
-> +		 * and return error as it is likely the userspace shooting
-> +		 * itself in a foot.
-> +		 */
->  		if (get_user(tce, tces + i)) {
->  			ret =3D H_TOO_HARD;
->  			goto unlock_exit;
-> diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3=
-s_64_vio_hv.c
-> index 9584d9b..e79ffbb 100644
-> --- a/arch/powerpc/kvm/book3s_64_vio_hv.c
-> +++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
-> @@ -94,14 +94,14 @@ EXPORT_SYMBOL_GPL(kvmppc_find_table);
->   * to the table and user space is supposed to process them), we can skip
->   * checking other things (such as TCE is a guest RAM address or the page
->   * was actually allocated).
-> - *
-> - * WARNING: This will be called in real-mode on HV KVM and virtual
-> - *          mode on PR KVM
->   */
-> -long kvmppc_tce_validate(struct kvmppc_spapr_tce_table *stt, unsigned lo=
-ng tce)
-> +static long kvmppc_rm_tce_validate(struct kvmppc_spapr_tce_table *stt,
-> +		unsigned long tce)
->  {
->  	unsigned long gpa =3D tce & ~(TCE_PCI_READ | TCE_PCI_WRITE);
->  	enum dma_data_direction dir =3D iommu_tce_direction(tce);
-> +	struct kvmppc_spapr_tce_iommu_table *stit;
-> +	unsigned long ua =3D 0;
-> =20
->  	/* Allow userspace to poison TCE table */
->  	if (dir =3D=3D DMA_NONE)
-> @@ -110,9 +110,25 @@ long kvmppc_tce_validate(struct kvmppc_spapr_tce_tab=
-le *stt, unsigned long tce)
->  	if (iommu_tce_check_gpa(stt->page_shift, gpa))
->  		return H_PARAMETER;
-> =20
-> +	if (kvmppc_gpa_to_ua(stt->kvm, tce & ~(TCE_PCI_READ | TCE_PCI_WRITE),
-> +				&ua, NULL))
-> +		return H_TOO_HARD;
-> +
-> +	list_for_each_entry_lockless(stit, &stt->iommu_tables, next) {
-> +		unsigned long hpa =3D 0;
-> +		struct mm_iommu_table_group_mem_t *mem;
-> +		long shift =3D stit->tbl->it_page_shift;
-> +
-> +		mem =3D mm_iommu_lookup_rm(stt->kvm->mm, ua, 1ULL << shift);
-> +		if (!mem)
-> +			return H_TOO_HARD;
-> +
-> +		if (mm_iommu_ua_to_hpa_rm(mem, ua, shift, &hpa))
-> +			return H_TOO_HARD;
-> +	}
-> +
->  	return H_SUCCESS;
->  }
-> -EXPORT_SYMBOL_GPL(kvmppc_tce_validate);
-> =20
->  /* Note on the use of page_address() in real mode,
->   *
-> @@ -345,7 +361,7 @@ long kvmppc_rm_h_put_tce(struct kvm_vcpu *vcpu, unsig=
-ned long liobn,
->  	if (ret !=3D H_SUCCESS)
->  		return ret;
-> =20
-> -	ret =3D kvmppc_tce_validate(stt, tce);
-> +	ret =3D kvmppc_rm_tce_validate(stt, tce);
->  	if (ret !=3D H_SUCCESS)
->  		return ret;
-> =20
-> @@ -498,7 +514,7 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vc=
-pu,
->  	for (i =3D 0; i < npages; ++i) {
->  		unsigned long tce =3D be64_to_cpu(((u64 *)tces)[i]);
-> =20
-> -		ret =3D kvmppc_tce_validate(stt, tce);
-> +		ret =3D kvmppc_rm_tce_validate(stt, tce);
->  		if (ret !=3D H_SUCCESS)
->  			goto unlock_exit;
->  	}
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---+ZmrHH5cGjskQnY1
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAluHbIoACgkQbDjKyiDZ
-s5L1QA//WP4Ny1gBnbdqcY+TCwhJap3wLi+v2CzwPGKKU4gmWHgjEJkDOUdpQsNG
-qgqZe0UNefASuhGiDPsJ8yLv/xoZSCS4A4U3uaLEDhF7gG0WOOBhso39lJHgQpoi
-t5D4d49qchVFSi2S8FLbFgMKR6ZroaJtMYDrMQH7A1U/b5Yr/b9Tn+5QCnc9cZjs
-9VtOhVJHKjlRCtBw+PWrkS6MRaciiy4sbrMjsaVl/LU9WfHIVM4ueYTJB8POvL2i
-fRcO6L1rMyop7kCPsjuVCm6qRtwkIMDjTa/hyn+hxrsYxKnHOVvBkSHQRLQK20NE
-8N6+JLSey/pLubSjuz6m67758Mx9A9Wjleik4BaOBji1QPgNrBEKuYxedt994/JV
-T5IrFI0nNfN4NQcHpTn3YHG4sqCJgPVC9L9wa1LWxky/91TarnLpk9CO15iSHDug
-ffj65ZD6JT919NBsb5p9Ka/9bAc9UqdW1EqcqxnhFEIjEBLX77oPC69xzkAL2mNL
-eiitAE03m/BTcLGga54kQJnjJYYG7R8DrQHTbe9F/eXRhsvF+cevtcyucXiDodpz
-3eG/cSQVgP+wMOCumpeZ0VJRzyONgmwA9A+GwkTh3oP5QArypnMbTVCgsaUBtdwm
-LYBo44afK8dlxeDp9GxayPDokbzNrNBbBnfQGs5C3dyq3wKaA5k=
-=jfVV
------END PGP SIGNATURE-----
-
---+ZmrHH5cGjskQnY1--
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogbGludXgta2VybmVsLW93
+bmVyQHZnZXIua2VybmVsLm9yZyA8bGludXgta2VybmVsLQ0KPiBvd25lckB2Z2VyLmtlcm5lbC5v
+cmc+IE9uIEJlaGFsZiBPZiBTY290dCBXb29kDQo+IFNlbnQ6IFdlZG5lc2RheSwgQXVndXN0IDI5
+LCAyMDE4IDU6NDkgQU0NCj4gVG86IFZhYmhhdiBTaGFybWEgPHZhYmhhdi5zaGFybWFAbnhwLmNv
+bT47IGxpbnV4LQ0KPiBrZXJuZWxAdmdlci5rZXJuZWwub3JnOyBkZXZpY2V0cmVlQHZnZXIua2Vy
+bmVsLm9yZzsgcm9iaCtkdEBrZXJuZWwub3JnOw0KPiBtYXJrLnJ1dGxhbmRAYXJtLmNvbTsgbGlu
+dXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGxpbnV4LWFybS0NCj4ga2VybmVsQGxpc3RzLmlu
+ZnJhZGVhZC5vcmc7IG10dXJxdWV0dGVAYmF5bGlicmUuY29tOyBzYm95ZEBrZXJuZWwub3JnOw0K
+PiByandAcmp3eXNvY2tpLm5ldDsgdmlyZXNoLmt1bWFyQGxpbmFyby5vcmc7IGxpbnV4LWNsa0B2
+Z2VyLmtlcm5lbC5vcmc7DQo+IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsgbGludXgta2VybmVs
+LW93bmVyQHZnZXIua2VybmVsLm9yZzsNCj4gY2F0YWxpbi5tYXJpbmFzQGFybS5jb207IHdpbGwu
+ZGVhY29uQGFybS5jb207DQo+IGdyZWdraEBsaW51eGZvdW5kYXRpb24ub3JnOyBhcm5kQGFybmRi
+LmRlOw0KPiBrc3Rld2FydEBsaW51eGZvdW5kYXRpb24ub3JnOyB5YW1hZGEubWFzYWhpcm9Ac29j
+aW9uZXh0LmNvbQ0KPiBDYzogWW9nZXNoIE5hcmF5YW4gR2F1ciA8eW9nZXNobmFyYXlhbi5nYXVy
+QG54cC5jb20+OyBBbmR5IFRhbmcNCj4gPGFuZHkudGFuZ0BueHAuY29tPjsgVWRpdCBLdW1hciA8
+dWRpdC5rdW1hckBueHAuY29tPjsNCj4gbGludXhAYXJtbGludXgub3JnLnVrOyBWYXJ1biBTZXRo
+aSA8Vi5TZXRoaUBueHAuY29tPg0KPiBTdWJqZWN0OiBSZTogW1BBVENIIDMvNV0gZHJpdmVyczog
+Y2xrLXFvcmlxOiBBZGQgY2xvY2tnZW4gc3VwcG9ydCBmb3IgbHgyMTYwYQ0KPiANCj4gT24gTW9u
+LCAyMDE4LTA4LTIwIGF0IDEyOjE3ICswNTMwLCBWYWJoYXYgU2hhcm1hIHdyb3RlOg0KPiA+IEZy
+b206IFlvZ2VzaCBHYXVyIDx5b2dlc2huYXJheWFuLmdhdXJAbnhwLmNvbT4NCj4gPg0KPiA+IEFk
+ZCBjbG9ja2dlbiBzdXBwb3J0IGZvciBseDIxNjBhLg0KPiA+IEFkZGVkIGVudHJ5IGZvciBjb21w
+YXQgJ2ZzbCxseDIxNjBhLWNsb2NrZ2VuJy4NCj4gPiBBcyBMWDIxNjBBIGlzIDE2IGNvcmUsIHNv
+IG1vZGlmaWVkIHZhbHVlIGZvciBOVU1fQ01VWA0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogVGFu
+ZyBZdWFudGlhbiA8YW5keS50YW5nQG54cC5jb20+DQo+ID4gU2lnbmVkLW9mZi1ieTogWW9nZXNo
+IEdhdXIgPHlvZ2VzaG5hcmF5YW4uZ2F1ckBueHAuY29tPg0KPiA+IFNpZ25lZC1vZmYtYnk6IFZh
+YmhhdiBTaGFybWEgPHZhYmhhdi5zaGFybWFAbnhwLmNvbT4NCj4gPiAtLS0NCj4gPiAgZHJpdmVy
+cy9jbGsvY2xrLXFvcmlxLmMgICAgICAgICB8IDE0ICsrKysrKysrKysrKystDQo+ID4gIGRyaXZl
+cnMvY3B1ZnJlcS9xb3JpcS1jcHVmcmVxLmMgfCAgMSArDQo+ID4gIDIgZmlsZXMgY2hhbmdlZCwg
+MTQgaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbigtKQ0KPiA+DQo+ID4gZGlmZiAtLWdpdCBhL2Ry
+aXZlcnMvY2xrL2Nsay1xb3JpcS5jIGIvZHJpdmVycy9jbGsvY2xrLXFvcmlxLmMgaW5kZXgNCj4g
+PiAzYTE4MTJmLi5mYzZlMzA4IDEwMDY0NA0KPiA+IC0tLSBhL2RyaXZlcnMvY2xrL2Nsay1xb3Jp
+cS5jDQo+ID4gKysrIGIvZHJpdmVycy9jbGsvY2xrLXFvcmlxLmMNCj4gPiBAQCAtNjAsNyArNjAs
+NyBAQCBzdHJ1Y3QgY2xvY2tnZW5fbXV4aW5mbyB7ICB9Ow0KPiA+DQo+ID4gICNkZWZpbmUgTlVN
+X0hXQUNDRUwJNQ0KPiA+IC0jZGVmaW5lIE5VTV9DTVVYCTgNCj4gPiArI2RlZmluZSBOVU1fQ01V
+WAkxNg0KPiA+DQo+ID4gIHN0cnVjdCBjbG9ja2dlbjsNCj4gPg0KPiA+IEBAIC01NzAsNiArNTcw
+LDE3IEBAIHN0YXRpYyBjb25zdCBzdHJ1Y3QgY2xvY2tnZW5fY2hpcGluZm8gY2hpcGluZm9bXSA9
+IHsNCj4gPiAgCQkuZmxhZ3MgPSBDR19WRVIzIHwgQ0dfTElUVExFX0VORElBTiwNCj4gPiAgCX0s
+DQo+ID4gIAl7DQo+ID4gKwkJLmNvbXBhdCA9ICJmc2wsbHgyMTYwYS1jbG9ja2dlbiIsDQo+ID4g
+KwkJLmNtdXhfZ3JvdXBzID0gew0KPiA+ICsJCQkmY2xvY2tnZW4yX2NtdXhfY2dhMTIsICZjbG9j
+a2dlbjJfY211eF9jZ2INCj4gPiArCQl9LA0KPiA+ICsJCS5jbXV4X3RvX2dyb3VwID0gew0KPiA+
+ICsJCQkwLCAwLCAwLCAwLCAxLCAxLCAxLCAxLCAtMQ0KPiA+ICsJCX0sDQo+ID4gKwkJLnBsbF9t
+YXNrID0gMHgzNywNCj4gPiArCQkuZmxhZ3MgPSBDR19WRVIzIHwgQ0dfTElUVExFX0VORElBTiwN
+Cj4gPiArCX0sDQo+IA0KPiBXaHkgYXJlIHlvdSBpbmNyZWFzaW5nIE5VTV9DTVVYIGJleW9uZCA4
+IGZvciBhIGNoaXAgdGhhdCBvbmx5IGhhcyA4DQo+IGVudHJpZXMgaW4gY211eF90b19ncm91cD8N
+CkNvbmZpZ3VyYXRpb24gaXMgMTYgY29yZXMsOCBjbHVzdGVyIHdpdGggMiBjb3JlcyBpbiBlYWNo
+IGNsdXN0ZXINCj4gDQo+IC1TY290dA0KDQo=
