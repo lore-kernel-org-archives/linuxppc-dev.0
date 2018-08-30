@@ -1,34 +1,23 @@
-Return-Path: <robh+dt@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <qiang.zhao@nxp.com>
+Received: from EUR04-HE1-obe.outbound.protection.outlook.com
+ (mail-eopbgr70074.outbound.protection.outlook.com [40.107.7.74])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42147G0xm2zF361
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Aug 2018 11:06:01 +1000 (AEST)
-Received: from mail-qt0-f179.google.com (mail-qt0-f179.google.com
- [209.85.216.179])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id BEF8820666
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Aug 2018 01:05:59 +0000 (UTC)
-Received: by mail-qt0-f179.google.com with SMTP id k38-v6so8010639qtk.11
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 18:05:59 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4216NZ4DsNzF35w
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Aug 2018 12:47:39 +1000 (AEST)
+From: Qiang Zhao <qiang.zhao@nxp.com>
+To: Rob Herring <robh@kernel.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Leo Li
+ <leoyang.li@nxp.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>
+Subject: RE: [PATCH] soc: fsl/qe: Use of_get_child_by_name helper
+Date: Thu, 30 Aug 2018 02:47:31 +0000
+Message-ID: <VI1PR04MB32475E7E36BA8467FC07B01D91080@VI1PR04MB3247.eurprd04.prod.outlook.com>
+References: <20180829200425.16435-1-robh@kernel.org>
+In-Reply-To: <20180829200425.16435-1-robh@kernel.org>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-References: <1520208889-3908-1-git-send-email-frowand.list@gmail.com>
- <1520208889-3908-2-git-send-email-frowand.list@gmail.com>
- <alpine.LNX.2.21.1808301025480.73@nippy.intranet>
-In-Reply-To: <alpine.LNX.2.21.1808301025480.73@nippy.intranet>
-From: Rob Herring <robh+dt@kernel.org>
-Date: Wed, 29 Aug 2018 20:05:47 -0500
-Message-ID: <CAL_JsqLJ9QMHCMqGKpCouP1rTEO+cMGA1es94qAH+ukLsR31jg@mail.gmail.com>
-Subject: Re: v4.17 regression: PowerMac G3 won't boot, was Re: [PATCH v5 1/3]
- of: cache phandle nodes to reduce cost of of_find_node_by_phandle()
-To: fthain@telegraphics.com.au
-Cc: Frank Rowand <frank.rowand@sony.com>, userm57@yahoo.com,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Chintan Pandya <cpandya@codeaurora.org>, devicetree@vger.kernel.org,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,23 +27,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 29, 2018 at 7:44 PM Finn Thain <fthain@telegraphics.com.au> wrote:
->
-> Hi Frank,
->
-> Linux v4.17 and later will no longer boot on a G3 PowerMac. The boot hangs
-> very early, before any video driver loads.
->
-> Stan and I were able to bisect the regression between v4.16 and v4.17 and
-> arrived at commit 0b3ce78e90fc ("of: cache phandle nodes to reduce cost of
-> of_find_node_by_phandle()").
->
-> I don't see any obvious bug in 0b3ce78e90fc or b9952b5218ad. But if you
-> revert these from v4.18 (which is also affected) that certainly resolves
-> the issue.
+From: Rob Herring <robh@kernel.org>
+date: 2018/8/30 4:04
 
-Perhaps a bad assumption on phandle values causing a problem. Can you
-provide a dump of all the phandle or linux,phandle values from
-/proc/device-tree.
+> To: Qiang Zhao <qiang.zhao@nxp.com>
+> Cc: linux-kernel@vger.kernel.org; Leo Li <leoyang.li@nxp.com>;
+> linuxppc-dev@lists.ozlabs.org; linux-arm-kernel@lists.infradead.org
+> Subject: [PATCH] soc: fsl/qe: Use of_get_child_by_name helper
+>=20
+> Use the of_get_child_by_name() helper instead of open coding searching fo=
+r the
+> 'firmware' child node. This removes directly accessing the name pointer a=
+s well.
+>=20
+> Cc: Qiang Zhao <qiang.zhao@nxp.com>
+> Cc: Li Yang <leoyang.li@nxp.com>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> Signed-off-by: Rob Herring <robh@kernel.org>
+> ---
+>  drivers/soc/fsl/qe/qe.c | 6 +-----
+>  1 file changed, 1 insertion(+), 5 deletions(-)
+>=20
+> diff --git a/drivers/soc/fsl/qe/qe.c b/drivers/soc/fsl/qe/qe.c index
+> 2ef6fc6487c1..612d9c551be5 100644
+> --- a/drivers/soc/fsl/qe/qe.c
+> +++ b/drivers/soc/fsl/qe/qe.c
+> @@ -588,11 +588,7 @@ struct qe_firmware_info *qe_get_firmware_info(void)
+>  	}
+>=20
+>  	/* Find the 'firmware' child node */
+> -	for_each_child_of_node(qe, fw) {
+> -		if (strcmp(fw->name, "firmware") =3D=3D 0)
+> -			break;
+> -	}
+> -
+> +	fw =3D of_get_child_by_name(qe, "firmware");
+>  	of_node_put(qe);
+>=20
+>  	/* Did we find the 'firmware' node? */
+> --
 
-Rob
+Acked-by: Qiang Zhao <qiang.zhao@nxp.com>
