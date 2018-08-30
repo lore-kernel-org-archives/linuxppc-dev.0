@@ -1,29 +1,23 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
- [IPv6:2607:f8b0:4864:20::643])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4212ch31JdzF346
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Aug 2018 09:57:55 +1000 (AEST)
-Received: by mail-pl1-x643.google.com with SMTP id b12-v6so2995531plr.8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2018 16:57:55 -0700 (PDT)
-Date: Thu, 30 Aug 2018 09:57:47 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-mm <linux-mm@kvack.org>, linux-arch <linux-arch@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ppc-dev
- <linuxppc-dev@lists.ozlabs.org>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/3] mm/cow: optimise pte dirty/accessed bits handling
- in fork
-Message-ID: <20180830095747.491f7770@roar.ozlabs.ibm.com>
-In-Reply-To: <CA+55aFzBHNsLNs4TfOrMQXTsV9u8=7yAu4GbsOM84AQb-OhJmg@mail.gmail.com>
-References: <20180828112034.30875-1-npiggin@gmail.com>
- <20180828112034.30875-3-npiggin@gmail.com>
- <CA+55aFwbZrsdZEh0ds1W3AWUeTamDRheQPKSi9O=--cEOSjr5g@mail.gmail.com>
- <20180830091213.78b64354@roar.ozlabs.ibm.com>
- <CA+55aFzBHNsLNs4TfOrMQXTsV9u8=7yAu4GbsOM84AQb-OhJmg@mail.gmail.com>
+Return-Path: <fthain@telegraphics.com.au>
+Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
+ [98.124.60.144])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4213fm4pPJzF35q
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Aug 2018 10:44:47 +1000 (AEST)
+Date: Thu, 30 Aug 2018 10:44:40 +1000 (AEST)
+From: Finn Thain <fthain@telegraphics.com.au>
+To: Frank Rowand <frank.rowand@sony.com>
+cc: Stan Johnson <userm57@yahoo.com>, Rob Herring <robh+dt@kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Chintan Pandya <cpandya@codeaurora.org>, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: v4.17 regression: PowerMac G3 won't boot, was Re: [PATCH v5 1/3]
+ of: cache phandle nodes to reduce cost of of_find_node_by_phandle()
+In-Reply-To: <1520208889-3908-2-git-send-email-frowand.list@gmail.com>
+Message-ID: <alpine.LNX.2.21.1808301025480.73@nippy.intranet>
+References: <1520208889-3908-1-git-send-email-frowand.list@gmail.com>
+ <1520208889-3908-2-git-send-email-frowand.list@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: multipart/mixed; boundary="-1463811774-152605667-1535589880=:73"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,30 +27,583 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 29 Aug 2018 16:15:37 -0700
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> On Wed, Aug 29, 2018 at 4:12 PM Nicholas Piggin <npiggin@gmail.com> wrote:
-> >
-> > Dirty micro fault seems to be the big one for my Skylake, takes 300
-> > nanoseconds per access. Accessed takes about 100. (I think, have to
-> > go over my benchmark a bit more carefully and re-test).  
+---1463811774-152605667-1535589880=:73
+Content-Type: text/plain; charset=US-ASCII
+
+Hi Frank,
+
+Linux v4.17 and later will no longer boot on a G3 PowerMac. The boot hangs 
+very early, before any video driver loads.
+
+Stan and I were able to bisect the regression between v4.16 and v4.17 and 
+arrived at commit 0b3ce78e90fc ("of: cache phandle nodes to reduce cost of 
+of_find_node_by_phandle()").
+
+I don't see any obvious bug in 0b3ce78e90fc or b9952b5218ad. But if you 
+revert these from v4.18 (which is also affected) that certainly resolves 
+the issue.
+
+I did see this in the kernel messages:
+
+Duplicate name in PowerPC,750, renamed to "l2-cache#1"
+Duplicate name in mac-io, renamed to "ide#1"
+Duplicate name in ide#1, renamed to "atapi-disk#1"
+Duplicate name in multifunc-device, renamed to "pci1799,1#1"
+
+No idea whether that's relevant; I haven't done any further investigation. 
+Complete dmesg output is attached. Please let me know if there's any more 
+information you need to help find the bug.
+
+Thanks.
+
+-- 
+
+On Sun, 4 Mar 2018, frowand.list@gmail.com wrote:
+
+> From: Frank Rowand <frank.rowand@sony.com>
 > 
-> Yeah, but they only happen for shared areas after fork, which sounds
-> like it shouldn't be a big deal in most cases.
-
-You might be right there.
-
+> Create a cache of the nodes that contain a phandle property.  Use this
+> cache to find the node for a given phandle value instead of scanning
+> the devicetree to find the node.  If the phandle value is not found
+> in the cache, of_find_node_by_phandle() will fall back to the tree
+> scan algorithm.
 > 
-> And I'm not entirely objecting to your patch per se, I just would want
-> to keep the accessed bit changes separate from the dirty bit ones.
+> The cache is initialized in of_core_init().
 > 
-> *If* somebody has bisectable issues with it (performance or not), it
-> will then be clearer what the exact issue is.
+> The cache is freed via a late_initcall_sync() if modules are not
+> enabled.
+> 
+> If the devicetree is created by the dtc compiler, with all phandle
+> property values auto generated, then the size required by the cache
+> could be 4 * (1 + number of phandles) bytes.  This results in an O(1)
+> node lookup cost for a given phandle value.  Due to a concern that the
+> phandle property values might not be consistent with what is generated
+> by the dtc compiler, a mask has been added to the cache lookup algorithm.
+> To maintain the O(1) node lookup cost, the size of the cache has been
+> increased by rounding the number of entries up to the next power of
+> two.
+> 
+> The overhead of finding the devicetree node containing a given phandle
+> value has been noted by several people in the recent past, in some cases
+> with a patch to add a hashed index of devicetree nodes, based on the
+> phandle value of the node.  One concern with this approach is the extra
+> space added to each node.  This patch takes advantage of the phandle
+> property values auto generated by the dtc compiler, which begin with
+> one and monotonically increase by one, resulting in a range of 1..n
+> for n phandle values.  This implementation should also provide a good
+> reduction of overhead for any range of phandle values that are mostly
+> in a monotonic range.
+> 
+> Performance measurements by Chintan Pandya <cpandya@codeaurora.org>
+> of several implementations of patches that are similar to this one
+> suggest an expected reduction of boot time by ~400ms for his test
+> system.  If the cache size was decreased to 64 entries, the boot
+> time was reduced by ~340 ms.  The measurements were on a 4.9.73 kernel
+> for arch/arm64/boot/dts/qcom/sda670-mtp.dts, contains 2371 nodes and
+> 814 phandle values.
+> 
+> Reported-by: Chintan Pandya <cpandya@codeaurora.org>
+> Signed-off-by: Frank Rowand <frank.rowand@sony.com>
+> ---
+> 
+> Changes since v3:
+>   - of_populate_phandle_cache(): add check for failed memory allocation
+> 
+> Changes since v2:
+>   - add mask to calculation of phandle cache entry
+>   - which results in better overhead reduction for devicetrees with
+>     phandle properties not allocated in the monotonically increasing
+>     range of 1..n
+>   - due to mask, number of entries in cache potentially increased to
+>     next power of two
+>   - minor fixes as suggested by reviewers
+>   - no longer using live_tree_max_phandle() so do not move it from
+>     drivers/of/resolver.c to drivers/of/base.c
+> 
+> Changes since v1:
+>   - change short description from
+>     of: cache phandle nodes to reduce cost of of_find_node_by_phandle()
+>   - rebase on v4.16-rc1
+>   - reorder new functions in base.c to avoid forward declaration
+>   - add locking around kfree(phandle_cache) for memory ordering
+>   - add explicit check for non-null of phandle_cache in
+>     of_find_node_by_phandle().  There is already a check for !handle,
+>     which prevents accessing a null phandle_cache, but that dependency
+>     is not obvious, so this check makes it more apparent.
+>   - do not free phandle_cache if modules are enabled, so that
+>     cached phandles will be available when modules are loaded
+> 
+>  drivers/of/base.c       | 86 ++++++++++++++++++++++++++++++++++++++++++++++---
+>  drivers/of/of_private.h |  3 ++
+>  drivers/of/resolver.c   |  3 --
+>  3 files changed, 85 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/of/base.c b/drivers/of/base.c
+> index ad28de96e13f..e71d157d7149 100644
+> --- a/drivers/of/base.c
+> +++ b/drivers/of/base.c
+> @@ -91,10 +91,72 @@ int __weak of_node_to_nid(struct device_node *np)
+>  }
+>  #endif
+>  
+> +static struct device_node **phandle_cache;
+> +static u32 phandle_cache_mask;
+> +
+> +/*
+> + * Assumptions behind phandle_cache implementation:
+> + *   - phandle property values are in a contiguous range of 1..n
+> + *
+> + * If the assumptions do not hold, then
+> + *   - the phandle lookup overhead reduction provided by the cache
+> + *     will likely be less
+> + */
+> +static void of_populate_phandle_cache(void)
+> +{
+> +	unsigned long flags;
+> +	u32 cache_entries;
+> +	struct device_node *np;
+> +	u32 phandles = 0;
+> +
+> +	raw_spin_lock_irqsave(&devtree_lock, flags);
+> +
+> +	kfree(phandle_cache);
+> +	phandle_cache = NULL;
+> +
+> +	for_each_of_allnodes(np)
+> +		if (np->phandle && np->phandle != OF_PHANDLE_ILLEGAL)
+> +			phandles++;
+> +
+> +	cache_entries = roundup_pow_of_two(phandles);
+> +	phandle_cache_mask = cache_entries - 1;
+> +
+> +	phandle_cache = kcalloc(cache_entries, sizeof(*phandle_cache),
+> +				GFP_ATOMIC);
+> +	if (!phandle_cache)
+> +		goto out;
+> +
+> +	for_each_of_allnodes(np)
+> +		if (np->phandle && np->phandle != OF_PHANDLE_ILLEGAL)
+> +			phandle_cache[np->phandle & phandle_cache_mask] = np;
+> +
+> +out:
+> +	raw_spin_unlock_irqrestore(&devtree_lock, flags);
+> +}
+> +
+> +#ifndef CONFIG_MODULES
+> +static int __init of_free_phandle_cache(void)
+> +{
+> +	unsigned long flags;
+> +
+> +	raw_spin_lock_irqsave(&devtree_lock, flags);
+> +
+> +	kfree(phandle_cache);
+> +	phandle_cache = NULL;
+> +
+> +	raw_spin_unlock_irqrestore(&devtree_lock, flags);
+> +
+> +	return 0;
+> +}
+> +late_initcall_sync(of_free_phandle_cache);
+> +#endif
+> +
+>  void __init of_core_init(void)
+>  {
+>  	struct device_node *np;
+>  
+> +	of_populate_phandle_cache();
+> +
+>  	/* Create the kset, and register existing nodes */
+>  	mutex_lock(&of_mutex);
+>  	of_kset = kset_create_and_add("devicetree", NULL, firmware_kobj);
+> @@ -1021,16 +1083,32 @@ int of_modalias_node(struct device_node *node, char *modalias, int len)
+>   */
+>  struct device_node *of_find_node_by_phandle(phandle handle)
+>  {
+> -	struct device_node *np;
+> +	struct device_node *np = NULL;
+>  	unsigned long flags;
+> +	phandle masked_handle;
+>  
+>  	if (!handle)
+>  		return NULL;
+>  
+>  	raw_spin_lock_irqsave(&devtree_lock, flags);
+> -	for_each_of_allnodes(np)
+> -		if (np->phandle == handle)
+> -			break;
+> +
+> +	masked_handle = handle & phandle_cache_mask;
+> +
+> +	if (phandle_cache) {
+> +		if (phandle_cache[masked_handle] &&
+> +		    handle == phandle_cache[masked_handle]->phandle)
+> +			np = phandle_cache[masked_handle];
+> +	}
+> +
+> +	if (!np) {
+> +		for_each_of_allnodes(np)
+> +			if (np->phandle == handle) {
+> +				if (phandle_cache)
+> +					phandle_cache[masked_handle] = np;
+> +				break;
+> +			}
+> +	}
+> +
+>  	of_node_get(np);
+>  	raw_spin_unlock_irqrestore(&devtree_lock, flags);
+>  	return np;
+> diff --git a/drivers/of/of_private.h b/drivers/of/of_private.h
+> index 0c609e7d0334..fa70650136b4 100644
+> --- a/drivers/of/of_private.h
+> +++ b/drivers/of/of_private.h
+> @@ -131,6 +131,9 @@ extern void __of_update_property_sysfs(struct device_node *np,
+>  extern void __of_sysfs_remove_bin_file(struct device_node *np,
+>  				       struct property *prop);
+>  
+> +/* illegal phandle value (set when unresolved) */
+> +#define OF_PHANDLE_ILLEGAL	0xdeadbeef
+> +
+>  /* iterators for transactions, used for overlays */
+>  /* forward iterator */
+>  #define for_each_transaction_entry(_oft, _te) \
+> diff --git a/drivers/of/resolver.c b/drivers/of/resolver.c
+> index 740d19bde601..b2ca8185c8c6 100644
+> --- a/drivers/of/resolver.c
+> +++ b/drivers/of/resolver.c
+> @@ -19,9 +19,6 @@
+>  
+>  #include "of_private.h"
+>  
+> -/* illegal phandle value (set when unresolved) */
+> -#define OF_PHANDLE_ILLEGAL	0xdeadbeef
+> -
+>  static phandle live_tree_max_phandle(void)
+>  {
+>  	struct device_node *node;
+> 
+---1463811774-152605667-1535589880=:73
+Content-Type: text/plain; name=dmesg_4.18.0-g5d852e5b3424.txt
+Content-Transfer-Encoding: BASE64
+Content-ID: <alpine.LNX.2.21.1808301044400.73@nippy.intranet>
+Content-Description: 
+Content-Disposition: attachment; filename=dmesg_4.18.0-g5d852e5b3424.txt
 
-Yeah that makes a lot of sense. I'll do a bit more testing and send
-Andrew a respin at least with those split (and a good comment for
-the dirty bit vs unmap handling that you pointed out).
+VG90YWwgbWVtb3J5ID0gNzY4TUI7IHVzaW5nIDIwNDhrQiBmb3IgaGFzaCB0
+YWJsZSAoYXQgKHB0cnZhbCkpDQpMaW51eCB2ZXJzaW9uIDQuMTguMC1nNWQ4
+NTJlNWIzNDI0IChyb290QG5pcHB5KSAoZ2NjIHZlcnNpb24gOC4xLjAgKERl
+YmlhbiA4LjEuMC0xMikpICM0IFNNUCBXZWQgQXVnIDI5IDE0OjU0OjAxIEFF
+U1QgMjAxOA0KRm91bmQgYSBIZWF0aHJvdyBtYWMtaW8gY29udHJvbGxlciwg
+cmV2OiAxLCBtYXBwZWQgYXQgMHgocHRydmFsKQ0KUG93ZXJNYWMgbW90aGVy
+Ym9hcmQ6IFBvd2VyTWFjIEczIChTaWxrKQ0KVXNpbmcgUG93ZXJNYWMgbWFj
+aGluZSBkZXNjcmlwdGlvbg0KYm9vdGNvbnNvbGUgW3VkYmcwXSBlbmFibGVk
+DQpDUFUgbWFwcyBpbml0aWFsaXplZCBmb3IgMSB0aHJlYWQgcGVyIGNvcmUN
+CiAodGhyZWFkIHNoaWZ0IGlzIDApDQotLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KSGFzaF9zaXplICAg
+ICAgICAgPSAweDIwMDAwMA0KcGh5c19tZW1fc2l6ZSAgICAgPSAweDMwMDAw
+MDAwDQpkY2FjaGVfYnNpemUgICAgICA9IDB4MjANCmljYWNoZV9ic2l6ZSAg
+ICAgID0gMHgyMA0KY3B1X2ZlYXR1cmVzICAgICAgPSAweDAwMDAwMDAwMDUw
+MWEwMDgNCiAgcG9zc2libGUgICAgICAgID0gMHgwMDAwMDAwMDJmN2ZmMDRi
+DQogIGFsd2F5cyAgICAgICAgICA9IDB4MDAwMDAwMDAwMTAwMDAwMA0KY3B1
+X3VzZXJfZmVhdHVyZXMgPSAweDhjMDAwMDAxIDB4MDAwMDAwMDANCm1tdV9m
+ZWF0dXJlcyAgICAgID0gMHgwMDAwMDAwMQ0KSGFzaCAgICAgICAgICAgICAg
+PSAweChwdHJ2YWwpDQpIYXNoX21hc2sgICAgICAgICA9IDB4N2ZmZg0KLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0NCkZvdW5kIEdyYWNrbGUgKE1QQzEwNikgUENJIGhvc3QgYnJpZGdl
+IGF0IDB4MDAwMDAwMDA4MDAwMDAwMC4gRmlybXdhcmUgYnVzIG51bWJlcjog
+MC0+MA0KUENJIGhvc3QgYnJpZGdlIC9wY2kgKHByaW1hcnkpIHJhbmdlczoN
+CiAgSU8gMHgwMDAwMDAwMGZlMDAwMDAwLi4weDAwMDAwMDAwZmU3ZmZmZmYg
+LT4gMHgwMDAwMDAwMDAwMDAwMDAwDQogTUVNIDB4MDAwMDAwMDBmZDAwMDAw
+MC4uMHgwMDAwMDAwMGZkZmZmZmZmIC0+IDB4MDAwMDAwMDAwMDAwMDAwMCAN
+CiBNRU0gMHgwMDAwMDAwMDgwMDAwMDAwLi4weDAwMDAwMDAwZmNmZmZmZmYg
+LT4gMHgwMDAwMDAwMDgwMDAwMDAwIA0KbnZyYW06IE9GIHBhcnRpdGlvbiBh
+dCAweDE4MDANCm52cmFtOiBYUCBwYXJ0aXRpb24gYXQgMHgxMzAwDQpudnJh
+bTogTlIgcGFydGl0aW9uIGF0IDB4MTQwMA0KVG9wIG9mIFJBTTogMHgzMDAw
+MDAwMCwgVG90YWwgUkFNOiAweDMwMDAwMDAwDQpNZW1vcnkgaG9sZSBzaXpl
+OiAwTUINClpvbmUgcmFuZ2VzOg0KICBETUEgICAgICBbbWVtIDB4MDAwMDAw
+MDAwMDAwMDAwMC0weDAwMDAwMDAwMmZmZmZmZmZdDQogIE5vcm1hbCAgIGVt
+cHR5DQogIEhpZ2hNZW0gIGVtcHR5DQpNb3ZhYmxlIHpvbmUgc3RhcnQgZm9y
+IGVhY2ggbm9kZQ0KRWFybHkgbWVtb3J5IG5vZGUgcmFuZ2VzDQogIG5vZGUg
+ICAwOiBbbWVtIDB4MDAwMDAwMDAwMDAwMDAwMC0weDAwMDAwMDAwMmZmZmZm
+ZmZdDQpJbml0bWVtIHNldHVwIG5vZGUgMCBbbWVtIDB4MDAwMDAwMDAwMDAw
+MDAwMC0weDAwMDAwMDAwMmZmZmZmZmZdDQpPbiBub2RlIDAgdG90YWxwYWdl
+czogMTk2NjA4DQogIERNQSB6b25lOiAxNTM2IHBhZ2VzIHVzZWQgZm9yIG1l
+bW1hcA0KICBETUEgem9uZTogMCBwYWdlcyByZXNlcnZlZA0KICBETUEgem9u
+ZTogMTk2NjA4IHBhZ2VzLCBMSUZPIGJhdGNoOjMxDQpwZXJjcHU6IEVtYmVk
+ZGVkIDE0IHBhZ2VzL2NwdSBAKHB0cnZhbCkgczI0Njg0IHI4MTkyIGQyNDQ2
+OCB1NTczNDQNCnBjcHUtYWxsb2M6IHMyNDY4NCByODE5MiBkMjQ0NjggdTU3
+MzQ0IGFsbG9jPTE0KjQwOTYNCnBjcHUtYWxsb2M6IFswXSAwIFswXSAxIA0K
+QnVpbHQgMSB6b25lbGlzdHMsIG1vYmlsaXR5IGdyb3VwaW5nIG9uLiAgVG90
+YWwgcGFnZXM6IDE5NTA3Mg0KS2VybmVsIGNvbW1hbmQgbGluZTogcm9vdD0v
+ZGV2L3NkYTEyIHZpZGVvPWF0eWZiOnZtb2RlOjE0IGxvZ19idWZfbGVuPTY0
+ayBlYXJseXByaW50ayBjb25zb2xlPXR0eTANCmxvZ19idWZfbGVuOiA2NTUz
+NiBieXRlcw0KZWFybHkgbG9nIGJ1ZiBmcmVlOiAyOTg4NCg5MSUpDQpEZW50
+cnkgY2FjaGUgaGFzaCB0YWJsZSBlbnRyaWVzOiAxMzEwNzIgKG9yZGVyOiA3
+LCA1MjQyODggYnl0ZXMpDQpJbm9kZS1jYWNoZSBoYXNoIHRhYmxlIGVudHJp
+ZXM6IDY1NTM2IChvcmRlcjogNiwgMjYyMTQ0IGJ5dGVzKQ0KTWVtb3J5OiA3
+NjAyMzZLLzc4NjQzMksgYXZhaWxhYmxlICg1NzU2SyBrZXJuZWwgY29kZSwg
+MjQ0SyByd2RhdGEsIDEzMzJLIHJvZGF0YSwgMjY4SyBpbml0LCAxNzVLIGJz
+cywgMjYxOTZLIHJlc2VydmVkLCAwSyBjbWEtcmVzZXJ2ZWQsIDBLIGhpZ2ht
+ZW0pDQpLZXJuZWwgdmlydHVhbCBtZW1vcnkgbGF5b3V0Og0KICAqIDB4ZmZm
+YmYwMDAuLjB4ZmZmZmYwMDAgIDogZml4bWFwDQogICogMHhmZjgwMDAwMC4u
+MHhmZmMwMDAwMCAgOiBoaWdobWVtIFBURXMNCiAgKiAweGZlZjViMDAwLi4w
+eGZmODAwMDAwICA6IGVhcmx5IGlvcmVtYXANCiAgKiAweGYxMDAwMDAwLi4w
+eGZlZjViMDAwICA6IHZtYWxsb2MgJiBpb3JlbWFwDQpIaWVyYXJjaGljYWwg
+UkNVIGltcGxlbWVudGF0aW9uLg0KTlJfSVJRUzogNTEyLCBucl9pcnFzOiA1
+MTIsIHByZWFsbG9jYXRlZCBpcnFzOiAxNg0KaXJxOiBGb3VuZCBwcmltYXJ5
+IEFwcGxlIFBJQyAvcGNpL21hYy1pbyBmb3IgNjQgaXJxcw0KaXJxOiBTeXN0
+ZW0gaGFzIDY0IHBvc3NpYmxlIGludGVycnVwdHMNCkdNVCBEZWx0YSByZWFk
+IGZyb20gWFBSQU06IC0zNjAgbWludXRlcywgRFNUOiBvbg0KdGltZV9pbml0
+OiBkZWNyZW1lbnRlciBmcmVxdWVuY3kgPSAxNi43MDg0MTYgTUh6DQp0aW1l
+X2luaXQ6IHByb2Nlc3NvciBmcmVxdWVuY3kgICA9IDUwMS4xNTAwMDAgTUh6
+DQpjbG9ja3NvdXJjZTogdGltZWJhc2U6IG1hc2s6IDB4ZmZmZmZmZmZmZmZm
+ZmZmZiBtYXhfY3ljbGVzOiAweDNkYTdkMmNkNywgbWF4X2lkbGVfbnM6IDQ0
+MDc5NTIwMjQxMSBucw0KY2xvY2tzb3VyY2U6IHRpbWViYXNlIG11bHRbM2Jk
+OTllYjVdIHNoaWZ0WzI0XSByZWdpc3RlcmVkDQpjbG9ja2V2ZW50OiBkZWNy
+ZW1lbnRlciBtdWx0WzQ0NzAwYjRdIHNoaWZ0WzMyXSBjcHVbMF0NCkNvbnNv
+bGU6IGNvbG91ciBkdW1teSBkZXZpY2UgODB4MjUNCmNvbnNvbGUgW3R0eTBd
+IGVuYWJsZWQNCmJvb3Rjb25zb2xlIFt1ZGJnMF0gZGlzYWJsZWQNCnBpZF9t
+YXg6IGRlZmF1bHQ6IDMyNzY4IG1pbmltdW06IDMwMQ0KTW91bnQtY2FjaGUg
+aGFzaCB0YWJsZSBlbnRyaWVzOiAyMDQ4IChvcmRlcjogMSwgODE5MiBieXRl
+cykNCk1vdW50cG9pbnQtY2FjaGUgaGFzaCB0YWJsZSBlbnRyaWVzOiAyMDQ4
+IChvcmRlcjogMSwgODE5MiBieXRlcykNCkhpZXJhcmNoaWNhbCBTUkNVIGlt
+cGxlbWVudGF0aW9uLg0Kc21wOiBCcmluZ2luZyB1cCBzZWNvbmRhcnkgQ1BV
+cyAuLi4NCnNtcDogQnJvdWdodCB1cCAxIG5vZGUsIDEgQ1BVDQpVc2luZyBz
+dGFuZGFyZCBzY2hlZHVsZXIgdG9wb2xvZ3kNCmRldnRtcGZzOiBpbml0aWFs
+aXplZA0KRHVwbGljYXRlIG5hbWUgaW4gUG93ZXJQQyw3NTAsIHJlbmFtZWQg
+dG8gImwyLWNhY2hlIzEiDQpEdXBsaWNhdGUgbmFtZSBpbiBtYWMtaW8sIHJl
+bmFtZWQgdG8gImlkZSMxIg0KRHVwbGljYXRlIG5hbWUgaW4gaWRlIzEsIHJl
+bmFtZWQgdG8gImF0YXBpLWRpc2sjMSINCkR1cGxpY2F0ZSBuYW1lIGluIG11
+bHRpZnVuYy1kZXZpY2UsIHJlbmFtZWQgdG8gInBjaTE3OTksMSMxIg0KcmFu
+ZG9tOiBnZXRfcmFuZG9tX3UzMiBjYWxsZWQgZnJvbSBidWNrZXRfdGFibGVf
+YWxsb2MrMHg5MC8weDIxNCB3aXRoIGNybmdfaW5pdD0wDQpjbG9ja3NvdXJj
+ZTogamlmZmllczogbWFzazogMHhmZmZmZmZmZiBtYXhfY3ljbGVzOiAweGZm
+ZmZmZmZmLCBtYXhfaWRsZV9uczogMTkxMTI2MDQ0NjI3NTAwMDAgbnMNCmZ1
+dGV4IGhhc2ggdGFibGUgZW50cmllczogNTEyIChvcmRlcjogMiwgMTYzODQg
+Ynl0ZXMpDQpORVQ6IFJlZ2lzdGVyZWQgcHJvdG9jb2wgZmFtaWx5IDE2DQpQ
+Q0k6IFByb2JpbmcgUENJIGhhcmR3YXJlDQpQQ0kgaG9zdCBicmlkZ2UgdG8g
+YnVzIDAwMDA6MDANCnBjaV9idXMgMDAwMDowMDogcm9vdCBidXMgcmVzb3Vy
+Y2UgW2lvICAweDAwMDAtMHg3ZmZmZmZdDQpwY2lfYnVzIDAwMDA6MDA6IHJv
+b3QgYnVzIHJlc291cmNlIFttZW0gMHhmZDAwMDAwMC0weGZkZmZmZmZmXSAo
+YnVzIGFkZHJlc3MgWzB4MDAwMDAwMDAtMHgwMGZmZmZmZl0pDQpwY2lfYnVz
+IDAwMDA6MDA6IHJvb3QgYnVzIHJlc291cmNlIFttZW0gMHg4MDAwMDAwMC0w
+eGZjZmZmZmZmXQ0KcGNpX2J1cyAwMDAwOjAwOiByb290IGJ1cyByZXNvdXJj
+ZSBbYnVzIDAwLWZmXQ0KcGNpX2J1cyAwMDAwOjAwOiBidXNuX3JlczogW2J1
+cyAwMC1mZl0gZW5kIGlzIHVwZGF0ZWQgdG8gZmYNCnBjaSAwMDAwOjAwOjAw
+LjA6IFsxMDU3OjAwMDJdIHR5cGUgMDAgY2xhc3MgMHgwNjAwMDANCnBjaSAw
+MDAwOjAwOjBlLjA6IFsxMDMzOjAwY2RdIHR5cGUgMDAgY2xhc3MgMHgwYzAw
+MTANCnBjaSAwMDAwOjAwOjBlLjA6IHJlZyAweDEwOiBbbWVtIDB4ODA4MDMw
+MDAtMHg4MDgwM2ZmZl0NCnBjaSAwMDAwOjAwOjBlLjA6IHN1cHBvcnRzIEQy
+DQpwY2kgMDAwMDowMDowZS4wOiBQTUUjIHN1cHBvcnRlZCBmcm9tIEQyIEQz
+aG90DQpwY2kgMDAwMDowMDowZi4wOiBbMTAzMzowMDM1XSB0eXBlIDAwIGNs
+YXNzIDB4MGMwMzEwDQpwY2kgMDAwMDowMDowZi4wOiByZWcgMHgxMDogW21l
+bSAweDgwODAyMDAwLTB4ODA4MDJmZmZdDQpwY2kgMDAwMDowMDowZi4wOiBz
+dXBwb3J0cyBEMSBEMg0KcGNpIDAwMDA6MDA6MGYuMDogUE1FIyBzdXBwb3J0
+ZWQgZnJvbSBEMCBEMSBEMiBEM2hvdA0KcGNpIDAwMDA6MDA6MGYuMTogWzEw
+MzM6MDAzNV0gdHlwZSAwMCBjbGFzcyAweDBjMDMxMA0KcGNpIDAwMDA6MDA6
+MGYuMTogcmVnIDB4MTA6IFttZW0gMHg4MDgwMTAwMC0weDgwODAxZmZmXQ0K
+cGNpIDAwMDA6MDA6MGYuMTogc3VwcG9ydHMgRDEgRDINCnBjaSAwMDAwOjAw
+OjBmLjE6IFBNRSMgc3VwcG9ydGVkIGZyb20gRDAgRDEgRDIgRDNob3QNCnBj
+aSAwMDAwOjAwOjBmLjI6IFsxMDMzOjAwZTBdIHR5cGUgMDAgY2xhc3MgMHgw
+YzAzMjANCnBjaSAwMDAwOjAwOjBmLjI6IHJlZyAweDEwOiBbbWVtIDB4ODA4
+MDAwMDAtMHg4MDgwMDBmZl0NCnBjaSAwMDAwOjAwOjBmLjI6IHN1cHBvcnRz
+IEQxIEQyDQpwY2kgMDAwMDowMDowZi4yOiBQTUUjIHN1cHBvcnRlZCBmcm9t
+IEQwIEQxIEQyIEQzaG90DQpwY2kgMDAwMDowMDoxMC4wOiBbMTA2YjowMDEw
+XSB0eXBlIDAwIGNsYXNzIDB4ZmYwMDAwDQpwY2kgMDAwMDowMDoxMC4wOiBy
+ZWcgMHgxMDogW21lbSAweGYzMDAwMDAwLTB4ZjMwN2ZmZmZdDQpwY2kgMDAw
+MDowMDoxMi4wOiBbMTAwMjo0NzUwXSB0eXBlIDAwIGNsYXNzIDB4MDMwMDAw
+DQpwY2kgMDAwMDowMDoxMi4wOiByZWcgMHgxMDogW21lbSAweDgxMDAwMDAw
+LTB4ODFmZmZmZmZdDQpwY2kgMDAwMDowMDoxMi4wOiByZWcgMHgxNDogW2lv
+ICAweDBjMDAtMHgwY2ZmXQ0KcGNpIDAwMDA6MDA6MTIuMDogcmVnIDB4MTg6
+IFttZW0gMHg4MDgwNDAwMC0weDgwODA0ZmZmXQ0KcGNpIDAwMDA6MDA6MTIu
+MDogcmVnIDB4MzA6IFttZW0gMHhmZDAwMDAwMC0weGZkMDFmZmZmIHByZWZd
+DQpwY2lfYnVzIDAwMDA6MDA6IGJ1c25fcmVzOiBbYnVzIDAwLWZmXSBlbmQg
+aXMgdXBkYXRlZCB0byAwMA0KUENJIDAwMDA6MDAgQ2Fubm90IHJlc2VydmUg
+TGVnYWN5IElPIFtpbyAgMHgwMDAwLTB4MGZmZl0NCnBjaSAwMDAwOjAwOjEy
+LjA6IEJBUiA2OiBhc3NpZ25lZCBbbWVtIDB4ZmQwMDAwMDAtMHhmZDAxZmZm
+ZiBwcmVmXQ0KcGNpX2J1cyAwMDAwOjAwOiByZXNvdXJjZSA0IFtpbyAgMHgw
+MDAwLTB4N2ZmZmZmXQ0KcGNpX2J1cyAwMDAwOjAwOiByZXNvdXJjZSA1IFtt
+ZW0gMHhmZDAwMDAwMC0weGZkZmZmZmZmXQ0KcGNpX2J1cyAwMDAwOjAwOiBy
+ZXNvdXJjZSA2IFttZW0gMHg4MDAwMDAwMC0weGZjZmZmZmZmXQ0KcGNpIDAw
+MDA6MDA6MTIuMDogdmdhYXJiOiBWR0EgZGV2aWNlIGFkZGVkOiBkZWNvZGVz
+PWlvK21lbSxvd25zPW1lbSxsb2Nrcz1ub25lDQpwY2kgMDAwMDowMDoxMi4w
+OiB2Z2FhcmI6IGJyaWRnZSBjb250cm9sIHBvc3NpYmxlDQpwY2kgMDAwMDow
+MDoxMi4wOiB2Z2FhcmI6IHNldHRpbmcgYXMgYm9vdCBkZXZpY2UgKFZHQSBs
+ZWdhY3kgcmVzb3VyY2VzIG5vdCBhdmFpbGFibGUpDQp2Z2FhcmI6IGxvYWRl
+ZA0KU0NTSSBzdWJzeXN0ZW0gaW5pdGlhbGl6ZWQNCmxpYmF0YSB2ZXJzaW9u
+IDMuMDAgbG9hZGVkLg0KdXNiY29yZTogcmVnaXN0ZXJlZCBuZXcgaW50ZXJm
+YWNlIGRyaXZlciB1c2Jmcw0KdXNiY29yZTogcmVnaXN0ZXJlZCBuZXcgaW50
+ZXJmYWNlIGRyaXZlciBodWINCnVzYmNvcmU6IHJlZ2lzdGVyZWQgbmV3IGRl
+dmljZSBkcml2ZXIgdXNiDQpjbG9ja3NvdXJjZTogU3dpdGNoZWQgdG8gY2xv
+Y2tzb3VyY2UgdGltZWJhc2UNCk5FVDogUmVnaXN0ZXJlZCBwcm90b2NvbCBm
+YW1pbHkgMg0KdGNwX2xpc3Rlbl9wb3J0YWRkcl9oYXNoIGhhc2ggdGFibGUg
+ZW50cmllczogNTEyIChvcmRlcjogMCwgNjE0NCBieXRlcykNClRDUCBlc3Rh
+Ymxpc2hlZCBoYXNoIHRhYmxlIGVudHJpZXM6IDgxOTIgKG9yZGVyOiAzLCAz
+Mjc2OCBieXRlcykNClRDUCBiaW5kIGhhc2ggdGFibGUgZW50cmllczogODE5
+MiAob3JkZXI6IDQsIDY1NTM2IGJ5dGVzKQ0KVENQOiBIYXNoIHRhYmxlcyBj
+b25maWd1cmVkIChlc3RhYmxpc2hlZCA4MTkyIGJpbmQgODE5MikNClVEUCBo
+YXNoIHRhYmxlIGVudHJpZXM6IDUxMiAob3JkZXI6IDIsIDE2Mzg0IGJ5dGVz
+KQ0KVURQLUxpdGUgaGFzaCB0YWJsZSBlbnRyaWVzOiA1MTIgKG9yZGVyOiAy
+LCAxNjM4NCBieXRlcykNCk5FVDogUmVnaXN0ZXJlZCBwcm90b2NvbCBmYW1p
+bHkgMQ0KUlBDOiBSZWdpc3RlcmVkIG5hbWVkIFVOSVggc29ja2V0IHRyYW5z
+cG9ydCBtb2R1bGUuDQpSUEM6IFJlZ2lzdGVyZWQgdWRwIHRyYW5zcG9ydCBt
+b2R1bGUuDQpSUEM6IFJlZ2lzdGVyZWQgdGNwIHRyYW5zcG9ydCBtb2R1bGUu
+DQpSUEM6IFJlZ2lzdGVyZWQgdGNwIE5GU3Y0LjEgYmFja2NoYW5uZWwgdHJh
+bnNwb3J0IG1vZHVsZS4NCnBjaSAwMDAwOjAwOjBmLjA6IGVuYWJsaW5nIGRl
+dmljZSAoMDAxNCAtPiAwMDE2KQ0KcGNpIDAwMDA6MDA6MGYuMTogZW5hYmxp
+bmcgZGV2aWNlICgwMDE0IC0+IDAwMTYpDQpwY2kgMDAwMDowMDowZi4yOiBl
+bmFibGluZyBkZXZpY2UgKDAwMTQgLT4gMDAxNikNClBDSTogQ0xTIDMyIGJ5
+dGVzLCBkZWZhdWx0IDMyDQpUaGVybWFsIGFzc2lzdCB1bml0IA0KdXNpbmcg
+dGltZXJzLCANCnNocmlua190aW1lcjogMjAwIGppZmZpZXMNCkluaXRpYWxp
+c2Ugc3lzdGVtIHRydXN0ZWQga2V5cmluZ3MNCndvcmtpbmdzZXQ6IHRpbWVz
+dGFtcF9iaXRzPTMwIG1heF9vcmRlcj0xOCBidWNrZXRfb3JkZXI9MA0Kc3F1
+YXNoZnM6IHZlcnNpb24gNC4wICgyMDA5LzAxLzMxKSBQaGlsbGlwIExvdWdo
+ZXINCktleSB0eXBlIGFzeW1tZXRyaWMgcmVnaXN0ZXJlZA0KQXN5bW1ldHJp
+YyBrZXkgcGFyc2VyICd4NTA5JyByZWdpc3RlcmVkDQpCbG9jayBsYXllciBT
+Q1NJIGdlbmVyaWMgKGJzZykgZHJpdmVyIHZlcnNpb24gMC40IGxvYWRlZCAo
+bWFqb3IgMjUzKQ0KaW8gc2NoZWR1bGVyIG5vb3AgcmVnaXN0ZXJlZA0KaW8g
+c2NoZWR1bGVyIGRlYWRsaW5lIHJlZ2lzdGVyZWQgKGRlZmF1bHQpDQppbyBz
+Y2hlZHVsZXIgbXEtZGVhZGxpbmUgcmVnaXN0ZXJlZCAoZGVmYXVsdCkNCmlv
+IHNjaGVkdWxlciBreWJlciByZWdpc3RlcmVkDQphdHlmYiAwMDAwOjAwOjEy
+LjA6IGVuYWJsaW5nIGRldmljZSAoMDA4NiAtPiAwMDg3KQ0KYXR5ZmI6IHVz
+aW5nIGF1eGlsaWFyeSByZWdpc3RlciBhcGVydHVyZQ0KYXR5ZmI6IDNEIFJB
+R0UgUFJPIChNYWNoNjQgR1AsIFBRRlAsIFBDSSkgWzB4NDc1MCByZXYgMHg3
+Y10NCmF0eWZiOiA2TSBTR1JBTSAoMToxKSwgMTQuMzE4MTggTUh6IFhUQUws
+IDIzMCBNSHogUExMLCAxMDAgTWh6IE1DTEssIDEwMCBNSHogWENMSw0KQ29u
+c29sZTogc3dpdGNoaW5nIHRvIGNvbG91ciBmcmFtZSBidWZmZXIgZGV2aWNl
+IDEyOHg0OA0KYXR5ZmI6IGZiMDogQVRZIE1hY2g2NCBmcmFtZSBidWZmZXIg
+ZGV2aWNlIG9uIFBDSQ0KcG1hY196aWxvZzogMC42IChCZW5qYW1pbiBIZXJy
+ZW5zY2htaWR0IDxiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmc+KQ0KR2VuZXJp
+YyBub24tdm9sYXRpbGUgbWVtb3J5IGRyaXZlciB2MS4xDQpicmQ6IG1vZHVs
+ZSBsb2FkZWQNCmxvb3A6IG1vZHVsZSBsb2FkZWQNCk1hY0lPIFBDSSBkcml2
+ZXIgYXR0YWNoZWQgdG8gSGVhdGhyb3cgY2hpcHNldA0Kc3dpbTMgMC4wMDAx
+NTAwMDpzd2ltMzogW2ZkMF0gU1dJTTMgZmxvcHB5IGNvbnRyb2xsZXIgDQow
+LjAwMDEzMDIwOmNoLWE6IHR0eVMwIGF0IE1NSU8gMHhmMzAxMzAyMCAoaXJx
+ID0gMTYsIGJhc2VfYmF1ZCA9IDIzMDQwMCkgaXMgYSBaODVjMzAgRVNDQyAt
+IFNlcmlhbCBwb3J0DQowLjAwMDEzMDAwOmNoLWI6IHR0eVMxIGF0IE1NSU8g
+MHhmMzAxMzAwMCAoaXJxID0gMTcsIGJhc2VfYmF1ZCA9IDIzMDQwMCkgaXMg
+YSBaODVjMzAgRVNDQyAtIFNlcmlhbCBwb3J0DQpNYWNpbnRvc2ggQ3VkYSBh
+bmQgRWdyZXQgZHJpdmVyLg0KbWVzaDogY29uZmlndXJlZCBmb3Igc3luY2hy
+b25vdXMgNSBNQi9zDQpyYW5kb206IGZhc3QgaW5pdCBkb25lDQpBREIga2V5
+Ym9hcmQgYXQgMiwgaGFuZGxlciAxDQpEZXRlY3RlZCBBREIga2V5Ym9hcmQs
+IHR5cGUgQU5TSS4NCmlucHV0OiBBREIga2V5Ym9hcmQgYXMgL2RldmljZXMv
+dmlydHVhbC9pbnB1dC9pbnB1dDANCm1lc2g6IHBlcmZvcm1pbmcgaW5pdGlh
+bCBidXMgcmVzZXQuLi4NCkFEQiBtb3VzZSBhdCAzLCBoYW5kbGVyIHNldCB0
+byAyDQppbnB1dDogQURCIG1vdXNlIGFzIC9kZXZpY2VzL3ZpcnR1YWwvaW5w
+dXQvaW5wdXQxDQpzY3NpIGhvc3QwOiBNRVNIDQpwYXRhLW1hY2lvIDAuMDAw
+MjAwMDA6aWRlOiBBY3RpdmF0aW5nIHBhdGEtbWFjaW8gY2hpcHNldCBIZWF0
+aHJvdyBBVEEsIEFwcGxlIGJ1cyBJRCAwDQpzY3NpIGhvc3QxOiBwYXRhX21h
+Y2lvDQphdGExOiBQQVRBIG1heCBNV0RNQTIgaXJxIDI4DQphdGExLjAwOiBB
+VEEtNzogTWF4dG9yIDZZMTIwUDAsIFlBUjQxQlcwLCBtYXggVURNQS8xMzMN
+CmF0YTEuMDA6IDI0MDEyMTcyOCBzZWN0b3JzLCBtdWx0aSAwOiBMQkEgDQpz
+Y3NpIDE6MDowOjA6IERpcmVjdC1BY2Nlc3MgICAgIEFUQSAgICAgIE1heHRv
+ciA2WTEyMFAwICAgMUJXMCBQUTogMCBBTlNJOiA1DQpzZCAxOjA6MDowOiBb
+c2RhXSAyNDAxMjE3MjggNTEyLWJ5dGUgbG9naWNhbCBibG9ja3M6ICgxMjMg
+R0IvMTE0IEdpQikNCnNkIDE6MDowOjA6IEF0dGFjaGVkIHNjc2kgZ2VuZXJp
+YyBzZzAgdHlwZSAwDQpzZCAxOjA6MDowOiBbc2RhXSBXcml0ZSBQcm90ZWN0
+IGlzIG9mZg0Kc2QgMTowOjA6MDogW3NkYV0gTW9kZSBTZW5zZTogMDAgM2Eg
+MDAgMDANCnNkIDE6MDowOjA6IFtzZGFdIFdyaXRlIGNhY2hlOiBlbmFibGVk
+LCByZWFkIGNhY2hlOiBlbmFibGVkLCBkb2Vzbid0IHN1cHBvcnQgRFBPIG9y
+IEZVQQ0KcGF0YS1tYWNpbyAwLjAwMDIxMDAwOmlkZTogQWN0aXZhdGluZyBw
+YXRhLW1hY2lvIGNoaXBzZXQgSGVhdGhyb3cgQVRBLCBBcHBsZSBidXMgSUQg
+MQ0Kc2NzaSBob3N0MjogcGF0YV9tYWNpbw0KYXRhMjogUEFUQSBtYXggTVdE
+TUEyIGlycSAzMA0KZXRoMDogQk1BQyBhdCAwMDowNTowMjpmZDo5ODo5Yw0K
+DQpmaXJld2lyZV9vaGNpIDAwMDA6MDA6MGUuMDogZW5hYmxpbmcgZGV2aWNl
+ICgwMDE0IC0+IDAwMTYpDQphdGEyLjAwOiBBVEFQSTogSU9NRUdBICBaSVAg
+MTAwICAgICAgIEFUQVBJLCAyNS5ELCBtYXggUElPMiwgQ0RCIGludHINCmF0
+YTIuMDE6IEFUQVBJOiBNQVRTSElUQURWRC1ST00gU1ItODU4MiwgMEI4Yiwg
+bWF4IE1XRE1BMg0Kc2NzaSAyOjA6MDowOiBEaXJlY3QtQWNjZXNzICAgICBJ
+T01FR0EgICBaSVAgMTAwICAgICAgICAgIDI1LkQgUFE6IDAgQU5TSTogNQ0K
+ZmlyZXdpcmVfb2hjaSAwMDAwOjAwOjBlLjA6IGFkZGVkIE9IQ0kgdjEuMCBk
+ZXZpY2UgYXMgY2FyZCAwLCA0IElSICsgNCBJVCBjb250ZXh0cywgcXVpcmtz
+IDB4MQ0KYW9lOiBjYW5ub3QgY3JlYXRlIGRlYnVnZnMgZGlyZWN0b3J5DQph
+b2U6IEFvRSB2ODUgaW5pdGlhbGlzZWQuDQplaGNpX2hjZDogVVNCIDIuMCAn
+RW5oYW5jZWQnIEhvc3QgQ29udHJvbGxlciAoRUhDSSkgRHJpdmVyDQplaGNp
+LXBjaTogRUhDSSBQQ0kgcGxhdGZvcm0gZHJpdmVyDQpzZCAyOjA6MDowOiBB
+dHRhY2hlZCBzY3NpIGdlbmVyaWMgc2cxIHR5cGUgMA0KZWhjaS1wY2kgMDAw
+MDowMDowZi4yOiBFSENJIEhvc3QgQ29udHJvbGxlcg0KZWhjaS1wY2kgMDAw
+MDowMDowZi4yOiBuZXcgVVNCIGJ1cyByZWdpc3RlcmVkLCBhc3NpZ25lZCBi
+dXMgbnVtYmVyIDENCmVoY2ktcGNpIDAwMDA6MDA6MGYuMjogaXJxIDI1LCBp
+byBtZW0gMHg4MDgwMDAwMA0KZWhjaS1wY2kgMDAwMDowMDowZi4yOiBVU0Ig
+Mi4wIHN0YXJ0ZWQsIEVIQ0kgMS4wMA0KdXNiIHVzYjE6IE5ldyBVU0IgZGV2
+aWNlIGZvdW5kLCBpZFZlbmRvcj0xZDZiLCBpZFByb2R1Y3Q9MDAwMiwgYmNk
+RGV2aWNlPSA0LjE4DQp1c2IgdXNiMTogTmV3IFVTQiBkZXZpY2Ugc3RyaW5n
+czogTWZyPTMsIFByb2R1Y3Q9MiwgU2VyaWFsTnVtYmVyPTENCnVzYiB1c2Ix
+OiBQcm9kdWN0OiBFSENJIEhvc3QgQ29udHJvbGxlcg0KdXNiIHVzYjE6IE1h
+bnVmYWN0dXJlcjogTGludXggNC4xOC4wLWc1ZDg1MmU1YjM0MjQgZWhjaV9o
+Y2QNCnVzYiB1c2IxOiBTZXJpYWxOdW1iZXI6IDAwMDA6MDA6MGYuMg0KaHVi
+IDEtMDoxLjA6IFVTQiBodWIgZm91bmQNCmh1YiAxLTA6MS4wOiA1IHBvcnRz
+IGRldGVjdGVkDQpvaGNpX2hjZDogVVNCIDEuMSAnT3BlbicgSG9zdCBDb250
+cm9sbGVyIChPSENJKSBEcml2ZXINCm9oY2ktcGNpOiBPSENJIFBDSSBwbGF0
+Zm9ybSBkcml2ZXINCm9oY2ktcGNpIDAwMDA6MDA6MGYuMDogT0hDSSBQQ0kg
+aG9zdCBjb250cm9sbGVyDQpvaGNpLXBjaSAwMDAwOjAwOjBmLjA6IG5ldyBV
+U0IgYnVzIHJlZ2lzdGVyZWQsIGFzc2lnbmVkIGJ1cyBudW1iZXIgMg0Kc2Qg
+MjowOjA6MDogW3NkYl0gQXR0YWNoZWQgU0NTSSByZW1vdmFibGUgZGlzaw0K
+b2hjaS1wY2kgMDAwMDowMDowZi4wOiBpcnEgMjUsIGlvIG1lbSAweDgwODAy
+MDAwDQpzY3NpIDI6MDoxOjA6IENELVJPTSAgICAgICAgICAgIE1BVFNISVRB
+IERWRC1ST00gU1ItODU4MiAgMEI4YiBQUTogMCBBTlNJOiA1DQpzciAyOjA6
+MTowOiBbc3IwXSBzY3NpMy1tbWMgZHJpdmU6IDI0eC8yNHggY2QvcncgeGEv
+Zm9ybTIgY2RkYSB0cmF5DQpjZHJvbTogVW5pZm9ybSBDRC1ST00gZHJpdmVy
+IFJldmlzaW9uOiAzLjIwDQpzciAyOjA6MTowOiBBdHRhY2hlZCBzY3NpIENE
+LVJPTSBzcjANCnNyIDI6MDoxOjA6IEF0dGFjaGVkIHNjc2kgZ2VuZXJpYyBz
+ZzIgdHlwZSA1DQp1c2IgdXNiMjogTmV3IFVTQiBkZXZpY2UgZm91bmQsIGlk
+VmVuZG9yPTFkNmIsIGlkUHJvZHVjdD0wMDAxLCBiY2REZXZpY2U9IDQuMTgN
+CnVzYiB1c2IyOiBOZXcgVVNCIGRldmljZSBzdHJpbmdzOiBNZnI9MywgUHJv
+ZHVjdD0yLCBTZXJpYWxOdW1iZXI9MQ0KdXNiIHVzYjI6IFByb2R1Y3Q6IE9I
+Q0kgUENJIGhvc3QgY29udHJvbGxlcg0KdXNiIHVzYjI6IE1hbnVmYWN0dXJl
+cjogTGludXggNC4xOC4wLWc1ZDg1MmU1YjM0MjQgb2hjaV9oY2QNCnVzYiB1
+c2IyOiBTZXJpYWxOdW1iZXI6IDAwMDA6MDA6MGYuMA0KaHViIDItMDoxLjA6
+IFVTQiBodWIgZm91bmQNCmh1YiAyLTA6MS4wOiAzIHBvcnRzIGRldGVjdGVk
+DQpvaGNpLXBjaSAwMDAwOjAwOjBmLjE6IE9IQ0kgUENJIGhvc3QgY29udHJv
+bGxlcg0Kb2hjaS1wY2kgMDAwMDowMDowZi4xOiBuZXcgVVNCIGJ1cyByZWdp
+c3RlcmVkLCBhc3NpZ25lZCBidXMgbnVtYmVyIDMNCm9oY2ktcGNpIDAwMDA6
+MDA6MGYuMTogaXJxIDI1LCBpbyBtZW0gMHg4MDgwMTAwMA0KdXNiIHVzYjM6
+IE5ldyBVU0IgZGV2aWNlIGZvdW5kLCBpZFZlbmRvcj0xZDZiLCBpZFByb2R1
+Y3Q9MDAwMSwgYmNkRGV2aWNlPSA0LjE4DQp1c2IgdXNiMzogTmV3IFVTQiBk
+ZXZpY2Ugc3RyaW5nczogTWZyPTMsIFByb2R1Y3Q9MiwgU2VyaWFsTnVtYmVy
+PTENCnVzYiB1c2IzOiBQcm9kdWN0OiBPSENJIFBDSSBob3N0IGNvbnRyb2xs
+ZXINCnVzYiB1c2IzOiBNYW51ZmFjdHVyZXI6IExpbnV4IDQuMTguMC1nNWQ4
+NTJlNWIzNDI0IG9oY2lfaGNkDQp1c2IgdXNiMzogU2VyaWFsTnVtYmVyOiAw
+MDAwOjAwOjBmLjENCmZpcmV3aXJlX2NvcmUgMDAwMDowMDowZS4wOiBjcmVh
+dGVkIGRldmljZSBmdzA6IEdVSUQgMDBkMGY1MjAwODAwNmFmZiwgUzQwMA0K
+aHViIDMtMDoxLjA6IFVTQiBodWIgZm91bmQNCmh1YiAzLTA6MS4wOiAyIHBv
+cnRzIGRldGVjdGVkDQp1c2Jjb3JlOiByZWdpc3RlcmVkIG5ldyBpbnRlcmZh
+Y2UgZHJpdmVyIHVhcw0KdXNiY29yZTogcmVnaXN0ZXJlZCBuZXcgaW50ZXJm
+YWNlIGRyaXZlciB1c2Itc3RvcmFnZQ0KbW91c2VkZXY6IFBTLzIgbW91c2Ug
+ZGV2aWNlIGNvbW1vbiBmb3IgYWxsIG1pY2UNCnJ0Yy1nZW5lcmljIHJ0Yy1n
+ZW5lcmljOiBydGMgY29yZTogcmVnaXN0ZXJlZCBydGMtZ2VuZXJpYyBhcyBy
+dGMwDQppMmMgL2RldiBlbnRyaWVzIGRyaXZlcg0KdXNiY29yZTogcmVnaXN0
+ZXJlZCBuZXcgaW50ZXJmYWNlIGRyaXZlciB1c2JoaWQNCnVzYmhpZDogVVNC
+IEhJRCBjb3JlIGRyaXZlcg0KTkVUOiBSZWdpc3RlcmVkIHByb3RvY29sIGZh
+bWlseSAxNw0KZHJtZW06IE5vIGR5bmFtaWMgcmVjb25maWd1cmF0aW9uIG1l
+bW9yeSBmb3VuZA0KTG9hZGluZyBjb21waWxlZC1pbiBYLjUwOSBjZXJ0aWZp
+Y2F0ZXMNCm5ldCBmaXJld2lyZTA6IElQIG92ZXIgSUVFRSAxMzk0IG9uIGNh
+cmQgMDAwMDowMDowZS4wDQpmaXJld2lyZV9jb3JlIDAwMDA6MDA6MGUuMDog
+cmVmcmVzaGVkIGRldmljZSBmdzANCiBzZGE6IFttYWNdIHNkYTEgc2RhMiBz
+ZGEzIHNkYTQgc2RhNSBzZGE2IHNkYTcgc2RhOCBzZGE5IHNkYTEwIHNkYTEx
+IHNkYTEyIHNkYTEzIHNkYTE0IHNkYTE1DQpzZCAxOjA6MDowOiBbc2RhXSBB
+dHRhY2hlZCBTQ1NJIGRpc2sNCkVYVDQtZnMgKHNkYTEyKTogbW91bnRpbmcg
+ZXh0MyBmaWxlIHN5c3RlbSB1c2luZyB0aGUgZXh0NCBzdWJzeXN0ZW0NCkVY
+VDQtZnMgKHNkYTEyKTogbW91bnRlZCBmaWxlc3lzdGVtIHdpdGggb3JkZXJl
+ZCBkYXRhIG1vZGUuIE9wdHM6IChudWxsKQ0KVkZTOiBNb3VudGVkIHJvb3Qg
+KGV4dDMgZmlsZXN5c3RlbSkgcmVhZG9ubHkgb24gZGV2aWNlIDg6MTIuDQpG
+cmVlaW5nIHVudXNlZCBrZXJuZWwgbWVtb3J5OiAyNjhLDQpUaGlzIGFyY2hp
+dGVjdHVyZSBkb2VzIG5vdCBoYXZlIGtlcm5lbCBtZW1vcnkgcHJvdGVjdGlv
+bi4NCkFkZGluZyAzMTQ1NzI0ayBzd2FwIG9uIC9kZXYvc2RhMTMuICBQcmlv
+cml0eTotMiBleHRlbnRzOjEgYWNyb3NzOjMxNDU3MjRrIA0KRVhUNC1mcyAo
+c2RhMTIpOiByZS1tb3VudGVkLiBPcHRzOiAobnVsbCkNCnJhbmRvbTogY3Ju
+ZyBpbml0IGRvbmUNCkVYVDQtZnMgKHNkYTEyKTogcmUtbW91bnRlZC4gT3B0
+czogZXJyb3JzPXJlbW91bnQtcm8NCkVYVDQtZnMgKHNkYTE0KTogbW91bnRp
+bmcgZXh0MyBmaWxlIHN5c3RlbSB1c2luZyB0aGUgZXh0NCBzdWJzeXN0ZW0N
+CkVYVDQtZnMgKHNkYTE0KTogbW91bnRlZCBmaWxlc3lzdGVtIHdpdGggb3Jk
+ZXJlZCBkYXRhIG1vZGUuIE9wdHM6IChudWxsKQ0KcGh5IHJlZ2lzdGVyczoN
+CiAwMDAwIDAwMDAgMDAwMCAwMDAwIDAwMDAgMDAwMCAwMDAwIDAwMDANCiAw
+MDAwIDAwMDAgMDAwMCAwMDAwIDAwMDAgMDAwMCAwMDAwIDAwMDANCiAwMDAw
+IDAwMDAgMDAwMCAwMDAwIDAwMDAgMDAwMCAwMDAwIDAwMDANCiAwMDAwIDAw
+MDAgMDAwMCAwMDAwIDAwMDAgMDAwMCAwMDAwIDAwMDANCkluc3RhbGxpbmcg
+a25mc2QgKGNvcHlyaWdodCAoQykgMTk5NiBva2lyQG1vbmFkLnN3Yi5kZSku
+DQo=
 
-Thanks,
-Nick
+---1463811774-152605667-1535589880=:73--
