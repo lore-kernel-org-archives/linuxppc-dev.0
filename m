@@ -1,10 +1,10 @@
 Return-Path: <Alexander.Levin@microsoft.com>
-Received: from NAM01-BY2-obe.outbound.protection.outlook.com
- (mail-by2nam01on0119.outbound.protection.outlook.com [104.47.34.119])
+Received: from NAM04-SN1-obe.outbound.protection.outlook.com
+ (mail-eopbgr700108.outbound.protection.outlook.com [40.107.70.108])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 421Vpp31NZzF36f
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Aug 2018 04:08:15 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 421VvC0Hy4zF31r
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Aug 2018 04:12:06 +1000 (AEST)
 From: Sasha Levin <Alexander.Levin@microsoft.com>
 To: "stable@vger.kernel.org" <stable@vger.kernel.org>
 CC: Randy Dunlap <rdunlap@infradead.org>, Benjamin Herrenschmidt
@@ -12,12 +12,12 @@ CC: Randy Dunlap <rdunlap@infradead.org>, Benjamin Herrenschmidt
  Ellerman <mpe@ellerman.id.au>, Scott Wood <oss@buserror.net>, Kumar Gala
  <galak@kernel.crashing.org>, "linuxppc-dev@lists.ozlabs.org"
  <linuxppc-dev@lists.ozlabs.org>, Sasha Levin <Alexander.Levin@microsoft.com>
-Subject: [PATCH AUTOSEL 4.18 095/113] powerpc/platforms/85xx: fix
- t1042rdb_diu.c build errors & warning
-Date: Thu, 30 Aug 2018 18:08:10 +0000
-Message-ID: <20180830180714.36167-29-alexander.levin@microsoft.com>
-References: <20180830180714.36167-1-alexander.levin@microsoft.com>
-In-Reply-To: <20180830180714.36167-1-alexander.levin@microsoft.com>
+Subject: [PATCH AUTOSEL 4.14 57/67] powerpc/platforms/85xx: fix t1042rdb_diu.c
+ build errors & warning
+Date: Thu, 30 Aug 2018 18:11:58 +0000
+Message-ID: <20180830180918.36327-57-alexander.levin@microsoft.com>
+References: <20180830180918.36327-1-alexander.levin@microsoft.com>
+In-Reply-To: <20180830180918.36327-1-alexander.levin@microsoft.com>
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
