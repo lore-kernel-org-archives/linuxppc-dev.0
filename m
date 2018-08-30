@@ -1,23 +1,18 @@
-Return-Path: <qiang.zhao@nxp.com>
-Received: from EUR04-HE1-obe.outbound.protection.outlook.com
- (mail-eopbgr70074.outbound.protection.outlook.com [40.107.7.74])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4216NZ4DsNzF35w
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Aug 2018 12:47:39 +1000 (AEST)
-From: Qiang Zhao <qiang.zhao@nxp.com>
-To: Rob Herring <robh@kernel.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Leo Li
- <leoyang.li@nxp.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>
-Subject: RE: [PATCH] soc: fsl/qe: Use of_get_child_by_name helper
-Date: Thu, 30 Aug 2018 02:47:31 +0000
-Message-ID: <VI1PR04MB32475E7E36BA8467FC07B01D91080@VI1PR04MB3247.eurprd04.prod.outlook.com>
-References: <20180829200425.16435-1-robh@kernel.org>
-In-Reply-To: <20180829200425.16435-1-robh@kernel.org>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+Return-Path: <aik@ozlabs.ru>
+Received: from ozlabs.ru (unknown [107.173.13.209])
+ by lists.ozlabs.org (Postfix) with ESMTP id 42172L2hGgzF0gv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Aug 2018 13:16:58 +1000 (AEST)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
+ Paul Mackerras <paulus@ozlabs.org>
+Subject: [PATCH kernel 4/4] KVM: PPC: Propagate errors to the guest when
+ failed instead of ignoring
+Date: Thu, 30 Aug 2018 13:16:47 +1000
+Message-Id: <20180830031647.34134-5-aik@ozlabs.ru>
+In-Reply-To: <20180830031647.34134-1-aik@ozlabs.ru>
+References: <20180830031647.34134-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,45 +22,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Rob Herring <robh@kernel.org>
-date: 2018/8/30 4:04
+At the moment if the PUT_TCE{_INDIRECT} handlers fail to update
+the hardware tables, we print a warning once, clear the entry and
+continue. This is so as at the time the assumption was that if
+a VFIO device is hotplugged into the guest, and the userspace replays
+virtual DMA mappings (i.e. TCEs) to the hardware tables and if this fails,
+then there is nothing useful we can do about it.
 
-> To: Qiang Zhao <qiang.zhao@nxp.com>
-> Cc: linux-kernel@vger.kernel.org; Leo Li <leoyang.li@nxp.com>;
-> linuxppc-dev@lists.ozlabs.org; linux-arm-kernel@lists.infradead.org
-> Subject: [PATCH] soc: fsl/qe: Use of_get_child_by_name helper
->=20
-> Use the of_get_child_by_name() helper instead of open coding searching fo=
-r the
-> 'firmware' child node. This removes directly accessing the name pointer a=
-s well.
->=20
-> Cc: Qiang Zhao <qiang.zhao@nxp.com>
-> Cc: Li Yang <leoyang.li@nxp.com>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> Signed-off-by: Rob Herring <robh@kernel.org>
-> ---
->  drivers/soc/fsl/qe/qe.c | 6 +-----
->  1 file changed, 1 insertion(+), 5 deletions(-)
->=20
-> diff --git a/drivers/soc/fsl/qe/qe.c b/drivers/soc/fsl/qe/qe.c index
-> 2ef6fc6487c1..612d9c551be5 100644
-> --- a/drivers/soc/fsl/qe/qe.c
-> +++ b/drivers/soc/fsl/qe/qe.c
-> @@ -588,11 +588,7 @@ struct qe_firmware_info *qe_get_firmware_info(void)
->  	}
->=20
->  	/* Find the 'firmware' child node */
-> -	for_each_child_of_node(qe, fw) {
-> -		if (strcmp(fw->name, "firmware") =3D=3D 0)
-> -			break;
-> -	}
-> -
-> +	fw =3D of_get_child_by_name(qe, "firmware");
->  	of_node_put(qe);
->=20
->  	/* Did we find the 'firmware' node? */
-> --
+However the assumption is not valid as these handlers are not called for
+TCE replay (VFIO ioctl interface is used for that) and these handlers
+are for new TCEs.
 
-Acked-by: Qiang Zhao <qiang.zhao@nxp.com>
+This returns an error to the guest if there is a request which cannot be
+processed. By now the only possible failure must be H_TOO_HARD.
+
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+ arch/powerpc/kvm/book3s_64_vio.c    | 20 ++++++--------------
+ arch/powerpc/kvm/book3s_64_vio_hv.c | 20 ++++++--------------
+ 2 files changed, 12 insertions(+), 28 deletions(-)
+
+diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
+index 5cd2a66..5e3151b 100644
+--- a/arch/powerpc/kvm/book3s_64_vio.c
++++ b/arch/powerpc/kvm/book3s_64_vio.c
+@@ -568,14 +568,10 @@ long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+ 			ret = kvmppc_tce_iommu_map(vcpu->kvm, stt, stit->tbl,
+ 					entry, ua, dir);
+ 
+-		if (ret == H_SUCCESS)
+-			continue;
+-
+-		if (ret == H_TOO_HARD)
++		if (ret != H_SUCCESS) {
++			kvmppc_clear_tce(stit->tbl, entry);
+ 			goto unlock_exit;
+-
+-		WARN_ON_ONCE(1);
+-		kvmppc_clear_tce(stit->tbl, entry);
++		}
+ 	}
+ 
+ 	kvmppc_tce_put(stt, entry, tce);
+@@ -660,14 +656,10 @@ long kvmppc_h_put_tce_indirect(struct kvm_vcpu *vcpu,
+ 					stit->tbl, entry + i, ua,
+ 					iommu_tce_direction(tce));
+ 
+-			if (ret == H_SUCCESS)
+-				continue;
+-
+-			if (ret == H_TOO_HARD)
++			if (ret != H_SUCCESS) {
++				kvmppc_clear_tce(stit->tbl, entry);
+ 				goto unlock_exit;
+-
+-			WARN_ON_ONCE(1);
+-			kvmppc_clear_tce(stit->tbl, entry);
++			}
+ 		}
+ 
+ 		kvmppc_tce_put(stt, entry + i, tce);
+diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
+index e79ffbb..8d82133 100644
+--- a/arch/powerpc/kvm/book3s_64_vio_hv.c
++++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
+@@ -380,14 +380,10 @@ long kvmppc_rm_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+ 			ret = kvmppc_rm_tce_iommu_map(vcpu->kvm, stt,
+ 					stit->tbl, entry, ua, dir);
+ 
+-		if (ret == H_SUCCESS)
+-			continue;
+-
+-		if (ret == H_TOO_HARD)
++		if (ret != H_SUCCESS) {
++			kvmppc_rm_clear_tce(stit->tbl, entry);
+ 			return ret;
+-
+-		WARN_ON_ONCE_RM(1);
+-		kvmppc_rm_clear_tce(stit->tbl, entry);
++		}
+ 	}
+ 
+ 	kvmppc_tce_put(stt, entry, tce);
+@@ -533,14 +529,10 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
+ 					stit->tbl, entry + i, ua,
+ 					iommu_tce_direction(tce));
+ 
+-			if (ret == H_SUCCESS)
+-				continue;
+-
+-			if (ret == H_TOO_HARD)
++			if (ret != H_SUCCESS) {
++				kvmppc_rm_clear_tce(stit->tbl, entry);
+ 				goto unlock_exit;
+-
+-			WARN_ON_ONCE_RM(1);
+-			kvmppc_rm_clear_tce(stit->tbl, entry);
++			}
+ 		}
+ 
+ 		kvmppc_tce_put(stt, entry + i, tce);
+-- 
+2.11.0
