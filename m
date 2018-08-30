@@ -1,11 +1,10 @@
 Return-Path: <Pavel.Tatashin@microsoft.com>
-Received: from NAM02-CY1-obe.outbound.protection.outlook.com
- (mail-cys01nam02on0716.outbound.protection.outlook.com
- [IPv6:2a01:111:f400:fe45::716])
+Received: from NAM04-SN1-obe.outbound.protection.outlook.com
+ (mail-eopbgr700119.outbound.protection.outlook.com [40.107.70.119])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 421Rrc1FwvzF374
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Aug 2018 01:54:39 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 421Xlv5xSMzF37N
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Aug 2018 05:35:55 +1000 (AEST)
 From: Pasha Tatashin <Pavel.Tatashin@microsoft.com>
 To: David Hildenbrand <david@redhat.com>, "linux-mm@kvack.org"
  <linux-mm@kvack.org>
@@ -14,31 +13,25 @@ CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
  "xen-devel@lists.xenproject.org" <xen-devel@lists.xenproject.org>,
- "devel@linuxdriverproject.org" <devel@linuxdriverproject.org>, Andrew Morton
- <akpm@linux-foundation.org>, Balbir Singh <bsingharora@gmail.com>, Benjamin
- Herrenschmidt <benh@kernel.crashing.org>, Boris Ostrovsky
- <boris.ostrovsky@oracle.com>, Dan Williams <dan.j.williams@intel.com>, Greg
- Kroah-Hartman <gregkh@linuxfoundation.org>, Haiyang Zhang
- <haiyangz@microsoft.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, John
- Allen <jallen@linux.vnet.ibm.com>, Jonathan Corbet <corbet@lwn.net>, Joonsoo
- Kim <iamjoonsoo.kim@lge.com>, Juergen Gross <jgross@suse.com>, Kate Stewart
- <kstewart@linuxfoundation.org>, KY Srinivasan <kys@microsoft.com>, Len Brown
- <lenb@kernel.org>, Martin Schwidefsky <schwidefsky@de.ibm.com>, Mathieu
- Malaterre <malat@debian.org>, Michael Ellerman <mpe@ellerman.id.au>, Michael
- Neuling <mikey@neuling.org>, Michal Hocko <mhocko@suse.com>, Nathan Fontenot
- <nfont@linux.vnet.ibm.com>, Oscar Salvador <osalvador@suse.de>, Paul
- Mackerras <paulus@samba.org>, Philippe Ombredanne <pombredanne@nexb.com>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rashmica Gupta
- <rashmica.g@gmail.com>, Stephen Hemminger <sthemmin@microsoft.com>, Thomas
- Gleixner <tglx@linutronix.de>, Vlastimil Babka <vbabka@suse.cz>, YASUAKI
- ISHIMATSU <yasu.isimatu@gmail.com>
-Subject: Re: [PATCH RFCv2 0/6] mm: online/offline_pages called w.o.
- mem_hotplug_lock
-Date: Thu, 30 Aug 2018 15:54:30 +0000
-Message-ID: <b9eb96e7-3846-1aaa-d257-895ca142b1ef@microsoft.com>
+ "devel@linuxdriverproject.org" <devel@linuxdriverproject.org>, Benjamin
+ Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, "Rafael J. Wysocki"
+ <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Rashmica Gupta
+ <rashmica.g@gmail.com>, Michael Neuling <mikey@neuling.org>, Balbir Singh
+ <bsingharora@gmail.com>, Nathan Fontenot <nfont@linux.vnet.ibm.com>, John
+ Allen <jallen@linux.vnet.ibm.com>, Andrew Morton <akpm@linux-foundation.org>,
+ Michal Hocko <mhocko@suse.com>, Dan Williams <dan.j.williams@intel.com>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>, Vlastimil Babka <vbabka@suse.cz>, Greg
+ Kroah-Hartman <gregkh@linuxfoundation.org>, Oscar Salvador
+ <osalvador@suse.de>, YASUAKI ISHIMATSU <yasu.isimatu@gmail.com>, Mathieu
+ Malaterre <malat@debian.org>
+Subject: Re: [PATCH RFCv2 1/6] mm/memory_hotplug: make remove_memory() take
+ the device_hotplug_lock
+Date: Thu, 30 Aug 2018 19:35:48 +0000
+Message-ID: <46a0119b-da16-0203-a8c2-d127738517f4@microsoft.com>
 References: <20180821104418.12710-1-david@redhat.com>
- <37ea507e-b16d-ae8d-4da8-128b621869f2@redhat.com>
-In-Reply-To: <37ea507e-b16d-ae8d-4da8-128b621869f2@redhat.com>
+ <20180821104418.12710-2-david@redhat.com>
+In-Reply-To: <20180821104418.12710-2-david@redhat.com>
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -50,13 +43,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCk9uIDgvMzAvMTggODozMSBBTSwgRGF2aWQgSGlsZGVuYnJhbmQgd3JvdGU6DQo+IE9uIDIx
-LjA4LjIwMTggMTI6NDQsIERhdmlkIEhpbGRlbmJyYW5kIHdyb3RlOg0KPj4gVGhpcyBpcyB0aGUg
-c2FtZSBhcHByb2FjaCBhcyBpbiB0aGUgZmlyc3QgUkZDLCBidXQgdGhpcyB0aW1lIHdpdGhvdXQN
-Cj4+IGV4cG9ydGluZyBkZXZpY2VfaG90cGx1Z19sb2NrIChyZXF1ZXN0ZWQgYnkgR3JlZykgYW5k
-IHdpdGggc29tZSBtb3JlDQo+PiBkZXRhaWxzIGFuZCBkb2N1bWVudGF0aW9uIHJlZ2FyZGluZyBs
-b2NraW5nLiBUZXN0ZWQgb25seSBvbiB4ODYgc28gZmFyLg0KPj4NCj4gDQo+IEknbGwgYmUgb24g
-dmFjYXRpb24gZm9yIHR3byB3ZWVrcyBzdGFydGluZyBvbiBTYXR1cmRheS4gSWYgdGhlcmUgYXJl
-IG5vDQo+IGNvbW1lbnRzIEknbGwgc2VuZCB0aGlzIGFzICFSRkMgb25jZSBJIHJldHVybi4NCj4N
-CkkgYW0gc3R1ZHlpbmcgdGhpcyBzZXJpZXMsIHdpbGwgc2VuZCBteSBjb21tZW50cyBsYXRlciB0
-b2RheS4NCg0KUGF2ZWw=
+PiArDQo+ICt2b2lkIF9fcmVmIHJlbW92ZV9tZW1vcnkoaW50IG5pZCwgdTY0IHN0YXJ0LCB1NjQg
+c2l6ZSkNCg0KUmVtb3ZlIF9fcmVmLCBvdGhlcndpc2UgbG9va3MgZ29vZDoNCg0KUmV2aWV3ZWQt
+Ynk6IFBhdmVsIFRhdGFzaGluIDxwYXZlbC50YXRhc2hpbkBtaWNyb3NvZnQuY29tPg0KDQo+ICt7
+DQo+ICsJbG9ja19kZXZpY2VfaG90cGx1ZygpOw0KPiArCV9fcmVtb3ZlX21lbW9yeShuaWQsIHN0
+YXJ0LCBzaXplKTsNCj4gKwl1bmxvY2tfZGV2aWNlX2hvdHBsdWcoKTsNCj4gK30NCj4gIEVYUE9S
+VF9TWU1CT0xfR1BMKHJlbW92ZV9tZW1vcnkpOw0KPiAgI2VuZGlmIC8qIENPTkZJR19NRU1PUllf
+SE9UUkVNT1ZFICovDQo+IA==
