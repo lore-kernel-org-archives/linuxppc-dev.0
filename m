@@ -1,45 +1,25 @@
-Return-Path: <oss@buserror.net>
-Received: from baldur.buserror.net (baldur.buserror.net [165.227.176.147])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <Alexander.Levin@microsoft.com>
+Received: from NAM01-BY2-obe.outbound.protection.outlook.com
+ (mail-by2nam01on0119.outbound.protection.outlook.com [104.47.34.119])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 421VHt10CHzDqSL
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Aug 2018 03:44:58 +1000 (AEST)
-Message-ID: <b31ae8e788fb93971167faa9b55b497e838532c4.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: Vabhav Sharma <vabhav.sharma@nxp.com>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org"
- <devicetree@vger.kernel.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>,
- "mark.rutland@arm.com"
- <mark.rutland@arm.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, "mturquette@baylibre.com"
- <mturquette@baylibre.com>, "sboyd@kernel.org" <sboyd@kernel.org>,
- "rjw@rjwysocki.net"
- <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>,
- "linux-clk@vger.kernel.org"
- <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org"
- <linux-pm@vger.kernel.org>, "linux-kernel-owner@vger.kernel.org"
- <linux-kernel-owner@vger.kernel.org>, "catalin.marinas@arm.com"
- <catalin.marinas@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>,
- "gregkh@linuxfoundation.org"
- <gregkh@linuxfoundation.org>, "arnd@arndb.de" <arnd@arndb.de>,
- "kstewart@linuxfoundation.org"
- <kstewart@linuxfoundation.org>, "yamada.masahiro@socionext.com"
- <yamada.masahiro@socionext.com>
-Cc: Yogesh Narayan Gaur <yogeshnarayan.gaur@nxp.com>, Andy Tang
- <andy.tang@nxp.com>, Udit Kumar <udit.kumar@nxp.com>,
- "linux@armlinux.org.uk" <linux@armlinux.org.uk>, Varun Sethi
- <V.Sethi@nxp.com>
-Date: Thu, 30 Aug 2018 12:42:41 -0500
-In-Reply-To: <d2cfd49eb33a3ce74f0e78f2b53d3954d2cb3e76.camel@buserror.net>
-References: <1534747636-20064-1-git-send-email-vabhav.sharma@nxp.com>
- <1534747636-20064-4-git-send-email-vabhav.sharma@nxp.com>
- <4a9ea6b451683ec98c92e86a5ae6b91213a6afcf.camel@buserror.net>
- <VI1PR04MB4800E8B1E8541FCA9221A1CFF3080@VI1PR04MB4800.eurprd04.prod.outlook.com>
- <d2cfd49eb33a3ce74f0e78f2b53d3954d2cb3e76.camel@buserror.net>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Subject: Re: [PATCH 3/5] drivers: clk-qoriq: Add clockgen support for lx2160a
+ by lists.ozlabs.org (Postfix) with ESMTPS id 421Vpp31NZzF36f
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Aug 2018 04:08:15 +1000 (AEST)
+From: Sasha Levin <Alexander.Levin@microsoft.com>
+To: "stable@vger.kernel.org" <stable@vger.kernel.org>
+CC: Randy Dunlap <rdunlap@infradead.org>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael
+ Ellerman <mpe@ellerman.id.au>, Scott Wood <oss@buserror.net>, Kumar Gala
+ <galak@kernel.crashing.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, Sasha Levin <Alexander.Levin@microsoft.com>
+Subject: [PATCH AUTOSEL 4.18 095/113] powerpc/platforms/85xx: fix
+ t1042rdb_diu.c build errors & warning
+Date: Thu, 30 Aug 2018 18:08:10 +0000
+Message-ID: <20180830180714.36167-29-alexander.levin@microsoft.com>
+References: <20180830180714.36167-1-alexander.levin@microsoft.com>
+In-Reply-To: <20180830180714.36167-1-alexander.levin@microsoft.com>
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,81 +29,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2018-08-30 at 12:39 -0500, Scott Wood wrote:
-> On Thu, 2018-08-30 at 07:36 +0000, Vabhav Sharma wrote:
-> > > -----Original Message-----
-> > > From: linux-kernel-owner@vger.kernel.org <linux-kernel-
-> > > owner@vger.kernel.org> On Behalf Of Scott Wood
-> > > Sent: Wednesday, August 29, 2018 5:49 AM
-> > > To: Vabhav Sharma <vabhav.sharma@nxp.com>; linux-
-> > > kernel@vger.kernel.org; devicetree@vger.kernel.org; robh+dt@kernel.org;
-> > > mark.rutland@arm.com; linuxppc-dev@lists.ozlabs.org; linux-arm-
-> > > kernel@lists.infradead.org; mturquette@baylibre.com; sboyd@kernel.org;
-> > > rjw@rjwysocki.net; viresh.kumar@linaro.org; linux-clk@vger.kernel.org;
-> > > linux-pm@vger.kernel.org; linux-kernel-owner@vger.kernel.org;
-> > > catalin.marinas@arm.com; will.deacon@arm.com;
-> > > gregkh@linuxfoundation.org; arnd@arndb.de;
-> > > kstewart@linuxfoundation.org; yamada.masahiro@socionext.com
-> > > Cc: Yogesh Narayan Gaur <yogeshnarayan.gaur@nxp.com>; Andy Tang
-> > > <andy.tang@nxp.com>; Udit Kumar <udit.kumar@nxp.com>;
-> > > linux@armlinux.org.uk; Varun Sethi <V.Sethi@nxp.com>
-> > > Subject: Re: [PATCH 3/5] drivers: clk-qoriq: Add clockgen support for
-> > > lx2160a
-> > > 
-> > > On Mon, 2018-08-20 at 12:17 +0530, Vabhav Sharma wrote:
-> > > > From: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>
-> > > > 
-> > > > Add clockgen support for lx2160a.
-> > > > Added entry for compat 'fsl,lx2160a-clockgen'.
-> > > > As LX2160A is 16 core, so modified value for NUM_CMUX
-> > > > 
-> > > > Signed-off-by: Tang Yuantian <andy.tang@nxp.com>
-> > > > Signed-off-by: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>
-> > > > Signed-off-by: Vabhav Sharma <vabhav.sharma@nxp.com>
-> > > > ---
-> > > >  drivers/clk/clk-qoriq.c         | 14 +++++++++++++-
-> > > >  drivers/cpufreq/qoriq-cpufreq.c |  1 +
-> > > >  2 files changed, 14 insertions(+), 1 deletion(-)
-> > > > 
-> > > > diff --git a/drivers/clk/clk-qoriq.c b/drivers/clk/clk-qoriq.c index
-> > > > 3a1812f..fc6e308 100644
-> > > > --- a/drivers/clk/clk-qoriq.c
-> > > > +++ b/drivers/clk/clk-qoriq.c
-> > > > @@ -60,7 +60,7 @@ struct clockgen_muxinfo {  };
-> > > > 
-> > > >  #define NUM_HWACCEL	5
-> > > > -#define NUM_CMUX	8
-> > > > +#define NUM_CMUX	16
-> > > > 
-> > > >  struct clockgen;
-> > > > 
-> > > > @@ -570,6 +570,17 @@ static const struct clockgen_chipinfo chipinfo[]
-> > > > =
-> > > > {
-> > > >  		.flags = CG_VER3 | CG_LITTLE_ENDIAN,
-> > > >  	},
-> > > >  	{
-> > > > +		.compat = "fsl,lx2160a-clockgen",
-> > > > +		.cmux_groups = {
-> > > > +			&clockgen2_cmux_cga12, &clockgen2_cmux_cgb
-> > > > +		},
-> > > > +		.cmux_to_group = {
-> > > > +			0, 0, 0, 0, 1, 1, 1, 1, -1
-> > > > +		},
-> > > > +		.pll_mask = 0x37,
-> > > > +		.flags = CG_VER3 | CG_LITTLE_ENDIAN,
-> > > > +	},
-> > > 
-> > > Why are you increasing NUM_CMUX beyond 8 for a chip that only has 8
-> > > entries in cmux_to_group?
-> > 
-> > Configuration is 16 cores,8 cluster with 2 cores in each cluster
-> 
-> So?  This is about cmuxes, not cores.  You're increasing the array without
-> ever using the new size.
+From: Randy Dunlap <rdunlap@infradead.org>
 
-Oh, and you also broke p4080 which has 8 cmuxes but no -1 terminator, because
-the array was of length 8.  Probably the array should be changed to NUM_CMUX+1
-so every array can be -1 terminated.
+[ Upstream commit f5daf77a55ef0e695cc90c440ed6503073ac5e07 ]
 
--Scott
+Fix build errors and warnings in t1042rdb_diu.c by adding header files
+and MODULE_LICENSE().
+
+../arch/powerpc/platforms/85xx/t1042rdb_diu.c:152:1: warning: data definiti=
+on has no type or storage class
+ early_initcall(t1042rdb_diu_init);
+../arch/powerpc/platforms/85xx/t1042rdb_diu.c:152:1: error: type defaults t=
+o 'int' in declaration of 'early_initcall' [-Werror=3Dimplicit-int]
+../arch/powerpc/platforms/85xx/t1042rdb_diu.c:152:1: warning: parameter nam=
+es (without types) in function declaration
+
+and
+WARNING: modpost: missing MODULE_LICENSE() in arch/powerpc/platforms/85xx/t=
+1042rdb_diu.o
+
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Scott Wood <oss@buserror.net>
+Cc: Kumar Gala <galak@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Sasha Levin <alexander.levin@microsoft.com>
+---
+ arch/powerpc/platforms/85xx/t1042rdb_diu.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/arch/powerpc/platforms/85xx/t1042rdb_diu.c b/arch/powerpc/plat=
+forms/85xx/t1042rdb_diu.c
+index 58fa3d319f1c..dac36ba82fea 100644
+--- a/arch/powerpc/platforms/85xx/t1042rdb_diu.c
++++ b/arch/powerpc/platforms/85xx/t1042rdb_diu.c
+@@ -9,8 +9,10 @@
+  * option) any later version.
+  */
+=20
++#include <linux/init.h>
+ #include <linux/io.h>
+ #include <linux/kernel.h>
++#include <linux/module.h>
+ #include <linux/of.h>
+ #include <linux/of_address.h>
+=20
+@@ -150,3 +152,5 @@ static int __init t1042rdb_diu_init(void)
+ }
+=20
+ early_initcall(t1042rdb_diu_init);
++
++MODULE_LICENSE("GPL");
+--=20
+2.17.1
