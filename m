@@ -1,18 +1,44 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from ozlabs.ru (unknown [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 421ppL0bSLzF38M
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Aug 2018 16:08:57 +1000 (AEST)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Paul Mackerras <paulus@ozlabs.org>
-Subject: [PATCH kernel] KVM: PPC: Avoid mapping compound pages to TCEs in real
- mode
-Date: Fri, 31 Aug 2018 16:08:50 +1000
-Message-Id: <20180831060850.33010-1-aik@ozlabs.ru>
+Return-Path: <andy.tang@nxp.com>
+Received: from EUR03-AM5-obe.outbound.protection.outlook.com
+ (mail-eopbgr30088.outbound.protection.outlook.com [40.107.3.88])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 421ptS5ZkhzF38n
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Aug 2018 16:12:30 +1000 (AEST)
+From: Andy Tang <andy.tang@nxp.com>
+To: Scott Wood <oss@buserror.net>, Vabhav Sharma <vabhav.sharma@nxp.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com"
+ <mark.rutland@arm.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "mturquette@baylibre.com"
+ <mturquette@baylibre.com>, "sboyd@kernel.org" <sboyd@kernel.org>,
+ "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org"
+ <viresh.kumar@linaro.org>, "linux-clk@vger.kernel.org"
+ <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org"
+ <linux-pm@vger.kernel.org>, "linux-kernel-owner@vger.kernel.org"
+ <linux-kernel-owner@vger.kernel.org>, "catalin.marinas@arm.com"
+ <catalin.marinas@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>,
+ "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "arnd@arndb.de"
+ <arnd@arndb.de>, "kstewart@linuxfoundation.org"
+ <kstewart@linuxfoundation.org>, "yamada.masahiro@socionext.com"
+ <yamada.masahiro@socionext.com>
+CC: Yogesh Narayan Gaur <yogeshnarayan.gaur@nxp.com>, "linux@armlinux.org.uk"
+ <linux@armlinux.org.uk>, Varun Sethi <V.Sethi@nxp.com>, Udit Kumar
+ <udit.kumar@nxp.com>
+Subject: RE: [PATCH 3/5] drivers: clk-qoriq: Add clockgen support for lx2160a
+Date: Fri, 31 Aug 2018 06:12:23 +0000
+Message-ID: <DB5PR0401MB22130C025AA4CCAD0221781DF30F0@DB5PR0401MB2213.eurprd04.prod.outlook.com>
+References: <1534747636-20064-1-git-send-email-vabhav.sharma@nxp.com>
+ <1534747636-20064-4-git-send-email-vabhav.sharma@nxp.com>
+ <4a9ea6b451683ec98c92e86a5ae6b91213a6afcf.camel@buserror.net>
+ <VI1PR04MB4800E8B1E8541FCA9221A1CFF3080@VI1PR04MB4800.eurprd04.prod.outlook.com>
+ <d2cfd49eb33a3ce74f0e78f2b53d3954d2cb3e76.camel@buserror.net>
+ <b31ae8e788fb93971167faa9b55b497e838532c4.camel@buserror.net>
+In-Reply-To: <b31ae8e788fb93971167faa9b55b497e838532c4.camel@buserror.net>
+Content-Type: text/plain; charset="gb2312"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,180 +48,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At the moment the real mode handler of H_PUT_TCE calls iommu_tce_xchg_rm()
-which in turn reads the old TCE and if it was a valid entry - marks
-the physical page dirty if it was mapped for writing. Since it is
-the real mode, realmode_pfn_to_page() is used instead of pfn_to_page()
-to get the page struct. However SetPageDirty() itself reads the compound
-page head and returns a virtual address for the head page struct and
-setting dirty bit for that kills the system.
-
-This moves dirty bit setting before updating the hardware table to make
-sure compound pages are never mapped in the real mode so when H_PUT_TCE
-or H_STUFF_TCE try clearing a TCE, they won't get a compound page to mark
-dirty.
-
-This changes kvmppc_rm_tce_validate() to check if the preregistered
-memory is backed with pages bigger than hardware IOMMU pages; if this is
-the case, we forward the request to the virtual mode handlers where it
-can be safely processed.
-
-The second check makes the first check rather unnecessary but since
-the actual crash happened at the SetPageDirty() call site, this marks
-the spot with WARN_ON_ONCE.
-
-In order to keep virtual and real mode handlers in sync, this adjusts
-iommu_tce_xchg() as well.
-
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
-
-This is made on top of:
-[PATCH kernel 0/4] KVM: PPC: Some error handling rework
-  KVM: PPC: Validate all tces before updating tables
-  KVM: PPC: Inform the userspace about TCE update failures
-  KVM: PPC: Validate TCEs against preregistered memory page sizes
-  KVM: PPC: Propagate errors to the guest when failed instead of
-    ignoring
----
- arch/powerpc/include/asm/mmu_context.h |  3 ++-
- arch/powerpc/kernel/iommu.c            | 19 ++++++++-----------
- arch/powerpc/kvm/book3s_64_vio_hv.c    | 15 +++++++++++----
- arch/powerpc/mm/mmu_context_iommu.c    |  4 +++-
- 4 files changed, 24 insertions(+), 17 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-index b2f89b6..073d72f9b 100644
---- a/arch/powerpc/include/asm/mmu_context.h
-+++ b/arch/powerpc/include/asm/mmu_context.h
-@@ -31,7 +31,8 @@ extern void mm_iommu_cleanup(struct mm_struct *mm);
- extern struct mm_iommu_table_group_mem_t *mm_iommu_lookup(struct mm_struct *mm,
- 		unsigned long ua, unsigned long size);
- extern struct mm_iommu_table_group_mem_t *mm_iommu_lookup_rm(
--		struct mm_struct *mm, unsigned long ua, unsigned long size);
-+		struct mm_struct *mm, unsigned long ua, unsigned long size,
-+		unsigned int *pshift);
- extern struct mm_iommu_table_group_mem_t *mm_iommu_find(struct mm_struct *mm,
- 		unsigned long ua, unsigned long entries);
- extern long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
-diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-index af7a20d..62e014d 100644
---- a/arch/powerpc/kernel/iommu.c
-+++ b/arch/powerpc/kernel/iommu.c
-@@ -998,12 +998,11 @@ long iommu_tce_xchg(struct iommu_table *tbl, unsigned long entry,
- {
- 	long ret;
- 
--	ret = tbl->it_ops->exchange(tbl, entry, hpa, direction);
--
--	if (!ret && ((*direction == DMA_FROM_DEVICE) ||
--			(*direction == DMA_BIDIRECTIONAL)))
-+	if (*direction == DMA_FROM_DEVICE || *direction == DMA_BIDIRECTIONAL)
- 		SetPageDirty(pfn_to_page(*hpa >> PAGE_SHIFT));
- 
-+	ret = tbl->it_ops->exchange(tbl, entry, hpa, direction);
-+
- 	/* if (unlikely(ret))
- 		pr_err("iommu_tce: %s failed on hwaddr=%lx ioba=%lx kva=%lx ret=%d\n",
- 			__func__, hwaddr, entry << tbl->it_page_shift,
-@@ -1019,20 +1018,18 @@ long iommu_tce_xchg_rm(struct iommu_table *tbl, unsigned long entry,
- {
- 	long ret;
- 
--	ret = tbl->it_ops->exchange_rm(tbl, entry, hpa, direction);
--
--	if (!ret && ((*direction == DMA_FROM_DEVICE) ||
--			(*direction == DMA_BIDIRECTIONAL))) {
-+	if (*direction == DMA_FROM_DEVICE || *direction == DMA_BIDIRECTIONAL) {
- 		struct page *pg = realmode_pfn_to_page(*hpa >> PAGE_SHIFT);
- 
- 		if (likely(pg)) {
-+			if (WARN_ON_ONCE(PageCompound(pg)))
-+				return -EPERM;
- 			SetPageDirty(pg);
--		} else {
--			tbl->it_ops->exchange_rm(tbl, entry, hpa, direction);
--			ret = -EFAULT;
- 		}
- 	}
- 
-+	ret = tbl->it_ops->exchange_rm(tbl, entry, hpa, direction);
-+
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(iommu_tce_xchg_rm);
-diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
-index 8d82133..ce4d2f4 100644
---- a/arch/powerpc/kvm/book3s_64_vio_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
-@@ -118,11 +118,17 @@ static long kvmppc_rm_tce_validate(struct kvmppc_spapr_tce_table *stt,
- 		unsigned long hpa = 0;
- 		struct mm_iommu_table_group_mem_t *mem;
- 		long shift = stit->tbl->it_page_shift;
-+		unsigned int memshift = 0;
- 
--		mem = mm_iommu_lookup_rm(stt->kvm->mm, ua, 1ULL << shift);
-+		mem = mm_iommu_lookup_rm(stt->kvm->mm, ua, 1ULL << shift,
-+				&memshift);
- 		if (!mem)
- 			return H_TOO_HARD;
- 
-+		/* Marking compound pages dirty in real mode is too complex */
-+		if (memshift > shift)
-+			return H_TOO_HARD;
-+
- 		if (mm_iommu_ua_to_hpa_rm(mem, ua, shift, &hpa))
- 			return H_TOO_HARD;
- 	}
-@@ -222,7 +228,7 @@ static long kvmppc_rm_tce_iommu_mapped_dec(struct kvm *kvm,
- 		/* it_userspace allocation might be delayed */
- 		return H_TOO_HARD;
- 
--	mem = mm_iommu_lookup_rm(kvm->mm, be64_to_cpu(*pua), pgsize);
-+	mem = mm_iommu_lookup_rm(kvm->mm, be64_to_cpu(*pua), pgsize, NULL);
- 	if (!mem)
- 		return H_TOO_HARD;
- 
-@@ -287,7 +293,7 @@ static long kvmppc_rm_tce_iommu_do_map(struct kvm *kvm, struct iommu_table *tbl,
- 		/* it_userspace allocation might be delayed */
- 		return H_TOO_HARD;
- 
--	mem = mm_iommu_lookup_rm(kvm->mm, ua, 1ULL << tbl->it_page_shift);
-+	mem = mm_iommu_lookup_rm(kvm->mm, ua, 1ULL << tbl->it_page_shift, NULL);
- 	if (!mem)
- 		return H_TOO_HARD;
- 
-@@ -472,7 +478,8 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
- 		if (kvmppc_gpa_to_ua(vcpu->kvm, tce_list, &ua, NULL))
- 			return H_TOO_HARD;
- 
--		mem = mm_iommu_lookup_rm(vcpu->kvm->mm, ua, IOMMU_PAGE_SIZE_4K);
-+		mem = mm_iommu_lookup_rm(vcpu->kvm->mm, ua, IOMMU_PAGE_SIZE_4K,
-+				NULL);
- 		if (mem)
- 			prereg = mm_iommu_ua_to_hpa_rm(mem, ua,
- 					IOMMU_PAGE_SHIFT_4K, &tces) == 0;
-diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_context_iommu.c
-index c9ee9e2..5c31fa5 100644
---- a/arch/powerpc/mm/mmu_context_iommu.c
-+++ b/arch/powerpc/mm/mmu_context_iommu.c
-@@ -344,7 +344,7 @@ struct mm_iommu_table_group_mem_t *mm_iommu_lookup(struct mm_struct *mm,
- EXPORT_SYMBOL_GPL(mm_iommu_lookup);
- 
- struct mm_iommu_table_group_mem_t *mm_iommu_lookup_rm(struct mm_struct *mm,
--		unsigned long ua, unsigned long size)
-+		unsigned long ua, unsigned long size, unsigned int *pshift)
- {
- 	struct mm_iommu_table_group_mem_t *mem, *ret = NULL;
- 
-@@ -354,6 +354,8 @@ struct mm_iommu_table_group_mem_t *mm_iommu_lookup_rm(struct mm_struct *mm,
- 				(ua + size <= mem->ua +
- 				 (mem->entries << PAGE_SHIFT))) {
- 			ret = mem;
-+			if (pshift)
-+				*pshift = mem->pageshift;
- 			break;
- 		}
- 	}
--- 
-2.11.0
+SGkgU2NvdHQsDQoNClBsZWFzZSBzZWUgbXkgcmVwbGF5IGlubGluZS4NCg0KPiAtLS0tLU9yaWdp
+bmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBsaW51eC1hcm0ta2VybmVsIDxsaW51eC1hcm0ta2Vy
+bmVsLWJvdW5jZXNAbGlzdHMuaW5mcmFkZWFkLm9yZz4NCj4gT24gQmVoYWxmIE9mIFNjb3R0IFdv
+b2QNCj4gU2VudDogMjAxOMTqONTCMzHI1SAxOjQzDQo+IFRvOiBWYWJoYXYgU2hhcm1hIDx2YWJo
+YXYuc2hhcm1hQG54cC5jb20+Ow0KPiBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyBkZXZp
+Y2V0cmVlQHZnZXIua2VybmVsLm9yZzsNCj4gcm9iaCtkdEBrZXJuZWwub3JnOyBtYXJrLnJ1dGxh
+bmRAYXJtLmNvbTsNCj4gbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGxpbnV4LWFybS1r
+ZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZzsNCj4gbXR1cnF1ZXR0ZUBiYXlsaWJyZS5jb207IHNi
+b3lkQGtlcm5lbC5vcmc7IHJqd0Byand5c29ja2kubmV0Ow0KPiB2aXJlc2gua3VtYXJAbGluYXJv
+Lm9yZzsgbGludXgtY2xrQHZnZXIua2VybmVsLm9yZzsNCj4gbGludXgtcG1Admdlci5rZXJuZWwu
+b3JnOyBsaW51eC1rZXJuZWwtb3duZXJAdmdlci5rZXJuZWwub3JnOw0KPiBjYXRhbGluLm1hcmlu
+YXNAYXJtLmNvbTsgd2lsbC5kZWFjb25AYXJtLmNvbTsNCj4gZ3JlZ2toQGxpbnV4Zm91bmRhdGlv
+bi5vcmc7IGFybmRAYXJuZGIuZGU7DQo+IGtzdGV3YXJ0QGxpbnV4Zm91bmRhdGlvbi5vcmc7IHlh
+bWFkYS5tYXNhaGlyb0Bzb2Npb25leHQuY29tDQo+IENjOiBZb2dlc2ggTmFyYXlhbiBHYXVyIDx5
+b2dlc2huYXJheWFuLmdhdXJAbnhwLmNvbT47IEFuZHkgVGFuZw0KPiA8YW5keS50YW5nQG54cC5j
+b20+OyBsaW51eEBhcm1saW51eC5vcmcudWs7IFZhcnVuIFNldGhpDQo+IDxWLlNldGhpQG54cC5j
+b20+OyBVZGl0IEt1bWFyIDx1ZGl0Lmt1bWFyQG54cC5jb20+DQo+IFN1YmplY3Q6IFJlOiBbUEFU
+Q0ggMy81XSBkcml2ZXJzOiBjbGstcW9yaXE6IEFkZCBjbG9ja2dlbiBzdXBwb3J0IGZvcg0KPiBs
+eDIxNjBhDQo+IA0KPiBPbiBUaHUsIDIwMTgtMDgtMzAgYXQgMTI6MzkgLTA1MDAsIFNjb3R0IFdv
+b2Qgd3JvdGU6DQo+ID4gT24gVGh1LCAyMDE4LTA4LTMwIGF0IDA3OjM2ICswMDAwLCBWYWJoYXYg
+U2hhcm1hIHdyb3RlOg0KPiA+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4g
+PiBGcm9tOiBsaW51eC1rZXJuZWwtb3duZXJAdmdlci5rZXJuZWwub3JnIDxsaW51eC1rZXJuZWwt
+DQo+ID4gPiA+IG93bmVyQHZnZXIua2VybmVsLm9yZz4gT24gQmVoYWxmIE9mIFNjb3R0IFdvb2QN
+Cj4gPiA+ID4gU2VudDogV2VkbmVzZGF5LCBBdWd1c3QgMjksIDIwMTggNTo0OSBBTQ0KPiA+ID4g
+PiBUbzogVmFiaGF2IFNoYXJtYSA8dmFiaGF2LnNoYXJtYUBueHAuY29tPjsgbGludXgtDQo+ID4g
+PiA+IGtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnOw0K
+PiA+ID4gPiByb2JoK2R0QGtlcm5lbC5vcmc7IG1hcmsucnV0bGFuZEBhcm0uY29tOw0KPiA+ID4g
+PiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgbGludXgtYXJtLQ0KPiA+ID4gPiBrZXJu
+ZWxAbGlzdHMuaW5mcmFkZWFkLm9yZzsgbXR1cnF1ZXR0ZUBiYXlsaWJyZS5jb207DQo+ID4gPiA+
+IHNib3lkQGtlcm5lbC5vcmc7IHJqd0Byand5c29ja2kubmV0OyB2aXJlc2gua3VtYXJAbGluYXJv
+Lm9yZzsNCj4gPiA+ID4gbGludXgtY2xrQHZnZXIua2VybmVsLm9yZzsgbGludXgtcG1Admdlci5r
+ZXJuZWwub3JnOw0KPiA+ID4gPiBsaW51eC1rZXJuZWwtb3duZXJAdmdlci5rZXJuZWwub3JnOw0K
+PiA+ID4gPiBjYXRhbGluLm1hcmluYXNAYXJtLmNvbTsgd2lsbC5kZWFjb25AYXJtLmNvbTsNCj4g
+PiA+ID4gZ3JlZ2toQGxpbnV4Zm91bmRhdGlvbi5vcmc7IGFybmRAYXJuZGIuZGU7DQo+ID4gPiA+
+IGtzdGV3YXJ0QGxpbnV4Zm91bmRhdGlvbi5vcmc7IHlhbWFkYS5tYXNhaGlyb0Bzb2Npb25leHQu
+Y29tDQo+ID4gPiA+IENjOiBZb2dlc2ggTmFyYXlhbiBHYXVyIDx5b2dlc2huYXJheWFuLmdhdXJA
+bnhwLmNvbT47IEFuZHkNCj4gVGFuZw0KPiA+ID4gPiA8YW5keS50YW5nQG54cC5jb20+OyBVZGl0
+IEt1bWFyIDx1ZGl0Lmt1bWFyQG54cC5jb20+Ow0KPiA+ID4gPiBsaW51eEBhcm1saW51eC5vcmcu
+dWs7IFZhcnVuIFNldGhpIDxWLlNldGhpQG54cC5jb20+DQo+ID4gPiA+IFN1YmplY3Q6IFJlOiBb
+UEFUQ0ggMy81XSBkcml2ZXJzOiBjbGstcW9yaXE6IEFkZCBjbG9ja2dlbiBzdXBwb3J0DQo+ID4g
+PiA+IGZvciBseDIxNjBhDQo+ID4gPiA+DQo+ID4gPiA+IE9uIE1vbiwgMjAxOC0wOC0yMCBhdCAx
+MjoxNyArMDUzMCwgVmFiaGF2IFNoYXJtYSB3cm90ZToNCj4gPiA+ID4gPiBGcm9tOiBZb2dlc2gg
+R2F1ciA8eW9nZXNobmFyYXlhbi5nYXVyQG54cC5jb20+DQo+ID4gPiA+ID4NCj4gPiA+ID4gPiBB
+ZGQgY2xvY2tnZW4gc3VwcG9ydCBmb3IgbHgyMTYwYS4NCj4gPiA+ID4gPiBBZGRlZCBlbnRyeSBm
+b3IgY29tcGF0ICdmc2wsbHgyMTYwYS1jbG9ja2dlbicuDQo+ID4gPiA+ID4gQXMgTFgyMTYwQSBp
+cyAxNiBjb3JlLCBzbyBtb2RpZmllZCB2YWx1ZSBmb3IgTlVNX0NNVVgNCj4gPiA+ID4gPg0KPiA+
+ID4gPiA+IFNpZ25lZC1vZmYtYnk6IFRhbmcgWXVhbnRpYW4gPGFuZHkudGFuZ0BueHAuY29tPg0K
+PiA+ID4gPiA+IFNpZ25lZC1vZmYtYnk6IFlvZ2VzaCBHYXVyIDx5b2dlc2huYXJheWFuLmdhdXJA
+bnhwLmNvbT4NCj4gPiA+ID4gPiBTaWduZWQtb2ZmLWJ5OiBWYWJoYXYgU2hhcm1hIDx2YWJoYXYu
+c2hhcm1hQG54cC5jb20+DQo+ID4gPiA+ID4gLS0tDQo+ID4gPiA+ID4gIGRyaXZlcnMvY2xrL2Ns
+ay1xb3JpcS5jICAgICAgICAgfCAxNCArKysrKysrKysrKysrLQ0KPiA+ID4gPiA+ICBkcml2ZXJz
+L2NwdWZyZXEvcW9yaXEtY3B1ZnJlcS5jIHwgIDEgKw0KPiA+ID4gPiA+ICAyIGZpbGVzIGNoYW5n
+ZWQsIDE0IGluc2VydGlvbnMoKyksIDEgZGVsZXRpb24oLSkNCj4gPiA+ID4gPg0KPiA+ID4gPiA+
+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2Nsay9jbGstcW9yaXEuYyBiL2RyaXZlcnMvY2xrL2Nsay1x
+b3JpcS5jDQo+ID4gPiA+ID4gaW5kZXgNCj4gPiA+ID4gPiAzYTE4MTJmLi5mYzZlMzA4IDEwMDY0
+NA0KPiA+ID4gPiA+IC0tLSBhL2RyaXZlcnMvY2xrL2Nsay1xb3JpcS5jDQo+ID4gPiA+ID4gKysr
+IGIvZHJpdmVycy9jbGsvY2xrLXFvcmlxLmMNCj4gPiA+ID4gPiBAQCAtNjAsNyArNjAsNyBAQCBz
+dHJ1Y3QgY2xvY2tnZW5fbXV4aW5mbyB7ICB9Ow0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gICNkZWZp
+bmUgTlVNX0hXQUNDRUwJNQ0KPiA+ID4gPiA+IC0jZGVmaW5lIE5VTV9DTVVYCTgNCj4gPiA+ID4g
+PiArI2RlZmluZSBOVU1fQ01VWAkxNg0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gIHN0cnVjdCBjbG9j
+a2dlbjsNCj4gPiA+ID4gPg0KPiA+ID4gPiA+IEBAIC01NzAsNiArNTcwLDE3IEBAIHN0YXRpYyBj
+b25zdCBzdHJ1Y3QgY2xvY2tnZW5fY2hpcGluZm8NCj4gPiA+ID4gPiBjaGlwaW5mb1tdID0gew0K
+PiA+ID4gPiA+ICAJCS5mbGFncyA9IENHX1ZFUjMgfCBDR19MSVRUTEVfRU5ESUFOLA0KPiA+ID4g
+PiA+ICAJfSwNCj4gPiA+ID4gPiAgCXsNCj4gPiA+ID4gPiArCQkuY29tcGF0ID0gImZzbCxseDIx
+NjBhLWNsb2NrZ2VuIiwNCj4gPiA+ID4gPiArCQkuY211eF9ncm91cHMgPSB7DQo+ID4gPiA+ID4g
+KwkJCSZjbG9ja2dlbjJfY211eF9jZ2ExMiwgJmNsb2NrZ2VuMl9jbXV4X2NnYg0KPiA+ID4gPiA+
+ICsJCX0sDQo+ID4gPiA+ID4gKwkJLmNtdXhfdG9fZ3JvdXAgPSB7DQo+ID4gPiA+ID4gKwkJCTAs
+IDAsIDAsIDAsIDEsIDEsIDEsIDEsIC0xDQo+ID4gPiA+ID4gKwkJfSwNCj4gPiA+ID4gPiArCQku
+cGxsX21hc2sgPSAweDM3LA0KPiA+ID4gPiA+ICsJCS5mbGFncyA9IENHX1ZFUjMgfCBDR19MSVRU
+TEVfRU5ESUFOLA0KPiA+ID4gPiA+ICsJfSwNCj4gPiA+ID4NCj4gPiA+ID4gV2h5IGFyZSB5b3Ug
+aW5jcmVhc2luZyBOVU1fQ01VWCBiZXlvbmQgOCBmb3IgYSBjaGlwIHRoYXQgb25seQ0KPiBoYXMN
+Cj4gPiA+ID4gOCBlbnRyaWVzIGluIGNtdXhfdG9fZ3JvdXA/DQo+ID4gPg0KPiA+ID4gQ29uZmln
+dXJhdGlvbiBpcyAxNiBjb3Jlcyw4IGNsdXN0ZXIgd2l0aCAyIGNvcmVzIGluIGVhY2ggY2x1c3Rl
+cg0KPiA+DQo+ID4gU28/ICBUaGlzIGlzIGFib3V0IGNtdXhlcywgbm90IGNvcmVzLiAgWW91J3Jl
+IGluY3JlYXNpbmcgdGhlIGFycmF5DQo+ID4gd2l0aG91dCBldmVyIHVzaW5nIHRoZSBuZXcgc2l6
+ZS4NCj4gDQo+IE9oLCBhbmQgeW91IGFsc28gYnJva2UgcDQwODAgd2hpY2ggaGFzIDggY211eGVz
+IGJ1dCBubyAtMSB0ZXJtaW5hdG9yLA0KPiBiZWNhdXNlIHRoZSBhcnJheSB3YXMgb2YgbGVuZ3Ro
+IDguICBQcm9iYWJseSB0aGUgYXJyYXkgc2hvdWxkIGJlIGNoYW5nZWQNCj4gdG8gTlVNX0NNVVgr
+MSBzbyBldmVyeSBhcnJheSBjYW4gYmUgLTEgdGVybWluYXRlZC4NCj4gDQpbQW5keV0gSG93IGFi
+b3V0IHdlIGFkZCAtMSB0ZXJtaW5hdG9yIHRvIHA0MDgwIGFuZCBpbmNyZWFzZSBOVU1fQ01VWCB0
+byAxNj8NCldlIGRvbid0IHdhbnQgdG8gaW5jcmVhc2UgTlVNX0NNVVggZWFjaCB0aW1lIG5ldyBz
+b2Mgd2l0aCBtb3JlIGNtdXhlcyBhZGRlZC4NCg0KQlIsDQpBbmR5IFRhbmcNCg0KPiAtU2NvdHQN
+Cj4gDQo+IA0KPiBfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+Xw0KPiBsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlzdA0KPiBsaW51eC1hcm0ta2VybmVsQGxp
+c3RzLmluZnJhZGVhZC5vcmcNCj4gaHR0cHM6Ly9lbWVhMDEuc2FmZWxpbmtzLnByb3RlY3Rpb24u
+b3V0bG9vay5jb20vP3VybD1odHRwJTNBJTJGJTJGbGlzdA0KPiBzLmluZnJhZGVhZC5vcmclMkZt
+YWlsbWFuJTJGbGlzdGluZm8lMkZsaW51eC1hcm0ta2VybmVsJmFtcDtkYXRhPTAyDQo+ICU3QzAx
+JTdDYW5keS50YW5nJTQwbnhwLmNvbSU3Qzk2M2QwY2RmNDk5NjQ1MzllYTQ0MDhkNjBlYTA2DQo+
+IDYzYiU3QzY4NmVhMWQzYmMyYjRjNmZhOTJjZDk5YzVjMzAxNjM1JTdDMCU3QzAlN0M2MzY3MTI0
+Nw0KPiA5NDE0NTYxMTAxJmFtcDtzZGF0YT1yWlklMkY1SlAwVEJaUkxyJTJCcDZxYUc0b1NRZDhm
+c052aXo5MkFZDQo+IDNJb0xUT3clM0QmYW1wO3Jlc2VydmVkPTANCg==
