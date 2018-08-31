@@ -1,48 +1,42 @@
-Return-Path: <srikar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <david@redhat.com>
+Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 421zpt26CbzF39F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Aug 2018 22:55:01 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w7VBnEMi067922
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Aug 2018 07:53:58 -0400
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2m72n1ehay-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Aug 2018 07:53:58 -0400
-Received: from localhost
- by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srikar@linux.vnet.ibm.com>;
- Fri, 31 Aug 2018 12:53:56 +0100
-Date: Fri, 31 Aug 2018 04:53:50 -0700
-From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
- Mel Gorman <mgorman@techsingularity.net>,
- Rik van Riel <riel@surriel.com>, Thomas Gleixner <tglx@linutronix.de>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Suravee Suthikulpanit <suravee.suthikulpanit@amd.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Benjamin Herrenschmidt <benh@au1.ibm.com>
-Subject: Re: [PATCH 2/2] sched/topology: Expose numa_mask set/clear functions
- to arch
-Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-References: <20180808081942.GA37418@linux.vnet.ibm.com>
- <1533920419-17410-1-git-send-email-srikar@linux.vnet.ibm.com>
- <1533920419-17410-2-git-send-email-srikar@linux.vnet.ibm.com>
- <20180829080219.GN24124@hirez.programming.kicks-ass.net>
- <20180831102724.GB8437@linux.vnet.ibm.com>
- <20180831111253.GJ24124@hirez.programming.kicks-ass.net>
- <20180831112639.GA24142@hirez.programming.kicks-ass.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4220Bl4LVdzF09x
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Aug 2018 23:12:15 +1000 (AEST)
+Subject: Re: [PATCH RFCv2 1/6] mm/memory_hotplug: make remove_memory() take
+ the device_hotplug_lock
+To: Pasha Tatashin <Pavel.Tatashin@microsoft.com>,
+ "linux-mm@kvack.org" <linux-mm@kvack.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+ "xen-devel@lists.xenproject.org" <xen-devel@lists.xenproject.org>,
+ "devel@linuxdriverproject.org" <devel@linuxdriverproject.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>,
+ Rashmica Gupta <rashmica.g@gmail.com>, Michael Neuling <mikey@neuling.org>,
+ Balbir Singh <bsingharora@gmail.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ John Allen <jallen@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@suse.com>,
+ Dan Williams <dan.j.williams@intel.com>, Joonsoo Kim
+ <iamjoonsoo.kim@lge.com>, Vlastimil Babka <vbabka@suse.cz>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Oscar Salvador <osalvador@suse.de>,
+ YASUAKI ISHIMATSU <yasu.isimatu@gmail.com>,
+ Mathieu Malaterre <malat@debian.org>
+References: <20180821104418.12710-1-david@redhat.com>
+ <20180821104418.12710-2-david@redhat.com>
+ <46a0119b-da16-0203-a8c2-d127738517f4@microsoft.com>
+From: David Hildenbrand <david@redhat.com>
+Message-ID: <5b1f79cd-553b-4f9d-2690-8d7fb553278e@redhat.com>
+Date: Fri, 31 Aug 2018 15:12:05 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20180831112639.GA24142@hirez.programming.kicks-ass.net>
-Message-Id: <20180831115350.GC8437@linux.vnet.ibm.com>
+In-Reply-To: <46a0119b-da16-0203-a8c2-d127738517f4@microsoft.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,26 +46,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Peter Zijlstra <peterz@infradead.org> [2018-08-31 13:26:39]:
+On 30.08.2018 21:35, Pasha Tatashin wrote:
+>> +
+>> +void __ref remove_memory(int nid, u64 start, u64 size)
+> 
+> Remove __ref, otherwise looks good:
 
-> On Fri, Aug 31, 2018 at 01:12:53PM +0200, Peter Zijlstra wrote:
-> > NAK, not until you've fixed every cpu_to_node() user in the kernel to
-> > deal with that mask changing.
-> 
-> Also, what happens if userspace reads that information; uses libnuma and
-> then you go and shift the world underneath their feet?
-> 
-> > This is absolutely insane.
-> 
+Indeed, will do.
 
-The topology events are suppose to be very rare.
->From whatever small experiments I have done till now, unless tasks are
-bound to both cpu and memory, they seem to be coping well with topology
-updates. I know things weren't optimal after a topology change but they
-worked. Now after 051f3ca02e46 "Introduce NUMA identity node sched
-domain", systems stall. I am only exploring at ways to keep them working
-as much as they were before that commit.
+Thanks for the review. Will resend in two weeks when I'm back from vacation.
+
+Cheers!
+
+> 
+> Reviewed-by: Pavel Tatashin <pavel.tatashin@microsoft.com>
+> 
+>> +{
+>> +	lock_device_hotplug();
+>> +	__remove_memory(nid, start, size);
+>> +	unlock_device_hotplug();
+>> +}
+>>  EXPORT_SYMBOL_GPL(remove_memory);
+>>  #endif /* CONFIG_MEMORY_HOTREMOVE */
+
 
 -- 
-Thanks and Regards
-Srikar Dronamraju
+
+Thanks,
+
+David / dhildenb
