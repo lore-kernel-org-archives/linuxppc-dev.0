@@ -1,25 +1,83 @@
-Return-Path: <breno.debian@gmail.com>
-Received: from mail-qt1-f194.google.com (mail-qt1-f194.google.com
- [209.85.160.194])
+Return-Path: <ndesaulniers@google.com>
+Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
+ [IPv6:2607:f8b0:4864:20::544])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42LmcJ71pszF37q
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2018 06:29:04 +1000 (AEST)
-Received: by mail-qt1-f194.google.com with SMTP id z13-v6so4286608qts.5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 13:29:04 -0700 (PDT)
-Subject: Re: [RFC PATCH 01/11] powerpc/tm: Reclaim transaction on kernel entry
-To: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org
-Cc: paulus@ozlabs.org, gromero@linux.vnet.ibm.com, mpe@ellerman.id.au,
- ldufour@linux.vnet.ibm.com
-References: <1536781219-13938-1-git-send-email-leitao@debian.org>
- <1536781219-13938-2-git-send-email-leitao@debian.org>
- <5013d84a59185cd7a1b941e6cc145a1fbfe52f48.camel@neuling.org>
-From: Breno Leitao <leitao@debian.org>
-Message-ID: <1e00c875-436f-8cae-8d6e-032402486c80@debian.org>
-Date: Thu, 27 Sep 2018 17:28:57 -0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4225136yPHzF39L
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Sep 2018 02:49:11 +1000 (AEST)
+Received: by mail-pg1-x544.google.com with SMTP id s15-v6so5693019pgv.8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Aug 2018 09:49:11 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <5013d84a59185cd7a1b941e6cc145a1fbfe52f48.camel@neuling.org>
-Content-Type: text/plain; charset=utf-8
+References: <20180821202900.208417-1-ndesaulniers@google.com>
+ <207784db-4fcc-85e7-a0b2-fec26b7dab81@gmx.de>
+ <c62e4e00-fb8f-19a6-f3eb-bde60118cb1a@zytor.com>
+ <81141365-8168-799b-f34f-da5f92efaaf9@zytor.com>
+ <7f49eeab-a5cc-867f-58fb-abd266f9c2c9@zytor.com>
+ <6ca8a1d3-ff95-e9f4-f003-0a5af85bcb6f@zytor.com>
+ <CA+55aFzuSCKfmgT9efHuwtan+m3+bPh4BpwbZwn5gGX_H=Thuw@mail.gmail.com>
+ <CAKwvOd=wAaPBkFHAcWxgMW91a--9gbvu7xrt3j-q8c+-mT=7Lw@mail.gmail.com>
+ <20180827073358.GV24124@hirez.programming.kicks-ass.net>
+ <f9896d68-4a49-e666-cea5-a9c0522f1658@zytor.com>
+ <20180827131103.GD24124@hirez.programming.kicks-ass.net>
+ <4d1a8f35-e2fc-70d2-ca0e-44b8574c86f1@zytor.com>
+In-Reply-To: <4d1a8f35-e2fc-70d2-ca0e-44b8574c86f1@zytor.com>
+From: Nick Desaulniers <ndesaulniers@google.com>
+Date: Fri, 31 Aug 2018 09:48:56 -0700
+Message-ID: <CAKwvOdmXhRZJ5bQw+W0Ro+oeWSTRJzG1UAJnjyjciR1JFs+ubA@mail.gmail.com>
+Subject: Re: [PATCH] treewide: remove current_text_addr
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, deller@gmx.de,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "Eric W . Biederman" <ebiederm@xmission.com>,
+ Thomas Gleixner <tglx@linutronix.de>, mingo@redhat.com,
+ Simon Horman <horms@verge.net.au>,
+ Nathan Chancellor <natechancellor@gmail.com>,
+ Philippe Ombredanne <pombredanne@nexb.com>,
+ Kate Stewart <kstewart@linuxfoundation.org>,
+ Greg KH <gregkh@linuxfoundation.org>,
+ rth@twiddle.net, ink@jurassic.park.msu.ru, Matt Turner <mattst88@gmail.com>,
+ vgupta@synopsys.com, linux@armlinux.org.uk,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
+ msalter@redhat.com,
+ jacquiot.aurelien@gmail.com, Yoshinori Sato <ysato@users.sourceforge.jp>,
+ rkuo@codeaurora.org, tony.luck@intel.com, fenghua.yu@intel.com,
+ Geert Uytterhoeven <geert@linux-m68k.org>, Michal Simek <monstr@monstr.eu>,
+ ralf@linux-mips.org,
+ paul.burton@mips.com, jhogan@kernel.org, Green Hu <green.hu@gmail.com>,
+ deanbo422@gmail.com, lftan@altera.com, Jonas Bonn <jonas@southpole.se>,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ Stafford Horne <shorne@gmail.com>,
+ jejb@parisc-linux.org, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, palmer@sifive.com, aou@eecs.berkeley.edu,
+ schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, dalias@libc.org,
+ "David S. Miller" <davem@davemloft.net>, gxt@pku.edu.cn, x86@kernel.org,
+ jdike@addtoit.com, richard@nod.at, Chris Zankel <chris@zankel.net>,
+ Max Filippov <jcmvbkbc@gmail.com>,
+ Tobias Klauser <tklauser@distanz.ch>, noamc@ezchip.com, mickael.guene@st.com,
+ Nicolas Pitre <nicolas.pitre@linaro.org>, Kees Cook <keescook@chromium.org>,
+ Dave Martin <Dave.Martin@arm.com>, Marc Zyngier <marc.zyngier@arm.com>,
+ =?UTF-8?B?QWxleCBCZW5uw6ll?= <alex.bennee@linaro.org>,
+ Laura Abbott <labbott@redhat.com>, Yury Norov <ynorov@caviumnetworks.com>,
+ Mark Rutland <mark.rutland@arm.com>, chenhc@lemote.com, macro@mips.com,
+ Arnd Bergmann <arnd@arndb.de>, dhowells@redhat.com, sukadev@linux.vnet.ibm.com,
+ Nicholas Piggin <npiggin@gmail.com>, aneesh.kumar@linux.vnet.ibm.com,
+ felix@linux.vnet.ibm.com, linuxram@us.ibm.com, christophe.leroy@c-s.fr,
+ cohuck@redhat.com, gor@linux.vnet.ibm.com, nick.alcock@oracle.com,
+ shannon.nelson@oracle.com,
+ Nagarathnam Muthusamy <nagarathnam.muthusamy@oracle.com>, luto@kernel.org,
+ bp@suse.de,
+ dave.hansen@linux.intel.com, vkuznets@redhat.com, jkosina@suse.cz,
+ linux-alpha@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+ linux-snps-arc@lists.infradead.org,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-c6x-dev@linux-c6x.org,
+ uclinux-h8-devel@lists.sourceforge.jp, linux-hexagon@vger.kernel.org,
+ linux-ia64@vger.kernel.org, linux-m68k@vger.kernel.org,
+ linux-mips@linux-mips.org, nios2-dev@lists.rocketboards.org,
+ openrisc@lists.librecores.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
+ linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-um@lists.infradead.org, hpa@zytor.com
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,30 +87,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Mikey,
+On Mon, Aug 27, 2018 at 6:34 AM H. Peter Anvin <hpa@zytor.com> wrote:
+>
+> On 08/27/18 06:11, Peter Zijlstra wrote:
+> > On Mon, Aug 27, 2018 at 05:26:53AM -0700, H. Peter Anvin wrote:
+> >
+> >> _THIS_IP_, however, is completely ill-defined, other than being an
+> >> address *somewhere* in the same global function (not even necessarily
+> >> the same function if the function is static!)  As my experiment show, in
+> >> many (nearly) cases gcc will hoist the address all the way to the top of
+> >> the function, at least for the current generic implementation.
+> >
+> > It seems to have mostly worked so far... did anything change?
+> >
+>
+> Most likely because the major architectures contain a arch-specific
+> assembly implementation.  The generic implementation used in some places
+> is completely broken, as my experiments show.
+>
+> >> For the case where _THIS_IP_ is passed to an out-of-line function in all
+> >> cases, it is extra pointless because all it does is increase the
+> >> footprint of every caller: _RET_IP_ is inherently passed to the function
+> >> anyway, and with tailcall protection it will uniquely identify a callsite.
+> >
+> > So I think we can convert many of the lockdep _THIS_IP_ calls to
+> > _RET_IP_ on the other side, with a wee bit of care.
+> >
+> > A little something like so perhaps...
+>
+> I don't have time to look at this right now (I'm on sabbatical, and I'm
+> dealing with personal legal stuff right at the moment), but I think it
+> is the right direction.
+>
+>         -hpa
 
-On 09/17/2018 10:31 PM, Michael Neuling wrote:
-> On Wed, 2018-09-12 at 16:40 -0300, Breno Leitao wrote:
->> This patch creates a macro that will be invoked on all entrance to the
->> kernel, so, in kernel space the transaction will be completely reclaimed
->> and not suspended anymore.
-> 
-> There are still some calls to tm_reclaim_current() in process.c. Should these
-> probably go now, right?
+Linus,
+Can this patch please be merged?  Then we can polish off Peter's
+change to lockdep to not even use _THIS_IP_.
 
-Yes, we shouldn't not call tm_reclaim_current() from anywhere else other than
-TM_KERNEL_ENTRY anymore.
-
-That said, I think we can still have some references for tm_reclaim_current()
-in some specific checkpoints. Something as:
-
-        if (WARN_ON(MSR_TM_SUSPENDED(mfmsr())))
-                tm_reclaim_current(0);
-
-I initially wrote something as BUG_ON(MSR_TM_SUSPENDED(mfmsr()) but
-scripts/checkpatch.pl suggested me writing a WARN_ON() and create a recovery
-pass, which seems fair.
-
-Anyway, if you think it is not a good strategy, I can get rid of them at v2.
-
-Thank you!
+-- 
+Thanks,
+~Nick Desaulniers
