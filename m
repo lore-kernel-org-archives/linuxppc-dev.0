@@ -1,35 +1,21 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <ran.wang_1@nxp.com>
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 421k574155zF38G
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Aug 2018 12:36:27 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w7V2SxHJ094348
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Aug 2018 22:36:25 -0400
-Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2m6t3edau0-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Aug 2018 22:36:24 -0400
-Received: from localhost
- by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Thu, 30 Aug 2018 22:36:24 -0400
-Subject: [PATCH v4 2/2] powerpc/pseries:Remove unneeded uses of dlpar work
- queue
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
-Cc: johnallen3991@gmail.com, desnesn@linux.vnet.ibm.com,
- haren@linux.vnet.ibm.com
-Date: Thu, 30 Aug 2018 21:15:19 -0500
-In-Reply-To: <153568164555.2146.11463040249853453135.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
-References: <153568164555.2146.11463040249853453135.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <153568171937.2146.3833444197643721596.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 421m043yNSzF37t
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Aug 2018 14:02:12 +1000 (AEST)
+From: Ran Wang <ran.wang_1@nxp.com>
+To: Leo Li <leoyang.li@nxp.com>, Rob Herring <robh+dt@kernel.org>,
+ Mark Rutland <mark.rutland@arm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Ran Wang <ran.wang_1@nxp.com>
+Subject: [PATCH 2/3] Documentation: dt: binding: fsl: update property
+ description for RCPM
+Date: Fri, 31 Aug 2018 11:52:18 +0800
+Message-Id: <20180831035219.31619-2-ran.wang_1@nxp.com>
+In-Reply-To: <20180831035219.31619-1-ran.wang_1@nxp.com>
+References: <20180831035219.31619-1-ran.wang_1@nxp.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,198 +25,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There are three instances in which dlpar hotplug events are invoked;
-handling a hotplug interrupt (in a kvm guest), handling a dlpar
-request through sysfs, and updating LMB affinity when handling a
-PRRN event. Only in the case of handling a hotplug interrupt do we
-have to put the work on a workqueue, the other cases can handle the
-dlpar request directly.
+Add property 'big-endian' and supportted IP's configuration info.
+Remove property 'fsl,#rcpm-wakeup-cell'.
 
-This patch exports the handle_dlpar_errorlog() function so that
-dlpar hotplug events can be handled directly and updates the two
-instances mentioned above to use the direct invocation.
-
-Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Signed-off-by: Ran Wang <ran.wang_1@nxp.com>
 ---
- arch/powerpc/platforms/pseries/dlpar.c    |   37 +++++++----------------------
- arch/powerpc/platforms/pseries/mobility.c |   18 +++++---------
- arch/powerpc/platforms/pseries/pseries.h  |    5 ++--
- arch/powerpc/platforms/pseries/ras.c      |    2 +-
- 4 files changed, 19 insertions(+), 43 deletions(-)
+ Documentation/devicetree/bindings/soc/fsl/rcpm.txt |   42 ++++++-------------
+ 1 files changed, 13 insertions(+), 29 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-index a0b20c03f078..052c4f2ba0a0 100644
---- a/arch/powerpc/platforms/pseries/dlpar.c
-+++ b/arch/powerpc/platforms/pseries/dlpar.c
-@@ -32,8 +32,6 @@ static struct workqueue_struct *pseries_hp_wq;
- struct pseries_hp_work {
- 	struct work_struct work;
- 	struct pseries_hp_errorlog *errlog;
--	struct completion *hp_completion;
--	int *rc;
- };
+diff --git a/Documentation/devicetree/bindings/soc/fsl/rcpm.txt b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
+index e284e4e..7fc630a 100644
+--- a/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
++++ b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
+@@ -5,8 +5,6 @@ and power management.
  
- struct cc_workarea {
-@@ -329,7 +327,7 @@ int dlpar_release_drc(u32 drc_index)
- 	return 0;
- }
- 
--static int handle_dlpar_errorlog(struct pseries_hp_errorlog *hp_elog)
-+int handle_dlpar_errorlog(struct pseries_hp_errorlog *hp_elog)
- {
- 	int rc;
- 
-@@ -371,20 +369,13 @@ static void pseries_hp_work_fn(struct work_struct *work)
- 	struct pseries_hp_work *hp_work =
- 			container_of(work, struct pseries_hp_work, work);
- 
--	if (hp_work->rc)
--		*(hp_work->rc) = handle_dlpar_errorlog(hp_work->errlog);
--	else
--		handle_dlpar_errorlog(hp_work->errlog);
--
--	if (hp_work->hp_completion)
--		complete(hp_work->hp_completion);
-+	handle_dlpar_errorlog(hp_work->errlog);
- 
- 	kfree(hp_work->errlog);
- 	kfree((void *)work);
- }
- 
--void queue_hotplug_event(struct pseries_hp_errorlog *hp_errlog,
--			 struct completion *hotplug_done, int *rc)
-+void queue_hotplug_event(struct pseries_hp_errorlog *hp_errlog)
- {
- 	struct pseries_hp_work *work;
- 	struct pseries_hp_errorlog *hp_errlog_copy;
-@@ -397,13 +388,9 @@ void queue_hotplug_event(struct pseries_hp_errorlog *hp_errlog,
- 	if (work) {
- 		INIT_WORK((struct work_struct *)work, pseries_hp_work_fn);
- 		work->errlog = hp_errlog_copy;
--		work->hp_completion = hotplug_done;
--		work->rc = rc;
- 		queue_work(pseries_hp_wq, (struct work_struct *)work);
- 	} else {
--		*rc = -ENOMEM;
- 		kfree(hp_errlog_copy);
--		complete(hotplug_done);
- 	}
- }
- 
-@@ -521,18 +508,15 @@ static int dlpar_parse_id_type(char **cmd, struct pseries_hp_errorlog *hp_elog)
- static ssize_t dlpar_store(struct class *class, struct class_attribute *attr,
- 			   const char *buf, size_t count)
- {
--	struct pseries_hp_errorlog *hp_elog;
--	struct completion hotplug_done;
-+	struct pseries_hp_errorlog hp_elog;
- 	char *argbuf;
- 	char *args;
- 	int rc;
- 
- 	args = argbuf = kstrdup(buf, GFP_KERNEL);
--	hp_elog = kzalloc(sizeof(*hp_elog), GFP_KERNEL);
--	if (!hp_elog || !argbuf) {
-+	if (!argbuf) {
- 		pr_info("Could not allocate resources for DLPAR operation\n");
- 		kfree(argbuf);
--		kfree(hp_elog);
- 		return -ENOMEM;
- 	}
- 
-@@ -540,25 +524,22 @@ static ssize_t dlpar_store(struct class *class, struct class_attribute *attr,
- 	 * Parse out the request from the user, this will be in the form:
- 	 * <resource> <action> <id_type> <id>
- 	 */
--	rc = dlpar_parse_resource(&args, hp_elog);
-+	rc = dlpar_parse_resource(&args, &hp_elog);
- 	if (rc)
- 		goto dlpar_store_out;
- 
--	rc = dlpar_parse_action(&args, hp_elog);
-+	rc = dlpar_parse_action(&args, &hp_elog);
- 	if (rc)
- 		goto dlpar_store_out;
- 
--	rc = dlpar_parse_id_type(&args, hp_elog);
-+	rc = dlpar_parse_id_type(&args, &hp_elog);
- 	if (rc)
- 		goto dlpar_store_out;
- 
--	init_completion(&hotplug_done);
--	queue_hotplug_event(hp_elog, &hotplug_done, &rc);
--	wait_for_completion(&hotplug_done);
-+	rc = handle_dlpar_errorlog(&hp_elog);
- 
- dlpar_store_out:
- 	kfree(argbuf);
--	kfree(hp_elog);
- 
- 	if (rc)
- 		pr_err("Could not handle DLPAR request \"%s\"\n", buf);
-diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
-index f0e30dc94988..6f27d00505cf 100644
---- a/arch/powerpc/platforms/pseries/mobility.c
-+++ b/arch/powerpc/platforms/pseries/mobility.c
-@@ -242,7 +242,7 @@ static int add_dt_node(__be32 parent_phandle, __be32 drc_index)
- 
- static void prrn_update_node(__be32 phandle)
- {
--	struct pseries_hp_errorlog *hp_elog;
-+	struct pseries_hp_errorlog hp_elog;
- 	struct device_node *dn;
- 
- 	/*
-@@ -255,18 +255,12 @@ static void prrn_update_node(__be32 phandle)
- 		return;
- 	}
- 
--	hp_elog = kzalloc(sizeof(*hp_elog), GFP_KERNEL);
--	if(!hp_elog)
--		return;
--
--	hp_elog->resource = PSERIES_HP_ELOG_RESOURCE_MEM;
--	hp_elog->action = PSERIES_HP_ELOG_ACTION_READD;
--	hp_elog->id_type = PSERIES_HP_ELOG_ID_DRC_INDEX;
--	hp_elog->_drc_u.drc_index = phandle;
--
--	queue_hotplug_event(hp_elog, NULL, NULL);
-+	hp_elog.resource = PSERIES_HP_ELOG_RESOURCE_MEM;
-+	hp_elog.action = PSERIES_HP_ELOG_ACTION_READD;
-+	hp_elog.id_type = PSERIES_HP_ELOG_ID_DRC_INDEX;
-+	hp_elog._drc_u.drc_index = phandle;
- 
--	kfree(hp_elog);
-+	handle_dlpar_errorlog(&hp_elog);
- }
- 
- int pseries_devicetree_update(s32 scope)
-diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
-index 60db2ee511fb..9310a20aef44 100644
---- a/arch/powerpc/platforms/pseries/pseries.h
-+++ b/arch/powerpc/platforms/pseries/pseries.h
-@@ -59,8 +59,9 @@ extern int dlpar_detach_node(struct device_node *);
- extern int dlpar_acquire_drc(u32 drc_index);
- extern int dlpar_release_drc(u32 drc_index);
- 
--void queue_hotplug_event(struct pseries_hp_errorlog *hp_errlog,
--			 struct completion *hotplug_done, int *rc);
-+void queue_hotplug_event(struct pseries_hp_errorlog *hp_errlog);
-+int handle_dlpar_errorlog(struct pseries_hp_errorlog *hp_errlog);
+ Required properites:
+   - reg : Offset and length of the register set of the RCPM block.
+-  - fsl,#rcpm-wakeup-cells : The number of IPPDEXPCR register cells in the
+-	fsl,rcpm-wakeup property.
+   - compatible : Must contain a chip-specific RCPM block compatible string
+ 	and (if applicable) may contain a chassis-version RCPM compatible
+ 	string. Chip-specific strings are of the form "fsl,<chip>-rcpm",
+@@ -27,37 +25,23 @@ Chassis Version		Example Chips
+ ---------------		-------------------------------
+ 1.0				p4080, p5020, p5040, p2041, p3041
+ 2.0				t4240, b4860, b4420
+-2.1				t1040, ls1021
++2.1				t1040, ls1021, ls1012
 +
- #ifdef CONFIG_MEMORY_HOTPLUG
- int dlpar_memory(struct pseries_hp_errorlog *hp_elog);
- #else
-diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
-index 851ce326874a..85a607d52014 100644
---- a/arch/powerpc/platforms/pseries/ras.c
-+++ b/arch/powerpc/platforms/pseries/ras.c
-@@ -238,7 +238,7 @@ static irqreturn_t ras_hotplug_interrupt(int irq, void *dev_id)
- 	 */
- 	if (hp_elog->resource == PSERIES_HP_ELOG_RESOURCE_MEM ||
- 	    hp_elog->resource == PSERIES_HP_ELOG_RESOURCE_CPU)
--		queue_hotplug_event(hp_elog, NULL, NULL);
-+		queue_hotplug_event(hp_elog);
- 	else
- 		log_error(ras_log_buf, ERR_TYPE_RTAS_LOG, 0);
++Optional properties:
++ - big-endian : Indicate RCPM registers is big-endian. A RCPM node
++   that doesn't have this property will be regarded as little-endian.
++ - <property 'compatible' string of consumer device> : This string
++   is referred by RCPM driver to judge if the consumer (such as flex timer)
++   is able to be regards as wakeup source or not, such as 'fsl,ls1012a-ftm'.
++   Further, this property will carry the bit mask info to control
++   coresponding wake up source.
  
+ Example:
+ The RCPM node for T4240:
+ 	rcpm: global-utilities@e2000 {
+ 		compatible = "fsl,t4240-rcpm", "fsl,qoriq-rcpm-2.0";
+ 		reg = <0xe2000 0x1000>;
+-		fsl,#rcpm-wakeup-cells = <2>;
+-	};
+-
+-* Freescale RCPM Wakeup Source Device Tree Bindings
+--------------------------------------------
+-Required fsl,rcpm-wakeup property should be added to a device node if the device
+-can be used as a wakeup source.
+-
+-  - fsl,rcpm-wakeup: Consists of a phandle to the rcpm node and the IPPDEXPCR
+-	register cells. The number of IPPDEXPCR register cells is defined in
+-	"fsl,#rcpm-wakeup-cells" in the rcpm node. The first register cell is
+-	the bit mask that should be set in IPPDEXPCR0, and the second register
+-	cell is for IPPDEXPCR1, and so on.
+-
+-	Note: IPPDEXPCR(IP Powerdown Exception Control Register) provides a
+-	mechanism for keeping certain blocks awake during STANDBY and MEM, in
+-	order to use them as wake-up sources.
+-
+-Example:
+-	lpuart0: serial@2950000 {
+-		compatible = "fsl,ls1021a-lpuart";
+-		reg = <0x0 0x2950000 0x0 0x1000>;
+-		interrupts = <GIC_SPI 80 IRQ_TYPE_LEVEL_HIGH>;
+-		clocks = <&sysclk>;
+-		clock-names = "ipg";
+-		fsl,rcpm-wakeup = <&rcpm 0x0 0x40000000>;
++		big-endian;
++		fsl,ls1012a-ftm = <0x20000>;
++		fsl,pfe = <0xf0000020>;
+ 	};
+-- 
+1.7.1
