@@ -1,47 +1,28 @@
-Return-Path: <jirislaby@gmail.com>
-Received: from mail-wr1-f68.google.com (mail-wr1-f68.google.com
- [209.85.221.68])
+Return-Path: <userm57@yahoo.com>
+Received: from sonic305-21.consmr.mail.ne1.yahoo.com
+ (sonic305-21.consmr.mail.ne1.yahoo.com [66.163.185.147])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 421zDM4XbMzF38P
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Aug 2018 22:28:34 +1000 (AEST)
-Received: by mail-wr1-f68.google.com with SMTP id z96-v6so11054720wrb.8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Aug 2018 05:28:34 -0700 (PDT)
-Subject: Re: [PATCH v1] mm: relax deferred struct page requirements
-To: Pasha Tatashin <Pavel.Tatashin@microsoft.com>
-Cc: "mhocko@kernel.org" <mhocko@kernel.org>,
- Steven Sistare <steven.sistare@oracle.com>,
- Daniel Jordan <daniel.m.jordan@oracle.com>,
- "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
- "paulus@samba.org" <paulus@samba.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- "kirill.shutemov@linux.intel.com" <kirill.shutemov@linux.intel.com>,
- Reza Arbab <arbab@linux.vnet.ibm.com>,
- "schwidefsky@de.ibm.com" <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, "x86@kernel.org"
- <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
- "tglx@linutronix.de" <tglx@linutronix.de>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Linux Memory Management List <linux-mm@kvack.org>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- "mgorman@techsingularity.net" <mgorman@techsingularity.net>
-References: <20171117014601.31606-1-pasha.tatashin@oracle.com>
- <20171121072416.v77vu4osm2s4o5sq@dhcp22.suse.cz>
- <b16029f0-ada0-df25-071b-cd5dba0ab756@suse.cz>
- <CAGM2rea=_VJJ26tohWQWgfwcFVkp0gb6j1edH1kVLjtxfugf5Q@mail.gmail.com>
- <CAGM2reYcwyOcKrO=WhB3Cf0FNL3ZearC=KvxmTNUU6rkWviQOg@mail.gmail.com>
- <83d035f1-40b4-bed8-6113-f4c5a0c4d22f@suse.cz>
- <c4d46b63-5237-d002-faf5-4e0749d825d7@suse.cz>
- <7aee9274-9e8e-4a40-a9e5-3c9ef28511b7@microsoft.com>
- <87516e50-a17c-6c80-e9b5-ba68eda9ce33@microsoft.com>
- <597f3f35-6aad-6ca1-ba03-b93444b1cb5f@suse.cz>
- <0acf1c74-1bd3-e425-f92b-5d084ff954a4@suse.cz>
- <5070bde7-d20e-a464-a566-e97a13264b94@microsoft.com>
-From: Jiri Slaby <jslaby@suse.cz>
-Message-ID: <31c12066-ae77-6a86-6238-2a55bde4f8e4@suse.cz>
-Date: Fri, 31 Aug 2018 14:28:28 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 421zDr0pPGzF38X
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Aug 2018 22:28:59 +1000 (AEST)
+Subject: Re: v4.17 regression: PowerMac G3 won't boot, was Re: [PATCH v5 1/3]
+ of: cache phandle nodes to reduce cost of of_find_node_by_phandle()
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Rob Herring <robh+dt@kernel.org>, fthain@telegraphics.com.au,
+ Frank Rowand <frank.rowand@sony.com>, Chintan Pandya
+ <cpandya@codeaurora.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+References: <1520208889-3908-1-git-send-email-frowand.list@gmail.com>
+ <1520208889-3908-2-git-send-email-frowand.list@gmail.com>
+ <alpine.LNX.2.21.1808301025480.73@nippy.intranet>
+ <CAL_JsqLJ9QMHCMqGKpCouP1rTEO+cMGA1es94qAH+ukLsR31jg@mail.gmail.com>
+ <569e4bc3-2149-4b2d-562f-e400dd05a8a8@yahoo.com>
+ <84f13bded54eda0817f9134f355d518d5b3a5f77.camel@kernel.crashing.org>
+ <a825ebf4c01f862075006370f418e0b7ab4626ad.camel@kernel.crashing.org>
+From: Mac User <userm57@yahoo.com>
+Message-ID: <d3f5a177-10ee-1696-1ddf-41b7db62de6c@yahoo.com>
+Date: Fri, 31 Aug 2018 06:28:50 -0600
 MIME-Version: 1.0
-In-Reply-To: <5070bde7-d20e-a464-a566-e97a13264b94@microsoft.com>
+In-Reply-To: <a825ebf4c01f862075006370f418e0b7ab4626ad.camel@kernel.crashing.org>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -52,65 +33,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/31/2018, 02:10 PM, Pasha Tatashin wrote:
-> Thanks Jiri, I am now able to reproduce it with your new config.
-> 
-> I have tried yesterday to enable sparsemem and deferred_struct_init on
-> x86_32, and that kernel booted fine, there must be something else in
-> your config that helps to trigger this problem. I am studying it now.
-> 
-> [    0.051245] Initializing CPU#0
-> [    0.051682] Initializing HighMem for node 0 (000367fe:0007ffe0)
-> [    0.067499] BUG: unable to handle kernel NULL pointer dereference at
-> 00000028
-> [    0.068452] *pdpt = 0000000000000000 *pde = f000ff53f000ff53
-> [    0.069105] Oops: 0000 [#1] PREEMPT SMP PTI
-> [    0.069595] CPU: 0 PID: 0 Comm: swapper Not tainted
-> 4.19.0-rc1-pae_pt_jiri #1
-> [    0.070382] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996),
-> BIOS 1.11.0-20171110_100015-anatol 04/01/2014
-> [    0.071545] EIP: free_unref_page_prepare.part.70+0x2c/0x50
-> [    0.072178] Code: 19 e9 ff 89 d1 55 c1 ea 11 c1 e9 07 8b 14 d5 44 52
-> fd d6 81 e1 fc 03 00 00 89 e5 56 53 89 cb be 1d 00 00 00 c1 eb 05 83 e1
-> 1f <8b> 14 9a 29 ce 89 f1 d3 ea 83 e2 07 89 50 10 b8 01 00 00 00 5b 5e
-> [    0.074296] EAX: f4cfa000 EBX: 0000000a ECX: 00000010 EDX: 00000000
-> [    0.075005] ESI: 0000001d EDI: 0007ffe0 EBP: d6d41ed0 ESP: d6d41ec8
-> [    0.075714] DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068 EFLAGS: 00210002
-> [    0.076508] CR0: 80050033 CR2: 00000028 CR3: 16f20000 CR4: 000406b0
-> [    0.077242] DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
-> [    0.077934] DR6: fffe0ff0 DR7: 00000400
-> [    0.078380] Call Trace:
-> [    0.078670]  free_unref_page+0x3a/0x90
-> [    0.079136]  __free_pages+0x25/0x30
-> [    0.079533]  free_highmem_page+0x1e/0x50
-> [    0.079978]  add_highpages_with_active_regions+0xd1/0x11f
-> [    0.080592]  set_highmem_pages_init+0x67/0x7d
-> [    0.081076]  mem_init+0x30/0x1fc
+On 8/30/18 10:49 PM, Benjamin Herrenschmidt wrote:
 
-page_to_pfn(pfn_to_page(pfn)) != pfn with my .config on pfns >= 0x60000:
+> On Fri, 2018-08-31 at 14:35 +1000, Benjamin Herrenschmidt wrote:
+>
+> ...
+> Assuming you are using BootX (or miBoot), can you try this patch ?
 
-[    0.157667] add_highpages_with_active_regions: pfn=5fffb pg=f55f9f4c
-pfn(pg(pfn)=5fffb sec=2
-[    0.159231] add_highpages_with_active_regions: pfn=5fffc pg=f55f9f70
-pfn(pg(pfn)=5fffc sec=2
-[    0.161020] add_highpages_with_active_regions: pfn=5fffd pg=f55f9f94
-pfn(pg(pfn)=5fffd sec=2
-[    0.163149] add_highpages_with_active_regions: pfn=5fffe pg=f55f9fb8
-pfn(pg(pfn)=5fffe sec=2
-[    0.165204] add_highpages_with_active_regions: pfn=5ffff pg=f55f9fdc
-pfn(pg(pfn)=5ffff sec=2
-[    0.167216] add_highpages_with_active_regions: pfn=60000 pg=f4cfa000
-pfn(pg(pfn)=c716a800 sec=3
+Yes, I'm using BootX.
 
-So add_highpages_with_active_regions passes down page to
-free_highmem_page and later, free_unref_page does page_to_pfn(page) and
-__get_pfnblock_flags_mask operates on this modified pfn leading to crash
-– __pfn_to_section(pfn)->pageblock_flags is NULL!
+Thanks to Finn for applying the patch (I wouldn't have been sure
+which source tree to apply it to).
 
-Note that __pfn_to_section(pfn)->pageblock_flags on the original pfn
-returns a valid bitmap.
+Thepatched kernel (Finn's vmlinux-4.18.0-00001-gd44cf7e41c19)
+boots normally on my Beige G3 Desktop using BootX.
 
-thanks,
--- 
-js
-suse labs
+Thanks for working on this!
+
+-Stan
