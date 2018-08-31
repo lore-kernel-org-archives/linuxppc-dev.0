@@ -3,32 +3,33 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 421k523BTfzF37s
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Aug 2018 12:36:21 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 421k574155zF38G
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Aug 2018 12:36:27 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w7V2T3bx041170
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Aug 2018 22:36:19 -0400
-Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2m6sk9x8wm-1
+ w7V2SxHJ094348
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Aug 2018 22:36:25 -0400
+Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2m6t3edau0-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Aug 2018 22:36:18 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Aug 2018 22:36:24 -0400
 Received: from localhost
- by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Thu, 30 Aug 2018 22:36:18 -0400
-Subject: [PATCH v4 1/2] powerpc/pseries: Remove prrn_work workqueue
+ Thu, 30 Aug 2018 22:36:24 -0400
+Subject: [PATCH v4 2/2] powerpc/pseries:Remove unneeded uses of dlpar work
+ queue
 From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
 Cc: johnallen3991@gmail.com, desnesn@linux.vnet.ibm.com,
  haren@linux.vnet.ibm.com
-Date: Thu, 30 Aug 2018 21:15:13 -0500
+Date: Thu, 30 Aug 2018 21:15:19 -0500
 In-Reply-To: <153568164555.2146.11463040249853453135.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
 References: <153568164555.2146.11463040249853453135.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <153568171320.2146.14267934108644287102.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
+Message-Id: <153568171937.2146.3833444197643721596.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,72 +39,198 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When a PRRN event is received we are already running in a worker
-thread. Instead of spawning off another worker thread on the prrn_work
-workqueue to handle the PRRN event we can just call the PRRN handler
-routine directly.
+There are three instances in which dlpar hotplug events are invoked;
+handling a hotplug interrupt (in a kvm guest), handling a dlpar
+request through sysfs, and updating LMB affinity when handling a
+PRRN event. Only in the case of handling a hotplug interrupt do we
+have to put the work on a workqueue, the other cases can handle the
+dlpar request directly.
 
-With this update we can also pass the scope variable for the PRRN
-event directly to the handler instead of it being a global variable.
+This patch exports the handle_dlpar_errorlog() function so that
+dlpar hotplug events can be handled directly and updates the two
+instances mentioned above to use the direct invocation.
 
-Signed-off-by: John Allen <jallen@linux.ibm.com>
-Signed-off-by: Haren Myneni <haren@us.ibm.com>
+Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 ---
-v4:
-  - Remove prrn_work workqueue as suggested by Michael Ellerman
-  - Make the PRRN event scope passed in as opposed to a global, suggested
-    by Michael Ellerman
-v3:
-  -Scrap the mutex as it only replicates existing workqueue behavior.
-v2:
-  -Unlock prrn_lock when PRRN operations are complete, not after handler is
-   scheduled.
-  -Remove call to flush_work, the previous broken method of serializing
-   PRRN events.
----
- arch/powerpc/kernel/rtasd.c |   17 +++--------------
- 1 file changed, 3 insertions(+), 14 deletions(-)
+ arch/powerpc/platforms/pseries/dlpar.c    |   37 +++++++----------------------
+ arch/powerpc/platforms/pseries/mobility.c |   18 +++++---------
+ arch/powerpc/platforms/pseries/pseries.h  |    5 ++--
+ arch/powerpc/platforms/pseries/ras.c      |    2 +-
+ 4 files changed, 19 insertions(+), 43 deletions(-)
 
-diff --git a/arch/powerpc/kernel/rtasd.c b/arch/powerpc/kernel/rtasd.c
-index 44d66c33d59d..23b88b923f06 100644
---- a/arch/powerpc/kernel/rtasd.c
-+++ b/arch/powerpc/kernel/rtasd.c
-@@ -274,27 +274,16 @@ void pSeries_log_error(char *buf, unsigned int err_type, int fatal)
+diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+index a0b20c03f078..052c4f2ba0a0 100644
+--- a/arch/powerpc/platforms/pseries/dlpar.c
++++ b/arch/powerpc/platforms/pseries/dlpar.c
+@@ -32,8 +32,6 @@ static struct workqueue_struct *pseries_hp_wq;
+ struct pseries_hp_work {
+ 	struct work_struct work;
+ 	struct pseries_hp_errorlog *errlog;
+-	struct completion *hp_completion;
+-	int *rc;
+ };
+ 
+ struct cc_workarea {
+@@ -329,7 +327,7 @@ int dlpar_release_drc(u32 drc_index)
+ 	return 0;
  }
  
- #ifdef CONFIG_PPC_PSERIES
--static s32 prrn_update_scope;
--
--static void prrn_work_fn(struct work_struct *work)
-+static void handle_prrn_event(s32 scope)
+-static int handle_dlpar_errorlog(struct pseries_hp_errorlog *hp_elog)
++int handle_dlpar_errorlog(struct pseries_hp_errorlog *hp_elog)
  {
+ 	int rc;
+ 
+@@ -371,20 +369,13 @@ static void pseries_hp_work_fn(struct work_struct *work)
+ 	struct pseries_hp_work *hp_work =
+ 			container_of(work, struct pseries_hp_work, work);
+ 
+-	if (hp_work->rc)
+-		*(hp_work->rc) = handle_dlpar_errorlog(hp_work->errlog);
+-	else
+-		handle_dlpar_errorlog(hp_work->errlog);
+-
+-	if (hp_work->hp_completion)
+-		complete(hp_work->hp_completion);
++	handle_dlpar_errorlog(hp_work->errlog);
+ 
+ 	kfree(hp_work->errlog);
+ 	kfree((void *)work);
+ }
+ 
+-void queue_hotplug_event(struct pseries_hp_errorlog *hp_errlog,
+-			 struct completion *hotplug_done, int *rc)
++void queue_hotplug_event(struct pseries_hp_errorlog *hp_errlog)
+ {
+ 	struct pseries_hp_work *work;
+ 	struct pseries_hp_errorlog *hp_errlog_copy;
+@@ -397,13 +388,9 @@ void queue_hotplug_event(struct pseries_hp_errorlog *hp_errlog,
+ 	if (work) {
+ 		INIT_WORK((struct work_struct *)work, pseries_hp_work_fn);
+ 		work->errlog = hp_errlog_copy;
+-		work->hp_completion = hotplug_done;
+-		work->rc = rc;
+ 		queue_work(pseries_hp_wq, (struct work_struct *)work);
+ 	} else {
+-		*rc = -ENOMEM;
+ 		kfree(hp_errlog_copy);
+-		complete(hotplug_done);
+ 	}
+ }
+ 
+@@ -521,18 +508,15 @@ static int dlpar_parse_id_type(char **cmd, struct pseries_hp_errorlog *hp_elog)
+ static ssize_t dlpar_store(struct class *class, struct class_attribute *attr,
+ 			   const char *buf, size_t count)
+ {
+-	struct pseries_hp_errorlog *hp_elog;
+-	struct completion hotplug_done;
++	struct pseries_hp_errorlog hp_elog;
+ 	char *argbuf;
+ 	char *args;
+ 	int rc;
+ 
+ 	args = argbuf = kstrdup(buf, GFP_KERNEL);
+-	hp_elog = kzalloc(sizeof(*hp_elog), GFP_KERNEL);
+-	if (!hp_elog || !argbuf) {
++	if (!argbuf) {
+ 		pr_info("Could not allocate resources for DLPAR operation\n");
+ 		kfree(argbuf);
+-		kfree(hp_elog);
+ 		return -ENOMEM;
+ 	}
+ 
+@@ -540,25 +524,22 @@ static ssize_t dlpar_store(struct class *class, struct class_attribute *attr,
+ 	 * Parse out the request from the user, this will be in the form:
+ 	 * <resource> <action> <id_type> <id>
+ 	 */
+-	rc = dlpar_parse_resource(&args, hp_elog);
++	rc = dlpar_parse_resource(&args, &hp_elog);
+ 	if (rc)
+ 		goto dlpar_store_out;
+ 
+-	rc = dlpar_parse_action(&args, hp_elog);
++	rc = dlpar_parse_action(&args, &hp_elog);
+ 	if (rc)
+ 		goto dlpar_store_out;
+ 
+-	rc = dlpar_parse_id_type(&args, hp_elog);
++	rc = dlpar_parse_id_type(&args, &hp_elog);
+ 	if (rc)
+ 		goto dlpar_store_out;
+ 
+-	init_completion(&hotplug_done);
+-	queue_hotplug_event(hp_elog, &hotplug_done, &rc);
+-	wait_for_completion(&hotplug_done);
++	rc = handle_dlpar_errorlog(&hp_elog);
+ 
+ dlpar_store_out:
+ 	kfree(argbuf);
+-	kfree(hp_elog);
+ 
+ 	if (rc)
+ 		pr_err("Could not handle DLPAR request \"%s\"\n", buf);
+diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
+index f0e30dc94988..6f27d00505cf 100644
+--- a/arch/powerpc/platforms/pseries/mobility.c
++++ b/arch/powerpc/platforms/pseries/mobility.c
+@@ -242,7 +242,7 @@ static int add_dt_node(__be32 parent_phandle, __be32 drc_index)
+ 
+ static void prrn_update_node(__be32 phandle)
+ {
+-	struct pseries_hp_errorlog *hp_elog;
++	struct pseries_hp_errorlog hp_elog;
+ 	struct device_node *dn;
+ 
  	/*
- 	 * For PRRN, we must pass the negative of the scope value in
- 	 * the RTAS event.
- 	 */
--	pseries_devicetree_update(-prrn_update_scope);
-+	pseries_devicetree_update(-scope);
- 	numa_update_cpu_topology(false);
+@@ -255,18 +255,12 @@ static void prrn_update_node(__be32 phandle)
+ 		return;
+ 	}
+ 
+-	hp_elog = kzalloc(sizeof(*hp_elog), GFP_KERNEL);
+-	if(!hp_elog)
+-		return;
+-
+-	hp_elog->resource = PSERIES_HP_ELOG_RESOURCE_MEM;
+-	hp_elog->action = PSERIES_HP_ELOG_ACTION_READD;
+-	hp_elog->id_type = PSERIES_HP_ELOG_ID_DRC_INDEX;
+-	hp_elog->_drc_u.drc_index = phandle;
+-
+-	queue_hotplug_event(hp_elog, NULL, NULL);
++	hp_elog.resource = PSERIES_HP_ELOG_RESOURCE_MEM;
++	hp_elog.action = PSERIES_HP_ELOG_ACTION_READD;
++	hp_elog.id_type = PSERIES_HP_ELOG_ID_DRC_INDEX;
++	hp_elog._drc_u.drc_index = phandle;
+ 
+-	kfree(hp_elog);
++	handle_dlpar_errorlog(&hp_elog);
  }
  
--static DECLARE_WORK(prrn_work, prrn_work_fn);
--
--static void prrn_schedule_update(u32 scope)
--{
--	flush_work(&prrn_work);
--	prrn_update_scope = scope;
--	schedule_work(&prrn_work);
--}
--
- static void handle_rtas_event(const struct rtas_error_log *log)
- {
- 	if (rtas_error_type(log) != RTAS_TYPE_PRRN || !prrn_is_enabled())
-@@ -303,7 +292,7 @@ static void handle_rtas_event(const struct rtas_error_log *log)
- 	/* For PRRN Events the extended log length is used to denote
- 	 * the scope for calling rtas update-nodes.
- 	 */
--	prrn_schedule_update(rtas_error_extended_log_length(log));
-+	handle_prrn_event(rtas_error_extended_log_length(log));
- }
+ int pseries_devicetree_update(s32 scope)
+diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
+index 60db2ee511fb..9310a20aef44 100644
+--- a/arch/powerpc/platforms/pseries/pseries.h
++++ b/arch/powerpc/platforms/pseries/pseries.h
+@@ -59,8 +59,9 @@ extern int dlpar_detach_node(struct device_node *);
+ extern int dlpar_acquire_drc(u32 drc_index);
+ extern int dlpar_release_drc(u32 drc_index);
  
+-void queue_hotplug_event(struct pseries_hp_errorlog *hp_errlog,
+-			 struct completion *hotplug_done, int *rc);
++void queue_hotplug_event(struct pseries_hp_errorlog *hp_errlog);
++int handle_dlpar_errorlog(struct pseries_hp_errorlog *hp_errlog);
++
+ #ifdef CONFIG_MEMORY_HOTPLUG
+ int dlpar_memory(struct pseries_hp_errorlog *hp_elog);
  #else
+diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
+index 851ce326874a..85a607d52014 100644
+--- a/arch/powerpc/platforms/pseries/ras.c
++++ b/arch/powerpc/platforms/pseries/ras.c
+@@ -238,7 +238,7 @@ static irqreturn_t ras_hotplug_interrupt(int irq, void *dev_id)
+ 	 */
+ 	if (hp_elog->resource == PSERIES_HP_ELOG_RESOURCE_MEM ||
+ 	    hp_elog->resource == PSERIES_HP_ELOG_RESOURCE_CPU)
+-		queue_hotplug_event(hp_elog, NULL, NULL);
++		queue_hotplug_event(hp_elog);
+ 	else
+ 		log_error(ras_log_buf, ERR_TYPE_RTAS_LOG, 0);
+ 
