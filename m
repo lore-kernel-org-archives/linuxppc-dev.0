@@ -1,83 +1,47 @@
-Return-Path: <ndesaulniers@google.com>
-Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
- [IPv6:2607:f8b0:4864:20::544])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <oss@buserror.net>
+Received: from baldur.buserror.net (baldur.buserror.net [165.227.176.147])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4225136yPHzF39L
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Sep 2018 02:49:11 +1000 (AEST)
-Received: by mail-pg1-x544.google.com with SMTP id s15-v6so5693019pgv.8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Aug 2018 09:49:11 -0700 (PDT)
-MIME-Version: 1.0
-References: <20180821202900.208417-1-ndesaulniers@google.com>
- <207784db-4fcc-85e7-a0b2-fec26b7dab81@gmx.de>
- <c62e4e00-fb8f-19a6-f3eb-bde60118cb1a@zytor.com>
- <81141365-8168-799b-f34f-da5f92efaaf9@zytor.com>
- <7f49eeab-a5cc-867f-58fb-abd266f9c2c9@zytor.com>
- <6ca8a1d3-ff95-e9f4-f003-0a5af85bcb6f@zytor.com>
- <CA+55aFzuSCKfmgT9efHuwtan+m3+bPh4BpwbZwn5gGX_H=Thuw@mail.gmail.com>
- <CAKwvOd=wAaPBkFHAcWxgMW91a--9gbvu7xrt3j-q8c+-mT=7Lw@mail.gmail.com>
- <20180827073358.GV24124@hirez.programming.kicks-ass.net>
- <f9896d68-4a49-e666-cea5-a9c0522f1658@zytor.com>
- <20180827131103.GD24124@hirez.programming.kicks-ass.net>
- <4d1a8f35-e2fc-70d2-ca0e-44b8574c86f1@zytor.com>
-In-Reply-To: <4d1a8f35-e2fc-70d2-ca0e-44b8574c86f1@zytor.com>
-From: Nick Desaulniers <ndesaulniers@google.com>
-Date: Fri, 31 Aug 2018 09:48:56 -0700
-Message-ID: <CAKwvOdmXhRZJ5bQw+W0Ro+oeWSTRJzG1UAJnjyjciR1JFs+ubA@mail.gmail.com>
-Subject: Re: [PATCH] treewide: remove current_text_addr
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, deller@gmx.de,
- Andrew Morton <akpm@linux-foundation.org>,
- "Eric W . Biederman" <ebiederm@xmission.com>,
- Thomas Gleixner <tglx@linutronix.de>, mingo@redhat.com,
- Simon Horman <horms@verge.net.au>,
- Nathan Chancellor <natechancellor@gmail.com>,
- Philippe Ombredanne <pombredanne@nexb.com>,
- Kate Stewart <kstewart@linuxfoundation.org>,
- Greg KH <gregkh@linuxfoundation.org>,
- rth@twiddle.net, ink@jurassic.park.msu.ru, Matt Turner <mattst88@gmail.com>,
- vgupta@synopsys.com, linux@armlinux.org.uk,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- msalter@redhat.com,
- jacquiot.aurelien@gmail.com, Yoshinori Sato <ysato@users.sourceforge.jp>,
- rkuo@codeaurora.org, tony.luck@intel.com, fenghua.yu@intel.com,
- Geert Uytterhoeven <geert@linux-m68k.org>, Michal Simek <monstr@monstr.eu>,
- ralf@linux-mips.org,
- paul.burton@mips.com, jhogan@kernel.org, Green Hu <green.hu@gmail.com>,
- deanbo422@gmail.com, lftan@altera.com, Jonas Bonn <jonas@southpole.se>,
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- Stafford Horne <shorne@gmail.com>,
- jejb@parisc-linux.org, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, palmer@sifive.com, aou@eecs.berkeley.edu,
- schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, dalias@libc.org,
- "David S. Miller" <davem@davemloft.net>, gxt@pku.edu.cn, x86@kernel.org,
- jdike@addtoit.com, richard@nod.at, Chris Zankel <chris@zankel.net>,
- Max Filippov <jcmvbkbc@gmail.com>,
- Tobias Klauser <tklauser@distanz.ch>, noamc@ezchip.com, mickael.guene@st.com,
- Nicolas Pitre <nicolas.pitre@linaro.org>, Kees Cook <keescook@chromium.org>,
- Dave Martin <Dave.Martin@arm.com>, Marc Zyngier <marc.zyngier@arm.com>,
- =?UTF-8?B?QWxleCBCZW5uw6ll?= <alex.bennee@linaro.org>,
- Laura Abbott <labbott@redhat.com>, Yury Norov <ynorov@caviumnetworks.com>,
- Mark Rutland <mark.rutland@arm.com>, chenhc@lemote.com, macro@mips.com,
- Arnd Bergmann <arnd@arndb.de>, dhowells@redhat.com, sukadev@linux.vnet.ibm.com,
- Nicholas Piggin <npiggin@gmail.com>, aneesh.kumar@linux.vnet.ibm.com,
- felix@linux.vnet.ibm.com, linuxram@us.ibm.com, christophe.leroy@c-s.fr,
- cohuck@redhat.com, gor@linux.vnet.ibm.com, nick.alcock@oracle.com,
- shannon.nelson@oracle.com,
- Nagarathnam Muthusamy <nagarathnam.muthusamy@oracle.com>, luto@kernel.org,
- bp@suse.de,
- dave.hansen@linux.intel.com, vkuznets@redhat.com, jkosina@suse.cz,
- linux-alpha@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
- linux-snps-arc@lists.infradead.org,
- Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-c6x-dev@linux-c6x.org,
- uclinux-h8-devel@lists.sourceforge.jp, linux-hexagon@vger.kernel.org,
- linux-ia64@vger.kernel.org, linux-m68k@vger.kernel.org,
- linux-mips@linux-mips.org, nios2-dev@lists.rocketboards.org,
- openrisc@lists.librecores.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-um@lists.infradead.org, hpa@zytor.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4229x86LdZzF38G
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Sep 2018 06:31:07 +1000 (AEST)
+Message-ID: <f6707cb54c3e6da1b50f45f915c996dfccfeacda.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: Andy Tang <andy.tang@nxp.com>, Vabhav Sharma <vabhav.sharma@nxp.com>,
+ "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org"
+ <devicetree@vger.kernel.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>,
+ "mark.rutland@arm.com"
+ <mark.rutland@arm.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "mturquette@baylibre.com"
+ <mturquette@baylibre.com>, "sboyd@kernel.org" <sboyd@kernel.org>,
+ "rjw@rjwysocki.net"
+ <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>,
+ "linux-clk@vger.kernel.org"
+ <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org"
+ <linux-pm@vger.kernel.org>, "linux-kernel-owner@vger.kernel.org"
+ <linux-kernel-owner@vger.kernel.org>, "catalin.marinas@arm.com"
+ <catalin.marinas@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>,
+ "gregkh@linuxfoundation.org"
+ <gregkh@linuxfoundation.org>, "arnd@arndb.de" <arnd@arndb.de>,
+ "kstewart@linuxfoundation.org"
+ <kstewart@linuxfoundation.org>, "yamada.masahiro@socionext.com"
+ <yamada.masahiro@socionext.com>
+Cc: Yogesh Narayan Gaur <yogeshnarayan.gaur@nxp.com>,
+ "linux@armlinux.org.uk" <linux@armlinux.org.uk>, Varun Sethi
+ <V.Sethi@nxp.com>, Udit Kumar <udit.kumar@nxp.com>
+Date: Fri, 31 Aug 2018 15:28:44 -0500
+In-Reply-To: <DB5PR0401MB22130C025AA4CCAD0221781DF30F0@DB5PR0401MB2213.eurprd04.prod.outlook.com>
+References: <1534747636-20064-1-git-send-email-vabhav.sharma@nxp.com>
+ <1534747636-20064-4-git-send-email-vabhav.sharma@nxp.com>
+ <4a9ea6b451683ec98c92e86a5ae6b91213a6afcf.camel@buserror.net>
+ <VI1PR04MB4800E8B1E8541FCA9221A1CFF3080@VI1PR04MB4800.eurprd04.prod.outlook.com>
+ <d2cfd49eb33a3ce74f0e78f2b53d3954d2cb3e76.camel@buserror.net>
+ <b31ae8e788fb93971167faa9b55b497e838532c4.camel@buserror.net>
+ <DB5PR0401MB22130C025AA4CCAD0221781DF30F0@DB5PR0401MB2213.eurprd04.prod.outlook.com>
 Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Subject: Re: [PATCH 3/5] drivers: clk-qoriq: Add clockgen support for lx2160a
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -87,44 +51,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 27, 2018 at 6:34 AM H. Peter Anvin <hpa@zytor.com> wrote:
->
-> On 08/27/18 06:11, Peter Zijlstra wrote:
-> > On Mon, Aug 27, 2018 at 05:26:53AM -0700, H. Peter Anvin wrote:
-> >
-> >> _THIS_IP_, however, is completely ill-defined, other than being an
-> >> address *somewhere* in the same global function (not even necessarily
-> >> the same function if the function is static!)  As my experiment show, in
-> >> many (nearly) cases gcc will hoist the address all the way to the top of
-> >> the function, at least for the current generic implementation.
-> >
-> > It seems to have mostly worked so far... did anything change?
-> >
->
-> Most likely because the major architectures contain a arch-specific
-> assembly implementation.  The generic implementation used in some places
-> is completely broken, as my experiments show.
->
-> >> For the case where _THIS_IP_ is passed to an out-of-line function in all
-> >> cases, it is extra pointless because all it does is increase the
-> >> footprint of every caller: _RET_IP_ is inherently passed to the function
-> >> anyway, and with tailcall protection it will uniquely identify a callsite.
-> >
-> > So I think we can convert many of the lockdep _THIS_IP_ calls to
-> > _RET_IP_ on the other side, with a wee bit of care.
-> >
-> > A little something like so perhaps...
->
-> I don't have time to look at this right now (I'm on sabbatical, and I'm
-> dealing with personal legal stuff right at the moment), but I think it
-> is the right direction.
->
->         -hpa
+On Fri, 2018-08-31 at 06:12 +0000, Andy Tang wrote:
+> Hi Scott,
+> 
+> Please see my replay inline.
+> 
+> > -----Original Message-----
+> > From: linux-arm-kernel <linux-arm-kernel-bounces@lists.infradead.org>
+> > On Behalf Of Scott Wood
+> > Sent: 2018年8月31日 1:43
+> > To: Vabhav Sharma <vabhav.sharma@nxp.com>;
+> > linux-kernel@vger.kernel.org; devicetree@vger.kernel.org;
+> > robh+dt@kernel.org; mark.rutland@arm.com;
+> > linuxppc-dev@lists.ozlabs.org; linux-arm-kernel@lists.infradead.org;
+> > mturquette@baylibre.com; sboyd@kernel.org; rjw@rjwysocki.net;
+> > viresh.kumar@linaro.org; linux-clk@vger.kernel.org;
+> > linux-pm@vger.kernel.org; linux-kernel-owner@vger.kernel.org;
+> > catalin.marinas@arm.com; will.deacon@arm.com;
+> > gregkh@linuxfoundation.org; arnd@arndb.de;
+> > kstewart@linuxfoundation.org; yamada.masahiro@socionext.com
+> > Cc: Yogesh Narayan Gaur <yogeshnarayan.gaur@nxp.com>; Andy Tang
+> > <andy.tang@nxp.com>; linux@armlinux.org.uk; Varun Sethi
+> > <V.Sethi@nxp.com>; Udit Kumar <udit.kumar@nxp.com>
+> > Subject: Re: [PATCH 3/5] drivers: clk-qoriq: Add clockgen support for
+> > lx2160a
+> > 
+> > On Thu, 2018-08-30 at 12:39 -0500, Scott Wood wrote:
+> > > On Thu, 2018-08-30 at 07:36 +0000, Vabhav Sharma wrote:
+> > > > > 
+> > > > > Why are you increasing NUM_CMUX beyond 8 for a chip that only
+> > 
+> > has
+> > > > > 8 entries in cmux_to_group?
+> > > > 
+> > > > Configuration is 16 cores,8 cluster with 2 cores in each cluster
+> > > 
+> > > So?  This is about cmuxes, not cores.  You're increasing the array
+> > > without ever using the new size.
+> > 
+> > Oh, and you also broke p4080 which has 8 cmuxes but no -1 terminator,
+> > because the array was of length 8.  Probably the array should be changed
+> > to NUM_CMUX+1 so every array can be -1 terminated.
+> > 
+> 
+> [Andy] How about we add -1 terminator to p4080 and increase NUM_CMUX to 16?
 
-Linus,
-Can this patch please be merged?  Then we can polish off Peter's
-change to lockdep to not even use _THIS_IP_.
+Why 16?  What does such a change have to do with this chip, which according to
+the rest of the patch has 8 cmuxes?
 
--- 
-Thanks,
-~Nick Desaulniers
+> We don't want to increase NUM_CMUX each time new soc with more cmuxes added.
+
+You don't want to have to make a trivial change each time you exceed a limit
+that has yet to be exceeded once since NUM_CMUX was added?  This isn't ABI or
+in any other way hard to change.  It's right in the same file as the chip
+description you'd be adding.
+
+And even if a chip did come along with 16 cmuxes, you'd then need to increase
+the array to 17 to hold the -1 if you don't want to leave a situation like the
+p4080 is in now, where a chip's cmux array could be broken by increasing
+NUM_CMUX further.
+
+-Scott
