@@ -1,26 +1,45 @@
-Return-Path: <kernelfans@gmail.com>
-Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
- [IPv6:2607:f8b0:4864:20::444])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <srikar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 421rd01sqnzF38S
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Aug 2018 17:31:00 +1000 (AEST)
-Received: by mail-pf1-x444.google.com with SMTP id j26-v6so5108104pfi.10
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Aug 2018 00:31:00 -0700 (PDT)
-From: Pingfan Liu <kernelfans@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Pingfan Liu <kernelfans@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 421wRS17rwzF38g
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Aug 2018 20:22:59 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w7VAG2Tu141473
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Aug 2018 06:22:56 -0400
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2m73s688c1-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Aug 2018 06:22:56 -0400
+Received: from localhost
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <srikar@linux.vnet.ibm.com>;
+ Fri, 31 Aug 2018 11:22:54 +0100
+Date: Fri, 31 Aug 2018 03:22:48 -0700
+From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+ Mel Gorman <mgorman@techsingularity.net>,
+ Rik van Riel <riel@surriel.com>, Thomas Gleixner <tglx@linutronix.de>,
  Michael Ellerman <mpe@ellerman.id.au>,
- Hari Bathini <hbathini@linux.ibm.com>,
- Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Anton Blanchard <anton@samba.org>
-Subject: [PATCH 2/2] powerpc/kexec: avoid hard coding when automatically
- allocating mem for crashkernel
-Date: Fri, 31 Aug 2018 15:30:23 +0800
-Message-Id: <1535700623-23750-3-git-send-email-kernelfans@gmail.com>
-In-Reply-To: <1535700623-23750-1-git-send-email-kernelfans@gmail.com>
-References: <1535700623-23750-1-git-send-email-kernelfans@gmail.com>
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Suravee Suthikulpanit <suravee.suthikulpanit@amd.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Andre Wild <wild@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@au1.ibm.com>
+Subject: Re: [PATCH] sched/topology: Use Identity node only if required
+Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+References: <1533712172-11428-1-git-send-email-srikar@linux.vnet.ibm.com>
+ <20180808075840.GO2494@hirez.programming.kicks-ass.net>
+ <20180810164533.GB42350@linux.vnet.ibm.com>
+ <20180829084348.GO24124@hirez.programming.kicks-ass.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20180829084348.GO24124@hirez.programming.kicks-ass.net>
+Message-Id: <20180831102248.GA8437@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,111 +49,224 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If no start address is specified for crashkernel, the current program hard
-code as: crashk_res.start = min(0x8000000ULL, (ppc64_rma_size / 2));
-This limits the candidate memory region, and may cause failure while there
-is enough mem for crashkernel. This patch suggests to find a suitable mem
-chunk by memblock_find_in_range()
+* Peter Zijlstra <peterz@infradead.org> [2018-08-29 10:43:48]:
 
-Signed-off-by: Pingfan Liu <kernelfans@gmail.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Hari Bathini <hbathini@linux.ibm.com>
-Cc: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-Cc: Anton Blanchard <anton@samba.org>
----
- arch/powerpc/kernel/machine_kexec.c | 24 +++++++++++++++---------
- arch/powerpc/kernel/prom.c          |  7 +++++--
- 2 files changed, 20 insertions(+), 11 deletions(-)
+> On Fri, Aug 10, 2018 at 09:45:33AM -0700, Srikar Dronamraju wrote:
+>=20
+> > ....
+> > CPU302 attaching NULL sched-domain.
+> > CPU303 attaching NULL sched-domain.
+> > BUG: arch topology borken
+> >      the DIE domain not a subset of the NODE domain
+>=20
+> ^^^^^ CLUE!!
+>=20
+> but nowhere did you show what it thinks the DIE mask is.
+>=20
+> >  CPU0 attaching sched-domain(s):
+> >    domain-2: sdA, span=3D0-303 level=3DNODE
+> >     groups: sg=3DsgL 0:{ span=3D0-7,32-39,64-71,96-103,128-135,160-167,=
+192-199,224-231,256-263,288-295 cap=3D81920 }, sgM 8:{ span=3D8-15,40-47,72=
+-79,104-111,136-143,168-175,200-207,232-239,264-271,296-303 cap=3D81920 }, =
+sdN 16:{ span=3D16-23,48-55,80-87,112-119,144-151,176-183,208-215,240-247,2=
+72-279 cap=3D73728 }, sgO 24:{ span=3D24-31,56-63,88-95,120-127,152-159,184=
+-191,216-223,248-255,280-287 cap=3D73728 }
+> > CPU1  attaching sched-domain(s):
+> >    domain-2: sdB, span=3D0-303 level=3DNODE
+> > [  367.739387]     groups: sg=3DsgL 0:{ span=3D0-7,32-39,64-71,96-103,1=
+28-135,160-167,192-199,224-231,256-263,288-295 cap=3D81920 }, sgM 8:{ span=
+=3D8-15,40-47,72-79,104-111,136-143,168-175,200-207,232-239,264-271,296-303=
+ cap=3D81920 }, sdN 16:{ span=3D16-23,48-55,80-87,112-119,144-151,176-183,2=
+08-215,240-247,272-279 cap=3D73728 }, sgO 24:{ span=3D24-31,56-63,88-95,120=
+-127,152-159,184-191,216-223,248-255,280-287 cap=3D73728 }
+>=20
+> You forgot to provide the rest of it... what's domain-[01] look like?
 
-diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
-index 63f5a93..78005bf 100644
---- a/arch/powerpc/kernel/machine_kexec.c
-+++ b/arch/powerpc/kernel/machine_kexec.c
-@@ -22,6 +22,9 @@
- #include <asm/pgalloc.h>
- #include <asm/prom.h>
- #include <asm/sections.h>
-+#include <asm/mmu.h>
-+
-+#include "setup.h"
- 
- void machine_kexec_mask_interrupts(void) {
- 	unsigned int i;
-@@ -117,6 +120,7 @@ void machine_kexec(struct kimage *image)
- void __init reserve_crashkernel(void)
- {
- 	unsigned long long crash_size, crash_base;
-+	phys_addr_t start, up_boundary;
- 	int ret;
- 
- 	/* use common parsing */
-@@ -146,22 +150,24 @@ void __init reserve_crashkernel(void)
- #else
- 	if (!crashk_res.start) {
- #ifdef CONFIG_PPC64
--		/*
--		 * On 64bit we split the RMO in half but cap it at half of
--		 * a small SLB (128MB) since the crash kernel needs to place
--		 * itself and some stacks to be in the first segment.
--		 */
--		crashk_res.start = min(0x8000000ULL, (ppc64_rma_size / 2));
-+		up_boundary = min(ppc64_bolted_size(), ppc64_rma_size);
-+		start = memblock_find_in_range(KDUMP_KERNELBASE, up_boundary,
-+				crash_size, PAGE_SIZE);
-+		if (start == 0) {
-+			pr_err("Failed to reserve memory for crashkernel!\n");
-+			crashk_res.start = crashk_res.end = 0;
-+			return;
-+		} else
-+			crashk_res.start = start;
- #else
- 		crashk_res.start = KDUMP_KERNELBASE;
- #endif
- 	}
- 
--	crash_base = PAGE_ALIGN(crashk_res.start);
--	if (crash_base != crashk_res.start) {
-+	if (crashk_res.start != PAGE_ALIGN(crashk_res.start)) {
- 		printk("Crash kernel base must be aligned to 0x%lx\n",
- 				PAGE_SIZE);
--		crashk_res.start = crash_base;
-+		crashk_res.start = PAGE_ALIGN(crashk_res.start);
- 	}
- 
- #endif
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index cae4a78..8b2ab99 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -688,6 +688,7 @@ static void tm_init(void) { }
- void __init early_init_devtree(void *params)
- {
- 	phys_addr_t limit;
-+	bool fadump_enabled = false;
- 
- 	DBG(" -> early_init_devtree(%p)\n", params);
- 
-@@ -737,9 +738,9 @@ void __init early_init_devtree(void *params)
- 	 * If we fail to reserve memory for firmware-assisted dump then
- 	 * fallback to kexec based kdump.
- 	 */
--	if (fadump_reserve_mem() == 0)
-+	if (fadump_reserve_mem() == 1)
-+		fadump_enabled = true;
- #endif
--		reserve_crashkernel();
- 	early_reserve_mem();
- 
- 	/* Ensure that total memory size is page-aligned. */
-@@ -761,6 +762,8 @@ void __init early_init_devtree(void *params)
- 
- 	dt_cpu_ftrs_scan();
- 	mmu_early_init_devtree();
-+	if (!fadump_enabled)
-+		reserve_crashkernel();
- 
- 	/* Retrieve CPU related informations from the flat tree
- 	 * (altivec support, boot CPU ID, ...)
--- 
-2.7.4
+At boot: Before topology update.
+
+For  CPU 0=20
+domain-0: span=3D0-7 level=3DSMT
+ groups: 0:{ span=3D0 }, 1:{ span=3D1 }, 2:{ span=3D2 }, 3:{ span=3D3 }, 4:=
+{ span=3D4 }, 5:{ span=3D5 }, 6:{ span=3D6 }, 7:{ span=3D7 }
+ domain-1: span=3D0-303 level=3DDIE
+  groups: 0:{ span=3D0-7 cap=3D8192 }, 8:{ span=3D8-15 cap=3D8192 }, 16:{ s=
+pan=3D16-23 cap=3D8192 }, 24:{ span=3D24-31 cap=3D8192 }, 32:{ span=3D32-39=
+ cap=3D8192 }, 40:{ span=3D40-47 cap=3D8192 }, 48:{ span=3D48-55 cap=3D8192=
+ }, 56:{ span=3D56-63 cap=3D8192 }, 64:{ span=3D64-71 cap=3D8192 }, 72:{ sp=
+an=3D72-79 cap=3D8192 }, 80:{ span=3D80-87 cap=3D8192 }, 88:{ span=3D88-95 =
+cap=3D8192 }, 96:{ span=3D96-103 cap=3D8192 }, 104:{ span=3D104-111 cap=3D8=
+192 }, 112:{ span=3D112-119 cap=3D8192 }, 120:{ span=3D120-127 cap=3D8192 }=
+, 128:{ span=3D128-135 cap=3D8192 }, 136:{ span=3D136-143 cap=3D8192 }, 144=
+:{ span=3D144-151 cap=3D8192 }, 152:{ span=3D152-159 cap=3D8192 }, 160:{ sp=
+an=3D160-167 cap=3D8192 }, 168:{ span=3D168-175 cap=3D8192 }, 176:{ span=3D=
+176-183 cap=3D8192 }, 184:{ span=3D184-191 cap=3D8192 }, 192:{ span=3D192-1=
+99 cap=3D8192 }, 200:{ span=3D200-207 cap=3D8192 }, 208:{ span=3D208-215 ca=
+p=3D8192 }, 216:{ span=3D216-223 cap=3D8192 }, 224:{ span=3D224-231 cap=3D8=
+192 }, 232:{ span=3D232-239 cap=3D8192 }, 240:{ span=3D240-247 cap=3D8192 }=
+, 248:{ span=3D248-255 cap=3D8192 }, 256:{ span=3D256-263 cap=3D8192 }, 264=
+:{ span=3D264-271 cap=3D8192 }, 272:{ span=3D272-279 cap=3D8192 }, 280:{ sp=
+an=3D280-287 cap=3D8192 }, 288:{ span=3D288-295 cap=3D8192 }, 296:{ span=3D=
+296-303 cap=3D8192 }
+
+For  CPU 1=20
+domain-0: span=3D0-7 level=3DSMT
+ groups: 1:{ span=3D1 }, 2:{ span=3D2 }, 3:{ span=3D3 }, 4:{ span=3D4 }, 5:=
+{ span=3D5 }, 6:{ span=3D6 }, 7:{ span=3D7 }, 0:{ span=3D0 }
+ domain-1: span=3D0-303 level=3DDIE
+  groups: 0:{ span=3D0-7 cap=3D8192 }, 8:{ span=3D8-15 cap=3D8192 }, 16:{ s=
+pan=3D16-23 cap=3D8192 }, 24:{ span=3D24-31 cap=3D8192 }, 32:{ span=3D32-39=
+ cap=3D8192 }, 40:{ span=3D40-47 cap=3D8192 }, 48:{ span=3D48-55 cap=3D8192=
+ }, 56:{ span=3D56-63 cap=3D8192 }, 64:{ span=3D64-71 cap=3D8192 }, 72:{ sp=
+an=3D72-79 cap=3D8192 }, 80:{ span=3D80-87 cap=3D8192 }, 88:{ span=3D88-95 =
+cap=3D8192 }, 96:{ span=3D96-103 cap=3D8192 }, 104:{ span=3D104-111 cap=3D8=
+192 }, 112:{ span=3D112-119 cap=3D8192 }, 120:{ span=3D120-127 cap=3D8192 }=
+, 128:{ span=3D128-135 cap=3D8192 }, 136:{ span=3D136-143 cap=3D8192 }, 144=
+:{ span=3D144-151 cap=3D8192 }, 152:{ span=3D152-159 cap=3D8192 }, 160:{ sp=
+an=3D160-167 cap=3D8192 }, 168:{ span=3D168-175 cap=3D8192 }, 176:{ span=3D=
+176-183 cap=3D8192 }, 184:{ span=3D184-191 cap=3D8192 }, 192:{ span=3D192-1=
+99 cap=3D8192 }, 200:{ span=3D200-207 cap=3D8192 }, 208:{ span=3D208-215 ca=
+p=3D8192}, 216:{ span=3D216-223 cap=3D8192 }, 224:{ span=3D224-231 cap=3D81=
+92 }, 232:{ span=3D232-239 cap=3D8192 }, 240:{ span=3D240-247 cap=3D8192 },=
+ 248:{ span=3D248-255 cap=3D8192 }, 256:{ span=3D256-263 cap=3D8192 }, 264:=
+{ span=3D264-271 cap=3D8192 }, 272:{ span=3D272-279 cap=3D8192 }, 280:{ spa=
+n=3D280-287 cap=3D8192 }, 288:{ span=3D288-295 cap=3D8192 }, 296:{ span=3D2=
+96-303 cap=3D8192 }
+
+
+For  CPU 8
+domain-0: span=3D8-15 level=3DSMT
+ groups: 8:{ span=3D8 }, 9:{ span=3D9 }, 10:{ span=3D10 }, 11:{ span=3D11 }=
+, 12:{ span=3D12 }, 13:{ span=3D13 }, 14:{ span=3D14 }, 15:{ span=3D15 }
+ domain-1: span=3D0-303 level=3DDIE
+  groups: 8:{ span=3D8-15 cap=3D8192 }, 16:{ span=3D16-23 cap=3D8192 }, 24:=
+{ span=3D24-31 cap=3D8192 }, 32:{ span=3D32-39 cap=3D8192 }, 40:{ span=3D40=
+-47 cap=3D8192 }, 48:{ span=3D48-55 cap=3D8192 }, 56:{ span=3D56-63 cap=3D8=
+192 }, 64:{ span=3D64-71 cap=3D8192 }, 72:{ span=3D72-79 cap=3D8192 }, 80:{=
+ span=3D80-87 cap=3D8192 }, 88:{ span=3D88-95 cap=3D8192 }, 96:{ span=3D96-=
+103 cap=3D8192 }, 104:{ span=3D104-111 cap=3D8192 }, 112:{ span=3D112-119 c=
+ap=3D8192 }, 120:{ span=3D120-127 cap=3D8192 }, 128:{ span=3D128-135 cap=3D=
+8192 }, 136:{ span=3D136-143 cap=3D8192 }, 144:{ span=3D144-151 cap=3D8192 =
+}, 152:{ span=3D152-159 cap=3D8192 }, 160:{ span=3D160-167 cap=3D8192 }, 16=
+8:{ span=3D168-175 cap=3D8192 }, 176:{ span=3D176-183 cap=3D8192 }, 184:{ s=
+pan=3D184-191 cap=3D8192 }, 192:{ span=3D192-199 cap=3D8192 }, 200:{ span=
+=3D200-207 cap=3D8192 }, 208:{ span=3D208-215 cap=3D8192 }, 216:{ span=3D21=
+6-223 cap=3D8192 }, 224:{ span=3D224-231 cap=3D8192 }, 232:{ span=3D232-239=
+ cap=3D8192 }, 240:{ span=3D240-247 cap=3D8192 }, 248:{ span=3D248-255 cap=
+=3D8192 }, 256:{ span=3D256-263 cap=3D8192 }, 264:{ span=3D264-271 cap=3D81=
+92 }, 272:{ span=3D272-279 cap=3D8192 }, 280:{ span=3D280-287 cap=3D8192 },=
+ 288:{ span=3D288-295 cap=3D8192 }, 296:{ span=3D296-303 cap=3D8192 }, 0:{ =
+span=3D0-7 cap=3D8192 }
+
+For  CPU 9=20
+domain-0: span=3D8-15 level=3DSMT
+ groups: 9:{ span=3D9 }, 10:{ span=3D10 }, 11:{ span=3D11 }, 12:{ span=3D12=
+ }, 13:{ span=3D13 }, 14:{ span=3D14 }, 15:{ span=3D15 }, 8:{ span=3D8 }
+ domain-1: span=3D0-303 level=3DDIE
+  groups: 8:{ span=3D8-15 cap=3D8192 }, 16:{ span=3D16-23 cap=3D8192 }, 24:=
+{ span=3D24-31 cap=3D8192 }, 32:{ span=3D32-39 cap=3D8192 }, 40:{ span=3D40=
+-47 cap=3D8192 }, 48:{ span=3D48-55 cap=3D8192 }, 56:{ span=3D56-63 cap=3D8=
+192 }, 64:{ span=3D64-71 cap=3D8192 }, 72:{ span=3D72-79 cap=3D8192 }, 80:{=
+ span=3D80-87 cap=3D8192 }, 88:{ span=3D88-95 cap=3D8192 }, 96:{ span=3D96-=
+103 cap=3D8192 }, 104:{ span=3D104-111 cap=3D8192 }, 112:{ span=3D112-119 c=
+ap=3D8192 }, 120:{ span=3D120-127 cap=3D8192 }, 128:{ span=3D128-135 cap=3D=
+8192 }, 136:{ span=3D136-143 cap=3D8192 }, 144:{ span=3D144-151 cap=3D8192 =
+}, 152:{ span=3D152-159 cap=3D8192 }, 160:{ span=3D160-167 cap=3D8192 }, 16=
+8:{ span=3D168-175 cap=3D8192 }, 176:{ span=3D176-183 cap=3D8192 }, 184:{ s=
+pan=3D184-191 cap=3D8192 }, 192:{ span=3D192-199 cap=3D8192 }, 200:{ span=
+=3D200-207 cap=3D8192 }, 208:{ span=3D208-215 cap=3D8192 }, 216:{ span=3D21=
+6-223 cap=3D8192 }, 224:{ span=3D224-231 cap=3D8192 }, 232:{ span=3D232-239=
+ cap=3D8192 }, 240:{ span=3D240-247 cap=3D8192 }, 248:{ span=3D248-255 cap=
+=3D8192 }, 256:{ span=3D256-263 cap=3D8192 }, 264:{ span=3D264-271 cap=3D81=
+92 }, 272:{ span=3D272-279 cap=3D8192 }, 280:{ span=3D280-287 cap=3D8192 },=
+ 288:{ span=3D288-295 cap=3D8192 }, 296:{ span=3D296-303 cap=3D8192 }, 0:{ =
+span=3D0-7 cap=3D8192 }
+
+
+After topology update.
+
+For CPU 0
+domain-0: span=3D0-7 level=3DSMT
+ groups: 0:{ span=3D0 }, 1:{ span=3D1 }, 2:{ span=3D2 }, 3:{ span=3D3 }, 4:=
+{ span=3D4 }, 5:{ span=3D5 }, 6:{ span=3D6 }, 7:{ span=3D7 }
+ domain-1: span=3D0-7,32-39,64-71,96-103,128-135,160-167,192-199,224-231,25=
+6-263,288-295 level=3DDIE
+  groups: 0:{ span=3D0-7 cap=3D8192 }, 32:{ span=3D32-39 cap=3D8192 }, 64:{=
+ span=3D64-71 cap=3D8192 }, 96:{ span=3D96-103 cap=3D8192 }, 128:{ span=3D1=
+28-135 cap=3D8192 }, 160:{ span=3D160-167 cap=3D8192 }, 192:{ span=3D192-19=
+9 cap=3D8192 }, 224:{ span=3D224-231 cap=3D8192 }, 256:{ span=3D256-263 cap=
+=3D8192 }, 288:{ span=3D288-295 cap=3D8192 }
+  domain-2: span=3D0-303 level=3DNODE
+   groups: 0:{ span=3D0-7,32-39,64-71,96-103,128-135,160-167,192-199,224-23=
+1,256-263,288-295 cap=3D81920 }, 8:{ span=3D8-15,40-47,72-79,104-111,136-14=
+3,168-175,200-207,232-239,264-271,296-303 cap=3D81920 }, 16:{ span=3D16-23,=
+48-55,80-87,112-119,144-151,176-183,208-215,240-247,272-279 cap=3D73728 }, =
+24:{ span=3D24-31,56-63,88-95,120-127,152-159,184-191,216-223,248-255,280-2=
+87 cap=3D73728 }
+
+For CPU 1
+domain-0: span=3D0-7 level=3DSMT
+ groups: 1:{ span=3D1 }, 2:{ span=3D2 }, 3:{ span=3D3 }, 4:{ span=3D4 }, 5:=
+{ span=3D5 }, 6:{ span=3D6 }, 7:{ span=3D7 }, 0:{ span=3D0 }
+ domain-1: span=3D0-7,32-39,64-71,96-103,128-135,160-167,192-199,224-231,25=
+6-263,288-295 level=3DDIE
+  groups: 0:{ span=3D0-7 cap=3D8192 }, 32:{ span=3D32-39 cap=3D8192 }, 64:{=
+ span=3D64-71 cap=3D8192 }, 96:{ span=3D96-103 cap=3D8192 }, 128:{ span=3D1=
+28-135 cap=3D8192 }, 160:{ span=3D160-167 cap=3D8192 }, 192:{ span=3D192-19=
+9 cap=3D8192 }, 224:{ span=3D224-231 cap=3D8192 }, 256:{ span=3D256-263 cap=
+=3D8192 }, 288:{ span=3D288-295 cap=3D8192 }
+  domain-2: span=3D0-303 level=3DNODE
+   groups: 0:{ span=3D0-7,32-39,64-71,96-103,128-135,160-167,192-199,224-23=
+1,256-263,288-295 cap=3D81920 }, 8:{ span=3D8-15,40-47,72-79,104-111,136-14=
+3,168-175,200-207,232-239,264-271,296-303 cap=3D81920 }, 16:{ span=3D16-23,=
+48-55,80-87,112-119,144-151,176-183,208-215,240-247,272-279 cap=3D73728 }, =
+24:{ span=3D24-31,56-63,88-95,120-127,152-159,184-191,216-223,248-255,280-2=
+87 cap=3D73728 }
+
+
+For CPU 8
+ domain-0: span=3D8-15 level=3DSMT
+  groups: 8:{ span=3D8 }, 9:{ span=3D9 }, 10:{ span=3D10 }, 11:{ span=3D11 =
+}, 12:{ span=3D12 }, 13:{ span=3D13 }, 14:{ span=3D14 }, 15:{ span=3D15 }
+  domain-1: span=3D8-15,40-47,72-79,104-111,136-143,168-175,200-207,232-239=
+,264-271,296-303 level=3DDIE
+   groups: 8:{ span=3D8-15 cap=3D8192 }, 40:{ span=3D40-47 cap=3D8192 }, 72=
+:{ span=3D72-79 cap=3D8192 }, 104:{ span=3D104-111 cap=3D8192 }, 136:{ span=
+=3D136-143 cap=3D8192 }, 168:{ span=3D168-175 cap=3D8192 }, 200:{ span=3D20=
+0-207 cap=3D8192 }, 232:{ span=3D232-239 cap=3D8192 }, 264:{ span=3D264-271=
+ cap=3D8192 }, 296:{ span=3D296-303 cap=3D8192 }
+   domain-2: span=3D8-15,40-47,72-79,104-111,136-143,168-175,200-207,232-23=
+9,264-271,296-303 level=3DNODE
+    groups: 8:{ span=3D8-15,40-47,72-79,104-111,136-143,168-175,200-207,232=
+-239,264-271,296-303 cap=3D81920 }
+    domain-3: span=3D0-303 level=3DNUMA
+     groups: 8:{ span=3D8-15,40-47,72-79,104-111,136-143,168-175,200-207,23=
+2-239,264-271,296-303 cap=3D81920 }, 16:{ span=3D16-23,48-55,80-87,112-119,=
+144-151,176-183,208-215,240-247,272-279 cap=3D73728 }, 24:{ span=3D24-31,56=
+-63,88-95,120-127,152-159,184-191,216-223,248-255,280-287 cap=3D73728 }
+ERROR: groups don't span domain->span
+
+For CPU 9
+ domain-0: span=3D8-15 level=3DSMT
+  groups: 9:{ span=3D9 }, 10:{ span=3D10 }, 11:{ span=3D11 }, 12:{ span=3D1=
+2 }, 13:{ span=3D13 }, 14:{ span=3D14 }, 15:{ span=3D15 }, 8:{ span=3D8 }
+  domain-1: span=3D8-15,40-47,72-79,104-111,136-143,168-175,200-207,232-239=
+,264-271,296-303 level=3DDIE
+   groups: 8:{ span=3D8-15 cap=3D8192 }, 40:{ span=3D40-47 cap=3D8192 }, 72=
+:{ span=3D72-79 cap=3D8192 }, 104:{ span=3D104-111 cap=3D8192 }, 136:{ span=
+=3D136-143 cap=3D8192 }, 168:{ span=3D168-175 cap=3D8192 }, 200:{ span=3D20=
+0-207 cap=3D8192 }, 232:{ span=3D232-239 cap=3D8192 }, 264:{ span=3D264-271=
+ cap=3D8192 }, 296:{ span=3D296-303 cap=3D8192 }
+   domain-2: span=3D8-15,40-47,72-79,104-111,136-143,168-175,200-207,232-23=
+9,264-271,296-303 level=3DNODE
+    groups: 8:{ span=3D8-15,40-47,72-79,104-111,136-143,168-175,200-207,232=
+-239,264-271,296-303 cap=3D81920 }
+    domain-3: span=3D0-303 level=3DNUMA
+     groups: 8:{ span=3D8-15,40-47,72-79,104-111,136-143,168-175,200-207,23=
+2-239,264-271,296-303 cap=3D81920 }, 16:{ span=3D16-23,48-55,80-87,112-119,=
+144-151,176-183,208-215,240-247,272-279 cap=3D73728 }, 24:{ span=3D24-31,56=
+-63,88-95,120-127,152-159,184-191,216-223,248-255,280-287 cap=3D73728 }
+ERROR: groups don't span domain->span
+
+--=20
+Thanks and Regards
+Srikar Dronamraju
