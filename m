@@ -1,23 +1,22 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [IPv6:2620:137:e000::1:9])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 422QSs0WF4zF39b
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Sep 2018 15:55:55 +1000 (AEST)
-Date: Fri, 31 Aug 2018 22:55:49 -0700 (PDT)
-Message-Id: <20180831.225549.934645882889326596.davem@davemloft.net>
-To: david.gounaris@infinera.com
-Cc: qiang.zhao@nxp.com, netdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, robh+dt@kernel.org
-Subject: Re: [PATCH v2 3/6] net/wan/fsl_ucc_hdlc: Adding ARPHRD_ETHER
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20180829131328.27901-4-david.gounaris@infinera.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 422TTQ3vDKzF39j
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Sep 2018 18:11:36 +1000 (AEST)
+Subject: Re: [PATCH v2 2/6] net/wan/fsl_ucc_hdlc: allow PARITY_CRC16_PR0_CCITT
+ parity
+To: David Gounaris <david.gounaris@infinera.com>, qiang.zhao@nxp.com,
+ netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, robh+dt@kernel.org
 References: <20180828110921.2542-2-david.gounaris@infinera.com>
  <20180829131328.27901-1-david.gounaris@infinera.com>
- <20180829131328.27901-4-david.gounaris@infinera.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+ <20180829131328.27901-3-david.gounaris@infinera.com>
+From: christophe leroy <christophe.leroy@c-s.fr>
+Message-ID: <a12f2ec8-77af-6474-d5c9-86ef545f7f8e@c-s.fr>
+Date: Sat, 1 Sep 2018 10:03:02 +0200
+MIME-Version: 1.0
+In-Reply-To: <20180829131328.27901-3-david.gounaris@infinera.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,16 +26,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: David Gounaris <david.gounaris@infinera.com>
-Date: Wed, 29 Aug 2018 15:13:25 +0200
 
-> @@ -513,6 +517,8 @@ static int hdlc_rx_done(struct ucc_hdlc_private *priv, int rx_work_limit)
->  			break;
->  
->  		case ARPHRD_PPP:
-> +		case ARPHRD_ETHER:
-> +			
 
-Please don't add such an extraneous empty line.
+Le 29/08/2018 à 15:13, David Gounaris a écrit :
+> Signed-off-by: David Gounaris <david.gounaris@infinera.com>
+> ---
+>   drivers/net/wan/fsl_ucc_hdlc.c | 3 ++-
+>   1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/net/wan/fsl_ucc_hdlc.c b/drivers/net/wan/fsl_ucc_hdlc.c
+> index 5cf6dcba039c..c8e526bf1130 100644
+> --- a/drivers/net/wan/fsl_ucc_hdlc.c
+> +++ b/drivers/net/wan/fsl_ucc_hdlc.c
+> @@ -781,7 +781,8 @@ static int ucc_hdlc_attach(struct net_device *dev, unsigned short encoding,
+>   
+>   	if (parity != PARITY_NONE &&
+>   	    parity != PARITY_CRC32_PR1_CCITT &&
+> -	    parity != PARITY_CRC16_PR1_CCITT)
+> +	    parity != PARITY_CRC16_PR1_CCITT &&
+> +	    parity != PARITY_CRC16_PR0_CCITT)
 
-Thanks.
+ERROR:TRAILING_WHITESPACE: trailing whitespace
+#20: FILE: drivers/net/wan/fsl_ucc_hdlc.c:783:
++^I    parity != PARITY_CRC16_PR1_CCITT && $
+
+Also, you could have left the line 'parity != PARITY_CRC16_PR1_CCITT)' 
+as is and just have added 'parity != PARITY_CRC16_PR0_CCITT &&' on the 
+previous line, would make more sense to have PR0 before PR1, and instead 
+of having 2+1- you would only have 1+
+
+>   		return -EINVAL;
+>   
+>   	priv->encoding = encoding;
+> 
+
+---
+L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
+https://www.avast.com/antivirus
