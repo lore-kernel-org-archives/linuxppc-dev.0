@@ -1,26 +1,47 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
- [IPv6:2607:f8b0:4864:20::443])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <david@redhat.com>
+Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 422WlL0brpzF2X2
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Sep 2018 19:53:49 +1000 (AEST)
-Received: by mail-pf1-x443.google.com with SMTP id d4-v6so6617919pfn.0
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 01 Sep 2018 02:53:49 -0700 (PDT)
-Date: Sat, 1 Sep 2018 19:53:37 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Vaibhav Jain <vaibhav@linux.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Michael Ellerman
- <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org, Vasant Hegde
- <hegdevasant@linux.vnet.ibm.com>, Michael Neuling <mikey@neuling.org>,
- "Oliver O'Halloran" <oohall@gmail.com>
-Subject: Re: [PATCH] powerpc/powernv: Make possible for user to force a full
- ipl cec reboot
-Message-ID: <20180901195337.3080204b@roar.ozlabs.ibm.com>
-In-Reply-To: <20180901081745.2165-1-vaibhav@linux.ibm.com>
-References: <20180901081745.2165-1-vaibhav@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 422dJC53N5zF39t
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Sep 2018 00:04:10 +1000 (AEST)
+Subject: Re: [PATCH RFCv2 0/6] mm: online/offline_pages called w.o.
+ mem_hotplug_lock
+To: Oscar Salvador <osalvador@techadventures.net>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ linux-doc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-acpi@vger.kernel.org, xen-devel@lists.xenproject.org,
+ devel@linuxdriverproject.org, Andrew Morton <akpm@linux-foundation.org>,
+ Balbir Singh <bsingharora@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ Dan Williams <dan.j.williams@intel.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Haiyang Zhang <haiyangz@microsoft.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ John Allen <jallen@linux.vnet.ibm.com>, Jonathan Corbet <corbet@lwn.net>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>, Juergen Gross <jgross@suse.com>,
+ Kate Stewart <kstewart@linuxfoundation.org>,
+ "K. Y. Srinivasan" <kys@microsoft.com>, Len Brown <lenb@kernel.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Mathieu Malaterre <malat@debian.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Michael Neuling <mikey@neuling.org>, Michal Hocko <mhocko@suse.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Oscar Salvador <osalvador@suse.de>, Paul Mackerras <paulus@samba.org>,
+ Pavel Tatashin <pasha.tatashin@oracle.com>,
+ Philippe Ombredanne <pombredanne@nexb.com>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Rashmica Gupta <rashmica.g@gmail.com>,
+ Stephen Hemminger <sthemmin@microsoft.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Vlastimil Babka <vbabka@suse.cz>,
+ YASUAKI ISHIMATSU <yasu.isimatu@gmail.com>
+References: <20180821104418.12710-1-david@redhat.com>
+ <20180831205457.GB3945@techadventures.net>
+From: David Hildenbrand <david@redhat.com>
+Message-ID: <d4b6608b-0b21-b925-4adc-d11e4706f69d@redhat.com>
+Date: Sat, 1 Sep 2018 16:03:58 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <20180831205457.GB3945@techadventures.net>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,72 +51,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat,  1 Sep 2018 13:47:45 +0530
-Vaibhav Jain <vaibhav@linux.ibm.com> wrote:
+On 31.08.2018 22:54, Oscar Salvador wrote:
+> On Tue, Aug 21, 2018 at 12:44:12PM +0200, David Hildenbrand wrote:
+>> This is the same approach as in the first RFC, but this time without
+>> exporting device_hotplug_lock (requested by Greg) and with some more
+>> details and documentation regarding locking. Tested only on x86 so far.
+> 
+> Hi David,
+> 
+> I would like to review this but I am on vacation, so I will not be able to get to it
+> soon.
+> I plan to do it once I am back.
 
-> Ever since fast reboot is enabled by default in opal,
-> opal_cec_reboot() will use fast-reset instead of full IPL to perform
-> system reboot. This leaves the user with no direct way to force a full
-> IPL reboot except changing an nvram setting that persistently disables
-> fast-reset for all subsequent reboots.
-> 
-> This patch provides a more direct way for the user to force a one-shot
-> full IPL reboot by passing the command line argument 'full' to the
-> reboot command. So the user will be able to tweak the reboot behavior
-> via:
-> 
->   $ sudo reboot full	# Force a full ipl reboot skipping fast-reset
-> 
->   or
->   $ sudo reboot  	# default reboot path (usually fast-reset)
-> 
-> The reboot command passes the un-parsed command argument to the kernel
-> via the 'Reboot' syscall which is then passed on to the arch function
-> pnv_restart(). The patch updates pnv_restart() to handle this cmd-arg
-> and issues opal_cec_reboot2 with OPAL_REBOOT_FULL_IPL to force a full
-> IPL reset.
-> 
-> Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
+Sure, I won't be resending within next two weeks either way, as I am
+also on vacation.
 
-This is nice but I wonder if the default should be IPL and fast
-should be the option.
+Have a nice vacation!
 
-> ---
->  arch/powerpc/include/asm/opal-api.h    | 1 +
->  arch/powerpc/platforms/powernv/setup.c | 8 +++++++-
->  2 files changed, 8 insertions(+), 1 deletion(-)
 > 
-> diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-> index 8365353330b4..870fb7b239ea 100644
-> --- a/arch/powerpc/include/asm/opal-api.h
-> +++ b/arch/powerpc/include/asm/opal-api.h
-> @@ -1050,6 +1050,7 @@ enum OpalSysCooling {
->  enum {
->  	OPAL_REBOOT_NORMAL		= 0,
->  	OPAL_REBOOT_PLATFORM_ERROR	= 1,
-> +	OPAL_REBOOT_FULL_IPL		= 2,
->  };
->  
->  /* Argument to OPAL_PCI_TCE_KILL */
-> diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-> index adddde023622..33d2faeacff8 100644
-> --- a/arch/powerpc/platforms/powernv/setup.c
-> +++ b/arch/powerpc/platforms/powernv/setup.c
-> @@ -224,7 +224,13 @@ static void  __noreturn pnv_restart(char *cmd)
->  	pnv_prepare_going_down();
->  
->  	while (rc == OPAL_BUSY || rc == OPAL_BUSY_EVENT) {
-> -		rc = opal_cec_reboot();
-> +
-> +		/* See if we need to do a full IPL reboot */
-> +		if (cmd && strcmp(cmd, "full") == 0)
-> +			rc = opal_cec_reboot2(OPAL_REBOOT_FULL_IPL, NULL);
-> +		else
-> +			rc = opal_cec_reboot();
-> +
->  		if (rc == OPAL_BUSY_EVENT)
->  			opal_poll_events(NULL);
->  		else
-> -- 
-> 2.17.1
+> Thanks
 > 
+
+
+-- 
+
+Thanks,
+
+David / dhildenb
