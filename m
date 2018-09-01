@@ -2,19 +2,19 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 422TTQ41FXzF39k
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Sep 2018 18:11:38 +1000 (AEST)
-Subject: Re: [PATCH v2 5/6] net/wan/fsl_ucc_hdlc: GUMR for non tsa mode
+ by lists.ozlabs.org (Postfix) with ESMTPS id 422TTQ3FRyzF39b
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Sep 2018 18:11:36 +1000 (AEST)
+Subject: Re: [PATCH v2 3/6] net/wan/fsl_ucc_hdlc: Adding ARPHRD_ETHER
 To: David Gounaris <david.gounaris@infinera.com>, qiang.zhao@nxp.com,
  netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, robh+dt@kernel.org
 References: <20180828110921.2542-2-david.gounaris@infinera.com>
  <20180829131328.27901-1-david.gounaris@infinera.com>
- <20180829131328.27901-6-david.gounaris@infinera.com>
+ <20180829131328.27901-4-david.gounaris@infinera.com>
 From: christophe leroy <christophe.leroy@c-s.fr>
-Message-ID: <68e2270c-3b61-7721-4200-00bca9815eb0@c-s.fr>
-Date: Sat, 1 Sep 2018 10:08:23 +0200
+Message-ID: <38fa6ba6-4806-d21b-2bd9-4606d8678da4@c-s.fr>
+Date: Sat, 1 Sep 2018 10:05:14 +0200
 MIME-Version: 1.0
-In-Reply-To: <20180829131328.27901-6-david.gounaris@infinera.com>
+In-Reply-To: <20180829131328.27901-4-david.gounaris@infinera.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -28,48 +28,48 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 Le 29/08/2018 à 15:13, David Gounaris a écrit :
-> The following bits in the GUMR is changed for non
-> tsa mode: CDS, CTSP and CTSS are set to zero.
-> 
-> When set, there is no tx interrupts from the controller.
+> This patch is to avoid discarding ethernet
+> packets when using HDLC_ETH protocol.
 > 
 > Signed-off-by: David Gounaris <david.gounaris@infinera.com>
 > ---
->   drivers/net/wan/fsl_ucc_hdlc.c | 7 +++++++
->   1 file changed, 7 insertions(+)
+>   drivers/net/wan/fsl_ucc_hdlc.c | 6 ++++++
+>   1 file changed, 6 insertions(+)
 > 
 > diff --git a/drivers/net/wan/fsl_ucc_hdlc.c b/drivers/net/wan/fsl_ucc_hdlc.c
-> index be5b0096af3b..248f1f5bcd04 100644
+> index c8e526bf1130..0f703d7be5e0 100644
 > --- a/drivers/net/wan/fsl_ucc_hdlc.c
 > +++ b/drivers/net/wan/fsl_ucc_hdlc.c
-> @@ -97,6 +97,13 @@ static int uhdlc_init(struct ucc_hdlc_private *priv)
->   	if (priv->tsa) {
->   		uf_info->tsa = 1;
->   		uf_info->ctsp = 1;
-> +		uf_info->cds = 1;
-> +		uf_info->ctss = 1;
-> +	}
-> +	else {
-
-ERROR:ELSE_AFTER_BRACE: else should follow close brace '}'
-#27: FILE: drivers/net/wan/fsl_ucc_hdlc.c:103:
-+	}
-+	else {
-
-CHECK:BRACES: Unbalanced braces around else statement
-#27: FILE: drivers/net/wan/fsl_ucc_hdlc.c:103:
-+	else {
-
-Should be:
-
-} else {
-
-> +		uf_info->cds = 0;
-> +		uf_info->ctsp = 0;
-> +		uf_info->ctss = 0;
->   	}
+> @@ -376,6 +376,10 @@ static netdev_tx_t ucc_hdlc_tx(struct sk_buff *skb, struct net_device *dev)
+>   		dev->stats.tx_bytes += skb->len;
+>   		break;
 >   
->   	/* This sets HPM register in CMXUCR register which configures a
+> +	case ARPHRD_ETHER:
+> +		dev->stats.tx_bytes += skb->len;
+> +		break;
+> +
+>   	default:
+>   		dev->stats.tx_dropped++;
+>   		dev_kfree_skb(skb);
+> @@ -513,6 +517,8 @@ static int hdlc_rx_done(struct ucc_hdlc_private *priv, int rx_work_limit)
+>   			break;
+>   
+>   		case ARPHRD_PPP:
+> +		case ARPHRD_ETHER:
+> +			
+
+ERROR:TRAILING_WHITESPACE: trailing whitespace
+#34: FILE: drivers/net/wan/fsl_ucc_hdlc.c:520:
++^I^I^I$
+
+Note that 'git show' would show it to you in red background so you 
+shouldn't miss it.
+
+And this additional blank line is unnecessary.
+
+>   			length -= HDLC_CRC_SIZE;
+>   
+>   			skb = dev_alloc_skb(length);
 > 
 
 ---
