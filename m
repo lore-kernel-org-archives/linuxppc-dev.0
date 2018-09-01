@@ -1,30 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [IPv6:2620:137:e000::1:9])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 422P6C6r5czF39t
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Sep 2018 14:54:43 +1000 (AEST)
-Message-ID: <9f5a75438063227f04a1900559b2f0d5e530aeb0.camel@kernel.crashing.org>
-Subject: Re: v4.17 regression: PowerMac G3 won't boot, was Re: [PATCH v5
- 1/3] of: cache phandle nodes to reduce cost of of_find_node_by_phandle()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Finn Thain <fthain@telegraphics.com.au>, Mac User <userm57@yahoo.com>
-Cc: Rob Herring <robh+dt@kernel.org>, Frank Rowand <frank.rowand@sony.com>,
- Chintan Pandya <cpandya@codeaurora.org>, linuxppc-dev
- <linuxppc-dev@lists.ozlabs.org>
-Date: Sat, 01 Sep 2018 14:54:30 +1000
-In-Reply-To: <alpine.LNX.2.21.1809010929350.228@nippy.intranet>
-References: <1520208889-3908-1-git-send-email-frowand.list@gmail.com>
- <1520208889-3908-2-git-send-email-frowand.list@gmail.com>
- <alpine.LNX.2.21.1808301025480.73@nippy.intranet>
- <CAL_JsqLJ9QMHCMqGKpCouP1rTEO+cMGA1es94qAH+ukLsR31jg@mail.gmail.com>
- <569e4bc3-2149-4b2d-562f-e400dd05a8a8@yahoo.com>
- <84f13bded54eda0817f9134f355d518d5b3a5f77.camel@kernel.crashing.org>
- <a825ebf4c01f862075006370f418e0b7ab4626ad.camel@kernel.crashing.org>
- <d3f5a177-10ee-1696-1ddf-41b7db62de6c@yahoo.com>
- <alpine.LNX.2.21.1809010929350.228@nippy.intranet>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 422QSs0WF4zF39b
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Sep 2018 15:55:55 +1000 (AEST)
+Date: Fri, 31 Aug 2018 22:55:49 -0700 (PDT)
+Message-Id: <20180831.225549.934645882889326596.davem@davemloft.net>
+To: david.gounaris@infinera.com
+Cc: qiang.zhao@nxp.com, netdev@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, robh+dt@kernel.org
+Subject: Re: [PATCH v2 3/6] net/wan/fsl_ucc_hdlc: Adding ARPHRD_ETHER
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20180829131328.27901-4-david.gounaris@infinera.com>
+References: <20180828110921.2542-2-david.gounaris@infinera.com>
+ <20180829131328.27901-1-david.gounaris@infinera.com>
+ <20180829131328.27901-4-david.gounaris@infinera.com>
 Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,15 +27,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2018-09-01 at 09:36 +1000, Finn Thain wrote:
-> > The patched kernel (Finn's vmlinux-4.18.0-00001-gd44cf7e41c19) boots 
-> > normally on my Beige G3 Desktop using BootX.
-> > 
-> 
-> Ben sent two patches, so I picked the most recent one and applied it by 
-> hand due to corrupted whitespace.
+From: David Gounaris <david.gounaris@infinera.com>
+Date: Wed, 29 Aug 2018 15:13:25 +0200
 
-Yup, evolution seems to have broken copy/pasting of patches in a
-preformatted email lately ... ugh.
+> @@ -513,6 +517,8 @@ static int hdlc_rx_done(struct ucc_hdlc_private *priv, int rx_work_limit)
+>  			break;
+>  
+>  		case ARPHRD_PPP:
+> +		case ARPHRD_ETHER:
+> +			
 
-> The patch you tested was the one below.
+Please don't add such an extraneous empty line.
+
+Thanks.
