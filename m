@@ -1,47 +1,18 @@
-Return-Path: <david@redhat.com>
-Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <darren@stevens-zone.net>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.130])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 422dJC53N5zF39t
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Sep 2018 00:04:10 +1000 (AEST)
-Subject: Re: [PATCH RFCv2 0/6] mm: online/offline_pages called w.o.
- mem_hotplug_lock
-To: Oscar Salvador <osalvador@techadventures.net>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- linux-doc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-acpi@vger.kernel.org, xen-devel@lists.xenproject.org,
- devel@linuxdriverproject.org, Andrew Morton <akpm@linux-foundation.org>,
- Balbir Singh <bsingharora@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- Dan Williams <dan.j.williams@intel.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Haiyang Zhang <haiyangz@microsoft.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- John Allen <jallen@linux.vnet.ibm.com>, Jonathan Corbet <corbet@lwn.net>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>, Juergen Gross <jgross@suse.com>,
- Kate Stewart <kstewart@linuxfoundation.org>,
- "K. Y. Srinivasan" <kys@microsoft.com>, Len Brown <lenb@kernel.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Mathieu Malaterre <malat@debian.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Michael Neuling <mikey@neuling.org>, Michal Hocko <mhocko@suse.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Oscar Salvador <osalvador@suse.de>, Paul Mackerras <paulus@samba.org>,
- Pavel Tatashin <pasha.tatashin@oracle.com>,
- Philippe Ombredanne <pombredanne@nexb.com>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Rashmica Gupta <rashmica.g@gmail.com>,
- Stephen Hemminger <sthemmin@microsoft.com>,
- Thomas Gleixner <tglx@linutronix.de>, Vlastimil Babka <vbabka@suse.cz>,
- YASUAKI ISHIMATSU <yasu.isimatu@gmail.com>
-References: <20180821104418.12710-1-david@redhat.com>
- <20180831205457.GB3945@techadventures.net>
-From: David Hildenbrand <david@redhat.com>
-Message-ID: <d4b6608b-0b21-b925-4adc-d11e4706f69d@redhat.com>
-Date: Sat, 1 Sep 2018 16:03:58 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 423CBT2WYgzF39r
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Sep 2018 22:31:10 +1000 (AEST)
+From: Darren Stevens <darren@stevens-zone.net>
+To: linuxppc-dev@lists.ozlabs.org, Christian Zigotzky <chzigotzky@xenosoft.de>,
+ Julian Margetson <runaway@candw.ms>, Scott Wood <oss@buserror.net>
+Date: Sun, 02 Sep 2018 12:30:34 +0100 (BST)
+Message-ID: <4c7f98c86ad.343ea8c1@auth.smtp.1and1.co.uk>
+Subject: [PATCH RFC] powerpc/kernel: Don't check for dev->dma_mask in
+ fsl_set_dma_mask
 MIME-Version: 1.0
-In-Reply-To: <20180831205457.GB3945@techadventures.net>
-Content-Type: text/plain; charset=utf-8
+Content-type: multipart/mixed; boundary="--=_BOUNDARY.6cc13ac07145c3fc.a7"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,30 +22,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 31.08.2018 22:54, Oscar Salvador wrote:
-> On Tue, Aug 21, 2018 at 12:44:12PM +0200, David Hildenbrand wrote:
->> This is the same approach as in the first RFC, but this time without
->> exporting device_hotplug_lock (requested by Greg) and with some more
->> details and documentation regarding locking. Tested only on x86 so far.
-> 
-> Hi David,
-> 
-> I would like to review this but I am on vacation, so I will not be able to get to it
-> soon.
-> I plan to do it once I am back.
+Warning: This is a message in MIME format. Your mail reader does
+not support MIME. Some parts of this message will be readable as
+plain text. To see the rest, you will need to upgrade your mail
+reader. Following are some URLs where you can find MIME-capable
+mail programs for common platforms:
 
-Sure, I won't be resending within next two weeks either way, as I am
-also on vacation.
+  AmigaOS...........: http://yam.ch/
+  Unix/MacOS/Windows: http://www.mozilla.com/thunderbird/
 
-Have a nice vacation!
+General information about MIME can be found at:
+http://en.wikipedia.org/wiki/MIME
 
-> 
-> Thanks
-> 
+----=_BOUNDARY.6cc13ac07145c3fc.a7
+Content-Type: text/plain
 
+To enable use of dma to all ram on a corenet generic system, we add the
+function fsl_pci_dma_set_mask, and link it into the ppc.md structure.
 
--- 
+But this function checks for the presence of dev->dma_mask and dma_ops
+at entry, and fails if one or other are missing. Powerpc's dma_set_mask 
+(which it is called from) doesn't check this until after it has set the 
+dma_mask for pci devs, this difference shows up on a Cyrus (AmigaOne X5000)
+- a soundblaster live pci card, will works properly if memory is limited 
+to <4G, but fail on probe with the following message if the memory is >=4G
 
-Thanks,
+[    4.646531] snd_emu10k1 1000:04:04.0: architecture does not support PCI 
+busmaster DMA with mask 0x7fffffff
 
-David / dhildenb
+Remove the dev->mask tests to make the routines behave similarly. 
+
+Signed-off-by: Darren Stevens <darren@stevens-zone.net>
+
+---
+
+This fix looks wrong to me, although it works. The test needs to be removed,
+moving it to the end of the function doesn't work either. This needs someone
+with more knowledge of what's going on to take a look.
+
+----=_BOUNDARY.6cc13ac07145c3fc.a7
+Content-Type: text/plain;
+	name="dma.patch"
+Content-Disposition: attachment;
+	filename="dma.patch";
+	size=551
+
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 918be81..36b3c86 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -127,9 +127,6 @@ static inline void setup_swiotlb_ops(struct pci_controller *hose) {}
+ 
+ static int fsl_pci_dma_set_mask(struct device *dev, u64 dma_mask)
+ {
+-	if (!dev->dma_mask || !dma_supported(dev, dma_mask))
+-		return -EIO;
+-
+ 	/*
+ 	 * Fix up PCI devices that are able to DMA to the large inbound
+ 	 * mapping that allows addressing any RAM address from across PCI.
+
+----=_BOUNDARY.6cc13ac07145c3fc.a7--
