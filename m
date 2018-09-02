@@ -1,10 +1,10 @@
 Return-Path: <Alexander.Levin@microsoft.com>
-Received: from NAM03-DM3-obe.outbound.protection.outlook.com
- (mail-dm3nam03on0099.outbound.protection.outlook.com [104.47.41.99])
+Received: from NAM03-BY2-obe.outbound.protection.outlook.com
+ (mail-by2nam03on0130.outbound.protection.outlook.com [104.47.42.130])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 423Cwd3fCYzF3BN
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Sep 2018 23:04:16 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 423D000N7GzF3BV
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Sep 2018 23:07:11 +1000 (AEST)
 From: Sasha Levin <Alexander.Levin@microsoft.com>
 To: "stable@vger.kernel.org" <stable@vger.kernel.org>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
@@ -13,12 +13,12 @@ CC: Christophe Leroy <christophe.leroy@c-s.fr>, Alexander Shishkin
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Arnaldo
  Carvalho de Melo <acme@redhat.com>, Sasha Levin
  <Alexander.Levin@microsoft.com>
-Subject: [PATCH AUTOSEL 4.18 044/131] perf tools: Allow overriding MAX_NR_CPUS
+Subject: [PATCH AUTOSEL 4.14 29/89] perf tools: Allow overriding MAX_NR_CPUS
  at compile time
-Date: Sun, 2 Sep 2018 13:03:56 +0000
-Message-ID: <20180902064601.183036-44-alexander.levin@microsoft.com>
-References: <20180902064601.183036-1-alexander.levin@microsoft.com>
-In-Reply-To: <20180902064601.183036-1-alexander.levin@microsoft.com>
+Date: Sun, 2 Sep 2018 13:06:43 +0000
+Message-ID: <20180902064918.183387-29-alexander.levin@microsoft.com>
+References: <20180902064918.183387-1-alexander.levin@microsoft.com>
+In-Reply-To: <20180902064918.183387-1-alexander.levin@microsoft.com>
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -89,10 +89,10 @@ Signed-off-by: Sasha Levin <alexander.levin@microsoft.com>
  1 file changed, 2 insertions(+)
 
 diff --git a/tools/perf/perf.h b/tools/perf/perf.h
-index d215714f48df..21bf7f5a3cf5 100644
+index 55086389fc06..96f62dd7e3ed 100644
 --- a/tools/perf/perf.h
 +++ b/tools/perf/perf.h
-@@ -25,7 +25,9 @@ static inline unsigned long long rdclock(void)
+@@ -24,7 +24,9 @@ static inline unsigned long long rdclock(void)
  	return ts.tv_sec * 1000000000ULL + ts.tv_nsec;
  }
 =20
