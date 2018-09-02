@@ -1,18 +1,26 @@
-Return-Path: <darren@stevens-zone.net>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.130])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <Alexander.Levin@microsoft.com>
+Received: from NAM03-DM3-obe.outbound.protection.outlook.com
+ (mail-dm3nam03on0099.outbound.protection.outlook.com [104.47.41.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 423CBT2WYgzF39r
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Sep 2018 22:31:10 +1000 (AEST)
-From: Darren Stevens <darren@stevens-zone.net>
-To: linuxppc-dev@lists.ozlabs.org, Christian Zigotzky <chzigotzky@xenosoft.de>,
- Julian Margetson <runaway@candw.ms>, Scott Wood <oss@buserror.net>
-Date: Sun, 02 Sep 2018 12:30:34 +0100 (BST)
-Message-ID: <4c7f98c86ad.343ea8c1@auth.smtp.1and1.co.uk>
-Subject: [PATCH RFC] powerpc/kernel: Don't check for dev->dma_mask in
- fsl_set_dma_mask
+ by lists.ozlabs.org (Postfix) with ESMTPS id 423Cwd3fCYzF3BN
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Sep 2018 23:04:16 +1000 (AEST)
+From: Sasha Levin <Alexander.Levin@microsoft.com>
+To: "stable@vger.kernel.org" <stable@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+CC: Christophe Leroy <christophe.leroy@c-s.fr>, Alexander Shishkin
+ <alexander.shishkin@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Arnaldo
+ Carvalho de Melo <acme@redhat.com>, Sasha Levin
+ <Alexander.Levin@microsoft.com>
+Subject: [PATCH AUTOSEL 4.18 044/131] perf tools: Allow overriding MAX_NR_CPUS
+ at compile time
+Date: Sun, 2 Sep 2018 13:03:56 +0000
+Message-ID: <20180902064601.183036-44-alexander.levin@microsoft.com>
+References: <20180902064601.183036-1-alexander.levin@microsoft.com>
+In-Reply-To: <20180902064601.183036-1-alexander.levin@microsoft.com>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-type: multipart/mixed; boundary="--=_BOUNDARY.6cc13ac07145c3fc.a7"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,64 +30,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Warning: This is a message in MIME format. Your mail reader does
-not support MIME. Some parts of this message will be readable as
-plain text. To see the rest, you will need to upgrade your mail
-reader. Following are some URLs where you can find MIME-capable
-mail programs for common platforms:
+From: Christophe Leroy <christophe.leroy@c-s.fr>
 
-  AmigaOS...........: http://yam.ch/
-  Unix/MacOS/Windows: http://www.mozilla.com/thunderbird/
+[ Upstream commit 21b8732eb4479b579bda9ee38e62b2c312c2a0e5 ]
 
-General information about MIME can be found at:
-http://en.wikipedia.org/wiki/MIME
+After update of kernel, the perf tool doesn't run anymore on my 32MB RAM
+powerpc board, but still runs on a 128MB RAM board:
 
-----=_BOUNDARY.6cc13ac07145c3fc.a7
-Content-Type: text/plain
+  ~# strace perf
+  execve("/usr/sbin/perf", ["perf"], [/* 12 vars */]) =3D -1 ENOMEM (Cannot=
+ allocate memory)
+  --- SIGSEGV {si_signo=3DSIGSEGV, si_code=3DSI_KERNEL, si_addr=3D0} ---
+  +++ killed by SIGSEGV +++
+  Segmentation fault
 
-To enable use of dma to all ram on a corenet generic system, we add the
-function fsl_pci_dma_set_mask, and link it into the ppc.md structure.
+objdump -x shows that .bss section has a huge size of 24Mbytes:
 
-But this function checks for the presence of dev->dma_mask and dma_ops
-at entry, and fails if one or other are missing. Powerpc's dma_set_mask 
-(which it is called from) doesn't check this until after it has set the 
-dma_mask for pci devs, this difference shows up on a Cyrus (AmigaOne X5000)
-- a soundblaster live pci card, will works properly if memory is limited 
-to <4G, but fail on probe with the following message if the memory is >=4G
+ 27 .bss          016baca8  101cebb8  101cebb8  001cd988  2**3
 
-[    4.646531] snd_emu10k1 1000:04:04.0: architecture does not support PCI 
-busmaster DMA with mask 0x7fffffff
+With especially the following objects having quite big size:
 
-Remove the dev->mask tests to make the routines behave similarly. 
+  10205f80 l     O .bss	00140000     runtime_cycles_stats
+  10345f80 l     O .bss	00140000     runtime_stalled_cycles_front_stats
+  10485f80 l     O .bss	00140000     runtime_stalled_cycles_back_stats
+  105c5f80 l     O .bss	00140000     runtime_branches_stats
+  10705f80 l     O .bss	00140000     runtime_cacherefs_stats
+  10845f80 l     O .bss	00140000     runtime_l1_dcache_stats
+  10985f80 l     O .bss	00140000     runtime_l1_icache_stats
+  10ac5f80 l     O .bss	00140000     runtime_ll_cache_stats
+  10c05f80 l     O .bss	00140000     runtime_itlb_cache_stats
+  10d45f80 l     O .bss	00140000     runtime_dtlb_cache_stats
+  10e85f80 l     O .bss	00140000     runtime_cycles_in_tx_stats
+  10fc5f80 l     O .bss	00140000     runtime_transaction_stats
+  11105f80 l     O .bss	00140000     runtime_elision_stats
+  11245f80 l     O .bss	00140000     runtime_topdown_total_slots
+  11385f80 l     O .bss	00140000     runtime_topdown_slots_retired
+  114c5f80 l     O .bss	00140000     runtime_topdown_slots_issued
+  11605f80 l     O .bss	00140000     runtime_topdown_fetch_bubbles
+  11745f80 l     O .bss	00140000     runtime_topdown_recovery_bubbles
 
-Signed-off-by: Darren Stevens <darren@stevens-zone.net>
+This is due to commit 4d255766d28b1 ("perf: Bump max number of cpus
+to 1024"), because many tables are sized with MAX_NR_CPUS
 
+This patch gives the opportunity to redefine MAX_NR_CPUS via
+
+  $ make EXTRA_CFLAGS=3D-DMAX_NR_CPUS=3D1
+
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Alexander Shishkin <alexander.shishkin@linux.intel.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Link: http://lkml.kernel.org/r/20170922112043.8349468C57@po15668-vm-win7.id=
+si0.si.c-s.fr
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+Signed-off-by: Sasha Levin <alexander.levin@microsoft.com>
 ---
+ tools/perf/perf.h | 2 ++
+ 1 file changed, 2 insertions(+)
 
-This fix looks wrong to me, although it works. The test needs to be removed,
-moving it to the end of the function doesn't work either. This needs someone
-with more knowledge of what's going on to take a look.
-
-----=_BOUNDARY.6cc13ac07145c3fc.a7
-Content-Type: text/plain;
-	name="dma.patch"
-Content-Disposition: attachment;
-	filename="dma.patch";
-	size=551
-
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index 918be81..36b3c86 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -127,9 +127,6 @@ static inline void setup_swiotlb_ops(struct pci_controller *hose) {}
- 
- static int fsl_pci_dma_set_mask(struct device *dev, u64 dma_mask)
- {
--	if (!dev->dma_mask || !dma_supported(dev, dma_mask))
--		return -EIO;
--
- 	/*
- 	 * Fix up PCI devices that are able to DMA to the large inbound
- 	 * mapping that allows addressing any RAM address from across PCI.
-
-----=_BOUNDARY.6cc13ac07145c3fc.a7--
+diff --git a/tools/perf/perf.h b/tools/perf/perf.h
+index d215714f48df..21bf7f5a3cf5 100644
+--- a/tools/perf/perf.h
++++ b/tools/perf/perf.h
+@@ -25,7 +25,9 @@ static inline unsigned long long rdclock(void)
+ 	return ts.tv_sec * 1000000000ULL + ts.tv_nsec;
+ }
+=20
++#ifndef MAX_NR_CPUS
+ #define MAX_NR_CPUS			1024
++#endif
+=20
+ extern const char *input_name;
+ extern bool perf_host, perf_guest;
+--=20
+2.17.1
