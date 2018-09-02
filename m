@@ -1,26 +1,38 @@
-Return-Path: <Alexander.Levin@microsoft.com>
-Received: from NAM02-CY1-obe.outbound.protection.outlook.com
- (mail-cys01nam02on0093.outbound.protection.outlook.com [104.47.37.93])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <vaibhav@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 423DBd5VdRzF38W
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Sep 2018 23:16:25 +1000 (AEST)
-From: Sasha Levin <Alexander.Levin@microsoft.com>
-To: "stable@vger.kernel.org" <stable@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-CC: Christophe Leroy <christophe.leroy@c-s.fr>, Alexander Shishkin
- <alexander.shishkin@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Arnaldo
- Carvalho de Melo <acme@redhat.com>, Sasha Levin
- <Alexander.Levin@microsoft.com>
-Subject: [PATCH AUTOSEL 4.4 12/47] perf tools: Allow overriding MAX_NR_CPUS at
- compile time
-Date: Sun, 2 Sep 2018 13:15:50 +0000
-Message-ID: <20180902131533.184092-12-alexander.levin@microsoft.com>
-References: <20180902131533.184092-1-alexander.levin@microsoft.com>
-In-Reply-To: <20180902131533.184092-1-alexander.levin@microsoft.com>
-Content-Type: text/plain; charset="iso-8859-1"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 423FlG72KWzF3BX
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Sep 2018 00:26:18 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w82ENtVP042739
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 2 Sep 2018 10:26:15 -0400
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2m888a681a-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 02 Sep 2018 10:26:15 -0400
+Received: from localhost
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.ibm.com>;
+ Sun, 2 Sep 2018 15:26:14 +0100
+From: Vaibhav Jain <vaibhav@linux.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
+ Michael Neuling <mikey@neuling.org>, "Oliver O'Halloran" <oohall@gmail.com>
+Subject: Re: [PATCH] powerpc/powernv: Make possible for user to force a full
+ ipl cec reboot
+In-Reply-To: <20180901195337.3080204b@roar.ozlabs.ibm.com>
+References: <20180901081745.2165-1-vaibhav@linux.ibm.com>
+ <20180901195337.3080204b@roar.ozlabs.ibm.com>
+Date: Sun, 02 Sep 2018 19:56:07 +0530
 MIME-Version: 1.0
+Content-Type: text/plain
+Message-Id: <87y3ckm0w0.fsf@vajain21.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,77 +42,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Christophe Leroy <christophe.leroy@c-s.fr>
+Thanks for looking into this patch Nick,
 
-[ Upstream commit 21b8732eb4479b579bda9ee38e62b2c312c2a0e5 ]
+Nicholas Piggin <npiggin@gmail.com> writes:
 
-After update of kernel, the perf tool doesn't run anymore on my 32MB RAM
-powerpc board, but still runs on a 128MB RAM board:
+> This is nice but I wonder if the default should be IPL and fast
+> should be the option.
 
-  ~# strace perf
-  execve("/usr/sbin/perf", ["perf"], [/* 12 vars */]) =3D -1 ENOMEM (Cannot=
- allocate memory)
-  --- SIGSEGV {si_signo=3DSIGSEGV, si_code=3DSI_KERNEL, si_addr=3D0} ---
-  +++ killed by SIGSEGV +++
-  Segmentation fault
+Fast-reset should work most of the times so I think it should be
+default. Its also the current default which I am bit relunctant to
+change.
 
-objdump -x shows that .bss section has a huge size of 24Mbytes:
+We usually need full IPL reset only when we need to update skiboot or
+have malfunctioning device that isnt being reset properly during
+fast-reset. So I am believe full IPL resets will be less frequent hence
+should be explicitly requested.
 
- 27 .bss          016baca8  101cebb8  101cebb8  001cd988  2**3
-
-With especially the following objects having quite big size:
-
-  10205f80 l     O .bss	00140000     runtime_cycles_stats
-  10345f80 l     O .bss	00140000     runtime_stalled_cycles_front_stats
-  10485f80 l     O .bss	00140000     runtime_stalled_cycles_back_stats
-  105c5f80 l     O .bss	00140000     runtime_branches_stats
-  10705f80 l     O .bss	00140000     runtime_cacherefs_stats
-  10845f80 l     O .bss	00140000     runtime_l1_dcache_stats
-  10985f80 l     O .bss	00140000     runtime_l1_icache_stats
-  10ac5f80 l     O .bss	00140000     runtime_ll_cache_stats
-  10c05f80 l     O .bss	00140000     runtime_itlb_cache_stats
-  10d45f80 l     O .bss	00140000     runtime_dtlb_cache_stats
-  10e85f80 l     O .bss	00140000     runtime_cycles_in_tx_stats
-  10fc5f80 l     O .bss	00140000     runtime_transaction_stats
-  11105f80 l     O .bss	00140000     runtime_elision_stats
-  11245f80 l     O .bss	00140000     runtime_topdown_total_slots
-  11385f80 l     O .bss	00140000     runtime_topdown_slots_retired
-  114c5f80 l     O .bss	00140000     runtime_topdown_slots_issued
-  11605f80 l     O .bss	00140000     runtime_topdown_fetch_bubbles
-  11745f80 l     O .bss	00140000     runtime_topdown_recovery_bubbles
-
-This is due to commit 4d255766d28b1 ("perf: Bump max number of cpus
-to 1024"), because many tables are sized with MAX_NR_CPUS
-
-This patch gives the opportunity to redefine MAX_NR_CPUS via
-
-  $ make EXTRA_CFLAGS=3D-DMAX_NR_CPUS=3D1
-
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: Alexander Shishkin <alexander.shishkin@linux.intel.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Link: http://lkml.kernel.org/r/20170922112043.8349468C57@po15668-vm-win7.id=
-si0.si.c-s.fr
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-Signed-off-by: Sasha Levin <alexander.levin@microsoft.com>
----
- tools/perf/perf.h | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/tools/perf/perf.h b/tools/perf/perf.h
-index 90129accffbe..4341ed267d4e 100644
---- a/tools/perf/perf.h
-+++ b/tools/perf/perf.h
-@@ -29,7 +29,9 @@ static inline unsigned long long rdclock(void)
- 	return ts.tv_sec * 1000000000ULL + ts.tv_nsec;
- }
-=20
-+#ifndef MAX_NR_CPUS
- #define MAX_NR_CPUS			1024
-+#endif
-=20
- extern const char *input_name;
- extern bool perf_host, perf_guest;
---=20
-2.17.1
+-- 
+Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Linux Technology Center, IBM India Pvt. Ltd.
