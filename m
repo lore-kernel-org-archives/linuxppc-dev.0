@@ -1,14 +1,14 @@
 Return-Path: <David.Gounaris@infinera.com>
 Received: from smtp.transmode.se (smtp.transmode.se [31.15.61.139])
- by lists.ozlabs.org (Postfix) with ESMTP id 423qWK5QjDzF37Q
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Sep 2018 22:47:54 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 423qWN1RG1zF37K
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Sep 2018 22:48:00 +1000 (AEST)
 From: David Gounaris <david.gounaris@infinera.com>
 To: qiang.zhao@nxp.com, netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  joakim.tjernlund@infinera.com
 Cc: David Gounaris <david.gounaris@infinera.com>
-Subject: [PATCH v3 1/6] net/wan/fsl_ucc_hdlc: allow ucc index up to 7
-Date: Mon,  3 Sep 2018 14:47:25 +0200
-Message-Id: <20180903124730.1551-2-david.gounaris@infinera.com>
+Subject: [PATCH v3 5/6] net/wan/fsl_ucc_hdlc: GUMR for non tsa mode
+Date: Mon,  3 Sep 2018 14:47:29 +0200
+Message-Id: <20180903124730.1551-6-david.gounaris@infinera.com>
 In-Reply-To: <20180903124730.1551-1-david.gounaris@infinera.com>
 References: <20180828110921.2542-2-david.gounaris@infinera.com>
  <20180903124730.1551-1-david.gounaris@infinera.com>
@@ -21,26 +21,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There is a need to allow higher indexes to be
-able to support MPC83xx platforms. (UCC1-UCC8)
+The following bits in the GUMR is changed for non
+tsa mode: CDS, CTSP and CTSS are set to zero.
+
+When set, there is no tx interrupts from the controller.
 
 Signed-off-by: David Gounaris <david.gounaris@infinera.com>
 ---
- drivers/net/wan/fsl_ucc_hdlc.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/wan/fsl_ucc_hdlc.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
 diff --git a/drivers/net/wan/fsl_ucc_hdlc.c b/drivers/net/wan/fsl_ucc_hdlc.c
-index 33df76405b86..485764c537d9 100644
+index 3dacafb219c6..999d93fa54f7 100644
 --- a/drivers/net/wan/fsl_ucc_hdlc.c
 +++ b/drivers/net/wan/fsl_ucc_hdlc.c
-@@ -1016,7 +1016,7 @@ static int ucc_hdlc_probe(struct platform_device *pdev)
+@@ -97,6 +97,12 @@ static int uhdlc_init(struct ucc_hdlc_private *priv)
+ 	if (priv->tsa) {
+ 		uf_info->tsa = 1;
+ 		uf_info->ctsp = 1;
++		uf_info->cds = 1;
++		uf_info->ctss = 1;
++	} else {
++		uf_info->cds = 0;
++		uf_info->ctsp = 0;
++		uf_info->ctss = 0;
  	}
  
- 	ucc_num = val - 1;
--	if ((ucc_num > 3) || (ucc_num < 0)) {
-+	if (ucc_num > (UCC_MAX_NUM - 1) || ucc_num < 0) {
- 		dev_err(&pdev->dev, ": Invalid UCC num\n");
- 		return -EINVAL;
- 	}
+ 	/* This sets HPM register in CMXUCR register which configures a
 -- 
 2.13.6
