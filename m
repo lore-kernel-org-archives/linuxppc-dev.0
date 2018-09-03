@@ -3,8 +3,8 @@ Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
  [140.211.169.12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4242bN0dk8zF37g
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2018 07:07:11 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4242pw4cLWzF38C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2018 07:17:12 +1000 (AEST)
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To: linux-kernel@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org,
@@ -12,11 +12,11 @@ Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org,
  linux-usb@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
  linuxppc-dev@lists.ozlabs.org, Felipe Balbi <felipe.balbi@linux.intel.com>,
  Sasha Levin <alexander.levin@microsoft.com>
-Subject: [PATCH 4.4 14/80] usb/phy: fix PPC64 build errors in phy-fsl-usb.c
-Date: Mon,  3 Sep 2018 18:48:52 +0200
-Message-Id: <20180903164934.723075049@linuxfoundation.org>
-In-Reply-To: <20180903164934.171677301@linuxfoundation.org>
-References: <20180903164934.171677301@linuxfoundation.org>
+Subject: [PATCH 4.9 012/107] usb/phy: fix PPC64 build errors in phy-fsl-usb.c
+Date: Mon,  3 Sep 2018 18:55:36 +0200
+Message-Id: <20180903165637.894421481@linuxfoundation.org>
+In-Reply-To: <20180903165637.293735109@linuxfoundation.org>
+References: <20180903165637.293735109@linuxfoundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,7 +28,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-4.4-stable review patch.  If anyone has any objections, please let me know.
+4.9-stable review patch.  If anyone has any objections, please let me know.
 
 ------------------
 
