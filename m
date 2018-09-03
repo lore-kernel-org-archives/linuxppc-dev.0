@@ -1,22 +1,18 @@
-Return-Path: <vkoul@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 423n1h4RYFzF36f
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Sep 2018 20:55:33 +1000 (AEST)
-Date: Mon, 3 Sep 2018 16:25:22 +0530
-From: Vinod <vkoul@kernel.org>
-To: Barry Song <21cnbao@gmail.com>
-Cc: leoyang.li@nxp.com, zw@zh-kernel.org, dan.j.williams@intel.com,
- linuxppc-dev@lists.ozlabs.org, dmaengine@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] dmaengine: fsldma: move spin_lock_bh to spin_lock in
- tasklet
-Message-ID: <20180903105522.GH2322@vkoul-mobl>
-References: <1534510826-7603-1-git-send-email-21cnbao@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1534510826-7603-1-git-send-email-21cnbao@gmail.com>
+Return-Path: <David.Gounaris@infinera.com>
+Received: from smtp.transmode.se (smtp.transmode.se [31.15.61.139])
+ by lists.ozlabs.org (Postfix) with ESMTP id 423qWK4tsnzF37J
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Sep 2018 22:47:54 +1000 (AEST)
+From: David Gounaris <david.gounaris@infinera.com>
+To: qiang.zhao@nxp.com, netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ joakim.tjernlund@infinera.com
+Cc: David Gounaris <david.gounaris@infinera.com>
+Subject: [PATCH v3 2/6] net/wan/fsl_ucc_hdlc: allow PARITY_CRC16_PR0_CCITT
+ parity
+Date: Mon,  3 Sep 2018 14:47:26 +0200
+Message-Id: <20180903124730.1551-3-david.gounaris@infinera.com>
+In-Reply-To: <20180903124730.1551-1-david.gounaris@infinera.com>
+References: <20180828110921.2542-2-david.gounaris@infinera.com>
+ <20180903124730.1551-1-david.gounaris@infinera.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,13 +22,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 17-08-18, 06:00, Barry Song wrote:
-> as you are already in a tasklet, it is unnecessary to call spin_lock_bh.
+Signed-off-by: David Gounaris <david.gounaris@infinera.com>
+---
+ drivers/net/wan/fsl_ucc_hdlc.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Applied all, thanks
-
-You may want to check you send-mail options, they patches were all over
-my inbox and npot threaded
-
+diff --git a/drivers/net/wan/fsl_ucc_hdlc.c b/drivers/net/wan/fsl_ucc_hdlc.c
+index 485764c537d9..5619e2c2e02d 100644
+--- a/drivers/net/wan/fsl_ucc_hdlc.c
++++ b/drivers/net/wan/fsl_ucc_hdlc.c
+@@ -781,6 +781,7 @@ static int ucc_hdlc_attach(struct net_device *dev, unsigned short encoding,
+ 
+ 	if (parity != PARITY_NONE &&
+ 	    parity != PARITY_CRC32_PR1_CCITT &&
++	    parity != PARITY_CRC16_PR0_CCITT &&
+ 	    parity != PARITY_CRC16_PR1_CCITT)
+ 		return -EINVAL;
+ 
 -- 
-~Vinod
+2.13.6
