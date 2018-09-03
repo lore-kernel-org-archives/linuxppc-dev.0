@@ -1,33 +1,24 @@
-Return-Path: <aneesh.kumar@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <gregkh@linuxfoundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4242T60wfpzF36V
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2018 07:01:45 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w83GYErk041672
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Sep 2018 12:38:24 -0400
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2m97fatppy-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Sep 2018 12:38:24 -0400
-Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Mon, 3 Sep 2018 12:38:23 -0400
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: npiggin@gmail.com, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, David Gibson <david@gibson.dropbear.id.au>,
- Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: [RFC PATCH 0/3] Add support for compound page migration in
- mm_iommu_get
-Date: Mon,  3 Sep 2018 22:07:30 +0530
-Message-Id: <20180903163733.27965-1-aneesh.kumar@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4242bN0dk8zF37g
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2018 07:07:11 +1000 (AEST)
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org,
+ Randy Dunlap <rdunlap@infradead.org>, Felipe Balbi <balbi@kernel.org>,
+ linux-usb@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org, Felipe Balbi <felipe.balbi@linux.intel.com>,
+ Sasha Levin <alexander.levin@microsoft.com>
+Subject: [PATCH 4.4 14/80] usb/phy: fix PPC64 build errors in phy-fsl-usb.c
+Date: Mon,  3 Sep 2018 18:48:52 +0200
+Message-Id: <20180903164934.723075049@linuxfoundation.org>
+In-Reply-To: <20180903164934.171677301@linuxfoundation.org>
+References: <20180903164934.171677301@linuxfoundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,30 +28,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch series add support for migrating compound pages if we find them in the
-CMA area before taking long term page reference for VFIO.
+4.4-stable review patch.  If anyone has any objections, please let me know.
 
-Testing:
-* TODO: test with hugetlb backed guest ram.
-* Testing done with a code change as below
+------------------
 
--		if (is_migrate_cma_page(pages[i]) && migrate_allow) {
-+		if (migrate_allow) {
+From: Randy Dunlap <rdunlap@infradead.org>
 
-...
-+	migrate_allow = false;
+[ Upstream commit a39ba90a1cc7010edb0a7132e1b67f3d80b994e9 ]
 
+Fix build errors when built for PPC64:
+These variables are only used on PPC32 so they don't need to be
+initialized for PPC64.
 
-Aneesh Kumar K.V (3):
-  mm: Export alloc_migrate_huge_page
-  powerpc/mm/iommu: Allow large IOMMU page size only for hugetlb backing
-  powerpc/mm/iommu: Allow migration of cma allocated pages during
-    mm_iommu_get
+../drivers/usb/phy/phy-fsl-usb.c: In function 'usb_otg_start':
+../drivers/usb/phy/phy-fsl-usb.c:865:3: error: '_fsl_readl' undeclared (first use in this function); did you mean 'fsl_readl'?
+   _fsl_readl = _fsl_readl_be;
+../drivers/usb/phy/phy-fsl-usb.c:865:16: error: '_fsl_readl_be' undeclared (first use in this function); did you mean 'fsl_readl'?
+   _fsl_readl = _fsl_readl_be;
+../drivers/usb/phy/phy-fsl-usb.c:866:3: error: '_fsl_writel' undeclared (first use in this function); did you mean 'fsl_writel'?
+   _fsl_writel = _fsl_writel_be;
+../drivers/usb/phy/phy-fsl-usb.c:866:17: error: '_fsl_writel_be' undeclared (first use in this function); did you mean 'fsl_writel'?
+   _fsl_writel = _fsl_writel_be;
+../drivers/usb/phy/phy-fsl-usb.c:868:16: error: '_fsl_readl_le' undeclared (first use in this function); did you mean 'fsl_readl'?
+   _fsl_readl = _fsl_readl_le;
+../drivers/usb/phy/phy-fsl-usb.c:869:17: error: '_fsl_writel_le' undeclared (first use in this function); did you mean 'fsl_writel'?
+   _fsl_writel = _fsl_writel_le;
 
- arch/powerpc/mm/mmu_context_iommu.c | 209 +++++++++++++++++-----------
- include/linux/hugetlb.h             |   2 +
- mm/hugetlb.c                        |   4 +-
- 3 files changed, 128 insertions(+), 87 deletions(-)
+and the sysfs "show" function return type should be ssize_t, not int:
 
--- 
-2.17.1
+../drivers/usb/phy/phy-fsl-usb.c:1042:49: error: initialization of 'ssize_t (*)(struct device *, struct device_attribute *, char *)' {aka 'long int (*)(struct device *, struct device_attribute *, char *)'} from incompatible pointer type 'int (*)(struct device *, struct device_attribute *, char *)' [-Werror=incompatible-pointer-types]
+ static DEVICE_ATTR(fsl_usb2_otg_state, S_IRUGO, show_fsl_usb2_otg_state, NULL);
+
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc: Felipe Balbi <balbi@kernel.org>
+Cc: linux-usb@vger.kernel.org
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Felipe Balbi <felipe.balbi@linux.intel.com>
+Signed-off-by: Sasha Levin <alexander.levin@microsoft.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ drivers/usb/phy/phy-fsl-usb.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+--- a/drivers/usb/phy/phy-fsl-usb.c
++++ b/drivers/usb/phy/phy-fsl-usb.c
+@@ -879,6 +879,7 @@ int usb_otg_start(struct platform_device
+ 	if (pdata->init && pdata->init(pdev) != 0)
+ 		return -EINVAL;
+ 
++#ifdef CONFIG_PPC32
+ 	if (pdata->big_endian_mmio) {
+ 		_fsl_readl = _fsl_readl_be;
+ 		_fsl_writel = _fsl_writel_be;
+@@ -886,6 +887,7 @@ int usb_otg_start(struct platform_device
+ 		_fsl_readl = _fsl_readl_le;
+ 		_fsl_writel = _fsl_writel_le;
+ 	}
++#endif
+ 
+ 	/* request irq */
+ 	p_otg->irq = platform_get_irq(pdev, 0);
+@@ -976,7 +978,7 @@ int usb_otg_start(struct platform_device
+ /*
+  * state file in sysfs
+  */
+-static int show_fsl_usb2_otg_state(struct device *dev,
++static ssize_t show_fsl_usb2_otg_state(struct device *dev,
+ 				   struct device_attribute *attr, char *buf)
+ {
+ 	struct otg_fsm *fsm = &fsl_otg_dev->fsm;
