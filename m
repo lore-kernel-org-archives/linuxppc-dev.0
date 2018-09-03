@@ -3,8 +3,8 @@ Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
  [140.211.169.12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42438D4B5XzDqSL
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2018 07:32:12 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4243Fz6bBmzF3BV
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2018 07:37:11 +1000 (AEST)
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To: linux-kernel@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org,
@@ -12,11 +12,11 @@ Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org,
  linux-usb@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
  linuxppc-dev@lists.ozlabs.org, Felipe Balbi <felipe.balbi@linux.intel.com>,
  Sasha Levin <alexander.levin@microsoft.com>
-Subject: [PATCH 4.14 024/165] usb/phy: fix PPC64 build errors in phy-fsl-usb.c
-Date: Mon,  3 Sep 2018 18:55:10 +0200
-Message-Id: <20180903165656.241065950@linuxfoundation.org>
-In-Reply-To: <20180903165655.003605184@linuxfoundation.org>
-References: <20180903165655.003605184@linuxfoundation.org>
+Subject: [PATCH 3.18 12/56] usb/phy: fix PPC64 build errors in phy-fsl-usb.c
+Date: Mon,  3 Sep 2018 18:49:02 +0200
+Message-Id: <20180903164924.699886562@linuxfoundation.org>
+In-Reply-To: <20180903164924.078355019@linuxfoundation.org>
+References: <20180903164924.078355019@linuxfoundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,7 +28,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-4.14-stable review patch.  If anyone has any objections, please let me know.
+3.18-stable review patch.  If anyone has any objections, please let me know.
 
 ------------------
 
@@ -73,7 +73,7 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
 --- a/drivers/usb/phy/phy-fsl-usb.c
 +++ b/drivers/usb/phy/phy-fsl-usb.c
-@@ -874,6 +874,7 @@ int usb_otg_start(struct platform_device
+@@ -913,6 +913,7 @@ int usb_otg_start(struct platform_device
  	if (pdata->init && pdata->init(pdev) != 0)
  		return -EINVAL;
  
@@ -81,7 +81,7 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
  	if (pdata->big_endian_mmio) {
  		_fsl_readl = _fsl_readl_be;
  		_fsl_writel = _fsl_writel_be;
-@@ -881,6 +882,7 @@ int usb_otg_start(struct platform_device
+@@ -920,6 +921,7 @@ int usb_otg_start(struct platform_device
  		_fsl_readl = _fsl_readl_le;
  		_fsl_writel = _fsl_writel_le;
  	}
@@ -89,7 +89,7 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
  
  	/* request irq */
  	p_otg->irq = platform_get_irq(pdev, 0);
-@@ -971,7 +973,7 @@ int usb_otg_start(struct platform_device
+@@ -1010,7 +1012,7 @@ int usb_otg_start(struct platform_device
  /*
   * state file in sysfs
   */
