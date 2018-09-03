@@ -1,49 +1,24 @@
-Return-Path: <oss@buserror.net>
-Received: from baldur.buserror.net (baldur.buserror.net [165.227.176.147])
+Return-Path: <gregkh@linuxfoundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4243221YDFzF38k
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2018 07:26:48 +1000 (AEST)
-Message-ID: <3a4274af2200923875ff05f945888a34d6dccee3.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: Andy Tang <andy.tang@nxp.com>, Vabhav Sharma <vabhav.sharma@nxp.com>,
- "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org"
- <devicetree@vger.kernel.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>,
- "mark.rutland@arm.com"
- <mark.rutland@arm.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, "mturquette@baylibre.com"
- <mturquette@baylibre.com>, "sboyd@kernel.org" <sboyd@kernel.org>,
- "rjw@rjwysocki.net"
- <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>,
- "linux-clk@vger.kernel.org"
- <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org"
- <linux-pm@vger.kernel.org>, "linux-kernel-owner@vger.kernel.org"
- <linux-kernel-owner@vger.kernel.org>, "catalin.marinas@arm.com"
- <catalin.marinas@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>,
- "gregkh@linuxfoundation.org"
- <gregkh@linuxfoundation.org>, "arnd@arndb.de" <arnd@arndb.de>,
- "kstewart@linuxfoundation.org"
- <kstewart@linuxfoundation.org>, "yamada.masahiro@socionext.com"
- <yamada.masahiro@socionext.com>
-Cc: Yogesh Narayan Gaur <yogeshnarayan.gaur@nxp.com>,
- "linux@armlinux.org.uk" <linux@armlinux.org.uk>, Udit Kumar
- <udit.kumar@nxp.com>, Varun Sethi <V.Sethi@nxp.com>
-Date: Mon, 03 Sep 2018 15:33:33 -0500
-In-Reply-To: <DB5PR0401MB221332A5ED14C8E14C8D18A1F30C0@DB5PR0401MB2213.eurprd04.prod.outlook.com>
-References: <1534747636-20064-1-git-send-email-vabhav.sharma@nxp.com>
- <1534747636-20064-4-git-send-email-vabhav.sharma@nxp.com>
- <4a9ea6b451683ec98c92e86a5ae6b91213a6afcf.camel@buserror.net>
- <VI1PR04MB4800E8B1E8541FCA9221A1CFF3080@VI1PR04MB4800.eurprd04.prod.outlook.com>
- <d2cfd49eb33a3ce74f0e78f2b53d3954d2cb3e76.camel@buserror.net>
- <b31ae8e788fb93971167faa9b55b497e838532c4.camel@buserror.net>
- <DB5PR0401MB22130C025AA4CCAD0221781DF30F0@DB5PR0401MB2213.eurprd04.prod.outlook.com>
- <f6707cb54c3e6da1b50f45f915c996dfccfeacda.camel@buserror.net>
- <DB5PR0401MB221332A5ED14C8E14C8D18A1F30C0@DB5PR0401MB2213.eurprd04.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Subject: Re: [PATCH 3/5] drivers: clk-qoriq: Add clockgen support for lx2160a
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42438D4B5XzDqSL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2018 07:32:12 +1000 (AEST)
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org,
+ Randy Dunlap <rdunlap@infradead.org>, Felipe Balbi <balbi@kernel.org>,
+ linux-usb@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org, Felipe Balbi <felipe.balbi@linux.intel.com>,
+ Sasha Levin <alexander.levin@microsoft.com>
+Subject: [PATCH 4.14 024/165] usb/phy: fix PPC64 build errors in phy-fsl-usb.c
+Date: Mon,  3 Sep 2018 18:55:10 +0200
+Message-Id: <20180903165656.241065950@linuxfoundation.org>
+In-Reply-To: <20180903165655.003605184@linuxfoundation.org>
+References: <20180903165655.003605184@linuxfoundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,78 +28,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2018-09-03 at 01:17 +0000, Andy Tang wrote:
-> Hi Scott,
-> 
-> Please see my replay in line.
-> 
-> > -----Original Message-----
-> > From: Linuxppc-dev
-> > <linuxppc-dev-bounces+b29983=freescale.com@lists.ozlabs.org> On
-> > Behalf Of Scott Wood
-> > Sent: 2018年9月1日 4:29
-> > To: Andy Tang <andy.tang@nxp.com>; Vabhav Sharma
-> > <vabhav.sharma@nxp.com>; linux-kernel@vger.kernel.org;
-> > devicetree@vger.kernel.org; robh+dt@kernel.org;
-> > mark.rutland@arm.com; linuxppc-dev@lists.ozlabs.org;
-> > linux-arm-kernel@lists.infradead.org; mturquette@baylibre.com;
-> > sboyd@kernel.org; rjw@rjwysocki.net; viresh.kumar@linaro.org;
-> > linux-clk@vger.kernel.org; linux-pm@vger.kernel.org;
-> > linux-kernel-owner@vger.kernel.org; catalin.marinas@arm.com;
-> > will.deacon@arm.com; gregkh@linuxfoundation.org; arnd@arndb.de;
-> > kstewart@linuxfoundation.org; yamada.masahiro@socionext.com
-> > Cc: Yogesh Narayan Gaur <yogeshnarayan.gaur@nxp.com>;
-> > linux@armlinux.org.uk; Udit Kumar <udit.kumar@nxp.com>; Varun Sethi
-> > <V.Sethi@nxp.com>
-> > Subject: Re: [PATCH 3/5] drivers: clk-qoriq: Add clockgen support for
-> > lx2160a
-> > 
-> > On Fri, 2018-08-31 at 06:12 +0000, Andy Tang wrote:
-> > > We don't want to increase NUM_CMUX each time new soc with more
-> > 
-> > cmuxes added.
-> > 
-> > You don't want to have to make a trivial change each time you exceed a
-> > limit that has yet to be exceeded once since NUM_CMUX was added?
-> > This isn't ABI or in any other way hard to change.  It's right in the same
-> > file
-> > as the chip description you'd be adding.
-> > 
-> > And even if a chip did come along with 16 cmuxes, you'd then need to
-> > increase the array to 17 to hold the -1 if you don't want to leave a
-> > situation
-> > like the
-> > p4080 is in now, where a chip's cmux array could be broken by increasing
-> > NUM_CMUX further.
-> > 
-> 
-> [Andy] Adding buffer to a limitation number is always a good habit when
-> coding. We often forget to increase this value when
-> a new chip with more cmuxes added. 
+4.14-stable review patch.  If anyone has any objections, please let me know.
 
-"often"?  There has never been a new chip added with more cmuxes than p4080's
-8, and if one does come along and you forget, the compiler should complain
-about exceeding the array length with a static initializer.  This isn't like
-an array that is filled with a runtime-determined length.
+------------------
 
-> Like this patch, we didn't increase this value at first. We spent a lot of
-> time finding out that NUM_CMUX needs to be increased too.
+From: Randy Dunlap <rdunlap@infradead.org>
 
-Are you talking about some other chip that you haven't sent a patch for yet? 
-Or is the cmux array for this chip wrong?  What specifically did you see
-happen "at first"?
+[ Upstream commit a39ba90a1cc7010edb0a7132e1b67f3d80b994e9 ]
 
-> It is a personal preference how to set this value. I think it is better to
-> increase it to 16, not NUM_CMUX+1 as long as we fix the P4080 issue
-> even though it is a trivial change. And I agree the description needs to be
-> updated.
+Fix build errors when built for PPC64:
+These variables are only used on PPC32 so they don't need to be
+initialized for PPC64.
 
-I'm not the clock maintainer, so it's not up to me, but I don't see the point
-in setting it to an arbitrary number, and I do not agree that increasing
-NUM_CMUX is a suitable replacement for NUM_CMUX+1 in cmux_to_group[], as that
-array should be one larger than cmux[] in order to allow every chip to have a
--1 terminator.  In any case, any change to NUM_CMUX should be a separate patch
-because it's not required for lx2160a support (assuming lx2160a was correctly
-described by this patch).
+../drivers/usb/phy/phy-fsl-usb.c: In function 'usb_otg_start':
+../drivers/usb/phy/phy-fsl-usb.c:865:3: error: '_fsl_readl' undeclared (first use in this function); did you mean 'fsl_readl'?
+   _fsl_readl = _fsl_readl_be;
+../drivers/usb/phy/phy-fsl-usb.c:865:16: error: '_fsl_readl_be' undeclared (first use in this function); did you mean 'fsl_readl'?
+   _fsl_readl = _fsl_readl_be;
+../drivers/usb/phy/phy-fsl-usb.c:866:3: error: '_fsl_writel' undeclared (first use in this function); did you mean 'fsl_writel'?
+   _fsl_writel = _fsl_writel_be;
+../drivers/usb/phy/phy-fsl-usb.c:866:17: error: '_fsl_writel_be' undeclared (first use in this function); did you mean 'fsl_writel'?
+   _fsl_writel = _fsl_writel_be;
+../drivers/usb/phy/phy-fsl-usb.c:868:16: error: '_fsl_readl_le' undeclared (first use in this function); did you mean 'fsl_readl'?
+   _fsl_readl = _fsl_readl_le;
+../drivers/usb/phy/phy-fsl-usb.c:869:17: error: '_fsl_writel_le' undeclared (first use in this function); did you mean 'fsl_writel'?
+   _fsl_writel = _fsl_writel_le;
 
--Scott
+and the sysfs "show" function return type should be ssize_t, not int:
+
+../drivers/usb/phy/phy-fsl-usb.c:1042:49: error: initialization of 'ssize_t (*)(struct device *, struct device_attribute *, char *)' {aka 'long int (*)(struct device *, struct device_attribute *, char *)'} from incompatible pointer type 'int (*)(struct device *, struct device_attribute *, char *)' [-Werror=incompatible-pointer-types]
+ static DEVICE_ATTR(fsl_usb2_otg_state, S_IRUGO, show_fsl_usb2_otg_state, NULL);
+
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc: Felipe Balbi <balbi@kernel.org>
+Cc: linux-usb@vger.kernel.org
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Felipe Balbi <felipe.balbi@linux.intel.com>
+Signed-off-by: Sasha Levin <alexander.levin@microsoft.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ drivers/usb/phy/phy-fsl-usb.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+--- a/drivers/usb/phy/phy-fsl-usb.c
++++ b/drivers/usb/phy/phy-fsl-usb.c
+@@ -874,6 +874,7 @@ int usb_otg_start(struct platform_device
+ 	if (pdata->init && pdata->init(pdev) != 0)
+ 		return -EINVAL;
+ 
++#ifdef CONFIG_PPC32
+ 	if (pdata->big_endian_mmio) {
+ 		_fsl_readl = _fsl_readl_be;
+ 		_fsl_writel = _fsl_writel_be;
+@@ -881,6 +882,7 @@ int usb_otg_start(struct platform_device
+ 		_fsl_readl = _fsl_readl_le;
+ 		_fsl_writel = _fsl_writel_le;
+ 	}
++#endif
+ 
+ 	/* request irq */
+ 	p_otg->irq = platform_get_irq(pdev, 0);
+@@ -971,7 +973,7 @@ int usb_otg_start(struct platform_device
+ /*
+  * state file in sysfs
+  */
+-static int show_fsl_usb2_otg_state(struct device *dev,
++static ssize_t show_fsl_usb2_otg_state(struct device *dev,
+ 				   struct device_attribute *attr, char *buf)
+ {
+ 	struct otg_fsm *fsm = &fsl_otg_dev->fsm;
