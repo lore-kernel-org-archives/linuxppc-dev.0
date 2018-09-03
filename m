@@ -1,26 +1,39 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <vaibhav@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 423dWL4GDbzF3Bg
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Sep 2018 15:17:18 +1000 (AEST)
-Date: Mon, 3 Sep 2018 15:17:14 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Paul Mackerras <paulus@ozlabs.org>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc@vger.kernel.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH kernel] KVM: PPC: Avoid mapping compound pages to TCEs in
- real mode
-Message-ID: <20180903051714.GE2679@umbus.fritz.box>
-References: <20180831060850.33010-1-aik@ozlabs.ru>
- <20180903032844.GD2679@umbus.fritz.box>
- <20180903051529.GA7848@fergus>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 423fTl4ZVdzF38t
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Sep 2018 16:00:59 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w835xboM086787
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Sep 2018 02:00:56 -0400
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2m8xvp8yxc-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Sep 2018 02:00:56 -0400
+Received: from localhost
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.ibm.com>;
+ Mon, 3 Sep 2018 07:00:53 +0100
+From: Vaibhav Jain <vaibhav@linux.ibm.com>
+To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Cc: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, Michael Neuling <mikey@neuling.org>,
+ "Oliver O'Halloran" <oohall@gmail.com>, Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH] powerpc/powernv: Make possible for user to force a full
+ ipl cec reboot
+In-Reply-To: <0fd029d2-e8ac-4392-6961-62e588ee5182@au1.ibm.com>
+References: <20180901081745.2165-1-vaibhav@linux.ibm.com>
+ <0fd029d2-e8ac-4392-6961-62e588ee5182@au1.ibm.com>
+Date: Mon, 03 Sep 2018 11:30:45 +0530
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="Lb0e7rgc7IsuDeGj"
-In-Reply-To: <20180903051529.GA7848@fergus>
+Content-Type: text/plain
+Message-Id: <87va7nm86q.fsf@vajain21.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,64 +43,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Thanks for looking into this Andrew,
 
---Lb0e7rgc7IsuDeGj
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Andrew Donnellan <andrew.donnellan@au1.ibm.com> writes:
 
-On Mon, Sep 03, 2018 at 03:15:29PM +1000, Paul Mackerras wrote:
-> On Mon, Sep 03, 2018 at 01:28:44PM +1000, David Gibson wrote:
-> > On Fri, Aug 31, 2018 at 04:08:50PM +1000, Alexey Kardashevskiy wrote:
-> > > At the moment the real mode handler of H_PUT_TCE calls iommu_tce_xchg=
-_rm()
-> > > which in turn reads the old TCE and if it was a valid entry - marks
-> > > the physical page dirty if it was mapped for writing. Since it is
-> > > the real mode, realmode_pfn_to_page() is used instead of pfn_to_page()
-> > > to get the page struct. However SetPageDirty() itself reads the compo=
-und
-> > > page head and returns a virtual address for the head page struct and
-> > > setting dirty bit for that kills the system.
-> > >=20
-> > > This moves dirty bit setting before updating the hardware table
-> >=20
-> > Um.. but now you're setting DIRTY based on the *new* TCE's
-> > permissions, instead of the old TCE's permissions, which I don't think
-> > is correct.
->=20
-> He's setting dirty on the page which is about to be mapped if the new
-> TCE allows the page to be written by the device.  Given that the page
-> is pinned, I don't see any reason why the dirty setting has to be done
-> when the page is unmapped rather than when it is mapped.  Do you see a
-> reason?
+> Oh good, someone else has finally picked this up and sent a kernel 
+> patch, I did the skiboot half and then neglected to make it useful (I 
+> sent an RFC at https://patchwork.ozlabs.org/patch/697604/ but never 
+> followed up on it... this approach seems more usable, I think).
+Thanks for pointing that out. I wasnt aware of this patch.
 
-Hrm.  Couldn't the page get marked clean by some other path before it
-is unmapped in that case?
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+> When you say "the reboot command" - is this behaviour of passing the 
+> argument common to all the important init systems/reboot utils?  What's 
+> the correct systemd way to do it?
+Mostly Yes,
 
---Lb0e7rgc7IsuDeGj
-Content-Type: application/pgp-signature; name="signature.asc"
+On systemd the reboot command is just a symlink to systemctl binary that
+checks argv[0] and maintains the a backward compatible behaviour. The
+more systemd specific command 'systemctl reboot full' will also do the
+same thing. So this patch should work on systemd.
 
------BEGIN PGP SIGNATURE-----
+Looking at 'upstart' I see support for adding an arg to the reboot
+command since revision
+https://bazaar.launchpad.net/~upstart-devel/upstart/trunk/revision/1432.3.1
+. So upstart should also be supported.
 
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAluMw9cACgkQbDjKyiDZ
-s5LI8A//TkMFziMY98N7Yrar+FQmd50WcGhEfsPzSBdxHS7VReIdTBh8ClK7ILJc
-FogI4g8TtjFU5BpsB31TnFpI1L5XJWrwwRPlcsE9QrQCzoxxagA6Q5eP76W9A1jm
-aW4uNXWerhbdnnBiDSN9nQBTv8kZKSyR4CbOi/rstoE6ZLMcgG4wqzlVOK0n03cv
-5niSJWHsYguSyezVXpVYl4JvwThuPrzVZaqmeIhpouUEGXVqrQy8OY8MijcJ48KN
-bD8qcoiRtpk7XR65Y5Vyg+e1lgfdhWcImMDP2KNj6W/3EUeJOwfkcHKEyMLDtc30
-HM3cFGiU5T/9rmYTzuf7OvBo52gYiA/KJXtpj/OemDh/i9tm6kFGHv7G7ZOfmyMQ
-0z64XpA8Z7LMhdaOU6OWkHZ+7k+5cwXicUoC0VCTuWzLt7EurZqmVPzgvpoQ7aCq
-XbbjmNUGzAT1iDaKoFkJscfBGM1hXUgt2Yxz3DH+9+R4vF8rtZ6o97a+bd11wLWH
-Poc8hHx86lbUC2xg9maNa6+xnl6Dyeo8WDvriZjHwdmqeK15pAJmIsiGkezecinF
-c/NwPDqwsiSbZloobXPgJvjOb/I9bItc3CTE2h8gaY6/MhRpJMq9pj0sTrsFIoim
-6K7jwtBj8yn+5IewT5b8l/Caq1FxmY0ITxWauf9/vTbnNd+deac=
-=WfGK
------END PGP SIGNATURE-----
+I dont see support for sending an arg in 'SysVinit' halt command
+yet. However this patch wont break the halt command. Just that SysVinit
+systems will continue to use fast-reboot like today. Though
+theorectially with this patch a SysVinit user can write a tool to issue
+reboot syscall with cmd == LINUX_REBOOT_CMD_RESTART2 and arg == "full".
 
---Lb0e7rgc7IsuDeGj--
+>>   	while (rc == OPAL_BUSY || rc == OPAL_BUSY_EVENT) {
+>> -		rc = opal_cec_reboot();
+>> +
+>> +		/* See if we need to do a full IPL reboot */
+>> +		if (cmd && strcmp(cmd, "full") == 0)
+>> +			rc = opal_cec_reboot2(OPAL_REBOOT_FULL_IPL, NULL);
+>
+> You might want to check for OPAL_UNSUPPORTED here just in case we're 
+> running on ancient firmware.
+Good idea, will fix this in v2.
+
+-- 
+Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Linux Technology Center, IBM India Pvt. Ltd.
