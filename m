@@ -3,33 +3,31 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4242MS08FbzF36W
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2018 06:56:51 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w83GYGEq070237
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Sep 2018 12:38:41 -0400
-Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2m97x41mu9-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4242T60wfpzF36V
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2018 07:01:45 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w83GYErk041672
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Sep 2018 12:38:24 -0400
+Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2m97fatppy-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Sep 2018 12:38:41 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Sep 2018 12:38:24 -0400
 Received: from localhost
- by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Mon, 3 Sep 2018 12:38:40 -0400
+ Mon, 3 Sep 2018 12:38:23 -0400
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: npiggin@gmail.com, benh@kernel.crashing.org, paulus@samba.org,
  mpe@ellerman.id.au, David Gibson <david@gibson.dropbear.id.au>,
  Alexey Kardashevskiy <aik@ozlabs.ru>
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: [RFC PATCH 2/3] powerpc/mm/iommu: Allow large IOMMU page size only
- for hugetlb backing
-Date: Mon,  3 Sep 2018 22:07:32 +0530
-In-Reply-To: <20180903163733.27965-1-aneesh.kumar@linux.ibm.com>
-References: <20180903163733.27965-1-aneesh.kumar@linux.ibm.com>
-Message-Id: <20180903163733.27965-3-aneesh.kumar@linux.ibm.com>
+Subject: [RFC PATCH 0/3] Add support for compound page migration in
+ mm_iommu_get
+Date: Mon,  3 Sep 2018 22:07:30 +0530
+Message-Id: <20180903163733.27965-1-aneesh.kumar@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,43 +37,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-THP pages can get split during different code paths. An incremented reference
-count do imply we will not split the compound page. But the pmd entry can be
-converted to level 4 pte entries. Keep the code simpler by allowing large
-IOMMU page size only if the guest ram is backed by hugetlb pages.
+This patch series add support for migrating compound pages if we find them in the
+CMA area before taking long term page reference for VFIO.
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
----
- arch/powerpc/mm/mmu_context_iommu.c | 16 ++--------------
- 1 file changed, 2 insertions(+), 14 deletions(-)
+Testing:
+* TODO: test with hugetlb backed guest ram.
+* Testing done with a code change as below
 
-diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_context_iommu.c
-index c9ee9e23845f..f472965f7638 100644
---- a/arch/powerpc/mm/mmu_context_iommu.c
-+++ b/arch/powerpc/mm/mmu_context_iommu.c
-@@ -212,21 +212,9 @@ long mm_iommu_get(struct mm_struct *mm, unsigned long ua, unsigned long entries,
- 		}
- populate:
- 		pageshift = PAGE_SHIFT;
--		if (mem->pageshift > PAGE_SHIFT && PageCompound(page)) {
--			pte_t *pte;
-+		if (mem->pageshift > PAGE_SHIFT && PageHuge(page)) {
- 			struct page *head = compound_head(page);
--			unsigned int compshift = compound_order(head);
--			unsigned int pteshift;
--
--			local_irq_save(flags); /* disables as well */
--			pte = find_linux_pte(mm->pgd, cur_ua, NULL, &pteshift);
--
--			/* Double check it is still the same pinned page */
--			if (pte && pte_page(*pte) == head &&
--			    pteshift == compshift + PAGE_SHIFT)
--				pageshift = max_t(unsigned int, pteshift,
--						PAGE_SHIFT);
--			local_irq_restore(flags);
-+			pageshift = compound_order(head) + PAGE_SHIFT;
- 		}
- 		mem->pageshift = min(mem->pageshift, pageshift);
- 		mem->hpas[i] = page_to_pfn(page) << PAGE_SHIFT;
+-		if (is_migrate_cma_page(pages[i]) && migrate_allow) {
++		if (migrate_allow) {
+
+...
++	migrate_allow = false;
+
+
+Aneesh Kumar K.V (3):
+  mm: Export alloc_migrate_huge_page
+  powerpc/mm/iommu: Allow large IOMMU page size only for hugetlb backing
+  powerpc/mm/iommu: Allow migration of cma allocated pages during
+    mm_iommu_get
+
+ arch/powerpc/mm/mmu_context_iommu.c | 209 +++++++++++++++++-----------
+ include/linux/hugetlb.h             |   2 +
+ mm/hugetlb.c                        |   4 +-
+ 3 files changed, 128 insertions(+), 87 deletions(-)
+
 -- 
 2.17.1
