@@ -1,32 +1,30 @@
-Return-Path: <aravinda@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <sergei.shtylyov@cogentembedded.com>
+Received: from mail-lf1-f65.google.com (mail-lf1-f65.google.com
+ [209.85.167.65])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 424McY0snmzF3Lq
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2018 19:54:17 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w849TObj137372
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Sep 2018 05:31:01 -0400
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2m9m1tgxjt-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Sep 2018 05:31:01 -0400
-Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aravinda@linux.vnet.ibm.com>;
- Tue, 4 Sep 2018 03:31:00 -0600
-Subject: [PATCH] powerpc/pseries: Export VPA related data
-From: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
-Cc: nfont@linux.vnet.ibm.com, naveen.n.rao@linux.vnet.ibm.com,
- aravinda@linux.vnet.ibm.com
-Date: Tue, 04 Sep 2018 15:00:55 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 424Nmc04HszF3Lr
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2018 20:46:19 +1000 (AEST)
+Received: by mail-lf1-f65.google.com with SMTP id g6-v6so2519007lfb.11
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Sep 2018 03:46:19 -0700 (PDT)
+Subject: Re: [PATCH 01/25] tty: Change return type to void
+To: Jaejoong Kim <climbbb.kim@gmail.com>, linux-um@lists.infradead.org,
+ netdev@vger.kernel.org, linux-mmc@vger.kernel.org,
+ linux-s390@vger.kernel.org, devel@driverdev.osuosl.org,
+ greybus-dev@lists.linaro.org, linuxppc-dev@lists.ozlabs.org,
+ linux-serial@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-usb@vger.kernel.org, linux-bluetooth@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jiri Slaby <jslaby@suse.com>
+References: <1536029091-4426-1-git-send-email-climbbb.kim@gmail.com>
+ <1536029091-4426-2-git-send-email-climbbb.kim@gmail.com>
+From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+Message-ID: <3b5cce6a-b4c3-edf9-51c8-0a16f156e128@cogentembedded.com>
+Date: Tue, 4 Sep 2018 13:45:14 +0300
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <153605345531.16879.5116444181129068578.stgit@aravinda>
+In-Reply-To: <1536029091-4426-2-git-send-email-climbbb.kim@gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,96 +34,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch exports VPA related data such as stolen and
-donated CPU cycles through /proc/powerpc/lparcfg file.
+Hello!
 
-Signed-off-by: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/lppaca.h        |   10 ++++++-
- arch/powerpc/platforms/pseries/lparcfg.c |   45 ++++++++++++++++++++++++++++++
- 2 files changed, 54 insertions(+), 1 deletion(-)
+On 9/4/2018 5:44 AM, Jaejoong Kim wrote:
 
-diff --git a/arch/powerpc/include/asm/lppaca.h b/arch/powerpc/include/asm/lppaca.h
-index 7c23ce8..87e22f6 100644
---- a/arch/powerpc/include/asm/lppaca.h
-+++ b/arch/powerpc/include/asm/lppaca.h
-@@ -94,7 +94,15 @@ struct lppaca {
- 	volatile __be32 dispersion_count; /* dispatch changed physical cpu */
- 	volatile __be64 cmo_faults;	/* CMO page fault count */
- 	volatile __be64 cmo_fault_time;	/* CMO page fault time */
--	u8	reserved10[104];
-+	volatile __be64 idle_stolen_purr;
-+	volatile __be64 idle_stolen_spurr;
-+	volatile __be64 busy_stolen_purr;
-+	volatile __be64 busy_stolen_spurr;
-+	volatile __be64 idle_donated_purr;
-+	volatile __be64 idle_donated_spurr;
-+	volatile __be64 busy_donated_purr;
-+	volatile __be64 busy_donated_spurr;
-+	u8  reserved10[40];
- 
- 	/* cacheline 4-5 */
- 
-diff --git a/arch/powerpc/platforms/pseries/lparcfg.c b/arch/powerpc/platforms/pseries/lparcfg.c
-index 7c872dc..b986551 100644
---- a/arch/powerpc/platforms/pseries/lparcfg.c
-+++ b/arch/powerpc/platforms/pseries/lparcfg.c
-@@ -433,6 +433,50 @@ static void parse_em_data(struct seq_file *m)
- 		seq_printf(m, "power_mode_data=%016lx\n", retbuf[0]);
- }
- 
-+static void pseries_vpa_data(struct seq_file *m)
-+{
-+	int cpu;
-+	unsigned long idle_stolen_purr = 0;
-+	unsigned long idle_stolen_spurr = 0;
-+	unsigned long busy_stolen_purr = 0;
-+	unsigned long busy_stolen_spurr = 0;
-+	unsigned long idle_donated_purr = 0;
-+	unsigned long idle_donated_spurr = 0;
-+	unsigned long busy_donated_purr = 0;
-+	unsigned long busy_donated_spurr = 0;
-+
-+	if (!firmware_has_feature(FW_FEATURE_SPLPAR))
-+		return;
-+
-+	for_each_possible_cpu(cpu) {
-+		idle_stolen_purr +=
-+			be64_to_cpu(lppaca_of(cpu).idle_stolen_purr);
-+		idle_stolen_spurr +=
-+			be64_to_cpu(lppaca_of(cpu).idle_stolen_spurr);
-+		busy_stolen_purr +=
-+			be64_to_cpu(lppaca_of(cpu).busy_stolen_purr);
-+		busy_stolen_spurr +=
-+			be64_to_cpu(lppaca_of(cpu).busy_stolen_spurr);
-+		idle_donated_purr +=
-+			be64_to_cpu(lppaca_of(cpu).idle_donated_purr);
-+		idle_donated_spurr +=
-+			be64_to_cpu(lppaca_of(cpu).idle_donated_spurr);
-+		busy_donated_purr +=
-+			be64_to_cpu(lppaca_of(cpu).busy_donated_purr);
-+		busy_donated_spurr +=
-+			be64_to_cpu(lppaca_of(cpu).busy_donated_spurr);
-+	}
-+
-+	seq_printf(m, "idle_stolen_purr=%lu\n", idle_stolen_purr);
-+	seq_printf(m, "idle_stolen_spurr=%lu\n", idle_stolen_spurr);
-+	seq_printf(m, "busy_stolen_purr=%lu\n", busy_stolen_purr);
-+	seq_printf(m, "busy_stolen_spurr=%lu\n", busy_stolen_spurr);
-+	seq_printf(m, "idle_donated_purr=%lu\n", idle_donated_purr);
-+	seq_printf(m, "idle_donated_spurr=%lu\n", idle_donated_spurr);
-+	seq_printf(m, "busy_donated_purr=%lu\n", busy_donated_purr);
-+	seq_printf(m, "busy_donated_spurr=%lu\n", busy_donated_spurr);
-+}
-+
- static int pseries_lparcfg_data(struct seq_file *m, void *v)
- {
- 	int partition_potential_processors;
-@@ -491,6 +535,7 @@ static int pseries_lparcfg_data(struct seq_file *m, void *v)
- 	seq_printf(m, "slb_size=%d\n", mmu_slb_size);
- #endif
- 	parse_em_data(m);
-+	pseries_vpa_data(m);
- 
- 	return 0;
- }
+> Many drivers with tty use the tty_stand_install(). But, there is no
+> need to handle the error, since it always returns 0. So, change the
+> return type of tty_standard_install() and tty_port_install() to void
+> type and remove unnecessary exception handling where we use these
+> functions.
+> 
+> Signed-off-by: Jaejoong Kim <climbbb.kim@gmail.com>
+> ---
+>   drivers/tty/tty_io.c   | 10 ++++++----
+>   drivers/tty/tty_port.c |  4 ++--
+>   include/linux/tty.h    |  4 ++--
+>   3 files changed, 10 insertions(+), 8 deletions(-)
+> 
+[...]
+> diff --git a/include/linux/tty.h b/include/linux/tty.h
+> index c56e397..63cdac1 100644
+> --- a/include/linux/tty.h
+> +++ b/include/linux/tty.h
+> @@ -556,7 +556,7 @@ extern struct tty_struct *tty_init_dev(struct tty_driver *driver, int idx);
+>   extern void tty_release_struct(struct tty_struct *tty, int idx);
+>   extern int tty_release(struct inode *inode, struct file *filp);
+>   extern void tty_init_termios(struct tty_struct *tty);
+> -extern int tty_standard_install(struct tty_driver *driver,
+> +extern void tty_standard_install(struct tty_driver *driver,
+>   		struct tty_struct *tty);
+>   
+>   extern struct mutex tty_mutex;
+> @@ -688,7 +688,7 @@ extern int tty_port_close_start(struct tty_port *port,
+>   extern void tty_port_close_end(struct tty_port *port, struct tty_struct *tty);
+>   extern void tty_port_close(struct tty_port *port,
+>   				struct tty_struct *tty, struct file *filp);
+> -extern int tty_port_install(struct tty_port *port, struct tty_driver *driver,
+> +extern void tty_port_install(struct tty_port *port, struct tty_driver *driver,
+>   				struct tty_struct *tty);
+
+    You need to update all the callers in the same patch -- the kernel must 
+remain buildable after each patch but you seem to have spread that update 
+among a lot of patches..
+
+[...]
+
+MBR, Sergei
