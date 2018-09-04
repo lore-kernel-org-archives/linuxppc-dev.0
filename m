@@ -1,12 +1,12 @@
 Return-Path: <climbbb.kim@gmail.com>
-Received: from mail-pf1-f196.google.com (mail-pf1-f196.google.com
- [209.85.210.196])
+Received: from mail-pg1-f195.google.com (mail-pg1-f195.google.com
+ [209.85.215.195])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 424Bhg2VJyzF3CZ
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2018 13:12:19 +1000 (AEST)
-Received: by mail-pf1-f196.google.com with SMTP id j26-v6so928472pfi.10
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Sep 2018 20:12:19 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 424Bj25mmPzF38C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2018 13:12:38 +1000 (AEST)
+Received: by mail-pg1-f195.google.com with SMTP id r1-v6so901743pgp.11
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Sep 2018 20:12:38 -0700 (PDT)
 From: Jaejoong Kim <climbbb.kim@gmail.com>
 To: linux-um@lists.infradead.org, netdev@vger.kernel.org,
  linux-mmc@vger.kernel.org, linux-s390@vger.kernel.org,
@@ -16,9 +16,9 @@ To: linux-um@lists.infradead.org, netdev@vger.kernel.org,
  linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Jiri Slaby <jslaby@suse.com>
-Subject: [PATCH 09/25] tty: serial: kgdb_nmi: Change return type to void
-Date: Tue,  4 Sep 2018 11:44:35 +0900
-Message-Id: <1536029091-4426-10-git-send-email-climbbb.kim@gmail.com>
+Subject: [PATCH 22/25] tty: nozomi: Change return type to void
+Date: Tue,  4 Sep 2018 11:44:48 +0900
+Message-Id: <1536029091-4426-23-git-send-email-climbbb.kim@gmail.com>
 In-Reply-To: <1536029091-4426-1-git-send-email-climbbb.kim@gmail.com>
 References: <1536029091-4426-1-git-send-email-climbbb.kim@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,44 +30,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since tty_port_install() always returns 0, the return type has changed
+Since tty_standard_install() always returns 0, the return type has changed
 to void. Now apply this and remove the obsolete error check.
 
 Signed-off-by: Jaejoong Kim <climbbb.kim@gmail.com>
 ---
- drivers/tty/serial/kgdb_nmi.c | 11 +----------
- 1 file changed, 1 insertion(+), 10 deletions(-)
+ drivers/tty/nozomi.c | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/tty/serial/kgdb_nmi.c b/drivers/tty/serial/kgdb_nmi.c
-index 4029272..ed8f806 100644
---- a/drivers/tty/serial/kgdb_nmi.c
-+++ b/drivers/tty/serial/kgdb_nmi.c
-@@ -234,7 +234,6 @@ static const struct tty_port_operations kgdb_nmi_tty_port_ops = {
- static int kgdb_nmi_tty_install(struct tty_driver *drv, struct tty_struct *tty)
+diff --git a/drivers/tty/nozomi.c b/drivers/tty/nozomi.c
+index fed820e..479583d 100644
+--- a/drivers/tty/nozomi.c
++++ b/drivers/tty/nozomi.c
+@@ -1555,13 +1555,11 @@ static int ntty_install(struct tty_driver *driver, struct tty_struct *tty)
  {
- 	struct kgdb_nmi_tty_priv *priv;
+ 	struct port *port = get_port_by_tty(tty);
+ 	struct nozomi *dc = get_dc_by_tty(tty);
 -	int ret;
- 
- 	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
- 	if (!priv)
-@@ -245,17 +244,9 @@ static int kgdb_nmi_tty_install(struct tty_driver *drv, struct tty_struct *tty)
- 	tty_port_init(&priv->port);
- 	priv->port.ops = &kgdb_nmi_tty_port_ops;
- 	tty->driver_data = priv;
-+	tty_port_install(&priv->port, drv, tty);
- 
--	ret = tty_port_install(&priv->port, drv, tty);
--	if (ret) {
--		pr_err("%s: can't install tty port: %d\n", __func__, ret);
--		goto err;
--	}
- 	return 0;
--err:
--	tty_port_destroy(&priv->port);
--	kfree(priv);
+ 	if (!port || !dc || dc->state != NOZOMI_STATE_READY)
+ 		return -ENODEV;
+-	ret = tty_standard_install(driver, tty);
+-	if (ret == 0)
+-		tty->driver_data = port;
 -	return ret;
++	tty_standard_install(driver, tty);
++	tty->driver_data = port;
++	return 0;
  }
  
- static void kgdb_nmi_tty_cleanup(struct tty_struct *tty)
+ static void ntty_cleanup(struct tty_struct *tty)
 -- 
 2.7.4
