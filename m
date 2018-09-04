@@ -1,23 +1,26 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <sam@ravnborg.org>
+Received: from asavdk4.altibox.net (asavdk4.altibox.net [109.247.116.15])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 424CwZ6tdhzF3C9
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2018 14:07:42 +1000 (AEST)
-Date: Tue, 4 Sep 2018 13:57:39 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Cc: npiggin@gmail.com, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, Alexey Kardashevskiy <aik@ozlabs.ru>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC PATCH 1/3] mm: Export alloc_migrate_huge_page
-Message-ID: <20180904035739.GF2679@umbus.fritz.box>
-References: <20180903163733.27965-1-aneesh.kumar@linux.ibm.com>
- <20180903163733.27965-2-aneesh.kumar@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 424Dsf746SzF38k
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2018 14:50:14 +1000 (AEST)
+Date: Tue, 4 Sep 2018 06:42:39 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jaejoong Kim <climbbb.kim@gmail.com>
+Cc: linux-um@lists.infradead.org, netdev@vger.kernel.org,
+ linux-mmc@vger.kernel.org, linux-s390@vger.kernel.org,
+ devel@driverdev.osuosl.org, greybus-dev@lists.linaro.org,
+ linuxppc-dev@lists.ozlabs.org, linux-serial@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-usb@vger.kernel.org,
+ linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jiri Slaby <jslaby@suse.com>
+Subject: Re: [PATCH 00/25] Change tty_port(standard)_install's return type
+Message-ID: <20180904044239.GA24208@ravnborg.org>
+References: <1536029091-4426-1-git-send-email-climbbb.kim@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="OzxllxdKGCiKxUZM"
-In-Reply-To: <20180903163733.27965-2-aneesh.kumar@linux.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1536029091-4426-1-git-send-email-climbbb.kim@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,82 +30,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Jaejoong.
 
---OzxllxdKGCiKxUZM
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> Change return type for tty functions. Patch No.01
+>   tty: Change return type to void
+Adding this patch first will generate a lot of warnings
+until all users are updated.
+It is usual practice to prepare all users
+and then apply the infrastructure changes as the
+last patch.
+Then people will not see a lot of warnings when
+they build something in the middle,
+and I guess current stack set may also generate
+a few mails from the 0-day build infrastructure.
 
-On Mon, Sep 03, 2018 at 10:07:31PM +0530, Aneesh Kumar K.V wrote:
-> We want to use this to support customized huge page migration.
->=20
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+>   isdn: i4l: isdn_tty: Change return type to void
 
-> ---
->  include/linux/hugetlb.h | 2 ++
->  mm/hugetlb.c            | 4 ++--
->  2 files changed, 4 insertions(+), 2 deletions(-)
->=20
-> diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
-> index c39d9170a8a0..98c9c6dc308c 100644
-> --- a/include/linux/hugetlb.h
-> +++ b/include/linux/hugetlb.h
-> @@ -357,6 +357,8 @@ struct page *alloc_huge_page_nodemask(struct hstate *=
-h, int preferred_nid,
->  				nodemask_t *nmask);
->  struct page *alloc_huge_page_vma(struct hstate *h, struct vm_area_struct=
- *vma,
->  				unsigned long address);
-> +struct page *alloc_migrate_huge_page(struct hstate *h, gfp_t gfp_mask,
-> +				     int nid, nodemask_t *nmask);
->  int huge_add_to_page_cache(struct page *page, struct address_space *mapp=
-ing,
->  			pgoff_t idx);
-> =20
-> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-> index 47566bb0b4b1..88881b3f8628 100644
-> --- a/mm/hugetlb.c
-> +++ b/mm/hugetlb.c
-> @@ -1586,8 +1586,8 @@ static struct page *alloc_surplus_huge_page(struct =
-hstate *h, gfp_t gfp_mask,
->  	return page;
->  }
-> =20
-> -static struct page *alloc_migrate_huge_page(struct hstate *h, gfp_t gfp_=
-mask,
-> -		int nid, nodemask_t *nmask)
-> +struct page *alloc_migrate_huge_page(struct hstate *h, gfp_t gfp_mask,
-> +				     int nid, nodemask_t *nmask)
->  {
->  	struct page *page;
-> =20
+And a nitpick on the patch description.
+This patch do not change any return type, but
+it ignore the return value og tty_part_install().
+Same goes for all ramaining patches.
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---OzxllxdKGCiKxUZM
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAluOArEACgkQbDjKyiDZ
-s5KIlA//eIIwAl4P34a/VgEWVfEjw1tPv5GjJbHLzXYKn+jdkl1POca15kDCJVym
-xJMg8v9ox8KUhImb+uKW15AhwH2Asq94PYExtFNpaB9d2Xpn892Amm7NOcXZOPS2
-4daX7XVP9hpqjrpATaCkRo4iGzrZ2ZZExFxyPEpmIex7K12AZEGc50PzJGPbvv84
-ZyxnxTXyUMs9L6J09zwF4aG3vSekGgSlTzyH1wKaAws+ly5SzZ0762oruCSHcF7x
-41xqaXvrJEmOmcGNpWJhagGBqjRaU33VL5r5tru/nlaVsoSEKlFHtoEyXm0CVdIf
-j4Fx4Iu3ct3HMpIkT4FMKw4WwUS9JlShentO1M2X2/2OLWFiHpjBkVokh0ZQ6JPu
-B75gbLbizazBp8kSIgTL5epfW1kM9rwe5w1tTXpkMy6ecYN7SYhAFAytlrDAPhZP
-f88k1X6JtJ562Z98UznS1r5QY/R0lJRqYy4THv9nJxSQFcvq7nk9oNbBrBhJAHyz
-D+EImJILhEwIHgD+VhcyDWB5Uafh1IaC3/UG4lHswxbfZZ8US9rsEHzvhUKGv3Qy
-hY1ivfTllk94yC1U1iQvfPdsZMPee7yH3ydws2k6q9GDeI39T0Uu4TpU60rzD0Hd
-S9pewxD/YxClmw4qWvUG6wNhDzz0Ak0Ol6NrUdg3OPtWXtVRt/8=
-=0EGr
------END PGP SIGNATURE-----
-
---OzxllxdKGCiKxUZM--
+	Sam
