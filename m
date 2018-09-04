@@ -1,12 +1,12 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
- [172.104.155.198])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <pavel@ucw.cz>
+Received: from atrey.karlin.mff.cuni.cz (atrey.karlin.mff.cuni.cz
+ [195.113.26.193])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 424PHb2B8pzF3G0
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2018 21:09:47 +1000 (AEST)
-Date: Tue, 4 Sep 2018 11:41:29 +0100
-From: Mark Brown <broonie@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 424Pvx0cfSzF3HH
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2018 21:37:48 +1000 (AEST)
+Date: Tue, 4 Sep 2018 13:30:30 +0200
+From: Pavel Machek <pavel@ucw.cz>
 To: Henrik Austad <henrik@austad.us>
 Cc: linux-doc@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
  Bjorn Helgaas <bhelgaas@google.com>,
@@ -30,14 +30,14 @@ Cc: linux-doc@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
  Paul Moore <paul@paul-moore.com>,
  "James E.J. Bottomley" <jejb@parisc-linux.org>,
  Helge Deller <deller@gmx.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+ Len Brown <len.brown@intel.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Martin Schwidefsky <schwidefsky@de.ibm.com>,
  Heiko Carstens <heiko.carstens@de.ibm.com>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Jiri Slaby <jslaby@suse.com>, Thomas Gleixner <tglx@linutronix.de>,
- Paolo Bonzini <pbonzini@redhat.com>,
+ Jiri Slaby <jslaby@suse.com>, Mark Brown <broonie@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Paolo Bonzini <pbonzini@redhat.com>,
  Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
  Evgeniy Polyakov <zbr@ioremap.net>,
  "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
@@ -54,11 +54,11 @@ Cc: linux-doc@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
  linux-s390@vger.kernel.org, linux-spi@vger.kernel.org,
  kvm@vger.kernel.org, Henrik Austad <haustad@cisco.com>
 Subject: Re: [PATCH] [RFC v2] Drop all 00-INDEX files from Documentation/
-Message-ID: <20180904104129.GB12993@sirena.org.uk>
+Message-ID: <20180904113030.GB25177@amd>
 References: <1536012923-16275-1-git-send-email-henrik@austad.us>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
- protocol="application/pgp-signature"; boundary="O5XBE6gyVG5Rl6Rj"
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="Fba/0zbH8Xs+Fj9o"
 In-Reply-To: <1536012923-16275-1-git-send-email-henrik@austad.us>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -70,30 +70,52 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---O5XBE6gyVG5Rl6Rj
+--Fba/0zbH8Xs+Fj9o
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, Sep 04, 2018 at 12:15:23AM +0200, Henrik Austad wrote:
-> This is a respin with a wider audience (all that get_maintainer returned)
-> and I know this spams a *lot* of people. Not sure what would be the correct
-> way, so my apologies for ruining your inbox.
+Hi!
 
-Acked-by: Mark Brown <broonie@kernel.org>
+> The 00-INDEX files are supposed to give a summary of all files present
+> in a directory, but these files are horribly out of date and their
+> usefulness is brought into question. Often a simple "ls" would reveal
+> the same information as the filenames are generally quite descriptive as
+> a short introduction to what the file covers (it should not surprise
 
---O5XBE6gyVG5Rl6Rj
+
+> -SAK.txt
+> -	- info on Secure Attention Keys.
+> -SM501.txt
+> -	- Silicon Motion SM501 multimedia companion chip
+> -btmrvl.txt
+> -	- info on Marvell Bluetooth driver usage.
+
+Well, I don't know what sm501 is, but description helps me. SAK is
+similar. .. as is btmrvl.
+
+I'd say this is still quite valueable, and it might be worth fixing,
+rather then removing completely.
+
+And yes, moving stuff to subdirectories and naming files reasonably
+would help, too. "btmrvl" is really bad name...
+
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--Fba/0zbH8Xs+Fj9o
 Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAluOYVgACgkQJNaLcl1U
-h9AYzQgAhduv2URwLqYje3JPZtGLqtLxGgecyHS/ksa1VCCcPy8kltd2kZ8xOeys
-+n8FKms8rzw5bCeyggflQj54NZhlSt+gBMjCKx+A8swUeqcfHp7GmI+MPeF2PUGr
-UhdoTr8/roMv7kA67RzNkzquvenYFSDtFFqDklULYikGBbMs3uACTGyaIxVhyU5x
-tWiVzem5oybY2SwnokmrT7aiM2asAg89X7PvSZytgef09Hb4FtKptTIYr0p5RVS9
-2M90CByKZ7P86IKpAVGn5y9rhDPVEOuMq37XrlDDa57Hr71V5qZbYXCPWyvI0+oo
-U3tAq34v0zey0x1/+mZd3Cl6zUBJng==
-=oJFX
+iEYEARECAAYFAluObNYACgkQMOfwapXb+vIEUgCfflpJ++Ke7RojgYEKLcv9wdCK
+VcAAoJ44RGl6/ZbjcSM3g58FnjCGx/f+
+=c4sE
 -----END PGP SIGNATURE-----
 
---O5XBE6gyVG5Rl6Rj--
+--Fba/0zbH8Xs+Fj9o--
