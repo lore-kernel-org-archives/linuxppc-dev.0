@@ -1,26 +1,21 @@
-Return-Path: <climbbb.kim@gmail.com>
-Received: from mail-pl1-f195.google.com (mail-pl1-f195.google.com
- [209.85.214.195])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net [23.128.96.9])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 424Bvy36SKzF3C7
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2018 13:22:06 +1000 (AEST)
-Received: by mail-pl1-f195.google.com with SMTP id u11-v6so927107plq.5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Sep 2018 20:22:06 -0700 (PDT)
-From: Jaejoong Kim <climbbb.kim@gmail.com>
-To: linux-um@lists.infradead.org, netdev@vger.kernel.org,
- linux-mmc@vger.kernel.org, linux-s390@vger.kernel.org,
- devel@driverdev.osuosl.org, greybus-dev@lists.linaro.org,
- linuxppc-dev@lists.ozlabs.org, linux-serial@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-usb@vger.kernel.org,
- linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Jiri Slaby <jslaby@suse.com>
-Subject: [PATCH 18/25] mmc: core: sdio_uart: Change return type to void
-Date: Tue,  4 Sep 2018 11:44:44 +0900
-Message-Id: <1536029091-4426-19-git-send-email-climbbb.kim@gmail.com>
-In-Reply-To: <1536029091-4426-1-git-send-email-climbbb.kim@gmail.com>
-References: <1536029091-4426-1-git-send-email-climbbb.kim@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 424Ffz1ltkzF3n8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2018 15:26:02 +1000 (AEST)
+Date: Mon, 03 Sep 2018 22:14:55 -0700 (PDT)
+Message-Id: <20180903.221455.1051477615149264810.davem@davemloft.net>
+To: david.gounaris@infinera.com
+Cc: qiang.zhao@nxp.com, netdev@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, joakim.tjernlund@infinera.com
+Subject: Re: [PATCH v3 0/6] Ethernet over hdlc
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20180903124730.1551-1-david.gounaris@infinera.com>
+References: <20180828110921.2542-2-david.gounaris@infinera.com>
+ <20180903124730.1551-1-david.gounaris@infinera.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,36 +25,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since tty_standard_install() always returns 0, the return type has changed
-to void. Now apply this and remove the obsolete error check.
+From: David Gounaris <david.gounaris@infinera.com>
+Date: Mon,  3 Sep 2018 14:47:24 +0200
 
-Signed-off-by: Jaejoong Kim <climbbb.kim@gmail.com>
----
- drivers/mmc/core/sdio_uart.c | 11 ++++-------
- 1 file changed, 4 insertions(+), 7 deletions(-)
+> Here is what has been changed in v3 after the review comments from v2.
+> 
+> v3-0001: corrected style problems
+> v3-0002: corrected style problems
+> v3-0003: corrected style problems
+> v3-0004: corrected style problems
+> v3-0005: corrected style problems
+> v3-0006: corrected style problems
+> 
+> Sorry for that, I did not know about scripts/checkpatch.pl.
 
-diff --git a/drivers/mmc/core/sdio_uart.c b/drivers/mmc/core/sdio_uart.c
-index 25e1130..b727186 100644
---- a/drivers/mmc/core/sdio_uart.c
-+++ b/drivers/mmc/core/sdio_uart.c
-@@ -731,14 +731,11 @@ static int sdio_uart_install(struct tty_driver *driver, struct tty_struct *tty)
- {
- 	int idx = tty->index;
- 	struct sdio_uart_port *port = sdio_uart_port_get(idx);
--	int ret = tty_standard_install(driver, tty);
- 
--	if (ret == 0)
--		/* This is the ref sdio_uart_port get provided */
--		tty->driver_data = port;
--	else
--		sdio_uart_port_put(port);
--	return ret;
-+	tty_standard_install(driver, tty);
-+	tty->driver_data = port;
-+
-+	return 0;
- }
- 
- /**
--- 
-2.7.4
+Series applied to net-next.
