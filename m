@@ -1,12 +1,12 @@
 Return-Path: <climbbb.kim@gmail.com>
-Received: from mail-pl1-f195.google.com (mail-pl1-f195.google.com
- [209.85.214.195])
+Received: from mail-pf1-f196.google.com (mail-pf1-f196.google.com
+ [209.85.210.196])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 424BkT2GVlzF394
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2018 13:13:53 +1000 (AEST)
-Received: by mail-pl1-f195.google.com with SMTP id g23-v6so906998plq.9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Sep 2018 20:13:53 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 424BkZ5C7DzF38s
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2018 13:13:58 +1000 (AEST)
+Received: by mail-pf1-f196.google.com with SMTP id k21-v6so925752pff.11
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Sep 2018 20:13:58 -0700 (PDT)
 From: Jaejoong Kim <climbbb.kim@gmail.com>
 To: linux-um@lists.infradead.org, netdev@vger.kernel.org,
  linux-mmc@vger.kernel.org, linux-s390@vger.kernel.org,
@@ -16,9 +16,9 @@ To: linux-um@lists.infradead.org, netdev@vger.kernel.org,
  linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Jiri Slaby <jslaby@suse.com>
-Subject: [PATCH 04/25] s390: char: tty3270: Change return type to void
-Date: Tue,  4 Sep 2018 11:44:30 +0900
-Message-Id: <1536029091-4426-5-git-send-email-climbbb.kim@gmail.com>
+Subject: [PATCH 03/25] s390: char: con3215: Change return type to void
+Date: Tue,  4 Sep 2018 11:44:29 +0900
+Message-Id: <1536029091-4426-4-git-send-email-climbbb.kim@gmail.com>
 In-Reply-To: <1536029091-4426-1-git-send-email-climbbb.kim@gmail.com>
 References: <1536029091-4426-1-git-send-email-climbbb.kim@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -35,26 +35,23 @@ to void. Now apply this and remove the obsolete error check.
 
 Signed-off-by: Jaejoong Kim <climbbb.kim@gmail.com>
 ---
- drivers/s390/char/tty3270.c | 7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
+ drivers/s390/char/con3215.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/s390/char/tty3270.c b/drivers/s390/char/tty3270.c
-index 5b8af27..2915f95 100644
---- a/drivers/s390/char/tty3270.c
-+++ b/drivers/s390/char/tty3270.c
-@@ -1017,12 +1017,7 @@ static int tty3270_install(struct tty_driver *driver, struct tty_struct *tty)
- 	raw3270_activate_view(&tp->view);
+diff --git a/drivers/s390/char/con3215.c b/drivers/s390/char/con3215.c
+index 8c9d412..6a9f6d9 100644
+--- a/drivers/s390/char/con3215.c
++++ b/drivers/s390/char/con3215.c
+@@ -965,8 +965,9 @@ static int tty3215_install(struct tty_driver *driver, struct tty_struct *tty)
+ 		return -ENODEV;
  
- port_install:
--	rc = tty_port_install(&tp->port, driver, tty);
--	if (rc) {
--		raw3270_put_view(&tp->view);
--		return rc;
--	}
--
-+	tty_port_install(&tp->port, driver, tty);
- 	tty->driver_data = tp;
+ 	tty->driver_data = raw;
++	tty_port_install(&raw->port, driver, tty);
  
- 	return 0;
+-	return tty_port_install(&raw->port, driver, tty);
++	return 0;
+ }
+ 
+ /*
 -- 
 2.7.4
