@@ -1,12 +1,12 @@
 Return-Path: <climbbb.kim@gmail.com>
-Received: from mail-pl1-f193.google.com (mail-pl1-f193.google.com
- [209.85.214.193])
+Received: from mail-pf1-f196.google.com (mail-pf1-f196.google.com
+ [209.85.210.196])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 424BhF0lbSzF3Km
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2018 13:11:56 +1000 (AEST)
-Received: by mail-pl1-f193.google.com with SMTP id s17-v6so911113plp.7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Sep 2018 20:11:56 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 424Bhg2VJyzF3CZ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2018 13:12:19 +1000 (AEST)
+Received: by mail-pf1-f196.google.com with SMTP id j26-v6so928472pfi.10
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Sep 2018 20:12:19 -0700 (PDT)
 From: Jaejoong Kim <climbbb.kim@gmail.com>
 To: linux-um@lists.infradead.org, netdev@vger.kernel.org,
  linux-mmc@vger.kernel.org, linux-s390@vger.kernel.org,
@@ -16,9 +16,9 @@ To: linux-um@lists.infradead.org, netdev@vger.kernel.org,
  linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Jiri Slaby <jslaby@suse.com>
-Subject: [PATCH 02/25] isdn: i4l: isdn_tty: Change return type to void
-Date: Tue,  4 Sep 2018 11:44:28 +0900
-Message-Id: <1536029091-4426-3-git-send-email-climbbb.kim@gmail.com>
+Subject: [PATCH 09/25] tty: serial: kgdb_nmi: Change return type to void
+Date: Tue,  4 Sep 2018 11:44:35 +0900
+Message-Id: <1536029091-4426-10-git-send-email-climbbb.kim@gmail.com>
 In-Reply-To: <1536029091-4426-1-git-send-email-climbbb.kim@gmail.com>
 References: <1536029091-4426-1-git-send-email-climbbb.kim@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -35,23 +35,39 @@ to void. Now apply this and remove the obsolete error check.
 
 Signed-off-by: Jaejoong Kim <climbbb.kim@gmail.com>
 ---
- drivers/isdn/i4l/isdn_tty.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/tty/serial/kgdb_nmi.c | 11 +----------
+ 1 file changed, 1 insertion(+), 10 deletions(-)
 
-diff --git a/drivers/isdn/i4l/isdn_tty.c b/drivers/isdn/i4l/isdn_tty.c
-index b730037..3d6b24e 100644
---- a/drivers/isdn/i4l/isdn_tty.c
-+++ b/drivers/isdn/i4l/isdn_tty.c
-@@ -1481,8 +1481,9 @@ static int isdn_tty_install(struct tty_driver *driver, struct tty_struct *tty)
- 		return -ENODEV;
+diff --git a/drivers/tty/serial/kgdb_nmi.c b/drivers/tty/serial/kgdb_nmi.c
+index 4029272..ed8f806 100644
+--- a/drivers/tty/serial/kgdb_nmi.c
++++ b/drivers/tty/serial/kgdb_nmi.c
+@@ -234,7 +234,6 @@ static const struct tty_port_operations kgdb_nmi_tty_port_ops = {
+ static int kgdb_nmi_tty_install(struct tty_driver *drv, struct tty_struct *tty)
+ {
+ 	struct kgdb_nmi_tty_priv *priv;
+-	int ret;
  
- 	tty->driver_data = info;
-+	tty_port_install(&info->port, driver, tty);
+ 	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
+ 	if (!priv)
+@@ -245,17 +244,9 @@ static int kgdb_nmi_tty_install(struct tty_driver *drv, struct tty_struct *tty)
+ 	tty_port_init(&priv->port);
+ 	priv->port.ops = &kgdb_nmi_tty_port_ops;
+ 	tty->driver_data = priv;
++	tty_port_install(&priv->port, drv, tty);
  
--	return tty_port_install(&info->port, driver, tty);
-+	return 0;
+-	ret = tty_port_install(&priv->port, drv, tty);
+-	if (ret) {
+-		pr_err("%s: can't install tty port: %d\n", __func__, ret);
+-		goto err;
+-	}
+ 	return 0;
+-err:
+-	tty_port_destroy(&priv->port);
+-	kfree(priv);
+-	return ret;
  }
  
- /*
+ static void kgdb_nmi_tty_cleanup(struct tty_struct *tty)
 -- 
 2.7.4
