@@ -1,35 +1,32 @@
-Return-Path: <aneesh.kumar@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <aravinda@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 424N850DRyzF3LS
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2018 20:18:12 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w8499KY1097030
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Sep 2018 05:10:32 -0400
-Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2m9nxc3euh-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 424McY0snmzF3Lq
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2018 19:54:17 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w849TObj137372
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Sep 2018 05:31:01 -0400
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2m9m1tgxjt-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Sep 2018 05:10:31 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Sep 2018 05:31:01 -0400
 Received: from localhost
- by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Tue, 4 Sep 2018 05:10:31 -0400
-Subject: Re: [PATCH] KVM: PPC: Book3S HV: Don't use compound_order to
- determine host mapping size
-To: Nicholas Piggin <npiggin@gmail.com>, kvm-ppc@vger.kernel.org
-Cc: Paul Mackerras <paulus@ozlabs.org>,
- David Gibson <david@gibson.dropbear.id.au>, linuxppc-dev@lists.ozlabs.org
-References: <20180904081601.32703-1-npiggin@gmail.com>
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Date: Tue, 4 Sep 2018 14:40:25 +0530
+ for <linuxppc-dev@lists.ozlabs.org> from <aravinda@linux.vnet.ibm.com>;
+ Tue, 4 Sep 2018 03:31:00 -0600
+Subject: [PATCH] powerpc/pseries: Export VPA related data
+From: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
+Cc: nfont@linux.vnet.ibm.com, naveen.n.rao@linux.vnet.ibm.com,
+ aravinda@linux.vnet.ibm.com
+Date: Tue, 04 Sep 2018 15:00:55 +0530
 MIME-Version: 1.0
-In-Reply-To: <20180904081601.32703-1-npiggin@gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <1dedb1ae-98eb-e35e-7bd9-2a1d1bf09047@linux.ibm.com>
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <153605345531.16879.5116444181129068578.stgit@aravinda>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,160 +36,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/04/2018 01:46 PM, Nicholas Piggin wrote:
-> THP paths can defer splitting compound pages until after the actual
-> remap and TLB flushes to split a huge PMD/PUD. This causes radix
-> partition scope page table mappings to get out of synch with the host
-> qemu page table mappings.
+This patch exports VPA related data such as stolen and
+donated CPU cycles through /proc/powerpc/lparcfg file.
 
-May be we can improve this further?
+Signed-off-by: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/lppaca.h        |   10 ++++++-
+ arch/powerpc/platforms/pseries/lparcfg.c |   45 ++++++++++++++++++++++++++++++
+ 2 files changed, 54 insertions(+), 1 deletion(-)
 
-With deferred_split_huge_page() during partial unmap we split the huge 
-pmd entries but defer splitting the compound page to shrinker 
-(9a982250f773cc8c76f1eee68a770b7cbf2faf78). That means we can find the 
-page as huge/compound page even when the actual mapping is not.
-
-Instead of looking at whether the page is compound or not, always walk 
-the page table and find the pte shift so that we map it correctly in the
-partition scoped table.
-
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-
-
-> 
-> This results in random memory corruption in the guest when running
-> with THP. The easiest way to reproduce is use KVM baloon to free up
-> a lot of memory in the guest and then shrink the balloon to give the
-> memory back, while some work is being done in the guest.
-> 
-> Cc: Paul Mackerras <paulus@ozlabs.org>
-> Cc: David Gibson <david@gibson.dropbear.id.au>
-> Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
->   arch/powerpc/kvm/book3s_64_mmu_radix.c | 88 ++++++++++----------------
->   1 file changed, 34 insertions(+), 54 deletions(-)
-> 
-> diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-> index 0af1c0aea1fe..d8792445d95a 100644
-> --- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
-> +++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-> @@ -525,8 +525,8 @@ int kvmppc_book3s_radix_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
->   				   unsigned long ea, unsigned long dsisr)
->   {
->   	struct kvm *kvm = vcpu->kvm;
-> -	unsigned long mmu_seq, pte_size;
-> -	unsigned long gpa, gfn, hva, pfn;
-> +	unsigned long mmu_seq;
-> +	unsigned long gpa, gfn, hva;
->   	struct kvm_memory_slot *memslot;
->   	struct page *page = NULL;
->   	long ret;
-> @@ -623,9 +623,10 @@ int kvmppc_book3s_radix_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
->   	 */
->   	hva = gfn_to_hva_memslot(memslot, gfn);
->   	if (upgrade_p && __get_user_pages_fast(hva, 1, 1, &page) == 1) {
-> -		pfn = page_to_pfn(page);
->   		upgrade_write = true;
->   	} else {
-> +		unsigned long pfn;
-> +
->   		/* Call KVM generic code to do the slow-path check */
->   		pfn = __gfn_to_pfn_memslot(memslot, gfn, false, NULL,
->   					   writing, upgrade_p);
-> @@ -639,63 +640,42 @@ int kvmppc_book3s_radix_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
->   		}
->   	}
->   
-> -	/* See if we can insert a 1GB or 2MB large PTE here */
-> -	level = 0;
-> -	if (page && PageCompound(page)) {
-> -		pte_size = PAGE_SIZE << compound_order(compound_head(page));
-> -		if (pte_size >= PUD_SIZE &&
-> -		    (gpa & (PUD_SIZE - PAGE_SIZE)) ==
-> -		    (hva & (PUD_SIZE - PAGE_SIZE))) {
-> -			level = 2;
-> -			pfn &= ~((PUD_SIZE >> PAGE_SHIFT) - 1);
-> -		} else if (pte_size >= PMD_SIZE &&
-> -			   (gpa & (PMD_SIZE - PAGE_SIZE)) ==
-> -			   (hva & (PMD_SIZE - PAGE_SIZE))) {
-> -			level = 1;
-> -			pfn &= ~((PMD_SIZE >> PAGE_SHIFT) - 1);
-> -		}
-> -	}
-> -
->   	/*
-> -	 * Compute the PTE value that we need to insert.
-> +	 * Read the PTE from the process' radix tree and use that
-> +	 * so we get the shift and attribute bits.
->   	 */
-> -	if (page) {
-> -		pgflags = _PAGE_READ | _PAGE_EXEC | _PAGE_PRESENT | _PAGE_PTE |
-> -			_PAGE_ACCESSED;
-> -		if (writing || upgrade_write)
-> -			pgflags |= _PAGE_WRITE | _PAGE_DIRTY;
-> -		pte = pfn_pte(pfn, __pgprot(pgflags));
-> +	local_irq_disable();
-> +	ptep = __find_linux_pte(vcpu->arch.pgdir, hva, NULL, &shift);
-> +	pte = *ptep;
-> +	local_irq_enable();
-> +
-> +	/* Get pte level from shift/size */
-> +	if (shift == PUD_SHIFT &&
-> +	    (gpa & (PUD_SIZE - PAGE_SIZE)) ==
-> +	    (hva & (PUD_SIZE - PAGE_SIZE))) {
-> +		level = 2;
-> +	} else if (shift == PMD_SHIFT &&
-> +		   (gpa & (PMD_SIZE - PAGE_SIZE)) ==
-> +		   (hva & (PMD_SIZE - PAGE_SIZE))) {
-> +		level = 1;
->   	} else {
-> -		/*
-> -		 * Read the PTE from the process' radix tree and use that
-> -		 * so we get the attribute bits.
-> -		 */
-> -		local_irq_disable();
-> -		ptep = __find_linux_pte(vcpu->arch.pgdir, hva, NULL, &shift);
-> -		pte = *ptep;
-> -		local_irq_enable();
-> -		if (shift == PUD_SHIFT &&
-> -		    (gpa & (PUD_SIZE - PAGE_SIZE)) ==
-> -		    (hva & (PUD_SIZE - PAGE_SIZE))) {
-> -			level = 2;
-> -		} else if (shift == PMD_SHIFT &&
-> -			   (gpa & (PMD_SIZE - PAGE_SIZE)) ==
-> -			   (hva & (PMD_SIZE - PAGE_SIZE))) {
-> -			level = 1;
-> -		} else if (shift && shift != PAGE_SHIFT) {
-> -			/* Adjust PFN */
-> -			unsigned long mask = (1ul << shift) - PAGE_SIZE;
-> -			pte = __pte(pte_val(pte) | (hva & mask));
-> -		}
-> -		pte = __pte(pte_val(pte) | _PAGE_EXEC | _PAGE_ACCESSED);
-> -		if (writing || upgrade_write) {
-> -			if (pte_val(pte) & _PAGE_WRITE)
-> -				pte = __pte(pte_val(pte) | _PAGE_DIRTY);
-> -		} else {
-> -			pte = __pte(pte_val(pte) & ~(_PAGE_WRITE | _PAGE_DIRTY));
-> +		level = 0;
-> +
-> +		/* Can not cope with unknown page shift */
-> +		if (shift && shift != PAGE_SHIFT) {
-> +			WARN_ON_ONCE(1);
-> +			return -EFAULT;
->   		}
->   	}
->   
-> +	pte = __pte(pte_val(pte) | _PAGE_EXEC | _PAGE_ACCESSED);
-> +	if (writing || upgrade_write) {
-> +		if (pte_val(pte) & _PAGE_WRITE)
-> +			pte = __pte(pte_val(pte) | _PAGE_DIRTY);
-> +	} else {
-> +		pte = __pte(pte_val(pte) & ~(_PAGE_WRITE | _PAGE_DIRTY));
-> +	}
-> +
->   	/* Allocate space in the tree and write the PTE */
->   	ret = kvmppc_create_pte(kvm, pte, gpa, level, mmu_seq);
->   
-> 
+diff --git a/arch/powerpc/include/asm/lppaca.h b/arch/powerpc/include/asm/lppaca.h
+index 7c23ce8..87e22f6 100644
+--- a/arch/powerpc/include/asm/lppaca.h
++++ b/arch/powerpc/include/asm/lppaca.h
+@@ -94,7 +94,15 @@ struct lppaca {
+ 	volatile __be32 dispersion_count; /* dispatch changed physical cpu */
+ 	volatile __be64 cmo_faults;	/* CMO page fault count */
+ 	volatile __be64 cmo_fault_time;	/* CMO page fault time */
+-	u8	reserved10[104];
++	volatile __be64 idle_stolen_purr;
++	volatile __be64 idle_stolen_spurr;
++	volatile __be64 busy_stolen_purr;
++	volatile __be64 busy_stolen_spurr;
++	volatile __be64 idle_donated_purr;
++	volatile __be64 idle_donated_spurr;
++	volatile __be64 busy_donated_purr;
++	volatile __be64 busy_donated_spurr;
++	u8  reserved10[40];
+ 
+ 	/* cacheline 4-5 */
+ 
+diff --git a/arch/powerpc/platforms/pseries/lparcfg.c b/arch/powerpc/platforms/pseries/lparcfg.c
+index 7c872dc..b986551 100644
+--- a/arch/powerpc/platforms/pseries/lparcfg.c
++++ b/arch/powerpc/platforms/pseries/lparcfg.c
+@@ -433,6 +433,50 @@ static void parse_em_data(struct seq_file *m)
+ 		seq_printf(m, "power_mode_data=%016lx\n", retbuf[0]);
+ }
+ 
++static void pseries_vpa_data(struct seq_file *m)
++{
++	int cpu;
++	unsigned long idle_stolen_purr = 0;
++	unsigned long idle_stolen_spurr = 0;
++	unsigned long busy_stolen_purr = 0;
++	unsigned long busy_stolen_spurr = 0;
++	unsigned long idle_donated_purr = 0;
++	unsigned long idle_donated_spurr = 0;
++	unsigned long busy_donated_purr = 0;
++	unsigned long busy_donated_spurr = 0;
++
++	if (!firmware_has_feature(FW_FEATURE_SPLPAR))
++		return;
++
++	for_each_possible_cpu(cpu) {
++		idle_stolen_purr +=
++			be64_to_cpu(lppaca_of(cpu).idle_stolen_purr);
++		idle_stolen_spurr +=
++			be64_to_cpu(lppaca_of(cpu).idle_stolen_spurr);
++		busy_stolen_purr +=
++			be64_to_cpu(lppaca_of(cpu).busy_stolen_purr);
++		busy_stolen_spurr +=
++			be64_to_cpu(lppaca_of(cpu).busy_stolen_spurr);
++		idle_donated_purr +=
++			be64_to_cpu(lppaca_of(cpu).idle_donated_purr);
++		idle_donated_spurr +=
++			be64_to_cpu(lppaca_of(cpu).idle_donated_spurr);
++		busy_donated_purr +=
++			be64_to_cpu(lppaca_of(cpu).busy_donated_purr);
++		busy_donated_spurr +=
++			be64_to_cpu(lppaca_of(cpu).busy_donated_spurr);
++	}
++
++	seq_printf(m, "idle_stolen_purr=%lu\n", idle_stolen_purr);
++	seq_printf(m, "idle_stolen_spurr=%lu\n", idle_stolen_spurr);
++	seq_printf(m, "busy_stolen_purr=%lu\n", busy_stolen_purr);
++	seq_printf(m, "busy_stolen_spurr=%lu\n", busy_stolen_spurr);
++	seq_printf(m, "idle_donated_purr=%lu\n", idle_donated_purr);
++	seq_printf(m, "idle_donated_spurr=%lu\n", idle_donated_spurr);
++	seq_printf(m, "busy_donated_purr=%lu\n", busy_donated_purr);
++	seq_printf(m, "busy_donated_spurr=%lu\n", busy_donated_spurr);
++}
++
+ static int pseries_lparcfg_data(struct seq_file *m, void *v)
+ {
+ 	int partition_potential_processors;
+@@ -491,6 +535,7 @@ static int pseries_lparcfg_data(struct seq_file *m, void *v)
+ 	seq_printf(m, "slb_size=%d\n", mmu_slb_size);
+ #endif
+ 	parse_em_data(m);
++	pseries_vpa_data(m);
+ 
+ 	return 0;
+ }
