@@ -1,12 +1,12 @@
 Return-Path: <climbbb.kim@gmail.com>
-Received: from mail-pg1-f193.google.com (mail-pg1-f193.google.com
- [209.85.215.193])
+Received: from mail-pl1-f195.google.com (mail-pl1-f195.google.com
+ [209.85.214.195])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 424BvY6RfDzF394
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2018 13:21:45 +1000 (AEST)
-Received: by mail-pg1-f193.google.com with SMTP id s15-v6so922322pgv.8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Sep 2018 20:21:45 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 424Bvy36SKzF3C7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2018 13:22:06 +1000 (AEST)
+Received: by mail-pl1-f195.google.com with SMTP id u11-v6so927107plq.5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Sep 2018 20:22:06 -0700 (PDT)
 From: Jaejoong Kim <climbbb.kim@gmail.com>
 To: linux-um@lists.infradead.org, netdev@vger.kernel.org,
  linux-mmc@vger.kernel.org, linux-s390@vger.kernel.org,
@@ -16,9 +16,9 @@ To: linux-um@lists.infradead.org, netdev@vger.kernel.org,
  linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Jiri Slaby <jslaby@suse.com>
-Subject: [PATCH 23/25] tty: vcc: Change return type to void
-Date: Tue,  4 Sep 2018 11:44:49 +0900
-Message-Id: <1536029091-4426-24-git-send-email-climbbb.kim@gmail.com>
+Subject: [PATCH 18/25] mmc: core: sdio_uart: Change return type to void
+Date: Tue,  4 Sep 2018 11:44:44 +0900
+Message-Id: <1536029091-4426-19-git-send-email-climbbb.kim@gmail.com>
 In-Reply-To: <1536029091-4426-1-git-send-email-climbbb.kim@gmail.com>
 References: <1536029091-4426-1-git-send-email-climbbb.kim@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -35,31 +35,31 @@ to void. Now apply this and remove the obsolete error check.
 
 Signed-off-by: Jaejoong Kim <climbbb.kim@gmail.com>
 ---
- drivers/tty/vcc.c | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+ drivers/mmc/core/sdio_uart.c | 11 ++++-------
+ 1 file changed, 4 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/tty/vcc.c b/drivers/tty/vcc.c
-index 58b454c..ce32631 100644
---- a/drivers/tty/vcc.c
-+++ b/drivers/tty/vcc.c
-@@ -987,7 +987,6 @@ static int vcc_install(struct tty_driver *driver, struct tty_struct *tty)
+diff --git a/drivers/mmc/core/sdio_uart.c b/drivers/mmc/core/sdio_uart.c
+index 25e1130..b727186 100644
+--- a/drivers/mmc/core/sdio_uart.c
++++ b/drivers/mmc/core/sdio_uart.c
+@@ -731,14 +731,11 @@ static int sdio_uart_install(struct tty_driver *driver, struct tty_struct *tty)
  {
- 	struct vcc_port *port_vcc;
- 	struct tty_port *port_tty;
--	int ret;
+ 	int idx = tty->index;
+ 	struct sdio_uart_port *port = sdio_uart_port_get(idx);
+-	int ret = tty_standard_install(driver, tty);
  
- 	if (unlikely(!tty)) {
- 		pr_err("VCC: install: Invalid TTY handle\n");
-@@ -997,9 +996,7 @@ static int vcc_install(struct tty_driver *driver, struct tty_struct *tty)
- 	if (tty->index >= VCC_MAX_PORTS)
- 		return -EINVAL;
- 
--	ret = tty_standard_install(driver, tty);
--	if (ret)
--		return ret;
+-	if (ret == 0)
+-		/* This is the ref sdio_uart_port get provided */
+-		tty->driver_data = port;
+-	else
+-		sdio_uart_port_put(port);
+-	return ret;
 +	tty_standard_install(driver, tty);
++	tty->driver_data = port;
++
++	return 0;
+ }
  
- 	port_tty = kzalloc(sizeof(struct tty_port), GFP_KERNEL);
- 	if (!port_tty)
+ /**
 -- 
 2.7.4
