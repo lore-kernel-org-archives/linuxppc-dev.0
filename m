@@ -1,20 +1,55 @@
-Return-Path: <robherring2@gmail.com>
-Received: from mail-oi0-f65.google.com (mail-oi0-f65.google.com
- [209.85.218.65])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <SRS0=LkcF=LS=goodmis.org=rostedt@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 424g0j0kCqzF35y
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2018 07:27:48 +1000 (AEST)
-Received: by mail-oi0-f65.google.com with SMTP id m11-v6so9668210oic.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Sep 2018 14:27:48 -0700 (PDT)
-From: Rob Herring <robh@kernel.org>
-To: linux-kernel@vger.kernel.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3] macintosh: Convert to using %pOFn instead of
- device_node.name
-Date: Tue,  4 Sep 2018 16:27:44 -0500
-Message-Id: <20180904212744.16747-1-robh@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 424T3G4jqJzF3FH
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2018 23:59:19 +1000 (AEST)
+Date: Tue, 4 Sep 2018 09:59:08 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Henrik Austad <henrik@austad.us>, linux-doc@vger.kernel.org, Jonathan
+ Corbet <corbet@lwn.net>, Bjorn Helgaas <bhelgaas@google.com>, "Paul E.
+ McKenney" <paulmck@linux.vnet.ibm.com>, Josh Triplett
+ <josh@joshtriplett.org>, Mathieu Desnoyers
+ <mathieu.desnoyers@efficios.com>, Lai Jiangshan <jiangshanlai@gmail.com>,
+ Jens Axboe <axboe@kernel.dk>, Rob Herring <robh+dt@kernel.org>, Mark
+ Rutland <mark.rutland@arm.com>, Bartlomiej Zolnierkiewicz
+ <b.zolnierkie@samsung.com>, Linus Walleij <linus.walleij@linaro.org>,
+ "David S. Miller" <davem@davemloft.net>, Karsten Keil
+ <isdn@linux-pingi.de>, Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Michal Marek <michal.lkml@markovi.net>, Peter Zijlstra
+ <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Will Deacon
+ <will.deacon@arm.com>, Ralf Baechle <ralf@linux-mips.org>, Paul Burton
+ <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>, Paul Moore
+ <paul@paul-moore.com>, "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ Helge Deller <deller@gmx.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len
+ Brown <len.brown@intel.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael
+ Ellerman <mpe@ellerman.id.au>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>, Mark Brown
+ <broonie@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Paolo Bonzini
+ <pbonzini@redhat.com>, Radim =?UTF-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
+ Evgeniy Polyakov <zbr@ioremap.net>, "H. Peter Anvin" <hpa@zytor.com>,
+ x86@kernel.org, Andrew Morton <akpm@linux-foundation.org>, Ian Kent
+ <raven@themaw.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Mike
+ Rapoport <rppt@linux.vnet.ibm.com>, Jan Kandziora <jjj@gmx.de>,
+ linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+ devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-fbdev@vger.kernel.org, linux-gpio@vger.kernel.org,
+ linux-ide@vger.kernel.org, netdev@vger.kernel.org,
+ linux-kbuild@vger.kernel.org, linux-mips@linux-mips.org,
+ linux-security-module@vger.kernel.org, linux-parisc@vger.kernel.org,
+ linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-spi@vger.kernel.org, kvm@vger.kernel.org,
+ Henrik Austad <haustad@cisco.com>
+Subject: Re: [PATCH] [RFC v2] Drop all 00-INDEX files from Documentation/
+Message-ID: <20180904095908.13298b3d@gandalf.local.home>
+In-Reply-To: <20180904113030.GB25177@amd>
+References: <1536012923-16275-1-git-send-email-henrik@austad.us>
+ <20180904113030.GB25177@amd>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,99 +59,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In preparation to remove the node name pointer from struct device_node,
-convert printf users to use the %pOFn format specifier.
+On Tue, 4 Sep 2018 13:30:30 +0200
+Pavel Machek <pavel@ucw.cz> wrote:
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Rob Herring <robh@kernel.org>
----
-v3:
-- Fix dev_name handling. Using "%.*p" syntax throws a warning (and 
-probably doesn't work).
+> I'd say this is still quite valueable, and it might be worth fixing,
+> rather then removing completely.
 
- drivers/macintosh/macio_asic.c            | 8 +++++---
- drivers/macintosh/macio_sysfs.c           | 8 +++++++-
- drivers/macintosh/windfarm_smu_controls.c | 4 ++--
- 3 files changed, 14 insertions(+), 6 deletions(-)
+I agree. Perhaps we should have a 00-DESCRIPTION file in each
+directory, and each file could start with a:
 
-diff --git a/drivers/macintosh/macio_asic.c b/drivers/macintosh/macio_asic.c
-index 07074820a167..58e676ca9622 100644
---- a/drivers/macintosh/macio_asic.c
-+++ b/drivers/macintosh/macio_asic.c
-@@ -362,7 +362,8 @@ static struct macio_dev * macio_add_one_device(struct macio_chip *chip,
- {
- 	struct macio_dev *dev;
- 	const u32 *reg;
--	
-+	char name[MAX_NODE_NAME_SIZE + 1];
-+
- 	if (np == NULL)
- 		return NULL;
- 
-@@ -402,6 +403,7 @@ static struct macio_dev * macio_add_one_device(struct macio_chip *chip,
- #endif
- 
- 	/* MacIO itself has a different reg, we use it's PCI base */
-+        snprintf(name, sizeof(name), "%pOFn", np);
- 	if (np == chip->of_node) {
- 		dev_set_name(&dev->ofdev.dev, "%1d.%08x:%.*s",
- 			     chip->lbus.index,
-@@ -410,12 +412,12 @@ static struct macio_dev * macio_add_one_device(struct macio_chip *chip,
- #else
- 			0, /* NuBus may want to do something better here */
- #endif
--			MAX_NODE_NAME_SIZE, np->name);
-+			MAX_NODE_NAME_SIZE, name);
- 	} else {
- 		reg = of_get_property(np, "reg", NULL);
- 		dev_set_name(&dev->ofdev.dev, "%1d.%08x:%.*s",
- 			     chip->lbus.index,
--			     reg ? *reg : 0, MAX_NODE_NAME_SIZE, np->name);
-+			     reg ? *reg : 0, MAX_NODE_NAME_SIZE, name);
- 	}
- 
- 	/* Setup interrupts & resources */
-diff --git a/drivers/macintosh/macio_sysfs.c b/drivers/macintosh/macio_sysfs.c
-index ca4fcffe454b..d2451e58acb9 100644
---- a/drivers/macintosh/macio_sysfs.c
-+++ b/drivers/macintosh/macio_sysfs.c
-@@ -58,7 +58,13 @@ static ssize_t devspec_show(struct device *dev,
- static DEVICE_ATTR_RO(modalias);
- static DEVICE_ATTR_RO(devspec);
- 
--macio_config_of_attr (name, "%s\n");
-+static ssize_t name_show(struct device *dev,
-+			 struct device_attribute *attr, char *buf)
-+{
-+	return sprintf(buf, "%pOFn\n", dev->of_node);
-+}
-+static DEVICE_ATTR_RO(name);
-+
- macio_config_of_attr (type, "%s\n");
- 
- static struct attribute *macio_dev_attrs[] = {
-diff --git a/drivers/macintosh/windfarm_smu_controls.c b/drivers/macintosh/windfarm_smu_controls.c
-index d174c7437337..86d65462a61c 100644
---- a/drivers/macintosh/windfarm_smu_controls.c
-+++ b/drivers/macintosh/windfarm_smu_controls.c
-@@ -277,7 +277,7 @@ static int __init smu_controls_init(void)
- 		fct = smu_fan_create(fan, 0);
- 		if (fct == NULL) {
- 			printk(KERN_WARNING "windfarm: Failed to create SMU "
--			       "RPM fan %s\n", fan->name);
-+			       "RPM fan %pOFn\n", fan);
- 			continue;
- 		}
- 		list_add(&fct->link, &smu_fans);
-@@ -296,7 +296,7 @@ static int __init smu_controls_init(void)
- 		fct = smu_fan_create(fan, 1);
- 		if (fct == NULL) {
- 			printk(KERN_WARNING "windfarm: Failed to create SMU "
--			       "PWM fan %s\n", fan->name);
-+			       "PWM fan %pOFn\n", fan);
- 			continue;
- 		}
- 		list_add(&fct->link, &smu_fans);
--- 
-2.17.1
+ DESCRIPTION: <one line description here>
+
+and then these files could be generated by those that have these tags.
+
+-- Steve
