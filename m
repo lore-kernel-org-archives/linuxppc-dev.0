@@ -1,11 +1,11 @@
 Return-Path: <climbbb.kim@gmail.com>
-Received: from mail-pg1-f195.google.com (mail-pg1-f195.google.com
- [209.85.215.195])
+Received: from mail-pg1-f193.google.com (mail-pg1-f193.google.com
+ [209.85.215.193])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 424BvY3wXvzF38J
+ by lists.ozlabs.org (Postfix) with ESMTPS id 424BvY6RfDzF394
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2018 13:21:45 +1000 (AEST)
-Received: by mail-pg1-f195.google.com with SMTP id r1-v6so911540pgp.11
+Received: by mail-pg1-f193.google.com with SMTP id s15-v6so922322pgv.8
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Sep 2018 20:21:45 -0700 (PDT)
 From: Jaejoong Kim <climbbb.kim@gmail.com>
 To: linux-um@lists.infradead.org, netdev@vger.kernel.org,
@@ -16,9 +16,9 @@ To: linux-um@lists.infradead.org, netdev@vger.kernel.org,
  linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Jiri Slaby <jslaby@suse.com>
-Subject: [PATCH 20/25] staging: gdm724x: gdm_tty: Change return type to void
-Date: Tue,  4 Sep 2018 11:44:46 +0900
-Message-Id: <1536029091-4426-21-git-send-email-climbbb.kim@gmail.com>
+Subject: [PATCH 23/25] tty: vcc: Change return type to void
+Date: Tue,  4 Sep 2018 11:44:49 +0900
+Message-Id: <1536029091-4426-24-git-send-email-climbbb.kim@gmail.com>
 In-Reply-To: <1536029091-4426-1-git-send-email-climbbb.kim@gmail.com>
 References: <1536029091-4426-1-git-send-email-climbbb.kim@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -35,38 +35,31 @@ to void. Now apply this and remove the obsolete error check.
 
 Signed-off-by: Jaejoong Kim <climbbb.kim@gmail.com>
 ---
- drivers/staging/gdm724x/gdm_tty.c | 11 +++--------
- 1 file changed, 3 insertions(+), 8 deletions(-)
+ drivers/tty/vcc.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-diff --git a/drivers/staging/gdm724x/gdm_tty.c b/drivers/staging/gdm724x/gdm_tty.c
-index 6e81369..d6348df 100644
---- a/drivers/staging/gdm724x/gdm_tty.c
-+++ b/drivers/staging/gdm724x/gdm_tty.c
-@@ -62,6 +62,7 @@ static int gdm_tty_install(struct tty_driver *driver, struct tty_struct *tty)
- 		return -ENODEV;
+diff --git a/drivers/tty/vcc.c b/drivers/tty/vcc.c
+index 58b454c..ce32631 100644
+--- a/drivers/tty/vcc.c
++++ b/drivers/tty/vcc.c
+@@ -987,7 +987,6 @@ static int vcc_install(struct tty_driver *driver, struct tty_struct *tty)
+ {
+ 	struct vcc_port *port_vcc;
+ 	struct tty_port *port_tty;
+-	int ret;
  
- 	mutex_lock(&gdm_table_lock);
-+
- 	gdm = gdm_table[ret][tty->index];
- 	if (!gdm) {
- 		mutex_unlock(&gdm_table_lock);
-@@ -69,15 +70,9 @@ static int gdm_tty_install(struct tty_driver *driver, struct tty_struct *tty)
- 	}
+ 	if (unlikely(!tty)) {
+ 		pr_err("VCC: install: Invalid TTY handle\n");
+@@ -997,9 +996,7 @@ static int vcc_install(struct tty_driver *driver, struct tty_struct *tty)
+ 	if (tty->index >= VCC_MAX_PORTS)
+ 		return -EINVAL;
  
- 	tty_port_get(&gdm->port);
--
 -	ret = tty_standard_install(driver, tty);
--	if (ret) {
--		tty_port_put(&gdm->port);
--		mutex_unlock(&gdm_table_lock);
+-	if (ret)
 -		return ret;
--	}
--
 +	tty_standard_install(driver, tty);
- 	tty->driver_data = gdm;
-+
- 	mutex_unlock(&gdm_table_lock);
  
- 	return 0;
+ 	port_tty = kzalloc(sizeof(struct tty_port), GFP_KERNEL);
+ 	if (!port_tty)
 -- 
 2.7.4
