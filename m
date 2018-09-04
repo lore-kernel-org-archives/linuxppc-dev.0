@@ -1,12 +1,12 @@
 Return-Path: <climbbb.kim@gmail.com>
-Received: from mail-pg1-f195.google.com (mail-pg1-f195.google.com
- [209.85.215.195])
+Received: from mail-pl1-f194.google.com (mail-pl1-f194.google.com
+ [209.85.214.194])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 424Bnl6W3JzF38s
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2018 13:16:43 +1000 (AEST)
-Received: by mail-pg1-f195.google.com with SMTP id f4-v6so924289pgq.5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Sep 2018 20:16:43 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 424BpG2dT7zF38r
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2018 13:17:10 +1000 (AEST)
+Received: by mail-pl1-f194.google.com with SMTP id j8-v6so909788pll.12
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Sep 2018 20:17:10 -0700 (PDT)
 From: Jaejoong Kim <climbbb.kim@gmail.com>
 To: linux-um@lists.infradead.org, netdev@vger.kernel.org,
  linux-mmc@vger.kernel.org, linux-s390@vger.kernel.org,
@@ -16,9 +16,9 @@ To: linux-um@lists.infradead.org, netdev@vger.kernel.org,
  linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Jiri Slaby <jslaby@suse.com>
-Subject: [PATCH 12/25] tty: vt: Change return type to void
-Date: Tue,  4 Sep 2018 11:44:38 +0900
-Message-Id: <1536029091-4426-13-git-send-email-climbbb.kim@gmail.com>
+Subject: [PATCH 08/25] tty: n_gsm: Change return type to void
+Date: Tue,  4 Sep 2018 11:44:34 +0900
+Message-Id: <1536029091-4426-9-git-send-email-climbbb.kim@gmail.com>
 In-Reply-To: <1536029091-4426-1-git-send-email-climbbb.kim@gmail.com>
 References: <1536029091-4426-1-git-send-email-climbbb.kim@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -35,24 +35,36 @@ to void. Now apply this and remove the obsolete error check.
 
 Signed-off-by: Jaejoong Kim <climbbb.kim@gmail.com>
 ---
- drivers/tty/vt/vt.c | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+ drivers/tty/n_gsm.c | 9 +--------
+ 1 file changed, 1 insertion(+), 8 deletions(-)
 
-diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
-index 5f1183b..cc72254 100644
---- a/drivers/tty/vt/vt.c
-+++ b/drivers/tty/vt/vt.c
-@@ -3222,10 +3222,7 @@ static int con_install(struct tty_driver *driver, struct tty_struct *tty)
- 		goto unlock;
+diff --git a/drivers/tty/n_gsm.c b/drivers/tty/n_gsm.c
+index 86b7e20..c52fa2d 100644
+--- a/drivers/tty/n_gsm.c
++++ b/drivers/tty/n_gsm.c
+@@ -2917,7 +2917,6 @@ static int gsmtty_install(struct tty_driver *driver, struct tty_struct *tty)
+ 	unsigned int line = tty->index;
+ 	unsigned int mux = line >> 6;
+ 	bool alloc = false;
+-	int ret;
+ 
+ 	line = line & 0x3F;
+ 
+@@ -2949,14 +2948,8 @@ static int gsmtty_install(struct tty_driver *driver, struct tty_struct *tty)
+ 		mutex_unlock(&gsm->mutex);
+ 		return -ENOMEM;
  	}
+-	ret = tty_port_install(&dlci->port, driver, tty);
+-	if (ret) {
+-		if (alloc)
+-			dlci_put(dlci);
+-		mutex_unlock(&gsm->mutex);
+-		return ret;
+-	}
  
--	ret = tty_port_install(&vc->port, driver, tty);
--	if (ret)
--		goto unlock;
--
-+	tty_port_install(&vc->port, driver, tty);
- 	tty->driver_data = vc;
- 	vc->port.tty = tty;
- 
++	tty_port_install(&dlci->port, driver, tty);
+ 	dlci_get(dlci);
+ 	dlci_get(gsm->dlci[0]);
+ 	mux_get(gsm);
 -- 
 2.7.4
