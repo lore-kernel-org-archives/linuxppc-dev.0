@@ -1,12 +1,12 @@
 Return-Path: <climbbb.kim@gmail.com>
-Received: from mail-pg1-f195.google.com (mail-pg1-f195.google.com
- [209.85.215.195])
+Received: from mail-pg1-f193.google.com (mail-pg1-f193.google.com
+ [209.85.215.193])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 424Bj25mmPzF38C
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2018 13:12:38 +1000 (AEST)
-Received: by mail-pg1-f195.google.com with SMTP id r1-v6so901743pgp.11
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Sep 2018 20:12:38 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 424Bj507PPzF38C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2018 13:12:40 +1000 (AEST)
+Received: by mail-pg1-f193.google.com with SMTP id d1-v6so925547pgo.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Sep 2018 20:12:40 -0700 (PDT)
 From: Jaejoong Kim <climbbb.kim@gmail.com>
 To: linux-um@lists.infradead.org, netdev@vger.kernel.org,
  linux-mmc@vger.kernel.org, linux-s390@vger.kernel.org,
@@ -16,9 +16,9 @@ To: linux-um@lists.infradead.org, netdev@vger.kernel.org,
  linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Jiri Slaby <jslaby@suse.com>
-Subject: [PATCH 22/25] tty: nozomi: Change return type to void
-Date: Tue,  4 Sep 2018 11:44:48 +0900
-Message-Id: <1536029091-4426-23-git-send-email-climbbb.kim@gmail.com>
+Subject: [PATCH 13/25] usb: xhci: dbc: Change return type to void
+Date: Tue,  4 Sep 2018 11:44:39 +0900
+Message-Id: <1536029091-4426-14-git-send-email-climbbb.kim@gmail.com>
 In-Reply-To: <1536029091-4426-1-git-send-email-climbbb.kim@gmail.com>
 References: <1536029091-4426-1-git-send-email-climbbb.kim@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,34 +30,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since tty_standard_install() always returns 0, the return type has changed
+Since tty_port_install() always returns 0, the return type has changed
 to void. Now apply this and remove the obsolete error check.
 
 Signed-off-by: Jaejoong Kim <climbbb.kim@gmail.com>
 ---
- drivers/tty/nozomi.c | 8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
+ drivers/usb/host/xhci-dbgtty.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/tty/nozomi.c b/drivers/tty/nozomi.c
-index fed820e..479583d 100644
---- a/drivers/tty/nozomi.c
-+++ b/drivers/tty/nozomi.c
-@@ -1555,13 +1555,11 @@ static int ntty_install(struct tty_driver *driver, struct tty_struct *tty)
- {
- 	struct port *port = get_port_by_tty(tty);
- 	struct nozomi *dc = get_dc_by_tty(tty);
--	int ret;
- 	if (!port || !dc || dc->state != NOZOMI_STATE_READY)
- 		return -ENODEV;
--	ret = tty_standard_install(driver, tty);
--	if (ret == 0)
--		tty->driver_data = port;
--	return ret;
-+	tty_standard_install(driver, tty);
-+	tty->driver_data = port;
+diff --git a/drivers/usb/host/xhci-dbgtty.c b/drivers/usb/host/xhci-dbgtty.c
+index aff79ff..18d661c 100644
+--- a/drivers/usb/host/xhci-dbgtty.c
++++ b/drivers/usb/host/xhci-dbgtty.c
+@@ -174,8 +174,9 @@ static int dbc_tty_install(struct tty_driver *driver, struct tty_struct *tty)
+ 	struct dbc_port		*port = driver->driver_state;
+ 
+ 	tty->driver_data = port;
++	tty_port_install(&port->port, driver, tty);
+ 
+-	return tty_port_install(&port->port, driver, tty);
 +	return 0;
  }
  
- static void ntty_cleanup(struct tty_struct *tty)
+ static int dbc_tty_open(struct tty_struct *tty, struct file *file)
 -- 
 2.7.4
