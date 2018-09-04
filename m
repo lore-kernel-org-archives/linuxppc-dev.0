@@ -1,23 +1,21 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg1-f195.google.com (mail-pg1-f195.google.com
- [209.85.215.195])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 424fls2q5rzF35K
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2018 07:16:40 +1000 (AEST)
-Received: by mail-pg1-f195.google.com with SMTP id d1-v6so2283887pgo.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Sep 2018 14:16:40 -0700 (PDT)
-Date: Wed, 5 Sep 2018 07:15:29 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Jason Gunthorpe <jgg@mellanox.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Leon Romanovsky <leonro@mellanox.com>
-Subject: Re: Regression from patch 'tty: hvc: hvc_poll() break hv read loop'
-Message-ID: <20180905071529.3b7a09c4@roar.ozlabs.ibm.com>
-In-Reply-To: <20180904174808.GS335@mellanox.com>
-References: <20180904174808.GS335@mellanox.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 424ftT0HZXzF35q
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2018 07:22:24 +1000 (AEST)
+Date: Tue, 4 Sep 2018 16:21:09 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Sandipan Das <sandipan@linux.ibm.com>
+Cc: mpe@ellerman.id.au, paulus@samba.org, naveen.n.rao@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, anton@samba.org, ravi.bangoria@linux.ibm.com
+Subject: Re: [PATCH 6/6] powerpc sstep: Add modsd, modud instruction emulation
+Message-ID: <20180904212109.GP24439@gate.crashing.org>
+References: <cover.1535609090.git.sandipan@linux.ibm.com>
+ <15e572f61bb5c74b01210b9245ce2750a31d6002.1535609090.git.sandipan@linux.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <15e572f61bb5c74b01210b9245ce2750a31d6002.1535609090.git.sandipan@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,32 +25,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 4 Sep 2018 11:48:08 -0600
-Jason Gunthorpe <jgg@mellanox.com> wrote:
+On Mon, Sep 03, 2018 at 08:49:38PM +0530, Sandipan Das wrote:
+> +#ifdef __powerpc64__
+> +		case 265:	/* modud */
+> +			if (!cpu_has_feature(CPU_FTR_ARCH_300))
+> +				return -1;
+> +			op->val = regs->gpr[ra] % regs->gpr[rb];
+> +			goto compute_done;
+> +#endif
 
-> Hi Nicholas,
-> 
-> I am testing 4.19-rc2 and I see bad behavior with my qemu hvc0
-> console..
-> 
-> Running interactive with qemu (qemu-2.11.2-1.fc28) on the console
-> providing hvc0, using options like:
-> 
->         -nographic
->         -chardev stdio,id=stdio,mux=on,signal=off
->         -mon chardev=stdio
-> 	-device isa-serial,chardev=stdio
->         -device virtio-serial-pci
-> 	-device virtconsole,chardev=stdio
-> 
-> I see the hvc0 console hang regularly, ie doing something like 'up
-> arrow' in bash causes the hvc0 console to hang. Prior kernels worked
-> OK.
-> 
-> Any ideas? I'm not familiar with this code.. Thanks!
+The mod instruction has special cases that aren't handled by this C code,
+too (divide by 0, or signed division of the most negative number by -1).
+For the mod intruction the behaviour is undefined in those cases, but you
+probably should force some specific behaviour.  You don't want the kernel
+to execute a trap instruction, etc. :-)
 
-Yes I have had another report, I'm working on a fix. Sorry it has taken
-a while and thank you for the report.
 
-Thanks,
-Nick
+Segher
