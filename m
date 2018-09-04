@@ -1,12 +1,12 @@
 Return-Path: <climbbb.kim@gmail.com>
-Received: from mail-pf1-f193.google.com (mail-pf1-f193.google.com
- [209.85.210.193])
+Received: from mail-pl1-f196.google.com (mail-pl1-f196.google.com
+ [209.85.214.196])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 424Bpb5dLgzF38W
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2018 13:17:27 +1000 (AEST)
-Received: by mail-pf1-f193.google.com with SMTP id x17-v6so945487pfh.5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Sep 2018 20:17:27 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 424Bqb3B5WzF38J
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2018 13:18:19 +1000 (AEST)
+Received: by mail-pl1-f196.google.com with SMTP id f6-v6so930011plo.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Sep 2018 20:18:19 -0700 (PDT)
 From: Jaejoong Kim <climbbb.kim@gmail.com>
 To: linux-um@lists.infradead.org, netdev@vger.kernel.org,
  linux-mmc@vger.kernel.org, linux-s390@vger.kernel.org,
@@ -16,9 +16,9 @@ To: linux-um@lists.infradead.org, netdev@vger.kernel.org,
  linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Jiri Slaby <jslaby@suse.com>
-Subject: [PATCH 07/25] tty: mips_ejtag_fdc: Change return type to void
-Date: Tue,  4 Sep 2018 11:44:33 +0900
-Message-Id: <1536029091-4426-8-git-send-email-climbbb.kim@gmail.com>
+Subject: [PATCH 10/25] tty: synclink: Change return type to void
+Date: Tue,  4 Sep 2018 11:44:36 +0900
+Message-Id: <1536029091-4426-11-git-send-email-climbbb.kim@gmail.com>
 In-Reply-To: <1536029091-4426-1-git-send-email-climbbb.kim@gmail.com>
 References: <1536029091-4426-1-git-send-email-climbbb.kim@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -35,23 +35,23 @@ to void. Now apply this and remove the obsolete error check.
 
 Signed-off-by: Jaejoong Kim <climbbb.kim@gmail.com>
 ---
- drivers/tty/mips_ejtag_fdc.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/tty/synclink.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/tty/mips_ejtag_fdc.c b/drivers/tty/mips_ejtag_fdc.c
-index 4c1cd49..33e06b4 100644
---- a/drivers/tty/mips_ejtag_fdc.c
-+++ b/drivers/tty/mips_ejtag_fdc.c
-@@ -763,7 +763,9 @@ static int mips_ejtag_fdc_tty_install(struct tty_driver *driver,
- 	struct mips_ejtag_fdc_tty *priv = driver->driver_state;
+diff --git a/drivers/tty/synclink.c b/drivers/tty/synclink.c
+index fbdf4d0..6e7e4d6 100644
+--- a/drivers/tty/synclink.c
++++ b/drivers/tty/synclink.c
+@@ -3355,8 +3355,9 @@ static int mgsl_install(struct tty_driver *driver, struct tty_struct *tty)
+ 	if (mgsl_paranoia_check(info, tty->name, "mgsl_open"))
+ 		return -ENODEV;
+ 	tty->driver_data = info;
++	tty_port_install(&info->port, driver, tty);
  
- 	tty->driver_data = &priv->ports[tty->index];
--	return tty_port_install(&priv->ports[tty->index].port, driver, tty);
-+	tty_port_install(&priv->ports[tty->index].port, driver, tty);
-+
+-	return tty_port_install(&info->port, driver, tty);
 +	return 0;
  }
  
- static int mips_ejtag_fdc_tty_open(struct tty_struct *tty, struct file *filp)
+ /* mgsl_open()
 -- 
 2.7.4
