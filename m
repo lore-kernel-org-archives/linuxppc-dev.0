@@ -1,23 +1,20 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pl1-f194.google.com (mail-pl1-f194.google.com
- [209.85.214.194])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4252hT5QSjzF37D
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2018 22:15:05 +1000 (AEST)
-Received: by mail-pl1-f194.google.com with SMTP id s17-v6so3214326plp.7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Sep 2018 05:15:05 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Nicholas Piggin <npiggin@gmail.com>, Jiri Slaby <jslaby@suse.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Matteo Croce <mcroce@redhat.com>,
- Jason Gunthorpe <jgg@mellanox.com>, Leon Romanovsky <leonro@mellanox.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org (op)
-Subject: [PATCH 3/3] tty: hvc: hvc_write() fix break condition
-Date: Wed,  5 Sep 2018 22:14:39 +1000
-Message-Id: <20180905121439.23809-4-npiggin@gmail.com>
-In-Reply-To: <20180905121439.23809-1-npiggin@gmail.com>
-References: <20180905121439.23809-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42539l1SrkzF36g
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2018 22:36:58 +1000 (AEST)
+Message-Id: <d078b40c8f5015611d983d229594a84e1e21d331.1535913369.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1535913369.git.christophe.leroy@c-s.fr>
+References: <cover.1535913369.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [RFC PATCH v1 02/17] powerpc/mm: remove direct use of flags related
+ to cache
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ npiggin@gmail.com, aneesh.kumar@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Wed,  5 Sep 2018 12:36:55 +0000 (UTC)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,47 +24,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 550ddadcc758 ("tty: hvc: hvc_write() may sleep") broke the
-termination condition in case the driver stops accepting characters.
-This can result in unnecessary polling of the busy driver.
+As already done for PPC64, use pgprot_cache() helpers
+instead of flags in ioremap() derived functions.
 
-Restore it by testing the hvc_push return code.
-
-Fixes: 550ddadcc758 ("tty: hvc: hvc_write() may sleep")
-Tested-by: Matteo Croce <mcroce@redhat.com>
-Tested-by: Leon Romanovsky <leonro@mellanox.com>
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- drivers/tty/hvc/hvc_console.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/nohash/pgtable.h |  2 ++
+ arch/powerpc/mm/pgtable_32.c              | 15 +++++++++------
+ 2 files changed, 11 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
-index bacf9b73ec98..c09a38fb0d66 100644
---- a/drivers/tty/hvc/hvc_console.c
-+++ b/drivers/tty/hvc/hvc_console.c
-@@ -522,6 +522,8 @@ static int hvc_write(struct tty_struct *tty, const unsigned char *buf, int count
- 		return -EIO;
+diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
+index b321c82b3624..5b82e44c4231 100644
+--- a/arch/powerpc/include/asm/nohash/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/pgtable.h
+@@ -197,6 +197,8 @@ extern int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long addre
+ #if _PAGE_WRITETHRU != 0
+ #define pgprot_cached_wthru(prot) (__pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) | \
+ 				            _PAGE_COHERENT | _PAGE_WRITETHRU))
++#else
++#define pgprot_cached_wthru(prot)	pgprot_noncached(prot)
+ #endif
  
- 	while (count > 0) {
-+		int ret;
+ #define pgprot_cached_noncoherent(prot) \
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index 528999738645..f983ffa24aa0 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -76,24 +76,27 @@ pgtable_t pte_alloc_one(struct mm_struct *mm, unsigned long address)
+ void __iomem *
+ ioremap(phys_addr_t addr, unsigned long size)
+ {
+-	return __ioremap_caller(addr, size, _PAGE_NO_CACHE | _PAGE_GUARDED,
+-				__builtin_return_address(0));
++	unsigned long flags = pgprot_val(pgprot_noncached(__pgprot(0)));
 +
- 		spin_lock_irqsave(&hp->lock, flags);
++	return __ioremap_caller(addr, size, flags, __builtin_return_address(0));
+ }
+ EXPORT_SYMBOL(ioremap);
  
- 		rsize = hp->outbuf_size - hp->n_outbuf;
-@@ -537,10 +539,13 @@ static int hvc_write(struct tty_struct *tty, const unsigned char *buf, int count
- 		}
- 
- 		if (hp->n_outbuf > 0)
--			hvc_push(hp);
-+			ret = hvc_push(hp);
- 
- 		spin_unlock_irqrestore(&hp->lock, flags);
- 
-+		if (!ret)
-+			break;
+ void __iomem *
+ ioremap_wc(phys_addr_t addr, unsigned long size)
+ {
+-	return __ioremap_caller(addr, size, _PAGE_NO_CACHE,
+-				__builtin_return_address(0));
++	unsigned long flags = pgprot_val(pgprot_noncached_wc(__pgprot(0)));
 +
- 		if (count) {
- 			if (hp->n_outbuf > 0)
- 				hvc_flush(hp);
++	return __ioremap_caller(addr, size, flags, __builtin_return_address(0));
+ }
+ EXPORT_SYMBOL(ioremap_wc);
+ 
+ void __iomem *
+ ioremap_wt(phys_addr_t addr, unsigned long size)
+ {
+-	return __ioremap_caller(addr, size, _PAGE_WRITETHRU,
+-				__builtin_return_address(0));
++	unsigned long flags = pgprot_val(pgprot_cached_wthru(__pgprot(0)));
++
++	return __ioremap_caller(addr, size, flags, __builtin_return_address(0));
+ }
+ EXPORT_SYMBOL(ioremap_wt);
+ 
 -- 
-2.18.0
+2.13.3
