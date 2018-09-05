@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4257hl56PJzF38p
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 02:00:39 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4257ht1tYjzF38g
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 02:00:46 +1000 (AEST)
 Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w85FtUPx022380
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Sep 2018 12:00:37 -0400
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2maj548k7t-1
+ w85FtUTl022367
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Sep 2018 12:00:44 -0400
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2maj548k51-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Sep 2018 12:00:33 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Sep 2018 12:00:29 -0400
 Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.vnet.ibm.com>;
- Wed, 5 Sep 2018 17:00:31 +0100
+ Wed, 5 Sep 2018 17:00:28 +0100
 From: Mike Rapoport <rppt@linux.vnet.ibm.com>
 To: linux-mm@kvack.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
@@ -29,12 +29,12 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
  linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
  linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
  linux-kernel@vger.kernel.org, Mike Rapoport <rppt@linux.vnet.ibm.com>
-Subject: [RFC PATCH 14/29] memblock: add align parameter to
- memblock_alloc_node()
-Date: Wed,  5 Sep 2018 18:59:29 +0300
+Subject: [RFC PATCH 12/29] memblock: replace alloc_bootmem_low with
+ memblock_alloc_low
+Date: Wed,  5 Sep 2018 18:59:27 +0300
 In-Reply-To: <1536163184-26356-1-git-send-email-rppt@linux.vnet.ibm.com>
 References: <1536163184-26356-1-git-send-email-rppt@linux.vnet.ibm.com>
-Message-Id: <1536163184-26356-15-git-send-email-rppt@linux.vnet.ibm.com>
+Message-Id: <1536163184-26356-13-git-send-email-rppt@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,43 +44,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With the align parameter memblock_alloc_node() can be used as drop in
-replacement for alloc_bootmem_pages_node().
+The alloc_bootmem_low(size) allocates low memory with default alignement
+and can be replcaed by memblock_alloc_low(size, 0)
 
 Signed-off-by: Mike Rapoport <rppt@linux.vnet.ibm.com>
 ---
- include/linux/bootmem.h | 4 ++--
- mm/sparse.c             | 2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ arch/arm64/kernel/setup.c     | 2 +-
+ arch/unicore32/kernel/setup.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/include/linux/bootmem.h b/include/linux/bootmem.h
-index 7d91f0f..3896af2 100644
---- a/include/linux/bootmem.h
-+++ b/include/linux/bootmem.h
-@@ -157,9 +157,9 @@ static inline void * __init memblock_alloc_from_nopanic(
- }
+diff --git a/arch/arm64/kernel/setup.c b/arch/arm64/kernel/setup.c
+index 5b4fac4..cf7a7b7 100644
+--- a/arch/arm64/kernel/setup.c
++++ b/arch/arm64/kernel/setup.c
+@@ -213,7 +213,7 @@ static void __init request_standard_resources(void)
+ 	kernel_data.end     = __pa_symbol(_end - 1);
  
- static inline void * __init memblock_alloc_node(
--						phys_addr_t size, int nid)
-+		phys_addr_t size, phys_addr_t align, int nid)
- {
--	return memblock_alloc_try_nid(size, 0, BOOTMEM_LOW_LIMIT,
-+	return memblock_alloc_try_nid(size, align, BOOTMEM_LOW_LIMIT,
- 					    BOOTMEM_ALLOC_ACCESSIBLE, nid);
- }
+ 	for_each_memblock(memory, region) {
+-		res = alloc_bootmem_low(sizeof(*res));
++		res = memblock_alloc_low(sizeof(*res), 0);
+ 		if (memblock_is_nomap(region)) {
+ 			res->name  = "reserved";
+ 			res->flags = IORESOURCE_MEM;
+diff --git a/arch/unicore32/kernel/setup.c b/arch/unicore32/kernel/setup.c
+index c2bffa5..9f163f9 100644
+--- a/arch/unicore32/kernel/setup.c
++++ b/arch/unicore32/kernel/setup.c
+@@ -207,7 +207,7 @@ request_standard_resources(struct meminfo *mi)
+ 		if (mi->bank[i].size == 0)
+ 			continue;
  
-diff --git a/mm/sparse.c b/mm/sparse.c
-index 04e97af..509828f 100644
---- a/mm/sparse.c
-+++ b/mm/sparse.c
-@@ -68,7 +68,7 @@ static noinline struct mem_section __ref *sparse_index_alloc(int nid)
- 	if (slab_is_available())
- 		section = kzalloc_node(array_size, GFP_KERNEL, nid);
- 	else
--		section = memblock_alloc_node(array_size, nid);
-+		section = memblock_alloc_node(array_size, 0, nid);
- 
- 	return section;
- }
+-		res = alloc_bootmem_low(sizeof(*res));
++		res = memblock_alloc_low(sizeof(*res), 0);
+ 		res->name  = "System RAM";
+ 		res->start = mi->bank[i].start;
+ 		res->end   = mi->bank[i].start + mi->bank[i].size - 1;
 -- 
 2.7.4
