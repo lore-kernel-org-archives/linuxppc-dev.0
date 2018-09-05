@@ -1,44 +1,21 @@
-Return-Path: <paul@paul-moore.com>
-Received: from mail-lj1-f193.google.com (mail-lj1-f193.google.com
- [209.85.208.193])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4251ym183szF2R6
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2018 21:42:20 +1000 (AEST)
-Received: by mail-lj1-f193.google.com with SMTP id p10-v6so5955869ljg.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Sep 2018 04:42:20 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4254yD1cvhzF37b
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2018 23:57:07 +1000 (AEST)
+Subject: Re: [PATCH] powerpc64s: Print exception vector name alongside the
+ trap number
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+References: <20180418090205.30844-1-naveen.n.rao@linux.vnet.ibm.com>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <c5d9f882-4b7d-fde5-9e29-2b3598750363@c-s.fr>
+Date: Wed, 5 Sep 2018 15:57:01 +0200
 MIME-Version: 1.0
-References: <1536012923-16275-1-git-send-email-henrik@austad.us>
-In-Reply-To: <1536012923-16275-1-git-send-email-henrik@austad.us>
-From: Paul Moore <paul@paul-moore.com>
-Date: Wed, 5 Sep 2018 07:42:04 -0400
-Message-ID: <CAHC9VhR7Zana3xTEj2jUGXb+hBzyh69g0rBg_p_4tkbjtCUdpw@mail.gmail.com>
-Subject: Re: [PATCH] [RFC v2] Drop all 00-INDEX files from Documentation/
-To: henrik@austad.us
-Cc: linux-doc@vger.kernel.org, corbet@lwn.net, bhelgaas@google.com,
- paulmck@linux.vnet.ibm.com, josh@joshtriplett.org, rostedt@goodmis.org,
- mathieu.desnoyers@efficios.com, jiangshanlai@gmail.com, axboe@kernel.dk,
- robh+dt@kernel.org, mark.rutland@arm.com, b.zolnierkie@samsung.com,
- linus.walleij@linaro.org, davem@davemloft.net, isdn@linux-pingi.de,
- yamada.masahiro@socionext.com, michal.lkml@markovi.net, peterz@infradead.org,
- mingo@redhat.com, will.deacon@arm.com, ralf@linux-mips.org,
- paul.burton@mips.com, jhogan@kernel.org, jejb@parisc-linux.org, deller@gmx.de,
- rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, gregkh@linuxfoundation.org,
- jslaby@suse.com, broonie@kernel.org, tglx@linutronix.de, pbonzini@redhat.com,
- rkrcmar@redhat.com, zbr@ioremap.net, hpa@zytor.com, x86@kernel.org,
- akpm@linux-foundation.org, raven@themaw.net, jacek.anaszewski@gmail.com,
- rppt@linux.vnet.ibm.com, jjj@gmx.de, linux-kernel@vger.kernel.org,
- linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
- linux-gpio@vger.kernel.org, linux-ide@vger.kernel.org, netdev@vger.kernel.org,
- linux-kbuild@vger.kernel.org, linux-mips@linux-mips.org,
- linux-security-module@vger.kernel.org, linux-parisc@vger.kernel.org,
- linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-spi@vger.kernel.org, kvm@vger.kernel.org,
- haustad@cisco.com
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20180418090205.30844-1-naveen.n.rao@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,77 +25,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Sep 3, 2018 at 6:15 PM Henrik Austad <henrik@austad.us> wrote:
-> This is a respin with a wider audience (all that get_maintainer returned)
-> and I know this spams a *lot* of people. Not sure what would be the correct
-> way, so my apologies for ruining your inbox.
->
-> The 00-INDEX files are supposed to give a summary of all files present
-> in a directory, but these files are horribly out of date and their
-> usefulness is brought into question. Often a simple "ls" would reveal
-> the same information as the filenames are generally quite descriptive as
-> a short introduction to what the file covers (it should not surprise
-> anyone what Documentation/sched/sched-design-CFS.txt covers)
->
-> A few years back it was mentioned that these files were no longer really
-> needed, and they have since then grown further out of date, so perhaps
-> it is time to just throw them out.
->
-> A short status yields the following _outdated_ 00-INDEX files, first
-> counter is files listed in 00-INDEX but missing in the directory, last
-> is files present but not listed in 00-INDEX.
->
-> List of outdated 00-INDEX:
-> Documentation: (4/10)
-> Documentation/sysctl: (0/1)
-> Documentation/timers: (1/0)
-> Documentation/blockdev: (3/1)
-> Documentation/w1/slaves: (0/1)
-> Documentation/locking: (0/1)
-> Documentation/devicetree: (0/5)
-> Documentation/power: (1/1)
-> Documentation/powerpc: (0/5)
-> Documentation/arm: (1/0)
-> Documentation/x86: (0/9)
-> Documentation/x86/x86_64: (1/1)
-> Documentation/scsi: (4/4)
-> Documentation/filesystems: (2/9)
-> Documentation/filesystems/nfs: (0/2)
-> Documentation/cgroup-v1: (0/2)
-> Documentation/kbuild: (0/4)
-> Documentation/spi: (1/0)
-> Documentation/virtual/kvm: (1/0)
-> Documentation/scheduler: (0/2)
-> Documentation/fb: (0/1)
-> Documentation/block: (0/1)
-> Documentation/networking: (6/37)
-> Documentation/vm: (1/3)
->
-> Then there are 364 subdirectories in Documentation/ with several files that
-> are missing 00-INDEX alltogether (and another 120 with a single file and no
-> 00-INDEX).
->
-> I don't really have an opinion to whether or not we /should/ have 00-INDEX,
-> but the above 00-INDEX should either be removed or be kept up to date. If
-> we should keep the files, I can try to keep them updated, but I rather not
-> if we just want to delete them anyway.
->
-> As a starting point, remove all index-files and references to 00-INDEX and
-> see where the discussion is going.
->
-> Again, sorry for the insanely wide distribution.
->
-> Signed-off-by: Henrik Austad <henrik@austad.us>
-...
-> Signed-off-by: Henrik Austad <haustad@cisco.com>
+
+
+Le 18/04/2018 à 11:02, Naveen N. Rao a écrit :
+> Print a small help text indicating the exception vector alongside the
+> trap number to make it easier while analyzing back traces. As an
+> example:
+> 
+>      Unable to handle kernel paging request for data at address 0x00000000
+>      Faulting instruction address: 0xc0000000006e3728
+>      Oops: Kernel access of bad area, sig: 11 [#1]
+>      LE SMP NR_CPUS=2048 NUMA PowerNV
+>      Modules linked in:
+>      CPU: 0 PID: 1 Comm: bash Not tainted 4.16.0-nnr #226
+>      NIP:  c0000000006e3728 LR: c0000000006e4774 CTR: c0000000006e3700
+>      REGS: c0000000f0aa3980 TRAP: 0300 (DSI)  Not tainted  (4.16.0-nnr)
+>      MSR:  9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE>  CR: 28222222  XER: 20000000
+>      CFAR: c0000000006e4770 DAR: 0000000000000000 DSISR: 42000000 SOFTE: 0
+> 
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 > ---
->  Documentation/00-INDEX                  | 428 --------------------------------
-...
+> I find this useful to have in backtraces, instead of having to look it
+> up. Some of the names could probably be tweaked a bit to be more
+> sensible.
+> 
+> - Naveen
+> 
+>   arch/powerpc/kernel/process.c | 42 +++++++++++++++++++++++++++++++++++
+>   1 file changed, 42 insertions(+)
+> 
+> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+> index 1237f13fed51..71bfe29af456 100644
+> --- a/arch/powerpc/kernel/process.c
+> +++ b/arch/powerpc/kernel/process.c
+> @@ -1414,6 +1414,42 @@ static void print_msr_bits(unsigned long val)
+>   #define LAST_VOLATILE	12
+>   #endif
+>   
+> +#ifdef CONFIG_PPC_BOOK3S_64
 
-Looks reasonable to me, you can add my ACK for the NetLabel bits.
+Why not make something generic applicable to all platforms ?
 
-Acked-by: Paul Moore <paul@paul-moore.com>
+Christophe
 
--- 
-paul moore
-www.paul-moore.com
+> +static char *print_trap(unsigned long trapno)
+> +{
+> +	trapno &= 0xff0;
+> +	switch (trapno) {
+> +		case 0x100:	return "SRESET";
+> +		case 0x200:	return "MCE";
+> +		case 0x300:	return "DSI";
+> +		case 0x380:	return "DSISLB";
+> +		case 0x400:	return "ISI";
+> +		case 0x480:	return "ISISLB";
+> +		case 0x500:	return "EXT";
+> +		case 0x600:	return "ALIGN";
+> +		case 0x700:	return "PCHECK";
+> +		case 0x800:	return "FP";
+> +		case 0x900:	return "DEC";
+> +		case 0x980:	return "HDEC";
+> +		case 0xa00:	return "DBELL";
+> +		case 0xc00:	return "SC";
+> +		case 0xd00:	return "SSTEP";
+> +		case 0xe00:	return "HDSI";
+> +		case 0xe20:	return "HISI";
+> +		case 0xe40:	return "HEMUL";
+> +		case 0xe60:	return "HMI";
+> +		case 0xe80:	return "HDBELL";
+> +		case 0xea0:	return "HVIRT";
+> +		case 0xf00:	return "PMI";
+> +		case 0xf20:	return "ALTIVEC";
+> +		case 0xf40:	return "VSX";
+> +		case 0xf60:	return "UNAVAIL";
+> +		case 0xf80:	return "HUNAVAIL";
+> +	}
+> +	return "UNKNOWN";
+> +}
+> +#endif
+> +
+>   void show_regs(struct pt_regs * regs)
+>   {
+>   	int i, trap;
+> @@ -1422,8 +1458,14 @@ void show_regs(struct pt_regs * regs)
+>   
+>   	printk("NIP:  "REG" LR: "REG" CTR: "REG"\n",
+>   	       regs->nip, regs->link, regs->ctr);
+> +#ifdef CONFIG_PPC_BOOK3S_64
+> +	printk("REGS: %px TRAP: %04lx (%s)  %s  (%s)\n",
+> +	       regs, regs->trap, print_trap(regs->trap), print_tainted(),
+> +	       init_utsname()->release);
+> +#else
+>   	printk("REGS: %px TRAP: %04lx   %s  (%s)\n",
+>   	       regs, regs->trap, print_tainted(), init_utsname()->release);
+> +#endif
+>   	printk("MSR:  "REG" ", regs->msr);
+>   	print_msr_bits(regs->msr);
+>   	pr_cont("  CR: %08lx  XER: %08lx\n", regs->ccr, regs->xer);
+> 
