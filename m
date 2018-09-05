@@ -1,38 +1,24 @@
-Return-Path: <aneesh.kumar@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <laurentiu.tudor@nxp.com>
+Received: from EUR03-AM5-obe.outbound.protection.outlook.com
+ (mail-eopbgr30059.outbound.protection.outlook.com [40.107.3.59])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4255651TSKzF33Q
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 00:03:56 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w85E0AE6025166
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Sep 2018 10:03:53 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2mafkfb9r0-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Sep 2018 10:03:50 -0400
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Wed, 5 Sep 2018 08:03:42 -0600
-Subject: Re: [RFC PATCH v1 00/17] ban the use of _PAGE_XXX flags outside
- platform specific code
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, npiggin@gmail.com,
- aneesh.kumar@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-References: <cover.1535913369.git.christophe.leroy@c-s.fr>
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Date: Wed, 5 Sep 2018 19:33:33 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4255CR0v6VzF35K
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 00:08:26 +1000 (AEST)
+From: Laurentiu Tudor <laurentiu.tudor@nxp.com>
+To: Scott Wood <oss@buserror.net>, Christian Zigotzky
+ <chzigotzky@xenosoft.de>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: FSL/NXP P5020: USB problems with the latest Git kernels
+Date: Wed, 5 Sep 2018 14:08:21 +0000
+Message-ID: <AM6PR0402MB38644F9691306961BBD68C0DEC020@AM6PR0402MB3864.eurprd04.prod.outlook.com>
+References: <0F797F4E-755B-499C-BA74-48CC03235393@xenosoft.de>
+ <76A7B415-F6D4-4BF8-B4B7-B146C5337CF8@xenosoft.de>
+ <196C6151-3085-4A42-B6D6-5891F4AF9759@xenosoft.de>
+ <07ad630cccbd33c81031f690fd17cdc30b662e49.camel@buserror.net>
+In-Reply-To: <07ad630cccbd33c81031f690fd17cdc30b662e49.camel@buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-In-Reply-To: <cover.1535913369.git.christophe.leroy@c-s.fr>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <95ee30b8-70b5-0f74-b677-417d3b0ca19e@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,60 +28,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/05/2018 06:06 PM, Christophe Leroy wrote:
-> Today flags like for instance _PAGE_RW or _PAGE_USER are used through
-> common parts of code.
-> Using those directly in common parts of code have proven to lead to
-> mistakes or misbehaviour, because their use is not always as trivial
-> as one could think.
-> 
-> For instance, (flags & _PAGE_USER) == 0 isn't enough to tell
-> that a page is a kernel page, because some targets are using
-> _PAGE_PRIVILEDGED and not _PAGE_USER, so the test has to be
-> (flags & (_PAGE_USER | _PAGE_PRIVILEDGED)) == _PAGE_PRIVILEDGED
-> This has to (bad) consequences:
-> 
->   - All targets must define every bit, even the unsupported ones,
->     leading to a lot of useless #define _PAGE_XXX 0
->   - If someone forgets to take into account all possible _PAGE_XXX bits
->     for the case, we can get unexpected behaviour on some targets.
-> 
-> This becomes even more complex when we come to using _PAGE_RW.
-> Testing (flags & _PAGE_RW) is not enough to test whether a page
-> if writable or not, because:
-> 
->   - Some targets have _PAGE_RO instead, which has to be unset to tell
->     a page is writable
->   - Some targets have _PAGE_R and _PAGE_W, in which case
->     _PAGE_RW = _PAGE_R | _PAGE_W
->   - Even knowing whether a page is readable is not always trivial because:
->     - Some targets requires to check that _PAGE_R is set to ensure page
->     is readable
->     - Some targets requires to check that _PAGE_NA is not set
->     - Some targets requires to check that _PAGE_RO or _PAGE_RW is set
-> 
-> Etc ....
-> 
-> In order to work around all those issues and minimise the risks of errors,
-> this serie aims at removing all use of _PAGE_XXX flags from powerpc code
-> and always use pte_xxx() and pte_mkxxx() accessors instead. Those accessors
-> are then defined in target specific parts of the kernel code.
-
-We recently did on book3s 64.
-
-static inline int pte_present(pte_t pte)
-{
-	/*
-	 * A pte is considerent present if _PAGE_PRESENT is set.
-	 * We also need to consider the pte present which is marked
-	 * invalid during ptep_set_access_flags. Hence we look for _PAGE_INVALID
-	 * if we find _PAGE_PRESENT cleared.
-	 */
-	return !!(pte_raw(pte) & cpu_to_be64(_PAGE_PRESENT | _PAGE_INVALID));
-}
-
-So I guess with that pte_present conversion we need to be careful.
-
-Do you have a git tree which I can use to double check?
-
--aneesh
+SGkgU2NvdHQsDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0gDQo+IE9uIE1vbiwgMjAx
+OC0wOC0yNyBhdCAyMDoxNSArMDIwMCwgQ2hyaXN0aWFuIFppZ290emt5IHdyb3RlOg0KPiA+IEhl
+bGxvLA0KPiA+DQo+ID4gT3VyIHVzZXJzIHRlc3RlZCB0aGUgUkMxIG9mIGtlcm5lbCA0LjE5IG9u
+IHRoZWlyIFA1MDIwIGJvYXJkcyB0b2RheS4NCj4gPiBVbmZvcnR1bmF0ZWx5IHRoZSBVU0IgYnVn
+IHN0aWxsIGV4aXN0cy4gV2l0aCBtZW0gdmFsdWVzIGJpZ2dlciB0aGFuDQo+IDQwOTZNLA0KPiA+
+IHRoZSBVU0IgbW91c2UgYW5kIGtleWJvYXJkIGRvZXNu4oCZdCB3b3JrLiBXaXRoIHRoZSBib290
+YXJnIG1lbT00MDk2TSwgdGhlDQo+IFVTQg0KPiA+IGRldmljZXMgd29yayB3aXRob3V0IGFueSBw
+cm9ibGVtcy4gUGxlYXNlIGNvbXBpbGUgdGhlIFJDMSBhbmQgdGVzdCBpdCBvbg0KPiA+IHlvdXIg
+UDUwMjAgYm9hcmQuIFRoZXJlIGlzIGEgcHJvYmxlbSB3aXRoIHRoZSBtZW1vcnkgbWFuYWdlbWVu
+dCBzaW5jZQ0KPiA+IDIyLzA4LzE4Lg0KPiANCj4gSSBqdXN0IHRlc3RlZCA0LjE5LXJjMSBvbiBh
+IFQ0MjQwIGFuZCBnb3QgYSBzaW1pbGFyIHByb2JsZW0gd2l0aCBNTUMuICBNTUMNCj4gYW5kDQo+
+IFVTQiBvbiB0aGVzZSBjaGlwcyBib3RoIGhhdmUgYSAzMi1iaXQgRE1BIGxpbWl0YXRpb24uICBJ
+J2xsIGxvb2sgaW50byBpdC4NCg0KSSBlbmNvdW50ZXJlZCBzaW1pbGFyIGlzc3VlcyBvbiBMUzEw
+NHhBIGNoaXBzLiBUaGlzIGlzIHRoZSB3b3JrYXJvdW5kIGZvciBNTUM6DQpodHRwczovL3BhdGNo
+d29yay5rZXJuZWwub3JnL3BhdGNoLzEwNTA2NjI3Lw0KT24gdGhlIFVTQiBzaWRlIEkgZGlkbid0
+IGZpbmQgYSBwcm9wZXIgcGxhY2UgaW4gdGhlIHVzYiBzdWJzeXN0ZW0gY29kZSBmb3IgYSB3b3Jr
+YXJvdW5kIGJ1dCBpbnN0ZWFkDQpmb3VuZCBhbiB1bmRvY3VtZW50ZWQga2VybmVsIGFyZyAoKikg
+dGhhdCBsaW1pdHMgdGhlIGRtYSBtYXNrIHRvIDMyIGJpdHM6DQp4aGNpLWhjZC5xdWlya3M9MHg4
+MDAwMDAuDQoNCigqKSBodHRwczovL3BhdGNod29yay5rZXJuZWwub3JnL3BhdGNoLzEwNTA5MTU5
+Lw0KDQotLS0NCkJlc3QgUmVnYXJkcywgTGF1cmVudGl1DQo=
