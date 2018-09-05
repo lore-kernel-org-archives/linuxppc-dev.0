@@ -1,28 +1,37 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <sandipan@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 424xVB4DkNzF36f
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2018 18:20:50 +1000 (AEST)
-Message-ID: <b54888e7cbfad8ea0f53cd93ec58743cc88e2431.camel@kernel.crashing.org>
-Subject: Re: v4.17 regression: PowerMac G3 won't boot, was Re: [PATCH v5
- 1/3] of: cache phandle nodes to reduce cost of of_find_node_by_phandle()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Mac User <userm57@yahoo.com>, Rob Herring <robh+dt@kernel.org>
-Cc: fthain@telegraphics.com.au, Frank Rowand <frank.rowand@sony.com>,
- Chintan Pandya <cpandya@codeaurora.org>, devicetree@vger.kernel.org,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linuxppc-dev
- <linuxppc-dev@lists.ozlabs.org>
-Date: Fri, 31 Aug 2018 14:49:51 +1000
-In-Reply-To: <84f13bded54eda0817f9134f355d518d5b3a5f77.camel@kernel.crashing.org>
-References: <1520208889-3908-1-git-send-email-frowand.list@gmail.com>
- <1520208889-3908-2-git-send-email-frowand.list@gmail.com>
- <alpine.LNX.2.21.1808301025480.73@nippy.intranet>
- <CAL_JsqLJ9QMHCMqGKpCouP1rTEO+cMGA1es94qAH+ukLsR31jg@mail.gmail.com>
- <569e4bc3-2149-4b2d-562f-e400dd05a8a8@yahoo.com>
- <84f13bded54eda0817f9134f355d518d5b3a5f77.camel@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4251ms51M0zF371
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2018 21:33:49 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w85BUgIY111042
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Sep 2018 07:33:47 -0400
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2macv6muha-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Sep 2018 07:33:46 -0400
+Received: from localhost
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sandipan@linux.ibm.com>;
+ Wed, 5 Sep 2018 12:30:55 +0100
+Subject: Re: [PATCH 1/6] powerpc sstep: Add maddhd, maddhdu, maddld
+ instruction emulation
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: mpe@ellerman.id.au, paulus@samba.org, naveen.n.rao@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, anton@samba.org, ravi.bangoria@linux.ibm.com
+References: <cover.1535609090.git.sandipan@linux.ibm.com>
+ <2962112510464de01b24f9e1014909fde3380d52.1535609090.git.sandipan@linux.ibm.com>
+ <20180904221223.GR24439@gate.crashing.org>
+From: Sandipan Das <sandipan@linux.ibm.com>
+Date: Wed, 5 Sep 2018 17:00:49 +0530
+MIME-Version: 1.0
+In-Reply-To: <20180904221223.GR24439@gate.crashing.org>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <99722a4e-fea8-7c74-2cb4-7d5efd2c54fa@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,61 +41,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2018-08-31 at 14:35 +1000, Benjamin Herrenschmidt wrote:
-> 
-> > If I force output with "-f", the resulting file has no occurrences 
-> > of "phandle".
-> 
-> Are you booting with BootX or Open Firmware ?
+Hi Segher,
 
-Assuming you are using BootX (or miBoot), can you try this patch ?
+On Wednesday 05 September 2018 03:42 AM, Segher Boessenkool wrote:
+> On Mon, Sep 03, 2018 at 08:49:33PM +0530, Sandipan Das wrote:
+>> +#ifdef __powerpc64__
+>> +	case 4:
+>> +		if (!cpu_has_feature(CPU_FTR_ARCH_300))
+>> +			return -1;
+>> +
+>> +		switch (instr & 0x3f) {
+>> +		case 48:	/* maddhd */
+>> +			asm("maddhd %0,%1,%2,%3" : "=r" (op->val) :
+>> +			    "r" (regs->gpr[ra]), "r" (regs->gpr[rb]),
+>> +			    "r" (regs->gpr[rc]));
+>> +			goto compute_done;
+> 
+> If running maddhd does not work, will running it in kernel mode work?
+> 
 
---- a/arch/powerpc/platforms/powermac/bootx_init.c
-+++ b/arch/powerpc/platforms/powermac/bootx_init.c
-@@ -37,6 +37,7 @@ static unsigned long __initdata bootx_dt_strend;
- static unsigned long __initdata bootx_node_chosen;
- static boot_infos_t * __initdata bootx_info;
- static char __initdata bootx_disp_path[256];
-+static int __initdata bootx_phandle;
- 
- /* Is boot-info compatible ? */
- #define BOOT_INFO_IS_COMPATIBLE(bi) \
-@@ -258,6 +259,8 @@ static void __init bootx_scan_dt_build_strings(unsigned long base,
-                namep = pp->name ? (char *)(base + pp->name) : NULL;
-                if (namep == NULL || strcmp(namep, "name") == 0)
-                        goto next;
-+               if (!strcmp(namep, "phandle") || !strcmp(namep, "linux,phandle"))
-+                       bootx_phandle = -1;
-                /* get/create string entry */
-                soff = bootx_dt_find_string(namep);
-                if (soff == 0)
-@@ -330,6 +333,12 @@ static void __init bootx_scan_dt_build_struct(unsigned long base,
-                ppp = &pp->next;
-        }
- 
-+       /* add a phandle */
-+       if (bootx_phandle > 0) {
-+               bootx_dt_add_prop("phandle", &bootx_phandle, 4, mem_end);
-+               bootx_phandle++;
-+       }
-+
-        if (node == bootx_node_chosen) {
-                bootx_add_chosen_props(base, mem_end);
-                if (bootx_info->dispDeviceRegEntryOffset == 0)
-@@ -385,6 +394,8 @@ static unsigned long __init bootx_flatten_dt(unsigned long start)
-        bootx_dt_add_string("linux,bootx-height", &mem_end);
-        bootx_dt_add_string("linux,bootx-linebytes", &mem_end);
-        bootx_dt_add_string("linux,bootx-addr", &mem_end);
-+       if (bootx_phandle > 0)
-+               bootx_dt_add_string("phandle", &mem_end);
-        /* Wrap up strings */
-        hdr->off_dt_strings = bootx_dt_strbase - mem_start;
-        hdr->dt_strings_size = bootx_dt_strend - bootx_dt_strbase;
-@@ -482,6 +493,7 @@ void __init bootx_init(unsigned long r3, unsigned long r4)
-        bootx_dt_strbase = bootx_dt_strend = 0;
-        bootx_node_chosen = 0;
-        bootx_disp_path[0] = 0;
-+       bootx_phandle = 1;
- 
-        if (!BOOT_INFO_IS_V2_COMPATIBLE(bi))
-                bi->logicalDisplayBase = bi->dispDeviceBase;
+Not sure what you meant here but one of the scenarios that I'm aware of
+where this is will be used is if we place a probe at a location having
+an maddhd instruction. The kernel would first attempt to emulate its
+behaviour, which in this case is done by executing the same instruction
+(similar to what is done for mulhd and mulhw) and if that fails, try to
+execute the instruction natively.
+
+- Sandipan
