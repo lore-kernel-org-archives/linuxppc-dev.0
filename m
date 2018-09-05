@@ -1,30 +1,40 @@
-Return-Path: <jirislaby@gmail.com>
-Received: from mail-wm0-f67.google.com (mail-wm0-f67.google.com [74.125.82.67])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <hegdevasant@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 424tJp4SD7zF384
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2018 15:57:29 +1000 (AEST)
-Received: by mail-wm0-f67.google.com with SMTP id n11-v6so6342527wmc.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Sep 2018 22:57:29 -0700 (PDT)
-Subject: Re: [PATCH 01/25] tty: Change return type to void
-To: Jaejoong Kim <climbbb.kim@gmail.com>, sergei.shtylyov@cogentembedded.com
-Cc: devel@driverdev.osuosl.org, Greg KH <gregkh@linuxfoundation.org>,
- linux-um@lists.infradead.org, greybus-dev@lists.linaro.org,
- linuxppc-dev@lists.ozlabs.org, linux-bluetooth@vger.kernel.org,
- LKML <linux-kernel@vger.kernel.org>, linux-mmc@vger.kernel.org,
- linux-s390@vger.kernel.org, linux-serial@vger.kernel.org,
- USB list <linux-usb@vger.kernel.org>, netdev@vger.kernel.org,
- sparclinux@vger.kernel.org
-References: <1536029091-4426-1-git-send-email-climbbb.kim@gmail.com>
- <1536029091-4426-2-git-send-email-climbbb.kim@gmail.com>
- <3b5cce6a-b4c3-edf9-51c8-0a16f156e128@cogentembedded.com>
- <CAL6iAaKzDPe7CMGR8VOBZRsJqZuNB1=zek_YVvwcKnjimbox2g@mail.gmail.com>
-From: Jiri Slaby <jslaby@suse.cz>
-Message-ID: <d3d5df26-4678-2539-e579-1c48bc726163@suse.cz>
-Date: Wed, 5 Sep 2018 07:57:25 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 424v4w2hq7zF31q
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2018 16:32:15 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w856TSLI096380
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Sep 2018 02:32:12 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2ma94h2322-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Sep 2018 02:32:11 -0400
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
+ Wed, 5 Sep 2018 07:32:10 +0100
+Subject: Re: [PATCH v2] powerpc/powernv: Make possible for user to force a
+ full ipl cec reboot
+To: Vaibhav Jain <vaibhav@linux.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Stewart Smith <stewart@linux.vnet.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>, Nicholas Piggin <npiggin@gmail.com>,
+ "Oliver O'Halloran" <oohall@gmail.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+References: <20180903102624.24344-1-vaibhav@linux.ibm.com>
+From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+Date: Wed, 5 Sep 2018 12:02:03 +0530
 MIME-Version: 1.0
-In-Reply-To: <CAL6iAaKzDPe7CMGR8VOBZRsJqZuNB1=zek_YVvwcKnjimbox2g@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20180903102624.24344-1-vaibhav@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <2e8ec40d-76ca-97ad-6d7a-aded2eea6451@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,38 +44,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/05/2018, 03:08 AM, Jaejoong Kim wrote:
->     > @@ -688,7 +688,7 @@ extern int tty_port_close_start(struct
->     tty_port *port,
->     >   extern void tty_port_close_end(struct tty_port *port, struct
->     tty_struct *tty);
->     >   extern void tty_port_close(struct tty_port *port,
->     >                               struct tty_struct *tty, struct file
->     *filp);
->     > -extern int tty_port_install(struct tty_port *port, struct
->     tty_driver *driver,
->     > +extern void tty_port_install(struct tty_port *port, struct
->     tty_driver *driver,
->     >                               struct tty_struct *tty);
+On 09/03/2018 03:56 PM, Vaibhav Jain wrote:
+> Ever since fast reboot is enabled by default in opal,
+> opal_cec_reboot() will use fast-reset instead of full IPL to perform
+> system reboot. This leaves the user with no direct way to force a full
+> IPL reboot except changing an nvram setting that persistently disables
+> fast-reset for all subsequent reboots.
 > 
->         You need to update all the callers in the same patch -- the
->     kernel must
->     remain buildable after each patch but you seem to have spread that
->     update
->     among a lot of patches..
+> This patch provides a more direct way for the user to force a one-shot
+> full IPL reboot by passing the command line argument 'full' to the
+> reboot command. So the user will be able to tweak the reboot behavior
+> via:
 > 
+
+.../...
+
 > 
-> OK. I will make several patches as one patch.
+>   /* Argument to OPAL_PCI_TCE_KILL */
+> diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+> index adddde023622..650484e0940b 100644
+> --- a/arch/powerpc/platforms/powernv/setup.c
+> +++ b/arch/powerpc/platforms/powernv/setup.c
+> @@ -224,7 +224,22 @@ static void  __noreturn pnv_restart(char *cmd)
+>   	pnv_prepare_going_down();
+> 
+>   	while (rc == OPAL_BUSY || rc == OPAL_BUSY_EVENT) {
+> -		rc = opal_cec_reboot();
+> +		/* See if we need to do a full IPL reboot */
+> +		if (cmd && strcmp(cmd, "full") == 0)
+> +			rc = opal_cec_reboot2(OPAL_REBOOT_FULL_IPL, NULL);
+> +		else
+> +			rc = OPAL_UNSUPPORTED;
 
-You don't have to. Just reorder the patches as suggested by Sam. (First,
-make everybody ignore the return value, then change these return types
-to void.)
+As discussed offline, please handle OPAL_SUCCESS case well.
 
-BTW you can mention in this commit log, that this change is possible
-after a3123fd0a4a5. That commit made tty_standard_install to always
-return 0.
-
-thanks,
--- 
-js
-suse labs
+-Vasant
