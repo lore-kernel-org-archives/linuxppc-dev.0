@@ -1,44 +1,23 @@
 Return-Path: <robherring2@gmail.com>
-Received: from mail-oi0-f65.google.com (mail-oi0-f65.google.com
- [209.85.218.65])
+Received: from mail-oi0-f67.google.com (mail-oi0-f67.google.com
+ [209.85.218.67])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 425DWD3MH5zF3D8
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 05:37:43 +1000 (AEST)
-Received: by mail-oi0-f65.google.com with SMTP id l202-v6so15923490oig.7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Sep 2018 12:37:43 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 425DWQ47mczF3HT
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 05:37:54 +1000 (AEST)
+Received: by mail-oi0-f67.google.com with SMTP id t68-v6so15894875oie.12
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Sep 2018 12:37:54 -0700 (PDT)
 From: Rob Herring <robh@kernel.org>
 To: devicetree@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Cc: Frank Rowand <frowand.list@gmail.com>,
- Russell King <linux@armlinux.org.uk>, Albert Ou <aou@eecs.berkeley.edu>,
- Aurelien Jacquiot <jacquiot.aurelien@gmail.com>,
- Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Borislav Petkov <bp@alien8.de>, Catalin Marinas <catalin.marinas@arm.com>,
- dri-devel@lists.freedesktop.org, "H. Peter Anvin" <hpa@zytor.com>,
- Ingo Molnar <mingo@redhat.com>, iommu@lists.linux-foundation.org,
- Joerg Roedel <joro@8bytes.org>, Jonas Bonn <jonas@southpole.se>,
- Ley Foon Tan <lftan@altera.com>, Magnus Damm <magnus.damm@gmail.com>,
- Mark Salter <msalter@redhat.com>,
- Mauro Carvalho Chehab <mchehab@kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Michal Simek <monstr@monstr.eu>,
- nios2-dev@lists.rocketboards.org, openrisc@lists.librecores.org,
- Palmer Dabbelt <palmer@sifive.com>, Rich Felker <dalias@libc.org>,
- Simon Horman <horms@verge.net.au>, Stafford Horne <shorne@gmail.com>,
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- Stephen Boyd <sboyd@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
- Vitaly Bordug <vitb@kernel.crashing.org>,
- Will Deacon <will.deacon@arm.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- linux-arm-kernel@lists.infradead.org, linux-c6x-dev@linux-c6x.org,
- linux-clk@vger.kernel.org, linux-edac@vger.kernel.org,
- linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-renesas-soc@vger.kernel.org, linux-riscv@lists.infradead.org,
- linux-sh@vger.kernel.org
-Subject: [PATCH 00/21] DT cpu node iterator
-Date: Wed,  5 Sep 2018 14:37:17 -0500
-Message-Id: <20180905193738.19325-1-robh@kernel.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 11/21] powerpc: use for_each_of_cpu_node iterator
+Date: Wed,  5 Sep 2018 14:37:28 -0500
+Message-Id: <20180905193738.19325-12-robh@kernel.org>
+In-Reply-To: <20180905193738.19325-1-robh@kernel.org>
+References: <20180905193738.19325-1-robh@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,66 +27,176 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This series adds an iterator for cpu nodes and converts users over to use
-it or of_get_cpu_node in some cases. This allows us to remove the
-dependency on device_type property for cpu nodes though removing that
-from DTS files will have to wait for some time. In some cases, this makes
-the DT search more strict by only looking in /cpus child nodes rather
-than any node with the device_type == cpu. The iterator also honors the
-status property which is often forgotten.
+Use the for_each_of_cpu_node iterator to iterate over cpu nodes. This
+has the side effect of defaulting to iterating using "cpu" node names in
+preference to the deprecated (for FDT) device_type == "cpu".
 
-I've only tested on ARM under QEMU and compiled powerpc.
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Rob Herring <robh@kernel.org>
+---
+Please ack and I will take via the DT tree. This is dependent on the
+first 2 patches.
 
-Rob
-
-Rob Herring (21):
-  of: Add cpu node iterator for_each_of_cpu_node()
-  of: Support matching cpu nodes with no 'reg' property
-  ARM: use for_each_of_cpu_node iterator
-  ARM: topology: remove unneeded check for /cpus node
-  ARM: shmobile: use for_each_of_cpu_node iterator
-  arm64: use for_each_of_cpu_node iterator
-  c6x: use for_each_of_cpu_node iterator
-  microblaze: get cpu node with of_get_cpu_node
-  nios2: get cpu node with of_get_cpu_node
-  openrisc: use for_each_of_cpu_node iterator
-  powerpc: use for_each_of_cpu_node iterator
-  powerpc: 4xx: get cpu node with of_get_cpu_node
-  powerpc: 8xx: get cpu node with of_get_cpu_node
-  riscv: use for_each_of_cpu_node iterator
-  SH: use for_each_of_cpu_node iterator
-  x86: DT: use for_each_of_cpu_node iterator
-  clk: mvebu: use for_each_of_cpu_node iterator
-  edac: cpc925: use for_each_of_cpu_node iterator
-  iommu: fsl_pamu: use for_each_of_cpu_node iterator
-  of: use for_each_of_cpu_node iterator
-  fbdev: fsl-diu: get cpu node with of_get_cpu_node
-
- arch/arm/kernel/devtree.c                 |  5 +--
- arch/arm/kernel/topology.c                |  6 ---
- arch/arm/mach-shmobile/pm-rcar-gen2.c     |  8 +---
- arch/arm/mach-shmobile/pm-rmobile.c       |  2 +-
- arch/arm/mach-shmobile/timer.c            | 10 +----
- arch/arm64/kernel/smp.c                   |  2 +-
- arch/c6x/kernel/setup.c                   | 11 ++---
- arch/microblaze/kernel/cpu/cpuinfo.c      |  4 +-
- arch/nios2/kernel/cpuinfo.c               |  4 +-
- arch/openrisc/kernel/setup.c              |  3 +-
- arch/powerpc/platforms/4xx/soc.c          |  2 +-
- arch/powerpc/platforms/8xx/m8xx_setup.c   |  5 ++-
  arch/powerpc/platforms/powermac/feature.c | 51 ++++++++---------------
  arch/powerpc/platforms/powermac/setup.c   | 15 +++----
- arch/riscv/kernel/smpboot.c               |  2 +-
- arch/sh/boards/of-generic.c               |  2 +-
- arch/x86/kernel/devicetree.c              |  2 +-
- drivers/clk/mvebu/clk-cpu.c               |  4 +-
- drivers/edac/cpc925_edac.c                | 20 +--------
- drivers/iommu/fsl_pamu.c                  |  2 +-
- drivers/of/base.c                         | 43 ++++++++++++++++++-
- drivers/of/of_numa.c                      | 15 +------
- drivers/video/fbdev/fsl-diu-fb.c          |  2 +-
- include/linux/of.h                        | 11 +++++
- 24 files changed, 111 insertions(+), 120 deletions(-)
+ 2 files changed, 26 insertions(+), 40 deletions(-)
 
+diff --git a/arch/powerpc/platforms/powermac/feature.c b/arch/powerpc/platforms/powermac/feature.c
+index 4eb8cb38fc69..ed2f54b3f173 100644
+--- a/arch/powerpc/platforms/powermac/feature.c
++++ b/arch/powerpc/platforms/powermac/feature.c
+@@ -1049,7 +1049,6 @@ core99_reset_cpu(struct device_node *node, long param, long value)
+ 	unsigned long flags;
+ 	struct macio_chip *macio;
+ 	struct device_node *np;
+-	struct device_node *cpus;
+ 	const int dflt_reset_lines[] = {	KL_GPIO_RESET_CPU0,
+ 						KL_GPIO_RESET_CPU1,
+ 						KL_GPIO_RESET_CPU2,
+@@ -1059,10 +1058,7 @@ core99_reset_cpu(struct device_node *node, long param, long value)
+ 	if (macio->type != macio_keylargo)
+ 		return -ENODEV;
+
+-	cpus = of_find_node_by_path("/cpus");
+-	if (cpus == NULL)
+-		return -ENODEV;
+-	for (np = cpus->child; np != NULL; np = np->sibling) {
++	for_each_of_cpu_node(np) {
+ 		const u32 *num = of_get_property(np, "reg", NULL);
+ 		const u32 *rst = of_get_property(np, "soft-reset", NULL);
+ 		if (num == NULL || rst == NULL)
+@@ -1072,7 +1068,6 @@ core99_reset_cpu(struct device_node *node, long param, long value)
+ 			break;
+ 		}
+ 	}
+-	of_node_put(cpus);
+ 	if (np == NULL || reset_io == 0)
+ 		reset_io = dflt_reset_lines[param];
+
+@@ -1504,16 +1499,12 @@ static long g5_reset_cpu(struct device_node *node, long param, long value)
+ 	unsigned long flags;
+ 	struct macio_chip *macio;
+ 	struct device_node *np;
+-	struct device_node *cpus;
+
+ 	macio = &macio_chips[0];
+ 	if (macio->type != macio_keylargo2 && macio->type != macio_shasta)
+ 		return -ENODEV;
+
+-	cpus = of_find_node_by_path("/cpus");
+-	if (cpus == NULL)
+-		return -ENODEV;
+-	for (np = cpus->child; np != NULL; np = np->sibling) {
++	for_each_of_cpu_node(np) {
+ 		const u32 *num = of_get_property(np, "reg", NULL);
+ 		const u32 *rst = of_get_property(np, "soft-reset", NULL);
+ 		if (num == NULL || rst == NULL)
+@@ -1523,7 +1514,6 @@ static long g5_reset_cpu(struct device_node *node, long param, long value)
+ 			break;
+ 		}
+ 	}
+-	of_node_put(cpus);
+ 	if (np == NULL || reset_io == 0)
+ 		return -ENODEV;
+
+@@ -2515,31 +2505,26 @@ static int __init probe_motherboard(void)
+ 	 * supposed to be set when not supported, but I'm not very confident
+ 	 * that all Apple OF revs did it properly, I do it the paranoid way.
+ 	 */
+-	while (uninorth_base && uninorth_rev > 3) {
+-		struct device_node *cpus = of_find_node_by_path("/cpus");
++	if (uninorth_base && uninorth_rev > 3) {
+ 		struct device_node *np;
+
+-		if (!cpus || !cpus->child) {
+-			printk(KERN_WARNING "Can't find CPU(s) in device tree !\n");
+-			of_node_put(cpus);
+-			break;
+-		}
+-		np = cpus->child;
+-		/* Nap mode not supported on SMP */
+-		if (np->sibling) {
+-			of_node_put(cpus);
+-			break;
+-		}
+-		/* Nap mode not supported if flush-on-lock property is present */
+-		if (of_get_property(np, "flush-on-lock", NULL)) {
+-			of_node_put(cpus);
+-			break;
++		for_each_of_cpu_node(np) {
++			int cpu_count = 1;
++
++			/* Nap mode not supported on SMP */
++			if (of_get_property(np, "flush-on-lock", NULL) ||
++			    (cpu_count > 1)) {
++				powersave_nap = 0;
++				of_node_put(np);
++				break;
++			}
++
++			cpu_count++;
++			powersave_nap = 1;
+ 		}
+-		of_node_put(cpus);
+-		powersave_nap = 1;
+-		printk(KERN_DEBUG "Processor NAP mode on idle enabled.\n");
+-		break;
+ 	}
++	if (powersave_nap)
++		printk(KERN_DEBUG "Processor NAP mode on idle enabled.\n");
+
+ 	/* On CPUs that support it (750FX), lowspeed by default during
+ 	 * NAP mode
+diff --git a/arch/powerpc/platforms/powermac/setup.c b/arch/powerpc/platforms/powermac/setup.c
+index 3a529fcdae97..2f00e3daafb0 100644
+--- a/arch/powerpc/platforms/powermac/setup.c
++++ b/arch/powerpc/platforms/powermac/setup.c
+@@ -243,10 +243,9 @@ static void __init l2cr_init(void)
+ {
+ 	/* Checks "l2cr-value" property in the registry */
+ 	if (cpu_has_feature(CPU_FTR_L2CR)) {
+-		struct device_node *np = of_find_node_by_name(NULL, "cpus");
+-		if (!np)
+-			np = of_find_node_by_type(NULL, "cpu");
+-		if (np) {
++		struct device_node *np;
++
++		for_each_of_cpu_node(np) {
+ 			const unsigned int *l2cr =
+ 				of_get_property(np, "l2cr-value", NULL);
+ 			if (l2cr) {
+@@ -256,6 +255,7 @@ static void __init l2cr_init(void)
+ 				_set_L2CR(ppc_override_l2cr_value);
+ 			}
+ 			of_node_put(np);
++			break;
+ 		}
+ 	}
+
+@@ -279,8 +279,8 @@ static void __init pmac_setup_arch(void)
+ 	/* Set loops_per_jiffy to a half-way reasonable value,
+ 	   for use until calibrate_delay gets called. */
+ 	loops_per_jiffy = 50000000 / HZ;
+-	cpu = of_find_node_by_type(NULL, "cpu");
+-	if (cpu != NULL) {
++
++	for_each_of_cpu_node(cpu) {
+ 		fp = of_get_property(cpu, "clock-frequency", NULL);
+ 		if (fp != NULL) {
+ 			if (pvr >= 0x30 && pvr < 0x80)
+@@ -292,8 +292,9 @@ static void __init pmac_setup_arch(void)
+ 			else
+ 				/* 601, 603, etc. */
+ 				loops_per_jiffy = *fp / (2 * HZ);
++			of_node_put(cpu);
++			break;
+ 		}
+-		of_node_put(cpu);
+ 	}
+
+ 	/* See if newworld or oldworld */
 --
 2.17.1
