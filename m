@@ -1,24 +1,32 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+Return-Path: <s.miroshnichenko@yadro.com>
+Received: from mta-01.yadro.com (mta-01.yadro.com [89.207.88.251])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4255lx4WHszF38R
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 00:33:17 +1000 (AEST)
-Subject: Re: [RFC PATCH v1 00/17] ban the use of _PAGE_XXX flags outside
- platform specific code
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- npiggin@gmail.com, aneesh.kumar@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-References: <cover.1535913369.git.christophe.leroy@c-s.fr>
- <95ee30b8-70b5-0f74-b677-417d3b0ca19e@linux.ibm.com>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <d6216a55-307e-ce80-ea37-ca9b5de694a7@c-s.fr>
-Date: Wed, 5 Sep 2018 14:32:26 +0000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4257FP1bbvzF38Y
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 01:40:22 +1000 (AEST)
+Received: from localhost (unknown [127.0.0.1])
+ by mta-01.yadro.com (Postfix) with ESMTP id 4ADF9418FF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2018 15:40:19 +0000 (UTC)
+Received: from mta-01.yadro.com ([127.0.0.1])
+ by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id IQNtp09Gsl3T for <linuxppc-dev@lists.ozlabs.org>;
+ Wed,  5 Sep 2018 18:40:18 +0300 (MSK)
+Received: from T-EXCH-02.corp.yadro.com (t-exch-02.corp.yadro.com
+ [172.17.10.102])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mta-01.yadro.com (Postfix) with ESMTPS id 18A9C418BF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2018 18:40:18 +0300 (MSK)
+From: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+CC: <linux@yadro.com>, Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
+Subject: [PATCH 1/5] powerpc/pci: Access PCI config space directly w/o pci_dn
+Date: Wed, 5 Sep 2018 18:40:04 +0300
+Message-ID: <20180905154008.11130-2-s.miroshnichenko@yadro.com>
+In-Reply-To: <20180905154008.11130-1-s.miroshnichenko@yadro.com>
+References: <20180905154008.11130-1-s.miroshnichenko@yadro.com>
 MIME-Version: 1.0
-In-Reply-To: <95ee30b8-70b5-0f74-b677-417d3b0ca19e@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,69 +36,287 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The pci_dn structures are retrieved from a DT, but hot-plugged PCIe
+devices don't have them. Don't stop PCIe I/O in absence of pci_dn, so
+it is now possible to discover new devices.
 
+Signed-off-by: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
+---
+ arch/powerpc/kernel/rtas_pci.c       | 89 +++++++++++++++++-----------
+ arch/powerpc/platforms/powernv/pci.c | 54 ++++++++++-------
+ 2 files changed, 88 insertions(+), 55 deletions(-)
 
-On 09/05/2018 02:03 PM, Aneesh Kumar K.V wrote:
-> On 09/05/2018 06:06 PM, Christophe Leroy wrote:
->> Today flags like for instance _PAGE_RW or _PAGE_USER are used through
->> common parts of code.
->> Using those directly in common parts of code have proven to lead to
->> mistakes or misbehaviour, because their use is not always as trivial
->> as one could think.
->>
->> For instance, (flags & _PAGE_USER) == 0 isn't enough to tell
->> that a page is a kernel page, because some targets are using
->> _PAGE_PRIVILEDGED and not _PAGE_USER, so the test has to be
->> (flags & (_PAGE_USER | _PAGE_PRIVILEDGED)) == _PAGE_PRIVILEDGED
->> This has to (bad) consequences:
->>
->>   - All targets must define every bit, even the unsupported ones,
->>     leading to a lot of useless #define _PAGE_XXX 0
->>   - If someone forgets to take into account all possible _PAGE_XXX bits
->>     for the case, we can get unexpected behaviour on some targets.
->>
->> This becomes even more complex when we come to using _PAGE_RW.
->> Testing (flags & _PAGE_RW) is not enough to test whether a page
->> if writable or not, because:
->>
->>   - Some targets have _PAGE_RO instead, which has to be unset to tell
->>     a page is writable
->>   - Some targets have _PAGE_R and _PAGE_W, in which case
->>     _PAGE_RW = _PAGE_R | _PAGE_W
->>   - Even knowing whether a page is readable is not always trivial 
->> because:
->>     - Some targets requires to check that _PAGE_R is set to ensure page
->>     is readable
->>     - Some targets requires to check that _PAGE_NA is not set
->>     - Some targets requires to check that _PAGE_RO or _PAGE_RW is set
->>
->> Etc ....
->>
->> In order to work around all those issues and minimise the risks of 
->> errors,
->> this serie aims at removing all use of _PAGE_XXX flags from powerpc code
->> and always use pte_xxx() and pte_mkxxx() accessors instead. Those 
->> accessors
->> are then defined in target specific parts of the kernel code.
-> 
-> We recently did on book3s 64.
-> 
-> static inline int pte_present(pte_t pte)
-> {
->      /*
->       * A pte is considerent present if _PAGE_PRESENT is set.
->       * We also need to consider the pte present which is marked
->       * invalid during ptep_set_access_flags. Hence we look for 
-> _PAGE_INVALID
->       * if we find _PAGE_PRESENT cleared.
->       */
->      return !!(pte_raw(pte) & cpu_to_be64(_PAGE_PRESENT | _PAGE_INVALID));
-> }
-> 
-> So I guess with that pte_present conversion we need to be careful.
-> 
-> Do you have a git tree which I can use to double check?
-
-I pushed on branch 'helpers' on https://github.com/chleroy/linux.git
-
-Christophe
+diff --git a/arch/powerpc/kernel/rtas_pci.c b/arch/powerpc/kernel/rtas_pci.c
+index c2b148b1634a..0da2c3732acd 100644
+--- a/arch/powerpc/kernel/rtas_pci.c
++++ b/arch/powerpc/kernel/rtas_pci.c
+@@ -55,10 +55,25 @@ static inline int config_access_valid(struct pci_dn *dn, int where)
+ 	return 0;
+ }
+ 
+-int rtas_read_config(struct pci_dn *pdn, int where, int size, u32 *val)
++static int rtas_read_raw_config(unsigned long buid, int busno, unsigned int devfn, int where, int size, u32 *val)
+ {
+ 	int returnval = -1;
+-	unsigned long buid, addr;
++	unsigned long addr = rtas_config_addr(busno, devfn, where);
++	int ret;
++
++	if (buid) {
++		ret = rtas_call(ibm_read_pci_config, 4, 2, &returnval,
++				addr, BUID_HI(buid), BUID_LO(buid), size);
++	} else {
++		ret = rtas_call(read_pci_config, 2, 2, &returnval, addr, size);
++	}
++	*val = returnval;
++
++	return ret;
++}
++
++int rtas_read_config(struct pci_dn *pdn, int where, int size, u32 *val)
++{
+ 	int ret;
+ 
+ 	if (!pdn)
+@@ -71,16 +86,7 @@ int rtas_read_config(struct pci_dn *pdn, int where, int size, u32 *val)
+ 		return PCIBIOS_SET_FAILED;
+ #endif
+ 
+-	addr = rtas_config_addr(pdn->busno, pdn->devfn, where);
+-	buid = pdn->phb->buid;
+-	if (buid) {
+-		ret = rtas_call(ibm_read_pci_config, 4, 2, &returnval,
+-				addr, BUID_HI(buid), BUID_LO(buid), size);
+-	} else {
+-		ret = rtas_call(read_pci_config, 2, 2, &returnval, addr, size);
+-	}
+-	*val = returnval;
+-
++	ret = rtas_read_raw_config(pdn->phb->buid, pdn->busno, pdn->devfn, where, size, val);
+ 	if (ret)
+ 		return PCIBIOS_DEVICE_NOT_FOUND;
+ 
+@@ -91,25 +97,43 @@ static int rtas_pci_read_config(struct pci_bus *bus,
+ 				unsigned int devfn,
+ 				int where, int size, u32 *val)
+ {
+-	struct pci_dn *pdn;
+-	int ret;
++	struct pci_dn *pdn = pci_get_pdn_by_devfn(bus, devfn);
+ 
+ 	*val = 0xFFFFFFFF;
+ 
+-	pdn = pci_get_pdn_by_devfn(bus, devfn);
++	if (pdn && eeh_enabled()) {
++		/* Validity of pdn is checked in here */
++		int ret = rtas_read_config(pdn, where, size, val);
++		if (*val == EEH_IO_ERROR_VALUE(size) &&
++		    eeh_dev_check_failure(pdn_to_eeh_dev(pdn)))
++			return PCIBIOS_DEVICE_NOT_FOUND;
++		return ret;
++	} else {
++		struct pci_controller *phb = pci_bus_to_host(bus);
++		return rtas_read_raw_config(phb->buid, bus->number, devfn, where, size, val);
++	}
++}
+ 
+-	/* Validity of pdn is checked in here */
+-	ret = rtas_read_config(pdn, where, size, val);
+-	if (*val == EEH_IO_ERROR_VALUE(size) &&
+-	    eeh_dev_check_failure(pdn_to_eeh_dev(pdn)))
++static int rtas_write_raw_config(unsigned long buid, int busno, unsigned int devfn, int where, int size, u32 val)
++{
++	unsigned long addr = rtas_config_addr(busno, devfn, where);
++	int ret;
++
++	if (buid) {
++		ret = rtas_call(ibm_write_pci_config, 5, 1, NULL, addr,
++			BUID_HI(buid), BUID_LO(buid), size, (ulong) val);
++	} else {
++		ret = rtas_call(write_pci_config, 3, 1, NULL, addr, size, (ulong)val);
++	}
++
++	if (ret)
+ 		return PCIBIOS_DEVICE_NOT_FOUND;
+ 
+-	return ret;
++	return PCIBIOS_SUCCESSFUL;
+ }
+ 
+ int rtas_write_config(struct pci_dn *pdn, int where, int size, u32 val)
+ {
+-	unsigned long buid, addr;
+ 	int ret;
+ 
+ 	if (!pdn)
+@@ -122,15 +146,7 @@ int rtas_write_config(struct pci_dn *pdn, int where, int size, u32 val)
+ 		return PCIBIOS_SET_FAILED;
+ #endif
+ 
+-	addr = rtas_config_addr(pdn->busno, pdn->devfn, where);
+-	buid = pdn->phb->buid;
+-	if (buid) {
+-		ret = rtas_call(ibm_write_pci_config, 5, 1, NULL, addr,
+-			BUID_HI(buid), BUID_LO(buid), size, (ulong) val);
+-	} else {
+-		ret = rtas_call(write_pci_config, 3, 1, NULL, addr, size, (ulong)val);
+-	}
+-
++	ret = rtas_write_raw_config(pdn->phb->buid, pdn->busno, pdn->devfn, where, size, val);
+ 	if (ret)
+ 		return PCIBIOS_DEVICE_NOT_FOUND;
+ 
+@@ -141,12 +157,15 @@ static int rtas_pci_write_config(struct pci_bus *bus,
+ 				 unsigned int devfn,
+ 				 int where, int size, u32 val)
+ {
+-	struct pci_dn *pdn;
++	struct pci_dn *pdn = pci_get_pdn_by_devfn(bus, devfn);
+ 
+-	pdn = pci_get_pdn_by_devfn(bus, devfn);
+-
+-	/* Validity of pdn is checked in here. */
+-	return rtas_write_config(pdn, where, size, val);
++	if (pdn && eeh_enabled()) {
++		/* Validity of pdn is checked in here. */
++		return rtas_write_config(pdn, where, size, val);
++	} else {
++		struct pci_controller *phb = pci_bus_to_host(bus);
++		return rtas_write_raw_config(phb->buid, bus->number, devfn, where, size, val);
++	}
+ }
+ 
+ static struct pci_ops rtas_pci_ops = {
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index 13aef2323bbc..6d4280086a08 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -654,30 +654,28 @@ static void pnv_pci_config_check_eeh(struct pci_dn *pdn)
+ 	}
+ }
+ 
+-int pnv_pci_cfg_read(struct pci_dn *pdn,
+-		     int where, int size, u32 *val)
++int pnv_pci_cfg_read_raw(uint64_t phb_id, int busno, unsigned int devfn, int where, int size, u32 *val)
+ {
+-	struct pnv_phb *phb = pdn->phb->private_data;
+-	u32 bdfn = (pdn->busno << 8) | pdn->devfn;
++	u32 bdfn = (busno << 8) | devfn;
+ 	s64 rc;
+ 
+ 	switch (size) {
+ 	case 1: {
+ 		u8 v8;
+-		rc = opal_pci_config_read_byte(phb->opal_id, bdfn, where, &v8);
++		rc = opal_pci_config_read_byte(phb_id, bdfn, where, &v8);
+ 		*val = (rc == OPAL_SUCCESS) ? v8 : 0xff;
+ 		break;
+ 	}
+ 	case 2: {
+ 		__be16 v16;
+-		rc = opal_pci_config_read_half_word(phb->opal_id, bdfn, where,
++		rc = opal_pci_config_read_half_word(phb_id, bdfn, where,
+ 						   &v16);
+ 		*val = (rc == OPAL_SUCCESS) ? be16_to_cpu(v16) : 0xffff;
+ 		break;
+ 	}
+ 	case 4: {
+ 		__be32 v32;
+-		rc = opal_pci_config_read_word(phb->opal_id, bdfn, where, &v32);
++		rc = opal_pci_config_read_word(phb_id, bdfn, where, &v32);
+ 		*val = (rc == OPAL_SUCCESS) ? be32_to_cpu(v32) : 0xffffffff;
+ 		break;
+ 	}
+@@ -686,27 +684,27 @@ int pnv_pci_cfg_read(struct pci_dn *pdn,
+ 	}
+ 
+ 	pr_devel("%s: bus: %x devfn: %x +%x/%x -> %08x\n",
+-		 __func__, pdn->busno, pdn->devfn, where, size, *val);
++		 __func__, busno, devfn, where, size, *val);
++
+ 	return PCIBIOS_SUCCESSFUL;
+ }
+ 
+-int pnv_pci_cfg_write(struct pci_dn *pdn,
+-		      int where, int size, u32 val)
++int pnv_pci_cfg_write_raw(uint64_t phb_id, int busno, unsigned int devfn, int where, int size, u32 val)
+ {
+-	struct pnv_phb *phb = pdn->phb->private_data;
+-	u32 bdfn = (pdn->busno << 8) | pdn->devfn;
++	u32 bdfn = (busno << 8) | devfn;
+ 
+ 	pr_devel("%s: bus: %x devfn: %x +%x/%x -> %08x\n",
+-		 __func__, pdn->busno, pdn->devfn, where, size, val);
++		 __func__, busno, devfn, where, size, val);
++
+ 	switch (size) {
+ 	case 1:
+-		opal_pci_config_write_byte(phb->opal_id, bdfn, where, val);
++		opal_pci_config_write_byte(phb_id, bdfn, where, val);
+ 		break;
+ 	case 2:
+-		opal_pci_config_write_half_word(phb->opal_id, bdfn, where, val);
++		opal_pci_config_write_half_word(phb_id, bdfn, where, val);
+ 		break;
+ 	case 4:
+-		opal_pci_config_write_word(phb->opal_id, bdfn, where, val);
++		opal_pci_config_write_word(phb_id, bdfn, where, val);
+ 		break;
+ 	default:
+ 		return PCIBIOS_FUNC_NOT_SUPPORTED;
+@@ -715,6 +713,20 @@ int pnv_pci_cfg_write(struct pci_dn *pdn,
+ 	return PCIBIOS_SUCCESSFUL;
+ }
+ 
++int pnv_pci_cfg_read(struct pci_dn *pdn,
++		     int where, int size, u32 *val)
++{
++	struct pnv_phb *phb = pdn->phb->private_data;
++	return pnv_pci_cfg_read_raw(phb->opal_id, pdn->busno, pdn->devfn, where, size, val);
++}
++
++int pnv_pci_cfg_write(struct pci_dn *pdn,
++		      int where, int size, u32 val)
++{
++	struct pnv_phb *phb = pdn->phb->private_data;
++	return pnv_pci_cfg_write_raw(phb->opal_id, pdn->busno, pdn->devfn, where, size, val);
++}
++
+ #if CONFIG_EEH
+ static bool pnv_pci_cfg_check(struct pci_dn *pdn)
+ {
+@@ -750,13 +762,14 @@ static int pnv_pci_read_config(struct pci_bus *bus,
+ 			       int where, int size, u32 *val)
+ {
+ 	struct pci_dn *pdn;
+-	struct pnv_phb *phb;
++	struct pci_controller *hose = pci_bus_to_host(bus);
++	struct pnv_phb *phb = hose->private_data;
+ 	int ret;
+ 
+ 	*val = 0xFFFFFFFF;
+ 	pdn = pci_get_pdn_by_devfn(bus, devfn);
+ 	if (!pdn)
+-		return PCIBIOS_DEVICE_NOT_FOUND;
++		return pnv_pci_cfg_read_raw(phb->opal_id, bus->number, devfn, where, size, val);
+ 
+ 	if (!pnv_pci_cfg_check(pdn))
+ 		return PCIBIOS_DEVICE_NOT_FOUND;
+@@ -779,12 +792,13 @@ static int pnv_pci_write_config(struct pci_bus *bus,
+ 				int where, int size, u32 val)
+ {
+ 	struct pci_dn *pdn;
+-	struct pnv_phb *phb;
++	struct pci_controller *hose = pci_bus_to_host(bus);
++	struct pnv_phb *phb = hose->private_data;
+ 	int ret;
+ 
+ 	pdn = pci_get_pdn_by_devfn(bus, devfn);
+ 	if (!pdn)
+-		return PCIBIOS_DEVICE_NOT_FOUND;
++		return pnv_pci_cfg_write_raw(phb->opal_id, bus->number, devfn, where, size, val);
+ 
+ 	if (!pnv_pci_cfg_check(pdn))
+ 		return PCIBIOS_DEVICE_NOT_FOUND;
+-- 
+2.17.1
