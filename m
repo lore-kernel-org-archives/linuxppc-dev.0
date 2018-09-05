@@ -1,54 +1,23 @@
-Return-Path: <climbbb.kim@gmail.com>
-Received: from mail-pg1-f194.google.com (mail-pg1-f194.google.com
- [209.85.215.194])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dongsheng.wang@hxt-semitech.com>
+Received: from barracuda.hxt-semitech.com (mx01.hxt-semitech.com
+ [223.203.96.7])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 424pB51mDbzF37Y
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2018 12:51:25 +1000 (AEST)
-Received: by mail-pg1-f194.google.com with SMTP id 7-v6so2646565pgf.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Sep 2018 19:51:24 -0700 (PDT)
-From: Jaejoong Kim <climbbb.kim@gmail.com>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Jiri Slaby <jslaby@suse.com>
-Cc: Jeff Dike <jdike@addtoit.com>, Richard Weinberger <richard@nod.at>,
- Karsten Keil <isdn@linux-pingi.de>, Arnd Bergmann <arnd@arndb.de>,
- Ulf Hansson <ulf.hansson@linaro.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, David Lin <dtwlin@gmail.com>,
- Johan Hovold <johan@kernel.org>, Alex Elder <elder@kernel.org>,
- "David S. Miller" <davem@davemloft.net>, Oliver Neukum <oneukum@suse.com>,
- Mathias Nyman <mathias.nyman@intel.com>,
- Marcel Holtmann <marcel@holtmann.org>,
- Johan Hedberg <johan.hedberg@gmail.com>,
- Anton Ivanov <anton.ivanov@cambridgegreys.com>,
- Kees Cook <keescook@chromium.org>, Randy Dunlap <rdunlap@infradead.org>,
- Al Viro <viro@zeniv.linux.org.uk>, Guenter Roeck <linux@roeck-us.net>,
- Thomas Gleixner <tglx@linutronix.de>,
- Philippe Ombredanne <pombredanne@nexb.com>,
- Quytelda Kahja <quytelda@tamalin.org>,
- Yisheng Xie <xieyisheng1@huawei.com>, Nicholas Piggin <npiggin@gmail.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Nicolas Pitre <nicolas.pitre@linaro.org>,
- Adam Borowski <kilobyte@angband.pl>,
- Alexander Potapenko <glider@google.com>, Thomas Meyer <thomas@m3y3r.de>,
- Joe Perches <joe@perches.com>, Meng Xu <mengxu.gatech@gmail.com>,
- linux-um@lists.infradead.org (open list:USER-MODE LINUX (UML)),
- linux-kernel@vger.kernel.org (open list),
- netdev@vger.kernel.org (open list:ISDN SUBSYSTEM),
- linux-mmc@vger.kernel.org (open list:MULTIMEDIA CARD (MMC),
- SECURE DIGITAL (SD) AND...), linux-s390@vger.kernel.org (open list:S390),
- devel@driverdev.osuosl.org (open list:STAGING SUBSYSTEM),
- greybus-dev@lists.linaro.org (moderated list:GREYBUS SUBSYSTEM),
- linuxppc-dev@lists.ozlabs.org (open list:HYPERVISOR VIRTUAL CONSOLE DRIVER),
- linux-serial@vger.kernel.org (open list:SERIAL DRIVERS),
- sparclinux@vger.kernel.org (open list:SPARC SERIAL DRIVERS),
- linux-usb@vger.kernel.org (open list:USB ACM DRIVER),
- linux-bluetooth@vger.kernel.org (open list:BLUETOOTH SUBSYSTEM)
-Subject: [PATCH v2] tty: Change tty_{port|standard}_install() return type to
- void
-Date: Wed,  5 Sep 2018 11:50:31 +0900
-Message-Id: <1536115855-25744-1-git-send-email-climbbb.kim@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 424pV02GJszF1nv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2018 13:05:12 +1000 (AEST)
+From: "Wang, Dongsheng" <dongsheng.wang@hxt-semitech.com>
+To: Ran Wang <ran.wang_1@nxp.com>, Leo Li <leoyang.li@nxp.com>, Rob Herring
+ <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
+CC: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Subject: Re: [PATCH 1/3] soc: fsl: add Platform PM driver QorIQ platforms
+Date: Wed, 5 Sep 2018 03:04:46 +0000
+Message-ID: <366f03eab44e489b9fef82fb8e8f3c3b@HXTBJIDCEMVIW02.hxtcorp.net>
+References: <20180831035219.31619-1-ran.wang_1@nxp.com>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -58,679 +27,254 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Many drivers with tty use the tty_stand_install(). But, there is no
-need to handle the error, since it always returns 0. So, change the
-return type of tty_standard_install() and tty_port_install() to void
-type and remove unnecessary exception handling where we use these
-functions.
-
-Signed-off-by: Jaejoong Kim <climbbb.kim@gmail.com>
----
-Changes in v2:
-- Update commit title
-- Squash other patches into one
-  https://lkml.org/lkml/2018/9/4/70
-
- arch/um/drivers/line.c              |  7 +------
- drivers/isdn/capi/capi.c            | 10 ++++------
- drivers/isdn/i4l/isdn_tty.c         |  3 ++-
- drivers/misc/pti.c                  | 28 +++++++++++++---------------
- drivers/mmc/core/sdio_uart.c        | 11 ++++-------
- drivers/s390/char/con3215.c         |  3 ++-
- drivers/s390/char/tty3270.c         |  7 +------
- drivers/staging/fwserial/fwserial.c | 22 ++++++++--------------
- drivers/staging/gdm724x/gdm_tty.c   | 11 +++--------
- drivers/staging/greybus/uart.c      | 10 ++--------
- drivers/tty/hvc/hvc_console.c       |  7 ++-----
- drivers/tty/hvc/hvcs.c              | 10 ++--------
- drivers/tty/mips_ejtag_fdc.c        |  4 +++-
- drivers/tty/n_gsm.c                 |  9 +--------
- drivers/tty/nozomi.c                |  8 +++-----
- drivers/tty/serial/kgdb_nmi.c       | 11 +----------
- drivers/tty/synclink.c              |  3 ++-
- drivers/tty/synclinkmp.c            |  3 ++-
- drivers/tty/tty_io.c                | 10 ++++++----
- drivers/tty/tty_port.c              |  4 ++--
- drivers/tty/vcc.c                   |  5 +----
- drivers/tty/vt/vt.c                 |  5 +----
- drivers/usb/class/cdc-acm.c         | 10 +---------
- drivers/usb/host/xhci-dbgtty.c      |  3 ++-
- drivers/usb/serial/usb-serial.c     |  6 +-----
- include/linux/tty.h                 |  4 ++--
- net/bluetooth/rfcomm/tty.c          |  7 +------
- 27 files changed, 73 insertions(+), 148 deletions(-)
-
-diff --git a/arch/um/drivers/line.c b/arch/um/drivers/line.c
-index 8d80b27..47058cf 100644
---- a/arch/um/drivers/line.c
-+++ b/arch/um/drivers/line.c
-@@ -338,12 +338,7 @@ int line_open(struct tty_struct *tty, struct file *filp)
- int line_install(struct tty_driver *driver, struct tty_struct *tty,
- 		 struct line *line)
- {
--	int ret;
--
--	ret = tty_standard_install(driver, tty);
--	if (ret)
--		return ret;
--
-+	tty_standard_install(driver, tty);
- 	tty->driver_data = line;
- 
- 	return 0;
-diff --git a/drivers/isdn/capi/capi.c b/drivers/isdn/capi/capi.c
-index ef5560b..08daf3a 100644
---- a/drivers/isdn/capi/capi.c
-+++ b/drivers/isdn/capi/capi.c
-@@ -999,13 +999,11 @@ static int
- capinc_tty_install(struct tty_driver *driver, struct tty_struct *tty)
- {
- 	struct capiminor *mp = capiminor_get(tty->index);
--	int ret = tty_standard_install(driver, tty);
- 
--	if (ret == 0)
--		tty->driver_data = mp;
--	else
--		capiminor_put(mp);
--	return ret;
-+	tty_standard_install(driver, tty);
-+	tty->driver_data = mp;
-+
-+	return 0;
- }
- 
- static void capinc_tty_cleanup(struct tty_struct *tty)
-diff --git a/drivers/isdn/i4l/isdn_tty.c b/drivers/isdn/i4l/isdn_tty.c
-index b730037..3d6b24e 100644
---- a/drivers/isdn/i4l/isdn_tty.c
-+++ b/drivers/isdn/i4l/isdn_tty.c
-@@ -1481,8 +1481,9 @@ static int isdn_tty_install(struct tty_driver *driver, struct tty_struct *tty)
- 		return -ENODEV;
- 
- 	tty->driver_data = info;
-+	tty_port_install(&info->port, driver, tty);
- 
--	return tty_port_install(&info->port, driver, tty);
-+	return 0;
- }
- 
- /*
-diff --git a/drivers/misc/pti.c b/drivers/misc/pti.c
-index 41f2a9f..5c885a1 100644
---- a/drivers/misc/pti.c
-+++ b/drivers/misc/pti.c
-@@ -462,26 +462,24 @@ static int pti_tty_install(struct tty_driver *driver, struct tty_struct *tty)
- {
- 	int idx = tty->index;
- 	struct pti_tty *pti_tty_data;
--	int ret = tty_standard_install(driver, tty);
- 
--	if (ret == 0) {
--		pti_tty_data = kmalloc(sizeof(struct pti_tty), GFP_KERNEL);
--		if (pti_tty_data == NULL)
--			return -ENOMEM;
-+	tty_standard_install(driver, tty);
-+	pti_tty_data = kmalloc(sizeof(struct pti_tty), GFP_KERNEL);
-+	if (pti_tty_data == NULL)
-+		return -ENOMEM;
- 
--		if (idx == PTITTY_MINOR_START)
--			pti_tty_data->mc = pti_request_masterchannel(0, NULL);
--		else
--			pti_tty_data->mc = pti_request_masterchannel(2, NULL);
-+	if (idx == PTITTY_MINOR_START)
-+		pti_tty_data->mc = pti_request_masterchannel(0, NULL);
-+	else
-+		pti_tty_data->mc = pti_request_masterchannel(2, NULL);
- 
--		if (pti_tty_data->mc == NULL) {
--			kfree(pti_tty_data);
--			return -ENXIO;
--		}
--		tty->driver_data = pti_tty_data;
-+	if (pti_tty_data->mc == NULL) {
-+		kfree(pti_tty_data);
-+		return -ENXIO;
- 	}
-+	tty->driver_data = pti_tty_data;
- 
--	return ret;
-+	return 0;
- }
- 
- /**
-diff --git a/drivers/mmc/core/sdio_uart.c b/drivers/mmc/core/sdio_uart.c
-index 25e1130..b727186 100644
---- a/drivers/mmc/core/sdio_uart.c
-+++ b/drivers/mmc/core/sdio_uart.c
-@@ -731,14 +731,11 @@ static int sdio_uart_install(struct tty_driver *driver, struct tty_struct *tty)
- {
- 	int idx = tty->index;
- 	struct sdio_uart_port *port = sdio_uart_port_get(idx);
--	int ret = tty_standard_install(driver, tty);
- 
--	if (ret == 0)
--		/* This is the ref sdio_uart_port get provided */
--		tty->driver_data = port;
--	else
--		sdio_uart_port_put(port);
--	return ret;
-+	tty_standard_install(driver, tty);
-+	tty->driver_data = port;
-+
-+	return 0;
- }
- 
- /**
-diff --git a/drivers/s390/char/con3215.c b/drivers/s390/char/con3215.c
-index 8c9d412..6a9f6d9 100644
---- a/drivers/s390/char/con3215.c
-+++ b/drivers/s390/char/con3215.c
-@@ -965,8 +965,9 @@ static int tty3215_install(struct tty_driver *driver, struct tty_struct *tty)
- 		return -ENODEV;
- 
- 	tty->driver_data = raw;
-+	tty_port_install(&raw->port, driver, tty);
- 
--	return tty_port_install(&raw->port, driver, tty);
-+	return 0;
- }
- 
- /*
-diff --git a/drivers/s390/char/tty3270.c b/drivers/s390/char/tty3270.c
-index 5b8af27..2915f95 100644
---- a/drivers/s390/char/tty3270.c
-+++ b/drivers/s390/char/tty3270.c
-@@ -1017,12 +1017,7 @@ static int tty3270_install(struct tty_driver *driver, struct tty_struct *tty)
- 	raw3270_activate_view(&tp->view);
- 
- port_install:
--	rc = tty_port_install(&tp->port, driver, tty);
--	if (rc) {
--		raw3270_put_view(&tp->view);
--		return rc;
--	}
--
-+	tty_port_install(&tp->port, driver, tty);
- 	tty->driver_data = tp;
- 
- 	return 0;
-diff --git a/drivers/staging/fwserial/fwserial.c b/drivers/staging/fwserial/fwserial.c
-index fa0dd42..5134019 100644
---- a/drivers/staging/fwserial/fwserial.c
-+++ b/drivers/staging/fwserial/fwserial.c
-@@ -1064,27 +1064,21 @@ static void fwtty_cleanup(struct tty_struct *tty)
- static int fwtty_install(struct tty_driver *driver, struct tty_struct *tty)
- {
- 	struct fwtty_port *port = fwtty_port_get(tty->index);
--	int err;
- 
--	err = tty_standard_install(driver, tty);
--	if (!err)
--		tty->driver_data = port;
--	else
--		fwtty_port_put(port);
--	return err;
-+	tty_standard_install(driver, tty);
-+	tty->driver_data = port;
-+
-+	return 0;
- }
- 
- static int fwloop_install(struct tty_driver *driver, struct tty_struct *tty)
- {
- 	struct fwtty_port *port = fwtty_port_get(table_idx(tty->index));
--	int err;
- 
--	err = tty_standard_install(driver, tty);
--	if (!err)
--		tty->driver_data = port;
--	else
--		fwtty_port_put(port);
--	return err;
-+	tty_standard_install(driver, tty);
-+	tty->driver_data = port;
-+
-+	return 0;
- }
- 
- static int fwtty_write(struct tty_struct *tty, const unsigned char *buf, int c)
-diff --git a/drivers/staging/gdm724x/gdm_tty.c b/drivers/staging/gdm724x/gdm_tty.c
-index 6e81369..d6348df 100644
---- a/drivers/staging/gdm724x/gdm_tty.c
-+++ b/drivers/staging/gdm724x/gdm_tty.c
-@@ -62,6 +62,7 @@ static int gdm_tty_install(struct tty_driver *driver, struct tty_struct *tty)
- 		return -ENODEV;
- 
- 	mutex_lock(&gdm_table_lock);
-+
- 	gdm = gdm_table[ret][tty->index];
- 	if (!gdm) {
- 		mutex_unlock(&gdm_table_lock);
-@@ -69,15 +70,9 @@ static int gdm_tty_install(struct tty_driver *driver, struct tty_struct *tty)
- 	}
- 
- 	tty_port_get(&gdm->port);
--
--	ret = tty_standard_install(driver, tty);
--	if (ret) {
--		tty_port_put(&gdm->port);
--		mutex_unlock(&gdm_table_lock);
--		return ret;
--	}
--
-+	tty_standard_install(driver, tty);
- 	tty->driver_data = gdm;
-+
- 	mutex_unlock(&gdm_table_lock);
- 
- 	return 0;
-diff --git a/drivers/staging/greybus/uart.c b/drivers/staging/greybus/uart.c
-index 8a00632..182155b 100644
---- a/drivers/staging/greybus/uart.c
-+++ b/drivers/staging/greybus/uart.c
-@@ -393,21 +393,15 @@ static void release_minor(struct gb_tty *gb_tty)
- static int gb_tty_install(struct tty_driver *driver, struct tty_struct *tty)
- {
- 	struct gb_tty *gb_tty;
--	int retval;
- 
- 	gb_tty = get_gb_by_minor(tty->index);
- 	if (!gb_tty)
- 		return -ENODEV;
- 
--	retval = tty_standard_install(driver, tty);
--	if (retval)
--		goto error;
--
-+	tty_standard_install(driver, tty);
- 	tty->driver_data = gb_tty;
-+
- 	return 0;
--error:
--	tty_port_put(&gb_tty->port);
--	return retval;
- }
- 
- static int gb_tty_open(struct tty_struct *tty, struct file *file)
-diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
-index 5414c4a..13fad62 100644
---- a/drivers/tty/hvc/hvc_console.c
-+++ b/drivers/tty/hvc/hvc_console.c
-@@ -329,7 +329,6 @@ static void hvc_unthrottle(struct tty_struct *tty)
- static int hvc_install(struct tty_driver *driver, struct tty_struct *tty)
- {
- 	struct hvc_struct *hp;
--	int rc;
- 
- 	/* Auto increments kref reference if found. */
- 	hp = hvc_get_by_index(tty->index);
-@@ -337,11 +336,9 @@ static int hvc_install(struct tty_driver *driver, struct tty_struct *tty)
- 		return -ENODEV;
- 
- 	tty->driver_data = hp;
-+	tty_port_install(&hp->port, driver, tty);
- 
--	rc = tty_port_install(&hp->port, driver, tty);
--	if (rc)
--		tty_port_put(&hp->port);
--	return rc;
-+	return 0;
- }
- 
- /*
-diff --git a/drivers/tty/hvc/hvcs.c b/drivers/tty/hvc/hvcs.c
-index cb4db1b..4dfa70c 100644
---- a/drivers/tty/hvc/hvcs.c
-+++ b/drivers/tty/hvc/hvcs.c
-@@ -1140,16 +1140,10 @@ static int hvcs_install(struct tty_driver *driver, struct tty_struct *tty)
- 		goto err_put;
- 	}
- 
--	retval = tty_port_install(&hvcsd->port, driver, tty);
--	if (retval)
--		goto err_irq;
-+	tty_port_install(&hvcsd->port, driver, tty);
- 
- 	return 0;
--err_irq:
--	spin_lock_irqsave(&hvcsd->lock, flags);
--	vio_disable_interrupts(hvcsd->vdev);
--	spin_unlock_irqrestore(&hvcsd->lock, flags);
--	free_irq(irq, hvcsd);
-+
- err_put:
- 	tty_port_put(&hvcsd->port);
- 
-diff --git a/drivers/tty/mips_ejtag_fdc.c b/drivers/tty/mips_ejtag_fdc.c
-index 4c1cd49..33e06b4 100644
---- a/drivers/tty/mips_ejtag_fdc.c
-+++ b/drivers/tty/mips_ejtag_fdc.c
-@@ -763,7 +763,9 @@ static int mips_ejtag_fdc_tty_install(struct tty_driver *driver,
- 	struct mips_ejtag_fdc_tty *priv = driver->driver_state;
- 
- 	tty->driver_data = &priv->ports[tty->index];
--	return tty_port_install(&priv->ports[tty->index].port, driver, tty);
-+	tty_port_install(&priv->ports[tty->index].port, driver, tty);
-+
-+	return 0;
- }
- 
- static int mips_ejtag_fdc_tty_open(struct tty_struct *tty, struct file *filp)
-diff --git a/drivers/tty/n_gsm.c b/drivers/tty/n_gsm.c
-index 86b7e20..c52fa2d 100644
---- a/drivers/tty/n_gsm.c
-+++ b/drivers/tty/n_gsm.c
-@@ -2917,7 +2917,6 @@ static int gsmtty_install(struct tty_driver *driver, struct tty_struct *tty)
- 	unsigned int line = tty->index;
- 	unsigned int mux = line >> 6;
- 	bool alloc = false;
--	int ret;
- 
- 	line = line & 0x3F;
- 
-@@ -2949,14 +2948,8 @@ static int gsmtty_install(struct tty_driver *driver, struct tty_struct *tty)
- 		mutex_unlock(&gsm->mutex);
- 		return -ENOMEM;
- 	}
--	ret = tty_port_install(&dlci->port, driver, tty);
--	if (ret) {
--		if (alloc)
--			dlci_put(dlci);
--		mutex_unlock(&gsm->mutex);
--		return ret;
--	}
- 
-+	tty_port_install(&dlci->port, driver, tty);
- 	dlci_get(dlci);
- 	dlci_get(gsm->dlci[0]);
- 	mux_get(gsm);
-diff --git a/drivers/tty/nozomi.c b/drivers/tty/nozomi.c
-index fed820e..479583d 100644
---- a/drivers/tty/nozomi.c
-+++ b/drivers/tty/nozomi.c
-@@ -1555,13 +1555,11 @@ static int ntty_install(struct tty_driver *driver, struct tty_struct *tty)
- {
- 	struct port *port = get_port_by_tty(tty);
- 	struct nozomi *dc = get_dc_by_tty(tty);
--	int ret;
- 	if (!port || !dc || dc->state != NOZOMI_STATE_READY)
- 		return -ENODEV;
--	ret = tty_standard_install(driver, tty);
--	if (ret == 0)
--		tty->driver_data = port;
--	return ret;
-+	tty_standard_install(driver, tty);
-+	tty->driver_data = port;
-+	return 0;
- }
- 
- static void ntty_cleanup(struct tty_struct *tty)
-diff --git a/drivers/tty/serial/kgdb_nmi.c b/drivers/tty/serial/kgdb_nmi.c
-index 4029272..ed8f806 100644
---- a/drivers/tty/serial/kgdb_nmi.c
-+++ b/drivers/tty/serial/kgdb_nmi.c
-@@ -234,7 +234,6 @@ static const struct tty_port_operations kgdb_nmi_tty_port_ops = {
- static int kgdb_nmi_tty_install(struct tty_driver *drv, struct tty_struct *tty)
- {
- 	struct kgdb_nmi_tty_priv *priv;
--	int ret;
- 
- 	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
- 	if (!priv)
-@@ -245,17 +244,9 @@ static int kgdb_nmi_tty_install(struct tty_driver *drv, struct tty_struct *tty)
- 	tty_port_init(&priv->port);
- 	priv->port.ops = &kgdb_nmi_tty_port_ops;
- 	tty->driver_data = priv;
-+	tty_port_install(&priv->port, drv, tty);
- 
--	ret = tty_port_install(&priv->port, drv, tty);
--	if (ret) {
--		pr_err("%s: can't install tty port: %d\n", __func__, ret);
--		goto err;
--	}
- 	return 0;
--err:
--	tty_port_destroy(&priv->port);
--	kfree(priv);
--	return ret;
- }
- 
- static void kgdb_nmi_tty_cleanup(struct tty_struct *tty)
-diff --git a/drivers/tty/synclink.c b/drivers/tty/synclink.c
-index fbdf4d0..6e7e4d6 100644
---- a/drivers/tty/synclink.c
-+++ b/drivers/tty/synclink.c
-@@ -3355,8 +3355,9 @@ static int mgsl_install(struct tty_driver *driver, struct tty_struct *tty)
- 	if (mgsl_paranoia_check(info, tty->name, "mgsl_open"))
- 		return -ENODEV;
- 	tty->driver_data = info;
-+	tty_port_install(&info->port, driver, tty);
- 
--	return tty_port_install(&info->port, driver, tty);
-+	return 0;
- }
- 
- /* mgsl_open()
-diff --git a/drivers/tty/synclinkmp.c b/drivers/tty/synclinkmp.c
-index 1e4d5b9..2d99a5b 100644
---- a/drivers/tty/synclinkmp.c
-+++ b/drivers/tty/synclinkmp.c
-@@ -734,8 +734,9 @@ static int install(struct tty_driver *driver, struct tty_struct *tty)
- 	}
- 
- 	tty->driver_data = info;
-+	tty_port_install(&info->port, driver, tty);
- 
--	return tty_port_install(&info->port, driver, tty);
-+	return 0;
- }
- 
- /* Called when a port is opened.  Init and enable port.
-diff --git a/drivers/tty/tty_io.c b/drivers/tty/tty_io.c
-index 32bc3e3..b01cec8 100644
---- a/drivers/tty/tty_io.c
-+++ b/drivers/tty/tty_io.c
-@@ -1196,13 +1196,12 @@ void tty_init_termios(struct tty_struct *tty)
- }
- EXPORT_SYMBOL_GPL(tty_init_termios);
- 
--int tty_standard_install(struct tty_driver *driver, struct tty_struct *tty)
-+void tty_standard_install(struct tty_driver *driver, struct tty_struct *tty)
- {
- 	tty_init_termios(tty);
- 	tty_driver_kref_get(driver);
- 	tty->count++;
- 	driver->ttys[tty->index] = tty;
--	return 0;
- }
- EXPORT_SYMBOL_GPL(tty_standard_install);
- 
-@@ -1221,8 +1220,11 @@ EXPORT_SYMBOL_GPL(tty_standard_install);
- static int tty_driver_install_tty(struct tty_driver *driver,
- 						struct tty_struct *tty)
- {
--	return driver->ops->install ? driver->ops->install(driver, tty) :
--		tty_standard_install(driver, tty);
-+	if (driver->ops->install)
-+		return driver->ops->install(driver, tty);
-+
-+	tty_standard_install(driver, tty);
-+	return 0;
- }
- 
- /**
-diff --git a/drivers/tty/tty_port.c b/drivers/tty/tty_port.c
-index 25d7368..fd8d40d 100644
---- a/drivers/tty/tty_port.c
-+++ b/drivers/tty/tty_port.c
-@@ -656,11 +656,11 @@ EXPORT_SYMBOL(tty_port_close);
-  * to a concrete tty specified by @tty. Use this or tty_port_register_device
-  * (or both). Call tty_port_link_device as a last resort.
-  */
--int tty_port_install(struct tty_port *port, struct tty_driver *driver,
-+void tty_port_install(struct tty_port *port, struct tty_driver *driver,
- 		struct tty_struct *tty)
- {
- 	tty->port = port;
--	return tty_standard_install(driver, tty);
-+	tty_standard_install(driver, tty);
- }
- EXPORT_SYMBOL_GPL(tty_port_install);
- 
-diff --git a/drivers/tty/vcc.c b/drivers/tty/vcc.c
-index 58b454c..ce32631 100644
---- a/drivers/tty/vcc.c
-+++ b/drivers/tty/vcc.c
-@@ -987,7 +987,6 @@ static int vcc_install(struct tty_driver *driver, struct tty_struct *tty)
- {
- 	struct vcc_port *port_vcc;
- 	struct tty_port *port_tty;
--	int ret;
- 
- 	if (unlikely(!tty)) {
- 		pr_err("VCC: install: Invalid TTY handle\n");
-@@ -997,9 +996,7 @@ static int vcc_install(struct tty_driver *driver, struct tty_struct *tty)
- 	if (tty->index >= VCC_MAX_PORTS)
- 		return -EINVAL;
- 
--	ret = tty_standard_install(driver, tty);
--	if (ret)
--		return ret;
-+	tty_standard_install(driver, tty);
- 
- 	port_tty = kzalloc(sizeof(struct tty_port), GFP_KERNEL);
- 	if (!port_tty)
-diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
-index 5f1183b..cc72254 100644
---- a/drivers/tty/vt/vt.c
-+++ b/drivers/tty/vt/vt.c
-@@ -3222,10 +3222,7 @@ static int con_install(struct tty_driver *driver, struct tty_struct *tty)
- 		goto unlock;
- 	}
- 
--	ret = tty_port_install(&vc->port, driver, tty);
--	if (ret)
--		goto unlock;
--
-+	tty_port_install(&vc->port, driver, tty);
- 	tty->driver_data = vc;
- 	vc->port.tty = tty;
- 
-diff --git a/drivers/usb/class/cdc-acm.c b/drivers/usb/class/cdc-acm.c
-index 27346d6..de6a27e 100644
---- a/drivers/usb/class/cdc-acm.c
-+++ b/drivers/usb/class/cdc-acm.c
-@@ -572,23 +572,15 @@ static void acm_softint(struct work_struct *work)
- static int acm_tty_install(struct tty_driver *driver, struct tty_struct *tty)
- {
- 	struct acm *acm;
--	int retval;
- 
- 	acm = acm_get_by_minor(tty->index);
- 	if (!acm)
- 		return -ENODEV;
- 
--	retval = tty_standard_install(driver, tty);
--	if (retval)
--		goto error_init_termios;
--
-+	tty_standard_install(driver, tty);
- 	tty->driver_data = acm;
- 
- 	return 0;
--
--error_init_termios:
--	tty_port_put(&acm->port);
--	return retval;
- }
- 
- static int acm_tty_open(struct tty_struct *tty, struct file *filp)
-diff --git a/drivers/usb/host/xhci-dbgtty.c b/drivers/usb/host/xhci-dbgtty.c
-index aff79ff..18d661c 100644
---- a/drivers/usb/host/xhci-dbgtty.c
-+++ b/drivers/usb/host/xhci-dbgtty.c
-@@ -174,8 +174,9 @@ static int dbc_tty_install(struct tty_driver *driver, struct tty_struct *tty)
- 	struct dbc_port		*port = driver->driver_state;
- 
- 	tty->driver_data = port;
-+	tty_port_install(&port->port, driver, tty);
- 
--	return tty_port_install(&port->port, driver, tty);
-+	return 0;
- }
- 
- static int dbc_tty_open(struct tty_struct *tty, struct file *file)
-diff --git a/drivers/usb/serial/usb-serial.c b/drivers/usb/serial/usb-serial.c
-index f7aaa7f..5cfc2ca 100644
---- a/drivers/usb/serial/usb-serial.c
-+++ b/drivers/usb/serial/usb-serial.c
-@@ -192,9 +192,7 @@ static int serial_install(struct tty_driver *driver, struct tty_struct *tty)
- 	if (retval)
- 		goto error_get_interface;
- 
--	retval = tty_standard_install(driver, tty);
--	if (retval)
--		goto error_init_termios;
-+	tty_standard_install(driver, tty);
- 
- 	mutex_unlock(&serial->disc_mutex);
- 
-@@ -206,8 +204,6 @@ static int serial_install(struct tty_driver *driver, struct tty_struct *tty)
- 
- 	return retval;
- 
-- error_init_termios:
--	usb_autopm_put_interface(serial->interface);
-  error_get_interface:
- 	module_put(serial->type->driver.owner);
-  error_module_get:
-diff --git a/include/linux/tty.h b/include/linux/tty.h
-index c56e397..63cdac1 100644
---- a/include/linux/tty.h
-+++ b/include/linux/tty.h
-@@ -556,7 +556,7 @@ extern struct tty_struct *tty_init_dev(struct tty_driver *driver, int idx);
- extern void tty_release_struct(struct tty_struct *tty, int idx);
- extern int tty_release(struct inode *inode, struct file *filp);
- extern void tty_init_termios(struct tty_struct *tty);
--extern int tty_standard_install(struct tty_driver *driver,
-+extern void tty_standard_install(struct tty_driver *driver,
- 		struct tty_struct *tty);
- 
- extern struct mutex tty_mutex;
-@@ -688,7 +688,7 @@ extern int tty_port_close_start(struct tty_port *port,
- extern void tty_port_close_end(struct tty_port *port, struct tty_struct *tty);
- extern void tty_port_close(struct tty_port *port,
- 				struct tty_struct *tty, struct file *filp);
--extern int tty_port_install(struct tty_port *port, struct tty_driver *driver,
-+extern void tty_port_install(struct tty_port *port, struct tty_driver *driver,
- 				struct tty_struct *tty);
- extern int tty_port_open(struct tty_port *port,
- 				struct tty_struct *tty, struct file *filp);
-diff --git a/net/bluetooth/rfcomm/tty.c b/net/bluetooth/rfcomm/tty.c
-index 5e44d84..b654420 100644
---- a/net/bluetooth/rfcomm/tty.c
-+++ b/net/bluetooth/rfcomm/tty.c
-@@ -710,7 +710,6 @@ static int rfcomm_tty_install(struct tty_driver *driver, struct tty_struct *tty)
- {
- 	struct rfcomm_dev *dev;
- 	struct rfcomm_dlc *dlc;
--	int err;
- 
- 	dev = rfcomm_dev_get(tty->index);
- 	if (!dev)
-@@ -725,11 +724,7 @@ static int rfcomm_tty_install(struct tty_driver *driver, struct tty_struct *tty)
- 	set_bit(RFCOMM_TTY_ATTACHED, &dev->flags);
- 
- 	/* install the tty_port */
--	err = tty_port_install(&dev->port, driver, tty);
--	if (err) {
--		rfcomm_tty_cleanup(tty);
--		return err;
--	}
-+	tty_port_install(&dev->port, driver, tty);
- 
- 	/* take over the tty_port reference if the port was created with the
- 	 * flag RFCOMM_RELEASE_ONHUP. This will force the release of the port
--- 
-2.7.4
+Please change your comments style.=0A=
+=0A=
+On 2018/8/31 11:57, Ran Wang wrote:=0A=
+> This driver is to provide a independent framework for PM service=0A=
+> provider and consumer to configure system level wake up feature. For=0A=
+> example, RCPM driver could register a callback function on this=0A=
+> platform first, and Flex timer driver who want to enable timer wake=0A=
+> up feature, will call generic API provided by this platform driver,=0A=
+> and then it will trigger RCPM driver to do it. The benefit is to=0A=
+> isolate the user and service, such as flex timer driver will not have=0A=
+> to know the implement details of wakeup function it require. Besides,=0A=
+> it is also easy for service side to upgrade its logic when design is=0A=
+> changed and remain user side unchanged.=0A=
+>=0A=
+> Signed-off-by: Ran Wang <ran.wang_1@nxp.com>=0A=
+> ---=0A=
+>  drivers/soc/fsl/Kconfig   |   14 +++++=0A=
+>  drivers/soc/fsl/Makefile  |    1 +=0A=
+>  drivers/soc/fsl/plat_pm.c |  144 +++++++++++++++++++++++++++++++++++++++=
+++++++=0A=
+>  include/soc/fsl/plat_pm.h |   22 +++++++=0A=
+>  4 files changed, 181 insertions(+), 0 deletions(-)=0A=
+>  create mode 100644 drivers/soc/fsl/plat_pm.c=0A=
+>  create mode 100644 include/soc/fsl/plat_pm.h=0A=
+>=0A=
+> diff --git a/drivers/soc/fsl/Kconfig b/drivers/soc/fsl/Kconfig=0A=
+> index 7a9fb9b..6517412 100644=0A=
+> --- a/drivers/soc/fsl/Kconfig=0A=
+> +++ b/drivers/soc/fsl/Kconfig=0A=
+> @@ -16,3 +16,17 @@ config FSL_GUTS=0A=
+>  	  Initially only reading SVR and registering soc device are supported.=
+=0A=
+>  	  Other guts accesses, such as reading RCW, should eventually be moved=
+=0A=
+>  	  into this driver as well.=0A=
+> +=0A=
+> +config FSL_PLAT_PM=0A=
+> +	bool "Freescale platform PM framework"=0A=
+> +	help=0A=
+> +	  This driver is to provide a independent framework for PM service=0A=
+> +	  provider and consumer to configure system level wake up feature. For=
+=0A=
+> +	  example, RCPM driver could register a callback function on this=0A=
+> +	  platform first, and Flex timer driver who want to enable timer wake=
+=0A=
+> +	  up feature, will call generic API provided by this platform driver,=
+=0A=
+> +	  and then it will trigger RCPM driver to do it. The benefit is to=0A=
+> +	  isolate the user and service, such as  flex timer driver will not=0A=
+> +	  have to know the implement details of wakeup function it require.=0A=
+> +	  Besides, it is also easy for service side to upgrade its logic when=
+=0A=
+> +	  design changed and remain user side unchanged.=0A=
+> diff --git a/drivers/soc/fsl/Makefile b/drivers/soc/fsl/Makefile=0A=
+> index 44b3beb..8f9db23 100644=0A=
+> --- a/drivers/soc/fsl/Makefile=0A=
+> +++ b/drivers/soc/fsl/Makefile=0A=
+> @@ -6,3 +6,4 @@ obj-$(CONFIG_FSL_DPAA)                 +=3D qbman/=0A=
+>  obj-$(CONFIG_QUICC_ENGINE)		+=3D qe/=0A=
+>  obj-$(CONFIG_CPM)			+=3D qe/=0A=
+>  obj-$(CONFIG_FSL_GUTS)			+=3D guts.o=0A=
+> +obj-$(CONFIG_FSL_PLAT_PM)	+=3D plat_pm.o=0A=
+> diff --git a/drivers/soc/fsl/plat_pm.c b/drivers/soc/fsl/plat_pm.c=0A=
+> new file mode 100644=0A=
+> index 0000000..19ea14e=0A=
+> --- /dev/null=0A=
+> +++ b/drivers/soc/fsl/plat_pm.c=0A=
+> @@ -0,0 +1,144 @@=0A=
+> +// SPDX-License-Identifier: GPL-2.0=0A=
+> +//=0A=
+> +// plat_pm.c - Freescale platform PM framework=0A=
+> +//=0A=
+> +// Copyright 2018 NXP=0A=
+> +//=0A=
+> +// Author: Ran Wang <ran.wang_1@nxp.com>,=0A=
+> +=0A=
+> +#include <linux/kernel.h>=0A=
+> +#include <linux/device.h>=0A=
+> +#include <linux/list.h>=0A=
+> +#include <linux/slab.h>=0A=
+> +#include <linux/err.h>=0A=
+> +#include <soc/fsl/plat_pm.h>=0A=
+> +=0A=
+> +=0A=
+> +struct plat_pm_t {=0A=
+> +	struct list_head node;=0A=
+> +	fsl_plat_pm_handle handle;=0A=
+> +	void *handle_priv;=0A=
+> +	spinlock_t	lock;=0A=
+> +};=0A=
+> +=0A=
+> +static struct plat_pm_t plat_pm;=0A=
+> +=0A=
+> +// register_fsl_platform_wakeup_source - Register callback function to p=
+lat_pm=0A=
+> +// @handle: Pointer to handle PM feature requirement=0A=
+> +// @handle_priv: Handler specific data struct=0A=
+> +//=0A=
+> +// Return 0 on success other negative errno=0A=
+> +int register_fsl_platform_wakeup_source(fsl_plat_pm_handle handle,=0A=
+> +		void *handle_priv)=0A=
+> +{=0A=
+> +	struct plat_pm_t *p;=0A=
+> +	unsigned long	flags;=0A=
+> +=0A=
+> +	if (!handle) {=0A=
+> +		pr_err("FSL plat_pm: Handler invalid, reject\n");=0A=
+> +		return -EINVAL;=0A=
+> +	}=0A=
+> +=0A=
+> +	p =3D kmalloc(sizeof(*p), GFP_KERNEL);=0A=
+> +	if (!p)=0A=
+> +		return -ENOMEM;=0A=
+> +=0A=
+> +	p->handle =3D handle;=0A=
+> +	p->handle_priv =3D handle_priv;=0A=
+> +=0A=
+> +	spin_lock_irqsave(&plat_pm.lock, flags);=0A=
+> +	list_add_tail(&p->node, &plat_pm.node);=0A=
+> +	spin_unlock_irqrestore(&plat_pm.lock, flags);=0A=
+> +=0A=
+> +	return 0;=0A=
+> +}=0A=
+> +EXPORT_SYMBOL_GPL(register_fsl_platform_wakeup_source);=0A=
+> +=0A=
+> +// Deregister_fsl_platform_wakeup_source - deregister callback function=
+=0A=
+> +// @handle_priv: Handler specific data struct=0A=
+> +//=0A=
+> +// Return 0 on success other negative errno=0A=
+> +int deregister_fsl_platform_wakeup_source(void *handle_priv)=0A=
+> +{=0A=
+> +	struct plat_pm_t *p, *tmp;=0A=
+> +	unsigned long	flags;=0A=
+> +=0A=
+> +	spin_lock_irqsave(&plat_pm.lock, flags);=0A=
+> +	list_for_each_entry_safe(p, tmp, &plat_pm.node, node) {=0A=
+> +		if (p->handle_priv =3D=3D handle_priv) {=0A=
+> +			list_del(&p->node);=0A=
+> +			kfree(p);=0A=
+> +		}=0A=
+> +	}=0A=
+> +	spin_unlock_irqrestore(&plat_pm.lock, flags);=0A=
+> +	return 0;=0A=
+> +}=0A=
+> +EXPORT_SYMBOL_GPL(deregister_fsl_platform_wakeup_source);=0A=
+> +=0A=
+> +// fsl_platform_wakeup_config - Configure wakeup source by calling handl=
+ers=0A=
+> +// @dev: pointer to user's device struct=0A=
+> +// @flag: to tell enable or disable wakeup source=0A=
+> +//=0A=
+> +// Return 0 on success other negative errno=0A=
+> +int fsl_platform_wakeup_config(struct device *dev, bool flag)=0A=
+> +{=0A=
+> +	struct plat_pm_t *p;=0A=
+> +	int ret;=0A=
+> +	bool success_handled;=0A=
+> +	unsigned long	flags;=0A=
+> +=0A=
+> +	success_handled =3D false;=0A=
+> +=0A=
+> +	// Will consider success if at least one callback return 0.=0A=
+> +	// Also, rest handles still get oppertunity to be executed=0A=
+> +	spin_lock_irqsave(&plat_pm.lock, flags);=0A=
+> +	list_for_each_entry(p, &plat_pm.node, node) {=0A=
+> +		if (p->handle) {=0A=
+> +			ret =3D p->handle(dev, flag, p->handle_priv);=0A=
+> +			if (!ret)=0A=
+> +				success_handled =3D true;=0A=
+Miss a break?=0A=
+=0A=
+> +			else if (ret !=3D -ENODEV) {=0A=
+> +				pr_err("FSL plat_pm: Failed to config wakeup source:%d\n", ret);=0A=
+Please unlock before return.=0A=
+=0A=
+> +				return ret;=0A=
+> +			}=0A=
+> +		} else=0A=
+> +			pr_warn("FSL plat_pm: Invalid handler detected, skip\n");=0A=
+> +	}=0A=
+> +	spin_unlock_irqrestore(&plat_pm.lock, flags);=0A=
+> +=0A=
+> +	if (success_handled =3D=3D false) {=0A=
+> +		pr_err("FSL plat_pm: Cannot find the matchhed handler for wakeup sourc=
+e config\n");=0A=
+> +		return -ENODEV;=0A=
+> +	}=0A=
+Add this into the loop.=0A=
+> +=0A=
+> +	return 0;=0A=
+> +}=0A=
+> +=0A=
+> +// fsl_platform_wakeup_enable - Enable wakeup source=0A=
+> +// @dev: pointer to user's device struct=0A=
+> +//=0A=
+> +// Return 0 on success other negative errno=0A=
+> +int fsl_platform_wakeup_enable(struct device *dev)=0A=
+> +{=0A=
+> +	return fsl_platform_wakeup_config(dev, true);=0A=
+> +}=0A=
+> +EXPORT_SYMBOL_GPL(fsl_platform_wakeup_enable);=0A=
+> +=0A=
+> +// fsl_platform_wakeup_disable - Disable wakeup source=0A=
+> +// @dev: pointer to user's device struct=0A=
+> +//=0A=
+> +// Return 0 on success other negative errno=0A=
+> +int fsl_platform_wakeup_disable(struct device *dev)=0A=
+> +{=0A=
+> +	return fsl_platform_wakeup_config(dev, false);=0A=
+> +}=0A=
+> +EXPORT_SYMBOL_GPL(fsl_platform_wakeup_disable);=0A=
+> +=0A=
+> +static int __init fsl_plat_pm_init(void)=0A=
+> +{=0A=
+> +	spin_lock_init(&plat_pm.lock);=0A=
+> +	INIT_LIST_HEAD(&plat_pm.node);=0A=
+> +	return 0;=0A=
+> +}=0A=
+> +=0A=
+> +core_initcall(fsl_plat_pm_init);=0A=
+> diff --git a/include/soc/fsl/plat_pm.h b/include/soc/fsl/plat_pm.h=0A=
+> new file mode 100644=0A=
+> index 0000000..bbe151e=0A=
+> --- /dev/null=0A=
+> +++ b/include/soc/fsl/plat_pm.h=0A=
+> @@ -0,0 +1,22 @@=0A=
+> +// SPDX-License-Identifier: GPL-2.0=0A=
+> +//=0A=
+> +// plat_pm.h - Freescale platform PM Header=0A=
+> +//=0A=
+> +// Copyright 2018 NXP=0A=
+> +//=0A=
+> +// Author: Ran Wang <ran.wang_1@nxp.com>,=0A=
+> +=0A=
+> +#ifndef __FSL_PLAT_PM_H=0A=
+> +#define __FSL_PLAT_PM_H=0A=
+> +=0A=
+> +typedef int (*fsl_plat_pm_handle)(struct device *dev, bool flag,=0A=
+> +		void *handle_priv);=0A=
+> +=0A=
+> +int register_fsl_platform_wakeup_source(fsl_plat_pm_handle handle,=0A=
+> +		void *handle_priv);=0A=
+> +int deregister_fsl_platform_wakeup_source(void *handle_priv);=0A=
+> +int fsl_platform_wakeup_config(struct device *dev, bool flag);=0A=
+> +int fsl_platform_wakeup_enable(struct device *dev);=0A=
+> +int fsl_platform_wakeup_disable(struct device *dev);=0A=
+> +=0A=
+> +#endif	// __FSL_PLAT_PM_H=0A=
+=0A=
+=0A=
