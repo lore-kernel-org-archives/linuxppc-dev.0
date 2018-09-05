@@ -1,29 +1,24 @@
-Return-Path: <groeck7@gmail.com>
-Received: from mail-pf1-f194.google.com (mail-pf1-f194.google.com
- [209.85.210.194])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4255h52kZnzF38D
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 00:29:56 +1000 (AEST)
-Received: by mail-pf1-f194.google.com with SMTP id d4-v6so3591185pfn.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Sep 2018 07:29:56 -0700 (PDT)
-Sender: Guenter Roeck <groeck7@gmail.com>
-Date: Wed, 5 Sep 2018 07:29:51 -0700
-From: Guenter Roeck <linux@roeck-us.net>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: linux-mm@kvack.org, linux-arch@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Ley Foon Tan <lftan@altera.com>, nios2-dev@lists.rocketboards.org
-Subject: Re: [PATCH 3/3] mm: optimise pte dirty/accessed bit setting by
- demand based pte insertion
-Message-ID: <20180905142951.GA15680@roeck-us.net>
-References: <20180828112034.30875-1-npiggin@gmail.com>
- <20180828112034.30875-4-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4255lx4WHszF38R
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 00:33:17 +1000 (AEST)
+Subject: Re: [RFC PATCH v1 00/17] ban the use of _PAGE_XXX flags outside
+ platform specific code
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ npiggin@gmail.com, aneesh.kumar@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+References: <cover.1535913369.git.christophe.leroy@c-s.fr>
+ <95ee30b8-70b5-0f74-b677-417d3b0ca19e@linux.ibm.com>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <d6216a55-307e-ce80-ea37-ca9b5de694a7@c-s.fr>
+Date: Wed, 5 Sep 2018 14:32:26 +0000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20180828112034.30875-4-npiggin@gmail.com>
+In-Reply-To: <95ee30b8-70b5-0f74-b677-417d3b0ca19e@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,56 +28,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
 
-On Tue, Aug 28, 2018 at 09:20:34PM +1000, Nicholas Piggin wrote:
-> Similarly to the previous patch, this tries to optimise dirty/accessed
-> bits in ptes to avoid access costs of hardware setting them.
+
+On 09/05/2018 02:03 PM, Aneesh Kumar K.V wrote:
+> On 09/05/2018 06:06 PM, Christophe Leroy wrote:
+>> Today flags like for instance _PAGE_RW or _PAGE_USER are used through
+>> common parts of code.
+>> Using those directly in common parts of code have proven to lead to
+>> mistakes or misbehaviour, because their use is not always as trivial
+>> as one could think.
+>>
+>> For instance, (flags & _PAGE_USER) == 0 isn't enough to tell
+>> that a page is a kernel page, because some targets are using
+>> _PAGE_PRIVILEDGED and not _PAGE_USER, so the test has to be
+>> (flags & (_PAGE_USER | _PAGE_PRIVILEDGED)) == _PAGE_PRIVILEDGED
+>> This has to (bad) consequences:
+>>
+>>   - All targets must define every bit, even the unsupported ones,
+>>     leading to a lot of useless #define _PAGE_XXX 0
+>>   - If someone forgets to take into account all possible _PAGE_XXX bits
+>>     for the case, we can get unexpected behaviour on some targets.
+>>
+>> This becomes even more complex when we come to using _PAGE_RW.
+>> Testing (flags & _PAGE_RW) is not enough to test whether a page
+>> if writable or not, because:
+>>
+>>   - Some targets have _PAGE_RO instead, which has to be unset to tell
+>>     a page is writable
+>>   - Some targets have _PAGE_R and _PAGE_W, in which case
+>>     _PAGE_RW = _PAGE_R | _PAGE_W
+>>   - Even knowing whether a page is readable is not always trivial 
+>> because:
+>>     - Some targets requires to check that _PAGE_R is set to ensure page
+>>     is readable
+>>     - Some targets requires to check that _PAGE_NA is not set
+>>     - Some targets requires to check that _PAGE_RO or _PAGE_RW is set
+>>
+>> Etc ....
+>>
+>> In order to work around all those issues and minimise the risks of 
+>> errors,
+>> this serie aims at removing all use of _PAGE_XXX flags from powerpc code
+>> and always use pte_xxx() and pte_mkxxx() accessors instead. Those 
+>> accessors
+>> are then defined in target specific parts of the kernel code.
 > 
+> We recently did on book3s 64.
+> 
+> static inline int pte_present(pte_t pte)
+> {
+>      /*
+>       * A pte is considerent present if _PAGE_PRESENT is set.
+>       * We also need to consider the pte present which is marked
+>       * invalid during ptep_set_access_flags. Hence we look for 
+> _PAGE_INVALID
+>       * if we find _PAGE_PRESENT cleared.
+>       */
+>      return !!(pte_raw(pte) & cpu_to_be64(_PAGE_PRESENT | _PAGE_INVALID));
+> }
+> 
+> So I guess with that pte_present conversion we need to be careful.
+> 
+> Do you have a git tree which I can use to double check?
 
-This patch results in silent nios2 boot failures, silent meaning that
-the boot stalls.
+I pushed on branch 'helpers' on https://github.com/chleroy/linux.git
 
-...
-Unpacking initramfs...
-Freeing initrd memory: 2168K
-workingset: timestamp_bits=30 max_order=15 bucket_order=0
-jffs2: version 2.2. (NAND) � 2001-2006 Red Hat, Inc.
-random: fast init done
-random: crng init done
-
-[no further activity until the qemu session is aborted]
-
-Reverting the patch fixes the problem. Bisect log is attached.
-
-Guenter
-
----
-# bad: [387ac6229ecf6e012649d4fc409c5352655a4cf0] Add linux-next specific files for 20180905
-# good: [57361846b52bc686112da6ca5368d11210796804] Linux 4.19-rc2
-git bisect start 'HEAD' 'v4.19-rc2'
-# good: [668570e8389bb076bea9b7531553e1362f5abd11] Merge remote-tracking branch 'net-next/master'
-git bisect good 668570e8389bb076bea9b7531553e1362f5abd11
-# good: [7f2f69ebf0bcf3e9bcff7d560ba92cee960a66a6] Merge remote-tracking branch 'battery/for-next'
-git bisect good 7f2f69ebf0bcf3e9bcff7d560ba92cee960a66a6
-# good: [c31458d3e03e3a2edeaab225a22eaf68c07c8290] Merge remote-tracking branch 'rpmsg/for-next'
-git bisect good c31458d3e03e3a2edeaab225a22eaf68c07c8290
-# good: [e0f43dcbe9af8ac72f39fe92c5d0ee1883546427] Merge remote-tracking branch 'nvdimm/libnvdimm-for-next'
-git bisect good e0f43dcbe9af8ac72f39fe92c5d0ee1883546427
-# bad: [f509e2c0f3cd11df238f0f1b5ba013fe726decdf] of: ignore sub-page memory regions
-git bisect bad f509e2c0f3cd11df238f0f1b5ba013fe726decdf
-# good: [2f7eebf30b87534f7e4c3982307579d9adc782a5] ocfs2: fix clusters leak in ocfs2_defrag_extent()
-git bisect good 2f7eebf30b87534f7e4c3982307579d9adc782a5
-# good: [119eb88c9dd23e305939ad748237100078e304a8] mm/swapfile.c: call free_swap_slot() in __swap_entry_free()
-git bisect good 119eb88c9dd23e305939ad748237100078e304a8
-# good: [21d64d37adf3ab20b4c3a1951018e84bf815c887] mm: remove vm_insert_pfn()
-git bisect good 21d64d37adf3ab20b4c3a1951018e84bf815c887
-# good: [90cd1a69010844e9dbfc43279d681d798812b962] cramfs: convert to use vmf_insert_mixed
-git bisect good 90cd1a69010844e9dbfc43279d681d798812b962
-# good: [c7dd91289b4bb4c400a8a71953511991815f8e6f] mm/cow: optimise pte dirty/accessed bits handling in fork
-git bisect good c7dd91289b4bb4c400a8a71953511991815f8e6f
-# bad: [87d74ae75700a39effcb8c9ed8a8445e719ac369] hexagon: switch to NO_BOOTMEM
-git bisect bad 87d74ae75700a39effcb8c9ed8a8445e719ac369
-# bad: [3d1d5b26ac5b4d4193dc618a50cd88de1fb0d360] mm: optimise pte dirty/accessed bit setting by demand based pte insertion
-git bisect bad 3d1d5b26ac5b4d4193dc618a50cd88de1fb0d360
-# first bad commit: [3d1d5b26ac5b4d4193dc618a50cd88de1fb0d360] mm: optimise pte dirty/accessed bit setting by demand based pte insertion
+Christophe
