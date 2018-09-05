@@ -1,24 +1,29 @@
-Return-Path: <robherring2@gmail.com>
-Received: from mail-oi0-f65.google.com (mail-oi0-f65.google.com
- [209.85.218.65])
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf1-f195.google.com (mail-pf1-f195.google.com
+ [209.85.210.195])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 425DWT4CrczF3G1
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 05:37:57 +1000 (AEST)
-Received: by mail-oi0-f65.google.com with SMTP id y207-v6so15870655oie.13
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Sep 2018 12:37:57 -0700 (PDT)
-From: Rob Herring <robh@kernel.org>
-To: devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Cc: Vitaly Bordug <vitb@kernel.crashing.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 13/21] powerpc: 8xx: get cpu node with of_get_cpu_node
-Date: Wed,  5 Sep 2018 14:37:30 -0500
-Message-Id: <20180905193738.19325-14-robh@kernel.org>
-In-Reply-To: <20180905193738.19325-1-robh@kernel.org>
-References: <20180905193738.19325-1-robh@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 425J4W06JhzF3FY
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 08:18:18 +1000 (AEST)
+Received: by mail-pf1-f195.google.com with SMTP id k19-v6so4191289pfi.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Sep 2018 15:18:18 -0700 (PDT)
+Date: Thu, 6 Sep 2018 08:18:02 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: linux-mm@kvack.org, linux-arch@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Andrew Morton
+ <akpm@linux-foundation.org>, Linus Torvalds
+ <torvalds@linux-foundation.org>, Ley Foon Tan <lftan@altera.com>,
+ nios2-dev@lists.rocketboards.org
+Subject: Re: [PATCH 3/3] mm: optimise pte dirty/accessed bit setting by
+ demand based pte insertion
+Message-ID: <20180906081802.210984d7@roar.ozlabs.ibm.com>
+In-Reply-To: <20180905142951.GA15680@roeck-us.net>
+References: <20180828112034.30875-1-npiggin@gmail.com>
+ <20180828112034.30875-4-npiggin@gmail.com>
+ <20180905142951.GA15680@roeck-us.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,49 +33,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"device_type" use is deprecated for FDT though it has continued to be used
-for nodes like cpu nodes. Use of_get_cpu_node() instead which works using
-node names by default. This will allow the eventually removal of cpu
-device_type properties.
+On Wed, 5 Sep 2018 07:29:51 -0700
+Guenter Roeck <linux@roeck-us.net> wrote:
 
-Also, fix a leaked reference and add a missing of_node_put.
+> Hi,
+>=20
+> On Tue, Aug 28, 2018 at 09:20:34PM +1000, Nicholas Piggin wrote:
+> > Similarly to the previous patch, this tries to optimise dirty/accessed
+> > bits in ptes to avoid access costs of hardware setting them.
+> >  =20
+>=20
+> This patch results in silent nios2 boot failures, silent meaning that
+> the boot stalls.
+>=20
+> ...
+> Unpacking initramfs...
+> Freeing initrd memory: 2168K
+> workingset: timestamp_bits=3D30 max_order=3D15 bucket_order=3D0
+> jffs2: version 2.2. (NAND) =C2=A9 2001-2006 Red Hat, Inc.
+> random: fast init done
+> random: crng init done
+>=20
+> [no further activity until the qemu session is aborted]
+>=20
+> Reverting the patch fixes the problem. Bisect log is attached.
 
-Cc: Vitaly Bordug <vitb@kernel.crashing.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Rob Herring <robh@kernel.org>
----
-Please ack and I will take via the DT tree. This is dependent on the
-first 2 patches.
+Thanks for bisecting it, I'll try to reproduce. Just qemu with no
+obscure options? Interesting that it's hit nios2 but apparently not
+other archs (yet).
 
- arch/powerpc/platforms/8xx/m8xx_setup.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/platforms/8xx/m8xx_setup.c b/arch/powerpc/platforms/8xx/m8xx_setup.c
-index 027c42d8966c..f1c805c8adbc 100644
---- a/arch/powerpc/platforms/8xx/m8xx_setup.c
-+++ b/arch/powerpc/platforms/8xx/m8xx_setup.c
-@@ -66,7 +66,7 @@ static int __init get_freq(char *name, unsigned long *val)
- 	int found = 0;
-
- 	/* The cpu node should have timebase and clock frequency properties */
--	cpu = of_find_node_by_type(NULL, "cpu");
-+	cpu = of_get_cpu_node(0, NULL);
-
- 	if (cpu) {
- 		fp = of_get_property(cpu, name, NULL);
-@@ -147,8 +147,9 @@ void __init mpc8xx_calibrate_decr(void)
- 	 * we have to enable the timebase).  The decrementer interrupt
- 	 * is wired into the vector table, nothing to do here for that.
- 	 */
--	cpu = of_find_node_by_type(NULL, "cpu");
-+	cpu = of_get_cpu_node(0, NULL);
- 	virq= irq_of_parse_and_map(cpu, 0);
-+	of_node_put(cpu);
- 	irq = virq_to_hw(virq);
-
- 	sys_tmr2 = immr_map(im_sit);
---
-2.17.1
+Thanks,
+Nick
