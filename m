@@ -2,18 +2,19 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4253B95VkVzF2X4
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2018 22:37:21 +1000 (AEST)
-Message-Id: <0e28371bf6a30752ffeb53c252052a4556e6c55d.1535913369.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4253BC37L5zF0gL
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2018 22:37:23 +1000 (AEST)
+Message-Id: <7827f7644d12c321a56c77a5450176447f23c704.1535913369.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1535913369.git.christophe.leroy@c-s.fr>
 References: <cover.1535913369.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [RFC PATCH v1 13/17] powerpc/nohash/64: do not include pte-common.h
+Subject: [RFC PATCH v1 14/17] powerpc/mm: Allow platforms to redefine some
+ helpers
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  npiggin@gmail.com, aneesh.kumar@linux.vnet.ibm.com
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Wed,  5 Sep 2018 12:37:17 +0000 (UTC)
+Date: Wed,  5 Sep 2018 12:37:19 +0000 (UTC)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,132 +24,290 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-nohash/64 only uses book3e PTE flags, so it doesn't need pte-common.h
+The 40xx defines _PAGE_HWWRITE while others don't.
+The 8xx defines _PAGE_RO instead of _PAGE_RW.
+The 8xx defines _PAGE_PRIVILEGED instead of _PAGE_USER.
+The 8xx defines _PAGE_HUGE and _PAGE_NA while others don't.
 
-This also allows to drop PAGE_SAO and H_PAGE_4K_PFN from pte_common.h
-as they are only used by PPC64
+Lets those platforms redefine pte_write(), pte_wrprotect() and
+pte_mkwrite() and get _PAGE_RO and _PAGE_HWWRITE off the common
+helpers.
+
+Lets the 8xx redefine pte_user(), pte_mkprivileged() and pte_mkuser()
+and get rid of _PAGE_PRIVILEGED and _PAGE_USER default values.
+
+Lets the 8xx redefine pte_mkhuge() and get rid of
+_PAGE_HUGE default value.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/nohash/64/pgtable.h | 16 ++++++++++++-
- arch/powerpc/include/asm/nohash/pgtable.h    | 27 +++++++++++++++++++++
- arch/powerpc/include/asm/pte-common.h        | 35 ----------------------------
- 3 files changed, 42 insertions(+), 36 deletions(-)
+ arch/powerpc/include/asm/nohash/32/pgtable.h | 16 ++++-----
+ arch/powerpc/include/asm/nohash/32/pte-40x.h | 16 +++++++++
+ arch/powerpc/include/asm/nohash/32/pte-8xx.h | 51 ++++++++++++++++++++++++++++
+ arch/powerpc/include/asm/nohash/64/pgtable.h |  4 ---
+ arch/powerpc/include/asm/nohash/pgtable.h    | 24 +++++++++----
+ arch/powerpc/include/asm/pte-common.h        | 24 -------------
+ 6 files changed, 91 insertions(+), 44 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/nohash/64/pgtable.h b/arch/powerpc/include/asm/nohash/64/pgtable.h
-index 6b50aa864e12..40162de77c3a 100644
---- a/arch/powerpc/include/asm/nohash/64/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/64/pgtable.h
-@@ -89,7 +89,21 @@
-  * Include the PTE bits definitions
-  */
- #include <asm/nohash/pte-book3e.h>
--#include <asm/pte-common.h>
-+
-+#define _PAGE_HWWRITE	0
-+#define _PAGE_SAO	0
-+#define _PAGE_RO 0
-+#define _PAGE_NA 0
-+#define _PAGE_HUGE 0
-+
-+#define PTE_RPN_MASK	(~((1UL << PTE_RPN_SHIFT) - 1))
-+
-+/* _PAGE_CHG_MASK masks of bits that are to be preserved across
-+ * pgprot changes
-+ */
-+#define _PAGE_CHG_MASK	(PTE_RPN_MASK | _PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_SPECIAL)
-+
-+#define H_PAGE_4K_PFN 0
+diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
+index 4fab3a7d764b..1577260641c9 100644
+--- a/arch/powerpc/include/asm/nohash/32/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
+@@ -136,14 +136,12 @@ extern int icache_44x_need_flush;
+ #define pte_clear(mm, addr, ptep) \
+ 	do { pte_update(ptep, ~0, 0); } while (0)
  
- #ifndef __ASSEMBLY__
- /* pte_clear moved to later in this file */
-diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
-index 38fdf513afa1..a40ab294d541 100644
---- a/arch/powerpc/include/asm/nohash/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/pgtable.h
-@@ -8,6 +8,33 @@
- #include <asm/nohash/32/pgtable.h>
- #endif
++#ifndef pte_mkwrite
+ static inline pte_t pte_mkwrite(pte_t pte)
+ {
+-	pte_basic_t ptev;
+-
+-	ptev = pte_val(pte) & ~_PAGE_RO;
+-	ptev |= _PAGE_RW;
+-	return __pte(ptev);
++	return __pte(pte_val(pte) | _PAGE_RW);
+ }
++#endif
  
-+/* Permission masks used for kernel mappings */
-+#define PAGE_KERNEL	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RW)
-+#define PAGE_KERNEL_NC	__pgprot(_PAGE_BASE_NC | _PAGE_KERNEL_RW | _PAGE_NO_CACHE)
-+#define PAGE_KERNEL_NCG	__pgprot(_PAGE_BASE_NC | _PAGE_KERNEL_RW | \
-+				 _PAGE_NO_CACHE | _PAGE_GUARDED)
-+#define PAGE_KERNEL_X	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RWX)
-+#define PAGE_KERNEL_RO	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RO)
-+#define PAGE_KERNEL_ROX	__pgprot(_PAGE_BASE | _PAGE_KERNEL_ROX)
+ static inline pte_t pte_mkdirty(pte_t pte)
+ {
+@@ -155,14 +153,12 @@ static inline pte_t pte_mkyoung(pte_t pte)
+ 	return __pte(pte_val(pte) | _PAGE_ACCESSED);
+ }
+ 
++#ifndef pte_wrprotect
+ static inline pte_t pte_wrprotect(pte_t pte)
+ {
+-	pte_basic_t ptev;
+-
+-	ptev = pte_val(pte) & ~(_PAGE_RW | _PAGE_HWWRITE);
+-	ptev |= _PAGE_RO;
+-	return __pte(ptev);
++	return __pte(pte_val(pte) & ~_PAGE_RW);
+ }
++#endif
+ 
+ static inline pte_t pte_mkexec(pte_t pte)
+ {
+diff --git a/arch/powerpc/include/asm/nohash/32/pte-40x.h b/arch/powerpc/include/asm/nohash/32/pte-40x.h
+index 2b48bc289a4d..ab043b3e9b99 100644
+--- a/arch/powerpc/include/asm/nohash/32/pte-40x.h
++++ b/arch/powerpc/include/asm/nohash/32/pte-40x.h
+@@ -87,5 +87,21 @@
+ #define PAGE_READONLY	__pgprot(_PAGE_BASE | _PAGE_USER)
+ #define PAGE_READONLY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_EXEC)
+ 
++#ifndef __ASSEMBLY__
++static inline pte_t pte_wrprotect(pte_t pte)
++{
++	return __pte(pte_val(pte) & ~(_PAGE_RW | _PAGE_HWWRITE));
++}
 +
-+/* Protection used for kernel text. We want the debuggers to be able to
-+ * set breakpoints anywhere, so don't write protect the kernel text
-+ * on platforms where such control is possible.
-+ */
-+#if defined(CONFIG_KGDB) || defined(CONFIG_XMON) || defined(CONFIG_BDI_SWITCH) ||\
-+	defined(CONFIG_KPROBES) || defined(CONFIG_DYNAMIC_FTRACE)
-+#define PAGE_KERNEL_TEXT	PAGE_KERNEL_X
-+#else
-+#define PAGE_KERNEL_TEXT	PAGE_KERNEL_ROX
++#define pte_wrprotect pte_wrprotect
++
++static inline pte_t pte_mkclean(pte_t pte)
++{
++	return __pte(pte_val(pte) & ~(_PAGE_DIRTY | _PAGE_HWWRITE));
++}
++
++#define pte_mkclean pte_mkclean
 +#endif
 +
-+/* Make modules code happy. We don't set RO yet */
-+#define PAGE_KERNEL_EXEC	PAGE_KERNEL_X
+ #endif /* __KERNEL__ */
+ #endif /*  _ASM_POWERPC_NOHASH_32_PTE_40x_H */
+diff --git a/arch/powerpc/include/asm/nohash/32/pte-8xx.h b/arch/powerpc/include/asm/nohash/32/pte-8xx.h
+index d06fc45bd9ac..b899c3c877ac 100644
+--- a/arch/powerpc/include/asm/nohash/32/pte-8xx.h
++++ b/arch/powerpc/include/asm/nohash/32/pte-8xx.h
+@@ -87,5 +87,56 @@
+ #define PAGE_READONLY	__pgprot(_PAGE_BASE | _PAGE_RO)
+ #define PAGE_READONLY_X	__pgprot(_PAGE_BASE | _PAGE_RO | _PAGE_EXEC)
+ 
++#ifndef __ASSEMBLY__
++static inline pte_t pte_wrprotect(pte_t pte)
++{
++	return __pte(pte_val(pte) | _PAGE_RO);
++}
 +
-+/* Advertise special mapping type for AGP */
-+#define PAGE_AGP		(PAGE_KERNEL_NC)
-+#define HAVE_PAGE_AGP
++#define pte_wrprotect pte_wrprotect
 +
++static inline int pte_write(pte_t pte)
++{
++	return !(pte_val(pte) & _PAGE_RO);
++}
++
++#define pte_write pte_write
++
++static inline pte_t pte_mkwrite(pte_t pte)
++{
++	return __pte(pte_val(pte) & ~_PAGE_RO);
++}
++
++#define pte_mkwrite pte_mkwrite
++
++static inline bool pte_user(pte_t pte)
++{
++	return !(pte_val(pte) & _PAGE_PRIVILEGED);
++}
++
++#define pte_user pte_user
++
++static inline pte_t pte_mkprivileged(pte_t pte)
++{
++	return __pte(pte_val(pte) | _PAGE_PRIVILEGED);
++}
++
++#define pte_mkprivileged pte_mkprivileged
++
++static inline pte_t pte_mkuser(pte_t pte)
++{
++	return __pte(pte_val(pte) & ~_PAGE_PRIVILEGED);
++}
++
++#define pte_mkuser pte_mkuser
++
++static inline pte_t pte_mkhuge(pte_t pte)
++{
++	return __pte(pte_val(pte) | _PAGE_HUGE);
++}
++
++#define pte_mkhuge pte_mkhuge
++#endif
++
+ #endif /* __KERNEL__ */
+ #endif /*  _ASM_POWERPC_NOHASH_32_PTE_8xx_H */
+diff --git a/arch/powerpc/include/asm/nohash/64/pgtable.h b/arch/powerpc/include/asm/nohash/64/pgtable.h
+index 40162de77c3a..c9e6626093ea 100644
+--- a/arch/powerpc/include/asm/nohash/64/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/64/pgtable.h
+@@ -90,11 +90,7 @@
+  */
+ #include <asm/nohash/pte-book3e.h>
+ 
+-#define _PAGE_HWWRITE	0
+ #define _PAGE_SAO	0
+-#define _PAGE_RO 0
+-#define _PAGE_NA 0
+-#define _PAGE_HUGE 0
+ 
+ #define PTE_RPN_MASK	(~((1UL << PTE_RPN_SHIFT) - 1))
+ 
+diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
+index a40ab294d541..a98768ebc481 100644
+--- a/arch/powerpc/include/asm/nohash/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/pgtable.h
+@@ -38,10 +38,12 @@
  #ifndef __ASSEMBLY__
  
  /* Generic accessors to PTE bits */
++#ifndef pte_write
+ static inline int pte_write(pte_t pte)
+ {
+-	return (pte_val(pte) & (_PAGE_RW | _PAGE_RO)) != _PAGE_RO;
++	return pte_val(pte) & _PAGE_RW;
+ }
++#endif
+ static inline int pte_read(pte_t pte)		{ return 1; }
+ static inline int pte_dirty(pte_t pte)		{ return pte_val(pte) & _PAGE_DIRTY; }
+ static inline int pte_special(pte_t pte)	{ return pte_val(pte) & _PAGE_SPECIAL; }
+@@ -78,10 +80,12 @@ static inline int pte_present(pte_t pte)
+  * and PTE_64BIT, PAGE_KERNEL_X contains _PAGE_BAP_SR which is also in
+  * _PAGE_USER.  Need to explicitly match _PAGE_BAP_UR bit in that case too.
+  */
++#ifndef pte_user
+ static inline bool pte_user(pte_t pte)
+ {
+-	return (pte_val(pte) & (_PAGE_USER | _PAGE_PRIVILEGED)) == _PAGE_USER;
++	return (pte_val(pte) & _PAGE_USER) == _PAGE_USER;
+ }
++#endif
+ 
+ /*
+  * We only find page table entry in the last level
+@@ -121,10 +125,12 @@ static inline pte_t pte_exprotect(pte_t pte)
+ 	return __pte(pte_val(pte) & ~_PAGE_EXEC);
+ }
+ 
++#ifndef pte_mkclean
+ static inline pte_t pte_mkclean(pte_t pte)
+ {
+-	return __pte(pte_val(pte) & ~(_PAGE_DIRTY | _PAGE_HWWRITE));
++	return __pte(pte_val(pte) & ~_PAGE_DIRTY);
+ }
++#endif
+ 
+ static inline pte_t pte_mkold(pte_t pte)
+ {
+@@ -141,20 +147,26 @@ static inline pte_t pte_mkspecial(pte_t pte)
+ 	return __pte(pte_val(pte) | _PAGE_SPECIAL);
+ }
+ 
++#ifndef pte_mkhuge
+ static inline pte_t pte_mkhuge(pte_t pte)
+ {
+-	return __pte(pte_val(pte) | _PAGE_HUGE);
++	return __pte(pte_val(pte));
+ }
++#endif
+ 
++#ifndef pte_mkprivileged
+ static inline pte_t pte_mkprivileged(pte_t pte)
+ {
+-	return __pte((pte_val(pte) & ~_PAGE_USER) | _PAGE_PRIVILEGED);
++	return __pte(pte_val(pte) & ~_PAGE_USER);
+ }
++#endif
+ 
++#ifndef pte_mkuser
+ static inline pte_t pte_mkuser(pte_t pte)
+ {
+-	return __pte((pte_val(pte) & ~_PAGE_PRIVILEGED) | _PAGE_USER);
++	return __pte(pte_val(pte) | _PAGE_USER);
+ }
++#endif
+ 
+ static inline pte_t pte_mknoncoherent(pte_t pte)
+ {
 diff --git a/arch/powerpc/include/asm/pte-common.h b/arch/powerpc/include/asm/pte-common.h
-index cce60b3ba7d4..4d594039bca5 100644
+index 4d594039bca5..1a2102f8b1e7 100644
 --- a/arch/powerpc/include/asm/pte-common.h
 +++ b/arch/powerpc/include/asm/pte-common.h
-@@ -14,9 +14,6 @@
+@@ -5,36 +5,12 @@
+  * Some bits are only used on some cpu families... Make sure that all
+  * the undefined gets a sensible default
+  */
+-#ifndef _PAGE_HWWRITE
+-#define _PAGE_HWWRITE	0
+-#endif
+ #ifndef _PAGE_COHERENT
+ #define _PAGE_COHERENT	0
+ #endif
  #ifndef _PAGE_WRITETHRU
  #define _PAGE_WRITETHRU	0
  #endif
--#ifndef _PAGE_SAO
--#define _PAGE_SAO	0
--#endif
- /* _PAGE_RO and _PAGE_RW shall not be defined at the same time */
- #ifndef _PAGE_RO
- #define _PAGE_RO 0
-@@ -61,35 +58,3 @@
-  */
- #define _PAGE_CHG_MASK	(PTE_RPN_MASK | _PAGE_DIRTY | \
-                          _PAGE_ACCESSED | _PAGE_SPECIAL)
--
--/* Permission masks used for kernel mappings */
--#define PAGE_KERNEL	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RW)
--#define PAGE_KERNEL_NC	__pgprot(_PAGE_BASE_NC | _PAGE_KERNEL_RW | \
--				 _PAGE_NO_CACHE)
--#define PAGE_KERNEL_NCG	__pgprot(_PAGE_BASE_NC | _PAGE_KERNEL_RW | \
--				 _PAGE_NO_CACHE | _PAGE_GUARDED)
--#define PAGE_KERNEL_X	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RWX)
--#define PAGE_KERNEL_RO	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RO)
--#define PAGE_KERNEL_ROX	__pgprot(_PAGE_BASE | _PAGE_KERNEL_ROX)
--
--/* Protection used for kernel text. We want the debuggers to be able to
-- * set breakpoints anywhere, so don't write protect the kernel text
-- * on platforms where such control is possible.
-- */
--#if defined(CONFIG_KGDB) || defined(CONFIG_XMON) || defined(CONFIG_BDI_SWITCH) ||\
--	defined(CONFIG_KPROBES) || defined(CONFIG_DYNAMIC_FTRACE)
--#define PAGE_KERNEL_TEXT	PAGE_KERNEL_X
+-/* _PAGE_RO and _PAGE_RW shall not be defined at the same time */
+-#ifndef _PAGE_RO
+-#define _PAGE_RO 0
 -#else
--#define PAGE_KERNEL_TEXT	PAGE_KERNEL_ROX
+-#define _PAGE_RW 0
 -#endif
 -
--/* Make modules code happy. We don't set RO yet */
--#define PAGE_KERNEL_EXEC	PAGE_KERNEL_X
--
--/* Advertise special mapping type for AGP */
--#define PAGE_AGP		(PAGE_KERNEL_NC)
--#define HAVE_PAGE_AGP
--
--#ifndef H_PAGE_4K_PFN
--#define H_PAGE_4K_PFN 0
+-/* At least one of _PAGE_PRIVILEGED or _PAGE_USER must be defined */
+-#ifndef _PAGE_PRIVILEGED
+-#define _PAGE_PRIVILEGED 0
+-#else
+-#ifndef _PAGE_USER
+-#define _PAGE_USER 0
 -#endif
+-#endif
+-#ifndef _PAGE_NA
+-#define _PAGE_NA 0
+-#endif
+-#ifndef _PAGE_HUGE
+-#define _PAGE_HUGE 0
+-#endif
+ 
+ /* Location of the PFN in the PTE. Most 32-bit platforms use the same
+  * as _PAGE_SHIFT here (ie, naturally aligned).
 -- 
 2.13.3
