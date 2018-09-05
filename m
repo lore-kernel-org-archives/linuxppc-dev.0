@@ -2,19 +2,18 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42539x1sRBzF374
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2018 22:37:09 +1000 (AEST)
-Message-Id: <a2d415d217759f61062c85cef54aca035f046544.1535913369.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42539z66f5zF37V
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2018 22:37:11 +1000 (AEST)
+Message-Id: <d2087f591a815825bcc2bc7869cd95337d7d33cf.1535913369.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1535913369.git.christophe.leroy@c-s.fr>
 References: <cover.1535913369.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [RFC PATCH v1 07/17] powerpc/mm: Split dump_pagelinuxtables
- flag_array table
+Subject: [RFC PATCH v1 08/17] powerpc/mm: drop unused page flags
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  npiggin@gmail.com, aneesh.kumar@linux.vnet.ibm.com
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Wed,  5 Sep 2018 12:37:05 +0000 (UTC)
+Date: Wed,  5 Sep 2018 12:37:07 +0000 (UTC)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,535 +23,116 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-To reduce the complexity of flag_array, and allow the removal of
-default 0 value of non existing flags, lets have one flag_array
-table for each platform family with only the really existing flags.
+The following page flags in pte-common.h can be dropped:
+
+_PAGE_ENDIAN is only used in mm/fsl_booke_mmu.c and is defined in
+asm/nohash/32/pte-fsl-booke.h
+
+_PAGE_4K_PFN is nowhere defined nor used
+
+_PAGE_READ, _PAGE_WRITE and _PAGE_PTE are only defined and used
+in book3s/64
+
+The following page flags in book3s/64/pgtable.h can be dropped as
+they are not used on this platform nor by common code.
+
+_PAGE_NA, _PAGE_RO, _PAGE_USER and _PAGE_PSIZE
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/mm/Makefile                        |   7 ++
- arch/powerpc/mm/dump_linuxpagetables-8xx.c      |  82 +++++++++++++
- arch/powerpc/mm/dump_linuxpagetables-book3s64.c | 115 ++++++++++++++++++
- arch/powerpc/mm/dump_linuxpagetables-generic.c  |  82 +++++++++++++
- arch/powerpc/mm/dump_linuxpagetables.c          | 155 +-----------------------
- arch/powerpc/mm/dump_linuxpagetables.h          |  19 +++
- 6 files changed, 307 insertions(+), 153 deletions(-)
- create mode 100644 arch/powerpc/mm/dump_linuxpagetables-8xx.c
- create mode 100644 arch/powerpc/mm/dump_linuxpagetables-book3s64.c
- create mode 100644 arch/powerpc/mm/dump_linuxpagetables-generic.c
- create mode 100644 arch/powerpc/mm/dump_linuxpagetables.h
+ arch/powerpc/include/asm/book3s/64/pgtable.h | 10 +---------
+ arch/powerpc/include/asm/pte-common.h        | 17 +----------------
+ 2 files changed, 2 insertions(+), 25 deletions(-)
 
-diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
-index cdf6a9960046..3c844bdd16c4 100644
---- a/arch/powerpc/mm/Makefile
-+++ b/arch/powerpc/mm/Makefile
-@@ -43,5 +43,12 @@ obj-$(CONFIG_HIGHMEM)		+= highmem.o
- obj-$(CONFIG_PPC_COPRO_BASE)	+= copro_fault.o
- obj-$(CONFIG_SPAPR_TCE_IOMMU)	+= mmu_context_iommu.o
- obj-$(CONFIG_PPC_PTDUMP)	+= dump_linuxpagetables.o
-+ifdef CONFIG_PPC_PTDUMP
-+obj-$(CONFIG_4xx)		+= dump_linuxpagetables-generic.o
-+obj-$(CONFIG_PPC_8xx)		+= dump_linuxpagetables-8xx.o
-+obj-$(CONFIG_PPC_BOOK3E_MMU)	+= dump_linuxpagetables-generic.o
-+obj-$(CONFIG_PPC_BOOK3S_32)	+= dump_linuxpagetables-generic.o
-+obj-$(CONFIG_PPC_BOOK3S_64)	+= dump_linuxpagetables-book3s64.o
-+endif
- obj-$(CONFIG_PPC_HTDUMP)	+= dump_hashpagetable.o
- obj-$(CONFIG_PPC_MEM_KEYS)	+= pkeys.o
-diff --git a/arch/powerpc/mm/dump_linuxpagetables-8xx.c b/arch/powerpc/mm/dump_linuxpagetables-8xx.c
-new file mode 100644
-index 000000000000..33f52a97975b
---- /dev/null
-+++ b/arch/powerpc/mm/dump_linuxpagetables-8xx.c
-@@ -0,0 +1,82 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * From split of dump_linuxpagetables.c
-+ * Copyright 2016, Rashmica Gupta, IBM Corp.
-+ *
-+ */
-+#include <linux/kernel.h>
-+#include <asm/pgtable.h>
-+
-+#include "dump_linuxpagetables.h"
-+
-+static const struct flag_info flag_array[] = {
-+	{
-+		.mask	= _PAGE_PRIVILEGED,
-+		.val	= 0,
-+		.set	= "user",
-+		.clear	= "    ",
-+	}, {
-+		.mask	= _PAGE_RO | _PAGE_NA,
-+		.val	= 0,
-+		.set	= "rw",
-+	}, {
-+		.mask	= _PAGE_RO | _PAGE_NA,
-+		.val	= _PAGE_RO,
-+		.set	= "r ",
-+	}, {
-+		.mask	= _PAGE_RO | _PAGE_NA,
-+		.val	= _PAGE_NA,
-+		.set	= "  ",
-+	}, {
-+		.mask	= _PAGE_EXEC,
-+		.val	= _PAGE_EXEC,
-+		.set	= " X ",
-+		.clear	= "   ",
-+	}, {
-+		.mask	= _PAGE_PRESENT,
-+		.val	= _PAGE_PRESENT,
-+		.set	= "present",
-+		.clear	= "       ",
-+	}, {
-+		.mask	= _PAGE_GUARDED,
-+		.val	= _PAGE_GUARDED,
-+		.set	= "guarded",
-+		.clear	= "       ",
-+	}, {
-+		.mask	= _PAGE_DIRTY,
-+		.val	= _PAGE_DIRTY,
-+		.set	= "dirty",
-+		.clear	= "     ",
-+	}, {
-+		.mask	= _PAGE_ACCESSED,
-+		.val	= _PAGE_ACCESSED,
-+		.set	= "accessed",
-+		.clear	= "        ",
-+	}, {
-+		.mask	= _PAGE_NO_CACHE,
-+		.val	= _PAGE_NO_CACHE,
-+		.set	= "no cache",
-+		.clear	= "        ",
-+	}, {
-+		.mask	= _PAGE_SPECIAL,
-+		.val	= _PAGE_SPECIAL,
-+		.set	= "special",
-+	}
-+};
-+
-+struct pgtable_level pg_level[5] = {
-+	{
-+	}, { /* pgd */
-+		.flag	= flag_array,
-+		.num	= ARRAY_SIZE(flag_array),
-+	}, { /* pud */
-+		.flag	= flag_array,
-+		.num	= ARRAY_SIZE(flag_array),
-+	}, { /* pmd */
-+		.flag	= flag_array,
-+		.num	= ARRAY_SIZE(flag_array),
-+	}, { /* pte */
-+		.flag	= flag_array,
-+		.num	= ARRAY_SIZE(flag_array),
-+	},
-+};
-diff --git a/arch/powerpc/mm/dump_linuxpagetables-book3s64.c b/arch/powerpc/mm/dump_linuxpagetables-book3s64.c
-new file mode 100644
-index 000000000000..78aabdd63dc0
---- /dev/null
-+++ b/arch/powerpc/mm/dump_linuxpagetables-book3s64.c
-@@ -0,0 +1,115 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * From split of dump_linuxpagetables.c
-+ * Copyright 2016, Rashmica Gupta, IBM Corp.
-+ *
-+ */
-+#include <linux/kernel.h>
-+#include <asm/pgtable.h>
-+
-+#include "dump_linuxpagetables.h"
-+
-+static const struct flag_info flag_array[] = {
-+	{
-+		.mask	= _PAGE_PRIVILEGED,
-+		.val	= 0,
-+		.set	= "user",
-+		.clear	= "    ",
-+	}, {
-+		.mask	= _PAGE_READ,
-+		.val	= _PAGE_READ,
-+		.set	= "r",
-+		.clear	= " ",
-+	}, {
-+		.mask	= _PAGE_WRITE
-+		.val	= _PAGE_WRITE,
-+		.set	= "w",
-+		.clear	= " ",
-+	}, {
-+		.mask	= _PAGE_EXEC,
-+		.val	= _PAGE_EXEC,
-+		.set	= " X ",
-+		.clear	= "   ",
-+	}, {
-+		.mask	= _PAGE_PTE,
-+		.val	= _PAGE_PTE,
-+		.set	= "pte",
-+		.clear	= "   ",
-+	}, {
-+		.mask	= _PAGE_PRESENT,
-+		.val	= _PAGE_PRESENT,
-+		.set	= "present",
-+		.clear	= "       ",
-+	}, {
-+		.mask	= H_PAGE_HASHPTE,
-+		.val	= H_PAGE_HASHPTE,
-+		.set	= "hpte",
-+		.clear	= "    ",
-+	}, {
-+		.mask	= _PAGE_DIRTY,
-+		.val	= _PAGE_DIRTY,
-+		.set	= "dirty",
-+		.clear	= "     ",
-+	}, {
-+		.mask	= _PAGE_ACCESSED,
-+		.val	= _PAGE_ACCESSED,
-+		.set	= "accessed",
-+		.clear	= "        ",
-+	}, {
-+		.mask	= _PAGE_NON_IDEMPOTENT,
-+		.val	= _PAGE_NON_IDEMPOTENT,
-+		.set	= "non-idempotent",
-+		.clear	= "              ",
-+	}, {
-+		.mask	= _PAGE_TOLERANT,
-+		.val	= _PAGE_TOLERANT,
-+		.set	= "tolerant",
-+		.clear	= "        ",
-+	}, {
-+		.mask	= H_PAGE_BUSY,
-+		.val	= H_PAGE_BUSY,
-+		.set	= "busy",
-+	}, {
-+#ifdef CONFIG_PPC_64K_PAGES
-+		.mask	= H_PAGE_COMBO,
-+		.val	= H_PAGE_COMBO,
-+		.set	= "combo",
-+	}, {
-+		.mask	= H_PAGE_4K_PFN,
-+		.val	= H_PAGE_4K_PFN,
-+		.set	= "4K_pfn",
-+	}, {
-+#else /* CONFIG_PPC_64K_PAGES */
-+		.mask	= H_PAGE_F_GIX,
-+		.val	= H_PAGE_F_GIX,
-+		.set	= "f_gix",
-+		.is_val	= true,
-+		.shift	= H_PAGE_F_GIX_SHIFT,
-+	}, {
-+		.mask	= H_PAGE_F_SECOND,
-+		.val	= H_PAGE_F_SECOND,
-+		.set	= "f_second",
-+	}, {
-+#endif /* CONFIG_PPC_64K_PAGES */
-+		.mask	= _PAGE_SPECIAL,
-+		.val	= _PAGE_SPECIAL,
-+		.set	= "special",
-+	}
-+};
-+
-+struct pgtable_level pg_level[5] = {
-+	{
-+	}, { /* pgd */
-+		.flag	= flag_array,
-+		.num	= ARRAY_SIZE(flag_array),
-+	}, { /* pud */
-+		.flag	= flag_array,
-+		.num	= ARRAY_SIZE(flag_array),
-+	}, { /* pmd */
-+		.flag	= flag_array,
-+		.num	= ARRAY_SIZE(flag_array),
-+	}, { /* pte */
-+		.flag	= flag_array,
-+		.num	= ARRAY_SIZE(flag_array),
-+	},
-+};
-diff --git a/arch/powerpc/mm/dump_linuxpagetables-generic.c b/arch/powerpc/mm/dump_linuxpagetables-generic.c
-new file mode 100644
-index 000000000000..1e3829ec1348
---- /dev/null
-+++ b/arch/powerpc/mm/dump_linuxpagetables-generic.c
-@@ -0,0 +1,82 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * From split of dump_linuxpagetables.c
-+ * Copyright 2016, Rashmica Gupta, IBM Corp.
-+ *
-+ */
-+#include <linux/kernel.h>
-+#include <asm/pgtable.h>
-+
-+#include "dump_linuxpagetables.h"
-+
-+static const struct flag_info flag_array[] = {
-+	{
-+		.mask	= _PAGE_USER,
-+		.val	= _PAGE_USER,
-+		.set	= "user",
-+		.clear	= "    ",
-+	}, {
-+		.mask	= _PAGE_RW,
-+		.val	= _PAGE_RW,
-+		.set	= "rw",
-+		.clear	= "r ",
-+	}, {
-+#ifndef CONFIG_PPC_BOOK3S_32
-+		.mask	= _PAGE_EXEC,
-+		.val	= _PAGE_EXEC,
-+		.set	= " X ",
-+		.clear	= "   ",
-+	}, {
-+#endif
-+		.mask	= _PAGE_PRESENT,
-+		.val	= _PAGE_PRESENT,
-+		.set	= "present",
-+		.clear	= "       ",
-+	}, {
-+		.mask	= _PAGE_GUARDED,
-+		.val	= _PAGE_GUARDED,
-+		.set	= "guarded",
-+		.clear	= "       ",
-+	}, {
-+		.mask	= _PAGE_DIRTY,
-+		.val	= _PAGE_DIRTY,
-+		.set	= "dirty",
-+		.clear	= "     ",
-+	}, {
-+		.mask	= _PAGE_ACCESSED,
-+		.val	= _PAGE_ACCESSED,
-+		.set	= "accessed",
-+		.clear	= "        ",
-+	}, {
-+		.mask	= _PAGE_WRITETHRU,
-+		.val	= _PAGE_WRITETHRU,
-+		.set	= "write through",
-+		.clear	= "             ",
-+	}, {
-+		.mask	= _PAGE_NO_CACHE,
-+		.val	= _PAGE_NO_CACHE,
-+		.set	= "no cache",
-+		.clear	= "        ",
-+	}, {
-+		.mask	= _PAGE_SPECIAL,
-+		.val	= _PAGE_SPECIAL,
-+		.set	= "special",
-+	}
-+};
-+
-+struct pgtable_level pg_level[5] = {
-+	{
-+	}, { /* pgd */
-+		.flag	= flag_array,
-+		.num	= ARRAY_SIZE(flag_array),
-+	}, { /* pud */
-+		.flag	= flag_array,
-+		.num	= ARRAY_SIZE(flag_array),
-+	}, { /* pmd */
-+		.flag	= flag_array,
-+		.num	= ARRAY_SIZE(flag_array),
-+	}, { /* pte */
-+		.flag	= flag_array,
-+		.num	= ARRAY_SIZE(flag_array),
-+	},
-+};
-diff --git a/arch/powerpc/mm/dump_linuxpagetables.c b/arch/powerpc/mm/dump_linuxpagetables.c
-index 876e2a3c79f2..e60aa6d7456d 100644
---- a/arch/powerpc/mm/dump_linuxpagetables.c
-+++ b/arch/powerpc/mm/dump_linuxpagetables.c
-@@ -27,6 +27,8 @@
- #include <asm/page.h>
- #include <asm/pgalloc.h>
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index b8a88c6d34ff..23299e1a2c08 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -14,10 +14,6 @@
+  */
+ #define _PAGE_BIT_SWAP_TYPE	0
  
-+#include "dump_linuxpagetables.h"
-+
- #ifdef CONFIG_PPC32
- #define KERN_VIRT_START	0
+-#define _PAGE_NA		0
+-#define _PAGE_RO		0
+-#define _PAGE_USER		0
+-
+ #define _PAGE_EXEC		0x00001 /* execute permission */
+ #define _PAGE_WRITE		0x00002 /* write access allowed */
+ #define _PAGE_READ		0x00004	/* read access allowed */
+@@ -123,10 +119,6 @@
+ #define _PAGE_KERNEL_RWX	(_PAGE_PRIVILEGED | _PAGE_DIRTY |	\
+ 				 _PAGE_RW | _PAGE_EXEC)
+ /*
+- * No page size encoding in the linux PTE
+- */
+-#define _PAGE_PSIZE		0
+-/*
+  * _PAGE_CHG_MASK masks of bits that are to be preserved across
+  * pgprot changes
+  */
+@@ -149,7 +141,7 @@
+  * pages. We always set _PAGE_COHERENT when SMP is enabled or
+  * the processor might need it for DMA coherency.
+  */
+-#define _PAGE_BASE_NC	(_PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_PSIZE)
++#define _PAGE_BASE_NC	(_PAGE_PRESENT | _PAGE_ACCESSED)
+ #define _PAGE_BASE	(_PAGE_BASE_NC)
+ 
+ /* Permission masks used to generate the __P and __S table,
+diff --git a/arch/powerpc/include/asm/pte-common.h b/arch/powerpc/include/asm/pte-common.h
+index bef56141a549..5a5ba43bdf98 100644
+--- a/arch/powerpc/include/asm/pte-common.h
++++ b/arch/powerpc/include/asm/pte-common.h
+@@ -14,18 +14,12 @@
+ #ifndef _PAGE_EXEC
+ #define _PAGE_EXEC	0
  #endif
-@@ -101,159 +103,6 @@ static struct addr_marker address_markers[] = {
- 	{ -1,	NULL },
- };
+-#ifndef _PAGE_ENDIAN
+-#define _PAGE_ENDIAN	0
+-#endif
+ #ifndef _PAGE_COHERENT
+ #define _PAGE_COHERENT	0
+ #endif
+ #ifndef _PAGE_WRITETHRU
+ #define _PAGE_WRITETHRU	0
+ #endif
+-#ifndef _PAGE_4K_PFN
+-#define _PAGE_4K_PFN		0
+-#endif
+ #ifndef _PAGE_SAO
+ #define _PAGE_SAO	0
+ #endif
+@@ -39,9 +33,6 @@
+ #define _PAGE_RW 0
+ #endif
  
--struct flag_info {
--	u64		mask;
--	u64		val;
--	const char	*set;
--	const char	*clear;
--	bool		is_val;
--	int		shift;
--};
+-#ifndef _PAGE_PTE
+-#define _PAGE_PTE 0
+-#endif
+ /* At least one of _PAGE_PRIVILEGED or _PAGE_USER must be defined */
+ #ifndef _PAGE_PRIVILEGED
+ #define _PAGE_PRIVILEGED 0
+@@ -122,7 +113,7 @@ static inline bool pte_user(pte_t pte)
+ 
+ /* Mask of bits returned by pte_pgprot() */
+ #define PAGE_PROT_BITS	(_PAGE_GUARDED | _PAGE_COHERENT | _PAGE_NO_CACHE | \
+-			 _PAGE_WRITETHRU | _PAGE_ENDIAN | _PAGE_4K_PFN | \
++			 _PAGE_WRITETHRU | \
+ 			 _PAGE_USER | _PAGE_ACCESSED | _PAGE_RO | _PAGE_NA | \
+ 			 _PAGE_PRIVILEGED | \
+ 			 _PAGE_RW | _PAGE_HWWRITE | _PAGE_DIRTY | _PAGE_EXEC)
+@@ -208,12 +199,6 @@ static inline bool pte_user(pte_t pte)
+ #define PAGE_AGP		(PAGE_KERNEL_NC)
+ #define HAVE_PAGE_AGP
+ 
+-#ifndef _PAGE_READ
+-/* if not defined, we should not find _PAGE_WRITE too */
+-#define _PAGE_READ 0
+-#define _PAGE_WRITE _PAGE_RW
+-#endif
 -
--static const struct flag_info flag_array[] = {
--	{
--		.mask	= _PAGE_USER | _PAGE_PRIVILEGED,
--		.val	= _PAGE_USER,
--		.set	= "user",
--		.clear	= "    ",
--	}, {
--		.mask	= _PAGE_RW | _PAGE_RO | _PAGE_NA,
--		.val	= _PAGE_RW,
--		.set	= "rw",
--	}, {
--		.mask	= _PAGE_RW | _PAGE_RO | _PAGE_NA,
--		.val	= _PAGE_RO,
--		.set	= "ro",
--	}, {
--#if _PAGE_NA != 0
--		.mask	= _PAGE_RW | _PAGE_RO | _PAGE_NA,
--		.val	= _PAGE_RO,
--		.set	= "na",
--	}, {
--#endif
--		.mask	= _PAGE_EXEC,
--		.val	= _PAGE_EXEC,
--		.set	= " X ",
--		.clear	= "   ",
--	}, {
--		.mask	= _PAGE_PTE,
--		.val	= _PAGE_PTE,
--		.set	= "pte",
--		.clear	= "   ",
--	}, {
--		.mask	= _PAGE_PRESENT,
--		.val	= _PAGE_PRESENT,
--		.set	= "present",
--		.clear	= "       ",
--	}, {
--#ifdef CONFIG_PPC_BOOK3S_64
--		.mask	= H_PAGE_HASHPTE,
--		.val	= H_PAGE_HASHPTE,
--#else
--		.mask	= _PAGE_HASHPTE,
--		.val	= _PAGE_HASHPTE,
--#endif
--		.set	= "hpte",
--		.clear	= "    ",
--	}, {
--#ifndef CONFIG_PPC_BOOK3S_64
--		.mask	= _PAGE_GUARDED,
--		.val	= _PAGE_GUARDED,
--		.set	= "guarded",
--		.clear	= "       ",
--	}, {
--#endif
--		.mask	= _PAGE_DIRTY,
--		.val	= _PAGE_DIRTY,
--		.set	= "dirty",
--		.clear	= "     ",
--	}, {
--		.mask	= _PAGE_ACCESSED,
--		.val	= _PAGE_ACCESSED,
--		.set	= "accessed",
--		.clear	= "        ",
--	}, {
--#ifndef CONFIG_PPC_BOOK3S_64
--		.mask	= _PAGE_WRITETHRU,
--		.val	= _PAGE_WRITETHRU,
--		.set	= "write through",
--		.clear	= "             ",
--	}, {
--#endif
--#ifndef CONFIG_PPC_BOOK3S_64
--		.mask	= _PAGE_NO_CACHE,
--		.val	= _PAGE_NO_CACHE,
--		.set	= "no cache",
--		.clear	= "        ",
--	}, {
--#else
--		.mask	= _PAGE_NON_IDEMPOTENT,
--		.val	= _PAGE_NON_IDEMPOTENT,
--		.set	= "non-idempotent",
--		.clear	= "              ",
--	}, {
--		.mask	= _PAGE_TOLERANT,
--		.val	= _PAGE_TOLERANT,
--		.set	= "tolerant",
--		.clear	= "        ",
--	}, {
--#endif
--#ifdef CONFIG_PPC_BOOK3S_64
--		.mask	= H_PAGE_BUSY,
--		.val	= H_PAGE_BUSY,
--		.set	= "busy",
--	}, {
--#ifdef CONFIG_PPC_64K_PAGES
--		.mask	= H_PAGE_COMBO,
--		.val	= H_PAGE_COMBO,
--		.set	= "combo",
--	}, {
--		.mask	= H_PAGE_4K_PFN,
--		.val	= H_PAGE_4K_PFN,
--		.set	= "4K_pfn",
--	}, {
--#else /* CONFIG_PPC_64K_PAGES */
--		.mask	= H_PAGE_F_GIX,
--		.val	= H_PAGE_F_GIX,
--		.set	= "f_gix",
--		.is_val	= true,
--		.shift	= H_PAGE_F_GIX_SHIFT,
--	}, {
--		.mask	= H_PAGE_F_SECOND,
--		.val	= H_PAGE_F_SECOND,
--		.set	= "f_second",
--	}, {
--#endif /* CONFIG_PPC_64K_PAGES */
--#endif
--		.mask	= _PAGE_SPECIAL,
--		.val	= _PAGE_SPECIAL,
--		.set	= "special",
--	}
--};
--
--struct pgtable_level {
--	const struct flag_info *flag;
--	size_t num;
--	u64 mask;
--};
--
--static struct pgtable_level pg_level[] = {
--	{
--	}, { /* pgd */
--		.flag	= flag_array,
--		.num	= ARRAY_SIZE(flag_array),
--	}, { /* pud */
--		.flag	= flag_array,
--		.num	= ARRAY_SIZE(flag_array),
--	}, { /* pmd */
--		.flag	= flag_array,
--		.num	= ARRAY_SIZE(flag_array),
--	}, { /* pte */
--		.flag	= flag_array,
--		.num	= ARRAY_SIZE(flag_array),
--	},
--};
--
- static void dump_flag_info(struct pg_state *st, const struct flag_info
- 		*flag, u64 pte, int num)
- {
-diff --git a/arch/powerpc/mm/dump_linuxpagetables.h b/arch/powerpc/mm/dump_linuxpagetables.h
-new file mode 100644
-index 000000000000..5d513636de73
---- /dev/null
-+++ b/arch/powerpc/mm/dump_linuxpagetables.h
-@@ -0,0 +1,19 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+#include <linux/types.h>
-+
-+struct flag_info {
-+	u64		mask;
-+	u64		val;
-+	const char	*set;
-+	const char	*clear;
-+	bool		is_val;
-+	int		shift;
-+};
-+
-+struct pgtable_level {
-+	const struct flag_info *flag;
-+	size_t num;
-+	u64 mask;
-+};
-+
-+extern struct pgtable_level pg_level[5];
+ #ifndef H_PAGE_4K_PFN
+ #define H_PAGE_4K_PFN 0
+ #endif
 -- 
 2.13.3
