@@ -2,19 +2,18 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42539l1SrkzF36g
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2018 22:36:58 +1000 (AEST)
-Message-Id: <d078b40c8f5015611d983d229594a84e1e21d331.1535913369.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42539n527RzF1nv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2018 22:37:00 +1000 (AEST)
+Message-Id: <b19dcca52787042f833e261dc4b829c21f52cd49.1535913369.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1535913369.git.christophe.leroy@c-s.fr>
 References: <cover.1535913369.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [RFC PATCH v1 02/17] powerpc/mm: remove direct use of flags related
- to cache
+Subject: [RFC PATCH v1 03/17] powerpc/mm: dont't use _PAGE_EXEC in book3s/32
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  npiggin@gmail.com, aneesh.kumar@linux.vnet.ibm.com
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Wed,  5 Sep 2018 12:36:55 +0000 (UTC)
+Date: Wed,  5 Sep 2018 12:36:57 +0000 (UTC)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,65 +23,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As already done for PPC64, use pgprot_cache() helpers
-instead of flags in ioremap() derived functions.
+book3s/32 doesn't define _PAGE_EXEC, so no need to use it.
+
+All other platforms define _PAGE_EXEC so no need to check
+it is not NUL when not book3s/32.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/nohash/pgtable.h |  2 ++
- arch/powerpc/mm/pgtable_32.c              | 15 +++++++++------
- 2 files changed, 11 insertions(+), 6 deletions(-)
+ arch/powerpc/include/asm/book3s/32/pgtable.h | 2 +-
+ arch/powerpc/mm/pgtable.c                    | 6 +++---
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
-index b321c82b3624..5b82e44c4231 100644
---- a/arch/powerpc/include/asm/nohash/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/pgtable.h
-@@ -197,6 +197,8 @@ extern int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long addre
- #if _PAGE_WRITETHRU != 0
- #define pgprot_cached_wthru(prot) (__pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) | \
- 				            _PAGE_COHERENT | _PAGE_WRITETHRU))
-+#else
-+#define pgprot_cached_wthru(prot)	pgprot_noncached(prot)
- #endif
- 
- #define pgprot_cached_noncoherent(prot) \
-diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index 528999738645..f983ffa24aa0 100644
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -76,24 +76,27 @@ pgtable_t pte_alloc_one(struct mm_struct *mm, unsigned long address)
- void __iomem *
- ioremap(phys_addr_t addr, unsigned long size)
+diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
+index 751cf931bb3f..b6d3b25d255c 100644
+--- a/arch/powerpc/include/asm/book3s/32/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
+@@ -234,7 +234,7 @@ static inline void __ptep_set_access_flags(struct vm_area_struct *vma,
+ 					   int psize)
  {
--	return __ioremap_caller(addr, size, _PAGE_NO_CACHE | _PAGE_GUARDED,
--				__builtin_return_address(0));
-+	unsigned long flags = pgprot_val(pgprot_noncached(__pgprot(0)));
-+
-+	return __ioremap_caller(addr, size, flags, __builtin_return_address(0));
- }
- EXPORT_SYMBOL(ioremap);
+ 	unsigned long set = pte_val(entry) &
+-		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC);
++		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW);
+ 	unsigned long clr = ~pte_val(entry) & _PAGE_RO;
  
- void __iomem *
- ioremap_wc(phys_addr_t addr, unsigned long size)
- {
--	return __ioremap_caller(addr, size, _PAGE_NO_CACHE,
--				__builtin_return_address(0));
-+	unsigned long flags = pgprot_val(pgprot_noncached_wc(__pgprot(0)));
-+
-+	return __ioremap_caller(addr, size, flags, __builtin_return_address(0));
+ 	pte_update(ptep, clr, set);
+diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
+index d71c7777669c..4f788f3762a9 100644
+--- a/arch/powerpc/mm/pgtable.c
++++ b/arch/powerpc/mm/pgtable.c
+@@ -73,7 +73,7 @@ static struct page *maybe_pte_to_page(pte_t pte)
+ 	return page;
  }
- EXPORT_SYMBOL(ioremap_wc);
  
- void __iomem *
- ioremap_wt(phys_addr_t addr, unsigned long size)
- {
--	return __ioremap_caller(addr, size, _PAGE_WRITETHRU,
--				__builtin_return_address(0));
-+	unsigned long flags = pgprot_val(pgprot_cached_wthru(__pgprot(0)));
-+
-+	return __ioremap_caller(addr, size, flags, __builtin_return_address(0));
+-#if defined(CONFIG_PPC_STD_MMU) || _PAGE_EXEC == 0
++#ifdef CONFIG_PPC_BOOK3S
+ 
+ /* Server-style MMU handles coherency when hashing if HW exec permission
+  * is supposed per page (currently 64-bit only). If not, then, we always
+@@ -106,7 +106,7 @@ static pte_t set_access_flags_filter(pte_t pte, struct vm_area_struct *vma,
+ 	return pte;
  }
- EXPORT_SYMBOL(ioremap_wt);
  
+-#else /* defined(CONFIG_PPC_STD_MMU) || _PAGE_EXEC == 0 */
++#else /* CONFIG_PPC_BOOK3S */
+ 
+ /* Embedded type MMU with HW exec support. This is a bit more complicated
+  * as we don't have two bits to spare for _PAGE_EXEC and _PAGE_HWEXEC so
+@@ -179,7 +179,7 @@ static pte_t set_access_flags_filter(pte_t pte, struct vm_area_struct *vma,
+ 	return __pte(pte_val(pte) | _PAGE_EXEC);
+ }
+ 
+-#endif /* !(defined(CONFIG_PPC_STD_MMU) || _PAGE_EXEC == 0) */
++#endif /* CONFIG_PPC_BOOK3S */
+ 
+ /*
+  * set_pte stores a linux PTE into the linux page table.
 -- 
 2.13.3
