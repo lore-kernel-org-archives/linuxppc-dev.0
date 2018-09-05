@@ -1,21 +1,28 @@
-Return-Path: <sjitindarsingh@gmail.com>
-Received: from mail-pf1-f193.google.com (mail-pf1-f193.google.com
- [209.85.210.193])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <ran.wang_1@nxp.com>
+Received: from EUR04-HE1-obe.outbound.protection.outlook.com
+ (mail-eopbgr70042.outbound.protection.outlook.com [40.107.7.42])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 424nGk1rwKzF37S
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2018 12:10:19 +1000 (AEST)
-Received: by mail-pf1-f193.google.com with SMTP id j26-v6so2616340pfi.10
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Sep 2018 19:10:19 -0700 (PDT)
-From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: mpe@ellerman.id.au, mikey@neuling.org, joel@jms.id.au,
- Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-Subject: [PATCH 1/2] powerpc/prom: Remove VLA in prom_check_platform_support()
-Date: Wed,  5 Sep 2018 12:09:50 +1000
-Message-Id: <20180905020951.10372-2-sjitindarsingh@gmail.com>
-In-Reply-To: <20180905020951.10372-1-sjitindarsingh@gmail.com>
-References: <20180905020951.10372-1-sjitindarsingh@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 424nYN05xzzF37X
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2018 12:23:02 +1000 (AEST)
+From: Ran Wang <ran.wang_1@nxp.com>
+To: Rob Herring <robh@kernel.org>
+CC: Leo Li <leoyang.li@nxp.com>, Mark Rutland <mark.rutland@arm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org"
+ <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>
+Subject: RE: [PATCH 2/3] Documentation: dt: binding: fsl: update property
+ description for RCPM
+Date: Wed, 5 Sep 2018 02:22:55 +0000
+Message-ID: <AM5PR0402MB28659BF8C2B5B3B18DB6BAC9F1020@AM5PR0402MB2865.eurprd04.prod.outlook.com>
+References: <20180831035219.31619-1-ran.wang_1@nxp.com>
+ <20180831035219.31619-2-ran.wang_1@nxp.com>
+ <5b8e8a71.1c69fb81.d966f.1ca1@mx.google.com>
+In-Reply-To: <5b8e8a71.1c69fb81.d966f.1ca1@mx.google.com>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,41 +32,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In prom_check_platform_support() we retrieve and parse the
-"ibm,arch-vec-5-platform-support" property of the chosen node.
-Currently we use a variable length array however to avoid this use an
-array of constant length 8.
+Hi Rob
 
-This property is used to indicate the supported options of vector 5
-bytes 23-26 of the ibm,architecture.vec node. Each of these options
-is a pair of bytes, thus for 4 options we have a max length of 8 bytes.
+> -----Original Message-----
+> From: Rob Herring <robh@kernel.org>
+> Sent: Tuesday, September 04, 2018 09:25
+> To: Ran Wang <ran.wang_1@nxp.com>
+> Cc: Leo Li <leoyang.li@nxp.com>; Mark Rutland <mark.rutland@arm.com>;
+> linuxppc-dev@lists.ozlabs.org; linux-arm-kernel@lists.infradead.org;
+> devicetree@vger.kernel.org; linux-kernel@vger.kernel.org
+> Subject: Re: [PATCH 2/3] Documentation: dt: binding: fsl: update property
+> description for RCPM
+>=20
+> On Fri, Aug 31, 2018 at 11:52:18AM +0800, Ran Wang wrote:
+> > Add property 'big-endian' and supportted IP's configuration info.
+> > Remove property 'fsl,#rcpm-wakeup-cell'.
+>=20
+> "dt-bindings: soc: ..." for the subject
+>=20
+> It is obvious reading the diff you are removing fsl,#rcpm-wakeup-cell.
+> What is not obvious is why? The commit msg should answer that.
 
-Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
----
- arch/powerpc/kernel/prom_init.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+Sure, I will add this in next version patch.
 
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index 9b38a2e5dd35..ce5fc03dc69f 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -1131,12 +1131,15 @@ static void __init prom_check_platform_support(void)
- 				       "ibm,arch-vec-5-platform-support");
- 	if (prop_len > 1) {
- 		int i;
--		u8 vec[prop_len];
-+		u8 vec[8];
- 		prom_debug("Found ibm,arch-vec-5-platform-support, len: %d\n",
- 			   prop_len);
-+		if (prop_len > sizeof(vec))
-+			prom_printf("WARNING: ibm,arch-vec-5-platform-support longer "\
-+				    " than expected (len: %d)\n", prop_len);
- 		prom_getprop(prom.chosen, "ibm,arch-vec-5-platform-support",
- 			     &vec, sizeof(vec));
--		for (i = 0; i < prop_len; i += 2) {
-+		for (i = 0; i < sizeof(vec); i += 2) {
- 			prom_debug("%d: index = 0x%x val = 0x%x\n", i / 2
- 								  , vec[i]
- 								  , vec[i + 1]);
--- 
-2.13.6
+> You also are mixing several things in this patch like adding ls1012 which=
+ you
+> don't mention. Please split.
+
+Got it, will split them and add more information in next version.
+=20
+Ran
+> >
+> > Signed-off-by: Ran Wang <ran.wang_1@nxp.com>
+> > ---
+> >  Documentation/devicetree/bindings/soc/fsl/rcpm.txt |   42 ++++++------=
+-----
+> --
+> >  1 files changed, 13 insertions(+), 29 deletions(-)
