@@ -3,8 +3,8 @@ Received: from barracuda.hxt-semitech.com (mx01.hxt-semitech.com
  [223.203.96.7])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 424pV02GJszF1nv
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2018 13:05:12 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 424pl54bXPzF0PW
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2018 13:16:31 +1000 (AEST)
 From: "Wang, Dongsheng" <dongsheng.wang@hxt-semitech.com>
 To: Ran Wang <ran.wang_1@nxp.com>, Leo Li <leoyang.li@nxp.com>, Rob Herring
  <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
@@ -12,11 +12,12 @@ CC: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
  "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
-Subject: Re: [PATCH 1/3] soc: fsl: add Platform PM driver QorIQ platforms
-Date: Wed, 5 Sep 2018 03:04:46 +0000
-Message-ID: <366f03eab44e489b9fef82fb8e8f3c3b@HXTBJIDCEMVIW02.hxtcorp.net>
+Subject: Re: [PATCH 3/3] soc: fsl: add RCPM driver
+Date: Wed, 5 Sep 2018 02:57:58 +0000
+Message-ID: <be39f5ea8c9046b0bf1f6bbfe935fae4@HXTBJIDCEMVIW02.hxtcorp.net>
 References: <20180831035219.31619-1-ran.wang_1@nxp.com>
-Content-Type: text/plain; charset="us-ascii"
+ <20180831035219.31619-3-ran.wang_1@nxp.com>
+Content-Type: text/plain; charset="iso-2022-jp"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,252 +30,226 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Please change your comments style.=0A=
 =0A=
-On 2018/8/31 11:57, Ran Wang wrote:=0A=
-> This driver is to provide a independent framework for PM service=0A=
-> provider and consumer to configure system level wake up feature. For=0A=
-> example, RCPM driver could register a callback function on this=0A=
-> platform first, and Flex timer driver who want to enable timer wake=0A=
-> up feature, will call generic API provided by this platform driver,=0A=
-> and then it will trigger RCPM driver to do it. The benefit is to=0A=
-> isolate the user and service, such as flex timer driver will not have=0A=
-> to know the implement details of wakeup function it require. Besides,=0A=
-> it is also easy for service side to upgrade its logic when design is=0A=
-> changed and remain user side unchanged.=0A=
+On 2018/8/31 11:56, Ran Wang wrote:=0A=
+> The NXP's QorIQ Processors based on ARM Core have RCPM module (Run=0A=
+> Control and Power Management), which performs all device-level=0A=
+> tasks associated with power management such as wakeup source control.=0A=
 >=0A=
+> This driver depends on FSL platform PM driver framework which help to=0A=
+> isolate user and PM service provider (such as RCPM driver).=0A=
+>=0A=
+> Signed-off-by: Chenhui Zhao <chenhui.zhao@nxp.com>=0A=
+> Signed-off-by: Ying Zhang <ying.zhang22455@nxp.com>=0A=
 > Signed-off-by: Ran Wang <ran.wang_1@nxp.com>=0A=
 > ---=0A=
->  drivers/soc/fsl/Kconfig   |   14 +++++=0A=
+>  drivers/soc/fsl/Kconfig   |    6 ++=0A=
 >  drivers/soc/fsl/Makefile  |    1 +=0A=
->  drivers/soc/fsl/plat_pm.c |  144 +++++++++++++++++++++++++++++++++++++++=
+>  drivers/soc/fsl/ls-rcpm.c |  153 +++++++++++++++++++++++++++++++++++++++=
 ++++++=0A=
->  include/soc/fsl/plat_pm.h |   22 +++++++=0A=
->  4 files changed, 181 insertions(+), 0 deletions(-)=0A=
->  create mode 100644 drivers/soc/fsl/plat_pm.c=0A=
->  create mode 100644 include/soc/fsl/plat_pm.h=0A=
+>  3 files changed, 160 insertions(+), 0 deletions(-)=0A=
+>  create mode 100644 drivers/soc/fsl/ls-rcpm.c=0A=
 >=0A=
 > diff --git a/drivers/soc/fsl/Kconfig b/drivers/soc/fsl/Kconfig=0A=
-> index 7a9fb9b..6517412 100644=0A=
+> index 6517412..882330d 100644=0A=
 > --- a/drivers/soc/fsl/Kconfig=0A=
 > +++ b/drivers/soc/fsl/Kconfig=0A=
-> @@ -16,3 +16,17 @@ config FSL_GUTS=0A=
->  	  Initially only reading SVR and registering soc device are supported.=
+> @@ -30,3 +30,9 @@ config FSL_PLAT_PM=0A=
+>  	  have to know the implement details of wakeup function it require.=0A=
+>  	  Besides, it is also easy for service side to upgrade its logic when=
 =0A=
->  	  Other guts accesses, such as reading RCW, should eventually be moved=
-=0A=
->  	  into this driver as well.=0A=
+>  	  design changed and remain user side unchanged.=0A=
 > +=0A=
-> +config FSL_PLAT_PM=0A=
-> +	bool "Freescale platform PM framework"=0A=
+> +config LS_RCPM=0A=
+> +	bool "Freescale RCPM support"=0A=
+> +	depends on (FSL_PLAT_PM)=0A=
 > +	help=0A=
-> +	  This driver is to provide a independent framework for PM service=0A=
-> +	  provider and consumer to configure system level wake up feature. For=
+> +	  This feature is to enable specified wakeup source for system sleep.=
 =0A=
-> +	  example, RCPM driver could register a callback function on this=0A=
-> +	  platform first, and Flex timer driver who want to enable timer wake=
-=0A=
-> +	  up feature, will call generic API provided by this platform driver,=
-=0A=
-> +	  and then it will trigger RCPM driver to do it. The benefit is to=0A=
-> +	  isolate the user and service, such as  flex timer driver will not=0A=
-> +	  have to know the implement details of wakeup function it require.=0A=
-> +	  Besides, it is also easy for service side to upgrade its logic when=
-=0A=
-> +	  design changed and remain user side unchanged.=0A=
 > diff --git a/drivers/soc/fsl/Makefile b/drivers/soc/fsl/Makefile=0A=
-> index 44b3beb..8f9db23 100644=0A=
+> index 8f9db23..43ff71a 100644=0A=
 > --- a/drivers/soc/fsl/Makefile=0A=
 > +++ b/drivers/soc/fsl/Makefile=0A=
-> @@ -6,3 +6,4 @@ obj-$(CONFIG_FSL_DPAA)                 +=3D qbman/=0A=
->  obj-$(CONFIG_QUICC_ENGINE)		+=3D qe/=0A=
+> @@ -7,3 +7,4 @@ obj-$(CONFIG_QUICC_ENGINE)		+=3D qe/=0A=
 >  obj-$(CONFIG_CPM)			+=3D qe/=0A=
 >  obj-$(CONFIG_FSL_GUTS)			+=3D guts.o=0A=
-> +obj-$(CONFIG_FSL_PLAT_PM)	+=3D plat_pm.o=0A=
-> diff --git a/drivers/soc/fsl/plat_pm.c b/drivers/soc/fsl/plat_pm.c=0A=
+>  obj-$(CONFIG_FSL_PLAT_PM)	+=3D plat_pm.o=0A=
+> +obj-$(CONFIG_LS_RCPM)		+=3D ls-rcpm.o=0A=
+> diff --git a/drivers/soc/fsl/ls-rcpm.c b/drivers/soc/fsl/ls-rcpm.c=0A=
 > new file mode 100644=0A=
-> index 0000000..19ea14e=0A=
+> index 0000000..b0feb88=0A=
 > --- /dev/null=0A=
-> +++ b/drivers/soc/fsl/plat_pm.c=0A=
-> @@ -0,0 +1,144 @@=0A=
+> +++ b/drivers/soc/fsl/ls-rcpm.c=0A=
+> @@ -0,0 +1,153 @@=0A=
 > +// SPDX-License-Identifier: GPL-2.0=0A=
 > +//=0A=
-> +// plat_pm.c - Freescale platform PM framework=0A=
+> +// plat_pm.c - Freescale Layerscape RCPM driver=0A=
 > +//=0A=
 > +// Copyright 2018 NXP=0A=
 > +//=0A=
 > +// Author: Ran Wang <ran.wang_1@nxp.com>,=0A=
 > +=0A=
-> +#include <linux/kernel.h>=0A=
-> +#include <linux/device.h>=0A=
-> +#include <linux/list.h>=0A=
+> +#include <linux/init.h>=0A=
+> +#include <linux/module.h>=0A=
+> +#include <linux/platform_device.h>=0A=
+> +#include <linux/of_address.h>=0A=
 > +#include <linux/slab.h>=0A=
-> +#include <linux/err.h>=0A=
 > +#include <soc/fsl/plat_pm.h>=0A=
 > +=0A=
+> +#define MAX_COMPATIBLE_NUM	10=0A=
 > +=0A=
-> +struct plat_pm_t {=0A=
-> +	struct list_head node;=0A=
-> +	fsl_plat_pm_handle handle;=0A=
-> +	void *handle_priv;=0A=
-> +	spinlock_t	lock;=0A=
+> +struct rcpm_t {=0A=
+> +	struct device *dev;=0A=
+> +	void __iomem *ippdexpcr_addr;=0A=
+> +	bool big_endian;	/* Big/Little endian of RCPM module */=0A=
 > +};=0A=
 > +=0A=
-> +static struct plat_pm_t plat_pm;=0A=
-> +=0A=
-> +// register_fsl_platform_wakeup_source - Register callback function to p=
-lat_pm=0A=
-> +// @handle: Pointer to handle PM feature requirement=0A=
-> +// @handle_priv: Handler specific data struct=0A=
-> +//=0A=
-> +// Return 0 on success other negative errno=0A=
-> +int register_fsl_platform_wakeup_source(fsl_plat_pm_handle handle,=0A=
-> +		void *handle_priv)=0A=
-> +{=0A=
-> +	struct plat_pm_t *p;=0A=
-> +	unsigned long	flags;=0A=
-> +=0A=
-> +	if (!handle) {=0A=
-> +		pr_err("FSL plat_pm: Handler invalid, reject\n");=0A=
-> +		return -EINVAL;=0A=
-> +	}=0A=
-> +=0A=
-> +	p =3D kmalloc(sizeof(*p), GFP_KERNEL);=0A=
-> +	if (!p)=0A=
-> +		return -ENOMEM;=0A=
-> +=0A=
-> +	p->handle =3D handle;=0A=
-> +	p->handle_priv =3D handle_priv;=0A=
-> +=0A=
-> +	spin_lock_irqsave(&plat_pm.lock, flags);=0A=
-> +	list_add_tail(&p->node, &plat_pm.node);=0A=
-> +	spin_unlock_irqrestore(&plat_pm.lock, flags);=0A=
-> +=0A=
-> +	return 0;=0A=
-> +}=0A=
-> +EXPORT_SYMBOL_GPL(register_fsl_platform_wakeup_source);=0A=
-> +=0A=
-> +// Deregister_fsl_platform_wakeup_source - deregister callback function=
+> +// rcpm_handle - Configure RCPM reg according to wake up source request=
 =0A=
-> +// @handle_priv: Handler specific data struct=0A=
+> +// @user_dev: pointer to user's device struct=0A=
+> +// @flag: to enable(true) or disable(false) wakeup source=0A=
+> +// @handle_priv: pointer to struct rcpm_t instance=0A=
 > +//=0A=
 > +// Return 0 on success other negative errno=0A=
-> +int deregister_fsl_platform_wakeup_source(void *handle_priv)=0A=
+> +static int rcpm_handle(struct device *user_dev, bool flag, void *handle_=
+priv)=0A=
 > +{=0A=
-> +	struct plat_pm_t *p, *tmp;=0A=
-> +	unsigned long	flags;=0A=
+> +	struct rcpm_t *rcpm;=0A=
+> +	bool big_endian;=0A=
+> +	const char  *dev_compatible_array[MAX_COMPATIBLE_NUM];=0A=
+> +	void __iomem *ippdexpcr_addr;=0A=
+> +	u32 ippdexpcr;=0A=
+> +	u32 set_bit;=0A=
+> +	int ret, num, i;=0A=
 > +=0A=
-> +	spin_lock_irqsave(&plat_pm.lock, flags);=0A=
-> +	list_for_each_entry_safe(p, tmp, &plat_pm.node, node) {=0A=
-> +		if (p->handle_priv =3D=3D handle_priv) {=0A=
-> +			list_del(&p->node);=0A=
-> +			kfree(p);=0A=
+> +	rcpm =3D handle_priv;=0A=
+> +	big_endian =3D rcpm->big_endian;=0A=
+> +	ippdexpcr_addr =3D rcpm->ippdexpcr_addr;=0A=
+> +=0A=
+> +	num =3D device_property_read_string_array(user_dev, "compatible",=0A=
+> +			dev_compatible_array, MAX_COMPATIBLE_NUM);=0A=
+> +	if (num < 0)=0A=
+> +		return num;=0A=
+> +=0A=
+> +	for (i =3D 0; i < num; i++) {=0A=
+> +		if (!device_property_present(rcpm->dev,=0A=
+> +					dev_compatible_array[i]))=0A=
+> +			continue;=0A=
+> +		else {=0A=
+Remove this else.=0A=
+> +			ret =3D device_property_read_u32(rcpm->dev,=0A=
+> +					dev_compatible_array[i], &set_bit);=0A=
+> +			if (ret)=0A=
+> +				return ret;=0A=
+> +=0A=
+> +			if (!device_property_present(rcpm->dev,=0A=
+> +						dev_compatible_array[i]))=0A=
+This has been checked. Continue ? or return ENODEV=1B$B!)=1B(B=0A=
+> +				return -ENODEV;=0A=
+> +			else {=0A=
+Remove this else.=0A=
+> +				ret =3D device_property_read_u32(rcpm->dev,=0A=
+> +						dev_compatible_array[i], &set_bit);=0A=
+> +				if (ret)=0A=
+> +					return ret;=0A=
+> +=0A=
+> +				if (big_endian)=0A=
+> +					ippdexpcr =3D ioread32be(ippdexpcr_addr);=0A=
+> +				else=0A=
+> +					ippdexpcr =3D ioread32(ippdexpcr_addr);=0A=
+> +=0A=
+> +				if (flag)=0A=
+> +					ippdexpcr |=3D set_bit;=0A=
+> +				else=0A=
+> +					ippdexpcr &=3D ~set_bit;=0A=
+> +=0A=
+> +				if (big_endian) {=0A=
+> +					iowrite32be(ippdexpcr, ippdexpcr_addr);=0A=
+> +					ippdexpcr =3D ioread32be(ippdexpcr_addr);=0A=
+> +				} else=0A=
+if (x) {=0A=
+....=0A=
+....=0A=
+}  else {=0A=
+=0A=
+}=0A=
+> +					iowrite32(ippdexpcr, ippdexpcr_addr);=0A=
+> +=0A=
+> +				return 0;=0A=
+> +			}=0A=
 > +		}=0A=
 > +	}=0A=
-> +	spin_unlock_irqrestore(&plat_pm.lock, flags);=0A=
-> +	return 0;=0A=
+> +=0A=
+> +	return -ENODEV;=0A=
 > +}=0A=
-> +EXPORT_SYMBOL_GPL(deregister_fsl_platform_wakeup_source);=0A=
 > +=0A=
-> +// fsl_platform_wakeup_config - Configure wakeup source by calling handl=
-ers=0A=
-> +// @dev: pointer to user's device struct=0A=
-> +// @flag: to tell enable or disable wakeup source=0A=
-> +//=0A=
-> +// Return 0 on success other negative errno=0A=
-> +int fsl_platform_wakeup_config(struct device *dev, bool flag)=0A=
+> +static int ls_rcpm_probe(struct platform_device *pdev)=0A=
 > +{=0A=
-> +	struct plat_pm_t *p;=0A=
-> +	int ret;=0A=
-> +	bool success_handled;=0A=
-> +	unsigned long	flags;=0A=
+> +	struct resource *r;=0A=
+> +	struct rcpm_t *rcpm;=0A=
 > +=0A=
-> +	success_handled =3D false;=0A=
-> +=0A=
-> +	// Will consider success if at least one callback return 0.=0A=
-> +	// Also, rest handles still get oppertunity to be executed=0A=
-> +	spin_lock_irqsave(&plat_pm.lock, flags);=0A=
-> +	list_for_each_entry(p, &plat_pm.node, node) {=0A=
-> +		if (p->handle) {=0A=
-> +			ret =3D p->handle(dev, flag, p->handle_priv);=0A=
-> +			if (!ret)=0A=
-> +				success_handled =3D true;=0A=
-Miss a break?=0A=
-=0A=
-> +			else if (ret !=3D -ENODEV) {=0A=
-> +				pr_err("FSL plat_pm: Failed to config wakeup source:%d\n", ret);=0A=
-Please unlock before return.=0A=
-=0A=
-> +				return ret;=0A=
-> +			}=0A=
-> +		} else=0A=
-> +			pr_warn("FSL plat_pm: Invalid handler detected, skip\n");=0A=
-> +	}=0A=
-> +	spin_unlock_irqrestore(&plat_pm.lock, flags);=0A=
-> +=0A=
-> +	if (success_handled =3D=3D false) {=0A=
-> +		pr_err("FSL plat_pm: Cannot find the matchhed handler for wakeup sourc=
-e config\n");=0A=
+> +	r =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);=0A=
+> +	if (!r)=0A=
 > +		return -ENODEV;=0A=
-> +	}=0A=
-Add this into the loop.=0A=
+> +=0A=
+> +	rcpm =3D kmalloc(sizeof(*rcpm), GFP_KERNEL);=0A=
+kzalloc is better.=0A=
+> +	if (!rcpm)=0A=
+> +		return -ENOMEM;=0A=
+> +=0A=
+> +	rcpm->big_endian =3D device_property_read_bool(&pdev->dev, "big-endian"=
+);=0A=
+> +=0A=
+> +	rcpm->ippdexpcr_addr =3D devm_ioremap_resource(&pdev->dev, r);=0A=
+> +	if (IS_ERR(rcpm->ippdexpcr_addr))=0A=
+> +		return PTR_ERR(rcpm->ippdexpcr_addr);=0A=
+> +=0A=
+> +	rcpm->dev =3D &pdev->dev;=0A=
+> +	platform_set_drvdata(pdev, rcpm);=0A=
+> +=0A=
+> +	return register_fsl_platform_wakeup_source(rcpm_handle, rcpm);=0A=
+> +}=0A=
+> +=0A=
+> +static int ls_rcpm_remove(struct platform_device *pdev)=0A=
+> +{=0A=
+> +	struct rcpm_t	*rcpm;=0A=
+Not need a table.=0A=
+=0A=
+Cheers,=0A=
+-Dongsheng=0A=
+=0A=
+> +=0A=
+> +	rcpm =3D platform_get_drvdata(pdev);=0A=
+> +	deregister_fsl_platform_wakeup_source(rcpm);=0A=
+> +	kfree(rcpm);=0A=
 > +=0A=
 > +	return 0;=0A=
 > +}=0A=
 > +=0A=
-> +// fsl_platform_wakeup_enable - Enable wakeup source=0A=
-> +// @dev: pointer to user's device struct=0A=
-> +//=0A=
-> +// Return 0 on success other negative errno=0A=
-> +int fsl_platform_wakeup_enable(struct device *dev)=0A=
+> +static const struct of_device_id ls_rcpm_of_match[] =3D {=0A=
+> +	{ .compatible =3D "fsl,qoriq-rcpm-2.1", },=0A=
+> +	{}=0A=
+> +};=0A=
+> +MODULE_DEVICE_TABLE(of, ls_rcpm_of_match);=0A=
+> +=0A=
+> +static struct platform_driver ls_rcpm_driver =3D {=0A=
+> +	.driver =3D {=0A=
+> +		.name =3D "ls-rcpm",=0A=
+> +		.of_match_table =3D ls_rcpm_of_match,=0A=
+> +	},=0A=
+> +	.probe =3D ls_rcpm_probe,=0A=
+> +	.remove =3D ls_rcpm_remove,=0A=
+> +};=0A=
+> +=0A=
+> +static int __init ls_rcpm_init(void)=0A=
 > +{=0A=
-> +	return fsl_platform_wakeup_config(dev, true);=0A=
+> +	return platform_driver_register(&ls_rcpm_driver);=0A=
 > +}=0A=
-> +EXPORT_SYMBOL_GPL(fsl_platform_wakeup_enable);=0A=
+> +subsys_initcall(ls_rcpm_init);=0A=
 > +=0A=
-> +// fsl_platform_wakeup_disable - Disable wakeup source=0A=
-> +// @dev: pointer to user's device struct=0A=
-> +//=0A=
-> +// Return 0 on success other negative errno=0A=
-> +int fsl_platform_wakeup_disable(struct device *dev)=0A=
+> +static void __exit ls_rcpm_exit(void)=0A=
 > +{=0A=
-> +	return fsl_platform_wakeup_config(dev, false);=0A=
+> +	platform_driver_unregister(&ls_rcpm_driver);=0A=
 > +}=0A=
-> +EXPORT_SYMBOL_GPL(fsl_platform_wakeup_disable);=0A=
-> +=0A=
-> +static int __init fsl_plat_pm_init(void)=0A=
-> +{=0A=
-> +	spin_lock_init(&plat_pm.lock);=0A=
-> +	INIT_LIST_HEAD(&plat_pm.node);=0A=
-> +	return 0;=0A=
-> +}=0A=
-> +=0A=
-> +core_initcall(fsl_plat_pm_init);=0A=
-> diff --git a/include/soc/fsl/plat_pm.h b/include/soc/fsl/plat_pm.h=0A=
-> new file mode 100644=0A=
-> index 0000000..bbe151e=0A=
-> --- /dev/null=0A=
-> +++ b/include/soc/fsl/plat_pm.h=0A=
-> @@ -0,0 +1,22 @@=0A=
-> +// SPDX-License-Identifier: GPL-2.0=0A=
-> +//=0A=
-> +// plat_pm.h - Freescale platform PM Header=0A=
-> +//=0A=
-> +// Copyright 2018 NXP=0A=
-> +//=0A=
-> +// Author: Ran Wang <ran.wang_1@nxp.com>,=0A=
-> +=0A=
-> +#ifndef __FSL_PLAT_PM_H=0A=
-> +#define __FSL_PLAT_PM_H=0A=
-> +=0A=
-> +typedef int (*fsl_plat_pm_handle)(struct device *dev, bool flag,=0A=
-> +		void *handle_priv);=0A=
-> +=0A=
-> +int register_fsl_platform_wakeup_source(fsl_plat_pm_handle handle,=0A=
-> +		void *handle_priv);=0A=
-> +int deregister_fsl_platform_wakeup_source(void *handle_priv);=0A=
-> +int fsl_platform_wakeup_config(struct device *dev, bool flag);=0A=
-> +int fsl_platform_wakeup_enable(struct device *dev);=0A=
-> +int fsl_platform_wakeup_disable(struct device *dev);=0A=
-> +=0A=
-> +#endif	// __FSL_PLAT_PM_H=0A=
+> +module_exit(ls_rcpm_exit);=0A=
 =0A=
 =0A=
