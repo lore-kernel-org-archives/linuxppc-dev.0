@@ -1,38 +1,25 @@
-Return-Path: <pku.leo@gmail.com>
-Received: from mail-oi0-f68.google.com (mail-oi0-f68.google.com
- [209.85.218.68])
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf1-f196.google.com (mail-pf1-f196.google.com
+ [209.85.210.196])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 424psY2n7wzF0QC
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2018 13:22:07 +1000 (AEST)
-Received: by mail-oi0-f68.google.com with SMTP id x197-v6so10951975oix.5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Sep 2018 20:22:07 -0700 (PDT)
-Received: from mail-oi0-f53.google.com (mail-oi0-f53.google.com.
- [209.85.218.53])
- by smtp.gmail.com with ESMTPSA id x126-v6sm1758741oig.15.2018.09.04.20.22.04
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 04 Sep 2018 20:22:05 -0700 (PDT)
-Received: by mail-oi0-f53.google.com with SMTP id m11-v6so10975620oic.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Sep 2018 20:22:04 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 424qX26s85zF373
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2018 13:52:02 +1000 (AEST)
+Received: by mail-pf1-f196.google.com with SMTP id b11-v6so2748768pfo.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Sep 2018 20:52:02 -0700 (PDT)
+Date: Wed, 5 Sep 2018 13:51:56 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Jason Gunthorpe <jgg@mellanox.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Leon Romanovsky <leonro@mellanox.com>
+Subject: Re: Regression from patch 'tty: hvc: hvc_poll() break hv read loop'
+Message-ID: <20180905135156.7ac7727b@roar.ozlabs.ibm.com>
+In-Reply-To: <20180904211635.GD335@mellanox.com>
+References: <20180904174808.GS335@mellanox.com>
+ <20180905071529.3b7a09c4@roar.ozlabs.ibm.com>
+ <20180904211635.GD335@mellanox.com>
 MIME-Version: 1.0
-References: <20180831035219.31619-1-ran.wang_1@nxp.com>
- <20180831035219.31619-3-ran.wang_1@nxp.com>
- <be39f5ea8c9046b0bf1f6bbfe935fae4@HXTBJIDCEMVIW02.hxtcorp.net>
-In-Reply-To: <be39f5ea8c9046b0bf1f6bbfe935fae4@HXTBJIDCEMVIW02.hxtcorp.net>
-From: Li Yang <leoyang.li@nxp.com>
-Date: Tue, 4 Sep 2018 22:21:53 -0500
-Message-ID: <CADRPPNQN=27+pOSckxvwSuBJoFaz7pT+Z6h07Wu3Liz5ao5kkA@mail.gmail.com>
-Subject: Re: [PATCH 3/3] soc: fsl: add RCPM driver
-To: dongsheng.wang@hxt-semitech.com
-Cc: Ran Wang <ran.wang_1@nxp.com>, Rob Herring <robh+dt@kernel.org>,
- Mark Rutland <mark.rutland@arm.com>,
- "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
- <devicetree@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- lkml <linux-kernel@vger.kernel.org>,
- "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,260 +29,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Sep 4, 2018 at 9:58 PM Wang, Dongsheng
-<dongsheng.wang@hxt-semitech.com> wrote:
->
-> Please change your comments style.
+On Tue, 4 Sep 2018 15:16:35 -0600
+Jason Gunthorpe <jgg@mellanox.com> wrote:
 
-Although this doesn't get into the Linux kernel coding style
-documentation yet, Linus seems changed his mind to prefer // than /*
-*/ comment style now.  https://lkml.org/lkml/2017/11/25/133   So the
-// style should be acceptable for now.
+> On Wed, Sep 05, 2018 at 07:15:29AM +1000, Nicholas Piggin wrote:
+> > On Tue, 4 Sep 2018 11:48:08 -0600
+> > Jason Gunthorpe <jgg@mellanox.com> wrote:
+> >   
+> > > Hi Nicholas,
+> > > 
+> > > I am testing 4.19-rc2 and I see bad behavior with my qemu hvc0
+> > > console..
+> > > 
+> > > Running interactive with qemu (qemu-2.11.2-1.fc28) on the console
+> > > providing hvc0, using options like:
+> > > 
+> > >         -nographic
+> > >         -chardev stdio,id=stdio,mux=on,signal=off
+> > >         -mon chardev=stdio
+> > > 	-device isa-serial,chardev=stdio
+> > >         -device virtio-serial-pci
+> > > 	-device virtconsole,chardev=stdio
+> > > 
+> > > I see the hvc0 console hang regularly, ie doing something like 'up
+> > > arrow' in bash causes the hvc0 console to hang. Prior kernels worked
+> > > OK.
+> > > 
+> > > Any ideas? I'm not familiar with this code.. Thanks!  
+> > 
+> > Yes I have had another report, I'm working on a fix. Sorry it has taken
+> > a while and thank you for the report.  
+> 
+> Okay, let me know when you have a fix and I will be able to test it
+> for you!
 
->
-> On 2018/8/31 11:56, Ran Wang wrote:
-> > The NXP's QorIQ Processors based on ARM Core have RCPM module (Run
-> > Control and Power Management), which performs all device-level
-> > tasks associated with power management such as wakeup source control.
-> >
-> > This driver depends on FSL platform PM driver framework which help to
-> > isolate user and PM service provider (such as RCPM driver).
-> >
-> > Signed-off-by: Chenhui Zhao <chenhui.zhao@nxp.com>
-> > Signed-off-by: Ying Zhang <ying.zhang22455@nxp.com>
-> > Signed-off-by: Ran Wang <ran.wang_1@nxp.com>
-> > ---
-> >  drivers/soc/fsl/Kconfig   |    6 ++
-> >  drivers/soc/fsl/Makefile  |    1 +
-> >  drivers/soc/fsl/ls-rcpm.c |  153 +++++++++++++++++++++++++++++++++++++=
-++++++++
-> >  3 files changed, 160 insertions(+), 0 deletions(-)
-> >  create mode 100644 drivers/soc/fsl/ls-rcpm.c
-> >
-> > diff --git a/drivers/soc/fsl/Kconfig b/drivers/soc/fsl/Kconfig
-> > index 6517412..882330d 100644
-> > --- a/drivers/soc/fsl/Kconfig
-> > +++ b/drivers/soc/fsl/Kconfig
-> > @@ -30,3 +30,9 @@ config FSL_PLAT_PM
-> >         have to know the implement details of wakeup function it requir=
-e.
-> >         Besides, it is also easy for service side to upgrade its logic =
-when
-> >         design changed and remain user side unchanged.
-> > +
-> > +config LS_RCPM
-> > +     bool "Freescale RCPM support"
-> > +     depends on (FSL_PLAT_PM)
-> > +     help
-> > +       This feature is to enable specified wakeup source for system sl=
-eep.
-> > diff --git a/drivers/soc/fsl/Makefile b/drivers/soc/fsl/Makefile
-> > index 8f9db23..43ff71a 100644
-> > --- a/drivers/soc/fsl/Makefile
-> > +++ b/drivers/soc/fsl/Makefile
-> > @@ -7,3 +7,4 @@ obj-$(CONFIG_QUICC_ENGINE)            +=3D qe/
-> >  obj-$(CONFIG_CPM)                    +=3D qe/
-> >  obj-$(CONFIG_FSL_GUTS)                       +=3D guts.o
-> >  obj-$(CONFIG_FSL_PLAT_PM)    +=3D plat_pm.o
-> > +obj-$(CONFIG_LS_RCPM)                +=3D ls-rcpm.o
+Can you try this?
 
-Probably use "_" instead of "-" for alignment.
-
-> > diff --git a/drivers/soc/fsl/ls-rcpm.c b/drivers/soc/fsl/ls-rcpm.c
-> > new file mode 100644
-> > index 0000000..b0feb88
-> > --- /dev/null
-> > +++ b/drivers/soc/fsl/ls-rcpm.c
-> > @@ -0,0 +1,153 @@
-> > +// SPDX-License-Identifier: GPL-2.0
-> > +//
-> > +// plat_pm.c - Freescale Layerscape RCPM driver
-
-The file name here is not the same as the real file name.
-
-> > +//
-> > +// Copyright 2018 NXP
-> > +//
-> > +// Author: Ran Wang <ran.wang_1@nxp.com>,
-
-Where do you need the comma in the end?
-
-> > +
-> > +#include <linux/init.h>
-> > +#include <linux/module.h>
-> > +#include <linux/platform_device.h>
-> > +#include <linux/of_address.h>
-> > +#include <linux/slab.h>
-> > +#include <soc/fsl/plat_pm.h>
-> > +
-> > +#define MAX_COMPATIBLE_NUM   10
-> > +
-> > +struct rcpm_t {
-> > +     struct device *dev;
-> > +     void __iomem *ippdexpcr_addr;
-> > +     bool big_endian;        /* Big/Little endian of RCPM module */
-> > +};
-> > +
-> > +// rcpm_handle - Configure RCPM reg according to wake up source reques=
-t
-> > +// @user_dev: pointer to user's device struct
-> > +// @flag: to enable(true) or disable(false) wakeup source
-> > +// @handle_priv: pointer to struct rcpm_t instance
-> > +//
-> > +// Return 0 on success other negative errno
-
-Although Linus preferred this // comment style.  I'm not sure if this
-will be handled correctly by the kernel-doc compiler.
-https://www.kernel.org/doc/html/v4.18/doc-guide/kernel-doc.html
-
-> > +static int rcpm_handle(struct device *user_dev, bool flag, void *handl=
-e_priv)
-> > +{
-> > +     struct rcpm_t *rcpm;
-> > +     bool big_endian;
-> > +     const char  *dev_compatible_array[MAX_COMPATIBLE_NUM];
-> > +     void __iomem *ippdexpcr_addr;
-> > +     u32 ippdexpcr;
-> > +     u32 set_bit;
-> > +     int ret, num, i;
-> > +
-> > +     rcpm =3D handle_priv;
-> > +     big_endian =3D rcpm->big_endian;
-> > +     ippdexpcr_addr =3D rcpm->ippdexpcr_addr;
-> > +
-> > +     num =3D device_property_read_string_array(user_dev, "compatible",
-> > +                     dev_compatible_array, MAX_COMPATIBLE_NUM);
-> > +     if (num < 0)
-> > +             return num;
-> > +
-> > +     for (i =3D 0; i < num; i++) {
-> > +             if (!device_property_present(rcpm->dev,
-> > +                                     dev_compatible_array[i]))
-> > +                     continue;
-> > +             else {
-> Remove this else.
-> > +                     ret =3D device_property_read_u32(rcpm->dev,
-> > +                                     dev_compatible_array[i], &set_bit=
-);
-> > +                     if (ret)
-> > +                             return ret;
-> > +
-> > +                     if (!device_property_present(rcpm->dev,
-> > +                                             dev_compatible_array[i]))
-> This has been checked. Continue ? or return ENODEV=EF=BC=9F
-> > +                             return -ENODEV;
-> > +                     else {
-> Remove this else.
-> > +                             ret =3D device_property_read_u32(rcpm->de=
-v,
-> > +                                             dev_compatible_array[i], =
-&set_bit);
-> > +                             if (ret)
-> > +                                     return ret;
-> > +
-> > +                             if (big_endian)
-> > +                                     ippdexpcr =3D ioread32be(ippdexpc=
-r_addr);
-> > +                             else
-> > +                                     ippdexpcr =3D ioread32(ippdexpcr_=
-addr);
-> > +
-> > +                             if (flag)
-> > +                                     ippdexpcr |=3D set_bit;
-> > +                             else
-> > +                                     ippdexpcr &=3D ~set_bit;
-> > +
-> > +                             if (big_endian) {
-> > +                                     iowrite32be(ippdexpcr, ippdexpcr_=
-addr);
-> > +                                     ippdexpcr =3D ioread32be(ippdexpc=
-r_addr);
-> > +                             } else
-> if (x) {
-> ....
-> ....
-> }  else {
->
-> }
-> > +                                     iowrite32(ippdexpcr, ippdexpcr_ad=
-dr);
-> > +
-> > +                             return 0;
-> > +                     }
-> > +             }
-> > +     }
-> > +
-> > +     return -ENODEV;
-> > +}
-> > +
-> > +static int ls_rcpm_probe(struct platform_device *pdev)
-> > +{
-> > +     struct resource *r;
-> > +     struct rcpm_t *rcpm;
-> > +
-> > +     r =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> > +     if (!r)
-> > +             return -ENODEV;
-> > +
-> > +     rcpm =3D kmalloc(sizeof(*rcpm), GFP_KERNEL);
-> kzalloc is better.
-> > +     if (!rcpm)
-> > +             return -ENOMEM;
-> > +
-> > +     rcpm->big_endian =3D device_property_read_bool(&pdev->dev, "big-e=
-ndian");
-> > +
-> > +     rcpm->ippdexpcr_addr =3D devm_ioremap_resource(&pdev->dev, r);
-> > +     if (IS_ERR(rcpm->ippdexpcr_addr))
-> > +             return PTR_ERR(rcpm->ippdexpcr_addr);
-> > +
-> > +     rcpm->dev =3D &pdev->dev;
-> > +     platform_set_drvdata(pdev, rcpm);
-> > +
-> > +     return register_fsl_platform_wakeup_source(rcpm_handle, rcpm);
-> > +}
-> > +
-> > +static int ls_rcpm_remove(struct platform_device *pdev)
-> > +{
-> > +     struct rcpm_t   *rcpm;
-> Not need a table.
->
-> Cheers,
-> -Dongsheng
->
-> > +
-> > +     rcpm =3D platform_get_drvdata(pdev);
-> > +     deregister_fsl_platform_wakeup_source(rcpm);
-> > +     kfree(rcpm);
-> > +
-> > +     return 0;
-> > +}
-> > +
-> > +static const struct of_device_id ls_rcpm_of_match[] =3D {
-> > +     { .compatible =3D "fsl,qoriq-rcpm-2.1", },
-> > +     {}
-> > +};
-> > +MODULE_DEVICE_TABLE(of, ls_rcpm_of_match);
-> > +
-> > +static struct platform_driver ls_rcpm_driver =3D {
-> > +     .driver =3D {
-> > +             .name =3D "ls-rcpm",
-> > +             .of_match_table =3D ls_rcpm_of_match,
-> > +     },
-> > +     .probe =3D ls_rcpm_probe,
-> > +     .remove =3D ls_rcpm_remove,
-> > +};
-> > +
-> > +static int __init ls_rcpm_init(void)
-> > +{
-> > +     return platform_driver_register(&ls_rcpm_driver);
-> > +}
-> > +subsys_initcall(ls_rcpm_init);
-> > +
-> > +static void __exit ls_rcpm_exit(void)
-> > +{
-> > +     platform_driver_unregister(&ls_rcpm_driver);
-> > +}
-> > +module_exit(ls_rcpm_exit);
->
->
+diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
+index 5414c4a87bea..f5fc3ba49130 100644
+--- a/drivers/tty/hvc/hvc_console.c
++++ b/drivers/tty/hvc/hvc_console.c
+@@ -49,6 +49,8 @@
+ #define N_OUTBUF	16
+ #define N_INBUF		16
+ 
++#define HVC_ATOMIC_READ_MAX	128
++
+ #define __ALIGNED__ __attribute__((__aligned__(sizeof(long))))
+ 
+ static struct tty_driver *hvc_driver;
+@@ -522,6 +524,8 @@ static int hvc_write(struct tty_struct *tty, const unsigned char *buf, int count
+ 		return -EIO;
+ 
+ 	while (count > 0) {
++		int ret;
++
+ 		spin_lock_irqsave(&hp->lock, flags);
+ 
+ 		rsize = hp->outbuf_size - hp->n_outbuf;
+@@ -537,10 +541,13 @@ static int hvc_write(struct tty_struct *tty, const unsigned char *buf, int count
+ 		}
+ 
+ 		if (hp->n_outbuf > 0)
+-			hvc_push(hp);
++			ret = hvc_push(hp);
+ 
+ 		spin_unlock_irqrestore(&hp->lock, flags);
+ 
++		if (!ret)
++			break;
++
+ 		if (count) {
+ 			if (hp->n_outbuf > 0)
+ 				hvc_flush(hp);
+@@ -669,8 +676,8 @@ static int __hvc_poll(struct hvc_struct *hp, bool may_sleep)
+ 	if (!hp->irq_requested)
+ 		poll_mask |= HVC_POLL_READ;
+ 
++ read_again:
+ 	/* Read data if any */
+-
+ 	count = tty_buffer_request_room(&hp->port, N_INBUF);
+ 
+ 	/* If flip is full, just reschedule a later read */
+@@ -717,9 +724,23 @@ static int __hvc_poll(struct hvc_struct *hp, bool may_sleep)
+ #endif /* CONFIG_MAGIC_SYSRQ */
+ 		tty_insert_flip_char(&hp->port, buf[i], 0);
+ 	}
+-	if (n == count)
+-		poll_mask |= HVC_POLL_READ;
+-	read_total = n;
++	read_total += n;
++
++	if (may_sleep) {
++		/* Keep going until the flip is full */
++		spin_unlock_irqrestore(&hp->lock, flags);
++		cond_resched();
++		spin_lock_irqsave(&hp->lock, flags);
++		goto read_again;
++	} else if (read_total < HVC_ATOMIC_READ_MAX) {
++		/* Break and defer if it's a large read in atomic */
++		goto read_again;
++	}
++
++	/*
++	 * Latency break, schedule another poll immediately.
++	 */
++	poll_mask |= HVC_POLL_READ;
+ 
+  out:
+ 	/* Wakeup write queue if necessary */
