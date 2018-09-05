@@ -1,23 +1,23 @@
 Return-Path: <rppt@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4257jd3qTmzF38h
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 02:01:25 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w85FuDVj046968
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Sep 2018 12:01:21 -0400
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2mag027js9-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4257jL5jC0zF38v
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 02:01:10 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w85FtUXk013434
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Sep 2018 12:01:07 -0400
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2maj5w0jsx-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Sep 2018 12:01:17 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Sep 2018 12:01:06 -0400
 Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.vnet.ibm.com>;
- Wed, 5 Sep 2018 17:00:51 +0100
+ Wed, 5 Sep 2018 17:01:03 +0100
 From: Mike Rapoport <rppt@linux.vnet.ibm.com>
 To: linux-mm@kvack.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
@@ -29,11 +29,12 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
  linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
  linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
  linux-kernel@vger.kernel.org, Mike Rapoport <rppt@linux.vnet.ibm.com>
-Subject: [RFC PATCH 21/29] memblock: replace alloc_bootmem with memblock_alloc
-Date: Wed,  5 Sep 2018 18:59:36 +0300
+Subject: [RFC PATCH 25/29] memblock: rename free_all_bootmem to
+ memblock_free_all
+Date: Wed,  5 Sep 2018 18:59:40 +0300
 In-Reply-To: <1536163184-26356-1-git-send-email-rppt@linux.vnet.ibm.com>
 References: <1536163184-26356-1-git-send-email-rppt@linux.vnet.ibm.com>
-Message-Id: <1536163184-26356-22-git-send-email-rppt@linux.vnet.ibm.com>
+Message-Id: <1536163184-26356-26-git-send-email-rppt@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,344 +44,532 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The conversion is done using the following semantic patch:
+The conversion is done using
 
-@@
-expression e;
-@@
-- __alloc_bootmem(e)
-+ memblock_alloc_from(e, 0)
+sed -i 's@free_all_bootmem@memblock_free_all@' \
+    $(git grep -l free_all_bootmem)
 
 Signed-off-by: Mike Rapoport <rppt@linux.vnet.ibm.com>
 ---
- arch/alpha/kernel/core_marvel.c     | 4 ++--
- arch/alpha/kernel/pci-noop.c        | 4 ++--
- arch/alpha/kernel/pci.c             | 4 ++--
- arch/alpha/kernel/pci_iommu.c       | 4 ++--
- arch/ia64/kernel/mca.c              | 4 ++--
- arch/ia64/mm/tlb.c                  | 4 ++--
- arch/m68k/sun3/sun3dvma.c           | 3 ++-
- arch/microblaze/mm/init.c           | 2 +-
- arch/mips/kernel/setup.c            | 2 +-
- arch/um/drivers/net_kern.c          | 2 +-
- arch/um/drivers/vector_kern.c       | 2 +-
- arch/um/kernel/initrd.c             | 2 +-
- arch/x86/kernel/acpi/boot.c         | 3 ++-
- arch/x86/kernel/apic/io_apic.c      | 2 +-
- arch/x86/kernel/e820.c              | 2 +-
- arch/x86/platform/olpc/olpc_dt.c    | 2 +-
- arch/xtensa/platforms/iss/network.c | 2 +-
- arch/xtensa/platforms/iss/setup.c   | 4 ++--
- drivers/macintosh/smu.c             | 2 +-
- init/main.c                         | 4 ++--
- 20 files changed, 30 insertions(+), 28 deletions(-)
+ arch/alpha/mm/init.c                   | 2 +-
+ arch/arc/mm/init.c                     | 2 +-
+ arch/arm/mm/init.c                     | 2 +-
+ arch/arm64/mm/init.c                   | 2 +-
+ arch/c6x/mm/init.c                     | 2 +-
+ arch/h8300/mm/init.c                   | 2 +-
+ arch/hexagon/mm/init.c                 | 2 +-
+ arch/ia64/mm/init.c                    | 2 +-
+ arch/m68k/mm/init.c                    | 2 +-
+ arch/microblaze/mm/init.c              | 2 +-
+ arch/mips/loongson64/loongson-3/numa.c | 2 +-
+ arch/mips/mm/init.c                    | 2 +-
+ arch/mips/sgi-ip27/ip27-memory.c       | 2 +-
+ arch/nds32/mm/init.c                   | 2 +-
+ arch/nios2/mm/init.c                   | 2 +-
+ arch/openrisc/mm/init.c                | 2 +-
+ arch/parisc/mm/init.c                  | 2 +-
+ arch/powerpc/mm/mem.c                  | 2 +-
+ arch/riscv/mm/init.c                   | 2 +-
+ arch/s390/mm/init.c                    | 2 +-
+ arch/sh/mm/init.c                      | 2 +-
+ arch/sparc/mm/init_32.c                | 2 +-
+ arch/sparc/mm/init_64.c                | 4 ++--
+ arch/um/kernel/mem.c                   | 2 +-
+ arch/unicore32/mm/init.c               | 2 +-
+ arch/x86/mm/highmem_32.c               | 2 +-
+ arch/x86/mm/init_32.c                  | 4 ++--
+ arch/x86/mm/init_64.c                  | 4 ++--
+ arch/x86/xen/mmu_pv.c                  | 2 +-
+ arch/xtensa/mm/init.c                  | 2 +-
+ include/linux/bootmem.h                | 2 +-
+ mm/memblock.c                          | 2 +-
+ mm/nobootmem.c                         | 4 ++--
+ mm/page_alloc.c                        | 2 +-
+ mm/page_poison.c                       | 2 +-
+ 35 files changed, 39 insertions(+), 39 deletions(-)
 
-diff --git a/arch/alpha/kernel/core_marvel.c b/arch/alpha/kernel/core_marvel.c
-index bdebb8c2..1f00c94 100644
---- a/arch/alpha/kernel/core_marvel.c
-+++ b/arch/alpha/kernel/core_marvel.c
-@@ -82,7 +82,7 @@ mk_resource_name(int pe, int port, char *str)
- 	char *name;
- 	
- 	sprintf(tmp, "PCI %s PE %d PORT %d", str, pe, port);
--	name = alloc_bootmem(strlen(tmp) + 1);
-+	name = memblock_alloc(strlen(tmp) + 1, 0);
- 	strcpy(name, tmp);
- 
- 	return name;
-@@ -117,7 +117,7 @@ alloc_io7(unsigned int pe)
- 		return NULL;
- 	}
- 
--	io7 = alloc_bootmem(sizeof(*io7));
-+	io7 = memblock_alloc(sizeof(*io7), 0);
- 	io7->pe = pe;
- 	raw_spin_lock_init(&io7->irq_lock);
- 
-diff --git a/arch/alpha/kernel/pci-noop.c b/arch/alpha/kernel/pci-noop.c
-index c7c5879..59cbfc2 100644
---- a/arch/alpha/kernel/pci-noop.c
-+++ b/arch/alpha/kernel/pci-noop.c
-@@ -33,7 +33,7 @@ alloc_pci_controller(void)
+diff --git a/arch/alpha/mm/init.c b/arch/alpha/mm/init.c
+index 9d74520..853d153 100644
+--- a/arch/alpha/mm/init.c
++++ b/arch/alpha/mm/init.c
+@@ -282,7 +282,7 @@ mem_init(void)
  {
- 	struct pci_controller *hose;
- 
--	hose = alloc_bootmem(sizeof(*hose));
-+	hose = memblock_alloc(sizeof(*hose), 0);
- 
- 	*hose_tail = hose;
- 	hose_tail = &hose->next;
-@@ -44,7 +44,7 @@ alloc_pci_controller(void)
- struct resource * __init
- alloc_resource(void)
- {
--	return alloc_bootmem(sizeof(struct resource));
-+	return memblock_alloc(sizeof(struct resource), 0);
+ 	set_max_mapnr(max_low_pfn);
+ 	high_memory = (void *) __va(max_low_pfn * PAGE_SIZE);
+-	free_all_bootmem();
++	memblock_free_all();
+ 	mem_init_print_info(NULL);
  }
  
- SYSCALL_DEFINE3(pciconfig_iobase, long, which, unsigned long, bus,
-diff --git a/arch/alpha/kernel/pci.c b/arch/alpha/kernel/pci.c
-index c668c3b..4cc3eb9 100644
---- a/arch/alpha/kernel/pci.c
-+++ b/arch/alpha/kernel/pci.c
-@@ -392,7 +392,7 @@ alloc_pci_controller(void)
- {
- 	struct pci_controller *hose;
+diff --git a/arch/arc/mm/init.c b/arch/arc/mm/init.c
+index ba14506..0f29c65 100644
+--- a/arch/arc/mm/init.c
++++ b/arch/arc/mm/init.c
+@@ -218,7 +218,7 @@ void __init mem_init(void)
+ 		free_highmem_page(pfn_to_page(tmp));
+ #endif
  
--	hose = alloc_bootmem(sizeof(*hose));
-+	hose = memblock_alloc(sizeof(*hose), 0);
- 
- 	*hose_tail = hose;
- 	hose_tail = &hose->next;
-@@ -403,7 +403,7 @@ alloc_pci_controller(void)
- struct resource * __init
- alloc_resource(void)
- {
--	return alloc_bootmem(sizeof(struct resource));
-+	return memblock_alloc(sizeof(struct resource), 0);
+-	free_all_bootmem();
++	memblock_free_all();
+ 	mem_init_print_info(NULL);
  }
  
+diff --git a/arch/arm/mm/init.c b/arch/arm/mm/init.c
+index 0cc8e04..d421a10 100644
+--- a/arch/arm/mm/init.c
++++ b/arch/arm/mm/init.c
+@@ -508,7 +508,7 @@ void __init mem_init(void)
  
-diff --git a/arch/alpha/kernel/pci_iommu.c b/arch/alpha/kernel/pci_iommu.c
-index 0c05493..5d178c7 100644
---- a/arch/alpha/kernel/pci_iommu.c
-+++ b/arch/alpha/kernel/pci_iommu.c
-@@ -79,7 +79,7 @@ iommu_arena_new_node(int nid, struct pci_controller *hose, dma_addr_t base,
- 		printk("%s: couldn't allocate arena from node %d\n"
- 		       "    falling back to system-wide allocation\n",
- 		       __func__, nid);
--		arena = alloc_bootmem(sizeof(*arena));
-+		arena = memblock_alloc(sizeof(*arena), 0);
- 	}
+ 	/* this will put all unused low memory onto the freelists */
+ 	free_unused_memmap();
+-	free_all_bootmem();
++	memblock_free_all();
  
- 	arena->ptes = memblock_alloc_node(sizeof(*arena), align, nid);
-@@ -92,7 +92,7 @@ iommu_arena_new_node(int nid, struct pci_controller *hose, dma_addr_t base,
+ #ifdef CONFIG_SA1111
+ 	/* now that our DMA memory is actually so designated, we can free it */
+diff --git a/arch/arm64/mm/init.c b/arch/arm64/mm/init.c
+index e335452..ae21849 100644
+--- a/arch/arm64/mm/init.c
++++ b/arch/arm64/mm/init.c
+@@ -601,7 +601,7 @@ void __init mem_init(void)
+ 	free_unused_memmap();
+ #endif
+ 	/* this will put all unused low memory onto the freelists */
+-	free_all_bootmem();
++	memblock_free_all();
  
- #else /* CONFIG_DISCONTIGMEM */
+ 	kexec_reserve_crashkres_pages();
  
--	arena = alloc_bootmem(sizeof(*arena));
-+	arena = memblock_alloc(sizeof(*arena), 0);
- 	arena->ptes = memblock_alloc_from(mem_size, align, 0);
+diff --git a/arch/c6x/mm/init.c b/arch/c6x/mm/init.c
+index dc369ad..3383df8 100644
+--- a/arch/c6x/mm/init.c
++++ b/arch/c6x/mm/init.c
+@@ -62,7 +62,7 @@ void __init mem_init(void)
+ 	high_memory = (void *)(memory_end & PAGE_MASK);
  
- #endif /* CONFIG_DISCONTIGMEM */
-diff --git a/arch/ia64/kernel/mca.c b/arch/ia64/kernel/mca.c
-index 5586926..7120976 100644
---- a/arch/ia64/kernel/mca.c
-+++ b/arch/ia64/kernel/mca.c
-@@ -361,9 +361,9 @@ static ia64_state_log_t ia64_state_log[IA64_MAX_LOG_TYPES];
+ 	/* this will put all memory onto the freelists */
+-	free_all_bootmem();
++	memblock_free_all();
  
- #define IA64_LOG_ALLOCATE(it, size) \
- 	{ia64_state_log[it].isl_log[IA64_LOG_CURR_INDEX(it)] = \
--		(ia64_err_rec_t *)alloc_bootmem(size); \
-+		(ia64_err_rec_t *)memblock_alloc(size, 0); \
- 	ia64_state_log[it].isl_log[IA64_LOG_NEXT_INDEX(it)] = \
--		(ia64_err_rec_t *)alloc_bootmem(size);}
-+		(ia64_err_rec_t *)memblock_alloc(size, 0);}
- #define IA64_LOG_LOCK_INIT(it) spin_lock_init(&ia64_state_log[it].isl_lock)
- #define IA64_LOG_LOCK(it)      spin_lock_irqsave(&ia64_state_log[it].isl_lock, s)
- #define IA64_LOG_UNLOCK(it)    spin_unlock_irqrestore(&ia64_state_log[it].isl_lock,s)
-diff --git a/arch/ia64/mm/tlb.c b/arch/ia64/mm/tlb.c
-index acf10eb..5554863 100644
---- a/arch/ia64/mm/tlb.c
-+++ b/arch/ia64/mm/tlb.c
-@@ -59,8 +59,8 @@ struct ia64_tr_entry *ia64_idtrs[NR_CPUS];
- void __init
- mmu_context_init (void)
- {
--	ia64_ctx.bitmap = alloc_bootmem((ia64_ctx.max_ctx+1)>>3);
--	ia64_ctx.flushmap = alloc_bootmem((ia64_ctx.max_ctx+1)>>3);
-+	ia64_ctx.bitmap = memblock_alloc((ia64_ctx.max_ctx + 1) >> 3, 0);
-+	ia64_ctx.flushmap = memblock_alloc((ia64_ctx.max_ctx + 1) >> 3, 0);
+ 	mem_init_print_info(NULL);
  }
+diff --git a/arch/h8300/mm/init.c b/arch/h8300/mm/init.c
+index 5d31ac9..f2bf448 100644
+--- a/arch/h8300/mm/init.c
++++ b/arch/h8300/mm/init.c
+@@ -96,7 +96,7 @@ void __init mem_init(void)
+ 	max_mapnr = MAP_NR(high_memory);
  
- /*
-diff --git a/arch/m68k/sun3/sun3dvma.c b/arch/m68k/sun3/sun3dvma.c
-index 8546922..72d9458 100644
---- a/arch/m68k/sun3/sun3dvma.c
-+++ b/arch/m68k/sun3/sun3dvma.c
-@@ -267,7 +267,8 @@ void __init dvma_init(void)
+ 	/* this will put all low memory onto the freelists */
+-	free_all_bootmem();
++	memblock_free_all();
  
- 	list_add(&(hole->list), &hole_list);
+ 	mem_init_print_info(NULL);
+ }
+diff --git a/arch/hexagon/mm/init.c b/arch/hexagon/mm/init.c
+index d789b9c..88643fa 100644
+--- a/arch/hexagon/mm/init.c
++++ b/arch/hexagon/mm/init.c
+@@ -68,7 +68,7 @@ unsigned long long kmap_generation;
+ void __init mem_init(void)
+ {
+ 	/*  No idea where this is actually declared.  Seems to evade LXR.  */
+-	free_all_bootmem();
++	memblock_free_all();
+ 	mem_init_print_info(NULL);
  
--	iommu_use = alloc_bootmem(IOMMU_TOTAL_ENTRIES * sizeof(unsigned long));
-+	iommu_use = memblock_alloc(IOMMU_TOTAL_ENTRIES * sizeof(unsigned long),
-+				   0);
+ 	/*
+diff --git a/arch/ia64/mm/init.c b/arch/ia64/mm/init.c
+index 2169ca5..43ea4a4 100644
+--- a/arch/ia64/mm/init.c
++++ b/arch/ia64/mm/init.c
+@@ -627,7 +627,7 @@ mem_init (void)
  
- 	dvma_unmap_iommu(DVMA_START, DVMA_SIZE);
+ 	set_max_mapnr(max_low_pfn);
+ 	high_memory = __va(max_low_pfn * PAGE_SIZE);
+-	free_all_bootmem();
++	memblock_free_all();
+ 	mem_init_print_info(NULL);
  
+ 	/*
+diff --git a/arch/m68k/mm/init.c b/arch/m68k/mm/init.c
+index 977363e..ae49ae4 100644
+--- a/arch/m68k/mm/init.c
++++ b/arch/m68k/mm/init.c
+@@ -140,7 +140,7 @@ static inline void init_pointer_tables(void)
+ void __init mem_init(void)
+ {
+ 	/* this will put all memory onto the freelists */
+-	free_all_bootmem();
++	memblock_free_all();
+ 	init_pointer_tables();
+ 	mem_init_print_info(NULL);
+ }
 diff --git a/arch/microblaze/mm/init.c b/arch/microblaze/mm/init.c
-index df6de7c..8c7f074 100644
+index 8c7f074..9989740 100644
 --- a/arch/microblaze/mm/init.c
 +++ b/arch/microblaze/mm/init.c
-@@ -377,7 +377,7 @@ void * __ref zalloc_maybe_bootmem(size_t size, gfp_t mask)
- 	if (mem_init_done)
- 		p = kzalloc(size, mask);
- 	else {
--		p = alloc_bootmem(size);
-+		p = memblock_alloc(size, 0);
- 		if (p)
- 			memset(p, 0, size);
- 	}
-diff --git a/arch/mips/kernel/setup.c b/arch/mips/kernel/setup.c
-index 08f8251..419dfc42 100644
---- a/arch/mips/kernel/setup.c
-+++ b/arch/mips/kernel/setup.c
-@@ -901,7 +901,7 @@ static void __init resource_init(void)
- 		if (end >= HIGHMEM_START)
- 			end = HIGHMEM_START - 1;
+@@ -204,7 +204,7 @@ void __init mem_init(void)
+ 	high_memory = (void *)__va(memory_start + lowmem_size - 1);
  
--		res = alloc_bootmem(sizeof(struct resource));
-+		res = memblock_alloc(sizeof(struct resource), 0);
+ 	/* this will put all memory onto the freelists */
+-	free_all_bootmem();
++	memblock_free_all();
+ #ifdef CONFIG_HIGHMEM
+ 	highmem_setup();
+ #endif
+diff --git a/arch/mips/loongson64/loongson-3/numa.c b/arch/mips/loongson64/loongson-3/numa.c
+index c1e6ec5..703ad45 100644
+--- a/arch/mips/loongson64/loongson-3/numa.c
++++ b/arch/mips/loongson64/loongson-3/numa.c
+@@ -272,7 +272,7 @@ void __init paging_init(void)
+ void __init mem_init(void)
+ {
+ 	high_memory = (void *) __va(get_num_physpages() << PAGE_SHIFT);
+-	free_all_bootmem();
++	memblock_free_all();
+ 	setup_zero_pages();	/* This comes from node 0 */
+ 	mem_init_print_info(NULL);
+ }
+diff --git a/arch/mips/mm/init.c b/arch/mips/mm/init.c
+index a010fba7..54c36be 100644
+--- a/arch/mips/mm/init.c
++++ b/arch/mips/mm/init.c
+@@ -464,7 +464,7 @@ void __init mem_init(void)
+ 	high_memory = (void *) __va(max_low_pfn << PAGE_SHIFT);
  
- 		res->start = start;
- 		res->end = end;
-diff --git a/arch/um/drivers/net_kern.c b/arch/um/drivers/net_kern.c
-index 3ef1b48..ef19a39 100644
---- a/arch/um/drivers/net_kern.c
-+++ b/arch/um/drivers/net_kern.c
-@@ -650,7 +650,7 @@ static int __init eth_setup(char *str)
- 		return 1;
- 	}
+ 	maar_init();
+-	free_all_bootmem();
++	memblock_free_all();
+ 	setup_zero_pages();	/* Setup zeroed pages.  */
+ 	mem_init_free_highmem();
+ 	mem_init_print_info(NULL);
+diff --git a/arch/mips/sgi-ip27/ip27-memory.c b/arch/mips/sgi-ip27/ip27-memory.c
+index 6f7bef0..cb1f1a6 100644
+--- a/arch/mips/sgi-ip27/ip27-memory.c
++++ b/arch/mips/sgi-ip27/ip27-memory.c
+@@ -475,7 +475,7 @@ void __init paging_init(void)
+ void __init mem_init(void)
+ {
+ 	high_memory = (void *) __va(get_num_physpages() << PAGE_SHIFT);
+-	free_all_bootmem();
++	memblock_free_all();
+ 	setup_zero_pages();	/* This comes from node 0 */
+ 	mem_init_print_info(NULL);
+ }
+diff --git a/arch/nds32/mm/init.c b/arch/nds32/mm/init.c
+index 5af81b8..66d3e9c 100644
+--- a/arch/nds32/mm/init.c
++++ b/arch/nds32/mm/init.c
+@@ -192,7 +192,7 @@ void __init mem_init(void)
+ 	free_highmem();
  
--	new = alloc_bootmem(sizeof(*new));
-+	new = memblock_alloc(sizeof(*new), 0);
+ 	/* this will put all low memory onto the freelists */
+-	free_all_bootmem();
++	memblock_free_all();
+ 	mem_init_print_info(NULL);
  
- 	INIT_LIST_HEAD(&new->list);
- 	new->index = n;
-diff --git a/arch/um/drivers/vector_kern.c b/arch/um/drivers/vector_kern.c
-index c84133c..9d77579 100644
---- a/arch/um/drivers/vector_kern.c
-+++ b/arch/um/drivers/vector_kern.c
-@@ -1575,7 +1575,7 @@ static int __init vector_setup(char *str)
- 				 str, error);
- 		return 1;
- 	}
--	new = alloc_bootmem(sizeof(*new));
-+	new = memblock_alloc(sizeof(*new), 0);
- 	INIT_LIST_HEAD(&new->list);
- 	new->unit = n;
- 	new->arguments = str;
-diff --git a/arch/um/kernel/initrd.c b/arch/um/kernel/initrd.c
-index 6f6e789..844056c 100644
---- a/arch/um/kernel/initrd.c
-+++ b/arch/um/kernel/initrd.c
-@@ -36,7 +36,7 @@ int __init read_initrd(void)
- 		return 0;
- 	}
+ 	pr_info("virtual kernel memory layout:\n"
+diff --git a/arch/nios2/mm/init.c b/arch/nios2/mm/init.c
+index c92fe42..1292350 100644
+--- a/arch/nios2/mm/init.c
++++ b/arch/nios2/mm/init.c
+@@ -73,7 +73,7 @@ void __init mem_init(void)
+ 	high_memory = __va(end_mem);
  
--	area = alloc_bootmem(size);
-+	area = memblock_alloc(size, 0);
+ 	/* this will put all memory onto the freelists */
+-	free_all_bootmem();
++	memblock_free_all();
+ 	mem_init_print_info(NULL);
+ }
  
- 	if (load_initrd(initrd, area, size) == -1)
- 		return 0;
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index 3b20607..fd887c1 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -932,7 +932,8 @@ static int __init acpi_parse_hpet(struct acpi_table_header *table)
- 	 * the resource tree during the lateinit timeframe.
+diff --git a/arch/openrisc/mm/init.c b/arch/openrisc/mm/init.c
+index b7670de..91a6a9a 100644
+--- a/arch/openrisc/mm/init.c
++++ b/arch/openrisc/mm/init.c
+@@ -213,7 +213,7 @@ void __init mem_init(void)
+ 	memset((void *)empty_zero_page, 0, PAGE_SIZE);
+ 
+ 	/* this will put all low memory onto the freelists */
+-	free_all_bootmem();
++	memblock_free_all();
+ 
+ 	mem_init_print_info(NULL);
+ 
+diff --git a/arch/parisc/mm/init.c b/arch/parisc/mm/init.c
+index 74842d2..bc368e9 100644
+--- a/arch/parisc/mm/init.c
++++ b/arch/parisc/mm/init.c
+@@ -612,7 +612,7 @@ void __init mem_init(void)
+ 
+ 	high_memory = __va((max_pfn << PAGE_SHIFT));
+ 	set_max_mapnr(page_to_pfn(virt_to_page(high_memory - 1)) + 1);
+-	free_all_bootmem();
++	memblock_free_all();
+ 
+ #ifdef CONFIG_PA11
+ 	if (boot_cpu_data.cpu_type == pcxl2 || boot_cpu_data.cpu_type == pcxl) {
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index 5c8530d..c141134 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -348,7 +348,7 @@ void __init mem_init(void)
+ 
+ 	high_memory = (void *) __va(max_low_pfn * PAGE_SIZE);
+ 	set_max_mapnr(max_pfn);
+-	free_all_bootmem();
++	memblock_free_all();
+ 
+ #ifdef CONFIG_HIGHMEM
+ 	{
+diff --git a/arch/riscv/mm/init.c b/arch/riscv/mm/init.c
+index 58a522f..d58c111 100644
+--- a/arch/riscv/mm/init.c
++++ b/arch/riscv/mm/init.c
+@@ -55,7 +55,7 @@ void __init mem_init(void)
+ #endif /* CONFIG_FLATMEM */
+ 
+ 	high_memory = (void *)(__va(PFN_PHYS(max_low_pfn)));
+-	free_all_bootmem();
++	memblock_free_all();
+ 
+ 	mem_init_print_info(NULL);
+ }
+diff --git a/arch/s390/mm/init.c b/arch/s390/mm/init.c
+index 3fa3e53..67bdba6 100644
+--- a/arch/s390/mm/init.c
++++ b/arch/s390/mm/init.c
+@@ -136,7 +136,7 @@ void __init mem_init(void)
+ 	cmma_init();
+ 
+ 	/* this will put all low memory onto the freelists */
+-	free_all_bootmem();
++	memblock_free_all();
+ 	setup_zero_pages();	/* Setup zeroed pages. */
+ 
+ 	cmma_init_nodat();
+diff --git a/arch/sh/mm/init.c b/arch/sh/mm/init.c
+index c884b76..21447f8 100644
+--- a/arch/sh/mm/init.c
++++ b/arch/sh/mm/init.c
+@@ -350,7 +350,7 @@ void __init mem_init(void)
+ 		high_memory = max_t(void *, high_memory,
+ 				    __va(pgdat_end_pfn(pgdat) << PAGE_SHIFT));
+ 
+-	free_all_bootmem();
++	memblock_free_all();
+ 
+ 	/* Set this up early, so we can take care of the zero page */
+ 	cpu_cache_init();
+diff --git a/arch/sparc/mm/init_32.c b/arch/sparc/mm/init_32.c
+index 885dd38..8807145 100644
+--- a/arch/sparc/mm/init_32.c
++++ b/arch/sparc/mm/init_32.c
+@@ -277,7 +277,7 @@ void __init mem_init(void)
+ 
+ 	max_mapnr = last_valid_pfn - pfn_base;
+ 	high_memory = __va(max_low_pfn << PAGE_SHIFT);
+-	free_all_bootmem();
++	memblock_free_all();
+ 
+ 	for (i = 0; sp_banks[i].num_bytes != 0; i++) {
+ 		unsigned long start_pfn = sp_banks[i].base_addr >> PAGE_SHIFT;
+diff --git a/arch/sparc/mm/init_64.c b/arch/sparc/mm/init_64.c
+index 51cd583..c2c8bff 100644
+--- a/arch/sparc/mm/init_64.c
++++ b/arch/sparc/mm/init_64.c
+@@ -2544,12 +2544,12 @@ void __init mem_init(void)
+ {
+ 	high_memory = __va(last_valid_pfn << PAGE_SHIFT);
+ 
+-	free_all_bootmem();
++	memblock_free_all();
+ 
+ 	/*
+ 	 * Must be done after boot memory is put on freelist, because here we
+ 	 * might set fields in deferred struct pages that have not yet been
+-	 * initialized, and free_all_bootmem() initializes all the reserved
++	 * initialized, and memblock_free_all() initializes all the reserved
+ 	 * deferred pages for us.
  	 */
- #define HPET_RESOURCE_NAME_SIZE 9
--	hpet_res = alloc_bootmem(sizeof(*hpet_res) + HPET_RESOURCE_NAME_SIZE);
-+	hpet_res = memblock_alloc(sizeof(*hpet_res) + HPET_RESOURCE_NAME_SIZE,
-+				  0);
+ 	register_page_bootmem_info();
+diff --git a/arch/um/kernel/mem.c b/arch/um/kernel/mem.c
+index 3555c13..2c672a8 100644
+--- a/arch/um/kernel/mem.c
++++ b/arch/um/kernel/mem.c
+@@ -51,7 +51,7 @@ void __init mem_init(void)
+ 	uml_reserved = brk_end;
  
- 	hpet_res->name = (void *)&hpet_res[1];
- 	hpet_res->flags = IORESOURCE_MEM;
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index e25118f..8c74509 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -2578,7 +2578,7 @@ static struct resource * __init ioapic_setup_resources(void)
- 	n = IOAPIC_RESOURCE_NAME_SIZE + sizeof(struct resource);
- 	n *= nr_ioapics;
+ 	/* this will put all low memory onto the freelists */
+-	free_all_bootmem();
++	memblock_free_all();
+ 	max_low_pfn = totalram_pages;
+ 	max_pfn = totalram_pages;
+ 	mem_init_print_info(NULL);
+diff --git a/arch/unicore32/mm/init.c b/arch/unicore32/mm/init.c
+index 4c572ab..3e5bb45 100644
+--- a/arch/unicore32/mm/init.c
++++ b/arch/unicore32/mm/init.c
+@@ -289,7 +289,7 @@ void __init mem_init(void)
+ 	free_unused_memmap(&meminfo);
  
--	mem = alloc_bootmem(n);
-+	mem = memblock_alloc(n, 0);
- 	res = (void *)mem;
+ 	/* this will put all unused low memory onto the freelists */
+-	free_all_bootmem();
++	memblock_free_all();
  
- 	mem += sizeof(struct resource) * nr_ioapics;
-diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
-index c88c23c..7ea8748 100644
---- a/arch/x86/kernel/e820.c
-+++ b/arch/x86/kernel/e820.c
-@@ -1094,7 +1094,7 @@ void __init e820__reserve_resources(void)
- 	struct resource *res;
- 	u64 end;
+ 	mem_init_print_info(NULL);
+ 	printk(KERN_NOTICE "Virtual kernel memory layout:\n"
+diff --git a/arch/x86/mm/highmem_32.c b/arch/x86/mm/highmem_32.c
+index 6d18b70..62915a5 100644
+--- a/arch/x86/mm/highmem_32.c
++++ b/arch/x86/mm/highmem_32.c
+@@ -111,7 +111,7 @@ void __init set_highmem_pages_init(void)
  
--	res = alloc_bootmem(sizeof(*res) * e820_table->nr_entries);
-+	res = memblock_alloc(sizeof(*res) * e820_table->nr_entries, 0);
- 	e820_res = res;
+ 	/*
+ 	 * Explicitly reset zone->managed_pages because set_highmem_pages_init()
+-	 * is invoked before free_all_bootmem()
++	 * is invoked before memblock_free_all()
+ 	 */
+ 	reset_all_zones_managed_pages();
+ 	for_each_zone(zone) {
+diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
+index 979e0a0..8ee1e64 100644
+--- a/arch/x86/mm/init_32.c
++++ b/arch/x86/mm/init_32.c
+@@ -771,7 +771,7 @@ void __init mem_init(void)
+ #endif
+ 	/*
+ 	 * With CONFIG_DEBUG_PAGEALLOC initialization of highmem pages has to
+-	 * be done before free_all_bootmem(). Memblock use free low memory for
++	 * be done before memblock_free_all(). Memblock use free low memory for
+ 	 * temporary data (see find_range_array()) and for this purpose can use
+ 	 * pages that was already passed to the buddy allocator, hence marked as
+ 	 * not accessible in the page tables when compiled with
+@@ -781,7 +781,7 @@ void __init mem_init(void)
+ 	set_highmem_pages_init();
  
- 	for (i = 0; i < e820_table->nr_entries; i++) {
-diff --git a/arch/x86/platform/olpc/olpc_dt.c b/arch/x86/platform/olpc/olpc_dt.c
-index d6ee929..140cd76 100644
---- a/arch/x86/platform/olpc/olpc_dt.c
-+++ b/arch/x86/platform/olpc/olpc_dt.c
-@@ -141,7 +141,7 @@ void * __init prom_early_alloc(unsigned long size)
- 		 * fast enough on the platforms we care about while minimizing
- 		 * wasted bootmem) and hand off chunks of it to callers.
- 		 */
--		res = alloc_bootmem(chunk_size);
-+		res = memblock_alloc(chunk_size, 0);
- 		BUG_ON(!res);
- 		prom_early_allocated += chunk_size;
- 		memset(res, 0, chunk_size);
-diff --git a/arch/xtensa/platforms/iss/network.c b/arch/xtensa/platforms/iss/network.c
-index d027ddd..206b9d4 100644
---- a/arch/xtensa/platforms/iss/network.c
-+++ b/arch/xtensa/platforms/iss/network.c
-@@ -646,7 +646,7 @@ static int __init iss_net_setup(char *str)
- 		return 1;
- 	}
+ 	/* this will put all low memory onto the freelists */
+-	free_all_bootmem();
++	memblock_free_all();
  
--	new = alloc_bootmem(sizeof(*new));
-+	new = memblock_alloc(sizeof(*new), 0);
- 	if (new == NULL) {
- 		pr_err("Alloc_bootmem failed\n");
- 		return 1;
-diff --git a/arch/xtensa/platforms/iss/setup.c b/arch/xtensa/platforms/iss/setup.c
-index f4bbb28..a922511 100644
---- a/arch/xtensa/platforms/iss/setup.c
-+++ b/arch/xtensa/platforms/iss/setup.c
-@@ -82,8 +82,8 @@ void __init platform_setup(char **p_cmdline)
- 	int argv_size = simc_argv_size();
+ 	after_bootmem = 1;
+ 	x86_init.hyper.init_after_bootmem();
+diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+index f39b512..bfb0bed 100644
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -1188,14 +1188,14 @@ void __init mem_init(void)
+ 	/* clear_bss() already clear the empty_zero_page */
  
- 	if (argc > 1) {
--		void **argv = alloc_bootmem(argv_size);
--		char *cmdline = alloc_bootmem(argv_size);
-+		void **argv = memblock_alloc(argv_size, 0);
-+		char *cmdline = memblock_alloc(argv_size, 0);
- 		int i;
+ 	/* this will put all memory onto the freelists */
+-	free_all_bootmem();
++	memblock_free_all();
+ 	after_bootmem = 1;
+ 	x86_init.hyper.init_after_bootmem();
  
- 		cmdline[0] = 0;
-diff --git a/drivers/macintosh/smu.c b/drivers/macintosh/smu.c
-index e8ae2e5..332fcca 100644
---- a/drivers/macintosh/smu.c
-+++ b/drivers/macintosh/smu.c
-@@ -493,7 +493,7 @@ int __init smu_init (void)
- 		goto fail_np;
- 	}
+ 	/*
+ 	 * Must be done after boot memory is put on freelist, because here we
+ 	 * might set fields in deferred struct pages that have not yet been
+-	 * initialized, and free_all_bootmem() initializes all the reserved
++	 * initialized, and memblock_free_all() initializes all the reserved
+ 	 * deferred pages for us.
+ 	 */
+ 	register_page_bootmem_info();
+diff --git a/arch/x86/xen/mmu_pv.c b/arch/x86/xen/mmu_pv.c
+index 2fe5c9b..d209134 100644
+--- a/arch/x86/xen/mmu_pv.c
++++ b/arch/x86/xen/mmu_pv.c
+@@ -856,7 +856,7 @@ static int __init xen_mark_pinned(struct mm_struct *mm, struct page *page,
+  * The init_mm pagetable is really pinned as soon as its created, but
+  * that's before we have page structures to store the bits.  So do all
+  * the book-keeping now once struct pages for allocated pages are
+- * initialized. This happens only after free_all_bootmem() is called.
++ * initialized. This happens only after memblock_free_all() is called.
+  */
+ static void __init xen_after_bootmem(void)
+ {
+diff --git a/arch/xtensa/mm/init.c b/arch/xtensa/mm/init.c
+index 34aead7..f7fbe63 100644
+--- a/arch/xtensa/mm/init.c
++++ b/arch/xtensa/mm/init.c
+@@ -152,7 +152,7 @@ void __init mem_init(void)
+ 	max_mapnr = max_pfn - ARCH_PFN_OFFSET;
+ 	high_memory = (void *)__va(max_low_pfn << PAGE_SHIFT);
  
--	smu = alloc_bootmem(sizeof(struct smu_device));
-+	smu = memblock_alloc(sizeof(struct smu_device), 0);
+-	free_all_bootmem();
++	memblock_free_all();
  
- 	spin_lock_init(&smu->lock);
- 	INIT_LIST_HEAD(&smu->cmd_list);
-diff --git a/init/main.c b/init/main.c
-index d0b92bd..99a9e99 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -768,8 +768,8 @@ static int __init initcall_blacklist(char *str)
- 		str_entry = strsep(&str, ",");
- 		if (str_entry) {
- 			pr_debug("blacklisting initcall %s\n", str_entry);
--			entry = alloc_bootmem(sizeof(*entry));
--			entry->buf = alloc_bootmem(strlen(str_entry) + 1);
-+			entry = memblock_alloc(sizeof(*entry), 0);
-+			entry->buf = memblock_alloc(strlen(str_entry) + 1, 0);
- 			strcpy(entry->buf, str_entry);
- 			list_add(&entry->next, &blacklisted_initcalls);
- 		}
+ 	mem_init_print_info(NULL);
+ 	pr_info("virtual kernel memory layout:\n"
+diff --git a/include/linux/bootmem.h b/include/linux/bootmem.h
+index bcc7e2f..b58873a 100644
+--- a/include/linux/bootmem.h
++++ b/include/linux/bootmem.h
+@@ -26,7 +26,7 @@ extern unsigned long max_pfn;
+  */
+ extern unsigned long long max_possible_pfn;
+ 
+-extern unsigned long free_all_bootmem(void);
++extern unsigned long memblock_free_all(void);
+ extern void reset_node_managed_pages(pg_data_t *pgdat);
+ extern void reset_all_zones_managed_pages(void);
+ 
+diff --git a/mm/memblock.c b/mm/memblock.c
+index 8d35107..63df68b 100644
+--- a/mm/memblock.c
++++ b/mm/memblock.c
+@@ -1435,7 +1435,7 @@ static void * __init memblock_alloc_internal(
+ 	/*
+ 	 * Detect any accidental use of these APIs after slab is ready, as at
+ 	 * this moment memblock may be deinitialized already and its
+-	 * internal data may be destroyed (after execution of free_all_bootmem)
++	 * internal data may be destroyed (after execution of memblock_free_all)
+ 	 */
+ 	if (WARN_ON_ONCE(slab_is_available()))
+ 		return kzalloc_node(size, GFP_NOWAIT, nid);
+diff --git a/mm/nobootmem.c b/mm/nobootmem.c
+index ee0f7fc..bb64b09 100644
+--- a/mm/nobootmem.c
++++ b/mm/nobootmem.c
+@@ -111,11 +111,11 @@ void __init reset_all_zones_managed_pages(void)
+ }
+ 
+ /**
+- * free_all_bootmem - release free pages to the buddy allocator
++ * memblock_free_all - release free pages to the buddy allocator
+  *
+  * Return: the number of pages actually released.
+  */
+-unsigned long __init free_all_bootmem(void)
++unsigned long __init memblock_free_all(void)
+ {
+ 	unsigned long pages;
+ 
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 2ade7b6..33c9e27 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -5482,7 +5482,7 @@ overlap_memmap_init(unsigned long zone, unsigned long *pfn)
+ 
+ /*
+  * Initially all pages are reserved - free ones are freed
+- * up by free_all_bootmem() once the early boot process is
++ * up by memblock_free_all() once the early boot process is
+  * done. Non-atomic initialization, single-pass.
+  */
+ void __meminit memmap_init_zone(unsigned long size, int nid, unsigned long zone,
+diff --git a/mm/page_poison.c b/mm/page_poison.c
+index aa2b3d3..f7e2a67 100644
+--- a/mm/page_poison.c
++++ b/mm/page_poison.c
+@@ -21,7 +21,7 @@ bool page_poisoning_enabled(void)
+ {
+ 	/*
+ 	 * Assumes that debug_pagealloc_enabled is set before
+-	 * free_all_bootmem.
++	 * memblock_free_all.
+ 	 * Page poisoning is debug page alloc for some arches. If
+ 	 * either of those options are enabled, enable poisoning.
+ 	 */
 -- 
 2.7.4
