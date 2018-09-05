@@ -1,21 +1,38 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4254yD1cvhzF37b
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2018 23:57:07 +1000 (AEST)
-Subject: Re: [PATCH] powerpc64s: Print exception vector name alongside the
- trap number
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-References: <20180418090205.30844-1-naveen.n.rao@linux.vnet.ibm.com>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <c5d9f882-4b7d-fde5-9e29-2b3598750363@c-s.fr>
-Date: Wed, 5 Sep 2018 15:57:01 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4255651TSKzF33Q
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 00:03:56 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w85E0AE6025166
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Sep 2018 10:03:53 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2mafkfb9r0-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Sep 2018 10:03:50 -0400
+Received: from localhost
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Wed, 5 Sep 2018 08:03:42 -0600
+Subject: Re: [RFC PATCH v1 00/17] ban the use of _PAGE_XXX flags outside
+ platform specific code
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, npiggin@gmail.com,
+ aneesh.kumar@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+References: <cover.1535913369.git.christophe.leroy@c-s.fr>
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Date: Wed, 5 Sep 2018 19:33:33 +0530
 MIME-Version: 1.0
-In-Reply-To: <20180418090205.30844-1-naveen.n.rao@linux.vnet.ibm.com>
+In-Reply-To: <cover.1535913369.git.christophe.leroy@c-s.fr>
 Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <95ee30b8-70b5-0f74-b677-417d3b0ca19e@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,100 +42,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 09/05/2018 06:06 PM, Christophe Leroy wrote:
+> Today flags like for instance _PAGE_RW or _PAGE_USER are used through
+> common parts of code.
+> Using those directly in common parts of code have proven to lead to
+> mistakes or misbehaviour, because their use is not always as trivial
+> as one could think.
+> 
+> For instance, (flags & _PAGE_USER) == 0 isn't enough to tell
+> that a page is a kernel page, because some targets are using
+> _PAGE_PRIVILEDGED and not _PAGE_USER, so the test has to be
+> (flags & (_PAGE_USER | _PAGE_PRIVILEDGED)) == _PAGE_PRIVILEDGED
+> This has to (bad) consequences:
+> 
+>   - All targets must define every bit, even the unsupported ones,
+>     leading to a lot of useless #define _PAGE_XXX 0
+>   - If someone forgets to take into account all possible _PAGE_XXX bits
+>     for the case, we can get unexpected behaviour on some targets.
+> 
+> This becomes even more complex when we come to using _PAGE_RW.
+> Testing (flags & _PAGE_RW) is not enough to test whether a page
+> if writable or not, because:
+> 
+>   - Some targets have _PAGE_RO instead, which has to be unset to tell
+>     a page is writable
+>   - Some targets have _PAGE_R and _PAGE_W, in which case
+>     _PAGE_RW = _PAGE_R | _PAGE_W
+>   - Even knowing whether a page is readable is not always trivial because:
+>     - Some targets requires to check that _PAGE_R is set to ensure page
+>     is readable
+>     - Some targets requires to check that _PAGE_NA is not set
+>     - Some targets requires to check that _PAGE_RO or _PAGE_RW is set
+> 
+> Etc ....
+> 
+> In order to work around all those issues and minimise the risks of errors,
+> this serie aims at removing all use of _PAGE_XXX flags from powerpc code
+> and always use pte_xxx() and pte_mkxxx() accessors instead. Those accessors
+> are then defined in target specific parts of the kernel code.
 
+We recently did on book3s 64.
 
-Le 18/04/2018 à 11:02, Naveen N. Rao a écrit :
-> Print a small help text indicating the exception vector alongside the
-> trap number to make it easier while analyzing back traces. As an
-> example:
-> 
->      Unable to handle kernel paging request for data at address 0x00000000
->      Faulting instruction address: 0xc0000000006e3728
->      Oops: Kernel access of bad area, sig: 11 [#1]
->      LE SMP NR_CPUS=2048 NUMA PowerNV
->      Modules linked in:
->      CPU: 0 PID: 1 Comm: bash Not tainted 4.16.0-nnr #226
->      NIP:  c0000000006e3728 LR: c0000000006e4774 CTR: c0000000006e3700
->      REGS: c0000000f0aa3980 TRAP: 0300 (DSI)  Not tainted  (4.16.0-nnr)
->      MSR:  9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE>  CR: 28222222  XER: 20000000
->      CFAR: c0000000006e4770 DAR: 0000000000000000 DSISR: 42000000 SOFTE: 0
-> 
-> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> ---
-> I find this useful to have in backtraces, instead of having to look it
-> up. Some of the names could probably be tweaked a bit to be more
-> sensible.
-> 
-> - Naveen
-> 
->   arch/powerpc/kernel/process.c | 42 +++++++++++++++++++++++++++++++++++
->   1 file changed, 42 insertions(+)
-> 
-> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-> index 1237f13fed51..71bfe29af456 100644
-> --- a/arch/powerpc/kernel/process.c
-> +++ b/arch/powerpc/kernel/process.c
-> @@ -1414,6 +1414,42 @@ static void print_msr_bits(unsigned long val)
->   #define LAST_VOLATILE	12
->   #endif
->   
-> +#ifdef CONFIG_PPC_BOOK3S_64
+static inline int pte_present(pte_t pte)
+{
+	/*
+	 * A pte is considerent present if _PAGE_PRESENT is set.
+	 * We also need to consider the pte present which is marked
+	 * invalid during ptep_set_access_flags. Hence we look for _PAGE_INVALID
+	 * if we find _PAGE_PRESENT cleared.
+	 */
+	return !!(pte_raw(pte) & cpu_to_be64(_PAGE_PRESENT | _PAGE_INVALID));
+}
 
-Why not make something generic applicable to all platforms ?
+So I guess with that pte_present conversion we need to be careful.
 
-Christophe
+Do you have a git tree which I can use to double check?
 
-> +static char *print_trap(unsigned long trapno)
-> +{
-> +	trapno &= 0xff0;
-> +	switch (trapno) {
-> +		case 0x100:	return "SRESET";
-> +		case 0x200:	return "MCE";
-> +		case 0x300:	return "DSI";
-> +		case 0x380:	return "DSISLB";
-> +		case 0x400:	return "ISI";
-> +		case 0x480:	return "ISISLB";
-> +		case 0x500:	return "EXT";
-> +		case 0x600:	return "ALIGN";
-> +		case 0x700:	return "PCHECK";
-> +		case 0x800:	return "FP";
-> +		case 0x900:	return "DEC";
-> +		case 0x980:	return "HDEC";
-> +		case 0xa00:	return "DBELL";
-> +		case 0xc00:	return "SC";
-> +		case 0xd00:	return "SSTEP";
-> +		case 0xe00:	return "HDSI";
-> +		case 0xe20:	return "HISI";
-> +		case 0xe40:	return "HEMUL";
-> +		case 0xe60:	return "HMI";
-> +		case 0xe80:	return "HDBELL";
-> +		case 0xea0:	return "HVIRT";
-> +		case 0xf00:	return "PMI";
-> +		case 0xf20:	return "ALTIVEC";
-> +		case 0xf40:	return "VSX";
-> +		case 0xf60:	return "UNAVAIL";
-> +		case 0xf80:	return "HUNAVAIL";
-> +	}
-> +	return "UNKNOWN";
-> +}
-> +#endif
-> +
->   void show_regs(struct pt_regs * regs)
->   {
->   	int i, trap;
-> @@ -1422,8 +1458,14 @@ void show_regs(struct pt_regs * regs)
->   
->   	printk("NIP:  "REG" LR: "REG" CTR: "REG"\n",
->   	       regs->nip, regs->link, regs->ctr);
-> +#ifdef CONFIG_PPC_BOOK3S_64
-> +	printk("REGS: %px TRAP: %04lx (%s)  %s  (%s)\n",
-> +	       regs, regs->trap, print_trap(regs->trap), print_tainted(),
-> +	       init_utsname()->release);
-> +#else
->   	printk("REGS: %px TRAP: %04lx   %s  (%s)\n",
->   	       regs, regs->trap, print_tainted(), init_utsname()->release);
-> +#endif
->   	printk("MSR:  "REG" ", regs->msr);
->   	print_msr_bits(regs->msr);
->   	pr_cont("  CR: %08lx  XER: %08lx\n", regs->ccr, regs->xer);
-> 
+-aneesh
