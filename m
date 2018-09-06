@@ -2,9 +2,9 @@ Return-Path: <mhocko@kernel.org>
 Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 425YrP3HmHzF31S
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 18:38:45 +1000 (AEST)
-Date: Thu, 6 Sep 2018 10:38:41 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 425Yvg0vJjzDrSg
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 18:41:35 +1000 (AEST)
+Date: Thu, 6 Sep 2018 10:41:31 +0200
 From: Michal Hocko <mhocko@kernel.org>
 To: Mike Rapoport <rppt@linux.vnet.ibm.com>
 Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
@@ -15,14 +15,14 @@ Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
  Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
  linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
  sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 16/29] memblock: replace __alloc_bootmem_node with
- appropriate memblock_ API
-Message-ID: <20180906083841.GA14951@dhcp22.suse.cz>
+Subject: Re: [RFC PATCH 17/29] memblock: replace alloc_bootmem_node with
+ memblock_alloc_node
+Message-ID: <20180906084131.GB14951@dhcp22.suse.cz>
 References: <1536163184-26356-1-git-send-email-rppt@linux.vnet.ibm.com>
- <1536163184-26356-17-git-send-email-rppt@linux.vnet.ibm.com>
+ <1536163184-26356-18-git-send-email-rppt@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1536163184-26356-17-git-send-email-rppt@linux.vnet.ibm.com>
+In-Reply-To: <1536163184-26356-18-git-send-email-rppt@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,59 +32,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed 05-09-18 18:59:31, Mike Rapoport wrote:
-> Use memblock_alloc_try_nid whenever goal (i.e. mininal address is
-> specified) and memblock_alloc_node otherwise.
-
-I suspect you wanted to say (i.e. minimal address) is specified
-
+On Wed 05-09-18 18:59:32, Mike Rapoport wrote:
 > Signed-off-by: Mike Rapoport <rppt@linux.vnet.ibm.com>
 
+ENOCHAGELOG again
+
+The conversion itself looks good to me
 Acked-by: Michal Hocko <mhocko@suse.com>
 
-One note below
-
 > ---
->  arch/ia64/mm/discontig.c       |  6 ++++--
->  arch/ia64/mm/init.c            |  2 +-
->  arch/powerpc/kernel/setup_64.c |  6 ++++--
->  arch/sparc/kernel/setup_64.c   | 10 ++++------
->  arch/sparc/kernel/smp_64.c     |  4 ++--
->  5 files changed, 15 insertions(+), 13 deletions(-)
+>  arch/alpha/kernel/pci_iommu.c   | 4 ++--
+>  arch/ia64/sn/kernel/io_common.c | 7 ++-----
+>  arch/ia64/sn/kernel/setup.c     | 4 ++--
+>  3 files changed, 6 insertions(+), 9 deletions(-)
 > 
-> diff --git a/arch/ia64/mm/discontig.c b/arch/ia64/mm/discontig.c
-> index 1928d57..918dda9 100644
-> --- a/arch/ia64/mm/discontig.c
-> +++ b/arch/ia64/mm/discontig.c
-> @@ -451,8 +451,10 @@ static void __init *memory_less_node_alloc(int nid, unsigned long pernodesize)
->  	if (bestnode == -1)
->  		bestnode = anynode;
+> diff --git a/arch/alpha/kernel/pci_iommu.c b/arch/alpha/kernel/pci_iommu.c
+> index 6923b0d..b52d76f 100644
+> --- a/arch/alpha/kernel/pci_iommu.c
+> +++ b/arch/alpha/kernel/pci_iommu.c
+> @@ -74,7 +74,7 @@ iommu_arena_new_node(int nid, struct pci_controller *hose, dma_addr_t base,
 >  
-> -	ptr = __alloc_bootmem_node(pgdat_list[bestnode], pernodesize,
-> -		PERCPU_PAGE_SIZE, __pa(MAX_DMA_ADDRESS));
-> +	ptr = memblock_alloc_try_nid(pernodesize, PERCPU_PAGE_SIZE,
-> +				     __pa(MAX_DMA_ADDRESS),
-> +				     BOOTMEM_ALLOC_ACCESSIBLE,
-> +				     bestnode);
+>  #ifdef CONFIG_DISCONTIGMEM
 >  
->  	return ptr;
->  }
-> diff --git a/arch/ia64/mm/init.c b/arch/ia64/mm/init.c
-> index ffcc358..2169ca5 100644
-> --- a/arch/ia64/mm/init.c
-> +++ b/arch/ia64/mm/init.c
-> @@ -459,7 +459,7 @@ int __init create_mem_map_page_table(u64 start, u64 end, void *arg)
->  		pte = pte_offset_kernel(pmd, address);
->  
->  		if (pte_none(*pte))
-> -			set_pte(pte, pfn_pte(__pa(memblock_alloc_node(PAGE_SIZE, PAGE_SIZE, node))) >> PAGE_SHIFT,
-> +			set_pte(pte, pfn_pte(__pa(memblock_alloc_node(PAGE_SIZE, PAGE_SIZE, node)) >> PAGE_SHIFT,
->  					     PAGE_KERNEL));
-
-This doesn't seem to belong to the patch, right?
-
+> -	arena = alloc_bootmem_node(NODE_DATA(nid), sizeof(*arena));
+> +	arena = memblock_alloc_node(sizeof(*arena), align, nid);
+>  	if (!NODE_DATA(nid) || !arena) {
+>  		printk("%s: couldn't allocate arena from node %d\n"
+>  		       "    falling back to system-wide allocation\n",
+> @@ -82,7 +82,7 @@ iommu_arena_new_node(int nid, struct pci_controller *hose, dma_addr_t base,
+>  		arena = alloc_bootmem(sizeof(*arena));
 >  	}
->  	return 0;
+>  
+> -	arena->ptes = __alloc_bootmem_node(NODE_DATA(nid), mem_size, align, 0);
+> +	arena->ptes = memblock_alloc_node(sizeof(*arena), align, nid);
+>  	if (!NODE_DATA(nid) || !arena->ptes) {
+>  		printk("%s: couldn't allocate arena ptes from node %d\n"
+>  		       "    falling back to system-wide allocation\n",
+> diff --git a/arch/ia64/sn/kernel/io_common.c b/arch/ia64/sn/kernel/io_common.c
+> index 102aaba..8b05d55 100644
+> --- a/arch/ia64/sn/kernel/io_common.c
+> +++ b/arch/ia64/sn/kernel/io_common.c
+> @@ -385,16 +385,13 @@ void __init hubdev_init_node(nodepda_t * npda, cnodeid_t node)
+>  {
+>  	struct hubdev_info *hubdev_info;
+>  	int size;
+> -	pg_data_t *pg;
+>  
+>  	size = sizeof(struct hubdev_info);
+>  
+>  	if (node >= num_online_nodes())	/* Headless/memless IO nodes */
+> -		pg = NODE_DATA(0);
+> -	else
+> -		pg = NODE_DATA(node);
+> +		node = 0;
+>  
+> -	hubdev_info = (struct hubdev_info *)alloc_bootmem_node(pg, size);
+> +	hubdev_info = (struct hubdev_info *)memblock_alloc_node(size, 0, node);
+>  
+>  	npda->pdinfo = (void *)hubdev_info;
+>  }
+> diff --git a/arch/ia64/sn/kernel/setup.c b/arch/ia64/sn/kernel/setup.c
+> index 5f6b6b4..ab2564f 100644
+> --- a/arch/ia64/sn/kernel/setup.c
+> +++ b/arch/ia64/sn/kernel/setup.c
+> @@ -511,7 +511,7 @@ static void __init sn_init_pdas(char **cmdline_p)
+>  	 */
+>  	for_each_online_node(cnode) {
+>  		nodepdaindr[cnode] =
+> -		    alloc_bootmem_node(NODE_DATA(cnode), sizeof(nodepda_t));
+> +		    memblock_alloc_node(sizeof(nodepda_t), 0, cnode);
+>  		memset(nodepdaindr[cnode]->phys_cpuid, -1,
+>  		    sizeof(nodepdaindr[cnode]->phys_cpuid));
+>  		spin_lock_init(&nodepdaindr[cnode]->ptc_lock);
+> @@ -522,7 +522,7 @@ static void __init sn_init_pdas(char **cmdline_p)
+>  	 */
+>  	for (cnode = num_online_nodes(); cnode < num_cnodes; cnode++)
+>  		nodepdaindr[cnode] =
+> -		    alloc_bootmem_node(NODE_DATA(0), sizeof(nodepda_t));
+> +		    memblock_alloc_node(sizeof(nodepda_t), 0, 0);
+>  
+>  	/*
+>  	 * Now copy the array of nodepda pointers to each nodepda.
+> -- 
+> 2.7.4
+> 
+
 -- 
 Michal Hocko
 SUSE Labs
