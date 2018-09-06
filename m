@@ -3,43 +3,42 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 425gGw1mWLzF3Ls
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 22:43:36 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 425gJg64y2zF3RY
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 22:45:07 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w86Ccpid101373
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Sep 2018 08:43:34 -0400
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2mb2a563n5-1
+ w86Chp1c138373
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Sep 2018 08:45:05 -0400
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2mb4f404r9-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Sep 2018 08:43:33 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Sep 2018 08:45:04 -0400
 Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.vnet.ibm.com>;
- Thu, 6 Sep 2018 13:43:31 +0100
-Date: Thu, 6 Sep 2018 15:43:21 +0300
+ Thu, 6 Sep 2018 13:45:02 +0100
+Date: Thu, 6 Sep 2018 15:44:53 +0300
 From: Mike Rapoport <rppt@linux.vnet.ibm.com>
 To: Michal Hocko <mhocko@kernel.org>
-Cc: Rob Herring <robh@kernel.org>, linux-mm@kvack.org,
- Andrew Morton <akpm@linux-foundation.org>, davem@davemloft.net,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, mingo@redhat.com,
- Michael Ellerman <mpe@ellerman.id.au>, paul.burton@mips.com,
- Thomas Gleixner <tglx@linutronix.de>, tony.luck@intel.com,
+Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
+ "David S. Miller" <davem@davemloft.net>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Ingo Molnar <mingo@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Paul Burton <paul.burton@mips.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Tony Luck <tony.luck@intel.com>,
  linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
  linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC PATCH 07/29] memblock: remove _virt from APIs returning
- virtual address
+ linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 13/29] memblock: replace __alloc_bootmem_nopanic with
+ memblock_alloc_from_nopanic
 References: <1536163184-26356-1-git-send-email-rppt@linux.vnet.ibm.com>
- <1536163184-26356-8-git-send-email-rppt@linux.vnet.ibm.com>
- <CABGGiswdb1x-=vqrgxZ9i2dnLdsgtXq4+5H9Y1JRd90YVMW69A@mail.gmail.com>
- <20180905172017.GA2203@rapoport-lnx>
- <20180906072800.GN14951@dhcp22.suse.cz>
+ <1536163184-26356-14-git-send-email-rppt@linux.vnet.ibm.com>
+ <20180906075721.GV14951@dhcp22.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180906072800.GN14951@dhcp22.suse.cz>
-Message-Id: <20180906124321.GD27492@rapoport-lnx>
+In-Reply-To: <20180906075721.GV14951@dhcp22.suse.cz>
+Message-Id: <20180906124453.GE27492@rapoport-lnx>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,39 +48,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 06, 2018 at 09:28:00AM +0200, Michal Hocko wrote:
-> On Wed 05-09-18 20:20:18, Mike Rapoport wrote:
-> > On Wed, Sep 05, 2018 at 12:04:36PM -0500, Rob Herring wrote:
-> > > On Wed, Sep 5, 2018 at 11:00 AM Mike Rapoport <rppt@linux.vnet.ibm.com> wrote:
-> > > >
-> > > > The conversion is done using
-> > > >
-> > > > sed -i 's@memblock_virt_alloc@memblock_alloc@g' \
-> > > >         $(git grep -l memblock_virt_alloc)
-> > > 
-> > > What's the reason to do this? It seems like a lot of churn even if a
-> > > mechanical change.
-> > 
-> > I felt that memblock_virt_alloc_ is too long for a prefix, e.g:
-> > memblock_virt_alloc_node_nopanic, memblock_virt_alloc_low_nopanic.
-> > 
-> > And for consistency I've changed the memblock_virt_alloc as well.
+On Thu, Sep 06, 2018 at 09:57:21AM +0200, Michal Hocko wrote:
+> On Wed 05-09-18 18:59:28, Mike Rapoport wrote:
+> > Signed-off-by: Mike Rapoport <rppt@linux.vnet.ibm.com>
 > 
-> I would keep the current API unless the name is terribly misleading or
-> it can be improved a lot. Neither seems to be the case here. So I would
-> rather stick with the status quo.
+> The translation is simpler here but still a word or two would be nice.
+> Empty changelogs suck.
 
-I'm ok with the memblock_virt_alloc by itself, but having 'virt' in
-'memblock_virt_alloc_try_nid_nopanic' and 'memblock_virt_alloc_low_nopanic'
-reduces code readability in my opinion.
-
-Besides, from what I've seen, many users of memblock_phys_alloc can be
-converted to the virtual variant and then we can just have memblock_alloc
-everywhere in the end.
-
-Currently there are ~70 users of memblock_virt_alloc*, but with the
-bootmem -> memblock conversion we'll be adding ~140 more.
-
+This is one of the things left to sort out :)
+ 
+> To the change
+> Acked-by: Michal Hocko <mhocko@suse.com>
+> 
+> > ---
+> >  arch/arc/kernel/unwind.c       | 4 ++--
+> >  arch/x86/kernel/setup_percpu.c | 4 ++--
+> >  2 files changed, 4 insertions(+), 4 deletions(-)
+> > 
+> > diff --git a/arch/arc/kernel/unwind.c b/arch/arc/kernel/unwind.c
+> > index 183391d..2a01dd1 100644
+> > --- a/arch/arc/kernel/unwind.c
+> > +++ b/arch/arc/kernel/unwind.c
+> > @@ -181,8 +181,8 @@ static void init_unwind_hdr(struct unwind_table *table,
+> >   */
+> >  static void *__init unw_hdr_alloc_early(unsigned long sz)
+> >  {
+> > -	return __alloc_bootmem_nopanic(sz, sizeof(unsigned int),
+> > -				       MAX_DMA_ADDRESS);
+> > +	return memblock_alloc_from_nopanic(sz, sizeof(unsigned int),
+> > +					   MAX_DMA_ADDRESS);
+> >  }
+> >  
+> >  static void *unw_hdr_alloc(unsigned long sz)
+> > diff --git a/arch/x86/kernel/setup_percpu.c b/arch/x86/kernel/setup_percpu.c
+> > index 67d48e26..041663a 100644
+> > --- a/arch/x86/kernel/setup_percpu.c
+> > +++ b/arch/x86/kernel/setup_percpu.c
+> > @@ -106,7 +106,7 @@ static void * __init pcpu_alloc_bootmem(unsigned int cpu, unsigned long size,
+> >  	void *ptr;
+> >  
+> >  	if (!node_online(node) || !NODE_DATA(node)) {
+> > -		ptr = __alloc_bootmem_nopanic(size, align, goal);
+> > +		ptr = memblock_alloc_from_nopanic(size, align, goal);
+> >  		pr_info("cpu %d has no node %d or node-local memory\n",
+> >  			cpu, node);
+> >  		pr_debug("per cpu data for cpu%d %lu bytes at %016lx\n",
+> > @@ -121,7 +121,7 @@ static void * __init pcpu_alloc_bootmem(unsigned int cpu, unsigned long size,
+> >  	}
+> >  	return ptr;
+> >  #else
+> > -	return __alloc_bootmem_nopanic(size, align, goal);
+> > +	return memblock_alloc_from_nopanic(size, align, goal);
+> >  #endif
+> >  }
+> >  
+> > -- 
+> > 2.7.4
+> > 
+> 
 > -- 
 > Michal Hocko
 > SUSE Labs
