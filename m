@@ -1,57 +1,69 @@
-Return-Path: <SRS0=IjWm=LU=goodmis.org=rostedt@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <daniel.vetter@ffwll.ch>
+Received: from mail-it0-f66.google.com (mail-it0-f66.google.com
+ [209.85.214.66])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 425lgK2bL0zF3Rr
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Sep 2018 02:01:30 +1000 (AEST)
-Date: Thu, 6 Sep 2018 12:01:20 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: Pavel Machek <pavel@ucw.cz>, Henrik Austad <henrik@austad.us>,
- linux-doc@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, "Paul E.
- McKenney" <paulmck@linux.vnet.ibm.com>, Josh Triplett
- <josh@joshtriplett.org>, Mathieu Desnoyers
- <mathieu.desnoyers@efficios.com>, Lai Jiangshan <jiangshanlai@gmail.com>,
- Jens Axboe <axboe@kernel.dk>, Rob Herring <robh+dt@kernel.org>, Mark
- Rutland <mark.rutland@arm.com>, Bartlomiej Zolnierkiewicz
- <b.zolnierkie@samsung.com>, Linus Walleij <linus.walleij@linaro.org>,
- "David S. Miller" <davem@davemloft.net>, Karsten Keil
- <isdn@linux-pingi.de>, Masahiro Yamada <yamada.masahiro@socionext.com>,
- Michal Marek <michal.lkml@markovi.net>, Peter Zijlstra
- <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Will Deacon
- <will.deacon@arm.com>, Ralf Baechle <ralf@linux-mips.org>, Paul Burton
- <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>, Paul Moore
- <paul@paul-moore.com>, "James E.J. Bottomley" <jejb@parisc-linux.org>,
- Helge Deller <deller@gmx.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len
- Brown <len.brown@intel.com>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael
- Ellerman <mpe@ellerman.id.au>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>, Mark Brown
- <broonie@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Paolo Bonzini
- <pbonzini@redhat.com>, Radim =?UTF-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
- Evgeniy Polyakov <zbr@ioremap.net>, "H. Peter Anvin" <hpa@zytor.com>,
- x86@kernel.org, Andrew Morton <akpm@linux-foundation.org>, Ian Kent
- <raven@themaw.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Mike
- Rapoport <rppt@linux.vnet.ibm.com>, Jan Kandziora <jjj@gmx.de>,
- linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
- devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-fbdev@vger.kernel.org, linux-gpio@vger.kernel.org,
- linux-ide@vger.kernel.org, netdev@vger.kernel.org,
- linux-kbuild@vger.kernel.org, linux-mips@linux-mips.org,
- linux-security-module@vger.kernel.org, linux-parisc@vger.kernel.org,
- linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-spi@vger.kernel.org, kvm@vger.kernel.org,
- Henrik Austad <haustad@cisco.com>
-Subject: Re: [PATCH] [RFC v2] Drop all 00-INDEX files from Documentation/
-Message-ID: <20180906120120.3dd1fc91@gandalf.local.home>
-In-Reply-To: <20180906095804.5ab2716f@lwn.net>
-References: <1536012923-16275-1-git-send-email-henrik@austad.us>
- <20180904113030.GB25177@amd>
- <20180904095908.13298b3d@gandalf.local.home>
- <20180906095804.5ab2716f@lwn.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 425v9d75XYzF3SH
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Sep 2018 07:39:45 +1000 (AEST)
+Received: by mail-it0-f66.google.com with SMTP id p79-v6so17861075itp.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Sep 2018 14:39:45 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Sender: daniel.vetter@ffwll.ch
+In-Reply-To: <20180906120120.3dd1fc91@gandalf.local.home>
+References: <1536012923-16275-1-git-send-email-henrik@austad.us>
+ <20180904113030.GB25177@amd> <20180904095908.13298b3d@gandalf.local.home>
+ <20180906095804.5ab2716f@lwn.net> <20180906120120.3dd1fc91@gandalf.local.home>
+From: Daniel Vetter <daniel@ffwll.ch>
+Date: Thu, 6 Sep 2018 23:39:42 +0200
+Message-ID: <CAKMK7uHoeB89-VVS8qVaoNiP_0waHHJ=dFCUgXkRDTnRkXz69g@mail.gmail.com>
+Subject: Re: [PATCH] [RFC v2] Drop all 00-INDEX files from Documentation/
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Jonathan Corbet <corbet@lwn.net>, Mark Rutland <mark.rutland@arm.com>,
+ Linux MIPS Mailing List <linux-mips@linux-mips.org>,
+ Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+ X86 ML <x86@kernel.org>, kvm@vger.kernel.org,
+ Linux Doc Mailing List <linux-doc@vger.kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ James Hogan <jhogan@kernel.org>, Henrik Austad <henrik@austad.us>,
+ Will Deacon <will.deacon@arm.com>,
+ dri-devel <dri-devel@lists.freedesktop.org>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>, Jan Kandziora <jjj@gmx.de>,
+ Paul Mackerras <paulus@samba.org>, Henrik Austad <haustad@cisco.com>,
+ Pavel Machek <pavel@ucw.cz>,
+ "H. Peter Anvin" <hpa@zytor.com>, Evgeniy Polyakov <zbr@ioremap.net>,
+ linux-s390@vger.kernel.org, Ian Kent <raven@themaw.net>,
+ linux-security-module <linux-security-module@vger.kernel.org>,
+ Paul Moore <paul@paul-moore.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Helge Deller <deller@gmx.de>,
+ =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>, Ingo Molnar <mingo@redhat.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Len Brown <len.brown@intel.com>, Mike Rapoport <rppt@linux.vnet.ibm.com>,
+ Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+ Lai Jiangshan <jiangshanlai@gmail.com>,
+ Jiri Slaby <jslaby@suse.com>, Josh Triplett <josh@joshtriplett.org>,
+ linux-gpio <linux-gpio@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Jacek Anaszewski <jacek.anaszewski@gmail.com>,
+ Bjorn Helgaas <bhelgaas@google.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-kbuild@vger.kernel.org,
+ Jens Axboe <axboe@kernel.dk>, Karsten Keil <isdn@linux-pingi.de>,
+ Michal Marek <michal.lkml@markovi.net>, linux-parisc@vger.kernel.org,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-ide@vger.kernel.org,
+ Linux PCI <linux-pci@vger.kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Linux PM list <linux-pm@vger.kernel.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Ralf Baechle <ralf@linux-mips.org>,
+ linux-spi@vger.kernel.org, Paul Burton <paul.burton@mips.com>,
+ Mark Brown <broonie@kernel.org>, netdev@vger.kernel.org,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Paolo Bonzini <pbonzini@redhat.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "David S. Miller" <davem@davemloft.net>, devicetree@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -61,15 +73,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 6 Sep 2018 09:58:04 -0600
-Jonathan Corbet <corbet@lwn.net> wrote:
+On Thu, Sep 6, 2018 at 6:01 PM, Steven Rostedt <rostedt@goodmis.org> wrote:
+> On Thu, 6 Sep 2018 09:58:04 -0600
+> Jonathan Corbet <corbet@lwn.net> wrote:
+>
+>> Thanks,
+>>
+>> jon  (who is increasingly inclined to apply this patch)
+>
+> As Colin Kaepernick now says... "Just do it!"
+>
+> ;-)
 
-> Thanks,
-> 
-> jon  (who is increasingly inclined to apply this patch)
++1
 
-As Colin Kaepernick now says... "Just do it!"
-
-;-)
-
--- Steve
+But I'm biased, I'm part of the party that is responsible for the new
+shiny documentation system ...
+-Daniel
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
++41 (0) 79 365 57 48 - http://blog.ffwll.ch
