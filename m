@@ -1,34 +1,37 @@
-Return-Path: <mhocko@kernel.org>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <pburton@wavecomp.com>
+Received: from NAM03-DM3-obe.outbound.protection.outlook.com
+ (mail-dm3nam03on0129.outbound.protection.outlook.com [104.47.41.129])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 425hgW63cdzF38y
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 23:46:31 +1000 (AEST)
-Date: Thu, 6 Sep 2018 15:46:27 +0200
-From: Michal Hocko <mhocko@kernel.org>
-To: Mike Rapoport <rppt@linux.vnet.ibm.com>
-Cc: Rob Herring <robh@kernel.org>, linux-mm@kvack.org,
- Andrew Morton <akpm@linux-foundation.org>, davem@davemloft.net,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, mingo@redhat.com,
- Michael Ellerman <mpe@ellerman.id.au>, paul.burton@mips.com,
- Thomas Gleixner <tglx@linutronix.de>, tony.luck@intel.com,
- linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
- linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC PATCH 07/29] memblock: remove _virt from APIs returning
- virtual address
-Message-ID: <20180906134627.GZ14951@dhcp22.suse.cz>
-References: <1536163184-26356-1-git-send-email-rppt@linux.vnet.ibm.com>
- <1536163184-26356-8-git-send-email-rppt@linux.vnet.ibm.com>
- <CABGGiswdb1x-=vqrgxZ9i2dnLdsgtXq4+5H9Y1JRd90YVMW69A@mail.gmail.com>
- <20180905172017.GA2203@rapoport-lnx>
- <20180906072800.GN14951@dhcp22.suse.cz>
- <20180906124321.GD27492@rapoport-lnx>
- <20180906130102.GY14951@dhcp22.suse.cz>
- <20180906133958.GM27492@rapoport-lnx>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 425nDM2cp6zF3Rq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Sep 2018 03:11:43 +1000 (AEST)
+Date: Thu, 6 Sep 2018 10:11:33 -0700
+From: Paul Burton <paul.burton@mips.com>
+To: Rob Herring <robh@kernel.org>
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Michal Marek <michal.lkml@markovi.net>, Vineet Gupta <vgupta@synopsys.com>,
+ Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Michal Simek <monstr@monstr.eu>, Ralf Baechle <ralf@linux-mips.org>,
+ James Hogan <jhogan@kernel.org>, Ley Foon Tan <lftan@altera.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
+ linux-kbuild@vger.kernel.org, linux-snps-arc@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org,
+ uclinux-h8-devel@lists.sourceforge.jp, linux-mips@linux-mips.org,
+ nios2-dev@lists.rocketboards.org, linuxppc-dev@lists.ozlabs.org,
+ linux-xtensa@linux-xtensa.org
+Subject: Re: [PATCH v2 6/9] kbuild: consolidate Devicetree dtb build rules
+Message-ID: <20180906171133.awny5cx533kkolrg@pburton-laptop>
+References: <20180905235327.5996-1-robh@kernel.org>
+ <20180905235327.5996-7-robh@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180906133958.GM27492@rapoport-lnx>
+In-Reply-To: <20180905235327.5996-7-robh@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,46 +41,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu 06-09-18 16:39:58, Mike Rapoport wrote:
-> On Thu, Sep 06, 2018 at 03:01:02PM +0200, Michal Hocko wrote:
-> > On Thu 06-09-18 15:43:21, Mike Rapoport wrote:
-> > > On Thu, Sep 06, 2018 at 09:28:00AM +0200, Michal Hocko wrote:
-> > > > On Wed 05-09-18 20:20:18, Mike Rapoport wrote:
-> > > > > On Wed, Sep 05, 2018 at 12:04:36PM -0500, Rob Herring wrote:
-> > > > > > On Wed, Sep 5, 2018 at 11:00 AM Mike Rapoport <rppt@linux.vnet.ibm.com> wrote:
-> > > > > > >
-> > > > > > > The conversion is done using
-> > > > > > >
-> > > > > > > sed -i 's@memblock_virt_alloc@memblock_alloc@g' \
-> > > > > > >         $(git grep -l memblock_virt_alloc)
-> > > > > > 
-> > > > > > What's the reason to do this? It seems like a lot of churn even if a
-> > > > > > mechanical change.
-> > > > > 
-> > > > > I felt that memblock_virt_alloc_ is too long for a prefix, e.g:
-> > > > > memblock_virt_alloc_node_nopanic, memblock_virt_alloc_low_nopanic.
-> > > > > 
-> > > > > And for consistency I've changed the memblock_virt_alloc as well.
-> > > > 
-> > > > I would keep the current API unless the name is terribly misleading or
-> > > > it can be improved a lot. Neither seems to be the case here. So I would
-> > > > rather stick with the status quo.
-> > > 
-> > > I'm ok with the memblock_virt_alloc by itself, but having 'virt' in
-> > > 'memblock_virt_alloc_try_nid_nopanic' and 'memblock_virt_alloc_low_nopanic'
-> > > reduces code readability in my opinion.
-> > 
-> > Well, is _nopanic really really useful in the name. Do we even need/want
-> > implicit panic/nopanic semantic? The code should rather check for the
-> > return value and decide depending on the code path. I suspect removing
-> > panic/nopanic would make the API slightly lighter.
->  
-> I agree that panic/nopanic should be removed. But I prefer to start with
-> equivalent replacement to make it as automated as possible and update
-> memblock API when the dust settles a bit.
+Hi Rob,
 
-Yes, I agree with that approach. But that also doesn't justify the
-renaming
--- 
-Michal Hocko
-SUSE Labs
+On Wed, Sep 05, 2018 at 06:53:24PM -0500, Rob Herring wrote:
+> There is nothing arch specific about building dtb files other than their
+> location under /arch/*/boot/dts/. Keeping each arch aligned is a pain.
+> The dependencies and supported targets are all slightly different.
+> Also, a cross-compiler for each arch is needed, but really the host
+> compiler preprocessor is perfectly fine for building dtbs. Move the
+> build rules to a common location and remove the arch specific ones. This
+> is done in a single step to avoid warnings about overriding rules.
+> 
+> The build dependencies had been a mixture of 'scripts' and/or 'prepare'.
+> These pull in several dependencies some of which need a target compiler
+> (specifically devicetable-offsets.h) and aren't needed to build dtbs.
+> All that is really needed is dtc, so adjust the dependencies to only be
+> dtc.
+> 
+> This change enables support 'dtbs_install' on some arches which were
+> missing the target.
+> 
+>%
+> Signed-off-by: Rob Herring <robh@kernel.org>
+> ---
+> Please ack so I can take the whole series via the DT tree.
+
+For MIPS:
+
+    Acked-by: Paul Burton <paul.burton@mips.com>
+
+Thanks,
+    Paul
