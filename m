@@ -1,30 +1,26 @@
-Return-Path: <Pavel.Tatashin@microsoft.com>
-Received: from NAM01-BN3-obe.outbound.protection.outlook.com
- (mail-bn3nam01on0131.outbound.protection.outlook.com [104.47.33.131])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg1-f194.google.com (mail-pg1-f194.google.com
+ [209.85.215.194])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 425glV1NGxzF3BR
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 23:04:53 +1000 (AEST)
-From: Pasha Tatashin <Pavel.Tatashin@microsoft.com>
-To: Michal Hocko <mhocko@kernel.org>, Mike Rapoport <rppt@linux.vnet.ibm.com>
-CC: "linux-mm@kvack.org" <linux-mm@kvack.org>, Andrew Morton
- <akpm@linux-foundation.org>, "David S. Miller" <davem@davemloft.net>, Greg
- Kroah-Hartman <gregkh@linuxfoundation.org>, Ingo Molnar <mingo@redhat.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Paul Burton <paul.burton@mips.com>,
- Thomas Gleixner <tglx@linutronix.de>, Tony Luck <tony.luck@intel.com>,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC PATCH 00/29] mm: remove bootmem allocator
-Date: Thu, 6 Sep 2018 13:04:47 +0000
-Message-ID: <46ae5e64-7b1a-afab-bfef-d00183a7ef76@microsoft.com>
-References: <1536163184-26356-1-git-send-email-rppt@linux.vnet.ibm.com>
- <20180906091538.GN14951@dhcp22.suse.cz>
-In-Reply-To: <20180906091538.GN14951@dhcp22.suse.cz>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 425gtb2PchzF31D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 23:11:03 +1000 (AEST)
+Received: by mail-pg1-f194.google.com with SMTP id y4-v6so5208867pgp.9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Sep 2018 06:11:02 -0700 (PDT)
+Date: Thu, 6 Sep 2018 23:10:39 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Jiri Slaby <jslaby@suse.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Matteo Croce <mcroce@redhat.com>, Jason Gunthorpe <jgg@mellanox.com>, Leon
+ Romanovsky <leonro@mellanox.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org (op)
+Subject: Re: [PATCH 3/3] tty: hvc: hvc_write() fix break condition
+Message-ID: <20180906231039.7b71186a@roar.ozlabs.ibm.com>
+In-Reply-To: <20180905121439.23809-4-npiggin@gmail.com>
+References: <20180905121439.23809-1-npiggin@gmail.com>
+ <20180905121439.23809-4-npiggin@gmail.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,21 +30,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCk9uIDkvNi8xOCA1OjE1IEFNLCBNaWNoYWwgSG9ja28gd3JvdGU6DQo+IE9uIFdlZCAwNS0w
-OS0xOCAxODo1OToxNSwgTWlrZSBSYXBvcG9ydCB3cm90ZToNCj4gWy4uLl0NCj4+ICAzMjUgZmls
-ZXMgY2hhbmdlZCwgODQ2IGluc2VydGlvbnMoKyksIDI0NzggZGVsZXRpb25zKC0pDQo+PiAgZGVs
-ZXRlIG1vZGUgMTAwNjQ0IGluY2x1ZGUvbGludXgvYm9vdG1lbS5oDQo+PiAgZGVsZXRlIG1vZGUg
-MTAwNjQ0IG1tL2Jvb3RtZW0uYw0KPj4gIGRlbGV0ZSBtb2RlIDEwMDY0NCBtbS9ub2Jvb3RtZW0u
-Yw0KPiANCj4gVGhpcyBpcyByZWFsbHkgaW1wcmVzc2l2ZSEgVGhhbmtzIGEgbG90IGZvciB3b3Jr
-aW5nIG9uIHRoaXMuIEkgd2lzaCB3ZQ0KPiBjb3VsZCBzaW1wbGlmeSB0aGUgbWVtYmxvY2sgQVBJ
-IGFzIHdlbGwuIFRoZXJlIGFyZSBqdXN0IHRvbyBtYW55IHB1YmxpYw0KPiBmdW5jdGlvbnMgd2l0
-aCBzdWJ0bHkgZGlmZmVyZW50IHNlbWFudGljIGFuZCBiYXJlbHkgYW55IHVzZWZ1bA0KPiBkb2N1
-bWVudGF0aW9uLg0KPiANCj4gQnV0IGV2ZW4gdGhpcyBpcyBhIGdyZWF0IHN0ZXAgZm9yd2FyZCEN
-Cg0KVGhpcyBpcyBhIGdyZWF0IHNpbXBsaWZpY2F0aW9uIG9mIGJvb3QgcHJvY2Vzcy4gVGhhbmsg
-eW91IE1pa2UhDQoNCkkgYWdyZWUsIHdpdGggTWljaGFsIGluIHRoZSBmdXR1cmUsIG9uY2Ugbm9i
-b290bWVtIGtlcm5lbCBzdGFiYWxpemVzDQphZnRlciB0aGlzIGVmZm9ydCwgd2Ugc2hvdWxkIHN0
-YXJ0IHNpbXBsaWZ5aW5nIG1lbWJsb2NrIGFsbG9jYXRvciBBUEk6DQppdCB3b24ndCBiZSBhcyBi
-aWcgZWZmb3J0IGFzIHRoaXMgb25lLCBhcyBJIHRoaW5rLCB0aGF0IGNhbiBiZSBkb25lIGluDQpp
-bmNyZW1lbnRhbCBwaGFzZXMsIGJ1dCBpdCB3aWxsIGhlbHAgdG8gbWFrZSBlYXJseSBib290IG11
-Y2ggbW9yZSBzdGFibGUNCmFuZCB1bmlmb3JtIGFjcm9zcyBhcmNoZXMuDQoNClRoYW5rIHlvdSwN
-ClBhdmVs
+On Wed,  5 Sep 2018 22:14:39 +1000
+Nicholas Piggin <npiggin@gmail.com> wrote:
+
+> Commit 550ddadcc758 ("tty: hvc: hvc_write() may sleep") broke the
+> termination condition in case the driver stops accepting characters.
+> This can result in unnecessary polling of the busy driver.
+> 
+> Restore it by testing the hvc_push return code.
+> 
+> Fixes: 550ddadcc758 ("tty: hvc: hvc_write() may sleep")
+> Tested-by: Matteo Croce <mcroce@redhat.com>
+> Tested-by: Leon Romanovsky <leonro@mellanox.com>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+>  drivers/tty/hvc/hvc_console.c | 7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
+> index bacf9b73ec98..c09a38fb0d66 100644
+> --- a/drivers/tty/hvc/hvc_console.c
+> +++ b/drivers/tty/hvc/hvc_console.c
+> @@ -522,6 +522,8 @@ static int hvc_write(struct tty_struct *tty, const unsigned char *buf, int count
+>  		return -EIO;
+>  
+>  	while (count > 0) {
+> +		int ret;
+> +
+>  		spin_lock_irqsave(&hp->lock, flags);
+>  
+>  		rsize = hp->outbuf_size - hp->n_outbuf;
+
+That needs to be 'int ret = 0;' to avoid used uninitialized.
+
+Let me know if I should resend the patches.
+
+Thanks,
+Nick
