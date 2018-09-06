@@ -1,26 +1,12 @@
-Return-Path: <rppt@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mhocko@kernel.org>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 425hXF36N1zF37t
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 23:40:13 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w86DdVdr011976
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Sep 2018 09:40:11 -0400
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2mb2a58fcp-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Sep 2018 09:40:10 -0400
-Received: from localhost
- by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.vnet.ibm.com>;
- Thu, 6 Sep 2018 14:40:08 +0100
-Date: Thu, 6 Sep 2018 16:39:58 +0300
-From: Mike Rapoport <rppt@linux.vnet.ibm.com>
-To: Michal Hocko <mhocko@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 425hgW63cdzF38y
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 23:46:31 +1000 (AEST)
+Date: Thu, 6 Sep 2018 15:46:27 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: Mike Rapoport <rppt@linux.vnet.ibm.com>
 Cc: Rob Herring <robh@kernel.org>, linux-mm@kvack.org,
  Andrew Morton <akpm@linux-foundation.org>, davem@davemloft.net,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>, mingo@redhat.com,
@@ -31,6 +17,7 @@ Cc: Rob Herring <robh@kernel.org>, linux-mm@kvack.org,
  Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Subject: Re: [RFC PATCH 07/29] memblock: remove _virt from APIs returning
  virtual address
+Message-ID: <20180906134627.GZ14951@dhcp22.suse.cz>
 References: <1536163184-26356-1-git-send-email-rppt@linux.vnet.ibm.com>
  <1536163184-26356-8-git-send-email-rppt@linux.vnet.ibm.com>
  <CABGGiswdb1x-=vqrgxZ9i2dnLdsgtXq4+5H9Y1JRd90YVMW69A@mail.gmail.com>
@@ -38,10 +25,10 @@ References: <1536163184-26356-1-git-send-email-rppt@linux.vnet.ibm.com>
  <20180906072800.GN14951@dhcp22.suse.cz>
  <20180906124321.GD27492@rapoport-lnx>
  <20180906130102.GY14951@dhcp22.suse.cz>
+ <20180906133958.GM27492@rapoport-lnx>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180906130102.GY14951@dhcp22.suse.cz>
-Message-Id: <20180906133958.GM27492@rapoport-lnx>
+In-Reply-To: <20180906133958.GM27492@rapoport-lnx>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,48 +38,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 06, 2018 at 03:01:02PM +0200, Michal Hocko wrote:
-> On Thu 06-09-18 15:43:21, Mike Rapoport wrote:
-> > On Thu, Sep 06, 2018 at 09:28:00AM +0200, Michal Hocko wrote:
-> > > On Wed 05-09-18 20:20:18, Mike Rapoport wrote:
-> > > > On Wed, Sep 05, 2018 at 12:04:36PM -0500, Rob Herring wrote:
-> > > > > On Wed, Sep 5, 2018 at 11:00 AM Mike Rapoport <rppt@linux.vnet.ibm.com> wrote:
-> > > > > >
-> > > > > > The conversion is done using
-> > > > > >
-> > > > > > sed -i 's@memblock_virt_alloc@memblock_alloc@g' \
-> > > > > >         $(git grep -l memblock_virt_alloc)
+On Thu 06-09-18 16:39:58, Mike Rapoport wrote:
+> On Thu, Sep 06, 2018 at 03:01:02PM +0200, Michal Hocko wrote:
+> > On Thu 06-09-18 15:43:21, Mike Rapoport wrote:
+> > > On Thu, Sep 06, 2018 at 09:28:00AM +0200, Michal Hocko wrote:
+> > > > On Wed 05-09-18 20:20:18, Mike Rapoport wrote:
+> > > > > On Wed, Sep 05, 2018 at 12:04:36PM -0500, Rob Herring wrote:
+> > > > > > On Wed, Sep 5, 2018 at 11:00 AM Mike Rapoport <rppt@linux.vnet.ibm.com> wrote:
+> > > > > > >
+> > > > > > > The conversion is done using
+> > > > > > >
+> > > > > > > sed -i 's@memblock_virt_alloc@memblock_alloc@g' \
+> > > > > > >         $(git grep -l memblock_virt_alloc)
+> > > > > > 
+> > > > > > What's the reason to do this? It seems like a lot of churn even if a
+> > > > > > mechanical change.
 > > > > > 
-> > > > > What's the reason to do this? It seems like a lot of churn even if a
-> > > > > mechanical change.
+> > > > > I felt that memblock_virt_alloc_ is too long for a prefix, e.g:
+> > > > > memblock_virt_alloc_node_nopanic, memblock_virt_alloc_low_nopanic.
+> > > > > 
+> > > > > And for consistency I've changed the memblock_virt_alloc as well.
 > > > > 
-> > > > I felt that memblock_virt_alloc_ is too long for a prefix, e.g:
-> > > > memblock_virt_alloc_node_nopanic, memblock_virt_alloc_low_nopanic.
-> > > > 
-> > > > And for consistency I've changed the memblock_virt_alloc as well.
+> > > > I would keep the current API unless the name is terribly misleading or
+> > > > it can be improved a lot. Neither seems to be the case here. So I would
+> > > > rather stick with the status quo.
 > > > 
-> > > I would keep the current API unless the name is terribly misleading or
-> > > it can be improved a lot. Neither seems to be the case here. So I would
-> > > rather stick with the status quo.
+> > > I'm ok with the memblock_virt_alloc by itself, but having 'virt' in
+> > > 'memblock_virt_alloc_try_nid_nopanic' and 'memblock_virt_alloc_low_nopanic'
+> > > reduces code readability in my opinion.
 > > 
-> > I'm ok with the memblock_virt_alloc by itself, but having 'virt' in
-> > 'memblock_virt_alloc_try_nid_nopanic' and 'memblock_virt_alloc_low_nopanic'
-> > reduces code readability in my opinion.
-> 
-> Well, is _nopanic really really useful in the name. Do we even need/want
-> implicit panic/nopanic semantic? The code should rather check for the
-> return value and decide depending on the code path. I suspect removing
-> panic/nopanic would make the API slightly lighter.
- 
-I agree that panic/nopanic should be removed. But I prefer to start with
-equivalent replacement to make it as automated as possible and update
-memblock API when the dust settles a bit.
+> > Well, is _nopanic really really useful in the name. Do we even need/want
+> > implicit panic/nopanic semantic? The code should rather check for the
+> > return value and decide depending on the code path. I suspect removing
+> > panic/nopanic would make the API slightly lighter.
+>  
+> I agree that panic/nopanic should be removed. But I prefer to start with
+> equivalent replacement to make it as automated as possible and update
+> memblock API when the dust settles a bit.
 
-> -- 
-> Michal Hocko
-> SUSE Labs
-> 
-
+Yes, I agree with that approach. But that also doesn't justify the
+renaming
 -- 
-Sincerely yours,
-Mike.
+Michal Hocko
+SUSE Labs
