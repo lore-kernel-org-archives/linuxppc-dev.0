@@ -1,23 +1,28 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+Return-Path: <mhocko@kernel.org>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 425ZQP2hm4zF3MK
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 19:04:45 +1000 (AEST)
-Subject: Re: [PATCH 1/2] powerpc/process: fix nested output in
- show_user_instructions()
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, muriloo@linux.ibm.com
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-References: <718cc9c9bd1d4bb2b4c2596f1a7ee00334e77055.1534192631.git.christophe.leroy@c-s.fr>
- <877ekkmdy7.fsf@concordia.ellerman.id.au>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <ebf2318b-7d72-6f20-2457-f97064d28164@c-s.fr>
-Date: Thu, 6 Sep 2018 11:04:40 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 425ZSk4cdXzF3RC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 19:06:46 +1000 (AEST)
+Date: Thu, 6 Sep 2018 11:06:42 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: Mike Rapoport <rppt@linux.vnet.ibm.com>
+Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
+ "David S. Miller" <davem@davemloft.net>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Ingo Molnar <mingo@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Paul Burton <paul.burton@mips.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
+ linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
+ sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 26/29] memblock: rename __free_pages_bootmem to
+ memblock_free_pages
+Message-ID: <20180906090642.GK14951@dhcp22.suse.cz>
+References: <1536163184-26356-1-git-send-email-rppt@linux.vnet.ibm.com>
+ <1536163184-26356-27-git-send-email-rppt@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <877ekkmdy7.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1536163184-26356-27-git-send-email-rppt@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,70 +32,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed 05-09-18 18:59:41, Mike Rapoport wrote:
+> The conversion is done using
+> 
+> sed -i 's@__free_pages_bootmem@memblock_free_pages@' \
+>     $(git grep -l __free_pages_bootmem)
+> 
+> Signed-off-by: Mike Rapoport <rppt@linux.vnet.ibm.com>
 
+Acked-by: Michal Hocko <mhocko@suse.com>
 
-Le 21/08/2018 à 08:27, Michael Ellerman a écrit :
-> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+> ---
+>  mm/internal.h   | 2 +-
+>  mm/memblock.c   | 2 +-
+>  mm/nobootmem.c  | 2 +-
+>  mm/page_alloc.c | 2 +-
+>  4 files changed, 4 insertions(+), 4 deletions(-)
 > 
->> When two processes crash at the same time, we sometimes encounter
->> nesting in the middle of a line:
+> diff --git a/mm/internal.h b/mm/internal.h
+> index 87256ae..291eb2b 100644
+> --- a/mm/internal.h
+> +++ b/mm/internal.h
+> @@ -161,7 +161,7 @@ static inline struct page *pageblock_pfn_to_page(unsigned long start_pfn,
+>  }
+>  
+>  extern int __isolate_free_page(struct page *page, unsigned int order);
+> -extern void __free_pages_bootmem(struct page *page, unsigned long pfn,
+> +extern void memblock_free_pages(struct page *page, unsigned long pfn,
+>  					unsigned int order);
+>  extern void prep_compound_page(struct page *page, unsigned int order);
+>  extern void post_alloc_hook(struct page *page, unsigned int order,
+> diff --git a/mm/memblock.c b/mm/memblock.c
+> index 63df68b..55d7d50 100644
+> --- a/mm/memblock.c
+> +++ b/mm/memblock.c
+> @@ -1639,7 +1639,7 @@ void __init __memblock_free_late(phys_addr_t base, phys_addr_t size)
+>  	end = PFN_DOWN(base + size);
+>  
+>  	for (; cursor < end; cursor++) {
+> -		__free_pages_bootmem(pfn_to_page(cursor), cursor, 0);
+> +		memblock_free_pages(pfn_to_page(cursor), cursor, 0);
+>  		totalram_pages++;
+>  	}
+>  }
+> diff --git a/mm/nobootmem.c b/mm/nobootmem.c
+> index bb64b09..9608bc5 100644
+> --- a/mm/nobootmem.c
+> +++ b/mm/nobootmem.c
+> @@ -43,7 +43,7 @@ static void __init __free_pages_memory(unsigned long start, unsigned long end)
+>  		while (start + (1UL << order) > end)
+>  			order--;
+>  
+> -		__free_pages_bootmem(pfn_to_page(start), start, order);
+> +		memblock_free_pages(pfn_to_page(start), start, order);
+>  
+>  		start += (1UL << order);
+>  	}
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index 33c9e27..e143fae 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -1333,7 +1333,7 @@ meminit_pfn_in_nid(unsigned long pfn, int node,
+>  #endif
+>  
+>  
+> -void __init __free_pages_bootmem(struct page *page, unsigned long pfn,
+> +void __init memblock_free_pages(struct page *page, unsigned long pfn,
+>  							unsigned int order)
+>  {
+>  	if (early_page_uninitialised(pfn))
+> -- 
+> 2.7.4
 > 
-> I think "interleaved" is the right word, rather than "nesting".
-> 
-> They're actually (potentially) completely unrelated segfaults, that just
-> happen to occur at the same time.
-> 
-> And in fact any output that happens simultaneously will mess things up,
-> it doesn't have to be another segfault.
 
-Ok, i reworded in v2.
-
-> 
->> [    4.365317] init[1]: segfault (11) at 0 nip 0 lr 0 code 1
->> [    4.370452] init[1]: code: XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
->> [    4.372042] init[74]: segfault (11) at 10a74 nip 1000c198 lr 100078c8 code 1 in sh[10000000+14000]
->> [    4.386829] XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
->> [    4.391542] init[1]: code: XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
->> [    4.400863] init[74]: code: 90010024 bf61000c 91490a7c 3fa01002 3be00000 7d3e4b78 3bbd0c20 3b600000
->> [    4.409867] init[74]: code: 3b9d0040 7c7fe02e 2f830000 419e0028 <89230000> 2f890000 41be001c 4b7f6e79
->>
->> This patch fixes it by preparing complete lines in a buffer and
->> printing it at once.
->>
->> Fixes: 88b0fe1757359 ("powerpc: Add show_user_instructions()")
->> Cc: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
->> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->> ---
->>   arch/powerpc/kernel/process.c | 17 +++++++++--------
->>   1 file changed, 9 insertions(+), 8 deletions(-)
->>
->> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
->> index 913c5725cdb2..c722ce4ca1c0 100644
->> --- a/arch/powerpc/kernel/process.c
->> +++ b/arch/powerpc/kernel/process.c
->> @@ -1303,32 +1303,33 @@ void show_user_instructions(struct pt_regs *regs)
->>   {
->>   	unsigned long pc;
->>   	int i;
->> +	char buf[96]; /* enough for 8 times 9 + 2 chars */
->> +	int l = 0;
-> 
-> I'm sure your math is right, but still an on-stack buffer with sprintf()
-> is a bit scary.
-> 
-> Can you try using seq_buf instead? It is safe against overflow.
-> 
-> eg, something like:
-> 
-> struct seq_buf s;
-> char buf[96];
-> 
-> seq_buf_init(&s, buf, sizeof(buf));
-> ...
-> seq_buf_printf(&s, ...);
-
-Ok, I did that in v2. In the meantime I reworked the loop to avoid this 
-uggly test against i % 8 and this duplication of the pr_info() of the 
-code line.
-
-Christophe
+-- 
+Michal Hocko
+SUSE Labs
