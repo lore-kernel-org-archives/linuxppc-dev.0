@@ -2,9 +2,9 @@ Return-Path: <mhocko@kernel.org>
 Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 425Y6y3tm0zF38B
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 18:06:18 +1000 (AEST)
-Date: Thu, 6 Sep 2018 10:06:14 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 425Y942VjZzF39c
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 18:08:08 +1000 (AEST)
+Date: Thu, 6 Sep 2018 10:08:04 +0200
 From: Michal Hocko <mhocko@kernel.org>
 To: Mike Rapoport <rppt@linux.vnet.ibm.com>
 Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
@@ -15,14 +15,14 @@ Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
  Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
  linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
  sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 14/29] memblock: add align parameter to
- memblock_alloc_node()
-Message-ID: <20180906080614.GW14951@dhcp22.suse.cz>
+Subject: Re: [RFC PATCH 15/29] memblock: replace alloc_bootmem_pages_node
+ with memblock_alloc_node
+Message-ID: <20180906080804.GX14951@dhcp22.suse.cz>
 References: <1536163184-26356-1-git-send-email-rppt@linux.vnet.ibm.com>
- <1536163184-26356-15-git-send-email-rppt@linux.vnet.ibm.com>
+ <1536163184-26356-16-git-send-email-rppt@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1536163184-26356-15-git-send-email-rppt@linux.vnet.ibm.com>
+In-Reply-To: <1536163184-26356-16-git-send-email-rppt@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,49 +32,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed 05-09-18 18:59:29, Mike Rapoport wrote:
-> With the align parameter memblock_alloc_node() can be used as drop in
-> replacement for alloc_bootmem_pages_node().
-
-Why do we need an additional translation later? Sparse code which is the
-only one to use it already uses memblock_alloc_try_nid elsewhere
-(sparse_mem_map_populate).
- 
+On Wed 05-09-18 18:59:30, Mike Rapoport wrote:
 > Signed-off-by: Mike Rapoport <rppt@linux.vnet.ibm.com>
+
+again a short work of wisdom please.
+
+The change itself looks good.
+Acked-by: Michal Hocko <mhocko@suse.com>
+
 > ---
->  include/linux/bootmem.h | 4 ++--
->  mm/sparse.c             | 2 +-
->  2 files changed, 3 insertions(+), 3 deletions(-)
+>  arch/ia64/mm/init.c | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
 > 
-> diff --git a/include/linux/bootmem.h b/include/linux/bootmem.h
-> index 7d91f0f..3896af2 100644
-> --- a/include/linux/bootmem.h
-> +++ b/include/linux/bootmem.h
-> @@ -157,9 +157,9 @@ static inline void * __init memblock_alloc_from_nopanic(
->  }
+> diff --git a/arch/ia64/mm/init.c b/arch/ia64/mm/init.c
+> index 3b85c3e..ffcc358 100644
+> --- a/arch/ia64/mm/init.c
+> +++ b/arch/ia64/mm/init.c
+> @@ -447,19 +447,19 @@ int __init create_mem_map_page_table(u64 start, u64 end, void *arg)
+>  	for (address = start_page; address < end_page; address += PAGE_SIZE) {
+>  		pgd = pgd_offset_k(address);
+>  		if (pgd_none(*pgd))
+> -			pgd_populate(&init_mm, pgd, alloc_bootmem_pages_node(NODE_DATA(node), PAGE_SIZE));
+> +			pgd_populate(&init_mm, pgd, memblock_alloc_node(PAGE_SIZE, PAGE_SIZE, node));
+>  		pud = pud_offset(pgd, address);
 >  
->  static inline void * __init memblock_alloc_node(
-> -						phys_addr_t size, int nid)
-> +		phys_addr_t size, phys_addr_t align, int nid)
->  {
-> -	return memblock_alloc_try_nid(size, 0, BOOTMEM_LOW_LIMIT,
-> +	return memblock_alloc_try_nid(size, align, BOOTMEM_LOW_LIMIT,
->  					    BOOTMEM_ALLOC_ACCESSIBLE, nid);
->  }
+>  		if (pud_none(*pud))
+> -			pud_populate(&init_mm, pud, alloc_bootmem_pages_node(NODE_DATA(node), PAGE_SIZE));
+> +			pud_populate(&init_mm, pud, memblock_alloc_node(PAGE_SIZE, PAGE_SIZE, node));
+>  		pmd = pmd_offset(pud, address);
 >  
-> diff --git a/mm/sparse.c b/mm/sparse.c
-> index 04e97af..509828f 100644
-> --- a/mm/sparse.c
-> +++ b/mm/sparse.c
-> @@ -68,7 +68,7 @@ static noinline struct mem_section __ref *sparse_index_alloc(int nid)
->  	if (slab_is_available())
->  		section = kzalloc_node(array_size, GFP_KERNEL, nid);
->  	else
-> -		section = memblock_alloc_node(array_size, nid);
-> +		section = memblock_alloc_node(array_size, 0, nid);
+>  		if (pmd_none(*pmd))
+> -			pmd_populate_kernel(&init_mm, pmd, alloc_bootmem_pages_node(NODE_DATA(node), PAGE_SIZE));
+> +			pmd_populate_kernel(&init_mm, pmd, memblock_alloc_node(PAGE_SIZE, PAGE_SIZE, node));
+>  		pte = pte_offset_kernel(pmd, address);
 >  
->  	return section;
->  }
+>  		if (pte_none(*pte))
+> -			set_pte(pte, pfn_pte(__pa(alloc_bootmem_pages_node(NODE_DATA(node), PAGE_SIZE)) >> PAGE_SHIFT,
+> +			set_pte(pte, pfn_pte(__pa(memblock_alloc_node(PAGE_SIZE, PAGE_SIZE, node))) >> PAGE_SHIFT,
+>  					     PAGE_KERNEL));
+>  	}
+>  	return 0;
 > -- 
 > 2.7.4
 > 
