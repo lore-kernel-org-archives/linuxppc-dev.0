@@ -1,28 +1,18 @@
-Return-Path: <mhocko@kernel.org>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 425YzB2rckzF36h
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 18:44:38 +1000 (AEST)
-Date: Thu, 6 Sep 2018 10:44:33 +0200
-From: Michal Hocko <mhocko@kernel.org>
-To: Mike Rapoport <rppt@linux.vnet.ibm.com>
-Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
- "David S. Miller" <davem@davemloft.net>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Ingo Molnar <mingo@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Paul Burton <paul.burton@mips.com>, Thomas Gleixner <tglx@linutronix.de>,
- Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
- linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
- sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 19/29] memblock: replace alloc_bootmem_pages with
- memblock_alloc
-Message-ID: <20180906084433.GD14951@dhcp22.suse.cz>
-References: <1536163184-26356-1-git-send-email-rppt@linux.vnet.ibm.com>
- <1536163184-26356-20-git-send-email-rppt@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1536163184-26356-20-git-send-email-rppt@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 425Z6v2TDTzF36b
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 18:51:19 +1000 (AEST)
+Message-Id: <02de5baec443d7c6f96cb2d197e08058c435c40a.1536180109.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v2 1/2] powerpc/process: fix interleaved output in
+ show_user_instructions()
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ muriloo@linux.ibm.com
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Thu,  6 Sep 2018 08:51:11 +0000 (UTC)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,198 +22,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed 05-09-18 18:59:34, Mike Rapoport wrote:
-> The conversion is done using the following semantic patch:
-> 
-> @@
-> expression e;
-> @@
-> - alloc_bootmem_pages(e)
-> + memblock_alloc(e, PAGE_SIZE)
-> 
-> Signed-off-by: Mike Rapoport <rppt@linux.vnet.ibm.com>
+When two processes crash at the same time, we sometimes encounter
+interleaving in the middle of a line:
 
-Same as the previous patch
+[    4.365317] init[1]: segfault (11) at 0 nip 0 lr 0 code 1
+[    4.370452] init[1]: code: XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
+[    4.372042] init[74]: segfault (11) at 10a74 nip 1000c198 lr 100078c8 code 1 in sh[10000000+14000]
+[    4.386829] XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
+[    4.391542] init[1]: code: XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
+[    4.400863] init[74]: code: 90010024 bf61000c 91490a7c 3fa01002 3be00000 7d3e4b78 3bbd0c20 3b600000
+[    4.409867] init[74]: code: 3b9d0040 7c7fe02e 2f830000 419e0028 <89230000> 2f890000 41be001c 4b7f6e79
 
-Acked-by: Michal Hocko <mhocko@suse.com>
+This patch fixes it by preparing complete lines in a buffer and
+printing it at once.
 
-> ---
->  arch/c6x/mm/init.c             | 3 ++-
->  arch/h8300/mm/init.c           | 2 +-
->  arch/m68k/mm/init.c            | 2 +-
->  arch/m68k/mm/mcfmmu.c          | 4 ++--
->  arch/m68k/mm/motorola.c        | 2 +-
->  arch/m68k/mm/sun3mmu.c         | 4 ++--
->  arch/sh/mm/init.c              | 4 ++--
->  arch/x86/kernel/apic/io_apic.c | 3 ++-
->  arch/x86/mm/init_64.c          | 2 +-
->  drivers/xen/swiotlb-xen.c      | 3 ++-
->  10 files changed, 16 insertions(+), 13 deletions(-)
-> 
-> diff --git a/arch/c6x/mm/init.c b/arch/c6x/mm/init.c
-> index 4cc72b0..dc369ad 100644
-> --- a/arch/c6x/mm/init.c
-> +++ b/arch/c6x/mm/init.c
-> @@ -38,7 +38,8 @@ void __init paging_init(void)
->  	struct pglist_data *pgdat = NODE_DATA(0);
->  	unsigned long zones_size[MAX_NR_ZONES] = {0, };
->  
-> -	empty_zero_page      = (unsigned long) alloc_bootmem_pages(PAGE_SIZE);
-> +	empty_zero_page      = (unsigned long) memblock_alloc(PAGE_SIZE,
-> +							      PAGE_SIZE);
->  	memset((void *)empty_zero_page, 0, PAGE_SIZE);
->  
->  	/*
-> diff --git a/arch/h8300/mm/init.c b/arch/h8300/mm/init.c
-> index 015287a..5d31ac9 100644
-> --- a/arch/h8300/mm/init.c
-> +++ b/arch/h8300/mm/init.c
-> @@ -67,7 +67,7 @@ void __init paging_init(void)
->  	 * Initialize the bad page table and bad page to point
->  	 * to a couple of allocated pages.
->  	 */
-> -	empty_zero_page = (unsigned long)alloc_bootmem_pages(PAGE_SIZE);
-> +	empty_zero_page = (unsigned long)memblock_alloc(PAGE_SIZE, PAGE_SIZE);
->  	memset((void *)empty_zero_page, 0, PAGE_SIZE);
->  
->  	/*
-> diff --git a/arch/m68k/mm/init.c b/arch/m68k/mm/init.c
-> index 38e2b27..977363e 100644
-> --- a/arch/m68k/mm/init.c
-> +++ b/arch/m68k/mm/init.c
-> @@ -93,7 +93,7 @@ void __init paging_init(void)
->  
->  	high_memory = (void *) end_mem;
->  
-> -	empty_zero_page = alloc_bootmem_pages(PAGE_SIZE);
-> +	empty_zero_page = memblock_alloc(PAGE_SIZE, PAGE_SIZE);
->  
->  	/*
->  	 * Set up SFC/DFC registers (user data space).
-> diff --git a/arch/m68k/mm/mcfmmu.c b/arch/m68k/mm/mcfmmu.c
-> index f5453d9..38a1d92 100644
-> --- a/arch/m68k/mm/mcfmmu.c
-> +++ b/arch/m68k/mm/mcfmmu.c
-> @@ -44,7 +44,7 @@ void __init paging_init(void)
->  	enum zone_type zone;
->  	int i;
->  
-> -	empty_zero_page = (void *) alloc_bootmem_pages(PAGE_SIZE);
-> +	empty_zero_page = (void *) memblock_alloc(PAGE_SIZE, PAGE_SIZE);
->  	memset((void *) empty_zero_page, 0, PAGE_SIZE);
->  
->  	pg_dir = swapper_pg_dir;
-> @@ -52,7 +52,7 @@ void __init paging_init(void)
->  
->  	size = num_pages * sizeof(pte_t);
->  	size = (size + PAGE_SIZE) & ~(PAGE_SIZE-1);
-> -	next_pgtable = (unsigned long) alloc_bootmem_pages(size);
-> +	next_pgtable = (unsigned long) memblock_alloc(size, PAGE_SIZE);
->  
->  	bootmem_end = (next_pgtable + size + PAGE_SIZE) & PAGE_MASK;
->  	pg_dir += PAGE_OFFSET >> PGDIR_SHIFT;
-> diff --git a/arch/m68k/mm/motorola.c b/arch/m68k/mm/motorola.c
-> index 8bcf57e..2113eec 100644
-> --- a/arch/m68k/mm/motorola.c
-> +++ b/arch/m68k/mm/motorola.c
-> @@ -276,7 +276,7 @@ void __init paging_init(void)
->  	 * initialize the bad page table and bad page to point
->  	 * to a couple of allocated pages
->  	 */
-> -	empty_zero_page = alloc_bootmem_pages(PAGE_SIZE);
-> +	empty_zero_page = memblock_alloc(PAGE_SIZE, PAGE_SIZE);
->  
->  	/*
->  	 * Set up SFC/DFC registers
-> diff --git a/arch/m68k/mm/sun3mmu.c b/arch/m68k/mm/sun3mmu.c
-> index 4a99799..19c05ab 100644
-> --- a/arch/m68k/mm/sun3mmu.c
-> +++ b/arch/m68k/mm/sun3mmu.c
-> @@ -45,7 +45,7 @@ void __init paging_init(void)
->  	unsigned long zones_size[MAX_NR_ZONES] = { 0, };
->  	unsigned long size;
->  
-> -	empty_zero_page = alloc_bootmem_pages(PAGE_SIZE);
-> +	empty_zero_page = memblock_alloc(PAGE_SIZE, PAGE_SIZE);
->  
->  	address = PAGE_OFFSET;
->  	pg_dir = swapper_pg_dir;
-> @@ -55,7 +55,7 @@ void __init paging_init(void)
->  	size = num_pages * sizeof(pte_t);
->  	size = (size + PAGE_SIZE) & ~(PAGE_SIZE-1);
->  
-> -	next_pgtable = (unsigned long)alloc_bootmem_pages(size);
-> +	next_pgtable = (unsigned long)memblock_alloc(size, PAGE_SIZE);
->  	bootmem_end = (next_pgtable + size + PAGE_SIZE) & PAGE_MASK;
->  
->  	/* Map whole memory from PAGE_OFFSET (0x0E000000) */
-> diff --git a/arch/sh/mm/init.c b/arch/sh/mm/init.c
-> index 7713c08..c884b76 100644
-> --- a/arch/sh/mm/init.c
-> +++ b/arch/sh/mm/init.c
-> @@ -128,7 +128,7 @@ static pmd_t * __init one_md_table_init(pud_t *pud)
->  	if (pud_none(*pud)) {
->  		pmd_t *pmd;
->  
-> -		pmd = alloc_bootmem_pages(PAGE_SIZE);
-> +		pmd = memblock_alloc(PAGE_SIZE, PAGE_SIZE);
->  		pud_populate(&init_mm, pud, pmd);
->  		BUG_ON(pmd != pmd_offset(pud, 0));
->  	}
-> @@ -141,7 +141,7 @@ static pte_t * __init one_page_table_init(pmd_t *pmd)
->  	if (pmd_none(*pmd)) {
->  		pte_t *pte;
->  
-> -		pte = alloc_bootmem_pages(PAGE_SIZE);
-> +		pte = memblock_alloc(PAGE_SIZE, PAGE_SIZE);
->  		pmd_populate_kernel(&init_mm, pmd, pte);
->  		BUG_ON(pte != pte_offset_kernel(pmd, 0));
->  	}
-> diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-> index ff0d14c..e25118f 100644
-> --- a/arch/x86/kernel/apic/io_apic.c
-> +++ b/arch/x86/kernel/apic/io_apic.c
-> @@ -2621,7 +2621,8 @@ void __init io_apic_init_mappings(void)
->  #ifdef CONFIG_X86_32
->  fake_ioapic_page:
->  #endif
-> -			ioapic_phys = (unsigned long)alloc_bootmem_pages(PAGE_SIZE);
-> +			ioapic_phys = (unsigned long)memblock_alloc(PAGE_SIZE,
-> +								    PAGE_SIZE);
->  			ioapic_phys = __pa(ioapic_phys);
->  		}
->  		set_fixmap_nocache(idx, ioapic_phys);
-> diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-> index dd519f3..f39b512 100644
-> --- a/arch/x86/mm/init_64.c
-> +++ b/arch/x86/mm/init_64.c
-> @@ -197,7 +197,7 @@ static __ref void *spp_getpage(void)
->  	if (after_bootmem)
->  		ptr = (void *) get_zeroed_page(GFP_ATOMIC);
->  	else
-> -		ptr = alloc_bootmem_pages(PAGE_SIZE);
-> +		ptr = memblock_alloc(PAGE_SIZE, PAGE_SIZE);
->  
->  	if (!ptr || ((unsigned long)ptr & ~PAGE_MASK)) {
->  		panic("set_pte_phys: cannot allocate page data %s\n",
-> diff --git a/drivers/xen/swiotlb-xen.c b/drivers/xen/swiotlb-xen.c
-> index a6f9ba8..8d849b4 100644
-> --- a/drivers/xen/swiotlb-xen.c
-> +++ b/drivers/xen/swiotlb-xen.c
-> @@ -217,7 +217,8 @@ int __ref xen_swiotlb_init(int verbose, bool early)
->  	 * Get IO TLB memory from any location.
->  	 */
->  	if (early)
-> -		xen_io_tlb_start = alloc_bootmem_pages(PAGE_ALIGN(bytes));
-> +		xen_io_tlb_start = memblock_alloc(PAGE_ALIGN(bytes),
-> +						  PAGE_SIZE);
->  	else {
->  #define SLABS_PER_PAGE (1 << (PAGE_SHIFT - IO_TLB_SHIFT))
->  #define IO_TLB_MIN_SLABS ((1<<20) >> IO_TLB_SHIFT)
-> -- 
-> 2.7.4
-> 
+Fixes: 88b0fe1757359 ("powerpc: Add show_user_instructions()")
+Cc: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ v2: Using seq_buf and reworked the loop to avoid redundant prints.
 
+ arch/powerpc/kernel/process.c | 37 +++++++++++++++++++------------------
+ 1 file changed, 19 insertions(+), 18 deletions(-)
+
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 913c5725cdb2..31d5d8a2ead6 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -43,6 +43,7 @@
+ #include <linux/uaccess.h>
+ #include <linux/elf-randomize.h>
+ #include <linux/pkeys.h>
++#include <linux/seq_buf.h>
+ 
+ #include <asm/pgtable.h>
+ #include <asm/io.h>
+@@ -1302,33 +1303,33 @@ static void show_instructions(struct pt_regs *regs)
+ void show_user_instructions(struct pt_regs *regs)
+ {
+ 	unsigned long pc;
+-	int i;
++	int n = instructions_to_print;
++	struct seq_buf s;
++	char buf[96]; /* enough for 8 times 9 + 2 chars */
+ 
+ 	pc = regs->nip - (instructions_to_print * 3 / 4 * sizeof(int));
+ 
+-	pr_info("%s[%d]: code: ", current->comm, current->pid);
++	seq_buf_init(&s, buf, sizeof(buf));
+ 
+-	for (i = 0; i < instructions_to_print; i++) {
+-		int instr;
++	while (n) {
++		int i;
+ 
+-		if (!(i % 8) && (i > 0)) {
+-			pr_cont("\n");
+-			pr_info("%s[%d]: code: ", current->comm, current->pid);
+-		}
++		seq_buf_clear(&s);
+ 
+-		if (probe_kernel_address((unsigned int __user *)pc, instr)) {
+-			pr_cont("XXXXXXXX ");
+-		} else {
+-			if (regs->nip == pc)
+-				pr_cont("<%08x> ", instr);
+-			else
+-				pr_cont("%08x ", instr);
++		for (i = 0; i < 8 && n; i++, n--, pc += sizeof(int)) {
++			int instr;
++
++			if (probe_kernel_address((unsigned int __user *)pc, instr)) {
++				seq_buf_puts(&s, "XXXXXXXX ");
++				continue;
++			}
++			seq_buf_printf(&s, regs->nip == pc ? "<%08x> " : "%08x ", instr);
+ 		}
+ 
+-		pc += sizeof(int);
++		if (!seq_buf_has_overflowed(&s))
++			pr_info("%s[%d]: code: %s\n", current->comm,
++				current->pid, s.buffer);
+ 	}
+-
+-	pr_cont("\n");
+ }
+ 
+ struct regbit {
 -- 
-Michal Hocko
-SUSE Labs
+2.13.3
