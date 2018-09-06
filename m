@@ -1,34 +1,31 @@
-Return-Path: <will.deacon@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 425bmm2b12zF3Lr
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 20:05:36 +1000 (AEST)
-Date: Thu, 6 Sep 2018 11:05:47 +0100
-From: Will Deacon <will.deacon@arm.com>
-To: Rob Herring <robh@kernel.org>
-Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Michal Marek <michal.lkml@markovi.net>, Vineet Gupta <vgupta@synopsys.com>,
- Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- Michal Simek <monstr@monstr.eu>, Ralf Baechle <ralf@linux-mips.org>,
- Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>,
- Ley Foon Tan <lftan@altera.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
- linux-kbuild@vger.kernel.org, linux-snps-arc@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org,
- uclinux-h8-devel@lists.sourceforge.jp, linux-mips@linux-mips.org,
- nios2-dev@lists.rocketboards.org, linuxppc-dev@lists.ozlabs.org,
- linux-xtensa@linux-xtensa.org
-Subject: Re: [PATCH v2 6/9] kbuild: consolidate Devicetree dtb build rules
-Message-ID: <20180906100546.GJ3592@arm.com>
-References: <20180905235327.5996-1-robh@kernel.org>
- <20180905235327.5996-7-robh@kernel.org>
+Return-Path: <s.miroshnichenko@yadro.com>
+Received: from mta-01.yadro.com (mta-01.yadro.com [89.207.88.251])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 425fGP15c0zF3MP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 21:58:04 +1000 (AEST)
+Received: from localhost (unknown [127.0.0.1])
+ by mta-01.yadro.com (Postfix) with ESMTP id 062A6418F9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 11:58:01 +0000 (UTC)
+Received: from mta-01.yadro.com ([127.0.0.1])
+ by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id A--El7dLXqXC for <linuxppc-dev@lists.ozlabs.org>;
+ Thu,  6 Sep 2018 14:57:59 +0300 (MSK)
+Received: from T-EXCH-02.corp.yadro.com (t-exch-02.corp.yadro.com
+ [172.17.10.102])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mta-01.yadro.com (Postfix) with ESMTPS id DFCDC40311
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 14:57:59 +0300 (MSK)
+From: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+CC: <linux@yadro.com>, Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
+Subject: [PATCH v2 0/5] powerpc/powernv/pci: Discover surprise-hotplugged PCIe
+ devices during rescan
+Date: Thu, 6 Sep 2018 14:57:47 +0300
+Message-ID: <20180906115752.29316-1-s.miroshnichenko@yadro.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180905235327.5996-7-robh@kernel.org>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,55 +35,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 05, 2018 at 06:53:24PM -0500, Rob Herring wrote:
-> There is nothing arch specific about building dtb files other than their
-> location under /arch/*/boot/dts/. Keeping each arch aligned is a pain.
-> The dependencies and supported targets are all slightly different.
-> Also, a cross-compiler for each arch is needed, but really the host
-> compiler preprocessor is perfectly fine for building dtbs. Move the
-> build rules to a common location and remove the arch specific ones. This
-> is done in a single step to avoid warnings about overriding rules.
-> 
-> The build dependencies had been a mixture of 'scripts' and/or 'prepare'.
-> These pull in several dependencies some of which need a target compiler
-> (specifically devicetable-offsets.h) and aren't needed to build dtbs.
-> All that is really needed is dtc, so adjust the dependencies to only be
-> dtc.
-> 
-> This change enables support 'dtbs_install' on some arches which were
-> missing the target.
-> 
-> Cc: Masahiro Yamada <yamada.masahiro@socionext.com>
-> Cc: Michal Marek <michal.lkml@markovi.net>
-> Cc: Vineet Gupta <vgupta@synopsys.com>
-> Cc: Russell King <linux@armlinux.org.uk>
-> Cc: Catalin Marinas <catalin.marinas@arm.com>
-> Cc: Will Deacon <will.deacon@arm.com>
-> Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
-> Cc: Michal Simek <monstr@monstr.eu>
-> Cc: Ralf Baechle <ralf@linux-mips.org>
-> Cc: Paul Burton <paul.burton@mips.com>
-> Cc: James Hogan <jhogan@kernel.org>
-> Cc: Ley Foon Tan <lftan@altera.com>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Chris Zankel <chris@zankel.net>
-> Cc: Max Filippov <jcmvbkbc@gmail.com>
-> Cc: linux-kbuild@vger.kernel.org
-> Cc: linux-snps-arc@lists.infradead.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: uclinux-h8-devel@lists.sourceforge.jp
-> Cc: linux-mips@linux-mips.org
-> Cc: nios2-dev@lists.rocketboards.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-xtensa@linux-xtensa.org
-> Signed-off-by: Rob Herring <robh@kernel.org>
-> ---
-> Please ack so I can take the whole series via the DT tree.
+This patchset allows hotplugged PCIe devices to be enumerated during a bus
+rescan being issued via sysfs on PowerNV platforms, when the "Presence
+Detect Changed" interrupt is not available.
 
-For arm64:
+As a first part of our work on adding support for hotplugging PCIe bridges
+full of devices (without special requirement such as Hot-Plug Controller,
+reservation of bus numbers and memory regions by firmware, etc.), this
+serie is intended to solve the first of two problems from the list below:
 
-Acked-by: Will Deacon <will.deacon@arm.com>
+I   PowerNV doesn't discover new hotplugged PCIe devices
+II  EEH is falsely triggered when poking empty slots during the PCIe rescan
+III The PCI subsystem is not prepared to runtime changes of BAR addresses
+IV  Device drivers don't track changes of their BAR addresses
+V   Allow the moving BARs of working devices to make space for new ones
+VI  Add support for PCIe bridge hotplug
 
-Will
+Tested on:
+ - POWER8 PowerNV+OPAL ppc64le (our Vesnin server) with pci=realloc;
+ - POWER8 IBM 8247-42L (pSeries);
+ - POWER8 IBM 8247-42L (PowerNV+OPAL) with pci=realloc.
+
+Changes since v1:
+ - Fixed build for ppc64le and ppc64be when CONFIG_PCI_IOV is disabled;
+ - Fixed build for ppc64e when CONFIG_EEH is disabled;
+ - Fixed code style warnings.
+
+Sergey Miroshnichenko (5):
+  powerpc/pci: Access PCI config space directly w/o pci_dn
+  powerpc/pci: Create pci_dn on demand
+  powerpc/pci: Use DT to create pci_dn for root bridges only
+  powerpc/powernv/pci: Enable reassigning the bus numbers
+  PCI/powerpc/eeh: Add pcibios hooks for preparing to rescan
+
+ arch/powerpc/include/asm/eeh.h               |  2 +
+ arch/powerpc/kernel/eeh.c                    | 12 +++
+ arch/powerpc/kernel/pci_dn.c                 | 82 +++++++++++++----
+ arch/powerpc/kernel/rtas_pci.c               | 97 +++++++++++++-------
+ arch/powerpc/platforms/powernv/eeh-powernv.c | 22 +++++
+ arch/powerpc/platforms/powernv/pci.c         | 65 ++++++++-----
+ drivers/pci/probe.c                          | 14 +++
+ include/linux/pci.h                          |  2 +
+ 8 files changed, 225 insertions(+), 71 deletions(-)
+
+-- 
+2.17.1
