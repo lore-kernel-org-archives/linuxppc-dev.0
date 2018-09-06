@@ -1,33 +1,21 @@
-Return-Path: <s.miroshnichenko@yadro.com>
-Received: from mta-01.yadro.com (mta-01.yadro.com [89.207.88.251])
+Return-Path: <mhocko@kernel.org>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 425fGT4JbzzF3MQ
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 21:58:09 +1000 (AEST)
-Received: from localhost (unknown [127.0.0.1])
- by mta-01.yadro.com (Postfix) with ESMTP id 5E1A2418EB
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 11:58:04 +0000 (UTC)
-Received: from mta-01.yadro.com ([127.0.0.1])
- by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id MCcGR9JcimQr for <linuxppc-dev@lists.ozlabs.org>;
- Thu,  6 Sep 2018 14:58:03 +0300 (MSK)
-Received: from T-EXCH-02.corp.yadro.com (t-exch-02.corp.yadro.com
- [172.17.10.102])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by mta-01.yadro.com (Postfix) with ESMTPS id EF1A0418F7
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 14:58:00 +0300 (MSK)
-From: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-CC: <linux@yadro.com>, Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
-Subject: [PATCH v2 5/5] PCI/powerpc/eeh: Add pcibios hooks for preparing to
- rescan
-Date: Thu, 6 Sep 2018 14:57:52 +0300
-Message-ID: <20180906115752.29316-6-s.miroshnichenko@yadro.com>
-In-Reply-To: <20180906115752.29316-1-s.miroshnichenko@yadro.com>
-References: <20180906115752.29316-1-s.miroshnichenko@yadro.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 425g0k0M1szF3HL
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 22:31:17 +1000 (AEST)
+Date: Thu, 6 Sep 2018 14:31:11 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Cc: akpm@linux-foundation.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ mpe@ellerman.id.au, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [RFC PATCH V2 1/4] mm: Export alloc_migrate_huge_page
+Message-ID: <20180906123111.GC26069@dhcp22.suse.cz>
+References: <20180906054342.25094-1-aneesh.kumar@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180906054342.25094-1-aneesh.kumar@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,141 +25,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Reading an empty slot returns all ones, which triggers a false
-EEH error event on PowerNV.
+On Thu 06-09-18 11:13:39, Aneesh Kumar K.V wrote:
+> We want to use this to support customized huge page migration.
 
-New callbacks pcibios_rescan_prepare/done are introduced to
-pause/resume the EEH during rescan.
+Please be much more specific. Ideally including the user. Btw. why do
+you want to skip the hugetlb pools? In other words alloc_huge_page_node*
+which are intended to an external use?
 
-Signed-off-by: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
----
- arch/powerpc/include/asm/eeh.h               |  2 ++
- arch/powerpc/kernel/eeh.c                    | 12 +++++++++++
- arch/powerpc/platforms/powernv/eeh-powernv.c | 22 ++++++++++++++++++++
- drivers/pci/probe.c                          | 14 +++++++++++++
- include/linux/pci.h                          |  2 ++
- 5 files changed, 52 insertions(+)
-
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index 219637ea69a1..926c3e31df99 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -219,6 +219,8 @@ struct eeh_ops {
- 	int (*next_error)(struct eeh_pe **pe);
- 	int (*restore_config)(struct pci_dn *pdn);
- 	int (*notify_resume)(struct pci_dn *pdn);
-+	int (*pause)(struct pci_bus *bus);
-+	int (*resume)(struct pci_bus *bus);
- };
- 
- extern int eeh_subsystem_flags;
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index 6ebba3e48b01..9fb5012f389d 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -1831,3 +1831,15 @@ static int __init eeh_init_proc(void)
- 	return 0;
- }
- __initcall(eeh_init_proc);
-+
-+void pcibios_rescan_prepare(struct pci_bus *bus)
-+{
-+	if (eeh_ops && eeh_ops->pause)
-+		eeh_ops->pause(bus);
-+}
-+
-+void pcibios_rescan_done(struct pci_bus *bus)
-+{
-+	if (eeh_ops && eeh_ops->resume)
-+		eeh_ops->resume(bus);
-+}
-diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index 3c1beae29f2d..9724a58afcd2 100644
---- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -59,6 +59,26 @@ void pnv_pcibios_bus_add_device(struct pci_dev *pdev)
- 	eeh_sysfs_add_device(pdev);
- }
- 
-+static int pnv_eeh_pause(struct pci_bus *bus)
-+{
-+	struct pci_controller *hose = pci_bus_to_host(bus);
-+	struct pnv_phb *phb = hose->private_data;
-+
-+	phb->flags &= ~PNV_PHB_FLAG_EEH;
-+	disable_irq(eeh_event_irq);
-+	return 0;
-+}
-+
-+static int pnv_eeh_resume(struct pci_bus *bus)
-+{
-+	struct pci_controller *hose = pci_bus_to_host(bus);
-+	struct pnv_phb *phb = hose->private_data;
-+
-+	enable_irq(eeh_event_irq);
-+	phb->flags |= PNV_PHB_FLAG_EEH;
-+	return 0;
-+}
-+
- static int pnv_eeh_init(void)
- {
- 	struct pci_controller *hose;
-@@ -1710,6 +1730,8 @@ static struct eeh_ops pnv_eeh_ops = {
- 	.write_config           = pnv_eeh_write_config,
- 	.next_error		= pnv_eeh_next_error,
- 	.restore_config		= pnv_eeh_restore_config,
-+	.pause			= pnv_eeh_pause,
-+	.resume			= pnv_eeh_resume,
- 	.notify_resume		= NULL
- };
- 
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index ac876e32de4b..4a9045364809 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -2801,6 +2801,14 @@ void __weak pcibios_remove_bus(struct pci_bus *bus)
- {
- }
- 
-+void __weak pcibios_rescan_prepare(struct pci_bus *bus)
-+{
-+}
-+
-+void __weak pcibios_rescan_done(struct pci_bus *bus)
-+{
-+}
-+
- struct pci_bus *pci_create_root_bus(struct device *parent, int bus,
- 		struct pci_ops *ops, void *sysdata, struct list_head *resources)
- {
-@@ -3055,9 +3063,15 @@ unsigned int pci_rescan_bus_bridge_resize(struct pci_dev *bridge)
- unsigned int pci_rescan_bus(struct pci_bus *bus)
- {
- 	unsigned int max;
-+	struct pci_bus *root = bus;
-+
-+	while (!pci_is_root_bus(root))
-+		root = root->parent;
- 
-+	pcibios_rescan_prepare(root);
- 	max = pci_scan_child_bus(bus);
- 	pci_assign_unassigned_bus_resources(bus);
-+	pcibios_rescan_done(root);
- 	pci_bus_add_devices(bus);
- 
- 	return max;
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 340029b2fb38..42930731c5a7 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -1929,6 +1929,8 @@ void pcibios_penalize_isa_irq(int irq, int active);
- int pcibios_alloc_irq(struct pci_dev *dev);
- void pcibios_free_irq(struct pci_dev *dev);
- resource_size_t pcibios_default_alignment(void);
-+void pcibios_rescan_prepare(struct pci_bus *bus);
-+void pcibios_rescan_done(struct pci_bus *bus);
- 
- #ifdef CONFIG_HIBERNATE_CALLBACKS
- extern struct dev_pm_ops pcibios_pm_ops;
 -- 
-2.17.1
+Michal Hocko
+SUSE Labs
