@@ -1,30 +1,32 @@
-Return-Path: <green.hu@gmail.com>
-Received: from mail-vk0-f66.google.com (mail-vk0-f66.google.com
- [209.85.213.66])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <aneesh.kumar@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 425Pm72SnCzF37J
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 12:34:27 +1000 (AEST)
-Received: by mail-vk0-f66.google.com with SMTP id s17-v6so3487941vke.10
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Sep 2018 19:34:27 -0700 (PDT)
-MIME-Version: 1.0
-References: <1536163184-26356-1-git-send-email-rppt@linux.vnet.ibm.com>
-In-Reply-To: <1536163184-26356-1-git-send-email-rppt@linux.vnet.ibm.com>
-From: Greentime Hu <green.hu@gmail.com>
-Date: Thu, 6 Sep 2018 10:33:48 +0800
-Message-ID: <CAEbi=3dKL1zOYc0DC3yXm=7srw6tUfx-JR=o9n4pVrGp+Sosug@mail.gmail.com>
-Subject: Re: [RFC PATCH 00/29] mm: remove bootmem allocator
-To: rppt@linux.vnet.ibm.com
-Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
- David Miller <davem@davemloft.net>, gregkh@linuxfoundation.org,
- mingo@redhat.com,
- mpe@ellerman.id.au, mhocko@suse.com, paul.burton@mips.com,
- Thomas Gleixner <tglx@linutronix.de>, tony.luck@intel.com,
- linux-ia64@vger.kernel.org,
- linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
- sparclinux <sparclinux@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 425Typ1f0wzF3C3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 15:44:02 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w865hft5086782
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Sep 2018 01:43:59 -0400
+Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2mawtn940h-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Sep 2018 01:43:59 -0400
+Received: from localhost
+ by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Thu, 6 Sep 2018 01:43:58 -0400
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: akpm@linux-foundation.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ mpe@ellerman.id.au
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Subject: [RFC PATCH V2 1/4] mm: Export alloc_migrate_huge_page
+Date: Thu,  6 Sep 2018 11:13:39 +0530
+Message-Id: <20180906054342.25094-1-aneesh.kumar@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,33 +36,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Mike Rapoport <rppt@linux.vnet.ibm.com> =E6=96=BC 2018=E5=B9=B49=E6=9C=886=
-=E6=97=A5 =E9=80=B1=E5=9B=9B =E4=B8=8A=E5=8D=8812:04=E5=AF=AB=E9=81=93=EF=
-=BC=9A
->
-> Hi,
->
-> These patches switch early memory managment to use memblock directly
-> without any bootmem compatibility wrappers. As the result both bootmem an=
-d
-> nobootmem are removed.
->
-> There are still a couple of things to sort out, the most important is the
-> removal of bootmem usage in MIPS.
->
-> Still, IMHO, the series is in sufficient state to post and get the early
-> feedback.
->
-> The patches are build-tested with defconfig for most architectures (I
-> couldn't find a compiler for nds32 and unicore32) and boot-tested on x86
-> VM.
->
-Hi Mike,
+We want to use this to support customized huge page migration.
 
-There are nds32 toolchains.
-https://mirrors.edge.kernel.org/pub/tools/crosstool/files/bin/x86_64/8.1.0/=
-x86_64-gcc-8.1.0-nolibc-nds32le-linux.tar.gz
-https://github.com/vincentzwc/prebuilt-nds32-toolchain/releases/download/20=
-180521/nds32le-linux-glibc-v3-upstream.tar.gz
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+---
+ include/linux/hugetlb.h | 2 ++
+ mm/hugetlb.c            | 4 ++--
+ 2 files changed, 4 insertions(+), 2 deletions(-)
 
-Sorry, we have no qemu yet.
+diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
+index c39d9170a8a0..98c9c6dc308c 100644
+--- a/include/linux/hugetlb.h
++++ b/include/linux/hugetlb.h
+@@ -357,6 +357,8 @@ struct page *alloc_huge_page_nodemask(struct hstate *h, int preferred_nid,
+ 				nodemask_t *nmask);
+ struct page *alloc_huge_page_vma(struct hstate *h, struct vm_area_struct *vma,
+ 				unsigned long address);
++struct page *alloc_migrate_huge_page(struct hstate *h, gfp_t gfp_mask,
++				     int nid, nodemask_t *nmask);
+ int huge_add_to_page_cache(struct page *page, struct address_space *mapping,
+ 			pgoff_t idx);
+ 
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index 47566bb0b4b1..88881b3f8628 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -1586,8 +1586,8 @@ static struct page *alloc_surplus_huge_page(struct hstate *h, gfp_t gfp_mask,
+ 	return page;
+ }
+ 
+-static struct page *alloc_migrate_huge_page(struct hstate *h, gfp_t gfp_mask,
+-		int nid, nodemask_t *nmask)
++struct page *alloc_migrate_huge_page(struct hstate *h, gfp_t gfp_mask,
++				     int nid, nodemask_t *nmask)
+ {
+ 	struct page *page;
+ 
+-- 
+2.17.1
