@@ -1,20 +1,30 @@
-Return-Path: <joel.stan@gmail.com>
-Received: from mail-pl1-f195.google.com (mail-pl1-f195.google.com
- [209.85.214.195])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mhocko@kernel.org>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 425Wq45fv3zF3CK
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 17:07:28 +1000 (AEST)
-Received: by mail-pl1-f195.google.com with SMTP id j8-v6so4521373pll.12
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Sep 2018 00:07:27 -0700 (PDT)
-Sender: "joel.stan@gmail.com" <joel.stan@gmail.com>
-From: Joel Stanley <joel@jms.id.au>
-To: Anton Blanchard <anton@ozlabs.org>, benh@kernel.crashing.org,
- paulus@samba.org, mpe@ellerman.id.au, npiggin@gmail.com
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2] powerpc/Makefiles: Fix clang/llvm build
-Date: Thu,  6 Sep 2018 17:07:10 +1000
-Message-Id: <20180906070710.29944-1-joel@jms.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 425XGw1W9QzF36t
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 17:28:07 +1000 (AEST)
+Date: Thu, 6 Sep 2018 09:28:00 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: Mike Rapoport <rppt@linux.vnet.ibm.com>
+Cc: Rob Herring <robh@kernel.org>, linux-mm@kvack.org,
+ Andrew Morton <akpm@linux-foundation.org>, davem@davemloft.net,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, mingo@redhat.com,
+ Michael Ellerman <mpe@ellerman.id.au>, paul.burton@mips.com,
+ Thomas Gleixner <tglx@linutronix.de>, tony.luck@intel.com,
+ linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
+ linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC PATCH 07/29] memblock: remove _virt from APIs returning
+ virtual address
+Message-ID: <20180906072800.GN14951@dhcp22.suse.cz>
+References: <1536163184-26356-1-git-send-email-rppt@linux.vnet.ibm.com>
+ <1536163184-26356-8-git-send-email-rppt@linux.vnet.ibm.com>
+ <CABGGiswdb1x-=vqrgxZ9i2dnLdsgtXq4+5H9Y1JRd90YVMW69A@mail.gmail.com>
+ <20180905172017.GA2203@rapoport-lnx>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180905172017.GA2203@rapoport-lnx>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,35 +34,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Anton Blanchard <anton@samba.org>
+On Wed 05-09-18 20:20:18, Mike Rapoport wrote:
+> On Wed, Sep 05, 2018 at 12:04:36PM -0500, Rob Herring wrote:
+> > On Wed, Sep 5, 2018 at 11:00 AM Mike Rapoport <rppt@linux.vnet.ibm.com> wrote:
+> > >
+> > > The conversion is done using
+> > >
+> > > sed -i 's@memblock_virt_alloc@memblock_alloc@g' \
+> > >         $(git grep -l memblock_virt_alloc)
+> > 
+> > What's the reason to do this? It seems like a lot of churn even if a
+> > mechanical change.
+> 
+> I felt that memblock_virt_alloc_ is too long for a prefix, e.g:
+> memblock_virt_alloc_node_nopanic, memblock_virt_alloc_low_nopanic.
+> 
+> And for consistency I've changed the memblock_virt_alloc as well.
 
-Commit 15a3204d24a3 ("powerpc/64s: Set assembler machine type to POWER4")
-passes -mpower4 to the assembler. We have more recent instructions in our
-assembly files, but gas permits them. The clang/llvm integrated assembler
-is more strict, and we get a build failure.
-
-Fix this by calling the assembler with -mcpu=power8 if as supports it,
-else fall back to power4.
-
-Suggested-by: Nicholas Piggin <npiggin@gmail.com>
-Signed-off-by: Anton Blanchard <anton@samba.org>
-Signed-off-by: Joel Stanley <joel@jms.id.au>
----
- arch/powerpc/Makefile | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 11a1acba164a..a70639482053 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -238,7 +238,7 @@ cpu-as-$(CONFIG_4xx)		+= -Wa,-m405
- cpu-as-$(CONFIG_ALTIVEC)	+= $(call as-option,-Wa$(comma)-maltivec)
- cpu-as-$(CONFIG_E200)		+= -Wa,-me200
- cpu-as-$(CONFIG_E500)		+= -Wa,-me500
--cpu-as-$(CONFIG_PPC_BOOK3S_64)	+= -Wa,-mpower4
-+cpu-as-$(CONFIG_PPC_BOOK3S_64)	+= $(call as-option,-Wa$(comma)-mpower8,-Wa$(comma)-mpower4)
- cpu-as-$(CONFIG_PPC_E500MC)	+= $(call as-option,-Wa$(comma)-me500mc)
- 
- KBUILD_AFLAGS += $(cpu-as-y)
+I would keep the current API unless the name is terribly misleading or
+it can be improved a lot. Neither seems to be the case here. So I would
+rather stick with the status quo.
 -- 
-2.17.1
+Michal Hocko
+SUSE Labs
