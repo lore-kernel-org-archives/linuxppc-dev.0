@@ -2,9 +2,9 @@ Return-Path: <mhocko@kernel.org>
 Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 425Xwh5Q9TzF3Qm
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 17:57:24 +1000 (AEST)
-Date: Thu, 6 Sep 2018 09:57:21 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 425Y6y3tm0zF38B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 18:06:18 +1000 (AEST)
+Date: Thu, 6 Sep 2018 10:06:14 +0200
 From: Michal Hocko <mhocko@kernel.org>
 To: Mike Rapoport <rppt@linux.vnet.ibm.com>
 Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
@@ -15,14 +15,14 @@ Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
  Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
  linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
  sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 13/29] memblock: replace __alloc_bootmem_nopanic with
- memblock_alloc_from_nopanic
-Message-ID: <20180906075721.GV14951@dhcp22.suse.cz>
+Subject: Re: [RFC PATCH 14/29] memblock: add align parameter to
+ memblock_alloc_node()
+Message-ID: <20180906080614.GW14951@dhcp22.suse.cz>
 References: <1536163184-26356-1-git-send-email-rppt@linux.vnet.ibm.com>
- <1536163184-26356-14-git-send-email-rppt@linux.vnet.ibm.com>
+ <1536163184-26356-15-git-send-email-rppt@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1536163184-26356-14-git-send-email-rppt@linux.vnet.ibm.com>
+In-Reply-To: <1536163184-26356-15-git-send-email-rppt@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,57 +32,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed 05-09-18 18:59:28, Mike Rapoport wrote:
+On Wed 05-09-18 18:59:29, Mike Rapoport wrote:
+> With the align parameter memblock_alloc_node() can be used as drop in
+> replacement for alloc_bootmem_pages_node().
+
+Why do we need an additional translation later? Sparse code which is the
+only one to use it already uses memblock_alloc_try_nid elsewhere
+(sparse_mem_map_populate).
+ 
 > Signed-off-by: Mike Rapoport <rppt@linux.vnet.ibm.com>
-
-The translation is simpler here but still a word or two would be nice.
-Empty changelogs suck.
-
-To the change
-Acked-by: Michal Hocko <mhocko@suse.com>
-
 > ---
->  arch/arc/kernel/unwind.c       | 4 ++--
->  arch/x86/kernel/setup_percpu.c | 4 ++--
->  2 files changed, 4 insertions(+), 4 deletions(-)
+>  include/linux/bootmem.h | 4 ++--
+>  mm/sparse.c             | 2 +-
+>  2 files changed, 3 insertions(+), 3 deletions(-)
 > 
-> diff --git a/arch/arc/kernel/unwind.c b/arch/arc/kernel/unwind.c
-> index 183391d..2a01dd1 100644
-> --- a/arch/arc/kernel/unwind.c
-> +++ b/arch/arc/kernel/unwind.c
-> @@ -181,8 +181,8 @@ static void init_unwind_hdr(struct unwind_table *table,
->   */
->  static void *__init unw_hdr_alloc_early(unsigned long sz)
+> diff --git a/include/linux/bootmem.h b/include/linux/bootmem.h
+> index 7d91f0f..3896af2 100644
+> --- a/include/linux/bootmem.h
+> +++ b/include/linux/bootmem.h
+> @@ -157,9 +157,9 @@ static inline void * __init memblock_alloc_from_nopanic(
+>  }
+>  
+>  static inline void * __init memblock_alloc_node(
+> -						phys_addr_t size, int nid)
+> +		phys_addr_t size, phys_addr_t align, int nid)
 >  {
-> -	return __alloc_bootmem_nopanic(sz, sizeof(unsigned int),
-> -				       MAX_DMA_ADDRESS);
-> +	return memblock_alloc_from_nopanic(sz, sizeof(unsigned int),
-> +					   MAX_DMA_ADDRESS);
+> -	return memblock_alloc_try_nid(size, 0, BOOTMEM_LOW_LIMIT,
+> +	return memblock_alloc_try_nid(size, align, BOOTMEM_LOW_LIMIT,
+>  					    BOOTMEM_ALLOC_ACCESSIBLE, nid);
 >  }
 >  
->  static void *unw_hdr_alloc(unsigned long sz)
-> diff --git a/arch/x86/kernel/setup_percpu.c b/arch/x86/kernel/setup_percpu.c
-> index 67d48e26..041663a 100644
-> --- a/arch/x86/kernel/setup_percpu.c
-> +++ b/arch/x86/kernel/setup_percpu.c
-> @@ -106,7 +106,7 @@ static void * __init pcpu_alloc_bootmem(unsigned int cpu, unsigned long size,
->  	void *ptr;
+> diff --git a/mm/sparse.c b/mm/sparse.c
+> index 04e97af..509828f 100644
+> --- a/mm/sparse.c
+> +++ b/mm/sparse.c
+> @@ -68,7 +68,7 @@ static noinline struct mem_section __ref *sparse_index_alloc(int nid)
+>  	if (slab_is_available())
+>  		section = kzalloc_node(array_size, GFP_KERNEL, nid);
+>  	else
+> -		section = memblock_alloc_node(array_size, nid);
+> +		section = memblock_alloc_node(array_size, 0, nid);
 >  
->  	if (!node_online(node) || !NODE_DATA(node)) {
-> -		ptr = __alloc_bootmem_nopanic(size, align, goal);
-> +		ptr = memblock_alloc_from_nopanic(size, align, goal);
->  		pr_info("cpu %d has no node %d or node-local memory\n",
->  			cpu, node);
->  		pr_debug("per cpu data for cpu%d %lu bytes at %016lx\n",
-> @@ -121,7 +121,7 @@ static void * __init pcpu_alloc_bootmem(unsigned int cpu, unsigned long size,
->  	}
->  	return ptr;
->  #else
-> -	return __alloc_bootmem_nopanic(size, align, goal);
-> +	return memblock_alloc_from_nopanic(size, align, goal);
->  #endif
+>  	return section;
 >  }
->  
 > -- 
 > 2.7.4
 > 
