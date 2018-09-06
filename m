@@ -1,44 +1,22 @@
-Return-Path: <rppt@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mhocko@kernel.org>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 425gJg64y2zF3RY
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 22:45:07 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w86Chp1c138373
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Sep 2018 08:45:05 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2mb4f404r9-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Sep 2018 08:45:04 -0400
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.vnet.ibm.com>;
- Thu, 6 Sep 2018 13:45:02 +0100
-Date: Thu, 6 Sep 2018 15:44:53 +0300
-From: Mike Rapoport <rppt@linux.vnet.ibm.com>
-To: Michal Hocko <mhocko@kernel.org>
-Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
- "David S. Miller" <davem@davemloft.net>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Ingo Molnar <mingo@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Paul Burton <paul.burton@mips.com>,
- Thomas Gleixner <tglx@linutronix.de>, Tony Luck <tony.luck@intel.com>,
- linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
- linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 13/29] memblock: replace __alloc_bootmem_nopanic with
- memblock_alloc_from_nopanic
-References: <1536163184-26356-1-git-send-email-rppt@linux.vnet.ibm.com>
- <1536163184-26356-14-git-send-email-rppt@linux.vnet.ibm.com>
- <20180906075721.GV14951@dhcp22.suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 425gJh3S9BzF3Rc
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 22:45:08 +1000 (AEST)
+Date: Thu, 6 Sep 2018 14:45:04 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Cc: akpm@linux-foundation.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ mpe@ellerman.id.au, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [RFC PATCH V2 2/4] mm: Add get_user_pages_cma_migrate
+Message-ID: <20180906124504.GW14951@dhcp22.suse.cz>
+References: <20180906054342.25094-1-aneesh.kumar@linux.ibm.com>
+ <20180906054342.25094-2-aneesh.kumar@linux.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180906075721.GV14951@dhcp22.suse.cz>
-Message-Id: <20180906124453.GE27492@rapoport-lnx>
+In-Reply-To: <20180906054342.25094-2-aneesh.kumar@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,69 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 06, 2018 at 09:57:21AM +0200, Michal Hocko wrote:
-> On Wed 05-09-18 18:59:28, Mike Rapoport wrote:
-> > Signed-off-by: Mike Rapoport <rppt@linux.vnet.ibm.com>
-> 
-> The translation is simpler here but still a word or two would be nice.
-> Empty changelogs suck.
+On Thu 06-09-18 11:13:40, Aneesh Kumar K.V wrote:
+> This helper does a get_user_pages_fast and if it find pages in the CMA area
+> it will try to migrate them before taking page reference. This makes sure that
+> we don't keep non-movable pages (due to page reference count) in the CMA area.
+> Not able to move pages out of CMA area result in CMA allocation failures.
 
-This is one of the things left to sort out :)
- 
-> To the change
-> Acked-by: Michal Hocko <mhocko@suse.com>
-> 
-> > ---
-> >  arch/arc/kernel/unwind.c       | 4 ++--
-> >  arch/x86/kernel/setup_percpu.c | 4 ++--
-> >  2 files changed, 4 insertions(+), 4 deletions(-)
-> > 
-> > diff --git a/arch/arc/kernel/unwind.c b/arch/arc/kernel/unwind.c
-> > index 183391d..2a01dd1 100644
-> > --- a/arch/arc/kernel/unwind.c
-> > +++ b/arch/arc/kernel/unwind.c
-> > @@ -181,8 +181,8 @@ static void init_unwind_hdr(struct unwind_table *table,
-> >   */
-> >  static void *__init unw_hdr_alloc_early(unsigned long sz)
-> >  {
-> > -	return __alloc_bootmem_nopanic(sz, sizeof(unsigned int),
-> > -				       MAX_DMA_ADDRESS);
-> > +	return memblock_alloc_from_nopanic(sz, sizeof(unsigned int),
-> > +					   MAX_DMA_ADDRESS);
-> >  }
-> >  
-> >  static void *unw_hdr_alloc(unsigned long sz)
-> > diff --git a/arch/x86/kernel/setup_percpu.c b/arch/x86/kernel/setup_percpu.c
-> > index 67d48e26..041663a 100644
-> > --- a/arch/x86/kernel/setup_percpu.c
-> > +++ b/arch/x86/kernel/setup_percpu.c
-> > @@ -106,7 +106,7 @@ static void * __init pcpu_alloc_bootmem(unsigned int cpu, unsigned long size,
-> >  	void *ptr;
-> >  
-> >  	if (!node_online(node) || !NODE_DATA(node)) {
-> > -		ptr = __alloc_bootmem_nopanic(size, align, goal);
-> > +		ptr = memblock_alloc_from_nopanic(size, align, goal);
-> >  		pr_info("cpu %d has no node %d or node-local memory\n",
-> >  			cpu, node);
-> >  		pr_debug("per cpu data for cpu%d %lu bytes at %016lx\n",
-> > @@ -121,7 +121,7 @@ static void * __init pcpu_alloc_bootmem(unsigned int cpu, unsigned long size,
-> >  	}
-> >  	return ptr;
-> >  #else
-> > -	return __alloc_bootmem_nopanic(size, align, goal);
-> > +	return memblock_alloc_from_nopanic(size, align, goal);
-> >  #endif
-> >  }
-> >  
-> > -- 
-> > 2.7.4
-> > 
-> 
-> -- 
-> Michal Hocko
-> SUSE Labs
-> 
+Again, there is no user so it is hard to guess the intention completely.
+There is no documentation to describe the expected context and
+assumptions about locking etc.
 
+As noted in the previous email. You should better describe why you are
+bypassing hugetlb pools. I assume that the reason is to guarantee a
+forward progress because those might be sitting in the CMA pools
+already, right?
 -- 
-Sincerely yours,
-Mike.
+Michal Hocko
+SUSE Labs
