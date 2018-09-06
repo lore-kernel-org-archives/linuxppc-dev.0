@@ -1,37 +1,23 @@
-Return-Path: <pburton@wavecomp.com>
-Received: from NAM03-DM3-obe.outbound.protection.outlook.com
- (mail-dm3nam03on0129.outbound.protection.outlook.com [104.47.41.129])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <helgaas@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 425nDM2cp6zF3Rq
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Sep 2018 03:11:43 +1000 (AEST)
-Date: Thu, 6 Sep 2018 10:11:33 -0700
-From: Paul Burton <paul.burton@mips.com>
-To: Rob Herring <robh@kernel.org>
-Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Michal Marek <michal.lkml@markovi.net>, Vineet Gupta <vgupta@synopsys.com>,
- Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- Michal Simek <monstr@monstr.eu>, Ralf Baechle <ralf@linux-mips.org>,
- James Hogan <jhogan@kernel.org>, Ley Foon Tan <lftan@altera.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
- linux-kbuild@vger.kernel.org, linux-snps-arc@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org,
- uclinux-h8-devel@lists.sourceforge.jp, linux-mips@linux-mips.org,
- nios2-dev@lists.rocketboards.org, linuxppc-dev@lists.ozlabs.org,
- linux-xtensa@linux-xtensa.org
-Subject: Re: [PATCH v2 6/9] kbuild: consolidate Devicetree dtb build rules
-Message-ID: <20180906171133.awny5cx533kkolrg@pburton-laptop>
-References: <20180905235327.5996-1-robh@kernel.org>
- <20180905235327.5996-7-robh@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 425r1L4cd5zF3Rf
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Sep 2018 05:17:23 +1000 (AEST)
+Date: Thu, 6 Sep 2018 14:17:20 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Cc: mpe@ellerman.id.au, benh@kernel.crashing.org,
+ linuxppc-dev@lists.ozlabs.org, nfont@linux.vnet.ibm.com,
+ linux-pci@vger.kernel.org, bhelgaas@google.com,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] MAINTAINERS: add maintainer entries for RPA pci hotplug
+ drivers
+Message-ID: <20180906191720.GG214747@bhelgaas-glaptop.roam.corp.google.com>
+References: <1534814431-20112-1-git-send-email-tyreld@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180905235327.5996-7-robh@kernel.org>
+In-Reply-To: <1534814431-20112-1-git-send-email-tyreld@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,34 +27,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Rob,
+On Mon, Aug 20, 2018 at 06:20:31PM -0700, Tyrel Datwyler wrote:
+> Adding myself as maintiner of the IBM RPA hotplug modules located in
+> drivers/pci/hotplug directory. These modules provide kernel interfaces
+> for support of Dynamic Logical Partitioning (DLPAR) of Logical and
+> Physical IO slots, and hotplug of physical PCI slots of a PHB on
+> RPA-compliant ppc64 platforms (pseries).
+> 
+> Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 
-On Wed, Sep 05, 2018 at 06:53:24PM -0500, Rob Herring wrote:
-> There is nothing arch specific about building dtb files other than their
-> location under /arch/*/boot/dts/. Keeping each arch aligned is a pain.
-> The dependencies and supported targets are all slightly different.
-> Also, a cross-compiler for each arch is needed, but really the host
-> compiler preprocessor is perfectly fine for building dtbs. Move the
-> build rules to a common location and remove the arch specific ones. This
-> is done in a single step to avoid warnings about overriding rules.
-> 
-> The build dependencies had been a mixture of 'scripts' and/or 'prepare'.
-> These pull in several dependencies some of which need a target compiler
-> (specifically devicetable-offsets.h) and aren't needed to build dtbs.
-> All that is really needed is dtc, so adjust the dependencies to only be
-> dtc.
-> 
-> This change enables support 'dtbs_install' on some arches which were
-> missing the target.
-> 
->%
-> Signed-off-by: Rob Herring <robh@kernel.org>
+Applied to for-linus for v4.19, thanks!
+
 > ---
-> Please ack so I can take the whole series via the DT tree.
-
-For MIPS:
-
-    Acked-by: Paul Burton <paul.burton@mips.com>
-
-Thanks,
-    Paul
+>  MAINTAINERS | 14 ++++++++++++++
+>  1 file changed, 14 insertions(+)
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 5df1b36..7b5dc3f 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -6984,6 +6984,20 @@ F:	drivers/crypto/vmx/aes*
+>  F:	drivers/crypto/vmx/ghash*
+>  F:	drivers/crypto/vmx/ppc-xlate.pl
+>  
+> +IBM Power PCI Hotplug Driver for RPA-compliant PPC64 platform
+> +M:	Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+> +L:	linux-pci@vger.kernel.org
+> +L:	linuxppc-dev@lists.ozlabs.org
+> +S:	Supported
+> +F:	drivers/pci/hotplug/rpaphp*
+> +
+> +IBM Power IO DLPAR Driver for RPA-compliant PPC64 platform
+> +M:	Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+> +L:	linux-pci@vger.kernel.org
+> +L:	linuxppc-dev@lists.ozlabs.org
+> +S:	Supported
+> +F:	drivers/pci/hotplug/rpadlpar*
+> +
+>  IBM ServeRAID RAID DRIVER
+>  S:	Orphan
+>  F:	drivers/scsi/ips.*
+> -- 
+> 1.8.3.1
+> 
