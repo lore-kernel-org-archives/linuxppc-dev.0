@@ -1,23 +1,56 @@
-Return-Path: <helgaas@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+Return-Path: <corbet@lwn.net>
+Received: from ms.lwn.net (ms.lwn.net [45.79.88.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 425r1L4cd5zF3Rf
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Sep 2018 05:17:23 +1000 (AEST)
-Date: Thu, 6 Sep 2018 14:17:20 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Cc: mpe@ellerman.id.au, benh@kernel.crashing.org,
- linuxppc-dev@lists.ozlabs.org, nfont@linux.vnet.ibm.com,
- linux-pci@vger.kernel.org, bhelgaas@google.com,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] MAINTAINERS: add maintainer entries for RPA pci hotplug
- drivers
-Message-ID: <20180906191720.GG214747@bhelgaas-glaptop.roam.corp.google.com>
-References: <1534814431-20112-1-git-send-email-tyreld@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 425ld80W6PzF3Rr
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Sep 2018 01:59:36 +1000 (AEST)
+Date: Thu, 6 Sep 2018 09:58:04 -0600
+From: Jonathan Corbet <corbet@lwn.net>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Pavel Machek <pavel@ucw.cz>, Henrik Austad <henrik@austad.us>,
+ linux-doc@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, "Paul E.
+ McKenney" <paulmck@linux.vnet.ibm.com>, Josh Triplett
+ <josh@joshtriplett.org>, Mathieu Desnoyers
+ <mathieu.desnoyers@efficios.com>, Lai Jiangshan <jiangshanlai@gmail.com>,
+ Jens Axboe <axboe@kernel.dk>, Rob Herring <robh+dt@kernel.org>, Mark
+ Rutland <mark.rutland@arm.com>, Bartlomiej Zolnierkiewicz
+ <b.zolnierkie@samsung.com>, Linus Walleij <linus.walleij@linaro.org>,
+ "David S. Miller" <davem@davemloft.net>, Karsten Keil
+ <isdn@linux-pingi.de>, Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Michal Marek <michal.lkml@markovi.net>, Peter Zijlstra
+ <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Will Deacon
+ <will.deacon@arm.com>, Ralf Baechle <ralf@linux-mips.org>, Paul Burton
+ <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>, Paul Moore
+ <paul@paul-moore.com>, "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ Helge Deller <deller@gmx.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len
+ Brown <len.brown@intel.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael
+ Ellerman <mpe@ellerman.id.au>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>, Mark Brown
+ <broonie@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Paolo Bonzini
+ <pbonzini@redhat.com>, Radim =?UTF-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
+ Evgeniy Polyakov <zbr@ioremap.net>, "H. Peter Anvin" <hpa@zytor.com>,
+ x86@kernel.org, Andrew Morton <akpm@linux-foundation.org>, Ian Kent
+ <raven@themaw.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Mike
+ Rapoport <rppt@linux.vnet.ibm.com>, Jan Kandziora <jjj@gmx.de>,
+ linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+ devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-fbdev@vger.kernel.org, linux-gpio@vger.kernel.org,
+ linux-ide@vger.kernel.org, netdev@vger.kernel.org,
+ linux-kbuild@vger.kernel.org, linux-mips@linux-mips.org,
+ linux-security-module@vger.kernel.org, linux-parisc@vger.kernel.org,
+ linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-spi@vger.kernel.org, kvm@vger.kernel.org,
+ Henrik Austad <haustad@cisco.com>
+Subject: Re: [PATCH] [RFC v2] Drop all 00-INDEX files from Documentation/
+Message-ID: <20180906095804.5ab2716f@lwn.net>
+In-Reply-To: <20180904095908.13298b3d@gandalf.local.home>
+References: <1536012923-16275-1-git-send-email-henrik@austad.us>
+ <20180904113030.GB25177@amd>
+ <20180904095908.13298b3d@gandalf.local.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1534814431-20112-1-git-send-email-tyreld@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,46 +60,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 20, 2018 at 06:20:31PM -0700, Tyrel Datwyler wrote:
-> Adding myself as maintiner of the IBM RPA hotplug modules located in
-> drivers/pci/hotplug directory. These modules provide kernel interfaces
-> for support of Dynamic Logical Partitioning (DLPAR) of Logical and
-> Physical IO slots, and hotplug of physical PCI slots of a PHB on
-> RPA-compliant ppc64 platforms (pseries).
-> 
-> Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+On Tue, 4 Sep 2018 09:59:08 -0400
+Steven Rostedt <rostedt@goodmis.org> wrote:
 
-Applied to for-linus for v4.19, thanks!
+> On Tue, 4 Sep 2018 13:30:30 +0200
+> Pavel Machek <pavel@ucw.cz> wrote:
+> 
+> > I'd say this is still quite valueable, and it might be worth fixing,
+> > rather then removing completely.  
+> 
+> I agree. Perhaps we should have a 00-DESCRIPTION file in each
+> directory, and each file could start with a:
+> 
+>  DESCRIPTION: <one line description here>
+> 
+> and then these files could be generated by those that have these tags.
 
-> ---
->  MAINTAINERS | 14 ++++++++++++++
->  1 file changed, 14 insertions(+)
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 5df1b36..7b5dc3f 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -6984,6 +6984,20 @@ F:	drivers/crypto/vmx/aes*
->  F:	drivers/crypto/vmx/ghash*
->  F:	drivers/crypto/vmx/ppc-xlate.pl
->  
-> +IBM Power PCI Hotplug Driver for RPA-compliant PPC64 platform
-> +M:	Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-> +L:	linux-pci@vger.kernel.org
-> +L:	linuxppc-dev@lists.ozlabs.org
-> +S:	Supported
-> +F:	drivers/pci/hotplug/rpaphp*
-> +
-> +IBM Power IO DLPAR Driver for RPA-compliant PPC64 platform
-> +M:	Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-> +L:	linux-pci@vger.kernel.org
-> +L:	linuxppc-dev@lists.ozlabs.org
-> +S:	Supported
-> +F:	drivers/pci/hotplug/rpadlpar*
-> +
->  IBM ServeRAID RAID DRIVER
->  S:	Orphan
->  F:	drivers/scsi/ips.*
-> -- 
-> 1.8.3.1
-> 
+I really don't want to hack up yet another documentation syntax and
+processing scheme.  We already have one that does all of this and more.
+That energy would be far better spent bringing the docs into the RST
+hierarchy, IMO.
+
+Thanks,
+
+jon  (who is increasingly inclined to apply this patch)
