@@ -1,22 +1,44 @@
-Return-Path: <mhocko@kernel.org>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <rppt@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 425gJh3S9BzF3Rc
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 22:45:08 +1000 (AEST)
-Date: Thu, 6 Sep 2018 14:45:04 +0200
-From: Michal Hocko <mhocko@kernel.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Cc: akpm@linux-foundation.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
- mpe@ellerman.id.au, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC PATCH V2 2/4] mm: Add get_user_pages_cma_migrate
-Message-ID: <20180906124504.GW14951@dhcp22.suse.cz>
-References: <20180906054342.25094-1-aneesh.kumar@linux.ibm.com>
- <20180906054342.25094-2-aneesh.kumar@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 425gQG1zbWzF39Y
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 22:49:58 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w86Cn27F056257
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Sep 2018 08:49:56 -0400
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2mb2y9mp9w-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Sep 2018 08:49:55 -0400
+Received: from localhost
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.vnet.ibm.com>;
+ Thu, 6 Sep 2018 13:49:53 +0100
+Date: Thu, 6 Sep 2018 15:49:44 +0300
+From: Mike Rapoport <rppt@linux.vnet.ibm.com>
+To: Michal Hocko <mhocko@kernel.org>
+Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
+ "David S. Miller" <davem@davemloft.net>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Ingo Molnar <mingo@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Paul Burton <paul.burton@mips.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Tony Luck <tony.luck@intel.com>,
+ linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
+ linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 14/29] memblock: add align parameter to
+ memblock_alloc_node()
+References: <1536163184-26356-1-git-send-email-rppt@linux.vnet.ibm.com>
+ <1536163184-26356-15-git-send-email-rppt@linux.vnet.ibm.com>
+ <20180906080614.GW14951@dhcp22.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180906054342.25094-2-aneesh.kumar@linux.ibm.com>
+In-Reply-To: <20180906080614.GW14951@dhcp22.suse.cz>
+Message-Id: <20180906124944.GF27492@rapoport-lnx>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,20 +48,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu 06-09-18 11:13:40, Aneesh Kumar K.V wrote:
-> This helper does a get_user_pages_fast and if it find pages in the CMA area
-> it will try to migrate them before taking page reference. This makes sure that
-> we don't keep non-movable pages (due to page reference count) in the CMA area.
-> Not able to move pages out of CMA area result in CMA allocation failures.
+On Thu, Sep 06, 2018 at 10:06:14AM +0200, Michal Hocko wrote:
+> On Wed 05-09-18 18:59:29, Mike Rapoport wrote:
+> > With the align parameter memblock_alloc_node() can be used as drop in
+> > replacement for alloc_bootmem_pages_node().
+> 
+> Why do we need an additional translation later? Sparse code which is the
+> only one to use it already uses memblock_alloc_try_nid elsewhere
+> (sparse_mem_map_populate).
 
-Again, there is no user so it is hard to guess the intention completely.
-There is no documentation to describe the expected context and
-assumptions about locking etc.
+It is also used in later patches to replace alloc_bootmem* in several
+places and most of them explicitly set the alignment.
+ 
+> > Signed-off-by: Mike Rapoport <rppt@linux.vnet.ibm.com>
+> > ---
+> >  include/linux/bootmem.h | 4 ++--
+> >  mm/sparse.c             | 2 +-
+> >  2 files changed, 3 insertions(+), 3 deletions(-)
+> > 
+> > diff --git a/include/linux/bootmem.h b/include/linux/bootmem.h
+> > index 7d91f0f..3896af2 100644
+> > --- a/include/linux/bootmem.h
+> > +++ b/include/linux/bootmem.h
+> > @@ -157,9 +157,9 @@ static inline void * __init memblock_alloc_from_nopanic(
+> >  }
+> >  
+> >  static inline void * __init memblock_alloc_node(
+> > -						phys_addr_t size, int nid)
+> > +		phys_addr_t size, phys_addr_t align, int nid)
+> >  {
+> > -	return memblock_alloc_try_nid(size, 0, BOOTMEM_LOW_LIMIT,
+> > +	return memblock_alloc_try_nid(size, align, BOOTMEM_LOW_LIMIT,
+> >  					    BOOTMEM_ALLOC_ACCESSIBLE, nid);
+> >  }
+> >  
+> > diff --git a/mm/sparse.c b/mm/sparse.c
+> > index 04e97af..509828f 100644
+> > --- a/mm/sparse.c
+> > +++ b/mm/sparse.c
+> > @@ -68,7 +68,7 @@ static noinline struct mem_section __ref *sparse_index_alloc(int nid)
+> >  	if (slab_is_available())
+> >  		section = kzalloc_node(array_size, GFP_KERNEL, nid);
+> >  	else
+> > -		section = memblock_alloc_node(array_size, nid);
+> > +		section = memblock_alloc_node(array_size, 0, nid);
+> >  
+> >  	return section;
+> >  }
+> > -- 
+> > 2.7.4
+> > 
+> 
+> -- 
+> Michal Hocko
+> SUSE Labs
+> 
 
-As noted in the previous email. You should better describe why you are
-bypassing hugetlb pools. I assume that the reason is to guarantee a
-forward progress because those might be sitting in the CMA pools
-already, right?
 -- 
-Michal Hocko
-SUSE Labs
+Sincerely yours,
+Mike.
