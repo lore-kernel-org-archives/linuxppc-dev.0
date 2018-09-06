@@ -1,37 +1,47 @@
-Return-Path: <aneesh.kumar@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <rppt@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 425hMH2t1KzF3Rm
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 23:32:27 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 425hXF36N1zF37t
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2018 23:40:13 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w86DUBfK142063
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Sep 2018 09:32:25 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2mb3jw4uy1-1
+ w86DdVdr011976
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Sep 2018 09:40:11 -0400
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2mb2a58fcp-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Sep 2018 09:32:24 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Sep 2018 09:40:10 -0400
 Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Thu, 6 Sep 2018 07:32:24 -0600
-Subject: Re: [RFC PATCH V2 1/4] mm: Export alloc_migrate_huge_page
+ for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.vnet.ibm.com>;
+ Thu, 6 Sep 2018 14:40:08 +0100
+Date: Thu, 6 Sep 2018 16:39:58 +0300
+From: Mike Rapoport <rppt@linux.vnet.ibm.com>
 To: Michal Hocko <mhocko@kernel.org>
-Cc: akpm@linux-foundation.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
- mpe@ellerman.id.au, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-References: <20180906054342.25094-1-aneesh.kumar@linux.ibm.com>
- <20180906123111.GC26069@dhcp22.suse.cz>
- <20180906123539.GV14951@dhcp22.suse.cz>
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Date: Thu, 6 Sep 2018 19:02:16 +0530
+Cc: Rob Herring <robh@kernel.org>, linux-mm@kvack.org,
+ Andrew Morton <akpm@linux-foundation.org>, davem@davemloft.net,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, mingo@redhat.com,
+ Michael Ellerman <mpe@ellerman.id.au>, paul.burton@mips.com,
+ Thomas Gleixner <tglx@linutronix.de>, tony.luck@intel.com,
+ linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
+ linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC PATCH 07/29] memblock: remove _virt from APIs returning
+ virtual address
+References: <1536163184-26356-1-git-send-email-rppt@linux.vnet.ibm.com>
+ <1536163184-26356-8-git-send-email-rppt@linux.vnet.ibm.com>
+ <CABGGiswdb1x-=vqrgxZ9i2dnLdsgtXq4+5H9Y1JRd90YVMW69A@mail.gmail.com>
+ <20180905172017.GA2203@rapoport-lnx>
+ <20180906072800.GN14951@dhcp22.suse.cz>
+ <20180906124321.GD27492@rapoport-lnx>
+ <20180906130102.GY14951@dhcp22.suse.cz>
 MIME-Version: 1.0
-In-Reply-To: <20180906123539.GV14951@dhcp22.suse.cz>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <50682adc-5be9-1fac-fd84-abc6bbea7549@linux.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180906130102.GY14951@dhcp22.suse.cz>
+Message-Id: <20180906133958.GM27492@rapoport-lnx>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,22 +51,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/06/2018 06:05 PM, Michal Hocko wrote:
-> On Thu 06-09-18 14:31:11, Michal Hocko wrote:
->> On Thu 06-09-18 11:13:39, Aneesh Kumar K.V wrote:
->>> We want to use this to support customized huge page migration.
->>
->> Please be much more specific. Ideally including the user. Btw. why do
->> you want to skip the hugetlb pools? In other words alloc_huge_page_node*
->> which are intended to an external use?
+On Thu, Sep 06, 2018 at 03:01:02PM +0200, Michal Hocko wrote:
+> On Thu 06-09-18 15:43:21, Mike Rapoport wrote:
+> > On Thu, Sep 06, 2018 at 09:28:00AM +0200, Michal Hocko wrote:
+> > > On Wed 05-09-18 20:20:18, Mike Rapoport wrote:
+> > > > On Wed, Sep 05, 2018 at 12:04:36PM -0500, Rob Herring wrote:
+> > > > > On Wed, Sep 5, 2018 at 11:00 AM Mike Rapoport <rppt@linux.vnet.ibm.com> wrote:
+> > > > > >
+> > > > > > The conversion is done using
+> > > > > >
+> > > > > > sed -i 's@memblock_virt_alloc@memblock_alloc@g' \
+> > > > > >         $(git grep -l memblock_virt_alloc)
+> > > > > 
+> > > > > What's the reason to do this? It seems like a lot of churn even if a
+> > > > > mechanical change.
+> > > > 
+> > > > I felt that memblock_virt_alloc_ is too long for a prefix, e.g:
+> > > > memblock_virt_alloc_node_nopanic, memblock_virt_alloc_low_nopanic.
+> > > > 
+> > > > And for consistency I've changed the memblock_virt_alloc as well.
+> > > 
+> > > I would keep the current API unless the name is terribly misleading or
+> > > it can be improved a lot. Neither seems to be the case here. So I would
+> > > rather stick with the status quo.
+> > 
+> > I'm ok with the memblock_virt_alloc by itself, but having 'virt' in
+> > 'memblock_virt_alloc_try_nid_nopanic' and 'memblock_virt_alloc_low_nopanic'
+> > reduces code readability in my opinion.
 > 
-> Ups, I have now found http://lkml.kernel.org/r/20180906054342.25094-2-aneesh.kumar@linux.ibm.com
-> which ended up in a different email folder so I have missed it. It would
-> be much better to merge those two to make the user immediately obvious.
-> There is a good reason to keep newly added functions closer to their
-> users.
+> Well, is _nopanic really really useful in the name. Do we even need/want
+> implicit panic/nopanic semantic? The code should rather check for the
+> return value and decide depending on the code path. I suspect removing
+> panic/nopanic would make the API slightly lighter.
+ 
+I agree that panic/nopanic should be removed. But I prefer to start with
+equivalent replacement to make it as automated as possible and update
+memblock API when the dust settles a bit.
+
+> -- 
+> Michal Hocko
+> SUSE Labs
 > 
 
-It is the same series. I will fold the patch 1 and 2.
-
--aneesh
+-- 
+Sincerely yours,
+Mike.
