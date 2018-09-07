@@ -1,18 +1,23 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <peterz@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 426JC214rgzDrTP
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Sep 2018 23:27:25 +1000 (AEST)
-Message-Id: <a70172863fa7d3c138f788b18d36524bd45b0a73.1536326078.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] perf: enum overflow in uapi/linux/perf_event.h
-To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 426JXy5PQYzF3BX
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Sep 2018 23:42:58 +1000 (AEST)
+Date: Fri, 7 Sep 2018 15:42:46 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Ingo Molnar <mingo@redhat.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
  Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Jiri Olsa <jolsa@redhat.com>, Namhyung Kim <namhyung@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Fri,  7 Sep 2018 13:27:19 +0000 (UTC)
+ Jiri Olsa <jolsa@redhat.com>, Namhyung Kim <namhyung@kernel.org>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] perf: enum overflow in uapi/linux/perf_event.h
+Message-ID: <20180907134246.GC24106@hirez.programming.kicks-ass.net>
+References: <a70172863fa7d3c138f788b18d36524bd45b0a73.1536326078.git.christophe.leroy@c-s.fr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <a70172863fa7d3c138f788b18d36524bd45b0a73.1536326078.git.christophe.leroy@c-s.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,36 +27,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On PPC32, enums are 32 bits, so __PERF_SAMPLE_CALLCHAIN_EARLY is
-out of scope. The following sparse warning is encountered:
+On Fri, Sep 07, 2018 at 01:27:19PM +0000, Christophe Leroy wrote:
+> On PPC32, enums are 32 bits, so __PERF_SAMPLE_CALLCHAIN_EARLY is
+> out of scope. The following sparse warning is encountered:
+> 
+>   CHECK   arch/powerpc/kernel/process.c
+> ./include/uapi/linux/perf_event.h:147:56: warning: cast truncates bits from constant value (8000000000000000 becomes 0)
 
-  CHECK   arch/powerpc/kernel/process.c
-./include/uapi/linux/perf_event.h:147:56: warning: cast truncates bits from constant value (8000000000000000 becomes 0)
-
-This patch changes it to a #define
-
-Fixes: 6cbc304f2f360 ("perf/x86/intel: Fix unwind errors from PEBS entries (mk-II)")
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- include/uapi/linux/perf_event.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/include/uapi/linux/perf_event.h b/include/uapi/linux/perf_event.h
-index eeb787b1c53c..27c7842bc86a 100644
---- a/include/uapi/linux/perf_event.h
-+++ b/include/uapi/linux/perf_event.h
-@@ -143,10 +143,10 @@ enum perf_event_sample_format {
- 	PERF_SAMPLE_PHYS_ADDR			= 1U << 19,
- 
- 	PERF_SAMPLE_MAX = 1U << 20,		/* non-ABI */
--
--	__PERF_SAMPLE_CALLCHAIN_EARLY		= 1ULL << 63,
- };
- 
-+#define __PERF_SAMPLE_CALLCHAIN_EARLY		(1ULL << 63)
-+
- /*
-  * values to program into branch_sample_type when PERF_SAMPLE_BRANCH is set
-  *
--- 
-2.13.3
+Urgh... what compiler is that? I've not seen anything like that from the
+build bots.
