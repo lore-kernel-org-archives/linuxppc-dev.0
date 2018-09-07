@@ -1,12 +1,12 @@
 Return-Path: <clabbe@baylibre.com>
-Received: from mail-wm0-x244.google.com (mail-wm0-x244.google.com
- [IPv6:2a00:1450:400c:c09::244])
+Received: from mail-wr1-x442.google.com (mail-wr1-x442.google.com
+ [IPv6:2a00:1450:4864:20::442])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 426SWl0TYWzF3TT
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Sep 2018 05:42:23 +1000 (AEST)
-Received: by mail-wm0-x244.google.com with SMTP id j192-v6so15733799wmj.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Sep 2018 12:42:23 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 426SWl49XZzF3TV
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Sep 2018 05:42:27 +1000 (AEST)
+Received: by mail-wr1-x442.google.com with SMTP id n2-v6so16033229wrw.7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Sep 2018 12:42:27 -0700 (PDT)
 From: Corentin Labbe <clabbe@baylibre.com>
 To: Gilles.Muller@lip6.fr, Julia.Lawall@lip6.fr, agust@denx.de,
  alexandre.torgue@st.com, alistair@popple.id.au, benh@kernel.crashing.org,
@@ -21,11 +21,9 @@ Cc: cocci@systeme.lip6.fr, linux-amlogic@lists.infradead.org,
  linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  netdev@vger.kernel.org, linux-sunxi@googlegroups.com,
  Corentin Labbe <clabbe@baylibre.com>
-Subject: [PATCH 2/5] include: add
- setbits32/clrbits32/clrsetbits32/setbits64/clrbits64/clrsetbits64 in
- linux/setbits.h
-Date: Fri,  7 Sep 2018 19:41:44 +0000
-Message-Id: <1536349307-20714-3-git-send-email-clabbe@baylibre.com>
+Subject: [PATCH 5/5] ata: ahci_sunxi: use xxxsetbits32 functions
+Date: Fri,  7 Sep 2018 19:41:47 +0000
+Message-Id: <1536349307-20714-6-git-send-email-clabbe@baylibre.com>
 In-Reply-To: <1536349307-20714-1-git-send-email-clabbe@baylibre.com>
 References: <1536349307-20714-1-git-send-email-clabbe@baylibre.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -37,75 +35,112 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds setbits32/clrbits32/clrsetbits32 and
-setbits64/clrbits64/clrsetbits64 in linux/setbits.h header.
+This patch converts ahci_sunxi to use xxxsetbits32 functions
 
 Signed-off-by: Corentin Labbe <clabbe@baylibre.com>
 ---
- include/linux/setbits.h | 55 +++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 55 insertions(+)
- create mode 100644 include/linux/setbits.h
+ drivers/ata/ahci_sunxi.c | 51 ++++++++++++------------------------------------
+ 1 file changed, 12 insertions(+), 39 deletions(-)
 
-diff --git a/include/linux/setbits.h b/include/linux/setbits.h
-new file mode 100644
-index 000000000000..3e1e273551bb
---- /dev/null
-+++ b/include/linux/setbits.h
-@@ -0,0 +1,55 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+#ifndef __LINUX_SETBITS_H
-+#define __LINUX_SETBITS_H
-+
-+#include <linux/io.h>
-+
-+#define __setbits(readfunction, writefunction, addr, set) \
-+	writefunction((readfunction(addr) | (set)), addr)
-+#define __clrbits(readfunction, writefunction, addr, mask) \
-+	writefunction((readfunction(addr) & ~(mask)), addr)
-+#define __clrsetbits(readfunction, writefunction, addr, mask, set) \
-+	writefunction(((readfunction(addr) & ~(mask)) | (set)), addr)
-+#define __setclrbits(readfunction, writefunction, addr, mask, set) \
-+	writefunction(((readfunction(addr) | (seti)) & ~(mask)), addr)
-+
-+#define setbits32(addr, set) __setbits(readl, writel, addr, set)
-+#define setbits32_relaxed(addr, set) __setbits(readl_relaxed, writel_relaxed, \
-+					       addr, set)
-+
-+#define clrbits32(addr, mask) __clrbits(readl, writel, addr, mask)
-+#define clrbits32_relaxed(addr, mask) __clrbits(readl_relaxed, writel_relaxed, \
-+						addr, mask)
-+
-+#define clrsetbits32(addr, mask, set) __clrsetbits(readl, writel, addr, mask, set)
-+#define clrsetbits32_relaxed(addr, mask, set) __clrsetbits(readl_relaxed, \
-+							   writel_relaxed, \
-+							   addr, mask, set)
-+
-+#define setclrbits32(addr, mask, set) __setclrbits(readl, writel, addr, mask, set)
-+#define setclrbits32_relaxed(addr, mask, set) __setclrbits(readl_relaxed, \
-+							   writel_relaxed, \
-+							   addr, mask, set)
-+
-+/* We cannot use CONFIG_64BIT as some x86 drivers use writeq */
-+#if defined(writeq) && defined(readq)
-+#define setbits64(addr, set) __setbits(readq, writeq, addr, set)
-+#define setbits64_relaxed(addr, set) __setbits(readq_relaxed, writeq_relaxed, \
-+					       addr, set)
-+
-+#define clrbits64(addr, mask) __clrbits(readq, writeq, addr, mask)
-+#define clrbits64_relaxed(addr, mask) __clrbits(readq_relaxed, writeq_relaxed, \
-+						addr, mask)
-+
-+#define clrsetbits64(addr, mask, set) __clrsetbits(readq, writeq, addr, mask, set)
-+#define clrsetbits64_relaxed(addr, mask, set) __clrsetbits(readq_relaxed, \
-+							   writeq_relaxed, \
-+							   addr, mask, set)
-+
-+#define setclrbits64(addr, mask, set) __setclrbits(readq, writeq, addr, mask, set)
-+#define setclrbits64_relaxed(addr, mask, set) __setclrbits(readq_relaxed, \
-+							   writeq_relaxed, \
-+							   addr, mask, set)
-+#endif /* writeq/readq */
-+
-+#endif /* __LINUX_SETBITS_H */
+diff --git a/drivers/ata/ahci_sunxi.c b/drivers/ata/ahci_sunxi.c
+index 911710643305..0799441f1237 100644
+--- a/drivers/ata/ahci_sunxi.c
++++ b/drivers/ata/ahci_sunxi.c
+@@ -25,6 +25,7 @@
+ #include <linux/of_device.h>
+ #include <linux/platform_device.h>
+ #include <linux/regulator/consumer.h>
++#include <linux/setbits.h>
+ #include "ahci.h"
+ 
+ #define DRV_NAME "ahci-sunxi"
+@@ -58,34 +59,6 @@ MODULE_PARM_DESC(enable_pmp,
+ #define AHCI_P0PHYCR	0x0178
+ #define AHCI_P0PHYSR	0x017c
+ 
+-static void sunxi_clrbits(void __iomem *reg, u32 clr_val)
+-{
+-	u32 reg_val;
+-
+-	reg_val = readl(reg);
+-	reg_val &= ~(clr_val);
+-	writel(reg_val, reg);
+-}
+-
+-static void sunxi_setbits(void __iomem *reg, u32 set_val)
+-{
+-	u32 reg_val;
+-
+-	reg_val = readl(reg);
+-	reg_val |= set_val;
+-	writel(reg_val, reg);
+-}
+-
+-static void sunxi_clrsetbits(void __iomem *reg, u32 clr_val, u32 set_val)
+-{
+-	u32 reg_val;
+-
+-	reg_val = readl(reg);
+-	reg_val &= ~(clr_val);
+-	reg_val |= set_val;
+-	writel(reg_val, reg);
+-}
+-
+ static u32 sunxi_getbits(void __iomem *reg, u8 mask, u8 shift)
+ {
+ 	return (readl(reg) >> shift) & mask;
+@@ -100,22 +73,22 @@ static int ahci_sunxi_phy_init(struct device *dev, void __iomem *reg_base)
+ 	writel(0, reg_base + AHCI_RWCR);
+ 	msleep(5);
+ 
+-	sunxi_setbits(reg_base + AHCI_PHYCS1R, BIT(19));
+-	sunxi_clrsetbits(reg_base + AHCI_PHYCS0R,
++	setbits32(reg_base + AHCI_PHYCS1R, BIT(19));
++	clrsetbits32(reg_base + AHCI_PHYCS0R,
+ 			 (0x7 << 24),
+ 			 (0x5 << 24) | BIT(23) | BIT(18));
+-	sunxi_clrsetbits(reg_base + AHCI_PHYCS1R,
++	clrsetbits32(reg_base + AHCI_PHYCS1R,
+ 			 (0x3 << 16) | (0x1f << 8) | (0x3 << 6),
+ 			 (0x2 << 16) | (0x6 << 8) | (0x2 << 6));
+-	sunxi_setbits(reg_base + AHCI_PHYCS1R, BIT(28) | BIT(15));
+-	sunxi_clrbits(reg_base + AHCI_PHYCS1R, BIT(19));
+-	sunxi_clrsetbits(reg_base + AHCI_PHYCS0R,
++	setbits32(reg_base + AHCI_PHYCS1R, BIT(28) | BIT(15));
++	clrbits32(reg_base + AHCI_PHYCS1R, BIT(19));
++	clrsetbits32(reg_base + AHCI_PHYCS0R,
+ 			 (0x7 << 20), (0x3 << 20));
+-	sunxi_clrsetbits(reg_base + AHCI_PHYCS2R,
++	clrsetbits32(reg_base + AHCI_PHYCS2R,
+ 			 (0x1f << 5), (0x19 << 5));
+ 	msleep(5);
+ 
+-	sunxi_setbits(reg_base + AHCI_PHYCS0R, (0x1 << 19));
++	setbits32(reg_base + AHCI_PHYCS0R, (0x1 << 19));
+ 
+ 	timeout = 250; /* Power up takes aprox 50 us */
+ 	do {
+@@ -130,7 +103,7 @@ static int ahci_sunxi_phy_init(struct device *dev, void __iomem *reg_base)
+ 		udelay(1);
+ 	} while (1);
+ 
+-	sunxi_setbits(reg_base + AHCI_PHYCS2R, (0x1 << 24));
++	setbits32(reg_base + AHCI_PHYCS2R, (0x1 << 24));
+ 
+ 	timeout = 100; /* Calibration takes aprox 10 us */
+ 	do {
+@@ -158,10 +131,10 @@ static void ahci_sunxi_start_engine(struct ata_port *ap)
+ 	struct ahci_host_priv *hpriv = ap->host->private_data;
+ 
+ 	/* Setup DMA before DMA start */
+-	sunxi_clrsetbits(hpriv->mmio + AHCI_P0DMACR, 0x0000ff00, 0x00004400);
++	clrsetbits32(hpriv->mmio + AHCI_P0DMACR, 0x0000ff00, 0x00004400);
+ 
+ 	/* Start DMA */
+-	sunxi_setbits(port_mmio + PORT_CMD, PORT_CMD_START);
++	setbits32(port_mmio + PORT_CMD, PORT_CMD_START);
+ }
+ 
+ static const struct ata_port_info ahci_sunxi_port_info = {
 -- 
 2.16.4
