@@ -1,36 +1,70 @@
-Return-Path: <vaibhav@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <gregkh@linuxfoundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4268Pd3M5DzF3SM
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Sep 2018 17:36:04 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w877Zm9m029261
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Sep 2018 03:36:02 -0400
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2mbhbeyg1c-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Sep 2018 03:35:58 -0400
-Received: from localhost
- by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.ibm.com>;
- Fri, 7 Sep 2018 08:35:00 +0100
-From: Vaibhav Jain <vaibhav@linux.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Stewart Smith <stewart@linux.vnet.ibm.com>
-Cc: Vaibhav Jain <vaibhav@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
- Michael Neuling <mikey@neuling.org>, Nicholas Piggin <npiggin@gmail.com>,
- "Oliver O'Halloran" <oohall@gmail.com>
-Subject: [PATCH v3] powerpc/powernv: Make possible for user to force a full
- ipl cec reboot
-Date: Fri,  7 Sep 2018 13:04:48 +0530
-Message-Id: <20180907073448.6908-1-vaibhav@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4268590GVpzF3SK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Sep 2018 17:21:48 +1000 (AEST)
+Date: Fri, 7 Sep 2018 09:21:43 +0200
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Daniel Vetter <daniel@ffwll.ch>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Jonathan Corbet <corbet@lwn.net>,
+ Mark Rutland <mark.rutland@arm.com>,
+ Linux MIPS Mailing List <linux-mips@linux-mips.org>,
+ Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+ X86 ML <x86@kernel.org>, kvm@vger.kernel.org,
+ Linux Doc Mailing List <linux-doc@vger.kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ James Hogan <jhogan@kernel.org>, Henrik Austad <henrik@austad.us>,
+ Will Deacon <will.deacon@arm.com>,
+ dri-devel <dri-devel@lists.freedesktop.org>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Jan Kandziora <jjj@gmx.de>, Paul Mackerras <paulus@samba.org>,
+ Henrik Austad <haustad@cisco.com>, Pavel Machek <pavel@ucw.cz>,
+ "H. Peter Anvin" <hpa@zytor.com>,
+ Evgeniy Polyakov <zbr@ioremap.net>, linux-s390@vger.kernel.org,
+ Ian Kent <raven@themaw.net>,
+ linux-security-module <linux-security-module@vger.kernel.org>,
+ Paul Moore <paul@paul-moore.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Helge Deller <deller@gmx.de>,
+ Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ Ingo Molnar <mingo@redhat.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Len Brown <len.brown@intel.com>, Mike Rapoport <rppt@linux.vnet.ibm.com>,
+ Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+ Lai Jiangshan <jiangshanlai@gmail.com>,
+ Jiri Slaby <jslaby@suse.com>, Josh Triplett <josh@joshtriplett.org>,
+ linux-gpio <linux-gpio@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Jacek Anaszewski <jacek.anaszewski@gmail.com>,
+ Bjorn Helgaas <bhelgaas@google.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-kbuild@vger.kernel.org,
+ Jens Axboe <axboe@kernel.dk>, Karsten Keil <isdn@linux-pingi.de>,
+ Michal Marek <michal.lkml@markovi.net>, linux-parisc@vger.kernel.org,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ linux-ide@vger.kernel.org, Linux PCI <linux-pci@vger.kernel.org>,
+ Linux PM list <linux-pm@vger.kernel.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Ralf Baechle <ralf@linux-mips.org>, linux-spi@vger.kernel.org,
+ Paul Burton <paul.burton@mips.com>, Mark Brown <broonie@kernel.org>,
+ netdev@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Paolo Bonzini <pbonzini@redhat.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "David S. Miller" <davem@davemloft.net>, devicetree@vger.kernel.org
+Subject: Re: [PATCH] [RFC v2] Drop all 00-INDEX files from Documentation/
+Message-ID: <20180907072143.GC1334@kroah.com>
+References: <1536012923-16275-1-git-send-email-henrik@austad.us>
+ <20180904113030.GB25177@amd>
+ <20180904095908.13298b3d@gandalf.local.home>
+ <20180906095804.5ab2716f@lwn.net>
+ <20180906120120.3dd1fc91@gandalf.local.home>
+ <CAKMK7uHoeB89-VVS8qVaoNiP_0waHHJ=dFCUgXkRDTnRkXz69g@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAKMK7uHoeB89-VVS8qVaoNiP_0waHHJ=dFCUgXkRDTnRkXz69g@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,109 +74,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ever since fast reboot is enabled by default in opal,
-opal_cec_reboot() will use fast-reset instead of full IPL to perform
-system reboot. This leaves the user with no direct way to force a full
-IPL reboot except changing an nvram setting that persistently disables
-fast-reset for all subsequent reboots.
+On Thu, Sep 06, 2018 at 11:39:42PM +0200, Daniel Vetter wrote:
+> On Thu, Sep 6, 2018 at 6:01 PM, Steven Rostedt <rostedt@goodmis.org> wrote:
+> > On Thu, 6 Sep 2018 09:58:04 -0600
+> > Jonathan Corbet <corbet@lwn.net> wrote:
+> >
+> >> Thanks,
+> >>
+> >> jon  (who is increasingly inclined to apply this patch)
+> >
+> > As Colin Kaepernick now says... "Just do it!"
+> >
+> > ;-)
+> 
+> +1
+> 
+> But I'm biased, I'm part of the party that is responsible for the new
+> shiny documentation system ...
 
-This patch provides a more direct way for the user to force a one-shot
-full IPL reboot by passing the command line argument 'full' to the
-reboot command. So the user will be able to tweak the reboot behavior
-via:
+I am not responsible for any of the new shiny documentation system, and
+I think this is a good idea:
 
-  $ sudo reboot full	# Force a full ipl reboot skipping fast-reset
-
-  or
-  $ sudo reboot  	# default reboot path (usually fast-reset)
-
-The reboot command passes the un-parsed command argument to the kernel
-via the 'Reboot' syscall which is then passed on to the arch function
-pnv_restart(). The patch updates pnv_restart() to handle this cmd-arg
-and issues opal_cec_reboot2 with OPAL_REBOOT_FULL_IPL to force a full
-IPL reset.
-
-Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
----
-Change-log:
-
-v3	-> Re-factored the code to make it more readable [Andrew]
-	   Handle return of OPAL_SUCCESS from cec_reboot variants
-	   [Vasant]
-
-v2	-> Updated the code to handle case when opal_cec_reboot2() is
-	   not supported by opal. [Andrew]
-
-	-> Force a call to opal_cec_reboot() is opal_cec_reboot2()
-           fails or the action verb 'cmd' is not recognized.
----
- arch/powerpc/include/asm/opal-api.h    |  1 +
- arch/powerpc/platforms/powernv/setup.c | 36 +++++++++++++++++++++-----
- 2 files changed, 31 insertions(+), 6 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index 8365353330b4..870fb7b239ea 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -1050,6 +1050,7 @@ enum OpalSysCooling {
- enum {
- 	OPAL_REBOOT_NORMAL		= 0,
- 	OPAL_REBOOT_PLATFORM_ERROR	= 1,
-+	OPAL_REBOOT_FULL_IPL		= 2,
- };
- 
- /* Argument to OPAL_PCI_TCE_KILL */
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-index adddde023622..79fd839faa2d 100644
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -219,17 +219,41 @@ static void pnv_prepare_going_down(void)
- 
- static void  __noreturn pnv_restart(char *cmd)
- {
--	long rc = OPAL_BUSY;
-+	long rc;
- 
- 	pnv_prepare_going_down();
- 
--	while (rc == OPAL_BUSY || rc == OPAL_BUSY_EVENT) {
--		rc = opal_cec_reboot();
--		if (rc == OPAL_BUSY_EVENT)
--			opal_poll_events(NULL);
-+	do {
-+		if (!cmd)
-+			rc = opal_cec_reboot();
-+		else if (strcmp(cmd, "full") == 0)
-+			rc = opal_cec_reboot2(OPAL_REBOOT_FULL_IPL, NULL);
- 		else
-+			rc = OPAL_UNSUPPORTED;
-+
-+		if (rc == OPAL_BUSY || rc == OPAL_BUSY_EVENT) {
-+			/* Opal is busy wait for some time and retry */
-+			opal_poll_events(NULL);
- 			mdelay(10);
--	}
-+
-+		} else	if (cmd && rc) {
-+			/* Unknown error while issuing reboot */
-+			if (rc == OPAL_UNSUPPORTED)
-+				pr_err("Unsupported '%s' reboot.\n", cmd);
-+			else
-+				pr_err("Unable to issue '%s' reboot. Err=%ld\n",
-+				       cmd, rc);
-+			pr_info("Forcing a cec-reboot\n");
-+			cmd = NULL;
-+			rc = OPAL_BUSY;
-+
-+		} else if (rc != OPAL_SUCCESS) {
-+			/* Unknown error while issuing cec-reboot */
-+			pr_err("Unable to reboot. Err=%ld\n", rc);
-+		}
-+
-+	} while (rc == OPAL_BUSY || rc == OPAL_BUSY_EVENT);
-+
- 	for (;;)
- 		opal_poll_events(NULL);
- }
--- 
-2.17.1
+Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
