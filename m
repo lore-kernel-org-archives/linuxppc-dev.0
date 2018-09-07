@@ -1,27 +1,24 @@
-Return-Path: <ran.wang_1@nxp.com>
-Received: from EUR01-HE1-obe.outbound.protection.outlook.com
- (mail-he1eur01on0073.outbound.protection.outlook.com [104.47.0.73])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 426C0B3R4qzF3RB
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Sep 2018 19:32:40 +1000 (AEST)
-From: Ran Wang <ran.wang_1@nxp.com>
-To: "Wang, Dongsheng" <dongsheng.wang@hxt-semitech.com>, Leo Li
- <leoyang.li@nxp.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland
- <mark.rutland@arm.com>
-CC: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
-Subject: RE: [PATCH 3/3] soc: fsl: add RCPM driver
-Date: Fri, 7 Sep 2018 09:32:30 +0000
-Message-ID: <AM5PR0402MB2865730C24CDCC90DCD8A438F1000@AM5PR0402MB2865.eurprd04.prod.outlook.com>
-References: <20180831035219.31619-1-ran.wang_1@nxp.com>
- <20180831035219.31619-3-ran.wang_1@nxp.com>
- <be39f5ea8c9046b0bf1f6bbfe935fae4@HXTBJIDCEMVIW02.hxtcorp.net>
-In-Reply-To: <be39f5ea8c9046b0bf1f6bbfe935fae4@HXTBJIDCEMVIW02.hxtcorp.net>
-Content-Type: text/plain; charset="gb2312"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 426CBM4QPtzF3Rc
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Sep 2018 19:41:31 +1000 (AEST)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: Re: [RFC PATCH v1 00/17] ban the use of _PAGE_XXX flags outside
+ platform specific code
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ npiggin@gmail.com, aneesh.kumar@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+References: <cover.1535913369.git.christophe.leroy@c-s.fr>
+ <8736uneylc.fsf@linux.ibm.com>
+Message-ID: <8b11dfd8-4c42-252f-c3dc-063026c49cef@c-s.fr>
+Date: Fri, 7 Sep 2018 09:41:24 +0000
 MIME-Version: 1.0
+In-Reply-To: <8736uneylc.fsf@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,126 +28,193 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGkgRG9uZ3NoZW5nLA0KDQpPbiAyMDE4LzkvNSAxMDo1OCwgRG9uZ3NoZW5nIFdhbmcgd3JvdGU6
-DQo+IA0KPiBQbGVhc2UgY2hhbmdlIHlvdXIgY29tbWVudHMgc3R5bGUuDQo+IA0KPiBPbiAyMDE4
-LzgvMzEgMTE6NTYsIFJhbiBXYW5nIHdyb3RlOg0KPiA+IFRoZSBOWFAncyBRb3JJUSBQcm9jZXNz
-b3JzIGJhc2VkIG9uIEFSTSBDb3JlIGhhdmUgUkNQTSBtb2R1bGUgKFJ1bg0KPiA+IENvbnRyb2wg
-YW5kIFBvd2VyIE1hbmFnZW1lbnQpLCB3aGljaCBwZXJmb3JtcyBhbGwgZGV2aWNlLWxldmVsIHRh
-c2tzDQo+ID4gYXNzb2NpYXRlZCB3aXRoIHBvd2VyIG1hbmFnZW1lbnQgc3VjaCBhcyB3YWtldXAg
-c291cmNlIGNvbnRyb2wuDQo+ID4NCj4gPiBUaGlzIGRyaXZlciBkZXBlbmRzIG9uIEZTTCBwbGF0
-Zm9ybSBQTSBkcml2ZXIgZnJhbWV3b3JrIHdoaWNoIGhlbHAgdG8NCj4gPiBpc29sYXRlIHVzZXIg
-YW5kIFBNIHNlcnZpY2UgcHJvdmlkZXIgKHN1Y2ggYXMgUkNQTSBkcml2ZXIpLg0KPiA+DQo+ID4g
-U2lnbmVkLW9mZi1ieTogQ2hlbmh1aSBaaGFvIDxjaGVuaHVpLnpoYW9AbnhwLmNvbT4NCj4gPiBT
-aWduZWQtb2ZmLWJ5OiBZaW5nIFpoYW5nIDx5aW5nLnpoYW5nMjI0NTVAbnhwLmNvbT4NCj4gPiBT
-aWduZWQtb2ZmLWJ5OiBSYW4gV2FuZyA8cmFuLndhbmdfMUBueHAuY29tPg0KPiA+IC0tLQ0KPiA+
-ICBkcml2ZXJzL3NvYy9mc2wvS2NvbmZpZyAgIHwgICAgNiArKw0KPiA+ICBkcml2ZXJzL3NvYy9m
-c2wvTWFrZWZpbGUgIHwgICAgMSArDQo+ID4gIGRyaXZlcnMvc29jL2ZzbC9scy1yY3BtLmMgfCAg
-MTUzDQo+ID4gKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrDQo+
-ID4gIDMgZmlsZXMgY2hhbmdlZCwgMTYwIGluc2VydGlvbnMoKyksIDAgZGVsZXRpb25zKC0pICBj
-cmVhdGUgbW9kZQ0KPiA+IDEwMDY0NCBkcml2ZXJzL3NvYy9mc2wvbHMtcmNwbS5jDQo+ID4NCj4g
-PiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9zb2MvZnNsL0tjb25maWcgYi9kcml2ZXJzL3NvYy9mc2wv
-S2NvbmZpZyBpbmRleA0KPiA+IDY1MTc0MTIuLjg4MjMzMGQgMTAwNjQ0DQo+ID4gLS0tIGEvZHJp
-dmVycy9zb2MvZnNsL0tjb25maWcNCj4gPiArKysgYi9kcml2ZXJzL3NvYy9mc2wvS2NvbmZpZw0K
-PiA+IEBAIC0zMCwzICszMCw5IEBAIGNvbmZpZyBGU0xfUExBVF9QTQ0KPiA+ICAJICBoYXZlIHRv
-IGtub3cgdGhlIGltcGxlbWVudCBkZXRhaWxzIG9mIHdha2V1cCBmdW5jdGlvbiBpdCByZXF1aXJl
-Lg0KPiA+ICAJICBCZXNpZGVzLCBpdCBpcyBhbHNvIGVhc3kgZm9yIHNlcnZpY2Ugc2lkZSB0byB1
-cGdyYWRlIGl0cyBsb2dpYyB3aGVuDQo+ID4gIAkgIGRlc2lnbiBjaGFuZ2VkIGFuZCByZW1haW4g
-dXNlciBzaWRlIHVuY2hhbmdlZC4NCj4gPiArDQo+ID4gK2NvbmZpZyBMU19SQ1BNDQo+ID4gKwli
-b29sICJGcmVlc2NhbGUgUkNQTSBzdXBwb3J0Ig0KPiA+ICsJZGVwZW5kcyBvbiAoRlNMX1BMQVRf
-UE0pDQo+ID4gKwloZWxwDQo+ID4gKwkgIFRoaXMgZmVhdHVyZSBpcyB0byBlbmFibGUgc3BlY2lm
-aWVkIHdha2V1cCBzb3VyY2UgZm9yIHN5c3RlbSBzbGVlcC4NCj4gPiBkaWZmIC0tZ2l0IGEvZHJp
-dmVycy9zb2MvZnNsL01ha2VmaWxlIGIvZHJpdmVycy9zb2MvZnNsL01ha2VmaWxlIGluZGV4DQo+
-ID4gOGY5ZGIyMy4uNDNmZjcxYSAxMDA2NDQNCj4gPiAtLS0gYS9kcml2ZXJzL3NvYy9mc2wvTWFr
-ZWZpbGUNCj4gPiArKysgYi9kcml2ZXJzL3NvYy9mc2wvTWFrZWZpbGUNCj4gPiBAQCAtNywzICs3
-LDQgQEAgb2JqLSQoQ09ORklHX1FVSUNDX0VOR0lORSkJCSs9IHFlLw0KPiA+ICBvYmotJChDT05G
-SUdfQ1BNKQkJCSs9IHFlLw0KPiA+ICBvYmotJChDT05GSUdfRlNMX0dVVFMpCQkJKz0gZ3V0cy5v
-DQo+ID4gIG9iai0kKENPTkZJR19GU0xfUExBVF9QTSkJKz0gcGxhdF9wbS5vDQo+ID4gK29iai0k
-KENPTkZJR19MU19SQ1BNKQkJKz0gbHMtcmNwbS5vDQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMv
-c29jL2ZzbC9scy1yY3BtLmMgYi9kcml2ZXJzL3NvYy9mc2wvbHMtcmNwbS5jIG5ldw0KPiA+IGZp
-bGUgbW9kZSAxMDA2NDQgaW5kZXggMDAwMDAwMC4uYjBmZWI4OA0KPiA+IC0tLSAvZGV2L251bGwN
-Cj4gPiArKysgYi9kcml2ZXJzL3NvYy9mc2wvbHMtcmNwbS5jDQo+ID4gQEAgLTAsMCArMSwxNTMg
-QEANCj4gPiArLy8gU1BEWC1MaWNlbnNlLUlkZW50aWZpZXI6IEdQTC0yLjANCj4gPiArLy8NCj4g
-PiArLy8gcGxhdF9wbS5jIC0gRnJlZXNjYWxlIExheWVyc2NhcGUgUkNQTSBkcml2ZXIgLy8gLy8g
-Q29weXJpZ2h0IDIwMTgNCj4gPiArTlhQIC8vIC8vIEF1dGhvcjogUmFuIFdhbmcgPHJhbi53YW5n
-XzFAbnhwLmNvbT4sDQo+ID4gKw0KPiA+ICsjaW5jbHVkZSA8bGludXgvaW5pdC5oPg0KPiA+ICsj
-aW5jbHVkZSA8bGludXgvbW9kdWxlLmg+DQo+ID4gKyNpbmNsdWRlIDxsaW51eC9wbGF0Zm9ybV9k
-ZXZpY2UuaD4NCj4gPiArI2luY2x1ZGUgPGxpbnV4L29mX2FkZHJlc3MuaD4NCj4gPiArI2luY2x1
-ZGUgPGxpbnV4L3NsYWIuaD4NCj4gPiArI2luY2x1ZGUgPHNvYy9mc2wvcGxhdF9wbS5oPg0KPiA+
-ICsNCj4gPiArI2RlZmluZSBNQVhfQ09NUEFUSUJMRV9OVU0JMTANCj4gPiArDQo+ID4gK3N0cnVj
-dCByY3BtX3Qgew0KPiA+ICsJc3RydWN0IGRldmljZSAqZGV2Ow0KPiA+ICsJdm9pZCBfX2lvbWVt
-ICppcHBkZXhwY3JfYWRkcjsNCj4gPiArCWJvb2wgYmlnX2VuZGlhbjsJLyogQmlnL0xpdHRsZSBl
-bmRpYW4gb2YgUkNQTSBtb2R1bGUgKi8NCj4gPiArfTsNCj4gPiArDQo+ID4gKy8vIHJjcG1faGFu
-ZGxlIC0gQ29uZmlndXJlIFJDUE0gcmVnIGFjY29yZGluZyB0byB3YWtlIHVwIHNvdXJjZQ0KPiA+
-ICtyZXF1ZXN0IC8vIEB1c2VyX2RldjogcG9pbnRlciB0byB1c2VyJ3MgZGV2aWNlIHN0cnVjdCAv
-LyBAZmxhZzogdG8NCj4gPiArZW5hYmxlKHRydWUpIG9yIGRpc2FibGUoZmFsc2UpIHdha2V1cCBz
-b3VyY2UgLy8gQGhhbmRsZV9wcml2OiBwb2ludGVyDQo+ID4gK3RvIHN0cnVjdCByY3BtX3QgaW5z
-dGFuY2UgLy8gLy8gUmV0dXJuIDAgb24gc3VjY2VzcyBvdGhlciBuZWdhdGl2ZQ0KPiA+ICtlcnJu
-byBzdGF0aWMgaW50IHJjcG1faGFuZGxlKHN0cnVjdCBkZXZpY2UgKnVzZXJfZGV2LCBib29sIGZs
-YWcsIHZvaWQNCj4gPiArKmhhbmRsZV9wcml2KSB7DQo+ID4gKwlzdHJ1Y3QgcmNwbV90ICpyY3Bt
-Ow0KPiA+ICsJYm9vbCBiaWdfZW5kaWFuOw0KPiA+ICsJY29uc3QgY2hhciAgKmRldl9jb21wYXRp
-YmxlX2FycmF5W01BWF9DT01QQVRJQkxFX05VTV07DQo+ID4gKwl2b2lkIF9faW9tZW0gKmlwcGRl
-eHBjcl9hZGRyOw0KPiA+ICsJdTMyIGlwcGRleHBjcjsNCj4gPiArCXUzMiBzZXRfYml0Ow0KPiA+
-ICsJaW50IHJldCwgbnVtLCBpOw0KPiA+ICsNCj4gPiArCXJjcG0gPSBoYW5kbGVfcHJpdjsNCj4g
-PiArCWJpZ19lbmRpYW4gPSByY3BtLT5iaWdfZW5kaWFuOw0KPiA+ICsJaXBwZGV4cGNyX2FkZHIg
-PSByY3BtLT5pcHBkZXhwY3JfYWRkcjsNCj4gPiArDQo+ID4gKwludW0gPSBkZXZpY2VfcHJvcGVy
-dHlfcmVhZF9zdHJpbmdfYXJyYXkodXNlcl9kZXYsICJjb21wYXRpYmxlIiwNCj4gPiArCQkJZGV2
-X2NvbXBhdGlibGVfYXJyYXksIE1BWF9DT01QQVRJQkxFX05VTSk7DQo+ID4gKwlpZiAobnVtIDwg
-MCkNCj4gPiArCQlyZXR1cm4gbnVtOw0KPiA+ICsNCj4gPiArCWZvciAoaSA9IDA7IGkgPCBudW07
-IGkrKykgew0KPiA+ICsJCWlmICghZGV2aWNlX3Byb3BlcnR5X3ByZXNlbnQocmNwbS0+ZGV2LA0K
-PiA+ICsJCQkJCWRldl9jb21wYXRpYmxlX2FycmF5W2ldKSkNCj4gPiArCQkJY29udGludWU7DQo+
-ID4gKwkJZWxzZSB7DQo+IFJlbW92ZSB0aGlzIGVsc2UuDQoNCkdvdCBpdCEgV2lsbCB1cGRhdGUg
-aW4gbmV4dCB2ZXJzaW9uLg0KDQo+ID4gKwkJCXJldCA9IGRldmljZV9wcm9wZXJ0eV9yZWFkX3Uz
-MihyY3BtLT5kZXYsDQo+ID4gKwkJCQkJZGV2X2NvbXBhdGlibGVfYXJyYXlbaV0sICZzZXRfYml0
-KTsNCj4gPiArCQkJaWYgKHJldCkNCj4gPiArCQkJCXJldHVybiByZXQ7DQo+ID4gKw0KPiA+ICsJ
-CQlpZiAoIWRldmljZV9wcm9wZXJ0eV9wcmVzZW50KHJjcG0tPmRldiwNCj4gPiArCQkJCQkJZGV2
-X2NvbXBhdGlibGVfYXJyYXlbaV0pKQ0KPiBUaGlzIGhhcyBiZWVuIGNoZWNrZWQuIENvbnRpbnVl
-ID8gb3IgcmV0dXJuIEVOT0RFVqO/DQoNClllcywgdGhpcyBjaGVja2luZyBpcyBub3QgbmVjZXNz
-YXJ5LCB3aWxsIHJlbW92ZSBpbiBuZXh0IHZlcnNpb24NCg0KPiA+ICsJCQkJcmV0dXJuIC1FTk9E
-RVY7DQo+ID4gKwkJCWVsc2Ugew0KPiBSZW1vdmUgdGhpcyBlbHNlLg0KDQpPSw0KDQo+ID4gKwkJ
-CQlyZXQgPSBkZXZpY2VfcHJvcGVydHlfcmVhZF91MzIocmNwbS0+ZGV2LA0KPiA+ICsJCQkJCQlk
-ZXZfY29tcGF0aWJsZV9hcnJheVtpXSwNCj4gJnNldF9iaXQpOw0KPiA+ICsJCQkJaWYgKHJldCkN
-Cj4gPiArCQkJCQlyZXR1cm4gcmV0Ow0KPiA+ICsNCj4gPiArCQkJCWlmIChiaWdfZW5kaWFuKQ0K
-PiA+ICsJCQkJCWlwcGRleHBjciA9DQo+IGlvcmVhZDMyYmUoaXBwZGV4cGNyX2FkZHIpOw0KPiA+
-ICsJCQkJZWxzZQ0KPiA+ICsJCQkJCWlwcGRleHBjciA9DQo+IGlvcmVhZDMyKGlwcGRleHBjcl9h
-ZGRyKTsNCj4gPiArDQo+ID4gKwkJCQlpZiAoZmxhZykNCj4gPiArCQkJCQlpcHBkZXhwY3IgfD0g
-c2V0X2JpdDsNCj4gPiArCQkJCWVsc2UNCj4gPiArCQkJCQlpcHBkZXhwY3IgJj0gfnNldF9iaXQ7
-DQo+ID4gKw0KPiA+ICsJCQkJaWYgKGJpZ19lbmRpYW4pIHsNCj4gPiArCQkJCQlpb3dyaXRlMzJi
-ZShpcHBkZXhwY3IsDQo+IGlwcGRleHBjcl9hZGRyKTsNCj4gPiArCQkJCQlpcHBkZXhwY3IgPQ0K
-PiBpb3JlYWQzMmJlKGlwcGRleHBjcl9hZGRyKTsNCj4gPiArCQkJCX0gZWxzZQ0KPiBpZiAoeCkg
-ew0KPiAuLi4uDQo+IC4uLi4NCj4gfSAgZWxzZSB7DQo+IA0KPiB9DQoNCkdvdCBpdCENCg0KPiA+
-ICsJCQkJCWlvd3JpdGUzMihpcHBkZXhwY3IsIGlwcGRleHBjcl9hZGRyKTsNCj4gPiArDQo+ID4g
-KwkJCQlyZXR1cm4gMDsNCj4gPiArCQkJfQ0KPiA+ICsJCX0NCj4gPiArCX0NCj4gPiArDQo+ID4g
-KwlyZXR1cm4gLUVOT0RFVjsNCj4gPiArfQ0KPiA+ICsNCj4gPiArc3RhdGljIGludCBsc19yY3Bt
-X3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpIHsNCj4gPiArCXN0cnVjdCByZXNv
-dXJjZSAqcjsNCj4gPiArCXN0cnVjdCByY3BtX3QgKnJjcG07DQo+ID4gKw0KPiA+ICsJciA9IHBs
-YXRmb3JtX2dldF9yZXNvdXJjZShwZGV2LCBJT1JFU09VUkNFX01FTSwgMCk7DQo+ID4gKwlpZiAo
-IXIpDQo+ID4gKwkJcmV0dXJuIC1FTk9ERVY7DQo+ID4gKw0KPiA+ICsJcmNwbSA9IGttYWxsb2Mo
-c2l6ZW9mKCpyY3BtKSwgR0ZQX0tFUk5FTCk7DQo+IGt6YWxsb2MgaXMgYmV0dGVyLg0KDQpPSw0K
-DQo+ID4gKwlpZiAoIXJjcG0pDQo+ID4gKwkJcmV0dXJuIC1FTk9NRU07DQo+ID4gKw0KPiA+ICsJ
-cmNwbS0+YmlnX2VuZGlhbiA9IGRldmljZV9wcm9wZXJ0eV9yZWFkX2Jvb2woJnBkZXYtPmRldiwN
-Cj4gPiArImJpZy1lbmRpYW4iKTsNCj4gPiArDQo+ID4gKwlyY3BtLT5pcHBkZXhwY3JfYWRkciA9
-IGRldm1faW9yZW1hcF9yZXNvdXJjZSgmcGRldi0+ZGV2LCByKTsNCj4gPiArCWlmIChJU19FUlIo
-cmNwbS0+aXBwZGV4cGNyX2FkZHIpKQ0KPiA+ICsJCXJldHVybiBQVFJfRVJSKHJjcG0tPmlwcGRl
-eHBjcl9hZGRyKTsNCj4gPiArDQo+ID4gKwlyY3BtLT5kZXYgPSAmcGRldi0+ZGV2Ow0KPiA+ICsJ
-cGxhdGZvcm1fc2V0X2RydmRhdGEocGRldiwgcmNwbSk7DQo+ID4gKw0KPiA+ICsJcmV0dXJuIHJl
-Z2lzdGVyX2ZzbF9wbGF0Zm9ybV93YWtldXBfc291cmNlKHJjcG1faGFuZGxlLCByY3BtKTsgfQ0K
-PiA+ICsNCj4gPiArc3RhdGljIGludCBsc19yY3BtX3JlbW92ZShzdHJ1Y3QgcGxhdGZvcm1fZGV2
-aWNlICpwZGV2KSB7DQo+ID4gKwlzdHJ1Y3QgcmNwbV90CSpyY3BtOw0KPiBOb3QgbmVlZCBhIHRh
-YmxlLg0KDQpPSywgdGhhbmtzIGZvciB5b3VyIGNhcmVmdWwgcmV2aWV3Lg0KDQpSZWdhcmRzLA0K
-UmFuDQogDQoNCj4gQ2hlZXJzLA0KPiAtRG9uZ3NoZW5nDQo+IA0KPiA+ICsNCj4gPiArCXJjcG0g
-PSBwbGF0Zm9ybV9nZXRfZHJ2ZGF0YShwZGV2KTsNCj4gPiArCWRlcmVnaXN0ZXJfZnNsX3BsYXRm
-b3JtX3dha2V1cF9zb3VyY2UocmNwbSk7DQo+ID4gKwlrZnJlZShyY3BtKTsNCj4gPiArDQo+ID4g
-KwlyZXR1cm4gMDsNCj4gPiArfQ0KPiA+ICsNCj4gPiArc3RhdGljIGNvbnN0IHN0cnVjdCBvZl9k
-ZXZpY2VfaWQgbHNfcmNwbV9vZl9tYXRjaFtdID0gew0KPiA+ICsJeyAuY29tcGF0aWJsZSA9ICJm
-c2wscW9yaXEtcmNwbS0yLjEiLCB9LA0KPiA+ICsJe30NCj4gPiArfTsNCj4gPiArTU9EVUxFX0RF
-VklDRV9UQUJMRShvZiwgbHNfcmNwbV9vZl9tYXRjaCk7DQo+ID4gKw0KPiA+ICtzdGF0aWMgc3Ry
-dWN0IHBsYXRmb3JtX2RyaXZlciBsc19yY3BtX2RyaXZlciA9IHsNCj4gPiArCS5kcml2ZXIgPSB7
-DQo+ID4gKwkJLm5hbWUgPSAibHMtcmNwbSIsDQo+ID4gKwkJLm9mX21hdGNoX3RhYmxlID0gbHNf
-cmNwbV9vZl9tYXRjaCwNCj4gPiArCX0sDQo+ID4gKwkucHJvYmUgPSBsc19yY3BtX3Byb2JlLA0K
-PiA+ICsJLnJlbW92ZSA9IGxzX3JjcG1fcmVtb3ZlLA0KPiA+ICt9Ow0KPiA+ICsNCj4gPiArc3Rh
-dGljIGludCBfX2luaXQgbHNfcmNwbV9pbml0KHZvaWQpDQo+ID4gK3sNCj4gPiArCXJldHVybiBw
-bGF0Zm9ybV9kcml2ZXJfcmVnaXN0ZXIoJmxzX3JjcG1fZHJpdmVyKTsNCj4gPiArfQ0KPiA+ICtz
-dWJzeXNfaW5pdGNhbGwobHNfcmNwbV9pbml0KTsNCj4gPiArDQo+ID4gK3N0YXRpYyB2b2lkIF9f
-ZXhpdCBsc19yY3BtX2V4aXQodm9pZCkgew0KPiA+ICsJcGxhdGZvcm1fZHJpdmVyX3VucmVnaXN0
-ZXIoJmxzX3JjcG1fZHJpdmVyKTsNCj4gPiArfQ0KPiA+ICttb2R1bGVfZXhpdChsc19yY3BtX2V4
-aXQpOw0KPiANCg0K
+
+
+On 09/06/2018 09:58 AM, Aneesh Kumar K.V wrote:
+> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+> 
+>> Today flags like for instance _PAGE_RW or _PAGE_USER are used through
+>> common parts of code.
+>> Using those directly in common parts of code have proven to lead to
+>> mistakes or misbehaviour, because their use is not always as trivial
+>> as one could think.
+>>
+>> For instance, (flags & _PAGE_USER) == 0 isn't enough to tell
+>> that a page is a kernel page, because some targets are using
+>> _PAGE_PRIVILEDGED and not _PAGE_USER, so the test has to be
+>> (flags & (_PAGE_USER | _PAGE_PRIVILEDGED)) == _PAGE_PRIVILEDGED
+>> This has to (bad) consequences:
+>>
+>>   - All targets must define every bit, even the unsupported ones,
+>>     leading to a lot of useless #define _PAGE_XXX 0
+>>   - If someone forgets to take into account all possible _PAGE_XXX bits
+>>     for the case, we can get unexpected behaviour on some targets.
+>>
+>> This becomes even more complex when we come to using _PAGE_RW.
+>> Testing (flags & _PAGE_RW) is not enough to test whether a page
+>> if writable or not, because:
+>>
+>>   - Some targets have _PAGE_RO instead, which has to be unset to tell
+>>     a page is writable
+>>   - Some targets have _PAGE_R and _PAGE_W, in which case
+>>     _PAGE_RW = _PAGE_R | _PAGE_W
+>>   - Even knowing whether a page is readable is not always trivial because:
+>>     - Some targets requires to check that _PAGE_R is set to ensure page
+>>     is readable
+>>     - Some targets requires to check that _PAGE_NA is not set
+>>     - Some targets requires to check that _PAGE_RO or _PAGE_RW is set
+>>
+>> Etc ....
+>>
+>> In order to work around all those issues and minimise the risks of errors,
+>> this serie aims at removing all use of _PAGE_XXX flags from powerpc code
+>> and always use pte_xxx() and pte_mkxxx() accessors instead. Those accessors
+>> are then defined in target specific parts of the kernel code.
+> 
+> The series is really good. It also helps in code readability. Few things
+> i am not sure there is a way to reduce the overhead
+> 
+> -		access = _PAGE_EXEC;
+> +		access = pte_val(pte_mkexec(__pte(0)));
+> 
+> Considering we have multiple big endian to little endian coversion there
+> for book3s 64.
+
+Thanks for the review.
+
+For the above, I propose the following:
+
+diff --git a/arch/powerpc/mm/hash_utils_64.c 
+b/arch/powerpc/mm/hash_utils_64.c
+index f23a89d8e4ce..904ac9c84ea5 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -1482,7 +1482,7 @@ static bool should_hash_preload(struct mm_struct 
+*mm, unsigned long ea)
+  #endif
+
+  void hash_preload(struct mm_struct *mm, unsigned long ea,
+-		  unsigned long access, unsigned long trap)
++		  bool is_exec, unsigned long trap)
+  {
+  	int hugepage_shift;
+  	unsigned long vsid;
+@@ -1490,6 +1490,7 @@ void hash_preload(struct mm_struct *mm, unsigned 
+long ea,
+  	pte_t *ptep;
+  	unsigned long flags;
+  	int rc, ssize, update_flags = 0;
++	unsigned long access = is_exec ? _PAGE_EXEC : 0;
+
+  	BUG_ON(REGION_ID(ea) != USER_REGION_ID);
+
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index 5c8530d0c611..4122f26a2f44 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -507,7 +507,8 @@ void update_mmu_cache(struct vm_area_struct *vma, 
+unsigned long address,
+  	 * We don't need to worry about _PAGE_PRESENT here because we are
+  	 * called with either mm->page_table_lock held or ptl lock held
+  	 */
+-	unsigned long access, trap;
++	unsigned long trap;
++	bool is_exec;
+
+  	if (radix_enabled()) {
+  		prefetch((void *)address);
+@@ -529,10 +530,10 @@ void update_mmu_cache(struct vm_area_struct *vma, 
+unsigned long address,
+  	trap = current->thread.regs ? TRAP(current->thread.regs) : 0UL;
+  	switch (trap) {
+  	case 0x300:
+-		access = 0UL;
++		is_exec = false;
+  		break;
+  	case 0x400:
+-		access = _PAGE_EXEC;
++		is_exec = true;
+  		break;
+  	default:
+  		return;
+diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
+index e5d779eed181..dd7f9b951d25 100644
+--- a/arch/powerpc/mm/mmu_decl.h
++++ b/arch/powerpc/mm/mmu_decl.h
+@@ -82,7 +82,7 @@ static inline void _tlbivax_bcast(unsigned long 
+address, unsigned int pid,
+  #else /* CONFIG_PPC_MMU_NOHASH */
+
+  extern void hash_preload(struct mm_struct *mm, unsigned long ea,
+-			 unsigned long access, unsigned long trap);
++			 bool is_exec, unsigned long trap);
+
+
+  extern void _tlbie(unsigned long address);
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index f983ffa24aa0..506e5c3e96da 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -263,7 +263,7 @@ static void __init __mapin_ram_chunk(unsigned long 
+offset, unsigned long top)
+  		map_kernel_page(v, p, f);
+  #ifdef CONFIG_PPC_STD_MMU_32
+  		if (ktext)
+-			hash_preload(&init_mm, v, 0, 0x300);
++			hash_preload(&init_mm, v, false, 0x300);
+  #endif
+  		v += PAGE_SIZE;
+  		p += PAGE_SIZE;
+diff --git a/arch/powerpc/mm/ppc_mmu_32.c b/arch/powerpc/mm/ppc_mmu_32.c
+index bea6c544e38f..38a793bfca37 100644
+--- a/arch/powerpc/mm/ppc_mmu_32.c
++++ b/arch/powerpc/mm/ppc_mmu_32.c
+@@ -163,7 +163,7 @@ void __init setbat(int index, unsigned long virt, 
+phys_addr_t phys,
+   * Preload a translation in the hash table
+   */
+  void hash_preload(struct mm_struct *mm, unsigned long ea,
+-		  unsigned long access, unsigned long trap)
++		  bool is_exec, unsigned long trap)
+  {
+  	pmd_t *pmd;
+
+
+
+> 
+> Other thing is __ioremap_at where we do
+> 
+> +       pte_t pte = __pte(flags);
+>   
+>          /* Make sure we have the base flags */
+> -       if ((flags & _PAGE_PRESENT) == 0)
+> +       if (!pte_present(pte))
+
+This one is using pte_raw(), so shouldn't be a problem.
+
+Since the function is doing almost nothing of on the flags, maybe
+we could just replace the above by pte_present(__pte(flags)) and
+leave the rest as is.
+
+> 
+> -               err = map_kernel_page(v+i, p+i, flags);
+> +               err = map_kernel_page(v + i, p + i, pte_val(pte));
+
+Maybe another alternative would be to pass a pte_t to map_kernel_page(), 
+then we have to find an optimised way to insert the RPN into it before
+calling set_pte_at() instead of using pfn_pte() ?
+
+
+If we are so concerned by the multiple conversions, should we modify all 
+the pte_mkxxxx() to use pte_raw() and __pte_raw() instead of pte_val() 
+and __pte() ?
+
+> 
+> 
+> But otherwise for the series.
+> 
+> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+> 
+
+Thanks
+Christophe
