@@ -1,27 +1,47 @@
-Return-Path: <mhocko@kernel.org>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+Return-Path: <robh@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 426FVN59KxzF3Sk
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Sep 2018 21:25:32 +1000 (AEST)
-Date: Fri, 7 Sep 2018 13:25:28 +0200
-From: Michal Hocko <mhocko@kernel.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Cc: akpm@linux-foundation.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
- mpe@ellerman.id.au, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC PATCH V2 4/4] powerpc/mm/iommu: Allow migration of cma
- allocated pages during mm_iommu_get
-Message-ID: <20180907112528.GI19621@dhcp22.suse.cz>
-References: <20180906054342.25094-1-aneesh.kumar@linux.ibm.com>
- <20180906054342.25094-4-aneesh.kumar@linux.ibm.com>
- <20180906125356.GX14951@dhcp22.suse.cz>
- <50d355bf-17d0-ee01-ec35-7f04e79ca277@linux.ibm.com>
- <20180907090312.GF19621@dhcp22.suse.cz>
- <8337fdcc-3344-04dd-ddb2-68f86912f333@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 426GfK4NpYzF3Sr
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Sep 2018 22:17:29 +1000 (AEST)
+Received: from mail-qk1-f179.google.com (mail-qk1-f179.google.com
+ [209.85.222.179])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 5FE022075E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Sep 2018 12:17:27 +0000 (UTC)
+Received: by mail-qk1-f179.google.com with SMTP id g13-v6so9520786qki.9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Sep 2018 05:17:27 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <8337fdcc-3344-04dd-ddb2-68f86912f333@linux.ibm.com>
+References: <20180905235327.5996-1-robh@kernel.org>
+ <20180905235327.5996-7-robh@kernel.org>
+ <CAK7LNARD+_kV=XtJ66mZBU-CPMQgWF+oQtv4bGKaGGARNwzXiQ@mail.gmail.com>
+In-Reply-To: <CAK7LNARD+_kV=XtJ66mZBU-CPMQgWF+oQtv4bGKaGGARNwzXiQ@mail.gmail.com>
+From: Rob Herring <robh@kernel.org>
+Date: Fri, 7 Sep 2018 07:17:14 -0500
+Message-ID: <CAL_JsqJeTqxFPxZfuusPxuOTsVbVk_Uhue6NXwpotkwZWHrCDw@mail.gmail.com>
+Subject: Re: [PATCH v2 6/9] kbuild: consolidate Devicetree dtb build rules
+To: Masahiro Yamada <yamada.masahiro@socionext.com>
+Cc: devicetree@vger.kernel.org,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Michal Marek <michal.lkml@markovi.net>,
+ Vineet Gupta <vgupta@synopsys.com>, Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Michal Simek <monstr@monstr.eu>,
+ Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>,
+ James Hogan <jhogan@kernel.org>, Ley Foon Tan <lftan@altera.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Chris Zankel <chris@zankel.net>,
+ Max Filippov <jcmvbkbc@gmail.com>,
+ Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
+ arcml <linux-snps-arc@lists.infradead.org>,
+ "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
+ <linux-arm-kernel@lists.infradead.org>,
+ "moderated list:H8/300 ARCHITECTURE" <uclinux-h8-devel@lists.sourceforge.jp>,
+ Linux-MIPS <linux-mips@linux-mips.org>, nios2-dev@lists.rocketboards.org,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-xtensa@linux-xtensa.org
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,78 +51,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri 07-09-18 16:45:09, Aneesh Kumar K.V wrote:
-> On 09/07/2018 02:33 PM, Michal Hocko wrote:
-> > On Thu 06-09-18 19:00:43, Aneesh Kumar K.V wrote:
-> > > On 09/06/2018 06:23 PM, Michal Hocko wrote:
-> > > > On Thu 06-09-18 11:13:42, Aneesh Kumar K.V wrote:
-> > > > > Current code doesn't do page migration if the page allocated is a compound page.
-> > > > > With HugeTLB migration support, we can end up allocating hugetlb pages from
-> > > > > CMA region. Also THP pages can be allocated from CMA region. This patch updates
-> > > > > the code to handle compound pages correctly.
-> > > > > 
-> > > > > This use the new helper get_user_pages_cma_migrate. It does one get_user_pages
-> > > > > with right count, instead of doing one get_user_pages per page. That avoids
-> > > > > reading page table multiple times.
-> > > > > 
-> > > > > The patch also convert the hpas member of mm_iommu_table_group_mem_t to a union.
-> > > > > We use the same storage location to store pointers to struct page. We cannot
-> > > > > update alll the code path use struct page *, because we access hpas in real mode
-> > > > > and we can't do that struct page * to pfn conversion in real mode.
-> > > > 
-> > > > I am not fmailiar with this code so bear with me. I am completely
-> > > > missing the purpose of this patch. The changelog doesn't really explain
-> > > > that AFAICS. I can only guess that you do not want to establish long
-> > > > pins on CMA pages, right? So whenever you are about to pin a page that
-> > > > is in CMA you migrate it away to a different !__GFP_MOVABLE page, right?
-> > > 
-> > > That is right.
-> > > 
-> > > > If that is the case then how do you handle pins which are already in
-> > > > zone_movable? I do not see any specific check for those.
-> > > 
-> > > 
-> > > > 
-> > > > Btw. why is this a proper thing to do? Problems with longterm pins are
-> > > > not only for CMA/ZONE_MOVABLE pages. Pinned pages are not reclaimable as
-> > > > well so there is a risk of OOMs if there are too many of them. We have
-> > > > discussed approaches that would allow to force pin invalidation/revocation
-> > > > at LSF/MM. Isn't that a more appropriate solution to the problem you are
-> > > > seeing?
-> > > > 
-> > > 
-> > > The CMA area is used on powerpc platforms to allocate guest specific page
-> > > table (hash page table). If we don't have sufficient free pages we fail to
-> > > allocate hash page table that result in failure to start guest.
-> > > 
-> > > Now with vfio, we end up pinning the entire guest RAM. There is a
-> > > possibility that these guest RAM  pages got allocated from CMA region. We
-> > > already do supporting migrating those pages out except for compound pages.
-> > > What this patch does is to start supporting compound page migration that got
-> > > allocated out of CMA region (ie, THP pages and hugetlb pages if platform
-> > > supported hugetlb migration).
-> > 
-> > This definitely belongs to the changelog.
-> > 
-> > > Now to do that I added a helper get_user_pages_cma_migrate().
-> > > 
-> > > I agree that long term pinned pages do have other issues. The patchset is
-> > > not solving that issue.
-> > 
-> > It would be great to note why a generic approach is not viable. I assume
-> > the main reason is that those pins are pretty much permanent for the
-> > guest lifetime so the situation has to be handled in advance. In other
-> > words, more information please.
-> > 
-> 
-> That is correct. I will add these details to commit message. And will also
-> do a cover letter for the patch series.
+On Fri, Sep 7, 2018 at 5:33 AM Masahiro Yamada
+<yamada.masahiro@socionext.com> wrote:
+>
+> 2018-09-06 8:53 GMT+09:00 Rob Herring <robh@kernel.org>:
+> > There is nothing arch specific about building dtb files other than their
+> > location under /arch/*/boot/dts/. Keeping each arch aligned is a pain.
+> > The dependencies and supported targets are all slightly different.
+> > Also, a cross-compiler for each arch is needed, but really the host
+> > compiler preprocessor is perfectly fine for building dtbs. Move the
+> > build rules to a common location and remove the arch specific ones. This
+> > is done in a single step to avoid warnings about overriding rules.
+> >
+> > The build dependencies had been a mixture of 'scripts' and/or 'prepare'.
+> > These pull in several dependencies some of which need a target compiler
+> > (specifically devicetable-offsets.h) and aren't needed to build dtbs.
+> > All that is really needed is dtc, so adjust the dependencies to only be
+> > dtc.
+> >
+> > This change enables support 'dtbs_install' on some arches which were
+> > missing the target.
+> >
+> > Cc: Masahiro Yamada <yamada.masahiro@socionext.com>
+> > Cc: Michal Marek <michal.lkml@markovi.net>
+> > Cc: Vineet Gupta <vgupta@synopsys.com>
+> > Cc: Russell King <linux@armlinux.org.uk>
+> > Cc: Catalin Marinas <catalin.marinas@arm.com>
+> > Cc: Will Deacon <will.deacon@arm.com>
+> > Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
+> > Cc: Michal Simek <monstr@monstr.eu>
+> > Cc: Ralf Baechle <ralf@linux-mips.org>
+> > Cc: Paul Burton <paul.burton@mips.com>
+> > Cc: James Hogan <jhogan@kernel.org>
+> > Cc: Ley Foon Tan <lftan@altera.com>
+> > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > Cc: Paul Mackerras <paulus@samba.org>
+> > Cc: Michael Ellerman <mpe@ellerman.id.au>
+> > Cc: Chris Zankel <chris@zankel.net>
+> > Cc: Max Filippov <jcmvbkbc@gmail.com>
+> > Cc: linux-kbuild@vger.kernel.org
+> > Cc: linux-snps-arc@lists.infradead.org
+> > Cc: linux-arm-kernel@lists.infradead.org
+> > Cc: uclinux-h8-devel@lists.sourceforge.jp
+> > Cc: linux-mips@linux-mips.org
+> > Cc: nios2-dev@lists.rocketboards.org
+> > Cc: linuxppc-dev@lists.ozlabs.org
+> > Cc: linux-xtensa@linux-xtensa.org
+> > Signed-off-by: Rob Herring <robh@kernel.org>
+> > ---
+> > Please ack so I can take the whole series via the DT tree.
+> >
+> > v2:
+> >  - Fix $arch/boot/dts path check for out of tree builds
+> >  - Fix dtc dependency for building built-in dtbs
+> >  - Fix microblaze built-in dtb building
+>
+>
+> This breaks parallel building
+> because two threads could descend into scripts/dtc
+> at the same time.
+>
+> 'all' depends on both 'scripts' and 'dtc'.
+>
+> * 'scripts' target -- descends into scripts/, then scripts/dtc
+> * 'dtc' target     -- descents into scripts/dtc directly
 
-OK, then the early migration makes some sense. Although I suspect this
-will lead to other issues (OOM in kernel zones) but revocation approach
-is clearly not usable. An excessive pinning simply sucks.
+Any suggestions for how to fix given the problem with depending on
+scripts? I suppose I could make scripts depend on dtc instead, but I'd
+be back to needing to fix cleaning. Or I could just skip removing the
+cross compiler dependency for now.
 
-Thanks a lot for the updated information though!
--- 
-Michal Hocko
-SUSE Labs
+Rob
