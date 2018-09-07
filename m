@@ -1,27 +1,25 @@
-Return-Path: <ran.wang_1@nxp.com>
-Received: from EUR04-VI1-obe.outbound.protection.outlook.com
- (mail-eopbgr80043.outbound.protection.outlook.com [40.107.8.43])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <dongsheng.wang@hxt-semitech.com>
+Received: from barracuda.hxt-semitech.com (mx01.hxt-semitech.com
+ [223.203.96.7])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 426CLl5DZmzF3RM
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Sep 2018 19:48:47 +1000 (AEST)
-From: Ran Wang <ran.wang_1@nxp.com>
-To: Leo Li <leoyang.li@nxp.com>
-CC: "dongsheng.wang@hxt-semitech.com" <dongsheng.wang@hxt-semitech.com>, Rob
- Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "open
- list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
- <devicetree@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- lkml <linux-kernel@vger.kernel.org>, "moderated list:ARM/FREESCALE IMX / MXC
- ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>
-Subject: RE: [PATCH 3/3] soc: fsl: add RCPM driver
-Date: Fri, 7 Sep 2018 09:48:41 +0000
-Message-ID: <AM5PR0402MB2865E57EDC0DE8B0047282A2F1000@AM5PR0402MB2865.eurprd04.prod.outlook.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 426Cy164WKzF3Sd
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Sep 2018 20:15:51 +1000 (AEST)
+From: "Wang, Dongsheng" <dongsheng.wang@hxt-semitech.com>
+To: Ran Wang <ran.wang_1@nxp.com>
+CC: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, Leo Li <leoyang.li@nxp.com>, "Rob
+ Herring" <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
+Subject: Re: [PATCH 1/3] soc: fsl: add Platform PM driver QorIQ platforms
+Date: Fri, 7 Sep 2018 10:15:43 +0000
+Message-ID: <35f171989af34850bd192c2b4de9b43b@HXTBJIDCEMVIW02.hxtcorp.net>
 References: <20180831035219.31619-1-ran.wang_1@nxp.com>
- <20180831035219.31619-3-ran.wang_1@nxp.com>
- <be39f5ea8c9046b0bf1f6bbfe935fae4@HXTBJIDCEMVIW02.hxtcorp.net>
- <CADRPPNQN=27+pOSckxvwSuBJoFaz7pT+Z6h07Wu3Liz5ao5kkA@mail.gmail.com>
-In-Reply-To: <CADRPPNQN=27+pOSckxvwSuBJoFaz7pT+Z6h07Wu3Liz5ao5kkA@mail.gmail.com>
-Content-Type: text/plain; charset="utf-8"
+ <366f03eab44e489b9fef82fb8e8f3c3b@HXTBJIDCEMVIW02.hxtcorp.net>
+ <AM5PR0402MB2865774C03981F9808AB3A13F1000@AM5PR0402MB2865.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -32,188 +30,272 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGkgTGVvLA0KDQpPbiBTZXB0ZW1iZXIgMDUsIDIwMTggYXQgMTE6MjIgWWFuZyBMaSB3cm90ZToN
-Cj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogTGkgWWFuZyA8bGVveWFuZy5s
-aUBueHAuY29tPg0KPiBTZW50OiBXZWRuZXNkYXksIFNlcHRlbWJlciAwNSwgMjAxOCAxMToyMg0K
-PiBUbzogZG9uZ3NoZW5nLndhbmdAaHh0LXNlbWl0ZWNoLmNvbQ0KPiBDYzogUmFuIFdhbmcgPHJh
-bi53YW5nXzFAbnhwLmNvbT47IFJvYiBIZXJyaW5nIDxyb2JoK2R0QGtlcm5lbC5vcmc+Ow0KPiBN
-YXJrIFJ1dGxhbmQgPG1hcmsucnV0bGFuZEBhcm0uY29tPjsgb3BlbiBsaXN0Ok9QRU4gRklSTVdB
-UkUgQU5EDQo+IEZMQVRURU5FRCBERVZJQ0UgVFJFRSBCSU5ESU5HUyA8ZGV2aWNldHJlZUB2Z2Vy
-Lmtlcm5lbC5vcmc+OyBsaW51eHBwYy0NCj4gZGV2IDxsaW51eHBwYy1kZXZAbGlzdHMub3psYWJz
-Lm9yZz47IGxrbWwgPGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc+Ow0KPiBtb2RlcmF0ZWQg
-bGlzdDpBUk0vRlJFRVNDQUxFIElNWCAvIE1YQyBBUk0gQVJDSElURUNUVVJFIDxsaW51eC1hcm0t
-DQo+IGtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnPg0KPiBTdWJqZWN0OiBSZTogW1BBVENIIDMv
-M10gc29jOiBmc2w6IGFkZCBSQ1BNIGRyaXZlcg0KPiANCj4gT24gVHVlLCBTZXAgNCwgMjAxOCBh
-dCA5OjU4IFBNIFdhbmcsIERvbmdzaGVuZyA8ZG9uZ3NoZW5nLndhbmdAaHh0LQ0KPiBzZW1pdGVj
-aC5jb20+IHdyb3RlOg0KPiA+DQo+ID4gUGxlYXNlIGNoYW5nZSB5b3VyIGNvbW1lbnRzIHN0eWxl
-Lg0KPiANCj4gQWx0aG91Z2ggdGhpcyBkb2Vzbid0IGdldCBpbnRvIHRoZSBMaW51eCBrZXJuZWwg
-Y29kaW5nIHN0eWxlIGRvY3VtZW50YXRpb24NCj4geWV0LCBMaW51cyBzZWVtcyBjaGFuZ2VkIGhp
-cyBtaW5kIHRvIHByZWZlciAvLyB0aGFuIC8qDQo+ICovIGNvbW1lbnQgc3R5bGUgbm93Lg0KPiBo
-dHRwczovL2VtZWEwMS5zYWZlbGlua3MucHJvdGVjdGlvbi5vdXRsb29rLmNvbS8/dXJsPWh0dHBz
-JTNBJTJGJTJGbGttbA0KPiAub3JnJTJGbGttbCUyRjIwMTclMkYxMSUyRjI1JTJGMTMzJmFtcDtk
-YXRhPTAyJTdDMDElN0NyYW4ud2FuZ18NCj4gMSU0MG54cC5jb20lN0NjMGQ4OGU2NjkwMzg0ZTAy
-Yjk1MTA4ZDYxMmRlYzIzNSU3QzY4NmVhMWQzYmMyYjRjDQo+IDZmYTkyY2Q5OWM1YzMwMTYzNSU3
-QzAlN0MwJTdDNjM2NzE3MTQ1Mjg1MTI2MjAwJmFtcDtzZGF0YT1KSW9DWnANCj4gV2hSeVc3NkVx
-Z1NmbGZUREExZjBnTVFHS2ElMkZjYnZTYzVDTyUyRnclM0QmYW1wO3Jlc2VydmVkPTANCj4gU28g
-dGhlDQo+IC8vIHN0eWxlIHNob3VsZCBiZSBhY2NlcHRhYmxlIGZvciBub3cuDQo+IA0KPiA+DQo+
-ID4gT24gMjAxOC84LzMxIDExOjU2LCBSYW4gV2FuZyB3cm90ZToNCj4gPiA+IFRoZSBOWFAncyBR
-b3JJUSBQcm9jZXNzb3JzIGJhc2VkIG9uIEFSTSBDb3JlIGhhdmUgUkNQTSBtb2R1bGUgKFJ1bg0K
-PiA+ID4gQ29udHJvbCBhbmQgUG93ZXIgTWFuYWdlbWVudCksIHdoaWNoIHBlcmZvcm1zIGFsbCBk
-ZXZpY2UtbGV2ZWwgdGFza3MNCj4gPiA+IGFzc29jaWF0ZWQgd2l0aCBwb3dlciBtYW5hZ2VtZW50
-IHN1Y2ggYXMgd2FrZXVwIHNvdXJjZSBjb250cm9sLg0KPiA+ID4NCj4gPiA+IFRoaXMgZHJpdmVy
-IGRlcGVuZHMgb24gRlNMIHBsYXRmb3JtIFBNIGRyaXZlciBmcmFtZXdvcmsgd2hpY2ggaGVscA0K
-PiA+ID4gdG8gaXNvbGF0ZSB1c2VyIGFuZCBQTSBzZXJ2aWNlIHByb3ZpZGVyIChzdWNoIGFzIFJD
-UE0gZHJpdmVyKS4NCj4gPiA+DQo+ID4gPiBTaWduZWQtb2ZmLWJ5OiBDaGVuaHVpIFpoYW8gPGNo
-ZW5odWkuemhhb0BueHAuY29tPg0KPiA+ID4gU2lnbmVkLW9mZi1ieTogWWluZyBaaGFuZyA8eWlu
-Zy56aGFuZzIyNDU1QG54cC5jb20+DQo+ID4gPiBTaWduZWQtb2ZmLWJ5OiBSYW4gV2FuZyA8cmFu
-LndhbmdfMUBueHAuY29tPg0KPiA+ID4gLS0tDQo+ID4gPiAgZHJpdmVycy9zb2MvZnNsL0tjb25m
-aWcgICB8ICAgIDYgKysNCj4gPiA+ICBkcml2ZXJzL3NvYy9mc2wvTWFrZWZpbGUgIHwgICAgMSAr
-DQo+ID4gPiAgZHJpdmVycy9zb2MvZnNsL2xzLXJjcG0uYyB8ICAxNTMNCj4gPiA+ICsrKysrKysr
-KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKw0KPiA+ID4gIDMgZmlsZXMgY2hh
-bmdlZCwgMTYwIGluc2VydGlvbnMoKyksIDAgZGVsZXRpb25zKC0pICBjcmVhdGUgbW9kZQ0KPiA+
-ID4gMTAwNjQ0IGRyaXZlcnMvc29jL2ZzbC9scy1yY3BtLmMNCj4gPiA+DQo+ID4gPiBkaWZmIC0t
-Z2l0IGEvZHJpdmVycy9zb2MvZnNsL0tjb25maWcgYi9kcml2ZXJzL3NvYy9mc2wvS2NvbmZpZyBp
-bmRleA0KPiA+ID4gNjUxNzQxMi4uODgyMzMwZCAxMDA2NDQNCj4gPiA+IC0tLSBhL2RyaXZlcnMv
-c29jL2ZzbC9LY29uZmlnDQo+ID4gPiArKysgYi9kcml2ZXJzL3NvYy9mc2wvS2NvbmZpZw0KPiA+
-ID4gQEAgLTMwLDMgKzMwLDkgQEAgY29uZmlnIEZTTF9QTEFUX1BNDQo+ID4gPiAgICAgICAgIGhh
-dmUgdG8ga25vdyB0aGUgaW1wbGVtZW50IGRldGFpbHMgb2Ygd2FrZXVwIGZ1bmN0aW9uIGl0IHJl
-cXVpcmUuDQo+ID4gPiAgICAgICAgIEJlc2lkZXMsIGl0IGlzIGFsc28gZWFzeSBmb3Igc2Vydmlj
-ZSBzaWRlIHRvIHVwZ3JhZGUgaXRzIGxvZ2ljIHdoZW4NCj4gPiA+ICAgICAgICAgZGVzaWduIGNo
-YW5nZWQgYW5kIHJlbWFpbiB1c2VyIHNpZGUgdW5jaGFuZ2VkLg0KPiA+ID4gKw0KPiA+ID4gK2Nv
-bmZpZyBMU19SQ1BNDQo+ID4gPiArICAgICBib29sICJGcmVlc2NhbGUgUkNQTSBzdXBwb3J0Ig0K
-PiA+ID4gKyAgICAgZGVwZW5kcyBvbiAoRlNMX1BMQVRfUE0pDQo+ID4gPiArICAgICBoZWxwDQo+
-ID4gPiArICAgICAgIFRoaXMgZmVhdHVyZSBpcyB0byBlbmFibGUgc3BlY2lmaWVkIHdha2V1cCBz
-b3VyY2UgZm9yIHN5c3RlbSBzbGVlcC4NCj4gPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3NvYy9m
-c2wvTWFrZWZpbGUgYi9kcml2ZXJzL3NvYy9mc2wvTWFrZWZpbGUNCj4gPiA+IGluZGV4IDhmOWRi
-MjMuLjQzZmY3MWEgMTAwNjQ0DQo+ID4gPiAtLS0gYS9kcml2ZXJzL3NvYy9mc2wvTWFrZWZpbGUN
-Cj4gPiA+ICsrKyBiL2RyaXZlcnMvc29jL2ZzbC9NYWtlZmlsZQ0KPiA+ID4gQEAgLTcsMyArNyw0
-IEBAIG9iai0kKENPTkZJR19RVUlDQ19FTkdJTkUpICAgICAgICAgICAgKz0gcWUvDQo+ID4gPiAg
-b2JqLSQoQ09ORklHX0NQTSkgICAgICAgICAgICAgICAgICAgICs9IHFlLw0KPiA+ID4gIG9iai0k
-KENPTkZJR19GU0xfR1VUUykgICAgICAgICAgICAgICAgICAgICAgICs9IGd1dHMubw0KPiA+ID4g
-IG9iai0kKENPTkZJR19GU0xfUExBVF9QTSkgICAgKz0gcGxhdF9wbS5vDQo+ID4gPiArb2JqLSQo
-Q09ORklHX0xTX1JDUE0pICAgICAgICAgICAgICAgICs9IGxzLXJjcG0ubw0KPiANCj4gUHJvYmFi
-bHkgdXNlICJfIiBpbnN0ZWFkIG9mICItIiBmb3IgYWxpZ25tZW50Lg0KDQpPSywgd2lsbCB1cGRh
-dGUgaW4gbmV4dCB2ZXJzaW9uDQoNCj4gPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3NvYy9mc2wv
-bHMtcmNwbS5jIGIvZHJpdmVycy9zb2MvZnNsL2xzLXJjcG0uYw0KPiA+ID4gbmV3IGZpbGUgbW9k
-ZSAxMDA2NDQgaW5kZXggMDAwMDAwMC4uYjBmZWI4OA0KPiA+ID4gLS0tIC9kZXYvbnVsbA0KPiA+
-ID4gKysrIGIvZHJpdmVycy9zb2MvZnNsL2xzLXJjcG0uYw0KPiA+ID4gQEAgLTAsMCArMSwxNTMg
-QEANCj4gPiA+ICsvLyBTUERYLUxpY2Vuc2UtSWRlbnRpZmllcjogR1BMLTIuMCAvLyAvLyBwbGF0
-X3BtLmMgLSBGcmVlc2NhbGUNCj4gPiA+ICtMYXllcnNjYXBlIFJDUE0gZHJpdmVyDQo+IA0KPiBU
-aGUgZmlsZSBuYW1lIGhlcmUgaXMgbm90IHRoZSBzYW1lIGFzIHRoZSByZWFsIGZpbGUgbmFtZS4N
-Cg0KR290IGl0LCB3aWxsIGNvcnJlY3QgaXQuDQoNCj4gPiA+ICsvLw0KPiA+ID4gKy8vIENvcHly
-aWdodCAyMDE4IE5YUA0KPiA+ID4gKy8vDQo+ID4gPiArLy8gQXV0aG9yOiBSYW4gV2FuZyA8cmFu
-LndhbmdfMUBueHAuY29tPiwNCj4gDQo+IFdoZXJlIGRvIHlvdSBuZWVkIHRoZSBjb21tYSBpbiB0
-aGUgZW5kPw0KDQpNeSBiYWQsIHdpbGwgcmVtb3ZlIGNvbW1hIGluIG5leHQgdmVyc2lvbi4NCg0K
-PiA+ID4gKw0KPiA+ID4gKyNpbmNsdWRlIDxsaW51eC9pbml0Lmg+DQo+ID4gPiArI2luY2x1ZGUg
-PGxpbnV4L21vZHVsZS5oPg0KPiA+ID4gKyNpbmNsdWRlIDxsaW51eC9wbGF0Zm9ybV9kZXZpY2Uu
-aD4NCj4gPiA+ICsjaW5jbHVkZSA8bGludXgvb2ZfYWRkcmVzcy5oPg0KPiA+ID4gKyNpbmNsdWRl
-IDxsaW51eC9zbGFiLmg+DQo+ID4gPiArI2luY2x1ZGUgPHNvYy9mc2wvcGxhdF9wbS5oPg0KPiA+
-ID4gKw0KPiA+ID4gKyNkZWZpbmUgTUFYX0NPTVBBVElCTEVfTlVNICAgMTANCj4gPiA+ICsNCj4g
-PiA+ICtzdHJ1Y3QgcmNwbV90IHsNCj4gPiA+ICsgICAgIHN0cnVjdCBkZXZpY2UgKmRldjsNCj4g
-PiA+ICsgICAgIHZvaWQgX19pb21lbSAqaXBwZGV4cGNyX2FkZHI7DQo+ID4gPiArICAgICBib29s
-IGJpZ19lbmRpYW47ICAgICAgICAvKiBCaWcvTGl0dGxlIGVuZGlhbiBvZiBSQ1BNIG1vZHVsZSAq
-Lw0KPiA+ID4gK307DQo+ID4gPiArDQo+ID4gPiArLy8gcmNwbV9oYW5kbGUgLSBDb25maWd1cmUg
-UkNQTSByZWcgYWNjb3JkaW5nIHRvIHdha2UgdXAgc291cmNlDQo+ID4gPiArcmVxdWVzdCAvLyBA
-dXNlcl9kZXY6IHBvaW50ZXIgdG8gdXNlcidzIGRldmljZSBzdHJ1Y3QgLy8gQGZsYWc6IHRvDQo+
-ID4gPiArZW5hYmxlKHRydWUpIG9yIGRpc2FibGUoZmFsc2UpIHdha2V1cCBzb3VyY2UgLy8gQGhh
-bmRsZV9wcml2Og0KPiA+ID4gK3BvaW50ZXIgdG8gc3RydWN0IHJjcG1fdCBpbnN0YW5jZSAvLyAv
-LyBSZXR1cm4gMCBvbiBzdWNjZXNzIG90aGVyDQo+ID4gPiArbmVnYXRpdmUgZXJybm8NCj4gDQo+
-IEFsdGhvdWdoIExpbnVzIHByZWZlcnJlZCB0aGlzIC8vIGNvbW1lbnQgc3R5bGUuICBJJ20gbm90
-IHN1cmUgaWYgdGhpcyB3aWxsIGJlDQo+IGhhbmRsZWQgY29ycmVjdGx5IGJ5IHRoZSBrZXJuZWwt
-ZG9jIGNvbXBpbGVyLg0KPiBodHRwczovL2VtZWEwMS5zYWZlbGlua3MucHJvdGVjdGlvbi5vdXRs
-b29rLmNvbS8/dXJsPWh0dHBzJTNBJTJGJTJGd3cNCj4gdy5rZXJuZWwub3JnJTJGZG9jJTJGaHRt
-bCUyRnY0LjE4JTJGZG9jLWd1aWRlJTJGa2VybmVsLQ0KPiBkb2MuaHRtbCZhbXA7ZGF0YT0wMiU3
-QzAxJTdDcmFuLndhbmdfMSU0MG54cC5jb20lN0NjMGQ4OGU2NjkwMzgNCj4gNGUwMmI5NTEwOGQ2
-MTJkZWMyMzUlN0M2ODZlYTFkM2JjMmI0YzZmYTkyY2Q5OWM1YzMwMTYzNSU3QzAlN0MwDQo+ICU3
-QzYzNjcxNzE0NTI4NTEyNjIwMCZhbXA7c2RhdGE9SDdHa1VOT0xWRyUyRkNjWkVTemh0SEJlSENi
-TzkNCj4gJTJGSzRrOUVkSDMwQ3hxMiUyQk0lM0QmYW1wO3Jlc2VydmVkPTANCg0KU28sIGRvIHlv
-dSB0aGluayBJIG5lZWQgdG8gY2hhbmdlIGFsbCBjb21tZW50IHN0eWxlIGJhY2sgdG8gJy8qIC4u
-LiAqLycgPw0KQWN0dWFsbHkgSSBmZWVsIGEgbGl0dGxlIGJpdCBjb25mdXNlZCBoZXJlLg0KDQpS
-ZWdhcmRzLA0KUmFuDQoNCj4gPiA+ICtzdGF0aWMgaW50IHJjcG1faGFuZGxlKHN0cnVjdCBkZXZp
-Y2UgKnVzZXJfZGV2LCBib29sIGZsYWcsIHZvaWQNCj4gPiA+ICsqaGFuZGxlX3ByaXYpIHsNCj4g
-PiA+ICsgICAgIHN0cnVjdCByY3BtX3QgKnJjcG07DQo+ID4gPiArICAgICBib29sIGJpZ19lbmRp
-YW47DQo+ID4gPiArICAgICBjb25zdCBjaGFyICAqZGV2X2NvbXBhdGlibGVfYXJyYXlbTUFYX0NP
-TVBBVElCTEVfTlVNXTsNCj4gPiA+ICsgICAgIHZvaWQgX19pb21lbSAqaXBwZGV4cGNyX2FkZHI7
-DQo+ID4gPiArICAgICB1MzIgaXBwZGV4cGNyOw0KPiA+ID4gKyAgICAgdTMyIHNldF9iaXQ7DQo+
-ID4gPiArICAgICBpbnQgcmV0LCBudW0sIGk7DQo+ID4gPiArDQo+ID4gPiArICAgICByY3BtID0g
-aGFuZGxlX3ByaXY7DQo+ID4gPiArICAgICBiaWdfZW5kaWFuID0gcmNwbS0+YmlnX2VuZGlhbjsN
-Cj4gPiA+ICsgICAgIGlwcGRleHBjcl9hZGRyID0gcmNwbS0+aXBwZGV4cGNyX2FkZHI7DQo+ID4g
-PiArDQo+ID4gPiArICAgICBudW0gPSBkZXZpY2VfcHJvcGVydHlfcmVhZF9zdHJpbmdfYXJyYXko
-dXNlcl9kZXYsICJjb21wYXRpYmxlIiwNCj4gPiA+ICsgICAgICAgICAgICAgICAgICAgICBkZXZf
-Y29tcGF0aWJsZV9hcnJheSwgTUFYX0NPTVBBVElCTEVfTlVNKTsNCj4gPiA+ICsgICAgIGlmIChu
-dW0gPCAwKQ0KPiA+ID4gKyAgICAgICAgICAgICByZXR1cm4gbnVtOw0KPiA+ID4gKw0KPiA+ID4g
-KyAgICAgZm9yIChpID0gMDsgaSA8IG51bTsgaSsrKSB7DQo+ID4gPiArICAgICAgICAgICAgIGlm
-ICghZGV2aWNlX3Byb3BlcnR5X3ByZXNlbnQocmNwbS0+ZGV2LA0KPiA+ID4gKyAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICBkZXZfY29tcGF0aWJsZV9hcnJheVtpXSkpDQo+ID4g
-PiArICAgICAgICAgICAgICAgICAgICAgY29udGludWU7DQo+ID4gPiArICAgICAgICAgICAgIGVs
-c2Ugew0KPiA+IFJlbW92ZSB0aGlzIGVsc2UuDQo+ID4gPiArICAgICAgICAgICAgICAgICAgICAg
-cmV0ID0gZGV2aWNlX3Byb3BlcnR5X3JlYWRfdTMyKHJjcG0tPmRldiwNCj4gPiA+ICsgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgZGV2X2NvbXBhdGlibGVfYXJyYXlbaV0sICZz
-ZXRfYml0KTsNCj4gPiA+ICsgICAgICAgICAgICAgICAgICAgICBpZiAocmV0KQ0KPiA+ID4gKyAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgcmV0dXJuIHJldDsNCj4gPiA+ICsNCj4gPiA+ICsg
-ICAgICAgICAgICAgICAgICAgICBpZiAoIWRldmljZV9wcm9wZXJ0eV9wcmVzZW50KHJjcG0tPmRl
-diwNCj4gPiA+ICsNCj4gPiA+ICsgZGV2X2NvbXBhdGlibGVfYXJyYXlbaV0pKQ0KPiA+IFRoaXMg
-aGFzIGJlZW4gY2hlY2tlZC4gQ29udGludWUgPyBvciByZXR1cm4gRU5PREVW77yfDQo+ID4gPiAr
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICByZXR1cm4gLUVOT0RFVjsNCj4gPiA+ICsgICAg
-ICAgICAgICAgICAgICAgICBlbHNlIHsNCj4gPiBSZW1vdmUgdGhpcyBlbHNlLg0KPiA+ID4gKyAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgcmV0ID0gZGV2aWNlX3Byb3BlcnR5X3JlYWRfdTMy
-KHJjcG0tPmRldiwNCj4gPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICBkZXZfY29tcGF0aWJsZV9hcnJheVtpXSwgJnNldF9iaXQpOw0KPiA+ID4gKyAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgaWYgKHJldCkNCj4gPiA+ICsgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgcmV0dXJuIHJldDsNCj4gPiA+ICsNCj4gPiA+ICsgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgIGlmIChiaWdfZW5kaWFuKQ0KPiA+ID4gKyAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICBpcHBkZXhwY3IgPSBpb3JlYWQzMmJlKGlwcGRleHBj
-cl9hZGRyKTsNCj4gPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGVsc2UNCj4gPiA+
-ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgaXBwZGV4cGNyID0NCj4gPiA+
-ICsgaW9yZWFkMzIoaXBwZGV4cGNyX2FkZHIpOw0KPiA+ID4gKw0KPiA+ID4gKyAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgaWYgKGZsYWcpDQo+ID4gPiArICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgIGlwcGRleHBjciB8PSBzZXRfYml0Ow0KPiA+ID4gKyAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgZWxzZQ0KPiA+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICBpcHBkZXhwY3IgJj0gfnNldF9iaXQ7DQo+ID4gPiArDQo+ID4gPiArICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICBpZiAoYmlnX2VuZGlhbikgew0KPiA+ID4gKyAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICBpb3dyaXRlMzJiZShpcHBkZXhwY3IsIGlwcGRl
-eHBjcl9hZGRyKTsNCj4gPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-aXBwZGV4cGNyID0gaW9yZWFkMzJiZShpcHBkZXhwY3JfYWRkcik7DQo+ID4gPiArICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICB9IGVsc2UNCj4gPiBpZiAoeCkgew0KPiA+IC4uLi4NCj4gPiAu
-Li4uDQo+ID4gfSAgZWxzZSB7DQo+ID4NCj4gPiB9DQo+ID4gPiArICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgIGlvd3JpdGUzMihpcHBkZXhwY3IsDQo+ID4gPiArIGlwcGRleHBj
-cl9hZGRyKTsNCj4gPiA+ICsNCj4gPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHJl
-dHVybiAwOw0KPiA+ID4gKyAgICAgICAgICAgICAgICAgICAgIH0NCj4gPiA+ICsgICAgICAgICAg
-ICAgfQ0KPiA+ID4gKyAgICAgfQ0KPiA+ID4gKw0KPiA+ID4gKyAgICAgcmV0dXJuIC1FTk9ERVY7
-DQo+ID4gPiArfQ0KPiA+ID4gKw0KPiA+ID4gK3N0YXRpYyBpbnQgbHNfcmNwbV9wcm9iZShzdHJ1
-Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2KSB7DQo+ID4gPiArICAgICBzdHJ1Y3QgcmVzb3VyY2Ug
-KnI7DQo+ID4gPiArICAgICBzdHJ1Y3QgcmNwbV90ICpyY3BtOw0KPiA+ID4gKw0KPiA+ID4gKyAg
-ICAgciA9IHBsYXRmb3JtX2dldF9yZXNvdXJjZShwZGV2LCBJT1JFU09VUkNFX01FTSwgMCk7DQo+
-ID4gPiArICAgICBpZiAoIXIpDQo+ID4gPiArICAgICAgICAgICAgIHJldHVybiAtRU5PREVWOw0K
-PiA+ID4gKw0KPiA+ID4gKyAgICAgcmNwbSA9IGttYWxsb2Moc2l6ZW9mKCpyY3BtKSwgR0ZQX0tF
-Uk5FTCk7DQo+ID4ga3phbGxvYyBpcyBiZXR0ZXIuDQo+ID4gPiArICAgICBpZiAoIXJjcG0pDQo+
-ID4gPiArICAgICAgICAgICAgIHJldHVybiAtRU5PTUVNOw0KPiA+ID4gKw0KPiA+ID4gKyAgICAg
-cmNwbS0+YmlnX2VuZGlhbiA9IGRldmljZV9wcm9wZXJ0eV9yZWFkX2Jvb2woJnBkZXYtPmRldiwN
-Cj4gPiA+ICsgImJpZy1lbmRpYW4iKTsNCj4gPiA+ICsNCj4gPiA+ICsgICAgIHJjcG0tPmlwcGRl
-eHBjcl9hZGRyID0gZGV2bV9pb3JlbWFwX3Jlc291cmNlKCZwZGV2LT5kZXYsIHIpOw0KPiA+ID4g
-KyAgICAgaWYgKElTX0VSUihyY3BtLT5pcHBkZXhwY3JfYWRkcikpDQo+ID4gPiArICAgICAgICAg
-ICAgIHJldHVybiBQVFJfRVJSKHJjcG0tPmlwcGRleHBjcl9hZGRyKTsNCj4gPiA+ICsNCj4gPiA+
-ICsgICAgIHJjcG0tPmRldiA9ICZwZGV2LT5kZXY7DQo+ID4gPiArICAgICBwbGF0Zm9ybV9zZXRf
-ZHJ2ZGF0YShwZGV2LCByY3BtKTsNCj4gPiA+ICsNCj4gPiA+ICsgICAgIHJldHVybiByZWdpc3Rl
-cl9mc2xfcGxhdGZvcm1fd2FrZXVwX3NvdXJjZShyY3BtX2hhbmRsZSwgcmNwbSk7DQo+ID4gPiAr
-fQ0KPiA+ID4gKw0KPiA+ID4gK3N0YXRpYyBpbnQgbHNfcmNwbV9yZW1vdmUoc3RydWN0IHBsYXRm
-b3JtX2RldmljZSAqcGRldikgew0KPiA+ID4gKyAgICAgc3RydWN0IHJjcG1fdCAgICpyY3BtOw0K
-PiA+IE5vdCBuZWVkIGEgdGFibGUuDQo+ID4NCj4gPiBDaGVlcnMsDQo+ID4gLURvbmdzaGVuZw0K
-PiA+DQo+ID4gPiArDQo+ID4gPiArICAgICByY3BtID0gcGxhdGZvcm1fZ2V0X2RydmRhdGEocGRl
-dik7DQo+ID4gPiArICAgICBkZXJlZ2lzdGVyX2ZzbF9wbGF0Zm9ybV93YWtldXBfc291cmNlKHJj
-cG0pOw0KPiA+ID4gKyAgICAga2ZyZWUocmNwbSk7DQo+ID4gPiArDQo+ID4gPiArICAgICByZXR1
-cm4gMDsNCj4gPiA+ICt9DQo+ID4gPiArDQo+ID4gPiArc3RhdGljIGNvbnN0IHN0cnVjdCBvZl9k
-ZXZpY2VfaWQgbHNfcmNwbV9vZl9tYXRjaFtdID0gew0KPiA+ID4gKyAgICAgeyAuY29tcGF0aWJs
-ZSA9ICJmc2wscW9yaXEtcmNwbS0yLjEiLCB9LA0KPiA+ID4gKyAgICAge30NCj4gPiA+ICt9Ow0K
-PiA+ID4gK01PRFVMRV9ERVZJQ0VfVEFCTEUob2YsIGxzX3JjcG1fb2ZfbWF0Y2gpOw0KPiA+ID4g
-Kw0KPiA+ID4gK3N0YXRpYyBzdHJ1Y3QgcGxhdGZvcm1fZHJpdmVyIGxzX3JjcG1fZHJpdmVyID0g
-ew0KPiA+ID4gKyAgICAgLmRyaXZlciA9IHsNCj4gPiA+ICsgICAgICAgICAgICAgLm5hbWUgPSAi
-bHMtcmNwbSIsDQo+ID4gPiArICAgICAgICAgICAgIC5vZl9tYXRjaF90YWJsZSA9IGxzX3JjcG1f
-b2ZfbWF0Y2gsDQo+ID4gPiArICAgICB9LA0KPiA+ID4gKyAgICAgLnByb2JlID0gbHNfcmNwbV9w
-cm9iZSwNCj4gPiA+ICsgICAgIC5yZW1vdmUgPSBsc19yY3BtX3JlbW92ZSwNCj4gPiA+ICt9Ow0K
-PiA+ID4gKw0KPiA+ID4gK3N0YXRpYyBpbnQgX19pbml0IGxzX3JjcG1faW5pdCh2b2lkKSB7DQo+
-ID4gPiArICAgICByZXR1cm4gcGxhdGZvcm1fZHJpdmVyX3JlZ2lzdGVyKCZsc19yY3BtX2RyaXZl
-cik7DQo+ID4gPiArfQ0KPiA+ID4gK3N1YnN5c19pbml0Y2FsbChsc19yY3BtX2luaXQpOw0KPiA+
-ID4gKw0KPiA+ID4gK3N0YXRpYyB2b2lkIF9fZXhpdCBsc19yY3BtX2V4aXQodm9pZCkgew0KPiA+
-ID4gKyAgICAgcGxhdGZvcm1fZHJpdmVyX3VucmVnaXN0ZXIoJmxzX3JjcG1fZHJpdmVyKTsNCj4g
-PiA+ICt9DQo+ID4gPiArbW9kdWxlX2V4aXQobHNfcmNwbV9leGl0KTsNCj4gPg0KPiA+DQo=
+On 2018/9/7 16:49, Ran Wang wrote:=0A=
+> Hi Dongsheng=0A=
+>=0A=
+>> On 2018/9/5 11:05, Dongsheng Wang wrote:=0A=
+>>=0A=
+>> Please change your comments style.=0A=
+>>=0A=
+>> On 2018/8/31 11:57, Ran Wang wrote:=0A=
+>>> This driver is to provide a independent framework for PM service=0A=
+>>> provider and consumer to configure system level wake up feature. For=0A=
+>>> example, RCPM driver could register a callback function on this=0A=
+>>> platform first, and Flex timer driver who want to enable timer wake up=
+=0A=
+>>> feature, will call generic API provided by this platform driver, and=0A=
+>>> then it will trigger RCPM driver to do it. The benefit is to isolate=0A=
+>>> the user and service, such as flex timer driver will not have to know=
+=0A=
+>>> the implement details of wakeup function it require. Besides, it is=0A=
+>>> also easy for service side to upgrade its logic when design is changed=
+=0A=
+>>> and remain user side unchanged.=0A=
+>>>=0A=
+>>> Signed-off-by: Ran Wang <ran.wang_1@nxp.com>=0A=
+>>> ---=0A=
+>>>  drivers/soc/fsl/Kconfig   |   14 +++++=0A=
+>>>  drivers/soc/fsl/Makefile  |    1 +=0A=
+>>>  drivers/soc/fsl/plat_pm.c |  144=0A=
+>> +++++++++++++++++++++++++++++++++++++++++++++=0A=
+>>>  include/soc/fsl/plat_pm.h |   22 +++++++=0A=
+>>>  4 files changed, 181 insertions(+), 0 deletions(-)  create mode=0A=
+>>> 100644 drivers/soc/fsl/plat_pm.c  create mode 100644=0A=
+>>> include/soc/fsl/plat_pm.h=0A=
+>>>=0A=
+>>> diff --git a/drivers/soc/fsl/Kconfig b/drivers/soc/fsl/Kconfig index=0A=
+>>> 7a9fb9b..6517412 100644=0A=
+>>> --- a/drivers/soc/fsl/Kconfig=0A=
+>>> +++ b/drivers/soc/fsl/Kconfig=0A=
+>>> @@ -16,3 +16,17 @@ config FSL_GUTS=0A=
+>>>  	  Initially only reading SVR and registering soc device are supported=
+.=0A=
+>>>  	  Other guts accesses, such as reading RCW, should eventually be=0A=
+>> moved=0A=
+>>>  	  into this driver as well.=0A=
+>>> +=0A=
+>>> +config FSL_PLAT_PM=0A=
+>>> +	bool "Freescale platform PM framework"=0A=
+>>> +	help=0A=
+>>> +	  This driver is to provide a independent framework for PM service=0A=
+>>> +	  provider and consumer to configure system level wake up feature.=0A=
+>> For=0A=
+>>> +	  example, RCPM driver could register a callback function on this=0A=
+>>> +	  platform first, and Flex timer driver who want to enable timer wake=
+=0A=
+>>> +	  up feature, will call generic API provided by this platform driver,=
+=0A=
+>>> +	  and then it will trigger RCPM driver to do it. The benefit is to=0A=
+>>> +	  isolate the user and service, such as  flex timer driver will not=
+=0A=
+>>> +	  have to know the implement details of wakeup function it require.=
+=0A=
+>>> +	  Besides, it is also easy for service side to upgrade its logic when=
+=0A=
+>>> +	  design changed and remain user side unchanged.=0A=
+>>> diff --git a/drivers/soc/fsl/Makefile b/drivers/soc/fsl/Makefile index=
+=0A=
+>>> 44b3beb..8f9db23 100644=0A=
+>>> --- a/drivers/soc/fsl/Makefile=0A=
+>>> +++ b/drivers/soc/fsl/Makefile=0A=
+>>> @@ -6,3 +6,4 @@ obj-$(CONFIG_FSL_DPAA)                 +=3D qbman/=0A=
+>>>  obj-$(CONFIG_QUICC_ENGINE)		+=3D qe/=0A=
+>>>  obj-$(CONFIG_CPM)			+=3D qe/=0A=
+>>>  obj-$(CONFIG_FSL_GUTS)			+=3D guts.o=0A=
+>>> +obj-$(CONFIG_FSL_PLAT_PM)	+=3D plat_pm.o=0A=
+>>> diff --git a/drivers/soc/fsl/plat_pm.c b/drivers/soc/fsl/plat_pm.c new=
+=0A=
+>>> file mode 100644 index 0000000..19ea14e=0A=
+>>> --- /dev/null=0A=
+>>> +++ b/drivers/soc/fsl/plat_pm.c=0A=
+>>> @@ -0,0 +1,144 @@=0A=
+>>> +// SPDX-License-Identifier: GPL-2.0=0A=
+>>> +//=0A=
+>>> +// plat_pm.c - Freescale platform PM framework // // Copyright 2018=0A=
+>>> +NXP // // Author: Ran Wang <ran.wang_1@nxp.com>,=0A=
+>>> +=0A=
+>>> +#include <linux/kernel.h>=0A=
+>>> +#include <linux/device.h>=0A=
+>>> +#include <linux/list.h>=0A=
+>>> +#include <linux/slab.h>=0A=
+>>> +#include <linux/err.h>=0A=
+>>> +#include <soc/fsl/plat_pm.h>=0A=
+>>> +=0A=
+>>> +=0A=
+>>> +struct plat_pm_t {=0A=
+>>> +	struct list_head node;=0A=
+>>> +	fsl_plat_pm_handle handle;=0A=
+>>> +	void *handle_priv;=0A=
+>>> +	spinlock_t	lock;=0A=
+>>> +};=0A=
+>>> +=0A=
+>>> +static struct plat_pm_t plat_pm;=0A=
+>>> +=0A=
+>>> +// register_fsl_platform_wakeup_source - Register callback function=0A=
+>>> +to plat_pm // @handle: Pointer to handle PM feature requirement //=0A=
+>>> +@handle_priv: Handler specific data struct // // Return 0 on success=
+=0A=
+>>> +other negative errno int=0A=
+>>> +register_fsl_platform_wakeup_source(fsl_plat_pm_handle handle,=0A=
+>>> +		void *handle_priv)=0A=
+>>> +{=0A=
+>>> +	struct plat_pm_t *p;=0A=
+>>> +	unsigned long	flags;=0A=
+>>> +=0A=
+>>> +	if (!handle) {=0A=
+>>> +		pr_err("FSL plat_pm: Handler invalid, reject\n");=0A=
+>>> +		return -EINVAL;=0A=
+>>> +	}=0A=
+>>> +=0A=
+>>> +	p =3D kmalloc(sizeof(*p), GFP_KERNEL);=0A=
+>>> +	if (!p)=0A=
+>>> +		return -ENOMEM;=0A=
+>>> +=0A=
+>>> +	p->handle =3D handle;=0A=
+>>> +	p->handle_priv =3D handle_priv;=0A=
+>>> +=0A=
+>>> +	spin_lock_irqsave(&plat_pm.lock, flags);=0A=
+>>> +	list_add_tail(&p->node, &plat_pm.node);=0A=
+>>> +	spin_unlock_irqrestore(&plat_pm.lock, flags);=0A=
+>>> +=0A=
+>>> +	return 0;=0A=
+>>> +}=0A=
+>>> +EXPORT_SYMBOL_GPL(register_fsl_platform_wakeup_source);=0A=
+>>> +=0A=
+>>> +// Deregister_fsl_platform_wakeup_source - deregister callback=0A=
+>>> +function // @handle_priv: Handler specific data struct // // Return 0=
+=0A=
+>>> +on success other negative errno int=0A=
+>>> +deregister_fsl_platform_wakeup_source(void *handle_priv) {=0A=
+>>> +	struct plat_pm_t *p, *tmp;=0A=
+>>> +	unsigned long	flags;=0A=
+>>> +=0A=
+>>> +	spin_lock_irqsave(&plat_pm.lock, flags);=0A=
+>>> +	list_for_each_entry_safe(p, tmp, &plat_pm.node, node) {=0A=
+>>> +		if (p->handle_priv =3D=3D handle_priv) {=0A=
+>>> +			list_del(&p->node);=0A=
+>>> +			kfree(p);=0A=
+>>> +		}=0A=
+>>> +	}=0A=
+>>> +	spin_unlock_irqrestore(&plat_pm.lock, flags);=0A=
+>>> +	return 0;=0A=
+>>> +}=0A=
+>>> +EXPORT_SYMBOL_GPL(deregister_fsl_platform_wakeup_source);=0A=
+>>> +=0A=
+>>> +// fsl_platform_wakeup_config - Configure wakeup source by calling=0A=
+>>> +handlers // @dev: pointer to user's device struct // @flag: to tell=0A=
+>>> +enable or disable wakeup source // // Return 0 on success other=0A=
+>>> +negative errno int fsl_platform_wakeup_config(struct device *dev,=0A=
+>>> +bool flag) {=0A=
+>>> +	struct plat_pm_t *p;=0A=
+>>> +	int ret;=0A=
+>>> +	bool success_handled;=0A=
+>>> +	unsigned long	flags;=0A=
+>>> +=0A=
+>>> +	success_handled =3D false;=0A=
+>>> +=0A=
+>>> +	// Will consider success if at least one callback return 0.=0A=
+>>> +	// Also, rest handles still get oppertunity to be executed=0A=
+>>> +	spin_lock_irqsave(&plat_pm.lock, flags);=0A=
+>>> +	list_for_each_entry(p, &plat_pm.node, node) {=0A=
+>>> +		if (p->handle) {=0A=
+>>> +			ret =3D p->handle(dev, flag, p->handle_priv);=0A=
+>>> +			if (!ret)=0A=
+>>> +				success_handled =3D true;=0A=
+>> Miss a break?=0A=
+> Actually my idea is to allow more than one registered handler to handle t=
+his=0A=
+> request, so I define a flag rather than return to indicated if there is a=
+t least one handler successfully=0A=
+> do it. This design might give more flexibility to framework when running.=
+=0A=
+There is only one flag(success_handled) here, how did know which handler=0A=
+failed?=0A=
+=0A=
+BTW, I don't think we need this flag. We can only use the return value.=0A=
+=0A=
+Cheers,=0A=
+Dongsheng=0A=
+=0A=
+>>> +			else if (ret !=3D -ENODEV) {=0A=
+>>> +				pr_err("FSL plat_pm: Failed to config wakeup=0A=
+>> source:%d\n", ret);=0A=
+>> Please unlock before return.=0A=
+> Yes, will fix it in next version, thanks for pointing out!=0A=
+>=0A=
+>>> +				return ret;=0A=
+>>> +			}=0A=
+>>> +		} else=0A=
+>>> +			pr_warn("FSL plat_pm: Invalid handler detected,=0A=
+>> skip\n");=0A=
+>>> +	}=0A=
+>>> +	spin_unlock_irqrestore(&plat_pm.lock, flags);=0A=
+>>> +=0A=
+>>> +	if (success_handled =3D=3D false) {=0A=
+>>> +		pr_err("FSL plat_pm: Cannot find the matchhed handler for=0A=
+>> wakeup source config\n");=0A=
+>>> +		return -ENODEV;=0A=
+>>> +	}=0A=
+>> Add this into the loop.=0A=
+> My design is that if the 1st handler return -ENODEV to indicated this dev=
+ice it doesn't support, =0A=
+> then the framework will continue try 2nd handler...=0A=
+>=0A=
+> So I think it is needed to place this checking out of loop, what do you s=
+ay?=0A=
+>=0A=
+> Regards,=0A=
+> Ran=0A=
+>>> +=0A=
+>>> +	return 0;=0A=
+>>> +}=0A=
+>>> +=0A=
+>>> +// fsl_platform_wakeup_enable - Enable wakeup source // @dev: pointer=
+=0A=
+>>> +to user's device struct // // Return 0 on success other negative=0A=
+>>> +errno int fsl_platform_wakeup_enable(struct device *dev) {=0A=
+>>> +	return fsl_platform_wakeup_config(dev, true); }=0A=
+>>> +EXPORT_SYMBOL_GPL(fsl_platform_wakeup_enable);=0A=
+>>> +=0A=
+>>> +// fsl_platform_wakeup_disable - Disable wakeup source // @dev:=0A=
+>>> +pointer to user's device struct // // Return 0 on success other=0A=
+>>> +negative errno int fsl_platform_wakeup_disable(struct device *dev) {=
+=0A=
+>>> +	return fsl_platform_wakeup_config(dev, false); }=0A=
+>>> +EXPORT_SYMBOL_GPL(fsl_platform_wakeup_disable);=0A=
+>>> +=0A=
+>>> +static int __init fsl_plat_pm_init(void) {=0A=
+>>> +	spin_lock_init(&plat_pm.lock);=0A=
+>>> +	INIT_LIST_HEAD(&plat_pm.node);=0A=
+>>> +	return 0;=0A=
+>>> +}=0A=
+>>> +=0A=
+>>> +core_initcall(fsl_plat_pm_init);=0A=
+>>> diff --git a/include/soc/fsl/plat_pm.h b/include/soc/fsl/plat_pm.h new=
+=0A=
+>>> file mode 100644 index 0000000..bbe151e=0A=
+>>> --- /dev/null=0A=
+>>> +++ b/include/soc/fsl/plat_pm.h=0A=
+>>> @@ -0,0 +1,22 @@=0A=
+>>> +// SPDX-License-Identifier: GPL-2.0=0A=
+>>> +//=0A=
+>>> +// plat_pm.h - Freescale platform PM Header // // Copyright 2018 NXP=
+=0A=
+>>> +// // Author: Ran Wang <ran.wang_1@nxp.com>,=0A=
+>>> +=0A=
+>>> +#ifndef __FSL_PLAT_PM_H=0A=
+>>> +#define __FSL_PLAT_PM_H=0A=
+>>> +=0A=
+>>> +typedef int (*fsl_plat_pm_handle)(struct device *dev, bool flag,=0A=
+>>> +		void *handle_priv);=0A=
+>>> +=0A=
+>>> +int register_fsl_platform_wakeup_source(fsl_plat_pm_handle handle,=0A=
+>>> +		void *handle_priv);=0A=
+>>> +int deregister_fsl_platform_wakeup_source(void *handle_priv); int=0A=
+>>> +fsl_platform_wakeup_config(struct device *dev, bool flag); int=0A=
+>>> +fsl_platform_wakeup_enable(struct device *dev); int=0A=
+>>> +fsl_platform_wakeup_disable(struct device *dev);=0A=
+>>> +=0A=
+>>> +#endif	// __FSL_PLAT_PM_H=0A=
+>=0A=
+=0A=
