@@ -1,12 +1,12 @@
 Return-Path: <clabbe@baylibre.com>
-Received: from mail-wr1-x444.google.com (mail-wr1-x444.google.com
- [IPv6:2a00:1450:4864:20::444])
+Received: from mail-wm0-x244.google.com (mail-wm0-x244.google.com
+ [IPv6:2a00:1450:400c:c09::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 426SWk0nLzzF3CS
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Sep 2018 05:42:25 +1000 (AEST)
-Received: by mail-wr1-x444.google.com with SMTP id k5-v6so15999583wre.10
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Sep 2018 12:42:25 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 426SWk6YKyzF3TS
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Sep 2018 05:42:22 +1000 (AEST)
+Received: by mail-wm0-x244.google.com with SMTP id c14-v6so15752070wmb.4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Sep 2018 12:42:21 -0700 (PDT)
 From: Corentin Labbe <clabbe@baylibre.com>
 To: Gilles.Muller@lip6.fr, Julia.Lawall@lip6.fr, agust@denx.de,
  alexandre.torgue@st.com, alistair@popple.id.au, benh@kernel.crashing.org,
@@ -21,11 +21,10 @@ Cc: cocci@systeme.lip6.fr, linux-amlogic@lists.infradead.org,
  linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  netdev@vger.kernel.org, linux-sunxi@googlegroups.com,
  Corentin Labbe <clabbe@baylibre.com>
-Subject: [PATCH RFC 3/5] coccinelle: add xxxsetbitsXX converting spatch
-Date: Fri,  7 Sep 2018 19:41:45 +0000
-Message-Id: <1536349307-20714-4-git-send-email-clabbe@baylibre.com>
-In-Reply-To: <1536349307-20714-1-git-send-email-clabbe@baylibre.com>
-References: <1536349307-20714-1-git-send-email-clabbe@baylibre.com>
+Subject: [PATCH 0/5] introduce
+ setbits32/clrbits32/clrsetbits32/setbits64/clrbits64/clrsetbits64 functions
+Date: Fri,  7 Sep 2018 19:41:42 +0000
+Message-Id: <1536349307-20714-1-git-send-email-clabbe@baylibre.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,443 +34,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch add a spatch which convert all open coded of setbits32/clrbits32/clrsetbits32
-and their 64 bits counterparts.
+Hello
 
-Signed-off-by: Corentin Labbe <clabbe@baylibre.com>
----
- scripts/coccinelle/misc/setbits.cocci | 423 ++++++++++++++++++++++++++++++++++
- 1 file changed, 423 insertions(+)
+This patchset adds a new set of functions which are open-coded in lot of
+place.
+Basicly the pattern is always the same, "read, modify a bit, write"
+some driver already have thoses pattern them as functions. (like ahci_sunxi.c or dwmac-meson8b)
+
+The first patch rename some powerpc funtions which already use the same name (xxxbits32)
+but with only bigendian values.
+
+The second patch adds the header.
+The third patch is an ugly try to implement a coccinelle semantic patch to
+find all place where xxxbits function could be used.
+Probably this spatch could be better written and I didnt found an easy way to add the "linux/setbits" header.
+
+The two last patch are example of convertion of two drivers.
+Thoses patchs give an example of the reduction of code won by using xxxbits32.
+
+This patchset is tested with the ahci_sunxi and dwmac-sun8i drivers.
+
+Regards
+
+Corentin Labbe (5):
+  powerpc: rename setbits32/clrbits32 to setbits32_be/clrbits32_be
+  include: add
+    setbits32/clrbits32/clrsetbits32/setbits64/clrbits64/clrsetbits64 in
+    linux/setbits.h
+  coccinelle: add xxxsetbitsXX converting spatch
+  net: ethernet: stmmac: use xxxsetbits32
+  ata: ahci_sunxi: use xxxsetbits32 functions
+
+ arch/powerpc/include/asm/fsl_lbc.h                 |   2 +-
+ arch/powerpc/include/asm/io.h                      |   5 +-
+ arch/powerpc/platforms/44x/canyonlands.c           |   4 +-
+ arch/powerpc/platforms/4xx/gpio.c                  |  28 +-
+ arch/powerpc/platforms/512x/pdm360ng.c             |   6 +-
+ arch/powerpc/platforms/52xx/mpc52xx_common.c       |   6 +-
+ arch/powerpc/platforms/52xx/mpc52xx_gpt.c          |  10 +-
+ arch/powerpc/platforms/82xx/ep8248e.c              |   2 +-
+ arch/powerpc/platforms/82xx/km82xx.c               |   6 +-
+ arch/powerpc/platforms/82xx/mpc8272_ads.c          |  10 +-
+ arch/powerpc/platforms/82xx/pq2.c                  |   2 +-
+ arch/powerpc/platforms/82xx/pq2ads-pci-pic.c       |   4 +-
+ arch/powerpc/platforms/82xx/pq2fads.c              |  10 +-
+ arch/powerpc/platforms/83xx/km83xx.c               |   6 +-
+ arch/powerpc/platforms/83xx/mpc836x_mds.c          |   2 +-
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c          |   2 +-
+ arch/powerpc/platforms/85xx/mpc85xx_pm_ops.c       |   4 +-
+ arch/powerpc/platforms/85xx/mpc85xx_rdb.c          |   2 +-
+ arch/powerpc/platforms/85xx/p1022_ds.c             |   4 +-
+ arch/powerpc/platforms/85xx/p1022_rdk.c            |   4 +-
+ arch/powerpc/platforms/85xx/t1042rdb_diu.c         |   4 +-
+ arch/powerpc/platforms/85xx/twr_p102x.c            |   2 +-
+ arch/powerpc/platforms/86xx/mpc8610_hpcd.c         |   4 +-
+ arch/powerpc/platforms/8xx/adder875.c              |   2 +-
+ arch/powerpc/platforms/8xx/m8xx_setup.c            |   4 +-
+ arch/powerpc/platforms/8xx/mpc86xads_setup.c       |   4 +-
+ arch/powerpc/platforms/8xx/mpc885ads_setup.c       |  28 +-
+ arch/powerpc/platforms/embedded6xx/flipper-pic.c   |   6 +-
+ arch/powerpc/platforms/embedded6xx/hlwd-pic.c      |   8 +-
+ arch/powerpc/platforms/embedded6xx/wii.c           |  10 +-
+ arch/powerpc/sysdev/cpm1.c                         |  26 +-
+ arch/powerpc/sysdev/cpm2.c                         |  16 +-
+ arch/powerpc/sysdev/cpm_common.c                   |   4 +-
+ arch/powerpc/sysdev/fsl_85xx_l2ctlr.c              |   8 +-
+ arch/powerpc/sysdev/fsl_lbc.c                      |   2 +-
+ arch/powerpc/sysdev/fsl_pci.c                      |   8 +-
+ arch/powerpc/sysdev/fsl_pmc.c                      |   2 +-
+ arch/powerpc/sysdev/fsl_rcpm.c                     |  74 ++--
+ arch/powerpc/sysdev/fsl_rio.c                      |   4 +-
+ arch/powerpc/sysdev/fsl_rmu.c                      |   8 +-
+ arch/powerpc/sysdev/mpic_timer.c                   |  12 +-
+ drivers/ata/ahci_sunxi.c                           |  51 +--
+ .../net/ethernet/stmicro/stmmac/dwmac-meson8b.c    |  54 +--
+ drivers/net/ethernet/stmicro/stmmac/dwmac-sun8i.c  |  55 +--
+ .../net/ethernet/stmicro/stmmac/dwmac1000_core.c   |  21 +-
+ drivers/net/ethernet/stmicro/stmmac/dwmac4_core.c  |  51 +--
+ drivers/net/ethernet/stmicro/stmmac/dwmac4_dma.c   |  13 +-
+ drivers/net/ethernet/stmicro/stmmac/dwmac4_lib.c   |  42 +-
+ drivers/net/ethernet/stmicro/stmmac/dwmac5.c       |  11 +-
+ drivers/net/ethernet/stmicro/stmmac/dwmac_lib.c    |  17 +-
+ .../net/ethernet/stmicro/stmmac/dwxgmac2_core.c    |  30 +-
+ drivers/net/ethernet/stmicro/stmmac/dwxgmac2_dma.c |  69 +---
+ .../net/ethernet/stmicro/stmmac/stmmac_hwtstamp.c  |  11 +-
+ drivers/net/ethernet/stmicro/stmmac/stmmac_mdio.c  |   7 +-
+ include/linux/setbits.h                            |  55 +++
+ scripts/coccinelle/misc/setbits.cocci              | 423 +++++++++++++++++++++
+ 56 files changed, 776 insertions(+), 489 deletions(-)
+ create mode 100644 include/linux/setbits.h
  create mode 100644 scripts/coccinelle/misc/setbits.cocci
 
-diff --git a/scripts/coccinelle/misc/setbits.cocci b/scripts/coccinelle/misc/setbits.cocci
-new file mode 100644
-index 000000000000..c01ab6d75eb4
---- /dev/null
-+++ b/scripts/coccinelle/misc/setbits.cocci
-@@ -0,0 +1,423 @@
-+virtual context
-+
-+@pclrsetbits32a@
-+identifier rr;
-+expression reg;
-+expression set;
-+expression clear;
-+@@
-+
-+  u32 rr;
-+  ...
-+- rr = readl(reg);
-+- rr &= ~clear;
-+- rr |= set;
-+- writel(rr, reg);
-++ clrsetbits32(reg, clear, set);
-+
-+@pclrsetbits32b@
-+identifier rr;
-+expression reg;
-+expression set;
-+expression clear;
-+@@
-+
-+  u32 rr;
-+  ...
-+- rr = readl(reg);
-+- rr |= set;
-+- rr &= ~clear;
-+- writel(rr, reg);
-++ clrsetbits32(reg, clear, set);
-+
-+@pclrbits32@
-+identifier rr;
-+expression reg;
-+expression clear;
-+@@
-+
-+  u32 rr;
-+  ...
-+- rr = readl(reg);
-+- rr &= ~clear;
-+- writel(rr, reg);
-++ clrbits32(reg, clear);
-+
-+@psetbits32@
-+identifier rr;
-+expression reg;
-+expression set;
-+@@
-+
-+  u32 rr;
-+  ...
-+- rr = readl(reg);
-+- rr |= set;
-+- writel(rr, reg);
-++ setbits32(reg, set);
-+
-+@psetbits32b@
-+identifier rr;
-+expression reg;
-+expression set1;
-+expression set2;
-+@@
-+
-+  u32 rr;
-+  ...
-+- rr = readl(reg);
-+- rr |= set1;
-+- rr |= set2;
-+- writel(rr, reg);
-++ setbits32(reg, set1 | set2);
-+
-+@pclrsetbits64a@
-+identifier rr;
-+expression reg;
-+expression set;
-+expression clear;
-+@@
-+
-+  u64 rr;
-+  ...
-+- rr = readq(reg);
-+- rr &= ~clear;
-+- rr |= set;
-+- writeq(rr, reg);
-++ clrsetbits64(reg, clear, set);
-+
-+@pclrsetbits64b@
-+identifier rr;
-+expression reg;
-+expression set;
-+expression clear;
-+@@
-+
-+  u64 rr;
-+  ...
-+- rr = readq(reg);
-+- rr |= set;
-+- rr &= ~clear;
-+- writeq(rr, reg);
-++ clrsetbits64(reg, clear, set);
-+
-+@pclrbits64@
-+identifier rr;
-+expression reg;
-+expression clear;
-+@@
-+
-+  u64 rr;
-+  ...
-+- rr = readq(reg);
-+- rr &= ~clear;
-+- writeq(rr, reg);
-++ clrbits64(reg, clear);
-+
-+@psetbits64@
-+identifier rr;
-+expression reg;
-+expression set;
-+@@
-+
-+  u64 rr;
-+  ...
-+- rr = readq(reg);
-+- rr |= set;
-+- writeq(rr, reg);
-++ setbits64(reg, set);
-+
-+@@
-+expression dwmac;
-+expression reg;
-+expression mask;
-+expression value;
-+@@
-+
-+- meson8b_dwmac_mask_bits(dwmac, reg, mask, value);
-++ clrsetbits32(dwmac->regs + reg, mask, value);
-+
-+@ppclrsetbits32a@
-+identifier rr;
-+expression reg;
-+expression set;
-+expression clear;
-+@@
-+
-+- u32 rr = readl(reg);
-+- rr &= ~clear;
-+- rr |= set;
-+- writel(rr, reg);
-++ clrsetbits32(reg, clear, set);
-+
-+@ppclrsetbits32b@
-+identifier rr;
-+expression reg;
-+expression set;
-+expression clear;
-+@@
-+
-+- u32 rr = readl(reg);
-+- rr |= set;
-+- rr &= ~clear;
-+- writel(rr, reg);
-++ clrsetbits32(reg, clear, set);
-+
-+@ppclrbits32@
-+identifier rr;
-+expression reg;
-+expression clear;
-+@@
-+
-+- u32 rr = readl(reg);
-+- rr &= ~clear;
-+- writel(rr, reg);
-++ clrbits32(reg, clear);
-+
-+@ppsetbits32@
-+identifier rr;
-+expression reg;
-+expression set;
-+@@
-+
-+- u32 rr = readl(reg);
-+- rr |= set;
-+- writel(rr, reg);
-++ setbits32(reg, set);
-+
-+@ppclrsetbits64a@
-+identifier rr;
-+expression reg;
-+expression set;
-+expression clear;
-+@@
-+
-+- u64 rr = readq(reg);
-+- rr &= ~clear;
-+- rr |= set;
-+- writeq(rr, reg);
-++ clrsetbits64(reg, clear, set);
-+
-+@ppclrsetbits64b@
-+identifier rr;
-+expression reg;
-+expression set;
-+expression clear;
-+@@
-+
-+- u64 rr = readq(reg);
-+- rr |= set;
-+- rr &= ~clear;
-+- writeq(rr, reg);
-++ clrsetbits64(reg, clear, set);
-+
-+@ppclrbits64@
-+identifier rr;
-+expression reg;
-+expression clear;
-+@@
-+
-+- u64 rr = readq(reg);
-+- rr &= ~clear;
-+- writeq(rr, reg);
-++ clrbits64(reg, clear);
-+
-+@ppsetbits64@
-+identifier rr;
-+expression reg;
-+expression set;
-+@@
-+
-+- u64 rr = readq(reg);
-+- rr |= set;
-+- writeq(rr, reg);
-++ setbits64(reg, set);
-+
-+@pif_set_clr@
-+identifier rr;
-+expression reg;
-+expression set;
-+expression clear;
-+@@
-+
-+  u32 rr;
-+  ...
-+- rr = readl(reg);
-+  if (...)
-+- rr |= set;
-++ setbits32(reg, set);
-+  else
-+- rr &= ~clear;
-++ clrbits32(reg, clear);
-+- writel(rr, reg);
-+
-+@pifclrset@
-+identifier rr;
-+expression reg;
-+expression set;
-+expression clear;
-+@@
-+
-+  u32 rr;
-+  ...
-+- rr = readl(reg);
-+  if (...)
-+- rr &= ~clear;
-++ clrbits32(reg, clear);
-+  else
-+- rr |= set;
-++ setbits32(reg, set);
-+- writel(rr, reg);
-+
-+@pif_set_clr64@
-+identifier rr;
-+expression reg;
-+expression set;
-+expression clear;
-+@@
-+
-+  u64 rr;
-+  ...
-+- rr = readq(reg);
-+  if (...)
-+- rr |= set;
-++ setbits64(reg, set);
-+  else
-+- rr &= ~clear;
-++ clrbits64(reg, clear);
-+- writeq(rr, reg);
-+
-+@pif_clr_set64@
-+identifier rr;
-+expression reg;
-+expression set;
-+expression clear;
-+@@
-+
-+  u64 rr;
-+  ...
-+- rr = readq(reg);
-+  if (...)
-+- rr &= ~clear;
-++ clrbits64(reg, clear);
-+  else
-+- rr |= set;
-++ setbits32(reg, set);
-+- writeq(rr, reg);
-+
-+
-+@p_setbits32_m2@
-+identifier rr;
-+expression reg;
-+expression set;
-+@@
-+
-+  u32 rr;
-+  ...
-+- rr = readl(reg);
-+- writel(rr | set, reg);
-++ setbits32(reg, set);
-+
-+@p_clrbits32_m2@
-+identifier rr;
-+expression reg;
-+expression mask;
-+@@
-+
-+  u32 rr;
-+  ...
-+- rr = readl(reg);
-+- writel(rr & ~mask, reg);
-++ clrbits32(reg, mask);
-+
-+
-+@p_setbits_oneliner@
-+expression addr;
-+expression set;
-+@@
-+- writel(readl(addr) | set, addr);
-++ setbits32(addr, set);
-+
-+@p_clrbits_oneliner@
-+expression addr;
-+expression mask;
-+@@
-+- writel(readl(addr) & ~mask, addr);
-++ clrbits32(addr, mask);
-+
-+@p_clrsetbits_oneliner_a@
-+expression addr;
-+expression set;
-+expression mask;
-+@@
-+- writel(readl(addr) | set & ~mask, addr);
-++ clrsetbits32(addr, mask, set);
-+
-+@p_clrsetbits_oneliner_b@
-+expression addr;
-+expression set;
-+expression mask;
-+@@
-+- writel(readl(addr) & ~mask | set, addr);
-++ clrsetbits32(addr, mask, set);
-+
-+@p_clrsetbits_oneliner_a2@
-+expression addr;
-+expression set;
-+expression mask;
-+@@
-+- writel((readl(addr) | set) & ~mask, addr);
-++ clrsetbits32(addr, mask, set);
-+
-+@p_clrsetbits_oneliner_b2@
-+expression addr;
-+expression set;
-+expression mask;
-+@@
-+- writel((readl(addr) & ~mask) | set, addr);
-++ clrsetbits32(addr, mask, set);
-+
-+
-+
-+
-+
-+
-+
-+
-+
-+
-+
-+// sub optimal way to add header
-+@header1 depends on psetbits32 || pclrbits32 || pclrsetbits32a || pclrsetbits32b || psetbits64 || pclrbits64 || pclrsetbits64a || pclrsetbits64b || ppsetbits32 || ppclrbits32 || ppclrsetbits32a || ppclrsetbits32b || ppsetbits64 || ppclrbits64 || ppclrsetbits64a || ppclrsetbits64b@
-+@@
-+  #include <linux/io.h>
-++ #include <linux/setbits.h>
-+
-+@header2 depends on (psetbits32 || pclrbits32 || pclrsetbits32a || pclrsetbits32b || psetbits64 || pclrbits64 || pclrsetbits64a || pclrsetbits64b || ppsetbits32 || ppclrbits32 || ppclrsetbits32a || ppclrsetbits32b || ppsetbits64 || ppclrbits64 || ppclrsetbits64a || ppclrsetbits64b) && !header1@
-+@@
-+  #include <linux/interrupt.h>
-++ #include <linux/setbits.h>
-+
-+@header3 depends on (psetbits32 || pclrbits32 || pclrsetbits32a || pclrsetbits32b || psetbits64 || pclrbits64 || pclrsetbits64a || pclrsetbits64b || ppsetbits32 || ppclrbits32 || ppclrsetbits32a || ppclrsetbits32b || ppsetbits64 || ppclrbits64 || ppclrsetbits64a || ppclrsetbits64b) && !header2@
-+@@
-+  #include <linux/of.h>
-++ #include <linux/setbits.h>
-+
-+@@
-+expression base;
-+expression offset;
-+expression value;
-+@@
-+
-+- mtu3_setbits(base, offset, value);
-++ setbits32(base + offset, value);
-+
-+@@
-+expression base;
-+expression offset;
-+expression mask;
-+@@
-+
-+- mtu3_clrbits(base, offset, mask);
-++ clrbits32(base + offset, mask);
-+
 -- 
 2.16.4
