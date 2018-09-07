@@ -1,24 +1,28 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <ran.wang_1@nxp.com>
+Received: from EUR04-VI1-obe.outbound.protection.outlook.com
+ (mail-eopbgr80043.outbound.protection.outlook.com [40.107.8.43])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 426CBM4QPtzF3Rc
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Sep 2018 19:41:31 +1000 (AEST)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: Re: [RFC PATCH v1 00/17] ban the use of _PAGE_XXX flags outside
- platform specific code
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- npiggin@gmail.com, aneesh.kumar@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-References: <cover.1535913369.git.christophe.leroy@c-s.fr>
- <8736uneylc.fsf@linux.ibm.com>
-Message-ID: <8b11dfd8-4c42-252f-c3dc-063026c49cef@c-s.fr>
-Date: Fri, 7 Sep 2018 09:41:24 +0000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 426CLl5DZmzF3RM
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Sep 2018 19:48:47 +1000 (AEST)
+From: Ran Wang <ran.wang_1@nxp.com>
+To: Leo Li <leoyang.li@nxp.com>
+CC: "dongsheng.wang@hxt-semitech.com" <dongsheng.wang@hxt-semitech.com>, Rob
+ Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "open
+ list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
+ <devicetree@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ lkml <linux-kernel@vger.kernel.org>, "moderated list:ARM/FREESCALE IMX / MXC
+ ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>
+Subject: RE: [PATCH 3/3] soc: fsl: add RCPM driver
+Date: Fri, 7 Sep 2018 09:48:41 +0000
+Message-ID: <AM5PR0402MB2865E57EDC0DE8B0047282A2F1000@AM5PR0402MB2865.eurprd04.prod.outlook.com>
+References: <20180831035219.31619-1-ran.wang_1@nxp.com>
+ <20180831035219.31619-3-ran.wang_1@nxp.com>
+ <be39f5ea8c9046b0bf1f6bbfe935fae4@HXTBJIDCEMVIW02.hxtcorp.net>
+ <CADRPPNQN=27+pOSckxvwSuBJoFaz7pT+Z6h07Wu3Liz5ao5kkA@mail.gmail.com>
+In-Reply-To: <CADRPPNQN=27+pOSckxvwSuBJoFaz7pT+Z6h07Wu3Liz5ao5kkA@mail.gmail.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-In-Reply-To: <8736uneylc.fsf@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,193 +32,188 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 09/06/2018 09:58 AM, Aneesh Kumar K.V wrote:
-> Christophe Leroy <christophe.leroy@c-s.fr> writes:
-> 
->> Today flags like for instance _PAGE_RW or _PAGE_USER are used through
->> common parts of code.
->> Using those directly in common parts of code have proven to lead to
->> mistakes or misbehaviour, because their use is not always as trivial
->> as one could think.
->>
->> For instance, (flags & _PAGE_USER) == 0 isn't enough to tell
->> that a page is a kernel page, because some targets are using
->> _PAGE_PRIVILEDGED and not _PAGE_USER, so the test has to be
->> (flags & (_PAGE_USER | _PAGE_PRIVILEDGED)) == _PAGE_PRIVILEDGED
->> This has to (bad) consequences:
->>
->>   - All targets must define every bit, even the unsupported ones,
->>     leading to a lot of useless #define _PAGE_XXX 0
->>   - If someone forgets to take into account all possible _PAGE_XXX bits
->>     for the case, we can get unexpected behaviour on some targets.
->>
->> This becomes even more complex when we come to using _PAGE_RW.
->> Testing (flags & _PAGE_RW) is not enough to test whether a page
->> if writable or not, because:
->>
->>   - Some targets have _PAGE_RO instead, which has to be unset to tell
->>     a page is writable
->>   - Some targets have _PAGE_R and _PAGE_W, in which case
->>     _PAGE_RW = _PAGE_R | _PAGE_W
->>   - Even knowing whether a page is readable is not always trivial because:
->>     - Some targets requires to check that _PAGE_R is set to ensure page
->>     is readable
->>     - Some targets requires to check that _PAGE_NA is not set
->>     - Some targets requires to check that _PAGE_RO or _PAGE_RW is set
->>
->> Etc ....
->>
->> In order to work around all those issues and minimise the risks of errors,
->> this serie aims at removing all use of _PAGE_XXX flags from powerpc code
->> and always use pte_xxx() and pte_mkxxx() accessors instead. Those accessors
->> are then defined in target specific parts of the kernel code.
-> 
-> The series is really good. It also helps in code readability. Few things
-> i am not sure there is a way to reduce the overhead
-> 
-> -		access = _PAGE_EXEC;
-> +		access = pte_val(pte_mkexec(__pte(0)));
-> 
-> Considering we have multiple big endian to little endian coversion there
-> for book3s 64.
-
-Thanks for the review.
-
-For the above, I propose the following:
-
-diff --git a/arch/powerpc/mm/hash_utils_64.c 
-b/arch/powerpc/mm/hash_utils_64.c
-index f23a89d8e4ce..904ac9c84ea5 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -1482,7 +1482,7 @@ static bool should_hash_preload(struct mm_struct 
-*mm, unsigned long ea)
-  #endif
-
-  void hash_preload(struct mm_struct *mm, unsigned long ea,
--		  unsigned long access, unsigned long trap)
-+		  bool is_exec, unsigned long trap)
-  {
-  	int hugepage_shift;
-  	unsigned long vsid;
-@@ -1490,6 +1490,7 @@ void hash_preload(struct mm_struct *mm, unsigned 
-long ea,
-  	pte_t *ptep;
-  	unsigned long flags;
-  	int rc, ssize, update_flags = 0;
-+	unsigned long access = is_exec ? _PAGE_EXEC : 0;
-
-  	BUG_ON(REGION_ID(ea) != USER_REGION_ID);
-
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 5c8530d0c611..4122f26a2f44 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -507,7 +507,8 @@ void update_mmu_cache(struct vm_area_struct *vma, 
-unsigned long address,
-  	 * We don't need to worry about _PAGE_PRESENT here because we are
-  	 * called with either mm->page_table_lock held or ptl lock held
-  	 */
--	unsigned long access, trap;
-+	unsigned long trap;
-+	bool is_exec;
-
-  	if (radix_enabled()) {
-  		prefetch((void *)address);
-@@ -529,10 +530,10 @@ void update_mmu_cache(struct vm_area_struct *vma, 
-unsigned long address,
-  	trap = current->thread.regs ? TRAP(current->thread.regs) : 0UL;
-  	switch (trap) {
-  	case 0x300:
--		access = 0UL;
-+		is_exec = false;
-  		break;
-  	case 0x400:
--		access = _PAGE_EXEC;
-+		is_exec = true;
-  		break;
-  	default:
-  		return;
-diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
-index e5d779eed181..dd7f9b951d25 100644
---- a/arch/powerpc/mm/mmu_decl.h
-+++ b/arch/powerpc/mm/mmu_decl.h
-@@ -82,7 +82,7 @@ static inline void _tlbivax_bcast(unsigned long 
-address, unsigned int pid,
-  #else /* CONFIG_PPC_MMU_NOHASH */
-
-  extern void hash_preload(struct mm_struct *mm, unsigned long ea,
--			 unsigned long access, unsigned long trap);
-+			 bool is_exec, unsigned long trap);
-
-
-  extern void _tlbie(unsigned long address);
-diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index f983ffa24aa0..506e5c3e96da 100644
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -263,7 +263,7 @@ static void __init __mapin_ram_chunk(unsigned long 
-offset, unsigned long top)
-  		map_kernel_page(v, p, f);
-  #ifdef CONFIG_PPC_STD_MMU_32
-  		if (ktext)
--			hash_preload(&init_mm, v, 0, 0x300);
-+			hash_preload(&init_mm, v, false, 0x300);
-  #endif
-  		v += PAGE_SIZE;
-  		p += PAGE_SIZE;
-diff --git a/arch/powerpc/mm/ppc_mmu_32.c b/arch/powerpc/mm/ppc_mmu_32.c
-index bea6c544e38f..38a793bfca37 100644
---- a/arch/powerpc/mm/ppc_mmu_32.c
-+++ b/arch/powerpc/mm/ppc_mmu_32.c
-@@ -163,7 +163,7 @@ void __init setbat(int index, unsigned long virt, 
-phys_addr_t phys,
-   * Preload a translation in the hash table
-   */
-  void hash_preload(struct mm_struct *mm, unsigned long ea,
--		  unsigned long access, unsigned long trap)
-+		  bool is_exec, unsigned long trap)
-  {
-  	pmd_t *pmd;
-
-
-
-> 
-> Other thing is __ioremap_at where we do
-> 
-> +       pte_t pte = __pte(flags);
->   
->          /* Make sure we have the base flags */
-> -       if ((flags & _PAGE_PRESENT) == 0)
-> +       if (!pte_present(pte))
-
-This one is using pte_raw(), so shouldn't be a problem.
-
-Since the function is doing almost nothing of on the flags, maybe
-we could just replace the above by pte_present(__pte(flags)) and
-leave the rest as is.
-
-> 
-> -               err = map_kernel_page(v+i, p+i, flags);
-> +               err = map_kernel_page(v + i, p + i, pte_val(pte));
-
-Maybe another alternative would be to pass a pte_t to map_kernel_page(), 
-then we have to find an optimised way to insert the RPN into it before
-calling set_pte_at() instead of using pfn_pte() ?
-
-
-If we are so concerned by the multiple conversions, should we modify all 
-the pte_mkxxxx() to use pte_raw() and __pte_raw() instead of pte_val() 
-and __pte() ?
-
-> 
-> 
-> But otherwise for the series.
-> 
-> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-> 
-
-Thanks
-Christophe
+SGkgTGVvLA0KDQpPbiBTZXB0ZW1iZXIgMDUsIDIwMTggYXQgMTE6MjIgWWFuZyBMaSB3cm90ZToN
+Cj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogTGkgWWFuZyA8bGVveWFuZy5s
+aUBueHAuY29tPg0KPiBTZW50OiBXZWRuZXNkYXksIFNlcHRlbWJlciAwNSwgMjAxOCAxMToyMg0K
+PiBUbzogZG9uZ3NoZW5nLndhbmdAaHh0LXNlbWl0ZWNoLmNvbQ0KPiBDYzogUmFuIFdhbmcgPHJh
+bi53YW5nXzFAbnhwLmNvbT47IFJvYiBIZXJyaW5nIDxyb2JoK2R0QGtlcm5lbC5vcmc+Ow0KPiBN
+YXJrIFJ1dGxhbmQgPG1hcmsucnV0bGFuZEBhcm0uY29tPjsgb3BlbiBsaXN0Ok9QRU4gRklSTVdB
+UkUgQU5EDQo+IEZMQVRURU5FRCBERVZJQ0UgVFJFRSBCSU5ESU5HUyA8ZGV2aWNldHJlZUB2Z2Vy
+Lmtlcm5lbC5vcmc+OyBsaW51eHBwYy0NCj4gZGV2IDxsaW51eHBwYy1kZXZAbGlzdHMub3psYWJz
+Lm9yZz47IGxrbWwgPGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc+Ow0KPiBtb2RlcmF0ZWQg
+bGlzdDpBUk0vRlJFRVNDQUxFIElNWCAvIE1YQyBBUk0gQVJDSElURUNUVVJFIDxsaW51eC1hcm0t
+DQo+IGtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnPg0KPiBTdWJqZWN0OiBSZTogW1BBVENIIDMv
+M10gc29jOiBmc2w6IGFkZCBSQ1BNIGRyaXZlcg0KPiANCj4gT24gVHVlLCBTZXAgNCwgMjAxOCBh
+dCA5OjU4IFBNIFdhbmcsIERvbmdzaGVuZyA8ZG9uZ3NoZW5nLndhbmdAaHh0LQ0KPiBzZW1pdGVj
+aC5jb20+IHdyb3RlOg0KPiA+DQo+ID4gUGxlYXNlIGNoYW5nZSB5b3VyIGNvbW1lbnRzIHN0eWxl
+Lg0KPiANCj4gQWx0aG91Z2ggdGhpcyBkb2Vzbid0IGdldCBpbnRvIHRoZSBMaW51eCBrZXJuZWwg
+Y29kaW5nIHN0eWxlIGRvY3VtZW50YXRpb24NCj4geWV0LCBMaW51cyBzZWVtcyBjaGFuZ2VkIGhp
+cyBtaW5kIHRvIHByZWZlciAvLyB0aGFuIC8qDQo+ICovIGNvbW1lbnQgc3R5bGUgbm93Lg0KPiBo
+dHRwczovL2VtZWEwMS5zYWZlbGlua3MucHJvdGVjdGlvbi5vdXRsb29rLmNvbS8/dXJsPWh0dHBz
+JTNBJTJGJTJGbGttbA0KPiAub3JnJTJGbGttbCUyRjIwMTclMkYxMSUyRjI1JTJGMTMzJmFtcDtk
+YXRhPTAyJTdDMDElN0NyYW4ud2FuZ18NCj4gMSU0MG54cC5jb20lN0NjMGQ4OGU2NjkwMzg0ZTAy
+Yjk1MTA4ZDYxMmRlYzIzNSU3QzY4NmVhMWQzYmMyYjRjDQo+IDZmYTkyY2Q5OWM1YzMwMTYzNSU3
+QzAlN0MwJTdDNjM2NzE3MTQ1Mjg1MTI2MjAwJmFtcDtzZGF0YT1KSW9DWnANCj4gV2hSeVc3NkVx
+Z1NmbGZUREExZjBnTVFHS2ElMkZjYnZTYzVDTyUyRnclM0QmYW1wO3Jlc2VydmVkPTANCj4gU28g
+dGhlDQo+IC8vIHN0eWxlIHNob3VsZCBiZSBhY2NlcHRhYmxlIGZvciBub3cuDQo+IA0KPiA+DQo+
+ID4gT24gMjAxOC84LzMxIDExOjU2LCBSYW4gV2FuZyB3cm90ZToNCj4gPiA+IFRoZSBOWFAncyBR
+b3JJUSBQcm9jZXNzb3JzIGJhc2VkIG9uIEFSTSBDb3JlIGhhdmUgUkNQTSBtb2R1bGUgKFJ1bg0K
+PiA+ID4gQ29udHJvbCBhbmQgUG93ZXIgTWFuYWdlbWVudCksIHdoaWNoIHBlcmZvcm1zIGFsbCBk
+ZXZpY2UtbGV2ZWwgdGFza3MNCj4gPiA+IGFzc29jaWF0ZWQgd2l0aCBwb3dlciBtYW5hZ2VtZW50
+IHN1Y2ggYXMgd2FrZXVwIHNvdXJjZSBjb250cm9sLg0KPiA+ID4NCj4gPiA+IFRoaXMgZHJpdmVy
+IGRlcGVuZHMgb24gRlNMIHBsYXRmb3JtIFBNIGRyaXZlciBmcmFtZXdvcmsgd2hpY2ggaGVscA0K
+PiA+ID4gdG8gaXNvbGF0ZSB1c2VyIGFuZCBQTSBzZXJ2aWNlIHByb3ZpZGVyIChzdWNoIGFzIFJD
+UE0gZHJpdmVyKS4NCj4gPiA+DQo+ID4gPiBTaWduZWQtb2ZmLWJ5OiBDaGVuaHVpIFpoYW8gPGNo
+ZW5odWkuemhhb0BueHAuY29tPg0KPiA+ID4gU2lnbmVkLW9mZi1ieTogWWluZyBaaGFuZyA8eWlu
+Zy56aGFuZzIyNDU1QG54cC5jb20+DQo+ID4gPiBTaWduZWQtb2ZmLWJ5OiBSYW4gV2FuZyA8cmFu
+LndhbmdfMUBueHAuY29tPg0KPiA+ID4gLS0tDQo+ID4gPiAgZHJpdmVycy9zb2MvZnNsL0tjb25m
+aWcgICB8ICAgIDYgKysNCj4gPiA+ICBkcml2ZXJzL3NvYy9mc2wvTWFrZWZpbGUgIHwgICAgMSAr
+DQo+ID4gPiAgZHJpdmVycy9zb2MvZnNsL2xzLXJjcG0uYyB8ICAxNTMNCj4gPiA+ICsrKysrKysr
+KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKw0KPiA+ID4gIDMgZmlsZXMgY2hh
+bmdlZCwgMTYwIGluc2VydGlvbnMoKyksIDAgZGVsZXRpb25zKC0pICBjcmVhdGUgbW9kZQ0KPiA+
+ID4gMTAwNjQ0IGRyaXZlcnMvc29jL2ZzbC9scy1yY3BtLmMNCj4gPiA+DQo+ID4gPiBkaWZmIC0t
+Z2l0IGEvZHJpdmVycy9zb2MvZnNsL0tjb25maWcgYi9kcml2ZXJzL3NvYy9mc2wvS2NvbmZpZyBp
+bmRleA0KPiA+ID4gNjUxNzQxMi4uODgyMzMwZCAxMDA2NDQNCj4gPiA+IC0tLSBhL2RyaXZlcnMv
+c29jL2ZzbC9LY29uZmlnDQo+ID4gPiArKysgYi9kcml2ZXJzL3NvYy9mc2wvS2NvbmZpZw0KPiA+
+ID4gQEAgLTMwLDMgKzMwLDkgQEAgY29uZmlnIEZTTF9QTEFUX1BNDQo+ID4gPiAgICAgICAgIGhh
+dmUgdG8ga25vdyB0aGUgaW1wbGVtZW50IGRldGFpbHMgb2Ygd2FrZXVwIGZ1bmN0aW9uIGl0IHJl
+cXVpcmUuDQo+ID4gPiAgICAgICAgIEJlc2lkZXMsIGl0IGlzIGFsc28gZWFzeSBmb3Igc2Vydmlj
+ZSBzaWRlIHRvIHVwZ3JhZGUgaXRzIGxvZ2ljIHdoZW4NCj4gPiA+ICAgICAgICAgZGVzaWduIGNo
+YW5nZWQgYW5kIHJlbWFpbiB1c2VyIHNpZGUgdW5jaGFuZ2VkLg0KPiA+ID4gKw0KPiA+ID4gK2Nv
+bmZpZyBMU19SQ1BNDQo+ID4gPiArICAgICBib29sICJGcmVlc2NhbGUgUkNQTSBzdXBwb3J0Ig0K
+PiA+ID4gKyAgICAgZGVwZW5kcyBvbiAoRlNMX1BMQVRfUE0pDQo+ID4gPiArICAgICBoZWxwDQo+
+ID4gPiArICAgICAgIFRoaXMgZmVhdHVyZSBpcyB0byBlbmFibGUgc3BlY2lmaWVkIHdha2V1cCBz
+b3VyY2UgZm9yIHN5c3RlbSBzbGVlcC4NCj4gPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3NvYy9m
+c2wvTWFrZWZpbGUgYi9kcml2ZXJzL3NvYy9mc2wvTWFrZWZpbGUNCj4gPiA+IGluZGV4IDhmOWRi
+MjMuLjQzZmY3MWEgMTAwNjQ0DQo+ID4gPiAtLS0gYS9kcml2ZXJzL3NvYy9mc2wvTWFrZWZpbGUN
+Cj4gPiA+ICsrKyBiL2RyaXZlcnMvc29jL2ZzbC9NYWtlZmlsZQ0KPiA+ID4gQEAgLTcsMyArNyw0
+IEBAIG9iai0kKENPTkZJR19RVUlDQ19FTkdJTkUpICAgICAgICAgICAgKz0gcWUvDQo+ID4gPiAg
+b2JqLSQoQ09ORklHX0NQTSkgICAgICAgICAgICAgICAgICAgICs9IHFlLw0KPiA+ID4gIG9iai0k
+KENPTkZJR19GU0xfR1VUUykgICAgICAgICAgICAgICAgICAgICAgICs9IGd1dHMubw0KPiA+ID4g
+IG9iai0kKENPTkZJR19GU0xfUExBVF9QTSkgICAgKz0gcGxhdF9wbS5vDQo+ID4gPiArb2JqLSQo
+Q09ORklHX0xTX1JDUE0pICAgICAgICAgICAgICAgICs9IGxzLXJjcG0ubw0KPiANCj4gUHJvYmFi
+bHkgdXNlICJfIiBpbnN0ZWFkIG9mICItIiBmb3IgYWxpZ25tZW50Lg0KDQpPSywgd2lsbCB1cGRh
+dGUgaW4gbmV4dCB2ZXJzaW9uDQoNCj4gPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3NvYy9mc2wv
+bHMtcmNwbS5jIGIvZHJpdmVycy9zb2MvZnNsL2xzLXJjcG0uYw0KPiA+ID4gbmV3IGZpbGUgbW9k
+ZSAxMDA2NDQgaW5kZXggMDAwMDAwMC4uYjBmZWI4OA0KPiA+ID4gLS0tIC9kZXYvbnVsbA0KPiA+
+ID4gKysrIGIvZHJpdmVycy9zb2MvZnNsL2xzLXJjcG0uYw0KPiA+ID4gQEAgLTAsMCArMSwxNTMg
+QEANCj4gPiA+ICsvLyBTUERYLUxpY2Vuc2UtSWRlbnRpZmllcjogR1BMLTIuMCAvLyAvLyBwbGF0
+X3BtLmMgLSBGcmVlc2NhbGUNCj4gPiA+ICtMYXllcnNjYXBlIFJDUE0gZHJpdmVyDQo+IA0KPiBU
+aGUgZmlsZSBuYW1lIGhlcmUgaXMgbm90IHRoZSBzYW1lIGFzIHRoZSByZWFsIGZpbGUgbmFtZS4N
+Cg0KR290IGl0LCB3aWxsIGNvcnJlY3QgaXQuDQoNCj4gPiA+ICsvLw0KPiA+ID4gKy8vIENvcHly
+aWdodCAyMDE4IE5YUA0KPiA+ID4gKy8vDQo+ID4gPiArLy8gQXV0aG9yOiBSYW4gV2FuZyA8cmFu
+LndhbmdfMUBueHAuY29tPiwNCj4gDQo+IFdoZXJlIGRvIHlvdSBuZWVkIHRoZSBjb21tYSBpbiB0
+aGUgZW5kPw0KDQpNeSBiYWQsIHdpbGwgcmVtb3ZlIGNvbW1hIGluIG5leHQgdmVyc2lvbi4NCg0K
+PiA+ID4gKw0KPiA+ID4gKyNpbmNsdWRlIDxsaW51eC9pbml0Lmg+DQo+ID4gPiArI2luY2x1ZGUg
+PGxpbnV4L21vZHVsZS5oPg0KPiA+ID4gKyNpbmNsdWRlIDxsaW51eC9wbGF0Zm9ybV9kZXZpY2Uu
+aD4NCj4gPiA+ICsjaW5jbHVkZSA8bGludXgvb2ZfYWRkcmVzcy5oPg0KPiA+ID4gKyNpbmNsdWRl
+IDxsaW51eC9zbGFiLmg+DQo+ID4gPiArI2luY2x1ZGUgPHNvYy9mc2wvcGxhdF9wbS5oPg0KPiA+
+ID4gKw0KPiA+ID4gKyNkZWZpbmUgTUFYX0NPTVBBVElCTEVfTlVNICAgMTANCj4gPiA+ICsNCj4g
+PiA+ICtzdHJ1Y3QgcmNwbV90IHsNCj4gPiA+ICsgICAgIHN0cnVjdCBkZXZpY2UgKmRldjsNCj4g
+PiA+ICsgICAgIHZvaWQgX19pb21lbSAqaXBwZGV4cGNyX2FkZHI7DQo+ID4gPiArICAgICBib29s
+IGJpZ19lbmRpYW47ICAgICAgICAvKiBCaWcvTGl0dGxlIGVuZGlhbiBvZiBSQ1BNIG1vZHVsZSAq
+Lw0KPiA+ID4gK307DQo+ID4gPiArDQo+ID4gPiArLy8gcmNwbV9oYW5kbGUgLSBDb25maWd1cmUg
+UkNQTSByZWcgYWNjb3JkaW5nIHRvIHdha2UgdXAgc291cmNlDQo+ID4gPiArcmVxdWVzdCAvLyBA
+dXNlcl9kZXY6IHBvaW50ZXIgdG8gdXNlcidzIGRldmljZSBzdHJ1Y3QgLy8gQGZsYWc6IHRvDQo+
+ID4gPiArZW5hYmxlKHRydWUpIG9yIGRpc2FibGUoZmFsc2UpIHdha2V1cCBzb3VyY2UgLy8gQGhh
+bmRsZV9wcml2Og0KPiA+ID4gK3BvaW50ZXIgdG8gc3RydWN0IHJjcG1fdCBpbnN0YW5jZSAvLyAv
+LyBSZXR1cm4gMCBvbiBzdWNjZXNzIG90aGVyDQo+ID4gPiArbmVnYXRpdmUgZXJybm8NCj4gDQo+
+IEFsdGhvdWdoIExpbnVzIHByZWZlcnJlZCB0aGlzIC8vIGNvbW1lbnQgc3R5bGUuICBJJ20gbm90
+IHN1cmUgaWYgdGhpcyB3aWxsIGJlDQo+IGhhbmRsZWQgY29ycmVjdGx5IGJ5IHRoZSBrZXJuZWwt
+ZG9jIGNvbXBpbGVyLg0KPiBodHRwczovL2VtZWEwMS5zYWZlbGlua3MucHJvdGVjdGlvbi5vdXRs
+b29rLmNvbS8/dXJsPWh0dHBzJTNBJTJGJTJGd3cNCj4gdy5rZXJuZWwub3JnJTJGZG9jJTJGaHRt
+bCUyRnY0LjE4JTJGZG9jLWd1aWRlJTJGa2VybmVsLQ0KPiBkb2MuaHRtbCZhbXA7ZGF0YT0wMiU3
+QzAxJTdDcmFuLndhbmdfMSU0MG54cC5jb20lN0NjMGQ4OGU2NjkwMzgNCj4gNGUwMmI5NTEwOGQ2
+MTJkZWMyMzUlN0M2ODZlYTFkM2JjMmI0YzZmYTkyY2Q5OWM1YzMwMTYzNSU3QzAlN0MwDQo+ICU3
+QzYzNjcxNzE0NTI4NTEyNjIwMCZhbXA7c2RhdGE9SDdHa1VOT0xWRyUyRkNjWkVTemh0SEJlSENi
+TzkNCj4gJTJGSzRrOUVkSDMwQ3hxMiUyQk0lM0QmYW1wO3Jlc2VydmVkPTANCg0KU28sIGRvIHlv
+dSB0aGluayBJIG5lZWQgdG8gY2hhbmdlIGFsbCBjb21tZW50IHN0eWxlIGJhY2sgdG8gJy8qIC4u
+LiAqLycgPw0KQWN0dWFsbHkgSSBmZWVsIGEgbGl0dGxlIGJpdCBjb25mdXNlZCBoZXJlLg0KDQpS
+ZWdhcmRzLA0KUmFuDQoNCj4gPiA+ICtzdGF0aWMgaW50IHJjcG1faGFuZGxlKHN0cnVjdCBkZXZp
+Y2UgKnVzZXJfZGV2LCBib29sIGZsYWcsIHZvaWQNCj4gPiA+ICsqaGFuZGxlX3ByaXYpIHsNCj4g
+PiA+ICsgICAgIHN0cnVjdCByY3BtX3QgKnJjcG07DQo+ID4gPiArICAgICBib29sIGJpZ19lbmRp
+YW47DQo+ID4gPiArICAgICBjb25zdCBjaGFyICAqZGV2X2NvbXBhdGlibGVfYXJyYXlbTUFYX0NP
+TVBBVElCTEVfTlVNXTsNCj4gPiA+ICsgICAgIHZvaWQgX19pb21lbSAqaXBwZGV4cGNyX2FkZHI7
+DQo+ID4gPiArICAgICB1MzIgaXBwZGV4cGNyOw0KPiA+ID4gKyAgICAgdTMyIHNldF9iaXQ7DQo+
+ID4gPiArICAgICBpbnQgcmV0LCBudW0sIGk7DQo+ID4gPiArDQo+ID4gPiArICAgICByY3BtID0g
+aGFuZGxlX3ByaXY7DQo+ID4gPiArICAgICBiaWdfZW5kaWFuID0gcmNwbS0+YmlnX2VuZGlhbjsN
+Cj4gPiA+ICsgICAgIGlwcGRleHBjcl9hZGRyID0gcmNwbS0+aXBwZGV4cGNyX2FkZHI7DQo+ID4g
+PiArDQo+ID4gPiArICAgICBudW0gPSBkZXZpY2VfcHJvcGVydHlfcmVhZF9zdHJpbmdfYXJyYXko
+dXNlcl9kZXYsICJjb21wYXRpYmxlIiwNCj4gPiA+ICsgICAgICAgICAgICAgICAgICAgICBkZXZf
+Y29tcGF0aWJsZV9hcnJheSwgTUFYX0NPTVBBVElCTEVfTlVNKTsNCj4gPiA+ICsgICAgIGlmIChu
+dW0gPCAwKQ0KPiA+ID4gKyAgICAgICAgICAgICByZXR1cm4gbnVtOw0KPiA+ID4gKw0KPiA+ID4g
+KyAgICAgZm9yIChpID0gMDsgaSA8IG51bTsgaSsrKSB7DQo+ID4gPiArICAgICAgICAgICAgIGlm
+ICghZGV2aWNlX3Byb3BlcnR5X3ByZXNlbnQocmNwbS0+ZGV2LA0KPiA+ID4gKyAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICBkZXZfY29tcGF0aWJsZV9hcnJheVtpXSkpDQo+ID4g
+PiArICAgICAgICAgICAgICAgICAgICAgY29udGludWU7DQo+ID4gPiArICAgICAgICAgICAgIGVs
+c2Ugew0KPiA+IFJlbW92ZSB0aGlzIGVsc2UuDQo+ID4gPiArICAgICAgICAgICAgICAgICAgICAg
+cmV0ID0gZGV2aWNlX3Byb3BlcnR5X3JlYWRfdTMyKHJjcG0tPmRldiwNCj4gPiA+ICsgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgZGV2X2NvbXBhdGlibGVfYXJyYXlbaV0sICZz
+ZXRfYml0KTsNCj4gPiA+ICsgICAgICAgICAgICAgICAgICAgICBpZiAocmV0KQ0KPiA+ID4gKyAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgcmV0dXJuIHJldDsNCj4gPiA+ICsNCj4gPiA+ICsg
+ICAgICAgICAgICAgICAgICAgICBpZiAoIWRldmljZV9wcm9wZXJ0eV9wcmVzZW50KHJjcG0tPmRl
+diwNCj4gPiA+ICsNCj4gPiA+ICsgZGV2X2NvbXBhdGlibGVfYXJyYXlbaV0pKQ0KPiA+IFRoaXMg
+aGFzIGJlZW4gY2hlY2tlZC4gQ29udGludWUgPyBvciByZXR1cm4gRU5PREVW77yfDQo+ID4gPiAr
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICByZXR1cm4gLUVOT0RFVjsNCj4gPiA+ICsgICAg
+ICAgICAgICAgICAgICAgICBlbHNlIHsNCj4gPiBSZW1vdmUgdGhpcyBlbHNlLg0KPiA+ID4gKyAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgcmV0ID0gZGV2aWNlX3Byb3BlcnR5X3JlYWRfdTMy
+KHJjcG0tPmRldiwNCj4gPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICBkZXZfY29tcGF0aWJsZV9hcnJheVtpXSwgJnNldF9iaXQpOw0KPiA+ID4gKyAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgaWYgKHJldCkNCj4gPiA+ICsgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgcmV0dXJuIHJldDsNCj4gPiA+ICsNCj4gPiA+ICsgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgIGlmIChiaWdfZW5kaWFuKQ0KPiA+ID4gKyAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICBpcHBkZXhwY3IgPSBpb3JlYWQzMmJlKGlwcGRleHBj
+cl9hZGRyKTsNCj4gPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGVsc2UNCj4gPiA+
+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgaXBwZGV4cGNyID0NCj4gPiA+
+ICsgaW9yZWFkMzIoaXBwZGV4cGNyX2FkZHIpOw0KPiA+ID4gKw0KPiA+ID4gKyAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgaWYgKGZsYWcpDQo+ID4gPiArICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgIGlwcGRleHBjciB8PSBzZXRfYml0Ow0KPiA+ID4gKyAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgZWxzZQ0KPiA+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICBpcHBkZXhwY3IgJj0gfnNldF9iaXQ7DQo+ID4gPiArDQo+ID4gPiArICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICBpZiAoYmlnX2VuZGlhbikgew0KPiA+ID4gKyAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICBpb3dyaXRlMzJiZShpcHBkZXhwY3IsIGlwcGRl
+eHBjcl9hZGRyKTsNCj4gPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+aXBwZGV4cGNyID0gaW9yZWFkMzJiZShpcHBkZXhwY3JfYWRkcik7DQo+ID4gPiArICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICB9IGVsc2UNCj4gPiBpZiAoeCkgew0KPiA+IC4uLi4NCj4gPiAu
+Li4uDQo+ID4gfSAgZWxzZSB7DQo+ID4NCj4gPiB9DQo+ID4gPiArICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgIGlvd3JpdGUzMihpcHBkZXhwY3IsDQo+ID4gPiArIGlwcGRleHBj
+cl9hZGRyKTsNCj4gPiA+ICsNCj4gPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHJl
+dHVybiAwOw0KPiA+ID4gKyAgICAgICAgICAgICAgICAgICAgIH0NCj4gPiA+ICsgICAgICAgICAg
+ICAgfQ0KPiA+ID4gKyAgICAgfQ0KPiA+ID4gKw0KPiA+ID4gKyAgICAgcmV0dXJuIC1FTk9ERVY7
+DQo+ID4gPiArfQ0KPiA+ID4gKw0KPiA+ID4gK3N0YXRpYyBpbnQgbHNfcmNwbV9wcm9iZShzdHJ1
+Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2KSB7DQo+ID4gPiArICAgICBzdHJ1Y3QgcmVzb3VyY2Ug
+KnI7DQo+ID4gPiArICAgICBzdHJ1Y3QgcmNwbV90ICpyY3BtOw0KPiA+ID4gKw0KPiA+ID4gKyAg
+ICAgciA9IHBsYXRmb3JtX2dldF9yZXNvdXJjZShwZGV2LCBJT1JFU09VUkNFX01FTSwgMCk7DQo+
+ID4gPiArICAgICBpZiAoIXIpDQo+ID4gPiArICAgICAgICAgICAgIHJldHVybiAtRU5PREVWOw0K
+PiA+ID4gKw0KPiA+ID4gKyAgICAgcmNwbSA9IGttYWxsb2Moc2l6ZW9mKCpyY3BtKSwgR0ZQX0tF
+Uk5FTCk7DQo+ID4ga3phbGxvYyBpcyBiZXR0ZXIuDQo+ID4gPiArICAgICBpZiAoIXJjcG0pDQo+
+ID4gPiArICAgICAgICAgICAgIHJldHVybiAtRU5PTUVNOw0KPiA+ID4gKw0KPiA+ID4gKyAgICAg
+cmNwbS0+YmlnX2VuZGlhbiA9IGRldmljZV9wcm9wZXJ0eV9yZWFkX2Jvb2woJnBkZXYtPmRldiwN
+Cj4gPiA+ICsgImJpZy1lbmRpYW4iKTsNCj4gPiA+ICsNCj4gPiA+ICsgICAgIHJjcG0tPmlwcGRl
+eHBjcl9hZGRyID0gZGV2bV9pb3JlbWFwX3Jlc291cmNlKCZwZGV2LT5kZXYsIHIpOw0KPiA+ID4g
+KyAgICAgaWYgKElTX0VSUihyY3BtLT5pcHBkZXhwY3JfYWRkcikpDQo+ID4gPiArICAgICAgICAg
+ICAgIHJldHVybiBQVFJfRVJSKHJjcG0tPmlwcGRleHBjcl9hZGRyKTsNCj4gPiA+ICsNCj4gPiA+
+ICsgICAgIHJjcG0tPmRldiA9ICZwZGV2LT5kZXY7DQo+ID4gPiArICAgICBwbGF0Zm9ybV9zZXRf
+ZHJ2ZGF0YShwZGV2LCByY3BtKTsNCj4gPiA+ICsNCj4gPiA+ICsgICAgIHJldHVybiByZWdpc3Rl
+cl9mc2xfcGxhdGZvcm1fd2FrZXVwX3NvdXJjZShyY3BtX2hhbmRsZSwgcmNwbSk7DQo+ID4gPiAr
+fQ0KPiA+ID4gKw0KPiA+ID4gK3N0YXRpYyBpbnQgbHNfcmNwbV9yZW1vdmUoc3RydWN0IHBsYXRm
+b3JtX2RldmljZSAqcGRldikgew0KPiA+ID4gKyAgICAgc3RydWN0IHJjcG1fdCAgICpyY3BtOw0K
+PiA+IE5vdCBuZWVkIGEgdGFibGUuDQo+ID4NCj4gPiBDaGVlcnMsDQo+ID4gLURvbmdzaGVuZw0K
+PiA+DQo+ID4gPiArDQo+ID4gPiArICAgICByY3BtID0gcGxhdGZvcm1fZ2V0X2RydmRhdGEocGRl
+dik7DQo+ID4gPiArICAgICBkZXJlZ2lzdGVyX2ZzbF9wbGF0Zm9ybV93YWtldXBfc291cmNlKHJj
+cG0pOw0KPiA+ID4gKyAgICAga2ZyZWUocmNwbSk7DQo+ID4gPiArDQo+ID4gPiArICAgICByZXR1
+cm4gMDsNCj4gPiA+ICt9DQo+ID4gPiArDQo+ID4gPiArc3RhdGljIGNvbnN0IHN0cnVjdCBvZl9k
+ZXZpY2VfaWQgbHNfcmNwbV9vZl9tYXRjaFtdID0gew0KPiA+ID4gKyAgICAgeyAuY29tcGF0aWJs
+ZSA9ICJmc2wscW9yaXEtcmNwbS0yLjEiLCB9LA0KPiA+ID4gKyAgICAge30NCj4gPiA+ICt9Ow0K
+PiA+ID4gK01PRFVMRV9ERVZJQ0VfVEFCTEUob2YsIGxzX3JjcG1fb2ZfbWF0Y2gpOw0KPiA+ID4g
+Kw0KPiA+ID4gK3N0YXRpYyBzdHJ1Y3QgcGxhdGZvcm1fZHJpdmVyIGxzX3JjcG1fZHJpdmVyID0g
+ew0KPiA+ID4gKyAgICAgLmRyaXZlciA9IHsNCj4gPiA+ICsgICAgICAgICAgICAgLm5hbWUgPSAi
+bHMtcmNwbSIsDQo+ID4gPiArICAgICAgICAgICAgIC5vZl9tYXRjaF90YWJsZSA9IGxzX3JjcG1f
+b2ZfbWF0Y2gsDQo+ID4gPiArICAgICB9LA0KPiA+ID4gKyAgICAgLnByb2JlID0gbHNfcmNwbV9w
+cm9iZSwNCj4gPiA+ICsgICAgIC5yZW1vdmUgPSBsc19yY3BtX3JlbW92ZSwNCj4gPiA+ICt9Ow0K
+PiA+ID4gKw0KPiA+ID4gK3N0YXRpYyBpbnQgX19pbml0IGxzX3JjcG1faW5pdCh2b2lkKSB7DQo+
+ID4gPiArICAgICByZXR1cm4gcGxhdGZvcm1fZHJpdmVyX3JlZ2lzdGVyKCZsc19yY3BtX2RyaXZl
+cik7DQo+ID4gPiArfQ0KPiA+ID4gK3N1YnN5c19pbml0Y2FsbChsc19yY3BtX2luaXQpOw0KPiA+
+ID4gKw0KPiA+ID4gK3N0YXRpYyB2b2lkIF9fZXhpdCBsc19yY3BtX2V4aXQodm9pZCkgew0KPiA+
+ID4gKyAgICAgcGxhdGZvcm1fZHJpdmVyX3VucmVnaXN0ZXIoJmxzX3JjcG1fZHJpdmVyKTsNCj4g
+PiA+ICt9DQo+ID4gPiArbW9kdWxlX2V4aXQobHNfcmNwbV9leGl0KTsNCj4gPg0KPiA+DQo=
