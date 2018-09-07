@@ -1,28 +1,21 @@
-Return-Path: <peterz@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <igor.stoppa@gmail.com>
+Received: from mail-lj1-x241.google.com (mail-lj1-x241.google.com
+ [IPv6:2a00:1450:4864:20::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 426KSG15gBzF3Qv
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Sep 2018 00:23:58 +1000 (AEST)
-Date: Fri, 7 Sep 2018 16:23:53 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Christophe LEROY <christophe.leroy@c-s.fr>
-Cc: Ingo Molnar <mingo@redhat.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Jiri Olsa <jolsa@redhat.com>, Namhyung Kim <namhyung@kernel.org>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-sparse@vger.kernel.org
-Subject: Re: [PATCH] perf: enum overflow in uapi/linux/perf_event.h
-Message-ID: <20180907142353.GI24106@hirez.programming.kicks-ass.net>
-References: <a70172863fa7d3c138f788b18d36524bd45b0a73.1536326078.git.christophe.leroy@c-s.fr>
- <20180907134246.GC24106@hirez.programming.kicks-ass.net>
- <ae32181d-37b2-1a13-3c72-66775e05ff88@c-s.fr>
- <20180907135817.GF24106@hirez.programming.kicks-ass.net>
- <7a086a56-a896-9513-7315-9d0d21b61a44@c-s.fr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <7a086a56-a896-9513-7315-9d0d21b61a44@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 426M331hpgzF3TD
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Sep 2018 01:35:43 +1000 (AEST)
+Received: by mail-lj1-x241.google.com with SMTP id p6-v6so12644455ljc.5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Sep 2018 08:35:42 -0700 (PDT)
+From: Igor Stoppa <igor.stoppa@gmail.com>
+To: Arseny Solokha <asolokha@kb.kras.ru>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: igor.stoppa@gmail.com, Igor Stoppa <igor.stoppa@huawei.com>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc: remove unnecessary unlikely()
+Date: Fri,  7 Sep 2018 18:35:26 +0300
+Message-Id: <20180907153526.19616-1-igor.stoppa@huawei.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,24 +25,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Sep 07, 2018 at 04:15:33PM +0200, Christophe LEROY wrote:
+WARN_ON() already contains an unlikely(), so it's not necessary to
+wrap it into another.
 
-> Ah yes, it seems that GCC is happy. So sparse should be fixed instead ?
+Signed-off-by: Igor Stoppa <igor.stoppa@huawei.com>
+Cc: Arseny Solokha <asolokha@kb.kras.ru>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org
+---
+ arch/powerpc/mm/tlb_nohash.c      | 2 +-
+ arch/powerpc/sysdev/xive/common.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-Ideally, yes.
-
-> Anyway, is it really correct to put this constant inside that enum, after
-> PERF_SAMPLE_MAX  ?
-
-It is a bit of a hack, agreed. What we do is use the top bit of that
-word (u64) for some internal state. By placing it there (after MAX) we
-ensure it is not available for userspace (trying to set it will return
-in -EINVAL) and by keeping it in the enum we know that bit is
-unavailable for future use.
-
-I have a patch queued that puts a little comment on that:
-
-  https://git.kernel.org/pub/scm/linux/kernel/git/peterz/queue.git/commit/?h=perf/urgent&id=34cad593c9ea350a1811ab718e64b36e5cde870c
-
-(url is not stable, as I regenerate that git tree from quilt every so
-often, but it should probably last the day).
+diff --git a/arch/powerpc/mm/tlb_nohash.c b/arch/powerpc/mm/tlb_nohash.c
+index 15fe5f0c8665..46f5d8c972fb 100644
+--- a/arch/powerpc/mm/tlb_nohash.c
++++ b/arch/powerpc/mm/tlb_nohash.c
+@@ -302,7 +302,7 @@ void __flush_tlb_page(struct mm_struct *mm, unsigned long vmaddr,
+ 	 * This function as well as __local_flush_tlb_page() must only be called
+ 	 * for user contexts.
+ 	 */
+-	if (unlikely(WARN_ON(!mm)))
++	if (WARN_ON(!mm))
+ 		return;
+ 
+ 	preempt_disable();
+diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
+index 959a2a62f233..7dde46b38979 100644
+--- a/arch/powerpc/sysdev/xive/common.c
++++ b/arch/powerpc/sysdev/xive/common.c
+@@ -442,7 +442,7 @@ static void xive_dec_target_count(int cpu)
+ 	struct xive_cpu *xc = per_cpu(xive_cpu, cpu);
+ 	struct xive_q *q = &xc->queue[xive_irq_priority];
+ 
+-	if (unlikely(WARN_ON(cpu < 0 || !xc))) {
++	if (WARN_ON(cpu < 0 || !xc)) {
+ 		pr_err("%s: cpu=%d xc=%p\n", __func__, cpu, xc);
+ 		return;
+ 	}
+-- 
+2.17.1
