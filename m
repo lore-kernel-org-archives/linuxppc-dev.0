@@ -1,54 +1,23 @@
-Return-Path: <corbet@lwn.net>
-Received: from ms.lwn.net (ms.lwn.net [45.79.88.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <radu.rendec@gmail.com>
+Received: from mail-it0-x244.google.com (mail-it0-x244.google.com
+ [IPv6:2607:f8b0:4001:c0b::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 427kR50ysYzF3MW
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 07:12:48 +1000 (AEST)
-Date: Sun, 9 Sep 2018 15:12:37 -0600
-From: Jonathan Corbet <corbet@lwn.net>
-To: Henrik Austad <henrik@austad.us>
-Cc: linux-doc@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, "Paul E.
- McKenney" <paulmck@linux.vnet.ibm.com>, Josh Triplett
- <josh@joshtriplett.org>, Steven Rostedt <rostedt@goodmis.org>, Mathieu
- Desnoyers <mathieu.desnoyers@efficios.com>, Lai Jiangshan
- <jiangshanlai@gmail.com>, Jens Axboe <axboe@kernel.dk>, Rob Herring
- <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Bartlomiej
- Zolnierkiewicz <b.zolnierkie@samsung.com>, Linus Walleij
- <linus.walleij@linaro.org>, "David S. Miller" <davem@davemloft.net>,
- Karsten Keil <isdn@linux-pingi.de>, Masahiro Yamada
- <yamada.masahiro@socionext.com>, Michal Marek <michal.lkml@markovi.net>,
- Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Will
- Deacon <will.deacon@arm.com>, Ralf Baechle <ralf@linux-mips.org>, Paul
- Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>, Paul Moore
- <paul@paul-moore.com>, "James E.J. Bottomley" <jejb@parisc-linux.org>,
- Helge Deller <deller@gmx.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len
- Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Benjamin
- Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Martin
- Schwidefsky <schwidefsky@de.ibm.com>, Heiko Carstens
- <heiko.carstens@de.ibm.com>, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>, Mark Brown
- <broonie@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Paolo Bonzini
- <pbonzini@redhat.com>, Radim =?UTF-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
- Evgeniy Polyakov <zbr@ioremap.net>, "H. Peter Anvin" <hpa@zytor.com>,
- x86@kernel.org, Andrew Morton <akpm@linux-foundation.org>, Ian Kent
- <raven@themaw.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Mike
- Rapoport <rppt@linux.vnet.ibm.com>, Jan Kandziora <jjj@gmx.de>,
- linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
- devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-fbdev@vger.kernel.org, linux-gpio@vger.kernel.org,
- linux-ide@vger.kernel.org, netdev@vger.kernel.org,
- linux-kbuild@vger.kernel.org, linux-mips@linux-mips.org,
- linux-security-module@vger.kernel.org, linux-parisc@vger.kernel.org,
- linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-spi@vger.kernel.org, kvm@vger.kernel.org,
- Henrik Austad <haustad@cisco.com>
-Subject: Re: [PATCH] [RFC v2] Drop all 00-INDEX files from Documentation/
-Message-ID: <20180909151237.4bc1b3e2@lwn.net>
-In-Reply-To: <1536012923-16275-1-git-send-email-henrik@austad.us>
-References: <1536012923-16275-1-git-send-email-henrik@austad.us>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 427n630BwCzF3Bd
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 09:13:11 +1000 (AEST)
+Received: by mail-it0-x244.google.com with SMTP id h3-v6so27287696ita.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 09 Sep 2018 16:13:11 -0700 (PDT)
+Message-ID: <fc3e7ca0f018afbf6c104c333b381ffbae6a48c3.camel@gmail.com>
+Subject: Re: MPC83xx reset status register (RSR, offset 0x910)
+From: Radu Rendec <radu.rendec@gmail.com>
+To: Christophe Leroy <christophe.leroy@c-s.fr>, linuxppc-dev@lists.ozlabs.org
+Cc: Scott Wood <oss@buserror.net>
+Date: Sun, 09 Sep 2018 19:13:04 -0400
+In-Reply-To: <e6b9f0f0-1cd9-c183-eff4-bec1ca18a373@c-s.fr>
+References: <CAD5jUk_e3LwPZGN7G3ZGHx=zdQBZSdAeoKWjxwE7Ei2=LtXQTg@mail.gmail.com>
+ <e6b9f0f0-1cd9-c183-eff4-bec1ca18a373@c-s.fr>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -58,17 +27,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue,  4 Sep 2018 00:15:23 +0200
-Henrik Austad <henrik@austad.us> wrote:
+Hi,
 
-> I don't really have an opinion to whether or not we /should/ have 00-INDEX,
-> but the above 00-INDEX should either be removed or be kept up to date. If
-> we should keep the files, I can try to keep them updated, but I rather not
-> if we just want to delete them anyway.
-> 
-> As a starting point, remove all index-files and references to 00-INDEX and
-> see where the discussion is going.
+On Fri, 2018-08-24 at 16:20 +0000, Christophe Leroy wrote:
+> > On 08/03/2018 04:36 PM, Radu Rendec wrote:
+> >
+> > Is there any kernel code that handles the "reset status register" (RSR)
+> > on MPC83xx? I looked at arch/powerpc/platforms/83xx/misc.c, but it seems
+> > to only map the reset register area and it's static. The watchdog driver
+> > (drivers/watchdog/mpc8xxx_wdt.c) doesn't seem to look at it either (for
+> > the bootstatus flags).
+>
+> How do you boot your Linux kernel ?
+>
+> My 832x board boots using U-boot, and U-boot reads the RSR then clears
+> it. So when Linux kernel reads it, it is just 0.
 
-Applied, thanks.
+I'm using U-boot as well, but it's just not configured to read or clear
+the RSR. I'm curious: if U-boot reads/clears the RSR in your case, how 
+do you make the initial value available to user space programs running 
+under Linux?
 
-jon
+> > Basically I need to check the CPU reset reason and I thought I would ask
+> > first, before starting to write any code of my own.
+>
+> Anyway, find below a set of two patches I used for testing. Feel free to
+> use them if you bootloader doesn't clear the register
+
+Thank you very much for the patches. Is there any chance they can be 
+submitted upstream?
+
+Of course, just printing the decoded bits is only helpful for testing. I
+was thinking of a way to make the value available to both the kernel 
+(as an exported symbol) and user space (e.g. via sysfs). Is there a
+standard or preferred way to do this?
+
+I tried to look for something similar on other platforms or architectures,
+but couldn't find anything.
+
+Thanks,
+Radu Rendec
