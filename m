@@ -1,23 +1,38 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
- [IPv6:2607:f8b0:4864:20::443])
+Return-Path: <elfring@users.sourceforge.net>
+Received: from mout.web.de (mout.web.de [212.227.15.4])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 427KkP4HBTzF3Kw
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Sep 2018 15:39:41 +1000 (AEST)
-Received: by mail-pf1-x443.google.com with SMTP id d4-v6so8893143pfn.0
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 08 Sep 2018 22:39:41 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Nicholas Piggin <npiggin@gmail.com>, Jiri Slaby <jslaby@suse.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Matteo Croce <mcroce@redhat.com>,
- Jason Gunthorpe <jgg@mellanox.com>, Leon Romanovsky <leonro@mellanox.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org (op)
-Subject: [PATCH v2 3/3] tty: hvc: hvc_write() fix break condition
-Date: Sun,  9 Sep 2018 15:39:16 +1000
-Message-Id: <20180909053916.14139-4-npiggin@gmail.com>
-In-Reply-To: <20180909053916.14139-1-npiggin@gmail.com>
-References: <20180909053916.14139-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 427TTf4zD5zF3CJ
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Sep 2018 21:29:10 +1000 (AEST)
+To: Corentin Labbe <clabbe@baylibre.com>, kernel-janitors@vger.kernel.org
+Cc: Coccinelle <cocci@systeme.lip6.fr>, linux-amlogic@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org, linux-ide@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-sunxi@googlegroups.com,
+ linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org,
+ Alexandre Torgue <alexandre.torgue@st.com>,
+ Alistair Popple <alistair@popple.id.au>, Anatolij Gustschin <agust@denx.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Carlo Caione <carlo@caione.org>, Chen-Yu Tsai <wens@csie.org>,
+ "David S. Miller" <davem@davemloft.net>,
+ Gilles Muller <Gilles.Muller@lip6.fr>,
+ Giuseppe Cavallaro <peppe.cavallaro@st.com>,
+ Jose Abreu <joabreu@synopsys.com>, Julia Lawall <julia.lawall@lip6.fr>,
+ Kevin Hilman <khilman@baylibre.com>, Kumar Gala <galak@kernel.crashing.org>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Matt Porter <mporter@kernel.crashing.org>,
+ Maxime Ripard <maxime.ripard@bootlin.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Michal Marek
+ <michal.lkml@markovi.net>, Nicolas Palix <nicolas.palix@imag.fr>,
+ Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>,
+ Tejun Heo <tj@kernel.org>, Vitaly Bordug <vitb@kernel.crashing.org>
+References: <1536349307-20714-4-git-send-email-clabbe@baylibre.com>
+Subject: Re: [PATCH RFC 3/5] coccinelle: add xxxsetbitsXX converting spatch
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Message-ID: <463dbbdc-7afc-bee8-8da1-bbe70b4aec26@users.sourceforge.net>
+Date: Sun, 9 Sep 2018 13:13:25 +0200
+MIME-Version: 1.0
+In-Reply-To: <1536349307-20714-4-git-send-email-clabbe@baylibre.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,47 +42,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 550ddadcc758 ("tty: hvc: hvc_write() may sleep") broke the
-termination condition in case the driver stops accepting characters.
-This can result in unnecessary polling of the busy driver.
+How do you think about to add any more meta-data for this semantic patch script?
 
-Restore it by testing the hvc_push return code.
+* SPDX identifier
+* Copyright information
+* Confidence level
 
-Tested-by: Matteo Croce <mcroce@redhat.com>
-Tested-by: Jason Gunthorpe <jgg@mellanox.com>
-Tested-by: Leon Romanovsky <leonro@mellanox.com>
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- drivers/tty/hvc/hvc_console.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+https://bottest.wiki.kernel.org/coccicheck
 
-diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
-index bacf9b73ec98..27284a2dcd2b 100644
---- a/drivers/tty/hvc/hvc_console.c
-+++ b/drivers/tty/hvc/hvc_console.c
-@@ -522,6 +522,8 @@ static int hvc_write(struct tty_struct *tty, const unsigned char *buf, int count
- 		return -EIO;
- 
- 	while (count > 0) {
-+		int ret = 0;
-+
- 		spin_lock_irqsave(&hp->lock, flags);
- 
- 		rsize = hp->outbuf_size - hp->n_outbuf;
-@@ -537,10 +539,13 @@ static int hvc_write(struct tty_struct *tty, const unsigned char *buf, int count
- 		}
- 
- 		if (hp->n_outbuf > 0)
--			hvc_push(hp);
-+			ret = hvc_push(hp);
- 
- 		spin_unlock_irqrestore(&hp->lock, flags);
- 
-+		if (!ret)
-+			break;
-+
- 		if (count) {
- 			if (hp->n_outbuf > 0)
- 				hvc_flush(hp);
--- 
-2.18.0
+
+> +virtual context
+
+Further variables will be needed if you would like to use corresponding
+operation modes (besides “patch”).
+
+
+> +expression reg;
+> +expression set;
+> +expression clear;
+
+I propose once more to avoid the repetition of (unnecessary) SmPL code.
+This part could be written like the following instead.
+
++expression clear, set, reg;
+
+
+If you would increase the usage of SmPL disjunctions, the specification
+of duplicate SmPL code could be reduced considerably.
+
+* Would you like to merge SmPL rules based on the distinction between
+  the data types “u32” and “u64”?
+
+* Did you identify any optional code in this transformation approach?
+
+
+> +@@
+> +expression base;
+> +expression offset;
+> +expression value;
+> +@@
+> +
+> +- mtu3_setbits(base, offset, value);
+> ++ setbits32(base + offset, value);
+> +
+> +@@
+> +expression base;
+> +expression offset;
+> +expression mask;
+> +@@
+> +
+> +- mtu3_clrbits(base, offset, mask);
+> ++ clrbits32(base + offset, mask);
+
+Another update suggestion:
+
++@replacement@
++expression base, offset;
++@@
++(
++-mtu3_clrbits
+++clrbits32
++|
++-mtu3_setbits
+++setbits32
++)(base
++-     ,
+++ +
++  offset, ...);
+
+
+Would you like to try further software fine-tuning out?
+
+Regards,
+Markus
