@@ -1,23 +1,46 @@
-Return-Path: <radu.rendec@gmail.com>
-Received: from mail-it0-x244.google.com (mail-it0-x244.google.com
- [IPv6:2607:f8b0:4001:c0b::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <yamada.masahiro@socionext.com>
+Received: from conssluserg-03.nifty.com (conssluserg-03.nifty.com
+ [210.131.2.82])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 427n630BwCzF3Bd
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 09:13:11 +1000 (AEST)
-Received: by mail-it0-x244.google.com with SMTP id h3-v6so27287696ita.2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 09 Sep 2018 16:13:11 -0700 (PDT)
-Message-ID: <fc3e7ca0f018afbf6c104c333b381ffbae6a48c3.camel@gmail.com>
-Subject: Re: MPC83xx reset status register (RSR, offset 0x910)
-From: Radu Rendec <radu.rendec@gmail.com>
-To: Christophe Leroy <christophe.leroy@c-s.fr>, linuxppc-dev@lists.ozlabs.org
-Cc: Scott Wood <oss@buserror.net>
-Date: Sun, 09 Sep 2018 19:13:04 -0400
-In-Reply-To: <e6b9f0f0-1cd9-c183-eff4-bec1ca18a373@c-s.fr>
-References: <CAD5jUk_e3LwPZGN7G3ZGHx=zdQBZSdAeoKWjxwE7Ei2=LtXQTg@mail.gmail.com>
- <e6b9f0f0-1cd9-c183-eff4-bec1ca18a373@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 427nRk2RNJzF38x
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 09:28:33 +1000 (AEST)
+Received: from mail-ua1-f42.google.com (mail-ua1-f42.google.com
+ [209.85.222.42]) (authenticated)
+ by conssluserg-03.nifty.com with ESMTP id w89NSGdG030098
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 08:28:17 +0900
+Received: by mail-ua1-f42.google.com with SMTP id m26-v6so15948306uap.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 09 Sep 2018 16:28:17 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20180905235327.5996-7-robh@kernel.org>
+References: <20180905235327.5996-1-robh@kernel.org>
+ <20180905235327.5996-7-robh@kernel.org>
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+Date: Mon, 10 Sep 2018 08:27:35 +0900
+Message-ID: <CAK7LNAS5uEUMDpL8oCJmFWKu1YF8tof5d=2h8jzt-MLHGAEAhg@mail.gmail.com>
+Subject: Re: [PATCH v2 6/9] kbuild: consolidate Devicetree dtb build rules
+To: Rob Herring <robh@kernel.org>
+Cc: DTML <devicetree@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Michal Marek <michal.lkml@markovi.net>, Vineet Gupta <vgupta@synopsys.com>,
+ Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Michal Simek <monstr@monstr.eu>, Ralf Baechle <ralf@linux-mips.org>,
+ Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>,
+ Ley Foon Tan <lftan@altera.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Chris Zankel <chris@zankel.net>,
+ Max Filippov <jcmvbkbc@gmail.com>,
+ Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
+ arcml <linux-snps-arc@lists.infradead.org>,
+ linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+ "moderated list:H8/300 ARCHITECTURE" <uclinux-h8-devel@lists.sourceforge.jp>,
+ Linux-MIPS <linux-mips@linux-mips.org>, nios2-dev@lists.rocketboards.org,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-xtensa@linux-xtensa.org
 Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,43 +50,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
-
-On Fri, 2018-08-24 at 16:20 +0000, Christophe Leroy wrote:
-> > On 08/03/2018 04:36 PM, Radu Rendec wrote:
-> >
-> > Is there any kernel code that handles the "reset status register" (RSR)
-> > on MPC83xx? I looked at arch/powerpc/platforms/83xx/misc.c, but it seems
-> > to only map the reset register area and it's static. The watchdog driver
-> > (drivers/watchdog/mpc8xxx_wdt.c) doesn't seem to look at it either (for
-> > the bootstatus flags).
+2018-09-06 8:53 GMT+09:00 Rob Herring <robh@kernel.org>:
+> There is nothing arch specific about building dtb files other than their
+> location under /arch/*/boot/dts/. Keeping each arch aligned is a pain.
+> The dependencies and supported targets are all slightly different.
+> Also, a cross-compiler for each arch is needed, but really the host
+> compiler preprocessor is perfectly fine for building dtbs. Move the
+> build rules to a common location and remove the arch specific ones. This
+> is done in a single step to avoid warnings about overriding rules.
 >
-> How do you boot your Linux kernel ?
+> The build dependencies had been a mixture of 'scripts' and/or 'prepare'.
+> These pull in several dependencies some of which need a target compiler
+> (specifically devicetable-offsets.h) and aren't needed to build dtbs.
+> All that is really needed is dtc, so adjust the dependencies to only be
+> dtc.
 >
-> My 832x board boots using U-boot, and U-boot reads the RSR then clears
-> it. So when Linux kernel reads it, it is just 0.
-
-I'm using U-boot as well, but it's just not configured to read or clear
-the RSR. I'm curious: if U-boot reads/clears the RSR in your case, how 
-do you make the initial value available to user space programs running 
-under Linux?
-
-> > Basically I need to check the CPU reset reason and I thought I would ask
-> > first, before starting to write any code of my own.
+> This change enables support 'dtbs_install' on some arches which were
+> missing the target.
 >
-> Anyway, find below a set of two patches I used for testing. Feel free to
-> use them if you bootloader doesn't clear the register
+> Cc: Masahiro Yamada <yamada.masahiro@socionext.com>
+> Cc: Michal Marek <michal.lkml@markovi.net>
+> Cc: Vineet Gupta <vgupta@synopsys.com>
+> Cc: Russell King <linux@armlinux.org.uk>
+> Cc: Catalin Marinas <catalin.marinas@arm.com>
+> Cc: Will Deacon <will.deacon@arm.com>
+> Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
+> Cc: Michal Simek <monstr@monstr.eu>
+> Cc: Ralf Baechle <ralf@linux-mips.org>
+> Cc: Paul Burton <paul.burton@mips.com>
+> Cc: James Hogan <jhogan@kernel.org>
+> Cc: Ley Foon Tan <lftan@altera.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Chris Zankel <chris@zankel.net>
+> Cc: Max Filippov <jcmvbkbc@gmail.com>
+> Cc: linux-kbuild@vger.kernel.org
+> Cc: linux-snps-arc@lists.infradead.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: uclinux-h8-devel@lists.sourceforge.jp
+> Cc: linux-mips@linux-mips.org
+> Cc: nios2-dev@lists.rocketboards.org
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: linux-xtensa@linux-xtensa.org
+> Signed-off-by: Rob Herring <robh@kernel.org>
+> ---
+> Please ack so I can take the whole series via the DT tree.
+>
+> v2:
+>  - Fix $arch/boot/dts path check for out of tree builds
+>  - Fix dtc dependency for building built-in dtbs
+>  - Fix microblaze built-in dtb building
+>
+>  Makefile                          | 32 +++++++++++++++++++++++++++++++
+>  arch/arc/Makefile                 |  6 ------
+>  arch/arm/Makefile                 | 20 +------------------
+>  arch/arm64/Makefile               | 17 +---------------
+>  arch/c6x/Makefile                 |  2 --
+>  arch/h8300/Makefile               | 11 +----------
+>  arch/microblaze/Makefile          |  4 +---
+>  arch/microblaze/boot/dts/Makefile |  2 ++
+>  arch/mips/Makefile                | 15 +--------------
+>  arch/nds32/Makefile               |  2 +-
+>  arch/nios2/Makefile               |  7 -------
+>  arch/nios2/boot/Makefile          |  4 ----
+>  arch/powerpc/Makefile             |  3 ---
+>  arch/xtensa/Makefile              | 12 +-----------
+>  scripts/Makefile.lib              |  2 +-
+>  15 files changed, 42 insertions(+), 97 deletions(-)
+>
+> diff --git a/Makefile b/Makefile
+> index 2b458801ba74..bc18dbbc16c5 100644
+> --- a/Makefile
+> +++ b/Makefile
+> @@ -1212,6 +1212,32 @@ kselftest-merge:
+>                 $(srctree)/tools/testing/selftests/*/config
+>         +$(Q)$(MAKE) -f $(srctree)/Makefile olddefconfig
+>
+> +# ---------------------------------------------------------------------------
+> +# Devicetree files
+> +
+> +ifneq ($(wildcard $(srctree)/arch/$(SRCARCH)/boot/dts/),)
+> +dtstree := arch/$(SRCARCH)/boot/dts
+> +endif
+> +
+> +ifdef CONFIG_OF_EARLY_FLATTREE
+> +
+> +%.dtb %.dtb.S %.dtb.o: | dtc
+> +       $(Q)$(MAKE) $(build)=$(dtstree) $(dtstree)/$@
 
-Thank you very much for the patches. Is there any chance they can be 
-submitted upstream?
 
-Of course, just printing the decoded bits is only helpful for testing. I
-was thinking of a way to make the value available to both the kernel 
-(as an exported symbol) and user space (e.g. via sysfs). Is there a
-standard or preferred way to do this?
+Hmm, I was worried about '%.dtb.o: | dtc'
+but seems working.
 
-I tried to look for something similar on other platforms or architectures,
-but couldn't find anything.
+Compiling %.S -> %.o requires objtool for x86,
+but x86 does not support DT.
 
-Thanks,
-Radu Rendec
+If CONFIG_MODVERSIONS=y, scripts/genksyms/genksyms is required,
+%.dtb.S does not contain EXPORT_SYMBOL.
+
+
+BTW, 'dtc' should be a PHONY target.
+
+
+
+-- 
+Best Regards
+Masahiro Yamada
