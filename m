@@ -1,39 +1,18 @@
-Return-Path: <aneesh.kumar@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 427yKl69NZzF37v
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 16:08:59 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w8A68tlx131203
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 02:08:57 -0400
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2mdech1fva-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 02:08:57 -0400
-Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Mon, 10 Sep 2018 07:08:52 +0100
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, npiggin@gmail.com,
- aneesh.kumar@linux.vnet.ibm.com
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH v1 00/17] ban the use of _PAGE_XXX flags outside
- platform specific code
-In-Reply-To: <1f4d6cc9-5d18-b171-02b0-d715629d594f@c-s.fr>
-References: <cover.1535913369.git.christophe.leroy@c-s.fr>
- <8736uneylc.fsf@linux.ibm.com> <1f4d6cc9-5d18-b171-02b0-d715629d594f@c-s.fr>
-Date: Mon, 10 Sep 2018 11:38:46 +0530
-MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <8736uhsx3l.fsf@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 427yKx4M6WzF3Cv
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 16:09:09 +1000 (AEST)
+Message-Id: <3c4cddf185438cc7200908b4f971a8e6ed7472fd.1536558233.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] powerpc: fix csum_ipv6_magic() on little endian platforms
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Jianlin Shi <jishi@redhat.com>, Xin Long <lucien.xin@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ stable@vger.kernel.org
+Date: Mon, 10 Sep 2018 06:09:04 +0000 (UTC)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,94 +22,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Christophe Leroy <christophe.leroy@c-s.fr> writes:
+On little endian platforms, csum_ipv6_magic() keeps len and proto in
+CPU byte order. This generates a bad results leading to ICMPv6 packets
+from other hosts being dropped by powerpc64le platforms.
 
-> On 09/06/2018 09:58 AM, Aneesh Kumar K.V wrote:
->> Christophe Leroy <christophe.leroy@c-s.fr> writes:
->> 
->>> Today flags like for instance _PAGE_RW or _PAGE_USER are used through
->>> common parts of code.
->>> Using those directly in common parts of code have proven to lead to
->>> mistakes or misbehaviour, because their use is not always as trivial
->>> as one could think.
->>>
->>> For instance, (flags & _PAGE_USER) == 0 isn't enough to tell
->>> that a page is a kernel page, because some targets are using
->>> _PAGE_PRIVILEDGED and not _PAGE_USER, so the test has to be
->>> (flags & (_PAGE_USER | _PAGE_PRIVILEDGED)) == _PAGE_PRIVILEDGED
->>> This has to (bad) consequences:
->>>
->>>   - All targets must define every bit, even the unsupported ones,
->>>     leading to a lot of useless #define _PAGE_XXX 0
->>>   - If someone forgets to take into account all possible _PAGE_XXX bits
->>>     for the case, we can get unexpected behaviour on some targets.
->>>
->>> This becomes even more complex when we come to using _PAGE_RW.
->>> Testing (flags & _PAGE_RW) is not enough to test whether a page
->>> if writable or not, because:
->>>
->>>   - Some targets have _PAGE_RO instead, which has to be unset to tell
->>>     a page is writable
->>>   - Some targets have _PAGE_R and _PAGE_W, in which case
->>>     _PAGE_RW = _PAGE_R | _PAGE_W
->>>   - Even knowing whether a page is readable is not always trivial because:
->>>     - Some targets requires to check that _PAGE_R is set to ensure page
->>>     is readable
->>>     - Some targets requires to check that _PAGE_NA is not set
->>>     - Some targets requires to check that _PAGE_RO or _PAGE_RW is set
->>>
->>> Etc ....
->>>
->>> In order to work around all those issues and minimise the risks of errors,
->>> this serie aims at removing all use of _PAGE_XXX flags from powerpc code
->>> and always use pte_xxx() and pte_mkxxx() accessors instead. Those accessors
->>> are then defined in target specific parts of the kernel code.
->> 
->> The series is really good. It also helps in code readability. Few things
->> i am not sure there is a way to reduce the overhead
->> 
->> -		access = _PAGE_EXEC;
->> +		access = pte_val(pte_mkexec(__pte(0)));
->> 
->> Considering we have multiple big endian to little endian coversion there
->> for book3s 64.
->
-> Thanks for the review.
->
-> For the above, I propose the following:
->
-> diff --git a/arch/powerpc/mm/hash_utils_64.c 
-> b/arch/powerpc/mm/hash_utils_64.c
-> index f23a89d8e4ce..904ac9c84ea5 100644
-> --- a/arch/powerpc/mm/hash_utils_64.c
-> +++ b/arch/powerpc/mm/hash_utils_64.c
-> @@ -1482,7 +1482,7 @@ static bool should_hash_preload(struct mm_struct 
-> *mm, unsigned long ea)
->   #endif
->
->   void hash_preload(struct mm_struct *mm, unsigned long ea,
-> -		  unsigned long access, unsigned long trap)
-> +		  bool is_exec, unsigned long trap)
->   {
->   	int hugepage_shift;
->   	unsigned long vsid;
-> @@ -1490,6 +1490,7 @@ void hash_preload(struct mm_struct *mm, unsigned 
-> long ea,
->   	pte_t *ptep;
->   	unsigned long flags;
->   	int rc, ssize, update_flags = 0;
-> +	unsigned long access = is_exec ? _PAGE_EXEC : 0;
+In order to fix this, len and proto should be converted to network
+byte order ie bigendian byte order. However checksumming 0x12345678
+and 0x56341278 provide the exact same result so it is enough to
+rotate the sum of len and proto by 1 byte.
 
+PPC32 only support bigendian so the fix is needed for PPC64 only
 
-I guess it will be better if we do
+Fixes: e9c4943a107b ("powerpc: Implement csum_ipv6_magic in assembly")
+Reported-by: Jianlin Shi <jishi@redhat.com>
+Reported-by: Xin Long <lucien.xin@gmail.com>
+Cc: <stable@vger.kernel.org> # 4.18+
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/lib/checksum_64.S | 3 +++
+ 1 file changed, 3 insertions(+)
 
-unsigned long access = _PAGE_PRESENT | _PAGE_READ
-
-if (is_exec)
-   access |= _PAGE_EXEC.
-
-That will also bring it closer to __hash_page. I agree that we should
-always find _PAGE_PRESENT and _PAGE_READ set, because we just handled
-the page fault.
-
--aneesh
+diff --git a/arch/powerpc/lib/checksum_64.S b/arch/powerpc/lib/checksum_64.S
+index 886ed94b9c13..2a68c43e13f5 100644
+--- a/arch/powerpc/lib/checksum_64.S
++++ b/arch/powerpc/lib/checksum_64.S
+@@ -443,6 +443,9 @@ _GLOBAL(csum_ipv6_magic)
+ 	addc	r0, r8, r9
+ 	ld	r10, 0(r4)
+ 	ld	r11, 8(r4)
++#ifndef CONFIG_CPU_BIG_ENDIAN
++	rotldi	r5, r5, 8
++#endif
+ 	adde	r0, r0, r10
+ 	add	r5, r5, r7
+ 	adde	r0, r0, r11
+-- 
+2.13.3
