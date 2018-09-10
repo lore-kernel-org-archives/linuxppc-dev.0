@@ -1,38 +1,24 @@
-Return-Path: <clabbe@baylibre.com>
-Received: from mail-wm0-x244.google.com (mail-wm0-x244.google.com
- [IPv6:2a00:1450:400c:c09::244])
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
+ [IPv6:2607:f8b0:4864:20::441])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 428HHv6H9fzF3B0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2018 04:53:31 +1000 (AEST)
-Received: by mail-wm0-x244.google.com with SMTP id q8-v6so22589380wmq.4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 11:53:31 -0700 (PDT)
-Date: Mon, 10 Sep 2018 20:53:25 +0200
-From: LABBE Corentin <clabbe@baylibre.com>
-To: Christophe LEROY <christophe.leroy@c-s.fr>
-Cc: Gilles.Muller@lip6.fr, Julia.Lawall@lip6.fr, agust@denx.de,
- alexandre.torgue@st.com, alistair@popple.id.au,
- benh@kernel.crashing.org, carlo@caione.org, davem@davemloft.net,
- galak@kernel.crashing.org, joabreu@synopsys.com,
- khilman@baylibre.com, maxime.ripard@bootlin.com,
- michal.lkml@markovi.net, mpe@ellerman.id.au,
- mporter@kernel.crashing.org, nicolas.palix@imag.fr,
- oss@buserror.net, paulus@samba.org, peppe.cavallaro@st.com,
- tj@kernel.org, vitb@kernel.crashing.org, wens@csie.org,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-ide@vger.kernel.org, linux-sunxi@googlegroups.com,
- linux-amlogic@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- cocci@systeme.lip6.fr, linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH 2/5] include: add
- setbits32/clrbits32/clrsetbits32/setbits64/clrbits64/clrsetbits64 in
- linux/setbits.h
-Message-ID: <20180910185325.GC7819@Red>
-References: <1536349307-20714-1-git-send-email-clabbe@baylibre.com>
- <1536349307-20714-3-git-send-email-clabbe@baylibre.com>
- <a1795266-5679-289d-5cce-1111babf3180@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 428LFr61KwzF38m
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2018 07:06:56 +1000 (AEST)
+Received: by mail-pf1-x441.google.com with SMTP id h79-v6so11074655pfk.8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 14:06:56 -0700 (PDT)
+Date: Tue, 11 Sep 2018 07:06:45 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: akpm@linux-foundation.org, linux-mm@kvack.org,
+ aneesh.kumar@linux.vnet.ibm.com, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: How to handle PTE tables with non contiguous entries ?
+Message-ID: <20180911070645.239aef8a@roar.ozlabs.ibm.com>
+In-Reply-To: <ddc3bb56-4da0-c093-256f-185d4a612b5c@c-s.fr>
+References: <ddc3bb56-4da0-c093-256f-185d4a612b5c@c-s.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <a1795266-5679-289d-5cce-1111babf3180@c-s.fr>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,32 +28,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Sep 10, 2018 at 07:22:04AM +0200, Christophe LEROY wrote:
-> 
-> 
-> Le 07/09/2018 à 21:41, Corentin Labbe a écrit :
-> > This patch adds setbits32/clrbits32/clrsetbits32 and
-> > setbits64/clrbits64/clrsetbits64 in linux/setbits.h header.
-> 
-> So you changed the name of setbits32() ... to setbits32_be() and now you 
-> are adding new functions called setbits32() ... which do something 
-> different ?
-> 
-> What will happen if any file has been forgotten during the conversion, 
-> or if anybody has outoftree drivers and missed this change ?
-> They will silently successfully compile without any error or warning, 
-> and the result will be crap buggy.
-> 
-> And why would it be more legitim to have setbits32() be implicitely LE 
-> instead of implicitely BE ?
-> 
-> I really think those new functions should be called something like 
-> setbits_le32() ...
-> 
+On Mon, 10 Sep 2018 14:34:37 +0000
+Christophe Leroy <christophe.leroy@c-s.fr> wrote:
 
-I believed that writel/readl was endian agnostic so it explain my mistake.
+> Hi,
+> 
+> I'm having a hard time figuring out the best way to handle the following 
+> situation:
+> 
+> On the powerpc8xx, handling 16k size pages requires to have page tables 
+> with 4 identical entries.
+> 
+> Initially I was thinking about handling this by simply modifying 
+> pte_index() which changing pte_t type in order to have one entry every 
+> 16 bytes, then replicate the PTE value at *ptep, *ptep+1,*ptep+2 and 
+> *ptep+3 both in set_pte_at() and pte_update().
+> 
+> However, this doesn't work because many many places in the mm core part 
+> of the kernel use loops on ptep with single ptep++ increment.
+> 
+> Therefore did it with the following hack:
+> 
+>   /* PTE level */
+> +#if defined(CONFIG_PPC_8xx) && defined(CONFIG_PPC_16K_PAGES)
+> +typedef struct { pte_basic_t pte, pte1, pte2, pte3; } pte_t;
+> +#else
+>   typedef struct { pte_basic_t pte; } pte_t;
+> +#endif
+> 
+> @@ -181,7 +192,13 @@ static inline unsigned long pte_update(pte_t *p,
+>          : "cc" );
+>   #else /* PTE_ATOMIC_UPDATES */
+>          unsigned long old = pte_val(*p);
+> -       *p = __pte((old & ~clr) | set);
+> +       unsigned long new = (old & ~clr) | set;
+> +
+> +#if defined(CONFIG_PPC_8xx) && defined(CONFIG_PPC_16K_PAGES)
+> +       p->pte = p->pte1 = p->pte2 = p->pte3 = new;
+> +#else
+> +       *p = __pte(new);
+> +#endif
+>   #endif /* !PTE_ATOMIC_UPDATES */
+> 
+>   #ifdef CONFIG_44x
+> 
+> 
+> @@ -161,7 +161,11 @@ static inline void __set_pte_at(struct mm_struct 
+> *mm, unsigned long addr,
+>          /* Anything else just stores the PTE normally. That covers all 
+> 64-bit
+>           * cases, and 32-bit non-hash with 32-bit PTEs.
+>           */
+> +#if defined(CONFIG_PPC_8xx) && defined(CONFIG_PPC_16K_PAGES)
+> +       ptep->pte = ptep->pte1 = ptep->pte2 = ptep->pte3 = pte_val(pte);
+> +#else
+>          *ptep = pte;
+> +#endif
+> 
+> 
+> 
+> But I'm not too happy with it as it means pte_t is not a single type 
+> anymore so passing it from one function to the other is quite heavy.
+> 
+> 
+> Would someone have an idea of an elegent way to handle that ?
 
-I will use xxxbits_le32 as you requests.
+I can't think of anything better. Do we pass pte by value to a lot of
+non inlined functions? Possible to inline the important ones?
 
-Thanks
-Regards
+Other option, try to get an iterator like pte = pte_next(pte) into core
+code.
+
+Thanks,
+Nick
