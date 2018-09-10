@@ -1,24 +1,25 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
- [IPv6:2607:f8b0:4864:20::441])
+Return-Path: <dan.malek@konsulko.com>
+Received: from mail-pl1-x62e.google.com (mail-pl1-x62e.google.com
+ [IPv6:2607:f8b0:4864:20::62e])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 428LFr61KwzF38m
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2018 07:06:56 +1000 (AEST)
-Received: by mail-pf1-x441.google.com with SMTP id h79-v6so11074655pfk.8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 14:06:56 -0700 (PDT)
-Date: Tue, 11 Sep 2018 07:06:45 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: akpm@linux-foundation.org, linux-mm@kvack.org,
- aneesh.kumar@linux.vnet.ibm.com, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 428JvM0h2WzF38V
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2018 06:05:46 +1000 (AEST)
+Received: by mail-pl1-x62e.google.com with SMTP id g2-v6so9272868plo.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 13:05:46 -0700 (PDT)
+Content-Type: text/plain; charset=utf-8
+Mime-Version: 1.0 (Mac OS X Mail 10.3 \(3273\))
 Subject: Re: How to handle PTE tables with non contiguous entries ?
-Message-ID: <20180911070645.239aef8a@roar.ozlabs.ibm.com>
+From: Dan Malek <dan.malek@konsulko.com>
 In-Reply-To: <ddc3bb56-4da0-c093-256f-185d4a612b5c@c-s.fr>
+Date: Mon, 10 Sep 2018 13:05:41 -0700
+Cc: akpm@linux-foundation.org, linux-mm@kvack.org,
+ aneesh.kumar@linux.vnet.ibm.com, Nicholas Piggin <npiggin@gmail.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ LKML <linux-kernel@vger.kernel.org>
+Message-Id: <98C61C92-0D24-41C6-B9DA-8335B34D3B07@konsulko.com>
 References: <ddc3bb56-4da0-c093-256f-185d4a612b5c@c-s.fr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: Christophe Leroy <christophe.leroy@c-s.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,76 +29,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 10 Sep 2018 14:34:37 +0000
-Christophe Leroy <christophe.leroy@c-s.fr> wrote:
 
-> Hi,
-> 
-> I'm having a hard time figuring out the best way to handle the following 
-> situation:
-> 
-> On the powerpc8xx, handling 16k size pages requires to have page tables 
-> with 4 identical entries.
-> 
-> Initially I was thinking about handling this by simply modifying 
-> pte_index() which changing pte_t type in order to have one entry every 
-> 16 bytes, then replicate the PTE value at *ptep, *ptep+1,*ptep+2 and 
-> *ptep+3 both in set_pte_at() and pte_update().
-> 
-> However, this doesn't work because many many places in the mm core part 
-> of the kernel use loops on ptep with single ptep++ increment.
-> 
-> Therefore did it with the following hack:
-> 
->   /* PTE level */
-> +#if defined(CONFIG_PPC_8xx) && defined(CONFIG_PPC_16K_PAGES)
-> +typedef struct { pte_basic_t pte, pte1, pte2, pte3; } pte_t;
-> +#else
->   typedef struct { pte_basic_t pte; } pte_t;
-> +#endif
-> 
-> @@ -181,7 +192,13 @@ static inline unsigned long pte_update(pte_t *p,
->          : "cc" );
->   #else /* PTE_ATOMIC_UPDATES */
->          unsigned long old = pte_val(*p);
-> -       *p = __pte((old & ~clr) | set);
-> +       unsigned long new = (old & ~clr) | set;
-> +
-> +#if defined(CONFIG_PPC_8xx) && defined(CONFIG_PPC_16K_PAGES)
-> +       p->pte = p->pte1 = p->pte2 = p->pte3 = new;
-> +#else
-> +       *p = __pte(new);
-> +#endif
->   #endif /* !PTE_ATOMIC_UPDATES */
-> 
->   #ifdef CONFIG_44x
-> 
-> 
-> @@ -161,7 +161,11 @@ static inline void __set_pte_at(struct mm_struct 
-> *mm, unsigned long addr,
->          /* Anything else just stores the PTE normally. That covers all 
-> 64-bit
->           * cases, and 32-bit non-hash with 32-bit PTEs.
->           */
-> +#if defined(CONFIG_PPC_8xx) && defined(CONFIG_PPC_16K_PAGES)
-> +       ptep->pte = ptep->pte1 = ptep->pte2 = ptep->pte3 = pte_val(pte);
-> +#else
->          *ptep = pte;
-> +#endif
-> 
-> 
-> 
-> But I'm not too happy with it as it means pte_t is not a single type 
-> anymore so passing it from one function to the other is quite heavy.
-> 
-> 
+Hello Cristophe.
+
+> On Sep 10, 2018, at 7:34 AM, Christophe Leroy =
+<christophe.leroy@c-s.fr> wrote:
+>=20
+> On the powerpc8xx, handling 16k size pages requires to have page =
+tables with 4 identical entries.
+
+Do you think a 16k page is useful?  Back in the day, the goal was to =
+keep the fault handling and management overhead as simple and generic as =
+possible, as you know this affects the system performance.  I understand =
+there would be fewer page faults and more efficient use of the MMU =
+resources with 16k, but if this comes at an overhead cost, is it really =
+worth it?
+
+In addition to the normal 4k mapping, I had thought about using 512k =
+mapping, which could be easily detected at level 2 (PMD), with a single =
+entry loaded into the MMU.  We would need an aux header or something =
+from the executable/library to assist with knowing when this could be =
+done.  I never got around to it. :)
+
+The 8xx platforms tended to have smaller memory resources, so the 4k =
+granularity was also useful in making better use of the available space.
+
 > Would someone have an idea of an elegent way to handle that ?
 
-I can't think of anything better. Do we pass pte by value to a lot of
-non inlined functions? Possible to inline the important ones?
+My suggestion would be to not change the PTE table, but have the fault =
+handler detect a 16k page and load any one of the four entries based =
+upon miss offset.  Kinda use the same 4k miss hander, but with 16k =
+knowledge.  You wouldn=E2=80=99t save any PTE table space, but the MMU =
+efficiency may be worth it.  As I recall, the hardware may ignore/mask =
+any LS bits, and there is PMD level information to utilize as well.
 
-Other option, try to get an iterator like pte = pte_next(pte) into core
-code.
+It=E2=80=99s been a long time since I=E2=80=99ve investigated how things =
+have evolved, glad it=E2=80=99s still in use, and I hope you at least =
+have some fun with the development :)
 
-Thanks,
-Nick
+Thanks.
+
+	=E2=80=94 Dan
