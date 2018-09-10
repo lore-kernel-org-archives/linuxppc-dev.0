@@ -1,33 +1,31 @@
-Return-Path: <luc.vanoostenryck@gmail.com>
-Received: from mail-wm0-x242.google.com (mail-wm0-x242.google.com
- [IPv6:2a00:1450:400c:c09::242])
+Return-Path: <robherring2@gmail.com>
+Received: from mail-oi0-f67.google.com (mail-oi0-f67.google.com
+ [209.85.218.67])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4285Yr6hFQzF3FK
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 21:34:54 +1000 (AEST)
-Received: by mail-wm0-x242.google.com with SMTP id j192-v6so21125951wmj.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 04:34:54 -0700 (PDT)
-Date: Mon, 10 Sep 2018 13:34:49 +0200
-From: Luc Van Oostenryck <luc.vanoostenryck@gmail.com>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: Nick Desaulniers <ndesaulniers@google.com>, joe@perches.com,
- Kees Cook <keescook@chromium.org>,
- LKML <linux-kernel@vger.kernel.org>, linux-sparse@vger.kernel.org,
- sparse@chrisli.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: Conflict between sparse and commit cafa0010cd51f ("Raise the
- minimum required gcc version to 4.6")
-Message-ID: <20180910113448.dxnfvznyimtj3tkv@ltop.local>
-References: <81a5fd11-366c-0897-4143-d8d041420a41@c-s.fr>
- <1324e7d6-83f8-f40f-ad34-c46e4ad3139b@c-s.fr>
- <CAKwvOdmuXydQsQyD2CUyoSkkDpF1e1CXg6v1SRv2q-bpYa9SQg@mail.gmail.com>
- <20180907181337.peyfq7yvhahduvmq@ltop.local>
- <CAKwvOdmXs+pWJGXu-zr-XSu7p-7hw=2m1vVQmVLwJcmGEFz0gg@mail.gmail.com>
- <e6db84f1-ee8d-9377-5f1c-6a0e7972ba50@c-s.fr>
- <20180910092835.v5nex5nzfgtl475m@ltop.local>
- <061b3056-1a9a-af6b-de2a-49fea394320d@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4287JP2ZjQzF37b
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 22:53:24 +1000 (AEST)
+Received: by mail-oi0-f67.google.com with SMTP id l202-v6so39819484oig.7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 05:53:24 -0700 (PDT)
+Date: Mon, 10 Sep 2018 07:53:20 -0500
+From: Rob Herring <robh@kernel.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Finn Thain <fthain@telegraphics.com.au>, Stan Johnson <userm57@yahoo.com>
+Cc: Frank Rowand <frowand.list@gmail.com>,
+ Chintan Pandya <cpandya@codeaurora.org>, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: v4.17 regression: PowerMac G3 won't boot, was Re: [PATCH v5 1/3]
+ of: cache phandle nodes to reduce cost of of_find_node_by_phandle()
+Message-ID: <20180910125320.GA17028@bogus>
+References: <1520208889-3908-1-git-send-email-frowand.list@gmail.com>
+ <1520208889-3908-2-git-send-email-frowand.list@gmail.com>
+ <alpine.LNX.2.21.1808301025480.73@nippy.intranet>
+ <0ad5dbfd-08f3-b97d-34b9-70fc9a729921@gmail.com>
+ <d9e53e48794c2eade19309b73febd492e3c5eeeb.camel@kernel.crashing.org>
+ <7427daf6570d519e6793eb96d2fbaa52714b0cd7.camel@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <061b3056-1a9a-af6b-de2a-49fea394320d@c-s.fr>
+In-Reply-To: <7427daf6570d519e6793eb96d2fbaa52714b0cd7.camel@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,34 +35,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Sep 10, 2018 at 09:56:33AM +0000, Christophe Leroy wrote:
+On Sun, Sep 09, 2018 at 07:04:25PM +0200, Benjamin Herrenschmidt wrote:
+> On Fri, 2018-08-31 at 14:58 +1000, Benjamin Herrenschmidt wrote:
+> > 
+> > > A long shot, but something to consider, is that I failed to cover the
+> > > cases of dynamic devicetree updates (removing nodes that contain a
+> > > phandle) in ways other than overlays.  Michael Ellerman has reported
+> > > such a problem for powerpc/mobility with of_detach_node().  A patch to
+> > > fix that is one of the tasks I need to complete.
+> > 
+> > The only thing I can think of is booting via the BootX bootloader on
+> > those ancient macs results in a DT with no phandles. I didn't see an
+> > obvious reason why that would cause that patch to break though.
 > 
-> # export REAL_CC=ppc-linux-gcc
-> # make CHECK="cgcc -target=ppc -D_CALL_ELF=2 -D__GCC__=5
-> -D__GCC_MINOR__=4" C=2 arch/powerpc/kernel/process.o
-> scripts/kconfig/conf  --syncconfig Kconfig
-> #
-> # configuration written to .config
-> #
->   UPD     include/config/kernel.release
->   UPD     include/generated/utsrelease.h
->   CC      kernel/bounds.s
->   CC      arch/powerpc/kernel/asm-offsets.s
->   CALL    scripts/checksyscalls.sh
->   CHECK   scripts/mod/empty.c
-> Can't exec "/bin/sh": Argument list too long at /usr/local/bin/cgcc line 86.
-> make[2]: *** [scripts/mod/empty.o] Error 1
-> make[1]: *** [scripts/mod] Error 2
-> make: *** [scripts] Error 2
+> Guys, we still don't have a fix for this one on its way upstream...
+> 
+> My test patch just creates phandle properties for all nodes, that was
+> not intended as a fix, more a way to check if the problem was related
+> to the lack of phandles.
+> 
+> I don't actually know why the new code causes things to fail when
+> phandles are absent. This needs to be looked at.
+> 
+> I'm travelling at the moment and generally caught up with other things,
+> I haven't had a chance to dig, so just a heads up. I don't intend to
+> submit my patch since it's just a band aid. We need to figure out what
+> the actual problem is.
 
-OK. Clearly nobody has ever used it so :(
-There is an infinite loop because cgcc use the env var CHECK
-to call sparse while kbuild use CHECK to call cgcc here.
+Can you try this patch (w/o Ben's patch). I think the problem is if 
+there are no phandles, then roundup_pow_of_two is passed 0 which is 
+documented as undefined result.
 
-The following seems to work here.
-$ export REAL_CC=ppc-linux-gcc
-$ make CHECK="CHECK=sparse cgcc -target=ppc ...
+Though, if a DT has no properties with phandles, then why are we doing a 
+lookup in the first place?
 
-It's a bit kludgy, I admit.
 
--- Luc
+8<----------------------------------------------------------------------
+
+diff --git a/drivers/of/base.c b/drivers/of/base.c
+index 9095b8290150..74eaedd5b860 100644
+--- a/drivers/of/base.c
++++ b/drivers/of/base.c
+@@ -140,6 +140,9 @@ void of_populate_phandle_cache(void)
+ 		if (np->phandle && np->phandle != OF_PHANDLE_ILLEGAL)
+ 			phandles++;
+ 
++	if (!phandles)
++		goto out;
++
+ 	cache_entries = roundup_pow_of_two(phandles);
+ 	phandle_cache_mask = cache_entries - 1;
+ 
