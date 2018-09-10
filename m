@@ -1,21 +1,36 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <sbobroff@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 427wb33FGFzDq5k
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 14:50:23 +1000 (AEST)
-Date: Mon, 10 Sep 2018 14:50:18 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
- Paul Mackerras <paulus@ozlabs.org>
-Subject: Re: [PATCH kernel] KVM: PPC: Remove redundand permission bits removal
-Message-ID: <20180910045018.GE24181@umbus.fritz.box>
-References: <20180906095146.43981-1-aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 427wtM6B66zDrM8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 15:03:39 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w8A4xcci012386
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 01:03:37 -0400
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2mdefv75fm-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 01:03:37 -0400
+Received: from localhost
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sbobroff@linux.ibm.com>;
+ Mon, 10 Sep 2018 06:03:34 +0100
+Date: Mon, 10 Sep 2018 15:03:28 +1000
+From: Sam Bobroff <sbobroff@linux.ibm.com>
+To: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux@yadro.com
+Subject: Re: [PATCH v2 5/5] PCI/powerpc/eeh: Add pcibios hooks for preparing
+ to rescan
+References: <20180906115752.29316-1-s.miroshnichenko@yadro.com>
+ <20180906115752.29316-6-s.miroshnichenko@yadro.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="AsxXAMtlQ5JHofzM"
-In-Reply-To: <20180906095146.43981-1-aik@ozlabs.ru>
+ protocol="application/pgp-signature"; boundary="iFRdW5/EC4oqxDHL"
+In-Reply-To: <20180906115752.29316-6-s.miroshnichenko@yadro.com>
+Message-Id: <20180910050328.GC14370@tungsten.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,169 +41,181 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---AsxXAMtlQ5JHofzM
+--iFRdW5/EC4oqxDHL
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Sep 06, 2018 at 07:51:46PM +1000, Alexey Kardashevskiy wrote:
-> The kvmppc_gpa_to_ua() helper itself takes care of the permission
-> bits in the TCE and yet every single caller removes them.
+Hi Sergey,
+
+On Thu, Sep 06, 2018 at 02:57:52PM +0300, Sergey Miroshnichenko wrote:
+> Reading an empty slot returns all ones, which triggers a false
+> EEH error event on PowerNV.
 >=20
-> This changes semantics of kvmppc_gpa_to_ua() so it takes TCEs
-> (which are GPAs + TCE permission bits) to make the callers simpler.
->=20
-> This should cause no behavioural change.
->=20
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> New callbacks pcibios_rescan_prepare/done are introduced to
+> pause/resume the EEH during rescan.
 
+If I understand it correctly, this temporarily disables EEH for config space
+accesses on the whole PHB while the rescan runs. Is it possible that a
+real EEH event could be missed if it occurred during the rescan?
 
-Hmm.  I like shrinking the code, but it bothers me that a function
-called simply kvmppc_gpa_to_ua() knows something about a TCE's
-internal format.
+Even if it's not possible, I think it would be good to mention that in a
+comment.
 
-I think either the TCE bit masking needs to happen in the callers, or
-that function needs a name change.  Maybe kvmppc_tce_to_ua()?
-
+> Signed-off-by: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
 > ---
+>  arch/powerpc/include/asm/eeh.h               |  2 ++
+>  arch/powerpc/kernel/eeh.c                    | 12 +++++++++++
+>  arch/powerpc/platforms/powernv/eeh-powernv.c | 22 ++++++++++++++++++++
+>  drivers/pci/probe.c                          | 14 +++++++++++++
+>  include/linux/pci.h                          |  2 ++
+>  5 files changed, 52 insertions(+)
 >=20
-> This is not related to any bug, just noticed this while doing other thing=
-s.
->=20
-> I can also rename kvmppc_gpa_to_ua() if it makes more sense, does not it?
->=20
-> ---
->  arch/powerpc/kvm/book3s_64_vio.c    | 10 +++-------
->  arch/powerpc/kvm/book3s_64_vio_hv.c | 16 ++++++----------
->  2 files changed, 9 insertions(+), 17 deletions(-)
->=20
-> diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_6=
-4_vio.c
-> index 174299d..7207481 100644
-> --- a/arch/powerpc/kvm/book3s_64_vio.c
-> +++ b/arch/powerpc/kvm/book3s_64_vio.c
-> @@ -378,8 +378,7 @@ static long kvmppc_tce_validate(struct kvmppc_spapr_t=
-ce_table *stt,
->  	if (iommu_tce_check_gpa(stt->page_shift, gpa))
->  		return H_TOO_HARD;
+> diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/ee=
+h.h
+> index 219637ea69a1..926c3e31df99 100644
+> --- a/arch/powerpc/include/asm/eeh.h
+> +++ b/arch/powerpc/include/asm/eeh.h
+> @@ -219,6 +219,8 @@ struct eeh_ops {
+>  	int (*next_error)(struct eeh_pe **pe);
+>  	int (*restore_config)(struct pci_dn *pdn);
+>  	int (*notify_resume)(struct pci_dn *pdn);
+> +	int (*pause)(struct pci_bus *bus);
+> +	int (*resume)(struct pci_bus *bus);
+
+I think these names are a bit too generic, what about naming them
+pause_bus()/resume_bus() or even prepare_rescan()/rescan_done()?
+
+>  };
 > =20
-> -	if (kvmppc_gpa_to_ua(stt->kvm, tce & ~(TCE_PCI_READ | TCE_PCI_WRITE),
-> -				&ua, NULL))
-> +	if (kvmppc_gpa_to_ua(stt->kvm, tce, &ua, NULL))
->  		return H_TOO_HARD;
-> =20
->  	list_for_each_entry_rcu(stit, &stt->iommu_tables, next) {
-> @@ -553,8 +552,7 @@ long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned=
- long liobn,
-> =20
->  	idx =3D srcu_read_lock(&vcpu->kvm->srcu);
-> =20
-> -	if ((dir !=3D DMA_NONE) && kvmppc_gpa_to_ua(vcpu->kvm,
-> -			tce & ~(TCE_PCI_READ | TCE_PCI_WRITE), &ua, NULL)) {
-> +	if ((dir !=3D DMA_NONE) && kvmppc_gpa_to_ua(vcpu->kvm, tce, &ua, NULL))=
- {
->  		ret =3D H_PARAMETER;
->  		goto unlock_exit;
->  	}
-> @@ -647,9 +645,7 @@ long kvmppc_h_put_tce_indirect(struct kvm_vcpu *vcpu,
->  		}
->  		tce =3D be64_to_cpu(tce);
-> =20
-> -		if (kvmppc_gpa_to_ua(vcpu->kvm,
-> -				tce & ~(TCE_PCI_READ | TCE_PCI_WRITE),
-> -				&ua, NULL))
-> +		if (kvmppc_gpa_to_ua(vcpu->kvm, tce, &ua, NULL))
->  			return H_PARAMETER;
-> =20
->  		list_for_each_entry_lockless(stit, &stt->iommu_tables, next) {
-> diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3=
-s_64_vio_hv.c
-> index 5f810dc..a03cd93 100644
-> --- a/arch/powerpc/kvm/book3s_64_vio_hv.c
-> +++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
-> @@ -110,8 +110,7 @@ static long kvmppc_rm_tce_validate(struct kvmppc_spap=
-r_tce_table *stt,
->  	if (iommu_tce_check_gpa(stt->page_shift, gpa))
->  		return H_PARAMETER;
-> =20
-> -	if (kvmppc_gpa_to_ua(stt->kvm, tce & ~(TCE_PCI_READ | TCE_PCI_WRITE),
-> -				&ua, NULL))
-> +	if (kvmppc_gpa_to_ua(stt->kvm, tce, &ua, NULL))
->  		return H_TOO_HARD;
-> =20
->  	list_for_each_entry_lockless(stit, &stt->iommu_tables, next) {
-> @@ -180,10 +179,10 @@ void kvmppc_tce_put(struct kvmppc_spapr_tce_table *=
-stt,
+>  extern int eeh_subsystem_flags;
+> diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+> index 6ebba3e48b01..9fb5012f389d 100644
+> --- a/arch/powerpc/kernel/eeh.c
+> +++ b/arch/powerpc/kernel/eeh.c
+> @@ -1831,3 +1831,15 @@ static int __init eeh_init_proc(void)
+>  	return 0;
 >  }
->  EXPORT_SYMBOL_GPL(kvmppc_tce_put);
+>  __initcall(eeh_init_proc);
+> +
+> +void pcibios_rescan_prepare(struct pci_bus *bus)
+> +{
+> +	if (eeh_ops && eeh_ops->pause)
+> +		eeh_ops->pause(bus);
+> +}
+> +
+> +void pcibios_rescan_done(struct pci_bus *bus)
+> +{
+> +	if (eeh_ops && eeh_ops->resume)
+> +		eeh_ops->resume(bus);
+> +}
+> diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/=
+platforms/powernv/eeh-powernv.c
+> index 3c1beae29f2d..9724a58afcd2 100644
+> --- a/arch/powerpc/platforms/powernv/eeh-powernv.c
+> +++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
+> @@ -59,6 +59,26 @@ void pnv_pcibios_bus_add_device(struct pci_dev *pdev)
+>  	eeh_sysfs_add_device(pdev);
+>  }
 > =20
-> -long kvmppc_gpa_to_ua(struct kvm *kvm, unsigned long gpa,
-> +long kvmppc_gpa_to_ua(struct kvm *kvm, unsigned long tce,
->  		unsigned long *ua, unsigned long **prmap)
+> +static int pnv_eeh_pause(struct pci_bus *bus)
+> +{
+> +	struct pci_controller *hose =3D pci_bus_to_host(bus);
+> +	struct pnv_phb *phb =3D hose->private_data;
+> +
+> +	phb->flags &=3D ~PNV_PHB_FLAG_EEH;
+> +	disable_irq(eeh_event_irq);
+> +	return 0;
+> +}
+> +
+> +static int pnv_eeh_resume(struct pci_bus *bus)
+> +{
+> +	struct pci_controller *hose =3D pci_bus_to_host(bus);
+> +	struct pnv_phb *phb =3D hose->private_data;
+> +
+> +	enable_irq(eeh_event_irq);
+> +	phb->flags |=3D PNV_PHB_FLAG_EEH;
+> +	return 0;
+> +}
+> +
+>  static int pnv_eeh_init(void)
 >  {
-> -	unsigned long gfn =3D gpa >> PAGE_SHIFT;
-> +	unsigned long gfn =3D tce >> PAGE_SHIFT;
->  	struct kvm_memory_slot *memslot;
+>  	struct pci_controller *hose;
+> @@ -1710,6 +1730,8 @@ static struct eeh_ops pnv_eeh_ops =3D {
+>  	.write_config           =3D pnv_eeh_write_config,
+>  	.next_error		=3D pnv_eeh_next_error,
+>  	.restore_config		=3D pnv_eeh_restore_config,
+> +	.pause			=3D pnv_eeh_pause,
+> +	.resume			=3D pnv_eeh_resume,
+>  	.notify_resume		=3D NULL
+>  };
 > =20
->  	memslot =3D search_memslots(kvm_memslots(kvm), gfn);
-> @@ -191,7 +190,7 @@ long kvmppc_gpa_to_ua(struct kvm *kvm, unsigned long =
-gpa,
->  		return -EINVAL;
+> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+> index ac876e32de4b..4a9045364809 100644
+> --- a/drivers/pci/probe.c
+> +++ b/drivers/pci/probe.c
+> @@ -2801,6 +2801,14 @@ void __weak pcibios_remove_bus(struct pci_bus *bus)
+>  {
+>  }
 > =20
->  	*ua =3D __gfn_to_hva_memslot(memslot, gfn) |
-> -		(gpa & ~(PAGE_MASK | TCE_PCI_READ | TCE_PCI_WRITE));
-> +		(tce & ~(PAGE_MASK | TCE_PCI_READ | TCE_PCI_WRITE));
+> +void __weak pcibios_rescan_prepare(struct pci_bus *bus)
+> +{
+> +}
+> +
+> +void __weak pcibios_rescan_done(struct pci_bus *bus)
+> +{
+> +}
+> +
+>  struct pci_bus *pci_create_root_bus(struct device *parent, int bus,
+>  		struct pci_ops *ops, void *sysdata, struct list_head *resources)
+>  {
+> @@ -3055,9 +3063,15 @@ unsigned int pci_rescan_bus_bridge_resize(struct p=
+ci_dev *bridge)
+>  unsigned int pci_rescan_bus(struct pci_bus *bus)
+>  {
+>  	unsigned int max;
+> +	struct pci_bus *root =3D bus;
+> +
+> +	while (!pci_is_root_bus(root))
+> +		root =3D root->parent;
 > =20
->  #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
->  	if (prmap)
-> @@ -366,8 +365,7 @@ long kvmppc_rm_h_put_tce(struct kvm_vcpu *vcpu, unsig=
-ned long liobn,
->  		return ret;
+> +	pcibios_rescan_prepare(root);
+>  	max =3D pci_scan_child_bus(bus);
+>  	pci_assign_unassigned_bus_resources(bus);
+> +	pcibios_rescan_done(root);
+>  	pci_bus_add_devices(bus);
 > =20
->  	dir =3D iommu_tce_direction(tce);
-> -	if ((dir !=3D DMA_NONE) && kvmppc_gpa_to_ua(vcpu->kvm,
-> -			tce & ~(TCE_PCI_READ | TCE_PCI_WRITE), &ua, NULL))
-> +	if ((dir !=3D DMA_NONE) && kvmppc_gpa_to_ua(vcpu->kvm, tce, &ua, NULL))
->  		return H_PARAMETER;
+>  	return max;
+> diff --git a/include/linux/pci.h b/include/linux/pci.h
+> index 340029b2fb38..42930731c5a7 100644
+> --- a/include/linux/pci.h
+> +++ b/include/linux/pci.h
+> @@ -1929,6 +1929,8 @@ void pcibios_penalize_isa_irq(int irq, int active);
+>  int pcibios_alloc_irq(struct pci_dev *dev);
+>  void pcibios_free_irq(struct pci_dev *dev);
+>  resource_size_t pcibios_default_alignment(void);
+> +void pcibios_rescan_prepare(struct pci_bus *bus);
+> +void pcibios_rescan_done(struct pci_bus *bus);
 > =20
->  	entry =3D ioba >> stt->page_shift;
-> @@ -520,9 +518,7 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vc=
-pu,
->  		unsigned long tce =3D be64_to_cpu(((u64 *)tces)[i]);
-> =20
->  		ua =3D 0;
-> -		if (kvmppc_gpa_to_ua(vcpu->kvm,
-> -				tce & ~(TCE_PCI_READ | TCE_PCI_WRITE),
-> -				&ua, NULL))
-> +		if (kvmppc_gpa_to_ua(vcpu->kvm, tce, &ua, NULL))
->  			return H_PARAMETER;
-> =20
->  		list_for_each_entry_lockless(stit, &stt->iommu_tables, next) {
+>  #ifdef CONFIG_HIBERNATE_CALLBACKS
+>  extern struct dev_pm_ops pcibios_pm_ops;
+> --=20
+> 2.17.1
+>=20
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---AsxXAMtlQ5JHofzM
+--iFRdW5/EC4oqxDHL
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAluV+AoACgkQbDjKyiDZ
-s5KASA/+N6lfabp98nE2jmLr+YCE10nx8Cwc/cuu9Oq4yz+W4CXJ1MlvgeckFR6y
-TpntPDQAtW0QlHfNrtW1b5nWzgiQBKn9PucjVo86Qb5FIlCO2tmalds3Kr26D+mR
-rMO1zG8AZ6BMuBdyfHUWNZfyL6ddbgRu/0CuEgxnxkxrzIe5Lfa3oWN6CrfB04wU
-z9heSq8xkU6IrJGbk3TPo4G6NV8RpR94VHxMwbGiNrgI8chHzjpq7pfBe1srgfKh
-MOUG6LLbFYqHisoolLxgbCUF3Ozloo5fDKH1+Bel3fv0As6ql6PLVsBChBQ27nn0
-nK0auVA1y9INfItH60lVL3Hco6Ez3RarwSbarj82q2y+mVPnBb11dycafEC/Gqk3
-PUVlgjyrRZA1SHcLmy64D/6Sizi2aZloWF4Xal7BTvBigna2w6ApKDpqHmDIjEqi
-FiZo6Gkq0u2cmDiHTm9CGFeeGiFpTIOpwQVnFD7sET9b94fNU94Ey/aVsO0F43Lg
-wqID4Mc5QDC074++/KBxSRBIjMmb3Jwsot39eVUAo1qbFi34VTXFygmW6BUznhTc
-sz61+TX4r4KUxpVyFD5Wb6Fw3OSPreIMZc4l73RX4SanAIuUatcveXSorSvHTRtT
-tuUqTxo3H8PGKuqDJ/xz1afdaX710tggE9aOjTf4o1r9QWy5tnY=
-=G+Bf
+iQEzBAABCAAdFiEELWWF8pdtWK5YQRohMX8w6AQl/iIFAluV+xkACgkQMX8w6AQl
+/iIbzwf+IW1F4K5TpUhF/LwMfDBJlrNJ55ilRyxpQZrISpwP+bp1sraQABy1xeIG
+fall91Se7i59IYp5WtL4/xom0BfsS6Ca4OB7bJU9OQ4J7VL/XlSuRIfOw+p3YiZH
+fXWDVlEkBf5fOIJ2vG8kecC+RpxfELtQdpD4aVoBzjMnyOGpl8A3CCPsPxcoLbLc
+ZDBGIn03vmkZw3lA6Mw1Fc/7khmZ50AgNOCbJZy/GZm6/IuQ4wzb2Wy1yrqcqp4+
+YhJ0+K2Ue7wBaSU1NyIV5kQKHFxwrkF+w4eYd5/ukJVAbwMu02ffI5REKqrbDGPF
+6FH+x6D6j9/Op8mGAXAcEbhfZ6j/+g==
+=Rk9P
 -----END PGP SIGNATURE-----
 
---AsxXAMtlQ5JHofzM--
+--iFRdW5/EC4oqxDHL--
