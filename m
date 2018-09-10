@@ -1,19 +1,20 @@
 Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4283Tq1bD9zF323
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 20:01:19 +1000 (AEST)
-Message-ID: <5db170d7504095793c1b258a05d99df678ce3a21.camel@neuling.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4283Zp4xmKzF37s
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 20:05:38 +1000 (AEST)
+Message-ID: <794308ed6aa6dcccf96e10bb0e3fa8d2dab9adff.camel@neuling.org>
 Subject: Re: [PATCH] powerpc: Avoid code patching freed init sections
 From: Michael Neuling <mikey@neuling.org>
 To: Michal =?ISO-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
 Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, Haren Myneni
- <haren@linux.vnet.ibm.com>, Nicholas Piggin <npiggin@gmail.com>
-Date: Mon, 10 Sep 2018 20:01:18 +1000
-In-Reply-To: <20180910101001.71a31102@naga.suse.cz>
+ <haren@linux.vnet.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, Paul
+ Mackerras <paulus@ozlabs.org>
+Date: Mon, 10 Sep 2018 20:05:38 +1000
+In-Reply-To: <20180910115457.60366160@naga.suse.cz>
 References: <20180910054405.32422-1-mikey@neuling.org>
- <20180910101001.71a31102@naga.suse.cz>
+ <20180910115457.60366160@naga.suse.cz>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,14 +27,26 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-> > For stable I've marked this as v4.13+ since that's when we refactored
-> > code-patching.c but it could go back even further than that. In
-> > reality though, I think we can only hit this since the first
-> > spectre/meltdown changes.
+> > +	/* Make sure we aren't patching a freed init section */
+> > +	if (in_init_section(patch_addr) && init_freed())
+> > +		return 0;
+> > +
 >=20
-> Which means it affects all maintained stable trees because the
-> spectre/meltdown changes are backported.
+> Do we even need the init_freed() check?
 
-Yep we this this on SLES12 SP3=20
+Maybe not.  If userspace isn't up, then maybe it's ok to skip.
+
+> What user input can we process in init-only code?
+
+See the stack trace in the commit message. It's a weird case for KVM guests=
+ in
+KVM PR mode.=20
+
+That's the only case I can found so far.
+
+> Also it would be nice to write the function+offset of the skipped patch
+> location into the kernel log.
+
+OK. I'll update.
 
 Mikey
