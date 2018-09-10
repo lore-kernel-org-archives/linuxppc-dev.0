@@ -1,34 +1,35 @@
 Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 428BWh2CNWzF3Dd
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2018 01:18:24 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w8AFGMqM067177
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 11:18:20 -0400
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2mdrgugppr-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 428BWn25RLzF3Dh
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2018 01:18:29 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w8AFF1g4125451
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 11:18:25 -0400
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2mdt3eug8t-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 11:18:20 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 11:18:25 -0400
 Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Mon, 10 Sep 2018 11:18:18 -0400
-Subject: [PATCH v5 1/2] powerpc/pseries: Remove prrn_work workqueue
+ Mon, 10 Sep 2018 11:18:24 -0400
+Subject: [PATCH v5 2/2] powerpc/pseries:Remove unneeded uses of dlpar work
+ queue
 From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
 Cc: johnallen3991@gmail.com, desnesn@linux.vnet.ibm.com,
  haren@linux.vnet.ibm.com, pmac@au1.ibm.com
-Date: Mon, 10 Sep 2018 09:57:00 -0500
+Date: Mon, 10 Sep 2018 09:57:07 -0500
 In-Reply-To: <153659128238.7764.14440832607437622051.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
 References: <153659128238.7764.14440832607437622051.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <153659142059.7764.7393389361707767600.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
+Message-Id: <153659142683.7764.14082769051437367416.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,129 +39,198 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When a PRRN event is received we are already running in a worker
-thread. Instead of spawning off another worker thread on the prrn_work
-workqueue to handle the PRRN event we can just call the PRRN handler
-routine directly.
+There are three instances in which dlpar hotplug events are invoked;
+handling a hotplug interrupt (in a kvm guest), handling a dlpar
+request through sysfs, and updating LMB affinity when handling a
+PRRN event. Only in the case of handling a hotplug interrupt do we
+have to put the work on a workqueue, the other cases can handle the
+dlpar request directly.
 
-With this update we can also pass the scope variable for the PRRN
-event directly to the handler instead of it being a global variable.
+This patch exports the handle_dlpar_errorlog() function so that
+dlpar hotplug events can be handled directly and updates the two
+instances mentioned above to use the direct invocation.
 
-This patch fixes the following oops mnessage we are seeing in PRRN testing:
-
-Oops: Bad kernel stack pointer, sig: 6 [#1]
-SMP NR_CPUS=2048 NUMA pSeries
-Modules linked in: nfsv3 nfs_acl rpcsec_gss_krb5 auth_rpcgss nfsv4 dns_resolver nfs lockd grace sunrpc fscache binfmt_misc reiserfs vfat fat rpadlpar_io(X) rpaphp(X) tcp_diag udp_diag inet_diag unix_diag af_packet_diag netlink_diag af_packet xfs libcrc32c dm_service_time ibmveth(X) ses enclosure scsi_transport_sas rtc_generic btrfs xor raid6_pq sd_mod ibmvscsi(X) scsi_transport_srp ipr(X) libata sg dm_multipath dm_mod scsi_dh_rdac scsi_dh_emc scsi_dh_alua scsi_mod autofs4
-Supported: Yes, External                                                     54
-CPU: 7 PID: 18967 Comm: kworker/u96:0 Tainted: G                 X 4.4.126-94.22-default #1
-Workqueue: pseries hotplug workque pseries_hp_work_fn
-task: c000000775367790 ti: c00000001ebd4000 task.ti: c00000070d140000
-NIP: 0000000000000000 LR: 000000001fb3d050 CTR: 0000000000000000
-REGS: c00000001ebd7d40 TRAP: 0700   Tainted: G                 X  (4.4.126-94.22-default)
-MSR: 8000000102081000 <41,VEC,ME5  CR: 28000002  XER: 20040018   4
-CFAR: 000000001fb3d084 40 419   1                                3
-GPR00: 000000000000000040000000000010007 000000001ffff400 000000041fffe200
-GPR04: 000000000000008050000000000000000 000000001fb15fa8 0000000500000500
-GPR08: 000000000001f40040000000000000001 0000000000000000 000005:5200040002
-GPR12: 00000000000000005c000000007a05400 c0000000000e89f8 000000001ed9f668
-GPR16: 000000001fbeff944000000001fbeff94 000000001fb545e4 0000006000000060
-GPR20: ffffffffffffffff4ffffffffffffffff 0000000000000000 0000000000000000
-GPR24: 00000000000000005400000001fb3c000 0000000000000000 000000001fb1b040
-GPR28: 000000001fb240004000000001fb440d8 0000000000000008 0000000000000000
-NIP [0000000000000000] 5         (null)
-LR [000000001fb3d050] 031fb3d050
-Call Trace:            4
-Instruction dump:      4                                       5:47 12    2
-XXXXXXXX XXXXXXXX XXXXX4XX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
-XXXXXXXX XXXXXXXX XXXXX5XX XXXXXXXX 60000000 60000000 60000000 60000000
----[ end trace aa5627b04a7d9d6b ]---                                       3NMI watchdog: BUG: soft lockup - CPU#27 stuck for 23s! [kworker/27:0:13903]
-Modules linked in: nfsv3 nfs_acl rpcsec_gss_krb5 auth_rpcgss nfsv4 dns_resolver nfs lockd grace sunrpc fscache binfmt_misc reiserfs vfat fat rpadlpar_io(X) rpaphp(X) tcp_diag udp_diag inet_diag unix_diag af_packet_diag netlink_diag af_packet xfs libcrc32c dm_service_time ibmveth(X) ses enclosure scsi_transport_sas rtc_generic btrfs xor raid6_pq sd_mod ibmvscsi(X) scsi_transport_srp ipr(X) libata sg dm_multipath dm_mod scsi_dh_rdac scsi_dh_emc scsi_dh_alua scsi_mod autofs4
-Supported: Yes, External
-CPU: 27 PID: 13903 Comm: kworker/27:0 Tainted: G      D          X 4.4.126-94.22-default #1
-Workqueue: events prrn_work_fn
-task: c000000747cfa390 ti: c00000074712c000 task.ti: c00000074712c000
-NIP: c0000000008002a8 LR: c000000000090770 CTR: 000000000032e088
-REGS: c00000074712f7b0 TRAP: 0901   Tainted: G      D          X  (4.4.126-94.22-default)
-MSR: 8000000100009033 <SF,EE,ME,IR,DR,RI,LE>  CR: 22482044  XER: 20040000
-CFAR: c0000000008002c4 SOFTE: 1
-GPR00: c000000000090770 c00000074712fa30 c000000000f09800 c000000000fa1928 6:02
-GPR04: c000000775f5e000 fffffffffffffffe 0000000000000001 c000000000f42db8
-GPR08: 0000000000000001 0000000080000007 0000000000000000 0000000000000000
-GPR12: 8006210083180000 c000000007a14400
-NIP [c0000000008002a8] _raw_spin_lock+0x68/0xd0
-LR [c000000000090770] mobility_rtas_call+0x50/0x100
-Call Trace:            59                                        5
-[c00000074712fa60] [c000000000090770] mobility_rtas_call+0x50/0x100
-[c00000074712faf0] [c000000000090b08] pseries_devicetree_update+0xf8/0x530
-[c00000074712fc20] [c000000000031ba4] prrn_work_fn+0x34/0x50
-[c00000074712fc40] [c0000000000e0390] process_one_work+0x1a0/0x4e0
-[c00000074712fcd0] [c0000000000e0870] worker_thread+0x1a0/0x6105:57       2
-[c00000074712fd80] [c0000000000e8b18] kthread+0x128/0x150
-[c00000074712fe30] [c0000000000096f8] ret_from_kernel_thread+0x5c/0x64
-Instruction dump:
-2c090000 40c20010 7d40192d 40c2fff0 7c2004ac 2fa90000 40de0018 5:540030   3
-e8010010 ebe1fff8 7c0803a6 4e800020 <7c210b78> e92d0000 89290009 792affe3
-
-Signed-off-by: John Allen <jallen@linux.ibm.com>
-Signed-off-by: Haren Myneni <haren@us.ibm.com>
+Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 ---
-v5:
-  - Update commit message to include oops message
-v4:
-  - Remove prrn_work workqueue as suggested by Michael Ellerman
-  - Make the PRRN event scope passed in as opposed to a global, suggested
-    by Michael Ellerman
-v3:
-  -Scrap the mutex as it only replicates existing workqueue behavior.
-v2:
-  -Unlock prrn_lock when PRRN operations are complete, not after handler is
-   scheduled.
-  -Remove call to flush_work, the previous broken method of serializing
-   PRRN events.
----
- arch/powerpc/kernel/rtasd.c |   17 +++--------------
- 1 file changed, 3 insertions(+), 14 deletions(-)
+ arch/powerpc/platforms/pseries/dlpar.c    |   37 +++++++----------------------
+ arch/powerpc/platforms/pseries/mobility.c |   18 +++++---------
+ arch/powerpc/platforms/pseries/pseries.h  |    5 ++--
+ arch/powerpc/platforms/pseries/ras.c      |    2 +-
+ 4 files changed, 19 insertions(+), 43 deletions(-)
 
-diff --git a/arch/powerpc/kernel/rtasd.c b/arch/powerpc/kernel/rtasd.c
-index 44d66c33d59d..23b88b923f06 100644
---- a/arch/powerpc/kernel/rtasd.c
-+++ b/arch/powerpc/kernel/rtasd.c
-@@ -274,27 +274,16 @@ void pSeries_log_error(char *buf, unsigned int err_type, int fatal)
+diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+index a0b20c03f078..052c4f2ba0a0 100644
+--- a/arch/powerpc/platforms/pseries/dlpar.c
++++ b/arch/powerpc/platforms/pseries/dlpar.c
+@@ -32,8 +32,6 @@ static struct workqueue_struct *pseries_hp_wq;
+ struct pseries_hp_work {
+ 	struct work_struct work;
+ 	struct pseries_hp_errorlog *errlog;
+-	struct completion *hp_completion;
+-	int *rc;
+ };
+ 
+ struct cc_workarea {
+@@ -329,7 +327,7 @@ int dlpar_release_drc(u32 drc_index)
+ 	return 0;
  }
  
- #ifdef CONFIG_PPC_PSERIES
--static s32 prrn_update_scope;
--
--static void prrn_work_fn(struct work_struct *work)
-+static void handle_prrn_event(s32 scope)
+-static int handle_dlpar_errorlog(struct pseries_hp_errorlog *hp_elog)
++int handle_dlpar_errorlog(struct pseries_hp_errorlog *hp_elog)
  {
+ 	int rc;
+ 
+@@ -371,20 +369,13 @@ static void pseries_hp_work_fn(struct work_struct *work)
+ 	struct pseries_hp_work *hp_work =
+ 			container_of(work, struct pseries_hp_work, work);
+ 
+-	if (hp_work->rc)
+-		*(hp_work->rc) = handle_dlpar_errorlog(hp_work->errlog);
+-	else
+-		handle_dlpar_errorlog(hp_work->errlog);
+-
+-	if (hp_work->hp_completion)
+-		complete(hp_work->hp_completion);
++	handle_dlpar_errorlog(hp_work->errlog);
+ 
+ 	kfree(hp_work->errlog);
+ 	kfree((void *)work);
+ }
+ 
+-void queue_hotplug_event(struct pseries_hp_errorlog *hp_errlog,
+-			 struct completion *hotplug_done, int *rc)
++void queue_hotplug_event(struct pseries_hp_errorlog *hp_errlog)
+ {
+ 	struct pseries_hp_work *work;
+ 	struct pseries_hp_errorlog *hp_errlog_copy;
+@@ -397,13 +388,9 @@ void queue_hotplug_event(struct pseries_hp_errorlog *hp_errlog,
+ 	if (work) {
+ 		INIT_WORK((struct work_struct *)work, pseries_hp_work_fn);
+ 		work->errlog = hp_errlog_copy;
+-		work->hp_completion = hotplug_done;
+-		work->rc = rc;
+ 		queue_work(pseries_hp_wq, (struct work_struct *)work);
+ 	} else {
+-		*rc = -ENOMEM;
+ 		kfree(hp_errlog_copy);
+-		complete(hotplug_done);
+ 	}
+ }
+ 
+@@ -521,18 +508,15 @@ static int dlpar_parse_id_type(char **cmd, struct pseries_hp_errorlog *hp_elog)
+ static ssize_t dlpar_store(struct class *class, struct class_attribute *attr,
+ 			   const char *buf, size_t count)
+ {
+-	struct pseries_hp_errorlog *hp_elog;
+-	struct completion hotplug_done;
++	struct pseries_hp_errorlog hp_elog;
+ 	char *argbuf;
+ 	char *args;
+ 	int rc;
+ 
+ 	args = argbuf = kstrdup(buf, GFP_KERNEL);
+-	hp_elog = kzalloc(sizeof(*hp_elog), GFP_KERNEL);
+-	if (!hp_elog || !argbuf) {
++	if (!argbuf) {
+ 		pr_info("Could not allocate resources for DLPAR operation\n");
+ 		kfree(argbuf);
+-		kfree(hp_elog);
+ 		return -ENOMEM;
+ 	}
+ 
+@@ -540,25 +524,22 @@ static ssize_t dlpar_store(struct class *class, struct class_attribute *attr,
+ 	 * Parse out the request from the user, this will be in the form:
+ 	 * <resource> <action> <id_type> <id>
+ 	 */
+-	rc = dlpar_parse_resource(&args, hp_elog);
++	rc = dlpar_parse_resource(&args, &hp_elog);
+ 	if (rc)
+ 		goto dlpar_store_out;
+ 
+-	rc = dlpar_parse_action(&args, hp_elog);
++	rc = dlpar_parse_action(&args, &hp_elog);
+ 	if (rc)
+ 		goto dlpar_store_out;
+ 
+-	rc = dlpar_parse_id_type(&args, hp_elog);
++	rc = dlpar_parse_id_type(&args, &hp_elog);
+ 	if (rc)
+ 		goto dlpar_store_out;
+ 
+-	init_completion(&hotplug_done);
+-	queue_hotplug_event(hp_elog, &hotplug_done, &rc);
+-	wait_for_completion(&hotplug_done);
++	rc = handle_dlpar_errorlog(&hp_elog);
+ 
+ dlpar_store_out:
+ 	kfree(argbuf);
+-	kfree(hp_elog);
+ 
+ 	if (rc)
+ 		pr_err("Could not handle DLPAR request \"%s\"\n", buf);
+diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
+index f0e30dc94988..6f27d00505cf 100644
+--- a/arch/powerpc/platforms/pseries/mobility.c
++++ b/arch/powerpc/platforms/pseries/mobility.c
+@@ -242,7 +242,7 @@ static int add_dt_node(__be32 parent_phandle, __be32 drc_index)
+ 
+ static void prrn_update_node(__be32 phandle)
+ {
+-	struct pseries_hp_errorlog *hp_elog;
++	struct pseries_hp_errorlog hp_elog;
+ 	struct device_node *dn;
+ 
  	/*
- 	 * For PRRN, we must pass the negative of the scope value in
- 	 * the RTAS event.
- 	 */
--	pseries_devicetree_update(-prrn_update_scope);
-+	pseries_devicetree_update(-scope);
- 	numa_update_cpu_topology(false);
+@@ -255,18 +255,12 @@ static void prrn_update_node(__be32 phandle)
+ 		return;
+ 	}
+ 
+-	hp_elog = kzalloc(sizeof(*hp_elog), GFP_KERNEL);
+-	if(!hp_elog)
+-		return;
+-
+-	hp_elog->resource = PSERIES_HP_ELOG_RESOURCE_MEM;
+-	hp_elog->action = PSERIES_HP_ELOG_ACTION_READD;
+-	hp_elog->id_type = PSERIES_HP_ELOG_ID_DRC_INDEX;
+-	hp_elog->_drc_u.drc_index = phandle;
+-
+-	queue_hotplug_event(hp_elog, NULL, NULL);
++	hp_elog.resource = PSERIES_HP_ELOG_RESOURCE_MEM;
++	hp_elog.action = PSERIES_HP_ELOG_ACTION_READD;
++	hp_elog.id_type = PSERIES_HP_ELOG_ID_DRC_INDEX;
++	hp_elog._drc_u.drc_index = phandle;
+ 
+-	kfree(hp_elog);
++	handle_dlpar_errorlog(&hp_elog);
  }
  
--static DECLARE_WORK(prrn_work, prrn_work_fn);
--
--static void prrn_schedule_update(u32 scope)
--{
--	flush_work(&prrn_work);
--	prrn_update_scope = scope;
--	schedule_work(&prrn_work);
--}
--
- static void handle_rtas_event(const struct rtas_error_log *log)
- {
- 	if (rtas_error_type(log) != RTAS_TYPE_PRRN || !prrn_is_enabled())
-@@ -303,7 +292,7 @@ static void handle_rtas_event(const struct rtas_error_log *log)
- 	/* For PRRN Events the extended log length is used to denote
- 	 * the scope for calling rtas update-nodes.
- 	 */
--	prrn_schedule_update(rtas_error_extended_log_length(log));
-+	handle_prrn_event(rtas_error_extended_log_length(log));
- }
+ int pseries_devicetree_update(s32 scope)
+diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
+index 60db2ee511fb..9310a20aef44 100644
+--- a/arch/powerpc/platforms/pseries/pseries.h
++++ b/arch/powerpc/platforms/pseries/pseries.h
+@@ -59,8 +59,9 @@ extern int dlpar_detach_node(struct device_node *);
+ extern int dlpar_acquire_drc(u32 drc_index);
+ extern int dlpar_release_drc(u32 drc_index);
  
+-void queue_hotplug_event(struct pseries_hp_errorlog *hp_errlog,
+-			 struct completion *hotplug_done, int *rc);
++void queue_hotplug_event(struct pseries_hp_errorlog *hp_errlog);
++int handle_dlpar_errorlog(struct pseries_hp_errorlog *hp_errlog);
++
+ #ifdef CONFIG_MEMORY_HOTPLUG
+ int dlpar_memory(struct pseries_hp_errorlog *hp_elog);
  #else
+diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
+index 851ce326874a..85a607d52014 100644
+--- a/arch/powerpc/platforms/pseries/ras.c
++++ b/arch/powerpc/platforms/pseries/ras.c
+@@ -238,7 +238,7 @@ static irqreturn_t ras_hotplug_interrupt(int irq, void *dev_id)
+ 	 */
+ 	if (hp_elog->resource == PSERIES_HP_ELOG_RESOURCE_MEM ||
+ 	    hp_elog->resource == PSERIES_HP_ELOG_RESOURCE_CPU)
+-		queue_hotplug_event(hp_elog, NULL, NULL);
++		queue_hotplug_event(hp_elog);
+ 	else
+ 		log_error(ras_log_buf, ERR_TYPE_RTAS_LOG, 0);
+ 
