@@ -1,20 +1,20 @@
-Return-Path: <msuchanek@suse.de>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42811j4FZGzF3C4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 18:10:10 +1000 (AEST)
-Date: Mon, 10 Sep 2018 10:10:01 +0200
-From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
-To: Michael Neuling <mikey@neuling.org>
-Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, Haren Myneni
- <haren@linux.vnet.ibm.com>, Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH] powerpc: Avoid code patching freed init sections
-Message-ID: <20180910101001.71a31102@naga.suse.cz>
-In-Reply-To: <20180910054405.32422-1-mikey@neuling.org>
-References: <20180910054405.32422-1-mikey@neuling.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <aik@ozlabs.ru>
+Received: from ozlabs.ru (unknown [107.173.13.209])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4281Rs3s9pzF3CV
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 18:29:29 +1000 (AEST)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Paul Mackerras <paulus@ozlabs.org>,
+ Alex Williamson <alex.williamson@redhat.com>
+Subject: [PATCH kernel v2 3/6] KVM: PPC: Inform the userspace about TCE update
+ failures
+Date: Mon, 10 Sep 2018 18:29:09 +1000
+Message-Id: <20180910082912.13255-4-aik@ozlabs.ru>
+In-Reply-To: <20180910082912.13255-1-aik@ozlabs.ru>
+References: <20180910082912.13255-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,48 +24,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 10 Sep 2018 15:44:05 +1000
-Michael Neuling <mikey@neuling.org> wrote:
+We return H_TOO_HARD from TCE update handlers when we think that
+the next handler (realmode -> virtual mode -> user mode) has a chance to
+handle the request; H_HARDWARE/H_CLOSED otherwise.
 
-> This stops us from doing code patching in init sections after they've
-> been freed.
-> 
-> In this chain:
->   kvm_guest_init() ->
->     kvm_use_magic_page() ->
->       fault_in_pages_readable() ->
-> 	 __get_user() ->
-> 	   __get_user_nocheck() ->
-> 	     barrier_nospec();
-> 
-> We have a code patching location at barrier_nospec() and
-> kvm_guest_init() is an init function. This whole chain gets inlined,
-> so when we free the init section (hence kvm_guest_init()), this code
-> goes away and hence should no longer be patched.
-> 
-> We seen this as userspace memory corruption when using a memory
-> checker while doing partition migration testing on powervm (this
-> starts the code patching post migration via
-> /sys/kernel/mobility/migration). In theory, it could also happen when
-> using /sys/kernel/debug/powerpc/barrier_nospec.
-> 
-> With this patch there is a small change of a race if we code patch
-> between the init section being freed and setting SYSTEM_RUNNING (in
-> kernel_init()) but that seems like an impractical time and small
-> window for any code patching to occur.
-> 
-> cc: stable@vger.kernel.org # 4.13+
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
-> 
-> ---
-> For stable I've marked this as v4.13+ since that's when we refactored
-> code-patching.c but it could go back even further than that. In
-> reality though, I think we can only hit this since the first
-> spectre/meltdown changes.
+This changes the handlers to return H_TOO_HARD on every error giving
+the userspace an opportunity to handle any request or at least log
+them all.
 
-Which means it affects all maintained stable trees because the
-spectre/meltdown changes are backported.
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+---
+ arch/powerpc/kvm/book3s_64_vio.c    | 8 ++++----
+ arch/powerpc/kvm/book3s_64_vio_hv.c | 6 +++---
+ 2 files changed, 7 insertions(+), 7 deletions(-)
 
-Thanks
-
-Michal
+diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
+index 3c17977..984cec8 100644
+--- a/arch/powerpc/kvm/book3s_64_vio.c
++++ b/arch/powerpc/kvm/book3s_64_vio.c
+@@ -401,7 +401,7 @@ static long kvmppc_tce_iommu_do_unmap(struct kvm *kvm,
+ 	long ret;
+ 
+ 	if (WARN_ON_ONCE(iommu_tce_xchg(tbl, entry, &hpa, &dir)))
+-		return H_HARDWARE;
++		return H_TOO_HARD;
+ 
+ 	if (dir == DMA_NONE)
+ 		return H_SUCCESS;
+@@ -449,15 +449,15 @@ long kvmppc_tce_iommu_do_map(struct kvm *kvm, struct iommu_table *tbl,
+ 		return H_TOO_HARD;
+ 
+ 	if (WARN_ON_ONCE(mm_iommu_ua_to_hpa(mem, ua, tbl->it_page_shift, &hpa)))
+-		return H_HARDWARE;
++		return H_TOO_HARD;
+ 
+ 	if (mm_iommu_mapped_inc(mem))
+-		return H_CLOSED;
++		return H_TOO_HARD;
+ 
+ 	ret = iommu_tce_xchg(tbl, entry, &hpa, &dir);
+ 	if (WARN_ON_ONCE(ret)) {
+ 		mm_iommu_mapped_dec(mem);
+-		return H_HARDWARE;
++		return H_TOO_HARD;
+ 	}
+ 
+ 	if (dir != DMA_NONE)
+diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
+index c2848e0b..7388b66 100644
+--- a/arch/powerpc/kvm/book3s_64_vio_hv.c
++++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
+@@ -300,10 +300,10 @@ static long kvmppc_rm_tce_iommu_do_map(struct kvm *kvm, struct iommu_table *tbl,
+ 
+ 	if (WARN_ON_ONCE_RM(mm_iommu_ua_to_hpa_rm(mem, ua, tbl->it_page_shift,
+ 			&hpa)))
+-		return H_HARDWARE;
++		return H_TOO_HARD;
+ 
+ 	if (WARN_ON_ONCE_RM(mm_iommu_mapped_inc(mem)))
+-		return H_CLOSED;
++		return H_TOO_HARD;
+ 
+ 	ret = iommu_tce_xchg_rm(kvm->mm, tbl, entry, &hpa, &dir);
+ 	if (ret) {
+@@ -501,7 +501,7 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
+ 
+ 		rmap = (void *) vmalloc_to_phys(rmap);
+ 		if (WARN_ON_ONCE_RM(!rmap))
+-			return H_HARDWARE;
++			return H_TOO_HARD;
+ 
+ 		/*
+ 		 * Synchronize with the MMU notifier callbacks in
+-- 
+2.11.0
