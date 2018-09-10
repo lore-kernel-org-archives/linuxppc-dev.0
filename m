@@ -1,39 +1,35 @@
-Return-Path: <stewart@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <sbobroff@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 427wJ34whNzF38k
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 14:37:23 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w8A4TjmZ095932
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 00:37:21 -0400
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2mdefv6bd7-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 427wX15h36zF379
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 14:47:45 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w8A4eTqH107209
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 00:47:43 -0400
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2mdff0cw7b-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 00:37:21 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 00:47:42 -0400
 Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.ibm.com>;
- Mon, 10 Sep 2018 00:37:19 -0400
-From: Stewart Smith <stewart@linux.ibm.com>
-To: Vaibhav Jain <vaibhav@linux.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-Cc: Michael Neuling <mikey@neuling.org>, Nicholas Piggin <npiggin@gmail.com>,
- Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
- "Oliver O'Halloran" <oohall@gmail.com>,
- Vaibhav Jain <vaibhav@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/powernv: Make possible for user to force a full
- ipl cec reboot
-In-Reply-To: <20180901081745.2165-1-vaibhav@linux.ibm.com>
-References: <20180901081745.2165-1-vaibhav@linux.ibm.com>
-Date: Mon, 10 Sep 2018 14:37:12 +1000
+ for <linuxppc-dev@lists.ozlabs.org> from <sbobroff@linux.ibm.com>;
+ Mon, 10 Sep 2018 05:47:41 +0100
+Date: Mon, 10 Sep 2018 14:47:36 +1000
+From: Sam Bobroff <sbobroff@linux.ibm.com>
+To: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux@yadro.com
+Subject: Re: [PATCH v2 2/5] powerpc/pci: Create pci_dn on demand
+References: <20180906115752.29316-1-s.miroshnichenko@yadro.com>
+ <20180906115752.29316-3-s.miroshnichenko@yadro.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87worut1c7.fsf@linux.vnet.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="KFztAG8eRSV9hGtP"
+In-Reply-To: <20180906115752.29316-3-s.miroshnichenko@yadro.com>
+Message-Id: <20180910044735.GB14370@tungsten.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,73 +39,211 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Vaibhav Jain <vaibhav@linux.ibm.com> writes:
-> Ever since fast reboot is enabled by default in opal,
-> opal_cec_reboot() will use fast-reset instead of full IPL to perform
-> system reboot. This leaves the user with no direct way to force a full
-> IPL reboot except changing an nvram setting that persistently disables
-> fast-reset for all subsequent reboots.
->
-> This patch provides a more direct way for the user to force a one-shot
-> full IPL reboot by passing the command line argument 'full' to the
-> reboot command. So the user will be able to tweak the reboot behavior
-> via:
->
->   $ sudo reboot full	# Force a full ipl reboot skipping fast-reset
->
->   or
->   $ sudo reboot  	# default reboot path (usually fast-reset)
->
-> The reboot command passes the un-parsed command argument to the kernel
-> via the 'Reboot' syscall which is then passed on to the arch function
-> pnv_restart(). The patch updates pnv_restart() to handle this cmd-arg
-> and issues opal_cec_reboot2 with OPAL_REBOOT_FULL_IPL to force a full
-> IPL reset.
 
-We're about to introduce an MPIPL reboot type (to take a firmware
-assisted kdump style thing), and we maybe should have a reboot type to
-force attempting a fast-reboot, and this makes me think if we should add
-those in now?
+--KFztAG8eRSV9hGtP
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->
-> Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
+Hi Sergey,
+
+On Thu, Sep 06, 2018 at 02:57:49PM +0300, Sergey Miroshnichenko wrote:
+> The pci_dn structures can be created not only from DT, but also
+> directly from newly discovered PCIe devices, so allocate them
+> dynamically.
+>=20
+> Signed-off-by: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
 > ---
->  arch/powerpc/include/asm/opal-api.h    | 1 +
->  arch/powerpc/platforms/powernv/setup.c | 8 +++++++-
->  2 files changed, 8 insertions(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-> index 8365353330b4..870fb7b239ea 100644
-> --- a/arch/powerpc/include/asm/opal-api.h
-> +++ b/arch/powerpc/include/asm/opal-api.h
-> @@ -1050,6 +1050,7 @@ enum OpalSysCooling {
->  enum {
->  	OPAL_REBOOT_NORMAL		= 0,
->  	OPAL_REBOOT_PLATFORM_ERROR	= 1,
-> +	OPAL_REBOOT_FULL_IPL		= 2,
->  };
->  
->  /* Argument to OPAL_PCI_TCE_KILL */
-> diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-> index adddde023622..33d2faeacff8 100644
-> --- a/arch/powerpc/platforms/powernv/setup.c
-> +++ b/arch/powerpc/platforms/powernv/setup.c
-> @@ -224,7 +224,13 @@ static void  __noreturn pnv_restart(char *cmd)
->  	pnv_prepare_going_down();
->  
->  	while (rc == OPAL_BUSY || rc == OPAL_BUSY_EVENT) {
-> -		rc = opal_cec_reboot();
+>  arch/powerpc/kernel/pci_dn.c | 76 ++++++++++++++++++++++++++++--------
+>  1 file changed, 59 insertions(+), 17 deletions(-)
+>=20
+> diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
+> index ab147a1909c8..48ec16407835 100644
+> --- a/arch/powerpc/kernel/pci_dn.c
+> +++ b/arch/powerpc/kernel/pci_dn.c
+> @@ -33,6 +33,8 @@
+>  #include <asm/firmware.h>
+>  #include <asm/eeh.h>
+> =20
+> +static struct pci_dn *create_pdn(struct pci_dev *pdev, struct pci_dn *pa=
+rent);
 > +
-> +		/* See if we need to do a full IPL reboot */
-> +		if (cmd && strcmp(cmd, "full") == 0)
-> +			rc = opal_cec_reboot2(OPAL_REBOOT_FULL_IPL, NULL);
-> +		else
-> +			rc = opal_cec_reboot();
+>  /*
+>   * The function is used to find the firmware data of one
+>   * specific PCI device, which is attached to the indicated
+> @@ -58,6 +60,9 @@ static struct pci_dn *pci_bus_to_pdn(struct pci_bus *bu=
+s)
+>  		pbus =3D pbus->parent;
+>  	}
+> =20
+> +	if (!pbus->self && !pci_is_root_bus(pbus))
+> +		return NULL;
 > +
+>  	/*
+>  	 * Except virtual bus, all PCI buses should
+>  	 * have device nodes.
+> @@ -65,13 +70,15 @@ static struct pci_dn *pci_bus_to_pdn(struct pci_bus *=
+bus)
+>  	dn =3D pci_bus_to_OF_node(pbus);
+>  	pdn =3D dn ? PCI_DN(dn) : NULL;
+> =20
+> +	if (!pdn && pbus->self)
+> +		pdn =3D pbus->self->dev.archdata.pci_data;
+> +
+>  	return pdn;
+>  }
+> =20
+>  struct pci_dn *pci_get_pdn_by_devfn(struct pci_bus *bus,
+>  				    int devfn)
+>  {
+> -	struct device_node *dn =3D NULL;
+>  	struct pci_dn *parent, *pdn;
+>  	struct pci_dev *pdev =3D NULL;
+> =20
+> @@ -80,17 +87,10 @@ struct pci_dn *pci_get_pdn_by_devfn(struct pci_bus *b=
+us,
+>  		if (pdev->devfn =3D=3D devfn) {
+>  			if (pdev->dev.archdata.pci_data)
+>  				return pdev->dev.archdata.pci_data;
+> -
+> -			dn =3D pci_device_to_OF_node(pdev);
+>  			break;
+>  		}
+>  	}
+> =20
+> -	/* Fast path: fetch from device node */
+> -	pdn =3D dn ? PCI_DN(dn) : NULL;
+> -	if (pdn)
+> -		return pdn;
+> -
 
-If the reboot type isn't supported, what should be the behvaiour? Reboot
-the default way or don't reboot at all?
+Why is it necessary to remove the above fast-path?
 
--- 
-Stewart Smith
-OPAL Architect, IBM.
+>  	/* Slow path: fetch from firmware data hierarchy */
+>  	parent =3D pci_bus_to_pdn(bus);
+>  	if (!parent)
+> @@ -128,16 +128,9 @@ struct pci_dn *pci_get_pdn(struct pci_dev *pdev)
+>  	if (!parent)
+>  		return NULL;
+> =20
+> -	list_for_each_entry(pdn, &parent->child_list, list) {
+> -		if (pdn->busno =3D=3D pdev->bus->number &&
+> -		    pdn->devfn =3D=3D pdev->devfn)
+> -			return pdn;
+> -	}
+
+Could you explain why the above block was removed? Is it now impossible
+for it to find a pdn?
+
+> -
+> -	return NULL;
+> +	return create_pdn(pdev, parent);
+>  }
+> =20
+> -#ifdef CONFIG_PCI_IOV
+>  static struct pci_dn *add_one_dev_pci_data(struct pci_dn *parent,
+>  					   int vf_index,
+>  					   int busno, int devfn)
+> @@ -156,7 +149,9 @@ static struct pci_dn *add_one_dev_pci_data(struct pci=
+_dn *parent,
+>  	pdn->parent =3D parent;
+>  	pdn->busno =3D busno;
+>  	pdn->devfn =3D devfn;
+> +	#ifdef CONFIG_PCI_IOV
+>  	pdn->vf_index =3D vf_index;
+> +	#endif /* CONFIG_PCI_IOV */
+>  	pdn->pe_number =3D IODA_INVALID_PE;
+>  	INIT_LIST_HEAD(&pdn->child_list);
+>  	INIT_LIST_HEAD(&pdn->list);
+
+I can see that this change allows you to re-use this to set up a pdn in
+create_pdn(). Perhaps you should refactor pci_add_device_node_info() to
+use it as well, now that it's possible?
+
+> @@ -164,7 +159,54 @@ static struct pci_dn *add_one_dev_pci_data(struct pc=
+i_dn *parent,
+> =20
+>  	return pdn;
+>  }
+> -#endif
+> +
+> +static struct pci_dn *create_pdn(struct pci_dev *pdev, struct pci_dn *pa=
+rent)
+> +{
+> +	struct pci_dn *pdn =3D NULL;
+> +
+> +	pdn =3D add_one_dev_pci_data(parent, 0, pdev->bus->number, pdev->devfn);
+> +	dev_info(&pdev->dev, "Create a new pdn for devfn %2x\n", pdev->devfn / =
+8);
+> +
+> +	if (pdn) {
+> +		#ifdef CONFIG_EEH
+> +		struct eeh_dev *edev;
+> +		#endif /* CONFIG_EEH */
+> +		u32 class_code;
+> +		u16 device_id;
+> +		u16 vendor_id;
+> +
+> +		#ifdef CONFIG_EEH
+> +		edev =3D eeh_dev_init(pdn);
+> +		if (!edev) {
+> +			kfree(pdn);
+> +			dev_err(&pdev->dev, "%s: Failed to allocate edev\n", __func__);
+> +			return NULL;
+> +		}
+> +		#endif /* CONFIG_EEH */
+> +
+> +		pdn->busno =3D pdev->bus->busn_res.start;
+
+It seems strange that pdn->busno is set by the call to
+add_one_dev_pci_data() above (to pdev->bus->number) and then overwritten
+here with a different value. Should add_one_dev_pci_data() use
+pdev->bus->busn_res.start and this line be removed?
+
+> +
+> +		pci_bus_read_config_word(pdev->bus, pdev->devfn,
+> +					 PCI_VENDOR_ID, &vendor_id);
+> +		pdn->vendor_id =3D vendor_id;
+> +
+> +		pci_bus_read_config_word(pdev->bus, pdev->devfn,
+> +					 PCI_DEVICE_ID, &device_id);
+> +		pdn->device_id =3D device_id;
+> +
+> +		pci_bus_read_config_dword(pdev->bus, pdev->devfn,
+> +					  PCI_CLASS_REVISION, &class_code);
+> +		class_code >>=3D 8;
+> +		pdn->class_code =3D class_code;
+> +
+> +		pdn->pci_ext_config_space =3D 0;
+> +		pdev->dev.archdata.pci_data =3D pdn;
+> +	} else {
+> +		dev_err(&pdev->dev, "%s: Failed to allocate pdn\n", __func__);
+> +	}
+> +
+> +	return pdn;
+> +}
+
+
+> =20
+>  struct pci_dn *add_dev_pci_data(struct pci_dev *pdev)
+>  {
+> --=20
+> 2.17.1
+>=20
+
+--KFztAG8eRSV9hGtP
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCAAdFiEELWWF8pdtWK5YQRohMX8w6AQl/iIFAluV918ACgkQMX8w6AQl
+/iLrXwf/ej4jkf1JyTIhcGfGsZxITfE2m2CBHfQXxi3ysI9namDiZGLi9uv0Lnmp
+Ydp8IGRSn6VOWuxIuAqbcT3K+3i6tbShgiR3otygekgweKmUYlemXsFuJLGI7tXb
+KjAeQma6kXEGXKtNPmClGeNJsTm5R3TuS7/SZ2DXFq4AWdbNGfQll7c9XtBsEqoC
+56MwM5Ixaovzv7qCSywd6iz9Y2ohfSxFNgz14Ea/uU97pUgq835G+7iyWFbu10Z4
+/Uh2TES2Wj59lWrKuyJdVsSmw4Vd0m5jtHhO38kZ60mIvFjM5Vs/gzJglXRGq0HN
+5521L6U12E/2xBzro8xq/U8TPybUPA==
+=bdEL
+-----END PGP SIGNATURE-----
+
+--KFztAG8eRSV9hGtP--
