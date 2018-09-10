@@ -1,21 +1,17 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 427xdC3Gg7zF397
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 15:37:19 +1000 (AEST)
-Subject: Re: MPC83xx reset status register (RSR, offset 0x910)
-To: Radu Rendec <radu.rendec@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Cc: Scott Wood <oss@buserror.net>, Michael Ellerman <mpe@ellerman.id.au>
-References: <CAD5jUk_e3LwPZGN7G3ZGHx=zdQBZSdAeoKWjxwE7Ei2=LtXQTg@mail.gmail.com>
- <e6b9f0f0-1cd9-c183-eff4-bec1ca18a373@c-s.fr>
- <fc3e7ca0f018afbf6c104c333b381ffbae6a48c3.camel@gmail.com>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <c0b2c45c-815c-d627-e975-a2d622494223@c-s.fr>
-Date: Mon, 10 Sep 2018 07:37:15 +0200
-MIME-Version: 1.0
-In-Reply-To: <fc3e7ca0f018afbf6c104c333b381ffbae6a48c3.camel@gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 427xn62xHfzF397
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 15:44:10 +1000 (AEST)
+From: Michael Neuling <mikey@neuling.org>
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>,
+ paulus@ozlabs.org, Haren Myneni <haren@linux.vnet.ibm.com>,
+ mikey@neuling.org
+Subject: [PATCH] powerpc: Avoid code patching freed init sections
+Date: Mon, 10 Sep 2018 15:44:05 +1000
+Message-Id: <20180910054405.32422-1-mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,70 +21,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+This stops us from doing code patching in init sections after they've
+been freed.
 
-Le 10/09/2018 à 01:13, Radu Rendec a écrit :
-> Hi,
-> 
-> On Fri, 2018-08-24 at 16:20 +0000, Christophe Leroy wrote:
->>> On 08/03/2018 04:36 PM, Radu Rendec wrote:
->>>
->>> Is there any kernel code that handles the "reset status register" (RSR)
->>> on MPC83xx? I looked at arch/powerpc/platforms/83xx/misc.c, but it seems
->>> to only map the reset register area and it's static. The watchdog driver
->>> (drivers/watchdog/mpc8xxx_wdt.c) doesn't seem to look at it either (for
->>> the bootstatus flags).
->>
->> How do you boot your Linux kernel ?
->>
->> My 832x board boots using U-boot, and U-boot reads the RSR then clears
->> it. So when Linux kernel reads it, it is just 0.
-> 
-> I'm using U-boot as well, but it's just not configured to read or clear
-> the RSR. I'm curious: if U-boot reads/clears the RSR in your case, how
-> do you make the initial value available to user space programs running
-> under Linux?
+In this chain:
+  kvm_guest_init() ->
+    kvm_use_magic_page() ->
+      fault_in_pages_readable() ->
+	 __get_user() ->
+	   __get_user_nocheck() ->
+	     barrier_nospec();
 
-I'm surprised. When looking at U-boot code, I don't see any way to 
-configure that. It seems just do by default in function cpu_init_f():
+We have a code patching location at barrier_nospec() and
+kvm_guest_init() is an init function. This whole chain gets inlined,
+so when we free the init section (hence kvm_guest_init()), this code
+goes away and hence should no longer be patched.
 
-https://elixir.bootlin.com/u-boot/v2018.07/source/arch/powerpc/cpu/mpc83xx/cpu_init.c#L217
+We seen this as userspace memory corruption when using a memory
+checker while doing partition migration testing on powervm (this
+starts the code patching post migration via
+/sys/kernel/mobility/migration). In theory, it could also happen when
+using /sys/kernel/debug/powerpc/barrier_nospec.
 
-	/* RSR - Reset Status Register - clear all status (4.6.1.3) */
-	gd->arch.reset_status = __raw_readl(&im->reset.rsr);
-	__raw_writel(~(RSR_RES), &im->reset.rsr);
+With this patch there is a small change of a race if we code patch
+between the init section being freed and setting SYSTEM_RUNNING (in
+kernel_init()) but that seems like an impractical time and small
+window for any code patching to occur.
 
+cc: stable@vger.kernel.org # 4.13+
+Signed-off-by: Michael Neuling <mikey@neuling.org>
 
-Do you know any user space program in Linux that needs this value ?
+---
+For stable I've marked this as v4.13+ since that's when we refactored
+code-patching.c but it could go back even further than that. In
+reality though, I think we can only hit this since the first
+spectre/meltdown changes.
+---
+ arch/powerpc/lib/code-patching.c | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
-> 
->>> Basically I need to check the CPU reset reason and I thought I would ask
->>> first, before starting to write any code of my own.
->>
->> Anyway, find below a set of two patches I used for testing. Feel free to
->> use them if you bootloader doesn't clear the register
-> 
-> Thank you very much for the patches. Is there any chance they can be
-> submitted upstream?
-
-I see no problem submitting them upstream, but are they really worth it 
-? Adding Michael in copy to get his opinion.
-
-> 
-> Of course, just printing the decoded bits is only helpful for testing. I
-> was thinking of a way to make the value available to both the kernel
-> (as an exported symbol) and user space (e.g. via sysfs). Is there a
-> standard or preferred way to do this?
-> 
-> I tried to look for something similar on other platforms or architectures,
-> but couldn't find anything.
-
-I believe furst thing is to identify some app needing such an 
-information, then we'll be able to investigate how to handle it.
-
-Christophe
-
-> 
-> Thanks,
-> Radu Rendec
-> 
+diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
+index 850f3b8f4d..a2bc08bfd8 100644
+--- a/arch/powerpc/lib/code-patching.c
++++ b/arch/powerpc/lib/code-patching.c
+@@ -23,11 +23,30 @@
+ #include <asm/code-patching.h>
+ #include <asm/setup.h>
+ 
++
++static inline bool in_init_section(unsigned int *patch_addr)
++{
++	if (patch_addr < (unsigned int *)__init_begin)
++		return false;
++	if (patch_addr >= (unsigned int *)__init_end)
++		return false;
++	return true;
++}
++
++static inline bool init_freed(void)
++{
++	return (system_state >= SYSTEM_RUNNING);
++}
++
+ static int __patch_instruction(unsigned int *exec_addr, unsigned int instr,
+ 			       unsigned int *patch_addr)
+ {
+ 	int err;
+ 
++	/* Make sure we aren't patching a freed init section */
++	if (in_init_section(patch_addr) && init_freed())
++		return 0;
++
+ 	__put_user_size(instr, patch_addr, 4, err);
+ 	if (err)
+ 		return err;
+-- 
+2.17.1
