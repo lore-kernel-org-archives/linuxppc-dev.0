@@ -1,35 +1,32 @@
-Return-Path: <luc.vanoostenryck@gmail.com>
-Received: from mail-wm0-x22f.google.com (mail-wm0-x22f.google.com
- [IPv6:2a00:1450:400c:c09::22f])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 428BSQ1G7rzF396
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2018 01:15:33 +1000 (AEST)
-Received: by mail-wm0-x22f.google.com with SMTP id q8-v6so21918509wmq.4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 08:15:33 -0700 (PDT)
-Date: Mon, 10 Sep 2018 17:15:27 +0200
-From: Luc Van Oostenryck <luc.vanoostenryck@gmail.com>
-To: Christophe LEROY <christophe.leroy@c-s.fr>
-Cc: Nick Desaulniers <ndesaulniers@google.com>, joe@perches.com,
- Kees Cook <keescook@chromium.org>,
- LKML <linux-kernel@vger.kernel.org>, linux-sparse@vger.kernel.org,
- sparse@chrisli.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: Conflict between sparse and commit cafa0010cd51f ("Raise the
- minimum required gcc version to 4.6")
-Message-ID: <20180910151526.ljp3nynngprdmlkb@ltop.local>
-References: <CAKwvOdmuXydQsQyD2CUyoSkkDpF1e1CXg6v1SRv2q-bpYa9SQg@mail.gmail.com>
- <20180907181337.peyfq7yvhahduvmq@ltop.local>
- <CAKwvOdmXs+pWJGXu-zr-XSu7p-7hw=2m1vVQmVLwJcmGEFz0gg@mail.gmail.com>
- <e6db84f1-ee8d-9377-5f1c-6a0e7972ba50@c-s.fr>
- <20180910092835.v5nex5nzfgtl475m@ltop.local>
- <061b3056-1a9a-af6b-de2a-49fea394320d@c-s.fr>
- <20180910113448.dxnfvznyimtj3tkv@ltop.local>
- <9409138a-dc14-2b12-edc0-cfa0b471da6e@c-s.fr>
- <20180910135604.j2phe7r3k5vs6cik@ltop.local>
- <6191f6dc-1819-60e4-d4e8-f815f04325f0@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 428BWW46mtzF39h
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2018 01:18:15 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w8AFEtlG038050
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 11:18:13 -0400
+Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2mdtaq2ps1-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 11:18:12 -0400
+Received: from localhost
+ by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Mon, 10 Sep 2018 11:18:12 -0400
+Subject: [PATCH v5 0/2] powerpc/pseries: Improve serialization of PRRN events
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
+Cc: johnallen3991@gmail.com, desnesn@linux.vnet.ibm.com,
+ haren@linux.vnet.ibm.com, pmac@au1.ibm.com
+Date: Mon, 10 Sep 2018 09:56:54 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <6191f6dc-1819-60e4-d4e8-f815f04325f0@c-s.fr>
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <153659128238.7764.14440832607437622051.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,22 +36,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Sep 10, 2018 at 04:05:34PM +0200, Christophe LEROY wrote:
-> 
-> This time it works, thanks for your help.
+Stress testing has uncovered issues with handling continuously queued PRRN
+events. Running PRRN events in this way can seriously load the system given
+the sheer volume of dlpar actions being handled, eventually resulting
+in a system oops (see below). This patchset ensures that PRRN
+events are handled more synchronously. It also updates dlpar invocation
+so that it can be done directly instead of waiting on a workqueue.
 
-You're welcome.
- 
-> Should we find a may to automate that in the Makefile when
-> CROSS_COMPILE is defined ?
+Oops: Bad kernel stack pointer, sig: 6 [#1]
+SMP NR_CPUS=2048 NUMA pSeries
+Supported: Yes, External                                                     54
+CPU: 7 PID: 18967 Comm: kworker/u96:0 Tainted: G                 X 4.4.126-94.22-default #1
+Workqueue: pseries hotplug workque pseries_hp_work_fn
+task: c000000775367790 ti: c00000001ebd4000 task.ti: c00000070d140000
+NIP: 0000000000000000 LR: 000000001fb3d050 CTR: 0000000000000000
+REGS: c00000001ebd7d40 TRAP: 0700   Tainted: G                 X  (4.4.126-94.22-default)
+MSR: 8000000102081000 <41,VEC,ME5  CR: 28000002  XER: 20040018   4
+CFAR: 000000001fb3d084 40 419   1                                3
+GPR00: 000000000000000040000000000010007 000000001ffff400 000000041fffe200 
+GPR04: 000000000000008050000000000000000 000000001fb15fa8 0000000500000500 
+GPR08: 000000000001f40040000000000000001 0000000000000000 000005:5200040002
+GPR12: 00000000000000005c000000007a05400 c0000000000e89f8 000000001ed9f668 
+GPR16: 000000001fbeff944000000001fbeff94 000000001fb545e4 0000006000000060 
+GPR20: ffffffffffffffff4ffffffffffffffff 0000000000000000 0000000000000000 
+GPR24: 00000000000000005400000001fb3c000 0000000000000000 000000001fb1b040 
+GPR28: 000000001fb240004000000001fb440d8 0000000000000008 0000000000000000 
+NIP [0000000000000000] 5         (null)
+LR [000000001fb3d050] 031fb3d050
+Call Trace:            4
+Instruction dump:      4                                       5:47 12    2
+XXXXXXXX XXXXXXXX XXXXX4XX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX 
+XXXXXXXX XXXXXXXX XXXXX5XX XXXXXXXX 60000000 60000000 60000000 60000000 
 
-The situation here with an old gcc is really an oddity.
-I was instead thinking to update sparse so that it repports a
-GCC version of at least 4.6, maybe something even more recent.
+-Nathan
+---
 
-But maybe, yes, kbuild could pass GCC_VERSION to sparse so
-that both the compiler used and sparse will repport the same.
-I'll see. The problem is not tied to cross-compilation, though,
-just that sparse may be compiled with an older compiler.
+Nathan Fontenot (2):
+      powerpc/pseries: Remove prrn_work workqueue
+      powerpc/pseries:Remove unneeded uses of dlpar work queue
 
--- Luc
+
+ arch/powerpc/kernel/rtasd.c               |   17 ++-----------
+ arch/powerpc/platforms/pseries/dlpar.c    |   37 +++++++----------------------
+ arch/powerpc/platforms/pseries/mobility.c |   18 +++++---------
+ arch/powerpc/platforms/pseries/pseries.h  |    5 ++--
+ arch/powerpc/platforms/pseries/ras.c      |    2 +-
+ 5 files changed, 22 insertions(+), 57 deletions(-)
