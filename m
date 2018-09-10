@@ -1,39 +1,39 @@
-Return-Path: <vaibhav@linux.ibm.com>
+Return-Path: <aneesh.kumar@linux.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 427y7p2w0fzF3Cc
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 16:00:22 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 427yKl69NZzF37v
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 16:08:59 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w8A5xkWr144252
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 02:00:20 -0400
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2mdffuxkux-1
+ w8A68tlx131203
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 02:08:57 -0400
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2mdech1fva-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 02:00:19 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 02:08:57 -0400
 Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.ibm.com>;
- Mon, 10 Sep 2018 07:00:17 +0100
-From: Vaibhav Jain <vaibhav@linux.ibm.com>
-To: Stewart Smith <stewart@linux.ibm.com>,
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Mon, 10 Sep 2018 07:08:52 +0100
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-Cc: Michael Neuling <mikey@neuling.org>, Nicholas Piggin <npiggin@gmail.com>,
- Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
- "Oliver O'Halloran" <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/powernv: Make possible for user to force a full
- ipl cec reboot
-In-Reply-To: <87worut1c7.fsf@linux.vnet.ibm.com>
-References: <20180901081745.2165-1-vaibhav@linux.ibm.com>
- <87worut1c7.fsf@linux.vnet.ibm.com>
-Date: Mon, 10 Sep 2018 11:30:10 +0530
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, npiggin@gmail.com,
+ aneesh.kumar@linux.vnet.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH v1 00/17] ban the use of _PAGE_XXX flags outside
+ platform specific code
+In-Reply-To: <1f4d6cc9-5d18-b171-02b0-d715629d594f@c-s.fr>
+References: <cover.1535913369.git.christophe.leroy@c-s.fr>
+ <8736uneylc.fsf@linux.ibm.com> <1f4d6cc9-5d18-b171-02b0-d715629d594f@c-s.fr>
+Date: Mon, 10 Sep 2018 11:38:46 +0530
 MIME-Version: 1.0
 Content-Type: text/plain
-Message-Id: <87h8ixj3it.fsf@vajain21.in.ibm.com>
+Message-Id: <8736uhsx3l.fsf@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,24 +43,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thanks for looking into this patch Stewart
+Christophe Leroy <christophe.leroy@c-s.fr> writes:
 
-Stewart Smith <stewart@linux.ibm.com> writes:
+> On 09/06/2018 09:58 AM, Aneesh Kumar K.V wrote:
+>> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+>> 
+>>> Today flags like for instance _PAGE_RW or _PAGE_USER are used through
+>>> common parts of code.
+>>> Using those directly in common parts of code have proven to lead to
+>>> mistakes or misbehaviour, because their use is not always as trivial
+>>> as one could think.
+>>>
+>>> For instance, (flags & _PAGE_USER) == 0 isn't enough to tell
+>>> that a page is a kernel page, because some targets are using
+>>> _PAGE_PRIVILEDGED and not _PAGE_USER, so the test has to be
+>>> (flags & (_PAGE_USER | _PAGE_PRIVILEDGED)) == _PAGE_PRIVILEDGED
+>>> This has to (bad) consequences:
+>>>
+>>>   - All targets must define every bit, even the unsupported ones,
+>>>     leading to a lot of useless #define _PAGE_XXX 0
+>>>   - If someone forgets to take into account all possible _PAGE_XXX bits
+>>>     for the case, we can get unexpected behaviour on some targets.
+>>>
+>>> This becomes even more complex when we come to using _PAGE_RW.
+>>> Testing (flags & _PAGE_RW) is not enough to test whether a page
+>>> if writable or not, because:
+>>>
+>>>   - Some targets have _PAGE_RO instead, which has to be unset to tell
+>>>     a page is writable
+>>>   - Some targets have _PAGE_R and _PAGE_W, in which case
+>>>     _PAGE_RW = _PAGE_R | _PAGE_W
+>>>   - Even knowing whether a page is readable is not always trivial because:
+>>>     - Some targets requires to check that _PAGE_R is set to ensure page
+>>>     is readable
+>>>     - Some targets requires to check that _PAGE_NA is not set
+>>>     - Some targets requires to check that _PAGE_RO or _PAGE_RW is set
+>>>
+>>> Etc ....
+>>>
+>>> In order to work around all those issues and minimise the risks of errors,
+>>> this serie aims at removing all use of _PAGE_XXX flags from powerpc code
+>>> and always use pte_xxx() and pte_mkxxx() accessors instead. Those accessors
+>>> are then defined in target specific parts of the kernel code.
+>> 
+>> The series is really good. It also helps in code readability. Few things
+>> i am not sure there is a way to reduce the overhead
+>> 
+>> -		access = _PAGE_EXEC;
+>> +		access = pte_val(pte_mkexec(__pte(0)));
+>> 
+>> Considering we have multiple big endian to little endian coversion there
+>> for book3s 64.
+>
+> Thanks for the review.
+>
+> For the above, I propose the following:
+>
+> diff --git a/arch/powerpc/mm/hash_utils_64.c 
+> b/arch/powerpc/mm/hash_utils_64.c
+> index f23a89d8e4ce..904ac9c84ea5 100644
+> --- a/arch/powerpc/mm/hash_utils_64.c
+> +++ b/arch/powerpc/mm/hash_utils_64.c
+> @@ -1482,7 +1482,7 @@ static bool should_hash_preload(struct mm_struct 
+> *mm, unsigned long ea)
+>   #endif
+>
+>   void hash_preload(struct mm_struct *mm, unsigned long ea,
+> -		  unsigned long access, unsigned long trap)
+> +		  bool is_exec, unsigned long trap)
+>   {
+>   	int hugepage_shift;
+>   	unsigned long vsid;
+> @@ -1490,6 +1490,7 @@ void hash_preload(struct mm_struct *mm, unsigned 
+> long ea,
+>   	pte_t *ptep;
+>   	unsigned long flags;
+>   	int rc, ssize, update_flags = 0;
+> +	unsigned long access = is_exec ? _PAGE_EXEC : 0;
 
-> We're about to introduce an MPIPL reboot type (to take a firmware
-> assisted kdump style thing), and we maybe should have a reboot type to
-> force attempting a fast-reboot, and this makes me think if we should add
-> those in now?
-I will probably let Vasant and others answer that.
 
+I guess it will be better if we do
 
-> If the reboot type isn't supported, what should be the behvaiour? Reboot
-> the default way or don't reboot at all?
-Yes, I have addressed that in v3 of this patch at
-http://patchwork.ozlabs.org/patch/967248/. In case the reboot type isnt
-supported or if there is an error invoking it, the patch will revert
-back to calling opal_cec_reboot().
+unsigned long access = _PAGE_PRESENT | _PAGE_READ
 
--- 
-Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-Linux Technology Center, IBM India Pvt. Ltd.
+if (is_exec)
+   access |= _PAGE_EXEC.
+
+That will also bring it closer to __hash_page. I agree that we should
+always find _PAGE_PRESENT and _PAGE_READ set, because we just handled
+the page fault.
+
+-aneesh
