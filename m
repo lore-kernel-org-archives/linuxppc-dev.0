@@ -1,7 +1,7 @@
 Return-Path: <aik@ozlabs.ru>
 Received: from ozlabs.ru (unknown [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 4281Rs3s9pzF3CV
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 18:29:29 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 4281SJ2f2TzF3Cg
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 18:29:52 +1000 (AEST)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -9,12 +9,9 @@ Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
  Paul Mackerras <paulus@ozlabs.org>,
  Alex Williamson <alex.williamson@redhat.com>
-Subject: [PATCH kernel v2 3/6] KVM: PPC: Inform the userspace about TCE update
- failures
-Date: Mon, 10 Sep 2018 18:29:09 +1000
-Message-Id: <20180910082912.13255-4-aik@ozlabs.ru>
-In-Reply-To: <20180910082912.13255-1-aik@ozlabs.ru>
-References: <20180910082912.13255-1-aik@ozlabs.ru>
+Subject: [PATCH kernel v2 0/6] KVM: PPC: TCE improvements
+Date: Mon, 10 Sep 2018 18:29:06 +1000
+Message-Id: <20180910082912.13255-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,78 +21,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We return H_TOO_HARD from TCE update handlers when we think that
-the next handler (realmode -> virtual mode -> user mode) has a chance to
-handle the request; H_HARDWARE/H_CLOSED otherwise.
+Hi,
 
-This changes the handlers to return H_TOO_HARD on every error giving
-the userspace an opportunity to handle any request or at least log
-them all.
+Here is my current queue of TCE/KVM patches.
 
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
----
- arch/powerpc/kvm/book3s_64_vio.c    | 8 ++++----
- arch/powerpc/kvm/book3s_64_vio_hv.c | 6 +++---
- 2 files changed, 7 insertions(+), 7 deletions(-)
+1/6 is a bugfix for https://bugzilla.redhat.com/show_bug.cgi?id=1620360
+2/6..5/6 are to help with testing https://bugzilla.redhat.com/show_bug.cgi?id=1613190
+6/6 is a small cleanup
 
-diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
-index 3c17977..984cec8 100644
---- a/arch/powerpc/kvm/book3s_64_vio.c
-+++ b/arch/powerpc/kvm/book3s_64_vio.c
-@@ -401,7 +401,7 @@ static long kvmppc_tce_iommu_do_unmap(struct kvm *kvm,
- 	long ret;
- 
- 	if (WARN_ON_ONCE(iommu_tce_xchg(tbl, entry, &hpa, &dir)))
--		return H_HARDWARE;
-+		return H_TOO_HARD;
- 
- 	if (dir == DMA_NONE)
- 		return H_SUCCESS;
-@@ -449,15 +449,15 @@ long kvmppc_tce_iommu_do_map(struct kvm *kvm, struct iommu_table *tbl,
- 		return H_TOO_HARD;
- 
- 	if (WARN_ON_ONCE(mm_iommu_ua_to_hpa(mem, ua, tbl->it_page_shift, &hpa)))
--		return H_HARDWARE;
-+		return H_TOO_HARD;
- 
- 	if (mm_iommu_mapped_inc(mem))
--		return H_CLOSED;
-+		return H_TOO_HARD;
- 
- 	ret = iommu_tce_xchg(tbl, entry, &hpa, &dir);
- 	if (WARN_ON_ONCE(ret)) {
- 		mm_iommu_mapped_dec(mem);
--		return H_HARDWARE;
-+		return H_TOO_HARD;
- 	}
- 
- 	if (dir != DMA_NONE)
-diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
-index c2848e0b..7388b66 100644
---- a/arch/powerpc/kvm/book3s_64_vio_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
-@@ -300,10 +300,10 @@ static long kvmppc_rm_tce_iommu_do_map(struct kvm *kvm, struct iommu_table *tbl,
- 
- 	if (WARN_ON_ONCE_RM(mm_iommu_ua_to_hpa_rm(mem, ua, tbl->it_page_shift,
- 			&hpa)))
--		return H_HARDWARE;
-+		return H_TOO_HARD;
- 
- 	if (WARN_ON_ONCE_RM(mm_iommu_mapped_inc(mem)))
--		return H_CLOSED;
-+		return H_TOO_HARD;
- 
- 	ret = iommu_tce_xchg_rm(kvm->mm, tbl, entry, &hpa, &dir);
- 	if (ret) {
-@@ -501,7 +501,7 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
- 
- 		rmap = (void *) vmalloc_to_phys(rmap);
- 		if (WARN_ON_ONCE_RM(!rmap))
--			return H_HARDWARE;
-+			return H_TOO_HARD;
- 
- 		/*
- 		 * Synchronize with the MMU notifier callbacks in
+
+This is based on sha1
+11da3a7 Linus Torvalds "Linux 4.19-rc3".
+
+Please comment. Thanks.
+
+
+Alex, I cc: you to keep you informed that
+[RFC 1/6] did change drivers/vfio/vfio_iommu_spapr_tce.c but
+this one does not.
+
+
+Alexey Kardashevskiy (6):
+  KVM: PPC: Avoid marking DMA-mapped pages dirty in real mode
+  KVM: PPC: Validate all tces before updating tables
+  KVM: PPC: Inform the userspace about TCE update failures
+  KVM: PPC: Validate TCEs against preregistered memory page sizes
+  KVM: PPC: Propagate errors to the guest when failed instead of
+    ignoring
+  KVM: PPC: Remove redundand permission bits removal
+
+ arch/powerpc/include/asm/book3s/64/pgtable.h |   1 -
+ arch/powerpc/include/asm/iommu.h             |   2 -
+ arch/powerpc/include/asm/kvm_ppc.h           |   4 +-
+ arch/powerpc/include/asm/mmu_context.h       |   1 +
+ arch/powerpc/kernel/iommu.c                  |  25 ------
+ arch/powerpc/kvm/book3s_64_vio.c             |  89 +++++++++++++++------
+ arch/powerpc/kvm/book3s_64_vio_hv.c          | 114 +++++++++++++++++----------
+ arch/powerpc/mm/init_64.c                    |  49 ------------
+ arch/powerpc/mm/mmu_context_iommu.c          |  34 +++++++-
+ 9 files changed, 170 insertions(+), 149 deletions(-)
+
 -- 
 2.11.0
