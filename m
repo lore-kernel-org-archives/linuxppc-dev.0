@@ -1,21 +1,28 @@
-Return-Path: <joel.stan@gmail.com>
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
- [IPv6:2607:f8b0:4864:20::541])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <ran.wang_1@nxp.com>
+Received: from EUR04-VI1-obe.outbound.protection.outlook.com
+ (mail-eopbgr80072.outbound.protection.outlook.com [40.107.8.72])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42824J6STMzF3FQ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 18:57:36 +1000 (AEST)
-Received: by mail-pg1-x541.google.com with SMTP id s7-v6so10143832pgc.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 01:57:36 -0700 (PDT)
-Sender: "joel.stan@gmail.com" <joel.stan@gmail.com>
-From: Joel Stanley <joel@jms.id.au>
-To: linuxppc-dev@lists.ozlabs.org,
-	Anton Blanchard <anton@ozlabs.org>
-Subject: [PATCH 2/2] powerpc/boot: Ensure _zimage_start is a weak symbol
-Date: Mon, 10 Sep 2018 18:57:14 +1000
-Message-Id: <20180910085714.4834-3-joel@jms.id.au>
-In-Reply-To: <20180910085714.4834-1-joel@jms.id.au>
-References: <20180910085714.4834-1-joel@jms.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4282Ll07q4zF387
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 19:10:05 +1000 (AEST)
+From: Ran Wang <ran.wang_1@nxp.com>
+To: Scott Wood <oss@buserror.net>, Leo Li <leoyang.li@nxp.com>, Rob Herring
+ <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
+CC: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "linux-pm@lists.linux-foundation.org"
+ <linux-pm@lists.linux-foundation.org>
+Subject: RE: [PATCH 3/3] soc: fsl: add RCPM driver
+Date: Mon, 10 Sep 2018 09:09:59 +0000
+Message-ID: <AM5PR0402MB28652A2D74A891BC35B1B680F1050@AM5PR0402MB2865.eurprd04.prod.outlook.com>
+References: <20180831035219.31619-1-ran.wang_1@nxp.com>
+ <20180831035219.31619-3-ran.wang_1@nxp.com>
+ <86101ce0f4201d05510e57d74cafe8c665b8e5d4.camel@buserror.net>
+In-Reply-To: <86101ce0f4201d05510e57d74cafe8c665b8e5d4.camel@buserror.net>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,52 +32,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When building with clang crt0's _zimage_start is not marked weak, which
-breaks the build when linking the kernel image:
-
- $ objdump -t arch/powerpc/boot/crt0.o |grep _zimage_start$
- 0000000000000058 g       .text  0000000000000000 _zimage_start
-
- ld: arch/powerpc/boot/wrapper.a(crt0.o): in function '_zimage_start':
- (.text+0x58): multiple definition of '_zimage_start';
- arch/powerpc/boot/pseries-head.o:(.text+0x0): first defined here
-
-Clang requires the .weak directive to appear after the symbol is
-declared. The binutils manual says:
-
- This directive sets the weak attribute on the comma separated list of
- symbol names. If the symbols do not already exist, they will be
- created.
-
-So it appears this is different with clang. The only reference I could
-see for this was an OpenBSD mailing list post[1].
-
-Changing it to be after the declaration fixes building with Clang, and
-still works with GCC.
-
- $ objdump -t arch/powerpc/boot/crt0.o |grep _zimage_start$
- 0000000000000058  w      .text	0000000000000000 _zimage_start
-
-[1] https://groups.google.com/forum/#!topic/fa.openbsd.tech/PAgKKen2YCY
-
-Signed-off-by: Joel Stanley <joel@jms.id.au>
----
- arch/powerpc/boot/crt0.S | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/boot/crt0.S b/arch/powerpc/boot/crt0.S
-index ace3f3c64620..41c6d03d6e2d 100644
---- a/arch/powerpc/boot/crt0.S
-+++ b/arch/powerpc/boot/crt0.S
-@@ -47,8 +47,8 @@ p_end:		.long	_end
- p_pstack:	.long	_platform_stack_top
- #endif
- 
--	.weak	_zimage_start
- 	.globl	_zimage_start
-+	.weak	_zimage_start
- _zimage_start:
- 	.globl	_zimage_start_lib
- _zimage_start_lib:
--- 
-2.17.1
+SGkgU2NvdHQsDQoNCk9uIDIwMTgvOS84IDE4OjE2LCBTY290dCBXb29kIHdyb3RlOg0KPiANCj4g
+T24gRnJpLCAyMDE4LTA4LTMxIGF0IDExOjUyICswODAwLCBSYW4gV2FuZyB3cm90ZToNCj4gPiBU
+aGUgTlhQJ3MgUW9ySVEgUHJvY2Vzc29ycyBiYXNlZCBvbiBBUk0gQ29yZSBoYXZlIFJDUE0gbW9k
+dWxlIChSdW4NCj4gPiBDb250cm9sIGFuZCBQb3dlciBNYW5hZ2VtZW50KSwgd2hpY2ggcGVyZm9y
+bXMgYWxsIGRldmljZS1sZXZlbCB0YXNrcw0KPiA+IGFzc29jaWF0ZWQgd2l0aCBwb3dlciBtYW5h
+Z2VtZW50IHN1Y2ggYXMgd2FrZXVwIHNvdXJjZSBjb250cm9sLg0KPiA+DQo+ID4gVGhpcyBkcml2
+ZXIgZGVwZW5kcyBvbiBGU0wgcGxhdGZvcm0gUE0gZHJpdmVyIGZyYW1ld29yayB3aGljaCBoZWxw
+IHRvDQo+ID4gaXNvbGF0ZSB1c2VyIGFuZCBQTSBzZXJ2aWNlIHByb3ZpZGVyIChzdWNoIGFzIFJD
+UE0gZHJpdmVyKS4NCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6IENoZW5odWkgWmhhbyA8Y2hlbmh1
+aS56aGFvQG54cC5jb20+DQo+ID4gU2lnbmVkLW9mZi1ieTogWWluZyBaaGFuZyA8eWluZy56aGFu
+ZzIyNDU1QG54cC5jb20+DQo+ID4gU2lnbmVkLW9mZi1ieTogUmFuIFdhbmcgPHJhbi53YW5nXzFA
+bnhwLmNvbT4NCj4gPiAtLS0NCj4gPiAgZHJpdmVycy9zb2MvZnNsL0tjb25maWcgICB8ICAgIDYg
+KysNCj4gPiAgZHJpdmVycy9zb2MvZnNsL01ha2VmaWxlICB8ICAgIDEgKw0KPiA+ICBkcml2ZXJz
+L3NvYy9mc2wvbHMtcmNwbS5jIHwgIDE1Mw0KPiA+ICsrKysrKysrKysrKysrKysrKysrKysrKysr
+KysrKysrKysrKysrKysrKysrKw0KPiA+ICAzIGZpbGVzIGNoYW5nZWQsIDE2MCBpbnNlcnRpb25z
+KCspLCAwIGRlbGV0aW9ucygtKSAgY3JlYXRlIG1vZGUNCj4gPiAxMDA2NDQgZHJpdmVycy9zb2Mv
+ZnNsL2xzLXJjcG0uYw0KPiANCj4gSXMgdGhlcmUgYSByZWFzb24gd2h5IHRoaXMgaXMgTFMtc3Bl
+Y2lmaWMsIG9yIGNvdWxkIGl0IGJlIHVzZWQgd2l0aCBQUEMgUkNQTQ0KPiBibG9ja3M/DQoNClRo
+ZXkgaGF2ZSBkaWZmZXJlbnQgU1cgYXJjaCBkZXNpZ24gb24gbG93IHBvd2VyIG9wZXJhdGlvbjog
+UFBDIFJDUE0NCmRyaXZlciBoYXMgdGFrZW4gY2FyZSBvZiBtb3N0IHRoaW5ncyBvZiBzdXNwZW5k
+IGVudGVyICYgZXhpdC4gQW5kIExTIFJDUE0gZHJpdmVyDQp3aWxsIG9ubHkgaGFuZGxlIHdha2V1
+cCBzb3VyY2UgY29uZmlndXJlIGFuZCBsZWZ0IHJlc3Qgd29yayB0byBzeXN0ZW0gZmlybXdhcmUN
+CnRvIGRvLiBTbyB5b3UgbWlnaHQgYmUgYXdhcmUgdGhhdCBMUyBSQ1BNIHdpbGwgb25seSBnZXQg
+Y2FsbCB3aGVuZXZlciBwbGF0X3BtDQpkcml2ZXIgQVBJIGlzIGNhbGxlZCByYXRoZXIgdGhhbiBz
+eXN0ZW0gc3VzcGVuZCBiZWdpbiB3aGVyZS4NCg0KPiANCj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVy
+cy9zb2MvZnNsL0tjb25maWcgYi9kcml2ZXJzL3NvYy9mc2wvS2NvbmZpZyBpbmRleA0KPiA+IDY1
+MTc0MTIuLjg4MjMzMGQgMTAwNjQ0DQo+ID4gLS0tIGEvZHJpdmVycy9zb2MvZnNsL0tjb25maWcN
+Cj4gPiArKysgYi9kcml2ZXJzL3NvYy9mc2wvS2NvbmZpZw0KPiA+IEBAIC0zMCwzICszMCw5IEBA
+IGNvbmZpZyBGU0xfUExBVF9QTQ0KPiA+ICAJICBoYXZlIHRvIGtub3cgdGhlIGltcGxlbWVudCBk
+ZXRhaWxzIG9mIHdha2V1cCBmdW5jdGlvbiBpdCByZXF1aXJlLg0KPiA+ICAJICBCZXNpZGVzLCBp
+dCBpcyBhbHNvIGVhc3kgZm9yIHNlcnZpY2Ugc2lkZSB0byB1cGdyYWRlIGl0cyBsb2dpYw0KPiA+
+IHdoZW4NCj4gPiAgCSAgZGVzaWduIGNoYW5nZWQgYW5kIHJlbWFpbiB1c2VyIHNpZGUgdW5jaGFu
+Z2VkLg0KPiA+ICsNCj4gPiArY29uZmlnIExTX1JDUE0NCj4gPiArCWJvb2wgIkZyZWVzY2FsZSBS
+Q1BNIHN1cHBvcnQiDQo+ID4gKwlkZXBlbmRzIG9uIChGU0xfUExBVF9QTSkNCj4gDQo+IFdoeSBp
+cyB0aGlzIHBhcmVudGhlc2l6ZWQ/DQoNCkJlY2F1c2Ugd2UnZCBsaWtlIHRvIGRlY291cGxlIFJD
+UE0gZHJpdmVyIGFuZCBpdHMgdXNlci4NCkJlbmVmaXQgaXMgdGhhdCB3aWxsIGFsbG93IHVzZXIg
+ZG9lc24ndCBoYXZlIHRvIGtub3cgd2hvIHdpbGwgc2VydmUgaXQgZm9yIHNvbWUgUE0NCmZlYXR1
+cmVzIChzdWNoIGFzIHdha2UgdXAgc291cmNlIGNvbnRyb2wpLCBhbmQgcHJvdmlkZSBzb21lIGtp
+bmQgb2YgZmxleGliaWxpdHkgd2hlbg0KZWl0aGVyIFJDTVAgb3IgdXNlciBkcml2ZXIgZXZvbHZl
+IGluIHRoZSBmdXR1cmUuIFNvIEkgYWRkIGEgcGxhdF9wbSBkcml2ZXIgdG8gcHJldmVudA0Kd2Fr
+ZSB1cCBJUCBrbm93aW5nIGFueSBpbmZvcm1hdGlvbiBvZiBSQ1BNLg0KDQpSZWdhcmRzLA0KUmFu
+DQoNCj4gDQo+IC1TY290dA0KDQo=
