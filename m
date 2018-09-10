@@ -1,27 +1,20 @@
-Return-Path: <ran.wang_1@nxp.com>
-Received: from EUR03-DB5-obe.outbound.protection.outlook.com
- (mail-eopbgr40059.outbound.protection.outlook.com [40.107.4.59])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <msuchanek@suse.de>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4282kJ4YQLzF38f
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 19:27:03 +1000 (AEST)
-From: Ran Wang <ran.wang_1@nxp.com>
-To: Scott Wood <oss@buserror.net>, Leo Li <leoyang.li@nxp.com>, Rob Herring
- <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
-CC: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, "linux-pm@lists.linux-foundation.org"
- <linux-pm@lists.linux-foundation.org>
-Subject: RE: [PATCH 1/3] soc: fsl: add Platform PM driver QorIQ platforms
-Date: Mon, 10 Sep 2018 09:26:58 +0000
-Message-ID: <AM5PR0402MB2865520968A3656EC904ECB8F1050@AM5PR0402MB2865.eurprd04.prod.outlook.com>
-References: <20180831035219.31619-1-ran.wang_1@nxp.com>
- <cad8c585fb415959e7ade8b500278c2c5e070873.camel@buserror.net>
-In-Reply-To: <cad8c585fb415959e7ade8b500278c2c5e070873.camel@buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4283Lb4Np8zF3Cb
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 19:55:03 +1000 (AEST)
+Date: Mon, 10 Sep 2018 11:54:57 +0200
+From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
+To: Michael Neuling <mikey@neuling.org>
+Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, Haren Myneni
+ <haren@linux.vnet.ibm.com>, Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH] powerpc: Avoid code patching freed init sections
+Message-ID: <20180910115457.60366160@naga.suse.cz>
+In-Reply-To: <20180910054405.32422-1-mikey@neuling.org>
+References: <20180910054405.32422-1-mikey@neuling.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,54 +24,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGkgU2NvdHQsDQoNCk9uIDIwMTgvOS84IDQ6MzUsIFNjb3R0IFdvb2Qgd3JvdGU6DQo+IA0KPiBP
-biBGcmksIDIwMTgtMDgtMzEgYXQgMTE6NTIgKzA4MDAsIFJhbiBXYW5nIHdyb3RlOg0KPiA+IFRo
-aXMgZHJpdmVyIGlzIHRvIHByb3ZpZGUgYSBpbmRlcGVuZGVudCBmcmFtZXdvcmsgZm9yIFBNIHNl
-cnZpY2UNCj4gPiBwcm92aWRlciBhbmQgY29uc3VtZXIgdG8gY29uZmlndXJlIHN5c3RlbSBsZXZl
-bCB3YWtlIHVwIGZlYXR1cmUuIEZvcg0KPiA+IGV4YW1wbGUsIFJDUE0gZHJpdmVyIGNvdWxkIHJl
-Z2lzdGVyIGEgY2FsbGJhY2sgZnVuY3Rpb24gb24gdGhpcw0KPiA+IHBsYXRmb3JtIGZpcnN0LCBh
-bmQgRmxleCB0aW1lciBkcml2ZXIgd2hvIHdhbnQgdG8gZW5hYmxlIHRpbWVyIHdha2UgdXANCj4g
-PiBmZWF0dXJlLCB3aWxsIGNhbGwgZ2VuZXJpYyBBUEkgcHJvdmlkZWQgYnkgdGhpcyBwbGF0Zm9y
-bSBkcml2ZXIsIGFuZA0KPiA+IHRoZW4gaXQgd2lsbCB0cmlnZ2VyIFJDUE0gZHJpdmVyIHRvIGRv
-IGl0LiBUaGUgYmVuZWZpdCBpcyB0byBpc29sYXRlDQo+ID4gdGhlIHVzZXIgYW5kIHNlcnZpY2Us
-IHN1Y2ggYXMgZmxleCB0aW1lciBkcml2ZXIgd2lsbCBub3QgaGF2ZSB0byBrbm93DQo+ID4gdGhl
-IGltcGxlbWVudCBkZXRhaWxzIG9mIHdha2V1cCBmdW5jdGlvbiBpdCByZXF1aXJlLiBCZXNpZGVz
-LCBpdCBpcw0KPiA+IGFsc28gZWFzeSBmb3Igc2VydmljZSBzaWRlIHRvIHVwZ3JhZGUgaXRzIGxv
-Z2ljIHdoZW4gZGVzaWduIGlzIGNoYW5nZWQNCj4gPiBhbmQgcmVtYWluIHVzZXIgc2lkZSB1bmNo
-YW5nZWQuDQo+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBSYW4gV2FuZyA8cmFuLndhbmdfMUBueHAu
-Y29tPg0KPiA+IC0tLQ0KPiA+ICBkcml2ZXJzL3NvYy9mc2wvS2NvbmZpZyAgIHwgICAxNCArKysr
-Kw0KPiA+ICBkcml2ZXJzL3NvYy9mc2wvTWFrZWZpbGUgIHwgICAgMSArDQo+ID4gIGRyaXZlcnMv
-c29jL2ZzbC9wbGF0X3BtLmMgfCAgMTQ0DQo+ID4gKysrKysrKysrKysrKysrKysrKysrKysrKysr
-KysrKysrKysrKysrKysrKysrDQo+ID4gIGluY2x1ZGUvc29jL2ZzbC9wbGF0X3BtLmggfCAgIDIy
-ICsrKysrKysNCj4gPiAgNCBmaWxlcyBjaGFuZ2VkLCAxODEgaW5zZXJ0aW9ucygrKSwgMCBkZWxl
-dGlvbnMoLSkgIGNyZWF0ZSBtb2RlDQo+ID4gMTAwNjQ0IGRyaXZlcnMvc29jL2ZzbC9wbGF0X3Bt
-LmMgIGNyZWF0ZSBtb2RlIDEwMDY0NA0KPiA+IGluY2x1ZGUvc29jL2ZzbC9wbGF0X3BtLmgNCj4g
-Pg0KPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3NvYy9mc2wvS2NvbmZpZyBiL2RyaXZlcnMvc29j
-L2ZzbC9LY29uZmlnIGluZGV4DQo+ID4gN2E5ZmI5Yi4uNjUxNzQxMiAxMDA2NDQNCj4gPiAtLS0g
-YS9kcml2ZXJzL3NvYy9mc2wvS2NvbmZpZw0KPiA+ICsrKyBiL2RyaXZlcnMvc29jL2ZzbC9LY29u
-ZmlnDQo+ID4gQEAgLTE2LDMgKzE2LDE3IEBAIGNvbmZpZyBGU0xfR1VUUw0KPiA+ICAJICBJbml0
-aWFsbHkgb25seSByZWFkaW5nIFNWUiBhbmQgcmVnaXN0ZXJpbmcgc29jIGRldmljZSBhcmUNCj4g
-PiBzdXBwb3J0ZWQuDQo+ID4gIAkgIE90aGVyIGd1dHMgYWNjZXNzZXMsIHN1Y2ggYXMgcmVhZGlu
-ZyBSQ1csIHNob3VsZCBldmVudHVhbGx5IGJlDQo+ID4gbW92ZWQNCj4gPiAgCSAgaW50byB0aGlz
-IGRyaXZlciBhcyB3ZWxsLg0KPiArDQo+ID4gK2NvbmZpZyBGU0xfUExBVF9QTQ0KPiA+ICsJYm9v
-bCAiRnJlZXNjYWxlIHBsYXRmb3JtIFBNIGZyYW1ld29yayINCj4gDQo+IFRoaXMgbmFtZSBzZWVt
-cyB0byBiZSBzaW11bHRhbmVvdXNseSB0b28gZ2VuZXJpYyAoZm9yIHNvbWV0aGluZyB0aGF0IGlz
-DQo+IGxpa2VseSBpbnRlbmRlZCBvbmx5IGZvciB1c2Ugd2l0aCBjZXJ0YWluIEZyZWVzY2FsZS9O
-WFAgY2hpcCBmYW1pbGllcykgYW5kIHRvbw0KPiBzcGVjaWZpYyAoZm9yIHNvbWV0aGluZyB0aGF0
-IHNlZW1zIHRvIGJlIGdlbmVyYWwgaW5mcmFzdHJ1Y3R1cmUgd2l0aCBubyByZWFsDQo+IGhhcmR3
-YXJlIGRlcGVuZGVuY2llcykuDQoNClllcywgdGhpcyBkcml2ZXIgaGFzIG5vIHJlYWwgSFcgZGVw
-ZW5kZW5jaWVzIGF0IGFsbC4gQnV0IHdlJ2QgbGlrZSB0byBpbnRyb2R1Y2UgaXQNCnRvIGhlbHAg
-cHJvdmlkaW5nIG1vcmUgZmxleGliaWxpdHkgJiBnZW5lcmljIG9uIEZTTCBQTSBmZWF0dXJlIGNv
-bmZpZ3VyZSAoc28gZmFyIA0Kd2UgaGF2ZSBSQ1BNIG9uIHN5c3RlbSB3YWtldXAgc291cmNlIGNv
-bnRyb2wpLiBJIHRoaW5rIGl0J3MgZ29vZA0KZm9yIGRyaXZlci9JUCBwb3J0aW5nIGFtb25nIGRp
-ZmZlcmVudCBTb0MgaW4gdGhlIGZ1dHVyZS4gQXMgdG8gdGhlIG5hbWUsIGRvIHlvdQ0KaGF2ZSBi
-ZXR0ZXIgc3VnZ2VzdGlvbj8NCg0KPiBXaGF0IHNwZWNpZmljIHByb2JsZW1zIHdpdGggTGludXgn
-cyBnZW5lcmljIHdha2V1cCBpbmZyYXN0cnVjdHVyZSBpcyB0aGlzDQo+IHRyeWluZyB0byBzb2x2
-ZSwgYW5kIHdoeSB3b3VsZCB0aG9zZSBwcm9ibGVtcyBub3QgYmUgYmV0dGVyIHNvbHZlZCB0aGVy
-ZT8NCg0KQWN0dWFsbHksIEkgYW0gbm90IHN1cmUgaWYgZ2VuZXJpYyB3YWtldXAgaW5mcmFzdHJ1
-Y3R1cmUgaGF2ZSB0aGlzIGtpbmQgb2YgUE0gZmVhdHVyZQ0KKGtlZXAgc3BlY2lmaWMgSVAgYWxp
-dmUgZHVyaW5nIHN5c3RlbSBzdXNwZW5kLCBjb3VsZCB5b3UgcGxlYXNlIHNob3cgbWU/KS4NCkFu
-ZCBJIHRoaW5rIGl0IGlzIG5vdCBjb21tb24gcmVxdWlyZW1lbnQsIHNvIEkgZGVjaWRlIHRvIHB1
-dCBpdCBpbiBGU0wgZm9sZGVyLiANCg0KPiBBbHNvLCB5b3Ugc2hvdWxkIENDIGxpbnV4LXBtIG9u
-IHRoZXNlIHBhdGNoZXMuDQoNClllcywgdGhhbmtzIGZvciBzdWdnZXN0aW9uDQoNClJlZ2FyZHMs
-DQpSYW4NCg0KPiAtU2NvdHQNCg0K
+On Mon, 10 Sep 2018 15:44:05 +1000
+Michael Neuling <mikey@neuling.org> wrote:
+
+> This stops us from doing code patching in init sections after they've
+> been freed.
+> 
+> In this chain:
+>   kvm_guest_init() ->
+>     kvm_use_magic_page() ->
+>       fault_in_pages_readable() ->
+> 	 __get_user() ->
+> 	   __get_user_nocheck() ->
+> 	     barrier_nospec();
+> 
+> We have a code patching location at barrier_nospec() and
+> kvm_guest_init() is an init function. This whole chain gets inlined,
+> so when we free the init section (hence kvm_guest_init()), this code
+> goes away and hence should no longer be patched.
+> 
+> We seen this as userspace memory corruption when using a memory
+> checker while doing partition migration testing on powervm (this
+> starts the code patching post migration via
+> /sys/kernel/mobility/migration). In theory, it could also happen when
+> using /sys/kernel/debug/powerpc/barrier_nospec.
+> 
+> With this patch there is a small change of a race if we code patch
+> between the init section being freed and setting SYSTEM_RUNNING (in
+> kernel_init()) but that seems like an impractical time and small
+> window for any code patching to occur.
+> 
+> cc: stable@vger.kernel.org # 4.13+
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> 
+> ---
+> For stable I've marked this as v4.13+ since that's when we refactored
+> code-patching.c but it could go back even further than that. In
+> reality though, I think we can only hit this since the first
+> spectre/meltdown changes.
+> ---
+>  arch/powerpc/lib/code-patching.c | 19 +++++++++++++++++++
+>  1 file changed, 19 insertions(+)
+> 
+> diff --git a/arch/powerpc/lib/code-patching.c
+> b/arch/powerpc/lib/code-patching.c index 850f3b8f4d..a2bc08bfd8 100644
+> --- a/arch/powerpc/lib/code-patching.c
+> +++ b/arch/powerpc/lib/code-patching.c
+> @@ -23,11 +23,30 @@
+>  #include <asm/code-patching.h>
+>  #include <asm/setup.h>
+>  
+> +
+> +static inline bool in_init_section(unsigned int *patch_addr)
+> +{
+> +	if (patch_addr < (unsigned int *)__init_begin)
+> +		return false;
+> +	if (patch_addr >= (unsigned int *)__init_end)
+> +		return false;
+> +	return true;
+> +}
+> +
+> +static inline bool init_freed(void)
+> +{
+> +	return (system_state >= SYSTEM_RUNNING);
+> +}
+> +
+>  static int __patch_instruction(unsigned int *exec_addr, unsigned int
+> instr, unsigned int *patch_addr)
+>  {
+>  	int err;
+>  
+> +	/* Make sure we aren't patching a freed init section */
+> +	if (in_init_section(patch_addr) && init_freed())
+> +		return 0;
+> +
+
+Do we even need the init_freed() check?
+
+What user input can we process in init-only code?
+
+Also it would be nice to write the function+offset of the skipped patch
+location into the kernel log.
+
+Thanks
+
+Michal
