@@ -1,19 +1,36 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <robherring2@gmail.com>
+Received: from mail-oi0-f66.google.com (mail-oi0-f66.google.com
+ [209.85.218.66])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4289qG1Wr9zF31n
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2018 00:46:50 +1000 (AEST)
-To: akpm@linux-foundation.org, linux-mm@kvack.org,
- aneesh.kumar@linux.vnet.ibm.com, Nicholas Piggin <npiggin@gmail.com>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: How to handle PTE tables with non contiguous entries ?
-Message-ID: <ddc3bb56-4da0-c093-256f-185d4a612b5c@c-s.fr>
-Date: Mon, 10 Sep 2018 14:34:37 +0000
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 428BCD0zpwzF38l
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2018 01:04:07 +1000 (AEST)
+Received: by mail-oi0-f66.google.com with SMTP id p84-v6so40745736oic.4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 08:04:07 -0700 (PDT)
+From: Rob Herring <robh@kernel.org>
+To: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Masahiro Yamada <yamada.masahiro@socionext.com>
+Cc: Frank Rowand <frowand.list@gmail.com>,
+ Ley Foon Tan <ley.foon.tan@intel.com>, Paul Burton <paul.burton@mips.com>,
+ Will Deacon <will.deacon@arm.com>,
+ Aurelien Jacquiot <jacquiot.aurelien@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, Chris Zankel <chris@zankel.net>,
+ James Hogan <jhogan@kernel.org>, Ley Foon Tan <lftan@altera.com>,
+ Mark Salter <msalter@redhat.com>, Max Filippov <jcmvbkbc@gmail.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Michal Marek <michal.lkml@markovi.net>, Michal Simek <monstr@monstr.eu>,
+ nios2-dev@lists.rocketboards.org, Paul Mackerras <paulus@samba.org>,
+ Ralf Baechle <ralf@linux-mips.org>, Russell King <linux@armlinux.org.uk>,
+ uclinux-h8-devel@lists.sourceforge.jp, Vineet Gupta <vgupta@synopsys.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ linux-arm-kernel@lists.infradead.org, linux-c6x-dev@linux-c6x.org,
+ linux-kbuild@vger.kernel.org, linux-mips@linux-mips.org,
+ linuxppc-dev@lists.ozlabs.org, linux-snps-arc@lists.infradead.org,
+ linux-xtensa@linux-xtensa.org
+Subject: [PATCH v3 0/9] Devicetree build consolidation
+Date: Mon, 10 Sep 2018 10:03:54 -0500
+Message-Id: <20180910150403.19476-1-robh@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,67 +40,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+This series addresses a couple of issues I have with building dts files.
 
-I'm having a hard time figuring out the best way to handle the following 
-situation:
+First, the ability to build all the dts files in the tree. This has been
+supported on most arches for some time with powerpc being the main
+exception. The reason powerpc wasn't supported was it needed a change
+in the location built dtb files are put.
 
-On the powerpc8xx, handling 16k size pages requires to have page tables 
-with 4 identical entries.
+Secondly, it's a pain to acquire all the cross-compilers needed to build
+dtbs for each arch. There's no reason to build with the cross compiler and
+the host compiler is perfectly fine as we only need the pre-processor.
 
-Initially I was thinking about handling this by simply modifying 
-pte_index() which changing pte_t type in order to have one entry every 
-16 bytes, then replicate the PTE value at *ptep, *ptep+1,*ptep+2 and 
-*ptep+3 both in set_pte_at() and pte_update().
+I started addressing just those 2 problems, but kept finding small
+differences such as target dependencies and dtbs_install support across
+architectures. Instead of trying to align all these, I've consolidated the
+build targets moving them out of the arch makefiles.
 
-However, this doesn't work because many many places in the mm core part 
-of the kernel use loops on ptep with single ptep++ increment.
+I'd like to take the series via the DT tree.
 
-Therefore did it with the following hack:
+Rob
 
-  /* PTE level */
-+#if defined(CONFIG_PPC_8xx) && defined(CONFIG_PPC_16K_PAGES)
-+typedef struct { pte_basic_t pte, pte1, pte2, pte3; } pte_t;
-+#else
-  typedef struct { pte_basic_t pte; } pte_t;
-+#endif
+v3:
+ - Rework dtc dependency to avoid 2 entry paths to scripts/dtc/. Essentially,
+   I copied 'scripts_basic'.
+ - Add missing scripts_basic dependency for dtc and missing PHONY tag.
+ - Drop the '|' order only from dependencies
+ - Drop %.dtb.S and %.dtb.o as top-level targets
+ - PPC: remove duplicate mpc5200 dtbs from image-y targets
 
-@@ -181,7 +192,13 @@ static inline unsigned long pte_update(pte_t *p,
-         : "cc" );
-  #else /* PTE_ATOMIC_UPDATES */
-         unsigned long old = pte_val(*p);
--       *p = __pte((old & ~clr) | set);
-+       unsigned long new = (old & ~clr) | set;
-+
-+#if defined(CONFIG_PPC_8xx) && defined(CONFIG_PPC_16K_PAGES)
-+       p->pte = p->pte1 = p->pte2 = p->pte3 = new;
-+#else
-+       *p = __pte(new);
-+#endif
-  #endif /* !PTE_ATOMIC_UPDATES */
+v2:
+ - Fix $arch/boot/dts path check for out of tree builds
+ - Fix dtc dependency for building built-in dtbs
+ - Fix microblaze built-in dtb building
+ - Add dtbs target for microblaze
 
-  #ifdef CONFIG_44x
+Rob Herring (9):
+  powerpc: build .dtb files in dts directory
+  nios2: build .dtb files in dts directory
+  nios2: use common rules to build built-in dtb
+  nios2: fix building all dtbs
+  c6x: use common built-in dtb support
+  kbuild: consolidate Devicetree dtb build rules
+  powerpc: enable building all dtbs
+  c6x: enable building all dtbs
+  microblaze: enable building all dtbs
 
+ Makefile                           | 35 ++++++++++++++++++-
+ arch/arc/Makefile                  |  6 ----
+ arch/arm/Makefile                  | 20 +----------
+ arch/arm64/Makefile                | 17 +--------
+ arch/c6x/Makefile                  |  2 --
+ arch/c6x/boot/dts/Makefile         | 17 ++++-----
+ arch/c6x/boot/dts/linked_dtb.S     |  2 --
+ arch/c6x/include/asm/sections.h    |  1 -
+ arch/c6x/kernel/setup.c            |  4 +--
+ arch/c6x/kernel/vmlinux.lds.S      | 10 ------
+ arch/h8300/Makefile                | 11 +-----
+ arch/microblaze/Makefile           |  4 +--
+ arch/microblaze/boot/dts/Makefile  |  4 +++
+ arch/mips/Makefile                 | 15 +-------
+ arch/nds32/Makefile                |  2 +-
+ arch/nios2/Makefile                | 11 +-----
+ arch/nios2/boot/Makefile           | 22 ------------
+ arch/nios2/boot/dts/Makefile       |  6 ++++
+ arch/nios2/boot/linked_dtb.S       | 19 -----------
+ arch/powerpc/Makefile              |  3 --
+ arch/powerpc/boot/Makefile         | 55 ++++++++++++++----------------
+ arch/powerpc/boot/dts/Makefile     |  6 ++++
+ arch/powerpc/boot/dts/fsl/Makefile |  4 +++
+ arch/xtensa/Makefile               | 12 +------
+ scripts/Makefile                   |  3 +-
+ scripts/Makefile.lib               |  2 +-
+ scripts/dtc/Makefile               |  2 +-
+ 27 files changed, 100 insertions(+), 195 deletions(-)
+ delete mode 100644 arch/c6x/boot/dts/linked_dtb.S
+ create mode 100644 arch/nios2/boot/dts/Makefile
+ delete mode 100644 arch/nios2/boot/linked_dtb.S
+ create mode 100644 arch/powerpc/boot/dts/Makefile
+ create mode 100644 arch/powerpc/boot/dts/fsl/Makefile
 
-@@ -161,7 +161,11 @@ static inline void __set_pte_at(struct mm_struct 
-*mm, unsigned long addr,
-         /* Anything else just stores the PTE normally. That covers all 
-64-bit
-          * cases, and 32-bit non-hash with 32-bit PTEs.
-          */
-+#if defined(CONFIG_PPC_8xx) && defined(CONFIG_PPC_16K_PAGES)
-+       ptep->pte = ptep->pte1 = ptep->pte2 = ptep->pte3 = pte_val(pte);
-+#else
-         *ptep = pte;
-+#endif
-
-
-
-But I'm not too happy with it as it means pte_t is not a single type 
-anymore so passing it from one function to the other is quite heavy.
-
-
-Would someone have an idea of an elegent way to handle that ?
-
-Thanks
-Christophe
+--
+2.17.1
