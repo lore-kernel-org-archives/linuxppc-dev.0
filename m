@@ -1,24 +1,35 @@
-Return-Path: <robherring2@gmail.com>
-Received: from mail-oi0-f65.google.com (mail-oi0-f65.google.com
- [209.85.218.65])
+Return-Path: <luc.vanoostenryck@gmail.com>
+Received: from mail-wm0-x22f.google.com (mail-wm0-x22f.google.com
+ [IPv6:2a00:1450:400c:c09::22f])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 428BCP47H9zF390
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2018 01:04:17 +1000 (AEST)
-Received: by mail-oi0-f65.google.com with SMTP id 8-v6so40783438oip.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 08:04:17 -0700 (PDT)
-From: Rob Herring <robh@kernel.org>
-To: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- Masahiro Yamada <yamada.masahiro@socionext.com>
-Cc: Frank Rowand <frowand.list@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 7/9] powerpc: enable building all dtbs
-Date: Mon, 10 Sep 2018 10:04:01 -0500
-Message-Id: <20180910150403.19476-8-robh@kernel.org>
-In-Reply-To: <20180910150403.19476-1-robh@kernel.org>
-References: <20180910150403.19476-1-robh@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 428BSQ1G7rzF396
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2018 01:15:33 +1000 (AEST)
+Received: by mail-wm0-x22f.google.com with SMTP id q8-v6so21918509wmq.4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 08:15:33 -0700 (PDT)
+Date: Mon, 10 Sep 2018 17:15:27 +0200
+From: Luc Van Oostenryck <luc.vanoostenryck@gmail.com>
+To: Christophe LEROY <christophe.leroy@c-s.fr>
+Cc: Nick Desaulniers <ndesaulniers@google.com>, joe@perches.com,
+ Kees Cook <keescook@chromium.org>,
+ LKML <linux-kernel@vger.kernel.org>, linux-sparse@vger.kernel.org,
+ sparse@chrisli.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: Conflict between sparse and commit cafa0010cd51f ("Raise the
+ minimum required gcc version to 4.6")
+Message-ID: <20180910151526.ljp3nynngprdmlkb@ltop.local>
+References: <CAKwvOdmuXydQsQyD2CUyoSkkDpF1e1CXg6v1SRv2q-bpYa9SQg@mail.gmail.com>
+ <20180907181337.peyfq7yvhahduvmq@ltop.local>
+ <CAKwvOdmXs+pWJGXu-zr-XSu7p-7hw=2m1vVQmVLwJcmGEFz0gg@mail.gmail.com>
+ <e6db84f1-ee8d-9377-5f1c-6a0e7972ba50@c-s.fr>
+ <20180910092835.v5nex5nzfgtl475m@ltop.local>
+ <061b3056-1a9a-af6b-de2a-49fea394320d@c-s.fr>
+ <20180910113448.dxnfvznyimtj3tkv@ltop.local>
+ <9409138a-dc14-2b12-edc0-cfa0b471da6e@c-s.fr>
+ <20180910135604.j2phe7r3k5vs6cik@ltop.local>
+ <6191f6dc-1819-60e4-d4e8-f815f04325f0@c-s.fr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <6191f6dc-1819-60e4-d4e8-f815f04325f0@c-s.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,41 +39,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Enable the 'dtbs' target for powerpc. This allows building all the dts
-files in arch/powerpc/boot/dts/ when COMPILE_TEST and OF_ALL_DTBS are
-enabled.
+On Mon, Sep 10, 2018 at 04:05:34PM +0200, Christophe LEROY wrote:
+> 
+> This time it works, thanks for your help.
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Rob Herring <robh@kernel.org>
----
- arch/powerpc/boot/dts/Makefile     | 5 +++++
- arch/powerpc/boot/dts/fsl/Makefile | 4 ++++
- 2 files changed, 9 insertions(+)
- create mode 100644 arch/powerpc/boot/dts/fsl/Makefile
+You're welcome.
+ 
+> Should we find a may to automate that in the Makefile when
+> CROSS_COMPILE is defined ?
 
-diff --git a/arch/powerpc/boot/dts/Makefile b/arch/powerpc/boot/dts/Makefile
-index f66554cd5c45..fb335d05aae8 100644
---- a/arch/powerpc/boot/dts/Makefile
-+++ b/arch/powerpc/boot/dts/Makefile
-@@ -1 +1,6 @@
- # SPDX-License-Identifier: GPL-2.0
-+
-+subdir-y += fsl
-+
-+dtstree		:= $(srctree)/$(src)
-+dtb-$(CONFIG_OF_ALL_DTBS) := $(patsubst $(dtstree)/%.dts,%.dtb, $(wildcard $(dtstree)/*.dts))
-diff --git a/arch/powerpc/boot/dts/fsl/Makefile b/arch/powerpc/boot/dts/fsl/Makefile
-new file mode 100644
-index 000000000000..3bae982641e9
---- /dev/null
-+++ b/arch/powerpc/boot/dts/fsl/Makefile
-@@ -0,0 +1,4 @@
-+# SPDX-License-Identifier: GPL-2.0
-+
-+dtstree		:= $(srctree)/$(src)
-+dtb-$(CONFIG_OF_ALL_DTBS) := $(patsubst $(dtstree)/%.dts,%.dtb, $(wildcard $(dtstree)/*.dts))
--- 
-2.17.1
+The situation here with an old gcc is really an oddity.
+I was instead thinking to update sparse so that it repports a
+GCC version of at least 4.6, maybe something even more recent.
+
+But maybe, yes, kbuild could pass GCC_VERSION to sparse so
+that both the compiler used and sparse will repport the same.
+I'll see. The problem is not tied to cross-compilation, though,
+just that sparse may be compiled with an older compiler.
+
+-- Luc
