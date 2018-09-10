@@ -1,30 +1,36 @@
-Return-Path: <ran.wang_1@nxp.com>
-Received: from EUR03-DB5-obe.outbound.protection.outlook.com
- (mail-eopbgr40087.outbound.protection.outlook.com [40.107.4.87])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <sbobroff@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 427trf54gBzF35x
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 13:32:02 +1000 (AEST)
-From: Ran Wang <ran.wang_1@nxp.com>
-To: Leo Li <leoyang.li@nxp.com>
-CC: Mark Rutland <mark.rutland@arm.com>, "dongsheng.wang@hxt-semitech.com"
- <dongsheng.wang@hxt-semitech.com>, "open list:OPEN FIRMWARE AND FLATTENED
- DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, lkml
- <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, "moderated list:ARM/FREESCALE
- IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>
-Subject: RE: [PATCH 3/3] soc: fsl: add RCPM driver
-Date: Mon, 10 Sep 2018 03:31:56 +0000
-Message-ID: <AM5PR0402MB2865939D4412A4129AC0FC67F1050@AM5PR0402MB2865.eurprd04.prod.outlook.com>
-References: <20180831035219.31619-1-ran.wang_1@nxp.com>
- <20180831035219.31619-3-ran.wang_1@nxp.com>
- <be39f5ea8c9046b0bf1f6bbfe935fae4@HXTBJIDCEMVIW02.hxtcorp.net>
- <CADRPPNQN=27+pOSckxvwSuBJoFaz7pT+Z6h07Wu3Liz5ao5kkA@mail.gmail.com>
- <AM5PR0402MB2865E57EDC0DE8B0047282A2F1000@AM5PR0402MB2865.eurprd04.prod.outlook.com>
- <CADRPPNTGrKBxzpbP05R0T3ovngYgQ4P_kgwgYwB6Aqrs8maXqw@mail.gmail.com>
-In-Reply-To: <CADRPPNTGrKBxzpbP05R0T3ovngYgQ4P_kgwgYwB6Aqrs8maXqw@mail.gmail.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 427w0h31T1zF3Ck
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 14:24:01 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w8A4JeKe072928
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 00:23:59 -0400
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2mdefv5xet-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 00:23:58 -0400
+Received: from localhost
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sbobroff@linux.ibm.com>;
+ Mon, 10 Sep 2018 05:23:52 +0100
+Date: Mon, 10 Sep 2018 14:23:45 +1000
+From: Sam Bobroff <sbobroff@linux.ibm.com>
+To: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux@yadro.com
+Subject: Re: [PATCH v2 1/5] powerpc/pci: Access PCI config space directly w/o
+ pci_dn
+References: <20180906115752.29316-1-s.miroshnichenko@yadro.com>
+ <20180906115752.29316-2-s.miroshnichenko@yadro.com>
 MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="UlVJffcvxoiEqYs2"
+In-Reply-To: <20180906115752.29316-2-s.miroshnichenko@yadro.com>
+Message-Id: <20180910042344.GA14370@tungsten.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,123 +40,347 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGkgTGVvLA0KDQpPbiAyMDE4LzkvNyA0OjUxLCBZYW5nIExpIHdyb3RlOg0KPiANCj4gT24gRnJp
-LCBTZXAgNywgMjAxOCBhdCA0OjUxIEFNIFJhbiBXYW5nIDxyYW4ud2FuZ18xQG54cC5jb20+IHdy
-b3RlOg0KPiA+DQo+ID4gSGkgTGVvLA0KPiA+DQo+ID4gT24gU2VwdGVtYmVyIDA1LCAyMDE4IGF0
-IDExOjIyIFlhbmcgTGkgd3JvdGU6DQo+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0K
-PiA+ID4gRnJvbTogTGkgWWFuZyA8bGVveWFuZy5saUBueHAuY29tPg0KPiA+ID4gU2VudDogV2Vk
-bmVzZGF5LCBTZXB0ZW1iZXIgMDUsIDIwMTggMTE6MjINCj4gPiA+IFRvOiBkb25nc2hlbmcud2Fu
-Z0BoeHQtc2VtaXRlY2guY29tDQo+ID4gPiBDYzogUmFuIFdhbmcgPHJhbi53YW5nXzFAbnhwLmNv
-bT47IFJvYiBIZXJyaW5nDQo+IDxyb2JoK2R0QGtlcm5lbC5vcmc+Ow0KPiA+ID4gTWFyayBSdXRs
-YW5kIDxtYXJrLnJ1dGxhbmRAYXJtLmNvbT47IG9wZW4gbGlzdDpPUEVOIEZJUk1XQVJFIEFORA0K
-PiA+ID4gRkxBVFRFTkVEIERFVklDRSBUUkVFIEJJTkRJTkdTIDxkZXZpY2V0cmVlQHZnZXIua2Vy
-bmVsLm9yZz47DQo+ID4gPiBsaW51eHBwYy0gZGV2IDxsaW51eHBwYy1kZXZAbGlzdHMub3psYWJz
-Lm9yZz47IGxrbWwNCj4gPiA+IDxsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnPjsgbW9kZXJh
-dGVkIGxpc3Q6QVJNL0ZSRUVTQ0FMRSBJTVggLw0KPiA+ID4gTVhDIEFSTSBBUkNISVRFQ1RVUkUg
-PGxpbnV4LWFybS0ga2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmc+DQo+ID4gPiBTdWJqZWN0OiBS
-ZTogW1BBVENIIDMvM10gc29jOiBmc2w6IGFkZCBSQ1BNIGRyaXZlcg0KPiA+ID4NCj4gPiA+IE9u
-IFR1ZSwgU2VwIDQsIDIwMTggYXQgOTo1OCBQTSBXYW5nLCBEb25nc2hlbmcNCj4gPGRvbmdzaGVu
-Zy53YW5nQGh4dC0NCj4gPiA+IHNlbWl0ZWNoLmNvbT4gd3JvdGU6DQo+ID4gPiA+DQo+ID4gPiA+
-IFBsZWFzZSBjaGFuZ2UgeW91ciBjb21tZW50cyBzdHlsZS4NCj4gPiA+DQo+ID4gPiBBbHRob3Vn
-aCB0aGlzIGRvZXNuJ3QgZ2V0IGludG8gdGhlIExpbnV4IGtlcm5lbCBjb2Rpbmcgc3R5bGUNCj4g
-PiA+IGRvY3VtZW50YXRpb24geWV0LCBMaW51cyBzZWVtcyBjaGFuZ2VkIGhpcyBtaW5kIHRvIHBy
-ZWZlciAvLyB0aGFuIC8qDQo+ID4gPiAqLyBjb21tZW50IHN0eWxlIG5vdy4NCj4gPiA+IGh0dHBz
-Oi8vZW1lYTAxLnNhZmVsaW5rcy5wcm90ZWN0aW9uLm91dGxvb2suY29tLz91cmw9aHR0cHMlM0El
-MkYlMkZsDQo+ID4gPg0KPiBrbWwgLm9yZyUyRmxrbWwlMkYyMDE3JTJGMTElMkYyNSUyRjEzMyZh
-bXA7ZGF0YT0wMiU3QzAxJTdDcmFuLncNCj4gYW5nXw0KPiA+ID4NCj4gMSU0MG54cC5jb20lN0Nj
-MGQ4OGU2NjkwMzg0ZTAyYjk1MTA4ZDYxMmRlYzIzNSU3QzY4NmVhMWQzYmMyYjRjDQo+ID4gPg0K
-PiA2ZmE5MmNkOTljNWMzMDE2MzUlN0MwJTdDMCU3QzYzNjcxNzE0NTI4NTEyNjIwMCZhbXA7c2Rh
-dGE9SklvQ1pwDQo+ID4gPg0KPiBXaFJ5Vzc2RXFnU2ZsZlREQTFmMGdNUUdLYSUyRmNidlNjNUNP
-JTJGdyUzRCZhbXA7cmVzZXJ2ZWQ9MA0KPiA+ID4gU28gdGhlDQo+ID4gPiAvLyBzdHlsZSBzaG91
-bGQgYmUgYWNjZXB0YWJsZSBmb3Igbm93Lg0KPiA+ID4NCj4gPiA+ID4NCj4gPiA+ID4gT24gMjAx
-OC84LzMxIDExOjU2LCBSYW4gV2FuZyB3cm90ZToNCj4gPiA+ID4gPiBUaGUgTlhQJ3MgUW9ySVEg
-UHJvY2Vzc29ycyBiYXNlZCBvbiBBUk0gQ29yZSBoYXZlIFJDUE0gbW9kdWxlDQo+ID4gPiA+ID4g
-KFJ1biBDb250cm9sIGFuZCBQb3dlciBNYW5hZ2VtZW50KSwgd2hpY2ggcGVyZm9ybXMgYWxsDQo+
-ID4gPiA+ID4gZGV2aWNlLWxldmVsIHRhc2tzIGFzc29jaWF0ZWQgd2l0aCBwb3dlciBtYW5hZ2Vt
-ZW50IHN1Y2ggYXMNCj4gd2FrZXVwIHNvdXJjZSBjb250cm9sLg0KPiA+ID4gPiA+DQo+ID4gPiA+
-ID4gVGhpcyBkcml2ZXIgZGVwZW5kcyBvbiBGU0wgcGxhdGZvcm0gUE0gZHJpdmVyIGZyYW1ld29y
-ayB3aGljaA0KPiA+ID4gPiA+IGhlbHAgdG8gaXNvbGF0ZSB1c2VyIGFuZCBQTSBzZXJ2aWNlIHBy
-b3ZpZGVyIChzdWNoIGFzIFJDUE0gZHJpdmVyKS4NCj4gPiA+ID4gPg0KPiA+ID4gPiA+IFNpZ25l
-ZC1vZmYtYnk6IENoZW5odWkgWmhhbyA8Y2hlbmh1aS56aGFvQG54cC5jb20+DQo+ID4gPiA+ID4g
-U2lnbmVkLW9mZi1ieTogWWluZyBaaGFuZyA8eWluZy56aGFuZzIyNDU1QG54cC5jb20+DQo+ID4g
-PiA+ID4gU2lnbmVkLW9mZi1ieTogUmFuIFdhbmcgPHJhbi53YW5nXzFAbnhwLmNvbT4NCj4gPiA+
-ID4gPiAtLS0NCj4gPiA+ID4gPiAgZHJpdmVycy9zb2MvZnNsL0tjb25maWcgICB8ICAgIDYgKysN
-Cj4gPiA+ID4gPiAgZHJpdmVycy9zb2MvZnNsL01ha2VmaWxlICB8ICAgIDEgKw0KPiA+ID4gPiA+
-ICBkcml2ZXJzL3NvYy9mc2wvbHMtcmNwbS5jIHwgIDE1Mw0KPiA+ID4gPiA+ICsrKysrKysrKysr
-KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKw0KPiA+ID4gPiA+ICAzIGZpbGVzIGNo
-YW5nZWQsIDE2MCBpbnNlcnRpb25zKCspLCAwIGRlbGV0aW9ucygtKSAgY3JlYXRlIG1vZGUNCj4g
-PiA+ID4gPiAxMDA2NDQgZHJpdmVycy9zb2MvZnNsL2xzLXJjcG0uYw0KPiA+ID4gPiA+DQo+ID4g
-PiA+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvc29jL2ZzbC9LY29uZmlnIGIvZHJpdmVycy9zb2Mv
-ZnNsL0tjb25maWcNCj4gPiA+ID4gPiBpbmRleCA2NTE3NDEyLi44ODIzMzBkIDEwMDY0NA0KPiA+
-ID4gPiA+IC0tLSBhL2RyaXZlcnMvc29jL2ZzbC9LY29uZmlnDQo+ID4gPiA+ID4gKysrIGIvZHJp
-dmVycy9zb2MvZnNsL0tjb25maWcNCj4gPiA+ID4gPiBAQCAtMzAsMyArMzAsOSBAQCBjb25maWcg
-RlNMX1BMQVRfUE0NCj4gPiA+ID4gPiAgICAgICAgIGhhdmUgdG8ga25vdyB0aGUgaW1wbGVtZW50
-IGRldGFpbHMgb2Ygd2FrZXVwIGZ1bmN0aW9uIGl0DQo+IHJlcXVpcmUuDQo+ID4gPiA+ID4gICAg
-ICAgICBCZXNpZGVzLCBpdCBpcyBhbHNvIGVhc3kgZm9yIHNlcnZpY2Ugc2lkZSB0byB1cGdyYWRl
-IGl0cyBsb2dpYyB3aGVuDQo+ID4gPiA+ID4gICAgICAgICBkZXNpZ24gY2hhbmdlZCBhbmQgcmVt
-YWluIHVzZXIgc2lkZSB1bmNoYW5nZWQuDQo+ID4gPiA+ID4gKw0KPiA+ID4gPiA+ICtjb25maWcg
-TFNfUkNQTQ0KPiA+ID4gPiA+ICsgICAgIGJvb2wgIkZyZWVzY2FsZSBSQ1BNIHN1cHBvcnQiDQo+
-ID4gPiA+ID4gKyAgICAgZGVwZW5kcyBvbiAoRlNMX1BMQVRfUE0pDQo+ID4gPiA+ID4gKyAgICAg
-aGVscA0KPiA+ID4gPiA+ICsgICAgICAgVGhpcyBmZWF0dXJlIGlzIHRvIGVuYWJsZSBzcGVjaWZp
-ZWQgd2FrZXVwIHNvdXJjZSBmb3Igc3lzdGVtDQo+IHNsZWVwLg0KPiA+ID4gPiA+IGRpZmYgLS1n
-aXQgYS9kcml2ZXJzL3NvYy9mc2wvTWFrZWZpbGUgYi9kcml2ZXJzL3NvYy9mc2wvTWFrZWZpbGUN
-Cj4gPiA+ID4gPiBpbmRleCA4ZjlkYjIzLi40M2ZmNzFhIDEwMDY0NA0KPiA+ID4gPiA+IC0tLSBh
-L2RyaXZlcnMvc29jL2ZzbC9NYWtlZmlsZQ0KPiA+ID4gPiA+ICsrKyBiL2RyaXZlcnMvc29jL2Zz
-bC9NYWtlZmlsZQ0KPiA+ID4gPiA+IEBAIC03LDMgKzcsNCBAQCBvYmotJChDT05GSUdfUVVJQ0Nf
-RU5HSU5FKSAgICAgICAgICAgICs9IHFlLw0KPiA+ID4gPiA+ICBvYmotJChDT05GSUdfQ1BNKSAg
-ICAgICAgICAgICAgICAgICAgKz0gcWUvDQo+ID4gPiA+ID4gIG9iai0kKENPTkZJR19GU0xfR1VU
-UykgICAgICAgICAgICAgICAgICAgICAgICs9IGd1dHMubw0KPiA+ID4gPiA+ICBvYmotJChDT05G
-SUdfRlNMX1BMQVRfUE0pICAgICs9IHBsYXRfcG0ubw0KPiA+ID4gPiA+ICtvYmotJChDT05GSUdf
-TFNfUkNQTSkgICAgICAgICAgICAgICAgKz0gbHMtcmNwbS5vDQo+ID4gPg0KPiA+ID4gUHJvYmFi
-bHkgdXNlICJfIiBpbnN0ZWFkIG9mICItIiBmb3IgYWxpZ25tZW50Lg0KPiA+DQo+ID4gT0ssIHdp
-bGwgdXBkYXRlIGluIG5leHQgdmVyc2lvbg0KPiA+DQo+ID4gPiA+ID4gZGlmZiAtLWdpdCBhL2Ry
-aXZlcnMvc29jL2ZzbC9scy1yY3BtLmMNCj4gPiA+ID4gPiBiL2RyaXZlcnMvc29jL2ZzbC9scy1y
-Y3BtLmMgbmV3IGZpbGUgbW9kZSAxMDA2NDQgaW5kZXgNCj4gPiA+ID4gPiAwMDAwMDAwLi5iMGZl
-Yjg4DQo+ID4gPiA+ID4gLS0tIC9kZXYvbnVsbA0KPiA+ID4gPiA+ICsrKyBiL2RyaXZlcnMvc29j
-L2ZzbC9scy1yY3BtLmMNCj4gPiA+ID4gPiBAQCAtMCwwICsxLDE1MyBAQA0KPiA+ID4gPiA+ICsv
-LyBTUERYLUxpY2Vuc2UtSWRlbnRpZmllcjogR1BMLTIuMCAvLyAvLyBwbGF0X3BtLmMgLSBGcmVl
-c2NhbGUNCj4gPiA+ID4gPiArTGF5ZXJzY2FwZSBSQ1BNIGRyaXZlcg0KPiA+ID4NCj4gPiA+IFRo
-ZSBmaWxlIG5hbWUgaGVyZSBpcyBub3QgdGhlIHNhbWUgYXMgdGhlIHJlYWwgZmlsZSBuYW1lLg0K
-PiA+DQo+ID4gR290IGl0LCB3aWxsIGNvcnJlY3QgaXQuDQo+ID4NCj4gPiA+ID4gPiArLy8NCj4g
-PiA+ID4gPiArLy8gQ29weXJpZ2h0IDIwMTggTlhQDQo+ID4gPiA+ID4gKy8vDQo+ID4gPiA+ID4g
-Ky8vIEF1dGhvcjogUmFuIFdhbmcgPHJhbi53YW5nXzFAbnhwLmNvbT4sDQo+ID4gPg0KPiA+ID4g
-V2hlcmUgZG8geW91IG5lZWQgdGhlIGNvbW1hIGluIHRoZSBlbmQ/DQo+ID4NCj4gPiBNeSBiYWQs
-IHdpbGwgcmVtb3ZlIGNvbW1hIGluIG5leHQgdmVyc2lvbi4NCj4gPg0KPiA+ID4gPiA+ICsNCj4g
-PiA+ID4gPiArI2luY2x1ZGUgPGxpbnV4L2luaXQuaD4NCj4gPiA+ID4gPiArI2luY2x1ZGUgPGxp
-bnV4L21vZHVsZS5oPg0KPiA+ID4gPiA+ICsjaW5jbHVkZSA8bGludXgvcGxhdGZvcm1fZGV2aWNl
-Lmg+ICNpbmNsdWRlDQo+ID4gPiA+ID4gKzxsaW51eC9vZl9hZGRyZXNzLmg+ICNpbmNsdWRlIDxs
-aW51eC9zbGFiLmg+ICNpbmNsdWRlDQo+ID4gPiA+ID4gKzxzb2MvZnNsL3BsYXRfcG0uaD4NCj4g
-PiA+ID4gPiArDQo+ID4gPiA+ID4gKyNkZWZpbmUgTUFYX0NPTVBBVElCTEVfTlVNICAgMTANCj4g
-PiA+ID4gPiArDQo+ID4gPiA+ID4gK3N0cnVjdCByY3BtX3Qgew0KPiA+ID4gPiA+ICsgICAgIHN0
-cnVjdCBkZXZpY2UgKmRldjsNCj4gPiA+ID4gPiArICAgICB2b2lkIF9faW9tZW0gKmlwcGRleHBj
-cl9hZGRyOw0KPiA+ID4gPiA+ICsgICAgIGJvb2wgYmlnX2VuZGlhbjsgICAgICAgIC8qIEJpZy9M
-aXR0bGUgZW5kaWFuIG9mIFJDUE0gbW9kdWxlICovDQo+ID4gPiA+ID4gK307DQo+ID4gPiA+ID4g
-Kw0KPiA+ID4gPiA+ICsvLyByY3BtX2hhbmRsZSAtIENvbmZpZ3VyZSBSQ1BNIHJlZyBhY2NvcmRp
-bmcgdG8gd2FrZSB1cCBzb3VyY2UNCj4gPiA+ID4gPiArcmVxdWVzdCAvLyBAdXNlcl9kZXY6IHBv
-aW50ZXIgdG8gdXNlcidzIGRldmljZSBzdHJ1Y3QgLy8gQGZsYWc6DQo+ID4gPiA+ID4gK3RvDQo+
-ID4gPiA+ID4gK2VuYWJsZSh0cnVlKSBvciBkaXNhYmxlKGZhbHNlKSB3YWtldXAgc291cmNlIC8v
-IEBoYW5kbGVfcHJpdjoNCj4gPiA+ID4gPiArcG9pbnRlciB0byBzdHJ1Y3QgcmNwbV90IGluc3Rh
-bmNlIC8vIC8vIFJldHVybiAwIG9uIHN1Y2Nlc3MNCj4gPiA+ID4gPiArb3RoZXIgbmVnYXRpdmUg
-ZXJybm8NCj4gPiA+DQo+ID4gPiBBbHRob3VnaCBMaW51cyBwcmVmZXJyZWQgdGhpcyAvLyBjb21t
-ZW50IHN0eWxlLiAgSSdtIG5vdCBzdXJlIGlmDQo+ID4gPiB0aGlzIHdpbGwgYmUgaGFuZGxlZCBj
-b3JyZWN0bHkgYnkgdGhlIGtlcm5lbC1kb2MgY29tcGlsZXIuDQo+ID4gPg0KPiBodHRwczovL2Vt
-ZWEwMS5zYWZlbGlua3MucHJvdGVjdGlvbi5vdXRsb29rLmNvbS8/dXJsPWh0dHBzJTNBJTJGJTJG
-dw0KPiA+ID4gdw0KPiA+ID4gdy5rZXJuZWwub3JnJTJGZG9jJTJGaHRtbCUyRnY0LjE4JTJGZG9j
-LWd1aWRlJTJGa2VybmVsLQ0KPiA+ID4NCj4gZG9jLmh0bWwmYW1wO2RhdGE9MDIlN0MwMSU3Q3Jh
-bi53YW5nXzElNDBueHAuY29tJTdDYzBkODhlNjY5MDM4DQo+ID4gPg0KPiA0ZTAyYjk1MTA4ZDYx
-MmRlYzIzNSU3QzY4NmVhMWQzYmMyYjRjNmZhOTJjZDk5YzVjMzAxNjM1JTdDMCU3QzANCj4gPiA+
-ICU3QzYzNjcxNzE0NTI4NTEyNjIwMCZhbXA7c2RhdGE9SDdHa1VOT0xWRyUyRkNjWkVTemh0SEJl
-SEMNCj4gYk85DQo+ID4gPiAlMkZLNGs5RWRIMzBDeHEyJTJCTSUzRCZhbXA7cmVzZXJ2ZWQ9MA0K
-PiA+DQo+ID4gU28sIGRvIHlvdSB0aGluayBJIG5lZWQgdG8gY2hhbmdlIGFsbCBjb21tZW50IHN0
-eWxlIGJhY2sgdG8gJy8qIC4uLiAqLycgPw0KPiA+IEFjdHVhbGx5IEkgZmVlbCBhIGxpdHRsZSBi
-aXQgY29uZnVzZWQgaGVyZS4NCj4gDQo+IEkgdGhpbmsgTGludXMncyBjb21tZW50IGFib3V0IC8v
-IGNvbW1lbnQgc3R5bGUgYXBwbGllcyB0byBub3JtYWwgY29kZQ0KPiBjb21tZW50LiAgQnV0IGtl
-cm5lbC1kb2MgY29tbWVudCBpcyBhIHNwZWNpYWwga2luZCBvZiBjb2RlIGNvbW1lbnQgdGhhdA0K
-PiBuZWVkcyB0byBtZWV0IGNlcnRhaW4gcmVxdWlyZW1lbnRzLiAgUGVvcGxlIGNhbiB1c2UgdGhl
-IHNjcmlwdHMva2VybmVsLWRvYw0KPiB0b29sIHRvIGdlbmVyYXRlIHJlYWRhYmxlIEFQSSBkb2N1
-bWVudHMgZnJvbSB0aGUgc291cmNlIGNvZGUuICBJdCBsb29rcyBsaWtlDQo+IHlvdSB3YW50ZWQg
-dG8gbWFrZSB0aGUgZnVuY3Rpb24gZGVzY3JpcHRpb24gYWxpZ25lZCB3aXRoIHRoZSBrZXJuZWwt
-ZG9jDQo+IGZvcm1hdCwgYnV0IGtlcm5lbC1kb2Mgc3BlY2lmaWNhbGx5IHJlcXVpcmVzIHRvIHVz
-ZSB0aGUgLyogKi8gc3R5bGUoYXQgbGVhc3QgZm9yDQo+IG5vdykuDQoNCk9LLCB3aWxsIGNoYW5n
-ZSBzdHlsZSBiYWNrIHRvIC8qICovLg0KDQpSZWdhcmRzLA0KUmFuDQoNCj4gUmVnYXJkcywNCj4g
-TGVvDQo=
+
+--UlVJffcvxoiEqYs2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Sergey,
+
+On Thu, Sep 06, 2018 at 02:57:48PM +0300, Sergey Miroshnichenko wrote:
+> The pci_dn structures are retrieved from a DT, but hot-plugged PCIe
+> devices don't have them. Don't stop PCIe I/O in absence of pci_dn, so
+> it is now possible to discover new devices.
+>=20
+> Signed-off-by: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
+> ---
+>  arch/powerpc/kernel/rtas_pci.c       | 97 +++++++++++++++++++---------
+>  arch/powerpc/platforms/powernv/pci.c | 64 ++++++++++++------
+>  2 files changed, 109 insertions(+), 52 deletions(-)
+>=20
+> diff --git a/arch/powerpc/kernel/rtas_pci.c b/arch/powerpc/kernel/rtas_pc=
+i.c
+> index c2b148b1634a..0611b46d9b5f 100644
+> --- a/arch/powerpc/kernel/rtas_pci.c
+> +++ b/arch/powerpc/kernel/rtas_pci.c
+> @@ -55,10 +55,26 @@ static inline int config_access_valid(struct pci_dn *=
+dn, int where)
+>  	return 0;
+>  }
+> =20
+> -int rtas_read_config(struct pci_dn *pdn, int where, int size, u32 *val)
+> +static int rtas_read_raw_config(unsigned long buid, int busno, unsigned =
+int devfn,
+> +				int where, int size, u32 *val)
+>  {
+>  	int returnval =3D -1;
+> -	unsigned long buid, addr;
+> +	unsigned long addr =3D rtas_config_addr(busno, devfn, where);
+> +	int ret;
+> +
+> +	if (buid) {
+> +		ret =3D rtas_call(ibm_read_pci_config, 4, 2, &returnval,
+> +				addr, BUID_HI(buid), BUID_LO(buid), size);
+> +	} else {
+> +		ret =3D rtas_call(read_pci_config, 2, 2, &returnval, addr, size);
+> +	}
+> +	*val =3D returnval;
+> +
+> +	return ret;
+> +}
+> +
+> +int rtas_read_config(struct pci_dn *pdn, int where, int size, u32 *val)
+> +{
+>  	int ret;
+> =20
+>  	if (!pdn)
+> @@ -71,16 +87,8 @@ int rtas_read_config(struct pci_dn *pdn, int where, in=
+t size, u32 *val)
+>  		return PCIBIOS_SET_FAILED;
+>  #endif
+> =20
+> -	addr =3D rtas_config_addr(pdn->busno, pdn->devfn, where);
+> -	buid =3D pdn->phb->buid;
+> -	if (buid) {
+> -		ret =3D rtas_call(ibm_read_pci_config, 4, 2, &returnval,
+> -				addr, BUID_HI(buid), BUID_LO(buid), size);
+> -	} else {
+> -		ret =3D rtas_call(read_pci_config, 2, 2, &returnval, addr, size);
+> -	}
+> -	*val =3D returnval;
+> -
+> +	ret =3D rtas_read_raw_config(pdn->phb->buid, pdn->busno, pdn->devfn,
+> +				   where, size, val);
+>  	if (ret)
+>  		return PCIBIOS_DEVICE_NOT_FOUND;
+> =20
+> @@ -98,18 +106,44 @@ static int rtas_pci_read_config(struct pci_bus *bus,
+> =20
+>  	pdn =3D pci_get_pdn_by_devfn(bus, devfn);
+> =20
+> -	/* Validity of pdn is checked in here */
+> -	ret =3D rtas_read_config(pdn, where, size, val);
+> -	if (*val =3D=3D EEH_IO_ERROR_VALUE(size) &&
+> -	    eeh_dev_check_failure(pdn_to_eeh_dev(pdn)))
+> -		return PCIBIOS_DEVICE_NOT_FOUND;
+> +	if (pdn && eeh_enabled()) {
+> +		/* Validity of pdn is checked in here */
+> +		ret =3D rtas_read_config(pdn, where, size, val);
+> +
+> +		if (*val =3D=3D EEH_IO_ERROR_VALUE(size) &&
+> +		    eeh_dev_check_failure(pdn_to_eeh_dev(pdn)))
+> +			ret =3D PCIBIOS_DEVICE_NOT_FOUND;
+> +	} else {
+> +		struct pci_controller *phb =3D pci_bus_to_host(bus);
+> +
+> +		ret =3D rtas_read_raw_config(phb->buid, bus->number, devfn,
+> +					   where, size, val);
+> +	}
+
+In the above block, if pdn is valid but EEH isn't enabled,
+rtas_read_raw_config() will be used instead of rtas_read_config(), so
+config_access_valid() won't be tested. Is that correct?
+
+> =20
+>  	return ret;
+>  }
+> =20
+> +static int rtas_write_raw_config(unsigned long buid, int busno, unsigned=
+ int devfn,
+> +				 int where, int size, u32 val)
+> +{
+> +	unsigned long addr =3D rtas_config_addr(busno, devfn, where);
+> +	int ret;
+> +
+> +	if (buid) {
+> +		ret =3D rtas_call(ibm_write_pci_config, 5, 1, NULL, addr,
+> +				BUID_HI(buid), BUID_LO(buid), size, (ulong)val);
+> +	} else {
+> +		ret =3D rtas_call(write_pci_config, 3, 1, NULL, addr, size, (ulong)val=
+);
+> +	}
+> +
+> +	if (ret)
+> +		return PCIBIOS_DEVICE_NOT_FOUND;
+> +
+> +	return PCIBIOS_SUCCESSFUL;
+> +}
+> +
+>  int rtas_write_config(struct pci_dn *pdn, int where, int size, u32 val)
+>  {
+> -	unsigned long buid, addr;
+>  	int ret;
+> =20
+>  	if (!pdn)
+> @@ -122,15 +156,8 @@ int rtas_write_config(struct pci_dn *pdn, int where,=
+ int size, u32 val)
+>  		return PCIBIOS_SET_FAILED;
+>  #endif
+> =20
+> -	addr =3D rtas_config_addr(pdn->busno, pdn->devfn, where);
+> -	buid =3D pdn->phb->buid;
+> -	if (buid) {
+> -		ret =3D rtas_call(ibm_write_pci_config, 5, 1, NULL, addr,
+> -			BUID_HI(buid), BUID_LO(buid), size, (ulong) val);
+> -	} else {
+> -		ret =3D rtas_call(write_pci_config, 3, 1, NULL, addr, size, (ulong)val=
+);
+> -	}
+> -
+> +	ret =3D rtas_write_raw_config(pdn->phb->buid, pdn->busno, pdn->devfn,
+> +				    where, size, val);
+>  	if (ret)
+>  		return PCIBIOS_DEVICE_NOT_FOUND;
+> =20
+> @@ -141,12 +168,20 @@ static int rtas_pci_write_config(struct pci_bus *bu=
+s,
+>  				 unsigned int devfn,
+>  				 int where, int size, u32 val)
+>  {
+> -	struct pci_dn *pdn;
+> +	struct pci_dn *pdn =3D pci_get_pdn_by_devfn(bus, devfn);
+> +	int ret;
+> =20
+> -	pdn =3D pci_get_pdn_by_devfn(bus, devfn);
+> +	if (pdn && eeh_enabled()) {
+> +		/* Validity of pdn is checked in here. */
+> +		ret =3D rtas_write_config(pdn, where, size, val);
+> +	} else {
+> +		struct pci_controller *phb =3D pci_bus_to_host(bus);
+
+Same comment as rtas_pci_read_config() above.
+
+> =20
+> -	/* Validity of pdn is checked in here. */
+> -	return rtas_write_config(pdn, where, size, val);
+> +		ret =3D rtas_write_raw_config(phb->buid, bus->number, devfn,
+> +					    where, size, val);
+> +	}
+> +
+> +	return ret;
+>  }
+> =20
+>  static struct pci_ops rtas_pci_ops =3D {
+> diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platform=
+s/powernv/pci.c
+> index 13aef2323bbc..3f87a2dc6578 100644
+> --- a/arch/powerpc/platforms/powernv/pci.c
+> +++ b/arch/powerpc/platforms/powernv/pci.c
+> @@ -654,30 +654,29 @@ static void pnv_pci_config_check_eeh(struct pci_dn =
+*pdn)
+>  	}
+>  }
+> =20
+> -int pnv_pci_cfg_read(struct pci_dn *pdn,
+> -		     int where, int size, u32 *val)
+> +int pnv_pci_cfg_read_raw(u64 phb_id, int busno, unsigned int devfn,
+> +			 int where, int size, u32 *val)
+>  {
+> -	struct pnv_phb *phb =3D pdn->phb->private_data;
+> -	u32 bdfn =3D (pdn->busno << 8) | pdn->devfn;
+> +	u32 bdfn =3D (busno << 8) | devfn;
+>  	s64 rc;
+> =20
+>  	switch (size) {
+>  	case 1: {
+>  		u8 v8;
+> -		rc =3D opal_pci_config_read_byte(phb->opal_id, bdfn, where, &v8);
+> +		rc =3D opal_pci_config_read_byte(phb_id, bdfn, where, &v8);
+>  		*val =3D (rc =3D=3D OPAL_SUCCESS) ? v8 : 0xff;
+>  		break;
+>  	}
+>  	case 2: {
+>  		__be16 v16;
+> -		rc =3D opal_pci_config_read_half_word(phb->opal_id, bdfn, where,
+> -						   &v16);
+> +		rc =3D opal_pci_config_read_half_word(phb_id, bdfn, where,
+> +						    &v16);
+>  		*val =3D (rc =3D=3D OPAL_SUCCESS) ? be16_to_cpu(v16) : 0xffff;
+>  		break;
+>  	}
+>  	case 4: {
+>  		__be32 v32;
+> -		rc =3D opal_pci_config_read_word(phb->opal_id, bdfn, where, &v32);
+> +		rc =3D opal_pci_config_read_word(phb_id, bdfn, where, &v32);
+>  		*val =3D (rc =3D=3D OPAL_SUCCESS) ? be32_to_cpu(v32) : 0xffffffff;
+>  		break;
+>  	}
+> @@ -686,27 +685,28 @@ int pnv_pci_cfg_read(struct pci_dn *pdn,
+>  	}
+> =20
+>  	pr_devel("%s: bus: %x devfn: %x +%x/%x -> %08x\n",
+> -		 __func__, pdn->busno, pdn->devfn, where, size, *val);
+> +		 __func__, busno, devfn, where, size, *val);
+> +
+>  	return PCIBIOS_SUCCESSFUL;
+>  }
+> =20
+> -int pnv_pci_cfg_write(struct pci_dn *pdn,
+> -		      int where, int size, u32 val)
+> +int pnv_pci_cfg_write_raw(u64 phb_id, int busno, unsigned int devfn,
+> +			  int where, int size, u32 val)
+>  {
+> -	struct pnv_phb *phb =3D pdn->phb->private_data;
+> -	u32 bdfn =3D (pdn->busno << 8) | pdn->devfn;
+> +	u32 bdfn =3D (busno << 8) | devfn;
+> =20
+>  	pr_devel("%s: bus: %x devfn: %x +%x/%x -> %08x\n",
+> -		 __func__, pdn->busno, pdn->devfn, where, size, val);
+> +		 __func__, busno, devfn, where, size, val);
+> +
+>  	switch (size) {
+>  	case 1:
+> -		opal_pci_config_write_byte(phb->opal_id, bdfn, where, val);
+> +		opal_pci_config_write_byte(phb_id, bdfn, where, val);
+>  		break;
+>  	case 2:
+> -		opal_pci_config_write_half_word(phb->opal_id, bdfn, where, val);
+> +		opal_pci_config_write_half_word(phb_id, bdfn, where, val);
+>  		break;
+>  	case 4:
+> -		opal_pci_config_write_word(phb->opal_id, bdfn, where, val);
+> +		opal_pci_config_write_word(phb_id, bdfn, where, val);
+>  		break;
+>  	default:
+>  		return PCIBIOS_FUNC_NOT_SUPPORTED;
+> @@ -715,6 +715,24 @@ int pnv_pci_cfg_write(struct pci_dn *pdn,
+>  	return PCIBIOS_SUCCESSFUL;
+>  }
+> =20
+> +int pnv_pci_cfg_read(struct pci_dn *pdn,
+> +		     int where, int size, u32 *val)
+> +{
+> +	struct pnv_phb *phb =3D pdn->phb->private_data;
+> +
+> +	return pnv_pci_cfg_read_raw(phb->opal_id, pdn->busno, pdn->devfn,
+> +				    where, size, val);
+> +}
+> +
+> +int pnv_pci_cfg_write(struct pci_dn *pdn,
+> +		      int where, int size, u32 val)
+> +{
+> +	struct pnv_phb *phb =3D pdn->phb->private_data;
+> +
+> +	return pnv_pci_cfg_write_raw(phb->opal_id, pdn->busno, pdn->devfn,
+> +				     where, size, val);
+> +}
+> +
+>  #if CONFIG_EEH
+>  static bool pnv_pci_cfg_check(struct pci_dn *pdn)
+>  {
+> @@ -750,13 +768,15 @@ static int pnv_pci_read_config(struct pci_bus *bus,
+>  			       int where, int size, u32 *val)
+>  {
+>  	struct pci_dn *pdn;
+> -	struct pnv_phb *phb;
+> +	struct pci_controller *hose =3D pci_bus_to_host(bus);
+> +	struct pnv_phb *phb =3D hose->private_data;
+>  	int ret;
+> =20
+>  	*val =3D 0xFFFFFFFF;
+>  	pdn =3D pci_get_pdn_by_devfn(bus, devfn);
+>  	if (!pdn)
+> -		return PCIBIOS_DEVICE_NOT_FOUND;
+> +		return pnv_pci_cfg_read_raw(phb->opal_id, bus->number, devfn,
+> +					    where, size, val);
+> =20
+>  	if (!pnv_pci_cfg_check(pdn))
+>  		return PCIBIOS_DEVICE_NOT_FOUND;
+> @@ -779,12 +799,14 @@ static int pnv_pci_write_config(struct pci_bus *bus,
+>  				int where, int size, u32 val)
+>  {
+>  	struct pci_dn *pdn;
+> -	struct pnv_phb *phb;
+> +	struct pci_controller *hose =3D pci_bus_to_host(bus);
+> +	struct pnv_phb *phb =3D hose->private_data;
+>  	int ret;
+> =20
+>  	pdn =3D pci_get_pdn_by_devfn(bus, devfn);
+>  	if (!pdn)
+> -		return PCIBIOS_DEVICE_NOT_FOUND;
+> +		return pnv_pci_cfg_write_raw(phb->opal_id, bus->number, devfn,
+> +					     where, size, val);
+> =20
+>  	if (!pnv_pci_cfg_check(pdn))
+>  		return PCIBIOS_DEVICE_NOT_FOUND;
+> --=20
+> 2.17.1
+>=20
+
+--UlVJffcvxoiEqYs2
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCAAdFiEELWWF8pdtWK5YQRohMX8w6AQl/iIFAluV8cEACgkQMX8w6AQl
+/iKdxQf/TSrxr2AAKgpCHJyjKtZDTINl6ln3CIf8VJHPyZLzjWC96rmokRazH39p
+5UUVNWQrK0QbvAURrbMyfNdqln4kAr5hSxYrr+cOY0wU3SJbS3uUinn/OzA4tmeA
+PU4oRtQbGss+cmukNI0DPl9n8uTOe0Wj+nZp3y1onJ0K9U5SpmnwxG96LVL4jjN7
+FudV1NjuLSrz75bJaCGLEvfm1yMUoFqz8qDYG84poga22UXirS7K7+2BJKzke7hQ
+e7ki3E9yZExJDBkqsLWY+vdwOKr7rOTn5kPjw6o8NXvGu8NJrHHBYRqhTIVIBsbw
+RJASscTLvAWffGKfdIu6U1jEYtGhiQ==
+=d+4a
+-----END PGP SIGNATURE-----
+
+--UlVJffcvxoiEqYs2--
