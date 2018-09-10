@@ -1,35 +1,29 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <nipun.gupta@nxp.com>
+Received: from EUR03-AM5-obe.outbound.protection.outlook.com
+ (mail-eopbgr30054.outbound.protection.outlook.com [40.107.3.54])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4288JY6bdvzF342
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 23:38:37 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w8ADaZfj019998
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 09:38:34 -0400
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2mdrbhkyjd-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 09:38:34 -0400
-Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Mon, 10 Sep 2018 14:38:32 +0100
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 0/3] powerpc/pseries: use H_BLOCK_REMOVE
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- mpe@ellerman.id.au
-Cc: aneesh.kumar@linux.ibm.com, benh@kernel.crashing.org, paulus@samba.org,
- npiggin@gmail.com
-References: <1534775376-22480-1-git-send-email-ldufour@linux.vnet.ibm.com>
-Date: Mon, 10 Sep 2018 15:38:28 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4288Z05fSYzF38F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 23:50:16 +1000 (AEST)
+From: Nipun Gupta <nipun.gupta@nxp.com>
+To: joro@8bytes.org, robin.murphy@arm.com, will.deacon@arm.com,
+ robh+dt@kernel.org, robh@kernel.org, mark.rutland@arm.com,
+ catalin.marinas@arm.com, gregkh@linuxfoundation.org,
+ laurentiu.tudor@nxp.com, bhelgaas@google.com, hch@lst.de
+Cc: m.szyprowski@samsung.com, shawnguo@kernel.org, frowand.list@gmail.com,
+ iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
+ bharat.bhushan@nxp.com, stuyoder@gmail.com, leoyang.li@nxp.com,
+ Nipun Gupta <nipun.gupta@nxp.com>
+Subject: [PATCH 1/7 v7] Documentation: fsl-mc: add iommu-map device-tree
+ binding for fsl-mc bus
+Date: Mon, 10 Sep 2018 19:19:15 +0530
+Message-Id: <1536587361-11047-2-git-send-email-nipun.gupta@nxp.com>
+In-Reply-To: <1536587361-11047-1-git-send-email-nipun.gupta@nxp.com>
+References: <1536587361-11047-1-git-send-email-nipun.gupta@nxp.com>
 MIME-Version: 1.0
-In-Reply-To: <1534775376-22480-1-git-send-email-ldufour@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <febd6c4b-e7b8-02a7-c570-0d1fe9e2e3a0@linux.vnet.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,77 +33,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
+The existing IOMMU bindings cannot be used to specify the relationship
+between fsl-mc devices and IOMMUs. This patch adds a generic binding for
+mapping fsl-mc devices to IOMMUs, using iommu-map property.
 
-Do you plan to pull it for 4.20 ?
+Signed-off-by: Nipun Gupta <nipun.gupta@nxp.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
+Acked-by: Robin Murphy <robin.murphy@arm.com>
+---
+ .../devicetree/bindings/misc/fsl,qoriq-mc.txt      | 39 ++++++++++++++++++++++
+ 1 file changed, 39 insertions(+)
 
-Cheers,
-Laurent.
-
-On 20/08/2018 16:29, Laurent Dufour wrote:
-> On very large system we could see soft lockup fired when a process is
-> exiting
-> 
-> watchdog: BUG: soft lockup - CPU#851 stuck for 21s! [forkoff:215523]
-> Modules linked in: pseries_rng rng_core xfs raid10 vmx_crypto btrfs libcrc32c xor zstd_decompress zstd_compress xxhash lzo_compress raid6_pq crc32c_vpmsum lpfc crc_t10dif crct10dif_generic crct10dif_common dm_multipath scsi_dh_rdac scsi_dh_alua autofs4
-> CPU: 851 PID: 215523 Comm: forkoff Not tainted 4.17.0 #1
-> NIP:  c0000000000b995c LR: c0000000000b8f64 CTR: 000000000000aa18
-> REGS: c00006b0645b7610 TRAP: 0901   Not tainted  (4.17.0)
-> MSR:  800000010280b033 <SF,VEC,VSX,EE,FP,ME,IR,DR,RI,LE,TM[E]>  CR: 22042082  XER: 00000000
-> CFAR: 00000000006cf8f0 SOFTE: 0 
-> GPR00: 0010000000000000 c00006b0645b7890 c000000000f99200 0000000000000000 
-> GPR04: 8e000001a5a4de58 400249cf1bfd5480 8e000001a5a4de50 400249cf1bfd5480 
-> GPR08: 8e000001a5a4de48 400249cf1bfd5480 8e000001a5a4de40 400249cf1bfd5480 
-> GPR12: ffffffffffffffff c00000001e690800 
-> NIP [c0000000000b995c] plpar_hcall9+0x44/0x7c
-> LR [c0000000000b8f64] pSeries_lpar_flush_hash_range+0x324/0x3d0
-> Call Trace:
-> [c00006b0645b7890] [8e000001a5a4dd20] 0x8e000001a5a4dd20 (unreliable)
-> [c00006b0645b7a00] [c00000000006d5b0] flush_hash_range+0x60/0x110
-> [c00006b0645b7a50] [c000000000072a2c] __flush_tlb_pending+0x4c/0xd0
-> [c00006b0645b7a80] [c0000000002eaf44] unmap_page_range+0x984/0xbd0
-> [c00006b0645b7bc0] [c0000000002eb594] unmap_vmas+0x84/0x100
-> [c00006b0645b7c10] [c0000000002f8afc] exit_mmap+0xac/0x1f0
-> [c00006b0645b7cd0] [c0000000000f2638] mmput+0x98/0x1b0
-> [c00006b0645b7d00] [c0000000000fc9d0] do_exit+0x330/0xc00
-> [c00006b0645b7dc0] [c0000000000fd384] do_group_exit+0x64/0x100
-> [c00006b0645b7e00] [c0000000000fd44c] sys_exit_group+0x2c/0x30
-> [c00006b0645b7e30] [c00000000000b960] system_call+0x58/0x6c
-> Instruction dump:
-> 60000000 f8810028 7ca42b78 7cc53378 7ce63b78 7d074378 7d284b78 7d495378 
-> e9410060 e9610068 e9810070 44000022 <7d806378> e9810028 f88c0000 f8ac0008
-> 
-> This happens when removing the PTE by calling the hypervisor using the
-> H_BULK_REMOVE call. This call is processing up to 4 PTEs but is doing a
-> tlbie for each PTE it is processing. This could lead to long time spent in
-> the hypervisor (sometimes up to 4s) and soft lockup being raised because
-> the scheduler is not called in zap_pte_range().
-> 
-> Since the Power7's time, the hypervisor is providing a new hcall
-> H_BLOCK_REMOVE allowing processing up to 8 PTEs with one call to
-> tlbie. By limiting the amount of tlbie generated, this reduces the time
-> spent invalidating the PTEs.
-> 
-> This hcall requires that the pages are "all within the same naturally
-> aligned 8 page virtual address block".
-> 
-> With this patch series applied, I couldn't see any soft lockup raised on
-> the victim LPAR I was running the test one.
-> 
-> Changes since V1:
-> - Remove a call to BUG_ON() in call_block_remove() since this one can be
->   handled gently.
-> - Remove uneeded of current_vpgb to 0 when retrying entries in
->   hugepage_block_invalidate() and do_block_remove().
-> 
-> Laurent Dufour (3):
->   powerpc/pseries/mm: Introducing FW_FEATURE_BLOCK_REMOVE
->   powerpc/pseries/mm: factorize PTE slot computation
->   powerpc/pseries/mm: call H_BLOCK_REMOVE
-> 
->  arch/powerpc/include/asm/firmware.h       |   3 +-
->  arch/powerpc/include/asm/hvcall.h         |   1 +
->  arch/powerpc/platforms/pseries/firmware.c |   1 +
->  arch/powerpc/platforms/pseries/lpar.c     | 241 ++++++++++++++++++++++++++++--
->  4 files changed, 230 insertions(+), 16 deletions(-)
-> 
+diff --git a/Documentation/devicetree/bindings/misc/fsl,qoriq-mc.txt b/Documentation/devicetree/bindings/misc/fsl,qoriq-mc.txt
+index 6611a7c..01fdc33 100644
+--- a/Documentation/devicetree/bindings/misc/fsl,qoriq-mc.txt
++++ b/Documentation/devicetree/bindings/misc/fsl,qoriq-mc.txt
+@@ -9,6 +9,25 @@ blocks that can be used to create functional hardware objects/devices
+ such as network interfaces, crypto accelerator instances, L2 switches,
+ etc.
+ 
++For an overview of the DPAA2 architecture and fsl-mc bus see:
++Documentation/networking/dpaa2/overview.rst
++
++As described in the above overview, all DPAA2 objects in a DPRC share the
++same hardware "isolation context" and a 10-bit value called an ICID
++(isolation context id) is expressed by the hardware to identify
++the requester.
++
++The generic 'iommus' property is insufficient to describe the relationship
++between ICIDs and IOMMUs, so an iommu-map property is used to define
++the set of possible ICIDs under a root DPRC and how they map to
++an IOMMU.
++
++For generic IOMMU bindings, see
++Documentation/devicetree/bindings/iommu/iommu.txt.
++
++For arm-smmu binding, see:
++Documentation/devicetree/bindings/iommu/arm,smmu.txt.
++
+ Required properties:
+ 
+     - compatible
+@@ -88,14 +107,34 @@ Sub-nodes:
+               Value type: <phandle>
+               Definition: Specifies the phandle to the PHY device node associated
+                           with the this dpmac.
++Optional properties:
++
++- iommu-map: Maps an ICID to an IOMMU and associated iommu-specifier
++  data.
++
++  The property is an arbitrary number of tuples of
++  (icid-base,iommu,iommu-base,length).
++
++  Any ICID i in the interval [icid-base, icid-base + length) is
++  associated with the listed IOMMU, with the iommu-specifier
++  (i - icid-base + iommu-base).
+ 
+ Example:
+ 
++        smmu: iommu@5000000 {
++               compatible = "arm,mmu-500";
++               #iommu-cells = <1>;
++               stream-match-mask = <0x7C00>;
++               ...
++        };
++
+         fsl_mc: fsl-mc@80c000000 {
+                 compatible = "fsl,qoriq-mc";
+                 reg = <0x00000008 0x0c000000 0 0x40>,    /* MC portal base */
+                       <0x00000000 0x08340000 0 0x40000>; /* MC control reg */
+                 msi-parent = <&its>;
++                /* define map for ICIDs 23-64 */
++                iommu-map = <23 &smmu 23 41>;
+                 #address-cells = <3>;
+                 #size-cells = <1>;
+ 
+-- 
+1.9.1
