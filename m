@@ -1,30 +1,39 @@
-Return-Path: <ran.wang_1@nxp.com>
-Received: from EUR03-DB5-obe.outbound.protection.outlook.com
- (mail-db5eur03on0615.outbound.protection.outlook.com
- [IPv6:2a01:111:f400:fe0a::615])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <kraxel@redhat.com>
+Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4281np4znVzF31q
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 18:45:00 +1000 (AEST)
-From: Ran Wang <ran.wang_1@nxp.com>
-To: Scott Wood <oss@buserror.net>, Leo Li <leoyang.li@nxp.com>, Rob Herring
- <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
-CC: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, "linux-pm@lists.linux-foundation.org"
- <linux-pm@lists.linux-foundation.org>
-Subject: RE: [PATCH 2/3] Documentation: dt: binding: fsl: update property
- description for RCPM
-Date: Mon, 10 Sep 2018 08:44:55 +0000
-Message-ID: <AM5PR0402MB28655442E42632DDAF22B769F1050@AM5PR0402MB2865.eurprd04.prod.outlook.com>
-References: <20180831035219.31619-1-ran.wang_1@nxp.com>
- <20180831035219.31619-2-ran.wang_1@nxp.com>
- <c19f11e200258297dbe5a61392a4bbc1e937d7c3.camel@buserror.net>
-In-Reply-To: <c19f11e200258297dbe5a61392a4bbc1e937d7c3.camel@buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4281zW5HY2zF380
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 18:53:24 +1000 (AEST)
+Date: Mon, 10 Sep 2018 10:53:16 +0200
+From: Gerd Hoffmann <kraxel@redhat.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Jiandi An <jiandi@amd.com>, brijesh.singh@amd.com,
+ srikar@linux.vnet.ibm.com, "Michael S. Tsirkin" <mst@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Will Deacon <will.deacon@arm.com>,
+ virtualization@lists.linux-foundation.org, paulus@samba.org,
+ elfring@users.sourceforge.net,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>, robh@kernel.org,
+ jean-philippe.brucker@arm.com, mpe@ellerman.id.au,
+ thomas.lendacky@amd.com, marc.zyngier@arm.com, linuxram@us.ibm.com,
+ david@gibson.dropbear.id.au, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, joe@perches.com, jiandi.an@amd.com,
+ robin.murphy@arm.com, haren@linux.vnet.ibm.com
+Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
+Message-ID: <20180910085316.yzjbvoohqhdng2vb@sirius.home.kraxel.org>
+References: <2103ecfe52d23cec03f185d08a87bfad9c9d82b5.camel@kernel.crashing.org>
+ <20180808063158.GA2474@infradead.org>
+ <4b596883892b5cb5560bef26fcd249e7107173ac.camel@kernel.crashing.org>
+ <20180808123036.GA2525@infradead.org>
+ <b8b9150a747453c070ad3b0e4c92d2b1b052ad06.camel@kernel.crashing.org>
+ <20180808232210-mutt-send-email-mst@kernel.org>
+ <98eb367ce322ad84baa31e3c7beffc4a42be8458.camel@kernel.crashing.org>
+ <20180809054013.GA20507@infradead.org>
+ <f1eeb994-ea13-d0f1-dc55-7c5049e70670@amd.com>
+ <20180910061947.GA30666@infradead.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180910061947.GA30666@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,63 +43,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGkgU2NvdHQsDQoNCk9uIDIwMTgvOS84IDQ6MjMsIFNjb3R0IFdvb2Qgd3JvdGU6DQo+IA0KPiBP
-biBGcmksIDIwMTgtMDgtMzEgYXQgMTE6NTIgKzA4MDAsIFJhbiBXYW5nIHdyb3RlOg0KPiA+ICtP
-cHRpb25hbCBwcm9wZXJ0aWVzOg0KPiA+ICsgLSBiaWctZW5kaWFuIDogSW5kaWNhdGUgUkNQTSBy
-ZWdpc3RlcnMgaXMgYmlnLWVuZGlhbi4gQSBSQ1BNIG5vZGUNCj4gPiArICAgdGhhdCBkb2Vzbid0
-IGhhdmUgdGhpcyBwcm9wZXJ0eSB3aWxsIGJlIHJlZ2FyZGVkIGFzIGxpdHRsZS1lbmRpYW4uDQo+
-IA0KPiBZb3UndmUganVzdCBicm9rZW4gYWxsIHRoZSBleGlzdGluZyBwb3dlcnBjIGRldmljZSB0
-cmVlcyB0aGF0IGFyZSBiaWctZW5kaWFuDQo+IGFuZCBoYXZlIG5vIGJpZy1lbmRpYW4gcHJvcGVy
-dHkuDQoNClllcywgcG93ZXJwYyBSQ1BNIGRyaXZlciAoYXJjaC9wb3dlcnBjL3N5c2Rldi9mc2xf
-cmNwbS5jKSB3aWxsIG5vdCByZWZlcg0KdG8gYmlnLWVuZGlhbi4gSG93ZXZlciwgSSB0aGluayBp
-ZiBMYXllcnNjYXBlIFJDUE0gZHJpdmVyIHVzZSBkaWZmZXJlbnQgY29tcGF0aWJsZQ0KaWQgKHN1
-Y2ggYXMgJyBmc2wscW9yaXEtcmNwbS0yLjInKSwgaXQgbWlnaHQgYmUgc2FmZS4gSXMgdGhhdCBP
-Sz8NCg0KPiA+ICsgLSA8cHJvcGVydHkgJ2NvbXBhdGlibGUnIHN0cmluZyBvZiBjb25zdW1lciBk
-ZXZpY2U+IDogVGhpcyBzdHJpbmcNCj4gPiArICAgaXMgcmVmZXJyZWQgYnkgUkNQTSBkcml2ZXIg
-dG8ganVkZ2UgaWYgdGhlIGNvbnN1bWVyIChzdWNoIGFzIGZsZXggdGltZXIpDQo+ID4gKyAgIGlz
-IGFibGUgdG8gYmUgcmVnYXJkcyBhcyB3YWtldXAgc291cmNlIG9yIG5vdCwgc3VjaCBhcw0KPiA+
-ICsgJ2ZzbCxsczEwMTJhLQ0KPiA+IGZ0bScuDQo+ID4gKyAgIEZ1cnRoZXIsIHRoaXMgcHJvcGVy
-dHkgd2lsbCBjYXJyeSB0aGUgYml0IG1hc2sgaW5mbyB0byBjb250cm9sDQo+ID4gKyAgIGNvcmVz
-cG9uZGluZyB3YWtlIHVwIHNvdXJjZS4NCj4gDQo+IFdoYXQgd2lsbCB5b3UgZG8gaWYgdGhlcmUg
-YXJlIG11bHRpcGxlIGluc3RhbmNlcyBvZiBhIGRldmljZSB3aXRoIHRoZSBzYW1lDQo+IGNvbXBh
-dGlibGUsIGFuZCBkaWZmZXJlbnQgd2FrZXVwIGJpdHM/ICANCg0KWW91IGdvdCBtZSEgVGhpcyBp
-cyBhIHByb2JsZW0gaW4gY3VycmVudCB2ZXJzaW9uLiBXZWxsLCB3ZSBoYXZlIHRvIGRlY291cGxl
-IHdha2UgdXANCnNvdXJjZSBJUCBhbmQgUkNQTSBkcml2ZXIuIFRoYXQncyB3aHkgSSBhZGQgYSBw
-bGF0X3BtIGRyaXZlciB0byBwcmV2ZW50IHdha2UgdXAgSVANCmtub3dpbmcgYW55IGluZm9ybWF0
-aW9uIG9mIFJDUE0uIFNvIGluIGN1cnJlbnQgY29udGV4dCwgb25lIGlkZWEgY29tZSB0byBtZSBp
-cyB0bw0KcmVkZXNpZ24gcHJvcGVydHkgJyBmc2wsbHMxMDEyYS1mdG0gPSA8MHgyMDAwMD47Jywg
-Y2hhbmdlIHRvICdmc2wsbHMxMDEyYS1mdG0gPSA8JmZ0bTAgMHgyMDAwMD47Jw0KV2hhdCBkbyB5
-b3Ugc2F5PyBBbmQgY291bGQgeW91IHRlbGwgbWUgd2hpY2ggQVBJIEkgY2FuIHVzZSB0byBjaGVj
-ayBpZiB0aGF0IGRldmljZSdzDQpuYW1lIGlzIGZ0bTAgKGZvciBleGFtcGxlIHdlIHdhbnQgdG8g
-ZmluZCBhIG5vZGUgZnRtMDogZnRtQDI5ZDAwMCk/DQoNCj5QbHVzLCBpdCdzIGFuIGF3a3dhcmQg
-ZGVzaWduIGluDQo+IGdlbmVyYWwsIGFuZCB5b3UgZG9uJ3QgZGVzY3JpYmUgd2hhdCB0aGUgdmFs
-dWUgYWN0dWFsbHkgbWVhbnMgKGJpdHMgaW4gd2hpY2gNCj4gcmVnaXN0ZXI/KS4gDQoNClllcywg
-SSBhZG1pdCBteSBkZXNpZ24gbG9va3MgdWdseSBhbmQgbm90IGZsZXhpYmxlIGFuZCBleHRlbnNp
-YmxlIGVub3VnaC4gSG93ZXZlciwgZm9yIGFib3ZlIHJlYXNvbiwgDQpkbyB5b3UgaGF2ZSBhbnkg
-Z29vZCBpZGVhLCBwbGVhc2U/IDopDQoNCkFzIHRvIHRoZSByZWdpc3RlciBpbmZvcm1hdGlvbiwg
-SSBjYW4gZXhwbGFpbiBoZXJlIGluIGRldGFpbHMgKHdpbGwgYWRkIHRvIGNvbW1pdA0KbWVzc2Fn
-ZSBvZiBuZXh0IHZlcnNpb24pOiBUaGVyZSBpcyBhIFJDUE0gSFcgYmxvY2sgd2hpY2ggaGFzIHJl
-Z2lzdGVyIG5hbWVkIElQUERFWFBDUi4NCkl0IGNvbnRyb2xzIHdoZXRoZXIgcHJldmVudCBjZXJ0
-YWluIElQIChzdWNoIGFzIHRpbWVyLCB1c2IsIGV0YykgZnJvbSBlbnRlcmluZyBsb3cNCnBvd2Vy
-IG1vZGUgd2hlbiBzeXN0ZW0gc3VzcGVuZGVkLiBTbyBpdCdzIG5lY2Vzc2FyeSB0byBwcm9ncmFt
-IGl0IGlmIHdlIHdhbnQgb25lDQpvZiB0aG9zZSBJUCB3b3JrIGFzIGEgd2FrZXVwIHNvdXJjZS4g
-SG93ZXZlciwgZGlmZmVyZW50IExheWVyc2NhcGUgU29DcyBoYXZlIGRpZmZlcmVudCBiaXQgdnMu
-DQpJUCBtYXBwaW5nICBsYXlvdXQuIFNvIEkgaGF2ZSB0byByZWNvcmQgdGhpcyBpbmZvcm1hdGlv
-biBpbiBkZXZpY2UgdHJlZSBhbmQgZmV0Y2hlZCBieSBSQ1BNIGRyaXZlcg0KZGlyZWN0bHkuDQoN
-CkRvIEkgbmVlZCB0byBsaXN0IGFsbCBTb0MncyBtYXBwaW5nIGluZm9ybWF0aW9uIGluIHRoaXMg
-YmluZGluZyBkb2MgZm9yIHJlZmVyZW5jZT8NCg0KPldoYXQgd2FzIHdyb25nIHdpdGggdGhlIGV4
-aXN0aW5nIGJpbmRpbmc/ICANCg0KVGhlcmUgd2FzIG9uZSB2ZXJzaW9uIG9mIFJDUE0gcGF0Y2gg
-d2hpY2ggcmVxdWlyaW5nIHByb3BlcnR5ICdmc2wsI3JjcG0td2FrZXVwLWNlbGxzJyBidXQgd2Fz
-IG5vdA0KYWNjZXB0ZWQgYnkgdXBzdHJlYW0gZmluYWxseS4gTm93IHdlIHdpbGwgbm8gbmVlZCBp
-dCBhbnkgbG9uZ2VyIGR1ZSB0byBuZXcgZGVzaWduIGFsbG93IGNhc2Ugb2YgbXVsdGlwbGUNClJD
-UE0gZGV2aWNlcyBleGlzdGluZyBjYXNlLg0KDQo+QWx0ZXJuYXRpdmVseSwgdXNlIHRoZSBjbG9j
-ayBiaW5kaW5ncy4NCg0KU29ycnkgSSBkaWRuJ3QgZ2V0IHlvdXIgcG9pbnQuDQoNCj4gPiAtDQo+
-ID4gLUV4YW1wbGU6DQo+ID4gLQlscHVhcnQwOiBzZXJpYWxAMjk1MDAwMCB7DQo+ID4gLQkJY29t
-cGF0aWJsZSA9ICJmc2wsbHMxMDIxYS1scHVhcnQiOw0KPiA+IC0JCXJlZyA9IDwweDAgMHgyOTUw
-MDAwIDB4MCAweDEwMDA+Ow0KPiA+IC0JCWludGVycnVwdHMgPSA8R0lDX1NQSSA4MCBJUlFfVFlQ
-RV9MRVZFTF9ISUdIPjsNCj4gPiAtCQljbG9ja3MgPSA8JnN5c2Nsaz47DQo+ID4gLQkJY2xvY2st
-bmFtZXMgPSAiaXBnIjsNCj4gPiAtCQlmc2wscmNwbS13YWtldXAgPSA8JnJjcG0gMHgwIDB4NDAw
-MDAwMDA+Ow0KPiA+ICsJCWJpZy1lbmRpYW47DQo+ID4gKwkJZnNsLGxzMTAxMmEtZnRtID0gPDB4
-MjAwMDA+Ow0KPiA+ICsJCWZzbCxwZmUgPSA8MHhmMDAwMDAyMD47DQo+IA0KPiBmc2wscGZlIGlz
-IG5vdCBkb2N1bWVudGVkLg0KDQpwZmUgcGF0Y2ggaXMgbm90IHVwc3RyZWFtIHlldCwgd2lsbCBy
-ZW1vdmUgaXQuDQoNClJlZ2FyZHMsDQpSYW4NCg0KPiAtU2NvdHQNCg0K
+> > this to set the VIRTIO_F_IOMMU_PLATFORM flag. But for example
+> > QEMU has the use of iommu_platform attribute disabled for virtio-gpu
+> > device.  So would also like to move towards not having to specify
+> > the VIRTIO_F_IOMMU_PLATFORM flag.
+> 
+> Specifying VIRTIO_F_IOMMU_PLATFORM is the right thing for your 
+> platform given that you can't directly use physical addresses.
+> Please fix qemu so that virtio-gpu works with VIRTIO_F_IOMMU_PLATFORM.
+
+This needs both host and guest side changes btw.
+
+Guest side patch is in drm-misc (a3b815f09bb8) and should land in the
+next merge window.
+
+Host side patches are here:
+  https://git.kraxel.org/cgit/qemu/log/?h=sirius/virtio-gpu-iommu
+
+Should also land in the next qemu version.
+
+cheers,
+  Gerd
