@@ -1,35 +1,21 @@
-Return-Path: <sbobroff@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 427wX15h36zF379
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 14:47:45 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w8A4eTqH107209
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 00:47:43 -0400
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2mdff0cw7b-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 00:47:42 -0400
-Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sbobroff@linux.ibm.com>;
- Mon, 10 Sep 2018 05:47:41 +0100
-Date: Mon, 10 Sep 2018 14:47:36 +1000
-From: Sam Bobroff <sbobroff@linux.ibm.com>
-To: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux@yadro.com
-Subject: Re: [PATCH v2 2/5] powerpc/pci: Create pci_dn on demand
-References: <20180906115752.29316-1-s.miroshnichenko@yadro.com>
- <20180906115752.29316-3-s.miroshnichenko@yadro.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 427wb33FGFzDq5k
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2018 14:50:23 +1000 (AEST)
+Date: Mon, 10 Sep 2018 14:50:18 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
+ Paul Mackerras <paulus@ozlabs.org>
+Subject: Re: [PATCH kernel] KVM: PPC: Remove redundand permission bits removal
+Message-ID: <20180910045018.GE24181@umbus.fritz.box>
+References: <20180906095146.43981-1-aik@ozlabs.ru>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="KFztAG8eRSV9hGtP"
-In-Reply-To: <20180906115752.29316-3-s.miroshnichenko@yadro.com>
-Message-Id: <20180910044735.GB14370@tungsten.ozlabs.ibm.com>
+ protocol="application/pgp-signature"; boundary="AsxXAMtlQ5JHofzM"
+In-Reply-To: <20180906095146.43981-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,210 +26,169 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---KFztAG8eRSV9hGtP
+--AsxXAMtlQ5JHofzM
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi Sergey,
-
-On Thu, Sep 06, 2018 at 02:57:49PM +0300, Sergey Miroshnichenko wrote:
-> The pci_dn structures can be created not only from DT, but also
-> directly from newly discovered PCIe devices, so allocate them
-> dynamically.
+On Thu, Sep 06, 2018 at 07:51:46PM +1000, Alexey Kardashevskiy wrote:
+> The kvmppc_gpa_to_ua() helper itself takes care of the permission
+> bits in the TCE and yet every single caller removes them.
 >=20
-> Signed-off-by: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
+> This changes semantics of kvmppc_gpa_to_ua() so it takes TCEs
+> (which are GPAs + TCE permission bits) to make the callers simpler.
+>=20
+> This should cause no behavioural change.
+>=20
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+
+
+Hmm.  I like shrinking the code, but it bothers me that a function
+called simply kvmppc_gpa_to_ua() knows something about a TCE's
+internal format.
+
+I think either the TCE bit masking needs to happen in the callers, or
+that function needs a name change.  Maybe kvmppc_tce_to_ua()?
+
 > ---
->  arch/powerpc/kernel/pci_dn.c | 76 ++++++++++++++++++++++++++++--------
->  1 file changed, 59 insertions(+), 17 deletions(-)
 >=20
-> diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
-> index ab147a1909c8..48ec16407835 100644
-> --- a/arch/powerpc/kernel/pci_dn.c
-> +++ b/arch/powerpc/kernel/pci_dn.c
-> @@ -33,6 +33,8 @@
->  #include <asm/firmware.h>
->  #include <asm/eeh.h>
+> This is not related to any bug, just noticed this while doing other thing=
+s.
+>=20
+> I can also rename kvmppc_gpa_to_ua() if it makes more sense, does not it?
+>=20
+> ---
+>  arch/powerpc/kvm/book3s_64_vio.c    | 10 +++-------
+>  arch/powerpc/kvm/book3s_64_vio_hv.c | 16 ++++++----------
+>  2 files changed, 9 insertions(+), 17 deletions(-)
+>=20
+> diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_6=
+4_vio.c
+> index 174299d..7207481 100644
+> --- a/arch/powerpc/kvm/book3s_64_vio.c
+> +++ b/arch/powerpc/kvm/book3s_64_vio.c
+> @@ -378,8 +378,7 @@ static long kvmppc_tce_validate(struct kvmppc_spapr_t=
+ce_table *stt,
+>  	if (iommu_tce_check_gpa(stt->page_shift, gpa))
+>  		return H_TOO_HARD;
 > =20
-> +static struct pci_dn *create_pdn(struct pci_dev *pdev, struct pci_dn *pa=
-rent);
-> +
->  /*
->   * The function is used to find the firmware data of one
->   * specific PCI device, which is attached to the indicated
-> @@ -58,6 +60,9 @@ static struct pci_dn *pci_bus_to_pdn(struct pci_bus *bu=
-s)
->  		pbus =3D pbus->parent;
+> -	if (kvmppc_gpa_to_ua(stt->kvm, tce & ~(TCE_PCI_READ | TCE_PCI_WRITE),
+> -				&ua, NULL))
+> +	if (kvmppc_gpa_to_ua(stt->kvm, tce, &ua, NULL))
+>  		return H_TOO_HARD;
+> =20
+>  	list_for_each_entry_rcu(stit, &stt->iommu_tables, next) {
+> @@ -553,8 +552,7 @@ long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned=
+ long liobn,
+> =20
+>  	idx =3D srcu_read_lock(&vcpu->kvm->srcu);
+> =20
+> -	if ((dir !=3D DMA_NONE) && kvmppc_gpa_to_ua(vcpu->kvm,
+> -			tce & ~(TCE_PCI_READ | TCE_PCI_WRITE), &ua, NULL)) {
+> +	if ((dir !=3D DMA_NONE) && kvmppc_gpa_to_ua(vcpu->kvm, tce, &ua, NULL))=
+ {
+>  		ret =3D H_PARAMETER;
+>  		goto unlock_exit;
 >  	}
-> =20
-> +	if (!pbus->self && !pci_is_root_bus(pbus))
-> +		return NULL;
-> +
->  	/*
->  	 * Except virtual bus, all PCI buses should
->  	 * have device nodes.
-> @@ -65,13 +70,15 @@ static struct pci_dn *pci_bus_to_pdn(struct pci_bus *=
-bus)
->  	dn =3D pci_bus_to_OF_node(pbus);
->  	pdn =3D dn ? PCI_DN(dn) : NULL;
-> =20
-> +	if (!pdn && pbus->self)
-> +		pdn =3D pbus->self->dev.archdata.pci_data;
-> +
->  	return pdn;
->  }
-> =20
->  struct pci_dn *pci_get_pdn_by_devfn(struct pci_bus *bus,
->  				    int devfn)
->  {
-> -	struct device_node *dn =3D NULL;
->  	struct pci_dn *parent, *pdn;
->  	struct pci_dev *pdev =3D NULL;
-> =20
-> @@ -80,17 +87,10 @@ struct pci_dn *pci_get_pdn_by_devfn(struct pci_bus *b=
-us,
->  		if (pdev->devfn =3D=3D devfn) {
->  			if (pdev->dev.archdata.pci_data)
->  				return pdev->dev.archdata.pci_data;
-> -
-> -			dn =3D pci_device_to_OF_node(pdev);
->  			break;
+> @@ -647,9 +645,7 @@ long kvmppc_h_put_tce_indirect(struct kvm_vcpu *vcpu,
 >  		}
->  	}
+>  		tce =3D be64_to_cpu(tce);
 > =20
-> -	/* Fast path: fetch from device node */
-> -	pdn =3D dn ? PCI_DN(dn) : NULL;
-> -	if (pdn)
-> -		return pdn;
-> -
-
-Why is it necessary to remove the above fast-path?
-
->  	/* Slow path: fetch from firmware data hierarchy */
->  	parent =3D pci_bus_to_pdn(bus);
->  	if (!parent)
-> @@ -128,16 +128,9 @@ struct pci_dn *pci_get_pdn(struct pci_dev *pdev)
->  	if (!parent)
->  		return NULL;
+> -		if (kvmppc_gpa_to_ua(vcpu->kvm,
+> -				tce & ~(TCE_PCI_READ | TCE_PCI_WRITE),
+> -				&ua, NULL))
+> +		if (kvmppc_gpa_to_ua(vcpu->kvm, tce, &ua, NULL))
+>  			return H_PARAMETER;
 > =20
-> -	list_for_each_entry(pdn, &parent->child_list, list) {
-> -		if (pdn->busno =3D=3D pdev->bus->number &&
-> -		    pdn->devfn =3D=3D pdev->devfn)
-> -			return pdn;
-> -	}
-
-Could you explain why the above block was removed? Is it now impossible
-for it to find a pdn?
-
-> -
-> -	return NULL;
-> +	return create_pdn(pdev, parent);
+>  		list_for_each_entry_lockless(stit, &stt->iommu_tables, next) {
+> diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3=
+s_64_vio_hv.c
+> index 5f810dc..a03cd93 100644
+> --- a/arch/powerpc/kvm/book3s_64_vio_hv.c
+> +++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
+> @@ -110,8 +110,7 @@ static long kvmppc_rm_tce_validate(struct kvmppc_spap=
+r_tce_table *stt,
+>  	if (iommu_tce_check_gpa(stt->page_shift, gpa))
+>  		return H_PARAMETER;
+> =20
+> -	if (kvmppc_gpa_to_ua(stt->kvm, tce & ~(TCE_PCI_READ | TCE_PCI_WRITE),
+> -				&ua, NULL))
+> +	if (kvmppc_gpa_to_ua(stt->kvm, tce, &ua, NULL))
+>  		return H_TOO_HARD;
+> =20
+>  	list_for_each_entry_lockless(stit, &stt->iommu_tables, next) {
+> @@ -180,10 +179,10 @@ void kvmppc_tce_put(struct kvmppc_spapr_tce_table *=
+stt,
 >  }
+>  EXPORT_SYMBOL_GPL(kvmppc_tce_put);
 > =20
-> -#ifdef CONFIG_PCI_IOV
->  static struct pci_dn *add_one_dev_pci_data(struct pci_dn *parent,
->  					   int vf_index,
->  					   int busno, int devfn)
-> @@ -156,7 +149,9 @@ static struct pci_dn *add_one_dev_pci_data(struct pci=
-_dn *parent,
->  	pdn->parent =3D parent;
->  	pdn->busno =3D busno;
->  	pdn->devfn =3D devfn;
-> +	#ifdef CONFIG_PCI_IOV
->  	pdn->vf_index =3D vf_index;
-> +	#endif /* CONFIG_PCI_IOV */
->  	pdn->pe_number =3D IODA_INVALID_PE;
->  	INIT_LIST_HEAD(&pdn->child_list);
->  	INIT_LIST_HEAD(&pdn->list);
-
-I can see that this change allows you to re-use this to set up a pdn in
-create_pdn(). Perhaps you should refactor pci_add_device_node_info() to
-use it as well, now that it's possible?
-
-> @@ -164,7 +159,54 @@ static struct pci_dn *add_one_dev_pci_data(struct pc=
-i_dn *parent,
-> =20
->  	return pdn;
->  }
-> -#endif
-> +
-> +static struct pci_dn *create_pdn(struct pci_dev *pdev, struct pci_dn *pa=
-rent)
-> +{
-> +	struct pci_dn *pdn =3D NULL;
-> +
-> +	pdn =3D add_one_dev_pci_data(parent, 0, pdev->bus->number, pdev->devfn);
-> +	dev_info(&pdev->dev, "Create a new pdn for devfn %2x\n", pdev->devfn / =
-8);
-> +
-> +	if (pdn) {
-> +		#ifdef CONFIG_EEH
-> +		struct eeh_dev *edev;
-> +		#endif /* CONFIG_EEH */
-> +		u32 class_code;
-> +		u16 device_id;
-> +		u16 vendor_id;
-> +
-> +		#ifdef CONFIG_EEH
-> +		edev =3D eeh_dev_init(pdn);
-> +		if (!edev) {
-> +			kfree(pdn);
-> +			dev_err(&pdev->dev, "%s: Failed to allocate edev\n", __func__);
-> +			return NULL;
-> +		}
-> +		#endif /* CONFIG_EEH */
-> +
-> +		pdn->busno =3D pdev->bus->busn_res.start;
-
-It seems strange that pdn->busno is set by the call to
-add_one_dev_pci_data() above (to pdev->bus->number) and then overwritten
-here with a different value. Should add_one_dev_pci_data() use
-pdev->bus->busn_res.start and this line be removed?
-
-> +
-> +		pci_bus_read_config_word(pdev->bus, pdev->devfn,
-> +					 PCI_VENDOR_ID, &vendor_id);
-> +		pdn->vendor_id =3D vendor_id;
-> +
-> +		pci_bus_read_config_word(pdev->bus, pdev->devfn,
-> +					 PCI_DEVICE_ID, &device_id);
-> +		pdn->device_id =3D device_id;
-> +
-> +		pci_bus_read_config_dword(pdev->bus, pdev->devfn,
-> +					  PCI_CLASS_REVISION, &class_code);
-> +		class_code >>=3D 8;
-> +		pdn->class_code =3D class_code;
-> +
-> +		pdn->pci_ext_config_space =3D 0;
-> +		pdev->dev.archdata.pci_data =3D pdn;
-> +	} else {
-> +		dev_err(&pdev->dev, "%s: Failed to allocate pdn\n", __func__);
-> +	}
-> +
-> +	return pdn;
-> +}
-
-
-> =20
->  struct pci_dn *add_dev_pci_data(struct pci_dev *pdev)
+> -long kvmppc_gpa_to_ua(struct kvm *kvm, unsigned long gpa,
+> +long kvmppc_gpa_to_ua(struct kvm *kvm, unsigned long tce,
+>  		unsigned long *ua, unsigned long **prmap)
 >  {
-> --=20
-> 2.17.1
->=20
+> -	unsigned long gfn =3D gpa >> PAGE_SHIFT;
+> +	unsigned long gfn =3D tce >> PAGE_SHIFT;
+>  	struct kvm_memory_slot *memslot;
+> =20
+>  	memslot =3D search_memslots(kvm_memslots(kvm), gfn);
+> @@ -191,7 +190,7 @@ long kvmppc_gpa_to_ua(struct kvm *kvm, unsigned long =
+gpa,
+>  		return -EINVAL;
+> =20
+>  	*ua =3D __gfn_to_hva_memslot(memslot, gfn) |
+> -		(gpa & ~(PAGE_MASK | TCE_PCI_READ | TCE_PCI_WRITE));
+> +		(tce & ~(PAGE_MASK | TCE_PCI_READ | TCE_PCI_WRITE));
+> =20
+>  #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+>  	if (prmap)
+> @@ -366,8 +365,7 @@ long kvmppc_rm_h_put_tce(struct kvm_vcpu *vcpu, unsig=
+ned long liobn,
+>  		return ret;
+> =20
+>  	dir =3D iommu_tce_direction(tce);
+> -	if ((dir !=3D DMA_NONE) && kvmppc_gpa_to_ua(vcpu->kvm,
+> -			tce & ~(TCE_PCI_READ | TCE_PCI_WRITE), &ua, NULL))
+> +	if ((dir !=3D DMA_NONE) && kvmppc_gpa_to_ua(vcpu->kvm, tce, &ua, NULL))
+>  		return H_PARAMETER;
+> =20
+>  	entry =3D ioba >> stt->page_shift;
+> @@ -520,9 +518,7 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vc=
+pu,
+>  		unsigned long tce =3D be64_to_cpu(((u64 *)tces)[i]);
+> =20
+>  		ua =3D 0;
+> -		if (kvmppc_gpa_to_ua(vcpu->kvm,
+> -				tce & ~(TCE_PCI_READ | TCE_PCI_WRITE),
+> -				&ua, NULL))
+> +		if (kvmppc_gpa_to_ua(vcpu->kvm, tce, &ua, NULL))
+>  			return H_PARAMETER;
+> =20
+>  		list_for_each_entry_lockless(stit, &stt->iommu_tables, next) {
 
---KFztAG8eRSV9hGtP
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--AsxXAMtlQ5JHofzM
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQEzBAABCAAdFiEELWWF8pdtWK5YQRohMX8w6AQl/iIFAluV918ACgkQMX8w6AQl
-/iLrXwf/ej4jkf1JyTIhcGfGsZxITfE2m2CBHfQXxi3ysI9namDiZGLi9uv0Lnmp
-Ydp8IGRSn6VOWuxIuAqbcT3K+3i6tbShgiR3otygekgweKmUYlemXsFuJLGI7tXb
-KjAeQma6kXEGXKtNPmClGeNJsTm5R3TuS7/SZ2DXFq4AWdbNGfQll7c9XtBsEqoC
-56MwM5Ixaovzv7qCSywd6iz9Y2ohfSxFNgz14Ea/uU97pUgq835G+7iyWFbu10Z4
-/Uh2TES2Wj59lWrKuyJdVsSmw4Vd0m5jtHhO38kZ60mIvFjM5Vs/gzJglXRGq0HN
-5521L6U12E/2xBzro8xq/U8TPybUPA==
-=bdEL
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAluV+AoACgkQbDjKyiDZ
+s5KASA/+N6lfabp98nE2jmLr+YCE10nx8Cwc/cuu9Oq4yz+W4CXJ1MlvgeckFR6y
+TpntPDQAtW0QlHfNrtW1b5nWzgiQBKn9PucjVo86Qb5FIlCO2tmalds3Kr26D+mR
+rMO1zG8AZ6BMuBdyfHUWNZfyL6ddbgRu/0CuEgxnxkxrzIe5Lfa3oWN6CrfB04wU
+z9heSq8xkU6IrJGbk3TPo4G6NV8RpR94VHxMwbGiNrgI8chHzjpq7pfBe1srgfKh
+MOUG6LLbFYqHisoolLxgbCUF3Ozloo5fDKH1+Bel3fv0As6ql6PLVsBChBQ27nn0
+nK0auVA1y9INfItH60lVL3Hco6Ez3RarwSbarj82q2y+mVPnBb11dycafEC/Gqk3
+PUVlgjyrRZA1SHcLmy64D/6Sizi2aZloWF4Xal7BTvBigna2w6ApKDpqHmDIjEqi
+FiZo6Gkq0u2cmDiHTm9CGFeeGiFpTIOpwQVnFD7sET9b94fNU94Ey/aVsO0F43Lg
+wqID4Mc5QDC074++/KBxSRBIjMmb3Jwsot39eVUAo1qbFi34VTXFygmW6BUznhTc
+sz61+TX4r4KUxpVyFD5Wb6Fw3OSPreIMZc4l73RX4SanAIuUatcveXSorSvHTRtT
+tuUqTxo3H8PGKuqDJ/xz1afdaX710tggE9aOjTf4o1r9QWy5tnY=
+=G+Bf
 -----END PGP SIGNATURE-----
 
---KFztAG8eRSV9hGtP--
+--AsxXAMtlQ5JHofzM--
