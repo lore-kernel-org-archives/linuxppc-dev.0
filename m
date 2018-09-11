@@ -1,49 +1,32 @@
-Return-Path: <robh@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 428pyb2RFVzF39H
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2018 01:40:23 +1000 (AEST)
-Received: from mail-qt0-f180.google.com (mail-qt0-f180.google.com
- [209.85.216.180])
+Return-Path: <frowand.list@gmail.com>
+Received: from mail-oi0-x244.google.com (mail-oi0-x244.google.com
+ [IPv6:2607:f8b0:4003:c06::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 2AD9520898
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2018 15:40:21 +0000 (UTC)
-Received: by mail-qt0-f180.google.com with SMTP id z8-v6so28671217qto.9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2018 08:40:21 -0700 (PDT)
-MIME-Version: 1.0
-References: <20180910150403.19476-1-robh@kernel.org>
- <20180910150403.19476-7-robh@kernel.org>
-In-Reply-To: <20180910150403.19476-7-robh@kernel.org>
-From: Rob Herring <robh@kernel.org>
-Date: Tue, 11 Sep 2018 10:40:07 -0500
-Message-ID: <CAL_Jsq+=VbdcVLiwXbOA5d+R2YY6=2Pw2bQpci-jj-JvereD1A@mail.gmail.com>
-Subject: Re: [PATCH v3 6/9] kbuild: consolidate Devicetree dtb build rules
-To: devicetree@vger.kernel.org,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Masahiro Yamada <yamada.masahiro@socionext.com>
-Cc: Frank Rowand <frowand.list@gmail.com>,
- Michal Marek <michal.lkml@markovi.net>,
- Vineet Gupta <vgupta@synopsys.com>, Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- Michal Simek <monstr@monstr.eu>, Ralf Baechle <ralf@linux-mips.org>,
- James Hogan <jhogan@kernel.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 428qFs2Ck2zF38R
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2018 01:53:36 +1000 (AEST)
+Received: by mail-oi0-x244.google.com with SMTP id x197-v6so48122326oix.5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2018 08:53:36 -0700 (PDT)
+Subject: Re: v4.17 regression: PowerMac G3 won't boot, was Re: [PATCH v5 1/3]
+ of: cache phandle nodes to reduce cost of of_find_node_by_phandle()
+To: Rob Herring <robh@kernel.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Chris Zankel <chris@zankel.net>,
- Max Filippov <jcmvbkbc@gmail.com>,
- Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
- arcml <linux-snps-arc@lists.infradead.org>,
- "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>,
- "moderated list:H8/300 ARCHITECTURE" <uclinux-h8-devel@lists.sourceforge.jp>,
- Linux-MIPS <linux-mips@linux-mips.org>, nios2-dev@lists.rocketboards.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-xtensa@linux-xtensa.org,
- Will Deacon <will.deacon@arm.com>, Paul Burton <paul.burton@mips.com>,
- Ley Foon Tan <ley.foon.tan@intel.com>
-Content-Type: text/plain; charset="UTF-8"
+ Finn Thain <fthain@telegraphics.com.au>, Stan Johnson <userm57@yahoo.com>
+Cc: Chintan Pandya <cpandya@codeaurora.org>, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+References: <1520208889-3908-1-git-send-email-frowand.list@gmail.com>
+ <1520208889-3908-2-git-send-email-frowand.list@gmail.com>
+ <alpine.LNX.2.21.1808301025480.73@nippy.intranet>
+ <0ad5dbfd-08f3-b97d-34b9-70fc9a729921@gmail.com>
+ <d9e53e48794c2eade19309b73febd492e3c5eeeb.camel@kernel.crashing.org>
+ <7427daf6570d519e6793eb96d2fbaa52714b0cd7.camel@kernel.crashing.org>
+ <20180910125320.GA17028@bogus>
+From: Frank Rowand <frowand.list@gmail.com>
+Message-ID: <5af64ee6-c7c4-29db-9aa4-c40e35e241fc@gmail.com>
+Date: Tue, 11 Sep 2018 08:53:30 -0700
+MIME-Version: 1.0
+In-Reply-To: <20180910125320.GA17028@bogus>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,56 +36,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Sep 10, 2018 at 10:04 AM Rob Herring <robh@kernel.org> wrote:
->
-> There is nothing arch specific about building dtb files other than their
-> location under /arch/*/boot/dts/. Keeping each arch aligned is a pain.
-> The dependencies and supported targets are all slightly different.
-> Also, a cross-compiler for each arch is needed, but really the host
-> compiler preprocessor is perfectly fine for building dtbs. Move the
-> build rules to a common location and remove the arch specific ones. This
-> is done in a single step to avoid warnings about overriding rules.
->
-> The build dependencies had been a mixture of 'scripts' and/or 'prepare'.
-> These pull in several dependencies some of which need a target compiler
-> (specifically devicetable-offsets.h) and aren't needed to build dtbs.
-> All that is really needed is dtc, so adjust the dependencies to only be
-> dtc.
->
-> This change enables support 'dtbs_install' on some arches which were
-> missing the target.
+On 09/10/18 05:53, Rob Herring wrote:
+> On Sun, Sep 09, 2018 at 07:04:25PM +0200, Benjamin Herrenschmidt wrote:
+>> On Fri, 2018-08-31 at 14:58 +1000, Benjamin Herrenschmidt wrote:
+>>>
+>>>> A long shot, but something to consider, is that I failed to cover the
+>>>> cases of dynamic devicetree updates (removing nodes that contain a
+>>>> phandle) in ways other than overlays.  Michael Ellerman has reported
+>>>> such a problem for powerpc/mobility with of_detach_node().  A patch to
+>>>> fix that is one of the tasks I need to complete.
+>>>
+>>> The only thing I can think of is booting via the BootX bootloader on
+>>> those ancient macs results in a DT with no phandles. I didn't see an
+>>> obvious reason why that would cause that patch to break though.
+>>
+>> Guys, we still don't have a fix for this one on its way upstream...
+>>
+>> My test patch just creates phandle properties for all nodes, that was
+>> not intended as a fix, more a way to check if the problem was related
+>> to the lack of phandles.
+>>
+>> I don't actually know why the new code causes things to fail when
+>> phandles are absent. This needs to be looked at.
+>>
+>> I'm travelling at the moment and generally caught up with other things,
+>> I haven't had a chance to dig, so just a heads up. I don't intend to
+>> submit my patch since it's just a band aid. We need to figure out what
+>> the actual problem is.
+> 
+> Can you try this patch (w/o Ben's patch). I think the problem is if 
+> there are no phandles, then roundup_pow_of_two is passed 0 which is 
+> documented as undefined result.
+> 
+> Though, if a DT has no properties with phandles, then why are we doing a 
+> lookup in the first place?
+> 
+> 
+> 8<----------------------------------------------------------------------
+> 
+> diff --git a/drivers/of/base.c b/drivers/of/base.c
+> index 9095b8290150..74eaedd5b860 100644
+> --- a/drivers/of/base.c
+> +++ b/drivers/of/base.c
+> @@ -140,6 +140,9 @@ void of_populate_phandle_cache(void)
+>  		if (np->phandle && np->phandle != OF_PHANDLE_ILLEGAL)
+>  			phandles++;
+>  
+> +	if (!phandles)
+> +		goto out;
+> +
+>  	cache_entries = roundup_pow_of_two(phandles);
+>  	phandle_cache_mask = cache_entries - 1;
+>  
+> 
 
-[...]
+Thanks Rob!  That fix makes sense, and the test results look
+promising.
 
-> @@ -1215,6 +1215,33 @@ kselftest-merge:
->                 $(srctree)/tools/testing/selftests/*/config
->         +$(Q)$(MAKE) -f $(srctree)/Makefile olddefconfig
->
-> +# ---------------------------------------------------------------------------
-> +# Devicetree files
-> +
-> +ifneq ($(wildcard $(srctree)/arch/$(SRCARCH)/boot/dts/),)
-> +dtstree := arch/$(SRCARCH)/boot/dts
-> +endif
-> +
-> +ifdef CONFIG_OF_EARLY_FLATTREE
-
-This can be true when dtstree is unset. So this line should be this
-instead to fix the 0-day reported error:
-
-ifneq ($(dtstree),)
-
-> +
-> +%.dtb : scripts_dtc
-> +       $(Q)$(MAKE) $(build)=$(dtstree) $(dtstree)/$@
-> +
-> +PHONY += dtbs dtbs_install
-> +dtbs: scripts_dtc
-> +       $(Q)$(MAKE) $(build)=$(dtstree)
-> +
-> +dtbs_install: dtbs
-> +       $(Q)$(MAKE) $(dtbinst)=$(dtstree)
-> +
-> +all: dtbs
-> +
-> +endif
+Reviewed-by: Frank Rowand <frank.rowand@sony.com>
