@@ -2,27 +2,27 @@ Return-Path: <s.miroshnichenko@yadro.com>
 Received: from mta-01.yadro.com (mta-01.yadro.com [89.207.88.251])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 428k0J2GxKzF38g
+ by lists.ozlabs.org (Postfix) with ESMTPS id 428k0K17hTzF38l
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2018 21:56:32 +1000 (AEST)
 Received: from localhost (unknown [127.0.0.1])
- by mta-01.yadro.com (Postfix) with ESMTP id 3C28741903
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2018 11:56:29 +0000 (UTC)
+ by mta-01.yadro.com (Postfix) with ESMTP id 10B5341907
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2018 11:56:30 +0000 (UTC)
 Received: from mta-01.yadro.com ([127.0.0.1])
  by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id Y0ubD__0AQhT for <linuxppc-dev@lists.ozlabs.org>;
- Tue, 11 Sep 2018 14:56:28 +0300 (MSK)
+ with ESMTP id aizWl2PxrQod for <linuxppc-dev@lists.ozlabs.org>;
+ Tue, 11 Sep 2018 14:56:29 +0300 (MSK)
 Received: from T-EXCH-02.corp.yadro.com (t-exch-02.corp.yadro.com
  [172.17.10.102])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by mta-01.yadro.com (Postfix) with ESMTPS id 9FC6241905
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2018 14:56:27 +0300 (MSK)
+ by mta-01.yadro.com (Postfix) with ESMTPS id 1286241908
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2018 14:56:28 +0300 (MSK)
 From: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
 To: <linuxppc-dev@lists.ozlabs.org>
 CC: <linux@yadro.com>, Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
-Subject: [PATCH v3 2/6] powerpc/pci: Create pci_dn on demand
-Date: Tue, 11 Sep 2018 14:56:16 +0300
-Message-ID: <20180911115620.10507-3-s.miroshnichenko@yadro.com>
+Subject: [PATCH v3 4/6] powerpc/powernv/pci: Enable reassigning the bus numbers
+Date: Tue, 11 Sep 2018 14:56:18 +0300
+Message-ID: <20180911115620.10507-5-s.miroshnichenko@yadro.com>
 In-Reply-To: <20180911115620.10507-1-s.miroshnichenko@yadro.com>
 References: <20180911115620.10507-1-s.miroshnichenko@yadro.com>
 MIME-Version: 1.0
@@ -36,126 +36,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The pci_dn structures can be created not only from DT, but also
-directly from newly discovered PCIe devices, so allocate them
-dynamically.
+PowerNV doesn't depend on PCIe topology info from DT anymore, and now
+it is able to enumerate the fabric and assign the bus numbers.
+
+This is enabled by the pci=realloc command line switch.
 
 Signed-off-by: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
 ---
- arch/powerpc/kernel/pci_dn.c | 63 ++++++++++++++++++++++++++++++++++--
- 1 file changed, 60 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/pci_dn.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
 diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
-index ab147a1909c8..e2b39b562b53 100644
+index 8bcf10fb13ad..863d00561c50 100644
 --- a/arch/powerpc/kernel/pci_dn.c
 +++ b/arch/powerpc/kernel/pci_dn.c
-@@ -33,6 +33,8 @@
- #include <asm/firmware.h>
- #include <asm/eeh.h>
- 
-+static struct pci_dn *create_pdn(struct pci_dev *pdev, struct pci_dn *parent);
-+
- /*
-  * The function is used to find the firmware data of one
-  * specific PCI device, which is attached to the indicated
-@@ -58,6 +60,9 @@ static struct pci_dn *pci_bus_to_pdn(struct pci_bus *bus)
- 		pbus = pbus->parent;
- 	}
- 
-+	if (!pbus->self && !pci_is_root_bus(pbus))
-+		return NULL;
-+
- 	/*
- 	 * Except virtual bus, all PCI buses should
- 	 * have device nodes.
-@@ -65,6 +70,9 @@ static struct pci_dn *pci_bus_to_pdn(struct pci_bus *bus)
- 	dn = pci_bus_to_OF_node(pbus);
- 	pdn = dn ? PCI_DN(dn) : NULL;
- 
-+	if (!pdn && pbus->self)
-+		pdn = pbus->self->dev.archdata.pci_data;
-+
- 	return pdn;
+@@ -592,3 +592,15 @@ static void pci_dev_pdn_setup(struct pci_dev *pdev)
+ 	pdev->dev.archdata.pci_data = pdn;
  }
- 
-@@ -134,10 +142,9 @@ struct pci_dn *pci_get_pdn(struct pci_dev *pdev)
- 			return pdn;
- 	}
- 
--	return NULL;
-+	return create_pdn(pdev, parent);
- }
- 
--#ifdef CONFIG_PCI_IOV
- static struct pci_dn *add_one_dev_pci_data(struct pci_dn *parent,
- 					   int vf_index,
- 					   int busno, int devfn)
-@@ -156,7 +163,9 @@ static struct pci_dn *add_one_dev_pci_data(struct pci_dn *parent,
- 	pdn->parent = parent;
- 	pdn->busno = busno;
- 	pdn->devfn = devfn;
-+	#ifdef CONFIG_PCI_IOV
- 	pdn->vf_index = vf_index;
-+	#endif /* CONFIG_PCI_IOV */
- 	pdn->pe_number = IODA_INVALID_PE;
- 	INIT_LIST_HEAD(&pdn->child_list);
- 	INIT_LIST_HEAD(&pdn->list);
-@@ -164,7 +173,55 @@ static struct pci_dn *add_one_dev_pci_data(struct pci_dn *parent,
- 
- 	return pdn;
- }
--#endif
+ DECLARE_PCI_FIXUP_EARLY(PCI_ANY_ID, PCI_ANY_ID, pci_dev_pdn_setup);
 +
-+static struct pci_dn *create_pdn(struct pci_dev *pdev, struct pci_dn *parent)
++char * __init pcibios_setup(char *str)
 +{
-+	struct pci_dn *pdn = NULL;
-+
-+	if (!parent)
-+		return NULL;
-+
-+	pdn = add_one_dev_pci_data(parent, 0, pdev->bus->busn_res.start, pdev->devfn);
-+	dev_info(&pdev->dev, "Create a new pdn for devfn %2x\n", pdev->devfn / 8);
-+
-+	if (pdn) {
-+		#ifdef CONFIG_EEH
-+		struct eeh_dev *edev;
-+		#endif /* CONFIG_EEH */
-+		u32 class_code;
-+		u16 device_id;
-+		u16 vendor_id;
-+
-+		#ifdef CONFIG_EEH
-+		edev = eeh_dev_init(pdn);
-+		if (!edev) {
-+			kfree(pdn);
-+			dev_err(&pdev->dev, "%s: Failed to allocate edev\n", __func__);
-+			return NULL;
-+		}
-+		#endif /* CONFIG_EEH */
-+
-+		pci_bus_read_config_word(pdev->bus, pdev->devfn,
-+					 PCI_VENDOR_ID, &vendor_id);
-+		pdn->vendor_id = vendor_id;
-+
-+		pci_bus_read_config_word(pdev->bus, pdev->devfn,
-+					 PCI_DEVICE_ID, &device_id);
-+		pdn->device_id = device_id;
-+
-+		pci_bus_read_config_dword(pdev->bus, pdev->devfn,
-+					  PCI_CLASS_REVISION, &class_code);
-+		class_code >>= 8;
-+		pdn->class_code = class_code;
-+
-+		pdn->pci_ext_config_space = 0;
-+		pdev->dev.archdata.pci_data = pdn;
-+	} else {
-+		dev_err(&pdev->dev, "%s: Failed to allocate pdn\n", __func__);
++	if (!strncmp(str, "realloc=", 8)) {
++		if (!strncmp(str + 8, "on", 2))
++			pci_add_flags(PCI_REASSIGN_ALL_BUS);
++	} else if (!strncmp(str, "realloc", 7)) {
++		pci_add_flags(PCI_REASSIGN_ALL_BUS);
 +	}
 +
-+	return pdn;
++	return str;
 +}
- 
- struct pci_dn *add_dev_pci_data(struct pci_dev *pdev)
- {
 -- 
 2.17.1
