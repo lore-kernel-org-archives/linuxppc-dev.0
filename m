@@ -2,28 +2,27 @@ Return-Path: <s.miroshnichenko@yadro.com>
 Received: from mta-01.yadro.com (mta-01.yadro.com [89.207.88.251])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 428k0J4NB5zF38k
+ by lists.ozlabs.org (Postfix) with ESMTPS id 428k0J2GxKzF38g
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2018 21:56:32 +1000 (AEST)
 Received: from localhost (unknown [127.0.0.1])
- by mta-01.yadro.com (Postfix) with ESMTP id 82F6D41905
+ by mta-01.yadro.com (Postfix) with ESMTP id 3C28741903
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2018 11:56:29 +0000 (UTC)
 Received: from mta-01.yadro.com ([127.0.0.1])
  by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id BP7_RTUl3QqP for <linuxppc-dev@lists.ozlabs.org>;
+ with ESMTP id Y0ubD__0AQhT for <linuxppc-dev@lists.ozlabs.org>;
  Tue, 11 Sep 2018 14:56:28 +0300 (MSK)
 Received: from T-EXCH-02.corp.yadro.com (t-exch-02.corp.yadro.com
  [172.17.10.102])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by mta-01.yadro.com (Postfix) with ESMTPS id D6C3241907
+ by mta-01.yadro.com (Postfix) with ESMTPS id 9FC6241905
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2018 14:56:27 +0300 (MSK)
 From: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
 To: <linuxppc-dev@lists.ozlabs.org>
 CC: <linux@yadro.com>, Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
-Subject: [PATCH v3 3/6] powerpc/pci: Use DT to create pci_dn for root bridges
- only
-Date: Tue, 11 Sep 2018 14:56:17 +0300
-Message-ID: <20180911115620.10507-4-s.miroshnichenko@yadro.com>
+Subject: [PATCH v3 2/6] powerpc/pci: Create pci_dn on demand
+Date: Tue, 11 Sep 2018 14:56:16 +0300
+Message-ID: <20180911115620.10507-3-s.miroshnichenko@yadro.com>
 In-Reply-To: <20180911115620.10507-1-s.miroshnichenko@yadro.com>
 References: <20180911115620.10507-1-s.miroshnichenko@yadro.com>
 MIME-Version: 1.0
@@ -37,29 +36,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Endpoint's pci_dn can be created dynamically.
+The pci_dn structures can be created not only from DT, but also
+directly from newly discovered PCIe devices, so allocate them
+dynamically.
 
 Signed-off-by: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
 ---
- arch/powerpc/kernel/pci_dn.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/pci_dn.c | 63 ++++++++++++++++++++++++++++++++++--
+ 1 file changed, 60 insertions(+), 3 deletions(-)
 
 diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
-index e2b39b562b53..8bcf10fb13ad 100644
+index ab147a1909c8..e2b39b562b53 100644
 --- a/arch/powerpc/kernel/pci_dn.c
 +++ b/arch/powerpc/kernel/pci_dn.c
-@@ -552,8 +552,10 @@ void pci_devs_phb_init_dynamic(struct pci_controller *phb)
- 		phb->pci_data = pdn;
+@@ -33,6 +33,8 @@
+ #include <asm/firmware.h>
+ #include <asm/eeh.h>
+ 
++static struct pci_dn *create_pdn(struct pci_dev *pdev, struct pci_dn *parent);
++
+ /*
+  * The function is used to find the firmware data of one
+  * specific PCI device, which is attached to the indicated
+@@ -58,6 +60,9 @@ static struct pci_dn *pci_bus_to_pdn(struct pci_bus *bus)
+ 		pbus = pbus->parent;
  	}
  
--	/* Update dn->phb ptrs for new phb and children devices */
--	pci_traverse_device_nodes(dn, add_pdn, phb);
-+	if (!pci_has_flag(PCI_REASSIGN_ALL_BUS)) {
-+		/* Update dn->phb ptrs for new phb and children devices */
-+		pci_traverse_device_nodes(dn, add_pdn, phb);
-+	}
++	if (!pbus->self && !pci_is_root_bus(pbus))
++		return NULL;
++
+ 	/*
+ 	 * Except virtual bus, all PCI buses should
+ 	 * have device nodes.
+@@ -65,6 +70,9 @@ static struct pci_dn *pci_bus_to_pdn(struct pci_bus *bus)
+ 	dn = pci_bus_to_OF_node(pbus);
+ 	pdn = dn ? PCI_DN(dn) : NULL;
+ 
++	if (!pdn && pbus->self)
++		pdn = pbus->self->dev.archdata.pci_data;
++
+ 	return pdn;
  }
  
- /** 
+@@ -134,10 +142,9 @@ struct pci_dn *pci_get_pdn(struct pci_dev *pdev)
+ 			return pdn;
+ 	}
+ 
+-	return NULL;
++	return create_pdn(pdev, parent);
+ }
+ 
+-#ifdef CONFIG_PCI_IOV
+ static struct pci_dn *add_one_dev_pci_data(struct pci_dn *parent,
+ 					   int vf_index,
+ 					   int busno, int devfn)
+@@ -156,7 +163,9 @@ static struct pci_dn *add_one_dev_pci_data(struct pci_dn *parent,
+ 	pdn->parent = parent;
+ 	pdn->busno = busno;
+ 	pdn->devfn = devfn;
++	#ifdef CONFIG_PCI_IOV
+ 	pdn->vf_index = vf_index;
++	#endif /* CONFIG_PCI_IOV */
+ 	pdn->pe_number = IODA_INVALID_PE;
+ 	INIT_LIST_HEAD(&pdn->child_list);
+ 	INIT_LIST_HEAD(&pdn->list);
+@@ -164,7 +173,55 @@ static struct pci_dn *add_one_dev_pci_data(struct pci_dn *parent,
+ 
+ 	return pdn;
+ }
+-#endif
++
++static struct pci_dn *create_pdn(struct pci_dev *pdev, struct pci_dn *parent)
++{
++	struct pci_dn *pdn = NULL;
++
++	if (!parent)
++		return NULL;
++
++	pdn = add_one_dev_pci_data(parent, 0, pdev->bus->busn_res.start, pdev->devfn);
++	dev_info(&pdev->dev, "Create a new pdn for devfn %2x\n", pdev->devfn / 8);
++
++	if (pdn) {
++		#ifdef CONFIG_EEH
++		struct eeh_dev *edev;
++		#endif /* CONFIG_EEH */
++		u32 class_code;
++		u16 device_id;
++		u16 vendor_id;
++
++		#ifdef CONFIG_EEH
++		edev = eeh_dev_init(pdn);
++		if (!edev) {
++			kfree(pdn);
++			dev_err(&pdev->dev, "%s: Failed to allocate edev\n", __func__);
++			return NULL;
++		}
++		#endif /* CONFIG_EEH */
++
++		pci_bus_read_config_word(pdev->bus, pdev->devfn,
++					 PCI_VENDOR_ID, &vendor_id);
++		pdn->vendor_id = vendor_id;
++
++		pci_bus_read_config_word(pdev->bus, pdev->devfn,
++					 PCI_DEVICE_ID, &device_id);
++		pdn->device_id = device_id;
++
++		pci_bus_read_config_dword(pdev->bus, pdev->devfn,
++					  PCI_CLASS_REVISION, &class_code);
++		class_code >>= 8;
++		pdn->class_code = class_code;
++
++		pdn->pci_ext_config_space = 0;
++		pdev->dev.archdata.pci_data = pdn;
++	} else {
++		dev_err(&pdev->dev, "%s: Failed to allocate pdn\n", __func__);
++	}
++
++	return pdn;
++}
+ 
+ struct pci_dn *add_dev_pci_data(struct pci_dev *pdev)
+ {
 -- 
 2.17.1
