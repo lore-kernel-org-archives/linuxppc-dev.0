@@ -3,18 +3,18 @@ Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
  [140.211.169.12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 428gqR1D2FzF37X
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2018 20:18:43 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 428h2413nTzF36V
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2018 20:27:55 +1000 (AEST)
 Subject: Patch "powerpc/platforms/85xx: fix t1042rdb_diu.c build errors &
- warning" has been added to the 4.14-stable tree
+ warning" has been added to the 4.18-stable tree
 To: alexander.levin@microsoft.com, benh@kernel.crashing.org,
  galak@kernel.crashing.org, gregkh@linuxfoundation.org,
  linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, oss@buserror.net,
  paulus@samba.org, rdunlap@infradead.org
 Cc: <stable-commits@vger.kernel.org>
 From: <gregkh@linuxfoundation.org>
-Date: Tue, 11 Sep 2018 12:14:28 +0200
-Message-ID: <15366608685597@kroah.com>
+Date: Tue, 11 Sep 2018 12:14:59 +0200
+Message-ID: <1536660899131191@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,18 +31,18 @@ This is a note to let you know that I've just added the patch titled
 
     powerpc/platforms/85xx: fix t1042rdb_diu.c build errors & warning
 
-to the 4.14-stable tree which can be found at:
+to the 4.18-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
      powerpc-platforms-85xx-fix-t1042rdb_diu.c-build-errors-warning.patch
-and it can be found in the queue-4.14 subdirectory.
+and it can be found in the queue-4.18 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
 please let <stable@vger.kernel.org> know about it.
 
 
->From foo@baz Tue Sep 11 12:07:47 CEST 2018
+>From foo@baz Tue Sep 11 12:05:55 CEST 2018
 From: Randy Dunlap <rdunlap@infradead.org>
 Date: Sun, 15 Jul 2018 10:34:46 -0700
 Subject: powerpc/platforms/85xx: fix t1042rdb_diu.c build errors & warning
@@ -99,6 +99,8 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
 Patches currently in stable-queue which might be from rdunlap@infradead.org are
 
-queue-4.14/scripts-modpost-check-memory-allocation-results.patch
-queue-4.14/platform-x86-intel_punit_ipc-fix-build-errors.patch
-queue-4.14/powerpc-platforms-85xx-fix-t1042rdb_diu.c-build-errors-warning.patch
+queue-4.18/scripts-modpost-check-memory-allocation-results.patch
+queue-4.18/um-fix-parallel-building-with-o-option.patch
+queue-4.18/mm-make-deferred_struct_page_init-explicitly-depend-on-sparsemem.patch
+queue-4.18/platform-x86-intel_punit_ipc-fix-build-errors.patch
+queue-4.18/powerpc-platforms-85xx-fix-t1042rdb_diu.c-build-errors-warning.patch
