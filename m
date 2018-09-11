@@ -1,22 +1,22 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <gregkh@linuxfoundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 428gS86rrzzF36x
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2018 20:02:00 +1000 (AEST)
-Date: Tue, 11 Sep 2018 20:01:54 +1000
-From: Paul Mackerras <paulus@ozlabs.org>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: kvm-ppc@vger.kernel.org, David Gibson <david@gibson.dropbear.id.au>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] KVM: PPC: Book3S HV: Don't use compound_order to
- determine host mapping size
-Message-ID: <20180911100154.GC25158@fergus>
-References: <20180904081601.32703-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 428gqR1D2FzF37X
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2018 20:18:43 +1000 (AEST)
+Subject: Patch "powerpc/platforms/85xx: fix t1042rdb_diu.c build errors &
+ warning" has been added to the 4.14-stable tree
+To: alexander.levin@microsoft.com, benh@kernel.crashing.org,
+ galak@kernel.crashing.org, gregkh@linuxfoundation.org,
+ linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, oss@buserror.net,
+ paulus@samba.org, rdunlap@infradead.org
+Cc: <stable-commits@vger.kernel.org>
+From: <gregkh@linuxfoundation.org>
+Date: Tue, 11 Sep 2018 12:14:28 +0200
+Message-ID: <15366608685597@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180904081601.32703-1-npiggin@gmail.com>
+Content-Type: text/plain; charset=ANSI_X3.4-1968
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,49 +26,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Sep 04, 2018 at 06:16:01PM +1000, Nicholas Piggin wrote:
-> THP paths can defer splitting compound pages until after the actual
-> remap and TLB flushes to split a huge PMD/PUD. This causes radix
-> partition scope page table mappings to get out of synch with the host
-> qemu page table mappings.
-> 
-> This results in random memory corruption in the guest when running
-> with THP. The easiest way to reproduce is use KVM baloon to free up
-> a lot of memory in the guest and then shrink the balloon to give the
-> memory back, while some work is being done in the guest.
 
-I'm hitting the WARN_ON you added.  I think I have an old qemu that
-doesn't 2M-align the guest ram and so we get to the level = 0 case
-because of misalignment.  The patch below on top of yours seems to
-work just fine.  In the case where the pte is 2M or 1G but we have
-misalignment, it ORs in address bits from hva into the pte so we get
-to the specific single page we want.
+This is a note to let you know that I've just added the patch titled
 
-Care to fold this in and resend?
+    powerpc/platforms/85xx: fix t1042rdb_diu.c build errors & warning
 
-Paul.
+to the 4.14-stable tree which can be found at:
+    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-index c290f59ae925..933c574e1cf7 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-@@ -660,11 +660,14 @@ int kvmppc_book3s_radix_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 		level = 1;
- 	} else {
- 		level = 0;
--
--		/* Can not cope with unknown page shift */
--		if (shift && shift != PAGE_SHIFT) {
--			WARN_ON_ONCE(1);
--			return -EFAULT;
-+		if (shift > PAGE_SHIFT) {
-+			/*
-+			 * If the pte maps more than one page, bring over
-+			 * bits from the virtual address to get the real
-+			 * address of the specific single page we want.
-+			 */
-+			unsigned long rpnmask = (1ul << shift) - PAGE_SIZE;
-+			pte = __pte(pte_val(pte) | (hva & rpnmask));
- 		}
- 	}
+The filename of the patch is:
+     powerpc-platforms-85xx-fix-t1042rdb_diu.c-build-errors-warning.patch
+and it can be found in the queue-4.14 subdirectory.
+
+If you, or anyone else, feels it should not be added to the stable tree,
+please let <stable@vger.kernel.org> know about it.
+
+
+>From foo@baz Tue Sep 11 12:07:47 CEST 2018
+From: Randy Dunlap <rdunlap@infradead.org>
+Date: Sun, 15 Jul 2018 10:34:46 -0700
+Subject: powerpc/platforms/85xx: fix t1042rdb_diu.c build errors & warning
+
+From: Randy Dunlap <rdunlap@infradead.org>
+
+[ Upstream commit f5daf77a55ef0e695cc90c440ed6503073ac5e07 ]
+
+Fix build errors and warnings in t1042rdb_diu.c by adding header files
+and MODULE_LICENSE().
+
+../arch/powerpc/platforms/85xx/t1042rdb_diu.c:152:1: warning: data definition has no type or storage class
+ early_initcall(t1042rdb_diu_init);
+../arch/powerpc/platforms/85xx/t1042rdb_diu.c:152:1: error: type defaults to 'int' in declaration of 'early_initcall' [-Werror=implicit-int]
+../arch/powerpc/platforms/85xx/t1042rdb_diu.c:152:1: warning: parameter names (without types) in function declaration
+
+and
+WARNING: modpost: missing MODULE_LICENSE() in arch/powerpc/platforms/85xx/t1042rdb_diu.o
+
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Scott Wood <oss@buserror.net>
+Cc: Kumar Gala <galak@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Sasha Levin <alexander.levin@microsoft.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ arch/powerpc/platforms/85xx/t1042rdb_diu.c |    4 ++++
+ 1 file changed, 4 insertions(+)
+
+--- a/arch/powerpc/platforms/85xx/t1042rdb_diu.c
++++ b/arch/powerpc/platforms/85xx/t1042rdb_diu.c
+@@ -9,8 +9,10 @@
+  * option) any later version.
+  */
  
++#include <linux/init.h>
+ #include <linux/io.h>
+ #include <linux/kernel.h>
++#include <linux/module.h>
+ #include <linux/of.h>
+ #include <linux/of_address.h>
+ 
+@@ -150,3 +152,5 @@ static int __init t1042rdb_diu_init(void
+ }
+ 
+ early_initcall(t1042rdb_diu_init);
++
++MODULE_LICENSE("GPL");
+
+
+Patches currently in stable-queue which might be from rdunlap@infradead.org are
+
+queue-4.14/scripts-modpost-check-memory-allocation-results.patch
+queue-4.14/platform-x86-intel_punit_ipc-fix-build-errors.patch
+queue-4.14/powerpc-platforms-85xx-fix-t1042rdb_diu.c-build-errors-warning.patch
