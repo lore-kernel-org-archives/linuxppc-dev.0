@@ -2,28 +2,28 @@ Return-Path: <s.miroshnichenko@yadro.com>
 Received: from mta-01.yadro.com (mta-01.yadro.com [89.207.88.251])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 428k0N5VpCzF38l
+ by lists.ozlabs.org (Postfix) with ESMTPS id 428k0N5WYbzF390
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2018 21:56:36 +1000 (AEST)
 Received: from localhost (unknown [127.0.0.1])
- by mta-01.yadro.com (Postfix) with ESMTP id 831F941908
+ by mta-01.yadro.com (Postfix) with ESMTP id F3D76411D9
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2018 11:56:30 +0000 (UTC)
 Received: from mta-01.yadro.com ([127.0.0.1])
  by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id fBzZdVhq57LM for <linuxppc-dev@lists.ozlabs.org>;
- Tue, 11 Sep 2018 14:56:29 +0300 (MSK)
+ with ESMTP id 0w4RR1YIcPgi for <linuxppc-dev@lists.ozlabs.org>;
+ Tue, 11 Sep 2018 14:56:30 +0300 (MSK)
 Received: from T-EXCH-02.corp.yadro.com (t-exch-02.corp.yadro.com
  [172.17.10.102])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by mta-01.yadro.com (Postfix) with ESMTPS id 4D771411D9
+ by mta-01.yadro.com (Postfix) with ESMTPS id 7F3B94190D
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2018 14:56:28 +0300 (MSK)
 From: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
 To: <linuxppc-dev@lists.ozlabs.org>
 CC: <linux@yadro.com>, Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
-Subject: [PATCH v3 5/6] PCI/powerpc/eeh: Add pcibios hooks for preparing to
- rescan
-Date: Tue, 11 Sep 2018 14:56:19 +0300
-Message-ID: <20180911115620.10507-6-s.miroshnichenko@yadro.com>
+Subject: [PATCH v3 6/6] powerpc/pci: Reduce code duplication in
+ pci_add_device_node_info
+Date: Tue, 11 Sep 2018 14:56:20 +0300
+Message-ID: <20180911115620.10507-7-s.miroshnichenko@yadro.com>
 In-Reply-To: <20180911115620.10507-1-s.miroshnichenko@yadro.com>
 References: <20180911115620.10507-1-s.miroshnichenko@yadro.com>
 MIME-Version: 1.0
@@ -37,144 +37,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Reading an empty slot returns all ones, which triggers a false
-EEH error event on PowerNV.
-
-New callbacks pcibios_rescan_prepare/done are introduced to
-pause/resume the EEH during rescan.
-
-In the same time it makes possible to miss a real EEH event during
-rescan.
+It is possible now to allocate and fill a new pdn with add_one_dev_pci_data
 
 Signed-off-by: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
 ---
- arch/powerpc/include/asm/eeh.h               |  2 ++
- arch/powerpc/kernel/eeh.c                    | 12 +++++++++++
- arch/powerpc/platforms/powernv/eeh-powernv.c | 22 ++++++++++++++++++++
- drivers/pci/probe.c                          | 14 +++++++++++++
- include/linux/pci.h                          |  2 ++
- 5 files changed, 52 insertions(+)
+ arch/powerpc/kernel/pci_dn.c | 38 +++++++++++++++---------------------
+ 1 file changed, 16 insertions(+), 22 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index 219637ea69a1..63c8e8fa671f 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -219,6 +219,8 @@ struct eeh_ops {
- 	int (*next_error)(struct eeh_pe **pe);
- 	int (*restore_config)(struct pci_dn *pdn);
- 	int (*notify_resume)(struct pci_dn *pdn);
-+	int (*rescan_prepare)(struct pci_bus *bus);
-+	int (*rescan_done)(struct pci_bus *bus);
- };
+diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
+index 863d00561c50..9bd780895926 100644
+--- a/arch/powerpc/kernel/pci_dn.c
++++ b/arch/powerpc/kernel/pci_dn.c
+@@ -151,15 +151,10 @@ static struct pci_dn *add_one_dev_pci_data(struct pci_dn *parent,
+ {
+ 	struct pci_dn *pdn;
  
- extern int eeh_subsystem_flags;
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index 6ebba3e48b01..d55f1089ca7b 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -1831,3 +1831,15 @@ static int __init eeh_init_proc(void)
- 	return 0;
+-	/* Except PHB, we always have the parent */
+-	if (!parent)
+-		return NULL;
+-
+ 	pdn = kzalloc(sizeof(*pdn), GFP_KERNEL);
+ 	if (!pdn)
+ 		return NULL;
+ 
+-	pdn->phb = parent->phb;
+ 	pdn->parent = parent;
+ 	pdn->busno = busno;
+ 	pdn->devfn = devfn;
+@@ -169,7 +164,10 @@ static struct pci_dn *add_one_dev_pci_data(struct pci_dn *parent,
+ 	pdn->pe_number = IODA_INVALID_PE;
+ 	INIT_LIST_HEAD(&pdn->child_list);
+ 	INIT_LIST_HEAD(&pdn->list);
+-	list_add_tail(&pdn->list, &parent->child_list);
++	if (parent) {
++		pdn->phb = parent->phb;
++		list_add_tail(&pdn->list, &parent->child_list);
++	}
+ 
+ 	return pdn;
  }
- __initcall(eeh_init_proc);
+@@ -338,25 +336,29 @@ struct pci_dn *pci_add_device_node_info(struct pci_controller *hose,
+ 	const __be32 *regs;
+ 	struct device_node *parent;
+ 	struct pci_dn *pdn;
++	int busno = 0, devfn = 0;
+ #ifdef CONFIG_EEH
+ 	struct eeh_dev *edev;
+ #endif
+ 
+-	pdn = kzalloc(sizeof(*pdn), GFP_KERNEL);
+-	if (pdn == NULL)
+-		return NULL;
+-	dn->data = pdn;
+-	pdn->phb = hose;
+-	pdn->pe_number = IODA_INVALID_PE;
+ 	regs = of_get_property(dn, "reg", NULL);
+ 	if (regs) {
+ 		u32 addr = of_read_number(regs, 1);
+ 
+ 		/* First register entry is addr (00BBSS00)  */
+-		pdn->busno = (addr >> 16) & 0xff;
+-		pdn->devfn = (addr >> 8) & 0xff;
++		busno = (addr >> 16) & 0xff;
++		devfn = (addr >> 8) & 0xff;
+ 	}
+ 
++	parent = of_get_parent(dn);
++	pdn = add_one_dev_pci_data(parent ? PCI_DN(parent) : NULL,
++				   0, busno, devfn);
++	if (!pdn)
++		return NULL;
 +
-+void pcibios_rescan_prepare(struct pci_bus *bus)
-+{
-+	if (eeh_ops && eeh_ops->rescan_prepare)
-+		eeh_ops->rescan_prepare(bus);
-+}
++	dn->data = pdn;
++	pdn->phb = hose;
 +
-+void pcibios_rescan_done(struct pci_bus *bus)
-+{
-+	if (eeh_ops && eeh_ops->rescan_done)
-+		eeh_ops->rescan_done(bus);
-+}
-diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index 3c1beae29f2d..44c74aa89fb4 100644
---- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -59,6 +59,26 @@ void pnv_pcibios_bus_add_device(struct pci_dev *pdev)
- 	eeh_sysfs_add_device(pdev);
+ 	/* vendor/device IDs and class code */
+ 	regs = of_get_property(dn, "vendor-id", NULL);
+ 	pdn->vendor_id = regs ? of_read_number(regs, 1) : 0;
+@@ -377,14 +379,6 @@ struct pci_dn *pci_add_device_node_info(struct pci_controller *hose,
+ 	}
+ #endif
+ 
+-	/* Attach to parent node */
+-	INIT_LIST_HEAD(&pdn->child_list);
+-	INIT_LIST_HEAD(&pdn->list);
+-	parent = of_get_parent(dn);
+-	pdn->parent = parent ? PCI_DN(parent) : NULL;
+-	if (pdn->parent)
+-		list_add_tail(&pdn->list, &pdn->parent->child_list);
+-
+ 	return pdn;
  }
- 
-+static int pnv_eeh_rescan_prepare(struct pci_bus *bus)
-+{
-+	struct pci_controller *hose = pci_bus_to_host(bus);
-+	struct pnv_phb *phb = hose->private_data;
-+
-+	phb->flags &= ~PNV_PHB_FLAG_EEH;
-+	disable_irq(eeh_event_irq);
-+	return 0;
-+}
-+
-+static int pnv_eeh_rescan_done(struct pci_bus *bus)
-+{
-+	struct pci_controller *hose = pci_bus_to_host(bus);
-+	struct pnv_phb *phb = hose->private_data;
-+
-+	enable_irq(eeh_event_irq);
-+	phb->flags |= PNV_PHB_FLAG_EEH;
-+	return 0;
-+}
-+
- static int pnv_eeh_init(void)
- {
- 	struct pci_controller *hose;
-@@ -1710,6 +1730,8 @@ static struct eeh_ops pnv_eeh_ops = {
- 	.write_config           = pnv_eeh_write_config,
- 	.next_error		= pnv_eeh_next_error,
- 	.restore_config		= pnv_eeh_restore_config,
-+	.rescan_prepare		= pnv_eeh_rescan_prepare,
-+	.rescan_done		= pnv_eeh_rescan_done,
- 	.notify_resume		= NULL
- };
- 
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index ac876e32de4b..4a9045364809 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -2801,6 +2801,14 @@ void __weak pcibios_remove_bus(struct pci_bus *bus)
- {
- }
- 
-+void __weak pcibios_rescan_prepare(struct pci_bus *bus)
-+{
-+}
-+
-+void __weak pcibios_rescan_done(struct pci_bus *bus)
-+{
-+}
-+
- struct pci_bus *pci_create_root_bus(struct device *parent, int bus,
- 		struct pci_ops *ops, void *sysdata, struct list_head *resources)
- {
-@@ -3055,9 +3063,15 @@ unsigned int pci_rescan_bus_bridge_resize(struct pci_dev *bridge)
- unsigned int pci_rescan_bus(struct pci_bus *bus)
- {
- 	unsigned int max;
-+	struct pci_bus *root = bus;
-+
-+	while (!pci_is_root_bus(root))
-+		root = root->parent;
- 
-+	pcibios_rescan_prepare(root);
- 	max = pci_scan_child_bus(bus);
- 	pci_assign_unassigned_bus_resources(bus);
-+	pcibios_rescan_done(root);
- 	pci_bus_add_devices(bus);
- 
- 	return max;
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 340029b2fb38..42930731c5a7 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -1929,6 +1929,8 @@ void pcibios_penalize_isa_irq(int irq, int active);
- int pcibios_alloc_irq(struct pci_dev *dev);
- void pcibios_free_irq(struct pci_dev *dev);
- resource_size_t pcibios_default_alignment(void);
-+void pcibios_rescan_prepare(struct pci_bus *bus);
-+void pcibios_rescan_done(struct pci_bus *bus);
- 
- #ifdef CONFIG_HIBERNATE_CALLBACKS
- extern struct dev_pm_ops pcibios_pm_ops;
+ EXPORT_SYMBOL_GPL(pci_add_device_node_info);
 -- 
 2.17.1
