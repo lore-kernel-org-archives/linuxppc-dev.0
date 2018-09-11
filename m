@@ -1,33 +1,45 @@
-Return-Path: <s.miroshnichenko@yadro.com>
-Received: from mta-01.yadro.com (mta-01.yadro.com [89.207.88.251])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <srs0=ktuc=lz=linux.vnet.ibm.com=mahesh@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 428k0N5WYbzF390
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2018 21:56:36 +1000 (AEST)
-Received: from localhost (unknown [127.0.0.1])
- by mta-01.yadro.com (Postfix) with ESMTP id F3D76411D9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2018 11:56:30 +0000 (UTC)
-Received: from mta-01.yadro.com ([127.0.0.1])
- by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 0w4RR1YIcPgi for <linuxppc-dev@lists.ozlabs.org>;
- Tue, 11 Sep 2018 14:56:30 +0300 (MSK)
-Received: from T-EXCH-02.corp.yadro.com (t-exch-02.corp.yadro.com
- [172.17.10.102])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 428nKr0DphzF36t
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2018 00:26:56 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 428nKq6S4Dz8tRT
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2018 00:26:55 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mta-01.yadro.com (Postfix) with ESMTPS id 7F3B94190D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2018 14:56:28 +0300 (MSK)
-From: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-CC: <linux@yadro.com>, Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
-Subject: [PATCH v3 6/6] powerpc/pci: Reduce code duplication in
- pci_add_device_node_info
-Date: Tue, 11 Sep 2018 14:56:20 +0300
-Message-ID: <20180911115620.10507-7-s.miroshnichenko@yadro.com>
-In-Reply-To: <20180911115620.10507-1-s.miroshnichenko@yadro.com>
-References: <20180911115620.10507-1-s.miroshnichenko@yadro.com>
+ by ozlabs.org (Postfix) with ESMTPS id 428nKq1zs1z9s1x
+ for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2018 00:26:54 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w8BEOnhS108358
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Sep 2018 10:26:51 -0400
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2meet39yng-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Sep 2018 10:26:51 -0400
+Received: from localhost
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Tue, 11 Sep 2018 15:26:49 +0100
+Subject: [PATCH v10 0/5] powerpc/pseries: Machine check handler improvements.
+From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Cc: Michal Suchanek <msuchanek@suse.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Michal Suchanek <msuchanek@suse.com>, Ananth Narayan <ananth@in.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Date: Tue, 11 Sep 2018 19:56:44 +0530
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <153667588649.24785.4453485245076541196.stgit@jupiter.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,97 +49,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It is possible now to allocate and fill a new pdn with add_one_dev_pci_data
+This patch series includes some improvement to Machine check handler
+for pSeries. This patch series drops the sysctl knob patch that was
+proposed in v7. The SLB recovery code now uses flush_and_reload_slb()
+from mce_power.c.
 
-Signed-off-by: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
+Patch 1 defines MCE error event section.
+Patch 2 implements a real mode mce handler and flushes the SLBs on SLB error.
+Patch 3 display's the MCE error details on console.
+Patch 4 saves and dumps the SLB contents on SLB MCE errors to improve the
+debugability.
+Patch 5 consolidates mce early real mode handling code.
+
+Change in v10:
+- Rebase to 4.19.0-rc2. Patch 4 now applies cleanly.
+
+Change in V9:
+- Move mce_exceptions counting to powernv's virtual mode handler.
+- Recover from ERAT errors.
+- Minor changes to fix few warnings/checks from checkpatch.pl
+
+Change in V8:
+- Move mce error log structure definition to ras.c
+- Use flush_and_reload_slb() from mce_power.c.
+- Limit the slb saving to single level of mce recursion.
+- Move mce_faulty_slbs and slb_save_cache_ptr under CONFIG_PPC_BOOK3S_64
+  instead of CONFIG_PPC_PSERIES.
+- Drop the sysctl knob patch.
+
+Change in V7:
+- Fold Michal's patch into patch 5
+- Handle MSR_RI=0 and evil context case in MC handler in patch 5.
+- Patch 7: Print slb cache ptr value and slb cache data.
+- Move patch 8 to patch 9.
+- Introduce patch 8 add sysctl knob for recovery action on recovered MCEs.
+
+Change in V6:
+- Introduce patch 8 to consolidate early real mode handling code.
+- Address Nick's comment on erroneous hunk.
+
+Change in V5:
+- Use min_t instead of max_t.
+- Fix an issue reported by kbuild test robot and address review comments.
+
+Change in V4:
+- Flush the SLBs in real mode mce handler to handle SLB errors for entry 0.
+- Allocate buffers per cpu to hold rtas error log and old slb contents.
+- Defer the logging of rtas error log to irq work queue.
+
+Change in V3:
+- Moved patch 5 to patch 2
+
+Change in V2:
+- patch 3: Display additional info (NIP and task info) in MCE error details.
+- patch 5: Fix endain bug while restoring of r3 in MCE handler.
+
+
 ---
- arch/powerpc/kernel/pci_dn.c | 38 +++++++++++++++---------------------
- 1 file changed, 16 insertions(+), 22 deletions(-)
 
-diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
-index 863d00561c50..9bd780895926 100644
---- a/arch/powerpc/kernel/pci_dn.c
-+++ b/arch/powerpc/kernel/pci_dn.c
-@@ -151,15 +151,10 @@ static struct pci_dn *add_one_dev_pci_data(struct pci_dn *parent,
- {
- 	struct pci_dn *pdn;
- 
--	/* Except PHB, we always have the parent */
--	if (!parent)
--		return NULL;
--
- 	pdn = kzalloc(sizeof(*pdn), GFP_KERNEL);
- 	if (!pdn)
- 		return NULL;
- 
--	pdn->phb = parent->phb;
- 	pdn->parent = parent;
- 	pdn->busno = busno;
- 	pdn->devfn = devfn;
-@@ -169,7 +164,10 @@ static struct pci_dn *add_one_dev_pci_data(struct pci_dn *parent,
- 	pdn->pe_number = IODA_INVALID_PE;
- 	INIT_LIST_HEAD(&pdn->child_list);
- 	INIT_LIST_HEAD(&pdn->list);
--	list_add_tail(&pdn->list, &parent->child_list);
-+	if (parent) {
-+		pdn->phb = parent->phb;
-+		list_add_tail(&pdn->list, &parent->child_list);
-+	}
- 
- 	return pdn;
- }
-@@ -338,25 +336,29 @@ struct pci_dn *pci_add_device_node_info(struct pci_controller *hose,
- 	const __be32 *regs;
- 	struct device_node *parent;
- 	struct pci_dn *pdn;
-+	int busno = 0, devfn = 0;
- #ifdef CONFIG_EEH
- 	struct eeh_dev *edev;
- #endif
- 
--	pdn = kzalloc(sizeof(*pdn), GFP_KERNEL);
--	if (pdn == NULL)
--		return NULL;
--	dn->data = pdn;
--	pdn->phb = hose;
--	pdn->pe_number = IODA_INVALID_PE;
- 	regs = of_get_property(dn, "reg", NULL);
- 	if (regs) {
- 		u32 addr = of_read_number(regs, 1);
- 
- 		/* First register entry is addr (00BBSS00)  */
--		pdn->busno = (addr >> 16) & 0xff;
--		pdn->devfn = (addr >> 8) & 0xff;
-+		busno = (addr >> 16) & 0xff;
-+		devfn = (addr >> 8) & 0xff;
- 	}
- 
-+	parent = of_get_parent(dn);
-+	pdn = add_one_dev_pci_data(parent ? PCI_DN(parent) : NULL,
-+				   0, busno, devfn);
-+	if (!pdn)
-+		return NULL;
-+
-+	dn->data = pdn;
-+	pdn->phb = hose;
-+
- 	/* vendor/device IDs and class code */
- 	regs = of_get_property(dn, "vendor-id", NULL);
- 	pdn->vendor_id = regs ? of_read_number(regs, 1) : 0;
-@@ -377,14 +379,6 @@ struct pci_dn *pci_add_device_node_info(struct pci_controller *hose,
- 	}
- #endif
- 
--	/* Attach to parent node */
--	INIT_LIST_HEAD(&pdn->child_list);
--	INIT_LIST_HEAD(&pdn->list);
--	parent = of_get_parent(dn);
--	pdn->parent = parent ? PCI_DN(parent) : NULL;
--	if (pdn->parent)
--		list_add_tail(&pdn->list, &pdn->parent->child_list);
--
- 	return pdn;
- }
- EXPORT_SYMBOL_GPL(pci_add_device_node_info);
--- 
-2.17.1
+Mahesh Salgaonkar (5):
+      powerpc/pseries: Define MCE error event section.
+      powerpc/pseries: flush SLB contents on SLB MCE errors.
+      powerpc/pseries: Display machine check error details.
+      powerpc/pseries: Dump the SLB contents on SLB MCE errors.
+      powernv/pseries: consolidate code for mce early handling.
+
+
+ arch/powerpc/include/asm/book3s/64/mmu-hash.h |    7 +
+ arch/powerpc/include/asm/machdep.h            |    1 
+ arch/powerpc/include/asm/mce.h                |    3 
+ arch/powerpc/include/asm/paca.h               |    6 
+ arch/powerpc/include/asm/rtas.h               |   13 +
+ arch/powerpc/kernel/exceptions-64s.S          |   42 +++
+ arch/powerpc/kernel/mce.c                     |    9 -
+ arch/powerpc/kernel/mce_power.c               |    2 
+ arch/powerpc/mm/slb.c                         |   70 ++++++
+ arch/powerpc/platforms/powernv/opal.c         |    2 
+ arch/powerpc/platforms/powernv/setup.c        |   11 +
+ arch/powerpc/platforms/pseries/pseries.h      |    1 
+ arch/powerpc/platforms/pseries/ras.c          |  303 +++++++++++++++++++++++++
+ arch/powerpc/platforms/pseries/setup.c        |   14 +
+ 14 files changed, 472 insertions(+), 12 deletions(-)
+
+--
+-Mahesh.
