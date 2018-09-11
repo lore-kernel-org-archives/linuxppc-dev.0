@@ -1,24 +1,17 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <andy.tang@nxp.com>
+Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 428QzK6knlzF38b
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2018 10:39:41 +1000 (AEST)
-Date: Tue, 11 Sep 2018 08:38:06 +1000
-From: Paul Mackerras <paulus@ozlabs.org>
-To: Michael Neuling <mikey@neuling.org>
-Cc: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>,
- mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- Haren Myneni <haren@linux.vnet.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH] powerpc: Avoid code patching freed init sections
-Message-ID: <20180910223806.GA25158@fergus>
-References: <20180910054405.32422-1-mikey@neuling.org>
- <20180910115457.60366160@naga.suse.cz>
- <794308ed6aa6dcccf96e10bb0e3fa8d2dab9adff.camel@neuling.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <794308ed6aa6dcccf96e10bb0e3fa8d2dab9adff.camel@neuling.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 428T6702ylzF38l
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2018 12:15:41 +1000 (AEST)
+From: andy.tang@nxp.com
+To: oss@buserror.net
+Cc: robh+dt@kernel.org, mark.rutland@arm.com, benh@kernel.crashing.org,
+ devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Yuantian Tang <andy.tang@nxp.com>
+Subject: [PATCH] powerpc/mpc85xx: fix issues in clock node
+Date: Tue, 11 Sep 2018 10:12:24 +0800
+Message-Id: <20180911021224.30558-1-andy.tang@nxp.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,27 +21,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Sep 10, 2018 at 08:05:38PM +1000, Michael Neuling wrote:
-> 
-> > > +	/* Make sure we aren't patching a freed init section */
-> > > +	if (in_init_section(patch_addr) && init_freed())
-> > > +		return 0;
-> > > +
-> > 
-> > Do we even need the init_freed() check?
-> 
-> Maybe not.  If userspace isn't up, then maybe it's ok to skip.
+From: Yuantian Tang <andy.tang@nxp.com>
 
-Isn't this same function used for patching asm feature sections?  It's
-not OK to skip patching them in init code.
+The compatible string is not correct in the clock node.
+The clocks property refers to the wrong node too.
+This patch is to fix them.
 
-> > What user input can we process in init-only code?
-> 
-> See the stack trace in the commit message. It's a weird case for KVM guests in
-> KVM PR mode. 
+Signed-off-by: Tang Yuantian <andy.tang@nxp.com>
+---
+ arch/powerpc/boot/dts/fsl/t1023si-post.dtsi |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-The fault_in_pages_readable (formerly __get_user) there isn't actually
-reading userspace, it's just a way of doing a load with a convenient
-way to handle it if it traps.
-
-Paul.
+diff --git a/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi b/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi
+index 4908af5..763caf4 100644
+--- a/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi
+@@ -348,7 +348,7 @@
+ 		mux0: mux0@0 {
+ 			#clock-cells = <0>;
+ 			reg = <0x0 4>;
+-			compatible = "fsl,core-mux-clock";
++			compatible = "fsl,qoriq-core-mux-2.0";
+ 			clocks = <&pll0 0>, <&pll0 1>;
+ 			clock-names = "pll0_0", "pll0_1";
+ 			clock-output-names = "cmux0";
+@@ -356,9 +356,9 @@
+ 		mux1: mux1@20 {
+ 			#clock-cells = <0>;
+ 			reg = <0x20 4>;
+-			compatible = "fsl,core-mux-clock";
+-			clocks = <&pll0 0>, <&pll0 1>;
+-			clock-names = "pll0_0", "pll0_1";
++			compatible = "fsl,qoriq-core-mux-2.0";
++			clocks = <&pll1 0>, <&pll1 1>;
++			clock-names = "pll1_0", "pll1_1";
+ 			clock-output-names = "cmux1";
+ 		};
+ 	};
+-- 
+1.7.1
