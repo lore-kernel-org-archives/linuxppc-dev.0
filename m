@@ -1,39 +1,23 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <helgaas@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 429JGC4jW9zF31W
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2018 20:40:35 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w8CAeA2h010742
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2018 06:40:32 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2mexa5ypt2-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2018 06:40:31 -0400
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
- Wed, 12 Sep 2018 11:40:09 +0100
-Subject: Re: [PATCH v2 5/5] PCI/powerpc/eeh: Add pcibios hooks for preparing
- to rescan
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Reply-To: benh@au1.ibm.com
-To: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>, Sam Bobroff
- <sbobroff@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux@yadro.com
-Date: Wed, 12 Sep 2018 12:39:57 +0200
-In-Reply-To: <61e8e5b9-0ed2-1848-d676-64bcbd3b9cbc@yadro.com>
-References: <20180906115752.29316-1-s.miroshnichenko@yadro.com>
- <20180906115752.29316-6-s.miroshnichenko@yadro.com>
- <20180910050328.GC14370@tungsten.ozlabs.ibm.com>
- <61e8e5b9-0ed2-1848-d676-64bcbd3b9cbc@yadro.com>
-Mime-Version: 1.0
-Message-Id: <baf90fe99f3644b33d50966b5721991a84369a7d.camel@au1.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 429MPY6MMjzF2QM
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2018 23:02:09 +1000 (AEST)
+Date: Wed, 12 Sep 2018 08:02:05 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Sebastian Ott <sebott@linux.ibm.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
+ Arnd Bergmann <arnd@arndb.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 0/2] sriov enablement on s390
+Message-ID: <20180912130205.GG118330@bhelgaas-glaptop.roam.corp.google.com>
+References: <20180912123411.23229-1-sebott@linux.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180912123411.23229-1-sebott@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,21 +27,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2018-09-10 at 19:00 +0300, Sergey Miroshnichenko wrote:
+[+cc Arnd, powerpc folks]
+
+On Wed, Sep 12, 2018 at 02:34:09PM +0200, Sebastian Ott wrote:
+> Hello Bjorn,
 > 
-> Yes, missing a real EEH event is possible, unfortunately, and it is
-> indeed worth mentioning.
+> On s390 we currently handle SRIOV within firmware. Which means
+> that the PF is under firmware control and not visible to operating
+> systems. SRIOV enablement happens within firmware and VFs are
+> passed through to logical partitions.
 > 
-> To reduce this probability the next patchset I'll post in a few days
-> among other things puts all the affected device drivers to pause during
-> rescan, mainly because of moving BARs and bridge windows, but it will
-> also help here a bit.
+> I'm working on a new mode were the PF is under operating system
+> control (including SRIOV enablement). However we still need
+> firmware support to access the VFs. The way this is supposed
+> to work is that when firmware traps the SRIOV enablement it
+> will present machine checks to the logical partition that
+> triggered the SRIOV enablement and provide the VFs via hotplug
+> events.
+> 
+> The problem I'm faced with is that the VF detection code in
+> sriov_enable leads to unusable functions in s390.
 
-How do you deal with moving BARs etc... within the segmenting
-restrictions of EEH ?
+We're moving away from the weak function implementation style.  Can
+you take a look at Arnd's work here, which uses pci_host_bridge
+callbacks instead?
 
-It's a horrible mess right now and I don't know if the current code can
-even work properly to be honest.
+  https://lkml.kernel.org/r/20180817102645.3839621-1-arnd@arndb.de
 
-Cheers,
-Ben.
+I cc'd some powerpc folks because they also have a fair amount of
+arch-specific SR-IOV code that might one day move in this direction.
+
+> Sebastian Ott (2):
+>   pci: provide pcibios_sriov_add_vfs
+>   s390/pci: handle function enumeration after sriov enablement
+> 
+>  arch/s390/pci/pci.c | 11 +++++++++++
+>  drivers/pci/iov.c   | 43 +++++++++++++++++++++++++++++++------------
+>  include/linux/pci.h |  2 ++
+>  3 files changed, 44 insertions(+), 12 deletions(-)
+> 
+> -- 
+> 2.13.4
+> 
