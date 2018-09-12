@@ -1,49 +1,18 @@
-Return-Path: <sbobroff@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4293vr6mjnzF3HQ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2018 11:23:52 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w8C1IY5j038002
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2018 21:23:51 -0400
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2meqcyueqn-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2018 21:23:50 -0400
-Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sbobroff@linux.ibm.com>;
- Wed, 12 Sep 2018 02:23:49 +0100
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- w8C1NZf067043582
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2018 01:23:35 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0782B4C040
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2018 04:23:27 +0100 (BST)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A9B564C046
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2018 04:23:26 +0100 (BST)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2018 04:23:26 +0100 (BST)
-Received: from tungsten.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
- (using TLSv1.2 with cipher DHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id A42D7A0123
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2018 11:23:32 +1000 (AEST)
-From: Sam Bobroff <sbobroff@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 00/14] EEH refactoring 3
-Date: Wed, 12 Sep 2018 11:23:19 +1000
-MIME-Version: 1.0
-Message-Id: <cover.1536715396.git.sbobroff@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4299BD3m4bzF38B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2018 15:21:40 +1000 (AEST)
+From: Michael Neuling <mikey@neuling.org>
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>,
+ paulus@ozlabs.org, Haren Myneni <haren@linux.vnet.ibm.com>,
+ mikey@neuling.org, =?UTF-8?q?Michal=20Such=C3=A1nek?= <msuchanek@suse.de>,
+ Christophe LEROY <christophe.leroy@c-s.fr>
+Subject: [PATCH v2] powerpc: Avoid code patching freed init sections
+Date: Wed, 12 Sep 2018 15:20:58 +1000
+Message-Id: <20180912052058.10062-1-mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,47 +22,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello everyone,
+This stops us from doing code patching in init sections after they've
+been freed.
 
-Here is another set of minor fixes and cleanups for the EEH code. There should
-be no significant changes in behaviour.
+In this chain:
+  kvm_guest_init() ->
+    kvm_use_magic_page() ->
+      fault_in_pages_readable() ->
+	 __get_user() ->
+	   __get_user_nocheck() ->
+	     barrier_nospec();
 
-I'm not sure if all of these are worth doing, and I don't want to add
-unnecessary churn so please comment if you have an opinion or better approach.
+We have a code patching location at barrier_nospec() and
+kvm_guest_init() is an init function. This whole chain gets inlined,
+so when we free the init section (hence kvm_guest_init()), this code
+goes away and hence should no longer be patched.
 
-The set is based on powerpc next.
+We seen this as userspace memory corruption when using a memory
+checker while doing partition migration testing on powervm (this
+starts the code patching post migration via
+/sys/kernel/mobility/migration). In theory, it could also happen when
+using /sys/kernel/debug/powerpc/barrier_nospec.
 
-Cheers,
-Sam
+With this patch there is a small change of a race if we code patch
+between the init section being freed and setting SYSTEM_RUNNING (in
+kernel_init()) but that seems like an impractical time and small
+window for any code patching to occur.
 
-Sam Bobroff (14):
-  powerpc/eeh: Fix possible null deref in eeh_dump_dev_log()
-  powerpc/eeh: Fix null deref for devices removed during EEH
-  powerpc/eeh: Fix use of EEH_PE_KEEP on wrong field
-  powerpc/eeh: Cleanup EEH_POSTPONED_PROBE
-  powerpc/eeh: Cleanup unused field in eeh_dev
-  powerpc/eeh: Cleanup eeh_add_virt_device()
-  powerpc/eeh: Cleanup list_head field names
-  powerpc/eeh: Cleanup field names in eeh_rmv_data
-  powerpc/eeh: Cleanup logic in eeh_rmv_from_parent_pe()
-  powerpc/eeh: Cleanup eeh_enabled()
-  powerpc/eeh: Cleanup unnecessary eeh_pe_state_mark_with_cfg()
-  powerpc/eeh: Cleanup eeh_pe_state_mark()
-  powerpc/eeh: Cleanup eeh_ops.wait_state()
-  powerpc/eeh: Cleanup control flow in eeh_handle_normal_event()
+cc: stable@vger.kernel.org # 4.13+
+Signed-off-by: Michael Neuling <mikey@neuling.org>
 
- arch/powerpc/include/asm/eeh.h               |  24 +-
- arch/powerpc/include/asm/ppc-pci.h           |   1 +
- arch/powerpc/kernel/eeh.c                    |  42 ++--
- arch/powerpc/kernel/eeh_dev.c                |   2 -
- arch/powerpc/kernel/eeh_driver.c             | 237 +++++++++----------
- arch/powerpc/kernel/eeh_pe.c                 | 160 +++++++------
- arch/powerpc/platforms/powernv/eeh-powernv.c |  62 +----
- arch/powerpc/platforms/pseries/eeh_pseries.c |  66 +-----
- arch/powerpc/platforms/pseries/msi.c         |   3 +-
- arch/powerpc/platforms/pseries/pci.c         |   1 +
- drivers/pci/hotplug/pnv_php.c                |   2 +-
- 11 files changed, 250 insertions(+), 350 deletions(-)
+---
+For stable I've marked this as v4.13+ since that's when we refactored
+code-patching.c but it could go back even further than that. In
+reality though, I think we can only hit this since the first
+spectre/meltdown changes.
 
+v2:
+  Print when we skip an address
+---
+ arch/powerpc/lib/code-patching.c | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
+
+diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
+index 850f3b8f4d..68254e7f17 100644
+--- a/arch/powerpc/lib/code-patching.c
++++ b/arch/powerpc/lib/code-patching.c
+@@ -23,11 +23,33 @@
+ #include <asm/code-patching.h>
+ #include <asm/setup.h>
+ 
++
++static inline bool in_init_section(unsigned int *patch_addr)
++{
++	if (patch_addr < (unsigned int *)__init_begin)
++		return false;
++	if (patch_addr >= (unsigned int *)__init_end)
++		return false;
++	return true;
++}
++
++static inline bool init_freed(void)
++{
++	return (system_state >= SYSTEM_RUNNING);
++}
++
+ static int __patch_instruction(unsigned int *exec_addr, unsigned int instr,
+ 			       unsigned int *patch_addr)
+ {
+ 	int err;
+ 
++	/* Make sure we aren't patching a freed init section */
++	if (in_init_section(patch_addr) && init_freed()) {
++		printk(KERN_DEBUG "Skipping init section patching addr: 0x%lx\n",
++			(unsigned long)patch_addr);
++		return 0;
++	}
++
+ 	__put_user_size(instr, patch_addr, 4, err);
+ 	if (err)
+ 		return err;
 -- 
-2.19.0.2.gcad72f5712
+2.17.1
