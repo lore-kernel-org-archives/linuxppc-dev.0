@@ -1,18 +1,17 @@
 Return-Path: <fthain@telegraphics.com.au>
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 4292Sj4LT6zF36d
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2018 10:18:45 +1000 (AEST)
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTP id 4292Sl12XPzF36d
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2018 10:18:47 +1000 (AEST)
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: <linuxppc-dev@lists.ozlabs.org>, <linux-m68k@lists.linux-m68k.org>,
- <linux-kernel@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>,
- Arnd Bergmann <arnd@arndb.de>
-Message-Id: <7a0748d8cd97964a99879a0b9f1c0243c677c7c3.1536709753.git.fthain@telegraphics.com.au>
+ <linux-kernel@vger.kernel.org>
+Message-Id: <348ad9ee1da7853b59e3ffeda38b652470ec4515.1536709753.git.fthain@telegraphics.com.au>
 In-Reply-To: <cover.1536709753.git.fthain@telegraphics.com.au>
 References: <cover.1536709753.git.fthain@telegraphics.com.au>
 From: Finn Thain <fthain@telegraphics.com.au>
-Subject: [PATCH 1/7] macintosh: Use common code to access RTC
+Subject: [PATCH 6/7] macintosh/via-macii, macintosh/adb-iop: Modernize printk
+ calls
 Date: Tue, 11 Sep 2018 20:18:44 -0400 (EDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -23,503 +22,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now that the 68k Mac port has adopted the via-pmu driver, the same RTC
-code can be shared between m68k and powerpc. Replace duplicated code in
-arch/powerpc and arch/m68k with common RTC accessors for Cuda and PMU.
+Add missing severity level to log messages.
 
-Drop the problematic WARN_ON which was introduced in commit 22db552b50fa
-("powerpc/powermac: Fix rtc read/write functions").
-
-Tested-by: Stan Johnson <userm57@yahoo.com>
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Arnd Bergmann <arnd@arndb.de>
 ---
-This patch has been regression tested on the following Mac models.
-  Centris 660av       (m68k, Cuda)
-  PowerBook 190       (m68k, PMU)
-  Beige G3 PowerMac   (powerpc, Cuda)
-  Pismo G3 PowerBook  (powerpc, PMU)
-  G5 PowerMac         (powerpc64, PMU)
+ drivers/macintosh/adb-iop.c   | 2 +-
+ drivers/macintosh/via-macii.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-These changes were previously submitted as "[RFC] macintosh: Use common
-code to access RTC", and prior to that as "[PATCH v3 10/12] macintosh:
-Use common code to access RTC", etc.
-
-Changes since RFC:
-- pmac_get_rtc_time() is no longer defined terms of pmac_get_boot_time().
-- The 64-bit temporary variables were replaced with 64-bit casts,
-  consistent with via_read_time() and via_set_rtc_time().
-- Rebased.
-
-Changes since v3:
-- Rearranged some #ifdefs in arch/powerpc/platforms/powermac/time.c so
-  that pmac_set_rtc_time() will return -ENODEV when appropriate.
-- Rebased.
----
- arch/m68k/mac/misc.c                   |  75 +++-----------------
- arch/powerpc/platforms/powermac/time.c | 126 ++++++---------------------------
- drivers/macintosh/via-cuda.c           |  35 +++++++++
- drivers/macintosh/via-pmu.c            |  33 +++++++++
- include/linux/cuda.h                   |   4 ++
- include/linux/pmu.h                    |   4 ++
- 6 files changed, 106 insertions(+), 171 deletions(-)
-
-diff --git a/arch/m68k/mac/misc.c b/arch/m68k/mac/misc.c
-index 1b083c500b9a..ebb3b6d169ea 100644
---- a/arch/m68k/mac/misc.c
-+++ b/arch/m68k/mac/misc.c
-@@ -37,35 +37,6 @@
- static void (*rom_reset)(void);
+diff --git a/drivers/macintosh/adb-iop.c b/drivers/macintosh/adb-iop.c
+index ca623e6446e4..3a1e995ecc0e 100644
+--- a/drivers/macintosh/adb-iop.c
++++ b/drivers/macintosh/adb-iop.c
+@@ -208,7 +208,7 @@ int adb_iop_probe(void)
  
- #ifdef CONFIG_ADB_CUDA
--static time64_t cuda_read_time(void)
--{
--	struct adb_request req;
--	time64_t time;
--
--	if (cuda_request(&req, NULL, 2, CUDA_PACKET, CUDA_GET_TIME) < 0)
--		return 0;
--	while (!req.complete)
--		cuda_poll();
--
--	time = (u32)((req.reply[3] << 24) | (req.reply[4] << 16) |
--		     (req.reply[5] << 8) | req.reply[6]);
--
--	return time - RTC_OFFSET;
--}
--
--static void cuda_write_time(time64_t time)
--{
--	struct adb_request req;
--	u32 data = lower_32_bits(time + RTC_OFFSET);
--
--	if (cuda_request(&req, NULL, 6, CUDA_PACKET, CUDA_SET_TIME,
--			 (data >> 24) & 0xFF, (data >> 16) & 0xFF,
--			 (data >> 8) & 0xFF, data & 0xFF) < 0)
--		return;
--	while (!req.complete)
--		cuda_poll();
--}
--
- static __u8 cuda_read_pram(int offset)
+ int adb_iop_init(void)
  {
- 	struct adb_request req;
-@@ -91,33 +62,6 @@ static void cuda_write_pram(int offset, __u8 data)
- #endif /* CONFIG_ADB_CUDA */
+-	printk("adb: IOP ISM driver v0.4 for Unified ADB.\n");
++	pr_info("adb: IOP ISM driver v0.4 for Unified ADB\n");
+ 	iop_listen(ADB_IOP, ADB_CHAN, adb_iop_listen, "ADB");
+ 	return 0;
+ }
+diff --git a/drivers/macintosh/via-macii.c b/drivers/macintosh/via-macii.c
+index 6ed9ac91aca1..a38f57ba50cb 100644
+--- a/drivers/macintosh/via-macii.c
++++ b/drivers/macintosh/via-macii.c
+@@ -127,7 +127,7 @@ static int macii_probe(void)
  
- #ifdef CONFIG_ADB_PMU
--static time64_t pmu_read_time(void)
--{
--	struct adb_request req;
--	time64_t time;
--
--	if (pmu_request(&req, NULL, 1, PMU_READ_RTC) < 0)
--		return 0;
--	pmu_wait_complete(&req);
--
--	time = (u32)((req.reply[0] << 24) | (req.reply[1] << 16) |
--		     (req.reply[2] << 8) | req.reply[3]);
--
--	return time - RTC_OFFSET;
--}
--
--static void pmu_write_time(time64_t time)
--{
--	struct adb_request req;
--	u32 data = lower_32_bits(time + RTC_OFFSET);
--
--	if (pmu_request(&req, NULL, 5, PMU_SET_RTC,
--			(data >> 24) & 0xFF, (data >> 16) & 0xFF,
--			(data >> 8) & 0xFF, data & 0xFF) < 0)
--		return;
--	pmu_wait_complete(&req);
--}
--
- static __u8 pmu_read_pram(int offset)
- {
- 	struct adb_request req;
-@@ -295,13 +239,17 @@ static time64_t via_read_time(void)
-  * is basically any machine with Mac II-style ADB.
-  */
+ 	via = via1;
  
--static void via_write_time(time64_t time)
-+static void via_set_rtc_time(struct rtc_time *tm)
- {
- 	union {
- 		__u8 cdata[4];
- 		__u32 idata;
- 	} data;
- 	__u8 temp;
-+	time64_t time;
-+
-+	time = mktime64(tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,
-+	                tm->tm_hour, tm->tm_min, tm->tm_sec);
- 
- 	/* Clear the write protect bit */
- 
-@@ -641,12 +589,12 @@ int mac_hwclk(int op, struct rtc_time *t)
- #ifdef CONFIG_ADB_CUDA
- 		case MAC_ADB_EGRET:
- 		case MAC_ADB_CUDA:
--			now = cuda_read_time();
-+			now = cuda_get_time();
- 			break;
- #endif
- #ifdef CONFIG_ADB_PMU
- 		case MAC_ADB_PB2:
--			now = pmu_read_time();
-+			now = pmu_get_time();
- 			break;
- #endif
- 		default:
-@@ -665,24 +613,21 @@ int mac_hwclk(int op, struct rtc_time *t)
- 		         __func__, t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
- 		         t->tm_hour, t->tm_min, t->tm_sec);
- 
--		now = mktime64(t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
--			       t->tm_hour, t->tm_min, t->tm_sec);
--
- 		switch (macintosh_config->adb_type) {
- 		case MAC_ADB_IOP:
- 		case MAC_ADB_II:
- 		case MAC_ADB_PB1:
--			via_write_time(now);
-+			via_set_rtc_time(t);
- 			break;
- #ifdef CONFIG_ADB_CUDA
- 		case MAC_ADB_EGRET:
- 		case MAC_ADB_CUDA:
--			cuda_write_time(now);
-+			cuda_set_rtc_time(t);
- 			break;
- #endif
- #ifdef CONFIG_ADB_PMU
- 		case MAC_ADB_PB2:
--			pmu_write_time(now);
-+			pmu_set_rtc_time(t);
- 			break;
- #endif
- 		default:
-diff --git a/arch/powerpc/platforms/powermac/time.c b/arch/powerpc/platforms/powermac/time.c
-index f92c1918fb56..f157e3d071f2 100644
---- a/arch/powerpc/platforms/powermac/time.c
-+++ b/arch/powerpc/platforms/powermac/time.c
-@@ -44,13 +44,6 @@
- #define DBG(x...)
- #endif
- 
--/*
-- * Offset between Unix time (1970-based) and Mac time (1904-based). Cuda and PMU
-- * times wrap in 2040. If we need to handle later times, the read_time functions
-- * need to be changed to interpret wrapped times as post-2040.
-- */
--#define RTC_OFFSET	2082844800
--
- /*
-  * Calibrate the decrementer frequency with the VIA timer 1.
-  */
-@@ -90,98 +83,6 @@ long __init pmac_time_init(void)
- 	return delta;
+-	printk("adb: Mac II ADB Driver v1.0 for Unified ADB\n");
++	pr_info("adb: Mac II ADB Driver v1.0 for Unified ADB\n");
+ 	return 0;
  }
  
--#ifdef CONFIG_ADB_CUDA
--static time64_t cuda_get_time(void)
--{
--	struct adb_request req;
--	time64_t now;
--
--	if (cuda_request(&req, NULL, 2, CUDA_PACKET, CUDA_GET_TIME) < 0)
--		return 0;
--	while (!req.complete)
--		cuda_poll();
--	if (req.reply_len != 7)
--		printk(KERN_ERR "cuda_get_time: got %d byte reply\n",
--		       req.reply_len);
--	now = (u32)((req.reply[3] << 24) + (req.reply[4] << 16) +
--		    (req.reply[5] << 8) + req.reply[6]);
--	/* it's either after year 2040, or the RTC has gone backwards */
--	WARN_ON(now < RTC_OFFSET);
--
--	return now - RTC_OFFSET;
--}
--
--#define cuda_get_rtc_time(tm)	rtc_time64_to_tm(cuda_get_time(), (tm))
--
--static int cuda_set_rtc_time(struct rtc_time *tm)
--{
--	u32 nowtime;
--	struct adb_request req;
--
--	nowtime = lower_32_bits(rtc_tm_to_time64(tm) + RTC_OFFSET);
--	if (cuda_request(&req, NULL, 6, CUDA_PACKET, CUDA_SET_TIME,
--			 nowtime >> 24, nowtime >> 16, nowtime >> 8,
--			 nowtime) < 0)
--		return -ENXIO;
--	while (!req.complete)
--		cuda_poll();
--	if ((req.reply_len != 3) && (req.reply_len != 7))
--		printk(KERN_ERR "cuda_set_rtc_time: got %d byte reply\n",
--		       req.reply_len);
--	return 0;
--}
--
--#else
--#define cuda_get_time()		0
--#define cuda_get_rtc_time(tm)
--#define cuda_set_rtc_time(tm)	0
--#endif
--
--#ifdef CONFIG_ADB_PMU
--static time64_t pmu_get_time(void)
--{
--	struct adb_request req;
--	time64_t now;
--
--	if (pmu_request(&req, NULL, 1, PMU_READ_RTC) < 0)
--		return 0;
--	pmu_wait_complete(&req);
--	if (req.reply_len != 4)
--		printk(KERN_ERR "pmu_get_time: got %d byte reply from PMU\n",
--		       req.reply_len);
--	now = (u32)((req.reply[0] << 24) + (req.reply[1] << 16)	+
--		    (req.reply[2] << 8) + req.reply[3]);
--
--	/* it's either after year 2040, or the RTC has gone backwards */
--	WARN_ON(now < RTC_OFFSET);
--
--	return now - RTC_OFFSET;
--}
--
--#define pmu_get_rtc_time(tm)	rtc_time64_to_tm(pmu_get_time(), (tm))
--
--static int pmu_set_rtc_time(struct rtc_time *tm)
--{
--	u32 nowtime;
--	struct adb_request req;
--
--	nowtime = lower_32_bits(rtc_tm_to_time64(tm) + RTC_OFFSET);
--	if (pmu_request(&req, NULL, 5, PMU_SET_RTC, nowtime >> 24,
--			nowtime >> 16, nowtime >> 8, nowtime) < 0)
--		return -ENXIO;
--	pmu_wait_complete(&req);
--	if (req.reply_len != 0)
--		printk(KERN_ERR "pmu_set_rtc_time: %d byte reply from PMU\n",
--		       req.reply_len);
--	return 0;
--}
--
--#else
--#define pmu_get_time()		0
--#define pmu_get_rtc_time(tm)
--#define pmu_set_rtc_time(tm)	0
--#endif
--
- #ifdef CONFIG_PMAC_SMU
- static time64_t smu_get_time(void)
- {
-@@ -191,11 +92,6 @@ static time64_t smu_get_time(void)
- 		return 0;
- 	return rtc_tm_to_time64(&tm);
- }
--
--#else
--#define smu_get_time()			0
--#define smu_get_rtc_time(tm, spin)
--#define smu_set_rtc_time(tm, spin)	0
- #endif
- 
- /* Can't be __init, it's called when suspending and resuming */
-@@ -203,12 +99,18 @@ time64_t pmac_get_boot_time(void)
- {
- 	/* Get the time from the RTC, used only at boot time */
- 	switch (sys_ctrler) {
-+#ifdef CONFIG_ADB_CUDA
- 	case SYS_CTRLER_CUDA:
- 		return cuda_get_time();
-+#endif
-+#ifdef CONFIG_ADB_PMU
- 	case SYS_CTRLER_PMU:
- 		return pmu_get_time();
-+#endif
-+#ifdef CONFIG_PMAC_SMU
- 	case SYS_CTRLER_SMU:
- 		return smu_get_time();
-+#endif
- 	default:
- 		return 0;
- 	}
-@@ -218,15 +120,21 @@ void pmac_get_rtc_time(struct rtc_time *tm)
- {
- 	/* Get the time from the RTC, used only at boot time */
- 	switch (sys_ctrler) {
-+#ifdef CONFIG_ADB_CUDA
- 	case SYS_CTRLER_CUDA:
--		cuda_get_rtc_time(tm);
-+		rtc_time64_to_tm(cuda_get_time(), tm);
- 		break;
-+#endif
-+#ifdef CONFIG_ADB_PMU
- 	case SYS_CTRLER_PMU:
--		pmu_get_rtc_time(tm);
-+		rtc_time64_to_tm(pmu_get_time(), tm);
- 		break;
-+#endif
-+#ifdef CONFIG_PMAC_SMU
- 	case SYS_CTRLER_SMU:
- 		smu_get_rtc_time(tm, 1);
- 		break;
-+#endif
- 	default:
- 		;
- 	}
-@@ -235,12 +143,18 @@ void pmac_get_rtc_time(struct rtc_time *tm)
- int pmac_set_rtc_time(struct rtc_time *tm)
- {
- 	switch (sys_ctrler) {
-+#ifdef CONFIG_ADB_CUDA
- 	case SYS_CTRLER_CUDA:
- 		return cuda_set_rtc_time(tm);
-+#endif
-+#ifdef CONFIG_ADB_PMU
- 	case SYS_CTRLER_PMU:
- 		return pmu_set_rtc_time(tm);
-+#endif
-+#ifdef CONFIG_PMAC_SMU
- 	case SYS_CTRLER_SMU:
- 		return smu_set_rtc_time(tm, 1);
-+#endif
- 	default:
- 		return -ENODEV;
- 	}
-diff --git a/drivers/macintosh/via-cuda.c b/drivers/macintosh/via-cuda.c
-index 98dd702eb867..bbec6ac0a966 100644
---- a/drivers/macintosh/via-cuda.c
-+++ b/drivers/macintosh/via-cuda.c
-@@ -766,3 +766,38 @@ cuda_input(unsigned char *buf, int nb)
- 	               buf, nb, false);
-     }
- }
-+
-+/* Offset between Unix time (1970-based) and Mac time (1904-based) */
-+#define RTC_OFFSET	2082844800
-+
-+time64_t cuda_get_time(void)
-+{
-+	struct adb_request req;
-+	u32 now;
-+
-+	if (cuda_request(&req, NULL, 2, CUDA_PACKET, CUDA_GET_TIME) < 0)
-+		return 0;
-+	while (!req.complete)
-+		cuda_poll();
-+	if (req.reply_len != 7)
-+		pr_err("%s: got %d byte reply\n", __func__, req.reply_len);
-+	now = (req.reply[3] << 24) + (req.reply[4] << 16) +
-+	      (req.reply[5] << 8) + req.reply[6];
-+	return (time64_t)now - RTC_OFFSET;
-+}
-+
-+int cuda_set_rtc_time(struct rtc_time *tm)
-+{
-+	u32 now;
-+	struct adb_request req;
-+
-+	now = lower_32_bits(rtc_tm_to_time64(tm) + RTC_OFFSET);
-+	if (cuda_request(&req, NULL, 6, CUDA_PACKET, CUDA_SET_TIME,
-+	                 now >> 24, now >> 16, now >> 8, now) < 0)
-+		return -ENXIO;
-+	while (!req.complete)
-+		cuda_poll();
-+	if ((req.reply_len != 3) && (req.reply_len != 7))
-+		pr_err("%s: got %d byte reply\n", __func__, req.reply_len);
-+	return 0;
-+}
-diff --git a/drivers/macintosh/via-pmu.c b/drivers/macintosh/via-pmu.c
-index d72c450aebe5..60f57e2abf21 100644
---- a/drivers/macintosh/via-pmu.c
-+++ b/drivers/macintosh/via-pmu.c
-@@ -1737,6 +1737,39 @@ pmu_enable_irled(int on)
- 	pmu_wait_complete(&req);
- }
- 
-+/* Offset between Unix time (1970-based) and Mac time (1904-based) */
-+#define RTC_OFFSET	2082844800
-+
-+time64_t pmu_get_time(void)
-+{
-+	struct adb_request req;
-+	u32 now;
-+
-+	if (pmu_request(&req, NULL, 1, PMU_READ_RTC) < 0)
-+		return 0;
-+	pmu_wait_complete(&req);
-+	if (req.reply_len != 4)
-+		pr_err("%s: got %d byte reply\n", __func__, req.reply_len);
-+	now = (req.reply[0] << 24) + (req.reply[1] << 16) +
-+	      (req.reply[2] << 8) + req.reply[3];
-+	return (time64_t)now - RTC_OFFSET;
-+}
-+
-+int pmu_set_rtc_time(struct rtc_time *tm)
-+{
-+	u32 now;
-+	struct adb_request req;
-+
-+	now = lower_32_bits(rtc_tm_to_time64(tm) + RTC_OFFSET);
-+	if (pmu_request(&req, NULL, 5, PMU_SET_RTC,
-+	                now >> 24, now >> 16, now >> 8, now) < 0)
-+		return -ENXIO;
-+	pmu_wait_complete(&req);
-+	if (req.reply_len != 0)
-+		pr_err("%s: got %d byte reply\n", __func__, req.reply_len);
-+	return 0;
-+}
-+
- void
- pmu_restart(void)
- {
-diff --git a/include/linux/cuda.h b/include/linux/cuda.h
-index 056867f09a01..45bfe9d61271 100644
---- a/include/linux/cuda.h
-+++ b/include/linux/cuda.h
-@@ -8,6 +8,7 @@
- #ifndef _LINUX_CUDA_H
- #define _LINUX_CUDA_H
- 
-+#include <linux/rtc.h>
- #include <uapi/linux/cuda.h>
- 
- 
-@@ -16,4 +17,7 @@ extern int cuda_request(struct adb_request *req,
- 			void (*done)(struct adb_request *), int nbytes, ...);
- extern void cuda_poll(void);
- 
-+extern time64_t cuda_get_time(void);
-+extern int cuda_set_rtc_time(struct rtc_time *tm);
-+
- #endif /* _LINUX_CUDA_H */
-diff --git a/include/linux/pmu.h b/include/linux/pmu.h
-index 9ac8fc60ad49..52453a24a24f 100644
---- a/include/linux/pmu.h
-+++ b/include/linux/pmu.h
-@@ -9,6 +9,7 @@
- #ifndef _LINUX_PMU_H
- #define _LINUX_PMU_H
- 
-+#include <linux/rtc.h>
- #include <uapi/linux/pmu.h>
- 
- 
-@@ -36,6 +37,9 @@ static inline void pmu_resume(void)
- 
- extern void pmu_enable_irled(int on);
- 
-+extern time64_t pmu_get_time(void);
-+extern int pmu_set_rtc_time(struct rtc_time *tm);
-+
- extern void pmu_restart(void);
- extern void pmu_shutdown(void);
- extern void pmu_unlock(void);
 -- 
 2.16.4
