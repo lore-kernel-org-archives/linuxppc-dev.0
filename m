@@ -1,36 +1,25 @@
-Return-Path: <mchehab+samsung@kernel.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 429RPK36mvzF35J
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2018 02:02:08 +1000 (AEST)
-Date: Wed, 12 Sep 2018 13:01:31 -0300
-From: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: viro@zeniv.linux.org.uk, linux-fsdevel@vger.kernel.org, Greg
- Kroah-Hartman <gregkh@linuxfoundation.org>, "David S. Miller"
- <davem@davemloft.net>, devel@driverdev.osuosl.org,
- linux-kernel@vger.kernel.org, qat-linux@intel.com,
- linux-crypto@vger.kernel.org, linux-media@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linaro-mm-sig@lists.linaro.org,
- amd-gfx@lists.freedesktop.org, linux-input@vger.kernel.org,
- linux-iio@vger.kernel.org, linux-rdma@vger.kernel.org,
- linux-nvdimm@lists.01.org, linux-nvme@lists.infradead.org,
- linux-pci@vger.kernel.org, platform-driver-x86@vger.kernel.org,
- linux-remoteproc@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-scsi@vger.kernel.org, linux-usb@vger.kernel.org,
- linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-btrfs@vger.kernel.org, ceph-devel@vger.kernel.org,
- linux-wireless@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH v2 05/17] compat_ioctl: move more drivers to
- generic_compat_ioctl_ptrarg
-Message-ID: <20180912130131.2c6581d5@coco.lan>
-In-Reply-To: <20180912151134.436719-1-arnd@arndb.de>
-References: <20180912150142.157913-1-arnd@arndb.de>
- <20180912151134.436719-1-arnd@arndb.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 429RT35HSfzF35q
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2018 02:05:27 +1000 (AEST)
+Subject: Re: [RFC PATCH v1 00/17] ban the use of _PAGE_XXX flags outside
+ platform specific code
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ npiggin@gmail.com, aneesh.kumar@linux.vnet.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <cover.1535913369.git.christophe.leroy@c-s.fr>
+ <8736uneylc.fsf@linux.ibm.com> <1f4d6cc9-5d18-b171-02b0-d715629d594f@c-s.fr>
+ <8736uhsx3l.fsf@linux.ibm.com>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <7bf77801-9c6c-a39e-6d82-3a0b0d870b65@c-s.fr>
+Date: Wed, 12 Sep 2018 18:05:23 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <8736uhsx3l.fsf@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,58 +29,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Em Wed, 12 Sep 2018 17:08:52 +0200
-Arnd Bergmann <arnd@arndb.de> escreveu:
 
-> The .ioctl and .compat_ioctl file operations have the same prototype so
-> they can both point to the same function, which works great almost all
-> the time when all the commands are compatible.
->=20
-> One exception is the s390 architecture, where a compat pointer is only
-> 31 bit wide, and converting it into a 64-bit pointer requires calling
-> compat_ptr(). Most drivers here will ever run in s390, but since we now
-> have a generic helper for it, it's easy enough to use it consistently.
->=20
-> I double-checked all these drivers to ensure that all ioctl arguments
-> are used as pointers or are ignored, but are not interpreted as integer
-> values.
->=20
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
 
->  drivers/media/rc/lirc_dev.c                 | 4 +---
+Le 10/09/2018 à 08:08, Aneesh Kumar K.V a écrit :
+> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+> 
+>> On 09/06/2018 09:58 AM, Aneesh Kumar K.V wrote:
+>>> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+>>>
+>>>> Today flags like for instance _PAGE_RW or _PAGE_USER are used through
+>>>> common parts of code.
+>>>> Using those directly in common parts of code have proven to lead to
+>>>> mistakes or misbehaviour, because their use is not always as trivial
+>>>> as one could think.
+>>>>
+>>>> For instance, (flags & _PAGE_USER) == 0 isn't enough to tell
+>>>> that a page is a kernel page, because some targets are using
+>>>> _PAGE_PRIVILEDGED and not _PAGE_USER, so the test has to be
+>>>> (flags & (_PAGE_USER | _PAGE_PRIVILEDGED)) == _PAGE_PRIVILEDGED
+>>>> This has to (bad) consequences:
+>>>>
+>>>>    - All targets must define every bit, even the unsupported ones,
+>>>>      leading to a lot of useless #define _PAGE_XXX 0
+>>>>    - If someone forgets to take into account all possible _PAGE_XXX bits
+>>>>      for the case, we can get unexpected behaviour on some targets.
+>>>>
+>>>> This becomes even more complex when we come to using _PAGE_RW.
+>>>> Testing (flags & _PAGE_RW) is not enough to test whether a page
+>>>> if writable or not, because:
+>>>>
+>>>>    - Some targets have _PAGE_RO instead, which has to be unset to tell
+>>>>      a page is writable
+>>>>    - Some targets have _PAGE_R and _PAGE_W, in which case
+>>>>      _PAGE_RW = _PAGE_R | _PAGE_W
+>>>>    - Even knowing whether a page is readable is not always trivial because:
+>>>>      - Some targets requires to check that _PAGE_R is set to ensure page
+>>>>      is readable
+>>>>      - Some targets requires to check that _PAGE_NA is not set
+>>>>      - Some targets requires to check that _PAGE_RO or _PAGE_RW is set
+>>>>
+>>>> Etc ....
+>>>>
+>>>> In order to work around all those issues and minimise the risks of errors,
+>>>> this serie aims at removing all use of _PAGE_XXX flags from powerpc code
+>>>> and always use pte_xxx() and pte_mkxxx() accessors instead. Those accessors
+>>>> are then defined in target specific parts of the kernel code.
+>>>
+>>> The series is really good. It also helps in code readability. Few things
+>>> i am not sure there is a way to reduce the overhead
+>>>
+>>> -		access = _PAGE_EXEC;
+>>> +		access = pte_val(pte_mkexec(__pte(0)));
+>>>
+>>> Considering we have multiple big endian to little endian coversion there
+>>> for book3s 64.
+>>
+>> Thanks for the review.
+>>
+>> For the above, I propose the following:
+>>
+>> diff --git a/arch/powerpc/mm/hash_utils_64.c
+>> b/arch/powerpc/mm/hash_utils_64.c
+>> index f23a89d8e4ce..904ac9c84ea5 100644
+>> --- a/arch/powerpc/mm/hash_utils_64.c
+>> +++ b/arch/powerpc/mm/hash_utils_64.c
+>> @@ -1482,7 +1482,7 @@ static bool should_hash_preload(struct mm_struct
+>> *mm, unsigned long ea)
+>>    #endif
+>>
+>>    void hash_preload(struct mm_struct *mm, unsigned long ea,
+>> -		  unsigned long access, unsigned long trap)
+>> +		  bool is_exec, unsigned long trap)
+>>    {
+>>    	int hugepage_shift;
+>>    	unsigned long vsid;
+>> @@ -1490,6 +1490,7 @@ void hash_preload(struct mm_struct *mm, unsigned
+>> long ea,
+>>    	pte_t *ptep;
+>>    	unsigned long flags;
+>>    	int rc, ssize, update_flags = 0;
+>> +	unsigned long access = is_exec ? _PAGE_EXEC : 0;
+> 
+> 
+> I guess it will be better if we do
+> 
+> unsigned long access = _PAGE_PRESENT | _PAGE_READ
+> 
+> if (is_exec)
+>     access |= _PAGE_EXEC.
+> 
+> That will also bring it closer to __hash_page. I agree that we should
+> always find _PAGE_PRESENT and _PAGE_READ set, because we just handled
+> the page fault.
+> 
 
-> diff --git a/drivers/media/rc/lirc_dev.c b/drivers/media/rc/lirc_dev.c
-> index f862f1b7f996..077209f414ed 100644
-> --- a/drivers/media/rc/lirc_dev.c
-> +++ b/drivers/media/rc/lirc_dev.c
-> @@ -730,9 +730,7 @@ static const struct file_operations lirc_fops =3D {
->  	.owner		=3D THIS_MODULE,
->  	.write		=3D ir_lirc_transmit_ir,
->  	.unlocked_ioctl	=3D ir_lirc_ioctl,
-> -#ifdef CONFIG_COMPAT
-> -	.compat_ioctl	=3D ir_lirc_ioctl,
-> -#endif
-> +	.compat_ioctl	=3D generic_compat_ioctl_ptrarg,
->  	.read		=3D ir_lirc_read,
->  	.poll		=3D ir_lirc_poll,
->  	.open		=3D ir_lirc_open,
+Ok, I did it in v2, can you have a look (patch 11/24) ?
 
-Adding an infrared remote controller to a s390 mainframe sounds fun :-)
-
-I suspect that one could implement it on a s390 platform=20
-using gpio-ir-recv and/or gpio-ir-tx drivers. Perhaps one possible
-practical usage would be to let the mainframe to send remote
-controller codes to adjust the air conditioning system ;-)
-
-=46rom lirc driver's PoV, there's nothing that really prevents one to
-do that and use lirc API, and the driver is generic enough to work
-on any hardware platform.
-
-I didn't check the implementation of generic_compat_ioctl_ptrarg(),
-but assuming it is ok,
-
-Acked-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-
-Thanks,
-Mauro
+Christophe
