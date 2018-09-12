@@ -1,49 +1,52 @@
-Return-Path: <yamada.masahiro@socionext.com>
-Received: from conssluserg-06.nifty.com (conssluserg-06.nifty.com
- [210.131.2.91])
+Return-Path: <sbobroff@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4293QW5DgfzF1RG
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2018 11:01:54 +1000 (AEST)
-Received: from mail-ua1-f47.google.com (mail-ua1-f47.google.com
- [209.85.222.47]) (authenticated)
- by conssluserg-06.nifty.com with ESMTP id w8C11UK3026859
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2018 10:01:31 +0900
-Received: by mail-ua1-f47.google.com with SMTP id g18-v6so206291uam.6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2018 18:01:31 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4293vf6kM2zF3FK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2018 11:23:42 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w8C1IZXd061566
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2018 21:23:39 -0400
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2mep5snsak-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2018 21:23:39 -0400
+Received: from localhost
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sbobroff@linux.ibm.com>;
+ Wed, 12 Sep 2018 02:23:38 +0100
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ w8C1NZrg56688668
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2018 01:23:35 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 84E76A4040
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2018 04:23:24 +0100 (BST)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 32C02A4053
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2018 04:23:24 +0100 (BST)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2018 04:23:24 +0100 (BST)
+Received: from tungsten.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id A7A00A0256
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2018 11:23:32 +1000 (AEST)
+From: Sam Bobroff <sbobroff@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 02/14] powerpc/eeh: Fix null deref for devices removed during
+ EEH
+Date: Wed, 12 Sep 2018 11:23:21 +1000
+In-Reply-To: <cover.1536715396.git.sbobroff@linux.ibm.com>
+References: <cover.1536715396.git.sbobroff@linux.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <CAL_Jsq+=VbdcVLiwXbOA5d+R2YY6=2Pw2bQpci-jj-JvereD1A@mail.gmail.com>
-References: <20180910150403.19476-1-robh@kernel.org>
- <20180910150403.19476-7-robh@kernel.org>
- <CAL_Jsq+=VbdcVLiwXbOA5d+R2YY6=2Pw2bQpci-jj-JvereD1A@mail.gmail.com>
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-Date: Wed, 12 Sep 2018 10:00:49 +0900
-Message-ID: <CAK7LNAQFqhWw+LwDoypGG=OP6tH4qf2tT=LvtchK2GoiNyzDXg@mail.gmail.com>
-Subject: Re: [PATCH v3 6/9] kbuild: consolidate Devicetree dtb build rules
-To: Rob Herring <robh@kernel.org>
-Cc: DTML <devicetree@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Frank Rowand <frowand.list@gmail.com>,
- Michal Marek <michal.lkml@markovi.net>, Vineet Gupta <vgupta@synopsys.com>,
- Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- Michal Simek <monstr@monstr.eu>, Ralf Baechle <ralf@linux-mips.org>,
- James Hogan <jhogan@kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Chris Zankel <chris@zankel.net>,
- Max Filippov <jcmvbkbc@gmail.com>,
- Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
- arcml <linux-snps-arc@lists.infradead.org>,
- "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>,
- "moderated list:H8/300 ARCHITECTURE" <uclinux-h8-devel@lists.sourceforge.jp>,
- Linux-MIPS <linux-mips@linux-mips.org>, nios2-dev@lists.rocketboards.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-xtensa@linux-xtensa.org, Will Deacon <will.deacon@arm.com>,
- Paul Burton <paul.burton@mips.com>, Ley Foon Tan <ley.foon.tan@intel.com>
-Content-Type: text/plain; charset="UTF-8"
+Message-Id: <a03e2f2dd0236af87814262c07652b0df3b5f2cd.1536715396.git.sbobroff@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,83 +56,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2018-09-12 0:40 GMT+09:00 Rob Herring <robh@kernel.org>:
-> On Mon, Sep 10, 2018 at 10:04 AM Rob Herring <robh@kernel.org> wrote:
->>
->> There is nothing arch specific about building dtb files other than their
->> location under /arch/*/boot/dts/. Keeping each arch aligned is a pain.
->> The dependencies and supported targets are all slightly different.
->> Also, a cross-compiler for each arch is needed, but really the host
->> compiler preprocessor is perfectly fine for building dtbs. Move the
->> build rules to a common location and remove the arch specific ones. This
->> is done in a single step to avoid warnings about overriding rules.
->>
->> The build dependencies had been a mixture of 'scripts' and/or 'prepare'.
->> These pull in several dependencies some of which need a target compiler
->> (specifically devicetable-offsets.h) and aren't needed to build dtbs.
->> All that is really needed is dtc, so adjust the dependencies to only be
->> dtc.
->>
->> This change enables support 'dtbs_install' on some arches which were
->> missing the target.
->
-> [...]
->
->> @@ -1215,6 +1215,33 @@ kselftest-merge:
->>                 $(srctree)/tools/testing/selftests/*/config
->>         +$(Q)$(MAKE) -f $(srctree)/Makefile olddefconfig
->>
->> +# ---------------------------------------------------------------------------
->> +# Devicetree files
->> +
->> +ifneq ($(wildcard $(srctree)/arch/$(SRCARCH)/boot/dts/),)
->> +dtstree := arch/$(SRCARCH)/boot/dts
->> +endif
->> +
->> +ifdef CONFIG_OF_EARLY_FLATTREE
->
-> This can be true when dtstree is unset. So this line should be this
-> instead to fix the 0-day reported error:
->
-> ifneq ($(dtstree),)
->
->> +
->> +%.dtb : scripts_dtc
->> +       $(Q)$(MAKE) $(build)=$(dtstree) $(dtstree)/$@
->> +
->> +PHONY += dtbs dtbs_install
->> +dtbs: scripts_dtc
->> +       $(Q)$(MAKE) $(build)=$(dtstree)
->> +
->> +dtbs_install: dtbs
->> +       $(Q)$(MAKE) $(dtbinst)=$(dtstree)
->> +
->> +all: dtbs
->> +
->> +endif
+If a device is removed during EEH processing (either by a driver's
+handler or as part of recovery), it can lead to a null dereference
+in eeh_pe_report_edev().
 
+To handle this, skip devices that have been removed.
 
-Ah, right.
-Even x86 can enable OF and OF_UNITTEST.
+Signed-off-by: Sam Bobroff <sbobroff@linux.ibm.com>
+---
+ arch/powerpc/kernel/eeh_driver.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-
-
-Another solution might be,
-guard it by 'depends on ARCH_SUPPORTS_OF'.
-
-
-
-This is actually what ACPI does.
-
-menuconfig ACPI
-        bool "ACPI (Advanced Configuration and Power Interface) Support"
-        depends on ARCH_SUPPORTS_ACPI
-         ...
-
-
-
-
-
+diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
+index 67619b4b3f96..4115d353c349 100644
+--- a/arch/powerpc/kernel/eeh_driver.c
++++ b/arch/powerpc/kernel/eeh_driver.c
+@@ -281,6 +281,10 @@ static void eeh_pe_report_edev(struct eeh_dev *edev, eeh_report_fn fn,
+ 	struct pci_driver *driver;
+ 	enum pci_ers_result new_result;
+ 
++	if (!edev->pdev) {
++		eeh_edev_info(edev, "no device");
++		return;
++	}
+ 	device_lock(&edev->pdev->dev);
+ 	if (eeh_edev_actionable(edev)) {
+ 		driver = eeh_pcid_get(edev->pdev);
 -- 
-Best Regards
-Masahiro Yamada
+2.19.0.2.gcad72f5712
