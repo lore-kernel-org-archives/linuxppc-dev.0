@@ -2,14 +2,14 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 429RK06P2MzF37L
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2018 01:58:28 +1000 (AEST)
-Message-Id: <34f570a52b8309984bbe500410098c85dcd28eaa.1536692743.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 429RK13J2RzF37f
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2018 01:58:29 +1000 (AEST)
+Message-Id: <18d5b7489e75dfa504010bc8939f97cd4463d229.1536692743.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1536692743.git.christophe.leroy@c-s.fr>
 References: <cover.1536692743.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2 04/24] soc/fsl/qbman: use ioremap_cache() instead of
- ioremap_prot(0)
+Subject: [PATCH v2 05/24] powerpc: don't use ioremap_prot() nor __ioremap()
+ unless really needed.
 To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Dominik Brodowski <linux@dominikbrodowski.net>,
@@ -21,7 +21,7 @@ To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
 Cc: linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org,
  linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org
-Date: Wed, 12 Sep 2018 15:58:21 +0000 (UTC)
+Date: Wed, 12 Sep 2018 15:58:23 +0000 (UTC)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,30 +31,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-ioremap_prot() with flag set to 0 relies on a hack in
-__ioremap_caller() which adds PAGE_KERNEL flags when the
-handed flags don't look like a valid set of flags
-(ie don't include _PAGE_PRESENT)
-
-The intention being to map cached memory, use ioremap_cache() instead.
+In many places, ioremap_prot() and __ioremap() can be replaced with
+higher level functions like ioremap(), ioremap_coherent(),
+ioremap_cache(), ioremap_wc() ...
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- drivers/soc/fsl/qbman/qman_ccsr.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/kernel/btext.c               | 2 +-
+ arch/powerpc/kernel/crash_dump.c          | 2 +-
+ arch/powerpc/platforms/85xx/smp.c         | 4 ++--
+ arch/powerpc/platforms/pasemi/dma_lib.c   | 2 +-
+ arch/powerpc/platforms/ps3/spu.c          | 3 +--
+ arch/powerpc/sysdev/fsl_85xx_cache_sram.c | 8 ++++----
+ 6 files changed, 10 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/soc/fsl/qbman/qman_ccsr.c b/drivers/soc/fsl/qbman/qman_ccsr.c
-index 79cba58387a5..0fbb201346c7 100644
---- a/drivers/soc/fsl/qbman/qman_ccsr.c
-+++ b/drivers/soc/fsl/qbman/qman_ccsr.c
-@@ -418,7 +418,7 @@ static size_t fqd_sz, pfdr_sz;
- static int zero_priv_mem(phys_addr_t addr, size_t sz)
- {
- 	/* map as cacheable, non-guarded */
--	void __iomem *tmpp = ioremap_prot(addr, sz, 0);
-+	void __iomem *tmpp = ioremap_cache(addr, sz);
+diff --git a/arch/powerpc/kernel/btext.c b/arch/powerpc/kernel/btext.c
+index b2072d5bbf2b..b4241ed1456e 100644
+--- a/arch/powerpc/kernel/btext.c
++++ b/arch/powerpc/kernel/btext.c
+@@ -163,7 +163,7 @@ void btext_map(void)
+ 	offset = ((unsigned long) dispDeviceBase) - base;
+ 	size = dispDeviceRowBytes * dispDeviceRect[3] + offset
+ 		+ dispDeviceRect[0];
+-	vbase = __ioremap(base, size, pgprot_val(pgprot_noncached_wc(__pgprot(0))));
++	vbase = ioremap_wc(base, size);
+ 	if (!vbase)
+ 		return;
+ 	logicalDisplayBase = vbase + offset;
+diff --git a/arch/powerpc/kernel/crash_dump.c b/arch/powerpc/kernel/crash_dump.c
+index d10ad258d41a..bbdc4706c159 100644
+--- a/arch/powerpc/kernel/crash_dump.c
++++ b/arch/powerpc/kernel/crash_dump.c
+@@ -110,7 +110,7 @@ ssize_t copy_oldmem_page(unsigned long pfn, char *buf,
+ 		vaddr = __va(paddr);
+ 		csize = copy_oldmem_vaddr(vaddr, buf, csize, offset, userbuf);
+ 	} else {
+-		vaddr = __ioremap(paddr, PAGE_SIZE, 0);
++		vaddr = ioremap_cache(paddr, PAGE_SIZE);
+ 		csize = copy_oldmem_vaddr(vaddr, buf, csize, offset, userbuf);
+ 		iounmap(vaddr);
+ 	}
+diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
+index 7e966f4cf19a..fff72425727a 100644
+--- a/arch/powerpc/platforms/85xx/smp.c
++++ b/arch/powerpc/platforms/85xx/smp.c
+@@ -216,8 +216,8 @@ static int smp_85xx_start_cpu(int cpu)
  
- 	if (!tmpp)
- 		return -ENOMEM;
+ 	/* Map the spin table */
+ 	if (ioremappable)
+-		spin_table = ioremap_prot(*cpu_rel_addr,
+-			sizeof(struct epapr_spin_table), _PAGE_COHERENT);
++		spin_table = ioremap_coherent(*cpu_rel_addr,
++					      sizeof(struct epapr_spin_table));
+ 	else
+ 		spin_table = phys_to_virt(*cpu_rel_addr);
+ 
+diff --git a/arch/powerpc/platforms/pasemi/dma_lib.c b/arch/powerpc/platforms/pasemi/dma_lib.c
+index c80f72c370ae..53384eb42a76 100644
+--- a/arch/powerpc/platforms/pasemi/dma_lib.c
++++ b/arch/powerpc/platforms/pasemi/dma_lib.c
+@@ -576,7 +576,7 @@ int pasemi_dma_init(void)
+ 		res.start = 0xfd800000;
+ 		res.end = res.start + 0x1000;
+ 	}
+-	dma_status = __ioremap(res.start, resource_size(&res), 0);
++	dma_status = ioremap_cache(res.start, resource_size(&res));
+ 	pci_dev_put(iob_pdev);
+ 
+ 	for (i = 0; i < MAX_TXCH; i++)
+diff --git a/arch/powerpc/platforms/ps3/spu.c b/arch/powerpc/platforms/ps3/spu.c
+index b54850845466..7746c2a3c509 100644
+--- a/arch/powerpc/platforms/ps3/spu.c
++++ b/arch/powerpc/platforms/ps3/spu.c
+@@ -215,8 +215,7 @@ static int __init setup_areas(struct spu *spu)
+ 		goto fail_ioremap;
+ 	}
+ 
+-	spu->local_store = (__force void *)ioremap_prot(spu->local_store_phys,
+-		LS_SIZE, pgprot_val(pgprot_noncached_wc(__pgprot(0))));
++	spu->local_store = (__force void *)ioremap_wc(spu->local_store_phys, LS_SIZE);
+ 
+ 	if (!spu->local_store) {
+ 		pr_debug("%s:%d: ioremap local_store failed\n",
+diff --git a/arch/powerpc/sysdev/fsl_85xx_cache_sram.c b/arch/powerpc/sysdev/fsl_85xx_cache_sram.c
+index 00ccf3e4fcb4..15cbdd4fde06 100644
+--- a/arch/powerpc/sysdev/fsl_85xx_cache_sram.c
++++ b/arch/powerpc/sysdev/fsl_85xx_cache_sram.c
+@@ -107,11 +107,11 @@ int __init instantiate_cache_sram(struct platform_device *dev,
+ 		goto out_free;
+ 	}
+ 
+-	cache_sram->base_virt = ioremap_prot(cache_sram->base_phys,
+-				cache_sram->size, _PAGE_COHERENT | PAGE_KERNEL);
++	cache_sram->base_virt = ioremap_coherent(cache_sram->base_phys,
++						 cache_sram->size);
+ 	if (!cache_sram->base_virt) {
+-		dev_err(&dev->dev, "%pOF: ioremap_prot failed\n",
+-				dev->dev.of_node);
++		dev_err(&dev->dev, "%pOF: ioremap_coherent failed\n",
++			dev->dev.of_node);
+ 		ret = -ENOMEM;
+ 		goto out_release;
+ 	}
 -- 
 2.13.3
