@@ -3,31 +3,31 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 429XFF58WSzF3D1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2018 05:40:33 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 429XFJ5QRqzF3D1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2018 05:40:36 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w8CJYa5C052558
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2018 15:40:30 -0400
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2mf60384hw-1
+ w8CJY17Y101610
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2018 15:40:34 -0400
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2mf8mj1c7b-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2018 15:40:30 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2018 15:40:34 -0400
 Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <leitao@debian.org>;
- Wed, 12 Sep 2018 13:40:29 -0600
+ Wed, 12 Sep 2018 13:40:33 -0600
 From: Breno Leitao <leitao@debian.org>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: mikey@neuling.org, paulus@ozlabs.org, gromero@linux.vnet.ibm.com,
  mpe@ellerman.id.au, ldufour@linux.vnet.ibm.com,
  Breno Leitao <leitao@debian.org>
-Subject: [RFC PATCH 01/11] powerpc/tm: Reclaim transaction on kernel entry
-Date: Wed, 12 Sep 2018 16:40:09 -0300
+Subject: [RFC PATCH 02/11] powerpc/tm: Reclaim on unavailable exception
+Date: Wed, 12 Sep 2018 16:40:10 -0300
 In-Reply-To: <1536781219-13938-1-git-send-email-leitao@debian.org>
 References: <1536781219-13938-1-git-send-email-leitao@debian.org>
-Message-Id: <1536781219-13938-2-git-send-email-leitao@debian.org>
+Message-Id: <1536781219-13938-3-git-send-email-leitao@debian.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,177 +37,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch creates a macro that will be invoked on all entrance to the
-kernel, so, in kernel space the transaction will be completely reclaimed
-and not suspended anymore.
+If there is a FP/VEC/Altivec touch inside a transaction and the facility is
+disabled, then a facility unavailable exception is raised and ends up
+calling {fp,vec,vsx}_unavailable_tm, which was reclaiming and recheckpointing.
 
-This patchset checks if we are coming from PR, if not, skip. This is useful
-when there is a irq_replay() being called after recheckpoint, when the IRQ
-is re-enable. In this case, we do not want to re-reclaim and
-re-recheckpoint, thus, if not coming from PR, skip it completely.
+This is not required anymore, since the checkpointed state was reclaimed in
+the trap entrace itself, and it will be recheckpointed by restore_tm_state
+later.
 
-This macro does not care about TM SPR also, it will only be saved and
-restore in the context switch code now on.
+With this new patchset, we only reclaim at exception entrance (except at
+syscall level if the transaction is suspended), and always recheckpoint on
+restore_tm_state.
 
-This macro will return 0 or 1 in r3 register, to specify if a reclaim was
-executed or not.
-
-This patchset is based on initial work done by Cyril:
-https://patchwork.ozlabs.org/cover/875341/
+Adding a WARN_ON() warning if we hit the _unavailable_tm() in suspended
+mode, i.e, the reclaim was not executed somehow in the trap entrance.
 
 Signed-off-by: Breno Leitao <leitao@debian.org>
 ---
- arch/powerpc/include/asm/exception-64s.h | 46 ++++++++++++++++++++++++
- arch/powerpc/kernel/entry_64.S           | 10 ++++++
- arch/powerpc/kernel/exceptions-64s.S     | 12 +++++--
- 3 files changed, 66 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/exceptions-64s.S |  3 +++
+ arch/powerpc/kernel/traps.c          | 16 ++++------------
+ 2 files changed, 7 insertions(+), 12 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
-index a86feddddad0..db90b6d7826e 100644
---- a/arch/powerpc/include/asm/exception-64s.h
-+++ b/arch/powerpc/include/asm/exception-64s.h
-@@ -36,6 +36,7 @@
-  */
- #include <asm/head-64.h>
- #include <asm/feature-fixups.h>
-+#include <asm/tm.h>
- 
- /* PACA save area offsets (exgen, exmc, etc) */
- #define EX_R9		0
-@@ -686,10 +687,54 @@ BEGIN_FTR_SECTION				\
- 	beql	ppc64_runlatch_on_trampoline;	\
- END_FTR_SECTION_IFSET(CPU_FTR_CTRL)
- 
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+
-+/*
-+ * This macro will reclaim a transaction if called when coming from userspace
-+ * (MSR.PR = 1) and if the transaction state is active or suspended.
-+ *
-+ * Since we don't want to reclaim when coming from kernel, for instance after
-+ * a trechkpt. or a IRQ replay, the live MSR is not useful and instead of it the
-+ * MSR from thread stack is used to check the MSR.PR bit.
-+ * This macro has one argument which is the cause that will be used by treclaim.
-+ * and returns in r3 '1' if the reclaim happens or '0' if reclaim didn't
-+ * happen, which is useful to know what registers were clobbered.
-+ *
-+ * NOTE: If addition registers are clobbered here, make sure the callee
-+ * function restores them before proceeding.
-+ */
-+#define TM_KERNEL_ENTRY(cause)						\
-+	ld      r3, _MSR(r1);						\
-+	andi.   r0, r3, MSR_PR;	/* Coming from userspace? */		\
-+	beq     1f;		/* Skip reclaim if MSR.PR != 1 */	\
-+	rldicl. r0, r3, (64-MSR_TM_LG), 63; /* Is TM enabled? */	\
-+	beq     1f;		/* Skip reclaim if TM is off */		\
-+	rldicl. r0, r3, (64-MSR_TS_LG), 62;	/* Is active */		\
-+	beq     1f;		/* Skip reclaim if neither */		\
-+	/*								\
-+	 * If there is a transaction active or suspended, save the	\
-+	 * non-volatile GPRs if they are not already saved.		\
-+	 */								\
-+	bl      save_nvgprs;						\
-+	/*								\
-+	 * Soft disable the IRQs, otherwise it might cause a CPU hang.	\
-+	 */								\
-+	RECONCILE_IRQ_STATE(r10, r11);					\
-+	li      r3, cause;						\
-+	bl      tm_reclaim_current;					\
-+	li      r3, 1;		/* Reclaim happened */			\
-+	b       2f;							\
-+1:	li      r3, 0;		/* Reclaim didn't happen */		\
-+2:
-+#else
-+#define TM_KERNEL_ENTRY(cause)
-+#endif
-+
- #define EXCEPTION_COMMON(area, trap, label, hdlr, ret, additions) \
- 	EXCEPTION_PROLOG_COMMON(trap, area);			\
- 	/* Volatile regs are potentially clobbered here */	\
- 	additions;						\
-+	TM_KERNEL_ENTRY(TM_CAUSE_MISC);				\
- 	addi	r3,r1,STACK_FRAME_OVERHEAD;			\
- 	bl	hdlr;						\
- 	b	ret
-@@ -704,6 +749,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_CTRL)
- 	EXCEPTION_PROLOG_COMMON_3(trap);			\
- 	/* Volatile regs are potentially clobbered here */	\
- 	additions;						\
-+	TM_KERNEL_ENTRY(TM_CAUSE_MISC);				\
- 	addi	r3,r1,STACK_FRAME_OVERHEAD;			\
- 	bl	hdlr
- 
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 2206912ea4f0..c38677b7442c 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -131,6 +131,16 @@ BEGIN_FW_FTR_SECTION
- END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
- #endif /* CONFIG_VIRT_CPU_ACCOUNTING_NATIVE && CONFIG_PPC_SPLPAR */
- 
-+#if CONFIG_PPC_TRANSACTIONAL_MEM
-+	TM_KERNEL_ENTRY(TM_CAUSE_SYSCALL)
-+	cmpdi	r3, 0x1
-+	bne	44f
-+	/* Restore from r4 to r12 */
-+	REST_8GPRS(4,r1)
-+44:	/* treclaim was not called, just restore r3 and r0 */
-+	REST_GPR(3, r1)
-+	REST_GPR(0, r1)
-+#endif
- 	/*
- 	 * A syscall should always be called with interrupts enabled
- 	 * so we just unconditionally hard-enable here. When some kind
 diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index ea04dfb8c092..78aba71a4b2d 100644
+index 78aba71a4b2d..4108f3944bdd 100644
 --- a/arch/powerpc/kernel/exceptions-64s.S
 +++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -805,6 +805,7 @@ EXC_COMMON_BEGIN(alignment_common)
- 	std	r3,_DAR(r1)
- 	std	r4,_DSISR(r1)
+@@ -874,6 +874,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_TM)
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+ 2:	/* User process was in a transaction */
  	bl	save_nvgprs
-+	TM_KERNEL_ENTRY(TM_CAUSE_ALIGNMENT)
- 	RECONCILE_IRQ_STATE(r10, r11)
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	alignment_exception
-@@ -839,6 +840,8 @@ EXC_COMMON_BEGIN(program_check_common)
- 	b 3f				/* Jump into the macro !!	*/
- 1:	EXCEPTION_PROLOG_COMMON(0x700, PACA_EXGEN)
- 	bl	save_nvgprs
-+	ld      r3, _MSR(r1)
 +	TM_KERNEL_ENTRY(TM_CAUSE_FAC_UNAV)
  	RECONCILE_IRQ_STATE(r10, r11)
  	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	program_check_exception
-@@ -1738,7 +1741,9 @@ do_hash_page:
+ 	bl	fp_unavailable_tm
+@@ -1216,6 +1217,7 @@ BEGIN_FTR_SECTION
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+ 2:	/* User process was in a transaction */
+ 	bl	save_nvgprs
++	TM_KERNEL_ENTRY(TM_CAUSE_FAC_UNAV)
+ 	RECONCILE_IRQ_STATE(r10, r11)
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	bl	altivec_unavailable_tm
+@@ -1252,6 +1254,7 @@ BEGIN_FTR_SECTION
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+ 2:	/* User process was in a transaction */
+ 	bl	save_nvgprs
++	TM_KERNEL_ENTRY(TM_CAUSE_FAC_UNAV)
+ 	RECONCILE_IRQ_STATE(r10, r11)
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	bl	vsx_unavailable_tm
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index c85adb858271..b973fdb72826 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -1749,19 +1749,12 @@ void fp_unavailable_tm(struct pt_regs *regs)
+          * transaction, and probably retry but now with FP enabled.  So the
+          * checkpointed FP registers need to be loaded.
+ 	 */
+-	tm_reclaim_current(TM_CAUSE_FAC_UNAV);
++	WARN_ON(MSR_TM_SUSPENDED(mfmsr()));
+ 	/* Reclaim didn't save out any FPRs to transact_fprs. */
  
- /* Here we have a page fault that hash_page can't handle. */
- handle_page_fault:
--11:	andis.  r0,r4,DSISR_DABRMATCH@h
-+11:	TM_KERNEL_ENTRY(TM_CAUSE_TLBI)
-+	ld      r4,_DSISR(r1)
-+	andis.  r0,r4,DSISR_DABRMATCH@h
- 	bne-    handle_dabr_fault
- 	ld	r4,_DAR(r1)
- 	ld	r5,_DSISR(r1)
-@@ -1769,6 +1774,8 @@ handle_dabr_fault:
-  */
- 13:	bl	save_nvgprs
- 	mr	r5,r3
-+	TM_KERNEL_ENTRY(TM_CAUSE_TLBI)
-+	REST_GPR(3,r1)
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	ld	r4,_DAR(r1)
- 	bl	low_hash_fault
-@@ -1783,7 +1790,8 @@ handle_dabr_fault:
-  * the access, or panic if there isn't a handler.
-  */
- 77:	bl	save_nvgprs
--	mr	r4,r3
-+	TM_KERNEL_ENTRY(TM_CAUSE_TLBI)
-+	ld      r4,_DAR(r1)
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	li	r5,SIGSEGV
- 	bl	bad_page_fault
+ 	/* Enable FP for the task: */
+ 	current->thread.load_fp = 1;
+ 
+-	/* This loads and recheckpoints the FP registers from
+-	 * thread.fpr[].  They will remain in registers after the
+-	 * checkpoint so we don't need to reload them after.
+-	 * If VMX is in use, the VRs now hold checkpointed values,
+-	 * so we don't want to load the VRs from the thread_struct.
+-	 */
+-	tm_recheckpoint(&current->thread);
+ }
+ 
+ void altivec_unavailable_tm(struct pt_regs *regs)
+@@ -1773,10 +1766,10 @@ void altivec_unavailable_tm(struct pt_regs *regs)
+ 	TM_DEBUG("Vector Unavailable trap whilst transactional at 0x%lx,"
+ 		 "MSR=%lx\n",
+ 		 regs->nip, regs->msr);
+-	tm_reclaim_current(TM_CAUSE_FAC_UNAV);
++	WARN_ON(MSR_TM_SUSPENDED(mfmsr()));
+ 	current->thread.load_vec = 1;
+-	tm_recheckpoint(&current->thread);
+ 	current->thread.used_vr = 1;
++
+ }
+ 
+ void vsx_unavailable_tm(struct pt_regs *regs)
+@@ -1795,12 +1788,11 @@ void vsx_unavailable_tm(struct pt_regs *regs)
+ 	current->thread.used_vsr = 1;
+ 
+ 	/* This reclaims FP and/or VR regs if they're already enabled */
+-	tm_reclaim_current(TM_CAUSE_FAC_UNAV);
++	WARN_ON(MSR_TM_SUSPENDED(mfmsr()));
+ 
+ 	current->thread.load_vec = 1;
+ 	current->thread.load_fp = 1;
+ 
+-	tm_recheckpoint(&current->thread);
+ }
+ #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
+ 
 -- 
 2.19.0
