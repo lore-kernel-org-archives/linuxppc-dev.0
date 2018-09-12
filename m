@@ -1,27 +1,36 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mchehab+samsung@kernel.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 429RKm3kwgzF37b
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2018 01:59:08 +1000 (AEST)
-Message-Id: <0c68d8973a7bc88840a08df5707dd7c8c7116650.1536692743.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1536692743.git.christophe.leroy@c-s.fr>
-References: <cover.1536692743.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2 24/24] powerpc/book3s64: Avoid multiple endian conversion
- in pte helpers
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Dominik Brodowski <linux@dominikbrodowski.net>,
- Geoff Levand <geoff@infradead.org>, Jens Axboe <axboe@kernel.dk>,
- Kumar Gala <galak@kernel.crashing.org>, Li Yang <leoyang.li@nxp.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>,
- aneesh.kumar@linux.vnet.ibm.com
-Cc: linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org,
- linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org
-Date: Wed, 12 Sep 2018 15:59:02 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 429RPK36mvzF35J
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2018 02:02:08 +1000 (AEST)
+Date: Wed, 12 Sep 2018 13:01:31 -0300
+From: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: viro@zeniv.linux.org.uk, linux-fsdevel@vger.kernel.org, Greg
+ Kroah-Hartman <gregkh@linuxfoundation.org>, "David S. Miller"
+ <davem@davemloft.net>, devel@driverdev.osuosl.org,
+ linux-kernel@vger.kernel.org, qat-linux@intel.com,
+ linux-crypto@vger.kernel.org, linux-media@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linaro-mm-sig@lists.linaro.org,
+ amd-gfx@lists.freedesktop.org, linux-input@vger.kernel.org,
+ linux-iio@vger.kernel.org, linux-rdma@vger.kernel.org,
+ linux-nvdimm@lists.01.org, linux-nvme@lists.infradead.org,
+ linux-pci@vger.kernel.org, platform-driver-x86@vger.kernel.org,
+ linux-remoteproc@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-scsi@vger.kernel.org, linux-usb@vger.kernel.org,
+ linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-btrfs@vger.kernel.org, ceph-devel@vger.kernel.org,
+ linux-wireless@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH v2 05/17] compat_ioctl: move more drivers to
+ generic_compat_ioctl_ptrarg
+Message-ID: <20180912130131.2c6581d5@coco.lan>
+In-Reply-To: <20180912151134.436719-1-arnd@arndb.de>
+References: <20180912150142.157913-1-arnd@arndb.de>
+ <20180912151134.436719-1-arnd@arndb.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,229 +40,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In the same spirit as already done in pte query helpers,
-this patch changes pte setting helpers to perform endian
-conversions on the constants rather than on the pte value.
+Em Wed, 12 Sep 2018 17:08:52 +0200
+Arnd Bergmann <arnd@arndb.de> escreveu:
 
-In the meantime, it changes pte_access_permitted() to use
-pte helpers for the same reason.
+> The .ioctl and .compat_ioctl file operations have the same prototype so
+> they can both point to the same function, which works great almost all
+> the time when all the commands are compatible.
+>=20
+> One exception is the s390 architecture, where a compat pointer is only
+> 31 bit wide, and converting it into a 64-bit pointer requires calling
+> compat_ptr(). Most drivers here will ever run in s390, but since we now
+> have a generic helper for it, it's easy enough to use it consistently.
+>=20
+> I double-checked all these drivers to ensure that all ioctl arguments
+> are used as pointers or are ignored, but are not interpreted as integer
+> values.
+>=20
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/include/asm/book3s/64/pgtable.h | 71 +++++++++++++---------------
- 1 file changed, 32 insertions(+), 39 deletions(-)
+>  drivers/media/rc/lirc_dev.c                 | 4 +---
 
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index 6799bc02cb22..7e29bda0944e 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -506,12 +506,12 @@ static inline bool pte_soft_dirty(pte_t pte)
- 
- static inline pte_t pte_mksoft_dirty(pte_t pte)
- {
--	return __pte(pte_val(pte) | _PAGE_SOFT_DIRTY);
-+	return __pte_raw(pte_raw(pte) | cpu_to_be64(_PAGE_SOFT_DIRTY));
- }
- 
- static inline pte_t pte_clear_soft_dirty(pte_t pte)
- {
--	return __pte(pte_val(pte) & ~_PAGE_SOFT_DIRTY);
-+	return __pte_raw(pte_raw(pte) & cpu_to_be64(~_PAGE_SOFT_DIRTY));
- }
- #endif /* CONFIG_HAVE_ARCH_SOFT_DIRTY */
- 
-@@ -532,7 +532,7 @@ static inline pte_t pte_mk_savedwrite(pte_t pte)
- 	 */
- 	VM_BUG_ON((pte_raw(pte) & cpu_to_be64(_PAGE_PRESENT | _PAGE_RWX | _PAGE_PRIVILEGED)) !=
- 		  cpu_to_be64(_PAGE_PRESENT | _PAGE_PRIVILEGED));
--	return __pte(pte_val(pte) & ~_PAGE_PRIVILEGED);
-+	return __pte_raw(pte_raw(pte) & cpu_to_be64(~_PAGE_PRIVILEGED));
- }
- 
- #define pte_clear_savedwrite pte_clear_savedwrite
-@@ -542,14 +542,14 @@ static inline pte_t pte_clear_savedwrite(pte_t pte)
- 	 * Used by KSM subsystem to make a protnone pte readonly.
- 	 */
- 	VM_BUG_ON(!pte_protnone(pte));
--	return __pte(pte_val(pte) | _PAGE_PRIVILEGED);
-+	return __pte_raw(pte_raw(pte) | cpu_to_be64(_PAGE_PRIVILEGED));
- }
- #else
- #define pte_clear_savedwrite pte_clear_savedwrite
- static inline pte_t pte_clear_savedwrite(pte_t pte)
- {
- 	VM_WARN_ON(1);
--	return __pte(pte_val(pte) & ~_PAGE_WRITE);
-+	return __pte_raw(pte_raw(pte) & cpu_to_be64(~_PAGE_WRITE));
- }
- #endif /* CONFIG_NUMA_BALANCING */
- 
-@@ -573,25 +573,22 @@ static inline bool arch_pte_access_permitted(u64 pte, bool write, bool execute)
- }
- #endif /* CONFIG_PPC_MEM_KEYS */
- 
-+static inline bool pte_user(pte_t pte)
-+{
-+	return !(pte_raw(pte) & cpu_to_be64(_PAGE_PRIVILEGED));
-+}
-+
- #define pte_access_permitted pte_access_permitted
- static inline bool pte_access_permitted(pte_t pte, bool write)
- {
--	unsigned long pteval = pte_val(pte);
--	/* Also check for pte_user */
--	unsigned long clear_pte_bits = _PAGE_PRIVILEGED;
- 	/*
- 	 * _PAGE_READ is needed for any access and will be
- 	 * cleared for PROT_NONE
- 	 */
--	unsigned long need_pte_bits = _PAGE_PRESENT | _PAGE_READ;
--
--	if (write)
--		need_pte_bits |= _PAGE_WRITE;
--
--	if ((pteval & need_pte_bits) != need_pte_bits)
-+	if (!pte_present(pte) || !pte_user(pte) || !pte_read(pte))
- 		return false;
- 
--	if ((pteval & clear_pte_bits) == clear_pte_bits)
-+	if (write && !pte_write(pte))
- 		return false;
- 
- 	return arch_pte_access_permitted(pte_val(pte), write, 0);
-@@ -620,32 +617,32 @@ static inline pte_t pte_wrprotect(pte_t pte)
- {
- 	if (unlikely(pte_savedwrite(pte)))
- 		return pte_clear_savedwrite(pte);
--	return __pte(pte_val(pte) & ~_PAGE_WRITE);
-+	return __pte_raw(pte_raw(pte) & cpu_to_be64(~_PAGE_WRITE));
- }
- 
- static inline pte_t pte_exprotect(pte_t pte)
- {
--	return __pte(pte_val(pte) & ~_PAGE_EXEC);
-+	return __pte_raw(pte_raw(pte) & cpu_to_be64(~_PAGE_EXEC));
- }
- 
- static inline pte_t pte_mkclean(pte_t pte)
- {
--	return __pte(pte_val(pte) & ~_PAGE_DIRTY);
-+	return __pte_raw(pte_raw(pte) & cpu_to_be64(~_PAGE_DIRTY));
- }
- 
- static inline pte_t pte_mkold(pte_t pte)
- {
--	return __pte(pte_val(pte) & ~_PAGE_ACCESSED);
-+	return __pte_raw(pte_raw(pte) & cpu_to_be64(~_PAGE_ACCESSED));
- }
- 
- static inline pte_t pte_mkexec(pte_t pte)
- {
--	return __pte(pte_val(pte) | _PAGE_EXEC);
-+	return __pte_raw(pte_raw(pte) | cpu_to_be64(_PAGE_EXEC));
- }
- 
- static inline pte_t pte_mkpte(pte_t pte)
- {
--	return __pte(pte_val(pte) | _PAGE_PTE);
-+	return __pte_raw(pte_raw(pte) | cpu_to_be64(_PAGE_PTE));
- }
- 
- static inline pte_t pte_mkwrite(pte_t pte)
-@@ -653,22 +650,22 @@ static inline pte_t pte_mkwrite(pte_t pte)
- 	/*
- 	 * write implies read, hence set both
- 	 */
--	return __pte(pte_val(pte) | _PAGE_RW);
-+	return __pte_raw(pte_raw(pte) | cpu_to_be64(_PAGE_RW));
- }
- 
- static inline pte_t pte_mkdirty(pte_t pte)
- {
--	return __pte(pte_val(pte) | _PAGE_DIRTY | _PAGE_SOFT_DIRTY);
-+	return __pte_raw(pte_raw(pte) | cpu_to_be64(_PAGE_DIRTY | _PAGE_SOFT_DIRTY));
- }
- 
- static inline pte_t pte_mkyoung(pte_t pte)
- {
--	return __pte(pte_val(pte) | _PAGE_ACCESSED);
-+	return __pte_raw(pte_raw(pte) | cpu_to_be64(_PAGE_ACCESSED));
- }
- 
- static inline pte_t pte_mkspecial(pte_t pte)
- {
--	return __pte(pte_val(pte) | _PAGE_SPECIAL);
-+	return __pte_raw(pte_raw(pte) | cpu_to_be64(_PAGE_SPECIAL));
- }
- 
- static inline pte_t pte_mkhuge(pte_t pte)
-@@ -678,17 +675,17 @@ static inline pte_t pte_mkhuge(pte_t pte)
- 
- static inline pte_t pte_mkdevmap(pte_t pte)
- {
--	return __pte(pte_val(pte) | _PAGE_SPECIAL|_PAGE_DEVMAP);
-+	return __pte_raw(pte_raw(pte) | cpu_to_be64(_PAGE_SPECIAL | _PAGE_DEVMAP));
- }
- 
- static inline pte_t pte_mkprivileged(pte_t pte)
- {
--	return __pte(pte_val(pte) | _PAGE_PRIVILEGED);
-+	return __pte_raw(pte_raw(pte) | cpu_to_be64(_PAGE_PRIVILEGED));
- }
- 
- static inline pte_t pte_mkuser(pte_t pte)
- {
--	return __pte(pte_val(pte) & ~_PAGE_PRIVILEGED);
-+	return __pte_raw(pte_raw(pte) & cpu_to_be64(~_PAGE_PRIVILEGED));
- }
- 
- /*
-@@ -707,12 +704,8 @@ static inline int pte_devmap(pte_t pte)
- static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
- {
- 	/* FIXME!! check whether this need to be a conditional */
--	return __pte((pte_val(pte) & _PAGE_CHG_MASK) | pgprot_val(newprot));
--}
--
--static inline bool pte_user(pte_t pte)
--{
--	return !(pte_raw(pte) & cpu_to_be64(_PAGE_PRIVILEGED));
-+	return __pte_raw((pte_raw(pte) & cpu_to_be64(_PAGE_CHG_MASK)) |
-+			 cpu_to_be64(pgprot_val(newprot)));
- }
- 
- /* Encode and de-code a swap entry */
-@@ -753,7 +746,7 @@ static inline bool pte_user(pte_t pte)
- #ifdef CONFIG_HAVE_ARCH_SOFT_DIRTY
- static inline pte_t pte_swp_mksoft_dirty(pte_t pte)
- {
--	return __pte(pte_val(pte) | _PAGE_SWP_SOFT_DIRTY);
-+	return __pte_raw(pte_raw(pte) | cpu_to_be64(_PAGE_SWP_SOFT_DIRTY));
- }
- 
- static inline bool pte_swp_soft_dirty(pte_t pte)
-@@ -763,7 +756,7 @@ static inline bool pte_swp_soft_dirty(pte_t pte)
- 
- static inline pte_t pte_swp_clear_soft_dirty(pte_t pte)
- {
--	return __pte(pte_val(pte) & ~_PAGE_SWP_SOFT_DIRTY);
-+	return __pte_raw(pte_raw(pte) & cpu_to_be64(~_PAGE_SWP_SOFT_DIRTY));
- }
- #endif /* CONFIG_HAVE_ARCH_SOFT_DIRTY */
- 
-@@ -852,10 +845,10 @@ static inline pgprot_t pgprot_writecombine(pgprot_t prot)
-  */
- static inline bool pte_ci(pte_t pte)
- {
--	unsigned long pte_v = pte_val(pte);
-+	unsigned long pte_v = pte_raw(pte);
- 
--	if (((pte_v & _PAGE_CACHE_CTL) == _PAGE_TOLERANT) ||
--	    ((pte_v & _PAGE_CACHE_CTL) == _PAGE_NON_IDEMPOTENT))
-+	if (((pte_v & cpu_to_be64(_PAGE_CACHE_CTL)) == cpu_to_be64(_PAGE_TOLERANT)) ||
-+	    ((pte_v & cpu_to_be64(_PAGE_CACHE_CTL)) == cpu_to_be64(_PAGE_NON_IDEMPOTENT)))
- 		return true;
- 	return false;
- }
--- 
-2.13.3
+> diff --git a/drivers/media/rc/lirc_dev.c b/drivers/media/rc/lirc_dev.c
+> index f862f1b7f996..077209f414ed 100644
+> --- a/drivers/media/rc/lirc_dev.c
+> +++ b/drivers/media/rc/lirc_dev.c
+> @@ -730,9 +730,7 @@ static const struct file_operations lirc_fops =3D {
+>  	.owner		=3D THIS_MODULE,
+>  	.write		=3D ir_lirc_transmit_ir,
+>  	.unlocked_ioctl	=3D ir_lirc_ioctl,
+> -#ifdef CONFIG_COMPAT
+> -	.compat_ioctl	=3D ir_lirc_ioctl,
+> -#endif
+> +	.compat_ioctl	=3D generic_compat_ioctl_ptrarg,
+>  	.read		=3D ir_lirc_read,
+>  	.poll		=3D ir_lirc_poll,
+>  	.open		=3D ir_lirc_open,
+
+Adding an infrared remote controller to a s390 mainframe sounds fun :-)
+
+I suspect that one could implement it on a s390 platform=20
+using gpio-ir-recv and/or gpio-ir-tx drivers. Perhaps one possible
+practical usage would be to let the mainframe to send remote
+controller codes to adjust the air conditioning system ;-)
+
+=46rom lirc driver's PoV, there's nothing that really prevents one to
+do that and use lirc API, and the driver is generic enough to work
+on any hardware platform.
+
+I didn't check the implementation of generic_compat_ioctl_ptrarg(),
+but assuming it is ok,
+
+Acked-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+
+Thanks,
+Mauro
