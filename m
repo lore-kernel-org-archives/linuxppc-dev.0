@@ -1,46 +1,35 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-ua1-f68.google.com (mail-ua1-f68.google.com
- [209.85.222.68])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <b.zolnierkie@samsung.com>
+Received: from mailout2.w1.samsung.com (mailout2.w1.samsung.com
+ [210.118.77.12])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42B37G6TbjzF3Sb
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 01:52:10 +1000 (AEST)
-Received: by mail-ua1-f68.google.com with SMTP id h1-v6so5061498uao.8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2018 08:52:10 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42B4rc5107zF3Ry
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 03:09:36 +1000 (AEST)
+Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
+ by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id
+ 20180913170235euoutp0217f68479f245034cd8729b8e35724d99~UBFl8iOVU0444804448euoutp02h
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2018 17:02:35 +0000 (GMT)
+Subject: Re: [PATCH v2 02/24] drivers/video/fbdev: use ioremap_wc/wt()
+ instead of __ioremap()
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Dominik Brodowski
+ <linux@dominikbrodowski.net>, Geoff Levand <geoff@infradead.org>, Jens Axboe
+ <axboe@kernel.dk>, Kumar Gala <galak@kernel.crashing.org>, Li Yang
+ <leoyang.li@nxp.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin
+ <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>, Scott Wood
+ <oss@buserror.net>, aneesh.kumar@linux.vnet.ibm.com,
+ linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org,
+ linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Thu, 13 Sep 2018 19:02:31 +0200
 MIME-Version: 1.0
-References: <20180910150403.19476-1-robh@kernel.org>
- <20180910150403.19476-7-robh@kernel.org>
- <CAL_Jsq+=VbdcVLiwXbOA5d+R2YY6=2Pw2bQpci-jj-JvereD1A@mail.gmail.com>
- <CAK7LNAQFqhWw+LwDoypGG=OP6tH4qf2tT=LvtchK2GoiNyzDXg@mail.gmail.com>
-In-Reply-To: <CAK7LNAQFqhWw+LwDoypGG=OP6tH4qf2tT=LvtchK2GoiNyzDXg@mail.gmail.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 13 Sep 2018 17:51:55 +0200
-Message-ID: <CAMuHMdWEnoh97_jiDWMq=ke4PrhSFbToYnx91CPLBuq3mOGzoQ@mail.gmail.com>
-Subject: Re: [PATCH v3 6/9] kbuild: consolidate Devicetree dtb build rules
-To: Masahiro Yamada <yamada.masahiro@socionext.com>
-Cc: Rob Herring <robh@kernel.org>,
- "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
- <devicetree@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Frank Rowand <frowand.list@gmail.com>,
- Michal Marek <michal.lkml@markovi.net>, Vineet Gupta <vgupta@synopsys.com>,
- Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Michal Simek <monstr@monstr.eu>,
- Ralf Baechle <ralf@linux-mips.org>, James Hogan <jhogan@kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Chris Zankel <chris@zankel.net>,
- Max Filippov <jcmvbkbc@gmail.com>,
- linux-kbuild <linux-kbuild@vger.kernel.org>,
- arcml <linux-snps-arc@lists.infradead.org>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>,
- "moderated list:H8/300 ARCHITECTURE" <uclinux-h8-devel@lists.sourceforge.jp>,
- Linux MIPS Mailing List <linux-mips@linux-mips.org>,
- nios2-dev@lists.rocketboards.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-xtensa@linux-xtensa.org,
- Will Deacon <will.deacon@arm.com>, Paul Burton <paul.burton@mips.com>,
- ley.foon.tan@intel.com
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <2f980cf32a05415662272cf052c2b9e2a94c756f.1536692743.git.christophe.leroy@c-s.fr>
+Message-Id: <20180913170233eucas1p19e6cd20020f27bb4db0cd927bb9a3302~UBFkQTUaX2145421454eucas1p1M@eucas1p1.samsung.com>
+Content-Type: text/plain; charset="utf-8"
+References: <cover.1536692743.git.christophe.leroy@c-s.fr>
+ <CGME20180912155824epcas5p17cd1e14fa1cb246362ec47b15248cf71@epcas5p1.samsung.com>
+ <2f980cf32a05415662272cf052c2b9e2a94c756f.1536692743.git.christophe.leroy@c-s.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,94 +39,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Yamada-san,
 
-On Wed, Sep 12, 2018 at 3:02 AM Masahiro Yamada
-<yamada.masahiro@socionext.com> wrote:
-> 2018-09-12 0:40 GMT+09:00 Rob Herring <robh@kernel.org>:
-> > On Mon, Sep 10, 2018 at 10:04 AM Rob Herring <robh@kernel.org> wrote:
-> >> There is nothing arch specific about building dtb files other than their
-> >> location under /arch/*/boot/dts/. Keeping each arch aligned is a pain.
-> >> The dependencies and supported targets are all slightly different.
-> >> Also, a cross-compiler for each arch is needed, but really the host
-> >> compiler preprocessor is perfectly fine for building dtbs. Move the
-> >> build rules to a common location and remove the arch specific ones. This
-> >> is done in a single step to avoid warnings about overriding rules.
-> >>
-> >> The build dependencies had been a mixture of 'scripts' and/or 'prepare'.
-> >> These pull in several dependencies some of which need a target compiler
-> >> (specifically devicetable-offsets.h) and aren't needed to build dtbs.
-> >> All that is really needed is dtc, so adjust the dependencies to only be
-> >> dtc.
-> >>
-> >> This change enables support 'dtbs_install' on some arches which were
-> >> missing the target.
-> >
-> > [...]
-> >
-> >> @@ -1215,6 +1215,33 @@ kselftest-merge:
-> >>                 $(srctree)/tools/testing/selftests/*/config
-> >>         +$(Q)$(MAKE) -f $(srctree)/Makefile olddefconfig
-> >>
-> >> +# ---------------------------------------------------------------------------
-> >> +# Devicetree files
-> >> +
-> >> +ifneq ($(wildcard $(srctree)/arch/$(SRCARCH)/boot/dts/),)
-> >> +dtstree := arch/$(SRCARCH)/boot/dts
-> >> +endif
-> >> +
-> >> +ifdef CONFIG_OF_EARLY_FLATTREE
-> >
-> > This can be true when dtstree is unset. So this line should be this
-> > instead to fix the 0-day reported error:
-> >
-> > ifneq ($(dtstree),)
-> >
-> >> +
-> >> +%.dtb : scripts_dtc
-> >> +       $(Q)$(MAKE) $(build)=$(dtstree) $(dtstree)/$@
-> >> +
-> >> +PHONY += dtbs dtbs_install
-> >> +dtbs: scripts_dtc
-> >> +       $(Q)$(MAKE) $(build)=$(dtstree)
-> >> +
-> >> +dtbs_install: dtbs
-> >> +       $(Q)$(MAKE) $(dtbinst)=$(dtstree)
-> >> +
-> >> +all: dtbs
-> >> +
-> >> +endif
->
->
-> Ah, right.
-> Even x86 can enable OF and OF_UNITTEST.
->
->
->
-> Another solution might be,
-> guard it by 'depends on ARCH_SUPPORTS_OF'.
->
->
->
-> This is actually what ACPI does.
->
-> menuconfig ACPI
->         bool "ACPI (Advanced Configuration and Power Interface) Support"
->         depends on ARCH_SUPPORTS_ACPI
->          ...
+On 09/12/2018 05:58 PM, Christophe Leroy wrote:
+> _PAGE_NO_CACHE is a platform specific flag. In addition, this flag
+> is misleading because one would think it requests a noncached page
+> whereas a noncached page is _PAGE_NO_CACHE | _PAGE_GUARDED
+> 
+> _PAGE_NO_CACHE alone means write combined noncached page, so lets
+> use ioremap_wc() instead.
+> 
+> _PAGE_WRITETHRU is also platform specific flag. Use ioremap_wt()
+> instead.
+> 
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-ACPI is a real platform feature, as it depends on firmware.
+After reading patch #1 this one LGTM.
 
-CONFIG_OF can be enabled, and DT overlays can be loaded, on any platform,
-even if it has ACPI ;-)
+Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-Gr{oetje,eeting}s,
+> ---
+>  drivers/video/fbdev/chipsfb.c    |  3 +--
+>  drivers/video/fbdev/controlfb.c  |  5 +----
+>  drivers/video/fbdev/platinumfb.c |  5 +----
+>  drivers/video/fbdev/valkyriefb.c | 12 ++++++------
+>  4 files changed, 9 insertions(+), 16 deletions(-)
 
-                        Geert
-
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
