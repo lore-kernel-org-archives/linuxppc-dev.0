@@ -1,35 +1,25 @@
-Return-Path: <b.zolnierkie@samsung.com>
-Received: from mailout2.w1.samsung.com (mailout2.w1.samsung.com
- [210.118.77.12])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <groeck7@gmail.com>
+Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
+ [IPv6:2607:f8b0:4864:20::643])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42B4rc5107zF3Ry
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 03:09:36 +1000 (AEST)
-Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
- by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id
- 20180913170235euoutp0217f68479f245034cd8729b8e35724d99~UBFl8iOVU0444804448euoutp02h
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2018 17:02:35 +0000 (GMT)
-Subject: Re: [PATCH v2 02/24] drivers/video/fbdev: use ioremap_wc/wt()
- instead of __ioremap()
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42B9Bw4gKQzF3Rg
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 06:25:43 +1000 (AEST)
+Received: by mail-pl1-x643.google.com with SMTP id b30-v6so3124015pla.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2018 13:25:43 -0700 (PDT)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Date: Thu, 13 Sep 2018 13:25:40 -0700
+From: Guenter Roeck <linux@roeck-us.net>
 To: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Dominik Brodowski
- <linux@dominikbrodowski.net>, Geoff Levand <geoff@infradead.org>, Jens Axboe
- <axboe@kernel.dk>, Kumar Gala <galak@kernel.crashing.org>, Li Yang
- <leoyang.li@nxp.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin
- <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>, Scott Wood
- <oss@buserror.net>, aneesh.kumar@linux.vnet.ibm.com,
- linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org,
- linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Thu, 13 Sep 2018 19:02:31 +0200
+Cc: Wim Van Sebroeck <wim@linux-watchdog.org>,
+ Radu Rendec <radu.rendec@gmail.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-watchdog@vger.kernel.org
+Subject: Re: [PATCH] watchdog: mpc8xxx: provide boot status
+Message-ID: <20180913202540.GA18019@roeck-us.net>
+References: <055ff141d12942ed5750cc9e803e730de0e38c93.1536778520.git.christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-In-Reply-To: <2f980cf32a05415662272cf052c2b9e2a94c756f.1536692743.git.christophe.leroy@c-s.fr>
-Message-Id: <20180913170233eucas1p19e6cd20020f27bb4db0cd927bb9a3302~UBFkQTUaX2145421454eucas1p1M@eucas1p1.samsung.com>
-Content-Type: text/plain; charset="utf-8"
-References: <cover.1536692743.git.christophe.leroy@c-s.fr>
- <CGME20180912155824epcas5p17cd1e14fa1cb246362ec47b15248cf71@epcas5p1.samsung.com>
- <2f980cf32a05415662272cf052c2b9e2a94c756f.1536692743.git.christophe.leroy@c-s.fr>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <055ff141d12942ed5750cc9e803e730de0e38c93.1536778520.git.christophe.leroy@c-s.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,33 +29,144 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, Sep 13, 2018 at 08:07:21AM +0000, Christophe Leroy wrote:
+> mpc8xxx watchdog driver supports the following platforms:
+> - mpc8xx
+> - mpc83xx
+> - mpc86xx
+> 
+> Those three platforms have a 32 bits register which provides the
+> reason of the last boot, including whether it was caused by the
+> watchdog.
+> 
+> mpc8xx: Register RSR, bit SWRS (bit 3)
+> mpc83xx: Register RSR, bit SWRS (bit 28)
+> mpc86xx: Register RSTRSCR, bit WDT_RR (bit 11)
+> 
+> This patch maps the register as defined in the device tree and updates
+> wdt.bootstatus based on the value of the watchdog related bit. Then
+> the information can be retrieved via the WDIOC_GETBOOTSTATUS ioctl.
+> 
+> Hereunder is an exemple of devicetree for mpc8xx,
 
-On 09/12/2018 05:58 PM, Christophe Leroy wrote:
-> _PAGE_NO_CACHE is a platform specific flag. In addition, this flag
-> is misleading because one would think it requests a noncached page
-> whereas a noncached page is _PAGE_NO_CACHE | _PAGE_GUARDED
+example
+
+> the Reset Status Register being at offset 0x288:
 > 
-> _PAGE_NO_CACHE alone means write combined noncached page, so lets
-> use ioremap_wc() instead.
+> 		WDT: watchdog@0 {
+> 			compatible = "fsl,mpc823-wdt";
+> 			reg = <0x0 0x10 0x288 0x4>;
+
+This isn't documented anywhere, and no one wil know how to use it.
+So far that was grandfathered in, but with more complex usage
+it really needs to be documented.
+
+> 		};
 > 
-> _PAGE_WRITETHRU is also platform specific flag. Use ioremap_wt()
-> instead.
+> On the mpc83xx, RSR is at offset 0x910
+> On the mpc86xx, RSTRSCR is at offset 0xe0094
 > 
+> Suggested-by: Radu Rendec <radu.rendec@gmail.com>
+> Tested-by: Christophe Leroy <christophe.leroy@c-s.fr> # On mpc885
 > Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-
-After reading patch #1 this one LGTM.
-
-Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-
 > ---
->  drivers/video/fbdev/chipsfb.c    |  3 +--
->  drivers/video/fbdev/controlfb.c  |  5 +----
->  drivers/video/fbdev/platinumfb.c |  5 +----
->  drivers/video/fbdev/valkyriefb.c | 12 ++++++------
->  4 files changed, 9 insertions(+), 16 deletions(-)
+>  drivers/watchdog/mpc8xxx_wdt.c | 22 ++++++++++++++++++++++
+>  1 file changed, 22 insertions(+)
+> 
+> diff --git a/drivers/watchdog/mpc8xxx_wdt.c b/drivers/watchdog/mpc8xxx_wdt.c
+> index aca2d6323f8a..2951a485a6b4 100644
+> --- a/drivers/watchdog/mpc8xxx_wdt.c
+> +++ b/drivers/watchdog/mpc8xxx_wdt.c
+> @@ -49,10 +49,12 @@ struct mpc8xxx_wdt {
+>  struct mpc8xxx_wdt_type {
+>  	int prescaler;
+>  	bool hw_enabled;
+> +	u32 rsr_mask;
+>  };
+>  
+>  struct mpc8xxx_wdt_ddata {
+>  	struct mpc8xxx_wdt __iomem *base;
+> +	u32 __iomem *rsr;
+>  	struct watchdog_device wdd;
+>  	spinlock_t lock;
+>  	u16 swtc;
+> @@ -137,6 +139,7 @@ static int mpc8xxx_wdt_probe(struct platform_device *ofdev)
+>  	struct mpc8xxx_wdt_ddata *ddata;
+>  	u32 freq = fsl_get_sys_freq();
+>  	bool enabled;
+> +	struct device *dev = &ofdev->dev;
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+If you introduce this variable, please use it everywhere
+in the function.
+
+>  
+>  	wdt_type = of_device_get_match_data(&ofdev->dev);
+>  	if (!wdt_type)
+> @@ -160,6 +163,22 @@ static int mpc8xxx_wdt_probe(struct platform_device *ofdev)
+>  		return -ENODEV;
+>  	}
+>  
+> +	res = platform_get_resource(ofdev, IORESOURCE_MEM, 1);
+> +	ddata->rsr = devm_ioremap_resource(dev, res);
+> +	if (IS_ERR(ddata->rsr)) {
+> +		dev_info(dev, "Could not map reset status register");
+
+Please, no such message. It would start to show up everywhere unless
+devicetree files are updated, which likely won't happen. Then we get
+bogged down by people asking where this message suddenly comes from.
+
+> +	} else {
+> +		u32 rsr_v = in_be32(ddata->rsr);
+> +		bool status = rsr_v & wdt_type->rsr_mask;
+> +
+> +		ddata->wdd.bootstatus = status ? WDIOF_CARDRESET : 0;
+> +		 /* clear reset status bits related to watchdog time */
+> +		out_be32(ddata->rsr, wdt_type->rsr_mask);
+> +
+> +		dev_info(dev, "Last boot was %s by watchdog (RSR = 0x%8.8x)\n",
+> +			 status ? "caused" : "not caused", rsr_v);
+
+The hex value of RSR may be interesting for developers, but not for users.
+Please drop.
+
+Also, "caused" is redundant. Add it to the base string and add "not "
+when needed.
+
+> +	}
+> +
+>  	spin_lock_init(&ddata->lock);
+>  
+>  	ddata->wdd.info = &mpc8xxx_wdt_info,
+> @@ -216,6 +235,7 @@ static const struct of_device_id mpc8xxx_wdt_match[] = {
+>  		.compatible = "mpc83xx_wdt",
+>  		.data = &(struct mpc8xxx_wdt_type) {
+>  			.prescaler = 0x10000,
+> +			.rsr_mask = BIT(3), /* RSR Bit 28 */
+
+The comment is quite useless. How does BIT(3) match RSR bit 28 ?
+I am sure it is because the HW manual counts bits the other way,
+but here it is just confusing and thus doesn't add value unless
+you provide additional context.
+
+>  		},
+>  	},
+>  	{
+> @@ -223,6 +243,7 @@ static const struct of_device_id mpc8xxx_wdt_match[] = {
+>  		.data = &(struct mpc8xxx_wdt_type) {
+>  			.prescaler = 0x10000,
+>  			.hw_enabled = true,
+> +			.rsr_mask = BIT(20), /* RSTRSCR Bit 11 */
+>  		},
+>  	},
+>  	{
+> @@ -230,6 +251,7 @@ static const struct of_device_id mpc8xxx_wdt_match[] = {
+>  		.data = &(struct mpc8xxx_wdt_type) {
+>  			.prescaler = 0x800,
+>  			.hw_enabled = true,
+> +			.rsr_mask = BIT(28), /* RSR Bit 3 */
+>  		},
+>  	},
+>  	{},
+> -- 
+> 2.13.3
+> 
