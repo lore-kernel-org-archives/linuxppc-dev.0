@@ -1,17 +1,25 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 429nPr3FLpzF3RN
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2018 15:33:52 +1000 (AEST)
-From: Michael Neuling <mikey@neuling.org>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org, paulus@ozlabs.org,
- sjitindarsingh@gmail.com, mikey@neuling.org
-Subject: [PATCH] KVM: PPC: Book3S HV: Fix guest r11 corruption with POWER9 TM
- workarounds
-Date: Thu, 13 Sep 2018 15:33:47 +1000
-Message-Id: <20180913053347.11389-1-mikey@neuling.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 429nW61tR9zF3RN
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2018 15:38:26 +1000 (AEST)
+Subject: Re: [PATCH v2] powerpc: Avoid code patching freed init sections
+To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Michael Neuling <mikey@neuling.org>, mpe@ellerman.id.au
+Cc: =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>,
+ linuxppc-dev@lists.ozlabs.org, Haren Myneni <haren@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>
+References: <20180912052058.10062-1-mikey@neuling.org>
+ <0922624b-6c6f-1afd-a9e2-cde5a9a8a1e4@c-s.fr>
+ <29d3467a9314f5b80f93d241ae2566c48b546bfe.camel@neuling.org>
+ <e8a68da4-1c58-b30b-ccd0-f37a9e7c330c@linux.vnet.ibm.com>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <7d32de2e-b390-527d-cd5c-2c5eacc19a2c@c-s.fr>
+Date: Thu, 13 Sep 2018 07:38:21 +0200
+MIME-Version: 1.0
+In-Reply-To: <e8a68da4-1c58-b30b-ccd0-f37a9e7c330c@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,50 +29,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When we come into the softpatch handler (0x1500), we use r11 to store
-the HSRR0 for later use by the denorm handler.
 
-We also use the softpatch handler for the TM workarounds for
-POWER9. Unfortunately, in kvmppc_interrupt_hv we later store r11 out
-to the vcpu assuming it's still what we got from userspace.
 
-This causes r11 to be corrupted in the VCPU and hence when we restore
-the guest, we get a corrupted r11. We've seen this when running TM
-tests inside guests on P9.
+Le 13/09/2018 à 03:21, Tyrel Datwyler a écrit :
+> On 09/12/2018 05:36 PM, Michael Neuling wrote:
+>>
+>>>
+>>>> +			(unsigned long)patch_addr);
+>>>
+>>> Please align second line as per Codying style.
+>>
+>> Sorry I can't see what's wrong. You're (or Cody :-P) going to have to spell it
+>> this out for me...
+> 
+> I suspect that the suggestion is the opening parenthesis of "(unsigned long)" should sit directly under the "K" of "KERN_DEBUG". I'm pretty sure Documentation/process/coding-style.rst is very adamant that all identation is always 8 characters and spaces should never be used, but there still seems to be a lot of places/suggestions that argument lists that spill over multiple lines should be space indented to align with the very first argument at the top level. So, I guess I'm not sure what the desire is here. Although moving to pr_debug might fit it to a single line anyways. ;)
 
-This fixes the problem by only touching r11 in the denorm case.
+It is exactly that, as reported by checkpatch, look at 
+https://patchwork.ozlabs.org/patch/968850/
 
-Fixes: 4bb3c7a020 ("KVM: PPC: Book3S HV: Work around transactional memory bugs in POWER9")
-Cc: <stable@vger.kernel.org> # 4.17+
-Test-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-Reviewed-by: Paul Mackerras <paulus@ozlabs.org>
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
- arch/powerpc/kernel/exceptions-64s.S | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index ea04dfb8c0..2d8fc8c9da 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -1314,9 +1314,7 @@ EXC_REAL_BEGIN(denorm_exception_hv, 0x1500, 0x100)
- 
- #ifdef CONFIG_PPC_DENORMALISATION
- 	mfspr	r10,SPRN_HSRR1
--	mfspr	r11,SPRN_HSRR0		/* save HSRR0 */
- 	andis.	r10,r10,(HSRR1_DENORM)@h /* denorm? */
--	addi	r11,r11,-4		/* HSRR0 is next instruction */
- 	bne+	denorm_assist
- #endif
- 
-@@ -1382,6 +1380,8 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
-  */
- 	XVCPSGNDP32(32)
- denorm_done:
-+	mfspr	r11,SPRN_HSRR0
-+	subi	r11,r11,4
- 	mtspr	SPRN_HSRR0,r11
- 	mtcrf	0x80,r9
- 	ld	r9,PACA_EXGEN+EX_R9(r13)
--- 
-2.17.1
+Christophe
