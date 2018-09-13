@@ -1,22 +1,35 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <felipe.balbi@linux.intel.com>
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 429sRx6dP1zF3Rc
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2018 18:35:57 +1000 (AEST)
-Message-ID: <d51126f75116534ec6ba6caee907b9db82363cc7.camel@kernel.crashing.org>
-Subject: Re: [PATCH] MAINTAINERS: Add PPC contacts for PCI core error handling
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Bjorn Helgaas <helgaas@kernel.org>, linux-pci@vger.kernel.org, Russell
- Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
-Cc: Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linux-kernel@vger.kernel.org, Oliver OHalloran <oliveroh@au1.ibm.com>
-Date: Thu, 13 Sep 2018 10:35:38 +0200
-In-Reply-To: <20180912165846.GH118330@bhelgaas-glaptop.roam.corp.google.com>
-References: <153677132617.23091.12307288405707171077.stgit@bhelgaas-glaptop.roam.corp.google.com>
- <20180912165846.GH118330@bhelgaas-glaptop.roam.corp.google.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 429wkW00TwzF3S6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2018 21:03:41 +1000 (AEST)
+From: Felipe Balbi <balbi@kernel.org>
+To: Arnd Bergmann <arnd@arndb.de>, viro@zeniv.linux.org.uk
+Cc: linux-fsdevel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Frank Haverkamp <haver@linux.vnet.ibm.com>,
+ "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>,
+ Kashyap Desai <kashyap.desai@broadcom.com>,
+ Sumit Saxena <sumit.saxena@broadcom.com>,
+ Shivasharan S <shivasharan.srikanteshwara@broadcom.com>,
+ "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ megaraidlinux.pdl@broadcom.com, linux-scsi@vger.kernel.org,
+ linux-usb@vger.kernel.org
+Subject: Re: [PATCH v2 03/17] compat_ioctl: use correct compat_ptr()
+ translation in drivers
+In-Reply-To: <20180912150142.157913-3-arnd@arndb.de>
+References: <20180912150142.157913-1-arnd@arndb.de>
+ <20180912150142.157913-3-arnd@arndb.de>
+Date: Thu, 13 Sep 2018 14:03:18 +0300
+Message-ID: <871s9x1wy1.fsf@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="=-=-=";
+ micalg=pgp-sha256; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,16 +39,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-09-12 at 11:58 -0500, Bjorn Helgaas wrote:
-> > Add the generic PCI core error recovery files to the powerpc EEH
-> > MAINTAINERS entry so the powerpc folks will be copied on changes to the
-> > generic PCI error handling strategy.
-> 
-> I really want to make sure the powerpc folks are plugged into any PCI core
-> error handling discussions.  Please let me know if there's a better way
-> than this patch, or if there are other people who should be added.
+--=-=-=
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Sounds good. Oliver, you want to be looped in as well ?
+Arnd Bergmann <arnd@arndb.de> writes:
 
-Cheers,
-Ben.
+> A handful of drivers all have a trivial wrapper around their ioctl
+> handler, but don't call the compat_ptr() conversion function at the
+> moment. In practice this does not matter, since none of them are used
+> on the s390 architecture and for all other architectures, compat_ptr()
+> does not do anything, but using the new generic_compat_ioctl_ptrarg
+> helper makes it more correct in theory, and simplifies the code.
+>
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+
+Acked-by: Felipe Balbi <felipe.balbi@linux.intel.com>
+
+=2D-=20
+balbi
+
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEElLzh7wn96CXwjh2IzL64meEamQYFAluaQ/YACgkQzL64meEa
+mQa7Cw//SVIduyNkKUJWE/M6JNaHgPcjaKHvJmfwUbCJ4obLMil5YB5r4CXLcL6c
+e+sSufRSpae7ea7GG3v7aKqOdA5QqwoK3Nuly7lJv7tfy29lQiXTIvVfW8f52SWM
+AM4vjGT/TKyMrdFoXBr8KkFlCppAXShYUSayRg7ADNnvR+pZ5aNihNdb1BVb/gfT
+4/A9PObPckHwj7v3RxYe1Nj6IOuI276oNXlLOWAbC4L3ijXxTD20K+sP/ZvzzO7V
+/bTl1rEmyqcD5khWYw/MpJhbuDZN2FRa1lyYcp/zHOXCrkly8jaB94LlSiycajja
+ylzBVqOSqC3al600dBsxAU2XFlDmVcWgQZCcyubLC1C0cZdo3sshhArgiXy/v8N2
+D+3l9iWr8BpC44zbCEQgjNvaqJUF0mMg4Rs7LXVH+IH6KrcZbpOf/pcjLRvqf+zt
+PXIyEJXDfXjOii/kSugM9EHAF8U9p+/JCxsum93vgv7E1UjZhz0X3pc3vWoIbGN6
+yeKN7vkGxiue8ghzscuwJowIdv6wa9erbX0srRruxajFvnm92wp0ajHDOgaUaZAG
+RhQSqq+JnE9zMWSUyc3rLD7WBiDntLu4DCYNjFqQbi34tbYDUnbiejsdnSywHa6p
+8TAIXk+jnn/Em5zalyWoAX4lkpdGhAgQLMySWhnvw3NEpfeX6Gw=
+=/6h3
+-----END PGP SIGNATURE-----
+--=-=-=--
