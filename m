@@ -1,22 +1,21 @@
 Return-Path: <robherring2@gmail.com>
-Received: from mail-oi0-f66.google.com (mail-oi0-f66.google.com
- [209.85.218.66])
+Received: from mail-oi0-f41.google.com (mail-oi0-f41.google.com
+ [209.85.218.41])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42B9G84XHLzF1RG
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 06:28:32 +1000 (AEST)
-Received: by mail-oi0-f66.google.com with SMTP id 13-v6so10775990ois.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2018 13:28:32 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42B9GB4GJvzF1RG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 06:28:34 +1000 (AEST)
+Received: by mail-oi0-f41.google.com with SMTP id m11-v6so10775152oic.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2018 13:28:34 -0700 (PDT)
 From: Rob Herring <robh@kernel.org>
 To: devicetree@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, Frank Rowand <frowand.list@gmail.com>,
- Russell King <linux@armlinux.org.uk>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH 1/3] libfdt: Ensure INT_MAX is defined in libfdt_env.h
-Date: Thu, 13 Sep 2018 15:28:26 -0500
-Message-Id: <20180913202828.15372-1-robh@kernel.org>
+ linuxppc-dev@lists.ozlabs.org, Frank Rowand <frowand.list@gmail.com>
+Subject: [PATCH 2/3] scripts/dtc: Add yamltree.c to dtc sources
+Date: Thu, 13 Sep 2018 15:28:27 -0500
+Message-Id: <20180913202828.15372-2-robh@kernel.org>
+In-Reply-To: <20180913202828.15372-1-robh@kernel.org>
+References: <20180913202828.15372-1-robh@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,60 +25,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The next update of libfdt has a new dependency on INT_MAX. Update the
-instances of libfdt_env.h in the kernel to either include the necessary
-header with the definition or define it locally.
+dtc has a new source file, yamltree.c, that needs to be copied when
+syncing dtc sources.
 
-Cc: Russell King <linux@armlinux.org.uk>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linuxppc-dev@lists.ozlabs.org
 Signed-off-by: Rob Herring <robh@kernel.org>
 ---
- arch/arm/boot/compressed/libfdt_env.h | 2 ++
- arch/powerpc/boot/libfdt_env.h        | 2 ++
- include/linux/libfdt_env.h            | 1 +
- 3 files changed, 5 insertions(+)
+ scripts/dtc/update-dtc-source.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/arm/boot/compressed/libfdt_env.h b/arch/arm/boot/compressed/libfdt_env.h
-index 07437816e098..b36c0289a308 100644
---- a/arch/arm/boot/compressed/libfdt_env.h
-+++ b/arch/arm/boot/compressed/libfdt_env.h
-@@ -6,6 +6,8 @@
- #include <linux/string.h>
- #include <asm/byteorder.h>
+diff --git a/scripts/dtc/update-dtc-source.sh b/scripts/dtc/update-dtc-source.sh
+index 1a009fd195d0..7dd29a0362b8 100755
+--- a/scripts/dtc/update-dtc-source.sh
++++ b/scripts/dtc/update-dtc-source.sh
+@@ -32,7 +32,7 @@ DTC_UPSTREAM_PATH=`pwd`/../dtc
+ DTC_LINUX_PATH=`pwd`/scripts/dtc
  
-+#define INT_MAX			((int)(~0U>>1))
-+
- typedef __be16 fdt16_t;
- typedef __be32 fdt32_t;
- typedef __be64 fdt64_t;
-diff --git a/arch/powerpc/boot/libfdt_env.h b/arch/powerpc/boot/libfdt_env.h
-index 2a0c8b1bf147..2abc8e83b95e 100644
---- a/arch/powerpc/boot/libfdt_env.h
-+++ b/arch/powerpc/boot/libfdt_env.h
-@@ -5,6 +5,8 @@
- #include <types.h>
- #include <string.h>
- 
-+#define INT_MAX			((int)(~0U>>1))
-+
- #include "of.h"
- 
- typedef unsigned long uintptr_t;
-diff --git a/include/linux/libfdt_env.h b/include/linux/libfdt_env.h
-index c6ac1fe7ec68..edb0f0c30904 100644
---- a/include/linux/libfdt_env.h
-+++ b/include/linux/libfdt_env.h
-@@ -2,6 +2,7 @@
- #ifndef LIBFDT_ENV_H
- #define LIBFDT_ENV_H
- 
-+#include <linux/kernel.h>	/* For INT_MAX */
- #include <linux/string.h>
- 
- #include <asm/byteorder.h>
+ DTC_SOURCE="checks.c data.c dtc.c dtc.h flattree.c fstree.c livetree.c srcpos.c \
+-		srcpos.h treesource.c util.c util.h version_gen.h Makefile.dtc \
++		srcpos.h treesource.c util.c util.h version_gen.h yamltree.c Makefile.dtc \
+ 		dtc-lexer.l dtc-parser.y"
+ LIBFDT_SOURCE="Makefile.libfdt fdt.c fdt.h fdt_addresses.c fdt_empty_tree.c \
+ 		fdt_overlay.c fdt_ro.c fdt_rw.c fdt_strerror.c fdt_sw.c \
 -- 
 2.17.1
