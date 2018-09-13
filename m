@@ -1,24 +1,22 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 429s786JfpzF3Ry
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2018 18:21:24 +1000 (AEST)
-Subject: Re: MPC83xx reset status register (RSR, offset 0x910)
-To: Radu Rendec <radu.rendec@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, oss@buserror.net, mpe@ellerman.id.au,
- eric.miao@marvell.com
-References: <CAD5jUk_e3LwPZGN7G3ZGHx=zdQBZSdAeoKWjxwE7Ei2=LtXQTg@mail.gmail.com>
- <e6b9f0f0-1cd9-c183-eff4-bec1ca18a373@c-s.fr>
- <fc3e7ca0f018afbf6c104c333b381ffbae6a48c3.camel@gmail.com>
- <c0b2c45c-815c-d627-e975-a2d622494223@c-s.fr>
- <CAD5jUk-oEoMwndqqPUs+AWnQThUjH+DA6fJUb5_W2rOPB1Njtw@mail.gmail.com>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <d30e4a1e-187b-2a07-ec9c-50f889375cde@c-s.fr>
-Date: Thu, 13 Sep 2018 10:21:19 +0200
-MIME-Version: 1.0
-In-Reply-To: <CAD5jUk-oEoMwndqqPUs+AWnQThUjH+DA6fJUb5_W2rOPB1Njtw@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 429sRx6dP1zF3Rc
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2018 18:35:57 +1000 (AEST)
+Message-ID: <d51126f75116534ec6ba6caee907b9db82363cc7.camel@kernel.crashing.org>
+Subject: Re: [PATCH] MAINTAINERS: Add PPC contacts for PCI core error handling
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Bjorn Helgaas <helgaas@kernel.org>, linux-pci@vger.kernel.org, Russell
+ Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
+Cc: Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linux-kernel@vger.kernel.org, Oliver OHalloran <oliveroh@au1.ibm.com>
+Date: Thu, 13 Sep 2018 10:35:38 +0200
+In-Reply-To: <20180912165846.GH118330@bhelgaas-glaptop.roam.corp.google.com>
+References: <153677132617.23091.12307288405707171077.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ <20180912165846.GH118330@bhelgaas-glaptop.roam.corp.google.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,89 +26,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, 2018-09-12 at 11:58 -0500, Bjorn Helgaas wrote:
+> > Add the generic PCI core error recovery files to the powerpc EEH
+> > MAINTAINERS entry so the powerpc folks will be copied on changes to the
+> > generic PCI error handling strategy.
+> 
+> I really want to make sure the powerpc folks are plugged into any PCI core
+> error handling discussions.  Please let me know if there's a better way
+> than this patch, or if there are other people who should be added.
 
+Sounds good. Oliver, you want to be looped in as well ?
 
-Le 11/09/2018 à 00:17, Radu Rendec a écrit :
-> Hi,
-> 
-> On Mon, 2018-09-10 at 07:37 +0200, Christophe Leroy wrote:
->> Le 10/09/2018 à 01:13, Radu Rendec a écrit :
->>>
->>> I'm using U-boot as well, but it's just not configured to read or clear
->>> the RSR. I'm curious: if U-boot reads/clears the RSR in your case, how
->>> do you make the initial value available to user space programs running
->>> under Linux?
->>
->> I'm surprised. When looking at U-boot code, I don't see any way to
->> configure that. It seems just do by default in function cpu_init_f():
->>
->> https://elixir.bootlin.com/u-boot/v2018.07/source/arch/powerpc/cpu/mpc83xx/cpu_init.c#L217
->>
->>          /* RSR - Reset Status Register - clear all status (4.6.1.3) */
->>          gd->arch.reset_status = __raw_readl(&im->reset.rsr);
->>          __raw_writel(~(RSR_RES), &im->reset.rsr);
-> 
-> I'm working as a contractor in a large embedded project, so I don't know
-> all the bits and pieces. I just checked the U-boot code. Whoever was
-> maintaining it, "configured" it by commenting out the __raw_writel()
-> that clears the register :)
-> 
-> Probably the reason was specifically to be able to read it from Linux,
-> but unfortunately the guy is not here any more to ask him.
-> 
-> It may make more sense to read it from U-boot, but (1) the value must
-> still be passed to Linux somehow and (2) in my case, I would prefer not
-> to touch U-boot.
-> 
->> Do you know any user space program in Linux that needs this value ?
-> 
-> I don't know of any "standard" program that needs it. In the project I'm
-> working on, there are multiple peripherals on the board and initialization
-> is slightly different when the reset line is physically asserted vs. a
-> soft CPU reset. Besides, we need to show the reset reason to the user.
-> 
-> I guess in the embedded world this is a fairly common use case, so
-> perhaps others can benefit from that if I fix it in a way that can be
-> pushed upstream.
-> 
->>> Thank you very much for the patches. Is there any chance they can be
->>> submitted upstream?
->>
->> I see no problem submitting them upstream, but are they really worth it
->> ? Adding Michael in copy to get his opinion.
-> 
-> I guess it's worth if they are changed to make the value available to
-> the kernel and user space rather than just decoding/printing it, for the
-> reasons I mentioned above.
-> 
-> The MPC83xx also has a watchdog and the kernel driver (mpc8xxx_wdt.c)
-> could also be improved to support the WDIOC_GETBOOTSTATUS ioctl and
-> properly report if the system rebooted due to a watchdog.
-
-Very good idea.
-
-I just submitted a patch for that. Please look at it.
-I'm sure any driver which needs reset status information can do the same.
-
-If we want to do something more central, maybe we should look at what 
-was done on ARM:
-
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=04fef228fb00
-
-Christophe
-
-
-> 
->>> I tried to look for something similar on other platforms or architectures,
->>> but couldn't find anything.
->>
->> I believe furst thing is to identify some app needing such an
->> information, then we'll be able to investigate how to handle it.
-> 
-> Well, I guess I explained my reasons and use case. If there is any
-> interest in that, I will gladly implement it in a way that makes sense
-> to upstream. Let's see what Michael thinks.
-> 
-> Thanks,
-> Radu Rendec
-> 
+Cheers,
+Ben.
