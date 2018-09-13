@@ -1,24 +1,18 @@
-Return-Path: <ruscur@russell.cc>
-Received: from out1-smtp.messagingengine.com (out1-smtp.messagingengine.com
- [66.111.4.25])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 429jGR2qX3zF3RM
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2018 12:27:09 +1000 (AEST)
-Message-ID: <94b8929d44af6dd965600b7d159458312d500582.camel@russell.cc>
-Subject: Re: [PATCH] MAINTAINERS: Add PPC contacts for PCI core error handling
-From: Russell Currey <ruscur@russell.cc>
-To: Bjorn Helgaas <helgaas@kernel.org>, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, sbobroff@linux.ibm.com
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linux-kernel@vger.kernel.org, oohall@gmail.com
-In-Reply-To: <20180912165846.GH118330@bhelgaas-glaptop.roam.corp.google.com>
-References: <153677132617.23091.12307288405707171077.stgit@bhelgaas-glaptop.roam.corp.google.com>
- <20180912165846.GH118330@bhelgaas-glaptop.roam.corp.google.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 13 Sep 2018 12:26:55 +1000
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 429k4M2GXrzF3RM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2018 13:03:31 +1000 (AEST)
+From: Michael Neuling <mikey@neuling.org>
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>,
+ paulus@ozlabs.org, Haren Myneni <haren@linux.vnet.ibm.com>,
+ mikey@neuling.org, =?UTF-8?q?Michal=20Such=C3=A1nek?= <msuchanek@suse.de>,
+ Christophe LEROY <christophe.leroy@c-s.fr>
+Subject: [PATCH v3] powerpc: Avoid code patching freed init sections
+Date: Thu, 13 Sep 2018 13:03:29 +1000
+Message-Id: <20180913030329.12052-1-mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,54 +22,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-09-12 at 11:58 -0500, Bjorn Helgaas wrote:
-> On Wed, Sep 12, 2018 at 11:55:26AM -0500, Bjorn Helgaas wrote:
-> > From: Bjorn Helgaas <bhelgaas@google.com>
-> > 
-> > The original PCI error recovery functionality was for the powerpc-specific
-> > IBM EEH feature.  PCIe subsequently added some similar features, including
-> > AER and DPC, that can be used on any architecture.
-> > 
-> > We want the generic PCI core error handling support to work with all of
-> > these features.  Driver error recovery callbacks should be independent of
-> > which feature the platform provides.
-> > 
-> > Add the generic PCI core error recovery files to the powerpc EEH
-> > MAINTAINERS entry so the powerpc folks will be copied on changes to the
-> > generic PCI error handling strategy.
-> 
-> I really want to make sure the powerpc folks are plugged into any PCI core
-> error handling discussions.  Please let me know if there's a better way
-> than this patch, or if there are other people who should be added.
+This stops us from doing code patching in init sections after they've
+been freed.
 
-I think this patch is definitely a good idea.
+In this chain:
+  kvm_guest_init() ->
+    kvm_use_magic_page() ->
+      fault_in_pages_readable() ->
+	 __get_user() ->
+	   __get_user_nocheck() ->
+	     barrier_nospec();
 
-Alongside this (whether you want to include it in your patch or not, Bjorn),
-Sam Bobroff should replace myself as maintainer.  He's been very active in fixing,
-reworking and reviewing in EEH land and will probably do a better job of keeping
-his finger on the pulse of the generic PCI error handling code than I did.
+We have a code patching location at barrier_nospec() and
+kvm_guest_init() is an init function. This whole chain gets inlined,
+so when we free the init section (hence kvm_guest_init()), this code
+goes away and hence should no longer be patched.
 
-- Russell
+We seen this as userspace memory corruption when using a memory
+checker while doing partition migration testing on powervm (this
+starts the code patching post migration via
+/sys/kernel/mobility/migration). In theory, it could also happen when
+using /sys/kernel/debug/powerpc/barrier_nospec.
 
-> 
-> > Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
-> > ---
-> >  MAINTAINERS |    4 ++++
-> >  1 file changed, 4 insertions(+)
-> > 
-> > diff --git a/MAINTAINERS b/MAINTAINERS
-> > index 7e10ba65bfe4..d6699597fd89 100644
-> > --- a/MAINTAINERS
-> > +++ b/MAINTAINERS
-> > @@ -11202,6 +11202,10 @@ PCI ENHANCED ERROR HANDLING (EEH) FOR POWERPC
-> >  M:	Russell Currey <ruscur@russell.cc>
-> >  L:	linuxppc-dev@lists.ozlabs.org
-> >  S:	Supported
-> > +F:	Documentation/PCI/pci-error-recovery.txt
-> > +F:	drivers/pci/pcie/aer.c
-> > +F:	drivers/pci/pcie/dpc.c
-> > +F:	drivers/pci/pcie/err.c
-> >  F:	Documentation/powerpc/eeh-pci-error-recovery.txt
-> >  F:	arch/powerpc/kernel/eeh*.c
-> >  F:	arch/powerpc/platforms/*/eeh*.c
-> > 
+cc: stable@vger.kernel.org # 4.13+
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+
+---
+For stable I've marked this as v4.13+ since that's when we refactored
+code-patching.c but it could go back even further than that. In
+reality though, I think we can only hit this since the first
+spectre/meltdown changes.
+
+v3:
+ Add init_mem_free flag to avoid potential race.
+ Feedback from Christophe Leroy:
+   - use init_section_contains()
+   - change order of init test for performance
+   - use pr_debug()
+   - remove blank line
+
+v2:
+  Print when we skip an address
+---
+ arch/powerpc/include/asm/setup.h | 1 +
+ arch/powerpc/lib/code-patching.c | 7 +++++++
+ arch/powerpc/mm/mem.c            | 2 ++
+ 3 files changed, 10 insertions(+)
+
+diff --git a/arch/powerpc/include/asm/setup.h b/arch/powerpc/include/asm/setup.h
+index 1a951b0046..4b4522b738 100644
+--- a/arch/powerpc/include/asm/setup.h
++++ b/arch/powerpc/include/asm/setup.h
+@@ -9,6 +9,7 @@ extern void ppc_printk_progress(char *s, unsigned short hex);
+ 
+ extern unsigned int rtas_data;
+ extern unsigned long long memory_limit;
++extern bool init_mem_free;
+ extern unsigned long klimit;
+ extern void *zalloc_maybe_bootmem(size_t size, gfp_t mask);
+ 
+diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
+index 850f3b8f4d..dacd6cef92 100644
+--- a/arch/powerpc/lib/code-patching.c
++++ b/arch/powerpc/lib/code-patching.c
+@@ -28,6 +28,13 @@ static int __patch_instruction(unsigned int *exec_addr, unsigned int instr,
+ {
+ 	int err;
+ 
++	/* Make sure we aren't patching a freed init section */
++	if (init_mem_free && init_section_contains(exec_addr, 4)) {
++		pr_debug("Skipping init section patching addr: 0x%lx\n",
++			 (unsigned long)exec_addr);
++		return 0;
++	}
++
+ 	__put_user_size(instr, patch_addr, 4, err);
+ 	if (err)
+ 		return err;
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index 5c8530d0c6..b9d59e1a83 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -63,6 +63,7 @@
+ #endif
+ 
+ unsigned long long memory_limit;
++bool init_mem_free;
+ 
+ #ifdef CONFIG_HIGHMEM
+ pte_t *kmap_pte;
+@@ -396,6 +397,7 @@ void free_initmem(void)
+ {
+ 	ppc_md.progress = ppc_printk_progress;
+ 	mark_initmem_nx();
++	init_mem_free = true;
+ 	free_initmem_default(POISON_FREE_INITMEM);
+ }
+ 
+-- 
+2.17.1
