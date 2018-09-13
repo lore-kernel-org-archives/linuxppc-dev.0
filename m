@@ -3,8 +3,8 @@ Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
  [140.211.169.12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42B0Ks4F7ZzF3Sk
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2018 23:46:09 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42B0dR22rdzF3Sb
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2018 23:59:38 +1000 (AEST)
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To: linux-kernel@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org,
@@ -13,12 +13,12 @@ Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Scott Wood <oss@buserror.net>, Kumar Gala <galak@kernel.crashing.org>,
  linuxppc-dev@lists.ozlabs.org, Sasha Levin <alexander.levin@microsoft.com>
-Subject: [PATCH 4.14 074/115] powerpc/platforms/85xx: fix t1042rdb_diu.c build
+Subject: [PATCH 4.18 124/197] powerpc/platforms/85xx: fix t1042rdb_diu.c build
  errors & warning
-Date: Thu, 13 Sep 2018 15:31:34 +0200
-Message-Id: <20180913131828.220709249@linuxfoundation.org>
-In-Reply-To: <20180913131823.327472833@linuxfoundation.org>
-References: <20180913131823.327472833@linuxfoundation.org>
+Date: Thu, 13 Sep 2018 15:31:13 +0200
+Message-Id: <20180913131846.505123144@linuxfoundation.org>
+In-Reply-To: <20180913131841.568116777@linuxfoundation.org>
+References: <20180913131841.568116777@linuxfoundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,7 +30,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-4.14-stable review patch.  If anyone has any objections, please let me know.
+4.18-stable review patch.  If anyone has any objections, please let me know.
 
 ------------------
 
