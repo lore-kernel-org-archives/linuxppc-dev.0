@@ -1,18 +1,37 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <nipun.gupta@nxp.com>
+Received: from EUR04-VI1-obe.outbound.protection.outlook.com
+ (mail-eopbgr80051.outbound.protection.outlook.com [40.107.8.51])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 429k4M2GXrzF3RM
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2018 13:03:31 +1000 (AEST)
-From: Michael Neuling <mikey@neuling.org>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>,
- paulus@ozlabs.org, Haren Myneni <haren@linux.vnet.ibm.com>,
- mikey@neuling.org, =?UTF-8?q?Michal=20Such=C3=A1nek?= <msuchanek@suse.de>,
- Christophe LEROY <christophe.leroy@c-s.fr>
-Subject: [PATCH v3] powerpc: Avoid code patching freed init sections
-Date: Thu, 13 Sep 2018 13:03:29 +1000
-Message-Id: <20180913030329.12052-1-mikey@neuling.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 429mj02f3yzF3RN
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2018 15:01:53 +1000 (AEST)
+From: Nipun Gupta <nipun.gupta@nxp.com>
+To: Will Deacon <will.deacon@arm.com>
+CC: "joro@8bytes.org" <joro@8bytes.org>, "robin.murphy@arm.com"
+ <robin.murphy@arm.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>,
+ "robh@kernel.org" <robh@kernel.org>, "mark.rutland@arm.com"
+ <mark.rutland@arm.com>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>,
+ "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, Laurentiu Tudor
+ <laurentiu.tudor@nxp.com>, "bhelgaas@google.com" <bhelgaas@google.com>,
+ "hch@lst.de" <hch@lst.de>, "m.szyprowski@samsung.com"
+ <m.szyprowski@samsung.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>,
+ "frowand.list@gmail.com" <frowand.list@gmail.com>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-pci@vger.kernel.org"
+ <linux-pci@vger.kernel.org>, Bharat Bhushan <bharat.bhushan@nxp.com>,
+ "stuyoder@gmail.com" <stuyoder@gmail.com>, Leo Li <leoyang.li@nxp.com>
+Subject: RE: [PATCH 0/7 v7] Support for fsl-mc bus and its devices in SMMU
+Date: Thu, 13 Sep 2018 05:01:46 +0000
+Message-ID: <VI1PR04MB448065E40C0930BA42FDE08DE61A0@VI1PR04MB4480.eurprd04.prod.outlook.com>
+References: <1536587361-11047-1-git-send-email-nipun.gupta@nxp.com>
+ <20180912165845.GD16071@arm.com>
+In-Reply-To: <20180912165845.GD16071@arm.com>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,102 +41,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This stops us from doing code patching in init sections after they've
-been freed.
 
-In this chain:
-  kvm_guest_init() ->
-    kvm_use_magic_page() ->
-      fault_in_pages_readable() ->
-	 __get_user() ->
-	   __get_user_nocheck() ->
-	     barrier_nospec();
 
-We have a code patching location at barrier_nospec() and
-kvm_guest_init() is an init function. This whole chain gets inlined,
-so when we free the init section (hence kvm_guest_init()), this code
-goes away and hence should no longer be patched.
+> -----Original Message-----
+> From: Will Deacon [mailto:will.deacon@arm.com]
+> Sent: Wednesday, September 12, 2018 10:29 PM
+> To: Nipun Gupta <nipun.gupta@nxp.com>
+> Cc: joro@8bytes.org; robin.murphy@arm.com; robh+dt@kernel.org;
+> robh@kernel.org; mark.rutland@arm.com; catalin.marinas@arm.com;
+> gregkh@linuxfoundation.org; Laurentiu Tudor <laurentiu.tudor@nxp.com>;
+> bhelgaas@google.com; hch@lst.de; m.szyprowski@samsung.com;
+> shawnguo@kernel.org; frowand.list@gmail.com; iommu@lists.linux-
+> foundation.org; linux-kernel@vger.kernel.org; devicetree@vger.kernel.org;
+> linux-arm-kernel@lists.infradead.org; linuxppc-dev@lists.ozlabs.org; linu=
+x-
+> pci@vger.kernel.org; Bharat Bhushan <bharat.bhushan@nxp.com>;
+> stuyoder@gmail.com; Leo Li <leoyang.li@nxp.com>
+> Subject: Re: [PATCH 0/7 v7] Support for fsl-mc bus and its devices in SMM=
+U
+>=20
+> Hi Nipun,
+>=20
+> On Mon, Sep 10, 2018 at 07:19:14PM +0530, Nipun Gupta wrote:
+> > This patchset defines IOMMU DT binding for fsl-mc bus and adds
+> > support in SMMU for fsl-mc bus.
+> >
+> > These patches
+> >   - Define property 'iommu-map' for fsl-mc bus (patch 1)
+> >   - Integrates the fsl-mc bus with the SMMU using this
+> >     IOMMU binding (patch 2,3,4)
+> >   - Adds the dma configuration support for fsl-mc bus (patch 5, 6)
+> >   - Updates the fsl-mc device node with iommu/dma related changes (patc=
+h 7)
+>=20
+> It looks like you have all the Acks in place for this series now, so I
+> assume it's going to go via Joerg directly. Is that right?
 
-We seen this as userspace memory corruption when using a memory
-checker while doing partition migration testing on powervm (this
-starts the code patching post migration via
-/sys/kernel/mobility/migration). In theory, it could also happen when
-using /sys/kernel/debug/powerpc/barrier_nospec.
-
-cc: stable@vger.kernel.org # 4.13+
-Signed-off-by: Michael Neuling <mikey@neuling.org>
-
----
-For stable I've marked this as v4.13+ since that's when we refactored
-code-patching.c but it could go back even further than that. In
-reality though, I think we can only hit this since the first
-spectre/meltdown changes.
-
-v3:
- Add init_mem_free flag to avoid potential race.
- Feedback from Christophe Leroy:
-   - use init_section_contains()
-   - change order of init test for performance
-   - use pr_debug()
-   - remove blank line
-
-v2:
-  Print when we skip an address
----
- arch/powerpc/include/asm/setup.h | 1 +
- arch/powerpc/lib/code-patching.c | 7 +++++++
- arch/powerpc/mm/mem.c            | 2 ++
- 3 files changed, 10 insertions(+)
-
-diff --git a/arch/powerpc/include/asm/setup.h b/arch/powerpc/include/asm/setup.h
-index 1a951b0046..4b4522b738 100644
---- a/arch/powerpc/include/asm/setup.h
-+++ b/arch/powerpc/include/asm/setup.h
-@@ -9,6 +9,7 @@ extern void ppc_printk_progress(char *s, unsigned short hex);
- 
- extern unsigned int rtas_data;
- extern unsigned long long memory_limit;
-+extern bool init_mem_free;
- extern unsigned long klimit;
- extern void *zalloc_maybe_bootmem(size_t size, gfp_t mask);
- 
-diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
-index 850f3b8f4d..dacd6cef92 100644
---- a/arch/powerpc/lib/code-patching.c
-+++ b/arch/powerpc/lib/code-patching.c
-@@ -28,6 +28,13 @@ static int __patch_instruction(unsigned int *exec_addr, unsigned int instr,
- {
- 	int err;
- 
-+	/* Make sure we aren't patching a freed init section */
-+	if (init_mem_free && init_section_contains(exec_addr, 4)) {
-+		pr_debug("Skipping init section patching addr: 0x%lx\n",
-+			 (unsigned long)exec_addr);
-+		return 0;
-+	}
-+
- 	__put_user_size(instr, patch_addr, 4, err);
- 	if (err)
- 		return err;
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 5c8530d0c6..b9d59e1a83 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -63,6 +63,7 @@
- #endif
- 
- unsigned long long memory_limit;
-+bool init_mem_free;
- 
- #ifdef CONFIG_HIGHMEM
- pte_t *kmap_pte;
-@@ -396,6 +397,7 @@ void free_initmem(void)
- {
- 	ppc_md.progress = ppc_printk_progress;
- 	mark_initmem_nx();
-+	init_mem_free = true;
- 	free_initmem_default(POISON_FREE_INITMEM);
- }
- 
--- 
-2.17.1
+This is what I am expecting :)
+=20
+> Will
+>=20
