@@ -1,35 +1,18 @@
-Return-Path: <arndbergmann@gmail.com>
-Received: from mail-qt0-f195.google.com (mail-qt0-f195.google.com
- [209.85.216.195])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42BWJx6Jj5zF3V4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 20:02:09 +1000 (AEST)
-Received: by mail-qt0-f195.google.com with SMTP id z8-v6so8137583qto.9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 03:02:09 -0700 (PDT)
-MIME-Version: 1.0
-References: <1536913980-4811-1-git-send-email-firoz.khan@linaro.org>
- <1536913980-4811-3-git-send-email-firoz.khan@linaro.org>
-In-Reply-To: <1536913980-4811-3-git-send-email-firoz.khan@linaro.org>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Fri, 14 Sep 2018 12:01:51 +0200
-Message-ID: <CAK8P3a1PCnHy1JX4T21LjOr3ZGAVLdqxQaPYfLHAgM-9Y5yxVg@mail.gmail.com>
-Subject: Re: [PATCH 2/3] powerpc: Add system call table generation support
-To: Firoz Khan <firoz.khan@linaro.org>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxram@us.ibm.com, leitao@debian.org,
- Boqun Feng <boqun.feng@gmail.com>, gregkh <gregkh@linuxfoundation.org>,
- Philippe Ombredanne <pombredanne@nexb.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- Kate Stewart <kstewart@linuxfoundation.org>,
- y2038 Mailman List <y2038@lists.linaro.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linux-arch <linux-arch@vger.kernel.org>,
- Deepa Dinamani <deepa.kernel@gmail.com>,
- Marcin Juszkiewicz <marcin.juszkiewicz@linaro.org>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42BX0S1zVXzF3VC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 20:32:55 +1000 (AEST)
+Message-Id: <379467c33068e86235272401edfe60a57f2130bb.1536883882.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] serial: cpm_uart: return immediately from console poll
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jiri Slaby <jslaby@suse.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-serial@vger.kernel.org, stable@vger.kernel.org,
+ Jason Wessel <jason.wessel@windriver.com>
+Date: Fri, 14 Sep 2018 10:32:50 +0000 (UTC)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,38 +22,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Sep 14, 2018 at 10:33 AM Firoz Khan <firoz.khan@linaro.org> wrote:
+kgdb expects poll function to return immediately and
+returning NO_POLL_CHAR when no character is available.
 
-> ---
->  arch/powerpc/kernel/syscalls/Makefile       |  51 ++++
->  arch/powerpc/kernel/syscalls/syscall_32.tbl | 378 ++++++++++++++++++++++++++++
->  arch/powerpc/kernel/syscalls/syscall_64.tbl | 372 +++++++++++++++++++++++++++
->  arch/powerpc/kernel/syscalls/syscallhdr.sh  |  37 +++
->  arch/powerpc/kernel/syscalls/syscalltbl.sh  |  38 +++
+Fixes: f5316b4aea024 ("kgdb,8250,pl011: Return immediately from console poll")
+Cc: Jason Wessel <jason.wessel@windriver.com>
+Cc: <stable@vger.kernel.org>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ drivers/tty/serial/cpm_uart/cpm_uart_core.c | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
 
-I think you should only need a single .tbl  input file here.
-
-
-> +
-> +systbl_abi_syscall_table_32 := 32
-> +$(out)/syscall_table_32.h: $(syscall32) $(systbl)
-> +       $(call if_changed,systbl)
-> +
-> +systbl_abi_syscall_table_64 := 64
-> +$(out)/syscall_table_64.h: $(syscall64) $(systbl)
-> +       $(call if_changed,systbl)
-> +
-> +systbl_abi_syscall_table_c32 := c32
-> +$(out)/syscall_table_c32.h: $(syscall32) $(systbl)
-> +       $(call if_changed,systbl)
-
-And here you need a fourth output file for the SPU table on ppc64.
-
-> +383     common  statx                           sys_statx
-> +384     common  pkey_alloc                      sys_pkey_alloc
-> +385     common  pkey_free                       sys_pkey_free
-> +386     common  pkey_mprotect                   sys_pkey_mprotect
-
-This also misses rseq and io_pgetevents.
-
-       Arnd
+diff --git a/drivers/tty/serial/cpm_uart/cpm_uart_core.c b/drivers/tty/serial/cpm_uart/cpm_uart_core.c
+index cd3f3fc4e0a5..280acc4dfa90 100644
+--- a/drivers/tty/serial/cpm_uart/cpm_uart_core.c
++++ b/drivers/tty/serial/cpm_uart/cpm_uart_core.c
+@@ -1093,8 +1093,8 @@ static int poll_wait_key(char *obuf, struct uart_cpm_port *pinfo)
+ 	/* Get the address of the host memory buffer.
+ 	 */
+ 	bdp = pinfo->rx_cur;
+-	while (bdp->cbd_sc & BD_SC_EMPTY)
+-		;
++	if (bdp->cbd_sc & BD_SC_EMPTY)
++		return NO_POLL_CHAR;
+ 
+ 	/* If the buffer address is in the CPM DPRAM, don't
+ 	 * convert it.
+@@ -1129,7 +1129,11 @@ static int cpm_get_poll_char(struct uart_port *port)
+ 		poll_chars = 0;
+ 	}
+ 	if (poll_chars <= 0) {
+-		poll_chars = poll_wait_key(poll_buf, pinfo);
++		int ret = poll_wait_key(poll_buf, pinfo);
++
++		if (ret == NO_POLL_CHAR)
++			return ret;
++		poll_chars = ret;
+ 		pollp = poll_buf;
+ 	}
+ 	poll_chars--;
+-- 
+2.13.3
