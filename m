@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42BZCC0zhYzF3VX
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 22:12:22 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42BZCK5lVwzF3VW
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 22:12:29 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w8EC5Apr013048
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 08:12:21 -0400
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2mgce2h2vm-1
+ w8EC59xT010003
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 08:12:27 -0400
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2mgamuw77h-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 08:12:20 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 08:12:27 -0400
 Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.vnet.ibm.com>;
- Fri, 14 Sep 2018 13:12:18 +0100
+ Fri, 14 Sep 2018 13:12:24 +0100
 From: Mike Rapoport <rppt@linux.vnet.ibm.com>
 To: linux-mm@kvack.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
@@ -52,12 +52,12 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
  openrisc@lists.librecores.org, sparclinux@vger.kernel.org,
  uclinux-h8-devel@lists.sourceforge.jp,
  Mike Rapoport <rppt@linux.vnet.ibm.com>
-Subject: [PATCH 12/30] memblock: replace alloc_bootmem_low with
- memblock_alloc_low
-Date: Fri, 14 Sep 2018 15:10:27 +0300
+Subject: [PATCH 13/30] memblock: replace __alloc_bootmem_nopanic with
+ memblock_alloc_from_nopanic
+Date: Fri, 14 Sep 2018 15:10:28 +0300
 In-Reply-To: <1536927045-23536-1-git-send-email-rppt@linux.vnet.ibm.com>
 References: <1536927045-23536-1-git-send-email-rppt@linux.vnet.ibm.com>
-Message-Id: <1536927045-23536-13-git-send-email-rppt@linux.vnet.ibm.com>
+Message-Id: <1536927045-23536-14-git-send-email-rppt@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -67,41 +67,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The alloc_bootmem_low(size) allocates low memory with default alignement
-and can be replcaed by memblock_alloc_low(size, 0)
+When __alloc_bootmem_nopanic() is used with explicit lower limit for the
+allocation it attempts to allocate memory at or above that limit and falls
+back to allocation with no limit set.
+
+The memblock_alloc_from_nopanic() does exactly the same thing and can be
+used as a replacement for __alloc_bootmem_nopanic() is such cases.
 
 Signed-off-by: Mike Rapoport <rppt@linux.vnet.ibm.com>
 Acked-by: Michal Hocko <mhocko@suse.com>
 ---
- arch/arm64/kernel/setup.c     | 2 +-
- arch/unicore32/kernel/setup.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ arch/arc/kernel/unwind.c       | 4 ++--
+ arch/x86/kernel/setup_percpu.c | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/arm64/kernel/setup.c b/arch/arm64/kernel/setup.c
-index 5b4fac4..cf7a7b7 100644
---- a/arch/arm64/kernel/setup.c
-+++ b/arch/arm64/kernel/setup.c
-@@ -213,7 +213,7 @@ static void __init request_standard_resources(void)
- 	kernel_data.end     = __pa_symbol(_end - 1);
+diff --git a/arch/arc/kernel/unwind.c b/arch/arc/kernel/unwind.c
+index 183391d..2a01dd1 100644
+--- a/arch/arc/kernel/unwind.c
++++ b/arch/arc/kernel/unwind.c
+@@ -181,8 +181,8 @@ static void init_unwind_hdr(struct unwind_table *table,
+  */
+ static void *__init unw_hdr_alloc_early(unsigned long sz)
+ {
+-	return __alloc_bootmem_nopanic(sz, sizeof(unsigned int),
+-				       MAX_DMA_ADDRESS);
++	return memblock_alloc_from_nopanic(sz, sizeof(unsigned int),
++					   MAX_DMA_ADDRESS);
+ }
  
- 	for_each_memblock(memory, region) {
--		res = alloc_bootmem_low(sizeof(*res));
-+		res = memblock_alloc_low(sizeof(*res), 0);
- 		if (memblock_is_nomap(region)) {
- 			res->name  = "reserved";
- 			res->flags = IORESOURCE_MEM;
-diff --git a/arch/unicore32/kernel/setup.c b/arch/unicore32/kernel/setup.c
-index c2bffa5..9f163f9 100644
---- a/arch/unicore32/kernel/setup.c
-+++ b/arch/unicore32/kernel/setup.c
-@@ -207,7 +207,7 @@ request_standard_resources(struct meminfo *mi)
- 		if (mi->bank[i].size == 0)
- 			continue;
+ static void *unw_hdr_alloc(unsigned long sz)
+diff --git a/arch/x86/kernel/setup_percpu.c b/arch/x86/kernel/setup_percpu.c
+index 67d48e26..041663a 100644
+--- a/arch/x86/kernel/setup_percpu.c
++++ b/arch/x86/kernel/setup_percpu.c
+@@ -106,7 +106,7 @@ static void * __init pcpu_alloc_bootmem(unsigned int cpu, unsigned long size,
+ 	void *ptr;
  
--		res = alloc_bootmem_low(sizeof(*res));
-+		res = memblock_alloc_low(sizeof(*res), 0);
- 		res->name  = "System RAM";
- 		res->start = mi->bank[i].start;
- 		res->end   = mi->bank[i].start + mi->bank[i].size - 1;
+ 	if (!node_online(node) || !NODE_DATA(node)) {
+-		ptr = __alloc_bootmem_nopanic(size, align, goal);
++		ptr = memblock_alloc_from_nopanic(size, align, goal);
+ 		pr_info("cpu %d has no node %d or node-local memory\n",
+ 			cpu, node);
+ 		pr_debug("per cpu data for cpu%d %lu bytes at %016lx\n",
+@@ -121,7 +121,7 @@ static void * __init pcpu_alloc_bootmem(unsigned int cpu, unsigned long size,
+ 	}
+ 	return ptr;
+ #else
+-	return __alloc_bootmem_nopanic(size, align, goal);
++	return memblock_alloc_from_nopanic(size, align, goal);
+ #endif
+ }
+ 
 -- 
 2.7.4
