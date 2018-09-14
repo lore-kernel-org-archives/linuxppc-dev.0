@@ -1,19 +1,20 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
- [IPv6:2607:f8b0:4864:20::442])
+Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
+ [IPv6:2607:f8b0:4864:20::443])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42BfcZ4413zF3Wt
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Sep 2018 01:31:10 +1000 (AEST)
-Received: by mail-pf1-x442.google.com with SMTP id l9-v6so4461726pff.9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 08:31:10 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Bfcd1GWYzF3X6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Sep 2018 01:31:13 +1000 (AEST)
+Received: by mail-pf1-x443.google.com with SMTP id h79-v6so4470966pfk.8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 08:31:12 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>,
  "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>
-Subject: [PATCH 01/12] powerpc/64s/hash: Fix stab_rr off by one initialization
-Date: Sat, 15 Sep 2018 01:30:45 +1000
-Message-Id: <20180914153056.3644-2-npiggin@gmail.com>
+Subject: [PATCH 02/12] powerpc/64s/hash: avoid the POWER5 < DD2.1 slb
+ invalidate workaround on POWER8/9
+Date: Sat, 15 Sep 2018 01:30:46 +1000
+Message-Id: <20180914153056.3644-3-npiggin@gmail.com>
 In-Reply-To: <20180914153056.3644-1-npiggin@gmail.com>
 References: <20180914153056.3644-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,27 +26,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This causes SLB alloation to start 1 beyond the start of the SLB.
-There is no real problem because after it wraps it stats behaving
-properly, it's just surprisig to see when looking at SLB traces.
+I only have POWER8/9 to test, so just remove it for those.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/mm/slb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/kernel/entry_64.S | 2 ++
+ arch/powerpc/mm/slb.c          | 8 +++++---
+ 2 files changed, 7 insertions(+), 3 deletions(-)
 
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 2206912ea4f0..77a888bfcb53 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -672,7 +672,9 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_1T_SEGMENT)
+ 
+ 	isync
+ 	slbie	r6
++BEGIN_FTR_SECTION
+ 	slbie	r6		/* Workaround POWER5 < DD2.1 issue */
++END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
+ 	slbmte	r7,r0
+ 	isync
+ 2:
 diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
-index 9f574e59d178..2f162c6e52d4 100644
+index 2f162c6e52d4..1c7128c63a4b 100644
 --- a/arch/powerpc/mm/slb.c
 +++ b/arch/powerpc/mm/slb.c
-@@ -355,7 +355,7 @@ void slb_initialize(void)
- #endif
+@@ -256,9 +256,11 @@ void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
+ 		__slb_flush_and_rebolt();
  	}
  
--	get_paca()->stab_rr = SLB_NUM_BOLTED;
-+	get_paca()->stab_rr = SLB_NUM_BOLTED - 1;
+-	/* Workaround POWER5 < DD2.1 issue */
+-	if (offset == 1 || offset > SLB_CACHE_ENTRIES)
+-		asm volatile("slbie %0" : : "r" (slbie_data));
++	if (!cpu_has_feature(CPU_FTR_ARCH_207S)) {
++		/* Workaround POWER5 < DD2.1 issue */
++		if (offset == 1 || offset > SLB_CACHE_ENTRIES)
++			asm volatile("slbie %0" : : "r" (slbie_data));
++	}
  
- 	lflags = SLB_VSID_KERNEL | linear_llp;
- 	vflags = SLB_VSID_KERNEL | vmalloc_llp;
+ 	get_paca()->slb_cache_ptr = 0;
+ 	copy_mm_to_paca(mm);
 -- 
 2.18.0
