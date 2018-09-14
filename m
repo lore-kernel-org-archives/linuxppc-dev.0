@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42BZBv0RcPzF2X4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 22:12:06 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w8EC59dE010005
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 08:12:04 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2mgamuw6qn-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42BZBx0d2hzF3Vb
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 22:12:08 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w8EC65EI108438
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 08:12:07 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2mg9hs82dn-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 08:12:04 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 08:12:02 -0400
 Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.vnet.ibm.com>;
- Fri, 14 Sep 2018 13:11:59 +0100
+ Fri, 14 Sep 2018 13:11:54 +0100
 From: Mike Rapoport <rppt@linux.vnet.ibm.com>
 To: linux-mm@kvack.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
@@ -52,12 +52,12 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
  openrisc@lists.librecores.org, sparclinux@vger.kernel.org,
  uclinux-h8-devel@lists.sourceforge.jp,
  Mike Rapoport <rppt@linux.vnet.ibm.com>
-Subject: [PATCH 09/30] memblock: replace alloc_bootmem_low with
- memblock_alloc_low
-Date: Fri, 14 Sep 2018 15:10:24 +0300
+Subject: [PATCH 08/30] memblock: replace alloc_bootmem_align with
+ memblock_alloc
+Date: Fri, 14 Sep 2018 15:10:23 +0300
 In-Reply-To: <1536927045-23536-1-git-send-email-rppt@linux.vnet.ibm.com>
 References: <1536927045-23536-1-git-send-email-rppt@linux.vnet.ibm.com>
-Message-Id: <1536927045-23536-10-git-send-email-rppt@linux.vnet.ibm.com>
+Message-Id: <1536927045-23536-9-git-send-email-rppt@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -73,21 +73,21 @@ translation layer.
 Signed-off-by: Mike Rapoport <rppt@linux.vnet.ibm.com>
 Acked-by: Michal Hocko <mhocko@suse.com>
 ---
- arch/x86/kernel/tce_64.c | 2 +-
+ arch/x86/xen/p2m.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/x86/kernel/tce_64.c b/arch/x86/kernel/tce_64.c
-index f386bad..54c9b5a 100644
---- a/arch/x86/kernel/tce_64.c
-+++ b/arch/x86/kernel/tce_64.c
-@@ -173,7 +173,7 @@ void * __init alloc_tce_table(void)
- 	size = table_size_to_number_of_entries(specified_table_size);
- 	size *= TCE_ENTRY_SIZE;
+diff --git a/arch/x86/xen/p2m.c b/arch/x86/xen/p2m.c
+index d6d74ef..5de761b 100644
+--- a/arch/x86/xen/p2m.c
++++ b/arch/x86/xen/p2m.c
+@@ -182,7 +182,7 @@ static void p2m_init_identity(unsigned long *p2m, unsigned long pfn)
+ static void * __ref alloc_p2m_page(void)
+ {
+ 	if (unlikely(!slab_is_available()))
+-		return alloc_bootmem_align(PAGE_SIZE, PAGE_SIZE);
++		return memblock_alloc(PAGE_SIZE, PAGE_SIZE);
  
--	return __alloc_bootmem_low(size, size, 0);
-+	return memblock_alloc_low(size, size);
+ 	return (void *)__get_free_page(GFP_KERNEL);
  }
- 
- void __init free_tce_table(void *tbl)
 -- 
 2.7.4
