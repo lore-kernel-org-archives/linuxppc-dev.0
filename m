@@ -2,17 +2,17 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42BZkF0q1ZzF326
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 22:35:48 +1000 (AEST)
-Message-Id: <ff05bd36b338f4f914780176e9eba8138e1b254b.1536927765.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Bbz80mFhzF3XJ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 23:32:03 +1000 (AEST)
+Message-Id: <5edda1a360cf7867b98a72a1dfa22db3bd5ed7b4.1536931725.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] kdb: use correct pointer when 'btc' calls 'btt'
-To: Jason Wessel <jason.wessel@windriver.com>,
- Daniel Thompson <daniel.thompson@linaro.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, kgdb-bugreport@lists.sourceforge.net,
- stable@vger.kernel.org
-Date: Fri, 14 Sep 2018 12:35:44 +0000 (UTC)
+Subject: [PATCH v2 1/3] watchdog: mpc8xxx: use dev_xxxx() instead of pr_xxxx()
+To: Wim Van Sebroeck <wim@linux-watchdog.org>,
+ Guenter Roeck <linux@roeck-us.net>, Radu Rendec <radu.rendec@gmail.com>,
+ Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-watchdog@vger.kernel.org, devicetree@vger.kernel.org
+Date: Fri, 14 Sep 2018 13:31:59 +0000 (UTC)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,56 +22,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On a powerpc 8xx, 'btc' fails as follows:
-
-Entering kdb (current=0x(ptrval), pid 282) due to Keyboard Entry
-kdb> btc
-btc: cpu status: Currently on cpu 0
-Available cpus: 0
-kdb_getarea: Bad address 0x0
-
-when booting the kernel with 'debug_boot_weak_hash', it fails as well
-
-Entering kdb (current=0xba99ad80, pid 284) due to Keyboard Entry
-kdb> btc
-btc: cpu status: Currently on cpu 0
-Available cpus: 0
-kdb_getarea: Bad address 0xba99ad80
-
-On other platforms, Oopses have been observed too, see
-https://github.com/linuxppc/linux/issues/139
-
-This is due to btc calling 'btt' with %p pointer as an argument.
-
-This patch replaces %p by %px to get the real pointer value as
-expected by 'btt'
+mpc8xxx watchdog driver is a platform device drivers, it is
+therefore possible to use dev_xxx() messaging rather than pr_xxx()
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: <stable@vger.kernel.org> # 4.15+
 ---
- kernel/debug/kdb/kdb_bt.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/watchdog/mpc8xxx_wdt.c | 24 ++++++++++++------------
+ 1 file changed, 12 insertions(+), 12 deletions(-)
 
-diff --git a/kernel/debug/kdb/kdb_bt.c b/kernel/debug/kdb/kdb_bt.c
-index 6ad4a9fcbd6f..7921ae4fca8d 100644
---- a/kernel/debug/kdb/kdb_bt.c
-+++ b/kernel/debug/kdb/kdb_bt.c
-@@ -179,14 +179,14 @@ kdb_bt(int argc, const char **argv)
- 				kdb_printf("no process for cpu %ld\n", cpu);
- 				return 0;
- 			}
--			sprintf(buf, "btt 0x%p\n", KDB_TSK(cpu));
-+			sprintf(buf, "btt 0x%px\n", KDB_TSK(cpu));
- 			kdb_parse(buf);
- 			return 0;
- 		}
- 		kdb_printf("btc: cpu status: ");
- 		kdb_parse("cpu\n");
- 		for_each_online_cpu(cpu) {
--			sprintf(buf, "btt 0x%p\n", KDB_TSK(cpu));
-+			sprintf(buf, "btt 0x%px\n", KDB_TSK(cpu));
- 			kdb_parse(buf);
- 			touch_nmi_watchdog();
- 		}
+diff --git a/drivers/watchdog/mpc8xxx_wdt.c b/drivers/watchdog/mpc8xxx_wdt.c
+index aca2d6323f8a..1dcf5f10cdd9 100644
+--- a/drivers/watchdog/mpc8xxx_wdt.c
++++ b/drivers/watchdog/mpc8xxx_wdt.c
+@@ -17,8 +17,6 @@
+  * option) any later version.
+  */
+ 
+-#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+-
+ #include <linux/fs.h>
+ #include <linux/init.h>
+ #include <linux/kernel.h>
+@@ -137,26 +135,27 @@ static int mpc8xxx_wdt_probe(struct platform_device *ofdev)
+ 	struct mpc8xxx_wdt_ddata *ddata;
+ 	u32 freq = fsl_get_sys_freq();
+ 	bool enabled;
++	struct device *dev = &ofdev->dev;
+ 
+-	wdt_type = of_device_get_match_data(&ofdev->dev);
++	wdt_type = of_device_get_match_data(dev);
+ 	if (!wdt_type)
+ 		return -EINVAL;
+ 
+ 	if (!freq || freq == -1)
+ 		return -EINVAL;
+ 
+-	ddata = devm_kzalloc(&ofdev->dev, sizeof(*ddata), GFP_KERNEL);
++	ddata = devm_kzalloc(dev, sizeof(*ddata), GFP_KERNEL);
+ 	if (!ddata)
+ 		return -ENOMEM;
+ 
+ 	res = platform_get_resource(ofdev, IORESOURCE_MEM, 0);
+-	ddata->base = devm_ioremap_resource(&ofdev->dev, res);
++	ddata->base = devm_ioremap_resource(dev, res);
+ 	if (IS_ERR(ddata->base))
+ 		return PTR_ERR(ddata->base);
+ 
+ 	enabled = in_be32(&ddata->base->swcrr) & SWCRR_SWEN;
+ 	if (!enabled && wdt_type->hw_enabled) {
+-		pr_info("could not be enabled in software\n");
++		dev_info(dev, "could not be enabled in software\n");
+ 		return -ENODEV;
+ 	}
+ 
+@@ -166,7 +165,7 @@ static int mpc8xxx_wdt_probe(struct platform_device *ofdev)
+ 	ddata->wdd.ops = &mpc8xxx_wdt_ops,
+ 
+ 	ddata->wdd.timeout = WATCHDOG_TIMEOUT;
+-	watchdog_init_timeout(&ddata->wdd, timeout, &ofdev->dev);
++	watchdog_init_timeout(&ddata->wdd, timeout, dev);
+ 
+ 	watchdog_set_nowayout(&ddata->wdd, nowayout);
+ 
+@@ -189,12 +188,13 @@ static int mpc8xxx_wdt_probe(struct platform_device *ofdev)
+ 
+ 	ret = watchdog_register_device(&ddata->wdd);
+ 	if (ret) {
+-		pr_err("cannot register watchdog device (err=%d)\n", ret);
++		dev_err(dev, "cannot register watchdog device (err=%d)\n", ret);
+ 		return ret;
+ 	}
+ 
+-	pr_info("WDT driver for MPC8xxx initialized. mode:%s timeout=%d sec\n",
+-		reset ? "reset" : "interrupt", ddata->wdd.timeout);
++	dev_info(dev,
++		 "WDT driver for MPC8xxx initialized. mode:%s timeout=%d sec\n",
++		 reset ? "reset" : "interrupt", ddata->wdd.timeout);
+ 
+ 	platform_set_drvdata(ofdev, ddata);
+ 	return 0;
+@@ -204,8 +204,8 @@ static int mpc8xxx_wdt_remove(struct platform_device *ofdev)
+ {
+ 	struct mpc8xxx_wdt_ddata *ddata = platform_get_drvdata(ofdev);
+ 
+-	pr_crit("Watchdog removed, expect the %s soon!\n",
+-		reset ? "reset" : "machine check exception");
++	dev_crit(&ofdev->dev, "Watchdog removed, expect the %s soon!\n",
++		 reset ? "reset" : "machine check exception");
+ 	watchdog_unregister_device(&ddata->wdd);
+ 
+ 	return 0;
 -- 
 2.13.3
