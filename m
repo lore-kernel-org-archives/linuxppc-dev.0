@@ -1,21 +1,21 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
- [IPv6:2607:f8b0:4864:20::641])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42BNpv5dwtzF3VB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 15:09:11 +1000 (AEST)
-Received: by mail-pl1-x641.google.com with SMTP id s17-v6so3618953plp.7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2018 22:09:11 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Joel Stanley <joel@jms.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 3/3] powerpc: avoid -mno-sched-epilog on GCC 4.9 and newer
-Date: Fri, 14 Sep 2018 15:08:54 +1000
-Message-Id: <20180914050854.6214-4-npiggin@gmail.com>
-In-Reply-To: <20180914050854.6214-1-npiggin@gmail.com>
-References: <20180914050854.6214-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42BPKg305dzF3Tq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 15:32:23 +1000 (AEST)
+Subject: Re: [PATCH v4] powerpc: Avoid code patching freed init sections
+To: Michael Neuling <mikey@neuling.org>, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>,
+ paulus@ozlabs.org, Haren Myneni <haren@linux.vnet.ibm.com>,
+ =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>
+References: <20180914011411.3184-1-mikey@neuling.org>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <1177731f-90eb-9716-4e74-ccbba53ab0de@c-s.fr>
+Date: Fri, 14 Sep 2018 07:32:18 +0200
+MIME-Version: 1.0
+In-Reply-To: <20180914011411.3184-1-mikey@neuling.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,29 +25,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/Makefile | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index be47cf8a0798..07d9dce7eda6 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -165,8 +165,12 @@ CC_FLAGS_FTRACE := -pg
- ifdef CONFIG_MPROFILE_KERNEL
- CC_FLAGS_FTRACE += -mprofile-kernel
- endif
--# Work around a gcc code-gen bug with -fno-omit-frame-pointer.
--CC_FLAGS_FTRACE	+= -mno-sched-epilog
-+# Work around gcc code-gen bugs with -pg / -fno-omit-frame-pointer in gcc <= 4.8
-+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=44199
-+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=52828
-+ifneq ($(cc-name),clang)
-+CC_FLAGS_FTRACE	+= $(call cc-ifversion, -lt, 0409, -mno-sched-epilog)
-+endif
- endif
- 
- CFLAGS-$(CONFIG_TARGET_CPU_BOOL) += $(call cc-option,-mcpu=$(CONFIG_TARGET_CPU))
--- 
-2.18.0
+
+Le 14/09/2018 à 03:14, Michael Neuling a écrit :
+> This stops us from doing code patching in init sections after they've
+> been freed.
+> 
+> In this chain:
+>    kvm_guest_init() ->
+>      kvm_use_magic_page() ->
+>        fault_in_pages_readable() ->
+> 	 __get_user() ->
+> 	   __get_user_nocheck() ->
+> 	     barrier_nospec();
+> 
+> We have a code patching location at barrier_nospec() and
+> kvm_guest_init() is an init function. This whole chain gets inlined,
+> so when we free the init section (hence kvm_guest_init()), this code
+> goes away and hence should no longer be patched.
+> 
+> We seen this as userspace memory corruption when using a memory
+> checker while doing partition migration testing on powervm (this
+> starts the code patching post migration via
+> /sys/kernel/mobility/migration). In theory, it could also happen when
+> using /sys/kernel/debug/powerpc/barrier_nospec.
+> 
+> cc: stable@vger.kernel.org # 4.13+
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> 
+> ---
+> For stable I've marked this as v4.13+ since that's when we refactored
+> code-patching.c but it could go back even further than that. In
+> reality though, I think we can only hit this since the first
+> spectre/meltdown changes.
+> 
+> v4:
+>   Feedback from Christophe Leroy:
+>     - init_mem_free -> init_mem_is_free
+>     - prlog %lx -> %px
+> 
+> v3:
+>   Add init_mem_free flag to avoid potential race.
+>   Feedback from Christophe Leroy:
+>     - use init_section_contains()
+>     - change order of init test for performance
+>     - use pr_debug()
+>     - remove blank line
+> 
+> v2:
+>    Print when we skip an address
+> ---
+>   arch/powerpc/include/asm/setup.h | 1 +
+>   arch/powerpc/lib/code-patching.c | 6 ++++++
+>   arch/powerpc/mm/mem.c            | 2 ++
+>   3 files changed, 9 insertions(+)
+> 
+> diff --git a/arch/powerpc/include/asm/setup.h b/arch/powerpc/include/asm/setup.h
+> index 1a951b0046..1fffbba8d6 100644
+> --- a/arch/powerpc/include/asm/setup.h
+> +++ b/arch/powerpc/include/asm/setup.h
+> @@ -9,6 +9,7 @@ extern void ppc_printk_progress(char *s, unsigned short hex);
+>   
+>   extern unsigned int rtas_data;
+>   extern unsigned long long memory_limit;
+> +extern bool init_mem_is_free;
+>   extern unsigned long klimit;
+>   extern void *zalloc_maybe_bootmem(size_t size, gfp_t mask);
+>   
+> diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
+> index 850f3b8f4d..6ae2777c22 100644
+> --- a/arch/powerpc/lib/code-patching.c
+> +++ b/arch/powerpc/lib/code-patching.c
+> @@ -28,6 +28,12 @@ static int __patch_instruction(unsigned int *exec_addr, unsigned int instr,
+>   {
+>   	int err;
+>   
+> +	/* Make sure we aren't patching a freed init section */
+> +	if (init_mem_is_free && init_section_contains(exec_addr, 4)) {
+> +		pr_debug("Skipping init section patching addr: 0x%px\n", exec_addr);
+> +		return 0;
+> +	}
+> +
+>   	__put_user_size(instr, patch_addr, 4, err);
+>   	if (err)
+>   		return err;
+> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+> index 5c8530d0c6..04ccb274a6 100644
+> --- a/arch/powerpc/mm/mem.c
+> +++ b/arch/powerpc/mm/mem.c
+> @@ -63,6 +63,7 @@
+>   #endif
+>   
+>   unsigned long long memory_limit;
+> +bool init_mem_is_free;
+>   
+>   #ifdef CONFIG_HIGHMEM
+>   pte_t *kmap_pte;
+> @@ -396,6 +397,7 @@ void free_initmem(void)
+>   {
+>   	ppc_md.progress = ppc_printk_progress;
+>   	mark_initmem_nx();
+> +	init_mem_is_free = true;
+>   	free_initmem_default(POISON_FREE_INITMEM);
+>   }
+>   
+> 
+
+Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
