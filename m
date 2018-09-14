@@ -1,36 +1,28 @@
-Return-Path: <sathnaga@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <groeck7@gmail.com>
+Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
+ [IPv6:2607:f8b0:4864:20::544])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42BhhD50kkzF3XX
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Sep 2018 03:04:25 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w8EGxKnI078815
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 13:04:22 -0400
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2mgg2vag50-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 13:04:22 -0400
-Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sathnaga@linux.vnet.ibm.com>;
- Fri, 14 Sep 2018 13:04:20 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Bj8126GjzF3Xb
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Sep 2018 03:25:05 +1000 (AEST)
+Received: by mail-pg1-x544.google.com with SMTP id b129-v6so4693600pga.13
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 10:25:04 -0700 (PDT)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Date: Fri, 14 Sep 2018 10:25:01 -0700
+From: Guenter Roeck <linux@roeck-us.net>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Wim Van Sebroeck <wim@linux-watchdog.org>,
+ Radu Rendec <radu.rendec@gmail.com>, Rob Herring <robh+dt@kernel.org>,
+ Mark Rutland <mark.rutland@arm.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-watchdog@vger.kernel.org,
+ devicetree@vger.kernel.org
+Subject: Re: [PATCH v2 1/3] watchdog: mpc8xxx: use dev_xxxx() instead of
+ pr_xxxx()
+Message-ID: <20180914172501.GE26861@roeck-us.net>
+References: <5edda1a360cf7867b98a72a1dfa22db3bd5ed7b4.1536931725.git.christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Date: Fri, 14 Sep 2018 22:34:39 +0530
-From: sathnaga <sathnaga@linux.vnet.ibm.com>
-To: mikey@neuling.org, linuxppc-dev@lists.ozlabs.org
-Cc: mpe@ellerman.id.au, kvm-ppc@vger.kernel.org, paulus@ozlabs.org,
- sjitindarsingh@gmail.com, mikey@neuling.org
-Subject: Re: KVM: PPC: Book3S HV: Fix guest r11 corruption with POWER9 TM
- workarounds
-In-Reply-To: <20180914165657.GB6306@MiWiFi-R3L-srv>
-References: <20180914165657.GB6306@MiWiFi-R3L-srv>
-Message-Id: <b3c1442f7afc59d70fa813e29254f8f7@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5edda1a360cf7867b98a72a1dfa22db3bd5ed7b4.1536931725.git.christophe.leroy@c-s.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,69 +32,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2018-09-14 22:26, sathnaga@linux.vnet.ibm.com wrote:
-> Date: Thu, 13 Sep 2018 15:33:47 +1000
-> From: Michael Neuling <mikey@neuling.org>
-> To: mpe@ellerman.id.au
-> Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
-> paulus@ozlabs.org, sjitindarsingh@gmail.com, mikey@neuling.org
-> Subject: KVM: PPC: Book3S HV: Fix guest r11 corruption with POWER9 TM
-> workarounds
+On Fri, Sep 14, 2018 at 01:31:59PM +0000, Christophe Leroy wrote:
+> mpc8xxx watchdog driver is a platform device drivers, it is
+> therefore possible to use dev_xxx() messaging rather than pr_xxx()
 > 
-> When we come into the softpatch handler (0x1500), we use r11 to store
-> the HSRR0 for later use by the denorm handler.
-> 
-> We also use the softpatch handler for the TM workarounds for
-> POWER9. Unfortunately, in kvmppc_interrupt_hv we later store r11 out
-> to the vcpu assuming it's still what we got from userspace.
-> 
-> This causes r11 to be corrupted in the VCPU and hence when we restore
-> the guest, we get a corrupted r11. We've seen this when running TM
-> tests inside guests on P9.
-> 
-> This fixes the problem by only touching r11 in the denorm case.
-> 
-> Fixes: 4bb3c7a020 ("KVM: PPC: Book3S HV: Work around transactional
-> memory bugs in POWER9")
-> Cc: <stable@vger.kernel.org> # 4.17+
-> Test-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-> Reviewed-by: Paul Mackerras <paulus@ozlabs.org>
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+
+Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+
 > ---
->  arch/powerpc/kernel/exceptions-64s.S | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  drivers/watchdog/mpc8xxx_wdt.c | 24 ++++++++++++------------
+>  1 file changed, 12 insertions(+), 12 deletions(-)
 > 
-Tested-by: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
-
-Test details: 
-https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1792501
-
-Regards,
--Satheesh.
-
-> diff --git a/arch/powerpc/kernel/exceptions-64s.S
-> b/arch/powerpc/kernel/exceptions-64s.S
-> index ea04dfb8c0..2d8fc8c9da 100644
-> --- a/arch/powerpc/kernel/exceptions-64s.S
-> +++ b/arch/powerpc/kernel/exceptions-64s.S
-> @@ -1314,9 +1314,7 @@ EXC_REAL_BEGIN(denorm_exception_hv, 0x1500, 
-> 0x100)
-> 
->  #ifdef CONFIG_PPC_DENORMALISATION
->  	mfspr	r10,SPRN_HSRR1
-> -	mfspr	r11,SPRN_HSRR0		/* save HSRR0 */
->  	andis.	r10,r10,(HSRR1_DENORM)@h /* denorm? */
-> -	addi	r11,r11,-4		/* HSRR0 is next instruction */
->  	bne+	denorm_assist
->  #endif
-> 
-> @@ -1382,6 +1380,8 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
+> diff --git a/drivers/watchdog/mpc8xxx_wdt.c b/drivers/watchdog/mpc8xxx_wdt.c
+> index aca2d6323f8a..1dcf5f10cdd9 100644
+> --- a/drivers/watchdog/mpc8xxx_wdt.c
+> +++ b/drivers/watchdog/mpc8xxx_wdt.c
+> @@ -17,8 +17,6 @@
+>   * option) any later version.
 >   */
->  	XVCPSGNDP32(32)
->  denorm_done:
-> +	mfspr	r11,SPRN_HSRR0
-> +	subi	r11,r11,4
->  	mtspr	SPRN_HSRR0,r11
->  	mtcrf	0x80,r9
->  	ld	r9,PACA_EXGEN+EX_R9(r13)
+>  
+> -#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+> -
+>  #include <linux/fs.h>
+>  #include <linux/init.h>
+>  #include <linux/kernel.h>
+> @@ -137,26 +135,27 @@ static int mpc8xxx_wdt_probe(struct platform_device *ofdev)
+>  	struct mpc8xxx_wdt_ddata *ddata;
+>  	u32 freq = fsl_get_sys_freq();
+>  	bool enabled;
+> +	struct device *dev = &ofdev->dev;
+>  
+> -	wdt_type = of_device_get_match_data(&ofdev->dev);
+> +	wdt_type = of_device_get_match_data(dev);
+>  	if (!wdt_type)
+>  		return -EINVAL;
+>  
+>  	if (!freq || freq == -1)
+>  		return -EINVAL;
+>  
+> -	ddata = devm_kzalloc(&ofdev->dev, sizeof(*ddata), GFP_KERNEL);
+> +	ddata = devm_kzalloc(dev, sizeof(*ddata), GFP_KERNEL);
+>  	if (!ddata)
+>  		return -ENOMEM;
+>  
+>  	res = platform_get_resource(ofdev, IORESOURCE_MEM, 0);
+> -	ddata->base = devm_ioremap_resource(&ofdev->dev, res);
+> +	ddata->base = devm_ioremap_resource(dev, res);
+>  	if (IS_ERR(ddata->base))
+>  		return PTR_ERR(ddata->base);
+>  
+>  	enabled = in_be32(&ddata->base->swcrr) & SWCRR_SWEN;
+>  	if (!enabled && wdt_type->hw_enabled) {
+> -		pr_info("could not be enabled in software\n");
+> +		dev_info(dev, "could not be enabled in software\n");
+>  		return -ENODEV;
+>  	}
+>  
+> @@ -166,7 +165,7 @@ static int mpc8xxx_wdt_probe(struct platform_device *ofdev)
+>  	ddata->wdd.ops = &mpc8xxx_wdt_ops,
+>  
+>  	ddata->wdd.timeout = WATCHDOG_TIMEOUT;
+> -	watchdog_init_timeout(&ddata->wdd, timeout, &ofdev->dev);
+> +	watchdog_init_timeout(&ddata->wdd, timeout, dev);
+>  
+>  	watchdog_set_nowayout(&ddata->wdd, nowayout);
+>  
+> @@ -189,12 +188,13 @@ static int mpc8xxx_wdt_probe(struct platform_device *ofdev)
+>  
+>  	ret = watchdog_register_device(&ddata->wdd);
+>  	if (ret) {
+> -		pr_err("cannot register watchdog device (err=%d)\n", ret);
+> +		dev_err(dev, "cannot register watchdog device (err=%d)\n", ret);
+>  		return ret;
+>  	}
+>  
+> -	pr_info("WDT driver for MPC8xxx initialized. mode:%s timeout=%d sec\n",
+> -		reset ? "reset" : "interrupt", ddata->wdd.timeout);
+> +	dev_info(dev,
+> +		 "WDT driver for MPC8xxx initialized. mode:%s timeout=%d sec\n",
+> +		 reset ? "reset" : "interrupt", ddata->wdd.timeout);
+>  
+>  	platform_set_drvdata(ofdev, ddata);
+>  	return 0;
+> @@ -204,8 +204,8 @@ static int mpc8xxx_wdt_remove(struct platform_device *ofdev)
+>  {
+>  	struct mpc8xxx_wdt_ddata *ddata = platform_get_drvdata(ofdev);
+>  
+> -	pr_crit("Watchdog removed, expect the %s soon!\n",
+> -		reset ? "reset" : "machine check exception");
+> +	dev_crit(&ofdev->dev, "Watchdog removed, expect the %s soon!\n",
+> +		 reset ? "reset" : "machine check exception");
+>  	watchdog_unregister_device(&ddata->wdd);
+>  
+>  	return 0;
+> -- 
+> 2.13.3
 > 
