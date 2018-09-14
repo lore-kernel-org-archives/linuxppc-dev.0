@@ -1,30 +1,19 @@
-Return-Path: <srs0=r/+u=l4=suse.cz=ptesarik@ozlabs.org>
-Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
+ [IPv6:2607:f8b0:4864:20::441])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42BdDD4ZhxzF3WZ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Sep 2018 00:28:28 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 42BdDC6lL6z8wTg
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Sep 2018 00:28:27 +1000 (AEST)
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 42BdDC2Pppz9s1x
- for <linuxppc-dev@ozlabs.org>; Sat, 15 Sep 2018 00:28:27 +1000 (AEST)
-Date: Fri, 14 Sep 2018 16:28:22 +0200
-From: Petr Tesarik <ptesarik@suse.cz>
-To: Hari Bathini <hbathini@linux.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev
- <linuxppc-dev@ozlabs.org>, Dave Young <dyoung@redhat.com>, Mahesh J
- Salgaonkar <mahesh@linux.ibm.com>
-Subject: Re: [PATCH] powerpc/fadump: re-register firmware-assisted dump if
- already registered
-Message-ID: <20180914162822.6b489d57@ezekiel.suse.cz>
-In-Reply-To: <153693396241.22873.15797641996113409474.stgit@hbathini.in.ibm.com>
-References: <153693396241.22873.15797641996113409474.stgit@hbathini.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42BfcX303JzF3Wt
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Sep 2018 01:31:08 +1000 (AEST)
+Received: by mail-pf1-x441.google.com with SMTP id x17-v6so4479637pfh.5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 08:31:08 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>
+Subject: [PATCH 00/12] SLB miss conversion to C, and SLB optimisations
+Date: Sat, 15 Sep 2018 01:30:44 +1000
+Message-Id: <20180914153056.3644-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,46 +23,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 14 Sep 2018 19:36:02 +0530
-Hari Bathini <hbathini@linux.ibm.com> wrote:
+This is a repost of the SLB conversion to C, no real change since last
+post. But given that slows down the SLB miss handler, I promised some
+optimisations could be made to mitigate that.
 
-> Firmware-Assisted Dump (FADump) needs to be registered again after any
-> memory hot add/remove operation to update the crash memory ranges. But
-> currently, the kernel returns '-EEXIST' if we try to register without
-> uregistering it first. This could expose the system to racing issues
-> while unregistering and registering FADump from userspace during udev
-> events. Spare the userspace of this and let it be taken care of in the
-> kernel space for a simpler interface.
-> 
-> Since this change, running 'echo 1 > /sys/kernel/fadump_registered'
-> would result in re-regisering (unregistering and registering) FADump,
-> if it was already registered.
+The two main optimisations after the C conversion are the SLB alloation
+bitmaps, and the preload cache.
 
-Great improvement to the API!
+Thanks,
+Nick
 
-Any suggestions what should be done in a client which tries to be
-compatible with kernels before this change and after this change?
+Nicholas Piggin (12):
+  powerpc/64s/hash: Fix stab_rr off by one initialization
+  powerpc/64s/hash: avoid the POWER5 < DD2.1 slb invalidate workaround
+    on POWER8/9
+  powerpc/64s/hash: move POWER5 < DD2.1 slbie workaround where it is
+    needed
+  powerpc/64s/hash: remove the vmalloc segment from the bolted SLB
+  powerpc/64s/hash: Use POWER6 SLBIA IH=1 variant in switch_slb
+  powerpc/64s/hash: Use POWER9 SLBIA IH=3 variant in switch_slb
+  powerpc/64s/hash: convert SLB miss handlers to C
+  powerpc/64s/hash: remove user SLB data from the paca
+  powerpc/64s/hash: SLB allocation status bitmaps
+  powerpc/64s: xmon do not dump hash fields when using radix mode
+  powerpc/64s/hash: provide arch_setup_exec hooks for hash slice setup
+  powerpc/64s/hash: Add a SLB preload cache
 
-Petr T
+ arch/powerpc/include/asm/asm-prototypes.h     |   2 +
+ arch/powerpc/include/asm/book3s/64/mmu-hash.h |   5 +-
+ arch/powerpc/include/asm/exception-64s.h      |   8 -
+ arch/powerpc/include/asm/paca.h               |  19 +-
+ arch/powerpc/include/asm/processor.h          |   1 +
+ arch/powerpc/include/asm/slice.h              |   1 +
+ arch/powerpc/include/asm/thread_info.h        |  11 +
+ arch/powerpc/kernel/asm-offsets.c             |  11 +-
+ arch/powerpc/kernel/entry_64.S                |   2 +
+ arch/powerpc/kernel/exceptions-64s.S          | 202 ++----
+ arch/powerpc/kernel/paca.c                    |  21 -
+ arch/powerpc/kernel/process.c                 |  16 +
+ arch/powerpc/mm/Makefile                      |   2 +-
+ arch/powerpc/mm/hash_utils_64.c               |  46 +-
+ arch/powerpc/mm/mmu_context.c                 |   3 +-
+ arch/powerpc/mm/mmu_context_book3s64.c        |   9 +
+ arch/powerpc/mm/slb.c                         | 596 ++++++++++++------
+ arch/powerpc/mm/slb_low.S                     | 335 ----------
+ arch/powerpc/mm/slice.c                       |  43 +-
+ arch/powerpc/xmon/xmon.c                      |  37 +-
+ 20 files changed, 540 insertions(+), 830 deletions(-)
+ delete mode 100644 arch/powerpc/mm/slb_low.S
 
-> Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
-> ---
->  arch/powerpc/kernel/fadump.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-> index a711d22..761b28b 100644
-> --- a/arch/powerpc/kernel/fadump.c
-> +++ b/arch/powerpc/kernel/fadump.c
-> @@ -1444,8 +1444,8 @@ static ssize_t fadump_register_store(struct kobject *kobj,
->  		break;
->  	case 1:
->  		if (fw_dump.dump_registered == 1) {
-> -			ret = -EEXIST;
-> -			goto unlock_out;
-> +			/* Un-register Firmware-assisted dump */
-> +			fadump_unregister_dump(&fdm);
->  		}
->  		/* Register Firmware-assisted dump */
->  		ret = register_fadump();
-> 
+-- 
+2.18.0
