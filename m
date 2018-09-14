@@ -1,24 +1,20 @@
-Return-Path: <amodra@gmail.com>
-Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
- [IPv6:2607:f8b0:4864:20::644])
+Return-Path: <joel.stan@gmail.com>
+Received: from mail-pg1-x533.google.com (mail-pg1-x533.google.com
+ [IPv6:2607:f8b0:4864:20::533])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42BLrC5ZPxzF3TN
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 13:40:11 +1000 (AEST)
-Received: by mail-pl1-x644.google.com with SMTP id b12-v6so3532784plr.8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2018 20:40:11 -0700 (PDT)
-Date: Fri, 14 Sep 2018 13:10:04 +0930
-From: Alan Modra <amodra@gmail.com>
-To: Michael Neuling <mikey@neuling.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@ozlabs.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH] PowerPC/VDSO: Correct call frame information
-Message-ID: <20180914034004.GP3174@bubble.grove.modra.org>
-References: <20180913232704.GL3174@bubble.grove.modra.org>
- <545f4cb2ca6f8d678798a387ea189bcf152842f9.camel@neuling.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <545f4cb2ca6f8d678798a387ea189bcf152842f9.camel@neuling.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42BMRF1rXczF3T4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 14:07:04 +1000 (AEST)
+Received: by mail-pg1-x533.google.com with SMTP id i190-v6so3737526pgc.6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2018 21:07:04 -0700 (PDT)
+Sender: "joel.stan@gmail.com" <joel.stan@gmail.com>
+From: Joel Stanley <joel@jms.id.au>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Anton Blanchard <anton@ozlabs.org>,
+ Nick Desaulniers <ndesaulniers@google.com>
+Subject: [PATCH v2 0/5] powerpc: Clang build fixes
+Date: Fri, 14 Sep 2018 13:36:44 +0930
+Message-Id: <20180914040649.1794-1-joel@jms.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,87 +24,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Call Frame Information is used by gdb for back-traces and inserting
-breakpoints on function return for the "finish" command.  This failed
-when inside __kernel_clock_gettime.  More concerning than difficulty
-debugging is that CFI is also used by stack frame unwinding code to
-implement exceptions.  If you have an app that needs to handle
-asynchronous exceptions for some reason, and you are unlucky enough to
-get one inside the VDSO time functions, your app will crash.
+v2 rolls up all of the fixes I have into the one series, and adds a few
+more fixes.
 
-What's wrong:  There is control flow in __kernel_clock_gettime that
-reaches label 99 without saving lr in r12.  CFI info however is
-interpreted by the unwinder without reference to control flow: It's a
-simple matter of "Execute all the CFI opcodes up to the current
-address".  That means the unwinder thinks r12 contains the return
-address at label 99.  Disabuse it of that notion by resetting CFI for
-the return address at label 99.
+With a one patch[1] on top of clang master I can build and boot a
+powernv kernel. Note that we can't build altivec code using clang
+yet[2], hence disabling MD_RAID456.
 
-Note that the ".cfi_restore lr" could have gone anywhere from the
-"mtlr r12" a few instructions earlier to the instruction at label 99.
-I put the CFI as late as possible, because in general that's best
-practice (and if possible grouped with other CFI in order to reduce
-the number of CFI opcodes executed when unwinding).  Using r12 as the
-return address is perfectly fine after the "mtlr r12" since r12 on
-that code path still contains the return address.
+$ make ARCH=powerpc powernv_defconfig
+$ ./scripts/config -d BTRFS_FS -d MD_RAID456
+$ make CC=clang-8 CLANG_TRIPLE=powerpc64le-linux-gnu -j128
 
-__get_datapage also has a CFI error.  That function temporarily saves
-lr in r0, and reflects that fact with ".cfi_register lr,r0".  A later
-use of r0 means the CFI at that point isn't correct, as r0 no longer
-contains the return address.  Fix that too.
+The build is very noisy as the ftrace recordmcount build step is not
+picking up -Qunused-arguments.
 
-Signed-off-by: Alan Modra <amodra@gmail.com>
-Tested-by: Reza Arbab <arbab@linux.ibm.com>
+$ qemu-system-ppc64 -M powernv -m 3G -nographic -kernel zImage.epapr \
+ -L ~/skiboot/ -initrd ~/rootfs.cpio.xz
 
-diff --git a/arch/powerpc/kernel/vdso32/datapage.S b/arch/powerpc/kernel/vdso32/datapage.S
-index 3745113fcc65..2a7eb5452aba 100644
---- a/arch/powerpc/kernel/vdso32/datapage.S
-+++ b/arch/powerpc/kernel/vdso32/datapage.S
-@@ -37,6 +37,7 @@ data_page_branch:
- 	mtlr	r0
- 	addi	r3, r3, __kernel_datapage_offset-data_page_branch
- 	lwz	r0,0(r3)
-+  .cfi_restore lr
- 	add	r3,r0,r3
- 	blr
-   .cfi_endproc
-diff --git a/arch/powerpc/kernel/vdso32/gettimeofday.S b/arch/powerpc/kernel/vdso32/gettimeofday.S
-index 769c2624e0a6..1e0bc5955a40 100644
---- a/arch/powerpc/kernel/vdso32/gettimeofday.S
-+++ b/arch/powerpc/kernel/vdso32/gettimeofday.S
-@@ -139,6 +139,7 @@ V_FUNCTION_BEGIN(__kernel_clock_gettime)
- 	 */
- 99:
- 	li	r0,__NR_clock_gettime
-+  .cfi_restore lr
- 	sc
- 	blr
-   .cfi_endproc
-diff --git a/arch/powerpc/kernel/vdso64/datapage.S b/arch/powerpc/kernel/vdso64/datapage.S
-index abf17feffe40..bf9668691511 100644
---- a/arch/powerpc/kernel/vdso64/datapage.S
-+++ b/arch/powerpc/kernel/vdso64/datapage.S
-@@ -37,6 +37,7 @@ data_page_branch:
- 	mtlr	r0
- 	addi	r3, r3, __kernel_datapage_offset-data_page_branch
- 	lwz	r0,0(r3)
-+  .cfi_restore lr
- 	add	r3,r0,r3
- 	blr
-   .cfi_endproc
-diff --git a/arch/powerpc/kernel/vdso64/gettimeofday.S b/arch/powerpc/kernel/vdso64/gettimeofday.S
-index c002adcc694c..a4ed9edfd5f0 100644
---- a/arch/powerpc/kernel/vdso64/gettimeofday.S
-+++ b/arch/powerpc/kernel/vdso64/gettimeofday.S
-@@ -169,6 +169,7 @@ V_FUNCTION_BEGIN(__kernel_clock_gettime)
- 	 */
- 99:
- 	li	r0,__NR_clock_gettime
-+  .cfi_restore lr
- 	sc
- 	blr
-   .cfi_endproc
+Linux version 4.19.0-rc3-00005-g7f51dcdecc6b (joel@ozrom3) (clang version 8.0.0 (trunk 342199)) #5 SMP Fri Sep 14 13:28:57 ACST 2018
+
+I have discovered Nick D's clangBuiltLinux issue tracker[3] and will be
+updating that as we find and fix issues.
+
+[1] https://reviews.llvm.org/D50965
+[2] https://bugs.llvm.org/show_bug.cgi?id=38887
+[3] https://github.com/clangBuiltLinux/linux/issues
+
+Anton Blanchard (2):
+  powerpc/Makefiles: Fix clang/llvm build
+  powerpc: Fix duplicate const clang warning in user access code
+
+Joel Stanley (3):
+  powerpc/boot: Fix crt0.S syntax for clang
+  powerpc/boot: Ensure _zimage_start is a weak symbol
+  powerpc: Remove -mno-sched-epilog
+
+ arch/powerpc/Makefile                    | 7 +------
+ arch/powerpc/boot/crt0.S                 | 8 +++++---
+ arch/powerpc/include/asm/uaccess.h       | 6 +++---
+ arch/powerpc/kernel/Makefile             | 8 ++++----
+ arch/powerpc/kernel/trace/Makefile       | 2 +-
+ arch/powerpc/platforms/powermac/Makefile | 2 +-
+ arch/powerpc/xmon/Makefile               | 2 +-
+ 7 files changed, 16 insertions(+), 19 deletions(-)
 
 -- 
-Alan Modra
-Australia Development Lab, IBM
+2.17.1
