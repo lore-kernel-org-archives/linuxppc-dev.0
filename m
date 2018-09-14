@@ -1,28 +1,28 @@
-Return-Path: <ndesaulniers@google.com>
+Return-Path: <firoz.khan@linaro.org>
 Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
  [IPv6:2607:f8b0:4864:20::542])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Bqhx0TKwzF36k
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Sep 2018 08:20:31 +1000 (AEST)
-Received: by mail-pg1-x542.google.com with SMTP id l63-v6so5003240pga.7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 15:20:31 -0700 (PDT)
-MIME-Version: 1.0
-References: <20180914040649.1794-1-joel@jms.id.au>
- <20180914040649.1794-6-joel@jms.id.au>
- <20180914150629.405c12cc@roar.ozlabs.ibm.com>
- <CAKwvOdn-e60VSvUzmSLGx6yx-wUzSaEtdA3q5xyZ+G_++nQSJg@mail.gmail.com>
- <20180915064305.65eea265@roar.ozlabs.ibm.com>
- <20180914211846.GU23155@gate.crashing.org>
-In-Reply-To: <20180914211846.GU23155@gate.crashing.org>
-From: Nick Desaulniers <ndesaulniers@google.com>
-Date: Fri, 14 Sep 2018 15:20:18 -0700
-Message-ID: <CAKwvOdmsSbrw7oLZHWTseqxLocPmuXV=cnxSi2zskAmd9zKo0Q@mail.gmail.com>
-Subject: Re: [PATCH v2 5/5] powerpc: Remove -mno-sched-epilog
-To: segher@kernel.crashing.org
-Cc: Nicholas Piggin <npiggin@gmail.com>, joel@jms.id.au,
- linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42BTLp1VD6zF33M
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 18:33:33 +1000 (AEST)
+Received: by mail-pg1-x542.google.com with SMTP id s15-v6so4049982pgv.8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 01:33:33 -0700 (PDT)
+From: Firoz Khan <firoz.khan@linaro.org>
+To: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@lists.ozlabs.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Ram Pai <linuxram@us.ibm.com>, Breno Leitao <leitao@debian.org>,
+ Boqun Feng <boqun.feng@gmail.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Philippe Ombredanne <pombredanne@nexb.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Kate Stewart <kstewart@linuxfoundation.org>
+Cc: y2038@lists.linaro.org, linux-kernel@vger.kernel.org,
+ linux-arch@vger.kernel.org, deepa.kernel@gmail.com,
+ marcin.juszkiewicz@linaro.org, firoz.khan@linaro.org
+Subject: [PATCH 0/3] System call table generation support
+Date: Fri, 14 Sep 2018 14:02:57 +0530
+Message-Id: <1536913980-4811-1-git-send-email-firoz.khan@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,54 +32,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Sep 14, 2018 at 2:56 PM Segher Boessenkool
-<segher@kernel.crashing.org> wrote:
->
-> On Sat, Sep 15, 2018 at 06:43:05AM +1000, Nicholas Piggin wrote:
-> > On Fri, 14 Sep 2018 11:03:38 -0700
-> > Nick Desaulniers <ndesaulniers@google.com> wrote:
-> >
-> > > On Thu, Sep 13, 2018 at 9:07 PM Joel Stanley <joel@jms.id.au> wrote:
-> > > > Last time this was proposed there was an issue reported:
-> > > >
-> > > >  https://lists.ozlabs.org/pipermail/linuxppc-dev/2014-September/121214.html
-> > >
-> > > Heh, did PASemi sell boxes? Interesting, I'll have to read up on my history.
-> > >
-> > > On Thu, Sep 13, 2018 at 10:06 PM Nicholas Piggin <npiggin@gmail.com> wrote:
-> > > > I don't think we can remove it completely because up to at least 4.6
-> > > > maybe 4.8 has problems.
-> > > >
-> > > > I have a few patches lying around I started looking at this... I'll
-> > > > send them.
-> > >
-> > > Yeah, it's too bad the link above doesn't mention gcc version.
-> > >
-> > > The gcc bugreport mentions fixing the bug in
-> > > 7563dc64585324f443f5ac107eb6d89ee813a2d2, not sure how to check what
-> > > release version of gcc that is? (Do they tag releases?)
-> >
-> > I'm not sure, that's not in my gcc tree AFAIKS.
->
-> This is a git hash in the kernel tree.
->
-> > > Nick, do you have a test case or more context about this still being
-> > > an issue in gcc 4.8? (maybe I should wait for your patch series?)
-> >
-> > Sorry I forgot to cc you. This has links to some of the sched
-> > epilog bugs.
-> >
-> > https://marc.info/?l=linuxppc-embedded&m=153690223909654&w=2
+The purpose of this patch series is:
+1. We can easily add/modify/delete system call by changing entry 
+in syscall.tbl file. No need to manually edit many files.
 
-Cool, cc me on the thread if you'd like me to add my reviewed-by tag
-visibly on the thread.
+2. It is easy to unify the system call implementation across all 
+the architectures. 
 
->
-> PR44199 was backported to 4.4 and PR52828 is fixed in 4.8.
+The system call tables are in different format in all architecture 
+and it will be difficult to manually add or modify the system calls
+in the respective files manually. To make it easy by keeping a script 
+and which'll generate the header file and syscall table file so this 
+change will unify them across all architectures.
 
-Are those GCC versions? If so, what does that mean for the users of
-the many GCC releases between 4.4 and 4.8?
+syscall.tbl contains the list of available system calls along with 
+system call number and corresponding entry point. Add a new system 
+call in this architecture will be possible by adding new entry in 
+the syscall.tbl file.
+
+Adding a new table entry consisting of:
+        - System call number.
+        - ABI.
+        - System call name.
+        - Entry point name.
+        - Compat entry name, if required.
+
+ARM, s390 and x86 architecuture does exist the similar support. I 
+leverage their implementation to come up with a generic solution.
+
+I have done the same support for work for alpha, m68k, microblaze, 
+ia64, mips, parisc, sh, sparc, and xtensa. But I started sending 
+the patch for one architecuture for review. Below mentioned git
+repository contains more details.
+Git repo:- https://github.com/frzkhn/system_call_table_generator/
+
+Finally, this is the ground work for solving the Y2038 issue. We 
+need to add/change two dozen of system calls to solve Y2038 issue. 
+So this patch series will help to easily modify from existing 
+system call to Y2038 compatible system calls.
+
+I started working system call table generation on 4.17-rc1. I used 
+marcin's script - https://github.com/hrw/syscalls-table to generate 
+the syscall.tbl file. And this will be the input to the system call 
+table generation script. But there are couple system call got add 
+in the latest rc release. If run Marcin's script on latest release,
+It will generate a new syscall.tbl. But I still use the old file - 
+syscall.tbl and once all review got over I'll update syscall.tbl 
+alone w.r.to the tip of the kernel. The impact of this thing, few 
+of the system call won't work. 
+
+Firoz Khan (3):
+  powerpc: Replace NR_syscalls macro from asm/unistd.h
+  powerpc: Add system call table generation support
+  powerpc: uapi header and system call table file generation
+
+ arch/powerpc/Makefile                       |   3 +
+ arch/powerpc/include/asm/Kbuild             |   3 +
+ arch/powerpc/include/asm/unistd.h           |   3 +-
+ arch/powerpc/include/uapi/asm/Kbuild        |   2 +
+ arch/powerpc/include/uapi/asm/unistd.h      | 391 +---------------------------
+ arch/powerpc/kernel/Makefile                |   3 +-
+ arch/powerpc/kernel/syscall_table_32.S      |   9 +
+ arch/powerpc/kernel/syscall_table_64.S      |  17 ++
+ arch/powerpc/kernel/syscalls/Makefile       |  51 ++++
+ arch/powerpc/kernel/syscalls/syscall_32.tbl | 378 +++++++++++++++++++++++++++
+ arch/powerpc/kernel/syscalls/syscall_64.tbl | 372 ++++++++++++++++++++++++++
+ arch/powerpc/kernel/syscalls/syscallhdr.sh  |  37 +++
+ arch/powerpc/kernel/syscalls/syscalltbl.sh  |  38 +++
+ arch/powerpc/kernel/systbl.S                |  50 ----
+ 14 files changed, 916 insertions(+), 441 deletions(-)
+ create mode 100644 arch/powerpc/kernel/syscall_table_32.S
+ create mode 100644 arch/powerpc/kernel/syscall_table_64.S
+ create mode 100644 arch/powerpc/kernel/syscalls/Makefile
+ create mode 100644 arch/powerpc/kernel/syscalls/syscall_32.tbl
+ create mode 100644 arch/powerpc/kernel/syscalls/syscall_64.tbl
+ create mode 100644 arch/powerpc/kernel/syscalls/syscallhdr.sh
+ create mode 100644 arch/powerpc/kernel/syscalls/syscalltbl.sh
+ delete mode 100644 arch/powerpc/kernel/systbl.S
 
 -- 
-Thanks,
-~Nick Desaulniers
+1.9.1
