@@ -1,18 +1,41 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <sbobroff@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42BG0B1DP6zF3TG
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 10:01:46 +1000 (AEST)
-Message-ID: <545f4cb2ca6f8d678798a387ea189bcf152842f9.camel@neuling.org>
-Subject: Re: [PATCH] Correct PowerPC VDSO call frame info
-From: Michael Neuling <mikey@neuling.org>
-To: Alan Modra <amodra@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Date: Fri, 14 Sep 2018 10:01:45 +1000
-In-Reply-To: <20180913232704.GL3174@bubble.grove.modra.org>
-References: <20180913232704.GL3174@bubble.grove.modra.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42BG4Y19C3zF314
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 10:05:32 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w8E04XnC120355
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2018 20:05:30 -0400
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2mfw0j31bc-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2018 20:05:30 -0400
+Received: from localhost
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sbobroff@linux.ibm.com>;
+ Fri, 14 Sep 2018 01:05:28 +0100
+Date: Fri, 14 Sep 2018 10:05:20 +1000
+From: Sam Bobroff <sbobroff@linux.ibm.com>
+To: Russell Currey <ruscur@russell.cc>
+Cc: Bjorn Helgaas <helgaas@kernel.org>, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
+ oohall@gmail.com
+Subject: Re: [PATCH] MAINTAINERS: Add PPC contacts for PCI core error handling
+References: <153677132617.23091.12307288405707171077.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ <20180912165846.GH118330@bhelgaas-glaptop.roam.corp.google.com>
+ <94b8929d44af6dd965600b7d159458312d500582.camel@russell.cc>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="+QahgC5+KEYLbs62"
+In-Reply-To: <94b8929d44af6dd965600b7d159458312d500582.camel@russell.cc>
+Message-Id: <20180914000520.GA7655@tungsten.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,105 +45,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alan,
 
-Thanks for the patch... A few minor comments...
+--+QahgC5+KEYLbs62
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Re: [PATCH] Correct PowerPC VDSO call frame info
-
-Our convention is to add powerpc: to the start. ie
-
-  [PATCH] powerpc: Correct VDSO call frame info
-
-or even:=20
-
-  [PATCH] powerpc/vdso: Correct call frame info
-
-
-On Fri, 2018-09-14 at 08:57 +0930, Alan Modra wrote:
-> There is control flow in __kernel_clock_gettime that reaches label 99
-> without saving lr in r12.  CFI info however is interpreted by the
-> unwinder without reference to control flow: It's a simple matter of
-> "Execute all the CFI opcodes up to the current address".  That means
-> the unwinder thinks r12 contains the return address at label 99.
-> Disabuse it of that notion by resetting CFI for the return address at
-> label 99.
-
-Can you expand on CFI =3D=3D Call Frame Information in the commit message. =
- Not a
-common term for us mere kernel developers?
-
-> Note that the ".cfi_restore lr" could have gone anywhere from the
-> "mtlr r12" a few instructions earlier to the instruction at label 99.
-> I put the CFI as late as possible, because in general that's best
-> practice (and if possible grouped with other CFI in order to reduce
-> the number of CFI opcodes executed when unwinding).  Using r12 as the
-> return address is perfectly fine after the "mtlr r12" since r12 on
-> that code path still contains the return address.
+On Thu, Sep 13, 2018 at 12:26:55PM +1000, Russell Currey wrote:
+> On Wed, 2018-09-12 at 11:58 -0500, Bjorn Helgaas wrote:
+> > On Wed, Sep 12, 2018 at 11:55:26AM -0500, Bjorn Helgaas wrote:
+> > > From: Bjorn Helgaas <bhelgaas@google.com>
+> > >=20
+> > > The original PCI error recovery functionality was for the powerpc-spe=
+cific
+> > > IBM EEH feature.  PCIe subsequently added some similar features, incl=
+uding
+> > > AER and DPC, that can be used on any architecture.
+> > >=20
+> > > We want the generic PCI core error handling support to work with all =
+of
+> > > these features.  Driver error recovery callbacks should be independen=
+t of
+> > > which feature the platform provides.
+> > >=20
+> > > Add the generic PCI core error recovery files to the powerpc EEH
+> > > MAINTAINERS entry so the powerpc folks will be copied on changes to t=
+he
+> > > generic PCI error handling strategy.
+> >=20
+> > I really want to make sure the powerpc folks are plugged into any PCI c=
+ore
+> > error handling discussions.  Please let me know if there's a better way
+> > than this patch, or if there are other people who should be added.
 >=20
-> __get_datapage also has a CFI error.  That function temporarily saves
-> lr in r0, and reflects that fact with ".cfi_register lr,r0".  A later
-> use of r0 means the CFI at that point isn't correct, as r0 no longer
-> contains the return address.  Fix that too.
-
-Can you describe the problem this fixes at a high level?  ie This fixes doi=
-ng a
-stack unwind with gdb when in __kernel_clock_gettime.
-
-Mikey
-
-> Signed-off-by: Alan Modra <amodra@gmail.com>
+> I think this patch is definitely a good idea.
 >=20
-> diff --git a/arch/powerpc/kernel/vdso32/datapage.S
-> b/arch/powerpc/kernel/vdso32/datapage.S
-> index 3745113fcc65..2a7eb5452aba 100644
-> --- a/arch/powerpc/kernel/vdso32/datapage.S
-> +++ b/arch/powerpc/kernel/vdso32/datapage.S
-> @@ -37,6 +37,7 @@ data_page_branch:
->  	mtlr	r0
->  	addi	r3, r3, __kernel_datapage_offset-data_page_branch
->  	lwz	r0,0(r3)
-> +  .cfi_restore lr
->  	add	r3,r0,r3
->  	blr
->    .cfi_endproc
-> diff --git a/arch/powerpc/kernel/vdso32/gettimeofday.S
-> b/arch/powerpc/kernel/vdso32/gettimeofday.S
-> index 769c2624e0a6..1e0bc5955a40 100644
-> --- a/arch/powerpc/kernel/vdso32/gettimeofday.S
-> +++ b/arch/powerpc/kernel/vdso32/gettimeofday.S
-> @@ -139,6 +139,7 @@ V_FUNCTION_BEGIN(__kernel_clock_gettime)
->  	 */
->  99:
->  	li	r0,__NR_clock_gettime
-> +  .cfi_restore lr
->  	sc
->  	blr
->    .cfi_endproc
-> diff --git a/arch/powerpc/kernel/vdso64/datapage.S
-> b/arch/powerpc/kernel/vdso64/datapage.S
-> index abf17feffe40..bf9668691511 100644
-> --- a/arch/powerpc/kernel/vdso64/datapage.S
-> +++ b/arch/powerpc/kernel/vdso64/datapage.S
-> @@ -37,6 +37,7 @@ data_page_branch:
->  	mtlr	r0
->  	addi	r3, r3, __kernel_datapage_offset-data_page_branch
->  	lwz	r0,0(r3)
-> +  .cfi_restore lr
->  	add	r3,r0,r3
->  	blr
->    .cfi_endproc
-> diff --git a/arch/powerpc/kernel/vdso64/gettimeofday.S
-> b/arch/powerpc/kernel/vdso64/gettimeofday.S
-> index c002adcc694c..a4ed9edfd5f0 100644
-> --- a/arch/powerpc/kernel/vdso64/gettimeofday.S
-> +++ b/arch/powerpc/kernel/vdso64/gettimeofday.S
-> @@ -169,6 +169,7 @@ V_FUNCTION_BEGIN(__kernel_clock_gettime)
->  	 */
->  99:
->  	li	r0,__NR_clock_gettime
-> +  .cfi_restore lr
->  	sc
->  	blr
->    .cfi_endproc
+> Alongside this (whether you want to include it in your patch or not, Bjor=
+n),
+> Sam Bobroff should replace myself as maintainer.  He's been very active i=
+n fixing,
+> reworking and reviewing in EEH land and will probably do a better job of =
+keeping
+> his finger on the pulse of the generic PCI error handling code than I did.
 >=20
+> - Russell
+
+That's fine with me. You can add me or let me know if I should send a
+patch.
+
+Sam.
+
+>=20
+> >=20
+> > > Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+> > > ---
+> > >  MAINTAINERS |    4 ++++
+> > >  1 file changed, 4 insertions(+)
+> > >=20
+> > > diff --git a/MAINTAINERS b/MAINTAINERS
+> > > index 7e10ba65bfe4..d6699597fd89 100644
+> > > --- a/MAINTAINERS
+> > > +++ b/MAINTAINERS
+> > > @@ -11202,6 +11202,10 @@ PCI ENHANCED ERROR HANDLING (EEH) FOR POWERPC
+> > >  M:	Russell Currey <ruscur@russell.cc>
+> > >  L:	linuxppc-dev@lists.ozlabs.org
+> > >  S:	Supported
+> > > +F:	Documentation/PCI/pci-error-recovery.txt
+> > > +F:	drivers/pci/pcie/aer.c
+> > > +F:	drivers/pci/pcie/dpc.c
+> > > +F:	drivers/pci/pcie/err.c
+> > >  F:	Documentation/powerpc/eeh-pci-error-recovery.txt
+> > >  F:	arch/powerpc/kernel/eeh*.c
+> > >  F:	arch/powerpc/platforms/*/eeh*.c
+> > >=20
+>=20
+
+--+QahgC5+KEYLbs62
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCAAdFiEELWWF8pdtWK5YQRohMX8w6AQl/iIFAlua+zEACgkQMX8w6AQl
+/iKOcQf+JdfQFAngmcHC2C0vnnnEQQqLURa4IOJ1v4MhPTFoPBNoAaFuXXTeCC/L
+6UEq5ZWULO+9LjgcDrXyzB30dFLv3o+Vdy/atZqogaiAFdFn77IQoO2IQJkZyA1v
+oS1Vd5YbepFuJyxSX1lSlV5aljuUQkcc7QRQ93w3j/j6KsRqJiyjCpI782ANZFtY
+CvomFGtSfdQgEVC/4VfXSIs4ZSbvB8LmprXWnIVmPTuw7gnkVJGpLACmmsLcwuvf
+bRZmVvveTvoyfVzJV9PCifKLJhojr1mfgtIbmQ9UWdWfjELnvKle9zAnilrppBmL
++iPh3HV5N0DSOfeYraEGzM5F7DQO0A==
+=fTc4
+-----END PGP SIGNATURE-----
+
+--+QahgC5+KEYLbs62--
