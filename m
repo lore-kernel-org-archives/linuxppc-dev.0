@@ -1,25 +1,37 @@
-Return-Path: <s.miroshnichenko@yadro.com>
-Received: from mta-01.yadro.com (mta-01.yadro.com [89.207.88.251])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <viro@ftp.linux.org.uk>
+Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42BpBw0ntZzF31p
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Sep 2018 07:12:55 +1000 (AEST)
-Subject: Re: [PATCH v2 5/5] PCI/powerpc/eeh: Add pcibios hooks for preparing
- to rescan
-To: <benh@au1.ibm.com>
-CC: Sam Bobroff <sbobroff@linux.ibm.com>, <linuxppc-dev@lists.ozlabs.org>,
- <linux@yadro.com>
-References: <20180906115752.29316-1-s.miroshnichenko@yadro.com>
- <20180906115752.29316-6-s.miroshnichenko@yadro.com>
- <20180910050328.GC14370@tungsten.ozlabs.ibm.com>
- <61e8e5b9-0ed2-1848-d676-64bcbd3b9cbc@yadro.com>
- <baf90fe99f3644b33d50966b5721991a84369a7d.camel@au1.ibm.com>
-From: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
-Message-ID: <6ae5e29d-8fdc-3b43-79eb-b0472588b49f@yadro.com>
-Date: Sat, 15 Sep 2018 00:12:50 +0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42BpKH4z7szF31q
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Sep 2018 07:18:27 +1000 (AEST)
+Date: Fri, 14 Sep 2018 21:57:48 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Darren Hart <dvhart@infradead.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-fsdevel@vger.kernel.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "David S. Miller" <davem@davemloft.net>, devel@driverdev.osuosl.org,
+ linux-kernel@vger.kernel.org, qat-linux@intel.com,
+ linux-crypto@vger.kernel.org, linux-media@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linaro-mm-sig@lists.linaro.org,
+ amd-gfx@lists.freedesktop.org, linux-input@vger.kernel.org,
+ linux-iio@vger.kernel.org, linux-rdma@vger.kernel.org,
+ linux-nvdimm@lists.01.org, linux-nvme@lists.infradead.org,
+ linux-pci@vger.kernel.org, platform-driver-x86@vger.kernel.org,
+ linux-remoteproc@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-scsi@vger.kernel.org, linux-usb@vger.kernel.org,
+ linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-btrfs@vger.kernel.org, ceph-devel@vger.kernel.org,
+ linux-wireless@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH v2 05/17] compat_ioctl: move more drivers to
+ generic_compat_ioctl_ptrarg
+Message-ID: <20180914205748.GC19965@ZenIV.linux.org.uk>
+References: <20180912150142.157913-1-arnd@arndb.de>
+ <20180912151134.436719-1-arnd@arndb.de>
+ <20180914203506.GE35251@wrath>
 MIME-Version: 1.0
-In-Reply-To: <baf90fe99f3644b33d50966b5721991a84369a7d.camel@au1.ibm.com>
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180914203506.GE35251@wrath>
+Sender: Al Viro <viro@ftp.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,39 +41,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On 9/12/18 1:39 PM,  wrote:
-> On Mon, 2018-09-10 at 19:00 +0300, Sergey Miroshnichenko wrote:
->>
->> Yes, missing a real EEH event is possible, unfortunately, and it is
->> indeed worth mentioning.
->>
->> To reduce this probability the next patchset I'll post in a few days
->> among other things puts all the affected device drivers to pause during
->> rescan, mainly because of moving BARs and bridge windows, but it will
->> also help here a bit.
+On Fri, Sep 14, 2018 at 01:35:06PM -0700, Darren Hart wrote:
+ 
+> Acked-by: Darren Hart (VMware) <dvhart@infradead.org>
 > 
-> How do you deal with moving BARs etc... within the segmenting
-> restrictions of EEH ?
-> 
+> As for a longer term solution, would it be possible to init fops in such
+> a way that the compat_ioctl call defaults to generic_compat_ioctl_ptrarg
+> so we don't have to duplicate this boilerplate for every ioctl fops
+> structure?
 
-Actually, [un]fortunately, we haven't encountered any segmenting issues
-yet, but to move BARs we are using the same existing mechanism in Linux
-kernel that re-enumerated the PCIe topology during startup with
-"pci=realloc" and PCI_REASSIGN_ALL_BUS. What restrictions must be broken
-to provoke a segmenting event?
+	Bad idea, that...  Because several years down the road somebody will add
+an ioctl that takes an unsigned int for argument.  Without so much as looking
+at your magical mystery macro being used to initialize file_operations.
 
-Are there any other limitations on segmenting besides keeping all the
-BARs of the PHB within its huge M32+M64 segments which are 2GiB+4GiB on
-our setup?
-
-> It's a horrible mess right now and I don't know if the current code can
-> even work properly to be honest.
-> 
-> Cheers,
-> Ben.
-> 
-> 
-
-Best regards,
-Serge
+	FWIW, I would name that helper in more blunt way - something like
+compat_ioctl_only_compat_pointer_ioctls_here()...
