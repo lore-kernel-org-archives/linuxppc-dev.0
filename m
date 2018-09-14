@@ -1,37 +1,25 @@
-Return-Path: <viro@ftp.linux.org.uk>
-Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <frowand.list@gmail.com>
+Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
+ [IPv6:2607:f8b0:4864:20::641])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42BpKH4z7szF31q
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Sep 2018 07:18:27 +1000 (AEST)
-Date: Fri, 14 Sep 2018 21:57:48 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Darren Hart <dvhart@infradead.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-fsdevel@vger.kernel.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "David S. Miller" <davem@davemloft.net>, devel@driverdev.osuosl.org,
- linux-kernel@vger.kernel.org, qat-linux@intel.com,
- linux-crypto@vger.kernel.org, linux-media@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linaro-mm-sig@lists.linaro.org,
- amd-gfx@lists.freedesktop.org, linux-input@vger.kernel.org,
- linux-iio@vger.kernel.org, linux-rdma@vger.kernel.org,
- linux-nvdimm@lists.01.org, linux-nvme@lists.infradead.org,
- linux-pci@vger.kernel.org, platform-driver-x86@vger.kernel.org,
- linux-remoteproc@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-scsi@vger.kernel.org, linux-usb@vger.kernel.org,
- linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-btrfs@vger.kernel.org, ceph-devel@vger.kernel.org,
- linux-wireless@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH v2 05/17] compat_ioctl: move more drivers to
- generic_compat_ioctl_ptrarg
-Message-ID: <20180914205748.GC19965@ZenIV.linux.org.uk>
-References: <20180912150142.157913-1-arnd@arndb.de>
- <20180912151134.436719-1-arnd@arndb.de>
- <20180914203506.GE35251@wrath>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Bpdr1K5GzF35x
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Sep 2018 07:32:47 +1000 (AEST)
+Received: by mail-pl1-x641.google.com with SMTP id s17-v6so4739669plp.7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 14:32:46 -0700 (PDT)
+Subject: Re: [PATCH 3/3] scripts/dtc: Update to upstream version
+ v1.4.7-14-gc86da84d30e4
+To: Rob Herring <robh@kernel.org>, devicetree@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org
+References: <20180913202828.15372-1-robh@kernel.org>
+ <20180913202828.15372-3-robh@kernel.org>
+From: Frank Rowand <frowand.list@gmail.com>
+Message-ID: <f9684222-fae0-c305-d48a-be77ebb985a3@gmail.com>
+Date: Fri, 14 Sep 2018 14:32:43 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180914203506.GE35251@wrath>
-Sender: Al Viro <viro@ftp.linux.org.uk>
+In-Reply-To: <20180913202828.15372-3-robh@kernel.org>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,18 +29,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Sep 14, 2018 at 01:35:06PM -0700, Darren Hart wrote:
- 
-> Acked-by: Darren Hart (VMware) <dvhart@infradead.org>
+On 09/13/18 13:28, Rob Herring wrote:
+> Major changes are I2C and SPI bus checks, YAML output format (for
+> future validation), some new libfdt functions, and more libfdt
+> validation of dtbs.
 > 
-> As for a longer term solution, would it be possible to init fops in such
-> a way that the compat_ioctl call defaults to generic_compat_ioctl_ptrarg
-> so we don't have to duplicate this boilerplate for every ioctl fops
-> structure?
+> The YAML addition adds an optional dependency on libyaml. pkg-config is
+> used to test for it and pkg-config became a kconfig dependency in 4.18.
 
-	Bad idea, that...  Because several years down the road somebody will add
-an ioctl that takes an unsigned int for argument.  Without so much as looking
-at your magical mystery macro being used to initialize file_operations.
+For Ubuntu, the libyaml dependency is provided by the packages:
 
-	FWIW, I would name that helper in more blunt way - something like
-compat_ioctl_only_compat_pointer_ioctls_here()...
+   libyaml-0-2
+   libyaml-dev
+
+
+-Frank
+
+> 
+> This adds the following commits from upstream:
+> 
+> c86da84d30e4 Add support for YAML encoded output
+> 361b5e7d8067 Make type_marker_length helper public
+
+
+< snip >
