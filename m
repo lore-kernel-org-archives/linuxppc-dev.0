@@ -2,17 +2,19 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Bbz80mFhzF3XJ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 23:32:03 +1000 (AEST)
-Message-Id: <5edda1a360cf7867b98a72a1dfa22db3bd5ed7b4.1536931725.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Bbz93CRBzF3XG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 23:32:05 +1000 (AEST)
+Message-Id: <4381d1515addcbc5329fbc955ef4a5074ab9afef.1536931725.git.christophe.leroy@c-s.fr>
+In-Reply-To: <5edda1a360cf7867b98a72a1dfa22db3bd5ed7b4.1536931725.git.christophe.leroy@c-s.fr>
+References: <5edda1a360cf7867b98a72a1dfa22db3bd5ed7b4.1536931725.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2 1/3] watchdog: mpc8xxx: use dev_xxxx() instead of pr_xxxx()
+Subject: [PATCH v2 2/3] watchdog: mpc8xxx: provide boot status
 To: Wim Van Sebroeck <wim@linux-watchdog.org>,
  Guenter Roeck <linux@roeck-us.net>, Radu Rendec <radu.rendec@gmail.com>,
  Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-watchdog@vger.kernel.org, devicetree@vger.kernel.org
-Date: Fri, 14 Sep 2018 13:31:59 +0000 (UTC)
+Date: Fri, 14 Sep 2018 13:32:01 +0000 (UTC)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,95 +24,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-mpc8xxx watchdog driver is a platform device drivers, it is
-therefore possible to use dev_xxx() messaging rather than pr_xxx()
+mpc8xxx watchdog driver supports the following platforms:
+- mpc8xx
+- mpc83xx
+- mpc86xx
 
+Those three platforms have a 32 bits register which provides the
+reason of the last boot, including whether it was caused by the
+watchdog.
+
+mpc8xx: Register RSR, bit SWRS (bit 3)
+mpc83xx: Register RSR, bit SWRS (bit 28)
+mpc86xx: Register RSTRSCR, bit WDT_RR (bit 11)
+
+This patch maps the register as defined in the device tree and updates
+wdt.bootstatus based on the value of the watchdog related bit. Then
+the information can be retrieved via the WDIOC_GETBOOTSTATUS ioctl.
+
+Hereunder is an example of devicetree for mpc8xx,
+the Reset Status Register being at offset 0x288:
+
+		WDT: watchdog@0 {
+			compatible = "fsl,mpc823-wdt";
+			reg = <0x0 0x10 0x288 0x4>;
+		};
+
+On the mpc83xx, RSR is at offset 0x910
+On the mpc86xx, RSTRSCR is at offset 0xe0094
+
+Suggested-by: Radu Rendec <radu.rendec@gmail.com>
+Tested-by: Christophe Leroy <christophe.leroy@c-s.fr> # On mpc885
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- drivers/watchdog/mpc8xxx_wdt.c | 24 ++++++++++++------------
- 1 file changed, 12 insertions(+), 12 deletions(-)
+ drivers/watchdog/mpc8xxx_wdt.c | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
 diff --git a/drivers/watchdog/mpc8xxx_wdt.c b/drivers/watchdog/mpc8xxx_wdt.c
-index aca2d6323f8a..1dcf5f10cdd9 100644
+index 1dcf5f10cdd9..4a4700458b17 100644
 --- a/drivers/watchdog/mpc8xxx_wdt.c
 +++ b/drivers/watchdog/mpc8xxx_wdt.c
-@@ -17,8 +17,6 @@
-  * option) any later version.
-  */
+@@ -47,6 +47,7 @@ struct mpc8xxx_wdt {
+ struct mpc8xxx_wdt_type {
+ 	int prescaler;
+ 	bool hw_enabled;
++	u32 rsr_mask;
+ };
  
--#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
--
- #include <linux/fs.h>
- #include <linux/init.h>
- #include <linux/kernel.h>
-@@ -137,26 +135,27 @@ static int mpc8xxx_wdt_probe(struct platform_device *ofdev)
- 	struct mpc8xxx_wdt_ddata *ddata;
+ struct mpc8xxx_wdt_ddata {
+@@ -136,6 +137,7 @@ static int mpc8xxx_wdt_probe(struct platform_device *ofdev)
  	u32 freq = fsl_get_sys_freq();
  	bool enabled;
-+	struct device *dev = &ofdev->dev;
+ 	struct device *dev = &ofdev->dev;
++	u32 __iomem *rsr = NULL;
  
--	wdt_type = of_device_get_match_data(&ofdev->dev);
-+	wdt_type = of_device_get_match_data(dev);
+ 	wdt_type = of_device_get_match_data(dev);
  	if (!wdt_type)
- 		return -EINVAL;
- 
- 	if (!freq || freq == -1)
- 		return -EINVAL;
- 
--	ddata = devm_kzalloc(&ofdev->dev, sizeof(*ddata), GFP_KERNEL);
-+	ddata = devm_kzalloc(dev, sizeof(*ddata), GFP_KERNEL);
- 	if (!ddata)
- 		return -ENOMEM;
- 
- 	res = platform_get_resource(ofdev, IORESOURCE_MEM, 0);
--	ddata->base = devm_ioremap_resource(&ofdev->dev, res);
-+	ddata->base = devm_ioremap_resource(dev, res);
- 	if (IS_ERR(ddata->base))
- 		return PTR_ERR(ddata->base);
- 
- 	enabled = in_be32(&ddata->base->swcrr) & SWCRR_SWEN;
- 	if (!enabled && wdt_type->hw_enabled) {
--		pr_info("could not be enabled in software\n");
-+		dev_info(dev, "could not be enabled in software\n");
+@@ -159,6 +161,21 @@ static int mpc8xxx_wdt_probe(struct platform_device *ofdev)
  		return -ENODEV;
  	}
  
-@@ -166,7 +165,7 @@ static int mpc8xxx_wdt_probe(struct platform_device *ofdev)
- 	ddata->wdd.ops = &mpc8xxx_wdt_ops,
++	res = platform_get_resource(ofdev, IORESOURCE_MEM, 1);
++	if (res)
++		rsr = ioremap(res->start, resource_size(res));
++	if (rsr) {
++		bool status = in_be32(rsr) & wdt_type->rsr_mask;
++
++		ddata->wdd.bootstatus = status ? WDIOF_CARDRESET : 0;
++		 /* clear reset status bits related to watchdog timer */
++		out_be32(rsr, wdt_type->rsr_mask);
++		iounmap(rsr);
++
++		dev_info(dev, "Last boot was %scaused by watchdog\n",
++			 status ? "" : "not ");
++	}
++
+ 	spin_lock_init(&ddata->lock);
  
- 	ddata->wdd.timeout = WATCHDOG_TIMEOUT;
--	watchdog_init_timeout(&ddata->wdd, timeout, &ofdev->dev);
-+	watchdog_init_timeout(&ddata->wdd, timeout, dev);
- 
- 	watchdog_set_nowayout(&ddata->wdd, nowayout);
- 
-@@ -189,12 +188,13 @@ static int mpc8xxx_wdt_probe(struct platform_device *ofdev)
- 
- 	ret = watchdog_register_device(&ddata->wdd);
- 	if (ret) {
--		pr_err("cannot register watchdog device (err=%d)\n", ret);
-+		dev_err(dev, "cannot register watchdog device (err=%d)\n", ret);
- 		return ret;
- 	}
- 
--	pr_info("WDT driver for MPC8xxx initialized. mode:%s timeout=%d sec\n",
--		reset ? "reset" : "interrupt", ddata->wdd.timeout);
-+	dev_info(dev,
-+		 "WDT driver for MPC8xxx initialized. mode:%s timeout=%d sec\n",
-+		 reset ? "reset" : "interrupt", ddata->wdd.timeout);
- 
- 	platform_set_drvdata(ofdev, ddata);
- 	return 0;
-@@ -204,8 +204,8 @@ static int mpc8xxx_wdt_remove(struct platform_device *ofdev)
- {
- 	struct mpc8xxx_wdt_ddata *ddata = platform_get_drvdata(ofdev);
- 
--	pr_crit("Watchdog removed, expect the %s soon!\n",
--		reset ? "reset" : "machine check exception");
-+	dev_crit(&ofdev->dev, "Watchdog removed, expect the %s soon!\n",
-+		 reset ? "reset" : "machine check exception");
- 	watchdog_unregister_device(&ddata->wdd);
- 
- 	return 0;
+ 	ddata->wdd.info = &mpc8xxx_wdt_info,
+@@ -216,6 +233,7 @@ static const struct of_device_id mpc8xxx_wdt_match[] = {
+ 		.compatible = "mpc83xx_wdt",
+ 		.data = &(struct mpc8xxx_wdt_type) {
+ 			.prescaler = 0x10000,
++			.rsr_mask = BIT(3), /* RSR Bit SWRS */
+ 		},
+ 	},
+ 	{
+@@ -223,6 +241,7 @@ static const struct of_device_id mpc8xxx_wdt_match[] = {
+ 		.data = &(struct mpc8xxx_wdt_type) {
+ 			.prescaler = 0x10000,
+ 			.hw_enabled = true,
++			.rsr_mask = BIT(20), /* RSTRSCR Bit WDT_RR */
+ 		},
+ 	},
+ 	{
+@@ -230,6 +249,7 @@ static const struct of_device_id mpc8xxx_wdt_match[] = {
+ 		.data = &(struct mpc8xxx_wdt_type) {
+ 			.prescaler = 0x800,
+ 			.hw_enabled = true,
++			.rsr_mask = BIT(28), /* RSR Bit SWRS */
+ 		},
+ 	},
+ 	{},
 -- 
 2.13.3
