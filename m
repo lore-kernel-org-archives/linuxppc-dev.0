@@ -1,24 +1,33 @@
-Return-Path: <joel.stan@gmail.com>
-Received: from mail-qt0-x241.google.com (mail-qt0-x241.google.com
- [IPv6:2607:f8b0:400d:c0d::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <arbab@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42BKrN29zLzF3TK
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 12:55:15 +1000 (AEST)
-Received: by mail-qt0-x241.google.com with SMTP id n6-v6so7474629qtl.4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2018 19:55:15 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42BKx438FnzF2vj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 12:59:20 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w8E2x4hj096051
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2018 22:59:18 -0400
+Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2mfxa1mhab-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2018 22:59:18 -0400
+Received: from localhost
+ by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <arbab@linux.ibm.com>;
+ Thu, 13 Sep 2018 22:59:16 -0400
+Date: Thu, 13 Sep 2018 21:59:11 -0500
+From: Reza Arbab <arbab@linux.ibm.com>
+To: Alan Modra <amodra@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH] Correct PowerPC VDSO call frame info
+References: <20180913232704.GL3174@bubble.grove.modra.org>
 MIME-Version: 1.0
-References: <20180910085714.4834-1-joel@jms.id.au>
- <20180910085714.4834-2-joel@jms.id.au>
- <20180911113228.GF23155@gate.crashing.org>
-In-Reply-To: <20180911113228.GF23155@gate.crashing.org>
-From: Joel Stanley <joel@jms.id.au>
-Date: Fri, 14 Sep 2018 12:25:01 +0930
-Message-ID: <CACPK8XdNRXTnuRk5vuBxiHu_5bFcg5jG84c3YzQLZk_eGjqPoQ@mail.gmail.com>
-Subject: Re: [PATCH 1/2] powerpc/boot: Fix crt0.S syntax for clang
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii; format=flowed
+In-Reply-To: <20180913232704.GL3174@bubble.grove.modra.org>
+Message-Id: <20180914025911.665onq4xzb67ijss@arbab-vm>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,32 +37,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 11 Sep 2018 at 21:02, Segher Boessenkool
-<segher@kernel.crashing.org> wrote:
->
-> On Mon, Sep 10, 2018 at 06:57:13PM +1000, Joel Stanley wrote:
-> > Clang's assembler does not like the syntax of the cmpdi:
-> >
-> >  arch/powerpc/boot/crt0.S:168:22: error: unexpected modifier on variable reference
-> >          cmpdi   12,RELACOUNT@l
-> >                               ^
-> >  arch/powerpc/boot/crt0.S:168:11: error: unknown operand
-> >          cmpdi   12,RELACOUNT@l
-> >                    ^
-> > Enclosing RELACOUNT in () makes it is happy. Tested with GCC 8 and Clang
-> > 8 (trunk).
->
-> Is clang going to fix this?  You also might want to add a comment that
-> this is a workaround for that broken assembler.
+On Fri, Sep 14, 2018 at 08:57:04AM +0930, Alan Modra wrote:
+>There is control flow in __kernel_clock_gettime that reaches label 99
+>without saving lr in r12.  CFI info however is interpreted by the
+>unwinder without reference to control flow: It's a simple matter of
+>"Execute all the CFI opcodes up to the current address".  That means
+>the unwinder thinks r12 contains the return address at label 99.
+>Disabuse it of that notion by resetting CFI for the return address at
+>label 99.
 
-I am not sure that we need a comment, it doesn't look too out of place
-compared to the other uses of wrapping symbols in ().
+Thanks for this! It looks like v2 will just be a commit log change, so 
+feel free to carry over my
 
-I did open a bug against clang though in the hope that they can fix
-the behaviour:
+Tested-by: Reza Arbab <arbab@linux.ibm.com>
 
- https://bugs.llvm.org/show_bug.cgi?id=38945
-
-Cheers,
-
-Joel
+-- 
+Reza Arbab
