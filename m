@@ -1,26 +1,36 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
- [IPv6:2607:f8b0:4864:20::444])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dvhart@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42BnXf4N1FzDrS3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Sep 2018 06:43:14 +1000 (AEST)
-Received: by mail-pf1-x444.google.com with SMTP id p12-v6so4822935pfh.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 13:43:13 -0700 (PDT)
-Date: Sat, 15 Sep 2018 06:43:05 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Nick Desaulniers <ndesaulniers@google.com>
-Cc: joel@jms.id.au, linuxppc-dev@lists.ozlabs.org, Segher Boessenkool
- <segher@kernel.crashing.org>
-Subject: Re: [PATCH v2 5/5] powerpc: Remove -mno-sched-epilog
-Message-ID: <20180915064305.65eea265@roar.ozlabs.ibm.com>
-In-Reply-To: <CAKwvOdn-e60VSvUzmSLGx6yx-wUzSaEtdA3q5xyZ+G_++nQSJg@mail.gmail.com>
-References: <20180914040649.1794-1-joel@jms.id.au>
- <20180914040649.1794-6-joel@jms.id.au>
- <20180914150629.405c12cc@roar.ozlabs.ibm.com>
- <CAKwvOdn-e60VSvUzmSLGx6yx-wUzSaEtdA3q5xyZ+G_++nQSJg@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Bnmk4rCTzF0PM
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Sep 2018 06:53:42 +1000 (AEST)
+Date: Fri, 14 Sep 2018 13:35:06 -0700
+From: Darren Hart <dvhart@infradead.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: viro@zeniv.linux.org.uk, linux-fsdevel@vger.kernel.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "David S. Miller" <davem@davemloft.net>, devel@driverdev.osuosl.org,
+ linux-kernel@vger.kernel.org, qat-linux@intel.com,
+ linux-crypto@vger.kernel.org, linux-media@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linaro-mm-sig@lists.linaro.org,
+ amd-gfx@lists.freedesktop.org, linux-input@vger.kernel.org,
+ linux-iio@vger.kernel.org, linux-rdma@vger.kernel.org,
+ linux-nvdimm@lists.01.org, linux-nvme@lists.infradead.org,
+ linux-pci@vger.kernel.org, platform-driver-x86@vger.kernel.org,
+ linux-remoteproc@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-scsi@vger.kernel.org, linux-usb@vger.kernel.org,
+ linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-btrfs@vger.kernel.org, ceph-devel@vger.kernel.org,
+ linux-wireless@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH v2 05/17] compat_ioctl: move more drivers to
+ generic_compat_ioctl_ptrarg
+Message-ID: <20180914203506.GE35251@wrath>
+References: <20180912150142.157913-1-arnd@arndb.de>
+ <20180912151134.436719-1-arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180912151134.436719-1-arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,39 +40,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 14 Sep 2018 11:03:38 -0700
-Nick Desaulniers <ndesaulniers@google.com> wrote:
-
-> On Thu, Sep 13, 2018 at 9:07 PM Joel Stanley <joel@jms.id.au> wrote:
-> > Last time this was proposed there was an issue reported:
-> >
-> >  https://lists.ozlabs.org/pipermail/linuxppc-dev/2014-September/121214.html  
+On Wed, Sep 12, 2018 at 05:08:52PM +0200, Arnd Bergmann wrote:
+> The .ioctl and .compat_ioctl file operations have the same prototype so
+> they can both point to the same function, which works great almost all
+> the time when all the commands are compatible.
 > 
-> Heh, did PASemi sell boxes? Interesting, I'll have to read up on my history.
+> One exception is the s390 architecture, where a compat pointer is only
+> 31 bit wide, and converting it into a 64-bit pointer requires calling
+> compat_ptr(). Most drivers here will ever run in s390, but since we now
+> have a generic helper for it, it's easy enough to use it consistently.
 > 
-> On Thu, Sep 13, 2018 at 10:06 PM Nicholas Piggin <npiggin@gmail.com> wrote:
-> > I don't think we can remove it completely because up to at least 4.6
-> > maybe 4.8 has problems.
-> >
-> > I have a few patches lying around I started looking at this... I'll
-> > send them.  
+> I double-checked all these drivers to ensure that all ioctl arguments
+> are used as pointers or are ignored, but are not interpreted as integer
+> values.
 > 
-> Yeah, it's too bad the link above doesn't mention gcc version.
-> 
-> The gcc bugreport mentions fixing the bug in
-> 7563dc64585324f443f5ac107eb6d89ee813a2d2, not sure how to check what
-> release version of gcc that is? (Do they tag releases?)
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+...
+>  drivers/platform/x86/wmi.c                  | 2 +-
+...
+>  static void link_event_work(struct work_struct *work)
+> diff --git a/drivers/platform/x86/wmi.c b/drivers/platform/x86/wmi.c
+> index 04791ea5d97b..e4d0697e07d6 100644
+> --- a/drivers/platform/x86/wmi.c
+> +++ b/drivers/platform/x86/wmi.c
+> @@ -886,7 +886,7 @@ static const struct file_operations wmi_fops = {
+>  	.read		= wmi_char_read,
+>  	.open		= wmi_char_open,
+>  	.unlocked_ioctl	= wmi_ioctl,
+> -	.compat_ioctl	= wmi_ioctl,
+> +	.compat_ioctl	= generic_compat_ioctl_ptrarg,
+>  };
 
-I'm not sure, that's not in my gcc tree AFAIKS.
+For platform/drivers/x86:
 
-> 
-> Nick, do you have a test case or more context about this still being
-> an issue in gcc 4.8? (maybe I should wait for your patch series?)
+Acked-by: Darren Hart (VMware) <dvhart@infradead.org>
 
-Sorry I forgot to cc you. This has links to some of the sched
-epilog bugs.
+As for a longer term solution, would it be possible to init fops in such
+a way that the compat_ioctl call defaults to generic_compat_ioctl_ptrarg
+so we don't have to duplicate this boilerplate for every ioctl fops
+structure?
 
-https://marc.info/?l=linuxppc-embedded&m=153690223909654&w=2
-
-Thanks,
-Nick
+-- 
+Darren Hart
+VMware Open Source Technology Center
