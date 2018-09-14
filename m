@@ -1,23 +1,23 @@
 Return-Path: <rppt@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42BZCK5lVwzF3VW
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 22:12:29 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w8EC59xT010003
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 08:12:27 -0400
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2mgamuw77h-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42BZCR3YHRzF3VP
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 22:12:35 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w8EC61hJ001740
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 08:12:33 -0400
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2mgcfxgun2-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 08:12:27 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 08:12:33 -0400
 Received: from localhost
- by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.vnet.ibm.com>;
- Fri, 14 Sep 2018 13:12:24 +0100
+ Fri, 14 Sep 2018 13:12:30 +0100
 From: Mike Rapoport <rppt@linux.vnet.ibm.com>
 To: linux-mm@kvack.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
@@ -52,12 +52,11 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
  openrisc@lists.librecores.org, sparclinux@vger.kernel.org,
  uclinux-h8-devel@lists.sourceforge.jp,
  Mike Rapoport <rppt@linux.vnet.ibm.com>
-Subject: [PATCH 13/30] memblock: replace __alloc_bootmem_nopanic with
- memblock_alloc_from_nopanic
-Date: Fri, 14 Sep 2018 15:10:28 +0300
+Subject: [PATCH 14/30] memblock: add align parameter to memblock_alloc_node()
+Date: Fri, 14 Sep 2018 15:10:29 +0300
 In-Reply-To: <1536927045-23536-1-git-send-email-rppt@linux.vnet.ibm.com>
 References: <1536927045-23536-1-git-send-email-rppt@linux.vnet.ibm.com>
-Message-Id: <1536927045-23536-14-git-send-email-rppt@linux.vnet.ibm.com>
+Message-Id: <1536927045-23536-15-git-send-email-rppt@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -67,56 +66,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When __alloc_bootmem_nopanic() is used with explicit lower limit for the
-allocation it attempts to allocate memory at or above that limit and falls
-back to allocation with no limit set.
-
-The memblock_alloc_from_nopanic() does exactly the same thing and can be
-used as a replacement for __alloc_bootmem_nopanic() is such cases.
+With the align parameter memblock_alloc_node() can be used as drop in
+replacement for alloc_bootmem_pages_node() and __alloc_bootmem_node(),
+which is done in the following patches.
 
 Signed-off-by: Mike Rapoport <rppt@linux.vnet.ibm.com>
-Acked-by: Michal Hocko <mhocko@suse.com>
 ---
- arch/arc/kernel/unwind.c       | 4 ++--
- arch/x86/kernel/setup_percpu.c | 4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ include/linux/bootmem.h | 4 ++--
+ mm/sparse.c             | 2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/arc/kernel/unwind.c b/arch/arc/kernel/unwind.c
-index 183391d..2a01dd1 100644
---- a/arch/arc/kernel/unwind.c
-+++ b/arch/arc/kernel/unwind.c
-@@ -181,8 +181,8 @@ static void init_unwind_hdr(struct unwind_table *table,
-  */
- static void *__init unw_hdr_alloc_early(unsigned long sz)
+diff --git a/include/linux/bootmem.h b/include/linux/bootmem.h
+index 7d91f0f..3896af2 100644
+--- a/include/linux/bootmem.h
++++ b/include/linux/bootmem.h
+@@ -157,9 +157,9 @@ static inline void * __init memblock_alloc_from_nopanic(
+ }
+ 
+ static inline void * __init memblock_alloc_node(
+-						phys_addr_t size, int nid)
++		phys_addr_t size, phys_addr_t align, int nid)
  {
--	return __alloc_bootmem_nopanic(sz, sizeof(unsigned int),
--				       MAX_DMA_ADDRESS);
-+	return memblock_alloc_from_nopanic(sz, sizeof(unsigned int),
-+					   MAX_DMA_ADDRESS);
+-	return memblock_alloc_try_nid(size, 0, BOOTMEM_LOW_LIMIT,
++	return memblock_alloc_try_nid(size, align, BOOTMEM_LOW_LIMIT,
+ 					    BOOTMEM_ALLOC_ACCESSIBLE, nid);
  }
  
- static void *unw_hdr_alloc(unsigned long sz)
-diff --git a/arch/x86/kernel/setup_percpu.c b/arch/x86/kernel/setup_percpu.c
-index 67d48e26..041663a 100644
---- a/arch/x86/kernel/setup_percpu.c
-+++ b/arch/x86/kernel/setup_percpu.c
-@@ -106,7 +106,7 @@ static void * __init pcpu_alloc_bootmem(unsigned int cpu, unsigned long size,
- 	void *ptr;
+diff --git a/mm/sparse.c b/mm/sparse.c
+index 04e97af..509828f 100644
+--- a/mm/sparse.c
++++ b/mm/sparse.c
+@@ -68,7 +68,7 @@ static noinline struct mem_section __ref *sparse_index_alloc(int nid)
+ 	if (slab_is_available())
+ 		section = kzalloc_node(array_size, GFP_KERNEL, nid);
+ 	else
+-		section = memblock_alloc_node(array_size, nid);
++		section = memblock_alloc_node(array_size, 0, nid);
  
- 	if (!node_online(node) || !NODE_DATA(node)) {
--		ptr = __alloc_bootmem_nopanic(size, align, goal);
-+		ptr = memblock_alloc_from_nopanic(size, align, goal);
- 		pr_info("cpu %d has no node %d or node-local memory\n",
- 			cpu, node);
- 		pr_debug("per cpu data for cpu%d %lu bytes at %016lx\n",
-@@ -121,7 +121,7 @@ static void * __init pcpu_alloc_bootmem(unsigned int cpu, unsigned long size,
- 	}
- 	return ptr;
- #else
--	return __alloc_bootmem_nopanic(size, align, goal);
-+	return memblock_alloc_from_nopanic(size, align, goal);
- #endif
+ 	return section;
  }
- 
 -- 
 2.7.4
