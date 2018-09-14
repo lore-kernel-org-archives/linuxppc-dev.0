@@ -3,19 +3,18 @@ Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
  [IPv6:2607:f8b0:4864:20::444])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42BMRn2TPyzF3Tv
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 14:07:33 +1000 (AEST)
-Received: by mail-pf1-x444.google.com with SMTP id k19-v6so3665066pfi.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2018 21:07:33 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42BMRw4wsDzF3TZ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 14:07:40 +1000 (AEST)
+Received: by mail-pf1-x444.google.com with SMTP id i26-v6so3634179pfo.12
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2018 21:07:40 -0700 (PDT)
 Sender: "joel.stan@gmail.com" <joel.stan@gmail.com>
 From: Joel Stanley <joel@jms.id.au>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: Anton Blanchard <anton@samba.org>, Anton Blanchard <anton@ozlabs.org>,
+Cc: Anton Blanchard <anton@ozlabs.org>,
  Nick Desaulniers <ndesaulniers@google.com>
-Subject: [PATCH v2 4/5] powerpc: Fix duplicate const clang warning in user
- access code
-Date: Fri, 14 Sep 2018 13:36:48 +0930
-Message-Id: <20180914040649.1794-5-joel@jms.id.au>
+Subject: [PATCH v2 5/5] powerpc: Remove -mno-sched-epilog
+Date: Fri, 14 Sep 2018 13:36:49 +0930
+Message-Id: <20180914040649.1794-6-joel@jms.id.au>
 In-Reply-To: <20180914040649.1794-1-joel@jms.id.au>
 References: <20180914040649.1794-1-joel@jms.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,64 +26,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Anton Blanchard <anton@samba.org>
+This effectively reverts 7563dc645853 ("powerpc: Work around gcc's
+-fno-omit-frame-pointer bug"), a workaround for a bug in GCC 4.1.3 when
+building 2.6.26 kernel.
 
-This re-applies b91c1e3e7a6f which was reverted in f2ca80905929
-d466f6c5cac1 f84ed59a612d (powerpc/sparse: Constify the address pointer
-...").
+The flag is not supported by clang, but reading the history of the
+bug[1] suggests it is no longer required by supported GCC versions, with
+GCC 4.6 now being the minimum.
 
-We see a large number of duplicate const errors in the user access
-code when building with llvm/clang:
-
-  include/linux/pagemap.h:576:8: warning: duplicate 'const' declaration specifier
-      [-Wduplicate-decl-specifier]
-        ret = __get_user(c, uaddr);
-
-The problem is we are doing const __typeof__(*(ptr)), which will hit the
-warning if ptr is marked const.
-
-Removing const does not seem to have any effect on GCC code generation.
-
-Signed-off-by: Anton Blanchard <anton@samba.org>
+[1] https://bugzilla.kernel.org/show_bug.cgi?id=11414
 Signed-off-by: Joel Stanley <joel@jms.id.au>
 ---
-If we don't want to apply this, other options are suppressing the
-warning, or wait for a fix to land in clang
-(https://github.com/ClangBuiltLinux/linux/issues/52).
----
- arch/powerpc/include/asm/uaccess.h | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+Last time this was proposed there was an issue reported:
 
-diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
-index bac225bb7f64..15bea9a0f260 100644
---- a/arch/powerpc/include/asm/uaccess.h
-+++ b/arch/powerpc/include/asm/uaccess.h
-@@ -260,7 +260,7 @@ do {								\
- ({								\
- 	long __gu_err;						\
- 	__long_type(*(ptr)) __gu_val;				\
--	const __typeof__(*(ptr)) __user *__gu_addr = (ptr);	\
-+	__typeof__(*(ptr)) __user *__gu_addr = (ptr);	\
- 	__chk_user_ptr(ptr);					\
- 	if (!is_kernel_addr((unsigned long)__gu_addr))		\
- 		might_fault();					\
-@@ -274,7 +274,7 @@ do {								\
- ({									\
- 	long __gu_err = -EFAULT;					\
- 	__long_type(*(ptr)) __gu_val = 0;				\
--	const __typeof__(*(ptr)) __user *__gu_addr = (ptr);		\
-+	__typeof__(*(ptr)) __user *__gu_addr = (ptr);		\
- 	might_fault();							\
- 	if (access_ok(VERIFY_READ, __gu_addr, (size))) {		\
- 		barrier_nospec();					\
-@@ -288,7 +288,7 @@ do {								\
- ({								\
- 	long __gu_err;						\
- 	__long_type(*(ptr)) __gu_val;				\
--	const __typeof__(*(ptr)) __user *__gu_addr = (ptr);	\
-+	__typeof__(*(ptr)) __user *__gu_addr = (ptr);	\
- 	__chk_user_ptr(ptr);					\
- 	barrier_nospec();					\
- 	__get_user_size(__gu_val, __gu_addr, (size), __gu_err);	\
+ https://lists.ozlabs.org/pipermail/linuxppc-dev/2014-September/121214.html
+
+If some machines still have an issue, we could instead wrap this in a
+flag check.
+---
+ arch/powerpc/Makefile                    | 5 -----
+ arch/powerpc/kernel/Makefile             | 8 ++++----
+ arch/powerpc/kernel/trace/Makefile       | 2 +-
+ arch/powerpc/platforms/powermac/Makefile | 2 +-
+ arch/powerpc/xmon/Makefile               | 2 +-
+ 5 files changed, 7 insertions(+), 12 deletions(-)
+
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index a70639482053..ef8eca40ffef 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -229,11 +229,6 @@ ifdef CONFIG_6xx
+ KBUILD_CFLAGS		+= -mcpu=powerpc
+ endif
+ 
+-# Work around a gcc code-gen bug with -fno-omit-frame-pointer.
+-ifdef CONFIG_FUNCTION_TRACER
+-KBUILD_CFLAGS		+= -mno-sched-epilog
+-endif
+-
+ cpu-as-$(CONFIG_4xx)		+= -Wa,-m405
+ cpu-as-$(CONFIG_ALTIVEC)	+= $(call as-option,-Wa$(comma)-maltivec)
+ cpu-as-$(CONFIG_E200)		+= -Wa,-me200
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 3b66f2c19c84..1e64cfe22a83 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -22,10 +22,10 @@ CFLAGS_prom.o += $(DISABLE_LATENT_ENTROPY_PLUGIN)
+ 
+ ifdef CONFIG_FUNCTION_TRACER
+ # Do not trace early boot code
+-CFLAGS_REMOVE_cputable.o = -mno-sched-epilog $(CC_FLAGS_FTRACE)
+-CFLAGS_REMOVE_prom_init.o = -mno-sched-epilog $(CC_FLAGS_FTRACE)
+-CFLAGS_REMOVE_btext.o = -mno-sched-epilog $(CC_FLAGS_FTRACE)
+-CFLAGS_REMOVE_prom.o = -mno-sched-epilog $(CC_FLAGS_FTRACE)
++CFLAGS_REMOVE_cputable.o = $(CC_FLAGS_FTRACE)
++CFLAGS_REMOVE_prom_init.o = $(CC_FLAGS_FTRACE)
++CFLAGS_REMOVE_btext.o = $(CC_FLAGS_FTRACE)
++CFLAGS_REMOVE_prom.o = $(CC_FLAGS_FTRACE)
+ endif
+ 
+ obj-y				:= cputable.o ptrace.o syscalls.o \
+diff --git a/arch/powerpc/kernel/trace/Makefile b/arch/powerpc/kernel/trace/Makefile
+index d22d8bafb643..d868ba42032f 100644
+--- a/arch/powerpc/kernel/trace/Makefile
++++ b/arch/powerpc/kernel/trace/Makefile
+@@ -7,7 +7,7 @@ subdir-ccflags-$(CONFIG_PPC_WERROR)	:= -Werror
+ 
+ ifdef CONFIG_FUNCTION_TRACER
+ # do not trace tracer code
+-CFLAGS_REMOVE_ftrace.o = -mno-sched-epilog $(CC_FLAGS_FTRACE)
++CFLAGS_REMOVE_ftrace.o = $(CC_FLAGS_FTRACE)
+ endif
+ 
+ obj32-$(CONFIG_FUNCTION_TRACER)		+= ftrace_32.o
+diff --git a/arch/powerpc/platforms/powermac/Makefile b/arch/powerpc/platforms/powermac/Makefile
+index f2839eed0f89..561a67d65e4d 100644
+--- a/arch/powerpc/platforms/powermac/Makefile
++++ b/arch/powerpc/platforms/powermac/Makefile
+@@ -3,7 +3,7 @@ CFLAGS_bootx_init.o  		+= -fPIC
+ 
+ ifdef CONFIG_FUNCTION_TRACER
+ # Do not trace early boot code
+-CFLAGS_REMOVE_bootx_init.o = -mno-sched-epilog $(CC_FLAGS_FTRACE)
++CFLAGS_REMOVE_bootx_init.o = $(CC_FLAGS_FTRACE)
+ endif
+ 
+ obj-y				+= pic.o setup.o time.o feature.o pci.o \
+diff --git a/arch/powerpc/xmon/Makefile b/arch/powerpc/xmon/Makefile
+index 1bc3abb237cd..93cc1f1b8b61 100644
+--- a/arch/powerpc/xmon/Makefile
++++ b/arch/powerpc/xmon/Makefile
+@@ -8,7 +8,7 @@ UBSAN_SANITIZE := n
+ 
+ # Disable ftrace for the entire directory
+ ORIG_CFLAGS := $(KBUILD_CFLAGS)
+-KBUILD_CFLAGS = $(subst -mno-sched-epilog,,$(subst $(CC_FLAGS_FTRACE),,$(ORIG_CFLAGS)))
++KBUILD_CFLAGS = $(subst $(CC_FLAGS_FTRACE),,$(ORIG_CFLAGS))
+ 
+ ccflags-$(CONFIG_PPC64) := $(NO_MINIMAL_TOC)
+ 
 -- 
 2.17.1
