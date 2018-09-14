@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42BZDs5nJ9zF3VG
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 22:13:49 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w8EC58O4009984
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 08:13:46 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2mgamuw8r4-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42BZDx6WR6zF3Tj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 22:13:53 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w8EC4Y4R096377
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 08:13:51 -0400
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2mgay24xy6-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 08:13:46 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 08:13:51 -0400
 Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.vnet.ibm.com>;
- Fri, 14 Sep 2018 13:13:42 +0100
+ Fri, 14 Sep 2018 13:13:48 +0100
 From: Mike Rapoport <rppt@linux.vnet.ibm.com>
 To: linux-mm@kvack.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
@@ -52,12 +52,11 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
  openrisc@lists.librecores.org, sparclinux@vger.kernel.org,
  uclinux-h8-devel@lists.sourceforge.jp,
  Mike Rapoport <rppt@linux.vnet.ibm.com>
-Subject: [PATCH 26/30] memblock: rename __free_pages_bootmem to
- memblock_free_pages
-Date: Fri, 14 Sep 2018 15:10:41 +0300
+Subject: [PATCH 27/30] mm: remove nobootmem
+Date: Fri, 14 Sep 2018 15:10:42 +0300
 In-Reply-To: <1536927045-23536-1-git-send-email-rppt@linux.vnet.ibm.com>
 References: <1536927045-23536-1-git-send-email-rppt@linux.vnet.ibm.com>
-Message-Id: <1536927045-23536-27-git-send-email-rppt@linux.vnet.ibm.com>
+Message-Id: <1536927045-23536-28-git-send-email-rppt@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -67,71 +66,285 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The conversion is done using
-
-sed -i 's@__free_pages_bootmem@memblock_free_pages@' \
-    $(git grep -l __free_pages_bootmem)
+Move a few remaining functions from nobootmem.c to memblock.c and remove
+nobootmem
 
 Signed-off-by: Mike Rapoport <rppt@linux.vnet.ibm.com>
 Acked-by: Michal Hocko <mhocko@suse.com>
 ---
- mm/internal.h   | 2 +-
- mm/memblock.c   | 2 +-
- mm/nobootmem.c  | 2 +-
- mm/page_alloc.c | 2 +-
- 4 files changed, 4 insertions(+), 4 deletions(-)
+ mm/Makefile    |   1 -
+ mm/memblock.c  | 104 ++++++++++++++++++++++++++++++++++++++++++++++
+ mm/nobootmem.c | 128 ---------------------------------------------------------
+ 3 files changed, 104 insertions(+), 129 deletions(-)
+ delete mode 100644 mm/nobootmem.c
 
-diff --git a/mm/internal.h b/mm/internal.h
-index 87256ae..291eb2b 100644
---- a/mm/internal.h
-+++ b/mm/internal.h
-@@ -161,7 +161,7 @@ static inline struct page *pageblock_pfn_to_page(unsigned long start_pfn,
- }
+diff --git a/mm/Makefile b/mm/Makefile
+index ca3c844..d210cc9 100644
+--- a/mm/Makefile
++++ b/mm/Makefile
+@@ -42,7 +42,6 @@ obj-y			:= filemap.o mempool.o oom_kill.o fadvise.o \
+ 			   debug.o $(mmu-y)
  
- extern int __isolate_free_page(struct page *page, unsigned int order);
--extern void __free_pages_bootmem(struct page *page, unsigned long pfn,
-+extern void memblock_free_pages(struct page *page, unsigned long pfn,
- 					unsigned int order);
- extern void prep_compound_page(struct page *page, unsigned int order);
- extern void post_alloc_hook(struct page *page, unsigned int order,
+ obj-y += init-mm.o
+-obj-y += nobootmem.o
+ obj-y += memblock.o
+ 
+ ifdef CONFIG_MMU
 diff --git a/mm/memblock.c b/mm/memblock.c
-index 1534edb..a2cd61d 100644
+index a2cd61d..4591f38 100644
 --- a/mm/memblock.c
 +++ b/mm/memblock.c
-@@ -1615,7 +1615,7 @@ void __init __memblock_free_late(phys_addr_t base, phys_addr_t size)
- 	end = PFN_DOWN(base + size);
+@@ -82,6 +82,16 @@
+  * initialization compltes.
+  */
  
- 	for (; cursor < end; cursor++) {
--		__free_pages_bootmem(pfn_to_page(cursor), cursor, 0);
-+		memblock_free_pages(pfn_to_page(cursor), cursor, 0);
- 		totalram_pages++;
- 	}
++#ifndef CONFIG_NEED_MULTIPLE_NODES
++struct pglist_data __refdata contig_page_data;
++EXPORT_SYMBOL(contig_page_data);
++#endif
++
++unsigned long max_low_pfn;
++unsigned long min_low_pfn;
++unsigned long max_pfn;
++unsigned long long max_possible_pfn;
++
+ static struct memblock_region memblock_memory_init_regions[INIT_MEMBLOCK_REGIONS] __initdata_memblock;
+ static struct memblock_region memblock_reserved_init_regions[INIT_MEMBLOCK_REGIONS] __initdata_memblock;
+ #ifdef CONFIG_HAVE_MEMBLOCK_PHYS_MAP
+@@ -1929,6 +1939,100 @@ static int __init early_memblock(char *p)
  }
-diff --git a/mm/nobootmem.c b/mm/nobootmem.c
-index bb64b09..9608bc5 100644
---- a/mm/nobootmem.c
-+++ b/mm/nobootmem.c
-@@ -43,7 +43,7 @@ static void __init __free_pages_memory(unsigned long start, unsigned long end)
- 		while (start + (1UL << order) > end)
- 			order--;
+ early_param("memblock", early_memblock);
  
--		__free_pages_bootmem(pfn_to_page(start), start, order);
++static void __init __free_pages_memory(unsigned long start, unsigned long end)
++{
++	int order;
++
++	while (start < end) {
++		order = min(MAX_ORDER - 1UL, __ffs(start));
++
++		while (start + (1UL << order) > end)
++			order--;
++
 +		memblock_free_pages(pfn_to_page(start), start, order);
++
++		start += (1UL << order);
++	}
++}
++
++static unsigned long __init __free_memory_core(phys_addr_t start,
++				 phys_addr_t end)
++{
++	unsigned long start_pfn = PFN_UP(start);
++	unsigned long end_pfn = min_t(unsigned long,
++				      PFN_DOWN(end), max_low_pfn);
++
++	if (start_pfn >= end_pfn)
++		return 0;
++
++	__free_pages_memory(start_pfn, end_pfn);
++
++	return end_pfn - start_pfn;
++}
++
++static unsigned long __init free_low_memory_core_early(void)
++{
++	unsigned long count = 0;
++	phys_addr_t start, end;
++	u64 i;
++
++	memblock_clear_hotplug(0, -1);
++
++	for_each_reserved_mem_region(i, &start, &end)
++		reserve_bootmem_region(start, end);
++
++	/*
++	 * We need to use NUMA_NO_NODE instead of NODE_DATA(0)->node_id
++	 *  because in some case like Node0 doesn't have RAM installed
++	 *  low ram will be on Node1
++	 */
++	for_each_free_mem_range(i, NUMA_NO_NODE, MEMBLOCK_NONE, &start, &end,
++				NULL)
++		count += __free_memory_core(start, end);
++
++	return count;
++}
++
++static int reset_managed_pages_done __initdata;
++
++void reset_node_managed_pages(pg_data_t *pgdat)
++{
++	struct zone *z;
++
++	for (z = pgdat->node_zones; z < pgdat->node_zones + MAX_NR_ZONES; z++)
++		z->managed_pages = 0;
++}
++
++void __init reset_all_zones_managed_pages(void)
++{
++	struct pglist_data *pgdat;
++
++	if (reset_managed_pages_done)
++		return;
++
++	for_each_online_pgdat(pgdat)
++		reset_node_managed_pages(pgdat);
++
++	reset_managed_pages_done = 1;
++}
++
++/**
++ * memblock_free_all - release free pages to the buddy allocator
++ *
++ * Return: the number of pages actually released.
++ */
++unsigned long __init memblock_free_all(void)
++{
++	unsigned long pages;
++
++	reset_all_zones_managed_pages();
++
++	pages = free_low_memory_core_early();
++	totalram_pages += pages;
++
++	return pages;
++}
++
+ #if defined(CONFIG_DEBUG_FS) && !defined(CONFIG_ARCH_DISCARD_MEMBLOCK)
  
- 		start += (1UL << order);
- 	}
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 13e394c..f4a8bc8 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -1334,7 +1334,7 @@ meminit_pfn_in_nid(unsigned long pfn, int node,
- #endif
- 
- 
--void __init __free_pages_bootmem(struct page *page, unsigned long pfn,
-+void __init memblock_free_pages(struct page *page, unsigned long pfn,
- 							unsigned int order)
- {
- 	if (early_page_uninitialised(pfn))
+ static int memblock_debug_show(struct seq_file *m, void *private)
+diff --git a/mm/nobootmem.c b/mm/nobootmem.c
+deleted file mode 100644
+index 9608bc5..0000000
+--- a/mm/nobootmem.c
++++ /dev/null
+@@ -1,128 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0
+-/*
+- *  bootmem - A boot-time physical memory allocator and configurator
+- *
+- *  Copyright (C) 1999 Ingo Molnar
+- *                1999 Kanoj Sarcar, SGI
+- *                2008 Johannes Weiner
+- *
+- * Access to this subsystem has to be serialized externally (which is true
+- * for the boot process anyway).
+- */
+-#include <linux/init.h>
+-#include <linux/pfn.h>
+-#include <linux/slab.h>
+-#include <linux/export.h>
+-#include <linux/kmemleak.h>
+-#include <linux/range.h>
+-#include <linux/memblock.h>
+-#include <linux/bootmem.h>
+-
+-#include <asm/bug.h>
+-#include <asm/io.h>
+-
+-#include "internal.h"
+-
+-#ifndef CONFIG_NEED_MULTIPLE_NODES
+-struct pglist_data __refdata contig_page_data;
+-EXPORT_SYMBOL(contig_page_data);
+-#endif
+-
+-unsigned long max_low_pfn;
+-unsigned long min_low_pfn;
+-unsigned long max_pfn;
+-unsigned long long max_possible_pfn;
+-
+-static void __init __free_pages_memory(unsigned long start, unsigned long end)
+-{
+-	int order;
+-
+-	while (start < end) {
+-		order = min(MAX_ORDER - 1UL, __ffs(start));
+-
+-		while (start + (1UL << order) > end)
+-			order--;
+-
+-		memblock_free_pages(pfn_to_page(start), start, order);
+-
+-		start += (1UL << order);
+-	}
+-}
+-
+-static unsigned long __init __free_memory_core(phys_addr_t start,
+-				 phys_addr_t end)
+-{
+-	unsigned long start_pfn = PFN_UP(start);
+-	unsigned long end_pfn = min_t(unsigned long,
+-				      PFN_DOWN(end), max_low_pfn);
+-
+-	if (start_pfn >= end_pfn)
+-		return 0;
+-
+-	__free_pages_memory(start_pfn, end_pfn);
+-
+-	return end_pfn - start_pfn;
+-}
+-
+-static unsigned long __init free_low_memory_core_early(void)
+-{
+-	unsigned long count = 0;
+-	phys_addr_t start, end;
+-	u64 i;
+-
+-	memblock_clear_hotplug(0, -1);
+-
+-	for_each_reserved_mem_region(i, &start, &end)
+-		reserve_bootmem_region(start, end);
+-
+-	/*
+-	 * We need to use NUMA_NO_NODE instead of NODE_DATA(0)->node_id
+-	 *  because in some case like Node0 doesn't have RAM installed
+-	 *  low ram will be on Node1
+-	 */
+-	for_each_free_mem_range(i, NUMA_NO_NODE, MEMBLOCK_NONE, &start, &end,
+-				NULL)
+-		count += __free_memory_core(start, end);
+-
+-	return count;
+-}
+-
+-static int reset_managed_pages_done __initdata;
+-
+-void reset_node_managed_pages(pg_data_t *pgdat)
+-{
+-	struct zone *z;
+-
+-	for (z = pgdat->node_zones; z < pgdat->node_zones + MAX_NR_ZONES; z++)
+-		z->managed_pages = 0;
+-}
+-
+-void __init reset_all_zones_managed_pages(void)
+-{
+-	struct pglist_data *pgdat;
+-
+-	if (reset_managed_pages_done)
+-		return;
+-
+-	for_each_online_pgdat(pgdat)
+-		reset_node_managed_pages(pgdat);
+-
+-	reset_managed_pages_done = 1;
+-}
+-
+-/**
+- * memblock_free_all - release free pages to the buddy allocator
+- *
+- * Return: the number of pages actually released.
+- */
+-unsigned long __init memblock_free_all(void)
+-{
+-	unsigned long pages;
+-
+-	reset_all_zones_managed_pages();
+-
+-	pages = free_low_memory_core_early();
+-	totalram_pages += pages;
+-
+-	return pages;
+-}
 -- 
 2.7.4
