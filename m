@@ -1,20 +1,20 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
- [IPv6:2607:f8b0:4864:20::544])
+Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
+ [IPv6:2607:f8b0:4864:20::543])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Bfd16DNyzF3XG
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Sep 2018 01:31:33 +1000 (AEST)
-Received: by mail-pg1-x544.google.com with SMTP id b129-v6so4558091pga.13
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 08:31:33 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Bfd45kGrzF3XK
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Sep 2018 01:31:36 +1000 (AEST)
+Received: by mail-pg1-x543.google.com with SMTP id i190-v6so4573382pgc.6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 08:31:36 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>,
  "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>
-Subject: [PATCH 10/12] powerpc/64s: xmon do not dump hash fields when using
- radix mode
-Date: Sat, 15 Sep 2018 01:30:54 +1000
-Message-Id: <20180914153056.3644-11-npiggin@gmail.com>
+Subject: [PATCH 11/12] powerpc/64s/hash: provide arch_setup_exec hooks for
+ hash slice setup
+Date: Sat, 15 Sep 2018 01:30:55 +1000
+Message-Id: <20180914153056.3644-12-npiggin@gmail.com>
 In-Reply-To: <20180914153056.3644-1-npiggin@gmail.com>
 References: <20180914153056.3644-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,66 +26,121 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This will be used by the SLB code in the next patch, but for now this
+sets the slb_addr_limit to the correct size for 32-bit tasks.
+
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/xmon/xmon.c | 40 +++++++++++++++++++++-------------------
- 1 file changed, 21 insertions(+), 19 deletions(-)
+ arch/powerpc/include/asm/book3s/64/mmu-hash.h |  2 ++
+ arch/powerpc/include/asm/slice.h              |  1 +
+ arch/powerpc/include/asm/thread_info.h        |  6 ++++++
+ arch/powerpc/kernel/process.c                 |  9 +++++++++
+ arch/powerpc/mm/mmu_context_book3s64.c        |  5 +++++
+ arch/powerpc/mm/slice.c                       | 14 ++++++++++++++
+ 6 files changed, 37 insertions(+)
 
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index 323aac8321fa..5dec84aba59e 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -2378,30 +2378,32 @@ static void dump_one_paca(int cpu)
- 	DUMP(p, cpu_start, "%#-*x");
- 	DUMP(p, kexec_state, "%#-*x");
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+index 4c8d413ce99a..fc68058554fa 100644
+--- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
++++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+@@ -487,6 +487,8 @@ int htab_remove_mapping(unsigned long vstart, unsigned long vend,
+ extern void pseries_add_gpage(u64 addr, u64 page_size, unsigned long number_of_pages);
+ extern void demote_segment_4k(struct mm_struct *mm, unsigned long addr);
+ 
++extern void hash__setup_new_exec(void);
++
+ #ifdef CONFIG_PPC_PSERIES
+ void hpte_init_pseries(void);
+ #else
+diff --git a/arch/powerpc/include/asm/slice.h b/arch/powerpc/include/asm/slice.h
+index e40406cf5628..a595461c9cb0 100644
+--- a/arch/powerpc/include/asm/slice.h
++++ b/arch/powerpc/include/asm/slice.h
+@@ -32,6 +32,7 @@ void slice_set_range_psize(struct mm_struct *mm, unsigned long start,
+ 			   unsigned long len, unsigned int psize);
+ 
+ void slice_init_new_context_exec(struct mm_struct *mm);
++void slice_setup_new_exec(void);
+ 
+ #endif /* __ASSEMBLY__ */
+ 
+diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
+index 3c0002044bc9..f9a442bb5a72 100644
+--- a/arch/powerpc/include/asm/thread_info.h
++++ b/arch/powerpc/include/asm/thread_info.h
+@@ -72,6 +72,12 @@ static inline struct thread_info *current_thread_info(void)
+ }
+ 
+ extern int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src);
++
++#ifdef CONFIG_PPC_BOOK3S_64
++void arch_setup_new_exec(void);
++#define arch_setup_new_exec arch_setup_new_exec
++#endif
++
+ #endif /* __ASSEMBLY__ */
+ 
+ /*
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 913c5725cdb2..e4feb45ae4c6 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -1482,6 +1482,15 @@ void flush_thread(void)
+ #endif /* CONFIG_HAVE_HW_BREAKPOINT */
+ }
+ 
++#ifdef CONFIG_PPC_BOOK3S_64
++void arch_setup_new_exec(void)
++{
++	if (radix_enabled())
++		return;
++	hash__setup_new_exec();
++}
++#endif
++
+ int set_thread_uses_vas(void)
+ {
  #ifdef CONFIG_PPC_BOOK3S_64
--	for (i = 0; i < SLB_NUM_BOLTED; i++) {
--		u64 esid, vsid;
-+	if (!early_radix_enabled()) {
-+		for (i = 0; i < SLB_NUM_BOLTED; i++) {
-+			u64 esid, vsid;
+diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/mmu_context_book3s64.c
+index dbd8f762140b..f7352c66b6b8 100644
+--- a/arch/powerpc/mm/mmu_context_book3s64.c
++++ b/arch/powerpc/mm/mmu_context_book3s64.c
+@@ -84,6 +84,11 @@ static int hash__init_new_context(struct mm_struct *mm)
+ 	return index;
+ }
  
--		if (!p->slb_shadow_ptr)
--			continue;
-+			if (!p->slb_shadow_ptr)
-+				continue;
++void hash__setup_new_exec(void)
++{
++	slice_setup_new_exec();
++}
++
+ static int radix__init_new_context(struct mm_struct *mm)
+ {
+ 	unsigned long rts_field;
+diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
+index 606f424aac47..fc5b3a1ec666 100644
+--- a/arch/powerpc/mm/slice.c
++++ b/arch/powerpc/mm/slice.c
+@@ -746,6 +746,20 @@ void slice_init_new_context_exec(struct mm_struct *mm)
+ 		bitmap_fill(mask->high_slices, SLICE_NUM_HIGH);
+ }
  
--		esid = be64_to_cpu(p->slb_shadow_ptr->save_area[i].esid);
--		vsid = be64_to_cpu(p->slb_shadow_ptr->save_area[i].vsid);
-+			esid = be64_to_cpu(p->slb_shadow_ptr->save_area[i].esid);
-+			vsid = be64_to_cpu(p->slb_shadow_ptr->save_area[i].vsid);
- 
--		if (esid || vsid) {
--			printf(" %-*s[%d] = 0x%016llx 0x%016llx\n",
--			       22, "slb_shadow", i, esid, vsid);
-+			if (esid || vsid) {
-+				printf(" %-*s[%d] = 0x%016llx 0x%016llx\n",
-+				       22, "slb_shadow", i, esid, vsid);
-+			}
- 		}
--	}
--	DUMP(p, vmalloc_sllp, "%#-*x");
--	DUMP(p, stab_rr, "%#-*x");
--	DUMP(p, slb_used_bitmap, "%#-*x");
--	DUMP(p, slb_kern_bitmap, "%#-*x");
-+		DUMP(p, vmalloc_sllp, "%#-*x");
-+		DUMP(p, stab_rr, "%#-*x");
-+		DUMP(p, slb_used_bitmap, "%#-*x");
-+		DUMP(p, slb_kern_bitmap, "%#-*x");
- 
--	if (!early_cpu_has_feature(CPU_FTR_ARCH_300)) {
--		DUMP(p, slb_cache_ptr, "%#-*x");
--		for (i = 0; i < SLB_CACHE_ENTRIES; i++)
--			printf(" %-*s[%d] = 0x%016x\n",
--			       22, "slb_cache", i, p->slb_cache[i]);
-+		if (!early_cpu_has_feature(CPU_FTR_ARCH_300)) {
-+			DUMP(p, slb_cache_ptr, "%#-*x");
-+			for (i = 0; i < SLB_CACHE_ENTRIES; i++)
-+				printf(" %-*s[%d] = 0x%016x\n",
-+				       22, "slb_cache", i, p->slb_cache[i]);
-+		}
- 	}
- 
- 	DUMP(p, rfi_flush_fallback_area, "%-*px");
++#ifdef CONFIG_PPC_BOOK3S_64
++void slice_setup_new_exec(void)
++{
++	struct mm_struct *mm = current->mm;
++
++	slice_dbg("slice_setup_new_exec(mm=%p)\n", mm);
++
++	if (!is_32bit_task())
++		return;
++
++	mm->context.slb_addr_limit = DEFAULT_MAP_WINDOW;
++}
++#endif
++
+ void slice_set_range_psize(struct mm_struct *mm, unsigned long start,
+ 			   unsigned long len, unsigned int psize)
+ {
 -- 
 2.18.0
