@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42BZCR3YHRzF3VP
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 22:12:35 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42BZCZ2pxbzF3VL
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 22:12:42 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w8EC61hJ001740
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 08:12:33 -0400
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2mgcfxgun2-1
+ w8EC5NSQ047936
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 08:12:40 -0400
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2mgak1wxbn-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 08:12:33 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 08:12:40 -0400
 Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.vnet.ibm.com>;
- Fri, 14 Sep 2018 13:12:30 +0100
+ Fri, 14 Sep 2018 13:12:35 +0100
 From: Mike Rapoport <rppt@linux.vnet.ibm.com>
 To: linux-mm@kvack.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
@@ -52,11 +52,12 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
  openrisc@lists.librecores.org, sparclinux@vger.kernel.org,
  uclinux-h8-devel@lists.sourceforge.jp,
  Mike Rapoport <rppt@linux.vnet.ibm.com>
-Subject: [PATCH 14/30] memblock: add align parameter to memblock_alloc_node()
-Date: Fri, 14 Sep 2018 15:10:29 +0300
+Subject: [PATCH 15/30] memblock: replace alloc_bootmem_pages_node with
+ memblock_alloc_node
+Date: Fri, 14 Sep 2018 15:10:30 +0300
 In-Reply-To: <1536927045-23536-1-git-send-email-rppt@linux.vnet.ibm.com>
 References: <1536927045-23536-1-git-send-email-rppt@linux.vnet.ibm.com>
-Message-Id: <1536927045-23536-15-git-send-email-rppt@linux.vnet.ibm.com>
+Message-Id: <1536927045-23536-16-git-send-email-rppt@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -66,44 +67,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With the align parameter memblock_alloc_node() can be used as drop in
-replacement for alloc_bootmem_pages_node() and __alloc_bootmem_node(),
-which is done in the following patches.
+The functions are equivalent, just the later does not require nobootmem
+translation layer.
 
 Signed-off-by: Mike Rapoport <rppt@linux.vnet.ibm.com>
+Acked-by: Michal Hocko <mhocko@suse.com>
 ---
- include/linux/bootmem.h | 4 ++--
- mm/sparse.c             | 2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ arch/ia64/mm/init.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/include/linux/bootmem.h b/include/linux/bootmem.h
-index 7d91f0f..3896af2 100644
---- a/include/linux/bootmem.h
-+++ b/include/linux/bootmem.h
-@@ -157,9 +157,9 @@ static inline void * __init memblock_alloc_from_nopanic(
- }
+diff --git a/arch/ia64/mm/init.c b/arch/ia64/mm/init.c
+index 3b85c3e..2169ca5 100644
+--- a/arch/ia64/mm/init.c
++++ b/arch/ia64/mm/init.c
+@@ -447,19 +447,19 @@ int __init create_mem_map_page_table(u64 start, u64 end, void *arg)
+ 	for (address = start_page; address < end_page; address += PAGE_SIZE) {
+ 		pgd = pgd_offset_k(address);
+ 		if (pgd_none(*pgd))
+-			pgd_populate(&init_mm, pgd, alloc_bootmem_pages_node(NODE_DATA(node), PAGE_SIZE));
++			pgd_populate(&init_mm, pgd, memblock_alloc_node(PAGE_SIZE, PAGE_SIZE, node));
+ 		pud = pud_offset(pgd, address);
  
- static inline void * __init memblock_alloc_node(
--						phys_addr_t size, int nid)
-+		phys_addr_t size, phys_addr_t align, int nid)
- {
--	return memblock_alloc_try_nid(size, 0, BOOTMEM_LOW_LIMIT,
-+	return memblock_alloc_try_nid(size, align, BOOTMEM_LOW_LIMIT,
- 					    BOOTMEM_ALLOC_ACCESSIBLE, nid);
- }
+ 		if (pud_none(*pud))
+-			pud_populate(&init_mm, pud, alloc_bootmem_pages_node(NODE_DATA(node), PAGE_SIZE));
++			pud_populate(&init_mm, pud, memblock_alloc_node(PAGE_SIZE, PAGE_SIZE, node));
+ 		pmd = pmd_offset(pud, address);
  
-diff --git a/mm/sparse.c b/mm/sparse.c
-index 04e97af..509828f 100644
---- a/mm/sparse.c
-+++ b/mm/sparse.c
-@@ -68,7 +68,7 @@ static noinline struct mem_section __ref *sparse_index_alloc(int nid)
- 	if (slab_is_available())
- 		section = kzalloc_node(array_size, GFP_KERNEL, nid);
- 	else
--		section = memblock_alloc_node(array_size, nid);
-+		section = memblock_alloc_node(array_size, 0, nid);
+ 		if (pmd_none(*pmd))
+-			pmd_populate_kernel(&init_mm, pmd, alloc_bootmem_pages_node(NODE_DATA(node), PAGE_SIZE));
++			pmd_populate_kernel(&init_mm, pmd, memblock_alloc_node(PAGE_SIZE, PAGE_SIZE, node));
+ 		pte = pte_offset_kernel(pmd, address);
  
- 	return section;
- }
+ 		if (pte_none(*pte))
+-			set_pte(pte, pfn_pte(__pa(alloc_bootmem_pages_node(NODE_DATA(node), PAGE_SIZE)) >> PAGE_SHIFT,
++			set_pte(pte, pfn_pte(__pa(memblock_alloc_node(PAGE_SIZE, PAGE_SIZE, node)) >> PAGE_SHIFT,
+ 					     PAGE_KERNEL));
+ 	}
+ 	return 0;
 -- 
 2.7.4
