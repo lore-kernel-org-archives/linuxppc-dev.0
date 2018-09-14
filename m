@@ -1,23 +1,21 @@
-Return-Path: <ndesaulniers@google.com>
-Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
- [IPv6:2607:f8b0:4864:20::444])
+Return-Path: <robherring2@gmail.com>
+Received: from mail-qk1-x742.google.com (mail-qk1-x742.google.com
+ [IPv6:2607:f8b0:4864:20::742])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Bk0m1N8nzF3XJ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Sep 2018 04:03:51 +1000 (AEST)
-Received: by mail-pf1-x444.google.com with SMTP id p12-v6so4659063pfh.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 11:03:51 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Blqb0ZJBzF3Yx
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Sep 2018 05:26:02 +1000 (AEST)
+Received: by mail-qk1-x742.google.com with SMTP id z78-v6so5807536qka.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 12:26:02 -0700 (PDT)
 MIME-Version: 1.0
-References: <20180914040649.1794-1-joel@jms.id.au>
- <20180914040649.1794-6-joel@jms.id.au>
- <20180914150629.405c12cc@roar.ozlabs.ibm.com>
-In-Reply-To: <20180914150629.405c12cc@roar.ozlabs.ibm.com>
-From: Nick Desaulniers <ndesaulniers@google.com>
-Date: Fri, 14 Sep 2018 11:03:38 -0700
-Message-ID: <CAKwvOdn-e60VSvUzmSLGx6yx-wUzSaEtdA3q5xyZ+G_++nQSJg@mail.gmail.com>
-Subject: Re: [PATCH v2 5/5] powerpc: Remove -mno-sched-epilog
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: joel@jms.id.au, linuxppc-dev@lists.ozlabs.org
+From: Rob Herring <robherring2@gmail.com>
+Date: Fri, 14 Sep 2018 14:25:48 -0500
+Message-ID: <CAL_JsqJmyiAOAvEhWxBy11xw==m5kqg_V90CCLPV1PqGDuHD7w@mail.gmail.com>
+Subject: [GIT PULL] Devicetree fix for 4.19-rc
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, devicetree@vger.kernel.org,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Frank Rowand <frowand.list@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -28,29 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 13, 2018 at 9:07 PM Joel Stanley <joel@jms.id.au> wrote:
-> Last time this was proposed there was an issue reported:
->
->  https://lists.ozlabs.org/pipermail/linuxppc-dev/2014-September/121214.html
+Linus,
 
-Heh, did PASemi sell boxes? Interesting, I'll have to read up on my history.
+Please pull. One regression for a 20 year old PowerMac.
 
-On Thu, Sep 13, 2018 at 10:06 PM Nicholas Piggin <npiggin@gmail.com> wrote:
-> I don't think we can remove it completely because up to at least 4.6
-> maybe 4.8 has problems.
->
-> I have a few patches lying around I started looking at this... I'll
-> send them.
+Rob
 
-Yeah, it's too bad the link above doesn't mention gcc version.
+The following changes since commit 0413bedabc886c3a56804d1c80a58e99077b1d91:
 
-The gcc bugreport mentions fixing the bug in
-7563dc64585324f443f5ac107eb6d89ee813a2d2, not sure how to check what
-release version of gcc that is? (Do they tag releases?)
+  of: Add device_type access helper functions (2018-08-31 08:30:42 -0400)
 
-Nick, do you have a test case or more context about this still being
-an issue in gcc 4.8? (maybe I should wait for your patch series?)
+are available in the Git repository at:
 
--- 
-Thanks,
-~Nick Desaulniers
+  git://git.kernel.org/pub/scm/linux/kernel/git/robh/linux.git
+tags/devicetree-fixes-for-4.19-2
+
+for you to fetch changes up to e54192b48da75f025ae4b277925eaf6aca1d13bd:
+
+  of: fix phandle cache creation for DTs with no phandles (2018-09-11
+11:28:40 -0500)
+
+----------------------------------------------------------------
+Devicetree fixes for 4.19, part 2:
+
+- Fix a regression on systems having a DT without any phandles which
+  happens on a PowerMac G3.
+
+----------------------------------------------------------------
+Rob Herring (1):
+      of: fix phandle cache creation for DTs with no phandles
+
+ drivers/of/base.c | 3 +++
+ 1 file changed, 3 insertions(+)
