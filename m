@@ -1,29 +1,35 @@
-Return-Path: <vabhav.sharma@nxp.com>
-Received: from EUR01-DB5-obe.outbound.protection.outlook.com
- (mail-db5eur01on0042.outbound.protection.outlook.com [104.47.2.42])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <arndbergmann@gmail.com>
+Received: from mail-qt0-f195.google.com (mail-qt0-f195.google.com
+ [209.85.216.195])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42BTZ91nh0zF3Tq
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 18:43:29 +1000 (AEST)
-From: Vabhav Sharma <vabhav.sharma@nxp.com>
-To: sudeep.holla@arm.com, oss@buserror.net, linux-kernel@vger.kernel.org,
- devicetree@vger.kernel.org, robh+dt@kernel.org, mark.rutland@arm.com,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- mturquette@baylibre.com, sboyd@kernel.org, rjw@rjwysocki.net,
- viresh.kumar@linaro.org, linux-clk@vger.kernel.org,
- linux-pm@vger.kernel.org, linux-kernel-owner@vger.kernel.org,
- catalin.marinas@arm.com, will.deacon@arm.com, gregkh@linuxfoundation.org,
- arnd@arndb.de, kstewart@linuxfoundation.org, yamada.masahiro@socionext.com
-Cc: linux@armlinux.org.uk, V.Sethi@nxp.com, udit.kumar@nxp.com,
- Vabhav Sharma <vabhav.sharma@nxp.com>,
- Priyanka Jain <priyanka.jain@nxp.com>, Sriram Dash <sriram.dash@nxp.com>
-Subject: [PATCH v2 5/5] arm64: dts: add LX2160ARDB board support
-Date: Fri, 14 Sep 2018 02:07:55 +0530
-Message-Id: <1536871075-3732-6-git-send-email-vabhav.sharma@nxp.com>
-In-Reply-To: <1536871075-3732-1-git-send-email-vabhav.sharma@nxp.com>
-References: <1536871075-3732-1-git-send-email-vabhav.sharma@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42BWJx6Jj5zF3V4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 20:02:09 +1000 (AEST)
+Received: by mail-qt0-f195.google.com with SMTP id z8-v6so8137583qto.9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2018 03:02:09 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
+References: <1536913980-4811-1-git-send-email-firoz.khan@linaro.org>
+ <1536913980-4811-3-git-send-email-firoz.khan@linaro.org>
+In-Reply-To: <1536913980-4811-3-git-send-email-firoz.khan@linaro.org>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Fri, 14 Sep 2018 12:01:51 +0200
+Message-ID: <CAK8P3a1PCnHy1JX4T21LjOr3ZGAVLdqxQaPYfLHAgM-9Y5yxVg@mail.gmail.com>
+Subject: Re: [PATCH 2/3] powerpc: Add system call table generation support
+To: Firoz Khan <firoz.khan@linaro.org>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxram@us.ibm.com, leitao@debian.org,
+ Boqun Feng <boqun.feng@gmail.com>, gregkh <gregkh@linuxfoundation.org>,
+ Philippe Ombredanne <pombredanne@nexb.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Kate Stewart <kstewart@linuxfoundation.org>,
+ y2038 Mailman List <y2038@lists.linaro.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linux-arch <linux-arch@vger.kernel.org>,
+ Deepa Dinamani <deepa.kernel@gmail.com>,
+ Marcin Juszkiewicz <marcin.juszkiewicz@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,121 +39,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-LX2160A reference design board (RDB) is a high-performance
-computing, evaluation, and development platform with LX2160A
-SoC.
+On Fri, Sep 14, 2018 at 10:33 AM Firoz Khan <firoz.khan@linaro.org> wrote:
 
-Signed-off-by: Priyanka Jain <priyanka.jain@nxp.com>
-Signed-off-by: Sriram Dash <sriram.dash@nxp.com>
-Signed-off-by: Vabhav Sharma <vabhav.sharma@nxp.com>
----
- arch/arm64/boot/dts/freescale/Makefile            |  1 +
- arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts | 88 +++++++++++++++++++++++
- 2 files changed, 89 insertions(+)
- create mode 100644 arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts
+> ---
+>  arch/powerpc/kernel/syscalls/Makefile       |  51 ++++
+>  arch/powerpc/kernel/syscalls/syscall_32.tbl | 378 ++++++++++++++++++++++++++++
+>  arch/powerpc/kernel/syscalls/syscall_64.tbl | 372 +++++++++++++++++++++++++++
+>  arch/powerpc/kernel/syscalls/syscallhdr.sh  |  37 +++
+>  arch/powerpc/kernel/syscalls/syscalltbl.sh  |  38 +++
 
-diff --git a/arch/arm64/boot/dts/freescale/Makefile b/arch/arm64/boot/dts/freescale/Makefile
-index 86e18ad..445b72b 100644
---- a/arch/arm64/boot/dts/freescale/Makefile
-+++ b/arch/arm64/boot/dts/freescale/Makefile
-@@ -13,3 +13,4 @@ dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2080a-rdb.dtb
- dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2080a-simu.dtb
- dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2088a-qds.dtb
- dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2088a-rdb.dtb
-+dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-lx2160a-rdb.dtb
-diff --git a/arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts b/arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts
-new file mode 100644
-index 0000000..1bbe663
---- /dev/null
-+++ b/arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts
-@@ -0,0 +1,88 @@
-+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
-+//
-+// Device Tree file for LX2160ARDB
-+//
-+// Copyright 2018 NXP
-+
-+/dts-v1/;
-+
-+#include "fsl-lx2160a.dtsi"
-+
-+/ {
-+	model = "NXP Layerscape LX2160ARDB";
-+	compatible = "fsl,lx2160a-rdb", "fsl,lx2160a";
-+
-+	chosen {
-+		stdout-path = "serial0:115200n8";
-+	};
-+};
-+
-+&uart0 {
-+	status = "okay";
-+};
-+
-+&uart1 {
-+	status = "okay";
-+};
-+
-+&i2c0 {
-+	status = "okay";
-+	i2c-mux@77 {
-+		compatible = "nxp,pca9547";
-+		reg = <0x77>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		i2c@2 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0x2>;
-+
-+			power-monitor@40 {
-+				compatible = "ti,ina220";
-+				reg = <0x40>;
-+				shunt-resistor = <1000>;
-+			};
-+		};
-+
-+		i2c@3 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0x3>;
-+
-+			temperature-sensor@4c {
-+				compatible = "nxp,sa56004";
-+				reg = <0x4c>;
-+			};
-+
-+			temperature-sensor@4d {
-+				compatible = "nxp,sa56004";
-+				reg = <0x4d>;
-+			};
-+		};
-+	};
-+};
-+
-+&i2c4 {
-+	status = "okay";
-+
-+	rtc@51 {
-+		compatible = "nxp,pcf2129";
-+		reg = <0x51>;
-+		// IRQ10_B
-+		interrupts = <0 150 0x4>;
-+		};
-+
-+};
-+
-+&usb0 {
-+	status = "okay";
-+};
-+
-+&usb1 {
-+	status = "okay";
-+};
-+
-+&crypto {
-+	status = "okay";
-+};
--- 
-2.7.4
+I think you should only need a single .tbl  input file here.
+
+
+> +
+> +systbl_abi_syscall_table_32 := 32
+> +$(out)/syscall_table_32.h: $(syscall32) $(systbl)
+> +       $(call if_changed,systbl)
+> +
+> +systbl_abi_syscall_table_64 := 64
+> +$(out)/syscall_table_64.h: $(syscall64) $(systbl)
+> +       $(call if_changed,systbl)
+> +
+> +systbl_abi_syscall_table_c32 := c32
+> +$(out)/syscall_table_c32.h: $(syscall32) $(systbl)
+> +       $(call if_changed,systbl)
+
+And here you need a fourth output file for the SPU table on ppc64.
+
+> +383     common  statx                           sys_statx
+> +384     common  pkey_alloc                      sys_pkey_alloc
+> +385     common  pkey_free                       sys_pkey_free
+> +386     common  pkey_mprotect                   sys_pkey_mprotect
+
+This also misses rseq and io_pgetevents.
+
+       Arnd
