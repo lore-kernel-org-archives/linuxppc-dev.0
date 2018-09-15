@@ -1,26 +1,18 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <yuehaibing@huawei.com>
+Received: from huawei.com (szxga06-in.huawei.com [45.249.212.32])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Bvpc393BzF37Z
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Sep 2018 11:25:44 +1000 (AEST)
-Date: Fri, 14 Sep 2018 20:04:11 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Nick Desaulniers <ndesaulniers@google.com>
-Cc: Nicholas Piggin <npiggin@gmail.com>, joel@jms.id.au,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 5/5] powerpc: Remove -mno-sched-epilog
-Message-ID: <20180915010410.GA23155@gate.crashing.org>
-References: <20180914040649.1794-1-joel@jms.id.au>
- <20180914040649.1794-6-joel@jms.id.au>
- <20180914150629.405c12cc@roar.ozlabs.ibm.com>
- <CAKwvOdn-e60VSvUzmSLGx6yx-wUzSaEtdA3q5xyZ+G_++nQSJg@mail.gmail.com>
- <20180915064305.65eea265@roar.ozlabs.ibm.com>
- <20180914211846.GU23155@gate.crashing.org>
- <CAKwvOdmsSbrw7oLZHWTseqxLocPmuXV=cnxSi2zskAmd9zKo0Q@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAKwvOdmsSbrw7oLZHWTseqxLocPmuXV=cnxSi2zskAmd9zKo0Q@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42C97K1JqZzF31k
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Sep 2018 21:26:02 +1000 (AEST)
+From: YueHaibing <yuehaibing@huawei.com>
+To: <qiang.zhao@nxp.com>, <leoyang.li@nxp.com>
+CC: <linux-kernel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+ <linuxppc-dev@lists.ozlabs.org>, YueHaibing <yuehaibing@huawei.com>
+Subject: [PATCH -next] fsl/qe: Fix copy-paste error in ucc_get_tdm_sync_shift
+Date: Sat, 15 Sep 2018 19:10:05 +0800
+Message-ID: <20180915111005.10028-1-yuehaibing@huawei.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,35 +22,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Sep 14, 2018 at 03:20:18PM -0700, Nick Desaulniers wrote:
-> On Fri, Sep 14, 2018 at 2:56 PM Segher Boessenkool
-> <segher@kernel.crashing.org> wrote:
-> > On Sat, Sep 15, 2018 at 06:43:05AM +1000, Nicholas Piggin wrote:
-> > > On Fri, 14 Sep 2018 11:03:38 -0700
-> > > Nick Desaulniers <ndesaulniers@google.com> wrote:
-> > >
-> > > Sorry I forgot to cc you. This has links to some of the sched
-> > > epilog bugs.
-> > >
-> > > https://marc.info/?l=linuxppc-embedded&m=153690223909654&w=2
-> 
-> Cool, cc me on the thread if you'd like me to add my reviewed-by tag
-> visibly on the thread.
-> 
-> > PR44199 was backported to 4.4 and PR52828 is fixed in 4.8.
-> 
-> Are those GCC versions? If so, what does that mean for the users of
-> the many GCC releases between 4.4 and 4.8?
+if 'mode' is COMM_DIR_TX, 'shift' should use TX_SYNC_SHIFT_BASE
 
-Yes, GCC bug 44199 was fixed in GCC version 4.4, etc.  It of course also
-is fixed in all later versions; so GCC releases between 4.4 and 4.8 have
-the fix for PR44199 but not that for PR52828.
+Fixes: bb8b2062aff3 ("fsl/qe: setup clock source for TDM mode")
+Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+---
+ drivers/soc/fsl/qe/ucc.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-I didn't check exactly what 4.4.x versions have the fix, etc.  I always
-assume anyone using x.y.z uses the highest z available.
-
-I don't know if those are the only fixes you need; those are the two
-bugs mentioned in Nicholas' patch (that MARC link above).
-
-
-Segher
+diff --git a/drivers/soc/fsl/qe/ucc.c b/drivers/soc/fsl/qe/ucc.c
+index c646d87..681f7d4 100644
+--- a/drivers/soc/fsl/qe/ucc.c
++++ b/drivers/soc/fsl/qe/ucc.c
+@@ -626,7 +626,7 @@ static u32 ucc_get_tdm_sync_shift(enum comm_dir mode, u32 tdm_num)
+ {
+ 	u32 shift;
+ 
+-	shift = (mode == COMM_DIR_RX) ? RX_SYNC_SHIFT_BASE : RX_SYNC_SHIFT_BASE;
++	shift = (mode == COMM_DIR_RX) ? RX_SYNC_SHIFT_BASE : TX_SYNC_SHIFT_BASE;
+ 	shift -= tdm_num * 2;
+ 
+ 	return shift;
+-- 
+1.8.3.1
