@@ -1,30 +1,25 @@
-Return-Path: <oss@buserror.net>
-Received: from baldur.buserror.net (baldur.buserror.net [165.227.176.147])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <daniel.thompson@linaro.org>
+Received: from mail-it0-x242.google.com (mail-it0-x242.google.com
+ [IPv6:2607:f8b0:4001:c0b::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42CMnz0qyszF22s
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Sep 2018 05:26:45 +1000 (AEST)
-Message-ID: <4fa10f679ad4b1b619daa521a8641c145cf8537e.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: Vabhav Sharma <vabhav.sharma@nxp.com>, sudeep.holla@arm.com,
- linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
- robh+dt@kernel.org,  mark.rutland@arm.com, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, mturquette@baylibre.com,
- sboyd@kernel.org,  rjw@rjwysocki.net, viresh.kumar@linaro.org,
- linux-clk@vger.kernel.org,  linux-pm@vger.kernel.org,
- linux-kernel-owner@vger.kernel.org,  catalin.marinas@arm.com,
- will.deacon@arm.com, gregkh@linuxfoundation.org,  arnd@arndb.de,
- kstewart@linuxfoundation.org, yamada.masahiro@socionext.com
-Cc: linux@armlinux.org.uk, V.Sethi@nxp.com, udit.kumar@nxp.com, Yogesh Gaur
- <yogeshnarayan.gaur@nxp.com>, Tang Yuantian <andy.tang@nxp.com>
-Date: Sat, 15 Sep 2018 14:24:21 -0500
-In-Reply-To: <1536871075-3732-4-git-send-email-vabhav.sharma@nxp.com>
-References: <1536871075-3732-1-git-send-email-vabhav.sharma@nxp.com>
- <1536871075-3732-4-git-send-email-vabhav.sharma@nxp.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Subject: Re: [PATCH v2 3/5] drivers: clk-qoriq: Add clockgen support for
- lx2160a
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42CzHw1K1HzF1fF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 05:06:16 +1000 (AEST)
+Received: by mail-it0-x242.google.com with SMTP id j81-v6so8537004ite.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Sep 2018 12:06:16 -0700 (PDT)
+Date: Sun, 16 Sep 2018 12:06:10 -0700
+From: Daniel Thompson <daniel.thompson@linaro.org>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Jason Wessel <jason.wessel@windriver.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, kgdb-bugreport@lists.sourceforge.net,
+ stable@vger.kernel.org, me@tobin.cc
+Subject: Re: [PATCH] kdb: use correct pointer when 'btc' calls 'btt'
+Message-ID: <20180916190610.vzqxwps7zqy2zc6o@holly.lan>
+References: <ff05bd36b338f4f914780176e9eba8138e1b254b.1536927765.git.christophe.leroy@c-s.fr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <ff05bd36b338f4f914780176e9eba8138e1b254b.1536927765.git.christophe.leroy@c-s.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,39 +29,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2018-09-14 at 02:07 +0530, Vabhav Sharma wrote:
-> From: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>
+On Fri, Sep 14, 2018 at 12:35:44PM +0000, Christophe Leroy wrote:
+> On a powerpc 8xx, 'btc' fails as follows:
 > 
-> Add clockgen support for lx2160a.
-> Added entry for compat 'fsl,lx2160a-clockgen'.
+> Entering kdb (current=0x(ptrval), pid 282) due to Keyboard Entry
+> kdb> btc
+> btc: cpu status: Currently on cpu 0
+> Available cpus: 0
+> kdb_getarea: Bad address 0x0
 > 
-> Signed-off-by: Tang Yuantian <andy.tang@nxp.com>
-> Signed-off-by: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>
-> Signed-off-by: Vabhav Sharma <vabhav.sharma@nxp.com>
-> Acked-by: Stephen Boyd <sboyd@kernel.org>
+> when booting the kernel with 'debug_boot_weak_hash', it fails as well
+> 
+> Entering kdb (current=0xba99ad80, pid 284) due to Keyboard Entry
+> kdb> btc
+> btc: cpu status: Currently on cpu 0
+> Available cpus: 0
+> kdb_getarea: Bad address 0xba99ad80
+> 
+> On other platforms, Oopses have been observed too, see
+> https://github.com/linuxppc/linux/issues/139
+> 
+> This is due to btc calling 'btt' with %p pointer as an argument.
+> 
+> This patch replaces %p by %px to get the real pointer value as
+> expected by 'btt'
+> 
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> Cc: <stable@vger.kernel.org> # 4.15+
+
+Would a Fixes: be better here?
+Fixes: ad67b74d2469d9b82 ("printk: hash addresses printed with %p")
+
+No blame attached to Tobin, but the fixes makes it super clear what
+changed and why this breaks kdb (which was not explicitly called out
+the patch description).
+
+
+Daniel.
+
 > ---
->  drivers/clk/clk-qoriq.c         | 14 +++++++++++++-
->  drivers/cpufreq/qoriq-cpufreq.c |  1 +
->  2 files changed, 14 insertions(+), 1 deletion(-)
+>  kernel/debug/kdb/kdb_bt.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> diff --git a/drivers/clk/clk-qoriq.c b/drivers/clk/clk-qoriq.c
-> index 3a1812f..e9ae70b 100644
-> --- a/drivers/clk/clk-qoriq.c
-> +++ b/drivers/clk/clk-qoriq.c
-> @@ -79,7 +79,7 @@ struct clockgen_chipinfo {
->  	const struct clockgen_muxinfo *cmux_groups[2];
->  	const struct clockgen_muxinfo *hwaccel[NUM_HWACCEL];
->  	void (*init_periph)(struct clockgen *cg);
-> -	int cmux_to_group[NUM_CMUX]; /* -1 terminates if fewer than
-> NUM_CMUX */
-> +	int cmux_to_group[NUM_CMUX+1]; /* -1 terminate if fewer to
-> NUM_CMUX+1 */
-
-You need to add the -1 terminator to p4080, and remove the "if fewer" comment
-since the whole point of this is that every array gets -1 terminated.
-
-Why did you change "terminates" to "terminate" and "than" to "to"?
-
-This +1 change should be a separate patch from lx2160a support.
-
--Scott
+> diff --git a/kernel/debug/kdb/kdb_bt.c b/kernel/debug/kdb/kdb_bt.c
+> index 6ad4a9fcbd6f..7921ae4fca8d 100644
+> --- a/kernel/debug/kdb/kdb_bt.c
+> +++ b/kernel/debug/kdb/kdb_bt.c
+> @@ -179,14 +179,14 @@ kdb_bt(int argc, const char **argv)
+>  				kdb_printf("no process for cpu %ld\n", cpu);
+>  				return 0;
+>  			}
+> -			sprintf(buf, "btt 0x%p\n", KDB_TSK(cpu));
+> +			sprintf(buf, "btt 0x%px\n", KDB_TSK(cpu));
+>  			kdb_parse(buf);
+>  			return 0;
+>  		}
+>  		kdb_printf("btc: cpu status: ");
+>  		kdb_parse("cpu\n");
+>  		for_each_online_cpu(cpu) {
+> -			sprintf(buf, "btt 0x%p\n", KDB_TSK(cpu));
+> +			sprintf(buf, "btt 0x%px\n", KDB_TSK(cpu));
+>  			kdb_parse(buf);
+>  			touch_nmi_watchdog();
+>  		}
+> -- 
+> 2.13.3
+> 
