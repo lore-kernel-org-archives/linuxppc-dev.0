@@ -1,22 +1,25 @@
-Return-Path: <breno.debian@gmail.com>
-Received: from mail-qt0-f196.google.com (mail-qt0-f196.google.com
- [209.85.216.196])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <me@tobin.cc>
+Received: from out1-smtp.messagingengine.com (out1-smtp.messagingengine.com
+ [66.111.4.25])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42D0yQ6kBBzF1p5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 06:21:15 +1000 (AEST)
-Received: by mail-qt0-f196.google.com with SMTP id k38-v6so13515154qtk.11
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Sep 2018 13:21:15 -0700 (PDT)
-Subject: Re: [PATCH] powerpc/tm: Fix HFSCR bit for no suspend case
-To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
- npiggin@gmail.com, Michael Neuling <mikey@neuling.org>
-References: <20180911030756.19583-1-mikey@neuling.org>
-From: Breno Leitao <leitao@debian.org>
-Message-ID: <ff27c6c4-9a7b-1851-9635-4e8ad0fcff93@debian.org>
-Date: Sun, 16 Sep 2018 17:21:09 -0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42D3Yn6fFDzF22s
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 08:18:30 +1000 (AEST)
+Date: Mon, 17 Sep 2018 08:18:22 +1000
+From: "Tobin C. Harding" <me@tobin.cc>
+To: Daniel Thompson <daniel.thompson@linaro.org>
+Cc: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Jason Wessel <jason.wessel@windriver.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, kgdb-bugreport@lists.sourceforge.net,
+ stable@vger.kernel.org
+Subject: Re: [PATCH] kdb: use correct pointer when 'btc' calls 'btt'
+Message-ID: <20180916221822.GO11198@eros>
+References: <ff05bd36b338f4f914780176e9eba8138e1b254b.1536927765.git.christophe.leroy@c-s.fr>
+ <20180916190610.vzqxwps7zqy2zc6o@holly.lan>
 MIME-Version: 1.0
-In-Reply-To: <20180911030756.19583-1-mikey@neuling.org>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180916190610.vzqxwps7zqy2zc6o@holly.lan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,18 +29,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/11/2018 12:07 AM, Michael Neuling wrote:
-> Currently on P9N DD2.1 we end up taking infinite TM facility
-> unavailable exceptions on the first TM usage by userspace.
+On Sun, Sep 16, 2018 at 12:06:10PM -0700, Daniel Thompson wrote:
+> On Fri, Sep 14, 2018 at 12:35:44PM +0000, Christophe Leroy wrote:
+> > On a powerpc 8xx, 'btc' fails as follows:
+> > 
+> > Entering kdb (current=0x(ptrval), pid 282) due to Keyboard Entry
+> > kdb> btc
+> > btc: cpu status: Currently on cpu 0
+> > Available cpus: 0
+> > kdb_getarea: Bad address 0x0
+> > 
+> > when booting the kernel with 'debug_boot_weak_hash', it fails as well
+> > 
+> > Entering kdb (current=0xba99ad80, pid 284) due to Keyboard Entry
+> > kdb> btc
+> > btc: cpu status: Currently on cpu 0
+> > Available cpus: 0
+> > kdb_getarea: Bad address 0xba99ad80
+> > 
+> > On other platforms, Oopses have been observed too, see
+> > https://github.com/linuxppc/linux/issues/139
+> > 
+> > This is due to btc calling 'btt' with %p pointer as an argument.
+> > 
+> > This patch replaces %p by %px to get the real pointer value as
+> > expected by 'btt'
+> > 
+> > Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> > Cc: <stable@vger.kernel.org> # 4.15+
 > 
-> In the special case of TM no suspend (P9N DD2.1), Linux is told TM is
-> off via CPU dt-ftrs but told to (partially) use it via
-> OPAL_REINIT_CPUS_TM_SUSPEND_DISABLED. So HFSCR[TM] will be off from
-> dt-ftrs but we need to turn it on for the no suspend case.
+> Would a Fixes: be better here?
+> Fixes: ad67b74d2469d9b82 ("printk: hash addresses printed with %p")
 > 
-> This patch fixes this by enabling HFSCR TM in this case.
-> 
-> Cc: stable@vger.kernel.org # 4.15+
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> No blame attached to Tobin, but the fixes makes it super clear what
 
-Tested-by: Breno Leitao <leitao@debian.org>
+:)
+
+> changed and why this breaks kdb (which was not explicitly called out
+> the patch description).
+> 
+> 
+> Daniel.
