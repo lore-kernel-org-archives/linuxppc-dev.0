@@ -1,34 +1,26 @@
-Return-Path: <pku.leo@gmail.com>
-Received: from mail-oi0-f67.google.com (mail-oi0-f67.google.com
- [209.85.218.67])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <gregkh@linuxfoundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Df0N2ytczF0fg
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2018 07:10:11 +1000 (AEST)
-Received: by mail-oi0-f67.google.com with SMTP id k12-v6so20278846oiw.8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 14:10:11 -0700 (PDT)
-Received: from mail-ot1-f51.google.com (mail-ot1-f51.google.com.
- [209.85.210.51])
- by smtp.gmail.com with ESMTPSA id u68-v6sm5205293otb.81.2018.09.17.14.10.09
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Mon, 17 Sep 2018 14:10:09 -0700 (PDT)
-Received: by mail-ot1-f51.google.com with SMTP id j9-v6so12832888otl.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 14:10:09 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Dh9C4jDszF0pD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2018 08:47:58 +1000 (AEST)
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org,
+ Christophe Leroy <christophe.leroy@c-s.fr>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Peter Zijlstra <peterz@infradead.org>, linuxppc-dev@lists.ozlabs.org,
+ Arnaldo Carvalho de Melo <acme@redhat.com>,
+ Sasha Levin <alexander.levin@microsoft.com>
+Subject: [PATCH 4.4 24/56] perf tools: Allow overriding MAX_NR_CPUS at compile
+ time
+Date: Tue, 18 Sep 2018 00:41:57 +0200
+Message-Id: <20180917213828.944657368@linuxfoundation.org>
+In-Reply-To: <20180917213827.913122591@linuxfoundation.org>
+References: <20180917213827.913122591@linuxfoundation.org>
 MIME-Version: 1.0
-References: <20180915111005.10028-1-yuehaibing@huawei.com>
-In-Reply-To: <20180915111005.10028-1-yuehaibing@huawei.com>
-From: Li Yang <leoyang.li@nxp.com>
-Date: Mon, 17 Sep 2018 16:09:57 -0500
-Message-ID: <CADRPPNSQp78jioP8Eao3ku_vqYCddRTuz1sydskUiPWTfmSUGQ@mail.gmail.com>
-Subject: Re: [PATCH -next] fsl/qe: Fix copy-paste error in
- ucc_get_tdm_sync_shift
-To: yuehaibing@huawei.com
-Cc: Zhao Qiang <qiang.zhao@nxp.com>, lkml <linux-kernel@vger.kernel.org>,
- "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,34 +30,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Sep 15, 2018 at 6:11 AM YueHaibing <yuehaibing@huawei.com> wrote:
->
-> if 'mode' is COMM_DIR_TX, 'shift' should use TX_SYNC_SHIFT_BASE
->
-> Fixes: bb8b2062aff3 ("fsl/qe: setup clock source for TDM mode")
-> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+4.4-stable review patch.  If anyone has any objections, please let me know.
 
-Thanks for submitting the patch, but there is already the same fix in
-the queue from Zhao Qiang and Dan Carpenter.
+------------------
 
-> ---
->  drivers/soc/fsl/qe/ucc.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/soc/fsl/qe/ucc.c b/drivers/soc/fsl/qe/ucc.c
-> index c646d87..681f7d4 100644
-> --- a/drivers/soc/fsl/qe/ucc.c
-> +++ b/drivers/soc/fsl/qe/ucc.c
-> @@ -626,7 +626,7 @@ static u32 ucc_get_tdm_sync_shift(enum comm_dir mode, u32 tdm_num)
->  {
->         u32 shift;
->
-> -       shift = (mode == COMM_DIR_RX) ? RX_SYNC_SHIFT_BASE : RX_SYNC_SHIFT_BASE;
-> +       shift = (mode == COMM_DIR_RX) ? RX_SYNC_SHIFT_BASE : TX_SYNC_SHIFT_BASE;
->         shift -= tdm_num * 2;
->
->         return shift;
-> --
-> 1.8.3.1
->
->
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+
+[ Upstream commit 21b8732eb4479b579bda9ee38e62b2c312c2a0e5 ]
+
+After update of kernel, the perf tool doesn't run anymore on my 32MB RAM
+powerpc board, but still runs on a 128MB RAM board:
+
+  ~# strace perf
+  execve("/usr/sbin/perf", ["perf"], [/* 12 vars */]) = -1 ENOMEM (Cannot allocate memory)
+  --- SIGSEGV {si_signo=SIGSEGV, si_code=SI_KERNEL, si_addr=0} ---
+  +++ killed by SIGSEGV +++
+  Segmentation fault
+
+objdump -x shows that .bss section has a huge size of 24Mbytes:
+
+ 27 .bss          016baca8  101cebb8  101cebb8  001cd988  2**3
+
+With especially the following objects having quite big size:
+
+  10205f80 l     O .bss	00140000     runtime_cycles_stats
+  10345f80 l     O .bss	00140000     runtime_stalled_cycles_front_stats
+  10485f80 l     O .bss	00140000     runtime_stalled_cycles_back_stats
+  105c5f80 l     O .bss	00140000     runtime_branches_stats
+  10705f80 l     O .bss	00140000     runtime_cacherefs_stats
+  10845f80 l     O .bss	00140000     runtime_l1_dcache_stats
+  10985f80 l     O .bss	00140000     runtime_l1_icache_stats
+  10ac5f80 l     O .bss	00140000     runtime_ll_cache_stats
+  10c05f80 l     O .bss	00140000     runtime_itlb_cache_stats
+  10d45f80 l     O .bss	00140000     runtime_dtlb_cache_stats
+  10e85f80 l     O .bss	00140000     runtime_cycles_in_tx_stats
+  10fc5f80 l     O .bss	00140000     runtime_transaction_stats
+  11105f80 l     O .bss	00140000     runtime_elision_stats
+  11245f80 l     O .bss	00140000     runtime_topdown_total_slots
+  11385f80 l     O .bss	00140000     runtime_topdown_slots_retired
+  114c5f80 l     O .bss	00140000     runtime_topdown_slots_issued
+  11605f80 l     O .bss	00140000     runtime_topdown_fetch_bubbles
+  11745f80 l     O .bss	00140000     runtime_topdown_recovery_bubbles
+
+This is due to commit 4d255766d28b1 ("perf: Bump max number of cpus
+to 1024"), because many tables are sized with MAX_NR_CPUS
+
+This patch gives the opportunity to redefine MAX_NR_CPUS via
+
+  $ make EXTRA_CFLAGS=-DMAX_NR_CPUS=1
+
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Alexander Shishkin <alexander.shishkin@linux.intel.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Link: http://lkml.kernel.org/r/20170922112043.8349468C57@po15668-vm-win7.idsi0.si.c-s.fr
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+Signed-off-by: Sasha Levin <alexander.levin@microsoft.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ tools/perf/perf.h |    2 ++
+ 1 file changed, 2 insertions(+)
+
+--- a/tools/perf/perf.h
++++ b/tools/perf/perf.h
+@@ -29,7 +29,9 @@ static inline unsigned long long rdclock
+ 	return ts.tv_sec * 1000000000ULL + ts.tv_nsec;
+ }
+ 
++#ifndef MAX_NR_CPUS
+ #define MAX_NR_CPUS			1024
++#endif
+ 
+ extern const char *input_name;
+ extern bool perf_host, perf_guest;
