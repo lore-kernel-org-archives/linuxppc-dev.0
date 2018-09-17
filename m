@@ -1,22 +1,24 @@
 Return-Path: <joel.stan@gmail.com>
-Received: from mail-qt0-x241.google.com (mail-qt0-x241.google.com
- [IPv6:2607:f8b0:400d:c0d::241])
+Received: from mail-qk1-x744.google.com (mail-qk1-x744.google.com
+ [IPv6:2607:f8b0:4864:20::744])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42D9HC64B1zDqKl
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 12:36:23 +1000 (AEST)
-Received: by mail-qt0-x241.google.com with SMTP id r37-v6so14051094qtc.0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Sep 2018 19:36:23 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42D9J94HrYzF22T
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 12:37:13 +1000 (AEST)
+Received: by mail-qk1-x744.google.com with SMTP id 130-v6so8265607qkd.10
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Sep 2018 19:37:13 -0700 (PDT)
 MIME-Version: 1.0
-References: <20180914050854.6214-1-npiggin@gmail.com>
- <20180914050854.6214-4-npiggin@gmail.com>
-In-Reply-To: <20180914050854.6214-4-npiggin@gmail.com>
+References: <20180905020951.10372-1-sjitindarsingh@gmail.com>
+ <20180905020951.10372-2-sjitindarsingh@gmail.com>
+In-Reply-To: <20180905020951.10372-2-sjitindarsingh@gmail.com>
 From: Joel Stanley <joel@jms.id.au>
-Date: Mon, 17 Sep 2018 12:06:10 +0930
-Message-ID: <CACPK8Xe1rrOaRUJSOSg7rocofA1_ePFd5Gp-1V5+xVKge3GbhQ@mail.gmail.com>
-Subject: Re: [PATCH 3/3] powerpc: avoid -mno-sched-epilog on GCC 4.9 and newer
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Date: Mon, 17 Sep 2018 12:07:00 +0930
+Message-ID: <CACPK8XeZS1b0iZwmL2BicLB3=hA1XNajo+vbva9hkr=FXHXhQA@mail.gmail.com>
+Subject: Re: [PATCH 1/2] powerpc/prom: Remove VLA in
+ prom_check_platform_support()
+To: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Michael Neuling <mikey@neuling.org>, Kees Cook <keescook@chromium.org>
 Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -27,18 +29,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 14 Sep 2018 at 14:39, Nicholas Piggin <npiggin@gmail.com> wrote:
+On Wed, 5 Sep 2018 at 11:40, Suraj Jitindar Singh
+<sjitindarsingh@gmail.com> wrote:
 >
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> In prom_check_platform_support() we retrieve and parse the
+> "ibm,arch-vec-5-platform-support" property of the chosen node.
+> Currently we use a variable length array however to avoid this use an
+> array of constant length 8.
+>
+> This property is used to indicate the supported options of vector 5
+> bytes 23-26 of the ibm,architecture.vec node. Each of these options
+> is a pair of bytes, thus for 4 options we have a max length of 8 bytes.
+>
+> Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
 
 Reviewed-by: Joel Stanley <joel@jms.id.au>
-
-I gave this a spin with clang trunk on the powernv kernel and it did
-the trick. Thanks!
-
-mpe, this series supersedes [v2,5/5] powerpc: Remove -mno-sched-epilog
-(https://patchwork.ozlabs.org/patch/969615/).
-
-Cheers,
-
-Joel
