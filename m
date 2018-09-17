@@ -1,27 +1,44 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
- [IPv6:2607:f8b0:4864:20::442])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <david@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42DHFT3mRtzF10Y
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 17:05:15 +1000 (AEST)
-Received: by mail-pf1-x442.google.com with SMTP id j8-v6so7104482pff.6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 00:05:15 -0700 (PDT)
-Subject: Re: [PATCH kernel RFC 0/3] powerpc/pseries/iommu: GPU coherent memory
- pass through
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42DHs84vTdzF1QT
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 17:32:44 +1000 (AEST)
+Subject: Re: [PATCH RFCv2 3/6] mm/memory_hotplug: fix online/offline_pages
+ called w.o. mem_hotplug_lock
+To: Rashmica <rashmica.g@gmail.com>, linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-acpi@vger.kernel.org,
+ xen-devel@lists.xenproject.org, devel@linuxdriverproject.org,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@ozlabs.org>,
- Russell Currey <ruscur@russell.cc>
-References: <20180725095032.2196-1-aik@ozlabs.ru>
- <f5bb1df3-1b15-9c2b-8bb1-7733bb743926@ozlabs.ru>
- <a28c139e-deb6-cdb3-1eb5-b8d6e7378ce1@ozlabs.ru>
-Message-ID: <cc415da6-74e9-536c-9065-5b2f0a10f5a1@ozlabs.ru>
-Date: Mon, 17 Sep 2018 17:05:07 +1000
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "K. Y. Srinivasan" <kys@microsoft.com>,
+ Haiyang Zhang <haiyangz@microsoft.com>,
+ Stephen Hemminger <sthemmin@microsoft.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross
+ <jgross@suse.com>, Michael Neuling <mikey@neuling.org>,
+ Balbir Singh <bsingharora@gmail.com>,
+ Kate Stewart <kstewart@linuxfoundation.org>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Philippe Ombredanne <pombredanne@nexb.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@suse.com>,
+ Pavel Tatashin <pasha.tatashin@oracle.com>, Vlastimil Babka
+ <vbabka@suse.cz>, Dan Williams <dan.j.williams@intel.com>,
+ Oscar Salvador <osalvador@suse.de>,
+ YASUAKI ISHIMATSU <yasu.isimatu@gmail.com>,
+ Mathieu Malaterre <malat@debian.org>
+References: <20180821104418.12710-1-david@redhat.com>
+ <20180821104418.12710-4-david@redhat.com>
+ <70372ef5-e332-6c07-f08c-50f8808bde6d@gmail.com>
+From: David Hildenbrand <david@redhat.com>
+Message-ID: <5f80ca56-9f34-4e6e-bc83-8f8b3c888163@redhat.com>
+Date: Mon, 17 Sep 2018 09:32:27 +0200
 MIME-Version: 1.0
-In-Reply-To: <a28c139e-deb6-cdb3-1eb5-b8d6e7378ce1@ozlabs.ru>
+In-Reply-To: <70372ef5-e332-6c07-f08c-50f8808bde6d@gmail.com>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -32,86 +49,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ping?
+Am 03.09.18 um 02:36 schrieb Rashmica:
+> Hi David,
+> 
+> 
+> On 21/08/18 20:44, David Hildenbrand wrote:
+> 
+>> There seem to be some problems as result of 30467e0b3be ("mm, hotplug:
+>> fix concurrent memory hot-add deadlock"), which tried to fix a possible
+>> lock inversion reported and discussed in [1] due to the two locks
+>> 	a) device_lock()
+>> 	b) mem_hotplug_lock
+>>
+>> While add_memory() first takes b), followed by a) during
+>> bus_probe_device(), onlining of memory from user space first took b),
+>> followed by a), exposing a possible deadlock.
+> 
+> Do you mean "onlining of memory from user space first took a),
+> followed by b)"? 
 
-The problem is still there...
+Very right, thanks.
 
+> 
+>> In [1], and it was decided to not make use of device_hotplug_lock, but
+>> rather to enforce a locking order.
+>>
+>> The problems I spotted related to this:
+>>
+>> 1. Memory block device attributes: While .state first calls
+>>    mem_hotplug_begin() and the calls device_online() - which takes
+>>    device_lock() - .online does no longer call mem_hotplug_begin(), so
+>>    effectively calls online_pages() without mem_hotplug_lock.
+>>
+>> 2. device_online() should be called under device_hotplug_lock, however
+>>    onlining memory during add_memory() does not take care of that.
+>>
+>> In addition, I think there is also something wrong about the locking in
+>>
+>> 3. arch/powerpc/platforms/powernv/memtrace.c calls offline_pages()
+>>    without locks. This was introduced after 30467e0b3be. And skimming over
+>>    the code, I assume it could need some more care in regards to locking
+>>    (e.g. device_online() called without device_hotplug_lock - but I'll
+>>    not touch that for now).
+> 
+> Can you mention that you fixed this in later patches?
 
-On 24/08/2018 13:04, Alexey Kardashevskiy wrote:
+Sure!
+
 > 
 > 
-> On 09/08/2018 14:41, Alexey Kardashevskiy wrote:
->>
->>
->> On 25/07/2018 19:50, Alexey Kardashevskiy wrote:
->>> I am trying to pass through a 3D controller:
->>> [0302]: NVIDIA Corporation GV100GL [Tesla V100 SXM2] [10de:1db1] (rev a1)
->>>
->>> which has a quite unique feature as coherent memory directly accessible
->>> from a POWER9 CPU via an NVLink2 transport.
->>>
->>> So in addition to passing a PCI device + accompanying NPU devices,
->>> we will also be passing the host physical address range as it is done
->>> on the bare metal system.
->>>
->>> The memory on the host is presented as:
->>>
->>> ===
->>> [aik@yc02goos ~]$ lsprop /proc/device-tree/memory@42000000000
->>> ibm,chip-id      000000fe (254)
->>> device_type      "memory"
->>> compatible       "ibm,coherent-device-memory"
->>> reg              00000420 00000000 00000020 00000000
->>> linux,usable-memory
->>>                  00000420 00000000 00000000 00000000
->>> phandle          00000726 (1830)
->>> name             "memory"
->>> ibm,associativity
->>>                  00000004 000000fe 000000fe 000000fe 000000fe
->>> ===
->>>
->>> and the host does not touch it as the second 64bit value of
->>> "linux,usable-memory" - the size - is null. Later on the NVIDIA driver
->>> trains the NVLink2 and probes this memory and this is how it becomes
->>> onlined.
->>>
->>> In the virtual environment I am planning on doing the same thing,
->>> however there is a difference in 64bit DMA handling. The powernv
->>> platform uses a PHB3 bypass mode and that just works but
->>> the pseries platform uses DDW RTAS API to achieve the same
->>> result and the problem with this is that we need a huge DMA
->>> window to start from zero (because this GPU supports less than
->>> 50bits for DMA address space) and cover not just present memory
->>> but also this new coherent memory.
->>>
->>>
->>> This is based on sha1
->>> d72e90f3 Linus Torvalds "Linux 4.18-rc6".
->>>
->>> Please comment. Thanks.
->>
->>
->> Ping?
+> The series looks good to me. Feel free to add my reviewed-by:
 > 
+> Reviewed-by: Rashmica Gupta <rashmica.g@gmail.com>
 > 
-> Ping?
-> 
->>
->>
->>>
->>>
->>>
->>> Alexey Kardashevskiy (3):
->>>   powerpc/pseries/iommu: Allow dynamic window to start from zero
->>>   powerpc/pseries/iommu: Force default DMA window removal
->>>   powerpc/pseries/iommu: Use memory@ nodes in max RAM address
->>>     calculation
->>>
->>>  arch/powerpc/platforms/pseries/iommu.c | 77 ++++++++++++++++++++++++++++++----
->>>  1 file changed, 70 insertions(+), 7 deletions(-)
->>>
->>
-> 
+
+Thanks, r-b only for this patch or all of the series?
 
 -- 
-Alexey
+
+Thanks,
+
+David / dhildenb
