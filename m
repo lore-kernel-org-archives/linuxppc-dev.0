@@ -1,20 +1,24 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <joel.stan@gmail.com>
+Received: from mail-qk1-x741.google.com (mail-qk1-x741.google.com
+ [IPv6:2607:f8b0:4864:20::741])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42DGJg0y8fzF12b
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 16:22:59 +1000 (AEST)
-Message-Id: <e3e0bcfd7b779b978d07e088a8bd667ea9ddf4aa.1537163780.git.christophe.leroy@c-s.fr>
-In-Reply-To: <c09f541d459c29aca40d54fff152d5645e24b50d.1537163776.git.christophe.leroy@c-s.fr>
-References: <c09f541d459c29aca40d54fff152d5645e24b50d.1537163776.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 3/3] dt-bindings: watchdog: add mpc8xxx-wdt support
-To: Wim Van Sebroeck <wim@linux-watchdog.org>,
- Guenter Roeck <linux@roeck-us.net>, Radu Rendec <radu.rendec@gmail.com>,
- Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-watchdog@vger.kernel.org, devicetree@vger.kernel.org
-Date: Mon, 17 Sep 2018 06:22:53 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42DGyG5W2zzDqsy
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 16:52:05 +1000 (AEST)
+Received: by mail-qk1-x741.google.com with SMTP id g13-v6so8454382qki.9
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Sep 2018 23:52:05 -0700 (PDT)
+MIME-Version: 1.0
+References: <20180914153056.3644-1-npiggin@gmail.com>
+ <20180914153056.3644-2-npiggin@gmail.com>
+In-Reply-To: <20180914153056.3644-2-npiggin@gmail.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Mon, 17 Sep 2018 16:21:51 +0930
+Message-ID: <CACPK8XcEQdSbUN=bRECfWeV6ZR2Pm9LM5wB83GSmAr63NH1hpg@mail.gmail.com>
+Subject: Re: [PATCH 01/12] powerpc/64s/hash: Fix stab_rr off by one
+ initialization
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, aneesh.kumar@linux.ibm.com
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,45 +28,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add description of DT bindings for mpc8xxx-wdt driver which
-handles the CPU watchdog timer on the mpc83xx, mpc86xx and mpc8xx.
+On Sat, 15 Sep 2018 at 01:03, Nicholas Piggin <npiggin@gmail.com> wrote:
+>
+> This causes SLB alloation to start 1 beyond the start of the SLB.
+> There is no real problem because after it wraps it stats behaving
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- .../devicetree/bindings/watchdog/mpc8xxx-wdt.txt   | 25 ++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/watchdog/mpc8xxx-wdt.txt
+starts?
 
-diff --git a/Documentation/devicetree/bindings/watchdog/mpc8xxx-wdt.txt b/Documentation/devicetree/bindings/watchdog/mpc8xxx-wdt.txt
-new file mode 100644
-index 000000000000..e176face472a
---- /dev/null
-+++ b/Documentation/devicetree/bindings/watchdog/mpc8xxx-wdt.txt
-@@ -0,0 +1,25 @@
-+* Freescale mpc8xxx watchdog driver (For 83xx, 86xx and 8xx)
-+
-+Required properties:
-+- compatible: Shall contain one of the following:
-+	"mpc83xx_wdt" for an mpc83xx
-+	"fsl,mpc8610-wdt" for an mpc86xx
-+	"fsl,mpc823-wdt" for an mpc8xx
-+- reg: base physical address and length of the area hosting the
-+       watchdog registers.
-+		On the 83xx, "Watchdog Timer Registers" area:	<0x200 0x100>
-+		On the 86xx, "Watchdog Timer Registers" area:	<0xe4000 0x100>
-+		On the 8xx, "General System Interface Unit" area: <0x0 0x10>
-+
-+Optional properties:
-+- reg: additional physical address and length (4) of location of the
-+       Reset Status Register (called RSTRSCR on the mpc86xx)
-+       		On the 83xx, it is located at offset 0x910
-+       		On the 86xx, it is located at offset 0xe0094
-+       		On the 8xx, it is located at offset 0x288
-+
-+Example:
-+		WDT: watchdog@0 {
-+		    compatible = "fsl,mpc823-wdt";
-+		    reg = <0x0 0x10 0x288 0x4>;
-+		};
--- 
-2.13.3
+> properly, it's just surprisig to see when looking at SLB traces.
+
+surprising
+
+>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+
+> ---
+>  arch/powerpc/mm/slb.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
+> index 9f574e59d178..2f162c6e52d4 100644
+> --- a/arch/powerpc/mm/slb.c
+> +++ b/arch/powerpc/mm/slb.c
+> @@ -355,7 +355,7 @@ void slb_initialize(void)
+>  #endif
+>         }
+>
+> -       get_paca()->stab_rr = SLB_NUM_BOLTED;
+> +       get_paca()->stab_rr = SLB_NUM_BOLTED - 1;
+>
+>         lflags = SLB_VSID_KERNEL | linear_llp;
+>         vflags = SLB_VSID_KERNEL | vmalloc_llp;
+> --
+> 2.18.0
+>
