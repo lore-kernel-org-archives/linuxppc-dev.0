@@ -1,21 +1,20 @@
 Return-Path: <joel.stan@gmail.com>
-Received: from mail-qk1-x744.google.com (mail-qk1-x744.google.com
- [IPv6:2607:f8b0:4864:20::744])
+Received: from mail-qt0-x243.google.com (mail-qt0-x243.google.com
+ [IPv6:2607:f8b0:400d:c0d::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42D9J94HrYzF22T
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 12:37:13 +1000 (AEST)
-Received: by mail-qk1-x744.google.com with SMTP id 130-v6so8265607qkd.10
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Sep 2018 19:37:13 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42D9JT27KRzF22T
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 12:37:29 +1000 (AEST)
+Received: by mail-qt0-x243.google.com with SMTP id z8-v6so13994632qto.9
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Sep 2018 19:37:29 -0700 (PDT)
 MIME-Version: 1.0
 References: <20180905020951.10372-1-sjitindarsingh@gmail.com>
- <20180905020951.10372-2-sjitindarsingh@gmail.com>
-In-Reply-To: <20180905020951.10372-2-sjitindarsingh@gmail.com>
+ <20180905020951.10372-3-sjitindarsingh@gmail.com>
+In-Reply-To: <20180905020951.10372-3-sjitindarsingh@gmail.com>
 From: Joel Stanley <joel@jms.id.au>
-Date: Mon, 17 Sep 2018 12:07:00 +0930
-Message-ID: <CACPK8XeZS1b0iZwmL2BicLB3=hA1XNajo+vbva9hkr=FXHXhQA@mail.gmail.com>
-Subject: Re: [PATCH 1/2] powerpc/prom: Remove VLA in
- prom_check_platform_support()
+Date: Mon, 17 Sep 2018 12:07:16 +0930
+Message-ID: <CACPK8XckWVGGWXeUU+SViJZwRwqMDK8j9MAPck5xYbL6PVTwZg@mail.gmail.com>
+Subject: Re: [PATCH 2/2] powerpc/pseries: Remove VLA from lparcfg_write()
 To: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
 Cc: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
  Michael Neuling <mikey@neuling.org>, Kees Cook <keescook@chromium.org>
@@ -32,14 +31,10 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 On Wed, 5 Sep 2018 at 11:40, Suraj Jitindar Singh
 <sjitindarsingh@gmail.com> wrote:
 >
-> In prom_check_platform_support() we retrieve and parse the
-> "ibm,arch-vec-5-platform-support" property of the chosen node.
-> Currently we use a variable length array however to avoid this use an
-> array of constant length 8.
->
-> This property is used to indicate the supported options of vector 5
-> bytes 23-26 of the ibm,architecture.vec node. Each of these options
-> is a pair of bytes, thus for 4 options we have a max length of 8 bytes.
+> In lparcfg_write we hard code kbuf_sz and then use this as the variable
+> length of kbuf creating a variable length array. Since we're hard coding
+> the length anyway just define the array using this as the length and
+> remove the need for kbuf_sz, thus removing the variable length array.
 >
 > Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
 
