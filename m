@@ -1,25 +1,36 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
- [IPv6:2607:f8b0:4864:20::641])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <aneesh.kumar@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42DKPG6bY1zF1RN
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 18:42:10 +1000 (AEST)
-Received: by mail-pl1-x641.google.com with SMTP id g2-v6so7086738plo.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 01:42:10 -0700 (PDT)
-Date: Mon, 17 Sep 2018 18:42:04 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 05/12] powerpc/64s/hash: Use POWER6 SLBIA IH=1 variant
- in switch_slb
-Message-ID: <20180917184204.332ba755@roar.ozlabs.ibm.com>
-In-Reply-To: <874leoirks.fsf@linux.ibm.com>
-References: <20180914153056.3644-1-npiggin@gmail.com>
- <20180914153056.3644-6-npiggin@gmail.com>
- <874leoirks.fsf@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42DKtV02dPzF1p5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 19:04:01 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w8H90II0041769
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 05:05:03 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2mj7h9ckjw-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 05:05:02 -0400
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Mon, 17 Sep 2018 10:03:56 +0100
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: Christophe Leroy <christophe.leroy@c-s.fr>, akpm@linux-foundation.org,
+ linux-mm@kvack.org, aneesh.kumar@linux.vnet.ibm.com,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: How to handle PTE tables with non contiguous entries ?
+In-Reply-To: <ddc3bb56-4da0-c093-256f-185d4a612b5c@c-s.fr>
+References: <ddc3bb56-4da0-c093-256f-185d4a612b5c@c-s.fr>
+Date: Mon, 17 Sep 2018 14:33:50 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
+Message-Id: <87tvmoh4w9.fsf@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,108 +40,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 17 Sep 2018 11:38:35 +0530
-"Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> wrote:
+Christophe Leroy <christophe.leroy@c-s.fr> writes:
 
-> Nicholas Piggin <npiggin@gmail.com> writes:
-> 
-> > The SLBIA IH=1 hint will remove all non-zero SLBEs, but only
-> > invalidate ERAT entries associated with a class value of 1, for
-> > processors that support the hint (e.g., POWER6 and newer), which
-> > Linux assigns to user addresses.
-> >
-> > This prevents kernel ERAT entries from being invalidated when
-> > context switchig (if the thread faulted in more than 8 user SLBEs).  
-> 
-> 
-> how about renaming stuff to indicate kernel ERAT entries are kept?
-> something like slb_flush_and_rebolt_user()? 
+> Hi,
+>
+> I'm having a hard time figuring out the best way to handle the following 
+> situation:
+>
+> On the powerpc8xx, handling 16k size pages requires to have page tables 
+> with 4 identical entries.
 
-User mappings aren't bolted though. I consider rebolt to mean update
-the bolted kernel mappings when something has changed (like vmalloc
-segment update). That doesn't need to be done here, so I think this
-is okay. I can add a comment though.
+I assume that hugetlb page size? If so isn't that similar to FSL hugetlb
+page table layout?
 
-Thanks,
-Nick
+>
+> Initially I was thinking about handling this by simply modifying 
+> pte_index() which changing pte_t type in order to have one entry every 
+> 16 bytes, then replicate the PTE value at *ptep, *ptep+1,*ptep+2 and 
+> *ptep+3 both in set_pte_at() and pte_update().
+>
+> However, this doesn't work because many many places in the mm core part 
+> of the kernel use loops on ptep with single ptep++ increment.
+>
+> Therefore did it with the following hack:
+>
+>   /* PTE level */
+> +#if defined(CONFIG_PPC_8xx) && defined(CONFIG_PPC_16K_PAGES)
+> +typedef struct { pte_basic_t pte, pte1, pte2, pte3; } pte_t;
+> +#else
+>   typedef struct { pte_basic_t pte; } pte_t;
+> +#endif
+>
+> @@ -181,7 +192,13 @@ static inline unsigned long pte_update(pte_t *p,
+>          : "cc" );
+>   #else /* PTE_ATOMIC_UPDATES */
+>          unsigned long old = pte_val(*p);
+> -       *p = __pte((old & ~clr) | set);
+> +       unsigned long new = (old & ~clr) | set;
+> +
+> +#if defined(CONFIG_PPC_8xx) && defined(CONFIG_PPC_16K_PAGES)
+> +       p->pte = p->pte1 = p->pte2 = p->pte3 = new;
+> +#else
+> +       *p = __pte(new);
+> +#endif
+>   #endif /* !PTE_ATOMIC_UPDATES */
+>
+>   #ifdef CONFIG_44x
+>
+>
+> @@ -161,7 +161,11 @@ static inline void __set_pte_at(struct mm_struct 
+> *mm, unsigned long addr,
+>          /* Anything else just stores the PTE normally. That covers all 
+> 64-bit
+>           * cases, and 32-bit non-hash with 32-bit PTEs.
+>           */
+> +#if defined(CONFIG_PPC_8xx) && defined(CONFIG_PPC_16K_PAGES)
+> +       ptep->pte = ptep->pte1 = ptep->pte2 = ptep->pte3 = pte_val(pte);
+> +#else
+>          *ptep = pte;
+> +#endif
+>
+>
+>
+> But I'm not too happy with it as it means pte_t is not a single type 
+> anymore so passing it from one function to the other is quite heavy.
+>
+>
+> Would someone have an idea of an elegent way to handle that ?
+>
+> Thanks
+> Christophe
 
-> 
-> >
-> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> > ---
-> >  arch/powerpc/mm/slb.c | 38 +++++++++++++++++++++++---------------
-> >  1 file changed, 23 insertions(+), 15 deletions(-)
-> >
-> > diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
-> > index a5e58f11d676..03fa1c663ccf 100644
-> > --- a/arch/powerpc/mm/slb.c
-> > +++ b/arch/powerpc/mm/slb.c
-> > @@ -128,13 +128,21 @@ void slb_flush_all_realmode(void)
-> >  	asm volatile("slbmte %0,%0; slbia" : : "r" (0));
-> >  }
-> >  
-> > -static void __slb_flush_and_rebolt(void)
-> > +void slb_flush_and_rebolt(void)
-> >  {
-> >  	/* If you change this make sure you change SLB_NUM_BOLTED
-> >  	 * and PR KVM appropriately too. */
-> >  	unsigned long linear_llp, lflags;
-> >  	unsigned long ksp_esid_data, ksp_vsid_data;
-> >  
-> > +	WARN_ON(!irqs_disabled());
-> > +
-> > +	/*
-> > +	 * We can't take a PMU exception in the following code, so hard
-> > +	 * disable interrupts.
-> > +	 */
-> > +	hard_irq_disable();
-> > +
-> >  	linear_llp = mmu_psize_defs[mmu_linear_psize].sllp;
-> >  	lflags = SLB_VSID_KERNEL | linear_llp;
-> >  
-> > @@ -160,20 +168,7 @@ static void __slb_flush_and_rebolt(void)
-> >  		     :: "r"(ksp_vsid_data),
-> >  		        "r"(ksp_esid_data)
-> >  		     : "memory");
-> > -}
-> >  
-> > -void slb_flush_and_rebolt(void)
-> > -{
-> > -
-> > -	WARN_ON(!irqs_disabled());
-> > -
-> > -	/*
-> > -	 * We can't take a PMU exception in the following code, so hard
-> > -	 * disable interrupts.
-> > -	 */
-> > -	hard_irq_disable();
-> > -
-> > -	__slb_flush_and_rebolt();
-> >  	get_paca()->slb_cache_ptr = 0;
-> >  }
-> >  
-> > @@ -248,7 +243,20 @@ void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
-> >  
-> >  		asm volatile("isync" : : : "memory");
-> >  	} else {
-> > -		__slb_flush_and_rebolt();
-> > +		struct slb_shadow *p = get_slb_shadow();
-> > +		unsigned long ksp_esid_data =
-> > +			be64_to_cpu(p->save_area[KSTACK_INDEX].esid);
-> > +		unsigned long ksp_vsid_data =
-> > +			be64_to_cpu(p->save_area[KSTACK_INDEX].vsid);
-> > +
-> > +		asm volatile("isync\n"
-> > +			     PPC_SLBIA(1) "\n"
-> > +			     "slbmte	%0,%1\n"
-> > +			     "isync"
-> > +			     :: "r"(ksp_vsid_data),
-> > +				"r"(ksp_esid_data));
-> > +
-> > +		asm volatile("isync" : : : "memory");
-> >  	}
-> >  
-> >  	get_paca()->slb_cache_ptr = 0;
-> > -- 
-> > 2.18.0  
-> 
+Why would pte_update bother about updating all the 4 entries?. Can you
+help me understand the issue?
+
+-aneesh
