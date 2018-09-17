@@ -3,8 +3,8 @@ Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
  [140.211.169.12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42DhVX2lzJzF27h
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2018 09:03:00 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Dhgx0YRkzDsRY
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2018 09:11:09 +1000 (AEST)
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To: linux-kernel@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org,
@@ -13,12 +13,12 @@ Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org,
  Peter Zijlstra <peterz@infradead.org>, linuxppc-dev@lists.ozlabs.org,
  Arnaldo Carvalho de Melo <acme@redhat.com>,
  Sasha Levin <alexander.levin@microsoft.com>
-Subject: [PATCH 4.14 046/126] perf tools: Allow overriding MAX_NR_CPUS at
+Subject: [PATCH 4.18 084/158] perf tools: Allow overriding MAX_NR_CPUS at
  compile time
-Date: Tue, 18 Sep 2018 00:41:34 +0200
-Message-Id: <20180917211707.646988170@linuxfoundation.org>
-In-Reply-To: <20180917211703.481236999@linuxfoundation.org>
-References: <20180917211703.481236999@linuxfoundation.org>
+Date: Tue, 18 Sep 2018 00:41:54 +0200
+Message-Id: <20180917211715.095678338@linuxfoundation.org>
+In-Reply-To: <20180917211710.383360696@linuxfoundation.org>
+References: <20180917211710.383360696@linuxfoundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,7 +30,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-4.14-stable review patch.  If anyone has any objections, please let me know.
+4.18-stable review patch.  If anyone has any objections, please let me know.
 
 ------------------
 
@@ -93,7 +93,7 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
 --- a/tools/perf/perf.h
 +++ b/tools/perf/perf.h
-@@ -24,7 +24,9 @@ static inline unsigned long long rdclock
+@@ -25,7 +25,9 @@ static inline unsigned long long rdclock
  	return ts.tv_sec * 1000000000ULL + ts.tv_nsec;
  }
  
