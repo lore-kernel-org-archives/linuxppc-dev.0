@@ -1,24 +1,28 @@
-Return-Path: <joel.stan@gmail.com>
-Received: from mail-qk1-x741.google.com (mail-qk1-x741.google.com
- [IPv6:2607:f8b0:4864:20::741])
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
+ [IPv6:2607:f8b0:4864:20::442])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42DGyG5W2zzDqsy
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 16:52:05 +1000 (AEST)
-Received: by mail-qk1-x741.google.com with SMTP id g13-v6so8454382qki.9
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Sep 2018 23:52:05 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42DHFT3mRtzF10Y
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 17:05:15 +1000 (AEST)
+Received: by mail-pf1-x442.google.com with SMTP id j8-v6so7104482pff.6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 00:05:15 -0700 (PDT)
+Subject: Re: [PATCH kernel RFC 0/3] powerpc/pseries/iommu: GPU coherent memory
+ pass through
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@ozlabs.org>,
+ Russell Currey <ruscur@russell.cc>
+References: <20180725095032.2196-1-aik@ozlabs.ru>
+ <f5bb1df3-1b15-9c2b-8bb1-7733bb743926@ozlabs.ru>
+ <a28c139e-deb6-cdb3-1eb5-b8d6e7378ce1@ozlabs.ru>
+Message-ID: <cc415da6-74e9-536c-9065-5b2f0a10f5a1@ozlabs.ru>
+Date: Mon, 17 Sep 2018 17:05:07 +1000
 MIME-Version: 1.0
-References: <20180914153056.3644-1-npiggin@gmail.com>
- <20180914153056.3644-2-npiggin@gmail.com>
-In-Reply-To: <20180914153056.3644-2-npiggin@gmail.com>
-From: Joel Stanley <joel@jms.id.au>
-Date: Mon, 17 Sep 2018 16:21:51 +0930
-Message-ID: <CACPK8XcEQdSbUN=bRECfWeV6ZR2Pm9LM5wB83GSmAr63NH1hpg@mail.gmail.com>
-Subject: Re: [PATCH 01/12] powerpc/64s/hash: Fix stab_rr off by one
- initialization
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, aneesh.kumar@linux.ibm.com
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <a28c139e-deb6-cdb3-1eb5-b8d6e7378ce1@ozlabs.ru>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,37 +32,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 15 Sep 2018 at 01:03, Nicholas Piggin <npiggin@gmail.com> wrote:
->
-> This causes SLB alloation to start 1 beyond the start of the SLB.
-> There is no real problem because after it wraps it stats behaving
+Ping?
 
-starts?
+The problem is still there...
 
-> properly, it's just surprisig to see when looking at SLB traces.
 
-surprising
+On 24/08/2018 13:04, Alexey Kardashevskiy wrote:
+> 
+> 
+> On 09/08/2018 14:41, Alexey Kardashevskiy wrote:
+>>
+>>
+>> On 25/07/2018 19:50, Alexey Kardashevskiy wrote:
+>>> I am trying to pass through a 3D controller:
+>>> [0302]: NVIDIA Corporation GV100GL [Tesla V100 SXM2] [10de:1db1] (rev a1)
+>>>
+>>> which has a quite unique feature as coherent memory directly accessible
+>>> from a POWER9 CPU via an NVLink2 transport.
+>>>
+>>> So in addition to passing a PCI device + accompanying NPU devices,
+>>> we will also be passing the host physical address range as it is done
+>>> on the bare metal system.
+>>>
+>>> The memory on the host is presented as:
+>>>
+>>> ===
+>>> [aik@yc02goos ~]$ lsprop /proc/device-tree/memory@42000000000
+>>> ibm,chip-id      000000fe (254)
+>>> device_type      "memory"
+>>> compatible       "ibm,coherent-device-memory"
+>>> reg              00000420 00000000 00000020 00000000
+>>> linux,usable-memory
+>>>                  00000420 00000000 00000000 00000000
+>>> phandle          00000726 (1830)
+>>> name             "memory"
+>>> ibm,associativity
+>>>                  00000004 000000fe 000000fe 000000fe 000000fe
+>>> ===
+>>>
+>>> and the host does not touch it as the second 64bit value of
+>>> "linux,usable-memory" - the size - is null. Later on the NVIDIA driver
+>>> trains the NVLink2 and probes this memory and this is how it becomes
+>>> onlined.
+>>>
+>>> In the virtual environment I am planning on doing the same thing,
+>>> however there is a difference in 64bit DMA handling. The powernv
+>>> platform uses a PHB3 bypass mode and that just works but
+>>> the pseries platform uses DDW RTAS API to achieve the same
+>>> result and the problem with this is that we need a huge DMA
+>>> window to start from zero (because this GPU supports less than
+>>> 50bits for DMA address space) and cover not just present memory
+>>> but also this new coherent memory.
+>>>
+>>>
+>>> This is based on sha1
+>>> d72e90f3 Linus Torvalds "Linux 4.18-rc6".
+>>>
+>>> Please comment. Thanks.
+>>
+>>
+>> Ping?
+> 
+> 
+> Ping?
+> 
+>>
+>>
+>>>
+>>>
+>>>
+>>> Alexey Kardashevskiy (3):
+>>>   powerpc/pseries/iommu: Allow dynamic window to start from zero
+>>>   powerpc/pseries/iommu: Force default DMA window removal
+>>>   powerpc/pseries/iommu: Use memory@ nodes in max RAM address
+>>>     calculation
+>>>
+>>>  arch/powerpc/platforms/pseries/iommu.c | 77 ++++++++++++++++++++++++++++++----
+>>>  1 file changed, 70 insertions(+), 7 deletions(-)
+>>>
+>>
+> 
 
->
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-
-> ---
->  arch/powerpc/mm/slb.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
-> index 9f574e59d178..2f162c6e52d4 100644
-> --- a/arch/powerpc/mm/slb.c
-> +++ b/arch/powerpc/mm/slb.c
-> @@ -355,7 +355,7 @@ void slb_initialize(void)
->  #endif
->         }
->
-> -       get_paca()->stab_rr = SLB_NUM_BOLTED;
-> +       get_paca()->stab_rr = SLB_NUM_BOLTED - 1;
->
->         lflags = SLB_VSID_KERNEL | linear_llp;
->         vflags = SLB_VSID_KERNEL | vmalloc_llp;
-> --
-> 2.18.0
->
+-- 
+Alexey
