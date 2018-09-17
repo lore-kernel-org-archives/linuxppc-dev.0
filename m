@@ -1,23 +1,29 @@
-Return-Path: <ndesaulniers@google.com>
-Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
- [IPv6:2607:f8b0:4864:20::443])
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
+ [IPv6:2607:f8b0:4864:20::541])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42DXlT5tHgzF12l
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2018 03:13:41 +1000 (AEST)
-Received: by mail-pf1-x443.google.com with SMTP id j26-v6so7847901pfi.10
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 10:13:41 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42DYdl2DmbzF0ph
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2018 03:53:47 +1000 (AEST)
+Received: by mail-pg1-x541.google.com with SMTP id 7-v6so8030616pgf.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 10:53:47 -0700 (PDT)
+Date: Tue, 18 Sep 2018 03:53:37 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: linux-mm@kvack.org, linux-arch@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Andrew Morton
+ <akpm@linux-foundation.org>, Linus Torvalds
+ <torvalds@linux-foundation.org>, Ley Foon Tan <lftan@altera.com>,
+ nios2-dev@lists.rocketboards.org
+Subject: Re: [PATCH 3/3] mm: optimise pte dirty/accessed bit setting by
+ demand based pte insertion
+Message-ID: <20180918035337.0727dad0@roar.ozlabs.ibm.com>
+In-Reply-To: <20180905142951.GA15680@roeck-us.net>
+References: <20180828112034.30875-1-npiggin@gmail.com>
+ <20180828112034.30875-4-npiggin@gmail.com>
+ <20180905142951.GA15680@roeck-us.net>
 MIME-Version: 1.0
-References: <20180917074621.25066-1-joel@jms.id.au>
-In-Reply-To: <20180917074621.25066-1-joel@jms.id.au>
-From: Nick Desaulniers <ndesaulniers@google.com>
-Date: Mon, 17 Sep 2018 10:13:27 -0700
-Message-ID: <CAKwvOdnj7pBwkXe953iMYpt65WNnTqDKEq-p90RVeYBMSpyTSQ@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: Disable -Wbuiltin-requires-header when setjmp is
- used
-To: joel@jms.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, Stephen Hines <srhines@google.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,90 +33,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Sep 17, 2018 at 12:46 AM Joel Stanley <joel@jms.id.au> wrote:
->
-> The powerpc kernel uses setjmp which causes a warning when building with
-> clang:
->
->     CC      arch/powerpc/xmon/xmon.o
->   In file included from arch/powerpc/xmon/xmon.c:51:
->   ./arch/powerpc/include/asm/setjmp.h:15:13: error: declaration of
->   built-in function 'setjmp' requires inclusion of the header <setjmp.h>
->         [-Werror,-Wbuiltin-requires-header]
->   extern long setjmp(long *);
->               ^
->   ./arch/powerpc/include/asm/setjmp.h:16:13: error: declaration of
->   built-in function 'longjmp' requires inclusion of the header <setjmp.h>
->         [-Werror,-Wbuiltin-requires-header]
->   extern void longjmp(long *, long);
->               ^
->
-> This *is* the header and we're not using the built-in setjump but
-> rather the one in arch/powerpc/kernel/misc.S. As the compiler warning
-> does not make sense, it for the files where setjmp is used.
->
-> Signed-off-by: Joel Stanley <joel@jms.id.au>
+On Wed, 5 Sep 2018 07:29:51 -0700
+Guenter Roeck <linux@roeck-us.net> wrote:
 
-Joel, thanks for reporting the issue in
-https://github.com/ClangBuiltLinux/linux/issues/59
-and sending the patch to fix.  I think it would be good to credit
-Stephen with the Suggested-by tag:
+> Hi,
+> 
+> On Tue, Aug 28, 2018 at 09:20:34PM +1000, Nicholas Piggin wrote:
+> > Similarly to the previous patch, this tries to optimise dirty/accessed
+> > bits in ptes to avoid access costs of hardware setting them.
+> >   
+> 
+> This patch results in silent nios2 boot failures, silent meaning that
+> the boot stalls.
 
-Suggested-by: Stephen Hines <srhines@google.com>
+Okay I just got back to looking at this. The reason for the hang is
+I think a bug in the nios2 TLB code, but maybe other archs have similar
+issues.
 
-> ---
-> We could instead disable this for all of the kernel as I don't think the
-> warning is going to ever provide useful information for the kernel.
+In case of a missing / !present Linux pte, nios2 installs a TLB entry
+with no permissions via its fast TLB exception handler (software TLB
+fill). Then it relies on that causing a TLB permission exception in a
+slower handler that calls handle_mm_fault to set the Linux pte and
+flushes the old TLB. Then the fast exception handler will find the new
+Linux pte.
 
-I'd be curious to see more than one failure to be able to discern
-whether this flag should always be disabled or if it could flag actual
-bugs.  I assume the intent of the flag is "don't name
-functions/headers that would conflict with the C standard library."
-While the kernel uses `-nostdinc`, I still kind of empathize with the
-intent of the flag.  I worry about system headers somehow getting
-included rather than the kernel provided ones, especially because some
-Makefiles in the kernel overwrite KBUILD_CFLAGS.
+With this patch, nios2 has a case where handle_mm_fault does not flush
+the old TLB, which results in the TLB permission exception continually
+being retried.
 
-Reviewed-by: Nick Desaulniers <ndesaulniers@google.com>
+What happens now is that fault paths like do_read_fault will install a
+Linux pte with the young bit clear and return. That will cause nios2 to
+fault again but this time go down the bottom of handle_pte_fault and to
+the access flags update with the young bit set. The young bit is seen to
+be different, so that causes ptep_set_access_flags to do a TLB flush and
+that finally allows the fast TLB handler to fire and pick up the new
+Linux pte.
 
->
->  arch/powerpc/kernel/Makefile | 3 +++
->  arch/powerpc/xmon/Makefile   | 3 +++
->  2 files changed, 6 insertions(+)
->
-> diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-> index 1e64cfe22a83..9845a94f5f68 100644
-> --- a/arch/powerpc/kernel/Makefile
-> +++ b/arch/powerpc/kernel/Makefile
-> @@ -7,6 +7,9 @@ CFLAGS_ptrace.o         += -DUTS_MACHINE='"$(UTS_MACHINE)"'
->
->  subdir-ccflags-$(CONFIG_PPC_WERROR) := -Werror
->
-> +# Disable clang warning for using setjmp without setjmp.h header
-> +CFLAGS_crash.o         += $(call cc-disable-warning, builtin-requires-header)
-> +
->  ifdef CONFIG_PPC64
->  CFLAGS_prom_init.o     += $(NO_MINIMAL_TOC)
->  endif
-> diff --git a/arch/powerpc/xmon/Makefile b/arch/powerpc/xmon/Makefile
-> index 93cc1f1b8b61..a38db48f9f6d 100644
-> --- a/arch/powerpc/xmon/Makefile
-> +++ b/arch/powerpc/xmon/Makefile
-> @@ -14,6 +14,9 @@ ccflags-$(CONFIG_PPC64) := $(NO_MINIMAL_TOC)
->
->  obj-y                  += xmon.o nonstdio.o spr_access.o
->
-> +# Disable clang warning for using setjmp without setjmp.h header
-> +subdir-ccflags-y := $(call cc-disable-warning, builtin-requires-header)
-> +
->  ifdef CONFIG_XMON_DISASSEMBLY
->  obj-y                  += ppc-dis.o ppc-opc.o
->  obj-$(CONFIG_SPU_BASE) += spu-dis.o spu-opc.o
-> --
-> 2.17.1
->
+With this patch, the young bit is set in the first handle_mm_fault, so
+the second handle_mm_fault no longer sees the ptes are different and
+does not flush the TLB. The spurious fault handler also does not flush
+them unless FAULT_FLAG_WRITE is set.
 
+What nios2 should do is invalidate the TLB in update_mmu_cache. What it
+*really* should do is install the new TLB entry, I have some patches to
+make that work in qemu I can submit. But I would like to try getting
+these dirty/accessed bit optimisation in 4.20, so I will send a simple
+path to just do the TLB invalidate that could go in Andrew's git tree.
 
--- 
+Is that agreeable with the nios2 maintainers?
+
 Thanks,
-~Nick Desaulniers
+Nick
