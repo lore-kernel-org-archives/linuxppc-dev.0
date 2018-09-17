@@ -1,20 +1,21 @@
 Return-Path: <joel.stan@gmail.com>
-Received: from mail-qt0-x241.google.com (mail-qt0-x241.google.com
- [IPv6:2607:f8b0:400d:c0d::241])
+Received: from mail-qk1-x743.google.com (mail-qk1-x743.google.com
+ [IPv6:2607:f8b0:4864:20::743])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42D99b2xJSzF12D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 12:31:30 +1000 (AEST)
-Received: by mail-qt0-x241.google.com with SMTP id g53-v6so13974563qtg.10
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Sep 2018 19:31:29 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42D9C16qnqzF1QT
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 12:32:45 +1000 (AEST)
+Received: by mail-qk1-x743.google.com with SMTP id 130-v6so8262365qkd.10
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Sep 2018 19:32:45 -0700 (PDT)
 MIME-Version: 1.0
 References: <20180914050854.6214-1-npiggin@gmail.com>
- <20180914050854.6214-2-npiggin@gmail.com>
-In-Reply-To: <20180914050854.6214-2-npiggin@gmail.com>
+ <20180914050854.6214-3-npiggin@gmail.com>
+In-Reply-To: <20180914050854.6214-3-npiggin@gmail.com>
 From: Joel Stanley <joel@jms.id.au>
-Date: Mon, 17 Sep 2018 12:01:15 +0930
-Message-ID: <CACPK8XeWnEhhXmCOu5FpdvAEhtAhWigdvQ27B0Z4zwks7aKt9g@mail.gmail.com>
-Subject: Re: [PATCH 1/3] powerpc: remove old GCC version checks
+Date: Mon, 17 Sep 2018 12:02:32 +0930
+Message-ID: <CACPK8XekkXwRqDd9z3VFQZVbmiDVV-W2nXqfy8u5DZPsZ+5fnA@mail.gmail.com>
+Subject: Re: [PATCH 2/3] powerpc: consolidate -mno-sched-epilog into FTRACE
+ flags
 To: Nicholas Piggin <npiggin@gmail.com>
 Cc: linuxppc-dev@lists.ozlabs.org
 Content-Type: text/plain; charset="UTF-8"
@@ -28,8 +29,6 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Fri, 14 Sep 2018 at 14:39, Nicholas Piggin <npiggin@gmail.com> wrote:
->
-> GCC 4.6 is the minimum supported now.
 >
 > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
