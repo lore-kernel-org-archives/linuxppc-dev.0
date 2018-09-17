@@ -1,29 +1,45 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
- [IPv6:2607:f8b0:4864:20::541])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42DYdl2DmbzF0ph
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2018 03:53:47 +1000 (AEST)
-Received: by mail-pg1-x541.google.com with SMTP id 7-v6so8030616pgf.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 10:53:47 -0700 (PDT)
-Date: Tue, 18 Sep 2018 03:53:37 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: linux-mm@kvack.org, linux-arch@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Andrew Morton
- <akpm@linux-foundation.org>, Linus Torvalds
- <torvalds@linux-foundation.org>, Ley Foon Tan <lftan@altera.com>,
- nios2-dev@lists.rocketboards.org
-Subject: Re: [PATCH 3/3] mm: optimise pte dirty/accessed bit setting by
- demand based pte insertion
-Message-ID: <20180918035337.0727dad0@roar.ozlabs.ibm.com>
-In-Reply-To: <20180905142951.GA15680@roeck-us.net>
-References: <20180828112034.30875-1-npiggin@gmail.com>
- <20180828112034.30875-4-npiggin@gmail.com>
- <20180905142951.GA15680@roeck-us.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Dbv85XJszF116
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2018 05:35:32 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w8HJYPjr108564
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 15:35:29 -0400
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2mjj1ksct5-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 15:35:28 -0400
+Received: from localhost
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Mon, 17 Sep 2018 15:35:28 -0400
+Received: from b01ledav004.gho.pok.ibm.com (b01ledav004.gho.pok.ibm.com
+ [9.57.199.109])
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ w8HJZQpe4391386
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 19:35:26 GMT
+Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B278F112062
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 15:34:54 -0400 (EDT)
+Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 7B80C112061
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 15:34:54 -0400 (EDT)
+Received: from ltcalpine2-lp14.aus.stglabs.ibm.com (unknown [9.40.195.197])
+ by b01ledav004.gho.pok.ibm.com (Postfix) with ESMTP
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 15:34:54 -0400 (EDT)
+Subject: [PATCH] powerpc/pseries: Disable CPU hotplug across migrations
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Date: Mon, 17 Sep 2018 14:14:02 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <153721164232.32706.4283915467151746975.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,54 +49,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 5 Sep 2018 07:29:51 -0700
-Guenter Roeck <linux@roeck-us.net> wrote:
+When performing partition migrations all present CPUs must be online
+as all present CPUs must make the H_JOIN call as part of the migration
+process. Once all present CPUs make the H_JOIN call, one CPU is returned
+to make the rtas call to perform the migration to the destination system.
 
-> Hi,
-> 
-> On Tue, Aug 28, 2018 at 09:20:34PM +1000, Nicholas Piggin wrote:
-> > Similarly to the previous patch, this tries to optimise dirty/accessed
-> > bits in ptes to avoid access costs of hardware setting them.
-> >   
-> 
-> This patch results in silent nios2 boot failures, silent meaning that
-> the boot stalls.
+During testing of migration and changing the SMT state we have found
+instances where CPUs are offlined, as part of the SMT state change,
+before they make the H_JOIN call. This results in a hung system where
+every CPU is either in H_JOIN or offline.
 
-Okay I just got back to looking at this. The reason for the hang is
-I think a bug in the nios2 TLB code, but maybe other archs have similar
-issues.
+To prevent this this patch disables CPU hotplug during the migration
+process.
 
-In case of a missing / !present Linux pte, nios2 installs a TLB entry
-with no permissions via its fast TLB exception handler (software TLB
-fill). Then it relies on that causing a TLB permission exception in a
-slower handler that calls handle_mm_fault to set the Linux pte and
-flushes the old TLB. Then the fast exception handler will find the new
-Linux pte.
+Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/rtas.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-With this patch, nios2 has a case where handle_mm_fault does not flush
-the old TLB, which results in the TLB permission exception continually
-being retried.
-
-What happens now is that fault paths like do_read_fault will install a
-Linux pte with the young bit clear and return. That will cause nios2 to
-fault again but this time go down the bottom of handle_pte_fault and to
-the access flags update with the young bit set. The young bit is seen to
-be different, so that causes ptep_set_access_flags to do a TLB flush and
-that finally allows the fast TLB handler to fire and pick up the new
-Linux pte.
-
-With this patch, the young bit is set in the first handle_mm_fault, so
-the second handle_mm_fault no longer sees the ptes are different and
-does not flush the TLB. The spurious fault handler also does not flush
-them unless FAULT_FLAG_WRITE is set.
-
-What nios2 should do is invalidate the TLB in update_mmu_cache. What it
-*really* should do is install the new TLB entry, I have some patches to
-make that work in qemu I can submit. But I would like to try getting
-these dirty/accessed bit optimisation in 4.20, so I will send a simple
-path to just do the TLB invalidate that could go in Andrew's git tree.
-
-Is that agreeable with the nios2 maintainers?
-
-Thanks,
-Nick
+diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+index 8afd146bc9c7..2c7ed31c736e 100644
+--- a/arch/powerpc/kernel/rtas.c
++++ b/arch/powerpc/kernel/rtas.c
+@@ -981,6 +981,7 @@ int rtas_ibm_suspend_me(u64 handle)
+ 		goto out;
+ 	}
+ 
++	cpu_hotplug_disable();
+ 	stop_topology_update();
+ 
+ 	/* Call function on all CPUs.  One of us will make the
+@@ -995,6 +996,7 @@ int rtas_ibm_suspend_me(u64 handle)
+ 		printk(KERN_ERR "Error doing global join\n");
+ 
+ 	start_topology_update();
++	cpu_hotplug_enable();
+ 
+ 	/* Take down CPUs not online prior to suspend */
+ 	cpuret = rtas_offline_cpus_mask(offline_mask);
