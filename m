@@ -3,15 +3,15 @@ Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
  [140.211.169.12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42DPVx54cNzF1fD
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 21:47:20 +1000 (AEST)
-Date: Mon, 17 Sep 2018 13:47:15 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42DPWc0ndwzF2QL
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 21:47:56 +1000 (AEST)
+Date: Mon, 17 Sep 2018 13:47:51 +0200
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To: Ondrej Mosnacek <omosnace@redhat.com>
 Cc: stable@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>,
  linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Subject: Re: [PATCH 4.4.y] crypto: vmx - Fix sleep-in-atomic bugs
-Message-ID: <20180917114715.GG13057@kroah.com>
+Message-ID: <20180917114751.GH13057@kroah.com>
 References: <20180910074204.10812-1-omosnace@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -33,4 +33,6 @@ On Mon, Sep 10, 2018 at 09:42:04AM +0200, Ondrej Mosnacek wrote:
 >     aes_cbc.c - adapted enable/disable calls to v4.4 state
 >     aes_xts.c - did not exist yet in v4.4
 
-We don't need these lines here...  I'll go hand edit it out...
+Now applied, thanks.
+
+greg k-h
