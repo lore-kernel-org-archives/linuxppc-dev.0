@@ -3,33 +3,33 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42DFpf3pm5zF0wf
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 16:00:25 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w8H5xhcG125805
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 02:00:23 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42DG0D4N4kzDr4C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 16:08:44 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w8H64SjF020059
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 02:08:42 -0400
 Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2mj62kh30w-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2mj5r9j27m-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 02:00:22 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2018 02:08:41 -0400
 Received: from localhost
  by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Mon, 17 Sep 2018 07:00:21 +0100
+ Mon, 17 Sep 2018 07:08:40 +0100
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH 03/12] powerpc/64s/hash: move POWER5 < DD2.1 slbie
- workaround where it is needed
-In-Reply-To: <20180914153056.3644-4-npiggin@gmail.com>
+Subject: Re: [PATCH 05/12] powerpc/64s/hash: Use POWER6 SLBIA IH=1 variant in
+ switch_slb
+In-Reply-To: <20180914153056.3644-6-npiggin@gmail.com>
 References: <20180914153056.3644-1-npiggin@gmail.com>
- <20180914153056.3644-4-npiggin@gmail.com>
-Date: Mon, 17 Sep 2018 11:30:16 +0530
+ <20180914153056.3644-6-npiggin@gmail.com>
+Date: Mon, 17 Sep 2018 11:38:35 +0530
 MIME-Version: 1.0
 Content-Type: text/plain
-Message-Id: <877ejkiryn.fsf@linux.ibm.com>
+Message-Id: <874leoirks.fsf@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,81 +41,91 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Nicholas Piggin <npiggin@gmail.com> writes:
 
-> The POWER5 < DD2.1 issue is that slbie needs to be issued more than
-> once. It came in with this change:
+> The SLBIA IH=1 hint will remove all non-zero SLBEs, but only
+> invalidate ERAT entries associated with a class value of 1, for
+> processors that support the hint (e.g., POWER6 and newer), which
+> Linux assigns to user addresses.
 >
-> ChangeSet@1.1608, 2004-04-29 07:12:31-07:00, david@gibson.dropbear.id.au
->   [PATCH] POWER5 erratum workaround
->
->   Early POWER5 revisions (<DD2.1) have a problem requiring slbie
->   instructions to be repeated under some circumstances.  The patch below
->   adds a workaround (patch made by Anton Blanchard).
-
-Thanks for extracting this. Can we add this to the code? Also I am not
-sure what is repeated here? Is it that we just need one slb extra(hence
-only applicable to offset == 1) or is it that we need to make sure there
-is always one slb extra? The code does the former.  Do you a have link for
-that email patch?
+> This prevents kernel ERAT entries from being invalidated when
+> context switchig (if the thread faulted in more than 8 user SLBEs).
 
 
->
-> The extra slbie in switch_slb is done even for the case where slbia is
-> called (slb_flush_and_rebolt). I don't believe that is required
-> because there are other slb_flush_and_rebolt callers which do not
-> issue the workaround slbie, which would be broken if it was required.
->
-> It also seems to be fine inside the isync with the first slbie, as it
-> is in the kernel stack switch code.
->
-> So move this workaround to where it is required. This is not much of
-> an optimisation because this is the fast path, but it makes the code
-> more understandable and neater.
+how about renaming stuff to indicate kernel ERAT entries are kept?
+something like slb_flush_and_rebolt_user()? 
+
 >
 > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 > ---
->  arch/powerpc/mm/slb.c | 14 +++++++-------
->  1 file changed, 7 insertions(+), 7 deletions(-)
+>  arch/powerpc/mm/slb.c | 38 +++++++++++++++++++++++---------------
+>  1 file changed, 23 insertions(+), 15 deletions(-)
 >
 > diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
-> index 1c7128c63a4b..d952ece3abf7 100644
+> index a5e58f11d676..03fa1c663ccf 100644
 > --- a/arch/powerpc/mm/slb.c
 > +++ b/arch/powerpc/mm/slb.c
-> @@ -226,7 +226,6 @@ static inline int esids_match(unsigned long addr1, unsigned long addr2)
->  void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
->  {
->  	unsigned long offset;
-> -	unsigned long slbie_data = 0;
->  	unsigned long pc = KSTK_EIP(tsk);
->  	unsigned long stack = KSTK_ESP(tsk);
->  	unsigned long exec_base;
-> @@ -241,7 +240,9 @@ void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
->  	offset = get_paca()->slb_cache_ptr;
->  	if (!mmu_has_feature(MMU_FTR_NO_SLBIE_B) &&
->  	    offset <= SLB_CACHE_ENTRIES) {
-> +		unsigned long slbie_data;
->  		int i;
-> +
->  		asm volatile("isync" : : : "memory");
->  		for (i = 0; i < offset; i++) {
->  			slbie_data = (unsigned long)get_paca()->slb_cache[i]
-> @@ -251,15 +252,14 @@ void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
->  			slbie_data |= SLBIE_C; /* C set for user addresses */
->  			asm volatile("slbie %0" : : "r" (slbie_data));
->  		}
-> -		asm volatile("isync" : : : "memory");
-> -	} else {
-> -		__slb_flush_and_rebolt();
-> -	}
+> @@ -128,13 +128,21 @@ void slb_flush_all_realmode(void)
+>  	asm volatile("slbmte %0,%0; slbia" : : "r" (0));
+>  }
 >  
-> -	if (!cpu_has_feature(CPU_FTR_ARCH_207S)) {
->  		/* Workaround POWER5 < DD2.1 issue */
-> -		if (offset == 1 || offset > SLB_CACHE_ENTRIES)
-> +		if (!cpu_has_feature(CPU_FTR_ARCH_207S) && offset == 1)
->  			asm volatile("slbie %0" : : "r" (slbie_data));
+> -static void __slb_flush_and_rebolt(void)
+> +void slb_flush_and_rebolt(void)
+>  {
+>  	/* If you change this make sure you change SLB_NUM_BOLTED
+>  	 * and PR KVM appropriately too. */
+>  	unsigned long linear_llp, lflags;
+>  	unsigned long ksp_esid_data, ksp_vsid_data;
+>  
+> +	WARN_ON(!irqs_disabled());
+> +
+> +	/*
+> +	 * We can't take a PMU exception in the following code, so hard
+> +	 * disable interrupts.
+> +	 */
+> +	hard_irq_disable();
+> +
+>  	linear_llp = mmu_psize_defs[mmu_linear_psize].sllp;
+>  	lflags = SLB_VSID_KERNEL | linear_llp;
+>  
+> @@ -160,20 +168,7 @@ static void __slb_flush_and_rebolt(void)
+>  		     :: "r"(ksp_vsid_data),
+>  		        "r"(ksp_esid_data)
+>  		     : "memory");
+> -}
+>  
+> -void slb_flush_and_rebolt(void)
+> -{
+> -
+> -	WARN_ON(!irqs_disabled());
+> -
+> -	/*
+> -	 * We can't take a PMU exception in the following code, so hard
+> -	 * disable interrupts.
+> -	 */
+> -	hard_irq_disable();
+> -
+> -	__slb_flush_and_rebolt();
+>  	get_paca()->slb_cache_ptr = 0;
+>  }
+>  
+> @@ -248,7 +243,20 @@ void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
+>  
+>  		asm volatile("isync" : : : "memory");
+>  	} else {
+> -		__slb_flush_and_rebolt();
+> +		struct slb_shadow *p = get_slb_shadow();
+> +		unsigned long ksp_esid_data =
+> +			be64_to_cpu(p->save_area[KSTACK_INDEX].esid);
+> +		unsigned long ksp_vsid_data =
+> +			be64_to_cpu(p->save_area[KSTACK_INDEX].vsid);
+> +
+> +		asm volatile("isync\n"
+> +			     PPC_SLBIA(1) "\n"
+> +			     "slbmte	%0,%1\n"
+> +			     "isync"
+> +			     :: "r"(ksp_vsid_data),
+> +				"r"(ksp_esid_data));
 > +
 > +		asm volatile("isync" : : : "memory");
-> +	} else {
-> +		__slb_flush_and_rebolt();
 >  	}
 >  
 >  	get_paca()->slb_cache_ptr = 0;
