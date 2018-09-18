@@ -1,29 +1,41 @@
-Return-Path: <helgaas@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <rjwysocki@gmail.com>
+Received: from mail-oi0-f66.google.com (mail-oi0-f66.google.com
+ [209.85.218.66])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42FFyp3j3dzDrS3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Sep 2018 07:10:58 +1000 (AEST)
-Date: Tue, 18 Sep 2018 16:10:55 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
-Cc: Sam Bobroff <sbobroff@linux.ibm.com>, linux-pci@vger.kernel.org,
- Bjorn Helgaas <bhelgaas@google.com>, linux@yadro.com,
- Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Oliver OHalloran <oliveroh@au1.ibm.com>
-Subject: Re: [PATCH RFC 1/4] PCI: hotplug: Add parameter to put devices to
- reset during rescan
-Message-ID: <20180918211055.GC13616@bhelgaas-glaptop.roam.corp.google.com>
-References: <20180914161404.4685-1-s.miroshnichenko@yadro.com>
- <20180914161404.4685-2-s.miroshnichenko@yadro.com>
- <20180917052800.GA7315@tungsten.ozlabs.ibm.com>
- <6b913e12-e8c8-30c1-5269-3029ddb00a4d@yadro.com>
- <20180917225935.GD54859@bhelgaas-glaptop.roam.corp.google.com>
- <b3963047-e3c1-5612-1bcf-04c9e81dacd2@yadro.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42FG831zrvzF3Hj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Sep 2018 07:18:55 +1000 (AEST)
+Received: by mail-oi0-f66.google.com with SMTP id t68-v6so3129738oie.12
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2018 14:18:55 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <b3963047-e3c1-5612-1bcf-04c9e81dacd2@yadro.com>
+References: <20180918114822.21926-1-david@redhat.com>
+ <20180918114822.21926-2-david@redhat.com>
+In-Reply-To: <20180918114822.21926-2-david@redhat.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Tue, 18 Sep 2018 23:18:41 +0200
+Message-ID: <CAJZ5v0gDDEvBrNCbB8E3Stq4QE_+6X72Pbu0Wyj8bQoSPXs3WA@mail.gmail.com>
+Subject: Re: [PATCH v1 1/6] mm/memory_hotplug: make remove_memory() take the
+ device_hotplug_lock
+To: David Hildenbrand <david@redhat.com>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+ xen-devel@lists.xenproject.org, devel@linuxdriverproject.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Len Brown <lenb@kernel.org>,
+ rashmica.g@gmail.com, Michael Neuling <mikey@neuling.org>,
+ Balbir Singh <bsingharora@gmail.com>, nfont@linux.vnet.ibm.com,
+ jallen@linux.vnet.ibm.com,
+ Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@suse.com>,
+ Dan Williams <dan.j.williams@intel.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ Vlastimil Babka <vbabka@suse.cz>, Pavel Tatashin <pasha.tatashin@oracle.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, osalvador@suse.de,
+ yasu.isimatu@gmail.com, malat@debian.org
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,105 +45,165 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Sep 18, 2018 at 05:01:48PM +0300, Sergey Miroshnichenko wrote:
-> On 9/18/18 1:59 AM, Bjorn Helgaas wrote:
-> > On Mon, Sep 17, 2018 at 11:55:43PM +0300, Sergey Miroshnichenko wrote:
-> >> On 9/17/18 8:28 AM, Sam Bobroff wrote:
-> >>> On Fri, Sep 14, 2018 at 07:14:01PM +0300, Sergey Miroshnichenko wrote:
-> >>>> Introduce a new command line option "pci=pcie_movable_bars"
-> >>>> that indicates support of PCIe hotplug without prior
-> >>>> reservation of memory regions by BIOS/bootloader.
+On Tue, Sep 18, 2018 at 1:48 PM David Hildenbrand <david@redhat.com> wrote:
+>
+> remove_memory() is exported right now but requires the
+> device_hotplug_lock, which is not exported. So let's provide a variant
+> that takes the lock and only export that one.
+>
+> The lock is already held in
+>         arch/powerpc/platforms/pseries/hotplug-memory.c
+>         drivers/acpi/acpi_memhotplug.c
+> So, let's use the locked variant.
+>
+> The lock is not held (but taken in)
+>         arch/powerpc/platforms/powernv/memtrace.c
+> So let's keep using the (now) locked variant.
+>
+> Apart from that, there are not other users in the tree.
+>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Len Brown <lenb@kernel.org>
+> Cc: Rashmica Gupta <rashmica.g@gmail.com>
+> Cc: Michael Neuling <mikey@neuling.org>
+> Cc: Balbir Singh <bsingharora@gmail.com>
+> Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+> Cc: John Allen <jallen@linux.vnet.ibm.com>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Michal Hocko <mhocko@suse.com>
+> Cc: Dan Williams <dan.j.williams@intel.com>
+> Cc: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+> Cc: Vlastimil Babka <vbabka@suse.cz>
+> Cc: Pavel Tatashin <pasha.tatashin@oracle.com>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: Oscar Salvador <osalvador@suse.de>
+> Cc: YASUAKI ISHIMATSU <yasu.isimatu@gmail.com>
+> Cc: Mathieu Malaterre <malat@debian.org>
+> Reviewed-by: Pavel Tatashin <pavel.tatashin@microsoft.com>
+> Signed-off-by: David Hildenbrand <david@redhat.com>
+> ---
+>  arch/powerpc/platforms/powernv/memtrace.c       | 2 --
+>  arch/powerpc/platforms/pseries/hotplug-memory.c | 6 +++---
+>  drivers/acpi/acpi_memhotplug.c                  | 2 +-
+>  include/linux/memory_hotplug.h                  | 3 ++-
+>  mm/memory_hotplug.c                             | 9 ++++++++-
+>  5 files changed, 14 insertions(+), 8 deletions(-)
+>
+> diff --git a/arch/powerpc/platforms/powernv/memtrace.c b/arch/powerpc/platforms/powernv/memtrace.c
+> index 51dc398ae3f7..8f1cd4f3bfd5 100644
+> --- a/arch/powerpc/platforms/powernv/memtrace.c
+> +++ b/arch/powerpc/platforms/powernv/memtrace.c
+> @@ -90,9 +90,7 @@ static bool memtrace_offline_pages(u32 nid, u64 start_pfn, u64 nr_pages)
+>         walk_memory_range(start_pfn, end_pfn, (void *)MEM_OFFLINE,
+>                           change_memblock_state);
+>
+> -       lock_device_hotplug();
+>         remove_memory(nid, start_pfn << PAGE_SHIFT, nr_pages << PAGE_SHIFT);
+> -       unlock_device_hotplug();
+>
+>         return true;
+>  }
+> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+> index c1578f54c626..b3f54466e25f 100644
+> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
+> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+> @@ -334,7 +334,7 @@ static int pseries_remove_memblock(unsigned long base, unsigned int memblock_siz
+>         nid = memory_add_physaddr_to_nid(base);
+>
+>         for (i = 0; i < sections_per_block; i++) {
+> -               remove_memory(nid, base, MIN_MEMORY_BLOCK_SIZE);
+> +               __remove_memory(nid, base, MIN_MEMORY_BLOCK_SIZE);
+>                 base += MIN_MEMORY_BLOCK_SIZE;
+>         }
+>
+> @@ -423,7 +423,7 @@ static int dlpar_remove_lmb(struct drmem_lmb *lmb)
+>         block_sz = pseries_memory_block_size();
+>         nid = memory_add_physaddr_to_nid(lmb->base_addr);
+>
+> -       remove_memory(nid, lmb->base_addr, block_sz);
+> +       __remove_memory(nid, lmb->base_addr, block_sz);
+>
+>         /* Update memory regions for memory remove */
+>         memblock_remove(lmb->base_addr, block_sz);
+> @@ -710,7 +710,7 @@ static int dlpar_add_lmb(struct drmem_lmb *lmb)
+>
+>         rc = dlpar_online_lmb(lmb);
+>         if (rc) {
+> -               remove_memory(nid, lmb->base_addr, block_sz);
+> +               __remove_memory(nid, lmb->base_addr, block_sz);
+>                 dlpar_remove_device_tree_lmb(lmb);
+>         } else {
+>                 lmb->flags |= DRCONF_MEM_ASSIGNED;
+> diff --git a/drivers/acpi/acpi_memhotplug.c b/drivers/acpi/acpi_memhotplug.c
+> index 6b0d3ef7309c..811148415993 100644
+> --- a/drivers/acpi/acpi_memhotplug.c
+> +++ b/drivers/acpi/acpi_memhotplug.c
+> @@ -282,7 +282,7 @@ static void acpi_memory_remove_memory(struct acpi_memory_device *mem_device)
+>                         nid = memory_add_physaddr_to_nid(info->start_addr);
+>
+>                 acpi_unbind_memory_blocks(info);
+> -               remove_memory(nid, info->start_addr, info->length);
+> +               __remove_memory(nid, info->start_addr, info->length);
+>                 list_del(&info->list);
+>                 kfree(info);
+>         }
+> diff --git a/include/linux/memory_hotplug.h b/include/linux/memory_hotplug.h
+> index 34a28227068d..1f096852f479 100644
+> --- a/include/linux/memory_hotplug.h
+> +++ b/include/linux/memory_hotplug.h
+> @@ -301,6 +301,7 @@ extern bool is_mem_section_removable(unsigned long pfn, unsigned long nr_pages);
+>  extern void try_offline_node(int nid);
+>  extern int offline_pages(unsigned long start_pfn, unsigned long nr_pages);
+>  extern void remove_memory(int nid, u64 start, u64 size);
+> +extern void __remove_memory(int nid, u64 start, u64 size);
+>
+>  #else
+>  static inline bool is_mem_section_removable(unsigned long pfn,
+> @@ -317,6 +318,7 @@ static inline int offline_pages(unsigned long start_pfn, unsigned long nr_pages)
+>  }
+>
+>  static inline void remove_memory(int nid, u64 start, u64 size) {}
+> +static inline void __remove_memory(int nid, u64 start, u64 size) {}
+>  #endif /* CONFIG_MEMORY_HOTREMOVE */
+>
+>  extern void __ref free_area_init_core_hotplug(int nid);
+> @@ -330,7 +332,6 @@ extern void move_pfn_range_to_zone(struct zone *zone, unsigned long start_pfn,
+>                 unsigned long nr_pages, struct vmem_altmap *altmap);
+>  extern int offline_pages(unsigned long start_pfn, unsigned long nr_pages);
+>  extern bool is_memblock_offlined(struct memory_block *mem);
+> -extern void remove_memory(int nid, u64 start, u64 size);
+>  extern int sparse_add_one_section(struct pglist_data *pgdat,
+>                 unsigned long start_pfn, struct vmem_altmap *altmap);
+>  extern void sparse_remove_one_section(struct zone *zone, struct mem_section *ms,
+> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+> index 38d94b703e9d..b8b1bd970322 100644
+> --- a/mm/memory_hotplug.c
+> +++ b/mm/memory_hotplug.c
+> @@ -1873,7 +1873,7 @@ EXPORT_SYMBOL(try_offline_node);
+>   * and online/offline operations before this call, as required by
+>   * try_offline_node().
+>   */
+> -void __ref remove_memory(int nid, u64 start, u64 size)
+> +void __ref __remove_memory(int nid, u64 start, u64 size)
+>  {
+>         int ret;
+>
+> @@ -1902,5 +1902,12 @@ void __ref remove_memory(int nid, u64 start, u64 size)
+>
+>         mem_hotplug_done();
+>  }
+> +
+> +void remove_memory(int nid, u64 start, u64 size)
+> +{
+> +       lock_device_hotplug();
+> +       __remove_memory(nid, start, size);
+> +       unlock_device_hotplug();
+> +}
+>  EXPORT_SYMBOL_GPL(remove_memory);
+>  #endif /* CONFIG_MEMORY_HOTREMOVE */
+> --
 
-> >>> What about devices with drivers that don't have reset_prepare()?  It
-> >>> looks like it will just reconfigure them anyway. Is that right?
-> >>
-> >> It is possible that unprepared driver without these hooks will get BARs
-> >> moved, I should put a warning message there. There three ways we can see
-> >> to make this safe:
-> >>  - add the reset_prepare()/reset_done() hooks to *every* PCIe driver;
-> >>  - refuse BAR movement if at least one unprepared driver has been
-> >> encountered during rescan;
-> >>  - reduce the number of drivers which can be affected to some
-> >> controllable value and prepare them on demand.
-> >>
-> >> Applying the second proposal as a major restriction seems fairly
-> >> reasonable, but for our particular setups and use-cases it is probably
-> >> too stiff:
-> >>  - we've noticed that devices connected directly to the root bridge
-> >> don't get moved BARs, and this covers our x86_64 servers: we only
-> >> insert/remove devices into "second-level" and "lower" bridges there, but
-> >> not root;
-> >>  - on PowerNV we have system devices (network interfaces, USB hub, etc.)
-> >> grouped into dedicated domain, with all other domains ready for hotplug,
-> >> and only these domains can be rescanned.
-> >>
-> >> With our scenarios currently reduced to these two, we can live with just
-> >> a few drivers "prepared" for now: NVME and few Ethernet adapters, this
-> >> gives us a possibility to use this feature before "converting" *all* the
-> >> drivers, and even have the NVidia cards running on a closed proprietary
-> >> driver.
-> >>
-> >> Should we make this behavior adjustable with something like
-> >> "pcie_movable_bars=safe" and "pcie_movable_bars=always" ?
-> > 
-> > I like the overall idea of this a lot.
-> > 
-> >   - Why do we need a command line parameter to enable this?  Can't we
-> >     do it unconditionally and automatically when it's possible?  We
-> >     could have a chicken switch to *disable* it in case this breaks
-> >     something horribly, but I would like this functionality to be
-> >     always available without a special option.
-> 
-> After making this feature completely safe we could activate it with the
-> existing option "pci=realloc".
-
-That *sounds* good, but in practice it never happens that we decide a
-feature is completely safe and somebody makes it the default.  If
-we're going to do this, I think we need to commit to making it work
-100% of the time, with no option needed.
-
-> >   - I'm not sure the existence of .reset_done() is evidence that a
-> >     driver is prepared for its BARs to move.  I don't see any
-> >     documentation that refers to BAR movement, and I doubt it's been
-> >     tested.  But I only see 5 implementations in the tree, so it'd be
-> >     easy to verify.
-> 
-> You are right, and we should clarify the description:
->  - drivers which have the .reset_done() already - none of them are aware
-> of movable BARs yet;
->  - the rest of the drivers should both be able to pause and handle the
-> changes in BARs.
-
-This doesn't clarify it for me.  If you want to update all existing
-.reset_done() methods so they deal with BAR changes, that would be
-fine with me.  That would be done by preliminary patches in the series
-that adds the feature.
-
-> >   - I think your second proposal above sounds right: we should regard
-> >     any device whose driver lacks .reset_done() as immovable.  We will
-> >     likely be able to move some devices but not others.  Implementing
-> >     .reset_done() will increase flexibility but it shouldn't be a
-> >     requirement for all drivers.
-> 
-> Thanks for the advice! This is more flexible and doesn't have any
-> prerequisites. In this case the greater the "movable"/"immovable" ratio
-> of the devices that was working before the hotplug event - the higher
-> the probability to free some space for new BARs. But even a single
-> "immovable" device at an undesirable place can block the re-arrangement,
-> in this case all we can is just give up and print an error message.
-
-Right.  There's nothing we can do about that except make the relevant
-drivers smarter.
-
-> This patchset in its current form doesn't support marking a choosen BAR
-> as immovable (just releasing all the resources of the root bridge and
-> trying to sort and re-assign them back), so I'll have to implement that.
-
-The current IORESOURCE_PCI_FIXED usage is for things that literally
-*cannot* be moved because there is no BAR at all (VGA or IDE legacy,
-enhanced allocation (see pci_ea_read()) or there's some platform
-quirk.
-
-It *might* make sense to also use it for devices where the *driver*
-isn't smart enough to deal with moving it, but I'm not sure.  That
-would have to be done at driver probe time, I guess.
+Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
