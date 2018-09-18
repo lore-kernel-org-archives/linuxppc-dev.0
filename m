@@ -1,23 +1,37 @@
-Return-Path: <msuchanek@suse.de>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42F1BY1Z7LzF0Q7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2018 21:35:16 +1000 (AEST)
-Date: Tue, 18 Sep 2018 13:35:09 +0200
-From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
-To: Christophe LEROY <christophe.leroy@c-s.fr>
-Cc: Nicholas Piggin <npiggin@gmail.com>, Michael Neuling
- <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org, Haren Myneni
- <haren@linux.vnet.ibm.com>
-Subject: Re: [PATCH v4] powerpc: Avoid code patching freed init sections
-Message-ID: <20180918133509.39ab1fc2@naga.suse.cz>
-In-Reply-To: <2d775c16-9dc9-efa4-f3fb-6a0f16297a3a@c-s.fr>
-References: <20180914011411.3184-1-mikey@neuling.org>
- <20180914142201.379b14a4@roar.ozlabs.ibm.com>
- <2d775c16-9dc9-efa4-f3fb-6a0f16297a3a@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42F1Sb4vWLzF0fh
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2018 21:47:27 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w8IBiTb4127992
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2018 07:47:25 -0400
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2mjwweytm1-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2018 07:47:25 -0400
+Received: from localhost
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Tue, 18 Sep 2018 12:47:22 +0100
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: Christophe LEROY <christophe.leroy@c-s.fr>, akpm@linux-foundation.org,
+ linux-mm@kvack.org, aneesh.kumar@linux.vnet.ibm.com,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: How to handle PTE tables with non contiguous entries ?
+In-Reply-To: <d1be61a4-8dc7-cfe0-e4e7-82ce5f57ced3@c-s.fr>
+References: <ddc3bb56-4da0-c093-256f-185d4a612b5c@c-s.fr>
+ <87tvmoh4w9.fsf@linux.ibm.com> <d1be61a4-8dc7-cfe0-e4e7-82ce5f57ced3@c-s.fr>
+Date: Tue, 18 Sep 2018 17:17:16 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+Message-Id: <87pnxbgh8b.fsf@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,110 +41,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 18 Sep 2018 10:52:09 +0200
-Christophe LEROY <christophe.leroy@c-s.fr> wrote:
+Christophe LEROY <christophe.leroy@c-s.fr> writes:
 
->=20
->=20
-> Le 14/09/2018 =C3=A0 06:22, Nicholas Piggin a =C3=A9crit=C2=A0:
-> > On Fri, 14 Sep 2018 11:14:11 +1000
-> > Michael Neuling <mikey@neuling.org> wrote:
-> >=20
-> >> This stops us from doing code patching in init sections after
-> >> they've been freed.
-> >>
-> >> In this chain:
-> >>    kvm_guest_init() ->
-> >>      kvm_use_magic_page() ->
-> >>        fault_in_pages_readable() ->
-> >> 	 __get_user() ->
-> >> 	   __get_user_nocheck() ->
-> >> 	     barrier_nospec();
-> >>
-> >> We have a code patching location at barrier_nospec() and
-> >> kvm_guest_init() is an init function. This whole chain gets
-> >> inlined, so when we free the init section (hence
-> >> kvm_guest_init()), this code goes away and hence should no longer
-> >> be patched.
-> >>
-> >> We seen this as userspace memory corruption when using a memory
-> >> checker while doing partition migration testing on powervm (this
-> >> starts the code patching post migration via
-> >> /sys/kernel/mobility/migration). In theory, it could also happen
-> >> when using /sys/kernel/debug/powerpc/barrier_nospec.
-> >>
-> >> cc: stable@vger.kernel.org # 4.13+
-> >> Signed-off-by: Michael Neuling <mikey@neuling.org>
-> >>
-> >> ---
-> >> For stable I've marked this as v4.13+ since that's when we
-> >> refactored code-patching.c but it could go back even further than
-> >> that. In reality though, I think we can only hit this since the
-> >> first spectre/meltdown changes.
-> >>
-> >> v4:
-> >>   Feedback from Christophe Leroy:
-> >>     - init_mem_free -> init_mem_is_free
-> >>     - prlog %lx -> %px
-> >>
-> >> v3:
-> >>   Add init_mem_free flag to avoid potential race.
-> >>   Feedback from Christophe Leroy:
-> >>     - use init_section_contains()
-> >>     - change order of init test for performance
-> >>     - use pr_debug()
-> >>     - remove blank line
-> >>
-> >> v2:
-> >>    Print when we skip an address
-> >> ---
-> >>   arch/powerpc/include/asm/setup.h | 1 +
-> >>   arch/powerpc/lib/code-patching.c | 6 ++++++
-> >>   arch/powerpc/mm/mem.c            | 2 ++
-> >>   3 files changed, 9 insertions(+)
-> >>
-> >> diff --git a/arch/powerpc/include/asm/setup.h
-> >> b/arch/powerpc/include/asm/setup.h index 1a951b0046..1fffbba8d6
-> >> 100644 --- a/arch/powerpc/include/asm/setup.h
-> >> +++ b/arch/powerpc/include/asm/setup.h
-> >> @@ -9,6 +9,7 @@ extern void ppc_printk_progress(char *s, unsigned
-> >> short hex);=20
-> >>   extern unsigned int rtas_data;
-> >>   extern unsigned long long memory_limit;
-> >> +extern bool init_mem_is_free;
-> >>   extern unsigned long klimit;
-> >>   extern void *zalloc_maybe_bootmem(size_t size, gfp_t mask);
-> >>  =20
-> >> diff --git a/arch/powerpc/lib/code-patching.c
-> >> b/arch/powerpc/lib/code-patching.c index 850f3b8f4d..6ae2777c22
-> >> 100644 --- a/arch/powerpc/lib/code-patching.c
-> >> +++ b/arch/powerpc/lib/code-patching.c
-> >> @@ -28,6 +28,12 @@ static int __patch_instruction(unsigned int
-> >> *exec_addr, unsigned int instr, {
-> >>   	int err;
-> >>  =20
-> >> +	/* Make sure we aren't patching a freed init section */
-> >> +	if (init_mem_is_free && init_section_contains(exec_addr,
-> >> 4)) {
-> >> +		pr_debug("Skipping init section patching addr:
-> >> 0x%px\n", exec_addr);
-> >> +		return 0;
-> >> +	}
-> >=20
-> > What we should do is a whitelist, make sure it's only patching the
-> > sections we want it to.
-> >=20
-> > That's a bigger job when you consider modules and things too though,
-> > so this looks good for now. Thanks,
->=20
-> What about using kernel_text_address() for it then ? It also handles=20
-> modules, is it more complicated than that ?
+> Le 17/09/2018 =C3=A0 11:03, Aneesh Kumar K.V a =C3=A9crit=C2=A0:
+>> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+>>=20
+>>> Hi,
+>>>
+>>> I'm having a hard time figuring out the best way to handle the following
+>>> situation:
+>>>
+>>> On the powerpc8xx, handling 16k size pages requires to have page tables
+>>> with 4 identical entries.
+>>=20
+>> I assume that hugetlb page size? If so isn't that similar to FSL hugetlb
+>> page table layout?
+>
+> No, it is not for 16k hugepage size with a standard page size of 4k.
+>
+> Here I'm trying to handle the case of CONFIG_PPC_16K_PAGES.
+> As of today, it is implemented by using the standard Linux page layout,=20
+> ie one PTE entry for each 16k page. This forbids the use the 8xx HW=20
+> assistance.
+>
+>>=20
+>>>
+>>> Initially I was thinking about handling this by simply modifying
+>>> pte_index() which changing pte_t type in order to have one entry every
+>>> 16 bytes, then replicate the PTE value at *ptep, *ptep+1,*ptep+2 and
+>>> *ptep+3 both in set_pte_at() and pte_update().
+>>>
+>>> However, this doesn't work because many many places in the mm core part
+>>> of the kernel use loops on ptep with single ptep++ increment.
+>>>
+>>> Therefore did it with the following hack:
+>>>
+>>>    /* PTE level */
+>>> +#if defined(CONFIG_PPC_8xx) && defined(CONFIG_PPC_16K_PAGES)
+>>> +typedef struct { pte_basic_t pte, pte1, pte2, pte3; } pte_t;
+>>> +#else
+>>>    typedef struct { pte_basic_t pte; } pte_t;
+>>> +#endif
+>>>
+>>> @@ -181,7 +192,13 @@ static inline unsigned long pte_update(pte_t *p,
+>>>           : "cc" );
+>>>    #else /* PTE_ATOMIC_UPDATES */
+>>>           unsigned long old =3D pte_val(*p);
+>>> -       *p =3D __pte((old & ~clr) | set);
+>>> +       unsigned long new =3D (old & ~clr) | set;
+>>> +
+>>> +#if defined(CONFIG_PPC_8xx) && defined(CONFIG_PPC_16K_PAGES)
+>>> +       p->pte =3D p->pte1 =3D p->pte2 =3D p->pte3 =3D new;
+>>> +#else
+>>> +       *p =3D __pte(new);
+>>> +#endif
+>>>    #endif /* !PTE_ATOMIC_UPDATES */
+>>>
+>>>    #ifdef CONFIG_44x
+>>>
+>>>
+>>> @@ -161,7 +161,11 @@ static inline void __set_pte_at(struct mm_struct
+>>> *mm, unsigned long addr,
+>>>           /* Anything else just stores the PTE normally. That covers all
+>>> 64-bit
+>>>            * cases, and 32-bit non-hash with 32-bit PTEs.
+>>>            */
+>>> +#if defined(CONFIG_PPC_8xx) && defined(CONFIG_PPC_16K_PAGES)
+>>> +       ptep->pte =3D ptep->pte1 =3D ptep->pte2 =3D ptep->pte3 =3D pte_=
+val(pte);
+>>> +#else
+>>>           *ptep =3D pte;
+>>> +#endif
+>>>
+>>>
+>>>
+>>> But I'm not too happy with it as it means pte_t is not a single type
+>>> anymore so passing it from one function to the other is quite heavy.
+>>>
+>>>
+>>> Would someone have an idea of an elegent way to handle that ?
+>>>
+>>> Thanks
+>>> Christophe
+>>=20
+>> Why would pte_update bother about updating all the 4 entries?. Can you
+>> help me understand the issue?
+>
+> Because the 8xx HW assistance expects 4 identical entries for each 16k=20
+> page, so everytime a PTE is updated the 4 entries have to be updated.
+>
 
-Modules are patched separately so should not need to be excluded here.
+What you suggested in the original mail is what matches that best isn't it?
+That is a linux pte update involves updating 4 slot. Hence a linux pte
+consist of 4 unsigned long?
 
-There is a different problem with modules: when the mitigation type
-changes the modules are not re-patched with the new settings.
-
-Thanks
-
-Michal
+-aneesh
