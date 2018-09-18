@@ -1,21 +1,16 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42DsL91bzpzDqCh
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2018 15:41:21 +1000 (AEST)
-Message-ID: <10da0fdc641b05ea288890a23aa01ad33f2d6987.camel@neuling.org>
-Subject: Re: [RFC PATCH 09/11] powerpc/tm: Do not restore default DSCR
-From: Michael Neuling <mikey@neuling.org>
-To: Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org
-Cc: paulus@ozlabs.org, gromero@linux.vnet.ibm.com, mpe@ellerman.id.au,
- ldufour@linux.vnet.ibm.com
-Date: Tue, 18 Sep 2018 15:41:20 +1000
-In-Reply-To: <1536781219-13938-10-git-send-email-leitao@debian.org>
-References: <1536781219-13938-1-git-send-email-leitao@debian.org>
- <1536781219-13938-10-git-send-email-leitao@debian.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42DsNT2jCbzDqCh
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2018 15:43:21 +1000 (AEST)
+Message-Id: <82bbb913ffd8bdc040a012152ee968cd0c6ccf4e.1537218487.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] powerpc/makefile: remove check on obsolete GCC versions
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Tue, 18 Sep 2018 05:43:17 +0000 (UTC)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,65 +20,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-09-12 at 16:40 -0300, Breno Leitao wrote:
-> In the previous TM code, trecheckpoint was being executed in the middle o=
-f
-> an exception, thus, DSCR was being restored to default kernel DSCR value
-> after trecheckpoint was done.
->=20
-> With this current patchset, trecheckpoint is executed just before getting
-> to userspace, at ret_from_except_lite, for example. Thus, we do not need =
-to
-> set default kernel DSCR value anymore, as we are leaving kernel space.  I=
-t
-> is OK to keep the checkpointed DSCR value into the live SPR, mainly becau=
-se
-> the transaction is doomed and it will fail soon (after RFID),=20
+Since commit cafa0010cd51 ("Raise the minimum required gcc version
+to 4.6"), it is not possible to build kernel with GCC lower than 4.6
 
-What if we are going back to a suspended transaction?  It will remain live =
-until
-userspace does a tresume
+This patch removes checkbin tests addressing older versions of GCC.
 
-> so,
-> continuing with the pre-checkpointed DSCR value is what seems correct.
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/Makefile | 28 ----------------------------
+ 1 file changed, 28 deletions(-)
 
-Reading this description suggests this patch isn't really needed. Right?
-
-Mikey
-
-> That said, we must set the DSCR value that will be used in userspace now.
-> Current trecheckpoint() function sets it to the pre-checkpointed value
-> prior to lines being changed in this patch, so, removing these lines woul=
-d
-> keep the pre-checkpointed values.
->=20
-> Important to say that we do not need to do the same thing with tm_reclaim=
-,
-> since it already set the DSCR to the default value, after TRECLAIM is
-> called, in the following lines:
->=20
->         /* Load CPU's default DSCR */
->         ld      r0, PACA_DSCR_DEFAULT(r13)
->         mtspr   SPRN_DSCR, r0
->=20
-> Signed-off-by: Breno Leitao <leitao@debian.org>
-> ---
->  arch/powerpc/kernel/tm.S | 4 ----
->  1 file changed, 4 deletions(-)
->=20
-> diff --git a/arch/powerpc/kernel/tm.S b/arch/powerpc/kernel/tm.S
-> index 6bffbc5affe7..5427eda69846 100644
-> --- a/arch/powerpc/kernel/tm.S
-> +++ b/arch/powerpc/kernel/tm.S
-> @@ -493,10 +493,6 @@ restore_gprs:
->  	mtlr	r0
->  	ld	r2, STK_GOT(r1)
-> =20
-> -	/* Load CPU's default DSCR */
-> -	ld	r0, PACA_DSCR_DEFAULT(r13)
-> -	mtspr	SPRN_DSCR, r0
-> -
->  	blr
-> =20
->  	/* ****************************************************************** *=
-/
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index 8397c7bd5880..b33083bad840 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -405,35 +405,7 @@ archprepare: checkbin
+ TOUT	:= .tmp_gas_check
+ 
+ # Check gcc and binutils versions:
+-# - gcc-3.4 and binutils-2.14 are a fatal combination
+-# - Require gcc 4.0 or above on 64-bit
+-# - gcc-4.2.0 has issues compiling modules on 64-bit
+ checkbin:
+-	@if test "$(cc-name)" != "clang" \
+-	    && test "$(cc-version)" = "0304" ; then \
+-		if ! /bin/echo mftb 5 | $(AS) -v -mppc -many -o $(TOUT) >/dev/null 2>&1 ; then \
+-			echo -n '*** ${VERSION}.${PATCHLEVEL} kernels no longer build '; \
+-			echo 'correctly with gcc-3.4 and your version of binutils.'; \
+-			echo '*** Please upgrade your binutils or downgrade your gcc'; \
+-			false; \
+-		fi ; \
+-	fi
+-	@if test "$(cc-name)" != "clang" \
+-	    && test "$(cc-version)" -lt "0400" \
+-	    && test "x${CONFIG_PPC64}" = "xy" ; then \
+-                echo -n "Sorry, GCC v4.0 or above is required to build " ; \
+-                echo "the 64-bit powerpc kernel." ; \
+-                false ; \
+-        fi
+-	@if test "$(cc-name)" != "clang" \
+-	    && test "$(cc-fullversion)" = "040200" \
+-	    && test "x${CONFIG_MODULES}${CONFIG_PPC64}" = "xyy" ; then \
+-		echo -n '*** GCC-4.2.0 cannot compile the 64-bit powerpc ' ; \
+-		echo 'kernel with modules enabled.' ; \
+-		echo -n '*** Please use a different GCC version or ' ; \
+-		echo 'disable kernel modules' ; \
+-		false ; \
+-	fi
+ 	@if test "x${CONFIG_CPU_LITTLE_ENDIAN}" = "xy" \
+ 	    && $(LD) --version | head -1 | grep ' 2\.24$$' >/dev/null ; then \
+ 		echo -n '*** binutils 2.24 miscompiles weak symbols ' ; \
+-- 
+2.13.3
