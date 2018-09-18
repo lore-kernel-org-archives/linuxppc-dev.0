@@ -1,41 +1,22 @@
-Return-Path: <rjwysocki@gmail.com>
-Received: from mail-ot1-f67.google.com (mail-ot1-f67.google.com
- [209.85.210.67])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <helgaas@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42FG9F6YhNzF3Jq
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Sep 2018 07:20:01 +1000 (AEST)
-Received: by mail-ot1-f67.google.com with SMTP id h26-v6so3525155otl.9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2018 14:20:01 -0700 (PDT)
-MIME-Version: 1.0
-References: <20180918114822.21926-1-david@redhat.com>
- <20180918114822.21926-3-david@redhat.com>
-In-Reply-To: <20180918114822.21926-3-david@redhat.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Tue, 18 Sep 2018 23:19:48 +0200
-Message-ID: <CAJZ5v0htjOEJp=FH1Hnr=xp8AL7BJA72uaF__78AC97GYCmFFQ@mail.gmail.com>
-Subject: Re: [PATCH v1 2/6] mm/memory_hotplug: make add_memory() take the
- device_hotplug_lock
-To: David Hildenbrand <david@redhat.com>
-Cc: Linux Memory Management List <linux-mm@kvack.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
- xen-devel@lists.xenproject.org, devel@linuxdriverproject.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42FH296GxfzF3JH
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Sep 2018 07:58:57 +1000 (AEST)
+Date: Tue, 18 Sep 2018 16:58:54 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: linux-pci@vger.kernel.org, Russell Currey <ruscur@russell.cc>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Len Brown <lenb@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- Juergen Gross <jgross@suse.com>, nfont@linux.vnet.ibm.com,
- jallen@linux.vnet.ibm.com,
- Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@suse.com>,
- Dan Williams <dan.j.williams@intel.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Vlastimil Babka <vbabka@suse.cz>, osalvador@suse.de, malat@debian.org,
- pavel.tatashin@microsoft.com, yasu.isimatu@gmail.com
-Content-Type: text/plain; charset="UTF-8"
+ Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] MAINTAINERS: Add PPC contacts for PCI core error handling
+Message-ID: <20180918215854.GH13616@bhelgaas-glaptop.roam.corp.google.com>
+References: <153677132617.23091.12307288405707171077.stgit@bhelgaas-glaptop.roam.corp.google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <153677132617.23091.12307288405707171077.stgit@bhelgaas-glaptop.roam.corp.google.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,195 +26,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Sep 18, 2018 at 1:48 PM David Hildenbrand <david@redhat.com> wrote:
->
-> add_memory() currently does not take the device_hotplug_lock, however
-> is aleady called under the lock from
->         arch/powerpc/platforms/pseries/hotplug-memory.c
->         drivers/acpi/acpi_memhotplug.c
-> to synchronize against CPU hot-remove and similar.
->
-> In general, we should hold the device_hotplug_lock when adding memory
-> to synchronize against online/offline request (e.g. from user space) -
-> which already resulted in lock inversions due to device_lock() and
-> mem_hotplug_lock - see 30467e0b3be ("mm, hotplug: fix concurrent memory
-> hot-add deadlock"). add_memory()/add_memory_resource() will create memory
-> block devices, so this really feels like the right thing to do.
->
-> Holding the device_hotplug_lock makes sure that a memory block device
-> can really only be accessed (e.g. via .online/.state) from user space,
-> once the memory has been fully added to the system.
->
-> The lock is not held yet in
->         drivers/xen/balloon.c
->         arch/powerpc/platforms/powernv/memtrace.c
->         drivers/s390/char/sclp_cmd.c
->         drivers/hv/hv_balloon.c
-> So, let's either use the locked variants or take the lock.
->
-> Don't export add_memory_resource(), as it once was exported to be used
-> by XEN, which is never built as a module. If somebody requires it, we
-> also have to export a locked variant (as device_hotplug_lock is never
-> exported).
->
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Len Brown <lenb@kernel.org>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: Boris Ostrovsky <boris.ostrovsky@oracle.com>
-> Cc: Juergen Gross <jgross@suse.com>
-> Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-> Cc: John Allen <jallen@linux.vnet.ibm.com>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Michal Hocko <mhocko@suse.com>
-> Cc: Dan Williams <dan.j.williams@intel.com>
-> Cc: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-> Cc: Vlastimil Babka <vbabka@suse.cz>
-> Cc: Oscar Salvador <osalvador@suse.de>
-> Cc: Mathieu Malaterre <malat@debian.org>
-> Cc: Pavel Tatashin <pavel.tatashin@microsoft.com>
-> Cc: YASUAKI ISHIMATSU <yasu.isimatu@gmail.com>
-> Reviewed-by: Pavel Tatashin <pavel.tatashin@microsoft.com>
-> Signed-off-by: David Hildenbrand <david@redhat.com>
-> ---
->  .../platforms/pseries/hotplug-memory.c        |  2 +-
->  drivers/acpi/acpi_memhotplug.c                |  2 +-
->  drivers/base/memory.c                         |  9 ++++++--
->  drivers/xen/balloon.c                         |  3 +++
->  include/linux/memory_hotplug.h                |  1 +
->  mm/memory_hotplug.c                           | 22 ++++++++++++++++---
->  6 files changed, 32 insertions(+), 7 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-> index b3f54466e25f..2e6f41dc103a 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-> @@ -702,7 +702,7 @@ static int dlpar_add_lmb(struct drmem_lmb *lmb)
->         nid = memory_add_physaddr_to_nid(lmb->base_addr);
->
->         /* Add the memory */
-> -       rc = add_memory(nid, lmb->base_addr, block_sz);
-> +       rc = __add_memory(nid, lmb->base_addr, block_sz);
->         if (rc) {
->                 dlpar_remove_device_tree_lmb(lmb);
->                 return rc;
-> diff --git a/drivers/acpi/acpi_memhotplug.c b/drivers/acpi/acpi_memhotplug.c
-> index 811148415993..8fe0960ea572 100644
-> --- a/drivers/acpi/acpi_memhotplug.c
-> +++ b/drivers/acpi/acpi_memhotplug.c
-> @@ -228,7 +228,7 @@ static int acpi_memory_enable_device(struct acpi_memory_device *mem_device)
->                 if (node < 0)
->                         node = memory_add_physaddr_to_nid(info->start_addr);
->
-> -               result = add_memory(node, info->start_addr, info->length);
-> +               result = __add_memory(node, info->start_addr, info->length);
->
->                 /*
->                  * If the memory block has been used by the kernel, add_memory()
-> diff --git a/drivers/base/memory.c b/drivers/base/memory.c
-> index 817320c7c4c1..40cac122ec73 100644
-> --- a/drivers/base/memory.c
-> +++ b/drivers/base/memory.c
-> @@ -519,15 +519,20 @@ memory_probe_store(struct device *dev, struct device_attribute *attr,
->         if (phys_addr & ((pages_per_block << PAGE_SHIFT) - 1))
->                 return -EINVAL;
->
-> +       ret = lock_device_hotplug_sysfs();
-> +       if (ret)
-> +               goto out;
-> +
->         nid = memory_add_physaddr_to_nid(phys_addr);
-> -       ret = add_memory(nid, phys_addr,
-> -                        MIN_MEMORY_BLOCK_SIZE * sections_per_block);
-> +       ret = __add_memory(nid, phys_addr,
-> +                          MIN_MEMORY_BLOCK_SIZE * sections_per_block);
->
->         if (ret)
->                 goto out;
->
->         ret = count;
->  out:
-> +       unlock_device_hotplug();
->         return ret;
->  }
->
-> diff --git a/drivers/xen/balloon.c b/drivers/xen/balloon.c
-> index e12bb256036f..6bab019a82b1 100644
-> --- a/drivers/xen/balloon.c
-> +++ b/drivers/xen/balloon.c
-> @@ -395,7 +395,10 @@ static enum bp_state reserve_additional_memory(void)
->          * callers drop the mutex before trying again.
->          */
->         mutex_unlock(&balloon_mutex);
-> +       /* add_memory_resource() requires the device_hotplug lock */
-> +       lock_device_hotplug();
->         rc = add_memory_resource(nid, resource, memhp_auto_online);
-> +       unlock_device_hotplug();
->         mutex_lock(&balloon_mutex);
->
->         if (rc) {
-> diff --git a/include/linux/memory_hotplug.h b/include/linux/memory_hotplug.h
-> index 1f096852f479..ffd9cd10fcf3 100644
-> --- a/include/linux/memory_hotplug.h
-> +++ b/include/linux/memory_hotplug.h
-> @@ -324,6 +324,7 @@ static inline void __remove_memory(int nid, u64 start, u64 size) {}
->  extern void __ref free_area_init_core_hotplug(int nid);
->  extern int walk_memory_range(unsigned long start_pfn, unsigned long end_pfn,
->                 void *arg, int (*func)(struct memory_block *, void *));
-> +extern int __add_memory(int nid, u64 start, u64 size);
->  extern int add_memory(int nid, u64 start, u64 size);
->  extern int add_memory_resource(int nid, struct resource *resource, bool online);
->  extern int arch_add_memory(int nid, u64 start, u64 size,
-> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-> index b8b1bd970322..ef5444145c88 100644
-> --- a/mm/memory_hotplug.c
-> +++ b/mm/memory_hotplug.c
-> @@ -1111,7 +1111,12 @@ static int online_memory_block(struct memory_block *mem, void *arg)
->         return device_online(&mem->dev);
->  }
->
-> -/* we are OK calling __meminit stuff here - we have CONFIG_MEMORY_HOTPLUG */
-> +/*
-> + * NOTE: The caller must call lock_device_hotplug() to serialize hotplug
-> + * and online/offline operations (triggered e.g. by sysfs).
-> + *
-> + * we are OK calling __meminit stuff here - we have CONFIG_MEMORY_HOTPLUG
-> + */
->  int __ref add_memory_resource(int nid, struct resource *res, bool online)
->  {
->         u64 start, size;
-> @@ -1180,9 +1185,9 @@ int __ref add_memory_resource(int nid, struct resource *res, bool online)
->         mem_hotplug_done();
->         return ret;
->  }
-> -EXPORT_SYMBOL_GPL(add_memory_resource);
->
-> -int __ref add_memory(int nid, u64 start, u64 size)
-> +/* requires device_hotplug_lock, see add_memory_resource() */
-> +int __ref __add_memory(int nid, u64 start, u64 size)
->  {
->         struct resource *res;
->         int ret;
-> @@ -1196,6 +1201,17 @@ int __ref add_memory(int nid, u64 start, u64 size)
->                 release_memory_resource(res);
->         return ret;
->  }
-> +
-> +int add_memory(int nid, u64 start, u64 size)
-> +{
-> +       int rc;
-> +
-> +       lock_device_hotplug();
-> +       rc = __add_memory(nid, start, size);
-> +       unlock_device_hotplug();
-> +
-> +       return rc;
-> +}
->  EXPORT_SYMBOL_GPL(add_memory);
->
->  #ifdef CONFIG_MEMORY_HOTREMOVE
-> --
+On Wed, Sep 12, 2018 at 11:55:26AM -0500, Bjorn Helgaas wrote:
+> From: Bjorn Helgaas <bhelgaas@google.com>
+> 
+> The original PCI error recovery functionality was for the powerpc-specific
+> IBM EEH feature.  PCIe subsequently added some similar features, including
+> AER and DPC, that can be used on any architecture.
+> 
+> We want the generic PCI core error handling support to work with all of
+> these features.  Driver error recovery callbacks should be independent of
+> which feature the platform provides.
+> 
+> Add the generic PCI core error recovery files to the powerpc EEH
+> MAINTAINERS entry so the powerpc folks will be copied on changes to the
+> generic PCI error handling strategy.
+> 
+> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
 
-Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+I applied the following to for-linus for v4.19.  Russell, if you want
+to be removed, let me know and I'll do that.
+
+commit 3fed0e04026c
+Author: Bjorn Helgaas <bhelgaas@google.com>
+Date:   Wed Sep 12 11:55:26 2018 -0500
+
+    MAINTAINERS: Update PPC contacts for PCI core error handling
+    
+    The original PCI error recovery functionality was for the powerpc-specific
+    IBM EEH feature.  PCIe subsequently added some similar features, including
+    AER and DPC, that can be used on any architecture.
+    
+    We want the generic PCI core error handling support to work with all of
+    these features.  Driver error recovery callbacks should be independent of
+    which feature the platform provides.
+    
+    Add the generic PCI core error recovery files to the powerpc EEH
+    MAINTAINERS entry so the powerpc folks will be copied on changes to the
+    generic PCI error handling strategy.
+    
+    Add Sam and Oliver as maintainers for this area.
+    
+    Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 4ece30f15777..f23244003836 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -11203,8 +11203,14 @@ F:	tools/pci/
+ 
+ PCI ENHANCED ERROR HANDLING (EEH) FOR POWERPC
+ M:	Russell Currey <ruscur@russell.cc>
++M:	Sam Bobroff <sbobroff@linux.ibm.com>
++M:	Oliver O'Halloran <oliveroh@au1.ibm.com>
+ L:	linuxppc-dev@lists.ozlabs.org
+ S:	Supported
++F:	Documentation/PCI/pci-error-recovery.txt
++F:	drivers/pci/pcie/aer.c
++F:	drivers/pci/pcie/dpc.c
++F:	drivers/pci/pcie/err.c
+ F:	Documentation/powerpc/eeh-pci-error-recovery.txt
+ F:	arch/powerpc/kernel/eeh*.c
+ F:	arch/powerpc/platforms/*/eeh*.c
