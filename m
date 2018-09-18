@@ -2,19 +2,19 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42F8Ky0f6LzF3FL
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Sep 2018 02:57:09 +1000 (AEST)
-Message-Id: <45a2b1768f0537ae963d16aeceb856817ae63f1c.1537288312.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42F8L82HSdzF3Fm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Sep 2018 02:57:20 +1000 (AEST)
+Message-Id: <3e7b4c6e023d9bba2b76439492a1ad65c72b3023.1537288312.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1537288312.git.christophe.leroy@c-s.fr>
 References: <cover.1537288312.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v4 01/20] Revert "powerpc/8xx: Use L1 entry APG to handle
- _PAGE_ACCESSED for CONFIG_SWAP"
+Subject: [PATCH v4 07/20] powerpc/mm: Use hardware assistance in TLB handlers
+ on the 8xx
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  aneesh.kumar@linux.vnet.ibm.com
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 18 Sep 2018 16:57:04 +0000 (UTC)
+Date: Tue, 18 Sep 2018 16:57:16 +0000 (UTC)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,200 +24,287 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This reverts commit 4f94b2c7462d9720b2afa7e8e8d4c19446bb31ce.
+Today, on the 8xx the TLB handlers do SW tablewalk by doing all
+the calculation in ASM, in order to match with the Linux page
+table structure.
 
-That commit was buggy, as it used rlwinm instead of rlwimi.
-Instead of fixing that bug, we revert the previous commit in order to
-reduce the dependency between L1 entries and L2 entries
+The 8xx offers hardware assistance which allows significant size
+reduction of the TLB handlers, hence also reduces the time spent
+in the handlers.
 
-Fixes: 4f94b2c7462d9 ("powerpc/8xx: Use L1 entry APG to handle _PAGE_ACCESSED for CONFIG_SWAP")
+However, using this HW assistance implies some constraints on the
+page table structure:
+- Regardless of the main page size used (4k or 16k), the
+level 1 table (PGD) contains 1024 entries and each PGD entry covers
+a 4Mbytes area which is managed by a level 2 table (PTE) containing
+also 1024 entries each describing a 4k page.
+- 16k pages require 4 identifical entries in the L2 table
+- 512k pages PTE have to be spread every 128 bytes in the L2 table
+- 8M pages PTE are at the address pointed by the L1 entry and each
+8M page require 2 identical entries in the PGD.
+
+This patch modifies the TLB handlers to use HW assistance for 4K PAGES.
+
+Before that patch, the mean time spent in TLB miss handlers is:
+- ITLB miss: 80 ticks
+- DTLB miss: 62 ticks
+After that patch, the mean time spent in TLB miss handlers is:
+- ITLB miss: 72 ticks
+- DTLB miss: 54 ticks
+So the improvement is 10% for ITLB and 13% for DTLB misses
+
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/mmu-8xx.h | 34 +++++-----------------------
- arch/powerpc/kernel/head_8xx.S     | 45 +++++++++++++++++++++++---------------
- arch/powerpc/mm/8xx_mmu.c          |  2 +-
- 3 files changed, 34 insertions(+), 47 deletions(-)
+ arch/powerpc/kernel/head_8xx.S | 97 +++++++++++++-----------------------------
+ arch/powerpc/mm/8xx_mmu.c      |  4 +-
+ 2 files changed, 32 insertions(+), 69 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/mmu-8xx.h b/arch/powerpc/include/asm/mmu-8xx.h
-index 4f547752ae79..193f53116c7a 100644
---- a/arch/powerpc/include/asm/mmu-8xx.h
-+++ b/arch/powerpc/include/asm/mmu-8xx.h
-@@ -34,20 +34,12 @@
-  * respectively NA for All or X for Supervisor and no access for User.
-  * Then we use the APG to say whether accesses are according to Page rules or
-  * "all Supervisor" rules (Access to all)
-- * We also use the 2nd APG bit for _PAGE_ACCESSED when having SWAP:
-- * When that bit is not set access is done iaw "all user"
-- * which means no access iaw page rules.
-- * Therefore, we define 4 APG groups. lsb is _PMD_USER, 2nd is _PAGE_ACCESSED
-- * 0x => No access => 11 (all accesses performed as user iaw page definition)
-- * 10 => No user => 01 (all accesses performed according to page definition)
-- * 11 => User => 00 (all accesses performed as supervisor iaw page definition)
-+ * Therefore, we define 2 APG groups. lsb is _PMD_USER
-+ * 0 => No user => 01 (all accesses performed according to page definition)
-+ * 1 => User => 00 (all accesses performed as supervisor iaw page definition)
-  * We define all 16 groups so that all other bits of APG can take any value
-  */
--#ifdef CONFIG_SWAP
--#define MI_APG_INIT	0xf4f4f4f4
--#else
- #define MI_APG_INIT	0x44444444
--#endif
- 
- /* The effective page number register.  When read, contains the information
-  * about the last instruction TLB miss.  When MI_RPN is written, bits in
-@@ -115,20 +107,12 @@
-  * Supervisor and no access for user and NA for ALL.
-  * Then we use the APG to say whether accesses are according to Page rules or
-  * "all Supervisor" rules (Access to all)
-- * We also use the 2nd APG bit for _PAGE_ACCESSED when having SWAP:
-- * When that bit is not set access is done iaw "all user"
-- * which means no access iaw page rules.
-- * Therefore, we define 4 APG groups. lsb is _PMD_USER, 2nd is _PAGE_ACCESSED
-- * 0x => No access => 11 (all accesses performed as user iaw page definition)
-- * 10 => No user => 01 (all accesses performed according to page definition)
-- * 11 => User => 00 (all accesses performed as supervisor iaw page definition)
-+ * Therefore, we define 2 APG groups. lsb is _PMD_USER
-+ * 0 => No user => 01 (all accesses performed according to page definition)
-+ * 1 => User => 00 (all accesses performed as supervisor iaw page definition)
-  * We define all 16 groups so that all other bits of APG can take any value
-  */
--#ifdef CONFIG_SWAP
--#define MD_APG_INIT	0xf4f4f4f4
--#else
- #define MD_APG_INIT	0x44444444
--#endif
- 
- /* The effective page number register.  When read, contains the information
-  * about the last instruction TLB miss.  When MD_RPN is written, bits in
-@@ -180,12 +164,6 @@
-  */
- #define SPRN_M_TW	799
- 
--/* APGs */
--#define M_APG0		0x00000000
--#define M_APG1		0x00000020
--#define M_APG2		0x00000040
--#define M_APG3		0x00000060
--
- #ifdef CONFIG_PPC_MM_SLICES
- #include <asm/nohash/32/slice.h>
- #define SLICE_ARRAY_SIZE	(1 << (32 - SLICE_LOW_SHIFT - 1))
 diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 134a573a9f2d..12c92a483fb1 100644
+index 9b31721b522c..50e97027b507 100644
 --- a/arch/powerpc/kernel/head_8xx.S
 +++ b/arch/powerpc/kernel/head_8xx.S
-@@ -353,13 +353,14 @@ _ENTRY(ITLBMiss_cmp)
- #if defined(ITLB_MISS_KERNEL) || defined(CONFIG_HUGETLB_PAGE)
+@@ -292,7 +292,7 @@ SystemCall:
+ 	. = 0x1100
+ /*
+  * For the MPC8xx, this is a software tablewalk to load the instruction
+- * TLB.  The task switch loads the M_TW register with the pointer to the first
++ * TLB.  The task switch loads the M_TWB register with the pointer to the first
+  * level table.
+  * If we discover there is no second level table (value is zero) or if there
+  * is an invalid pte, we load that into the TLB, which causes another fault
+@@ -314,7 +314,7 @@ SystemCall:
+ InstructionTLBMiss:
+ 	mtspr	SPRN_SPRG_SCRATCH0, r10
+ 	mtspr	SPRN_SPRG_SCRATCH1, r11
+-#if defined(ITLB_MISS_KERNEL) || defined(CONFIG_HUGETLB_PAGE)
++#ifdef ITLB_MISS_KERNEL
+ 	mtspr	SPRN_SPRG_SCRATCH2, r12
+ #endif
+ 
+@@ -323,12 +323,11 @@ InstructionTLBMiss:
+ 	 */
+ 	mfspr	r10, SPRN_SRR0	/* Get effective address of fault */
+ 	INVALIDATE_ADJACENT_PAGES_CPU15(r11, r10)
++	mtspr	SPRN_MD_EPN, r10
+ 	/* Only modules will cause ITLB Misses as we always
+ 	 * pin the first 8MB of kernel memory */
+-#if defined(ITLB_MISS_KERNEL) || defined(CONFIG_HUGETLB_PAGE)
+-	mfcr	r12
+-#endif
+ #ifdef ITLB_MISS_KERNEL
++	mfcr	r12
+ #if defined(SIMPLE_KERNEL_ADDRESS) && defined(CONFIG_PIN_TLB_TEXT)
+ 	andis.	r11, r10, 0x8000	/* Address >= 0x80000000 */
+ #else
+@@ -341,7 +340,7 @@ InstructionTLBMiss:
+ #endif
+ #endif
+ #endif
+-	mfspr	r11, SPRN_M_TW	/* Get level 1 table */
++	mfspr	r11, SPRN_M_TWB	/* Get level 1 table */
+ #ifdef ITLB_MISS_KERNEL
+ #if defined(SIMPLE_KERNEL_ADDRESS) && defined(CONFIG_PIN_TLB_TEXT)
+ 	beq+	3f
+@@ -351,23 +350,17 @@ InstructionTLBMiss:
+ #ifndef CONFIG_PIN_TLB_TEXT
+ 	blt	cr7, ITLBMissLinear
+ #endif
+-	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
++	rlwinm	r11, r11, 0, 20, 31
++	oris	r11, r11, (swapper_pg_dir - PAGE_OFFSET)@ha
+ 3:
+ #endif
+-	/* Insert level 1 index */
+-	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
+ 	lwz	r11, (swapper_pg_dir-PAGE_OFFSET)@l(r11)	/* Get the level 1 entry */
+ 
+-	/* Extract level 2 index */
+-	rlwinm	r10, r10, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
+-#ifdef CONFIG_HUGETLB_PAGE
+-	mtcr	r11
+-	bt-	28, 10f		/* bit 28 = Large page (8M) */
+-#endif
+-	rlwimi	r10, r11, 0, 0, 32 - PAGE_SHIFT - 1	/* Add level 2 base */
++	mtspr	SPRN_MD_TWC, r11
++	mfspr	r10, SPRN_MD_TWC
+ 	lwz	r10, 0(r10)	/* Get the pte */
+-4:
+-#if defined(ITLB_MISS_KERNEL) || defined(CONFIG_HUGETLB_PAGE)
++
++#ifdef ITLB_MISS_KERNEL
  	mtcr	r12
  #endif
--
--#ifdef CONFIG_SWAP
--	rlwinm	r11, r10, 31, _PAGE_ACCESSED >> 1
--#endif
  	/* Load the MI_TWC with the attributes for this "segment." */
- 	mtspr	SPRN_MI_TWC, r11	/* Set segment attributes */
+@@ -392,7 +385,7 @@ InstructionTLBMiss:
+ 	/* Restore registers */
+ 0:	mfspr	r10, SPRN_SPRG_SCRATCH0
+ 	mfspr	r11, SPRN_SPRG_SCRATCH1
+-#if defined(ITLB_MISS_KERNEL) || defined(CONFIG_HUGETLB_PAGE)
++#ifdef ITLB_MISS_KERNEL
+ 	mfspr	r12, SPRN_SPRG_SCRATCH2
+ #endif
+ 	rfi
+@@ -405,20 +398,12 @@ InstructionTLBMiss:
+ 	stw	r10, (itlb_miss_counter - PAGE_OFFSET)@l(0)
+ 	mfspr	r10, SPRN_SPRG_SCRATCH0
+ 	mfspr	r11, SPRN_SPRG_SCRATCH1
+-#if defined(ITLB_MISS_KERNEL) || defined(CONFIG_HUGETLB_PAGE)
++#ifdef ITLB_MISS_KERNEL
+ 	mfspr	r12, SPRN_SPRG_SCRATCH2
+ #endif
+ 	rfi
+ #endif
  
-+#ifdef CONFIG_SWAP
-+	rlwinm	r11, r10, 32-5, _PAGE_PRESENT
-+	and	r11, r11, r10
-+	rlwimi	r10, r11, 0, _PAGE_PRESENT
-+#endif
- 	li	r11, RPN_PATTERN | 0x200
- 	/* The Linux PTE won't go exactly into the MMU TLB.
- 	 * Software indicator bits 20 and 23 must be clear.
-@@ -470,14 +471,22 @@ _ENTRY(DTLBMiss_jmp)
- 	 * above.
- 	 */
- 	rlwimi	r11, r10, 0, _PAGE_GUARDED
--#ifdef CONFIG_SWAP
--	/* _PAGE_ACCESSED has to be set. We use second APG bit for that, 0
--	 * on that bit will represent a Non Access group
--	 */
--	rlwinm	r11, r10, 31, _PAGE_ACCESSED >> 1
+-#ifdef CONFIG_HUGETLB_PAGE
+-10:	/* 8M pages */
+-	/* Level 2 base */
+-	rlwinm	r10, r11, 0, ~HUGEPD_SHIFT_MASK
+-	lwz	r10, 0(r10)	/* Get the pte */
+-	b	4b
 -#endif
- 	mtspr	SPRN_MD_TWC, r11
+-
+ 	. = 0x1200
+ DataStoreTLBMiss:
+ 	mtspr	SPRN_SPRG_SCRATCH0, r10
+@@ -432,7 +417,7 @@ DataStoreTLBMiss:
+ 	mfspr	r10, SPRN_MD_EPN
+ 	rlwinm	r11, r10, 16, 0xfff8
+ 	cmpli	cr0, r11, PAGE_OFFSET@h
+-	mfspr	r11, SPRN_M_TW	/* Get level 1 table */
++	mfspr	r11, SPRN_M_TWB	/* Get level 1 table */
+ 	blt+	3f
+ 	rlwinm	r11, r10, 16, 0xfff8
+ #ifndef CONFIG_PIN_TLB_IMMR
+@@ -445,24 +430,16 @@ DataStoreTLBMiss:
+ 	patch_site	0b, patch__dtlbmiss_immr_jmp
+ #endif
+ 	blt	cr7, DTLBMissLinear
+-	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
++	mfspr	r11, SPRN_M_TWB	/* Get level 1 table */
++	rlwinm	r11, r11, 0, 20, 31
++	oris	r11, r11, (swapper_pg_dir - PAGE_OFFSET)@ha
+ 3:
+-
+-	/* Insert level 1 index */
+-	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
+ 	lwz	r11, (swapper_pg_dir-PAGE_OFFSET)@l(r11)	/* Get the level 1 entry */
  
-+	/* Both _PAGE_ACCESSED and _PAGE_PRESENT has to be set.
-+	 * We also need to know if the insn is a load/store, so:
-+	 * Clear _PAGE_PRESENT and load that which will
-+	 * trap into DTLB Error with store bit set accordinly.
-+	 */
-+	/* PRESENT=0x1, ACCESSED=0x20
-+	 * r11 = ((r10 & PRESENT) & ((r10 & ACCESSED) >> 5));
-+	 * r10 = (r10 & ~PRESENT) | r11;
-+	 */
-+#ifdef CONFIG_SWAP
-+	rlwinm	r11, r10, 32-5, _PAGE_PRESENT
-+	and	r11, r11, r10
-+	rlwimi	r10, r11, 0, _PAGE_PRESENT
-+#endif
- 	/* The Linux PTE won't go exactly into the MMU TLB.
- 	 * Software indicator bits 24, 25, 26, and 27 must be
- 	 * set.  All other Linux PTE bits control the behavior
-@@ -637,8 +646,8 @@ InstructionBreakpoint:
-  */
- DTLBMissIMMR:
+-	/* We have a pte table, so load fetch the pte from the table.
+-	 */
+-	/* Extract level 2 index */
+-	rlwinm	r10, r10, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
+-#ifdef CONFIG_HUGETLB_PAGE
+-	mtcr	r11
+-	bt-	28, 10f		/* bit 28 = Large page (8M) */
+-#endif
+-	rlwimi	r10, r11, 0, 0, 32 - PAGE_SHIFT - 1	/* Add level 2 base */
++	mtspr	SPRN_MD_TWC, r11
++	mfspr	r10, SPRN_MD_TWC
+ 	lwz	r10, 0(r10)	/* Get the pte */
+-4:
++
  	mtcr	r12
--	/* Set 512k byte guarded page and mark it valid and accessed */
--	li	r10, MD_PS512K | MD_GUARDED | MD_SVALID | M_APG2
-+	/* Set 512k byte guarded page and mark it valid */
-+	li	r10, MD_PS512K | MD_GUARDED | MD_SVALID
- 	mtspr	SPRN_MD_TWC, r10
- 	mfspr	r10, SPRN_IMMR			/* Get current IMMR */
- 	rlwinm	r10, r10, 0, 0xfff80000		/* Get 512 kbytes boundary */
-@@ -656,8 +665,8 @@ _ENTRY(dtlb_miss_exit_2)
  
- DTLBMissLinear:
- 	mtcr	r12
--	/* Set 8M byte page and mark it valid and accessed */
--	li	r11, MD_PS8MEG | MD_SVALID | M_APG2
-+	/* Set 8M byte page and mark it valid */
-+	li	r11, MD_PS8MEG | MD_SVALID
- 	mtspr	SPRN_MD_TWC, r11
- 	rlwinm	r10, r10, 0, 0x0f800000	/* 8xx supports max 256Mb RAM */
- 	ori	r10, r10, 0xf0 | MD_SPS16K | _PAGE_SH | _PAGE_DIRTY | \
-@@ -675,8 +684,8 @@ _ENTRY(dtlb_miss_exit_3)
- #ifndef CONFIG_PIN_TLB_TEXT
- ITLBMissLinear:
- 	mtcr	r12
--	/* Set 8M byte page and mark it valid,accessed */
--	li	r11, MI_PS8MEG | MI_SVALID | M_APG2
-+	/* Set 8M byte page and mark it valid */
-+	li	r11, MI_PS8MEG | MI_SVALID
- 	mtspr	SPRN_MI_TWC, r11
- 	rlwinm	r10, r10, 0, 0x0f800000	/* 8xx supports max 256Mb RAM */
- 	ori	r10, r10, 0xf0 | MI_SPS16K | _PAGE_SH | _PAGE_DIRTY | \
-@@ -960,7 +969,7 @@ initial_mmu:
- 	ori	r8, r8, MI_EVALID	/* Mark it valid */
- 	mtspr	SPRN_MI_EPN, r8
- 	li	r8, MI_PS8MEG /* Set 8M byte page */
--	ori	r8, r8, MI_SVALID | M_APG2	/* Make it valid, APG 2 */
-+	ori	r8, r8, MI_SVALID	/* Make it valid */
- 	mtspr	SPRN_MI_TWC, r8
- 	li	r8, MI_BOOTINIT		/* Create RPN for address 0 */
- 	mtspr	SPRN_MI_RPN, r8		/* Store TLB entry */
-@@ -987,7 +996,7 @@ initial_mmu:
- 	ori	r8, r8, MD_EVALID	/* Mark it valid */
- 	mtspr	SPRN_MD_EPN, r8
- 	li	r8, MD_PS512K | MD_GUARDED	/* Set 512k byte page */
--	ori	r8, r8, MD_SVALID | M_APG2	/* Make it valid and accessed */
-+	ori	r8, r8, MD_SVALID	/* Make it valid */
- 	mtspr	SPRN_MD_TWC, r8
- 	mr	r8, r9			/* Create paddr for TLB */
- 	ori	r8, r8, MI_BOOTINIT|0x2 /* Inhibit cache -- Cort */
+ 	/* Insert the Guarded flag into the TWC from the Linux PTE.
+@@ -517,15 +494,6 @@ DataStoreTLBMiss:
+ 	rfi
+ #endif
+ 
+-#ifdef CONFIG_HUGETLB_PAGE
+-10:	/* 8M pages */
+-	/* Extract level 2 index */
+-	/* Level 2 base */
+-	rlwinm	r10, r11, 0, ~HUGEPD_SHIFT_MASK
+-	lwz	r10, 0(r10)	/* Get the pte */
+-	b	4b
+-#endif
+-
+ /* This is an instruction TLB error on the MPC8xx.  This could be due
+  * to many reasons, such as executing guarded memory or illegal instruction
+  * addresses.  There is nothing to do but handle a big time error fault.
+@@ -696,9 +664,10 @@ FixupDAR:/* Entry point for dcbx workaround. */
+ 	mtspr	SPRN_SPRG_SCRATCH2, r10
+ 	/* fetch instruction from memory. */
+ 	mfspr	r10, SPRN_SRR0
++	mtspr	SPRN_MD_EPN, r10
+ 	rlwinm	r11, r10, 16, 0xfff8
+ 	cmpli	cr0, r11, PAGE_OFFSET@h
+-	mfspr	r11, SPRN_M_TW	/* Get level 1 table */
++	mfspr	r11, SPRN_M_TWB	/* Get level 1 table */
+ 	blt+	3f
+ 	rlwinm	r11, r10, 16, 0xfff8
+ 
+@@ -708,17 +677,17 @@ FixupDAR:/* Entry point for dcbx workaround. */
+ 	/* create physical page address from effective address */
+ 	tophys(r11, r10)
+ 	blt-	cr7, 201f
+-	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
+-	/* Insert level 1 index */
+-3:	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
++	mfspr	r11, SPRN_M_TWB	/* Get level 1 table */
++	rlwinm	r11, r11, 0, 20, 31
++	oris	r11, r11, (swapper_pg_dir - PAGE_OFFSET)@ha
++3:
+ 	lwz	r11, (swapper_pg_dir-PAGE_OFFSET)@l(r11)	/* Get the level 1 entry */
++	mtspr	SPRN_MD_TWC, r11
+ 	mtcr	r11
++	mfspr	r11, SPRN_MD_TWC
++	lwz	r11, 0(r11)	/* Get the pte */
+ 	bt	28,200f		/* bit 28 = Large page (8M) */
+ 	bt	29,202f		/* bit 29 = Large page (8M or 512K) */
+-	rlwinm	r11, r11,0,0,19	/* Extract page descriptor page address */
+-	/* Insert level 2 index */
+-	rlwimi	r11, r10, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
+-	lwz	r11, 0(r11)	/* Get the pte */
+ 	/* concat physical page address(r11) and page offset(r10) */
+ 	rlwimi	r11, r10, 0, 32 - PAGE_SHIFT, 31
+ 201:	lwz	r11,0(r11)
+@@ -740,18 +709,12 @@ FixupDAR:/* Entry point for dcbx workaround. */
+ 141:	mfspr	r10,SPRN_SPRG_SCRATCH2
+ 	b	DARFixed	/* Nope, go back to normal TLB processing */
+ 
+-	/* concat physical page address(r11) and page offset(r10) */
+ 200:
+-	rlwinm	r11, r10, 0, ~HUGEPD_SHIFT_MASK
+-	lwz	r11, 0(r11)	/* Get the pte */
+ 	/* concat physical page address(r11) and page offset(r10) */
+ 	rlwimi	r11, r10, 0, 32 - PAGE_SHIFT_8M, 31
+ 	b	201b
+ 
+ 202:
+-	rlwinm	r11, r11, 0, 0, 32 + PAGE_SHIFT_512K - (PAGE_SHIFT << 1) - 1
+-	rlwimi	r11, r10, 32 - (PAGE_SHIFT_512K - 2), 32 + PAGE_SHIFT_512K - (PAGE_SHIFT << 1), 29
+-	lwz	r11, 0(r11)	/* Get the pte */
+ 	/* concat physical page address(r11) and page offset(r10) */
+ 	rlwimi	r11, r10, 0, 32 - PAGE_SHIFT_512K, 31
+ 	b	201b
+@@ -867,7 +830,7 @@ start_here:
+ 
+ 	lis	r6, swapper_pg_dir@ha
+ 	tophys(r6,r6)
+-	mtspr	SPRN_M_TW, r6
++	mtspr	SPRN_M_TWB, r6
+ 
+ 	bl	early_init	/* We have to do this with MMU on */
+ 
 diff --git a/arch/powerpc/mm/8xx_mmu.c b/arch/powerpc/mm/8xx_mmu.c
-index 36484a2ef915..fee599cf3bc3 100644
+index d39f3af03221..896e710e5697 100644
 --- a/arch/powerpc/mm/8xx_mmu.c
 +++ b/arch/powerpc/mm/8xx_mmu.c
-@@ -79,7 +79,7 @@ void __init MMU_init_hw(void)
- 	for (; i < 32 && mem >= LARGE_PAGE_SIZE_8M; i++) {
- 		mtspr(SPRN_MD_CTR, ctr | (i << 8));
- 		mtspr(SPRN_MD_EPN, (unsigned long)__va(addr) | MD_EVALID);
--		mtspr(SPRN_MD_TWC, MD_PS8MEG | MD_SVALID | M_APG2);
-+		mtspr(SPRN_MD_TWC, MD_PS8MEG | MD_SVALID);
- 		mtspr(SPRN_MD_RPN, addr | flags | _PAGE_PRESENT);
- 		addr += LARGE_PAGE_SIZE_8M;
- 		mem -= LARGE_PAGE_SIZE_8M;
+@@ -174,12 +174,12 @@ void set_context(unsigned long id, pgd_t *pgd)
+ 	*(ptr + 1) = pgd;
+ #endif
+ 
+-	/* Register M_TW will contain base address of level 1 table minus the
++	/* Register M_TWB will contain base address of level 1 table minus the
+ 	 * lower part of the kernel PGDIR base address, so that all accesses to
+ 	 * level 1 table are done relative to lower part of kernel PGDIR base
+ 	 * address.
+ 	 */
+-	mtspr(SPRN_M_TW, __pa(pgd) - offset);
++	mtspr(SPRN_M_TWB, __pa(pgd) - offset);
+ 
+ 	/* Update context */
+ 	mtspr(SPRN_M_CASID, id - 1);
 -- 
 2.13.3
