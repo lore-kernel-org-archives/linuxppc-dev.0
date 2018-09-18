@@ -1,32 +1,32 @@
 Return-Path: <aneesh.kumar@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42F1lf6jyyzF3F0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2018 22:00:30 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42F1n041xFzF3Fx
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2018 22:01:40 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w8IBtqML075205
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2018 08:02:21 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2mk0by9q1q-1
+ w8IBruKT083187
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2018 08:01:37 -0400
+Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2mk0b3hnmq-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2018 08:02:20 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2018 08:01:37 -0400
 Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Tue, 18 Sep 2018 06:00:26 -0600
+ Tue, 18 Sep 2018 08:01:35 -0400
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: npiggin@gmail.com, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au
+ mpe@ellerman.id.au, Alexey Kardashevskiy <aik@ozlabs.ru>
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: [PATCH] powerpc/mm/iommu: Allow large IOMMU page size only for
+Subject: [PATCH V3] powerpc/mm/iommu: Allow large IOMMU page size only for
  hugetlb backing
-Date: Tue, 18 Sep 2018 17:30:17 +0530
-Message-Id: <20180918120017.22527-1-aneesh.kumar@linux.ibm.com>
+Date: Tue, 18 Sep 2018 17:31:22 +0530
+Message-Id: <20180918120122.22746-1-aneesh.kumar@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
