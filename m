@@ -1,23 +1,24 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42F0CD21RHzF0pD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2018 20:50:48 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42F0Gj1wwwzDq61
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2018 20:53:49 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe LEROY <christophe.leroy@c-s.fr>, Joel Stanley <joel@jms.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] powerpc/makefile: remove check on obsolete GCC versions
-In-Reply-To: <1ede3510-df2a-183a-dd4b-3276041d8910@c-s.fr>
-References: <82bbb913ffd8bdc040a012152ee968cd0c6ccf4e.1537218487.git.christophe.leroy@c-s.fr>
- <CACPK8XdeT_FF_PHjqOh3e18jDhsFOdECVDd+Z2vWt8pSk5damA@mail.gmail.com>
- <1ede3510-df2a-183a-dd4b-3276041d8910@c-s.fr>
-Date: Tue, 18 Sep 2018 20:50:44 +1000
-Message-ID: <87va73axkr.fsf@concordia.ellerman.id.au>
+To: Joel Stanley <joel@jms.id.au>, Nick Desaulniers <ndesaulniers@google.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2 2/5] powerpc/boot: Fix crt0.S syntax for clang
+In-Reply-To: <CACPK8XeWojwrQ08gzr7=YgCKFfgLt3H81V699W=9FYyyF32UZw@mail.gmail.com>
+References: <20180914040649.1794-1-joel@jms.id.au>
+ <20180914040649.1794-3-joel@jms.id.au>
+ <CAKwvOdmKvxmh+Vb1UcUzOsYOsK6gjn7v62X=SpwuhimBhdM7ng@mail.gmail.com>
+ <20180914210840.GT23155@gate.crashing.org>
+ <CAKwvOd=gf_G4SaZh3feqBZgZh=WXisRvJosrYzq20gtSOsao5Q@mail.gmail.com>
+ <CACPK8XeWojwrQ08gzr7=YgCKFfgLt3H81V699W=9FYyyF32UZw@mail.gmail.com>
+Date: Tue, 18 Sep 2018 20:53:48 +1000
+Message-ID: <87sh27axfn.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,34 +28,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Christophe LEROY <christophe.leroy@c-s.fr> writes:
-> Le 18/09/2018 =C3=A0 07:48, Joel Stanley a =C3=A9crit=C2=A0:
->> Hey Christophe,
->>=20
->> On Tue, 18 Sep 2018 at 15:13, Christophe Leroy <christophe.leroy@c-s.fr>=
- wrote:
->>>
->>> Since commit cafa0010cd51 ("Raise the minimum required gcc version
->>> to 4.6"), it is not possible to build kernel with GCC lower than 4.6
->>>
->>> This patch removes checkbin tests addressing older versions of GCC.
->>=20
->> This is the same as Nick's patch:
->>=20
->>   https://patchwork.ozlabs.org/patch/969624/
->>=20
->
-> Oops, thanks, I missed that.
->
-> And even before Nick's, there is this one=20
-> https://patchwork.ozlabs.org/patch/962319/
->
-> So I missed twice :(
+Joel Stanley <joel@jms.id.au> writes:
 
-Haha, I missed that one too.
+> On Tue, 18 Sep 2018 at 06:11, Nick Desaulniers <ndesaulniers@google.com> wrote:
+>>
+>> On Fri, Sep 14, 2018 at 2:08 PM Segher Boessenkool
+>> <segher@kernel.crashing.org> wrote:
+>> >
+>> > On Fri, Sep 14, 2018 at 10:47:08AM -0700, Nick Desaulniers wrote:
+>> > > On Thu, Sep 13, 2018 at 9:07 PM Joel Stanley <joel@jms.id.au> wrote:
+>> > > >  10:    addis   r12,r12,(-RELACOUNT)@ha
+>> > > > -       cmpdi   r12,RELACOUNT@l
+>> > > > +       cmpdi   r12,(RELACOUNT)@l
+>> > >
+>> > > Yep, as we can see above, when RELACOUNT is negated, it's wrapped in
+>> > > parens.
+>>
+>> Looks like this was just fixed in Clang-8:
+>> https://bugs.llvm.org/show_bug.cgi?id=38945
+>> https://reviews.llvm.org/D52188
+>
+> Nice!
+>
+> mpe, given we need the local references to labels fix which is also in
+> clang-8 I suggest we drop this patch.
 
-Everyone loves deleting code ;)
-
-I have Nick's patch queued.
+OK, no worries.
 
 cheers
