@@ -2,20 +2,20 @@ Return-Path: <ebiederm@xmission.com>
 Received: from out03.mta.xmission.com (out03.mta.xmission.com [166.70.13.233])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42F9jS1wWQzF3G9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Sep 2018 03:59:08 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42F9jq1tDbzF3JJ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Sep 2018 03:59:27 +1000 (AEST)
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: linux-kernel@vger.kernel.org
 Cc: linux-arch@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  "Eric W. Biederman" <ebiederm@xmission.com>
-Date: Tue, 18 Sep 2018 19:58:42 +0200
-Message-Id: <20180918175850.4437-1-ebiederm@xmission.com>
+Date: Tue, 18 Sep 2018 19:58:43 +0200
+Message-Id: <20180918175850.4437-2-ebiederm@xmission.com>
 In-Reply-To: <878t3yitze.fsf@xmission.com>
 References: <878t3yitze.fsf@xmission.com>
-Subject: [REVIEW][PATCH 1/9] signal/powerpc: Use force_sig_mceerr as
- appropriate
+Subject: [REVIEW][PATCH 2/9] signal/powerpc: Remove pkey parameter from
+ __bad_area
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,55 +25,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In do_sigbus isolate the mceerr signaling code and call
-force_sig_mceerr instead of falling through to the force_sig_info that
-works for all of the other signals.
+There are no callers of __bad_area that pass in a pkey parameter so it makes
+no sense to take one.
 
 Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
 ---
- arch/powerpc/mm/fault.c | 18 +++++++++++-------
- 1 file changed, 11 insertions(+), 7 deletions(-)
+ arch/powerpc/mm/fault.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
 
 diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index d51cf5f4e45e..22d7f8748cd7 100644
+index 22d7f8748cd7..e5725fa96a48 100644
 --- a/arch/powerpc/mm/fault.c
 +++ b/arch/powerpc/mm/fault.c
-@@ -158,7 +158,6 @@ static int do_sigbus(struct pt_regs *regs, unsigned long address,
- 		     vm_fault_t fault)
- {
- 	siginfo_t info;
--	unsigned int lsb = 0;
- 
- 	if (!user_mode(regs))
- 		return SIGBUS;
-@@ -171,17 +170,22 @@ static int do_sigbus(struct pt_regs *regs, unsigned long address,
- 	info.si_addr = (void __user *)address;
- #ifdef CONFIG_MEMORY_FAILURE
- 	if (fault & (VM_FAULT_HWPOISON|VM_FAULT_HWPOISON_LARGE)) {
-+		unsigned int lsb = 0; /* shutup gcc */
-+
- 		pr_err("MCE: Killing %s:%d due to hardware memory corruption fault at %lx\n",
- 			current->comm, current->pid, address);
--		info.si_code = BUS_MCEERR_AR;
-+
-+		if (fault & VM_FAULT_HWPOISON_LARGE)
-+			lsb = hstate_index_to_shift(VM_FAULT_GET_HINDEX(fault));
-+		if (fault & VM_FAULT_HWPOISON)
-+			lsb = PAGE_SHIFT;
-+
-+		force_sig_mceerr(BUS_MCEERR_AR, (void __user *)address, lsb,
-+				 current);
-+		return 0;
- 	}
- 
--	if (fault & VM_FAULT_HWPOISON_LARGE)
--		lsb = hstate_index_to_shift(VM_FAULT_GET_HINDEX(fault));
--	if (fault & VM_FAULT_HWPOISON)
--		lsb = PAGE_SHIFT;
- #endif
--	info.si_addr_lsb = lsb;
- 	force_sig_info(SIGBUS, &info, current);
- 	return 0;
+@@ -124,8 +124,7 @@ static noinline int bad_area_nosemaphore(struct pt_regs *regs, unsigned long add
+ 	return __bad_area_nosemaphore(regs, address, SEGV_MAPERR, 0);
  }
+ 
+-static int __bad_area(struct pt_regs *regs, unsigned long address, int si_code,
+-			int pkey)
++static int __bad_area(struct pt_regs *regs, unsigned long address, int si_code)
+ {
+ 	struct mm_struct *mm = current->mm;
+ 
+@@ -135,12 +134,12 @@ static int __bad_area(struct pt_regs *regs, unsigned long address, int si_code,
+ 	 */
+ 	up_read(&mm->mmap_sem);
+ 
+-	return __bad_area_nosemaphore(regs, address, si_code, pkey);
++	return __bad_area_nosemaphore(regs, address, si_code, 0);
+ }
+ 
+ static noinline int bad_area(struct pt_regs *regs, unsigned long address)
+ {
+-	return __bad_area(regs, address, SEGV_MAPERR, 0);
++	return __bad_area(regs, address, SEGV_MAPERR);
+ }
+ 
+ static int bad_key_fault_exception(struct pt_regs *regs, unsigned long address,
+@@ -151,7 +150,7 @@ static int bad_key_fault_exception(struct pt_regs *regs, unsigned long address,
+ 
+ static noinline int bad_access(struct pt_regs *regs, unsigned long address)
+ {
+-	return __bad_area(regs, address, SEGV_ACCERR, 0);
++	return __bad_area(regs, address, SEGV_ACCERR);
+ }
+ 
+ static int do_sigbus(struct pt_regs *regs, unsigned long address,
 -- 
 2.17.1
