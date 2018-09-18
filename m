@@ -1,19 +1,30 @@
-Return-Path: <ebiederm@xmission.com>
-Received: from out03.mta.xmission.com (out03.mta.xmission.com [166.70.13.233])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42FCtP55ljzF3JN
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Sep 2018 05:37:00 +1000 (AEST)
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: <linux-kernel@vger.kernel.org>
-Cc: <linux-arch@vger.kernel.org> , linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Tue, 18 Sep 2018 19:41:09 +0200
-Message-ID: <878t3yitze.fsf@xmission.com>
+Return-Path: <frowand.list@gmail.com>
+Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
+ [IPv6:2607:f8b0:4864:20::544])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42FDbP2gd2zF3JS
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Sep 2018 06:09:04 +1000 (AEST)
+Received: by mail-pg1-x544.google.com with SMTP id 205-v6so614178pgd.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2018 13:09:04 -0700 (PDT)
+Subject: Re: [PATCH 3/3] scripts/dtc: Update to upstream version
+ v1.4.7-14-gc86da84d30e4
+To: Rob Herring <robh@kernel.org>
+Cc: devicetree@vger.kernel.org,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
+ <linux-arm-kernel@lists.infradead.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+References: <20180913202828.15372-1-robh@kernel.org>
+ <20180913202828.15372-3-robh@kernel.org>
+ <f9684222-fae0-c305-d48a-be77ebb985a3@gmail.com>
+ <CAL_JsqLTcLVGCmjTMi8GojomP=VbFQ5EqKcGnOPo=Wwh5Lc_mw@mail.gmail.com>
+From: Frank Rowand <frowand.list@gmail.com>
+Message-ID: <6414499d-2261-ef50-617e-a743173a3041@gmail.com>
+Date: Tue, 18 Sep 2018 13:09:00 -0700
 MIME-Version: 1.0
-Content-Type: text/plain
-Subject: [REVIEW][PATCH 0/9] signal/powerpc: siginfo cleanups
+In-Reply-To: <CAL_JsqLTcLVGCmjTMi8GojomP=VbFQ5EqKcGnOPo=Wwh5Lc_mw@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,45 +34,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 09/18/18 11:55, Rob Herring wrote:
+> On Fri, Sep 14, 2018 at 2:32 PM Frank Rowand <frowand.list@gmail.com> wrote:
+>>
+>> On 09/13/18 13:28, Rob Herring wrote:
+>>> Major changes are I2C and SPI bus checks, YAML output format (for
+>>> future validation), some new libfdt functions, and more libfdt
+>>> validation of dtbs.
+>>>
+>>> The YAML addition adds an optional dependency on libyaml. pkg-config is
+>>> used to test for it and pkg-config became a kconfig dependency in 4.18.
+>>
+>> For Ubuntu, the libyaml dependency is provided by the packages:
+>>
+>>    libyaml-0-2
+>>    libyaml-dev
+> 
+> Yes, but as it is not yet required by anything in the kernel I don't
+> think that needs to be documented yet. Also, offhand, I don't think we
+> generally document in the kernel distro specifics like package names.
+> 
+> Rob
+> 
 
-This is the continuation of my work to sort out signaling of exceptions
-with siginfo.  The old functions by passing siginfo resulted in many
-cases of fields of siginfo that were not initialized and then passed to
-userspace, and also resulted in callers getting confused and
-initializing the wrong fields.  My remedy is to have specific functions
-for sending each different kind of signal with siginfo.  Those functions
-take the information needed to fill in siginfo and do the work
-themselves.
-
-This is my set of changes to update powerpc to use those functions.
-Along with some refactoring so those functions can be cleanly used.
-
-Folks please review and double check me.  I think I have kept these
-changes simple and obviously correct but I am human and mess up
-sometimes.
-
-After these patches have had a chance to be reviewed I plan to merge
-them by my siginfo tree.  If you would rather take them in the powerpc
-tree let me know.   All of the prerequisites should have been merged
-through Linus's tree several releases ago.
-
-Eric W. Biederman (9):
-      signal/powerpc: Use force_sig_mceerr as appropriate
-      signal/powerpc: Remove pkey parameter from __bad_area
-      signal/powerpc: Call _exception_pkey directly from bad_key_fault_exception
-      signal/powerpc: Remove pkey parameter from __bad_area_nosemaphore
-      signal/powerpc: Factor the common exception code into exception_common
-      signal/powerpc: Call force_sig_fault from _exception
-      signal/poewrpc: Specialize _exception_pkey for handling pkey exceptions
-      signal/powerpc: Simplify _exception_pkey by using force_sig_pkuerr
-      signal/powerpc: Use force_sig_fault where appropriate
-
- arch/powerpc/include/asm/bug.h            |  2 +-
- arch/powerpc/kernel/process.c             |  9 +----
- arch/powerpc/kernel/traps.c               | 27 ++++++++-------
- arch/powerpc/mm/fault.c                   | 55 +++++++++++++++++--------------
- arch/powerpc/platforms/cell/spu_base.c    |  4 +--
- arch/powerpc/platforms/cell/spufs/fault.c | 26 +++++----------
- 6 files changed, 57 insertions(+), 66 deletions(-)
-
-Eric
+Agreed.  I was providing information that might save other people a bit
+of research.  It is sufficiently visible in the email thread and does
+not need to be in the commit message.
