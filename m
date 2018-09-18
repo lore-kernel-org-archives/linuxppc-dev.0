@@ -2,19 +2,19 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42F8LB3zZYzF3FT
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Sep 2018 02:57:22 +1000 (AEST)
-Message-Id: <7d0386541aca84f7208eb67233b6743ab19a05cd.1537288312.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42F8LD2T0rzF3FZ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Sep 2018 02:57:24 +1000 (AEST)
+Message-Id: <768d39976215332fa58b05cb255e4bad8f22c766.1537288312.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1537288312.git.christophe.leroy@c-s.fr>
 References: <cover.1537288312.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v4 08/20] powerpc/mm: Enable 512k hugepage support with HW
- assistance on the 8xx
+Subject: [PATCH v4 09/20] powerpc/8xx: don't use r12/SPRN_SPRG_SCRATCH2 in TLB
+ Miss handlers
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  aneesh.kumar@linux.vnet.ibm.com
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 18 Sep 2018 16:57:18 +0000 (UTC)
+Date: Tue, 18 Sep 2018 16:57:20 +0000 (UTC)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,86 +24,312 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For using 512k pages with hardware assistance, the PTEs have to be spread
-every 128 bytes in the L2 table.
+This patch reworks the TLB Miss handler in order to not use r12
+register, hence avoiding having to save it into SPRN_SPRG_SCRATCH2.
+
+In the DAR Fixup code we can now use SPRN_M_TW, freeing
+SPRN_SPRG_SCRATCH2.
+
+Then SPRN_SPRG_SCRATCH2 may be used for something else in the future.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/hugetlb.h |  4 +++-
- arch/powerpc/mm/hugetlbpage.c      | 13 +++++++++++++
- arch/powerpc/mm/tlb_nohash.c       |  3 +++
- 3 files changed, 19 insertions(+), 1 deletion(-)
+ arch/powerpc/kernel/head_8xx.S | 110 ++++++++++++++++++-----------------------
+ 1 file changed, 49 insertions(+), 61 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/hugetlb.h b/arch/powerpc/include/asm/hugetlb.h
-index e13843556414..b22f164216ad 100644
---- a/arch/powerpc/include/asm/hugetlb.h
-+++ b/arch/powerpc/include/asm/hugetlb.h
-@@ -75,7 +75,9 @@ static inline pte_t *hugepte_offset(hugepd_t hpd, unsigned long addr,
- 	unsigned long idx = 0;
+diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+index 50e97027b507..d69c6e3d5cc1 100644
+--- a/arch/powerpc/kernel/head_8xx.S
++++ b/arch/powerpc/kernel/head_8xx.S
+@@ -302,91 +302,88 @@ SystemCall:
+  */
  
- 	pte_t *dir = hugepd_page(hpd);
--#ifndef CONFIG_PPC_FSL_BOOK3E
-+#ifdef CONFIG_PPC_8xx
-+	idx = (addr & ((1UL << pdshift) - 1)) >> PAGE_SHIFT;
-+#elif !defined(CONFIG_PPC_FSL_BOOK3E)
- 	idx = (addr & ((1UL << pdshift) - 1)) >> hugepd_shift(hpd);
+ #ifdef CONFIG_8xx_CPU15
+-#define INVALIDATE_ADJACENT_PAGES_CPU15(tmp, addr)	\
+-	addi	tmp, addr, PAGE_SIZE;	\
+-	tlbie	tmp;			\
+-	addi	tmp, addr, -PAGE_SIZE;	\
+-	tlbie	tmp
++#define INVALIDATE_ADJACENT_PAGES_CPU15(addr)	\
++	addi	addr, addr, PAGE_SIZE;	\
++	tlbie	addr;			\
++	addi	addr, addr, -(PAGE_SIZE << 1);	\
++	tlbie	addr;			\
++	addi	addr, addr, PAGE_SIZE
+ #else
+-#define INVALIDATE_ADJACENT_PAGES_CPU15(tmp, addr)
++#define INVALIDATE_ADJACENT_PAGES_CPU15(addr)
  #endif
  
-diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-index 16846649499b..527ea2451cc2 100644
---- a/arch/powerpc/mm/hugetlbpage.c
-+++ b/arch/powerpc/mm/hugetlbpage.c
-@@ -66,7 +66,11 @@ static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
- 		cachep = PGT_CACHE(PTE_T_ORDER);
- 		num_hugepd = 1 << (pshift - pdshift);
- 	} else {
-+#ifdef CONFIG_PPC_8xx
-+		cachep = PGT_CACHE(PTE_SHIFT);
-+#else
- 		cachep = PGT_CACHE(pdshift - pshift);
-+#endif
- 		num_hugepd = 1;
- 	}
- 
-@@ -330,8 +334,13 @@ static void free_hugepd_range(struct mmu_gather *tlb, hugepd_t *hpdp, int pdshif
- 	if (shift >= pdshift)
- 		hugepd_free(tlb, hugepte);
- 	else
-+#ifdef CONFIG_PPC_8xx
-+		pgtable_free_tlb(tlb, hugepte,
-+				 get_hugepd_cache_index(PTE_SHIFT));
-+#else
- 		pgtable_free_tlb(tlb, hugepte,
- 				 get_hugepd_cache_index(pdshift - shift));
-+#endif
- }
- 
- static void hugetlb_free_pmd_range(struct mmu_gather *tlb, pud_t *pud,
-@@ -699,7 +708,11 @@ static int __init hugetlbpage_init(void)
- 		 * use pgt cache for hugepd.
- 		 */
- 		if (pdshift > shift)
-+#ifdef CONFIG_PPC_8xx
-+			pgtable_cache_add(PTE_SHIFT);
-+#else
- 			pgtable_cache_add(pdshift - shift);
-+#endif
- #if defined(CONFIG_PPC_FSL_BOOK3E) || defined(CONFIG_PPC_8xx)
- 		else
- 			pgtable_cache_add(PTE_T_ORDER);
-diff --git a/arch/powerpc/mm/tlb_nohash.c b/arch/powerpc/mm/tlb_nohash.c
-index 49441963d285..15fe5f0c8665 100644
---- a/arch/powerpc/mm/tlb_nohash.c
-+++ b/arch/powerpc/mm/tlb_nohash.c
-@@ -97,6 +97,9 @@ struct mmu_psize_def mmu_psize_defs[MMU_PAGE_COUNT] = {
- 		.shift	= 14,
- 	},
+ InstructionTLBMiss:
+ 	mtspr	SPRN_SPRG_SCRATCH0, r10
++#if defined(ITLB_MISS_KERNEL) || defined(CONFIG_SWAP)
+ 	mtspr	SPRN_SPRG_SCRATCH1, r11
+-#ifdef ITLB_MISS_KERNEL
+-	mtspr	SPRN_SPRG_SCRATCH2, r12
  #endif
-+	[MMU_PAGE_512K] = {
-+		.shift	= 19,
-+	},
- 	[MMU_PAGE_8M] = {
- 		.shift	= 23,
- 	},
+ 
+ 	/* If we are faulting a kernel address, we have to use the
+ 	 * kernel page tables.
+ 	 */
+ 	mfspr	r10, SPRN_SRR0	/* Get effective address of fault */
+-	INVALIDATE_ADJACENT_PAGES_CPU15(r11, r10)
++	INVALIDATE_ADJACENT_PAGES_CPU15(r10)
+ 	mtspr	SPRN_MD_EPN, r10
+ 	/* Only modules will cause ITLB Misses as we always
+ 	 * pin the first 8MB of kernel memory */
+ #ifdef ITLB_MISS_KERNEL
+-	mfcr	r12
++	mfcr	r11
+ #if defined(SIMPLE_KERNEL_ADDRESS) && defined(CONFIG_PIN_TLB_TEXT)
+-	andis.	r11, r10, 0x8000	/* Address >= 0x80000000 */
++	cmpi	cr0, r10, 0	/* Address >= 0x80000000 */
+ #else
+-	rlwinm	r11, r10, 16, 0xfff8
+-	cmpli	cr0, r11, PAGE_OFFSET@h
++	rlwinm	r10, r10, 16, 0xfff8
++	cmpli	cr0, r10, PAGE_OFFSET@h
+ #ifndef CONFIG_PIN_TLB_TEXT
+ 	/* It is assumed that kernel code fits into the first 8M page */
+-0:	cmpli	cr7, r11, (PAGE_OFFSET + 0x0800000)@h
++0:	cmpli	cr7, r10, (PAGE_OFFSET + 0x0800000)@h
+ 	patch_site	0b, patch__itlbmiss_linmem_top
+ #endif
+ #endif
+ #endif
+-	mfspr	r11, SPRN_M_TWB	/* Get level 1 table */
++	mfspr	r10, SPRN_M_TWB	/* Get level 1 table */
+ #ifdef ITLB_MISS_KERNEL
+ #if defined(SIMPLE_KERNEL_ADDRESS) && defined(CONFIG_PIN_TLB_TEXT)
+-	beq+	3f
++	bge+	3f
+ #else
+ 	blt+	3f
+ #endif
+ #ifndef CONFIG_PIN_TLB_TEXT
+ 	blt	cr7, ITLBMissLinear
+ #endif
+-	rlwinm	r11, r11, 0, 20, 31
+-	oris	r11, r11, (swapper_pg_dir - PAGE_OFFSET)@ha
++	rlwinm	r10, r10, 0, 20, 31
++	oris	r10, r10, (swapper_pg_dir - PAGE_OFFSET)@ha
+ 3:
+ #endif
+-	lwz	r11, (swapper_pg_dir-PAGE_OFFSET)@l(r11)	/* Get the level 1 entry */
++	lwz	r10, (swapper_pg_dir-PAGE_OFFSET)@l(r10)	/* Get level 1 entry */
++	mtspr	SPRN_MI_TWC, r10	/* Set segment attributes */
+ 
+-	mtspr	SPRN_MD_TWC, r11
++	mtspr	SPRN_MD_TWC, r10
+ 	mfspr	r10, SPRN_MD_TWC
+ 	lwz	r10, 0(r10)	/* Get the pte */
+ 
+ #ifdef ITLB_MISS_KERNEL
+-	mtcr	r12
++	mtcr	r11
+ #endif
+-	/* Load the MI_TWC with the attributes for this "segment." */
+-	mtspr	SPRN_MI_TWC, r11	/* Set segment attributes */
+-
+ #ifdef CONFIG_SWAP
+ 	rlwinm	r11, r10, 32-5, _PAGE_PRESENT
+ 	and	r11, r11, r10
+ 	rlwimi	r10, r11, 0, _PAGE_PRESENT
+ #endif
+-	li	r11, RPN_PATTERN | 0x200
+ 	/* The Linux PTE won't go exactly into the MMU TLB.
+ 	 * Software indicator bits 20 and 23 must be clear.
+ 	 * Software indicator bits 22, 24, 25, 26, and 27 must be
+ 	 * set.  All other Linux PTE bits control the behavior
+ 	 * of the MMU.
+ 	 */
+-	rlwimi	r11, r10, 4, 0x0400	/* Copy _PAGE_EXEC into bit 21 */
+-	rlwimi	r10, r11, 0, 0x0ff0	/* Set 22, 24-27, clear 20,23 */
++	rlwimi	r10, r10, 0, 0x0f00	/* Clear bits 20-23 */
++	rlwimi	r10, r10, 4, 0x0400	/* Copy _PAGE_EXEC into bit 21 */
++	ori	r10, r10, RPN_PATTERN | 0x200 /* Set 22 and 24-27 */
+ 	mtspr	SPRN_MI_RPN, r10	/* Update TLB entry */
+ 
+ 	/* Restore registers */
+ 0:	mfspr	r10, SPRN_SPRG_SCRATCH0
++#if defined(ITLB_MISS_KERNEL) || defined(CONFIG_SWAP)
+ 	mfspr	r11, SPRN_SPRG_SCRATCH1
+-#ifdef ITLB_MISS_KERNEL
+-	mfspr	r12, SPRN_SPRG_SCRATCH2
+ #endif
+ 	rfi
+ 	patch_site	0b, patch__itlbmiss_exit_1
+@@ -397,9 +394,8 @@ InstructionTLBMiss:
+ 	addi	r10, r10, 1
+ 	stw	r10, (itlb_miss_counter - PAGE_OFFSET)@l(0)
+ 	mfspr	r10, SPRN_SPRG_SCRATCH0
++#if defined(ITLB_MISS_KERNEL) || defined(CONFIG_SWAP)
+ 	mfspr	r11, SPRN_SPRG_SCRATCH1
+-#ifdef ITLB_MISS_KERNEL
+-	mfspr	r12, SPRN_SPRG_SCRATCH2
+ #endif
+ 	rfi
+ #endif
+@@ -408,40 +404,37 @@ InstructionTLBMiss:
+ DataStoreTLBMiss:
+ 	mtspr	SPRN_SPRG_SCRATCH0, r10
+ 	mtspr	SPRN_SPRG_SCRATCH1, r11
+-	mtspr	SPRN_SPRG_SCRATCH2, r12
+-	mfcr	r12
++	mfcr	r11
+ 
+ 	/* If we are faulting a kernel address, we have to use the
+ 	 * kernel page tables.
+ 	 */
+ 	mfspr	r10, SPRN_MD_EPN
+-	rlwinm	r11, r10, 16, 0xfff8
+-	cmpli	cr0, r11, PAGE_OFFSET@h
+-	mfspr	r11, SPRN_M_TWB	/* Get level 1 table */
+-	blt+	3f
+-	rlwinm	r11, r10, 16, 0xfff8
++	rlwinm	r10, r10, 16, 0xfff8
++	cmpli	cr0, r10, PAGE_OFFSET@h
+ #ifndef CONFIG_PIN_TLB_IMMR
+-	cmpli	cr0, r11, VIRT_IMMR_BASE@h
++	cmpli	cr6, r10, VIRT_IMMR_BASE@h
+ #endif
+-0:	cmpli	cr7, r11, (PAGE_OFFSET + 0x1800000)@h
++0:	cmpli	cr7, r10, (PAGE_OFFSET + 0x1800000)@h
+ 	patch_site	0b, patch__dtlbmiss_linmem_top
++
++	mfspr	r10, SPRN_M_TWB	/* Get level 1 table */
++	blt+	3f
+ #ifndef CONFIG_PIN_TLB_IMMR
+-0:	beq-	DTLBMissIMMR
++0:	beq-	cr6, DTLBMissIMMR
+ 	patch_site	0b, patch__dtlbmiss_immr_jmp
+ #endif
+ 	blt	cr7, DTLBMissLinear
+-	mfspr	r11, SPRN_M_TWB	/* Get level 1 table */
+-	rlwinm	r11, r11, 0, 20, 31
+-	oris	r11, r11, (swapper_pg_dir - PAGE_OFFSET)@ha
++	rlwinm	r10, r10, 0, 20, 31
++	oris	r10, r10, (swapper_pg_dir - PAGE_OFFSET)@ha
+ 3:
+-	lwz	r11, (swapper_pg_dir-PAGE_OFFSET)@l(r11)	/* Get the level 1 entry */
++	mtcr	r11
++	lwz	r11, (swapper_pg_dir-PAGE_OFFSET)@l(r10)	/* Get level 1 entry */
+ 
+ 	mtspr	SPRN_MD_TWC, r11
+ 	mfspr	r10, SPRN_MD_TWC
+ 	lwz	r10, 0(r10)	/* Get the pte */
+ 
+-	mtcr	r12
+-
+ 	/* Insert the Guarded flag into the TWC from the Linux PTE.
+ 	 * It is bit 27 of both the Linux PTE and the TWC (at least
+ 	 * I got that right :-).  It will be better when we can put
+@@ -479,7 +472,6 @@ DataStoreTLBMiss:
+ 
+ 0:	mfspr	r10, SPRN_SPRG_SCRATCH0
+ 	mfspr	r11, SPRN_SPRG_SCRATCH1
+-	mfspr	r12, SPRN_SPRG_SCRATCH2
+ 	rfi
+ 	patch_site	0b, patch__dtlbmiss_exit_1
+ 
+@@ -490,7 +482,6 @@ DataStoreTLBMiss:
+ 	stw	r10, (dtlb_miss_counter - PAGE_OFFSET)@l(0)
+ 	mfspr	r10, SPRN_SPRG_SCRATCH0
+ 	mfspr	r11, SPRN_SPRG_SCRATCH1
+-	mfspr	r12, SPRN_SPRG_SCRATCH2
+ 	rfi
+ #endif
+ 
+@@ -598,7 +589,7 @@ InstructionBreakpoint:
+  * not enough space in the DataStoreTLBMiss area.
+  */
+ DTLBMissIMMR:
+-	mtcr	r12
++	mtcr	r11
+ 	/* Set 512k byte guarded page and mark it valid */
+ 	li	r10, MD_PS512K | MD_GUARDED | MD_SVALID
+ 	mtspr	SPRN_MD_TWC, r10
+@@ -613,16 +604,15 @@ DTLBMissIMMR:
+ 
+ 0:	mfspr	r10, SPRN_SPRG_SCRATCH0
+ 	mfspr	r11, SPRN_SPRG_SCRATCH1
+-	mfspr	r12, SPRN_SPRG_SCRATCH2
+ 	rfi
+ 	patch_site	0b, patch__dtlbmiss_exit_2
+ 
+ DTLBMissLinear:
+-	mtcr	r12
++	mtcr	r11
+ 	/* Set 8M byte page and mark it valid */
+ 	li	r11, MD_PS8MEG | MD_SVALID
+ 	mtspr	SPRN_MD_TWC, r11
+-	rlwinm	r10, r10, 0, 0x0f800000	/* 8xx supports max 256Mb RAM */
++	rlwinm	r10, r10, 20, 0x0f800000	/* 8xx supports max 256Mb RAM */
+ 	ori	r10, r10, 0xf0 | MD_SPS16K | _PAGE_SH | _PAGE_DIRTY | \
+ 			  _PAGE_PRESENT
+ 	mtspr	SPRN_MD_RPN, r10	/* Update TLB entry */
+@@ -632,24 +622,22 @@ DTLBMissLinear:
+ 
+ 0:	mfspr	r10, SPRN_SPRG_SCRATCH0
+ 	mfspr	r11, SPRN_SPRG_SCRATCH1
+-	mfspr	r12, SPRN_SPRG_SCRATCH2
+ 	rfi
+ 	patch_site	0b, patch__dtlbmiss_exit_3
+ 
+ #ifndef CONFIG_PIN_TLB_TEXT
+ ITLBMissLinear:
+-	mtcr	r12
++	mtcr	r11
+ 	/* Set 8M byte page and mark it valid */
+ 	li	r11, MI_PS8MEG | MI_SVALID
+ 	mtspr	SPRN_MI_TWC, r11
+-	rlwinm	r10, r10, 0, 0x0f800000	/* 8xx supports max 256Mb RAM */
++	rlwinm	r10, r10, 20, 0x0f800000	/* 8xx supports max 256Mb RAM */
+ 	ori	r10, r10, 0xf0 | MI_SPS16K | _PAGE_SH | _PAGE_DIRTY | \
+ 			  _PAGE_PRESENT
+ 	mtspr	SPRN_MI_RPN, r10	/* Update TLB entry */
+ 
+ 0:	mfspr	r10, SPRN_SPRG_SCRATCH0
+ 	mfspr	r11, SPRN_SPRG_SCRATCH1
+-	mfspr	r12, SPRN_SPRG_SCRATCH2
+ 	rfi
+ 	patch_site	0b, patch__itlbmiss_exit_2
+ #endif
+@@ -661,7 +649,7 @@ ITLBMissLinear:
+  /* define if you don't want to use self modifying code */
+ #define NO_SELF_MODIFYING_CODE
+ FixupDAR:/* Entry point for dcbx workaround. */
+-	mtspr	SPRN_SPRG_SCRATCH2, r10
++	mtspr	SPRN_M_TW, r10
+ 	/* fetch instruction from memory. */
+ 	mfspr	r10, SPRN_SRR0
+ 	mtspr	SPRN_MD_EPN, r10
+@@ -706,7 +694,7 @@ FixupDAR:/* Entry point for dcbx workaround. */
+ 	beq+	142f
+ 	cmpwi	cr0, r10, 1964	/* Is icbi? */
+ 	beq+	142f
+-141:	mfspr	r10,SPRN_SPRG_SCRATCH2
++141:	mfspr	r10,SPRN_M_TW
+ 	b	DARFixed	/* Nope, go back to normal TLB processing */
+ 
+ 200:
+@@ -741,7 +729,7 @@ modified_instr:
+ 	bne+	143f
+ 	subf	r10,r0,r10	/* r10=r10-r0, only if reg RA is r0 */
+ 143:	mtdar	r10		/* store faulting EA in DAR */
+-	mfspr	r10,SPRN_SPRG_SCRATCH2
++	mfspr	r10,SPRN_M_TW
+ 	b	DARFixed	/* Go back to normal TLB handling */
+ #else
+ 	mfctr	r10
+@@ -795,7 +783,7 @@ modified_instr:
+ 	mfdar	r11
+ 	mtctr	r11			/* restore ctr reg from DAR */
+ 	mtdar	r10			/* save fault EA to DAR */
+-	mfspr	r10,SPRN_SPRG_SCRATCH2
++	mfspr	r10,SPRN_M_TW
+ 	b	DARFixed		/* Go back to normal TLB handling */
+ 
+ 	/* special handling for r10,r11 since these are modified already */
 -- 
 2.13.3
