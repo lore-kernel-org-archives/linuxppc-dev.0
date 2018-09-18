@@ -2,21 +2,15 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42DxZS2TfDzDrDD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2018 18:52:16 +1000 (AEST)
-Subject: Re: [PATCH v4] powerpc: Avoid code patching freed init sections
-To: Nicholas Piggin <npiggin@gmail.com>, Michael Neuling <mikey@neuling.org>
-Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, paulus@ozlabs.org,
- Haren Myneni <haren@linux.vnet.ibm.com>, =?UTF-8?Q?Michal_Such=c3=a1nek?=
- <msuchanek@suse.de>
-References: <20180914011411.3184-1-mikey@neuling.org>
- <20180914142201.379b14a4@roar.ozlabs.ibm.com>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <2d775c16-9dc9-efa4-f3fb-6a0f16297a3a@c-s.fr>
-Date: Tue, 18 Sep 2018 10:52:09 +0200
-MIME-Version: 1.0
-In-Reply-To: <20180914142201.379b14a4@roar.ozlabs.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42DyKX3k8yzF0fg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2018 19:26:08 +1000 (AEST)
+Message-Id: <872199441fd43b05fc1c7d049098ef7c0e83f4c5.1537262646.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] powerpc/kgdb: add kgdb_arch_set/remove_breakpoint()
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Tue, 18 Sep 2018 09:26:03 +0000 (UTC)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,97 +20,127 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Generic implementation fails to remove breakpoints after init
+when CONFIG_STRICT_KERNEL_RWX is selected:
 
+[   13.251285] KGDB: BP remove failed: c001c338
+[   13.259587] kgdbts: ERROR PUT: end of test buffer on 'do_fork_test' line 8 expected OK got $E14#aa
+[   13.268969] KGDB: re-enter exception: ALL breakpoints killed
+[   13.275099] CPU: 0 PID: 1 Comm: init Not tainted 4.18.0-g82bbb913ffd8 #860
+[   13.282836] Call Trace:
+[   13.285313] [c60e1ba0] [c0080ef0] kgdb_handle_exception+0x6f4/0x720 (unreliable)
+[   13.292618] [c60e1c30] [c000e97c] kgdb_handle_breakpoint+0x3c/0x98
+[   13.298709] [c60e1c40] [c000af54] program_check_exception+0x104/0x700
+[   13.305083] [c60e1c60] [c000e45c] ret_from_except_full+0x0/0x4
+[   13.310845] [c60e1d20] [c02a22ac] run_simple_test+0x2b4/0x2d4
+[   13.316532] [c60e1d30] [c0081698] put_packet+0xb8/0x158
+[   13.321694] [c60e1d60] [c00820b4] gdb_serial_stub+0x230/0xc4c
+[   13.327374] [c60e1dc0] [c0080af8] kgdb_handle_exception+0x2fc/0x720
+[   13.333573] [c60e1e50] [c000e928] kgdb_singlestep+0xb4/0xcc
+[   13.339068] [c60e1e70] [c000ae1c] single_step_exception+0x90/0xac
+[   13.345100] [c60e1e80] [c000e45c] ret_from_except_full+0x0/0x4
+[   13.350865] [c60e1f40] [c000e11c] ret_from_syscall+0x0/0x38
+[   13.356346] Kernel panic - not syncing: Recursive entry to debugger
 
-Le 14/09/2018 à 06:22, Nicholas Piggin a écrit :
-> On Fri, 14 Sep 2018 11:14:11 +1000
-> Michael Neuling <mikey@neuling.org> wrote:
-> 
->> This stops us from doing code patching in init sections after they've
->> been freed.
->>
->> In this chain:
->>    kvm_guest_init() ->
->>      kvm_use_magic_page() ->
->>        fault_in_pages_readable() ->
->> 	 __get_user() ->
->> 	   __get_user_nocheck() ->
->> 	     barrier_nospec();
->>
->> We have a code patching location at barrier_nospec() and
->> kvm_guest_init() is an init function. This whole chain gets inlined,
->> so when we free the init section (hence kvm_guest_init()), this code
->> goes away and hence should no longer be patched.
->>
->> We seen this as userspace memory corruption when using a memory
->> checker while doing partition migration testing on powervm (this
->> starts the code patching post migration via
->> /sys/kernel/mobility/migration). In theory, it could also happen when
->> using /sys/kernel/debug/powerpc/barrier_nospec.
->>
->> cc: stable@vger.kernel.org # 4.13+
->> Signed-off-by: Michael Neuling <mikey@neuling.org>
->>
->> ---
->> For stable I've marked this as v4.13+ since that's when we refactored
->> code-patching.c but it could go back even further than that. In
->> reality though, I think we can only hit this since the first
->> spectre/meltdown changes.
->>
->> v4:
->>   Feedback from Christophe Leroy:
->>     - init_mem_free -> init_mem_is_free
->>     - prlog %lx -> %px
->>
->> v3:
->>   Add init_mem_free flag to avoid potential race.
->>   Feedback from Christophe Leroy:
->>     - use init_section_contains()
->>     - change order of init test for performance
->>     - use pr_debug()
->>     - remove blank line
->>
->> v2:
->>    Print when we skip an address
->> ---
->>   arch/powerpc/include/asm/setup.h | 1 +
->>   arch/powerpc/lib/code-patching.c | 6 ++++++
->>   arch/powerpc/mm/mem.c            | 2 ++
->>   3 files changed, 9 insertions(+)
->>
->> diff --git a/arch/powerpc/include/asm/setup.h b/arch/powerpc/include/asm/setup.h
->> index 1a951b0046..1fffbba8d6 100644
->> --- a/arch/powerpc/include/asm/setup.h
->> +++ b/arch/powerpc/include/asm/setup.h
->> @@ -9,6 +9,7 @@ extern void ppc_printk_progress(char *s, unsigned short hex);
->>   
->>   extern unsigned int rtas_data;
->>   extern unsigned long long memory_limit;
->> +extern bool init_mem_is_free;
->>   extern unsigned long klimit;
->>   extern void *zalloc_maybe_bootmem(size_t size, gfp_t mask);
->>   
->> diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
->> index 850f3b8f4d..6ae2777c22 100644
->> --- a/arch/powerpc/lib/code-patching.c
->> +++ b/arch/powerpc/lib/code-patching.c
->> @@ -28,6 +28,12 @@ static int __patch_instruction(unsigned int *exec_addr, unsigned int instr,
->>   {
->>   	int err;
->>   
->> +	/* Make sure we aren't patching a freed init section */
->> +	if (init_mem_is_free && init_section_contains(exec_addr, 4)) {
->> +		pr_debug("Skipping init section patching addr: 0x%px\n", exec_addr);
->> +		return 0;
->> +	}
-> 
-> What we should do is a whitelist, make sure it's only patching the
-> sections we want it to.
-> 
-> That's a bigger job when you consider modules and things too though,
-> so this looks good for now. Thanks,
+This patch creates powerpc specific version of
+kgdb_arch_set_breakpoint() and kgdb_arch_remove_breakpoint()
+using patch_instruction()
 
-What about using kernel_text_address() for it then ? It also handles 
-modules, is it more complicated than that ?
+Fixes: 1e0fc9d1eb2b ("powerpc/Kconfig: Enable STRICT_KERNEL_RWX for some configs")
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/include/asm/kgdb.h |  5 ++++-
+ arch/powerpc/kernel/kgdb.c      | 43 +++++++++++++++++++++++++++++++++--------
+ 2 files changed, 39 insertions(+), 9 deletions(-)
 
-Christophe
+diff --git a/arch/powerpc/include/asm/kgdb.h b/arch/powerpc/include/asm/kgdb.h
+index 9db24e77b9f4..a9e098a3b881 100644
+--- a/arch/powerpc/include/asm/kgdb.h
++++ b/arch/powerpc/include/asm/kgdb.h
+@@ -26,9 +26,12 @@
+ #define BREAK_INSTR_SIZE	4
+ #define BUFMAX			((NUMREGBYTES * 2) + 512)
+ #define OUTBUFMAX		((NUMREGBYTES * 2) + 512)
++
++#define BREAK_INSTR		0x7d821008	/* twge r2, r2 */
++
+ static inline void arch_kgdb_breakpoint(void)
+ {
+-	asm(".long 0x7d821008"); /* twge r2, r2 */
++	asm(stringify_in_c(.long BREAK_INSTR));
+ }
+ #define CACHE_FLUSH_IS_SAFE	1
+ #define DBG_MAX_REG_NUM     70
+diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
+index 35e240a0a408..59c578f865aa 100644
+--- a/arch/powerpc/kernel/kgdb.c
++++ b/arch/powerpc/kernel/kgdb.c
+@@ -24,6 +24,7 @@
+ #include <asm/processor.h>
+ #include <asm/machdep.h>
+ #include <asm/debug.h>
++#include <asm/code-patching.h>
+ #include <linux/slab.h>
+ 
+ /*
+@@ -144,7 +145,7 @@ static int kgdb_handle_breakpoint(struct pt_regs *regs)
+ 	if (kgdb_handle_exception(1, SIGTRAP, 0, regs) != 0)
+ 		return 0;
+ 
+-	if (*(u32 *) (regs->nip) == *(u32 *) (&arch_kgdb_ops.gdb_bpt_instr))
++	if (*(u32 *)regs->nip == BREAK_INSTR)
+ 		regs->nip += BREAK_INSTR_SIZE;
+ 
+ 	return 1;
+@@ -441,16 +442,42 @@ int kgdb_arch_handle_exception(int vector, int signo, int err_code,
+ 	return -1;
+ }
+ 
++int kgdb_arch_set_breakpoint(struct kgdb_bkpt *bpt)
++{
++	int err;
++	unsigned int instr;
++	unsigned int *addr = (unsigned int *)bpt->bpt_addr;
++
++	err = probe_kernel_address(addr, instr);
++	if (err)
++		return err;
++
++	err = patch_instruction(addr, BREAK_INSTR);
++	if (err)
++		return -EFAULT;
++
++	*(unsigned int *)bpt->saved_instr = instr;
++
++	return 0;
++}
++
++int kgdb_arch_remove_breakpoint(struct kgdb_bkpt *bpt)
++{
++	int err;
++	unsigned int instr = *(unsigned int *)bpt->saved_instr;
++	unsigned int *addr = (unsigned int *)bpt->bpt_addr;
++
++	err = patch_instruction(addr, instr);
++	if (err)
++		return -EFAULT;
++
++	return 0;
++}
++
+ /*
+  * Global data
+  */
+-struct kgdb_arch arch_kgdb_ops = {
+-#ifdef __LITTLE_ENDIAN__
+-	.gdb_bpt_instr = {0x08, 0x10, 0x82, 0x7d},
+-#else
+-	.gdb_bpt_instr = {0x7d, 0x82, 0x10, 0x08},
+-#endif
+-};
++struct kgdb_arch arch_kgdb_ops;
+ 
+ static int kgdb_not_implemented(struct pt_regs *regs)
+ {
+-- 
+2.13.3
