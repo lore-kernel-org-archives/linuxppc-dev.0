@@ -1,19 +1,19 @@
 Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42DsF42cZNzDrTP
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2018 15:36:56 +1000 (AEST)
-Message-ID: <743b29dab736700c1b284fabb8fccf7c83ddb3c2.camel@neuling.org>
-Subject: Re: [RFC PATCH 08/11] powerpc/tm: Do not reclaim on ptrace
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42DsL91bzpzDqCh
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2018 15:41:21 +1000 (AEST)
+Message-ID: <10da0fdc641b05ea288890a23aa01ad33f2d6987.camel@neuling.org>
+Subject: Re: [RFC PATCH 09/11] powerpc/tm: Do not restore default DSCR
 From: Michael Neuling <mikey@neuling.org>
 To: Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org
 Cc: paulus@ozlabs.org, gromero@linux.vnet.ibm.com, mpe@ellerman.id.au,
  ldufour@linux.vnet.ibm.com
-Date: Tue, 18 Sep 2018 15:36:55 +1000
-In-Reply-To: <1536781219-13938-9-git-send-email-leitao@debian.org>
+Date: Tue, 18 Sep 2018 15:41:20 +1000
+In-Reply-To: <1536781219-13938-10-git-send-email-leitao@debian.org>
 References: <1536781219-13938-1-git-send-email-leitao@debian.org>
- <1536781219-13938-9-git-send-email-leitao@debian.org>
+ <1536781219-13938-10-git-send-email-leitao@debian.org>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,49 +26,64 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Wed, 2018-09-12 at 16:40 -0300, Breno Leitao wrote:
-> Make sure that we are not suspended on ptrace and that the registers were
-> already reclaimed.
+> In the previous TM code, trecheckpoint was being executed in the middle o=
+f
+> an exception, thus, DSCR was being restored to default kernel DSCR value
+> after trecheckpoint was done.
 >=20
-> Since the data was already reclaimed, there is nothing to be done here
-> except to restore the SPRs.
->=20
-> Signed-off-by: Breno Leitao <leitao@debian.org>
-> ---
->  arch/powerpc/kernel/ptrace.c | 10 ++++------
->  1 file changed, 4 insertions(+), 6 deletions(-)
->=20
-> diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-> index 9667666eb18e..cf6ee9154b11 100644
-> --- a/arch/powerpc/kernel/ptrace.c
-> +++ b/arch/powerpc/kernel/ptrace.c
-> @@ -136,12 +136,10 @@ static void flush_tmregs_to_thread(struct task_stru=
-ct
-> *tsk)
->  	if ((!cpu_has_feature(CPU_FTR_TM)) || (tsk !=3D current))
->  		return;
-> =20
-> -	if (MSR_TM_SUSPENDED(mfmsr())) {
-> -		tm_reclaim_current(TM_CAUSE_SIGNAL);
-> -	} else {
-> -		tm_enable();
-> -		tm_save_sprs(&(tsk->thread));
-> -	}
-> +	WARN_ON(MSR_TM_SUSPENDED(mfmsr()));
-> +
-> +	tm_enable();
-> +	tm_save_sprs(&(tsk->thread));
+> With this current patchset, trecheckpoint is executed just before getting
+> to userspace, at ret_from_except_lite, for example. Thus, we do not need =
+to
+> set default kernel DSCR value anymore, as we are leaving kernel space.  I=
+t
+> is OK to keep the checkpointed DSCR value into the live SPR, mainly becau=
+se
+> the transaction is doomed and it will fail soon (after RFID),=20
 
-Do we need to check if TM was enabled in the task before saving the TM SPRs=
-?
+What if we are going back to a suspended transaction?  It will remain live =
+until
+userspace does a tresume
 
-What happens if TM was lazily off and hence we had someone else's TM SPRs i=
-n the
-CPU currently?  Wouldn't this flush the wrong values to the task_struct?
+> so,
+> continuing with the pre-checkpointed DSCR value is what seems correct.
 
-I think we need to check the processes MSR before doing this.
+Reading this description suggests this patch isn't really needed. Right?
 
 Mikey
 
->  }
->  #else
->  static inline void flush_tmregs_to_thread(struct task_struct *tsk) { }
+> That said, we must set the DSCR value that will be used in userspace now.
+> Current trecheckpoint() function sets it to the pre-checkpointed value
+> prior to lines being changed in this patch, so, removing these lines woul=
+d
+> keep the pre-checkpointed values.
+>=20
+> Important to say that we do not need to do the same thing with tm_reclaim=
+,
+> since it already set the DSCR to the default value, after TRECLAIM is
+> called, in the following lines:
+>=20
+>         /* Load CPU's default DSCR */
+>         ld      r0, PACA_DSCR_DEFAULT(r13)
+>         mtspr   SPRN_DSCR, r0
+>=20
+> Signed-off-by: Breno Leitao <leitao@debian.org>
+> ---
+>  arch/powerpc/kernel/tm.S | 4 ----
+>  1 file changed, 4 deletions(-)
+>=20
+> diff --git a/arch/powerpc/kernel/tm.S b/arch/powerpc/kernel/tm.S
+> index 6bffbc5affe7..5427eda69846 100644
+> --- a/arch/powerpc/kernel/tm.S
+> +++ b/arch/powerpc/kernel/tm.S
+> @@ -493,10 +493,6 @@ restore_gprs:
+>  	mtlr	r0
+>  	ld	r2, STK_GOT(r1)
+> =20
+> -	/* Load CPU's default DSCR */
+> -	ld	r0, PACA_DSCR_DEFAULT(r13)
+> -	mtspr	SPRN_DSCR, r0
+> -
+>  	blr
+> =20
+>  	/* ****************************************************************** *=
+/
