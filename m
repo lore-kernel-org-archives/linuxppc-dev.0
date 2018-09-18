@@ -1,21 +1,21 @@
-Return-Path: <yuehaibing@huawei.com>
-Received: from huawei.com (szxga07-in.huawei.com [45.249.212.35])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42DtYP2tvFzF0Q7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2018 16:36:07 +1000 (AEST)
-From: YueHaibing <yuehaibing@huawei.com>
-To: <davem@davemloft.net>, <dougmill@linux.vnet.ibm.com>,
- <benh@kernel.crashing.org>, <paulus@samba.org>, <mpe@ellerman.id.au>,
- <tlfalcon@linux.vnet.ibm.com>, <jallen@linux.vnet.ibm.com>,
- <ivan@de.ibm.com>, <chunkeey@gmail.com>, <keescook@chromium.org>
-CC: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, YueHaibing <yuehaibing@huawei.com>
-Subject: [PATCH net-next] net: ibm: fix return type of ndo_start_xmit function
-Date: Tue, 18 Sep 2018 14:35:47 +0800
-Message-ID: <20180918063547.25644-1-yuehaibing@huawei.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42DtYg6GdBzF0RH
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2018 16:36:23 +1000 (AEST)
+Message-ID: <b544029461059473cb7b8b6c66815a3ff31ec540.camel@neuling.org>
+Subject: Re: [RFC PATCH 11/11] selftests/powerpc: Adapt the test
+From: Michael Neuling <mikey@neuling.org>
+To: Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org
+Cc: paulus@ozlabs.org, gromero@linux.vnet.ibm.com, mpe@ellerman.id.au,
+ ldufour@linux.vnet.ibm.com
+Date: Tue, 18 Sep 2018 16:36:23 +1000
+In-Reply-To: <1536781219-13938-12-git-send-email-leitao@debian.org>
+References: <1536781219-13938-1-git-send-email-leitao@debian.org>
+ <1536781219-13938-12-git-send-email-leitao@debian.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,86 +25,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The method ndo_start_xmit() is defined as returning an 'netdev_tx_t',
-which is a typedef for an enum type, so make sure the implementation in
-this driver has returns 'netdev_tx_t' value, and change the function
-return type to netdev_tx_t.
+On Wed, 2018-09-12 at 16:40 -0300, Breno Leitao wrote:
+> The Documentation/powerpc/transactional_memory.txt says:
+>=20
+>  "Syscalls made from within a suspended transaction are performed as norm=
+al
+>   and the transaction is not explicitly doomed by the kernel.  However,
+>   what the kernel does to perform the syscall may result in the transacti=
+on
+>   being doomed by the hardware."
+>=20
+> With this new TM mechanism, the syscall will continue to be executed if t=
+he
+> syscall happens on a suspended syscall, but, the syscall will *fail* if t=
+he
+> transaction is still active during the syscall invocation.
 
-Found by coccinelle.
+Not sure I get this. This doesn't seem any different to before.
 
-Signed-off-by: YueHaibing <yuehaibing@huawei.com>
----
- drivers/net/ethernet/ibm/ehea/ehea_main.c | 2 +-
- drivers/net/ethernet/ibm/emac/core.c      | 7 ++++---
- drivers/net/ethernet/ibm/ibmvnic.c        | 4 ++--
- 3 files changed, 7 insertions(+), 6 deletions(-)
+An active (not suspended) transaction *will* result in the syscall failing =
+and
+the transaction being doomed. =20
 
-diff --git a/drivers/net/ethernet/ibm/ehea/ehea_main.c b/drivers/net/ethernet/ibm/ehea/ehea_main.c
-index ba580bf..88128d3 100644
---- a/drivers/net/ethernet/ibm/ehea/ehea_main.c
-+++ b/drivers/net/ethernet/ibm/ehea/ehea_main.c
-@@ -2038,7 +2038,7 @@ static void ehea_xmit3(struct sk_buff *skb, struct net_device *dev,
- 	dev_consume_skb_any(skb);
- }
- 
--static int ehea_start_xmit(struct sk_buff *skb, struct net_device *dev)
-+static netdev_tx_t ehea_start_xmit(struct sk_buff *skb, struct net_device *dev)
- {
- 	struct ehea_port *port = netdev_priv(dev);
- 	struct ehea_swqe *swqe;
-diff --git a/drivers/net/ethernet/ibm/emac/core.c b/drivers/net/ethernet/ibm/emac/core.c
-index 7410a1d..5107c94 100644
---- a/drivers/net/ethernet/ibm/emac/core.c
-+++ b/drivers/net/ethernet/ibm/emac/core.c
-@@ -1409,7 +1409,7 @@ static inline u16 emac_tx_csum(struct emac_instance *dev,
- 	return 0;
- }
- 
--static inline int emac_xmit_finish(struct emac_instance *dev, int len)
-+static inline netdev_tx_t emac_xmit_finish(struct emac_instance *dev, int len)
- {
- 	struct emac_regs __iomem *p = dev->emacp;
- 	struct net_device *ndev = dev->ndev;
-@@ -1436,7 +1436,7 @@ static inline int emac_xmit_finish(struct emac_instance *dev, int len)
- }
- 
- /* Tx lock BH */
--static int emac_start_xmit(struct sk_buff *skb, struct net_device *ndev)
-+static netdev_tx_t emac_start_xmit(struct sk_buff *skb, struct net_device *ndev)
- {
- 	struct emac_instance *dev = netdev_priv(ndev);
- 	unsigned int len = skb->len;
-@@ -1494,7 +1494,8 @@ static inline int emac_xmit_split(struct emac_instance *dev, int slot,
- }
- 
- /* Tx lock BH disabled (SG version for TAH equipped EMACs) */
--static int emac_start_xmit_sg(struct sk_buff *skb, struct net_device *ndev)
-+static netdev_tx_t
-+emac_start_xmit_sg(struct sk_buff *skb, struct net_device *ndev)
- {
- 	struct emac_instance *dev = netdev_priv(ndev);
- 	int nr_frags = skb_shinfo(skb)->nr_frags;
-diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
-index 4f0daf6..a8369ad 100644
---- a/drivers/net/ethernet/ibm/ibmvnic.c
-+++ b/drivers/net/ethernet/ibm/ibmvnic.c
-@@ -1428,7 +1428,7 @@ static int ibmvnic_xmit_workarounds(struct sk_buff *skb,
- 	return 0;
- }
- 
--static int ibmvnic_xmit(struct sk_buff *skb, struct net_device *netdev)
-+static netdev_tx_t ibmvnic_xmit(struct sk_buff *skb, struct net_device *netdev)
- {
- 	struct ibmvnic_adapter *adapter = netdev_priv(netdev);
- 	int queue_num = skb_get_queue_mapping(skb);
-@@ -1452,7 +1452,7 @@ static int ibmvnic_xmit(struct sk_buff *skb, struct net_device *netdev)
- 	u64 *handle_array;
- 	int index = 0;
- 	u8 proto = 0;
--	int ret = 0;
-+	netdev_tx_t ret = NETDEV_TX_OK;
- 
- 	if (adapter->resetting) {
- 		if (!netif_subqueue_stopped(netdev, skb))
--- 
-1.8.3.1
+A syscall in a suspended transaction should succeed and the transaction.
+
+You might need to clean up the language. I try to use:
+
+   Active =3D=3D transactional but not suspended (ie MSR[TS] =3D T)
+   Suspended =3D=3D suspended (ie MSR [TS] =3D S)
+   Doomed =3D=3D transaction to be rolled back at next opportinity (ie tche=
+ck returns doomed)
+
+(note: the kernel MSR_TM_ACTIVE() macro is not consistent with this since i=
+t's
+MSR[TS] =3D=3D S or T).
+
+> On the syscall path, if the transaction is active and not suspended, it
+> will call TM_KERNEL_ENTRY which will reclaim and recheckpoint the
+> transaction, thus, dooming the transaction on userspace return, with
+> failure code TM_CAUSE_SYSCALL.
+
+But the test below is on a suspend transaction?
+
+> This new model will break part of this test, but I understand that that t=
+he
+> documentation above didn't guarantee that the syscall would succeed, and =
+it
+> will never succeed anymore now on.
+
+The syscall should pass in suspend (modulo the normal syscall checks). The
+transaction may fail as a result.
+
+> In fact, glibc is calling 'tabort' before every syscalls, thus, any sysca=
+ll
+> called through glibc from inside a transaction will be doomed anyhow.
+>=20
+> This patch updates the test case to not assume that a syscall inside a
+> active transaction will succeed, because it will not anymore.
+>=20
+> Signed-off-by: Breno Leitao <leitao@debian.org>
+> ---
+>  tools/testing/selftests/powerpc/tm/tm-syscall.c | 6 ------
+>  1 file changed, 6 deletions(-)
+>=20
+> diff --git a/tools/testing/selftests/powerpc/tm/tm-syscall.c
+> b/tools/testing/selftests/powerpc/tm/tm-syscall.c
+> index 454b965a2db3..1439a87eba3a 100644
+> --- a/tools/testing/selftests/powerpc/tm/tm-syscall.c
+> +++ b/tools/testing/selftests/powerpc/tm/tm-syscall.c
+> @@ -78,12 +78,6 @@ int tm_syscall(void)
+>  	timeradd(&end, &now, &end);
+> =20
+>  	for (count =3D 0; timercmp(&now, &end, <); count++) {
+> -		/*
+> -		 * Test a syscall within a suspended transaction and verify
+> -		 * that it succeeds.
+> -		 */
+> -		FAIL_IF(getppid_tm(true) =3D=3D -1); /* Should succeed. */
+> -
+>  		/*
+>  		 * Test a syscall within an active transaction and verify that
+>  		 * it fails with the correct failure code.
