@@ -1,36 +1,38 @@
-Return-Path: <firoz.khan@linaro.org>
-Received: from mail-yw1-xc43.google.com (mail-yw1-xc43.google.com
- [IPv6:2607:f8b0:4864:20::c43])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <aneesh.kumar@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42F2535cdwzDqBy
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2018 22:15:35 +1000 (AEST)
-Received: by mail-yw1-xc43.google.com with SMTP id n21-v6so662058ywh.5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2018 05:15:34 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42F4Fq4GzQzDrCp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2018 23:53:19 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w8IDdnh6013295
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2018 09:53:17 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2mk1234ux0-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2018 09:53:16 -0400
+Received: from localhost
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Tue, 18 Sep 2018 07:53:16 -0600
+Subject: Re: [RFC PATCH 3/3] powerpc/mm/iommu: Allow migration of cma
+ allocated pages during mm_iommu_get
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: npiggin@gmail.com, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ linuxppc-dev@lists.ozlabs.org
+References: <20180903163733.27965-1-aneesh.kumar@linux.ibm.com>
+ <20180903163733.27965-4-aneesh.kumar@linux.ibm.com>
+ <20180918035116.GA30868@umbus.fritz.box>
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Date: Tue, 18 Sep 2018 19:23:05 +0530
 MIME-Version: 1.0
-In-Reply-To: <CAK8P3a1PCnHy1JX4T21LjOr3ZGAVLdqxQaPYfLHAgM-9Y5yxVg@mail.gmail.com>
-References: <1536913980-4811-1-git-send-email-firoz.khan@linaro.org>
- <1536913980-4811-3-git-send-email-firoz.khan@linaro.org>
- <CAK8P3a1PCnHy1JX4T21LjOr3ZGAVLdqxQaPYfLHAgM-9Y5yxVg@mail.gmail.com>
-From: Firoz Khan <firoz.khan@linaro.org>
-Date: Tue, 18 Sep 2018 17:45:32 +0530
-Message-ID: <CALxhOngVYQRwbcUg6c_3LcKAEoBwyN1B478LqRGmWEGL004--w@mail.gmail.com>
-Subject: Re: [PATCH 2/3] powerpc: Add system call table generation support
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Ram Pai <linuxram@us.ibm.com>,
- Breno Leitao <leitao@debian.org>, Boqun Feng <boqun.feng@gmail.com>,
- gregkh <gregkh@linuxfoundation.org>, Philippe Ombredanne <pombredanne@nexb.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- Kate Stewart <kstewart@linuxfoundation.org>,
- y2038 Mailman List <y2038@lists.linaro.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linux-arch <linux-arch@vger.kernel.org>,
- Deepa Dinamani <deepa.kernel@gmail.com>,
- Marcin Juszkiewicz <marcin.juszkiewicz@linaro.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20180918035116.GA30868@umbus.fritz.box>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <ff666ec0-9dc1-304d-387d-19e1a90e17e0@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,76 +42,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 14 September 2018 at 15:31, Arnd Bergmann <arnd@arndb.de> wrote:
-> On Fri, Sep 14, 2018 at 10:33 AM Firoz Khan <firoz.khan@linaro.org> wrote:
->
->> ---
->>  arch/powerpc/kernel/syscalls/Makefile       |  51 ++++
->>  arch/powerpc/kernel/syscalls/syscall_32.tbl | 378 ++++++++++++++++++++++++++++
->>  arch/powerpc/kernel/syscalls/syscall_64.tbl | 372 +++++++++++++++++++++++++++
->>  arch/powerpc/kernel/syscalls/syscallhdr.sh  |  37 +++
->>  arch/powerpc/kernel/syscalls/syscalltbl.sh  |  38 +++
->
-> I think you should only need a single .tbl  input file here.
+On 9/18/18 9:21 AM, David Gibson wrote:
+> On Mon, Sep 03, 2018 at 10:07:33PM +0530, Aneesh Kumar K.V wrote:
+>> Current code doesn't do page migration if the page allocated is a compound page.
+>> With HugeTLB migration support, we can end up allocating hugetlb pages from
+>> CMA region. Also THP pages can be allocated from CMA region. This patch updates
+>> the code to handle compound pages correctly.
+>>
+>> This add a new helper get_user_pages_cma_migrate. It does one get_user_pages
+>> with right count, instead of doing one get_user_pages per page. That avoids
+>> reading page table multiple times. The helper could possibly used by other
+>> subystem if we have more users.
+>>
+>> The patch also convert the hpas member of mm_iommu_table_group_mem_t to a union.
+>> We use the same storage location to store pointers to struct page. We cannot
+>> update alll the code path use struct page *, because we access hpas in real mode
+>> and we can't do that struct page * to pfn conversion in real mode.
+>>
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+> 
+> This approach doesn't seem quite right to me.  It's specific to pages
+> mapped into the IOMMU.  It's true that will address the obvious case
+> we have, of vfio-using guests fragmenting the CMA for other guests.
+> 
+> But AFAICT, fragmenting the CMA coud happen with *any* locked memory,
+> not just things that are IOMMU mapped for VFIO.  So, for example a
+> guest not using vfio, but using -realtime mlock=on, or an unrelated
+> program using locked memory (e.g. gpg or something else that locks
+> memory for security reasons).
+> 
+> AFAICT this approach won't fix the problem for that case.
+> 
 
-Yes, we can do that way also.As I mentioned, it will add
-more complexity in the script.
+yes and we should be migrate away pages that we allocated out of CMA 
+region before we pin/mlock them. This handle the long term pin w.r.t 
+vfio. For mlock too we should do that.
 
- The script has to be smart enough to parse the
-.tbl if we add more thing in the .tble file. It need more
-logic in the scripts. This is not common. So if you keep
-separate .tbl we can avoid this.
-
-ABI flag is serving *nothing* in all other architecture including
-SPARC.
-
-But as I told in the cover letter, I followed x86/arm/
-s390 architecture's system table generation implementation.
-They are keeping ABI flag. In our case we can delete this
-flag completely from all architectures.
-
-Most of the architecture these 32/64 similarity is absent.
-So it would be better keep separate files to maintain a
-generic script across all architecture.
-
->
->
->> +
->> +systbl_abi_syscall_table_32 := 32
->> +$(out)/syscall_table_32.h: $(syscall32) $(systbl)
->> +       $(call if_changed,systbl)
->> +
->> +systbl_abi_syscall_table_64 := 64
->> +$(out)/syscall_table_64.h: $(syscall64) $(systbl)
->> +       $(call if_changed,systbl)
->> +
->> +systbl_abi_syscall_table_c32 := c32
->> +$(out)/syscall_table_c32.h: $(syscall32) $(systbl)
->> +       $(call if_changed,systbl)
->
-> And here you need a fourth output file for the SPU table on ppc64.
-
-Hmm. Let me have a look where things went wrong.
-
->
->> +383     common  statx                           sys_statx
->> +384     common  pkey_alloc                      sys_pkey_alloc
->> +385     common  pkey_free                       sys_pkey_free
->> +386     common  pkey_mprotect                   sys_pkey_mprotect
->
-> This also misses rseq and io_pgetevents.
-
-As I mentioned in the cover letter:
-"I started working system call table generation on 4.17-rc1. I used
-marcin's script - https://github.com/hrw/syscalls-table to generate
-the syscall.tbl file. And this will be the input to the system call
-table generation script. But there are couple system call got add
-in the latest rc release. If run Marcin's script on latest release,
-It will generate a new syscall.tbl. But I still use the old file -
-syscall.tbl and once all review got over I'll update syscall.tbl
-alone w.r.to the tip of the kernel. The impact of this thing, few
-of the system call won't work."
-
-Hopefully, the next version does have this change. Thanks!
-
-- Firoz
+-aneesh
