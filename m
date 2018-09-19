@@ -1,50 +1,24 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
- [IPv6:2607:f8b0:4864:20::443])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <ruscur@russell.cc>
+Received: from out1-smtp.messagingengine.com (out1-smtp.messagingengine.com
+ [66.111.4.25])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42FMXm5nL6zDrS7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Sep 2018 11:22:13 +1000 (AEST)
-Received: by mail-pf1-x443.google.com with SMTP id h79-v6so1851905pfk.8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2018 18:22:13 -0700 (PDT)
-Date: Wed, 19 Sep 2018 11:22:07 +1000
-From: Balbir Singh <bsingharora@gmail.com>
-To: David Hildenbrand <david@redhat.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- linux-doc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-acpi@vger.kernel.org, xen-devel@lists.xenproject.org,
- devel@linuxdriverproject.org, Andrew Morton <akpm@linux-foundation.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- Dan Williams <dan.j.williams@intel.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Haiyang Zhang <haiyangz@microsoft.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- John Allen <jallen@linux.vnet.ibm.com>, Jonathan Corbet <corbet@lwn.net>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>, Juergen Gross <jgross@suse.com>,
- Kate Stewart <kstewart@linuxfoundation.org>,
- "K. Y. Srinivasan" <kys@microsoft.com>, Len Brown <lenb@kernel.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Mathieu Malaterre <malat@debian.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Michael Neuling <mikey@neuling.org>, Michal Hocko <mhocko@suse.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Oscar Salvador <osalvador@suse.de>, Paul Mackerras <paulus@samba.org>,
- Pavel Tatashin <pasha.tatashin@oracle.com>,
- Pavel Tatashin <pavel.tatashin@microsoft.com>,
- Philippe Ombredanne <pombredanne@nexb.com>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Rashmica Gupta <rashmica.g@gmail.com>,
- Stephen Hemminger <sthemmin@microsoft.com>,
- Thomas Gleixner <tglx@linutronix.de>, Vlastimil Babka <vbabka@suse.cz>,
- YASUAKI ISHIMATSU <yasu.isimatu@gmail.com>
-Subject: Re: [PATCH v1 0/6] mm: online/offline_pages called w.o.
- mem_hotplug_lock
-Message-ID: <20180919012207.GD8537@350D>
-References: <20180918114822.21926-1-david@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180918114822.21926-1-david@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42FN8N49wdzF3JW
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Sep 2018 11:49:40 +1000 (AEST)
+Message-ID: <1020abbb3d8a8f121d25da7327e296cfa1aaa698.camel@russell.cc>
+Subject: Re: [PATCH] MAINTAINERS: Add PPC contacts for PCI core error handling
+From: Russell Currey <ruscur@russell.cc>
+To: Bjorn Helgaas <helgaas@kernel.org>, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linux-kernel@vger.kernel.org, oohall@gmail.com, sbobroff@linux.ibm.com
+In-Reply-To: <20180918215854.GH13616@bhelgaas-glaptop.roam.corp.google.com>
+References: <153677132617.23091.12307288405707171077.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ <20180918215854.GH13616@bhelgaas-glaptop.roam.corp.google.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 19 Sep 2018 11:49:26 +1000
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,55 +28,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Sep 18, 2018 at 01:48:16PM +0200, David Hildenbrand wrote:
-> Reading through the code and studying how mem_hotplug_lock is to be used,
-> I noticed that there are two places where we can end up calling
-> device_online()/device_offline() - online_pages()/offline_pages() without
-> the mem_hotplug_lock. And there are other places where we call
-> device_online()/device_offline() without the device_hotplug_lock.
+On Tue, 2018-09-18 at 16:58 -0500, Bjorn Helgaas wrote:
+> On Wed, Sep 12, 2018 at 11:55:26AM -0500, Bjorn Helgaas wrote:
+> > From: Bjorn Helgaas <bhelgaas@google.com>
+> > 
+> > The original PCI error recovery functionality was for the powerpc-specific
+> > IBM EEH feature.  PCIe subsequently added some similar features, including
+> > AER and DPC, that can be used on any architecture.
+> > 
+> > We want the generic PCI core error handling support to work with all of
+> > these features.  Driver error recovery callbacks should be independent of
+> > which feature the platform provides.
+> > 
+> > Add the generic PCI core error recovery files to the powerpc EEH
+> > MAINTAINERS entry so the powerpc folks will be copied on changes to the
+> > generic PCI error handling strategy.
+> > 
+> > Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
 > 
-> While e.g.
-> 	echo "online" > /sys/devices/system/memory/memory9/state
-> is fine, e.g.
-> 	echo 1 > /sys/devices/system/memory/memory9/online
-> Will not take the mem_hotplug_lock. However the device_lock() and
-> device_hotplug_lock.
-> 
-> E.g. via memory_probe_store(), we can end up calling
-> add_memory()->online_pages() without the device_hotplug_lock. So we can
-> have concurrent callers in online_pages(). We e.g. touch in online_pages()
-> basically unprotected zone->present_pages then.
-> 
-> Looks like there is a longer history to that (see Patch #2 for details),
-> and fixing it to work the way it was intended is not really possible. We
-> would e.g. have to take the mem_hotplug_lock in device/base/core.c, which
-> sounds wrong.
-> 
-> Summary: We had a lock inversion on mem_hotplug_lock and device_lock().
-> More details can be found in patch 3 and patch 6.
-> 
-> I propose the general rules (documentation added in patch 6):
-> 
-> 1. add_memory/add_memory_resource() must only be called with
->    device_hotplug_lock.
-> 2. remove_memory() must only be called with device_hotplug_lock. This is
->    already documented and holds for all callers.
-> 3. device_online()/device_offline() must only be called with
->    device_hotplug_lock. This is already documented and true for now in core
->    code. Other callers (related to memory hotplug) have to be fixed up.
-> 4. mem_hotplug_lock is taken inside of add_memory/remove_memory/
->    online_pages/offline_pages.
-> 
-> To me, this looks way cleaner than what we have right now (and easier to
-> verify). And looking at the documentation of remove_memory, using
-> lock_device_hotplug also for add_memory() feels natural.
->
+> I applied the following to for-linus for v4.19.  Russell, if you want
+> to be removed, let me know and I'll do that.
 
-That seems reasonable, but also implies that device_online() would hold
-back add/remove memory, could you please also document what mode
-read/write the locks need to be held? For example can the device_hotplug_lock
-be held in read mode while add/remove memory via (mem_hotplug_lock) is held
-in write mode?
+Oliver's email address for kernel stuff is oohall@gmail.com, I think benh has been
+CCing his IBM address.  But other than that,
 
-Balbir Singh.
- 
+Acked-by: Russell Currey <ruscur@russell.cc>
+
+Thanks for this, Bjorn.
+
+- Russell
+
+> 
+> commit 3fed0e04026c
+> Author: Bjorn Helgaas <bhelgaas@google.com>
+> Date:   Wed Sep 12 11:55:26 2018 -0500
+> 
+>     MAINTAINERS: Update PPC contacts for PCI core error handling
+>     
+>     The original PCI error recovery functionality was for the powerpc-specific
+>     IBM EEH feature.  PCIe subsequently added some similar features, including
+>     AER and DPC, that can be used on any architecture.
+>     
+>     We want the generic PCI core error handling support to work with all of
+>     these features.  Driver error recovery callbacks should be independent of
+>     which feature the platform provides.
+>     
+>     Add the generic PCI core error recovery files to the powerpc EEH
+>     MAINTAINERS entry so the powerpc folks will be copied on changes to the
+>     generic PCI error handling strategy.
+>     
+>     Add Sam and Oliver as maintainers for this area.
+>     
+>     Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 4ece30f15777..f23244003836 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -11203,8 +11203,14 @@ F:	tools/pci/
+>  
+>  PCI ENHANCED ERROR HANDLING (EEH) FOR POWERPC
+>  M:	Russell Currey <ruscur@russell.cc>
+> +M:	Sam Bobroff <sbobroff@linux.ibm.com>
+> +M:	Oliver O'Halloran <oliveroh@au1.ibm.com>
+>  L:	linuxppc-dev@lists.ozlabs.org
+>  S:	Supported
+> +F:	Documentation/PCI/pci-error-recovery.txt
+> +F:	drivers/pci/pcie/aer.c
+> +F:	drivers/pci/pcie/dpc.c
+> +F:	drivers/pci/pcie/err.c
+>  F:	Documentation/powerpc/eeh-pci-error-recovery.txt
+>  F:	arch/powerpc/kernel/eeh*.c
+>  F:	arch/powerpc/platforms/*/eeh*.c
