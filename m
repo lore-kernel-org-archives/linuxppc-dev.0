@@ -1,25 +1,29 @@
-Return-Path: <andy.tang@nxp.com>
-Received: from EUR02-HE1-obe.outbound.protection.outlook.com
- (mail-eopbgr10084.outbound.protection.outlook.com [40.107.1.84])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <krzk@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42FVPd42gtzF3Hs
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Sep 2018 16:31:30 +1000 (AEST)
-From: Andy Tang <andy.tang@nxp.com>
-To: Scott Wood <oss@buserror.net>
-CC: "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com"
- <mark.rutland@arm.com>, "benh@kernel.crashing.org"
- <benh@kernel.crashing.org>, "devicetree@vger.kernel.org"
- <devicetree@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [PATCH] powerpc/mpc85xx: fix issues in clock node
-Date: Wed, 19 Sep 2018 06:31:23 +0000
-Message-ID: <DB5PR0401MB2213EAE80AECB1A0E15D447FF31C0@DB5PR0401MB2213.eurprd04.prod.outlook.com>
-References: <20180911021224.30558-1-andy.tang@nxp.com>
- <ee1869ae946229fe01f5269fcebd855a2fc8770d.camel@buserror.net>
-In-Reply-To: <ee1869ae946229fe01f5269fcebd855a2fc8770d.camel@buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42FVZc5xLZzF3Hs
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Sep 2018 16:39:20 +1000 (AEST)
+Received: from mail-wr1-f43.google.com (mail-wr1-f43.google.com
+ [209.85.221.43])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 7948C21508
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Sep 2018 06:39:17 +0000 (UTC)
+Received: by mail-wr1-f43.google.com with SMTP id j15-v6so413247wrt.8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2018 23:39:17 -0700 (PDT)
 MIME-Version: 1.0
+References: <20180918230756.26035-1-joel@jms.id.au>
+In-Reply-To: <20180918230756.26035-1-joel@jms.id.au>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Date: Wed, 19 Sep 2018 08:39:04 +0200
+Message-ID: <CAJKOXPd4dCyuXKxAz-V=ujtiuKcumHzAx28y5J+6m+L7ZRLsZQ@mail.gmail.com>
+Subject: Re: [PATCH] lib/xz: Fix powerpc build with KERNEL_XZ
+To: joel@jms.id.au
+Cc: herbert@gondor.apana.org.au, linux-kernel@vger.kernel.org,
+ mpe@ellerman.id.au, oohall@gmail.com, linuxppc-dev@lists.ozlabs.org,
+ Christophe LEROY <christophe.leroy@c-s.fr>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,40 +33,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGkgU2NvdHQsDQoNCldoYXQgeW91IHNhaWQgbWFrZXMgc2Vuc2Ugd2VsbC4gSSB3aWxsIHJlc2Vu
-ZCB0aGUgcGF0Y2guDQoNClRoYW5rcywNCkFuZHkNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2Ut
-LS0tLQ0KPiBGcm9tOiBTY290dCBXb29kIDxvc3NAYnVzZXJyb3IubmV0Pg0KPiBTZW50OiAyMDE4
-5bm0OeaciDE55pelIDY6MjQNCj4gVG86IEFuZHkgVGFuZyA8YW5keS50YW5nQG54cC5jb20+DQo+
-IENjOiByb2JoK2R0QGtlcm5lbC5vcmc7IG1hcmsucnV0bGFuZEBhcm0uY29tOw0KPiBiZW5oQGtl
-cm5lbC5jcmFzaGluZy5vcmc7IGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnOw0KPiBsaW51eHBw
-Yy1kZXZAbGlzdHMub3psYWJzLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENIXSBwb3dlcnBjL21w
-Yzg1eHg6IGZpeCBpc3N1ZXMgaW4gY2xvY2sgbm9kZQ0KPiANCj4gT24gVHVlLCAyMDE4LTA5LTEx
-IGF0IDEwOjEyICswODAwLCBhbmR5LnRhbmdAbnhwLmNvbSB3cm90ZToNCj4gPiBGcm9tOiBZdWFu
-dGlhbiBUYW5nIDxhbmR5LnRhbmdAbnhwLmNvbT4NCj4gPg0KPiA+IFRoZSBjb21wYXRpYmxlIHN0
-cmluZyBpcyBub3QgY29ycmVjdCBpbiB0aGUgY2xvY2sgbm9kZS4NCj4gPiBUaGUgY2xvY2tzIHBy
-b3BlcnR5IHJlZmVycyB0byB0aGUgd3Jvbmcgbm9kZSB0b28uDQo+ID4gVGhpcyBwYXRjaCBpcyB0
-byBmaXggdGhlbS4NCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6IFRhbmcgWXVhbnRpYW4gPGFuZHku
-dGFuZ0BueHAuY29tPg0KPiA+IC0tLQ0KPiA+ICBhcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3Qx
-MDIzc2ktcG9zdC5kdHNpIHwgICAgOCArKysrLS0tLQ0KPiA+ICAxIGZpbGVzIGNoYW5nZWQsIDQg
-aW5zZXJ0aW9ucygrKSwgNCBkZWxldGlvbnMoLSkNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9hcmNo
-L3Bvd2VycGMvYm9vdC9kdHMvZnNsL3QxMDIzc2ktcG9zdC5kdHNpDQo+ID4gYi9hcmNoL3Bvd2Vy
-cGMvYm9vdC9kdHMvZnNsL3QxMDIzc2ktcG9zdC5kdHNpDQo+ID4gaW5kZXggNDkwOGFmNS4uNzYz
-Y2FmNCAxMDA2NDQNCj4gPiAtLS0gYS9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3QxMDIzc2kt
-cG9zdC5kdHNpDQo+ID4gKysrIGIvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC90MTAyM3NpLXBv
-c3QuZHRzaQ0KPiA+IEBAIC0zNDgsNyArMzQ4LDcgQEANCj4gPiAgCQltdXgwOiBtdXgwQDAgew0K
-PiA+ICAJCQkjY2xvY2stY2VsbHMgPSA8MD47DQo+ID4gIAkJCXJlZyA9IDwweDAgND47DQo+ID4g
-LQkJCWNvbXBhdGlibGUgPSAiZnNsLGNvcmUtbXV4LWNsb2NrIjsNCj4gPiArCQkJY29tcGF0aWJs
-ZSA9ICJmc2wscW9yaXEtY29yZS1tdXgtMi4wIjsNCj4gPiAgCQkJY2xvY2tzID0gPCZwbGwwIDA+
-LCA8JnBsbDAgMT47DQo+ID4gIAkJCWNsb2NrLW5hbWVzID0gInBsbDBfMCIsICJwbGwwXzEiOw0K
-PiA+ICAJCQljbG9jay1vdXRwdXQtbmFtZXMgPSAiY211eDAiOw0KPiA+IEBAIC0zNTYsOSArMzU2
-LDkgQEANCj4gPiAgCQltdXgxOiBtdXgxQDIwIHsNCj4gPiAgCQkJI2Nsb2NrLWNlbGxzID0gPDA+
-Ow0KPiA+ICAJCQlyZWcgPSA8MHgyMCA0PjsNCj4gPiAtCQkJY29tcGF0aWJsZSA9ICJmc2wsY29y
-ZS1tdXgtY2xvY2siOw0KPiA+IC0JCQljbG9ja3MgPSA8JnBsbDAgMD4sIDwmcGxsMCAxPjsNCj4g
-PiAtCQkJY2xvY2stbmFtZXMgPSAicGxsMF8wIiwgInBsbDBfMSI7DQo+ID4gKwkJCWNvbXBhdGli
-bGUgPSAiZnNsLHFvcmlxLWNvcmUtbXV4LTIuMCI7DQo+ID4gKwkJCWNsb2NrcyA9IDwmcGxsMSAw
-PiwgPCZwbGwxIDE+Ow0KPiA+ICsJCQljbG9jay1uYW1lcyA9ICJwbGwxXzAiLCAicGxsMV8xIjsN
-Cj4gPiAgCQkJY2xvY2stb3V0cHV0LW5hbWVzID0gImNtdXgxIjsNCj4gPiAgCQl9Ow0KPiA+ICAJ
-fTsNCj4gDQo+IFRoZXNlIGFyZSB0aGUgbGVnYWN5IG5vZGVzLiAgV2h5IG5vdCBqdXN0IHJlbW92
-ZSB0aGVtIGluc3RlYWQgb2YgZml4aW5nDQo+IHRoZW0/DQo+IE5vdyB0aGF0IHRoZSBjcHVmcmVx
-IGRyaXZlciBpcyBmaXhlZCB3ZSBjb3VsZCBnZXQgcmlkIG9mIHRoZSBsZWdhY3kgbm9kZXMNCj4g
-Zm9yIGFsbCB0aGUgY2hpcHMuDQo+IA0KPiAtU2NvdHQNCg0K
+On Wed, 19 Sep 2018 at 01:08, Joel Stanley <joel@jms.id.au> wrote:
+>
+> This partially reverts faa16bc404d72a5 ("lib: Use existing define with
+> polynomial").
+>
+> The cleanup added a dependency on include/linux, which broke the PowerPC
+> boot wrapper/decompresser when KERNEL_XZ is enabled:
+>
+>   BOOTCC  arch/powerpc/boot/decompress.o
+>  In file included from arch/powerpc/boot/../../../lib/decompress_unxz.c:233,
+>                  from arch/powerpc/boot/decompress.c:42:
+>  arch/powerpc/boot/../../../lib/xz/xz_crc32.c:18:10: fatal error:
+>  linux/crc32poly.h: No such file or directory
+>   #include <linux/crc32poly.h>
+>            ^~~~~~~~~~~~~~~~~~~
+>
+> The powerpc decompressor is a hairy corner of the kernel. Even while building
+> a 64-bit kernel it needs to build a 32-bit binary and therefore avoid including
+> files from include/linux.
+
+I fixed the build error here:
+https://lkml.org/lkml/2018/8/29/179
+
+If you choose to remove any includes from /linux, then go ahead but
+please use original reported-by :)
+
+Best regards,
+Krzysztof
+
+>
+> Fixes: faa16bc404d7 ("lib: Use existing define with polynomial")
+> Signed-off-by: Joel Stanley <joel@jms.id.au>
+> ---
+> We need to clean up the powerpc boot decompresser but that work will be
+> more involved than we would include in a late -rc. Please consider
+> merging this fix for 4.19. Thanks!
+>
+>  lib/xz/xz_crc32.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
+>
+> diff --git a/lib/xz/xz_crc32.c b/lib/xz/xz_crc32.c
+> index 25a5d87e2e4c..34532d14fd4c 100644
+> --- a/lib/xz/xz_crc32.c
+> +++ b/lib/xz/xz_crc32.c
+> @@ -15,7 +15,6 @@
+>   * but they are bigger and use more memory for the lookup table.
+>   */
+>
+> -#include <linux/crc32poly.h>
+>  #include "xz_private.h"
+>
+>  /*
+> @@ -30,7 +29,7 @@ STATIC_RW_DATA uint32_t xz_crc32_table[256];
+>
+>  XZ_EXTERN void xz_crc32_init(void)
+>  {
+> -       const uint32_t poly = CRC32_POLY_LE;
+> +       const uint32_t poly = 0xEDB88320;
+>
+>         uint32_t i;
+>         uint32_t j;
+> --
+> 2.17.1
+>
