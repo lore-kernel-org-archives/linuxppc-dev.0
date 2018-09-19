@@ -1,26 +1,24 @@
-Return-Path: <peterz@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Ffsw46xKzDqNG
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Sep 2018 22:53:08 +1000 (AEST)
-Date: Wed, 19 Sep 2018 14:52:59 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Christophe LEROY <christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42FgdS6ZghzDrDJ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Sep 2018 23:27:24 +1000 (AEST)
+Date: Wed, 19 Sep 2018 08:26:18 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Ingo Molnar <mingo@redhat.com>, segher@kernel.crashing.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 1/2] sched: move stack_canary field at the top of
- task_struct
-Message-ID: <20180919125259.GG24124@hirez.programming.kicks-ass.net>
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Ingo Molnar <mingo@redhat.com>,
+ Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2 2/2] powerpc/32: add stack protector support
+Message-ID: <20180919132618.GX23155@gate.crashing.org>
 References: <d60ce7dd74704b0ca0a857186f30de4006b63534.1537355312.git.christophe.leroy@c-s.fr>
- <20180919115836.GE24124@hirez.programming.kicks-ass.net>
- <f6a36d25-ce19-5d56-69d9-198215a7b9e1@c-s.fr>
-MIME-Version: 1.0
+ <ef8fcc7933d56db6f5f7251cb982ca7131f7408d.1537355312.git.christophe.leroy@c-s.fr>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <f6a36d25-ce19-5d56-69d9-198215a7b9e1@c-s.fr>
+In-Reply-To: <ef8fcc7933d56db6f5f7251cb982ca7131f7408d.1537355312.git.christophe.leroy@c-s.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,18 +28,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 19, 2018 at 02:25:00PM +0200, Christophe LEROY wrote:
-> I have not been able to find a way to define the compilation flags AFTER
-> building asm-offsets.h, see https://patchwork.ozlabs.org/patch/971521/
-> 
-> If you have a suggestion, it is welcomed.
+On Wed, Sep 19, 2018 at 11:14:45AM +0000, Christophe Leroy wrote:
+> --- a/arch/powerpc/Makefile
+> +++ b/arch/powerpc/Makefile
+> @@ -112,6 +112,10 @@ KBUILD_LDFLAGS	+= -m elf$(BITS)$(LDEMULATION)
+>  KBUILD_ARFLAGS	+= --target=elf$(BITS)-$(GNUTARGET)
+>  endif
+>  
+> +cflags-$(CONFIG_STACKPROTECTOR)	+= -mstack-protector-guard=tls
+> +cflags-$(CONFIG_STACKPROTECTOR)	+= -mstack-protector-guard-reg=r2
+> +cflags-$(CONFIG_STACKPROTECTOR)	+= -mstack-protector-guard-offset=4
 
-Not really; I always get lost in that stuff :/
+This last line is only correct if !CONFIG_THREAD_INFO_IN_TASK; is that
+always true?  Add an assert somewhere maybe?
 
-> > Might as well put it before state, right after the task_info thing.
-> > 
-> 
-> Yes, it doesn't make much difference, don't any arch expect state at offset
-> 0 ?
+> +	/*
+> +	 * The stack_canary must be located at the offset given to
+> +	 * -mstack-protector-guard-offset in the Makefile
+> +	 */
+> +	BUILD_BUG_ON(offsetof(struct task_struct, stack_canary) != sizeof(long));
 
-Uhmm.. dunno. I would not expect so, but then I didn't check.
+Well this will help :-)
+
+It looks like it will be easy to enable on 64 bit as well.
+
+> +	/* Try to get a semi random initial value. */
+> +	get_random_bytes(&canary, sizeof(canary));
+> +	canary ^= mftb();
+> +	canary ^= LINUX_VERSION_CODE;
+
+These last two lines are useless (or worse, they may give people the idea
+that they are not!)
+
+You should use wait_for_random_bytes I think.
+
+
+Segher
