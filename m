@@ -1,21 +1,28 @@
-Return-Path: <joel.stan@gmail.com>
-Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
- [IPv6:2607:f8b0:4864:20::442])
+Return-Path: <radu.rendec@gmail.com>
+Received: from mail-it0-x242.google.com (mail-it0-x242.google.com
+ [IPv6:2607:f8b0:4001:c0b::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42FJZ81XfMzF3JC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Sep 2018 09:08:15 +1000 (AEST)
-Received: by mail-pf1-x442.google.com with SMTP id p12-v6so1729995pfh.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2018 16:08:15 -0700 (PDT)
-Sender: "joel.stan@gmail.com" <joel.stan@gmail.com>
-From: Joel Stanley <joel@jms.id.au>
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
- Michael Ellerman <mpe@ellerman.id.au>,
- Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] lib/xz: Fix powerpc build with KERNEL_XZ
-Date: Wed, 19 Sep 2018 08:37:56 +0930
-Message-Id: <20180918230756.26035-1-joel@jms.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42FMTH6rzTzF3JW
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Sep 2018 11:19:13 +1000 (AEST)
+Received: by mail-it0-x242.google.com with SMTP id x79-v6so15771662ita.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2018 18:19:13 -0700 (PDT)
+Message-ID: <525e9a1f239a34bd568d043184ca913ae88e2edd.camel@gmail.com>
+Subject: Re: MPC83xx reset status register (RSR, offset 0x910)
+From: Radu Rendec <radu.rendec@gmail.com>
+To: Christophe LEROY <christophe.leroy@c-s.fr>
+Cc: linuxppc-dev@lists.ozlabs.org, oss@buserror.net, mpe@ellerman.id.au,
+ eric.miao@marvell.com
+Date: Tue, 18 Sep 2018 21:19:09 -0400
+In-Reply-To: <d30e4a1e-187b-2a07-ec9c-50f889375cde@c-s.fr>
+References: <CAD5jUk_e3LwPZGN7G3ZGHx=zdQBZSdAeoKWjxwE7Ei2=LtXQTg@mail.gmail.com>
+ <e6b9f0f0-1cd9-c183-eff4-bec1ca18a373@c-s.fr>
+ <fc3e7ca0f018afbf6c104c333b381ffbae6a48c3.camel@gmail.com>
+ <c0b2c45c-815c-d627-e975-a2d622494223@c-s.fr>
+ <CAD5jUk-oEoMwndqqPUs+AWnQThUjH+DA6fJUb5_W2rOPB1Njtw@mail.gmail.com>
+ <d30e4a1e-187b-2a07-ec9c-50f889375cde@c-s.fr>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,54 +32,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This partially reverts faa16bc404d72a5 ("lib: Use existing define with
-polynomial").
+Hi Christophe,
 
-The cleanup added a dependency on include/linux, which broke the PowerPC
-boot wrapper/decompresser when KERNEL_XZ is enabled:
+On Thu, 2018-09-13 at 10:21 +0200, Christophe LEROY wrote:
+>
+> Le 11/09/2018 à 00:17, Radu Rendec a écrit :
+> >
+> > The MPC83xx also has a watchdog and the kernel driver (mpc8xxx_wdt.c)
+> > could also be improved to support the WDIOC_GETBOOTSTATUS ioctl and
+> > properly report if the system rebooted due to a watchdog.
+>
+> Very good idea.
+>
+> I just submitted a patch for that. Please look at it.
+> I'm sure any driver which needs reset status information can do the same.
 
-  BOOTCC  arch/powerpc/boot/decompress.o
- In file included from arch/powerpc/boot/../../../lib/decompress_unxz.c:233,
-                 from arch/powerpc/boot/decompress.c:42:
- arch/powerpc/boot/../../../lib/xz/xz_crc32.c:18:10: fatal error:
- linux/crc32poly.h: No such file or directory
-  #include <linux/crc32poly.h>
-           ^~~~~~~~~~~~~~~~~~~
+Thanks for submitting the patch and sorry for the late reply! I followed
+the conversation between you and Guenter and it seems your patches are
+almost accepted. That's a good thing.
 
-The powerpc decompressor is a hairy corner of the kernel. Even while building
-a 64-bit kernel it needs to build a 32-bit binary and therefore avoid including
-files from include/linux.
+> If we want to do something more central, maybe we should look at what
+> was done on ARM:
+>
+> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=04fef228fb00
 
-Fixes: faa16bc404d7 ("lib: Use existing define with polynomial")
-Signed-off-by: Joel Stanley <joel@jms.id.au>
----
-We need to clean up the powerpc boot decompresser but that work will be
-more involved than we would include in a late -rc. Please consider
-merging this fix for 4.19. Thanks!
+Thanks for pointing out that commit. It's very similar to what I wanted
+to do (for MPC83xx) in the first place: read the RSR value on start-up
+into a variable and export it as a symbol to make it available to other
+drivers.
 
- lib/xz/xz_crc32.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+I would take on the work to implement something similar for PowerPC, but
+I need some guidance as to what goes where. For instance, what would be
+the PowerPC equivalent of arch/arm/mach-pxa/reset.c, which defines the
+reset_status variable?
 
-diff --git a/lib/xz/xz_crc32.c b/lib/xz/xz_crc32.c
-index 25a5d87e2e4c..34532d14fd4c 100644
---- a/lib/xz/xz_crc32.c
-+++ b/lib/xz/xz_crc32.c
-@@ -15,7 +15,6 @@
-  * but they are bigger and use more memory for the lookup table.
-  */
- 
--#include <linux/crc32poly.h>
- #include "xz_private.h"
- 
- /*
-@@ -30,7 +29,7 @@ STATIC_RW_DATA uint32_t xz_crc32_table[256];
- 
- XZ_EXTERN void xz_crc32_init(void)
- {
--	const uint32_t poly = CRC32_POLY_LE;
-+	const uint32_t poly = 0xEDB88320;
- 
- 	uint32_t i;
- 	uint32_t j;
--- 
-2.17.1
+Another question is if the device tree should be used. We already have
+separate directories for each platform in arch/powerpc/platforms and I
+guess for each platform the RSR is always there and at a fixed, well
+known address.
+
+Thanks,
+Radu
