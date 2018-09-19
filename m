@@ -1,21 +1,43 @@
-Return-Path: <yuehaibing@huawei.com>
-Received: from huawei.com (szxga06-in.huawei.com [45.249.212.32])
+Return-Path: <rppt@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42FbhH5vgtzF3JJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Sep 2018 20:29:34 +1000 (AEST)
-From: YueHaibing <yuehaibing@huawei.com>
-To: <davem@davemloft.net>, <geoff@infradead.org>, <benh@kernel.crashing.org>,
- <paulus@samba.org>, <mpe@ellerman.id.au>, <kou.ishizaki@toshiba.co.jp>,
- <andrew@lunn.ch>, <f.fainelli@gmail.com>
-CC: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, YueHaibing <yuehaibing@huawei.com>
-Subject: [PATCH net-next] net: toshiba: fix return type of ndo_start_xmit
- function
-Date: Wed, 19 Sep 2018 18:23:39 +0800
-Message-ID: <20180919102339.13988-1-yuehaibing@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Fbpn4NF0zF3JJ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Sep 2018 20:35:13 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w8JAXlo3075692
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Sep 2018 06:35:11 -0400
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2mkkxcjdpx-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Sep 2018 06:35:11 -0400
+Received: from localhost
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.vnet.ibm.com>;
+ Wed, 19 Sep 2018 11:35:08 +0100
+Date: Wed, 19 Sep 2018 13:34:57 +0300
+From: Mike Rapoport <rppt@linux.vnet.ibm.com>
+To: Jonathan Cameron <jonathan.cameron@huawei.com>
+Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
+ "David S. Miller" <davem@davemloft.net>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Ingo Molnar <mingo@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Michal Hocko <mhocko@suse.com>, Paul Burton <paul.burton@mips.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Tony Luck <tony.luck@intel.com>,
+ linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
+ linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxarm@huawei.com
+Subject: Re: [RFC PATCH 03/29] mm: remove CONFIG_HAVE_MEMBLOCK
+References: <1536163184-26356-1-git-send-email-rppt@linux.vnet.ibm.com>
+ <1536163184-26356-4-git-send-email-rppt@linux.vnet.ibm.com>
+ <20180919100449.00006df9@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180919100449.00006df9@huawei.com>
+Message-Id: <20180919103457.GA20545@rapoport-lnx>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,89 +47,132 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The method ndo_start_xmit() is defined as returning an 'netdev_tx_t',
-which is a typedef for an enum type, so make sure the implementation in
-this driver has returns 'netdev_tx_t' value, and change the function
-return type to netdev_tx_t.
+Hi Jonathan,
 
-Found by coccinelle.
+On Wed, Sep 19, 2018 at 10:04:49AM +0100, Jonathan Cameron wrote:
+> On Wed, 5 Sep 2018 18:59:18 +0300
+> Mike Rapoport <rppt@linux.vnet.ibm.com> wrote:
+> 
+> > All architecures use memblock for early memory management. There is no need
+> > for the CONFIG_HAVE_MEMBLOCK configuration option.
+> > 
+> > Signed-off-by: Mike Rapoport <rppt@linux.vnet.ibm.com>
+> 
+> Hi Mike,
+> 
+> A minor editing issue in here that is stopping boot on arm64 platforms with latest
+> version of the mm tree.
 
-Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+Can you please try the following patch:
+
+
+>From 079bd5d24a01df3df9500d0a33d89cb9f7da4588 Mon Sep 17 00:00:00 2001
+From: Mike Rapoport <rppt@linux.vnet.ibm.com>
+Date: Wed, 19 Sep 2018 13:29:27 +0300
+Subject: [PATCH] of/fdt: fixup #ifdefs after removal of HAVE_MEMBLOCK config
+ option
+
+The removal of HAVE_MEMBLOCK configuration option, mistakenly dropped the
+wrong #endif. This patch restores that #endif and removes the part that
+should have been actually removed, starting from #else and up to the
+correct #endif
+
+Reported-by: Jonathan Cameron <jonathan.cameron@huawei.com>
+Signed-off-by: Mike Rapoport <rppt@linux.vnet.ibm.com>
 ---
- drivers/net/ethernet/toshiba/ps3_gelic_net.c | 4 ++--
- drivers/net/ethernet/toshiba/ps3_gelic_net.h | 2 +-
- drivers/net/ethernet/toshiba/spider_net.c    | 4 ++--
- drivers/net/ethernet/toshiba/tc35815.c       | 6 ++++--
- 4 files changed, 9 insertions(+), 7 deletions(-)
+ drivers/of/fdt.c | 21 +--------------------
+ 1 file changed, 1 insertion(+), 20 deletions(-)
 
-diff --git a/drivers/net/ethernet/toshiba/ps3_gelic_net.c b/drivers/net/ethernet/toshiba/ps3_gelic_net.c
-index 88d74ae..75237c8 100644
---- a/drivers/net/ethernet/toshiba/ps3_gelic_net.c
-+++ b/drivers/net/ethernet/toshiba/ps3_gelic_net.c
-@@ -845,9 +845,9 @@ static int gelic_card_kick_txdma(struct gelic_card *card,
-  * @skb: packet to send out
-  * @netdev: interface device structure
-  *
-- * returns 0 on success, <0 on failure
-+ * returns NETDEV_TX_OK on success, NETDEV_TX_BUSY on failure
-  */
--int gelic_net_xmit(struct sk_buff *skb, struct net_device *netdev)
-+netdev_tx_t gelic_net_xmit(struct sk_buff *skb, struct net_device *netdev)
- {
- 	struct gelic_card *card = netdev_card(netdev);
- 	struct gelic_descr *descr;
-diff --git a/drivers/net/ethernet/toshiba/ps3_gelic_net.h b/drivers/net/ethernet/toshiba/ps3_gelic_net.h
-index 003d045..fbbf9b5 100644
---- a/drivers/net/ethernet/toshiba/ps3_gelic_net.h
-+++ b/drivers/net/ethernet/toshiba/ps3_gelic_net.h
-@@ -370,7 +370,7 @@ static inline void udbg_shutdown_ps3gelic(void) {}
- void gelic_card_down(struct gelic_card *card);
- int gelic_net_open(struct net_device *netdev);
- int gelic_net_stop(struct net_device *netdev);
--int gelic_net_xmit(struct sk_buff *skb, struct net_device *netdev);
-+netdev_tx_t gelic_net_xmit(struct sk_buff *skb, struct net_device *netdev);
- void gelic_net_set_multi(struct net_device *netdev);
- void gelic_net_tx_timeout(struct net_device *netdev);
- int gelic_net_setup_netdev(struct net_device *netdev, struct gelic_card *card);
-diff --git a/drivers/net/ethernet/toshiba/spider_net.c b/drivers/net/ethernet/toshiba/spider_net.c
-index d925b82..2341726 100644
---- a/drivers/net/ethernet/toshiba/spider_net.c
-+++ b/drivers/net/ethernet/toshiba/spider_net.c
-@@ -880,9 +880,9 @@
-  * @skb: packet to send out
-  * @netdev: interface device structure
-  *
-- * returns 0 on success, !0 on failure
-+ * returns NETDEV_TX_OK on success, NETDEV_TX_BUSY on failure
-  */
--static int
-+static netdev_tx_t
- spider_net_xmit(struct sk_buff *skb, struct net_device *netdev)
- {
- 	int cnt;
-diff --git a/drivers/net/ethernet/toshiba/tc35815.c b/drivers/net/ethernet/toshiba/tc35815.c
-index 7163a8d..6a71c2c 100644
---- a/drivers/net/ethernet/toshiba/tc35815.c
-+++ b/drivers/net/ethernet/toshiba/tc35815.c
-@@ -474,7 +474,8 @@ static void free_rxbuf_skb(struct pci_dev *hwdev, struct sk_buff *skb, dma_addr_
- /* Index to functions, as function prototypes. */
+diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+index 48314e9..bb532aa 100644
+--- a/drivers/of/fdt.c
++++ b/drivers/of/fdt.c
+@@ -1119,6 +1119,7 @@ int __init early_init_dt_scan_chosen(unsigned long node, const char *uname,
+ #endif
+ #ifndef MAX_MEMBLOCK_ADDR
+ #define MAX_MEMBLOCK_ADDR	((phys_addr_t)~0)
++#endif
  
- static int	tc35815_open(struct net_device *dev);
--static int	tc35815_send_packet(struct sk_buff *skb, struct net_device *dev);
-+static netdev_tx_t	tc35815_send_packet(struct sk_buff *skb,
-+					    struct net_device *dev);
- static irqreturn_t	tc35815_interrupt(int irq, void *dev_id);
- static int	tc35815_rx(struct net_device *dev, int limit);
- static int	tc35815_poll(struct napi_struct *napi, int budget);
-@@ -1248,7 +1249,8 @@ static void tc35815_tx_timeout(struct net_device *dev)
-  * invariant will hold if you make sure that the netif_*_queue()
-  * calls are done at the proper times.
-  */
--static int tc35815_send_packet(struct sk_buff *skb, struct net_device *dev)
-+static netdev_tx_t
-+tc35815_send_packet(struct sk_buff *skb, struct net_device *dev)
+ void __init __weak early_init_dt_add_memory_arch(u64 base, u64 size)
  {
- 	struct tc35815_local *lp = netdev_priv(dev);
- 	struct TxFD *txfd;
+@@ -1175,26 +1176,6 @@ int __init __weak early_init_dt_reserve_memory_arch(phys_addr_t base,
+ 	return memblock_reserve(base, size);
+ }
+ 
+-#else
+-void __init __weak early_init_dt_add_memory_arch(u64 base, u64 size)
+-{
+-	WARN_ON(1);
+-}
+-
+-int __init __weak early_init_dt_mark_hotplug_memory_arch(u64 base, u64 size)
+-{
+-	return -ENOSYS;
+-}
+-
+-int __init __weak early_init_dt_reserve_memory_arch(phys_addr_t base,
+-					phys_addr_t size, bool nomap)
+-{
+-	pr_err("Reserved memory not supported, ignoring range %pa - %pa%s\n",
+-		  &base, &size, nomap ? " (nomap)" : "");
+-	return -ENOSYS;
+-}
+-#endif
+-
+ static void * __init early_init_dt_alloc_memory_arch(u64 size, u64 align)
+ {
+ 	return memblock_alloc(size, align);
 -- 
-1.8.3.1
+2.7.4
+
+ 
+> > diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+> > index 76c83c1..bd841bb 100644
+> > --- a/drivers/of/fdt.c
+> > +++ b/drivers/of/fdt.c
+> > @@ -1115,13 +1115,11 @@ int __init early_init_dt_scan_chosen(unsigned long node, const char *uname,
+> >  	return 1;
+> >  }
+> >  
+> > -#ifdef CONFIG_HAVE_MEMBLOCK
+> >  #ifndef MIN_MEMBLOCK_ADDR
+> >  #define MIN_MEMBLOCK_ADDR	__pa(PAGE_OFFSET)
+> >  #endif
+> >  #ifndef MAX_MEMBLOCK_ADDR
+> >  #define MAX_MEMBLOCK_ADDR	((phys_addr_t)~0)
+> > -#endif
+> 
+> This isn't the right #endif. It is matching with the #ifndef MAX_MEMBLOCK_ADDR
+> not the intented #ifdef CONFIG_HAVE_MEMBLOCK.
+> 
+> Now I haven't chased through the exact reason this is causing my acpi
+> arm64 system not to boot on the basis it is obviously miss-matched anyway
+> and I'm inherently lazy.  It's resulting in stubs replacing the following weak
+> functions.
+> 
+> early_init_dt_add_memory_arch
+> (this is defined elsewhere for some architectures but not arm)
+> 
+> early_init_dt_mark_hotplug_memory_arch
+> (there is only one definition of this in the kernel so it doesn't
+>  need to be weak or in the header etc).
+> 
+> early_init_dt_reserve_memory_arch
+> (defined on mips but nothing else)
+> 
+> Taking out the right endif also lets you drop an #else removing some stub
+> functions further down in here.
+> 
+> Nice cleanup in general btw.
+> 
+> Thanks,
+> 
+> Jonathan
+> >  
+> >  void __init __weak early_init_dt_add_memory_arch(u64 base, u64 size)
+> >  {
+> 
+
+-- 
+Sincerely yours,
+Mike.
