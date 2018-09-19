@@ -1,24 +1,47 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+Return-Path: <david@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42FVt12wjpzF0pD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Sep 2018 16:52:41 +1000 (AEST)
-Subject: Re: [PATCH] lib/xz: Fix powerpc build with KERNEL_XZ
-To: Oliver <oohall@gmail.com>
-Cc: Joel Stanley <joel@jms.id.au>, Krzysztof Kozlowski <krzk@kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Herbert Xu <herbert@gondor.apana.org.au>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <20180918230756.26035-1-joel@jms.id.au>
- <a3a97ebf-9a40-db6e-8225-7b9ccf9cfb4b@c-s.fr>
- <CAOSf1CG3bFHNWS8hQVy-VrpfnwjLWBHSrr-c52AMQbsBRqeyZA@mail.gmail.com>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <6882aff7-eb33-b53c-3ff4-d4c327d4f589@c-s.fr>
-Date: Wed, 19 Sep 2018 08:52:37 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42FWqF2ZbLzF3FG
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Sep 2018 17:35:21 +1000 (AEST)
+Subject: Re: [PATCH v1 0/6] mm: online/offline_pages called w.o.
+ mem_hotplug_lock
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ linux-doc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-acpi@vger.kernel.org, xen-devel@lists.xenproject.org,
+ devel@linuxdriverproject.org, Andrew Morton <akpm@linux-foundation.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ Dan Williams <dan.j.williams@intel.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Haiyang Zhang <haiyangz@microsoft.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ John Allen <jallen@linux.vnet.ibm.com>, Jonathan Corbet <corbet@lwn.net>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>, Juergen Gross <jgross@suse.com>,
+ Kate Stewart <kstewart@linuxfoundation.org>,
+ "K. Y. Srinivasan" <kys@microsoft.com>, Len Brown <lenb@kernel.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Mathieu Malaterre <malat@debian.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Michael Neuling <mikey@neuling.org>, Michal Hocko <mhocko@suse.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Oscar Salvador <osalvador@suse.de>, Paul Mackerras <paulus@samba.org>,
+ Pavel Tatashin <pasha.tatashin@oracle.com>,
+ Pavel Tatashin <pavel.tatashin@microsoft.com>,
+ Philippe Ombredanne <pombredanne@nexb.com>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Rashmica Gupta <rashmica.g@gmail.com>,
+ Stephen Hemminger <sthemmin@microsoft.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Vlastimil Babka <vbabka@suse.cz>,
+ YASUAKI ISHIMATSU <yasu.isimatu@gmail.com>
+References: <20180918114822.21926-1-david@redhat.com>
+ <20180919012207.GD8537@350D>
+From: David Hildenbrand <david@redhat.com>
+Message-ID: <f3a13f6a-b34c-8561-884a-23fd9aa60331@redhat.com>
+Date: Wed, 19 Sep 2018 09:35:07 +0200
 MIME-Version: 1.0
-In-Reply-To: <CAOSf1CG3bFHNWS8hQVy-VrpfnwjLWBHSrr-c52AMQbsBRqeyZA@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <20180919012207.GD8537@350D>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,86 +51,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-Le 19/09/2018 à 08:44, Oliver a écrit :
-> On Wed, Sep 19, 2018 at 3:52 PM, Christophe LEROY
-> <christophe.leroy@c-s.fr> wrote:
+Am 19.09.18 um 03:22 schrieb Balbir Singh:
+> On Tue, Sep 18, 2018 at 01:48:16PM +0200, David Hildenbrand wrote:
+>> Reading through the code and studying how mem_hotplug_lock is to be used,
+>> I noticed that there are two places where we can end up calling
+>> device_online()/device_offline() - online_pages()/offline_pages() without
+>> the mem_hotplug_lock. And there are other places where we call
+>> device_online()/device_offline() without the device_hotplug_lock.
 >>
+>> While e.g.
+>> 	echo "online" > /sys/devices/system/memory/memory9/state
+>> is fine, e.g.
+>> 	echo 1 > /sys/devices/system/memory/memory9/online
+>> Will not take the mem_hotplug_lock. However the device_lock() and
+>> device_hotplug_lock.
 >>
->> Le 19/09/2018 à 01:07, Joel Stanley a écrit :
->>>
->>> This partially reverts faa16bc404d72a5 ("lib: Use existing define with
->>> polynomial").
->>>
->>> The cleanup added a dependency on include/linux, which broke the PowerPC
->>> boot wrapper/decompresser when KERNEL_XZ is enabled:
->>>
->>>     BOOTCC  arch/powerpc/boot/decompress.o
->>>    In file included from
->>> arch/powerpc/boot/../../../lib/decompress_unxz.c:233,
->>>                    from arch/powerpc/boot/decompress.c:42:
->>>    arch/powerpc/boot/../../../lib/xz/xz_crc32.c:18:10: fatal error:
->>>    linux/crc32poly.h: No such file or directory
->>>     #include <linux/crc32poly.h>
->>>              ^~~~~~~~~~~~~~~~~~~
->>>
->>> The powerpc decompressor is a hairy corner of the kernel. Even while
->>> building
->>> a 64-bit kernel it needs to build a 32-bit binary and therefore avoid
->>> including
->>> files from include/linux.
->>>
->>> Fixes: faa16bc404d7 ("lib: Use existing define with polynomial")
->>> Signed-off-by: Joel Stanley <joel@jms.id.au>
->>> ---
->>> We need to clean up the powerpc boot decompresser but that work will be
->>> more involved than we would include in a late -rc. Please consider
->>> merging this fix for 4.19. Thanks!
->>>
->>>    lib/xz/xz_crc32.c | 3 +--
->>>    1 file changed, 1 insertion(+), 2 deletions(-)
->>>
->>> diff --git a/lib/xz/xz_crc32.c b/lib/xz/xz_crc32.c
->>> index 25a5d87e2e4c..34532d14fd4c 100644
->>> --- a/lib/xz/xz_crc32.c
->>> +++ b/lib/xz/xz_crc32.c
->>> @@ -15,7 +15,6 @@
->>>     * but they are bigger and use more memory for the lookup table.
->>>     */
->>>    -#include <linux/crc32poly.h>
->>>    #include "xz_private.h"
->>>      /*
->>> @@ -30,7 +29,7 @@ STATIC_RW_DATA uint32_t xz_crc32_table[256];
->>>      XZ_EXTERN void xz_crc32_init(void)
->>>    {
->>> -       const uint32_t poly = CRC32_POLY_LE;
->>> +       const uint32_t poly = 0xEDB88320;
+>> E.g. via memory_probe_store(), we can end up calling
+>> add_memory()->online_pages() without the device_hotplug_lock. So we can
+>> have concurrent callers in online_pages(). We e.g. touch in online_pages()
+>> basically unprotected zone->present_pages then.
 >>
+>> Looks like there is a longer history to that (see Patch #2 for details),
+>> and fixing it to work the way it was intended is not really possible. We
+>> would e.g. have to take the mem_hotplug_lock in device/base/core.c, which
+>> sounds wrong.
 >>
->> Maybe avoid capital letters ?
+>> Summary: We had a lock inversion on mem_hotplug_lock and device_lock().
+>> More details can be found in patch 3 and patch 6.
 >>
->> What about adding something like the following in xz_private.h instead:
+>> I propose the general rules (documentation added in patch 6):
 >>
->> #define CRC32_POLY_LE 0xedb88320
+>> 1. add_memory/add_memory_resource() must only be called with
+>>    device_hotplug_lock.
+>> 2. remove_memory() must only be called with device_hotplug_lock. This is
+>>    already documented and holds for all callers.
+>> 3. device_online()/device_offline() must only be called with
+>>    device_hotplug_lock. This is already documented and true for now in core
+>>    code. Other callers (related to memory hotplug) have to be fixed up.
+>> 4. mem_hotplug_lock is taken inside of add_memory/remove_memory/
+>>    online_pages/offline_pages.
+>>
+>> To me, this looks way cleaner than what we have right now (and easier to
+>> verify). And looking at the documentation of remove_memory, using
+>> lock_device_hotplug also for add_memory() feels natural.
+>>
 > 
-> The problem is that it's pulling in linux/crc32poly.h. To support old
-> systems with a 32bit Open Firmware we boot wrapper we build the boot
-> wrapper as a 32bit ELF even for a 64 bit kernel. The headers generated
-> by Kbuild are only valid for the 64bit kernel so we have to avoid
-> pulling them into the boot wrapper.
+> That seems reasonable, but also implies that device_online() would hold
+> back add/remove memory, could you please also document what mode
+> read/write the locks need to be held? For example can the device_hotplug_lock
+> be held in read mode while add/remove memory via (mem_hotplug_lock) is held
+> in write mode?
 
-Yes I understood, hence my proposal to redefine CRC32_POLY_LE in 
-xz_private.h instead of including linux/crc32poly.h
+device_hotplug_lock is an ordinary mutex. So no option there.
 
-It avoids modifying the C code.
+Only mem_hotplug_lock is a per CPU RW mutex. And as of now it only
+exists to not require get_online_mems()/put_online_mems() to take the
+device_hotplug_lock. Which is perfectly valid, because these users only
+care about memory (not any other devices) not suddenly vanish. And that
+RW lock makes things fast.
 
-Christophe
+Any modifications (online/offline/add/remove) require the
+mem_hotplug_lock in write.
+
+I can add some more details to documentation in patch #6.
+
+"... we should always hold the mem_hotplug_lock (via
+mem_hotplug_begin/mem_hotplug_done) in write mode to serialize memory
+hotplug" ..."
+
+"In addition, mem_hotplug_lock (in contrast to device_hotplug_lock) in
+read mode allows for a quite efficient get_online_mems/put_online_mems
+implementation, so code accessing memory can protect from that memory
+vanishing."
+
+Would that work for you?
+
+Thanks!
 
 > 
->> Christophe
->>
->>>          uint32_t i;
->>>          uint32_t j;
->>>
->>
+> Balbir Singh.
+>  
+> 
+
+
+-- 
+
+Thanks,
+
+David / dhildenb
