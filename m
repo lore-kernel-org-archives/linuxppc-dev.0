@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42GNpn3fqTzF3Mv
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42GNpn3d1gzF3Ms
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 03:22:57 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w8KHEorB057268
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 13:22:55 -0400
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2mmcrh0ug0-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ w8KHELGo115338
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 13:22:54 -0400
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2mmdqw673g-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 13:22:53 -0400
 Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Thu, 20 Sep 2018 11:22:54 -0600
+ Thu, 20 Sep 2018 11:22:52 -0600
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
  Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
@@ -33,12 +33,12 @@ To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
  Anton Blanchard <anton@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [PATCH v8 3/3] powerpc/sysfs: Add
- topology/smallcore_thread_siblings[_list]
-Date: Thu, 20 Sep 2018 22:52:39 +0530
+Subject: [PATCH v8 2/3] powerpc: Use cpu_smallcore_sibling_mask at SMT level
+ on bigcores
+Date: Thu, 20 Sep 2018 22:52:38 +0530
 In-Reply-To: <1537464159-25919-1-git-send-email-ego@linux.vnet.ibm.com>
 References: <1537464159-25919-1-git-send-email-ego@linux.vnet.ibm.com>
-Message-Id: <1537464159-25919-4-git-send-email-ego@linux.vnet.ibm.com>
+Message-Id: <1537464159-25919-3-git-send-email-ego@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,154 +50,103 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-This patch adds two sysfs attributes named smallcore_thread_siblings
-and smallcore_thread_siblings_list to the "topology" attribute group
-for each CPU device.
+Each of the SMT4 cores forming a big-core are more or less independent
+units. Thus when multiple tasks are scheduled to run on the big-core,
+we get the best performance when the tasks are spread across the pair of
+SMT4 cores.
 
-The read-only attributes
-/sys/device/system/cpu/cpuN/topology/smallcore_thread_siblings and
-/sys/device/system/cpu/cpuN/topology/smallcore_thread_siblings_list
-will the online siblings of CPU N that share the L1 cache with it on
-big-core configurations in cpumask format and cpu-list format
-respectively.
+This patch achieves this by setting the SMT level mask to correspond to
+the smallcore sibling mask on big-core systems. This patch also the
+CACHE level sched-domain corresponding to the big-core is created on
+big-core systems.
+
+With this patch, the SMT sched-domain with SMT=8,4,2 on big-core
+systems are as follows:
+
+1) ppc64_cpu --smt=8
+
+ CPU0 attaching sched-domain(s):
+  domain-0: span=0,2,4,6 level=SMT
+   groups: 0:{ span=0 cap=294 }, 2:{ span=2 cap=294 },
+           4:{ span=4 cap=294 }, 6:{ span=6 cap=294 }
+ CPU1 attaching sched-domain(s):
+  domain-0: span=1,3,5,7 level=SMT
+   groups: 1:{ span=1 cap=294 }, 3:{ span=3 cap=294 },
+           5:{ span=5 cap=294 }, 7:{ span=7 cap=294 }
+
+2) ppc64_cpu --smt=4
+
+ CPU0 attaching sched-domain(s):
+  domain-0: span=0,2 level=SMT
+   groups: 0:{ span=0 cap=589 }, 2:{ span=2 cap=589 }
+ CPU1 attaching sched-domain(s):
+  domain-0: span=1,3 level=SMT
+   groups: 1:{ span=1 cap=589 }, 3:{ span=3 cap=589 }
+
+3) ppc64_cpu --smt=2
+   SMT domain is a trivial domain consisting of just
+   1 CPU. Hence this domain gets collapsed leaving only CACHE, DIE and
+   NUMA domains.
 
 Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 ---
- Documentation/ABI/testing/sysfs-devices-system-cpu | 14 ++++
- arch/powerpc/kernel/sysfs.c                        | 88 ++++++++++++++++++++++
- 2 files changed, 102 insertions(+)
+ arch/powerpc/kernel/smp.c | 19 ++++++++++++++++++-
+ 1 file changed, 18 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
-index 7331822..2a80dc2 100644
---- a/Documentation/ABI/testing/sysfs-devices-system-cpu
-+++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
-@@ -511,3 +511,17 @@ Description:	Control Symetric Multi Threading (SMT)
- 
- 			 If control status is "forceoff" or "notsupported" writes
- 			 are rejected.
-+
-+What:		/sys/devices/system/cpu/cpu#/topology/smallcore_thread_siblings
-+		/sys/devices/system/cpu/cpu#/topology/smallcore_thread_siblings_list
-+Date:		Sept 2018
-+Contact:	Linux for PowerPC mailing list <linuxppc-dev@ozlabs.org>
-+Description: 	CPU topology files that describe the thread siblings of a
-+		logical CPU that share the L1-cache with it on POWER9
-+		big-core configurations.
-+
-+		smallcore_thread_siblings: internal kernel map of
-+		cpu#'s hardware threads that share L1-cache with cpu#.
-+
-+		smallcore_thread_siblings_list: human-readable list of
-+		cpu#'s hardware threads that share L1-cache with cpu#.
-diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
-index 755dc98..f9c7d96 100644
---- a/arch/powerpc/kernel/sysfs.c
-+++ b/arch/powerpc/kernel/sysfs.c
-@@ -18,6 +18,7 @@
- #include <asm/smp.h>
- #include <asm/pmc.h>
- #include <asm/firmware.h>
-+#include <asm/cputhreads.h>
- 
- #include "cacheinfo.h"
- #include "setup.h"
-@@ -714,6 +715,62 @@ static void sysfs_create_dscr_default(void)
- #endif /* HAS_PPC_PMC_PA6T */
- #endif /* HAS_PPC_PMC_CLASSIC */
- 
-+static ssize_t smallcore_thread_siblings_show(struct device *dev,
-+					struct device_attribute *attr,
-+					char *buf)
-+{
-+	int cpu = dev->id;
-+
-+	return cpumap_print_to_pagebuf(false, buf, cpu_smallcore_mask(cpu));
-+}
-+static DEVICE_ATTR_RO(smallcore_thread_siblings);
-+
-+static ssize_t smallcore_thread_siblings_list_show(struct device *dev,
-+					struct device_attribute *attr,
-+					char *buf)
-+{
-+	int cpu = dev->id;
-+
-+	return cpumap_print_to_pagebuf(true, buf, cpu_smallcore_mask(cpu));
-+}
-+static DEVICE_ATTR_RO(smallcore_thread_siblings_list);
-+
-+static struct attribute *smallcore_attrs[] = {
-+	&dev_attr_smallcore_thread_siblings.attr,
-+	&dev_attr_smallcore_thread_siblings_list.attr,
-+	NULL
-+};
-+
-+static const struct attribute_group smallcore_attr_group = {
-+	.name = "topology",
-+	.attrs = smallcore_attrs
-+};
-+
-+static int smallcore_register_cpu_online(unsigned int cpu)
-+{
-+	int err;
-+	struct device *cpu_dev = get_cpu_device(cpu);
-+
-+	if (!has_big_cores)
-+		return 0;
-+
-+	err = sysfs_merge_group(&cpu_dev->kobj, &smallcore_attr_group);
-+
-+	return err;
-+}
-+
-+static int smallcore_unregister_cpu_online(unsigned int cpu)
-+{
-+	struct device *cpu_dev = get_cpu_device(cpu);
-+
-+	if (!has_big_cores)
-+		return 0;
-+
-+	sysfs_unmerge_group(&cpu_dev->kobj, &smallcore_attr_group);
-+
-+	return 0;
-+}
-+
- static int register_cpu_online(unsigned int cpu)
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 15095110..5cdcf44 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -1265,6 +1265,7 @@ static void add_cpu_to_masks(int cpu)
+ void start_secondary(void *unused)
  {
- 	struct cpu *c = &per_cpu(cpu_devices, cpu);
-@@ -1060,3 +1117,34 @@ static int __init topology_init(void)
- 	return 0;
+ 	unsigned int cpu = smp_processor_id();
++	struct cpumask *(*sibling_mask)(int) = cpu_sibling_mask;
+ 
+ 	mmgrab(&init_mm);
+ 	current->active_mm = &init_mm;
+@@ -1290,11 +1291,13 @@ void start_secondary(void *unused)
+ 	/* Update topology CPU masks */
+ 	add_cpu_to_masks(cpu);
+ 
++	if (has_big_cores)
++		sibling_mask = cpu_smallcore_mask;
+ 	/*
+ 	 * Check for any shared caches. Note that this must be done on a
+ 	 * per-core basis because one core in the pair might be disabled.
+ 	 */
+-	if (!cpumask_equal(cpu_l2_cache_mask(cpu), cpu_sibling_mask(cpu)))
++	if (!cpumask_equal(cpu_l2_cache_mask(cpu), sibling_mask(cpu)))
+ 		shared_caches = true;
+ 
+ 	set_numa_node(numa_cpu_lookup_table[cpu]);
+@@ -1361,6 +1364,13 @@ static const struct cpumask *shared_cache_mask(int cpu)
+ 	return cpu_l2_cache_mask(cpu);
  }
- subsys_initcall(topology_init);
-+
-+/*
-+ * NOTE: The smallcore_register_cpu_online
-+ *       (resp. smallcore_unregister_cpu_online) callback will merge
-+ *       (resp. unmerge) a couple of additional attributes to the
-+ *       "topology" attribute group of a CPU device when the CPU comes
-+ *       online (resp. goes offline).
-+ *
-+ *       Hence, the registration of these callbacks must happen after
-+ *       topology_sysfs_init() is called so that the topology
-+ *       attribute group is created before these additional attributes
-+ *       can be merged/unmerged. We cannot register these callbacks in
-+ *       topology_init() since this function is called before
-+ *       topology_sysfs_init(). Hence we define the following
-+ *       late_initcall for this purpose.
-+ */
-+static int __init smallcore_topology_init(void)
+ 
++#ifdef CONFIG_SCHED_SMT
++static const struct cpumask *smallcore_smt_mask(int cpu)
 +{
-+	int r;
-+
-+	if (!has_big_cores)
-+		return 0;
-+
-+	r = cpuhp_setup_state(CPUHP_AP_ONLINE_DYN,
-+			      "powerpc/topology/smallcore:online",
-+			      smallcore_register_cpu_online,
-+			      smallcore_unregister_cpu_online);
-+	WARN_ON(r < 0);
-+	return 0;
++	return cpu_smallcore_mask(cpu);
 +}
-+late_initcall(smallcore_topology_init);
++#endif
++
+ static struct sched_domain_topology_level power9_topology[] = {
+ #ifdef CONFIG_SCHED_SMT
+ 	{ cpu_smt_mask, powerpc_smt_flags, SD_INIT_NAME(SMT) },
+@@ -1388,6 +1398,13 @@ void __init smp_cpus_done(unsigned int max_cpus)
+ 	shared_proc_topology_init();
+ 	dump_numa_cpu_topology();
+ 
++#ifdef CONFIG_SCHED_SMT
++	if (has_big_cores) {
++		pr_info("Using small cores at SMT level\n");
++		power9_topology[0].mask = smallcore_smt_mask;
++		powerpc_topology[0].mask = smallcore_smt_mask;
++	}
++#endif
+ 	/*
+ 	 * If any CPU detects that it's sharing a cache with another CPU then
+ 	 * use the deeper topology that is aware of this sharing.
 -- 
 1.9.4
