@@ -1,23 +1,28 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <alex@ghiti.fr>
+Received: from relay1-d.mail.gandi.net (relay1-d.mail.gandi.net
+ [217.70.183.193])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42G4Cj2KHHzF3L2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 14:54:56 +1000 (AEST)
-Subject: Re: [PATCH v2 4/5] powerpc: Fix duplicate const clang warning in user
- access code
-To: Joel Stanley <joel@jms.id.au>, Nick Desaulniers <ndesaulniers@google.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>
-References: <20180914040649.1794-1-joel@jms.id.au>
- <20180914040649.1794-5-joel@jms.id.au>
- <CAKwvOd=-22J2=QvCTOAxkWw-WV8C4VY6Yvx91Rif5STmiXMtMg@mail.gmail.com>
- <CACPK8XdF=orE8UtGu_K=p612L=iuDsnmrVrXJ6CNn6iDXi8znQ@mail.gmail.com>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <af6548de-69aa-bbce-3e9e-4acdf89fb107@c-s.fr>
-Date: Thu, 20 Sep 2018 06:54:51 +0200
-MIME-Version: 1.0
-In-Reply-To: <CACPK8XdF=orE8UtGu_K=p612L=iuDsnmrVrXJ6CNn6iDXi8znQ@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42G5lh6nyXzF3Dw
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 16:04:12 +1000 (AEST)
+From: Alexandre Ghiti <alex@ghiti.fr>
+To: akpm@linux-foundation.org
+Cc: linux-mm@kvack.org, mike.kravetz@oracle.com, linux@armlinux.org.uk,
+ catalin.marinas@arm.com, will.deacon@arm.com, tony.luck@intel.com,
+ fenghua.yu@intel.com, ralf@linux-mips.org, paul.burton@mips.com,
+ jhogan@kernel.org, jejb@parisc-linux.org, deller@gmx.de,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ ysato@users.sourceforge.jp, dalias@libc.org, davem@davemloft.net,
+ tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org,
+ arnd@arndb.de, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-arch@vger.kernel.org,
+ Alexandre Ghiti <alex@ghiti.fr>
+Subject: [PATCH v7 00/11] hugetlb: Factorize hugetlb architecture primitives 
+Date: Thu, 20 Sep 2018 06:03:47 +0000
+Message-Id: <20180920060358.16606-1-alex@ghiti.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,45 +32,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Andrew,
 
+As suggested by people who reviewed/acked this series, please consider
+including this series into -mm tree.
 
-Le 19/09/2018 à 09:45, Joel Stanley a écrit :
-> On Sat, 15 Sep 2018 at 03:27, Nick Desaulniers <ndesaulniers@google.com> wrote:
->>
->> On Thu, Sep 13, 2018 at 9:07 PM Joel Stanley <joel@jms.id.au> wrote:
->>>
->>> From: Anton Blanchard <anton@samba.org>
->>>
->>> This re-applies b91c1e3e7a6f which was reverted in f2ca80905929
->>> d466f6c5cac1 f84ed59a612d (powerpc/sparse: Constify the address pointer
->>> ...").
->>>
->>> We see a large number of duplicate const errors in the user access
->>> code when building with llvm/clang:
->>>
->>>    include/linux/pagemap.h:576:8: warning: duplicate 'const' declaration specifier
->>>        [-Wduplicate-decl-specifier]
->>>          ret = __get_user(c, uaddr);
->>>
->>> The problem is we are doing const __typeof__(*(ptr)), which will hit the
->>> warning if ptr is marked const.
->>>
->>> Removing const does not seem to have any effect on GCC code generation.
->>
->> I wouldn't expect it to for a local variable with such localized
->> usage.  I myself am quite liberal in applying `const` to everything,
->> so I will try to fix this in Clang as well, but this should silence
->> the warning for users of older versions of Clang and results in no
->> functional change.
->> Reviewed-by: Nick Desaulniers <ndesaulniers@google.com>
-> 
-> Nick has written a clang patch that suppresses the warning in the same
-> way as GCC. Assuming it gets merged, as we depend on clang-8 we could
-> chose to not merge the kernel patch.
-> 
-> https://reviews.llvm.org/D52248
-> 
+In order to reduce copy/paste of functions across architectures and then         
+make riscv hugetlb port (and future ports) simpler and smaller, this             
+patchset intends to factorize the numerous hugetlb primitives that are           
+defined across all the architectures.                                            
+                                                                                 
+Except for prepare_hugepage_range, this patchset moves the versions that         
+are just pass-through to standard pte primitives into                            
+asm-generic/hugetlb.h by using the same #ifdef semantic that can be              
+found in asm-generic/pgtable.h, i.e. __HAVE_ARCH_***.                            
+                                                                                 
+s390 architecture has not been tackled in this serie since it does not           
+use asm-generic/hugetlb.h at all.                                                
+                                                                                 
+This patchset has been compiled on all addressed architectures with              
+success (except for parisc, but the problem does not come from this              
+series).                 
 
-Seems like Michael has merged this patch anyway.
+v7:
+  Add Ingo Molnar Acked-By for x86.
 
-Christophe
+v6:                                                                              
+  - Remove nohash/32 and book3s/32 powerpc specific implementations in
+    order to use the generic ones.                                                        
+  - Add all the Reviewed-by, Acked-by and Tested-by in the commits,              
+    thanks to everyone.                                                          
+                                                                                 
+v5:                                                                              
+  As suggested by Mike Kravetz, no need to move the #include                     
+  <asm-generic/hugetlb.h> for arm and x86 architectures, let it live at          
+  the top of the file.                                                           
+                                                                                 
+v4:                                                                              
+  Fix powerpc build error due to misplacing of #include                          
+  <asm-generic/hugetlb.h> outside of #ifdef CONFIG_HUGETLB_PAGE, as              
+  pointed by Christophe Leroy.                                                   
+                                                                                 
+v1, v2, v3:                                                                      
+  Same version, just problems with email provider and misuse of                  
+  --batch-size option of git send-email
+
+Alexandre Ghiti (11):
+  hugetlb: Harmonize hugetlb.h arch specific defines with pgtable.h
+  hugetlb: Introduce generic version of hugetlb_free_pgd_range
+  hugetlb: Introduce generic version of set_huge_pte_at
+  hugetlb: Introduce generic version of huge_ptep_get_and_clear
+  hugetlb: Introduce generic version of huge_ptep_clear_flush
+  hugetlb: Introduce generic version of huge_pte_none
+  hugetlb: Introduce generic version of huge_pte_wrprotect
+  hugetlb: Introduce generic version of prepare_hugepage_range
+  hugetlb: Introduce generic version of huge_ptep_set_wrprotect
+  hugetlb: Introduce generic version of huge_ptep_set_access_flags
+  hugetlb: Introduce generic version of huge_ptep_get
+
+ arch/arm/include/asm/hugetlb-3level.h        | 32 +---------
+ arch/arm/include/asm/hugetlb.h               | 30 ----------
+ arch/arm64/include/asm/hugetlb.h             | 39 +++---------
+ arch/ia64/include/asm/hugetlb.h              | 47 ++-------------
+ arch/mips/include/asm/hugetlb.h              | 40 +++----------
+ arch/parisc/include/asm/hugetlb.h            | 33 +++--------
+ arch/powerpc/include/asm/book3s/32/pgtable.h |  6 --
+ arch/powerpc/include/asm/book3s/64/pgtable.h |  1 +
+ arch/powerpc/include/asm/hugetlb.h           | 43 ++------------
+ arch/powerpc/include/asm/nohash/32/pgtable.h |  6 --
+ arch/powerpc/include/asm/nohash/64/pgtable.h |  1 +
+ arch/sh/include/asm/hugetlb.h                | 54 ++---------------
+ arch/sparc/include/asm/hugetlb.h             | 40 +++----------
+ arch/x86/include/asm/hugetlb.h               | 69 ----------------------
+ include/asm-generic/hugetlb.h                | 88 +++++++++++++++++++++++++++-
+ 15 files changed, 135 insertions(+), 394 deletions(-)
+
+-- 
+2.16.2
