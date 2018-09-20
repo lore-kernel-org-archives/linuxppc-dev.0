@@ -1,36 +1,29 @@
-Return-Path: <linuxram@us.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <leitao@debian.org>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42GMDx2MgYzF3MD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 02:12:00 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42GMzG3nxBzF3Mm
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 02:45:14 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w8KG1sfN089930
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 12:11:58 -0400
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2mmdq4utft-1
+ w8KGdNFw103142
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 12:45:12 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2mmd7u6bw4-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 12:11:58 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 12:45:11 -0400
 Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Thu, 20 Sep 2018 17:11:56 +0100
-Date: Thu, 20 Sep 2018 09:11:47 -0700
-From: Ram Pai <linuxram@us.ibm.com>
-To: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/pkeys: Fix reading of ibm, processor-storage-keys
- property
-Reply-To: Ram Pai <linuxram@us.ibm.com>
-References: <20180920043858.28773-1-bauerman@linux.ibm.com>
-MIME-Version: 1.0
-In-Reply-To: <20180920043858.28773-1-bauerman@linux.ibm.com>
-Message-Id: <20180920161147.GE5809@ram.oc3035372033.ibm.com>
-Content-Type: text/plain; charset=us-ascii
+ for <linuxppc-dev@lists.ozlabs.org> from <leitao@debian.org>;
+ Thu, 20 Sep 2018 10:45:10 -0600
+From: Breno Leitao <leitao@debian.org>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Breno Leitao <leitao@debian.org>
+Subject: [PATCH 1/3] powerpc: Redefine TIF_32BITS thread flag
+Date: Thu, 20 Sep 2018 13:45:05 -0300
+Message-Id: <1537461907-32003-1-git-send-email-leitao@debian.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,44 +33,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 20, 2018 at 01:38:58AM -0300, Thiago Jung Bauermann wrote:
-> scan_pkey_feature() uses of_property_read_u32_array() to read the
-> ibm,processor-storage-keys property and calls be32_to_cpu() on the
-> value it gets. The problem is that of_property_read_u32_array() already
-> returns the value converted to the CPU byte order.
-> 
-> The value of pkeys_total ends up more or less sane because there's a min()
-> call in pkey_initialize() which reduces pkeys_total to 32. So in practice
-> the kernel ignores the fact that the hypervisor reserved one key for
-> itself (the device tree advertises 31 keys in my test VM).
-> 
-> This is wrong, but the effect in practice is that when a process tries to
-> allocate the 32nd key, it gets an -EINVAL error instead of -ENOSPC which
-> would indicate that there aren't any keys available
+Moving TIF_32BIT to use bit 20 instead of 4 in the task flag field.
 
-Thanks for the fix.
+This change is making room for an upcoming new task macro
+(_TIF_SYSCALL_EMU) which is preferred to set a bit in the lower 16-bits
+part of the word.
 
-Reviewed-by: Ram Pai <linuxram@us.ibm.com>
+This upcoming flag macro will take part in a composed macro
+(_TIF_SYSCALL_DOTRACE) which will contain other flags as well, and it is
+preferred that the whole _TIF_SYSCALL_DOTRACE macro only sets the lower 16
+bits of a word, so, it could be handled using immediate operations (as load
+immediate, add immediate, ...) where the immediate operand (SI) is limited
+to 16-bits.
 
-> 
-> Fixes: cf43d3b26452 ("powerpc: Enable pkey subsystem")
-> Signed-off-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-> ---
->  arch/powerpc/mm/pkeys.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
-> index 333b1f80c435..b271b283c785 100644
-> --- a/arch/powerpc/mm/pkeys.c
-> +++ b/arch/powerpc/mm/pkeys.c
-> @@ -45,7 +45,7 @@ static void scan_pkey_feature(void)
->  	 * Since any pkey can be used for data or execute, we will just treat
->  	 * all keys as equal and track them as one entity.
->  	 */
-> -	pkeys_total = be32_to_cpu(vals[0]);
-> +	pkeys_total = vals[0];
->  	pkeys_devtree_defined = true;
->  }
+Another possible solution would be using the LOAD_REG_IMMEDIATE() macro
+to load a full 64-bits word immediate, but it takes 5 operations instead of
+one.
 
+Having TIF_32BITS being redefined to use an upper bit is not a problem
+since there is only one place in the assembly code where TIF_32BIT is being
+used, and it could be replaced with an operation with right shift (addis),
+since it is used alone, i.e. not being part of a composed macro, which has
+different bits set, and would require LOAD_REG_IMMEDIATE().
+
+Tested on a 64 bits Big Endian machine running a 32 bits task.
+
+Signed-off-by: Breno Leitao <leitao@debian.org>
+---
+ arch/powerpc/include/asm/thread_info.h | 2 +-
+ arch/powerpc/kernel/entry_64.S         | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
+index 3c0002044bc9..1a52e14ec3ee 100644
+--- a/arch/powerpc/include/asm/thread_info.h
++++ b/arch/powerpc/include/asm/thread_info.h
+@@ -81,7 +81,6 @@ extern int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src
+ #define TIF_SIGPENDING		1	/* signal pending */
+ #define TIF_NEED_RESCHED	2	/* rescheduling necessary */
+ #define TIF_FSCHECK		3	/* Check FS is USER_DS on return */
+-#define TIF_32BIT		4	/* 32 bit binary */
+ #define TIF_RESTORE_TM		5	/* need to restore TM FP/VEC/VSX */
+ #define TIF_PATCH_PENDING	6	/* pending live patching update */
+ #define TIF_SYSCALL_AUDIT	7	/* syscall auditing active */
+@@ -100,6 +99,7 @@ extern int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src
+ #define TIF_ELF2ABI		18	/* function descriptors must die! */
+ #endif
+ #define TIF_POLLING_NRFLAG	19	/* true if poll_idle() is polling TIF_NEED_RESCHED */
++#define TIF_32BIT		20	/* 32 bit binary */
+ 
+ /* as above, but as bit values */
+ #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 2206912ea4f0..56f7b11d76ec 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -171,7 +171,7 @@ system_call:			/* label this so stack traces look sane */
+  * based on caller's run-mode / personality.
+  */
+ 	ld	r11,SYS_CALL_TABLE@toc(2)
+-	andi.	r10,r10,_TIF_32BIT
++	andis.	r10,r10,_TIF_32BIT@h
+ 	beq	15f
+ 	addi	r11,r11,8	/* use 32-bit syscall entries */
+ 	clrldi	r3,r3,32
 -- 
-Ram Pai
+2.19.0
