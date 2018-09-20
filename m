@@ -1,30 +1,51 @@
-Return-Path: <pburton@wavecomp.com>
-Received: from NAM02-BL2-obe.outbound.protection.outlook.com
- (mail-bl2nam02on0113.outbound.protection.outlook.com [104.47.38.113])
+Return-Path: <haiyangz@microsoft.com>
+Received: from NAM02-CY1-obe.outbound.protection.outlook.com
+ (mail-cys01nam02on0095.outbound.protection.outlook.com [104.47.37.95])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42GT6C1dHdzF3Nv
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 06:36:34 +1000 (AEST)
-From: Paul Burton <paul.burton@mips.com>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-CC: Michael Ellerman <mpe@ellerman.id.au>, Joe Perches <joe@perches.com>, Andy
- Whitcroft <apw@canonical.com>, "ralf@linux-mips.org" <ralf@linux-mips.org>,
- "jhogan@kernel.org" <jhogan@kernel.org>, Paul Mackerras <paulus@samba.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>
-Subject: Re: Checkpatch bad Warning (Re: [PATCH] powerpc/kgdb: add
- kgdb_arch_set/remove_breakpoint())
-Date: Thu, 20 Sep 2018 20:36:25 +0000
-Message-ID: <20180920203624.s4ivwqlco2icac73@pburton-laptop>
-References: <872199441fd43b05fc1c7d049098ef7c0e83f4c5.1537262646.git.christophe.leroy@c-s.fr>
- <2f5f572a-a28c-9d17-844b-9e1961febf64@c-s.fr>
- <595c96f5adcccd7eab9dc95eb48618981af66d3c.camel@perches.com>
- <87worgia60.fsf@concordia.ellerman.id.au>
- <f9ad7501-4d07-ddc2-6236-a7eb61283378@c-s.fr>
- <d31bd0cb-b9da-6f1b-4f93-da71644668d6@c-s.fr>
-In-Reply-To: <d31bd0cb-b9da-6f1b-4f93-da71644668d6@c-s.fr>
-Content-Type: text/plain; charset="iso-8859-1"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42GKCM5t8gzF3LZ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 00:40:27 +1000 (AEST)
+From: Haiyang Zhang <haiyangz@microsoft.com>
+To: YueHaibing <yuehaibing@huawei.com>, "davem@davemloft.net"
+ <davem@davemloft.net>, "dmitry.tarnyagin@lockless.no"
+ <dmitry.tarnyagin@lockless.no>, "wg@grandegger.com" <wg@grandegger.com>,
+ "mkl@pengutronix.de" <mkl@pengutronix.de>, "michal.simek@xilinx.com"
+ <michal.simek@xilinx.com>, "hsweeten@visionengravers.com"
+ <hsweeten@visionengravers.com>, "madalin.bucur@nxp.com"
+ <madalin.bucur@nxp.com>, "pantelis.antoniou@gmail.com"
+ <pantelis.antoniou@gmail.com>, "claudiu.manoil@nxp.com"
+ <claudiu.manoil@nxp.com>, "leoyang.li@nxp.com" <leoyang.li@nxp.com>,
+ "linux@armlinux.org.uk" <linux@armlinux.org.uk>, "sammy@sammy.net"
+ <sammy@sammy.net>, "ralf@linux-mips.org" <ralf@linux-mips.org>,
+ "nico@fluxnic.net" <nico@fluxnic.net>, "steve.glendinning@shawell.net"
+ <steve.glendinning@shawell.net>, "f.fainelli@gmail.com"
+ <f.fainelli@gmail.com>, "grygorii.strashko@ti.com"
+ <grygorii.strashko@ti.com>, "w-kwok2@ti.com" <w-kwok2@ti.com>,
+ "m-karicheri2@ti.com" <m-karicheri2@ti.com>, "t.sailer@alumni.ethz.ch"
+ <t.sailer@alumni.ethz.ch>, "jreuter@yaina.de" <jreuter@yaina.de>, KY
+ Srinivasan <kys@microsoft.com>, "wei.liu2@citrix.com" <wei.liu2@citrix.com>,
+ "paul.durrant@citrix.com" <paul.durrant@citrix.com>, "arvid.brodin@alten.se"
+ <arvid.brodin@alten.se>, "pshelar@ovn.org" <pshelar@ovn.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "linux-can@vger.kernel.org" <linux-can@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-mips@linux-mips.org"
+ <linux-mips@linux-mips.org>, "linux-omap@vger.kernel.org"
+ <linux-omap@vger.kernel.org>, "linux-hams@vger.kernel.org"
+ <linux-hams@vger.kernel.org>, "devel@linuxdriverproject.org"
+ <devel@linuxdriverproject.org>, "linux-usb@vger.kernel.org"
+ <linux-usb@vger.kernel.org>, "xen-devel@lists.xenproject.org"
+ <xen-devel@lists.xenproject.org>, "dev@openvswitch.org" <dev@openvswitch.org>
+Subject: RE: [PATCH net-next 17/22] hv_netvsc: fix return type of
+ ndo_start_xmit function
+Date: Thu, 20 Sep 2018 14:40:20 +0000
+Message-ID: <BN6PR21MB016115A6ACD7D2685DC0070DCA130@BN6PR21MB0161.namprd21.prod.outlook.com>
+References: <20180920123306.14772-1-yuehaibing@huawei.com>
+ <20180920123306.14772-18-yuehaibing@huawei.com>
+In-Reply-To: <20180920123306.14772-18-yuehaibing@huawei.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -35,89 +56,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Christophe,
 
-On Thu, Sep 20, 2018 at 01:23:55AM +0000, Christophe Leroy wrote:
-> On 09/20/2018 01:19 PM, Christophe LEROY wrote:
-> > Le 20/09/2018 =E0 15:13, Michael Ellerman a =E9crit=A0:
-> > > Joe Perches <joe@perches.com> writes:
-> > > > On Tue, 2018-09-18 at 09:33 +0000, Christophe Leroy wrote:
-> > > > > On the below patch, checkpatch reports
-> > > > >=20
-> > > > > WARNING: struct kgdb_arch should normally be const
-> > > > > #127: FILE: arch/powerpc/kernel/kgdb.c:480:
-> > > > > +struct kgdb_arch arch_kgdb_ops;
-> > > > >=20
-> > > > > But when I add 'const', I get compilation failure
-> > > >=20
-> > > > So don't add const.
-> > > >=20
-> > > > checkpatch is stupid.=A0 You are not.
-> > > >=20
-> > > > _Always_ take checkpatch bleats with very
-> > > > large grains of salt.
-> > > >=20
-> > > > Perhaps send a patch to remove kgbd_arch
-> > > > from scripts/const_structs.checkpatch as
-> > > > it seems not ever to be const.
-> > >=20
-> > > I think it could/should be const though, it just requires updating al=
-l
-> > > arches.
-> > >=20
-> >=20
-> > Yes I was thinking about doing it, but first thing is to change the way
-> > MIPS initialises it:
-> >=20
-> > struct kgdb_arch arch_kgdb_ops;
-> >=20
-> > int kgdb_arch_init(void)
-> > {
-> >  =A0=A0=A0=A0union mips_instruction insn =3D {
-> >  =A0=A0=A0=A0=A0=A0=A0 .r_format =3D {
-> >  =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 .opcode =3D spec_op,
-> >  =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 .func=A0=A0=A0 =3D break_op,
-> >  =A0=A0=A0=A0=A0=A0=A0 }
-> >  =A0=A0=A0=A0};
-> >  =A0=A0=A0=A0memcpy(arch_kgdb_ops.gdb_bpt_instr, insn.byte, BREAK_INSTR=
-_SIZE);
-> >=20
-> >=20
-> > Can this be done staticaly ?
 
-Something like this ought to do the trick:
+> -----Original Message-----
+> From: YueHaibing <yuehaibing@huawei.com>
+> Sent: Thursday, September 20, 2018 8:33 AM
+> To: davem@davemloft.net; dmitry.tarnyagin@lockless.no;
+> wg@grandegger.com; mkl@pengutronix.de; michal.simek@xilinx.com;
+> hsweeten@visionengravers.com; madalin.bucur@nxp.com;
+> pantelis.antoniou@gmail.com; claudiu.manoil@nxp.com; leoyang.li@nxp.com;
+> linux@armlinux.org.uk; sammy@sammy.net; ralf@linux-mips.org;
+> nico@fluxnic.net; steve.glendinning@shawell.net; f.fainelli@gmail.com;
+> grygorii.strashko@ti.com; w-kwok2@ti.com; m-karicheri2@ti.com;
+> t.sailer@alumni.ethz.ch; jreuter@yaina.de; KY Srinivasan <kys@microsoft.c=
+om>;
+> Haiyang Zhang <haiyangz@microsoft.com>; wei.liu2@citrix.com;
+> paul.durrant@citrix.com; arvid.brodin@alten.se; pshelar@ovn.org
+> Cc: linux-kernel@vger.kernel.org; netdev@vger.kernel.org; linux-
+> can@vger.kernel.org; linux-arm-kernel@lists.infradead.org; linuxppc-
+> dev@lists.ozlabs.org; linux-mips@linux-mips.org; linux-omap@vger.kernel.o=
+rg;
+> linux-hams@vger.kernel.org; devel@linuxdriverproject.org; linux-
+> usb@vger.kernel.org; xen-devel@lists.xenproject.org; dev@openvswitch.org;
+> YueHaibing <yuehaibing@huawei.com>
+> Subject: [PATCH net-next 17/22] hv_netvsc: fix return type of ndo_start_x=
+mit
+> function
+>=20
+> The method ndo_start_xmit() is defined as returning an 'netdev_tx_t', whi=
+ch is
+> a typedef for an enum type, so make sure the implementation in this drive=
+r has
+> returns 'netdev_tx_t' value, and change the function return type to netde=
+v_tx_t.
+>=20
+> Found by coccinelle.
+>=20
+> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+> ---
+>  drivers/net/hyperv/netvsc_drv.c | 10 +++++++---
+>  1 file changed, 7 insertions(+), 3 deletions(-)
+>=20
+> diff --git a/drivers/net/hyperv/netvsc_drv.c b/drivers/net/hyperv/netvsc_=
+drv.c
+> index 3af6d8d..056c472 100644
+> --- a/drivers/net/hyperv/netvsc_drv.c
+> +++ b/drivers/net/hyperv/netvsc_drv.c
+> @@ -511,7 +511,8 @@ static int netvsc_vf_xmit(struct net_device *net, str=
+uct
+> net_device *vf_netdev,
+>  	return rc;
+>  }
+>=20
+> -static int netvsc_start_xmit(struct sk_buff *skb, struct net_device *net=
+)
+> +static netdev_tx_t
+> +netvsc_start_xmit(struct sk_buff *skb, struct net_device *net)
+>  {
+>  	struct net_device_context *net_device_ctx =3D netdev_priv(net);
+>  	struct hv_netvsc_packet *packet =3D NULL; @@ -528,8 +529,11 @@
+> static int netvsc_start_xmit(struct sk_buff *skb, struct net_device *net)
+>  	 */
+>  	vf_netdev =3D rcu_dereference_bh(net_device_ctx->vf_netdev);
+>  	if (vf_netdev && netif_running(vf_netdev) &&
+> -	    !netpoll_tx_running(net))
+> -		return netvsc_vf_xmit(net, vf_netdev, skb);
+> +	    !netpoll_tx_running(net)) {
+> +		ret =3D netvsc_vf_xmit(net, vf_netdev, skb);
+> +		if (ret)
+> +			return NETDEV_TX_BUSY;
 
-diff --git a/arch/mips/kernel/kgdb.c b/arch/mips/kernel/kgdb.c
-index eb6c0d582626..31eff1bec577 100644
---- a/arch/mips/kernel/kgdb.c
-+++ b/arch/mips/kernel/kgdb.c
-@@ -394,18 +394,16 @@ int kgdb_arch_handle_exception(int vector, int signo,=
- int err_code,
- 	return -1;
- }
-=20
--struct kgdb_arch arch_kgdb_ops;
-+struct kgdb_arch arch_kgdb_ops =3D {
-+#ifdef CONFIG_CPU_BIG_ENDIAN
-+	.gdb_bpt_instr =3D { spec_op << 2, 0x00, 0x00, break_op },
-+#else
-+	.gdb_bpt_instr =3D { break_op, 0x00, 0x00, spec_op << 2 },
-+#endif
-+};
-=20
- int kgdb_arch_init(void)
- {
--	union mips_instruction insn =3D {
--		.r_format =3D {
--			.opcode =3D spec_op,
--			.func	=3D break_op,
--		}
--	};
--	memcpy(arch_kgdb_ops.gdb_bpt_instr, insn.byte, BREAK_INSTR_SIZE);
--
- 	register_die_notifier(&kgdb_notifier);
-=20
- 	return 0;
+For error case, please just return NETDEV_TX_OK. We are not sure if the=20
+error can go away after retrying, returning NETDEV_TX_BUSY may cause=20
+infinite retry from the upper layer.
 
 Thanks,
-    Paul
+- Haiyang
