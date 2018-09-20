@@ -2,11 +2,11 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42GJSm24JGzF3Md
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 00:07:03 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42GJTY68dfzDrJv
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 00:07:45 +1000 (AEST)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
 Subject: Re: Checkpatch bad Warning (Re: [PATCH] powerpc/kgdb: add
  kgdb_arch_set/remove_breakpoint())
-From: Christophe Leroy <christophe.leroy@c-s.fr>
 To: Michael Ellerman <mpe@ellerman.id.au>, Joe Perches <joe@perches.com>,
  Andy Whitcroft <apw@canonical.com>, paul.burton@mips.com,
  ralf@linux-mips.org, jhogan@kernel.org
@@ -17,8 +17,8 @@ References: <872199441fd43b05fc1c7d049098ef7c0e83f4c5.1537262646.git.christophe.
  <595c96f5adcccd7eab9dc95eb48618981af66d3c.camel@perches.com>
  <87worgia60.fsf@concordia.ellerman.id.au>
  <f9ad7501-4d07-ddc2-6236-a7eb61283378@c-s.fr>
-Message-ID: <d31bd0cb-b9da-6f1b-4f93-da71644668d6@c-s.fr>
-Date: Thu, 20 Sep 2018 01:23:55 +0000
+Message-ID: <32b61fef-8da3-9203-1115-78e69afc56d4@c-s.fr>
+Date: Thu, 20 Sep 2018 14:07:41 +0000
 MIME-Version: 1.0
 In-Reply-To: <f9ad7501-4d07-ddc2-6236-a7eb61283378@c-s.fr>
 Content-Type: text/plain; charset=utf-8; format=flowed
