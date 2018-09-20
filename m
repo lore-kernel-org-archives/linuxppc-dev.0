@@ -1,31 +1,34 @@
-Return-Path: <leitao@debian.org>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <mwb@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42GMzP1L9wzF3Mw
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42GMzS1JVxzF3NQ
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 02:45:20 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w8KGfUx7057569
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 12:45:17 -0400
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2mmf9m84sd-1
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w8KGdOFQ103173
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 12:45:19 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2mmd7u6c1u-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 12:45:16 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 12:45:19 -0400
 Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <leitao@debian.org>;
- Thu, 20 Sep 2018 10:45:16 -0600
-From: Breno Leitao <leitao@debian.org>
+ for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
+ Thu, 20 Sep 2018 10:45:18 -0600
+Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>, minkim@us.ibm.com,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: Breno Leitao <leitao@debian.org>
-Subject: [PATCH 3/3] selftests/powerpc: New PTRACE_SYSEMU test
-Date: Thu, 20 Sep 2018 13:45:07 -0300
-In-Reply-To: <1537461907-32003-1-git-send-email-leitao@debian.org>
-References: <1537461907-32003-1-git-send-email-leitao@debian.org>
-Message-Id: <1537461907-32003-3-git-send-email-leitao@debian.org>
+From: Michael Bringmann <mwb@linux.vnet.ibm.com>
+Subject: [PATCH v02] REPOST powerpc/migration: Handle unitialized timer reset
+Date: Thu, 20 Sep 2018 11:45:13 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Message-Id: <6a7769a5-c8bc-f857-61cc-a76cdd98b28c@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,281 +38,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds a new test for the new PTRACE_SYSEMU ptrace request.
+After migration of a powerpc LPAR, the kernel executes code to
+update the system state to reflect new platform characteristics.
+Such changes include modifications to device tree properties
+provided to the system by PHYP.  Property notifications received
+by the powerpc 'migration_store' code are passed along to the
+kernel in general through a call to 'of_update_property' which
+in turn passes such events back to all modules through entries like
+the '.notifier_call' function within the NUMA module.  When the
+NUMA module updates its state, it resets its event timer.  If this
+occurs after a previous call to 'stop_topology_update' or on a
+system without VPHN enabled, the code runs into an unitialized
+timer structure and crashes.  This patch adds a safety check
+along this path toward the problem code.
 
-This test also relies on PTRACE_GETREGS and PTRACE_SETREGS requests to
-run properly, since the trace instruction (gettid() syscall) is being
-modified at run-time (by PTRACE_SETREGS) and re-executed three times.
-PTRACE_GETREGS is being used to check that the registers are still
-sane.
+Note: This crash was observed on every LPM in the 4.17-rc7 kernel
+(and in the 4.18 kernel) of a system with dedicated CPUs enabled.
+An example crash log without the patch is as follows.
 
-This test basically creates a child process that executes syscalls
-and the parent process check if it is being traced appropriately.  The
-parent process guarantees that the SYSCALLs are being traced, with
-PTRACE_SYSEMU, and ptrace stops the child application before a syscall is
-executed. The way the tests validates it, is by guaranteeing that the
-system calls arguments, as argv[0] (r3) which is the same register that
-will have the syscall return value on powerpc, are not being corrupted on
-PTRACE_SYSEMU with a return value, i.e, it continues to have the current
-arguments instead, meaning that the registers where not clobbered.
+  [ 2571.437467] ibmvscsi 30000081: Re-enabling adapter!
+[ 2571.673850] ------------[ cut here ]------------
+[ 2571.673863] kernel BUG at kernel/time/timer.c:958!
+[ 2571.673875] Oops: Exception in kernel mode, sig: 5 [#1]
+[ 2571.673877] LE SMP NR_CPUS=2048 NUMA pSeries
+[ 2571.673886] Modules linked in: nfsv3 nfs_acl nfs tcp_diag udp_diag inet_diag lockd unix_diag af_packet_diag netlink_diag grace fscache sunrpc xts vmx_crypto pseries_rng sg binfmt_misc ip_tables xfs libcrc32c sd_mod ibmvscsi ibmveth scsi_transport_srp dm_mirror dm_region_hash dm_log dm_mod
+[ 2571.673969] CPU: 11 PID: 3067 Comm: drmgr Not tainted 4.17.0+ #179
+[ 2571.673972] NIP:  c000000000198a2c LR: c000000000075990 CTR: 0000000000000000
+[ 2571.673975] REGS: c0000003f9407560 TRAP: 0700   Not tainted  (4.17.0+)
+[ 2571.673977] MSR:  800000010282b033 <SF,VEC,VSX,EE,FP,ME,IR,DR,RI,LE,TM[E]>  CR: 44482824  XER: 00000000
+[ 2571.673990] CFAR: c00000000007598c SOFTE: 0
+[ 2571.673990] GPR00: c000000000075990 c0000003f94077e0 c00000000113a900 c0000000012e5968
+[ 2571.673990] GPR04: 000000010003776b c0000003ffa05180 0000000000000020 c0000003f9407850
+[ 2571.673990] GPR08: 0000000000000000 0000000000000001 ffffffffffffffff 0000000000000220
+[ 2571.673990] GPR12: c000000000076560 c00000001ec90200 0000000040000000 0000000000000018
+[ 2571.673990] GPR16: 0000000000000000 000000000000000d c0000003e9ea5015 0000000000000010
+[ 2571.673990] GPR20: 000000000000000b 0000000000000050 c0000003e9ea4068 0000000000000001
+[ 2571.673990] GPR24: 000000000000001c c0000003ffff3ab0 0000000000000000 c0000003f9407990
+[ 2571.673990] GPR28: 0000000000000005 c0000003ffff3ab0 000000010003776b c0000000012e5968
+[ 2571.674042] NIP [c000000000198a2c] mod_timer+0x4c/0x400
+[ 2571.674051] LR [c000000000075990] reset_topology_timer+0x40/0x60
+[ 2571.674053] Call Trace:
+[ 2571.674056] [c0000003f94077e0] [c0000003f9407830] 0xc0000003f9407830 (unreliable)
+[ 2571.674060] [c0000003f9407860] [c000000000075990] reset_topology_timer+0x40/0x60
+[ 2571.674063] [c0000003f9407880] [c000000000076660] dt_update_callback+0x100/0x120
+[ 2571.674072] [c0000003f94078d0] [c00000000012ada0] notifier_call_chain+0x90/0x100
+[ 2571.674077] [c0000003f9407920] [c00000000012b270] __blocking_notifier_call_chain+0x60/0x90
+[ 2571.674092] [c0000003f9407970] [c0000000007b9a60] of_property_notify+0x90/0xd0
+[ 2571.674096] [c0000003f94079d0] [c0000000007b4644] of_update_property+0x104/0x150
+[ 2571.674103] [c0000003f9407a30] [c0000000000c0ddc] update_dt_property+0xdc/0x1f0
+[ 2571.674106] [c0000003f9407a90] [c0000000000c11c0] pseries_devicetree_update+0x2d0/0x510
+[ 2571.674110] [c0000003f9407bc0] [c0000000000c147c] post_mobility_fixup+0x7c/0xf0
+[ 2571.674113] [c0000003f9407c30] [c0000000000c1594] migration_store+0xa4/0xc0
+[ 2571.674123] [c0000003f9407c70] [c000000000989940] kobj_attr_store+0x30/0x60
+[ 2571.674133] [c0000003f9407c90] [c00000000040b294] sysfs_kf_write+0x64/0xa0
+[ 2571.674136] [c0000003f9407cb0] [c00000000040a02c] kernfs_fop_write+0x16c/0x240
+[ 2571.674146] [c0000003f9407d00] [c00000000034eeb0] __vfs_write+0x40/0x200
+[ 2571.674149] [c0000003f9407d90] [c00000000034f288] vfs_write+0xc8/0x240
+[ 2571.674152] [c0000003f9407de0] [c00000000034f5bc] ksys_write+0x5c/0x100
+[ 2571.674158] [c0000003f9407e30] [c00000000000b284] system_call+0x58/0x6c
+[ 2571.674161] Instruction dump:
+[ 2571.674163] fb01ffc0 7c7f1b78 fb21ffc8 fb41ffd0 fb61ffd8 fb81ffe0 fba1ffe8 f8010010
+[ 2571.674168] f821ff81 e9230018 7d290074 7929d182 <0b090000> e9230008 2fa90000 419e0278
+[ 2571.674176] ---[ end trace 0c7939657d5522df ]---
 
-This test is basically the same test for x86 located at
-tools/testing/selftests/x86/ptrace_syscall.c, limited to test PTRACE_SYSEMU
-request, and ported to PowerPC.
-
-Signed-off-by: Breno Leitao <leitao@debian.org>
+Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 ---
- .../testing/selftests/powerpc/ptrace/Makefile |   2 +-
- .../selftests/powerpc/ptrace/ptrace-syscall.c | 228 ++++++++++++++++++
- 2 files changed, 229 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-syscall.c
+Changes in patch:
+  -- Revised patch description.
+---
+ arch/powerpc/mm/numa.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/tools/testing/selftests/powerpc/ptrace/Makefile b/tools/testing/selftests/powerpc/ptrace/Makefile
-index 28f5b781a553..1ee59978508d 100644
---- a/tools/testing/selftests/powerpc/ptrace/Makefile
-+++ b/tools/testing/selftests/powerpc/ptrace/Makefile
-@@ -2,7 +2,7 @@
- TEST_PROGS := ptrace-gpr ptrace-tm-gpr ptrace-tm-spd-gpr \
-               ptrace-tar ptrace-tm-tar ptrace-tm-spd-tar ptrace-vsx ptrace-tm-vsx \
-               ptrace-tm-spd-vsx ptrace-tm-spr ptrace-hwbreak ptrace-pkey core-pkey \
--              perf-hwbreak
-+              perf-hwbreak ptrace-syscall
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index 0c7e05d..a789d57 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -1457,7 +1457,8 @@ static void topology_timer_fn(struct timer_list *unused)
  
- include ../../lib.mk
+ static void reset_topology_timer(void)
+ {
+-	mod_timer(&topology_timer, jiffies + topology_timer_secs * HZ);
++	if (vphn_enabled)
++		mod_timer(&topology_timer, jiffies + topology_timer_secs * HZ);
+ }
  
-diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace-syscall.c b/tools/testing/selftests/powerpc/ptrace/ptrace-syscall.c
-new file mode 100644
-index 000000000000..3353210dcdbd
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/ptrace/ptrace-syscall.c
-@@ -0,0 +1,228 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * A ptrace test for testing PTRACE_SYSEMU, PTRACE_SETREGS and
-+ * PTRACE_GETREG.  This test basically create a child process that executes
-+ * syscalls and the parent process check if it is being traced appropriated.
-+ *
-+ * This test is heavily based on tools/testing/selftests/x86/ptrace_syscall.c
-+ * test, and it was adapted to run on Powerpc by
-+ * Breno Leitao <leitao@debian.org>
-+ */
-+#define _GNU_SOURCE
-+
-+#include <sys/ptrace.h>
-+#include <sys/types.h>
-+#include <sys/wait.h>
-+#include <sys/syscall.h>
-+#include <sys/user.h>
-+#include <unistd.h>
-+#include <errno.h>
-+#include <stddef.h>
-+#include <stdio.h>
-+#include <err.h>
-+#include <string.h>
-+#include <sys/auxv.h>
-+#include "utils.h"
-+
-+/* Bitness-agnostic defines for user_regs_struct fields. */
-+#define user_syscall_nr	gpr[0]
-+#define user_arg0		gpr[3]
-+#define user_arg1		gpr[4]
-+#define user_arg2		gpr[5]
-+#define user_arg3		gpr[6]
-+#define user_arg4		gpr[7]
-+#define user_arg5		gpr[8]
-+#define user_ip		nip
-+
-+#define PTRACE_SYSEMU		0x1d
-+
-+static int nerrs;
-+
-+static void wait_trap(pid_t chld)
-+{
-+	siginfo_t si;
-+
-+	if (waitid(P_PID, chld, &si, WEXITED|WSTOPPED) != 0)
-+		err(1, "waitid");
-+	if (si.si_pid != chld)
-+		errx(1, "got unexpected pid in event\n");
-+	if (si.si_code != CLD_TRAPPED)
-+		errx(1, "got unexpected event type %d\n", si.si_code);
-+}
-+
-+static void test_ptrace_syscall_restart(void)
-+{
-+	int status;
-+	struct pt_regs regs;
-+	pid_t chld;
-+
-+	printf("[RUN]\tptrace-induced syscall restart\n");
-+
-+	chld = fork();
-+	if (chld < 0)
-+		err(1, "fork");
-+
-+	/*
-+	 * Child process is running 4 syscalls after ptrace.
-+	 *
-+	 * 1) getpid()
-+	 * 2) gettid()
-+	 * 3) tgkill() -> Send SIGSTOP
-+	 * 4) gettid() -> Where the tests will happen essentially
-+	 */
-+	if (chld == 0) {
-+		if (ptrace(PTRACE_TRACEME, 0, 0, 0) != 0)
-+			err(1, "PTRACE_TRACEME");
-+
-+		pid_t pid = getpid(), tid = syscall(SYS_gettid);
-+
-+		printf("\tChild will make one syscall\n");
-+		syscall(SYS_tgkill, pid, tid, SIGSTOP);
-+
-+		syscall(SYS_gettid, 10, 11, 12, 13, 14, 15);
-+		_exit(0);
-+	}
-+	/* Parent process below */
-+
-+	/* Wait for SIGSTOP sent by tgkill above. */
-+	if (waitpid(chld, &status, 0) != chld || !WIFSTOPPED(status))
-+		err(1, "waitpid");
-+
-+	printf("[RUN]\tSYSEMU\n");
-+	if (ptrace(PTRACE_SYSEMU, chld, 0, 0) != 0)
-+		err(1, "PTRACE_SYSEMU");
-+	wait_trap(chld);
-+
-+	if (ptrace(PTRACE_GETREGS, chld, 0, &regs) != 0)
-+		err(1, "PTRACE_GETREGS");
-+
-+	/*
-+	 * Ptrace trapped prior to executing the syscall, thus r3 still has
-+	 * the syscall number instead of the sys_gettid() result
-+	 */
-+	if (regs.user_syscall_nr != SYS_gettid ||
-+	    regs.user_arg0 != 10 || regs.user_arg1 != 11 ||
-+	    regs.user_arg2 != 12 || regs.user_arg3 != 13 ||
-+	    regs.user_arg4 != 14 || regs.user_arg5 != 15) {
-+		printf("[FAIL]\tInitial args are wrong (nr=%lu, args=%lu %lu %lu %lu %lu %lu)\n",
-+			(unsigned long)regs.user_syscall_nr,
-+			(unsigned long)regs.user_arg0,
-+			(unsigned long)regs.user_arg1,
-+			(unsigned long)regs.user_arg2,
-+			(unsigned long)regs.user_arg3,
-+			(unsigned long)regs.user_arg4,
-+			(unsigned long)regs.user_arg5);
-+		 nerrs++;
-+	} else {
-+		printf("[OK]\tInitial nr and args are correct\n"); }
-+
-+	printf("[RUN]\tRestart the syscall (ip = 0x%lx)\n",
-+	       (unsigned long)regs.user_ip);
-+
-+	/*
-+	 * Rewind to retry the same syscall again. This will basically test
-+	 * the rewind process together with PTRACE_SETREGS and PTRACE_GETREGS.
-+	 */
-+	regs.user_ip -= 4;
-+	if (ptrace(PTRACE_SETREGS, chld, 0, &regs) != 0)
-+		err(1, "PTRACE_SETREGS");
-+
-+	if (ptrace(PTRACE_SYSEMU, chld, 0, 0) != 0)
-+		err(1, "PTRACE_SYSEMU");
-+	wait_trap(chld);
-+
-+	if (ptrace(PTRACE_GETREGS, chld, 0, &regs) != 0)
-+		err(1, "PTRACE_GETREGS");
-+
-+	if (regs.user_syscall_nr != SYS_gettid ||
-+	    regs.user_arg0 != 10 || regs.user_arg1 != 11 ||
-+	    regs.user_arg2 != 12 || regs.user_arg3 != 13 ||
-+	    regs.user_arg4 != 14 || regs.user_arg5 != 15) {
-+		printf("[FAIL]\tRestart nr or args are wrong (nr=%lu, args=%lu %lu %lu %lu %lu %lu)\n",
-+			(unsigned long)regs.user_syscall_nr,
-+			(unsigned long)regs.user_arg0,
-+			(unsigned long)regs.user_arg1,
-+			(unsigned long)regs.user_arg2,
-+			(unsigned long)regs.user_arg3,
-+			(unsigned long)regs.user_arg4,
-+			(unsigned long)regs.user_arg5);
-+		nerrs++;
-+	} else {
-+		printf("[OK]\tRestarted nr and args are correct\n");
-+	}
-+
-+	printf("[RUN]\tChange nr and args and restart the syscall (ip = 0x%lx)\n",
-+	       (unsigned long)regs.user_ip);
-+
-+	/*
-+	 * Inject a new syscall (getpid) in the same place the previous
-+	 * syscall (gettid), rewind and re-execute.
-+	 */
-+	regs.user_syscall_nr = SYS_getpid;
-+	regs.user_arg0 = 20;
-+	regs.user_arg1 = 21;
-+	regs.user_arg2 = 22;
-+	regs.user_arg3 = 23;
-+	regs.user_arg4 = 24;
-+	regs.user_arg5 = 25;
-+	regs.user_ip -= 4;
-+
-+	if (ptrace(PTRACE_SETREGS, chld, 0, &regs) != 0)
-+		err(1, "PTRACE_SETREGS");
-+
-+	if (ptrace(PTRACE_SYSEMU, chld, 0, 0) != 0)
-+		err(1, "PTRACE_SYSEMU");
-+	wait_trap(chld);
-+
-+	if (ptrace(PTRACE_GETREGS, chld, 0, &regs) != 0)
-+		err(1, "PTRACE_GETREGS");
-+
-+	/* Check that ptrace stopped at the new syscall that was
-+	 * injected, and guarantee that it haven't executed, i.e, user_args
-+	 * contain the arguments and not the syscall return value, for
-+	 * instance.
-+	 */
-+	if (regs.user_syscall_nr != SYS_getpid
-+		|| regs.user_arg0 != 20 || regs.user_arg1 != 21
-+		|| regs.user_arg2 != 22 || regs.user_arg3 != 23
-+		|| regs.user_arg4 != 24 || regs.user_arg5 != 25) {
-+
-+		printf("[FAIL]\tRestart nr or args are wrong (nr=%lu, args=%lu %lu %lu %lu %lu %lu)\n",
-+			(unsigned long)regs.user_syscall_nr,
-+			(unsigned long)regs.user_arg0,
-+			(unsigned long)regs.user_arg1,
-+			(unsigned long)regs.user_arg2,
-+			(unsigned long)regs.user_arg3,
-+			(unsigned long)regs.user_arg4,
-+			(unsigned long)regs.user_arg5);
-+		nerrs++;
-+	} else {
-+		printf("[OK]\tReplacement nr and args are correct\n");
-+	}
-+
-+	if (ptrace(PTRACE_CONT, chld, 0, 0) != 0)
-+		err(1, "PTRACE_CONT");
-+
-+	if (waitpid(chld, &status, 0) != chld)
-+		err(1, "waitpid");
-+
-+	/* Guarantee that the process executed properly, returning 0 */
-+	if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
-+		printf("[FAIL]\tChild failed\n");
-+		nerrs++;
-+	} else {
-+		printf("[OK]\tChild exited cleanly\n");
-+	}
-+}
-+
-+int ptrace_syscall(void)
-+{
-+	test_ptrace_syscall_restart();
-+
-+	return nerrs;
-+}
-+
-+int main(void)
-+{
-+	return test_harness(ptrace_syscall, "ptrace_syscall");
-+}
--- 
-2.19.0
+ #ifdef CONFIG_SMP
