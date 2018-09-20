@@ -2,8 +2,8 @@ Return-Path: <yuehaibing@huawei.com>
 Received: from huawei.com (szxga04-in.huawei.com [45.249.212.190])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42GGkT2bdhzF3Kn
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 22:48:49 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42GGkX6N02zF3Jd
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 22:48:51 +1000 (AEST)
 From: YueHaibing <yuehaibing@huawei.com>
 To: <davem@davemloft.net>, <dmitry.tarnyagin@lockless.no>,
  <wg@grandegger.com>, <mkl@pengutronix.de>, <michal.simek@xilinx.com>,
@@ -22,10 +22,10 @@ CC: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
  <devel@linuxdriverproject.org>, <linux-usb@vger.kernel.org>,
  <xen-devel@lists.xenproject.org>, <dev@openvswitch.org>, YueHaibing
  <yuehaibing@huawei.com>
-Subject: [PATCH net-next 15/22] net: hamradio: fix return type of
+Subject: [PATCH net-next 16/22] usbnet: ipheth: fix return type of
  ndo_start_xmit function
-Date: Thu, 20 Sep 2018 20:32:59 +0800
-Message-ID: <20180920123306.14772-16-yuehaibing@huawei.com>
+Date: Thu, 20 Sep 2018 20:33:00 +0800
+Message-ID: <20180920123306.14772-17-yuehaibing@huawei.com>
 In-Reply-To: <20180920123306.14772-1-yuehaibing@huawei.com>
 References: <20180920123306.14772-1-yuehaibing@huawei.com>
 MIME-Version: 1.0
@@ -48,45 +48,21 @@ Found by coccinelle.
 
 Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 ---
- drivers/net/hamradio/baycom_epp.c | 3 ++-
- drivers/net/hamradio/dmascc.c     | 4 ++--
- 2 files changed, 4 insertions(+), 3 deletions(-)
+ drivers/net/usb/ipheth.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/hamradio/baycom_epp.c b/drivers/net/hamradio/baycom_epp.c
-index 1e62d00..f4ceccf 100644
---- a/drivers/net/hamradio/baycom_epp.c
-+++ b/drivers/net/hamradio/baycom_epp.c
-@@ -772,7 +772,8 @@ static void epp_bh(struct work_struct *work)
-  * ===================== network driver interface =========================
-  */
- 
--static int baycom_send_packet(struct sk_buff *skb, struct net_device *dev)
-+static netdev_tx_t
-+baycom_send_packet(struct sk_buff *skb, struct net_device *dev)
- {
- 	struct baycom_state *bc = netdev_priv(dev);
- 
-diff --git a/drivers/net/hamradio/dmascc.c b/drivers/net/hamradio/dmascc.c
-index cde4120..2798870 100644
---- a/drivers/net/hamradio/dmascc.c
-+++ b/drivers/net/hamradio/dmascc.c
-@@ -239,7 +239,7 @@ struct scc_info {
- static int scc_open(struct net_device *dev);
- static int scc_close(struct net_device *dev);
- static int scc_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd);
--static int scc_send_packet(struct sk_buff *skb, struct net_device *dev);
-+static netdev_tx_t scc_send_packet(struct sk_buff *skb, struct net_device *dev);
- static int scc_set_mac_address(struct net_device *dev, void *sa);
- 
- static inline void tx_on(struct scc_priv *priv);
-@@ -921,7 +921,7 @@ static int scc_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
+diff --git a/drivers/net/usb/ipheth.c b/drivers/net/usb/ipheth.c
+index 7275761..53eab6fb 100644
+--- a/drivers/net/usb/ipheth.c
++++ b/drivers/net/usb/ipheth.c
+@@ -413,7 +413,7 @@ static int ipheth_close(struct net_device *net)
+ 	return 0;
  }
  
- 
--static int scc_send_packet(struct sk_buff *skb, struct net_device *dev)
-+static netdev_tx_t scc_send_packet(struct sk_buff *skb, struct net_device *dev)
+-static int ipheth_tx(struct sk_buff *skb, struct net_device *net)
++static netdev_tx_t ipheth_tx(struct sk_buff *skb, struct net_device *net)
  {
- 	struct scc_priv *priv = dev->ml_priv;
- 	unsigned long flags;
+ 	struct ipheth_device *dev = netdev_priv(net);
+ 	struct usb_device *udev = dev->udev;
 -- 
 1.8.3.1
