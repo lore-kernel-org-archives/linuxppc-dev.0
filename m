@@ -1,21 +1,29 @@
-Return-Path: <yuehaibing@huawei.com>
-Received: from huawei.com (szxga04-in.huawei.com [45.249.212.190])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <joe@perches.com>
+Received: from smtprelay.hostedemail.com (smtprelay0011.hostedemail.com
+ [216.40.44.11])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42G0672npSzF0R8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 11:49:51 +1000 (AEST)
-From: YueHaibing <yuehaibing@huawei.com>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby
- <jslaby@suse.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, "Paul
- Mackerras" <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-CC: YueHaibing <yuehaibing@huawei.com>, <linux-serial@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, <kernel-janitors@vger.kernel.org>,
- <linux-kernel@vger.kernel.org>
-Subject: [PATCH -next] tty: serial: remove set but not used variable 'error'
-Date: Thu, 20 Sep 2018 01:59:16 +0000
-Message-ID: <1537408756-196431-1-git-send-email-yuehaibing@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42G1rp5xH0zF0dq
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 13:08:25 +1000 (AEST)
+Received: from smtprelay.hostedemail.com (10.5.19.251.rfc1918.com
+ [10.5.19.251])
+ by smtpgrave07.hostedemail.com (Postfix) with ESMTP id 775CB180301B6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 03:02:19 +0000 (UTC)
+Message-ID: <595c96f5adcccd7eab9dc95eb48618981af66d3c.camel@perches.com>
+Subject: Re: Checkpatch bad Warning (Re: [PATCH] powerpc/kgdb: add
+ kgdb_arch_set/remove_breakpoint())
+From: Joe Perches <joe@perches.com>
+To: Christophe Leroy <christophe.leroy@c-s.fr>, Andy Whitcroft
+ <apw@canonical.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Date: Wed, 19 Sep 2018 20:02:05 -0700
+In-Reply-To: <2f5f572a-a28c-9d17-844b-9e1961febf64@c-s.fr>
+References: <872199441fd43b05fc1c7d049098ef7c0e83f4c5.1537262646.git.christophe.leroy@c-s.fr>
+ <2f5f572a-a28c-9d17-844b-9e1961febf64@c-s.fr>
 Content-Type: text/plain; charset="ISO-8859-1"
-MIME-Version: 1.0
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,43 +33,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Fixes gcc '-Wunused-but-set-variable' warning:
+On Tue, 2018-09-18 at 09:33 +0000, Christophe Leroy wrote:
+> On the below patch, checkpatch reports
+> 
+> WARNING: struct kgdb_arch should normally be const
+> #127: FILE: arch/powerpc/kernel/kgdb.c:480:
+> +struct kgdb_arch arch_kgdb_ops;
+> 
+> But when I add 'const', I get compilation failure
 
-drivers/tty/serial/pmac_zilog.c: In function 'pmz_receive_chars':
-drivers/tty/serial/pmac_zilog.c:222:30: warning:
- variable 'error' set but not used [-Wunused-but-set-variable]
+So don't add const.
 
-Signed-off-by: YueHaibing <yuehaibing@huawei.com>
----
- drivers/tty/serial/pmac_zilog.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+checkpatch is stupid.  You are not.
 
-diff --git a/drivers/tty/serial/pmac_zilog.c b/drivers/tty/serial/pmac_zilog.c
-index a4ec22d..a9d4098 100644
---- a/drivers/tty/serial/pmac_zilog.c
-+++ b/drivers/tty/serial/pmac_zilog.c
-@@ -219,7 +219,7 @@ static void pmz_interrupt_control(struct uart_pmac_port *uap, int enable)
- static bool pmz_receive_chars(struct uart_pmac_port *uap)
- {
- 	struct tty_port *port;
--	unsigned char ch, r1, drop, error, flag;
-+	unsigned char ch, r1, drop, flag;
- 	int loops = 0;
- 
- 	/* Sanity check, make sure the old bug is no longer happening */
-@@ -231,7 +231,6 @@ static bool pmz_receive_chars(struct uart_pmac_port *uap)
- 	port = &uap->port.state->port;
- 
- 	while (1) {
--		error = 0;
- 		drop = 0;
- 
- 		r1 = read_zsreg(uap, R1);
-@@ -273,7 +272,6 @@ static bool pmz_receive_chars(struct uart_pmac_port *uap)
- 		uap->port.icount.rx++;
- 
- 		if (r1 & (PAR_ERR | Rx_OVR | CRC_ERR | BRK_ABRT)) {
--			error = 1;
- 			if (r1 & BRK_ABRT) {
- 				pmz_debug("pmz: got break !\n");
- 				r1 &= ~(PAR_ERR | CRC_ERR);
+_Always_ take checkpatch bleats with very
+large grains of salt.
+
+Perhaps send a patch to remove kgbd_arch
+from scripts/const_structs.checkpatch as
+it seems not ever to be const.
