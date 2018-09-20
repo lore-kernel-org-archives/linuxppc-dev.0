@@ -1,50 +1,52 @@
 Return-Path: <haiyangz@microsoft.com>
-Received: from NAM02-CY1-obe.outbound.protection.outlook.com
- (mail-cys01nam02on0095.outbound.protection.outlook.com [104.47.37.95])
+Received: from NAM01-BN3-obe.outbound.protection.outlook.com
+ (mail-bn3nam01on0106.outbound.protection.outlook.com [104.47.33.106])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42GKCM5t8gzF3LZ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 00:40:27 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42GKQs5Tx5zF3MH
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 00:50:28 +1000 (AEST)
 From: Haiyang Zhang <haiyangz@microsoft.com>
-To: YueHaibing <yuehaibing@huawei.com>, "davem@davemloft.net"
- <davem@davemloft.net>, "dmitry.tarnyagin@lockless.no"
- <dmitry.tarnyagin@lockless.no>, "wg@grandegger.com" <wg@grandegger.com>,
- "mkl@pengutronix.de" <mkl@pengutronix.de>, "michal.simek@xilinx.com"
- <michal.simek@xilinx.com>, "hsweeten@visionengravers.com"
- <hsweeten@visionengravers.com>, "madalin.bucur@nxp.com"
- <madalin.bucur@nxp.com>, "pantelis.antoniou@gmail.com"
- <pantelis.antoniou@gmail.com>, "claudiu.manoil@nxp.com"
- <claudiu.manoil@nxp.com>, "leoyang.li@nxp.com" <leoyang.li@nxp.com>,
- "linux@armlinux.org.uk" <linux@armlinux.org.uk>, "sammy@sammy.net"
- <sammy@sammy.net>, "ralf@linux-mips.org" <ralf@linux-mips.org>,
- "nico@fluxnic.net" <nico@fluxnic.net>, "steve.glendinning@shawell.net"
- <steve.glendinning@shawell.net>, "f.fainelli@gmail.com"
- <f.fainelli@gmail.com>, "grygorii.strashko@ti.com"
+To: Stephen Hemminger <stephen@networkplumber.org>, YueHaibing
+ <yuehaibing@huawei.com>
+CC: "davem@davemloft.net" <davem@davemloft.net>,
+ "dmitry.tarnyagin@lockless.no" <dmitry.tarnyagin@lockless.no>,
+ "wg@grandegger.com" <wg@grandegger.com>, "mkl@pengutronix.de"
+ <mkl@pengutronix.de>, "michal.simek@xilinx.com" <michal.simek@xilinx.com>,
+ "hsweeten@visionengravers.com" <hsweeten@visionengravers.com>,
+ "madalin.bucur@nxp.com" <madalin.bucur@nxp.com>,
+ "pantelis.antoniou@gmail.com" <pantelis.antoniou@gmail.com>,
+ "claudiu.manoil@nxp.com" <claudiu.manoil@nxp.com>, "leoyang.li@nxp.com"
+ <leoyang.li@nxp.com>, "linux@armlinux.org.uk" <linux@armlinux.org.uk>,
+ "sammy@sammy.net" <sammy@sammy.net>, "ralf@linux-mips.org"
+ <ralf@linux-mips.org>, "nico@fluxnic.net" <nico@fluxnic.net>,
+ "steve.glendinning@shawell.net" <steve.glendinning@shawell.net>,
+ "f.fainelli@gmail.com" <f.fainelli@gmail.com>, "grygorii.strashko@ti.com"
  <grygorii.strashko@ti.com>, "w-kwok2@ti.com" <w-kwok2@ti.com>,
  "m-karicheri2@ti.com" <m-karicheri2@ti.com>, "t.sailer@alumni.ethz.ch"
  <t.sailer@alumni.ethz.ch>, "jreuter@yaina.de" <jreuter@yaina.de>, KY
  Srinivasan <kys@microsoft.com>, "wei.liu2@citrix.com" <wei.liu2@citrix.com>,
  "paul.durrant@citrix.com" <paul.durrant@citrix.com>, "arvid.brodin@alten.se"
- <arvid.brodin@alten.se>, "pshelar@ovn.org" <pshelar@ovn.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linux-can@vger.kernel.org" <linux-can@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "linux-mips@linux-mips.org"
- <linux-mips@linux-mips.org>, "linux-omap@vger.kernel.org"
- <linux-omap@vger.kernel.org>, "linux-hams@vger.kernel.org"
- <linux-hams@vger.kernel.org>, "devel@linuxdriverproject.org"
- <devel@linuxdriverproject.org>, "linux-usb@vger.kernel.org"
- <linux-usb@vger.kernel.org>, "xen-devel@lists.xenproject.org"
- <xen-devel@lists.xenproject.org>, "dev@openvswitch.org" <dev@openvswitch.org>
+ <arvid.brodin@alten.se>, "pshelar@ovn.org" <pshelar@ovn.org>,
+ "dev@openvswitch.org" <dev@openvswitch.org>, "linux-mips@linux-mips.org"
+ <linux-mips@linux-mips.org>, "xen-devel@lists.xenproject.org"
+ <xen-devel@lists.xenproject.org>, "netdev@vger.kernel.org"
+ <netdev@vger.kernel.org>, "linux-usb@vger.kernel.org"
+ <linux-usb@vger.kernel.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "linux-can@vger.kernel.org"
+ <linux-can@vger.kernel.org>, "devel@linuxdriverproject.org"
+ <devel@linuxdriverproject.org>, "linux-hams@vger.kernel.org"
+ <linux-hams@vger.kernel.org>, "linux-omap@vger.kernel.org"
+ <linux-omap@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>
 Subject: RE: [PATCH net-next 17/22] hv_netvsc: fix return type of
  ndo_start_xmit function
-Date: Thu, 20 Sep 2018 14:40:20 +0000
-Message-ID: <BN6PR21MB016115A6ACD7D2685DC0070DCA130@BN6PR21MB0161.namprd21.prod.outlook.com>
+Date: Thu, 20 Sep 2018 14:50:23 +0000
+Message-ID: <BN6PR21MB016180C794F26A279345A17FCA130@BN6PR21MB0161.namprd21.prod.outlook.com>
 References: <20180920123306.14772-1-yuehaibing@huawei.com>
  <20180920123306.14772-18-yuehaibing@huawei.com>
-In-Reply-To: <20180920123306.14772-18-yuehaibing@huawei.com>
+ <20180920074341.3acef75c@xeon-e3>
+In-Reply-To: <20180920074341.3acef75c@xeon-e3>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -59,9 +61,10 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 > -----Original Message-----
-> From: YueHaibing <yuehaibing@huawei.com>
-> Sent: Thursday, September 20, 2018 8:33 AM
-> To: davem@davemloft.net; dmitry.tarnyagin@lockless.no;
+> From: Stephen Hemminger <stephen@networkplumber.org>
+> Sent: Thursday, September 20, 2018 10:44 AM
+> To: YueHaibing <yuehaibing@huawei.com>
+> Cc: davem@davemloft.net; dmitry.tarnyagin@lockless.no;
 > wg@grandegger.com; mkl@pengutronix.de; michal.simek@xilinx.com;
 > hsweeten@visionengravers.com; madalin.bucur@nxp.com;
 > pantelis.antoniou@gmail.com; claudiu.manoil@nxp.com; leoyang.li@nxp.com;
@@ -71,64 +74,44 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 > t.sailer@alumni.ethz.ch; jreuter@yaina.de; KY Srinivasan <kys@microsoft.c=
 om>;
 > Haiyang Zhang <haiyangz@microsoft.com>; wei.liu2@citrix.com;
-> paul.durrant@citrix.com; arvid.brodin@alten.se; pshelar@ovn.org
-> Cc: linux-kernel@vger.kernel.org; netdev@vger.kernel.org; linux-
-> can@vger.kernel.org; linux-arm-kernel@lists.infradead.org; linuxppc-
-> dev@lists.ozlabs.org; linux-mips@linux-mips.org; linux-omap@vger.kernel.o=
-rg;
-> linux-hams@vger.kernel.org; devel@linuxdriverproject.org; linux-
-> usb@vger.kernel.org; xen-devel@lists.xenproject.org; dev@openvswitch.org;
-> YueHaibing <yuehaibing@huawei.com>
-> Subject: [PATCH net-next 17/22] hv_netvsc: fix return type of ndo_start_x=
-mit
-> function
+> paul.durrant@citrix.com; arvid.brodin@alten.se; pshelar@ovn.org;
+> dev@openvswitch.org; linux-mips@linux-mips.org; xen-
+> devel@lists.xenproject.org; netdev@vger.kernel.org; linux-usb@vger.kernel=
+.org;
+> linux-kernel@vger.kernel.org; linux-can@vger.kernel.org;
+> devel@linuxdriverproject.org; linux-hams@vger.kernel.org; linux-
+> omap@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; linux-arm-
+> kernel@lists.infradead.org
+> Subject: Re: [PATCH net-next 17/22] hv_netvsc: fix return type of
+> ndo_start_xmit function
 >=20
-> The method ndo_start_xmit() is defined as returning an 'netdev_tx_t', whi=
-ch is
-> a typedef for an enum type, so make sure the implementation in this drive=
-r has
-> returns 'netdev_tx_t' value, and change the function return type to netde=
-v_tx_t.
+> On Thu, 20 Sep 2018 20:33:01 +0800
+> YueHaibing <yuehaibing@huawei.com> wrote:
+> > int netvsc_start_xmit(struct sk_buff *skb, struct net_device *net)
+> >  	 */
+> >  	vf_netdev =3D rcu_dereference_bh(net_device_ctx->vf_netdev);
+> >  	if (vf_netdev && netif_running(vf_netdev) &&
+> > -	    !netpoll_tx_running(net))
+> > -		return netvsc_vf_xmit(net, vf_netdev, skb);
+> > +	    !netpoll_tx_running(net)) {
+> > +		ret =3D netvsc_vf_xmit(net, vf_netdev, skb);
+> > +		if (ret)
+> > +			return NETDEV_TX_BUSY;
+> > +	}
 >=20
-> Found by coccinelle.
->=20
-> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
-> ---
->  drivers/net/hyperv/netvsc_drv.c | 10 +++++++---
->  1 file changed, 7 insertions(+), 3 deletions(-)
->=20
-> diff --git a/drivers/net/hyperv/netvsc_drv.c b/drivers/net/hyperv/netvsc_=
-drv.c
-> index 3af6d8d..056c472 100644
-> --- a/drivers/net/hyperv/netvsc_drv.c
-> +++ b/drivers/net/hyperv/netvsc_drv.c
-> @@ -511,7 +511,8 @@ static int netvsc_vf_xmit(struct net_device *net, str=
-uct
-> net_device *vf_netdev,
->  	return rc;
->  }
->=20
-> -static int netvsc_start_xmit(struct sk_buff *skb, struct net_device *net=
-)
-> +static netdev_tx_t
-> +netvsc_start_xmit(struct sk_buff *skb, struct net_device *net)
->  {
->  	struct net_device_context *net_device_ctx =3D netdev_priv(net);
->  	struct hv_netvsc_packet *packet =3D NULL; @@ -528,8 +529,11 @@
-> static int netvsc_start_xmit(struct sk_buff *skb, struct net_device *net)
->  	 */
->  	vf_netdev =3D rcu_dereference_bh(net_device_ctx->vf_netdev);
->  	if (vf_netdev && netif_running(vf_netdev) &&
-> -	    !netpoll_tx_running(net))
-> -		return netvsc_vf_xmit(net, vf_netdev, skb);
-> +	    !netpoll_tx_running(net)) {
-> +		ret =3D netvsc_vf_xmit(net, vf_netdev, skb);
-> +		if (ret)
-> +			return NETDEV_TX_BUSY;
+> Sorry, the new code is wrong. It will fall through if ret =3D=3D 0 (NETDE=
+V_TX_OK)
+> Please review and test your patches.
 
-For error case, please just return NETDEV_TX_OK. We are not sure if the=20
-error can go away after retrying, returning NETDEV_TX_BUSY may cause=20
-infinite retry from the upper layer.
+Plus consideration of -- For error case, please just return NETDEV_TX_OK. W=
+e=20
+are not sure if the error can go away after retrying, returning NETDEV_TX_B=
+USY=20
+may cause infinite retry from the upper layer.
+
+So, let's just always return NETDEV_TX_OK like this:
+		netvsc_vf_xmit(net, vf_netdev, skb);
+		return NETDEV_TX_OK;
 
 Thanks,
 - Haiyang
