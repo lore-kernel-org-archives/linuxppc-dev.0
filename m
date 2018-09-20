@@ -1,26 +1,21 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <yuehaibing@huawei.com>
+Received: from huawei.com (szxga04-in.huawei.com [45.249.212.190])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42FxXn08F4zDrcY
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 09:54:17 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe LEROY <christophe.leroy@c-s.fr>,
- Peter Zijlstra <peterz@infradead.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@redhat.com>,
- segher@kernel.crashing.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 1/2] sched: move stack_canary field at the top of
- task_struct
-In-Reply-To: <f6a36d25-ce19-5d56-69d9-198215a7b9e1@c-s.fr>
-References: <d60ce7dd74704b0ca0a857186f30de4006b63534.1537355312.git.christophe.leroy@c-s.fr>
- <20180919115836.GE24124@hirez.programming.kicks-ass.net>
- <f6a36d25-ce19-5d56-69d9-198215a7b9e1@c-s.fr>
-Date: Thu, 20 Sep 2018 09:54:16 +1000
-Message-ID: <875zz1avrr.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42G0672npSzF0R8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 11:49:51 +1000 (AEST)
+From: YueHaibing <yuehaibing@huawei.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby
+ <jslaby@suse.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, "Paul
+ Mackerras" <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+CC: YueHaibing <yuehaibing@huawei.com>, <linux-serial@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>, <kernel-janitors@vger.kernel.org>,
+ <linux-kernel@vger.kernel.org>
+Subject: [PATCH -next] tty: serial: remove set but not used variable 'error'
+Date: Thu, 20 Sep 2018 01:59:16 +0000
+Message-ID: <1537408756-196431-1-git-send-email-yuehaibing@huawei.com>
+Content-Type: text/plain; charset="ISO-8859-1"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,31 +25,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Christophe LEROY <christophe.leroy@c-s.fr> writes:
-> Le 19/09/2018 =C3=A0 13:58, Peter Zijlstra a =C3=A9crit=C2=A0:
->> On Wed, Sep 19, 2018 at 11:14:43AM +0000, Christophe Leroy wrote:
->>> In order to allow the use of non global stack protector canary,
->>> the stack canary needs to be located at a know offset defined
->>> in Makefile via -mstack-protector-guard-offset.
->>>
->>> On powerpc/32, register r2 points to current task_struct at
->>> all time, the stack_canary located inside task_struct can be
->>> used directly if it is located in a known place.
->>>
->>> In order to allow that, this patch moves the stack_canary field
->>> out of the randomized area of task_struct.
->>=20
->> And you cannot use something like asm-offsets to extract this?
->
-> I have not been able to find a way to define the compilation flags AFTER=
-=20
-> building asm-offsets.h, see https://patchwork.ozlabs.org/patch/971521/
->
-> If you have a suggestion, it is welcomed.
+Fixes gcc '-Wunused-but-set-variable' warning:
 
-Hmm, that's something of a hard problem.
+drivers/tty/serial/pmac_zilog.c: In function 'pmz_receive_chars':
+drivers/tty/serial/pmac_zilog.c:222:30: warning:
+ variable 'error' set but not used [-Wunused-but-set-variable]
 
-But the stack canary is one of the things we really *do* want to be
-randomised, so we should probably try to come up with a solution.
+Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+---
+ drivers/tty/serial/pmac_zilog.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-cheers
+diff --git a/drivers/tty/serial/pmac_zilog.c b/drivers/tty/serial/pmac_zilog.c
+index a4ec22d..a9d4098 100644
+--- a/drivers/tty/serial/pmac_zilog.c
++++ b/drivers/tty/serial/pmac_zilog.c
+@@ -219,7 +219,7 @@ static void pmz_interrupt_control(struct uart_pmac_port *uap, int enable)
+ static bool pmz_receive_chars(struct uart_pmac_port *uap)
+ {
+ 	struct tty_port *port;
+-	unsigned char ch, r1, drop, error, flag;
++	unsigned char ch, r1, drop, flag;
+ 	int loops = 0;
+ 
+ 	/* Sanity check, make sure the old bug is no longer happening */
+@@ -231,7 +231,6 @@ static bool pmz_receive_chars(struct uart_pmac_port *uap)
+ 	port = &uap->port.state->port;
+ 
+ 	while (1) {
+-		error = 0;
+ 		drop = 0;
+ 
+ 		r1 = read_zsreg(uap, R1);
+@@ -273,7 +272,6 @@ static bool pmz_receive_chars(struct uart_pmac_port *uap)
+ 		uap->port.icount.rx++;
+ 
+ 		if (r1 & (PAR_ERR | Rx_OVR | CRC_ERR | BRK_ABRT)) {
+-			error = 1;
+ 			if (r1 & BRK_ABRT) {
+ 				pmz_debug("pmz: got break !\n");
+ 				r1 &= ~(PAR_ERR | CRC_ERR);
