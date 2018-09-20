@@ -2,8 +2,8 @@ Return-Path: <yuehaibing@huawei.com>
 Received: from huawei.com (szxga04-in.huawei.com [45.249.212.190])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42GGkJ5S55zF3KZ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 22:48:40 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42GGkL4Ch9zF3KZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 22:48:41 +1000 (AEST)
 From: YueHaibing <yuehaibing@huawei.com>
 To: <davem@davemloft.net>, <dmitry.tarnyagin@lockless.no>,
  <wg@grandegger.com>, <mkl@pengutronix.de>, <michal.simek@xilinx.com>,
@@ -22,10 +22,10 @@ CC: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
  <devel@linuxdriverproject.org>, <linux-usb@vger.kernel.org>,
  <xen-devel@lists.xenproject.org>, <dev@openvswitch.org>, YueHaibing
  <yuehaibing@huawei.com>
-Subject: [PATCH net-next 12/22] net: ovs: fix return type of ndo_start_xmit
- function
-Date: Thu, 20 Sep 2018 20:32:56 +0800
-Message-ID: <20180920123306.14772-13-yuehaibing@huawei.com>
+Subject: [PATCH net-next 13/22] net: xen-netback: fix return type of
+ ndo_start_xmit function
+Date: Thu, 20 Sep 2018 20:32:57 +0800
+Message-ID: <20180920123306.14772-14-yuehaibing@huawei.com>
 In-Reply-To: <20180920123306.14772-1-yuehaibing@huawei.com>
 References: <20180920123306.14772-1-yuehaibing@huawei.com>
 MIME-Version: 1.0
@@ -48,31 +48,22 @@ Found by coccinelle.
 
 Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 ---
- net/openvswitch/vport-internal_dev.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/net/xen-netback/interface.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/net/openvswitch/vport-internal_dev.c b/net/openvswitch/vport-internal_dev.c
-index bb95c43..26f71cb 100644
---- a/net/openvswitch/vport-internal_dev.c
-+++ b/net/openvswitch/vport-internal_dev.c
-@@ -43,7 +43,8 @@ static struct internal_dev *internal_dev_priv(struct net_device *netdev)
+diff --git a/drivers/net/xen-netback/interface.c b/drivers/net/xen-netback/interface.c
+index 92274c2..7e3ea39 100644
+--- a/drivers/net/xen-netback/interface.c
++++ b/drivers/net/xen-netback/interface.c
+@@ -165,7 +165,8 @@ static u16 xenvif_select_queue(struct net_device *dev, struct sk_buff *skb,
+ 	return vif->hash.mapping[skb_get_hash_raw(skb) % size];
  }
  
- /* Called with rcu_read_lock_bh. */
--static int internal_dev_xmit(struct sk_buff *skb, struct net_device *netdev)
+-static int xenvif_start_xmit(struct sk_buff *skb, struct net_device *dev)
 +static netdev_tx_t
-+internal_dev_xmit(struct sk_buff *skb, struct net_device *netdev)
++xenvif_start_xmit(struct sk_buff *skb, struct net_device *dev)
  {
- 	int len, err;
- 
-@@ -62,7 +63,7 @@ static int internal_dev_xmit(struct sk_buff *skb, struct net_device *netdev)
- 	} else {
- 		netdev->stats.tx_errors++;
- 	}
--	return 0;
-+	return NETDEV_TX_OK;
- }
- 
- static int internal_dev_open(struct net_device *netdev)
+ 	struct xenvif *vif = netdev_priv(dev);
+ 	struct xenvif_queue *queue = NULL;
 -- 
 1.8.3.1
