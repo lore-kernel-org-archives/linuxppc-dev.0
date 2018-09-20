@@ -1,32 +1,23 @@
-Return-Path: <bauerman@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42G3tL4CnWzF3RH
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 14:39:54 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w8K4dbDS086755
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 00:39:52 -0400
-Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2mm3h7jd48-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 00:39:43 -0400
-Received: from localhost
- by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.ibm.com>;
- Thu, 20 Sep 2018 00:39:18 -0400
-From: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
- Ram Pai <linuxram@us.ibm.com>,
- Thiago Jung Bauermann <bauerman@linux.ibm.com>
-Subject: [PATCH] powerpc/pkeys: Fix reading of ibm,
- processor-storage-keys property
-Date: Thu, 20 Sep 2018 01:38:58 -0300
-Message-Id: <20180920043858.28773-1-bauerman@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42G4Cj2KHHzF3L2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 14:54:56 +1000 (AEST)
+Subject: Re: [PATCH v2 4/5] powerpc: Fix duplicate const clang warning in user
+ access code
+To: Joel Stanley <joel@jms.id.au>, Nick Desaulniers <ndesaulniers@google.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>
+References: <20180914040649.1794-1-joel@jms.id.au>
+ <20180914040649.1794-5-joel@jms.id.au>
+ <CAKwvOd=-22J2=QvCTOAxkWw-WV8C4VY6Yvx91Rif5STmiXMtMg@mail.gmail.com>
+ <CACPK8XdF=orE8UtGu_K=p612L=iuDsnmrVrXJ6CNn6iDXi8znQ@mail.gmail.com>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <af6548de-69aa-bbce-3e9e-4acdf89fb107@c-s.fr>
+Date: Thu, 20 Sep 2018 06:54:51 +0200
+MIME-Version: 1.0
+In-Reply-To: <CACPK8XdF=orE8UtGu_K=p612L=iuDsnmrVrXJ6CNn6iDXi8znQ@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,36 +27,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-scan_pkey_feature() uses of_property_read_u32_array() to read the
-ibm,processor-storage-keys property and calls be32_to_cpu() on the
-value it gets. The problem is that of_property_read_u32_array() already
-returns the value converted to the CPU byte order.
 
-The value of pkeys_total ends up more or less sane because there's a min()
-call in pkey_initialize() which reduces pkeys_total to 32. So in practice
-the kernel ignores the fact that the hypervisor reserved one key for
-itself (the device tree advertises 31 keys in my test VM).
 
-This is wrong, but the effect in practice is that when a process tries to
-allocate the 32nd key, it gets an -EINVAL error instead of -ENOSPC which
-would indicate that there aren't any keys available
+Le 19/09/2018 à 09:45, Joel Stanley a écrit :
+> On Sat, 15 Sep 2018 at 03:27, Nick Desaulniers <ndesaulniers@google.com> wrote:
+>>
+>> On Thu, Sep 13, 2018 at 9:07 PM Joel Stanley <joel@jms.id.au> wrote:
+>>>
+>>> From: Anton Blanchard <anton@samba.org>
+>>>
+>>> This re-applies b91c1e3e7a6f which was reverted in f2ca80905929
+>>> d466f6c5cac1 f84ed59a612d (powerpc/sparse: Constify the address pointer
+>>> ...").
+>>>
+>>> We see a large number of duplicate const errors in the user access
+>>> code when building with llvm/clang:
+>>>
+>>>    include/linux/pagemap.h:576:8: warning: duplicate 'const' declaration specifier
+>>>        [-Wduplicate-decl-specifier]
+>>>          ret = __get_user(c, uaddr);
+>>>
+>>> The problem is we are doing const __typeof__(*(ptr)), which will hit the
+>>> warning if ptr is marked const.
+>>>
+>>> Removing const does not seem to have any effect on GCC code generation.
+>>
+>> I wouldn't expect it to for a local variable with such localized
+>> usage.  I myself am quite liberal in applying `const` to everything,
+>> so I will try to fix this in Clang as well, but this should silence
+>> the warning for users of older versions of Clang and results in no
+>> functional change.
+>> Reviewed-by: Nick Desaulniers <ndesaulniers@google.com>
+> 
+> Nick has written a clang patch that suppresses the warning in the same
+> way as GCC. Assuming it gets merged, as we depend on clang-8 we could
+> chose to not merge the kernel patch.
+> 
+> https://reviews.llvm.org/D52248
+> 
 
-Fixes: cf43d3b26452 ("powerpc: Enable pkey subsystem")
-Signed-off-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
----
- arch/powerpc/mm/pkeys.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Seems like Michael has merged this patch anyway.
 
-diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
-index 333b1f80c435..b271b283c785 100644
---- a/arch/powerpc/mm/pkeys.c
-+++ b/arch/powerpc/mm/pkeys.c
-@@ -45,7 +45,7 @@ static void scan_pkey_feature(void)
- 	 * Since any pkey can be used for data or execute, we will just treat
- 	 * all keys as equal and track them as one entity.
- 	 */
--	pkeys_total = be32_to_cpu(vals[0]);
-+	pkeys_total = vals[0];
- 	pkeys_devtree_defined = true;
- }
- 
+Christophe
