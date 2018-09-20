@@ -1,22 +1,36 @@
-Return-Path: <madalin.bucur@nxp.com>
-Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [IPv6:2620:137:e000::1:9])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42GL1h4hwFzF3PD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 01:17:12 +1000 (AEST)
-From: Madalin Bucur <madalin.bucur@nxp.com>
-To: leoyang.li@nxp.com
-Cc: roy.pledge@nxp.com, claudiu.manoil@nxp.com, catalin.marinas@arm.com,
- oss@buserror.net, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Madalin Bucur <madalin.bucur@nxp.com>
-Subject: [PATCH 2/4] soc/fsl/qbman: Add 64 bit DMA addressing requirement to
- QBMan
-Date: Thu, 20 Sep 2018 18:06:49 +0300
-Message-Id: <1537456011-10769-3-git-send-email-madalin.bucur@nxp.com>
-In-Reply-To: <1537456011-10769-1-git-send-email-madalin.bucur@nxp.com>
-References: <1537456011-10769-1-git-send-email-madalin.bucur@nxp.com>
-Reply-to: madalin.bucur@nxp.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42GLmn4wJHzF3LT
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 01:51:04 +1000 (AEST)
+Date: Thu, 20 Sep 2018 08:50:55 -0700 (PDT)
+Message-Id: <20180920.085055.1188796939437872993.davem@davemloft.net>
+To: yuehaibing@huawei.com
+Cc: dmitry.tarnyagin@lockless.no, wg@grandegger.com, mkl@pengutronix.de,
+ michal.simek@xilinx.com, hsweeten@visionengravers.com,
+ madalin.bucur@nxp.com, pantelis.antoniou@gmail.com,
+ claudiu.manoil@nxp.com, leoyang.li@nxp.com, linux@armlinux.org.uk,
+ sammy@sammy.net, ralf@linux-mips.org, nico@fluxnic.net,
+ steve.glendinning@shawell.net, f.fainelli@gmail.com,
+ grygorii.strashko@ti.com, w-kwok2@ti.com, m-karicheri2@ti.com,
+ t.sailer@alumni.ethz.ch, jreuter@yaina.de, kys@microsoft.com,
+ haiyangz@microsoft.com, wei.liu2@citrix.com, paul.durrant@citrix.com,
+ arvid.brodin@alten.se, pshelar@ovn.org, linux-kernel@vger.kernel.org,
+ netdev@vger.kernel.org, linux-can@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ linux-mips@linux-mips.org, linux-omap@vger.kernel.org,
+ linux-hams@vger.kernel.org, devel@linuxdriverproject.org,
+ linux-usb@vger.kernel.org, xen-devel@lists.xenproject.org,
+ dev@openvswitch.org
+Subject: Re: [PATCH net-next 00/22] net: fix return type of ndo_start_xmit
+ function
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20180920123306.14772-1-yuehaibing@huawei.com>
+References: <20180920123306.14772-1-yuehaibing@huawei.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,29 +40,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Roy Pledge <roy.pledge@nxp.com>
+From: YueHaibing <yuehaibing@huawei.com>
+Date: Thu, 20 Sep 2018 20:32:44 +0800
 
-The QBMan block is memory mapped on SoCs above a 32 bit (4 Gigabyte)
-boundary so enabling 64 bit DMA addressing is needed for QBMan to
-be usable.
+> The method ndo_start_xmit() is defined as returning an 'netdev_tx_t',
+> which is a typedef for an enum type, so make sure the implementation in
+> this driver has returns 'netdev_tx_t' value, and change the function
+> return type to netdev_tx_t.
 
-Signed-off-by: Roy Pledge <roy.pledge@nxp.com>
-Signed-off-by: Madalin Bucur <madalin.bucur@nxp.com>
----
- drivers/soc/fsl/qbman/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I would advise you not to send so many of these changes as a group.
 
-diff --git a/drivers/soc/fsl/qbman/Kconfig b/drivers/soc/fsl/qbman/Kconfig
-index d570cb5fd381..19d6f4621e23 100644
---- a/drivers/soc/fsl/qbman/Kconfig
-+++ b/drivers/soc/fsl/qbman/Kconfig
-@@ -1,6 +1,6 @@
- menuconfig FSL_DPAA
- 	bool "QorIQ DPAA1 framework support"
--	depends on (FSL_SOC_BOOKE || ARCH_LAYERSCAPE)
-+	depends on ((FSL_SOC_BOOKE || ARCH_LAYERSCAPE || ARM) && ARCH_DMA_ADDR_T_64BIT)
- 	select GENERIC_ALLOCATOR
- 	help
- 	  The Freescale Data Path Acceleration Architecture (DPAA) is a set of
--- 
-2.1.0
+If one of the patches needs feedback addressed, which is already the
+case, you will have to resubmit the entire series all over again with
+the fixes.
