@@ -1,42 +1,32 @@
-Return-Path: <srs0=2cx7=mc=linux.vnet.ibm.com=maddy@ozlabs.org>
-Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42GBzC1F0BzF3JS
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 19:59:35 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 42GBzB3s7sz8tH1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 19:59:34 +1000 (AEST)
+Return-Path: <aravinda@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 42GBz96nNYz9sBv
- for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2018 19:59:33 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42GCL64s5rzF3JS
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 20:15:58 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w8K9uvd0023765
- for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2018 05:59:31 -0400
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2mm7tgm18d-1
+ w8KAE9Gk125068
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 06:15:55 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2mm963hacn-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2018 05:59:31 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 06:15:55 -0400
 Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Thu, 20 Sep 2018 10:59:29 +0100
-Subject: Re: [PATCH] powerpc/perf: Add missing break in
- power7_marked_instr_event()
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-Cc: maddy@linux.ibm.com, paulus@samba.org
-References: <20180920094111.4125-1-mpe@ellerman.id.au>
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Date: Thu, 20 Sep 2018 15:29:22 +0530
+ for <linuxppc-dev@lists.ozlabs.org> from <aravinda@linux.vnet.ibm.com>;
+ Thu, 20 Sep 2018 04:15:54 -0600
+Subject: [PATCH] powerpc/pseries: Export raw per-CPU VPA data via debugfs
+From: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
+Cc: nfont@linux.vnet.ibm.com, naveen.n.rao@linux.vnet.ibm.com,
+ aravinda@linux.vnet.ibm.com
+Date: Thu, 20 Sep 2018 15:45:47 +0530
 MIME-Version: 1.0
-In-Reply-To: <20180920094111.4125-1-mpe@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <e1868207-7dd4-e6cc-0fce-04e0fd1e5edc@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <153743854746.12332.9507208773294249019.stgit@aravinda>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,65 +36,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This patch exports the raw per-CPU VPA data via debugfs.
+A per-CPU file is created which exports the VPA data of
+that CPU to help debug some of the VPA related issues or
+to analyze the per-CPU VPA related statistics.
 
+Signed-off-by: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/pseries/lpar.c |   85 +++++++++++++++++++++++++++++++++
+ 1 file changed, 85 insertions(+)
 
-On Thursday 20 September 2018 03:11 PM, Michael Ellerman wrote:
-> In power7_marked_instr_event() there is a switch case that is missing
-> a break or an explicit fallthrough, it's not immediately clear which
-> it should be.
->
-> The function determines based on the PMU event code, whether the event
-> is a "marked" event (which then requires us to configure the PMU in a
-> certain way). On Power7 there is no specific bit(s) in the event to
-> tell us that, we just have to know.
->
-> Rather than having a full list of every event and whether they are
-> marked, we pull apart the event code and for events with certain
-> values of certain fields we can say that those are all marked events.
->
-> We take the psel (bits 0-7) of the event, and look at bits 4-7. For a
-> value of 6 we say that if the entire psel == 0x64 then if the pmc == 3
-> the event is marked, else not, and otherwise we continue.
->
-> It is then that we fallthrough to the 8 case, where we return true if
-> the unit == 0xd.
->
-> The question is should the 6 case also fallthrough and check for
-> unit == 0xd, or should it return.
->
-> Looking at the full list of events we see that there are zero events
-> where (psel >> 4) == 0x6 and unit == 0xd.
->
-> So the answer is it doesn't really matter, there are no valid event
-> codes that will return a different result whether we fallthrough or
-> break.
->
-> But equally, testing the 6 case events against unit == 0xd is slightly
-> bogus, as there are no such events. So to make the code clearer, and
-> avoid any future confusion, have the 6 case break rather than falling
-> through.
-
-Reviewed-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-
-Just curious to know, how did you find this. Static code checker compiled
-or any specific compiler warnings or just by code read?
-
-Maddy
->
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> ---
->   arch/powerpc/perf/power7-pmu.c | 1 +
->   1 file changed, 1 insertion(+)
->
-> diff --git a/arch/powerpc/perf/power7-pmu.c b/arch/powerpc/perf/power7-pmu.c
-> index 7963658dbc22..6dbae9884ec4 100644
-> --- a/arch/powerpc/perf/power7-pmu.c
-> +++ b/arch/powerpc/perf/power7-pmu.c
-> @@ -238,6 +238,7 @@ static int power7_marked_instr_event(u64 event)
->   	case 6:
->   		if (psel == 0x64)
->   			return pmc >= 3;
-> +		break;
->   	case 8:
->   		return unit == 0xd;
->   	}
+diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
+index d3992ce..cc12c12 100644
+--- a/arch/powerpc/platforms/pseries/lpar.c
++++ b/arch/powerpc/platforms/pseries/lpar.c
+@@ -48,6 +48,7 @@
+ #include <asm/kexec.h>
+ #include <asm/fadump.h>
+ #include <asm/asm-prototypes.h>
++#include <asm/debugfs.h>
+ 
+ #include "pseries.h"
+ 
+@@ -64,6 +65,16 @@ EXPORT_SYMBOL(plpar_hcall);
+ EXPORT_SYMBOL(plpar_hcall9);
+ EXPORT_SYMBOL(plpar_hcall_norets);
+ 
++#ifdef CONFIG_DEBUG_FS
++struct vpa {
++	struct dentry	*file;
++	int		cpu;
++};
++static DEFINE_PER_CPU(struct vpa, cpu_vpa);
++
++static struct dentry *vpa_dir;
++#endif
++
+ void vpa_init(int cpu)
+ {
+ 	int hwcpu = get_hard_smp_processor_id(cpu);
+@@ -1028,3 +1039,77 @@ static int __init reserve_vrma_context_id(void)
+ 	return 0;
+ }
+ machine_device_initcall(pseries, reserve_vrma_context_id);
++
++#ifdef CONFIG_DEBUG_FS
++/* debugfs file interface for vpa data */
++static ssize_t vpa_file_read(struct file *filp, char __user *buf, size_t len,
++		loff_t *pos)
++{
++	long int rc;
++	struct vpa *vpa = filp->private_data;
++	struct lppaca *lppaca = &lppaca_of(vpa->cpu);
++
++	if (len < sizeof(struct lppaca))
++		return -EINVAL;
++
++	rc = copy_to_user(buf, lppaca, sizeof(struct lppaca));
++	if (rc)
++		return -EFAULT;
++
++	return 0;
++}
++
++static int vpa_file_open(struct inode *inode, struct file *filp)
++{
++	struct vpa *vpa = inode->i_private;
++
++	filp->private_data = vpa;
++	return 0;
++}
++
++static int vpa_file_release(struct inode *inode, struct file *filp)
++{
++	return 0;
++}
++
++static const struct file_operations vpa_fops = {
++	.open		= vpa_file_open,
++	.release	= vpa_file_release,
++	.read		= vpa_file_read,
++	.llseek		= no_llseek,
++};
++
++static int __init vpa_debugfs_init(void)
++{
++	char name[10];
++	int i;
++
++	if (!firmware_has_feature(FW_FEATURE_SPLPAR))
++		return 0;
++
++	vpa_dir = debugfs_create_dir("vpa", powerpc_debugfs_root);
++	if (!vpa_dir) {
++		pr_warn("%s: can't create vpa root dir\n", __func__);
++		return -ENOMEM;
++	}
++
++	/* set up the per-cpu vpa file*/
++	for_each_possible_cpu(i) {
++		struct vpa *vpa = &per_cpu(cpu_vpa, i);
++
++		vpa->cpu = i;
++		sprintf(name, "cpu-%d", i);
++
++		vpa->file = debugfs_create_file(name, 0400, vpa_dir, vpa,
++					&vpa_fops);
++		if (!vpa->file) {
++			pr_warn("%s: can't create per-cpu vpa file\n",
++					__func__);
++			return -ENOMEM;
++		}
++	}
++
++	return 0;
++}
++machine_arch_initcall(pseries, vpa_debugfs_init);
++#endif /* CONFIG_DEBUG_FS */
