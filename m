@@ -1,9 +1,9 @@
 Return-Path: <yuehaibing@huawei.com>
-Received: from huawei.com (szxga07-in.huawei.com [45.249.212.35])
+Received: from huawei.com (szxga04-in.huawei.com [45.249.212.190])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42GGjw0ZDvzF3Jl
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 22:48:17 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42GGk03SHmzF3Kt
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 22:48:23 +1000 (AEST)
 From: YueHaibing <yuehaibing@huawei.com>
 To: <davem@davemloft.net>, <dmitry.tarnyagin@lockless.no>,
  <wg@grandegger.com>, <mkl@pengutronix.de>, <michal.simek@xilinx.com>,
@@ -22,10 +22,10 @@ CC: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
  <devel@linuxdriverproject.org>, <linux-usb@vger.kernel.org>,
  <xen-devel@lists.xenproject.org>, <dev@openvswitch.org>, YueHaibing
  <yuehaibing@huawei.com>
-Subject: [PATCH net-next 05/22] net: sgi: fix return type of ndo_start_xmit
+Subject: [PATCH net-next 06/22] net: wiznet: fix return type of ndo_start_xmit
  function
-Date: Thu, 20 Sep 2018 20:32:49 +0800
-Message-ID: <20180920123306.14772-6-yuehaibing@huawei.com>
+Date: Thu, 20 Sep 2018 20:32:50 +0800
+Message-ID: <20180920123306.14772-7-yuehaibing@huawei.com>
 In-Reply-To: <20180920123306.14772-1-yuehaibing@huawei.com>
 References: <20180920123306.14772-1-yuehaibing@huawei.com>
 MIME-Version: 1.0
@@ -48,44 +48,35 @@ Found by coccinelle.
 
 Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 ---
- drivers/net/ethernet/sgi/ioc3-eth.c | 4 ++--
- drivers/net/ethernet/sgi/meth.c     | 2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/wiznet/w5100.c | 2 +-
+ drivers/net/ethernet/wiznet/w5300.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/sgi/ioc3-eth.c b/drivers/net/ethernet/sgi/ioc3-eth.c
-index 18d533f..3140999 100644
---- a/drivers/net/ethernet/sgi/ioc3-eth.c
-+++ b/drivers/net/ethernet/sgi/ioc3-eth.c
-@@ -99,7 +99,7 @@ struct ioc3_private {
+diff --git a/drivers/net/ethernet/wiznet/w5100.c b/drivers/net/ethernet/wiznet/w5100.c
+index 2bdfb39..d8ba512 100644
+--- a/drivers/net/ethernet/wiznet/w5100.c
++++ b/drivers/net/ethernet/wiznet/w5100.c
+@@ -835,7 +835,7 @@ static void w5100_tx_work(struct work_struct *work)
+ 	w5100_tx_skb(priv->ndev, skb);
+ }
  
- static int ioc3_ioctl(struct net_device *dev, struct ifreq *rq, int cmd);
- static void ioc3_set_multicast_list(struct net_device *dev);
--static int ioc3_start_xmit(struct sk_buff *skb, struct net_device *dev);
-+static netdev_tx_t ioc3_start_xmit(struct sk_buff *skb, struct net_device *dev);
- static void ioc3_timeout(struct net_device *dev);
- static inline unsigned int ioc3_hash(const unsigned char *addr);
- static inline void ioc3_stop(struct ioc3_private *ip);
-@@ -1390,7 +1390,7 @@ static void ioc3_remove_one(struct pci_dev *pdev)
- 	.remove		= ioc3_remove_one,
- };
+-static int w5100_start_tx(struct sk_buff *skb, struct net_device *ndev)
++static netdev_tx_t w5100_start_tx(struct sk_buff *skb, struct net_device *ndev)
+ {
+ 	struct w5100_priv *priv = netdev_priv(ndev);
  
--static int ioc3_start_xmit(struct sk_buff *skb, struct net_device *dev)
-+static netdev_tx_t ioc3_start_xmit(struct sk_buff *skb, struct net_device *dev)
+diff --git a/drivers/net/ethernet/wiznet/w5300.c b/drivers/net/ethernet/wiznet/w5300.c
+index 56ae573..80fdbff 100644
+--- a/drivers/net/ethernet/wiznet/w5300.c
++++ b/drivers/net/ethernet/wiznet/w5300.c
+@@ -365,7 +365,7 @@ static void w5300_tx_timeout(struct net_device *ndev)
+ 	netif_wake_queue(ndev);
+ }
+ 
+-static int w5300_start_tx(struct sk_buff *skb, struct net_device *ndev)
++static netdev_tx_t w5300_start_tx(struct sk_buff *skb, struct net_device *ndev)
  {
- 	unsigned long data;
- 	struct ioc3_private *ip = netdev_priv(dev);
-diff --git a/drivers/net/ethernet/sgi/meth.c b/drivers/net/ethernet/sgi/meth.c
-index ea55abd..703fbbe 100644
---- a/drivers/net/ethernet/sgi/meth.c
-+++ b/drivers/net/ethernet/sgi/meth.c
-@@ -697,7 +697,7 @@ static void meth_add_to_tx_ring(struct meth_private *priv, struct sk_buff *skb)
- /*
-  * Transmit a packet (called by the kernel)
-  */
--static int meth_tx(struct sk_buff *skb, struct net_device *dev)
-+static netdev_tx_t meth_tx(struct sk_buff *skb, struct net_device *dev)
- {
- 	struct meth_private *priv = netdev_priv(dev);
- 	unsigned long flags;
+ 	struct w5300_priv *priv = netdev_priv(ndev);
+ 
 -- 
 1.8.3.1
