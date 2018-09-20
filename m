@@ -1,34 +1,44 @@
-Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42GMzS1JVxzF3NQ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 02:45:20 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w8KGdOFQ103173
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 12:45:19 -0400
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2mmd7u6c1u-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42GNpn3fqTzF3Mv
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 03:22:57 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w8KHEorB057268
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 13:22:55 -0400
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2mmcrh0ug0-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 12:45:19 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 13:22:54 -0400
 Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Thu, 20 Sep 2018 10:45:18 -0600
-Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>, minkim@us.ibm.com,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Subject: [PATCH v02] REPOST powerpc/migration: Handle unitialized timer reset
-Date: Thu, 20 Sep 2018 11:45:13 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Message-Id: <6a7769a5-c8bc-f857-61cc-a76cdd98b28c@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Thu, 20 Sep 2018 11:22:54 -0600
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Neuling <mikey@neuling.org>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ "Oliver O'Halloran" <oohall@gmail.com>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Murilo Opsfelder Araujo <muriloo@linux.ibm.com>,
+ Anton Blanchard <anton@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Subject: [PATCH v8 3/3] powerpc/sysfs: Add
+ topology/smallcore_thread_siblings[_list]
+Date: Thu, 20 Sep 2018 22:52:39 +0530
+In-Reply-To: <1537464159-25919-1-git-send-email-ego@linux.vnet.ibm.com>
+References: <1537464159-25919-1-git-send-email-ego@linux.vnet.ibm.com>
+Message-Id: <1537464159-25919-4-git-send-email-ego@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,88 +48,156 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-After migration of a powerpc LPAR, the kernel executes code to
-update the system state to reflect new platform characteristics.
-Such changes include modifications to device tree properties
-provided to the system by PHYP.  Property notifications received
-by the powerpc 'migration_store' code are passed along to the
-kernel in general through a call to 'of_update_property' which
-in turn passes such events back to all modules through entries like
-the '.notifier_call' function within the NUMA module.  When the
-NUMA module updates its state, it resets its event timer.  If this
-occurs after a previous call to 'stop_topology_update' or on a
-system without VPHN enabled, the code runs into an unitialized
-timer structure and crashes.  This patch adds a safety check
-along this path toward the problem code.
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-Note: This crash was observed on every LPM in the 4.17-rc7 kernel
-(and in the 4.18 kernel) of a system with dedicated CPUs enabled.
-An example crash log without the patch is as follows.
+This patch adds two sysfs attributes named smallcore_thread_siblings
+and smallcore_thread_siblings_list to the "topology" attribute group
+for each CPU device.
 
-  [ 2571.437467] ibmvscsi 30000081: Re-enabling adapter!
-[ 2571.673850] ------------[ cut here ]------------
-[ 2571.673863] kernel BUG at kernel/time/timer.c:958!
-[ 2571.673875] Oops: Exception in kernel mode, sig: 5 [#1]
-[ 2571.673877] LE SMP NR_CPUS=2048 NUMA pSeries
-[ 2571.673886] Modules linked in: nfsv3 nfs_acl nfs tcp_diag udp_diag inet_diag lockd unix_diag af_packet_diag netlink_diag grace fscache sunrpc xts vmx_crypto pseries_rng sg binfmt_misc ip_tables xfs libcrc32c sd_mod ibmvscsi ibmveth scsi_transport_srp dm_mirror dm_region_hash dm_log dm_mod
-[ 2571.673969] CPU: 11 PID: 3067 Comm: drmgr Not tainted 4.17.0+ #179
-[ 2571.673972] NIP:  c000000000198a2c LR: c000000000075990 CTR: 0000000000000000
-[ 2571.673975] REGS: c0000003f9407560 TRAP: 0700   Not tainted  (4.17.0+)
-[ 2571.673977] MSR:  800000010282b033 <SF,VEC,VSX,EE,FP,ME,IR,DR,RI,LE,TM[E]>  CR: 44482824  XER: 00000000
-[ 2571.673990] CFAR: c00000000007598c SOFTE: 0
-[ 2571.673990] GPR00: c000000000075990 c0000003f94077e0 c00000000113a900 c0000000012e5968
-[ 2571.673990] GPR04: 000000010003776b c0000003ffa05180 0000000000000020 c0000003f9407850
-[ 2571.673990] GPR08: 0000000000000000 0000000000000001 ffffffffffffffff 0000000000000220
-[ 2571.673990] GPR12: c000000000076560 c00000001ec90200 0000000040000000 0000000000000018
-[ 2571.673990] GPR16: 0000000000000000 000000000000000d c0000003e9ea5015 0000000000000010
-[ 2571.673990] GPR20: 000000000000000b 0000000000000050 c0000003e9ea4068 0000000000000001
-[ 2571.673990] GPR24: 000000000000001c c0000003ffff3ab0 0000000000000000 c0000003f9407990
-[ 2571.673990] GPR28: 0000000000000005 c0000003ffff3ab0 000000010003776b c0000000012e5968
-[ 2571.674042] NIP [c000000000198a2c] mod_timer+0x4c/0x400
-[ 2571.674051] LR [c000000000075990] reset_topology_timer+0x40/0x60
-[ 2571.674053] Call Trace:
-[ 2571.674056] [c0000003f94077e0] [c0000003f9407830] 0xc0000003f9407830 (unreliable)
-[ 2571.674060] [c0000003f9407860] [c000000000075990] reset_topology_timer+0x40/0x60
-[ 2571.674063] [c0000003f9407880] [c000000000076660] dt_update_callback+0x100/0x120
-[ 2571.674072] [c0000003f94078d0] [c00000000012ada0] notifier_call_chain+0x90/0x100
-[ 2571.674077] [c0000003f9407920] [c00000000012b270] __blocking_notifier_call_chain+0x60/0x90
-[ 2571.674092] [c0000003f9407970] [c0000000007b9a60] of_property_notify+0x90/0xd0
-[ 2571.674096] [c0000003f94079d0] [c0000000007b4644] of_update_property+0x104/0x150
-[ 2571.674103] [c0000003f9407a30] [c0000000000c0ddc] update_dt_property+0xdc/0x1f0
-[ 2571.674106] [c0000003f9407a90] [c0000000000c11c0] pseries_devicetree_update+0x2d0/0x510
-[ 2571.674110] [c0000003f9407bc0] [c0000000000c147c] post_mobility_fixup+0x7c/0xf0
-[ 2571.674113] [c0000003f9407c30] [c0000000000c1594] migration_store+0xa4/0xc0
-[ 2571.674123] [c0000003f9407c70] [c000000000989940] kobj_attr_store+0x30/0x60
-[ 2571.674133] [c0000003f9407c90] [c00000000040b294] sysfs_kf_write+0x64/0xa0
-[ 2571.674136] [c0000003f9407cb0] [c00000000040a02c] kernfs_fop_write+0x16c/0x240
-[ 2571.674146] [c0000003f9407d00] [c00000000034eeb0] __vfs_write+0x40/0x200
-[ 2571.674149] [c0000003f9407d90] [c00000000034f288] vfs_write+0xc8/0x240
-[ 2571.674152] [c0000003f9407de0] [c00000000034f5bc] ksys_write+0x5c/0x100
-[ 2571.674158] [c0000003f9407e30] [c00000000000b284] system_call+0x58/0x6c
-[ 2571.674161] Instruction dump:
-[ 2571.674163] fb01ffc0 7c7f1b78 fb21ffc8 fb41ffd0 fb61ffd8 fb81ffe0 fba1ffe8 f8010010
-[ 2571.674168] f821ff81 e9230018 7d290074 7929d182 <0b090000> e9230008 2fa90000 419e0278
-[ 2571.674176] ---[ end trace 0c7939657d5522df ]---
+The read-only attributes
+/sys/device/system/cpu/cpuN/topology/smallcore_thread_siblings and
+/sys/device/system/cpu/cpuN/topology/smallcore_thread_siblings_list
+will the online siblings of CPU N that share the L1 cache with it on
+big-core configurations in cpumask format and cpu-list format
+respectively.
 
-Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
+Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 ---
-Changes in patch:
-  -- Revised patch description.
----
- arch/powerpc/mm/numa.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ Documentation/ABI/testing/sysfs-devices-system-cpu | 14 ++++
+ arch/powerpc/kernel/sysfs.c                        | 88 ++++++++++++++++++++++
+ 2 files changed, 102 insertions(+)
 
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 0c7e05d..a789d57 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -1457,7 +1457,8 @@ static void topology_timer_fn(struct timer_list *unused)
+diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
+index 7331822..2a80dc2 100644
+--- a/Documentation/ABI/testing/sysfs-devices-system-cpu
++++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
+@@ -511,3 +511,17 @@ Description:	Control Symetric Multi Threading (SMT)
  
- static void reset_topology_timer(void)
+ 			 If control status is "forceoff" or "notsupported" writes
+ 			 are rejected.
++
++What:		/sys/devices/system/cpu/cpu#/topology/smallcore_thread_siblings
++		/sys/devices/system/cpu/cpu#/topology/smallcore_thread_siblings_list
++Date:		Sept 2018
++Contact:	Linux for PowerPC mailing list <linuxppc-dev@ozlabs.org>
++Description: 	CPU topology files that describe the thread siblings of a
++		logical CPU that share the L1-cache with it on POWER9
++		big-core configurations.
++
++		smallcore_thread_siblings: internal kernel map of
++		cpu#'s hardware threads that share L1-cache with cpu#.
++
++		smallcore_thread_siblings_list: human-readable list of
++		cpu#'s hardware threads that share L1-cache with cpu#.
+diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
+index 755dc98..f9c7d96 100644
+--- a/arch/powerpc/kernel/sysfs.c
++++ b/arch/powerpc/kernel/sysfs.c
+@@ -18,6 +18,7 @@
+ #include <asm/smp.h>
+ #include <asm/pmc.h>
+ #include <asm/firmware.h>
++#include <asm/cputhreads.h>
+ 
+ #include "cacheinfo.h"
+ #include "setup.h"
+@@ -714,6 +715,62 @@ static void sysfs_create_dscr_default(void)
+ #endif /* HAS_PPC_PMC_PA6T */
+ #endif /* HAS_PPC_PMC_CLASSIC */
+ 
++static ssize_t smallcore_thread_siblings_show(struct device *dev,
++					struct device_attribute *attr,
++					char *buf)
++{
++	int cpu = dev->id;
++
++	return cpumap_print_to_pagebuf(false, buf, cpu_smallcore_mask(cpu));
++}
++static DEVICE_ATTR_RO(smallcore_thread_siblings);
++
++static ssize_t smallcore_thread_siblings_list_show(struct device *dev,
++					struct device_attribute *attr,
++					char *buf)
++{
++	int cpu = dev->id;
++
++	return cpumap_print_to_pagebuf(true, buf, cpu_smallcore_mask(cpu));
++}
++static DEVICE_ATTR_RO(smallcore_thread_siblings_list);
++
++static struct attribute *smallcore_attrs[] = {
++	&dev_attr_smallcore_thread_siblings.attr,
++	&dev_attr_smallcore_thread_siblings_list.attr,
++	NULL
++};
++
++static const struct attribute_group smallcore_attr_group = {
++	.name = "topology",
++	.attrs = smallcore_attrs
++};
++
++static int smallcore_register_cpu_online(unsigned int cpu)
++{
++	int err;
++	struct device *cpu_dev = get_cpu_device(cpu);
++
++	if (!has_big_cores)
++		return 0;
++
++	err = sysfs_merge_group(&cpu_dev->kobj, &smallcore_attr_group);
++
++	return err;
++}
++
++static int smallcore_unregister_cpu_online(unsigned int cpu)
++{
++	struct device *cpu_dev = get_cpu_device(cpu);
++
++	if (!has_big_cores)
++		return 0;
++
++	sysfs_unmerge_group(&cpu_dev->kobj, &smallcore_attr_group);
++
++	return 0;
++}
++
+ static int register_cpu_online(unsigned int cpu)
  {
--	mod_timer(&topology_timer, jiffies + topology_timer_secs * HZ);
-+	if (vphn_enabled)
-+		mod_timer(&topology_timer, jiffies + topology_timer_secs * HZ);
+ 	struct cpu *c = &per_cpu(cpu_devices, cpu);
+@@ -1060,3 +1117,34 @@ static int __init topology_init(void)
+ 	return 0;
  }
- 
- #ifdef CONFIG_SMP
+ subsys_initcall(topology_init);
++
++/*
++ * NOTE: The smallcore_register_cpu_online
++ *       (resp. smallcore_unregister_cpu_online) callback will merge
++ *       (resp. unmerge) a couple of additional attributes to the
++ *       "topology" attribute group of a CPU device when the CPU comes
++ *       online (resp. goes offline).
++ *
++ *       Hence, the registration of these callbacks must happen after
++ *       topology_sysfs_init() is called so that the topology
++ *       attribute group is created before these additional attributes
++ *       can be merged/unmerged. We cannot register these callbacks in
++ *       topology_init() since this function is called before
++ *       topology_sysfs_init(). Hence we define the following
++ *       late_initcall for this purpose.
++ */
++static int __init smallcore_topology_init(void)
++{
++	int r;
++
++	if (!has_big_cores)
++		return 0;
++
++	r = cpuhp_setup_state(CPUHP_AP_ONLINE_DYN,
++			      "powerpc/topology/smallcore:online",
++			      smallcore_register_cpu_online,
++			      smallcore_unregister_cpu_online);
++	WARN_ON(r < 0);
++	return 0;
++}
++late_initcall(smallcore_topology_init);
+-- 
+1.9.4
