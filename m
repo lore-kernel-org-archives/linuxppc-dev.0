@@ -1,15 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42G3SS6BrlzF37B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 14:20:56 +1000 (AEST)
-In-Reply-To: <1533070557-24432-1-git-send-email-leitao@debian.org>
-To: Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42G3ST3y0pzF37B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 14:20:57 +1000 (AEST)
+In-Reply-To: <1534250715-4543-1-git-send-email-clombard@linux.vnet.ibm.com>
+To: Christophe Lombard <clombard@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
+ vaibhav@linux.vnet.ibm.com, andrew.donnellan@au1.ibm.com
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Breno Leitao <leitao@debian.org>, mikey@neuling.org, rashmicy@gmail.com
-Subject: Re: powerpc/selftests: Wait all threads to join
-Message-Id: <42G3SS4kCvz9sCP@ozlabs.org>
+Subject: Re: [V3] ocxl: Fix access to the AFU Descriptor Data
+Message-Id: <42G3ST1F03z9sCR@ozlabs.org>
 Date: Thu, 20 Sep 2018 14:20:56 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,20 +21,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2018-07-31 at 20:55:57 UTC, Breno Leitao wrote:
-> Test tm-tmspr might exit before all threads stop executing, because it just
-> waits for the very last thread to join before proceeding/exiting.
+On Tue, 2018-08-14 at 12:45:15 UTC, Christophe Lombard wrote:
+> The AFU Information DVSEC capability is a means to extract common,
+> general information about all of the AFUs associated with a Function
+> independent of the specific functionality that each AFU provides.
+> Write in the AFU Index field allows to access to the descriptor data
+> for each AFU.
 > 
-> This patch makes sure that all threads that were created will join before
-> proceeding/exiting.
+> With the current code, we are not able to access to these specific data
+> when the index >= 1 because we are writing to the wrong location.
+> All requests to the data of each AFU are pointing to those of the AFU 0,
+> which could have impacts when using a card with more than one AFU per
+> function.
 > 
-> This patch also guarantees that the amount of threads being created is equal
-> to thread_num.
+> This patch fixes the access to the AFU Descriptor Data indexed by the
+> AFU Info Index field.
 > 
-> Signed-off-by: Breno Leitao <leitao@debian.org>
+> Fixes: 5ef3166e8a32 ("ocxl: Driver code for 'generic' opencapi devices")
+> Cc: stable <stable@vger.kernel.org>     # 4.16
+> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/693b31b2fc1636f0aa7af53136d3b4
+https://git.kernel.org/powerpc/c/6f8e45f7eb1bee5efdbe4a9cfe4a45
 
 cheers
