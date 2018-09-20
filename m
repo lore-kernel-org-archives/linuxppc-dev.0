@@ -1,9 +1,9 @@
 Return-Path: <yuehaibing@huawei.com>
-Received: from huawei.com (szxga06-in.huawei.com [45.249.212.32])
+Received: from huawei.com (szxga04-in.huawei.com [45.249.212.190])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42GGk25wxXzF3Km
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 22:48:26 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42GGk55CcvzF3Kp
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 22:48:29 +1000 (AEST)
 From: YueHaibing <yuehaibing@huawei.com>
 To: <davem@davemloft.net>, <dmitry.tarnyagin@lockless.no>,
  <wg@grandegger.com>, <mkl@pengutronix.de>, <michal.simek@xilinx.com>,
@@ -22,10 +22,10 @@ CC: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
  <devel@linuxdriverproject.org>, <linux-usb@vger.kernel.org>,
  <xen-devel@lists.xenproject.org>, <dev@openvswitch.org>, YueHaibing
  <yuehaibing@huawei.com>
-Subject: [PATCH net-next 08/22] net: apple: fix return type of ndo_start_xmit
+Subject: [PATCH net-next 09/22] net: smsc: fix return type of ndo_start_xmit
  function
-Date: Thu, 20 Sep 2018 20:32:52 +0800
-Message-ID: <20180920123306.14772-9-yuehaibing@huawei.com>
+Date: Thu, 20 Sep 2018 20:32:53 +0800
+Message-ID: <20180920123306.14772-10-yuehaibing@huawei.com>
 In-Reply-To: <20180920123306.14772-1-yuehaibing@huawei.com>
 References: <20180920123306.14772-1-yuehaibing@huawei.com>
 MIME-Version: 1.0
@@ -48,76 +48,52 @@ Found by coccinelle.
 
 Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 ---
- drivers/net/ethernet/apple/bmac.c    | 4 ++--
- drivers/net/ethernet/apple/mace.c    | 4 ++--
- drivers/net/ethernet/apple/macmace.c | 4 ++--
- 3 files changed, 6 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/smsc/smc911x.c  | 3 ++-
+ drivers/net/ethernet/smsc/smc91x.c   | 3 ++-
+ drivers/net/ethernet/smsc/smsc911x.c | 3 ++-
+ 3 files changed, 6 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/apple/bmac.c b/drivers/net/ethernet/apple/bmac.c
-index 024998d..6a8e256 100644
---- a/drivers/net/ethernet/apple/bmac.c
-+++ b/drivers/net/ethernet/apple/bmac.c
-@@ -154,7 +154,7 @@ struct bmac_data {
- static irqreturn_t bmac_rxdma_intr(int irq, void *dev_id);
- static void bmac_set_timeout(struct net_device *dev);
- static void bmac_tx_timeout(struct timer_list *t);
--static int bmac_output(struct sk_buff *skb, struct net_device *dev);
-+static netdev_tx_t bmac_output(struct sk_buff *skb, struct net_device *dev);
- static void bmac_start(struct net_device *dev);
- 
- #define	DBDMA_SET(x)	( ((x) | (x) << 16) )
-@@ -1456,7 +1456,7 @@ static int bmac_close(struct net_device *dev)
- 	spin_unlock_irqrestore(&bp->lock, flags);
- }
- 
--static int
-+static netdev_tx_t
- bmac_output(struct sk_buff *skb, struct net_device *dev)
- {
- 	struct bmac_data *bp = netdev_priv(dev);
-diff --git a/drivers/net/ethernet/apple/mace.c b/drivers/net/ethernet/apple/mace.c
-index 0b5429d..68b9ee4 100644
---- a/drivers/net/ethernet/apple/mace.c
-+++ b/drivers/net/ethernet/apple/mace.c
-@@ -78,7 +78,7 @@ struct mace_data {
- 
- static int mace_open(struct net_device *dev);
- static int mace_close(struct net_device *dev);
--static int mace_xmit_start(struct sk_buff *skb, struct net_device *dev);
-+static netdev_tx_t mace_xmit_start(struct sk_buff *skb, struct net_device *dev);
- static void mace_set_multicast(struct net_device *dev);
- static void mace_reset(struct net_device *dev);
- static int mace_set_address(struct net_device *dev, void *addr);
-@@ -525,7 +525,7 @@ static inline void mace_set_timeout(struct net_device *dev)
-     mp->timeout_active = 1;
- }
- 
--static int mace_xmit_start(struct sk_buff *skb, struct net_device *dev)
-+static netdev_tx_t mace_xmit_start(struct sk_buff *skb, struct net_device *dev)
- {
-     struct mace_data *mp = netdev_priv(dev);
-     volatile struct dbdma_regs __iomem *td = mp->tx_dma;
-diff --git a/drivers/net/ethernet/apple/macmace.c b/drivers/net/ethernet/apple/macmace.c
-index 137cbb4..376f2c2 100644
---- a/drivers/net/ethernet/apple/macmace.c
-+++ b/drivers/net/ethernet/apple/macmace.c
-@@ -89,7 +89,7 @@ struct mace_frame {
- 
- static int mace_open(struct net_device *dev);
- static int mace_close(struct net_device *dev);
--static int mace_xmit_start(struct sk_buff *skb, struct net_device *dev);
-+static netdev_tx_t mace_xmit_start(struct sk_buff *skb, struct net_device *dev);
- static void mace_set_multicast(struct net_device *dev);
- static int mace_set_address(struct net_device *dev, void *addr);
- static void mace_reset(struct net_device *dev);
-@@ -444,7 +444,7 @@ static int mace_close(struct net_device *dev)
-  * Transmit a frame
+diff --git a/drivers/net/ethernet/smsc/smc911x.c b/drivers/net/ethernet/smsc/smc911x.c
+index b1b53f6..8355dfb 100644
+--- a/drivers/net/ethernet/smsc/smc911x.c
++++ b/drivers/net/ethernet/smsc/smc911x.c
+@@ -513,7 +513,8 @@ static void smc911x_hardware_send_pkt(struct net_device *dev)
+  * now, or set the card to generates an interrupt when ready
+  * for the packet.
   */
- 
--static int mace_xmit_start(struct sk_buff *skb, struct net_device *dev)
-+static netdev_tx_t mace_xmit_start(struct sk_buff *skb, struct net_device *dev)
+-static int smc911x_hard_start_xmit(struct sk_buff *skb, struct net_device *dev)
++static netdev_tx_t
++smc911x_hard_start_xmit(struct sk_buff *skb, struct net_device *dev)
  {
- 	struct mace_data *mp = netdev_priv(dev);
- 	unsigned long flags;
+ 	struct smc911x_local *lp = netdev_priv(dev);
+ 	unsigned int free;
+diff --git a/drivers/net/ethernet/smsc/smc91x.c b/drivers/net/ethernet/smsc/smc91x.c
+index b944828..8d6cff8 100644
+--- a/drivers/net/ethernet/smsc/smc91x.c
++++ b/drivers/net/ethernet/smsc/smc91x.c
+@@ -638,7 +638,8 @@ static void smc_hardware_send_pkt(unsigned long data)
+  * now, or set the card to generates an interrupt when ready
+  * for the packet.
+  */
+-static int smc_hard_start_xmit(struct sk_buff *skb, struct net_device *dev)
++static netdev_tx_t
++smc_hard_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ {
+ 	struct smc_local *lp = netdev_priv(dev);
+ 	void __iomem *ioaddr = lp->base;
+diff --git a/drivers/net/ethernet/smsc/smsc911x.c b/drivers/net/ethernet/smsc/smsc911x.c
+index c009407..99a5a8a 100644
+--- a/drivers/net/ethernet/smsc/smsc911x.c
++++ b/drivers/net/ethernet/smsc/smsc911x.c
+@@ -1786,7 +1786,8 @@ static int smsc911x_stop(struct net_device *dev)
+ }
+ 
+ /* Entry point for transmitting a packet */
+-static int smsc911x_hard_start_xmit(struct sk_buff *skb, struct net_device *dev)
++static netdev_tx_t
++smsc911x_hard_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ {
+ 	struct smsc911x_data *pdata = netdev_priv(dev);
+ 	unsigned int freespace;
 -- 
 1.8.3.1
