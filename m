@@ -1,33 +1,22 @@
-Return-Path: <aneesh.kumar@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <BATV+17e4623c997d928794c6+5506+infradead.org+hch@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [198.137.202.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42GPsP0p8HzF3NY
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 04:10:16 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w8KI9DEB131065
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 14:10:14 -0400
-Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2mmfm7tfxn-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 14:10:13 -0400
-Received: from localhost
- by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Thu, 20 Sep 2018 14:10:13 -0400
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: npiggin@gmail.com, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: [PATCH V3 6/6] powerpc/mm:book3s: Enable THP migration support
-Date: Thu, 20 Sep 2018 23:39:47 +0530
-In-Reply-To: <20180920180947.17893-1-aneesh.kumar@linux.ibm.com>
-References: <20180920180947.17893-1-aneesh.kumar@linux.ibm.com>
-Message-Id: <20180920180947.17893-6-aneesh.kumar@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42GQq70tl2zF3Nf
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 04:53:18 +1000 (AEST)
+From: Christoph Hellwig <hch@lst.de>
+To: iommu@lists.linux-foundation.org
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>,
+ Robin Murphy <robin.murphy@arm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 4/5] dma-direct: implement complete bus_dma_mask handling
+Date: Thu, 20 Sep 2018 20:52:46 +0200
+Message-Id: <20180920185247.20037-5-hch@lst.de>
+In-Reply-To: <20180920185247.20037-1-hch@lst.de>
+References: <20180920185247.20037-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,49 +26,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
----
- arch/powerpc/include/asm/book3s/64/pgtable.h | 8 ++++++++
- arch/powerpc/platforms/Kconfig.cputype       | 1 +
- 2 files changed, 9 insertions(+)
+Instead of rejecting devices with a too small bus_dma_mask we can handle
+by taking the bus dma_mask into account for allocations and bounce
+buffering decisions.
 
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index e24db2aa260f..c68cbbff3429 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -741,6 +741,8 @@ static inline bool pte_user(pte_t pte)
-  */
- #define __pte_to_swp_entry(pte)	((swp_entry_t) { pte_val((pte)) & ~_PAGE_PTE })
- #define __swp_entry_to_pte(x)	__pte((x).val | _PAGE_PTE)
-+#define __pmd_to_swp_entry(pmd)	(__pte_to_swp_entry(pmd_pte(pmd)))
-+#define __swp_entry_to_pmd(x)	(pte_pmd(__swp_entry_to_pte(x)))
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ include/linux/dma-direct.h |  3 ++-
+ kernel/dma/direct.c        | 21 +++++++++++----------
+ 2 files changed, 13 insertions(+), 11 deletions(-)
+
+diff --git a/include/linux/dma-direct.h b/include/linux/dma-direct.h
+index b79496d8c75b..fbca184ff5a0 100644
+--- a/include/linux/dma-direct.h
++++ b/include/linux/dma-direct.h
+@@ -27,7 +27,8 @@ static inline bool dma_capable(struct device *dev, dma_addr_t addr, size_t size)
+ 	if (!dev->dma_mask)
+ 		return false;
  
- #ifdef CONFIG_MEM_SOFT_DIRTY
- #define _PAGE_SWP_SOFT_DIRTY   (1UL << (SWP_TYPE_BITS + _PAGE_BIT_SWAP_TYPE))
-@@ -1091,6 +1093,12 @@ static inline pte_t *pmdp_ptep(pmd_t *pmd)
- #define pmd_soft_dirty(pmd)    pte_soft_dirty(pmd_pte(pmd))
- #define pmd_mksoft_dirty(pmd)  pte_pmd(pte_mksoft_dirty(pmd_pte(pmd)))
- #define pmd_clear_soft_dirty(pmd) pte_pmd(pte_clear_soft_dirty(pmd_pte(pmd)))
+-	return addr + size - 1 <= *dev->dma_mask;
++	return addr + size - 1 <=
++		min_not_zero(*dev->dma_mask, dev->bus_dma_mask);
+ }
+ #endif /* !CONFIG_ARCH_HAS_PHYS_TO_DMA */
+ 
+diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
+index 3c404e33d946..64466b7ef67b 100644
+--- a/kernel/dma/direct.c
++++ b/kernel/dma/direct.c
+@@ -43,10 +43,11 @@ check_addr(struct device *dev, dma_addr_t dma_addr, size_t size,
+ 			return false;
+ 		}
+ 
+-		if (*dev->dma_mask >= DMA_BIT_MASK(32)) {
++		if (*dev->dma_mask >= DMA_BIT_MASK(32) || dev->bus_dma_mask) {
+ 			dev_err(dev,
+-				"%s: overflow %pad+%zu of device mask %llx\n",
+-				caller, &dma_addr, size, *dev->dma_mask);
++				"%s: overflow %pad+%zu of device mask %llx bus mask %llx\n",
++				caller, &dma_addr, size,
++				*dev->dma_mask, dev->bus_dma_mask);
+ 		}
+ 		return false;
+ 	}
+@@ -65,12 +66,18 @@ u64 dma_direct_get_required_mask(struct device *dev)
+ {
+ 	u64 max_dma = phys_to_dma_direct(dev, (max_pfn - 1) << PAGE_SHIFT);
+ 
++	if (dev->bus_dma_mask && dev->bus_dma_mask < max_dma)
++		max_dma = dev->bus_dma_mask;
 +
-+#ifdef CONFIG_ARCH_ENABLE_THP_MIGRATION
-+#define pmd_swp_mksoft_dirty(pmd)	pte_pmd(pte_swp_mksoft_dirty(pmd_pte(pmd)))
-+#define pmd_swp_soft_dirty(pmd)		pte_swp_soft_dirty(pmd_pte(pmd))
-+#define pmd_swp_clear_soft_dirty(pmd)	pte_pmd(pte_swp_clear_soft_dirty(pmd_pte(pmd)))
-+#endif
- #endif /* CONFIG_HAVE_ARCH_SOFT_DIRTY */
+ 	return (1ULL << (fls64(max_dma) - 1)) * 2 - 1;
+ }
  
- #ifdef CONFIG_NUMA_BALANCING
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index 6c6a7c72cae4..495db17dcbca 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -72,6 +72,7 @@ config PPC_BOOK3S_64
- 	select PPC_HAVE_PMU_SUPPORT
- 	select SYS_SUPPORTS_HUGETLBFS
- 	select HAVE_ARCH_TRANSPARENT_HUGEPAGE
-+	select ARCH_ENABLE_THP_MIGRATION if TRANSPARENT_HUGEPAGE
- 	select ARCH_SUPPORTS_NUMA_BALANCING
- 	select IRQ_WORK
+ static gfp_t __dma_direct_optimal_gfp_mask(struct device *dev, u64 dma_mask,
+ 		u64 *phys_mask)
+ {
++	if (dev->bus_dma_mask && dev->bus_dma_mask < dma_mask)
++		dma_mask = dev->bus_dma_mask;
++
+ 	if (force_dma_unencrypted())
+ 		*phys_mask = __dma_to_phys(dev, dma_mask);
+ 	else
+@@ -87,7 +94,7 @@ static gfp_t __dma_direct_optimal_gfp_mask(struct device *dev, u64 dma_mask,
+ static bool dma_coherent_ok(struct device *dev, phys_addr_t phys, size_t size)
+ {
+ 	return phys_to_dma_direct(dev, phys) + size - 1 <=
+-			dev->coherent_dma_mask;
++			min_not_zero(dev->coherent_dma_mask, dev->bus_dma_mask);
+ }
+ 
+ void *dma_direct_alloc_pages(struct device *dev, size_t size,
+@@ -291,12 +298,6 @@ int dma_direct_supported(struct device *dev, u64 mask)
+ 	if (mask < phys_to_dma(dev, DMA_BIT_MASK(32)))
+ 		return 0;
+ #endif
+-	/*
+-	 * Upstream PCI/PCIe bridges or SoC interconnects may not carry
+-	 * as many DMA address bits as the device itself supports.
+-	 */
+-	if (dev->bus_dma_mask && mask > dev->bus_dma_mask)
+-		return 0;
+ 	return 1;
+ }
  
 -- 
-2.17.1
+2.18.0
