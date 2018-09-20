@@ -1,9 +1,9 @@
 Return-Path: <yuehaibing@huawei.com>
-Received: from huawei.com (szxga04-in.huawei.com [45.249.212.190])
+Received: from huawei.com (szxga05-in.huawei.com [45.249.212.191])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42GGkX6N02zF3Jd
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 22:48:51 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42GGkc71BWzF3Kt
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 22:48:56 +1000 (AEST)
 From: YueHaibing <yuehaibing@huawei.com>
 To: <davem@davemloft.net>, <dmitry.tarnyagin@lockless.no>,
  <wg@grandegger.com>, <mkl@pengutronix.de>, <michal.simek@xilinx.com>,
@@ -22,10 +22,10 @@ CC: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
  <devel@linuxdriverproject.org>, <linux-usb@vger.kernel.org>,
  <xen-devel@lists.xenproject.org>, <dev@openvswitch.org>, YueHaibing
  <yuehaibing@huawei.com>
-Subject: [PATCH net-next 16/22] usbnet: ipheth: fix return type of
- ndo_start_xmit function
-Date: Thu, 20 Sep 2018 20:33:00 +0800
-Message-ID: <20180920123306.14772-17-yuehaibing@huawei.com>
+Subject: [PATCH net-next 18/22] can: xilinx: fix return type of ndo_start_xmit
+ function
+Date: Thu, 20 Sep 2018 20:33:02 +0800
+Message-ID: <20180920123306.14772-19-yuehaibing@huawei.com>
 In-Reply-To: <20180920123306.14772-1-yuehaibing@huawei.com>
 References: <20180920123306.14772-1-yuehaibing@huawei.com>
 MIME-Version: 1.0
@@ -48,21 +48,21 @@ Found by coccinelle.
 
 Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 ---
- drivers/net/usb/ipheth.c | 2 +-
+ drivers/net/can/xilinx_can.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/usb/ipheth.c b/drivers/net/usb/ipheth.c
-index 7275761..53eab6fb 100644
---- a/drivers/net/usb/ipheth.c
-+++ b/drivers/net/usb/ipheth.c
-@@ -413,7 +413,7 @@ static int ipheth_close(struct net_device *net)
- 	return 0;
- }
- 
--static int ipheth_tx(struct sk_buff *skb, struct net_device *net)
-+static netdev_tx_t ipheth_tx(struct sk_buff *skb, struct net_device *net)
+diff --git a/drivers/net/can/xilinx_can.c b/drivers/net/can/xilinx_can.c
+index 045f084..6de5004 100644
+--- a/drivers/net/can/xilinx_can.c
++++ b/drivers/net/can/xilinx_can.c
+@@ -612,7 +612,7 @@ static int xcan_start_xmit_mailbox(struct sk_buff *skb, struct net_device *ndev)
+  *
+  * Return: NETDEV_TX_OK on success and NETDEV_TX_BUSY when the tx queue is full
+  */
+-static int xcan_start_xmit(struct sk_buff *skb, struct net_device *ndev)
++static netdev_tx_t xcan_start_xmit(struct sk_buff *skb, struct net_device *ndev)
  {
- 	struct ipheth_device *dev = netdev_priv(net);
- 	struct usb_device *udev = dev->udev;
+ 	struct xcan_priv *priv = netdev_priv(ndev);
+ 	int ret;
 -- 
 1.8.3.1
