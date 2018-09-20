@@ -1,33 +1,23 @@
-Return-Path: <yuehaibing@huawei.com>
-Received: from huawei.com (szxga04-in.huawei.com [45.249.212.190])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42GGkt5mBRzF3Km
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 22:49:10 +1000 (AEST)
-From: YueHaibing <yuehaibing@huawei.com>
-To: <davem@davemloft.net>, <dmitry.tarnyagin@lockless.no>,
- <wg@grandegger.com>, <mkl@pengutronix.de>, <michal.simek@xilinx.com>,
- <hsweeten@visionengravers.com>, <madalin.bucur@nxp.com>,
- <pantelis.antoniou@gmail.com>, <claudiu.manoil@nxp.com>,
- <leoyang.li@nxp.com>, <linux@armlinux.org.uk>, <sammy@sammy.net>,
- <ralf@linux-mips.org>, <nico@fluxnic.net>, <steve.glendinning@shawell.net>,
- <f.fainelli@gmail.com>, <grygorii.strashko@ti.com>, <w-kwok2@ti.com>,
- <m-karicheri2@ti.com>, <t.sailer@alumni.ethz.ch>, <jreuter@yaina.de>,
- <kys@microsoft.com>, <haiyangz@microsoft.com>, <wei.liu2@citrix.com>,
- <paul.durrant@citrix.com>, <arvid.brodin@alten.se>, <pshelar@ovn.org>
-CC: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
- <linux-can@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-mips@linux-mips.org>,
- <linux-omap@vger.kernel.org>, <linux-hams@vger.kernel.org>,
- <devel@linuxdriverproject.org>, <linux-usb@vger.kernel.org>,
- <xen-devel@lists.xenproject.org>, <dev@openvswitch.org>, YueHaibing
- <yuehaibing@huawei.com>
-Subject: [PATCH net-next 22/22] net: hsr: fix return type of ndo_start_xmit
- function
-Date: Thu, 20 Sep 2018 20:33:06 +0800
-Message-ID: <20180920123306.14772-23-yuehaibing@huawei.com>
-In-Reply-To: <20180920123306.14772-1-yuehaibing@huawei.com>
-References: <20180920123306.14772-1-yuehaibing@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42GHHH710dzF3Lt
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 23:13:47 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Joe Perches <joe@perches.com>, Christophe Leroy <christophe.leroy@c-s.fr>,
+ Andy Whitcroft <apw@canonical.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: Checkpatch bad Warning (Re: [PATCH] powerpc/kgdb: add
+ kgdb_arch_set/remove_breakpoint())
+In-Reply-To: <595c96f5adcccd7eab9dc95eb48618981af66d3c.camel@perches.com>
+References: <872199441fd43b05fc1c7d049098ef7c0e83f4c5.1537262646.git.christophe.leroy@c-s.fr>
+ <2f5f572a-a28c-9d17-844b-9e1961febf64@c-s.fr>
+ <595c96f5adcccd7eab9dc95eb48618981af66d3c.camel@perches.com>
+Date: Thu, 20 Sep 2018 23:13:43 +1000
+Message-ID: <87worgia60.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,30 +29,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The method ndo_start_xmit() is defined as returning an 'netdev_tx_t',
-which is a typedef for an enum type, so make sure the implementation in
-this driver has returns 'netdev_tx_t' value, and change the function
-return type to netdev_tx_t.
+Joe Perches <joe@perches.com> writes:
 
-Found by coccinelle.
+> On Tue, 2018-09-18 at 09:33 +0000, Christophe Leroy wrote:
+>> On the below patch, checkpatch reports
+>> 
+>> WARNING: struct kgdb_arch should normally be const
+>> #127: FILE: arch/powerpc/kernel/kgdb.c:480:
+>> +struct kgdb_arch arch_kgdb_ops;
+>> 
+>> But when I add 'const', I get compilation failure
+>
+> So don't add const.
+>
+> checkpatch is stupid.  You are not.
+>
+> _Always_ take checkpatch bleats with very
+> large grains of salt.
+>
+> Perhaps send a patch to remove kgbd_arch
+> from scripts/const_structs.checkpatch as
+> it seems not ever to be const.
 
-Signed-off-by: YueHaibing <yuehaibing@huawei.com>
----
- net/hsr/hsr_device.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I think it could/should be const though, it just requires updating all
+arches.
 
-diff --git a/net/hsr/hsr_device.c b/net/hsr/hsr_device.c
-index b8cd43c..a067150 100644
---- a/net/hsr/hsr_device.c
-+++ b/net/hsr/hsr_device.c
-@@ -233,7 +233,7 @@ static netdev_features_t hsr_fix_features(struct net_device *dev,
- }
- 
- 
--static int hsr_dev_xmit(struct sk_buff *skb, struct net_device *dev)
-+static netdev_tx_t hsr_dev_xmit(struct sk_buff *skb, struct net_device *dev)
- {
- 	struct hsr_priv *hsr = netdev_priv(dev);
- 	struct hsr_port *master;
--- 
-1.8.3.1
+cheers
