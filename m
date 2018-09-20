@@ -1,33 +1,27 @@
-Return-Path: <alex@ghiti.fr>
-Received: from mslow2.mail.gandi.net (mslow2.mail.gandi.net [217.70.178.242])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <joel.stan@gmail.com>
+Received: from mail-qt0-x241.google.com (mail-qt0-x241.google.com
+ [IPv6:2607:f8b0:400d:c0d::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42G6Ds5Lk9zF3M0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 16:26:04 +1000 (AEST)
-Received: from relay10.mail.gandi.net (unknown [217.70.178.230])
- by mslow2.mail.gandi.net (Postfix) with ESMTP id 0920E3A6298
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 08:15:46 +0200 (CEST)
-From: Alexandre Ghiti <alex@ghiti.fr>
-To: akpm@linux-foundation.org
-Cc: linux-mm@kvack.org, mike.kravetz@oracle.com, linux@armlinux.org.uk,
- catalin.marinas@arm.com, will.deacon@arm.com, tony.luck@intel.com,
- fenghua.yu@intel.com, ralf@linux-mips.org, paul.burton@mips.com,
- jhogan@kernel.org, jejb@parisc-linux.org, deller@gmx.de,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- ysato@users.sourceforge.jp, dalias@libc.org, davem@davemloft.net,
- tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org,
- arnd@arndb.de, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-arch@vger.kernel.org,
- Alexandre Ghiti <alex@ghiti.fr>
-Subject: [PATCH v7 10/11] hugetlb: Introduce generic version of
- huge_ptep_set_access_flags
-Date: Thu, 20 Sep 2018 06:03:57 +0000
-Message-Id: <20180920060358.16606-11-alex@ghiti.fr>
-In-Reply-To: <20180920060358.16606-1-alex@ghiti.fr>
-References: <20180920060358.16606-1-alex@ghiti.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42G75L3LSlzF31N
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 17:04:38 +1000 (AEST)
+Received: by mail-qt0-x241.google.com with SMTP id h4-v6so7538565qtj.7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 00:04:38 -0700 (PDT)
+MIME-Version: 1.0
+References: <20180914040649.1794-1-joel@jms.id.au>
+ <20180914040649.1794-2-joel@jms.id.au>
+ <CAKwvOd=imPGj6=en2uFAW6fa8jRo9siAEwMZzoj023HUa3ihOw@mail.gmail.com>
+In-Reply-To: <CAKwvOd=imPGj6=en2uFAW6fa8jRo9siAEwMZzoj023HUa3ihOw@mail.gmail.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Thu, 20 Sep 2018 16:34:23 +0930
+Message-ID: <CACPK8XcE=3vTR9JDTJBiZzWiKu__nLd95L4hNJzaZaycX6rONA@mail.gmail.com>
+Subject: Re: [PATCH v2 1/5] powerpc/Makefiles: Fix clang/llvm build
+To: Nick Desaulniers <ndesaulniers@google.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Segher Boessenkool <segher@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>,
+ Anton Blanchard <anton@ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,177 +31,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-arm, ia64, sh, x86 architectures use the same version
-of huge_ptep_set_access_flags, so move this generic implementation
-into asm-generic/hugetlb.h.
+On Sat, 15 Sep 2018 at 03:11, Nick Desaulniers <ndesaulniers@google.com> wrote:
+>
+> On Thu, Sep 13, 2018 at 9:07 PM Joel Stanley <joel@jms.id.au> wrote:
+> >
+> > From: Anton Blanchard <anton@samba.org>
+> >
+> > Commit 15a3204d24a3 ("powerpc/64s: Set assembler machine type to POWER4")
+> > passes -mpower4 to the assembler. We have more recent instructions in our
+> > assembly files, but gas permits them. The clang/llvm integrated assembler
+> > is more strict, and we get a build failure.
+>
+> Note that we disable clang's integrated assembler in the top level
+> Makefile for now, but it will still validate constraints for inline
+> assembly.  Do you know which case is meant by "build failure?"
 
-Signed-off-by: Alexandre Ghiti <alex@ghiti.fr>
-Tested-by: Helge Deller <deller@gmx.de> # parisc
-Acked-by: Catalin Marinas <catalin.marinas@arm.com> # arm64
-Acked-by: Paul Burton <paul.burton@mips.com> # MIPS parts
-Acked-by: Ingo Molnar <mingo@kernel.org> # x86
-Reviewed-by: Luiz Capitulino <lcapitulino@redhat.com>
-Reviewed-by: Mike Kravetz <mike.kravetz@oracle.com>
----
- arch/arm/include/asm/hugetlb-3level.h | 7 -------
- arch/arm64/include/asm/hugetlb.h      | 1 +
- arch/ia64/include/asm/hugetlb.h       | 7 -------
- arch/mips/include/asm/hugetlb.h       | 1 +
- arch/parisc/include/asm/hugetlb.h     | 1 +
- arch/powerpc/include/asm/hugetlb.h    | 1 +
- arch/sh/include/asm/hugetlb.h         | 7 -------
- arch/sparc/include/asm/hugetlb.h      | 1 +
- arch/x86/include/asm/hugetlb.h        | 7 -------
- include/asm-generic/hugetlb.h         | 9 +++++++++
- 10 files changed, 14 insertions(+), 28 deletions(-)
+An example of a failure is:
 
-diff --git a/arch/arm/include/asm/hugetlb-3level.h b/arch/arm/include/asm/hugetlb-3level.h
-index 8247cd6a2ac6..54e4b097b1f5 100644
---- a/arch/arm/include/asm/hugetlb-3level.h
-+++ b/arch/arm/include/asm/hugetlb-3level.h
-@@ -37,11 +37,4 @@ static inline pte_t huge_ptep_get(pte_t *ptep)
- 	return retval;
- }
- 
--static inline int huge_ptep_set_access_flags(struct vm_area_struct *vma,
--					     unsigned long addr, pte_t *ptep,
--					     pte_t pte, int dirty)
--{
--	return ptep_set_access_flags(vma, addr, ptep, pte, dirty);
--}
--
- #endif /* _ASM_ARM_HUGETLB_3LEVEL_H */
-diff --git a/arch/arm64/include/asm/hugetlb.h b/arch/arm64/include/asm/hugetlb.h
-index f4f69ae5466e..80887abcef7f 100644
---- a/arch/arm64/include/asm/hugetlb.h
-+++ b/arch/arm64/include/asm/hugetlb.h
-@@ -42,6 +42,7 @@ extern pte_t arch_make_huge_pte(pte_t entry, struct vm_area_struct *vma,
- #define __HAVE_ARCH_HUGE_SET_HUGE_PTE_AT
- extern void set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
- 			    pte_t *ptep, pte_t pte);
-+#define __HAVE_ARCH_HUGE_PTEP_SET_ACCESS_FLAGS
- extern int huge_ptep_set_access_flags(struct vm_area_struct *vma,
- 				      unsigned long addr, pte_t *ptep,
- 				      pte_t pte, int dirty);
-diff --git a/arch/ia64/include/asm/hugetlb.h b/arch/ia64/include/asm/hugetlb.h
-index 49d1f7949f3a..e9b42750fdf5 100644
---- a/arch/ia64/include/asm/hugetlb.h
-+++ b/arch/ia64/include/asm/hugetlb.h
-@@ -27,13 +27,6 @@ static inline void huge_ptep_clear_flush(struct vm_area_struct *vma,
- {
- }
- 
--static inline int huge_ptep_set_access_flags(struct vm_area_struct *vma,
--					     unsigned long addr, pte_t *ptep,
--					     pte_t pte, int dirty)
--{
--	return ptep_set_access_flags(vma, addr, ptep, pte, dirty);
--}
--
- static inline pte_t huge_ptep_get(pte_t *ptep)
- {
- 	return *ptep;
-diff --git a/arch/mips/include/asm/hugetlb.h b/arch/mips/include/asm/hugetlb.h
-index 3dcf5debf8c4..120adc3b2ffd 100644
---- a/arch/mips/include/asm/hugetlb.h
-+++ b/arch/mips/include/asm/hugetlb.h
-@@ -63,6 +63,7 @@ static inline int huge_pte_none(pte_t pte)
- 	return !val || (val == (unsigned long)invalid_pte_table);
- }
- 
-+#define __HAVE_ARCH_HUGE_PTEP_SET_ACCESS_FLAGS
- static inline int huge_ptep_set_access_flags(struct vm_area_struct *vma,
- 					     unsigned long addr,
- 					     pte_t *ptep, pte_t pte,
-diff --git a/arch/parisc/include/asm/hugetlb.h b/arch/parisc/include/asm/hugetlb.h
-index 9c3950ca2974..165b4e5a6f32 100644
---- a/arch/parisc/include/asm/hugetlb.h
-+++ b/arch/parisc/include/asm/hugetlb.h
-@@ -43,6 +43,7 @@ static inline void huge_ptep_clear_flush(struct vm_area_struct *vma,
- void huge_ptep_set_wrprotect(struct mm_struct *mm,
- 					   unsigned long addr, pte_t *ptep);
- 
-+#define __HAVE_ARCH_HUGE_PTEP_SET_ACCESS_FLAGS
- int huge_ptep_set_access_flags(struct vm_area_struct *vma,
- 					     unsigned long addr, pte_t *ptep,
- 					     pte_t pte, int dirty);
-diff --git a/arch/powerpc/include/asm/hugetlb.h b/arch/powerpc/include/asm/hugetlb.h
-index 2a90f387880a..d4d9cf6cb846 100644
---- a/arch/powerpc/include/asm/hugetlb.h
-+++ b/arch/powerpc/include/asm/hugetlb.h
-@@ -134,6 +134,7 @@ static inline void huge_ptep_clear_flush(struct vm_area_struct *vma,
- 	flush_hugetlb_page(vma, addr);
- }
- 
-+#define __HAVE_ARCH_HUGE_PTEP_SET_ACCESS_FLAGS
- extern int huge_ptep_set_access_flags(struct vm_area_struct *vma,
- 				      unsigned long addr, pte_t *ptep,
- 				      pte_t pte, int dirty);
-diff --git a/arch/sh/include/asm/hugetlb.h b/arch/sh/include/asm/hugetlb.h
-index 8df4004977b9..c87195ae0cfa 100644
---- a/arch/sh/include/asm/hugetlb.h
-+++ b/arch/sh/include/asm/hugetlb.h
-@@ -32,13 +32,6 @@ static inline void huge_ptep_clear_flush(struct vm_area_struct *vma,
- {
- }
- 
--static inline int huge_ptep_set_access_flags(struct vm_area_struct *vma,
--					     unsigned long addr, pte_t *ptep,
--					     pte_t pte, int dirty)
--{
--	return ptep_set_access_flags(vma, addr, ptep, pte, dirty);
--}
--
- static inline pte_t huge_ptep_get(pte_t *ptep)
- {
- 	return *ptep;
-diff --git a/arch/sparc/include/asm/hugetlb.h b/arch/sparc/include/asm/hugetlb.h
-index c41754a113f3..028a1465fbe7 100644
---- a/arch/sparc/include/asm/hugetlb.h
-+++ b/arch/sparc/include/asm/hugetlb.h
-@@ -40,6 +40,7 @@ static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
- 	set_huge_pte_at(mm, addr, ptep, pte_wrprotect(old_pte));
- }
- 
-+#define __HAVE_ARCH_HUGE_PTEP_SET_ACCESS_FLAGS
- static inline int huge_ptep_set_access_flags(struct vm_area_struct *vma,
- 					     unsigned long addr, pte_t *ptep,
- 					     pte_t pte, int dirty)
-diff --git a/arch/x86/include/asm/hugetlb.h b/arch/x86/include/asm/hugetlb.h
-index a3f781f7a264..574d42eb081e 100644
---- a/arch/x86/include/asm/hugetlb.h
-+++ b/arch/x86/include/asm/hugetlb.h
-@@ -13,13 +13,6 @@ static inline int is_hugepage_only_range(struct mm_struct *mm,
- 	return 0;
- }
- 
--static inline int huge_ptep_set_access_flags(struct vm_area_struct *vma,
--					     unsigned long addr, pte_t *ptep,
--					     pte_t pte, int dirty)
--{
--	return ptep_set_access_flags(vma, addr, ptep, pte, dirty);
--}
--
- static inline pte_t huge_ptep_get(pte_t *ptep)
- {
- 	return *ptep;
-diff --git a/include/asm-generic/hugetlb.h b/include/asm-generic/hugetlb.h
-index 9b9039845278..f3c99a03ee83 100644
---- a/include/asm-generic/hugetlb.h
-+++ b/include/asm-generic/hugetlb.h
-@@ -110,4 +110,13 @@ static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
- }
- #endif
- 
-+#ifndef __HAVE_ARCH_HUGE_PTEP_SET_ACCESS_FLAGS
-+static inline int huge_ptep_set_access_flags(struct vm_area_struct *vma,
-+		unsigned long addr, pte_t *ptep,
-+		pte_t pte, int dirty)
-+{
-+	return ptep_set_access_flags(vma, addr, ptep, pte, dirty);
-+}
-+#endif
-+
- #endif /* _ASM_GENERIC_HUGETLB_H */
--- 
-2.16.2
+  CC      init/do_mounts.o
+/tmp/do_mounts-58cd1d.s: Assembler messages:
+/tmp/do_mounts-58cd1d.s:251: Error: unrecognized opcode: `isel'
+/tmp/do_mounts-58cd1d.s:748: Error: unrecognized opcode: `isel'
+/tmp/do_mounts-58cd1d.s:759: Error: unrecognized opcode: `isel'
+/tmp/do_mounts-58cd1d.s:1373: Error: unrecognized opcode: `isel'
+
+The full build line at the bottom of this email. The m flags:
+
+ -mlittle-endian -m64 -msoft-float -mabi=elfv2 -mcmodel=medium
+-mcpu=power8 -mtune=power9 -mno-altivec -mno-vsx -Wa,-maltivec
+-Wa,-mpower4 -mlittle-endian
+
+If we remove the -Wa,-mpower4 it works. This is because isel is not
+available on power4.
+
+Digging deeper, clang drives gas like this:
+
+"/usr/bin/as" -a64 -mppc64 -mlittle-endian -mpower8 -I
+./arch/powerpc/include -I ./arch/powerpc/include/generated -I
+./include -I ./arch/powerpc/include/uapi -I
+./arch/powerpc/include/generated/uapi -I ./include/uapi -I
+./include/generated/uapi -I arch/powerpc -I arch/powerpc -maltivec
+-mpower4 -o init/do_mounts.o /tmp/do_mounts-3b0a3d.s
+
+GCC drives it:
+
+as -v -I ./arch/powerpc/include -I ./arch/powerpc/include/generated -I
+./include -I ./arch/powerpc/include/uapi -I
+./arch/powerpc/include/generated/uapi -I ./include/uapi -I
+./include/generated/uapi -I arch/powerpc -I arch/powerpc -a64 -mpower8
+-many -mlittle -maltivec -mpower4 -o init/do_mounts.o
+
+I think the important difference is GCC adds -many:
+
+        -many
+           Generate code for any architecture (PWR/PWRX/PPC).
+
+This is probably what we mean when building the kernel. I will get
+some advice from our toolchain people first to understand what -many
+does.
+
+> Is there a link to the Clang bug?  It would be good to have that
+> context in the commit message.
+
+I haven't opened a clang bug. I'm not sure that we need one, unless we
+want it to add -many to the assembler call like gcc does.
+
+Cheers,
+
+Joel
+
+--
+  /scratch/joel/llvm-build/bin/clang-8 -Wp,-MD,init/.do_mounts.o.d
+-nostdinc -isystem /scratch/joel/llvm-build/lib/clang/8.0.0/include
+-I./arch/powerpc/include -I./arch/powerpc/include/generated
+-I./include -I./arch/powerpc/include/uapi
+-I./arch/powerpc/include/generated/uapi -I./include/uapi
+-I./include/generated/uapi -include ./include/linux/kconfig.h -include
+./include/linux/compiler_types.h -D__KERNEL__ -Iarch/powerpc
+-DHAVE_AS_ATHIGH=1 -Qunused-arguments -Wall -Wundef
+-Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common
+-fshort-wchar -Werror-implicit-function-declaration
+-Wno-format-security -std=gnu89 -no-integrated-as -fno-PIE
+-mlittle-endian -m64 -msoft-float -pipe -Iarch/powerpc -mabi=elfv2
+-mcmodel=medium -mcpu=power8 -mtune=power9 -mno-altivec -mno-vsx
+-funit-at-a-time -fno-dwarf2-cfi-asm -Wa,-maltivec -Wa,-mpower4
+-mlittle-endian -fno-delete-null-pointer-checks -Oz
+-Wframe-larger-than=2048 -fno-stack-protector
+-Wno-format-invalid-specifier -Wno-gnu -Wno-address-of-packed-member
+-Wno-tautological-compare -mno-global-merge -Wno-unused-const-variable
+-fomit-frame-pointer -Wdeclaration-after-statement -Wno-pointer-sign
+-fno-strict-overflow -fno-merge-all-constants -fno-stack-check
+-Werror=implicit-int -Werror=strict-prototypes -Werror=date-time
+-Werror=incompatible-pointer-types -Wno-initializer-overrides
+-Wno-unused-value -Wno-format -Wno-sign-compare
+-Wno-format-zero-length -Wno-uninitialized -fno-function-sections
+-fno-data-sections    -DKBUILD_BASENAME='"do_mounts"'
+-DKBUILD_MODNAME='"mounts"' -c -o init/do_mounts.o init/do_mounts.c
