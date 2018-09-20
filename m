@@ -1,8 +1,8 @@
 Return-Path: <yuehaibing@huawei.com>
-Received: from huawei.com (szxga05-in.huawei.com [45.249.212.191])
+Received: from huawei.com (szxga07-in.huawei.com [45.249.212.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42GGkp19h4zF3Kt
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42GGkn6LMBzF3KZ
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 22:49:05 +1000 (AEST)
 From: YueHaibing <yuehaibing@huawei.com>
 To: <davem@davemloft.net>, <dmitry.tarnyagin@lockless.no>,
@@ -22,10 +22,10 @@ CC: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
  <devel@linuxdriverproject.org>, <linux-usb@vger.kernel.org>,
  <xen-devel@lists.xenproject.org>, <dev@openvswitch.org>, YueHaibing
  <yuehaibing@huawei.com>
-Subject: [PATCH net-next 21/22] l2tp: fix return type of ndo_start_xmit
+Subject: [PATCH net-next 20/22] rionet: fix return type of ndo_start_xmit
  function
-Date: Thu, 20 Sep 2018 20:33:05 +0800
-Message-ID: <20180920123306.14772-22-yuehaibing@huawei.com>
+Date: Thu, 20 Sep 2018 20:33:04 +0800
+Message-ID: <20180920123306.14772-21-yuehaibing@huawei.com>
 In-Reply-To: <20180920123306.14772-1-yuehaibing@huawei.com>
 References: <20180920123306.14772-1-yuehaibing@huawei.com>
 MIME-Version: 1.0
@@ -48,22 +48,22 @@ Found by coccinelle.
 
 Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 ---
- net/l2tp/l2tp_eth.c | 3 ++-
+ drivers/net/rionet.c | 3 ++-
  1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/net/l2tp/l2tp_eth.c b/net/l2tp/l2tp_eth.c
-index 8aadc4f..4173cb1 100644
---- a/net/l2tp/l2tp_eth.c
-+++ b/net/l2tp/l2tp_eth.c
-@@ -77,7 +77,8 @@ static void l2tp_eth_dev_uninit(struct net_device *dev)
- 	 */
+diff --git a/drivers/net/rionet.c b/drivers/net/rionet.c
+index e9f101c..de391c7 100644
+--- a/drivers/net/rionet.c
++++ b/drivers/net/rionet.c
+@@ -170,7 +170,8 @@ static int rionet_queue_tx_msg(struct sk_buff *skb, struct net_device *ndev,
+ 	return 0;
  }
  
--static int l2tp_eth_dev_xmit(struct sk_buff *skb, struct net_device *dev)
+-static int rionet_start_xmit(struct sk_buff *skb, struct net_device *ndev)
 +static netdev_tx_t
-+l2tp_eth_dev_xmit(struct sk_buff *skb, struct net_device *dev)
++rionet_start_xmit(struct sk_buff *skb, struct net_device *ndev)
  {
- 	struct l2tp_eth *priv = netdev_priv(dev);
- 	struct l2tp_session *session = priv->session;
+ 	int i;
+ 	struct rionet_private *rnet = netdev_priv(ndev);
 -- 
 1.8.3.1
