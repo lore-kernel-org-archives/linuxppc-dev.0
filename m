@@ -1,9 +1,9 @@
 Return-Path: <yuehaibing@huawei.com>
-Received: from huawei.com (szxga05-in.huawei.com [45.249.212.191])
+Received: from huawei.com (szxga04-in.huawei.com [45.249.212.190])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42GGkH56gRzF3L6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 22:48:39 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42GGkJ5S55zF3KZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 22:48:40 +1000 (AEST)
 From: YueHaibing <yuehaibing@huawei.com>
 To: <davem@davemloft.net>, <dmitry.tarnyagin@lockless.no>,
  <wg@grandegger.com>, <mkl@pengutronix.de>, <michal.simek@xilinx.com>,
@@ -22,10 +22,10 @@ CC: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
  <devel@linuxdriverproject.org>, <linux-usb@vger.kernel.org>,
  <xen-devel@lists.xenproject.org>, <dev@openvswitch.org>, YueHaibing
  <yuehaibing@huawei.com>
-Subject: [PATCH net-next 11/22] net: faraday: fix return type of
- ndo_start_xmit function
-Date: Thu, 20 Sep 2018 20:32:55 +0800
-Message-ID: <20180920123306.14772-12-yuehaibing@huawei.com>
+Subject: [PATCH net-next 12/22] net: ovs: fix return type of ndo_start_xmit
+ function
+Date: Thu, 20 Sep 2018 20:32:56 +0800
+Message-ID: <20180920123306.14772-13-yuehaibing@huawei.com>
 In-Reply-To: <20180920123306.14772-1-yuehaibing@huawei.com>
 References: <20180920123306.14772-1-yuehaibing@huawei.com>
 MIME-Version: 1.0
@@ -40,56 +40,39 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 The method ndo_start_xmit() is defined as returning an 'netdev_tx_t',
-which is a typedef for an enum type, but the implementation in this
-driver returns an 'int'.
+which is a typedef for an enum type, so make sure the implementation in
+this driver has returns 'netdev_tx_t' value, and change the function
+return type to netdev_tx_t.
 
 Found by coccinelle.
 
 Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 ---
- drivers/net/ethernet/faraday/ftgmac100.c | 4 ++--
- drivers/net/ethernet/faraday/ftmac100.c  | 7 ++++---
- 2 files changed, 6 insertions(+), 5 deletions(-)
+ net/openvswitch/vport-internal_dev.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/faraday/ftgmac100.c b/drivers/net/ethernet/faraday/ftgmac100.c
-index d8ead7e..4d67322 100644
---- a/drivers/net/ethernet/faraday/ftgmac100.c
-+++ b/drivers/net/ethernet/faraday/ftgmac100.c
-@@ -712,8 +712,8 @@ static bool ftgmac100_prep_tx_csum(struct sk_buff *skb, u32 *csum_vlan)
- 	return skb_checksum_help(skb) == 0;
+diff --git a/net/openvswitch/vport-internal_dev.c b/net/openvswitch/vport-internal_dev.c
+index bb95c43..26f71cb 100644
+--- a/net/openvswitch/vport-internal_dev.c
++++ b/net/openvswitch/vport-internal_dev.c
+@@ -43,7 +43,8 @@ static struct internal_dev *internal_dev_priv(struct net_device *netdev)
  }
  
--static int ftgmac100_hard_start_xmit(struct sk_buff *skb,
--				     struct net_device *netdev)
-+static netdev_tx_t ftgmac100_hard_start_xmit(struct sk_buff *skb,
-+					     struct net_device *netdev)
- {
- 	struct ftgmac100 *priv = netdev_priv(netdev);
- 	struct ftgmac100_txdes *txdes, *first;
-diff --git a/drivers/net/ethernet/faraday/ftmac100.c b/drivers/net/ethernet/faraday/ftmac100.c
-index a1197d3..570caeb 100644
---- a/drivers/net/ethernet/faraday/ftmac100.c
-+++ b/drivers/net/ethernet/faraday/ftmac100.c
-@@ -634,8 +634,8 @@ static void ftmac100_tx_complete(struct ftmac100 *priv)
- 		;
- }
- 
--static int ftmac100_xmit(struct ftmac100 *priv, struct sk_buff *skb,
--			 dma_addr_t map)
-+static netdev_tx_t ftmac100_xmit(struct ftmac100 *priv, struct sk_buff *skb,
-+				 dma_addr_t map)
- {
- 	struct net_device *netdev = priv->netdev;
- 	struct ftmac100_txdes *txdes;
-@@ -1016,7 +1016,8 @@ static int ftmac100_stop(struct net_device *netdev)
- 	return 0;
- }
- 
--static int ftmac100_hard_start_xmit(struct sk_buff *skb, struct net_device *netdev)
+ /* Called with rcu_read_lock_bh. */
+-static int internal_dev_xmit(struct sk_buff *skb, struct net_device *netdev)
 +static netdev_tx_t
-+ftmac100_hard_start_xmit(struct sk_buff *skb, struct net_device *netdev)
++internal_dev_xmit(struct sk_buff *skb, struct net_device *netdev)
  {
- 	struct ftmac100 *priv = netdev_priv(netdev);
- 	dma_addr_t map;
+ 	int len, err;
+ 
+@@ -62,7 +63,7 @@ static int internal_dev_xmit(struct sk_buff *skb, struct net_device *netdev)
+ 	} else {
+ 		netdev->stats.tx_errors++;
+ 	}
+-	return 0;
++	return NETDEV_TX_OK;
+ }
+ 
+ static int internal_dev_open(struct net_device *netdev)
 -- 
 1.8.3.1
