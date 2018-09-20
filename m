@@ -1,22 +1,31 @@
-Return-Path: <BATV+17e4623c997d928794c6+5506+infradead.org+hch@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <pburton@wavecomp.com>
+Received: from NAM02-BL2-obe.outbound.protection.outlook.com
+ (mail-bl2nam02on0113.outbound.protection.outlook.com [104.47.38.113])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42GRbH4V79zF3Nw
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 05:28:11 +1000 (AEST)
-From: Christoph Hellwig <hch@lst.de>
-To: iommu@lists.linux-foundation.org
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>,
- Robin Murphy <robin.murphy@arm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/5] dma-direct: add an explicit dma_direct_get_required_mask
-Date: Thu, 20 Sep 2018 20:52:44 +0200
-Message-Id: <20180920185247.20037-3-hch@lst.de>
-In-Reply-To: <20180920185247.20037-1-hch@lst.de>
-References: <20180920185247.20037-1-hch@lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42GT6C1dHdzF3Nv
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 06:36:34 +1000 (AEST)
+From: Paul Burton <paul.burton@mips.com>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+CC: Michael Ellerman <mpe@ellerman.id.au>, Joe Perches <joe@perches.com>, Andy
+ Whitcroft <apw@canonical.com>, "ralf@linux-mips.org" <ralf@linux-mips.org>,
+ "jhogan@kernel.org" <jhogan@kernel.org>, Paul Mackerras <paulus@samba.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>
+Subject: Re: Checkpatch bad Warning (Re: [PATCH] powerpc/kgdb: add
+ kgdb_arch_set/remove_breakpoint())
+Date: Thu, 20 Sep 2018 20:36:25 +0000
+Message-ID: <20180920203624.s4ivwqlco2icac73@pburton-laptop>
+References: <872199441fd43b05fc1c7d049098ef7c0e83f4c5.1537262646.git.christophe.leroy@c-s.fr>
+ <2f5f572a-a28c-9d17-844b-9e1961febf64@c-s.fr>
+ <595c96f5adcccd7eab9dc95eb48618981af66d3c.camel@perches.com>
+ <87worgia60.fsf@concordia.ellerman.id.au>
+ <f9ad7501-4d07-ddc2-6236-a7eb61283378@c-s.fr>
+ <d31bd0cb-b9da-6f1b-4f93-da71644668d6@c-s.fr>
+In-Reply-To: <d31bd0cb-b9da-6f1b-4f93-da71644668d6@c-s.fr>
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,69 +35,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is somewhat modelled after the powerpc version, and differs from
-the legacy fallback in use fls64 instead of pointlessly splitting up the
-address into low and high dwords and in that it takes (__)phys_to_dma
-into account.
+Hi Christophe,
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
----
- include/linux/dma-direct.h |  1 +
- kernel/dma/direct.c        | 21 ++++++++++++++++++---
- 2 files changed, 19 insertions(+), 3 deletions(-)
+On Thu, Sep 20, 2018 at 01:23:55AM +0000, Christophe Leroy wrote:
+> On 09/20/2018 01:19 PM, Christophe LEROY wrote:
+> > Le 20/09/2018 =E0 15:13, Michael Ellerman a =E9crit=A0:
+> > > Joe Perches <joe@perches.com> writes:
+> > > > On Tue, 2018-09-18 at 09:33 +0000, Christophe Leroy wrote:
+> > > > > On the below patch, checkpatch reports
+> > > > >=20
+> > > > > WARNING: struct kgdb_arch should normally be const
+> > > > > #127: FILE: arch/powerpc/kernel/kgdb.c:480:
+> > > > > +struct kgdb_arch arch_kgdb_ops;
+> > > > >=20
+> > > > > But when I add 'const', I get compilation failure
+> > > >=20
+> > > > So don't add const.
+> > > >=20
+> > > > checkpatch is stupid.=A0 You are not.
+> > > >=20
+> > > > _Always_ take checkpatch bleats with very
+> > > > large grains of salt.
+> > > >=20
+> > > > Perhaps send a patch to remove kgbd_arch
+> > > > from scripts/const_structs.checkpatch as
+> > > > it seems not ever to be const.
+> > >=20
+> > > I think it could/should be const though, it just requires updating al=
+l
+> > > arches.
+> > >=20
+> >=20
+> > Yes I was thinking about doing it, but first thing is to change the way
+> > MIPS initialises it:
+> >=20
+> > struct kgdb_arch arch_kgdb_ops;
+> >=20
+> > int kgdb_arch_init(void)
+> > {
+> >  =A0=A0=A0=A0union mips_instruction insn =3D {
+> >  =A0=A0=A0=A0=A0=A0=A0 .r_format =3D {
+> >  =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 .opcode =3D spec_op,
+> >  =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 .func=A0=A0=A0 =3D break_op,
+> >  =A0=A0=A0=A0=A0=A0=A0 }
+> >  =A0=A0=A0=A0};
+> >  =A0=A0=A0=A0memcpy(arch_kgdb_ops.gdb_bpt_instr, insn.byte, BREAK_INSTR=
+_SIZE);
+> >=20
+> >=20
+> > Can this be done staticaly ?
 
-diff --git a/include/linux/dma-direct.h b/include/linux/dma-direct.h
-index 86a59ba5a7f3..b79496d8c75b 100644
---- a/include/linux/dma-direct.h
-+++ b/include/linux/dma-direct.h
-@@ -55,6 +55,7 @@ static inline void dma_mark_clean(void *addr, size_t size)
+Something like this ought to do the trick:
+
+diff --git a/arch/mips/kernel/kgdb.c b/arch/mips/kernel/kgdb.c
+index eb6c0d582626..31eff1bec577 100644
+--- a/arch/mips/kernel/kgdb.c
++++ b/arch/mips/kernel/kgdb.c
+@@ -394,18 +394,16 @@ int kgdb_arch_handle_exception(int vector, int signo,=
+ int err_code,
+ 	return -1;
  }
- #endif /* CONFIG_ARCH_HAS_DMA_MARK_CLEAN */
- 
-+u64 dma_direct_get_required_mask(struct device *dev);
- void *dma_direct_alloc(struct device *dev, size_t size, dma_addr_t *dma_handle,
- 		gfp_t gfp, unsigned long attrs);
- void dma_direct_free(struct device *dev, size_t size, void *cpu_addr,
-diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
-index c954f0a6dc62..81b73a5bba54 100644
---- a/kernel/dma/direct.c
-+++ b/kernel/dma/direct.c
-@@ -53,11 +53,25 @@ check_addr(struct device *dev, dma_addr_t dma_addr, size_t size,
- 	return true;
- }
- 
-+static inline dma_addr_t phys_to_dma_direct(struct device *dev,
-+		phys_addr_t phys)
-+{
-+	if (force_dma_unencrypted())
-+		return __phys_to_dma(dev, phys);
-+	return phys_to_dma(dev, phys);
-+}
-+
-+u64 dma_direct_get_required_mask(struct device *dev)
-+{
-+	u64 max_dma = phys_to_dma_direct(dev, (max_pfn - 1) << PAGE_SHIFT);
-+
-+	return (1ULL << (fls64(max_dma) - 1)) * 2 - 1;
-+}
-+
- static bool dma_coherent_ok(struct device *dev, phys_addr_t phys, size_t size)
+=20
+-struct kgdb_arch arch_kgdb_ops;
++struct kgdb_arch arch_kgdb_ops =3D {
++#ifdef CONFIG_CPU_BIG_ENDIAN
++	.gdb_bpt_instr =3D { spec_op << 2, 0x00, 0x00, break_op },
++#else
++	.gdb_bpt_instr =3D { break_op, 0x00, 0x00, spec_op << 2 },
++#endif
++};
+=20
+ int kgdb_arch_init(void)
  {
--	dma_addr_t addr = force_dma_unencrypted() ?
--		__phys_to_dma(dev, phys) : phys_to_dma(dev, phys);
--	return addr + size - 1 <= dev->coherent_dma_mask;
-+	return phys_to_dma_direct(dev, phys) + size - 1 <=
-+			dev->coherent_dma_mask;
- }
- 
- void *dma_direct_alloc_pages(struct device *dev, size_t size,
-@@ -296,6 +310,7 @@ const struct dma_map_ops dma_direct_ops = {
- 	.unmap_page		= dma_direct_unmap_page,
- 	.unmap_sg		= dma_direct_unmap_sg,
- #endif
-+	.get_required_mask	= dma_direct_get_required_mask,
- 	.dma_supported		= dma_direct_supported,
- 	.mapping_error		= dma_direct_mapping_error,
- 	.cache_sync		= arch_dma_cache_sync,
--- 
-2.18.0
+-	union mips_instruction insn =3D {
+-		.r_format =3D {
+-			.opcode =3D spec_op,
+-			.func	=3D break_op,
+-		}
+-	};
+-	memcpy(arch_kgdb_ops.gdb_bpt_instr, insn.byte, BREAK_INSTR_SIZE);
+-
+ 	register_die_notifier(&kgdb_notifier);
+=20
+ 	return 0;
+
+Thanks,
+    Paul
