@@ -1,22 +1,37 @@
-Return-Path: <BATV+17e4623c997d928794c6+5506+infradead.org+hch@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [198.137.202.133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <pku.leo@gmail.com>
+Received: from mail-ot1-f66.google.com (mail-ot1-f66.google.com
+ [209.85.210.66])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42GQq76csyzF3Ng
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 04:53:20 +1000 (AEST)
-From: Christoph Hellwig <hch@lst.de>
-To: iommu@lists.linux-foundation.org
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>,
- Robin Murphy <robin.murphy@arm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 5/5] dma-direct: always allow dma mask <= physiscal memory size
-Date: Thu, 20 Sep 2018 20:52:47 +0200
-Message-Id: <20180920185247.20037-6-hch@lst.de>
-In-Reply-To: <20180920185247.20037-1-hch@lst.de>
-References: <20180920185247.20037-1-hch@lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42GQrg4KYNzF3Nn
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 04:54:43 +1000 (AEST)
+Received: by mail-ot1-f66.google.com with SMTP id o13-v6so10512459otl.4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 11:54:43 -0700 (PDT)
+Received: from mail-ot1-f45.google.com (mail-ot1-f45.google.com.
+ [209.85.210.45])
+ by smtp.gmail.com with ESMTPSA id f7-v6sm7499694otb.9.2018.09.20.11.54.40
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Thu, 20 Sep 2018 11:54:40 -0700 (PDT)
+Received: by mail-ot1-f45.google.com with SMTP id c12-v6so10508945otl.6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 11:54:40 -0700 (PDT)
+MIME-Version: 1.0
+References: <1537456011-10769-1-git-send-email-madalin.bucur@nxp.com>
+ <1537456011-10769-3-git-send-email-madalin.bucur@nxp.com>
+In-Reply-To: <1537456011-10769-3-git-send-email-madalin.bucur@nxp.com>
+From: Li Yang <leoyang.li@nxp.com>
+Date: Thu, 20 Sep 2018 13:54:28 -0500
+Message-ID: <CADRPPNSz-x1uf98+cKUjj54sSxQbJOXWk7xn_ExhbcjdAYKUpw@mail.gmail.com>
+Subject: Re: [PATCH 2/4] soc/fsl/qbman: Add 64 bit DMA addressing requirement
+ to QBMan
+To: madalin.bucur@nxp.com
+Cc: Roy Pledge <roy.pledge@nxp.com>, claudiu.manoil@nxp.com,
+ Catalin Marinas <catalin.marinas@arm.com>, Scott Wood <oss@buserror.net>,
+ "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
+ <linux-arm-kernel@lists.infradead.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,63 +41,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This way an architecture with less than 4G of RAM can support dma_mask
-smaller than 32-bit without a ZONE_DMA.  Apparently that is a common
-case on powerpc.
+On Thu, Sep 20, 2018 at 10:09 AM Madalin Bucur <madalin.bucur@nxp.com> wrote:
+>
+> From: Roy Pledge <roy.pledge@nxp.com>
+>
+> The QBMan block is memory mapped on SoCs above a 32 bit (4 Gigabyte)
+> boundary so enabling 64 bit DMA addressing is needed for QBMan to
+> be usable.
+>
+> Signed-off-by: Roy Pledge <roy.pledge@nxp.com>
+> Signed-off-by: Madalin Bucur <madalin.bucur@nxp.com>
+> ---
+>  drivers/soc/fsl/qbman/Kconfig | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/soc/fsl/qbman/Kconfig b/drivers/soc/fsl/qbman/Kconfig
+> index d570cb5fd381..19d6f4621e23 100644
+> --- a/drivers/soc/fsl/qbman/Kconfig
+> +++ b/drivers/soc/fsl/qbman/Kconfig
+> @@ -1,6 +1,6 @@
+>  menuconfig FSL_DPAA
+>         bool "QorIQ DPAA1 framework support"
+> -       depends on (FSL_SOC_BOOKE || ARCH_LAYERSCAPE)
+> +       depends on ((FSL_SOC_BOOKE || ARCH_LAYERSCAPE || ARM) && ARCH_DMA_ADDR_T_64BIT)
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
----
- kernel/dma/direct.c | 28 ++++++++++++++++------------
- 1 file changed, 16 insertions(+), 12 deletions(-)
+You also added ARM support here.  Actually the dependency on
+ARCH_DMA_ADDR_T_64BIT is only explicitly needed by ARM(other platforms
+already implies ARCH_DMA_ADDR_T_64BIT).  So I think the patch title
+should be like: adding 32-bit ARM support.  The ARCH_DMA_ADDR_T_64BIT
+is enabled by ARM_LPAE on ARM.  Probably we should make that
+straightforward in the Kconfig, so that people better understand what
+is needed for 32-bit ARM.
 
-diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
-index 64466b7ef67b..d1e103c6b107 100644
---- a/kernel/dma/direct.c
-+++ b/kernel/dma/direct.c
-@@ -4,6 +4,7 @@
-  *
-  * DMA operations that map physical memory directly without using an IOMMU.
-  */
-+#include <linux/bootmem.h> /* for max_pfn */
- #include <linux/export.h>
- #include <linux/mm.h>
- #include <linux/dma-direct.h>
-@@ -283,21 +284,24 @@ int dma_direct_map_sg(struct device *dev, struct scatterlist *sgl, int nents,
- 	return nents;
- }
- 
-+/*
-+ * Because 32-bit DMA masks are so common we expect every architecture to be
-+ * able to satisfy them - either by not supporting more physical memory, or by
-+ * providing a ZONE_DMA32.  If neither is the case, the architecture needs to
-+ * use an IOMMU instead of the direct mapping.
-+ */
- int dma_direct_supported(struct device *dev, u64 mask)
- {
--#ifdef CONFIG_ZONE_DMA
--	if (mask < phys_to_dma(dev, DMA_BIT_MASK(ARCH_ZONE_DMA_BITS)))
--		return 0;
--#else
--	/*
--	 * Because 32-bit DMA masks are so common we expect every architecture
--	 * to be able to satisfy them - either by not supporting more physical
--	 * memory, or by providing a ZONE_DMA32.  If neither is the case, the
--	 * architecture needs to use an IOMMU instead of the direct mapping.
--	 */
--	if (mask < phys_to_dma(dev, DMA_BIT_MASK(32)))
-+	u64 min_mask;
-+
-+	if (IS_ENABLED(CONFIG_ZONE_DMA))
-+		min_mask = DMA_BIT_MASK(ARCH_ZONE_DMA_BITS);
-+	else
-+		min_mask = min_t(u64, DMA_BIT_MASK(32),
-+				 (max_pfn - 1) << PAGE_SHIFT);
-+
-+	if (mask >= phys_to_dma(dev, min_mask))
- 		return 0;
--#endif
- 	return 1;
- }
- 
--- 
-2.18.0
+>         select GENERIC_ALLOCATOR
+>         help
+>           The Freescale Data Path Acceleration Architecture (DPAA) is a set of
+> --
+> 2.1.0
+>
