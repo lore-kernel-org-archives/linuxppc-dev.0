@@ -1,33 +1,16 @@
-Return-Path: <aneesh.kumar@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42G9521hnJzF3KV
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 18:34:30 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w8K8TREl017881
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 04:34:27 -0400
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2mm70t348n-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 04:34:27 -0400
-Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Thu, 20 Sep 2018 02:34:26 -0600
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: npiggin@gmail.com, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: [PATCH V2 2/2] powerpc/mm: Increase the max addressable memory to 2PB
-Date: Thu, 20 Sep 2018 14:03:58 +0530
-In-Reply-To: <20180920083358.2359-1-aneesh.kumar@linux.ibm.com>
-References: <20180920083358.2359-1-aneesh.kumar@linux.ibm.com>
-Message-Id: <20180920083358.2359-2-aneesh.kumar@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42GBZ25YPVzF3JC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 19:41:14 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Cc: maddy@linux.ibm.com,
+	paulus@samba.org
+Subject: [PATCH] powerpc/perf: Add missing break in power7_marked_instr_event()
+Date: Thu, 20 Sep 2018 19:41:11 +1000
+Message-Id: <20180920094111.4125-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,247 +20,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently we limit the max addressable memory to 128TB. This patch increase the
-limit to 2PB. We can have devices like nvdimm which adds memory above 512TB
-limit.
+In power7_marked_instr_event() there is a switch case that is missing
+a break or an explicit fallthrough, it's not immediately clear which
+it should be.
 
-We still don't support regular system ram above 512TB. One of the challenge with
-that is the percpu allocator, that allocates per node memory and use the max
-distance between them as the percpu offsets. This means with large gap in
-address space ( system ram above 1PB) we will run out of vmalloc space to map
-the percpu allocation.
+The function determines based on the PMU event code, whether the event
+is a "marked" event (which then requires us to configure the PMU in a
+certain way). On Power7 there is no specific bit(s) in the event to
+tell us that, we just have to know.
 
-In order to support addressable memory above 512TB, kernel should be able to
-linear map this range. To do that with hash translation we now add 4 context
-to kernel linear map region. Our per context addressable range is 512TB. We
-still keep VMALLOC and VMEMMAP region to old size. SLB miss handlers is updated
-to validate these limit.
+Rather than having a full list of every event and whether they are
+marked, we pull apart the event code and for events with certain
+values of certain fields we can say that those are all marked events.
 
-We also limit this update to SPARSEMEM_VMEMMAP and SPARSEMEM_EXTREME
+We take the psel (bits 0-7) of the event, and look at bits 4-7. For a
+value of 6 we say that if the entire psel == 0x64 then if the pmc == 3
+the event is marked, else not, and otherwise we continue.
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+It is then that we fallthrough to the 8 case, where we return true if
+the unit == 0xd.
+
+The question is should the 6 case also fallthrough and check for
+unit == 0xd, or should it return.
+
+Looking at the full list of events we see that there are zero events
+where (psel >> 4) == 0x6 and unit == 0xd.
+
+So the answer is it doesn't really matter, there are no valid event
+codes that will return a different result whether we fallthrough or
+break.
+
+But equally, testing the 6 case events against unit == 0xd is slightly
+bogus, as there are no such events. So to make the code clearer, and
+avoid any future confusion, have the 6 case break rather than falling
+through.
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/book3s/64/mmu-hash.h | 82 +++++++++++++------
- arch/powerpc/include/asm/mmu.h                | 15 ++++
- arch/powerpc/include/asm/sparsemem.h          | 11 ---
- arch/powerpc/mm/slb.c                         | 20 +++--
- 4 files changed, 87 insertions(+), 41 deletions(-)
+ arch/powerpc/perf/power7-pmu.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-index bbeaf6adf93c..431a063a450b 100644
---- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-@@ -522,13 +522,9 @@ extern void slb_set_size(u16 size);
-  * from mmu context id and effective segment id of the address.
-  *
-  * For user processes max context id is limited to MAX_USER_CONTEXT.
--
-- * For kernel space, we use context ids 1-4 to map addresses as below:
-- * NOTE: each context only support 64TB now.
-- * 0x00001 -  [ 0xc000000000000000 - 0xc0003fffffffffff ]
-- * 0x00002 -  [ 0xd000000000000000 - 0xd0003fffffffffff ]
-- * 0x00003 -  [ 0xe000000000000000 - 0xe0003fffffffffff ]
-- * 0x00004 -  [ 0xf000000000000000 - 0xf0003fffffffffff ]
-+ * more details in get_user_context
-+ *
-+ * For kernel space get_kernel_context
-  *
-  * The proto-VSIDs are then scrambled into real VSIDs with the
-  * multiplicative hash:
-@@ -568,6 +564,21 @@ extern void slb_set_size(u16 size);
- #define ESID_BITS_MASK		((1 << ESID_BITS) - 1)
- #define ESID_BITS_1T_MASK	((1 << ESID_BITS_1T) - 1)
- 
-+/*
-+ * Now certain config support MAX_PHYSMEM more than 512TB. Hence we will need
-+ * to use more than one context for linear mapping the kernel.
-+ * For vmalloc and memmap, we use just one context with 512TB. With 64 byte
-+ * struct page size, we need ony 32 TB in memmap for 2PB (51 bits (MAX_PHYSMEM_BITS)).
-+ */
-+#if (MAX_PHYSMEM_BITS > MAX_EA_BITS_PER_CONTEXT)
-+#define MAX_KERNEL_CTX_CNT	(1UL << (MAX_PHYSMEM_BITS - MAX_EA_BITS_PER_CONTEXT))
-+#else
-+#define MAX_KERNEL_CTX_CNT	1
-+#endif
-+
-+#define MAX_VMALLOC_CTX_CNT	1
-+#define MAX_MEMMAP_CTX_CNT	1
-+
- /*
-  * 256MB segment
-  * The proto-VSID space has 2^(CONTEX_BITS + ESID_BITS) - 1 segments
-@@ -578,12 +589,13 @@ extern void slb_set_size(u16 size);
-  * We also need to avoid the last segment of the last context, because that
-  * would give a protovsid of 0x1fffffffff. That will result in a VSID 0
-  * because of the modulo operation in vsid scramble.
-+ *
-+ * We add one extra context to MIN_USER_CONTEXT so that we can map kernel
-+ * context easily. The +1 is to map the unused 0xe region mapping.
-  */
- #define MAX_USER_CONTEXT	((ASM_CONST(1) << CONTEXT_BITS) - 2)
--#define MIN_USER_CONTEXT	(5)
--
--/* Would be nice to use KERNEL_REGION_ID here */
--#define KERNEL_REGION_CONTEXT_OFFSET	(0xc - 1)
-+#define MIN_USER_CONTEXT	(MAX_KERNEL_CTX_CNT + MAX_VMALLOC_CTX_CNT + \
-+				 MAX_MEMMAP_CTX_CNT + 2)
- 
- /*
-  * For platforms that support on 65bit VA we limit the context bits
-@@ -743,6 +755,39 @@ static inline unsigned long get_vsid(unsigned long context, unsigned long ea,
- 	return vsid_scramble(protovsid, VSID_MULTIPLIER_1T, vsid_bits);
- }
- 
-+/*
-+ * For kernel space, we use context ids as below
-+ * below. Range is 512TB per context.
-+ *
-+ * 0x00001 -  [ 0xc000000000000000 - 0xc001ffffffffffff]
-+ * 0x00002 -  [ 0xc002000000000000 - 0xc003ffffffffffff]
-+ * 0x00003 -  [ 0xc004000000000000 - 0xc005ffffffffffff]
-+ * 0x00004 -  [ 0xc006000000000000 - 0xc007ffffffffffff]
-+
-+ * 0x00005 -  [ 0xd000000000000000 - 0xd001ffffffffffff ]
-+ * 0x00006 -  Not used - Can map 0xe000000000000000 range.
-+ * 0x00007 -  [ 0xf000000000000000 - 0xf001ffffffffffff ]
-+ *
-+ * So we can compute the context from the region (top nibble) by
-+ * subtracting 11, or 0xc - 1.
-+ */
-+static inline unsigned long get_kernel_context(unsigned long ea)
-+{
-+	unsigned long region_id = REGION_ID(ea);
-+	unsigned long ctx;
-+	/*
-+	 * For linear mapping we do support multiple context
-+	 */
-+	if (region_id == KERNEL_REGION_ID) {
-+		/*
-+		 * We already verified ea to be not beyond the addr limit.
-+		 */
-+		ctx =  1 + ((ea & ~REGION_MASK) >> MAX_EA_BITS_PER_CONTEXT);
-+	} else
-+		ctx = (region_id - 0xc) + MAX_KERNEL_CTX_CNT;
-+	return ctx;
-+}
-+
- /*
-  * This is only valid for addresses >= PAGE_OFFSET
-  */
-@@ -753,20 +798,7 @@ static inline unsigned long get_kernel_vsid(unsigned long ea, int ssize)
- 	if (!is_kernel_addr(ea))
- 		return 0;
- 
--	/*
--	 * For kernel space, we use context ids 1-4 to map the address space as
--	 * below:
--	 *
--	 * 0x00001 -  [ 0xc000000000000000 - 0xc0003fffffffffff ]
--	 * 0x00002 -  [ 0xd000000000000000 - 0xd0003fffffffffff ]
--	 * 0x00003 -  [ 0xe000000000000000 - 0xe0003fffffffffff ]
--	 * 0x00004 -  [ 0xf000000000000000 - 0xf0003fffffffffff ]
--	 *
--	 * So we can compute the context from the region (top nibble) by
--	 * subtracting 11, or 0xc - 1.
--	 */
--	context = (ea >> 60) - KERNEL_REGION_CONTEXT_OFFSET;
--
-+	context = get_kernel_context(ea);
- 	return get_vsid(context, ea, ssize);
- }
- 
-diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
-index 13ea441ac531..eb20eb3b8fb0 100644
---- a/arch/powerpc/include/asm/mmu.h
-+++ b/arch/powerpc/include/asm/mmu.h
-@@ -309,6 +309,21 @@ static inline u16 get_mm_addr_key(struct mm_struct *mm, unsigned long address)
-  */
- #define MMU_PAGE_COUNT	16
- 
-+/*
-+ * If we store section details in page->flags we can't increase the MAX_PHYSMEM_BITS
-+ * if we increase SECTIONS_WIDTH we will not store node details in page->flags and
-+ * page_to_nid does a page->section->node lookup
-+ * Hence only increase for VMEMMAP. Further depending on SPARSEMEM_EXTREME reduce
-+ * memory requirements with large number of sections.
-+ * 51 bits is the max physical real address on POWER9
-+ */
-+#if defined(CONFIG_SPARSEMEM_VMEMMAP) && defined(CONFIG_SPARSEMEM_EXTREME) &&	\
-+	defined (CONFIG_PPC_64K_PAGES)
-+#define MAX_PHYSMEM_BITS        51
-+#else
-+#define MAX_PHYSMEM_BITS        46
-+#endif
-+
- #ifdef CONFIG_PPC_BOOK3S_64
- #include <asm/book3s/64/mmu.h>
- #else /* CONFIG_PPC_BOOK3S_64 */
-diff --git a/arch/powerpc/include/asm/sparsemem.h b/arch/powerpc/include/asm/sparsemem.h
-index 28f5dae25db6..68da49320592 100644
---- a/arch/powerpc/include/asm/sparsemem.h
-+++ b/arch/powerpc/include/asm/sparsemem.h
-@@ -9,17 +9,6 @@
-  * MAX_PHYSMEM_BITS		2^N: how much memory we can have in that space
-  */
- #define SECTION_SIZE_BITS       24
--/*
-- * If we store section details in page->flags we can't increase the MAX_PHYSMEM_BITS
-- * if we increase SECTIONS_WIDTH we will not store node details in page->flags and
-- * page_to_nid does a page->section->node lookup
-- * Hence only increase for VMEMMAP.
-- */
--#ifdef CONFIG_SPARSEMEM_VMEMMAP
--#define MAX_PHYSMEM_BITS        47
--#else
--#define MAX_PHYSMEM_BITS        46
--#endif
- 
- #endif /* CONFIG_SPARSEMEM */
- 
-diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
-index af87945298fa..0c7cb2fdaaef 100644
---- a/arch/powerpc/mm/slb.c
-+++ b/arch/powerpc/mm/slb.c
-@@ -638,16 +638,27 @@ static long slb_allocate_kernel(unsigned long ea, unsigned long id)
- 	unsigned long flags;
- 	int ssize;
- 
--	if ((ea & ~REGION_MASK) >= (1ULL << MAX_EA_BITS_PER_CONTEXT))
--		return -EFAULT;
--
- 	if (id == KERNEL_REGION_ID) {
-+
-+		/* We only support upto MAX_PHYSMEM_BITS */
-+		if ((ea & ~REGION_MASK) > (1UL << MAX_PHYSMEM_BITS))
-+			return -EFAULT;
-+
- 		flags = SLB_VSID_KERNEL | mmu_psize_defs[mmu_linear_psize].sllp;
-+
- #ifdef CONFIG_SPARSEMEM_VMEMMAP
- 	} else if (id == VMEMMAP_REGION_ID) {
-+
-+		if ((ea & ~REGION_MASK) >= (1ULL << MAX_EA_BITS_PER_CONTEXT))
-+			return -EFAULT;
-+
- 		flags = SLB_VSID_KERNEL | mmu_psize_defs[mmu_vmemmap_psize].sllp;
- #endif
- 	} else if (id == VMALLOC_REGION_ID) {
-+
-+		if ((ea & ~REGION_MASK) >= (1ULL << MAX_EA_BITS_PER_CONTEXT))
-+			return -EFAULT;
-+
- 		if (ea < H_VMALLOC_END)
- 			flags = get_paca()->vmalloc_sllp;
- 		else
-@@ -660,8 +671,7 @@ static long slb_allocate_kernel(unsigned long ea, unsigned long id)
- 	if (!mmu_has_feature(MMU_FTR_1T_SEGMENT))
- 		ssize = MMU_SEGSIZE_256M;
- 
--	context = id - KERNEL_REGION_CONTEXT_OFFSET;
--
-+	context = get_kernel_context(ea);
- 	return slb_insert_entry(ea, context, flags, ssize, true);
- }
- 
+diff --git a/arch/powerpc/perf/power7-pmu.c b/arch/powerpc/perf/power7-pmu.c
+index 7963658dbc22..6dbae9884ec4 100644
+--- a/arch/powerpc/perf/power7-pmu.c
++++ b/arch/powerpc/perf/power7-pmu.c
+@@ -238,6 +238,7 @@ static int power7_marked_instr_event(u64 event)
+ 	case 6:
+ 		if (psel == 0x64)
+ 			return pmc >= 3;
++		break;
+ 	case 8:
+ 		return unit == 0xd;
+ 	}
 -- 
 2.17.1
