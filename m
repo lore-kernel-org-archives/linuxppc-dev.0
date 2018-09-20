@@ -1,9 +1,9 @@
 Return-Path: <yuehaibing@huawei.com>
-Received: from huawei.com (szxga07-in.huawei.com [45.249.212.35])
+Received: from huawei.com (szxga04-in.huawei.com [45.249.212.190])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42GGkn6LMBzF3KZ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 22:49:05 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42GGkt5mBRzF3Km
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 22:49:10 +1000 (AEST)
 From: YueHaibing <yuehaibing@huawei.com>
 To: <davem@davemloft.net>, <dmitry.tarnyagin@lockless.no>,
  <wg@grandegger.com>, <mkl@pengutronix.de>, <michal.simek@xilinx.com>,
@@ -22,10 +22,10 @@ CC: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
  <devel@linuxdriverproject.org>, <linux-usb@vger.kernel.org>,
  <xen-devel@lists.xenproject.org>, <dev@openvswitch.org>, YueHaibing
  <yuehaibing@huawei.com>
-Subject: [PATCH net-next 20/22] rionet: fix return type of ndo_start_xmit
+Subject: [PATCH net-next 22/22] net: hsr: fix return type of ndo_start_xmit
  function
-Date: Thu, 20 Sep 2018 20:33:04 +0800
-Message-ID: <20180920123306.14772-21-yuehaibing@huawei.com>
+Date: Thu, 20 Sep 2018 20:33:06 +0800
+Message-ID: <20180920123306.14772-23-yuehaibing@huawei.com>
 In-Reply-To: <20180920123306.14772-1-yuehaibing@huawei.com>
 References: <20180920123306.14772-1-yuehaibing@huawei.com>
 MIME-Version: 1.0
@@ -48,22 +48,21 @@ Found by coccinelle.
 
 Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 ---
- drivers/net/rionet.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ net/hsr/hsr_device.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/rionet.c b/drivers/net/rionet.c
-index e9f101c..de391c7 100644
---- a/drivers/net/rionet.c
-+++ b/drivers/net/rionet.c
-@@ -170,7 +170,8 @@ static int rionet_queue_tx_msg(struct sk_buff *skb, struct net_device *ndev,
- 	return 0;
+diff --git a/net/hsr/hsr_device.c b/net/hsr/hsr_device.c
+index b8cd43c..a067150 100644
+--- a/net/hsr/hsr_device.c
++++ b/net/hsr/hsr_device.c
+@@ -233,7 +233,7 @@ static netdev_features_t hsr_fix_features(struct net_device *dev,
  }
  
--static int rionet_start_xmit(struct sk_buff *skb, struct net_device *ndev)
-+static netdev_tx_t
-+rionet_start_xmit(struct sk_buff *skb, struct net_device *ndev)
+ 
+-static int hsr_dev_xmit(struct sk_buff *skb, struct net_device *dev)
++static netdev_tx_t hsr_dev_xmit(struct sk_buff *skb, struct net_device *dev)
  {
- 	int i;
- 	struct rionet_private *rnet = netdev_priv(ndev);
+ 	struct hsr_priv *hsr = netdev_priv(dev);
+ 	struct hsr_port *master;
 -- 
 1.8.3.1
