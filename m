@@ -1,29 +1,24 @@
-Return-Path: <joe@perches.com>
-Received: from smtprelay.hostedemail.com (smtprelay0011.hostedemail.com
- [216.40.44.11])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [IPv6:2620:137:e000::1:9])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42G1rp5xH0zF0dq
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 13:08:25 +1000 (AEST)
-Received: from smtprelay.hostedemail.com (10.5.19.251.rfc1918.com
- [10.5.19.251])
- by smtpgrave07.hostedemail.com (Postfix) with ESMTP id 775CB180301B6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 03:02:19 +0000 (UTC)
-Message-ID: <595c96f5adcccd7eab9dc95eb48618981af66d3c.camel@perches.com>
-Subject: Re: Checkpatch bad Warning (Re: [PATCH] powerpc/kgdb: add
- kgdb_arch_set/remove_breakpoint())
-From: Joe Perches <joe@perches.com>
-To: Christophe Leroy <christophe.leroy@c-s.fr>, Andy Whitcroft
- <apw@canonical.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Date: Wed, 19 Sep 2018 20:02:05 -0700
-In-Reply-To: <2f5f572a-a28c-9d17-844b-9e1961febf64@c-s.fr>
-References: <872199441fd43b05fc1c7d049098ef7c0e83f4c5.1537262646.git.christophe.leroy@c-s.fr>
- <2f5f572a-a28c-9d17-844b-9e1961febf64@c-s.fr>
-Content-Type: text/plain; charset="ISO-8859-1"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42G3QR02xZzF1RG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 14:19:09 +1000 (AEST)
+Date: Wed, 19 Sep 2018 21:19:05 -0700 (PDT)
+Message-Id: <20180919.211905.947180004211832156.davem@davemloft.net>
+To: yuehaibing@huawei.com
+Cc: geoff@infradead.org, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, kou.ishizaki@toshiba.co.jp, andrew@lunn.ch,
+ f.fainelli@gmail.com, linux-kernel@vger.kernel.org,
+ netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH net-next] net: toshiba: fix return type of
+ ndo_start_xmit function
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20180919102339.13988-1-yuehaibing@huawei.com>
+References: <20180919102339.13988-1-yuehaibing@huawei.com>
 Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,22 +28,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2018-09-18 at 09:33 +0000, Christophe Leroy wrote:
-> On the below patch, checkpatch reports
+From: YueHaibing <yuehaibing@huawei.com>
+Date: Wed, 19 Sep 2018 18:23:39 +0800
+
+> The method ndo_start_xmit() is defined as returning an 'netdev_tx_t',
+> which is a typedef for an enum type, so make sure the implementation in
+> this driver has returns 'netdev_tx_t' value, and change the function
+> return type to netdev_tx_t.
 > 
-> WARNING: struct kgdb_arch should normally be const
-> #127: FILE: arch/powerpc/kernel/kgdb.c:480:
-> +struct kgdb_arch arch_kgdb_ops;
+> Found by coccinelle.
 > 
-> But when I add 'const', I get compilation failure
+> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 
-So don't add const.
-
-checkpatch is stupid.  You are not.
-
-_Always_ take checkpatch bleats with very
-large grains of salt.
-
-Perhaps send a patch to remove kgbd_arch
-from scripts/const_structs.checkpatch as
-it seems not ever to be const.
+Applied.
