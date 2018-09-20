@@ -1,9 +1,9 @@
 Return-Path: <yuehaibing@huawei.com>
-Received: from huawei.com (szxga07-in.huawei.com [45.249.212.35])
+Received: from huawei.com (szxga05-in.huawei.com [45.249.212.191])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42GGkh59pHzF3Kt
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 22:49:00 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42GGkp19h4zF3Kt
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 22:49:05 +1000 (AEST)
 From: YueHaibing <yuehaibing@huawei.com>
 To: <davem@davemloft.net>, <dmitry.tarnyagin@lockless.no>,
  <wg@grandegger.com>, <mkl@pengutronix.de>, <michal.simek@xilinx.com>,
@@ -22,10 +22,10 @@ CC: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
  <devel@linuxdriverproject.org>, <linux-usb@vger.kernel.org>,
  <xen-devel@lists.xenproject.org>, <dev@openvswitch.org>, YueHaibing
  <yuehaibing@huawei.com>
-Subject: [PATCH net-next 19/22] net: plip: fix return type of ndo_start_xmit
+Subject: [PATCH net-next 21/22] l2tp: fix return type of ndo_start_xmit
  function
-Date: Thu, 20 Sep 2018 20:33:03 +0800
-Message-ID: <20180920123306.14772-20-yuehaibing@huawei.com>
+Date: Thu, 20 Sep 2018 20:33:05 +0800
+Message-ID: <20180920123306.14772-22-yuehaibing@huawei.com>
 In-Reply-To: <20180920123306.14772-1-yuehaibing@huawei.com>
 References: <20180920123306.14772-1-yuehaibing@huawei.com>
 MIME-Version: 1.0
@@ -48,30 +48,22 @@ Found by coccinelle.
 
 Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 ---
- drivers/net/plip/plip.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ net/l2tp/l2tp_eth.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/plip/plip.c b/drivers/net/plip/plip.c
-index feb92ec..0b354e6 100644
---- a/drivers/net/plip/plip.c
-+++ b/drivers/net/plip/plip.c
-@@ -146,7 +146,7 @@
- static void plip_interrupt(void *dev_id);
- 
- /* Functions for DEV methods */
--static int plip_tx_packet(struct sk_buff *skb, struct net_device *dev);
-+static netdev_tx_t plip_tx_packet(struct sk_buff *skb, struct net_device *dev);
- static int plip_hard_header(struct sk_buff *skb, struct net_device *dev,
-                             unsigned short type, const void *daddr,
- 			    const void *saddr, unsigned len);
-@@ -962,7 +962,7 @@ static __be16 plip_type_trans(struct sk_buff *skb, struct net_device *dev)
- 	spin_unlock_irqrestore(&nl->lock, flags);
+diff --git a/net/l2tp/l2tp_eth.c b/net/l2tp/l2tp_eth.c
+index 8aadc4f..4173cb1 100644
+--- a/net/l2tp/l2tp_eth.c
++++ b/net/l2tp/l2tp_eth.c
+@@ -77,7 +77,8 @@ static void l2tp_eth_dev_uninit(struct net_device *dev)
+ 	 */
  }
  
--static int
+-static int l2tp_eth_dev_xmit(struct sk_buff *skb, struct net_device *dev)
 +static netdev_tx_t
- plip_tx_packet(struct sk_buff *skb, struct net_device *dev)
++l2tp_eth_dev_xmit(struct sk_buff *skb, struct net_device *dev)
  {
- 	struct net_local *nl = netdev_priv(dev);
+ 	struct l2tp_eth *priv = netdev_priv(dev);
+ 	struct l2tp_session *session = priv->session;
 -- 
 1.8.3.1
