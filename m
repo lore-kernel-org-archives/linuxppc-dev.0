@@ -3,8 +3,8 @@ Received: from relay6-d.mail.gandi.net (relay6-d.mail.gandi.net
  [217.70.183.198])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42G5zC5qcKzF3Jd
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 16:14:15 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42G61s34wVzF3J4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 16:16:32 +1000 (AEST)
 From: Alexandre Ghiti <alex@ghiti.fr>
 To: akpm@linux-foundation.org
 Cc: linux-mm@kvack.org, mike.kravetz@oracle.com, linux@armlinux.org.uk,
@@ -20,10 +20,9 @@ Cc: linux-mm@kvack.org, mike.kravetz@oracle.com, linux@armlinux.org.uk,
  linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
  sparclinux@vger.kernel.org, linux-arch@vger.kernel.org,
  Alexandre Ghiti <alex@ghiti.fr>
-Subject: [PATCH v7 09/11] hugetlb: Introduce generic version of
- huge_ptep_set_wrprotect
-Date: Thu, 20 Sep 2018 06:03:56 +0000
-Message-Id: <20180920060358.16606-10-alex@ghiti.fr>
+Subject: [PATCH v7 11/11] hugetlb: Introduce generic version of huge_ptep_get
+Date: Thu, 20 Sep 2018 06:03:58 +0000
+Message-Id: <20180920060358.16606-12-alex@ghiti.fr>
 In-Reply-To: <20180920060358.16606-1-alex@ghiti.fr>
 References: <20180920060358.16606-1-alex@ghiti.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -35,8 +34,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-arm, ia64, mips, powerpc, sh, x86 architectures use the same version
-of huge_ptep_set_wrprotect, so move this generic implementation into
+ia64, mips, parisc, powerpc, sh, sparc, x86 architectures use the
+same version of huge_ptep_get, so move this generic implementation into
 asm-generic/hugetlb.h.
 
 Signed-off-by: Alexandre Ghiti <alex@ghiti.fr>
@@ -47,213 +46,166 @@ Acked-by: Ingo Molnar <mingo@kernel.org> # x86
 Reviewed-by: Luiz Capitulino <lcapitulino@redhat.com>
 Reviewed-by: Mike Kravetz <mike.kravetz@oracle.com>
 ---
- arch/arm/include/asm/hugetlb-3level.h        | 6 ------
- arch/arm64/include/asm/hugetlb.h             | 1 +
- arch/ia64/include/asm/hugetlb.h              | 6 ------
- arch/mips/include/asm/hugetlb.h              | 6 ------
- arch/parisc/include/asm/hugetlb.h            | 1 +
- arch/powerpc/include/asm/book3s/32/pgtable.h | 6 ------
- arch/powerpc/include/asm/book3s/64/pgtable.h | 1 +
- arch/powerpc/include/asm/nohash/32/pgtable.h | 6 ------
- arch/powerpc/include/asm/nohash/64/pgtable.h | 1 +
- arch/sh/include/asm/hugetlb.h                | 6 ------
- arch/sparc/include/asm/hugetlb.h             | 1 +
- arch/x86/include/asm/hugetlb.h               | 6 ------
- include/asm-generic/hugetlb.h                | 8 ++++++++
- 13 files changed, 13 insertions(+), 42 deletions(-)
+ arch/arm/include/asm/hugetlb-3level.h | 1 +
+ arch/arm64/include/asm/hugetlb.h      | 1 +
+ arch/ia64/include/asm/hugetlb.h       | 5 -----
+ arch/mips/include/asm/hugetlb.h       | 5 -----
+ arch/parisc/include/asm/hugetlb.h     | 5 -----
+ arch/powerpc/include/asm/hugetlb.h    | 5 -----
+ arch/sh/include/asm/hugetlb.h         | 5 -----
+ arch/sparc/include/asm/hugetlb.h      | 5 -----
+ arch/x86/include/asm/hugetlb.h        | 5 -----
+ include/asm-generic/hugetlb.h         | 7 +++++++
+ 10 files changed, 9 insertions(+), 35 deletions(-)
 
 diff --git a/arch/arm/include/asm/hugetlb-3level.h b/arch/arm/include/asm/hugetlb-3level.h
-index b897541520ef..8247cd6a2ac6 100644
+index 54e4b097b1f5..0d9f3918fa7e 100644
 --- a/arch/arm/include/asm/hugetlb-3level.h
 +++ b/arch/arm/include/asm/hugetlb-3level.h
-@@ -37,12 +37,6 @@ static inline pte_t huge_ptep_get(pte_t *ptep)
- 	return retval;
- }
- 
--static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
--					   unsigned long addr, pte_t *ptep)
--{
--	ptep_set_wrprotect(mm, addr, ptep);
--}
--
- static inline int huge_ptep_set_access_flags(struct vm_area_struct *vma,
- 					     unsigned long addr, pte_t *ptep,
- 					     pte_t pte, int dirty)
+@@ -29,6 +29,7 @@
+  * ptes.
+  * (The valid bit is automatically cleared by set_pte_at for PROT_NONE ptes).
+  */
++#define __HAVE_ARCH_HUGE_PTEP_GET
+ static inline pte_t huge_ptep_get(pte_t *ptep)
+ {
+ 	pte_t retval = *ptep;
 diff --git a/arch/arm64/include/asm/hugetlb.h b/arch/arm64/include/asm/hugetlb.h
-index 3e7f6e69b28d..f4f69ae5466e 100644
+index 80887abcef7f..fb6609875455 100644
 --- a/arch/arm64/include/asm/hugetlb.h
 +++ b/arch/arm64/include/asm/hugetlb.h
-@@ -48,6 +48,7 @@ extern int huge_ptep_set_access_flags(struct vm_area_struct *vma,
- #define __HAVE_ARCH_HUGE_PTEP_GET_AND_CLEAR
- extern pte_t huge_ptep_get_and_clear(struct mm_struct *mm,
- 				     unsigned long addr, pte_t *ptep);
-+#define __HAVE_ARCH_HUGE_PTEP_SET_WRPROTECT
- extern void huge_ptep_set_wrprotect(struct mm_struct *mm,
- 				    unsigned long addr, pte_t *ptep);
- #define __HAVE_ARCH_HUGE_PTEP_CLEAR_FLUSH
+@@ -20,6 +20,7 @@
+ 
+ #include <asm/page.h>
+ 
++#define __HAVE_ARCH_HUGE_PTEP_GET
+ static inline pte_t huge_ptep_get(pte_t *ptep)
+ {
+ 	return READ_ONCE(*ptep);
 diff --git a/arch/ia64/include/asm/hugetlb.h b/arch/ia64/include/asm/hugetlb.h
-index cbe296271030..49d1f7949f3a 100644
+index e9b42750fdf5..36cc0396b214 100644
 --- a/arch/ia64/include/asm/hugetlb.h
 +++ b/arch/ia64/include/asm/hugetlb.h
-@@ -27,12 +27,6 @@ static inline void huge_ptep_clear_flush(struct vm_area_struct *vma,
+@@ -27,11 +27,6 @@ static inline void huge_ptep_clear_flush(struct vm_area_struct *vma,
  {
  }
  
--static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
--					   unsigned long addr, pte_t *ptep)
+-static inline pte_t huge_ptep_get(pte_t *ptep)
 -{
--	ptep_set_wrprotect(mm, addr, ptep);
+-	return *ptep;
 -}
 -
- static inline int huge_ptep_set_access_flags(struct vm_area_struct *vma,
- 					     unsigned long addr, pte_t *ptep,
- 					     pte_t pte, int dirty)
+ static inline void arch_clear_hugepage_flags(struct page *page)
+ {
+ }
 diff --git a/arch/mips/include/asm/hugetlb.h b/arch/mips/include/asm/hugetlb.h
-index 6ff2531cfb1d..3dcf5debf8c4 100644
+index 120adc3b2ffd..425bb6fc3bda 100644
 --- a/arch/mips/include/asm/hugetlb.h
 +++ b/arch/mips/include/asm/hugetlb.h
-@@ -63,12 +63,6 @@ static inline int huge_pte_none(pte_t pte)
- 	return !val || (val == (unsigned long)invalid_pte_table);
+@@ -82,11 +82,6 @@ static inline int huge_ptep_set_access_flags(struct vm_area_struct *vma,
+ 	return changed;
  }
  
--static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
--					   unsigned long addr, pte_t *ptep)
+-static inline pte_t huge_ptep_get(pte_t *ptep)
 -{
--	ptep_set_wrprotect(mm, addr, ptep);
+-	return *ptep;
 -}
 -
- static inline int huge_ptep_set_access_flags(struct vm_area_struct *vma,
- 					     unsigned long addr,
- 					     pte_t *ptep, pte_t pte,
+ static inline void arch_clear_hugepage_flags(struct page *page)
+ {
+ }
 diff --git a/arch/parisc/include/asm/hugetlb.h b/arch/parisc/include/asm/hugetlb.h
-index fb7e0fd858a3..9c3950ca2974 100644
+index 165b4e5a6f32..7cb595dcb7d7 100644
 --- a/arch/parisc/include/asm/hugetlb.h
 +++ b/arch/parisc/include/asm/hugetlb.h
-@@ -39,6 +39,7 @@ static inline void huge_ptep_clear_flush(struct vm_area_struct *vma,
- {
- }
+@@ -48,11 +48,6 @@ int huge_ptep_set_access_flags(struct vm_area_struct *vma,
+ 					     unsigned long addr, pte_t *ptep,
+ 					     pte_t pte, int dirty);
  
-+#define __HAVE_ARCH_HUGE_PTEP_SET_WRPROTECT
- void huge_ptep_set_wrprotect(struct mm_struct *mm,
- 					   unsigned long addr, pte_t *ptep);
- 
-diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
-index 751cf931bb3f..796d026da37e 100644
---- a/arch/powerpc/include/asm/book3s/32/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
-@@ -221,12 +221,6 @@ static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addr,
- {
- 	pte_update(ptep, (_PAGE_RW | _PAGE_HWWRITE), _PAGE_RO);
- }
--static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
--					   unsigned long addr, pte_t *ptep)
+-static inline pte_t huge_ptep_get(pte_t *ptep)
 -{
--	ptep_set_wrprotect(mm, addr, ptep);
+-	return *ptep;
 -}
 -
- 
- static inline void __ptep_set_access_flags(struct vm_area_struct *vma,
- 					   pte_t *ptep, pte_t entry,
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index 13a688fc8cd0..badb56963885 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -461,6 +461,7 @@ static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addr,
- 		pte_update(mm, addr, ptep, 0, _PAGE_PRIVILEGED, 0);
- }
- 
-+#define __HAVE_ARCH_HUGE_PTEP_SET_WRPROTECT
- static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
- 					   unsigned long addr, pte_t *ptep)
+ static inline void arch_clear_hugepage_flags(struct page *page)
  {
-diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
-index a507a65b0866..6c82b9660c55 100644
---- a/arch/powerpc/include/asm/nohash/32/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
-@@ -246,12 +246,6 @@ static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addr,
- {
- 	pte_update(ptep, (_PAGE_RW | _PAGE_HWWRITE), _PAGE_RO);
  }
--static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
--					   unsigned long addr, pte_t *ptep)
+diff --git a/arch/powerpc/include/asm/hugetlb.h b/arch/powerpc/include/asm/hugetlb.h
+index d4d9cf6cb846..383da1ab9e23 100644
+--- a/arch/powerpc/include/asm/hugetlb.h
++++ b/arch/powerpc/include/asm/hugetlb.h
+@@ -139,11 +139,6 @@ extern int huge_ptep_set_access_flags(struct vm_area_struct *vma,
+ 				      unsigned long addr, pte_t *ptep,
+ 				      pte_t pte, int dirty);
+ 
+-static inline pte_t huge_ptep_get(pte_t *ptep)
 -{
--	ptep_set_wrprotect(mm, addr, ptep);
+-	return *ptep;
 -}
 -
- 
- static inline void __ptep_set_access_flags(struct vm_area_struct *vma,
- 					   pte_t *ptep, pte_t entry,
-diff --git a/arch/powerpc/include/asm/nohash/64/pgtable.h b/arch/powerpc/include/asm/nohash/64/pgtable.h
-index 7cd6809f4d33..68283e632f04 100644
---- a/arch/powerpc/include/asm/nohash/64/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/64/pgtable.h
-@@ -239,6 +239,7 @@ static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addr,
- 	pte_update(mm, addr, ptep, _PAGE_RW, 0, 0);
- }
- 
-+#define __HAVE_ARCH_HUGE_PTEP_SET_WRPROTECT
- static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
- 					   unsigned long addr, pte_t *ptep)
+ static inline void arch_clear_hugepage_flags(struct page *page)
  {
+ }
 diff --git a/arch/sh/include/asm/hugetlb.h b/arch/sh/include/asm/hugetlb.h
-index f1bbd255ee43..8df4004977b9 100644
+index c87195ae0cfa..6f025fe18146 100644
 --- a/arch/sh/include/asm/hugetlb.h
 +++ b/arch/sh/include/asm/hugetlb.h
-@@ -32,12 +32,6 @@ static inline void huge_ptep_clear_flush(struct vm_area_struct *vma,
+@@ -32,11 +32,6 @@ static inline void huge_ptep_clear_flush(struct vm_area_struct *vma,
  {
  }
  
--static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
--					   unsigned long addr, pte_t *ptep)
+-static inline pte_t huge_ptep_get(pte_t *ptep)
 -{
--	ptep_set_wrprotect(mm, addr, ptep);
+-	return *ptep;
 -}
 -
- static inline int huge_ptep_set_access_flags(struct vm_area_struct *vma,
- 					     unsigned long addr, pte_t *ptep,
- 					     pte_t pte, int dirty)
+ static inline void arch_clear_hugepage_flags(struct page *page)
+ {
+ 	clear_bit(PG_dcache_clean, &page->flags);
 diff --git a/arch/sparc/include/asm/hugetlb.h b/arch/sparc/include/asm/hugetlb.h
-index 2101ea217f33..c41754a113f3 100644
+index 028a1465fbe7..3963f80d1cb3 100644
 --- a/arch/sparc/include/asm/hugetlb.h
 +++ b/arch/sparc/include/asm/hugetlb.h
-@@ -32,6 +32,7 @@ static inline void huge_ptep_clear_flush(struct vm_area_struct *vma,
- {
+@@ -53,11 +53,6 @@ static inline int huge_ptep_set_access_flags(struct vm_area_struct *vma,
+ 	return changed;
  }
  
-+#define __HAVE_ARCH_HUGE_PTEP_SET_WRPROTECT
- static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
- 					   unsigned long addr, pte_t *ptep)
+-static inline pte_t huge_ptep_get(pte_t *ptep)
+-{
+-	return *ptep;
+-}
+-
+ static inline void arch_clear_hugepage_flags(struct page *page)
  {
+ }
 diff --git a/arch/x86/include/asm/hugetlb.h b/arch/x86/include/asm/hugetlb.h
-index 59c056adb3c9..a3f781f7a264 100644
+index 574d42eb081e..7469d321f072 100644
 --- a/arch/x86/include/asm/hugetlb.h
 +++ b/arch/x86/include/asm/hugetlb.h
-@@ -13,12 +13,6 @@ static inline int is_hugepage_only_range(struct mm_struct *mm,
+@@ -13,11 +13,6 @@ static inline int is_hugepage_only_range(struct mm_struct *mm,
  	return 0;
  }
  
--static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
--					   unsigned long addr, pte_t *ptep)
+-static inline pte_t huge_ptep_get(pte_t *ptep)
 -{
--	ptep_set_wrprotect(mm, addr, ptep);
+-	return *ptep;
 -}
 -
- static inline int huge_ptep_set_access_flags(struct vm_area_struct *vma,
- 					     unsigned long addr, pte_t *ptep,
- 					     pte_t pte, int dirty)
+ static inline void arch_clear_hugepage_flags(struct page *page)
+ {
+ }
 diff --git a/include/asm-generic/hugetlb.h b/include/asm-generic/hugetlb.h
-index 6c0c8b0c71e0..9b9039845278 100644
+index f3c99a03ee83..71d7b77eea50 100644
 --- a/include/asm-generic/hugetlb.h
 +++ b/include/asm-generic/hugetlb.h
-@@ -102,4 +102,12 @@ static inline int prepare_hugepage_range(struct file *file,
+@@ -119,4 +119,11 @@ static inline int huge_ptep_set_access_flags(struct vm_area_struct *vma,
  }
  #endif
  
-+#ifndef __HAVE_ARCH_HUGE_PTEP_SET_WRPROTECT
-+static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
-+		unsigned long addr, pte_t *ptep)
++#ifndef __HAVE_ARCH_HUGE_PTEP_GET
++static inline pte_t huge_ptep_get(pte_t *ptep)
 +{
-+	ptep_set_wrprotect(mm, addr, ptep);
++	return *ptep;
 +}
 +#endif
 +
