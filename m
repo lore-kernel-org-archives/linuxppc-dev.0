@@ -1,37 +1,22 @@
-Return-Path: <pku.leo@gmail.com>
-Received: from mail-ot1-f66.google.com (mail-ot1-f66.google.com
- [209.85.210.66])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <BATV+17e4623c997d928794c6+5506+infradead.org+hch@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42GQrg4KYNzF3Nn
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 04:54:43 +1000 (AEST)
-Received: by mail-ot1-f66.google.com with SMTP id o13-v6so10512459otl.4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 11:54:43 -0700 (PDT)
-Received: from mail-ot1-f45.google.com (mail-ot1-f45.google.com.
- [209.85.210.45])
- by smtp.gmail.com with ESMTPSA id f7-v6sm7499694otb.9.2018.09.20.11.54.40
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Thu, 20 Sep 2018 11:54:40 -0700 (PDT)
-Received: by mail-ot1-f45.google.com with SMTP id c12-v6so10508945otl.6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 11:54:40 -0700 (PDT)
-MIME-Version: 1.0
-References: <1537456011-10769-1-git-send-email-madalin.bucur@nxp.com>
- <1537456011-10769-3-git-send-email-madalin.bucur@nxp.com>
-In-Reply-To: <1537456011-10769-3-git-send-email-madalin.bucur@nxp.com>
-From: Li Yang <leoyang.li@nxp.com>
-Date: Thu, 20 Sep 2018 13:54:28 -0500
-Message-ID: <CADRPPNSz-x1uf98+cKUjj54sSxQbJOXWk7xn_ExhbcjdAYKUpw@mail.gmail.com>
-Subject: Re: [PATCH 2/4] soc/fsl/qbman: Add 64 bit DMA addressing requirement
- to QBMan
-To: madalin.bucur@nxp.com
-Cc: Roy Pledge <roy.pledge@nxp.com>, claudiu.manoil@nxp.com,
- Catalin Marinas <catalin.marinas@arm.com>, Scott Wood <oss@buserror.net>,
- "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- lkml <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42GRXb4v83zF3Nd
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 05:25:51 +1000 (AEST)
+From: Christoph Hellwig <hch@lst.de>
+To: iommu@lists.linux-foundation.org
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>,
+ Robin Murphy <robin.murphy@arm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 3/5] dma-direct: refine dma_direct_alloc zone selection
+Date: Thu, 20 Sep 2018 20:52:45 +0200
+Message-Id: <20180920185247.20037-4-hch@lst.de>
+In-Reply-To: <20180920185247.20037-1-hch@lst.de>
+References: <20180920185247.20037-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,41 +26,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 20, 2018 at 10:09 AM Madalin Bucur <madalin.bucur@nxp.com> wrote:
->
-> From: Roy Pledge <roy.pledge@nxp.com>
->
-> The QBMan block is memory mapped on SoCs above a 32 bit (4 Gigabyte)
-> boundary so enabling 64 bit DMA addressing is needed for QBMan to
-> be usable.
->
-> Signed-off-by: Roy Pledge <roy.pledge@nxp.com>
-> Signed-off-by: Madalin Bucur <madalin.bucur@nxp.com>
-> ---
->  drivers/soc/fsl/qbman/Kconfig | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/soc/fsl/qbman/Kconfig b/drivers/soc/fsl/qbman/Kconfig
-> index d570cb5fd381..19d6f4621e23 100644
-> --- a/drivers/soc/fsl/qbman/Kconfig
-> +++ b/drivers/soc/fsl/qbman/Kconfig
-> @@ -1,6 +1,6 @@
->  menuconfig FSL_DPAA
->         bool "QorIQ DPAA1 framework support"
-> -       depends on (FSL_SOC_BOOKE || ARCH_LAYERSCAPE)
-> +       depends on ((FSL_SOC_BOOKE || ARCH_LAYERSCAPE || ARM) && ARCH_DMA_ADDR_T_64BIT)
+We need to take the DMA offset and encryption bit into account when
+selecting a zone.  User the opportunity to factor out the zone
+selection into a helper for reuse.
 
-You also added ARM support here.  Actually the dependency on
-ARCH_DMA_ADDR_T_64BIT is only explicitly needed by ARM(other platforms
-already implies ARCH_DMA_ADDR_T_64BIT).  So I think the patch title
-should be like: adding 32-bit ARM support.  The ARCH_DMA_ADDR_T_64BIT
-is enabled by ARM_LPAE on ARM.  Probably we should make that
-straightforward in the Kconfig, so that people better understand what
-is needed for 32-bit ARM.
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ kernel/dma/direct.c | 31 +++++++++++++++++++++----------
+ 1 file changed, 21 insertions(+), 10 deletions(-)
 
->         select GENERIC_ALLOCATOR
->         help
->           The Freescale Data Path Acceleration Architecture (DPAA) is a set of
-> --
-> 2.1.0
->
+diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
+index 81b73a5bba54..3c404e33d946 100644
+--- a/kernel/dma/direct.c
++++ b/kernel/dma/direct.c
+@@ -68,6 +68,22 @@ u64 dma_direct_get_required_mask(struct device *dev)
+ 	return (1ULL << (fls64(max_dma) - 1)) * 2 - 1;
+ }
+ 
++static gfp_t __dma_direct_optimal_gfp_mask(struct device *dev, u64 dma_mask,
++		u64 *phys_mask)
++{
++	if (force_dma_unencrypted())
++		*phys_mask = __dma_to_phys(dev, dma_mask);
++	else
++		*phys_mask = dma_to_phys(dev, dma_mask);
++
++	/* GFP_DMA32 and GFP_DMA are no ops without the corresponding zones: */
++	if (*phys_mask <= DMA_BIT_MASK(ARCH_ZONE_DMA_BITS))
++		return GFP_DMA;
++	if (*phys_mask <= DMA_BIT_MASK(32))
++		return GFP_DMA32;
++	return 0;
++}
++
+ static bool dma_coherent_ok(struct device *dev, phys_addr_t phys, size_t size)
+ {
+ 	return phys_to_dma_direct(dev, phys) + size - 1 <=
+@@ -80,17 +96,13 @@ void *dma_direct_alloc_pages(struct device *dev, size_t size,
+ 	unsigned int count = PAGE_ALIGN(size) >> PAGE_SHIFT;
+ 	int page_order = get_order(size);
+ 	struct page *page = NULL;
++	u64 phys_mask;
+ 	void *ret;
+ 
+ 	/* we always manually zero the memory once we are done: */
+ 	gfp &= ~__GFP_ZERO;
+-
+-	/* GFP_DMA32 and GFP_DMA are no ops without the corresponding zones: */
+-	if (dev->coherent_dma_mask <= DMA_BIT_MASK(ARCH_ZONE_DMA_BITS))
+-		gfp |= GFP_DMA;
+-	if (dev->coherent_dma_mask <= DMA_BIT_MASK(32) && !(gfp & GFP_DMA))
+-		gfp |= GFP_DMA32;
+-
++	gfp |= __dma_direct_optimal_gfp_mask(dev, dev->coherent_dma_mask,
++			&phys_mask);
+ again:
+ 	/* CMA can be used only in the context which permits sleeping */
+ 	if (gfpflags_allow_blocking(gfp)) {
+@@ -109,15 +121,14 @@ void *dma_direct_alloc_pages(struct device *dev, size_t size,
+ 		page = NULL;
+ 
+ 		if (IS_ENABLED(CONFIG_ZONE_DMA32) &&
+-		    dev->coherent_dma_mask < DMA_BIT_MASK(64) &&
++		    phys_mask < DMA_BIT_MASK(64) &&
+ 		    !(gfp & (GFP_DMA32 | GFP_DMA))) {
+ 			gfp |= GFP_DMA32;
+ 			goto again;
+ 		}
+ 
+ 		if (IS_ENABLED(CONFIG_ZONE_DMA) &&
+-		    dev->coherent_dma_mask < DMA_BIT_MASK(32) &&
+-		    !(gfp & GFP_DMA)) {
++		    phys_mask < DMA_BIT_MASK(32) && !(gfp & GFP_DMA)) {
+ 			gfp = (gfp & ~GFP_DMA32) | GFP_DMA;
+ 			goto again;
+ 		}
+-- 
+2.18.0
