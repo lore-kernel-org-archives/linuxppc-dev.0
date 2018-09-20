@@ -1,32 +1,19 @@
-Return-Path: <aravinda@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <camelia.groza@nxp.com>
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42GCL64s5rzF3JS
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 20:15:58 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w8KAE9Gk125068
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 06:15:55 -0400
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2mm963hacn-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 06:15:55 -0400
-Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aravinda@linux.vnet.ibm.com>;
- Thu, 20 Sep 2018 04:15:54 -0600
-Subject: [PATCH] powerpc/pseries: Export raw per-CPU VPA data via debugfs
-From: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
-Cc: nfont@linux.vnet.ibm.com, naveen.n.rao@linux.vnet.ibm.com,
- aravinda@linux.vnet.ibm.com
-Date: Thu, 20 Sep 2018 15:45:47 +0530
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <153743854746.12332.9507208773294249019.stgit@aravinda>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42GFZw03X0zF3Fg
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 21:57:11 +1000 (AEST)
+From: Camelia Groza <camelia.groza@nxp.com>
+To: oss@buserror.net,
+	robh+dt@kernel.org,
+	mark.rutland@arm.com
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Camelia Groza <camelia.groza@nxp.com>
+Subject: [PATCH] powerpc/dts/fsl: t2080rdb: reorder the Cortina PHY XFI lanes
+Date: Thu, 20 Sep 2018 14:47:01 +0300
+Message-Id: <1537444021-10113-1-git-send-email-camelia.groza@nxp.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,120 +23,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch exports the raw per-CPU VPA data via debugfs.
-A per-CPU file is created which exports the VPA data of
-that CPU to help debug some of the VPA related issues or
-to analyze the per-CPU VPA related statistics.
+According to the T2080RDB schematics, for the CS4315 PHY, the XFI 1 lane is
+connected to SFP 2 and the XFI 2 lane is connected to SFP 1. Change the
+device tree to reflect the correct PHY order and port association.
 
-Signed-off-by: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
+Signed-off-by: Camelia Groza <camelia.groza@nxp.com>
 ---
- arch/powerpc/platforms/pseries/lpar.c |   85 +++++++++++++++++++++++++++++++++
- 1 file changed, 85 insertions(+)
+ arch/powerpc/boot/dts/fsl/t2080rdb.dts | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index d3992ce..cc12c12 100644
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -48,6 +48,7 @@
- #include <asm/kexec.h>
- #include <asm/fadump.h>
- #include <asm/asm-prototypes.h>
-+#include <asm/debugfs.h>
- 
- #include "pseries.h"
- 
-@@ -64,6 +65,16 @@ EXPORT_SYMBOL(plpar_hcall);
- EXPORT_SYMBOL(plpar_hcall9);
- EXPORT_SYMBOL(plpar_hcall_norets);
- 
-+#ifdef CONFIG_DEBUG_FS
-+struct vpa {
-+	struct dentry	*file;
-+	int		cpu;
-+};
-+static DEFINE_PER_CPU(struct vpa, cpu_vpa);
-+
-+static struct dentry *vpa_dir;
-+#endif
-+
- void vpa_init(int cpu)
- {
- 	int hwcpu = get_hard_smp_processor_id(cpu);
-@@ -1028,3 +1039,77 @@ static int __init reserve_vrma_context_id(void)
- 	return 0;
- }
- machine_device_initcall(pseries, reserve_vrma_context_id);
-+
-+#ifdef CONFIG_DEBUG_FS
-+/* debugfs file interface for vpa data */
-+static ssize_t vpa_file_read(struct file *filp, char __user *buf, size_t len,
-+		loff_t *pos)
-+{
-+	long int rc;
-+	struct vpa *vpa = filp->private_data;
-+	struct lppaca *lppaca = &lppaca_of(vpa->cpu);
-+
-+	if (len < sizeof(struct lppaca))
-+		return -EINVAL;
-+
-+	rc = copy_to_user(buf, lppaca, sizeof(struct lppaca));
-+	if (rc)
-+		return -EFAULT;
-+
-+	return 0;
-+}
-+
-+static int vpa_file_open(struct inode *inode, struct file *filp)
-+{
-+	struct vpa *vpa = inode->i_private;
-+
-+	filp->private_data = vpa;
-+	return 0;
-+}
-+
-+static int vpa_file_release(struct inode *inode, struct file *filp)
-+{
-+	return 0;
-+}
-+
-+static const struct file_operations vpa_fops = {
-+	.open		= vpa_file_open,
-+	.release	= vpa_file_release,
-+	.read		= vpa_file_read,
-+	.llseek		= no_llseek,
-+};
-+
-+static int __init vpa_debugfs_init(void)
-+{
-+	char name[10];
-+	int i;
-+
-+	if (!firmware_has_feature(FW_FEATURE_SPLPAR))
-+		return 0;
-+
-+	vpa_dir = debugfs_create_dir("vpa", powerpc_debugfs_root);
-+	if (!vpa_dir) {
-+		pr_warn("%s: can't create vpa root dir\n", __func__);
-+		return -ENOMEM;
-+	}
-+
-+	/* set up the per-cpu vpa file*/
-+	for_each_possible_cpu(i) {
-+		struct vpa *vpa = &per_cpu(cpu_vpa, i);
-+
-+		vpa->cpu = i;
-+		sprintf(name, "cpu-%d", i);
-+
-+		vpa->file = debugfs_create_file(name, 0400, vpa_dir, vpa,
-+					&vpa_fops);
-+		if (!vpa->file) {
-+			pr_warn("%s: can't create per-cpu vpa file\n",
-+					__func__);
-+			return -ENOMEM;
-+		}
-+	}
-+
-+	return 0;
-+}
-+machine_arch_initcall(pseries, vpa_debugfs_init);
-+#endif /* CONFIG_DEBUG_FS */
+diff --git a/arch/powerpc/boot/dts/fsl/t2080rdb.dts b/arch/powerpc/boot/dts/fsl/t2080rdb.dts
+index 55c0210..092a400 100644
+--- a/arch/powerpc/boot/dts/fsl/t2080rdb.dts
++++ b/arch/powerpc/boot/dts/fsl/t2080rdb.dts
+@@ -77,12 +77,12 @@
+ 		};
+
+ 		ethernet@f0000 {
+-			phy-handle = <&xg_cs4315_phy1>;
++			phy-handle = <&xg_cs4315_phy2>;
+ 			phy-connection-type = "xgmii";
+ 		};
+
+ 		ethernet@f2000 {
+-			phy-handle = <&xg_cs4315_phy2>;
++			phy-handle = <&xg_cs4315_phy1>;
+ 			phy-connection-type = "xgmii";
+ 		};
+
+--
+1.9.1
