@@ -1,23 +1,29 @@
-Return-Path: <joel.stan@gmail.com>
-Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
- [IPv6:2607:f8b0:4864:20::543])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42GdVW0yMXzF3PG
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 12:54:42 +1000 (AEST)
-Received: by mail-pg1-x543.google.com with SMTP id r77-v6so218817pgr.5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 19:54:42 -0700 (PDT)
-Sender: "joel.stan@gmail.com" <joel.stan@gmail.com>
-From: Joel Stanley <joel@jms.id.au>
-To: Krzysztof Kozlowski <krzk@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Christophe LEROY <christophe.leroy@c-s.fr>, Meelis Roos <mroos@linux.ee>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] lib/xz: Put CRC32_POLY_LE in xz_private.h
-Date: Fri, 21 Sep 2018 12:24:31 +0930
-Message-Id: <20180921025431.28366-1-joel@jms.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Gdgn5L1GzF3PG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 13:02:45 +1000 (AEST)
+Message-ID: <d1cf1628ed2641140d3508d355cdc172d6b145e9.camel@neuling.org>
+Subject: Re: [PATCH v8 1/3] powerpc: Detect the presence of big-cores via
+ "ibm,thread-groups"
+From: Michael Neuling <mikey@neuling.org>
+To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, "Aneesh Kumar K.V"
+ <aneesh.kumar@linux.ibm.com>, Srikar Dronamraju
+ <srikar@linux.vnet.ibm.com>,  Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, Vaidyanathan Srinivasan
+ <svaidy@linux.vnet.ibm.com>, Akshay Adiga
+ <akshay.adiga@linux.vnet.ibm.com>,  Shilpasri G Bhat
+ <shilpa.bhat@linux.vnet.ibm.com>, Oliver O'Halloran <oohall@gmail.com>,
+ Nicholas Piggin <npiggin@gmail.com>, Murilo Opsfelder Araujo
+ <muriloo@linux.ibm.com>, Anton Blanchard <anton@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Date: Fri, 21 Sep 2018 13:02:45 +1000
+In-Reply-To: <1537464159-25919-2-git-send-email-ego@linux.vnet.ibm.com>
+References: <1537464159-25919-1-git-send-email-ego@linux.vnet.ibm.com>
+ <1537464159-25919-2-git-send-email-ego@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,63 +33,374 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This fixes a regression introduced by faa16bc404d72a5 ("lib: Use
-existing define with polynomial").
+This doesn't compile for me with:
 
-The cleanup added a dependency on include/linux, which broke the PowerPC
-boot wrapper/decompresser when KERNEL_XZ is enabled:
+arch/powerpc/kernel/smp.c: In function =E2=80=98smp_prepare_cpus=E2=80=99:
+arch/powerpc/kernel/smp.c:812:23: error: =E2=80=98tg.threads_per_group=E2=
+=80=99 may be used uninitialized in this function [-Werror=3Dmaybe-uninitia=
+lized]
+  struct thread_groups tg;
+                       ^
+arch/powerpc/kernel/smp.c:812:23: error: =E2=80=98tg.nr_groups=E2=80=99 may=
+ be used uninitialized in this function [-Werror=3Dmaybe-uninitialized]
+cc1: all warnings being treated as errors
+/home/mikey/src/linux-ozlabs/scripts/Makefile.build:305: recipe for target =
+'arch/powerpc/kernel/smp.o' failed
 
-  BOOTCC  arch/powerpc/boot/decompress.o
- In file included from arch/powerpc/boot/../../../lib/decompress_unxz.c:233,
-                 from arch/powerpc/boot/decompress.c:42:
- arch/powerpc/boot/../../../lib/xz/xz_crc32.c:18:10: fatal error:
- linux/crc32poly.h: No such file or directory
-  #include <linux/crc32poly.h>
-           ^~~~~~~~~~~~~~~~~~~
 
-The powerpc decompresser is a hairy corner of the kernel. Even while building
-a 64-bit kernel it needs to build a 32-bit binary and therefore avoid including
-files from include/linux.
-
-This allows users of the xz library to avoid including headers from
-'include/linux/' while still achieving the cleanup of the magic number.
-
-Fixes: faa16bc404d72a5 ("lib: Use existing define with polynomial")
-Reported-by: Meelis Roos <mroos@linux.ee>
-Reported-by: kbuild test robot <lkp@intel.com>
-Suggested-by: Christophe LEROY <christophe.leroy@c-s.fr>
-Signed-off-by: Joel Stanley <joel@jms.id.au>
----
- lib/xz/xz_crc32.c   | 1 -
- lib/xz/xz_private.h | 4 ++++
- 2 files changed, 4 insertions(+), 1 deletion(-)
-
-diff --git a/lib/xz/xz_crc32.c b/lib/xz/xz_crc32.c
-index 25a5d87e2e4c..912aae5fa09e 100644
---- a/lib/xz/xz_crc32.c
-+++ b/lib/xz/xz_crc32.c
-@@ -15,7 +15,6 @@
-  * but they are bigger and use more memory for the lookup table.
-  */
- 
--#include <linux/crc32poly.h>
- #include "xz_private.h"
- 
- /*
-diff --git a/lib/xz/xz_private.h b/lib/xz/xz_private.h
-index 482b90f363fe..09360ebb510e 100644
---- a/lib/xz/xz_private.h
-+++ b/lib/xz/xz_private.h
-@@ -102,6 +102,10 @@
- #	endif
- #endif
- 
-+#ifndef CRC32_POLY_LE
-+#define CRC32_POLY_LE 0xedb88320
-+#endif
-+
- /*
-  * Allocate memory for LZMA2 decoder. xz_dec_lzma2_reset() must be used
-  * before calling xz_dec_lzma2_run().
--- 
-2.17.1
+On Thu, 2018-09-20 at 22:52 +0530, Gautham R. Shenoy wrote:
+> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+>=20
+> On IBM POWER9, the device tree exposes a property array identifed by
+> "ibm,thread-groups" which will indicate which groups of threads share a
+> particular set of resources.
+>=20
+> As of today we only have one form of grouping identifying the group of
+> threads in the core that share the L1 cache, translation cache and
+> instruction data flow.
+>=20
+> This patch
+>=20
+>      1) Defines the helper function to parse the contents of
+>      "ibm,thread-groups".
+>=20
+>      2) On boot, it parses the "ibm,thread-groups" property and caches
+>      the CPU-threads sharing the L1 cache in a per-cpu variable named
+>      cpu_l1_cache_map.
+>=20
+>      3) Initializes a global variable named "has_big_cores" on
+>      big-core systems.
+>=20
+>      4) Each time a CPU is onlined, it initializes the
+>      cpu_smallcore_mask which contains the online siblings of the
+>      CPU that share the L1 cache with this CPU.
+>=20
+> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/cputhreads.h |   2 +
+>  arch/powerpc/include/asm/smp.h        |   6 +
+>  arch/powerpc/kernel/smp.c             | 221
+> ++++++++++++++++++++++++++++++++++
+>  3 files changed, 229 insertions(+)
+>=20
+> diff --git a/arch/powerpc/include/asm/cputhreads.h
+> b/arch/powerpc/include/asm/cputhreads.h
+> index d71a909..deb99fd 100644
+> --- a/arch/powerpc/include/asm/cputhreads.h
+> +++ b/arch/powerpc/include/asm/cputhreads.h
+> @@ -23,11 +23,13 @@
+>  extern int threads_per_core;
+>  extern int threads_per_subcore;
+>  extern int threads_shift;
+> +extern bool has_big_cores;
+>  extern cpumask_t threads_core_mask;
+>  #else
+>  #define threads_per_core	1
+>  #define threads_per_subcore	1
+>  #define threads_shift		0
+> +#define has_big_cores		0
+>  #define threads_core_mask	(*get_cpu_mask(0))
+>  #endif
+> =20
+> diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/sm=
+p.h
+> index 95b66a0..4439893 100644
+> --- a/arch/powerpc/include/asm/smp.h
+> +++ b/arch/powerpc/include/asm/smp.h
+> @@ -100,6 +100,7 @@ static inline void set_hard_smp_processor_id(int cpu,=
+ int
+> phys)
+>  DECLARE_PER_CPU(cpumask_var_t, cpu_sibling_map);
+>  DECLARE_PER_CPU(cpumask_var_t, cpu_l2_cache_map);
+>  DECLARE_PER_CPU(cpumask_var_t, cpu_core_map);
+> +DECLARE_PER_CPU(cpumask_var_t, cpu_smallcore_map);
+> =20
+>  static inline struct cpumask *cpu_sibling_mask(int cpu)
+>  {
+> @@ -116,6 +117,11 @@ static inline struct cpumask *cpu_l2_cache_mask(int =
+cpu)
+>  	return per_cpu(cpu_l2_cache_map, cpu);
+>  }
+> =20
+> +static inline struct cpumask *cpu_smallcore_mask(int cpu)
+> +{
+> +	return per_cpu(cpu_smallcore_map, cpu);
+> +}
+> +
+>  extern int cpu_to_core_id(int cpu);
+> =20
+>  /* Since OpenPIC has only 4 IPIs, we use slightly different message numb=
+ers.
+> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+> index 61c1fad..15095110 100644
+> --- a/arch/powerpc/kernel/smp.c
+> +++ b/arch/powerpc/kernel/smp.c
+> @@ -74,14 +74,32 @@
+>  #endif
+> =20
+>  struct thread_info *secondary_ti;
+> +bool has_big_cores;
+> =20
+>  DEFINE_PER_CPU(cpumask_var_t, cpu_sibling_map);
+> +DEFINE_PER_CPU(cpumask_var_t, cpu_smallcore_map);
+>  DEFINE_PER_CPU(cpumask_var_t, cpu_l2_cache_map);
+>  DEFINE_PER_CPU(cpumask_var_t, cpu_core_map);
+> =20
+>  EXPORT_PER_CPU_SYMBOL(cpu_sibling_map);
+>  EXPORT_PER_CPU_SYMBOL(cpu_l2_cache_map);
+>  EXPORT_PER_CPU_SYMBOL(cpu_core_map);
+> +EXPORT_SYMBOL_GPL(has_big_cores);
+> +
+> +#define MAX_THREAD_LIST_SIZE	8
+> +#define THREAD_GROUP_SHARE_L1   1
+> +struct thread_groups {
+> +	unsigned int property;
+> +	unsigned int nr_groups;
+> +	unsigned int threads_per_group;
+> +	unsigned int thread_list[MAX_THREAD_LIST_SIZE];
+> +};
+> +
+> +/*
+> + * On big-cores system, cpu_l1_cache_map for each CPU corresponds to
+> + * the set its siblings that share the L1-cache.
+> + */
+> +DEFINE_PER_CPU(cpumask_var_t, cpu_l1_cache_map);
+> =20
+>  /* SMP operations for this machine */
+>  struct smp_ops_t *smp_ops;
+> @@ -674,6 +692,184 @@ static void set_cpus_unrelated(int i, int j,
+>  }
+>  #endif
+> =20
+> +/*
+> + * parse_thread_groups: Parses the "ibm,thread-groups" device tree
+> + *                      property for the CPU device node @dn and stores
+> + *                      the parsed output in the thread_groups
+> + *                      structure @tg if the ibm,thread-groups[0]
+> + *                      matches @property.
+> + *
+> + * @dn: The device node of the CPU device.
+> + * @tg: Pointer to a thread group structure into which the parsed
+> + *      output of "ibm,thread-groups" is stored.
+> + * @property: The property of the thread-group that the caller is
+> + *            interested in.
+> + *
+> + * ibm,thread-groups[0..N-1] array defines which group of threads in
+> + * the CPU-device node can be grouped together based on the property.
+> + *
+> + * ibm,thread-groups[0] tells us the property based on which the
+> + * threads are being grouped together. If this value is 1, it implies
+> + * that the threads in the same group share L1, translation cache.
+> + *
+> + * ibm,thread-groups[1] tells us how many such thread groups exist.
+> + *
+> + * ibm,thread-groups[2] tells us the number of threads in each such
+> + * group.
+> + *
+> + * ibm,thread-groups[3..N-1] is the list of threads identified by
+> + * "ibm,ppc-interrupt-server#s" arranged as per their membership in
+> + * the grouping.
+> + *
+> + * Example: If ibm,thread-groups =3D [1,2,4,5,6,7,8,9,10,11,12] it
+> + * implies that there are 2 groups of 4 threads each, where each group
+> + * of threads share L1, translation cache.
+> + *
+> + * The "ibm,ppc-interrupt-server#s" of the first group is {5,6,7,8}
+> + * and the "ibm,ppc-interrupt-server#s" of the second group is {9, 10,
+> + * 11, 12} structure
+> + *
+> + * Returns 0 on success, -EINVAL if the property does not exist,
+> + * -ENODATA if property does not have a value, and -EOVERFLOW if the
+> + * property data isn't large enough.
+> + */
+> +static int parse_thread_groups(struct device_node *dn,
+> +			       struct thread_groups *tg,
+> +			       unsigned int property)
+> +{
+> +	int i;
+> +	u32 thread_group_array[3 + MAX_THREAD_LIST_SIZE];
+> +	u32 *thread_list;
+> +	size_t total_threads;
+> +	int ret;
+> +
+> +	ret =3D of_property_read_u32_array(dn, "ibm,thread-groups",
+> +					 thread_group_array, 3);
+> +	if (ret)
+> +		return ret;
+> +
+> +	tg->property =3D thread_group_array[0];
+> +	tg->nr_groups =3D thread_group_array[1];
+> +	tg->threads_per_group =3D thread_group_array[2];
+> +	if (tg->property !=3D property ||
+> +	    tg->nr_groups < 1 ||
+> +	    tg->threads_per_group < 1)
+> +		return -ENODATA;
+> +
+> +	total_threads =3D tg->nr_groups * tg->threads_per_group;
+> +
+> +	ret =3D of_property_read_u32_array(dn, "ibm,thread-groups",
+> +					 thread_group_array,
+> +					 3 + total_threads);
+> +	if (ret)
+> +		return ret;
+> +
+> +	thread_list =3D &thread_group_array[3];
+> +
+> +	for (i =3D 0 ; i < total_threads; i++)
+> +		tg->thread_list[i] =3D thread_list[i];
+> +
+> +	return 0;
+> +}
+> +
+> +/*
+> + * get_cpu_thread_group_start : Searches the thread group in tg->thread_=
+list
+> + *                              that @cpu belongs to.
+> + *
+> + * @cpu : The logical CPU whose thread group is being searched.
+> + * @tg : The thread-group structure of the CPU node which @cpu belongs
+> + *       to.
+> + *
+> + * Returns the index to tg->thread_list that points to the the start
+> + * of the thread_group that @cpu belongs to.
+> + *
+> + * Returns -1 if cpu doesn't belong to any of the groups pointed to by
+> + * tg->thread_list.
+> + */
+> +static int get_cpu_thread_group_start(int cpu, struct thread_groups *tg)
+> +{
+> +	int hw_cpu_id =3D get_hard_smp_processor_id(cpu);
+> +	int i, j;
+> +
+> +	for (i =3D 0; i < tg->nr_groups; i++) {
+> +		int group_start =3D i * tg->threads_per_group;
+> +
+> +		for (j =3D 0; j < tg->threads_per_group; j++) {
+> +			int idx =3D group_start + j;
+> +
+> +			if (tg->thread_list[idx] =3D=3D hw_cpu_id)
+> +				return group_start;
+> +		}
+> +	}
+> +
+> +	return -1;
+> +}
+> +
+> +static int init_cpu_l1_cache_map(int cpu)
+> +
+> +{
+> +	struct device_node *dn =3D of_get_cpu_node(cpu, NULL);
+> +	struct thread_groups tg;
+> +
+> +	int first_thread =3D cpu_first_thread_sibling(cpu);
+> +	int i, cpu_group_start =3D -1, err =3D 0;
+> +
+> +	if (!dn)
+> +		return -ENODATA;
+> +
+> +	err =3D parse_thread_groups(dn, &tg, THREAD_GROUP_SHARE_L1);
+> +	if (err)
+> +		goto out;
+> +
+> +	zalloc_cpumask_var_node(&per_cpu(cpu_l1_cache_map, cpu),
+> +				GFP_KERNEL,
+> +				cpu_to_node(cpu));
+> +
+> +	cpu_group_start =3D get_cpu_thread_group_start(cpu, &tg);
+> +
+> +	if (unlikely(cpu_group_start =3D=3D -1)) {
+> +		WARN_ON_ONCE(1);
+> +		err =3D -ENODATA;
+> +		goto out;
+> +	}
+> +
+> +	for (i =3D first_thread; i < first_thread + threads_per_core; i++) {
+> +		int i_group_start =3D get_cpu_thread_group_start(i, &tg);
+> +
+> +		if (unlikely(i_group_start =3D=3D -1)) {
+> +			WARN_ON_ONCE(1);
+> +			err =3D -ENODATA;
+> +			goto out;
+> +		}
+> +
+> +		if (i_group_start =3D=3D cpu_group_start)
+> +			cpumask_set_cpu(i, per_cpu(cpu_l1_cache_map, cpu));
+> +	}
+> +
+> +out:
+> +	of_node_put(dn);
+> +	return err;
+> +}
+> +
+> +static int init_big_cores(void)
+> +{
+> +	int cpu;
+> +
+> +	for_each_possible_cpu(cpu) {
+> +		int err =3D init_cpu_l1_cache_map(cpu);
+> +
+> +		if (err)
+> +			return err;
+> +
+> +		zalloc_cpumask_var_node(&per_cpu(cpu_smallcore_map, cpu),
+> +					GFP_KERNEL,
+> +					cpu_to_node(cpu));
+> +	}
+> +
+> +	has_big_cores =3D true;
+> +	return 0;
+> +}
+> +
+>  void __init smp_prepare_cpus(unsigned int max_cpus)
+>  {
+>  	unsigned int cpu;
+> @@ -712,6 +908,12 @@ void __init smp_prepare_cpus(unsigned int max_cpus)
+>  	cpumask_set_cpu(boot_cpuid, cpu_l2_cache_mask(boot_cpuid));
+>  	cpumask_set_cpu(boot_cpuid, cpu_core_mask(boot_cpuid));
+> =20
+> +	init_big_cores();
+> +	if (has_big_cores) {
+> +		cpumask_set_cpu(boot_cpuid,
+> +				cpu_smallcore_mask(boot_cpuid));
+> +	}
+> +
+>  	if (smp_ops && smp_ops->probe)
+>  		smp_ops->probe();
+>  }
+> @@ -995,10 +1197,28 @@ static void remove_cpu_from_masks(int cpu)
+>  		set_cpus_unrelated(cpu, i, cpu_core_mask);
+>  		set_cpus_unrelated(cpu, i, cpu_l2_cache_mask);
+>  		set_cpus_unrelated(cpu, i, cpu_sibling_mask);
+> +		if (has_big_cores)
+> +			set_cpus_unrelated(cpu, i, cpu_smallcore_mask);
+>  	}
+>  }
+>  #endif
+> =20
+> +static inline void add_cpu_to_smallcore_masks(int cpu)
+> +{
+> +	struct cpumask *this_l1_cache_map =3D per_cpu(cpu_l1_cache_map, cpu);
+> +	int i, first_thread =3D cpu_first_thread_sibling(cpu);
+> +
+> +	if (!has_big_cores)
+> +		return;
+> +
+> +	cpumask_set_cpu(cpu, cpu_smallcore_mask(cpu));
+> +
+> +	for (i =3D first_thread; i < first_thread + threads_per_core; i++) {
+> +		if (cpu_online(i) && cpumask_test_cpu(i, this_l1_cache_map))
+> +			set_cpus_related(i, cpu, cpu_smallcore_mask);
+> +	}
+> +}
+> +
+>  static void add_cpu_to_masks(int cpu)
+>  {
+>  	int first_thread =3D cpu_first_thread_sibling(cpu);
+> @@ -1015,6 +1235,7 @@ static void add_cpu_to_masks(int cpu)
+>  		if (cpu_online(i))
+>  			set_cpus_related(i, cpu, cpu_sibling_mask);
+> =20
+> +	add_cpu_to_smallcore_masks(cpu);
+>  	/*
+>  	 * Copy the thread sibling mask into the cache sibling mask
+>  	 * and mark any CPUs that share an L2 with this CPU.
