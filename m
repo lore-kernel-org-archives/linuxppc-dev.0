@@ -1,37 +1,27 @@
-Return-Path: <yuehaibing@huawei.com>
-Received: from huawei.com (szxga05-in.huawei.com [45.249.212.191])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <joel.stan@gmail.com>
+Received: from mail-qk1-x744.google.com (mail-qk1-x744.google.com
+ [IPv6:2607:f8b0:4864:20::744])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Gbny0cV3zDq5k
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 11:37:58 +1000 (AEST)
-Subject: Re: [PATCH net-next 17/22] hv_netvsc: fix return type of
- ndo_start_xmit function
-To: Stephen Hemminger <stephen@networkplumber.org>
-References: <20180920123306.14772-1-yuehaibing@huawei.com>
- <20180920123306.14772-18-yuehaibing@huawei.com>
- <20180920074341.3acef75c@xeon-e3>
-CC: <davem@davemloft.net>, <dmitry.tarnyagin@lockless.no>,
- <wg@grandegger.com>, <mkl@pengutronix.de>, <michal.simek@xilinx.com>,
- <hsweeten@visionengravers.com>, <madalin.bucur@nxp.com>,
- <pantelis.antoniou@gmail.com>, <claudiu.manoil@nxp.com>,
- <leoyang.li@nxp.com>, <linux@armlinux.org.uk>, <sammy@sammy.net>,
- <ralf@linux-mips.org>, <nico@fluxnic.net>, <steve.glendinning@shawell.net>,
- <f.fainelli@gmail.com>, <grygorii.strashko@ti.com>, <w-kwok2@ti.com>,
- <m-karicheri2@ti.com>, <t.sailer@alumni.ethz.ch>, <jreuter@yaina.de>,
- <kys@microsoft.com>, <haiyangz@microsoft.com>, <wei.liu2@citrix.com>,
- <paul.durrant@citrix.com>, <arvid.brodin@alten.se>, <pshelar@ovn.org>,
- <dev@openvswitch.org>, <linux-mips@linux-mips.org>,
- <xen-devel@lists.xenproject.org>, <netdev@vger.kernel.org>,
- <linux-usb@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
- <linux-can@vger.kernel.org>, <devel@linuxdriverproject.org>,
- <linux-hams@vger.kernel.org>, <linux-omap@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-arm-kernel@lists.infradead.org>
-From: YueHaibing <yuehaibing@huawei.com>
-Message-ID: <b9b170c4-caba-928e-4c6f-eb51cb5e4707@huawei.com>
-Date: Fri, 21 Sep 2018 09:37:50 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Gcyz3SGKzF3P5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 12:30:50 +1000 (AEST)
+Received: by mail-qk1-x744.google.com with SMTP id p84-v6so7174927qke.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 19:30:50 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20180920074341.3acef75c@xeon-e3>
-Content-Type: text/plain; charset="windows-1252"
+References: <20180918230756.26035-1-joel@jms.id.au>
+ <CAJKOXPd4dCyuXKxAz-V=ujtiuKcumHzAx28y5J+6m+L7ZRLsZQ@mail.gmail.com>
+In-Reply-To: <CAJKOXPd4dCyuXKxAz-V=ujtiuKcumHzAx28y5J+6m+L7ZRLsZQ@mail.gmail.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Fri, 21 Sep 2018 12:00:36 +0930
+Message-ID: <CACPK8Xcx7i_pe65PH+ECA6z0M_h5H1uW3wdUKS3RG5HYxEhgpg@mail.gmail.com>
+Subject: Re: [PATCH] lib/xz: Fix powerpc build with KERNEL_XZ
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ "Oliver O'Halloran" <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ christophe.leroy@c-s.fr
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,53 +31,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2018/9/20 22:43, Stephen Hemminger wrote:
-> On Thu, 20 Sep 2018 20:33:01 +0800
-> YueHaibing <yuehaibing@huawei.com> wrote:
-> 
->> The method ndo_start_xmit() is defined as returning an 'netdev_tx_t',
->> which is a typedef for an enum type, so make sure the implementation in
->> this driver has returns 'netdev_tx_t' value, and change the function
->> return type to netdev_tx_t.
->>
->> Found by coccinelle.
->>
->> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
->> ---
->>  drivers/net/hyperv/netvsc_drv.c | 10 +++++++---
->>  1 file changed, 7 insertions(+), 3 deletions(-)
->>
->> diff --git a/drivers/net/hyperv/netvsc_drv.c b/drivers/net/hyperv/netvsc_drv.c
->> index 3af6d8d..056c472 100644
->> --- a/drivers/net/hyperv/netvsc_drv.c
->> +++ b/drivers/net/hyperv/netvsc_drv.c
->> @@ -511,7 +511,8 @@ static int netvsc_vf_xmit(struct net_device *net, struct net_device *vf_netdev,
->>  	return rc;
->>  }
->>  
->> -static int netvsc_start_xmit(struct sk_buff *skb, struct net_device *net)
->> +static netdev_tx_t
->> +netvsc_start_xmit(struct sk_buff *skb, struct net_device *net)
->>  {
->>  	struct net_device_context *net_device_ctx = netdev_priv(net);
->>  	struct hv_netvsc_packet *packet = NULL;
->> @@ -528,8 +529,11 @@ static int netvsc_start_xmit(struct sk_buff *skb, struct net_device *net)
->>  	 */
->>  	vf_netdev = rcu_dereference_bh(net_device_ctx->vf_netdev);
->>  	if (vf_netdev && netif_running(vf_netdev) &&
->> -	    !netpoll_tx_running(net))
->> -		return netvsc_vf_xmit(net, vf_netdev, skb);
->> +	    !netpoll_tx_running(net)) {
->> +		ret = netvsc_vf_xmit(net, vf_netdev, skb);
->> +		if (ret)
->> +			return NETDEV_TX_BUSY;
->> +	}
-> 
-> Sorry, the new code is wrong. It will fall through if ret == 0 (NETDEV_TX_OK)
-> Please review and test your patches.
+On Wed, 19 Sep 2018 at 16:09, Krzysztof Kozlowski <krzk@kernel.org> wrote:
+>
+> On Wed, 19 Sep 2018 at 01:08, Joel Stanley <joel@jms.id.au> wrote:
+> >
+> > This partially reverts faa16bc404d72a5 ("lib: Use existing define with
+> > polynomial").
+> >
+> > The cleanup added a dependency on include/linux, which broke the PowerPC
+> > boot wrapper/decompresser when KERNEL_XZ is enabled:
+> >
+> >   BOOTCC  arch/powerpc/boot/decompress.o
+> >  In file included from arch/powerpc/boot/../../../lib/decompress_unxz.c:233,
+> >                  from arch/powerpc/boot/decompress.c:42:
+> >  arch/powerpc/boot/../../../lib/xz/xz_crc32.c:18:10: fatal error:
+> >  linux/crc32poly.h: No such file or directory
+> >   #include <linux/crc32poly.h>
+> >            ^~~~~~~~~~~~~~~~~~~
+> >
+> > The powerpc decompressor is a hairy corner of the kernel. Even while building
+> > a 64-bit kernel it needs to build a 32-bit binary and therefore avoid including
+> > files from include/linux.
+>
+> I fixed the build error here:
+> https://lkml.org/lkml/2018/8/29/179
+>
+> If you choose to remove any includes from /linux, then go ahead but
+> please use original reported-by :)
 
-I'm sorry for this, will correct it as Haiyang's suggestion.
+Okay. I'll try Christophe's suggestion instead.
 
-> 
-> .
-> 
+Cheers,
+
+Joel
