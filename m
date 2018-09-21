@@ -1,25 +1,25 @@
 Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Gml14MdczF3P3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 18:21:01 +1000 (AEST)
-Date: Fri, 21 Sep 2018 18:20:16 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Gmp20dGWzF3P3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 18:23:38 +1000 (AEST)
+Date: Fri, 21 Sep 2018 18:23:36 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: "Eric W. Biederman" <ebiederm@xmission.com>
 Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt
  <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael
  Ellerman <mpe@ellerman.id.au>
-Subject: Re: [REVIEW][PATCH 1/9] signal/powerpc: Use force_sig_mceerr as
- appropriate
-Message-ID: <20180921182016.45039844@canb.auug.org.au>
-In-Reply-To: <20180918175850.4437-1-ebiederm@xmission.com>
+Subject: Re: [REVIEW][PATCH 2/9] signal/powerpc: Remove pkey parameter from
+ __bad_area
+Message-ID: <20180921182336.34eb93bb@canb.auug.org.au>
+In-Reply-To: <20180918175850.4437-2-ebiederm@xmission.com>
 References: <878t3yitze.fsf@xmission.com>
- <20180918175850.4437-1-ebiederm@xmission.com>
+ <20180918175850.4437-2-ebiederm@xmission.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/hFzliqTZXG32fC_.thNh2X2"; protocol="application/pgp-signature"
+ boundary="Sig_/+1fvc78zun2mu//N77zcj6u"; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,23 +29,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Sig_/hFzliqTZXG32fC_.thNh2X2
+--Sig_/+1fvc78zun2mu//N77zcj6u
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: quoted-printable
 
 Hi Eric,
 
-On Tue, 18 Sep 2018 19:58:42 +0200 "Eric W. Biederman" <ebiederm@xmission.c=
+On Tue, 18 Sep 2018 19:58:43 +0200 "Eric W. Biederman" <ebiederm@xmission.c=
 om> wrote:
 >
-> In do_sigbus isolate the mceerr signaling code and call
-> force_sig_mceerr instead of falling through to the force_sig_info that
-> works for all of the other signals.
+> There are no callers of __bad_area that pass in a pkey parameter so it ma=
+kes
+> no sense to take one.
 >=20
 > Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
 
-Looks good to me.  I was going to mention further cleanup, but I see
-you do that in a later patch.
+Fairly straight forward.
 
 Reviewed-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
@@ -53,20 +52,20 @@ Reviewed-by: Stephen Rothwell <sfr@canb.auug.org.au>
 Cheers,
 Stephen Rothwell
 
---Sig_/hFzliqTZXG32fC_.thNh2X2
+--Sig_/+1fvc78zun2mu//N77zcj6u
 Content-Type: application/pgp-signature
 Content-Description: OpenPGP digital signature
 
 -----BEGIN PGP SIGNATURE-----
 
-iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAlukqcEACgkQAVBC80lX
-0GzsOAf9FbPsGUfwnqkVUOxlUsK16JCBbL0AaAeq1SnTh0/e/N81AmfhDql5BEzx
-67TeRWxlO1dRUBa4LcMQDMCR/73vskgBgamUiwW3+3Im6gBpCFZLjtXbsVOdtzrH
-be/TNU+tCitFphIwFJRXGLS29bLqdKHHpbCaNXdQ6ndA9tiXgp7k6EdsCRvLddpj
-JJRVMaDtn61fJrazuuU6kzLU+XQuPhWU/Vk2VM6n9HaYfojys6iJcb6VA2tGO6BS
-Zn/+5AKDloz2TXHD5hPyk3t3uTxZ/gIfXEi67TqvqcIz6nTeM2mvejPH02PPQFqg
-r389zGrHSMpokgtlwKIwO2UEqL0sAQ==
-=hAFB
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAlukqogACgkQAVBC80lX
+0Gzg/gf/WX4pu1mmKoOigaEl4I8FeP/UYJwLdW5/Pzh2ZHt3wSwPa83m9llUlgO+
+WA0pEchtVOFP8EEWEJz+kjwtM6tKUNKssgtS47svKZv5neMAZCOCgOSmMPM5WU+b
+oEhbdgJdeKKZ+4SRk5VhbmfUk6XdEqZ6AWP9i+CM9RdBNbAXHunVQ0o28WUJircl
+8bnZNblQ0Zrqd2jbc4tEcSBjmibUA2NLzvLM9Q3LBJP5GVHZo1iFxzNBYGVNbfhP
+0xLluK6fhtNg2V28geP2KKbRMDzQDnWRMGjHhJQibiwDpXMvf4rgPgb4fn5CdCz+
+4YG4NyhPLvJIj2hSX/KUTYkTgcsn/A==
+=h6+X
 -----END PGP SIGNATURE-----
 
---Sig_/hFzliqTZXG32fC_.thNh2X2--
+--Sig_/+1fvc78zun2mu//N77zcj6u--
