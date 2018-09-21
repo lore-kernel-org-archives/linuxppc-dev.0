@@ -1,37 +1,38 @@
-Return-Path: <pku.leo@gmail.com>
-Received: from mail-ot1-f68.google.com (mail-ot1-f68.google.com
- [209.85.210.68])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <muriloo@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42H7Fr244RzF3Qc
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Sep 2018 08:15:27 +1000 (AEST)
-Received: by mail-ot1-f68.google.com with SMTP id n5-v6so14478619otl.5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 15:15:27 -0700 (PDT)
-Received: from mail-ot1-f52.google.com (mail-ot1-f52.google.com.
- [209.85.210.52])
- by smtp.gmail.com with ESMTPSA id m11-v6sm11138477oif.27.2018.09.21.15.15.25
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Fri, 21 Sep 2018 15:15:25 -0700 (PDT)
-Received: by mail-ot1-f52.google.com with SMTP id n5-v6so14478591otl.5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 15:15:25 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42H7g11ZP6zF3R1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Sep 2018 08:33:48 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w8LKODlI086265
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 16:25:49 -0400
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2mn4u4pksb-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 16:25:49 -0400
+Received: from localhost
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <muriloo@linux.ibm.com>;
+ Fri, 21 Sep 2018 14:25:48 -0600
+Date: Fri, 21 Sep 2018 17:25:40 -0300
+From: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v3 3/3] powerpc/process: Constify the number of insns
+ printed by show instructions functions.
+References: <113d4a559f6eec448b253bf5f0b4f2a8ffb187af.1536327756.git.christophe.leroy@c-s.fr>
+ <3fdf75eed98b1fa22da77e675692a86a7a9986a7.1536327756.git.christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-References: <1537456011-10769-1-git-send-email-madalin.bucur@nxp.com>
- <1537456011-10769-2-git-send-email-madalin.bucur@nxp.com>
-In-Reply-To: <1537456011-10769-2-git-send-email-madalin.bucur@nxp.com>
-From: Li Yang <leoyang.li@nxp.com>
-Date: Fri, 21 Sep 2018 17:15:13 -0500
-Message-ID: <CADRPPNQMK8sNYU23nvAdF3T_gx=VruM1ZKAcwNg6HuW6hz+Ezw@mail.gmail.com>
-Subject: Re: [PATCH 1/4] soc/fsl/qbman: Check if CPU is offline when
- initializing portals
-To: madalin.bucur@nxp.com
-Cc: Roy Pledge <roy.pledge@nxp.com>, claudiu.manoil@nxp.com,
- Catalin Marinas <catalin.marinas@arm.com>, Scott Wood <oss@buserror.net>,
- "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- lkml <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3fdf75eed98b1fa22da77e675692a86a7a9986a7.1536327756.git.christophe.leroy@c-s.fr>
+Message-Id: <20180921202540.GC19940@kermit-br-ibm-com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,91 +42,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 20, 2018 at 10:09 AM Madalin Bucur <madalin.bucur@nxp.com> wrote:
->
-> From: Roy Pledge <roy.pledge@nxp.com>
->
-> If the affine portal for a specific CPU is offline at boot time
-> affine its interrupt to CPU 0. If the CPU is later brought online
-> the hotplug handler will correctly adjust the affinity.
+On Fri, Sep 07, 2018 at 01:47:33PM +0000, Christophe Leroy wrote:
+> instructions_to_print var is assigned value 16 and there is no
+> way to change it.
+> 
+> This patch replaces it by a constant.
+> 
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-Although this does provide better compatibility with cpu hotplug, we
-still have a problem.  You are assuming the CPU0 is always online
-which is not the case for arm64.  How about not setting the affinity
-and let the system decide if the dedicated CPU is offline?
+Reviewed-by: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
 
->
-> Signed-off-by: Roy Pledge <roy.pledge@nxp.com>
-> Signed-off-by: Madalin Bucur <madalin.bucur@nxp.com>
 > ---
->  drivers/soc/fsl/qbman/bman.c | 17 +++++++++++++----
->  drivers/soc/fsl/qbman/qman.c | 18 +++++++++++++-----
->  2 files changed, 26 insertions(+), 9 deletions(-)
->
-> diff --git a/drivers/soc/fsl/qbman/bman.c b/drivers/soc/fsl/qbman/bman.c
-> index f9485cedc648..2e6e682bf16b 100644
-> --- a/drivers/soc/fsl/qbman/bman.c
-> +++ b/drivers/soc/fsl/qbman/bman.c
-> @@ -562,10 +562,19 @@ static int bman_create_portal(struct bman_portal *portal,
->                 dev_err(c->dev, "request_irq() failed\n");
->                 goto fail_irq;
->         }
-> -       if (c->cpu != -1 && irq_can_set_affinity(c->irq) &&
-> -           irq_set_affinity(c->irq, cpumask_of(c->cpu))) {
-> -               dev_err(c->dev, "irq_set_affinity() failed\n");
-> -               goto fail_affinity;
-> +       if (cpu_online(c->cpu) && c->cpu != -1 &&
-> +           irq_can_set_affinity(c->irq)) {
-> +               if (irq_set_affinity(c->irq, cpumask_of(c->cpu))) {
-> +                       dev_err(c->dev, "irq_set_affinity() failed %d\n",
-> +                               c->cpu);
-> +                       goto fail_affinity;
-> +               }
-> +       } else {
-> +               /* CPU is offline, direct IRQ to CPU 0 */
-> +               if (irq_set_affinity(c->irq, cpumask_of(0))) {
-> +                       dev_err(c->dev, "irq_set_affinity() cpu 0 failed\n");
-> +                       goto fail_affinity;
-> +               }
->         }
->
->         /* Need RCR to be empty before continuing */
-> diff --git a/drivers/soc/fsl/qbman/qman.c b/drivers/soc/fsl/qbman/qman.c
-> index ecb22749df0b..7dbcb475a59c 100644
-> --- a/drivers/soc/fsl/qbman/qman.c
-> +++ b/drivers/soc/fsl/qbman/qman.c
-> @@ -935,7 +935,6 @@ static inline int qm_mc_result_timeout(struct qm_portal *portal,
->                         break;
->                 udelay(1);
->         } while (--timeout);
-> -
->         return timeout;
+>  v3: no change
+>  v2: no change
+> 
+>  arch/powerpc/kernel/process.c | 11 +++++------
+>  1 file changed, 5 insertions(+), 6 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+> index 2a39f7aca846..7d86b4f7949e 100644
+> --- a/arch/powerpc/kernel/process.c
+> +++ b/arch/powerpc/kernel/process.c
+> @@ -1261,17 +1261,16 @@ struct task_struct *__switch_to(struct task_struct *prev,
+>  	return last;
 >  }
->
-> @@ -1210,10 +1209,19 @@ static int qman_create_portal(struct qman_portal *portal,
->                 dev_err(c->dev, "request_irq() failed\n");
->                 goto fail_irq;
->         }
-> -       if (c->cpu != -1 && irq_can_set_affinity(c->irq) &&
-> -           irq_set_affinity(c->irq, cpumask_of(c->cpu))) {
-> -               dev_err(c->dev, "irq_set_affinity() failed\n");
-> -               goto fail_affinity;
-> +       if (cpu_online(c->cpu) && c->cpu != -1 &&
-> +           irq_can_set_affinity(c->irq)) {
-> +               if (irq_set_affinity(c->irq, cpumask_of(c->cpu))) {
-> +                       dev_err(c->dev, "irq_set_affinity() failed %d\n",
-> +                               c->cpu);
-> +                       goto fail_affinity;
-> +               }
-> +       } else {
-> +               /* CPU is offline, direct IRQ to CPU 0 */
-> +               if (irq_set_affinity(c->irq, cpumask_of(0))) {
-> +                       dev_err(c->dev, "irq_set_affinity() cpu 0 failed\n");
-> +                       goto fail_affinity;
-> +               }
->         }
->
->         /* Need EQCR to be empty before continuing */
-> --
-> 2.1.0
->
+>  
+> -static int instructions_to_print = 16;
+> +#define NR_INSN_TO_PRINT	16
+>  
+>  static void show_instructions(struct pt_regs *regs)
+>  {
+>  	int i;
+> -	unsigned long pc = regs->nip - (instructions_to_print * 3 / 4 *
+> -			sizeof(int));
+> +	unsigned long pc = regs->nip - (NR_INSN_TO_PRINT * 3 / 4 * sizeof(int));
+>  
+>  	printk("Instruction dump:");
+>  
+> -	for (i = 0; i < instructions_to_print; i++) {
+> +	for (i = 0; i < NR_INSN_TO_PRINT; i++) {
+>  		int instr;
+>  
+>  		if (!(i % 8))
+> @@ -1304,11 +1303,11 @@ static void show_instructions(struct pt_regs *regs)
+>  void show_user_instructions(struct pt_regs *regs)
+>  {
+>  	unsigned long pc;
+> -	int n = instructions_to_print;
+> +	int n = NR_INSN_TO_PRINT;
+>  	struct seq_buf s;
+>  	char buf[96]; /* enough for 8 times 9 + 2 chars */
+>  
+> -	pc = regs->nip - (instructions_to_print * 3 / 4 * sizeof(int));
+> +	pc = regs->nip - (NR_INSN_TO_PRINT * 3 / 4 * sizeof(int));
+>  
+>  	seq_buf_init(&s, buf, sizeof(buf));
+>  
+> -- 
+> 2.13.3
+> 
+
+-- 
+Murilo
