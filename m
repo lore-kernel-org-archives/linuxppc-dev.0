@@ -1,23 +1,36 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aneesh.kumar@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Gnlj29q4zF3Px
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 19:06:41 +1000 (AEST)
-Date: Fri, 21 Sep 2018 19:06:39 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: ebiederm@xmission.com (Eric W. Biederman)
-Cc: <linux-kernel@vger.kernel.org>, <linux-arch@vger.kernel.org>,
- linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael
- Ellerman <mpe@ellerman.id.au>
-Subject: Re: [REVIEW][PATCH 0/9] signal/powerpc: siginfo cleanups
-Message-ID: <20180921190639.36c4bcf8@canb.auug.org.au>
-In-Reply-To: <878t3yitze.fsf@xmission.com>
-References: <878t3yitze.fsf@xmission.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42GqWX3hb7zF3Q8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 20:26:16 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w8LALTFT020242
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 06:26:13 -0400
+Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2mmx7w9mem-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 06:26:13 -0400
+Received: from localhost
+ by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Fri, 21 Sep 2018 06:26:12 -0400
+Subject: Re: [PATCH V3 1/6] powerpc/mm/book3s: Update pmd_present to look at
+ _PAGE_PRESENT bit
+To: Christophe LEROY <christophe.leroy@c-s.fr>, npiggin@gmail.com,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org
+References: <20180920180947.17893-1-aneesh.kumar@linux.ibm.com>
+ <71b953af-5063-2440-62aa-9c3a7a738dc6@c-s.fr>
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Date: Fri, 21 Sep 2018 15:56:05 +0530
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/L83Adti=lF2bierENe4AgKL"; protocol="application/pgp-signature"
+In-Reply-To: <71b953af-5063-2440-62aa-9c3a7a738dc6@c-s.fr>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <e64affb4-858b-1424-e850-07442fd45912@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,39 +40,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Sig_/L83Adti=lF2bierENe4AgKL
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On 9/21/18 11:25 AM, Christophe LEROY wrote:
+> 
+> 
+> Le 20/09/2018 à 20:09, Aneesh Kumar K.V a écrit :
 
-Hi Eric,
+>> diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
+>> index d71c7777669c..aee04b209b51 100644
+>> --- a/arch/powerpc/mm/pgtable.c
+>> +++ b/arch/powerpc/mm/pgtable.c
+>> @@ -188,11 +188,10 @@ void set_pte_at(struct mm_struct *mm, unsigned 
+>> long addr, pte_t *ptep,
+>>           pte_t pte)
+>>   {
+>>       /*
+>> -     * When handling numa faults, we already have the pte marked
+>> -     * _PAGE_PRESENT, but we can be sure that it is not in hpte.
+>> -     * Hence we can use set_pte_at for them.
+>> +     * Make sure hardware valid bit is not set. We don't do
+>> +     * tlb flush for this update.
+>>        */
+>> -    VM_WARN_ON(pte_present(*ptep) && !pte_protnone(*ptep));
+>> +    VM_WARN_ON(pte_val(*ptep) & _PAGE_PRESENT);
+> 
+> Why not using pte_present() anymore ?
+> 
+> Also, you are removing the pte_protnone() check, won't it change the 
+> behaviour ?
+> 
+> If we can't use pte_present(), can we create a new helper for that 
+> (allthough _PAGE_PRESENT exists on all platforms).
+> 
+> Christophe
+> 
 
-On Tue, 18 Sep 2018 19:41:09 +0200 ebiederm@xmission.com (Eric W. Biederman=
-) wrote:
->
-> Folks please review and double check me.  I think I have kept these
-> changes simple and obviously correct but I am human and mess up
-> sometimes.
+This patch update a page table clear to clear _PAGE_PRESENT and mark it 
+invalid via _PAGE_INVALID. The pte_present now looks at both the flag. 
+That is we want these transient clear of pte to be considered as present 
+pte even if _PAGE_PRESENT is cleared. What we are catching by the debug 
+BUG_ON in these function is we are not using them to set a pte where the 
+old entry has a hadware valid bit set. This is because we don't do any 
+tlb flush with set_pte_at.
 
-Its always good to see a nicely set out patch series like this.
 
---=20
-Cheers,
-Stephen Rothwell
+So the reason for pte_present -> pte_val() & _PAGE_PRESENT is because we 
+swtiched the clear to clear _PAGE_PRESENT and set _PAGE_INVALID and 
+pte_present now check both.
 
---Sig_/L83Adti=lF2bierENe4AgKL
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
+The reason for the removal of pte_protnone is because we dropped that 
+set_pte_at usage from core autonuma code long time back.
 
------BEGIN PGP SIGNATURE-----
+Now Considering we are calling this from mm/pgtable.c With your approach 
+of not using pte flags directly in core code we could switch this to 
+pte_hw_valid(). May be we can do that as an addon patch?
 
-iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAluktJ8ACgkQAVBC80lX
-0GzDLQgAjiA+cJSVkM6LtgzOLLTCs4Co5C770JYclf8Z1UezSfK0DvVUbyEL1FZs
-ric3KQQVU5qyNzMM3qJX+UJjQUlFMumsFcbp9eRV4Uavyanvv0JQgnbYo/L/u9Fc
-E+pjhUK3qSPF0tJs4nC+szglI+DMIvGFl64Y7RN2/CFev1w61uEvOanZgdkVlA4W
-ArjpONz2GSebGRcKE6fJghjqLwQMGFe9pU9umSSLZSv9XuX1hINYGaTN6zqy8f+Q
-1pgc4YvMgvNXcAPEoTM2B3fUPkDgw+F7WKMYVjX4nLsV1z9qE4BWli99UHGC6aTp
-AWJ64EKghrxlKCDpEjKm9Iq7BhDiCw==
-=Kblr
------END PGP SIGNATURE-----
-
---Sig_/L83Adti=lF2bierENe4AgKL--
+-aneesh
