@@ -2,17 +2,17 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42GsbJ1x06zF3QM
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 21:59:40 +1000 (AEST)
-In-Reply-To: <20180914011411.3184-1-mikey@neuling.org>
-To: Michael Neuling <mikey@neuling.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42GsbK1VxszF3QS
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 21:59:41 +1000 (AEST)
+In-Reply-To: <20180920043858.28773-1-bauerman@linux.ibm.com>
+To: Thiago Jung Bauermann <bauerman@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: mikey@neuling.org, Nicholas Piggin <npiggin@gmail.com>,
- =?utf-8?q?Mich?= =?utf-8?q?al_Such=C3=A1nek?= <msuchanek@suse.de>,
- linuxppc-dev@lists.ozlabs.org, Haren Myneni <haren@linux.vnet.ibm.com>
-Subject: Re: [v4] powerpc: Avoid code patching freed init sections
-Message-Id: <42GsbJ0Knkz9sCh@ozlabs.org>
-Date: Fri, 21 Sep 2018 21:59:39 +1000 (AEST)
+Cc: Ram Pai <linuxram@us.ibm.com>, linux-kernel@vger.kernel.org,
+ Thiago Jung Bauermann <bauerman@linux.ibm.com>
+Subject: Re: powerpc/pkeys: Fix reading of ibm, processor-storage-keys property
+Message-Id: <42GsbJ6bPwz9sC7@ozlabs.org>
+Date: Fri, 21 Sep 2018 21:59:40 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,36 +22,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2018-09-14 at 01:14:11 UTC, Michael Neuling wrote:
-> This stops us from doing code patching in init sections after they've
-> been freed.
+On Thu, 2018-09-20 at 04:38:58 UTC, Thiago Jung Bauermann wrote:
+> scan_pkey_feature() uses of_property_read_u32_array() to read the
+> ibm,processor-storage-keys property and calls be32_to_cpu() on the
+> value it gets. The problem is that of_property_read_u32_array() already
+> returns the value converted to the CPU byte order.
 > 
-> In this chain:
->   kvm_guest_init() ->
->     kvm_use_magic_page() ->
->       fault_in_pages_readable() ->
-> 	 __get_user() ->
-> 	   __get_user_nocheck() ->
-> 	     barrier_nospec();
+> The value of pkeys_total ends up more or less sane because there's a min()
+> call in pkey_initialize() which reduces pkeys_total to 32. So in practice
+> the kernel ignores the fact that the hypervisor reserved one key for
+> itself (the device tree advertises 31 keys in my test VM).
 > 
-> We have a code patching location at barrier_nospec() and
-> kvm_guest_init() is an init function. This whole chain gets inlined,
-> so when we free the init section (hence kvm_guest_init()), this code
-> goes away and hence should no longer be patched.
+> This is wrong, but the effect in practice is that when a process tries to
+> allocate the 32nd key, it gets an -EINVAL error instead of -ENOSPC which
+> would indicate that there aren't any keys available
 > 
-> We seen this as userspace memory corruption when using a memory
-> checker while doing partition migration testing on powervm (this
-> starts the code patching post migration via
-> /sys/kernel/mobility/migration). In theory, it could also happen when
-> using /sys/kernel/debug/powerpc/barrier_nospec.
-> 
-> cc: stable@vger.kernel.org # 4.13+
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
-> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
-> Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> Fixes: cf43d3b26452 ("powerpc: Enable pkey subsystem")
+> Signed-off-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/51c3c62b58b357e8d35e4cc32f7b4e
+https://git.kernel.org/powerpc/c/c716a25b9b70084e1144f77423f5ae
 
 cheers
