@@ -1,23 +1,20 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Gr663r4pzF3QF
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 20:52:46 +1000 (AEST)
-Subject: Re: [PATCH V3 1/6] powerpc/mm/book3s: Update pmd_present to look at
- _PAGE_PRESENT bit
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, npiggin@gmail.com,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org
-References: <20180920180947.17893-1-aneesh.kumar@linux.ibm.com>
- <71b953af-5063-2440-62aa-9c3a7a738dc6@c-s.fr>
- <e64affb4-858b-1424-e850-07442fd45912@linux.ibm.com>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <714222b6-60a0-7a41-63fd-c955555091f9@c-s.fr>
-Date: Fri, 21 Sep 2018 12:52:41 +0200
-MIME-Version: 1.0
-In-Reply-To: <e64affb4-858b-1424-e850-07442fd45912@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42GsbF33jBzF3QF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 21:59:37 +1000 (AEST)
+In-Reply-To: <3c4cddf185438cc7200908b4f971a8e6ed7472fd.1536558233.git.christophe.leroy@c-s.fr>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Jianlin Shi <jishi@redhat.com>,
+ Xin Long <lucien.xin@gmail.com>
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ stable@vger.kernel.org
+Subject: Re: powerpc: fix csum_ipv6_magic() on little endian platforms
+Message-Id: <42GsbF1vw9z9sCR@ozlabs.org>
+Date: Fri, 21 Sep 2018 21:59:37 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,65 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, 2018-09-10 at 06:09:04 UTC, Christophe Leroy wrote:
+> On little endian platforms, csum_ipv6_magic() keeps len and proto in
+> CPU byte order. This generates a bad results leading to ICMPv6 packets
+> from other hosts being dropped by powerpc64le platforms.
+> 
+> In order to fix this, len and proto should be converted to network
+> byte order ie bigendian byte order. However checksumming 0x12345678
+> and 0x56341278 provide the exact same result so it is enough to
+> rotate the sum of len and proto by 1 byte.
+> 
+> PPC32 only support bigendian so the fix is needed for PPC64 only
+> 
+> Fixes: e9c4943a107b ("powerpc: Implement csum_ipv6_magic in assembly")
+> Reported-by: Jianlin Shi <jishi@redhat.com>
+> Reported-by: Xin Long <lucien.xin@gmail.com>
+> Cc: <stable@vger.kernel.org> # 4.18+
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> Tested-by: Xin Long <lucien.xin@gmail.com>
 
+Applied to powerpc fixes, thanks.
 
-Le 21/09/2018 à 12:26, Aneesh Kumar K.V a écrit :
-> On 9/21/18 11:25 AM, Christophe LEROY wrote:
->>
->>
->> Le 20/09/2018 à 20:09, Aneesh Kumar K.V a écrit :
-> 
->>> diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
->>> index d71c7777669c..aee04b209b51 100644
->>> --- a/arch/powerpc/mm/pgtable.c
->>> +++ b/arch/powerpc/mm/pgtable.c
->>> @@ -188,11 +188,10 @@ void set_pte_at(struct mm_struct *mm, unsigned 
->>> long addr, pte_t *ptep,
->>>           pte_t pte)
->>>   {
->>>       /*
->>> -     * When handling numa faults, we already have the pte marked
->>> -     * _PAGE_PRESENT, but we can be sure that it is not in hpte.
->>> -     * Hence we can use set_pte_at for them.
->>> +     * Make sure hardware valid bit is not set. We don't do
->>> +     * tlb flush for this update.
->>>        */
->>> -    VM_WARN_ON(pte_present(*ptep) && !pte_protnone(*ptep));
->>> +    VM_WARN_ON(pte_val(*ptep) & _PAGE_PRESENT);
->>
->> Why not using pte_present() anymore ?
->>
->> Also, you are removing the pte_protnone() check, won't it change the 
->> behaviour ?
->>
->> If we can't use pte_present(), can we create a new helper for that 
->> (allthough _PAGE_PRESENT exists on all platforms).
->>
->> Christophe
->>
-> 
-> This patch update a page table clear to clear _PAGE_PRESENT and mark it 
-> invalid via _PAGE_INVALID. The pte_present now looks at both the flag. 
-> That is we want these transient clear of pte to be considered as present 
-> pte even if _PAGE_PRESENT is cleared. What we are catching by the debug 
-> BUG_ON in these function is we are not using them to set a pte where the 
-> old entry has a hadware valid bit set. This is because we don't do any 
-> tlb flush with set_pte_at.
-> 
-> 
-> So the reason for pte_present -> pte_val() & _PAGE_PRESENT is because we 
-> swtiched the clear to clear _PAGE_PRESENT and set _PAGE_INVALID and 
-> pte_present now check both.
-> 
-> The reason for the removal of pte_protnone is because we dropped that 
-> set_pte_at usage from core autonuma code long time back.
-> 
-> Now Considering we are calling this from mm/pgtable.c With your approach 
-> of not using pte flags directly in core code we could switch this to 
-> pte_hw_valid(). May be we can do that as an addon patch?
-> 
+https://git.kernel.org/powerpc/c/85682a7e3b9c664995ad477520f917
 
-Ok, depending on which serie goes first, I'll add it in mine if I have 
-to rebase.
-
-Christophe
+cheers
