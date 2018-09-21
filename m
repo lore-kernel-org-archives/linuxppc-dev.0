@@ -1,49 +1,21 @@
-Return-Path: <ego@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <york.sun@nxp.com>
+Received: from EUR01-HE1-obe.outbound.protection.outlook.com
+ (mail-he1eur01on0084.outbound.protection.outlook.com [104.47.0.84])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42H0jz5X9xzF3QR
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Sep 2018 03:20:55 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w8LHJLKf019381
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 13:20:53 -0400
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2mn4u4gaaw-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 13:20:53 -0400
-Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Fri, 21 Sep 2018 13:20:52 -0400
-Date: Fri, 21 Sep 2018 22:50:45 +0530
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-To: kbuild test robot <lkp@intel.com>
-Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, kbuild-all@01.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Neuling <mikey@neuling.org>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- "Oliver O'Halloran" <oohall@gmail.com>,
- Nicholas Piggin <npiggin@gmail.com>,
- Murilo Opsfelder Araujo <muriloo@linux.ibm.com>,
- Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v8 3/3] powerpc/sysfs: Add
- topology/smallcore_thread_siblings[_list]
-Reply-To: ego@linux.vnet.ibm.com
-References: <1537464159-25919-4-git-send-email-ego@linux.vnet.ibm.com>
- <201809211407.677jNLUN%fengguang.wu@intel.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42H19H54xmzF3QZ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Sep 2018 03:41:02 +1000 (AEST)
+From: York Sun <york.sun@nxp.com>
+To: Scott Wood <swood@redhat.com>, David Lamparter <equinox@diac24.net>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+CC: Scott Wood <oss@buserror.net>
+Subject: Re: [PATCH ppc-next] powerpc/fsl-booke: don't load early TLB at once
+Date: Fri, 21 Sep 2018 17:40:56 +0000
+Message-ID: <DB7PR04MB4298A6AD0F866804A3F4FB6F9A120@DB7PR04MB4298.eurprd04.prod.outlook.com>
+References: <20180920224856.GJ487685@eidolon.nox.tf>
+ <1537489893.7689.38.camel@redhat.com>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <201809211407.677jNLUN%fengguang.wu@intel.com>
-Message-Id: <20180921172045.GB12919@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,84 +25,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On Fri, Sep 21, 2018 at 02:20:15PM +0800, kbuild test robot wrote:
-> Hi Gautham,
-> 
-> Thank you for the patch! Yet something to improve:
-> 
-> [auto build test ERROR on powerpc/next]
-> [also build test ERROR on v4.19-rc4 next-20180919]
-> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
-> 
-> url:    https://github.com/0day-ci/linux/commits/Gautham-R-Shenoy/powerpc-Detection-and-scheduler-optimization-for-POWER9-bigcore/20180921-085812
-> base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
-> config: powerpc-mpc837x_mds_defconfig (attached as .config)
-> compiler: powerpc-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
-> reproduce:
->         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
->         chmod +x ~/bin/make.cross
->         # save the attached .config to linux build tree
->         GCC_VERSION=7.2.0 make.cross ARCH=powerpc 
-> 
-> All errors (new ones prefixed by >>):
-> 
->    arch/powerpc/kernel/sysfs.c: In function 'smallcore_thread_siblings_show':
-> >> arch/powerpc/kernel/sysfs.c:724:45: error: implicit declaration of function 'cpu_smallcore_mask'; did you mean 'cpu_all_mask'? [-Werror=implicit-function-declaration]
->      return cpumap_print_to_pagebuf(false, buf, cpu_smallcore_mask(cpu));
->                                                 ^~~~~~~~~~~~~~~~~~
-
-
-No, the smallcore_thread_siblings_show, and the other functions should
-only be compiled for CONFIG_SMP.
-
-
-Will add this. Thanks bot!
-
->                                                 cpu_all_mask
-> >> arch/powerpc/kernel/sysfs.c:724:45: error: passing argument 3 of 'cpumap_print_to_pagebuf' makes pointer from integer without a cast [-Werror=int-conversion]
->    In file included from include/linux/rcupdate.h:44:0,
->                     from include/linux/radix-tree.h:28,
->                     from include/linux/idr.h:15,
->                     from include/linux/kernfs.h:14,
->                     from include/linux/sysfs.h:16,
->                     from include/linux/kobject.h:20,
->                     from include/linux/device.h:16,
->                     from arch/powerpc/kernel/sysfs.c:1:
->    include/linux/cpumask.h:892:1: note: expected 'const struct cpumask *' but argument is of type 'int'
->     cpumap_print_to_pagebuf(bool list, char *buf, const struct cpumask *mask)
->     ^~~~~~~~~~~~~~~~~~~~~~~
->    arch/powerpc/kernel/sysfs.c: In function 'smallcore_thread_siblings_list_show':
->    arch/powerpc/kernel/sysfs.c:734:44: error: passing argument 3 of 'cpumap_print_to_pagebuf' makes pointer from integer without a cast [-Werror=int-conversion]
->      return cpumap_print_to_pagebuf(true, buf, cpu_smallcore_mask(cpu));
->                                                ^~~~~~~~~~~~~~~~~~
->    In file included from include/linux/rcupdate.h:44:0,
->                     from include/linux/radix-tree.h:28,
->                     from include/linux/idr.h:15,
->                     from include/linux/kernfs.h:14,
->                     from include/linux/sysfs.h:16,
->                     from include/linux/kobject.h:20,
->                     from include/linux/device.h:16,
->                     from arch/powerpc/kernel/sysfs.c:1:
->    include/linux/cpumask.h:892:1: note: expected 'const struct cpumask *' but argument is of type 'int'
->     cpumap_print_to_pagebuf(bool list, char *buf, const struct cpumask *mask)
->     ^~~~~~~~~~~~~~~~~~~~~~~
->    cc1: all warnings being treated as errors
-> 
-> vim +724 arch/powerpc/kernel/sysfs.c
-> 
->    717	
->    718	static ssize_t smallcore_thread_siblings_show(struct device *dev,
->    719						struct device_attribute *attr,
->    720						char *buf)
->    721	{
->    722		int cpu = dev->id;
->    723	
->  > 724		return cpumap_print_to_pagebuf(false, buf, cpu_smallcore_mask(cpu));
->    725	}
->    726	static DEVICE_ATTR_RO(smallcore_thread_siblings);
->    727	
-> 
-> ---
-> 0-DAY kernel test infrastructure                Open Source Technology Center
-> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+On 09/20/2018 05:31 PM, Scott Wood wrote:=0A=
+> On Fri, 2018-09-21 at 00:48 +0200, David Lamparter wrote:=0A=
+>> This is a *partial* revert of "powerpc/85xx: Load all early TLB entries=
+=0A=
+>> at once" (d9e1831a420267a7ced708bb259d65b0a3c0344d.)=0A=
+>>=0A=
+>> My dusty old P4080DS just completely fails to boot (no output at all)=0A=
+>> without this revert.  I have no clue what's going on here, I just=0A=
+>> bisected it down and since it looks like an optimization to me I just=0A=
+>> reverted it - and voil=E1, the P4080 boots again.=0A=
+> =0A=
+> It's not an optimization; it was required to get kdump working, at least=
+=0A=
+> for certain choices of crash kernel location.  I just tried booting a 32-=
+=0A=
+> bit kernel and did not see this problem -- but I don't have access to a=
+=0A=
+> p4080ds anymore.  I tried with qemu e500mc, and also running a 32-bit=0A=
+> kernel on e6500 (needs a tiny change to get past SMP init, since 32-bit=
+=0A=
+> isn't really supported on e6500, but you do get output even without that)=
+.=0A=
+> =0A=
+> Do you have a JTAG that can be used to find out where it's hanging?  If=
+=0A=
+> not, I can try to get early debug working (needs an early IOMMU mapping).=
+=0A=
+> =0A=
+> York, can you try booting the latest kernel on p4080ds?=0A=
+> =0A=
+=0A=
+Scott,=0A=
+=0A=
+I haven't tried P4080DS for a long time. What defconfig do you use for=0A=
+this board? I tried latest master branch (commit a27fb6d983c7b5) with=0A=
+corenet_basic_defconfig, it didn't boot up. Kernel has an exception very=0A=
+early (pc ffffae80).=0A=
+=0A=
+However, before I claimed the board, someone booted Linux 4.14.71 on=0A=
+this board. I need to track down where the image came from.=0A=
+=0A=
+York=0A=
