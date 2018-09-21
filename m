@@ -1,29 +1,21 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Gdgn5L1GzF3PG
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 13:02:45 +1000 (AEST)
-Message-ID: <d1cf1628ed2641140d3508d355cdc172d6b145e9.camel@neuling.org>
-Subject: Re: [PATCH v8 1/3] powerpc: Detect the presence of big-cores via
- "ibm,thread-groups"
-From: Michael Neuling <mikey@neuling.org>
-To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, "Aneesh Kumar K.V"
- <aneesh.kumar@linux.ibm.com>, Srikar Dronamraju
- <srikar@linux.vnet.ibm.com>,  Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>, Vaidyanathan Srinivasan
- <svaidy@linux.vnet.ibm.com>, Akshay Adiga
- <akshay.adiga@linux.vnet.ibm.com>,  Shilpasri G Bhat
- <shilpa.bhat@linux.vnet.ibm.com>, Oliver O'Halloran <oohall@gmail.com>,
- Nicholas Piggin <npiggin@gmail.com>, Murilo Opsfelder Araujo
- <muriloo@linux.ibm.com>, Anton Blanchard <anton@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Date: Fri, 21 Sep 2018 13:02:45 +1000
-In-Reply-To: <1537464159-25919-2-git-send-email-ego@linux.vnet.ibm.com>
-References: <1537464159-25919-1-git-send-email-ego@linux.vnet.ibm.com>
- <1537464159-25919-2-git-send-email-ego@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42GjWB4zbjzF3PV
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 15:55:34 +1000 (AEST)
+Subject: Re: [PATCH V3 1/6] powerpc/mm/book3s: Update pmd_present to look at
+ _PAGE_PRESENT bit
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, npiggin@gmail.com,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org
+References: <20180920180947.17893-1-aneesh.kumar@linux.ibm.com>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <71b953af-5063-2440-62aa-9c3a7a738dc6@c-s.fr>
+Date: Fri, 21 Sep 2018 07:55:28 +0200
+MIME-Version: 1.0
+In-Reply-To: <20180920180947.17893-1-aneesh.kumar@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,374 +25,156 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This doesn't compile for me with:
-
-arch/powerpc/kernel/smp.c: In function =E2=80=98smp_prepare_cpus=E2=80=99:
-arch/powerpc/kernel/smp.c:812:23: error: =E2=80=98tg.threads_per_group=E2=
-=80=99 may be used uninitialized in this function [-Werror=3Dmaybe-uninitia=
-lized]
-  struct thread_groups tg;
-                       ^
-arch/powerpc/kernel/smp.c:812:23: error: =E2=80=98tg.nr_groups=E2=80=99 may=
- be used uninitialized in this function [-Werror=3Dmaybe-uninitialized]
-cc1: all warnings being treated as errors
-/home/mikey/src/linux-ozlabs/scripts/Makefile.build:305: recipe for target =
-'arch/powerpc/kernel/smp.o' failed
 
 
-On Thu, 2018-09-20 at 22:52 +0530, Gautham R. Shenoy wrote:
-> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
->=20
-> On IBM POWER9, the device tree exposes a property array identifed by
-> "ibm,thread-groups" which will indicate which groups of threads share a
-> particular set of resources.
->=20
-> As of today we only have one form of grouping identifying the group of
-> threads in the core that share the L1 cache, translation cache and
-> instruction data flow.
->=20
-> This patch
->=20
->      1) Defines the helper function to parse the contents of
->      "ibm,thread-groups".
->=20
->      2) On boot, it parses the "ibm,thread-groups" property and caches
->      the CPU-threads sharing the L1 cache in a per-cpu variable named
->      cpu_l1_cache_map.
->=20
->      3) Initializes a global variable named "has_big_cores" on
->      big-core systems.
->=20
->      4) Each time a CPU is onlined, it initializes the
->      cpu_smallcore_mask which contains the online siblings of the
->      CPU that share the L1 cache with this CPU.
->=20
-> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+Le 20/09/2018 à 20:09, Aneesh Kumar K.V a écrit :
+> With this patch we use 0x8000000000000000UL (_PAGE_PRESENT) to indicate a valid
+> pgd/pud/pmd entry. We also switch the p**_present() to look at this bit.
+> 
+> With pmd_present, we have a special case. We need to make sure we consider a
+> pmd marked invalid during THP split as present. Right now we clear the
+> _PAGE_PRESENT bit during a pmdp_invalidate. Inorder to consider this special
+> case we add a new pte bit _PAGE_INVALID (mapped to _RPAGE_SW0). This bit is
+> only used with _PAGE_PRESENT cleared. Hence we are not really losing a pte bit
+> for this special case. pmd_present is also updated to look at _PAGE_INVALID.
+> 
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 > ---
->  arch/powerpc/include/asm/cputhreads.h |   2 +
->  arch/powerpc/include/asm/smp.h        |   6 +
->  arch/powerpc/kernel/smp.c             | 221
-> ++++++++++++++++++++++++++++++++++
->  3 files changed, 229 insertions(+)
->=20
-> diff --git a/arch/powerpc/include/asm/cputhreads.h
-> b/arch/powerpc/include/asm/cputhreads.h
-> index d71a909..deb99fd 100644
-> --- a/arch/powerpc/include/asm/cputhreads.h
-> +++ b/arch/powerpc/include/asm/cputhreads.h
-> @@ -23,11 +23,13 @@
->  extern int threads_per_core;
->  extern int threads_per_subcore;
->  extern int threads_shift;
-> +extern bool has_big_cores;
->  extern cpumask_t threads_core_mask;
->  #else
->  #define threads_per_core	1
->  #define threads_per_subcore	1
->  #define threads_shift		0
-> +#define has_big_cores		0
->  #define threads_core_mask	(*get_cpu_mask(0))
->  #endif
-> =20
-> diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/sm=
-p.h
-> index 95b66a0..4439893 100644
-> --- a/arch/powerpc/include/asm/smp.h
-> +++ b/arch/powerpc/include/asm/smp.h
-> @@ -100,6 +100,7 @@ static inline void set_hard_smp_processor_id(int cpu,=
- int
-> phys)
->  DECLARE_PER_CPU(cpumask_var_t, cpu_sibling_map);
->  DECLARE_PER_CPU(cpumask_var_t, cpu_l2_cache_map);
->  DECLARE_PER_CPU(cpumask_var_t, cpu_core_map);
-> +DECLARE_PER_CPU(cpumask_var_t, cpu_smallcore_map);
-> =20
->  static inline struct cpumask *cpu_sibling_mask(int cpu)
->  {
-> @@ -116,6 +117,11 @@ static inline struct cpumask *cpu_l2_cache_mask(int =
-cpu)
->  	return per_cpu(cpu_l2_cache_map, cpu);
->  }
-> =20
-> +static inline struct cpumask *cpu_smallcore_mask(int cpu)
-> +{
-> +	return per_cpu(cpu_smallcore_map, cpu);
-> +}
+>   arch/powerpc/include/asm/book3s/64/hash.h    |  5 +++++
+>   arch/powerpc/include/asm/book3s/64/pgtable.h | 14 +++++++++++---
+>   arch/powerpc/mm/hash_utils_64.c              |  6 +++---
+>   arch/powerpc/mm/pgtable-book3s64.c           |  8 ++++++--
+>   arch/powerpc/mm/pgtable.c                    |  7 +++----
+>   5 files changed, 28 insertions(+), 12 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
+> index d52a51b2ce7b..fcf8b10a209f 100644
+> --- a/arch/powerpc/include/asm/book3s/64/hash.h
+> +++ b/arch/powerpc/include/asm/book3s/64/hash.h
+> @@ -18,6 +18,11 @@
+>   #include <asm/book3s/64/hash-4k.h>
+>   #endif
+>   
+> +/* Bits to set in a PMD/PUD/PGD entry valid bit*/
+> +#define HASH_PMD_VAL_BITS		(0x8000000000000000UL)
+> +#define HASH_PUD_VAL_BITS		(0x8000000000000000UL)
+> +#define HASH_PGD_VAL_BITS		(0x8000000000000000UL)
 > +
->  extern int cpu_to_core_id(int cpu);
-> =20
->  /* Since OpenPIC has only 4 IPIs, we use slightly different message numb=
-ers.
-> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-> index 61c1fad..15095110 100644
-> --- a/arch/powerpc/kernel/smp.c
-> +++ b/arch/powerpc/kernel/smp.c
-> @@ -74,14 +74,32 @@
->  #endif
-> =20
->  struct thread_info *secondary_ti;
-> +bool has_big_cores;
-> =20
->  DEFINE_PER_CPU(cpumask_var_t, cpu_sibling_map);
-> +DEFINE_PER_CPU(cpumask_var_t, cpu_smallcore_map);
->  DEFINE_PER_CPU(cpumask_var_t, cpu_l2_cache_map);
->  DEFINE_PER_CPU(cpumask_var_t, cpu_core_map);
-> =20
->  EXPORT_PER_CPU_SYMBOL(cpu_sibling_map);
->  EXPORT_PER_CPU_SYMBOL(cpu_l2_cache_map);
->  EXPORT_PER_CPU_SYMBOL(cpu_core_map);
-> +EXPORT_SYMBOL_GPL(has_big_cores);
-> +
-> +#define MAX_THREAD_LIST_SIZE	8
-> +#define THREAD_GROUP_SHARE_L1   1
-> +struct thread_groups {
-> +	unsigned int property;
-> +	unsigned int nr_groups;
-> +	unsigned int threads_per_group;
-> +	unsigned int thread_list[MAX_THREAD_LIST_SIZE];
-> +};
-> +
-> +/*
-> + * On big-cores system, cpu_l1_cache_map for each CPU corresponds to
-> + * the set its siblings that share the L1-cache.
-> + */
-> +DEFINE_PER_CPU(cpumask_var_t, cpu_l1_cache_map);
-> =20
->  /* SMP operations for this machine */
->  struct smp_ops_t *smp_ops;
-> @@ -674,6 +692,184 @@ static void set_cpus_unrelated(int i, int j,
->  }
->  #endif
-> =20
-> +/*
-> + * parse_thread_groups: Parses the "ibm,thread-groups" device tree
-> + *                      property for the CPU device node @dn and stores
-> + *                      the parsed output in the thread_groups
-> + *                      structure @tg if the ibm,thread-groups[0]
-> + *                      matches @property.
-> + *
-> + * @dn: The device node of the CPU device.
-> + * @tg: Pointer to a thread group structure into which the parsed
-> + *      output of "ibm,thread-groups" is stored.
-> + * @property: The property of the thread-group that the caller is
-> + *            interested in.
-> + *
-> + * ibm,thread-groups[0..N-1] array defines which group of threads in
-> + * the CPU-device node can be grouped together based on the property.
-> + *
-> + * ibm,thread-groups[0] tells us the property based on which the
-> + * threads are being grouped together. If this value is 1, it implies
-> + * that the threads in the same group share L1, translation cache.
-> + *
-> + * ibm,thread-groups[1] tells us how many such thread groups exist.
-> + *
-> + * ibm,thread-groups[2] tells us the number of threads in each such
-> + * group.
-> + *
-> + * ibm,thread-groups[3..N-1] is the list of threads identified by
-> + * "ibm,ppc-interrupt-server#s" arranged as per their membership in
-> + * the grouping.
-> + *
-> + * Example: If ibm,thread-groups =3D [1,2,4,5,6,7,8,9,10,11,12] it
-> + * implies that there are 2 groups of 4 threads each, where each group
-> + * of threads share L1, translation cache.
-> + *
-> + * The "ibm,ppc-interrupt-server#s" of the first group is {5,6,7,8}
-> + * and the "ibm,ppc-interrupt-server#s" of the second group is {9, 10,
-> + * 11, 12} structure
-> + *
-> + * Returns 0 on success, -EINVAL if the property does not exist,
-> + * -ENODATA if property does not have a value, and -EOVERFLOW if the
-> + * property data isn't large enough.
-> + */
-> +static int parse_thread_groups(struct device_node *dn,
-> +			       struct thread_groups *tg,
-> +			       unsigned int property)
-> +{
-> +	int i;
-> +	u32 thread_group_array[3 + MAX_THREAD_LIST_SIZE];
-> +	u32 *thread_list;
-> +	size_t total_threads;
-> +	int ret;
-> +
-> +	ret =3D of_property_read_u32_array(dn, "ibm,thread-groups",
-> +					 thread_group_array, 3);
-> +	if (ret)
-> +		return ret;
-> +
-> +	tg->property =3D thread_group_array[0];
-> +	tg->nr_groups =3D thread_group_array[1];
-> +	tg->threads_per_group =3D thread_group_array[2];
-> +	if (tg->property !=3D property ||
-> +	    tg->nr_groups < 1 ||
-> +	    tg->threads_per_group < 1)
-> +		return -ENODATA;
-> +
-> +	total_threads =3D tg->nr_groups * tg->threads_per_group;
-> +
-> +	ret =3D of_property_read_u32_array(dn, "ibm,thread-groups",
-> +					 thread_group_array,
-> +					 3 + total_threads);
-> +	if (ret)
-> +		return ret;
-> +
-> +	thread_list =3D &thread_group_array[3];
-> +
-> +	for (i =3D 0 ; i < total_threads; i++)
-> +		tg->thread_list[i] =3D thread_list[i];
-> +
-> +	return 0;
-> +}
-> +
-> +/*
-> + * get_cpu_thread_group_start : Searches the thread group in tg->thread_=
-list
-> + *                              that @cpu belongs to.
-> + *
-> + * @cpu : The logical CPU whose thread group is being searched.
-> + * @tg : The thread-group structure of the CPU node which @cpu belongs
-> + *       to.
-> + *
-> + * Returns the index to tg->thread_list that points to the the start
-> + * of the thread_group that @cpu belongs to.
-> + *
-> + * Returns -1 if cpu doesn't belong to any of the groups pointed to by
-> + * tg->thread_list.
-> + */
-> +static int get_cpu_thread_group_start(int cpu, struct thread_groups *tg)
-> +{
-> +	int hw_cpu_id =3D get_hard_smp_processor_id(cpu);
-> +	int i, j;
-> +
-> +	for (i =3D 0; i < tg->nr_groups; i++) {
-> +		int group_start =3D i * tg->threads_per_group;
-> +
-> +		for (j =3D 0; j < tg->threads_per_group; j++) {
-> +			int idx =3D group_start + j;
-> +
-> +			if (tg->thread_list[idx] =3D=3D hw_cpu_id)
-> +				return group_start;
-> +		}
-> +	}
-> +
-> +	return -1;
-> +}
-> +
-> +static int init_cpu_l1_cache_map(int cpu)
-> +
-> +{
-> +	struct device_node *dn =3D of_get_cpu_node(cpu, NULL);
-> +	struct thread_groups tg;
-> +
-> +	int first_thread =3D cpu_first_thread_sibling(cpu);
-> +	int i, cpu_group_start =3D -1, err =3D 0;
-> +
-> +	if (!dn)
-> +		return -ENODATA;
-> +
-> +	err =3D parse_thread_groups(dn, &tg, THREAD_GROUP_SHARE_L1);
-> +	if (err)
-> +		goto out;
-> +
-> +	zalloc_cpumask_var_node(&per_cpu(cpu_l1_cache_map, cpu),
-> +				GFP_KERNEL,
-> +				cpu_to_node(cpu));
-> +
-> +	cpu_group_start =3D get_cpu_thread_group_start(cpu, &tg);
-> +
-> +	if (unlikely(cpu_group_start =3D=3D -1)) {
-> +		WARN_ON_ONCE(1);
-> +		err =3D -ENODATA;
-> +		goto out;
-> +	}
-> +
-> +	for (i =3D first_thread; i < first_thread + threads_per_core; i++) {
-> +		int i_group_start =3D get_cpu_thread_group_start(i, &tg);
-> +
-> +		if (unlikely(i_group_start =3D=3D -1)) {
-> +			WARN_ON_ONCE(1);
-> +			err =3D -ENODATA;
-> +			goto out;
-> +		}
-> +
-> +		if (i_group_start =3D=3D cpu_group_start)
-> +			cpumask_set_cpu(i, per_cpu(cpu_l1_cache_map, cpu));
-> +	}
-> +
-> +out:
-> +	of_node_put(dn);
-> +	return err;
-> +}
-> +
-> +static int init_big_cores(void)
-> +{
-> +	int cpu;
-> +
-> +	for_each_possible_cpu(cpu) {
-> +		int err =3D init_cpu_l1_cache_map(cpu);
-> +
-> +		if (err)
-> +			return err;
-> +
-> +		zalloc_cpumask_var_node(&per_cpu(cpu_smallcore_map, cpu),
-> +					GFP_KERNEL,
-> +					cpu_to_node(cpu));
-> +	}
-> +
-> +	has_big_cores =3D true;
-> +	return 0;
-> +}
-> +
->  void __init smp_prepare_cpus(unsigned int max_cpus)
->  {
->  	unsigned int cpu;
-> @@ -712,6 +908,12 @@ void __init smp_prepare_cpus(unsigned int max_cpus)
->  	cpumask_set_cpu(boot_cpuid, cpu_l2_cache_mask(boot_cpuid));
->  	cpumask_set_cpu(boot_cpuid, cpu_core_mask(boot_cpuid));
-> =20
-> +	init_big_cores();
-> +	if (has_big_cores) {
-> +		cpumask_set_cpu(boot_cpuid,
-> +				cpu_smallcore_mask(boot_cpuid));
-> +	}
-> +
->  	if (smp_ops && smp_ops->probe)
->  		smp_ops->probe();
->  }
-> @@ -995,10 +1197,28 @@ static void remove_cpu_from_masks(int cpu)
->  		set_cpus_unrelated(cpu, i, cpu_core_mask);
->  		set_cpus_unrelated(cpu, i, cpu_l2_cache_mask);
->  		set_cpus_unrelated(cpu, i, cpu_sibling_mask);
-> +		if (has_big_cores)
-> +			set_cpus_unrelated(cpu, i, cpu_smallcore_mask);
->  	}
->  }
->  #endif
-> =20
-> +static inline void add_cpu_to_smallcore_masks(int cpu)
-> +{
-> +	struct cpumask *this_l1_cache_map =3D per_cpu(cpu_l1_cache_map, cpu);
-> +	int i, first_thread =3D cpu_first_thread_sibling(cpu);
-> +
-> +	if (!has_big_cores)
-> +		return;
-> +
-> +	cpumask_set_cpu(cpu, cpu_smallcore_mask(cpu));
-> +
-> +	for (i =3D first_thread; i < first_thread + threads_per_core; i++) {
-> +		if (cpu_online(i) && cpumask_test_cpu(i, this_l1_cache_map))
-> +			set_cpus_related(i, cpu, cpu_smallcore_mask);
-> +	}
-> +}
-> +
->  static void add_cpu_to_masks(int cpu)
->  {
->  	int first_thread =3D cpu_first_thread_sibling(cpu);
-> @@ -1015,6 +1235,7 @@ static void add_cpu_to_masks(int cpu)
->  		if (cpu_online(i))
->  			set_cpus_related(i, cpu, cpu_sibling_mask);
-> =20
-> +	add_cpu_to_smallcore_masks(cpu);
->  	/*
->  	 * Copy the thread sibling mask into the cache sibling mask
->  	 * and mark any CPUs that share an L2 with this CPU.
+>   /*
+>    * Size of EA range mapped by our pagetables.
+>    */
+> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+> index 13a688fc8cd0..8feb4a3240d5 100644
+> --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
+> +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+> @@ -875,8 +875,16 @@ static inline int pmd_none(pmd_t pmd)
+>   
+>   static inline int pmd_present(pmd_t pmd)
+>   {
+> +	/*
+> +	 * A pmd is considerent present if _PAGE_PRESENT is set.
+> +	 * We also need to consider the pmd present which is marked
+> +	 * invalid during a split. Hence we look for _PAGE_INVALID
+> +	 * if we find _PAGE_PRESENT cleared.
+> +	 */
+> +	if (pmd_raw(pmd) & cpu_to_be64(_PAGE_PRESENT | _PAGE_INVALID))
+> +		return true;
+>   
+> -	return !pmd_none(pmd);
+> +	return false;
+>   }
+>   
+>   static inline int pmd_bad(pmd_t pmd)
+> @@ -903,7 +911,7 @@ static inline int pud_none(pud_t pud)
+>   
+>   static inline int pud_present(pud_t pud)
+>   {
+> -	return !pud_none(pud);
+> +	return (pud_raw(pud) & cpu_to_be64(_PAGE_PRESENT));
+>   }
+>   
+>   extern struct page *pud_page(pud_t pud);
+> @@ -950,7 +958,7 @@ static inline int pgd_none(pgd_t pgd)
+>   
+>   static inline int pgd_present(pgd_t pgd)
+>   {
+> -	return !pgd_none(pgd);
+> +	return (pgd_raw(pgd) & cpu_to_be64(_PAGE_PRESENT));
+>   }
+>   
+>   static inline pte_t pgd_pte(pgd_t pgd)
+> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+> index 88c95dc8b141..13ba718c9680 100644
+> --- a/arch/powerpc/mm/hash_utils_64.c
+> +++ b/arch/powerpc/mm/hash_utils_64.c
+> @@ -1001,9 +1001,9 @@ void __init hash__early_init_mmu(void)
+>   	 * 4k use hugepd format, so for hash set then to
+>   	 * zero
+>   	 */
+> -	__pmd_val_bits = 0;
+> -	__pud_val_bits = 0;
+> -	__pgd_val_bits = 0;
+> +	__pmd_val_bits = HASH_PMD_VAL_BITS;
+> +	__pud_val_bits = HASH_PUD_VAL_BITS;
+> +	__pgd_val_bits = HASH_PGD_VAL_BITS;
+>   
+>   	__kernel_virt_start = H_KERN_VIRT_START;
+>   	__kernel_virt_size = H_KERN_VIRT_SIZE;
+> diff --git a/arch/powerpc/mm/pgtable-book3s64.c b/arch/powerpc/mm/pgtable-book3s64.c
+> index 01d7c0f7c4f0..654000da8b15 100644
+> --- a/arch/powerpc/mm/pgtable-book3s64.c
+> +++ b/arch/powerpc/mm/pgtable-book3s64.c
+> @@ -69,7 +69,11 @@ void set_pmd_at(struct mm_struct *mm, unsigned long addr,
+>   		pmd_t *pmdp, pmd_t pmd)
+>   {
+>   #ifdef CONFIG_DEBUG_VM
+> -	WARN_ON(pte_present(pmd_pte(*pmdp)) && !pte_protnone(pmd_pte(*pmdp)));
+> +	/*
+> +	 * Make sure hardware valid bit is not set. We don't do
+> +	 * tlb flush for this update.
+> +	 */
+> +	WARN_ON(pte_val(pmd_pte(*pmdp)) & _PAGE_PRESENT);
+>   	assert_spin_locked(pmd_lockptr(mm, pmdp));
+>   	WARN_ON(!(pmd_trans_huge(pmd) || pmd_devmap(pmd)));
+>   #endif
+> @@ -106,7 +110,7 @@ pmd_t pmdp_invalidate(struct vm_area_struct *vma, unsigned long address,
+>   {
+>   	unsigned long old_pmd;
+>   
+> -	old_pmd = pmd_hugepage_update(vma->vm_mm, address, pmdp, _PAGE_PRESENT, 0);
+> +	old_pmd = pmd_hugepage_update(vma->vm_mm, address, pmdp, _PAGE_PRESENT, _PAGE_INVALID);
+>   	flush_pmd_tlb_range(vma, address, address + HPAGE_PMD_SIZE);
+>   	/*
+>   	 * This ensures that generic code that rely on IRQ disabling
+> diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
+> index d71c7777669c..aee04b209b51 100644
+> --- a/arch/powerpc/mm/pgtable.c
+> +++ b/arch/powerpc/mm/pgtable.c
+> @@ -188,11 +188,10 @@ void set_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
+>   		pte_t pte)
+>   {
+>   	/*
+> -	 * When handling numa faults, we already have the pte marked
+> -	 * _PAGE_PRESENT, but we can be sure that it is not in hpte.
+> -	 * Hence we can use set_pte_at for them.
+> +	 * Make sure hardware valid bit is not set. We don't do
+> +	 * tlb flush for this update.
+>   	 */
+> -	VM_WARN_ON(pte_present(*ptep) && !pte_protnone(*ptep));
+> +	VM_WARN_ON(pte_val(*ptep) & _PAGE_PRESENT);
+
+Why not using pte_present() anymore ?
+
+Also, you are removing the pte_protnone() check, won't it change the 
+behaviour ?
+
+If we can't use pte_present(), can we create a new helper for that 
+(allthough _PAGE_PRESENT exists on all platforms).
+
+Christophe
+
+
+>   
+>   	/* Add the pte bit when trying to set a pte */
+>   	pte = __pte(pte_val(pte) | _PAGE_PTE);
+> 
