@@ -1,20 +1,23 @@
-Return-Path: <yuehaibing@huawei.com>
-Received: from huawei.com (szxga07-in.huawei.com [45.249.212.35])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <joel.stan@gmail.com>
+Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
+ [IPv6:2607:f8b0:4864:20::543])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42GdRC6XzJzF3PG
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 12:51:49 +1000 (AEST)
-From: YueHaibing <yuehaibing@huawei.com>
-To: <davem@davemloft.net>, <madalin.bucur@nxp.com>,
- <pantelis.antoniou@gmail.com>, <claudiu.manoil@nxp.com>, <leoyang.li@nxp.com>
-CC: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, YueHaibing <yuehaibing@huawei.com>
-Subject: [PATCH net-next] net: freescale: fix return type of ndo_start_xmit
- function
-Date: Fri, 21 Sep 2018 10:50:32 +0800
-Message-ID: <20180921025032.18652-1-yuehaibing@huawei.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42GdVW0yMXzF3PG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 12:54:42 +1000 (AEST)
+Received: by mail-pg1-x543.google.com with SMTP id r77-v6so218817pgr.5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2018 19:54:42 -0700 (PDT)
+Sender: "joel.stan@gmail.com" <joel.stan@gmail.com>
+From: Joel Stanley <joel@jms.id.au>
+To: Krzysztof Kozlowski <krzk@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Christophe LEROY <christophe.leroy@c-s.fr>, Meelis Roos <mroos@linux.ee>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] lib/xz: Put CRC32_POLY_LE in xz_private.h
+Date: Fri, 21 Sep 2018 12:24:31 +0930
+Message-Id: <20180921025431.28366-1-joel@jms.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,99 +27,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The method ndo_start_xmit() is defined as returning an 'netdev_tx_t',
-which is a typedef for an enum type, so make sure the implementation in
-this driver has returns 'netdev_tx_t' value, and change the function
-return type to netdev_tx_t.
+This fixes a regression introduced by faa16bc404d72a5 ("lib: Use
+existing define with polynomial").
 
-Found by coccinelle.
+The cleanup added a dependency on include/linux, which broke the PowerPC
+boot wrapper/decompresser when KERNEL_XZ is enabled:
 
-Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+  BOOTCC  arch/powerpc/boot/decompress.o
+ In file included from arch/powerpc/boot/../../../lib/decompress_unxz.c:233,
+                 from arch/powerpc/boot/decompress.c:42:
+ arch/powerpc/boot/../../../lib/xz/xz_crc32.c:18:10: fatal error:
+ linux/crc32poly.h: No such file or directory
+  #include <linux/crc32poly.h>
+           ^~~~~~~~~~~~~~~~~~~
+
+The powerpc decompresser is a hairy corner of the kernel. Even while building
+a 64-bit kernel it needs to build a 32-bit binary and therefore avoid including
+files from include/linux.
+
+This allows users of the xz library to avoid including headers from
+'include/linux/' while still achieving the cleanup of the magic number.
+
+Fixes: faa16bc404d72a5 ("lib: Use existing define with polynomial")
+Reported-by: Meelis Roos <mroos@linux.ee>
+Reported-by: kbuild test robot <lkp@intel.com>
+Suggested-by: Christophe LEROY <christophe.leroy@c-s.fr>
+Signed-off-by: Joel Stanley <joel@jms.id.au>
 ---
- drivers/net/ethernet/freescale/dpaa/dpaa_eth.c        | 3 ++-
- drivers/net/ethernet/freescale/fec_mpc52xx.c          | 3 ++-
- drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c | 3 ++-
- drivers/net/ethernet/freescale/gianfar.c              | 4 ++--
- drivers/net/ethernet/freescale/ucc_geth.c             | 3 ++-
- 5 files changed, 10 insertions(+), 6 deletions(-)
+ lib/xz/xz_crc32.c   | 1 -
+ lib/xz/xz_private.h | 4 ++++
+ 2 files changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
-index a5131a5..84843de 100644
---- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
-+++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
-@@ -2044,7 +2044,8 @@ static inline int dpaa_xmit(struct dpaa_priv *priv,
- 	return 0;
- }
- 
--static int dpaa_start_xmit(struct sk_buff *skb, struct net_device *net_dev)
-+static netdev_tx_t
-+dpaa_start_xmit(struct sk_buff *skb, struct net_device *net_dev)
- {
- 	const int queue_mapping = skb_get_queue_mapping(skb);
- 	bool nonlinear = skb_is_nonlinear(skb);
-diff --git a/drivers/net/ethernet/freescale/fec_mpc52xx.c b/drivers/net/ethernet/freescale/fec_mpc52xx.c
-index 6d7269d..b90bab7 100644
---- a/drivers/net/ethernet/freescale/fec_mpc52xx.c
-+++ b/drivers/net/ethernet/freescale/fec_mpc52xx.c
-@@ -305,7 +305,8 @@ static int mpc52xx_fec_close(struct net_device *dev)
-  * invariant will hold if you make sure that the netif_*_queue()
-  * calls are done at the proper times.
+diff --git a/lib/xz/xz_crc32.c b/lib/xz/xz_crc32.c
+index 25a5d87e2e4c..912aae5fa09e 100644
+--- a/lib/xz/xz_crc32.c
++++ b/lib/xz/xz_crc32.c
+@@ -15,7 +15,6 @@
+  * but they are bigger and use more memory for the lookup table.
   */
--static int mpc52xx_fec_start_xmit(struct sk_buff *skb, struct net_device *dev)
-+static netdev_tx_t
-+mpc52xx_fec_start_xmit(struct sk_buff *skb, struct net_device *dev)
- {
- 	struct mpc52xx_fec_priv *priv = netdev_priv(dev);
- 	struct bcom_fec_bd *bd;
-diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-index 2c2976a..7c548ed 100644
---- a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-@@ -481,7 +481,8 @@ static struct sk_buff *tx_skb_align_workaround(struct net_device *dev,
- }
+ 
+-#include <linux/crc32poly.h>
+ #include "xz_private.h"
+ 
+ /*
+diff --git a/lib/xz/xz_private.h b/lib/xz/xz_private.h
+index 482b90f363fe..09360ebb510e 100644
+--- a/lib/xz/xz_private.h
++++ b/lib/xz/xz_private.h
+@@ -102,6 +102,10 @@
+ #	endif
  #endif
  
--static int fs_enet_start_xmit(struct sk_buff *skb, struct net_device *dev)
-+static netdev_tx_t
-+fs_enet_start_xmit(struct sk_buff *skb, struct net_device *dev)
- {
- 	struct fs_enet_private *fep = netdev_priv(dev);
- 	cbd_t __iomem *bdp;
-diff --git a/drivers/net/ethernet/freescale/gianfar.c b/drivers/net/ethernet/freescale/gianfar.c
-index c488d31..0bd21a4 100644
---- a/drivers/net/ethernet/freescale/gianfar.c
-+++ b/drivers/net/ethernet/freescale/gianfar.c
-@@ -110,7 +110,7 @@
- const char gfar_driver_version[] = "2.0";
- 
- static int gfar_enet_open(struct net_device *dev);
--static int gfar_start_xmit(struct sk_buff *skb, struct net_device *dev);
-+static netdev_tx_t gfar_start_xmit(struct sk_buff *skb, struct net_device *dev);
- static void gfar_reset_task(struct work_struct *work);
- static void gfar_timeout(struct net_device *dev);
- static int gfar_close(struct net_device *dev);
-@@ -2332,7 +2332,7 @@ static inline bool gfar_csum_errata_76(struct gfar_private *priv,
- /* This is called by the kernel when a frame is ready for transmission.
-  * It is pointed to by the dev->hard_start_xmit function pointer
-  */
--static int gfar_start_xmit(struct sk_buff *skb, struct net_device *dev)
-+static netdev_tx_t gfar_start_xmit(struct sk_buff *skb, struct net_device *dev)
- {
- 	struct gfar_private *priv = netdev_priv(dev);
- 	struct gfar_priv_tx_q *tx_queue = NULL;
-diff --git a/drivers/net/ethernet/freescale/ucc_geth.c b/drivers/net/ethernet/freescale/ucc_geth.c
-index 9600837..32e0270 100644
---- a/drivers/net/ethernet/freescale/ucc_geth.c
-+++ b/drivers/net/ethernet/freescale/ucc_geth.c
-@@ -3078,7 +3078,8 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 
- /* This is called by the kernel when a frame is ready for transmission. */
- /* It is pointed to by the dev->hard_start_xmit function pointer */
--static int ucc_geth_start_xmit(struct sk_buff *skb, struct net_device *dev)
-+static netdev_tx_t
-+ucc_geth_start_xmit(struct sk_buff *skb, struct net_device *dev)
- {
- 	struct ucc_geth_private *ugeth = netdev_priv(dev);
- #ifdef CONFIG_UGETH_TX_ON_DEMAND
++#ifndef CRC32_POLY_LE
++#define CRC32_POLY_LE 0xedb88320
++#endif
++
+ /*
+  * Allocate memory for LZMA2 decoder. xz_dec_lzma2_reset() must be used
+  * before calling xz_dec_lzma2_run().
 -- 
-1.8.3.1
+2.17.1
