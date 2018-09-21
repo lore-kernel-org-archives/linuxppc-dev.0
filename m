@@ -1,16 +1,19 @@
-Return-Path: <equinox@diac24.net>
-Received: from eidolon.nox.tf (eidolon.nox.tf [IPv6:2a07:2ec0:2185::])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <swood@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42GXNp3TpmzF3NN
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 09:04:26 +1000 (AEST)
-Date: Fri, 21 Sep 2018 01:04:22 +0200
-From: David Lamparter <equinox@diac24.net>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/fsl/dts: add missing P4080DS I2C devices
-Message-ID: <20180920230422.GK487685@eidolon.nox.tf>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42GZKT2xxTzF3P5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 10:31:37 +1000 (AEST)
+Message-ID: <1537489893.7689.38.camel@redhat.com>
+Subject: Re: [PATCH ppc-next] powerpc/fsl-booke: don't load early TLB at once
+From: Scott Wood <swood@redhat.com>
+To: David Lamparter <equinox@diac24.net>, linuxppc-dev@lists.ozlabs.org
+Cc: Scott Wood <oss@buserror.net>, York Sun <york.sun@nxp.com>
+Date: Thu, 20 Sep 2018 19:31:33 -0500
+In-Reply-To: <20180920224856.GJ487685@eidolon.nox.tf>
+References: <20180920224856.GJ487685@eidolon.nox.tf>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,81 +23,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This just adds the zl2006 voltage regulators / power monitors and the
-onboard I2C eeproms.  The ICS9FG108 clock chip doesn't seem to have a
-driver, so it is left in the DTS as a comment.  And for good measure,
-the SPD eeproms are tagged as such.
+On Fri, 2018-09-21 at 00:48 +0200, David Lamparter wrote:
+> This is a *partial* revert of "powerpc/85xx: Load all early TLB entries
+> at once" (d9e1831a420267a7ced708bb259d65b0a3c0344d.)
+> 
+> My dusty old P4080DS just completely fails to boot (no output at all)
+> without this revert.  I have no clue what's going on here, I just
+> bisected it down and since it looks like an optimization to me I just
+> reverted it - and voilá, the P4080 boots again.
 
-Signed-off-by: David Lamparter <equinox@diac24.net>
----
-I'm not subscribed to linuxppc-dev, please keep me in Cc:.
----
- arch/powerpc/boot/dts/fsl/p4080ds.dts | 43 +++++++++++++++++++++++++--
- 1 file changed, 41 insertions(+), 2 deletions(-)
+It's not an optimization; it was required to get kdump working, at least
+for certain choices of crash kernel location.  I just tried booting a 32-
+bit kernel and did not see this problem -- but I don't have access to a
+p4080ds anymore.  I tried with qemu e500mc, and also running a 32-bit
+kernel on e6500 (needs a tiny change to get past SMP init, since 32-bit
+isn't really supported on e6500, but you do get output even without that).
 
-diff --git a/arch/powerpc/boot/dts/fsl/p4080ds.dts b/arch/powerpc/boot/dts/fsl/p4080ds.dts
-index 65e20152e22f..969b32c4f2d5 100644
---- a/arch/powerpc/boot/dts/fsl/p4080ds.dts
-+++ b/arch/powerpc/boot/dts/fsl/p4080ds.dts
-@@ -125,11 +125,11 @@
- 
- 		i2c@118100 {
- 			eeprom@51 {
--				compatible = "atmel,24c256";
-+				compatible = "atmel,spd";
- 				reg = <0x51>;
- 			};
- 			eeprom@52 {
--				compatible = "atmel,24c256";
-+				compatible = "atmel,spd";
- 				reg = <0x52>;
- 			};
- 			rtc@68 {
-@@ -143,6 +143,45 @@
- 			};
- 		};
- 
-+		i2c@118000 {
-+			zl2006@21 {
-+				compatible = "zl2006";
-+				reg = <0x21>;
-+			};
-+			zl2006@22 {
-+				compatible = "zl2006";
-+				reg = <0x22>;
-+			};
-+			zl2006@23 {
-+				compatible = "zl2006";
-+				reg = <0x23>;
-+			};
-+			zl2006@24 {
-+				compatible = "zl2006";
-+				reg = <0x24>;
-+			};
-+			eeprom@50 {
-+				compatible = "atmel,24c64";
-+				reg = <0x50>;
-+			};
-+			eeprom@55 {
-+				compatible = "atmel,24c64";
-+				reg = <0x55>;
-+			};
-+			eeprom@56 {
-+				compatible = "atmel,24c64";
-+				reg = <0x56>;
-+			};
-+			eeprom@57 {
-+				compatible = "atmel,24c02";
-+				reg = <0x57>;
-+			};
-+		};
-+
-+		i2c@119100 {
-+			/* 0x6E: ICS9FG108 */
-+		};
-+
- 		usb0: usb@210000 {
- 			phy_type = "ulpi";
- 		};
--- 
-2.18.0
+Do you have a JTAG that can be used to find out where it's hanging?  If
+not, I can try to get early debug working (needs an early IOMMU mapping).
+
+York, can you try booting the latest kernel on p4080ds?
+
+-Scott
