@@ -1,25 +1,25 @@
 Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Gn0F2nz3zF3PN
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 18:32:29 +1000 (AEST)
-Date: Fri, 21 Sep 2018 18:32:28 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Gn6m5wCmzF3PZ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2018 18:38:08 +1000 (AEST)
+Date: Fri, 21 Sep 2018 18:38:07 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: "Eric W. Biederman" <ebiederm@xmission.com>
 Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt
  <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael
  Ellerman <mpe@ellerman.id.au>
-Subject: Re: [REVIEW][PATCH 4/9] signal/powerpc: Remove pkey parameter from
- __bad_area_nosemaphore
-Message-ID: <20180921183228.6140665c@canb.auug.org.au>
-In-Reply-To: <20180918175850.4437-4-ebiederm@xmission.com>
+Subject: Re: [REVIEW][PATCH 5/9] signal/powerpc: Factor the common exception
+ code into exception_common
+Message-ID: <20180921183807.700623bd@canb.auug.org.au>
+In-Reply-To: <20180918175850.4437-5-ebiederm@xmission.com>
 References: <878t3yitze.fsf@xmission.com>
- <20180918175850.4437-4-ebiederm@xmission.com>
+ <20180918175850.4437-5-ebiederm@xmission.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/95WVGHuS4Ewzn/t6D3.S4zV"; protocol="application/pgp-signature"
+ boundary="Sig_//TK0bzvZq/Kez6spvh++oVH"; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,22 +29,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Sig_/95WVGHuS4Ewzn/t6D3.S4zV
+--Sig_//TK0bzvZq/Kez6spvh++oVH
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: quoted-printable
 
 Hi Eric,
 
-On Tue, 18 Sep 2018 19:58:45 +0200 "Eric W. Biederman" <ebiederm@xmission.c=
+On Tue, 18 Sep 2018 19:58:46 +0200 "Eric W. Biederman" <ebiederm@xmission.c=
 om> wrote:
 >
-> Now that bad_key_fault_exception no longer calls __bad_area_nosemaphore
-> there is no reason for __bad_area_nosemaphore to handle pkeys.
+> It is brittle and wrong to populate si_pkey when there was not a pkey
+> exception.  The field does not exist for all si_codes and in some
+> cases another field exists in the same memory location.
+>=20
+> So factor out the code that all exceptions handlers must run
+> into exception_common, leaving the individual exception handlers
+> to generate the signals themselves.
 >=20
 > Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
 
-Again, very straight forward given that _exception(a,b,c,d) -> _exception_p=
-key(a,b,c,d,0).
+Clearly no change in semantics.
 
 Reviewed-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
@@ -52,20 +56,20 @@ Reviewed-by: Stephen Rothwell <sfr@canb.auug.org.au>
 Cheers,
 Stephen Rothwell
 
---Sig_/95WVGHuS4Ewzn/t6D3.S4zV
+--Sig_//TK0bzvZq/Kez6spvh++oVH
 Content-Type: application/pgp-signature
 Content-Description: OpenPGP digital signature
 
 -----BEGIN PGP SIGNATURE-----
 
-iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAlukrJwACgkQAVBC80lX
-0GyKbwf7BQb2XOvMXtY2v569PpZmtI/71bKz1VQmyj/9KFSIR7BVVVoyN3KvMAi6
-Zd/XI2a9faGJkyb6qWIDnHxLHNktEiqzU+oyn/EjSwh270K+U4z9qEyfpAtXTO0e
-yWFjpGY57WUxFyXWXNRz+quhG4QEnMswLn/QtOcNcIzZ9Xwb/VXaGmqf7dBWLCr+
-sTgjTFUKl4a8ccyu4YotV+rSU/e/BFDt6VqU6FD8a0xJSCF1NKEu+fhs8GXMZFkz
-uk2q86HJ3AhhksBz1mhjRMm8QKIjzliB2hBRw+C6bglkWijcUcE4tq0tfiujvFLE
-fgHkjFe52spf3N4FFG0vMUwbcbForA==
-=kobP
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAlukre8ACgkQAVBC80lX
+0Gwkigf/bA/DSSCczbH5itXP3jjiTRk4KR/N1QmKfnFTXvrspspJjGyXr+88oGeY
+rVK+HHbcdXuNQmi2dGL3UYhAcBPqmHb/MVEtblEpi9/zxCCku2evwJqQKryfGaKA
+fhskO18ZMSD1aRqrJ61YY7kC/ZqQ+oYGIlpZidTX50Usf6Dl1zXmb9mewggnzX24
+94ObFYt7duEt5lW+NII1dCxPZMxZM4T1O79efhgPU3IGP9UEjHYzin6Of/AVjU6R
+o34/Oo6S7jBAXBTf8sgo2QEwnEz4xu27NQuFHtkG2/LwBlKrKPw/ngHGQiWbzahX
+oOWqoaiphleG4+40GHtmmxCLe8VDwA==
+=FL4j
 -----END PGP SIGNATURE-----
 
---Sig_/95WVGHuS4Ewzn/t6D3.S4zV--
+--Sig_//TK0bzvZq/Kez6spvh++oVH--
