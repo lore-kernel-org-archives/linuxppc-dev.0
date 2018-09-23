@@ -1,31 +1,53 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
- [IPv6:2607:f8b0:4864:20::643])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <yamada.masahiro@socionext.com>
+Received: from conssluserg-03.nifty.com (conssluserg-03.nifty.com
+ [210.131.2.82])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42J2262rDkzF3HZ
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Sep 2018 19:23:25 +1000 (AEST)
-Received: by mail-pl1-x643.google.com with SMTP id s17-v6so7814245plp.7
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Sep 2018 02:23:24 -0700 (PDT)
-Date: Sun, 23 Sep 2018 19:23:15 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Ley Foon Tan <ley.foon.tan@intel.com>
-Cc: Guenter Roeck <linux@roeck-us.net>, linux-mm@kvack.org,
- linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>, Ley Foon Tan
- <lftan@altera.com>, nios2-dev@lists.rocketboards.org
-Subject: Re: [PATCH 3/3] mm: optimise pte dirty/accessed bit setting by
- demand based pte insertion
-Message-ID: <20180923192315.13cb4114@roar.ozlabs.ibm.com>
-In-Reply-To: <1537519325.19048.0.camel@intel.com>
-References: <20180828112034.30875-1-npiggin@gmail.com>
- <20180828112034.30875-4-npiggin@gmail.com>
- <20180905142951.GA15680@roeck-us.net>
- <20180918035337.0727dad0@roar.ozlabs.ibm.com>
- <1537519325.19048.0.camel@intel.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42J3Yl4pGnzF3Hj
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Sep 2018 20:32:26 +1000 (AEST)
+Received: from mail-vs1-f44.google.com (mail-vs1-f44.google.com
+ [209.85.217.44]) (authenticated)
+ by conssluserg-03.nifty.com with ESMTP id w8NAVtbg007514
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Sep 2018 19:31:56 +0900
+Received: by mail-vs1-f44.google.com with SMTP id w16-v6so850810vso.9
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Sep 2018 03:31:55 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <CAMuHMdWEnoh97_jiDWMq=ke4PrhSFbToYnx91CPLBuq3mOGzoQ@mail.gmail.com>
+References: <20180910150403.19476-1-robh@kernel.org>
+ <20180910150403.19476-7-robh@kernel.org>
+ <CAL_Jsq+=VbdcVLiwXbOA5d+R2YY6=2Pw2bQpci-jj-JvereD1A@mail.gmail.com>
+ <CAK7LNAQFqhWw+LwDoypGG=OP6tH4qf2tT=LvtchK2GoiNyzDXg@mail.gmail.com>
+ <CAMuHMdWEnoh97_jiDWMq=ke4PrhSFbToYnx91CPLBuq3mOGzoQ@mail.gmail.com>
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+Date: Sun, 23 Sep 2018 06:31:14 -0400
+Message-ID: <CAK7LNATkkOiYPj2RLubcgZ_z59Bhz4GkgWqPMbnaHBk7EisXLg@mail.gmail.com>
+Subject: Re: [PATCH v3 6/9] kbuild: consolidate Devicetree dtb build rules
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Rob Herring <robh@kernel.org>,
+ "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
+ <devicetree@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Frank Rowand <frowand.list@gmail.com>,
+ Michal Marek <michal.lkml@markovi.net>, Vineet Gupta <vgupta@synopsys.com>,
+ Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Michal Simek <monstr@monstr.eu>, Ralf Baechle <ralf@linux-mips.org>,
+ James Hogan <jhogan@kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Chris Zankel <chris@zankel.net>,
+ Max Filippov <jcmvbkbc@gmail.com>,
+ linux-kbuild <linux-kbuild@vger.kernel.org>,
+ arcml <linux-snps-arc@lists.infradead.org>,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>,
+ "moderated list:H8/300 ARCHITECTURE" <uclinux-h8-devel@lists.sourceforge.jp>,
+ Linux MIPS Mailing List <linux-mips@linux-mips.org>,
+ nios2-dev@lists.rocketboards.org,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-xtensa@linux-xtensa.org, Will Deacon <will.deacon@arm.com>,
+ Paul Burton <paul.burton@mips.com>, Ley Foon Tan <ley.foon.tan@intel.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,85 +57,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 21 Sep 2018 16:42:05 +0800
-Ley Foon Tan <ley.foon.tan@intel.com> wrote:
+2018-09-13 11:51 GMT-04:00 Geert Uytterhoeven <geert@linux-m68k.org>:
+> Hi Yamada-san,
+>
+> On Wed, Sep 12, 2018 at 3:02 AM Masahiro Yamada
+> <yamada.masahiro@socionext.com> wrote:
+>> 2018-09-12 0:40 GMT+09:00 Rob Herring <robh@kernel.org>:
+>> > On Mon, Sep 10, 2018 at 10:04 AM Rob Herring <robh@kernel.org> wrote:
+>> >> There is nothing arch specific about building dtb files other than their
+>> >> location under /arch/*/boot/dts/. Keeping each arch aligned is a pain.
+>> >> The dependencies and supported targets are all slightly different.
+>> >> Also, a cross-compiler for each arch is needed, but really the host
+>> >> compiler preprocessor is perfectly fine for building dtbs. Move the
+>> >> build rules to a common location and remove the arch specific ones. This
+>> >> is done in a single step to avoid warnings about overriding rules.
+>> >>
+>> >> The build dependencies had been a mixture of 'scripts' and/or 'prepare'.
+>> >> These pull in several dependencies some of which need a target compiler
+>> >> (specifically devicetable-offsets.h) and aren't needed to build dtbs.
+>> >> All that is really needed is dtc, so adjust the dependencies to only be
+>> >> dtc.
+>> >>
+>> >> This change enables support 'dtbs_install' on some arches which were
+>> >> missing the target.
+>> >
+>> > [...]
+>> >
+>> >> @@ -1215,6 +1215,33 @@ kselftest-merge:
+>> >>                 $(srctree)/tools/testing/selftests/*/config
+>> >>         +$(Q)$(MAKE) -f $(srctree)/Makefile olddefconfig
+>> >>
+>> >> +# ---------------------------------------------------------------------------
+>> >> +# Devicetree files
+>> >> +
+>> >> +ifneq ($(wildcard $(srctree)/arch/$(SRCARCH)/boot/dts/),)
+>> >> +dtstree := arch/$(SRCARCH)/boot/dts
+>> >> +endif
+>> >> +
+>> >> +ifdef CONFIG_OF_EARLY_FLATTREE
+>> >
+>> > This can be true when dtstree is unset. So this line should be this
+>> > instead to fix the 0-day reported error:
+>> >
+>> > ifneq ($(dtstree),)
+>> >
+>> >> +
+>> >> +%.dtb : scripts_dtc
+>> >> +       $(Q)$(MAKE) $(build)=$(dtstree) $(dtstree)/$@
+>> >> +
+>> >> +PHONY += dtbs dtbs_install
+>> >> +dtbs: scripts_dtc
+>> >> +       $(Q)$(MAKE) $(build)=$(dtstree)
+>> >> +
+>> >> +dtbs_install: dtbs
+>> >> +       $(Q)$(MAKE) $(dtbinst)=$(dtstree)
+>> >> +
+>> >> +all: dtbs
+>> >> +
+>> >> +endif
+>>
+>>
+>> Ah, right.
+>> Even x86 can enable OF and OF_UNITTEST.
+>>
+>>
+>>
+>> Another solution might be,
+>> guard it by 'depends on ARCH_SUPPORTS_OF'.
+>>
+>>
+>>
+>> This is actually what ACPI does.
+>>
+>> menuconfig ACPI
+>>         bool "ACPI (Advanced Configuration and Power Interface) Support"
+>>         depends on ARCH_SUPPORTS_ACPI
+>>          ...
+>
+> ACPI is a real platform feature, as it depends on firmware.
+>
+> CONFIG_OF can be enabled, and DT overlays can be loaded, on any platform,
+> even if it has ACPI ;-)
+>
 
-> On Tue, 2018-09-18 at 03:53 +1000, Nicholas Piggin wrote:
-> > On Wed, 5 Sep 2018 07:29:51 -0700
-> > Guenter Roeck <linux@roeck-us.net> wrote:
-> >   
-> > > 
-> > > Hi,
-> > > 
-> > > On Tue, Aug 28, 2018 at 09:20:34PM +1000, Nicholas Piggin wrote:  
-> > > > 
-> > > > Similarly to the previous patch, this tries to optimise
-> > > > dirty/accessed
-> > > > bits in ptes to avoid access costs of hardware setting them.
-> > > >   
-> > > This patch results in silent nios2 boot failures, silent meaning
-> > > that
-> > > the boot stalls.  
-> > Okay I just got back to looking at this. The reason for the hang is
-> > I think a bug in the nios2 TLB code, but maybe other archs have
-> > similar
-> > issues.
-> > 
-> > In case of a missing / !present Linux pte, nios2 installs a TLB entry
-> > with no permissions via its fast TLB exception handler (software TLB
-> > fill). Then it relies on that causing a TLB permission exception in a
-> > slower handler that calls handle_mm_fault to set the Linux pte and
-> > flushes the old TLB. Then the fast exception handler will find the
-> > new
-> > Linux pte.
-> > 
-> > With this patch, nios2 has a case where handle_mm_fault does not
-> > flush
-> > the old TLB, which results in the TLB permission exception
-> > continually
-> > being retried.
-> > 
-> > What happens now is that fault paths like do_read_fault will install
-> > a
-> > Linux pte with the young bit clear and return. That will cause nios2
-> > to
-> > fault again but this time go down the bottom of handle_pte_fault and
-> > to
-> > the access flags update with the young bit set. The young bit is seen
-> > to
-> > be different, so that causes ptep_set_access_flags to do a TLB flush
-> > and
-> > that finally allows the fast TLB handler to fire and pick up the new
-> > Linux pte.
-> > 
-> > With this patch, the young bit is set in the first handle_mm_fault,
-> > so
-> > the second handle_mm_fault no longer sees the ptes are different and
-> > does not flush the TLB. The spurious fault handler also does not
-> > flush
-> > them unless FAULT_FLAG_WRITE is set.
-> > 
-> > What nios2 should do is invalidate the TLB in update_mmu_cache. What
-> > it
-> > *really* should do is install the new TLB entry, I have some patches
-> > to
-> > make that work in qemu I can submit. But I would like to try getting
-> > these dirty/accessed bit optimisation in 4.20, so I will send a
-> > simple
-> > path to just do the TLB invalidate that could go in Andrew's git
-> > tree.
-> > 
-> > Is that agreeable with the nios2 maintainers?
-> > 
-> > Thanks,
-> > Nick
-> >   
-> Hi
-> 
-> Do you have patches to test?
+OK, understood.
 
-I've been working on some, it has taken longer than I expected, I'll
-hopefully have something to send out by tomorrow.
+Thanks!
 
-Thanks,
-Nick
+
+
+-- 
+Best Regards
+Masahiro Yamada
