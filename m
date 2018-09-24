@@ -1,10 +1,11 @@
 Return-Path: <vabhav.sharma@nxp.com>
 Received: from EUR03-DB5-obe.outbound.protection.outlook.com
- (mail-eopbgr40054.outbound.protection.outlook.com [40.107.4.54])
+ (mail-db5eur03on0600.outbound.protection.outlook.com
+ [IPv6:2a01:111:f400:fe0a::600])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Jjn80wkGzF3Dr
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Sep 2018 22:14:35 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42JjnK2RjxzF3DK
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Sep 2018 22:14:44 +1000 (AEST)
 From: Vabhav Sharma <vabhav.sharma@nxp.com>
 To: sudeep.holla@arm.com, oss@buserror.net, linux-kernel@vger.kernel.org,
  devicetree@vger.kernel.org, robh+dt@kernel.org, mark.rutland@arm.com,
@@ -15,11 +16,14 @@ To: sudeep.holla@arm.com, oss@buserror.net, linux-kernel@vger.kernel.org,
  catalin.marinas@arm.com, will.deacon@arm.com, gregkh@linuxfoundation.org,
  arnd@arndb.de, kstewart@linuxfoundation.org, yamada.masahiro@socionext.com
 Cc: linux@armlinux.org.uk, V.Sethi@nxp.com, udit.kumar@nxp.com,
- Yogesh Gaur <yogeshnarayan.gaur@nxp.com>,
- Tang Yuantian <andy.tang@nxp.com>, Vabhav Sharma <vabhav.sharma@nxp.com>
-Subject: [PATCH v3 4/6] drivers: clk-qoriq: Add clockgen support for lx2160a
-Date: Mon, 24 Sep 2018 05:38:59 +0530
-Message-Id: <1537747741-6245-5-git-send-email-vabhav.sharma@nxp.com>
+ Vabhav Sharma <vabhav.sharma@nxp.com>,
+ Ramneek Mehresh <ramneek.mehresh@nxp.com>,
+ Zhang Ying-22455 <ying.zhang22455@nxp.com>,
+ Nipun Gupta <nipun.gupta@nxp.com>, Priyanka Jain <priyanka.jain@nxp.com>,
+ Yogesh Gaur <yogeshnarayan.gaur@nxp.com>, Sriram Dash <sriram.dash@nxp.com>
+Subject: [PATCH v3 5/6] arm64: dts: add QorIQ LX2160A SoC support
+Date: Mon, 24 Sep 2018 05:39:00 +0530
+Message-Id: <1537747741-6245-6-git-send-email-vabhav.sharma@nxp.com>
 In-Reply-To: <1537747741-6245-1-git-send-email-vabhav.sharma@nxp.com>
 References: <1537747741-6245-1-git-send-email-vabhav.sharma@nxp.com>
 MIME-Version: 1.0
@@ -33,61 +37,723 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>
+LX2160A SoC is based on Layerscape Chassis Generation 3.2 Architecture.
 
-Add clockgen support for lx2160a.
-Added entry for compat 'fsl,lx2160a-clockgen'.
+LX2160A features an advanced 16 64-bit ARM v8 CortexA72 processor cores
+in 8 cluster, CCN508, GICv3,two 64-bit DDR4 memory controller, 8 I2C
+controllers, 3 dspi, 2 esdhc,2 USB 3.0, mmu 500, 3 SATA, 4 PL011 SBSA
+UARTs etc.
 
-Signed-off-by: Tang Yuantian <andy.tang@nxp.com>
+Signed-off-by: Ramneek Mehresh <ramneek.mehresh@nxp.com>
+Signed-off-by: Zhang Ying-22455 <ying.zhang22455@nxp.com>
+Signed-off-by: Nipun Gupta <nipun.gupta@nxp.com>
+Signed-off-by: Priyanka Jain <priyanka.jain@nxp.com>
 Signed-off-by: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>
+Signed-off-by: Sriram Dash <sriram.dash@nxp.com>
 Signed-off-by: Vabhav Sharma <vabhav.sharma@nxp.com>
-Acked-by: Stephen Boyd <sboyd@kernel.org>
 ---
- drivers/clk/clk-qoriq.c         | 12 ++++++++++++
- drivers/cpufreq/qoriq-cpufreq.c |  1 +
- 2 files changed, 13 insertions(+)
+ arch/arm64/boot/dts/freescale/fsl-lx2160a.dtsi | 693 +++++++++++++++++++++++++
+ 1 file changed, 693 insertions(+)
+ create mode 100644 arch/arm64/boot/dts/freescale/fsl-lx2160a.dtsi
 
-diff --git a/drivers/clk/clk-qoriq.c b/drivers/clk/clk-qoriq.c
-index e152bfb..99675de 100644
---- a/drivers/clk/clk-qoriq.c
-+++ b/drivers/clk/clk-qoriq.c
-@@ -570,6 +570,17 @@ static const struct clockgen_chipinfo chipinfo[] = {
- 		.flags = CG_VER3 | CG_LITTLE_ENDIAN,
- 	},
- 	{
-+		.compat = "fsl,lx2160a-clockgen",
-+		.cmux_groups = {
-+			&clockgen2_cmux_cga12, &clockgen2_cmux_cgb
-+		},
-+		.cmux_to_group = {
-+			0, 0, 0, 0, 1, 1, 1, 1, -1
-+		},
-+		.pll_mask = 0x37,
-+		.flags = CG_VER3 | CG_LITTLE_ENDIAN,
-+	},
-+	{
- 		.compat = "fsl,p2041-clockgen",
- 		.guts_compat = "fsl,qoriq-device-config-1.0",
- 		.init_periph = p2041_init_periph,
-@@ -1424,6 +1435,7 @@ CLK_OF_DECLARE(qoriq_clockgen_ls1043a, "fsl,ls1043a-clockgen", clockgen_init);
- CLK_OF_DECLARE(qoriq_clockgen_ls1046a, "fsl,ls1046a-clockgen", clockgen_init);
- CLK_OF_DECLARE(qoriq_clockgen_ls1088a, "fsl,ls1088a-clockgen", clockgen_init);
- CLK_OF_DECLARE(qoriq_clockgen_ls2080a, "fsl,ls2080a-clockgen", clockgen_init);
-+CLK_OF_DECLARE(qoriq_clockgen_lx2160a, "fsl,lx2160a-clockgen", clockgen_init);
- 
- /* Legacy nodes */
- CLK_OF_DECLARE(qoriq_sysclk_1, "fsl,qoriq-sysclk-1.0", sysclk_init);
-diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
-index 3d773f6..83921b7 100644
---- a/drivers/cpufreq/qoriq-cpufreq.c
-+++ b/drivers/cpufreq/qoriq-cpufreq.c
-@@ -295,6 +295,7 @@ static const struct of_device_id node_matches[] __initconst = {
- 	{ .compatible = "fsl,ls1046a-clockgen", },
- 	{ .compatible = "fsl,ls1088a-clockgen", },
- 	{ .compatible = "fsl,ls2080a-clockgen", },
-+	{ .compatible = "fsl,lx2160a-clockgen", },
- 	{ .compatible = "fsl,p4080-clockgen", },
- 	{ .compatible = "fsl,qoriq-clockgen-1.0", },
- 	{ .compatible = "fsl,qoriq-clockgen-2.0", },
+diff --git a/arch/arm64/boot/dts/freescale/fsl-lx2160a.dtsi b/arch/arm64/boot/dts/freescale/fsl-lx2160a.dtsi
+new file mode 100644
+index 0000000..46eea16
+--- /dev/null
++++ b/arch/arm64/boot/dts/freescale/fsl-lx2160a.dtsi
+@@ -0,0 +1,693 @@
++// SPDX-License-Identifier: (GPL-2.0 OR MIT)
++//
++// Device Tree Include file for Layerscape-LX2160A family SoC.
++//
++// Copyright 2018 NXP
++
++#include <dt-bindings/interrupt-controller/arm-gic.h>
++
++/memreserve/ 0x80000000 0x00010000;
++
++/ {
++	compatible = "fsl,lx2160a";
++	interrupt-parent = <&gic>;
++	#address-cells = <2>;
++	#size-cells = <2>;
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		// 8 clusters having 2 Cortex-A72 cores each
++		cpu@0 {
++			device_type = "cpu";
++			compatible = "arm,cortex-a72";
++			reg = <0x0>;
++			clocks = <&clockgen 1 0>;
++			d-cache-size = <0x8000>;
++			d-cache-line-size = <64>;
++			d-cache-sets = <128>;
++			i-cache-size = <0xC000>;
++			i-cache-line-size = <64>;
++			i-cache-sets = <192>;
++			next-level-cache = <&cluster0_l2>;
++		};
++
++		cpu@1 {
++			device_type = "cpu";
++			compatible = "arm,cortex-a72";
++			reg = <0x1>;
++			clocks = <&clockgen 1 0>;
++			d-cache-size = <0x8000>;
++			d-cache-line-size = <64>;
++			d-cache-sets = <128>;
++			i-cache-size = <0xC000>;
++			i-cache-line-size = <64>;
++			i-cache-sets = <192>;
++			next-level-cache = <&cluster0_l2>;
++		};
++
++		cpu@100 {
++			device_type = "cpu";
++			compatible = "arm,cortex-a72";
++			reg = <0x100>;
++			clocks = <&clockgen 1 1>;
++			d-cache-size = <0x8000>;
++			d-cache-line-size = <64>;
++			d-cache-sets = <128>;
++			i-cache-size = <0xC000>;
++			i-cache-line-size = <64>;
++			i-cache-sets = <192>;
++			next-level-cache = <&cluster1_l2>;
++		};
++
++		cpu@101 {
++			device_type = "cpu";
++			compatible = "arm,cortex-a72";
++			reg = <0x101>;
++			clocks = <&clockgen 1 1>;
++			d-cache-size = <0x8000>;
++			d-cache-line-size = <64>;
++			d-cache-sets = <128>;
++			i-cache-size = <0xC000>;
++			i-cache-line-size = <64>;
++			i-cache-sets = <192>;
++			next-level-cache = <&cluster1_l2>;
++		};
++
++		cpu@200 {
++			device_type = "cpu";
++			compatible = "arm,cortex-a72";
++			reg = <0x200>;
++			clocks = <&clockgen 1 2>;
++			d-cache-size = <0x8000>;
++			d-cache-line-size = <64>;
++			d-cache-sets = <128>;
++			i-cache-size = <0xC000>;
++			i-cache-line-size = <64>;
++			i-cache-sets = <192>;
++			next-level-cache = <&cluster2_l2>;
++		};
++
++		cpu@201 {
++			device_type = "cpu";
++			compatible = "arm,cortex-a72";
++			reg = <0x201>;
++			clocks = <&clockgen 1 2>;
++			d-cache-size = <0x8000>;
++			d-cache-line-size = <64>;
++			d-cache-sets = <128>;
++			i-cache-size = <0xC000>;
++			i-cache-line-size = <64>;
++			i-cache-sets = <192>;
++			next-level-cache = <&cluster2_l2>;
++		};
++
++		cpu@300 {
++			device_type = "cpu";
++			compatible = "arm,cortex-a72";
++			reg = <0x300>;
++			clocks = <&clockgen 1 3>;
++			d-cache-size = <0x8000>;
++			d-cache-line-size = <64>;
++			d-cache-sets = <128>;
++			i-cache-size = <0xC000>;
++			i-cache-line-size = <64>;
++			i-cache-sets = <192>;
++			next-level-cache = <&cluster3_l2>;
++		};
++
++		cpu@301 {
++			device_type = "cpu";
++			compatible = "arm,cortex-a72";
++			reg = <0x301>;
++			clocks = <&clockgen 1 3>;
++			d-cache-size = <0x8000>;
++			d-cache-line-size = <64>;
++			d-cache-sets = <128>;
++			i-cache-size = <0xC000>;
++			i-cache-line-size = <64>;
++			i-cache-sets = <192>;
++			next-level-cache = <&cluster3_l2>;
++		};
++
++		cpu@400 {
++			device_type = "cpu";
++			compatible = "arm,cortex-a72";
++			reg = <0x400>;
++			clocks = <&clockgen 1 4>;
++			d-cache-size = <0x8000>;
++			d-cache-line-size = <64>;
++			d-cache-sets = <128>;
++			i-cache-size = <0xC000>;
++			i-cache-line-size = <64>;
++			i-cache-sets = <192>;
++			next-level-cache = <&cluster4_l2>;
++		};
++
++		cpu@401 {
++			device_type = "cpu";
++			compatible = "arm,cortex-a72";
++			reg = <0x401>;
++			clocks = <&clockgen 1 4>;
++			d-cache-size = <0x8000>;
++			d-cache-line-size = <64>;
++			d-cache-sets = <128>;
++			i-cache-size = <0xC000>;
++			i-cache-line-size = <64>;
++			i-cache-sets = <192>;
++			next-level-cache = <&cluster4_l2>;
++		};
++
++		cpu@500 {
++			device_type = "cpu";
++			compatible = "arm,cortex-a72";
++			reg = <0x500>;
++			clocks = <&clockgen 1 5>;
++			d-cache-size = <0x8000>;
++			d-cache-line-size = <64>;
++			d-cache-sets = <128>;
++			i-cache-size = <0xC000>;
++			i-cache-line-size = <64>;
++			i-cache-sets = <192>;
++			next-level-cache = <&cluster5_l2>;
++		};
++
++		cpu@501 {
++			device_type = "cpu";
++			compatible = "arm,cortex-a72";
++			reg = <0x501>;
++			clocks = <&clockgen 1 5>;
++			d-cache-size = <0x8000>;
++			d-cache-line-size = <64>;
++			d-cache-sets = <128>;
++			i-cache-size = <0xC000>;
++			i-cache-line-size = <64>;
++			i-cache-sets = <192>;
++			next-level-cache = <&cluster5_l2>;
++		};
++
++		cpu@600 {
++			device_type = "cpu";
++			compatible = "arm,cortex-a72";
++			reg = <0x600>;
++			clocks = <&clockgen 1 6>;
++			d-cache-size = <0x8000>;
++			d-cache-line-size = <64>;
++			d-cache-sets = <128>;
++			i-cache-size = <0xC000>;
++			i-cache-line-size = <64>;
++			i-cache-sets = <192>;
++			next-level-cache = <&cluster6_l2>;
++		};
++
++		cpu@601 {
++			device_type = "cpu";
++			compatible = "arm,cortex-a72";
++			reg = <0x601>;
++			clocks = <&clockgen 1 6>;
++			d-cache-size = <0x8000>;
++			d-cache-line-size = <64>;
++			d-cache-sets = <128>;
++			i-cache-size = <0xC000>;
++			i-cache-line-size = <64>;
++			i-cache-sets = <192>;
++			next-level-cache = <&cluster6_l2>;
++		};
++
++		cpu@700 {
++			device_type = "cpu";
++			compatible = "arm,cortex-a72";
++			reg = <0x700>;
++			clocks = <&clockgen 1 7>;
++			d-cache-size = <0x8000>;
++			d-cache-line-size = <64>;
++			d-cache-sets = <128>;
++			i-cache-size = <0xC000>;
++			i-cache-line-size = <64>;
++			i-cache-sets = <192>;
++			next-level-cache = <&cluster7_l2>;
++		};
++
++		cpu@701 {
++			device_type = "cpu";
++			compatible = "arm,cortex-a72";
++			reg = <0x701>;
++			clocks = <&clockgen 1 7>;
++			d-cache-size = <0x8000>;
++			d-cache-line-size = <64>;
++			d-cache-sets = <128>;
++			i-cache-size = <0xC000>;
++			i-cache-line-size = <64>;
++			i-cache-sets = <192>;
++			next-level-cache = <&cluster7_l2>;
++		};
++
++		cluster0_l2: l2-cache0 {
++			compatible = "cache";
++			cache-size = <0x100000>;
++			cache-line-size = <64>;
++			cache-sets = <1024>;
++			cache-level = <2>;
++		};
++
++		cluster1_l2: l2-cache1 {
++			compatible = "cache";
++			cache-size = <0x100000>;
++			cache-line-size = <64>;
++			cache-sets = <1024>;
++			cache-level = <2>;
++		};
++
++		cluster2_l2: l2-cache2 {
++			compatible = "cache";
++			cache-size = <0x100000>;
++			cache-line-size = <64>;
++			cache-sets = <1024>;
++			cache-level = <2>;
++		};
++
++		cluster3_l2: l2-cache3 {
++			compatible = "cache";
++			cache-size = <0x100000>;
++			cache-line-size = <64>;
++			cache-sets = <1024>;
++			cache-level = <2>;
++		};
++
++		cluster4_l2: l2-cache4 {
++			compatible = "cache";
++			cache-size = <0x100000>;
++			cache-line-size = <64>;
++			cache-sets = <1024>;
++			cache-level = <2>;
++		};
++
++		cluster5_l2: l2-cache5 {
++			compatible = "cache";
++			cache-size = <0x100000>;
++			cache-line-size = <64>;
++			cache-sets = <1024>;
++			cache-level = <2>;
++		};
++
++		cluster6_l2: l2-cache6 {
++			compatible = "cache";
++			cache-size = <0x100000>;
++			cache-line-size = <64>;
++			cache-sets = <1024>;
++			cache-level = <2>;
++		};
++
++		cluster7_l2: l2-cache7 {
++			compatible = "cache";
++			cache-size = <0x100000>;
++			cache-line-size = <64>;
++			cache-sets = <1024>;
++			cache-level = <2>;
++		};
++	};
++
++	gic: interrupt-controller@6000000 {
++		compatible = "arm,gic-v3";
++		reg = <0x0 0x06000000 0 0x10000>, // GIC Dist
++			<0x0 0x06200000 0 0x200000>, // GICR (RD_base +
++						     // SGI_base)
++			<0x0 0x0c0c0000 0 0x2000>, // GICC
++			<0x0 0x0c0d0000 0 0x1000>, // GICH
++			<0x0 0x0c0e0000 0 0x20000>; // GICV
++		#interrupt-cells = <3>;
++		#address-cells = <2>;
++		#size-cells = <2>;
++		ranges;
++		interrupt-controller;
++		interrupts = <1 9 0x4>;
++
++		its: gic-its@6020000 {
++			compatible = "arm,gic-v3-its";
++			msi-controller;
++			reg = <0x0 0x6020000 0 0x20000>;
++		};
++	};
++
++	rstcr: syscon@1e60000 {
++		compatible = "syscon";
++		reg = <0x0 0x1e60000 0x0 0x4>;
++	};
++
++	timer {
++		compatible = "arm,armv8-timer";
++		interrupts = <1 13 4>,
++			     <1 14 4>,
++			     <1 11 4>,
++			     <1 10 4>;
++	};
++
++	pmu {
++		compatible = "arm,cortex-a72-pmu";
++		interrupts = <1 7 0x8>; // PMU PPI, Level low type
++	};
++
++	psci {
++		compatible = "arm,psci-0.2";
++		method = "smc";
++	};
++
++	memory@80000000 {
++		// DRAM space - 1, size : 2 GB DRAM
++		device_type = "memory";
++		reg = <0x00000000 0x80000000 0 0x80000000>;
++	};
++
++	ddr1: memory-controller@1080000 {
++		compatible = "fsl,qoriq-memory-controller";
++		reg = <0x0 0x1080000 0x0 0x1000>;
++		interrupts = <0 17 0x4>;
++		little-endian;
++	};
++
++	ddr2: memory-controller@1090000 {
++		compatible = "fsl,qoriq-memory-controller";
++		reg = <0x0 0x1090000 0x0 0x1000>;
++		interrupts = <0 18 0x4>;
++		little-endian;
++	};
++
++	sysclk: sysclk {
++		compatible = "fixed-clock";
++		#clock-cells = <0>;
++		clock-frequency = <100000000>;
++		clock-output-names = "sysclk";
++	};
++
++	soc {
++		compatible = "simple-bus";
++		#address-cells = <2>;
++		#size-cells = <2>;
++		ranges;
++
++		clockgen: clocking@1300000 {
++			compatible = "fsl,lx2160a-clockgen";
++			reg = <0 0x1300000 0 0xa0000>;
++			#clock-cells = <2>;
++			clocks = <&sysclk>;
++		};
++
++		crypto: crypto@8000000 {
++			compatible = "fsl,sec-v5.0", "fsl,sec-v4.0";
++			fsl,sec-era = <10>;
++			#address-cells = <1>;
++			#size-cells = <1>;
++			ranges = <0x0 0x00 0x8000000 0x100000>;
++			reg = <0x00 0x8000000 0x0 0x100000>;
++			interrupts = <GIC_SPI 139 IRQ_TYPE_LEVEL_HIGH>;
++			dma-coherent;
++			status = "disabled";
++
++			sec_jr0: jr@10000 {
++				compatible = "fsl,sec-v5.0-job-ring",
++					     "fsl,sec-v4.0-job-ring";
++				reg        = <0x10000 0x10000>;
++				interrupts = <GIC_SPI 140 IRQ_TYPE_LEVEL_HIGH>;
++			};
++
++			sec_jr1: jr@20000 {
++				compatible = "fsl,sec-v5.0-job-ring",
++					     "fsl,sec-v4.0-job-ring";
++				reg        = <0x20000 0x10000>;
++				interrupts = <GIC_SPI 141 IRQ_TYPE_LEVEL_HIGH>;
++			};
++
++			sec_jr2: jr@30000 {
++				compatible = "fsl,sec-v5.0-job-ring",
++					     "fsl,sec-v4.0-job-ring";
++				reg        = <0x30000 0x10000>;
++				interrupts = <GIC_SPI 142 IRQ_TYPE_LEVEL_HIGH>;
++			};
++
++			sec_jr3: jr@40000 {
++				compatible = "fsl,sec-v5.0-job-ring",
++					     "fsl,sec-v4.0-job-ring";
++				reg        = <0x40000 0x10000>;
++				interrupts = <GIC_SPI 143 IRQ_TYPE_LEVEL_HIGH>;
++			};
++		};
++
++		dcfg: dcfg@1e00000 {
++			compatible = "fsl,lx2160a-dcfg", "syscon";
++			reg = <0x0 0x1e00000 0x0 0x10000>;
++			little-endian;
++		};
++
++		gpio0: gpio@2300000 {
++			compatible = "fsl,qoriq-gpio";
++			reg = <0x0 0x2300000 0x0 0x10000>;
++			interrupts = <0 36 0x4>; // Level high type
++			gpio-controller;
++			little-endian;
++			#gpio-cells = <2>;
++			interrupt-controller;
++			#interrupt-cells = <2>;
++		};
++
++		gpio1: gpio@2310000 {
++			compatible = "fsl,qoriq-gpio";
++			reg = <0x0 0x2310000 0x0 0x10000>;
++			interrupts = <0 36 0x4>; // Level high type
++			gpio-controller;
++			little-endian;
++			#gpio-cells = <2>;
++			interrupt-controller;
++			#interrupt-cells = <2>;
++		};
++
++		gpio2: gpio@2320000 {
++			compatible = "fsl,qoriq-gpio";
++			reg = <0x0 0x2320000 0x0 0x10000>;
++			interrupts = <0 37 0x4>; // Level high type
++			gpio-controller;
++			little-endian;
++			#gpio-cells = <2>;
++			interrupt-controller;
++			#interrupt-cells = <2>;
++		};
++
++		gpio3: gpio@2330000 {
++			compatible = "fsl,qoriq-gpio";
++			reg = <0x0 0x2330000 0x0 0x10000>;
++			interrupts = <0 37 0x4>; // Level high type
++			gpio-controller;
++			little-endian;
++			#gpio-cells = <2>;
++			interrupt-controller;
++			#interrupt-cells = <2>;
++		};
++
++
++		i2c0: i2c@2000000 {
++			compatible = "fsl,vf610-i2c";
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x0 0x2000000 0x0 0x10000>;
++			interrupts = <0 34 0x4>; // Level high type
++			clock-names = "i2c";
++			clocks = <&clockgen 4 7>;
++			fsl-scl-gpio = <&gpio2 15 0>;
++			status = "disabled";
++		};
++
++		i2c1: i2c@2010000 {
++			compatible = "fsl,vf610-i2c";
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x0 0x2010000 0x0 0x10000>;
++			interrupts = <0 34 0x4>; // Level high type
++			clock-names = "i2c";
++			clocks = <&clockgen 4 7>;
++			status = "disabled";
++		};
++
++		i2c2: i2c@2020000 {
++			compatible = "fsl,vf610-i2c";
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x0 0x2020000 0x0 0x10000>;
++			interrupts = <0 35 0x4>; // Level high type
++			clock-names = "i2c";
++			clocks = <&clockgen 4 7>;
++			status = "disabled";
++		};
++
++		i2c3: i2c@2030000 {
++			compatible = "fsl,vf610-i2c";
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x0 0x2030000 0x0 0x10000>;
++			interrupts = <0 35 0x4>; // Level high type
++			clock-names = "i2c";
++			clocks = <&clockgen 4 7>;
++			status = "disabled";
++		};
++
++		i2c4: i2c@2040000 {
++			compatible = "fsl,vf610-i2c";
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x0 0x2040000 0x0 0x10000>;
++			interrupts = <0 74 0x4>; // Level high type
++			clock-names = "i2c";
++			clocks = <&clockgen 4 7>;
++			fsl-scl-gpio = <&gpio2 16 0>;
++			status = "disabled";
++		};
++
++		i2c5: i2c@2050000 {
++			compatible = "fsl,vf610-i2c";
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x0 0x2050000 0x0 0x10000>;
++			interrupts = <0 74 0x4>; // Level high type
++			clock-names = "i2c";
++			clocks = <&clockgen 4 7>;
++			status = "disabled";
++		};
++
++		i2c6: i2c@2060000 {
++			compatible = "fsl,vf610-i2c";
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x0 0x2060000 0x0 0x10000>;
++			interrupts = <0 75 0x4>; // Level high type
++			clock-names = "i2c";
++			clocks = <&clockgen 4 7>;
++			status = "disabled";
++		};
++
++		i2c7: i2c@2070000 {
++			compatible = "fsl,vf610-i2c";
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x0 0x2070000 0x0 0x10000>;
++			interrupts = <0 75 0x4>; // Level high type
++			clock-names = "i2c";
++			clocks = <&clockgen 4 7>;
++			status = "disabled";
++		};
++
++		uart0: serial@21c0000 {
++			device_type = "serial";
++			compatible = "arm,pl011","arm,sbsa-uart";
++			reg = <0x0 0x21c0000 0x0 0x1000>;
++			interrupts = <0 32 0x4>;	// Level high type
++			current-speed = <115200>;
++			status = "disabled";
++		};
++
++		uart1: serial@21d0000 {
++			device_type = "serial";
++			compatible = "arm,pl011","arm,sbsa-uart";
++			reg = <0x0 0x21d0000 0x0 0x1000>;
++			interrupts = <0 33 0x4>;	// Level high type
++			current-speed = <115200>;
++			status = "disabled";
++		};
++
++		uart2: serial@21e0000 {
++			device_type = "serial";
++			compatible = "arm,pl011","arm,sbsa-uart";
++			reg = <0x0 0x21e0000 0x0 0x1000>;
++			interrupts = <0 72 0x4>;	// Level high type
++			current-speed = <115200>;
++			status = "disabled";
++		};
++
++		uart3: serial@21f0000 {
++			device_type = "serial";
++			compatible = "arm,pl011","arm,sbsa-uart";
++			reg = <0x0 0x21f0000 0x0 0x1000>;
++			interrupts = <0 73 0x4>;	// Level high type
++			current-speed = <115200>;
++			status = "disabled";
++		};
++
++		smmu: iommu@5000000 {
++			compatible = "arm,mmu-500";
++			reg = <0 0x5000000 0 0x800000>;
++			#iommu-cells = <1>;
++			#global-interrupts = <14>;
++			interrupts = <0 13 4>, // global secure fault
++				     <0 14 4>, // combined secure interrupt
++				     <0 15 4>, // global non-secure fault
++				     <0 16 4>, // combined non-secure interrupt
++				// performance counter interrupts 0-9
++				     <0 211 4>, <0 212 4>,
++				     <0 213 4>, <0 214 4>,
++				     <0 215 4>, <0 216 4>,
++				     <0 217 4>, <0 218 4>,
++				     <0 219 4>, <0 220 4>,
++				// per context interrupt, 64 interrupts
++				     <0 146 4>, <0 147 4>,
++				     <0 148 4>, <0 149 4>,
++				     <0 150 4>, <0 151 4>,
++				     <0 152 4>, <0 153 4>,
++				     <0 154 4>, <0 155 4>,
++				     <0 156 4>, <0 157 4>,
++				     <0 158 4>, <0 159 4>,
++				     <0 160 4>, <0 161 4>,
++				     <0 162 4>, <0 163 4>,
++				     <0 164 4>, <0 165 4>,
++				     <0 166 4>, <0 167 4>,
++				     <0 168 4>, <0 169 4>,
++				     <0 170 4>, <0 171 4>,
++				     <0 172 4>, <0 173 4>,
++				     <0 174 4>, <0 175 4>,
++				     <0 176 4>, <0 177 4>,
++				     <0 178 4>, <0 179 4>,
++				     <0 180 4>, <0 181 4>,
++				     <0 182 4>, <0 183 4>,
++				     <0 184 4>, <0 185 4>,
++				     <0 186 4>, <0 187 4>,
++				     <0 188 4>, <0 189 4>,
++				     <0 190 4>, <0 191 4>,
++				     <0 192 4>, <0 193 4>,
++				     <0 194 4>, <0 195 4>,
++				     <0 196 4>, <0 197 4>,
++				     <0 198 4>, <0 199 4>,
++				     <0 200 4>, <0 201 4>,
++				     <0 202 4>, <0 203 4>,
++				     <0 204 4>, <0 205 4>,
++				     <0 206 4>, <0 207 4>,
++				     <0 208 4>, <0 209 4>;
++			dma-coherent;
++		};
++
++		usb0: usb3@3100000 {
++			compatible = "snps,dwc3";
++			reg = <0x0 0x3100000 0x0 0x10000>;
++			interrupts = <0 80 0x4>; // Level high type
++			dr_mode = "host";
++			snps,quirk-frame-length-adjustment = <0x20>;
++			snps,dis_rxdet_inp3_quirk;
++			status = "disabled";
++		};
++
++		usb1: usb3@3110000 {
++			compatible = "snps,dwc3";
++			reg = <0x0 0x3110000 0x0 0x10000>;
++			interrupts = <0 81 0x4>; // Level high type
++			dr_mode = "host";
++			snps,quirk-frame-length-adjustment = <0x20>;
++			snps,dis_rxdet_inp3_quirk;
++			status = "disabled";
++		};
++
++		watchdog@23a0000 {
++			compatible = "arm,sbsa-gwdt";
++			reg = <0x0 0x23a0000 0 0x1000>,
++			      <0x0 0x2390000 0 0x1000>;
++			interrupts = <0 59 4>;
++			timeout-sec = <30>;
++		};
++
++	};
++};
 -- 
 2.7.4
