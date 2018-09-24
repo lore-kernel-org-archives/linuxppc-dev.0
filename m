@@ -3,8 +3,8 @@ Received: from EUR03-DB5-obe.outbound.protection.outlook.com
  (mail-eopbgr40061.outbound.protection.outlook.com [40.107.4.61])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Jjmv3MwnzF1Rl
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Sep 2018 22:14:23 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Jjmw6JYyzF1Rl
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Sep 2018 22:14:24 +1000 (AEST)
 From: Vabhav Sharma <vabhav.sharma@nxp.com>
 To: sudeep.holla@arm.com, oss@buserror.net, linux-kernel@vger.kernel.org,
  devicetree@vger.kernel.org, robh+dt@kernel.org, mark.rutland@arm.com,
@@ -16,9 +16,9 @@ To: sudeep.holla@arm.com, oss@buserror.net, linux-kernel@vger.kernel.org,
  arnd@arndb.de, kstewart@linuxfoundation.org, yamada.masahiro@socionext.com
 Cc: linux@armlinux.org.uk, V.Sethi@nxp.com, udit.kumar@nxp.com,
  Vabhav Sharma <vabhav.sharma@nxp.com>
-Subject: [PATCH v3 1/6] dt-bindings: arm64: add compatible for LX2160A
-Date: Mon, 24 Sep 2018 05:38:56 +0530
-Message-Id: <1537747741-6245-2-git-send-email-vabhav.sharma@nxp.com>
+Subject: [PATCH v3 2/6] soc/fsl/guts: Add compatible string for LX2160A
+Date: Mon, 24 Sep 2018 05:38:57 +0530
+Message-Id: <1537747741-6245-3-git-send-email-vabhav.sharma@nxp.com>
 In-Reply-To: <1537747741-6245-1-git-send-email-vabhav.sharma@nxp.com>
 References: <1537747741-6245-1-git-send-email-vabhav.sharma@nxp.com>
 MIME-Version: 1.0
@@ -32,32 +32,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add compatible for LX2160A SoC,QDS and RDB board
+Adding compatible string "lx2160a-dcfg" to
+initialize guts driver for lx2160
 
 Signed-off-by: Vabhav Sharma <vabhav.sharma@nxp.com>
 ---
- Documentation/devicetree/bindings/arm/fsl.txt | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+ drivers/soc/fsl/guts.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/Documentation/devicetree/bindings/arm/fsl.txt b/Documentation/devicetree/bindings/arm/fsl.txt
-index cdb9dd7..76256bd 100644
---- a/Documentation/devicetree/bindings/arm/fsl.txt
-+++ b/Documentation/devicetree/bindings/arm/fsl.txt
-@@ -218,3 +218,15 @@ Required root node properties:
- LS2088A ARMv8 based RDB Board
- Required root node properties:
-     - compatible = "fsl,ls2088a-rdb", "fsl,ls2088a";
-+
-+LX2160A SoC
-+Required root node properties:
-+    - compatible = "fsl,lx2160a";
-+
-+LX2160A ARMv8 based QDS Board
-+Required root node properties:
-+    - compatible = "fsl,lx2160a-qds", "fsl,lx2160a";
-+
-+LX2160A ARMv8 based RDB Board
-+Required root node properties:
-+    - compatible = "fsl,lx2160a-rdb", "fsl,lx2160a";
+diff --git a/drivers/soc/fsl/guts.c b/drivers/soc/fsl/guts.c
+index 302e0c8..5e1e633 100644
+--- a/drivers/soc/fsl/guts.c
++++ b/drivers/soc/fsl/guts.c
+@@ -222,6 +222,7 @@ static const struct of_device_id fsl_guts_of_match[] = {
+ 	{ .compatible = "fsl,ls1088a-dcfg", },
+ 	{ .compatible = "fsl,ls1012a-dcfg", },
+ 	{ .compatible = "fsl,ls1046a-dcfg", },
++	{ .compatible = "fsl,lx2160a-dcfg", },
+ 	{}
+ };
+ MODULE_DEVICE_TABLE(of, fsl_guts_of_match);
 -- 
 2.7.4
