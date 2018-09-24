@@ -1,27 +1,38 @@
-Return-Path: <madalin.bucur@nxp.com>
-Received: from EUR04-HE1-obe.outbound.protection.outlook.com
- (mail-eopbgr70053.outbound.protection.outlook.com [40.107.7.53])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42JdM1198pzF0dq
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Sep 2018 18:55:05 +1000 (AEST)
-From: Madalin-cristian Bucur <madalin.bucur@nxp.com>
-To: Leo Li <leoyang.li@nxp.com>, Roy Pledge <roy.pledge@nxp.com>
-CC: Claudiu Manoil <claudiu.manoil@nxp.com>, Catalin Marinas
- <catalin.marinas@arm.com>, Scott Wood <oss@buserror.net>, "moderated
- list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>, linuxppc-dev
- <linuxppc-dev@lists.ozlabs.org>, lkml <linux-kernel@vger.kernel.org>
-Subject: RE: [PATCH 1/4] soc/fsl/qbman: Check if CPU is offline when
- initializing portals
-Date: Mon, 24 Sep 2018 08:54:58 +0000
-Message-ID: <AM6PR04MB400829AD9740850D5EF93E51EC170@AM6PR04MB4008.eurprd04.prod.outlook.com>
-References: <1537456011-10769-1-git-send-email-madalin.bucur@nxp.com>
- <1537456011-10769-2-git-send-email-madalin.bucur@nxp.com>
- <CADRPPNQMK8sNYU23nvAdF3T_gx=VruM1ZKAcwNg6HuW6hz+Ezw@mail.gmail.com>
-In-Reply-To: <CADRPPNQMK8sNYU23nvAdF3T_gx=VruM1ZKAcwNg6HuW6hz+Ezw@mail.gmail.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42JdNN6C7ZzF3HD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Sep 2018 18:56:20 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w8O8u7WM132836
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Sep 2018 04:56:17 -0400
+Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2mpvfn0xby-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Sep 2018 04:56:17 -0400
+Received: from localhost
+ by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Mon, 24 Sep 2018 04:56:14 -0400
+Date: Mon, 24 Sep 2018 14:26:06 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>, ego@linux.vnet.ibm.com,
+ tyreld@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/pseries: Disable CPU hotplug across migrations
+Reply-To: ego@linux.vnet.ibm.com
+References: <153721164232.32706.4283915467151746975.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
+ <CAHZ_5WxcDxV5vrdW5Y1QaucXLL8Z4xskEbm+y4VFeNsj-38e7g@mail.gmail.com>
+ <d0a4995c-949b-f6a4-889a-908e6f72036e@linux.vnet.ibm.com>
+ <87va6v5qhx.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87va6v5qhx.fsf@concordia.ellerman.id.au>
+Message-Id: <20180924085606.GA16671@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,83 +42,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBMaSBZYW5nIFttYWlsdG86bGVv
-eWFuZy5saUBueHAuY29tXQ0KPiBTZW50OiBTYXR1cmRheSwgU2VwdGVtYmVyIDIyLCAyMDE4IDE6
-MTUgQU0NCj4gVG86IE1hZGFsaW4tY3Jpc3RpYW4gQnVjdXIgPG1hZGFsaW4uYnVjdXJAbnhwLmNv
-bT4NCj4gU3ViamVjdDogUmU6IFtQQVRDSCAxLzRdIHNvYy9mc2wvcWJtYW46IENoZWNrIGlmIENQ
-VSBpcyBvZmZsaW5lIHdoZW4NCj4gaW5pdGlhbGl6aW5nIHBvcnRhbHMNCj4gDQo+IE9uIFRodSwg
-U2VwIDIwLCAyMDE4IGF0IDEwOjA5IEFNIE1hZGFsaW4gQnVjdXIgPG1hZGFsaW4uYnVjdXJAbnhw
-LmNvbT4NCj4gd3JvdGU6DQo+ID4NCj4gPiBGcm9tOiBSb3kgUGxlZGdlIDxyb3kucGxlZGdlQG54
-cC5jb20+DQo+ID4NCj4gPiBJZiB0aGUgYWZmaW5lIHBvcnRhbCBmb3IgYSBzcGVjaWZpYyBDUFUg
-aXMgb2ZmbGluZSBhdCBib290IHRpbWUNCj4gPiBhZmZpbmUgaXRzIGludGVycnVwdCB0byBDUFUg
-MC4gSWYgdGhlIENQVSBpcyBsYXRlciBicm91Z2h0IG9ubGluZQ0KPiA+IHRoZSBob3RwbHVnIGhh
-bmRsZXIgd2lsbCBjb3JyZWN0bHkgYWRqdXN0IHRoZSBhZmZpbml0eS4NCj4gDQo+IEFsdGhvdWdo
-IHRoaXMgZG9lcyBwcm92aWRlIGJldHRlciBjb21wYXRpYmlsaXR5IHdpdGggY3B1IGhvdHBsdWcs
-IHdlDQo+IHN0aWxsIGhhdmUgYSBwcm9ibGVtLiAgWW91IGFyZSBhc3N1bWluZyB0aGUgQ1BVMCBp
-cyBhbHdheXMgb25saW5lDQo+IHdoaWNoIGlzIG5vdCB0aGUgY2FzZSBmb3IgYXJtNjQuICBIb3cg
-YWJvdXQgbm90IHNldHRpbmcgdGhlIGFmZmluaXR5DQo+IGFuZCBsZXQgdGhlIHN5c3RlbSBkZWNp
-ZGUgaWYgdGhlIGRlZGljYXRlZCBDUFUgaXMgb2ZmbGluZT8NCg0KSSBjYW4gY2hhbmdlIHRoZSBo
-YXJkY29kaW5nIG9mIENQVSAwIHdpdGggcmF3X3NtcF9wcm9jZXNzb3JfaWQoKS4NCldoaWxlIHdl
-J3JlIGF0IGl0LCBJJ2QgbW92ZSB0aGUgaW50cm9kdWNlZCBjb2RlIGludG8gYSBoZWxwZXIgZnVu
-Y3Rpb24NCnRvIGF2b2lkIGR1cGxpY2F0aW9uOg0KDQpzdGF0aWMgaW5saW5lIHZvaWQgZHBhYV9z
-ZXRfcG9ydGFsX2lycV9hZmZpbml0eShzdHJ1Y3QgZGV2aWNlKiBkZXYsDQoJCQkJCQkJCWludCBj
-cHUsIGludCBpcnEpDQoNCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6IFJveSBQbGVkZ2UgPHJveS5w
-bGVkZ2VAbnhwLmNvbT4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBNYWRhbGluIEJ1Y3VyIDxtYWRhbGlu
-LmJ1Y3VyQG54cC5jb20+DQo+ID4gLS0tDQo+ID4gIGRyaXZlcnMvc29jL2ZzbC9xYm1hbi9ibWFu
-LmMgfCAxNyArKysrKysrKysrKysrLS0tLQ0KPiA+ICBkcml2ZXJzL3NvYy9mc2wvcWJtYW4vcW1h
-bi5jIHwgMTggKysrKysrKysrKysrKy0tLS0tDQo+ID4gIDIgZmlsZXMgY2hhbmdlZCwgMjYgaW5z
-ZXJ0aW9ucygrKSwgOSBkZWxldGlvbnMoLSkNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJz
-L3NvYy9mc2wvcWJtYW4vYm1hbi5jIGIvZHJpdmVycy9zb2MvZnNsL3FibWFuL2JtYW4uYw0KPiA+
-IGluZGV4IGY5NDg1Y2VkYzY0OC4uMmU2ZTY4MmJmMTZiIDEwMDY0NA0KPiA+IC0tLSBhL2RyaXZl
-cnMvc29jL2ZzbC9xYm1hbi9ibWFuLmMNCj4gPiArKysgYi9kcml2ZXJzL3NvYy9mc2wvcWJtYW4v
-Ym1hbi5jDQo+ID4gQEAgLTU2MiwxMCArNTYyLDE5IEBAIHN0YXRpYyBpbnQgYm1hbl9jcmVhdGVf
-cG9ydGFsKHN0cnVjdCBibWFuX3BvcnRhbA0KPiAqcG9ydGFsLA0KPiA+ICAgICAgICAgICAgICAg
-ICBkZXZfZXJyKGMtPmRldiwgInJlcXVlc3RfaXJxKCkgZmFpbGVkXG4iKTsNCj4gPiAgICAgICAg
-ICAgICAgICAgZ290byBmYWlsX2lycTsNCj4gPiAgICAgICAgIH0NCj4gPiAtICAgICAgIGlmIChj
-LT5jcHUgIT0gLTEgJiYgaXJxX2Nhbl9zZXRfYWZmaW5pdHkoYy0+aXJxKSAmJg0KPiA+IC0gICAg
-ICAgICAgIGlycV9zZXRfYWZmaW5pdHkoYy0+aXJxLCBjcHVtYXNrX29mKGMtPmNwdSkpKSB7DQo+
-ID4gLSAgICAgICAgICAgICAgIGRldl9lcnIoYy0+ZGV2LCAiaXJxX3NldF9hZmZpbml0eSgpIGZh
-aWxlZFxuIik7DQo+ID4gLSAgICAgICAgICAgICAgIGdvdG8gZmFpbF9hZmZpbml0eTsNCj4gPiAr
-ICAgICAgIGlmIChjcHVfb25saW5lKGMtPmNwdSkgJiYgYy0+Y3B1ICE9IC0xICYmDQo+ID4gKyAg
-ICAgICAgICAgaXJxX2Nhbl9zZXRfYWZmaW5pdHkoYy0+aXJxKSkgew0KPiA+ICsgICAgICAgICAg
-ICAgICBpZiAoaXJxX3NldF9hZmZpbml0eShjLT5pcnEsIGNwdW1hc2tfb2YoYy0+Y3B1KSkpIHsN
-Cj4gPiArICAgICAgICAgICAgICAgICAgICAgICBkZXZfZXJyKGMtPmRldiwgImlycV9zZXRfYWZm
-aW5pdHkoKSBmYWlsZWQNCj4gJWRcbiIsDQo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICBjLT5jcHUpOw0KPiA+ICsgICAgICAgICAgICAgICAgICAgICAgIGdvdG8gZmFpbF9hZmZp
-bml0eTsNCj4gPiArICAgICAgICAgICAgICAgfQ0KPiA+ICsgICAgICAgfSBlbHNlIHsNCj4gPiAr
-ICAgICAgICAgICAgICAgLyogQ1BVIGlzIG9mZmxpbmUsIGRpcmVjdCBJUlEgdG8gQ1BVIDAgKi8N
-Cj4gPiArICAgICAgICAgICAgICAgaWYgKGlycV9zZXRfYWZmaW5pdHkoYy0+aXJxLCBjcHVtYXNr
-X29mKDApKSkgew0KPiA+ICsgICAgICAgICAgICAgICAgICAgICAgIGRldl9lcnIoYy0+ZGV2LCAi
-aXJxX3NldF9hZmZpbml0eSgpIGNwdSAwDQo+IGZhaWxlZFxuIik7DQo+ID4gKyAgICAgICAgICAg
-ICAgICAgICAgICAgZ290byBmYWlsX2FmZmluaXR5Ow0KPiA+ICsgICAgICAgICAgICAgICB9DQo+
-ID4gICAgICAgICB9DQo+ID4NCj4gPiAgICAgICAgIC8qIE5lZWQgUkNSIHRvIGJlIGVtcHR5IGJl
-Zm9yZSBjb250aW51aW5nICovDQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvc29jL2ZzbC9xYm1h
-bi9xbWFuLmMgYi9kcml2ZXJzL3NvYy9mc2wvcWJtYW4vcW1hbi5jDQo+ID4gaW5kZXggZWNiMjI3
-NDlkZjBiLi43ZGJjYjQ3NWE1OWMgMTAwNjQ0DQo+ID4gLS0tIGEvZHJpdmVycy9zb2MvZnNsL3Fi
-bWFuL3FtYW4uYw0KPiA+ICsrKyBiL2RyaXZlcnMvc29jL2ZzbC9xYm1hbi9xbWFuLmMNCj4gPiBA
-QCAtOTM1LDcgKzkzNSw2IEBAIHN0YXRpYyBpbmxpbmUgaW50IHFtX21jX3Jlc3VsdF90aW1lb3V0
-KHN0cnVjdA0KPiBxbV9wb3J0YWwgKnBvcnRhbCwNCj4gPiAgICAgICAgICAgICAgICAgICAgICAg
-ICBicmVhazsNCj4gPiAgICAgICAgICAgICAgICAgdWRlbGF5KDEpOw0KPiA+ICAgICAgICAgfSB3
-aGlsZSAoLS10aW1lb3V0KTsNCj4gPiAtDQo+ID4gICAgICAgICByZXR1cm4gdGltZW91dDsNCj4g
-PiAgfQ0KPiA+DQo+ID4gQEAgLTEyMTAsMTAgKzEyMDksMTkgQEAgc3RhdGljIGludCBxbWFuX2Ny
-ZWF0ZV9wb3J0YWwoc3RydWN0IHFtYW5fcG9ydGFsDQo+ICpwb3J0YWwsDQo+ID4gICAgICAgICAg
-ICAgICAgIGRldl9lcnIoYy0+ZGV2LCAicmVxdWVzdF9pcnEoKSBmYWlsZWRcbiIpOw0KPiA+ICAg
-ICAgICAgICAgICAgICBnb3RvIGZhaWxfaXJxOw0KPiA+ICAgICAgICAgfQ0KPiA+IC0gICAgICAg
-aWYgKGMtPmNwdSAhPSAtMSAmJiBpcnFfY2FuX3NldF9hZmZpbml0eShjLT5pcnEpICYmDQo+ID4g
-LSAgICAgICAgICAgaXJxX3NldF9hZmZpbml0eShjLT5pcnEsIGNwdW1hc2tfb2YoYy0+Y3B1KSkp
-IHsNCj4gPiAtICAgICAgICAgICAgICAgZGV2X2VycihjLT5kZXYsICJpcnFfc2V0X2FmZmluaXR5
-KCkgZmFpbGVkXG4iKTsNCj4gPiAtICAgICAgICAgICAgICAgZ290byBmYWlsX2FmZmluaXR5Ow0K
-PiA+ICsgICAgICAgaWYgKGNwdV9vbmxpbmUoYy0+Y3B1KSAmJiBjLT5jcHUgIT0gLTEgJiYNCj4g
-PiArICAgICAgICAgICBpcnFfY2FuX3NldF9hZmZpbml0eShjLT5pcnEpKSB7DQo+ID4gKyAgICAg
-ICAgICAgICAgIGlmIChpcnFfc2V0X2FmZmluaXR5KGMtPmlycSwgY3B1bWFza19vZihjLT5jcHUp
-KSkgew0KPiA+ICsgICAgICAgICAgICAgICAgICAgICAgIGRldl9lcnIoYy0+ZGV2LCAiaXJxX3Nl
-dF9hZmZpbml0eSgpIGZhaWxlZA0KPiAlZFxuIiwNCj4gPiArICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgIGMtPmNwdSk7DQo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgZ290byBmYWls
-X2FmZmluaXR5Ow0KPiA+ICsgICAgICAgICAgICAgICB9DQo+ID4gKyAgICAgICB9IGVsc2Ugew0K
-PiA+ICsgICAgICAgICAgICAgICAvKiBDUFUgaXMgb2ZmbGluZSwgZGlyZWN0IElSUSB0byBDUFUg
-MCAqLw0KPiA+ICsgICAgICAgICAgICAgICBpZiAoaXJxX3NldF9hZmZpbml0eShjLT5pcnEsIGNw
-dW1hc2tfb2YoMCkpKSB7DQo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgZGV2X2VycihjLT5k
-ZXYsICJpcnFfc2V0X2FmZmluaXR5KCkgY3B1IDANCj4gZmFpbGVkXG4iKTsNCj4gPiArICAgICAg
-ICAgICAgICAgICAgICAgICBnb3RvIGZhaWxfYWZmaW5pdHk7DQo+ID4gKyAgICAgICAgICAgICAg
-IH0NCj4gPiAgICAgICAgIH0NCj4gPg0KPiA+ICAgICAgICAgLyogTmVlZCBFUUNSIHRvIGJlIGVt
-cHR5IGJlZm9yZSBjb250aW51aW5nICovDQo+ID4gLS0NCj4gPiAyLjEuMA0KPiA+DQo=
+Hi Michael,
+
+On Mon, Sep 24, 2018 at 05:00:42PM +1000, Michael Ellerman wrote:
+> Nathan Fontenot <nfont@linux.vnet.ibm.com> writes:
+> > On 09/18/2018 05:32 AM, Gautham R Shenoy wrote:
+> >> Hi Nathan,
+> >> On Tue, Sep 18, 2018 at 1:05 AM Nathan Fontenot
+> >> <nfont@linux.vnet.ibm.com> wrote:
+> >>>
+> >>> When performing partition migrations all present CPUs must be online
+> >>> as all present CPUs must make the H_JOIN call as part of the migration
+> >>> process. Once all present CPUs make the H_JOIN call, one CPU is returned
+> >>> to make the rtas call to perform the migration to the destination system.
+> >>>
+> >>> During testing of migration and changing the SMT state we have found
+> >>> instances where CPUs are offlined, as part of the SMT state change,
+> >>> before they make the H_JOIN call. This results in a hung system where
+> >>> every CPU is either in H_JOIN or offline.
+> >>>
+> >>> To prevent this this patch disables CPU hotplug during the migration
+> >>> process.
+> >>>
+> >>> Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+> >>> ---
+> >>>  arch/powerpc/kernel/rtas.c |    2 ++
+> >>>  1 file changed, 2 insertions(+)
+> >>>
+> >>> diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+> >>> index 8afd146bc9c7..2c7ed31c736e 100644
+> >>> --- a/arch/powerpc/kernel/rtas.c
+> >>> +++ b/arch/powerpc/kernel/rtas.c
+> >>> @@ -981,6 +981,7 @@ int rtas_ibm_suspend_me(u64 handle)
+> >>>                 goto out;
+> >>>         }
+> >>>
+> >>> +       cpu_hotplug_disable();
+> >> 
+> >> So, some of the onlined CPUs ( via
+> >> rtas_online_cpus_mask(offline_mask);) can go still offline,
+> >> if the userspace issues an offline command, just before we execute
+> >> cpu_hotplug_disable().
+> >> 
+> >> So we are narrowing down the race, but it still exists. Am I missing something ?
+> >
+> > You're correct, this narrows the window in which a CPU can go offline.
+> >
+> > In testing with this patch we have not been able to re-create the failure but
+> > there is still a small window.
+> 
+> Well let's close it.
+> 
+> We just need to check that all present CPUs are online after we've
+> called cpu_hotplug_disable() don't we?
+
+Yes. However, we cannot use the cpu_up() API to bring the offline CPUs
+online, since will return with an -EBUSY if CPU-Hotplug has been
+disabled. _cpu_up() works, but it is (understandably) a static
+function in kernel/cpu.c
+
+So, we might need a new APIs along the lines of
+disable_nonboot_cpus()/enable_nonboot_cpus() 
+that is currently being used by the suspend subsystem, only that we
+would need the APIs to
+      - Disable hotplug and online all the CPUs in an atomic
+      fashion. Would be good if the API returns the cpumask of CPUs
+      which were offline, which were brought online by this API.
+
+      - Restore the state of the machine by offlining the CPUs which
+      we brought online, and enable hotplug again. 
+      
+> 
+> cheers
+> 
