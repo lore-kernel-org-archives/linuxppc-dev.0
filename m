@@ -1,13 +1,13 @@
 Return-Path: <narmstrong@baylibre.com>
-Received: from mail-wm1-x342.google.com (mail-wm1-x342.google.com
- [IPv6:2a00:1450:4864:20::342])
+Received: from mail-wr1-x443.google.com (mail-wr1-x443.google.com
+ [IPv6:2a00:1450:4864:20::443])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Jtxp36FZzF3JG
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Sep 2018 05:07:39 +1000 (AEST)
-Received: by mail-wm1-x342.google.com with SMTP id c14-v6so10851340wmb.4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Sep 2018 12:07:39 -0700 (PDT)
-Subject: Re: [PATCH v2 6/7] drm: meson: use xxxsetbits32
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42JtyM0g5qzF3JL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Sep 2018 05:08:10 +1000 (AEST)
+Received: by mail-wr1-x443.google.com with SMTP id s14-v6so20788157wrw.6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Sep 2018 12:08:10 -0700 (PDT)
+Subject: Re: [PATCH v2 7/7] net: stmmac: dwmac-meson8b: use xxxsetbits32
 To: Corentin Labbe <clabbe@baylibre.com>, Gilles.Muller@lip6.fr,
  Julia.Lawall@lip6.fr, agust@denx.de, airlied@linux.ie,
  alexandre.torgue@st.com, alistair@popple.id.au, benh@kernel.crashing.org,
@@ -22,12 +22,12 @@ Cc: cocci@systeme.lip6.fr, dri-devel@lists.freedesktop.org,
  linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org
 References: <1537815856-31728-1-git-send-email-clabbe@baylibre.com>
- <1537815856-31728-7-git-send-email-clabbe@baylibre.com>
+ <1537815856-31728-8-git-send-email-clabbe@baylibre.com>
 From: Neil Armstrong <narmstrong@baylibre.com>
-Message-ID: <9925d909-5f50-499d-744d-f59170e8899a@baylibre.com>
-Date: Mon, 24 Sep 2018 21:07:33 +0200
+Message-ID: <b87baa02-66e7-b855-478a-6d0bb4d39bad@baylibre.com>
+Date: Mon, 24 Sep 2018 21:08:04 +0200
 MIME-Version: 1.0
-In-Reply-To: <1537815856-31728-7-git-send-email-clabbe@baylibre.com>
+In-Reply-To: <1537815856-31728-8-git-send-email-clabbe@baylibre.com>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -38,24 +38,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Corentin,
-
 On 24/09/2018 21:04, Corentin Labbe wrote:
-> This patch convert meson DRM driver to use all xxxsetbits32 functions.
+> This patch convert meson stmmac glue driver to use all xxxsetbits32 functions.
 > 
 > Signed-off-by: Corentin Labbe <clabbe@baylibre.com>
 > ---
->  drivers/gpu/drm/meson/meson_crtc.c      | 14 ++++---
->  drivers/gpu/drm/meson/meson_dw_hdmi.c   | 33 +++++++++--------
->  drivers/gpu/drm/meson/meson_plane.c     | 13 ++++---
->  drivers/gpu/drm/meson/meson_registers.h |  3 --
->  drivers/gpu/drm/meson/meson_venc.c      | 13 ++++---
->  drivers/gpu/drm/meson/meson_venc_cvbs.c |  4 +-
->  drivers/gpu/drm/meson/meson_viu.c       | 65 +++++++++++++++++----------------
->  drivers/gpu/drm/meson/meson_vpp.c       | 22 +++++------
->  8 files changed, 86 insertions(+), 81 deletions(-)
+>  .../net/ethernet/stmicro/stmmac/dwmac-meson8b.c    | 56 +++++++++-------------
+>  1 file changed, 22 insertions(+), 34 deletions(-)
 > 
 [...]
 
 Reviewed-by: Neil Armstrong <narmstrong@baylibre.com>
-Tested-by: Neil Armstrong <narmstrong@baylibre.com>
