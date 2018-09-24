@@ -1,23 +1,34 @@
-Return-Path: <breno.debian@gmail.com>
-Received: from mail-qk1-f194.google.com (mail-qk1-f194.google.com
- [209.85.222.194])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Jmrn0t6fzF3Hw
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Sep 2018 00:32:56 +1000 (AEST)
-Received: by mail-qk1-f194.google.com with SMTP id v18-v6so1917420qka.10
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Sep 2018 07:32:56 -0700 (PDT)
-Subject: Re: [PATCH] powerpc/tm: Fix userspace r13 corruption
-To: Michael Neuling <mikey@neuling.org>, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>,
- paulus@ozlabs.org, benh@kernel.crashing.org, aneesh.kumar@linux.vnet.ibm.com
-References: <20180924072704.6200-1-mikey@neuling.org>
-From: Breno Leitao <leitao@debian.org>
-Message-ID: <2675a034-288e-a3c2-a5df-7a223d79dc88@debian.org>
-Date: Mon, 24 Sep 2018 11:32:48 -0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Jms66b47zF3Fn
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Sep 2018 00:33:14 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w8OEVbtC076403
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Sep 2018 10:33:12 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2mq0mw3un8-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Sep 2018 10:33:12 -0400
+Received: from localhost
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Mon, 24 Sep 2018 08:33:11 -0600
+Subject: Re: [PATCH] powerpc/pseries: Track LMB nid instead of using device
+ tree
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+References: <153677072365.15599.14388703259401466198.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
+ <87h8ikkckz.fsf@concordia.ellerman.id.au>
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Date: Mon, 24 Sep 2018 09:33:06 -0500
 MIME-Version: 1.0
-In-Reply-To: <20180924072704.6200-1-mikey@neuling.org>
+In-Reply-To: <87h8ikkckz.fsf@concordia.ellerman.id.au>
 Content-Type: text/plain; charset=utf-8
+Message-Id: <514f0192-4403-4305-1c2b-41dc752bcd36@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,55 +38,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Mikey,
-
-On 09/24/2018 04:27 AM, Michael Neuling wrote:
-> When we treclaim we store the userspace checkpointed r13 to a scratch
-> SPR and then later save the scratch SPR to the user thread struct.
+On 09/19/2018 11:38 PM, Michael Ellerman wrote:
+> Nathan Fontenot <nfont@linux.vnet.ibm.com> writes:
 > 
-> Unfortunately, this doesn't work as accessing the user thread struct
-> can take an SLB fault and the SLB fault handler will write the same
-> scratch SPRG that now contains the userspace r13.
+>> When removing memory we need to remove the memory from the node
+>> it was added to instead of looking up the node it should be in
+>> in the device tree.
+>>
+>> During testing we have seen scenarios where the affinity for a
+>> LMB changes due to a partition migration or PRRN event. In these
+>> cases the node the LMB exists in may not match the node the device
+>> tree indicates it belongs in. This can lead to a system crash
+>> when trying to DLAPR remove the LMB after a migration or PRRN
+>> event. The current code looks up the node in the device tree to
+>> remove the LMB from, the crash occurs when we try to offline this
+>> node and it does not have any data, i.e. node_data[nid] == NULL.
 > 
-> To fix this, we store r13 to the kernel stack (which can't fault)
-> before we access the user thread struct.
+> This isn't building for 32-bit etc:
 > 
-> Found by running P8 guest + powervm + disable_1tb_segments + TM. Seen
-> as a random userspace segfault with r13 looking like a kernel address.
+> arch/powerpc/mm/drmem.c: In function 'init_drmem_v1_lmbs':
+> arch/powerpc/mm/drmem.c:371:14: error: implicit declaration of function 'memory_add_physaddr_to_nid' [-Werror=implicit-function-declaration]
+>    lmb->nid = memory_add_physaddr_to_nid(lmb->base_addr);
+>               ^
+> cc1: all warnings being treated as errors
+> scripts/Makefile.build:317: recipe for target 'arch/powerpc/mm/drmem.o' failed
 > 
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> See the failed checks here:
+>   https://patchwork.ozlabs.org/patch/969150/
+> 
+> 
+> Probably drmem.c should only be compiled for 64-bit NUMA etc.
 
-Reviewed-by: Breno Leitao <leitao@debian.org>
+Looks like the root cause is that memory hotplug relies on sparsemem which
+is not supported on 32-bit.
 
-I am wondering if the same problem could not happen with r1 as well, since r1
-is kept in the paca->tm_scratch after MSR[RI] is enabled, in a code similar
-to this:
+This patch is also going to need a refresh to apply cleanly due to other
+patches that have gone in. I'll re-submit after looking at the build break issues more.
 
-        std     r1, PACATMSCRATCH(r13)
-	..
-        li      r11, MSR_RI
-	mtmsrd  r11, 1
-	....
-        ld      r3, PACATMSCRATCH(r13)          /* user r1 */
-        std     r3, GPR1(r7)
+-Nathan
 
-There might be a corruption if the exception that is raised just after
-MSR[RI] is enabled somehow exits through 'fast_exception_return' (being
-called by most of the exception handlers as I understand) which will
-overwrite paca->tm_scratch with the upcoming MSR (aka SRR1) just before the
-SRR1, as:
-
-	ld      r3,_MSR(r1)
-
-	...
-	std     r3, PACATMSCRATCH(r13) /* Stash returned-to MSR */
-
-
-It seems that slb_miss_common and instruction_access_slb does not go through
-this path, but handle_page_fault calls
-ret_from_except_lite->fast_exception_return, which might cause this
-'possible' issue.
-
-Anyway, I would like to investigate if this problem might happen or not for
-real, but I do not fully understand what are the exceptions that might be
-raised when just MSR[RI] is enabled.
+> 
+> cheers
+> 
