@@ -1,18 +1,27 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <madalin.bucur@nxp.com>
+Received: from EUR04-HE1-obe.outbound.protection.outlook.com
+ (mail-eopbgr70053.outbound.protection.outlook.com [40.107.7.53])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42JbPd6H5qzF13y
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Sep 2018 17:27:17 +1000 (AEST)
-From: Michael Neuling <mikey@neuling.org>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>,
- paulus@ozlabs.org, benh@kernel.crashing.org,
- Breno Leitao <leitao@debian.org>, aneesh.kumar@linux.vnet.ibm.com,
- Michael Neuling <mikey@neuling.org>
-Subject: [PATCH] powerpc/tm: Fix userspace r13 corruption
-Date: Mon, 24 Sep 2018 17:27:04 +1000
-Message-Id: <20180924072704.6200-1-mikey@neuling.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42JdM1198pzF0dq
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Sep 2018 18:55:05 +1000 (AEST)
+From: Madalin-cristian Bucur <madalin.bucur@nxp.com>
+To: Leo Li <leoyang.li@nxp.com>, Roy Pledge <roy.pledge@nxp.com>
+CC: Claudiu Manoil <claudiu.manoil@nxp.com>, Catalin Marinas
+ <catalin.marinas@arm.com>, Scott Wood <oss@buserror.net>, "moderated
+ list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
+ <linux-arm-kernel@lists.infradead.org>, linuxppc-dev
+ <linuxppc-dev@lists.ozlabs.org>, lkml <linux-kernel@vger.kernel.org>
+Subject: RE: [PATCH 1/4] soc/fsl/qbman: Check if CPU is offline when
+ initializing portals
+Date: Mon, 24 Sep 2018 08:54:58 +0000
+Message-ID: <AM6PR04MB400829AD9740850D5EF93E51EC170@AM6PR04MB4008.eurprd04.prod.outlook.com>
+References: <1537456011-10769-1-git-send-email-madalin.bucur@nxp.com>
+ <1537456011-10769-2-git-send-email-madalin.bucur@nxp.com>
+ <CADRPPNQMK8sNYU23nvAdF3T_gx=VruM1ZKAcwNg6HuW6hz+Ezw@mail.gmail.com>
+In-Reply-To: <CADRPPNQMK8sNYU23nvAdF3T_gx=VruM1ZKAcwNg6HuW6hz+Ezw@mail.gmail.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,58 +31,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When we treclaim we store the userspace checkpointed r13 to a scratch
-SPR and then later save the scratch SPR to the user thread struct.
-
-Unfortunately, this doesn't work as accessing the user thread struct
-can take an SLB fault and the SLB fault handler will write the same
-scratch SPRG that now contains the userspace r13.
-
-To fix this, we store r13 to the kernel stack (which can't fault)
-before we access the user thread struct.
-
-Found by running P8 guest + powervm + disable_1tb_segments + TM. Seen
-as a random userspace segfault with r13 looking like a kernel address.
-
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
- arch/powerpc/kernel/tm.S | 11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kernel/tm.S b/arch/powerpc/kernel/tm.S
-index 6bffbc5aff..701b0f5b09 100644
---- a/arch/powerpc/kernel/tm.S
-+++ b/arch/powerpc/kernel/tm.S
-@@ -176,13 +176,20 @@ _GLOBAL(tm_reclaim)
- 	std	r1, PACATMSCRATCH(r13)
- 	ld	r1, PACAR1(r13)
- 
--	/* Store the PPR in r11 and reset to decent value */
- 	std	r11, GPR11(r1)			/* Temporary stash */
- 
-+	/* Store r13 away so we can free up the scratch SPR for the
-+	 * SLB fault handler (needed once we start access the
-+	 * thread_struct)
-+	 */
-+	GET_SCRATCH0(r11)
-+	std	r11, GPR13(r1)
-+
- 	/* Reset MSR RI so we can take SLB faults again */
- 	li	r11, MSR_RI
- 	mtmsrd	r11, 1
- 
-+	/* Store the PPR in r11 and reset to decent value */
- 	mfspr	r11, SPRN_PPR
- 	HMT_MEDIUM
- 
-@@ -211,7 +218,7 @@ _GLOBAL(tm_reclaim)
- 	ld	r4, GPR7(r1)			/* user r7 */
- 	ld	r5, GPR11(r1)			/* user r11 */
- 	ld	r6, GPR12(r1)			/* user r12 */
--	GET_SCRATCH0(8)				/* user r13 */
-+	ld	r8, GPR13(r1)			/* user r13 */
- 	std	r3, GPR1(r7)
- 	std	r4, GPR7(r7)
- 	std	r5, GPR11(r7)
--- 
-2.17.1
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBMaSBZYW5nIFttYWlsdG86bGVv
+eWFuZy5saUBueHAuY29tXQ0KPiBTZW50OiBTYXR1cmRheSwgU2VwdGVtYmVyIDIyLCAyMDE4IDE6
+MTUgQU0NCj4gVG86IE1hZGFsaW4tY3Jpc3RpYW4gQnVjdXIgPG1hZGFsaW4uYnVjdXJAbnhwLmNv
+bT4NCj4gU3ViamVjdDogUmU6IFtQQVRDSCAxLzRdIHNvYy9mc2wvcWJtYW46IENoZWNrIGlmIENQ
+VSBpcyBvZmZsaW5lIHdoZW4NCj4gaW5pdGlhbGl6aW5nIHBvcnRhbHMNCj4gDQo+IE9uIFRodSwg
+U2VwIDIwLCAyMDE4IGF0IDEwOjA5IEFNIE1hZGFsaW4gQnVjdXIgPG1hZGFsaW4uYnVjdXJAbnhw
+LmNvbT4NCj4gd3JvdGU6DQo+ID4NCj4gPiBGcm9tOiBSb3kgUGxlZGdlIDxyb3kucGxlZGdlQG54
+cC5jb20+DQo+ID4NCj4gPiBJZiB0aGUgYWZmaW5lIHBvcnRhbCBmb3IgYSBzcGVjaWZpYyBDUFUg
+aXMgb2ZmbGluZSBhdCBib290IHRpbWUNCj4gPiBhZmZpbmUgaXRzIGludGVycnVwdCB0byBDUFUg
+MC4gSWYgdGhlIENQVSBpcyBsYXRlciBicm91Z2h0IG9ubGluZQ0KPiA+IHRoZSBob3RwbHVnIGhh
+bmRsZXIgd2lsbCBjb3JyZWN0bHkgYWRqdXN0IHRoZSBhZmZpbml0eS4NCj4gDQo+IEFsdGhvdWdo
+IHRoaXMgZG9lcyBwcm92aWRlIGJldHRlciBjb21wYXRpYmlsaXR5IHdpdGggY3B1IGhvdHBsdWcs
+IHdlDQo+IHN0aWxsIGhhdmUgYSBwcm9ibGVtLiAgWW91IGFyZSBhc3N1bWluZyB0aGUgQ1BVMCBp
+cyBhbHdheXMgb25saW5lDQo+IHdoaWNoIGlzIG5vdCB0aGUgY2FzZSBmb3IgYXJtNjQuICBIb3cg
+YWJvdXQgbm90IHNldHRpbmcgdGhlIGFmZmluaXR5DQo+IGFuZCBsZXQgdGhlIHN5c3RlbSBkZWNp
+ZGUgaWYgdGhlIGRlZGljYXRlZCBDUFUgaXMgb2ZmbGluZT8NCg0KSSBjYW4gY2hhbmdlIHRoZSBo
+YXJkY29kaW5nIG9mIENQVSAwIHdpdGggcmF3X3NtcF9wcm9jZXNzb3JfaWQoKS4NCldoaWxlIHdl
+J3JlIGF0IGl0LCBJJ2QgbW92ZSB0aGUgaW50cm9kdWNlZCBjb2RlIGludG8gYSBoZWxwZXIgZnVu
+Y3Rpb24NCnRvIGF2b2lkIGR1cGxpY2F0aW9uOg0KDQpzdGF0aWMgaW5saW5lIHZvaWQgZHBhYV9z
+ZXRfcG9ydGFsX2lycV9hZmZpbml0eShzdHJ1Y3QgZGV2aWNlKiBkZXYsDQoJCQkJCQkJCWludCBj
+cHUsIGludCBpcnEpDQoNCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6IFJveSBQbGVkZ2UgPHJveS5w
+bGVkZ2VAbnhwLmNvbT4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBNYWRhbGluIEJ1Y3VyIDxtYWRhbGlu
+LmJ1Y3VyQG54cC5jb20+DQo+ID4gLS0tDQo+ID4gIGRyaXZlcnMvc29jL2ZzbC9xYm1hbi9ibWFu
+LmMgfCAxNyArKysrKysrKysrKysrLS0tLQ0KPiA+ICBkcml2ZXJzL3NvYy9mc2wvcWJtYW4vcW1h
+bi5jIHwgMTggKysrKysrKysrKysrKy0tLS0tDQo+ID4gIDIgZmlsZXMgY2hhbmdlZCwgMjYgaW5z
+ZXJ0aW9ucygrKSwgOSBkZWxldGlvbnMoLSkNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJz
+L3NvYy9mc2wvcWJtYW4vYm1hbi5jIGIvZHJpdmVycy9zb2MvZnNsL3FibWFuL2JtYW4uYw0KPiA+
+IGluZGV4IGY5NDg1Y2VkYzY0OC4uMmU2ZTY4MmJmMTZiIDEwMDY0NA0KPiA+IC0tLSBhL2RyaXZl
+cnMvc29jL2ZzbC9xYm1hbi9ibWFuLmMNCj4gPiArKysgYi9kcml2ZXJzL3NvYy9mc2wvcWJtYW4v
+Ym1hbi5jDQo+ID4gQEAgLTU2MiwxMCArNTYyLDE5IEBAIHN0YXRpYyBpbnQgYm1hbl9jcmVhdGVf
+cG9ydGFsKHN0cnVjdCBibWFuX3BvcnRhbA0KPiAqcG9ydGFsLA0KPiA+ICAgICAgICAgICAgICAg
+ICBkZXZfZXJyKGMtPmRldiwgInJlcXVlc3RfaXJxKCkgZmFpbGVkXG4iKTsNCj4gPiAgICAgICAg
+ICAgICAgICAgZ290byBmYWlsX2lycTsNCj4gPiAgICAgICAgIH0NCj4gPiAtICAgICAgIGlmIChj
+LT5jcHUgIT0gLTEgJiYgaXJxX2Nhbl9zZXRfYWZmaW5pdHkoYy0+aXJxKSAmJg0KPiA+IC0gICAg
+ICAgICAgIGlycV9zZXRfYWZmaW5pdHkoYy0+aXJxLCBjcHVtYXNrX29mKGMtPmNwdSkpKSB7DQo+
+ID4gLSAgICAgICAgICAgICAgIGRldl9lcnIoYy0+ZGV2LCAiaXJxX3NldF9hZmZpbml0eSgpIGZh
+aWxlZFxuIik7DQo+ID4gLSAgICAgICAgICAgICAgIGdvdG8gZmFpbF9hZmZpbml0eTsNCj4gPiAr
+ICAgICAgIGlmIChjcHVfb25saW5lKGMtPmNwdSkgJiYgYy0+Y3B1ICE9IC0xICYmDQo+ID4gKyAg
+ICAgICAgICAgaXJxX2Nhbl9zZXRfYWZmaW5pdHkoYy0+aXJxKSkgew0KPiA+ICsgICAgICAgICAg
+ICAgICBpZiAoaXJxX3NldF9hZmZpbml0eShjLT5pcnEsIGNwdW1hc2tfb2YoYy0+Y3B1KSkpIHsN
+Cj4gPiArICAgICAgICAgICAgICAgICAgICAgICBkZXZfZXJyKGMtPmRldiwgImlycV9zZXRfYWZm
+aW5pdHkoKSBmYWlsZWQNCj4gJWRcbiIsDQo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICBjLT5jcHUpOw0KPiA+ICsgICAgICAgICAgICAgICAgICAgICAgIGdvdG8gZmFpbF9hZmZp
+bml0eTsNCj4gPiArICAgICAgICAgICAgICAgfQ0KPiA+ICsgICAgICAgfSBlbHNlIHsNCj4gPiAr
+ICAgICAgICAgICAgICAgLyogQ1BVIGlzIG9mZmxpbmUsIGRpcmVjdCBJUlEgdG8gQ1BVIDAgKi8N
+Cj4gPiArICAgICAgICAgICAgICAgaWYgKGlycV9zZXRfYWZmaW5pdHkoYy0+aXJxLCBjcHVtYXNr
+X29mKDApKSkgew0KPiA+ICsgICAgICAgICAgICAgICAgICAgICAgIGRldl9lcnIoYy0+ZGV2LCAi
+aXJxX3NldF9hZmZpbml0eSgpIGNwdSAwDQo+IGZhaWxlZFxuIik7DQo+ID4gKyAgICAgICAgICAg
+ICAgICAgICAgICAgZ290byBmYWlsX2FmZmluaXR5Ow0KPiA+ICsgICAgICAgICAgICAgICB9DQo+
+ID4gICAgICAgICB9DQo+ID4NCj4gPiAgICAgICAgIC8qIE5lZWQgUkNSIHRvIGJlIGVtcHR5IGJl
+Zm9yZSBjb250aW51aW5nICovDQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvc29jL2ZzbC9xYm1h
+bi9xbWFuLmMgYi9kcml2ZXJzL3NvYy9mc2wvcWJtYW4vcW1hbi5jDQo+ID4gaW5kZXggZWNiMjI3
+NDlkZjBiLi43ZGJjYjQ3NWE1OWMgMTAwNjQ0DQo+ID4gLS0tIGEvZHJpdmVycy9zb2MvZnNsL3Fi
+bWFuL3FtYW4uYw0KPiA+ICsrKyBiL2RyaXZlcnMvc29jL2ZzbC9xYm1hbi9xbWFuLmMNCj4gPiBA
+QCAtOTM1LDcgKzkzNSw2IEBAIHN0YXRpYyBpbmxpbmUgaW50IHFtX21jX3Jlc3VsdF90aW1lb3V0
+KHN0cnVjdA0KPiBxbV9wb3J0YWwgKnBvcnRhbCwNCj4gPiAgICAgICAgICAgICAgICAgICAgICAg
+ICBicmVhazsNCj4gPiAgICAgICAgICAgICAgICAgdWRlbGF5KDEpOw0KPiA+ICAgICAgICAgfSB3
+aGlsZSAoLS10aW1lb3V0KTsNCj4gPiAtDQo+ID4gICAgICAgICByZXR1cm4gdGltZW91dDsNCj4g
+PiAgfQ0KPiA+DQo+ID4gQEAgLTEyMTAsMTAgKzEyMDksMTkgQEAgc3RhdGljIGludCBxbWFuX2Ny
+ZWF0ZV9wb3J0YWwoc3RydWN0IHFtYW5fcG9ydGFsDQo+ICpwb3J0YWwsDQo+ID4gICAgICAgICAg
+ICAgICAgIGRldl9lcnIoYy0+ZGV2LCAicmVxdWVzdF9pcnEoKSBmYWlsZWRcbiIpOw0KPiA+ICAg
+ICAgICAgICAgICAgICBnb3RvIGZhaWxfaXJxOw0KPiA+ICAgICAgICAgfQ0KPiA+IC0gICAgICAg
+aWYgKGMtPmNwdSAhPSAtMSAmJiBpcnFfY2FuX3NldF9hZmZpbml0eShjLT5pcnEpICYmDQo+ID4g
+LSAgICAgICAgICAgaXJxX3NldF9hZmZpbml0eShjLT5pcnEsIGNwdW1hc2tfb2YoYy0+Y3B1KSkp
+IHsNCj4gPiAtICAgICAgICAgICAgICAgZGV2X2VycihjLT5kZXYsICJpcnFfc2V0X2FmZmluaXR5
+KCkgZmFpbGVkXG4iKTsNCj4gPiAtICAgICAgICAgICAgICAgZ290byBmYWlsX2FmZmluaXR5Ow0K
+PiA+ICsgICAgICAgaWYgKGNwdV9vbmxpbmUoYy0+Y3B1KSAmJiBjLT5jcHUgIT0gLTEgJiYNCj4g
+PiArICAgICAgICAgICBpcnFfY2FuX3NldF9hZmZpbml0eShjLT5pcnEpKSB7DQo+ID4gKyAgICAg
+ICAgICAgICAgIGlmIChpcnFfc2V0X2FmZmluaXR5KGMtPmlycSwgY3B1bWFza19vZihjLT5jcHUp
+KSkgew0KPiA+ICsgICAgICAgICAgICAgICAgICAgICAgIGRldl9lcnIoYy0+ZGV2LCAiaXJxX3Nl
+dF9hZmZpbml0eSgpIGZhaWxlZA0KPiAlZFxuIiwNCj4gPiArICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgIGMtPmNwdSk7DQo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgZ290byBmYWls
+X2FmZmluaXR5Ow0KPiA+ICsgICAgICAgICAgICAgICB9DQo+ID4gKyAgICAgICB9IGVsc2Ugew0K
+PiA+ICsgICAgICAgICAgICAgICAvKiBDUFUgaXMgb2ZmbGluZSwgZGlyZWN0IElSUSB0byBDUFUg
+MCAqLw0KPiA+ICsgICAgICAgICAgICAgICBpZiAoaXJxX3NldF9hZmZpbml0eShjLT5pcnEsIGNw
+dW1hc2tfb2YoMCkpKSB7DQo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgZGV2X2VycihjLT5k
+ZXYsICJpcnFfc2V0X2FmZmluaXR5KCkgY3B1IDANCj4gZmFpbGVkXG4iKTsNCj4gPiArICAgICAg
+ICAgICAgICAgICAgICAgICBnb3RvIGZhaWxfYWZmaW5pdHk7DQo+ID4gKyAgICAgICAgICAgICAg
+IH0NCj4gPiAgICAgICAgIH0NCj4gPg0KPiA+ICAgICAgICAgLyogTmVlZCBFUUNSIHRvIGJlIGVt
+cHR5IGJlZm9yZSBjb250aW51aW5nICovDQo+ID4gLS0NCj4gPiAyLjEuMA0KPiA+DQo=
