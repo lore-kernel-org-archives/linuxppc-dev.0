@@ -1,45 +1,18 @@
-Return-Path: <srs0=8qt9=mg=linux.vnet.ibm.com=maddy@ozlabs.org>
-Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42JZwQ66kdzDqSh
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Sep 2018 17:05:26 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 42JZwQ5V1hz8xKT
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Sep 2018 17:05:26 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 42JZwQ1jM2z9sB4
- for <linuxppc-dev@ozlabs.org>; Mon, 24 Sep 2018 17:05:25 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w8O741UO114597
- for <linuxppc-dev@ozlabs.org>; Mon, 24 Sep 2018 03:05:24 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2mpu70g2fu-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Mon, 24 Sep 2018 03:05:23 -0400
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Mon, 24 Sep 2018 08:05:21 +0100
-Subject: Re: [PATCH] powerpc/perf: Add missing break in
- power7_marked_instr_event()
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org,
- maddy@linux.ibm.com, paulus@samba.org
-References: <20180920094111.4125-1-mpe@ellerman.id.au>
- <e1868207-7dd4-e6cc-0fce-04e0fd1e5edc@linux.vnet.ibm.com>
- <20180920144715.GA23155@gate.crashing.org>
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Date: Mon, 24 Sep 2018 12:35:16 +0530
-MIME-Version: 1.0
-In-Reply-To: <20180920144715.GA23155@gate.crashing.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <8f147e4f-321b-d730-0a0a-f6cee8254dd0@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42JbPd6H5qzF13y
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Sep 2018 17:27:17 +1000 (AEST)
+From: Michael Neuling <mikey@neuling.org>
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>,
+ paulus@ozlabs.org, benh@kernel.crashing.org,
+ Breno Leitao <leitao@debian.org>, aneesh.kumar@linux.vnet.ibm.com,
+ Michael Neuling <mikey@neuling.org>
+Subject: [PATCH] powerpc/tm: Fix userspace r13 corruption
+Date: Mon, 24 Sep 2018 17:27:04 +1000
+Message-Id: <20180924072704.6200-1-mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,24 +22,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+When we treclaim we store the userspace checkpointed r13 to a scratch
+SPR and then later save the scratch SPR to the user thread struct.
 
+Unfortunately, this doesn't work as accessing the user thread struct
+can take an SLB fault and the SLB fault handler will write the same
+scratch SPRG that now contains the userspace r13.
 
-On Thursday 20 September 2018 08:17 PM, Segher Boessenkool wrote:
-> On Thu, Sep 20, 2018 at 03:29:22PM +0530, Madhavan Srinivasan wrote:
->> On Thursday 20 September 2018 03:11 PM, Michael Ellerman wrote:
->>> In power7_marked_instr_event() there is a switch case that is missing
->>> a break or an explicit fallthrough, it's not immediately clear which
->>> it should be.
->> Just curious to know, how did you find this. Static code checker compiled
->> or any specific compiler warnings or just by code read?
-> Newer GCC warns about suspicious fallthroughs (-Wimplicit-fallthrough,
-> which is in -Wextra).
->
+To fix this, we store r13 to the kernel stack (which can't fault)
+before we access the user thread struct.
 
-Nice good to know.
+Found by running P8 guest + powervm + disable_1tb_segments + TM. Seen
+as a random userspace segfault with r13 looking like a kernel address.
 
-Maddy
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+ arch/powerpc/kernel/tm.S | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
-
-> Segher
->
+diff --git a/arch/powerpc/kernel/tm.S b/arch/powerpc/kernel/tm.S
+index 6bffbc5aff..701b0f5b09 100644
+--- a/arch/powerpc/kernel/tm.S
++++ b/arch/powerpc/kernel/tm.S
+@@ -176,13 +176,20 @@ _GLOBAL(tm_reclaim)
+ 	std	r1, PACATMSCRATCH(r13)
+ 	ld	r1, PACAR1(r13)
+ 
+-	/* Store the PPR in r11 and reset to decent value */
+ 	std	r11, GPR11(r1)			/* Temporary stash */
+ 
++	/* Store r13 away so we can free up the scratch SPR for the
++	 * SLB fault handler (needed once we start access the
++	 * thread_struct)
++	 */
++	GET_SCRATCH0(r11)
++	std	r11, GPR13(r1)
++
+ 	/* Reset MSR RI so we can take SLB faults again */
+ 	li	r11, MSR_RI
+ 	mtmsrd	r11, 1
+ 
++	/* Store the PPR in r11 and reset to decent value */
+ 	mfspr	r11, SPRN_PPR
+ 	HMT_MEDIUM
+ 
+@@ -211,7 +218,7 @@ _GLOBAL(tm_reclaim)
+ 	ld	r4, GPR7(r1)			/* user r7 */
+ 	ld	r5, GPR11(r1)			/* user r11 */
+ 	ld	r6, GPR12(r1)			/* user r12 */
+-	GET_SCRATCH0(8)				/* user r13 */
++	ld	r8, GPR13(r1)			/* user r13 */
+ 	std	r3, GPR1(r7)
+ 	std	r4, GPR7(r7)
+ 	std	r5, GPR11(r7)
+-- 
+2.17.1
