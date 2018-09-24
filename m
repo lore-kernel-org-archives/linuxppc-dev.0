@@ -2,18 +2,22 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Jpgr1K0LzF3Dv
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Jpgr1Xb7zF3F7
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Sep 2018 01:55:20 +1000 (AEST)
-Message-Id: <3a3061a88f1fe00108e5dafac63d443cbb2f2a4d.1537802981.git.christophe.leroy@c-s.fr>
+Message-Id: <72d3e8c38f729dc22cb3235319b72f96190e01ee.1537802981.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1537802981.git.christophe.leroy@c-s.fr>
 References: <cover.1537802981.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [RFC PATCH v1 6/9] powerpc: regain entire stack space
+Subject: [RFC PATCH v1 1/9] timer: fix circular header dependency
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- aneesh.kumar@linux.vnet.ibm.com, npiggin@gmail.com
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Mon, 24 Sep 2018 15:52:31 +0000 (UTC)
+ aneesh.kumar@linux.vnet.ibm.com, npiggin@gmail.com,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Alexander Viro <viro@zeniv.linux.org.uk>,
+ John Stultz <john.stultz@linaro.org>, Stephen Boyd <sboyd@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-fsdevel@vger.kernel.org
+Date: Mon, 24 Sep 2018 15:52:21 +0000 (UTC)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,264 +27,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-thread_info is not anymore in the stack, so the entire stack
-can now be used.
+When switching powerpc to CONFIG_THREAD_INFO_IN_TASK, include/sched.h
+has to be included in asm/smp.h for the following change, in order
+to avoid uncomplete definition of task_struct:
 
-In the meantime, all pointers to the stacks are not anymore
-pointers to thread_info so this patch changes them to void*
+-#define raw_smp_processor_id() (current_thread_info()->cpu)
++#define raw_smp_processor_id() (current->cpu)
+
+But this generates the following compilation error, due to circular
+header dependency.
+
+  CC      kernel/time/alarmtimer.o
+In file included from ./arch/powerpc/include/asm/smp.h:31,
+                 from ./include/linux/smp.h:64,
+                 from ./include/linux/percpu.h:7,
+                 from ./include/linux/hrtimer.h:22,
+                 from kernel/time/alarmtimer.c:19:
+./include/linux/sched.h:558:19: error: field 'dl_timer' has incomplete type
+  struct hrtimer   dl_timer;
+                   ^~~~~~~~
+./include/linux/sched.h:567:17: error: field 'inactive_timer' has incomplete type
+  struct hrtimer inactive_timer;
+                 ^~~~~~~~~~~~~~
+make[1]: *** [kernel/time/alarmtimer.o] Error 1
+make: *** [kernel/time/alarmtimer.o] Error 2
+
+  CC      fs/timerfd.o
+In file included from ./arch/powerpc/include/asm/smp.h:31,
+                 from ./include/linux/smp.h:64,
+                 from ./include/linux/percpu.h:7,
+                 from ./include/linux/hrtimer.h:22,
+                 from ./include/linux/alarmtimer.h:6,
+                 from fs/timerfd.c:12:
+./include/linux/sched.h:558:19: error: field 'dl_timer' has incomplete type
+  struct hrtimer   dl_timer;
+                   ^~~~~~~~
+./include/linux/sched.h:567:17: error: field 'inactive_timer' has incomplete type
+  struct hrtimer inactive_timer;
+                 ^~~~~~~~~~~~~~
+make[1]: *** [fs/timerfd.o] Error 1
+make: *** [fs/timerfd.o] Error 2
+
+This patch fixes it by including linux/hrtimer.h after linux/sched.h
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/irq.h       | 10 +++++-----
- arch/powerpc/include/asm/processor.h |  3 +--
- arch/powerpc/kernel/asm-offsets.c    |  1 -
- arch/powerpc/kernel/entry_32.S       | 14 ++++----------
- arch/powerpc/kernel/irq.c            | 19 +++++++++----------
- arch/powerpc/kernel/misc_32.S        |  6 ++----
- arch/powerpc/kernel/process.c        |  9 +++------
- arch/powerpc/kernel/setup_64.c       |  8 ++++----
- 8 files changed, 28 insertions(+), 42 deletions(-)
+ Should it be fixed in powerpc instead ? In that case, how ? Any idea ?
 
-diff --git a/arch/powerpc/include/asm/irq.h b/arch/powerpc/include/asm/irq.h
-index 8108d1fe33ca..3987929408d3 100644
---- a/arch/powerpc/include/asm/irq.h
-+++ b/arch/powerpc/include/asm/irq.h
-@@ -48,9 +48,9 @@ struct pt_regs;
-  * Per-cpu stacks for handling critical, debug and machine check
-  * level interrupts.
+ fs/timerfd.c             | 2 +-
+ kernel/time/alarmtimer.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/fs/timerfd.c b/fs/timerfd.c
+index d69ad801eb80..0fc01b241382 100644
+--- a/fs/timerfd.c
++++ b/fs/timerfd.c
+@@ -9,12 +9,12 @@
+  *
   */
--extern struct thread_info *critirq_ctx[NR_CPUS];
--extern struct thread_info *dbgirq_ctx[NR_CPUS];
--extern struct thread_info *mcheckirq_ctx[NR_CPUS];
-+extern void *critirq_ctx[NR_CPUS];
-+extern void *dbgirq_ctx[NR_CPUS];
-+extern void *mcheckirq_ctx[NR_CPUS];
- extern void exc_lvl_ctx_init(void);
- #else
- #define exc_lvl_ctx_init()
-@@ -59,8 +59,8 @@ extern void exc_lvl_ctx_init(void);
- /*
-  * Per-cpu stacks for handling hard and soft interrupts.
+ 
+-#include <linux/alarmtimer.h>
+ #include <linux/file.h>
+ #include <linux/poll.h>
+ #include <linux/init.h>
+ #include <linux/fs.h>
+ #include <linux/sched.h>
++#include <linux/alarmtimer.h>
+ #include <linux/kernel.h>
+ #include <linux/slab.h>
+ #include <linux/list.h>
+diff --git a/kernel/time/alarmtimer.c b/kernel/time/alarmtimer.c
+index fa5de5e8de61..5fb75c9b3f06 100644
+--- a/kernel/time/alarmtimer.c
++++ b/kernel/time/alarmtimer.c
+@@ -16,11 +16,11 @@
+  * published by the Free Software Foundation.
   */
--extern struct thread_info *hardirq_ctx[NR_CPUS];
--extern struct thread_info *softirq_ctx[NR_CPUS];
-+extern void *hardirq_ctx[NR_CPUS];
-+extern void *softirq_ctx[NR_CPUS];
- 
- extern void irq_ctx_init(void);
- extern void call_do_softirq(void *tp);
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index 31873614392f..834d0d701e19 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -332,8 +332,7 @@ struct thread_struct {
- #define ARCH_MIN_TASKALIGN 16
- 
- #define INIT_SP		(sizeof(init_stack) + (unsigned long) &init_stack)
--#define INIT_SP_LIMIT \
--	(_ALIGN_UP(sizeof(struct thread_info), 16) + (unsigned long) &init_stack)
-+#define INIT_SP_LIMIT	((unsigned long) &init_stack)
- 
- #ifdef CONFIG_SPE
- #define SPEFSCR_INIT \
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index b042d85325f5..ae7eda4ca09e 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -85,7 +85,6 @@ int main(void)
- 	DEFINE(NMI_MASK, NMI_MASK);
- 	OFFSET(TASKTHREADPPR, task_struct, thread.ppr);
- #else
--	DEFINE(THREAD_INFO_GAP, _ALIGN_UP(sizeof(struct thread_info), 16));
- 	OFFSET(KSP_LIMIT, thread_struct, ksp_limit);
- #endif /* CONFIG_PPC64 */
- 	OFFSET(TASK_STACK, task_struct, stack);
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index a14f9b5f2762..b45da00b01ef 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -97,14 +97,11 @@ crit_transfer_to_handler:
- 	mfspr	r0,SPRN_SRR1
- 	stw	r0,_SRR1(r11)
- 
--	/* set the stack limit to the current stack
--	 * and set the limit to protect the thread_info
--	 * struct
--	 */
-+	/* set the stack limit to the current stack */
- 	mfspr	r8,SPRN_SPRG_THREAD
- 	lwz	r0,KSP_LIMIT(r8)
- 	stw	r0,SAVED_KSP_LIMIT(r11)
--	rlwimi	r0,r1,0,0,(31-THREAD_SHIFT)
-+	rlwinm	r0,r1,0,0,(31 - THREAD_SHIFT)
- 	stw	r0,KSP_LIMIT(r8)
- 	/* fall through */
- #endif
-@@ -121,14 +118,11 @@ crit_transfer_to_handler:
- 	mfspr	r0,SPRN_SRR1
- 	stw	r0,crit_srr1@l(0)
- 
--	/* set the stack limit to the current stack
--	 * and set the limit to protect the thread_info
--	 * struct
--	 */
-+	/* set the stack limit to the current stack */
- 	mfspr	r8,SPRN_SPRG_THREAD
- 	lwz	r0,KSP_LIMIT(r8)
- 	stw	r0,saved_ksp_limit@l(0)
--	rlwimi	r0,r1,0,0,(31-THREAD_SHIFT)
-+	rlwinm	r0,r1,0,0,(31 - THREAD_SHIFT)
- 	stw	r0,KSP_LIMIT(r8)
- 	/* fall through */
- #endif
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 699f0f816687..00dbee440bc2 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -618,9 +618,8 @@ static inline void check_stack_overflow(void)
- 	sp = current_stack_pointer() & (THREAD_SIZE-1);
- 
- 	/* check for stack overflow: is there less than 2KB free? */
--	if (unlikely(sp < (sizeof(struct thread_info) + 2048))) {
--		pr_err("do_IRQ: stack overflow: %ld\n",
--			sp - sizeof(struct thread_info));
-+	if (unlikely(sp < 2048)) {
-+		pr_err("do_IRQ: stack overflow: %ld\n", sp);
- 		dump_stack();
- 	}
- #endif
-@@ -660,7 +659,7 @@ void __do_irq(struct pt_regs *regs)
- void do_IRQ(struct pt_regs *regs)
- {
- 	struct pt_regs *old_regs = set_irq_regs(regs);
--	struct thread_info *curtp, *irqtp, *sirqtp;
-+	void *curtp, *irqtp, *sirqtp;
- 
- 	/* Switch to the irq stack to handle this */
- 	curtp = (void*)(current_stack_pointer() & ~(THREAD_SIZE - 1));
-@@ -690,9 +689,9 @@ void __init init_IRQ(void)
- }
- 
- #if defined(CONFIG_BOOKE) || defined(CONFIG_40x)
--struct thread_info   *critirq_ctx[NR_CPUS] __read_mostly;
--struct thread_info    *dbgirq_ctx[NR_CPUS] __read_mostly;
--struct thread_info *mcheckirq_ctx[NR_CPUS] __read_mostly;
-+void   *critirq_ctx[NR_CPUS] __read_mostly;
-+void    *dbgirq_ctx[NR_CPUS] __read_mostly;
-+void *mcheckirq_ctx[NR_CPUS] __read_mostly;
- 
- void exc_lvl_ctx_init(void)
- {
-@@ -718,8 +717,8 @@ void exc_lvl_ctx_init(void)
- }
- #endif
- 
--struct thread_info *softirq_ctx[NR_CPUS] __read_mostly;
--struct thread_info *hardirq_ctx[NR_CPUS] __read_mostly;
-+void *softirq_ctx[NR_CPUS] __read_mostly;
-+void *hardirq_ctx[NR_CPUS] __read_mostly;
- 
- void irq_ctx_init(void)
- {
-@@ -733,7 +732,7 @@ void irq_ctx_init(void)
- 
- void do_softirq_own_stack(void)
- {
--	struct thread_info *irqtp;
-+	void *irqtp;
- 
- 	irqtp = softirq_ctx[smp_processor_id()];
- 	call_do_softirq(irqtp);
-diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
-index 24a7f18ea10c..d3ba56307eb4 100644
---- a/arch/powerpc/kernel/misc_32.S
-+++ b/arch/powerpc/kernel/misc_32.S
-@@ -46,11 +46,10 @@ _GLOBAL(call_do_softirq)
- 	mflr	r0
- 	stw	r0,4(r1)
- 	lwz	r10,THREAD+KSP_LIMIT(r2)
--	addi	r11,r3,THREAD_INFO_GAP
-+	stw	r3, THREAD+KSP_LIMIT(r2)
- 	stwu	r1,THREAD_SIZE-STACK_FRAME_OVERHEAD(r3)
- 	mr	r1,r3
- 	stw	r10,8(r1)
--	stw	r11,THREAD+KSP_LIMIT(r2)
- 	bl	__do_softirq
- 	lwz	r10,8(r1)
- 	lwz	r1,0(r1)
-@@ -66,11 +65,10 @@ _GLOBAL(call_do_irq)
- 	mflr	r0
- 	stw	r0,4(r1)
- 	lwz	r10,THREAD+KSP_LIMIT(r2)
--	addi	r11,r4,THREAD_INFO_GAP
-+	stw	r4, THREAD+KSP_LIMIT(r2)
- 	stwu	r1,THREAD_SIZE-STACK_FRAME_OVERHEAD(r4)
- 	mr	r1,r4
- 	stw	r10,8(r1)
--	stw	r11,THREAD+KSP_LIMIT(r2)
- 	bl	__do_irq
- 	lwz	r10,8(r1)
- 	lwz	r1,0(r1)
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 111abb4df2ec..1e01bf42dc82 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1691,8 +1691,7 @@ int copy_thread(unsigned long clone_flags, unsigned long usp,
- 	sp -= STACK_FRAME_OVERHEAD;
- 	p->thread.ksp = sp;
- #ifdef CONFIG_PPC32
--	p->thread.ksp_limit = (unsigned long)task_stack_page(p) +
--				_ALIGN_UP(sizeof(struct thread_info), 16);
-+	p->thread.ksp_limit = (unsigned long)task_stack_page(p);
- #endif
- #ifdef CONFIG_HAVE_HW_BREAKPOINT
- 	p->thread.ptrace_bps[0] = NULL;
-@@ -2001,13 +2000,11 @@ static inline int valid_irq_stack(unsigned long sp, struct task_struct *p,
- 	 */
- 	if (cpu < NR_CPUS && cpu_possible(cpu)) {
- 		stack_page = (unsigned long) hardirq_ctx[cpu];
--		if (sp >= stack_page + sizeof(struct thread_struct)
--		    && sp <= stack_page + THREAD_SIZE - nbytes)
-+		if (sp >= stack_page && sp <= stack_page + THREAD_SIZE - nbytes)
- 			return 1;
- 
- 		stack_page = (unsigned long) softirq_ctx[cpu];
--		if (sp >= stack_page + sizeof(struct thread_struct)
--		    && sp <= stack_page + THREAD_SIZE - nbytes)
-+		if (sp >= stack_page && sp <= stack_page + THREAD_SIZE - nbytes)
- 			return 1;
- 	}
- 	return 0;
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 2d682f3e31c6..6792e9c90689 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -717,22 +717,22 @@ void __init emergency_stack_init(void)
- 	limit = min(ppc64_bolted_size(), ppc64_rma_size);
- 
- 	for_each_possible_cpu(i) {
--		struct thread_info *ti;
-+		void *ti;
- 
- 		ti = alloc_stack(limit, i);
- 		memset(ti, 0, THREAD_SIZE);
--		paca_ptrs[i]->emergency_sp = (void *)ti + THREAD_SIZE;
-+		paca_ptrs[i]->emergency_sp = ti + THREAD_SIZE;
- 
- #ifdef CONFIG_PPC_BOOK3S_64
- 		/* emergency stack for NMI exception handling. */
- 		ti = alloc_stack(limit, i);
- 		memset(ti, 0, THREAD_SIZE);
--		paca_ptrs[i]->nmi_emergency_sp = (void *)ti + THREAD_SIZE;
-+		paca_ptrs[i]->nmi_emergency_sp = ti + THREAD_SIZE;
- 
- 		/* emergency stack for machine check exception handling. */
- 		ti = alloc_stack(limit, i);
- 		memset(ti, 0, THREAD_SIZE);
--		paca_ptrs[i]->mc_emergency_sp = (void *)ti + THREAD_SIZE;
-+		paca_ptrs[i]->mc_emergency_sp = ti + THREAD_SIZE;
- #endif
- 	}
- }
+ #include <linux/time.h>
+-#include <linux/hrtimer.h>
+ #include <linux/timerqueue.h>
+ #include <linux/rtc.h>
+ #include <linux/sched/signal.h>
+ #include <linux/sched/debug.h>
++#include <linux/hrtimer.h>
+ #include <linux/alarmtimer.h>
+ #include <linux/mutex.h>
+ #include <linux/platform_device.h>
 -- 
 2.13.3
