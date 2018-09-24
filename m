@@ -1,38 +1,37 @@
-Return-Path: <tyreld@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <arndbergmann@gmail.com>
+Received: from mail-qt1-f196.google.com (mail-qt1-f196.google.com
+ [209.85.160.196])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42JxBz1fwYzF3JS
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Sep 2018 06:49:14 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w8OKiZ8u017616
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Sep 2018 16:49:12 -0400
-Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2mq3usgr4q-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Sep 2018 16:49:12 -0400
-Received: from localhost
- by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Mon, 24 Sep 2018 16:49:11 -0400
-Subject: Re: [PATCH] powerpc/pseries: Disable CPU hotplug across migrations
-To: Nathan Fontenot <nfont@linux.vnet.ibm.com>, ego@linux.vnet.ibm.com,
- Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-References: <153721164232.32706.4283915467151746975.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
- <CAHZ_5WxcDxV5vrdW5Y1QaucXLL8Z4xskEbm+y4VFeNsj-38e7g@mail.gmail.com>
- <d0a4995c-949b-f6a4-889a-908e6f72036e@linux.vnet.ibm.com>
- <87va6v5qhx.fsf@concordia.ellerman.id.au> <20180924085606.GA16671@in.ibm.com>
- <b61828ef-b07f-93b1-6185-d4d62bd8fd77@linux.vnet.ibm.com>
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Date: Mon, 24 Sep 2018 13:49:06 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42JxRk4CM6zF3Fg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Sep 2018 07:00:18 +1000 (AEST)
+Received: by mail-qt1-f196.google.com with SMTP id e9-v6so10697538qtp.7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Sep 2018 14:00:18 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <b61828ef-b07f-93b1-6185-d4d62bd8fd77@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <89531902-477b-660a-227c-8563e4ca076a@linux.vnet.ibm.com>
+References: <1536913980-4811-1-git-send-email-firoz.khan@linaro.org>
+ <1536913980-4811-3-git-send-email-firoz.khan@linaro.org>
+ <CAK8P3a1PCnHy1JX4T21LjOr3ZGAVLdqxQaPYfLHAgM-9Y5yxVg@mail.gmail.com>
+ <CALxhOngVYQRwbcUg6c_3LcKAEoBwyN1B478LqRGmWEGL004--w@mail.gmail.com>
+In-Reply-To: <CALxhOngVYQRwbcUg6c_3LcKAEoBwyN1B478LqRGmWEGL004--w@mail.gmail.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Mon, 24 Sep 2018 22:59:59 +0200
+Message-ID: <CAK8P3a2hi-Ndh7X-9r3NhBUJXQBTBFsTU==GbHesy6YD9idCJA@mail.gmail.com>
+Subject: Re: [PATCH 2/3] powerpc: Add system call table generation support
+To: Firoz Khan <firoz.khan@linaro.org>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxram@us.ibm.com, leitao@debian.org,
+ Boqun Feng <boqun.feng@gmail.com>, gregkh <gregkh@linuxfoundation.org>,
+ Philippe Ombredanne <pombredanne@nexb.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Kate Stewart <kstewart@linuxfoundation.org>,
+ y2038 Mailman List <y2038@lists.linaro.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linux-arch <linux-arch@vger.kernel.org>,
+ Deepa Dinamani <deepa.kernel@gmail.com>,
+ Marcin Juszkiewicz <marcin.juszkiewicz@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,97 +41,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/24/2018 07:30 AM, Nathan Fontenot wrote:
-> On 09/24/2018 03:56 AM, Gautham R Shenoy wrote:
->> Hi Michael,
->>
->> On Mon, Sep 24, 2018 at 05:00:42PM +1000, Michael Ellerman wrote:
->>> Nathan Fontenot <nfont@linux.vnet.ibm.com> writes:
->>>> On 09/18/2018 05:32 AM, Gautham R Shenoy wrote:
->>>>> Hi Nathan,
->>>>> On Tue, Sep 18, 2018 at 1:05 AM Nathan Fontenot
->>>>> <nfont@linux.vnet.ibm.com> wrote:
->>>>>>
->>>>>> When performing partition migrations all present CPUs must be online
->>>>>> as all present CPUs must make the H_JOIN call as part of the migration
->>>>>> process. Once all present CPUs make the H_JOIN call, one CPU is returned
->>>>>> to make the rtas call to perform the migration to the destination system.
->>>>>>
->>>>>> During testing of migration and changing the SMT state we have found
->>>>>> instances where CPUs are offlined, as part of the SMT state change,
->>>>>> before they make the H_JOIN call. This results in a hung system where
->>>>>> every CPU is either in H_JOIN or offline.
->>>>>>
->>>>>> To prevent this this patch disables CPU hotplug during the migration
->>>>>> process.
->>>>>>
->>>>>> Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
->>>>>> ---
->>>>>>  arch/powerpc/kernel/rtas.c |    2 ++
->>>>>>  1 file changed, 2 insertions(+)
->>>>>>
->>>>>> diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
->>>>>> index 8afd146bc9c7..2c7ed31c736e 100644
->>>>>> --- a/arch/powerpc/kernel/rtas.c
->>>>>> +++ b/arch/powerpc/kernel/rtas.c
->>>>>> @@ -981,6 +981,7 @@ int rtas_ibm_suspend_me(u64 handle)
->>>>>>                 goto out;
->>>>>>         }
->>>>>>
->>>>>> +       cpu_hotplug_disable();
->>>>>
->>>>> So, some of the onlined CPUs ( via
->>>>> rtas_online_cpus_mask(offline_mask);) can go still offline,
->>>>> if the userspace issues an offline command, just before we execute
->>>>> cpu_hotplug_disable().
->>>>>
->>>>> So we are narrowing down the race, but it still exists. Am I missing something ?
->>>>
->>>> You're correct, this narrows the window in which a CPU can go offline.
->>>>
->>>> In testing with this patch we have not been able to re-create the failure but
->>>> there is still a small window.
->>>
->>> Well let's close it.
->>>
->>> We just need to check that all present CPUs are online after we've
->>> called cpu_hotplug_disable() don't we?
->>
->> Yes. However, we cannot use the cpu_up() API to bring the offline CPUs
->> online, since will return with an -EBUSY if CPU-Hotplug has been
->> disabled. _cpu_up() works, but it is (understandably) a static
->> function in kernel/cpu.c
->>
->> So, we might need a new APIs along the lines of
->> disable_nonboot_cpus()/enable_nonboot_cpus() 
->> that is currently being used by the suspend subsystem, only that we
->> would need the APIs to
->>       - Disable hotplug and online all the CPUs in an atomic
->>       fashion. Would be good if the API returns the cpumask of CPUs
->>       which were offline, which were brought online by this API.
->>
->>       - Restore the state of the machine by offlining the CPUs which
->>       we brought online, and enable hotplug again. 
->>       
-> 
-> There is already code in the LPM path that saves a cpu mask of the offline
-> cpus prior to bringing them all online so we can offline them again after
-> the migration.
-> 
-> The missing piece to fully close the window is an API that will allow us to
-> online cpus while cpu hotplug is disabled.
-> 
-> Since we have not been able to re-create the failure with this patch would
-> it be ok to pull in this patch while other options are explored?
+On Tue, Sep 18, 2018 at 2:15 PM Firoz Khan <firoz.khan@linaro.org> wrote:
+>
+> On 14 September 2018 at 15:31, Arnd Bergmann <arnd@arndb.de> wrote:
+> > On Fri, Sep 14, 2018 at 10:33 AM Firoz Khan <firoz.khan@linaro.org> wrote:
+> >
+> >> ---
+> >>  arch/powerpc/kernel/syscalls/Makefile       |  51 ++++
+> >>  arch/powerpc/kernel/syscalls/syscall_32.tbl | 378 ++++++++++++++++++++++++++++
+> >>  arch/powerpc/kernel/syscalls/syscall_64.tbl | 372 +++++++++++++++++++++++++++
+> >>  arch/powerpc/kernel/syscalls/syscallhdr.sh  |  37 +++
+> >>  arch/powerpc/kernel/syscalls/syscalltbl.sh  |  38 +++
+> >
+> > I think you should only need a single .tbl  input file here.
+>
+> Yes, we can do that way also.As I mentioned, it will add
+> more complexity in the script.
+>
+>  The script has to be smart enough to parse the
+> .tbl if we add more thing in the .tble file. It need more
+> logic in the scripts. This is not common. So if you keep
+> separate .tbl we can avoid this.
 
-I think mpe initially applied this to -next. Not sure if he dropped it, but I would definitely give a +1 to carrying this workaround for now until we can put together an API that fully closes the gap. We are hot with LPM blocked tests at the moment.
+But all three existing architectures (x86, s390 and arm) already
+have the capability to parse the table and generate different output
+from that.
 
--Tyrel
+> ABI flag is serving *nothing* in all other architecture including
+> SPARC.
 
-> 
-> -Nathan
-> 
->>>
->>> cheers
->>>
-> 
+If you don't use it in sparc, I think that's a bug, see e.g.
+
+#ifdef __32bit_syscall_numbers__
+#define __NR_setresuid32        108 /* Linux Specific, sigvec under
+SunOS          */
+#else
+#define __NR_setresuid          108 /* Linux Specific, sigvec under
+SunOS          */
+#endif
+
+> But as I told in the cover letter, I followed x86/arm/
+> s390 architecture's system table generation implementation.
+> They are keeping ABI flag. In our case we can delete this
+> flag completely from all architectures.
+>
+> Most of the architecture these 32/64 similarity is absent.
+> So it would be better keep separate files to maintain a
+> generic script across all architecture.
+
+There are a couple of architectures that definitely need it:
+ARM for oabi, x86 for x32, s390, parisc and sparc for compat,
+asm-generic for compat, powerpc for compat and spu,
+and arm64 if we want to share the arm32 syscall table
+for compat mode later.
+
+      Arnd
