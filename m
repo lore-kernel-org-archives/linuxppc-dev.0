@@ -1,17 +1,22 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42JXwC6zdLzDrTQ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Sep 2018 15:35:07 +1000 (AEST)
-Message-Id: <f49e2e4ff1eacbad161eb6c1645cca7a281dcf3e.1537765881.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc/traps: merge unrecoverable_exception() and
- nonrecoverable_exception()
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Mon, 24 Sep 2018 05:35:03 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42JZpy525HzDqSh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Sep 2018 17:00:42 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nathan Fontenot <nfont@linux.vnet.ibm.com>, ego@linux.vnet.ibm.com,
+ tyreld@linux.vnet.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/pseries: Disable CPU hotplug across migrations
+In-Reply-To: <d0a4995c-949b-f6a4-889a-908e6f72036e@linux.vnet.ibm.com>
+References: <153721164232.32706.4283915467151746975.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
+ <CAHZ_5WxcDxV5vrdW5Y1QaucXLL8Z4xskEbm+y4VFeNsj-38e7g@mail.gmail.com>
+ <d0a4995c-949b-f6a4-889a-908e6f72036e@linux.vnet.ibm.com>
+Date: Mon, 24 Sep 2018 17:00:42 +1000
+Message-ID: <87va6v5qhx.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,84 +26,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PPC32 uses nonrecoverable_exception() while PPC64 uses
-unrecoverable_exception().
+Nathan Fontenot <nfont@linux.vnet.ibm.com> writes:
+> On 09/18/2018 05:32 AM, Gautham R Shenoy wrote:
+>> Hi Nathan,
+>> On Tue, Sep 18, 2018 at 1:05 AM Nathan Fontenot
+>> <nfont@linux.vnet.ibm.com> wrote:
+>>>
+>>> When performing partition migrations all present CPUs must be online
+>>> as all present CPUs must make the H_JOIN call as part of the migration
+>>> process. Once all present CPUs make the H_JOIN call, one CPU is returned
+>>> to make the rtas call to perform the migration to the destination system.
+>>>
+>>> During testing of migration and changing the SMT state we have found
+>>> instances where CPUs are offlined, as part of the SMT state change,
+>>> before they make the H_JOIN call. This results in a hung system where
+>>> every CPU is either in H_JOIN or offline.
+>>>
+>>> To prevent this this patch disables CPU hotplug during the migration
+>>> process.
+>>>
+>>> Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+>>> ---
+>>>  arch/powerpc/kernel/rtas.c |    2 ++
+>>>  1 file changed, 2 insertions(+)
+>>>
+>>> diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+>>> index 8afd146bc9c7..2c7ed31c736e 100644
+>>> --- a/arch/powerpc/kernel/rtas.c
+>>> +++ b/arch/powerpc/kernel/rtas.c
+>>> @@ -981,6 +981,7 @@ int rtas_ibm_suspend_me(u64 handle)
+>>>                 goto out;
+>>>         }
+>>>
+>>> +       cpu_hotplug_disable();
+>> 
+>> So, some of the onlined CPUs ( via
+>> rtas_online_cpus_mask(offline_mask);) can go still offline,
+>> if the userspace issues an offline command, just before we execute
+>> cpu_hotplug_disable().
+>> 
+>> So we are narrowing down the race, but it still exists. Am I missing something ?
+>
+> You're correct, this narrows the window in which a CPU can go offline.
+>
+> In testing with this patch we have not been able to re-create the failure but
+> there is still a small window.
 
-Both functions are doing almost the same thing.
+Well let's close it.
 
-This patch removes nonrecoverable_exception()
+We just need to check that all present CPUs are online after we've
+called cpu_hotplug_disable() don't we?
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/include/asm/asm-prototypes.h |  1 -
- arch/powerpc/kernel/entry_32.S            |  4 ++--
- arch/powerpc/kernel/traps.c               | 13 +++----------
- 3 files changed, 5 insertions(+), 13 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/asm-prototypes.h b/arch/powerpc/include/asm/asm-prototypes.h
-index 78ed3c3f879a..2741831482f4 100644
---- a/arch/powerpc/include/asm/asm-prototypes.h
-+++ b/arch/powerpc/include/asm/asm-prototypes.h
-@@ -63,7 +63,6 @@ void program_check_exception(struct pt_regs *regs);
- void alignment_exception(struct pt_regs *regs);
- void slb_miss_bad_addr(struct pt_regs *regs);
- void StackOverflow(struct pt_regs *regs);
--void nonrecoverable_exception(struct pt_regs *regs);
- void kernel_fp_unavailable_exception(struct pt_regs *regs);
- void altivec_unavailable_exception(struct pt_regs *regs);
- void vsx_unavailable_exception(struct pt_regs *regs);
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index e58c3f467db5..77decded1175 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -794,7 +794,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_601)
- 	lis	r10,MSR_KERNEL@h
- 	ori	r10,r10,MSR_KERNEL@l
- 	bl	transfer_to_handler_full
--	.long	nonrecoverable_exception
-+	.long	unrecoverable_exception
- 	.long	ret_from_except
- #endif
- 
-@@ -1297,7 +1297,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_601)
- 	rlwinm	r3,r3,0,0,30
- 	stw	r3,_TRAP(r1)
- 4:	addi	r3,r1,STACK_FRAME_OVERHEAD
--	bl	nonrecoverable_exception
-+	bl	unrecoverable_exception
- 	/* shouldn't return */
- 	b	4b
- 
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 6ab66a88db14..4567eeb6524e 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -1547,14 +1547,6 @@ void StackOverflow(struct pt_regs *regs)
- 	panic("kernel stack overflow");
- }
- 
--void nonrecoverable_exception(struct pt_regs *regs)
--{
--	printk(KERN_ERR "Non-recoverable exception at PC=%lx MSR=%lx\n",
--	       regs->nip, regs->msr);
--	debugger(regs);
--	die("nonrecoverable exception", regs, SIGKILL);
--}
--
- void kernel_fp_unavailable_exception(struct pt_regs *regs)
- {
- 	enum ctx_state prev_state = exception_enter();
-@@ -2090,8 +2082,9 @@ void SPEFloatingPointRoundException(struct pt_regs *regs)
-  */
- void unrecoverable_exception(struct pt_regs *regs)
- {
--	printk(KERN_EMERG "Unrecoverable exception %lx at %lx\n",
--	       regs->trap, regs->nip);
-+	pr_emerg("Unrecoverable exception %lx at %lx (msr=%lx)\n",
-+		 regs->trap, regs->nip, regs->msr);
-+	debugger(regs);
- 	die("Unrecoverable exception", regs, SIGABRT);
- }
- NOKPROBE_SYMBOL(unrecoverable_exception);
--- 
-2.13.3
+cheers
