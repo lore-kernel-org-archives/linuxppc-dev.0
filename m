@@ -1,36 +1,49 @@
 Return-Path: <arndbergmann@gmail.com>
-Received: from mail-qt1-f196.google.com (mail-qt1-f196.google.com
- [209.85.160.196])
+Received: from mail-qt1-f194.google.com (mail-qt1-f194.google.com
+ [209.85.160.194])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42JxRk4CM6zF3Fg
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Sep 2018 07:00:18 +1000 (AEST)
-Received: by mail-qt1-f196.google.com with SMTP id e9-v6so10697538qtp.7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Sep 2018 14:00:18 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42JxqM4fTBzF3DQ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Sep 2018 07:17:19 +1000 (AEST)
+Received: by mail-qt1-f194.google.com with SMTP id h22-v6so3173059qtr.13
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Sep 2018 14:17:19 -0700 (PDT)
 MIME-Version: 1.0
-References: <1536913980-4811-1-git-send-email-firoz.khan@linaro.org>
- <1536913980-4811-3-git-send-email-firoz.khan@linaro.org>
- <CAK8P3a1PCnHy1JX4T21LjOr3ZGAVLdqxQaPYfLHAgM-9Y5yxVg@mail.gmail.com>
- <CALxhOngVYQRwbcUg6c_3LcKAEoBwyN1B478LqRGmWEGL004--w@mail.gmail.com>
-In-Reply-To: <CALxhOngVYQRwbcUg6c_3LcKAEoBwyN1B478LqRGmWEGL004--w@mail.gmail.com>
+References: <20180912150142.157913-1-arnd@arndb.de>
+ <20180912151134.436719-1-arnd@arndb.de>
+ <20180914203506.GE35251@wrath> <20180914205748.GC19965@ZenIV.linux.org.uk>
+ <20180918175108.GF35251@wrath> <20180918175952.GJ11367@ziepe.ca>
+ <CAK8P3a17GY89in7PeLk1F2T-0Xq=sCrwwntM+Y4BCpXheUC+qQ@mail.gmail.com>
+ <20180924203505.GC6008@ziepe.ca>
+In-Reply-To: <20180924203505.GC6008@ziepe.ca>
 From: Arnd Bergmann <arnd@arndb.de>
-Date: Mon, 24 Sep 2018 22:59:59 +0200
-Message-ID: <CAK8P3a2hi-Ndh7X-9r3NhBUJXQBTBFsTU==GbHesy6YD9idCJA@mail.gmail.com>
-Subject: Re: [PATCH 2/3] powerpc: Add system call table generation support
-To: Firoz Khan <firoz.khan@linaro.org>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxram@us.ibm.com, leitao@debian.org,
- Boqun Feng <boqun.feng@gmail.com>, gregkh <gregkh@linuxfoundation.org>,
- Philippe Ombredanne <pombredanne@nexb.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- Kate Stewart <kstewart@linuxfoundation.org>,
- y2038 Mailman List <y2038@lists.linaro.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linux-arch <linux-arch@vger.kernel.org>,
- Deepa Dinamani <deepa.kernel@gmail.com>,
- Marcin Juszkiewicz <marcin.juszkiewicz@linaro.org>
+Date: Mon, 24 Sep 2018 23:17:01 +0200
+Message-ID: <CAK8P3a1Bh9NnncbcT0X4fKWC7B0FnqYyEMUwB6MvmzaNO7VhFQ@mail.gmail.com>
+Subject: Re: [PATCH v2 05/17] compat_ioctl: move more drivers to
+ generic_compat_ioctl_ptrarg
+To: Jason Gunthorpe <jgg@ziepe.ca>
+Cc: Darren Hart <dvhart@infradead.org>, Al Viro <viro@zeniv.linux.org.uk>,
+ Linux FS-devel Mailing List <linux-fsdevel@vger.kernel.org>,
+ gregkh <gregkh@linuxfoundation.org>,
+ David Miller <davem@davemloft.net>, driverdevel <devel@driverdev.osuosl.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, qat-linux@intel.com,
+ "open list:HARDWARE RANDOM NUMBER GENERATOR CORE"
+ <linux-crypto@vger.kernel.org>,
+ Linux Media Mailing List <linux-media@vger.kernel.org>,
+ dri-devel <dri-devel@lists.freedesktop.org>,
+ linaro-mm-sig@lists.linaro.org, amd-gfx@lists.freedesktop.org,
+ "open list:HID CORE LAYER" <linux-input@vger.kernel.org>,
+ linux-iio@vger.kernel.org,
+ linux-rdma <linux-rdma@vger.kernel.org>, linux-nvdimm@lists.01.org,
+ linux-nvme@lists.infradead.org, linux-pci <linux-pci@vger.kernel.org>,
+ Platform Driver <platform-driver-x86@vger.kernel.org>,
+ linux-remoteproc@vger.kernel.org, sparclinux <sparclinux@vger.kernel.org>,
+ linux-scsi <linux-scsi@vger.kernel.org>,
+ USB list <linux-usb@vger.kernel.org>, linux-fbdev@vger.kernel.org,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-btrfs <linux-btrfs@vger.kernel.org>,
+ ceph-devel <ceph-devel@vger.kernel.org>,
+ linux-wireless <linux-wireless@vger.kernel.org>,
+ Networking <netdev@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -41,58 +54,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Sep 18, 2018 at 2:15 PM Firoz Khan <firoz.khan@linaro.org> wrote:
+On Mon, Sep 24, 2018 at 10:35 PM Jason Gunthorpe <jgg@ziepe.ca> wrote:
+> On Mon, Sep 24, 2018 at 10:18:52PM +0200, Arnd Bergmann wrote:
+> > On Tue, Sep 18, 2018 at 7:59 PM Jason Gunthorpe <jgg@ziepe.ca> wrote:
+> > > On Tue, Sep 18, 2018 at 10:51:08AM -0700, Darren Hart wrote:
+> > > > On Fri, Sep 14, 2018 at 09:57:48PM +0100, Al Viro wrote:
+> > > > > On Fri, Sep 14, 2018 at 01:35:06PM -0700, Darren Hart wrote:
+> > We already do this inside of some subsystems, notably drivers/media/,
+> > and it simplifies the implementation of the ioctl handler function
+> > significantly. We obviously cannot do this in general, both because of
+> > traditional drivers that have 16-bit command codes (drivers/tty and others)
+> > and also because of drivers that by accident defined the commands
+> > incorrectly and use the wrong type or the wrong direction in the
+> > definition.
 >
-> On 14 September 2018 at 15:31, Arnd Bergmann <arnd@arndb.de> wrote:
-> > On Fri, Sep 14, 2018 at 10:33 AM Firoz Khan <firoz.khan@linaro.org> wrote:
-> >
-> >> ---
-> >>  arch/powerpc/kernel/syscalls/Makefile       |  51 ++++
-> >>  arch/powerpc/kernel/syscalls/syscall_32.tbl | 378 ++++++++++++++++++++++++++++
-> >>  arch/powerpc/kernel/syscalls/syscall_64.tbl | 372 +++++++++++++++++++++++++++
-> >>  arch/powerpc/kernel/syscalls/syscallhdr.sh  |  37 +++
-> >>  arch/powerpc/kernel/syscalls/syscalltbl.sh  |  38 +++
-> >
-> > I think you should only need a single .tbl  input file here.
+> That could work well, but the first idea could be done globally and
+> mechanically, while this would require very careful per-driver
+> investigation.
 >
-> Yes, we can do that way also.As I mentioned, it will add
-> more complexity in the script.
+> Particularly if the core code has worse performance.. ie due to
+> kmalloc calls or something.
 >
->  The script has to be smart enough to parse the
-> .tbl if we add more thing in the .tble file. It need more
-> logic in the scripts. This is not common. So if you keep
-> separate .tbl we can avoid this.
+> I think it would make more sense to start by having the core do the
+> case to __user and then add another entry point to have the core do
+> the copy_from_user, and so on.
 
-But all three existing architectures (x86, s390 and arm) already
-have the capability to parse the table and generate different output
-from that.
+Having six separate callback pointers to implement a single
+system call seems a bit excessive though.
 
-> ABI flag is serving *nothing* in all other architecture including
-> SPARC.
-
-If you don't use it in sparc, I think that's a bug, see e.g.
-
-#ifdef __32bit_syscall_numbers__
-#define __NR_setresuid32        108 /* Linux Specific, sigvec under
-SunOS          */
-#else
-#define __NR_setresuid          108 /* Linux Specific, sigvec under
-SunOS          */
-#endif
-
-> But as I told in the cover letter, I followed x86/arm/
-> s390 architecture's system table generation implementation.
-> They are keeping ABI flag. In our case we can delete this
-> flag completely from all architectures.
->
-> Most of the architecture these 32/64 similarity is absent.
-> So it would be better keep separate files to maintain a
-> generic script across all architecture.
-
-There are a couple of architectures that definitely need it:
-ARM for oabi, x86 for x32, s390, parisc and sparc for compat,
-asm-generic for compat, powerpc for compat and spu,
-and arm64 if we want to share the arm32 syscall table
-for compat mode later.
-
-      Arnd
+        Arnd
