@@ -2,33 +2,24 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42K2WQ5vP7zDqD5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Sep 2018 10:48:50 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42K37b1yn1zF3Dv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Sep 2018 11:16:43 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Arnd Bergmann <arnd@arndb.de>, Firoz Khan <firoz.khan@linaro.org>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxram@us.ibm.com, leitao@debian.org,
- Boqun Feng <boqun.feng@gmail.com>, gregkh <gregkh@linuxfoundation.org>,
- Philippe Ombredanne <pombredanne@nexb.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- Kate Stewart <kstewart@linuxfoundation.org>,
- y2038 Mailman List <y2038@lists.linaro.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linux-arch <linux-arch@vger.kernel.org>,
- Deepa Dinamani <deepa.kernel@gmail.com>,
- Marcin Juszkiewicz <marcin.juszkiewicz@linaro.org>
-Subject: Re: [PATCH 2/3] powerpc: Add system call table generation support
-In-Reply-To: <CAK8P3a2hi-Ndh7X-9r3NhBUJXQBTBFsTU==GbHesy6YD9idCJA@mail.gmail.com>
-References: <1536913980-4811-1-git-send-email-firoz.khan@linaro.org>
- <1536913980-4811-3-git-send-email-firoz.khan@linaro.org>
- <CAK8P3a1PCnHy1JX4T21LjOr3ZGAVLdqxQaPYfLHAgM-9Y5yxVg@mail.gmail.com>
- <CALxhOngVYQRwbcUg6c_3LcKAEoBwyN1B478LqRGmWEGL004--w@mail.gmail.com>
- <CAK8P3a2hi-Ndh7X-9r3NhBUJXQBTBFsTU==GbHesy6YD9idCJA@mail.gmail.com>
-Date: Tue, 25 Sep 2018 10:48:49 +1000
-Message-ID: <87efdi5rm6.fsf@concordia.ellerman.id.au>
+To: Christophe LEROY <christophe.leroy@c-s.fr>, linuxppc-dev@lists.ozlabs.org,
+ linux-kbuild@vger.kernel.org, Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Michal Marek <michal.lkml@markovi.net>,
+ Segher Boessenkool <segher@kernel.crashing.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: How to define some additional KBUILD_CFLAGS after building
+ include/generated/asm-offsets.h ?
+In-Reply-To: <56227965-464a-d972-1c25-d6a4d190e1a1@c-s.fr>
+References: <e1b65467-7497-5db4-aa93-1ad00d12af3f@c-s.fr>
+ <87mus75c5m.fsf@concordia.ellerman.id.au>
+ <56227965-464a-d972-1c25-d6a4d190e1a1@c-s.fr>
+Date: Tue, 25 Sep 2018 11:16:39 +1000
+Message-ID: <87bm8m5qbs.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,36 +29,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Arnd Bergmann <arnd@arndb.de> writes:
-> On Tue, Sep 18, 2018 at 2:15 PM Firoz Khan <firoz.khan@linaro.org> wrote:
->> On 14 September 2018 at 15:31, Arnd Bergmann <arnd@arndb.de> wrote:
->> > On Fri, Sep 14, 2018 at 10:33 AM Firoz Khan <firoz.khan@linaro.org> wrote:
->> >
->> >> ---
->> >>  arch/powerpc/kernel/syscalls/Makefile       |  51 ++++
->> >>  arch/powerpc/kernel/syscalls/syscall_32.tbl | 378 ++++++++++++++++++++++++++++
->> >>  arch/powerpc/kernel/syscalls/syscall_64.tbl | 372 +++++++++++++++++++++++++++
->> >>  arch/powerpc/kernel/syscalls/syscallhdr.sh  |  37 +++
->> >>  arch/powerpc/kernel/syscalls/syscalltbl.sh  |  38 +++
->> >
->> > I think you should only need a single .tbl  input file here.
->>
->> Yes, we can do that way also.As I mentioned, it will add
->> more complexity in the script.
->>
->>  The script has to be smart enough to parse the
->> .tbl if we add more thing in the .tble file. It need more
->> logic in the scripts. This is not common. So if you keep
->> separate .tbl we can avoid this.
+Christophe LEROY <christophe.leroy@c-s.fr> writes:
+
+> Le 24/09/2018 =C3=A0 14:10, Michael Ellerman a =C3=A9crit=C2=A0:
+>> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+>>=20
+>>> I'm trying to implement TLS based stack protector in the Linux Kernel.
+>>> For that I need to give to GCC the offset at which it will find the
+>>> canary (register r2 is pointing to the current task struct).
+>>>
+>>> I have been able to do it with the below patch, but it only works when
+>>> include/generated/asm-offsets.h already exists from the start of the bu=
+ild.
+>>>
+>>> Is there a way to evaluate CANARY_OFFSET and add the stack-protector
+>>> flags to KBUILD_FLAGS only after include/generated/asm-offsets.h is bui=
+lt ?
+>>>
+>>> Or another way of add -mstack-protector-guard-offset=3Doffsetof(struct
+>>> task_struct, stack_canary) ?
+>>=20
+>> This seems to work, at least I see the value in CFLAGS:
+>>=20
+>> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+>> index 07d9dce..39ee113 100644
+>> --- a/arch/powerpc/Makefile
+>> +++ b/arch/powerpc/Makefile
+>> @@ -404,6 +394,11 @@ archclean:
+>>=20=20=20
+>>   archprepare: checkbin
+>>=20=20=20
+>> +prepare: stack_protector_prepare
+>> +
+>> +stack_protector_prepare: prepare0
+>> +	$(eval KBUILD_CFLAGS +=3D -mstack-protector-guard-offset=3D$(shell awk=
+ '{if ($$2 =3D=3D "TSK_STACK_CANARY") print $$3;}' include/generated/asm-of=
+fsets.h))
+>> +
 >
-> But all three existing architectures (x86, s390 and arm) already
-> have the capability to parse the table and generate different output
-> from that.
+> Great, it works !
+> Thanks, I have sent v3 of the patches.
 
-Yeah, we want that on powerpc too.
+Cool.
 
-If the script needs to be more complex that's fine, if it can't be
-shared across arches that's fine, the main thing for me is that wiring
-up a syscall can be done by adding a single line in a single file.
+It would be good to here from someone who knows Kbuild better than me if
+this is acceptable or just a gross hack :)
 
 cheers
