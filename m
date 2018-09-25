@@ -1,27 +1,30 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <srs0=ugol=mh=emerson.com=sachin.gosavi@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42KB9L3W0czDqYd
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Sep 2018 16:33:42 +1000 (AEST)
-Subject: Re: [RFC PATCH v1 1/9] timer: fix circular header dependency
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- aneesh.kumar@linux.vnet.ibm.com, npiggin@gmail.com,
- Thomas Gleixner <tglx@linutronix.de>,
- Alexander Viro <viro@zeniv.linux.org.uk>,
- John Stultz <john.stultz@linaro.org>, Stephen Boyd <sboyd@kernel.org>
-Cc: linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-References: <cover.1537802981.git.christophe.leroy@c-s.fr>
- <72d3e8c38f729dc22cb3235319b72f96190e01ee.1537802981.git.christophe.leroy@c-s.fr>
- <5c9530da-f5c8-e0b2-61ab-294a0da7f3fc@c-s.fr>
-Message-ID: <9bff645b-4e00-ab0f-288a-a17f1e45ecdd@c-s.fr>
-Date: Tue, 25 Sep 2018 08:33:35 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42KBq15wzJzF0RH
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Sep 2018 17:02:53 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 42KBq15Gn0z8t7b
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Sep 2018 17:02:53 +1000 (AEST)
+Received: from n7.nabble.com (n7.nabble.com [162.253.133.57])
+ by ozlabs.org (Postfix) with ESMTP id 42KBq11Jfwz9sB5
+ for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2018 17:02:51 +1000 (AEST)
+Received: from n7.nabble.com (localhost [127.0.0.1])
+ by n7.nabble.com (Postfix) with ESMTP id D8155712DB0F
+ for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2018 00:02:49 -0700 (MST)
+Date: Tue, 25 Sep 2018 00:02:49 -0700 (MST)
+From: sgosavi1 <Sachin.Gosavi@emerson.com>
+To: linuxppc-dev@ozlabs.org
+Message-ID: <1537858969882-0.post@n7.nabble.com>
+In-Reply-To: <1535599586827-0.post@n7.nabble.com>
+References: <1535541276673-0.post@n7.nabble.com>
+ <8ca7e76b239a14e322f00cd1a0eac141472ab2bd.camel@buserror.net>
+ <1535599586827-0.post@n7.nabble.com>
+Subject: Re: Not able to boot cuImage for the target board with MPC8270
+ processor
 MIME-Version: 1.0
-In-Reply-To: <5c9530da-f5c8-e0b2-61ab-294a0da7f3fc@c-s.fr>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,132 +34,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi All,
+
+I debugged the bootwrapper code by printing messages in RAM using memcpy.
+The bootwrapper code appears to be executing correctly. I ensured that the
+"serial_console_init" function has executed successfully. But I am still not
+able to get any of the "printf" output in the wrapper code on the serial
+console. 
+
+Can anybody suggests what else I need to look at?
+
+Thanks,
+Sachin
 
 
-Le 25/09/2018 à 07:34, Christophe LEROY a écrit :
-> 
-> 
-> Le 24/09/2018 à 17:52, Christophe Leroy a écrit :
->> When switching powerpc to CONFIG_THREAD_INFO_IN_TASK, include/sched.h
->> has to be included in asm/smp.h for the following change, in order
->> to avoid uncomplete definition of task_struct:
->>
->> -#define raw_smp_processor_id() (current_thread_info()->cpu)
->> +#define raw_smp_processor_id() (current->cpu)
->>
->> But this generates the following compilation error, due to circular
->> header dependency.
->>
->>    CC      kernel/time/alarmtimer.o
->> In file included from ./arch/powerpc/include/asm/smp.h:31,
->>                   from ./include/linux/smp.h:64,
->>                   from ./include/linux/percpu.h:7,
->>                   from ./include/linux/hrtimer.h:22,
->>                   from kernel/time/alarmtimer.c:19:
->> ./include/linux/sched.h:558:19: error: field 'dl_timer' has incomplete 
->> type
->>    struct hrtimer   dl_timer;
->>                     ^~~~~~~~
->> ./include/linux/sched.h:567:17: error: field 'inactive_timer' has 
->> incomplete type
->>    struct hrtimer inactive_timer;
->>                   ^~~~~~~~~~~~~~
->> make[1]: *** [kernel/time/alarmtimer.o] Error 1
->> make: *** [kernel/time/alarmtimer.o] Error 2
->>
->>    CC      fs/timerfd.o
->> In file included from ./arch/powerpc/include/asm/smp.h:31,
->>                   from ./include/linux/smp.h:64,
->>                   from ./include/linux/percpu.h:7,
->>                   from ./include/linux/hrtimer.h:22,
->>                   from ./include/linux/alarmtimer.h:6,
->>                   from fs/timerfd.c:12:
->> ./include/linux/sched.h:558:19: error: field 'dl_timer' has incomplete 
->> type
->>    struct hrtimer   dl_timer;
->>                     ^~~~~~~~
->> ./include/linux/sched.h:567:17: error: field 'inactive_timer' has 
->> incomplete type
->>    struct hrtimer inactive_timer;
->>                   ^~~~~~~~~~~~~~
->> make[1]: *** [fs/timerfd.o] Error 1
->> make: *** [fs/timerfd.o] Error 2
->>
->> This patch fixes it by including linux/hrtimer.h after linux/sched.h
->>
->> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->> ---
->>   Should it be fixed in powerpc instead ? In that case, how ? Any idea ?
-> 
-> 
-> Looks like there are several other places where the problem occurs, so 
-> it has to be fixed in the powerpc headers instead.
-> 
-> Seems like RISC arch faced the same issue, and fixed it the following way:
-> 
-> /*
->   * This is particularly ugly: it appears we can't actually get the 
-> definition
->   * of task_struct here, but we need access to the CPU this task is 
-> running on.
->   * Instead of using C we're using asm-offsets.h to get the current 
-> processor
->   * ID.
->   */
-> #define raw_smp_processor_id() (*((int*)((char*)get_current() + 
-> TASK_TI_CPU)))
-> 
-> 
-> Unless someone has a better idea, I'll fixed it that way.
 
-
-Not easy. I'm stuck at the moment, because asm-offsets.h redefines a lot 
-of things with the same name as in C, so when including asm-offsets.h in 
-C it conflicts. Argh !. Need to fix all those duplicates ?
-
-Christophe
-
-> 
-> Christophe
-> 
-> 
->>
->>   fs/timerfd.c             | 2 +-
->>   kernel/time/alarmtimer.c | 2 +-
->>   2 files changed, 2 insertions(+), 2 deletions(-)
->>
->> diff --git a/fs/timerfd.c b/fs/timerfd.c
->> index d69ad801eb80..0fc01b241382 100644
->> --- a/fs/timerfd.c
->> +++ b/fs/timerfd.c
->> @@ -9,12 +9,12 @@
->>    *
->>    */
->> -#include <linux/alarmtimer.h>
->>   #include <linux/file.h>
->>   #include <linux/poll.h>
->>   #include <linux/init.h>
->>   #include <linux/fs.h>
->>   #include <linux/sched.h>
->> +#include <linux/alarmtimer.h>
->>   #include <linux/kernel.h>
->>   #include <linux/slab.h>
->>   #include <linux/list.h>
->> diff --git a/kernel/time/alarmtimer.c b/kernel/time/alarmtimer.c
->> index fa5de5e8de61..5fb75c9b3f06 100644
->> --- a/kernel/time/alarmtimer.c
->> +++ b/kernel/time/alarmtimer.c
->> @@ -16,11 +16,11 @@
->>    * published by the Free Software Foundation.
->>    */
->>   #include <linux/time.h>
->> -#include <linux/hrtimer.h>
->>   #include <linux/timerqueue.h>
->>   #include <linux/rtc.h>
->>   #include <linux/sched/signal.h>
->>   #include <linux/sched/debug.h>
->> +#include <linux/hrtimer.h>
->>   #include <linux/alarmtimer.h>
->>   #include <linux/mutex.h>
->>   #include <linux/platform_device.h>
->>
+--
+Sent from: http://linuxppc.10917.n7.nabble.com/linuxppc-dev-f3.html
