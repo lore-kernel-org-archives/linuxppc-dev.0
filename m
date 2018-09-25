@@ -2,19 +2,19 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42KRsh1dlvzF3F9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2018 02:51:04 +1000 (AEST)
-Message-Id: <d8ae44c7f24d0f7f44ac5e7868240aa7f70638a1.1537892499.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42KRsk1yC9zF13P
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2018 02:51:06 +1000 (AEST)
+Message-Id: <d6acec4c128db91426dee61c1374860560b4bc09.1537892499.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1537892498.git.christophe.leroy@c-s.fr>
 References: <cover.1537892498.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v5 11/22] powerpc/mm: don't use pte_alloc_one_kernel() before
- slab is available
+Subject: [PATCH v5 12/22] powerpc/mm: inline pte_alloc_one() and
+ pte_alloc_one_kernel() in PPC32
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  aneesh.kumar@linux.vnet.ibm.com
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 25 Sep 2018 16:51:00 +0000 (UTC)
+Date: Tue, 25 Sep 2018 16:51:02 +0000 (UTC)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,128 +24,114 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In the same way as PPC64, let's handle pte allocation directly
-in kernel_map_page() when slab is not available.
-
-The new function early_pte_alloc_kernel() is put in as inline in
-platforms pgalloc.h, this will allow to have different ones later.
-It is not an issue because early_pte_alloc_kernel() is called only
-once from map_kernel_page() and is inlined anyway.
+As in PPC64, inline pte_alloc_one() and pte_alloc_one_kernel()
+in PPC32. This will allow to switch nohash/32 to pte_fragment
+without impacting hash/32.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/book3s/32/pgalloc.h | 15 +++++++++++++++
- arch/powerpc/include/asm/nohash/32/pgalloc.h | 15 +++++++++++++++
- arch/powerpc/mm/pgtable_32.c                 | 20 +++++++-------------
- 3 files changed, 37 insertions(+), 13 deletions(-)
+ arch/powerpc/include/asm/book3s/32/pgalloc.h | 22 ++++++++++++++++++++--
+ arch/powerpc/include/asm/nohash/32/pgalloc.h | 22 ++++++++++++++++++++--
+ arch/powerpc/mm/pgtable_32.c                 | 21 ---------------------
+ 3 files changed, 40 insertions(+), 25 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/book3s/32/pgalloc.h b/arch/powerpc/include/asm/book3s/32/pgalloc.h
-index 96138ab3ddd6..4ddc7df20381 100644
+index 4ddc7df20381..a4cf0de10931 100644
 --- a/arch/powerpc/include/asm/book3s/32/pgalloc.h
 +++ b/arch/powerpc/include/asm/book3s/32/pgalloc.h
-@@ -4,6 +4,7 @@
+@@ -80,8 +80,26 @@ static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmdp,
+ #define pmd_pgtable(pmd) pmd_page(pmd)
+ #endif
  
- #include <linux/threads.h>
- #include <linux/slab.h>
-+#include <linux/memblock.h>
- 
- /*
-  * Functions that deal with pagetables that could be at any level of
-@@ -137,4 +138,18 @@ static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
- {
- 	pgtable_free_tlb(tlb, page_address(table), 0);
- }
-+
-+static inline pte_t *early_pte_alloc_kernel(pmd_t *pmdp, unsigned long va)
+-extern pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long addr);
+-extern pgtable_t pte_alloc_one(struct mm_struct *mm, unsigned long addr);
++static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long address)
 +{
-+	if (!pmd_present(*pmdp)) {
-+		pte_t *ptep = __va(memblock_alloc(PAGE_SIZE, PAGE_SIZE));
-+
-+		if (!ptep)
-+			return NULL;
-+
-+		clear_page(ptep);
-+		pmd_populate_kernel(&init_mm, pmdp, ptep);
-+	}
-+	return pte_offset_kernel(pmdp, va);
++	return (pte_t *)__get_free_page(GFP_KERNEL | __GFP_ZERO);
 +}
- #endif /* _ASM_POWERPC_BOOK3S_32_PGALLOC_H */
++
++static inline pgtable_t pte_alloc_one(struct mm_struct *mm, unsigned long address)
++{
++	struct page *ptepage;
++
++	gfp_t flags = GFP_KERNEL | __GFP_ZERO | __GFP_ACCOUNT;
++
++	ptepage = alloc_pages(flags, 0);
++	if (!ptepage)
++		return NULL;
++	if (!pgtable_page_ctor(ptepage)) {
++		__free_page(ptepage);
++		return NULL;
++	}
++	return ptepage;
++}
+ 
+ static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
+ {
 diff --git a/arch/powerpc/include/asm/nohash/32/pgalloc.h b/arch/powerpc/include/asm/nohash/32/pgalloc.h
-index 6fbbb90043c0..da8fdfc76418 100644
+index da8fdfc76418..78367855a4f3 100644
 --- a/arch/powerpc/include/asm/nohash/32/pgalloc.h
 +++ b/arch/powerpc/include/asm/nohash/32/pgalloc.h
-@@ -4,6 +4,7 @@
+@@ -81,8 +81,26 @@ static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmdp,
+ #define pmd_pgtable(pmd) pmd_page(pmd)
+ #endif
  
- #include <linux/threads.h>
- #include <linux/slab.h>
-+#include <linux/memblock.h>
- 
- /*
-  * Functions that deal with pagetables that could be at any level of
-@@ -139,4 +140,18 @@ static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
- 	tlb_flush_pgtable(tlb, address);
- 	pgtable_free_tlb(tlb, page_address(table), 0);
- }
-+
-+static inline pte_t *early_pte_alloc_kernel(pmd_t *pmdp, unsigned long va)
+-extern pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long addr);
+-extern pgtable_t pte_alloc_one(struct mm_struct *mm, unsigned long addr);
++static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long address)
 +{
-+	if (!pmd_present(*pmdp)) {
-+		pte_t *ptep = __va(memblock_alloc(PAGE_SIZE, PAGE_SIZE));
-+
-+		if (!ptep)
-+			return NULL;
-+
-+		clear_page(ptep);
-+		pmd_populate_kernel(&init_mm, pmdp, ptep);
-+	}
-+	return pte_offset_kernel(pmdp, va);
++	return (pte_t *)__get_free_page(GFP_KERNEL | __GFP_ZERO);
 +}
- #endif /* _ASM_POWERPC_PGALLOC_32_H */
++
++static inline pgtable_t pte_alloc_one(struct mm_struct *mm, unsigned long address)
++{
++	struct page *ptepage;
++
++	gfp_t flags = GFP_KERNEL | __GFP_ZERO | __GFP_ACCOUNT;
++
++	ptepage = alloc_pages(flags, 0);
++	if (!ptepage)
++		return NULL;
++	if (!pgtable_page_ctor(ptepage)) {
++		__free_page(ptepage);
++		return NULL;
++	}
++	return ptepage;
++}
+ 
+ static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
+ {
 diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index 5877f5aa8f5d..ea4442dde0d5 100644
+index ea4442dde0d5..745f2f30d4e9 100644
 --- a/arch/powerpc/mm/pgtable_32.c
 +++ b/arch/powerpc/mm/pgtable_32.c
-@@ -43,18 +43,9 @@ EXPORT_SYMBOL(ioremap_bot);	/* aka VMALLOC_END */
+@@ -43,27 +43,6 @@ EXPORT_SYMBOL(ioremap_bot);	/* aka VMALLOC_END */
  
  extern char etext[], _stext[], _sinittext[], _einittext[];
  
--__ref pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long address)
-+pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long address)
- {
--	pte_t *pte;
+-pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long address)
+-{
+-	return (pte_t *)__get_free_page(GFP_KERNEL | __GFP_ZERO);
+-}
 -
--	if (slab_is_available()) {
--		pte = (pte_t *)__get_free_page(GFP_KERNEL|__GFP_ZERO);
--	} else {
--		pte = __va(memblock_alloc(PAGE_SIZE, PAGE_SIZE));
--		if (pte)
--			clear_page(pte);
+-pgtable_t pte_alloc_one(struct mm_struct *mm, unsigned long address)
+-{
+-	struct page *ptepage;
+-
+-	gfp_t flags = GFP_KERNEL | __GFP_ZERO | __GFP_ACCOUNT;
+-
+-	ptepage = alloc_pages(flags, 0);
+-	if (!ptepage)
+-		return NULL;
+-	if (!pgtable_page_ctor(ptepage)) {
+-		__free_page(ptepage);
+-		return NULL;
 -	}
--	return pte;
-+	return (pte_t *)__get_free_page(GFP_KERNEL | __GFP_ZERO);
- }
- 
- pgtable_t pte_alloc_one(struct mm_struct *mm, unsigned long address)
-@@ -222,7 +213,7 @@ void iounmap(volatile void __iomem *addr)
- }
- EXPORT_SYMBOL(iounmap);
- 
--int map_kernel_page(unsigned long va, phys_addr_t pa, pgprot_t prot)
-+__ref int map_kernel_page(unsigned long va, phys_addr_t pa, pgprot_t prot)
+-	return ptepage;
+-}
+-
+ void __iomem *
+ ioremap(phys_addr_t addr, unsigned long size)
  {
- 	pmd_t *pd;
- 	pte_t *pg;
-@@ -231,7 +222,10 @@ int map_kernel_page(unsigned long va, phys_addr_t pa, pgprot_t prot)
- 	/* Use upper 10 bits of VA to index the first level map */
- 	pd = pmd_offset(pud_offset(pgd_offset_k(va), va), va);
- 	/* Use middle 10 bits of VA to index the second-level map */
--	pg = pte_alloc_kernel(pd, va);
-+	if (slab_is_available())
-+		pg = pte_alloc_kernel(pd, va);
-+	else
-+		pg = early_pte_alloc_kernel(pd, va);
- 	if (pg != 0) {
- 		err = 0;
- 		/* The PTE should never be already set nor present in the
 -- 
 2.13.3
