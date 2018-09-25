@@ -2,18 +2,19 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42KRsP72YhzF12b
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2018 02:50:49 +1000 (AEST)
-Message-Id: <dec9f448fddd9af72edb27bdd5e35776114f8e0e.1537892498.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42KRsS0TPSzF13T
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2018 02:50:52 +1000 (AEST)
+Message-Id: <60c0f3b871bba32a4e3ddb4c93b3543fd6a7973c.1537892498.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1537892498.git.christophe.leroy@c-s.fr>
 References: <cover.1537892498.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v5 04/22] powerpc/8xx: Use patch_site for perf counters setup
+Subject: [PATCH v5 05/22] powerpc/8xx: Move SW perf counters in first 32kb of
+ memory
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  aneesh.kumar@linux.vnet.ibm.com
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 25 Sep 2018 16:50:46 +0000 (UTC)
+Date: Tue, 25 Sep 2018 16:50:48 +0000 (UTC)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,192 +24,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The 8xx TLB miss routines are patched when (de)activating
-perf counters.
+In order to simplify time critical exceptions handling 8xx
+specific SW perf counters, this patch moves the counters into
+the beginning of memory. This is possible because .text is readable
+and the counters are never modified outside of the handlers.
 
-This patch uses the new patch_site functionality in order
-to get a better code readability and avoid a label mess when
-dumping the code with 'objdump -d'
+By doing this, we avoid having to set a second register with
+the upper part of the address of the counters.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/mmu-8xx.h |  4 ++++
- arch/powerpc/kernel/head_8xx.S     | 33 +++++++++++++++++++--------------
- arch/powerpc/perf/8xx-pmu.c        | 27 ++++++++++++---------------
- 3 files changed, 35 insertions(+), 29 deletions(-)
+ arch/powerpc/kernel/head_8xx.S | 58 ++++++++++++++++++++----------------------
+ 1 file changed, 28 insertions(+), 30 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/mmu-8xx.h b/arch/powerpc/include/asm/mmu-8xx.h
-index 3a15d6647d47..fa05aa566ece 100644
---- a/arch/powerpc/include/asm/mmu-8xx.h
-+++ b/arch/powerpc/include/asm/mmu-8xx.h
-@@ -234,6 +234,10 @@ extern s32 patch__itlbmiss_linmem_top;
- extern s32 patch__dtlbmiss_linmem_top, patch__dtlbmiss_immr_jmp;
- extern s32 patch__fixupdar_linmem_top;
- 
-+extern s32 patch__itlbmiss_exit_1, patch__itlbmiss_exit_2;
-+extern s32 patch__dtlbmiss_exit_1, patch__dtlbmiss_exit_2, patch__dtlbmiss_exit_3;
-+extern s32 patch__itlbmiss_perf, patch__dtlbmiss_perf;
-+
- #endif /* !__ASSEMBLY__ */
- 
- #if defined(CONFIG_PPC_4K_PAGES)
 diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 0425571a533d..3b67b9533c82 100644
+index 3b67b9533c82..c203defe49a4 100644
 --- a/arch/powerpc/kernel/head_8xx.S
 +++ b/arch/powerpc/kernel/head_8xx.S
-@@ -374,16 +374,17 @@ InstructionTLBMiss:
- 	mtspr	SPRN_MI_RPN, r10	/* Update TLB entry */
+@@ -106,6 +106,23 @@ turn_on_mmu:
+ 	mtspr	SPRN_SRR0,r0
+ 	rfi				/* enables MMU */
  
- 	/* Restore registers */
--_ENTRY(itlb_miss_exit_1)
--	mfspr	r10, SPRN_SPRG_SCRATCH0
-+0:	mfspr	r10, SPRN_SPRG_SCRATCH0
++
++#ifdef CONFIG_PERF_EVENTS
++	.align	4
++
++	.globl	itlb_miss_counter
++itlb_miss_counter:
++	.space	4
++
++	.globl	dtlb_miss_counter
++dtlb_miss_counter:
++	.space	4
++
++	.globl	instruction_counter
++instruction_counter:
++	.space	4
++#endif
++
+ /*
+  * Exception entry code.  This code runs with address translation
+  * turned off, i.e. using physical addresses.
+@@ -384,17 +401,16 @@ InstructionTLBMiss:
+ 
+ #ifdef CONFIG_PERF_EVENTS
+ 	patch_site	0f, patch__itlbmiss_perf
+-0:	lis	r10, (itlb_miss_counter - PAGE_OFFSET)@ha
+-	lwz	r11, (itlb_miss_counter - PAGE_OFFSET)@l(r10)
+-	addi	r11, r11, 1
+-	stw	r11, (itlb_miss_counter - PAGE_OFFSET)@l(r10)
+-#endif
++0:	lwz	r10, (itlb_miss_counter - PAGE_OFFSET)@l(0)
++	addi	r10, r10, 1
++	stw	r10, (itlb_miss_counter - PAGE_OFFSET)@l(0)
+ 	mfspr	r10, SPRN_SPRG_SCRATCH0
  	mfspr	r11, SPRN_SPRG_SCRATCH1
  #if defined(ITLB_MISS_KERNEL) || defined(CONFIG_HUGETLB_PAGE)
  	mfspr	r12, SPRN_SPRG_SCRATCH2
  #endif
  	rfi
-+	patch_site	0b, patch__itlbmiss_exit_1
-+
++#endif
+ 
+ #ifdef CONFIG_HUGETLB_PAGE
+ 10:	/* 8M pages */
+@@ -509,15 +525,14 @@ DataStoreTLBMiss:
+ 
  #ifdef CONFIG_PERF_EVENTS
--_ENTRY(itlb_miss_perf)
--	lis	r10, (itlb_miss_counter - PAGE_OFFSET)@ha
-+	patch_site	0f, patch__itlbmiss_perf
-+0:	lis	r10, (itlb_miss_counter - PAGE_OFFSET)@ha
- 	lwz	r11, (itlb_miss_counter - PAGE_OFFSET)@l(r10)
- 	addi	r11, r11, 1
- 	stw	r11, (itlb_miss_counter - PAGE_OFFSET)@l(r10)
-@@ -499,14 +500,16 @@ DataStoreTLBMiss:
- 
- 	/* Restore registers */
- 	mtspr	SPRN_DAR, r11	/* Tag DAR */
--_ENTRY(dtlb_miss_exit_1)
--	mfspr	r10, SPRN_SPRG_SCRATCH0
-+
-+0:	mfspr	r10, SPRN_SPRG_SCRATCH0
+ 	patch_site	0f, patch__dtlbmiss_perf
+-0:	lis	r10, (dtlb_miss_counter - PAGE_OFFSET)@ha
+-	lwz	r11, (dtlb_miss_counter - PAGE_OFFSET)@l(r10)
+-	addi	r11, r11, 1
+-	stw	r11, (dtlb_miss_counter - PAGE_OFFSET)@l(r10)
+-#endif
++0:	lwz	r10, (dtlb_miss_counter - PAGE_OFFSET)@l(0)
++	addi	r10, r10, 1
++	stw	r10, (dtlb_miss_counter - PAGE_OFFSET)@l(0)
+ 	mfspr	r10, SPRN_SPRG_SCRATCH0
  	mfspr	r11, SPRN_SPRG_SCRATCH1
  	mfspr	r12, SPRN_SPRG_SCRATCH2
  	rfi
-+	patch_site	0b, patch__dtlbmiss_exit_1
-+
- #ifdef CONFIG_PERF_EVENTS
--_ENTRY(dtlb_miss_perf)
--	lis	r10, (dtlb_miss_counter - PAGE_OFFSET)@ha
-+	patch_site	0f, patch__dtlbmiss_perf
-+0:	lis	r10, (dtlb_miss_counter - PAGE_OFFSET)@ha
- 	lwz	r11, (dtlb_miss_counter - PAGE_OFFSET)@l(r10)
- 	addi	r11, r11, 1
- 	stw	r11, (dtlb_miss_counter - PAGE_OFFSET)@l(r10)
-@@ -658,11 +661,12 @@ DTLBMissIMMR:
++#endif
  
- 	li	r11, RPN_PATTERN
- 	mtspr	SPRN_DAR, r11	/* Tag DAR */
--_ENTRY(dtlb_miss_exit_2)
--	mfspr	r10, SPRN_SPRG_SCRATCH0
-+
-+0:	mfspr	r10, SPRN_SPRG_SCRATCH0
- 	mfspr	r11, SPRN_SPRG_SCRATCH1
- 	mfspr	r12, SPRN_SPRG_SCRATCH2
+ #ifdef CONFIG_HUGETLB_PAGE
+ 10:	/* 8M pages */
+@@ -625,16 +640,13 @@ DataBreakpoint:
+ 	. = 0x1d00
+ InstructionBreakpoint:
+ 	mtspr	SPRN_SPRG_SCRATCH0, r10
+-	mtspr	SPRN_SPRG_SCRATCH1, r11
+-	lis	r10, (instruction_counter - PAGE_OFFSET)@ha
+-	lwz	r11, (instruction_counter - PAGE_OFFSET)@l(r10)
+-	addi	r11, r11, -1
+-	stw	r11, (instruction_counter - PAGE_OFFSET)@l(r10)
++	lwz	r10, (instruction_counter - PAGE_OFFSET)@l(0)
++	addi	r10, r10, -1
++	stw	r10, (instruction_counter - PAGE_OFFSET)@l(0)
+ 	lis	r10, 0xffff
+ 	ori	r10, r10, 0x01
+ 	mtspr	SPRN_COUNTA, r10
+ 	mfspr	r10, SPRN_SPRG_SCRATCH0
+-	mfspr	r11, SPRN_SPRG_SCRATCH1
  	rfi
-+	patch_site	0b, patch__dtlbmiss_exit_2
- 
- DTLBMissLinear:
- 	mtcr	r12
-@@ -676,11 +680,12 @@ DTLBMissLinear:
- 
- 	li	r11, RPN_PATTERN
- 	mtspr	SPRN_DAR, r11	/* Tag DAR */
--_ENTRY(dtlb_miss_exit_3)
--	mfspr	r10, SPRN_SPRG_SCRATCH0
-+
-+0:	mfspr	r10, SPRN_SPRG_SCRATCH0
- 	mfspr	r11, SPRN_SPRG_SCRATCH1
- 	mfspr	r12, SPRN_SPRG_SCRATCH2
- 	rfi
-+	patch_site	0b, patch__dtlbmiss_exit_3
- 
- #ifndef CONFIG_PIN_TLB_TEXT
- ITLBMissLinear:
-@@ -693,11 +698,11 @@ ITLBMissLinear:
- 			  _PAGE_PRESENT
- 	mtspr	SPRN_MI_RPN, r10	/* Update TLB entry */
- 
--_ENTRY(itlb_miss_exit_2)
--	mfspr	r10, SPRN_SPRG_SCRATCH0
-+0:	mfspr	r10, SPRN_SPRG_SCRATCH0
- 	mfspr	r11, SPRN_SPRG_SCRATCH1
- 	mfspr	r12, SPRN_SPRG_SCRATCH2
- 	rfi
-+	patch_site	0b, patch__itlbmiss_exit_2
- #endif
- 
- /* This is the procedure to calculate the data EA for buggy dcbx,dcbi instructions
-diff --git a/arch/powerpc/perf/8xx-pmu.c b/arch/powerpc/perf/8xx-pmu.c
-index 6c0020d1c561..808f1873de61 100644
---- a/arch/powerpc/perf/8xx-pmu.c
-+++ b/arch/powerpc/perf/8xx-pmu.c
-@@ -31,9 +31,6 @@
- 
- extern unsigned long itlb_miss_counter, dtlb_miss_counter;
- extern atomic_t instruction_counter;
--extern unsigned int itlb_miss_perf, dtlb_miss_perf;
--extern unsigned int itlb_miss_exit_1, itlb_miss_exit_2;
--extern unsigned int dtlb_miss_exit_1, dtlb_miss_exit_2, dtlb_miss_exit_3;
- 
- static atomic_t insn_ctr_ref;
- static atomic_t itlb_miss_ref;
-@@ -103,22 +100,22 @@ static int mpc8xx_pmu_add(struct perf_event *event, int flags)
- 		break;
- 	case PERF_8xx_ID_ITLB_LOAD_MISS:
- 		if (atomic_inc_return(&itlb_miss_ref) == 1) {
--			unsigned long target = (unsigned long)&itlb_miss_perf;
-+			unsigned long target = site_addr(&patch__itlbmiss_perf);
- 
--			patch_branch(&itlb_miss_exit_1, target, 0);
-+			patch_branch_site(&patch__itlbmiss_exit_1, target, 0);
- #ifndef CONFIG_PIN_TLB_TEXT
--			patch_branch(&itlb_miss_exit_2, target, 0);
-+			patch_branch_site(&patch__itlbmiss_exit_2, target, 0);
- #endif
- 		}
- 		val = itlb_miss_counter;
- 		break;
- 	case PERF_8xx_ID_DTLB_LOAD_MISS:
- 		if (atomic_inc_return(&dtlb_miss_ref) == 1) {
--			unsigned long target = (unsigned long)&dtlb_miss_perf;
-+			unsigned long target = site_addr(&patch__dtlbmiss_perf);
- 
--			patch_branch(&dtlb_miss_exit_1, target, 0);
--			patch_branch(&dtlb_miss_exit_2, target, 0);
--			patch_branch(&dtlb_miss_exit_3, target, 0);
-+			patch_branch_site(&patch__dtlbmiss_exit_1, target, 0);
-+			patch_branch_site(&patch__dtlbmiss_exit_2, target, 0);
-+			patch_branch_site(&patch__dtlbmiss_exit_3, target, 0);
- 		}
- 		val = dtlb_miss_counter;
- 		break;
-@@ -180,17 +177,17 @@ static void mpc8xx_pmu_del(struct perf_event *event, int flags)
- 		break;
- 	case PERF_8xx_ID_ITLB_LOAD_MISS:
- 		if (atomic_dec_return(&itlb_miss_ref) == 0) {
--			patch_instruction(&itlb_miss_exit_1, insn);
-+			patch_instruction_site(&patch__itlbmiss_exit_1, insn);
- #ifndef CONFIG_PIN_TLB_TEXT
--			patch_instruction(&itlb_miss_exit_2, insn);
-+			patch_instruction_site(&patch__itlbmiss_exit_2, insn);
- #endif
- 		}
- 		break;
- 	case PERF_8xx_ID_DTLB_LOAD_MISS:
- 		if (atomic_dec_return(&dtlb_miss_ref) == 0) {
--			patch_instruction(&dtlb_miss_exit_1, insn);
--			patch_instruction(&dtlb_miss_exit_2, insn);
--			patch_instruction(&dtlb_miss_exit_3, insn);
-+			patch_instruction_site(&patch__dtlbmiss_exit_1, insn);
-+			patch_instruction_site(&patch__dtlbmiss_exit_2, insn);
-+			patch_instruction_site(&patch__dtlbmiss_exit_3, insn);
- 		}
- 		break;
- 	}
+ #else
+ 	EXCEPTION(0x1d00, Trap_1d, unknown_exception, EXC_XFER_EE)
+@@ -1065,17 +1077,3 @@ swapper_pg_dir:
+  */
+ abatron_pteptrs:
+ 	.space	8
+-
+-#ifdef CONFIG_PERF_EVENTS
+-	.globl	itlb_miss_counter
+-itlb_miss_counter:
+-	.space	4
+-
+-	.globl	dtlb_miss_counter
+-dtlb_miss_counter:
+-	.space	4
+-
+-	.globl	instruction_counter
+-instruction_counter:
+-	.space	4
+-#endif
 -- 
 2.13.3
