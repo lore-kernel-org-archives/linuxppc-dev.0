@@ -1,26 +1,29 @@
-Return-Path: <olof@lixom.net>
-Received: from mail-lj1-x243.google.com (mail-lj1-x243.google.com
- [IPv6:2a00:1450:4864:20::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <hch@lst.de>
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42KWlv6QvQzDr4m
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2018 05:46:18 +1000 (AEST)
-Received: by mail-lj1-x243.google.com with SMTP id y71-v6so6479737lje.9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Sep 2018 12:46:18 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42KXQg3K8hzF1pS
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2018 06:16:22 +1000 (AEST)
+Date: Tue, 25 Sep 2018 22:16:19 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: Christoph Hellwig <hch@lst.de>, iommu@lists.linux-foundation.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Robin Murphy <robin.murphy@arm.com>, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org,
+ Marek Szyprowski <m.szyprowski@samsung.com>,
+ Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 4/4] dma-mapping: clear dev->dma_ops in
+ arch_teardown_dma_ops
+Message-ID: <20180925201619.GB8413@lst.de>
+References: <20180827084711.23407-1-hch@lst.de>
+ <20180827084711.23407-5-hch@lst.de> <20180922150119.GA14761@roeck-us.net>
 MIME-Version: 1.0
-References: <20180823213600.23426-1-alexandre.belloni@bootlin.com>
-In-Reply-To: <20180823213600.23426-1-alexandre.belloni@bootlin.com>
-From: Olof Johansson <olof@lixom.net>
-Date: Tue, 25 Sep 2018 21:45:56 +0200
-Message-ID: <CAOesGMjDKKSNVccu4D579SiwL9zEU7ha7HQCHncvh2r4kpO6fQ@mail.gmail.com>
-Subject: Re: [PATCH 1/2] soc: fsl: qbman: qman_portal: defer probing when qman
- is not available
-To: Alexandre Belloni <alexandre.belloni@bootlin.com>
-Cc: Li Yang <leoyang.li@nxp.com>, Roy Pledge <roy.pledge@nxp.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux ARM Mailing List <linux-arm-kernel@lists.infradead.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180922150119.GA14761@roeck-us.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,44 +33,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+Looking at the code I think this commit is simply broken for
+architectures not using arch_setup_dma_ops, but instead setting up
+the dma ops through arch specific magic.
 
-
-On Thu, Aug 23, 2018 at 11:36 PM Alexandre Belloni
-<alexandre.belloni@bootlin.com> wrote:
->
-> If the qman driver (qman_ccsr) doesn't probe or fail to probe before
-> qman_portal, qm_ccsr_start will be either NULL or a stale pointer to an
-> unmapped page.
->
-> This leads to a crash when probing  qman_portal as the init_pcfg function
-> calls qman_liodn_fixup that tries to read qman registers.
->
-> Assume that qman didn't probe when the pool mask is 0.
->
-> Signed-off-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
-> ---
->  drivers/soc/fsl/qbman/qman_portal.c | 2 ++
->  1 file changed, 2 insertions(+)
->
-> diff --git a/drivers/soc/fsl/qbman/qman_portal.c b/drivers/soc/fsl/qbman/qman_portal.c
-> index a120002b630e..4fc80d2c8feb 100644
-> --- a/drivers/soc/fsl/qbman/qman_portal.c
-> +++ b/drivers/soc/fsl/qbman/qman_portal.c
-> @@ -277,6 +277,8 @@ static int qman_portal_probe(struct platform_device *pdev)
->         }
->
->         pcfg->pools = qm_get_pools_sdqcr();
-> +       if (pcfg->pools == 0)
-> +               return -EPROBE_DEFER;
-
-This is quite late in the probe, after a bunch of resources have been claimed.
-
-Note that the ioremaps above this are doing unwinds, and you'll end up
-doing duplicate ioremaps if you come in and probe again.
-
-You should probably unwind those allocations, or move them to devm_*
-or do this check earlier in the function.
-
-
--Olof
+I'll revert the patch.
