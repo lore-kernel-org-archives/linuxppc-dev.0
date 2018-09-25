@@ -1,22 +1,18 @@
-Return-Path: <david@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42KFmS60B0zF26J
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Sep 2018 19:15:52 +1000 (AEST)
-From: David Hildenbrand <david@redhat.com>
-To: linux-mm@kvack.org
-Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-acpi@vger.kernel.org,
- xen-devel@lists.xenproject.org, devel@linuxdriverproject.org,
- David Hildenbrand <david@redhat.com>, Jonathan Corbet <corbet@lwn.net>,
- Michal Hocko <mhocko@suse.com>, Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v2 6/6] memory-hotplug.txt: Add some details about locking
- internals
-Date: Tue, 25 Sep 2018 11:14:57 +0200
-Message-Id: <20180925091457.28651-7-david@redhat.com>
-In-Reply-To: <20180925091457.28651-1-david@redhat.com>
-References: <20180925091457.28651-1-david@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42KGDp1ZCLzDqws
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Sep 2018 19:36:58 +1000 (AEST)
+From: Michael Neuling <mikey@neuling.org>
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>,
+ paulus@ozlabs.org, benh@kernel.crashing.org,
+ Breno Leitao <leitao@debian.org>, aneesh.kumar@linux.vnet.ibm.com,
+ Michael Neuling <mikey@neuling.org>
+Subject: [PATCH] powerpc/tm: Avoid possible userspace r1 corruption on reclaim
+Date: Tue, 25 Sep 2018 19:36:47 +1000
+Message-Id: <20180925093647.23723-1-mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,79 +22,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Let's document the magic a bit, especially why device_hotplug_lock is
-required when adding/removing memory and how it all play together with
-requests to online/offline memory from user space.
+Current we store the userspace r1 to PACATMSCRATCH before finally
+saving it to the thread struct.
 
-Cc: Jonathan Corbet <corbet@lwn.net>
-Cc: Michal Hocko <mhocko@suse.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Reviewed-by: Pavel Tatashin <pavel.tatashin@microsoft.com>
-Reviewed-by: Rashmica Gupta <rashmica.g@gmail.com>
-Signed-off-by: David Hildenbrand <david@redhat.com>
+In theory an exception could be taken here (like a machine check or
+SLB miss) that could write PACATMSCRATCH and hence corrupt the
+userspace r1. The SLB fault currently doesn't touch PACATMSCRATCH, but
+others do.
+
+We've never actually seen this happen but it's theoretically
+possible. Either way, the code is fragile as it is.
+
+This patch saves r1 to the kernel stack (which can't fault) before we
+turn MSR[RI] back on. PACATMSCRATCH is still used but only with
+MSR[RI] off. We then copy r1 from the kernel stack to the thread
+struct once we have MSR[RI] back on.
+
+Suggested-by: Breno Leitao <leitao@debian.org>
+Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- Documentation/memory-hotplug.txt | 42 +++++++++++++++++++++++++++++++-
- 1 file changed, 41 insertions(+), 1 deletion(-)
+ arch/powerpc/kernel/tm.S | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/memory-hotplug.txt b/Documentation/memory-hotplug.txt
-index 7f49ebf3ddb2..ce4faa5530fa 100644
---- a/Documentation/memory-hotplug.txt
-+++ b/Documentation/memory-hotplug.txt
-@@ -3,7 +3,7 @@ Memory Hotplug
- ==============
+diff --git a/arch/powerpc/kernel/tm.S b/arch/powerpc/kernel/tm.S
+index 701b0f5b09..8207816a1e 100644
+--- a/arch/powerpc/kernel/tm.S
++++ b/arch/powerpc/kernel/tm.S
+@@ -178,6 +178,12 @@ _GLOBAL(tm_reclaim)
  
- :Created:							Jul 28 2007
--:Updated: Add description of notifier of memory hotplug:	Oct 11 2007
-+:Updated: Add some details about locking internals:		Aug 20 2018
+ 	std	r11, GPR11(r1)			/* Temporary stash */
  
- This document is about memory hotplug including how-to-use and current status.
- Because Memory Hotplug is still under development, contents of this text will
-@@ -495,6 +495,46 @@ further processing of the notification queue.
- 
- NOTIFY_STOP stops further processing of the notification queue.
- 
++	/* Move r1 to kernel stack in case PACATMSCRATCH is used once
++	 * we turn on RI
++	 */
++	ld	r11, PACATMSCRATCH(r13)
++	std	r11, GPR1(r1)
 +
-+Locking Internals
-+=================
-+
-+When adding/removing memory that uses memory block devices (i.e. ordinary RAM),
-+the device_hotplug_lock should be held to:
-+
-+- synchronize against online/offline requests (e.g. via sysfs). This way, memory
-+  block devices can only be accessed (.online/.state attributes) by user
-+  space once memory has been fully added. And when removing memory, we
-+  know nobody is in critical sections.
-+- synchronize against CPU hotplug and similar (e.g. relevant for ACPI and PPC)
-+
-+Especially, there is a possible lock inversion that is avoided using
-+device_hotplug_lock when adding memory and user space tries to online that
-+memory faster than expected:
-+
-+- device_online() will first take the device_lock(), followed by
-+  mem_hotplug_lock
-+- add_memory_resource() will first take the mem_hotplug_lock, followed by
-+  the device_lock() (while creating the devices, during bus_add_device()).
-+
-+As the device is visible to user space before taking the device_lock(), this
-+can result in a lock inversion.
-+
-+onlining/offlining of memory should be done via device_online()/
-+device_offline() - to make sure it is properly synchronized to actions
-+via sysfs. Holding device_hotplug_lock is advised (to e.g. protect online_type)
-+
-+When adding/removing/onlining/offlining memory or adding/removing
-+heterogeneous/device memory, we should always hold the mem_hotplug_lock in
-+write mode to serialise memory hotplug (e.g. access to global/zone
-+variables).
-+
-+In addition, mem_hotplug_lock (in contrast to device_hotplug_lock) in read
-+mode allows for a quite efficient get_online_mems/put_online_mems
-+implementation, so code accessing memory can protect from that memory
-+vanishing.
-+
-+
- Future Work
- ===========
- 
+ 	/* Store r13 away so we can free up the scratch SPR for the
+ 	 * SLB fault handler (needed once we start access the
+ 	 * thread_struct)
+@@ -214,7 +220,7 @@ _GLOBAL(tm_reclaim)
+ 	SAVE_GPR(8, r7)				/* user r8 */
+ 	SAVE_GPR(9, r7)				/* user r9 */
+ 	SAVE_GPR(10, r7)			/* user r10 */
+-	ld	r3, PACATMSCRATCH(r13)		/* user r1 */
++	ld	r3, GPR1(r1)			/* user r1 */
+ 	ld	r4, GPR7(r1)			/* user r7 */
+ 	ld	r5, GPR11(r1)			/* user r11 */
+ 	ld	r6, GPR12(r1)			/* user r12 */
 -- 
 2.17.1
