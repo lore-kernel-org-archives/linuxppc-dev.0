@@ -1,21 +1,23 @@
-Return-Path: <darknighte@darknighte.com>
-Received: from mail-it1-x134.google.com (mail-it1-x134.google.com
- [IPv6:2607:f8b0:4864:20::134])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42K6nj2D04zF3J4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Sep 2018 14:01:25 +1000 (AEST)
-Received: by mail-it1-x134.google.com with SMTP id j198-v6so6249738ita.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Sep 2018 21:01:25 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42K7km0qhvzDr1F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Sep 2018 14:43:59 +1000 (AEST)
+Subject: Re: [PATCH] powerpc/traps: merge unrecoverable_exception() and
+ nonrecoverable_exception()
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+References: <f49e2e4ff1eacbad161eb6c1645cca7a281dcf3e.1537765881.git.christophe.leroy@c-s.fr>
+ <875zyu5pr6.fsf@concordia.ellerman.id.au>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <af93f6f7-b7e7-64a0-b9df-4f1721a567bd@c-s.fr>
+Date: Tue, 25 Sep 2018 06:43:55 +0200
 MIME-Version: 1.0
-From: darknighte <darknighte@darknighte.com>
-Date: Mon, 24 Sep 2018 23:01:11 -0500
-Message-ID: <CAKM2CVJ+wyXtf8bL+bEF3K=0p28MUuRcA7ks4zGeHmCUvwc6wg@mail.gmail.com>
-Subject: Call for speakers for the Devicetree Microconference @ the 2018 LPC
- in Vancouver
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Frank Rowand <frowand.list@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <875zyu5pr6.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,49 +27,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The Devicetree Microconference has been accepted into the 2018 Linux
-Plumbers Conference, which will be held in Vancouver, British
-Columbia, Canada from Tuesday, November 13 through Thursday, November
-15.  If you are interested in speaking, please contact myself, or
-co-leader Frank Rowand (on CC), to request a slot.
 
-For more details, here is the LPC announcement :
 
-We are pleased to announce the the Devicetree Microconference
-has been accepted into the 2018 Linux Plumbers Conference!
+Le 25/09/2018 à 03:29, Michael Ellerman a écrit :
+> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+> 
+>> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+>> index 6ab66a88db14..4567eeb6524e 100644
+>> --- a/arch/powerpc/kernel/traps.c
+>> +++ b/arch/powerpc/kernel/traps.c
+>> @@ -2090,8 +2082,9 @@ void SPEFloatingPointRoundException(struct pt_regs *regs)
+>>    */
+>>   void unrecoverable_exception(struct pt_regs *regs)
+>>   {
+>> -	printk(KERN_EMERG "Unrecoverable exception %lx at %lx\n",
+>> -	       regs->trap, regs->nip);
+>> +	pr_emerg("Unrecoverable exception %lx at %lx (msr=%lx)\n",
+>> +		 regs->trap, regs->nip, regs->msr);
+>> +	debugger(regs);
+>>   	die("Unrecoverable exception", regs, SIGABRT);
+> 
+> die() already calls debugger() if the trap is != 0x100.
+> 
+> I don't think we want to call it twice?
 
-Devicetree provides hardware description for many platforms, such
-as Linux [1], U-Boot [2], BSD [3], and Zephyr [4]. Devicetree
-continues to evolve to become more robust and attempt to provide the
-features desired by the varied users.
+Oh, good spot. So nonrecoverable_exception() is calling it twice.
 
-Some of the overlay related needs are now being addressed by
-U-boot, but there remain use cases for run time overlay management in
-the Linux kernel. Support for run time overlay management in the Linux
-kernel is slowly moving forward, but significant issues remain [5].
+I'll fix the patch. Thanks.
 
-Devicetree verification has been an ongoing project for several years,
-with the most recent in person discussion occurring at the Devicetree
-Workshop [6] at Kernel Summit 2017. Progress continues on mail lists,
-and will be an important topic at the microconference.
-
-Other Devicetree related tools, such as the dtc compiler and libfdt [7]
-continue to see active development.
-
-Additional possible issues to be discussed may include potential
-changes to the Flattened Device Tree (FDT) format, reducing the
-Devicetree memory and storage size in the Linux kernel, creating new
-architecture to provide solutions to current problems, updating the
-Devicetree Specification, and using devicetrees in constrained contexts.
-
-LPC [8] will be held in Vancouver, British Columbia, Canada
-from Tuesday, November 13 through Thursday, November 15.
-
-[1] https://elinux.org/Device_Tree_Reference
-[2] https://github.com/lentinj/u-boot/blob/master/doc/README.fdt-control
-[3] https://wiki.freebsd.org/FlattenedDeviceTree
-[4] http://docs.zephyrproject.org/devices/dts/device_tree.html
-[5] https://elinux.org/Frank%27s_Evolving_Overlay_Thoughts
-[6] https://elinux.org/Device_tree_future#Kernel_Summit_2017.2C_Devicetree_Workshop
-[7] https://elinux.org/Device_Tree_Reference#dtc_.28upstream_project.29
-[8] https://linuxplumbersconf.org/
+Christophe
