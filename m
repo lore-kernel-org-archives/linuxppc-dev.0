@@ -2,20 +2,31 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42K2Mg2gg6zDqD5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Sep 2018 10:42:07 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42K2WQ5vP7zDqD5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Sep 2018 10:48:50 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>, ego@linux.vnet.ibm.com,
- tyreld@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/pseries: Disable CPU hotplug across migrations
-In-Reply-To: <20180924085606.GA16671@in.ibm.com>
-References: <153721164232.32706.4283915467151746975.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
- <CAHZ_5WxcDxV5vrdW5Y1QaucXLL8Z4xskEbm+y4VFeNsj-38e7g@mail.gmail.com>
- <d0a4995c-949b-f6a4-889a-908e6f72036e@linux.vnet.ibm.com>
- <87va6v5qhx.fsf@concordia.ellerman.id.au> <20180924085606.GA16671@in.ibm.com>
-Date: Tue, 25 Sep 2018 10:42:05 +1000
-Message-ID: <87h8ie5rxe.fsf@concordia.ellerman.id.au>
+To: Arnd Bergmann <arnd@arndb.de>, Firoz Khan <firoz.khan@linaro.org>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linuxram@us.ibm.com, leitao@debian.org,
+ Boqun Feng <boqun.feng@gmail.com>, gregkh <gregkh@linuxfoundation.org>,
+ Philippe Ombredanne <pombredanne@nexb.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Kate Stewart <kstewart@linuxfoundation.org>,
+ y2038 Mailman List <y2038@lists.linaro.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linux-arch <linux-arch@vger.kernel.org>,
+ Deepa Dinamani <deepa.kernel@gmail.com>,
+ Marcin Juszkiewicz <marcin.juszkiewicz@linaro.org>
+Subject: Re: [PATCH 2/3] powerpc: Add system call table generation support
+In-Reply-To: <CAK8P3a2hi-Ndh7X-9r3NhBUJXQBTBFsTU==GbHesy6YD9idCJA@mail.gmail.com>
+References: <1536913980-4811-1-git-send-email-firoz.khan@linaro.org>
+ <1536913980-4811-3-git-send-email-firoz.khan@linaro.org>
+ <CAK8P3a1PCnHy1JX4T21LjOr3ZGAVLdqxQaPYfLHAgM-9Y5yxVg@mail.gmail.com>
+ <CALxhOngVYQRwbcUg6c_3LcKAEoBwyN1B478LqRGmWEGL004--w@mail.gmail.com>
+ <CAK8P3a2hi-Ndh7X-9r3NhBUJXQBTBFsTU==GbHesy6YD9idCJA@mail.gmail.com>
+Date: Tue, 25 Sep 2018 10:48:49 +1000
+Message-ID: <87efdi5rm6.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,57 +38,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Gautham R Shenoy <ego@linux.vnet.ibm.com> writes:
-> On Mon, Sep 24, 2018 at 05:00:42PM +1000, Michael Ellerman wrote:
->> Nathan Fontenot <nfont@linux.vnet.ibm.com> writes:
->> > On 09/18/2018 05:32 AM, Gautham R Shenoy wrote:
->> >> On Tue, Sep 18, 2018 at 1:05 AM Nathan Fontenot
->> >>> diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
->> >>> index 8afd146bc9c7..2c7ed31c736e 100644
->> >>> --- a/arch/powerpc/kernel/rtas.c
->> >>> +++ b/arch/powerpc/kernel/rtas.c
->> >>> @@ -981,6 +981,7 @@ int rtas_ibm_suspend_me(u64 handle)
->> >>>                 goto out;
->> >>>         }
->> >>>
->> >>> +       cpu_hotplug_disable();
->> >> 
->> >> So, some of the onlined CPUs ( via
->> >> rtas_online_cpus_mask(offline_mask);) can go still offline,
->> >> if the userspace issues an offline command, just before we execute
->> >> cpu_hotplug_disable().
->> >> 
->> >> So we are narrowing down the race, but it still exists. Am I missing something ?
+Arnd Bergmann <arnd@arndb.de> writes:
+> On Tue, Sep 18, 2018 at 2:15 PM Firoz Khan <firoz.khan@linaro.org> wrote:
+>> On 14 September 2018 at 15:31, Arnd Bergmann <arnd@arndb.de> wrote:
+>> > On Fri, Sep 14, 2018 at 10:33 AM Firoz Khan <firoz.khan@linaro.org> wrote:
 >> >
->> > You're correct, this narrows the window in which a CPU can go offline.
+>> >> ---
+>> >>  arch/powerpc/kernel/syscalls/Makefile       |  51 ++++
+>> >>  arch/powerpc/kernel/syscalls/syscall_32.tbl | 378 ++++++++++++++++++++++++++++
+>> >>  arch/powerpc/kernel/syscalls/syscall_64.tbl | 372 +++++++++++++++++++++++++++
+>> >>  arch/powerpc/kernel/syscalls/syscallhdr.sh  |  37 +++
+>> >>  arch/powerpc/kernel/syscalls/syscalltbl.sh  |  38 +++
 >> >
->> > In testing with this patch we have not been able to re-create the failure but
->> > there is still a small window.
->> 
->> Well let's close it.
->> 
->> We just need to check that all present CPUs are online after we've
->> called cpu_hotplug_disable() don't we?
+>> > I think you should only need a single .tbl  input file here.
+>>
+>> Yes, we can do that way also.As I mentioned, it will add
+>> more complexity in the script.
+>>
+>>  The script has to be smart enough to parse the
+>> .tbl if we add more thing in the .tble file. It need more
+>> logic in the scripts. This is not common. So if you keep
+>> separate .tbl we can avoid this.
 >
-> Yes. However, we cannot use the cpu_up() API to bring the offline CPUs
-> online, since will return with an -EBUSY if CPU-Hotplug has been
-> disabled.
+> But all three existing architectures (x86, s390 and arm) already
+> have the capability to parse the table and generate different output
+> from that.
 
-I'm not suggesting we try to bring them online after we've disabled CPU
-hotplug, if we detect that race we can just fail the migration.
+Yeah, we want that on powerpc too.
 
-Can't we do:
- - save mask of offline CPUs
- - bring all offline CPUs online
- - disable CPU hotplug
- - check if any CPUs are offline
-   - if so, we've raced with an offline
-   - bail out of the migration with an error
-
-
-Instead of bailing out we could go back to the start and try again for
-some number of retries, but that's probably overkill anyway.
-
-What am I missing?
+If the script needs to be more complex that's fine, if it can't be
+shared across arches that's fine, the main thing for me is that wiring
+up a syscall can be done by adding a single line in a single file.
 
 cheers
