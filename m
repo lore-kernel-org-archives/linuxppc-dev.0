@@ -1,64 +1,19 @@
-Return-Path: <rppt@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42KxF01khgzF3LX
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2018 21:54:28 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w8QBoCH8106788
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2018 07:54:26 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2mr7jaxebx-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2018 07:54:25 -0400
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.vnet.ibm.com>;
- Wed, 26 Sep 2018 12:54:22 +0100
-Date: Wed, 26 Sep 2018 14:54:05 +0300
-From: Mike Rapoport <rppt@linux.vnet.ibm.com>
-To: Michal Hocko <mhocko@kernel.org>
-Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
- Catalin Marinas <catalin.marinas@arm.com>, Chris Zankel <chris@zankel.net>,
- "David S. Miller" <davem@davemloft.net>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- Greentime Hu <green.hu@gmail.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Guan Xuetao <gxt@pku.edu.cn>, Ingo Molnar <mingo@redhat.com>,
- "James E.J. Bottomley" <jejb@parisc-linux.org>,
- Jonas Bonn <jonas@southpole.se>, Jonathan Corbet <corbet@lwn.net>,
- Ley Foon Tan <lftan@altera.com>, Mark Salter <msalter@redhat.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Matt Turner <mattst88@gmail.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Michal Simek <monstr@monstr.eu>,
- Palmer Dabbelt <palmer@sifive.com>, Paul Burton <paul.burton@mips.com>,
- Richard Kuo <rkuo@codeaurora.org>, Richard Weinberger <richard@nod.at>,
- Rich Felker <dalias@libc.org>, Russell King <linux@armlinux.org.uk>,
- Serge Semin <fancer.lancer@gmail.com>,
- Thomas Gleixner <tglx@linutronix.de>, Tony Luck <tony.luck@intel.com>,
- Vineet Gupta <vgupta@synopsys.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-c6x-dev@linux-c6x.org, linux-hexagon@vger.kernel.org,
- linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-m68k@lists.linux-m68k.org, linux-mips@linux-mips.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, linux-snps-arc@lists.infradead.org,
- linux-um@lists.infradead.org, nios2-dev@lists.rocketboards.org,
- openrisc@lists.librecores.org, sparclinux@vger.kernel.org,
- uclinux-h8-devel@lists.sourceforge.jp
-Subject: Re: [PATCH 03/30] mm: remove CONFIG_HAVE_MEMBLOCK
-References: <1536927045-23536-1-git-send-email-rppt@linux.vnet.ibm.com>
- <1536927045-23536-4-git-send-email-rppt@linux.vnet.ibm.com>
- <20180926092404.GL6278@dhcp22.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180926092404.GL6278@dhcp22.suse.cz>
-Message-Id: <20180926115404.GE4628@rapoport-lnx>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42KxfY3y98zF3Jl
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2018 22:13:09 +1000 (AEST)
+In-Reply-To: <6a7769a5-c8bc-f857-61cc-a76cdd98b28c@linux.vnet.ibm.com>
+To: Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Michael Bringmann <mwb@linux.vnet.ibm.com>, minkim@us.ibm.com,
+ Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Subject: Re: [v02] REPOST powerpc/migration: Handle unitialized timer reset
+Message-Id: <42KxfY2bFQz9s4Z@ozlabs.org>
+Date: Wed, 26 Sep 2018 22:13:09 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -68,28 +23,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 26, 2018 at 11:24:04AM +0200, Michal Hocko wrote:
-> On Fri 14-09-18 15:10:18, Mike Rapoport wrote:
-> > All architecures use memblock for early memory management. There is no need
-> > for the CONFIG_HAVE_MEMBLOCK configuration option.
+On Thu, 2018-09-20 at 16:45:13 UTC, Michael Bringmann wrote:
+> After migration of a powerpc LPAR, the kernel executes code to
+> update the system state to reflect new platform characteristics.
+> Such changes include modifications to device tree properties
+> provided to the system by PHYP.  Property notifications received
+> by the powerpc 'migration_store' code are passed along to the
+> kernel in general through a call to 'of_update_property' which
+> in turn passes such events back to all modules through entries like
+> the '.notifier_call' function within the NUMA module.  When the
+> NUMA module updates its state, it resets its event timer.  If this
+> occurs after a previous call to 'stop_topology_update' or on a
+> system without VPHN enabled, the code runs into an unitialized
+> timer structure and crashes.  This patch adds a safety check
+> along this path toward the problem code.
 > 
-> git grep says
-> arch/csky/Kconfig:  select HAVE_MEMBLOCK
- 
-Not only that, there are other bootmem leftovers in csky.
-I've sent the patch with the necessary fixups [1]
-
-[1] https://lkml.kernel.org/lkml/20180926112744.GC4628@rapoport-lnx/
-
-> > Signed-off-by: Mike Rapoport <rppt@linux.vnet.ibm.com>
+> Note: This crash was observed on every LPM in the 4.17-rc7 kernel
+> (and in the 4.18 kernel) of a system with dedicated CPUs enabled.
+> An example crash log without the patch is as follows.
 > 
-> Other than that
-> Acked-by: Michal Hocko <mhocko@suse.com>
-> -- 
-> Michal Hocko
-> SUSE Labs
+...
 > 
+> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 
--- 
-Sincerely yours,
-Mike.
+Applied to powerpc fixes, thanks.
+
+https://git.kernel.org/powerpc/c/8604895a34d92f5e186ceb931b0d1b
+
+cheers
