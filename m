@@ -1,61 +1,29 @@
-Return-Path: <rppt@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42L6422MQXzF3LK
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 04:32:18 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w8QIT8Qu008539
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2018 14:32:15 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2mre6nuynb-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2018 14:32:15 -0400
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.vnet.ibm.com>;
- Wed, 26 Sep 2018 19:32:12 +0100
-Date: Wed, 26 Sep 2018 21:31:53 +0300
-From: Mike Rapoport <rppt@linux.vnet.ibm.com>
-To: Alexander Duyck <alexander.duyck@gmail.com>
-Cc: linux-mm <linux-mm@kvack.org>, Andrew Morton <akpm@linux-foundation.org>,
- Catalin Marinas <catalin.marinas@arm.com>, chris@zankel.net,
- David Miller <davem@davemloft.net>,
- Geert Uytterhoeven <geert@linux-m68k.org>, green.hu@gmail.com,
- Greg KH <gregkh@linuxfoundation.org>, gxt@pku.edu.cn,
- Ingo Molnar <mingo@redhat.com>, jejb@parisc-linux.org,
- jonas@southpole.se, Jonathan Corbet <corbet@lwn.net>, lftan@altera.com,
- msalter@redhat.com, Martin Schwidefsky <schwidefsky@de.ibm.com>,
- mattst88@gmail.com, mpe@ellerman.id.au, Michal Hocko <mhocko@suse.com>,
- monstr@monstr.eu, palmer@sifive.com, paul.burton@mips.com,
- rkuo@codeaurora.org, richard@nod.at, dalias@libc.org,
- Russell King - ARM Linux <linux@armlinux.org.uk>,
- fancer.lancer@gmail.com, Thomas Gleixner <tglx@linutronix.de>,
- Tony Luck <tony.luck@intel.com>, vgupta@synopsys.com,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-c6x-dev@linux-c6x.org, linux-hexagon@vger.kernel.org,
- linux-ia64@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
- linux-m68k@lists.linux-m68k.org, linux-mips@linux-mips.org,
- linux-parisc@vger.kernel.org,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>,
- linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, linux-snps-arc@lists.infradead.org,
- linux-um@lists.infradead.org, nios2-dev@lists.rocketboards.org,
- openrisc@lists.librecores.org, sparclinux@vger.kernel.org,
- uclinux-h8-devel@lists.sourceforge.jp
-Subject: Re: [PATCH 03/30] mm: remove CONFIG_HAVE_MEMBLOCK
-References: <1536927045-23536-1-git-send-email-rppt@linux.vnet.ibm.com>
- <1536927045-23536-4-git-send-email-rppt@linux.vnet.ibm.com>
- <CAKgT0UdP=78RsWHMxFu4PD8a3AhA3eNcG68Z_9aGY0vhOKf7xA@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAKgT0UdP=78RsWHMxFu4PD8a3AhA3eNcG68Z_9aGY0vhOKf7xA@mail.gmail.com>
-Message-Id: <20180926183152.GA4597@rapoport-lnx>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42L6CG30fFzF3LK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 04:38:33 +1000 (AEST)
+Date: Wed, 26 Sep 2018 12:37:44 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Christophe LEROY <christophe.leroy@c-s.fr>
+Cc: Russell Currey <ruscur@russell.cc>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3 2/2] powerpc/64: add stack protector support
+Message-ID: <20180926173744.GN23155@gate.crashing.org>
+References: <2b934594d21ade67a4092637cf9e6b7d2d131187.1537801613.git.christophe.leroy@c-s.fr>
+ <e84d65fb4744cf8260eb2fc9474765a7f3a60573.1537801613.git.christophe.leroy@c-s.fr>
+ <0797fc91-6400-2508-1cc0-4bba78aafbbb@c-s.fr>
+ <d203ccfce64c8f9fd403162f2fa3807ade7f1d28.camel@russell.cc>
+ <30fb4e6b-0981-c53c-a1db-94138eaad268@c-s.fr>
+ <20180926092806.GM23155@gate.crashing.org>
+ <284752d1-6c32-bdca-72d3-4d8616b26fbf@c-s.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <284752d1-6c32-bdca-72d3-4d8616b26fbf@c-s.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -65,43 +33,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 26, 2018 at 09:58:41AM -0700, Alexander Duyck wrote:
-> On Fri, Sep 14, 2018 at 5:11 AM Mike Rapoport <rppt@linux.vnet.ibm.com> wrote:
+On Wed, Sep 26, 2018 at 11:41:26AM +0200, Christophe LEROY wrote:
+> Le 26/09/2018 à 11:28, Segher Boessenkool a écrit :
+> >On Wed, Sep 26, 2018 at 09:58:30AM +0200, Christophe LEROY wrote:
+> >>Segher, any idea about this problem ?
 > >
-> > All architecures use memblock for early memory management. There is no need
-> > for the CONFIG_HAVE_MEMBLOCK configuration option.
+> >>>>arch/powerpc/platforms/powermac/bootx_init.o: In function 
+> >>>>`bootx_printf':
+> >>>>/var/lib/jenkins-slave/workspace/snowpatch/snowpatch-linux-
+> >>>>sparse/linux/arch/powerpc/platforms/powermac/bootx_init.c:88:
+> >>>>undefined reference to `__stack_chk_fail_local'
 > >
-> > Signed-off-by: Mike Rapoport <rppt@linux.vnet.ibm.com>
+> >Are you building as PIC?  Are you linking libssp_nonshared.a?  Why not?
 > 
-> <snip>
+> Spotted, thanks.
 > 
-> > diff --git a/include/linux/memblock.h b/include/linux/memblock.h
-> > index 5169205..4ae91fc 100644
-> > --- a/include/linux/memblock.h
-> > +++ b/include/linux/memblock.h
-> > @@ -2,7 +2,6 @@
-> >  #define _LINUX_MEMBLOCK_H
-> >  #ifdef __KERNEL__
-> >
-> > -#ifdef CONFIG_HAVE_MEMBLOCK
-> >  /*
-> >   * Logical memory blocks.
-> >   *
-> > @@ -460,7 +459,6 @@ static inline phys_addr_t memblock_alloc(phys_addr_t size, phys_addr_t align)
-> >  {
-> >         return 0;
-> >  }
-> > -#endif /* CONFIG_HAVE_MEMBLOCK */
-> >
-> >  #endif /* __KERNEL__ */
+> arch/powerpc/platforms/powermac/Makefile contains:
 > 
-> There was an #else above this section and I believe it and the code
-> after it needs to be stripped as well.
+> CFLAGS_bootx_init.o  		+= -fPIC
+> 
+> Does it mean we should add -lssp_nonshared to LDFLAGS_vmlinux ?
 
-Right, I've already sent the fix [1] and it's in mmots.
+Something like that.
 
-[1] https://lkml.org/lkml/2018/9/19/416
+> Or maybe stack protection on bootx_init doesn't make much sense and we 
+> could just do the following ?
+> 
+> CFLAGS_bootx_init.o  		+= -fPIC $(call cc-option, 
+> -fno-stack-protector)
 
--- 
-Sincerely yours,
-Mike.
+But more likely this.  Why does it use -fPIC?
+
+If it is only boot-time init (which the name suggests) then disabling
+ssp makes a lot of sense.
+
+
+Segher
