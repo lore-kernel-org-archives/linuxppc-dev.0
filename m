@@ -2,9 +2,9 @@ Return-Path: <mhocko@kernel.org>
 Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42KtBG1qlzzDqBx
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2018 19:36:54 +1000 (AEST)
-Date: Wed, 26 Sep 2018 11:36:48 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42KtCC5RR2zF3L6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2018 19:37:43 +1000 (AEST)
+Date: Wed, 26 Sep 2018 11:37:39 +0200
 From: Michal Hocko <mhocko@kernel.org>
 To: Mike Rapoport <rppt@linux.vnet.ibm.com>
 Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
@@ -37,15 +37,14 @@ Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
  linux-um@lists.infradead.org, nios2-dev@lists.rocketboards.org,
  openrisc@lists.librecores.org, sparclinux@vger.kernel.org,
  uclinux-h8-devel@lists.sourceforge.jp
-Subject: Re: [PATCH 14/30] memblock: add align parameter to
- memblock_alloc_node()
-Message-ID: <20180926093648.GP6278@dhcp22.suse.cz>
+Subject: Re: [PATCH 16/30] memblock: replace __alloc_bootmem_node with
+ appropriate memblock_ API
+Message-ID: <20180926093739.GQ6278@dhcp22.suse.cz>
 References: <1536927045-23536-1-git-send-email-rppt@linux.vnet.ibm.com>
- <1536927045-23536-15-git-send-email-rppt@linux.vnet.ibm.com>
- <20180926093127.GO6278@dhcp22.suse.cz>
+ <1536927045-23536-17-git-send-email-rppt@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180926093127.GO6278@dhcp22.suse.cz>
+In-Reply-To: <1536927045-23536-17-git-send-email-rppt@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,20 +54,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed 26-09-18 11:31:27, Michal Hocko wrote:
-> On Fri 14-09-18 15:10:29, Mike Rapoport wrote:
-> > With the align parameter memblock_alloc_node() can be used as drop in
-> > replacement for alloc_bootmem_pages_node() and __alloc_bootmem_node(),
-> > which is done in the following patches.
+On Fri 14-09-18 15:10:31, Mike Rapoport wrote:
+> Use memblock_alloc_try_nid whenever goal (i.e. minimal address is
+> specified) and memblock_alloc_node otherwise.
 > 
-> /me confused. Why do we need this patch at all? Maybe it should be
-> folded into the later patch you are refereing here?
+> Signed-off-by: Mike Rapoport <rppt@linux.vnet.ibm.com>
 
-OK, I can see 1536927045-23536-17-git-send-email-rppt@linux.vnet.ibm.com
-now. If you are going to repost for whatever reason please merge those
-two. Also I would get rid of the implicit "0 implies SMP_CACHE_BYTES"
-behavior. It is subtle and you have to dig deep to find that out. Why
-not make it explicit?
+Acked-by: Michal Hocko <mhocko@suse.com>
 -- 
 Michal Hocko
 SUSE Labs
