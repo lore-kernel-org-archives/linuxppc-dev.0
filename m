@@ -1,21 +1,19 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <zhongjiang@huawei.com>
+Received: from huawei.com (szxga06-in.huawei.com [45.249.212.32])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Kxfc6jVHzF3Ky
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2018 22:13:12 +1000 (AEST)
-In-Reply-To: <1537878315-10783-1-git-send-email-srikar@linux.vnet.ibm.com>
-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@au1.ibm.com>
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Harish <harisrir@linux.vnet.ibm.com>,
- Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
- Michael Bringmann <mbringm@us.ibm.com>
-Subject: Re: powerpc/numa: Use associativity if VPHN hcall is successful
-Message-Id: <42Kxfc4WW0z9s4Z@ozlabs.org>
-Date: Wed, 26 Sep 2018 22:13:12 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Kxrt2mmzzDqZl
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2018 22:22:04 +1000 (AEST)
+From: zhong jiang <zhongjiang@huawei.com>
+To: <mpe@ellerman.id.au>, <paulus@samba.org>, <akpm@linux-foundation.org>
+CC: <npiggin@gmail.com>, <fbarrat@linux.vnet.ibm.com>,
+ <fthain@telegraphics.com.au>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-kernel@vger.kernel.org>
+Subject: [PATCH] powerpc: xive: Move a dereference below a NULL test
+Date: Wed, 26 Sep 2018 20:09:32 +0800
+Message-ID: <1537963772-15309-1-git-send-email-zhongjiang@huawei.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,68 +23,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2018-09-25 at 12:25:15 UTC, Srikar Dronamraju wrote:
-> Currently associativity is used to lookup node-id even if the preceding
-> VPHN hcall failed. However this can cause CPU to be made part of the
-> wrong node, (most likely to be node 0). This is because VPHN is not
-> enabled on kvm guests.
-> 
-> With 2ea6263 ("powerpc/topology: Get topology for shared processors at
-> boot"), associativity is used to set to the wrong node. Hence KVM guest
-> topology is broken.
-> 
-> For example : A 4 node KVM guest before would have reported.
-> 
-> [root@localhost ~]#  numactl -H
-> available: 4 nodes (0-3)
-> node 0 cpus: 0 1 2 3
-> node 0 size: 1746 MB
-> node 0 free: 1604 MB
-> node 1 cpus: 4 5 6 7
-> node 1 size: 2044 MB
-> node 1 free: 1765 MB
-> node 2 cpus: 8 9 10 11
-> node 2 size: 2044 MB
-> node 2 free: 1837 MB
-> node 3 cpus: 12 13 14 15
-> node 3 size: 2044 MB
-> node 3 free: 1903 MB
-> node distances:
-> node   0   1   2   3
->   0:  10  40  40  40
->   1:  40  10  40  40
->   2:  40  40  10  40
->   3:  40  40  40  10
-> 
-> would now report
-> 
-> [root@localhost ~]# numactl -H
-> available: 4 nodes (0-3)
-> node 0 cpus: 0 2 3 4 5 6 7 8 9 10 11 12 13 14 15
-> node 0 size: 1746 MB
-> node 0 free: 1244 MB
-> node 1 cpus:
-> node 1 size: 2044 MB
-> node 1 free: 2032 MB
-> node 2 cpus: 1
-> node 2 size: 2044 MB
-> node 2 free: 2028 MB
-> node 3 cpus:
-> node 3 size: 2044 MB
-> node 3 free: 2032 MB
-> node distances:
-> node   0   1   2   3
->   0:  10  40  40  40
->   1:  40  10  40  40
->   2:  40  40  10  40
->   3:  40  40  40  10
-> 
-> Fix this by skipping associativity lookup if the VPHN hcall failed.
-> 
-> Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+It is safe to move dereference below a NULL test.
 
-Applied to powerpc fixes, thanks.
+Signed-off-by: zhong jiang <zhongjiang@huawei.com>
+---
+ arch/powerpc/sysdev/xive/common.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-https://git.kernel.org/powerpc/c/2483ef056f6e42f61cd266452e2841
-
-cheers
+diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
+index 959a2a6..9824074 100644
+--- a/arch/powerpc/sysdev/xive/common.c
++++ b/arch/powerpc/sysdev/xive/common.c
+@@ -1010,12 +1010,13 @@ static void xive_ipi_eoi(struct irq_data *d)
+ {
+ 	struct xive_cpu *xc = __this_cpu_read(xive_cpu);
+ 
+-	DBG_VERBOSE("IPI eoi: irq=%d [0x%lx] (HW IRQ 0x%x) pending=%02x\n",
+-		    d->irq, irqd_to_hwirq(d), xc->hw_ipi, xc->pending_prio);
+-
+ 	/* Handle possible race with unplug and drop stale IPIs */
+ 	if (!xc)
+ 		return;
++
++	DBG_VERBOSE("IPI eoi: irq=%d [0x%lx] (HW IRQ 0x%x) pending=%02x\n",
++		    d->irq, irqd_to_hwirq(d), xc->hw_ipi, xc->pending_prio);
++
+ 	xive_do_source_eoi(xc->hw_ipi, &xc->ipi_data);
+ 	xive_do_queue_eoi(xc);
+ }
+-- 
+1.7.12.4
