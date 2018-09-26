@@ -1,32 +1,50 @@
-Return-Path: <aravinda@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Kljj3MvDzF3Dr
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2018 14:45:13 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42KnWN3YhjzF110
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2018 16:06:24 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w8Q4iBfF123969
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2018 00:45:10 -0400
-Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2mqy04h0pg-1
+ w8Q5wWaF073081
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2018 02:06:22 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2mr3qehydf-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2018 00:45:10 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2018 02:06:22 -0400
 Received: from localhost
- by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aravinda@linux.vnet.ibm.com>;
- Wed, 26 Sep 2018 00:45:10 -0400
-Subject: [PATCH v2] powerpc/pseries: Export raw per-CPU VPA data via debugfs
-From: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
-Cc: nfont@linux.vnet.ibm.com, naveen.n.rao@linux.vnet.ibm.com,
- aravinda@linux.vnet.ibm.com
-Date: Wed, 26 Sep 2018 10:15:05 +0530
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Wed, 26 Sep 2018 00:06:21 -0600
+Date: Wed, 26 Sep 2018 11:36:13 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Dave Hansen <dave.hansen@intel.com>
+Cc: ego@linux.vnet.ibm.com, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Neuling <mikey@neuling.org>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ "Oliver O'Halloran" <oohall@gmail.com>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Murilo Opsfelder Araujo <muriloo@linux.ibm.com>,
+ Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v8 0/3] powerpc: Detection and scheduler optimization for
+ POWER9 bigcore
+Reply-To: ego@linux.vnet.ibm.com
+References: <1537464159-25919-1-git-send-email-ego@linux.vnet.ibm.com>
+ <133c7bca-5720-81de-7956-b93870a1bab8@intel.com>
+ <20180922110340.GA1402@in.ibm.com>
+ <f2ac8eb0-b28e-a930-0160-09720f73a297@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <153793710517.7350.15426611829727317154.stgit@aravinda>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <f2ac8eb0-b28e-a930-0160-09720f73a297@intel.com>
+Message-Id: <20180926060613.GA22139@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,85 +54,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch exports the raw per-CPU VPA data via debugfs.
-A per-CPU file is created which exports the VPA data of
-that CPU to help debug some of the VPA related issues or
-to analyze the per-CPU VPA related statistics.
+Hello Dave,
 
-Signed-off-by: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/pseries/lpar.c |   57 +++++++++++++++++++++++++++++++++
- 1 file changed, 57 insertions(+)
+On Tue, Sep 25, 2018 at 03:16:30PM -0700, Dave Hansen wrote:
+> On 09/22/2018 04:03 AM, Gautham R Shenoy wrote:
+> > Without this patchset, the SMT domain would be defined as the group of
+> > threads that share L2 cache.
+> 
+> Could you try to make a more clear, concise statement about the current
+> state of the art vs. what you want it to be?  Right now, the sched
+> domains do something like this in terms of ordering:
+> 
+> 1. SMT siblings
+> 2. Caches
+> 3. NUMA
 
-diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index d3992ce..8852ebc 100644
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -48,6 +48,7 @@
- #include <asm/kexec.h>
- #include <asm/fadump.h>
- #include <asm/asm-prototypes.h>
-+#include <asm/debugfs.h>
- 
- #include "pseries.h"
- 
-@@ -1028,3 +1029,59 @@ static int __init reserve_vrma_context_id(void)
- 	return 0;
- }
- machine_device_initcall(pseries, reserve_vrma_context_id);
-+
-+#ifdef CONFIG_DEBUG_FS
-+/* debugfs file interface for vpa data */
-+static ssize_t vpa_file_read(struct file *filp, char __user *buf, size_t len,
-+			      loff_t *pos)
-+{
-+	int cpu = (long)filp->private_data;
-+	struct lppaca *lppaca = &lppaca_of(cpu);
-+
-+	if (!cpu_online(cpu))
-+		return -EINVAL;
-+
-+	return simple_read_from_buffer(buf, len, pos, lppaca,
-+				sizeof(struct lppaca));
-+}
-+
-+static const struct file_operations vpa_fops = {
-+	.open		= simple_open,
-+	.read		= vpa_file_read,
-+	.llseek		= default_llseek,
-+};
-+
-+static int __init vpa_debugfs_init(void)
-+{
-+	char name[16];
-+	long i;
-+	static struct dentry *vpa_dir;
-+
-+	if (!firmware_has_feature(FW_FEATURE_SPLPAR))
-+		return 0;
-+
-+	vpa_dir = debugfs_create_dir("vpa", powerpc_debugfs_root);
-+	if (!vpa_dir) {
-+		pr_warn("%s: can't create vpa root dir\n", __func__);
-+		return -ENOMEM;
-+	}
-+
-+	/* set up the per-cpu vpa file*/
-+	for_each_possible_cpu(i) {
-+		struct dentry *d;
-+
-+		sprintf(name, "cpu-%ld", i);
-+
-+		d = debugfs_create_file(name, 0400, vpa_dir, (void *)i,
-+					&vpa_fops);
-+		if (!d) {
-+			pr_warn("%s: can't create per-cpu vpa file\n",
-+					__func__);
-+			return -ENOMEM;
-+		}
-+	}
-+
-+	return 0;
-+}
-+machine_arch_initcall(pseries, vpa_debugfs_init);
-+#endif /* CONFIG_DEBUG_FS */
+Yes. you are right. The state of art on POWER9 machines having SMT8
+cores is as you described above with
+
+1. SMT siblings sharing L2-cache, called the SMT domain
+2. Cores on the same die, called the DIE domain
+3. NUMA
+
+> 
+> It sounds like you don't want SMT siblings to be the things that we use,
+> right?  Because some siblings share caches and some do not.  Right?  You
+> want something like this:
+> 
+> 1. SMT siblings (sharing L1)
+> 2. SMT siblings (sharing L2)
+> 3. Other caches
+> 4. NUMA
+>
+
+Yes, with the patchset the sched-domain hierarchy on POWER9 machines
+having SMT8 will be:
+
+1. SMT siblings sharing L1 cache, called the SMT domain
+2. SMT siblings sharing L2 cache, called the CACHE domain (introduced in
+   commit 96d91431d691 "powerpc/smp: Add Power9 scheduler topology")
+3. Cores on the same die, called the DIE domain.
+4. NUMA
+
+--
+Thanks and Regards
+gautham.
