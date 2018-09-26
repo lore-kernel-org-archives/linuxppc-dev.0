@@ -1,38 +1,48 @@
-Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <alexander.duyck@gmail.com>
+Received: from mail-it1-x142.google.com (mail-it1-x142.google.com
+ [IPv6:2607:f8b0:4864:20::142])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42L1DP0fGzzDqjk
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 00:54:12 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w8QEoC5B018398
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2018 10:54:09 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2mrb8funpy-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2018 10:54:08 -0400
-Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Wed, 26 Sep 2018 08:54:07 -0600
-Subject: RESCIND Re: [v02] REPOST powerpc/migration: Handle unitialized timer
- reset
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-To: Michael Ellerman <patch-notifications@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org
-Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>, minkim@us.ibm.com,
- Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-References: <42KxfY2bFQz9s4Z@ozlabs.org>
- <3b78a11a-296e-00ac-3648-b26ce7c8aaac@linux.vnet.ibm.com>
-Date: Wed, 26 Sep 2018 09:54:03 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42L40L12YxzF3Lb
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 02:58:54 +1000 (AEST)
+Received: by mail-it1-x142.google.com with SMTP id 139-v6so3859601itf.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2018 09:58:54 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <3b78a11a-296e-00ac-3648-b26ce7c8aaac@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <8816c05c-efc5-0b99-2de4-9cdf5480dd1a@linux.vnet.ibm.com>
+References: <1536927045-23536-1-git-send-email-rppt@linux.vnet.ibm.com>
+ <1536927045-23536-4-git-send-email-rppt@linux.vnet.ibm.com>
+In-Reply-To: <1536927045-23536-4-git-send-email-rppt@linux.vnet.ibm.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Wed, 26 Sep 2018 09:58:41 -0700
+Message-ID: <CAKgT0UdP=78RsWHMxFu4PD8a3AhA3eNcG68Z_9aGY0vhOKf7xA@mail.gmail.com>
+Subject: Re: [PATCH 03/30] mm: remove CONFIG_HAVE_MEMBLOCK
+To: rppt@linux.vnet.ibm.com
+Cc: linux-mm <linux-mm@kvack.org>, Andrew Morton <akpm@linux-foundation.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, chris@zankel.net,
+ David Miller <davem@davemloft.net>, Geert Uytterhoeven <geert@linux-m68k.org>,
+ green.hu@gmail.com, Greg KH <gregkh@linuxfoundation.org>, gxt@pku.edu.cn,
+ Ingo Molnar <mingo@redhat.com>,
+ jejb@parisc-linux.org, jonas@southpole.se, Jonathan Corbet <corbet@lwn.net>,
+ lftan@altera.com, msalter@redhat.com,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, mattst88@gmail.com,
+ mpe@ellerman.id.au,
+ Michal Hocko <mhocko@suse.com>, monstr@monstr.eu, palmer@sifive.com,
+ paul.burton@mips.com,
+ rkuo@codeaurora.org, richard@nod.at, dalias@libc.org,
+ Russell King - ARM Linux <linux@armlinux.org.uk>, fancer.lancer@gmail.com,
+ Thomas Gleixner <tglx@linutronix.de>, Tony Luck <tony.luck@intel.com>,
+ vgupta@synopsys.com,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, linux-alpha@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-c6x-dev@linux-c6x.org,
+ linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
+ LKML <linux-kernel@vger.kernel.org>, linux-m68k@lists.linux-m68k.org,
+ linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>, linux-riscv@lists.infradead.org,
+ linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+ linux-snps-arc@lists.infradead.org, linux-um@lists.infradead.org,
+ nios2-dev@lists.rocketboards.org, openrisc@lists.librecores.org,
+ sparclinux@vger.kernel.org, uclinux-h8-devel@lists.sourceforge.jp
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,75 +52,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello, Michael:
-    I am an idiot this morning.  Not enough coffee.
-I confused this posting with another.  Please forget the request.
+On Fri, Sep 14, 2018 at 5:11 AM Mike Rapoport <rppt@linux.vnet.ibm.com> wrote:
+>
+> All architecures use memblock for early memory management. There is no need
+> for the CONFIG_HAVE_MEMBLOCK configuration option.
+>
+> Signed-off-by: Mike Rapoport <rppt@linux.vnet.ibm.com>
 
-    We do want to omit 
+<snip>
 
-[PATCH v08 0/5] powerpc/hotplug: Update affinity for migrated CPUs
-https://lists.ozlabs.org/pipermail/linuxppc-dev/2018-July/176301.html
+> diff --git a/include/linux/memblock.h b/include/linux/memblock.h
+> index 5169205..4ae91fc 100644
+> --- a/include/linux/memblock.h
+> +++ b/include/linux/memblock.h
+> @@ -2,7 +2,6 @@
+>  #define _LINUX_MEMBLOCK_H
+>  #ifdef __KERNEL__
+>
+> -#ifdef CONFIG_HAVE_MEMBLOCK
+>  /*
+>   * Logical memory blocks.
+>   *
+> @@ -460,7 +459,6 @@ static inline phys_addr_t memblock_alloc(phys_addr_t size, phys_addr_t align)
+>  {
+>         return 0;
+>  }
+> -#endif /* CONFIG_HAVE_MEMBLOCK */
+>
+>  #endif /* __KERNEL__ */
 
-though.
-
-Very sorry for the inconvenience.
-
-Michael
-
-On 09/26/2018 09:44 AM, Michael Bringmann wrote:
-> Hello, Michael:
->     Please look at v03 of the patch set which was posted
-> just on 09/25/2018.  We had a last minute brainstorm of how
-> to simplify the code after the v02 REPOST.
->     Also, note that we would like to invalidate the set,
-> 
-> [PATCH v08 0/5] powerpc/hotplug: Update affinity for migrated CPUs
-> https://lists.ozlabs.org/pipermail/linuxppc-dev/2018-July/176301.html
-> 
-> as we think it is covered now by other code.
-> 
->     Thanks for your attention and assistance.
-> 
-> Michael
-> 
-> On 09/26/2018 07:13 AM, Michael Ellerman wrote:
->> On Thu, 2018-09-20 at 16:45:13 UTC, Michael Bringmann wrote:
->>> After migration of a powerpc LPAR, the kernel executes code to
->>> update the system state to reflect new platform characteristics.
->>> Such changes include modifications to device tree properties
->>> provided to the system by PHYP.  Property notifications received
->>> by the powerpc 'migration_store' code are passed along to the
->>> kernel in general through a call to 'of_update_property' which
->>> in turn passes such events back to all modules through entries like
->>> the '.notifier_call' function within the NUMA module.  When the
->>> NUMA module updates its state, it resets its event timer.  If this
->>> occurs after a previous call to 'stop_topology_update' or on a
->>> system without VPHN enabled, the code runs into an unitialized
->>> timer structure and crashes.  This patch adds a safety check
->>> along this path toward the problem code.
->>>
->>> Note: This crash was observed on every LPM in the 4.17-rc7 kernel
->>> (and in the 4.18 kernel) of a system with dedicated CPUs enabled.
->>> An example crash log without the patch is as follows.
->>>
->> ...
->>>
->>> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
->>
->> Applied to powerpc fixes, thanks.
->>
->> https://git.kernel.org/powerpc/c/8604895a34d92f5e186ceb931b0d1b
->>
->> cheers
->>
->>
-> 
-
--- 
-Michael W. Bringmann
-Linux Technology Center
-IBM Corporation
-Tie-Line  363-5196
-External: (512) 286-5196
-Cell:       (512) 466-0650
-mwb@linux.vnet.ibm.com
+There was an #else above this section and I believe it and the code
+after it needs to be stripped as well.
