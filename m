@@ -1,36 +1,61 @@
-Return-Path: <pku.leo@gmail.com>
-Received: from mail-ot1-f65.google.com (mail-ot1-f65.google.com
- [209.85.210.65])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <rppt@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42L5lK12FmzF3LF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 04:17:48 +1000 (AEST)
-Received: by mail-ot1-f65.google.com with SMTP id c12-v6so29134768otl.6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2018 11:17:48 -0700 (PDT)
-Received: from mail-ot1-f49.google.com (mail-ot1-f49.google.com.
- [209.85.210.49])
- by smtp.gmail.com with ESMTPSA id 63-v6sm5573749oti.68.2018.09.26.11.17.45
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Wed, 26 Sep 2018 11:17:45 -0700 (PDT)
-Received: by mail-ot1-f49.google.com with SMTP id j9-v6so29159595otl.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2018 11:17:45 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42L6422MQXzF3LK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 04:32:18 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w8QIT8Qu008539
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2018 14:32:15 -0400
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2mre6nuynb-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2018 14:32:15 -0400
+Received: from localhost
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.vnet.ibm.com>;
+ Wed, 26 Sep 2018 19:32:12 +0100
+Date: Wed, 26 Sep 2018 21:31:53 +0300
+From: Mike Rapoport <rppt@linux.vnet.ibm.com>
+To: Alexander Duyck <alexander.duyck@gmail.com>
+Cc: linux-mm <linux-mm@kvack.org>, Andrew Morton <akpm@linux-foundation.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, chris@zankel.net,
+ David Miller <davem@davemloft.net>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, green.hu@gmail.com,
+ Greg KH <gregkh@linuxfoundation.org>, gxt@pku.edu.cn,
+ Ingo Molnar <mingo@redhat.com>, jejb@parisc-linux.org,
+ jonas@southpole.se, Jonathan Corbet <corbet@lwn.net>, lftan@altera.com,
+ msalter@redhat.com, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ mattst88@gmail.com, mpe@ellerman.id.au, Michal Hocko <mhocko@suse.com>,
+ monstr@monstr.eu, palmer@sifive.com, paul.burton@mips.com,
+ rkuo@codeaurora.org, richard@nod.at, dalias@libc.org,
+ Russell King - ARM Linux <linux@armlinux.org.uk>,
+ fancer.lancer@gmail.com, Thomas Gleixner <tglx@linutronix.de>,
+ Tony Luck <tony.luck@intel.com>, vgupta@synopsys.com,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-c6x-dev@linux-c6x.org, linux-hexagon@vger.kernel.org,
+ linux-ia64@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+ linux-m68k@lists.linux-m68k.org, linux-mips@linux-mips.org,
+ linux-parisc@vger.kernel.org,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>,
+ linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, linux-snps-arc@lists.infradead.org,
+ linux-um@lists.infradead.org, nios2-dev@lists.rocketboards.org,
+ openrisc@lists.librecores.org, sparclinux@vger.kernel.org,
+ uclinux-h8-devel@lists.sourceforge.jp
+Subject: Re: [PATCH 03/30] mm: remove CONFIG_HAVE_MEMBLOCK
+References: <1536927045-23536-1-git-send-email-rppt@linux.vnet.ibm.com>
+ <1536927045-23536-4-git-send-email-rppt@linux.vnet.ibm.com>
+ <CAKgT0UdP=78RsWHMxFu4PD8a3AhA3eNcG68Z_9aGY0vhOKf7xA@mail.gmail.com>
 MIME-Version: 1.0
-References: <20180823213600.23426-1-alexandre.belloni@bootlin.com>
- <CAOesGMjDKKSNVccu4D579SiwL9zEU7ha7HQCHncvh2r4kpO6fQ@mail.gmail.com>
- <20180926092706.GA16644@piout.net>
-In-Reply-To: <20180926092706.GA16644@piout.net>
-From: Li Yang <leoyang.li@nxp.com>
-Date: Wed, 26 Sep 2018 13:15:15 -0500
-Message-ID: <CADRPPNQwWgU6OcE7CjxyrgSXjUjwYe4VY0gQD8jx6D+eT_DWrw@mail.gmail.com>
-Subject: Re: [PATCH 1/2] soc: fsl: qbman: qman_portal: defer probing when qman
- is not available
-To: alexandre.belloni@bootlin.com
-Cc: Olof Johansson <olof@lixom.net>, Roy Pledge <roy.pledge@nxp.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>, lkml <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAKgT0UdP=78RsWHMxFu4PD8a3AhA3eNcG68Z_9aGY0vhOKf7xA@mail.gmail.com>
+Message-Id: <20180926183152.GA4597@rapoport-lnx>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,63 +65,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 26, 2018 at 4:28 AM Alexandre Belloni
-<alexandre.belloni@bootlin.com> wrote:
->
-> On 25/09/2018 21:45:56+0200, Olof Johansson wrote:
-> > Hi,
+On Wed, Sep 26, 2018 at 09:58:41AM -0700, Alexander Duyck wrote:
+> On Fri, Sep 14, 2018 at 5:11 AM Mike Rapoport <rppt@linux.vnet.ibm.com> wrote:
 > >
+> > All architecures use memblock for early memory management. There is no need
+> > for the CONFIG_HAVE_MEMBLOCK configuration option.
 > >
-> > On Thu, Aug 23, 2018 at 11:36 PM Alexandre Belloni
-> > <alexandre.belloni@bootlin.com> wrote:
-> > >
-> > > If the qman driver (qman_ccsr) doesn't probe or fail to probe before
-> > > qman_portal, qm_ccsr_start will be either NULL or a stale pointer to an
-> > > unmapped page.
-> > >
-> > > This leads to a crash when probing  qman_portal as the init_pcfg function
-> > > calls qman_liodn_fixup that tries to read qman registers.
-> > >
-> > > Assume that qman didn't probe when the pool mask is 0.
-> > >
-> > > Signed-off-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
-> > > ---
-> > >  drivers/soc/fsl/qbman/qman_portal.c | 2 ++
-> > >  1 file changed, 2 insertions(+)
-> > >
-> > > diff --git a/drivers/soc/fsl/qbman/qman_portal.c b/drivers/soc/fsl/qbman/qman_portal.c
-> > > index a120002b630e..4fc80d2c8feb 100644
-> > > --- a/drivers/soc/fsl/qbman/qman_portal.c
-> > > +++ b/drivers/soc/fsl/qbman/qman_portal.c
-> > > @@ -277,6 +277,8 @@ static int qman_portal_probe(struct platform_device *pdev)
-> > >         }
-> > >
-> > >         pcfg->pools = qm_get_pools_sdqcr();
-> > > +       if (pcfg->pools == 0)
-> > > +               return -EPROBE_DEFER;
+> > Signed-off-by: Mike Rapoport <rppt@linux.vnet.ibm.com>
+> 
+> <snip>
+> 
+> > diff --git a/include/linux/memblock.h b/include/linux/memblock.h
+> > index 5169205..4ae91fc 100644
+> > --- a/include/linux/memblock.h
+> > +++ b/include/linux/memblock.h
+> > @@ -2,7 +2,6 @@
+> >  #define _LINUX_MEMBLOCK_H
+> >  #ifdef __KERNEL__
 > >
-> > This is quite late in the probe, after a bunch of resources have been claimed.
+> > -#ifdef CONFIG_HAVE_MEMBLOCK
+> >  /*
+> >   * Logical memory blocks.
+> >   *
+> > @@ -460,7 +459,6 @@ static inline phys_addr_t memblock_alloc(phys_addr_t size, phys_addr_t align)
+> >  {
+> >         return 0;
+> >  }
+> > -#endif /* CONFIG_HAVE_MEMBLOCK */
 > >
-> > Note that the ioremaps above this are doing unwinds, and you'll end up
-> > doing duplicate ioremaps if you come in and probe again.
-> >
-> > You should probably unwind those allocations, or move them to devm_*
-> > or do this check earlier in the function.
-> >
->
-> The actual chance of having that happen is quite small (this was coming
-> from a non working DT) and I mainly wanted to avoid a crash so the
-> platform could still boot. I would think moving to devm_ would be the
-> right thing to do.
+> >  #endif /* __KERNEL__ */
+> 
+> There was an #else above this section and I believe it and the code
+> after it needs to be stripped as well.
 
-Even if it is not failing with the upstreamed device trees, it is
-still good to harden the driver for possible issues.  Moving to devm_
-is definitely a right thing to do.  But I also think checking if the
-qman is already probed should be the first thing to do before starting
-to allocate resources and etc and rolling back later.  Probably we can
-move the qm_get_pools_sdqcr() to the begining of the probe to
-determine if qman is probed as it doesn't seem to depend on any of the
-setups done right now.
+Right, I've already sent the fix [1] and it's in mmots.
 
-Regards,
-Leo
+[1] https://lkml.org/lkml/2018/9/19/416
+
+-- 
+Sincerely yours,
+Mike.
