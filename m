@@ -1,20 +1,53 @@
-Return-Path: <msuchanek@suse.de>
+Return-Path: <mhocko@kernel.org>
 Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42L0Wy6m5tzF3Kb
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 00:22:38 +1000 (AEST)
-Date: Wed, 26 Sep 2018 16:22:32 +0200
-From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
-To: zhong jiang <zhongjiang@huawei.com>
-Cc: <paulus@samba.org>, <benh@kernel.crashing.org>, <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powerpc: Move a dereference below a NULL test
-Message-ID: <20180926162232.250c0090@naga>
-In-Reply-To: <1537962368-14019-1-git-send-email-zhongjiang@huawei.com>
-References: <1537962368-14019-1-git-send-email-zhongjiang@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42L0Xy5KCTzF3Lm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 00:23:30 +1000 (AEST)
+Date: Wed, 26 Sep 2018 16:23:19 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: Mike Rapoport <rppt@linux.vnet.ibm.com>
+Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, Chris Zankel <chris@zankel.net>,
+ "David S. Miller" <davem@davemloft.net>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Greentime Hu <green.hu@gmail.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Guan Xuetao <gxt@pku.edu.cn>, Ingo Molnar <mingo@redhat.com>,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ Jonas Bonn <jonas@southpole.se>, Jonathan Corbet <corbet@lwn.net>,
+ Ley Foon Tan <lftan@altera.com>, Mark Salter <msalter@redhat.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Matt Turner <mattst88@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Michal Simek <monstr@monstr.eu>, Palmer Dabbelt <palmer@sifive.com>,
+ Paul Burton <paul.burton@mips.com>, Richard Kuo <rkuo@codeaurora.org>,
+ Richard Weinberger <richard@nod.at>, Rich Felker <dalias@libc.org>,
+ Russell King <linux@armlinux.org.uk>,
+ Serge Semin <fancer.lancer@gmail.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Tony Luck <tony.luck@intel.com>, Vineet Gupta <vgupta@synopsys.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-c6x-dev@linux-c6x.org, linux-hexagon@vger.kernel.org,
+ linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-m68k@lists.linux-m68k.org, linux-mips@linux-mips.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, linux-snps-arc@lists.infradead.org,
+ linux-um@lists.infradead.org, nios2-dev@lists.rocketboards.org,
+ openrisc@lists.librecores.org, sparclinux@vger.kernel.org,
+ uclinux-h8-devel@lists.sourceforge.jp
+Subject: Re: [PATCH 14/30] memblock: add align parameter to
+ memblock_alloc_node()
+Message-ID: <20180926142319.GA6278@dhcp22.suse.cz>
+References: <1536927045-23536-1-git-send-email-rppt@linux.vnet.ibm.com>
+ <1536927045-23536-15-git-send-email-rppt@linux.vnet.ibm.com>
+ <20180926093127.GO6278@dhcp22.suse.cz>
+ <20180926093648.GP6278@dhcp22.suse.cz>
+ <20180926134335.GF4628@rapoport-lnx>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180926134335.GF4628@rapoport-lnx>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,32 +57,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 26 Sep 2018 19:46:08 +0800
-zhong jiang <zhongjiang@huawei.com> wrote:
-
-> It is safe to move dereference below a NULL test.
+On Wed 26-09-18 16:43:35, Mike Rapoport wrote:
+> On Wed, Sep 26, 2018 at 11:36:48AM +0200, Michal Hocko wrote:
+> > On Wed 26-09-18 11:31:27, Michal Hocko wrote:
+> > > On Fri 14-09-18 15:10:29, Mike Rapoport wrote:
+> > > > With the align parameter memblock_alloc_node() can be used as drop in
+> > > > replacement for alloc_bootmem_pages_node() and __alloc_bootmem_node(),
+> > > > which is done in the following patches.
+> > > 
+> > > /me confused. Why do we need this patch at all? Maybe it should be
+> > > folded into the later patch you are refereing here?
+> > 
+> > OK, I can see 1536927045-23536-17-git-send-email-rppt@linux.vnet.ibm.com
+> > now. If you are going to repost for whatever reason please merge those
+> > two. Also I would get rid of the implicit "0 implies SMP_CACHE_BYTES"
+> > behavior. It is subtle and you have to dig deep to find that out. Why
+> > not make it explicit?
 > 
-> Signed-off-by: zhong jiang <zhongjiang@huawei.com>
-> ---
->  arch/powerpc/kernel/cacheinfo.c | 5 ++---
->  1 file changed, 2 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/cacheinfo.c
-> b/arch/powerpc/kernel/cacheinfo.c index a8f20e5..7f19714 100644
-> --- a/arch/powerpc/kernel/cacheinfo.c
-> +++ b/arch/powerpc/kernel/cacheinfo.c
-> @@ -401,14 +401,13 @@ static struct cache
-> *cache_lookup_or_instantiate(struct device_node *node, struct cache
-> *cache; 
->  	cache = cache_lookup_by_node(node);
-> +	if (!cache)
-> +		cache = cache_do_one_devnode(node, level);
->  
->  	WARN_ONCE(cache && cache->level != level,
+> Agree. I'd just prefer to make it a separate patch rather then resend the
+> whole series. 
 
-This has also null test so cache should be dereferenced only when
-non-null here.
+Sure, no objection from me.
 
-Thanks
-
-Michal
+-- 
+Michal Hocko
+SUSE Labs
