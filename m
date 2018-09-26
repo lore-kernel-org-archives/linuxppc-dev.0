@@ -1,22 +1,27 @@
-Return-Path: <helgaas@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <robherring2@gmail.com>
+Received: from mail-ot1-f66.google.com (mail-ot1-f66.google.com
+ [209.85.210.66])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42L7DX2t1DzF3MZ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 05:24:44 +1000 (AEST)
-Date: Wed, 26 Sep 2018 14:24:40 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: YueHaibing <yuehaibing@huawei.com>
-Cc: Russell Currey <ruscur@russell.cc>, Sam Bobroff <sbobroff@linux.ibm.com>,
- Oliver O'Halloran <oohall@gmail.com>,
- Bjorn Helgaas <bhelgaas@google.com>, linuxppc-dev@lists.ozlabs.org,
- linux-pci@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH -next] PCI/AER: Remove duplicated include from err.c
-Message-ID: <20180926192440.GC28024@bhelgaas-glaptop.roam.corp.google.com>
-References: <1537959610-71713-1-git-send-email-yuehaibing@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42LCSf2sQ5zF3Ld
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 08:35:29 +1000 (AEST)
+Received: by mail-ot1-f66.google.com with SMTP id q4-v6so579491otf.13
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2018 15:35:29 -0700 (PDT)
+Date: Wed, 26 Sep 2018 17:35:25 -0500
+From: Rob Herring <robh@kernel.org>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Wim Van Sebroeck <wim@linux-watchdog.org>,
+ Guenter Roeck <linux@roeck-us.net>, Radu Rendec <radu.rendec@gmail.com>,
+ Mark Rutland <mark.rutland@arm.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-watchdog@vger.kernel.org,
+ devicetree@vger.kernel.org
+Subject: Re: [PATCH v3 3/3] dt-bindings: watchdog: add mpc8xxx-wdt support
+Message-ID: <20180926223525.GA25002@bogus>
+References: <c09f541d459c29aca40d54fff152d5645e24b50d.1537163776.git.christophe.leroy@c-s.fr>
+ <e3e0bcfd7b779b978d07e088a8bd667ea9ddf4aa.1537163780.git.christophe.leroy@c-s.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1537959610-71713-1-git-send-email-yuehaibing@huawei.com>
+In-Reply-To: <e3e0bcfd7b779b978d07e088a8bd667ea9ddf4aa.1537163780.git.christophe.leroy@c-s.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,29 +31,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 26, 2018 at 11:00:10AM +0000, YueHaibing wrote:
-> Remove duplicated include.
+On Mon, 17 Sep 2018 06:22:53 +0000 (UTC), Christophe Leroy wrote:
+> Add description of DT bindings for mpc8xxx-wdt driver which
+> handles the CPU watchdog timer on the mpc83xx, mpc86xx and mpc8xx.
 > 
-> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
-
-Applied to pci/hotplug for v4.20, thanks!
-
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 > ---
->  drivers/pci/pcie/err.c | 1 -
->  1 file changed, 1 deletion(-)
+>  .../devicetree/bindings/watchdog/mpc8xxx-wdt.txt   | 25 ++++++++++++++++++++++
+>  1 file changed, 25 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/watchdog/mpc8xxx-wdt.txt
 > 
-> diff --git a/drivers/pci/pcie/err.c b/drivers/pci/pcie/err.c
-> index 4da2a62b..773197a 100644
-> --- a/drivers/pci/pcie/err.c
-> +++ b/drivers/pci/pcie/err.c
-> @@ -12,7 +12,6 @@
->  
->  #include <linux/pci.h>
->  #include <linux/module.h>
-> -#include <linux/pci.h>
->  #include <linux/kernel.h>
->  #include <linux/errno.h>
->  #include <linux/aer.h>
-> 
-> 
-> 
+
+Reviewed-by: Rob Herring <robh@kernel.org>
