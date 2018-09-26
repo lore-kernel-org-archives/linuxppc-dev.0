@@ -1,22 +1,22 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <helgaas@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42L73X49DlzF3Ld
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 05:16:56 +1000 (AEST)
-Date: Wed, 26 Sep 2018 14:16:16 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4 1/2] powerpc/32: add stack protector support
-Message-ID: <20180926191615.GO23155@gate.crashing.org>
-References: <d6c43ab708bf9ae1266c745fece457ed2da43d7c.1537961921.git.christophe.leroy@c-s.fr>
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42L7DX2t1DzF3MZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 05:24:44 +1000 (AEST)
+Date: Wed, 26 Sep 2018 14:24:40 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: YueHaibing <yuehaibing@huawei.com>
+Cc: Russell Currey <ruscur@russell.cc>, Sam Bobroff <sbobroff@linux.ibm.com>,
+ Oliver O'Halloran <oohall@gmail.com>,
+ Bjorn Helgaas <bhelgaas@google.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-pci@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH -next] PCI/AER: Remove duplicated include from err.c
+Message-ID: <20180926192440.GC28024@bhelgaas-glaptop.roam.corp.google.com>
+References: <1537959610-71713-1-git-send-email-yuehaibing@huawei.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <d6c43ab708bf9ae1266c745fece457ed2da43d7c.1537961921.git.christophe.leroy@c-s.fr>
+In-Reply-To: <1537959610-71713-1-git-send-email-yuehaibing@huawei.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,24 +26,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 26, 2018 at 11:40:38AM +0000, Christophe Leroy wrote:
-> +static __always_inline void boot_init_stack_canary(void)
-> +{
-> +	unsigned long canary;
-> +
-> +	/* Try to get a semi random initial value. */
-> +	get_random_bytes(&canary, sizeof(canary));
-> +	canary ^= mftb();
-> +	canary ^= LINUX_VERSION_CODE;
-> +
-> +	current->stack_canary = canary;
-> +}
+On Wed, Sep 26, 2018 at 11:00:10AM +0000, YueHaibing wrote:
+> Remove duplicated include.
+> 
+> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 
-I still think you should wait until there is entropy available.  You
-haven't answered my questions about that (or I didn't see them): what
-does the kernel do in other similar cases?
+Applied to pci/hotplug for v4.20, thanks!
 
-Looks great otherwise!
-
-
-Segher
+> ---
+>  drivers/pci/pcie/err.c | 1 -
+>  1 file changed, 1 deletion(-)
+> 
+> diff --git a/drivers/pci/pcie/err.c b/drivers/pci/pcie/err.c
+> index 4da2a62b..773197a 100644
+> --- a/drivers/pci/pcie/err.c
+> +++ b/drivers/pci/pcie/err.c
+> @@ -12,7 +12,6 @@
+>  
+>  #include <linux/pci.h>
+>  #include <linux/module.h>
+> -#include <linux/pci.h>
+>  #include <linux/kernel.h>
+>  #include <linux/errno.h>
+>  #include <linux/aer.h>
+> 
+> 
+> 
