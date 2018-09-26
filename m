@@ -1,28 +1,48 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+Return-Path: <mhocko@kernel.org>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42KtHd0d93zF3Lc
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2018 19:41:32 +1000 (AEST)
-Subject: Re: [PATCH v3 2/2] powerpc/64: add stack protector support
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: Russell Currey <ruscur@russell.cc>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <2b934594d21ade67a4092637cf9e6b7d2d131187.1537801613.git.christophe.leroy@c-s.fr>
- <e84d65fb4744cf8260eb2fc9474765a7f3a60573.1537801613.git.christophe.leroy@c-s.fr>
- <0797fc91-6400-2508-1cc0-4bba78aafbbb@c-s.fr>
- <d203ccfce64c8f9fd403162f2fa3807ade7f1d28.camel@russell.cc>
- <30fb4e6b-0981-c53c-a1db-94138eaad268@c-s.fr>
- <20180926092806.GM23155@gate.crashing.org>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <284752d1-6c32-bdca-72d3-4d8616b26fbf@c-s.fr>
-Date: Wed, 26 Sep 2018 11:41:26 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42KtJ84L0mzF3Ll
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2018 19:42:00 +1000 (AEST)
+Date: Wed, 26 Sep 2018 11:41:54 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: Mike Rapoport <rppt@linux.vnet.ibm.com>
+Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, Chris Zankel <chris@zankel.net>,
+ "David S. Miller" <davem@davemloft.net>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Greentime Hu <green.hu@gmail.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Guan Xuetao <gxt@pku.edu.cn>, Ingo Molnar <mingo@redhat.com>,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ Jonas Bonn <jonas@southpole.se>, Jonathan Corbet <corbet@lwn.net>,
+ Ley Foon Tan <lftan@altera.com>, Mark Salter <msalter@redhat.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Matt Turner <mattst88@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Michal Simek <monstr@monstr.eu>, Palmer Dabbelt <palmer@sifive.com>,
+ Paul Burton <paul.burton@mips.com>, Richard Kuo <rkuo@codeaurora.org>,
+ Richard Weinberger <richard@nod.at>, Rich Felker <dalias@libc.org>,
+ Russell King <linux@armlinux.org.uk>,
+ Serge Semin <fancer.lancer@gmail.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Tony Luck <tony.luck@intel.com>, Vineet Gupta <vgupta@synopsys.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-c6x-dev@linux-c6x.org, linux-hexagon@vger.kernel.org,
+ linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-m68k@lists.linux-m68k.org, linux-mips@linux-mips.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, linux-snps-arc@lists.infradead.org,
+ linux-um@lists.infradead.org, nios2-dev@lists.rocketboards.org,
+ openrisc@lists.librecores.org, sparclinux@vger.kernel.org,
+ uclinux-h8-devel@lists.sourceforge.jp
+Subject: Re: [PATCH 00/30] mm: remove bootmem allocator
+Message-ID: <20180926094154.GT6278@dhcp22.suse.cz>
+References: <1536927045-23536-1-git-send-email-rppt@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20180926092806.GM23155@gate.crashing.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1536927045-23536-1-git-send-email-rppt@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,38 +52,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri 14-09-18 15:10:15, Mike Rapoport wrote:
+[...]
+>  326 files changed, 866 insertions(+), 2539 deletions(-)
+>  delete mode 100644 include/linux/bootmem.h
+>  delete mode 100644 mm/bootmem.c
+>  delete mode 100644 mm/nobootmem.c
 
+I _really_ love this part the most! Not only we got rid of the
+translation which always has been a headache but also this nicely shows
+how having multiple allocators hurt. I believe further cleanups on top
+will make the boot allocator even a place where you look and your eyes
+do not want to jump out.
 
-Le 26/09/2018 à 11:28, Segher Boessenkool a écrit :
-> On Wed, Sep 26, 2018 at 09:58:30AM +0200, Christophe LEROY wrote:
->> Segher, any idea about this problem ?
-> 
->>>> arch/powerpc/platforms/powermac/bootx_init.o: In function `bootx_printf':
->>>> /var/lib/jenkins-slave/workspace/snowpatch/snowpatch-linux-
->>>> sparse/linux/arch/powerpc/platforms/powermac/bootx_init.c:88:
->>>> undefined reference to `__stack_chk_fail_local'
-> 
-> Are you building as PIC?  Are you linking libssp_nonshared.a?  Why not?
+I have only went through patches without my acks from the previous
+iteration and there are only minor comments. This looks good overall.
 
-Spotted, thanks.
-
-arch/powerpc/platforms/powermac/Makefile contains:
-
-CFLAGS_bootx_init.o  		+= -fPIC
-
-Does it mean we should add -lssp_nonshared to LDFLAGS_vmlinux ?
-
-Or maybe stack protection on bootx_init doesn't make much sense and we 
-could just do the following ?
-
-CFLAGS_bootx_init.o  		+= -fPIC $(call cc-option, -fno-stack-protector)
-
-Christophe
-
-
-> 
-> :-)
-> 
-> 
-> Segher
-> 
+Nice work Mike!
+-- 
+Michal Hocko
+SUSE Labs
