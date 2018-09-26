@@ -1,19 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42KxfY3y98zF3Jl
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2018 22:13:09 +1000 (AEST)
-In-Reply-To: <6a7769a5-c8bc-f857-61cc-a76cdd98b28c@linux.vnet.ibm.com>
-To: Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42KxfZ3VRMzF3Jl
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2018 22:13:10 +1000 (AEST)
+In-Reply-To: <20180924072704.6200-1-mikey@neuling.org>
+To: Michael Neuling <mikey@neuling.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Michael Bringmann <mwb@linux.vnet.ibm.com>, minkim@us.ibm.com,
- Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Subject: Re: [v02] REPOST powerpc/migration: Handle unitialized timer reset
-Message-Id: <42KxfY2bFQz9s4Z@ozlabs.org>
-Date: Wed, 26 Sep 2018 22:13:09 +1000 (AEST)
+Cc: Michael Neuling <mikey@neuling.org>, Nicholas Piggin <npiggin@gmail.com>,
+ aneesh.kumar@linux.vnet.ibm.com, Breno Leitao <leitao@debian.org>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: powerpc/tm: Fix userspace r13 corruption
+Message-Id: <42KxfZ2RhHz9s4s@ozlabs.org>
+Date: Wed, 26 Sep 2018 22:13:10 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,31 +22,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2018-09-20 at 16:45:13 UTC, Michael Bringmann wrote:
-> After migration of a powerpc LPAR, the kernel executes code to
-> update the system state to reflect new platform characteristics.
-> Such changes include modifications to device tree properties
-> provided to the system by PHYP.  Property notifications received
-> by the powerpc 'migration_store' code are passed along to the
-> kernel in general through a call to 'of_update_property' which
-> in turn passes such events back to all modules through entries like
-> the '.notifier_call' function within the NUMA module.  When the
-> NUMA module updates its state, it resets its event timer.  If this
-> occurs after a previous call to 'stop_topology_update' or on a
-> system without VPHN enabled, the code runs into an unitialized
-> timer structure and crashes.  This patch adds a safety check
-> along this path toward the problem code.
+On Mon, 2018-09-24 at 07:27:04 UTC, Michael Neuling wrote:
+> When we treclaim we store the userspace checkpointed r13 to a scratch
+> SPR and then later save the scratch SPR to the user thread struct.
 > 
-> Note: This crash was observed on every LPM in the 4.17-rc7 kernel
-> (and in the 4.18 kernel) of a system with dedicated CPUs enabled.
-> An example crash log without the patch is as follows.
+> Unfortunately, this doesn't work as accessing the user thread struct
+> can take an SLB fault and the SLB fault handler will write the same
+> scratch SPRG that now contains the userspace r13.
 > 
-...
+> To fix this, we store r13 to the kernel stack (which can't fault)
+> before we access the user thread struct.
 > 
-> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
+> Found by running P8 guest + powervm + disable_1tb_segments + TM. Seen
+> as a random userspace segfault with r13 looking like a kernel address.
+> 
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> Reviewed-by: Breno Leitao <leitao@debian.org>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/8604895a34d92f5e186ceb931b0d1b
+https://git.kernel.org/powerpc/c/cf13435b730a502e814c63c84d93db
 
 cheers
