@@ -2,9 +2,9 @@ Return-Path: <mhocko@kernel.org>
 Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Kst11zvlzDrhl
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2018 19:22:48 +1000 (AEST)
-Date: Wed, 26 Sep 2018 11:22:39 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Ksvc1nyFzF1S0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2018 19:24:12 +1000 (AEST)
+Date: Wed, 26 Sep 2018 11:24:04 +0200
 From: Michal Hocko <mhocko@kernel.org>
 To: Mike Rapoport <rppt@linux.vnet.ibm.com>
 Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
@@ -37,13 +37,13 @@ Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
  linux-um@lists.infradead.org, nios2-dev@lists.rocketboards.org,
  openrisc@lists.librecores.org, sparclinux@vger.kernel.org,
  uclinux-h8-devel@lists.sourceforge.jp
-Subject: Re: [PATCH 02/30] mm: remove CONFIG_NO_BOOTMEM
-Message-ID: <20180926092239.GK6278@dhcp22.suse.cz>
+Subject: Re: [PATCH 03/30] mm: remove CONFIG_HAVE_MEMBLOCK
+Message-ID: <20180926092404.GL6278@dhcp22.suse.cz>
 References: <1536927045-23536-1-git-send-email-rppt@linux.vnet.ibm.com>
- <1536927045-23536-3-git-send-email-rppt@linux.vnet.ibm.com>
+ <1536927045-23536-4-git-send-email-rppt@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1536927045-23536-3-git-send-email-rppt@linux.vnet.ibm.com>
+In-Reply-To: <1536927045-23536-4-git-send-email-rppt@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,16 +53,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri 14-09-18 15:10:17, Mike Rapoport wrote:
-> All achitectures select NO_BOOTMEM which essentially becomes 'Y' for any
-> kernel configuration and therefore it can be removed.
+On Fri 14-09-18 15:10:18, Mike Rapoport wrote:
+> All architecures use memblock for early memory management. There is no need
+> for the CONFIG_HAVE_MEMBLOCK configuration option.
 
-git grep suggests that DEFERRED_STRUCT_PAGE_INIT still depends on
-NO_BOOTMEM but I have a vague feeling that I've seen a patch to address
-that. It would be great to have it folded to this one.
+git grep says
+arch/csky/Kconfig:  select HAVE_MEMBLOCK
 
 > Signed-off-by: Mike Rapoport <rppt@linux.vnet.ibm.com>
 
+Other than that
 Acked-by: Michal Hocko <mhocko@suse.com>
 -- 
 Michal Hocko
