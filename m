@@ -1,36 +1,37 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <danielwa@cisco.com>
+Received: from rcdn-iport-2.cisco.com (rcdn-iport-2.cisco.com [173.37.86.73])
+ (using TLSv1.2 with cipher DHE-RSA-SEED-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Lhgg0bsvzF37b
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2018 03:31:42 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w8RHTfYI018311
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 13:31:40 -0400
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ms2amv1y4-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 13:31:40 -0400
-Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Thu, 27 Sep 2018 13:31:39 -0400
-Subject: Re: [PATCH] powerpc/rtas: Fix a potential race between CPU-Offline &
- Migration
-To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-References: <1538067112-11493-1-git-send-email-ego@linux.vnet.ibm.com>
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Date: Thu, 27 Sep 2018 12:31:34 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42LjlB3LC8zF37d
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2018 04:19:50 +1000 (AEST)
+Subject: Re: [PATCH 0/8] add generic builtin command line
+To: Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Maksym Kokhan <maksym.kokhan@globallogic.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ Rob Herring <robh+dt@kernel.org>, Frank Rowand <frowand.list@gmail.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>,
+ the arch/x86 maintainers <x86@kernel.org>,
+ Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon
+ <will.deacon@arm.com>, Ralf Baechle <ralf@linux-mips.org>,
+ Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Daniel Walker <dwalker@fifo99.com>, Andrii Bordunov <aborduno@cisco.com>,
+ Ruslan Bilovol <rbilovol@cisco.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Devicetree List <devicetree@vger.kernel.org>,
+ linux-efi <linux-efi@vger.kernel.org>, linux-mips
+ <linux-mips@linux-mips.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+References: <1538067309-5711-1-git-send-email-maksym.kokhan@globallogic.com>
+ <CAKv+Gu-AxtOO04iwPSri12tkb9NRugXV9E2LGrfJT-LJjf4_ow@mail.gmail.com>
+From: Daniel Walker <danielwa@cisco.com>
+Message-ID: <3320a561-2287-63f7-2162-84a639a22a8a@cisco.com>
+Date: Thu, 27 Sep 2018 11:08:51 -0700
 MIME-Version: 1.0
-In-Reply-To: <1538067112-11493-1-git-send-email-ego@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <fa97b7f0-0cef-fc47-6566-216e399ac52a@linux.vnet.ibm.com>
+In-Reply-To: <CAKv+Gu-AxtOO04iwPSri12tkb9NRugXV9E2LGrfJT-LJjf4_ow@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,66 +41,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/27/2018 11:51 AM, Gautham R. Shenoy wrote:
-> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+On 09/27/2018 10:05 AM, Ard Biesheuvel wrote:
+> On 27 September 2018 at 18:55, Maksym Kokhan
+> <maksym.kokhan@globallogic.com> wrote:
+>> There were series of patches [1] for 4.3.0-rc3, that allowed
+>> architectures to use a generic builtin command line. I have rebased
+>> these patches on kernel 4.19.0-rc4.
+>>
 > 
-> Live Partition Migrations require all the present CPUs to execute the
-> H_JOIN call, and hence rtas_ibm_suspend_me() onlines any offline CPUs
-> before initiating the migration for this purpose.
-> 
-> The commit 85a88cabad57
-> ("powerpc/pseries: Disable CPU hotplug across migrations")
-> disables any CPU-hotplug operations once all the offline CPUs are
-> brought online to prevent any further state change. Once the
-> CPU-Hotplug operation is disabled, the code assumes that all the CPUs
-> are online.
-> 
-> However, there is a minor window in rtas_ibm_suspend_me() between
-> onlining the offline CPUs and disabling CPU-Hotplug when a concurrent
-> CPU-offline operations initiated by the userspace can succeed thereby
-> nullifying the the aformentioned assumption. In this unlikely case
-> these offlined CPUs will not call H_JOIN, resulting in a system hang.
-> 
-> Fix this by verifying that all the present CPUs are actually online
-> after CPU-Hotplug has been disabled, failing which we return from
-> rtas_ibm_suspend_me() with -EBUSY.
+> Could you please elaborate on the purpose of this series? Is it simply
+> to align between architectures? Does it solve an actual problem?
 
-Would we also want to havr the ability to re-try onlining all of the cpus
-before failing the migration?
+1) It removed a lot of code duplication between architecture
 
-This would involve a bigger code change as the current code to online all
-CPUs would work in its current form.
+2) At Cisco we have issues where our bootloaders having default boot 
+arguments. Some platforms we can't update the boot loader and it's 
+helpful to be able to have boot arguments which are prepended to the 
+bootloader arguments , and some parameters which are appended. These 
+changes allow that.
 
--Nathan
-
-> 
-> Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-> Cc: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-> Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
-> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/kernel/rtas.c | 10 ++++++++++
->  1 file changed, 10 insertions(+)
-> 
-> diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-> index 2c7ed31..27f6fd3 100644
-> --- a/arch/powerpc/kernel/rtas.c
-> +++ b/arch/powerpc/kernel/rtas.c
-> @@ -982,6 +982,16 @@ int rtas_ibm_suspend_me(u64 handle)
->  	}
-> 
->  	cpu_hotplug_disable();
-> +
-> +	/* Check if we raced with a CPU-Offline Operation */
-> +	if (unlikely(!cpumask_equal(cpu_present_mask, cpu_online_mask))) {
-> +		pr_err("%s: Raced against a concurrent CPU-Offline\n",
-> +		       __func__);
-> +		atomic_set(&data.error, -EBUSY);
-> +		cpu_hotplug_enable();
-> +		goto out;
-> +	}
-> +
->  	stop_topology_update();
-> 
->  	/* Call function on all CPUs.  One of us will make the
-> 
+Daniel
