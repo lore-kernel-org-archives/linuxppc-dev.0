@@ -2,78 +2,80 @@ Return-Path: <SRS0=O7I3=MJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EBE5FC43382
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Sep 2018 18:22:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C9CF8C43382
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Sep 2018 19:27:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 21DC221708
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Sep 2018 18:22:06 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=cisco.com header.i=@cisco.com header.b="DoP2xIca"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 21DC221708
-Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=cisco.com
+	by mail.kernel.org (Postfix) with ESMTPS id 1F75D216C4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Sep 2018 19:27:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1F75D216C4
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42Ljnl6Q80zF38p
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 04:22:03 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=cisco.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42LlDf71SnzF37q
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 05:26:58 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=cisco.com header.i=@cisco.com header.b="DoP2xIca";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=209.85.210.65; helo=mail-ot1-f65.google.com;
+ envelope-from=pku.leo@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=cisco.com
- (client-ip=173.37.86.73; helo=rcdn-iport-2.cisco.com;
- envelope-from=danielwa@cisco.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none)
- header.from=cisco.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=cisco.com header.i=@cisco.com header.b="DoP2xIca"; 
- dkim-atps=neutral
-X-Greylist: delayed 646 seconds by postgrey-1.36 at bilbo;
- Fri, 28 Sep 2018 04:19:50 AEST
-Received: from rcdn-iport-2.cisco.com (rcdn-iport-2.cisco.com [173.37.86.73])
- (using TLSv1.2 with cipher DHE-RSA-SEED-SHA (128/128 bits))
+ dmarc=fail (p=none dis=none) header.from=nxp.com
+Received: from mail-ot1-f65.google.com (mail-ot1-f65.google.com
+ [209.85.210.65])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42LjlB3LC8zF37d
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2018 04:19:50 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=cisco.com; i=@cisco.com; l=843; q=dns/txt; s=iport;
- t=1538072390; x=1539281990;
- h=subject:to:cc:references:from:message-id:date:
- mime-version:in-reply-to:content-transfer-encoding;
- bh=cAG8rOD6AL/BWLmyRIVLF6FwD6JtQPyY8cfvn+rw6AM=;
- b=DoP2xIcaiZhOkUr6PhlZQSbf7BMlHyKAyWGWuketCWunge8dIvGItlCr
- ozjmu821CwFw6w0TiRyezJDDTTmMnM2GRCRm/8/O66j4iOV6cmgq0+Dks
- fb0ptZwz0tMEFDkCbPDvqdy5osUyYsEXB3g4lCELw1ClG7PYcAkfSaJGv w=;
-X-IronPort-AV: E=Sophos;i="5.54,311,1534809600"; d="scan'208";a="461535457"
-Received: from alln-core-10.cisco.com ([173.36.13.132])
- by rcdn-iport-2.cisco.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
- 27 Sep 2018 18:08:56 +0000
-Received: from [10.24.65.89] ([10.24.65.89])
- by alln-core-10.cisco.com (8.15.2/8.15.2) with ESMTP id w8RI8pMg000694;
- Thu, 27 Sep 2018 18:08:54 GMT
-Subject: Re: [PATCH 0/8] add generic builtin command line
-To: Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Maksym Kokhan <maksym.kokhan@globallogic.com>
-References: <1538067309-5711-1-git-send-email-maksym.kokhan@globallogic.com>
- <CAKv+Gu-AxtOO04iwPSri12tkb9NRugXV9E2LGrfJT-LJjf4_ow@mail.gmail.com>
-From: Daniel Walker <danielwa@cisco.com>
-Message-ID: <3320a561-2287-63f7-2162-84a639a22a8a@cisco.com>
-Date: Thu, 27 Sep 2018 11:08:51 -0700
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42LlBR2sMvzF37p
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2018 05:25:02 +1000 (AEST)
+Received: by mail-ot1-f65.google.com with SMTP id o13-v6so3708565otl.4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 12:25:02 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=EzsjO9h7V10qHOZxD5XIsRojhm72Dwp0dDZrz1FkINA=;
+ b=SRQflM2/bovdSATDiuOTJk7kCVoJlOOLo9d2R+1KTAELYBnWtRfExZuqTpareuWWia
+ 88HqkBccnFp9sa2Wpirbl8Ae3R1sNcjJRXu/j8EgrnPW1foy7xrseGOKiLNxMp6oqHlP
+ 2PSMc4/cvvtR4QNcuumFs9YjmkINbCekQwwFazEpWFIr5PY1l/ONuLmwCKqNbvZIuLnI
+ +fM7MPh+ncbJAGVD3fna9P/ySrHXhxZejewwRku/L1sV9/tzFyLmCozrZ4AZIN0XJfRF
+ DLqQmVE7kxwJ0pd1C137BQyc6+b7B9VzAl1LlB+4blSiqoUpU1tzJfyOFfLyQitHx4cV
+ 4ceA==
+X-Gm-Message-State: ABuFfohr8aWnFypvHaMtb8k2yUHO+ZlRHBTFkRy0OH99htLcucHuprUt
+ QogcuJgXuu+/fYMNuM4ymh4+xf3z2fRwpQ==
+X-Google-Smtp-Source: ACcGV620AafDUZ/WTmTCeGGB6jTvia69b2pa5tOmeF8mfkO4XPKruPJBlu/T5AshDw2W/ceHWZLGCw==
+X-Received: by 2002:a9d:4ea:: with SMTP id 97-v6mr7313960otm.99.1538076300791; 
+ Thu, 27 Sep 2018 12:25:00 -0700 (PDT)
+Received: from mail-oi1-f170.google.com (mail-oi1-f170.google.com.
+ [209.85.167.170])
+ by smtp.gmail.com with ESMTPSA id z2-v6sm801573oib.40.2018.09.27.12.24.59
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Thu, 27 Sep 2018 12:24:59 -0700 (PDT)
+Received: by mail-oi1-f170.google.com with SMTP id j68-v6so3197032oib.7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 12:24:59 -0700 (PDT)
+X-Received: by 2002:aca:5217:: with SMTP id
+ g23-v6mr1132684oib.293.1538076299687; 
+ Thu, 27 Sep 2018 12:24:59 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <CAKv+Gu-AxtOO04iwPSri12tkb9NRugXV9E2LGrfJT-LJjf4_ow@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Outbound-SMTP-Client: 10.24.65.89, [10.24.65.89]
-X-Outbound-Node: alln-core-10.cisco.com
+References: <20180823213600.23426-1-alexandre.belloni@bootlin.com>
+ <CAOesGMjDKKSNVccu4D579SiwL9zEU7ha7HQCHncvh2r4kpO6fQ@mail.gmail.com>
+ <20180926092706.GA16644@piout.net>
+ <CADRPPNQwWgU6OcE7CjxyrgSXjUjwYe4VY0gQD8jx6D+eT_DWrw@mail.gmail.com>
+In-Reply-To: <CADRPPNQwWgU6OcE7CjxyrgSXjUjwYe4VY0gQD8jx6D+eT_DWrw@mail.gmail.com>
+From: Li Yang <leoyang.li@nxp.com>
+Date: Thu, 27 Sep 2018 14:24:48 -0500
+X-Gmail-Original-Message-ID: <CADRPPNRTWSLapqLHO=y5_Rcbh27CigAjPuorLYPrzqxUGYt-9Q@mail.gmail.com>
+Message-ID:
+ <CADRPPNRTWSLapqLHO=y5_Rcbh27CigAjPuorLYPrzqxUGYt-9Q@mail.gmail.com>
+Subject: Re: [PATCH 1/2] soc: fsl: qbman: qman_portal: defer probing when qman
+ is not available
+To: alexandre.belloni@bootlin.com, Laurentiu Tudor <laurentiu.tudor@nxp.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,43 +87,85 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mips <linux-mips@linux-mips.org>,
- linux-efi <linux-efi@vger.kernel.org>, Ruslan Bilovol <rbilovol@cisco.com>,
- Will Deacon <will.deacon@arm.com>, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>, Daniel Walker <dwalker@fifo99.com>,
- Frank Rowand <frowand.list@gmail.com>,
- the arch/x86 maintainers <x86@kernel.org>,
- Russell King <linux@armlinux.org.uk>, Ingo Molnar <mingo@redhat.com>,
- Catalin Marinas <catalin.marinas@arm.com>, James Hogan <jhogan@kernel.org>,
- Devicetree List <devicetree@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>,
- Borislav Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>,
- Andrii Bordunov <aborduno@cisco.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Olof Johansson <olof@lixom.net>, Roy Pledge <roy.pledge@nxp.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ lkml <linux-kernel@vger.kernel.org>,
+ "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
+ <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
-Message-ID: <20180927180851.taMdWhdyT-4dg4dzK4WTFJLa7I-56bPGiSlShLunXyg@z>
+Message-ID: <20180927192448.d4W-kd7j7mQ1JJdXfPI0WwBNut2yMKASb9zHVba_Rjc@z>
 
-On 09/27/2018 10:05 AM, Ard Biesheuvel wrote:
-> On 27 September 2018 at 18:55, Maksym Kokhan
-> <maksym.kokhan@globallogic.com> wrote:
->> There were series of patches [1] for 4.3.0-rc3, that allowed
->> architectures to use a generic builtin command line. I have rebased
->> these patches on kernel 4.19.0-rc4.
->>
-> 
-> Could you please elaborate on the purpose of this series? Is it simply
-> to align between architectures? Does it solve an actual problem?
+On Wed, Sep 26, 2018 at 1:15 PM Li Yang <leoyang.li@nxp.com> wrote:
+>
+> On Wed, Sep 26, 2018 at 4:28 AM Alexandre Belloni
+> <alexandre.belloni@bootlin.com> wrote:
+> >
+> > On 25/09/2018 21:45:56+0200, Olof Johansson wrote:
+> > > Hi,
+> > >
+> > >
+> > > On Thu, Aug 23, 2018 at 11:36 PM Alexandre Belloni
+> > > <alexandre.belloni@bootlin.com> wrote:
+> > > >
+> > > > If the qman driver (qman_ccsr) doesn't probe or fail to probe before
+> > > > qman_portal, qm_ccsr_start will be either NULL or a stale pointer to an
+> > > > unmapped page.
+> > > >
+> > > > This leads to a crash when probing  qman_portal as the init_pcfg function
+> > > > calls qman_liodn_fixup that tries to read qman registers.
+> > > >
+> > > > Assume that qman didn't probe when the pool mask is 0.
+> > > >
+> > > > Signed-off-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
+> > > > ---
+> > > >  drivers/soc/fsl/qbman/qman_portal.c | 2 ++
+> > > >  1 file changed, 2 insertions(+)
+> > > >
+> > > > diff --git a/drivers/soc/fsl/qbman/qman_portal.c b/drivers/soc/fsl/qbman/qman_portal.c
+> > > > index a120002b630e..4fc80d2c8feb 100644
+> > > > --- a/drivers/soc/fsl/qbman/qman_portal.c
+> > > > +++ b/drivers/soc/fsl/qbman/qman_portal.c
+> > > > @@ -277,6 +277,8 @@ static int qman_portal_probe(struct platform_device *pdev)
+> > > >         }
+> > > >
+> > > >         pcfg->pools = qm_get_pools_sdqcr();
+> > > > +       if (pcfg->pools == 0)
+> > > > +               return -EPROBE_DEFER;
+> > >
+> > > This is quite late in the probe, after a bunch of resources have been claimed.
+> > >
+> > > Note that the ioremaps above this are doing unwinds, and you'll end up
+> > > doing duplicate ioremaps if you come in and probe again.
+> > >
+> > > You should probably unwind those allocations, or move them to devm_*
+> > > or do this check earlier in the function.
+> > >
+> >
+> > The actual chance of having that happen is quite small (this was coming
+> > from a non working DT) and I mainly wanted to avoid a crash so the
+> > platform could still boot. I would think moving to devm_ would be the
+> > right thing to do.
+>
+> Even if it is not failing with the upstreamed device trees, it is
+> still good to harden the driver for possible issues.  Moving to devm_
+> is definitely a right thing to do.  But I also think checking if the
+> qman is already probed should be the first thing to do before starting
+> to allocate resources and etc and rolling back later.  Probably we can
+> move the qm_get_pools_sdqcr() to the begining of the probe to
+> determine if qman is probed as it doesn't seem to depend on any of the
+> setups done right now.
 
-1) It removed a lot of code duplication between architecture
+I just find out Laurentiu also included the following patches in his
+SMMU patch series (although not neccessarily related to SMMU) which
+also fix the same problem.  I think they are more straightforward and
+can deal with the case that qman failed to probe.  So we can take
+these to fix this problem instead in 4.19.
 
-2) At Cisco we have issues where our bootloaders having default boot 
-arguments. Some platforms we can't update the boot loader and it's 
-helpful to be able to have boot arguments which are prepended to the 
-bootloader arguments , and some parameters which are appended. These 
-changes allow that.
+https://patchwork.kernel.org/patch/10616021/
+https://patchwork.kernel.org/patch/10616019/
+https://patchwork.kernel.org/patch/10615971/
 
-Daniel
+Regards,
+Leo
