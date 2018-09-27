@@ -1,37 +1,37 @@
-Return-Path: <danielwa@cisco.com>
-Received: from rcdn-iport-2.cisco.com (rcdn-iport-2.cisco.com [173.37.86.73])
- (using TLSv1.2 with cipher DHE-RSA-SEED-SHA (128/128 bits))
+Return-Path: <pku.leo@gmail.com>
+Received: from mail-ot1-f65.google.com (mail-ot1-f65.google.com
+ [209.85.210.65])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42LjlB3LC8zF37d
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2018 04:19:50 +1000 (AEST)
-Subject: Re: [PATCH 0/8] add generic builtin command line
-To: Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Maksym Kokhan <maksym.kokhan@globallogic.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- Rob Herring <robh+dt@kernel.org>, Frank Rowand <frowand.list@gmail.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- Borislav Petkov <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>,
- the arch/x86 maintainers <x86@kernel.org>,
- Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon
- <will.deacon@arm.com>, Ralf Baechle <ralf@linux-mips.org>,
- Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Daniel Walker <dwalker@fifo99.com>, Andrii Bordunov <aborduno@cisco.com>,
- Ruslan Bilovol <rbilovol@cisco.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Devicetree List <devicetree@vger.kernel.org>,
- linux-efi <linux-efi@vger.kernel.org>, linux-mips
- <linux-mips@linux-mips.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-References: <1538067309-5711-1-git-send-email-maksym.kokhan@globallogic.com>
- <CAKv+Gu-AxtOO04iwPSri12tkb9NRugXV9E2LGrfJT-LJjf4_ow@mail.gmail.com>
-From: Daniel Walker <danielwa@cisco.com>
-Message-ID: <3320a561-2287-63f7-2162-84a639a22a8a@cisco.com>
-Date: Thu, 27 Sep 2018 11:08:51 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42LlBR2sMvzF37p
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2018 05:25:02 +1000 (AEST)
+Received: by mail-ot1-f65.google.com with SMTP id o13-v6so3708565otl.4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 12:25:02 -0700 (PDT)
+Received: from mail-oi1-f170.google.com (mail-oi1-f170.google.com.
+ [209.85.167.170])
+ by smtp.gmail.com with ESMTPSA id z2-v6sm801573oib.40.2018.09.27.12.24.59
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Thu, 27 Sep 2018 12:24:59 -0700 (PDT)
+Received: by mail-oi1-f170.google.com with SMTP id j68-v6so3197032oib.7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 12:24:59 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <CAKv+Gu-AxtOO04iwPSri12tkb9NRugXV9E2LGrfJT-LJjf4_ow@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+References: <20180823213600.23426-1-alexandre.belloni@bootlin.com>
+ <CAOesGMjDKKSNVccu4D579SiwL9zEU7ha7HQCHncvh2r4kpO6fQ@mail.gmail.com>
+ <20180926092706.GA16644@piout.net>
+ <CADRPPNQwWgU6OcE7CjxyrgSXjUjwYe4VY0gQD8jx6D+eT_DWrw@mail.gmail.com>
+In-Reply-To: <CADRPPNQwWgU6OcE7CjxyrgSXjUjwYe4VY0gQD8jx6D+eT_DWrw@mail.gmail.com>
+From: Li Yang <leoyang.li@nxp.com>
+Date: Thu, 27 Sep 2018 14:24:48 -0500
+Message-ID: <CADRPPNRTWSLapqLHO=y5_Rcbh27CigAjPuorLYPrzqxUGYt-9Q@mail.gmail.com>
+Subject: Re: [PATCH 1/2] soc: fsl: qbman: qman_portal: defer probing when qman
+ is not available
+To: alexandre.belloni@bootlin.com, Laurentiu Tudor <laurentiu.tudor@nxp.com>
+Cc: Olof Johansson <olof@lixom.net>, Roy Pledge <roy.pledge@nxp.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
+ <linux-arm-kernel@lists.infradead.org>, lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,23 +41,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/27/2018 10:05 AM, Ard Biesheuvel wrote:
-> On 27 September 2018 at 18:55, Maksym Kokhan
-> <maksym.kokhan@globallogic.com> wrote:
->> There were series of patches [1] for 4.3.0-rc3, that allowed
->> architectures to use a generic builtin command line. I have rebased
->> these patches on kernel 4.19.0-rc4.
->>
-> 
-> Could you please elaborate on the purpose of this series? Is it simply
-> to align between architectures? Does it solve an actual problem?
+On Wed, Sep 26, 2018 at 1:15 PM Li Yang <leoyang.li@nxp.com> wrote:
+>
+> On Wed, Sep 26, 2018 at 4:28 AM Alexandre Belloni
+> <alexandre.belloni@bootlin.com> wrote:
+> >
+> > On 25/09/2018 21:45:56+0200, Olof Johansson wrote:
+> > > Hi,
+> > >
+> > >
+> > > On Thu, Aug 23, 2018 at 11:36 PM Alexandre Belloni
+> > > <alexandre.belloni@bootlin.com> wrote:
+> > > >
+> > > > If the qman driver (qman_ccsr) doesn't probe or fail to probe before
+> > > > qman_portal, qm_ccsr_start will be either NULL or a stale pointer to an
+> > > > unmapped page.
+> > > >
+> > > > This leads to a crash when probing  qman_portal as the init_pcfg function
+> > > > calls qman_liodn_fixup that tries to read qman registers.
+> > > >
+> > > > Assume that qman didn't probe when the pool mask is 0.
+> > > >
+> > > > Signed-off-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
+> > > > ---
+> > > >  drivers/soc/fsl/qbman/qman_portal.c | 2 ++
+> > > >  1 file changed, 2 insertions(+)
+> > > >
+> > > > diff --git a/drivers/soc/fsl/qbman/qman_portal.c b/drivers/soc/fsl/qbman/qman_portal.c
+> > > > index a120002b630e..4fc80d2c8feb 100644
+> > > > --- a/drivers/soc/fsl/qbman/qman_portal.c
+> > > > +++ b/drivers/soc/fsl/qbman/qman_portal.c
+> > > > @@ -277,6 +277,8 @@ static int qman_portal_probe(struct platform_device *pdev)
+> > > >         }
+> > > >
+> > > >         pcfg->pools = qm_get_pools_sdqcr();
+> > > > +       if (pcfg->pools == 0)
+> > > > +               return -EPROBE_DEFER;
+> > >
+> > > This is quite late in the probe, after a bunch of resources have been claimed.
+> > >
+> > > Note that the ioremaps above this are doing unwinds, and you'll end up
+> > > doing duplicate ioremaps if you come in and probe again.
+> > >
+> > > You should probably unwind those allocations, or move them to devm_*
+> > > or do this check earlier in the function.
+> > >
+> >
+> > The actual chance of having that happen is quite small (this was coming
+> > from a non working DT) and I mainly wanted to avoid a crash so the
+> > platform could still boot. I would think moving to devm_ would be the
+> > right thing to do.
+>
+> Even if it is not failing with the upstreamed device trees, it is
+> still good to harden the driver for possible issues.  Moving to devm_
+> is definitely a right thing to do.  But I also think checking if the
+> qman is already probed should be the first thing to do before starting
+> to allocate resources and etc and rolling back later.  Probably we can
+> move the qm_get_pools_sdqcr() to the begining of the probe to
+> determine if qman is probed as it doesn't seem to depend on any of the
+> setups done right now.
 
-1) It removed a lot of code duplication between architecture
+I just find out Laurentiu also included the following patches in his
+SMMU patch series (although not neccessarily related to SMMU) which
+also fix the same problem.  I think they are more straightforward and
+can deal with the case that qman failed to probe.  So we can take
+these to fix this problem instead in 4.19.
 
-2) At Cisco we have issues where our bootloaders having default boot 
-arguments. Some platforms we can't update the boot loader and it's 
-helpful to be able to have boot arguments which are prepended to the 
-bootloader arguments , and some parameters which are appended. These 
-changes allow that.
+https://patchwork.kernel.org/patch/10616021/
+https://patchwork.kernel.org/patch/10616019/
+https://patchwork.kernel.org/patch/10615971/
 
-Daniel
+Regards,
+Leo
