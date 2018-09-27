@@ -2,74 +2,89 @@ Return-Path: <SRS0=O7I3=MJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D0705C43382
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Sep 2018 20:57:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 42C9CC43382
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Sep 2018 21:02:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 31E442159D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Sep 2018 20:57:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 31E442159D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=debian.org
+	by mail.kernel.org (Postfix) with ESMTPS id 9F5692152F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Sep 2018 21:02:06 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=globallogic.com header.i=@globallogic.com header.b="FXt/sOk2"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9F5692152F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=globallogic.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42LnDj1twmzF380
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 06:57:09 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=debian.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42LnLN14zGzDrBx
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 07:02:04 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=globallogic.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.160.177; helo=mail-qt1-f177.google.com;
- envelope-from=breno.debian@gmail.com; receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=globallogic.com header.i=@globallogic.com header.b="FXt/sOk2";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=debian.org
-Received: from mail-qt1-f177.google.com (mail-qt1-f177.google.com
- [209.85.160.177])
+ spf=pass (mailfrom) smtp.mailfrom=globallogic.com
+ (client-ip=2a00:1450:4864:20::143; helo=mail-lf1-x143.google.com;
+ envelope-from=maksym.kokhan@globallogic.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none)
+ header.from=globallogic.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=globallogic.com header.i=@globallogic.com
+ header.b="FXt/sOk2"; dkim-atps=neutral
+Received: from mail-lf1-x143.google.com (mail-lf1-x143.google.com
+ [IPv6:2a00:1450:4864:20::143])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Ln3B1P4hzF37t
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2018 06:48:54 +1000 (AEST)
-Received: by mail-qt1-f177.google.com with SMTP id z13-v6so4351047qts.5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 13:48:53 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Lgsl3QPTzDrGC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2018 02:55:20 +1000 (AEST)
+Received: by mail-lf1-x143.google.com with SMTP id v17-v6so2752239lfe.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 09:55:20 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=globallogic.com; s=google;
+ h=from:to:cc:subject:date:message-id;
+ bh=iM8c0ufFnsdAl7ba5T+Z3WN7gLhoLrTNvpjR0bH4AwM=;
+ b=FXt/sOk2SbP1AvGPLTOWaXNJ9cR+513RIm7Dt6AcPZDnSx93A93v2fVw4FcXXPxVfX
+ 9HG6FnPSdxRX5sQTijVTqJwwQasX91r8h+UrrC0CPVoN2fSqnGO66AbKofmeTdJVlq4z
+ 3cdCTwbDa45Ywz6Ggkp5862BNoSfRP4rVaozQ=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=VGNx84LlKvYQokOGTIPioIZVlzbGoswie6CgGctqQOY=;
- b=IdepfNN35iZ7DAnSYG2X07RyAoQxQEKZ/Y3QfDPurEJnkEtsIFgEsCtummt9EUfRaA
- NjMcxoHgaXxfMGkQ+dP1qDSxVGSf0qSV3ob+LJ1NvmGOHMj7EkqGZdjpRDJkgY2Js9/q
- ESDQhYVl3suK7FVNz1iq9KAR4Obfv/DETdySjzNHW3pqjSxJjj5jQid9Ryjgz4H+D7yI
- pAmTjyBKPfus9muCEJgQI4torDD6KMQdWd+XsAe07xQHG1mAFphuI+sMrIITugWB2s/5
- ECKk7lwJR26kD/cjX4twDjQ8d1JCe2tdJjmROFPbyoEOiCZqitBBBq2yPB0CRqVW1Wk5
- r+eg==
-X-Gm-Message-State: ABuFfojqN42LtbSaHMkC6tnxs70pRWY0vn5ZsMimbwNJB0YGCbMuEfHV
- jyVCZ470F01giyLUo9N2vrk=
-X-Google-Smtp-Source: ACcGV624xFE/A5hJws5OKGrz/DsHL4ceBAgmeIgmR8Lwz93+wgg66DhzXpPNpXRm8tdlAx64corNTw==
-X-Received: by 2002:ac8:190e:: with SMTP id
- t14-v6mr9939715qtj.327.1538081331822; 
- Thu, 27 Sep 2018 13:48:51 -0700 (PDT)
-Received: from [10.0.0.9] ([177.83.210.7])
- by smtp.gmail.com with ESMTPSA id e195-v6sm1823444qka.2.2018.09.27.13.48.49
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Thu, 27 Sep 2018 13:48:51 -0700 (PDT)
-Subject: Re: [RFC PATCH 06/11] powerpc/tm: Refactor the __switch_to_tm code
-To: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org
-References: <1536781219-13938-1-git-send-email-leitao@debian.org>
- <1536781219-13938-7-git-send-email-leitao@debian.org>
- <d06021833414dcfa5c9e04b4d83dfc475d1f1cbd.camel@neuling.org>
-From: Breno Leitao <leitao@debian.org>
-Message-ID: <8c286819-a41b-5c07-2857-09618181000f@debian.org>
-Date: Thu, 27 Sep 2018 17:48:46 -0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
-MIME-Version: 1.0
-In-Reply-To: <d06021833414dcfa5c9e04b4d83dfc475d1f1cbd.camel@neuling.org>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+ h=x-gm-message-state:from:to:cc:subject:date:message-id;
+ bh=iM8c0ufFnsdAl7ba5T+Z3WN7gLhoLrTNvpjR0bH4AwM=;
+ b=LnzaCnOau9ci4TI/CCIE8uX4Kk+Ey8FLpQbJi4YfLBE85Xy7IK4qf2KrEDiMTWHxgc
+ Tm7dO03viRB0K0Wt5AsFeVfX8CdrAmRS1Xtm5ml2/xt77MsgyQBdiYTuGeCWwZdZXGG8
+ dX25vv9HTARYiYWBHKoT86NYmZjlIzPZYc5yMzBgaD5U8MVEH0REAu6+3KQpAGfXT1+l
+ a5N9ss202dSsmyFY/K+yFh2qY5kf5VkZkPW8l3Eggov3lICbNjNFgT1F2LezCY8eRdkX
+ PTJFngyj/R/0CB/bzubV4Hdj1nZj6wwpZG/yYw8ybT1VlDLFTMiaZiDyymg2SGErAm6V
+ lGBw==
+X-Gm-Message-State: ABuFfohnR0hMYeHVXtPEYLkyGG0ijDApMhd8TzOafTziPmHcxxluHuCZ
+ K9abIaJzOCiKB7TNkT+Fwytrfg==
+X-Google-Smtp-Source: ACcGV60IVvJ1LmrupkgPSKGUTSqjIw+n1U2CyKX7tDFZzcRbrqnbFz86YNwU9RqIoJEQ9c/o4zxHOg==
+X-Received: by 2002:a19:635b:: with SMTP id x88-v6mr789639lfb.85.1538067316929; 
+ Thu, 27 Sep 2018 09:55:16 -0700 (PDT)
+Received: from kbp1-lhp-f55466.synapse.com ([195.238.92.77])
+ by smtp.gmail.com with ESMTPSA id n3-v6sm533529lfi.96.2018.09.27.09.55.15
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
+ Thu, 27 Sep 2018 09:55:16 -0700 (PDT)
+From: Maksym Kokhan <maksym.kokhan@globallogic.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+ Rob Herring <robh+dt@kernel.org>, Frank Rowand <frowand.list@gmail.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>,
+ x86@kernel.org, Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>, Ralf Baechle <ralf@linux-mips.org>,
+ Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH 0/8] add generic builtin command line
+Date: Thu, 27 Sep 2018 19:55:08 +0300
+Message-Id: <1538067309-5711-1-git-send-email-maksym.kokhan@globallogic.com>
+X-Mailer: git-send-email 2.7.4
+X-Mailman-Approved-At: Fri, 28 Sep 2018 06:54:58 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,81 +96,77 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ldufour@linux.vnet.ibm.com, gromero@linux.vnet.ibm.com
+Cc: devicetree@vger.kernel.org, linux-efi@vger.kernel.org,
+ Andrii Bordunov <aborduno@cisco.com>, linux-mips@linux-mips.org,
+ Ruslan Bilovol <rbilovol@cisco.com>, linux-kernel@vger.kernel.org,
+ Daniel Walker <dwalker@fifo99.com>, linuxppc-dev@lists.ozlabs.org,
+ Daniel Walker <danielwa@cisco.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-hi Mikey
+There were series of patches [1] for 4.3.0-rc3, that allowed
+architectures to use a generic builtin command line. I have rebased
+these patches on kernel 4.19.0-rc4.
 
-On 09/18/2018 01:04 AM, Michael Neuling wrote:
->> On top of that, both tm_reclaim_task() and tm_recheckpoint_new_task()
->> functions are not used anymore, removing them.
-> 
-> What about tm_reclaim_current().  This is being used in places like signals
-> which I would have thought we could avoid with this series
+Things, modified in comparison with original patches:                            
+* There was some bug for mips, in the case when CONFIG_CMDLINE_PREPEND
+and CONFIG_CMDLINE_APPEND are empty and CMDLINE_OVERRIDE is not set,
+command line from bootloader was ignored, so I fixed it, modifying
+patch "add generic builtin command line".
 
-In fact tm_reclaim_current() is the default function to reclaim. It is the
-function that is being called by TM_KERNEL_ENTRY, other than that, it should
-never be called on the sane path.
+* Implemented new patch to resolve conflict with new kernel, which
+modify EFI stub code. Unfortunately, I don't have capability to test
+this modification on real arm board with EFI.
 
->> +		 * If we got here with an active transaction, then, it was
->> +		 * aborted by TM_KERNEL_ENTRY and the fix the failure case
->> +		 * needs to be fixed, so, indepedently how we arrived here, the
->> +		 * new TM abort case will be TM_CAUSE_RESCHED now.
-> 
-> What does "fix the failure case needs to be fixed" mean?
-> 
-> also s/indepedently/independently/
+* Removed new realisation of mips builtin command line, which was
+created after 4.3.0-rc3.
 
-In fact, I rewrote this paragraph. I try to say that the "TEXASR Failure
-code" needs to be updated/fixed, but it became that messy and crazy
-paragraph. :-(
+* Kernel 4.3.0-rc3 with original patches could not be compiled for
+powerpc due to prom_init.c checking by prom_init_check.sh. So I added
+strlcat (which is used by cmdline_add_builtin macro) to
+prom_init_check.sh whitelist.
 
-> 
->> +		 */
->> +		if (MSR_TM_ACTIVE(prev->thread.regs->msr)) {
->> +			/*
->> +			 * If there was an IRQ during trecheckpoint, it will
->> +			 * cause an IRQ to be replayed. This replayed IRQ can
->> +			 * invoke SCHEDULE_USER, thus, we arrive here with a TM
->> +			 * active transaction.
-> 
-> I don't think this can happen. trecheckpoint (and treclaim) are called with IRQs
-> hard off (since they change r1).
+Patches have been tested in QEMU for x86, arm (little-endian), arm64
+(little-endian), mips (little-endian, 32-bit) and powerpc
+(big-endian, 64-bit), everything works perfectly. Also it was tested
+on linux-next (next-20180924 tag) for all listed above architectures.
 
-There will be an IRQ check and replay later. An IRQ being replayed can cause
-a process to be reschedule and arrive here after a trecheckpoint.
+[1] : https://lore.kernel.org/patchwork/patch/604992/
 
-> I think something else is going on here. I think this code and comment needs to
-> go but I assume it's here because you are seeing something.
+Daniel Walker (7):
+  add generic builtin command line
+  drivers: of: ifdef out cmdline section
+  x86: convert to generic builtin command line
+  arm: convert to generic builtin command line
+  arm64: convert to generic builtin command line
+  mips: convert to generic builtin command line
+  powerpc: convert to generic builtin command line
 
-Right, and it was my major concern about this whole review.
+Maksym Kokhan (1):
+  efi: modify EFI stub code for arm/arm64
 
-The tm_recheckpoint() was being called with IRQ hard off, as you said, but
-the IRQ is being re-enabled later, after "trecheckpoint", when it calls
-local_irq_restore().
+ arch/arm/Kconfig                        | 38 +-----------------
+ arch/arm/kernel/atags_parse.c           | 14 ++-----
+ arch/arm/kernel/devtree.c               |  2 +
+ arch/arm64/Kconfig                      | 17 +-------
+ arch/arm64/kernel/setup.c               |  3 ++
+ arch/mips/Kconfig                       | 24 +----------
+ arch/mips/Kconfig.debug                 | 47 ----------------------
+ arch/mips/kernel/setup.c                | 41 ++-----------------
+ arch/powerpc/Kconfig                    | 23 +----------
+ arch/powerpc/kernel/prom.c              |  4 ++
+ arch/powerpc/kernel/prom_init.c         |  8 ++--
+ arch/powerpc/kernel/prom_init_check.sh  |  2 +-
+ arch/x86/Kconfig                        | 44 +--------------------
+ arch/x86/kernel/setup.c                 | 19 ++-------
+ drivers/firmware/efi/libstub/arm-stub.c | 10 ++---
+ drivers/of/fdt.c                        |  2 +-
+ include/linux/cmdline.h                 | 70 +++++++++++++++++++++++++++++++++
+ init/Kconfig                            | 68 ++++++++++++++++++++++++++++++++
+ 18 files changed, 173 insertions(+), 263 deletions(-)
+ create mode 100644 include/linux/cmdline.h
 
-Since the IRQ was re-enabled, there is a mechanism to check for IRQs that
-were pending and execute them (after recheckpoint - hence with MSR[TS]
-active). Some of these pending IRQ might cause a task reschedule, bringing us
-to __switch_to with MSR[TS] active.
+-- 
+2.7.4
 
-I also checked that there were cases where a pending IRQ was waiting to be
-replayed even before  tm_recheckpoint() is called. I suspect we were reaching
-tm_recheckpoint soft-disabled.
-
-On the v2 patchset, I am following your suggestion, which is calling
-restore_tm_state() much later (at the beginning of fast_exception_return),
-after the _TIF_USER_WORK_MASK section, and after the IRQ replay section also.
-So, after this point, there is no way to rollback the exit to userspace after
-trecheckpoint. Therefore, if there is a recheckpoint, a rfid will always come
-directly.
-
-In order to do so, I need to remove _TIF_RESTORE_TM as part of
-_TIF_USER_WORK_MASK and handle _TIF_RESTORE_TM individually later.
-
-This seems to solve this problem, and I can remove this reclaim in the middle
-of __switch_to_tm().
-
-Thank you
