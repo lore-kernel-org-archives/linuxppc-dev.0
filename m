@@ -1,27 +1,50 @@
-Return-Path: <robherring2@gmail.com>
-Received: from mail-ot1-f66.google.com (mail-ot1-f66.google.com
- [209.85.210.66])
+Return-Path: <alexander.duyck@gmail.com>
+Received: from mail-it1-x141.google.com (mail-it1-x141.google.com
+ [IPv6:2607:f8b0:4864:20::141])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42LCSf2sQ5zF3Ld
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 08:35:29 +1000 (AEST)
-Received: by mail-ot1-f66.google.com with SMTP id q4-v6so579491otf.13
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2018 15:35:29 -0700 (PDT)
-Date: Wed, 26 Sep 2018 17:35:25 -0500
-From: Rob Herring <robh@kernel.org>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: Wim Van Sebroeck <wim@linux-watchdog.org>,
- Guenter Roeck <linux@roeck-us.net>, Radu Rendec <radu.rendec@gmail.com>,
- Mark Rutland <mark.rutland@arm.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-watchdog@vger.kernel.org,
- devicetree@vger.kernel.org
-Subject: Re: [PATCH v3 3/3] dt-bindings: watchdog: add mpc8xxx-wdt support
-Message-ID: <20180926223525.GA25002@bogus>
-References: <c09f541d459c29aca40d54fff152d5645e24b50d.1537163776.git.christophe.leroy@c-s.fr>
- <e3e0bcfd7b779b978d07e088a8bd667ea9ddf4aa.1537163780.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42LG6J5801zF3LX
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 10:34:47 +1000 (AEST)
+Received: by mail-it1-x141.google.com with SMTP id m70-v6so1962557ith.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2018 17:34:47 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <e3e0bcfd7b779b978d07e088a8bd667ea9ddf4aa.1537163780.git.christophe.leroy@c-s.fr>
+References: <1536927045-23536-1-git-send-email-rppt@linux.vnet.ibm.com>
+ <1536927045-23536-4-git-send-email-rppt@linux.vnet.ibm.com>
+ <CAKgT0UdP=78RsWHMxFu4PD8a3AhA3eNcG68Z_9aGY0vhOKf7xA@mail.gmail.com>
+ <20180926183152.GA4597@rapoport-lnx>
+In-Reply-To: <20180926183152.GA4597@rapoport-lnx>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Wed, 26 Sep 2018 17:34:32 -0700
+Message-ID: <CAKgT0UcC-GTtyPK9ynvj6r3YFqy8kE40iMJxzPowbNoXGf9iWg@mail.gmail.com>
+Subject: Re: [PATCH 03/30] mm: remove CONFIG_HAVE_MEMBLOCK
+To: rppt@linux.vnet.ibm.com
+Cc: linux-mm <linux-mm@kvack.org>, Andrew Morton <akpm@linux-foundation.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, chris@zankel.net,
+ David Miller <davem@davemloft.net>, Geert Uytterhoeven <geert@linux-m68k.org>,
+ green.hu@gmail.com, Greg KH <gregkh@linuxfoundation.org>, gxt@pku.edu.cn,
+ Ingo Molnar <mingo@redhat.com>,
+ jejb@parisc-linux.org, jonas@southpole.se, Jonathan Corbet <corbet@lwn.net>,
+ lftan@altera.com, msalter@redhat.com,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, mattst88@gmail.com,
+ mpe@ellerman.id.au,
+ Michal Hocko <mhocko@suse.com>, monstr@monstr.eu, palmer@sifive.com,
+ paul.burton@mips.com,
+ rkuo@codeaurora.org, richard@nod.at, dalias@libc.org,
+ Russell King - ARM Linux <linux@armlinux.org.uk>, fancer.lancer@gmail.com,
+ Thomas Gleixner <tglx@linutronix.de>, Tony Luck <tony.luck@intel.com>,
+ vgupta@synopsys.com,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, linux-alpha@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-c6x-dev@linux-c6x.org,
+ linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
+ LKML <linux-kernel@vger.kernel.org>, linux-m68k@lists.linux-m68k.org,
+ linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>, linux-riscv@lists.infradead.org,
+ linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+ linux-snps-arc@lists.infradead.org, linux-um@lists.infradead.org,
+ nios2-dev@lists.rocketboards.org, openrisc@lists.librecores.org,
+ sparclinux@vger.kernel.org, uclinux-h8-devel@lists.sourceforge.jp
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,15 +54,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 17 Sep 2018 06:22:53 +0000 (UTC), Christophe Leroy wrote:
-> Add description of DT bindings for mpc8xxx-wdt driver which
-> handles the CPU watchdog timer on the mpc83xx, mpc86xx and mpc8xx.
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> ---
->  .../devicetree/bindings/watchdog/mpc8xxx-wdt.txt   | 25 ++++++++++++++++++++++
->  1 file changed, 25 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/watchdog/mpc8xxx-wdt.txt
-> 
+On Wed, Sep 26, 2018 at 11:32 AM Mike Rapoport <rppt@linux.vnet.ibm.com> wrote:
+>
+> On Wed, Sep 26, 2018 at 09:58:41AM -0700, Alexander Duyck wrote:
+> > On Fri, Sep 14, 2018 at 5:11 AM Mike Rapoport <rppt@linux.vnet.ibm.com> wrote:
+> > >
+> > > All architecures use memblock for early memory management. There is no need
+> > > for the CONFIG_HAVE_MEMBLOCK configuration option.
+> > >
+> > > Signed-off-by: Mike Rapoport <rppt@linux.vnet.ibm.com>
+> >
+> > <snip>
+> >
+> > > diff --git a/include/linux/memblock.h b/include/linux/memblock.h
+> > > index 5169205..4ae91fc 100644
+> > > --- a/include/linux/memblock.h
+> > > +++ b/include/linux/memblock.h
+> > > @@ -2,7 +2,6 @@
+> > >  #define _LINUX_MEMBLOCK_H
+> > >  #ifdef __KERNEL__
+> > >
+> > > -#ifdef CONFIG_HAVE_MEMBLOCK
+> > >  /*
+> > >   * Logical memory blocks.
+> > >   *
+> > > @@ -460,7 +459,6 @@ static inline phys_addr_t memblock_alloc(phys_addr_t size, phys_addr_t align)
+> > >  {
+> > >         return 0;
+> > >  }
+> > > -#endif /* CONFIG_HAVE_MEMBLOCK */
+> > >
+> > >  #endif /* __KERNEL__ */
+> >
+> > There was an #else above this section and I believe it and the code
+> > after it needs to be stripped as well.
+>
+> Right, I've already sent the fix [1] and it's in mmots.
+>
+> [1] https://lkml.org/lkml/2018/9/19/416
+>
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+Are you sure? The patch you reference appears to be for
+drivers/of/fdt.c, and the bit I pointed out here is in
+include/linux/memblock.h.
+
+- Alex
