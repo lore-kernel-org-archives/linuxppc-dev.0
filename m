@@ -2,28 +2,23 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42LQ2J0PGJzF33Q
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 16:31:52 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42LQFk2NrHzF33Q
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 16:41:46 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Masahiro Yamada <yamada.masahiro@socionext.com>
-Cc: Christophe LEROY <christophe.leroy@c-s.fr>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
- Michal Marek <michal.lkml@markovi.net>,
- Segher Boessenkool <segher@kernel.crashing.org>,
- LKML <linux-kernel@vger.kernel.org>
-Subject: Re: How to define some additional KBUILD_CFLAGS after building
- include/generated/asm-offsets.h ?
-In-Reply-To: <CAK7LNAQA2JyK9aOp9QQF32bwsz2MitaZ5HrqSVjdEvRdCQpO3g@mail.gmail.com>
-References: <e1b65467-7497-5db4-aa93-1ad00d12af3f@c-s.fr>
- <87mus75c5m.fsf@concordia.ellerman.id.au>
- <56227965-464a-d972-1c25-d6a4d190e1a1@c-s.fr>
- <87bm8m5qbs.fsf@concordia.ellerman.id.au>
- <CAK7LNAQA2JyK9aOp9QQF32bwsz2MitaZ5HrqSVjdEvRdCQpO3g@mail.gmail.com>
-Date: Thu, 27 Sep 2018 16:31:48 +1000
-Message-ID: <87ftxvv4bv.fsf@concordia.ellerman.id.au>
+To: Michael Neuling <mikey@neuling.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>,
+ paulus@ozlabs.org, benh@kernel.crashing.org, Breno Leitao <leitao@debian.org>,
+ aneesh.kumar@linux.vnet.ibm.com
+Subject: Re: [PATCH] powerpc/tm: Avoid possible userspace r1 corruption on
+ reclaim
+In-Reply-To: <cc2f3d4526039cf71e4dac1c0a231e27d59cb4c0.camel@neuling.org>
+References: <20180925093647.23723-1-mikey@neuling.org>
+ <87d0t14wiz.fsf@concordia.ellerman.id.au>
+ <cc2f3d4526039cf71e4dac1c0a231e27d59cb4c0.camel@neuling.org>
+Date: Thu, 27 Sep 2018 16:41:45 +1000
+Message-ID: <87d0szv3va.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,56 +28,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Masahiro Yamada <yamada.masahiro@socionext.com> writes:
-> 2018-09-25 10:16 GMT+09:00 Michael Ellerman <mpe@ellerman.id.au>:
->> Christophe LEROY <christophe.leroy@c-s.fr> writes:
->>
->>> Le 24/09/2018 =C3=A0 14:10, Michael Ellerman a =C3=A9crit :
->>>> Christophe Leroy <christophe.leroy@c-s.fr> writes:
->>>>
->>>>> I'm trying to implement TLS based stack protector in the Linux Kernel.
->>>>> For that I need to give to GCC the offset at which it will find the
->>>>> canary (register r2 is pointing to the current task struct).
->>>>>
->>>>> I have been able to do it with the below patch, but it only works when
->>>>> include/generated/asm-offsets.h already exists from the start of the =
-build.
->>>>>
->>>>> Is there a way to evaluate CANARY_OFFSET and add the stack-protector
->>>>> flags to KBUILD_FLAGS only after include/generated/asm-offsets.h is b=
-uilt ?
->>>>>
->>>>> Or another way of add -mstack-protector-guard-offset=3Doffsetof(struct
->>>>> task_struct, stack_canary) ?
->>>>
->>>> This seems to work, at least I see the value in CFLAGS:
->>>>
->>>> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
->>>> index 07d9dce..39ee113 100644
->>>> --- a/arch/powerpc/Makefile
->>>> +++ b/arch/powerpc/Makefile
->>>> @@ -404,6 +394,11 @@ archclean:
->>>>
->>>>   archprepare: checkbin
->>>>
->>>> +prepare: stack_protector_prepare
->>>> +
->>>> +stack_protector_prepare: prepare0
->>>> +    $(eval KBUILD_CFLAGS +=3D -mstack-protector-guard-offset=3D$(shel=
-l awk '{if ($$2 =3D=3D "TSK_STACK_CANARY") print $$3;}' include/generated/a=
-sm-offsets.h))
->>>> +
->>>
->>> Great, it works !
->>> Thanks, I have sent v3 of the patches.
->>
->> Cool.
->>
->> It would be good to here from someone who knows Kbuild better than me if
->> this is acceptable or just a gross hack :)
+Michael Neuling <mikey@neuling.org> writes:
+> On Tue, 2018-09-25 at 22:00 +1000, Michael Ellerman wrote:
+>> Michael Neuling <mikey@neuling.org> writes:
+>> > Current we store the userspace r1 to PACATMSCRATCH before finally
+>> > saving it to the thread struct.
+>> > 
+>> > In theory an exception could be taken here (like a machine check or
+>> > SLB miss) that could write PACATMSCRATCH and hence corrupt the
+>> > userspace r1. The SLB fault currently doesn't touch PACATMSCRATCH, but
+>> > others do.
+>> > 
+>> > We've never actually seen this happen but it's theoretically
+>> > possible. Either way, the code is fragile as it is.
+>> > 
+>> > This patch saves r1 to the kernel stack (which can't fault) before we
+>> > turn MSR[RI] back on. PACATMSCRATCH is still used but only with
+>> > MSR[RI] off. We then copy r1 from the kernel stack to the thread
+>> > struct once we have MSR[RI] back on.
+>> > 
+>> > Suggested-by: Breno Leitao <leitao@debian.org>
+>> > Signed-off-by: Michael Neuling <mikey@neuling.org>
+>> > ---
+>> >  arch/powerpc/kernel/tm.S | 8 +++++++-
+>> >  1 file changed, 7 insertions(+), 1 deletion(-)
+>> > 
+>> > diff --git a/arch/powerpc/kernel/tm.S b/arch/powerpc/kernel/tm.S
+>> > index 701b0f5b09..8207816a1e 100644
+>> > --- a/arch/powerpc/kernel/tm.S
+>> > +++ b/arch/powerpc/kernel/tm.S
+>> > @@ -178,6 +178,12 @@ _GLOBAL(tm_reclaim)
+>> >  
+>> >  	std	r11, GPR11(r1)			/* Temporary stash */
+>> >  
+>> > +	/* Move r1 to kernel stack in case PACATMSCRATCH is used once
+>> > +	 * we turn on RI
+>> > +	 */
+>> 
+>> I see we still need to send you to Comment Formatting Re-Education Camp.
 >
-> I am fine with this solution.
+> The rest of that file has they style, so I'm just keeping with that.  I can
+> submit a patch later to fix them all up.
 
-Thanks.
+Sure, but let's not add new ones.
+
+And yeah fixing them all up in another patch would be good.
 
 cheers
