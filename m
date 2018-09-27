@@ -2,17 +2,18 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42LhMj6bxmzF31F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2018 03:17:53 +1000 (AEST)
-Message-Id: <1d23a5607dca206e429c086ed622d75b92b8fd96.1538068291.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42LhMs1ztJzF31F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2018 03:18:01 +1000 (AEST)
+Message-Id: <e5f8f6e3e5a5595be08127eefae8025ebbb691cc.1538068025.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2] kdb: use correct pointer when 'btc' calls 'btt'
+Subject: [PATCH] kdb: print real address of pointers instead of hashed
+ addresses
 To: Jason Wessel <jason.wessel@windriver.com>,
  Daniel Thompson <daniel.thompson@linaro.org>
 Cc: Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, kgdb-bugreport@lists.sourceforge.net,
  stable@vger.kernel.org
-Date: Thu, 27 Sep 2018 17:17:49 +0000 (UTC)
+Date: Thu, 27 Sep 2018 17:17:57 +0000 (UTC)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,60 +23,164 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On a powerpc 8xx, 'btc' fails as follows:
+Since commit ad67b74d2469 ("printk: hash addresses printed with %p"),
+all pointers printed with %p are printed with hashed addresses
+instead of real addresses in order to avoid leaking addresses in
+dmesg and syslog. But this applies to kdb too, with is unfortunate:
 
-Entering kdb (current=0x(ptrval), pid 282) due to Keyboard Entry
-kdb> btc
-btc: cpu status: Currently on cpu 0
-Available cpus: 0
-kdb_getarea: Bad address 0x0
+    Entering kdb (current=0x(ptrval), pid 329) due to Keyboard Entry
+    kdb> ps
+    15 sleeping system daemon (state M) processes suppressed,
+    use 'ps A' to see all.
+    Task Addr       Pid   Parent [*] cpu State Thread     Command
+    0x(ptrval)      329      328  1    0   R  0x(ptrval) *sh
 
-when booting the kernel with 'debug_boot_weak_hash', it fails as well
+    0x(ptrval)        1        0  0    0   S  0x(ptrval)  init
+    0x(ptrval)        3        2  0    0   D  0x(ptrval)  rcu_gp
+    0x(ptrval)        4        2  0    0   D  0x(ptrval)  rcu_par_gp
+    0x(ptrval)        5        2  0    0   D  0x(ptrval)  kworker/0:0
+    0x(ptrval)        6        2  0    0   D  0x(ptrval)  kworker/0:0H
+    0x(ptrval)        7        2  0    0   D  0x(ptrval)  kworker/u2:0
+    0x(ptrval)        8        2  0    0   D  0x(ptrval)  mm_percpu_wq
+    0x(ptrval)       10        2  0    0   D  0x(ptrval)  rcu_preempt
 
-Entering kdb (current=0xba99ad80, pid 284) due to Keyboard Entry
-kdb> btc
-btc: cpu status: Currently on cpu 0
-Available cpus: 0
-kdb_getarea: Bad address 0xba99ad80
+The whole purpose of kdb is to debug, and for debugging real addresses
+need to be known. In addition, data displayed by kdb doesn't go into
+dmesg.
 
-On other platforms, Oopses have been observed too, see
-https://github.com/linuxppc/linux/issues/139
-
-This is due to btc calling 'btt' with %p pointer as an argument.
-
-This patch replaces %p by %px to get the real pointer value as
-expected by 'btt'
+This patch replaces all %p by %px in kdb in order to display real
+addresses.
 
 Fixes: ad67b74d2469 ("printk: hash addresses printed with %p")
 Cc: <stable@vger.kernel.org>
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- v2: Added fixes: and Daniel's reviewed-by: in commit's log. No code change.
+ kernel/debug/kdb/kdb_main.c    | 14 +++++++-------
+ kernel/debug/kdb/kdb_support.c | 12 ++++++------
+ 2 files changed, 13 insertions(+), 13 deletions(-)
 
- kernel/debug/kdb/kdb_bt.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/debug/kdb/kdb_bt.c b/kernel/debug/kdb/kdb_bt.c
-index 6ad4a9fcbd6f..7921ae4fca8d 100644
---- a/kernel/debug/kdb/kdb_bt.c
-+++ b/kernel/debug/kdb/kdb_bt.c
-@@ -179,14 +179,14 @@ kdb_bt(int argc, const char **argv)
- 				kdb_printf("no process for cpu %ld\n", cpu);
- 				return 0;
- 			}
--			sprintf(buf, "btt 0x%p\n", KDB_TSK(cpu));
-+			sprintf(buf, "btt 0x%px\n", KDB_TSK(cpu));
- 			kdb_parse(buf);
- 			return 0;
+diff --git a/kernel/debug/kdb/kdb_main.c b/kernel/debug/kdb/kdb_main.c
+index 2ddfce8f1e8f..f338d23b112b 100644
+--- a/kernel/debug/kdb/kdb_main.c
++++ b/kernel/debug/kdb/kdb_main.c
+@@ -1192,7 +1192,7 @@ static int kdb_local(kdb_reason_t reason, int error, struct pt_regs *regs,
+ 	if (reason == KDB_REASON_DEBUG) {
+ 		/* special case below */
+ 	} else {
+-		kdb_printf("\nEntering kdb (current=0x%p, pid %d) ",
++		kdb_printf("\nEntering kdb (current=0x%px, pid %d) ",
+ 			   kdb_current, kdb_current ? kdb_current->pid : 0);
+ #if defined(CONFIG_SMP)
+ 		kdb_printf("on processor %d ", raw_smp_processor_id());
+@@ -1208,7 +1208,7 @@ static int kdb_local(kdb_reason_t reason, int error, struct pt_regs *regs,
+ 		 */
+ 		switch (db_result) {
+ 		case KDB_DB_BPT:
+-			kdb_printf("\nEntering kdb (0x%p, pid %d) ",
++			kdb_printf("\nEntering kdb (0x%px, pid %d) ",
+ 				   kdb_current, kdb_current->pid);
+ #if defined(CONFIG_SMP)
+ 			kdb_printf("on processor %d ", raw_smp_processor_id());
+@@ -2048,7 +2048,7 @@ static int kdb_lsmod(int argc, const char **argv)
+ 		if (mod->state == MODULE_STATE_UNFORMED)
+ 			continue;
+ 
+-		kdb_printf("%-20s%8u  0x%p ", mod->name,
++		kdb_printf("%-20s%8u  0x%px ", mod->name,
+ 			   mod->core_layout.size, (void *)mod);
+ #ifdef CONFIG_MODULE_UNLOAD
+ 		kdb_printf("%4d ", module_refcount(mod));
+@@ -2059,7 +2059,7 @@ static int kdb_lsmod(int argc, const char **argv)
+ 			kdb_printf(" (Loading)");
+ 		else
+ 			kdb_printf(" (Live)");
+-		kdb_printf(" 0x%p", mod->core_layout.base);
++		kdb_printf(" 0x%px", mod->core_layout.base);
+ 
+ #ifdef CONFIG_MODULE_UNLOAD
+ 		{
+@@ -2341,7 +2341,7 @@ void kdb_ps1(const struct task_struct *p)
+ 		return;
+ 
+ 	cpu = kdb_process_cpu(p);
+-	kdb_printf("0x%p %8d %8d  %d %4d   %c  0x%p %c%s\n",
++	kdb_printf("0x%px %8d %8d  %d %4d   %c  0x%px %c%s\n",
+ 		   (void *)p, p->pid, p->parent->pid,
+ 		   kdb_task_has_cpu(p), kdb_process_cpu(p),
+ 		   kdb_task_state_char(p),
+@@ -2354,7 +2354,7 @@ void kdb_ps1(const struct task_struct *p)
+ 		} else {
+ 			if (KDB_TSK(cpu) != p)
+ 				kdb_printf("  Error: does not match running "
+-				   "process table (0x%p)\n", KDB_TSK(cpu));
++				   "process table (0x%px)\n", KDB_TSK(cpu));
  		}
- 		kdb_printf("btc: cpu status: ");
- 		kdb_parse("cpu\n");
- 		for_each_online_cpu(cpu) {
--			sprintf(buf, "btt 0x%p\n", KDB_TSK(cpu));
-+			sprintf(buf, "btt 0x%px\n", KDB_TSK(cpu));
- 			kdb_parse(buf);
- 			touch_nmi_watchdog();
+ 	}
+ }
+@@ -2692,7 +2692,7 @@ int kdb_register_flags(char *cmd,
+ 	for_each_kdbcmd(kp, i) {
+ 		if (kp->cmd_name && (strcmp(kp->cmd_name, cmd) == 0)) {
+ 			kdb_printf("Duplicate kdb command registered: "
+-				"%s, func %p help %s\n", cmd, func, help);
++				"%s, func %px help %s\n", cmd, func, help);
+ 			return 1;
  		}
+ 	}
+diff --git a/kernel/debug/kdb/kdb_support.c b/kernel/debug/kdb/kdb_support.c
+index 990b3cc526c8..987eb73284d2 100644
+--- a/kernel/debug/kdb/kdb_support.c
++++ b/kernel/debug/kdb/kdb_support.c
+@@ -40,7 +40,7 @@
+ int kdbgetsymval(const char *symname, kdb_symtab_t *symtab)
+ {
+ 	if (KDB_DEBUG(AR))
+-		kdb_printf("kdbgetsymval: symname=%s, symtab=%p\n", symname,
++		kdb_printf("kdbgetsymval: symname=%s, symtab=%px\n", symname,
+ 			   symtab);
+ 	memset(symtab, 0, sizeof(*symtab));
+ 	symtab->sym_start = kallsyms_lookup_name(symname);
+@@ -88,7 +88,7 @@ int kdbnearsym(unsigned long addr, kdb_symtab_t *symtab)
+ 	char *knt1 = NULL;
+ 
+ 	if (KDB_DEBUG(AR))
+-		kdb_printf("kdbnearsym: addr=0x%lx, symtab=%p\n", addr, symtab);
++		kdb_printf("kdbnearsym: addr=0x%lx, symtab=%px\n", addr, symtab);
+ 	memset(symtab, 0, sizeof(*symtab));
+ 
+ 	if (addr < 4096)
+@@ -149,7 +149,7 @@ int kdbnearsym(unsigned long addr, kdb_symtab_t *symtab)
+ 		symtab->mod_name = "kernel";
+ 	if (KDB_DEBUG(AR))
+ 		kdb_printf("kdbnearsym: returns %d symtab->sym_start=0x%lx, "
+-		   "symtab->mod_name=%p, symtab->sym_name=%p (%s)\n", ret,
++		   "symtab->mod_name=%px, symtab->sym_name=%px (%s)\n", ret,
+ 		   symtab->sym_start, symtab->mod_name, symtab->sym_name,
+ 		   symtab->sym_name);
+ 
+@@ -887,13 +887,13 @@ void debug_kusage(void)
+ 		   __func__, dah_first);
+ 	if (dah_first) {
+ 		h_used = (struct debug_alloc_header *)debug_alloc_pool;
+-		kdb_printf("%s: h_used %p size %d\n", __func__, h_used,
++		kdb_printf("%s: h_used %px size %d\n", __func__, h_used,
+ 			   h_used->size);
+ 	}
+ 	do {
+ 		h_used = (struct debug_alloc_header *)
+ 			  ((char *)h_free + dah_overhead + h_free->size);
+-		kdb_printf("%s: h_used %p size %d caller %p\n",
++		kdb_printf("%s: h_used %px size %d caller %px\n",
+ 			   __func__, h_used, h_used->size, h_used->caller);
+ 		h_free = (struct debug_alloc_header *)
+ 			  (debug_alloc_pool + h_free->next);
+@@ -902,7 +902,7 @@ void debug_kusage(void)
+ 		  ((char *)h_free + dah_overhead + h_free->size);
+ 	if ((char *)h_used - debug_alloc_pool !=
+ 	    sizeof(debug_alloc_pool_aligned))
+-		kdb_printf("%s: h_used %p size %d caller %p\n",
++		kdb_printf("%s: h_used %px size %d caller %px\n",
+ 			   __func__, h_used, h_used->size, h_used->caller);
+ out:
+ 	spin_unlock(&dap_lock);
 -- 
 2.13.3
