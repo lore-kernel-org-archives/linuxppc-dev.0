@@ -2,19 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42LHgt3QHdzF3LX
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 11:45:30 +1000 (AEST)
-Message-ID: <1811156d5a1df1166c7ab7522525619b951f047d.camel@kernel.crashing.org>
-Subject: Re: [PATCH 3/5] dma-direct: refine dma_direct_alloc zone selection
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42LHnc6gmKzDqjl
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 11:50:28 +1000 (AEST)
+Message-ID: <985079efc3296ac45de1e6344d7916c42fc7cbdd.camel@kernel.crashing.org>
+Subject: Re: [PATCH 5/5] dma-direct: always allow dma mask <= physiscal
+ memory size
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Christoph Hellwig <hch@lst.de>, iommu@lists.linux-foundation.org
 Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Robin Murphy
  <robin.murphy@arm.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Thu, 27 Sep 2018 11:45:15 +1000
-In-Reply-To: <20180920185247.20037-4-hch@lst.de>
+Date: Thu, 27 Sep 2018 11:50:14 +1000
+In-Reply-To: <20180920185247.20037-6-hch@lst.de>
 References: <20180920185247.20037-1-hch@lst.de>
- <20180920185247.20037-4-hch@lst.de>
+ <20180920185247.20037-6-hch@lst.de>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,44 +28,77 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Thu, 2018-09-20 at 20:52 +0200, Christoph Hellwig wrote:
-> +static gfp_t __dma_direct_optimal_gfp_mask(struct device *dev, u64 dma_mask,
-> +               u64 *phys_mask)
-> +{
-> +       if (force_dma_unencrypted())
-> +               *phys_mask = __dma_to_phys(dev, dma_mask);
-> +       else
-> +               *phys_mask = dma_to_phys(dev, dma_mask);
+> This way an architecture with less than 4G of RAM can support dma_mask
+> smaller than 32-bit without a ZONE_DMA.  Apparently that is a common
+> case on powerpc.
+
+Anything that uses a b43 wifi adapter which has a 31-bit limitation
+actually :-)
+> 
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> ---
+>  kernel/dma/direct.c | 28 ++++++++++++++++------------
+>  1 file changed, 16 insertions(+), 12 deletions(-)
+> 
+> diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
+> index 64466b7ef67b..d1e103c6b107 100644
+> --- a/kernel/dma/direct.c
+> +++ b/kernel/dma/direct.c
+> @@ -4,6 +4,7 @@
+>   *
+>   * DMA operations that map physical memory directly without using an IOMMU.
+>   */
+> +#include <linux/bootmem.h> /* for max_pfn */
+>  #include <linux/export.h>
+>  #include <linux/mm.h>
+>  #include <linux/dma-direct.h>
+> @@ -283,21 +284,24 @@ int dma_direct_map_sg(struct device *dev, struct scatterlist *sgl, int nents,
+>  	return nents;
+>  }
+>  
+> +/*
+> + * Because 32-bit DMA masks are so common we expect every architecture to be
+> + * able to satisfy them - either by not supporting more physical memory, or by
+> + * providing a ZONE_DMA32.  If neither is the case, the architecture needs to
+> + * use an IOMMU instead of the direct mapping.
+> + */
+>  int dma_direct_supported(struct device *dev, u64 mask)
+>  {
+> -#ifdef CONFIG_ZONE_DMA
+> -	if (mask < phys_to_dma(dev, DMA_BIT_MASK(ARCH_ZONE_DMA_BITS)))
+> -		return 0;
+> -#else
+> -	/*
+> -	 * Because 32-bit DMA masks are so common we expect every architecture
+> -	 * to be able to satisfy them - either by not supporting more physical
+> -	 * memory, or by providing a ZONE_DMA32.  If neither is the case, the
+> -	 * architecture needs to use an IOMMU instead of the direct mapping.
+> -	 */
+> -	if (mask < phys_to_dma(dev, DMA_BIT_MASK(32)))
+> +	u64 min_mask;
 > +
-> +       /* GFP_DMA32 and GFP_DMA are no ops without the corresponding zones: */
-> +       if (*phys_mask <= DMA_BIT_MASK(ARCH_ZONE_DMA_BITS))
-> +               return GFP_DMA;
-> +       if (*phys_mask <= DMA_BIT_MASK(32))
-> +               return GFP_DMA32;
-> +       return 0;
-> +}
+> +	if (IS_ENABLED(CONFIG_ZONE_DMA))
+> +		min_mask = DMA_BIT_MASK(ARCH_ZONE_DMA_BITS);
+> +	else
+> +		min_mask = min_t(u64, DMA_BIT_MASK(32),
+> +				 (max_pfn - 1) << PAGE_SHIFT);
+> +
+> +	if (mask >= phys_to_dma(dev, min_mask))
+>  		return 0;
 
-I'm not sure this is entirely right.
+nitpick ... to be completely "correct", I would have written
 
-Let's say the mask is 30 bits. You will return GFP_DMA32, which will
-fail if you allocate something above 1G (which is legit for
-ZONE_DMA32).
-
-I think the logic should be:
-
-	if (mask < ZONE_DMA)
-		fail;
-	else if (mask < ZONE_DMA32)
-		use ZONE_DMA or fail if doesn't exist
-	else if (mask < top_of_ram)
-		use ZONE_DMA32 or fail if doesn't exist
+	if (IS_ENABLED(CONFIG_ZONE_DMA))
+		min_mask = DMA_BIT_MASK(ARCH_ZONE_DMA_BITS);
 	else
-		use ZONE_NORMAL
+		min_mask = DMA_BIT_MASK(32);
 
-Additionally, we want to fold-in the top-of-ram test such that we don't
-fail the second case if the mask is 31-bits (smaller than ZONE_DMA32)
-but top of ram is also small enough.
+	min_mask = min_t(u64, min_mask,	(max_pfn - 1) << PAGE_SHIFT);
 
-So the top of ram test should take precendence.
-
-Cheers,
-Ben.
+In "theory" it's also ok to have a mask < ZONE_DMA_BITS as long as it's
+big enough to fit all memory :-)
+	
+> -#endif
+>  	return 1;
+>  }
+>  
