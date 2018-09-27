@@ -5,68 +5,68 @@ X-Spam-Level:
 X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E6178C004D5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Sep 2018 20:31:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D0705C43382
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Sep 2018 20:57:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 48EBD216FE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Sep 2018 20:31:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 48EBD216FE
+	by mail.kernel.org (Postfix) with ESMTPS id 31E442159D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Sep 2018 20:57:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 31E442159D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=debian.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42LmfZ0vRbzF37v
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 06:31:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42LnDj1twmzF380
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 06:57:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=debian.org
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.160.194; helo=mail-qt1-f194.google.com;
+ (client-ip=209.85.160.177; helo=mail-qt1-f177.google.com;
  envelope-from=breno.debian@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=debian.org
-Received: from mail-qt1-f194.google.com (mail-qt1-f194.google.com
- [209.85.160.194])
+Received: from mail-qt1-f177.google.com (mail-qt1-f177.google.com
+ [209.85.160.177])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42LmcJ71pszF37q
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2018 06:29:04 +1000 (AEST)
-Received: by mail-qt1-f194.google.com with SMTP id z13-v6so4286608qts.5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 13:29:04 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Ln3B1P4hzF37t
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2018 06:48:54 +1000 (AEST)
+Received: by mail-qt1-f177.google.com with SMTP id z13-v6so4351047qts.5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 13:48:53 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:subject:to:cc:references:from:message-id:date
  :user-agent:mime-version:in-reply-to:content-language
  :content-transfer-encoding;
- bh=E6UolQnHSWw3dtRGNI3HSICE9ylPREuzUc8HPlYIZrI=;
- b=j8SX+K9U0ruYAu31MNwjxduJnkRd0JcgRca6X29SizuwMBmqvXkh4HsP6QDGxE/po4
- GrWe7TgZBbfcTM7e9CGZbJPbcbuDEl5BrOd1PhDFoNNSVc4K60erTdISMtoIffyrCDvl
- VcLGrLcAWslMhvtThMhw2/xuxbUuWkhWuSE3JqimpspSXSYMNP0/IUsPXzAYQ5LUnjQ2
- hNs+x/3FbvFiKdNhD4K1Nu/yrMJiutF1jM0Cc08f1tSXW88l7qFqDBo+PlGMc7hChQ0Y
- eRGKDIOEL8f2suGEnX1V6ZQunYo9g+I6SVNfu6jqDF64znsWb6vNYzdW+v7rqxCHJL2f
- srlQ==
-X-Gm-Message-State: ABuFfogb48IGiC9kW8QQq7JlJ2Xk6Udj+gwGJY+Kq2I/wVitTS3xDCIJ
- lDiTdyQYeTjreDRhRiUeCwM=
-X-Google-Smtp-Source: ACcGV61beIFVh1HJpa11rVevbxj2UpREfBxHbeyshIqxV9JWiBerAd3SLMGfh/zffrTzEugAplikXg==
-X-Received: by 2002:aed:2f27:: with SMTP id
- l36-v6mr10047723qtd.333.1538080142435; 
- Thu, 27 Sep 2018 13:29:02 -0700 (PDT)
+ bh=VGNx84LlKvYQokOGTIPioIZVlzbGoswie6CgGctqQOY=;
+ b=IdepfNN35iZ7DAnSYG2X07RyAoQxQEKZ/Y3QfDPurEJnkEtsIFgEsCtummt9EUfRaA
+ NjMcxoHgaXxfMGkQ+dP1qDSxVGSf0qSV3ob+LJ1NvmGOHMj7EkqGZdjpRDJkgY2Js9/q
+ ESDQhYVl3suK7FVNz1iq9KAR4Obfv/DETdySjzNHW3pqjSxJjj5jQid9Ryjgz4H+D7yI
+ pAmTjyBKPfus9muCEJgQI4torDD6KMQdWd+XsAe07xQHG1mAFphuI+sMrIITugWB2s/5
+ ECKk7lwJR26kD/cjX4twDjQ8d1JCe2tdJjmROFPbyoEOiCZqitBBBq2yPB0CRqVW1Wk5
+ r+eg==
+X-Gm-Message-State: ABuFfojqN42LtbSaHMkC6tnxs70pRWY0vn5ZsMimbwNJB0YGCbMuEfHV
+ jyVCZ470F01giyLUo9N2vrk=
+X-Google-Smtp-Source: ACcGV624xFE/A5hJws5OKGrz/DsHL4ceBAgmeIgmR8Lwz93+wgg66DhzXpPNpXRm8tdlAx64corNTw==
+X-Received: by 2002:ac8:190e:: with SMTP id
+ t14-v6mr9939715qtj.327.1538081331822; 
+ Thu, 27 Sep 2018 13:48:51 -0700 (PDT)
 Received: from [10.0.0.9] ([177.83.210.7])
- by smtp.gmail.com with ESMTPSA id 192-v6sm1726398qke.3.2018.09.27.13.29.00
+ by smtp.gmail.com with ESMTPSA id e195-v6sm1823444qka.2.2018.09.27.13.48.49
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Thu, 27 Sep 2018 13:29:01 -0700 (PDT)
-Subject: Re: [RFC PATCH 01/11] powerpc/tm: Reclaim transaction on kernel entry
+ Thu, 27 Sep 2018 13:48:51 -0700 (PDT)
+Subject: Re: [RFC PATCH 06/11] powerpc/tm: Refactor the __switch_to_tm code
 To: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org
 References: <1536781219-13938-1-git-send-email-leitao@debian.org>
- <1536781219-13938-2-git-send-email-leitao@debian.org>
- <5013d84a59185cd7a1b941e6cc145a1fbfe52f48.camel@neuling.org>
+ <1536781219-13938-7-git-send-email-leitao@debian.org>
+ <d06021833414dcfa5c9e04b4d83dfc475d1f1cbd.camel@neuling.org>
 From: Breno Leitao <leitao@debian.org>
-Message-ID: <1e00c875-436f-8cae-8d6e-032402486c80@debian.org>
-Date: Thu, 27 Sep 2018 17:28:57 -0300
+Message-ID: <8c286819-a41b-5c07-2857-09618181000f@debian.org>
+Date: Thu, 27 Sep 2018 17:48:46 -0300
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
  Thunderbird/52.9.1
 MIME-Version: 1.0
-In-Reply-To: <5013d84a59185cd7a1b941e6cc145a1fbfe52f48.camel@neuling.org>
+In-Reply-To: <d06021833414dcfa5c9e04b4d83dfc475d1f1cbd.camel@neuling.org>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
@@ -85,32 +85,77 @@ Cc: ldufour@linux.vnet.ibm.com, gromero@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
-Message-ID: <20180927202857.f0l8TH6t7d5q0g3Dj8JBqRvoDrWwSGpNRoXfU1Hn8B4@z>
 
-Hi Mikey,
+hi Mikey
 
-On 09/17/2018 10:31 PM, Michael Neuling wrote:
-> On Wed, 2018-09-12 at 16:40 -0300, Breno Leitao wrote:
->> This patch creates a macro that will be invoked on all entrance to the
->> kernel, so, in kernel space the transaction will be completely reclaimed
->> and not suspended anymore.
+On 09/18/2018 01:04 AM, Michael Neuling wrote:
+>> On top of that, both tm_reclaim_task() and tm_recheckpoint_new_task()
+>> functions are not used anymore, removing them.
 > 
-> There are still some calls to tm_reclaim_current() in process.c. Should these
-> probably go now, right?
+> What about tm_reclaim_current().  This is being used in places like signals
+> which I would have thought we could avoid with this series
 
-Yes, we shouldn't not call tm_reclaim_current() from anywhere else other than
-TM_KERNEL_ENTRY anymore.
+In fact tm_reclaim_current() is the default function to reclaim. It is the
+function that is being called by TM_KERNEL_ENTRY, other than that, it should
+never be called on the sane path.
 
-That said, I think we can still have some references for tm_reclaim_current()
-in some specific checkpoints. Something as:
+>> +		 * If we got here with an active transaction, then, it was
+>> +		 * aborted by TM_KERNEL_ENTRY and the fix the failure case
+>> +		 * needs to be fixed, so, indepedently how we arrived here, the
+>> +		 * new TM abort case will be TM_CAUSE_RESCHED now.
+> 
+> What does "fix the failure case needs to be fixed" mean?
+> 
+> also s/indepedently/independently/
 
-        if (WARN_ON(MSR_TM_SUSPENDED(mfmsr())))
-                tm_reclaim_current(0);
+In fact, I rewrote this paragraph. I try to say that the "TEXASR Failure
+code" needs to be updated/fixed, but it became that messy and crazy
+paragraph. :-(
 
-I initially wrote something as BUG_ON(MSR_TM_SUSPENDED(mfmsr()) but
-scripts/checkpatch.pl suggested me writing a WARN_ON() and create a recovery
-pass, which seems fair.
+> 
+>> +		 */
+>> +		if (MSR_TM_ACTIVE(prev->thread.regs->msr)) {
+>> +			/*
+>> +			 * If there was an IRQ during trecheckpoint, it will
+>> +			 * cause an IRQ to be replayed. This replayed IRQ can
+>> +			 * invoke SCHEDULE_USER, thus, we arrive here with a TM
+>> +			 * active transaction.
+> 
+> I don't think this can happen. trecheckpoint (and treclaim) are called with IRQs
+> hard off (since they change r1).
 
-Anyway, if you think it is not a good strategy, I can get rid of them at v2.
+There will be an IRQ check and replay later. An IRQ being replayed can cause
+a process to be reschedule and arrive here after a trecheckpoint.
 
-Thank you!
+> I think something else is going on here. I think this code and comment needs to
+> go but I assume it's here because you are seeing something.
+
+Right, and it was my major concern about this whole review.
+
+The tm_recheckpoint() was being called with IRQ hard off, as you said, but
+the IRQ is being re-enabled later, after "trecheckpoint", when it calls
+local_irq_restore().
+
+Since the IRQ was re-enabled, there is a mechanism to check for IRQs that
+were pending and execute them (after recheckpoint - hence with MSR[TS]
+active). Some of these pending IRQ might cause a task reschedule, bringing us
+to __switch_to with MSR[TS] active.
+
+I also checked that there were cases where a pending IRQ was waiting to be
+replayed even before  tm_recheckpoint() is called. I suspect we were reaching
+tm_recheckpoint soft-disabled.
+
+On the v2 patchset, I am following your suggestion, which is calling
+restore_tm_state() much later (at the beginning of fast_exception_return),
+after the _TIF_USER_WORK_MASK section, and after the IRQ replay section also.
+So, after this point, there is no way to rollback the exit to userspace after
+trecheckpoint. Therefore, if there is a recheckpoint, a rfid will always come
+directly.
+
+In order to do so, I need to remove _TIF_RESTORE_TM as part of
+_TIF_USER_WORK_MASK and handle _TIF_RESTORE_TM individually later.
+
+This seems to solve this problem, and I can remove this reclaim in the middle
+of __switch_to_tm().
+
+Thank you
