@@ -1,63 +1,16 @@
-Return-Path: <rppt@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42LMnf2WBlzF36d
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 14:50:46 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w8R4nM2K042066
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 00:50:42 -0400
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2mrqk8j21m-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 00:50:42 -0400
-Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.vnet.ibm.com>;
- Thu, 27 Sep 2018 05:50:38 +0100
-Date: Thu, 27 Sep 2018 07:50:20 +0300
-From: Mike Rapoport <rppt@linux.vnet.ibm.com>
-To: Alexander Duyck <alexander.duyck@gmail.com>
-Cc: linux-mm <linux-mm@kvack.org>, Andrew Morton <akpm@linux-foundation.org>,
- Catalin Marinas <catalin.marinas@arm.com>, chris@zankel.net,
- David Miller <davem@davemloft.net>,
- Geert Uytterhoeven <geert@linux-m68k.org>, green.hu@gmail.com,
- Greg KH <gregkh@linuxfoundation.org>, gxt@pku.edu.cn,
- Ingo Molnar <mingo@redhat.com>, jejb@parisc-linux.org,
- jonas@southpole.se, Jonathan Corbet <corbet@lwn.net>, lftan@altera.com,
- msalter@redhat.com, Martin Schwidefsky <schwidefsky@de.ibm.com>,
- mattst88@gmail.com, mpe@ellerman.id.au, Michal Hocko <mhocko@suse.com>,
- monstr@monstr.eu, palmer@sifive.com, paul.burton@mips.com,
- rkuo@codeaurora.org, richard@nod.at, dalias@libc.org,
- Russell King - ARM Linux <linux@armlinux.org.uk>,
- fancer.lancer@gmail.com, Thomas Gleixner <tglx@linutronix.de>,
- Tony Luck <tony.luck@intel.com>, vgupta@synopsys.com,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-c6x-dev@linux-c6x.org, linux-hexagon@vger.kernel.org,
- linux-ia64@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
- linux-m68k@lists.linux-m68k.org, linux-mips@linux-mips.org,
- linux-parisc@vger.kernel.org,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>,
- linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, linux-snps-arc@lists.infradead.org,
- linux-um@lists.infradead.org, nios2-dev@lists.rocketboards.org,
- openrisc@lists.librecores.org, sparclinux@vger.kernel.org,
- uclinux-h8-devel@lists.sourceforge.jp
-Subject: Re: [PATCH 03/30] mm: remove CONFIG_HAVE_MEMBLOCK
-References: <1536927045-23536-1-git-send-email-rppt@linux.vnet.ibm.com>
- <1536927045-23536-4-git-send-email-rppt@linux.vnet.ibm.com>
- <CAKgT0UdP=78RsWHMxFu4PD8a3AhA3eNcG68Z_9aGY0vhOKf7xA@mail.gmail.com>
- <20180926183152.GA4597@rapoport-lnx>
- <CAKgT0UcC-GTtyPK9ynvj6r3YFqy8kE40iMJxzPowbNoXGf9iWg@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAKgT0UcC-GTtyPK9ynvj6r3YFqy8kE40iMJxzPowbNoXGf9iWg@mail.gmail.com>
-Message-Id: <20180927045019.GA16740@rapoport-lnx>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42LN6Q4rZ4zF323
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 15:05:18 +1000 (AEST)
+From: Michael Neuling <mikey@neuling.org>
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org,
+	Michael Neuling <mikey@neuling.org>
+Subject: [PATCH] powerpc/tm: Reformat comments
+Date: Thu, 27 Sep 2018 15:05:15 +1000
+Message-Id: <20180927050515.25644-1-mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -67,56 +20,164 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 26, 2018 at 05:34:32PM -0700, Alexander Duyck wrote:
-> On Wed, Sep 26, 2018 at 11:32 AM Mike Rapoport <rppt@linux.vnet.ibm.com> wrote:
-> >
-> > On Wed, Sep 26, 2018 at 09:58:41AM -0700, Alexander Duyck wrote:
-> > > On Fri, Sep 14, 2018 at 5:11 AM Mike Rapoport <rppt@linux.vnet.ibm.com> wrote:
-> > > >
-> > > > All architecures use memblock for early memory management. There is no need
-> > > > for the CONFIG_HAVE_MEMBLOCK configuration option.
-> > > >
-> > > > Signed-off-by: Mike Rapoport <rppt@linux.vnet.ibm.com>
-> > >
-> > > <snip>
-> > >
-> > > > diff --git a/include/linux/memblock.h b/include/linux/memblock.h
-> > > > index 5169205..4ae91fc 100644
-> > > > --- a/include/linux/memblock.h
-> > > > +++ b/include/linux/memblock.h
-> > > > @@ -2,7 +2,6 @@
-> > > >  #define _LINUX_MEMBLOCK_H
-> > > >  #ifdef __KERNEL__
-> > > >
-> > > > -#ifdef CONFIG_HAVE_MEMBLOCK
-> > > >  /*
-> > > >   * Logical memory blocks.
-> > > >   *
-> > > > @@ -460,7 +459,6 @@ static inline phys_addr_t memblock_alloc(phys_addr_t size, phys_addr_t align)
-> > > >  {
-> > > >         return 0;
-> > > >  }
-> > > > -#endif /* CONFIG_HAVE_MEMBLOCK */
-> > > >
-> > > >  #endif /* __KERNEL__ */
-> > >
-> > > There was an #else above this section and I believe it and the code
-> > > after it needs to be stripped as well.
-> >
-> > Right, I've already sent the fix [1] and it's in mmots.
-> >
-> > [1] https://lkml.org/lkml/2018/9/19/416
-> >
-> 
-> Are you sure? The patch you reference appears to be for
-> drivers/of/fdt.c, and the bit I pointed out here is in
-> include/linux/memblock.h.
+The comments in this file don't conform to the coding style so take
+them to "Comment Formatting Re-Education Camp"
 
-Ah, sorry. You are right, will fix. Thanks for spotting it!
+Suggested-by: Michael "Camp Drill Sargent" Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+ arch/powerpc/kernel/tm.S | 49 +++++++++++++++++++++++++---------------
+ 1 file changed, 31 insertions(+), 18 deletions(-)
+
+diff --git a/arch/powerpc/kernel/tm.S b/arch/powerpc/kernel/tm.S
+index 50e5cff10d..c954aecd9b 100644
+--- a/arch/powerpc/kernel/tm.S
++++ b/arch/powerpc/kernel/tm.S
+@@ -92,7 +92,8 @@ _GLOBAL(tm_abort)
+ 	blr
+ EXPORT_SYMBOL_GPL(tm_abort);
  
-> - Alex
-> 
-
+-/* void tm_reclaim(struct thread_struct *thread,
++/*
++ * void tm_reclaim(struct thread_struct *thread,
+  *		   uint8_t cause)
+  *
+  *	- Performs a full reclaim.  This destroys outstanding
+@@ -163,14 +164,16 @@ _GLOBAL(tm_reclaim)
+ 	 */
+ 	TRECLAIM(R4)				/* Cause in r4 */
+ 
+-	/* ******************** GPRs ******************** */
+-	/* Stash the checkpointed r13 away in the scratch SPR and get the real
++	/*
++	 * ******************** GPRs ********************
++	 * Stash the checkpointed r13 away in the scratch SPR and get the real
+ 	 *  paca
+ 	 */
+ 	SET_SCRATCH0(r13)
+ 	GET_PACA(r13)
+ 
+-	/* Stash the checkpointed r1 away in paca tm_scratch and get the real
++	/*
++	 * Stash the checkpointed r1 away in paca tm_scratch and get the real
+ 	 * stack pointer back
+ 	 */
+ 	std	r1, PACATMSCRATCH(r13)
+@@ -195,7 +198,8 @@ _GLOBAL(tm_reclaim)
+ 
+ 	addi	r7, r12, PT_CKPT_REGS		/* Thread's ckpt_regs */
+ 
+-	/* Make r7 look like an exception frame so that we
++	/*
++	 * Make r7 look like an exception frame so that we
+ 	 * can use the neat GPRx(n) macros.  r7 is NOT a pt_regs ptr!
+ 	 */
+ 	subi	r7, r7, STACK_FRAME_OVERHEAD
+@@ -223,7 +227,8 @@ _GLOBAL(tm_reclaim)
+ 	/* ******************** NIP ******************** */
+ 	mfspr	r3, SPRN_TFHAR
+ 	std	r3, _NIP(r7)			/* Returns to failhandler */
+-	/* The checkpointed NIP is ignored when rescheduling/rechkpting,
++	/*
++	 * The checkpointed NIP is ignored when rescheduling/rechkpting,
+ 	 * but is used in signal return to 'wind back' to the abort handler.
+ 	 */
+ 
+@@ -246,12 +251,14 @@ _GLOBAL(tm_reclaim)
+ 	std	r3, THREAD_TM_TAR(r12)
+ 	std	r4, THREAD_TM_DSCR(r12)
+ 
+-	/* MSR and flags:  We don't change CRs, and we don't need to alter
++	/*
++	 * MSR and flags:  We don't change CRs, and we don't need to alter
+ 	 * MSR.
+ 	 */
+ 
+ 
+-	/* ******************** FPR/VR/VSRs ************
++	/*
++	 * ******************** FPR/VR/VSRs ************
+ 	 * After reclaiming, capture the checkpointed FPRs/VRs.
+ 	 *
+ 	 * We enabled VEC/FP/VSX in the msr above, so we can execute these
+@@ -277,7 +284,8 @@ _GLOBAL(tm_reclaim)
+ 	stfd    fr0,FPSTATE_FPSCR(r7)
+ 
+ 
+-	/* TM regs, incl TEXASR -- these live in thread_struct.  Note they've
++	/*
++	 * TM regs, incl TEXASR -- these live in thread_struct.  Note they've
+ 	 * been updated by the treclaim, to explain to userland the failure
+ 	 * cause (aborted).
+ 	 */
+@@ -313,7 +321,7 @@ _GLOBAL(tm_reclaim)
+ 	blr
+ 
+ 
+-       /*
++	/*
+ 	 * void __tm_recheckpoint(struct thread_struct *thread)
+ 	 *	- Restore the checkpointed register state saved by tm_reclaim
+ 	 *	  when we switch_to a process.
+@@ -329,7 +337,8 @@ _GLOBAL(__tm_recheckpoint)
+ 	std	r2, STK_GOT(r1)
+ 	stdu	r1, -TM_FRAME_SIZE(r1)
+ 
+-	/* We've a struct pt_regs at [r1+STACK_FRAME_OVERHEAD].
++	/*
++	 * We've a struct pt_regs at [r1+STACK_FRAME_OVERHEAD].
+ 	 * This is used for backing up the NVGPRs:
+ 	 */
+ 	SAVE_NVGPRS(r1)
+@@ -338,7 +347,8 @@ _GLOBAL(__tm_recheckpoint)
+ 
+ 	addi	r7, r3, PT_CKPT_REGS		/* Thread's ckpt_regs */
+ 
+-	/* Make r7 look like an exception frame so that we
++	/*
++	 * Make r7 look like an exception frame so that we
+ 	 * can use the neat GPRx(n) macros.  r7 is now NOT a pt_regs ptr!
+ 	 */
+ 	subi	r7, r7, STACK_FRAME_OVERHEAD
+@@ -407,14 +417,15 @@ restore_gprs:
+ 
+ 	REST_NVGPRS(r7)				/* GPR14-31 */
+ 
+-	/* Load up PPR and DSCR here so we don't run with user values for long
+-	 */
++	/* Load up PPR and DSCR here so we don't run with user values for long */
+ 	mtspr	SPRN_DSCR, r5
+ 	mtspr	SPRN_PPR, r6
+ 
+-	/* Do final sanity check on TEXASR to make sure FS is set.  Do this
++	/*
++	 * Do final sanity check on TEXASR to make sure FS is set.  Do this
+ 	 * here before we load up the userspace r1 so any bugs we hit will get
+-	 * a call chain */
++	 * a call chain
++	 */
+ 	mfspr	r5, SPRN_TEXASR
+ 	srdi	r5, r5, 16
+ 	li	r6, (TEXASR_FS)@h
+@@ -422,7 +433,8 @@ restore_gprs:
+ 1:	tdeqi	r6, 0
+ 	EMIT_BUG_ENTRY 1b,__FILE__,__LINE__,0
+ 
+-	/* Do final sanity check on MSR to make sure we are not transactional
++	/*
++	 * Do final sanity check on MSR to make sure we are not transactional
+ 	 * or suspended
+ 	 */
+ 	mfmsr   r6
+@@ -470,7 +482,8 @@ restore_gprs:
+ 
+ 	HMT_MEDIUM
+ 
+-	/* Our transactional state has now changed.
++	/*
++	 * Our transactional state has now changed.
+ 	 *
+ 	 * Now just get out of here.  Transactional (current) state will be
+ 	 * updated once restore is called on the return path in the _switch-ed
 -- 
-Sincerely yours,
-Mike.
+2.17.1
