@@ -2,75 +2,78 @@ Return-Path: <SRS0=O7I3=MJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CB37AC43382
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Sep 2018 21:21:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9FB1EC43382
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Sep 2018 22:27:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 395E5216FA
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Sep 2018 21:21:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 395E5216FA
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=debian.org
+	by mail.kernel.org (Postfix) with ESMTPS id EF4B52170E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Sep 2018 22:27:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EF4B52170E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42Lnmb15MDzF39C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 07:21:19 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=debian.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42LqFG0GbPzF39P
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 08:27:46 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.160.196; helo=mail-qt1-f196.google.com;
- envelope-from=breno.debian@gmail.com; receiver=<UNKNOWN>)
+ (client-ip=209.85.167.173; helo=mail-oi1-f173.google.com;
+ envelope-from=pku.leo@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=debian.org
-Received: from mail-qt1-f196.google.com (mail-qt1-f196.google.com
- [209.85.160.196])
+ dmarc=fail (p=none dis=none) header.from=nxp.com
+Received: from mail-oi1-f173.google.com (mail-oi1-f173.google.com
+ [209.85.167.173])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42LnMz3HDvzF38V
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2018 07:03:27 +1000 (AEST)
-Received: by mail-qt1-f196.google.com with SMTP id i10-v6so4437018qtp.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 14:03:27 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42LqC92n4mzF38P
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2018 08:25:56 +1000 (AEST)
+Received: by mail-oi1-f173.google.com with SMTP id u197-v6so3640656oif.5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 15:25:56 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=fMuiGNIhLVfXcjnfaIs9bxfJ7nDKry3/26kExqHB2co=;
- b=Wj7rAt87uz6hkWZYHEwNaQ8R69ckfOnzAGOYwpzRBx5dGUDUqbsM6MZSUR5UN2m/dH
- FSLU6rPbRFjSagSw5FH9JQZFsCtzBR+z+Ti26GlmmmfvbPkCS2tNr12q7TSOiRgWmIIJ
- aBPkVGGvofHr46b16RrQdInAuEDCLp8UQSIoStkp7trmSalVIJMPnRDe80JsFtEnhadB
- 6RNng48BkL1JmqNZAuzFqTPVxb4qmz4IRaD+km/kA3mRqm8F6+hiOjUNmh4RQiP1b/4U
- hobcaVokh5Y7uIAHJJqwYGO5K/uNDw0hhU5GQL4PxpJ9P0O+Yx0FNfHh3MBG9XKtFQpI
- HPQg==
-X-Gm-Message-State: ABuFfogsUG5w8zwIabyngNaFAQC1k+lTAgDajDTvIzOlEWzqVP6lKLei
- s2Xf6PeWG62uwS/OnwUQ3Hc=
-X-Google-Smtp-Source: ACcGV63FkZN8E0hPn2RRVqUDq7B0NPN7YG5AtOBDegSi6m3vpGCE0E6LywfIxsxktnimFgHL2DW5jw==
-X-Received: by 2002:ac8:33da:: with SMTP id
- d26-v6mr9945658qtb.313.1538082205396; 
- Thu, 27 Sep 2018 14:03:25 -0700 (PDT)
-Received: from [10.0.0.9] ([177.83.210.7])
- by smtp.gmail.com with ESMTPSA id f184-v6sm1773934qkc.23.2018.09.27.14.03.22
+ h=x-gm-message-state:mime-version:from:date:message-id:subject:to;
+ bh=ShoJtjcjQb0gjp7YdjvKzVSuec6myPwgPyE/EvL7OBk=;
+ b=Wn2dufLbpAbJgdXxtF5b2cE24nHe8rz4aOgFDRyZgkUd9n+/cPere1KcfmG4U9TOIb
+ B8+01yTq1up08Hf358dx/HgTk5msaRmM/1gbHYbJ5ERs2tpMNwmn3oTQNP3nF4CNGD+X
+ fE0bFtbY53NzZdo9bVN3JzqqWZ4B3BRV1aFmtkGVxfCvxP12JaMZ3KsXDc6NPV8sTdFn
+ BoS57Jjxlx2Xpc3uVHKcTBdLI8UnhrUhPab/lRPo4ovGU82SbXUE9aqRzzMmJ/ggBR8r
+ XzSgOlNyJ/FHF1vdCGUKQ/rn4IX0RHnbT2xyOIslAlsMjRMeLDtBA1WwKq0hJTSRqndO
+ 9Z5Q==
+X-Gm-Message-State: ABuFfoibynOCCLgsxVsg3a+PUqI+Cs/lqrjE4IFccz2gWIvUt+Mxc72u
+ XusOivYbqySgaT02j3hJjZVrpcI4bx4=
+X-Google-Smtp-Source: ACcGV60++nOx9vnSu6kXjqX0cYJGUBNunv06th0HYbr66lJ/3Pxu0gX8iddRiSmA8OB6bH42TPtJdQ==
+X-Received: by 2002:aca:e1d4:: with SMTP id
+ y203-v6mr1119728oig.313.1538087154710; 
+ Thu, 27 Sep 2018 15:25:54 -0700 (PDT)
+Received: from mail-oi1-f180.google.com (mail-oi1-f180.google.com.
+ [209.85.167.180])
+ by smtp.gmail.com with ESMTPSA id v34-v6sm1282364ota.30.2018.09.27.15.25.54
+ for <linuxppc-dev@lists.ozlabs.org>
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Thu, 27 Sep 2018 14:03:24 -0700 (PDT)
-Subject: Re: [RFC PATCH 08/11] powerpc/tm: Do not reclaim on ptrace
-To: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org
-References: <1536781219-13938-1-git-send-email-leitao@debian.org>
- <1536781219-13938-9-git-send-email-leitao@debian.org>
- <743b29dab736700c1b284fabb8fccf7c83ddb3c2.camel@neuling.org>
-From: Breno Leitao <leitao@debian.org>
-Message-ID: <18dcf8b7-1001-d6cc-1847-af9c679f9435@debian.org>
-Date: Thu, 27 Sep 2018 18:03:21 -0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ Thu, 27 Sep 2018 15:25:54 -0700 (PDT)
+Received: by mail-oi1-f180.google.com with SMTP id e17-v6so2752494oib.4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 15:25:54 -0700 (PDT)
+X-Received: by 2002:aca:fd89:: with SMTP id
+ b131-v6mr4395787oii.30.1538087154014; 
+ Thu, 27 Sep 2018 15:25:54 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <743b29dab736700c1b284fabb8fccf7c83ddb3c2.camel@neuling.org>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+From: Li Yang <leoyang.li@nxp.com>
+Date: Thu, 27 Sep 2018 17:25:42 -0500
+X-Gmail-Original-Message-ID: <CADRPPNT0QiBkJtJnxjW95Yf-mirL5OzRrvqj8rC-O8fiz17VnA@mail.gmail.com>
+Message-ID: <CADRPPNT0QiBkJtJnxjW95Yf-mirL5OzRrvqj8rC-O8fiz17VnA@mail.gmail.com>
+Subject: drivers binding to device node with multiple compatible strings
+To: Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@secretlab.ca>,
+ "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
+ <devicetree@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, 
+ "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
+ <linux-arm-kernel@lists.infradead.org>, 
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,60 +85,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ldufour@linux.vnet.ibm.com, gromero@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Mikey,
+Hi Rob and Grant,
 
-On 09/18/2018 02:36 AM, Michael Neuling wrote:
-> On Wed, 2018-09-12 at 16:40 -0300, Breno Leitao wrote:
->> Make sure that we are not suspended on ptrace and that the registers were
->> already reclaimed.
->>
->> Since the data was already reclaimed, there is nothing to be done here
->> except to restore the SPRs.
->>
->> Signed-off-by: Breno Leitao <leitao@debian.org>
->> ---
->>  arch/powerpc/kernel/ptrace.c | 10 ++++------
->>  1 file changed, 4 insertions(+), 6 deletions(-)
->>
->> diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
->> index 9667666eb18e..cf6ee9154b11 100644
->> --- a/arch/powerpc/kernel/ptrace.c
->> +++ b/arch/powerpc/kernel/ptrace.c
->> @@ -136,12 +136,10 @@ static void flush_tmregs_to_thread(struct task_struct
->> *tsk)
->>  	if ((!cpu_has_feature(CPU_FTR_TM)) || (tsk != current))
->>  		return;
->>  
->> -	if (MSR_TM_SUSPENDED(mfmsr())) {
->> -		tm_reclaim_current(TM_CAUSE_SIGNAL);
->> -	} else {
->> -		tm_enable();
->> -		tm_save_sprs(&(tsk->thread));
->> -	}
->> +	WARN_ON(MSR_TM_SUSPENDED(mfmsr()));
->> +
->> +	tm_enable();
->> +	tm_save_sprs(&(tsk->thread));
-> 
-> Do we need to check if TM was enabled in the task before saving the TM SPRs?
-> 
-> What happens if TM was lazily off and hence we had someone else's TM SPRs in the
-> CPU currently?  Wouldn't this flush the wrong values to the task_struct?
-> 
-> I think we need to check the processes MSR before doing this.
+Various device tree specs are recommending to include all the
+potential compatible strings in the device node, with the order from
+most specific to most general.  But it looks like Linux kernel doesn't
+provide a way to bind the device to the most specific driver, however,
+the first registered compatible driver will be bound.
 
-Yes, it is a *very* good point, and I think we are vulnerable even before
-this patch (in the current kernel). Take a look above, we are calling
-tm_save_sprs() if MSR is not TM suspended independently if TM is lazily off.
+As more and more generic drivers are added to the Linux kernel, they
+are competing with the more specific vendor drivers and causes problem
+when both are built into the kernel.  I'm wondering if there is a
+generic solution (or in plan) to make the most specific driver bound
+to the device.   Or we have to disable the more general driver or
+remove the more general compatible string from the device tree?
 
-It shouldn't be hard to create a test case for it. I can try to call
-ptrace(PTRACE_GETVRREGS) on a task that sleeps until TM is lazily disabled,
-compare if the TM SPR changed in this mean time. (while doing HTM in parallel
-to keep HTM SPR changing). Let's see if I can read others task TM SPRs.
-
-Thank you.
+Regards,
+Leo
