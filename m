@@ -1,22 +1,25 @@
-Return-Path: <david@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42LTw53FBTzF35s
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 19:26:45 +1000 (AEST)
-From: David Hildenbrand <david@redhat.com>
-To: linux-mm@kvack.org
-Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-acpi@vger.kernel.org,
- xen-devel@lists.xenproject.org, devel@linuxdriverproject.org,
- David Hildenbrand <david@redhat.com>, Jonathan Corbet <corbet@lwn.net>,
- Michal Hocko <mhocko@suse.com>, Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v3 6/6] memory-hotplug.txt: Add some details about locking
- internals
-Date: Thu, 27 Sep 2018 11:25:54 +0200
-Message-Id: <20180927092554.13567-7-david@redhat.com>
-In-Reply-To: <20180927092554.13567-1-david@redhat.com>
-References: <20180927092554.13567-1-david@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42LXBg3y7TzF35S
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 21:09:31 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christophe LEROY <christophe.leroy@c-s.fr>,
+ Daniel Thompson <daniel.thompson@linaro.org>
+Cc: Jason Wessel <jason.wessel@windriver.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, kgdb-bugreport@lists.sourceforge.net,
+ stable@vger.kernel.org, me@tobin.cc
+Subject: Re: [PATCH] kdb: use correct pointer when 'btc' calls 'btt'
+In-Reply-To: <760ed3ff-43d9-75e5-b36c-aaa7871ffe50@c-s.fr>
+References: <ff05bd36b338f4f914780176e9eba8138e1b254b.1536927765.git.christophe.leroy@c-s.fr>
+ <20180916190610.vzqxwps7zqy2zc6o@holly.lan>
+ <5f0e0241-b7ab-b5fa-de0e-01abdbc85770@linaro.org>
+ <760ed3ff-43d9-75e5-b36c-aaa7871ffe50@c-s.fr>
+Date: Thu, 27 Sep 2018 21:09:28 +1000
+Message-ID: <877ej7urh3.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,79 +29,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Let's document the magic a bit, especially why device_hotplug_lock is
-required when adding/removing memory and how it all play together with
-requests to online/offline memory from user space.
+Christophe LEROY <christophe.leroy@c-s.fr> writes:
+> Le 26/09/2018 =C3=A0 13:11, Daniel Thompson a =C3=A9crit=C2=A0:
+>> On 16/09/2018 20:06, Daniel Thompson wrote:
+>>> On Fri, Sep 14, 2018 at 12:35:44PM +0000, Christophe Leroy wrote:
+>>>> On a powerpc 8xx, 'btc' fails as follows:
+>>>> Entering kdb (current=3D0x(ptrval), pid 282) due to Keyboard Entry
+...
+>>>>
+>>>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>>>> Cc: <stable@vger.kernel.org> # 4.15+
+>>>
+>>> Would a Fixes: be better here?
+>>> Fixes: ad67b74d2469d9b82 ("printk: hash addresses printed with %p")
+>>=20
+>> Christophe, When you add the Fixes: could you also add my
+>>=20
+>> Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+>
+> Ok, thanks for the review, but do I have to do anything really ?
+>
+> The Fixes: and now your Reviewed-by: appear automatically in patchwork=20
+> (https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=3D65715),=
+=20
+> so I believe they'll be automatically included when Jason or someone=20
+> else takes the patch, no ?
 
-Cc: Jonathan Corbet <corbet@lwn.net>
-Cc: Michal Hocko <mhocko@suse.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Reviewed-by: Pavel Tatashin <pavel.tatashin@microsoft.com>
-Reviewed-by: Rashmica Gupta <rashmica.g@gmail.com>
-Signed-off-by: David Hildenbrand <david@redhat.com>
----
- Documentation/memory-hotplug.txt | 42 +++++++++++++++++++++++++++++++-
- 1 file changed, 41 insertions(+), 1 deletion(-)
+patchwork won't add the Fixes tag from the reply, it needs to be in the
+original mail.
 
-diff --git a/Documentation/memory-hotplug.txt b/Documentation/memory-hotplug.txt
-index 7f49ebf3ddb2..ce4faa5530fa 100644
---- a/Documentation/memory-hotplug.txt
-+++ b/Documentation/memory-hotplug.txt
-@@ -3,7 +3,7 @@ Memory Hotplug
- ==============
- 
- :Created:							Jul 28 2007
--:Updated: Add description of notifier of memory hotplug:	Oct 11 2007
-+:Updated: Add some details about locking internals:		Aug 20 2018
- 
- This document is about memory hotplug including how-to-use and current status.
- Because Memory Hotplug is still under development, contents of this text will
-@@ -495,6 +495,46 @@ further processing of the notification queue.
- 
- NOTIFY_STOP stops further processing of the notification queue.
- 
-+
-+Locking Internals
-+=================
-+
-+When adding/removing memory that uses memory block devices (i.e. ordinary RAM),
-+the device_hotplug_lock should be held to:
-+
-+- synchronize against online/offline requests (e.g. via sysfs). This way, memory
-+  block devices can only be accessed (.online/.state attributes) by user
-+  space once memory has been fully added. And when removing memory, we
-+  know nobody is in critical sections.
-+- synchronize against CPU hotplug and similar (e.g. relevant for ACPI and PPC)
-+
-+Especially, there is a possible lock inversion that is avoided using
-+device_hotplug_lock when adding memory and user space tries to online that
-+memory faster than expected:
-+
-+- device_online() will first take the device_lock(), followed by
-+  mem_hotplug_lock
-+- add_memory_resource() will first take the mem_hotplug_lock, followed by
-+  the device_lock() (while creating the devices, during bus_add_device()).
-+
-+As the device is visible to user space before taking the device_lock(), this
-+can result in a lock inversion.
-+
-+onlining/offlining of memory should be done via device_online()/
-+device_offline() - to make sure it is properly synchronized to actions
-+via sysfs. Holding device_hotplug_lock is advised (to e.g. protect online_type)
-+
-+When adding/removing/onlining/offlining memory or adding/removing
-+heterogeneous/device memory, we should always hold the mem_hotplug_lock in
-+write mode to serialise memory hotplug (e.g. access to global/zone
-+variables).
-+
-+In addition, mem_hotplug_lock (in contrast to device_hotplug_lock) in read
-+mode allows for a quite efficient get_online_mems/put_online_mems
-+implementation, so code accessing memory can protect from that memory
-+vanishing.
-+
-+
- Future Work
- ===========
- 
--- 
-2.17.1
+See:
+  https://github.com/getpatchwork/patchwork/issues/151
+
+
+cheers
