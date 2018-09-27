@@ -5,68 +5,68 @@ X-Spam-Level:
 X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D2140C43382
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Sep 2018 21:11:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 28816C43382
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Sep 2018 21:13:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 50FEC21571
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Sep 2018 21:11:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 50FEC21571
+	by mail.kernel.org (Postfix) with ESMTPS id EF1F621571
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Sep 2018 21:13:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EF1F621571
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=debian.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42LnYB4KlCzF380
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 07:11:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Lnbb4QKSzDrWN
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 07:13:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=debian.org
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.222.195; helo=mail-qk1-f195.google.com;
+ (client-ip=209.85.160.195; helo=mail-qt1-f195.google.com;
  envelope-from=breno.debian@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=debian.org
-Received: from mail-qk1-f195.google.com (mail-qk1-f195.google.com
- [209.85.222.195])
+Received: from mail-qt1-f195.google.com (mail-qt1-f195.google.com
+ [209.85.160.195])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Ln5x44zNzF37t
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2018 06:51:17 +1000 (AEST)
-Received: by mail-qk1-f195.google.com with SMTP id a189-v6so2540928qkb.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 13:51:17 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Ln7R2Jv0zF38X
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2018 06:52:35 +1000 (AEST)
+Received: by mail-qt1-f195.google.com with SMTP id l2-v6so4304186qtr.12
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 13:52:35 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:subject:to:cc:references:from:message-id:date
  :user-agent:mime-version:in-reply-to:content-language
  :content-transfer-encoding;
- bh=SdczOLlgD2I9v890RyFvwqTXXGP7YgA4wD0VUE++51A=;
- b=hosEtCRZcA7C11DRJ2HS0iwALpi04pZbR4Lvea1inQeW0i/nan5lSArI0H1SOB0srh
- QqHCj1qbm2ayJDSYrmy6Mn0a9alycArMK1lPriWqzUBK49AsWVGjIlEUtVCdSpbzA40V
- f4FjIGiFPncZnMAxbwiGR4OJUIZL7xkqbaL1ujp5AJpuG6YW226Pnw3uUcatSJTS9KQh
- bdGCuhAbqFxQ535LGJ4rOToAEv04E1JDgtwvJ1vq7bPXhzAq3fIykUIYPMQcllLpRTOd
- 5Tc9v0WU2AZO5UhORmCs4Jv0vcJQRJWo9kOOL14ofc9ITB2c1e0bLQX1mS8tnPGL+Lcy
- 5m0g==
-X-Gm-Message-State: ABuFfohmprJkuwOk3MyobOXO1sylR4xPi7wOgqsyc8E/C2Eio68JadQ0
- szy/PQuOa1g2mntssL9LUZg=
-X-Google-Smtp-Source: ACcGV63pfWZW6F2BRKfBhuBadi7TVmzLFKulOd08KFAaEijznDjrJMMK3mgbWI0tZiGqGMhWMq4tOQ==
-X-Received: by 2002:a37:7b45:: with SMTP id
- w66-v6mr9614488qkc.39.1538081475192; 
- Thu, 27 Sep 2018 13:51:15 -0700 (PDT)
+ bh=cF5KSpSrk1jLJyiIcMdd3rjocddR4wgsvoY6Jt4mR0Y=;
+ b=eBsotfuk1JlnXdH5rXFnJHBFT4VNChZyVElDTVBceJGwxrR20rzfEAL0t65sD6i3G9
+ TDiadkurhSAnSSXNLZdGYHSPmNCzlqX7smF0OqAAtQtx3jWW1Y7O9on5gHAeoqeKCKEa
+ YCvKndinoq2mVk/XtO0+D8chqng1u3e01H0v8J0GLUZiSdon0wqKvwTkeH3JHMlDUaJO
+ yhneZENP/NbW6K800Yv00GgBywtXuoXjK58jBnV2TBRCK5EMj7L+bpx76nFMdO7JOkKx
+ MOvJ7VGxtFjM5cdMGmm0UNmJoJ6XF1ED9JTgxiGa10mhT6cYry6dhLSi5lZ07W/ljHzX
+ StTw==
+X-Gm-Message-State: ABuFfojUHnSGAi233w4ho/PobUzJAQI9buH27UttOTI5tsAk/sND7Unq
+ 9Lu5IbBuJp2JPiKsieyLEL8=
+X-Google-Smtp-Source: ACcGV60Bg3UVfybY40GHizFqcbCJ6lZW2aUhlcKqwCgtf5/PXGtPBcLZ4AoXW8GHHH/yWCFkxF1dpw==
+X-Received: by 2002:aed:2601:: with SMTP id
+ z1-v6mr9911308qtc.123.1538081553200; 
+ Thu, 27 Sep 2018 13:52:33 -0700 (PDT)
 Received: from [10.0.0.9] ([177.83.210.7])
- by smtp.gmail.com with ESMTPSA id b7-v6sm1725530qtt.24.2018.09.27.13.51.12
+ by smtp.gmail.com with ESMTPSA id n41-v6sm2016005qtn.73.2018.09.27.13.52.30
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Thu, 27 Sep 2018 13:51:14 -0700 (PDT)
-Subject: Re: [RFC PATCH 09/11] powerpc/tm: Do not restore default DSCR
+ Thu, 27 Sep 2018 13:52:32 -0700 (PDT)
+Subject: Re: [RFC PATCH 10/11] powerpc/tm: Set failure summary
 To: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org
 References: <1536781219-13938-1-git-send-email-leitao@debian.org>
- <1536781219-13938-10-git-send-email-leitao@debian.org>
- <10da0fdc641b05ea288890a23aa01ad33f2d6987.camel@neuling.org>
+ <1536781219-13938-11-git-send-email-leitao@debian.org>
+ <7647a2d788ceb979e6de8bb8bb988f4d37fb1877.camel@neuling.org>
 From: Breno Leitao <leitao@debian.org>
-Message-ID: <11f2155f-eff8-2aac-ab47-1ab343d52107@debian.org>
-Date: Thu, 27 Sep 2018 17:51:10 -0300
+Message-ID: <85a2de6d-6cb5-6052-252e-858e61eb00ab@debian.org>
+Date: Thu, 27 Sep 2018 17:52:29 -0300
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
  Thunderbird/52.9.1
 MIME-Version: 1.0
-In-Reply-To: <10da0fdc641b05ea288890a23aa01ad33f2d6987.camel@neuling.org>
+In-Reply-To: <7647a2d788ceb979e6de8bb8bb988f4d37fb1877.camel@neuling.org>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
@@ -88,37 +88,38 @@ Sender: "Linuxppc-dev"
 
 Hi Mikey,
 
-On 09/18/2018 02:41 AM, Michael Neuling wrote:
+On 09/18/2018 02:50 AM, Michael Neuling wrote:
 > On Wed, 2018-09-12 at 16:40 -0300, Breno Leitao wrote:
->> In the previous TM code, trecheckpoint was being executed in the middle of
->> an exception, thus, DSCR was being restored to default kernel DSCR value
->> after trecheckpoint was done.
->>
->> With this current patchset, trecheckpoint is executed just before getting
->> to userspace, at ret_from_except_lite, for example. Thus, we do not need to
->> set default kernel DSCR value anymore, as we are leaving kernel space.  It
->> is OK to keep the checkpointed DSCR value into the live SPR, mainly because
->> the transaction is doomed and it will fail soon (after RFID), 
+>> Since the transaction will be doomed with treckpt., the TEXASR[FS]
+>> should be set, to reflect that the transaction is a failure. This patch
+>> ensures it before recheckpointing, and remove changes from other places
+>> that were calling recheckpoint.
 > 
-> What if we are going back to a suspended transaction?  It will remain live until
-> userspace does a tresume
+> TEXASR[FS] should be set by the reclaim. 
 
-Hmm, I understand that once we get in kernel space, and call
-treclaim/trecheckpoint, the transaction will be doomed and it will abort and
-rollback when we leave kernel space. I.e., if we can treclaim/trecheckpointn
-in kernel space, the transaction will *always* abort just after RFID, so, a
-possible tresume will never be executed. Is my understanding wrong?
+Do you mean that the CPU should set TEXASR[FS] when treclaim is called, or,
+that the tm_reclaim?
 
+Looking at the ISA, I didn't see TEXASR[FS] being set automatically when a
+reclaim happens, although, I see it needs TEXASR[FS] to be set when executing
+a trecheckpoint, otherwise it will cause a TM Bad Thing.
+
+That is why I am forcing TEXASR[FS]=1 to doom the transaction so we can
+recheckpoint it, but it seems I understood this wrongly.
+
+> I don't know why you'd need to set this
+> explicitly in process.c. The only case is when the user supplies a bad signal
+> context, but we should check that in the signals code, not process.c
 > 
->> so,
->> continuing with the pre-checkpointed DSCR value is what seems correct.
+> Hence I think this patch is wrong.
 > 
-> Reading this description suggests this patch isn't really needed. Right?
+> Also, according to the architecture, TEXASR[FS] HAS TO BE SET on trecheckpoint
+> otherwise you'll get a TM Bad Thing. You should say that rather than suggesting
+> it's because the transaction is doomed. It's ilqlegal to not do it. That's why we
+> have this check in arch/powerpc/kernel/tm.S.
 
-Maybe the description is not clear, but I understand this patch is required,
-otherwise we will leave userspace with a default DSCR value.
-
-By the way, do you know if there is a change in DSCR inside a transaction,
-will it be reverted if the transaction is aborted?
+When you say "HAS TO BE SET", do you mean that the hardware will set it and
+we shouldn't care about this flag? Thus, if I am hitting EMIT_BUG_ENTRY, it
+means my TEXASR was messed somehow?
 
 Thank you
