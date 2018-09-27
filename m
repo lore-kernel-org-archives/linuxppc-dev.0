@@ -1,37 +1,33 @@
-Return-Path: <pku.leo@gmail.com>
-Received: from mail-ot1-f65.google.com (mail-ot1-f65.google.com
- [209.85.210.65])
+Return-Path: <robherring2@gmail.com>
+Received: from mail-oi1-f194.google.com (mail-oi1-f194.google.com
+ [209.85.167.194])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42LlBR2sMvzF37p
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2018 05:25:02 +1000 (AEST)
-Received: by mail-ot1-f65.google.com with SMTP id o13-v6so3708565otl.4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 12:25:02 -0700 (PDT)
-Received: from mail-oi1-f170.google.com (mail-oi1-f170.google.com.
- [209.85.167.170])
- by smtp.gmail.com with ESMTPSA id z2-v6sm801573oib.40.2018.09.27.12.24.59
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Thu, 27 Sep 2018 12:24:59 -0700 (PDT)
-Received: by mail-oi1-f170.google.com with SMTP id j68-v6so3197032oib.7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 12:24:59 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42LlMJ4J9gzF37p
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2018 05:32:43 +1000 (AEST)
+Received: by mail-oi1-f194.google.com with SMTP id 13-v6so3259393ois.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 12:32:43 -0700 (PDT)
+Date: Thu, 27 Sep 2018 14:32:40 -0500
+From: Rob Herring <robh@kernel.org>
+To: Vabhav Sharma <vabhav.sharma@nxp.com>
+Cc: sudeep.holla@arm.com, oss@buserror.net, linux-kernel@vger.kernel.org,
+ devicetree@vger.kernel.org, robh+dt@kernel.org,
+ mark.rutland@arm.com, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org, mturquette@baylibre.com,
+ sboyd@kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org,
+ linux-clk@vger.kernel.org, linux-pm@vger.kernel.org,
+ linux-kernel-owner@vger.kernel.org, catalin.marinas@arm.com,
+ will.deacon@arm.com, gregkh@linuxfoundation.org, arnd@arndb.de,
+ kstewart@linuxfoundation.org, yamada.masahiro@socionext.com,
+ udit.kumar@nxp.com, linux@armlinux.org.uk,
+ Vabhav Sharma <vabhav.sharma@nxp.com>, V.Sethi@nxp.com
+Subject: Re: [PATCH v3 1/6] dt-bindings: arm64: add compatible for LX2160A
+Message-ID: <20180927193240.GA29253@bogus>
+References: <1537747741-6245-1-git-send-email-vabhav.sharma@nxp.com>
+ <1537747741-6245-2-git-send-email-vabhav.sharma@nxp.com>
 MIME-Version: 1.0
-References: <20180823213600.23426-1-alexandre.belloni@bootlin.com>
- <CAOesGMjDKKSNVccu4D579SiwL9zEU7ha7HQCHncvh2r4kpO6fQ@mail.gmail.com>
- <20180926092706.GA16644@piout.net>
- <CADRPPNQwWgU6OcE7CjxyrgSXjUjwYe4VY0gQD8jx6D+eT_DWrw@mail.gmail.com>
-In-Reply-To: <CADRPPNQwWgU6OcE7CjxyrgSXjUjwYe4VY0gQD8jx6D+eT_DWrw@mail.gmail.com>
-From: Li Yang <leoyang.li@nxp.com>
-Date: Thu, 27 Sep 2018 14:24:48 -0500
-Message-ID: <CADRPPNRTWSLapqLHO=y5_Rcbh27CigAjPuorLYPrzqxUGYt-9Q@mail.gmail.com>
-Subject: Re: [PATCH 1/2] soc: fsl: qbman: qman_portal: defer probing when qman
- is not available
-To: alexandre.belloni@bootlin.com, Laurentiu Tudor <laurentiu.tudor@nxp.com>
-Cc: Olof Johansson <olof@lixom.net>, Roy Pledge <roy.pledge@nxp.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>, lkml <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1537747741-6245-2-git-send-email-vabhav.sharma@nxp.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,75 +37,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 26, 2018 at 1:15 PM Li Yang <leoyang.li@nxp.com> wrote:
->
-> On Wed, Sep 26, 2018 at 4:28 AM Alexandre Belloni
-> <alexandre.belloni@bootlin.com> wrote:
-> >
-> > On 25/09/2018 21:45:56+0200, Olof Johansson wrote:
-> > > Hi,
-> > >
-> > >
-> > > On Thu, Aug 23, 2018 at 11:36 PM Alexandre Belloni
-> > > <alexandre.belloni@bootlin.com> wrote:
-> > > >
-> > > > If the qman driver (qman_ccsr) doesn't probe or fail to probe before
-> > > > qman_portal, qm_ccsr_start will be either NULL or a stale pointer to an
-> > > > unmapped page.
-> > > >
-> > > > This leads to a crash when probing  qman_portal as the init_pcfg function
-> > > > calls qman_liodn_fixup that tries to read qman registers.
-> > > >
-> > > > Assume that qman didn't probe when the pool mask is 0.
-> > > >
-> > > > Signed-off-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
-> > > > ---
-> > > >  drivers/soc/fsl/qbman/qman_portal.c | 2 ++
-> > > >  1 file changed, 2 insertions(+)
-> > > >
-> > > > diff --git a/drivers/soc/fsl/qbman/qman_portal.c b/drivers/soc/fsl/qbman/qman_portal.c
-> > > > index a120002b630e..4fc80d2c8feb 100644
-> > > > --- a/drivers/soc/fsl/qbman/qman_portal.c
-> > > > +++ b/drivers/soc/fsl/qbman/qman_portal.c
-> > > > @@ -277,6 +277,8 @@ static int qman_portal_probe(struct platform_device *pdev)
-> > > >         }
-> > > >
-> > > >         pcfg->pools = qm_get_pools_sdqcr();
-> > > > +       if (pcfg->pools == 0)
-> > > > +               return -EPROBE_DEFER;
-> > >
-> > > This is quite late in the probe, after a bunch of resources have been claimed.
-> > >
-> > > Note that the ioremaps above this are doing unwinds, and you'll end up
-> > > doing duplicate ioremaps if you come in and probe again.
-> > >
-> > > You should probably unwind those allocations, or move them to devm_*
-> > > or do this check earlier in the function.
-> > >
-> >
-> > The actual chance of having that happen is quite small (this was coming
-> > from a non working DT) and I mainly wanted to avoid a crash so the
-> > platform could still boot. I would think moving to devm_ would be the
-> > right thing to do.
->
-> Even if it is not failing with the upstreamed device trees, it is
-> still good to harden the driver for possible issues.  Moving to devm_
-> is definitely a right thing to do.  But I also think checking if the
-> qman is already probed should be the first thing to do before starting
-> to allocate resources and etc and rolling back later.  Probably we can
-> move the qm_get_pools_sdqcr() to the begining of the probe to
-> determine if qman is probed as it doesn't seem to depend on any of the
-> setups done right now.
+On Mon, 24 Sep 2018 05:38:56 +0530, Vabhav Sharma wrote:
+> Add compatible for LX2160A SoC,QDS and RDB board
+> 
+> Signed-off-by: Vabhav Sharma <vabhav.sharma@nxp.com>
+> ---
+>  Documentation/devicetree/bindings/arm/fsl.txt | 12 ++++++++++++
+>  1 file changed, 12 insertions(+)
+> 
 
-I just find out Laurentiu also included the following patches in his
-SMMU patch series (although not neccessarily related to SMMU) which
-also fix the same problem.  I think they are more straightforward and
-can deal with the case that qman failed to probe.  So we can take
-these to fix this problem instead in 4.19.
-
-https://patchwork.kernel.org/patch/10616021/
-https://patchwork.kernel.org/patch/10616019/
-https://patchwork.kernel.org/patch/10615971/
-
-Regards,
-Leo
+Reviewed-by: Rob Herring <robh@kernel.org>
