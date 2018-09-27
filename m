@@ -1,16 +1,35 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <yamada.masahiro@socionext.com>
+Received: from conssluserg-06.nifty.com (conssluserg-06.nifty.com
+ [210.131.2.91])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42LN6Q4rZ4zF323
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 15:05:18 +1000 (AEST)
-From: Michael Neuling <mikey@neuling.org>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
-	Michael Neuling <mikey@neuling.org>
-Subject: [PATCH] powerpc/tm: Reformat comments
-Date: Thu, 27 Sep 2018 15:05:15 +1000
-Message-Id: <20180927050515.25644-1-mikey@neuling.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42LNZB6t51zF324
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 15:25:53 +1000 (AEST)
+Received: from mail-ua1-f43.google.com (mail-ua1-f43.google.com
+ [209.85.222.43]) (authenticated)
+ by conssluserg-06.nifty.com with ESMTP id w8R5PThQ026577
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 14:25:30 +0900
+Received: by mail-ua1-f43.google.com with SMTP id m26-v6so496692uaq.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2018 22:25:29 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <87bm8m5qbs.fsf@concordia.ellerman.id.au>
+References: <e1b65467-7497-5db4-aa93-1ad00d12af3f@c-s.fr>
+ <87mus75c5m.fsf@concordia.ellerman.id.au>
+ <56227965-464a-d972-1c25-d6a4d190e1a1@c-s.fr>
+ <87bm8m5qbs.fsf@concordia.ellerman.id.au>
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+Date: Thu, 27 Sep 2018 14:24:48 +0900
+Message-ID: <CAK7LNAQA2JyK9aOp9QQF32bwsz2MitaZ5HrqSVjdEvRdCQpO3g@mail.gmail.com>
+Subject: Re: How to define some additional KBUILD_CFLAGS after building
+ include/generated/asm-offsets.h ?
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Christophe LEROY <christophe.leroy@c-s.fr>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
+ Michal Marek <michal.lkml@markovi.net>,
+ Segher Boessenkool <segher@kernel.crashing.org>,
+ LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,164 +39,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The comments in this file don't conform to the coding style so take
-them to "Comment Formatting Re-Education Camp"
+Hi.
 
-Suggested-by: Michael "Camp Drill Sargent" Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
- arch/powerpc/kernel/tm.S | 49 +++++++++++++++++++++++++---------------
- 1 file changed, 31 insertions(+), 18 deletions(-)
+2018-09-25 10:16 GMT+09:00 Michael Ellerman <mpe@ellerman.id.au>:
+> Christophe LEROY <christophe.leroy@c-s.fr> writes:
+>
+>> Le 24/09/2018 =C3=A0 14:10, Michael Ellerman a =C3=A9crit :
+>>> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+>>>
+>>>> I'm trying to implement TLS based stack protector in the Linux Kernel.
+>>>> For that I need to give to GCC the offset at which it will find the
+>>>> canary (register r2 is pointing to the current task struct).
+>>>>
+>>>> I have been able to do it with the below patch, but it only works when
+>>>> include/generated/asm-offsets.h already exists from the start of the b=
+uild.
+>>>>
+>>>> Is there a way to evaluate CANARY_OFFSET and add the stack-protector
+>>>> flags to KBUILD_FLAGS only after include/generated/asm-offsets.h is bu=
+ilt ?
+>>>>
+>>>> Or another way of add -mstack-protector-guard-offset=3Doffsetof(struct
+>>>> task_struct, stack_canary) ?
+>>>
+>>> This seems to work, at least I see the value in CFLAGS:
+>>>
+>>> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+>>> index 07d9dce..39ee113 100644
+>>> --- a/arch/powerpc/Makefile
+>>> +++ b/arch/powerpc/Makefile
+>>> @@ -404,6 +394,11 @@ archclean:
+>>>
+>>>   archprepare: checkbin
+>>>
+>>> +prepare: stack_protector_prepare
+>>> +
+>>> +stack_protector_prepare: prepare0
+>>> +    $(eval KBUILD_CFLAGS +=3D -mstack-protector-guard-offset=3D$(shell=
+ awk '{if ($$2 =3D=3D "TSK_STACK_CANARY") print $$3;}' include/generated/as=
+m-offsets.h))
+>>> +
+>>
+>> Great, it works !
+>> Thanks, I have sent v3 of the patches.
+>
+> Cool.
+>
+> It would be good to here from someone who knows Kbuild better than me if
+> this is acceptable or just a gross hack :)
 
-diff --git a/arch/powerpc/kernel/tm.S b/arch/powerpc/kernel/tm.S
-index 50e5cff10d..c954aecd9b 100644
---- a/arch/powerpc/kernel/tm.S
-+++ b/arch/powerpc/kernel/tm.S
-@@ -92,7 +92,8 @@ _GLOBAL(tm_abort)
- 	blr
- EXPORT_SYMBOL_GPL(tm_abort);
- 
--/* void tm_reclaim(struct thread_struct *thread,
-+/*
-+ * void tm_reclaim(struct thread_struct *thread,
-  *		   uint8_t cause)
-  *
-  *	- Performs a full reclaim.  This destroys outstanding
-@@ -163,14 +164,16 @@ _GLOBAL(tm_reclaim)
- 	 */
- 	TRECLAIM(R4)				/* Cause in r4 */
- 
--	/* ******************** GPRs ******************** */
--	/* Stash the checkpointed r13 away in the scratch SPR and get the real
-+	/*
-+	 * ******************** GPRs ********************
-+	 * Stash the checkpointed r13 away in the scratch SPR and get the real
- 	 *  paca
- 	 */
- 	SET_SCRATCH0(r13)
- 	GET_PACA(r13)
- 
--	/* Stash the checkpointed r1 away in paca tm_scratch and get the real
-+	/*
-+	 * Stash the checkpointed r1 away in paca tm_scratch and get the real
- 	 * stack pointer back
- 	 */
- 	std	r1, PACATMSCRATCH(r13)
-@@ -195,7 +198,8 @@ _GLOBAL(tm_reclaim)
- 
- 	addi	r7, r12, PT_CKPT_REGS		/* Thread's ckpt_regs */
- 
--	/* Make r7 look like an exception frame so that we
-+	/*
-+	 * Make r7 look like an exception frame so that we
- 	 * can use the neat GPRx(n) macros.  r7 is NOT a pt_regs ptr!
- 	 */
- 	subi	r7, r7, STACK_FRAME_OVERHEAD
-@@ -223,7 +227,8 @@ _GLOBAL(tm_reclaim)
- 	/* ******************** NIP ******************** */
- 	mfspr	r3, SPRN_TFHAR
- 	std	r3, _NIP(r7)			/* Returns to failhandler */
--	/* The checkpointed NIP is ignored when rescheduling/rechkpting,
-+	/*
-+	 * The checkpointed NIP is ignored when rescheduling/rechkpting,
- 	 * but is used in signal return to 'wind back' to the abort handler.
- 	 */
- 
-@@ -246,12 +251,14 @@ _GLOBAL(tm_reclaim)
- 	std	r3, THREAD_TM_TAR(r12)
- 	std	r4, THREAD_TM_DSCR(r12)
- 
--	/* MSR and flags:  We don't change CRs, and we don't need to alter
-+	/*
-+	 * MSR and flags:  We don't change CRs, and we don't need to alter
- 	 * MSR.
- 	 */
- 
- 
--	/* ******************** FPR/VR/VSRs ************
-+	/*
-+	 * ******************** FPR/VR/VSRs ************
- 	 * After reclaiming, capture the checkpointed FPRs/VRs.
- 	 *
- 	 * We enabled VEC/FP/VSX in the msr above, so we can execute these
-@@ -277,7 +284,8 @@ _GLOBAL(tm_reclaim)
- 	stfd    fr0,FPSTATE_FPSCR(r7)
- 
- 
--	/* TM regs, incl TEXASR -- these live in thread_struct.  Note they've
-+	/*
-+	 * TM regs, incl TEXASR -- these live in thread_struct.  Note they've
- 	 * been updated by the treclaim, to explain to userland the failure
- 	 * cause (aborted).
- 	 */
-@@ -313,7 +321,7 @@ _GLOBAL(tm_reclaim)
- 	blr
- 
- 
--       /*
-+	/*
- 	 * void __tm_recheckpoint(struct thread_struct *thread)
- 	 *	- Restore the checkpointed register state saved by tm_reclaim
- 	 *	  when we switch_to a process.
-@@ -329,7 +337,8 @@ _GLOBAL(__tm_recheckpoint)
- 	std	r2, STK_GOT(r1)
- 	stdu	r1, -TM_FRAME_SIZE(r1)
- 
--	/* We've a struct pt_regs at [r1+STACK_FRAME_OVERHEAD].
-+	/*
-+	 * We've a struct pt_regs at [r1+STACK_FRAME_OVERHEAD].
- 	 * This is used for backing up the NVGPRs:
- 	 */
- 	SAVE_NVGPRS(r1)
-@@ -338,7 +347,8 @@ _GLOBAL(__tm_recheckpoint)
- 
- 	addi	r7, r3, PT_CKPT_REGS		/* Thread's ckpt_regs */
- 
--	/* Make r7 look like an exception frame so that we
-+	/*
-+	 * Make r7 look like an exception frame so that we
- 	 * can use the neat GPRx(n) macros.  r7 is now NOT a pt_regs ptr!
- 	 */
- 	subi	r7, r7, STACK_FRAME_OVERHEAD
-@@ -407,14 +417,15 @@ restore_gprs:
- 
- 	REST_NVGPRS(r7)				/* GPR14-31 */
- 
--	/* Load up PPR and DSCR here so we don't run with user values for long
--	 */
-+	/* Load up PPR and DSCR here so we don't run with user values for long */
- 	mtspr	SPRN_DSCR, r5
- 	mtspr	SPRN_PPR, r6
- 
--	/* Do final sanity check on TEXASR to make sure FS is set.  Do this
-+	/*
-+	 * Do final sanity check on TEXASR to make sure FS is set.  Do this
- 	 * here before we load up the userspace r1 so any bugs we hit will get
--	 * a call chain */
-+	 * a call chain
-+	 */
- 	mfspr	r5, SPRN_TEXASR
- 	srdi	r5, r5, 16
- 	li	r6, (TEXASR_FS)@h
-@@ -422,7 +433,8 @@ restore_gprs:
- 1:	tdeqi	r6, 0
- 	EMIT_BUG_ENTRY 1b,__FILE__,__LINE__,0
- 
--	/* Do final sanity check on MSR to make sure we are not transactional
-+	/*
-+	 * Do final sanity check on MSR to make sure we are not transactional
- 	 * or suspended
- 	 */
- 	mfmsr   r6
-@@ -470,7 +482,8 @@ restore_gprs:
- 
- 	HMT_MEDIUM
- 
--	/* Our transactional state has now changed.
-+	/*
-+	 * Our transactional state has now changed.
- 	 *
- 	 * Now just get out of here.  Transactional (current) state will be
- 	 * updated once restore is called on the return path in the _switch-ed
--- 
-2.17.1
+
+I am fine with this solution.
+
+Thanks.
+
+
+
+--=20
+Best Regards
+Masahiro Yamada
