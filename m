@@ -1,19 +1,36 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42LhMs1ztJzF31F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2018 03:18:01 +1000 (AEST)
-Message-Id: <e5f8f6e3e5a5595be08127eefae8025ebbb691cc.1538068025.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] kdb: print real address of pointers instead of hashed
- addresses
-To: Jason Wessel <jason.wessel@windriver.com>,
- Daniel Thompson <daniel.thompson@linaro.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, kgdb-bugreport@lists.sourceforge.net,
- stable@vger.kernel.org
-Date: Thu, 27 Sep 2018 17:17:57 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Lhgg0bsvzF37b
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2018 03:31:42 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w8RHTfYI018311
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 13:31:40 -0400
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ms2amv1y4-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2018 13:31:40 -0400
+Received: from localhost
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Thu, 27 Sep 2018 13:31:39 -0400
+Subject: Re: [PATCH] powerpc/rtas: Fix a potential race between CPU-Offline &
+ Migration
+To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+References: <1538067112-11493-1-git-send-email-ego@linux.vnet.ibm.com>
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Date: Thu, 27 Sep 2018 12:31:34 -0500
+MIME-Version: 1.0
+In-Reply-To: <1538067112-11493-1-git-send-email-ego@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <fa97b7f0-0cef-fc47-6566-216e399ac52a@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,164 +40,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since commit ad67b74d2469 ("printk: hash addresses printed with %p"),
-all pointers printed with %p are printed with hashed addresses
-instead of real addresses in order to avoid leaking addresses in
-dmesg and syslog. But this applies to kdb too, with is unfortunate:
+On 09/27/2018 11:51 AM, Gautham R. Shenoy wrote:
+> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+> 
+> Live Partition Migrations require all the present CPUs to execute the
+> H_JOIN call, and hence rtas_ibm_suspend_me() onlines any offline CPUs
+> before initiating the migration for this purpose.
+> 
+> The commit 85a88cabad57
+> ("powerpc/pseries: Disable CPU hotplug across migrations")
+> disables any CPU-hotplug operations once all the offline CPUs are
+> brought online to prevent any further state change. Once the
+> CPU-Hotplug operation is disabled, the code assumes that all the CPUs
+> are online.
+> 
+> However, there is a minor window in rtas_ibm_suspend_me() between
+> onlining the offline CPUs and disabling CPU-Hotplug when a concurrent
+> CPU-offline operations initiated by the userspace can succeed thereby
+> nullifying the the aformentioned assumption. In this unlikely case
+> these offlined CPUs will not call H_JOIN, resulting in a system hang.
+> 
+> Fix this by verifying that all the present CPUs are actually online
+> after CPU-Hotplug has been disabled, failing which we return from
+> rtas_ibm_suspend_me() with -EBUSY.
 
-    Entering kdb (current=0x(ptrval), pid 329) due to Keyboard Entry
-    kdb> ps
-    15 sleeping system daemon (state M) processes suppressed,
-    use 'ps A' to see all.
-    Task Addr       Pid   Parent [*] cpu State Thread     Command
-    0x(ptrval)      329      328  1    0   R  0x(ptrval) *sh
+Would we also want to havr the ability to re-try onlining all of the cpus
+before failing the migration?
 
-    0x(ptrval)        1        0  0    0   S  0x(ptrval)  init
-    0x(ptrval)        3        2  0    0   D  0x(ptrval)  rcu_gp
-    0x(ptrval)        4        2  0    0   D  0x(ptrval)  rcu_par_gp
-    0x(ptrval)        5        2  0    0   D  0x(ptrval)  kworker/0:0
-    0x(ptrval)        6        2  0    0   D  0x(ptrval)  kworker/0:0H
-    0x(ptrval)        7        2  0    0   D  0x(ptrval)  kworker/u2:0
-    0x(ptrval)        8        2  0    0   D  0x(ptrval)  mm_percpu_wq
-    0x(ptrval)       10        2  0    0   D  0x(ptrval)  rcu_preempt
+This would involve a bigger code change as the current code to online all
+CPUs would work in its current form.
 
-The whole purpose of kdb is to debug, and for debugging real addresses
-need to be known. In addition, data displayed by kdb doesn't go into
-dmesg.
+-Nathan
 
-This patch replaces all %p by %px in kdb in order to display real
-addresses.
-
-Fixes: ad67b74d2469 ("printk: hash addresses printed with %p")
-Cc: <stable@vger.kernel.org>
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- kernel/debug/kdb/kdb_main.c    | 14 +++++++-------
- kernel/debug/kdb/kdb_support.c | 12 ++++++------
- 2 files changed, 13 insertions(+), 13 deletions(-)
-
-diff --git a/kernel/debug/kdb/kdb_main.c b/kernel/debug/kdb/kdb_main.c
-index 2ddfce8f1e8f..f338d23b112b 100644
---- a/kernel/debug/kdb/kdb_main.c
-+++ b/kernel/debug/kdb/kdb_main.c
-@@ -1192,7 +1192,7 @@ static int kdb_local(kdb_reason_t reason, int error, struct pt_regs *regs,
- 	if (reason == KDB_REASON_DEBUG) {
- 		/* special case below */
- 	} else {
--		kdb_printf("\nEntering kdb (current=0x%p, pid %d) ",
-+		kdb_printf("\nEntering kdb (current=0x%px, pid %d) ",
- 			   kdb_current, kdb_current ? kdb_current->pid : 0);
- #if defined(CONFIG_SMP)
- 		kdb_printf("on processor %d ", raw_smp_processor_id());
-@@ -1208,7 +1208,7 @@ static int kdb_local(kdb_reason_t reason, int error, struct pt_regs *regs,
- 		 */
- 		switch (db_result) {
- 		case KDB_DB_BPT:
--			kdb_printf("\nEntering kdb (0x%p, pid %d) ",
-+			kdb_printf("\nEntering kdb (0x%px, pid %d) ",
- 				   kdb_current, kdb_current->pid);
- #if defined(CONFIG_SMP)
- 			kdb_printf("on processor %d ", raw_smp_processor_id());
-@@ -2048,7 +2048,7 @@ static int kdb_lsmod(int argc, const char **argv)
- 		if (mod->state == MODULE_STATE_UNFORMED)
- 			continue;
- 
--		kdb_printf("%-20s%8u  0x%p ", mod->name,
-+		kdb_printf("%-20s%8u  0x%px ", mod->name,
- 			   mod->core_layout.size, (void *)mod);
- #ifdef CONFIG_MODULE_UNLOAD
- 		kdb_printf("%4d ", module_refcount(mod));
-@@ -2059,7 +2059,7 @@ static int kdb_lsmod(int argc, const char **argv)
- 			kdb_printf(" (Loading)");
- 		else
- 			kdb_printf(" (Live)");
--		kdb_printf(" 0x%p", mod->core_layout.base);
-+		kdb_printf(" 0x%px", mod->core_layout.base);
- 
- #ifdef CONFIG_MODULE_UNLOAD
- 		{
-@@ -2341,7 +2341,7 @@ void kdb_ps1(const struct task_struct *p)
- 		return;
- 
- 	cpu = kdb_process_cpu(p);
--	kdb_printf("0x%p %8d %8d  %d %4d   %c  0x%p %c%s\n",
-+	kdb_printf("0x%px %8d %8d  %d %4d   %c  0x%px %c%s\n",
- 		   (void *)p, p->pid, p->parent->pid,
- 		   kdb_task_has_cpu(p), kdb_process_cpu(p),
- 		   kdb_task_state_char(p),
-@@ -2354,7 +2354,7 @@ void kdb_ps1(const struct task_struct *p)
- 		} else {
- 			if (KDB_TSK(cpu) != p)
- 				kdb_printf("  Error: does not match running "
--				   "process table (0x%p)\n", KDB_TSK(cpu));
-+				   "process table (0x%px)\n", KDB_TSK(cpu));
- 		}
- 	}
- }
-@@ -2692,7 +2692,7 @@ int kdb_register_flags(char *cmd,
- 	for_each_kdbcmd(kp, i) {
- 		if (kp->cmd_name && (strcmp(kp->cmd_name, cmd) == 0)) {
- 			kdb_printf("Duplicate kdb command registered: "
--				"%s, func %p help %s\n", cmd, func, help);
-+				"%s, func %px help %s\n", cmd, func, help);
- 			return 1;
- 		}
- 	}
-diff --git a/kernel/debug/kdb/kdb_support.c b/kernel/debug/kdb/kdb_support.c
-index 990b3cc526c8..987eb73284d2 100644
---- a/kernel/debug/kdb/kdb_support.c
-+++ b/kernel/debug/kdb/kdb_support.c
-@@ -40,7 +40,7 @@
- int kdbgetsymval(const char *symname, kdb_symtab_t *symtab)
- {
- 	if (KDB_DEBUG(AR))
--		kdb_printf("kdbgetsymval: symname=%s, symtab=%p\n", symname,
-+		kdb_printf("kdbgetsymval: symname=%s, symtab=%px\n", symname,
- 			   symtab);
- 	memset(symtab, 0, sizeof(*symtab));
- 	symtab->sym_start = kallsyms_lookup_name(symname);
-@@ -88,7 +88,7 @@ int kdbnearsym(unsigned long addr, kdb_symtab_t *symtab)
- 	char *knt1 = NULL;
- 
- 	if (KDB_DEBUG(AR))
--		kdb_printf("kdbnearsym: addr=0x%lx, symtab=%p\n", addr, symtab);
-+		kdb_printf("kdbnearsym: addr=0x%lx, symtab=%px\n", addr, symtab);
- 	memset(symtab, 0, sizeof(*symtab));
- 
- 	if (addr < 4096)
-@@ -149,7 +149,7 @@ int kdbnearsym(unsigned long addr, kdb_symtab_t *symtab)
- 		symtab->mod_name = "kernel";
- 	if (KDB_DEBUG(AR))
- 		kdb_printf("kdbnearsym: returns %d symtab->sym_start=0x%lx, "
--		   "symtab->mod_name=%p, symtab->sym_name=%p (%s)\n", ret,
-+		   "symtab->mod_name=%px, symtab->sym_name=%px (%s)\n", ret,
- 		   symtab->sym_start, symtab->mod_name, symtab->sym_name,
- 		   symtab->sym_name);
- 
-@@ -887,13 +887,13 @@ void debug_kusage(void)
- 		   __func__, dah_first);
- 	if (dah_first) {
- 		h_used = (struct debug_alloc_header *)debug_alloc_pool;
--		kdb_printf("%s: h_used %p size %d\n", __func__, h_used,
-+		kdb_printf("%s: h_used %px size %d\n", __func__, h_used,
- 			   h_used->size);
- 	}
- 	do {
- 		h_used = (struct debug_alloc_header *)
- 			  ((char *)h_free + dah_overhead + h_free->size);
--		kdb_printf("%s: h_used %p size %d caller %p\n",
-+		kdb_printf("%s: h_used %px size %d caller %px\n",
- 			   __func__, h_used, h_used->size, h_used->caller);
- 		h_free = (struct debug_alloc_header *)
- 			  (debug_alloc_pool + h_free->next);
-@@ -902,7 +902,7 @@ void debug_kusage(void)
- 		  ((char *)h_free + dah_overhead + h_free->size);
- 	if ((char *)h_used - debug_alloc_pool !=
- 	    sizeof(debug_alloc_pool_aligned))
--		kdb_printf("%s: h_used %p size %d caller %p\n",
-+		kdb_printf("%s: h_used %px size %d caller %px\n",
- 			   __func__, h_used, h_used->size, h_used->caller);
- out:
- 	spin_unlock(&dap_lock);
--- 
-2.13.3
+> 
+> Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+> Cc: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+> Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/kernel/rtas.c | 10 ++++++++++
+>  1 file changed, 10 insertions(+)
+> 
+> diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+> index 2c7ed31..27f6fd3 100644
+> --- a/arch/powerpc/kernel/rtas.c
+> +++ b/arch/powerpc/kernel/rtas.c
+> @@ -982,6 +982,16 @@ int rtas_ibm_suspend_me(u64 handle)
+>  	}
+> 
+>  	cpu_hotplug_disable();
+> +
+> +	/* Check if we raced with a CPU-Offline Operation */
+> +	if (unlikely(!cpumask_equal(cpu_present_mask, cpu_online_mask))) {
+> +		pr_err("%s: Raced against a concurrent CPU-Offline\n",
+> +		       __func__);
+> +		atomic_set(&data.error, -EBUSY);
+> +		cpu_hotplug_enable();
+> +		goto out;
+> +	}
+> +
+>  	stop_topology_update();
+> 
+>  	/* Call function on all CPUs.  One of us will make the
+> 
