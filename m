@@ -3,100 +3,76 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 28A08C43143
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 20:38:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BE9AEC43143
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 20:43:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 93486206B7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 20:38:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 93486206B7
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 207E6206B8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 20:43:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 207E6206B8
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42MNmj54gKzF3J5
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Sep 2018 06:38:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42MNtf1kgZzF3J7
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Sep 2018 06:43:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=nfont@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=209.85.167.196; helo=mail-oi1-f196.google.com;
+ envelope-from=pku.leo@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=nxp.com
+Received: from mail-oi1-f196.google.com (mail-oi1-f196.google.com
+ [209.85.167.196])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42MNk84qRbzF3J5
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Sep 2018 06:36:16 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w8SKY4ML062530
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2018 16:36:13 -0400
-Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2msry7nj0g-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2018 16:36:13 -0400
-Received: from localhost
- by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Fri, 28 Sep 2018 16:36:12 -0400
-Received: from b01cxnp23033.gho.pok.ibm.com (9.57.198.28)
- by e14.ny.us.ibm.com (146.89.104.201) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 28 Sep 2018 16:36:10 -0400
-Received: from b01ledav002.gho.pok.ibm.com (b01ledav002.gho.pok.ibm.com
- [9.57.199.107])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- w8SKa9UH25821224
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Fri, 28 Sep 2018 20:36:09 GMT
-Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A94E312405B;
- Fri, 28 Sep 2018 17:36:10 -0400 (EDT)
-Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 447A8124054;
- Fri, 28 Sep 2018 17:36:10 -0400 (EDT)
-Received: from oc6428688403.ibm.com (unknown [9.41.179.188])
- by b01ledav002.gho.pok.ibm.com (Postfix) with ESMTPS;
- Fri, 28 Sep 2018 17:36:10 -0400 (EDT)
-Subject: Re: [PATCH] powerpc/rtas: Fix a potential race between CPU-Offline &
- Migration
-To: ego@linux.vnet.ibm.com
-References: <1538067112-11493-1-git-send-email-ego@linux.vnet.ibm.com>
- <fa97b7f0-0cef-fc47-6566-216e399ac52a@linux.vnet.ibm.com>
- <20180928070244.GA6190@in.ibm.com>
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Date: Fri, 28 Sep 2018 15:36:08 -0500
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42MNrH2mgDzF3J5
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Sep 2018 06:41:34 +1000 (AEST)
+Received: by mail-oi1-f196.google.com with SMTP id w81-v6so4850267oiw.9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2018 13:41:34 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=8QazDEMp1DUrObDqQ8G9xdW3UlS9WHz9291NmeVJyp4=;
+ b=K2KWQ7r6gDIsn0lqBGeMu7rGcVkj3aYXUAOA1oJn9rmmqu6WJ2/9t7/zGtezmr98U8
+ wMz88PgfgZR+fB82AgjUEVdTPqjauA+Zff8aEgKpmSzU5dUJzJozxJg+HEEawKLVjq76
+ LTEdIUgjjsDL/F4DJQMxaDWanvVfBOhVXbuF1j/OqaPuhZu1sr3oxQdEOBmqH7TQfE6n
+ NB5BJIC/v3hn7XGJHoJyO75b6MeBbCqyyqDPflHRoEj3hCcbhJmE7+RwqkM19EnWqFXU
+ uLk9LWS3Ky71ZY5lPHKKw2rHyzqPpze67Td8CtVw8HbfUHX9+64QLg4zRr5B9pXdbKmC
+ E0Kg==
+X-Gm-Message-State: ABuFfohj3O83YPRyAlHhhScL0CE35N+J6IqDO4RORLDwIVXKVunwIjoh
+ maH1tendlRufV83Oea3Q1DE1fhM4iIA=
+X-Google-Smtp-Source: ACcGV608buco574h1FJ7q5DtAEqsHZt3zujEtjQTz+uynHHmICYz9MdGfqrWWxW82GbwQkjqYjzPVQ==
+X-Received: by 2002:aca:6ccc:: with SMTP id
+ h195-v6mr190283oic.140.1538167291535; 
+ Fri, 28 Sep 2018 13:41:31 -0700 (PDT)
+Received: from mail-ot1-f46.google.com (mail-ot1-f46.google.com.
+ [209.85.210.46])
+ by smtp.gmail.com with ESMTPSA id i9-v6sm2315237ota.12.2018.09.28.13.41.30
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Fri, 28 Sep 2018 13:41:30 -0700 (PDT)
+Received: by mail-ot1-f46.google.com with SMTP id o13-v6so7302592otl.4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2018 13:41:30 -0700 (PDT)
+X-Received: by 2002:a9d:42f1:: with SMTP id
+ c46-v6mr174273otj.331.1538167290021; 
+ Fri, 28 Sep 2018 13:41:30 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20180928070244.GA6190@in.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-x-cbid: 18092820-0052-0000-0000-0000033967DB
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00009787; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000267; SDB=6.01095028; UDB=6.00566098; IPR=6.00875064; 
- MB=3.00023547; MTD=3.00000008; XFM=3.00000015; UTC=2018-09-28 20:36:11
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18092820-0053-0000-0000-00005E3B6D13
-Message-Id: <12262001-fd31-99f4-0eac-2f90bdf47a0c@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-09-28_09:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1807170000 definitions=main-1809280202
+References: <1537747741-6245-1-git-send-email-vabhav.sharma@nxp.com>
+ <1537747741-6245-6-git-send-email-vabhav.sharma@nxp.com>
+In-Reply-To: <1537747741-6245-6-git-send-email-vabhav.sharma@nxp.com>
+From: Li Yang <leoyang.li@nxp.com>
+Date: Fri, 28 Sep 2018 15:41:18 -0500
+X-Gmail-Original-Message-ID: <CADRPPNT7Fcv=gkN4iB+7QYUpFqi5wJWmXKRnK893eBa6GWi1dw@mail.gmail.com>
+Message-ID: <CADRPPNT7Fcv=gkN4iB+7QYUpFqi5wJWmXKRnK893eBa6GWi1dw@mail.gmail.com>
+Subject: Re: [PATCH v3 5/6] arm64: dts: add QorIQ LX2160A SoC support
+To: vabhav.sharma@nxp.com
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,100 +84,780 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ Kate Stewart <kstewart@linuxfoundation.org>, yogeshnarayan.gaur@nxp.com,
+ linux-kernel-owner@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>,
+ Michael Turquette <mturquette@baylibre.com>, Will Deacon <will.deacon@arm.com>,
+ yamada.masahiro@socionext.com, Sriram Dash <sriram.dash@nxp.com>,
+ linux-clk <linux-clk@vger.kernel.org>, udit.kumar@nxp.com,
+ Russell King <linux@armlinux.org.uk>, Priyanka Jain <priyanka.jain@nxp.com>,
+ Viresh Kumar <viresh.kumar@linaro.org>,
+ "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
+ <devicetree@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+ linux-pm@vger.kernel.org, Scott Wood <oss@buserror.net>,
+ Rob Herring <robh+dt@kernel.org>, V.Sethi@nxp.com, nipun.gupta@nxp.com,
+ "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
+ <linux-arm-kernel@lists.infradead.org>,
+ Ramneek Mehresh <ramneek.mehresh@nxp.com>, sboyd@kernel.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Ying Zhang <ying.zhang22455@nxp.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ lkml <linux-kernel@vger.kernel.org>, Sudeep Holla <sudeep.holla@arm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 09/28/2018 02:02 AM, Gautham R Shenoy wrote:
-> Hi Nathan,
-> 
-> On Thu, Sep 27, 2018 at 12:31:34PM -0500, Nathan Fontenot wrote:
->> On 09/27/2018 11:51 AM, Gautham R. Shenoy wrote:
->>> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
->>>
->>> Live Partition Migrations require all the present CPUs to execute the
->>> H_JOIN call, and hence rtas_ibm_suspend_me() onlines any offline CPUs
->>> before initiating the migration for this purpose.
->>>
->>> The commit 85a88cabad57
->>> ("powerpc/pseries: Disable CPU hotplug across migrations")
->>> disables any CPU-hotplug operations once all the offline CPUs are
->>> brought online to prevent any further state change. Once the
->>> CPU-Hotplug operation is disabled, the code assumes that all the CPUs
->>> are online.
->>>
->>> However, there is a minor window in rtas_ibm_suspend_me() between
->>> onlining the offline CPUs and disabling CPU-Hotplug when a concurrent
->>> CPU-offline operations initiated by the userspace can succeed thereby
->>> nullifying the the aformentioned assumption. In this unlikely case
->>> these offlined CPUs will not call H_JOIN, resulting in a system hang.
->>>
->>> Fix this by verifying that all the present CPUs are actually online
->>> after CPU-Hotplug has been disabled, failing which we return from
->>> rtas_ibm_suspend_me() with -EBUSY.
->>
->> Would we also want to havr the ability to re-try onlining all of the cpus
->> before failing the migration?
-> 
-> Given that we haven't been able to hit issue in practice after your
-> fix to disable CPU Hotplug after migrations, it indicates that the
-> race-window, if it is not merely a theoretical one, is extremely
-> narrow. So, this current patch addresses the safety aspect, as in,
-> should someone manage to exploit this narrow race-window, it ensures
-> that the system doesn't go to a hang state.
-> 
-> Having the ability to retry onlining all the CPUs is only required for
-> progress of LPM in this rarest of cases. We should add the code to
-> retry onlining the CPUs if the consequence of failing an LPM is high,
-> even in this rarest of case. Otherwise IMHO we should be ok not adding
-> the additional code.
+On Mon, Sep 24, 2018 at 7:47 AM Vabhav Sharma <vabhav.sharma@nxp.com> wrote:
+>
+> LX2160A SoC is based on Layerscape Chassis Generation 3.2 Architecture.
+>
+> LX2160A features an advanced 16 64-bit ARM v8 CortexA72 processor cores
+> in 8 cluster, CCN508, GICv3,two 64-bit DDR4 memory controller, 8 I2C
+> controllers, 3 dspi, 2 esdhc,2 USB 3.0, mmu 500, 3 SATA, 4 PL011 SBSA
+> UARTs etc.
+>
+> Signed-off-by: Ramneek Mehresh <ramneek.mehresh@nxp.com>
+> Signed-off-by: Zhang Ying-22455 <ying.zhang22455@nxp.com>
+> Signed-off-by: Nipun Gupta <nipun.gupta@nxp.com>
+> Signed-off-by: Priyanka Jain <priyanka.jain@nxp.com>
+> Signed-off-by: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>
+> Signed-off-by: Sriram Dash <sriram.dash@nxp.com>
+> Signed-off-by: Vabhav Sharma <vabhav.sharma@nxp.com>
+> ---
+>  arch/arm64/boot/dts/freescale/fsl-lx2160a.dtsi | 693 +++++++++++++++++++++++++
+>  1 file changed, 693 insertions(+)
+>  create mode 100644 arch/arm64/boot/dts/freescale/fsl-lx2160a.dtsi
+>
+> diff --git a/arch/arm64/boot/dts/freescale/fsl-lx2160a.dtsi b/arch/arm64/boot/dts/freescale/fsl-lx2160a.dtsi
+> new file mode 100644
+> index 0000000..46eea16
+> --- /dev/null
+> +++ b/arch/arm64/boot/dts/freescale/fsl-lx2160a.dtsi
+> @@ -0,0 +1,693 @@
+> +// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+> +//
+> +// Device Tree Include file for Layerscape-LX2160A family SoC.
+> +//
+> +// Copyright 2018 NXP
+> +
+> +#include <dt-bindings/interrupt-controller/arm-gic.h>
 
-I believe you're correct. One small update to the patch below...
+You included the header file, but you didn't use the MACROs in most of
+the interrupts property below.  It is recommended to use them for
+better readibity.
 
-> 
->>
->> This would involve a bigger code change as the current code to online all
->> CPUs would work in its current form.
->>
->> -Nathan
->>
->>>
->>> Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
->>> Cc: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
->>> Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
->>> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
->>> ---
->>>  arch/powerpc/kernel/rtas.c | 10 ++++++++++
->>>  1 file changed, 10 insertions(+)
->>>
->>> diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
->>> index 2c7ed31..27f6fd3 100644
->>> --- a/arch/powerpc/kernel/rtas.c
->>> +++ b/arch/powerpc/kernel/rtas.c
->>> @@ -982,6 +982,16 @@ int rtas_ibm_suspend_me(u64 handle)
->>>  	}
->>>
->>>  	cpu_hotplug_disable();
->>> +
->>> +	/* Check if we raced with a CPU-Offline Operation */
->>> +	if (unlikely(!cpumask_equal(cpu_present_mask, cpu_online_mask))) {
->>> +		pr_err("%s: Raced against a concurrent CPU-Offline\n",
->>> +		       __func__);
->>> +		atomic_set(&data.error, -EBUSY);
->>> +		cpu_hotplug_enable();
+> +
+> +/memreserve/ 0x80000000 0x00010000;
+> +
+> +/ {
+> +       compatible = "fsl,lx2160a";
+> +       interrupt-parent = <&gic>;
+> +       #address-cells = <2>;
+> +       #size-cells = <2>;
+> +
+> +       cpus {
+> +               #address-cells = <1>;
+> +               #size-cells = <0>;
+> +
+> +               // 8 clusters having 2 Cortex-A72 cores each
+> +               cpu@0 {
+> +                       device_type = "cpu";
+> +                       compatible = "arm,cortex-a72";
+> +                       reg = <0x0>;
+> +                       clocks = <&clockgen 1 0>;
+> +                       d-cache-size = <0x8000>;
+> +                       d-cache-line-size = <64>;
+> +                       d-cache-sets = <128>;
+> +                       i-cache-size = <0xC000>;
+> +                       i-cache-line-size = <64>;
+> +                       i-cache-sets = <192>;
+> +                       next-level-cache = <&cluster0_l2>;
 
-Before returning, we return all CPUs that were offline prior to the migration
-back to the offline state. We should be doing that here as well. This should
-be as simple as adding a call to rtas_offline_cpus_mask() here.
+enable-method is a required property for this and cpu below.
 
--Nathan
+> +               };
+> +
+> +               cpu@1 {
+> +                       device_type = "cpu";
+> +                       compatible = "arm,cortex-a72";
+> +                       reg = <0x1>;
+> +                       clocks = <&clockgen 1 0>;
+> +                       d-cache-size = <0x8000>;
+> +                       d-cache-line-size = <64>;
+> +                       d-cache-sets = <128>;
+> +                       i-cache-size = <0xC000>;
+> +                       i-cache-line-size = <64>;
+> +                       i-cache-sets = <192>;
+> +                       next-level-cache = <&cluster0_l2>;
+> +               };
+> +
+> +               cpu@100 {
+> +                       device_type = "cpu";
+> +                       compatible = "arm,cortex-a72";
+> +                       reg = <0x100>;
+> +                       clocks = <&clockgen 1 1>;
+> +                       d-cache-size = <0x8000>;
+> +                       d-cache-line-size = <64>;
+> +                       d-cache-sets = <128>;
+> +                       i-cache-size = <0xC000>;
+> +                       i-cache-line-size = <64>;
+> +                       i-cache-sets = <192>;
+> +                       next-level-cache = <&cluster1_l2>;
+> +               };
+> +
+> +               cpu@101 {
+> +                       device_type = "cpu";
+> +                       compatible = "arm,cortex-a72";
+> +                       reg = <0x101>;
+> +                       clocks = <&clockgen 1 1>;
+> +                       d-cache-size = <0x8000>;
+> +                       d-cache-line-size = <64>;
+> +                       d-cache-sets = <128>;
+> +                       i-cache-size = <0xC000>;
+> +                       i-cache-line-size = <64>;
+> +                       i-cache-sets = <192>;
+> +                       next-level-cache = <&cluster1_l2>;
+> +               };
+> +
+> +               cpu@200 {
+> +                       device_type = "cpu";
+> +                       compatible = "arm,cortex-a72";
+> +                       reg = <0x200>;
+> +                       clocks = <&clockgen 1 2>;
+> +                       d-cache-size = <0x8000>;
+> +                       d-cache-line-size = <64>;
+> +                       d-cache-sets = <128>;
+> +                       i-cache-size = <0xC000>;
+> +                       i-cache-line-size = <64>;
+> +                       i-cache-sets = <192>;
+> +                       next-level-cache = <&cluster2_l2>;
+> +               };
+> +
+> +               cpu@201 {
+> +                       device_type = "cpu";
+> +                       compatible = "arm,cortex-a72";
+> +                       reg = <0x201>;
+> +                       clocks = <&clockgen 1 2>;
+> +                       d-cache-size = <0x8000>;
+> +                       d-cache-line-size = <64>;
+> +                       d-cache-sets = <128>;
+> +                       i-cache-size = <0xC000>;
+> +                       i-cache-line-size = <64>;
+> +                       i-cache-sets = <192>;
+> +                       next-level-cache = <&cluster2_l2>;
+> +               };
+> +
+> +               cpu@300 {
+> +                       device_type = "cpu";
+> +                       compatible = "arm,cortex-a72";
+> +                       reg = <0x300>;
+> +                       clocks = <&clockgen 1 3>;
+> +                       d-cache-size = <0x8000>;
+> +                       d-cache-line-size = <64>;
+> +                       d-cache-sets = <128>;
+> +                       i-cache-size = <0xC000>;
+> +                       i-cache-line-size = <64>;
+> +                       i-cache-sets = <192>;
+> +                       next-level-cache = <&cluster3_l2>;
+> +               };
+> +
+> +               cpu@301 {
+> +                       device_type = "cpu";
+> +                       compatible = "arm,cortex-a72";
+> +                       reg = <0x301>;
+> +                       clocks = <&clockgen 1 3>;
+> +                       d-cache-size = <0x8000>;
+> +                       d-cache-line-size = <64>;
+> +                       d-cache-sets = <128>;
+> +                       i-cache-size = <0xC000>;
+> +                       i-cache-line-size = <64>;
+> +                       i-cache-sets = <192>;
+> +                       next-level-cache = <&cluster3_l2>;
+> +               };
+> +
+> +               cpu@400 {
+> +                       device_type = "cpu";
+> +                       compatible = "arm,cortex-a72";
+> +                       reg = <0x400>;
+> +                       clocks = <&clockgen 1 4>;
+> +                       d-cache-size = <0x8000>;
+> +                       d-cache-line-size = <64>;
+> +                       d-cache-sets = <128>;
+> +                       i-cache-size = <0xC000>;
+> +                       i-cache-line-size = <64>;
+> +                       i-cache-sets = <192>;
+> +                       next-level-cache = <&cluster4_l2>;
+> +               };
+> +
+> +               cpu@401 {
+> +                       device_type = "cpu";
+> +                       compatible = "arm,cortex-a72";
+> +                       reg = <0x401>;
+> +                       clocks = <&clockgen 1 4>;
+> +                       d-cache-size = <0x8000>;
+> +                       d-cache-line-size = <64>;
+> +                       d-cache-sets = <128>;
+> +                       i-cache-size = <0xC000>;
+> +                       i-cache-line-size = <64>;
+> +                       i-cache-sets = <192>;
+> +                       next-level-cache = <&cluster4_l2>;
+> +               };
+> +
+> +               cpu@500 {
+> +                       device_type = "cpu";
+> +                       compatible = "arm,cortex-a72";
+> +                       reg = <0x500>;
+> +                       clocks = <&clockgen 1 5>;
+> +                       d-cache-size = <0x8000>;
+> +                       d-cache-line-size = <64>;
+> +                       d-cache-sets = <128>;
+> +                       i-cache-size = <0xC000>;
+> +                       i-cache-line-size = <64>;
+> +                       i-cache-sets = <192>;
+> +                       next-level-cache = <&cluster5_l2>;
+> +               };
+> +
+> +               cpu@501 {
+> +                       device_type = "cpu";
+> +                       compatible = "arm,cortex-a72";
+> +                       reg = <0x501>;
+> +                       clocks = <&clockgen 1 5>;
+> +                       d-cache-size = <0x8000>;
+> +                       d-cache-line-size = <64>;
+> +                       d-cache-sets = <128>;
+> +                       i-cache-size = <0xC000>;
+> +                       i-cache-line-size = <64>;
+> +                       i-cache-sets = <192>;
+> +                       next-level-cache = <&cluster5_l2>;
+> +               };
+> +
+> +               cpu@600 {
+> +                       device_type = "cpu";
+> +                       compatible = "arm,cortex-a72";
+> +                       reg = <0x600>;
+> +                       clocks = <&clockgen 1 6>;
+> +                       d-cache-size = <0x8000>;
+> +                       d-cache-line-size = <64>;
+> +                       d-cache-sets = <128>;
+> +                       i-cache-size = <0xC000>;
+> +                       i-cache-line-size = <64>;
+> +                       i-cache-sets = <192>;
+> +                       next-level-cache = <&cluster6_l2>;
+> +               };
+> +
+> +               cpu@601 {
+> +                       device_type = "cpu";
+> +                       compatible = "arm,cortex-a72";
+> +                       reg = <0x601>;
+> +                       clocks = <&clockgen 1 6>;
+> +                       d-cache-size = <0x8000>;
+> +                       d-cache-line-size = <64>;
+> +                       d-cache-sets = <128>;
+> +                       i-cache-size = <0xC000>;
+> +                       i-cache-line-size = <64>;
+> +                       i-cache-sets = <192>;
+> +                       next-level-cache = <&cluster6_l2>;
+> +               };
+> +
+> +               cpu@700 {
+> +                       device_type = "cpu";
+> +                       compatible = "arm,cortex-a72";
+> +                       reg = <0x700>;
+> +                       clocks = <&clockgen 1 7>;
+> +                       d-cache-size = <0x8000>;
+> +                       d-cache-line-size = <64>;
+> +                       d-cache-sets = <128>;
+> +                       i-cache-size = <0xC000>;
+> +                       i-cache-line-size = <64>;
+> +                       i-cache-sets = <192>;
+> +                       next-level-cache = <&cluster7_l2>;
+> +               };
+> +
+> +               cpu@701 {
+> +                       device_type = "cpu";
+> +                       compatible = "arm,cortex-a72";
+> +                       reg = <0x701>;
+> +                       clocks = <&clockgen 1 7>;
+> +                       d-cache-size = <0x8000>;
+> +                       d-cache-line-size = <64>;
+> +                       d-cache-sets = <128>;
+> +                       i-cache-size = <0xC000>;
+> +                       i-cache-line-size = <64>;
+> +                       i-cache-sets = <192>;
+> +                       next-level-cache = <&cluster7_l2>;
+> +               };
+> +
+> +               cluster0_l2: l2-cache0 {
+> +                       compatible = "cache";
+> +                       cache-size = <0x100000>;
+> +                       cache-line-size = <64>;
+> +                       cache-sets = <1024>;
+> +                       cache-level = <2>;
+> +               };
+> +
+> +               cluster1_l2: l2-cache1 {
+> +                       compatible = "cache";
+> +                       cache-size = <0x100000>;
+> +                       cache-line-size = <64>;
+> +                       cache-sets = <1024>;
+> +                       cache-level = <2>;
+> +               };
+> +
+> +               cluster2_l2: l2-cache2 {
+> +                       compatible = "cache";
+> +                       cache-size = <0x100000>;
+> +                       cache-line-size = <64>;
+> +                       cache-sets = <1024>;
+> +                       cache-level = <2>;
+> +               };
+> +
+> +               cluster3_l2: l2-cache3 {
+> +                       compatible = "cache";
+> +                       cache-size = <0x100000>;
+> +                       cache-line-size = <64>;
+> +                       cache-sets = <1024>;
+> +                       cache-level = <2>;
+> +               };
+> +
+> +               cluster4_l2: l2-cache4 {
+> +                       compatible = "cache";
+> +                       cache-size = <0x100000>;
+> +                       cache-line-size = <64>;
+> +                       cache-sets = <1024>;
+> +                       cache-level = <2>;
+> +               };
+> +
+> +               cluster5_l2: l2-cache5 {
+> +                       compatible = "cache";
+> +                       cache-size = <0x100000>;
+> +                       cache-line-size = <64>;
+> +                       cache-sets = <1024>;
+> +                       cache-level = <2>;
+> +               };
+> +
+> +               cluster6_l2: l2-cache6 {
+> +                       compatible = "cache";
+> +                       cache-size = <0x100000>;
+> +                       cache-line-size = <64>;
+> +                       cache-sets = <1024>;
+> +                       cache-level = <2>;
+> +               };
+> +
+> +               cluster7_l2: l2-cache7 {
+> +                       compatible = "cache";
+> +                       cache-size = <0x100000>;
+> +                       cache-line-size = <64>;
+> +                       cache-sets = <1024>;
+> +                       cache-level = <2>;
+> +               };
+> +       };
+> +
+> +       gic: interrupt-controller@6000000 {
+> +               compatible = "arm,gic-v3";
+> +               reg = <0x0 0x06000000 0 0x10000>, // GIC Dist
+> +                       <0x0 0x06200000 0 0x200000>, // GICR (RD_base +
+> +                                                    // SGI_base)
+> +                       <0x0 0x0c0c0000 0 0x2000>, // GICC
+> +                       <0x0 0x0c0d0000 0 0x1000>, // GICH
+> +                       <0x0 0x0c0e0000 0 0x20000>; // GICV
+> +               #interrupt-cells = <3>;
+> +               #address-cells = <2>;
+> +               #size-cells = <2>;
+> +               ranges;
+> +               interrupt-controller;
+> +               interrupts = <1 9 0x4>;
+> +
+> +               its: gic-its@6020000 {
+> +                       compatible = "arm,gic-v3-its";
+> +                       msi-controller;
+> +                       reg = <0x0 0x6020000 0 0x20000>;
+> +               };
+> +       };
+> +
+> +       rstcr: syscon@1e60000 {
+> +               compatible = "syscon";
+> +               reg = <0x0 0x1e60000 0x0 0x4>;
+> +       };
 
->>> +		goto out;
->>> +	}
->>> +
->>>  	stop_topology_update();
->>>
->>>  	/* Call function on all CPUs.  One of us will make the
->>>
+This is no use if you don't have a syscon-reboot node pointing to it.
 
+> +
+> +       timer {
+> +               compatible = "arm,armv8-timer";
+> +               interrupts = <1 13 4>,
+> +                            <1 14 4>,
+> +                            <1 11 4>,
+> +                            <1 10 4>;
+> +       };
+> +
+> +       pmu {
+> +               compatible = "arm,cortex-a72-pmu";
+> +               interrupts = <1 7 0x8>; // PMU PPI, Level low type
+> +       };
+> +
+> +       psci {
+> +               compatible = "arm,psci-0.2";
+> +               method = "smc";
+> +       };
+> +
+> +       memory@80000000 {
+> +               // DRAM space - 1, size : 2 GB DRAM
+> +               device_type = "memory";
+> +               reg = <0x00000000 0x80000000 0 0x80000000>;
+> +       };
+> +
+> +       ddr1: memory-controller@1080000 {
+> +               compatible = "fsl,qoriq-memory-controller";
+> +               reg = <0x0 0x1080000 0x0 0x1000>;
+> +               interrupts = <0 17 0x4>;
+> +               little-endian;
+> +       };
+> +
+> +       ddr2: memory-controller@1090000 {
+> +               compatible = "fsl,qoriq-memory-controller";
+> +               reg = <0x0 0x1090000 0x0 0x1000>;
+> +               interrupts = <0 18 0x4>;
+> +               little-endian;
+> +       };
+> +
+> +       sysclk: sysclk {
+> +               compatible = "fixed-clock";
+> +               #clock-cells = <0>;
+> +               clock-frequency = <100000000>;
+> +               clock-output-names = "sysclk";
+> +       };
+> +
+> +       soc {
+> +               compatible = "simple-bus";
+> +               #address-cells = <2>;
+> +               #size-cells = <2>;
+> +               ranges;
+> +
+> +               clockgen: clocking@1300000 {
+> +                       compatible = "fsl,lx2160a-clockgen";
+
+Also update the binding to include this new compatible.
+
+> +                       reg = <0 0x1300000 0 0xa0000>;
+> +                       #clock-cells = <2>;
+> +                       clocks = <&sysclk>;
+> +               };
+> +
+> +               crypto: crypto@8000000 {
+> +                       compatible = "fsl,sec-v5.0", "fsl,sec-v4.0";
+> +                       fsl,sec-era = <10>;
+> +                       #address-cells = <1>;
+> +                       #size-cells = <1>;
+> +                       ranges = <0x0 0x00 0x8000000 0x100000>;
+> +                       reg = <0x00 0x8000000 0x0 0x100000>;
+> +                       interrupts = <GIC_SPI 139 IRQ_TYPE_LEVEL_HIGH>;
+> +                       dma-coherent;
+> +                       status = "disabled";
+> +
+> +                       sec_jr0: jr@10000 {
+> +                               compatible = "fsl,sec-v5.0-job-ring",
+> +                                            "fsl,sec-v4.0-job-ring";
+> +                               reg        = <0x10000 0x10000>;
+> +                               interrupts = <GIC_SPI 140 IRQ_TYPE_LEVEL_HIGH>;
+> +                       };
+> +
+> +                       sec_jr1: jr@20000 {
+> +                               compatible = "fsl,sec-v5.0-job-ring",
+> +                                            "fsl,sec-v4.0-job-ring";
+> +                               reg        = <0x20000 0x10000>;
+> +                               interrupts = <GIC_SPI 141 IRQ_TYPE_LEVEL_HIGH>;
+> +                       };
+> +
+> +                       sec_jr2: jr@30000 {
+> +                               compatible = "fsl,sec-v5.0-job-ring",
+> +                                            "fsl,sec-v4.0-job-ring";
+> +                               reg        = <0x30000 0x10000>;
+> +                               interrupts = <GIC_SPI 142 IRQ_TYPE_LEVEL_HIGH>;
+> +                       };
+> +
+> +                       sec_jr3: jr@40000 {
+> +                               compatible = "fsl,sec-v5.0-job-ring",
+> +                                            "fsl,sec-v4.0-job-ring";
+> +                               reg        = <0x40000 0x10000>;
+> +                               interrupts = <GIC_SPI 143 IRQ_TYPE_LEVEL_HIGH>;
+> +                       };
+> +               };
+> +
+> +               dcfg: dcfg@1e00000 {
+> +                       compatible = "fsl,lx2160a-dcfg", "syscon";
+
+Update the binding to include this new compatible.
+
+> +                       reg = <0x0 0x1e00000 0x0 0x10000>;
+> +                       little-endian;
+> +               };
+> +
+> +               gpio0: gpio@2300000 {
+> +                       compatible = "fsl,qoriq-gpio";
+> +                       reg = <0x0 0x2300000 0x0 0x10000>;
+> +                       interrupts = <0 36 0x4>; // Level high type
+> +                       gpio-controller;
+> +                       little-endian;
+> +                       #gpio-cells = <2>;
+> +                       interrupt-controller;
+> +                       #interrupt-cells = <2>;
+> +               };
+> +
+> +               gpio1: gpio@2310000 {
+> +                       compatible = "fsl,qoriq-gpio";
+> +                       reg = <0x0 0x2310000 0x0 0x10000>;
+> +                       interrupts = <0 36 0x4>; // Level high type
+> +                       gpio-controller;
+> +                       little-endian;
+> +                       #gpio-cells = <2>;
+> +                       interrupt-controller;
+> +                       #interrupt-cells = <2>;
+> +               };
+> +
+> +               gpio2: gpio@2320000 {
+> +                       compatible = "fsl,qoriq-gpio";
+> +                       reg = <0x0 0x2320000 0x0 0x10000>;
+> +                       interrupts = <0 37 0x4>; // Level high type
+> +                       gpio-controller;
+> +                       little-endian;
+> +                       #gpio-cells = <2>;
+> +                       interrupt-controller;
+> +                       #interrupt-cells = <2>;
+> +               };
+> +
+> +               gpio3: gpio@2330000 {
+> +                       compatible = "fsl,qoriq-gpio";
+> +                       reg = <0x0 0x2330000 0x0 0x10000>;
+> +                       interrupts = <0 37 0x4>; // Level high type
+> +                       gpio-controller;
+> +                       little-endian;
+> +                       #gpio-cells = <2>;
+> +                       interrupt-controller;
+> +                       #interrupt-cells = <2>;
+> +               };
+> +
+> +
+
+One new line is enough.
+
+> +               i2c0: i2c@2000000 {
+> +                       compatible = "fsl,vf610-i2c";
+> +                       #address-cells = <1>;
+> +                       #size-cells = <0>;
+> +                       reg = <0x0 0x2000000 0x0 0x10000>;
+> +                       interrupts = <0 34 0x4>; // Level high type
+> +                       clock-names = "i2c";
+> +                       clocks = <&clockgen 4 7>;
+> +                       fsl-scl-gpio = <&gpio2 15 0>;
+> +                       status = "disabled";
+> +               };
+> +
+> +               i2c1: i2c@2010000 {
+> +                       compatible = "fsl,vf610-i2c";
+> +                       #address-cells = <1>;
+> +                       #size-cells = <0>;
+> +                       reg = <0x0 0x2010000 0x0 0x10000>;
+> +                       interrupts = <0 34 0x4>; // Level high type
+> +                       clock-names = "i2c";
+> +                       clocks = <&clockgen 4 7>;
+> +                       status = "disabled";
+> +               };
+> +
+> +               i2c2: i2c@2020000 {
+> +                       compatible = "fsl,vf610-i2c";
+> +                       #address-cells = <1>;
+> +                       #size-cells = <0>;
+> +                       reg = <0x0 0x2020000 0x0 0x10000>;
+> +                       interrupts = <0 35 0x4>; // Level high type
+> +                       clock-names = "i2c";
+> +                       clocks = <&clockgen 4 7>;
+> +                       status = "disabled";
+> +               };
+> +
+> +               i2c3: i2c@2030000 {
+> +                       compatible = "fsl,vf610-i2c";
+> +                       #address-cells = <1>;
+> +                       #size-cells = <0>;
+> +                       reg = <0x0 0x2030000 0x0 0x10000>;
+> +                       interrupts = <0 35 0x4>; // Level high type
+> +                       clock-names = "i2c";
+> +                       clocks = <&clockgen 4 7>;
+> +                       status = "disabled";
+> +               };
+> +
+> +               i2c4: i2c@2040000 {
+> +                       compatible = "fsl,vf610-i2c";
+> +                       #address-cells = <1>;
+> +                       #size-cells = <0>;
+> +                       reg = <0x0 0x2040000 0x0 0x10000>;
+> +                       interrupts = <0 74 0x4>; // Level high type
+> +                       clock-names = "i2c";
+> +                       clocks = <&clockgen 4 7>;
+> +                       fsl-scl-gpio = <&gpio2 16 0>;
+> +                       status = "disabled";
+> +               };
+> +
+> +               i2c5: i2c@2050000 {
+> +                       compatible = "fsl,vf610-i2c";
+> +                       #address-cells = <1>;
+> +                       #size-cells = <0>;
+> +                       reg = <0x0 0x2050000 0x0 0x10000>;
+> +                       interrupts = <0 74 0x4>; // Level high type
+> +                       clock-names = "i2c";
+> +                       clocks = <&clockgen 4 7>;
+> +                       status = "disabled";
+> +               };
+> +
+> +               i2c6: i2c@2060000 {
+> +                       compatible = "fsl,vf610-i2c";
+> +                       #address-cells = <1>;
+> +                       #size-cells = <0>;
+> +                       reg = <0x0 0x2060000 0x0 0x10000>;
+> +                       interrupts = <0 75 0x4>; // Level high type
+> +                       clock-names = "i2c";
+> +                       clocks = <&clockgen 4 7>;
+> +                       status = "disabled";
+> +               };
+> +
+> +               i2c7: i2c@2070000 {
+> +                       compatible = "fsl,vf610-i2c";
+> +                       #address-cells = <1>;
+> +                       #size-cells = <0>;
+> +                       reg = <0x0 0x2070000 0x0 0x10000>;
+> +                       interrupts = <0 75 0x4>; // Level high type
+> +                       clock-names = "i2c";
+> +                       clocks = <&clockgen 4 7>;
+> +                       status = "disabled";
+> +               };
+> +
+> +               uart0: serial@21c0000 {
+> +                       device_type = "serial";
+> +                       compatible = "arm,pl011","arm,sbsa-uart";
+
+From the sbsa_uart binding:
+This UART uses a subset of the PL011 registers and consequently lives
+in the PL011 driver. It's baudrate and other communication parameters
+cannot be adjusted at runtime, so it lacks a clock specifier here.
+
+So it is a more specific variant of pl011.  Put the sbsa-uart compatible first.
+
+> +                       reg = <0x0 0x21c0000 0x0 0x1000>;
+> +                       interrupts = <0 32 0x4>;        // Level high type
+> +                       current-speed = <115200>;
+> +                       status = "disabled";
+> +               };
+> +
+> +               uart1: serial@21d0000 {
+> +                       device_type = "serial";
+> +                       compatible = "arm,pl011","arm,sbsa-uart";
+> +                       reg = <0x0 0x21d0000 0x0 0x1000>;
+> +                       interrupts = <0 33 0x4>;        // Level high type
+> +                       current-speed = <115200>;
+> +                       status = "disabled";
+> +               };
+> +
+> +               uart2: serial@21e0000 {
+> +                       device_type = "serial";
+> +                       compatible = "arm,pl011","arm,sbsa-uart";
+> +                       reg = <0x0 0x21e0000 0x0 0x1000>;
+> +                       interrupts = <0 72 0x4>;        // Level high type
+> +                       current-speed = <115200>;
+> +                       status = "disabled";
+> +               };
+> +
+> +               uart3: serial@21f0000 {
+> +                       device_type = "serial";
+> +                       compatible = "arm,pl011","arm,sbsa-uart";
+> +                       reg = <0x0 0x21f0000 0x0 0x1000>;
+> +                       interrupts = <0 73 0x4>;        // Level high type
+> +                       current-speed = <115200>;
+> +                       status = "disabled";
+> +               };
+> +
+> +               smmu: iommu@5000000 {
+> +                       compatible = "arm,mmu-500";
+> +                       reg = <0 0x5000000 0 0x800000>;
+> +                       #iommu-cells = <1>;
+> +                       #global-interrupts = <14>;
+> +                       interrupts = <0 13 4>, // global secure fault
+> +                                    <0 14 4>, // combined secure interrupt
+> +                                    <0 15 4>, // global non-secure fault
+> +                                    <0 16 4>, // combined non-secure interrupt
+> +                               // performance counter interrupts 0-9
+> +                                    <0 211 4>, <0 212 4>,
+> +                                    <0 213 4>, <0 214 4>,
+> +                                    <0 215 4>, <0 216 4>,
+> +                                    <0 217 4>, <0 218 4>,
+> +                                    <0 219 4>, <0 220 4>,
+> +                               // per context interrupt, 64 interrupts
+> +                                    <0 146 4>, <0 147 4>,
+> +                                    <0 148 4>, <0 149 4>,
+> +                                    <0 150 4>, <0 151 4>,
+> +                                    <0 152 4>, <0 153 4>,
+> +                                    <0 154 4>, <0 155 4>,
+> +                                    <0 156 4>, <0 157 4>,
+> +                                    <0 158 4>, <0 159 4>,
+> +                                    <0 160 4>, <0 161 4>,
+> +                                    <0 162 4>, <0 163 4>,
+> +                                    <0 164 4>, <0 165 4>,
+> +                                    <0 166 4>, <0 167 4>,
+> +                                    <0 168 4>, <0 169 4>,
+> +                                    <0 170 4>, <0 171 4>,
+> +                                    <0 172 4>, <0 173 4>,
+> +                                    <0 174 4>, <0 175 4>,
+> +                                    <0 176 4>, <0 177 4>,
+> +                                    <0 178 4>, <0 179 4>,
+> +                                    <0 180 4>, <0 181 4>,
+> +                                    <0 182 4>, <0 183 4>,
+> +                                    <0 184 4>, <0 185 4>,
+> +                                    <0 186 4>, <0 187 4>,
+> +                                    <0 188 4>, <0 189 4>,
+> +                                    <0 190 4>, <0 191 4>,
+> +                                    <0 192 4>, <0 193 4>,
+> +                                    <0 194 4>, <0 195 4>,
+> +                                    <0 196 4>, <0 197 4>,
+> +                                    <0 198 4>, <0 199 4>,
+> +                                    <0 200 4>, <0 201 4>,
+> +                                    <0 202 4>, <0 203 4>,
+> +                                    <0 204 4>, <0 205 4>,
+> +                                    <0 206 4>, <0 207 4>,
+> +                                    <0 208 4>, <0 209 4>;
+> +                       dma-coherent;
+> +               };
+> +
+> +               usb0: usb3@3100000 {
+> +                       compatible = "snps,dwc3";
+> +                       reg = <0x0 0x3100000 0x0 0x10000>;
+> +                       interrupts = <0 80 0x4>; // Level high type
+> +                       dr_mode = "host";
+> +                       snps,quirk-frame-length-adjustment = <0x20>;
+> +                       snps,dis_rxdet_inp3_quirk;
+> +                       status = "disabled";
+> +               };
+> +
+> +               usb1: usb3@3110000 {
+> +                       compatible = "snps,dwc3";
+> +                       reg = <0x0 0x3110000 0x0 0x10000>;
+> +                       interrupts = <0 81 0x4>; // Level high type
+> +                       dr_mode = "host";
+> +                       snps,quirk-frame-length-adjustment = <0x20>;
+> +                       snps,dis_rxdet_inp3_quirk;
+> +                       status = "disabled";
+> +               };
+> +
+> +               watchdog@23a0000 {
+> +                       compatible = "arm,sbsa-gwdt";
+> +                       reg = <0x0 0x23a0000 0 0x1000>,
+> +                             <0x0 0x2390000 0 0x1000>;
+> +                       interrupts = <0 59 4>;
+> +                       timeout-sec = <30>;
+> +               };
+> +
+
+No new line is needed here.
+
+> +       };
+> +};
+> --
+> 2.7.4
+>
