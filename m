@@ -5,42 +5,42 @@ X-Spam-Level:
 X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D7EEC43382
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 05:05:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F6A2C43382
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 05:19:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 80BAA216FA
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 05:05:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 80BAA216FA
+	by mail.kernel.org (Postfix) with ESMTPS id 85EAE2152F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 05:19:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 85EAE2152F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=neuling.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42M03z2d4YzF3BG
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 15:05:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42M0N13js9zF3BR
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 15:19:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=neuling.org
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42M0236yzrzF39s
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2018 15:03:39 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42M0L66ZpBzF37s
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2018 15:17:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=neuling.org
 Received: from localhost.localdomain (localhost [127.0.0.1])
- by ozlabs.org (Postfix) with ESMTP id 42M0235PZsz9s3x;
- Fri, 28 Sep 2018 15:03:39 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTP id 42M0L64tDgz9s3Z;
+ Fri, 28 Sep 2018 15:17:34 +1000 (AEST)
 Received: by localhost.localdomain (Postfix, from userid 1000)
- id 69F94EE78BF; Fri, 28 Sep 2018 15:03:39 +1000 (AEST)
-Message-ID: <76750b659e4ac0e3eb1bca338c04285c58b6b9b9.camel@neuling.org>
-Subject: Re: [RFC PATCH 09/11] powerpc/tm: Do not restore default DSCR
+ id 6A4D5EE78BF; Fri, 28 Sep 2018 15:17:34 +1000 (AEST)
+Message-ID: <51a0d5bad5b498065b30fd3e126a24d5d81f52ae.camel@neuling.org>
+Subject: Re: [RFC PATCH 10/11] powerpc/tm: Set failure summary
 From: Michael Neuling <mikey@neuling.org>
 To: Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org
-Date: Fri, 28 Sep 2018 15:03:39 +1000
-In-Reply-To: <11f2155f-eff8-2aac-ab47-1ab343d52107@debian.org>
+Date: Fri, 28 Sep 2018 15:17:34 +1000
+In-Reply-To: <85a2de6d-6cb5-6052-252e-858e61eb00ab@debian.org>
 References: <1536781219-13938-1-git-send-email-leitao@debian.org>
- <1536781219-13938-10-git-send-email-leitao@debian.org>
- <10da0fdc641b05ea288890a23aa01ad33f2d6987.camel@neuling.org>
- <11f2155f-eff8-2aac-ab47-1ab343d52107@debian.org>
+ <1536781219-13938-11-git-send-email-leitao@debian.org>
+ <7647a2d788ceb979e6de8bb8bb988f4d37fb1877.camel@neuling.org>
+ <85a2de6d-6cb5-6052-252e-858e61eb00ab@debian.org>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.1 
@@ -61,85 +61,73 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2018-09-27 at 17:51 -0300, Breno Leitao wrote:
+On Thu, 2018-09-27 at 17:52 -0300, Breno Leitao wrote:
 > Hi Mikey,
 >=20
-> On 09/18/2018 02:41 AM, Michael Neuling wrote:
+> On 09/18/2018 02:50 AM, Michael Neuling wrote:
 > > On Wed, 2018-09-12 at 16:40 -0300, Breno Leitao wrote:
-> > > In the previous TM code, trecheckpoint was being executed in the midd=
-le of
-> > > an exception, thus, DSCR was being restored to default kernel DSCR va=
-lue
-> > > after trecheckpoint was done.
-> > >=20
-> > > With this current patchset, trecheckpoint is executed just before get=
-ting
-> > > to userspace, at ret_from_except_lite, for example. Thus, we do not n=
+> > > Since the transaction will be doomed with treckpt., the TEXASR[FS]
+> > > should be set, to reflect that the transaction is a failure. This pat=
+ch
+> > > ensures it before recheckpointing, and remove changes from other plac=
+es
+> > > that were calling recheckpoint.
+> >=20
+> > TEXASR[FS] should be set by the reclaim.=20
+>=20
+> Do you mean that the CPU should set TEXASR[FS] when treclaim is called, o=
+r,
+> that the tm_reclaim?
+>=20
+> Looking at the ISA, I didn't see TEXASR[FS] being set automatically when =
+a
+> reclaim happens,=20
+treclaim in ISA talks about "TMRecordFailure(cause)" and that macro sets
+TEXASR[FS]=3D1.=20
+
+So yes treclaim always sets TEXASR[FS]=3D1.
+
+> although, I see it needs TEXASR[FS] to be set when executing a=20
+> trecheckpoint, otherwise it will cause a TM Bad Thing.
+
+Yep
+
+> That is why I am forcing TEXASR[FS]=3D1 to doom the transaction so we can
+> recheckpoint it, but it seems I understood this wrongly.
+
+You shouldn't need to.  We do a bug_on() just before the trecheckpoint to m=
+ake
+sure it's set, but you shouldn't need to set it (other than the signals cas=
+e).
+
+> > I don't know why you'd need to set this
+> > explicitly in process.c. The only case is when the user supplies a bad
+> > signal
+> > context, but we should check that in the signals code, not process.c
+> >=20
+> > Hence I think this patch is wrong.
+> >=20
+> > Also, according to the architecture, TEXASR[FS] HAS TO BE SET on
+> > trecheckpoint
+> > otherwise you'll get a TM Bad Thing. You should say that rather than
+> > suggesting
+> > it's because the transaction is doomed. It's ilqlegal to not do it. Tha=
+t's
+> > why we
+> > have this check in arch/powerpc/kernel/tm.S.
+>=20
+> When you say "HAS TO BE SET", do you mean that the hardware will set it a=
+nd
+> we shouldn't care about this flag? Thus, if I am hitting EMIT_BUG_ENTRY, =
+it
+> means my TEXASR was messed somehow?
+
+I'm just saying what you said before about the tm bad thing.  We have to ma=
+ke
+sure it's set before we do the trecheckpoint otherwise we end up in the TM =
+bad
+thing. The treclaim should handle this for us (but again the signals case n=
 eed
-> > > to
-> > > set default kernel DSCR value anymore, as we are leaving kernel space=
-.  It
-> > > is OK to keep the checkpointed DSCR value into the live SPR, mainly
-> > > because
-> > > the transaction is doomed and it will fail soon (after RFID),=20
-> >=20
-> > What if we are going back to a suspended transaction?  It will remain l=
-ive
-> > until
-> > userspace does a tresume
->=20
-> Hmm, I understand that once we get in kernel space, and call
-> treclaim/trecheckpoint, the transaction will be doomed and it will abort =
-and
-> rollback when we leave kernel space. I.e., if we can treclaim/trecheckpoi=
-ntn
-> in kernel space, the transaction will *always* abort just after RFID, so,=
- a
-> possible tresume will never be executed. Is my understanding wrong?
-
-Your understanding is wrong. We don't roll back until MSR[TS] =3D T.
-
-There are two cases for the RFID.
-
-1) if you RFID back to userspace that is transactional (ie MSR[TS] =3D T), =
-then it
-will immediately rollback as soon as the RFID happens since we are going
-directly to T.
-
-2) If you RFID back to userspace that is suspended (ie MSR[TS] =3D S), then=
- it
-won't roll back until userspace does a tresume. It doesn't rollback until w=
-e go
-MSR[TS] =3D S -> T).
-
-> >=20
-> > > so,
-> > > continuing with the pre-checkpointed DSCR value is what seems correct=
-.
-> >=20
-> > Reading this description suggests this patch isn't really needed. Right=
-?
->=20
-> Maybe the description is not clear, but I understand this patch is requir=
-ed,
-> otherwise we will leave userspace with a default DSCR value.
->=20
-> By the way, do you know if there is a change in DSCR inside a transaction=
-,
-> will it be reverted if the transaction is aborted?
-
-Yes it will be reverted. We even have a selftest for it in
-tools/testing/selftests/powerpc/tm/tm-resched-dscr.c
-
-There are a bunch of checkpointed SPRs. From the arch:
-   Checkpointed registers: The set of registers that are
-   saved to the =E2=80=9Ccheckpoint area=E2=80=9D when a transaction is
-   initiated, and restored upon transaction failure, is a
-   subset of the architected register state, consisting of
-   the General Purpose Registers, Floating-Point Regis-
-   ters, Vector Registers, Vector-Scalar Registers, and the
-   following Special Registers and fields: CR fields other
-   than CR0, XER, LR, CTR, FPSCR, AMR, PPR,
-   VRSAVE, VSCR, DSCR, and TAR.
+to be checked).
 
 Mikey
