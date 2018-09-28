@@ -1,68 +1,35 @@
-Date: Thu, 3 Jul 2003 00:11:40 -0800
-From: Ethan Benson <erbenson@alaska.net>
-To: LinuxPPC Developers <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: fsck_hfs on PPC???
-Message-ID: <20030703081140.GG930@plato.local.lan>
-References: <20030702225425.220d046a.billfink@mindspring.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20030702225425.220d046a.billfink@mindspring.com>
+From: deepesh@india.tejasnetworks.com
+Message-ID: <1057227367.3f0402676dddd@pop-mail.india.tejasnetworks.com>
+Date: Thu, Thu 03 Jul 2003 03:46:07 PM IST, Jul 2003 15:46:07 +0530
+To: wd@denx.de
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: EP8260
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Jul 02, 2003 at 10:54:25PM -0400, Bill Fink wrote:
->
-> Has anyone been able to get Apple's fsck_hfs with Roman Zippel's
-> Linux patch to a usable state on PPC?
->
-> I was able to build it with the following additional patch:
+Hi,
 
->
-> But when I try and run it on an HFS+ partition:
->
-> gwiz# fsck_hfs /dev/hda9
-> /dev/rhda9: No such file or directory
-> Can't stat /dev/rhda9
-> /dev/hda9 is not a character device
-> CONTINUE? [yn] n
+  I am having an EP8260 Board. The board comes with a PlanetCore BootLoader
+and a diagnostics. I want to boot kernel using this bootloader. TimeSys
+people claim to have released a kernel binary for EP8260. I am not able to
+boot this kernel. What is clear is that the board info structure is passed
+correctly from the planetcore boot loader to the kernel arch/ppc/boot/.
+This is because I found that the decompress_kernel function is working. I
+dumped the first few bytes of memory, starting at 0(zero). They are exactly
+same as the "dissembled vmlinux".
 
-heh, it seems to be rather bsd centric.  bsd has this silly concept of
-having a r device for raw access, whereas the normal one is used for
-filesystems.  ive never noticed that the r device is a char device though...
+   But there is a problem in entering from the arch/ppc/boot code to
+arch/ppc/kernel code. The board goes for a reset.
 
-> So I create a raw device with:
->
-> 	raw /dev/raw/raw3 /dev/hda9
->
-> And then create a symbolic link:
->
-> 	ln -s /dev/raw/raw3 rhda9
->
-> But:
->
-> gwiz# fsck_hfs /dev/rhda9
-> ** /dev/rhda9
->
-> does not appear to do anything.  Using the "-f" force option
-> doesn't appear to have any effect either.
->
-> gwiz# fsck_hfs -f /dev/rhda9
-> ** /dev/rhda9
->
-> It just immediately returns.
->
-> I'm guessing fsck_hfs has only been tested on PC Linux.
-> Has anyone gotten it to work on PPC or have any ideas
-> about further things to try or investigate.
+Kindly help.
 
-i don't think architecture has anything to do with the problems your
-seeing, it looks to me like it will only work on *BSD.
+Please  give me a reference to a kernel which would come up with this
+bootloader(PlanetCore)
 
-but i haven't looked at its source, and won't.
-
---
-Ethan Benson
-http://www.alaska.net/~erbenson/
+Thank you,
+Deepesh
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
