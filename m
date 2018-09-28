@@ -2,52 +2,47 @@ Return-Path: <SRS0=psBJ=MK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 354C5C43382
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 12:48:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 925D3C43382
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 12:51:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9CC81216FE
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 12:48:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9CC81216FE
+	by mail.kernel.org (Postfix) with ESMTPS id 39C9F2159D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 12:51:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 39C9F2159D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42MBLr4TppzDqnK
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 22:48:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42MBPc0zzHzF3Fq
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 22:51:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42MBFN3FPmzF3Fq
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2018 22:44:08 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42MBJP0yPfzF3Fv
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2018 22:46:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 42MBFM4brmz9s1x;
- Fri, 28 Sep 2018 22:44:07 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPSA id 42MBJN0VvGz9s1x;
+ Fri, 28 Sep 2018 22:46:44 +1000 (AEST)
 Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe LEROY <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] powerpc: wire up memtest
-In-Reply-To: <9f0055e2-ebd1-649b-272e-cb9b58bd4e15@c-s.fr>
-References: <b3f2074b89ef0e3352fb11b69be30caeaa823fa0.1535360497.git.christophe.leroy@c-s.fr>
- <871s9euw4m.fsf@concordia.ellerman.id.au>
- <9f0055e2-ebd1-649b-272e-cb9b58bd4e15@c-s.fr>
-Date: Fri, 28 Sep 2018 22:44:07 +1000
-Message-ID: <878t3lu6zs.fsf@concordia.ellerman.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH kernel] cxl: Remove unused include
+In-Reply-To: <20180928063804.35692-1-aik@ozlabs.ru>
+References: <20180928063804.35692-1-aik@ozlabs.ru>
+Date: Fri, 28 Sep 2018 22:46:43 +1000
+Message-ID: <875zypu6vg.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,54 +54,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe LEROY <christophe.leroy@c-s.fr> writes:
-> Le 28/09/2018 =C3=A0 05:41, Michael Ellerman a =C3=A9crit=C2=A0:
->> Christophe Leroy <christophe.leroy@c-s.fr> writes:
->>> Add call to early_memtest() so that kernel compiled with
->>> CONFIG_MEMTEST really perform memtest at startup when requested
->>> via 'memtest' boot parameter.
->>>
->>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->>> ---
->>>   arch/powerpc/kernel/setup-common.c | 3 +++
->>>   1 file changed, 3 insertions(+)
->>>
->>> diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/s=
-etup-common.c
->>> index 93fa0c99681e..904b728eb20d 100644
->>> --- a/arch/powerpc/kernel/setup-common.c
->>> +++ b/arch/powerpc/kernel/setup-common.c
->>> @@ -33,6 +33,7 @@
->>>   #include <linux/serial_8250.h>
->>>   #include <linux/percpu.h>
->>>   #include <linux/memblock.h>
->>> +#include <linux/bootmem.h>
->>>   #include <linux/of_platform.h>
->>>   #include <linux/hugetlb.h>
->>>   #include <asm/debugfs.h>
->>> @@ -917,6 +918,8 @@ void __init setup_arch(char **cmdline_p)
->>>   	/* Parse memory topology */
->>>   	mem_topology_setup();
->>>=20=20=20
->>> +	early_memtest(min_low_pfn << PAGE_SHIFT, max_low_pfn << PAGE_SHIFT);
->>=20
->> On a ppc64le VM this boils down to early_memtest(0, 0) for me.
->>=20
->> I think it's too early, we don't set up max_low_pfn until
->> initmem_init().
->>=20
->> If I move it after initmem_init() then it does something more useful:
->
-> Ok. On my 8xx max_low_pfn is set in mem_topology_setup().
->
-> Moving the test afte initmem_init() still works on the 8xx so I'll do tha=
-t.
+Alexey Kardashevskiy <aik@ozlabs.ru> writes:
+> The included opal.h gives a wrong idea that CXL makes PPC OPAL calls
+> while it does not so let's remote it.
 
-Great, thanks.
+But it does use eg.
+
+  OPAL_PHB_CAPI_MODE_SNOOP_ON
+  OPAL_PHB_CAPI_MODE_CAPI
+
+Which come from opal-api.h via opal.h.
+
+So you should at least include opal-api.h.
 
 cheers
+
+> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+> index b66d832..8cbcbb7 100644
+> --- a/drivers/misc/cxl/pci.c
+> +++ b/drivers/misc/cxl/pci.c
+> @@ -17,7 +17,6 @@
+>  #include <linux/pci.h>
+>  #include <linux/of.h>
+>  #include <linux/delay.h>
+> -#include <asm/opal.h>
+>  #include <asm/msi_bitmap.h>
+>  #include <asm/pnv-pci.h>
+>  #include <asm/io.h>
+> -- 
+> 2.11.0
