@@ -2,82 +2,86 @@ Return-Path: <SRS0=psBJ=MK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 567D9C43382
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 16:03:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E1883C43382
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 16:05:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8C4DC20657
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 16:03:32 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 605ED20657
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 16:05:52 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="qYFXxDjE"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8C4DC20657
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="faOZQs9n"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 605ED20657
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42MGgQ3RvBzF3G0
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Sep 2018 02:03:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42MGk56LtWzF3LY
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Sep 2018 02:05:49 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="qYFXxDjE";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="faOZQs9n";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::542; helo=mail-pg1-x542.google.com;
+ (client-ip=2607:f8b0:4864:20::543; helo=mail-pg1-x543.google.com;
  envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="qYFXxDjE"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="faOZQs9n"; 
  dkim-atps=neutral
-Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
- [IPv6:2607:f8b0:4864:20::542])
+Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
+ [IPv6:2607:f8b0:4864:20::543])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42MGcj4w5szF3G0
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Sep 2018 02:01:09 +1000 (AEST)
-Received: by mail-pg1-x542.google.com with SMTP id c10-v6so4790526pgq.4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2018 09:01:08 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42MGcm62jHzF3Fv
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Sep 2018 02:01:12 +1000 (AEST)
+Received: by mail-pg1-x543.google.com with SMTP id r77-v6so4792744pgr.5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2018 09:01:12 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id;
- bh=DYD2J8baFTy1b5NmBRkCW2NywtBh2itoU2wDcfk+wpw=;
- b=qYFXxDjEreDdda3gSF7OiRBXB5uG1EjrkfZ9NybK/l1q6kjqsMY2KqCvrfHcmUNmJS
- giSCv3+9swgXLPCaCatbtV7s1QGzPQKxi9OprhnQSRfLSQ/Gfod7+/nmGG39mT94sR17
- JgAuD4WZsBl2FGKFECCXy4GUaOniX/4e/fFqCEzLoYF0PANq5R2meFhi+Q6sdYrW0XMV
- 75mVB1JZRpRJpGDxZTD1wcuVgsxMkaFRvFxUlRyz9er5w6NVk1FTxHtDMDAvN4DWMp+4
- ombAG40k0r4t8BNCodwaRafvzicN9Pb9o43whjL6cTnTltkWKx+uJpB9+C1TcTwoxnhM
- 2Lrw==
+ h=from:to:cc:subject:date:message-id:in-reply-to:references;
+ bh=UfjfuH41DqqXuld0hbpgExjHcf4uBHY7puZvfP54OZg=;
+ b=faOZQs9nPZzI0mmaJsF+VAKIk9lwPCJlGGDGH9hSV31/EjgxN0J88EG/5kenzrp2tY
+ 4H78scFlOEYBKPia9CLislKV6VGLsDvj3lMmcaUqbZsAQmKxOo16RJhlJxNs2FihzV/L
+ 1KjdCeH462KNGGJYQoE2ip74CqMeMMeV9n3JyeusGZsuYRr8kAI6tX/InYwczW9UN0IN
+ oFrBdNx4ucY2OHNGkOEdZtX8c1pMf5jD60ZHs9Cr/nn4Q5ghIR1wDGaXr/aZhZwEVHXN
+ rPpD1k/AExIyQfZBHv5IfmNKI7a+tMhLCKPdyw+ubl+MGnkj919bPgEPZ7V0ilgpp1yK
+ v/Rw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id;
- bh=DYD2J8baFTy1b5NmBRkCW2NywtBh2itoU2wDcfk+wpw=;
- b=R2VMDot/SfJLac/H4PvNpgkBQqYWrl5XI80Rwny/HVvdkIPUzBhjs0HRZiNrEkHgck
- REgYaBN7qqHVCE9OufJHmpRT72q8zVYgJ8Zis14LcswivYUChHBj8sSmvwbnGclHEAB5
- HyX8w6BPKiH1hNlGAZsxNvKMtblW20pG3TVaGcWGz8aFmNOlWn1UZ41g1SodWDqzvq/G
- 2s6JNVh+WGCsLEpByyB0iOicn+ANky/g+/SjZ18hgv+g9JhAIlmP/aCFiLPbrWE7Da8q
- LVIrI3gRrGU/xunXpkQBEPClGFZc4sg4Hb7zF+Vv+olw/OEtTrlKIvEYdewehLRc6M7v
- ax7g==
-X-Gm-Message-State: ABuFfojI+H7FF8pddwZ+DnVV4uvY1xq+PScv7K5i6M+bGvbFadFjFZCv
- 1vNM0xUvaWt7YXWuCAjvhkCeksMM
-X-Google-Smtp-Source: ACcGV62eFTp5B2GnwNZg2KHbJBmrpCmM5ge9mt6QbTGW7xr6ktAOoM5h2dGmmQL8WtcytDcIw2q8mQ==
-X-Received: by 2002:a17:902:9696:: with SMTP id
- n22-v6mr17223887plp.212.1538150466143; 
- Fri, 28 Sep 2018 09:01:06 -0700 (PDT)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references;
+ bh=UfjfuH41DqqXuld0hbpgExjHcf4uBHY7puZvfP54OZg=;
+ b=B0aWDKuhXIFpr0sAIKpn0u7nK6CtbtAv6+A5JVJoyLfzRVCT//nD/mlB1DDJJVZE51
+ GIIePDgu9KMj3nO71yXTXIawhEIIBwDeaX+iiv0ketKL5aUezsDUKRxTtuYcUMyFUMK+
+ HQjz0Ktvotb+os7uSXT2B3LavuVfwkQdQBuGfnNr0JaNIByHm3qzLC6+/sFEfN3FGkg5
+ Pwav7kQK6rUICBDLVQdWCSP7NRAVblQwJY/gDbg7DNZZnjYUc7+cVIxFE+9yr3TiEG2b
+ FFNfwyCdAGr0r0emC3k0MFv7K2RaRPuUTSLHe459aXnH+/6+Dsc7+7EWnwzuVrS/ak/U
+ rBcA==
+X-Gm-Message-State: ABuFfogL3TKkf8MyzMXBbeh2J83vtseO8T1Z3KxJ3EGwQjjljUJN5thJ
+ zo4fjjHl8gspvJgd2tOjgwYJlnVA
+X-Google-Smtp-Source: ACcGV62tc+jhqlbsLUqkevNx2+y1ygjGb2VJ+J0iupAF5/Iv0A457nu4NMGdvZ4tBFMrkYRY4s6UTw==
+X-Received: by 2002:a17:902:694a:: with SMTP id
+ k10-v6mr16902672plt.166.1538150470051; 
+ Fri, 28 Sep 2018 09:01:10 -0700 (PDT)
 Received: from roar.local0.net (59-102-83-213.tpgi.com.au. [59.102.83.213])
- by smtp.gmail.com with ESMTPSA id u79-v6sm11969725pfd.117.2018.09.28.09.01.02
+ by smtp.gmail.com with ESMTPSA id u79-v6sm11969725pfd.117.2018.09.28.09.01.06
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Fri, 28 Sep 2018 09:01:04 -0700 (PDT)
+ Fri, 28 Sep 2018 09:01:08 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 0/4] Fixes for SLB to C series
-Date: Sat, 29 Sep 2018 02:00:54 +1000
-Message-Id: <20180928160058.18700-1-npiggin@gmail.com>
+Subject: [PATCH 1/4] powerpc/64: add struct int_regs to save additional
+ registers on stack
+Date: Sat, 29 Sep 2018 02:00:55 +1000
+Message-Id: <20180928160058.18700-2-npiggin@gmail.com>
 X-Mailer: git-send-email 2.18.0
+In-Reply-To: <20180928160058.18700-1-npiggin@gmail.com>
+References: <20180928160058.18700-1-npiggin@gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,33 +99,270 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-These are some fixes I've got so far to sovle hangs and multi hits
-particularly on P8 with 256MB segments (but can also be reproduced
-on P9).
+struct pt_regs is part of the user ABI and also the fundametal
+structure for saving registers at interrupt.
 
-I'm not yet sure these solve all the problems, and they need some
-good review and testing. So far they have been solid for me.
+The generic kernel code makes it difficult to completely decouple
+these, but it's easy enough to add additional space required to save
+more registers. Create a struct int_stack with struct pt_regs at
+offset 0.
 
-Thanks,
-Nick
+This is required for a following fix to save the PPR SPR on stack.
 
-Nicholas Piggin (4):
-  powerpc/64: add struct int_regs to save additional registers on stack
-  powerpc/64: interrupts save PPR on stack rather than thread_struct
-  powerpc/64s/hash: Fix preloading of SLB entries
-  powerpc/64s/hash: add more barriers for slb preloading
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/include/asm/ptrace.h | 17 +++++++---
+ arch/powerpc/kernel/asm-offsets.c | 21 ++++++++-----
+ arch/powerpc/kernel/process.c     | 52 ++++++++++++++++---------------
+ arch/powerpc/kernel/stacktrace.c  |  2 +-
+ 4 files changed, 53 insertions(+), 39 deletions(-)
 
- arch/powerpc/include/asm/exception-64s.h |  9 ++--
- arch/powerpc/include/asm/processor.h     | 12 +++---
- arch/powerpc/include/asm/ptrace.h        | 18 +++++---
- arch/powerpc/kernel/asm-offsets.c        | 23 ++++++----
- arch/powerpc/kernel/entry_64.S           | 15 +++----
- arch/powerpc/kernel/process.c            | 54 ++++++++++++------------
- arch/powerpc/kernel/ptrace.c             |  4 +-
- arch/powerpc/kernel/stacktrace.c         |  2 +-
- arch/powerpc/mm/slb.c                    | 48 ++++++++++++++++++---
- 9 files changed, 116 insertions(+), 69 deletions(-)
-
+diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
+index 447cbd1bee99..1a98cd8c49f6 100644
+--- a/arch/powerpc/include/asm/ptrace.h
++++ b/arch/powerpc/include/asm/ptrace.h
+@@ -26,7 +26,6 @@
+ #include <uapi/asm/ptrace.h>
+ #include <asm/asm-const.h>
+ 
+-
+ #ifdef __powerpc64__
+ 
+ /*
+@@ -44,7 +43,7 @@
+ #define STACK_FRAME_OVERHEAD	112	/* size of minimum stack frame */
+ #define STACK_FRAME_LR_SAVE	2	/* Location of LR in stack frame */
+ #define STACK_FRAME_REGS_MARKER	ASM_CONST(0x7265677368657265)
+-#define STACK_INT_FRAME_SIZE	(sizeof(struct pt_regs) + \
++#define STACK_INT_FRAME_SIZE	(sizeof(struct int_regs) + \
+ 				 STACK_FRAME_OVERHEAD + KERNEL_REDZONE_SIZE)
+ #define STACK_FRAME_MARKER	12
+ 
+@@ -76,6 +75,11 @@
+ 
+ #ifndef __ASSEMBLY__
+ 
++struct int_regs {
++	/* pt_regs must be offset 0 so r1 + STACK_FRAME_OVERHEAD points to it */
++	struct pt_regs pt_regs;
++};
++
+ #define GET_IP(regs)		((regs)->nip)
+ #define GET_USP(regs)		((regs)->gpr[1])
+ #define GET_FP(regs)		(0)
+@@ -119,8 +123,11 @@ extern int ptrace_get_reg(struct task_struct *task, int regno,
+ extern int ptrace_put_reg(struct task_struct *task, int regno,
+ 			  unsigned long data);
+ 
+-#define current_pt_regs() \
+-	((struct pt_regs *)((unsigned long)current_thread_info() + THREAD_SIZE) - 1)
++#define current_int_regs() \
++ ((struct int_regs *)((unsigned long)current_thread_info() + THREAD_SIZE) - 1)
++
++#define current_pt_regs() (&current_int_regs()->pt_regs)
++
+ /*
+  * We use the least-significant bit of the trap field to indicate
+  * whether we have saved the full set of registers, or only a
+@@ -137,7 +144,7 @@ extern int ptrace_put_reg(struct task_struct *task, int regno,
+ #define TRAP(regs)		((regs)->trap & ~0xF)
+ #ifdef __powerpc64__
+ #define NV_REG_POISON		0xdeadbeefdeadbeefUL
+-#define CHECK_FULL_REGS(regs)	BUG_ON(regs->trap & 1)
++#define CHECK_FULL_REGS(regs)	BUG_ON((regs)->trap & 1)
+ #else
+ #define NV_REG_POISON		0xdeadbeef
+ #define CHECK_FULL_REGS(regs)						      \
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index ba9d0fc98730..8db740a3a8c7 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -72,8 +72,13 @@
+ #include <asm/fixmap.h>
+ #endif
+ 
+-#define STACK_PT_REGS_OFFSET(sym, val)	\
+-	DEFINE(sym, STACK_FRAME_OVERHEAD + offsetof(struct pt_regs, val))
++#define STACK_INT_REGS_OFFSET(sym, val)				\
++	DEFINE(sym, STACK_FRAME_OVERHEAD + offsetof(struct int_regs, val))
++
++#define STACK_PT_REGS_OFFSET(sym, val)				\
++	DEFINE(sym, STACK_FRAME_OVERHEAD +			\
++			offsetof(struct int_regs, pt_regs) +	\
++			offsetof(struct pt_regs, val))
+ 
+ int main(void)
+ {
+@@ -150,7 +155,7 @@ int main(void)
+ 	OFFSET(THREAD_CKFPSTATE, thread_struct, ckfp_state.fpr);
+ 	/* Local pt_regs on stack for Transactional Memory funcs. */
+ 	DEFINE(TM_FRAME_SIZE, STACK_FRAME_OVERHEAD +
+-	       sizeof(struct pt_regs) + 16);
++	       sizeof(struct int_regs) + 16);
+ #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
+ 
+ 	OFFSET(TI_FLAGS, thread_info, flags);
+@@ -264,11 +269,11 @@ int main(void)
+ 
+ 	/* Interrupt register frame */
+ 	DEFINE(INT_FRAME_SIZE, STACK_INT_FRAME_SIZE);
+-	DEFINE(SWITCH_FRAME_SIZE, STACK_FRAME_OVERHEAD + sizeof(struct pt_regs));
++	DEFINE(SWITCH_FRAME_SIZE, STACK_FRAME_OVERHEAD + sizeof(struct int_regs));
+ #ifdef CONFIG_PPC64
+ 	/* Create extra stack space for SRR0 and SRR1 when calling prom/rtas. */
+-	DEFINE(PROM_FRAME_SIZE, STACK_FRAME_OVERHEAD + sizeof(struct pt_regs) + 16);
+-	DEFINE(RTAS_FRAME_SIZE, STACK_FRAME_OVERHEAD + sizeof(struct pt_regs) + 16);
++	DEFINE(PROM_FRAME_SIZE, STACK_FRAME_OVERHEAD + sizeof(struct int_regs) + 16);
++	DEFINE(RTAS_FRAME_SIZE, STACK_FRAME_OVERHEAD + sizeof(struct int_regs) + 16);
+ #endif /* CONFIG_PPC64 */
+ 	STACK_PT_REGS_OFFSET(GPR0, gpr[0]);
+ 	STACK_PT_REGS_OFFSET(GPR1, gpr[1]);
+@@ -315,8 +320,8 @@ int main(void)
+ 	STACK_PT_REGS_OFFSET(SOFTE, softe);
+ 
+ 	/* These _only_ to be used with {PROM,RTAS}_FRAME_SIZE!!! */
+-	DEFINE(_SRR0, STACK_FRAME_OVERHEAD+sizeof(struct pt_regs));
+-	DEFINE(_SRR1, STACK_FRAME_OVERHEAD+sizeof(struct pt_regs)+8);
++	DEFINE(_SRR0, STACK_FRAME_OVERHEAD+sizeof(struct int_regs));
++	DEFINE(_SRR1, STACK_FRAME_OVERHEAD+sizeof(struct int_regs)+8);
+ #endif /* CONFIG_PPC64 */
+ 
+ #if defined(CONFIG_PPC32)
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 03c2e1f134bc..532e9a83e526 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -1627,7 +1627,7 @@ static void setup_ksp_vsid(struct task_struct *p, unsigned long sp)
+ int copy_thread(unsigned long clone_flags, unsigned long usp,
+ 		unsigned long kthread_arg, struct task_struct *p)
+ {
+-	struct pt_regs *childregs, *kregs;
++	struct int_regs *childregs, *kregs;
+ 	extern void ret_from_fork(void);
+ 	extern void ret_from_kernel_thread(void);
+ 	void (*f)(void);
+@@ -1637,44 +1637,44 @@ int copy_thread(unsigned long clone_flags, unsigned long usp,
+ 	klp_init_thread_info(ti);
+ 
+ 	/* Copy registers */
+-	sp -= sizeof(struct pt_regs);
+-	childregs = (struct pt_regs *) sp;
++	sp -= sizeof(struct int_regs);
++	childregs = (struct int_regs *) sp;
+ 	if (unlikely(p->flags & PF_KTHREAD)) {
+ 		/* kernel thread */
+-		memset(childregs, 0, sizeof(struct pt_regs));
+-		childregs->gpr[1] = sp + sizeof(struct pt_regs);
++		memset(childregs, 0, sizeof(struct int_regs));
++		childregs->pt_regs.gpr[1] = sp + sizeof(struct int_regs);
+ 		/* function */
+ 		if (usp)
+-			childregs->gpr[14] = ppc_function_entry((void *)usp);
++			childregs->pt_regs.gpr[14] = ppc_function_entry((void *)usp);
+ #ifdef CONFIG_PPC64
+ 		clear_tsk_thread_flag(p, TIF_32BIT);
+-		childregs->softe = IRQS_ENABLED;
++		childregs->pt_regs.softe = IRQS_ENABLED;
+ #endif
+-		childregs->gpr[15] = kthread_arg;
++		childregs->pt_regs.gpr[15] = kthread_arg;
+ 		p->thread.regs = NULL;	/* no user register state */
+ 		ti->flags |= _TIF_RESTOREALL;
+ 		f = ret_from_kernel_thread;
+ 	} else {
+ 		/* user thread */
+-		struct pt_regs *regs = current_pt_regs();
+-		CHECK_FULL_REGS(regs);
++		struct int_regs *regs = current_int_regs();
++		CHECK_FULL_REGS(&regs->pt_regs);
+ 		*childregs = *regs;
+ 		if (usp)
+-			childregs->gpr[1] = usp;
+-		p->thread.regs = childregs;
+-		childregs->gpr[3] = 0;  /* Result from fork() */
++			childregs->pt_regs.gpr[1] = usp;
++		p->thread.regs = &childregs->pt_regs;
++		childregs->pt_regs.gpr[3] = 0;  /* Result from fork() */
+ 		if (clone_flags & CLONE_SETTLS) {
+ #ifdef CONFIG_PPC64
+ 			if (!is_32bit_task())
+-				childregs->gpr[13] = childregs->gpr[6];
++				childregs->pt_regs.gpr[13] = childregs->pt_regs.gpr[6];
+ 			else
+ #endif
+-				childregs->gpr[2] = childregs->gpr[6];
++				childregs->pt_regs.gpr[2] = childregs->pt_regs.gpr[6];
+ 		}
+ 
+ 		f = ret_from_fork;
+ 	}
+-	childregs->msr &= ~(MSR_FP|MSR_VEC|MSR_VSX);
++	childregs->pt_regs.msr &= ~(MSR_FP|MSR_VEC|MSR_VSX);
+ 	sp -= STACK_FRAME_OVERHEAD;
+ 
+ 	/*
+@@ -1686,8 +1686,8 @@ int copy_thread(unsigned long clone_flags, unsigned long usp,
+ 	 * system call, using the stack frame created above.
+ 	 */
+ 	((unsigned long *)sp)[0] = 0;
+-	sp -= sizeof(struct pt_regs);
+-	kregs = (struct pt_regs *) sp;
++	sp -= sizeof(struct int_regs);
++	kregs = (struct int_regs *) sp;
+ 	sp -= STACK_FRAME_OVERHEAD;
+ 	p->thread.ksp = sp;
+ #ifdef CONFIG_PPC32
+@@ -1715,7 +1715,7 @@ int copy_thread(unsigned long clone_flags, unsigned long usp,
+ 
+ 	p->thread.tidr = 0;
+ #endif
+-	kregs->nip = ppc_function_entry(f);
++	kregs->pt_regs.nip = ppc_function_entry(f);
+ 	return 0;
+ }
+ 
+@@ -1739,8 +1739,8 @@ void start_thread(struct pt_regs *regs, unsigned long start, unsigned long sp)
+ 	 * set.  Do it now.
+ 	 */
+ 	if (!current->thread.regs) {
+-		struct pt_regs *regs = task_stack_page(current) + THREAD_SIZE;
+-		current->thread.regs = regs - 1;
++		struct int_regs *iregs = task_stack_page(current) + THREAD_SIZE;
++		current->thread.regs = &(iregs - 1)->pt_regs;
+ 	}
+ 
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+@@ -2106,11 +2106,13 @@ void show_stack(struct task_struct *tsk, unsigned long *stack)
+ 		 */
+ 		if (validate_sp(sp, tsk, STACK_INT_FRAME_SIZE)
+ 		    && stack[STACK_FRAME_MARKER] == STACK_FRAME_REGS_MARKER) {
+-			struct pt_regs *regs = (struct pt_regs *)
+-				(sp + STACK_FRAME_OVERHEAD);
+-			lr = regs->link;
++			struct int_regs *regs;
++			regs = (struct int_regs *)(sp + STACK_FRAME_OVERHEAD);
++			lr = regs->pt_regs.link;
+ 			printk("--- interrupt: %lx at %pS\n    LR = %pS\n",
+-			       regs->trap, (void *)regs->nip, (void *)lr);
++			       regs->pt_regs.trap,
++			       (void *)regs->pt_regs.nip,
++			       (void *)lr);
+ 			firstframe = 1;
+ 		}
+ 
+diff --git a/arch/powerpc/kernel/stacktrace.c b/arch/powerpc/kernel/stacktrace.c
+index e2c50b55138f..463dedc4d664 100644
+--- a/arch/powerpc/kernel/stacktrace.c
++++ b/arch/powerpc/kernel/stacktrace.c
+@@ -120,7 +120,7 @@ save_stack_trace_tsk_reliable(struct task_struct *tsk,
+ 		 * an unreliable stack trace until it's been
+ 		 * _switch()'ed to for the first time.
+ 		 */
+-		stack_end -= STACK_FRAME_OVERHEAD + sizeof(struct pt_regs);
++		stack_end -= STACK_FRAME_OVERHEAD + sizeof(struct int_regs);
+ 	} else {
+ 		/*
+ 		 * idle tasks have a custom stack layout,
 -- 
 2.18.0
 
