@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BBDADC43382
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 06:48:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 49280C43382
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 06:50:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 76E422172C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 06:48:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 76E422172C
+	by mail.kernel.org (Postfix) with ESMTPS id BA4332172C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 06:50:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BA4332172C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42M2LT6Q8HzF3Bj
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 16:48:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42M2PN5QmCzF3BQ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 16:50:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
@@ -27,17 +27,16 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Received: from ozlabs.ru (unknown [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 42M2JQ0hB6zDrhS
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2018 16:46:14 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 42M2L84fmLzF3Bh
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2018 16:47:44 +1000 (AEST)
 Received: from vpl1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id F4162AE80016;
- Fri, 28 Sep 2018 02:43:58 -0400 (EDT)
+ by ozlabs.ru (Postfix) with ESMTP id 62383AE80016;
+ Fri, 28 Sep 2018 02:45:29 -0400 (EDT)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel] powerpc/powernv/ioda: Allocate indirect TCE levels of
- cached userspace addresses on demand
-Date: Fri, 28 Sep 2018 16:45:39 +1000
-Message-Id: <20180928064539.39050-1-aik@ozlabs.ru>
+Subject: [PATCH kernel] KVM: PPC: Optimize clearing TCEs for sparse tables
+Date: Fri, 28 Sep 2018 16:47:10 +1000
+Message-Id: <20180928064710.39380-1-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.11.0
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -57,35 +56,143 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 The powernv platform maintains 2 TCE tables for VFIO - a hardware TCE
-table and a table with userspace addresses; the latter is used for
-marking pages dirty when corresponging TCEs are unmapped from
-the hardware table.
+table and a table with userspace addresses. These tables are radix trees,
+we allocate indirect levels when they are written to. Since
+the memory allocation is problematic in real mode, we have 2 accessors
+to the entries:
+- for virtual mode: it allocates the memory and it is always expected
+to return non-NULL;
+- fr real mode: it does not allocate and can return NULL.
 
-a68bd1267b72 ("powerpc/powernv/ioda: Allocate indirect TCE levels
-on demand") enabled on-demand allocation of the hardware table,
-however it missed the other table so it has still been fully allocated
-at the boot time. This fixes the issue by allocating a single level,
-just like we do for the hardware table.
+Also, DMA windows can span to up to 55 bits of the address space and since
+we never have this much RAM, such windows are sparse. However currently
+the SPAPR TCE IOMMU driver walks through all TCEs to unpin DMA memory.
 
-Fixes: a68bd1267b72 ("powerpc/powernv/ioda: Allocate indirect TCE levels on demand")
+Since we maintain a userspace addresses table for VFIO which is a mirror
+of the hardware table, we can use it to know which parts of the DMA
+window have not been mapped and skip these so does this patch.
+
+The bare metal systems do not have this problem as they use a bypass mode
+of a PHB which maps RAM directly.
+
+This helps a lot with sparse DMA windows, reducing the shutdown time from
+about 3 minutes per 1 billion TCEs to a few seconds for 32GB sparse guest.
+Just skipping the last level seems to be good enough.
+
+As non-allocating accessor is used now in virtual mode as well, rename it
+from IOMMU_TABLE_USERSPACE_ENTRY_RM (real mode) to _RO (read only).
+
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- arch/powerpc/platforms/powernv/pci-ioda-tce.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/include/asm/iommu.h    |  2 +-
+ arch/powerpc/kvm/book3s_64_vio.c    |  5 ++---
+ arch/powerpc/kvm/book3s_64_vio_hv.c |  6 +++---
+ drivers/vfio/vfio_iommu_spapr_tce.c | 22 ++++++++++++++++++++--
+ 4 files changed, 26 insertions(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda-tce.c b/arch/powerpc/platforms/powernv/pci-ioda-tce.c
-index fe96910..7639b21 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda-tce.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda-tce.c
-@@ -299,7 +299,7 @@ long pnv_pci_ioda2_table_alloc_pages(int nid, __u64 bus_offset,
- 	if (alloc_userspace_copy) {
- 		offset = 0;
- 		uas = pnv_pci_ioda2_table_do_alloc_pages(nid, level_shift,
--				levels, tce_table_size, &offset,
-+				tmplevels, tce_table_size, &offset,
- 				&total_allocated_uas);
- 		if (!uas)
- 			goto free_tces_exit;
+diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+index 3d4b88c..35db0cb 100644
+--- a/arch/powerpc/include/asm/iommu.h
++++ b/arch/powerpc/include/asm/iommu.h
+@@ -126,7 +126,7 @@ struct iommu_table {
+ 	int it_nid;
+ };
+ 
+-#define IOMMU_TABLE_USERSPACE_ENTRY_RM(tbl, entry) \
++#define IOMMU_TABLE_USERSPACE_ENTRY_RO(tbl, entry) \
+ 		((tbl)->it_ops->useraddrptr((tbl), (entry), false))
+ #define IOMMU_TABLE_USERSPACE_ENTRY(tbl, entry) \
+ 		((tbl)->it_ops->useraddrptr((tbl), (entry), true))
+diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
+index c0c64d1..62a8d03 100644
+--- a/arch/powerpc/kvm/book3s_64_vio.c
++++ b/arch/powerpc/kvm/book3s_64_vio.c
+@@ -410,11 +410,10 @@ static long kvmppc_tce_iommu_mapped_dec(struct kvm *kvm,
+ {
+ 	struct mm_iommu_table_group_mem_t *mem = NULL;
+ 	const unsigned long pgsize = 1ULL << tbl->it_page_shift;
+-	__be64 *pua = IOMMU_TABLE_USERSPACE_ENTRY(tbl, entry);
++	__be64 *pua = IOMMU_TABLE_USERSPACE_ENTRY_RO(tbl, entry);
+ 
+ 	if (!pua)
+-		/* it_userspace allocation might be delayed */
+-		return H_TOO_HARD;
++		return H_SUCCESS;
+ 
+ 	mem = mm_iommu_lookup(kvm->mm, be64_to_cpu(*pua), pgsize);
+ 	if (!mem)
+diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
+index 389dac1..583031d 100644
+--- a/arch/powerpc/kvm/book3s_64_vio_hv.c
++++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
+@@ -212,7 +212,7 @@ static long iommu_tce_xchg_rm(struct mm_struct *mm, struct iommu_table *tbl,
+ 
+ 	if (!ret && ((*direction == DMA_FROM_DEVICE) ||
+ 				(*direction == DMA_BIDIRECTIONAL))) {
+-		__be64 *pua = IOMMU_TABLE_USERSPACE_ENTRY_RM(tbl, entry);
++		__be64 *pua = IOMMU_TABLE_USERSPACE_ENTRY_RO(tbl, entry);
+ 		/*
+ 		 * kvmppc_rm_tce_iommu_do_map() updates the UA cache after
+ 		 * calling this so we still get here a valid UA.
+@@ -238,7 +238,7 @@ static long kvmppc_rm_tce_iommu_mapped_dec(struct kvm *kvm,
+ {
+ 	struct mm_iommu_table_group_mem_t *mem = NULL;
+ 	const unsigned long pgsize = 1ULL << tbl->it_page_shift;
+-	__be64 *pua = IOMMU_TABLE_USERSPACE_ENTRY_RM(tbl, entry);
++	__be64 *pua = IOMMU_TABLE_USERSPACE_ENTRY_RO(tbl, entry);
+ 
+ 	if (!pua)
+ 		/* it_userspace allocation might be delayed */
+@@ -302,7 +302,7 @@ static long kvmppc_rm_tce_iommu_do_map(struct kvm *kvm, struct iommu_table *tbl,
+ {
+ 	long ret;
+ 	unsigned long hpa = 0;
+-	__be64 *pua = IOMMU_TABLE_USERSPACE_ENTRY_RM(tbl, entry);
++	__be64 *pua = IOMMU_TABLE_USERSPACE_ENTRY_RO(tbl, entry);
+ 	struct mm_iommu_table_group_mem_t *mem;
+ 
+ 	if (!pua)
+diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+index 96721b1..b1a8ab3 100644
+--- a/drivers/vfio/vfio_iommu_spapr_tce.c
++++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+@@ -444,7 +444,7 @@ static void tce_iommu_unuse_page_v2(struct tce_container *container,
+ 	struct mm_iommu_table_group_mem_t *mem = NULL;
+ 	int ret;
+ 	unsigned long hpa = 0;
+-	__be64 *pua = IOMMU_TABLE_USERSPACE_ENTRY(tbl, entry);
++	__be64 *pua = IOMMU_TABLE_USERSPACE_ENTRY_RO(tbl, entry);
+ 
+ 	if (!pua)
+ 		return;
+@@ -467,8 +467,26 @@ static int tce_iommu_clear(struct tce_container *container,
+ 	unsigned long oldhpa;
+ 	long ret;
+ 	enum dma_data_direction direction;
++	unsigned long lastentry = entry + pages;
++
++	for ( ; entry < lastentry; ++entry) {
++		if (tbl->it_indirect_levels && tbl->it_userspace) {
++			/*
++			 * For multilevel tables, we can take a shortcut here
++			 * and skip some TCEs as we know that the userspace
++			 * addresses cache is a mirror of the real TCE table
++			 * and if it is missing some indirect levels, then
++			 * the hardware table does not have them allocated
++			 * either and therefore does not require updating.
++			 */
++			__be64 *pua = IOMMU_TABLE_USERSPACE_ENTRY_RO(tbl,
++					entry);
++			if (!pua) {
++				entry += tbl->it_level_size - 1;
++				continue;
++			}
++		}
+ 
+-	for ( ; pages; --pages, ++entry) {
+ 		cond_resched();
+ 
+ 		direction = DMA_NONE;
 -- 
 2.11.0
 
