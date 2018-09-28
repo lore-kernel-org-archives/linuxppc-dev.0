@@ -2,23 +2,23 @@ Return-Path: <SRS0=psBJ=MK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C3112C43382
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 08:46:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 030F7C43382
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 08:48:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1DE5A2173D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 08:46:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1DE5A2173D
+	by mail.kernel.org (Postfix) with ESMTPS id 6BAB52170E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 08:48:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6BAB52170E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42M4z0057fzF3C6
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 18:46:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42M51F4CCCzF3C6
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 18:48:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=nxp.com
@@ -29,25 +29,28 @@ Authentication-Results: lists.ozlabs.org;
 Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42M4vw6BKtzF3BW
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2018 18:43:39 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42M4vz67WqzF3BV
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2018 18:43:43 +1000 (AEST)
 Received: from inva021.nxp.com (localhost [127.0.0.1])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 3A18A200032;
- Fri, 28 Sep 2018 10:43:36 +0200 (CEST)
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 7A430200077;
+ Fri, 28 Sep 2018 10:43:40 +0200 (CEST)
 Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com
  [134.27.226.22])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 2E48620000A;
- Fri, 28 Sep 2018 10:43:36 +0200 (CEST)
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 6E3972000BC;
+ Fri, 28 Sep 2018 10:43:40 +0200 (CEST)
 Received: from fsr-fed2164-101.ea.freescale.net
  (fsr-fed2164-101.ea.freescale.net [10.171.82.91])
- by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id B2DF120621;
- Fri, 28 Sep 2018 10:43:35 +0200 (CEST)
+ by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 0A0092039E;
+ Fri, 28 Sep 2018 10:43:40 +0200 (CEST)
 From: Madalin Bucur <madalin.bucur@nxp.com>
 To: leoyang.li@nxp.com
-Subject: [PATCH v2 0/5] soc/fsl/qbman: DPAA QBMan fixes and additions 
-Date: Fri, 28 Sep 2018 11:43:19 +0300
-Message-Id: <1538124204-31406-1-git-send-email-madalin.bucur@nxp.com>
+Subject: [PATCH v2 2/5] soc/fsl/qbman: replace CPU 0 with any online CPU in
+ hotplug handlers
+Date: Fri, 28 Sep 2018 11:43:21 +0300
+Message-Id: <1538124204-31406-3-git-send-email-madalin.bucur@nxp.com>
 X-Mailer: git-send-email 2.1.0
+In-Reply-To: <1538124204-31406-1-git-send-email-madalin.bucur@nxp.com>
+References: <1538124204-31406-1-git-send-email-madalin.bucur@nxp.com>
 X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -69,35 +72,48 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch set brings a number of fixes and the option to control
-the QMan portal interrupt coalescing.
+The existing code sets portal IRQ affinity to CPU 0 in the
+offline hotplug handler. If CPU 0 is offline this is invalid.
+Use a different online CPU instead.
 
-Changes from v1:
- - change CPU 0 with any online CPU to allow CPU 0 to be taken offline
- - move common code in a function
- - address all places in the code where the portal interrupt was affined
-   to CPU 0
- - remove unrelated change from patch adding 64 bit DMA addressing
-   requirement
+Signed-off-by: Madalin Bucur <madalin.bucur@nxp.com>
+---
+ drivers/soc/fsl/qbman/bman_portal.c | 4 +++-
+ drivers/soc/fsl/qbman/qman_portal.c | 6 ++++--
+ 2 files changed, 7 insertions(+), 3 deletions(-)
 
-Madalin Bucur (2):
-  soc/fsl/qbman: replace CPU 0 with any online CPU in hotplug handlers
-  soc/fsl_qbman: export coalesce change API
-
-Roy Pledge (3):
-  soc/fsl/qbman: Check if CPU is offline when initializing portals
-  soc/fsl/qbman: Add 64 bit DMA addressing requirement to QBMan
-  soc/fsl/qbman: Use last response to determine valid bit
-
- drivers/soc/fsl/qbman/Kconfig       |  2 +-
- drivers/soc/fsl/qbman/bman.c        |  6 ++---
- drivers/soc/fsl/qbman/bman_portal.c |  4 ++-
- drivers/soc/fsl/qbman/dpaa_sys.h    | 20 ++++++++++++++
- drivers/soc/fsl/qbman/qman.c        | 53 ++++++++++++++++++++++++++++++++-----
- drivers/soc/fsl/qbman/qman_portal.c |  6 +++--
- include/soc/fsl/qman.h              | 27 +++++++++++++++++++
- 7 files changed, 104 insertions(+), 14 deletions(-)
-
+diff --git a/drivers/soc/fsl/qbman/bman_portal.c b/drivers/soc/fsl/qbman/bman_portal.c
+index 2f71f7df3465..088cdfa7c034 100644
+--- a/drivers/soc/fsl/qbman/bman_portal.c
++++ b/drivers/soc/fsl/qbman/bman_portal.c
+@@ -65,7 +65,9 @@ static int bman_offline_cpu(unsigned int cpu)
+ 	if (!pcfg)
+ 		return 0;
+ 
+-	irq_set_affinity(pcfg->irq, cpumask_of(0));
++	/* use any other online CPU */
++	cpu = cpumask_any_but(cpu_online_mask, cpu);
++	irq_set_affinity(pcfg->irq, cpumask_of(cpu));
+ 	return 0;
+ }
+ 
+diff --git a/drivers/soc/fsl/qbman/qman_portal.c b/drivers/soc/fsl/qbman/qman_portal.c
+index a120002b630e..4efd6ea598b1 100644
+--- a/drivers/soc/fsl/qbman/qman_portal.c
++++ b/drivers/soc/fsl/qbman/qman_portal.c
+@@ -195,8 +195,10 @@ static int qman_offline_cpu(unsigned int cpu)
+ 	if (p) {
+ 		pcfg = qman_get_qm_portal_config(p);
+ 		if (pcfg) {
+-			irq_set_affinity(pcfg->irq, cpumask_of(0));
+-			qman_portal_update_sdest(pcfg, 0);
++			/* select any other online CPU */
++			cpu = cpumask_any_but(cpu_online_mask, cpu);
++			irq_set_affinity(pcfg->irq, cpumask_of(cpu));
++			qman_portal_update_sdest(pcfg, cpu);
+ 		}
+ 	}
+ 	return 0;
 -- 
 2.1.0
 
