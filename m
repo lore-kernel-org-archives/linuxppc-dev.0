@@ -1,35 +1,21 @@
-To: shuaiye1999@sohu.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: looking for mpc8260 mcc driver example for linux 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 10 Jul 2003 09:35:12 +0800."
-             <2146459.1057800912392.JavaMail.postfix@mx49.mail.sohu.com>
-Date: Thu, 10 Jul 2003 08:27:56 +0200
-Message-Id: <20030710062802.16517C6D82@atlas.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <1057841040.3f0d5f9022327@pop-mail.india.tejasnetworks.com>
+Date: Thu, Thu 10 Jul 2003 06:14:00 PM IST, Jul 2003 18:14:00 +0530
+From: Anil Giri <anil@india.tejasnetworks.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: _PAGE_WRITETHRU option in 8xx
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <2146459.1057800912392.JavaMail.postfix@mx49.mail.sohu.com> you wrote:
->
-> I'm a newbie of mpc series and linuxppc-embedded.after
-> searching the maillist using the keyword"mcc",I found
-> some mail said that some 8260 mcc driver exist,but I
-> can't find them.Can someone give some infomation about it,
+Hi,
+  I am using linuxppx_2_4_20 from denx and i can;t find the _PAGE_WRITETHRU
+option in include/asm-ppc/pgtable.h for 8xx. Is it replaced or ommitted?
 
-google is your friend.
+Thanks
+-Anil
 
-See for example https://sourceforge.net/projects/mcc8260/
-
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"Everybody is talking about the  weather  but  nobody  does  anything
-about it."                                               - Mark Twain
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
