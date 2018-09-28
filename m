@@ -2,76 +2,74 @@ Return-Path: <SRS0=psBJ=MK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 48453C43143
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 21:21:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E15BAC43143
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 22:11:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AC394206B7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 21:21:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AC394206B7
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id 2F9DD206B6
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Sep 2018 22:11:43 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="THovtu/5"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2F9DD206B6
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42MPk833DFzF3M6
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Sep 2018 07:21:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42MQrF0wsDzF3M6
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Sep 2018 08:11:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.210.65; helo=mail-ot1-f65.google.com;
- envelope-from=pku.leo@gmail.com; receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="THovtu/5";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=nxp.com
-Received: from mail-ot1-f65.google.com (mail-ot1-f65.google.com
- [209.85.210.65])
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=robh@kernel.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="THovtu/5"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42MQnT291dzF3Kq
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Sep 2018 08:09:17 +1000 (AEST)
+Received: from mail-qt1-f181.google.com (mail-qt1-f181.google.com
+ [209.85.160.181])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42MPgz6cxFzF3JQ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Sep 2018 07:19:27 +1000 (AEST)
-Received: by mail-ot1-f65.google.com with SMTP id c20-v6so822329otl.6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2018 14:19:27 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=IVJ1BzTPqVwuEsAYNRRGQSay6V5VghQOpTKMdwNYelU=;
- b=pagMWXjEaLFyDJUhubOhiij65rbWEOb+UJgdeE9NJWWPFTRhUeBP3dyxX5E8t9OvJS
- X3KFZ2W5ACBUlH854GebP8jO7GKpTUUZufXaKzIBihpG3LNaKpqgPjhjxlh0oyENJkeW
- jMGR9Zndy6W0Jz3EYpTihUuBwOiUQFXnqcvclMPuaHPkN7yci69ZEimh3riWf4dE9fLC
- sx2ps0hKR0ZcnPsmLsUhM/IFY4fl5HrZAxvqBiszLEeox+4AOvGK42nCo6xqCaZGqyjt
- ZWT5+S6cIuiiKhgDJNAT64eX5eZT5CO7LSJ5DvpbVvGqQFNoSLMd60TytwF99V/5WMDB
- uPVg==
-X-Gm-Message-State: ABuFfojfy/V/P5Z/MOAtsOdXpaBZHPTGkNKgT4nZn0a1feh41PHObhxZ
- 6V8268VoEUMrVGg3Kr7Hd5qtTFEcX9w=
-X-Google-Smtp-Source: ACcGV62GYMx5aKGxUueHNw73dHXitagjR5mWZAKK1T2z2PaKZNpEsphi6gfi2X1TCNMbgaFCI2tG3g==
-X-Received: by 2002:a9d:502b:: with SMTP id
- a43-v6mr271261oth.195.1538169565507; 
- Fri, 28 Sep 2018 14:19:25 -0700 (PDT)
-Received: from mail-ot1-f48.google.com (mail-ot1-f48.google.com.
- [209.85.210.48])
- by smtp.gmail.com with ESMTPSA id p132-v6sm1965927oia.31.2018.09.28.14.19.24
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Fri, 28 Sep 2018 14:19:25 -0700 (PDT)
-Received: by mail-ot1-f48.google.com with SMTP id b43-v6so2941798otd.12
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2018 14:19:24 -0700 (PDT)
-X-Received: by 2002:a9d:1ab:: with SMTP id e40-v6mr290858ote.68.1538169564711; 
- Fri, 28 Sep 2018 14:19:24 -0700 (PDT)
+ by mail.kernel.org (Postfix) with ESMTPSA id 4B6B32083A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2018 22:09:15 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1538172555;
+ bh=HNJsIfW4Zwj9YHU/6iKGze1QgCcDLZL+IOQ3QzMwOLQ=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=THovtu/58atNNVIcXJRAN9GK6wh1VPUg45sW17WGqSOrErP2mRLAXPp/Let9RXE+F
+ eItgr/qz0YzZQQQHNjoxghIWo1qgcd2lA8TUh+2Xd43IUmA98GzeM+8u8fQzIAaJS6
+ oyXEUfJG5BnnvCk04JUaGizZSXvjAYhzKskAISZ8=
+Received: by mail-qt1-f181.google.com with SMTP id z13-v6so8347647qts.5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2018 15:09:15 -0700 (PDT)
+X-Gm-Message-State: ABuFfoghXZKhxxvDhv4bHqH/rzdCJliHPvRc/vwQAeuAUt9hgcxe4an1
+ 1J+lr948KpJmlVnoZ68Pdp07oclgY7Rfj0tWlQ==
+X-Google-Smtp-Source: ACcGV60hFKFRnTk0/nbtL5dmVTvlvFzfy8F65G/nPcUDndGSKj4026QkIjOyeyW12d+iuZRWpicx04xBNw5l+IrJXX0=
+X-Received: by 2002:aed:3983:: with SMTP id m3-v6mr484695qte.164.1538172554449; 
+ Fri, 28 Sep 2018 15:09:14 -0700 (PDT)
 MIME-Version: 1.0
-References: <CADRPPNT0QiBkJtJnxjW95Yf-mirL5OzRrvqj8rC-O8fiz17VnA@mail.gmail.com>
- <CAL_JsqKRH8uEzSx6H6ZSRJF9Ecp4am1cNsxgQqf2OO5_aGR1zw@mail.gmail.com>
- <CADRPPNQam-QUfqDMvu42KS+50VaHfGPhCZj-1jRHQ-Od0fbxuQ@mail.gmail.com>
-In-Reply-To: <CADRPPNQam-QUfqDMvu42KS+50VaHfGPhCZj-1jRHQ-Od0fbxuQ@mail.gmail.com>
-From: Li Yang <leoyang.li@nxp.com>
-Date: Fri, 28 Sep 2018 16:19:13 -0500
-X-Gmail-Original-Message-ID: <CADRPPNTovoNaY-suhmeM2YCGHTe6UsQ5FnkOCuPef=uUxi74-Q@mail.gmail.com>
-Message-ID: <CADRPPNTovoNaY-suhmeM2YCGHTe6UsQ5FnkOCuPef=uUxi74-Q@mail.gmail.com>
-Subject: Re: drivers binding to device node with multiple compatible strings
-To: Rob Herring <robh+dt@kernel.org>
+References: <20180828015252.28511-1-robh@kernel.org>
+ <20180828015252.28511-46-robh@kernel.org>
+In-Reply-To: <20180828015252.28511-46-robh@kernel.org>
+From: Rob Herring <robh@kernel.org>
+Date: Fri, 28 Sep 2018 17:09:03 -0500
+X-Gmail-Original-Message-ID: <CAL_JsqJfAsv-MOgk2Ycs2VBj2vK0m29B_3FxwJV5xUjnMbH4sg@mail.gmail.com>
+Message-ID: <CAL_JsqJfAsv-MOgk2Ycs2VBj2vK0m29B_3FxwJV5xUjnMbH4sg@mail.gmail.com>
+Subject: Re: [PATCH] tty: Convert to using %pOFn instead of device_node.name
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -84,65 +82,116 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
- <devicetree@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- lkml <linux-kernel@vger.kernel.org>, frowand.list@gmail.com,
- "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>
+Cc: Jiri Slaby <jslaby@suse.com>, Paul Mackerras <paulus@samba.org>,
+ "open list:SERIAL DRIVERS" <linux-serial@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Sep 28, 2018 at 4:00 PM Li Yang <leoyang.li@nxp.com> wrote:
+On Mon, Aug 27, 2018 at 8:55 PM Rob Herring <robh@kernel.org> wrote:
 >
-> On Fri, Sep 28, 2018 at 3:07 PM Rob Herring <robh+dt@kernel.org> wrote:
-> >
-> > On Thu, Sep 27, 2018 at 5:25 PM Li Yang <leoyang.li@nxp.com> wrote:
-> > >
-> > > Hi Rob and Grant,
-> > >
-> > > Various device tree specs are recommending to include all the
-> > > potential compatible strings in the device node, with the order from
-> > > most specific to most general.  But it looks like Linux kernel doesn't
-> > > provide a way to bind the device to the most specific driver, however,
-> > > the first registered compatible driver will be bound.
-> > >
-> > > As more and more generic drivers are added to the Linux kernel, they
-> > > are competing with the more specific vendor drivers and causes problem
-> > > when both are built into the kernel.  I'm wondering if there is a
-> > > generic solution (or in plan) to make the most specific driver bound
-> > > to the device.   Or we have to disable the more general driver or
-> > > remove the more general compatible string from the device tree?
-> >
-> > It's been a known limitation for a long time. However, in practice it
-> > doesn't seem to be a common problem. Perhaps folks just remove the
-> > less specific compatible from their DT (though that's not ideal). For
-> > most modern bindings, there's so many other resources beyond
-> > compatible (clocks, resets, pinctrl, etc.) that there are few generic
-> > drivers that can work.
-> >
-> > I guess if we want to fix this, we'd need to have weighted matching in
-> > the driver core and unbind drivers when we get a better match. Though
-> > it could get messy if the better driver probe fails. Then we've got to
-> > rebind to the original driver.
+> In preparation to remove the node name pointer from struct device_node,
+> convert printf users to use the %pOFn format specifier.
 >
-> Probably we can populate the platform devices from device tree after
-> the device_init phase?  So that all built-in drivers are already
-> registered when the devices are created and we can try find the best
-> match in one go?  For more specific loadable modules we probably need
-> to unbind from the old driver and bind to the new one.  But I agree
-> with you that it could be messy.
->
-> >
-> > Do you have a specific case where you hit this?
->
-> Maybe not a new issue but "snps,dw-pcie" is competing with various
-> "fsl,<chip>-pcie" compatibles.  Also a specific PHY
-> "ethernet-phy-idAAAA.BBBB" with generic "ethernet-phy-ieee802.3-c45".
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: Jiri Slaby <jslaby@suse.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: linux-serial@vger.kernel.org
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Signed-off-by: Rob Herring <robh@kernel.org>
+> ---
+>  drivers/tty/ehv_bytechan.c                  | 12 ++++++------
+>  drivers/tty/serial/cpm_uart/cpm_uart_core.c |  8 ++++----
+>  drivers/tty/serial/pmac_zilog.c             |  4 ++--
+>  3 files changed, 12 insertions(+), 12 deletions(-)
 
-The ethernet-phy issue is not related to the general device binding
-framework, it should be an issue with the of_mdio framework. But it is
-still a inalignment with the device tree recommendation.
+Hey Greg, Is this still in your queue? Maybe you've just been extra
+busy lately. ;)
 
-Regards,
-Leo
+Rob
+>
+> diff --git a/drivers/tty/ehv_bytechan.c b/drivers/tty/ehv_bytechan.c
+> index eea4049b5dcc..769e0a5d1dfc 100644
+> --- a/drivers/tty/ehv_bytechan.c
+> +++ b/drivers/tty/ehv_bytechan.c
+> @@ -128,8 +128,8 @@ static int find_console_handle(void)
+>          */
+>         iprop = of_get_property(np, "hv-handle", NULL);
+>         if (!iprop) {
+> -               pr_err("ehv-bc: no 'hv-handle' property in %s node\n",
+> -                      np->name);
+> +               pr_err("ehv-bc: no 'hv-handle' property in %pOFn node\n",
+> +                      np);
+>                 return 0;
+>         }
+>         stdout_bc = be32_to_cpu(*iprop);
+> @@ -661,8 +661,8 @@ static int ehv_bc_tty_probe(struct platform_device *pdev)
+>
+>         iprop = of_get_property(np, "hv-handle", NULL);
+>         if (!iprop) {
+> -               dev_err(&pdev->dev, "no 'hv-handle' property in %s node\n",
+> -                       np->name);
+> +               dev_err(&pdev->dev, "no 'hv-handle' property in %pOFn node\n",
+> +                       np);
+>                 return -ENODEV;
+>         }
+>
+> @@ -682,8 +682,8 @@ static int ehv_bc_tty_probe(struct platform_device *pdev)
+>         bc->rx_irq = irq_of_parse_and_map(np, 0);
+>         bc->tx_irq = irq_of_parse_and_map(np, 1);
+>         if ((bc->rx_irq == NO_IRQ) || (bc->tx_irq == NO_IRQ)) {
+> -               dev_err(&pdev->dev, "no 'interrupts' property in %s node\n",
+> -                       np->name);
+> +               dev_err(&pdev->dev, "no 'interrupts' property in %pOFn node\n",
+> +                       np);
+>                 ret = -ENODEV;
+>                 goto error;
+>         }
+> diff --git a/drivers/tty/serial/cpm_uart/cpm_uart_core.c b/drivers/tty/serial/cpm_uart/cpm_uart_core.c
+> index 24a5f05e769b..ea7204d75022 100644
+> --- a/drivers/tty/serial/cpm_uart/cpm_uart_core.c
+> +++ b/drivers/tty/serial/cpm_uart/cpm_uart_core.c
+> @@ -1151,8 +1151,8 @@ static int cpm_uart_init_port(struct device_node *np,
+>         if (!pinfo->clk) {
+>                 data = of_get_property(np, "fsl,cpm-brg", &len);
+>                 if (!data || len != 4) {
+> -                       printk(KERN_ERR "CPM UART %s has no/invalid "
+> -                                       "fsl,cpm-brg property.\n", np->name);
+> +                       printk(KERN_ERR "CPM UART %pOFn has no/invalid "
+> +                                       "fsl,cpm-brg property.\n", np);
+>                         return -EINVAL;
+>                 }
+>                 pinfo->brg = *data;
+> @@ -1160,8 +1160,8 @@ static int cpm_uart_init_port(struct device_node *np,
+>
+>         data = of_get_property(np, "fsl,cpm-command", &len);
+>         if (!data || len != 4) {
+> -               printk(KERN_ERR "CPM UART %s has no/invalid "
+> -                               "fsl,cpm-command property.\n", np->name);
+> +               printk(KERN_ERR "CPM UART %pOFn has no/invalid "
+> +                               "fsl,cpm-command property.\n", np);
+>                 return -EINVAL;
+>         }
+>         pinfo->command = *data;
+> diff --git a/drivers/tty/serial/pmac_zilog.c b/drivers/tty/serial/pmac_zilog.c
+> index 3d21790d961e..a4ec22d1f214 100644
+> --- a/drivers/tty/serial/pmac_zilog.c
+> +++ b/drivers/tty/serial/pmac_zilog.c
+> @@ -1566,9 +1566,9 @@ static int pmz_attach(struct macio_dev *mdev, const struct of_device_id *match)
+>          * to work around bugs in ancient Apple device-trees
+>          */
+>         if (macio_request_resources(uap->dev, "pmac_zilog"))
+> -               printk(KERN_WARNING "%s: Failed to request resource"
+> +               printk(KERN_WARNING "%pOFn: Failed to request resource"
+>                        ", port still active\n",
+> -                      uap->node->name);
+> +                      uap->node);
+>         else
+>                 uap->flags |= PMACZILOG_FLAG_RSRC_REQUESTED;
+>
+> --
+> 2.17.1
+>
