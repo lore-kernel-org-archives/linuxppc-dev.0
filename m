@@ -6,60 +6,62 @@ X-Spam-Status: No, score=-0.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D7DECC43143
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Sep 2018 03:59:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E855EC43143
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Sep 2018 04:02:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 51A9220666
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Sep 2018 03:59:10 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 51CBE206B7
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Sep 2018 04:02:13 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="Q8SyC3lP"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 51A9220666
+	dkim=pass (2048-bit key) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="PkPAgc9b"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 51CBE206B7
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42MZY81fglzDqq8
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Sep 2018 13:59:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42MZcg2LmfzDqq8
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Sep 2018 14:02:11 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="Q8SyC3lP";
+	dkim=pass (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="PkPAgc9b";
 	dkim-atps=neutral
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42MZVf3nPLzF3LK
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Sep 2018 13:56:58 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42MZZ4115VzDqq8
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Sep 2018 13:59:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=canb.auug.org.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au
- header.b="Q8SyC3lP"; dkim-atps=neutral
+ header.b="PkPAgc9b"; dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 42MZVf12YSz9sCR
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Sep 2018 13:56:58 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPSA id 42MZZ3615Zz9sCR
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Sep 2018 13:59:55 +1000 (AEST)
 Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
  header.from=canb.auug.org.au
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=canb.auug.org.au;
- s=201702; t=1538193418;
- bh=wSlEG1anvCG/IPTeiXttjymQowE8pvIQgvQXOvjEIOY=;
- h=Date:From:To:Subject:From;
- b=Q8SyC3lP6nx23X1icO7DJrNta1jKkEs56Ga++4EFdhLcnrAI+Jpvw4RXtB5BdIW5D
- IfoJZIcL6ncHQPRqN5/l7YTGhRB3Q89VXRlde0MhoGV4Ni5QlsqPga9l4Bj+FRperJ
- Xoypi7hePLnJUhl9SbnyVnI0DDHpXym+ppVh8n2gU0wCoNP5ZwerC55hszvuloNo6P
- /oz/gZUBlHZGZ6MWoSn/Qv9u2EB5AL9BYPoc135HWRQxXW7B8w+02xh/fJ4dhc3upX
- xAH3PwUrV8L4kZThRK4JU3C5WXLbGP6uNp8fzT4fPC5pbdbyfeRGsSF/1UDQJomH5K
- RJmml2mKRRzlA==
-Date: Sat, 29 Sep 2018 13:56:28 +1000
+ s=201702; t=1538193595;
+ bh=/cFs5n0UCtcSNcRG1NWGRgd7hl5axRxgqEZROFkgNbo=;
+ h=Date:From:To:Subject:In-Reply-To:References:From;
+ b=PkPAgc9bElbTSMimy9KOLb2BbAh97oKmC0GkH1hiHUkYFLR7P1UUuVtFlWYfOWWuP
+ d7PwJJogphe+wPPsva9DXumIG/RsdxVej2dIiGGcVwpVAi0tgczP3jqtOTqLOnxVtc
+ YD17i5+yT6RmXXlN7aptzkuuuCNKxIuugimXlCGijmPsQh7w0Wi8HN2fcQcEYTY8lG
+ 76r+dldwSXyhrY59cs8KGIg8bQTDC+u0P5OsQYuZAokHZI36HP9w6G1GQV3eyHqM9s
+ IcYGhYVU6z1IMcceSwFpRI7P4KHRH4/Y0gu7hyjAE6p9gKJmP+b4UOBghFHrqkM+h1
+ dM0Xf9eHcW6EA==
+Date: Sat, 29 Sep 2018 13:59:53 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: ppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: New mail archive
-Message-ID: <20180929135628.783ca76e@canb.auug.org.au>
+Subject: Re: New mail archive
+Message-ID: <20180929135953.6ab09fcb@canb.auug.org.au>
+In-Reply-To: <20180929135628.783ca76e@canb.auug.org.au>
+References: <20180929135628.783ca76e@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/PqcA99lxeN_I3aY8k0rQKq2"; protocol="application/pgp-signature"
+ boundary="Sig_/zxEyeyCw7Eyp.iipQNEsxXV"; protocol="application/pgp-signature"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,33 +77,42 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---Sig_/PqcA99lxeN_I3aY8k0rQKq2
+--Sig_/zxEyeyCw7Eyp.iipQNEsxXV
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: quoted-printable
 
 Hi all,
 
-This mailing list is now also archived at
-https://lore.kernel.org/linuxppc-dev/
+On Sat, 29 Sep 2018 13:56:28 +1000 Stephen Rothwell <sfr@canb.auug.org.au> =
+wrote:
+>
+> This mailing list is now also archived at
+> https://lore.kernel.org/linuxppc-dev/
+
+A few of the earliest emails have been misdated in the archive (to today
+or yesterday), sorry.
+
+Also, this archive includes as much as we had of the linuxppc-embedded
+archive as well.
 
 --=20
 Cheers,
 Stephen Rothwell
 
---Sig_/PqcA99lxeN_I3aY8k0rQKq2
+--Sig_/zxEyeyCw7Eyp.iipQNEsxXV
 Content-Type: application/pgp-signature
 Content-Description: OpenPGP digital signature
 
 -----BEGIN PGP SIGNATURE-----
 
-iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAluu9+0ACgkQAVBC80lX
-0Gz6jwgAoxhKUZUmtqjBJHSkMOT5wUXWhc30OX7UTt6MJxnLbLdK8zh88ObbNkIZ
-y0IQXs13W5sSCgGWs1QWkNHshG8eDBis4WHVSa9auR5Pz4Ibvda5oXWRdlprxsMQ
-cvvFCRKdRoGO+N998/HpiiyS0GRH53bc6oZ7lfWUlVHGT8Q+tWwTFqzFtAMIJXTB
-Be+RVgaRrj8CVLYjWgwq7Lh63g88we6ZqZO80TjkQ25WQkHY4VndS05J+ltmRTaL
-W6tBJ2z+pvXEJPL3GbfnRDVpOxmCdloKwp7tlYc/Om0m66Rc90ZEFqcHm1OjXSbU
-Fpqa+0jKmuBdseXIviChWQWDmhTpqg==
-=yXG7
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAluu+LkACgkQAVBC80lX
+0GySKQgAidDBqNWxvJGzR9B/vmsfPIXTN68NCglNN0c1CNcgZXTLfvv2BaxR47KS
+sEiX2k1Z+1k/d+whspGRUwAmJPiuW1ASFp9t1wi+j5roMWjNSuHv2pea+KsNf/eW
+O3eiFIxdrwo3NAc6X9a0DD3swmpXrrL+NikY1YKY/Fc6D4lTyUGqMMbdGTIT/OnQ
+RkJ2OsbY3Gtipct7k9n1iZK9lW5RiqGwXWpAgcec5vZEPV2oRWIHIGt51Q2iZ1ej
+M+TOLq0MUWxtD22krErA7GmR+NshKz0jXGQUJ5Q23+3wWi8cH++HazFCPn5zQJRQ
+yf+wLuMYS49oyNASgY5WsdCb6xjdQg==
+=wXKu
 -----END PGP SIGNATURE-----
 
---Sig_/PqcA99lxeN_I3aY8k0rQKq2--
+--Sig_/zxEyeyCw7Eyp.iipQNEsxXV--
