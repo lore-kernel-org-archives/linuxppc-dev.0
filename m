@@ -2,50 +2,79 @@ Return-Path: <SRS0=aJM7=ML=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 45CA1C43143
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Sep 2018 18:29:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 35580C43143
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Sep 2018 21:27:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C330420652
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Sep 2018 18:29:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C330420652
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=fifo99.com
+	by mail.kernel.org (Postfix) with ESMTPS id 76DAE206B8
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Sep 2018 21:27:13 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="TzMt+Qx/"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 76DAE206B8
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42Mxrs58JVzF3Dy
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Sep 2018 04:29:01 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=fifo99.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42N1pR2QdYzF3CR
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Sep 2018 07:27:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=fifo99.com
- (client-ip=34.208.57.251; helo=ip-172-31-12-36.us-west-2.compute.internal;
- envelope-from=dwalker@fifo99.com; receiver=<UNKNOWN>)
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="TzMt+Qx/";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=fifo99.com
-X-Greylist: delayed 575 seconds by postgrey-1.36 at bilbo;
- Sun, 30 Sep 2018 04:27:08 AEST
-Received: from ip-172-31-12-36.us-west-2.compute.internal
- (ec2-34-208-57-251.us-west-2.compute.amazonaws.com [34.208.57.251])
- by lists.ozlabs.org (Postfix) with ESMTP id 42Mxph0flvzF370
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Sep 2018 04:27:07 +1000 (AEST)
-Received: by ip-172-31-12-36.us-west-2.compute.internal (Postfix,
- from userid 1001)
- id 0C39F40120; Sat, 29 Sep 2018 11:17:26 -0700 (PDT)
-Date: Sat, 29 Sep 2018 11:17:26 -0700
-From: dwalker@fifo99.com
-To: Maksym Kokhan <maksym.kokhan@globallogic.com>
-Subject: Re: [PATCH 0/8] add generic builtin command line
-Message-ID: <20180929181725.GB27441@fifo99.com>
-References: <1538067309-5711-1-git-send-email-maksym.kokhan@globallogic.com>
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2a00:1450:4864:20::533; helo=mail-ed1-x533.google.com;
+ envelope-from=raziebe@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="TzMt+Qx/"; 
+ dkim-atps=neutral
+Received: from mail-ed1-x533.google.com (mail-ed1-x533.google.com
+ [IPv6:2a00:1450:4864:20::533])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42N1lq6qyCzF39p
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Sep 2018 07:24:51 +1000 (AEST)
+Received: by mail-ed1-x533.google.com with SMTP id u23so10977240edx.10
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Sep 2018 14:24:51 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:from:date:message-id:subject:to;
+ bh=4y/aGya0tcduBYJgr7MGw+OB3blvM5D1Zr3QjktnGlQ=;
+ b=TzMt+Qx/wJrro1TMoDIOUldxWCnJGrdTEST20bBhaHOcXxgMMN3+h+WxKrvYVlbmDP
+ UGR3ikPH2mmtiECHoZIPwnv0ukPemxJSKbEvGEFAa8SLE+v6IfDcJP0U39H+R1J1vRsV
+ eL+RRFPvWLnMnDFf48u5CozbMTJfAUqBHhm4YHwbKk+9QLOysbd/p9hxI8r+Q8aaAGeu
+ JZBHUyZHPzxecL80+MQKsRcFDMco/lPfgV9oJ7DxwJie69Hip29Z5oImi8n1wNZA2aM9
+ 0i6fK3h3hb9UINxqWQz6NwM0pz3DEYxYCeIdWwdgOvoYcJqBwT5ZubrRn1WMd66s1sd2
+ 1Qfg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:from:date:message-id:subject:to;
+ bh=4y/aGya0tcduBYJgr7MGw+OB3blvM5D1Zr3QjktnGlQ=;
+ b=NraG2ulPxJndu6fF0A9RHVZZEjwKFYvvazrfaDgDH4Qvp9Cq1WZfnRVEPHVX+TxKwX
+ Bz+HX1LBWKUzyUevAM1UA/utFYjE3qBEIxByKd/RZJV0uDUD0fM3tS6k7qdyjTA74rHa
+ QGeW52IE1NsrZ8sb7XKRpRlOE6naIDJrhiX7ajKkRF0kqwfAjRFpwrrktCadIQCC/NvR
+ vywNSynaIHcqotVFQ0sgj+7sO+gye0PA0h011II1zHy96LU4cjMzZyLn5K0SdhS71YAp
+ Yc/WgJwigV7PNbrWolL9uf/2i6jasAsYHRHbaBBgyQzuR9pe5J6mL0tIoHHkDXJY0KnQ
+ guJw==
+X-Gm-Message-State: ABuFfogG6dTDdahPRqfqvz4YKk1M0Wd0Akqccu3nrd09npg+MwmfC1+b
+ yhoFznOIz6LJVhBmJYBtf5XC3Iq5MuOpLk7JfcaHMEVf
+X-Google-Smtp-Source: ACcGV63/XBU7ynsCAXBZjqH2qWUhxjhaQQBeENmcZCOVjx2f6H0THZeR/rG/EvOOFW8OMwgk7QtkVqiX2tBVpCx7/R8=
+X-Received: by 2002:a50:f197:: with SMTP id
+ x23-v6mr4861787edl.21.1538256287065; 
+ Sat, 29 Sep 2018 14:24:47 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1538067309-5711-1-git-send-email-maksym.kokhan@globallogic.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+From: Raz <raziebe@gmail.com>
+Date: Sun, 30 Sep 2018 00:24:35 +0300
+Message-ID: <CAPB=Z-rEoVWFFDBS_XhuOQyL+YxR8jScSAAQfO1X-n_Lbm=StA@mail.gmail.com>
+Subject: Looking for architecture papers
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,53 +86,14 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mips@linux-mips.org, linux-efi@vger.kernel.org,
- Ruslan Bilovol <rbilovol@cisco.com>, Will Deacon <will.deacon@arm.com>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Frank Rowand <frowand.list@gmail.com>, x86@kernel.org,
- Russell King <linux@armlinux.org.uk>, Ingo Molnar <mingo@redhat.com>,
- Catalin Marinas <catalin.marinas@arm.com>, James Hogan <jhogan@kernel.org>,
- Daniel Walker <danielwa@cisco.com>, devicetree@vger.kernel.org,
- Rob Herring <robh+dt@kernel.org>, Borislav Petkov <bp@alien8.de>,
- Thomas Gleixner <tglx@linutronix.de>, Andrii Bordunov <aborduno@cisco.com>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>, linux-kernel@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Sep 27, 2018 at 07:55:08PM +0300, Maksym Kokhan wrote:
-> Daniel Walker (7):
->   add generic builtin command line
->   drivers: of: ifdef out cmdline section
->   x86: convert to generic builtin command line
->   arm: convert to generic builtin command line
->   arm64: convert to generic builtin command line
->   mips: convert to generic builtin command line
->   powerpc: convert to generic builtin command line
-> 
+Hello
 
-When I originally submitted these I had a very good conversion with Rob Herring
-on the device tree changes. It seemed fairly clear that my approach in these
-changes could be done better. It effected specifically arm64, but a lot of other
-platforms use the device tree integrally. With arm64 you can reduce the changes
-down to only Kconfig changes, and that would likely be the case for many of the
-other architecture. I made patches to do this a while back, but have not had
-time to test them and push them out.
+I want to learn about powerpc architecture, mainly hypervisor and
+partioning.  I download the books (1,2, and 3 ) but I feel it lacks
+a lot of information. Are there other books ?
 
-In terms of mips I think there's a fair amount of work needed to pull out their
-architecture specific mangling into something generic. Part of my motivation for
-these was to take the architecture specific feature and open that up for all the
-architecture. So it makes sense that the mips changes should become part of
-that.
-
-The only changes which have no comments are the generic changes, x86, and
-powerpc. Those patches have been used at Cisco for years with no issues.
-I added those changes into my -next tree for a round of testing. Assuming there
-are no issues I can work out the merging with the architecture maintainers.
-As for the other changes I think they can be done in time, as long as the
-generic parts of upstream the rest can be worked on by any of the architecture
-developers.
-
-Daniel
+Kind regards
