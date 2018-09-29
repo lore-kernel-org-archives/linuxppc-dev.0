@@ -2,61 +2,64 @@ Return-Path: <SRS0=aJM7=ML=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E7A0C43143
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Sep 2018 01:30:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D7DECC43143
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Sep 2018 03:59:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8177D20652
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Sep 2018 01:30:36 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 51A9220666
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Sep 2018 03:59:10 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="r00Cb0z+"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8177D20652
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
+	dkim=pass (2048-bit key) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="Q8SyC3lP"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 51A9220666
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
-Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42MWFk3TfNzF3Qw
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Sep 2018 11:30:34 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
+Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 42MZY81fglzDqq8
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Sep 2018 13:59:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="r00Cb0z+";
+	dkim=pass (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="Q8SyC3lP";
 	dkim-atps=neutral
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42MW8q2vG4zF3Kq
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Sep 2018 11:26:19 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42MZVf3nPLzF3LK
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Sep 2018 13:56:58 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=canb.auug.org.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="r00Cb0z+"; 
- dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1010)
- id 42MW8p6z8Xz9sBq; Sat, 29 Sep 2018 11:26:18 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1538184378; bh=DG4pWJAYPTjPYnbwLyMKrfAgCjARbjRantbxhe0tWNs=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=r00Cb0z+rMhSsYOt29jV5FyWQJTh03dii08/pZL7gqUBjGqOCa5SWexwAo2mVBBgy
- wT9mTEl+HT8EQYezqO7vuvl08G9kSEc72X2sKagAC/vrUYMaYXvidjR/rRnGcYI3Ia
- 82ZTSCDO9cPSVZTG2qfMlRwAI5oHNHePEYfQn8IGQCZsAd36NBqLjW0/YEUcFsbYfG
- U3xCkbBSBG8nlpGZ4eV1ZberChKLz1t14Fj6M8ma23WOkT2RNQHAXl67mPPpzwR8s7
- JC1QmWN9OmafZcgGuPfxU5/iVudlKraETN+779JZlNcnfGaxQTRl/2E4Rj4zGteEsG
- I1g58qzd/pLyA==
-From: Anton Blanchard <anton@ozlabs.org>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- npiggin@gmail.com, mikey@neuling.org, oohall@gmail.com
-Subject: [PATCH 2/2] powerpc/time: Only cap decrementer when watchdog is
- enabled
-Date: Sat, 29 Sep 2018 11:26:07 +1000
-Message-Id: <20180929012607.10204-2-anton@ozlabs.org>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20180929012607.10204-1-anton@ozlabs.org>
-References: <20180929012607.10204-1-anton@ozlabs.org>
+ secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au
+ header.b="Q8SyC3lP"; dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPSA id 42MZVf12YSz9sCR
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Sep 2018 13:56:58 +1000 (AEST)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=canb.auug.org.au
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=canb.auug.org.au;
+ s=201702; t=1538193418;
+ bh=wSlEG1anvCG/IPTeiXttjymQowE8pvIQgvQXOvjEIOY=;
+ h=Date:From:To:Subject:From;
+ b=Q8SyC3lP6nx23X1icO7DJrNta1jKkEs56Ga++4EFdhLcnrAI+Jpvw4RXtB5BdIW5D
+ IfoJZIcL6ncHQPRqN5/l7YTGhRB3Q89VXRlde0MhoGV4Ni5QlsqPga9l4Bj+FRperJ
+ Xoypi7hePLnJUhl9SbnyVnI0DDHpXym+ppVh8n2gU0wCoNP5ZwerC55hszvuloNo6P
+ /oz/gZUBlHZGZ6MWoSn/Qv9u2EB5AL9BYPoc135HWRQxXW7B8w+02xh/fJ4dhc3upX
+ xAH3PwUrV8L4kZThRK4JU3C5WXLbGP6uNp8fzT4fPC5pbdbyfeRGsSF/1UDQJomH5K
+ RJmml2mKRRzlA==
+Date: Sat, 29 Sep 2018 13:56:28 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: ppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: New mail archive
+Message-ID: <20180929135628.783ca76e@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/PqcA99lxeN_I3aY8k0rQKq2"; protocol="application/pgp-signature"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,42 +71,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-If CONFIG_PPC_WATCHDOG is enabled, we always cap the decrementer to
-0x7fffffff. As suggested by Nick, add a run time check of the watchdog
-cpumask, so if it is disabled we use the large decrementer.
+--Sig_/PqcA99lxeN_I3aY8k0rQKq2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
- arch/powerpc/kernel/time.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+Hi all,
 
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 6a1f0a084ca3..3372019f52bd 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -60,6 +60,7 @@
- #include <linux/rtc.h>
- #include <linux/sched/cputime.h>
- #include <linux/processor.h>
-+#include <linux/nmi.h>
- #include <asm/trace.h>
- 
- #include <asm/io.h>
-@@ -575,7 +576,8 @@ void timer_interrupt(struct pt_regs *regs)
- 	 * 31 bits, which is about 4 seconds on most systems, which gives
- 	 * the watchdog a chance of catching timer interrupt hard lockups.
- 	 */
--	if (IS_ENABLED(CONFIG_PPC_WATCHDOG))
-+	if (IS_ENABLED(CONFIG_PPC_WATCHDOG) &&
-+	    cpumask_test_cpu(smp_processor_id(), &watchdog_cpumask))
- 		set_dec(0x7fffffff);
- 	else
- 		set_dec(decrementer_max);
--- 
-2.17.1
+This mailing list is now also archived at
+https://lore.kernel.org/linuxppc-dev/
 
+--=20
+Cheers,
+Stephen Rothwell
+
+--Sig_/PqcA99lxeN_I3aY8k0rQKq2
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAluu9+0ACgkQAVBC80lX
+0Gz6jwgAoxhKUZUmtqjBJHSkMOT5wUXWhc30OX7UTt6MJxnLbLdK8zh88ObbNkIZ
+y0IQXs13W5sSCgGWs1QWkNHshG8eDBis4WHVSa9auR5Pz4Ibvda5oXWRdlprxsMQ
+cvvFCRKdRoGO+N998/HpiiyS0GRH53bc6oZ7lfWUlVHGT8Q+tWwTFqzFtAMIJXTB
+Be+RVgaRrj8CVLYjWgwq7Lh63g88we6ZqZO80TjkQ25WQkHY4VndS05J+ltmRTaL
+W6tBJ2z+pvXEJPL3GbfnRDVpOxmCdloKwp7tlYc/Om0m66Rc90ZEFqcHm1OjXSbU
+Fpqa+0jKmuBdseXIviChWQWDmhTpqg==
+=yXG7
+-----END PGP SIGNATURE-----
+
+--Sig_/PqcA99lxeN_I3aY8k0rQKq2--
