@@ -7,84 +7,84 @@ X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_PASS,USER_AGENT_MUTT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 874A9C43143
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Sep 2018 18:21:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3757CC43143
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Sep 2018 18:24:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CEAC02073F
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Sep 2018 18:21:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 705552073F
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Sep 2018 18:24:17 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="SaAMkvpp"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CEAC02073F
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="KgcxtZiW"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 705552073F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42MxhQ0VjTzF3DT
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Sep 2018 04:21:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42MxlM40LnzF3D1
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Sep 2018 04:24:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="SaAMkvpp";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="KgcxtZiW";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::444; helo=mail-pf1-x444.google.com;
+ (client-ip=2607:f8b0:4864:20::443; helo=mail-pf1-x443.google.com;
  envelope-from=groeck7@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=roeck-us.net
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="SaAMkvpp"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="KgcxtZiW"; 
  dkim-atps=neutral
-Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
- [IPv6:2607:f8b0:4864:20::444])
+Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
+ [IPv6:2607:f8b0:4864:20::443])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42MxdS0BVYzF3D5
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Sep 2018 04:19:06 +1000 (AEST)
-Received: by mail-pf1-x444.google.com with SMTP id p12-v6so6438860pfh.2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Sep 2018 11:19:06 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42MxfJ49lSzF3Df
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Sep 2018 04:19:52 +1000 (AEST)
+Received: by mail-pf1-x443.google.com with SMTP id b7-v6so6432441pfo.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Sep 2018 11:19:52 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=sender:date:from:to:cc:subject:message-id:references:mime-version
  :content-disposition:in-reply-to:user-agent;
- bh=tDXzf/udT2sLICh0F22dZmfyKcOE6GKdhC9TxcJib8o=;
- b=SaAMkvppvQTYGQVtNj3RcYow2tvFEWnQXsWIP7k1NdH5nlSz5e6+28aZq+J+Pcv/iB
- B5rHD6HcnlrnmBteGs4zByny8fsuelYReWqzCL4gF04tUbxjVDSd7Mv/4557Z0uNtpMy
- wY50UqQN3m0iBtq3DVB3Jfz4G21X17PxNhM91r08KpfXAE5GSagVtUNHEaeQP/IUcp6t
- pOyCCeQJOaO6n8NypCeiKaekdxXsSe3ZbfWSREMACao+dg47lkczR9RHLzgYil3N85R8
- 0qsHRsyh8QphOh/dkCgT2KgOT5KJsIwZiPT/KfWQc4YTxM9KscW3Jz65SLpcivYK+EF4
- mzIw==
+ bh=RK7lmXdnzFYxg5omuWKypkgu5ApkfOL23ghs9ownmdA=;
+ b=KgcxtZiW2GTgiQfzcgDQLbL4P14Fcq+fflwu1ocoWItVuRoJGdlry0H0Jzn8FWdEn4
+ n3s2jrXxW0daScKhwfkfx3dNNyDPDtrrAeL1EqvjgjixsWtqDUK/7cbEHpCKEP3s9PLj
+ oD1BHSVYyAUjiQ11LUPVIAvt4Fpb3sa3pVvqhqOZX9qUOamsR5Ur9wrGuXGm9fp4SCL4
+ fRxLV2NiPY2tqrxm4wHNBT/cyP1MDpEEoEsE12IEnFbzEWWJpWrqamDSOr4NUZxOx//z
+ GQPMmSXCvIJ209fnLkXWnaV0F/c8M0rEkpB4oOmyhhcPLfZB9BliQ+5vp7zls3uV/UvB
+ PTDw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:sender:date:from:to:cc:subject:message-id
  :references:mime-version:content-disposition:in-reply-to:user-agent;
- bh=tDXzf/udT2sLICh0F22dZmfyKcOE6GKdhC9TxcJib8o=;
- b=KP9cY2Rghqu5ZLtloZE7rT6rQXX/2FB2C7FZCDQfy+EKtYJL1doDdOLYD1QIl0lteJ
- vFmPNDPGOshbBH1Rc95ImBDBbgvFpOrLSU6LPP9rSuGLzF/cvWyoZmGsS1vyW97PhyNM
- LiSDgLj1gYP4vXgeAeOxYaQrvqyREsmc/vgSz9uO11C1aIOoRfa8/tzWcV11hFbYMQCH
- DOxkf2b1zAOsR0/VNinpIdCOKwHKx1sdU17Xe1uxJ/yEXgCkLHyX1lDpO0nAMeDo1kCs
- u/BBRd46q5NX75yURyWTp1mcAYnlXNWnHsKIqPM3oK3Qyf2dTrgZJTBTRyNy6xOApv8U
- icKQ==
-X-Gm-Message-State: ABuFfogYjVt/nbSGRGF4rYplRqS41BdXI34yJoWPIa5E9Zwx/jDVMZEa
- 8icLKMS2VVz/8ClZhO51Da0=
-X-Google-Smtp-Source: ACcGV63yscddTUXp+MU7pwVbHt+9bogVEYBKbUkq+SKLnTPEUkf/Tgd4Px4eTAUToGrGbYiuDHgscA==
-X-Received: by 2002:a62:1a16:: with SMTP id
- a22-v6mr4025109pfa.237.1538245140891; 
- Sat, 29 Sep 2018 11:19:00 -0700 (PDT)
+ bh=RK7lmXdnzFYxg5omuWKypkgu5ApkfOL23ghs9ownmdA=;
+ b=kGgYQHVD5UdKV2/ixegITZK9DHnypGxwnd6E6j0BOObMOQWp0ef8KVC2wTAtRXTwAy
+ WVJ1qDoUndwQ58HDMUPoi2ZXkfqqKOKLDki96uhjYvaBKC9r6iJGhkOXPbK50DFTh0ii
+ yIXPv7ZaR3wdIQSrsiIcXrgDH3JGsjT2kMFuWxMwAezZsT4l5c6jUCs6uedB7fCNO72H
+ DIuM7wdBqHiQfkeycHEHNOI+Sm9xDfDnzl/8Q65qQc3vo1mpvVWlglcVZZLJD9KfWvzQ
+ qVcpQTfBIvuj8EP3XGhZUV53NB6u4UykvZEGNVQzzvyx9tNRV+n+N0Vn252AwMpqX3za
+ 0v1A==
+X-Gm-Message-State: ABuFfoiZ78+Jk0kQTT1EaBc6MK11Q65t+UwrvFcAvsru4oqtFSeFoor0
+ 5M6me60iQsnkU3zDOh2qM0k=
+X-Google-Smtp-Source: ACcGV62ulzYAyTMpEMW5jhm3AiXeSEVZGBQHajHBKxI4w89uSqqE9aWlPWZroFJn3XBhcPVG9Q68QA==
+X-Received: by 2002:a62:184a:: with SMTP id
+ 71-v6mr2344593pfy.246.1538245190568; 
+ Sat, 29 Sep 2018 11:19:50 -0700 (PDT)
 Received: from localhost (108-223-40-66.lightspeed.sntcca.sbcglobal.net.
  [108.223.40.66])
- by smtp.gmail.com with ESMTPSA id u62-v6sm13227276pfu.69.2018.09.29.11.18.59
+ by smtp.gmail.com with ESMTPSA id i184-v6sm11943487pgc.9.2018.09.29.11.19.49
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Sat, 29 Sep 2018 11:18:59 -0700 (PDT)
-Date: Sat, 29 Sep 2018 11:18:58 -0700
+ Sat, 29 Sep 2018 11:19:49 -0700 (PDT)
+Date: Sat, 29 Sep 2018 11:19:49 -0700
 From: Guenter Roeck <linux@roeck-us.net>
 To: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: Re: [v3,2/3] watchdog: mpc8xxx: provide boot status
-Message-ID: <20180929181858.GA5758@roeck-us.net>
-References: <207741bf9c994a869f574a93d4fb4152d4e169c9.1537163779.git.christophe.leroy@c-s.fr>
+Subject: Re: [v3,3/3] dt-bindings: watchdog: add mpc8xxx-wdt support
+Message-ID: <20180929181949.GA4420@roeck-us.net>
+References: <e3e0bcfd7b779b978d07e088a8bd667ea9ddf4aa.1537163780.git.christophe.leroy@c-s.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <207741bf9c994a869f574a93d4fb4152d4e169c9.1537163779.git.christophe.leroy@c-s.fr>
+In-Reply-To: <e3e0bcfd7b779b978d07e088a8bd667ea9ddf4aa.1537163780.git.christophe.leroy@c-s.fr>
 User-Agent: Mutt/1.5.24 (2015-08-30)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -105,103 +105,48 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Sep 17, 2018 at 06:22:50AM +0000, Christophe Leroy wrote:
-> mpc8xxx watchdog driver supports the following platforms:
-> - mpc8xx
-> - mpc83xx
-> - mpc86xx
+On Mon, Sep 17, 2018 at 06:22:53AM +0000, Christophe Leroy wrote:
+> Add description of DT bindings for mpc8xxx-wdt driver which
+> handles the CPU watchdog timer on the mpc83xx, mpc86xx and mpc8xx.
 > 
-> Those three platforms have a 32 bits register which provides the
-> reason of the last boot, including whether it was caused by the
-> watchdog.
-> 
-> mpc8xx: Register RSR, bit SWRS (bit 3)
-> mpc83xx: Register RSR, bit SWRS (bit 28)
-> mpc86xx: Register RSTRSCR, bit WDT_RR (bit 11)
-> 
-> This patch maps the register as defined in the device tree and updates
-> wdt.bootstatus based on the value of the watchdog related bit. Then
-> the information can be retrieved via the WDIOC_GETBOOTSTATUS ioctl.
-> 
-> Hereunder is an example of devicetree for mpc8xx,
-> the Reset Status Register being at offset 0x288:
-> 
-> 		WDT: watchdog@0 {
-> 			compatible = "fsl,mpc823-wdt";
-> 			reg = <0x0 0x10 0x288 0x4>;
-> 		};
-> 
-> On the mpc83xx, RSR is at offset 0x910
-> On the mpc86xx, RSTRSCR is at offset 0xe0094
-> 
-> Suggested-by: Radu Rendec <radu.rendec@gmail.com>
-> Tested-by: Christophe Leroy <christophe.leroy@c-s.fr> # On mpc885
 > Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> Reviewed-by: Rob Herring <robh@kernel.org>
 
 Reviewed-by: Guenter Roeck <linux@roeck-us.net>
 
 > ---
->  drivers/watchdog/mpc8xxx_wdt.c | 22 ++++++++++++++++++++++
->  1 file changed, 22 insertions(+)
+>  .../devicetree/bindings/watchdog/mpc8xxx-wdt.txt   | 25 ++++++++++++++++++++++
+>  1 file changed, 25 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/watchdog/mpc8xxx-wdt.txt
 > 
-> diff --git a/drivers/watchdog/mpc8xxx_wdt.c b/drivers/watchdog/mpc8xxx_wdt.c
-> index 1dcf5f10cdd9..069072e6747d 100644
-> --- a/drivers/watchdog/mpc8xxx_wdt.c
-> +++ b/drivers/watchdog/mpc8xxx_wdt.c
-> @@ -47,6 +47,7 @@ struct mpc8xxx_wdt {
->  struct mpc8xxx_wdt_type {
->  	int prescaler;
->  	bool hw_enabled;
-> +	u32 rsr_mask;
->  };
->  
->  struct mpc8xxx_wdt_ddata {
-> @@ -159,6 +160,24 @@ static int mpc8xxx_wdt_probe(struct platform_device *ofdev)
->  		return -ENODEV;
->  	}
->  
-> +	res = platform_get_resource(ofdev, IORESOURCE_MEM, 1);
-> +	if (res) {
-> +		bool status;
-> +		u32 __iomem *rsr = ioremap(res->start, resource_size(res));
+> diff --git a/Documentation/devicetree/bindings/watchdog/mpc8xxx-wdt.txt b/Documentation/devicetree/bindings/watchdog/mpc8xxx-wdt.txt
+> new file mode 100644
+> index 000000000000..e176face472a
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/watchdog/mpc8xxx-wdt.txt
+> @@ -0,0 +1,25 @@
+> +* Freescale mpc8xxx watchdog driver (For 83xx, 86xx and 8xx)
 > +
-> +		if (!rsr)
-> +			return -ENOMEM;
+> +Required properties:
+> +- compatible: Shall contain one of the following:
+> +	"mpc83xx_wdt" for an mpc83xx
+> +	"fsl,mpc8610-wdt" for an mpc86xx
+> +	"fsl,mpc823-wdt" for an mpc8xx
+> +- reg: base physical address and length of the area hosting the
+> +       watchdog registers.
+> +		On the 83xx, "Watchdog Timer Registers" area:	<0x200 0x100>
+> +		On the 86xx, "Watchdog Timer Registers" area:	<0xe4000 0x100>
+> +		On the 8xx, "General System Interface Unit" area: <0x0 0x10>
 > +
-> +		status = in_be32(rsr) & wdt_type->rsr_mask;
-> +		ddata->wdd.bootstatus = status ? WDIOF_CARDRESET : 0;
-> +		 /* clear reset status bits related to watchdog timer */
-> +		out_be32(rsr, wdt_type->rsr_mask);
-> +		iounmap(rsr);
+> +Optional properties:
+> +- reg: additional physical address and length (4) of location of the
+> +       Reset Status Register (called RSTRSCR on the mpc86xx)
+> +       		On the 83xx, it is located at offset 0x910
+> +       		On the 86xx, it is located at offset 0xe0094
+> +       		On the 8xx, it is located at offset 0x288
 > +
-> +		dev_info(dev, "Last boot was %scaused by watchdog\n",
-> +			 status ? "" : "not ");
-> +	}
-> +
->  	spin_lock_init(&ddata->lock);
->  
->  	ddata->wdd.info = &mpc8xxx_wdt_info,
-> @@ -216,6 +235,7 @@ static const struct of_device_id mpc8xxx_wdt_match[] = {
->  		.compatible = "mpc83xx_wdt",
->  		.data = &(struct mpc8xxx_wdt_type) {
->  			.prescaler = 0x10000,
-> +			.rsr_mask = BIT(3), /* RSR Bit SWRS */
->  		},
->  	},
->  	{
-> @@ -223,6 +243,7 @@ static const struct of_device_id mpc8xxx_wdt_match[] = {
->  		.data = &(struct mpc8xxx_wdt_type) {
->  			.prescaler = 0x10000,
->  			.hw_enabled = true,
-> +			.rsr_mask = BIT(20), /* RSTRSCR Bit WDT_RR */
->  		},
->  	},
->  	{
-> @@ -230,6 +251,7 @@ static const struct of_device_id mpc8xxx_wdt_match[] = {
->  		.data = &(struct mpc8xxx_wdt_type) {
->  			.prescaler = 0x800,
->  			.hw_enabled = true,
-> +			.rsr_mask = BIT(28), /* RSR Bit SWRS */
->  		},
->  	},
->  	{},
+> +Example:
+> +		WDT: watchdog@0 {
+> +		    compatible = "fsl,mpc823-wdt";
+> +		    reg = <0x0 0x10 0x288 0x4>;
+> +		};
