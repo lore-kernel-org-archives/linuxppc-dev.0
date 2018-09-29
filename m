@@ -2,91 +2,90 @@ Return-Path: <SRS0=aJM7=ML=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,USER_AGENT_MUTT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 10457C43143
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Sep 2018 05:18:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 874A9C43143
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Sep 2018 18:21:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 089C12084D
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Sep 2018 05:18:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id CEAC02073F
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Sep 2018 18:21:44 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="j/MQ7phN"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 089C12084D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="SaAMkvpp"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CEAC02073F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42McJw0831zF3Lc
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Sep 2018 15:18:40 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42MxhQ0VjTzF3DT
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Sep 2018 04:21:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="j/MQ7phN";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="SaAMkvpp";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::544; helo=mail-pg1-x544.google.com;
- envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+ (client-ip=2607:f8b0:4864:20::444; helo=mail-pf1-x444.google.com;
+ envelope-from=groeck7@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
+ dmarc=none (p=none dis=none) header.from=roeck-us.net
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="j/MQ7phN"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="SaAMkvpp"; 
  dkim-atps=neutral
-Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
- [IPv6:2607:f8b0:4864:20::544])
+Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
+ [IPv6:2607:f8b0:4864:20::444])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42McGM6lHJzF3Lc
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Sep 2018 15:16:27 +1000 (AEST)
-Received: by mail-pg1-x544.google.com with SMTP id v133-v6so5866984pgb.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2018 22:16:27 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42MxdS0BVYzF3D5
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Sep 2018 04:19:06 +1000 (AEST)
+Received: by mail-pf1-x444.google.com with SMTP id p12-v6so6438860pfh.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Sep 2018 11:19:06 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=FLhNRXDh++j3xMVcsZ+lpIk1M9DVtcaXoQMG1mxIhv4=;
- b=j/MQ7phN8hhnR9KtvkYrUR/8ETpON6H4C2/Cdl9+/qnrS56LdE44p0VE9ivF0WtScA
- cFED01Ny2j4Qt7nJB5+PVOubFcn97vDZuN3CSnZ4jfxl0uKIPBNp4zqG2Ek8IUD9c4/A
- 8HeXNrijCgB4TToajOlHl6ACSPbikY4C3DO2WEFzlD+HOSXNm8DYIJZ5YRRrReYiE91j
- sC15DhvEpJ3WlFvaWatAjcFIrS2gwrAKzNbaLN68E8AEBccdEMaWBdjjXIm5D5d+ylXT
- zful8XViPfxB08uWElbrTjMyBpnLkkGmqGxtrnomFTW3z9V5UQsrFwOd0FacCrOW2rPj
- XmOA==
+ h=sender:date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=tDXzf/udT2sLICh0F22dZmfyKcOE6GKdhC9TxcJib8o=;
+ b=SaAMkvppvQTYGQVtNj3RcYow2tvFEWnQXsWIP7k1NdH5nlSz5e6+28aZq+J+Pcv/iB
+ B5rHD6HcnlrnmBteGs4zByny8fsuelYReWqzCL4gF04tUbxjVDSd7Mv/4557Z0uNtpMy
+ wY50UqQN3m0iBtq3DVB3Jfz4G21X17PxNhM91r08KpfXAE5GSagVtUNHEaeQP/IUcp6t
+ pOyCCeQJOaO6n8NypCeiKaekdxXsSe3ZbfWSREMACao+dg47lkczR9RHLzgYil3N85R8
+ 0qsHRsyh8QphOh/dkCgT2KgOT5KJsIwZiPT/KfWQc4YTxM9KscW3Jz65SLpcivYK+EF4
+ mzIw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=FLhNRXDh++j3xMVcsZ+lpIk1M9DVtcaXoQMG1mxIhv4=;
- b=SbZlN1jvCleZyGWxdvlXqnpPJDi3vRAXTEHFpy0z3rtuTwMjlj+fabdgL2/nGBUVwl
- g83aDTJkQUm8toV9BDLZDybX0PjUAfmv+wHLIaXHRFwggB0sLTbzMTalm2FYBwL7qHG9
- g56vf5r4o+qAckkzXQe+pLPfAKrYNBj6HHHUp7GFyznvlj8zBfrFOAWZyMCPC98GurLJ
- xGHyduoKl0QrC7xNdMPlvNjaFdvYt9HkwcmCsnLnUNFkkiOHcfo0s5CyFUjLBYnUvXBA
- CeS/GXHvY2xoiRn8P9rlG0gdxdEdGdQbibv6D11Ul+UJa0HLabncvRYaWUU0sZ76JfAR
- pawA==
-X-Gm-Message-State: ABuFfohQyinAMHK/Uzc+1pIDWjD+n3vlnfNyv0TsR/Rga0g3/1PL0flf
- paLH+IaCbahb7ZdXsqWsG6k=
-X-Google-Smtp-Source: ACcGV62QByMlmBZrf7uA1UBXp7OrwogB5s0Pnj46jjwuOBrzmrpMCvVkTYiN/sB+cvilWusIqoxfuA==
-X-Received: by 2002:a62:4799:: with SMTP id
- p25-v6mr1638137pfi.197.1538198185174; 
- Fri, 28 Sep 2018 22:16:25 -0700 (PDT)
-Received: from roar.ozlabs.ibm.com (59-102-83-213.tpgi.com.au. [59.102.83.213])
- by smtp.gmail.com with ESMTPSA id i186-v6sm8951034pge.80.2018.09.28.22.16.21
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Fri, 28 Sep 2018 22:16:24 -0700 (PDT)
-Date: Sat, 29 Sep 2018 15:16:18 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Anton Blanchard <anton@ozlabs.org>
-Subject: Re: [PATCH 2/2] powerpc/time: Only cap decrementer when watchdog is
- enabled
-Message-ID: <20180929151618.1e15ca4c@roar.ozlabs.ibm.com>
-In-Reply-To: <20180929012607.10204-2-anton@ozlabs.org>
-References: <20180929012607.10204-1-anton@ozlabs.org>
- <20180929012607.10204-2-anton@ozlabs.org>
-X-Mailer: Claws Mail 3.17.0 (GTK+ 2.24.32; x86_64-pc-linux-gnu)
+ h=x-gm-message-state:sender:date:from:to:cc:subject:message-id
+ :references:mime-version:content-disposition:in-reply-to:user-agent;
+ bh=tDXzf/udT2sLICh0F22dZmfyKcOE6GKdhC9TxcJib8o=;
+ b=KP9cY2Rghqu5ZLtloZE7rT6rQXX/2FB2C7FZCDQfy+EKtYJL1doDdOLYD1QIl0lteJ
+ vFmPNDPGOshbBH1Rc95ImBDBbgvFpOrLSU6LPP9rSuGLzF/cvWyoZmGsS1vyW97PhyNM
+ LiSDgLj1gYP4vXgeAeOxYaQrvqyREsmc/vgSz9uO11C1aIOoRfa8/tzWcV11hFbYMQCH
+ DOxkf2b1zAOsR0/VNinpIdCOKwHKx1sdU17Xe1uxJ/yEXgCkLHyX1lDpO0nAMeDo1kCs
+ u/BBRd46q5NX75yURyWTp1mcAYnlXNWnHsKIqPM3oK3Qyf2dTrgZJTBTRyNy6xOApv8U
+ icKQ==
+X-Gm-Message-State: ABuFfogYjVt/nbSGRGF4rYplRqS41BdXI34yJoWPIa5E9Zwx/jDVMZEa
+ 8icLKMS2VVz/8ClZhO51Da0=
+X-Google-Smtp-Source: ACcGV63yscddTUXp+MU7pwVbHt+9bogVEYBKbUkq+SKLnTPEUkf/Tgd4Px4eTAUToGrGbYiuDHgscA==
+X-Received: by 2002:a62:1a16:: with SMTP id
+ a22-v6mr4025109pfa.237.1538245140891; 
+ Sat, 29 Sep 2018 11:19:00 -0700 (PDT)
+Received: from localhost (108-223-40-66.lightspeed.sntcca.sbcglobal.net.
+ [108.223.40.66])
+ by smtp.gmail.com with ESMTPSA id u62-v6sm13227276pfu.69.2018.09.29.11.18.59
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Sat, 29 Sep 2018 11:18:59 -0700 (PDT)
+Date: Sat, 29 Sep 2018 11:18:58 -0700
+From: Guenter Roeck <linux@roeck-us.net>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: Re: [v3,2/3] watchdog: mpc8xxx: provide boot status
+Message-ID: <20180929181858.GA5758@roeck-us.net>
+References: <207741bf9c994a869f574a93d4fb4152d4e169c9.1537163779.git.christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <207741bf9c994a869f574a93d4fb4152d4e169c9.1537163779.git.christophe.leroy@c-s.fr>
+User-Agent: Mutt/1.5.24 (2015-08-30)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,37 +97,111 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mikey@neuling.org, paulus@samba.org, oohall@gmail.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org,
+ linux-watchdog@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Rob Herring <robh+dt@kernel.org>, Radu Rendec <radu.rendec@gmail.com>,
+ Wim Van Sebroeck <wim@linux-watchdog.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 29 Sep 2018 11:26:07 +1000
-Anton Blanchard <anton@ozlabs.org> wrote:
-
-> If CONFIG_PPC_WATCHDOG is enabled, we always cap the decrementer to
-> 0x7fffffff. As suggested by Nick, add a run time check of the watchdog
-> cpumask, so if it is disabled we use the large decrementer.
+On Mon, Sep 17, 2018 at 06:22:50AM +0000, Christophe Leroy wrote:
+> mpc8xxx watchdog driver supports the following platforms:
+> - mpc8xx
+> - mpc83xx
+> - mpc86xx
 > 
-> Signed-off-by: Anton Blanchard <anton@samba.org>
+> Those three platforms have a 32 bits register which provides the
+> reason of the last boot, including whether it was caused by the
+> watchdog.
+> 
+> mpc8xx: Register RSR, bit SWRS (bit 3)
+> mpc83xx: Register RSR, bit SWRS (bit 28)
+> mpc86xx: Register RSTRSCR, bit WDT_RR (bit 11)
+> 
+> This patch maps the register as defined in the device tree and updates
+> wdt.bootstatus based on the value of the watchdog related bit. Then
+> the information can be retrieved via the WDIOC_GETBOOTSTATUS ioctl.
+> 
+> Hereunder is an example of devicetree for mpc8xx,
+> the Reset Status Register being at offset 0x288:
+> 
+> 		WDT: watchdog@0 {
+> 			compatible = "fsl,mpc823-wdt";
+> 			reg = <0x0 0x10 0x288 0x4>;
+> 		};
+> 
+> On the mpc83xx, RSR is at offset 0x910
+> On the mpc86xx, RSTRSCR is at offset 0xe0094
+> 
+> Suggested-by: Radu Rendec <radu.rendec@gmail.com>
+> Tested-by: Christophe Leroy <christophe.leroy@c-s.fr> # On mpc885
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+
+Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+
 > ---
-
-Thanks for tracking this down. It's a fix for my breakage
-
-a7cba02deced ("powerpc: allow soft-NMI watchdog to cover timer
-interrupts with large decrementers")
-
-Taking another look... what I had expected here is the timer subsystem
-would have stopped the decrementer device after it processed the timer
-and found nothing left. And we should have set DEC to max at that time.
-
-The above patch was really intended to only cover the timer interrupt
-itself locking up. I wonder if we need to add
-
-    .set_state_oneshot_stopped = decrementer_shutdown
-
-In our decremementer clockevent device?
-
-Thanks,
-Nick
+>  drivers/watchdog/mpc8xxx_wdt.c | 22 ++++++++++++++++++++++
+>  1 file changed, 22 insertions(+)
+> 
+> diff --git a/drivers/watchdog/mpc8xxx_wdt.c b/drivers/watchdog/mpc8xxx_wdt.c
+> index 1dcf5f10cdd9..069072e6747d 100644
+> --- a/drivers/watchdog/mpc8xxx_wdt.c
+> +++ b/drivers/watchdog/mpc8xxx_wdt.c
+> @@ -47,6 +47,7 @@ struct mpc8xxx_wdt {
+>  struct mpc8xxx_wdt_type {
+>  	int prescaler;
+>  	bool hw_enabled;
+> +	u32 rsr_mask;
+>  };
+>  
+>  struct mpc8xxx_wdt_ddata {
+> @@ -159,6 +160,24 @@ static int mpc8xxx_wdt_probe(struct platform_device *ofdev)
+>  		return -ENODEV;
+>  	}
+>  
+> +	res = platform_get_resource(ofdev, IORESOURCE_MEM, 1);
+> +	if (res) {
+> +		bool status;
+> +		u32 __iomem *rsr = ioremap(res->start, resource_size(res));
+> +
+> +		if (!rsr)
+> +			return -ENOMEM;
+> +
+> +		status = in_be32(rsr) & wdt_type->rsr_mask;
+> +		ddata->wdd.bootstatus = status ? WDIOF_CARDRESET : 0;
+> +		 /* clear reset status bits related to watchdog timer */
+> +		out_be32(rsr, wdt_type->rsr_mask);
+> +		iounmap(rsr);
+> +
+> +		dev_info(dev, "Last boot was %scaused by watchdog\n",
+> +			 status ? "" : "not ");
+> +	}
+> +
+>  	spin_lock_init(&ddata->lock);
+>  
+>  	ddata->wdd.info = &mpc8xxx_wdt_info,
+> @@ -216,6 +235,7 @@ static const struct of_device_id mpc8xxx_wdt_match[] = {
+>  		.compatible = "mpc83xx_wdt",
+>  		.data = &(struct mpc8xxx_wdt_type) {
+>  			.prescaler = 0x10000,
+> +			.rsr_mask = BIT(3), /* RSR Bit SWRS */
+>  		},
+>  	},
+>  	{
+> @@ -223,6 +243,7 @@ static const struct of_device_id mpc8xxx_wdt_match[] = {
+>  		.data = &(struct mpc8xxx_wdt_type) {
+>  			.prescaler = 0x10000,
+>  			.hw_enabled = true,
+> +			.rsr_mask = BIT(20), /* RSTRSCR Bit WDT_RR */
+>  		},
+>  	},
+>  	{
+> @@ -230,6 +251,7 @@ static const struct of_device_id mpc8xxx_wdt_match[] = {
+>  		.data = &(struct mpc8xxx_wdt_type) {
+>  			.prescaler = 0x800,
+>  			.hw_enabled = true,
+> +			.rsr_mask = BIT(28), /* RSR Bit SWRS */
+>  		},
+>  	},
+>  	{},
