@@ -6,72 +6,72 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F3AF8C00449
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 13:29:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 194E1C43143
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 13:32:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 60C632089A
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 13:29:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 60C632089A
+	by mail.kernel.org (Postfix) with ESMTPS id 7DA352084C
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 13:32:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7DA352084C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42P35l2BKSzF37x
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 23:28:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42P39N2jfWzF38F
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 23:32:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=mwb@linux.vnet.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42P2nB4L1SzF323
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42P2nB6rbpzF31j
  for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2018 23:14:38 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w91DCWLr005279
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w91DD1Ij042719
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Oct 2018 09:14:36 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2mukq4sttg-1
+Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2muhmcq2fj-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Oct 2018 09:14:35 -0400
 Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Mon, 1 Oct 2018 07:14:35 -0600
-Received: from b03cxnp08025.gho.boulder.ibm.com (9.17.130.17)
- by e32.co.us.ibm.com (192.168.1.132) with IBM ESMTP SMTP Gateway: Authorized
+ Mon, 1 Oct 2018 09:14:34 -0400
+Received: from b01cxnp23032.gho.pok.ibm.com (9.57.198.27)
+ by e13.ny.us.ibm.com (146.89.104.200) with IBM ESMTP SMTP Gateway: Authorized
  Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 1 Oct 2018 07:14:33 -0600
-Received: from b03ledav006.gho.boulder.ibm.com
- (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- w91DEWJw23330820
+ Mon, 1 Oct 2018 09:14:33 -0400
+Received: from b01ledav004.gho.pok.ibm.com (b01ledav004.gho.pok.ibm.com
+ [9.57.199.109])
+ by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ w91DEWro25493730
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Oct 2018 06:14:32 -0700
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 852DBC605B
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2018 07:14:32 -0600 (MDT)
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 62D4CC6055
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2018 07:14:32 -0600 (MDT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Oct 2018 13:14:32 GMT
+Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 31FC3112062
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2018 09:13:57 -0400 (EDT)
+Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 0035D112063
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2018 09:13:56 -0400 (EDT)
 Received: from ltcalpine2-lp9.aus.stglabs.ibm.com (unknown [9.40.195.192])
- by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2018 07:14:32 -0600 (MDT)
+ by b01ledav004.gho.pok.ibm.com (Postfix) with ESMTP
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2018 09:13:56 -0400 (EDT)
 Received: from ltcalpine2-lp9.aus.stglabs.ibm.com (localhost [IPv6:::1])
- by ltcalpine2-lp9.aus.stglabs.ibm.com (Postfix) with ESMTP id A93872116356;
- Mon,  1 Oct 2018 07:59:47 -0500 (CDT)
-Subject: [PATCH v03 2/5] powerpc/drmem: Add internal_flags feature
+ by ltcalpine2-lp9.aus.stglabs.ibm.com (Postfix) with ESMTP id 1EFCC2007B8D;
+ Mon,  1 Oct 2018 07:59:36 -0500 (CDT)
+Subject: [PATCH v03 1/5] powerpc/drmem: Export 'dynamic-memory' loader
 From: Michael Bringmann <mwb@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, mwb@linux.vnet.ibm.com
-Date: Mon, 01 Oct 2018 07:59:47 -0500
+Date: Mon, 01 Oct 2018 07:59:36 -0500
 In-Reply-To: <20181001125846.2676.89826.stgit@ltcalpine2-lp9.aus.stglabs.ibm.com>
 References: <20181001125846.2676.89826.stgit@ltcalpine2-lp9.aus.stglabs.ibm.com>
 User-Agent: StGit/0.18-105-g416a
@@ -79,21 +79,21 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
-x-cbid: 18100113-0004-0000-0000-000014950D53
+x-cbid: 18100113-0064-0000-0000-000003581F7D
 X-IBM-SpamModules-Scores: 
 X-IBM-SpamModules-Versions: BY=3.00009802; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000267; SDB=6.01096314; UDB=6.00566873; IPR=6.00876356; 
+ PH=3.00000004; SC=3.00000267; SDB=6.01096314; UDB=6.00566874; IPR=6.00876357; 
  MB=3.00023575; MTD=3.00000008; XFM=3.00000015; UTC=2018-10-01 13:14:34
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18100113-0005-0000-0000-000089002B98
-Message-Id: <20181001125941.2676.59996.stgit@ltcalpine2-lp9.aus.stglabs.ibm.com>
+x-cbparentid: 18100113-0065-0000-0000-00003AD52A04
+Message-Id: <20181001125924.2676.54786.stgit@ltcalpine2-lp9.aus.stglabs.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2018-10-01_08:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=978 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1807170000 definitions=main-1810010131
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -113,74 +113,249 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-powerpc/drmem: Add internal_flags field to each LMB to allow
-marking of kernel software-specific operations that need not
-be exported to other users.  For instance, if information about
-selected LMBs needs to be maintained for subsequent passes
-through the system, it can be encoded into the LMB array itself
-without requiring the allocation and maintainance of additional
-data structures.
+powerpc/drmem: Export many of the functions of DRMEM to parse
+"ibm,dynamic-memory" and "ibm,dynamic-memory-v2" during hotplug
+operations and for Post Migration events.
+
+Also modify the DRMEM initialization code to allow it to,
+
+* Be called after system initialization
+* Provide a separate user copy of the LMB array that is produces
+* Free the user copy upon request
+
+In addition, a couple of changes were made to make the creation
+of additional copies of the LMB array more useful including,
+
+* Add new iterator to work through a pair of drmem_info arrays.
+* Modify DRMEM code to replace usages of dt_root_addr_cells, and
+  dt_mem_next_cell, as these are only available at first boot.
 
 Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/drmem.h |   18 ++++++++++++++++++
- arch/powerpc/mm/drmem.c          |    2 ++
- 2 files changed, 20 insertions(+)
+ arch/powerpc/include/asm/drmem.h |   15 ++++++++
+ arch/powerpc/mm/drmem.c          |   75 ++++++++++++++++++++++++++++----------
+ 2 files changed, 70 insertions(+), 20 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/drmem.h b/arch/powerpc/include/asm/drmem.h
-index b0e70fd..acb6539 100644
+index ce242b9..b0e70fd 100644
 --- a/arch/powerpc/include/asm/drmem.h
 +++ b/arch/powerpc/include/asm/drmem.h
-@@ -17,6 +17,7 @@ struct drmem_lmb {
- 	u32     drc_index;
- 	u32     aa_index;
- 	u32     flags;
-+	u32     internal_flags;
- };
+@@ -35,6 +35,18 @@ struct drmem_lmb_info {
+ 		&drmem_info->lmbs[0],				\
+ 		&drmem_info->lmbs[drmem_info->n_lmbs - 1])
  
- struct drmem_lmb_info {
-@@ -101,6 +102,23 @@ static inline bool drmem_lmb_reserved(struct drmem_lmb *lmb)
- 	return lmb->flags & DRMEM_LMB_RESERVED;
- }
++#define for_each_dinfo_lmb(dinfo, lmb)				\
++	for_each_drmem_lmb_in_range((lmb),			\
++		&dinfo->lmbs[0],				\
++		&dinfo->lmbs[dinfo->n_lmbs - 1])
++
++#define for_each_pair_dinfo_lmb(dinfo1, lmb1, dinfo2, lmb2)	\
++	for ((lmb1) = (&dinfo1->lmbs[0]),			\
++	     (lmb2) = (&dinfo2->lmbs[0]);			\
++	     ((lmb1) <= (&dinfo1->lmbs[dinfo1->n_lmbs - 1])) &&	\
++	     ((lmb2) <= (&dinfo2->lmbs[dinfo2->n_lmbs - 1]));	\
++	     (lmb1)++, (lmb2)++)
++
+ /*
+  * The of_drconf_cell_v1 struct defines the layout of the LMB data
+  * specified in the ibm,dynamic-memory device tree property.
+@@ -94,6 +106,9 @@ void __init walk_drmem_lmbs(struct device_node *dn,
+ 			void (*func)(struct drmem_lmb *, const __be32 **));
+ int drmem_update_dt(void);
  
-+#define DRMEM_LMBINT_UPDATE	0x00000001
++struct drmem_lmb_info *drmem_lmbs_init(struct property *prop);
++void drmem_lmbs_free(struct drmem_lmb_info *dinfo);
 +
-+static inline void drmem_mark_lmb_update(struct drmem_lmb *lmb)
-+{
-+	lmb->internal_flags |= DRMEM_LMBINT_UPDATE;
-+}
-+
-+static inline void drmem_remove_lmb_update(struct drmem_lmb *lmb)
-+{
-+	lmb->internal_flags &= ~DRMEM_LMBINT_UPDATE;
-+}
-+
-+static inline bool drmem_lmb_update(struct drmem_lmb *lmb)
-+{
-+	return lmb->internal_flags & DRMEM_LMBINT_UPDATE;
-+}
-+
- u64 drmem_lmb_memory_max(void);
- void __init walk_drmem_lmbs(struct device_node *dn,
+ #ifdef CONFIG_PPC_PSERIES
+ void __init walk_drmem_lmbs_early(unsigned long node,
  			void (*func)(struct drmem_lmb *, const __be32 **));
 diff --git a/arch/powerpc/mm/drmem.c b/arch/powerpc/mm/drmem.c
-index 13d2abb..fd2cae92 100644
+index 3f18036..13d2abb 100644
 --- a/arch/powerpc/mm/drmem.c
 +++ b/arch/powerpc/mm/drmem.c
-@@ -207,6 +207,7 @@ static void read_drconf_v1_cell(struct drmem_lmb *lmb,
+@@ -20,6 +20,7 @@
  
- 	lmb->aa_index = of_read_number(p++, 1);
- 	lmb->flags = of_read_number(p++, 1);
-+	lmb->internal_flags = 0;
+ static struct drmem_lmb_info __drmem_info;
+ struct drmem_lmb_info *drmem_info = &__drmem_info;
++static int n_root_addr_cells;
  
+ u64 drmem_lmb_memory_max(void)
+ {
+@@ -193,12 +194,13 @@ int drmem_update_dt(void)
+ 	return rc;
+ }
+ 
+-static void __init read_drconf_v1_cell(struct drmem_lmb *lmb,
++static void read_drconf_v1_cell(struct drmem_lmb *lmb,
+ 				       const __be32 **prop)
+ {
+ 	const __be32 *p = *prop;
+ 
+-	lmb->base_addr = dt_mem_next_cell(dt_root_addr_cells, &p);
++	lmb->base_addr = of_read_number(p, n_root_addr_cells);
++	p += n_root_addr_cells;
+ 	lmb->drc_index = of_read_number(p++, 1);
+ 
+ 	p++; /* skip reserved field */
+@@ -209,7 +211,7 @@ static void __init read_drconf_v1_cell(struct drmem_lmb *lmb,
  	*prop = p;
  }
-@@ -265,6 +266,7 @@ static void __walk_drmem_v2_lmbs(const __be32 *prop, const __be32 *usm,
  
- 			lmb.aa_index = dr_cell.aa_index;
- 			lmb.flags = dr_cell.flags;
-+			lmb.internal_flags = 0;
+-static void __init __walk_drmem_v1_lmbs(const __be32 *prop, const __be32 *usm,
++static void __walk_drmem_v1_lmbs(const __be32 *prop, const __be32 *usm,
+ 			void (*func)(struct drmem_lmb *, const __be32 **))
+ {
+ 	struct drmem_lmb lmb;
+@@ -225,13 +227,14 @@ static void __init __walk_drmem_v1_lmbs(const __be32 *prop, const __be32 *usm,
+ 	}
+ }
  
- 			func(&lmb, &usm);
- 		}
+-static void __init read_drconf_v2_cell(struct of_drconf_cell_v2 *dr_cell,
++static void read_drconf_v2_cell(struct of_drconf_cell_v2 *dr_cell,
+ 				       const __be32 **prop)
+ {
+ 	const __be32 *p = *prop;
+ 
+ 	dr_cell->seq_lmbs = of_read_number(p++, 1);
+-	dr_cell->base_addr = dt_mem_next_cell(dt_root_addr_cells, &p);
++	dr_cell->base_addr = of_read_number(p, n_root_addr_cells);
++	p += n_root_addr_cells;
+ 	dr_cell->drc_index = of_read_number(p++, 1);
+ 	dr_cell->aa_index = of_read_number(p++, 1);
+ 	dr_cell->flags = of_read_number(p++, 1);
+@@ -239,7 +242,7 @@ static void __init read_drconf_v2_cell(struct of_drconf_cell_v2 *dr_cell,
+ 	*prop = p;
+ }
+ 
+-static void __init __walk_drmem_v2_lmbs(const __be32 *prop, const __be32 *usm,
++static void __walk_drmem_v2_lmbs(const __be32 *prop, const __be32 *usm,
+ 			void (*func)(struct drmem_lmb *, const __be32 **))
+ {
+ 	struct of_drconf_cell_v2 dr_cell;
+@@ -275,6 +278,9 @@ void __init walk_drmem_lmbs_early(unsigned long node,
+ 	const __be32 *prop, *usm;
+ 	int len;
+ 
++	if (n_root_addr_cells == 0)
++		n_root_addr_cells = dt_root_addr_cells;
++
+ 	prop = of_get_flat_dt_prop(node, "ibm,lmb-size", &len);
+ 	if (!prop || len < dt_root_size_cells * sizeof(__be32))
+ 		return;
+@@ -353,24 +359,26 @@ void __init walk_drmem_lmbs(struct device_node *dn,
+ 	}
+ }
+ 
+-static void __init init_drmem_v1_lmbs(const __be32 *prop)
++static void init_drmem_v1_lmbs(const __be32 *prop,
++				struct drmem_lmb_info *dinfo)
+ {
+ 	struct drmem_lmb *lmb;
+ 
+-	drmem_info->n_lmbs = of_read_number(prop++, 1);
+-	if (drmem_info->n_lmbs == 0)
++	dinfo->n_lmbs = of_read_number(prop++, 1);
++	if (dinfo->n_lmbs == 0)
+ 		return;
+ 
+-	drmem_info->lmbs = kcalloc(drmem_info->n_lmbs, sizeof(*lmb),
++	dinfo->lmbs = kcalloc(dinfo->n_lmbs, sizeof(*lmb),
+ 				   GFP_KERNEL);
+-	if (!drmem_info->lmbs)
++	if (!dinfo->lmbs)
+ 		return;
+ 
+-	for_each_drmem_lmb(lmb)
++	for_each_dinfo_lmb(dinfo, lmb)
+ 		read_drconf_v1_cell(lmb, &prop);
+ }
+ 
+-static void __init init_drmem_v2_lmbs(const __be32 *prop)
++static void init_drmem_v2_lmbs(const __be32 *prop,
++				struct drmem_lmb_info *dinfo)
+ {
+ 	struct drmem_lmb *lmb;
+ 	struct of_drconf_cell_v2 dr_cell;
+@@ -386,12 +394,12 @@ static void __init init_drmem_v2_lmbs(const __be32 *prop)
+ 	p = prop;
+ 	for (i = 0; i < lmb_sets; i++) {
+ 		read_drconf_v2_cell(&dr_cell, &p);
+-		drmem_info->n_lmbs += dr_cell.seq_lmbs;
++		dinfo->n_lmbs += dr_cell.seq_lmbs;
+ 	}
+ 
+-	drmem_info->lmbs = kcalloc(drmem_info->n_lmbs, sizeof(*lmb),
++	dinfo->lmbs = kcalloc(dinfo->n_lmbs, sizeof(*lmb),
+ 				   GFP_KERNEL);
+-	if (!drmem_info->lmbs)
++	if (!dinfo->lmbs)
+ 		return;
+ 
+ 	/* second pass, read in the LMB information */
+@@ -402,10 +410,10 @@ static void __init init_drmem_v2_lmbs(const __be32 *prop)
+ 		read_drconf_v2_cell(&dr_cell, &p);
+ 
+ 		for (j = 0; j < dr_cell.seq_lmbs; j++) {
+-			lmb = &drmem_info->lmbs[lmb_index++];
++			lmb = &dinfo->lmbs[lmb_index++];
+ 
+ 			lmb->base_addr = dr_cell.base_addr;
+-			dr_cell.base_addr += drmem_info->lmb_size;
++			dr_cell.base_addr += dinfo->lmb_size;
+ 
+ 			lmb->drc_index = dr_cell.drc_index;
+ 			dr_cell.drc_index++;
+@@ -416,11 +424,38 @@ static void __init init_drmem_v2_lmbs(const __be32 *prop)
+ 	}
+ }
+ 
++void drmem_lmbs_free(struct drmem_lmb_info *dinfo)
++{
++	if (dinfo) {
++		kfree(dinfo->lmbs);
++		kfree(dinfo);
++	}
++}
++
++struct drmem_lmb_info *drmem_lmbs_init(struct property *prop)
++{
++	struct drmem_lmb_info *dinfo;
++
++	dinfo = kzalloc(sizeof(*dinfo), GFP_KERNEL);
++	if (!dinfo)
++		return NULL;
++
++	if (!strcmp("ibm,dynamic-memory", prop->name))
++		init_drmem_v1_lmbs(prop->value, dinfo);
++	else if (!strcmp("ibm,dynamic-memory-v2", prop->name))
++		init_drmem_v2_lmbs(prop->value, dinfo);
++
++	return dinfo;
++}
++
+ static int __init drmem_init(void)
+ {
+ 	struct device_node *dn;
+ 	const __be32 *prop;
+ 
++	if (n_root_addr_cells == 0)
++		n_root_addr_cells = dt_root_addr_cells;
++
+ 	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
+ 	if (!dn) {
+ 		pr_info("No dynamic reconfiguration memory found\n");
+@@ -434,11 +469,11 @@ static int __init drmem_init(void)
+ 
+ 	prop = of_get_property(dn, "ibm,dynamic-memory", NULL);
+ 	if (prop) {
+-		init_drmem_v1_lmbs(prop);
++		init_drmem_v1_lmbs(prop, drmem_info);
+ 	} else {
+ 		prop = of_get_property(dn, "ibm,dynamic-memory-v2", NULL);
+ 		if (prop)
+-			init_drmem_v2_lmbs(prop);
++			init_drmem_v2_lmbs(prop, drmem_info);
+ 	}
+ 
+ 	of_node_put(dn);
 
