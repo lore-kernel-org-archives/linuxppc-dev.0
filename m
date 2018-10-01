@@ -2,96 +2,69 @@ Return-Path: <SRS0=DRoX=MN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 40259C43143
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 10:42:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8EA7AC43143
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 11:27:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 562DE2064A
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 10:42:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 562DE2064A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 99F9B20666
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 11:27:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 99F9B20666
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42NzQ74t0mzF36b
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 20:42:55 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42P0Pz2w9vzF35S
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 21:27:51 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=ego@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42NzMp2kynzF31r
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2018 20:40:54 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w91AePpF082565
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Oct 2018 06:40:51 -0400
-Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2mugkn3my8-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Oct 2018 06:40:51 -0400
-Received: from localhost
- by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Mon, 1 Oct 2018 06:40:51 -0400
-Received: from b01cxnp23032.gho.pok.ibm.com (9.57.198.27)
- by e14.ny.us.ibm.com (146.89.104.201) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 1 Oct 2018 06:40:48 -0400
-Received: from b01ledav004.gho.pok.ibm.com (b01ledav004.gho.pok.ibm.com
- [9.57.199.109])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- w91AelLA27983950
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Mon, 1 Oct 2018 10:40:47 GMT
-Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2EB94112066;
- Mon,  1 Oct 2018 06:40:12 -0400 (EDT)
-Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E0722112065;
- Mon,  1 Oct 2018 06:40:11 -0400 (EDT)
-Received: from sofia.ibm.com (unknown [9.124.35.106])
- by b01ledav004.gho.pok.ibm.com (Postfix) with ESMTP;
- Mon,  1 Oct 2018 06:40:11 -0400 (EDT)
-Received: by sofia.ibm.com (Postfix, from userid 1000)
- id DB4CC2E3D89; Mon,  1 Oct 2018 16:10:43 +0530 (IST)
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Subject: [PATCH v2] powerpc/rtas: Fix a potential race between CPU-Offline &
- Migration
-Date: Mon,  1 Oct 2018 16:10:39 +0530
-X-Mailer: git-send-email 1.8.3.1
-X-TM-AS-GCONF: 00
-x-cbid: 18100110-0052-0000-0000-0000033A62CD
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00009802; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000267; SDB=6.01096263; UDB=6.00566842; IPR=6.00876305; 
- MB=3.00023571; MTD=3.00000008; XFM=3.00000015; UTC=2018-10-01 10:40:50
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18100110-0053-0000-0000-00005E41FC3C
-Message-Id: <1538390439-17072-1-git-send-email-ego@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-10-01_06:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=925 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1807170000 definitions=main-1810010109
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42P0My5xhXzF22T
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2018 21:26:05 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 42P0Md02zrz9ttBr;
+ Mon,  1 Oct 2018 13:25:49 +0200 (CEST)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id Gk3JWOhi6fPF; Mon,  1 Oct 2018 13:25:48 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 42P0Mc5vLkz9ttBl;
+ Mon,  1 Oct 2018 13:25:48 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 0F1B18B966;
+ Mon,  1 Oct 2018 13:25:56 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id lS_m23ETi1hg; Mon,  1 Oct 2018 13:25:55 +0200 (CEST)
+Received: from PO15451 (po15451.idsi0.si.c-s.fr [172.25.231.3])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D29FD8B95C;
+ Mon,  1 Oct 2018 13:25:55 +0200 (CEST)
+Subject: Re: [v4] powerpc: Avoid code patching freed init sections
+To: Michael Ellerman <patch-notifications@ellerman.id.au>,
+ Michael Neuling <mikey@neuling.org>
+References: <42GsbJ0Knkz9sCh@ozlabs.org>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <0702294f-6a17-18aa-95f6-d97da4596dbd@c-s.fr>
+Date: Mon, 1 Oct 2018 13:25:46 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
+MIME-Version: 1.0
+In-Reply-To: <42GsbJ0Knkz9sCh@ozlabs.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,74 +76,78 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>,
+ linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>,
+ Haren Myneni <haren@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-Live Partition Migrations require all the present CPUs to execute the
-H_JOIN call, and hence rtas_ibm_suspend_me() onlines any offline CPUs
-before initiating the migration for this purpose.
 
-The commit 85a88cabad57
-("powerpc/pseries: Disable CPU hotplug across migrations")
-disables any CPU-hotplug operations once all the offline CPUs are
-brought online to prevent any further state change. Once the
-CPU-Hotplug operation is disabled, the code assumes that all the CPUs
-are online.
+Le 21/09/2018 à 13:59, Michael Ellerman a écrit :
+> On Fri, 2018-09-14 at 01:14:11 UTC, Michael Neuling wrote:
+>> This stops us from doing code patching in init sections after they've
+>> been freed.
+>>
+>> In this chain:
+>>    kvm_guest_init() ->
+>>      kvm_use_magic_page() ->
+>>        fault_in_pages_readable() ->
+>> 	 __get_user() ->
+>> 	   __get_user_nocheck() ->
+>> 	     barrier_nospec();
+>>
+>> We have a code patching location at barrier_nospec() and
+>> kvm_guest_init() is an init function. This whole chain gets inlined,
+>> so when we free the init section (hence kvm_guest_init()), this code
+>> goes away and hence should no longer be patched.
+>>
+>> We seen this as userspace memory corruption when using a memory
+>> checker while doing partition migration testing on powervm (this
+>> starts the code patching post migration via
+>> /sys/kernel/mobility/migration). In theory, it could also happen when
+>> using /sys/kernel/debug/powerpc/barrier_nospec.
+>>
+>> cc: stable@vger.kernel.org # 4.13+
+>> Signed-off-by: Michael Neuling <mikey@neuling.org>
+>> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+>> Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> 
+> Applied to powerpc fixes, thanks.
+> 
+> https://git.kernel.org/powerpc/c/51c3c62b58b357e8d35e4cc32f7b4e
+> 
 
-However, there is a minor window in rtas_ibm_suspend_me() between
-onlining the offline CPUs and disabling CPU-Hotplug when a concurrent
-CPU-offline operations initiated by the userspace can succeed thereby
-nullifying the the aformentioned assumption. In this unlikely case
-these offlined CPUs will not call H_JOIN, resulting in a system hang.
+This patch breaks booting on my MPC83xx board (book3s/32) very early 
+(before console is active), provoking restart.
+u-boot reports a checkstop reset at restart.
 
-Fix this by verifying that all the present CPUs are actually online
-after CPU-Hotplug has been disabled, failing which we restore the
-state of the offline CPUs in rtas_ibm_suspend_me() and return an
--EBUSY.
+Reverting this commit fixes the issue.
 
-Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Cc: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
----
-v2: Restore the state of the offline CPUs if all CPUs aren't onlined.
+The following patch fixes the issue as well, but I think it is not the 
+best solution. I still think the test should be in patch_instruction() 
+instead of being in __patch_instruction(), see my comment on v2
 
- arch/powerpc/kernel/rtas.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+Christophe
 
-diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-index 2c7ed31..d4468cb 100644
---- a/arch/powerpc/kernel/rtas.c
-+++ b/arch/powerpc/kernel/rtas.c
-@@ -982,6 +982,15 @@ int rtas_ibm_suspend_me(u64 handle)
- 	}
- 
- 	cpu_hotplug_disable();
-+
-+	/* Check if we raced with a CPU-Offline Operation */
-+	if (unlikely(!cpumask_equal(cpu_present_mask, cpu_online_mask))) {
-+		pr_err("%s: Raced against a concurrent CPU-Offline\n",
-+		       __func__);
-+		atomic_set(&data.error, -EBUSY);
-+		goto out_hotplug_enable;
-+	}
-+
- 	stop_topology_update();
- 
- 	/* Call function on all CPUs.  One of us will make the
-@@ -996,6 +1005,8 @@ int rtas_ibm_suspend_me(u64 handle)
- 		printk(KERN_ERR "Error doing global join\n");
- 
- 	start_topology_update();
-+
-+out_hotplug_enable:
- 	cpu_hotplug_enable();
- 
- 	/* Take down CPUs not online prior to suspend */
--- 
-1.9.4
+diff --git a/arch/powerpc/lib/code-patching.c 
+b/arch/powerpc/lib/code-patching.c
+index 6ae2777..6192fda 100644
+--- a/arch/powerpc/lib/code-patching.c
++++ b/arch/powerpc/lib/code-patching.c
+@@ -29,7 +29,7 @@ static int __patch_instruction(unsigned int 
+*exec_addr, unsigned int instr,
+         int err;
 
+         /* Make sure we aren't patching a freed init section */
+-       if (init_mem_is_free && init_section_contains(exec_addr, 4)) {
++       if (*PTRRELOC(&init_mem_is_free) && 
+init_section_contains(exec_addr, 4)) {
+                 pr_debug("Skipping init section patching addr: 
+0x%px\n", exec_addr);
+                 return 0;
+         }
+
+
+Christophe
