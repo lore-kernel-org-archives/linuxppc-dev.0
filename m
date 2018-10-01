@@ -2,87 +2,99 @@ Return-Path: <SRS0=DRoX=MN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS autolearn=ham
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3562BC43143
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 12:56:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 827FBC0044B
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 13:17:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 78D402084C
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 12:56:17 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hQbF/jJv"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 78D402084C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id E184B20684
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 13:17:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E184B20684
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42P2Mz5Fg6zF0wf
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 22:56:15 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42P2qv61K0zF31j
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 23:16:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="hQbF/jJv";
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2a00:1450:4864:20::544; helo=mail-ed1-x544.google.com;
- envelope-from=bmeng.cn@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="hQbF/jJv"; 
- dkim-atps=neutral
-Received: from mail-ed1-x544.google.com (mail-ed1-x544.google.com
- [IPv6:2a00:1450:4864:20::544])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=mwb@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42P23341BQzF35s
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2018 22:41:35 +1000 (AEST)
-Received: by mail-ed1-x544.google.com with SMTP id c22-v6so445150edc.4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Oct 2018 05:41:35 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=EzWP5N7joT8dCGKElIenLmA4Qlb9ymLZblXC2podw5o=;
- b=hQbF/jJv+qrtQ5bnK3N2+j0wEfp/dxUczg32oaSWG5tfMiADZP2C6wi8K9WGriRHZe
- ck566bYyowlCnWrgyhBSC2x1U7uw6SOxOEvYEIsqA5+CKPFl8AyaAvq1xwafh9TM7/Ft
- IezDboC0Mhqn4cUeChH+CEguJwgY7lXVbbGk4nGF2yKxYXwD7+iewHP8TSPMHJVN/vMY
- L7q4mXfvu8SAFq9e0/VEUUdcUY/EinNhV6MxY3aRyQG7hzLVbjVXF+qiQJbf56nV+KN/
- T/LO+RlvIlUlk3b5PGXC9mdc1Hjz2Bm+5XtG23J0eW75XfZJGKF2rxgF1TQiYVDJE+KJ
- o93w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=EzWP5N7joT8dCGKElIenLmA4Qlb9ymLZblXC2podw5o=;
- b=YWuZaiX9uVSFjBJOQKySN5L15t/NKNSmZkBal5NW7TlfPK41pSsro+UqMlhz4D5CSM
- SuevKpHvL6Av9VXCkSs/qqMVYTY+WO///F1ejiOTYCS7o1NS8SNFaaGZ5+GjsdiGWCBC
- lmqRSvrVdHtnKDAISjO1XykIv2k3lkOinjo7ZAM6YfKopldMTt9Gac57BvANMWEeVsvI
- 0SRczMs0Bu1L4pMMFuy0fqRkHqBZCotKnUxrfjX8i2WK6uruXYhoK4gJiEQjgxQYh7yk
- BDrxe+zD3GV5UMqGL8ffWwGQYU6ZliVZirZDcHltD+hDSCTAjfVZ35rXR2/TPqrTC8vH
- m9Qg==
-X-Gm-Message-State: ABuFfogttjHiP5Szlf2xygzsTsDBNMcfwTBPMNinnVHpUDY2sMLYfNrh
- vR/V5WyaQ6rMxNFa4VlvN+X1nk5ktvCJuWTk1Gs=
-X-Google-Smtp-Source: ACcGV63TK8GpRfODtezGdN+GlUflrvUpWa6NEDueM1Ky7UIqFWv+iBxb0y2sValOoxjl3fVnooGrN2U/169xGh+ERh4=
-X-Received: by 2002:a50:fb8f:: with SMTP id
- e15-v6mr18027298edq.153.1538397692531; 
- Mon, 01 Oct 2018 05:41:32 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42P2nB10HVzF31m
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2018 23:14:37 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w91DD6KT017881
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Oct 2018 09:14:35 -0400
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2muhm971y4-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Oct 2018 09:14:35 -0400
+Received: from localhost
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
+ Mon, 1 Oct 2018 07:14:34 -0600
+Received: from b03cxnp07029.gho.boulder.ibm.com (9.17.130.16)
+ by e31.co.us.ibm.com (192.168.1.131) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Mon, 1 Oct 2018 07:14:33 -0600
+Received: from b03ledav005.gho.boulder.ibm.com
+ (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ w91DEWtF50397272
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Oct 2018 06:14:32 -0700
+Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 7C0C5BE051
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2018 07:14:32 -0600 (MDT)
+Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 5ED6ABE04F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2018 07:14:32 -0600 (MDT)
+Received: from ltcalpine2-lp9.aus.stglabs.ibm.com (unknown [9.40.195.192])
+ by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2018 07:14:32 -0600 (MDT)
+Received: from ltcalpine2-lp9.aus.stglabs.ibm.com (localhost [IPv6:::1])
+ by ltcalpine2-lp9.aus.stglabs.ibm.com (Postfix) with ESMTP id E7D11211635B;
+ Mon,  1 Oct 2018 08:00:19 -0500 (CDT)
+Subject: [PATCH v03 5/5] migration/memory: Support 'ibm,dynamic-memory-v2'
+From: Michael Bringmann <mwb@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, mwb@linux.vnet.ibm.com
+Date: Mon, 01 Oct 2018 08:00:19 -0500
+In-Reply-To: <20181001125846.2676.89826.stgit@ltcalpine2-lp9.aus.stglabs.ibm.com>
+References: <20181001125846.2676.89826.stgit@ltcalpine2-lp9.aus.stglabs.ibm.com>
+User-Agent: StGit/0.18-105-g416a
 MIME-Version: 1.0
-References: <1538288720-14910-1-git-send-email-bmeng.cn@gmail.com>
- <1538288720-14910-2-git-send-email-bmeng.cn@gmail.com>
- <20181001092715.0a2696bd@roar.ozlabs.ibm.com>
- <CAEUhbmUih9irf-A8E4rouvpWKjeqg78Vzg+xm5TzUVB_vLPr=g@mail.gmail.com>
- <20181001122256.7cfdf186@roar.ozlabs.ibm.com>
-In-Reply-To: <20181001122256.7cfdf186@roar.ozlabs.ibm.com>
-From: Bin Meng <bmeng.cn@gmail.com>
-Date: Mon, 1 Oct 2018 20:41:19 +0800
-Message-ID: <CAEUhbmUW4jUwLEM7_gDXHVqso7sfX5_YvAuWXfKh4ckKH6NKWQ@mail.gmail.com>
-Subject: Re: [PATCH 2/2] powerpc/64: Increase stack redzone for 64-bit kernel
- to 512 bytes
-To: npiggin@gmail.com
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 18100113-8235-0000-0000-00000E0A89A0
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00009802; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000267; SDB=6.01096314; UDB=6.00566874; IPR=6.00876356; 
+ MB=3.00023575; MTD=3.00000008; XFM=3.00000015; UTC=2018-10-01 13:14:34
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18100113-8236-0000-0000-000042D62E98
+Message-Id: <20181001130014.2676.657.stgit@ltcalpine2-lp9.aus.stglabs.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-10-01_08:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=996 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1807170000 definitions=main-1810010131
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,67 +106,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>, Juliet Kim <minkim@us.ibm.com>,
+ Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Nick,
+migration/memory: This patch adds recognition for changes to the
+associativity of memory blocks described by 'ibm,dynamic-memory-v2'.
+If the associativity of an LMB has changed, it should be readded to
+the system in order to update local and general kernel data structures.
+This patch builds upon previous enhancements that scan the device-tree
+"ibm,dynamic-memory" properties using the base LMB array, and a copy
+derived from the updated properties.
 
-On Mon, Oct 1, 2018 at 10:23 AM Nicholas Piggin <npiggin@gmail.com> wrote:
->
-> On Mon, 1 Oct 2018 09:11:04 +0800
-> Bin Meng <bmeng.cn@gmail.com> wrote:
->
-> > Hi Nick,
-> >
-> > On Mon, Oct 1, 2018 at 7:27 AM Nicholas Piggin <npiggin@gmail.com> wrote:
-> > >
-> > > On Sat, 29 Sep 2018 23:25:20 -0700
-> > > Bin Meng <bmeng.cn@gmail.com> wrote:
-> > >
-> > > > commit 573ebfa6601f ("powerpc: Increase stack redzone for 64-bit
-> > > > userspace to 512 bytes") only changes stack userspace redzone size.
-> > > > We need increase the kernel one to 512 bytes too per ABIv2 spec.
-> > >
-> > > You're right we need 512 to be compatible with ABIv2, but as the
-> > > comment says, gcc limits this to 288 bytes so that's what is used
-> > > to save stack space. We can use a compiler version test to change
-> > > this if llvm or a new version of gcc does something different.
-> > >
-> >
-> > I believe what the comment says is for ABIv1. At the time when commit
-> > 573ebfa6601f was submitted, kernel had not switched to ABIv2 build
-> > yet.
->
-> I see, yes you are right about that. However gcc still seems to be using
-> 288 bytes.
->
-> static inline bool
-> offset_below_red_zone_p (HOST_WIDE_INT offset)
-> {
->   return offset < (DEFAULT_ABI == ABI_V4
->                    ? 0
->                    : TARGET_32BIT ? -220 : -288);
-> }
->
-> llvm does as well AFAIKS
->
->   // DarwinABI has a 224-byte red zone. PPC32 SVR4ABI(Non-DarwinABI) has no
->   // red zone and PPC64 SVR4ABI has a 288-byte red zone.
->   unsigned  getRedZoneSize() const {
->     return isDarwinABI() ? 224 : (isPPC64() ? 288 : 0);
->   }
->
-> So I suspect we can get away with using 288 for the kernel. Although
-> the ELFv2 ABI allows 512, I suspect at this point compilers won't switch
-> over without an explicit red zone size flag.
->
+Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/pseries/hotplug-memory.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Thanks for the info of gcc/llvm codes. I suspect for the red zone size
-gcc/llvm still uses ABIv1 defined value which is 288. If we get way
-with kernel using 288, what's the point of having user as 512 (commit
-573ebfa6601f)?
+diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+index 68bde2e..3e65aeb 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-memory.c
++++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+@@ -1203,7 +1203,8 @@ static int pseries_memory_notifier(struct notifier_block *nb,
+ 		err = pseries_remove_mem_node(rd->dn);
+ 		break;
+ 	case OF_RECONFIG_UPDATE_PROPERTY:
+-		if (!strcmp(rd->prop->name, "ibm,dynamic-memory")) {
++		if (!strcmp(rd->prop->name, "ibm,dynamic-memory") ||
++		    !strcmp(rd->prop->name, "ibm,dynamic-memory-v2")) {
+ 			struct drmem_lmb_info *dinfo =
+ 				drmem_lmbs_init(rd->prop);
+ 			if (!dinfo)
 
-Regards,
-Bin
