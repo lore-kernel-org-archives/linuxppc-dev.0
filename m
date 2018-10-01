@@ -2,101 +2,65 @@ Return-Path: <SRS0=DRoX=MN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.0 required=3.0 tests=MAILING_LIST_MULTI,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 025DAC43143
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 15:21:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 311ACC43143
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 15:28:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 65900208AE
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 15:21:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 65900208AE
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9AE47204FD
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 15:28:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9AE47204FD
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42P5bm3LxszF373
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 01:21:40 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42P5lR4KpDzF39s
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 01:28:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=nfont@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=209.85.210.66; helo=mail-ot1-f66.google.com;
+ envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Received: from mail-ot1-f66.google.com (mail-ot1-f66.google.com
+ [209.85.210.66])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42P5Yb4CKLzF2yr
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Oct 2018 01:19:47 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w91FFTKk132473
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Oct 2018 11:19:44 -0400
-Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2munx40kx7-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Oct 2018 11:19:44 -0400
-Received: from localhost
- by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Mon, 1 Oct 2018 11:19:42 -0400
-Received: from b01cxnp22034.gho.pok.ibm.com (9.57.198.24)
- by e13.ny.us.ibm.com (146.89.104.200) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 1 Oct 2018 11:19:40 -0400
-Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
- [9.57.199.106])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- w91FJde35177642
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Mon, 1 Oct 2018 15:19:39 GMT
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A648A28058;
- Mon,  1 Oct 2018 11:17:19 -0400 (EDT)
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0650628064;
- Mon,  1 Oct 2018 11:17:19 -0400 (EDT)
-Received: from oc6428688403.ibm.com (unknown [9.41.179.188])
- by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTPS;
- Mon,  1 Oct 2018 11:17:18 -0400 (EDT)
-Subject: Re: [PATCH v2] powerpc/rtas: Fix a potential race between CPU-Offline
- & Migration
-To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-References: <1538390439-17072-1-git-send-email-ego@linux.vnet.ibm.com>
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Date: Mon, 1 Oct 2018 10:19:37 -0500
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
-MIME-Version: 1.0
-In-Reply-To: <1538390439-17072-1-git-send-email-ego@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-x-cbid: 18100115-0064-0000-0000-000003583295
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00009803; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000267; SDB=6.01096356; UDB=6.00566899; IPR=6.00876398; 
- MB=3.00023576; MTD=3.00000008; XFM=3.00000015; UTC=2018-10-01 15:19:41
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18100115-0065-0000-0000-00003AD571FE
-Message-Id: <eca201f3-50b6-9ecc-2205-70b7f853131d@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-10-01_09:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1807170000 definitions=main-1810010148
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42P5hK1NLxzF31R
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Oct 2018 01:25:36 +1000 (AEST)
+Received: by mail-ot1-f66.google.com with SMTP id h15-v6so13483979otj.5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Oct 2018 08:25:36 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id;
+ bh=UyCzgVa0S9jSz66CwZemQEtwQKyE2g8HQUKaESq/u1s=;
+ b=LhigtsNfkDGw/+LTkQRpp6J8tsRyLjNK4pUo2LakY0RZRRCeTF6s8IgACAXf63VmhD
+ 7PI/OMB8njKMvqbNpsdpV2pqgLEU7NitNwRE6DDByIWt/g/Opyz4Sfz7RxDMRUtIX4Af
+ Se53ZBOmYi3/EbWgan8cfPem5W8y9Bm5r8GDC6ZDFaiKZRxYfVlvXXdoOKPSTe9Nx3dy
+ us2YG5EEc6OrhYWBzQdnHtmsHrfmj/vGaV+GGM9IsfiLe6dstL3Bv1yfiiq3T6a0JLvS
+ /2Zn3aqe28sWGgr8mXc0js3pjqTyWjZNlgWEAoZQfHz4qQzc18Cl0fmtd9lXZoieogJj
+ 91Wg==
+X-Gm-Message-State: ABuFfog7On8k9g6j0nK903t0/pZwOteHJRx77viynEf//5XRPD1cGnAV
+ FCt2yICDLc8lAERCJDSgPw==
+X-Google-Smtp-Source: ACcGV63U/9K7378gByl64xe8uZ+wZl67iUuVreJToGbhZPR74UhMNSBcYY1EZOgrsjJBChS4j/bmTQ==
+X-Received: by 2002:a9d:461a:: with SMTP id y26mr3008875ote.113.1538407534222; 
+ Mon, 01 Oct 2018 08:25:34 -0700 (PDT)
+Received: from xps15.herring.priv (24-155-109-49.dyn.grandenetworks.net.
+ [24.155.109.49]) by smtp.googlemail.com with ESMTPSA id
+ s203-v6sm2047035oif.33.2018.10.01.08.25.32
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Mon, 01 Oct 2018 08:25:33 -0700 (PDT)
+From: Rob Herring <robh@kernel.org>
+To: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Frank Rowand <frowand.list@gmail.com>
+Subject: [PATCH v4 0/9] Devicetree build consolidation
+Date: Mon,  1 Oct 2018 10:25:22 -0500
+Message-Id: <20181001152531.3385-1-robh@kernel.org>
+X-Mailer: git-send-email 2.17.1
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,77 +72,111 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-mips@linux-mips.org, Will Deacon <will.deacon@arm.com>,
+ Max Filippov <jcmvbkbc@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Russell King <linux@armlinux.org.uk>, Ley Foon Tan <ley.foon.tan@intel.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, James Hogan <jhogan@kernel.org>,
+ linux-snps-arc@lists.infradead.org, uclinux-h8-devel@lists.sourceforge.jp,
+ linux-xtensa@linux-xtensa.org, linux-kbuild@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>,
+ Michal Simek <monstr@monstr.eu>, Michal Marek <michal.lkml@markovi.net>,
+ Vineet Gupta <vgupta@synopsys.com>, Ralf Baechle <ralf@linux-mips.org>,
+ Paul Burton <paul.burton@mips.com>, nios2-dev@lists.rocketboards.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 10/01/2018 05:40 AM, Gautham R. Shenoy wrote:
-> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-> 
-> Live Partition Migrations require all the present CPUs to execute the
-> H_JOIN call, and hence rtas_ibm_suspend_me() onlines any offline CPUs
-> before initiating the migration for this purpose.
-> 
-> The commit 85a88cabad57
-> ("powerpc/pseries: Disable CPU hotplug across migrations")
-> disables any CPU-hotplug operations once all the offline CPUs are
-> brought online to prevent any further state change. Once the
-> CPU-Hotplug operation is disabled, the code assumes that all the CPUs
-> are online.
-> 
-> However, there is a minor window in rtas_ibm_suspend_me() between
-> onlining the offline CPUs and disabling CPU-Hotplug when a concurrent
-> CPU-offline operations initiated by the userspace can succeed thereby
-> nullifying the the aformentioned assumption. In this unlikely case
-> these offlined CPUs will not call H_JOIN, resulting in a system hang.
-> 
-> Fix this by verifying that all the present CPUs are actually online
-> after CPU-Hotplug has been disabled, failing which we restore the
-> state of the offline CPUs in rtas_ibm_suspend_me() and return an
-> -EBUSY.
-> 
-> Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-> Cc: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-> Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
-> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+This series addresses a couple of issues I have with building dts files.
 
-Reviewed-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+First, the ability to build all the dts files in the tree. This has been
+supported on most arches for some time with powerpc being the main
+exception. The reason powerpc wasn't supported was it needed a change
+in the location built dtb files are put.
 
-> ---
-> v2: Restore the state of the offline CPUs if all CPUs aren't onlined.
-> 
->  arch/powerpc/kernel/rtas.c | 11 +++++++++++
->  1 file changed, 11 insertions(+)
-> 
-> diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-> index 2c7ed31..d4468cb 100644
-> --- a/arch/powerpc/kernel/rtas.c
-> +++ b/arch/powerpc/kernel/rtas.c
-> @@ -982,6 +982,15 @@ int rtas_ibm_suspend_me(u64 handle)
->  	}
-> 
->  	cpu_hotplug_disable();
-> +
-> +	/* Check if we raced with a CPU-Offline Operation */
-> +	if (unlikely(!cpumask_equal(cpu_present_mask, cpu_online_mask))) {
-> +		pr_err("%s: Raced against a concurrent CPU-Offline\n",
-> +		       __func__);
-> +		atomic_set(&data.error, -EBUSY);
-> +		goto out_hotplug_enable;
-> +	}
-> +
->  	stop_topology_update();
-> 
->  	/* Call function on all CPUs.  One of us will make the
-> @@ -996,6 +1005,8 @@ int rtas_ibm_suspend_me(u64 handle)
->  		printk(KERN_ERR "Error doing global join\n");
-> 
->  	start_topology_update();
-> +
-> +out_hotplug_enable:
->  	cpu_hotplug_enable();
-> 
->  	/* Take down CPUs not online prior to suspend */
-> 
+Secondly, it's a pain to acquire all the cross-compilers needed to build
+dtbs for each arch. There's no reason to build with the cross compiler and
+the host compiler is perfectly fine as we only need the pre-processor.
 
+I started addressing just those 2 problems, but kept finding small
+differences such as target dependencies and dtbs_install support across
+architectures. Instead of trying to align all these, I've consolidated the
+build targets moving them out of the arch makefiles.
+
+I'd like to take the series via the DT tree.
+
+PPC maintainers, really need you review/ack on this especially patch 1.
+
+Rob
+
+
+v4:
+ - Make dtbs and %.dtb rules depend on arch/$ARCH/boot/dts path rather than
+   CONFIG_OF_EARLY_FLATTREE
+ - Fix install path missing kernel version for dtbs_install
+ - Fix "make CONFIG_OF_ALL_DTBS=y" for arches like ARM which selectively
+   enable CONFIG_OF (and therefore dtc)
+
+v3:
+ - Rework dtc dependency to avoid 2 entry paths to scripts/dtc/. Essentially,
+   I copied 'scripts_basic'.
+ - Add missing scripts_basic dependency for dtc and missing PHONY tag.
+ - Drop the '|' order only from dependencies
+ - Drop %.dtb.S and %.dtb.o as top-level targets
+ - PPC: remove duplicate mpc5200 dtbs from image-y targets
+
+v2:
+ - Fix $arch/boot/dts path check for out of tree builds
+ - Fix dtc dependency for building built-in dtbs
+ - Fix microblaze built-in dtb building
+ - Add dtbs target for microblaze
+
+
+Rob Herring (9):
+  powerpc: build .dtb files in dts directory
+  nios2: build .dtb files in dts directory
+  nios2: use common rules to build built-in dtb
+  nios2: fix building all dtbs
+  c6x: use common built-in dtb support
+  kbuild: consolidate Devicetree dtb build rules
+  powerpc: enable building all dtbs
+  c6x: enable building all dtbs
+  microblaze: enable building all dtbs
+
+ Makefile                           | 37 +++++++++++++++++++-
+ arch/arc/Makefile                  |  6 ----
+ arch/arm/Makefile                  | 20 +----------
+ arch/arm64/Makefile                | 17 +--------
+ arch/c6x/Makefile                  |  2 --
+ arch/c6x/boot/dts/Makefile         | 17 ++++-----
+ arch/c6x/boot/dts/linked_dtb.S     |  2 --
+ arch/c6x/include/asm/sections.h    |  1 -
+ arch/c6x/kernel/setup.c            |  4 +--
+ arch/c6x/kernel/vmlinux.lds.S      | 10 ------
+ arch/h8300/Makefile                | 11 +-----
+ arch/microblaze/Makefile           |  4 +--
+ arch/microblaze/boot/dts/Makefile  |  4 +++
+ arch/mips/Makefile                 | 15 +-------
+ arch/nds32/Makefile                |  2 +-
+ arch/nios2/Makefile                | 11 +-----
+ arch/nios2/boot/Makefile           | 22 ------------
+ arch/nios2/boot/dts/Makefile       |  6 ++++
+ arch/nios2/boot/linked_dtb.S       | 19 -----------
+ arch/powerpc/Makefile              |  3 --
+ arch/powerpc/boot/Makefile         | 55 ++++++++++++++----------------
+ arch/powerpc/boot/dts/Makefile     |  6 ++++
+ arch/powerpc/boot/dts/fsl/Makefile |  4 +++
+ arch/xtensa/Makefile               | 12 +------
+ scripts/Makefile                   |  3 +-
+ scripts/Makefile.lib               |  2 +-
+ scripts/dtc/Makefile               |  2 +-
+ 27 files changed, 102 insertions(+), 195 deletions(-)
+ delete mode 100644 arch/c6x/boot/dts/linked_dtb.S
+ create mode 100644 arch/nios2/boot/dts/Makefile
+ delete mode 100644 arch/nios2/boot/linked_dtb.S
+ create mode 100644 arch/powerpc/boot/dts/Makefile
+ create mode 100644 arch/powerpc/boot/dts/fsl/Makefile
+
+--
+2.17.1
