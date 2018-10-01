@@ -2,93 +2,92 @@ Return-Path: <SRS0=DRoX=MN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 85A27C43143
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 19:52:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E3ADC43143
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 20:05:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 091ED2146D
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 19:52:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 091ED2146D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=debian.org
+	by mail.kernel.org (Postfix) with ESMTPS id 54CAB2084C
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 20:05:21 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="MMztVRRo"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 54CAB2084C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42PCbh0b7czF3Bw
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 05:52:00 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=debian.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42PCv30hr4zF39h
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 06:05:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=debian.org
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=leitao@debian.org; receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.b="MMztVRRo";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=debian.org
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=chromium.org
+ (client-ip=2607:f8b0:4864:20::c41; helo=mail-yw1-xc41.google.com;
+ envelope-from=keescook@chromium.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=chromium.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=chromium.org header.i=@chromium.org header.b="MMztVRRo";
+ dkim-atps=neutral
+Received: from mail-yw1-xc41.google.com (mail-yw1-xc41.google.com
+ [IPv6:2607:f8b0:4864:20::c41])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42PCW85TTQzF39y
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Oct 2018 05:48:04 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w91JdGlO047836
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Oct 2018 15:48:01 -0400
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2mus4ta30t-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Oct 2018 15:48:01 -0400
-Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <leitao@debian.org>;
- Mon, 1 Oct 2018 13:48:00 -0600
-Received: from b03cxnp08026.gho.boulder.ibm.com (9.17.130.18)
- by e34.co.us.ibm.com (192.168.1.134) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 1 Oct 2018 13:47:57 -0600
-Received: from b03ledav005.gho.boulder.ibm.com
- (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- w91Jlu8k41418990
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Mon, 1 Oct 2018 12:47:56 -0700
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D5D1CBE051;
- Mon,  1 Oct 2018 13:47:56 -0600 (MDT)
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1DA46BE04F;
- Mon,  1 Oct 2018 13:47:55 -0600 (MDT)
-Received: from debra.ibm.com (unknown [9.80.236.140])
- by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
- Mon,  1 Oct 2018 13:47:54 -0600 (MDT)
-From: Breno Leitao <leitao@debian.org>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/2] powerpc/tm: Avoid SPR flush if TM is disabled
-Date: Mon,  1 Oct 2018 16:47:50 -0300
-X-Mailer: git-send-email 1.8.3.1
-In-Reply-To: <1538423270-17527-1-git-send-email-leitao@debian.org>
-References: <1538423270-17527-1-git-send-email-leitao@debian.org>
-X-TM-AS-GCONF: 00
-x-cbid: 18100119-0016-0000-0000-000009394508
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00009804; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000267; SDB=6.01096446; UDB=6.00566952; IPR=6.00876488; 
- MB=3.00023577; MTD=3.00000008; XFM=3.00000015; UTC=2018-10-01 19:47:59
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18100119-0017-0000-0000-0000408D0557
-Message-Id: <1538423270-17527-2-git-send-email-leitao@debian.org>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-10-01_10:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=609 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1807170000 definitions=main-1810010188
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42PCrS4z5bzF38b
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Oct 2018 06:03:03 +1000 (AEST)
+Received: by mail-yw1-xc41.google.com with SMTP id y14-v6so6053881ywa.4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Oct 2018 13:03:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
+ h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+ :cc; bh=GNlIUAwuN1sQQ+qJNf7a6orBI5uhXKmIz9IhShdF95M=;
+ b=MMztVRRofm+KI9WR1xYJ7sb0nzYrDOnrVnigSK+U3j/A/d1/OyfHH9PATv5QF9AFQM
+ VbIl6eEhRRnJPJsk+JS9oQcBxFh4F1f9FxUsR7ZiNQAP3xWAKl2x+QKC/VL7hzp3fABJ
+ vtSGGKMIVf2fLclvlaQAGXXFh4zm5VLRg/5mI=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:in-reply-to:references:from:date
+ :message-id:subject:to:cc;
+ bh=GNlIUAwuN1sQQ+qJNf7a6orBI5uhXKmIz9IhShdF95M=;
+ b=qFFQAY0W6DKgYnZfAGag3Gy3x4xXLAgbBF4uuxSFsle37qiyawW0IlIfIpKAJlgmKb
+ whitDgHQClV6aotXa9vgs3rkmuJa6toqbQENisJd7RbwN5iq7+cjaY9cRjOrxJqWM9iN
+ SLiNkTvsKbgY+rWrVtJrcUlSbPCblTclT+ik3Bk6C7lt18Z3QB1Il8/x/r/V3PEbOHBz
+ 4jCLEgqLpEmkncSwevlC7e6aa5XqVj0qaonG3lJni+TppAZ/H1oAZ3LpEi2jFp10+ZWV
+ 7zDg7XNOYG/dH/ektXx8BSOjgAOjkcJgd8Oe9hiCoj1Lqb51temTgekI4XfDuBbQk2i4
+ J9Mw==
+X-Gm-Message-State: ABuFfohAQb54NLXLC7A4CXJGHnwwSSzG9tCf9TrmztnmN53S2RWiTu40
+ e7wMAMq8TEhQ9hsT0I1Cwg1lZxUNLiI=
+X-Google-Smtp-Source: ACcGV62UWcH4Sz3XzR+zyE3cvUIpVw17qAZak+MdUKXg3ApU40nFcE0QC5NxdCMZddiAt8b0TZEbBg==
+X-Received: by 2002:a81:838e:: with SMTP id
+ t136-v6mr6665034ywf.165.1538424179863; 
+ Mon, 01 Oct 2018 13:02:59 -0700 (PDT)
+Received: from mail-yw1-f51.google.com (mail-yw1-f51.google.com.
+ [209.85.161.51])
+ by smtp.gmail.com with ESMTPSA id a207-v6sm6976814ywe.22.2018.10.01.13.02.57
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Mon, 01 Oct 2018 13:02:57 -0700 (PDT)
+Received: by mail-yw1-f51.google.com with SMTP id j75-v6so1107703ywj.10
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Oct 2018 13:02:57 -0700 (PDT)
+X-Received: by 2002:a81:9b83:: with SMTP id
+ s125-v6mr6689309ywg.47.1538424176795; 
+ Mon, 01 Oct 2018 13:02:56 -0700 (PDT)
+MIME-Version: 1.0
+Received: by 2002:a25:d116:0:0:0:0:0 with HTTP;
+ Mon, 1 Oct 2018 13:02:56 -0700 (PDT)
+In-Reply-To: <20181001185616.11427.35521.stgit@ltcalpine2-lp9.aus.stglabs.ibm.com>
+References: <20181001185616.11427.35521.stgit@ltcalpine2-lp9.aus.stglabs.ibm.com>
+From: Kees Cook <keescook@chromium.org>
+Date: Mon, 1 Oct 2018 13:02:56 -0700
+X-Gmail-Original-Message-ID: <CAGXu5jL2xgiXZ_9bdY9fWJB7dKvzKO7L9Xb83M0mmmhQrZSZcQ@mail.gmail.com>
+Message-ID: <CAGXu5jL2xgiXZ_9bdY9fWJB7dKvzKO7L9Xb83M0mmmhQrZSZcQ@mail.gmail.com>
+Subject: Re: [PATCH] migration/mm: Add WARN_ON to try_offline_node
+To: Michael Bringmann <mwb@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,56 +99,108 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Breno Leitao <leitao@debian.org>, mikey@neuling.org,
- gromero@linux.vnet.ibm.com
+Cc: Michal Hocko <mhocko@suse.com>, Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
+ Mathieu Malaterre <malat@debian.org>, LKML <linux-kernel@vger.kernel.org>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Pavel Tatashin <pasha.tatashin@oracle.com>, Linux-MM <linux-mm@kvack.org>,
+ Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>,
+ Juliet Kim <minkim@us.ibm.com>, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ YASUAKI ISHIMATSU <yasu.isimatu@gmail.com>,
+ PowerPC <linuxppc-dev@lists.ozlabs.org>,
+ Dan Williams <dan.j.williams@intel.com>, Oscar Salvador <osalvador@suse.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There is a bug in the flush_tmregs_to_thread() function, where it forces
-TM SPRs to be saved to the thread even if the TM facility is disabled.
+On Mon, Oct 1, 2018 at 11:56 AM, Michael Bringmann
+<mwb@linux.vnet.ibm.com> wrote:
+> In some LPAR migration scenarios, device-tree modifications are
+> made to the affinity of the memory in the system.  For instance,
+> it may occur that memory is installed to nodes 0,3 on a source
+> system, and to nodes 0,2 on a target system.  Node 2 may not
+> have been initialized/allocated on the target system.
+>
+> After migration, if a RTAS PRRN memory remove is made to a
+> memory block that was in node 3 on the source system, then
+> try_offline_node tries to remove it from node 2 on the target.
+> The NODE_DATA(2) block would not be initialized on the target,
+> and there is no validation check in the current code to prevent
+> the use of a NULL pointer.  Call traces such as the following
+> may be observed:
+>
+> A similar problem of moving memory to an unitialized node has
+> also been observed on systems where multiple PRRN events occur
+> prior to a complete update of the device-tree.
+>
+> pseries-hotplug-mem: Attempting to update LMB, drc index 80000002
+> Offlined Pages 4096
+> ...
+> Oops: Kernel access of bad area, sig: 11 [#1]
+> ...
+> Workqueue: pseries hotplug workque pseries_hp_work_fn
+> ...
+> NIP [c0000000002bc088] try_offline_node+0x48/0x1e0
+> LR [c0000000002e0b84] remove_memory+0xb4/0xf0
+> Call Trace:
+> [c0000002bbee7a30] [c0000002bbee7a70] 0xc0000002bbee7a70 (unreliable)
+> [c0000002bbee7a70] [c0000000002e0b84] remove_memory+0xb4/0xf0
+> [c0000002bbee7ab0] [c000000000097784] dlpar_remove_lmb+0xb4/0x160
+> [c0000002bbee7af0] [c000000000097f38] dlpar_memory+0x328/0xcb0
+> [c0000002bbee7ba0] [c0000000000906d0] handle_dlpar_errorlog+0xc0/0x130
+> [c0000002bbee7c10] [c0000000000907d4] pseries_hp_work_fn+0x94/0xa0
+> [c0000002bbee7c40] [c0000000000e1cd0] process_one_work+0x1a0/0x4e0
+> [c0000002bbee7cd0] [c0000000000e21b0] worker_thread+0x1a0/0x610
+> [c0000002bbee7d80] [c0000000000ea458] kthread+0x128/0x150
+> [c0000002bbee7e30] [c00000000000982c] ret_from_kernel_thread+0x5c/0xb0
+>
+> This patch adds a check for an incorrectly initialized to the
+> beginning of try_offline_node, and exits the routine.
+>
+> Another patch is being developed for powerpc to track the
+> node Id to which an LMB belongs, so that we can remove the
+> LMB from there instead of the nid as currently interpreted
+> from the device tree.
+>
+> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 
-This bug could be reproduced using a simple test case:
+Reviewed-by: Kees Cook <keescook@chromium.org>
 
-  mtspr(SPRN_TEXASR, XX);
-  sleep until load_tm == 0
-  cause a coredump
-  read SPRN_TEXASR in the coredump
+-Kees
 
-In this case, the coredump may contain an invalid SPR, because the
-current code is flushing live SPRs (Used by the last thread with TM
-active) into the current thread, overwriting the latest SPRs (which were
-valid).
+> ---
+>  mm/memory_hotplug.c |   10 ++++++++--
+>  1 file changed, 8 insertions(+), 2 deletions(-)
+>
+> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+> index 38d94b7..e48a4d0 100644
+> --- a/mm/memory_hotplug.c
+> +++ b/mm/memory_hotplug.c
+> @@ -1831,10 +1831,16 @@ static int check_and_unmap_cpu_on_node(pg_data_t *pgdat)
+>  void try_offline_node(int nid)
+>  {
+>         pg_data_t *pgdat = NODE_DATA(nid);
+> -       unsigned long start_pfn = pgdat->node_start_pfn;
+> -       unsigned long end_pfn = start_pfn + pgdat->node_spanned_pages;
+> +       unsigned long start_pfn;
+> +       unsigned long end_pfn;
+>         unsigned long pfn;
+>
+> +       if (WARN_ON(pgdat == NULL))
+> +               return;
+> +
+> +       start_pfn = pgdat->node_start_pfn;
+> +       end_pfn = start_pfn + pgdat->node_spanned_pages;
+> +
+>         for (pfn = start_pfn; pfn < end_pfn; pfn += PAGES_PER_SECTION) {
+>                 unsigned long section_nr = pfn_to_section_nr(pfn);
+>
+>
 
-This patch checks if TM is enabled for current task before
-saving the SPRs, otherwise, the TM is lazily disabled and the thread
-value is already up-to-date and could be used directly, and saving is
-not required.
 
-Fixes: cd63f3cf1d5 ("powerpc/tm: Fix saving of TM SPRs in core dump")
-Signed-off-by: Breno Leitao <leitao@debian.org>
----
- arch/powerpc/kernel/ptrace.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index 9667666eb18e..e0a2ee865032 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -138,7 +138,12 @@ static void flush_tmregs_to_thread(struct task_struct *tsk)
- 
- 	if (MSR_TM_SUSPENDED(mfmsr())) {
- 		tm_reclaim_current(TM_CAUSE_SIGNAL);
--	} else {
-+	} else if (tm_enabled(tsk)) {
-+		/*
-+		 * Only flush TM SPRs to the thread if TM was enabled,
-+		 * otherwise (TM lazily disabled), the thread already
-+		 * contains the latest SPR value
-+		 */
- 		tm_enable();
- 		tm_save_sprs(&(tsk->thread));
- 	}
 -- 
-2.19.0
-
+Kees Cook
+Pixel Security
