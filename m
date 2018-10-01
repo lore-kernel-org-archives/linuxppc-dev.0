@@ -2,84 +2,65 @@ Return-Path: <SRS0=DRoX=MN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C02AC43143
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 12:26:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C4FAAC43143
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 12:28:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 078C92089D
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 12:26:40 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="QUFp/Cqs"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 078C92089D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4D6B6208AE
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 12:28:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4D6B6208AE
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42P1jp1WzYzF35X
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 22:26:38 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42P1m20fsfzF373
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 22:28:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="QUFp/Cqs";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2a00:1450:4864:20::543; helo=mail-ed1-x543.google.com;
- envelope-from=bmeng.cn@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="QUFp/Cqs"; 
- dkim-atps=neutral
-Received: from mail-ed1-x543.google.com (mail-ed1-x543.google.com
- [IPv6:2a00:1450:4864:20::543])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42P1ZD3936zF31s
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2018 22:20:04 +1000 (AEST)
-Received: by mail-ed1-x543.google.com with SMTP id h6-v6so12501121eds.12
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Oct 2018 05:20:03 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=Ee9pxe1qM/FM7hhNAyF6gpe/cunUB0mcwaK0zp/xdYo=;
- b=QUFp/CqsOVdjSqzp6bmfS0hfy7+pGiRuiJyPW88CLfxQRpB4G7vH72Z4EuVs6L3+x+
- IlvxmuR8JRNTAP+9wivA7Wn7lGj88ywRgoKc7oU/seZx7cIkAxZmih6b1YobUBmhTEUe
- 1hnNVzoek/w6YGSnJMz0QwChTs5WmjU3W9Hk2pIDs7Q/o3m6bevf+t6k6IS7kBICFZY2
- xkKcGO5CDW3D/w5ffk6iEk3Cm4VxN5SSo/0zuDlUEfn3u2vlJTYb7KyIa6fskbj3hUKf
- 0gbfzXrynNA/AmqiUZGWX70ytfdPhgEIDG9rWvuspGvwI3RRbc8WHwkwJm67coFwMwLn
- XBjw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=Ee9pxe1qM/FM7hhNAyF6gpe/cunUB0mcwaK0zp/xdYo=;
- b=UR+ksPmVAA+ZgGKWQu3Oliti/rZqd381NvVVRMB+CahoqQa1xIxoDG0xBWjtYedGLJ
- R1zvt/HYSpNnL8bBSUkNGaXhgbWB++UTvsclv2cWY5HQ5+0S9gnftRF9z4DpSjo56Pst
- VASeow+9RY8tkrhrlShVzi616nwVGM32awbDkRGW7zfIjdNV7DcO28ki+bDlBI/rrjQ3
- FptcxJE8BtwS9Ew1GjTiwuGV1YA5/ZZ1WAEfBFxMxiYuXgU1y9x2jn6F2Isc20lbfIYk
- 5LPB2zIh8zSSq2hQzrxdMuYAV4nzH8QTnlpQc6FQ/jjWS7HJbMWClrUXOlxc7KJO8ypM
- q6fQ==
-X-Gm-Message-State: ABuFfoi44vd3IYh7WBvqjlQAW90AhPDRhEYr/ybqi4H92L4iKZgj5NLh
- EdXuPxltgri6OCmIcwBm6xgFMjpyPSbefZesW/w=
-X-Google-Smtp-Source: ACcGV62KVF2Tx2zNtUodmgPChbmdJSeNID7dtcwn2qYxjfORGQLa1E5fi8zw8lBSp3AQau30+1jH3SpacmLqoME2ZZg=
-X-Received: by 2002:a17:906:25e:: with SMTP id
- 30-v6mr9855623ejl.105.1538396401425; 
- Mon, 01 Oct 2018 05:20:01 -0700 (PDT)
-MIME-Version: 1.0
-References: <1538288720-14910-1-git-send-email-bmeng.cn@gmail.com>
- <20181001085915.GC23155@gate.crashing.org>
-In-Reply-To: <20181001085915.GC23155@gate.crashing.org>
-From: Bin Meng <bmeng.cn@gmail.com>
-Date: Mon, 1 Oct 2018 20:19:48 +0800
-Message-ID: <CAEUhbmUa5HCW=HDNhOq7jynjPVEjWuROOxxauWB3dpShRSAxBw@mail.gmail.com>
-Subject: Re: [PATCH 1/2] powerpc/64: Remove duplicated -mabi=elfv2 for little
- endian targets
-To: segher@kernel.crashing.org
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42P1bb3V22zF31w
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2018 22:21:14 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 42P1bN2fYwz9ttBw;
+ Mon,  1 Oct 2018 14:21:04 +0200 (CEST)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id t48jS16Cu-_L; Mon,  1 Oct 2018 14:21:04 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 42P1bN22sqz9ttBl;
+ Mon,  1 Oct 2018 14:21:04 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 7B8638B96B;
+ Mon,  1 Oct 2018 14:21:11 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id RSRckGY-HKbw; Mon,  1 Oct 2018 14:21:11 +0200 (CEST)
+Received: from pc16082vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
+ [172.25.231.3])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 43CE78B968;
+ Mon,  1 Oct 2018 14:21:11 +0200 (CEST)
+Received: by pc16082vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 13FB46F36D; Mon,  1 Oct 2018 12:21:10 +0000 (UTC)
+Message-Id: <6acad0a13b7f6c2845b2022737c6a11a445ed3c2.1538394860.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] powerpc/lib: fix book3s/32 boot failure due to code patching
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Michael Neuling <mikey@neuling.org>
+Date: Mon,  1 Oct 2018 12:21:10 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,42 +72,79 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Oct 1, 2018 at 4:59 PM Segher Boessenkool
-<segher@kernel.crashing.org> wrote:
->
-> On Sat, Sep 29, 2018 at 11:25:19PM -0700, Bin Meng wrote:
-> > The -mabi=elfv2 is currently specified twice in the makefile. Remove
-> > the one that does not test compiler.
->
-> This was
->
-> ifdef CONFIG_PPC64
-> cflags-$(CONFIG_CPU_BIG_ENDIAN)         += $(call cc-option,-mabi=elfv1)
-> cflags-$(CONFIG_CPU_BIG_ENDIAN)         += $(call cc-option,-mcall-aixdesc)
-> aflags-$(CONFIG_CPU_BIG_ENDIAN)         += $(call cc-option,-mabi=elfv1)
-> aflags-$(CONFIG_CPU_LITTLE_ENDIAN)      += -mabi=elfv2
-> endif
->
-> and the later setting is
->
-> ifeq ($(CONFIG_CPU_LITTLE_ENDIAN),y)
-> CFLAGS-$(CONFIG_PPC64)  += $(call cc-option,-mabi=elfv2,$(call cc-option,-mcall-aixdesc))
-> AFLAGS-$(CONFIG_PPC64)  += $(call cc-option,-mabi=elfv2)
-> else
-> CFLAGS-$(CONFIG_PPC64)  += $(call cc-option,-mabi=elfv1)
-> CFLAGS-$(CONFIG_PPC64)  += $(call cc-option,-mcall-aixdesc)
-> AFLAGS-$(CONFIG_PPC64)  += $(call cc-option,-mabi=elfv1)
-> endif
->
-> Maybe these two pieces should be joined completely?
->
+Commit 51c3c62b58b3 ("powerpc: Avoid code patching freed init
+sections") accesses 'init_mem_is_free' flag too early, before the
+kernel is relocated. This provokes early boot failure (before the
+console is active).
 
-Ah, yes! I was only looking at elfv2 stuff before :)
+As it is not necessary to do this verification that early, this
+patch moves the test into patch_instruction() instead of
+__patch_instruction().
 
-Regards,
-Bin
+This modification also has the advantage of avoiding unnecessary
+remappings.
+
+Fixes: 51c3c62b58b3 ("powerpc: Avoid code patching freed init sections")
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/lib/code-patching.c | 20 ++++++++++++--------
+ 1 file changed, 12 insertions(+), 8 deletions(-)
+
+diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
+index 6ae2777c220d..5ffee298745f 100644
+--- a/arch/powerpc/lib/code-patching.c
++++ b/arch/powerpc/lib/code-patching.c
+@@ -28,12 +28,6 @@ static int __patch_instruction(unsigned int *exec_addr, unsigned int instr,
+ {
+ 	int err;
+ 
+-	/* Make sure we aren't patching a freed init section */
+-	if (init_mem_is_free && init_section_contains(exec_addr, 4)) {
+-		pr_debug("Skipping init section patching addr: 0x%px\n", exec_addr);
+-		return 0;
+-	}
+-
+ 	__put_user_size(instr, patch_addr, 4, err);
+ 	if (err)
+ 		return err;
+@@ -148,7 +142,7 @@ static inline int unmap_patch_area(unsigned long addr)
+ 	return 0;
+ }
+ 
+-int patch_instruction(unsigned int *addr, unsigned int instr)
++static int do_patch_instruction(unsigned int *addr, unsigned int instr)
+ {
+ 	int err;
+ 	unsigned int *patch_addr = NULL;
+@@ -188,12 +182,22 @@ int patch_instruction(unsigned int *addr, unsigned int instr)
+ }
+ #else /* !CONFIG_STRICT_KERNEL_RWX */
+ 
+-int patch_instruction(unsigned int *addr, unsigned int instr)
++static int do_patch_instruction(unsigned int *addr, unsigned int instr)
+ {
+ 	return raw_patch_instruction(addr, instr);
+ }
+ 
+ #endif /* CONFIG_STRICT_KERNEL_RWX */
++
++int patch_instruction(unsigned int *addr, unsigned int instr)
++{
++	/* Make sure we aren't patching a freed init section */
++	if (init_mem_is_free && init_section_contains(addr, 4)) {
++		pr_debug("Skipping init section patching addr: 0x%px\n", addr);
++		return 0;
++	}
++	return do_patch_instruction(addr, instr);
++}
+ NOKPROBE_SYMBOL(patch_instruction);
+ 
+ int patch_branch(unsigned int *addr, unsigned long target, int flags)
+-- 
+2.13.3
+
