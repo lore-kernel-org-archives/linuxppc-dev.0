@@ -2,81 +2,102 @@ Return-Path: <SRS0=DRoX=MN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 918CBC43143
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 06:24:35 +0000 (UTC)
-Received: from lists.ozlabs.org (unknown [203.11.71.2])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A713C43143
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 06:42:48 +0000 (UTC)
+Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0B9152083C
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 06:24:34 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=axtens.net header.i=@axtens.net header.b="qE98+g1p"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0B9152083C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
+	by mail.kernel.org (Postfix) with ESMTPS id EC6AA206B2
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 06:42:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EC6AA206B2
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42Nsh03Wf4zF37Q
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 16:24:32 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=axtens.net
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Nt514FLpzF37v
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 16:42:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=axtens.net header.i=@axtens.net header.b="qE98+g1p";
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=axtens.net
- (client-ip=2607:f8b0:4864:20::441; helo=mail-pf1-x441.google.com;
- envelope-from=dja@axtens.net; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=axtens.net
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=axtens.net header.i=@axtens.net header.b="qE98+g1p"; 
- dkim-atps=neutral
-Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
- [IPv6:2607:f8b0:4864:20::441])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=ego@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42NsdN0m0ZzF35s
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2018 16:22:14 +1000 (AEST)
-Received: by mail-pf1-x441.google.com with SMTP id m77-v6so8410981pfi.8
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Sep 2018 23:22:14 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
- h=from:to:cc:subject:date:message-id;
- bh=gb/QeTgch69rLNoSkztRf63gt6HjmQ/UAWrv+rNxmdM=;
- b=qE98+g1pjMaoCIc/mgovR+JCCUNlTs5KkdDc1iEQZhwqrU+THZGx+8mrZYbpZzAcH9
- OTgDU1hgUHi0P4x2S4xN7plxdx3qNTmWNIbFmr22FwBxq6AK7Wsa33Wqx6No+I75ApA+
- Io9uC5EVDEjI87xqoL1AnfJ3LdPGqAHiP1MvI=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id;
- bh=gb/QeTgch69rLNoSkztRf63gt6HjmQ/UAWrv+rNxmdM=;
- b=Xc6jmrHBF+Z08Dr8k2wvaeDtLrUI7e3APQR9QYWstFfwRnXbaldRgOP9YgTXt8wPLj
- LKJfbquJdRiChxbBe5Kmb4Kko7hfY6Ezn97W9Siss+9ak22erMKVSzCSazTv5uOMufsL
- v4CplxjU7qAQH06TZQeuQb8ay+nJ+vs6wfwbQjrl8SlPsWxNy8qGXNqFRu6tLevP/SAk
- Xou08O3Blr4nMaTYZn3DtDsZdGEnVCyLuS/IsCeQBZDfH676md7dB/1RISowCUSa5/5S
- yJxm5RSmo/s+iH5zwxT3uXY1IZHGRzhlZ9M/Fz77lS8qCJyaUyxvvgFBQxuKcxL//kVN
- 7nZw==
-X-Gm-Message-State: ABuFfoiX3FeIYshBsdeTE307mUHRI1bJ7CWSDJLOl4g/LFqvWq0zvf/W
- RZxrRjIc7al6ABP6dmLt5P6CzVs6CNbePg==
-X-Google-Smtp-Source: ACcGV62Ap2KHq4wmFYl2XPwOWw21yN74EVbLHMPxsRMXKU4y8DYmPA0ICkleVgC6Z5UMGX6M5YKnNg==
-X-Received: by 2002:a63:5021:: with SMTP id
- e33-v6mr8908214pgb.306.1538374932596; 
- Sun, 30 Sep 2018 23:22:12 -0700 (PDT)
-Received: from localhost.localdomain
- (ppp121-45-207-120.bras1.cbr1.internode.on.net. [121.45.207.120])
- by smtp.gmail.com with ESMTPSA id g3-v6sm17550952pgn.37.2018.09.30.23.22.10
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Sun, 30 Sep 2018 23:22:11 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/nohash: fix undefined behaviour when testing page
- size support
-Date: Mon,  1 Oct 2018 16:21:51 +1000
-Message-Id: <20181001062151.23831-1-dja@axtens.net>
-X-Mailer: git-send-email 2.17.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Nt2z2h9pzF35S
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2018 16:40:59 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w916dr8E145867
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Oct 2018 02:40:56 -0400
+Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2mudbujdms-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Oct 2018 02:40:56 -0400
+Received: from localhost
+ by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Mon, 1 Oct 2018 02:40:55 -0400
+Received: from b01cxnp22033.gho.pok.ibm.com (9.57.198.23)
+ by e15.ny.us.ibm.com (146.89.104.202) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Mon, 1 Oct 2018 02:40:52 -0400
+Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
+ [9.57.199.110])
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ w916epx945219990
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Mon, 1 Oct 2018 06:40:51 GMT
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2357EAE05C;
+ Mon,  1 Oct 2018 02:39:12 -0400 (EDT)
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D4585AE05F;
+ Mon,  1 Oct 2018 02:39:11 -0400 (EDT)
+Received: from sofia.ibm.com (unknown [9.124.35.106])
+ by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP;
+ Mon,  1 Oct 2018 02:39:11 -0400 (EDT)
+Received: by sofia.ibm.com (Postfix, from userid 1000)
+ id E14C52E3D25; Mon,  1 Oct 2018 12:10:47 +0530 (IST)
+Date: Mon, 1 Oct 2018 12:10:47 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/rtas: Fix a potential race between CPU-Offline &
+ Migration
+References: <1538067112-11493-1-git-send-email-ego@linux.vnet.ibm.com>
+ <fa97b7f0-0cef-fc47-6566-216e399ac52a@linux.vnet.ibm.com>
+ <20180928070244.GA6190@in.ibm.com>
+ <12262001-fd31-99f4-0eac-2f90bdf47a0c@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <12262001-fd31-99f4-0eac-2f90bdf47a0c@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.23 (2014-03-12)
+X-TM-AS-GCONF: 00
+x-cbid: 18100106-0068-0000-0000-000003454F7D
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00009802; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000267; SDB=6.01096183; UDB=6.00566795; IPR=6.00876225; 
+ MB=3.00023569; MTD=3.00000008; XFM=3.00000015; UTC=2018-10-01 06:40:54
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18100106-0069-0000-0000-000045EA8A34
+Message-Id: <20181001064047.GA7498@in.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-10-01_03:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1807170000 definitions=main-1810010069
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,54 +109,108 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Daniel Axtens <dja@axtens.net>
+Reply-To: ego@linux.vnet.ibm.com
+Cc: ego@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When enumerating page size definitions to check hardware support,
-we construct a constant which is (1U << (def->shift - 10)).
+On Fri, Sep 28, 2018 at 03:36:08PM -0500, Nathan Fontenot wrote:
+> On 09/28/2018 02:02 AM, Gautham R Shenoy wrote:
+> > Hi Nathan,
+> > 
+> > On Thu, Sep 27, 2018 at 12:31:34PM -0500, Nathan Fontenot wrote:
+> >> On 09/27/2018 11:51 AM, Gautham R. Shenoy wrote:
+> >>> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+> >>>
+> >>> Live Partition Migrations require all the present CPUs to execute the
+> >>> H_JOIN call, and hence rtas_ibm_suspend_me() onlines any offline CPUs
+> >>> before initiating the migration for this purpose.
+> >>>
+> >>> The commit 85a88cabad57
+> >>> ("powerpc/pseries: Disable CPU hotplug across migrations")
+> >>> disables any CPU-hotplug operations once all the offline CPUs are
+> >>> brought online to prevent any further state change. Once the
+> >>> CPU-Hotplug operation is disabled, the code assumes that all the CPUs
+> >>> are online.
+> >>>
+> >>> However, there is a minor window in rtas_ibm_suspend_me() between
+> >>> onlining the offline CPUs and disabling CPU-Hotplug when a concurrent
+> >>> CPU-offline operations initiated by the userspace can succeed thereby
+> >>> nullifying the the aformentioned assumption. In this unlikely case
+> >>> these offlined CPUs will not call H_JOIN, resulting in a system hang.
+> >>>
+> >>> Fix this by verifying that all the present CPUs are actually online
+> >>> after CPU-Hotplug has been disabled, failing which we return from
+> >>> rtas_ibm_suspend_me() with -EBUSY.
+> >>
+> >> Would we also want to havr the ability to re-try onlining all of the cpus
+> >> before failing the migration?
+> > 
+> > Given that we haven't been able to hit issue in practice after your
+> > fix to disable CPU Hotplug after migrations, it indicates that the
+> > race-window, if it is not merely a theoretical one, is extremely
+> > narrow. So, this current patch addresses the safety aspect, as in,
+> > should someone manage to exploit this narrow race-window, it ensures
+> > that the system doesn't go to a hang state.
+> > 
+> > Having the ability to retry onlining all the CPUs is only required for
+> > progress of LPM in this rarest of cases. We should add the code to
+> > retry onlining the CPUs if the consequence of failing an LPM is high,
+> > even in this rarest of case. Otherwise IMHO we should be ok not adding
+> > the additional code.
+> 
+> I believe you're correct. One small update to the patch below...
+> 
+> > 
+> >>
+> >> This would involve a bigger code change as the current code to online all
+> >> CPUs would work in its current form.
+> >>
+> >> -Nathan
+> >>
+> >>>
+> >>> Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+> >>> Cc: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+> >>> Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+> >>> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> >>> ---
+> >>>  arch/powerpc/kernel/rtas.c | 10 ++++++++++
+> >>>  1 file changed, 10 insertions(+)
+> >>>
+> >>> diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+> >>> index 2c7ed31..27f6fd3 100644
+> >>> --- a/arch/powerpc/kernel/rtas.c
+> >>> +++ b/arch/powerpc/kernel/rtas.c
+> >>> @@ -982,6 +982,16 @@ int rtas_ibm_suspend_me(u64 handle)
+> >>>  	}
+> >>>
+> >>>  	cpu_hotplug_disable();
+> >>> +
+> >>> +	/* Check if we raced with a CPU-Offline Operation */
+> >>> +	if (unlikely(!cpumask_equal(cpu_present_mask, cpu_online_mask))) {
+> >>> +		pr_err("%s: Raced against a concurrent CPU-Offline\n",
+> >>> +		       __func__);
+> >>> +		atomic_set(&data.error, -EBUSY);
+> >>> +		cpu_hotplug_enable();
+> 
+> Before returning, we return all CPUs that were offline prior to the migration
+> back to the offline state. We should be doing that here as well. This should
+> be as simple as adding a call to rtas_offline_cpus_mask() here.
 
-However, the array of page size definitions is only initalised for
-various MMU_PAGE_* constants, so it contains a number of 0-initialised
-elements with def->shift == 0. This means we end up shifting by a
-very large number, which gives the following UBSan splat:
+You are right. I will add the code to undo the offline and send it.
 
-================================================================================
-UBSAN: Undefined behaviour in /home/dja/dev/linux/linux/arch/powerpc/mm/tlb_nohash.c:506:21
-shift exponent 4294967286 is too large for 32-bit type 'unsigned int'
-CPU: 0 PID: 0 Comm: swapper Not tainted 4.19.0-rc3-00045-ga604f927b012-dirty #6
-Call Trace:
-[c00000000101bc20] [c000000000a13d54] .dump_stack+0xa8/0xec (unreliable)
-[c00000000101bcb0] [c0000000004f20a8] .ubsan_epilogue+0x18/0x64
-[c00000000101bd30] [c0000000004f2b10] .__ubsan_handle_shift_out_of_bounds+0x110/0x1a4
-[c00000000101be20] [c000000000d21760] .early_init_mmu+0x1b4/0x5a0
-[c00000000101bf10] [c000000000d1ba28] .early_setup+0x100/0x130
-[c00000000101bf90] [c000000000000528] start_here_multiplatform+0x68/0x80
-================================================================================
+Thanks for the review!
 
-Fix this by first checking if the element exists (shift != 0) before
-constructing the constant.
-
-Signed-off-by: Daniel Axtens <dja@axtens.net>
----
- arch/powerpc/mm/tlb_nohash.c | 3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/arch/powerpc/mm/tlb_nohash.c b/arch/powerpc/mm/tlb_nohash.c
-index 15fe5f0c8665..ae5d568e267f 100644
---- a/arch/powerpc/mm/tlb_nohash.c
-+++ b/arch/powerpc/mm/tlb_nohash.c
-@@ -503,6 +503,9 @@ static void setup_page_sizes(void)
- 		for (psize = 0; psize < MMU_PAGE_COUNT; ++psize) {
- 			struct mmu_psize_def *def = &mmu_psize_defs[psize];
- 
-+			if (!def->shift)
-+				continue;
-+
- 			if (tlb1ps & (1U << (def->shift - 10))) {
- 				def->flags |= MMU_PAGE_SIZE_DIRECT;
- 
--- 
-2.17.1
+> 
+> -Nathan
+> 
+> >>> +		goto out;
+> >>> +	}
+> >>> +
+> >>>  	stop_topology_update();
+> >>>
+> >>>  	/* Call function on all CPUs.  One of us will make the
+> >>>
 
