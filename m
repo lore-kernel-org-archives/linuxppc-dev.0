@@ -2,69 +2,64 @@ Return-Path: <SRS0=DRoX=MN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS autolearn=ham
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E008C43143
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 23:01:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 98071C43143
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 23:03:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 60700206B2
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 23:01:52 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="Um7HmHPL"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 60700206B2
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
+	by mail.kernel.org (Postfix) with ESMTPS id 11026206B2
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 23:03:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 11026206B2
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=windriver.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42PHpk2rkczF3Cf
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 09:01:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42PHrp552LzF3DL
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 09:03:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=windriver.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="Um7HmHPL";
-	dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42PHkB0xw8zF3D6
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Oct 2018 08:57:54 +1000 (AEST)
+ spf=pass (mailfrom) smtp.mailfrom=windriver.com
+ (client-ip=147.11.146.13; helo=mail1.windriver.com;
+ envelope-from=jason.wessel@windriver.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="Um7HmHPL"; 
- dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=windriver.com
+X-Greylist: delayed 11265 seconds by postgrey-1.36 at bilbo;
+ Tue, 02 Oct 2018 09:00:12 AEST
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 42PHk90b5Dz9s3l;
- Tue,  2 Oct 2018 08:57:53 +1000 (AEST)
-Authentication-Results: ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.org
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1538434673; bh=VzMmh9hqTajqe6+n2bmegkVk55anULfwfRAg5jNJt1U=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=Um7HmHPLZ/LJ1L/s9jBF4w6xdHnmM2E4RkaZL08P67+mF7erIULRtXJMtcs+m4xLq
- rcT5Sr3zzHIPBJuPnHB6gBSIOxYt7t/KO37Ah3B0n5IsKq1uFgIyMIXdHHYjXj36eK
- z0g5rbV7EEdX5MW2HfE5P2lEdHXAKil5ZboGRCv/jFzr4GdZpSfPeFZguxN32VogMt
- f+x6qum8XnlffTSRwnnzGcPQ8BYoHyIUuYmhsKeZwrCmNJV1PstAmfcwHbvCGT+8+I
- DvKibEQpYom2DoOBVV5T9P3LN2WL3lUrR7qHn3WbMQQbcYheliXQtxn35WqJKZNc5i
- yNJi2O7cJPRmg==
-Date: Tue, 2 Oct 2018 08:57:51 +1000
-From: Anton Blanchard <anton@ozlabs.org>
-To: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH 2/2] powerpc/time: Only cap decrementer when watchdog is
- enabled
-Message-ID: <20181002085751.0dc17ff2@kryten>
-In-Reply-To: <20180929151618.1e15ca4c@roar.ozlabs.ibm.com>
-References: <20180929012607.10204-1-anton@ozlabs.org>
- <20180929012607.10204-2-anton@ozlabs.org>
- <20180929151618.1e15ca4c@roar.ozlabs.ibm.com>
-X-Mailer: Mutt/1.8.0 (2017-02-23)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42PHmr2XJXzF31V
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Oct 2018 09:00:11 +1000 (AEST)
+Received: from ALA-HCA.corp.ad.wrs.com ([147.11.189.40])
+ by mail1.windriver.com (8.15.2/8.15.1) with ESMTPS id w91JqDP1001179
+ (version=TLSv1 cipher=AES128-SHA bits=128 verify=FAIL);
+ Mon, 1 Oct 2018 12:52:13 -0700 (PDT)
+Received: from [172.25.59.211] (172.25.59.211) by ALA-HCA.corp.ad.wrs.com
+ (147.11.189.40) with Microsoft SMTP Server id 14.3.408.0; Mon, 1 Oct 2018
+ 12:52:12 -0700
+Subject: Re: [PATCH] kdb: use correct pointer when 'btc' calls 'btt'
+To: Michael Ellerman <mpe@ellerman.id.au>, Christophe LEROY
+ <christophe.leroy@c-s.fr>, Daniel Thompson <daniel.thompson@linaro.org>
+References: <ff05bd36b338f4f914780176e9eba8138e1b254b.1536927765.git.christophe.leroy@c-s.fr>
+ <20180916190610.vzqxwps7zqy2zc6o@holly.lan>
+ <5f0e0241-b7ab-b5fa-de0e-01abdbc85770@linaro.org>
+ <760ed3ff-43d9-75e5-b36c-aaa7871ffe50@c-s.fr>
+ <877ej7urh3.fsf@concordia.ellerman.id.au>
+ <7cf2d115-a58b-4585-37fc-7e58169a43a3@c-s.fr>
+ <87zhw1srt4.fsf@concordia.ellerman.id.au>
+From: Jason Wessel <jason.wessel@windriver.com>
+Message-ID: <ca845d92-674b-4ca2-3535-2621972bd13b@windriver.com>
+Date: Mon, 1 Oct 2018 14:52:11 -0500
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <87zhw1srt4.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,31 +71,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mikey@neuling.org, paulus@samba.org, oohall@gmail.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: kgdb-bugreport@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org, me@tobin.cc
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Nick,
+On 09/28/2018 07:57 AM, Michael Ellerman wrote:
+> Christophe LEROY <christophe.leroy@c-s.fr> writes:
+>> Le 27/09/2018 à 13:09, Michael Ellerman a écrit :
+>>> Christophe LEROY <christophe.leroy@c-s.fr> writes:
+>>>> Le 26/09/2018 à 13:11, Daniel Thompson a écrit :
+>>>>
+>>>> The Fixes: and now your Reviewed-by: appear automatically in patchwork
+>>>> (https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=65715),
+>>>> so I believe they'll be automatically included when Jason or someone
+>>>> else takes the patch, no ?
+>>>
+>>> patchwork won't add the Fixes tag from the reply, it needs to be in the
+>>> original mail.
+>>>
+>>> See:
+>>>     https://github.com/getpatchwork/patchwork/issues/151
+>>>
+>>
+>> Ok, so it accounts it and adds a '1' in the F column in the patches
+>> list, but won't take it into account.
+> 
+> Yes. The logic that populates the columns is separate from the logic
+> that scrapes the tags, which is a bug :)
+> 
+>> Then I'll send a v2 with revised commit text.
+> 
 
-> Thanks for tracking this down. It's a fix for my breakage
-> 
-> a7cba02deced ("powerpc: allow soft-NMI watchdog to cover timer
-> interrupts with large decrementers")
-> 
-> Taking another look... what I had expected here is the timer subsystem
-> would have stopped the decrementer device after it processed the timer
-> and found nothing left. And we should have set DEC to max at that
-> time.
-> 
-> The above patch was really intended to only cover the timer interrupt
-> itself locking up. I wonder if we need to add
-> 
->     .set_state_oneshot_stopped = decrementer_shutdown
-> 
-> In our decremementer clockevent device?
 
-Thanks Nick, that looks much nicer, and passes my tests.
+No need.  https://git.kernel.org/pub/scm/linux/kernel/git/jwessel/kgdb.git/commit/?h=kgdb-next
 
-Anton
+Since it is a regression fix, we'll try and get it merged as soon as we can.
+
+Cheers,
+Jason.
