@@ -6,72 +6,72 @@ X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CC244C43143
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 23:23:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DEB9CC43143
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 23:25:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3F6FA2084C
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 23:23:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3F6FA2084C
+	by mail.kernel.org (Postfix) with ESMTPS id 57DCF2084C
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 23:25:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 57DCF2084C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42PJHm1w6JzF3DT
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 09:23:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42PJKx1815zF09y
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 09:25:25 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=tyreld@linux.vnet.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42PJDV5Fj3zF3F0
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Oct 2018 09:20:42 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42PJHp4pqmzF3F0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Oct 2018 09:23:34 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w91NIVnm023643
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Oct 2018 19:20:39 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2mus4tg9j3-1
+ w91NIUTv056867
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Oct 2018 19:23:32 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2mutcxngy5-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Oct 2018 19:20:39 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Oct 2018 19:23:32 -0400
 Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Mon, 1 Oct 2018 17:20:38 -0600
-Received: from b03cxnp08027.gho.boulder.ibm.com (9.17.130.19)
- by e35.co.us.ibm.com (192.168.1.135) with IBM ESMTP SMTP Gateway: Authorized
+ Mon, 1 Oct 2018 17:23:31 -0600
+Received: from b03cxnp08028.gho.boulder.ibm.com (9.17.130.20)
+ by e33.co.us.ibm.com (192.168.1.133) with IBM ESMTP SMTP Gateway: Authorized
  Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 1 Oct 2018 17:20:35 -0600
+ Mon, 1 Oct 2018 17:23:27 -0600
 Received: from b03ledav004.gho.boulder.ibm.com
  (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- w91NKYgK33226928
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ w91NNRDZ27590808
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Mon, 1 Oct 2018 16:20:34 -0700
+ Mon, 1 Oct 2018 16:23:27 -0700
 Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id CD19778066;
- Mon,  1 Oct 2018 17:20:34 -0600 (MDT)
+ by IMSVA (Postfix) with ESMTP id 0488778066;
+ Mon,  1 Oct 2018 17:23:27 -0600 (MDT)
 Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9126D78068;
- Mon,  1 Oct 2018 17:20:31 -0600 (MDT)
+ by IMSVA (Postfix) with ESMTP id 9E5C578064;
+ Mon,  1 Oct 2018 17:23:23 -0600 (MDT)
 Received: from oc6857751186.ibm.com (unknown [9.85.143.166])
  by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
- Mon,  1 Oct 2018 17:20:31 -0600 (MDT)
+ Mon,  1 Oct 2018 17:23:23 -0600 (MDT)
 Subject: Re: [PATCH] migration/mm: Add WARN_ON to try_offline_node
 To: Michal Hocko <mhocko@kernel.org>,
  Michael Bringmann <mwb@linux.vnet.ibm.com>
 References: <20181001185616.11427.35521.stgit@ltcalpine2-lp9.aus.stglabs.ibm.com>
  <20181001202724.GL18290@dhcp22.suse.cz>
 From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Date: Mon, 1 Oct 2018 16:20:30 -0700
+Date: Mon, 1 Oct 2018 16:23:22 -0700
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
  Thunderbird/52.9.1
 MIME-Version: 1.0
@@ -80,21 +80,21 @@ Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
-x-cbid: 18100123-0012-0000-0000-000016BF5EDC
+x-cbid: 18100123-0036-0000-0000-00000A425FFB
 X-IBM-SpamModules-Scores: 
 X-IBM-SpamModules-Versions: BY=3.00009805; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000267; SDB=6.01096516; UDB=6.00566995; IPR=6.00876559; 
- MB=3.00023581; MTD=3.00000008; XFM=3.00000015; UTC=2018-10-01 23:20:38
+ PH=3.00000004; SC=3.00000267; SDB=6.01096517; UDB=6.00566995; IPR=6.00876559; 
+ MB=3.00023581; MTD=3.00000008; XFM=3.00000015; UTC=2018-10-01 23:23:31
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18100123-0013-0000-0000-00005499D067
-Message-Id: <bdbca329-7d35-0535-1737-94a06a19ae28@linux.vnet.ibm.com>
+x-cbparentid: 18100123-0037-0000-0000-00004922A2C1
+Message-Id: <75acdad4-f0f4-f9c6-8a5c-3df44d4882cf@linux.vnet.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2018-10-01_13:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=911 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1807170000 definitions=main-1810010222
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -161,9 +161,9 @@ On 10/01/2018 01:27 PM, Michal Hocko wrote:
 > memory range is valid while the node association is not?
 > 
 
-I think the issue here is a race between the LPM code updating affinity and PRRN events being processed. Does your other patch[1] not fix the issue? Or is it that the LPM affinity updates don't do any of the initialization/allocation you mentioned?
+I guess with respect to my previous reply that patch in conjunction with this patch set as well?
+
+https://lore.kernel.org/linuxppc-dev/20181001125846.2676.89826.stgit@ltcalpine2-lp9.aus.stglabs.ibm.com/T/#t
 
 -Tyrel
-
-[1] https://lore.kernel.org/linuxppc-dev/20181001185603.11373.61650.stgit@ltcalpine2-lp9.aus.stglabs.ibm.com/T/#u
 
