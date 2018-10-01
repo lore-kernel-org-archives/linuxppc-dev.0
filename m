@@ -2,93 +2,84 @@ Return-Path: <SRS0=DRoX=MN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1DDC3C004D2
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 02:25:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B5BADC43143
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 05:52:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 61B192083C
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 02:25:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id D7F5E206B2
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 05:52:25 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="CxOwSRV7"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 61B192083C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="X2MVzJlJ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D7F5E206B2
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42NmMr0G93zF26H
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 12:25:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Nryv44R5zF35T
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 15:52:23 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="CxOwSRV7";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nifty.com header.i=@nifty.com header.b="X2MVzJlJ";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
- envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+ spf=softfail (mailfrom) smtp.mailfrom=socionext.com
+ (client-ip=210.131.2.91; helo=conssluserg-06.nifty.com;
+ envelope-from=yamada.masahiro@socionext.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
+ dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="CxOwSRV7"; 
+ unprotected) header.d=nifty.com header.i=@nifty.com header.b="X2MVzJlJ"; 
  dkim-atps=neutral
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
- [IPv6:2607:f8b0:4864:20::541])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from conssluserg-06.nifty.com (conssluserg-06.nifty.com
+ [210.131.2.91])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42NmKP61LVzF35w
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2018 12:23:05 +1000 (AEST)
-Received: by mail-pg1-x541.google.com with SMTP id n31-v6so8313911pgm.7
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Sep 2018 19:23:05 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=Szguqu1+pnw0T8qAonEvyY+8S8SROfSFf95BgCbriTk=;
- b=CxOwSRV7YbVGl2BT19HfUs9STA0cENfJFpCHYf7UFctmWDZApEh4zc0qOJDnzNzszK
- 9oYHlAiJENMy1doNUEZeVKDdgBusCCi2KuRMlxmLZa+ht8vX0eJvDObcw+U775JntAQp
- I2W1ABYDajlxOGh+vs2KhzX6Q6RqR8SinM9bkogaHxP5f6smWdSJmAXvGi40jSFQep6G
- NyVH3+DjD0EAxajVungo1rM0/xtQo7tL0kg3ogUifwhXX8SR/GzBbc8IULGJYWHtep61
- SXUn8G1s/ybwqeRYQCEpwArU/6QgXdpj8e2iwuMVxBPCmlBUI6nGmS+YSo5Kx6FjDe/o
- 4BTw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=Szguqu1+pnw0T8qAonEvyY+8S8SROfSFf95BgCbriTk=;
- b=ER7Rgq3C5qSB6fmcI+ycv5qKKo4wlq8rfDu0NnWHWEkwAetU3CQFy2NWUzNZTfp6tY
- LeJQCVzelZftp63KrI4uKzoiNsu/Td3psB95ga8DxaILvsODaCbNzqGpHDBuF1OSY4Kd
- 85Gvj5r15wVyY9IgVZPCUMQhauax4uLDNAMG5v2I2pRyK5Ik1HPnmWv9g822LXwrH98T
- jXZx68VuZmuPrpVyyM2WZz7XL/L+BBgiP3QNGepgPkFyGHBS533OOhiyzwYnAL3pxjF4
- XfWNt2yoOqG3jDXpu7Ylr3HYaWua26jOSNlAsjS+YaLLlAIMfNvcdV9iXgStm+F7pW6i
- D23Q==
-X-Gm-Message-State: ABuFfojv6cuA3lytuQzlI3Mxz9pb5DSXs/ECnpV6/B+mrU3yTcPsYRwJ
- k2qc/WoqlX6IQF139LsOGok=
-X-Google-Smtp-Source: ACcGV62m/Q/Obce1UW8qpngBbnlM3dYeO/Xul0Jkhp7AvWsa/89xfdVw6n9RVI/jicS/CJDhNHjteg==
-X-Received: by 2002:a17:902:e185:: with SMTP id
- cd5-v6mr9306948plb.224.1538360583537; 
- Sun, 30 Sep 2018 19:23:03 -0700 (PDT)
-Received: from roar.ozlabs.ibm.com (59-102-83-213.tpgi.com.au. [59.102.83.213])
- by smtp.gmail.com with ESMTPSA id g12-v6sm15710336pfo.50.2018.09.30.19.22.59
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Sun, 30 Sep 2018 19:23:02 -0700 (PDT)
-Date: Mon, 1 Oct 2018 12:22:56 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Bin Meng <bmeng.cn@gmail.com>
-Subject: Re: [PATCH 2/2] powerpc/64: Increase stack redzone for 64-bit
- kernel to 512 bytes
-Message-ID: <20181001122256.7cfdf186@roar.ozlabs.ibm.com>
-In-Reply-To: <CAEUhbmUih9irf-A8E4rouvpWKjeqg78Vzg+xm5TzUVB_vLPr=g@mail.gmail.com>
-References: <1538288720-14910-1-git-send-email-bmeng.cn@gmail.com>
- <1538288720-14910-2-git-send-email-bmeng.cn@gmail.com>
- <20181001092715.0a2696bd@roar.ozlabs.ibm.com>
- <CAEUhbmUih9irf-A8E4rouvpWKjeqg78Vzg+xm5TzUVB_vLPr=g@mail.gmail.com>
-X-Mailer: Claws Mail 3.17.0 (GTK+ 2.24.32; x86_64-pc-linux-gnu)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42NrwJ10CyzF35X
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2018 15:50:07 +1000 (AEST)
+Received: from mail-vk1-f172.google.com (mail-vk1-f172.google.com
+ [209.85.221.172]) (authenticated)
+ by conssluserg-06.nifty.com with ESMTP id w915nhCU018862
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Oct 2018 14:49:43 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conssluserg-06.nifty.com w915nhCU018862
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
+ s=dec2015msa; t=1538372984;
+ bh=Qnw6nfv2f5Qfhbl6CcKxxBJpYuyhxpkGAFyiVgJV+BE=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=X2MVzJlJn2/a1+FprtsEbUVyFee8l4lY0RG8UJgIjEom/1NzC6EUIYq/RS6lHis5c
+ jFVdFzePf8tg5WTjx8+xQ2BReCX48uMSMh4ddvoFCJqDjQfxYk3C3n/5zxXkYOMkNp
+ CDqz8D4xZUtp2Ii1hmH9UoUMyoMzxh8kXa4MulNqGwTQwblQ/dlHGwTPHYmfQb6Uqq
+ dJmpzkfdKV7IzNdeODt9aAzspuAT45rd+0cTC36a+vps8z5nJLm0L6SvsxlQidPoYJ
+ RuVXLMikOdN1C/82GeDy0hFBuP3sme/07u2XxBSJdd9UeKoVYFP5jZxFyi+IvJCxl8
+ FqaOeD62HAiUQ==
+X-Nifty-SrcIP: [209.85.221.172]
+Received: by mail-vk1-f172.google.com with SMTP id w193-v6so2701272vke.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Sep 2018 22:49:43 -0700 (PDT)
+X-Gm-Message-State: ABuFfojcMQz8mpyz3mi53ZRZtstZLZayTkxGZGLg0CxXoSUjY1T9LqQF
+ s8uaBUCM7icOjmfq+ktJCwuGU+Xe+/CRGFwsfyo=
+X-Google-Smtp-Source: ACcGV62iRmxiHkB3QMTJljzoGoephgbyQk5RidQoVpOMzclvUjQgLINmFzCENJujD3tHwm/uyOI4PiPdrnFhgJZdJcU=
+X-Received: by 2002:a1f:28e:: with SMTP id 136-v6mr3353329vkc.34.1538372982761; 
+ Sun, 30 Sep 2018 22:49:42 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+References: <20180910150403.19476-1-robh@kernel.org>
+ <20180910150403.19476-7-robh@kernel.org>
+ <CAL_Jsq+=VbdcVLiwXbOA5d+R2YY6=2Pw2bQpci-jj-JvereD1A@mail.gmail.com>
+ <CAK7LNAQFqhWw+LwDoypGG=OP6tH4qf2tT=LvtchK2GoiNyzDXg@mail.gmail.com>
+ <CAMuHMdWEnoh97_jiDWMq=ke4PrhSFbToYnx91CPLBuq3mOGzoQ@mail.gmail.com>
+ <CAK7LNATkkOiYPj2RLubcgZ_z59Bhz4GkgWqPMbnaHBk7EisXLg@mail.gmail.com>
+ <20180928154150.GA25013@bogus>
+In-Reply-To: <20180928154150.GA25013@bogus>
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+Date: Mon, 1 Oct 2018 14:49:06 +0900
+X-Gmail-Original-Message-ID: <CAK7LNATiSbwVfCRNsDOyksfq5wcv0pnNQYnMXdo2yRyE7fcn-Q@mail.gmail.com>
+Message-ID: <CAK7LNATiSbwVfCRNsDOyksfq5wcv0pnNQYnMXdo2yRyE7fcn-Q@mail.gmail.com>
+Subject: Re: [PATCH v3 6/9] kbuild: consolidate Devicetree dtb build rules
+To: Rob Herring <robh@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,57 +91,99 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Linux-MIPS <linux-mips@linux-mips.org>, linux-xtensa@linux-xtensa.org,
+ Will Deacon <will.deacon@arm.com>, Max Filippov <jcmvbkbc@gmail.com>,
+ Paul Mackerras <paulus@samba.org>, Frank Rowand <frowand.list@gmail.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Russell King <linux@armlinux.org.uk>, Ley Foon Tan <ley.foon.tan@intel.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, James Hogan <jhogan@kernel.org>,
+ arcml <linux-snps-arc@lists.infradead.org>,
+ "moderated list:H8/300 ARCHITECTURE" <uclinux-h8-devel@lists.sourceforge.jp>,
+ DTML <devicetree@vger.kernel.org>,
+ Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
+ linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+ Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>,
+ Michal Marek <michal.lkml@markovi.net>, Vineet Gupta <vgupta@synopsys.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>,
+ nios2-dev@lists.rocketboards.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 1 Oct 2018 09:11:04 +0800
-Bin Meng <bmeng.cn@gmail.com> wrote:
+Hi Rob,
 
-> Hi Nick,
-> 
-> On Mon, Oct 1, 2018 at 7:27 AM Nicholas Piggin <npiggin@gmail.com> wrote:
-> >
-> > On Sat, 29 Sep 2018 23:25:20 -0700
-> > Bin Meng <bmeng.cn@gmail.com> wrote:
-> >  
-> > > commit 573ebfa6601f ("powerpc: Increase stack redzone for 64-bit
-> > > userspace to 512 bytes") only changes stack userspace redzone size.
-> > > We need increase the kernel one to 512 bytes too per ABIv2 spec.  
-> >
-> > You're right we need 512 to be compatible with ABIv2, but as the
-> > comment says, gcc limits this to 288 bytes so that's what is used
-> > to save stack space. We can use a compiler version test to change
-> > this if llvm or a new version of gcc does something different.
-> >  
-> 
-> I believe what the comment says is for ABIv1. At the time when commit
-> 573ebfa6601f was submitted, kernel had not switched to ABIv2 build
-> yet.
 
-I see, yes you are right about that. However gcc still seems to be using
-288 bytes.
+2018=E5=B9=B49=E6=9C=8829=E6=97=A5(=E5=9C=9F) 0:43 Rob Herring <robh@kernel=
+.org>:
 
-static inline bool
-offset_below_red_zone_p (HOST_WIDE_INT offset)
-{
-  return offset < (DEFAULT_ABI == ABI_V4
-                   ? 0
-                   : TARGET_32BIT ? -220 : -288);
-}
+> +#
+> -------------------------------------------------------------------------=
+--
+> +# Devicetree files
+> +
+> +ifneq ($(wildcard $(srctree)/arch/$(SRCARCH)/boot/dts/),)
+> +dtstree :=3D arch/$(SRCARCH)/boot/dts
+> +endif
+> +
+> +ifneq ($(dtstree),)
+> +
+> +%.dtb : scripts_dtc
 
-llvm does as well AFAIKS
+%.dtb: prepare3 prepare
 
-  // DarwinABI has a 224-byte red zone. PPC32 SVR4ABI(Non-DarwinABI) has no
-  // red zone and PPC64 SVR4ABI has a 288-byte red zone.
-  unsigned  getRedZoneSize() const {
-    return isDarwinABI() ? 224 : (isPPC64() ? 288 : 0);
-  }
 
-So I suspect we can get away with using 288 for the kernel. Although
-the ELFv2 ABI allows 512, I suspect at this point compilers won't switch
-over without an explicit red zone size flag.
+because we need to make sure KERNELRELEASE
+is correctly defined before dtbs_install happens.
 
-Thanks,
-Nick
+
+> +       $(Q)$(MAKE) $(build)=3D$(dtstree) $(dtstree)/$@
+> +
+> +PHONY +=3D dtbs dtbs_install
+> +dtbs: scripts_dtc
+
+
+dtbs: prepare3 scripts_dtc
+
+
+
+> +       $(Q)$(MAKE) $(build)=3D$(dtstree)
+> +
+> +dtbs_install: dtbs
+
+
+Please do not have dtbs_install to depend on dtbs.
+
+No install targets should ever trigger building anything
+in the source tree.
+
+
+For the background, see the commit log of
+19514fc665ffbce624785f76ee7ad0ea6378a527
+
+
+
+
+> +       $(Q)$(MAKE) $(dtbinst)=3D$(dtstree)
+> +
+> +ifdef CONFIG_OF_EARLY_FLATTREE
+> +all: dtbs
+> +endif
+> +
+> +endif
+> +
+> +PHONY +=3D scripts_dtc
+> +scripts_dtc: scripts_basic
+> +       $(Q)$(MAKE) $(build)=3Dscripts/dtc
+> +
+>  #
+> -------------------------------------------------------------------------=
+--
+>  # Modules
+>
+
+
+--=20
+Best Regards
+Masahiro Yamada
