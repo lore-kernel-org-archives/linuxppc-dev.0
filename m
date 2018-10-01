@@ -2,67 +2,87 @@ Return-Path: <SRS0=DRoX=MN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 67C11C43143
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 12:53:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3562BC43143
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 12:56:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DA4D92084C
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 12:53:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DA4D92084C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 78D402084C
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 12:56:17 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hQbF/jJv"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 78D402084C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42P2Jc5qBmzF37q
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 22:53:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by lists.ozlabs.org (Postfix) with ESMTP id 42P2Mz5Fg6zF0wf
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 22:56:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="hQbF/jJv";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2a00:1450:4864:20::544; helo=mail-ed1-x544.google.com;
+ envelope-from=bmeng.cn@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="hQbF/jJv"; 
+ dkim-atps=neutral
+Received: from mail-ed1-x544.google.com (mail-ed1-x544.google.com
+ [IPv6:2a00:1450:4864:20::544])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42P1pM6JLCzF33f
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2018 22:30:35 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 42P1p918cXz9ttCY;
- Mon,  1 Oct 2018 14:30:25 +0200 (CEST)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 5OsY_MTIGc8z; Mon,  1 Oct 2018 14:30:25 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 42P1p90bswz9ttBl;
- Mon,  1 Oct 2018 14:30:25 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 2C3518B968;
- Mon,  1 Oct 2018 14:30:32 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id hnZmVxk63QDA; Mon,  1 Oct 2018 14:30:32 +0200 (CEST)
-Received: from pc16082vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
- [172.25.231.3])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id EA6318B95C;
- Mon,  1 Oct 2018 14:30:31 +0200 (CEST)
-Received: by pc16082vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id DE7D36F36F; Mon,  1 Oct 2018 12:30:31 +0000 (UTC)
-Message-Id: <e218eef4c27f7cf00c41914ba977b29edba943ff.1538396659.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1538396658.git.christophe.leroy@c-s.fr>
-References: <cover.1538396658.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [RFC PATCH v3 7/7] powerpc/64: Modify CURRENT_THREAD_INFO()
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
- aneesh.kumar@linux.vnet.ibm.com, npiggin@gmail.com
-Date: Mon,  1 Oct 2018 12:30:31 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42P23341BQzF35s
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2018 22:41:35 +1000 (AEST)
+Received: by mail-ed1-x544.google.com with SMTP id c22-v6so445150edc.4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Oct 2018 05:41:35 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=EzWP5N7joT8dCGKElIenLmA4Qlb9ymLZblXC2podw5o=;
+ b=hQbF/jJv+qrtQ5bnK3N2+j0wEfp/dxUczg32oaSWG5tfMiADZP2C6wi8K9WGriRHZe
+ ck566bYyowlCnWrgyhBSC2x1U7uw6SOxOEvYEIsqA5+CKPFl8AyaAvq1xwafh9TM7/Ft
+ IezDboC0Mhqn4cUeChH+CEguJwgY7lXVbbGk4nGF2yKxYXwD7+iewHP8TSPMHJVN/vMY
+ L7q4mXfvu8SAFq9e0/VEUUdcUY/EinNhV6MxY3aRyQG7hzLVbjVXF+qiQJbf56nV+KN/
+ T/LO+RlvIlUlk3b5PGXC9mdc1Hjz2Bm+5XtG23J0eW75XfZJGKF2rxgF1TQiYVDJE+KJ
+ o93w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=EzWP5N7joT8dCGKElIenLmA4Qlb9ymLZblXC2podw5o=;
+ b=YWuZaiX9uVSFjBJOQKySN5L15t/NKNSmZkBal5NW7TlfPK41pSsro+UqMlhz4D5CSM
+ SuevKpHvL6Av9VXCkSs/qqMVYTY+WO///F1ejiOTYCS7o1NS8SNFaaGZ5+GjsdiGWCBC
+ lmqRSvrVdHtnKDAISjO1XykIv2k3lkOinjo7ZAM6YfKopldMTt9Gac57BvANMWEeVsvI
+ 0SRczMs0Bu1L4pMMFuy0fqRkHqBZCotKnUxrfjX8i2WK6uruXYhoK4gJiEQjgxQYh7yk
+ BDrxe+zD3GV5UMqGL8ffWwGQYU6ZliVZirZDcHltD+hDSCTAjfVZ35rXR2/TPqrTC8vH
+ m9Qg==
+X-Gm-Message-State: ABuFfogttjHiP5Szlf2xygzsTsDBNMcfwTBPMNinnVHpUDY2sMLYfNrh
+ vR/V5WyaQ6rMxNFa4VlvN+X1nk5ktvCJuWTk1Gs=
+X-Google-Smtp-Source: ACcGV63TK8GpRfODtezGdN+GlUflrvUpWa6NEDueM1Ky7UIqFWv+iBxb0y2sValOoxjl3fVnooGrN2U/169xGh+ERh4=
+X-Received: by 2002:a50:fb8f:: with SMTP id
+ e15-v6mr18027298edq.153.1538397692531; 
+ Mon, 01 Oct 2018 05:41:32 -0700 (PDT)
+MIME-Version: 1.0
+References: <1538288720-14910-1-git-send-email-bmeng.cn@gmail.com>
+ <1538288720-14910-2-git-send-email-bmeng.cn@gmail.com>
+ <20181001092715.0a2696bd@roar.ozlabs.ibm.com>
+ <CAEUhbmUih9irf-A8E4rouvpWKjeqg78Vzg+xm5TzUVB_vLPr=g@mail.gmail.com>
+ <20181001122256.7cfdf186@roar.ozlabs.ibm.com>
+In-Reply-To: <20181001122256.7cfdf186@roar.ozlabs.ibm.com>
+From: Bin Meng <bmeng.cn@gmail.com>
+Date: Mon, 1 Oct 2018 20:41:19 +0800
+Message-ID: <CAEUhbmUW4jUwLEM7_gDXHVqso7sfX5_YvAuWXfKh4ckKH6NKWQ@mail.gmail.com>
+Subject: Re: [PATCH 2/2] powerpc/64: Increase stack redzone for 64-bit kernel
+ to 512 bytes
+To: npiggin@gmail.com
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,193 +94,67 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-CURRENT_THREAD_INFO() now uses the PACA to retrieve 'current' pointer,
-it doesn't use 'sp' anymore.
+Hi Nick,
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/include/asm/exception-64s.h       |  4 ++--
- arch/powerpc/include/asm/thread_info.h         |  2 +-
- arch/powerpc/kernel/entry_64.S                 | 10 +++++-----
- arch/powerpc/kernel/exceptions-64e.S           |  2 +-
- arch/powerpc/kernel/exceptions-64s.S           |  2 +-
- arch/powerpc/kernel/idle_book3e.S              |  2 +-
- arch/powerpc/kernel/idle_power4.S              |  2 +-
- arch/powerpc/kernel/trace/ftrace_64_mprofile.S |  6 +++---
- 8 files changed, 15 insertions(+), 15 deletions(-)
+On Mon, Oct 1, 2018 at 10:23 AM Nicholas Piggin <npiggin@gmail.com> wrote:
+>
+> On Mon, 1 Oct 2018 09:11:04 +0800
+> Bin Meng <bmeng.cn@gmail.com> wrote:
+>
+> > Hi Nick,
+> >
+> > On Mon, Oct 1, 2018 at 7:27 AM Nicholas Piggin <npiggin@gmail.com> wrote:
+> > >
+> > > On Sat, 29 Sep 2018 23:25:20 -0700
+> > > Bin Meng <bmeng.cn@gmail.com> wrote:
+> > >
+> > > > commit 573ebfa6601f ("powerpc: Increase stack redzone for 64-bit
+> > > > userspace to 512 bytes") only changes stack userspace redzone size.
+> > > > We need increase the kernel one to 512 bytes too per ABIv2 spec.
+> > >
+> > > You're right we need 512 to be compatible with ABIv2, but as the
+> > > comment says, gcc limits this to 288 bytes so that's what is used
+> > > to save stack space. We can use a compiler version test to change
+> > > this if llvm or a new version of gcc does something different.
+> > >
+> >
+> > I believe what the comment says is for ABIv1. At the time when commit
+> > 573ebfa6601f was submitted, kernel had not switched to ABIv2 build
+> > yet.
+>
+> I see, yes you are right about that. However gcc still seems to be using
+> 288 bytes.
+>
+> static inline bool
+> offset_below_red_zone_p (HOST_WIDE_INT offset)
+> {
+>   return offset < (DEFAULT_ABI == ABI_V4
+>                    ? 0
+>                    : TARGET_32BIT ? -220 : -288);
+> }
+>
+> llvm does as well AFAIKS
+>
+>   // DarwinABI has a 224-byte red zone. PPC32 SVR4ABI(Non-DarwinABI) has no
+>   // red zone and PPC64 SVR4ABI has a 288-byte red zone.
+>   unsigned  getRedZoneSize() const {
+>     return isDarwinABI() ? 224 : (isPPC64() ? 288 : 0);
+>   }
+>
+> So I suspect we can get away with using 288 for the kernel. Although
+> the ELFv2 ABI allows 512, I suspect at this point compilers won't switch
+> over without an explicit red zone size flag.
+>
 
-diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
-index 47578b79f0fb..e38d84c267b8 100644
---- a/arch/powerpc/include/asm/exception-64s.h
-+++ b/arch/powerpc/include/asm/exception-64s.h
-@@ -672,7 +672,7 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
- 
- #define RUNLATCH_ON				\
- BEGIN_FTR_SECTION				\
--	CURRENT_THREAD_INFO(r3, r1);		\
-+	CURRENT_THREAD_INFO(r3);		\
- 	ld	r4,TI_LOCAL_FLAGS(r3);		\
- 	andi.	r0,r4,_TLF_RUNLATCH;		\
- 	beql	ppc64_runlatch_on_trampoline;	\
-@@ -722,7 +722,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_CTRL)
- #ifdef CONFIG_PPC_970_NAP
- #define FINISH_NAP				\
- BEGIN_FTR_SECTION				\
--	CURRENT_THREAD_INFO(r11, r1);		\
-+	CURRENT_THREAD_INFO(r11);		\
- 	ld	r9,TI_LOCAL_FLAGS(r11);		\
- 	andi.	r10,r9,_TLF_NAPPING;		\
- 	bnel	power4_fixup_nap;		\
-diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
-index 1c42df627bf3..a339de87806b 100644
---- a/arch/powerpc/include/asm/thread_info.h
-+++ b/arch/powerpc/include/asm/thread_info.h
-@@ -18,7 +18,7 @@
- #define THREAD_SIZE		(1 << THREAD_SHIFT)
- 
- #ifdef CONFIG_PPC64
--#define CURRENT_THREAD_INFO(dest, sp)	stringify_in_c(ld dest, PACACURRENT(r13))
-+#define CURRENT_THREAD_INFO(dest)	stringify_in_c(ld dest, PACACURRENT(r13))
- #endif
- 
- #ifndef __ASSEMBLY__
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 697406572592..331b9e9b6d78 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -158,7 +158,7 @@ system_call:			/* label this so stack traces look sane */
- 	li	r10,IRQS_ENABLED
- 	std	r10,SOFTE(r1)
- 
--	CURRENT_THREAD_INFO(r11, r1)
-+	CURRENT_THREAD_INFO(r11)
- 	ld	r10,TI_FLAGS(r11)
- 	andi.	r11,r10,_TIF_SYSCALL_DOTRACE
- 	bne	.Lsyscall_dotrace		/* does not return */
-@@ -205,7 +205,7 @@ system_call:			/* label this so stack traces look sane */
- 	ld	r3,RESULT(r1)
- #endif
- 
--	CURRENT_THREAD_INFO(r12, r1)
-+	CURRENT_THREAD_INFO(r12)
- 
- 	ld	r8,_MSR(r1)
- #ifdef CONFIG_PPC_BOOK3S
-@@ -336,7 +336,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
- 
- 	/* Repopulate r9 and r10 for the syscall path */
- 	addi	r9,r1,STACK_FRAME_OVERHEAD
--	CURRENT_THREAD_INFO(r10, r1)
-+	CURRENT_THREAD_INFO(r10)
- 	ld	r10,TI_FLAGS(r10)
- 
- 	cmpldi	r0,NR_syscalls
-@@ -731,7 +731,7 @@ _GLOBAL(ret_from_except_lite)
- 	mtmsrd	r10,1		  /* Update machine state */
- #endif /* CONFIG_PPC_BOOK3E */
- 
--	CURRENT_THREAD_INFO(r9, r1)
-+	CURRENT_THREAD_INFO(r9)
- 	ld	r3,_MSR(r1)
- #ifdef CONFIG_PPC_BOOK3E
- 	ld	r10,PACACURRENT(r13)
-@@ -845,7 +845,7 @@ resume_kernel:
- 1:	bl	preempt_schedule_irq
- 
- 	/* Re-test flags and eventually loop */
--	CURRENT_THREAD_INFO(r9, r1)
-+	CURRENT_THREAD_INFO(r9)
- 	ld	r4,TI_FLAGS(r9)
- 	andi.	r0,r4,_TIF_NEED_RESCHED
- 	bne	1b
-diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-index 231d066b4a3d..f48d9aa07a73 100644
---- a/arch/powerpc/kernel/exceptions-64e.S
-+++ b/arch/powerpc/kernel/exceptions-64e.S
-@@ -469,7 +469,7 @@ exc_##n##_bad_stack:							    \
-  * interrupts happen before the wait instruction.
-  */
- #define CHECK_NAPPING()							\
--	CURRENT_THREAD_INFO(r11, r1);					\
-+	CURRENT_THREAD_INFO(r11);					\
- 	ld	r10,TI_LOCAL_FLAGS(r11);				\
- 	andi.	r9,r10,_TLF_NAPPING;					\
- 	beq+	1f;							\
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 89d32bb79d5e..07701063d36e 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -1620,7 +1620,7 @@ do_hash_page:
- 	ori	r0,r0,DSISR_BAD_FAULT_64S@l
- 	and.	r0,r4,r0		/* weird error? */
- 	bne-	handle_page_fault	/* if not, try to insert a HPTE */
--	CURRENT_THREAD_INFO(r11, r1)
-+	CURRENT_THREAD_INFO(r11)
- 	lwz	r0,TI_PREEMPT(r11)	/* If we're in an "NMI" */
- 	andis.	r0,r0,NMI_MASK@h	/* (i.e. an irq when soft-disabled) */
- 	bne	77f			/* then don't call hash_page now */
-diff --git a/arch/powerpc/kernel/idle_book3e.S b/arch/powerpc/kernel/idle_book3e.S
-index 4e0d94d02030..23f3d927ea4f 100644
---- a/arch/powerpc/kernel/idle_book3e.S
-+++ b/arch/powerpc/kernel/idle_book3e.S
-@@ -63,7 +63,7 @@ _GLOBAL(\name)
- 1:	/* Let's set the _TLF_NAPPING flag so interrupts make us return
- 	 * to the right spot
- 	*/
--	CURRENT_THREAD_INFO(r11, r1)
-+	CURRENT_THREAD_INFO(r11)
- 	ld	r10,TI_LOCAL_FLAGS(r11)
- 	ori	r10,r10,_TLF_NAPPING
- 	std	r10,TI_LOCAL_FLAGS(r11)
-diff --git a/arch/powerpc/kernel/idle_power4.S b/arch/powerpc/kernel/idle_power4.S
-index a09b3c7ca176..80e09f4ec056 100644
---- a/arch/powerpc/kernel/idle_power4.S
-+++ b/arch/powerpc/kernel/idle_power4.S
-@@ -68,7 +68,7 @@ BEGIN_FTR_SECTION
- 	DSSALL
- 	sync
- END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
--	CURRENT_THREAD_INFO(r9, r1)
-+	CURRENT_THREAD_INFO(r9)
- 	ld	r8,TI_LOCAL_FLAGS(r9)	/* set napping bit */
- 	ori	r8,r8,_TLF_NAPPING	/* so when we take an exception */
- 	std	r8,TI_LOCAL_FLAGS(r9)	/* it will return to our caller */
-diff --git a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
-index 32476a6e4e9c..5ba39ec48cdd 100644
---- a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
-+++ b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
-@@ -229,7 +229,7 @@ ftrace_call:
- 	 *  - r0, r11 & r12 are free
- 	 */
- livepatch_handler:
--	CURRENT_THREAD_INFO(r12, r1)
-+	CURRENT_THREAD_INFO(r12)
- 
- 	/* Allocate 3 x 8 bytes */
- 	ld	r11, TI_livepatch_sp(r12)
-@@ -256,7 +256,7 @@ livepatch_handler:
- 	 * restore it.
- 	 */
- 
--	CURRENT_THREAD_INFO(r12, r1)
-+	CURRENT_THREAD_INFO(r12)
- 
- 	ld	r11, TI_livepatch_sp(r12)
- 
-@@ -273,7 +273,7 @@ livepatch_handler:
- 	ld	r2,  -24(r11)
- 
- 	/* Pop livepatch stack frame */
--	CURRENT_THREAD_INFO(r12, r1)
-+	CURRENT_THREAD_INFO(r12)
- 	subi	r11, r11, 24
- 	std	r11, TI_livepatch_sp(r12)
- 
--- 
-2.13.3
+Thanks for the info of gcc/llvm codes. I suspect for the red zone size
+gcc/llvm still uses ABIv1 defined value which is 288. If we get way
+with kernel using 288, what's the point of having user as 512 (commit
+573ebfa6601f)?
 
+Regards,
+Bin
