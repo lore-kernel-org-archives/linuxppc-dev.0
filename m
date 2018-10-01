@@ -2,59 +2,61 @@ Return-Path: <SRS0=DRoX=MN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-8.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 697C3C43143
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 23:05:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CA96EC43143
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 23:08:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B8318206B2
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 23:05:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id DF635206B2
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 23:08:04 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="wFaXq/0C"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B8318206B2
+	dkim=pass (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="vpSJMJrv"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DF635206B2
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42PHvK19nwzF3Cf
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 09:05:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42PHxt627NzF3Cw
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 09:08:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="wFaXq/0C";
+	dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="vpSJMJrv";
 	dkim-atps=neutral
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42PHnw6BR8zF3Cg
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Oct 2018 09:01:08 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42PHny28whzF3Cw
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Oct 2018 09:01:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="wFaXq/0C"; 
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="vpSJMJrv"; 
  dkim-atps=neutral
 Received: by ozlabs.org (Postfix, from userid 1010)
- id 42PHnw5HKDz9s8T; Tue,  2 Oct 2018 09:01:08 +1000 (AEST)
+ id 42PHny0s9fz9sBq; Tue,  2 Oct 2018 09:01:09 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1538434868; bh=CANyzqOEIXTCvCMQnj7UvhaDnAcz3Hjp4+sVy443+2I=;
- h=From:To:Cc:Subject:Date:From;
- b=wFaXq/0Cd0xI6t7hQBCg3gz1fSHvI+OvGXm4j0+6vNeakmzsKER4Uu1g5QwYSVBZh
- +QKrpktgL7WTGqWhjGMZ0QszUuhhWwoBd7XK/pIyCoLcoIFC+QRTv5Q8S3HBfBgrXY
- ES/pi4SvcBf7kTXD7aoC6BJ3gBDUaLNt01eripGKA9nSqL0ra+AisSHCRxBOLiDwm5
- E8K1O6DWs0OIMhlIqYtiXtM1nmVl4gbnvJ9mZRpqpqutvNFL0acKVSAipNue7MVwMx
- gQrrxWWorm89fXyfNZA+9aZFFfK4A4gu/GAX/ZLr1RvkmnSVHPfgqOztVhOHDZA8x2
- bzfIN26Ngs/qw==
+ t=1538434870; bh=K5AgXpLFDn9agxRmO/xfpRR427CZS+riAhLFAhKE77s=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=vpSJMJrv0vm5sSpSDv/JjhiKxrxhhCYGof3kVVY9Cx/qZRG8qBeyc5jYJ5xmC+Nra
+ n/09gxBmPW9ac+XeYbhn6kvqkcv+zjcVd0orrsIeKgHCrhbUOJuV1d2W1TVxa+rlVv
+ ei5JAWVAjH1o5vPGVZle8FbTmXyB2BR49WrbpqqxFVB/+3VZld7jRju3QQmfYzqOTn
+ /QfckkOjuF+mPSC8r4G8mDEsyMbPj6tTQ90703txivSKmRcLEGAEwiqDSLj9hhT/5D
+ uzDvH0WTcRIzenm2Rysx4eBgl7BztZlnGuHx1ufre7Cja6PM38wJyejdzqWeEEq/zq
+ keoiJeNjZX9wg==
 From: Anton Blanchard <anton@ozlabs.org>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  npiggin@gmail.com, mikey@neuling.org, oohall@gmail.com
-Subject: [PATCH 1/2] powerpc/time: Use clockevents_register_device(),
- fixing an issue with large decrementer
-Date: Tue,  2 Oct 2018 09:01:04 +1000
-Message-Id: <20181001230105.26040-1-anton@ozlabs.org>
+Subject: [PATCH 2/2] powerpc/time: Add set_state_oneshot_stopped decrementer
+ callback
+Date: Tue,  2 Oct 2018 09:01:05 +1000
+Message-Id: <20181001230105.26040-2-anton@ozlabs.org>
 X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20181001230105.26040-1-anton@ozlabs.org>
+References: <20181001230105.26040-1-anton@ozlabs.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,53 +73,39 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We currently cap the decrementer clockevent at 4 seconds, even on systems
-with large decrementer support. Fix this by converting the code to use
-clockevents_register_device() which calculates the upper bound based on
-the max_delta passed in.
+If CONFIG_PPC_WATCHDOG is enabled we always cap the decrementer to
+0x7fffffff:
+
+       if (IS_ENABLED(CONFIG_PPC_WATCHDOG))
+                set_dec(0x7fffffff);
+        else
+                set_dec(decrementer_max);
+
+If there are no future events, we don't reprogram the decrementer
+after this and we end up with 0x7fffffff even on a large decrementer
+capable system.
+
+As suggested by Nick, add a set_state_oneshot_stopped callback
+so we program the decrementer with decrementer_max if there are
+no future events.
 
 Signed-off-by: Anton Blanchard <anton@ozlabs.org>
 ---
- arch/powerpc/kernel/time.c | 17 +++--------------
- 1 file changed, 3 insertions(+), 14 deletions(-)
+ arch/powerpc/kernel/time.c | 1 +
+ 1 file changed, 1 insertion(+)
 
 diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 70f145e02487..6a1f0a084ca3 100644
+index 6a1f0a084ca3..40868f3ee113 100644
 --- a/arch/powerpc/kernel/time.c
 +++ b/arch/powerpc/kernel/time.c
-@@ -984,10 +984,10 @@ static void register_decrementer_clockevent(int cpu)
- 	*dec = decrementer_clockevent;
- 	dec->cpumask = cpumask_of(cpu);
- 
-+	clockevents_config_and_register(dec, ppc_tb_freq, 2, decrementer_max);
-+
- 	printk_once(KERN_DEBUG "clockevent: %s mult[%x] shift[%d] cpu[%d]\n",
- 		    dec->name, dec->mult, dec->shift, cpu);
--
--	clockevents_register_device(dec);
- }
- 
- static void enable_large_decrementer(void)
-@@ -1035,18 +1035,7 @@ static void __init set_decrementer_max(void)
- 
- static void __init init_decrementer_clockevent(void)
- {
--	int cpu = smp_processor_id();
--
--	clockevents_calc_mult_shift(&decrementer_clockevent, ppc_tb_freq, 4);
--
--	decrementer_clockevent.max_delta_ns =
--		clockevent_delta2ns(decrementer_max, &decrementer_clockevent);
--	decrementer_clockevent.max_delta_ticks = decrementer_max;
--	decrementer_clockevent.min_delta_ns =
--		clockevent_delta2ns(2, &decrementer_clockevent);
--	decrementer_clockevent.min_delta_ticks = 2;
--
--	register_decrementer_clockevent(cpu);
-+	register_decrementer_clockevent(smp_processor_id());
- }
- 
- void secondary_cpu_time_init(void)
+@@ -111,6 +111,7 @@ struct clock_event_device decrementer_clockevent = {
+ 	.rating			= 200,
+ 	.irq			= 0,
+ 	.set_next_event		= decrementer_set_next_event,
++	.set_state_oneshot_stopped = decrementer_shutdown,
+ 	.set_state_shutdown	= decrementer_shutdown,
+ 	.tick_resume		= decrementer_shutdown,
+ 	.features		= CLOCK_EVT_FEAT_ONESHOT |
 -- 
 2.17.1
 
