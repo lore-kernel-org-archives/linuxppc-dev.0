@@ -2,100 +2,89 @@ Return-Path: <SRS0=DRoX=MN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DEB9CC43143
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 23:25:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ED743C43143
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 23:53:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 57DCF2084C
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 23:25:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 57DCF2084C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 376852083F
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 23:53:47 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="c5zdiDki"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 376852083F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42PJKx1815zF09y
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 09:25:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42PJyd1GQNzF3DW
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 09:53:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=tyreld@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="c5zdiDki";
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::443; helo=mail-pf1-x443.google.com;
+ envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="c5zdiDki"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
+ [IPv6:2607:f8b0:4864:20::443])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42PJHp4pqmzF3F0
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Oct 2018 09:23:34 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w91NIUTv056867
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Oct 2018 19:23:32 -0400
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2mutcxngy5-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Oct 2018 19:23:32 -0400
-Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Mon, 1 Oct 2018 17:23:31 -0600
-Received: from b03cxnp08028.gho.boulder.ibm.com (9.17.130.20)
- by e33.co.us.ibm.com (192.168.1.133) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 1 Oct 2018 17:23:27 -0600
-Received: from b03ledav004.gho.boulder.ibm.com
- (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- w91NNRDZ27590808
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Mon, 1 Oct 2018 16:23:27 -0700
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0488778066;
- Mon,  1 Oct 2018 17:23:27 -0600 (MDT)
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9E5C578064;
- Mon,  1 Oct 2018 17:23:23 -0600 (MDT)
-Received: from oc6857751186.ibm.com (unknown [9.85.143.166])
- by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
- Mon,  1 Oct 2018 17:23:23 -0600 (MDT)
-Subject: Re: [PATCH] migration/mm: Add WARN_ON to try_offline_node
-To: Michal Hocko <mhocko@kernel.org>,
- Michael Bringmann <mwb@linux.vnet.ibm.com>
-References: <20181001185616.11427.35521.stgit@ltcalpine2-lp9.aus.stglabs.ibm.com>
- <20181001202724.GL18290@dhcp22.suse.cz>
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Date: Mon, 1 Oct 2018 16:23:22 -0700
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42PJw52mPTzF39y
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Oct 2018 09:51:33 +1000 (AEST)
+Received: by mail-pf1-x443.google.com with SMTP id s5-v6so102471pfj.7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Oct 2018 16:51:33 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:to:cc:subject:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=gplaKC6UEz0A+Uvp0v0Qlnbl2RdlNAz4fdwm9o7AFfc=;
+ b=c5zdiDkimz9IRvquk4YGddgRM0jjskHkNMk4Z+mkFxCwErP73SjSvxEU8l5qKcfA1W
+ 30bfSIoz4Rs14hJJ/M2SAodvL/60T5DLKyNqvPtAz6BKn5x9yhH/Q39ctIgcjA/ZaKFt
+ 2qQ/c5PS2ClshOQwnIujgXbRjdTICclPdyjEqQ5Vfwm2KQ3gm+Hpf7CDtmMIvKbPdKbM
+ pP4zRWvvn+YPu9EL9m0qpLMN1yivR110z3RaZS+6q9GQuxdZF9otP+SPLS29ZHEglN3O
+ 0wKl5pepvcVxid01rPGYGDHH7WfcM1J/gggkFjfSqEeZTMo/sggxVNJyDxV4LDwc94Jx
+ FmPg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=gplaKC6UEz0A+Uvp0v0Qlnbl2RdlNAz4fdwm9o7AFfc=;
+ b=r2DbMU0qufsUNgPmStPTu3H9ZbzDhixt2EHbJawHaYtjhfOCXds6LuLux6+PrRmxPg
+ BCZaUMfOAzhdbD3iNedOkoeMYgqz56qjuqU09yiCd9L/TETsLoCosXAyTuFROEgvGeUY
+ 4a1H8PLkrzFjasFwz+/c3uErSvUPIRJSPcMl2tiFVf7uX5icPFaSCjpLqpcds/PJ4P+H
+ g8hRYwGNBRxAtC5Oq6gF2ECZzJYMx/TKl3yTFKcscviigZrsZN9ws3G3VSgJt0FUiQgw
+ fFo/RylZLcftT/oBio4x/y202lL7WCcVTP1zpfj8+EQeGUKiCkrRoQGVesrud7nTTlxJ
+ Jp4Q==
+X-Gm-Message-State: ABuFfoh5dUltWiDOiSrRhhT43LwNqwP77temwWzkgVEblQLkdmSxOPXi
+ K/wp5OFvCMtK7Tu4OSAuVGk=
+X-Google-Smtp-Source: ACcGV60RY0EEwZ8PnLMWS7bZ6KBLp9mbnKRO8v1ARfAyC3+Q3G55MVZhvQuVn9gDXL2N5UvpEQi4pA==
+X-Received: by 2002:a62:c08b:: with SMTP id
+ g11-v6mr13722746pfk.72.1538437891115; 
+ Mon, 01 Oct 2018 16:51:31 -0700 (PDT)
+Received: from roar.ozlabs.ibm.com (59-102-83-213.tpgi.com.au. [59.102.83.213])
+ by smtp.gmail.com with ESMTPSA id b81-v6sm34559027pfm.96.2018.10.01.16.51.27
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Mon, 01 Oct 2018 16:51:30 -0700 (PDT)
+Date: Tue, 2 Oct 2018 09:51:21 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Masahiro Yamada <yamada.masahiro@socionext.com>
+Subject: Re: [PATCH] powerpc: remove leftover code of old GCC version checks
+Message-ID: <20181002095121.3f0326f7@roar.ozlabs.ibm.com>
+In-Reply-To: <1538374224-3742-1-git-send-email-yamada.masahiro@socionext.com>
+References: <1538374224-3742-1-git-send-email-yamada.masahiro@socionext.com>
+X-Mailer: Claws Mail 3.17.0 (GTK+ 2.24.32; x86_64-pc-linux-gnu)
 MIME-Version: 1.0
-In-Reply-To: <20181001202724.GL18290@dhcp22.suse.cz>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-x-cbid: 18100123-0036-0000-0000-00000A425FFB
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00009805; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000267; SDB=6.01096517; UDB=6.00566995; IPR=6.00876559; 
- MB=3.00023581; MTD=3.00000008; XFM=3.00000015; UTC=2018-10-01 23:23:31
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18100123-0037-0000-0000-00004922A2C1
-Message-Id: <75acdad4-f0f4-f9c6-8a5c-3df44d4882cf@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-10-01_13:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=911 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1807170000 definitions=main-1810010222
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,63 +96,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
- Kees Cook <keescook@chromium.org>, Mathieu Malaterre <malat@debian.org>,
- Pavel Tatashin <pasha.tatashin@oracle.com>,
- Nicholas Piggin <npiggin@gmail.com>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>,
- Juliet Kim <minkim@us.ibm.com>,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- YASUAKI ISHIMATSU <yasu.isimatu@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- Dan Williams <dan.j.williams@intel.com>, Oscar Salvador <osalvador@suse.de>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 10/01/2018 01:27 PM, Michal Hocko wrote:
-> On Mon 01-10-18 13:56:25, Michael Bringmann wrote:
->> In some LPAR migration scenarios, device-tree modifications are
->> made to the affinity of the memory in the system.  For instance,
->> it may occur that memory is installed to nodes 0,3 on a source
->> system, and to nodes 0,2 on a target system.  Node 2 may not
->> have been initialized/allocated on the target system.
->>
->> After migration, if a RTAS PRRN memory remove is made to a
->> memory block that was in node 3 on the source system, then
->> try_offline_node tries to remove it from node 2 on the target.
->> The NODE_DATA(2) block would not be initialized on the target,
->> and there is no validation check in the current code to prevent
->> the use of a NULL pointer.
-> 
-> I am not familiar with ppc and the above doesn't really help me
-> much. Sorry about that. But from the above it is not clear to me whether
-> it is the caller which does something unexpected or the hotplug code
-> being not robust enough. From your changelog I would suggest the later
-> but why don't we see the same problem for other archs? Is this a problem
-> of unrolling a partial failure?
-> 
-> dlpar_remove_lmb does the following
-> 
-> 	nid = memory_add_physaddr_to_nid(lmb->base_addr);
-> 
-> 	remove_memory(nid, lmb->base_addr, block_sz);
-> 
-> 	/* Update memory regions for memory remove */
-> 	memblock_remove(lmb->base_addr, block_sz);
-> 
-> 	dlpar_remove_device_tree_lmb(lmb);
-> 
-> Is the whole operation correct when remove_memory simply backs off
-> silently. Why don't we have to care about memblock resp
-> dlpar_remove_device_tree_lmb parts? In other words how come the physical
-> memory range is valid while the node association is not?
-> 
+On Mon,  1 Oct 2018 15:10:24 +0900
+Masahiro Yamada <yamada.masahiro@socionext.com> wrote:
 
-I guess with respect to my previous reply that patch in conjunction with this patch set as well?
+> Clean up the leftover of commit f2910f0e6835 ("powerpc: remove old
+> GCC version checks").
+> 
+> Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+> ---
+> 
+> My patch had been sent earlier, with more clean-ups:
+> https://lore.kernel.org/patchwork/patch/977805/
 
-https://lore.kernel.org/linuxppc-dev/20181001125846.2676.89826.stgit@ltcalpine2-lp9.aus.stglabs.ibm.com/T/#t
+Sorry, I missed or forgot about your patch :(
 
--Tyrel
+Thanks for tidying up my mess!
+
+Acked-by: Nicholas Piggin <npiggin@gmail.com>
+
+> 
+> Anyway, this cleans up the left-over of the Nicholas' one.
+> 
+> 
+>  arch/powerpc/Makefile | 8 --------
+>  1 file changed, 8 deletions(-)
+> 
+> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+> index 2ecd0976..b094375 100644
+> --- a/arch/powerpc/Makefile
+> +++ b/arch/powerpc/Makefile
+> @@ -400,10 +400,6 @@ archclean:
+>  
+>  archprepare: checkbin
+>  
+> -# Use the file '.tmp_gas_check' for binutils tests, as gas won't output
+> -# to stdout and these checks are run even on install targets.
+> -TOUT	:= .tmp_gas_check
+> -
+>  # Check toolchain versions:
+>  # - gcc-4.6 is the minimum kernel-wide version so nothing required.
+>  checkbin:
+> @@ -414,7 +410,3 @@ checkbin:
+>  		echo -n '*** Please use a different binutils version.' ; \
+>  		false ; \
+>  	fi
+> -
+> -
+> -CLEAN_FILES += $(TOUT)
+> -
+> -- 
+> 2.7.4
+> 
 
