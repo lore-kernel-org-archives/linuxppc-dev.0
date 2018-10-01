@@ -3,70 +3,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D3B5C43143
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 13:40:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E6C1C43143
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 13:43:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0E17D20C0A
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 13:40:12 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0E17D20C0A
+	by mail.kernel.org (Postfix) with ESMTPS id E9D0220C0A
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 13:43:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E9D0220C0A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42P3Lg09pYzF38y
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 23:40:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42P3QS4HXDzF36q
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Oct 2018 23:43:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=ego@linux.vnet.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42P2qx5VMbzF31n
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2018 23:17:01 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w91DCZAv116607
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Oct 2018 09:16:58 -0400
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2mum4r0h34-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42P2r02SyxzF35X
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2018 23:17:04 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w91DD1vj042722
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Oct 2018 09:17:02 -0400
+Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2muhmcq60q-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Oct 2018 09:16:58 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Oct 2018 09:17:00 -0400
 Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Mon, 1 Oct 2018 09:16:57 -0400
-Received: from b01cxnp22035.gho.pok.ibm.com (9.57.198.25)
- by e16.ny.us.ibm.com (146.89.104.203) with IBM ESMTP SMTP Gateway: Authorized
+ Mon, 1 Oct 2018 09:16:58 -0400
+Received: from b01cxnp23033.gho.pok.ibm.com (9.57.198.28)
+ by e14.ny.us.ibm.com (146.89.104.201) with IBM ESMTP SMTP Gateway: Authorized
  Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 1 Oct 2018 09:16:53 -0400
-Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
- [9.57.199.110])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- w91DGqOr43581588
+ Mon, 1 Oct 2018 09:16:54 -0400
+Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
+ [9.57.199.106])
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ w91DGr2s25821356
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Mon, 1 Oct 2018 13:16:52 GMT
-Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 53557AE064;
- Mon,  1 Oct 2018 09:15:12 -0400 (EDT)
-Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 04304AE068;
- Mon,  1 Oct 2018 09:15:12 -0400 (EDT)
+ Mon, 1 Oct 2018 13:16:53 GMT
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id DAB4728060;
+ Mon,  1 Oct 2018 09:14:33 -0400 (EDT)
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id A08682805A;
+ Mon,  1 Oct 2018 09:14:33 -0400 (EDT)
 Received: from sofia.ibm.com (unknown [9.124.35.106])
- by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP;
- Mon,  1 Oct 2018 09:15:11 -0400 (EDT)
+ by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP;
+ Mon,  1 Oct 2018 09:14:33 -0400 (EDT)
 Received: by sofia.ibm.com (Postfix, from userid 1000)
- id AC3932E413F; Mon,  1 Oct 2018 18:46:49 +0530 (IST)
+ id CE07F2E4141; Mon,  1 Oct 2018 18:46:49 +0530 (IST)
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 To: Dave Hansen <dave.hansen@intel.com>,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
@@ -81,21 +81,21 @@ To: Dave Hansen <dave.hansen@intel.com>,
  Nicholas Piggin <npiggin@gmail.com>,
  Murilo Opsfelder Araujo <muriloo@linux.ibm.com>,
  Anton Blanchard <anton@samba.org>
-Subject: [PATCH v9 1/3] powerpc: Detect the presence of big-cores via "ibm,
- thread-groups"
-Date: Mon,  1 Oct 2018 18:46:40 +0530
+Subject: [PATCH v9 3/3] powerpc/sysfs: Add
+ topology/smallcore_thread_siblings[_list]
+Date: Mon,  1 Oct 2018 18:46:42 +0530
 X-Mailer: git-send-email 1.8.3.1
 In-Reply-To: <1538399802-23582-1-git-send-email-ego@linux.vnet.ibm.com>
 References: <1538399802-23582-1-git-send-email-ego@linux.vnet.ibm.com>
 X-TM-AS-GCONF: 00
-x-cbid: 18100113-0072-0000-0000-000003AD4EFA
+x-cbid: 18100113-0052-0000-0000-0000033A73D3
 X-IBM-SpamModules-Scores: 
 X-IBM-SpamModules-Versions: BY=3.00009802; HX=3.00000242; KW=3.00000007;
  PH=3.00000004; SC=3.00000267; SDB=6.01096315; UDB=6.00566874; IPR=6.00876357; 
- MB=3.00023575; MTD=3.00000008; XFM=3.00000015; UTC=2018-10-01 13:16:55
+ MB=3.00023575; MTD=3.00000008; XFM=3.00000015; UTC=2018-10-01 13:16:57
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18100113-0073-0000-0000-0000499B28BA
-Message-Id: <1538399802-23582-2-git-send-email-ego@linux.vnet.ibm.com>
+x-cbparentid: 18100113-0053-0000-0000-00005E424CBA
+Message-Id: <1538399802-23582-4-git-send-email-ego@linux.vnet.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2018-10-01_08:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
@@ -123,348 +123,151 @@ Sender: "Linuxppc-dev"
 
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-On IBM POWER9, the device tree exposes a property array identifed by
-"ibm,thread-groups" which will indicate which groups of threads share
-a particular set of resources.
+This patch adds two sysfs attributes named smallcore_thread_siblings
+and smallcore_thread_siblings_list to the "topology" attribute group
+for each CPU device.
 
-As of today we only have one form of grouping identifying the group of
-threads in the core that share the L1 cache, translation cache and
-instruction data flow.
-
-This patch adds helper functions to parse the contents of
-"ibm,thread-groups" and populate a per-cpu variable to cache
-information about siblings of each CPU that share the L1, traslation
-cache and instruction data-flow.
-
-It also defines a new global variable named "has_big_cores" which
-indicates if the cores on this configuration have multiple groups of
-threads that share L1 cache.
-
-For each online CPU, it maintains a cpu_smallcore_mask, which
-indicates the online siblings which share the L1-cache with it.
+The read-only attributes
+/sys/device/system/cpu/cpuN/topology/smallcore_thread_siblings and
+/sys/device/system/cpu/cpuN/topology/smallcore_thread_siblings_list
+will the online siblings of CPU N that share the L1 cache with it on
+big-core configurations in cpumask format and cpu-list format
+respectively.
 
 Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/cputhreads.h |   2 +
- arch/powerpc/include/asm/smp.h        |   6 +
- arch/powerpc/kernel/smp.c             | 222 ++++++++++++++++++++++++++++++++++
- 3 files changed, 230 insertions(+)
+ Documentation/ABI/testing/sysfs-devices-system-cpu | 14 ++++
+ arch/powerpc/kernel/sysfs.c                        | 91 ++++++++++++++++++++++
+ 2 files changed, 105 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/cputhreads.h b/arch/powerpc/include/asm/cputhreads.h
-index d71a909..deb99fd 100644
---- a/arch/powerpc/include/asm/cputhreads.h
-+++ b/arch/powerpc/include/asm/cputhreads.h
-@@ -23,11 +23,13 @@
- extern int threads_per_core;
- extern int threads_per_subcore;
- extern int threads_shift;
-+extern bool has_big_cores;
- extern cpumask_t threads_core_mask;
- #else
- #define threads_per_core	1
- #define threads_per_subcore	1
- #define threads_shift		0
-+#define has_big_cores		0
- #define threads_core_mask	(*get_cpu_mask(0))
- #endif
+diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
+index 7331822..2a80dc2 100644
+--- a/Documentation/ABI/testing/sysfs-devices-system-cpu
++++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
+@@ -511,3 +511,17 @@ Description:	Control Symetric Multi Threading (SMT)
  
-diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
-index 95b66a0..4439893 100644
---- a/arch/powerpc/include/asm/smp.h
-+++ b/arch/powerpc/include/asm/smp.h
-@@ -100,6 +100,7 @@ static inline void set_hard_smp_processor_id(int cpu, int phys)
- DECLARE_PER_CPU(cpumask_var_t, cpu_sibling_map);
- DECLARE_PER_CPU(cpumask_var_t, cpu_l2_cache_map);
- DECLARE_PER_CPU(cpumask_var_t, cpu_core_map);
-+DECLARE_PER_CPU(cpumask_var_t, cpu_smallcore_map);
+ 			 If control status is "forceoff" or "notsupported" writes
+ 			 are rejected.
++
++What:		/sys/devices/system/cpu/cpu#/topology/smallcore_thread_siblings
++		/sys/devices/system/cpu/cpu#/topology/smallcore_thread_siblings_list
++Date:		Sept 2018
++Contact:	Linux for PowerPC mailing list <linuxppc-dev@ozlabs.org>
++Description: 	CPU topology files that describe the thread siblings of a
++		logical CPU that share the L1-cache with it on POWER9
++		big-core configurations.
++
++		smallcore_thread_siblings: internal kernel map of
++		cpu#'s hardware threads that share L1-cache with cpu#.
++
++		smallcore_thread_siblings_list: human-readable list of
++		cpu#'s hardware threads that share L1-cache with cpu#.
+diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
+index 755dc98..3049511 100644
+--- a/arch/powerpc/kernel/sysfs.c
++++ b/arch/powerpc/kernel/sysfs.c
+@@ -18,6 +18,7 @@
+ #include <asm/smp.h>
+ #include <asm/pmc.h>
+ #include <asm/firmware.h>
++#include <asm/cputhreads.h>
  
- static inline struct cpumask *cpu_sibling_mask(int cpu)
- {
-@@ -116,6 +117,11 @@ static inline struct cpumask *cpu_l2_cache_mask(int cpu)
- 	return per_cpu(cpu_l2_cache_map, cpu);
+ #include "cacheinfo.h"
+ #include "setup.h"
+@@ -1060,3 +1061,93 @@ static int __init topology_init(void)
+ 	return 0;
  }
- 
-+static inline struct cpumask *cpu_smallcore_mask(int cpu)
+ subsys_initcall(topology_init);
++
++#ifdef CONFIG_SMP
++static ssize_t smallcore_thread_siblings_show(struct device *dev,
++					      struct device_attribute *attr,
++					      char *buf)
 +{
-+	return per_cpu(cpu_smallcore_map, cpu);
++	int cpu = dev->id;
++
++	return cpumap_print_to_pagebuf(false, buf, cpu_smallcore_mask(cpu));
 +}
++static DEVICE_ATTR_RO(smallcore_thread_siblings);
 +
- extern int cpu_to_core_id(int cpu);
- 
- /* Since OpenPIC has only 4 IPIs, we use slightly different message numbers.
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index 61c1fad..22a14a9 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -74,14 +74,32 @@
- #endif
- 
- struct thread_info *secondary_ti;
-+bool has_big_cores;
- 
- DEFINE_PER_CPU(cpumask_var_t, cpu_sibling_map);
-+DEFINE_PER_CPU(cpumask_var_t, cpu_smallcore_map);
- DEFINE_PER_CPU(cpumask_var_t, cpu_l2_cache_map);
- DEFINE_PER_CPU(cpumask_var_t, cpu_core_map);
- 
- EXPORT_PER_CPU_SYMBOL(cpu_sibling_map);
- EXPORT_PER_CPU_SYMBOL(cpu_l2_cache_map);
- EXPORT_PER_CPU_SYMBOL(cpu_core_map);
-+EXPORT_SYMBOL_GPL(has_big_cores);
++static ssize_t
++	smallcore_thread_siblings_list_show(struct device *dev,
++					    struct device_attribute *attr,
++					    char *buf)
++{
++	int cpu = dev->id;
 +
-+#define MAX_THREAD_LIST_SIZE	8
-+#define THREAD_GROUP_SHARE_L1   1
-+struct thread_groups {
-+	unsigned int property;
-+	unsigned int nr_groups;
-+	unsigned int threads_per_group;
-+	unsigned int thread_list[MAX_THREAD_LIST_SIZE];
++	return cpumap_print_to_pagebuf(true, buf, cpu_smallcore_mask(cpu));
++}
++static DEVICE_ATTR_RO(smallcore_thread_siblings_list);
++
++static struct attribute *smallcore_attrs[] = {
++	&dev_attr_smallcore_thread_siblings.attr,
++	&dev_attr_smallcore_thread_siblings_list.attr,
++	NULL
 +};
 +
-+/*
-+ * On big-cores system, cpu_l1_cache_map for each CPU corresponds to
-+ * the set its siblings that share the L1-cache.
-+ */
-+DEFINE_PER_CPU(cpumask_var_t, cpu_l1_cache_map);
- 
- /* SMP operations for this machine */
- struct smp_ops_t *smp_ops;
-@@ -674,6 +692,185 @@ static void set_cpus_unrelated(int i, int j,
- }
- #endif
- 
-+/*
-+ * parse_thread_groups: Parses the "ibm,thread-groups" device tree
-+ *                      property for the CPU device node @dn and stores
-+ *                      the parsed output in the thread_groups
-+ *                      structure @tg if the ibm,thread-groups[0]
-+ *                      matches @property.
-+ *
-+ * @dn: The device node of the CPU device.
-+ * @tg: Pointer to a thread group structure into which the parsed
-+ *      output of "ibm,thread-groups" is stored.
-+ * @property: The property of the thread-group that the caller is
-+ *            interested in.
-+ *
-+ * ibm,thread-groups[0..N-1] array defines which group of threads in
-+ * the CPU-device node can be grouped together based on the property.
-+ *
-+ * ibm,thread-groups[0] tells us the property based on which the
-+ * threads are being grouped together. If this value is 1, it implies
-+ * that the threads in the same group share L1, translation cache.
-+ *
-+ * ibm,thread-groups[1] tells us how many such thread groups exist.
-+ *
-+ * ibm,thread-groups[2] tells us the number of threads in each such
-+ * group.
-+ *
-+ * ibm,thread-groups[3..N-1] is the list of threads identified by
-+ * "ibm,ppc-interrupt-server#s" arranged as per their membership in
-+ * the grouping.
-+ *
-+ * Example: If ibm,thread-groups = [1,2,4,5,6,7,8,9,10,11,12] it
-+ * implies that there are 2 groups of 4 threads each, where each group
-+ * of threads share L1, translation cache.
-+ *
-+ * The "ibm,ppc-interrupt-server#s" of the first group is {5,6,7,8}
-+ * and the "ibm,ppc-interrupt-server#s" of the second group is {9, 10,
-+ * 11, 12} structure
-+ *
-+ * Returns 0 on success, -EINVAL if the property does not exist,
-+ * -ENODATA if property does not have a value, and -EOVERFLOW if the
-+ * property data isn't large enough.
-+ */
-+static int parse_thread_groups(struct device_node *dn,
-+			       struct thread_groups *tg,
-+			       unsigned int property)
++static const struct attribute_group smallcore_attr_group = {
++	.name = "topology",
++	.attrs = smallcore_attrs
++};
++
++static int smallcore_register_cpu_online(unsigned int cpu)
 +{
-+	int i;
-+	u32 thread_group_array[3 + MAX_THREAD_LIST_SIZE];
-+	u32 *thread_list;
-+	size_t total_threads;
-+	int ret;
++	int err;
++	struct device *cpu_dev = get_cpu_device(cpu);
 +
-+	ret = of_property_read_u32_array(dn, "ibm,thread-groups",
-+					 thread_group_array, 3);
-+	if (ret)
-+		return ret;
++	if (!has_big_cores)
++		return 0;
 +
-+	tg->property = thread_group_array[0];
-+	tg->nr_groups = thread_group_array[1];
-+	tg->threads_per_group = thread_group_array[2];
-+	if (tg->property != property ||
-+	    tg->nr_groups < 1 ||
-+	    tg->threads_per_group < 1)
-+		return -ENODATA;
++	err = sysfs_merge_group(&cpu_dev->kobj, &smallcore_attr_group);
 +
-+	total_threads = tg->nr_groups * tg->threads_per_group;
-+
-+	ret = of_property_read_u32_array(dn, "ibm,thread-groups",
-+					 thread_group_array,
-+					 3 + total_threads);
-+	if (ret)
-+		return ret;
-+
-+	thread_list = &thread_group_array[3];
-+
-+	for (i = 0 ; i < total_threads; i++)
-+		tg->thread_list[i] = thread_list[i];
-+
-+	return 0;
-+}
-+
-+/*
-+ * get_cpu_thread_group_start : Searches the thread group in tg->thread_list
-+ *                              that @cpu belongs to.
-+ *
-+ * @cpu : The logical CPU whose thread group is being searched.
-+ * @tg : The thread-group structure of the CPU node which @cpu belongs
-+ *       to.
-+ *
-+ * Returns the index to tg->thread_list that points to the the start
-+ * of the thread_group that @cpu belongs to.
-+ *
-+ * Returns -1 if cpu doesn't belong to any of the groups pointed to by
-+ * tg->thread_list.
-+ */
-+static int get_cpu_thread_group_start(int cpu, struct thread_groups *tg)
-+{
-+	int hw_cpu_id = get_hard_smp_processor_id(cpu);
-+	int i, j;
-+
-+	for (i = 0; i < tg->nr_groups; i++) {
-+		int group_start = i * tg->threads_per_group;
-+
-+		for (j = 0; j < tg->threads_per_group; j++) {
-+			int idx = group_start + j;
-+
-+			if (tg->thread_list[idx] == hw_cpu_id)
-+				return group_start;
-+		}
-+	}
-+
-+	return -1;
-+}
-+
-+static int init_cpu_l1_cache_map(int cpu)
-+
-+{
-+	struct device_node *dn = of_get_cpu_node(cpu, NULL);
-+	struct thread_groups tg = {.property = 0,
-+				   .nr_groups = 0,
-+				   .threads_per_group = 0};
-+	int first_thread = cpu_first_thread_sibling(cpu);
-+	int i, cpu_group_start = -1, err = 0;
-+
-+	if (!dn)
-+		return -ENODATA;
-+
-+	err = parse_thread_groups(dn, &tg, THREAD_GROUP_SHARE_L1);
-+	if (err)
-+		goto out;
-+
-+	zalloc_cpumask_var_node(&per_cpu(cpu_l1_cache_map, cpu),
-+				GFP_KERNEL,
-+				cpu_to_node(cpu));
-+
-+	cpu_group_start = get_cpu_thread_group_start(cpu, &tg);
-+
-+	if (unlikely(cpu_group_start == -1)) {
-+		WARN_ON_ONCE(1);
-+		err = -ENODATA;
-+		goto out;
-+	}
-+
-+	for (i = first_thread; i < first_thread + threads_per_core; i++) {
-+		int i_group_start = get_cpu_thread_group_start(i, &tg);
-+
-+		if (unlikely(i_group_start == -1)) {
-+			WARN_ON_ONCE(1);
-+			err = -ENODATA;
-+			goto out;
-+		}
-+
-+		if (i_group_start == cpu_group_start)
-+			cpumask_set_cpu(i, per_cpu(cpu_l1_cache_map, cpu));
-+	}
-+
-+out:
-+	of_node_put(dn);
 +	return err;
 +}
 +
-+static int init_big_cores(void)
++static int smallcore_unregister_cpu_online(unsigned int cpu)
 +{
-+	int cpu;
++	struct device *cpu_dev = get_cpu_device(cpu);
 +
-+	for_each_possible_cpu(cpu) {
-+		int err = init_cpu_l1_cache_map(cpu);
++	if (!has_big_cores)
++		return 0;
 +
-+		if (err)
-+			return err;
++	sysfs_unmerge_group(&cpu_dev->kobj, &smallcore_attr_group);
 +
-+		zalloc_cpumask_var_node(&per_cpu(cpu_smallcore_map, cpu),
-+					GFP_KERNEL,
-+					cpu_to_node(cpu));
-+	}
-+
-+	has_big_cores = true;
 +	return 0;
 +}
 +
- void __init smp_prepare_cpus(unsigned int max_cpus)
- {
- 	unsigned int cpu;
-@@ -712,6 +909,12 @@ void __init smp_prepare_cpus(unsigned int max_cpus)
- 	cpumask_set_cpu(boot_cpuid, cpu_l2_cache_mask(boot_cpuid));
- 	cpumask_set_cpu(boot_cpuid, cpu_core_mask(boot_cpuid));
- 
-+	init_big_cores();
-+	if (has_big_cores) {
-+		cpumask_set_cpu(boot_cpuid,
-+				cpu_smallcore_mask(boot_cpuid));
-+	}
-+
- 	if (smp_ops && smp_ops->probe)
- 		smp_ops->probe();
- }
-@@ -995,10 +1198,28 @@ static void remove_cpu_from_masks(int cpu)
- 		set_cpus_unrelated(cpu, i, cpu_core_mask);
- 		set_cpus_unrelated(cpu, i, cpu_l2_cache_mask);
- 		set_cpus_unrelated(cpu, i, cpu_sibling_mask);
-+		if (has_big_cores)
-+			set_cpus_unrelated(cpu, i, cpu_smallcore_mask);
- 	}
- }
- #endif
- 
-+static inline void add_cpu_to_smallcore_masks(int cpu)
++/*
++ * NOTE: The smallcore_register_cpu_online
++ *       (resp. smallcore_unregister_cpu_online) callback will merge
++ *       (resp. unmerge) a couple of additional attributes to the
++ *       "topology" attribute group of a CPU device when the CPU comes
++ *       online (resp. goes offline).
++ *
++ *       Hence, the registration of these callbacks must happen after
++ *       topology_sysfs_init() is called so that the topology
++ *       attribute group is created before these additional attributes
++ *       can be merged/unmerged. We cannot register these callbacks in
++ *       topology_init() since this function is called before
++ *       topology_sysfs_init(). Hence we define the following
++ *       late_initcall for this purpose.
++ */
++static int __init smallcore_topology_init(void)
 +{
-+	struct cpumask *this_l1_cache_map = per_cpu(cpu_l1_cache_map, cpu);
-+	int i, first_thread = cpu_first_thread_sibling(cpu);
++	int r;
 +
 +	if (!has_big_cores)
-+		return;
++		return 0;
 +
-+	cpumask_set_cpu(cpu, cpu_smallcore_mask(cpu));
-+
-+	for (i = first_thread; i < first_thread + threads_per_core; i++) {
-+		if (cpu_online(i) && cpumask_test_cpu(i, this_l1_cache_map))
-+			set_cpus_related(i, cpu, cpu_smallcore_mask);
-+	}
++	r = cpuhp_setup_state(CPUHP_AP_ONLINE_DYN,
++			      "powerpc/topology/smallcore:online",
++			      smallcore_register_cpu_online,
++			      smallcore_unregister_cpu_online);
++	WARN_ON(r < 0);
++	return 0;
 +}
-+
- static void add_cpu_to_masks(int cpu)
- {
- 	int first_thread = cpu_first_thread_sibling(cpu);
-@@ -1015,6 +1236,7 @@ static void add_cpu_to_masks(int cpu)
- 		if (cpu_online(i))
- 			set_cpus_related(i, cpu, cpu_sibling_mask);
- 
-+	add_cpu_to_smallcore_masks(cpu);
- 	/*
- 	 * Copy the thread sibling mask into the cache sibling mask
- 	 * and mark any CPUs that share an L2 with this CPU.
++late_initcall(smallcore_topology_init);
++#endif /* CONFIG_SMP */
 -- 
 1.9.4
 
