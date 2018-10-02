@@ -7,60 +7,60 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C81FDC43143
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 12:41:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7EF0DC43143
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 12:44:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 318A720652
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 12:41:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id CCB4120652
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 12:44:32 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="ZwtNAu5F"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 318A720652
+	dkim=pass (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="RyLxYspF"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CCB4120652
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42Pf073LRmzDqnK
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 22:41:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Pf3y4J4lzF3G1
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 22:44:30 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="ZwtNAu5F";
+	dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="RyLxYspF";
 	dkim-atps=neutral
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42PcSY31xLzF36T
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42PcSY65jKzF39y
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Oct 2018 21:32:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="ZwtNAu5F"; 
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="RyLxYspF"; 
  dkim-atps=neutral
 Received: by ozlabs.org (Postfix)
- id 42PcSW6qzrz9t1r; Tue,  2 Oct 2018 21:32:11 +1000 (AEST)
+ id 42PcSX6zTrz9t2G; Tue,  2 Oct 2018 21:32:12 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 42PcSW2cl2z9t1C;
- Tue,  2 Oct 2018 21:32:11 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPSA id 42PcSX3sHlz9t2g;
+ Tue,  2 Oct 2018 21:32:12 +1000 (AEST)
 Authentication-Results: ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.org
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1538479931; bh=djHNSVXJTvXCjK7H9qQ6O5lgGofFSh7fV/dNpM8OAvE=;
+ t=1538479932; bh=XEoPNls1gJ8R1w0gCYEMrqUX2ovyPHkY7vYDaK/MnVQ=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=ZwtNAu5F2GIYMku3aE5gZBVX4kjYtbQ1GRNJ/DB0la9LOIPPycMBOAyIpN1jOp8lp
- HH0RXJeldzV84lsuzTYLoHkk0eXxXidgWzpkcHGgrromxV1c0WhZotXEkaux77ukrE
- 5wc5GG0KFLM/s06I2xuaMJDttNHxaBz3Cd5/Fn/8MY0Pu5pWZaIB5uD8HQ/4GwBFNd
- av/+KEWCyq8ZRT5yIYlJzo5421Co9dWR/AzHyqU35cp3QcudvPLA2D1GONbP/x7Myq
- 5XDweGjaJRpbhoVsYkBuEtGhbKN//i2BanKhPddHAFZ3mOen0DDrM1/nxl03cefwbG
- u1lBz+1WTOOLA==
+ b=RyLxYspFI90Qe7cZG5AzxYRegtlW1M1GUtJV4EBavNNn5Z8cMp/HCb0o2wcC92Igs
+ yixVFjrOrI3uPyFbq5t42w4LPcYykIJMzpM++mFnWG6VeLiZxvxH4pEv4dI+ZYK3j5
+ xzknDuJfsckY2vYZsH6FGsV3PBYCbCFJnoqFZaPh6LW1jv+2GioM/s2766dU67o6Ra
+ vDpoQWym+J/q42bVqXt6cHY0tkEuWYceYVFhuUPzhcZMhpDjj8hcDGL1YqXF+pjjci
+ pfV7wTOaO2VB23vGvv3mh8Swya5wzUgmxKnyokM4spXsXLFHrdhUsZtdYthfBVjcJQ
+ czd+BPolzx0nw==
 From: Paul Mackerras <paulus@ozlabs.org>
 To: kvm@vger.kernel.org,
 	kvm-ppc@vger.kernel.org
-Subject: [PATCH v3 25/33] KVM: PPC: Book3S HV: Invalidate TLB when nested vcpu
- moves physical cpu
-Date: Tue,  2 Oct 2018 21:31:24 +1000
-Message-Id: <1538479892-14835-26-git-send-email-paulus@ozlabs.org>
+Subject: [PATCH v3 26/33] KVM: PPC: Book3S HV: Don't access HFSCR,
+ LPIDR or LPCR when running nested
+Date: Tue,  2 Oct 2018 21:31:25 +1000
+Message-Id: <1538479892-14835-27-git-send-email-paulus@ozlabs.org>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1538479892-14835-1-git-send-email-paulus@ozlabs.org>
 References: <1538479892-14835-1-git-send-email-paulus@ozlabs.org>
@@ -80,235 +80,103 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+When running as a nested hypervisor, this avoids reading hypervisor
+privileged registers (specifically HFSCR, LPIDR and LPCR) at startup;
+instead reasonable default values are used.  This also avoids writing
+LPIDR in the single-vcpu entry/exit path.
 
-This is only done at level 0, since only level 0 knows which physical
-CPU a vcpu is running on.  This does for nested guests what L0 already
-did for its own guests, which is to flush the TLB on a pCPU when it
-goes to run a vCPU there, and there is another vCPU in the same VM
-which previously ran on this pCPU and has now started to run on another
-pCPU.  This is to handle the situation where the other vCPU touched
-a mapping, moved to another pCPU and did a tlbiel (local-only tlbie)
-on that new pCPU and thus left behind a stale TLB entry on this pCPU.
+Also, this removes the check for CPU_FTR_HVMODE in kvmppc_mmu_hv_init()
+since its only caller already checks this.
 
-This introduces a limit on the the vcpu_token values used in the
-H_ENTER_NESTED hcall -- they must now be less than NR_CPUS.
-
-[paulus@ozlabs.org - made prev_cpu array be unsigned short[] to reduce
- memory consumption.]
-
-Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/include/asm/kvm_book3s_64.h |   3 +
- arch/powerpc/kvm/book3s_hv.c             | 101 +++++++++++++++++++------------
- arch/powerpc/kvm/book3s_hv_nested.c      |   5 ++
- 3 files changed, 71 insertions(+), 38 deletions(-)
+ arch/powerpc/kvm/book3s_64_mmu_hv.c |  7 +++----
+ arch/powerpc/kvm/book3s_hv.c        | 33 +++++++++++++++++++++------------
+ 2 files changed, 24 insertions(+), 16 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
-index 38614f0..399ccbc 100644
---- a/arch/powerpc/include/asm/kvm_book3s_64.h
-+++ b/arch/powerpc/include/asm/kvm_book3s_64.h
-@@ -51,6 +51,9 @@ struct kvm_nested_guest {
- 	long refcnt;			/* number of pointers to this struct */
- 	struct mutex tlb_lock;		/* serialize page faults and tlbies */
- 	struct kvm_nested_guest *next;
-+	cpumask_t need_tlb_flush;
-+	cpumask_t cpu_in_guest;
-+	unsigned short prev_cpu[NR_CPUS];
- };
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+index 68e14af..c615617 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+@@ -268,14 +268,13 @@ int kvmppc_mmu_hv_init(void)
+ {
+ 	unsigned long host_lpid, rsvd_lpid;
  
- /*
+-	if (!cpu_has_feature(CPU_FTR_HVMODE))
+-		return -EINVAL;
+-
+ 	if (!mmu_has_feature(MMU_FTR_LOCKLESS_TLBIE))
+ 		return -EINVAL;
+ 
+ 	/* POWER7 has 10-bit LPIDs (12-bit in POWER8) */
+-	host_lpid = mfspr(SPRN_LPID);
++	host_lpid = 0;
++	if (cpu_has_feature(CPU_FTR_HVMODE))
++		host_lpid = mfspr(SPRN_LPID);
+ 	rsvd_lpid = LPID_RSVD;
+ 
+ 	kvmppc_init_lpid(rsvd_lpid + 1);
 diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 3aa5d11e..c87d3d0 100644
+index c87d3d0..120a82c 100644
 --- a/arch/powerpc/kvm/book3s_hv.c
 +++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -2420,10 +2420,18 @@ static void kvmppc_release_hwthread(int cpu)
- 
- static void radix_flush_cpu(struct kvm *kvm, int cpu, struct kvm_vcpu *vcpu)
- {
-+	struct kvm_nested_guest *nested = vcpu->arch.nested;
-+	cpumask_t *cpu_in_guest;
- 	int i;
- 
- 	cpu = cpu_first_thread_sibling(cpu);
--	cpumask_set_cpu(cpu, &kvm->arch.need_tlb_flush);
-+	if (nested) {
-+		cpumask_set_cpu(cpu, &nested->need_tlb_flush);
-+		cpu_in_guest = &nested->cpu_in_guest;
-+	} else {
-+		cpumask_set_cpu(cpu, &kvm->arch.need_tlb_flush);
-+		cpu_in_guest = &kvm->arch.cpu_in_guest;
-+	}
- 	/*
- 	 * Make sure setting of bit in need_tlb_flush precedes
- 	 * testing of cpu_in_guest bits.  The matching barrier on
-@@ -2431,13 +2439,23 @@ static void radix_flush_cpu(struct kvm *kvm, int cpu, struct kvm_vcpu *vcpu)
+@@ -2197,15 +2197,18 @@ static struct kvm_vcpu *kvmppc_core_vcpu_create_hv(struct kvm *kvm,
+ 	 * Set the default HFSCR for the guest from the host value.
+ 	 * This value is only used on POWER9.
+ 	 * On POWER9, we want to virtualize the doorbell facility, so we
+-	 * turn off the HFSCR bit, which causes those instructions to trap.
++	 * don't set the HFSCR_MSGP bit, and that causes those instructions
++	 * to trap and then we emulate them.
  	 */
- 	smp_mb();
- 	for (i = 0; i < threads_per_core; ++i)
--		if (cpumask_test_cpu(cpu + i, &kvm->arch.cpu_in_guest))
-+		if (cpumask_test_cpu(cpu + i, cpu_in_guest))
- 			smp_call_function_single(cpu + i, do_nothing, NULL, 1);
- }
- 
- static void kvmppc_prepare_radix_vcpu(struct kvm_vcpu *vcpu, int pcpu)
- {
-+	struct kvm_nested_guest *nested = vcpu->arch.nested;
- 	struct kvm *kvm = vcpu->kvm;
-+	int prev_cpu;
-+
-+	if (!cpu_has_feature(CPU_FTR_HVMODE))
-+		return;
-+
-+	if (nested)
-+		prev_cpu = nested->prev_cpu[vcpu->arch.nested_vcpu_id];
-+	else
-+		prev_cpu = vcpu->arch.prev_cpu;
- 
- 	/*
- 	 * With radix, the guest can do TLB invalidations itself,
-@@ -2451,12 +2469,46 @@ static void kvmppc_prepare_radix_vcpu(struct kvm_vcpu *vcpu, int pcpu)
- 	 * ran to flush the TLB.  The TLB is shared between threads,
- 	 * so we use a single bit in .need_tlb_flush for all 4 threads.
- 	 */
--	if (vcpu->arch.prev_cpu != pcpu) {
--		if (vcpu->arch.prev_cpu >= 0 &&
--		    cpu_first_thread_sibling(vcpu->arch.prev_cpu) !=
-+	if (prev_cpu != pcpu) {
-+		if (prev_cpu >= 0 &&
-+		    cpu_first_thread_sibling(prev_cpu) !=
- 		    cpu_first_thread_sibling(pcpu))
--			radix_flush_cpu(kvm, vcpu->arch.prev_cpu, vcpu);
--		vcpu->arch.prev_cpu = pcpu;
-+			radix_flush_cpu(kvm, prev_cpu, vcpu);
-+		if (nested)
-+			nested->prev_cpu[vcpu->arch.nested_vcpu_id] = pcpu;
-+		else
-+			vcpu->arch.prev_cpu = pcpu;
+-	vcpu->arch.hfscr = mfspr(SPRN_HFSCR);
+-	if (cpu_has_feature(CPU_FTR_P9_TM_HV_ASSIST))
++	vcpu->arch.hfscr = HFSCR_TAR | HFSCR_EBB | HFSCR_PM | HFSCR_BHRB |
++		HFSCR_DSCR | HFSCR_VECVSX | HFSCR_FP;
++	if (cpu_has_feature(CPU_FTR_HVMODE)) {
++		vcpu->arch.hfscr &= mfspr(SPRN_HFSCR);
++		if (cpu_has_feature(CPU_FTR_P9_TM_HV_ASSIST))
++			vcpu->arch.hfscr |= HFSCR_TM;
 +	}
-+}
-+
-+static void kvmppc_radix_check_need_tlb_flush(struct kvm *kvm, int pcpu,
-+					      struct kvm_nested_guest *nested)
-+{
-+	cpumask_t *need_tlb_flush;
-+	int lpid;
-+
-+	if (!cpu_has_feature(CPU_FTR_HVMODE))
-+		return;
-+
-+	if (cpu_has_feature(CPU_FTR_ARCH_300))
-+		pcpu &= ~0x3UL;
-+
-+	if (nested) {
-+		lpid = nested->shadow_lpid;
-+		need_tlb_flush = &nested->need_tlb_flush;
-+	} else {
-+		lpid = kvm->arch.lpid;
-+		need_tlb_flush = &kvm->arch.need_tlb_flush;
-+	}
-+
-+	mtspr(SPRN_LPID, lpid);
-+	isync();
-+	smp_mb();
-+
-+	if (cpumask_test_cpu(pcpu, need_tlb_flush)) {
-+		radix__local_flush_tlb_lpid_guest(lpid);
-+		/* Clear the bit after the TLB flush */
-+		cpumask_clear_cpu(pcpu, need_tlb_flush);
- 	}
- }
- 
-@@ -3150,8 +3202,6 @@ static noinline void kvmppc_run_core(struct kvmppc_vcore *vc)
- 		spin_unlock(&core_info.vc[sub]->lock);
- 
- 	if (kvm_is_radix(vc->kvm)) {
--		int tmp = pcpu;
--
- 		/*
- 		 * Do we need to flush the process scoped TLB for the LPAR?
- 		 *
-@@ -3162,17 +3212,7 @@ static noinline void kvmppc_run_core(struct kvmppc_vcore *vc)
- 		 *
- 		 * Hash must be flushed in realmode in order to use tlbiel.
- 		 */
--		mtspr(SPRN_LPID, vc->kvm->arch.lpid);
--		isync();
--
--		if (cpu_has_feature(CPU_FTR_ARCH_300))
--			tmp &= ~0x3UL;
--
--		if (cpumask_test_cpu(tmp, &vc->kvm->arch.need_tlb_flush)) {
--			radix__local_flush_tlb_lpid_guest(vc->kvm->arch.lpid);
--			/* Clear the bit after the TLB flush */
--			cpumask_clear_cpu(tmp, &vc->kvm->arch.need_tlb_flush);
--		}
-+		kvmppc_radix_check_need_tlb_flush(vc->kvm, pcpu, NULL);
- 	}
- 
- 	/*
-@@ -3891,11 +3931,10 @@ int kvmhv_run_single_vcpu(struct kvm_run *kvm_run,
- 			  struct kvm_vcpu *vcpu, u64 time_limit,
- 			  unsigned long lpcr)
- {
--	int trap, r, pcpu, pcpu0;
-+	int trap, r, pcpu;
- 	int srcu_idx;
- 	struct kvmppc_vcore *vc;
- 	struct kvm_nested_guest *nested = vcpu->arch.nested;
--	unsigned long lpid;
- 
- 	trace_kvmppc_run_vcpu_enter(vcpu);
- 
-@@ -3968,22 +4007,8 @@ int kvmhv_run_single_vcpu(struct kvm_run *kvm_run,
- 	vc->vcore_state = VCORE_RUNNING;
- 	trace_kvmppc_run_core(vc, 0);
- 
--	lpid = vc->kvm->arch.lpid;
--	if (nested)
--		lpid = nested->shadow_lpid;
--	mtspr(SPRN_LPID, lpid);
--	isync();
--
--	/* See comment above in kvmppc_run_core() about this */
--	pcpu0 = pcpu;
++	if (cpu_has_feature(CPU_FTR_TM_COMP))
+ 		vcpu->arch.hfscr |= HFSCR_TM;
+-	else if (!cpu_has_feature(CPU_FTR_TM_COMP))
+-		vcpu->arch.hfscr &= ~HFSCR_TM;
 -	if (cpu_has_feature(CPU_FTR_ARCH_300))
--		pcpu0 &= ~0x3UL;
--
--	if (cpumask_test_cpu(pcpu0, &vc->kvm->arch.need_tlb_flush)) {
--		radix__local_flush_tlb_lpid_guest(lpid);
--		/* Clear the bit after the TLB flush */
--		cpumask_clear_cpu(pcpu0, &vc->kvm->arch.need_tlb_flush);
--	}
-+	if (cpu_has_feature(CPU_FTR_HVMODE))
-+		kvmppc_radix_check_need_tlb_flush(vc->kvm, pcpu, nested);
+-		vcpu->arch.hfscr &= ~HFSCR_MSGP;
  
- 	trace_hardirqs_on();
- 	guest_enter_irqoff();
-diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm/book3s_hv_nested.c
-index 7abcc2b..7656cb3 100644
---- a/arch/powerpc/kvm/book3s_hv_nested.c
-+++ b/arch/powerpc/kvm/book3s_hv_nested.c
-@@ -168,6 +168,9 @@ long kvmhv_enter_nested_guest(struct kvm_vcpu *vcpu)
- 	if (err)
- 		return H_PARAMETER;
+ 	kvmppc_mmu_book3s_hv_init(vcpu);
  
-+	if (l2_hv.vcpu_token >= NR_CPUS)
-+		return H_PARAMETER;
-+
- 	/* translate lpid */
- 	l2 = kvmhv_get_nested(vcpu->kvm, l2_hv.lpid, true);
- 	if (!l2)
-@@ -383,6 +386,8 @@ struct kvm_nested_guest *kvmhv_alloc_nested(struct kvm *kvm, unsigned int lpid)
- 		goto out_free2;
- 	gp->shadow_lpid = shadow_lpid;
+@@ -4024,8 +4027,10 @@ int kvmhv_run_single_vcpu(struct kvm_run *kvm_run,
  
-+	memset(gp->prev_cpu, -1, sizeof(gp->prev_cpu));
-+
- 	return gp;
+ 	srcu_read_unlock(&vc->kvm->srcu, srcu_idx);
  
-  out_free2:
+-	mtspr(SPRN_LPID, vc->kvm->arch.host_lpid);
+-	isync();
++	if (cpu_has_feature(CPU_FTR_HVMODE)) {
++		mtspr(SPRN_LPID, vc->kvm->arch.host_lpid);
++		isync();
++	}
+ 
+ 	trace_hardirqs_off();
+ 	set_irq_happened(trap);
+@@ -4645,9 +4650,13 @@ static int kvmppc_core_init_vm_hv(struct kvm *kvm)
+ 		kvm->arch.host_sdr1 = mfspr(SPRN_SDR1);
+ 
+ 	/* Init LPCR for virtual RMA mode */
+-	kvm->arch.host_lpid = mfspr(SPRN_LPID);
+-	kvm->arch.host_lpcr = lpcr = mfspr(SPRN_LPCR);
+-	lpcr &= LPCR_PECE | LPCR_LPES;
++	if (cpu_has_feature(CPU_FTR_HVMODE)) {
++		kvm->arch.host_lpid = mfspr(SPRN_LPID);
++		kvm->arch.host_lpcr = lpcr = mfspr(SPRN_LPCR);
++		lpcr &= LPCR_PECE | LPCR_LPES;
++	} else {
++		lpcr = 0;
++	}
+ 	lpcr |= (4UL << LPCR_DPFD_SH) | LPCR_HDICE |
+ 		LPCR_VPM0 | LPCR_VPM1;
+ 	kvm->arch.vrma_slb_v = SLB_VSID_B_1T |
 -- 
 2.7.4
 
