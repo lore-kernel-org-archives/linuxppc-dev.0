@@ -2,107 +2,94 @@ Return-Path: <SRS0=LYrz=MO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CB342C43143
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 15:27:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E770BC43143
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 15:59:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3C20F20666
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 15:27:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3C20F20666
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 09B9E206B2
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 15:59:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 09B9E206B2
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42PjhC0w9vzF3JJ
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 01:27:39 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42PkPC1V4FzF3J4
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 01:59:43 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com; envelope-from=david@redhat.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=nfont@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Pjdq2w6nzF36s
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Oct 2018 01:25:35 +1000 (AEST)
-Received: from smtp.corp.redhat.com (int-mx01.intmail.prod.int.phx2.redhat.com
- [10.5.11.11])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 502A7307D84D;
- Tue,  2 Oct 2018 15:25:32 +0000 (UTC)
-Received: from [10.36.118.57] (unknown [10.36.118.57])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 92BD161366;
- Tue,  2 Oct 2018 15:25:20 +0000 (UTC)
-Subject: Re: [PATCH RFC] mm/memory_hotplug: Introduce memory block types
-To: Michal Hocko <mhocko@kernel.org>
-References: <20180928150357.12942-1-david@redhat.com>
- <20181001084038.GD18290@dhcp22.suse.cz>
- <d54a8509-725f-f771-72f0-15a9d93e8a49@redhat.com>
- <20181002134734.GT18290@dhcp22.suse.cz>
-From: David Hildenbrand <david@redhat.com>
-Openpgp: preference=signencrypt
-Autocrypt: addr=david@redhat.com; prefer-encrypt=mutual; keydata=
- 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
- SE+xAvmumFBY
-Organization: Red Hat GmbH
-Message-ID: <98fb8d65-b641-2225-f842-8804c6f79a06@redhat.com>
-Date: Tue, 2 Oct 2018 17:25:19 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42PkM13cVkzF37S
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Oct 2018 01:57:48 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w92FseG0015749
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Oct 2018 11:57:46 -0400
+Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2mv9amxuv1-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Oct 2018 11:57:45 -0400
+Received: from localhost
+ by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Tue, 2 Oct 2018 11:57:44 -0400
+Received: from b01cxnp22035.gho.pok.ibm.com (9.57.198.25)
+ by e12.ny.us.ibm.com (146.89.104.199) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Tue, 2 Oct 2018 11:57:43 -0400
+Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
+ [9.57.199.111])
+ by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ w92Fvg5P41812094
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Oct 2018 15:57:42 GMT
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 57CF9AC05B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Oct 2018 11:57:00 -0400 (EDT)
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2AE31AC060
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Oct 2018 11:57:00 -0400 (EDT)
+Received: from ltcalpine2-lp14.aus.stglabs.ibm.com (unknown [9.40.195.197])
+ by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Oct 2018 11:57:00 -0400 (EDT)
+Subject: [PATCH v2] powerpc/pseries: Track LMB nid instead of using device tree
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Date: Tue, 02 Oct 2018 10:35:59 -0500
+User-Agent: StGit/0.17.1-dirty
 MIME-Version: 1.0
-In-Reply-To: <20181002134734.GT18290@dhcp22.suse.cz>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.11
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.48]); Tue, 02 Oct 2018 15:25:33 +0000 (UTC)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 18100215-0060-0000-0000-000002B9FD2A
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00009809; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000267; SDB=6.01096848; UDB=6.00567194; IPR=6.00876891; 
+ MB=3.00023591; MTD=3.00000008; XFM=3.00000015; UTC=2018-10-02 15:57:44
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18100215-0061-0000-0000-000046B56785
+Message-Id: <153849454718.31242.7801365038229982137.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-10-02_07:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1807170000 definitions=main-1810020154
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -114,206 +101,190 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kate Stewart <kstewart@linuxfoundation.org>, Rich Felker <dalias@libc.org>,
- linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>,
- Dave Hansen <dave.hansen@linux.intel.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, linux-mm@kvack.org,
- Pavel Tatashin <pavel.tatashin@microsoft.com>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Rashmica Gupta <rashmica.g@gmail.com>, "K. Y. Srinivasan" <kys@microsoft.com>,
- Boris Ostrovsky <boris.ostrovsky@oracle.com>, linux-s390@vger.kernel.org,
- Michael Neuling <mikey@neuling.org>,
- Stephen Hemminger <sthemmin@microsoft.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, linux-acpi@vger.kernel.org,
- Ingo Molnar <mingo@redhat.com>, xen-devel@lists.xenproject.org,
- Rob Herring <robh@kernel.org>, Len Brown <lenb@kernel.org>,
- Fenghua Yu <fenghua.yu@intel.com>, Stephen Rothwell <sfr@canb.auug.org.au>,
- "mike.travis@hpe.com" <mike.travis@hpe.com>,
- Haiyang Zhang <haiyangz@microsoft.com>,
- Dan Williams <dan.j.williams@intel.com>,
- =?UTF-8?Q?Jonathan_Neusch=c3=a4fer?= <j.neuschaefer@gmx.net>,
- Nicholas Piggin <npiggin@gmail.com>, Joe Perches <joe@perches.com>,
- =?UTF-8?B?SsOpcsO0bWUgR2xpc3Nl?= <jglisse@redhat.com>,
- Mike Rapoport <rppt@linux.vnet.ibm.com>, Borislav Petkov <bp@alien8.de>,
- Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>, Oscar Salvador <osalvador@suse.de>,
- Juergen Gross <jgross@suse.com>, Tony Luck <tony.luck@intel.com>,
- Mathieu Malaterre <malat@debian.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
- Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>,
- Philippe Ombredanne <pombredanne@nexb.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, devel@linuxdriverproject.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 02/10/2018 15:47, Michal Hocko wrote:
-> On Mon 01-10-18 11:34:25, David Hildenbrand wrote:
->> On 01/10/2018 10:40, Michal Hocko wrote:
->>> On Fri 28-09-18 17:03:57, David Hildenbrand wrote:
->>> [...]
->>>
->>> I haven't read the patch itself but I just wanted to note one thing
->>> about this part
->>>
->>>> For paravirtualized devices it is relevant that memory is onlined as
->>>> quickly as possible after adding - and that it is added to the NORMAL
->>>> zone. Otherwise, it could happen that too much memory in a row is added
->>>> (but not onlined), resulting in out-of-memory conditions due to the
->>>> additional memory for "struct pages" and friends. MOVABLE zone as well
->>>> as delays might be very problematic and lead to crashes (e.g. zone
->>>> imbalance).
->>>
->>> I have proposed (but haven't finished this due to other stuff) a
->>> solution for this. Newly added memory can host memmaps itself and then
->>> you do not have the problem in the first place. For vmemmap it would
->>> have an advantage that you do not really have to beg for 2MB pages to
->>> back the whole section but you would get it for free because the initial
->>> part of the section is by definition properly aligned and unused.
->>
->> So the plan is to "host metadata for new memory on the memory itself".
->> Just want to note that this is basically impossible for s390x with the
->> current mechanisms. (added memory is dead, until onlining notifies the
->> hypervisor and memory is allocated). It will also be problematic for
->> paravirtualized memory devices (e.g. XEN's "not backed by the
->> hypervisor" hacks).
-> 
-> OK, I understand that not all usecases can use self memmap hosting
-> others do not have much choice left though. You have to allocate from
-> somewhere. Well and alternative would be to have no memmap until
-> onlining but I am not sure how much work that would be.
-> 
->> This would only be possible for memory DIMMs, memory that is completely
->> accessible as far as I can see. Or at least, some specified "first part"
->> is accessible.
->>
->> Other problems are other metadata like extended struct pages and friends.
-> 
-> I wouldn't really worry about extended struct pages. Those should be
-> used for debugging purposes mostly. Ot at least that was the case last
-> time I've checked.
+When removing memory we need to remove the memory from the node
+it was added to instead of looking up the node it should be in
+in the device tree.
 
-Yes, I guess that is true. Being able to add and online memory without
-the need for additional (external) memory would be the ultimate goal,
-but highly complicated. But steps into that direction is a good idea.
+During testing we have seen scenarios where the affinity for a
+LMB changes due to a partition migration or PRRN event. In these
+cases the node the LMB exists in may not match the node the device
+tree indicates it belongs in. This can lead to a system crash
+when trying to DLPAR remove the LMB after a migration or PRRN
+event. The current code looks up the node in the device tree to
+remove the LMB from, the crash occurs when we try to offline this
+node and it does not have any data, i.e. node_data[nid] == NULL.
 
-> 
->> (I really like the idea of adding memory without allocating memory in
->> the hypervisor in the first place, please keep me tuned).
->>
->> And please note: This solves some problematic part ("adding too much
->> memory to the movable zone or not onlining it"), but not the issue of
->> zone imbalance in the first place. And not one issue I try to tackle
->> here: don't add paravirtualized memory to the movable zone.
-> 
-> Zone imbalance is an inherent problem of the highmem zone. It is
-> essentially the highmem zone we all loved so much back in 32b days.
-> Yes the movable zone doesn't have any addressing limitations so it is a
-> bit more relaxed but considering the hotplug scenarios I have seen so
-> far people just want to have full NUMA nodes movable to allow replacing
-> DIMMs. And then we are back to square one and the zone imbalance issue.
-> You have those regardless where memmaps are allocated from.
+36:mon> e
+cpu 0x36: Vector: 300 (Data Access) at [c0000001828b7810]
+    pc: c00000000036d08c: try_offline_node+0x2c/0x1b0
+    lr: c0000000003a14ec: remove_memory+0xbc/0x110
+    sp: c0000001828b7a90
+   msr: 800000000280b033
+   dar: 9a28
+ dsisr: 40000000
+  current = 0xc0000006329c4c80
+  paca    = 0xc000000007a55200   softe: 0        irq_happened: 0x01
+    pid   = 76926, comm = kworker/u320:3
 
-Unfortunately yes. And things get more complicated as you are adding a
-whole DIMMs and get notifications in the granularity of memory blocks.
-Usually you are not interested in onlining any memory block of that DIMM
-as MOVABLE as soon as you would have to online one memory block of that
-DIMM as NORMAL - because that can already block the whole DIMM.
+36:mon> t
+[link register   ] c0000000003a14ec remove_memory+0xbc/0x110
+[c0000001828b7a90] c00000000006a1cc arch_remove_memory+0x9c/0xd0 (unreliable)
+[c0000001828b7ad0] c0000000003a14e0 remove_memory+0xb0/0x110
+[c0000001828b7b20] c0000000000c7db4 dlpar_remove_lmb+0x94/0x160
+[c0000001828b7b60] c0000000000c8ef8 dlpar_memory+0x7e8/0xd10
+[c0000001828b7bf0] c0000000000bf828 handle_dlpar_errorlog+0xf8/0x160
+[c0000001828b7c60] c0000000000bf8cc pseries_hp_work_fn+0x3c/0xa0
+[c0000001828b7c90] c000000000128cd8 process_one_work+0x298/0x5a0
+[c0000001828b7d20] c000000000129068 worker_thread+0x88/0x620
+[c0000001828b7dc0] c00000000013223c kthread+0x1ac/0x1c0
+[c0000001828b7e30] c00000000000b45c ret_from_kernel_thread+0x5c/0x80
 
-> 
->>> I yet have to think about the whole proposal but I am missing the most
->>> important part. _Who_ is going to use the new exported information and
->>> for what purpose. You said that distributions have hard time to
->>> distinguish different types of onlinining policies but isn't this
->>> something that is inherently usecase specific?
->>>
->>
->> Let's think about a distribution. We have a clash of use cases here
->> (just what you describe). What I propose solves one part of it ("handle
->> what you know how to handle right in the kernel").
->>
->> 1. Users of DIMMs usually expect that they can be unplugged again. That
->> is why you want to control how to online memory in user space (== add it
->> to the movable zone).
-> 
-> Which is only true if you really want to hotremove them. I am not going
-> to tell how much I believe in this usecase but movable policy is not
-> generally applicable here.
+To resolve this we need to track the node a LMB belongs to when
+it is added to the system so we can remove it from that node instead
+of the node that the device tree indicates it should belong to.
 
-Customers expect this to work and the both of us know that we can't make
-any guarantees. At least MOVABLE makes it more likely to work. NORMAL is
-basically impossible.
+Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+---
 
-> 
->> 2. Users of standby memory (s390) expect that memory will never be
->> onlined automatically. It will be onlined manually.
-> 
-> yeah
-> 
->> 3. Users of paravirtualized devices (esp. Hyper-V) don't care about
->> memory unplug in the sense of MOVABLE at all. They (or Hyper-V!) will
->> add a whole bunch of memory and expect that everything works fine. So
->> that memory is onlined immediately and that memory is added to the
->> NORMAL zone. Users never want the MOVABLE zone.
-> 
-> Then the immediate question would be why to use memory hotplug for that
-> at all? Why don't you simply start with a huge pre-allocated physical
-> address space and balloon memory in an out per demand. Why do you want
-> to inject new memory during the runtime?
+Updates:
+  V2: Fix builds to only track nid for LMBs when MEMORY_HOTPLUG
+      is configured.
 
-Let's assume you have a guest with 20GB size and eventually want to
-allow to grow it to 4TB. You would have to allocate metadata for 4TB
-right from the beginning. That's definitely now what we want. That is
-why memory hotplug is used by e.g. XEN or Hyper-V. With Hyper-V, the
-hypervisor even tells you at which places additional memory has been
-made available.
+ arch/powerpc/include/asm/drmem.h                |   21 +++++++++++++++++++++
+ arch/powerpc/mm/drmem.c                         |    6 +++++-
+ arch/powerpc/platforms/pseries/hotplug-memory.c |   17 ++++++++---------
+ 3 files changed, 34 insertions(+), 10 deletions(-)
 
-> 
->> 1. is a reason why distributions usually don't configure
->> "MEMORY_HOTPLUG_DEFAULT_ONLINE", because you really want the option for
->> MOVABLE zone. That however implies, that e.g. for x86, you have to
->> handle all new memory in user space, especially also HyperV memory.
->> There, you then have to check for things like "isHyperV()" to decide
->> "oh, yes, this should definitely not go to the MOVABLE zone".
-> 
-> Why do you need a generic hotplug rule in the first place? Why don't you
-> simply provide different set of rules for different usecases? Let users
-> decide which usecase they prefer rather than try to be clever which
-> almost always hits weird corner cases.
-> 
+diff --git a/arch/powerpc/include/asm/drmem.h b/arch/powerpc/include/asm/drmem.h
+index 7c1d8e74b25d..7f3279b014db 100644
+--- a/arch/powerpc/include/asm/drmem.h
++++ b/arch/powerpc/include/asm/drmem.h
+@@ -17,6 +17,9 @@ struct drmem_lmb {
+ 	u32     drc_index;
+ 	u32     aa_index;
+ 	u32     flags;
++#ifdef CONFIG_MEMORY_HOTPLUG
++	int	nid;
++#endif
+ };
+ 
+ struct drmem_lmb_info {
+@@ -104,4 +107,22 @@ static inline void invalidate_lmb_associativity_index(struct drmem_lmb *lmb)
+ 	lmb->aa_index = 0xffffffff;
+ }
+ 
++#ifdef CONFIG_MEMORY_HOTPLUG
++static inline void lmb_set_nid(struct drmem_lmb *lmb)
++{
++	lmb->nid = memory_add_physaddr_to_nid(lmb->base_addr);
++}
++static inline void lmb_clear_nid(struct drmem_lmb *lmb)
++{
++	lmb->nid = -1;
++}
++#else
++static inline void lmb_set_nid(struct drmem_lmb *lmb)
++{
++}
++static inline void lmb_clear_nid(struct drmem_lmb *lmb)
++{
++}
++#endif
++
+ #endif /* _ASM_POWERPC_LMB_H */
+diff --git a/arch/powerpc/mm/drmem.c b/arch/powerpc/mm/drmem.c
+index 3f1803672c9b..641891df2046 100644
+--- a/arch/powerpc/mm/drmem.c
++++ b/arch/powerpc/mm/drmem.c
+@@ -366,8 +366,10 @@ static void __init init_drmem_v1_lmbs(const __be32 *prop)
+ 	if (!drmem_info->lmbs)
+ 		return;
+ 
+-	for_each_drmem_lmb(lmb)
++	for_each_drmem_lmb(lmb) {
+ 		read_drconf_v1_cell(lmb, &prop);
++		lmb_set_nid(lmb);
++	}
+ }
+ 
+ static void __init init_drmem_v2_lmbs(const __be32 *prop)
+@@ -412,6 +414,8 @@ static void __init init_drmem_v2_lmbs(const __be32 *prop)
+ 
+ 			lmb->aa_index = dr_cell.aa_index;
+ 			lmb->flags = dr_cell.flags;
++
++			lmb_set_nid(lmb);
+ 		}
+ 	}
+ }
+diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+index 9a15d39995e5..58feca665b8c 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-memory.c
++++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+@@ -382,7 +382,7 @@ static int dlpar_add_lmb(struct drmem_lmb *);
+ static int dlpar_remove_lmb(struct drmem_lmb *lmb)
+ {
+ 	unsigned long block_sz;
+-	int nid, rc;
++	int rc;
+ 
+ 	if (!lmb_is_removable(lmb))
+ 		return -EINVAL;
+@@ -392,14 +392,14 @@ static int dlpar_remove_lmb(struct drmem_lmb *lmb)
+ 		return rc;
+ 
+ 	block_sz = pseries_memory_block_size();
+-	nid = memory_add_physaddr_to_nid(lmb->base_addr);
+ 
+-	remove_memory(nid, lmb->base_addr, block_sz);
++	remove_memory(lmb->nid, lmb->base_addr, block_sz);
+ 
+ 	/* Update memory regions for memory remove */
+ 	memblock_remove(lmb->base_addr, block_sz);
+ 
+ 	invalidate_lmb_associativity_index(lmb);
++	lmb_clear_nid(lmb);
+ 	lmb->flags &= ~DRCONF_MEM_ASSIGNED;
+ 
+ 	return 0;
+@@ -656,7 +656,7 @@ static int dlpar_memory_remove_by_ic(u32 lmbs_to_remove, u32 drc_index)
+ static int dlpar_add_lmb(struct drmem_lmb *lmb)
+ {
+ 	unsigned long block_sz;
+-	int nid, rc;
++	int rc;
+ 
+ 	if (lmb->flags & DRCONF_MEM_ASSIGNED)
+ 		return -EINVAL;
+@@ -667,13 +667,11 @@ static int dlpar_add_lmb(struct drmem_lmb *lmb)
+ 		return rc;
+ 	}
+ 
++	lmb_set_nid(lmb);
+ 	block_sz = memory_block_size_bytes();
+ 
+-	/* Find the node id for this address */
+-	nid = memory_add_physaddr_to_nid(lmb->base_addr);
+-
+ 	/* Add the memory */
+-	rc = add_memory(nid, lmb->base_addr, block_sz);
++	rc = add_memory(lmb->nid, lmb->base_addr, block_sz);
+ 	if (rc) {
+ 		invalidate_lmb_associativity_index(lmb);
+ 		return rc;
+@@ -681,8 +679,9 @@ static int dlpar_add_lmb(struct drmem_lmb *lmb)
+ 
+ 	rc = dlpar_online_lmb(lmb);
+ 	if (rc) {
+-		remove_memory(nid, lmb->base_addr, block_sz);
++		remove_memory(lmb->nid, lmb->base_addr, block_sz);
+ 		invalidate_lmb_associativity_index(lmb);
++		lmb_clear_nid(lmb);
+ 	} else {
+ 		lmb->flags |= DRCONF_MEM_ASSIGNED;
+ 	}
 
-Memory hotplug has to work as reliable as we can out of the box. Letting
-the user make simple decisions like "oh, I am on hyper-V, I want to
-online memory to the normal zone" does not feel right. But yes, we
-should definitely allow to make modifications. So some sane default rule
-+ possible modification is usually a good idea.
-
-I think Dave has a point with using MOVABLE for huge page use cases. And
-there might be other corner cases as you correctly state.
-
-I wonder if this patch itself minus modifying online/offline might make
-sense. We can then implement simple rules in user space
-
-if (normal) {
-	/* customers expect hotplugged DIMMs to be unpluggable */
-	online_movable();
-} else if (paravirt) {
-	/* paravirt memory should as default always go to the NORMAL */
-	online();
-} else {
-	/* standby memory will never get onlined automatically */
-}
-
-Compared to having to guess what is to be done (isKVM(), isHyperV,
-isS390 ...) and failing once this is no longer unique (e.g. virtio-mem
-and ACPI support for x86 KVM).
-
--- 
-
-Thanks,
-
-David / dhildenb
