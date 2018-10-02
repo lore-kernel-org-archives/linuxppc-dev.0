@@ -2,111 +2,51 @@ Return-Path: <SRS0=LYrz=MO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=MAILING_LIST_MULTI,SPF_PASS,
+	USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D366BC004D2
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 09:46:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 91209C43143
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 13:54:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3434A20878
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 09:46:32 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="TswmtvV/"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3434A20878
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id F1FE0204FD
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 13:54:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F1FE0204FD
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42PZ6Z0NJlzDrBx
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 19:46:30 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42PgcQ1lZ6zF3HN
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 23:54:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.b="TswmtvV/";
-	dkim-atps=neutral
+ spf=softfail (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=mhocko@kernel.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=nxp.com
- (client-ip=40.107.0.43; helo=eur02-am5-obe.outbound.protection.outlook.com;
- envelope-from=ioana.ciornei@nxp.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=nxp.com header.i=@nxp.com header.b="TswmtvV/"; 
- dkim-atps=neutral
-Received: from EUR02-AM5-obe.outbound.protection.outlook.com
- (mail-eopbgr00043.outbound.protection.outlook.com [40.107.0.43])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42PZ3Q07SBzF3DY
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Oct 2018 19:43:43 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1; 
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=NBPNFL4IRLp9ozKvdY7RxFmMv8N4is682pl71zVzACo=;
- b=TswmtvV/RrmaGD+6CwDWk4ZPmTEfdpV3NuFASjgwIB2IlVnOh2gJGt+OEY+n+jH9RJmQIP73muMxi9EE4DCn7UBigRifmPl8wyqmOgXiybgEOHdmjueebvmVO/Vg9VGGMK9Co6VUDX45FY99FiyNkW9CTAFHs7NNPrftOaiB8Zs=
-Received: from HE1PR0401MB2363.eurprd04.prod.outlook.com (10.168.33.8) by
- HE1PR0401MB2508.eurprd04.prod.outlook.com (10.168.147.143) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.1185.25; Tue, 2 Oct 2018 09:43:36 +0000
-Received: from HE1PR0401MB2363.eurprd04.prod.outlook.com
- ([fe80::10fa:841f:d25c:a565]) by HE1PR0401MB2363.eurprd04.prod.outlook.com
- ([fe80::10fa:841f:d25c:a565%10]) with mapi id 15.20.1185.024; Tue, 2 Oct 2018
- 09:43:36 +0000
-From: Ioana Ciornei <ioana.ciornei@nxp.com>
-To: Greg KH <gregkh@linuxfoundation.org>
-Subject: RE: [PATCH] driver core: device: add BUS_ATTR_WO macro
-Thread-Topic: [PATCH] driver core: device: add BUS_ATTR_WO macro
-Thread-Index: AQHUWZxbI1CVKGkJjk2ecx6zC3HfWaUK4nYAgADLczA=
-Date: Tue, 2 Oct 2018 09:43:35 +0000
-Message-ID: <HE1PR0401MB236354F325B7A56355068E35E0E80@HE1PR0401MB2363.eurprd04.prod.outlook.com>
-References: <1538407972-9340-1-git-send-email-ioana.ciornei@nxp.com>
- <20181001210804.GA24332@kroah.com>
-In-Reply-To: <20181001210804.GA24332@kroah.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-authentication-results: spf=none (sender IP is )
- smtp.mailfrom=ioana.ciornei@nxp.com; 
-x-originating-ip: [86.34.165.90]
-x-ms-publictraffictype: Email
-x-microsoft-exchange-diagnostics: 1; HE1PR0401MB2508;
- 6:zHoZUcXcF8mkm8RQWZ7rKWbwV2bn8rUUvtOyDReYfog6thQG67c3n6y/gZJt1hkY6berU36TuQmk9BEssgD0xq3CLKy0sLZvyN7X8mXbWZHELlmWaAQLEDrlAgipIM6Lfd5U95cD7VS7b0TLvFon/383rYe9dCw060OE29KIEFSxy6BRNa9idmqZMN9baZUFbMMlZVXu8I7iW05pFKssML+Y7eRAFLgUtfwyYyESGNU/rl7JBDp+84zzsHh1dkmB6Z627VtbR0tkrlw1FJ8tAfo0cmaH2JvrEI3iJoHVZ635/eB3W2u5eigoJeJvQ4TzI0p9XBEXrDIazqvB/cOlWIogtDFWkR6NffeXvJhDGaPA0NgOj+HvBTXXaL9niFSz+tXM9Rxpe7pqRcL09zEmuZYPl+NvAHEi7KJZRC1ybo2ma3Etywd7ykLhufOKi8eUveYiBqajeYS+W9mOFsCf7Q==;
- 5:xa1U1OZQOxUsG2o565Et2ijNyHaOndo955V2yci39DeZGBJpDdcSSonEcNzPJsjIkI5uxJBs8FGCcq9dAQezk2l7P8D/DCNvJG9w3njqjgxsCjCWPah1RpVijn6+4xrWVvlUXjlVoAejKUpLjs+SP9HWBTeiqp1BsWJuYRzIZdI=;
- 7:KjxrDnqymfpUikP91wGrYLb1nYsTM4axiOKWPet9RtOcjNX7B75Y1OXWBtuKUCVEJxPPA81L+sRI6977CWdY9BL5p9O/jlWbKQ1caMdFSd3X0/ISTgDqDt6nLyjlON47CuD+DC4HpAoQhznvypApxSDRnZlcYjQ27D28/MZCbe1l4Wiz1Y+vlZhdqQo+MYTBV2rcLyEZ0kLIQ1ON/8pNbiwA0PGF1FUfoznF51LBipWf+ACoi6WFLKRuP8I1m5QQ
-x-ms-exchange-antispam-srfa-diagnostics: SOS;
-x-ms-office365-filtering-correlation-id: 51441aed-eaed-4c46-9d3b-08d6284b864d
-x-ms-office365-filtering-ht: Tenant
-x-microsoft-antispam: BCL:0; PCL:0;
- RULEID:(7020095)(4652040)(8989299)(4534165)(4627221)(201703031133081)(201702281549075)(8990200)(5600074)(711020)(4618075)(2017052603328)(7153060)(7193020);
- SRVR:HE1PR0401MB2508; 
-x-ms-traffictypediagnostic: HE1PR0401MB2508:
-x-microsoft-antispam-prvs: <HE1PR0401MB2508A888110132F1E03C0A89E0E80@HE1PR0401MB2508.eurprd04.prod.outlook.com>
-x-exchange-antispam-report-test: UriScan:(84791874153150)(185117386973197);
-x-ms-exchange-senderadcheck: 1
-x-exchange-antispam-report-cfa-test: BCL:0; PCL:0;
- RULEID:(8211001083)(6040522)(2401047)(8121501046)(5005006)(93006095)(93001095)(3231355)(944501410)(52105095)(10201501046)(3002001)(6055026)(149066)(150057)(6041310)(20161123558120)(20161123562045)(20161123564045)(20161123560045)(201703131423095)(201702281528075)(20161123555045)(201703061421075)(201703061406153)(201708071742011)(7699051);
- SRVR:HE1PR0401MB2508; BCL:0; PCL:0; RULEID:; SRVR:HE1PR0401MB2508; 
-x-forefront-prvs: 0813C68E65
-x-forefront-antispam-report: SFV:NSPM;
- SFS:(10009020)(366004)(39860400002)(376002)(396003)(136003)(346002)(189003)(199004)(86362001)(2900100001)(102836004)(5250100002)(316002)(186003)(26005)(105586002)(106356001)(6506007)(99286004)(478600001)(33656002)(76176011)(14454004)(7696005)(7736002)(966005)(39060400002)(7416002)(74316002)(6246003)(446003)(11346002)(54906003)(305945005)(68736007)(44832011)(486006)(25786009)(476003)(97736004)(53936002)(66066001)(81156014)(8936002)(4326008)(229853002)(5660300001)(6116002)(3846002)(9686003)(6306002)(6436002)(55016002)(256004)(8676002)(2906002)(71200400001)(81166006)(6916009)(71190400001);
- DIR:OUT; SFP:1101; SCL:1; SRVR:HE1PR0401MB2508;
- H:HE1PR0401MB2363.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
- PTR:InfoNoRecords; MX:1; A:1; 
-received-spf: None (protection.outlook.com: nxp.com does not designate
- permitted sender hosts)
-x-microsoft-antispam-message-info: 5FoqNjsn7vBGoeNb3DQlVHeW3V05jKX7J/rhE+bbkeu0NUVElk94KC4I9CV4Y0VjPI4OyeyobFNQyAkH4hwBqfoqZuxXJ5rubvp9bYJvESsCbb2mdFt/2PUogSS2AyS0zyDuDm1s0/LIA5SteHbbtJJrsBp+KUZbjubXCyqARH+xfIrrq85ND70P+pvO6kdo0wnVViPLlmrip1PYDkJrfUkhn7CiUMST+FGt8iSJNL0ltAqtnGfIe7zhu7RDQcYhui3/Z9ywoJ0NbWY8klM6q6KOyrmlEyFLsOO0txPJwOwklcJOHsvIjRdeXjQYlHawk0dq1thi9He7SlIP51JokYh90KoufcsH4oOWHj64sL0=
-spamdiagnosticoutput: 1:99
-spamdiagnosticmetadata: NSPM
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42PgT022kJzF3FT
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Oct 2018 23:47:47 +1000 (AEST)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay1.suse.de (unknown [195.135.220.254])
+ by mx1.suse.de (Postfix) with ESMTP id 7EEF8AE41;
+ Tue,  2 Oct 2018 13:47:43 +0000 (UTC)
+Date: Tue, 2 Oct 2018 15:47:34 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: David Hildenbrand <david@redhat.com>
+Subject: Re: [PATCH RFC] mm/memory_hotplug: Introduce memory block types
+Message-ID: <20181002134734.GT18290@dhcp22.suse.cz>
+References: <20180928150357.12942-1-david@redhat.com>
+ <20181001084038.GD18290@dhcp22.suse.cz>
+ <d54a8509-725f-f771-72f0-15a9d93e8a49@redhat.com>
 MIME-Version: 1.0
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 51441aed-eaed-4c46-9d3b-08d6284b864d
-X-MS-Exchange-CrossTenant-originalarrivaltime: 02 Oct 2018 09:43:35.7739 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: HE1PR0401MB2508
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <d54a8509-725f-f771-72f0-15a9d93e8a49@redhat.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -118,63 +58,150 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "elder@kernel.org" <elder@kernel.org>,
- "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
- "sage@redhat.com" <sage@redhat.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-block@vger.kernel.org" <linux-block@vger.kernel.org>,
- "idryomov@gmail.com" <idryomov@gmail.com>, "jth@kernel.org" <jth@kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "ceph-devel@vger.kernel.org" <ceph-devel@vger.kernel.org>
+Cc: Kate Stewart <kstewart@linuxfoundation.org>, Rich Felker <dalias@libc.org>,
+ linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+ Peter Zijlstra <peterz@infradead.org>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-mm@kvack.org,
+ Pavel Tatashin <pavel.tatashin@microsoft.com>,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ Rashmica Gupta <rashmica.g@gmail.com>, "K. Y. Srinivasan" <kys@microsoft.com>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>, linux-s390@vger.kernel.org,
+ Michael Neuling <mikey@neuling.org>,
+ Stephen Hemminger <sthemmin@microsoft.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, linux-acpi@vger.kernel.org,
+ Ingo Molnar <mingo@redhat.com>, xen-devel@lists.xenproject.org,
+ Rob Herring <robh@kernel.org>, Len Brown <lenb@kernel.org>,
+ Fenghua Yu <fenghua.yu@intel.com>, Stephen Rothwell <sfr@canb.auug.org.au>,
+ "mike.travis@hpe.com" <mike.travis@hpe.com>,
+ Haiyang Zhang <haiyangz@microsoft.com>,
+ Dan Williams <dan.j.williams@intel.com>,
+ Jonathan =?iso-8859-1?Q?Neusch=E4fer?= <j.neuschaefer@gmx.net>,
+ Nicholas Piggin <npiggin@gmail.com>, Joe Perches <joe@perches.com>,
+ =?iso-8859-1?B?Suly9G1l?= Glisse <jglisse@redhat.com>,
+ Mike Rapoport <rppt@linux.vnet.ibm.com>, Borislav Petkov <bp@alien8.de>,
+ Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>, Oscar Salvador <osalvador@suse.de>,
+ Juergen Gross <jgross@suse.com>, Tony Luck <tony.luck@intel.com>,
+ Mathieu Malaterre <malat@debian.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
+ Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>,
+ Philippe Ombredanne <pombredanne@nexb.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, devel@linuxdriverproject.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-> > Add BUS_ATTR_WO macro to make it easier to add attributes without
-> > auditing the mode settings. Also, use the newly added macro where
-> > appropriate.
-> >
-> > Signed-off-by: Ioana Ciornei <ioana.ciornei@nxp.com>
-> > ---
-> >  arch/powerpc/platforms/pseries/ibmebus.c | 12 ++++----
-> >  drivers/block/rbd.c                      | 48 ++++++++++++++++--------=
---------
-> >  drivers/scsi/fcoe/fcoe_sysfs.c           |  4 +--
-> >  drivers/scsi/fcoe/fcoe_transport.c       | 10 +++----
-> >  include/linux/device.h                   |  2 ++
-> >  include/scsi/libfcoe.h                   |  8 +++---
-> >  6 files changed, 43 insertions(+), 41 deletions(-)
->=20
-> Nice!  This duplicates a lot of the work I did back in July but have not =
-pushed out
-> very far due to the other things that ended up happening around that time=
-:
-> 	https://git.kernel.org/pub/scm/linux/kernel/git/gregkh/driver-core.git/l=
-og/?h=3Dbus_cleanup=20
->=20
-> As the patch series seen at that link shows, you can do this in more plac=
-es than
-> just what you did here.
->=20
-> Either way, you should break this up into the individual patches, like I =
-did or you
-> can take my patches if you want.  Getting the BUS_ATTR_WO() macro added i=
-s
-> good to do now, and then you can go and hit up all of the different subsy=
-stems
-> that should be converted over to it.
+On Mon 01-10-18 11:34:25, David Hildenbrand wrote:
+> On 01/10/2018 10:40, Michal Hocko wrote:
+> > On Fri 28-09-18 17:03:57, David Hildenbrand wrote:
+> > [...]
+> > 
+> > I haven't read the patch itself but I just wanted to note one thing
+> > about this part
+> > 
+> >> For paravirtualized devices it is relevant that memory is onlined as
+> >> quickly as possible after adding - and that it is added to the NORMAL
+> >> zone. Otherwise, it could happen that too much memory in a row is added
+> >> (but not onlined), resulting in out-of-memory conditions due to the
+> >> additional memory for "struct pages" and friends. MOVABLE zone as well
+> >> as delays might be very problematic and lead to crashes (e.g. zone
+> >> imbalance).
+> > 
+> > I have proposed (but haven't finished this due to other stuff) a
+> > solution for this. Newly added memory can host memmaps itself and then
+> > you do not have the problem in the first place. For vmemmap it would
+> > have an advantage that you do not really have to beg for 2MB pages to
+> > back the whole section but you would get it for free because the initial
+> > part of the section is by definition properly aligned and unused.
+> 
+> So the plan is to "host metadata for new memory on the memory itself".
+> Just want to note that this is basically impossible for s390x with the
+> current mechanisms. (added memory is dead, until onlining notifies the
+> hypervisor and memory is allocated). It will also be problematic for
+> paravirtualized memory devices (e.g. XEN's "not backed by the
+> hypervisor" hacks).
 
-I can of course split my patch into individual ones and resubmit them, but =
-as you already have the entire patch set ready, I feel like we can just pus=
-h those. I looked through your changes and it seems like you covered all th=
-e subsystems. Please let me know if there is something else I should do.
+OK, I understand that not all usecases can use self memmap hosting
+others do not have much choice left though. You have to allocate from
+somewhere. Well and alternative would be to have no memmap until
+onlining but I am not sure how much work that would be.
 
-My intention here was to first add the _WO attribute so that afterwards I c=
-an add a new bus attribute in the fsl-mc bus.
+> This would only be possible for memory DIMMs, memory that is completely
+> accessible as far as I can see. Or at least, some specified "first part"
+> is accessible.
+> 
+> Other problems are other metadata like extended struct pages and friends.
 
-Ioana
+I wouldn't really worry about extended struct pages. Those should be
+used for debugging purposes mostly. Ot at least that was the case last
+time I've checked.
 
->=20
-> thanks,
->=20
-> greg k-h
+> (I really like the idea of adding memory without allocating memory in
+> the hypervisor in the first place, please keep me tuned).
+> 
+> And please note: This solves some problematic part ("adding too much
+> memory to the movable zone or not onlining it"), but not the issue of
+> zone imbalance in the first place. And not one issue I try to tackle
+> here: don't add paravirtualized memory to the movable zone.
+
+Zone imbalance is an inherent problem of the highmem zone. It is
+essentially the highmem zone we all loved so much back in 32b days.
+Yes the movable zone doesn't have any addressing limitations so it is a
+bit more relaxed but considering the hotplug scenarios I have seen so
+far people just want to have full NUMA nodes movable to allow replacing
+DIMMs. And then we are back to square one and the zone imbalance issue.
+You have those regardless where memmaps are allocated from.
+
+> > I yet have to think about the whole proposal but I am missing the most
+> > important part. _Who_ is going to use the new exported information and
+> > for what purpose. You said that distributions have hard time to
+> > distinguish different types of onlinining policies but isn't this
+> > something that is inherently usecase specific?
+> > 
+> 
+> Let's think about a distribution. We have a clash of use cases here
+> (just what you describe). What I propose solves one part of it ("handle
+> what you know how to handle right in the kernel").
+> 
+> 1. Users of DIMMs usually expect that they can be unplugged again. That
+> is why you want to control how to online memory in user space (== add it
+> to the movable zone).
+
+Which is only true if you really want to hotremove them. I am not going
+to tell how much I believe in this usecase but movable policy is not
+generally applicable here.
+
+> 2. Users of standby memory (s390) expect that memory will never be
+> onlined automatically. It will be onlined manually.
+
+yeah
+
+> 3. Users of paravirtualized devices (esp. Hyper-V) don't care about
+> memory unplug in the sense of MOVABLE at all. They (or Hyper-V!) will
+> add a whole bunch of memory and expect that everything works fine. So
+> that memory is onlined immediately and that memory is added to the
+> NORMAL zone. Users never want the MOVABLE zone.
+
+Then the immediate question would be why to use memory hotplug for that
+at all? Why don't you simply start with a huge pre-allocated physical
+address space and balloon memory in an out per demand. Why do you want
+to inject new memory during the runtime?
+
+> 1. is a reason why distributions usually don't configure
+> "MEMORY_HOTPLUG_DEFAULT_ONLINE", because you really want the option for
+> MOVABLE zone. That however implies, that e.g. for x86, you have to
+> handle all new memory in user space, especially also HyperV memory.
+> There, you then have to check for things like "isHyperV()" to decide
+> "oh, yes, this should definitely not go to the MOVABLE zone".
+
+Why do you need a generic hotplug rule in the first place? Why don't you
+simply provide different set of rules for different usecases? Let users
+decide which usecase they prefer rather than try to be clever which
+almost always hits weird corner cases.
+-- 
+Michal Hocko
+SUSE Labs
