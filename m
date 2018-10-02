@@ -7,77 +7,77 @@ X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EAD35C004D2
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 14:54:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BB5C3C43143
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 14:57:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4CE8A20666
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 14:54:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2BEDD20666
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 14:57:50 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="VqhNRiZp"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4CE8A20666
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="T/lkXH3S"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2BEDD20666
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42PhxS4RC4zF3Hl
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 00:54:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Pj1l5ZtrzDqfy
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 00:57:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="VqhNRiZp";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="T/lkXH3S";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::641; helo=mail-pl1-x641.google.com;
+ (client-ip=2607:f8b0:4864:20::644; helo=mail-pl1-x644.google.com;
  envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="VqhNRiZp"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="T/lkXH3S"; 
  dkim-atps=neutral
-Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
- [IPv6:2607:f8b0:4864:20::641])
+Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
+ [IPv6:2607:f8b0:4864:20::644])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42PhMg4hmrzF3G3
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Oct 2018 00:28:15 +1000 (AEST)
-Received: by mail-pl1-x641.google.com with SMTP id b5-v6so1711444plr.5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Oct 2018 07:28:15 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42PhMj41XDzF3HS
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Oct 2018 00:28:17 +1000 (AEST)
+Received: by mail-pl1-x644.google.com with SMTP id p5-v6so1710852plk.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Oct 2018 07:28:17 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=0ge2Ls5nJleiboCDA6W63/fjdCr4a4PrN+QTNJmYig4=;
- b=VqhNRiZpREVSYZ54XJ2PiJeXf/2RflO42axPfciRWaAx1PFyoCbtQ6RkP4gRjXgNKJ
- vcXYgzX1nidzV5AJ8ffHrs3y/SHzIoC5ddHB77PyAzM1Uoy02EeJ+Poxtyzv4LqDiKtN
- LpdhF9HU7tWy8XSqzCE3HmLmmPLLchAbsyzquDIVj5HyePhXhz/11LMMCHoRgo80H8lQ
- BnPYWPqAdW/MgyJlv/fPTEgSTep/gwcxQAJQeevkkHbO2JqFXHj8vcHj4yKSO/Q/jyII
- rqIOZ9BZR10rKoazrQs1m8e/BzQKAARHDuLoxnaXqG0g9y7pc08fxiVm8AEtSE95oV8/
- aMKA==
+ bh=xabar2VATOwse3HlR0UpP67f4YJ7beAlC0bOS3eA+Ws=;
+ b=T/lkXH3S4MoEBA6x5gb+dE9khyYHuhsA2u7mdizCDBH4zSz+u2FiS5SKhHhBD4OtrL
+ zkjoj51zaMBiBqkqS+wH+CW/zGMjAS15YFJApDC0JH1lSUo7gJqi+uBwqTwd/zJHdBS6
+ BrmvmWhPTgAGaIr6Kdd/7+LdXTJ6WZ4twiFgQdLYDJ4s+ZdQSYyqH1atWyE7EHQroyLu
+ 2S7DYc84rAtbl+BK2uTY0NBFbRxZzn0lmvMRNsYfbIzEV3j9F6gtQRkECptTSjv6LE4Y
+ SpHLR7XlUdnh54UnRUFWE0n5/mvc8gimxXhDuFViyyPE6i6Q+QCEFlLGRjggjZ8NfDSR
+ qEpw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references;
- bh=0ge2Ls5nJleiboCDA6W63/fjdCr4a4PrN+QTNJmYig4=;
- b=dM9yT7iCttNtbBhRLw7lM9xpXvAilRr+nODThu4Rwxy3zP4B3Q+Xq38qh0y8u5R7vS
- or9P1Guf6vnHPa6AoFILwDeqh897Ai6Xke7Fspm0tEvOQsRe4H3B+tOT++dUqg76cUC/
- RTa3hTTFuDj7XNbwxDtNolBegOjvaSr623LTrXnAiFRrhkuwM2FArMo4DEiYqM8MJSXy
- kSzwAtRQ7za/cY3KPjlxk4ffgjeUoPvG38JWud1GJX0bB0JFSGQWEpoYUAyr9Tw8aybF
- 2LkAbVOcaPV3gzsjinuUS92t0v7X/1AIOu0+NtXRzNObHmHZz8AmW/D1BMig9JBFu1+7
- WaTQ==
-X-Gm-Message-State: ABuFfoh3YuvwmecdjYXEL+CoZIFNlqE3KJNLDLtxIc+K+qHa3QyHlyM5
- pYxd1KlG3YYW/hf3/9lZx5DEXN+L
-X-Google-Smtp-Source: ACcGV62brs+83hvK6XNXBrcEoY9Y6UUYM55fwaf8vSwUkWpmqZqE8uvSjZRQ008eSoRoBWWsN2i/+Q==
-X-Received: by 2002:a63:64c2:: with SMTP id
- y185-v6mr14703851pgb.411.1538490493055; 
- Tue, 02 Oct 2018 07:28:13 -0700 (PDT)
+ bh=xabar2VATOwse3HlR0UpP67f4YJ7beAlC0bOS3eA+Ws=;
+ b=BhqqrcIyKTFp9O6YIkJr97t9Bs/qkG5atNjOjW5Ye+ha4FA8dxdcQdTqPl3dW1imF2
+ gcgf4YBsEdLVLSHoEDk36zoT5keogwxW1K6/uS9gMAzMD44+HugQYFzMcaKANSSfKki+
+ +coUqnwFGE9CL7M4RUSSHLLMF8cl4YSo01egX6K2fF1kUYKsP8ZfBJNlw7PLVpdC2qyK
+ QojUextkE7IfPmyZ7byOl2CTZC3o1JFwaJU8knNwQD+GJ8ZQ5HK6nt0sMFynxVHP2ut9
+ icLgKePFDCcv7vaSJjyP/l6ldWilrVc2qYzDC5fm0JUY9BI8exRaVh8VfIYDfM+PRssf
+ WJLw==
+X-Gm-Message-State: ABuFfoiZsXiWmCUhkqbC12ctg+9mzJ6TXHOz1wCe4sU4HMK0X9qrG3Ea
+ LLkkv9uOFeos3z/+IFZknSEZ35gb
+X-Google-Smtp-Source: ACcGV63mMO7+B10JWck5dHKzb8Ty9DuBdFGNNk++O/TeNn7/Wgt2D+HqVtdmTJUzrygwTjUDrwILew==
+X-Received: by 2002:a63:9c01:: with SMTP id
+ f1-v6mr14477523pge.156.1538490495543; 
+ Tue, 02 Oct 2018 07:28:15 -0700 (PDT)
 Received: from roar.local0.net (59-102-83-213.tpgi.com.au. [59.102.83.213])
- by smtp.gmail.com with ESMTPSA id p3-v6sm21862621pfo.130.2018.10.02.07.28.10
+ by smtp.gmail.com with ESMTPSA id p3-v6sm21862621pfo.130.2018.10.02.07.28.13
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 02 Oct 2018 07:28:12 -0700 (PDT)
+ Tue, 02 Oct 2018 07:28:15 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 4/9] powerpc/64s/hash: Fix preloading of SLB entries
-Date: Wed,  3 Oct 2018 00:27:54 +1000
-Message-Id: <20181002142759.6244-5-npiggin@gmail.com>
+Subject: [PATCH v2 5/9] powerpc/64s/hash: add more barriers for slb preloading
+Date: Wed,  3 Oct 2018 00:27:55 +1000
+Message-Id: <20181002142759.6244-6-npiggin@gmail.com>
 X-Mailer: git-send-email 2.18.0
 In-Reply-To: <20181002142759.6244-1-npiggin@gmail.com>
 References: <20181002142759.6244-1-npiggin@gmail.com>
@@ -98,52 +98,131 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-slb_setup_new_exec and preload_new_slb_context assumed if an address
-missed the preload cache, then it would not be in the SLB and could
-be added. This is wrong if the preload cache has started to overflow.
-This can cause SLB multi-hits on user addresses.
+In several places, more care has to be taken to prevent compiler or
+CPU re-ordering of memory accesses into critical sections that must
+not take SLB faults. Barriers are explained in the comments.
 
-That assumption came from an earlier version of the patch which
-cleared the preload cache when copying the task, but even that was
-technically wrong because some user accesses occur before these
-preloads, and the preloads themselves could overflow the cache
-depending on the size.
-
+Fixes: 5e46e29e6a97 ("powerpc/64s/hash: convert SLB miss handlers to C")
 Fixes: 89ca4e126a3f ("powerpc/64s/hash: Add a SLB preload cache")
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/mm/slb.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ arch/powerpc/mm/slb.c | 37 +++++++++++++++++++++++++++++++------
+ 1 file changed, 31 insertions(+), 6 deletions(-)
 
 diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
-index 74c3b6f8e9b7..a5bd3c02d432 100644
+index a5bd3c02d432..8c38659f1b6b 100644
 --- a/arch/powerpc/mm/slb.c
 +++ b/arch/powerpc/mm/slb.c
-@@ -311,6 +311,13 @@ void slb_setup_new_exec(void)
- 	struct mm_struct *mm = current->mm;
- 	unsigned long exec = 0x10000000;
+@@ -344,6 +344,9 @@ void slb_setup_new_exec(void)
+ 		if (preload_add(ti, mm->mmap_base))
+ 			slb_allocate_user(mm, mm->mmap_base);
+ 	}
++
++	/* see switch_slb */
++	asm volatile("isync" : : : "memory");
+ }
+ 
+ void preload_new_slb_context(unsigned long start, unsigned long sp)
+@@ -373,6 +376,9 @@ void preload_new_slb_context(unsigned long start, unsigned long sp)
+ 		if (preload_add(ti, heap))
+ 			slb_allocate_user(mm, heap);
+ 	}
++
++	/* see switch_slb */
++	asm volatile("isync" : : : "memory");
+ }
+ 
+ 
+@@ -389,6 +395,7 @@ void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
+ 	 * which would update the slb_cache/slb_cache_ptr fields in the PACA.
+ 	 */
+ 	hard_irq_disable();
++	asm volatile("isync" : : : "memory");
+ 	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
+ 		/*
+ 		 * SLBIA IH=3 invalidates all Class=1 SLBEs and their
+@@ -396,7 +403,7 @@ void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
+ 		 * switch_slb wants. So ARCH_300 does not use the slb
+ 		 * cache.
+ 		 */
+-		asm volatile("isync ; " PPC_SLBIA(3)" ; isync");
++		asm volatile(PPC_SLBIA(3));
+ 	} else {
+ 		unsigned long offset = get_paca()->slb_cache_ptr;
+ 
+@@ -404,7 +411,6 @@ void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
+ 		    offset <= SLB_CACHE_ENTRIES) {
+ 			unsigned long slbie_data = 0;
+ 
+-			asm volatile("isync" : : : "memory");
+ 			for (i = 0; i < offset; i++) {
+ 				/* EA */
+ 				slbie_data = (unsigned long)
+@@ -419,7 +425,6 @@ void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
+ 			if (!cpu_has_feature(CPU_FTR_ARCH_207S) && offset == 1)
+ 				asm volatile("slbie %0" : : "r" (slbie_data));
+ 
+-			asm volatile("isync" : : : "memory");
+ 		} else {
+ 			struct slb_shadow *p = get_slb_shadow();
+ 			unsigned long ksp_esid_data =
+@@ -427,8 +432,7 @@ void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
+ 			unsigned long ksp_vsid_data =
+ 				be64_to_cpu(p->save_area[KSTACK_INDEX].vsid);
+ 
+-			asm volatile("isync\n"
+-				     PPC_SLBIA(1) "\n"
++			asm volatile(PPC_SLBIA(1) "\n"
+ 				     "slbmte	%0,%1\n"
+ 				     "isync"
+ 				     :: "r"(ksp_vsid_data),
+@@ -466,6 +470,13 @@ void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
+ 
+ 		slb_allocate_user(mm, ea);
+ 	}
++
++	/*
++	 * Synchronize slbmte preloads with possible subsequent user memory
++	 * address accesses by the kernel (user mode won't happen until
++	 * rfid, which is safe).
++	 */
++	asm volatile("isync" : : : "memory");
+ }
+ 
+ void slb_set_size(u16 size)
+@@ -609,6 +620,17 @@ static long slb_insert_entry(unsigned long ea, unsigned long context,
+ 	if (!vsid)
+ 		return -EFAULT;
  
 +	/*
-+	 * preload cache can only be used to determine whether a SLB
-+	 * entry exists if it does not start to overflow.
++	 * There must not be a kernel SLB fault in alloc_slb_index or before
++	 * slbmte here or the allocation bitmaps could get out of whack with
++	 * the SLB.
++	 *
++	 * User SLB faults or preloads take this path which might get inlined
++	 * into the caller, so add compiler barriers here to ensure unsafe
++	 * memory accesses do not come between
 +	 */
-+	if (ti->slb_preload_nr + 2 > SLB_PRELOAD_NR)
-+		return;
++	barrier();
 +
- 	/*
- 	 * We have no good place to clear the slb preload cache on exec,
- 	 * flush_thread is about the earliest arch hook but that happens
-@@ -345,6 +352,10 @@ void preload_new_slb_context(unsigned long start, unsigned long sp)
- 	struct mm_struct *mm = current->mm;
- 	unsigned long heap = mm->start_brk;
+ 	index = alloc_slb_index(kernel);
  
-+	/* see above */
-+	if (ti->slb_preload_nr + 3 > SLB_PRELOAD_NR)
-+		return;
+ 	vsid_data = __mk_vsid_data(vsid, ssize, flags);
+@@ -617,10 +639,13 @@ static long slb_insert_entry(unsigned long ea, unsigned long context,
+ 	/*
+ 	 * No need for an isync before or after this slbmte. The exception
+ 	 * we enter with and the rfid we exit with are context synchronizing.
+-	 * Also we only handle user segments here.
++	 * User preloads should add isync afterwards in case the kernel
++	 * accesses user memory before it returns to userspace with rfid.
+ 	 */
+ 	asm volatile("slbmte %0, %1" : : "r" (vsid_data), "r" (esid_data));
+ 
++	barrier();
 +
- 	/* Userspace entry address. */
- 	if (!is_kernel_addr(start)) {
- 		if (preload_add(ti, start))
+ 	if (!kernel)
+ 		slb_cache_update(esid_data);
+ 
 -- 
 2.18.0
 
