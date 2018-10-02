@@ -7,60 +7,60 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5FDF2C43143
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 11:44:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 74BA6C43143
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 11:47:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C6202206B2
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 11:44:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E34CF206B2
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 11:47:15 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="Ujc1ovqk"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C6202206B2
+	dkim=pass (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="brlYTmGO"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E34CF206B2
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42Pcl25gL5zDrBy
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 21:44:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Pcns6n3RzDrBy
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 21:47:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="Ujc1ovqk";
+	dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="brlYTmGO";
 	dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42PcSC5DYtzF35t
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Oct 2018 21:31:55 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42PcSD1BXTzF36Y
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Oct 2018 21:31:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="Ujc1ovqk"; 
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="brlYTmGO"; 
  dkim-atps=neutral
 Received: by ozlabs.org (Postfix)
- id 42PcSC1l91z9snk; Tue,  2 Oct 2018 21:31:55 +1000 (AEST)
+ id 42PcSC6b24z9sj0; Tue,  2 Oct 2018 21:31:55 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 42PcSB4mDCz9t0P;
- Tue,  2 Oct 2018 21:31:54 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPSA id 42PcSC4YDWz9t0l;
+ Tue,  2 Oct 2018 21:31:55 +1000 (AEST)
 Authentication-Results: ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.org
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1538479915; bh=MVrjagpAlwh0kTcKfj5bpn3lKL2gakBXXZOfJY+zIlM=;
+ t=1538479915; bh=bYaGtk9+M+4jP9f5VRWnnhXsqWSJlegMSozLLd9/obs=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=Ujc1ovqkfsF3ikUuyQuOZp75hb7pcjuLiJ180ENUdI5mgRSg6uDU6zqtgf58vTYEL
- BwApnlDWUdnCmx5ATwsOv1jSUxruCVeKGXk5yP6sat18/LGjQSqeVhZP8XTGe7gtnT
- Ax/r88CfEBUif2tDactftLA3BEC8oRWdIgLl8KPpbQSGdtHUkBgKtmBC3hD8msNuRz
- YzHk+meTtBw5cXSJy2wWZXNiG27LnWkRBj2M96iT9QBA0niSL0w6ibfmWP2zcVi9ek
- QCuKXKc2tOeTEBNG+kR4fsduHHN1u9r8h33L40ukuE8ZQYx9aMfVXKOy3b8UZeHELO
- rpjCEcGHObnyg==
+ b=brlYTmGONkNMsdEkybp+aEw0I4B23Vc9LkyJKQW0d1b/Zx8TKhFGcBRdZUE5WtN2w
+ gQjOdvgktJhX+t3uW4W/icHNz9lFQV4e4uEPybaMYhe0gf0gGH8xrzCpKksc7+0Lpx
+ haAxdXq+f+zmnCges7mAapuWWhost0/BGR+pNAdp19MLm236mu2zRVZVXxctQuSg5N
+ mVqPd2uUjrakMBgR2g9LIJVLSZzqY/F9CJZFIsjgtRSSKXQzU5/AgchL0J7NytDQuX
+ 06yhoHP3lABSe81HnVbHjbCKJ28vMpo4UDiq9+mTnRoAXbSyaWJt4pXnDMR+DlNWCE
+ aU/3rza95LvjA==
 From: Paul Mackerras <paulus@ozlabs.org>
 To: kvm@vger.kernel.org,
 	kvm-ppc@vger.kernel.org
-Subject: [PATCH v3 03/33] KVM: PPC: Book3S HV: Remove left-over code in
- XICS-on-XIVE emulation
-Date: Tue,  2 Oct 2018 21:31:02 +1000
-Message-Id: <1538479892-14835-4-git-send-email-paulus@ozlabs.org>
+Subject: [PATCH v3 05/33] KVM: PPC: Book3S HV: Extract PMU save/restore
+ operations as C-callable functions
+Date: Tue,  2 Oct 2018 21:31:04 +1000
+Message-Id: <1538479892-14835-6-git-send-email-paulus@ozlabs.org>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1538479892-14835-1-git-send-email-paulus@ozlabs.org>
 References: <1538479892-14835-1-git-send-email-paulus@ozlabs.org>
@@ -80,39 +80,548 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This removes code that clears the external interrupt pending bit in
-the pending_exceptions bitmap.  This is left over from an earlier
-iteration of the code where this bit was set when an escalation
-interrupt arrived in order to wake the vcpu from cede.  Currently
-we set the vcpu->arch.irq_pending flag instead for this purpose.
-Therefore there is no need to do anything with the pending_exceptions
-bitmap.
+This pulls out the assembler code that is responsible for saving and
+restoring the PMU state for the host and guest into separate functions
+so they can be used from an alternate entry path.  The calling
+convention is made compatible with C.
 
 Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/kvm/book3s_xive_template.c | 8 --------
- 1 file changed, 8 deletions(-)
+ arch/powerpc/include/asm/asm-prototypes.h |   5 +
+ arch/powerpc/kvm/book3s_hv_interrupts.S   |  95 ++++----
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S   | 363 ++++++++++++++++--------------
+ 3 files changed, 253 insertions(+), 210 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_xive_template.c b/arch/powerpc/kvm/book3s_xive_template.c
-index 203ea65..033363d 100644
---- a/arch/powerpc/kvm/book3s_xive_template.c
-+++ b/arch/powerpc/kvm/book3s_xive_template.c
-@@ -280,14 +280,6 @@ X_STATIC unsigned long GLUE(X_PFX,h_xirr)(struct kvm_vcpu *vcpu)
- 	/* First collect pending bits from HW */
- 	GLUE(X_PFX,ack_pending)(xc);
+diff --git a/arch/powerpc/include/asm/asm-prototypes.h b/arch/powerpc/include/asm/asm-prototypes.h
+index 1f4691c..024e8fc 100644
+--- a/arch/powerpc/include/asm/asm-prototypes.h
++++ b/arch/powerpc/include/asm/asm-prototypes.h
+@@ -150,4 +150,9 @@ extern s32 patch__memset_nocache, patch__memcpy_nocache;
  
+ extern long flush_count_cache;
+ 
++void kvmhv_save_host_pmu(void);
++void kvmhv_load_host_pmu(void);
++void kvmhv_save_guest_pmu(struct kvm_vcpu *vcpu, bool pmu_in_use);
++void kvmhv_load_guest_pmu(struct kvm_vcpu *vcpu);
++
+ #endif /* _ASM_POWERPC_ASM_PROTOTYPES_H */
+diff --git a/arch/powerpc/kvm/book3s_hv_interrupts.S b/arch/powerpc/kvm/book3s_hv_interrupts.S
+index 666b91c..a6d1001 100644
+--- a/arch/powerpc/kvm/book3s_hv_interrupts.S
++++ b/arch/powerpc/kvm/book3s_hv_interrupts.S
+@@ -64,52 +64,7 @@ BEGIN_FTR_SECTION
+ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
+ 
+ 	/* Save host PMU registers */
+-BEGIN_FTR_SECTION
+-	/* Work around P8 PMAE bug */
+-	li	r3, -1
+-	clrrdi	r3, r3, 10
+-	mfspr	r8, SPRN_MMCR2
+-	mtspr	SPRN_MMCR2, r3		/* freeze all counters using MMCR2 */
+-	isync
+-END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+-	li	r3, 1
+-	sldi	r3, r3, 31		/* MMCR0_FC (freeze counters) bit */
+-	mfspr	r7, SPRN_MMCR0		/* save MMCR0 */
+-	mtspr	SPRN_MMCR0, r3		/* freeze all counters, disable interrupts */
+-	mfspr	r6, SPRN_MMCRA
+-	/* Clear MMCRA in order to disable SDAR updates */
+-	li	r5, 0
+-	mtspr	SPRN_MMCRA, r5
+-	isync
+-	lbz	r5, PACA_PMCINUSE(r13)	/* is the host using the PMU? */
+-	cmpwi	r5, 0
+-	beq	31f			/* skip if not */
+-	mfspr	r5, SPRN_MMCR1
+-	mfspr	r9, SPRN_SIAR
+-	mfspr	r10, SPRN_SDAR
+-	std	r7, HSTATE_MMCR0(r13)
+-	std	r5, HSTATE_MMCR1(r13)
+-	std	r6, HSTATE_MMCRA(r13)
+-	std	r9, HSTATE_SIAR(r13)
+-	std	r10, HSTATE_SDAR(r13)
+-BEGIN_FTR_SECTION
+-	mfspr	r9, SPRN_SIER
+-	std	r8, HSTATE_MMCR2(r13)
+-	std	r9, HSTATE_SIER(r13)
+-END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+-	mfspr	r3, SPRN_PMC1
+-	mfspr	r5, SPRN_PMC2
+-	mfspr	r6, SPRN_PMC3
+-	mfspr	r7, SPRN_PMC4
+-	mfspr	r8, SPRN_PMC5
+-	mfspr	r9, SPRN_PMC6
+-	stw	r3, HSTATE_PMC1(r13)
+-	stw	r5, HSTATE_PMC2(r13)
+-	stw	r6, HSTATE_PMC3(r13)
+-	stw	r7, HSTATE_PMC4(r13)
+-	stw	r8, HSTATE_PMC5(r13)
+-	stw	r9, HSTATE_PMC6(r13)
+-31:
++	bl	kvmhv_save_host_pmu
+ 
+ 	/*
+ 	 * Put whatever is in the decrementer into the
+@@ -161,3 +116,51 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+ 	ld	r0, PPC_LR_STKOFF(r1)
+ 	mtlr	r0
+ 	blr
++
++_GLOBAL(kvmhv_save_host_pmu)
++BEGIN_FTR_SECTION
++	/* Work around P8 PMAE bug */
++	li	r3, -1
++	clrrdi	r3, r3, 10
++	mfspr	r8, SPRN_MMCR2
++	mtspr	SPRN_MMCR2, r3		/* freeze all counters using MMCR2 */
++	isync
++END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
++	li	r3, 1
++	sldi	r3, r3, 31		/* MMCR0_FC (freeze counters) bit */
++	mfspr	r7, SPRN_MMCR0		/* save MMCR0 */
++	mtspr	SPRN_MMCR0, r3		/* freeze all counters, disable interrupts */
++	mfspr	r6, SPRN_MMCRA
++	/* Clear MMCRA in order to disable SDAR updates */
++	li	r5, 0
++	mtspr	SPRN_MMCRA, r5
++	isync
++	lbz	r5, PACA_PMCINUSE(r13)	/* is the host using the PMU? */
++	cmpwi	r5, 0
++	beq	31f			/* skip if not */
++	mfspr	r5, SPRN_MMCR1
++	mfspr	r9, SPRN_SIAR
++	mfspr	r10, SPRN_SDAR
++	std	r7, HSTATE_MMCR0(r13)
++	std	r5, HSTATE_MMCR1(r13)
++	std	r6, HSTATE_MMCRA(r13)
++	std	r9, HSTATE_SIAR(r13)
++	std	r10, HSTATE_SDAR(r13)
++BEGIN_FTR_SECTION
++	mfspr	r9, SPRN_SIER
++	std	r8, HSTATE_MMCR2(r13)
++	std	r9, HSTATE_SIER(r13)
++END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
++	mfspr	r3, SPRN_PMC1
++	mfspr	r5, SPRN_PMC2
++	mfspr	r6, SPRN_PMC3
++	mfspr	r7, SPRN_PMC4
++	mfspr	r8, SPRN_PMC5
++	mfspr	r9, SPRN_PMC6
++	stw	r3, HSTATE_PMC1(r13)
++	stw	r5, HSTATE_PMC2(r13)
++	stw	r6, HSTATE_PMC3(r13)
++	stw	r7, HSTATE_PMC4(r13)
++	stw	r8, HSTATE_PMC5(r13)
++	stw	r9, HSTATE_PMC6(r13)
++31:	blr
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index 6752da1..5b2ae34 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -28,6 +28,7 @@
+ #include <asm/exception-64s.h>
+ #include <asm/kvm_book3s_asm.h>
+ #include <asm/book3s/64/mmu-hash.h>
++#include <asm/export.h>
+ #include <asm/tm.h>
+ #include <asm/opal.h>
+ #include <asm/xive-regs.h>
+@@ -113,45 +114,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
+ 	mtspr	SPRN_SPRG_VDSO_WRITE,r3
+ 
+ 	/* Reload the host's PMU registers */
+-	lbz	r4, PACA_PMCINUSE(r13) /* is the host using the PMU? */
+-	cmpwi	r4, 0
+-	beq	23f			/* skip if not */
+-BEGIN_FTR_SECTION
+-	ld	r3, HSTATE_MMCR0(r13)
+-	andi.	r4, r3, MMCR0_PMAO_SYNC | MMCR0_PMAO
+-	cmpwi	r4, MMCR0_PMAO
+-	beql	kvmppc_fix_pmao
+-END_FTR_SECTION_IFSET(CPU_FTR_PMAO_BUG)
+-	lwz	r3, HSTATE_PMC1(r13)
+-	lwz	r4, HSTATE_PMC2(r13)
+-	lwz	r5, HSTATE_PMC3(r13)
+-	lwz	r6, HSTATE_PMC4(r13)
+-	lwz	r8, HSTATE_PMC5(r13)
+-	lwz	r9, HSTATE_PMC6(r13)
+-	mtspr	SPRN_PMC1, r3
+-	mtspr	SPRN_PMC2, r4
+-	mtspr	SPRN_PMC3, r5
+-	mtspr	SPRN_PMC4, r6
+-	mtspr	SPRN_PMC5, r8
+-	mtspr	SPRN_PMC6, r9
+-	ld	r3, HSTATE_MMCR0(r13)
+-	ld	r4, HSTATE_MMCR1(r13)
+-	ld	r5, HSTATE_MMCRA(r13)
+-	ld	r6, HSTATE_SIAR(r13)
+-	ld	r7, HSTATE_SDAR(r13)
+-	mtspr	SPRN_MMCR1, r4
+-	mtspr	SPRN_MMCRA, r5
+-	mtspr	SPRN_SIAR, r6
+-	mtspr	SPRN_SDAR, r7
+-BEGIN_FTR_SECTION
+-	ld	r8, HSTATE_MMCR2(r13)
+-	ld	r9, HSTATE_SIER(r13)
+-	mtspr	SPRN_MMCR2, r8
+-	mtspr	SPRN_SIER, r9
+-END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+-	mtspr	SPRN_MMCR0, r3
+-	isync
+-23:
++	bl	kvmhv_load_host_pmu
+ 
+ 	/*
+ 	 * Reload DEC.  HDEC interrupts were disabled when
+@@ -805,57 +768,12 @@ END_FTR_SECTION(CPU_FTR_TM | CPU_FTR_P9_TM_HV_ASSIST, 0)
+ 91:
+ #endif
+ 
+-	/* Load guest PMU registers */
+-	/* R4 is live here (vcpu pointer) */
+-	li	r3, 1
+-	sldi	r3, r3, 31		/* MMCR0_FC (freeze counters) bit */
+-	mtspr	SPRN_MMCR0, r3		/* freeze all counters, disable ints */
+-	isync
+-BEGIN_FTR_SECTION
+-	ld	r3, VCPU_MMCR(r4)
+-	andi.	r5, r3, MMCR0_PMAO_SYNC | MMCR0_PMAO
+-	cmpwi	r5, MMCR0_PMAO
+-	beql	kvmppc_fix_pmao
+-END_FTR_SECTION_IFSET(CPU_FTR_PMAO_BUG)
+-	lwz	r3, VCPU_PMC(r4)	/* always load up guest PMU registers */
+-	lwz	r5, VCPU_PMC + 4(r4)	/* to prevent information leak */
+-	lwz	r6, VCPU_PMC + 8(r4)
+-	lwz	r7, VCPU_PMC + 12(r4)
+-	lwz	r8, VCPU_PMC + 16(r4)
+-	lwz	r9, VCPU_PMC + 20(r4)
+-	mtspr	SPRN_PMC1, r3
+-	mtspr	SPRN_PMC2, r5
+-	mtspr	SPRN_PMC3, r6
+-	mtspr	SPRN_PMC4, r7
+-	mtspr	SPRN_PMC5, r8
+-	mtspr	SPRN_PMC6, r9
+-	ld	r3, VCPU_MMCR(r4)
+-	ld	r5, VCPU_MMCR + 8(r4)
+-	ld	r6, VCPU_MMCR + 16(r4)
+-	ld	r7, VCPU_SIAR(r4)
+-	ld	r8, VCPU_SDAR(r4)
+-	mtspr	SPRN_MMCR1, r5
+-	mtspr	SPRN_MMCRA, r6
+-	mtspr	SPRN_SIAR, r7
+-	mtspr	SPRN_SDAR, r8
+-BEGIN_FTR_SECTION
+-	ld	r5, VCPU_MMCR + 24(r4)
+-	ld	r6, VCPU_SIER(r4)
+-	mtspr	SPRN_MMCR2, r5
+-	mtspr	SPRN_SIER, r6
+-BEGIN_FTR_SECTION_NESTED(96)
+-	lwz	r7, VCPU_PMC + 24(r4)
+-	lwz	r8, VCPU_PMC + 28(r4)
+-	ld	r9, VCPU_MMCR + 32(r4)
+-	mtspr	SPRN_SPMC1, r7
+-	mtspr	SPRN_SPMC2, r8
+-	mtspr	SPRN_MMCRS, r9
+-END_FTR_SECTION_NESTED(CPU_FTR_ARCH_300, 0, 96)
+-END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+-	mtspr	SPRN_MMCR0, r3
+-	isync
++	/* Load guest PMU registers; r4 = vcpu pointer here */
++	mr	r3, r4
++	bl	kvmhv_load_guest_pmu
+ 
+ 	/* Load up FP, VMX and VSX registers */
++	ld	r4, HSTATE_KVM_VCPU(r13)
+ 	bl	kvmppc_load_fp
+ 
+ 	ld	r14, VCPU_GPR(R14)(r4)
+@@ -1766,83 +1684,12 @@ END_FTR_SECTION(CPU_FTR_TM | CPU_FTR_P9_TM_HV_ASSIST, 0)
+ 25:
+ 	/* Save PMU registers if requested */
+ 	/* r8 and cr0.eq are live here */
+-BEGIN_FTR_SECTION
 -	/*
--	 * Cleanup the old-style bits if needed (they may have been
--	 * set by pull or an escalation interrupts).
+-	 * POWER8 seems to have a hardware bug where setting
+-	 * MMCR0[PMAE] along with MMCR0[PMC1CE] and/or MMCR0[PMCjCE]
+-	 * when some counters are already negative doesn't seem
+-	 * to cause a performance monitor alert (and hence interrupt).
+-	 * The effect of this is that when saving the PMU state,
+-	 * if there is no PMU alert pending when we read MMCR0
+-	 * before freezing the counters, but one becomes pending
+-	 * before we read the counters, we lose it.
+-	 * To work around this, we need a way to freeze the counters
+-	 * before reading MMCR0.  Normally, freezing the counters
+-	 * is done by writing MMCR0 (to set MMCR0[FC]) which
+-	 * unavoidably writes MMCR0[PMA0] as well.  On POWER8,
+-	 * we can also freeze the counters using MMCR2, by writing
+-	 * 1s to all the counter freeze condition bits (there are
+-	 * 9 bits each for 6 counters).
 -	 */
--	if (test_bit(BOOK3S_IRQPRIO_EXTERNAL, &vcpu->arch.pending_exceptions))
--		clear_bit(BOOK3S_IRQPRIO_EXTERNAL,
--			  &vcpu->arch.pending_exceptions);
--
- 	pr_devel(" new pending=0x%02x hw_cppr=%d cppr=%d\n",
- 		 xc->pending, xc->hw_cppr, xc->cppr);
+-	li	r3, -1			/* set all freeze bits */
+-	clrrdi	r3, r3, 10
+-	mfspr	r10, SPRN_MMCR2
+-	mtspr	SPRN_MMCR2, r3
+-	isync
+-END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+-	li	r3, 1
+-	sldi	r3, r3, 31		/* MMCR0_FC (freeze counters) bit */
+-	mfspr	r4, SPRN_MMCR0		/* save MMCR0 */
+-	mtspr	SPRN_MMCR0, r3		/* freeze all counters, disable ints */
+-	mfspr	r6, SPRN_MMCRA
+-	/* Clear MMCRA in order to disable SDAR updates */
+-	li	r7, 0
+-	mtspr	SPRN_MMCRA, r7
+-	isync
++	mr	r3, r9
++	li	r4, 1
+ 	beq	21f			/* if no VPA, save PMU stuff anyway */
+-	lbz	r7, LPPACA_PMCINUSE(r8)
+-	cmpwi	r7, 0			/* did they ask for PMU stuff to be saved? */
+-	bne	21f
+-	std	r3, VCPU_MMCR(r9)	/* if not, set saved MMCR0 to FC */
+-	b	22f
+-21:	mfspr	r5, SPRN_MMCR1
+-	mfspr	r7, SPRN_SIAR
+-	mfspr	r8, SPRN_SDAR
+-	std	r4, VCPU_MMCR(r9)
+-	std	r5, VCPU_MMCR + 8(r9)
+-	std	r6, VCPU_MMCR + 16(r9)
+-BEGIN_FTR_SECTION
+-	std	r10, VCPU_MMCR + 24(r9)
+-END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+-	std	r7, VCPU_SIAR(r9)
+-	std	r8, VCPU_SDAR(r9)
+-	mfspr	r3, SPRN_PMC1
+-	mfspr	r4, SPRN_PMC2
+-	mfspr	r5, SPRN_PMC3
+-	mfspr	r6, SPRN_PMC4
+-	mfspr	r7, SPRN_PMC5
+-	mfspr	r8, SPRN_PMC6
+-	stw	r3, VCPU_PMC(r9)
+-	stw	r4, VCPU_PMC + 4(r9)
+-	stw	r5, VCPU_PMC + 8(r9)
+-	stw	r6, VCPU_PMC + 12(r9)
+-	stw	r7, VCPU_PMC + 16(r9)
+-	stw	r8, VCPU_PMC + 20(r9)
+-BEGIN_FTR_SECTION
+-	mfspr	r5, SPRN_SIER
+-	std	r5, VCPU_SIER(r9)
+-BEGIN_FTR_SECTION_NESTED(96)
+-	mfspr	r6, SPRN_SPMC1
+-	mfspr	r7, SPRN_SPMC2
+-	mfspr	r8, SPRN_MMCRS
+-	stw	r6, VCPU_PMC + 24(r9)
+-	stw	r7, VCPU_PMC + 28(r9)
+-	std	r8, VCPU_MMCR + 32(r9)
+-	lis	r4, 0x8000
+-	mtspr	SPRN_MMCRS, r4
+-END_FTR_SECTION_NESTED(CPU_FTR_ARCH_300, 0, 96)
+-END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+-22:
++	lbz	r4, LPPACA_PMCINUSE(r8)
++21:	bl	kvmhv_save_guest_pmu
++	ld	r9, HSTATE_KVM_VCPU(r13)
  
+ 	/* Restore host values of some registers */
+ BEGIN_FTR_SECTION
+@@ -3388,6 +3235,194 @@ kvmppc_msr_interrupt:
+ 	blr
+ 
+ /*
++ * Load up guest PMU state.  R3 points to the vcpu struct.
++ */
++_GLOBAL(kvmhv_load_guest_pmu)
++EXPORT_SYMBOL_GPL(kvmhv_load_guest_pmu)
++	mr	r4, r3
++	mflr	r0
++	li	r3, 1
++	sldi	r3, r3, 31		/* MMCR0_FC (freeze counters) bit */
++	mtspr	SPRN_MMCR0, r3		/* freeze all counters, disable ints */
++	isync
++BEGIN_FTR_SECTION
++	ld	r3, VCPU_MMCR(r4)
++	andi.	r5, r3, MMCR0_PMAO_SYNC | MMCR0_PMAO
++	cmpwi	r5, MMCR0_PMAO
++	beql	kvmppc_fix_pmao
++END_FTR_SECTION_IFSET(CPU_FTR_PMAO_BUG)
++	lwz	r3, VCPU_PMC(r4)	/* always load up guest PMU registers */
++	lwz	r5, VCPU_PMC + 4(r4)	/* to prevent information leak */
++	lwz	r6, VCPU_PMC + 8(r4)
++	lwz	r7, VCPU_PMC + 12(r4)
++	lwz	r8, VCPU_PMC + 16(r4)
++	lwz	r9, VCPU_PMC + 20(r4)
++	mtspr	SPRN_PMC1, r3
++	mtspr	SPRN_PMC2, r5
++	mtspr	SPRN_PMC3, r6
++	mtspr	SPRN_PMC4, r7
++	mtspr	SPRN_PMC5, r8
++	mtspr	SPRN_PMC6, r9
++	ld	r3, VCPU_MMCR(r4)
++	ld	r5, VCPU_MMCR + 8(r4)
++	ld	r6, VCPU_MMCR + 16(r4)
++	ld	r7, VCPU_SIAR(r4)
++	ld	r8, VCPU_SDAR(r4)
++	mtspr	SPRN_MMCR1, r5
++	mtspr	SPRN_MMCRA, r6
++	mtspr	SPRN_SIAR, r7
++	mtspr	SPRN_SDAR, r8
++BEGIN_FTR_SECTION
++	ld	r5, VCPU_MMCR + 24(r4)
++	ld	r6, VCPU_SIER(r4)
++	mtspr	SPRN_MMCR2, r5
++	mtspr	SPRN_SIER, r6
++BEGIN_FTR_SECTION_NESTED(96)
++	lwz	r7, VCPU_PMC + 24(r4)
++	lwz	r8, VCPU_PMC + 28(r4)
++	ld	r9, VCPU_MMCR + 32(r4)
++	mtspr	SPRN_SPMC1, r7
++	mtspr	SPRN_SPMC2, r8
++	mtspr	SPRN_MMCRS, r9
++END_FTR_SECTION_NESTED(CPU_FTR_ARCH_300, 0, 96)
++END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
++	mtspr	SPRN_MMCR0, r3
++	isync
++	mtlr	r0
++	blr
++
++/*
++ * Reload host PMU state saved in the PACA by kvmhv_save_host_pmu.
++ */
++_GLOBAL(kvmhv_load_host_pmu)
++EXPORT_SYMBOL_GPL(kvmhv_load_host_pmu)
++	mflr	r0
++	lbz	r4, PACA_PMCINUSE(r13) /* is the host using the PMU? */
++	cmpwi	r4, 0
++	beq	23f			/* skip if not */
++BEGIN_FTR_SECTION
++	ld	r3, HSTATE_MMCR0(r13)
++	andi.	r4, r3, MMCR0_PMAO_SYNC | MMCR0_PMAO
++	cmpwi	r4, MMCR0_PMAO
++	beql	kvmppc_fix_pmao
++END_FTR_SECTION_IFSET(CPU_FTR_PMAO_BUG)
++	lwz	r3, HSTATE_PMC1(r13)
++	lwz	r4, HSTATE_PMC2(r13)
++	lwz	r5, HSTATE_PMC3(r13)
++	lwz	r6, HSTATE_PMC4(r13)
++	lwz	r8, HSTATE_PMC5(r13)
++	lwz	r9, HSTATE_PMC6(r13)
++	mtspr	SPRN_PMC1, r3
++	mtspr	SPRN_PMC2, r4
++	mtspr	SPRN_PMC3, r5
++	mtspr	SPRN_PMC4, r6
++	mtspr	SPRN_PMC5, r8
++	mtspr	SPRN_PMC6, r9
++	ld	r3, HSTATE_MMCR0(r13)
++	ld	r4, HSTATE_MMCR1(r13)
++	ld	r5, HSTATE_MMCRA(r13)
++	ld	r6, HSTATE_SIAR(r13)
++	ld	r7, HSTATE_SDAR(r13)
++	mtspr	SPRN_MMCR1, r4
++	mtspr	SPRN_MMCRA, r5
++	mtspr	SPRN_SIAR, r6
++	mtspr	SPRN_SDAR, r7
++BEGIN_FTR_SECTION
++	ld	r8, HSTATE_MMCR2(r13)
++	ld	r9, HSTATE_SIER(r13)
++	mtspr	SPRN_MMCR2, r8
++	mtspr	SPRN_SIER, r9
++END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
++	mtspr	SPRN_MMCR0, r3
++	isync
++	mtlr	r0
++23:	blr
++
++/*
++ * Save guest PMU state into the vcpu struct.
++ * r3 = vcpu, r4 = full save flag (PMU in use flag set in VPA)
++ */
++_GLOBAL(kvmhv_save_guest_pmu)
++EXPORT_SYMBOL_GPL(kvmhv_save_guest_pmu)
++	mr	r9, r3
++	mr	r8, r4
++BEGIN_FTR_SECTION
++	/*
++	 * POWER8 seems to have a hardware bug where setting
++	 * MMCR0[PMAE] along with MMCR0[PMC1CE] and/or MMCR0[PMCjCE]
++	 * when some counters are already negative doesn't seem
++	 * to cause a performance monitor alert (and hence interrupt).
++	 * The effect of this is that when saving the PMU state,
++	 * if there is no PMU alert pending when we read MMCR0
++	 * before freezing the counters, but one becomes pending
++	 * before we read the counters, we lose it.
++	 * To work around this, we need a way to freeze the counters
++	 * before reading MMCR0.  Normally, freezing the counters
++	 * is done by writing MMCR0 (to set MMCR0[FC]) which
++	 * unavoidably writes MMCR0[PMA0] as well.  On POWER8,
++	 * we can also freeze the counters using MMCR2, by writing
++	 * 1s to all the counter freeze condition bits (there are
++	 * 9 bits each for 6 counters).
++	 */
++	li	r3, -1			/* set all freeze bits */
++	clrrdi	r3, r3, 10
++	mfspr	r10, SPRN_MMCR2
++	mtspr	SPRN_MMCR2, r3
++	isync
++END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
++	li	r3, 1
++	sldi	r3, r3, 31		/* MMCR0_FC (freeze counters) bit */
++	mfspr	r4, SPRN_MMCR0		/* save MMCR0 */
++	mtspr	SPRN_MMCR0, r3		/* freeze all counters, disable ints */
++	mfspr	r6, SPRN_MMCRA
++	/* Clear MMCRA in order to disable SDAR updates */
++	li	r7, 0
++	mtspr	SPRN_MMCRA, r7
++	isync
++	cmpwi	r8, 0			/* did they ask for PMU stuff to be saved? */
++	bne	21f
++	std	r3, VCPU_MMCR(r9)	/* if not, set saved MMCR0 to FC */
++	b	22f
++21:	mfspr	r5, SPRN_MMCR1
++	mfspr	r7, SPRN_SIAR
++	mfspr	r8, SPRN_SDAR
++	std	r4, VCPU_MMCR(r9)
++	std	r5, VCPU_MMCR + 8(r9)
++	std	r6, VCPU_MMCR + 16(r9)
++BEGIN_FTR_SECTION
++	std	r10, VCPU_MMCR + 24(r9)
++END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
++	std	r7, VCPU_SIAR(r9)
++	std	r8, VCPU_SDAR(r9)
++	mfspr	r3, SPRN_PMC1
++	mfspr	r4, SPRN_PMC2
++	mfspr	r5, SPRN_PMC3
++	mfspr	r6, SPRN_PMC4
++	mfspr	r7, SPRN_PMC5
++	mfspr	r8, SPRN_PMC6
++	stw	r3, VCPU_PMC(r9)
++	stw	r4, VCPU_PMC + 4(r9)
++	stw	r5, VCPU_PMC + 8(r9)
++	stw	r6, VCPU_PMC + 12(r9)
++	stw	r7, VCPU_PMC + 16(r9)
++	stw	r8, VCPU_PMC + 20(r9)
++BEGIN_FTR_SECTION
++	mfspr	r5, SPRN_SIER
++	std	r5, VCPU_SIER(r9)
++BEGIN_FTR_SECTION_NESTED(96)
++	mfspr	r6, SPRN_SPMC1
++	mfspr	r7, SPRN_SPMC2
++	mfspr	r8, SPRN_MMCRS
++	stw	r6, VCPU_PMC + 24(r9)
++	stw	r7, VCPU_PMC + 28(r9)
++	std	r8, VCPU_MMCR + 32(r9)
++	lis	r4, 0x8000
++	mtspr	SPRN_MMCRS, r4
++END_FTR_SECTION_NESTED(CPU_FTR_ARCH_300, 0, 96)
++END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
++22:	blr
++
++/*
+  * This works around a hardware bug on POWER8E processors, where
+  * writing a 1 to the MMCR0[PMAO] bit doesn't generate a
+  * performance monitor interrupt.  Instead, when we need to have
 -- 
 2.7.4
 
