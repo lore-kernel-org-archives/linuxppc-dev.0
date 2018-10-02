@@ -2,65 +2,66 @@ Return-Path: <SRS0=LYrz=MO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-5.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 97CDFC43143
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 07:25:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 24513C43143
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 08:03:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C2BAE2089A
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 07:25:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 729972089A
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 08:03:03 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="guVCGtDF"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C2BAE2089A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="u3LFB2GU"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 729972089A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42PVzV6CJpzF3Cd
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 17:25:10 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+	by lists.ozlabs.org (Postfix) with ESMTP id 42PWq954KBzF3FW
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 18:03:01 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="guVCGtDF";
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="u3LFB2GU";
 	dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42PVwx5sNRzF0Pl
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Oct 2018 17:22:57 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=gibson.dropbear.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.b="guVCGtDF"; dkim-atps=neutral
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42PWmD4H8tzF3DK
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Oct 2018 18:00:28 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=ozlabs.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="u3LFB2GU"; 
+ dkim-atps=neutral
 Received: by ozlabs.org (Postfix)
- id 42PVwx5CVfz9sBq; Tue,  2 Oct 2018 17:22:57 +1000 (AEST)
-Received: by ozlabs.org (Postfix, from userid 1007)
- id 42PVwx4d3Xz9sCq; Tue,  2 Oct 2018 17:22:57 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1538464977;
- bh=xOywA+th4Z60DexvInMKVRU2d4gWASkLmQC0r467cTE=;
+ id 42PWmD2Qtcz9sjD; Tue,  2 Oct 2018 18:00:28 +1000 (AEST)
+Received: by ozlabs.org (Postfix, from userid 1003)
+ id 42PWmD1Yccz9sj1; Tue,  2 Oct 2018 18:00:28 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
+ t=1538467228; bh=vGrxvvEJJIbgQixKclFXrBItSzPWgNcsitXe9JuhL/I=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=guVCGtDFgJkYRjmaleMq3OVyucNWN9/MlukdboBhad0QLiB38C//yA/y6mOvRCbTR
- ItvBDAC56ZcPewHPRLQtGviHGicaNIatec7wD2FnxSJoLDRPjbLY07elPdM4k+DR0t
- m2msPwOQgXTdNCnMg8V2XJrQHJP9Jp9GFLwGCKWg=
-Date: Tue, 2 Oct 2018 17:02:07 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Paul Mackerras <paulus@ozlabs.org>
-Subject: Re: [PATCH v2 20/33] KVM: PPC: Book3S HV: Use XICS hypercalls when
- running as a nested hypervisor
-Message-ID: <20181002070207.GK1886@umbus.fritz.box>
+ b=u3LFB2GUBSTzL4cnFOQtvj/cK9gmEGFvc4BQ3buAoprRISUxrfadkFMMVqTry3y1q
+ gFNYydiHaVQbzm8oxlXevRr9W5EQneWa782RaD7sw1XReAsXhKuH1AXgstACkdh8MH
+ X0Nczl17tTGyTRUZViMhTVZmhBtq2SLNeFSz8qgxIem9ohJywwe5MrqMPdv0uSRoD5
+ jCneUkUDdFUavLqYAoILLuO4rSv4ovT9Vs9JurEKEJFUyE+N5rsSDz/Kx5R1sxwB76
+ 0VIXlVzRLtv39tK4+j4YScg+sciDVwUyY5m0dCz1UA6IjWBNeqH4oS0zSolkLJI8gg
+ IfQFA7hMhB32A==
+Date: Tue, 2 Oct 2018 18:00:16 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH v2 19/33] KVM: PPC: Book3S HV: Nested guest entry via
+ hypercall
+Message-ID: <20181002080016.GB26512@fergus>
 References: <1538127963-15645-1-git-send-email-paulus@ozlabs.org>
- <1538127963-15645-21-git-send-email-paulus@ozlabs.org>
+ <1538127963-15645-20-git-send-email-paulus@ozlabs.org>
+ <20181002070009.GJ1886@umbus.fritz.box>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="SLauP2uySp+9cKYP"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1538127963-15645-21-git-send-email-paulus@ozlabs.org>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <20181002070009.GJ1886@umbus.fritz.box>
+User-Agent: Mutt/1.5.24 (2015-08-30)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,177 +78,151 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Tue, Oct 02, 2018 at 05:00:09PM +1000, David Gibson wrote:
+> On Fri, Sep 28, 2018 at 07:45:49PM +1000, Paul Mackerras wrote:
+> > This adds a new hypercall, H_ENTER_NESTED, which is used by a nested
+> > hypervisor to enter one of its nested guests.  The hypercall supplies
+> > register values in two structs.  Those values are copied by the level 0
+> > (L0) hypervisor (the one which is running in hypervisor mode) into the
+> > vcpu struct of the L1 guest, and then the guest is run until an
+> > interrupt or error occurs which needs to be reported to L1 via the
+> > hypercall return value.
+> > 
+> > Currently this assumes that the L0 and L1 hypervisors are the same
+> > endianness, and the structs passed as arguments are in native
+> > endianness.  If they are of different endianness, the version number
+> > check will fail and the hcall will be rejected.
+> > 
+> > Nested hypervisors do not support indep_threads_mode=N, so this adds
+> > code to print a warning message if the administrator has set
+> > indep_threads_mode=N, and treat it as Y.
+> > 
+> > Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+> 
+> [snip]
+> > +/* Register state for entering a nested guest with H_ENTER_NESTED */
+> > +struct hv_guest_state {
+> > +	u64 version;		/* version of this structure layout */
+> > +	u32 lpid;
+> > +	u32 vcpu_token;
+> > +	/* These registers are hypervisor privileged (at least for writing) */
+> > +	u64 lpcr;
+> > +	u64 pcr;
+> > +	u64 amor;
+> > +	u64 dpdes;
+> > +	u64 hfscr;
+> > +	s64 tb_offset;
+> > +	u64 dawr0;
+> > +	u64 dawrx0;
+> > +	u64 ciabr;
+> > +	u64 hdec_expiry;
+> > +	u64 purr;
+> > +	u64 spurr;
+> > +	u64 ic;
+> > +	u64 vtb;
+> > +	u64 hdar;
+> > +	u64 hdsisr;
+> > +	u64 heir;
+> > +	u64 asdr;
+> > +	/* These are OS privileged but need to be set late in guest entry */
+> > +	u64 srr0;
+> > +	u64 srr1;
+> > +	u64 sprg[4];
+> > +	u64 pidr;
+> > +	u64 cfar;
+> > +	u64 ppr;
+> > +};
+> 
+> I'm guessing the implication here is that most supervisor privileged
+> registers need to be set by the L1 to the L2 values, before making the
+> H_ENTER_NESTED call.  Is that right?
 
---SLauP2uySp+9cKYP
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Right - the supervisor privileged registers that are here are the ones
+that the L1 guest needs to have valid at all times (e.g. sprgN), or
+that can get clobbered at any time (e.g. srr0/1), or that can't be
+set to guest values until just before guest entry (cfar, ppr), or that
+are not writable by the supervisor (purr, spurr, dpdes, ic, vtb).
 
-On Fri, Sep 28, 2018 at 07:45:50PM +1000, Paul Mackerras wrote:
-> This adds code to call the H_IPI and H_EOI hypercalls when we are
-> running as a nested hypervisor (i.e. without the CPU_FTR_HVMODE cpu
-> feature) and we would otherwise access the XICS interrupt controller
-> directly or via an OPAL call.
->=20
-> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+> [snip]
+> > +static int kvmppc_handle_nested_exit(struct kvm_vcpu *vcpu)
+> > +{
+> > +	int r;
+> > +	int srcu_idx;
+> > +
+> > +	vcpu->stat.sum_exits++;
+> > +
+> > +	/*
+> > +	 * This can happen if an interrupt occurs in the last stages
+> > +	 * of guest entry or the first stages of guest exit (i.e. after
+> > +	 * setting paca->kvm_hstate.in_guest to KVM_GUEST_MODE_GUEST_HV
+> > +	 * and before setting it to KVM_GUEST_MODE_HOST_HV).
+> > +	 * That can happen due to a bug, or due to a machine check
+> > +	 * occurring at just the wrong time.
+> > +	 */
+> > +	if (vcpu->arch.shregs.msr & MSR_HV) {
+> > +		pr_emerg("KVM trap in HV mode while nested!\n");
+> > +		pr_emerg("trap=0x%x | pc=0x%lx | msr=0x%llx\n",
+> > +			 vcpu->arch.trap, kvmppc_get_pc(vcpu),
+> > +			 vcpu->arch.shregs.msr);
+> > +		kvmppc_dump_regs(vcpu);
+> > +		return RESUME_HOST;
+> 
+> To make sure I'm understanding right here, RESUME_HOST will
+> effectively mean resume the L0, and RESUME_GUEST (without additional
+> processing) will mean resume the L2, right?
 
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+RESUME_HOST means resume L1 in fact, and RESUME_GUEST means resume L2.
+We never go straight out from L2 to L0 because that would leave L1 in
+the middle of a hypercall and we would have to have some sort of extra
+state to record that fact.  Instead, if we need to do anything like
+that (e.g. because of a signal pending for the task), we get to the
+point where the H_ENTER_NESTED is finished and the return code is
+stored in L1's r3 before exiting to the L0 userspace.
 
-> ---
->  arch/powerpc/kvm/book3s_hv.c         |  7 +++++-
->  arch/powerpc/kvm/book3s_hv_builtin.c | 44 +++++++++++++++++++++++++++++-=
-------
->  arch/powerpc/kvm/book3s_hv_rm_xics.c |  8 +++++++
->  3 files changed, 50 insertions(+), 9 deletions(-)
->=20
-> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> index 60adf47..8d2f91f 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -173,6 +173,10 @@ static bool kvmppc_ipi_thread(int cpu)
->  {
->  	unsigned long msg =3D PPC_DBELL_TYPE(PPC_DBELL_SERVER);
-> =20
-> +	/* If we're a nested hypervisor, fall back to ordinary IPIs for now */
-> +	if (kvmhv_on_pseries())
-> +		return false;
-> +
->  	/* On POWER9 we can use msgsnd to IPI any cpu */
->  	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
->  		msg |=3D get_hard_smp_processor_id(cpu);
-> @@ -5164,7 +5168,8 @@ static int kvmppc_book3s_init_hv(void)
->  	 * indirectly, via OPAL.
->  	 */
->  #ifdef CONFIG_SMP
-> -	if (!xive_enabled() && !local_paca->kvm_hstate.xics_phys) {
-> +	if (!xive_enabled() && !kvmhv_on_pseries() &&
-> +	    !local_paca->kvm_hstate.xics_phys) {
->  		struct device_node *np;
-> =20
->  		np =3D of_find_compatible_node(NULL, NULL, "ibm,opal-intc");
-> diff --git a/arch/powerpc/kvm/book3s_hv_builtin.c b/arch/powerpc/kvm/book=
-3s_hv_builtin.c
-> index ccfea5b..a71e2fc 100644
-> --- a/arch/powerpc/kvm/book3s_hv_builtin.c
-> +++ b/arch/powerpc/kvm/book3s_hv_builtin.c
-> @@ -231,6 +231,15 @@ void kvmhv_rm_send_ipi(int cpu)
->  	void __iomem *xics_phys;
->  	unsigned long msg =3D PPC_DBELL_TYPE(PPC_DBELL_SERVER);
-> =20
-> +	/* For a nested hypervisor, use the XICS via hcall */
-> +	if (kvmhv_on_pseries()) {
-> +		unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
-> +
-> +		plpar_hcall_raw(H_IPI, retbuf, get_hard_smp_processor_id(cpu),
-> +				IPI_PRIORITY);
-> +		return;
-> +	}
-> +
->  	/* On POWER9 we can use msgsnd for any destination cpu. */
->  	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
->  		msg |=3D get_hard_smp_processor_id(cpu);
-> @@ -460,12 +469,19 @@ static long kvmppc_read_one_intr(bool *again)
->  		return 1;
-> =20
->  	/* Now read the interrupt from the ICP */
-> -	xics_phys =3D local_paca->kvm_hstate.xics_phys;
-> -	rc =3D 0;
-> -	if (!xics_phys)
-> -		rc =3D opal_int_get_xirr(&xirr, false);
-> -	else
-> -		xirr =3D __raw_rm_readl(xics_phys + XICS_XIRR);
-> +	if (kvmhv_on_pseries()) {
-> +		unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
-> +
-> +		rc =3D plpar_hcall_raw(H_XIRR, retbuf, 0xFF);
-> +		xirr =3D cpu_to_be32(retbuf[0]);
-> +	} else {
-> +		xics_phys =3D local_paca->kvm_hstate.xics_phys;
-> +		rc =3D 0;
-> +		if (!xics_phys)
-> +			rc =3D opal_int_get_xirr(&xirr, false);
-> +		else
-> +			xirr =3D __raw_rm_readl(xics_phys + XICS_XIRR);
-> +	}
->  	if (rc < 0)
->  		return 1;
-> =20
-> @@ -494,7 +510,13 @@ static long kvmppc_read_one_intr(bool *again)
->  	 */
->  	if (xisr =3D=3D XICS_IPI) {
->  		rc =3D 0;
-> -		if (xics_phys) {
-> +		if (kvmhv_on_pseries()) {
-> +			unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
-> +
-> +			plpar_hcall_raw(H_IPI, retbuf,
-> +					hard_smp_processor_id(), 0xff);
-> +			plpar_hcall_raw(H_EOI, retbuf, h_xirr);
-> +		} else if (xics_phys) {
->  			__raw_rm_writeb(0xff, xics_phys + XICS_MFRR);
->  			__raw_rm_writel(xirr, xics_phys + XICS_XIRR);
->  		} else {
-> @@ -520,7 +542,13 @@ static long kvmppc_read_one_intr(bool *again)
->  			/* We raced with the host,
->  			 * we need to resend that IPI, bummer
->  			 */
-> -			if (xics_phys)
-> +			if (kvmhv_on_pseries()) {
-> +				unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
-> +
-> +				plpar_hcall_raw(H_IPI, retbuf,
-> +						hard_smp_processor_id(),
-> +						IPI_PRIORITY);
-> +			} else if (xics_phys)
->  				__raw_rm_writeb(IPI_PRIORITY,
->  						xics_phys + XICS_MFRR);
->  			else
-> diff --git a/arch/powerpc/kvm/book3s_hv_rm_xics.c b/arch/powerpc/kvm/book=
-3s_hv_rm_xics.c
-> index 8b9f356..b3f5786 100644
-> --- a/arch/powerpc/kvm/book3s_hv_rm_xics.c
-> +++ b/arch/powerpc/kvm/book3s_hv_rm_xics.c
-> @@ -767,6 +767,14 @@ static void icp_eoi(struct irq_chip *c, u32 hwirq, _=
-_be32 xirr, bool *again)
->  	void __iomem *xics_phys;
->  	int64_t rc;
-> =20
-> +	if (kvmhv_on_pseries()) {
-> +		unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
-> +
-> +		iosync();
-> +		plpar_hcall_raw(H_EOI, retbuf, hwirq);
-> +		return;
-> +	}
-> +
->  	rc =3D pnv_opal_pci_msi_eoi(c, hwirq);
-> =20
->  	if (rc)
+> > @@ -3098,7 +3203,8 @@ static noinline void kvmppc_run_core(struct kvmppc_vcore *vc)
+> >  /*
+> >   * Load up hypervisor-mode registers on P9.
+> >   */
+> > -static int kvmhv_load_hv_regs_and_go(struct kvm_vcpu *vcpu, u64 time_limit)
+> > +static int kvmhv_load_hv_regs_and_go(struct kvm_vcpu *vcpu, u64 time_limit,
+> > +				     unsigned long lpcr)
+> 
+> I don't understand this change: you've added a parameter, but there's
+> no change to the body of the function, so you're not actually using
+> the new parameter.
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Oops, it should be being used.  Thanks for pointing that out.
 
---SLauP2uySp+9cKYP
-Content-Type: application/pgp-signature; name="signature.asc"
+> [snip]
+> > +/*
+> > + * This never fails for a radix guest, as none of the operations it does
+> > + * for a radix guest can fail or have a way to report failure.
+> > + * kvmhv_run_single_vcpu() relies on this fact.
+> > + */
+> >  static int kvmhv_setup_mmu(struct kvm_vcpu *vcpu)
+> >  {
+> >  	int r = 0;
+> > @@ -3684,12 +3814,15 @@ static int kvmppc_run_vcpu(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
+> >  	return vcpu->arch.ret;
+> >  }
+> >  
+> > -static int kvmppc_run_single_vcpu(struct kvm_run *kvm_run,
+> > -				  struct kvm_vcpu *vcpu, u64 time_limit)
+> > +int kvmhv_run_single_vcpu(struct kvm_run *kvm_run,
+> > +			  struct kvm_vcpu *vcpu, u64 time_limit,
+> > +			  unsigned long lpcr)
+> 
+> IIRC this is the streamlined entry path introduced earlier in the
+> series, yes?  Making the name change where it was introduced would
+> avoid the extra churn here.
 
------BEGIN PGP SIGNATURE-----
+True.
 
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAluzF+8ACgkQbDjKyiDZ
-s5KPAQ//UdPQJCMSNFwV9utUu1k9mT+6gHQ5fmL5maD6v6JfDzYCNiBRT0aKMUkf
-/6vdPP2cIPJa6dnsaQyrOLN4KVW9K7AX0eHLgMZx1OgTSwFqx3UsDEOQQCXF7j1n
-57+TuhAJh+etFT/8eatJBgs1seTHso7vIFab63HCkf+wvPTKaKTn8wpS7V3ZXD9a
-kOWN/4EtKsCYuuDRcRFNy4duFdVd/KOu6nyGITA2x2BJvr188a9GQ3Okk7j/b39K
-PBRwbGT2Lob+k0dgCoCB22sQLCQ7DNlVJvpVL7VLgnzkSSI8d0hvupprx+IzG270
-v6rTKTM2Macvc+W06vEHgW3bK9mlLq7z1tpAgrjgCDQG97ZViL2RXjkR4c7eL59s
-kWe8GwUbqpmIs9vI0SK4YjdCEG7vXxP8kE6XZjINCg2kJHQImLAkilqaFSSKY8Yn
-P/rftIQAhHWxt7xVHHy+ZnWhSrXtTxFkb6mFCfGKOBn69BIJOMCopZDJfQBCqBaX
-oLKlFjrqFK/FT7aEc6e72IbOFrv/8xRKBWXfMSMAfQ0DJeMMJREq4mJ+XLQcQDzZ
-O4J1qYq3i8AEL0+7ezGjkDXCayaRlndHI+8qCBmWJ401+U7iILNnKOK7tzOAZVoY
-MTCjFD741HG0oqQgWNffPGfnrpS6TK3Wm8M3NYPb7BzVzIht15c=
-=P2Yk
------END PGP SIGNATURE-----
+> It'd be nice to have something here to make it more obvious that this
+> path is only for radix guests, but I'm not really sure how to
+> accomplish that.
 
---SLauP2uySp+9cKYP--
+It will probably end up getting used for nested HPT guests, when we
+implement support for them.
+
+Paul.
