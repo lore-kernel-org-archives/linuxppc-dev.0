@@ -3,127 +3,106 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AFD7EC43143
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 15:18:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CB342C43143
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 15:27:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4ECC02082A
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 15:18:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4ECC02082A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 3C20F20666
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Oct 2018 15:27:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3C20F20666
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42PjTR2cggzF3JG
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 01:18:19 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42PjhC0w9vzF3JJ
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 01:27:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=mwb@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=redhat.com
+ (client-ip=209.132.183.28; helo=mx1.redhat.com; envelope-from=david@redhat.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42PjPh43bCzF3Jm
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Oct 2018 01:15:04 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w92FEe9a091825
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Oct 2018 11:15:02 -0400
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2mva3sjn8a-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Oct 2018 11:15:01 -0400
-Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Tue, 2 Oct 2018 11:14:58 -0400
-Received: from b01cxnp23034.gho.pok.ibm.com (9.57.198.29)
- by e16.ny.us.ibm.com (146.89.104.203) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 2 Oct 2018 11:14:53 -0400
-Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
- [9.57.199.111])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- w92FErdm8716490
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Tue, 2 Oct 2018 15:14:53 GMT
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A706FAC05E;
- Tue,  2 Oct 2018 11:14:10 -0400 (EDT)
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id ECDFEAC05B;
- Tue,  2 Oct 2018 11:14:07 -0400 (EDT)
-Received: from oc5000245537.ibm.com (unknown [9.53.179.212])
- by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
- Tue,  2 Oct 2018 11:14:07 -0400 (EDT)
-Subject: Re: [PATCH] migration/mm: Add WARN_ON to try_offline_node
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Pjdq2w6nzF36s
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Oct 2018 01:25:35 +1000 (AEST)
+Received: from smtp.corp.redhat.com (int-mx01.intmail.prod.int.phx2.redhat.com
+ [10.5.11.11])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mx1.redhat.com (Postfix) with ESMTPS id 502A7307D84D;
+ Tue,  2 Oct 2018 15:25:32 +0000 (UTC)
+Received: from [10.36.118.57] (unknown [10.36.118.57])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 92BD161366;
+ Tue,  2 Oct 2018 15:25:20 +0000 (UTC)
+Subject: Re: [PATCH RFC] mm/memory_hotplug: Introduce memory block types
 To: Michal Hocko <mhocko@kernel.org>
-References: <20181001185616.11427.35521.stgit@ltcalpine2-lp9.aus.stglabs.ibm.com>
- <20181001202724.GL18290@dhcp22.suse.cz>
- <bdbca329-7d35-0535-1737-94a06a19ae28@linux.vnet.ibm.com>
- <df95f828-1963-d8b9-ab58-6d29d2d152d2@linux.vnet.ibm.com>
- <20181002145922.GZ18290@dhcp22.suse.cz>
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
+References: <20180928150357.12942-1-david@redhat.com>
+ <20181001084038.GD18290@dhcp22.suse.cz>
+ <d54a8509-725f-f771-72f0-15a9d93e8a49@redhat.com>
+ <20181002134734.GT18290@dhcp22.suse.cz>
+From: David Hildenbrand <david@redhat.com>
 Openpgp: preference=signencrypt
-Autocrypt: addr=mwb@linux.vnet.ibm.com; prefer-encrypt=mutual; keydata=
- xsBNBFcY7GcBCADzw3en+yzo9ASFGCfldVkIg95SAMPK0myXp2XJYET3zT45uBsX/uj9/2nA
- lBmXXeOSXnPfJ9V3vtiwcfATnWIsVt3tL6n1kqikzH9nXNxZT7MU/7gqzWZngMAWh/GJ9qyg
- DTOZdjsvdUNUWxtiLvBo7y+reA4HjlQhwhYxxvCpXBeRoF0qDWfQ8DkneemqINzDZPwSQ7zY
- t4F5iyN1I9GC5RNK8Y6jiKmm6bDkrrbtXPOtzXKs0J0FqWEIab/u3BDrRP3STDVPdXqViHua
- AjEzthQbGZm0VCxI4a7XjMi99g614/qDcXZCs00GLZ/VYIE8hB9C5Q+l66S60PLjRrxnABEB
- AAHNLU1pY2hhZWwgVy4gQnJpbmdtYW5uIDxtd2JAbGludXgudm5ldC5pYm0uY29tPsLAeAQT
- AQIAIgUCVxjsZwIbAwYLCQgHAwIGFQgCCQoLBBYCAwECHgECF4AACgkQSEdag3dpuTI0NAf8
- CKYTDKQLgOSjVrU2L5rM4lXaJRmQV6oidD3vIhKSnWRvPq9C29ifRG6ri20prTHAlc0vycgm
- 41HHg0y2vsGgNXGTWC2ObemoZBI7mySXe/7Tq5mD/semGzOp0YWZ7teqrkiSR8Bw0p+LdE7K
- QmT7tpjjvuhrtQ3RRojUYcuy1nWUsc4D+2cxsnZslsx84FUKxPbLagDgZmgBhUw/sUi40s6S
- AkdViVCVS0WANddLIpG0cfdsV0kCae/XdjK3mRK6drFKv1z+QFjvOhc8QIkkxFD0da9w3tJj
- oqnqHFV5gLcHO6/wizPx/NV90y6RngeBORkQiRFWxTXS4Oj9GVI/Us7ATQRXGOxnAQgAmJ5Y
- ikTWrMWPfiveUacETyEhWVl7u8UhZcx3yy2te8O0ay7t9fYcZgIEfQPPVVus89acIXlG3wYL
- DDPvb21OprLxi+ZJ2a0S5we+LcSWN1jByxJlbWBq+/LcMtGAOhNLpysY1gD0Y4UW/eKS+TFZ
- 562qKC3k1dBvnV9JXCgeS1taYFxRdVAn+2DwK3nuyG/DDq/XgJ5BtmyC3MMx8CiW3POj+O+l
- 6SedIeAfZlZ7/xhijx82g93h07VavUQRwMZgZFsqmuxBxVGiav2HB+dNvs3PFB087Pvc9OHe
- qhajPWOP/gNLMmvBvknn1NToM9a8/E8rzcIZXoYs4RggRRYh6wARAQABwsBfBBgBAgAJBQJX
- GOxnAhsMAAoJEEhHWoN3abky+RUH/jE08/r5QzaNKYeVhu0uVbgXu5fsxqr2cAxhf+KuwT3T
- efhEP2alarxzUZdEh4MsG6c+X2NYLbD3cryiXxVx/7kSAJEFQJfA5P06g8NLR25Qpq9BLsN7
- ++dxQ+CLKzSEb1X24hYAJZpOhS8ev3ii+M/XIo+olDBKuTaTgB6elrg3CaxUsVgLBJ+jbRkW
- yQe2S5f/Ja1ThDpSSLLWLiLK/z7+gaqwhnwjQ8Z8Y9D2itJQcj4itHilwImsqwLG7SxzC0NX
- IQ5KaAFYdRcOgwR8VhhkOIVd70ObSZU+E4pTET1WDz4o65xZ89yfose1No0+r5ht/xWOOrh8
- 53/hcWvxHVs=
-Organization: IBM Linux Technology Center
-Date: Tue, 2 Oct 2018 10:14:49 -0500
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+Autocrypt: addr=david@redhat.com; prefer-encrypt=mutual; keydata=
+ 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
+ SE+xAvmumFBY
+Organization: Red Hat GmbH
+Message-ID: <98fb8d65-b641-2225-f842-8804c6f79a06@redhat.com>
+Date: Tue, 2 Oct 2018 17:25:19 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.0
 MIME-Version: 1.0
-In-Reply-To: <20181002145922.GZ18290@dhcp22.suse.cz>
+In-Reply-To: <20181002134734.GT18290@dhcp22.suse.cz>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-x-cbid: 18100215-0072-0000-0000-000003AE1A9A
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00009809; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000267; SDB=6.01096834; UDB=6.00567186; IPR=6.00876876; 
- MB=3.00023590; MTD=3.00000008; XFM=3.00000015; UTC=2018-10-02 15:14:56
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18100215-0073-0000-0000-0000499E6A50
-Message-Id: <d338b385-626b-0e79-9944-708178fe245d@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-10-02_06:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1807170000 definitions=main-1810020148
+Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.11
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
+ (mx1.redhat.com [10.5.110.48]); Tue, 02 Oct 2018 15:25:33 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -135,50 +114,206 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
- Kees Cook <keescook@chromium.org>, Mathieu Malaterre <malat@debian.org>,
- Pavel Tatashin <pasha.tatashin@oracle.com>,
- Nicholas Piggin <npiggin@gmail.com>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>,
- Juliet Kim <minkim@us.ibm.com>, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- YASUAKI ISHIMATSU <yasu.isimatu@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- Dan Williams <dan.j.williams@intel.com>, Oscar Salvador <osalvador@suse.de>
+Cc: Kate Stewart <kstewart@linuxfoundation.org>, Rich Felker <dalias@libc.org>,
+ linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+ Peter Zijlstra <peterz@infradead.org>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-mm@kvack.org,
+ Pavel Tatashin <pavel.tatashin@microsoft.com>,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ Rashmica Gupta <rashmica.g@gmail.com>, "K. Y. Srinivasan" <kys@microsoft.com>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>, linux-s390@vger.kernel.org,
+ Michael Neuling <mikey@neuling.org>,
+ Stephen Hemminger <sthemmin@microsoft.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, linux-acpi@vger.kernel.org,
+ Ingo Molnar <mingo@redhat.com>, xen-devel@lists.xenproject.org,
+ Rob Herring <robh@kernel.org>, Len Brown <lenb@kernel.org>,
+ Fenghua Yu <fenghua.yu@intel.com>, Stephen Rothwell <sfr@canb.auug.org.au>,
+ "mike.travis@hpe.com" <mike.travis@hpe.com>,
+ Haiyang Zhang <haiyangz@microsoft.com>,
+ Dan Williams <dan.j.williams@intel.com>,
+ =?UTF-8?Q?Jonathan_Neusch=c3=a4fer?= <j.neuschaefer@gmx.net>,
+ Nicholas Piggin <npiggin@gmail.com>, Joe Perches <joe@perches.com>,
+ =?UTF-8?B?SsOpcsO0bWUgR2xpc3Nl?= <jglisse@redhat.com>,
+ Mike Rapoport <rppt@linux.vnet.ibm.com>, Borislav Petkov <bp@alien8.de>,
+ Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>, Oscar Salvador <osalvador@suse.de>,
+ Juergen Gross <jgross@suse.com>, Tony Luck <tony.luck@intel.com>,
+ Mathieu Malaterre <malat@debian.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
+ Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>,
+ Philippe Ombredanne <pombredanne@nexb.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, devel@linuxdriverproject.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 10/02/2018 09:59 AM, Michal Hocko wrote:
-> On Tue 02-10-18 09:51:40, Michael Bringmann wrote:
-> [...]
->> When the device-tree affinity attributes have changed for memory,
->> the 'nid' affinity calculated points to a different node for the
->> memory block than the one used to install it, previously on the
->> source system.  The newly calculated 'nid' affinity may not yet
->> be initialized on the target system.  The current memory tracking
->> mechanisms do not record the node to which a memory block was
->> associated when it was added.  Nathan is looking at adding this
->> feature to the new implementation of LMBs, but it is not there
->> yet, and won't be present in earlier kernels without backporting a
->> significant number of changes.
+On 02/10/2018 15:47, Michal Hocko wrote:
+> On Mon 01-10-18 11:34:25, David Hildenbrand wrote:
+>> On 01/10/2018 10:40, Michal Hocko wrote:
+>>> On Fri 28-09-18 17:03:57, David Hildenbrand wrote:
+>>> [...]
+>>>
+>>> I haven't read the patch itself but I just wanted to note one thing
+>>> about this part
+>>>
+>>>> For paravirtualized devices it is relevant that memory is onlined as
+>>>> quickly as possible after adding - and that it is added to the NORMAL
+>>>> zone. Otherwise, it could happen that too much memory in a row is added
+>>>> (but not onlined), resulting in out-of-memory conditions due to the
+>>>> additional memory for "struct pages" and friends. MOVABLE zone as well
+>>>> as delays might be very problematic and lead to crashes (e.g. zone
+>>>> imbalance).
+>>>
+>>> I have proposed (but haven't finished this due to other stuff) a
+>>> solution for this. Newly added memory can host memmaps itself and then
+>>> you do not have the problem in the first place. For vmemmap it would
+>>> have an advantage that you do not really have to beg for 2MB pages to
+>>> back the whole section but you would get it for free because the initial
+>>> part of the section is by definition properly aligned and unused.
+>>
+>> So the plan is to "host metadata for new memory on the memory itself".
+>> Just want to note that this is basically impossible for s390x with the
+>> current mechanisms. (added memory is dead, until onlining notifies the
+>> hypervisor and memory is allocated). It will also be problematic for
+>> paravirtualized memory devices (e.g. XEN's "not backed by the
+>> hypervisor" hacks).
 > 
-> Then the patch you have proposed here just papers over a real issue, no?
-> IIUC then you simply do not remove the memory if you lose the race.
+> OK, I understand that not all usecases can use self memmap hosting
+> others do not have much choice left though. You have to allocate from
+> somewhere. Well and alternative would be to have no memmap until
+> onlining but I am not sure how much work that would be.
+> 
+>> This would only be possible for memory DIMMs, memory that is completely
+>> accessible as far as I can see. Or at least, some specified "first part"
+>> is accessible.
+>>
+>> Other problems are other metadata like extended struct pages and friends.
+> 
+> I wouldn't really worry about extended struct pages. Those should be
+> used for debugging purposes mostly. Ot at least that was the case last
+> time I've checked.
 
-The problem occurs when removing memory after an affinity change references a node that was previously unreferenced.  Other code in 'kernel/mm/memory_hotplug.c' deals with initializing an empty node when adding memory to a system.  The   'removing memory' case is specific to systems that perform LPM and allow device-tree changes.  The powerpc kernel does not have the option of accepting some PRRN requests and accepting others.  It must perform them all.
+Yes, I guess that is true. Being able to add and online memory without
+the need for additional (external) memory would be the ultimate goal,
+but highly complicated. But steps into that direction is a good idea.
 
-The kernel/mm code that removes memory blocks does not (before this patch) recognize that the affinity of a memory block could have changed to a previously unused node.  If every path to try_offline_node made such a check, then this patch would be unnecessary.  However, putting a patch at a single location to check for a relatively rare occurrence, would seem to be a more efficient implementation.
+> 
+>> (I really like the idea of adding memory without allocating memory in
+>> the hypervisor in the first place, please keep me tuned).
+>>
+>> And please note: This solves some problematic part ("adding too much
+>> memory to the movable zone or not onlining it"), but not the issue of
+>> zone imbalance in the first place. And not one issue I try to tackle
+>> here: don't add paravirtualized memory to the movable zone.
+> 
+> Zone imbalance is an inherent problem of the highmem zone. It is
+> essentially the highmem zone we all loved so much back in 32b days.
+> Yes the movable zone doesn't have any addressing limitations so it is a
+> bit more relaxed but considering the hotplug scenarios I have seen so
+> far people just want to have full NUMA nodes movable to allow replacing
+> DIMMs. And then we are back to square one and the zone imbalance issue.
+> You have those regardless where memmaps are allocated from.
 
-Michael
+Unfortunately yes. And things get more complicated as you are adding a
+whole DIMMs and get notifications in the granularity of memory blocks.
+Usually you are not interested in onlining any memory block of that DIMM
+as MOVABLE as soon as you would have to online one memory block of that
+DIMM as NORMAL - because that can already block the whole DIMM.
+
+> 
+>>> I yet have to think about the whole proposal but I am missing the most
+>>> important part. _Who_ is going to use the new exported information and
+>>> for what purpose. You said that distributions have hard time to
+>>> distinguish different types of onlinining policies but isn't this
+>>> something that is inherently usecase specific?
+>>>
+>>
+>> Let's think about a distribution. We have a clash of use cases here
+>> (just what you describe). What I propose solves one part of it ("handle
+>> what you know how to handle right in the kernel").
+>>
+>> 1. Users of DIMMs usually expect that they can be unplugged again. That
+>> is why you want to control how to online memory in user space (== add it
+>> to the movable zone).
+> 
+> Which is only true if you really want to hotremove them. I am not going
+> to tell how much I believe in this usecase but movable policy is not
+> generally applicable here.
+
+Customers expect this to work and the both of us know that we can't make
+any guarantees. At least MOVABLE makes it more likely to work. NORMAL is
+basically impossible.
+
+> 
+>> 2. Users of standby memory (s390) expect that memory will never be
+>> onlined automatically. It will be onlined manually.
+> 
+> yeah
+> 
+>> 3. Users of paravirtualized devices (esp. Hyper-V) don't care about
+>> memory unplug in the sense of MOVABLE at all. They (or Hyper-V!) will
+>> add a whole bunch of memory and expect that everything works fine. So
+>> that memory is onlined immediately and that memory is added to the
+>> NORMAL zone. Users never want the MOVABLE zone.
+> 
+> Then the immediate question would be why to use memory hotplug for that
+> at all? Why don't you simply start with a huge pre-allocated physical
+> address space and balloon memory in an out per demand. Why do you want
+> to inject new memory during the runtime?
+
+Let's assume you have a guest with 20GB size and eventually want to
+allow to grow it to 4TB. You would have to allocate metadata for 4TB
+right from the beginning. That's definitely now what we want. That is
+why memory hotplug is used by e.g. XEN or Hyper-V. With Hyper-V, the
+hypervisor even tells you at which places additional memory has been
+made available.
+
+> 
+>> 1. is a reason why distributions usually don't configure
+>> "MEMORY_HOTPLUG_DEFAULT_ONLINE", because you really want the option for
+>> MOVABLE zone. That however implies, that e.g. for x86, you have to
+>> handle all new memory in user space, especially also HyperV memory.
+>> There, you then have to check for things like "isHyperV()" to decide
+>> "oh, yes, this should definitely not go to the MOVABLE zone".
+> 
+> Why do you need a generic hotplug rule in the first place? Why don't you
+> simply provide different set of rules for different usecases? Let users
+> decide which usecase they prefer rather than try to be clever which
+> almost always hits weird corner cases.
+> 
+
+Memory hotplug has to work as reliable as we can out of the box. Letting
+the user make simple decisions like "oh, I am on hyper-V, I want to
+online memory to the normal zone" does not feel right. But yes, we
+should definitely allow to make modifications. So some sane default rule
++ possible modification is usually a good idea.
+
+I think Dave has a point with using MOVABLE for huge page use cases. And
+there might be other corner cases as you correctly state.
+
+I wonder if this patch itself minus modifying online/offline might make
+sense. We can then implement simple rules in user space
+
+if (normal) {
+	/* customers expect hotplugged DIMMs to be unpluggable */
+	online_movable();
+} else if (paravirt) {
+	/* paravirt memory should as default always go to the NORMAL */
+	online();
+} else {
+	/* standby memory will never get onlined automatically */
+}
+
+Compared to having to guess what is to be done (isKVM(), isHyperV,
+isS390 ...) and failing once this is no longer unique (e.g. virtio-mem
+and ACPI support for x86 KVM).
 
 -- 
-Michael W. Bringmann
-Linux Technology Center
-IBM Corporation
-Tie-Line  363-5196
-External: (512) 286-5196
-Cell:       (512) 466-0650
-mwb@linux.vnet.ibm.com
 
+Thanks,
+
+David / dhildenb
