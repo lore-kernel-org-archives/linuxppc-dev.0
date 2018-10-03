@@ -2,81 +2,74 @@ Return-Path: <SRS0=1oDC=MP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C04E8C00449
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 13:32:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2EC10C00449
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 13:34:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4A38F20684
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 13:32:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4A38F20684
+	by mail.kernel.org (Postfix) with ESMTPS id 9FF9A20684
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 13:34:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9FF9A20684
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42QH4P07JmzF38F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 23:32:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42QH7W4nlLzF38y
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 23:34:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=mwb@linux.vnet.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42QGys2BM2zF37D
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Oct 2018 23:27:16 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42QH3L2HTpzF37g
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Oct 2018 23:31:10 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w93DPQY4075744
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Oct 2018 09:27:14 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2mvwd93hwj-1
+ w93DPx8r048798
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Oct 2018 09:31:08 -0400
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2mvwq8ay9x-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Oct 2018 09:27:13 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Oct 2018 09:31:07 -0400
 Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Wed, 3 Oct 2018 07:27:12 -0600
+ Wed, 3 Oct 2018 07:31:07 -0600
 Received: from b03cxnp08027.gho.boulder.ibm.com (9.17.130.19)
- by e32.co.us.ibm.com (192.168.1.132) with IBM ESMTP SMTP Gateway: Authorized
+ by e31.co.us.ibm.com (192.168.1.131) with IBM ESMTP SMTP Gateway: Authorized
  Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 3 Oct 2018 07:27:09 -0600
+ Wed, 3 Oct 2018 07:31:06 -0600
 Received: from b03ledav004.gho.boulder.ibm.com
  (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
  by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- w93DR8ti51118240
+ w93DV53O51380434
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Wed, 3 Oct 2018 06:27:08 -0700
+ Wed, 3 Oct 2018 06:31:05 -0700
 Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0562C78067;
- Wed,  3 Oct 2018 07:27:08 -0600 (MDT)
+ by IMSVA (Postfix) with ESMTP id 4ECE478064;
+ Wed,  3 Oct 2018 07:31:05 -0600 (MDT)
 Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D0A867805E;
- Wed,  3 Oct 2018 07:27:04 -0600 (MDT)
+ by IMSVA (Postfix) with ESMTP id 2D37E78060;
+ Wed,  3 Oct 2018 07:31:04 -0600 (MDT)
 Received: from oc5000245537.ibm.com (unknown [9.80.203.154])
  by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
- Wed,  3 Oct 2018 07:27:04 -0600 (MDT)
-Subject: Re: [PATCH] migration/mm: Add WARN_ON to try_offline_node
-To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- Michal Hocko <mhocko@kernel.org>
-References: <20181001185616.11427.35521.stgit@ltcalpine2-lp9.aus.stglabs.ibm.com>
- <20181001202724.GL18290@dhcp22.suse.cz>
- <bdbca329-7d35-0535-1737-94a06a19ae28@linux.vnet.ibm.com>
- <df95f828-1963-d8b9-ab58-6d29d2d152d2@linux.vnet.ibm.com>
- <20181002145922.GZ18290@dhcp22.suse.cz>
- <d338b385-626b-0e79-9944-708178fe245d@linux.vnet.ibm.com>
- <20181002160446.GA18290@dhcp22.suse.cz>
- <e7dd66c1-d196-3a14-0115-acdaf538ebfd@linux.vnet.ibm.com>
- <bbc5f219-614f-b024-0888-8ad216c5eaf8@linux.vnet.ibm.com>
+ Wed,  3 Oct 2018 07:31:03 -0600 (MDT)
+Subject: Re: [PATCH v03 3/5] migration/memory: Add hotplug READD_MULTIPLE
+To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+References: <20181001125846.2676.89826.stgit@ltcalpine2-lp9.aus.stglabs.ibm.com>
+ <20181001125952.2676.35168.stgit@ltcalpine2-lp9.aus.stglabs.ibm.com>
+ <460b921e-269b-c7d2-9a31-522a1674faec@linux.vnet.ibm.com>
 From: Michael Bringmann <mwb@linux.vnet.ibm.com>
 Openpgp: preference=signencrypt
 Autocrypt: addr=mwb@linux.vnet.ibm.com; prefer-encrypt=mutual; keydata=
@@ -104,23 +97,23 @@ Autocrypt: addr=mwb@linux.vnet.ibm.com; prefer-encrypt=mutual; keydata=
  IQ5KaAFYdRcOgwR8VhhkOIVd70ObSZU+E4pTET1WDz4o65xZ89yfose1No0+r5ht/xWOOrh8
  53/hcWvxHVs=
 Organization: IBM Linux Technology Center
-Date: Wed, 3 Oct 2018 08:27:03 -0500
+Date: Wed, 3 Oct 2018 08:31:03 -0500
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
  Thunderbird/52.9.1
 MIME-Version: 1.0
-In-Reply-To: <bbc5f219-614f-b024-0888-8ad216c5eaf8@linux.vnet.ibm.com>
+In-Reply-To: <460b921e-269b-c7d2-9a31-522a1674faec@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
-x-cbid: 18100313-0004-0000-0000-000014966E18
+x-cbid: 18100313-8235-0000-0000-00000E0BE6CF
 X-IBM-SpamModules-Scores: 
 X-IBM-SpamModules-Versions: BY=3.00009814; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000267; SDB=6.01097278; UDB=6.00567452; IPR=6.00877321; 
- MB=3.00023600; MTD=3.00000008; XFM=3.00000015; UTC=2018-10-03 13:27:11
+ PH=3.00000004; SC=3.00000267; SDB=6.01097279; UDB=6.00567453; IPR=6.00877322; 
+ MB=3.00023600; MTD=3.00000008; XFM=3.00000015; UTC=2018-10-03 13:31:06
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18100313-0005-0000-0000-0000890644B6
-Message-Id: <17781f9e-abfb-8c1e-eb18-39571d1b5cd6@linux.vnet.ibm.com>
+x-cbparentid: 18100313-8236-0000-0000-000042DC4B79
+Message-Id: <ff3ce485-8f4a-571d-91c4-9b62ae4c98fe@linux.vnet.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2018-10-03_07:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
@@ -140,85 +133,69 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
- Kees Cook <keescook@chromium.org>, Mathieu Malaterre <malat@debian.org>,
- linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
- Pavel Tatashin <pasha.tatashin@oracle.com>, linux-mm@kvack.org,
- Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>,
- Juliet Kim <minkim@us.ibm.com>,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- YASUAKI ISHIMATSU <yasu.isimatu@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- Dan Williams <dan.j.williams@intel.com>, Oscar Salvador <osalvador@suse.de>
+Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>, Juliet Kim <minkim@us.ibm.com>,
+ Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 10/02/2018 02:45 PM, Tyrel Datwyler wrote:
-> On 10/02/2018 11:13 AM, Michael Bringmann wrote:
+On 10/02/2018 04:03 PM, Tyrel Datwyler wrote:
+> On 10/01/2018 05:59 AM, Michael Bringmann wrote:
+>> migration/memory: This patch adds a new pseries hotplug action
+>> for CPU and memory operations, PSERIES_HP_ELOG_ACTION_READD_MULTIPLE.
+>> This is a variant of the READD operation which performs the action
+>> upon multiple instances of the resource at one time.  The operation
+>> is to be triggered by device-tree analysis of updates by RTAS events
+>> analyzed by 'migation_store' during post-migration processing.  It
+>> will be used for memory updates, initially.
 >>
+>> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/include/asm/rtas.h |    1 +
+>>  arch/powerpc/mm/drmem.c         |    1 +
+>>  2 files changed, 2 insertions(+)
 >>
->> On 10/02/2018 11:04 AM, Michal Hocko wrote:
->>> On Tue 02-10-18 10:14:49, Michael Bringmann wrote:
->>>> On 10/02/2018 09:59 AM, Michal Hocko wrote:
->>>>> On Tue 02-10-18 09:51:40, Michael Bringmann wrote:
->>>>> [...]
->>>>>> When the device-tree affinity attributes have changed for memory,
->>>>>> the 'nid' affinity calculated points to a different node for the
->>>>>> memory block than the one used to install it, previously on the
->>>>>> source system.  The newly calculated 'nid' affinity may not yet
->>>>>> be initialized on the target system.  The current memory tracking
->>>>>> mechanisms do not record the node to which a memory block was
->>>>>> associated when it was added.  Nathan is looking at adding this
->>>>>> feature to the new implementation of LMBs, but it is not there
->>>>>> yet, and won't be present in earlier kernels without backporting a
->>>>>> significant number of changes.
->>>>>
->>>>> Then the patch you have proposed here just papers over a real issue, no?
->>>>> IIUC then you simply do not remove the memory if you lose the race.
->>>>
->>>> The problem occurs when removing memory after an affinity change
->>>> references a node that was previously unreferenced.  Other code
->>>> in 'kernel/mm/memory_hotplug.c' deals with initializing an empty
->>>> node when adding memory to a system.  The 'removing memory' case is
->>>> specific to systems that perform LPM and allow device-tree changes.
->>>> The powerpc kernel does not have the option of accepting some PRRN
->>>> requests and accepting others.  It must perform them all.
->>>
->>> I am sorry, but you are still too cryptic for me. Either there is a
->>> correctness issue and the the patch doesn't really fix anything or the
->>> final race doesn't make any difference and then the ppc code should be
->>> explicit about that. Checking the node inside the hotplug core code just
->>> looks as a wrong layer to mitigate an arch specific problem. I am not
->>> saying the patch is a no-go but if anything we want a big fat comment
->>> explaining how this is possible because right now it just points to an
->>> incorrect API usage.
->>>
->>> That being said, this sounds pretty much ppc specific problem and I
->>> would _prefer_ it to be handled there (along with a big fat comment of
->>> course).
->>
->> Let me try again.  Regardless of the path to which we get to this condition,
->> we currently crash the kernel.  This patch changes that to a WARN_ON notice
->> and continues executing the kernel without shutting down the system.  I saw
->> the problem during powerpc testing, because that is the focus of my work.
->> There are other paths to this function besides powerpc.  I feel that the
->> kernel should keep running instead of halting.
+>> diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
+>> index 71e393c..e510d82 100644
+>> --- a/arch/powerpc/include/asm/rtas.h
+>> +++ b/arch/powerpc/include/asm/rtas.h
+>> @@ -320,6 +320,7 @@ struct pseries_hp_errorlog {
+>>  #define PSERIES_HP_ELOG_ACTION_ADD	1
+>>  #define PSERIES_HP_ELOG_ACTION_REMOVE	2
+>>  #define PSERIES_HP_ELOG_ACTION_READD	3
+>> +#define PSERIES_HP_ELOG_ACTION_READD_MULTIPLE	4
 > 
-> This is still basically a hack to get around a known race. In itself this patch is still worth while in that we shouldn't crash the kernel on a null pointer dereference. However, I think the actual problem still needs to be addressed. We shouldn't run any PRRN events for the source system on the target after a migration. The device tree update should have taken care of telling us about new affinities and what not. Can we just throw out any queued PRRN events when we wake up on the target?
+> I'm confused, you have only added a define and not the actual implementation. I really think this should be squashed into your 4th patch where the operation is actually implemented.
 
-We are not talking about queued events provided on the source system, but about
-new PRRN events sent by phyp to the kernel on the target system to update the
-kernel state after migration.  No way to predict the content.
+Okay.
 
 > 
-> -Tyrel
 >>
->> Regards,
+>>  #define PSERIES_HP_ELOG_ID_DRC_NAME	1
+>>  #define PSERIES_HP_ELOG_ID_DRC_INDEX	2
+>> diff --git a/arch/powerpc/mm/drmem.c b/arch/powerpc/mm/drmem.c
+>> index fd2cae92..2228586 100644
+>> --- a/arch/powerpc/mm/drmem.c
+>> +++ b/arch/powerpc/mm/drmem.c
+>> @@ -422,6 +422,7 @@ static void init_drmem_v2_lmbs(const __be32 *prop,
 >>
+>>  			lmb->aa_index = dr_cell.aa_index;
+>>  			lmb->flags = dr_cell.flags;
+>> +			lmb->internal_flags = 0;
+> 
+> And this should have been squashed into the previous patch where you added the internal_flags field to the lmb struct.
 
-Michael
+Okay.
+
+> 
+> -Tyrel 
+> 
+>>  		}
+>>  	}
+>>  }
+>>
+> 
+> 
 
 -- 
 Michael W. Bringmann
