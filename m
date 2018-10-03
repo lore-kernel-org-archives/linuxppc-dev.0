@@ -2,91 +2,70 @@ Return-Path: <SRS0=1oDC=MP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FEF8C00449
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 05:45:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F69FC00449
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 05:47:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D5F0020835
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 05:45:55 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="QOsmrCRy"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D5F0020835
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id CFE5620835
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 05:47:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CFE5620835
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42Q4kT5bqHzF3Cw
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 15:45:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Q4mZ6Q4HzF3Fs
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 15:47:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="QOsmrCRy";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
- envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="QOsmrCRy"; 
- dkim-atps=neutral
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
- [IPv6:2607:f8b0:4864:20::541])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Q4d15HpZzF3C1
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Oct 2018 15:41:09 +1000 (AEST)
-Received: by mail-pg1-x541.google.com with SMTP id 23-v6so1018013pgc.8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Oct 2018 22:41:09 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=ZtSHqbROg5aIdtQ5EV7dkBPXom9wik6oinmHzRs5kyw=;
- b=QOsmrCRyYvXIFMDgJfet9c4+GqiB4aRteyPBBrddzwurHXu6y2K290X2mumQ2sqqsV
- r2xwnYjo2UaEaF1pYYShfL26HCXDwoOMVUbd4hWQLzVCcMdTMZ6BHfSZDXixvr5U0Qe5
- mkR4UccDqyFmrv6/Afsn9rr7YN48BfsOkLj3WRd4fVPh2rlo0LmiQ9JPfhg960PARXEJ
- qHGzPf5suDOsos6JQaHRW9WvD8p2M029OBMDbyz+cRmlvYUTx5Zh1RnKpUU3yceiRrpj
- TxB7b/BqY1wwK66f+g4B26g+uXqQhaW7VGujae1WoQ+sDOfFjr0LZ2IEU8cFAQAHpanO
- esmg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=ZtSHqbROg5aIdtQ5EV7dkBPXom9wik6oinmHzRs5kyw=;
- b=P1A2bEhmr7J+AXbkv9aueJ8PAN9FETuofS6t/RcLWDCThDjGbqApYd+nVtMYvaRkzp
- mxe+UH+19j0vxRyKeS4KmO3Kd6Rz1krgXpdA3aZ3GnC73e5J2r1yBqpSN+yueVpJLLS/
- BSgZDa1LaKtM7nZ1AHjsCTL5WSzJmXvHDUQyBf5sBn3ha48mcmv9lPpO+yadfAybanmI
- 0LRcXJ4rqRC1v57OdW5G1fKOgR8hrsKSdQdhrpBKI5ekQ57al4I9ScbjCO3aiCWkxpg1
- 86cxvZDXM06tBL3p3+3JUsRhUKBIZXiL1O1BkTlJg6hQMyQM4aUGBYKMrhWsHyhA3e2y
- YePw==
-X-Gm-Message-State: ABuFfojCaL0PLGdA1pjCjGZoq6y324Z/UwbPCYDigA3hOG17GRWXrG3l
- nXC/kpqBlPuVpB0hNoORIyk=
-X-Google-Smtp-Source: ACcGV61ENre3fHt1Cuk2HQbQdnEq0EX4RWaVnWmKqV9Zr6SeVOBzKaarDhCA43vlBG7TwLF1L9j/NQ==
-X-Received: by 2002:a62:9c4a:: with SMTP id
- f71-v6mr14434396pfe.135.1538545267530; 
- Tue, 02 Oct 2018 22:41:07 -0700 (PDT)
-Received: from roar.ozlabs.ibm.com (60-240-189-67.tpgi.com.au. [60.240.189.67])
- by smtp.gmail.com with ESMTPSA id u21-v6sm531193pfa.176.2018.10.02.22.41.04
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Tue, 02 Oct 2018 22:41:07 -0700 (PDT)
-Date: Wed, 3 Oct 2018 15:41:01 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: Re: [RFC PATCH v3 5/7] powerpc: 'current_set' is now a table of
- task_struct pointers
-Message-ID: <20181003154101.0b46956d@roar.ozlabs.ibm.com>
-In-Reply-To: <acc40cfa715e398d578371857dbf65882ad72c0f.1538396659.git.christophe.leroy@c-s.fr>
-References: <cover.1538396658.git.christophe.leroy@c-s.fr>
- <acc40cfa715e398d578371857dbf65882ad72c0f.1538396659.git.christophe.leroy@c-s.fr>
-X-Mailer: Claws Mail 3.17.0 (GTK+ 2.24.32; x86_64-pc-linux-gnu)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Q4fY5ctKzF3Dy
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Oct 2018 15:42:29 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 42Q4fT4twmz9ttBf;
+ Wed,  3 Oct 2018 07:42:25 +0200 (CEST)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id sL8Q4NNTjzXb; Wed,  3 Oct 2018 07:42:25 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 42Q4fT43qqz9ttBW;
+ Wed,  3 Oct 2018 07:42:25 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D65888B8B2;
+ Wed,  3 Oct 2018 07:42:25 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id Z1FJnXgznEtZ; Wed,  3 Oct 2018 07:42:25 +0200 (CEST)
+Received: from PO15451 (po15451.idsi0.si.c-s.fr [172.25.231.3])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 9CC878B74C;
+ Wed,  3 Oct 2018 07:42:25 +0200 (CEST)
+Subject: Re: [PATCH v4] powerpc: Avoid code patching freed init sections
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Andreas Schwab <schwab@linux-m68k.org>, Michael Neuling <mikey@neuling.org>
+References: <20180914011411.3184-1-mikey__14553.8904158913$1536887645$gmane$org@neuling.org>
+ <871s98av6p.fsf@igel.home> <87va6jk97a.fsf@concordia.ellerman.id.au>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <9df89bf6-6c7f-1b60-c023-3a73169eb5e0@c-s.fr>
+Date: Wed, 3 Oct 2018 07:42:25 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <87va6jk97a.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,31 +77,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- aneesh.kumar@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>,
+ linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>,
+ Haren Myneni <haren@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon,  1 Oct 2018 12:30:27 +0000 (UTC)
-Christophe Leroy <christophe.leroy@c-s.fr> wrote:
 
-> The table of pointers 'current_set' has been used for retrieving
-> the stack and current. They used to be thread_info pointers as
-> they were pointing to the stack and current was taken from the
-> 'task' field of the thread_info.
+
+Le 03/10/2018 à 05:20, Michael Ellerman a écrit :
+> Andreas Schwab <schwab@linux-m68k.org> writes:
 > 
-> Now, the pointers of 'current_set' table are now both pointers
-> to task_struct and pointers to thread_info.
+>> On Sep 14 2018, Michael Neuling <mikey@neuling.org> wrote:
+>>
+>>> This stops us from doing code patching in init sections after they've
+>>> been freed.
+>>
+>> This breaks booting on PowerBook6,7, crashing very early.
 > 
-> As they are used to get current, and the stack pointer is
-> retrieved from current's stack field, this patch changes
-> their type to task_struct, and renames secondary_ti to
-> secondary_current.
+> Crud, sorry.
+> 
+> My CI setup tests with the mac99 qemu model, but that boots happily, not
+> sure why.
 
-I'm not sure if current_set is actually needed is it? Because
-64-bit already initializes paca->ksave / PACAKSAVE. That might
-be a cleanup to do after your series.
+Maybe mac99 doesn't use relocation ?
 
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+The issue is that during early boot, 'init_mem_is_free' is not yet at 
+its definitif address.
 
+I sent a fix for it : https://patchwork.ozlabs.org/patch/977195/
+
+Christophe
