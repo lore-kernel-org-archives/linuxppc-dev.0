@@ -7,59 +7,59 @@ X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 35C6CC00449
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 06:27:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DF2A9C00449
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 06:29:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 759BA20652
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 06:27:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5329720652
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 06:29:17 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="Vinpe48j"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 759BA20652
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="UcdtX73t"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5329720652
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42Q5dy1NzJzF3JD
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 16:27:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Q5hW34JlzF3B3
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 16:29:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="Vinpe48j";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="UcdtX73t";
 	dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Q5X25jSNzF3BB
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Q5X252ryzF3B3
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Oct 2018 16:21:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=gibson.dropbear.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.b="Vinpe48j"; dkim-atps=neutral
+ header.b="UcdtX73t"; dkim-atps=neutral
 Received: by ozlabs.org (Postfix)
- id 42Q5X245tpzB2xn; Wed,  3 Oct 2018 16:21:54 +1000 (AEST)
+ id 42Q5X232FnzB2xk; Wed,  3 Oct 2018 16:21:54 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1007)
- id 42Q5X23JmFzB2xQ; Wed,  3 Oct 2018 16:21:53 +1000 (AEST)
+ id 42Q5X22Msrz9sB7; Wed,  3 Oct 2018 16:21:53 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=gibson.dropbear.id.au; s=201602; t=1538547714;
- bh=QdYDtIaZu4lMMuO2q5pAKYxCgYkLEFecmHcAS7lCBxw=;
+ bh=jkl2VZHXNR7+aUV2zncdctKmwJFS7RKcTXP3+yZsUZA=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=Vinpe48jq6jwCObo94bQ/VXqyaMdSyHbLANUNLvJEAPF0W3VvXmV/z8f7bpepgmgd
- MCBMzwQikM2mq2V10hawKENeq6/ytfQ7TiHc9e221RYPwEO/5L1dQmtBMi8gkA2D9y
- W9lrEV3PRHjMaeGRkNRpwEPuv8qxBScsiCeGHWv0=
-Date: Wed, 3 Oct 2018 16:21:44 +1000
+ b=UcdtX73tei4ftngJT23oCTVepBs2ib50413Y+KuG8/LMQbElrQ/KT52+gsW7wsurB
+ U6NHsbeZdjcpxOOy4rs4hK7X5VC6PmmG2FJHbzdX5XMEdxt/wVBP+IK9uKdGsEDWMw
+ oGefeoiRQVLaa6RGCXGA4GvHB/qggPHsY8R4z4dQ=
+Date: Wed, 3 Oct 2018 16:17:52 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Paul Mackerras <paulus@ozlabs.org>
-Subject: Re: [PATCH v3 33/33] KVM: PPC: Book3S HV: Add a VM capability to
- enable nested virtualization
-Message-ID: <20181003062144.GY1886@umbus.fritz.box>
+Subject: Re: [PATCH v3 32/33] KVM: PPC: Book3S HV: Use hypercalls for TLB
+ invalidation when nested
+Message-ID: <20181003061752.GX1886@umbus.fritz.box>
 References: <1538479892-14835-1-git-send-email-paulus@ozlabs.org>
- <1538479892-14835-34-git-send-email-paulus@ozlabs.org>
+ <1538479892-14835-33-git-send-email-paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="tpZe61tYkA9f+p/0"
+ protocol="application/pgp-signature"; boundary="SvF6CGw9fzJC4Rcx"
 Content-Disposition: inline
-In-Reply-To: <1538479892-14835-34-git-send-email-paulus@ozlabs.org>
+In-Reply-To: <1538479892-14835-33-git-send-email-paulus@ozlabs.org>
 User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -78,161 +78,175 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---tpZe61tYkA9f+p/0
+--SvF6CGw9fzJC4Rcx
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Oct 02, 2018 at 09:31:32PM +1000, Paul Mackerras wrote:
-> With this, userspace can enable a KVM-HV guest to run nested guests
-> under it.
->=20
+On Tue, Oct 02, 2018 at 09:31:31PM +1000, Paul Mackerras wrote:
+> This adds code to call the H_TLB_INVALIDATE hypercall when running as
+> a guest, in the cases where we need to invalidate TLBs (or other MMU
+> caches) as part of managing the mappings for a nested guest.  Calling
+> H_TLB_INVALIDATE is an alternative to doing the tlbie instruction and
+> having it be emulated by our hypervisor.
+
+Why is supporting two methods useful, rather than just settling on
+one?  Having both just sounds like asking for untested and therefore
+broken code paths lying around.
+
 > Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 > ---
->  Documentation/virtual/kvm/api.txt  | 14 ++++++++++++++
->  arch/powerpc/include/asm/kvm_ppc.h |  1 +
->  arch/powerpc/kvm/book3s_hv.c       | 17 +++++++++++++++++
->  arch/powerpc/kvm/powerpc.c         | 12 ++++++++++++
->  include/uapi/linux/kvm.h           |  1 +
->  5 files changed, 45 insertions(+)
+>  arch/powerpc/include/asm/kvm_book3s_64.h |  5 +++++
+>  arch/powerpc/kvm/book3s_64_mmu_radix.c   | 30 ++++++++++++++++++++++++++=
++--
+>  arch/powerpc/kvm/book3s_hv_nested.c      | 33 +++++++++++++++++++++++---=
+------
+>  3 files changed, 57 insertions(+), 11 deletions(-)
 >=20
-> diff --git a/Documentation/virtual/kvm/api.txt b/Documentation/virtual/kv=
-m/api.txt
-> index 017d851..a2d4832 100644
-> --- a/Documentation/virtual/kvm/api.txt
-> +++ b/Documentation/virtual/kvm/api.txt
-> @@ -4522,6 +4522,20 @@ hpage module parameter is not set to 1, -EINVAL is=
- returned.
->  While it is generally possible to create a huge page backed VM without
->  this capability, the VM will not be able to run.
+> diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/incl=
+ude/asm/kvm_book3s_64.h
+> index f0fa14c..95280e2 100644
+> --- a/arch/powerpc/include/asm/kvm_book3s_64.h
+> +++ b/arch/powerpc/include/asm/kvm_book3s_64.h
+> @@ -24,6 +24,7 @@
+>  #include <asm/bitops.h>
+>  #include <asm/book3s/64/mmu-hash.h>
+>  #include <asm/cpu_has_feature.h>
+> +#include <asm/ppc-opcode.h>
 > =20
-> +7.15 KVM_CAP_PPC_NESTED_HV
+>  #ifdef CONFIG_PPC_PSERIES
+>  static inline bool kvmhv_on_pseries(void)
+> @@ -121,6 +122,10 @@ struct kvm_nested_guest *kvmhv_get_nested(struct kvm=
+ *kvm, int l1_lpid,
+>  void kvmhv_put_nested(struct kvm_nested_guest *gp);
+>  int kvmhv_nested_next_lpid(struct kvm *kvm, int lpid);
+> =20
+> +/* Encoding of first parameter for H_TLB_INVALIDATE */
+> +#define H_TLBIE_P1_ENC(ric, prs, r)	(___PPC_RIC(ric) | ___PPC_PRS(prs) |=
+ \
+> +					 ___PPC_R(r))
 > +
-> +Architectures: ppc
-> +Parameters: enable flag (0 to disable, non-zero to enable)
-> +Returns: 0 on success, -EINVAL when the implementation doesn't support
-> +nested-HV virtualization.
+>  /* Power architecture requires HPT is at least 256kiB, at most 64TiB */
+>  #define PPC_MIN_HPT_ORDER	18
+>  #define PPC_MAX_HPT_ORDER	46
+> diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/bo=
+ok3s_64_mmu_radix.c
+> index b74abdd..6c93f5c 100644
+> --- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
+> +++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
+> @@ -201,17 +201,43 @@ static void kvmppc_radix_tlbie_page(struct kvm *kvm=
+, unsigned long addr,
+>  				    unsigned int pshift, unsigned int lpid)
+>  {
+>  	unsigned long psize =3D PAGE_SIZE;
+> +	int psi;
+> +	long rc;
+> +	unsigned long rb;
+> =20
+>  	if (pshift)
+>  		psize =3D 1UL << pshift;
+> +	else
+> +		pshift =3D PAGE_SHIFT;
+> =20
+>  	addr &=3D ~(psize - 1);
+> -	radix__flush_tlb_lpid_page(lpid, addr, psize);
 > +
-> +HV-KVM on POWER9 and later systems allows for "nested-HV"
-> +virtualization, which provides a way for a guest VM to run guests that
-> +can run using the CPU's supervisor mode (privileged non-hypervisor
-> +state).  Enabling this capability on a VM depends on the CPU having
-> +the necessary functionality and on the facility being enabled with a
-> +kvm-hv module parameter.
+> +	if (!kvmhv_on_pseries()) {
+> +		radix__flush_tlb_lpid_page(lpid, addr, psize);
+> +		return;
+> +	}
 > +
->  8. Other capabilities.
->  ----------------------
-> =20
-> diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/as=
-m/kvm_ppc.h
-> index 245e564..80f0091 100644
-> --- a/arch/powerpc/include/asm/kvm_ppc.h
-> +++ b/arch/powerpc/include/asm/kvm_ppc.h
-> @@ -327,6 +327,7 @@ struct kvmppc_ops {
->  	int (*set_smt_mode)(struct kvm *kvm, unsigned long mode,
->  			    unsigned long flags);
->  	void (*giveup_ext)(struct kvm_vcpu *vcpu, ulong msr);
-> +	int (*enable_nested)(struct kvm *kvm, bool enable);
->  };
-> =20
->  extern struct kvmppc_ops *kvmppc_hv_ops;
-> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> index 196bff1..a5b3862 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -118,6 +118,11 @@ module_param_cb(h_ipi_redirect, &module_param_ops, &=
-h_ipi_redirect, 0644);
->  MODULE_PARM_DESC(h_ipi_redirect, "Redirect H_IPI wakeup to a free host c=
-ore");
->  #endif
-> =20
-> +/* If set, guests are allowed to create and control nested guests */
-> +static bool enable_nested =3D true;
-> +module_param(enable_nested, bool, S_IRUGO | S_IWUSR);
-> +MODULE_PARM_DESC(enable_nested, "Enable nested virtualization (only on P=
-OWER9)");
-
-I'd suggest calling the module parameter just "nested" to match x86.
-
->  /* If set, the threads on each CPU core have to be in the same MMU mode =
-*/
->  static bool no_mixing_hpt_and_radix;
-> =20
-> @@ -5188,6 +5193,17 @@ static int kvmhv_configure_mmu(struct kvm *kvm, st=
-ruct kvm_ppc_mmuv3_cfg *cfg)
->  	return err;
+> +	psi =3D shift_to_mmu_psize(pshift);
+> +	rb =3D addr | (mmu_get_ap(psi) << PPC_BITLSHIFT(58));
+> +	rc =3D plpar_hcall_norets(H_TLB_INVALIDATE, H_TLBIE_P1_ENC(0, 0, 1),
+> +				lpid, rb);
+> +	if (rc)
+> +		pr_err("KVM: TLB page invalidation hcall failed, rc=3D%ld\n", rc);
 >  }
 > =20
-> +static int kvmhv_enable_nested(struct kvm *kvm, bool enable)
-> +{
-> +	if (!(enable_nested && cpu_has_feature(CPU_FTR_ARCH_300)))
-> +		return -EINVAL;
-
-Maybe EPERM, rather than EINVAL.  There's nothing invalid about the
-ioctl() parameters - we just can't do what they want.
-
+>  static void kvmppc_radix_flush_pwc(struct kvm *kvm, unsigned int lpid)
+>  {
+> -	radix__flush_pwc_lpid(lpid);
+> +	long rc;
 > +
-> +	/* kvm =3D=3D NULL means the caller is testing if the capability exists=
- */
-> +	if (kvm)
-> +		kvm->arch.nested_enable =3D enable;
-> +	return 0;
+> +	if (!kvmhv_on_pseries()) {
+> +		radix__flush_pwc_lpid(lpid);
+> +		return;
+> +	}
+> +
+> +	rc =3D plpar_hcall_norets(H_TLB_INVALIDATE, H_TLBIE_P1_ENC(1, 0, 1),
+> +				lpid, TLBIEL_INVAL_SET_LPID);
+> +	if (rc)
+> +		pr_err("KVM: TLB PWC invalidation hcall failed, rc=3D%ld\n", rc);
+>  }
+> =20
+>  static unsigned long kvmppc_radix_update_pte(struct kvm *kvm, pte_t *pte=
+p,
+> diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm/book3=
+s_hv_nested.c
+> index 914ca78..81c81d51 100644
+> --- a/arch/powerpc/kvm/book3s_hv_nested.c
+> +++ b/arch/powerpc/kvm/book3s_hv_nested.c
+> @@ -368,17 +368,32 @@ void kvmhv_nested_exit(void)
+>  	}
+>  }
+> =20
+> +static void kvmhv_flush_lpid(unsigned int lpid)
+> +{
+> +	long rc;
+> +
+> +	if (!kvmhv_on_pseries()) {
+> +		radix__flush_tlb_lpid(lpid);
+> +		return;
+> +	}
+> +
+> +	rc =3D plpar_hcall_norets(H_TLB_INVALIDATE, H_TLBIE_P1_ENC(2, 0, 1),
+> +				lpid, TLBIEL_INVAL_SET_LPID);
+> +	if (rc)
+> +		pr_err("KVM: TLB LPID invalidation hcall failed, rc=3D%ld\n", rc);
 > +}
 > +
->  static struct kvmppc_ops kvm_ops_hv =3D {
->  	.get_sregs =3D kvm_arch_vcpu_ioctl_get_sregs_hv,
->  	.set_sregs =3D kvm_arch_vcpu_ioctl_set_sregs_hv,
-> @@ -5227,6 +5243,7 @@ static struct kvmppc_ops kvm_ops_hv =3D {
->  	.configure_mmu =3D kvmhv_configure_mmu,
->  	.get_rmmu_info =3D kvmhv_get_rmmu_info,
->  	.set_smt_mode =3D kvmhv_set_smt_mode,
-> +	.enable_nested =3D kvmhv_enable_nested,
->  };
-> =20
->  static int kvm_init_subcore_bitmap(void)
-> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-> index eba5756..449ae1d 100644
-> --- a/arch/powerpc/kvm/powerpc.c
-> +++ b/arch/powerpc/kvm/powerpc.c
-> @@ -596,6 +596,10 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, lo=
-ng ext)
->  	case KVM_CAP_PPC_MMU_HASH_V3:
->  		r =3D !!(hv_enabled && cpu_has_feature(CPU_FTR_ARCH_300));
->  		break;
-> +	case KVM_CAP_PPC_NESTED_HV:
-> +		r =3D !!(hv_enabled && kvmppc_hv_ops->enable_nested &&
-> +		       !kvmppc_hv_ops->enable_nested(NULL, false));
-> +		break;
->  #endif
->  	case KVM_CAP_SYNC_MMU:
->  #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
-> @@ -2114,6 +2118,14 @@ static int kvm_vm_ioctl_enable_cap(struct kvm *kvm,
->  			r =3D kvm->arch.kvm_ops->set_smt_mode(kvm, mode, flags);
->  		break;
+>  void kvmhv_set_ptbl_entry(unsigned int lpid, u64 dw0, u64 dw1)
+>  {
+> -	if (cpu_has_feature(CPU_FTR_HVMODE)) {
+> +	if (!kvmhv_on_pseries()) {
+>  		mmu_partition_table_set_entry(lpid, dw0, dw1);
+> -	} else {
+> -		pseries_partition_tb[lpid].patb0 =3D cpu_to_be64(dw0);
+> -		pseries_partition_tb[lpid].patb1 =3D cpu_to_be64(dw1);
+> -		/* this will be emulated, L0 will do the necessary barriers */
+> -		asm volatile(PPC_TLBIE_5(%0, %1, 2, 0, 1) : :
+> -			     "r" (TLBIEL_INVAL_SET_LPID), "r" (lpid));
+> +		return;
 >  	}
 > +
-> +	case KVM_CAP_PPC_NESTED_HV:
-> +		r =3D -EINVAL;
-> +		if (!is_kvmppc_hv_enabled(kvm) ||
-> +		    !kvm->arch.kvm_ops->enable_nested)
-> +			break;
-> +		r =3D kvm->arch.kvm_ops->enable_nested(kvm, !!cap->args[0]);
-> +		break;
->  #endif
->  	default:
->  		r =3D -EINVAL;
-> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
-> index 07548de..a6d5a46 100644
-> --- a/include/uapi/linux/kvm.h
-> +++ b/include/uapi/linux/kvm.h
-> @@ -952,6 +952,7 @@ struct kvm_ppc_resize_hpt {
->  #define KVM_CAP_S390_HPAGE_1M 156
->  #define KVM_CAP_NESTED_STATE 157
->  #define KVM_CAP_ARM_INJECT_SERROR_ESR 158
-> +#define KVM_CAP_PPC_NESTED_HV 160
+> +	pseries_partition_tb[lpid].patb0 =3D cpu_to_be64(dw0);
+> +	pseries_partition_tb[lpid].patb1 =3D cpu_to_be64(dw1);
+> +	/* L0 will do the necessary barriers */
+> +	kvmhv_flush_lpid(lpid);
+>  }
 > =20
->  #ifdef KVM_CAP_IRQ_ROUTING
-> =20
+>  static void kvmhv_set_nested_ptbl(struct kvm_nested_guest *gp)
+> @@ -543,7 +558,7 @@ static void kvmhv_flush_nested(struct kvm_nested_gues=
+t *gp)
+>  	spin_lock(&kvm->mmu_lock);
+>  	kvmppc_free_pgtable_radix(kvm, gp->shadow_pgtable, gp->shadow_lpid);
+>  	spin_unlock(&kvm->mmu_lock);
+> -	radix__flush_tlb_lpid(gp->shadow_lpid);
+> +	kvmhv_flush_lpid(gp->shadow_lpid);
+>  	kvmhv_update_ptbl_cache(gp);
+>  	if (gp->l1_gr_to_hr =3D=3D 0)
+>  		kvmhv_remove_nested(gp);
+> @@ -839,7 +854,7 @@ static void kvmhv_emulate_tlbie_lpid(struct kvm_vcpu =
+*vcpu,
+>  		spin_lock(&kvm->mmu_lock);
+>  		kvmppc_free_pgtable_radix(kvm, gp->shadow_pgtable,
+>  					  gp->shadow_lpid);
+> -		radix__flush_tlb_lpid(gp->shadow_lpid);
+> +		kvmhv_flush_lpid(gp->shadow_lpid);
+>  		spin_unlock(&kvm->mmu_lock);
+>  		break;
+>  	case 1:
 
 --=20
 David Gibson			| I'll have my music baroque, and my code
@@ -240,24 +254,24 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---tpZe61tYkA9f+p/0
+--SvF6CGw9fzJC4Rcx
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlu0X/gACgkQbDjKyiDZ
-s5KF4w//SlUvvvmpAhS1P3jB62BklYr3kD4gGTGFCzufYOsWptwic2L6HMehUW8A
-0viJ7fDjpkrT2gLFVRW9KbyrXDxU6qVKmUvjVsmzjHwCF6JJb1CUI4NuN+hKD+m1
-ht6XQHHCT7eN8r+dcsvxc7aviZ34bBn/h1e6a+ibnFb7hnJvxMADh2LsruTZ6sly
-Malpd9VmUscm8PQ5cS30Y5vID6+ocQ6OK4235Dnfk7GtgmCNe0FkUtnQZ36lGb2g
-gMuSiTZfslRaV1C5foMI4QKMwT02qVs+0YJRM+rK6xf4g0W7pPT6C9S8xWa04fJO
-R19zebI4eunVhKTHHXdEAYSy7hgZiHJw4E2XgfIcrMctcwZ077OjfLtgxS43sYLf
-AR2CCP6NzeNXAVS1HDDhUIqy7sJTinPQIgBYcI+Lx/dgI1Dx2sfeMEZcchhOOSmP
-yIfP1azhtdzhsxf0lVmYxjwvS4l5Y5fUUTmznJvTSvOn9S3YLMJZXARhxpX61FEo
-H9nTgsgo4QPQEYV6yFi7e12/zvNUjh78J2ceZgQsBz88bVoC96qiU2aqS9AJibmS
-I/p2mHxPAtnfxFnm0kquvLzLsK6tcFW7L3uHz92KZEyNjzkIQmZsbXYprzLDuK26
-2EoXDnnU1cWp9HxKK8QuCh7X72qvE2gUJtvb0IFvo13E0WcRNDI=
-=/9Rs
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlu0XxAACgkQbDjKyiDZ
+s5J1qQ/8C2wNzantm6FEml0tWRtqrq52k4UGHe90GKbLLkz5yTa/33WfF12LvKJU
+eK8W3Mp4ZraJYRUUIOu/V647MQLuXDRrl4bwhuxGJ3QEPbyAY9P36jl8uxzKB6ax
+YFIMdzmsvKoSg6UKkRYeHsOZLRbIOWbpxhzEFhvyfe7EWb+NwFXOLPixIsvdj65m
+jQWRIL3BvYz58mgqiq3ocwL1W6LtT+W6DOx+OxS3txq/EAGqjft4PbTqPcARLqrb
+v5LN6/ZGSCacmMFYC/LAzHOUXSFFX2Cb4LP58kN4ZA4t8EWJeEv7xBiIOOUDStjk
+EpErf5COOlnr7EKIcSUCSY3m3kBoy8Zf2ouEBfVBkGrmnXgH4KZhpf5RB/KI/dbz
+L8DyDiiZxRlvY6z1BmblNP4B52oPlMoT6irjeiI2kbhK2v/OiKlYg6WQGz2J3NVC
+oH3PsGWSNUqLjniCi72hXFrqpJYezBUc4SBnilm5rVKQg7UjSm8DstqsJjFxY1vg
+MOY9I7f2knsUIRb8vJpgOSEHuBySiwz3ciKoHIoS8NTU4jlrwCWPjUt3xwHJM5Jf
+X+/kb3Y8sYsKm4cNOX+XM6bgJBjoFEW0WwDydQH5QUmHJZjVgFoNaaXAIYYlijF7
+9/Jgo6nVvY06WyuYgLxZd767PBlbCZl7ikQrYgsw7UnUvz+yPfY=
+=abKP
 -----END PGP SIGNATURE-----
 
---tpZe61tYkA9f+p/0--
+--SvF6CGw9fzJC4Rcx--
