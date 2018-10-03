@@ -3,21 +3,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 67DE0C00449
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 17:08:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BB75DC00449
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 17:23:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D844C2098A
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 17:08:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D844C2098A
+	by mail.kernel.org (Postfix) with ESMTPS id 1461620835
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 17:23:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1461620835
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42QMtZ6Q9DzF38h
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 03:08:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42QN304lCfzF38h
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 03:16:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=redhat.com
@@ -28,26 +29,29 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42QMr511VWzF37M
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2018 03:06:45 +1000 (AEST)
-Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.phx2.redhat.com
- [10.5.11.13])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42QN0r30sjzF13y
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2018 03:14:20 +1000 (AEST)
+Received: from smtp.corp.redhat.com (int-mx12.intmail.prod.int.phx2.redhat.com
+ [10.5.11.27])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id D7540A6DFD;
- Wed,  3 Oct 2018 17:06:41 +0000 (UTC)
+ by mx1.redhat.com (Postfix) with ESMTPS id CA5AA3084296;
+ Wed,  3 Oct 2018 17:14:17 +0000 (UTC)
 Received: from [10.36.116.20] (ovpn-116-20.ams2.redhat.com [10.36.116.20])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 232396606A;
- Wed,  3 Oct 2018 17:06:28 +0000 (UTC)
+ by smtp.corp.redhat.com (Postfix) with ESMTP id EB7AB9D8C3;
+ Wed,  3 Oct 2018 17:14:06 +0000 (UTC)
 Subject: Re: [PATCH RFC] mm/memory_hotplug: Introduce memory block types
-To: Michal Hocko <mhocko@kernel.org>, Vitaly Kuznetsov <vkuznets@redhat.com>
+To: Vitaly Kuznetsov <vkuznets@redhat.com>,
+ Dave Hansen <dave.hansen@linux.intel.com>, Michal Hocko <mhocko@kernel.org>
 References: <20180928150357.12942-1-david@redhat.com>
  <20181001084038.GD18290@dhcp22.suse.cz>
  <d54a8509-725f-f771-72f0-15a9d93e8a49@redhat.com>
  <20181002134734.GT18290@dhcp22.suse.cz>
  <98fb8d65-b641-2225-f842-8804c6f79a06@redhat.com>
  <8736tndubn.fsf@vitty.brq.redhat.com> <20181003134444.GH4714@dhcp22.suse.cz>
- <87zhvvcf3b.fsf@vitty.brq.redhat.com> <20181003142444.GJ4714@dhcp22.suse.cz>
+ <87zhvvcf3b.fsf@vitty.brq.redhat.com>
+ <49456818-238e-2d95-9df6-d1934e9c8b53@linux.intel.com>
+ <87tvm3cd5w.fsf@vitty.brq.redhat.com>
 From: David Hildenbrand <david@redhat.com>
 Openpgp: preference=signencrypt
 Autocrypt: addr=david@redhat.com; prefer-encrypt=mutual; keydata=
@@ -94,18 +98,18 @@ Autocrypt: addr=david@redhat.com; prefer-encrypt=mutual; keydata=
  +8Umfre0Xt4713VxMygW0PnQt5aSQdMD58jHFxTk092mU+yIHj5LeYgvwSgZN4airXk5yRXl
  SE+xAvmumFBY
 Organization: Red Hat GmbH
-Message-ID: <37fab0d1-4b5d-ff69-9091-2f9e34b47e4e@redhat.com>
-Date: Wed, 3 Oct 2018 19:06:28 +0200
+Message-ID: <06a35970-e478-18f8-eae6-4022925a5192@redhat.com>
+Date: Wed, 3 Oct 2018 19:14:05 +0200
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.0
 MIME-Version: 1.0
-In-Reply-To: <20181003142444.GJ4714@dhcp22.suse.cz>
+In-Reply-To: <87tvm3cd5w.fsf@vitty.brq.redhat.com>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.13
+Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 2.84 on 10.5.11.27
 X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.38]); Wed, 03 Oct 2018 17:06:43 +0000 (UTC)
+ (mx1.redhat.com [10.5.110.40]); Wed, 03 Oct 2018 17:14:18 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -120,7 +124,6 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Cc: Kate Stewart <kstewart@linuxfoundation.org>, Rich Felker <dalias@libc.org>,
  linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
  Peter Zijlstra <peterz@infradead.org>,
- Dave Hansen <dave.hansen@linux.intel.com>,
  Heiko Carstens <heiko.carstens@de.ibm.com>, linux-mm@kvack.org,
  Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
  Stephen Rothwell <sfr@canb.auug.org.au>, Rashmica Gupta <rashmica.g@gmail.com>,
@@ -155,31 +158,47 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 03/10/2018 16:24, Michal Hocko wrote:
-> On Wed 03-10-18 15:52:24, Vitaly Kuznetsov wrote:
-> [...]
->>> As David said some of the memory cannot be onlined without further steps
->>> (e.g. when it is standby as David called it) and then I fail to see how
->>> eBPF help in any way.
+On 03/10/2018 16:34, Vitaly Kuznetsov wrote:
+> Dave Hansen <dave.hansen@linux.intel.com> writes:
+> 
+>> On 10/03/2018 06:52 AM, Vitaly Kuznetsov wrote:
+>>> It is more than just memmaps (e.g. forking udev process doing memory
+>>> onlining also needs memory) but yes, the main idea is to make the
+>>> onlining synchronous with hotplug.
 >>
->> and also, we can fight till the end of days here trying to come up with
->> an onlining solution which would work for everyone and eBPF would move
->> this decision to distro level.
+>> That's a good theoretical concern.
+>>
+>> But, is it a problem we need to solve in practice?
 > 
-> The point is that there is _no_ general onlining solution. This is
-> basically policy which belongs to the userspace.
+> Yes, unfortunately. It was previously discovered that when we try to
+> hotplug tons of memory to a low memory system (this is a common scenario
+> with VMs) we end up with OOM because for all new memory blocks we need
+> to allocate page tables, struct pages, ... and we need memory to do
+> that. The userspace program doing memory onlining also needs memory to
+> run and in case it prefers to fork to handle hundreds of notfifications
+> ... well, it may get OOMkilled before it manages to online anything.
+> 
+> Allocating all kernel objects from the newly hotplugged blocks would
+> definitely help to manage the situation but as I said this won't solve
+> the 'forking udev' problem completely (it will likely remain in
+> 'extreme' cases only. We can probably work around it by onlining with a
+> dedicated process which doesn't do memory allocation).
 > 
 
-As already stated, I guess we should then provide user space with
-sufficient information to make a good decision (to implement rules).
+I guess the problem is even worse. We always have two phases
 
-The eBPF is basically the same idea, only the rules are formulated
-differently and directly handle in the kernel. Still it might be e.e.
-relevant if memory is standby memory (that's what I remember the
-official s390x name), or something else.
+1. add memory - requires memory allocation
+2. online memory - might require memory allocations e.g. for slab/slub
 
-Right now, the (udev) rules we have make assumptions based on general
-system properties (s390x, HyperV ...).
+So if we just added memory but don't have sufficient memory to start a
+user space process to trigger onlining, then we most likely also don't
+have sufficient memory to online the memory right away (in some scenarios).
+
+We would have to allocate all new memory for 1 and 2 from the memory to
+be onlined. I guess the latter part is less trivial.
+
+So while onlining the memory from the kernel might make things a little
+more robust, we would still have the chance for OOM / onlining failing.
 
 -- 
 
