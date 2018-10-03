@@ -2,96 +2,74 @@ Return-Path: <SRS0=1oDC=MP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FEA6C00449
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 08:31:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4AC93C00449
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 09:32:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F0B9320684
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 08:31:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F0B9320684
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9454F2089F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 09:32:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9454F2089F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42Q8Pc59HDzF3JN
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 18:31:32 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Q9m52MDDzF3Bc
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 19:32:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=fbarrat@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Q8M74vyzzF3D6
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Oct 2018 18:29:22 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w938T3eb067908
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Oct 2018 04:29:20 -0400
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2mvsgx1w59-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Oct 2018 04:29:19 -0400
-Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.ibm.com>;
- Wed, 3 Oct 2018 09:29:15 +0100
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
- by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 3 Oct 2018 09:29:13 +0100
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
- [9.149.105.61])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- w938TChi66191560
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Oct 2018 08:29:13 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 12F6111C050
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Oct 2018 11:28:50 +0100 (BST)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E6E4311C04A
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Oct 2018 11:28:49 +0100 (BST)
-Received: from [9.145.45.50] (unknown [9.145.45.50])
- by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Oct 2018 11:28:49 +0100 (BST)
-Subject: Re: [PATCH kernel] cxl: Remove unused include
-To: linuxppc-dev@lists.ozlabs.org
-References: <20180928063804.35692-1-aik@ozlabs.ru>
- <875zypu6vg.fsf@concordia.ellerman.id.au>
- <548a710f-b542-b361-b056-74a8d58c5ceb@ozlabs.ru>
-From: Frederic Barrat <fbarrat@linux.ibm.com>
-Date: Wed, 3 Oct 2018 10:29:12 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Q9jk2Q0LzF3B8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Oct 2018 19:30:34 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 42Q9jd4lxVz9ttBs;
+ Wed,  3 Oct 2018 11:30:29 +0200 (CEST)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id yGs7P_owGSBg; Wed,  3 Oct 2018 11:30:29 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 42Q9jd47LZz9ttBf;
+ Wed,  3 Oct 2018 11:30:29 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 397E48B8C5;
+ Wed,  3 Oct 2018 11:30:30 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id 3KTNbf7wHOoV; Wed,  3 Oct 2018 11:30:30 +0200 (CEST)
+Received: from PO15451 (po15451.idsi0.si.c-s.fr [172.25.231.3])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id DE01C8B8CD;
+ Wed,  3 Oct 2018 11:30:29 +0200 (CEST)
+Subject: Re: [RFC PATCH v3 4/7] powerpc: regain entire stack space
+To: Nicholas Piggin <npiggin@gmail.com>
+References: <cover.1538396658.git.christophe.leroy@c-s.fr>
+ <8108de51846b7b34e4732753b2b65e435b6a2b7a.1538396659.git.christophe.leroy@c-s.fr>
+ <20181003153448.3fb64e19@roar.ozlabs.ibm.com>
+ <6a539614-abb6-d468-ccba-2e3c1fb8b680@c-s.fr>
+ <20181003163024.281254bf@roar.ozlabs.ibm.com>
+ <38d58749-c058-a6d7-1ca2-23abe9dd34a3@c-s.fr>
+ <20181003170736.34082f4d@roar.ozlabs.ibm.com>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <c78d1f91-b99a-bdf4-ebec-f0aca9c40e8a@c-s.fr>
+Date: Wed, 3 Oct 2018 11:30:29 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:52.0) Gecko/20100101
  Thunderbird/52.9.1
 MIME-Version: 1.0
-In-Reply-To: <548a710f-b542-b361-b056-74a8d58c5ceb@ozlabs.ru>
+In-Reply-To: <20181003170736.34082f4d@roar.ozlabs.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
+Content-Language: fr
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 18100308-0008-0000-0000-0000027A47F3
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18100308-0009-0000-0000-000021E367A3
-Message-Id: <0f52023f-75a6-5eb6-a094-6ee88a1d9fa6@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-10-03_04:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=29 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=809 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1807170000 definitions=main-1810030086
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,61 +81,105 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ aneesh.kumar@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
 
-Le 03/10/2018 à 09:46, Alexey Kardashevskiy a écrit :
+Le 03/10/2018 à 09:07, Nicholas Piggin a écrit :
+> On Wed, 3 Oct 2018 08:45:25 +0200
+> Christophe LEROY <christophe.leroy@c-s.fr> wrote:
 > 
-> 
-> On 28/09/2018 22:46, Michael Ellerman wrote:
->> Alexey Kardashevskiy <aik@ozlabs.ru> writes:
->>> The included opal.h gives a wrong idea that CXL makes PPC OPAL calls
->>> while it does not so let's remote it.
+>> Le 03/10/2018 à 08:30, Nicholas Piggin a écrit :
+>>> On Wed, 3 Oct 2018 07:52:59 +0200
+>>> Christophe LEROY <christophe.leroy@c-s.fr> wrote:
+>>>    
+>>>> Le 03/10/2018 à 07:34, Nicholas Piggin a écrit :
+>>>>> On Mon,  1 Oct 2018 12:30:25 +0000 (UTC)
+>>>>> Christophe Leroy <christophe.leroy@c-s.fr> wrote:
+>>>>>       
+>>>>>> thread_info is not anymore in the stack, so the entire stack
+>>>>>> can now be used.
+>>>>>
+>>>>> Nice.
+>>>>>       
+>>>>>>
+>>>>>> In the meantime, all pointers to the stacks are not anymore
+>>>>>> pointers to thread_info so this patch changes them to void*
+>>>>>
+>>>>> Wasn't this previously effectively already the case with patch
+>>>>> 3/7? You had thread_info sized space left there, but it was not
+>>>>> used or initialized right? Does it make sense to move this part
+>>>>> of it to the previous patch?
+>>>>
+>>>> Not really.
+>>>>
+>>>> In 3/7 I changed the prototypes of two functions that really used the
+>>>> pointer as a task pointer only.
 >>
->> But it does use eg.
+>> I meant 2/7 here sorry.
 >>
->>    OPAL_PHB_CAPI_MODE_SNOOP_ON
->>    OPAL_PHB_CAPI_MODE_CAPI
+>>>>
+>>>> Here it change things that before 4/7 were really used as both stack
+>>>> pointers and thread_info pointers.
 >>
->> Which come from opal-api.h via opal.h.
+>> And here I meant 3/7
 >>
->> So you should at least include opal-api.h.
-> 
-> 
-> I'd say that since it includes pnv-pci.h (and this is why this patch
-> compiles), it should be a different set of values for powernv (which
-> would map 1:1 to OPAL_PHB_xxx). The powernv platform knowledge is
-> already intimate enough for a driver to have. Dunno, I found this opal.h
-> inclusion confusing, that's all.
-
-
-I agree, it would be the cleaner way of doing it. It's going to be 
-pretty low on my list though...
-
-   Fred
-
-
-> 
-> 
+>>>
+>>> What uses it as a thread_info pointer? It seems more like a stack
+>>> with some amount of unused space in it but that's all.
 >>
->> cheers
+>> Before 3/7, we have
 >>
->>> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
->>> index b66d832..8cbcbb7 100644
->>> --- a/drivers/misc/cxl/pci.c
->>> +++ b/drivers/misc/cxl/pci.c
->>> @@ -17,7 +17,6 @@
->>>   #include <linux/pci.h>
->>>   #include <linux/of.h>
->>>   #include <linux/delay.h>
->>> -#include <asm/opal.h>
->>>   #include <asm/msi_bitmap.h>
->>>   #include <asm/pnv-pci.h>
->>>   #include <asm/io.h>
->>> -- 
->>> 2.11.0
+>> void do_softirq_own_stack(void)
+>> {
+>> 	struct thread_info *curtp, *irqtp;
+>>
+>> 	curtp = current_thread_info();
+>> 	irqtp = softirq_ctx[smp_processor_id()];
+>> 	irqtp->task = curtp->task;
+>> 	irqtp->flags = 0;
+>> 	call_do_softirq(irqtp);
+>> 	irqtp->task = NULL;
+>>
+>> 	/* Set any flag that may have been set on the
+>> 	 * alternate stack
+>> 	 */
+>> 	if (irqtp->flags)
+>> 		set_bits(irqtp->flags, &curtp->flags);
+>> }
+>>
+>> After 3/7, we have
+>>
+>>    void do_softirq_own_stack(void)
+>>    {
+>> 	struct thread_info *irqtp;
+>>
+>>    	irqtp = softirq_ctx[smp_processor_id()];
+>>    	call_do_softirq(irqtp);
+>>    }
+>>
+>>
+>> So now only we can change irqtp to void* can't we ?
 > 
+> In patch 3 we can, right? That's what I mean by moving from
+> thread_info * to void * in patch 3 rather than 4.
 
+Ah ok, that's what you meant. Sorry.
+
+> 
+> But if you prefer not to, it's fine. Maybe it keeps patch 3
+> a little smaller.
+
+Yes indeed, that's the idea, keep patch 3 to the strict minimum and do 
+cleanups afterwards.
+
+Christophe
+
+> 
+> Thanks,
+> Nick
+> 
