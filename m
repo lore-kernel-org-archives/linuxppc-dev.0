@@ -2,60 +2,53 @@ Return-Path: <SRS0=1oDC=MP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=MAILING_LIST_MULTI,SPF_PASS,
+	USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D2123C00449
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 13:56:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 07C24C00449
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 13:59:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5FEEE2089F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 13:56:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5FEEE2089F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 882FF2089F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 13:58:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 882FF2089F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42QHc93Zb8zF36g
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 23:56:09 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42QHgP32kCzF36V
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 23:58:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com;
- envelope-from=vkuznets@redhat.com; receiver=<UNKNOWN>)
+ spf=softfail (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=mhocko@kernel.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42QHX74ylVzF35j
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Oct 2018 23:52:39 +1000 (AEST)
-Received: from smtp.corp.redhat.com (int-mx12.intmail.prod.int.phx2.redhat.com
- [10.5.11.27])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 00F5FC03D485;
- Wed,  3 Oct 2018 13:52:37 +0000 (UTC)
-Received: from vitty.brq.redhat.com.redhat.com (unknown [10.43.2.58])
- by smtp.corp.redhat.com (Postfix) with ESMTPS id 6377085F03;
- Wed,  3 Oct 2018 13:52:26 +0000 (UTC)
-From: Vitaly Kuznetsov <vkuznets@redhat.com>
-To: Michal Hocko <mhocko@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42QHYx5Y2mzF388
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Oct 2018 23:54:13 +1000 (AEST)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+ by mx1.suse.de (Postfix) with ESMTP id 1113CAF55;
+ Wed,  3 Oct 2018 13:54:10 +0000 (UTC)
+Date: Wed, 3 Oct 2018 15:54:07 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: David Hildenbrand <david@redhat.com>
 Subject: Re: [PATCH RFC] mm/memory_hotplug: Introduce memory block types
-In-Reply-To: <20181003134444.GH4714@dhcp22.suse.cz>
+Message-ID: <20181003135407.GI4714@dhcp22.suse.cz>
 References: <20180928150357.12942-1-david@redhat.com>
  <20181001084038.GD18290@dhcp22.suse.cz>
  <d54a8509-725f-f771-72f0-15a9d93e8a49@redhat.com>
  <20181002134734.GT18290@dhcp22.suse.cz>
  <98fb8d65-b641-2225-f842-8804c6f79a06@redhat.com>
- <8736tndubn.fsf@vitty.brq.redhat.com> <20181003134444.GH4714@dhcp22.suse.cz>
-Date: Wed, 03 Oct 2018 15:52:24 +0200
-Message-ID: <87zhvvcf3b.fsf@vitty.brq.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Scanned-By: MIMEDefang 2.84 on 10.5.11.27
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.31]); Wed, 03 Oct 2018 13:52:38 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <98fb8d65-b641-2225-f842-8804c6f79a06@redhat.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,86 +65,132 @@ Cc: Kate Stewart <kstewart@linuxfoundation.org>, Rich Felker <dalias@libc.org>,
  Peter Zijlstra <peterz@infradead.org>,
  Dave Hansen <dave.hansen@linux.intel.com>,
  Heiko Carstens <heiko.carstens@de.ibm.com>, linux-mm@kvack.org,
+ Pavel Tatashin <pavel.tatashin@microsoft.com>,
  Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Stephen Rothwell <sfr@canb.auug.org.au>, Rashmica Gupta <rashmica.g@gmail.com>,
- Dan Williams <dan.j.williams@intel.com>, linux-s390@vger.kernel.org,
+ Rashmica Gupta <rashmica.g@gmail.com>, "K. Y. Srinivasan" <kys@microsoft.com>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>, linux-s390@vger.kernel.org,
  Michael Neuling <mikey@neuling.org>,
  Stephen Hemminger <sthemmin@microsoft.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- David Hildenbrand <david@redhat.com>, linux-acpi@vger.kernel.org,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, linux-acpi@vger.kernel.org,
  Ingo Molnar <mingo@redhat.com>, xen-devel@lists.xenproject.org,
- Len Brown <lenb@kernel.org>, Pavel Tatashin <pavel.tatashin@microsoft.com>,
- Rob Herring <robh@kernel.org>, "mike.travis@hpe.com" <mike.travis@hpe.com>,
+ Rob Herring <robh@kernel.org>, Len Brown <lenb@kernel.org>,
+ Fenghua Yu <fenghua.yu@intel.com>, Stephen Rothwell <sfr@canb.auug.org.au>,
+ "mike.travis@hpe.com" <mike.travis@hpe.com>,
  Haiyang Zhang <haiyangz@microsoft.com>,
- Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
- Nicholas Piggin <npiggin@gmail.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- =?utf-8?B?SsOpcsO0bWU=?= Glisse <jglisse@redhat.com>,
+ Dan Williams <dan.j.williams@intel.com>,
+ Jonathan =?iso-8859-1?Q?Neusch=E4fer?= <j.neuschaefer@gmx.net>,
+ Nicholas Piggin <npiggin@gmail.com>, Joe Perches <joe@perches.com>,
+ =?iso-8859-1?B?Suly9G1l?= Glisse <jglisse@redhat.com>,
  Mike Rapoport <rppt@linux.vnet.ibm.com>, Borislav Petkov <bp@alien8.de>,
- Andy Lutomirski <luto@kernel.org>,
- Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- Andrew Morton <akpm@linux-foundation.org>, Oscar Salvador <osalvador@suse.de>,
+ Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>, Oscar Salvador <osalvador@suse.de>,
  Juergen Gross <jgross@suse.com>, Tony Luck <tony.luck@intel.com>,
  Mathieu Malaterre <malat@debian.org>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
- Fenghua Yu <fenghua.yu@intel.com>,
  Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- Philippe Ombredanne <pombredanne@nexb.com>, Joe Perches <joe@perches.com>,
- devel@linuxdriverproject.org, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- linuxppc-dev@lists.ozlabs.org,
+ Philippe Ombredanne <pombredanne@nexb.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, devel@linuxdriverproject.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
  "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Michal Hocko <mhocko@kernel.org> writes:
+On Tue 02-10-18 17:25:19, David Hildenbrand wrote:
+> On 02/10/2018 15:47, Michal Hocko wrote:
+[...]
+> > Zone imbalance is an inherent problem of the highmem zone. It is
+> > essentially the highmem zone we all loved so much back in 32b days.
+> > Yes the movable zone doesn't have any addressing limitations so it is a
+> > bit more relaxed but considering the hotplug scenarios I have seen so
+> > far people just want to have full NUMA nodes movable to allow replacing
+> > DIMMs. And then we are back to square one and the zone imbalance issue.
+> > You have those regardless where memmaps are allocated from.
+> 
+> Unfortunately yes. And things get more complicated as you are adding a
+> whole DIMMs and get notifications in the granularity of memory blocks.
+> Usually you are not interested in onlining any memory block of that DIMM
+> as MOVABLE as soon as you would have to online one memory block of that
+> DIMM as NORMAL - because that can already block the whole DIMM.
 
-> On Wed 03-10-18 15:38:04, Vitaly Kuznetsov wrote:
->> David Hildenbrand <david@redhat.com> writes:
->> 
->> > On 02/10/2018 15:47, Michal Hocko wrote:
->> ...
->> >> 
->> >> Why do you need a generic hotplug rule in the first place? Why don't you
->> >> simply provide different set of rules for different usecases? Let users
->> >> decide which usecase they prefer rather than try to be clever which
->> >> almost always hits weird corner cases.
->> >> 
->> >
->> > Memory hotplug has to work as reliable as we can out of the box. Letting
->> > the user make simple decisions like "oh, I am on hyper-V, I want to
->> > online memory to the normal zone" does not feel right. But yes, we
->> > should definitely allow to make modifications.
->> 
->> Last time I was thinking about the imperfectness of the auto-online
->> solution we have and any other solution we're able to suggest an idea
->> came to my mind - what if we add an eBPF attach point to the
->> auto-onlining mechanism effecively offloading decision-making to
->> userspace. We'll of couse need to provide all required data (e.g. how
->> memory blocks are aligned with physical DIMMs as it makes no sense to
->> online part of DIMM as normal and the rest as movable as it's going to
->> be impossible to unplug such DIMM anyways).
->
-> And how does that differ from the notification mechanism we have? Just
-> by not relying on the process scheduling? If yes then this revolves
-> around the implementation detail that you care about time-to-hot-add
-> vs. time-to-online. And that is a solveable problem - just allocate
-> memmaps from the hot-added memory.
+For the purpose of the hotremove, yes. But as Dave has noted people are
+(ab)using zone movable for other purposes - e.g. large pages.
+ 
+[...]
+> > Then the immediate question would be why to use memory hotplug for that
+> > at all? Why don't you simply start with a huge pre-allocated physical
+> > address space and balloon memory in an out per demand. Why do you want
+> > to inject new memory during the runtime?
+> 
+> Let's assume you have a guest with 20GB size and eventually want to
+> allow to grow it to 4TB. You would have to allocate metadata for 4TB
+> right from the beginning. That's definitely now what we want. That is
+> why memory hotplug is used by e.g. XEN or Hyper-V. With Hyper-V, the
+> hypervisor even tells you at which places additional memory has been
+> made available.
 
-It is more than just memmaps (e.g. forking udev process doing memory
-onlining also needs memory) but yes, the main idea is to make the
-onlining synchronous with hotplug.
+Then you have to live with the fact that your hot added memory will be
+self hosted and find a way for ballooning to work with that. The price
+would be that some part of the memory is not really balloonable in the
+end.
 
->
-> As David said some of the memory cannot be onlined without further steps
-> (e.g. when it is standby as David called it) and then I fail to see how
-> eBPF help in any way.
+> >> 1. is a reason why distributions usually don't configure
+> >> "MEMORY_HOTPLUG_DEFAULT_ONLINE", because you really want the option for
+> >> MOVABLE zone. That however implies, that e.g. for x86, you have to
+> >> handle all new memory in user space, especially also HyperV memory.
+> >> There, you then have to check for things like "isHyperV()" to decide
+> >> "oh, yes, this should definitely not go to the MOVABLE zone".
+> > 
+> > Why do you need a generic hotplug rule in the first place? Why don't you
+> > simply provide different set of rules for different usecases? Let users
+> > decide which usecase they prefer rather than try to be clever which
+> > almost always hits weird corner cases.
+> > 
+> 
+> Memory hotplug has to work as reliable as we can out of the box. Letting
+> the user make simple decisions like "oh, I am on hyper-V, I want to
+> online memory to the normal zone" does not feel right.
 
-and also, we can fight till the end of days here trying to come up with
-an onlining solution which would work for everyone and eBPF would move
-this decision to distro level.
+Users usually know what is their usecase and then it is just a matter of
+plumbing (e.g. distribution can provide proper tools to deploy those
+usecases) to chose the right and for user obscure way to make it work.
 
+> But yes, we
+> should definitely allow to make modifications. So some sane default rule
+> + possible modification is usually a good idea.
+> 
+> I think Dave has a point with using MOVABLE for huge page use cases. And
+> there might be other corner cases as you correctly state.
+> 
+> I wonder if this patch itself minus modifying online/offline might make
+> sense. We can then implement simple rules in user space
+> 
+> if (normal) {
+> 	/* customers expect hotplugged DIMMs to be unpluggable */
+> 	online_movable();
+> } else if (paravirt) {
+> 	/* paravirt memory should as default always go to the NORMAL */
+> 	online();
+> } else {
+> 	/* standby memory will never get onlined automatically */
+> }
+> 
+> Compared to having to guess what is to be done (isKVM(), isHyperV,
+> isS390 ...) and failing once this is no longer unique (e.g. virtio-mem
+> and ACPI support for x86 KVM).
+
+I am worried that exporing a type will just push us even further to the
+corner. The current design is really simple and 2 stage and that is good
+because it allows for very different usecases. The more specific the API
+be the more likely we are going to hit "I haven't even dreamed somebody
+would be using hotplug for this thing". And I would bet this will happen
+sooner or later.
+
+Just look at how the whole auto onlining screwed the API to workaround
+an implementation detail. It has created a one purpose behavior that
+doesn't suite many usecases. Yet we have to live with that because
+somebody really relies on it. Let's not repeat same errors.
 -- 
-Vitaly
+Michal Hocko
+SUSE Labs
