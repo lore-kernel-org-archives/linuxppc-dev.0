@@ -7,59 +7,59 @@ X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DF2A9C00449
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 06:29:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EC1B8C64EBC
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 06:31:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5329720652
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 06:29:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 6C92B20835
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 06:31:57 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="UcdtX73t"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5329720652
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="ICS+yHQk"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6C92B20835
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42Q5hW34JlzF3B3
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 16:29:15 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Q5lb3SqhzF3JH
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 16:31:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="UcdtX73t";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="ICS+yHQk";
 	dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Q5X252ryzF3B3
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Q5X26SpkzF3Bb
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Oct 2018 16:21:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=gibson.dropbear.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.b="UcdtX73t"; dkim-atps=neutral
+ header.b="ICS+yHQk"; dkim-atps=neutral
 Received: by ozlabs.org (Postfix)
- id 42Q5X232FnzB2xk; Wed,  3 Oct 2018 16:21:54 +1000 (AEST)
+ id 42Q5X25r2DzB4MQ; Wed,  3 Oct 2018 16:21:54 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1007)
- id 42Q5X22Msrz9sB7; Wed,  3 Oct 2018 16:21:53 +1000 (AEST)
+ id 42Q5X25Srdz9vZs; Wed,  3 Oct 2018 16:21:53 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=gibson.dropbear.id.au; s=201602; t=1538547714;
- bh=jkl2VZHXNR7+aUV2zncdctKmwJFS7RKcTXP3+yZsUZA=;
+ bh=R2quBuLkPwviUaaodvzsatat8R4m2sw753O/MqtcJRI=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=UcdtX73tei4ftngJT23oCTVepBs2ib50413Y+KuG8/LMQbElrQ/KT52+gsW7wsurB
- U6NHsbeZdjcpxOOy4rs4hK7X5VC6PmmG2FJHbzdX5XMEdxt/wVBP+IK9uKdGsEDWMw
- oGefeoiRQVLaa6RGCXGA4GvHB/qggPHsY8R4z4dQ=
-Date: Wed, 3 Oct 2018 16:17:52 +1000
+ b=ICS+yHQkkT9khnPFFr1HtRtRoWT0RkOiesZMHNFmSQEwSteCfLXexIIyRMxX3hJYc
+ 6LGhFPnodD7B7xcB76tcaGSMvPkoO+8PL4BycnwScq/t5l7tNEzunQfYmmWx4poM5k
+ tNpXaHDhR90ihTw7ejzhhgrbNosOTxVlPG61bgtw=
+Date: Wed, 3 Oct 2018 15:56:37 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Paul Mackerras <paulus@ozlabs.org>
-Subject: Re: [PATCH v3 32/33] KVM: PPC: Book3S HV: Use hypercalls for TLB
- invalidation when nested
-Message-ID: <20181003061752.GX1886@umbus.fritz.box>
+Subject: Re: [PATCH v3 23/33] KVM: PPC: Book3S HV: Introduce rmap to track
+ nested guest mappings
+Message-ID: <20181003055637.GS1886@umbus.fritz.box>
 References: <1538479892-14835-1-git-send-email-paulus@ozlabs.org>
- <1538479892-14835-33-git-send-email-paulus@ozlabs.org>
+ <1538479892-14835-24-git-send-email-paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="SvF6CGw9fzJC4Rcx"
+ protocol="application/pgp-signature"; boundary="lt3WynA+XK9Fj6D4"
 Content-Disposition: inline
-In-Reply-To: <1538479892-14835-33-git-send-email-paulus@ozlabs.org>
+In-Reply-To: <1538479892-14835-24-git-send-email-paulus@ozlabs.org>
 User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -78,175 +78,109 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---SvF6CGw9fzJC4Rcx
+--lt3WynA+XK9Fj6D4
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Oct 02, 2018 at 09:31:31PM +1000, Paul Mackerras wrote:
-> This adds code to call the H_TLB_INVALIDATE hypercall when running as
-> a guest, in the cases where we need to invalidate TLBs (or other MMU
-> caches) as part of managing the mappings for a nested guest.  Calling
-> H_TLB_INVALIDATE is an alternative to doing the tlbie instruction and
-> having it be emulated by our hypervisor.
-
-Why is supporting two methods useful, rather than just settling on
-one?  Having both just sounds like asking for untested and therefore
-broken code paths lying around.
-
+On Tue, Oct 02, 2018 at 09:31:22PM +1000, Paul Mackerras wrote:
+> From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+>=20
+> When a host (L0) page which is mapped into a (L1) guest is in turn
+> mapped through to a nested (L2) guest we keep a reverse mapping (rmap)
+> so that these mappings can be retrieved later.
+>=20
+> Whenever we create an entry in a shadow_pgtable for a nested guest we
+> create a corresponding rmap entry and add it to the list for the
+> L1 guest memslot at the index of the L1 guest page it maps. This means
+> at the L1 guest memslot we end up with lists of rmaps.
+>=20
+> When we are notified of a host page being invalidated which has been
+> mapped through to a (L1) guest, we can then walk the rmap list for that
+> guest page, and find and invalidate all of the corresponding
+> shadow_pgtable entries.
+>=20
+> In order to reduce memory consumption, we compress the information for
+> each rmap entry down to 52 bits -- 12 bits for the LPID and 40 bits
+> for the guest real page frame number -- which will fit in a single
+> unsigned long.  To avoid a scenario where a guest can trigger
+> unbounded memory allocations, we scan the list when adding an entry to
+> see if there is already an entry with the contents we need.  This can
+> occur, because we don't ever remove entries from the middle of a list.
+>=20
+> A struct nested guest rmap is a list pointer and an rmap entry;
+> ----------------
+> | next pointer |
+> ----------------
+> | rmap entry   |
+> ----------------
+>=20
+> Thus the rmap pointer for each guest frame number in the memslot can be
+> either NULL, a single entry, or a pointer to a list of nested rmap entrie=
+s.
+>=20
+> gfn	 memslot rmap array
+>  	-------------------------
+>  0	| NULL			|	(no rmap entry)
+>  	-------------------------
+>  1	| single rmap entry	|	(rmap entry with low bit set)
+>  	-------------------------
+>  2	| list head pointer	|	(list of rmap entries)
+>  	-------------------------
+>=20
+> The final entry always has the lowest bit set and is stored in the next
+> pointer of the last list entry, or as a single rmap entry.
+> With a list of rmap entries looking like;
+>=20
+> -----------------	-----------------	-------------------------
+> | list head ptr	| ----> | next pointer	| ---->	| single rmap entry	|
+> -----------------	-----------------	-------------------------
+> 			| rmap entry	|	| rmap entry		|
+> 			-----------------	-------------------------
+>=20
+> Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
 > Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 > ---
->  arch/powerpc/include/asm/kvm_book3s_64.h |  5 +++++
->  arch/powerpc/kvm/book3s_64_mmu_radix.c   | 30 ++++++++++++++++++++++++++=
-+--
->  arch/powerpc/kvm/book3s_hv_nested.c      | 33 +++++++++++++++++++++++---=
-------
->  3 files changed, 57 insertions(+), 11 deletions(-)
+>  arch/powerpc/include/asm/kvm_book3s.h    |   3 +
+>  arch/powerpc/include/asm/kvm_book3s_64.h |  70 ++++++++++++++++-
+>  arch/powerpc/kvm/book3s_64_mmu_radix.c   |  44 +++++++----
+>  arch/powerpc/kvm/book3s_hv.c             |   1 +
+>  arch/powerpc/kvm/book3s_hv_nested.c      | 130 +++++++++++++++++++++++++=
++++++-
+>  5 files changed, 233 insertions(+), 15 deletions(-)
 >=20
+> diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include=
+/asm/kvm_book3s.h
+> index d983778..1d2286d 100644
+> --- a/arch/powerpc/include/asm/kvm_book3s.h
+> +++ b/arch/powerpc/include/asm/kvm_book3s.h
+> @@ -196,6 +196,9 @@ extern int kvmppc_mmu_radix_translate_table(struct kv=
+m_vcpu *vcpu, gva_t eaddr,
+>  			int table_index, u64 *pte_ret_p);
+>  extern int kvmppc_mmu_radix_xlate(struct kvm_vcpu *vcpu, gva_t eaddr,
+>  			struct kvmppc_pte *gpte, bool data, bool iswrite);
+> +extern void kvmppc_unmap_pte(struct kvm *kvm, pte_t *pte, unsigned long =
+gpa,
+> +			unsigned int shift, struct kvm_memory_slot *memslot,
+> +			unsigned int lpid);
+>  extern bool kvmppc_hv_handle_set_rc(struct kvm *kvm, pgd_t *pgtable,
+>  				    bool writing, unsigned long gpa,
+>  				    unsigned int lpid);
 > diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/incl=
 ude/asm/kvm_book3s_64.h
-> index f0fa14c..95280e2 100644
+> index 5496152..38614f0 100644
 > --- a/arch/powerpc/include/asm/kvm_book3s_64.h
 > +++ b/arch/powerpc/include/asm/kvm_book3s_64.h
-> @@ -24,6 +24,7 @@
->  #include <asm/bitops.h>
->  #include <asm/book3s/64/mmu-hash.h>
->  #include <asm/cpu_has_feature.h>
-> +#include <asm/ppc-opcode.h>
+> @@ -53,6 +53,66 @@ struct kvm_nested_guest {
+>  	struct kvm_nested_guest *next;
+>  };
 > =20
->  #ifdef CONFIG_PPC_PSERIES
->  static inline bool kvmhv_on_pseries(void)
-> @@ -121,6 +122,10 @@ struct kvm_nested_guest *kvmhv_get_nested(struct kvm=
- *kvm, int l1_lpid,
->  void kvmhv_put_nested(struct kvm_nested_guest *gp);
->  int kvmhv_nested_next_lpid(struct kvm *kvm, int lpid);
-> =20
-> +/* Encoding of first parameter for H_TLB_INVALIDATE */
-> +#define H_TLBIE_P1_ENC(ric, prs, r)	(___PPC_RIC(ric) | ___PPC_PRS(prs) |=
- \
-> +					 ___PPC_R(r))
-> +
->  /* Power architecture requires HPT is at least 256kiB, at most 64TiB */
->  #define PPC_MIN_HPT_ORDER	18
->  #define PPC_MAX_HPT_ORDER	46
-> diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/bo=
-ok3s_64_mmu_radix.c
-> index b74abdd..6c93f5c 100644
-> --- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
-> +++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-> @@ -201,17 +201,43 @@ static void kvmppc_radix_tlbie_page(struct kvm *kvm=
-, unsigned long addr,
->  				    unsigned int pshift, unsigned int lpid)
->  {
->  	unsigned long psize =3D PAGE_SIZE;
-> +	int psi;
-> +	long rc;
-> +	unsigned long rb;
-> =20
->  	if (pshift)
->  		psize =3D 1UL << pshift;
-> +	else
-> +		pshift =3D PAGE_SHIFT;
-> =20
->  	addr &=3D ~(psize - 1);
-> -	radix__flush_tlb_lpid_page(lpid, addr, psize);
-> +
-> +	if (!kvmhv_on_pseries()) {
-> +		radix__flush_tlb_lpid_page(lpid, addr, psize);
-> +		return;
-> +	}
-> +
-> +	psi =3D shift_to_mmu_psize(pshift);
-> +	rb =3D addr | (mmu_get_ap(psi) << PPC_BITLSHIFT(58));
-> +	rc =3D plpar_hcall_norets(H_TLB_INVALIDATE, H_TLBIE_P1_ENC(0, 0, 1),
-> +				lpid, rb);
-> +	if (rc)
-> +		pr_err("KVM: TLB page invalidation hcall failed, rc=3D%ld\n", rc);
->  }
-> =20
->  static void kvmppc_radix_flush_pwc(struct kvm *kvm, unsigned int lpid)
->  {
-> -	radix__flush_pwc_lpid(lpid);
-> +	long rc;
-> +
-> +	if (!kvmhv_on_pseries()) {
-> +		radix__flush_pwc_lpid(lpid);
-> +		return;
-> +	}
-> +
-> +	rc =3D plpar_hcall_norets(H_TLB_INVALIDATE, H_TLBIE_P1_ENC(1, 0, 1),
-> +				lpid, TLBIEL_INVAL_SET_LPID);
-> +	if (rc)
-> +		pr_err("KVM: TLB PWC invalidation hcall failed, rc=3D%ld\n", rc);
->  }
-> =20
->  static unsigned long kvmppc_radix_update_pte(struct kvm *kvm, pte_t *pte=
-p,
-> diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm/book3=
-s_hv_nested.c
-> index 914ca78..81c81d51 100644
-> --- a/arch/powerpc/kvm/book3s_hv_nested.c
-> +++ b/arch/powerpc/kvm/book3s_hv_nested.c
-> @@ -368,17 +368,32 @@ void kvmhv_nested_exit(void)
->  	}
->  }
-> =20
-> +static void kvmhv_flush_lpid(unsigned int lpid)
-> +{
-> +	long rc;
-> +
-> +	if (!kvmhv_on_pseries()) {
-> +		radix__flush_tlb_lpid(lpid);
-> +		return;
-> +	}
-> +
-> +	rc =3D plpar_hcall_norets(H_TLB_INVALIDATE, H_TLBIE_P1_ENC(2, 0, 1),
-> +				lpid, TLBIEL_INVAL_SET_LPID);
-> +	if (rc)
-> +		pr_err("KVM: TLB LPID invalidation hcall failed, rc=3D%ld\n", rc);
-> +}
-> +
->  void kvmhv_set_ptbl_entry(unsigned int lpid, u64 dw0, u64 dw1)
->  {
-> -	if (cpu_has_feature(CPU_FTR_HVMODE)) {
-> +	if (!kvmhv_on_pseries()) {
->  		mmu_partition_table_set_entry(lpid, dw0, dw1);
-> -	} else {
-> -		pseries_partition_tb[lpid].patb0 =3D cpu_to_be64(dw0);
-> -		pseries_partition_tb[lpid].patb1 =3D cpu_to_be64(dw1);
-> -		/* this will be emulated, L0 will do the necessary barriers */
-> -		asm volatile(PPC_TLBIE_5(%0, %1, 2, 0, 1) : :
-> -			     "r" (TLBIEL_INVAL_SET_LPID), "r" (lpid));
-> +		return;
->  	}
-> +
-> +	pseries_partition_tb[lpid].patb0 =3D cpu_to_be64(dw0);
-> +	pseries_partition_tb[lpid].patb1 =3D cpu_to_be64(dw1);
-> +	/* L0 will do the necessary barriers */
-> +	kvmhv_flush_lpid(lpid);
->  }
-> =20
->  static void kvmhv_set_nested_ptbl(struct kvm_nested_guest *gp)
-> @@ -543,7 +558,7 @@ static void kvmhv_flush_nested(struct kvm_nested_gues=
-t *gp)
->  	spin_lock(&kvm->mmu_lock);
->  	kvmppc_free_pgtable_radix(kvm, gp->shadow_pgtable, gp->shadow_lpid);
->  	spin_unlock(&kvm->mmu_lock);
-> -	radix__flush_tlb_lpid(gp->shadow_lpid);
-> +	kvmhv_flush_lpid(gp->shadow_lpid);
->  	kvmhv_update_ptbl_cache(gp);
->  	if (gp->l1_gr_to_hr =3D=3D 0)
->  		kvmhv_remove_nested(gp);
-> @@ -839,7 +854,7 @@ static void kvmhv_emulate_tlbie_lpid(struct kvm_vcpu =
-*vcpu,
->  		spin_lock(&kvm->mmu_lock);
->  		kvmppc_free_pgtable_radix(kvm, gp->shadow_pgtable,
->  					  gp->shadow_lpid);
-> -		radix__flush_tlb_lpid(gp->shadow_lpid);
-> +		kvmhv_flush_lpid(gp->shadow_lpid);
->  		spin_unlock(&kvm->mmu_lock);
->  		break;
->  	case 1:
+> +/*
+> + * We define a nested rmap entry as a single 64-bit quantity
+> + * 0xFFF0000000000000	12-bit lpid field
+> + * 0x000FFFFFFFFFF000	40-bit guest physical address field
+
+I thought we could potentially support guests with >1TiB of RAM..?
 
 --=20
 David Gibson			| I'll have my music baroque, and my code
@@ -254,24 +188,24 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---SvF6CGw9fzJC4Rcx
+--lt3WynA+XK9Fj6D4
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlu0XxAACgkQbDjKyiDZ
-s5J1qQ/8C2wNzantm6FEml0tWRtqrq52k4UGHe90GKbLLkz5yTa/33WfF12LvKJU
-eK8W3Mp4ZraJYRUUIOu/V647MQLuXDRrl4bwhuxGJ3QEPbyAY9P36jl8uxzKB6ax
-YFIMdzmsvKoSg6UKkRYeHsOZLRbIOWbpxhzEFhvyfe7EWb+NwFXOLPixIsvdj65m
-jQWRIL3BvYz58mgqiq3ocwL1W6LtT+W6DOx+OxS3txq/EAGqjft4PbTqPcARLqrb
-v5LN6/ZGSCacmMFYC/LAzHOUXSFFX2Cb4LP58kN4ZA4t8EWJeEv7xBiIOOUDStjk
-EpErf5COOlnr7EKIcSUCSY3m3kBoy8Zf2ouEBfVBkGrmnXgH4KZhpf5RB/KI/dbz
-L8DyDiiZxRlvY6z1BmblNP4B52oPlMoT6irjeiI2kbhK2v/OiKlYg6WQGz2J3NVC
-oH3PsGWSNUqLjniCi72hXFrqpJYezBUc4SBnilm5rVKQg7UjSm8DstqsJjFxY1vg
-MOY9I7f2knsUIRb8vJpgOSEHuBySiwz3ciKoHIoS8NTU4jlrwCWPjUt3xwHJM5Jf
-X+/kb3Y8sYsKm4cNOX+XM6bgJBjoFEW0WwDydQH5QUmHJZjVgFoNaaXAIYYlijF7
-9/Jgo6nVvY06WyuYgLxZd767PBlbCZl7ikQrYgsw7UnUvz+yPfY=
-=abKP
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlu0WhMACgkQbDjKyiDZ
+s5LWZQ//SUMAcmDQAUvQbPU02BfHcWI/mSQ/kY/PDDARPgMLRfCUhmPVoQ33fwUp
+zKSOPthpfVFzFRtwMb6DZPZFQJUsdPOL3i9qNUz0h+upAouDYky5mVM+LKX6jW8B
+JbjRYwWJJNuGnyAbPVTSb8IdxcyXWumv3YZxfVG3faAn9QkoaUn1kjrSwuAUy2Xy
+lESymZKskwpONuikPhjaLgK/R3QCfWMu6iLSVCVx/H/7R14lPVEY3JMCYnTnNDFe
+bKj8MOCP8TnFXkwd2BoVzTSaFEbkW3a1MQfjQjiuTKEq1+ZnzYkbm0nicF7OL0Cj
++oB3h++YSQpVo9r8NdrLXBPLhJj6aEEvJlGOFPbVdqdES3N+UydTfigfvGAMT1fR
+Sg8BgOhzxN9zQ2d2zF6WD4mXXTVn4ZcyFsrLfQHmytPjMcaw0En4nPahyBtf7Bpg
+lgkIH49yU9QhCGCe1YWS4XOXEqcuQM7pU1k/9Vnqwm761PuxBAl1BHJznNbb8Nxe
+RWozROGreURj/tIIt9d+WNAeZUZ6vHq83Sm9TCBlMiVYdcb2ACBlU9oszA3KLRDe
+lRSfXssSsQE6s/6lEMvCHFxYv8xSm4JjttLBkSUcceSYrZnLGTNZaBI+siUIPv27
+LzPkr+/0YZPXjwDgMczm7dY1MkLrjsTlEqxAc3Wivotje5vd/RI=
+=bwUU
 -----END PGP SIGNATURE-----
 
---SvF6CGw9fzJC4Rcx--
+--lt3WynA+XK9Fj6D4--
