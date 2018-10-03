@@ -2,65 +2,63 @@ Return-Path: <SRS0=1oDC=MP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 22D73C00449
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 05:18:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 37FABC00449
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 05:20:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7D90B206B2
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 05:18:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 77F95206B2
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 05:20:47 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="UvsIM14M"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7D90B206B2
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="ppp9CjdK"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 77F95206B2
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42Q46p3rwHzF325
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 15:18:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Q49T3VPfzF3Cf
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 15:20:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="UvsIM14M";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="ppp9CjdK";
 	dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Q43m4zdlzF37X
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Q43m4PqXzF37K
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Oct 2018 15:15:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=gibson.dropbear.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.b="UvsIM14M"; dkim-atps=neutral
+ header.b="ppp9CjdK"; dkim-atps=neutral
 Received: by ozlabs.org (Postfix)
- id 42Q43m4G4nz9s8r; Wed,  3 Oct 2018 15:15:48 +1000 (AEST)
+ id 42Q43m3jYjz9sBk; Wed,  3 Oct 2018 15:15:48 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1007)
- id 42Q43m3j3gz9sB7; Wed,  3 Oct 2018 15:15:48 +1000 (AEST)
+ id 42Q43m2wc2z9s9m; Wed,  3 Oct 2018 15:15:48 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=gibson.dropbear.id.au; s=201602; t=1538543748;
- bh=bFw2WKS2i61yJFJP3s7y+UJ83D5evVXmgRGwz7xqn4U=;
+ bh=VnkkjMC95YYN5ZfZ8b3p+CT6qLIGOQ1c4+0YaxpInr4=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=UvsIM14MsXBdMSJix/bIKmrZi9hftAnjFxo7zc1x2Ejfqn8llMn9ERaI+7QGH8/Fm
- LpuvX3GGjDv2EqNwBXeIEEZ+7RucKTa3z15+xTQOMQ5fR9KH5ou9djDknxuNcQiikN
- 2GnTscVIFk6r1AjWsVD/es5s7Mk7ZVlSBxG1SgiA=
-Date: Wed, 3 Oct 2018 15:09:14 +1000
+ b=ppp9CjdKynfChimaCGW+Pe6L9iYCGNEMDNfffCYBRLzu1OffA5lNKC71ALs1zMf5f
+ Sa+QiChBJ4BAAncO6/jN9Hlu6meN6cGY7nNaB2y7NbfjR2wUO1dj6U/aKTnZoip8vB
+ ri71kaioFU8bDo7AuWcb9ixOjGHHLTwJp009U+0M=
+Date: Wed, 3 Oct 2018 15:13:01 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Paul Mackerras <paulus@ozlabs.org>
-Subject: Re: [PATCH v2 19/33] KVM: PPC: Book3S HV: Nested guest entry via
- hypercall
-Message-ID: <20181003050914.GA30122@umbus.fritz.box>
-References: <1538127963-15645-1-git-send-email-paulus@ozlabs.org>
- <1538127963-15645-20-git-send-email-paulus@ozlabs.org>
- <20181002070009.GJ1886@umbus.fritz.box>
- <20181002080016.GB26512@fergus>
+Subject: Re: [PATCH v3 21/33] KVM: PPC: Book3S HV: Framework to handle HV
+ Emulation Assist Interrupt
+Message-ID: <20181003051301.GO1886@umbus.fritz.box>
+References: <1538479892-14835-1-git-send-email-paulus@ozlabs.org>
+ <1538479892-14835-22-git-send-email-paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="/04w6evG8XlLl3ft"
+ protocol="application/pgp-signature"; boundary="NKtYx2Ppz7d1tORf"
 Content-Disposition: inline
-In-Reply-To: <20181002080016.GB26512@fergus>
+In-Reply-To: <1538479892-14835-22-git-send-email-paulus@ozlabs.org>
 User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -79,121 +77,277 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---/04w6evG8XlLl3ft
+--NKtYx2Ppz7d1tORf
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Oct 02, 2018 at 06:00:16PM +1000, Paul Mackerras wrote:
-> On Tue, Oct 02, 2018 at 05:00:09PM +1000, David Gibson wrote:
-> > On Fri, Sep 28, 2018 at 07:45:49PM +1000, Paul Mackerras wrote:
-> > > This adds a new hypercall, H_ENTER_NESTED, which is used by a nested
-> > > hypervisor to enter one of its nested guests.  The hypercall supplies
-> > > register values in two structs.  Those values are copied by the level=
- 0
-> > > (L0) hypervisor (the one which is running in hypervisor mode) into the
-> > > vcpu struct of the L1 guest, and then the guest is run until an
-> > > interrupt or error occurs which needs to be reported to L1 via the
-> > > hypercall return value.
-> > >=20
-> > > Currently this assumes that the L0 and L1 hypervisors are the same
-> > > endianness, and the structs passed as arguments are in native
-> > > endianness.  If they are of different endianness, the version number
-> > > check will fail and the hcall will be rejected.
-> > >=20
-> > > Nested hypervisors do not support indep_threads_mode=3DN, so this adds
-> > > code to print a warning message if the administrator has set
-> > > indep_threads_mode=3DN, and treat it as Y.
-> > >=20
-> > > Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
-> >=20
-> > [snip]
-> > > +/* Register state for entering a nested guest with H_ENTER_NESTED */
-> > > +struct hv_guest_state {
-> > > +	u64 version;		/* version of this structure layout */
-> > > +	u32 lpid;
-> > > +	u32 vcpu_token;
-> > > +	/* These registers are hypervisor privileged (at least for writing)=
- */
-> > > +	u64 lpcr;
-> > > +	u64 pcr;
-> > > +	u64 amor;
-> > > +	u64 dpdes;
-> > > +	u64 hfscr;
-> > > +	s64 tb_offset;
-> > > +	u64 dawr0;
-> > > +	u64 dawrx0;
-> > > +	u64 ciabr;
-> > > +	u64 hdec_expiry;
-> > > +	u64 purr;
-> > > +	u64 spurr;
-> > > +	u64 ic;
-> > > +	u64 vtb;
-> > > +	u64 hdar;
-> > > +	u64 hdsisr;
-> > > +	u64 heir;
-> > > +	u64 asdr;
-> > > +	/* These are OS privileged but need to be set late in guest entry */
-> > > +	u64 srr0;
-> > > +	u64 srr1;
-> > > +	u64 sprg[4];
-> > > +	u64 pidr;
-> > > +	u64 cfar;
-> > > +	u64 ppr;
-> > > +};
-> >=20
-> > I'm guessing the implication here is that most supervisor privileged
-> > registers need to be set by the L1 to the L2 values, before making the
-> > H_ENTER_NESTED call.  Is that right?
+On Tue, Oct 02, 2018 at 09:31:20PM +1000, Paul Mackerras wrote:
+> From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
 >=20
-> Right - the supervisor privileged registers that are here are the ones
-> that the L1 guest needs to have valid at all times (e.g. sprgN), or
-> that can get clobbered at any time (e.g. srr0/1), or that can't be
-> set to guest values until just before guest entry (cfar, ppr), or that
-> are not writable by the supervisor (purr, spurr, dpdes, ic, vtb).
+> A HEAI (hypervisor emulation assistance interrupt) occurs when a
+> hypervisor resource or instruction is used in a privileged but
+> non-hypervisor state and the LPCR_EVIRT bit is set in LPCR.  When
+> this occurs bit 45 is set in HSRR1.  Detect the occurrence of this,
+> and if userspace has enabled the nested virtualization capability
+> on the VM, then call the code to handle it accordingly.
 >=20
-> > [snip]
-> > > +static int kvmppc_handle_nested_exit(struct kvm_vcpu *vcpu)
-> > > +{
-> > > +	int r;
-> > > +	int srcu_idx;
-> > > +
-> > > +	vcpu->stat.sum_exits++;
-> > > +
-> > > +	/*
-> > > +	 * This can happen if an interrupt occurs in the last stages
-> > > +	 * of guest entry or the first stages of guest exit (i.e. after
-> > > +	 * setting paca->kvm_hstate.in_guest to KVM_GUEST_MODE_GUEST_HV
-> > > +	 * and before setting it to KVM_GUEST_MODE_HOST_HV).
-> > > +	 * That can happen due to a bug, or due to a machine check
-> > > +	 * occurring at just the wrong time.
-> > > +	 */
-> > > +	if (vcpu->arch.shregs.msr & MSR_HV) {
-> > > +		pr_emerg("KVM trap in HV mode while nested!\n");
-> > > +		pr_emerg("trap=3D0x%x | pc=3D0x%lx | msr=3D0x%llx\n",
-> > > +			 vcpu->arch.trap, kvmppc_get_pc(vcpu),
-> > > +			 vcpu->arch.shregs.msr);
-> > > +		kvmppc_dump_regs(vcpu);
-> > > +		return RESUME_HOST;
-> >=20
-> > To make sure I'm understanding right here, RESUME_HOST will
-> > effectively mean resume the L0, and RESUME_GUEST (without additional
-> > processing) will mean resume the L2, right?
+> With LPCR[EVIRT] set, we also get HEAI (without bit 45 set) for
+> mfspr or mtspr to unimplemented SPR numbers.  For these accesses,
+> we emulate the EVIRT=3D0 behaviour, which is to make the access
+> a no-op for privileged software unless it is accessing SPR 0,
+> 4, 5 or 6.  Problem-state accesses and accesses to SPR 0, 4, 5
+> or 6 generate an illegal-instruction type program interrupt.
 >=20
-> RESUME_HOST means resume L1 in fact, and RESUME_GUEST means resume L2.
+> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+> Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 
-Hm, ok.  A comment saying that might make this easier to read.
+Do we still need this if we're moving to paravirt tlbie?
 
-> We never go straight out from L2 to L0 because that would leave L1 in
-> the middle of a hypercall and we would have to have some sort of extra
-> state to record that fact.  Instead, if we need to do anything like
-> that (e.g. because of a signal pending for the task), we get to the
-> point where the H_ENTER_NESTED is finished and the return code is
-> stored in L1's r3 before exiting to the L0 userspace.
-
-To clarify.. if an L2 is running, but the L1 vcpu it's running on is
-descheduled by the L0, does that mean we have to force an L2 exit to
-L1 before we can continued scheduling whatever else on the L0?
+> ---
+>  arch/powerpc/include/asm/kvm_book3s.h |  2 +
+>  arch/powerpc/include/asm/reg.h        |  1 +
+>  arch/powerpc/kvm/book3s_hv.c          | 87 ++++++++++++++++++++++-------=
+------
+>  arch/powerpc/kvm/book3s_hv_nested.c   | 55 ++++++++++++++++++++++
+>  4 files changed, 113 insertions(+), 32 deletions(-)
+>=20
+> diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include=
+/asm/kvm_book3s.h
+> index 093fd70..0a97446 100644
+> --- a/arch/powerpc/include/asm/kvm_book3s.h
+> +++ b/arch/powerpc/include/asm/kvm_book3s.h
+> @@ -287,6 +287,8 @@ void kvmhv_save_hv_regs(struct kvm_vcpu *vcpu, struct=
+ hv_guest_state *hr);
+>  void kvmhv_restore_hv_return_state(struct kvm_vcpu *vcpu,
+>  				   struct hv_guest_state *hr);
+>  long int kvmhv_nested_page_fault(struct kvm_vcpu *vcpu);
+> +int kvmhv_emulate_priv(struct kvm_run *run, struct kvm_vcpu *vcpu,
+> +			unsigned int instr);
+> =20
+>  void kvmppc_giveup_fac(struct kvm_vcpu *vcpu, ulong fac);
+> =20
+> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/re=
+g.h
+> index 6fda746..9c42abf 100644
+> --- a/arch/powerpc/include/asm/reg.h
+> +++ b/arch/powerpc/include/asm/reg.h
+> @@ -456,6 +456,7 @@
+>  #define   LPCR_HVICE		ASM_CONST(0x0000000000000002)      /* P9: HV inter=
+rupt enable */
+>  #define   LPCR_HDICE		ASM_CONST(0x0000000000000001)      /* Hyp Decr ena=
+ble (HV,PR,EE) */
+>  #define   LPCR_UPRT		ASM_CONST(0x0000000000400000)      /* Use Process T=
+able (ISA 3) */
+> +#define   LPCR_EVIRT		ASM_CONST(0x0000000000200000)      /* Enhanced Vir=
+tualisation */
+>  #define   LPCR_HR		ASM_CONST(0x0000000000100000)
+>  #ifndef SPRN_LPID
+>  #define SPRN_LPID	0x13F	/* Logical Partition Identifier */
+> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> index 134d7c7..b975683 100644
+> --- a/arch/powerpc/kvm/book3s_hv.c
+> +++ b/arch/powerpc/kvm/book3s_hv.c
+> @@ -1027,30 +1027,6 @@ static int kvmppc_hcall_impl_hv(unsigned long cmd)
+>  	return kvmppc_hcall_impl_hv_realmode(cmd);
+>  }
+> =20
+> -static int kvmppc_emulate_debug_inst(struct kvm_run *run,
+> -					struct kvm_vcpu *vcpu)
+> -{
+> -	u32 last_inst;
+> -
+> -	if (kvmppc_get_last_inst(vcpu, INST_GENERIC, &last_inst) !=3D
+> -					EMULATE_DONE) {
+> -		/*
+> -		 * Fetch failed, so return to guest and
+> -		 * try executing it again.
+> -		 */
+> -		return RESUME_GUEST;
+> -	}
+> -
+> -	if (last_inst =3D=3D KVMPPC_INST_SW_BREAKPOINT) {
+> -		run->exit_reason =3D KVM_EXIT_DEBUG;
+> -		run->debug.arch.address =3D kvmppc_get_pc(vcpu);
+> -		return RESUME_HOST;
+> -	} else {
+> -		kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
+> -		return RESUME_GUEST;
+> -	}
+> -}
+> -
+>  static void do_nothing(void *x)
+>  {
+>  }
+> @@ -1144,6 +1120,23 @@ static int kvmppc_emulate_doorbell_instr(struct kv=
+m_vcpu *vcpu)
+>  	return RESUME_GUEST;
+>  }
+> =20
+> +static int kvmhv_emulate_unknown_spr(struct kvm_vcpu *vcpu, u32 instr)
+> +{
+> +	u32 spr =3D get_sprn(instr);
+> +
+> +	/*
+> +	 * In privileged state, access to unimplemented SPRs is a no-op
+> +	 * except for SPR 0, 4, 5 and 6.  All other accesses get turned
+> +	 * into illegal-instruction program interrupts.
+> +	 */
+> +	if ((vcpu->arch.shregs.msr & MSR_PR) ||
+> +	    spr =3D=3D 0 || (4 <=3D spr && spr <=3D 6))
+> +		return EMULATE_FAIL;
+> +
+> +	kvmppc_set_pc(vcpu, kvmppc_get_pc(vcpu) + 4);
+> +	return RESUME_GUEST;
+> +}
+> +
+>  static int kvmppc_handle_exit_hv(struct kvm_run *run, struct kvm_vcpu *v=
+cpu,
+>  				 struct task_struct *tsk)
+>  {
+> @@ -1260,19 +1253,49 @@ static int kvmppc_handle_exit_hv(struct kvm_run *=
+run, struct kvm_vcpu *vcpu,
+>  	 * to the guest. If guest debug is enabled, we need to check
+>  	 * whether the instruction is a software breakpoint instruction.
+>  	 * Accordingly return to Guest or Host.
+> +	 * With LPCR[EVIRT] set, we also get these for accesses to
+> +	 * unknown SPRs and for guests executing hypervisor privileged
+> +	 * instructions.
+>  	 */
+>  	case BOOK3S_INTERRUPT_H_EMUL_ASSIST:
+> -		if (vcpu->arch.emul_inst !=3D KVM_INST_FETCH_FAILED)
+> -			vcpu->arch.last_inst =3D kvmppc_need_byteswap(vcpu) ?
+> -				swab32(vcpu->arch.emul_inst) :
+> -				vcpu->arch.emul_inst;
+> -		if (vcpu->guest_debug & KVM_GUESTDBG_USE_SW_BP) {
+> -			r =3D kvmppc_emulate_debug_inst(run, vcpu);
+> +	{
+> +		u32 instr =3D vcpu->arch.emul_inst;
+> +		unsigned long srr1_bit =3D SRR1_PROGILL;
+> +
+> +		vcpu->arch.last_inst =3D kvmppc_need_byteswap(vcpu) ?
+> +			swab32(instr) : instr;
+> +
+> +		r =3D EMULATE_FAIL;
+> +		if (vcpu->arch.shregs.msr & SRR1_PROGPRIV) {
+> +			/*
+> +			 * Tried to execute hypervisor privileged instruction
+> +			 * or mtspr/mfspr on a hypervisor privileged SPR while
+> +			 * MSR(HV | PR) =3D=3D 0b00 -> Privileged but !HV state
+> +			 */
+> +			srr1_bit =3D SRR1_PROGPRIV;
+> +			if (vcpu->kvm->arch.nested_enable)
+> +				r =3D kvmhv_emulate_priv(run, vcpu, instr);
+>  		} else {
+> -			kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
+> +			/* Illegal instruction or unknown SPR access */
+> +			if (instr =3D=3D KVMPPC_INST_SW_BREAKPOINT &&
+> +			    (vcpu->guest_debug & KVM_GUESTDBG_USE_SW_BP)) {
+> +				run->exit_reason =3D KVM_EXIT_DEBUG;
+> +				run->debug.arch.address =3D kvmppc_get_pc(vcpu);
+> +				r =3D RESUME_HOST;
+> +				break;
+> +			}
+> +			if ((instr & 0xfc0006fe) =3D=3D PPC_INST_MFSPR)
+> +				/* mfspr or mtspr to unknown SPR, may be noop */
+> +				r =3D kvmhv_emulate_unknown_spr(vcpu, instr);
+> +		}
+> +		if (r =3D=3D EMULATE_FAIL) {
+> +			pr_debug("KVM: Couldn't emulate instruction 0x%.8x\n",
+> +				 instr);
+> +			kvmppc_core_queue_program(vcpu, srr1_bit);
+>  			r =3D RESUME_GUEST;
+>  		}
+>  		break;
+> +	}
+>  	/*
+>  	 * This occurs if the guest (kernel or userspace), does something that
+>  	 * is prohibited by HFSCR.
+> @@ -4612,7 +4635,7 @@ static int kvmppc_core_init_vm_hv(struct kvm *kvm)
+>  	 */
+>  	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
+>  		lpcr &=3D ~LPCR_VPM0;
+> -		lpcr |=3D LPCR_HVICE | LPCR_HEIC;
+> +		lpcr |=3D LPCR_HVICE | LPCR_HEIC | LPCR_EVIRT;
+> =20
+>  		/*
+>  		 * If xive is enabled, we route 0x500 interrupts directly
+> diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm/book3=
+s_hv_nested.c
+> index 4a381b4..f8f9fab 100644
+> --- a/arch/powerpc/kvm/book3s_hv_nested.c
+> +++ b/arch/powerpc/kvm/book3s_hv_nested.c
+> @@ -15,6 +15,7 @@
+>  #include <asm/mmu.h>
+>  #include <asm/pgtable.h>
+>  #include <asm/pgalloc.h>
+> +#include <asm/disassemble.h>
+> =20
+>  static struct patb_entry *pseries_partition_tb;
+> =20
+> @@ -515,3 +516,57 @@ long kvmhv_nested_page_fault(struct kvm_vcpu *vcpu)
+>  {
+>  	return RESUME_HOST;
+>  }
+> +
+> +static int kvmhv_emulate_priv_mtspr(struct kvm_run *run, struct kvm_vcpu=
+ *vcpu,
+> +				    unsigned int instr)
+> +{
+> +	return EMULATE_FAIL;
+> +}
+> +
+> +static int kvmhv_emulate_priv_mfspr(struct kvm_run *run, struct kvm_vcpu=
+ *vcpu,
+> +				    unsigned int instr)
+> +{
+> +	return EMULATE_FAIL;
+> +}
+> +
+> +static int kvmhv_emulate_priv_op_31(struct kvm_run *run, struct kvm_vcpu=
+ *vcpu,
+> +				    unsigned int instr)
+> +{
+> +	return EMULATE_FAIL;
+> +}
+> +
+> +static int kvmhv_emulate_priv_op(struct kvm_run *run, struct kvm_vcpu *v=
+cpu,
+> +				  unsigned int instr)
+> +{
+> +	return EMULATE_FAIL;
+> +}
+> +
+> +int kvmhv_emulate_priv(struct kvm_run *run, struct kvm_vcpu *vcpu,
+> +			unsigned int instr)
+> +{
+> +	int rc =3D EMULATE_FAIL;
+> +
+> +	switch (get_op(instr)) {
+> +	case 31:
+> +		switch (get_xop(instr)) {
+> +		case OP_31_XOP_MTSPR:
+> +			rc =3D kvmhv_emulate_priv_mtspr(run, vcpu, instr);
+> +			break;
+> +		case OP_31_XOP_MFSPR:
+> +			rc =3D kvmhv_emulate_priv_mfspr(run, vcpu, instr);
+> +			break;
+> +		default:
+> +			rc =3D kvmhv_emulate_priv_op_31(run, vcpu, instr);
+> +			break;
+> +		}
+> +
+> +		if (rc =3D=3D EMULATE_DONE)
+> +			kvmppc_set_pc(vcpu, kvmppc_get_pc(vcpu) + 4);
+> +		break;
+> +	default:
+> +		rc =3D kvmhv_emulate_priv_op(run, vcpu, instr);
+> +		break;
+> +	}
+> +
+> +	return rc;
+> +}
 
 --=20
 David Gibson			| I'll have my music baroque, and my code
@@ -201,24 +355,24 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---/04w6evG8XlLl3ft
+--NKtYx2Ppz7d1tORf
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlu0TvgACgkQbDjKyiDZ
-s5IQKA//V6EJMt7gcha2rVvlvZgju3q++fnOOtmc2hzMq3v4q0BNi7B1rZ5zIJWQ
-CEoeX60fWsxlmcNkBnoH8BdRHKvcSY8nu9qViSEY/YGHwrVa1YbyXYxdSe6HTfh4
-p7TrmPt2VnbvBsilh52pbiie8mMVgJpB+BSlyCXrcHjtjEeTA6QjI5E3z3ko75Vg
-d0I/e3mP2uVyF0RcqWIrjXouBtiD9XNDBj/b/UneoM81y50gTm/HKISFXJ60UZFS
-r9yTRIDlDZV0BPgDDrat3OYd3u3K4X1RBBYdA/xr+luh+OW/PT/0TtjcVip/jlQz
-tAOGxy3iWflQ7Krhk6nbB5xBfBw3rgKoTuVhbZ9OSu53ggpLTGDYMTIaiBAlaN4A
-4udnhfZPZY/QC+S+7W7ifhf50VGPZe3ZcTd6tmzw+Omq/9iEBcK7Oc04CJNU+MWF
-BqLQ5CUITvQn2Rw50ahIrMV77zguZfn5N/85xtpRIKXWb4SpTTtAojolYQgpdYoc
-BCQ6goA5oxRGPBUgUHC1NZ1kzp9DtaI+JJCFWcVQSrqV+fyvGrcwMbX/Y2s2wMGT
-QTYaP1H2MzZFCWMzYSes8Z0PCg7Iflbxagag2vzsi1cCfHjgnzAiu9w5EWD0gHlU
-KB8yc5X7JrXfhi7TQS8ZJmGFj4gKhSHmiBZ++ii4BQTzkdXnp5c=
-=NIbd
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlu0T9wACgkQbDjKyiDZ
+s5JZixAAyWZvk07ErYYCj5T67EIs7SqnZaXplCKqf/MOdlV49Q7/kTRiINIpcwny
+11SAxEpv8cf0nyjnTstuPy2RLkxAFmxp2RdtSCeKZc360sL3Cc2kPcGaUOwArYQh
+6F4vVOD9rKptlbPzvSllHchszivpKyYb9t3QLwMQiBUaxx35Bx94koMqtXkknPo1
+9cusG73rZcIiBpoMr6YIxvzxfKqVbos1pjZkG6NjwZTCCaW1McaFW7NUGfl6PgVe
+HC/h9/piH5OQ/TjEkppgW9Myq0GT9CDDSRgrzDVPMK5dIyLUAZX33G+XrzK0u2Gc
+PbGJL6GRPt/lVdGkQG9/8UFKq2D4iR/CLaRaxjb3pFbzY2hkKtTkop1/YM+1E4aS
+fivU2Y95l37SNp6THcnBFq54zAXaAAEmbwPnWU9yGle3I8VmQqTpXxMxNvbqcapA
+MO3FgzQg+UpaeoMpPktZF1WpyaXxIytxPCqzueCa2+e4lWl/fPB+Ok1DEZ3BBFjX
+NEJ5pBePyoJUiJZhuY2b5/DJmCKMrCtMQrmfgccUmRudlVfYCssTaeMhYhHPQwIq
++AeRibjjGZ2myAqFqw9SEdmMadLpoTeXBJUX7TYsYOrwYhzY8X83KQluLZwHbIP2
+jVVvGl/7P7btAiULlxXdwjqgZYDpElOPTjlkTT8PEudBYkA66ow=
+=1O7I
 -----END PGP SIGNATURE-----
 
---/04w6evG8XlLl3ft--
+--NKtYx2Ppz7d1tORf--
