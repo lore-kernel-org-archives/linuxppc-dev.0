@@ -2,57 +2,138 @@ Return-Path: <SRS0=1oDC=MP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=MAILING_LIST_MULTI,SPF_PASS,
-	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 64E9FC64EBC
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 07:25:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A581C00449
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 07:48:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C8C572089F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 07:25:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C8C572089F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 76E0420684
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 07:48:43 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="QdlENKgN"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 76E0420684
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42Q6xl6BB6zF0QC
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 17:25:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Q7S866XpzF3FT
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 17:48:40 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org;
- spf=softfail (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=mhocko@kernel.org;
- receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="QdlENKgN";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
+ (client-ip=2607:f8b0:4864:20::643; helo=mail-pl1-x643.google.com;
+ envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=ozlabs.ru
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
+ header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="QdlENKgN"; 
+ dkim-atps=neutral
+Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
+ [IPv6:2607:f8b0:4864:20::643])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Q6vM3Q1kzF3C5
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Oct 2018 17:23:42 +1000 (AEST)
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay1.suse.de (unknown [195.135.220.254])
- by mx1.suse.de (Postfix) with ESMTP id 6735FAFF6;
- Wed,  3 Oct 2018 07:03:23 +0000 (UTC)
-Date: Wed, 3 Oct 2018 09:03:20 +0200
-From: Michal Hocko <mhocko@kernel.org>
-To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Subject: Re: [PATCH] migration/mm: Add WARN_ON to try_offline_node
-Message-ID: <20181003070320.GE18290@dhcp22.suse.cz>
-References: <20181001185616.11427.35521.stgit@ltcalpine2-lp9.aus.stglabs.ibm.com>
- <20181001202724.GL18290@dhcp22.suse.cz>
- <bdbca329-7d35-0535-1737-94a06a19ae28@linux.vnet.ibm.com>
- <df95f828-1963-d8b9-ab58-6d29d2d152d2@linux.vnet.ibm.com>
- <20181002145922.GZ18290@dhcp22.suse.cz>
- <d338b385-626b-0e79-9944-708178fe245d@linux.vnet.ibm.com>
- <20181002160446.GA18290@dhcp22.suse.cz>
- <e7dd66c1-d196-3a14-0115-acdaf538ebfd@linux.vnet.ibm.com>
- <bbc5f219-614f-b024-0888-8ad216c5eaf8@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Q7PF62m4zF3BB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Oct 2018 17:46:08 +1000 (AEST)
+Received: by mail-pl1-x643.google.com with SMTP id v5-v6so3034258plz.13
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Oct 2018 00:46:08 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
+ h=subject:to:cc:references:from:openpgp:autocrypt:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=5FTsSJI82hefxEWL24zooH5fNMkSirt9MUI/jSMs5N0=;
+ b=QdlENKgNZzy12cl9sxVX0sIdSNtGDLZs49GGNghvMoBayqXX0tyrGYkdKMHHEEvPNn
+ ptUs8tSsgyc/na4kkoAU79EC7xX3WEOSDkVXKwqqM5Z6r5jbodnUZ/ltY4lcDgJtFCuz
+ RqYN9kJcgCuxcRD3mDdRm+J5fENAWRkXhgKemIa/wq4nFNdLCLPrf9BYIjk/0BAYh82K
+ 5/sfHGFvtc5ZnPRGDvpF4IOAi4xvbMZ9hLK2BMJyJBkBj0uPq/L6nK4FsapL1MThTJFO
+ PmM/AH1n+LXMMDWmoN8ZcWioSncwSrJ8xSJbqcFzzWturU3YMJ7Tffj9rnuwWptHu0EB
+ hISQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:subject:to:cc:references:from:openpgp:autocrypt
+ :message-id:date:user-agent:mime-version:in-reply-to
+ :content-language:content-transfer-encoding;
+ bh=5FTsSJI82hefxEWL24zooH5fNMkSirt9MUI/jSMs5N0=;
+ b=UrGl2oi2ld0erjARKANDnN0eNBG5aE2+69QA04u+whnYuRYxrXdUnrQIRz/xBJOjEC
+ w6qa1kmJZA1DXcxqr04t4Yx8i4rQJD/TjOghJ75MN0x30eF7IazGX5EtwlBUP0Hn0OtT
+ 20+ZG0Ln8I7fsJzR12gMMnP5BOkyjMX7iVwiYOhQL0wvwpcSadRIbVcQaV5HRYpjUlQ6
+ yGIkm+2OAsFZBipBeP1NXaU/OFRH21iE2qrf9rQ6ZZNLq+FxDMEw9tBjPfdg2sc1p/kZ
+ KeuOoDcMM8nySaJS6TQrHema8jMG8eeatc8wrMxTOLNeUV117qayMDz1qFlg7b4CNjmH
+ PRNA==
+X-Gm-Message-State: ABuFfogxrm1LdWNAAhtiHc3gEII59twXH0nObfqHTSbYbg6XHJafsDgE
+ EmEZ2Y007xVnxoFqdbg2iOPRUA==
+X-Google-Smtp-Source: ACcGV62G2JPQmXqOgvIIP9e5s8n8vLayfXEDRak00s0FuRxIyRBTWOwVJZBPsDOa3fsqURkDKeI7Tg==
+X-Received: by 2002:a17:902:9696:: with SMTP id
+ n22-v6mr289127plp.212.1538552766929; 
+ Wed, 03 Oct 2018 00:46:06 -0700 (PDT)
+Received: from [10.61.2.175] ([122.99.82.10])
+ by smtp.gmail.com with ESMTPSA id m15-v6sm2636263pfk.149.2018.10.03.00.46.03
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Wed, 03 Oct 2018 00:46:05 -0700 (PDT)
+Subject: Re: [PATCH kernel] cxl: Remove unused include
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+References: <20180928063804.35692-1-aik@ozlabs.ru>
+ <875zypu6vg.fsf@concordia.ellerman.id.au>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Openpgp: preference=signencrypt
+Autocrypt: addr=aik@ozlabs.ru; keydata=
+ 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
+Message-ID: <548a710f-b542-b361-b056-74a8d58c5ceb@ozlabs.ru>
+Date: Wed, 3 Oct 2018 17:46:00 +1000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <bbc5f219-614f-b024-0888-8ad216c5eaf8@linux.vnet.ibm.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <875zypu6vg.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,86 +145,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
- Kees Cook <keescook@chromium.org>, Mathieu Malaterre <malat@debian.org>,
- linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
- Pavel Tatashin <pasha.tatashin@oracle.com>, linux-mm@kvack.org,
- Michael Bringmann <mwb@linux.vnet.ibm.com>,
- Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>,
- Juliet Kim <minkim@us.ibm.com>,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- YASUAKI ISHIMATSU <yasu.isimatu@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- Dan Williams <dan.j.williams@intel.com>, Oscar Salvador <osalvador@suse.de>
+Cc: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue 02-10-18 12:45:50, Tyrel Datwyler wrote:
-> On 10/02/2018 11:13 AM, Michael Bringmann wrote:
-> > 
-> > 
-> > On 10/02/2018 11:04 AM, Michal Hocko wrote:
-> >> On Tue 02-10-18 10:14:49, Michael Bringmann wrote:
-> >>> On 10/02/2018 09:59 AM, Michal Hocko wrote:
-> >>>> On Tue 02-10-18 09:51:40, Michael Bringmann wrote:
-> >>>> [...]
-> >>>>> When the device-tree affinity attributes have changed for memory,
-> >>>>> the 'nid' affinity calculated points to a different node for the
-> >>>>> memory block than the one used to install it, previously on the
-> >>>>> source system.  The newly calculated 'nid' affinity may not yet
-> >>>>> be initialized on the target system.  The current memory tracking
-> >>>>> mechanisms do not record the node to which a memory block was
-> >>>>> associated when it was added.  Nathan is looking at adding this
-> >>>>> feature to the new implementation of LMBs, but it is not there
-> >>>>> yet, and won't be present in earlier kernels without backporting a
-> >>>>> significant number of changes.
-> >>>>
-> >>>> Then the patch you have proposed here just papers over a real issue, no?
-> >>>> IIUC then you simply do not remove the memory if you lose the race.
-> >>>
-> >>> The problem occurs when removing memory after an affinity change
-> >>> references a node that was previously unreferenced.  Other code
-> >>> in 'kernel/mm/memory_hotplug.c' deals with initializing an empty
-> >>> node when adding memory to a system.  The 'removing memory' case is
-> >>> specific to systems that perform LPM and allow device-tree changes.
-> >>> The powerpc kernel does not have the option of accepting some PRRN
-> >>> requests and accepting others.  It must perform them all.
-> >>
-> >> I am sorry, but you are still too cryptic for me. Either there is a
-> >> correctness issue and the the patch doesn't really fix anything or the
-> >> final race doesn't make any difference and then the ppc code should be
-> >> explicit about that. Checking the node inside the hotplug core code just
-> >> looks as a wrong layer to mitigate an arch specific problem. I am not
-> >> saying the patch is a no-go but if anything we want a big fat comment
-> >> explaining how this is possible because right now it just points to an
-> >> incorrect API usage.
-> >>
-> >> That being said, this sounds pretty much ppc specific problem and I
-> >> would _prefer_ it to be handled there (along with a big fat comment of
-> >> course).
-> > 
-> > Let me try again.  Regardless of the path to which we get to this condition,
-> > we currently crash the kernel.  This patch changes that to a WARN_ON notice
-> > and continues executing the kernel without shutting down the system.  I saw
-> > the problem during powerpc testing, because that is the focus of my work.
-> > There are other paths to this function besides powerpc.  I feel that the
-> > kernel should keep running instead of halting.
-> 
-> This is still basically a hack to get around a known race. In itself
-> this patch is still worth while in that we shouldn't crash the kernel
-> on a null pointer dereference. However, I think the actual problem
-> still needs to be addressed. We shouldn't run any PRRN events for the
-> source system on the target after a migration. The device tree update
-> should have taken care of telling us about new affinities and what
-> not. Can we just throw out any queued PRRN events when we wake up on
-> the target?
 
-And until a proper fix is developed can we have NODE_DATA test in the
-affected code rather than pollute the generic code with something that
-is essentially a wrong usage of the API? With a big fat warning
-explaining what is going on here?
+
+On 28/09/2018 22:46, Michael Ellerman wrote:
+> Alexey Kardashevskiy <aik@ozlabs.ru> writes:
+>> The included opal.h gives a wrong idea that CXL makes PPC OPAL calls
+>> while it does not so let's remote it.
+> 
+> But it does use eg.
+> 
+>   OPAL_PHB_CAPI_MODE_SNOOP_ON
+>   OPAL_PHB_CAPI_MODE_CAPI
+> 
+> Which come from opal-api.h via opal.h.
+> 
+> So you should at least include opal-api.h.
+
+
+I'd say that since it includes pnv-pci.h (and this is why this patch
+compiles), it should be a different set of values for powernv (which
+would map 1:1 to OPAL_PHB_xxx). The powernv platform knowledge is
+already intimate enough for a driver to have. Dunno, I found this opal.h
+inclusion confusing, that's all.
+
+
+
+> 
+> cheers
+> 
+>> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+>> index b66d832..8cbcbb7 100644
+>> --- a/drivers/misc/cxl/pci.c
+>> +++ b/drivers/misc/cxl/pci.c
+>> @@ -17,7 +17,6 @@
+>>  #include <linux/pci.h>
+>>  #include <linux/of.h>
+>>  #include <linux/delay.h>
+>> -#include <asm/opal.h>
+>>  #include <asm/msi_bitmap.h>
+>>  #include <asm/pnv-pci.h>
+>>  #include <asm/io.h>
+>> -- 
+>> 2.11.0
+
 -- 
-Michal Hocko
-SUSE Labs
+Alexey
