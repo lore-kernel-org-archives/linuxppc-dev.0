@@ -7,55 +7,56 @@ X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B39CCC00449
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 18:56:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B7CAC00449
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 18:58:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2C50220644
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 18:56:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B4B5C20644
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 18:58:46 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="Xo2Q5JSE"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2C50220644
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="n1bdkk0n"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B4B5C20644
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nvidia.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42QQGd1GZXzF38q
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 04:56:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42QQKJ3Kf4zF3BB
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 04:58:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="Xo2Q5JSE";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="n1bdkk0n";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=nvidia.com
- (client-ip=216.228.121.143; helo=hqemgate14.nvidia.com;
+ (client-ip=216.228.121.64; helo=hqemgate15.nvidia.com;
  envelope-from=mhairgrove@nvidia.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="Xo2Q5JSE"; 
+ unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="n1bdkk0n"; 
  dkim-atps=neutral
-Received: from hqemgate14.nvidia.com (hqemgate14.nvidia.com [216.228.121.143])
+Received: from hqemgate15.nvidia.com (hqemgate15.nvidia.com [216.228.121.64])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42QQ9S5xTnzF37w
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2018 04:51:56 +1000 (AEST)
-Received: from hqpgpgate101.nvidia.com (Not Verified[216.228.121.13]) by
- hqemgate14.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
- id <B5bb50fc70000>; Wed, 03 Oct 2018 11:51:51 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42QQ9T5sqXzF37y
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2018 04:51:57 +1000 (AEST)
+Received: from hqpgpgate102.nvidia.com (Not Verified[216.228.121.13]) by
+ hqemgate15.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
+ id <B5bb50faf0001>; Wed, 03 Oct 2018 11:51:27 -0700
 Received: from HQMAIL101.nvidia.com ([172.20.161.6])
- by hqpgpgate101.nvidia.com (PGP Universal service);
- Wed, 03 Oct 2018 11:51:53 -0700
+ by hqpgpgate102.nvidia.com (PGP Universal service);
+ Wed, 03 Oct 2018 11:51:52 -0700
 X-PGP-Universal: processed;
- by hqpgpgate101.nvidia.com on Wed, 03 Oct 2018 11:51:53 -0700
+ by hqpgpgate102.nvidia.com on Wed, 03 Oct 2018 11:51:52 -0700
 Received: from localhost.localdomain (10.110.48.80) by HQMAIL101.nvidia.com
  (172.20.187.10) with Microsoft SMTP Server (TLS) id 15.0.1395.4; Wed, 3 Oct
  2018 18:51:52 +0000
 From: Mark Hairgrove <mhairgrove@nvidia.com>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v2 2/3] powerpc/powernv/npu: Use size-based ATSD invalidates
-Date: Wed, 3 Oct 2018 11:51:33 -0700
-Message-ID: <1538592694-18739-3-git-send-email-mhairgrove@nvidia.com>
+Subject: [PATCH v2 1/3] powerpc/powernv/npu: Reduce eieio usage when issuing
+ ATSD invalidates
+Date: Wed, 3 Oct 2018 11:51:32 -0700
+Message-ID: <1538592694-18739-2-git-send-email-mhairgrove@nvidia.com>
 X-Mailer: git-send-email 1.7.2.5
 In-Reply-To: <1538592694-18739-1-git-send-email-mhairgrove@nvidia.com>
 References: <1538592694-18739-1-git-send-email-mhairgrove@nvidia.com>
@@ -66,16 +67,16 @@ X-ClientProxiedBy: HQMAIL103.nvidia.com (172.20.187.11) To
  HQMAIL101.nvidia.com (172.20.187.10)
 Content-Type: text/plain
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
- t=1538592711; bh=Sj4dABW1Dx4ooVnph1LJ6efBbzrBHSN/d9n6uMt6kiY=;
+ t=1538592687; bh=f6S8No1I0d8qHAbCAT1PoBbJKFQOePu8kIadRBZY/Yc=;
  h=X-PGP-Universal:From:To:CC:Subject:Date:Message-ID:X-Mailer:
  In-Reply-To:References:X-NVConfidentiality:MIME-Version:
  X-Originating-IP:X-ClientProxiedBy:Content-Type;
- b=Xo2Q5JSEHrdx7NzCJzUrj48LUlCoy9xK+5NQjl3PMeGO5Hu3JW141RX7XM8XUjbvF
- 6mgNClTFial8+hNnUHuykr5SR+MOu1GFhmNLvP8BEwxNrCKDl0/V3s6pHc5eT0DFor
- qioTYN/2QFLRMwJiiV/zvoVzHfsZLqU83x4eAJOhO1a75GQcZI8rzxJzwZ+T9OX08Y
- dmEAnQKC+d/Im/+ErAuoZ5aBK4ipkEEZ1SrjJsLcPMag55NusjeWP/W+EJ6ZprhzPV
- 9BfDy9T0n0G24VBxLWWhjwcimzhhSLOoqD+x41HiZo7gfdNCPAbZ0ELooZUUj+oejQ
- pz/eNSR4rMuAw==
+ b=n1bdkk0n7ZWv6ERtfQUPrztVAhqSvCHdN75j/sHQEfLmH+dpbR/qJEOPy6LV/I8YV
+ 1lzr6QY4QtGX0XLT3SZZ6Su28SeRSEns9qRQY1ayR8amgChubQoejAAvjSHul+U0Uh
+ DsyieB81/QhxuuxyyErHdn00eFUzLF/i2QaZnOAzwKpd+EOlafmIMpf5KyBkSZqFE5
+ o7Hb4MVHr8bVSrYP9QJ3R29PgmJYu1fXj1s2XogAyJ3FFkshM2sHMlor8ujtNL/ET4
+ rQnG3ej0lDi3xT0Aqfe/+B8vK+DaGwWCDYjTb5tx0dF3zm9afbLtYN0Il999i7z9fU
+ +V7v6SUP94aCA==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,243 +94,183 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Prior to this change only two types of ATSDs were issued to the NPU:
-invalidates targeting a single page and invalidates targeting the whole
-address space. The crossover point happened at the configurable
-atsd_threshold which defaulted to 2M. Invalidates that size or smaller
-would issue per-page invalidates for the whole range.
+There are two types of ATSDs issued to the NPU: invalidates targeting a
+specific virtual address and invalidates targeting the whole address
+space. In both cases prior to this change, the sequence was:
 
-The NPU supports more invalidation sizes however: 64K, 2M, 1G, and all.
-These invalidates target addresses aligned to their size. 2M is a common
-invalidation size for GPU-enabled applications because that is a GPU
-page size, so reducing the number of invalidates by 32x in that case is a
-clear improvement.
+    for each NPU
+        - Write the target address to the XTS_ATSD_AVA register
+        - EIEIO
+        - Write the launch value to issue the ATSD
 
-ATSD latency is high in general so now we always issue a single invalidate
-rather than multiple. This will over-invalidate in some cases, but for any
-invalidation size over 2M it matches or improves the prior behavior.
-There's also an improvement for single-page invalidates since the prior
-version issued two invalidates for that case instead of one.
+First, a target address is not required when invalidating the whole
+address space, so that write and the EIEIO have been removed. The AP
+(size) field in the launch is not needed either.
 
-With this change all issued ATSDs now perform a flush, so the flush
-parameter has been removed from all the helpers.
+Second, for per-address invalidates the above sequence is inefficient in
+the common case of multiple NPUs because an EIEIO is issued per NPU. This
+unnecessarily forces the launches of later ATSDs to be ordered with the
+launches of earlier ones. The new sequence only issues a single EIEIO:
 
-To show the benefit here are some performance numbers from a
-microbenchmark which creates a 1G allocation then uses mprotect with
-PROT_NONE to trigger invalidates in strides across the allocation.
+    for each NPU
+        - Write the target address to the XTS_ATSD_AVA register
+    EIEIO
+    for each NPU
+        - Write the launch value to issue the ATSD
 
-One NPU (1 GPU):
+Performance results were gathered using a microbenchmark which creates a
+1G allocation then uses mprotect with PROT_NONE to trigger invalidates in
+strides across the allocation.
 
-         mprotect rate (GB/s)
-Stride   Before      After      Speedup
-64K         5.3        5.6           5%
-1M         39.3       57.4          46%
-2M         49.7       82.6          66%
-4M        286.6      285.7           0%
+With only a single NPU active (one GPU) the difference is in the noise for
+both types of invalidates (+/-1%).
 
-Two NPUs (6 GPUs):
+With two NPUs active (on a 6-GPU system) the effect is more noticeable:
 
          mprotect rate (GB/s)
 Stride   Before      After      Speedup
-64K         6.5        7.4          13%
-1M         33.4       67.9         103%
-2M         38.7       93.1         141%
-4M        356.7      354.6          -1%
-
-Anything over 2M is roughly the same as before since both cases issue a
-single ATSD.
+64K         5.9        6.5          10%
+1M         31.2       33.4           7%
+2M         36.3       38.7           7%
+4M        322.6      356.7          11%
 
 Signed-off-by: Mark Hairgrove <mhairgrove@nvidia.com>
 ---
- arch/powerpc/platforms/powernv/npu-dma.c |  103 ++++++++++++++++--------------
- 1 files changed, 55 insertions(+), 48 deletions(-)
+ arch/powerpc/platforms/powernv/npu-dma.c |   99 ++++++++++++++---------------
+ 1 files changed, 48 insertions(+), 51 deletions(-)
 
 diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
-index c8f438a..e4c0fab 100644
+index 8006c54..c8f438a 100644
 --- a/arch/powerpc/platforms/powernv/npu-dma.c
 +++ b/arch/powerpc/platforms/powernv/npu-dma.c
-@@ -18,6 +18,7 @@
- #include <linux/memblock.h>
- #include <linux/iommu.h>
- #include <linux/debugfs.h>
-+#include <linux/sizes.h>
- 
- #include <asm/debugfs.h>
- #include <asm/tlb.h>
-@@ -458,8 +459,7 @@ static void put_mmio_atsd_reg(struct npu *npu, int reg)
- #define XTS_ATSD_AVA    1
- #define XTS_ATSD_STAT   2
- 
--static unsigned long get_atsd_launch_val(unsigned long pid, unsigned long psize,
--					bool flush)
-+static unsigned long get_atsd_launch_val(unsigned long pid, unsigned long psize)
- {
- 	unsigned long launch = 0;
- 
-@@ -477,8 +477,7 @@ static unsigned long get_atsd_launch_val(unsigned long pid, unsigned long psize,
- 	/* PID */
- 	launch |= pid << PPC_BITLSHIFT(38);
- 
--	/* No flush */
--	launch |= !flush << PPC_BITLSHIFT(39);
-+	/* Leave "No flush" (bit 39) 0 so every ATSD performs a flush */
- 
- 	return launch;
- }
-@@ -501,23 +500,22 @@ static void mmio_atsd_regs_write(struct mmio_atsd_reg
+@@ -454,79 +454,76 @@ static void put_mmio_atsd_reg(struct npu *npu, int reg)
  }
  
- static void mmio_invalidate_pid(struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS],
--				unsigned long pid, bool flush)
-+				unsigned long pid)
+ /* MMIO ATSD register offsets */
+-#define XTS_ATSD_AVA  1
+-#define XTS_ATSD_STAT 2
++#define XTS_ATSD_LAUNCH 0
++#define XTS_ATSD_AVA    1
++#define XTS_ATSD_STAT   2
+ 
+-static void mmio_launch_invalidate(struct mmio_atsd_reg *mmio_atsd_reg,
+-				unsigned long launch, unsigned long va)
++static unsigned long get_atsd_launch_val(unsigned long pid, unsigned long psize,
++					bool flush)
  {
--	unsigned long launch = get_atsd_launch_val(pid, MMU_PAGE_COUNT, flush);
-+	unsigned long launch = get_atsd_launch_val(pid, MMU_PAGE_COUNT);
+-	struct npu *npu = mmio_atsd_reg->npu;
+-	int reg = mmio_atsd_reg->reg;
++	unsigned long launch = 0;
  
- 	/* Invalidating the entire process doesn't use a va */
- 	mmio_atsd_regs_write(mmio_atsd_reg, XTS_ATSD_LAUNCH, launch);
- }
- 
--static void mmio_invalidate_va(struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS],
--			unsigned long va, unsigned long pid, bool flush)
-+static void mmio_invalidate_range(struct mmio_atsd_reg
-+			mmio_atsd_reg[NV_MAX_NPUS], unsigned long pid,
-+			unsigned long start, unsigned long psize)
- {
--	unsigned long launch;
--
--	launch = get_atsd_launch_val(pid, mmu_virtual_psize, flush);
-+	unsigned long launch = get_atsd_launch_val(pid, psize);
- 
- 	/* Write all VAs first */
--	mmio_atsd_regs_write(mmio_atsd_reg, XTS_ATSD_AVA, va);
-+	mmio_atsd_regs_write(mmio_atsd_reg, XTS_ATSD_AVA, start);
- 
- 	/* Issue one barrier for all address writes */
- 	eieio();
-@@ -609,14 +607,36 @@ static void release_atsd_reg(struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS])
- }
- 
- /*
-- * Invalidate either a single address or an entire PID depending on
-- * the value of va.
-+ * Invalidate a virtual address range
-  */
--static void mmio_invalidate(struct npu_context *npu_context, int va,
--			unsigned long address, bool flush)
-+static void mmio_invalidate(struct npu_context *npu_context,
-+			unsigned long start, unsigned long size)
- {
- 	struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS];
- 	unsigned long pid = npu_context->mm->context.id;
-+	unsigned long atsd_start = 0;
-+	unsigned long end = start + size - 1;
-+	int atsd_psize = MMU_PAGE_COUNT;
-+
-+	/*
-+	 * Convert the input range into one of the supported sizes. If the range
-+	 * doesn't fit, use the next larger supported size. Invalidation latency
-+	 * is high, so over-invalidation is preferred to issuing multiple
-+	 * invalidates.
-+	 *
-+	 * A 4K page size isn't supported by NPU/GPU ATS, so that case is
-+	 * ignored.
-+	 */
-+	if (size == SZ_64K) {
-+		atsd_start = start;
-+		atsd_psize = MMU_PAGE_64K;
-+	} else if (ALIGN_DOWN(start, SZ_2M) == ALIGN_DOWN(end, SZ_2M)) {
-+		atsd_start = ALIGN_DOWN(start, SZ_2M);
-+		atsd_psize = MMU_PAGE_2M;
-+	} else if (ALIGN_DOWN(start, SZ_1G) == ALIGN_DOWN(end, SZ_1G)) {
-+		atsd_start = ALIGN_DOWN(start, SZ_1G);
-+		atsd_psize = MMU_PAGE_1G;
+-	__raw_writeq_be(va, npu->mmio_atsd_regs[reg] + XTS_ATSD_AVA);
+-	eieio();
+-	__raw_writeq_be(launch, npu->mmio_atsd_regs[reg]);
++	if (psize == MMU_PAGE_COUNT) {
++		/* IS set to invalidate entire matching PID */
++		launch |= PPC_BIT(12);
++	} else {
++		/* AP set to invalidate region of psize */
++		launch |= (u64)mmu_get_ap(psize) << PPC_BITLSHIFT(17);
 +	}
- 
- 	if (npu_context->nmmu_flush)
- 		/*
-@@ -631,23 +651,25 @@ static void mmio_invalidate(struct npu_context *npu_context, int va,
- 	 * an invalidate.
- 	 */
- 	acquire_atsd_reg(npu_context, mmio_atsd_reg);
--	if (va)
--		mmio_invalidate_va(mmio_atsd_reg, address, pid, flush);
 +
-+	if (atsd_psize == MMU_PAGE_COUNT)
-+		mmio_invalidate_pid(mmio_atsd_reg, pid);
- 	else
--		mmio_invalidate_pid(mmio_atsd_reg, pid, flush);
-+		mmio_invalidate_range(mmio_atsd_reg, pid, atsd_start,
-+					atsd_psize);
- 
- 	mmio_invalidate_wait(mmio_atsd_reg);
--	if (flush) {
--		/*
--		 * The GPU requires two flush ATSDs to ensure all entries have
--		 * been flushed. We use PID 0 as it will never be used for a
--		 * process on the GPU.
--		 */
--		mmio_invalidate_pid(mmio_atsd_reg, 0, true);
--		mmio_invalidate_wait(mmio_atsd_reg);
--		mmio_invalidate_pid(mmio_atsd_reg, 0, true);
--		mmio_invalidate_wait(mmio_atsd_reg);
--	}
++	/* PRS set to process-scoped */
++	launch |= PPC_BIT(13);
 +
-+	/*
-+	 * The GPU requires two flush ATSDs to ensure all entries have been
-+	 * flushed. We use PID 0 as it will never be used for a process on the
-+	 * GPU.
-+	 */
-+	mmio_invalidate_pid(mmio_atsd_reg, 0);
-+	mmio_invalidate_wait(mmio_atsd_reg);
-+	mmio_invalidate_pid(mmio_atsd_reg, 0);
-+	mmio_invalidate_wait(mmio_atsd_reg);
++	/* PID */
++	launch |= pid << PPC_BITLSHIFT(38);
 +
- 	release_atsd_reg(mmio_atsd_reg);
++	/* No flush */
++	launch |= !flush << PPC_BITLSHIFT(39);
++
++	return launch;
  }
  
-@@ -664,7 +686,7 @@ static void pnv_npu2_mn_release(struct mmu_notifier *mn,
- 	 * There should be no more translation requests for this PID, but we
- 	 * need to ensure any entries for it are removed from the TLB.
- 	 */
--	mmio_invalidate(npu_context, 0, 0, true);
-+	mmio_invalidate(npu_context, 0, ~0UL);
- }
- 
- static void pnv_npu2_mn_change_pte(struct mmu_notifier *mn,
-@@ -673,8 +695,7 @@ static void pnv_npu2_mn_change_pte(struct mmu_notifier *mn,
- 				pte_t pte)
+-static void mmio_invalidate_pid(struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS],
+-				unsigned long pid, bool flush)
++static void mmio_atsd_regs_write(struct mmio_atsd_reg
++			mmio_atsd_reg[NV_MAX_NPUS], unsigned long offset,
++			unsigned long val)
  {
- 	struct npu_context *npu_context = mn_to_npu_context(mn);
--
--	mmio_invalidate(npu_context, 1, address, true);
-+	mmio_invalidate(npu_context, address, PAGE_SIZE);
- }
+-	int i;
+-	unsigned long launch;
++	struct npu *npu;
++	int i, reg;
  
- static void pnv_npu2_mn_invalidate_range(struct mmu_notifier *mn,
-@@ -682,21 +703,7 @@ static void pnv_npu2_mn_invalidate_range(struct mmu_notifier *mn,
- 					unsigned long start, unsigned long end)
- {
- 	struct npu_context *npu_context = mn_to_npu_context(mn);
--	unsigned long address;
+ 	for (i = 0; i <= max_npu2_index; i++) {
+-		if (mmio_atsd_reg[i].reg < 0)
++		reg = mmio_atsd_reg[i].reg;
++		if (reg < 0)
+ 			continue;
+ 
+-		/* IS set to invalidate matching PID */
+-		launch = PPC_BIT(12);
 -
--	if (end - start > atsd_threshold) {
--		/*
--		 * Just invalidate the entire PID if the address range is too
--		 * large.
--		 */
--		mmio_invalidate(npu_context, 0, 0, true);
--	} else {
--		for (address = start; address < end; address += PAGE_SIZE)
--			mmio_invalidate(npu_context, 1, address, false);
+-		/* PRS set to process-scoped */
+-		launch |= PPC_BIT(13);
 -
--		/* Do the flush only on the final addess == end */
--		mmio_invalidate(npu_context, 1, address, true);
+-		/* AP */
+-		launch |= (u64)
+-			mmu_get_ap(mmu_virtual_psize) << PPC_BITLSHIFT(17);
+-
+-		/* PID */
+-		launch |= pid << PPC_BITLSHIFT(38);
++		npu = mmio_atsd_reg[i].npu;
++		__raw_writeq_be(val, npu->mmio_atsd_regs[reg] + offset);
++	}
++}
+ 
+-		/* No flush */
+-		launch |= !flush << PPC_BITLSHIFT(39);
++static void mmio_invalidate_pid(struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS],
++				unsigned long pid, bool flush)
++{
++	unsigned long launch = get_atsd_launch_val(pid, MMU_PAGE_COUNT, flush);
+ 
+-		/* Invalidating the entire process doesn't use a va */
+-		mmio_launch_invalidate(&mmio_atsd_reg[i], launch, 0);
 -	}
-+	mmio_invalidate(npu_context, start, end - start);
++	/* Invalidating the entire process doesn't use a va */
++	mmio_atsd_regs_write(mmio_atsd_reg, XTS_ATSD_LAUNCH, launch);
  }
  
- static const struct mmu_notifier_ops nv_nmmu_notifier_ops = {
+ static void mmio_invalidate_va(struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS],
+ 			unsigned long va, unsigned long pid, bool flush)
+ {
+-	int i;
+ 	unsigned long launch;
+ 
+-	for (i = 0; i <= max_npu2_index; i++) {
+-		if (mmio_atsd_reg[i].reg < 0)
+-			continue;
+-
+-		/* IS set to invalidate target VA */
+-		launch = 0;
++	launch = get_atsd_launch_val(pid, mmu_virtual_psize, flush);
+ 
+-		/* PRS set to process scoped */
+-		launch |= PPC_BIT(13);
++	/* Write all VAs first */
++	mmio_atsd_regs_write(mmio_atsd_reg, XTS_ATSD_AVA, va);
+ 
+-		/* AP */
+-		launch |= (u64)
+-			mmu_get_ap(mmu_virtual_psize) << PPC_BITLSHIFT(17);
+-
+-		/* PID */
+-		launch |= pid << PPC_BITLSHIFT(38);
+-
+-		/* No flush */
+-		launch |= !flush << PPC_BITLSHIFT(39);
++	/* Issue one barrier for all address writes */
++	eieio();
+ 
+-		mmio_launch_invalidate(&mmio_atsd_reg[i], launch, va);
+-	}
++	/* Launch */
++	mmio_atsd_regs_write(mmio_atsd_reg, XTS_ATSD_LAUNCH, launch);
+ }
+ 
+ #define mn_to_npu_context(x) container_of(x, struct npu_context, mn)
 -- 
 1.7.2.5
 
