@@ -2,58 +2,82 @@ Return-Path: <SRS0=1oDC=MP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D4BBC00449
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 18:19:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E6CDAC00449
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 18:36:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 051052089F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 18:19:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 051052089F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 3F63D206B2
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 18:36:35 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="I90WFM0T"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3F63D206B2
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nvidia.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42QPRS379mzF39S
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 04:19:00 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42QPqj1LsYzF38y
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 04:36:33 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com;
- envelope-from=alex.williamson@redhat.com; receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="I90WFM0T";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42QPPH6QTTzF37w
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2018 04:17:06 +1000 (AEST)
-Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.phx2.redhat.com
- [10.5.11.22])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id D60E330BDA0B;
- Wed,  3 Oct 2018 18:17:03 +0000 (UTC)
-Received: from t450s.home (ovpn-116-90.phx2.redhat.com [10.3.116.90])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 05F1C106A780;
- Wed,  3 Oct 2018 18:17:02 +0000 (UTC)
-Date: Wed, 3 Oct 2018 12:17:02 -0600
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [RFC PATCH kernel] vfio/spapr_tce: Get rid of possible infinite
- loop
-Message-ID: <20181003121702.13e66bdd@t450s.home>
-In-Reply-To: <20181002032231.7494-1-aik@ozlabs.ru>
-References: <20181002032231.7494-1-aik@ozlabs.ru>
+ spf=pass (mailfrom) smtp.mailfrom=nvidia.com
+ (client-ip=216.228.121.143; helo=hqemgate14.nvidia.com;
+ envelope-from=mhairgrove@nvidia.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=nvidia.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="I90WFM0T"; 
+ dkim-atps=neutral
+Received: from hqemgate14.nvidia.com (hqemgate14.nvidia.com [216.228.121.143])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42QPmt20wKzF34W
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2018 04:34:05 +1000 (AEST)
+Received: from hqpgpgate101.nvidia.com (Not Verified[216.228.121.13]) by
+ hqemgate14.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
+ id <B5bb50b960000>; Wed, 03 Oct 2018 11:33:58 -0700
+Received: from HQMAIL101.nvidia.com ([172.20.161.6])
+ by hqpgpgate101.nvidia.com (PGP Universal service);
+ Wed, 03 Oct 2018 11:34:00 -0700
+X-PGP-Universal: processed;
+ by hqpgpgate101.nvidia.com on Wed, 03 Oct 2018 11:34:00 -0700
+Received: from mdh-linux64-2.nvidia.com (172.20.13.39) by HQMAIL101.nvidia.com
+ (172.20.187.10) with Microsoft SMTP Server (TLS) id 15.0.1395.4;
+ Wed, 3 Oct 2018 18:33:59 +0000
+Date: Wed, 3 Oct 2018 11:33:50 -0700
+From: Mark Hairgrove <mhairgrove@nvidia.com>
+To: Alistair Popple <alistair@popple.id.au>
+Subject: Re: [PATCH 2/3] powerpc/powernv/npu: Use size-based ATSD invalidates
+In-Reply-To: <3711069.TlgilHPQgk@new-mexico>
+Message-ID: <alpine.DEB.2.00.1810031128270.18560@mdh-linux64-2.nvidia.com>
+References: <1538090591-28519-1-git-send-email-mhairgrove@nvidia.com>
+ <1843554.67Higpl3JC@new-mexico>
+ <alpine.DEB.2.00.1810021750110.16676@mdh-linux64-2.nvidia.com>
+ <3711069.TlgilHPQgk@new-mexico>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+X-NVConfidentiality: public
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Scanned-By: MIMEDefang 2.84 on 10.5.11.22
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.46]); Wed, 03 Oct 2018 18:17:04 +0000 (UTC)
+X-Originating-IP: [172.20.13.39]
+X-ClientProxiedBy: HQMAIL107.nvidia.com (172.20.187.13) To
+ HQMAIL101.nvidia.com (172.20.187.10)
+Content-Type: text/plain; charset="US-ASCII"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
+ t=1538591638; bh=4RBQUt62qOuCzGO49XLyzMv48wbVM6C8T1BNFAV8L6k=;
+ h=X-PGP-Universal:Date:From:To:CC:Subject:In-Reply-To:Message-ID:
+ References:User-Agent:X-NVConfidentiality:MIME-Version:
+ X-Originating-IP:X-ClientProxiedBy:Content-Type;
+ b=I90WFM0T1HYmazG5p9eWWZdNud8TvRvk0CDeTKbtU3i0HWora05zj+RhyhIIEtGFh
+ OBGf6Uh80MT32zEzr9stVaAbR7VLpjl5RsojdtR9ycRFqhXQgvS10UQeJLnYYRigLu
+ 6h4xi8Qh3D98Z94hx4tabU8f7dHmstLo+S0Fl/iachcOBHyZlcQp5fnYB9N3+Tt34E
+ E4x9ZA2uf4XvO004ADh545zVbZuc6OdLqFqkua8Ol6v8DdNOS4JktGpViE437SpVA5
+ +Uiy2dMQ/SO+YyJDyFofwKqHX6F/BLRUVYEsxt9JNMbyavTaV5h9HvwE3VFpNnUTzX
+ Nlj3dI9r+/Txg==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,65 +89,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, Reza Arbab <arbab@us.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue,  2 Oct 2018 13:22:31 +1000
-Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
 
-> As a part of cleanup, the SPAPR TCE IOMMU subdriver releases preregistered
-> memory. If there is a bug in memory release, the loop in
-> tce_iommu_release() becomes infinite; this actually happened to me.
+
+On Wed, 3 Oct 2018, Alistair Popple wrote:
+
+> > > 
+> > > We also support 4K page sizes on PPC. If I am not mistaken this means every ATSD
+> > > would invalidate the entire GPU TLB for a the given PID on those systems. Could
+> > > we change the above check to `if (size <= PAGE_64K)` to avoid this?
+> > 
+> > PPC supports 4K pages but the GPU ATS implementation does not. For that
+> > reason I didn't bother handling invalidates smaller than 64K. I'll add a
+> > comment on that.
 > 
-> This makes the loop finite and prints a warning on every failure to make
-> the code more bug prone.
+> Interesting, I was not aware of that limitation. Do you know if it is a
+> SW/driver limitation or a HW limitation?
+
+HW.
+
 > 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
->  drivers/vfio/vfio_iommu_spapr_tce.c | 10 +++-------
->  1 file changed, 3 insertions(+), 7 deletions(-)
+> > I don't know that this requirement is enforced anywhere though. I could
+> > add a PAGE_SIZE == 64K check to pnv_npu2_init_context if you think it
+> > would be useful.
+> 
+> Given it's a static kernel build parameter perhaps it makes more sense to do the
+> check as part of the driver build in a conftest rather than a runtime failure?
 
-Should this have a stable/fixes tag?  Looks like it's relevant to:
-
-4b6fad7097f8 powerpc/mm/iommu, vfio/spapr: Put pages on VFIO container shutdown
-
-Also, not sure who you're wanting to take this since it was sent to ppc
-lists.  If it's me, let me know, otherwise
-
-Acked-by: Alex Williamson <alex.williamson@redhat.com>
-
-Thanks,
-Alex
-
-> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-> index b1a8ab3..ece0651 100644
-> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
-> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> @@ -371,6 +371,7 @@ static void tce_iommu_release(void *iommu_data)
->  {
->  	struct tce_container *container = iommu_data;
->  	struct tce_iommu_group *tcegrp;
-> +	struct tce_iommu_prereg *tcemem, *tmtmp;
->  	long i;
->  
->  	while (tce_groups_attached(container)) {
-> @@ -393,13 +394,8 @@ static void tce_iommu_release(void *iommu_data)
->  		tce_iommu_free_table(container, tbl);
->  	}
->  
-> -	while (!list_empty(&container->prereg_list)) {
-> -		struct tce_iommu_prereg *tcemem;
-> -
-> -		tcemem = list_first_entry(&container->prereg_list,
-> -				struct tce_iommu_prereg, next);
-> -		WARN_ON_ONCE(tce_iommu_prereg_free(container, tcemem));
-> -	}
-> +	list_for_each_entry_safe(tcemem, tmtmp, &container->prereg_list, next)
-> +		WARN_ON(tce_iommu_prereg_free(container, tcemem));
->  
->  	tce_iommu_disable(container);
->  	if (container->mm)
-
+Sure, we can do it in the driver. I'll just stick with a comment for the
+kernel.
