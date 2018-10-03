@@ -2,93 +2,65 @@ Return-Path: <SRS0=1oDC=MP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0BB00C00449
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 06:11:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 41EA1C00449
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 06:24:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4E15D20684
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 06:11:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B632D20652
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 06:24:44 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="tbIWLiI1"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4E15D20684
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="S8PEe2r+"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B632D20652
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42Q5JJ692PzF39y
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 16:11:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Q5bG4ZGzzF3G3
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Oct 2018 16:24:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="tbIWLiI1";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="S8PEe2r+";
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::544; helo=mail-pg1-x544.google.com;
- envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="tbIWLiI1"; 
- dkim-atps=neutral
-Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
- [IPv6:2607:f8b0:4864:20::544])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Q5FW1qcxzF39J
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Oct 2018 16:09:18 +1000 (AEST)
-Received: by mail-pg1-x544.google.com with SMTP id g2-v6so1040368pgu.11
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Oct 2018 23:09:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=6W1YNU4j3vrKALU35G2VMZ7ZB5cTZtrjn/Eb0TYSvOo=;
- b=tbIWLiI10SP0lQLZ5qeqKIuaQCw06Hi0D1BUwSS+UnSEDfc3NWq6ScX/Ks2zApFYBR
- ZKJ+CBDZHrtSxMvA/yoF+4knyMQ+fZj93FiYY2azxIqzHt70c0b81Su/7Sw5GU6qrG+H
- qfFuNRt5aJPOjNuZh5i5kmH4rbT1WA26lqTOMWmGaEICDPCgFe0BAbagMTLx8HyxfyB4
- LdN1evoERBEvT86yqEU2639FGz3+OSsEkNfYyNu+iKkVm6Y48w/IkphdNyWcosWf1Wt5
- vSiWtvP1gtgxrwdKRPQma+gb+3loypRX02LrzGeJ5SDg23is+zsqEboP8OvO7kQ90naX
- QeEw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=6W1YNU4j3vrKALU35G2VMZ7ZB5cTZtrjn/Eb0TYSvOo=;
- b=EraT+7vyNMMCZXn7qrcFISyzzOJDHp+sieHOywTaN7XDkyx2rB4HMI42WeSNH8stCv
- KqzUWt8v5UdMyUMJIayzAPCyNGCc1cIkjf+NK8GFpMDziAaFLF7Tejg++DJ7mp+bfZMO
- bC6akLCvjuaGAlO9r96Hinbjf6XjcYoA0T7GjoDx1woMulsEDsBzOG5icWqb5mQldJJR
- cFGnLB/ATskONpE30QKbYo1K8MLIx4gi502U9kFW9/C4dSh8VRo/+Ibdjw9f5IYAPLdt
- 4JPtmoXUWD6qndOODuKwd+m1SR0TPQOn6z4BE/COvpwsP0UjmB2s7zaZ1X6f/blMituD
- oO4g==
-X-Gm-Message-State: ABuFfojCXGS/1KuZi3FOXgY7TGI7F37tYIWrrpzMX1gnGoCRl+EUqMgF
- XbodR231kRw9GtC1PCLqTno=
-X-Google-Smtp-Source: ACcGV61X3O2RUZdqxlCZ0k5cQiWkXcO1LhYNBb0IyswV9LI0v7UJBkVrJMSmMvNlA6ncgEYMDWrkhQ==
-X-Received: by 2002:a62:6547:: with SMTP id
- z68-v6mr19654039pfb.20.1538546956850; 
- Tue, 02 Oct 2018 23:09:16 -0700 (PDT)
-Received: from roar.ozlabs.ibm.com (60-240-189-67.tpgi.com.au. [60.240.189.67])
- by smtp.gmail.com with ESMTPSA id y1-v6sm688097pfy.89.2018.10.02.23.09.13
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Tue, 02 Oct 2018 23:09:16 -0700 (PDT)
-Date: Wed, 3 Oct 2018 16:09:11 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Christophe LEROY <christophe.leroy@c-s.fr>
-Subject: Re: [RFC PATCH v3 5/7] powerpc: 'current_set' is now a table of
- task_struct pointers
-Message-ID: <20181003160911.18fb0c60@roar.ozlabs.ibm.com>
-In-Reply-To: <0336ff43-55ac-067b-23a9-4cb4b2fd38f3@c-s.fr>
-References: <cover.1538396658.git.christophe.leroy@c-s.fr>
- <acc40cfa715e398d578371857dbf65882ad72c0f.1538396659.git.christophe.leroy@c-s.fr>
- <20181003154101.0b46956d@roar.ozlabs.ibm.com>
- <0336ff43-55ac-067b-23a9-4cb4b2fd38f3@c-s.fr>
-X-Mailer: Claws Mail 3.17.0 (GTK+ 2.24.32; x86_64-pc-linux-gnu)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Q5X262KZzF3BG
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Oct 2018 16:21:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=gibson.dropbear.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
+ header.b="S8PEe2r+"; dkim-atps=neutral
+Received: by ozlabs.org (Postfix)
+ id 42Q5X25301zB3sq; Wed,  3 Oct 2018 16:21:54 +1000 (AEST)
+Received: by ozlabs.org (Postfix, from userid 1007)
+ id 42Q5X24TwtzB2xZ; Wed,  3 Oct 2018 16:21:53 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=gibson.dropbear.id.au; s=201602; t=1538547714;
+ bh=DJuf++Vl7tWavwXCVSpRzJlKb6+ZMEjMRFpqwqftxZo=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=S8PEe2r+kVxSHPedo0Uw/uATAMf72e9aBWfNAyM/wvGCJohBs1nKRDwWoKy5hTS/O
+ XdFnpGjI1/fPnY0ioUjERLc3KctxA1azMXwKm4WnHG+gOAY2iUF7CCylJjNpqrfit7
+ 4gqCpBMWeclyhDqxAbtIpzRAZJr7du/zoMe57Ils=
+Date: Wed, 3 Oct 2018 16:07:36 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Paul Mackerras <paulus@ozlabs.org>
+Subject: Re: [PATCH v3 28/33] KVM: PPC: Book3S HV: Sanitise hv_regs on nested
+ guest entry
+Message-ID: <20181003060736.GU1886@umbus.fritz.box>
+References: <1538479892-14835-1-git-send-email-paulus@ozlabs.org>
+ <1538479892-14835-29-git-send-email-paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="GAoked8QSizNecZ5"
+Content-Disposition: inline
+In-Reply-To: <1538479892-14835-29-git-send-email-paulus@ozlabs.org>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,55 +72,127 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- aneesh.kumar@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 3 Oct 2018 08:00:43 +0200
-Christophe LEROY <christophe.leroy@c-s.fr> wrote:
 
-> Le 03/10/2018 =C3=A0 07:41, Nicholas Piggin a =C3=A9crit=C2=A0:
-> > On Mon,  1 Oct 2018 12:30:27 +0000 (UTC)
-> > Christophe Leroy <christophe.leroy@c-s.fr> wrote:
-> >  =20
-> >> The table of pointers 'current_set' has been used for retrieving
-> >> the stack and current. They used to be thread_info pointers as
-> >> they were pointing to the stack and current was taken from the
-> >> 'task' field of the thread_info.
-> >>
-> >> Now, the pointers of 'current_set' table are now both pointers
-> >> to task_struct and pointers to thread_info.
-> >>
-> >> As they are used to get current, and the stack pointer is
-> >> retrieved from current's stack field, this patch changes
-> >> their type to task_struct, and renames secondary_ti to
-> >> secondary_current. =20
-> >=20
-> > I'm not sure if current_set is actually needed is it? Because
-> > 64-bit already initializes paca->ksave / PACAKSAVE. That might
-> > be a cleanup to do after your series. =20
+--GAoked8QSizNecZ5
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Tue, Oct 02, 2018 at 09:31:27PM +1000, Paul Mackerras wrote:
+> From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
 >=20
-> head_64.S contains:
+> restore_hv_regs() is used to copy the hv_regs L1 wants to set to run the
+> nested (L2) guest into the vcpu structure. We need to sanitise these
+> values to ensure we don't let the L1 guest hypervisor do things we don't
+> want it to.
 >=20
-> __secondary_start:
-> 	/* Set thread priority to MEDIUM */
-> 	HMT_MEDIUM
+> We don't let data address watchpoints or completed instruction address
+> breakpoints be set to match in hypervisor state.
 >=20
-> 	/* Initialize the kernel stack */
-> 	LOAD_REG_ADDR(r3, current_set)
-> 	sldi	r28,r24,3		/* get current_set[cpu#]	 */
-> 	ldx	r14,r3,r28
-> 	addi	r14,r14,THREAD_SIZE-STACK_FRAME_OVERHEAD
-> 	std	r14,PACAKSAVE(r13)
+> We also don't let L1 enable features in the hypervisor facility status
+> and control register (HFSCR) for L2 which we have disabled for L1. That
+> is L2 will get the subset of features which the L0 hypervisor has
+> enabled for L1 and the features L1 wants to enable for L2. This could
+> mean we give L1 a hypervisor facility unavailable interrupt for a
+> facility it thinks it has enabled, however it shouldn't have enabled a
+> facility it itself doesn't have for the L2 guest.
+>=20
+> We sanitise the registers when copying in the L2 hv_regs. We don't need
+> to sanitise when copying back the L1 hv_regs since these shouldn't be
+> able to contain invalid values as they're just what was copied out.
+>=20
+> Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 
-Right, I don't *think* that's needed because boot CPU should already
-have set PACAKSAVE before starting secondaries here. ld r14,PACAKSAVE
-should have the same result I think.
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
-But never mind that for your series, just something I saw that could
-be cleaned up.
+> ---
+>  arch/powerpc/include/asm/reg.h      |  1 +
+>  arch/powerpc/kvm/book3s_hv_nested.c | 17 +++++++++++++++++
+>  2 files changed, 18 insertions(+)
+>=20
+> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/re=
+g.h
+> index 9c42abf..47489f6 100644
+> --- a/arch/powerpc/include/asm/reg.h
+> +++ b/arch/powerpc/include/asm/reg.h
+> @@ -415,6 +415,7 @@
+>  #define   HFSCR_DSCR	__MASK(FSCR_DSCR_LG)
+>  #define   HFSCR_VECVSX	__MASK(FSCR_VECVSX_LG)
+>  #define   HFSCR_FP	__MASK(FSCR_FP_LG)
+> +#define   HFSCR_INTR_CAUSE (ASM_CONST(0xFF) << 56)	/* interrupt cause */
+>  #define SPRN_TAR	0x32f	/* Target Address Register */
+>  #define SPRN_LPCR	0x13E	/* LPAR Control Register */
+>  #define   LPCR_VPM0		ASM_CONST(0x8000000000000000)
+> diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm/book3=
+s_hv_nested.c
+> index 7656cb3..7b1088a 100644
+> --- a/arch/powerpc/kvm/book3s_hv_nested.c
+> +++ b/arch/powerpc/kvm/book3s_hv_nested.c
+> @@ -86,6 +86,22 @@ static void save_hv_return_state(struct kvm_vcpu *vcpu=
+, int trap,
+>  	}
+>  }
+> =20
+> +static void sanitise_hv_regs(struct kvm_vcpu *vcpu, struct hv_guest_stat=
+e *hr)
+> +{
+> +	/*
+> +	 * Don't let L1 enable features for L2 which we've disabled for L1,
+> +	 * but preserve the interrupt cause field.
+> +	 */
+> +	hr->hfscr &=3D (HFSCR_INTR_CAUSE | vcpu->arch.hfscr);
+> +
+> +	/* Don't let data address watchpoint match in hypervisor state */
+> +	hr->dawrx0 &=3D ~DAWRX_HYP;
+> +
+> +	/* Don't let completed instruction address breakpt match in HV state */
+> +	if ((hr->ciabr & CIABR_PRIV) =3D=3D CIABR_PRIV_HYPER)
+> +		hr->ciabr &=3D ~CIABR_PRIV;
+> +}
+> +
+>  static void restore_hv_regs(struct kvm_vcpu *vcpu, struct hv_guest_state=
+ *hr)
+>  {
+>  	struct kvmppc_vcore *vc =3D vcpu->arch.vcore;
+> @@ -198,6 +214,7 @@ long kvmhv_enter_nested_guest(struct kvm_vcpu *vcpu)
+>  	mask =3D LPCR_DPFD | LPCR_ILE | LPCR_TC | LPCR_AIL | LPCR_LD |
+>  		LPCR_LPES | LPCR_MER;
+>  	lpcr =3D (vc->lpcr & ~mask) | (l2_hv.lpcr & mask);
+> +	sanitise_hv_regs(vcpu, &l2_hv);
+>  	restore_hv_regs(vcpu, &l2_hv);
+> =20
+>  	vcpu->arch.ret =3D RESUME_GUEST;
 
-Thanks,
-Nick
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--GAoked8QSizNecZ5
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlu0XKMACgkQbDjKyiDZ
+s5LWFA//TsPiGp8ItmLNehs/iUTtvZE9Es09k61dQr7NkGqnIZLS7gnkD73oQgnf
+S0fMkUH78wmFVrdJWkPG521DKHVhyMUJnGcrWyZ8RlKKjRuQqxAzg/NOPoxiaAwh
+OW61oG62gKIbLmaJba0bkYB4WcHxTo+TgS6XTSR2/ZuqmqN68AoPw/CNBVXNbSmn
+udw6FwbcwqP6rhtVzk+eW90bgFo1/qD8FXHKJN9ObCDLo2j/s34gUqeYYbxYhbkm
+uCNBrQbh7Qjv1JDEmhsvoDUH3nY52AeFeNT7jq8vl0FgwPL6kmXcvtGlUAztnNnT
+4s9atAxSQ4bYQmn+MkJceCx6g7d62ginikn8A9PjfnuT4YQ6A+5KZdcdu6VI6xEy
+HHITUFa3x9jXXdRSby6A6ljYfUP9aYZg4MwiV9T/IdlHZhUPYDF2azkXQtBQu3A4
+eTGeHZrfWsqJKibLEzS7K2pvb+/l1IdMuNmZ7YafYFZahth4RhLQn0IvFCinkErD
+E8nu7q6YgWi6niUClmNANIZZXAR6sPPvD7BK7NjCSd6KVywx+zocZ5k+UIw4Zo+J
+mJKmJ/W5e52QKrhZLJ4xlhECUa16MydbX38Y2DmpwUuZuIzNVrdrZ/M5iHJm1sjG
+UVXf2J/SYfGzKr+iSb+L8aSI3vwwFdLvkL4pggY+axdJoar1wpo=
+=NBQA
+-----END PGP SIGNATURE-----
+
+--GAoked8QSizNecZ5--
