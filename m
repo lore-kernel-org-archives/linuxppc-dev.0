@@ -6,70 +6,90 @@ X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 21235C64EBC
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 08:37:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C1ECC64EBD
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 08:40:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8A48721470
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 08:37:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8A48721470
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 9AFB521470
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 08:40:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9AFB521470
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42QmTk2nGwzF3Jj
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 18:37:14 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by lists.ozlabs.org (Postfix) with ESMTP id 42QmYH5b99zF3JW
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 18:40:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42QmNY1ctlzF3JW
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2018 18:32:45 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 42QmNR3NjPz9ttFL;
- Thu,  4 Oct 2018 10:32:39 +0200 (CEST)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id uLuFNDXyu5rK; Thu,  4 Oct 2018 10:32:39 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 42QmNR2sgdz9ttBv;
- Thu,  4 Oct 2018 10:32:39 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 919438B90F;
- Thu,  4 Oct 2018 10:32:41 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id T3xQxRH_8etP; Thu,  4 Oct 2018 10:32:41 +0200 (CEST)
-Received: from PO15451 (unknown [192.168.232.3])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A72CA8B907;
- Thu,  4 Oct 2018 10:32:40 +0200 (CEST)
-Subject: Re: [RFC PATCH v3 1/7] book3s/64: avoid circular header inclusion in
- mmu-hash.h
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>
-References: <cover.1538396658.git.christophe.leroy@c-s.fr>
- <c95148024873842459472bbcc0dd0e65607fd43b.1538396658.git.christophe.leroy@c-s.fr>
- <20181003142400.490fd38a@roar.ozlabs.ibm.com>
- <bed3d788-6633-6eef-30ea-bdfa374e0216@c-s.fr>
- <1516af9d-bb0b-4a2c-71f8-554a3f830281@linux.ibm.com>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <cd9590e5-5a0a-7ee4-a214-2ddbe00ee572@c-s.fr>
-Date: Thu, 4 Oct 2018 10:32:40 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42QmQn3GxRzF3Jd
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2018 18:34:41 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w948XkLI093915
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Oct 2018 04:34:39 -0400
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2mwers1rtn-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Oct 2018 04:34:39 -0400
+Received: from localhost
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Thu, 4 Oct 2018 09:34:36 +0100
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
+ by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Thu, 4 Oct 2018 09:34:32 +0100
+Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
+ [9.149.105.60])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ w948YVo164094412
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Thu, 4 Oct 2018 08:34:31 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 84EAE42049;
+ Thu,  4 Oct 2018 11:34:11 +0100 (BST)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 538A74203F;
+ Thu,  4 Oct 2018 11:34:10 +0100 (BST)
+Received: from skywalker (unknown [9.124.31.179])
+ by d06av24.portsmouth.uk.ibm.com (Postfix) with SMTP;
+ Thu,  4 Oct 2018 11:34:10 +0100 (BST)
+Received: (nullmailer pid 27280 invoked by uid 1000);
+ Thu, 04 Oct 2018 08:34:29 -0000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: akpm@linux-foundation.org, Michal Hocko <mhocko@kernel.org>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>, mpe@ellerman.id.au
+Subject: Re: [PATCH V3 0/2] mm/kvm/vfio/ppc64: Migrate compound pages out of
+ CMA region
+In-Reply-To: <20180918115839.22154-1-aneesh.kumar@linux.ibm.com>
+References: <20180918115839.22154-1-aneesh.kumar@linux.ibm.com>
+Date: Thu, 04 Oct 2018 14:04:29 +0530
 MIME-Version: 1.0
-In-Reply-To: <1516af9d-bb0b-4a2c-71f8-554a3f830281@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+x-cbid: 18100408-4275-0000-0000-000002C4D3E0
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18100408-4276-0000-0000-000037CFEAF1
+Message-Id: <87y3beaz56.fsf@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-10-04_03:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=678 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1807170000 definitions=main-1810040088
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,73 +101,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- aneesh.kumar@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
+Hi Andrew,
 
-Le 04/10/2018 à 10:23, Aneesh Kumar K.V a écrit :
-> On 10/4/18 1:50 PM, Christophe LEROY wrote:
->>
->>
->> Le 03/10/2018 à 06:24, Nicholas Piggin a écrit :
->>> On Mon,  1 Oct 2018 12:30:19 +0000 (UTC)
->>> Christophe Leroy <christophe.leroy@c-s.fr> wrote:
->>>
->>>> When activating CONFIG_THREAD_INFO_IN_TASK, linux/sched.h
->>>> includes asm/current.h. This generates a circular dependency.
->>>> To avoid that, asm/processor.h shall not be included in mmu-hash.h
->>>>
->>>> In order to do that, this patch moves into a new header called
->>>> asm/task_size.h the information from asm/processor.h requires by
->>>> mmu-hash.h
->>>
->>> Doesn't look like you use this header in 32-bit code. Put task_size.h
->>> in asm/64/ maybe?
->>
->> There is no asm/64/ dir at the time being, only book3s/64/ and nohash/64/
->>
->> I'm thinking about leaving it in asm/ but renaming it task_size_user64.h
->>
-> 
-> Quiet a lot of that is book3s 64 specifi because we have there.
-> 
-> #if defined(CONFIG_PPC_BOOK3S_64) && defined(CONFIG_PPC_64K_PAGES)
-> /*
->   * Max value currently used:
->   */
+"Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> writes:
 
-We have an #if / #else
+> ppc64 use CMA area for the allocation of guest page table (hash page table). We won't
+> be able to start guest if we fail to allocate hash page table. We have observed
+> hash table allocation failure because we failed to migrate pages out of CMA region
+> because they were pinned. This happen when we are using VFIO. VFIO on ppc64 pins
+> the entire guest RAM. If the guest RAM pages get allocated out of CMA region, we
+> won't be able to migrate those pages. The pages are also pinned for the lifetime of the
+> guest.
+>
+> Currently we support migration of non-compound pages. With THP and with the addition of
+>  hugetlb migration we can end up allocating compound pages from CMA region. This
+> patch series add support for migrating compound pages. The first path adds the helper
+> get_user_pages_cma_migrate() which pin the page making sure we migrate them out of
+> CMA region before incrementing the reference count. 
+>
+> Aneesh Kumar K.V (2):
+>   mm: Add get_user_pages_cma_migrate
+>   powerpc/mm/iommu: Allow migration of cma allocated pages during
+>     mm_iommu_get
+>
+>  arch/powerpc/mm/mmu_context_iommu.c | 120 ++++++++-----------------
+>  include/linux/hugetlb.h             |   2 +
+>  include/linux/migrate.h             |   3 +
+>  mm/hugetlb.c                        |   4 +-
+>  mm/migrate.c                        | 132 ++++++++++++++++++++++++++++
+>  5 files changed, 174 insertions(+), 87 deletions(-)
 
-#if defined(CONFIG_PPC_BOOK3S_64) && defined(CONFIG_PPC_64K_PAGES)
-/*
-  * Max value currently used:
-  */
-#define TASK_SIZE_USER64		TASK_SIZE_4PB
-#define DEFAULT_MAP_WINDOW_USER64	TASK_SIZE_128TB
-#define TASK_CONTEXT_SIZE		TASK_SIZE_512TB
+Any feedback on this.
 
-#else
+-aneesh
 
-#define TASK_SIZE_USER64		TASK_SIZE_64TB
-#define DEFAULT_MAP_WINDOW_USER64	TASK_SIZE_64TB
-/*
-  * We don't need to allocate extended context ids for 4K page size, because
-  * we limit the max effective address on this config to 64TB.
-  */
-#define TASK_CONTEXT_SIZE		TASK_SIZE_64TB
-#endif
-
-And processor .h derives several other consts applying to both BOOK3S64 
-et BOOK3E64 from that.
-
-
-And arch/powerpc/mm/pgtable-book3e.c has:
-
-	BUILD_BUG_ON(TASK_SIZE_USER64 > PGTABLE_RANGE);
-
-
-Christophe
