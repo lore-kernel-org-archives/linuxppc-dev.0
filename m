@@ -2,65 +2,65 @@ Return-Path: <SRS0=m9yV=MQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1704CC64EB8
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 12:12:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C037FC64EBC
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 12:15:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7468220684
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 12:12:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2A8A620877
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 12:15:09 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="qMw8jVf8"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7468220684
+	dkim=pass (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="FRDx6SFT"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2A8A620877
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42QsGP3HfpzF3KD
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 22:12:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42QsK71KbYzF3KQ
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 22:15:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="qMw8jVf8";
+	dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="FRDx6SFT";
 	dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42QrvT69QhzF3Jp
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2018 21:56:21 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42QrvV2wlpzDrDy
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2018 21:56:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="qMw8jVf8"; 
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="FRDx6SFT"; 
  dkim-atps=neutral
 Received: by ozlabs.org (Postfix)
- id 42QrvT54Hlz9s8T; Thu,  4 Oct 2018 21:56:21 +1000 (AEST)
+ id 42QrvV1Rcpz9s8T; Thu,  4 Oct 2018 21:56:22 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 42QrvT2mzWz9sj9;
+ by ozlabs.org (Postfix) with ESMTPSA id 42QrvT5Gmrz9sBj;
  Thu,  4 Oct 2018 21:56:21 +1000 (AEST)
 Authentication-Results: ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.org
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1538654181; bh=bYaGtk9+M+4jP9f5VRWnnhXsqWSJlegMSozLLd9/obs=;
+ t=1538654181; bh=DGXVwfrX/luxrBRl3iXol9FAb8vRKj+zZEYCI7T73Qs=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=qMw8jVf84+B++9bJZnj/tNuGfaXSq6vjcajE0bJNxLlSKsUWejDL1CkfTR30UkNP7
- xiKFXitR+4OvilDGMiJ3xDtE3NrB1OwORfJvkPbaQoS5Ac1ur4JNEKr7oRKl4Bf+qG
- SXnvetrmjQv8fnMgSpCZv0rTdwkv9JUD6yeeBh6/jvhSkiDZP0vCqD+1aUbi5tHFbC
- HBfH8/fxaYPCZD6kZ/o3nB++iiv7PMkiGc+RSppA3cNpdR+000zoM6pIGebFShf5FC
- k6dEETIHQK+6Z2I9kXwTU09usZCANlGUQxNsejm5im7aibemwJyPrmTUu5EXB3mouD
- g7cROrVat+uFg==
+ b=FRDx6SFTMEoU+s2K+oF/OIEnIXYOCuhjuRTHZHOvV30QgfDvr6fWTx30zauU8pQmr
+ 2WyjC4Wo5SRnT8ibTOMhpMPJT/+M23INJHJfflSttYuvbVbKEYjIa9VkfIgb3dD47c
+ WmDbpeuFkd4G6EmgxQCIn1vtoNUGjArKs2TiHiOhicw6QF3Zej7qtoAtjTydzBMgEI
+ GrlrESJ16WklFeamtf+a3PDBQUGXfYvoNFG2rbm+eqi8DRlcQAdyS2dUk5Vg7WaTx5
+ 9JzgbrkEJua9Cads3BGCUKyrDQC0B4k4DeD/+9wORPQ229hVkgjUaCw5BjCRtwrriD
+ dLMj5u61SuFbg==
 From: Paul Mackerras <paulus@ozlabs.org>
 To: kvm@vger.kernel.org,
 	kvm-ppc@vger.kernel.org
-Subject: [PATCH v4 05/32] KVM: PPC: Book3S HV: Extract PMU save/restore
- operations as C-callable functions
-Date: Thu,  4 Oct 2018 21:55:42 +1000
-Message-Id: <1538654169-15602-6-git-send-email-paulus@ozlabs.org>
+Subject: [PATCH v4 06/32] KVM: PPC: Book3S HV: Simplify real-mode interrupt
+ handling
+Date: Thu,  4 Oct 2018 21:55:43 +1000
+Message-Id: <1538654169-15602-7-git-send-email-paulus@ozlabs.org>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1538654169-15602-1-git-send-email-paulus@ozlabs.org>
 References: <1538654169-15602-1-git-send-email-paulus@ozlabs.org>
@@ -80,548 +80,348 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This pulls out the assembler code that is responsible for saving and
-restoring the PMU state for the host and guest into separate functions
-so they can be used from an alternate entry path.  The calling
-convention is made compatible with C.
+This streamlines the first part of the code that handles a hypervisor
+interrupt that occurred in the guest.  With this, all of the real-mode
+handling that occurs is done before the "guest_exit_cont" label; once
+we get to that label we are committed to exiting to host virtual mode.
+Thus the machine check and HMI real-mode handling is moved before that
+label.
 
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+Also, the code to handle external interrupts is moved out of line, as
+is the code that calls kvmppc_realmode_hmi_handler().
+
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/include/asm/asm-prototypes.h |   5 +
- arch/powerpc/kvm/book3s_hv_interrupts.S   |  95 ++++----
- arch/powerpc/kvm/book3s_hv_rmhandlers.S   | 363 ++++++++++++++++--------------
- 3 files changed, 253 insertions(+), 210 deletions(-)
+ arch/powerpc/kvm/book3s_hv_ras.c        |   8 ++
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S | 220 ++++++++++++++++----------------
+ 2 files changed, 119 insertions(+), 109 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/asm-prototypes.h b/arch/powerpc/include/asm/asm-prototypes.h
-index 1f4691c..024e8fc 100644
---- a/arch/powerpc/include/asm/asm-prototypes.h
-+++ b/arch/powerpc/include/asm/asm-prototypes.h
-@@ -150,4 +150,9 @@ extern s32 patch__memset_nocache, patch__memcpy_nocache;
- 
- extern long flush_count_cache;
- 
-+void kvmhv_save_host_pmu(void);
-+void kvmhv_load_host_pmu(void);
-+void kvmhv_save_guest_pmu(struct kvm_vcpu *vcpu, bool pmu_in_use);
-+void kvmhv_load_guest_pmu(struct kvm_vcpu *vcpu);
+diff --git a/arch/powerpc/kvm/book3s_hv_ras.c b/arch/powerpc/kvm/book3s_hv_ras.c
+index b11043b..ee564b6 100644
+--- a/arch/powerpc/kvm/book3s_hv_ras.c
++++ b/arch/powerpc/kvm/book3s_hv_ras.c
+@@ -331,5 +331,13 @@ long kvmppc_realmode_hmi_handler(void)
+ 	} else {
+ 		wait_for_tb_resync();
+ 	}
 +
- #endif /* _ASM_POWERPC_ASM_PROTOTYPES_H */
-diff --git a/arch/powerpc/kvm/book3s_hv_interrupts.S b/arch/powerpc/kvm/book3s_hv_interrupts.S
-index 666b91c..a6d1001 100644
---- a/arch/powerpc/kvm/book3s_hv_interrupts.S
-+++ b/arch/powerpc/kvm/book3s_hv_interrupts.S
-@@ -64,52 +64,7 @@ BEGIN_FTR_SECTION
- END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
- 
- 	/* Save host PMU registers */
--BEGIN_FTR_SECTION
--	/* Work around P8 PMAE bug */
--	li	r3, -1
--	clrrdi	r3, r3, 10
--	mfspr	r8, SPRN_MMCR2
--	mtspr	SPRN_MMCR2, r3		/* freeze all counters using MMCR2 */
--	isync
--END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
--	li	r3, 1
--	sldi	r3, r3, 31		/* MMCR0_FC (freeze counters) bit */
--	mfspr	r7, SPRN_MMCR0		/* save MMCR0 */
--	mtspr	SPRN_MMCR0, r3		/* freeze all counters, disable interrupts */
--	mfspr	r6, SPRN_MMCRA
--	/* Clear MMCRA in order to disable SDAR updates */
--	li	r5, 0
--	mtspr	SPRN_MMCRA, r5
--	isync
--	lbz	r5, PACA_PMCINUSE(r13)	/* is the host using the PMU? */
--	cmpwi	r5, 0
--	beq	31f			/* skip if not */
--	mfspr	r5, SPRN_MMCR1
--	mfspr	r9, SPRN_SIAR
--	mfspr	r10, SPRN_SDAR
--	std	r7, HSTATE_MMCR0(r13)
--	std	r5, HSTATE_MMCR1(r13)
--	std	r6, HSTATE_MMCRA(r13)
--	std	r9, HSTATE_SIAR(r13)
--	std	r10, HSTATE_SDAR(r13)
--BEGIN_FTR_SECTION
--	mfspr	r9, SPRN_SIER
--	std	r8, HSTATE_MMCR2(r13)
--	std	r9, HSTATE_SIER(r13)
--END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
--	mfspr	r3, SPRN_PMC1
--	mfspr	r5, SPRN_PMC2
--	mfspr	r6, SPRN_PMC3
--	mfspr	r7, SPRN_PMC4
--	mfspr	r8, SPRN_PMC5
--	mfspr	r9, SPRN_PMC6
--	stw	r3, HSTATE_PMC1(r13)
--	stw	r5, HSTATE_PMC2(r13)
--	stw	r6, HSTATE_PMC3(r13)
--	stw	r7, HSTATE_PMC4(r13)
--	stw	r8, HSTATE_PMC5(r13)
--	stw	r9, HSTATE_PMC6(r13)
--31:
-+	bl	kvmhv_save_host_pmu
- 
- 	/*
- 	 * Put whatever is in the decrementer into the
-@@ -161,3 +116,51 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
- 	ld	r0, PPC_LR_STKOFF(r1)
- 	mtlr	r0
- 	blr
++	/*
++	 * Reset tb_offset_applied so the guest exit code won't try
++	 * to subtract the previous timebase offset from the timebase.
++	 */
++	if (local_paca->kvm_hstate.kvm_vcore)
++		local_paca->kvm_hstate.kvm_vcore->tb_offset_applied = 0;
 +
-+_GLOBAL(kvmhv_save_host_pmu)
-+BEGIN_FTR_SECTION
-+	/* Work around P8 PMAE bug */
-+	li	r3, -1
-+	clrrdi	r3, r3, 10
-+	mfspr	r8, SPRN_MMCR2
-+	mtspr	SPRN_MMCR2, r3		/* freeze all counters using MMCR2 */
-+	isync
-+END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
-+	li	r3, 1
-+	sldi	r3, r3, 31		/* MMCR0_FC (freeze counters) bit */
-+	mfspr	r7, SPRN_MMCR0		/* save MMCR0 */
-+	mtspr	SPRN_MMCR0, r3		/* freeze all counters, disable interrupts */
-+	mfspr	r6, SPRN_MMCRA
-+	/* Clear MMCRA in order to disable SDAR updates */
-+	li	r5, 0
-+	mtspr	SPRN_MMCRA, r5
-+	isync
-+	lbz	r5, PACA_PMCINUSE(r13)	/* is the host using the PMU? */
-+	cmpwi	r5, 0
-+	beq	31f			/* skip if not */
-+	mfspr	r5, SPRN_MMCR1
-+	mfspr	r9, SPRN_SIAR
-+	mfspr	r10, SPRN_SDAR
-+	std	r7, HSTATE_MMCR0(r13)
-+	std	r5, HSTATE_MMCR1(r13)
-+	std	r6, HSTATE_MMCRA(r13)
-+	std	r9, HSTATE_SIAR(r13)
-+	std	r10, HSTATE_SDAR(r13)
-+BEGIN_FTR_SECTION
-+	mfspr	r9, SPRN_SIER
-+	std	r8, HSTATE_MMCR2(r13)
-+	std	r9, HSTATE_SIER(r13)
-+END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
-+	mfspr	r3, SPRN_PMC1
-+	mfspr	r5, SPRN_PMC2
-+	mfspr	r6, SPRN_PMC3
-+	mfspr	r7, SPRN_PMC4
-+	mfspr	r8, SPRN_PMC5
-+	mfspr	r9, SPRN_PMC6
-+	stw	r3, HSTATE_PMC1(r13)
-+	stw	r5, HSTATE_PMC2(r13)
-+	stw	r6, HSTATE_PMC3(r13)
-+	stw	r7, HSTATE_PMC4(r13)
-+	stw	r8, HSTATE_PMC5(r13)
-+	stw	r9, HSTATE_PMC6(r13)
-+31:	blr
+ 	return 0;
+ }
 diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index 6752da1..5b2ae34 100644
+index 5b2ae34..772740d 100644
 --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
 +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -28,6 +28,7 @@
- #include <asm/exception-64s.h>
- #include <asm/kvm_book3s_asm.h>
- #include <asm/book3s/64/mmu-hash.h>
-+#include <asm/export.h>
- #include <asm/tm.h>
- #include <asm/opal.h>
- #include <asm/xive-regs.h>
-@@ -113,45 +114,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
- 	mtspr	SPRN_SPRG_VDSO_WRITE,r3
+@@ -1018,8 +1018,7 @@ ALT_FTR_SECTION_END_IFCLR(CPU_FTR_ARCH_300)
+ no_xive:
+ #endif /* CONFIG_KVM_XICS */
  
- 	/* Reload the host's PMU registers */
--	lbz	r4, PACA_PMCINUSE(r13) /* is the host using the PMU? */
--	cmpwi	r4, 0
--	beq	23f			/* skip if not */
--BEGIN_FTR_SECTION
--	ld	r3, HSTATE_MMCR0(r13)
--	andi.	r4, r3, MMCR0_PMAO_SYNC | MMCR0_PMAO
--	cmpwi	r4, MMCR0_PMAO
--	beql	kvmppc_fix_pmao
--END_FTR_SECTION_IFSET(CPU_FTR_PMAO_BUG)
--	lwz	r3, HSTATE_PMC1(r13)
--	lwz	r4, HSTATE_PMC2(r13)
--	lwz	r5, HSTATE_PMC3(r13)
--	lwz	r6, HSTATE_PMC4(r13)
--	lwz	r8, HSTATE_PMC5(r13)
--	lwz	r9, HSTATE_PMC6(r13)
--	mtspr	SPRN_PMC1, r3
--	mtspr	SPRN_PMC2, r4
--	mtspr	SPRN_PMC3, r5
--	mtspr	SPRN_PMC4, r6
--	mtspr	SPRN_PMC5, r8
--	mtspr	SPRN_PMC6, r9
--	ld	r3, HSTATE_MMCR0(r13)
--	ld	r4, HSTATE_MMCR1(r13)
--	ld	r5, HSTATE_MMCRA(r13)
--	ld	r6, HSTATE_SIAR(r13)
--	ld	r7, HSTATE_SDAR(r13)
--	mtspr	SPRN_MMCR1, r4
--	mtspr	SPRN_MMCRA, r5
--	mtspr	SPRN_SIAR, r6
--	mtspr	SPRN_SDAR, r7
--BEGIN_FTR_SECTION
--	ld	r8, HSTATE_MMCR2(r13)
--	ld	r9, HSTATE_SIER(r13)
--	mtspr	SPRN_MMCR2, r8
--	mtspr	SPRN_SIER, r9
--END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
--	mtspr	SPRN_MMCR0, r3
--	isync
--23:
-+	bl	kvmhv_load_host_pmu
- 
- 	/*
- 	 * Reload DEC.  HDEC interrupts were disabled when
-@@ -805,57 +768,12 @@ END_FTR_SECTION(CPU_FTR_TM | CPU_FTR_P9_TM_HV_ASSIST, 0)
- 91:
- #endif
- 
--	/* Load guest PMU registers */
--	/* R4 is live here (vcpu pointer) */
--	li	r3, 1
--	sldi	r3, r3, 31		/* MMCR0_FC (freeze counters) bit */
--	mtspr	SPRN_MMCR0, r3		/* freeze all counters, disable ints */
--	isync
--BEGIN_FTR_SECTION
--	ld	r3, VCPU_MMCR(r4)
--	andi.	r5, r3, MMCR0_PMAO_SYNC | MMCR0_PMAO
--	cmpwi	r5, MMCR0_PMAO
--	beql	kvmppc_fix_pmao
--END_FTR_SECTION_IFSET(CPU_FTR_PMAO_BUG)
--	lwz	r3, VCPU_PMC(r4)	/* always load up guest PMU registers */
--	lwz	r5, VCPU_PMC + 4(r4)	/* to prevent information leak */
--	lwz	r6, VCPU_PMC + 8(r4)
--	lwz	r7, VCPU_PMC + 12(r4)
--	lwz	r8, VCPU_PMC + 16(r4)
--	lwz	r9, VCPU_PMC + 20(r4)
--	mtspr	SPRN_PMC1, r3
--	mtspr	SPRN_PMC2, r5
--	mtspr	SPRN_PMC3, r6
--	mtspr	SPRN_PMC4, r7
--	mtspr	SPRN_PMC5, r8
--	mtspr	SPRN_PMC6, r9
--	ld	r3, VCPU_MMCR(r4)
--	ld	r5, VCPU_MMCR + 8(r4)
--	ld	r6, VCPU_MMCR + 16(r4)
--	ld	r7, VCPU_SIAR(r4)
--	ld	r8, VCPU_SDAR(r4)
--	mtspr	SPRN_MMCR1, r5
--	mtspr	SPRN_MMCRA, r6
--	mtspr	SPRN_SIAR, r7
--	mtspr	SPRN_SDAR, r8
--BEGIN_FTR_SECTION
--	ld	r5, VCPU_MMCR + 24(r4)
--	ld	r6, VCPU_SIER(r4)
--	mtspr	SPRN_MMCR2, r5
--	mtspr	SPRN_SIER, r6
--BEGIN_FTR_SECTION_NESTED(96)
--	lwz	r7, VCPU_PMC + 24(r4)
--	lwz	r8, VCPU_PMC + 28(r4)
--	ld	r9, VCPU_MMCR + 32(r4)
--	mtspr	SPRN_SPMC1, r7
--	mtspr	SPRN_SPMC2, r8
--	mtspr	SPRN_MMCRS, r9
--END_FTR_SECTION_NESTED(CPU_FTR_ARCH_300, 0, 96)
--END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
--	mtspr	SPRN_MMCR0, r3
--	isync
-+	/* Load guest PMU registers; r4 = vcpu pointer here */
-+	mr	r3, r4
-+	bl	kvmhv_load_guest_pmu
- 
- 	/* Load up FP, VMX and VSX registers */
-+	ld	r4, HSTATE_KVM_VCPU(r13)
- 	bl	kvmppc_load_fp
- 
- 	ld	r14, VCPU_GPR(R14)(r4)
-@@ -1766,83 +1684,12 @@ END_FTR_SECTION(CPU_FTR_TM | CPU_FTR_P9_TM_HV_ASSIST, 0)
- 25:
- 	/* Save PMU registers if requested */
- 	/* r8 and cr0.eq are live here */
--BEGIN_FTR_SECTION
--	/*
--	 * POWER8 seems to have a hardware bug where setting
--	 * MMCR0[PMAE] along with MMCR0[PMC1CE] and/or MMCR0[PMCjCE]
--	 * when some counters are already negative doesn't seem
--	 * to cause a performance monitor alert (and hence interrupt).
--	 * The effect of this is that when saving the PMU state,
--	 * if there is no PMU alert pending when we read MMCR0
--	 * before freezing the counters, but one becomes pending
--	 * before we read the counters, we lose it.
--	 * To work around this, we need a way to freeze the counters
--	 * before reading MMCR0.  Normally, freezing the counters
--	 * is done by writing MMCR0 (to set MMCR0[FC]) which
--	 * unavoidably writes MMCR0[PMA0] as well.  On POWER8,
--	 * we can also freeze the counters using MMCR2, by writing
--	 * 1s to all the counter freeze condition bits (there are
--	 * 9 bits each for 6 counters).
--	 */
--	li	r3, -1			/* set all freeze bits */
--	clrrdi	r3, r3, 10
--	mfspr	r10, SPRN_MMCR2
--	mtspr	SPRN_MMCR2, r3
--	isync
--END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
--	li	r3, 1
--	sldi	r3, r3, 31		/* MMCR0_FC (freeze counters) bit */
--	mfspr	r4, SPRN_MMCR0		/* save MMCR0 */
--	mtspr	SPRN_MMCR0, r3		/* freeze all counters, disable ints */
--	mfspr	r6, SPRN_MMCRA
--	/* Clear MMCRA in order to disable SDAR updates */
--	li	r7, 0
--	mtspr	SPRN_MMCRA, r7
--	isync
-+	mr	r3, r9
-+	li	r4, 1
- 	beq	21f			/* if no VPA, save PMU stuff anyway */
--	lbz	r7, LPPACA_PMCINUSE(r8)
--	cmpwi	r7, 0			/* did they ask for PMU stuff to be saved? */
--	bne	21f
--	std	r3, VCPU_MMCR(r9)	/* if not, set saved MMCR0 to FC */
--	b	22f
--21:	mfspr	r5, SPRN_MMCR1
--	mfspr	r7, SPRN_SIAR
--	mfspr	r8, SPRN_SDAR
--	std	r4, VCPU_MMCR(r9)
--	std	r5, VCPU_MMCR + 8(r9)
--	std	r6, VCPU_MMCR + 16(r9)
--BEGIN_FTR_SECTION
--	std	r10, VCPU_MMCR + 24(r9)
--END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
--	std	r7, VCPU_SIAR(r9)
--	std	r8, VCPU_SDAR(r9)
--	mfspr	r3, SPRN_PMC1
--	mfspr	r4, SPRN_PMC2
--	mfspr	r5, SPRN_PMC3
--	mfspr	r6, SPRN_PMC4
--	mfspr	r7, SPRN_PMC5
--	mfspr	r8, SPRN_PMC6
--	stw	r3, VCPU_PMC(r9)
--	stw	r4, VCPU_PMC + 4(r9)
--	stw	r5, VCPU_PMC + 8(r9)
--	stw	r6, VCPU_PMC + 12(r9)
--	stw	r7, VCPU_PMC + 16(r9)
--	stw	r8, VCPU_PMC + 20(r9)
--BEGIN_FTR_SECTION
--	mfspr	r5, SPRN_SIER
--	std	r5, VCPU_SIER(r9)
--BEGIN_FTR_SECTION_NESTED(96)
--	mfspr	r6, SPRN_SPMC1
--	mfspr	r7, SPRN_SPMC2
--	mfspr	r8, SPRN_MMCRS
--	stw	r6, VCPU_PMC + 24(r9)
--	stw	r7, VCPU_PMC + 28(r9)
--	std	r8, VCPU_MMCR + 32(r9)
--	lis	r4, 0x8000
--	mtspr	SPRN_MMCRS, r4
--END_FTR_SECTION_NESTED(CPU_FTR_ARCH_300, 0, 96)
--END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
--22:
-+	lbz	r4, LPPACA_PMCINUSE(r8)
-+21:	bl	kvmhv_save_guest_pmu
-+	ld	r9, HSTATE_KVM_VCPU(r13)
- 
- 	/* Restore host values of some registers */
+-deliver_guest_interrupt:
+-kvmppc_cede_reentry:		/* r4 = vcpu, r13 = paca */
++deliver_guest_interrupt:	/* r4 = vcpu, r13 = paca */
+ 	/* Check if we can deliver an external or decrementer interrupt now */
+ 	ld	r0, VCPU_PENDING_EXC(r4)
  BEGIN_FTR_SECTION
-@@ -3388,6 +3235,194 @@ kvmppc_msr_interrupt:
+@@ -1269,18 +1268,26 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
+ 	std	r3, VCPU_CTR(r9)
+ 	std	r4, VCPU_XER(r9)
+ 
+-#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+-	/* For softpatch interrupt, go off and do TM instruction emulation */
+-	cmpwi	r12, BOOK3S_INTERRUPT_HV_SOFTPATCH
+-	beq	kvmppc_tm_emul
+-#endif
++	/* Save more register state  */
++	mfdar	r6
++	mfdsisr	r7
++	std	r6, VCPU_DAR(r9)
++	stw	r7, VCPU_DSISR(r9)
+ 
+ 	/* If this is a page table miss then see if it's theirs or ours */
+ 	cmpwi	r12, BOOK3S_INTERRUPT_H_DATA_STORAGE
+ 	beq	kvmppc_hdsi
++	std	r6, VCPU_FAULT_DAR(r9)
++	stw	r7, VCPU_FAULT_DSISR(r9)
+ 	cmpwi	r12, BOOK3S_INTERRUPT_H_INST_STORAGE
+ 	beq	kvmppc_hisi
+ 
++#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
++	/* For softpatch interrupt, go off and do TM instruction emulation */
++	cmpwi	r12, BOOK3S_INTERRUPT_HV_SOFTPATCH
++	beq	kvmppc_tm_emul
++#endif
++
+ 	/* See if this is a leftover HDEC interrupt */
+ 	cmpwi	r12,BOOK3S_INTERRUPT_HV_DECREMENTER
+ 	bne	2f
+@@ -1303,7 +1310,7 @@ BEGIN_FTR_SECTION
+ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+ 	lbz	r0, HSTATE_HOST_IPI(r13)
+ 	cmpwi	r0, 0
+-	beq	4f
++	beq	maybe_reenter_guest
+ 	b	guest_exit_cont
+ 3:
+ 	/* If it's a hypervisor facility unavailable interrupt, save HFSCR */
+@@ -1315,82 +1322,16 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+ 14:
+ 	/* External interrupt ? */
+ 	cmpwi	r12, BOOK3S_INTERRUPT_EXTERNAL
+-	bne+	guest_exit_cont
+-
+-	/* External interrupt, first check for host_ipi. If this is
+-	 * set, we know the host wants us out so let's do it now
+-	 */
+-	bl	kvmppc_read_intr
+-
+-	/*
+-	 * Restore the active volatile registers after returning from
+-	 * a C function.
+-	 */
+-	ld	r9, HSTATE_KVM_VCPU(r13)
+-	li	r12, BOOK3S_INTERRUPT_EXTERNAL
+-
+-	/*
+-	 * kvmppc_read_intr return codes:
+-	 *
+-	 * Exit to host (r3 > 0)
+-	 *   1 An interrupt is pending that needs to be handled by the host
+-	 *     Exit guest and return to host by branching to guest_exit_cont
+-	 *
+-	 *   2 Passthrough that needs completion in the host
+-	 *     Exit guest and return to host by branching to guest_exit_cont
+-	 *     However, we also set r12 to BOOK3S_INTERRUPT_HV_RM_HARD
+-	 *     to indicate to the host to complete handling the interrupt
+-	 *
+-	 * Before returning to guest, we check if any CPU is heading out
+-	 * to the host and if so, we head out also. If no CPUs are heading
+-	 * check return values <= 0.
+-	 *
+-	 * Return to guest (r3 <= 0)
+-	 *  0 No external interrupt is pending
+-	 * -1 A guest wakeup IPI (which has now been cleared)
+-	 *    In either case, we return to guest to deliver any pending
+-	 *    guest interrupts.
+-	 *
+-	 * -2 A PCI passthrough external interrupt was handled
+-	 *    (interrupt was delivered directly to guest)
+-	 *    Return to guest to deliver any pending guest interrupts.
+-	 */
+-
+-	cmpdi	r3, 1
+-	ble	1f
+-
+-	/* Return code = 2 */
+-	li	r12, BOOK3S_INTERRUPT_HV_RM_HARD
+-	stw	r12, VCPU_TRAP(r9)
+-	b	guest_exit_cont
+-
+-1:	/* Return code <= 1 */
+-	cmpdi	r3, 0
+-	bgt	guest_exit_cont
+-
+-	/* Return code <= 0 */
+-4:	ld	r5, HSTATE_KVM_VCORE(r13)
+-	lwz	r0, VCORE_ENTRY_EXIT(r5)
+-	cmpwi	r0, 0x100
+-	mr	r4, r9
+-	blt	deliver_guest_interrupt
+-
+-guest_exit_cont:		/* r9 = vcpu, r12 = trap, r13 = paca */
+-	/* Save more register state  */
+-	mfdar	r6
+-	mfdsisr	r7
+-	std	r6, VCPU_DAR(r9)
+-	stw	r7, VCPU_DSISR(r9)
+-	/* don't overwrite fault_dar/fault_dsisr if HDSI */
+-	cmpwi	r12,BOOK3S_INTERRUPT_H_DATA_STORAGE
+-	beq	mc_cont
+-	std	r6, VCPU_FAULT_DAR(r9)
+-	stw	r7, VCPU_FAULT_DSISR(r9)
+-
++	beq	kvmppc_guest_external
+ 	/* See if it is a machine check */
+ 	cmpwi	r12, BOOK3S_INTERRUPT_MACHINE_CHECK
+ 	beq	machine_check_realmode
+-mc_cont:
++	/* Or a hypervisor maintenance interrupt */
++	cmpwi	r12, BOOK3S_INTERRUPT_HMI
++	beq	hmi_realmode
++
++guest_exit_cont:		/* r9 = vcpu, r12 = trap, r13 = paca */
++
+ #ifdef CONFIG_KVM_BOOK3S_HV_EXIT_TIMING
+ 	addi	r3, r9, VCPU_TB_RMEXIT
+ 	mr	r4, r9
+@@ -1821,24 +1762,6 @@ BEGIN_FTR_SECTION
+ 	mtspr	SPRN_DPDES, r8
+ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ 
+-	/* If HMI, call kvmppc_realmode_hmi_handler() */
+-	lwz	r12, STACK_SLOT_TRAP(r1)
+-	cmpwi	r12, BOOK3S_INTERRUPT_HMI
+-	bne	27f
+-	bl	kvmppc_realmode_hmi_handler
+-	nop
+-	cmpdi	r3, 0
+-	/*
+-	 * At this point kvmppc_realmode_hmi_handler may have resync-ed
+-	 * the TB, and if it has, we must not subtract the guest timebase
+-	 * offset from the timebase. So, skip it.
+-	 *
+-	 * Also, do not call kvmppc_subcore_exit_guest() because it has
+-	 * been invoked as part of kvmppc_realmode_hmi_handler().
+-	 */
+-	beq	30f
+-
+-27:
+ 	/* Subtract timebase offset from timebase */
+ 	ld	r8, VCORE_TB_OFFSET_APPL(r5)
+ 	cmpdi	r8,0
+@@ -1856,7 +1779,16 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ 	addis	r8,r8,0x100		/* if so, increment upper 40 bits */
+ 	mtspr	SPRN_TBU40,r8
+ 
+-17:	bl	kvmppc_subcore_exit_guest
++17:
++	/*
++	 * If this is an HMI, we called kvmppc_realmode_hmi_handler
++	 * above, which may or may not have already called
++	 * kvmppc_subcore_exit_guest.  Fortunately, all that
++	 * kvmppc_subcore_exit_guest does is clear a flag, so calling
++	 * it again here is benign even if kvmppc_realmode_hmi_handler
++	 * has already called it.
++	 */
++	bl	kvmppc_subcore_exit_guest
+ 	nop
+ 30:	ld	r5,HSTATE_KVM_VCORE(r13)
+ 	ld	r4,VCORE_KVM(r5)	/* pointer to struct kvm */
+@@ -1910,6 +1842,67 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+ 	mtlr	r0
  	blr
  
- /*
-+ * Load up guest PMU state.  R3 points to the vcpu struct.
-+ */
-+_GLOBAL(kvmhv_load_guest_pmu)
-+EXPORT_SYMBOL_GPL(kvmhv_load_guest_pmu)
-+	mr	r4, r3
-+	mflr	r0
-+	li	r3, 1
-+	sldi	r3, r3, 31		/* MMCR0_FC (freeze counters) bit */
-+	mtspr	SPRN_MMCR0, r3		/* freeze all counters, disable ints */
-+	isync
-+BEGIN_FTR_SECTION
-+	ld	r3, VCPU_MMCR(r4)
-+	andi.	r5, r3, MMCR0_PMAO_SYNC | MMCR0_PMAO
-+	cmpwi	r5, MMCR0_PMAO
-+	beql	kvmppc_fix_pmao
-+END_FTR_SECTION_IFSET(CPU_FTR_PMAO_BUG)
-+	lwz	r3, VCPU_PMC(r4)	/* always load up guest PMU registers */
-+	lwz	r5, VCPU_PMC + 4(r4)	/* to prevent information leak */
-+	lwz	r6, VCPU_PMC + 8(r4)
-+	lwz	r7, VCPU_PMC + 12(r4)
-+	lwz	r8, VCPU_PMC + 16(r4)
-+	lwz	r9, VCPU_PMC + 20(r4)
-+	mtspr	SPRN_PMC1, r3
-+	mtspr	SPRN_PMC2, r5
-+	mtspr	SPRN_PMC3, r6
-+	mtspr	SPRN_PMC4, r7
-+	mtspr	SPRN_PMC5, r8
-+	mtspr	SPRN_PMC6, r9
-+	ld	r3, VCPU_MMCR(r4)
-+	ld	r5, VCPU_MMCR + 8(r4)
-+	ld	r6, VCPU_MMCR + 16(r4)
-+	ld	r7, VCPU_SIAR(r4)
-+	ld	r8, VCPU_SDAR(r4)
-+	mtspr	SPRN_MMCR1, r5
-+	mtspr	SPRN_MMCRA, r6
-+	mtspr	SPRN_SIAR, r7
-+	mtspr	SPRN_SDAR, r8
-+BEGIN_FTR_SECTION
-+	ld	r5, VCPU_MMCR + 24(r4)
-+	ld	r6, VCPU_SIER(r4)
-+	mtspr	SPRN_MMCR2, r5
-+	mtspr	SPRN_SIER, r6
-+BEGIN_FTR_SECTION_NESTED(96)
-+	lwz	r7, VCPU_PMC + 24(r4)
-+	lwz	r8, VCPU_PMC + 28(r4)
-+	ld	r9, VCPU_MMCR + 32(r4)
-+	mtspr	SPRN_SPMC1, r7
-+	mtspr	SPRN_SPMC2, r8
-+	mtspr	SPRN_MMCRS, r9
-+END_FTR_SECTION_NESTED(CPU_FTR_ARCH_300, 0, 96)
-+END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
-+	mtspr	SPRN_MMCR0, r3
-+	isync
-+	mtlr	r0
-+	blr
-+
-+/*
-+ * Reload host PMU state saved in the PACA by kvmhv_save_host_pmu.
-+ */
-+_GLOBAL(kvmhv_load_host_pmu)
-+EXPORT_SYMBOL_GPL(kvmhv_load_host_pmu)
-+	mflr	r0
-+	lbz	r4, PACA_PMCINUSE(r13) /* is the host using the PMU? */
-+	cmpwi	r4, 0
-+	beq	23f			/* skip if not */
-+BEGIN_FTR_SECTION
-+	ld	r3, HSTATE_MMCR0(r13)
-+	andi.	r4, r3, MMCR0_PMAO_SYNC | MMCR0_PMAO
-+	cmpwi	r4, MMCR0_PMAO
-+	beql	kvmppc_fix_pmao
-+END_FTR_SECTION_IFSET(CPU_FTR_PMAO_BUG)
-+	lwz	r3, HSTATE_PMC1(r13)
-+	lwz	r4, HSTATE_PMC2(r13)
-+	lwz	r5, HSTATE_PMC3(r13)
-+	lwz	r6, HSTATE_PMC4(r13)
-+	lwz	r8, HSTATE_PMC5(r13)
-+	lwz	r9, HSTATE_PMC6(r13)
-+	mtspr	SPRN_PMC1, r3
-+	mtspr	SPRN_PMC2, r4
-+	mtspr	SPRN_PMC3, r5
-+	mtspr	SPRN_PMC4, r6
-+	mtspr	SPRN_PMC5, r8
-+	mtspr	SPRN_PMC6, r9
-+	ld	r3, HSTATE_MMCR0(r13)
-+	ld	r4, HSTATE_MMCR1(r13)
-+	ld	r5, HSTATE_MMCRA(r13)
-+	ld	r6, HSTATE_SIAR(r13)
-+	ld	r7, HSTATE_SDAR(r13)
-+	mtspr	SPRN_MMCR1, r4
-+	mtspr	SPRN_MMCRA, r5
-+	mtspr	SPRN_SIAR, r6
-+	mtspr	SPRN_SDAR, r7
-+BEGIN_FTR_SECTION
-+	ld	r8, HSTATE_MMCR2(r13)
-+	ld	r9, HSTATE_SIER(r13)
-+	mtspr	SPRN_MMCR2, r8
-+	mtspr	SPRN_SIER, r9
-+END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
-+	mtspr	SPRN_MMCR0, r3
-+	isync
-+	mtlr	r0
-+23:	blr
-+
-+/*
-+ * Save guest PMU state into the vcpu struct.
-+ * r3 = vcpu, r4 = full save flag (PMU in use flag set in VPA)
-+ */
-+_GLOBAL(kvmhv_save_guest_pmu)
-+EXPORT_SYMBOL_GPL(kvmhv_save_guest_pmu)
-+	mr	r9, r3
-+	mr	r8, r4
-+BEGIN_FTR_SECTION
-+	/*
-+	 * POWER8 seems to have a hardware bug where setting
-+	 * MMCR0[PMAE] along with MMCR0[PMC1CE] and/or MMCR0[PMCjCE]
-+	 * when some counters are already negative doesn't seem
-+	 * to cause a performance monitor alert (and hence interrupt).
-+	 * The effect of this is that when saving the PMU state,
-+	 * if there is no PMU alert pending when we read MMCR0
-+	 * before freezing the counters, but one becomes pending
-+	 * before we read the counters, we lose it.
-+	 * To work around this, we need a way to freeze the counters
-+	 * before reading MMCR0.  Normally, freezing the counters
-+	 * is done by writing MMCR0 (to set MMCR0[FC]) which
-+	 * unavoidably writes MMCR0[PMA0] as well.  On POWER8,
-+	 * we can also freeze the counters using MMCR2, by writing
-+	 * 1s to all the counter freeze condition bits (there are
-+	 * 9 bits each for 6 counters).
++kvmppc_guest_external:
++	/* External interrupt, first check for host_ipi. If this is
++	 * set, we know the host wants us out so let's do it now
 +	 */
-+	li	r3, -1			/* set all freeze bits */
-+	clrrdi	r3, r3, 10
-+	mfspr	r10, SPRN_MMCR2
-+	mtspr	SPRN_MMCR2, r3
-+	isync
-+END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
-+	li	r3, 1
-+	sldi	r3, r3, 31		/* MMCR0_FC (freeze counters) bit */
-+	mfspr	r4, SPRN_MMCR0		/* save MMCR0 */
-+	mtspr	SPRN_MMCR0, r3		/* freeze all counters, disable ints */
-+	mfspr	r6, SPRN_MMCRA
-+	/* Clear MMCRA in order to disable SDAR updates */
-+	li	r7, 0
-+	mtspr	SPRN_MMCRA, r7
-+	isync
-+	cmpwi	r8, 0			/* did they ask for PMU stuff to be saved? */
-+	bne	21f
-+	std	r3, VCPU_MMCR(r9)	/* if not, set saved MMCR0 to FC */
-+	b	22f
-+21:	mfspr	r5, SPRN_MMCR1
-+	mfspr	r7, SPRN_SIAR
-+	mfspr	r8, SPRN_SDAR
-+	std	r4, VCPU_MMCR(r9)
-+	std	r5, VCPU_MMCR + 8(r9)
-+	std	r6, VCPU_MMCR + 16(r9)
-+BEGIN_FTR_SECTION
-+	std	r10, VCPU_MMCR + 24(r9)
-+END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
-+	std	r7, VCPU_SIAR(r9)
-+	std	r8, VCPU_SDAR(r9)
-+	mfspr	r3, SPRN_PMC1
-+	mfspr	r4, SPRN_PMC2
-+	mfspr	r5, SPRN_PMC3
-+	mfspr	r6, SPRN_PMC4
-+	mfspr	r7, SPRN_PMC5
-+	mfspr	r8, SPRN_PMC6
-+	stw	r3, VCPU_PMC(r9)
-+	stw	r4, VCPU_PMC + 4(r9)
-+	stw	r5, VCPU_PMC + 8(r9)
-+	stw	r6, VCPU_PMC + 12(r9)
-+	stw	r7, VCPU_PMC + 16(r9)
-+	stw	r8, VCPU_PMC + 20(r9)
-+BEGIN_FTR_SECTION
-+	mfspr	r5, SPRN_SIER
-+	std	r5, VCPU_SIER(r9)
-+BEGIN_FTR_SECTION_NESTED(96)
-+	mfspr	r6, SPRN_SPMC1
-+	mfspr	r7, SPRN_SPMC2
-+	mfspr	r8, SPRN_MMCRS
-+	stw	r6, VCPU_PMC + 24(r9)
-+	stw	r7, VCPU_PMC + 28(r9)
-+	std	r8, VCPU_MMCR + 32(r9)
-+	lis	r4, 0x8000
-+	mtspr	SPRN_MMCRS, r4
-+END_FTR_SECTION_NESTED(CPU_FTR_ARCH_300, 0, 96)
-+END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
-+22:	blr
++	bl	kvmppc_read_intr
++
++	/*
++	 * Restore the active volatile registers after returning from
++	 * a C function.
++	 */
++	ld	r9, HSTATE_KVM_VCPU(r13)
++	li	r12, BOOK3S_INTERRUPT_EXTERNAL
++
++	/*
++	 * kvmppc_read_intr return codes:
++	 *
++	 * Exit to host (r3 > 0)
++	 *   1 An interrupt is pending that needs to be handled by the host
++	 *     Exit guest and return to host by branching to guest_exit_cont
++	 *
++	 *   2 Passthrough that needs completion in the host
++	 *     Exit guest and return to host by branching to guest_exit_cont
++	 *     However, we also set r12 to BOOK3S_INTERRUPT_HV_RM_HARD
++	 *     to indicate to the host to complete handling the interrupt
++	 *
++	 * Before returning to guest, we check if any CPU is heading out
++	 * to the host and if so, we head out also. If no CPUs are heading
++	 * check return values <= 0.
++	 *
++	 * Return to guest (r3 <= 0)
++	 *  0 No external interrupt is pending
++	 * -1 A guest wakeup IPI (which has now been cleared)
++	 *    In either case, we return to guest to deliver any pending
++	 *    guest interrupts.
++	 *
++	 * -2 A PCI passthrough external interrupt was handled
++	 *    (interrupt was delivered directly to guest)
++	 *    Return to guest to deliver any pending guest interrupts.
++	 */
++
++	cmpdi	r3, 1
++	ble	1f
++
++	/* Return code = 2 */
++	li	r12, BOOK3S_INTERRUPT_HV_RM_HARD
++	stw	r12, VCPU_TRAP(r9)
++	b	guest_exit_cont
++
++1:	/* Return code <= 1 */
++	cmpdi	r3, 0
++	bgt	guest_exit_cont
++
++	/* Return code <= 0 */
++maybe_reenter_guest:
++	ld	r5, HSTATE_KVM_VCORE(r13)
++	lwz	r0, VCORE_ENTRY_EXIT(r5)
++	cmpwi	r0, 0x100
++	mr	r4, r9
++	blt	deliver_guest_interrupt
++	b	guest_exit_cont
++
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+ /*
+  * Softpatch interrupt for transactional memory emulation cases
+@@ -2685,13 +2678,7 @@ END_FTR_SECTION(CPU_FTR_TM | CPU_FTR_P9_TM_HV_ASSIST, 0)
+ 	mr	r9, r4
+ 	cmpdi	r3, 0
+ 	bgt	guest_exit_cont
+-
+-	/* see if any other thread is already exiting */
+-	lwz	r0,VCORE_ENTRY_EXIT(r5)
+-	cmpwi	r0,0x100
+-	bge	guest_exit_cont
+-
+-	b	kvmppc_cede_reentry	/* if not go back to guest */
++	b	maybe_reenter_guest
+ 
+ 	/* cede when already previously prodded case */
+ kvm_cede_prodded:
+@@ -2758,12 +2745,12 @@ machine_check_realmode:
+ 	 */
+ 	ld	r11, VCPU_MSR(r9)
+ 	rldicl.	r0, r11, 64-MSR_HV_LG, 63 /* check if it happened in HV mode */
+-	bne	mc_cont			/* if so, exit to host */
++	bne	guest_exit_cont		/* if so, exit to host */
+ 	/* Check if guest is capable of handling NMI exit */
+ 	ld	r10, VCPU_KVM(r9)
+ 	lbz	r10, KVM_FWNMI(r10)
+ 	cmpdi	r10, 1			/* FWNMI capable? */
+-	beq	mc_cont			/* if so, exit with KVM_EXIT_NMI. */
++	beq	guest_exit_cont		/* if so, exit with KVM_EXIT_NMI. */
+ 
+ 	/* if not, fall through for backward compatibility. */
+ 	andi.	r10, r11, MSR_RI	/* check for unrecoverable exception */
+@@ -2777,6 +2764,21 @@ machine_check_realmode:
+ 2:	b	fast_interrupt_c_return
+ 
+ /*
++ * Call C code to handle a HMI in real mode.
++ * Only the primary thread does the call, secondary threads are handled
++ * by calling hmi_exception_realmode() after kvmppc_hv_entry returns.
++ * r9 points to the vcpu on entry
++ */
++hmi_realmode:
++	lbz	r0, HSTATE_PTID(r13)
++	cmpwi	r0, 0
++	bne	guest_exit_cont
++	bl	kvmppc_realmode_hmi_handler
++	ld	r9, HSTATE_KVM_VCPU(r13)
++	li	r12, BOOK3S_INTERRUPT_HMI
++	b	guest_exit_cont
 +
 +/*
-  * This works around a hardware bug on POWER8E processors, where
-  * writing a 1 to the MMCR0[PMAO] bit doesn't generate a
-  * performance monitor interrupt.  Instead, when we need to have
+  * Check the reason we woke from nap, and take appropriate action.
+  * Returns (in r3):
+  *	0 if nothing needs to be done
 -- 
 2.7.4
 
