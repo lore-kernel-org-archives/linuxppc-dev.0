@@ -2,65 +2,65 @@ Return-Path: <SRS0=m9yV=MQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-6.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	SIGNED_OFF_BY,SPF_PASS,UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3534DC64EBC
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 12:28:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 37CD1C64EB8
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 12:31:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A204F20877
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 12:28:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id ABECC21470
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 12:31:10 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="CGw70ZK8"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A204F20877
+	dkim=pass (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="TDeSc2Wl"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ABECC21470
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42Qsc33XGPzF3K4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 22:28:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Qsgc1xSDzF3Kg
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 22:31:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="CGw70ZK8";
+	dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="TDeSc2Wl";
 	dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42QrvW3cLPzF3Jm
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2018 21:56:23 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42QrvX1MQrzF3Jp
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2018 21:56:24 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="CGw70ZK8"; 
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="TDeSc2Wl"; 
  dkim-atps=neutral
 Received: by ozlabs.org (Postfix)
- id 42QrvW0wT7z9sj8; Thu,  4 Oct 2018 21:56:23 +1000 (AEST)
+ id 42QrvX00CLz9sCw; Thu,  4 Oct 2018 21:56:24 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 42QrvV5z8Bz9sRp;
- Thu,  4 Oct 2018 21:56:22 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPSA id 42QrvW4Z9yzB4Mc;
+ Thu,  4 Oct 2018 21:56:23 +1000 (AEST)
 Authentication-Results: ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.org
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1538654182; bh=GHvrort0D4PvHrFwKGzxDTIEly/vEiPuLNTqgnCF/XE=;
+ t=1538654183; bh=rhgUkOJJ71vBHHQlGL7qVU9mmkJ5sNGdjrSe0Jw3G1I=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=CGw70ZK8YtuziwvTVutqppfIWmQ54t/oLuSbCKKnVSFnLf73Lg/czgBGGLSu9KhUr
- R7TWFv5P8hA/zLq/iF9AUhSD0RHzWgKp7W7jB030lolvlj1qTUBSNvp8BtSf41Tjr4
- 7x+KAYyfY6JT74W7eHhoZfwHvCTt7azbd5peiH9h/9jnOsfR8bDwv2UOLIby3MrSxU
- Jjv5nhrCg/1I6LhwVhue7QGWWmtABxH5GpreBE+U1ZNefrrTJntuThV/uc74raWKyG
- vdlAmTlvoXaPm+gwJ+2pbqswNoe6UHkvYnHonlEGbvftQSzW4ytbqDZjwMxFUWL75A
- V1Hu1bYrwGPDw==
+ b=TDeSc2WlklVxHOFVi7MhbzizQHh8odvZZj1q/Yvq1FYHh+QQB8ioYYn7wmqhbwmw7
+ CdKzmv1um4vRdJWLOAl9CZlMf9dVausb0aebjaESvmJsLChPTxcK1QPCAUu0Ee0BnW
+ dooNTcQkgz3LjW1OdfW/3eJDnANKI56ZpvR1ugGYu4EMQauZURK1+Z3/jVOLGe7uIF
+ TpuTwzMKQMZJWjPxZYqTu9TBKo3hmc3kjY8ESNz93mgYxhVpfQQwagZFdmRC6z9Kna
+ NpNae0pG4KxVFr5va0TlgRe6hOHqiSUP42g2xuGDZgVaS45MgAqDbm11Y3+ywVL904
+ /4OX4PJchVlzw==
 From: Paul Mackerras <paulus@ozlabs.org>
 To: kvm@vger.kernel.org,
 	kvm-ppc@vger.kernel.org
-Subject: [PATCH v4 09/32] KVM: PPC: Book3S HV: Streamlined guest entry/exit
- path on P9 for radix guests
-Date: Thu,  4 Oct 2018 21:55:46 +1000
-Message-Id: <1538654169-15602-10-git-send-email-paulus@ozlabs.org>
+Subject: [PATCH v4 11/32] KVM: PPC: Book3S HV: Add a debugfs file to dump
+ radix mappings
+Date: Thu,  4 Oct 2018 21:55:48 +1000
+Message-Id: <1538654169-15602-12-git-send-email-paulus@ozlabs.org>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1538654169-15602-1-git-send-email-paulus@ozlabs.org>
 References: <1538654169-15602-1-git-send-email-paulus@ozlabs.org>
@@ -80,761 +80,255 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This creates an alternative guest entry/exit path which is used for
-radix guests on POWER9 systems when we have indep_threads_mode=Y.  In
-these circumstances there is exactly one vcpu per vcore and there is
-no coordination required between vcpus or vcores; the vcpu can enter
-the guest without needing to synchronize with anything else.
-
-The new fast path is implemented almost entirely in C in book3s_hv.c
-and runs with the MMU on until the guest is entered.  On guest exit
-we use the existing path until the point where we are committed to
-exiting the guest (as distinct from handling an interrupt in the
-low-level code and returning to the guest) and we have pulled the
-guest context from the XIVE.  At that point we check a flag in the
-stack frame to see whether we came in via the old path and the new
-path; if we came in via the new path then we go back to C code to do
-the rest of the process of saving the guest context and restoring the
-host context.
-
-The C code is split into separate functions for handling the
-OS-accessible state and the hypervisor state, with the idea that the
-latter can be replaced by a hypercall when we implement nested
-virtualization.
+This adds a file called 'radix' in the debugfs directory for the
+guest, which when read gives all of the valid leaf PTEs in the
+partition-scoped radix tree for a radix guest, in human-readable
+format.  It is analogous to the existing 'htab' file which dumps
+the HPT entries for a HPT guest.
 
 Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/include/asm/asm-prototypes.h |   2 +
- arch/powerpc/include/asm/kvm_ppc.h        |   2 +
- arch/powerpc/kvm/book3s_hv.c              | 425 +++++++++++++++++++++++++++++-
- arch/powerpc/kvm/book3s_hv_ras.c          |   2 +
- arch/powerpc/kvm/book3s_hv_rmhandlers.S   |  95 ++++++-
- arch/powerpc/kvm/book3s_xive.c            |  63 +++++
- 6 files changed, 585 insertions(+), 4 deletions(-)
+ arch/powerpc/include/asm/kvm_book3s_64.h |   1 +
+ arch/powerpc/include/asm/kvm_host.h      |   1 +
+ arch/powerpc/kvm/book3s_64_mmu_radix.c   | 179 +++++++++++++++++++++++++++++++
+ arch/powerpc/kvm/book3s_hv.c             |   2 +
+ 4 files changed, 183 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/asm-prototypes.h b/arch/powerpc/include/asm/asm-prototypes.h
-index 0c1a2b0..5c9b00c 100644
---- a/arch/powerpc/include/asm/asm-prototypes.h
-+++ b/arch/powerpc/include/asm/asm-prototypes.h
-@@ -165,4 +165,6 @@ void kvmhv_load_host_pmu(void);
- void kvmhv_save_guest_pmu(struct kvm_vcpu *vcpu, bool pmu_in_use);
- void kvmhv_load_guest_pmu(struct kvm_vcpu *vcpu);
- 
-+int __kvmhv_vcpu_entry_p9(struct kvm_vcpu *vcpu);
-+
- #endif /* _ASM_POWERPC_ASM_PROTOTYPES_H */
-diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-index 83d61b8..245e564 100644
---- a/arch/powerpc/include/asm/kvm_ppc.h
-+++ b/arch/powerpc/include/asm/kvm_ppc.h
-@@ -585,6 +585,7 @@ extern int kvmppc_xive_set_icp(struct kvm_vcpu *vcpu, u64 icpval);
- 
- extern int kvmppc_xive_set_irq(struct kvm *kvm, int irq_source_id, u32 irq,
- 			       int level, bool line_status);
-+extern void kvmppc_xive_push_vcpu(struct kvm_vcpu *vcpu);
- #else
- static inline int kvmppc_xive_set_xive(struct kvm *kvm, u32 irq, u32 server,
- 				       u32 priority) { return -1; }
-@@ -607,6 +608,7 @@ static inline int kvmppc_xive_set_icp(struct kvm_vcpu *vcpu, u64 icpval) { retur
- 
- static inline int kvmppc_xive_set_irq(struct kvm *kvm, int irq_source_id, u32 irq,
- 				      int level, bool line_status) { return -ENODEV; }
-+static inline void kvmppc_xive_push_vcpu(struct kvm_vcpu *vcpu) { }
- #endif /* CONFIG_KVM_XIVE */
- 
- /*
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 0e17593..0dda782 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -3080,6 +3080,269 @@ static noinline void kvmppc_run_core(struct kvmppc_vcore *vc)
+diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
+index dc435a5..af25aaa 100644
+--- a/arch/powerpc/include/asm/kvm_book3s_64.h
++++ b/arch/powerpc/include/asm/kvm_book3s_64.h
+@@ -435,6 +435,7 @@ static inline struct kvm_memslots *kvm_memslots_raw(struct kvm *kvm)
  }
  
- /*
-+ * Load up hypervisor-mode registers on P9.
-+ */
-+static int kvmhv_load_hv_regs_and_go(struct kvm_vcpu *vcpu, u64 time_limit)
-+{
-+	struct kvmppc_vcore *vc = vcpu->arch.vcore;
-+	s64 hdec;
-+	u64 tb, purr, spurr;
-+	int trap;
-+	unsigned long host_hfscr = mfspr(SPRN_HFSCR);
-+	unsigned long host_ciabr = mfspr(SPRN_CIABR);
-+	unsigned long host_dawr = mfspr(SPRN_DAWR);
-+	unsigned long host_dawrx = mfspr(SPRN_DAWRX);
-+	unsigned long host_psscr = mfspr(SPRN_PSSCR);
-+	unsigned long host_pidr = mfspr(SPRN_PID);
-+
-+	hdec = time_limit - mftb();
-+	if (hdec < 0)
-+		return BOOK3S_INTERRUPT_HV_DECREMENTER;
-+	mtspr(SPRN_HDEC, hdec);
-+
-+	if (vc->tb_offset) {
-+		u64 new_tb = mftb() + vc->tb_offset;
-+		mtspr(SPRN_TBU40, new_tb);
-+		tb = mftb();
-+		if ((tb & 0xffffff) < (new_tb & 0xffffff))
-+			mtspr(SPRN_TBU40, new_tb + 0x1000000);
-+		vc->tb_offset_applied = vc->tb_offset;
-+	}
-+
-+	if (vc->pcr)
-+		mtspr(SPRN_PCR, vc->pcr);
-+	mtspr(SPRN_DPDES, vc->dpdes);
-+	mtspr(SPRN_VTB, vc->vtb);
-+
-+	local_paca->kvm_hstate.host_purr = mfspr(SPRN_PURR);
-+	local_paca->kvm_hstate.host_spurr = mfspr(SPRN_SPURR);
-+	mtspr(SPRN_PURR, vcpu->arch.purr);
-+	mtspr(SPRN_SPURR, vcpu->arch.spurr);
-+
-+	if (cpu_has_feature(CPU_FTR_DAWR)) {
-+		mtspr(SPRN_DAWR, vcpu->arch.dawr);
-+		mtspr(SPRN_DAWRX, vcpu->arch.dawrx);
-+	}
-+	mtspr(SPRN_CIABR, vcpu->arch.ciabr);
-+	mtspr(SPRN_IC, vcpu->arch.ic);
-+	mtspr(SPRN_PID, vcpu->arch.pid);
-+
-+	mtspr(SPRN_PSSCR, vcpu->arch.psscr | PSSCR_EC |
-+	      (local_paca->kvm_hstate.fake_suspend << PSSCR_FAKE_SUSPEND_LG));
-+
-+	mtspr(SPRN_HFSCR, vcpu->arch.hfscr);
-+
-+	mtspr(SPRN_SPRG0, vcpu->arch.shregs.sprg0);
-+	mtspr(SPRN_SPRG1, vcpu->arch.shregs.sprg1);
-+	mtspr(SPRN_SPRG2, vcpu->arch.shregs.sprg2);
-+	mtspr(SPRN_SPRG3, vcpu->arch.shregs.sprg3);
-+
-+	mtspr(SPRN_AMOR, ~0UL);
-+
-+	mtspr(SPRN_LPCR, vc->lpcr);
-+	isync();
-+
-+	kvmppc_xive_push_vcpu(vcpu);
-+
-+	mtspr(SPRN_SRR0, vcpu->arch.shregs.srr0);
-+	mtspr(SPRN_SRR1, vcpu->arch.shregs.srr1);
-+
-+	trap = __kvmhv_vcpu_entry_p9(vcpu);
-+
-+	/* Advance host PURR/SPURR by the amount used by guest */
-+	purr = mfspr(SPRN_PURR);
-+	spurr = mfspr(SPRN_SPURR);
-+	mtspr(SPRN_PURR, local_paca->kvm_hstate.host_purr +
-+	      purr - vcpu->arch.purr);
-+	mtspr(SPRN_SPURR, local_paca->kvm_hstate.host_spurr +
-+	      spurr - vcpu->arch.spurr);
-+	vcpu->arch.purr = purr;
-+	vcpu->arch.spurr = spurr;
-+
-+	vcpu->arch.ic = mfspr(SPRN_IC);
-+	vcpu->arch.pid = mfspr(SPRN_PID);
-+	vcpu->arch.psscr = mfspr(SPRN_PSSCR) & PSSCR_GUEST_VIS;
-+
-+	vcpu->arch.shregs.sprg0 = mfspr(SPRN_SPRG0);
-+	vcpu->arch.shregs.sprg1 = mfspr(SPRN_SPRG1);
-+	vcpu->arch.shregs.sprg2 = mfspr(SPRN_SPRG2);
-+	vcpu->arch.shregs.sprg3 = mfspr(SPRN_SPRG3);
-+
-+	mtspr(SPRN_PSSCR, host_psscr);
-+	mtspr(SPRN_HFSCR, host_hfscr);
-+	mtspr(SPRN_CIABR, host_ciabr);
-+	mtspr(SPRN_DAWR, host_dawr);
-+	mtspr(SPRN_DAWRX, host_dawrx);
-+	mtspr(SPRN_PID, host_pidr);
-+
-+	/*
-+	 * Since this is radix, do a eieio; tlbsync; ptesync sequence in
-+	 * case we interrupted the guest between a tlbie and a ptesync.
-+	 */
-+	asm volatile("eieio; tlbsync; ptesync");
-+
-+	mtspr(SPRN_LPID, vcpu->kvm->arch.host_lpid);	/* restore host LPID */
-+	isync();
-+
-+	vc->dpdes = mfspr(SPRN_DPDES);
-+	vc->vtb = mfspr(SPRN_VTB);
-+	mtspr(SPRN_DPDES, 0);
-+	if (vc->pcr)
-+		mtspr(SPRN_PCR, 0);
-+
-+	if (vc->tb_offset_applied) {
-+		u64 new_tb = mftb() - vc->tb_offset_applied;
-+		mtspr(SPRN_TBU40, new_tb);
-+		tb = mftb();
-+		if ((tb & 0xffffff) < (new_tb & 0xffffff))
-+			mtspr(SPRN_TBU40, new_tb + 0x1000000);
-+		vc->tb_offset_applied = 0;
-+	}
-+
-+	mtspr(SPRN_HDEC, 0x7fffffff);
-+	mtspr(SPRN_LPCR, vcpu->kvm->arch.host_lpcr);
-+
-+	return trap;
-+}
-+
-+/*
-+ * Virtual-mode guest entry for POWER9 and later when the host and
-+ * guest are both using the radix MMU.  The LPIDR has already been set.
-+ */
-+int kvmhv_p9_guest_entry(struct kvm_vcpu *vcpu, u64 time_limit)
-+{
-+	struct kvmppc_vcore *vc = vcpu->arch.vcore;
-+	unsigned long host_dscr = mfspr(SPRN_DSCR);
-+	unsigned long host_tidr = mfspr(SPRN_TIDR);
-+	unsigned long host_iamr = mfspr(SPRN_IAMR);
-+	s64 dec;
-+	u64 tb;
-+	int trap, save_pmu;
-+
-+	dec = mfspr(SPRN_DEC);
-+	tb = mftb();
-+	if (dec < 512)
-+		return BOOK3S_INTERRUPT_HV_DECREMENTER;
-+	local_paca->kvm_hstate.dec_expires = dec + tb;
-+	if (local_paca->kvm_hstate.dec_expires < time_limit)
-+		time_limit = local_paca->kvm_hstate.dec_expires;
-+
-+	vcpu->arch.ceded = 0;
-+
-+	kvmhv_save_host_pmu();		/* saves it to PACA kvm_hstate */
-+
-+	kvmppc_subcore_enter_guest();
-+
-+	vc->entry_exit_map = 1;
-+	vc->in_guest = 1;
-+
-+	if (vcpu->arch.vpa.pinned_addr) {
-+		struct lppaca *lp = vcpu->arch.vpa.pinned_addr;
-+		u32 yield_count = be32_to_cpu(lp->yield_count) + 1;
-+		lp->yield_count = cpu_to_be32(yield_count);
-+		vcpu->arch.vpa.dirty = 1;
-+	}
-+
-+	if (cpu_has_feature(CPU_FTR_TM) ||
-+	    cpu_has_feature(CPU_FTR_P9_TM_HV_ASSIST))
-+		kvmppc_restore_tm_hv(vcpu, vcpu->arch.shregs.msr, true);
-+
-+	kvmhv_load_guest_pmu(vcpu);
-+
-+	msr_check_and_set(MSR_FP | MSR_VEC | MSR_VSX);
-+	load_fp_state(&vcpu->arch.fp);
-+	load_vr_state(&vcpu->arch.vr);
-+
-+	mtspr(SPRN_DSCR, vcpu->arch.dscr);
-+	mtspr(SPRN_IAMR, vcpu->arch.iamr);
-+	mtspr(SPRN_PSPB, vcpu->arch.pspb);
-+	mtspr(SPRN_FSCR, vcpu->arch.fscr);
-+	mtspr(SPRN_TAR, vcpu->arch.tar);
-+	mtspr(SPRN_EBBHR, vcpu->arch.ebbhr);
-+	mtspr(SPRN_EBBRR, vcpu->arch.ebbrr);
-+	mtspr(SPRN_BESCR, vcpu->arch.bescr);
-+	mtspr(SPRN_WORT, vcpu->arch.wort);
-+	mtspr(SPRN_TIDR, vcpu->arch.tid);
-+	mtspr(SPRN_DAR, vcpu->arch.shregs.dar);
-+	mtspr(SPRN_DSISR, vcpu->arch.shregs.dsisr);
-+	mtspr(SPRN_AMR, vcpu->arch.amr);
-+	mtspr(SPRN_UAMOR, vcpu->arch.uamor);
-+
-+	if (!(vcpu->arch.ctrl & 1))
-+		mtspr(SPRN_CTRLT, mfspr(SPRN_CTRLF) & ~1);
-+
-+	mtspr(SPRN_DEC, vcpu->arch.dec_expires - mftb());
-+
-+	if (vcpu->arch.doorbell_request) {
-+		vc->dpdes = 1;
-+		smp_wmb();
-+		vcpu->arch.doorbell_request = 0;
-+	}
-+
-+	trap = kvmhv_load_hv_regs_and_go(vcpu, time_limit);
-+
-+	vcpu->arch.slb_max = 0;
-+	dec = mfspr(SPRN_DEC);
-+	tb = mftb();
-+	vcpu->arch.dec_expires = dec + tb;
-+	vcpu->cpu = -1;
-+	vcpu->arch.thread_cpu = -1;
-+	vcpu->arch.ctrl = mfspr(SPRN_CTRLF);
-+
-+	vcpu->arch.iamr = mfspr(SPRN_IAMR);
-+	vcpu->arch.pspb = mfspr(SPRN_PSPB);
-+	vcpu->arch.fscr = mfspr(SPRN_FSCR);
-+	vcpu->arch.tar = mfspr(SPRN_TAR);
-+	vcpu->arch.ebbhr = mfspr(SPRN_EBBHR);
-+	vcpu->arch.ebbrr = mfspr(SPRN_EBBRR);
-+	vcpu->arch.bescr = mfspr(SPRN_BESCR);
-+	vcpu->arch.wort = mfspr(SPRN_WORT);
-+	vcpu->arch.tid = mfspr(SPRN_TIDR);
-+	vcpu->arch.amr = mfspr(SPRN_AMR);
-+	vcpu->arch.uamor = mfspr(SPRN_UAMOR);
-+	vcpu->arch.dscr = mfspr(SPRN_DSCR);
-+
-+	mtspr(SPRN_PSPB, 0);
-+	mtspr(SPRN_WORT, 0);
-+	mtspr(SPRN_AMR, 0);
-+	mtspr(SPRN_UAMOR, 0);
-+	mtspr(SPRN_DSCR, host_dscr);
-+	mtspr(SPRN_TIDR, host_tidr);
-+	mtspr(SPRN_IAMR, host_iamr);
-+	mtspr(SPRN_PSPB, 0);
-+
-+	msr_check_and_set(MSR_FP | MSR_VEC | MSR_VSX);
-+	store_fp_state(&vcpu->arch.fp);
-+	store_vr_state(&vcpu->arch.vr);
-+
-+	if (cpu_has_feature(CPU_FTR_TM) ||
-+	    cpu_has_feature(CPU_FTR_P9_TM_HV_ASSIST))
-+		kvmppc_save_tm_hv(vcpu, vcpu->arch.shregs.msr, true);
-+
-+	save_pmu = 1;
-+	if (vcpu->arch.vpa.pinned_addr) {
-+		struct lppaca *lp = vcpu->arch.vpa.pinned_addr;
-+		u32 yield_count = be32_to_cpu(lp->yield_count) + 1;
-+		lp->yield_count = cpu_to_be32(yield_count);
-+		vcpu->arch.vpa.dirty = 1;
-+		save_pmu = lp->pmcregs_in_use;
-+	}
-+
-+	kvmhv_save_guest_pmu(vcpu, save_pmu);
-+
-+	vc->entry_exit_map = 0x101;
-+	vc->in_guest = 0;
-+
-+	mtspr(SPRN_DEC, local_paca->kvm_hstate.dec_expires - mftb());
-+
-+	kvmhv_load_host_pmu();
-+
-+	kvmppc_subcore_exit_guest();
-+
-+	return trap;
-+}
-+
-+/*
-  * Wait for some other vcpu thread to execute us, and
-  * wake us up when we need to handle something in the host.
-  */
-@@ -3405,6 +3668,163 @@ static int kvmppc_run_vcpu(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
- 	return vcpu->arch.ret;
+ extern void kvmppc_mmu_debugfs_init(struct kvm *kvm);
++extern void kvmhv_radix_debugfs_init(struct kvm *kvm);
+ 
+ extern void kvmhv_rm_send_ipi(int cpu);
+ 
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index 3cd0b9f..a3d4f61 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -291,6 +291,7 @@ struct kvm_arch {
+ 	u64 process_table;
+ 	struct dentry *debugfs_dir;
+ 	struct dentry *htab_dentry;
++	struct dentry *radix_dentry;
+ 	struct kvm_resize_hpt *resize_hpt; /* protected by kvm->lock */
+ #endif /* CONFIG_KVM_BOOK3S_HV_POSSIBLE */
+ #ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/book3s_64_mmu_radix.c
+index 933c574..71951b5 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
+@@ -10,6 +10,9 @@
+ #include <linux/string.h>
+ #include <linux/kvm.h>
+ #include <linux/kvm_host.h>
++#include <linux/anon_inodes.h>
++#include <linux/file.h>
++#include <linux/debugfs.h>
+ 
+ #include <asm/kvm_ppc.h>
+ #include <asm/kvm_book3s.h>
+@@ -853,6 +856,182 @@ static void pmd_ctor(void *addr)
+ 	memset(addr, 0, RADIX_PMD_TABLE_SIZE);
  }
  
-+static int kvmhv_run_single_vcpu(struct kvm_run *kvm_run,
-+				 struct kvm_vcpu *vcpu, u64 time_limit)
++struct debugfs_radix_state {
++	struct kvm	*kvm;
++	struct mutex	mutex;
++	unsigned long	gpa;
++	int		chars_left;
++	int		buf_index;
++	char		buf[128];
++	u8		hdr;
++};
++
++static int debugfs_radix_open(struct inode *inode, struct file *file)
 +{
-+	int trap, r, pcpu, pcpu0;
-+	int srcu_idx;
-+	struct kvmppc_vcore *vc;
++	struct kvm *kvm = inode->i_private;
++	struct debugfs_radix_state *p;
 +
-+	trace_kvmppc_run_vcpu_enter(vcpu);
++	p = kzalloc(sizeof(*p), GFP_KERNEL);
++	if (!p)
++		return -ENOMEM;
 +
-+	kvm_run->exit_reason = 0;
-+	vcpu->arch.ret = RESUME_GUEST;
-+	vcpu->arch.trap = 0;
++	kvm_get_kvm(kvm);
++	p->kvm = kvm;
++	mutex_init(&p->mutex);
++	file->private_data = p;
 +
-+	vc = vcpu->arch.vcore;
-+	vcpu->arch.ceded = 0;
-+	vcpu->arch.run_task = current;
-+	vcpu->arch.kvm_run = kvm_run;
-+	vcpu->arch.stolen_logged = vcore_stolen_time(vc, mftb());
-+	vcpu->arch.state = KVMPPC_VCPU_RUNNABLE;
-+	vcpu->arch.busy_preempt = TB_NIL;
-+	vcpu->arch.last_inst = KVM_INST_FETCH_FAILED;
-+	vc->runnable_threads[0] = vcpu;
-+	vc->n_runnable = 1;
-+	vc->runner = vcpu;
++	return nonseekable_open(inode, file);
++}
 +
-+	/* See if the MMU is ready to go */
-+	if (!vcpu->kvm->arch.mmu_ready) {
-+		r = kvmhv_setup_mmu(vcpu);
++static int debugfs_radix_release(struct inode *inode, struct file *file)
++{
++	struct debugfs_radix_state *p = file->private_data;
++
++	kvm_put_kvm(p->kvm);
++	kfree(p);
++	return 0;
++}
++
++static ssize_t debugfs_radix_read(struct file *file, char __user *buf,
++				 size_t len, loff_t *ppos)
++{
++	struct debugfs_radix_state *p = file->private_data;
++	ssize_t ret, r;
++	unsigned long n;
++	struct kvm *kvm;
++	unsigned long gpa;
++	pgd_t *pgt;
++	pgd_t pgd, *pgdp;
++	pud_t pud, *pudp;
++	pmd_t pmd, *pmdp;
++	pte_t *ptep;
++	int shift;
++	unsigned long pte;
++
++	kvm = p->kvm;
++	if (!kvm_is_radix(kvm))
++		return 0;
++
++	ret = mutex_lock_interruptible(&p->mutex);
++	if (ret)
++		return ret;
++
++	if (p->chars_left) {
++		n = p->chars_left;
++		if (n > len)
++			n = len;
++		r = copy_to_user(buf, p->buf + p->buf_index, n);
++		n -= r;
++		p->chars_left -= n;
++		p->buf_index += n;
++		buf += n;
++		len -= n;
++		ret = n;
 +		if (r) {
-+			kvm_run->exit_reason = KVM_EXIT_FAIL_ENTRY;
-+			kvm_run->fail_entry.
-+				hardware_entry_failure_reason = 0;
-+			vcpu->arch.ret = r;
++			if (!n)
++				ret = -EFAULT;
 +			goto out;
 +		}
 +	}
 +
-+	if (need_resched())
-+		cond_resched();
++	gpa = p->gpa;
++	pgt = kvm->arch.pgtable;
++	while (len != 0 && gpa < RADIX_PGTABLE_RANGE) {
++		if (!p->hdr) {
++			n = scnprintf(p->buf, sizeof(p->buf),
++				      "pgdir: %lx\n", (unsigned long)pgt);
++			p->hdr = 1;
++			goto copy;
++		}
 +
-+	kvmppc_update_vpas(vcpu);
++		pgdp = pgt + pgd_index(gpa);
++		pgd = READ_ONCE(*pgdp);
++		if (!(pgd_val(pgd) & _PAGE_PRESENT)) {
++			gpa = (gpa & PGDIR_MASK) + PGDIR_SIZE;
++			continue;
++		}
 +
-+	init_vcore_to_run(vc);
-+	vc->preempt_tb = TB_NIL;
++		pudp = pud_offset(&pgd, gpa);
++		pud = READ_ONCE(*pudp);
++		if (!(pud_val(pud) & _PAGE_PRESENT)) {
++			gpa = (gpa & PUD_MASK) + PUD_SIZE;
++			continue;
++		}
++		if (pud_val(pud) & _PAGE_PTE) {
++			pte = pud_val(pud);
++			shift = PUD_SHIFT;
++			goto leaf;
++		}
 +
-+	preempt_disable();
-+	pcpu = smp_processor_id();
-+	vc->pcpu = pcpu;
-+	kvmppc_prepare_radix_vcpu(vcpu, pcpu);
++		pmdp = pmd_offset(&pud, gpa);
++		pmd = READ_ONCE(*pmdp);
++		if (!(pmd_val(pmd) & _PAGE_PRESENT)) {
++			gpa = (gpa & PMD_MASK) + PMD_SIZE;
++			continue;
++		}
++		if (pmd_val(pmd) & _PAGE_PTE) {
++			pte = pmd_val(pmd);
++			shift = PMD_SHIFT;
++			goto leaf;
++		}
 +
-+	local_irq_disable();
-+	hard_irq_disable();
-+	if (signal_pending(current))
-+		goto sigpend;
-+	if (lazy_irq_pending() || need_resched() || !vcpu->kvm->arch.mmu_ready)
-+		goto out;
-+
-+	kvmppc_core_prepare_to_enter(vcpu);
-+
-+	kvmppc_clear_host_core(pcpu);
-+
-+	local_paca->kvm_hstate.tid = 0;
-+	local_paca->kvm_hstate.napping = 0;
-+	local_paca->kvm_hstate.kvm_split_mode = NULL;
-+	kvmppc_start_thread(vcpu, vc);
-+	kvmppc_create_dtl_entry(vcpu, vc);
-+	trace_kvm_guest_enter(vcpu);
-+
-+	vc->vcore_state = VCORE_RUNNING;
-+	trace_kvmppc_run_core(vc, 0);
-+
-+	mtspr(SPRN_LPID, vc->kvm->arch.lpid);
-+	isync();
-+
-+	/* See comment above in kvmppc_run_core() about this */
-+	pcpu0 = pcpu;
-+	if (cpu_has_feature(CPU_FTR_ARCH_300))
-+		pcpu0 &= ~0x3UL;
-+
-+	if (cpumask_test_cpu(pcpu0, &vc->kvm->arch.need_tlb_flush)) {
-+		radix__local_flush_tlb_lpid_guest(vc->kvm->arch.lpid);
-+		/* Clear the bit after the TLB flush */
-+		cpumask_clear_cpu(pcpu0, &vc->kvm->arch.need_tlb_flush);
-+	}
-+
-+	trace_hardirqs_on();
-+	guest_enter_irqoff();
-+
-+	srcu_idx = srcu_read_lock(&vc->kvm->srcu);
-+
-+	this_cpu_disable_ftrace();
-+
-+	trap = kvmhv_p9_guest_entry(vcpu, time_limit);
-+	vcpu->arch.trap = trap;
-+
-+	this_cpu_enable_ftrace();
-+
-+	srcu_read_unlock(&vc->kvm->srcu, srcu_idx);
-+
-+	mtspr(SPRN_LPID, vc->kvm->arch.host_lpid);
-+	isync();
-+
-+	trace_hardirqs_off();
-+	set_irq_happened(trap);
-+
-+	kvmppc_set_host_core(pcpu);
-+
-+	local_irq_enable();
-+	guest_exit();
-+	preempt_enable();
-+
-+	/* cancel pending decrementer exception if DEC is now positive */
-+	if (get_tb() < vcpu->arch.dec_expires && kvmppc_core_pending_dec(vcpu))
-+		kvmppc_core_dequeue_dec(vcpu);
-+
-+	trace_kvm_guest_exit(vcpu);
-+	r = RESUME_GUEST;
-+	if (trap)
-+		r = kvmppc_handle_exit_hv(kvm_run, vcpu, current);
-+	vcpu->arch.ret = r;
-+
-+	if (is_kvmppc_resume_guest(r) && vcpu->arch.ceded &&
-+	    !kvmppc_vcpu_woken(vcpu)) {
-+		kvmppc_set_timer(vcpu);
-+		while (vcpu->arch.ceded && !kvmppc_vcpu_woken(vcpu)) {
-+			if (signal_pending(current)) {
-+				vcpu->stat.signal_exits++;
-+				kvm_run->exit_reason = KVM_EXIT_INTR;
-+				vcpu->arch.ret = -EINTR;
-+				break;
-+			}
-+			spin_lock(&vc->lock);
-+			kvmppc_vcore_blocked(vc);
-+			spin_unlock(&vc->lock);
++		ptep = pte_offset_kernel(&pmd, gpa);
++		pte = pte_val(READ_ONCE(*ptep));
++		if (!(pte & _PAGE_PRESENT)) {
++			gpa += PAGE_SIZE;
++			continue;
++		}
++		shift = PAGE_SHIFT;
++	leaf:
++		n = scnprintf(p->buf, sizeof(p->buf),
++			      " %lx: %lx %d\n", gpa, pte, shift);
++		gpa += 1ul << shift;
++	copy:
++		p->chars_left = n;
++		if (n > len)
++			n = len;
++		r = copy_to_user(buf, p->buf, n);
++		n -= r;
++		p->chars_left -= n;
++		p->buf_index = n;
++		buf += n;
++		len -= n;
++		ret += n;
++		if (r) {
++			if (!ret)
++				ret = -EFAULT;
++			break;
 +		}
 +	}
-+	vcpu->arch.ceded = 0;
++	p->gpa = gpa;
 +
-+	vc->vcore_state = VCORE_INACTIVE;
-+	trace_kvmppc_run_core(vc, 1);
-+
-+ done:
-+	kvmppc_remove_runnable(vc, vcpu);
-+	trace_kvmppc_run_vcpu_exit(vcpu, kvm_run);
-+
-+	return vcpu->arch.ret;
-+
-+ sigpend:
-+	vcpu->stat.signal_exits++;
-+	kvm_run->exit_reason = KVM_EXIT_INTR;
-+	vcpu->arch.ret = -EINTR;
 + out:
-+	local_irq_enable();
-+	preempt_enable();
-+	goto done;
++	mutex_unlock(&p->mutex);
++	return ret;
 +}
 +
- static int kvmppc_vcpu_run_hv(struct kvm_run *run, struct kvm_vcpu *vcpu)
- {
- 	int r;
-@@ -3480,7 +3900,10 @@ static int kvmppc_vcpu_run_hv(struct kvm_run *run, struct kvm_vcpu *vcpu)
- 	vcpu->arch.state = KVMPPC_VCPU_BUSY_IN_HOST;
- 
- 	do {
--		r = kvmppc_run_vcpu(run, vcpu);
-+		if (kvm->arch.threads_indep && kvm_is_radix(kvm))
-+			r = kvmhv_run_single_vcpu(run, vcpu, ~(u64)0);
-+		else
-+			r = kvmppc_run_vcpu(run, vcpu);
- 
- 		if (run->exit_reason == KVM_EXIT_PAPR_HCALL &&
- 		    !(vcpu->arch.shregs.msr & MSR_PR)) {
-diff --git a/arch/powerpc/kvm/book3s_hv_ras.c b/arch/powerpc/kvm/book3s_hv_ras.c
-index ee564b6..0787f12 100644
---- a/arch/powerpc/kvm/book3s_hv_ras.c
-+++ b/arch/powerpc/kvm/book3s_hv_ras.c
-@@ -177,6 +177,7 @@ void kvmppc_subcore_enter_guest(void)
- 
- 	local_paca->sibling_subcore_state->in_guest[subcore_id] = 1;
- }
-+EXPORT_SYMBOL_GPL(kvmppc_subcore_enter_guest);
- 
- void kvmppc_subcore_exit_guest(void)
- {
-@@ -187,6 +188,7 @@ void kvmppc_subcore_exit_guest(void)
- 
- 	local_paca->sibling_subcore_state->in_guest[subcore_id] = 0;
- }
-+EXPORT_SYMBOL_GPL(kvmppc_subcore_exit_guest);
- 
- static bool kvmppc_tb_resync_required(void)
- {
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index 67a847f..2abc336 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -47,8 +47,9 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
- #define NAPPING_NOVCPU	2
- 
- /* Stack frame offsets for kvmppc_hv_entry */
--#define SFS			160
-+#define SFS			208
- #define STACK_SLOT_TRAP		(SFS-4)
-+#define STACK_SLOT_SHORT_PATH	(SFS-8)
- #define STACK_SLOT_TID		(SFS-16)
- #define STACK_SLOT_PSSCR	(SFS-24)
- #define STACK_SLOT_PID		(SFS-32)
-@@ -57,6 +58,8 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
- #define STACK_SLOT_DAWR		(SFS-56)
- #define STACK_SLOT_DAWRX	(SFS-64)
- #define STACK_SLOT_HFSCR	(SFS-72)
-+/* the following is used by the P9 short path */
-+#define STACK_SLOT_NVGPRS	(SFS-152)	/* 18 gprs */
- 
- /*
-  * Call kvmppc_hv_entry in real mode.
-@@ -1020,6 +1023,9 @@ ALT_FTR_SECTION_END_IFCLR(CPU_FTR_ARCH_300)
- no_xive:
- #endif /* CONFIG_KVM_XICS */
- 
-+	li	r0, 0
-+	stw	r0, STACK_SLOT_SHORT_PATH(r1)
-+
- deliver_guest_interrupt:	/* r4 = vcpu, r13 = paca */
- 	/* Check if we can deliver an external or decrementer interrupt now */
- 	ld	r0, VCPU_PENDING_EXC(r4)
-@@ -1034,13 +1040,14 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
- 	bl	kvmppc_guest_entry_inject_int
- 	ld	r4, HSTATE_KVM_VCPU(r13)
- 71:
--	ld	r10, VCPU_PC(r4)
--	ld	r11, VCPU_MSR(r4)
- 	ld	r6, VCPU_SRR0(r4)
- 	ld	r7, VCPU_SRR1(r4)
- 	mtspr	SPRN_SRR0, r6
- 	mtspr	SPRN_SRR1, r7
- 
-+fast_guest_entry_c:
-+	ld	r10, VCPU_PC(r4)
-+	ld	r11, VCPU_MSR(r4)
- 	/* r11 = vcpu->arch.msr & ~MSR_HV */
- 	rldicl	r11, r11, 63 - MSR_HV_LG, 1
- 	rotldi	r11, r11, 1 + MSR_HV_LG
-@@ -1117,6 +1124,83 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
- 	HRFI_TO_GUEST
- 	b	.
- 
-+/*
-+ * Enter the guest on a P9 or later system where we have exactly
-+ * one vcpu per vcore and we don't need to go to real mode
-+ * (which implies that host and guest are both using radix MMU mode).
-+ * r3 = vcpu pointer
-+ * Most SPRs and all the VSRs have been loaded already.
-+ */
-+_GLOBAL(__kvmhv_vcpu_entry_p9)
-+EXPORT_SYMBOL_GPL(__kvmhv_vcpu_entry_p9)
-+	mflr	r0
-+	std	r0, PPC_LR_STKOFF(r1)
-+	stdu	r1, -SFS(r1)
-+
-+	li	r0, 1
-+	stw	r0, STACK_SLOT_SHORT_PATH(r1)
-+
-+	std	r3, HSTATE_KVM_VCPU(r13)
-+	mfcr	r4
-+	stw	r4, SFS+8(r1)
-+
-+	std	r1, HSTATE_HOST_R1(r13)
-+
-+	reg = 14
-+	.rept	18
-+	std	reg, STACK_SLOT_NVGPRS + ((reg - 14) * 8)(r1)
-+	reg = reg + 1
-+	.endr
-+
-+	reg = 14
-+	.rept	18
-+	ld	reg, __VCPU_GPR(reg)(r3)
-+	reg = reg + 1
-+	.endr
-+
-+	mfmsr	r10
-+	std	r10, HSTATE_HOST_MSR(r13)
-+
-+	mr	r4, r3
-+	b	fast_guest_entry_c
-+guest_exit_short_path:
-+
-+	li	r0, KVM_GUEST_MODE_NONE
-+	stb	r0, HSTATE_IN_GUEST(r13)
-+
-+	reg = 14
-+	.rept	18
-+	std	reg, __VCPU_GPR(reg)(r9)
-+	reg = reg + 1
-+	.endr
-+
-+	reg = 14
-+	.rept	18
-+	ld	reg, STACK_SLOT_NVGPRS + ((reg - 14) * 8)(r1)
-+	reg = reg + 1
-+	.endr
-+
-+	lwz	r4, SFS+8(r1)
-+	mtcr	r4
-+
-+	mr	r3, r12		/* trap number */
-+
-+	addi	r1, r1, SFS
-+	ld	r0, PPC_LR_STKOFF(r1)
-+	mtlr	r0
-+
-+	/* If we are in real mode, do a rfid to get back to the caller */
-+	mfmsr	r4
-+	andi.	r5, r4, MSR_IR
-+	bnelr
-+	rldicl	r5, r4, 64 - MSR_TS_S_LG, 62	/* extract TS field */
-+	mtspr	SPRN_SRR0, r0
-+	ld	r10, HSTATE_HOST_MSR(r13)
-+	rldimi	r10, r5, MSR_TS_S_LG, 63 - MSR_TS_T_LG
-+	mtspr	SPRN_SRR1, r10
-+	RFI_TO_KERNEL
-+	b	.
-+
- secondary_too_late:
- 	li	r12, 0
- 	stw	r12, STACK_SLOT_TRAP(r1)
-@@ -1377,6 +1461,11 @@ guest_exit_cont:		/* r9 = vcpu, r12 = trap, r13 = paca */
- 1:
- #endif /* CONFIG_KVM_XICS */
- 
-+	/* If we came in through the P9 short path, go back out to C now */
-+	lwz	r0, STACK_SLOT_SHORT_PATH(r1)
-+	cmpwi	r0, 0
-+	bne	guest_exit_short_path
-+
- 	/* For hash guest, read the guest SLB and save it away */
- 	ld	r5, VCPU_KVM(r9)
- 	lbz	r0, KVM_RADIX(r5)
-diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3s_xive.c
-index 30c2eb7..ad4a370 100644
---- a/arch/powerpc/kvm/book3s_xive.c
-+++ b/arch/powerpc/kvm/book3s_xive.c
-@@ -62,6 +62,69 @@
- #define XIVE_Q_GAP	2
- 
- /*
-+ * Push a vcpu's context to the XIVE on guest entry.
-+ * This assumes we are in virtual mode (MMU on)
-+ */
-+void kvmppc_xive_push_vcpu(struct kvm_vcpu *vcpu)
++static ssize_t debugfs_radix_write(struct file *file, const char __user *buf,
++			   size_t len, loff_t *ppos)
 +{
-+	void __iomem *tima = local_paca->kvm_hstate.xive_tima_virt;
-+	u64 pq;
-+
-+	if (!tima)
-+		return;
-+	eieio();
-+	__raw_writeq(vcpu->arch.xive_saved_state.w01, tima + TM_QW1_OS);
-+	__raw_writel(vcpu->arch.xive_cam_word, tima + TM_QW1_OS + TM_WORD2);
-+	vcpu->arch.xive_pushed = 1;
-+	eieio();
-+
-+	/*
-+	 * We clear the irq_pending flag. There is a small chance of a
-+	 * race vs. the escalation interrupt happening on another
-+	 * processor setting it again, but the only consequence is to
-+	 * cause a spurious wakeup on the next H_CEDE, which is not an
-+	 * issue.
-+	 */
-+	vcpu->arch.irq_pending = 0;
-+
-+	/*
-+	 * In single escalation mode, if the escalation interrupt is
-+	 * on, we mask it.
-+	 */
-+	if (vcpu->arch.xive_esc_on) {
-+		pq = __raw_readq((void __iomem *)(vcpu->arch.xive_esc_vaddr +
-+						  XIVE_ESB_SET_PQ_01));
-+		mb();
-+
-+		/*
-+		 * We have a possible subtle race here: The escalation
-+		 * interrupt might have fired and be on its way to the
-+		 * host queue while we mask it, and if we unmask it
-+		 * early enough (re-cede right away), there is a
-+		 * theorical possibility that it fires again, thus
-+		 * landing in the target queue more than once which is
-+		 * a big no-no.
-+		 *
-+		 * Fortunately, solving this is rather easy. If the
-+		 * above load setting PQ to 01 returns a previous
-+		 * value where P is set, then we know the escalation
-+		 * interrupt is somewhere on its way to the host. In
-+		 * that case we simply don't clear the xive_esc_on
-+		 * flag below. It will be eventually cleared by the
-+		 * handler for the escalation interrupt.
-+		 *
-+		 * Then, when doing a cede, we check that flag again
-+		 * before re-enabling the escalation interrupt, and if
-+		 * set, we abort the cede.
-+		 */
-+		if (!(pq & XIVE_ESB_VAL_P))
-+			/* Now P is 0, we can clear the flag */
-+			vcpu->arch.xive_esc_on = 0;
-+	}
++	return -EACCES;
 +}
-+EXPORT_SYMBOL_GPL(kvmppc_xive_push_vcpu);
 +
-+/*
-  * This is a simple trigger for a generic XIVE IRQ. This must
-  * only be called for interrupts that support a trigger page
-  */
++static const struct file_operations debugfs_radix_fops = {
++	.owner	 = THIS_MODULE,
++	.open	 = debugfs_radix_open,
++	.release = debugfs_radix_release,
++	.read	 = debugfs_radix_read,
++	.write	 = debugfs_radix_write,
++	.llseek	 = generic_file_llseek,
++};
++
++void kvmhv_radix_debugfs_init(struct kvm *kvm)
++{
++	kvm->arch.radix_dentry = debugfs_create_file("radix", 0400,
++						     kvm->arch.debugfs_dir, kvm,
++						     &debugfs_radix_fops);
++}
++
+ int kvmppc_radix_init(void)
+ {
+ 	unsigned long size = sizeof(void *) << RADIX_PTE_INDEX_SIZE;
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 3aabbb2..aa13728 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -4477,6 +4477,8 @@ static int kvmppc_core_init_vm_hv(struct kvm *kvm)
+ 	snprintf(buf, sizeof(buf), "vm%d", current->pid);
+ 	kvm->arch.debugfs_dir = debugfs_create_dir(buf, kvm_debugfs_dir);
+ 	kvmppc_mmu_debugfs_init(kvm);
++	if (radix_enabled())
++		kvmhv_radix_debugfs_init(kvm);
+ 
+ 	return 0;
+ }
 -- 
 2.7.4
 
