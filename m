@@ -2,65 +2,65 @@ Return-Path: <SRS0=m9yV=MQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 87F85C64EBC
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 12:17:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 90033C64EBC
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 12:19:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CD81720877
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 12:17:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id EC85120877
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 12:19:57 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="mjHytSSL"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CD81720877
+	dkim=pass (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="okdBTGYG"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EC85120877
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42QsN15VKdzF3Kk
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 22:17:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42QsQg6DrfzF3Kf
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 22:19:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="mjHytSSL";
+	dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="okdBTGYG";
 	dkim-atps=neutral
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42QrvV3sWpzF3Jm
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42QrvV6SFPzDrDy
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2018 21:56:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="mjHytSSL"; 
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="okdBTGYG"; 
  dkim-atps=neutral
 Received: by ozlabs.org (Postfix)
- id 42QrvV3KK1z9sRp; Thu,  4 Oct 2018 21:56:22 +1000 (AEST)
+ id 42QrvV5mSnz9s8T; Thu,  4 Oct 2018 21:56:22 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 42QrvV1djRz9sCr;
+ by ozlabs.org (Postfix) with ESMTPSA id 42QrvV3Wvkz9s55;
  Thu,  4 Oct 2018 21:56:22 +1000 (AEST)
 Authentication-Results: ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.org
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1538654182; bh=K5aswZ74Ifr3rxny/QRMZAws6ay9rhfa/mf63cCPXyQ=;
+ t=1538654182; bh=rhwZmTbPSGXuqzu5MmIcPN2GrDUqIBi5Ktej1eXaNjA=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=mjHytSSLNEYaQ3Zwfg26mwLVlN97hTnoo4+Tkc+SRXb7+d6RQlKF99LfBmHu4AsbB
- MNcVuT5tyTf3T1zY/knqaAGmG0+GgjwCcBEexgJe6d/46thUc9bnx8VWwIKIfBv8mM
- bC5ujIiX3+XGaJJGXMdHhhaqMoI95Po283z+IckhRGVfpHV8NCZO14GG+gBOwphS7j
- GC828sRVT83MINysl01nNJMW+hB33JVeP3e0bkICUbEDIy5C3IROjKakhziyvTDuGn
- NNZvqzeV4jS/7TOlKE9QzVS/D1V8CcNJ3FYwSKhQhBQ3TD/gqIR/oHa10BcwUbSXe2
- A7QE3/kXX2DPg==
+ b=okdBTGYGorXCPe1VzoEw6obIpbrYJ2vt7xHkEtDEpeYYNBIAhy4L9R56erNbNjcU9
+ 4XzKn9nMCnJDbLDLeZ25jaWujJic4rqx4J2yaB65Hy708bR/Pt2gDc9CYezrwlj1A8
+ wNL27np81ghwcU6EuXx1ELcuqyHrxKNPIC7+GShifDytcX7GU3PTCnb+GcjH/aeHxv
+ 20A/7KAjLdbaxtWUoOdSZD6OS0tDYNxWQaANeR2Xc2xnJhEtTTVBowrc24P76ffhZZ
+ he3QrvidokudE2lwquG/1P8zb0GqKQ1llpjE9ndrGiVjFjNZdQsDDM155gIDWotJ0t
+ BhXP4DeijiBZQ==
 From: Paul Mackerras <paulus@ozlabs.org>
 To: kvm@vger.kernel.org,
 	kvm-ppc@vger.kernel.org
-Subject: [PATCH v4 07/32] KVM: PPC: Book3S: Rework TM save/restore code and
- make it C-callable
-Date: Thu,  4 Oct 2018 21:55:44 +1000
-Message-Id: <1538654169-15602-8-git-send-email-paulus@ozlabs.org>
+Subject: [PATCH v4 08/32] KVM: PPC: Book3S HV: Call kvmppc_handle_exit_hv()
+ with vcore unlocked
+Date: Thu,  4 Oct 2018 21:55:45 +1000
+Message-Id: <1538654169-15602-9-git-send-email-paulus@ozlabs.org>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1538654169-15602-1-git-send-email-paulus@ozlabs.org>
 References: <1538654169-15602-1-git-send-email-paulus@ozlabs.org>
@@ -80,590 +80,86 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This adds a parameter to __kvmppc_save_tm and __kvmppc_restore_tm
-which allows the caller to indicate whether it wants the nonvolatile
-register state to be preserved across the call, as required by the C
-calling conventions.  This parameter being non-zero also causes the
-MSR bits that enable TM, FP, VMX and VSX to be preserved.  The
-condition register and DSCR are now always preserved.
+Currently kvmppc_handle_exit_hv() is called with the vcore lock held
+because it is called within a for_each_runnable_thread loop.
+However, we already unlock the vcore within kvmppc_handle_exit_hv()
+under certain circumstances, and this is safe because (a) any vcpus
+that become runnable and are added to the runnable set by
+kvmppc_run_vcpu() have their vcpu->arch.trap == 0 and can't actually
+run in the guest (because the vcore state is VCORE_EXITING), and
+(b) for_each_runnable_thread is safe against addition or removal
+of vcpus from the runnable set.
 
-With this, kvmppc_save_tm_hv and kvmppc_restore_tm_hv can be called
-from C code provided the 3rd parameter is non-zero.  So that these
-functions can be called from modules, they now include code to set
-the TOC pointer (r2) on entry, as they can call other built-in C
-functions which will assume the TOC to have been set.
-
-Also, the fake suspend code in kvmppc_save_tm_hv is modified here to
-assume that treclaim in fake-suspend state does not modify any registers,
-which is the case on POWER9.  This enables the code to be simplified
-quite a bit.
-
-_kvmppc_save_tm_pr and _kvmppc_restore_tm_pr become much simpler with
-this change, since they now only need to save and restore TAR and pass
-1 for the 3rd argument to __kvmppc_{save,restore}_tm.
+Therefore, in order to simplify things for following patches, let's
+drop the vcore lock in the for_each_runnable_thread loop, so
+kvmppc_handle_exit_hv() gets called without the vcore lock held.
 
 Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/include/asm/asm-prototypes.h |  10 ++
- arch/powerpc/kvm/book3s_hv_rmhandlers.S   |  49 +++---
- arch/powerpc/kvm/tm.S                     | 250 ++++++++++++++++--------------
- 3 files changed, 169 insertions(+), 140 deletions(-)
+ arch/powerpc/kvm/book3s_hv.c | 19 ++++++++++---------
+ 1 file changed, 10 insertions(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/asm-prototypes.h b/arch/powerpc/include/asm/asm-prototypes.h
-index 024e8fc..0c1a2b0 100644
---- a/arch/powerpc/include/asm/asm-prototypes.h
-+++ b/arch/powerpc/include/asm/asm-prototypes.h
-@@ -150,6 +150,16 @@ extern s32 patch__memset_nocache, patch__memcpy_nocache;
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 49a686c..0e17593 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -1084,7 +1084,6 @@ static int kvmppc_emulate_doorbell_instr(struct kvm_vcpu *vcpu)
+ 	return RESUME_GUEST;
+ }
  
- extern long flush_count_cache;
+-/* Called with vcpu->arch.vcore->lock held */
+ static int kvmppc_handle_exit_hv(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 				 struct task_struct *tsk)
+ {
+@@ -1205,10 +1204,7 @@ static int kvmppc_handle_exit_hv(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 				swab32(vcpu->arch.emul_inst) :
+ 				vcpu->arch.emul_inst;
+ 		if (vcpu->guest_debug & KVM_GUESTDBG_USE_SW_BP) {
+-			/* Need vcore unlocked to call kvmppc_get_last_inst */
+-			spin_unlock(&vcpu->arch.vcore->lock);
+ 			r = kvmppc_emulate_debug_inst(run, vcpu);
+-			spin_lock(&vcpu->arch.vcore->lock);
+ 		} else {
+ 			kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
+ 			r = RESUME_GUEST;
+@@ -1224,12 +1220,8 @@ static int kvmppc_handle_exit_hv(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 	case BOOK3S_INTERRUPT_H_FAC_UNAVAIL:
+ 		r = EMULATE_FAIL;
+ 		if (((vcpu->arch.hfscr >> 56) == FSCR_MSGP_LG) &&
+-		    cpu_has_feature(CPU_FTR_ARCH_300)) {
+-			/* Need vcore unlocked to call kvmppc_get_last_inst */
+-			spin_unlock(&vcpu->arch.vcore->lock);
++		    cpu_has_feature(CPU_FTR_ARCH_300))
+ 			r = kvmppc_emulate_doorbell_instr(vcpu);
+-			spin_lock(&vcpu->arch.vcore->lock);
+-		}
+ 		if (r == EMULATE_FAIL) {
+ 			kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
+ 			r = RESUME_GUEST;
+@@ -2599,6 +2591,14 @@ static void post_guest_process(struct kvmppc_vcore *vc, bool is_master)
+ 	spin_lock(&vc->lock);
+ 	now = get_tb();
+ 	for_each_runnable_thread(i, vcpu, vc) {
++		/*
++		 * It's safe to unlock the vcore in the loop here, because
++		 * for_each_runnable_thread() is safe against removal of
++		 * the vcpu, and the vcore state is VCORE_EXITING here,
++		 * so any vcpus becoming runnable will have their arch.trap
++		 * set to zero and can't actually run in the guest.
++		 */
++		spin_unlock(&vc->lock);
+ 		/* cancel pending dec exception if dec is positive */
+ 		if (now < vcpu->arch.dec_expires &&
+ 		    kvmppc_core_pending_dec(vcpu))
+@@ -2614,6 +2614,7 @@ static void post_guest_process(struct kvmppc_vcore *vc, bool is_master)
+ 		vcpu->arch.ret = ret;
+ 		vcpu->arch.trap = 0;
  
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+void kvmppc_save_tm_hv(struct kvm_vcpu *vcpu, u64 msr, bool preserve_nv);
-+void kvmppc_restore_tm_hv(struct kvm_vcpu *vcpu, u64 msr, bool preserve_nv);
-+#else
-+static inline void kvmppc_save_tm_hv(struct kvm_vcpu *vcpu, u64 msr,
-+				     bool preserve_nv) { }
-+static inline void kvmppc_restore_tm_hv(struct kvm_vcpu *vcpu, u64 msr,
-+					bool preserve_nv) { }
-+#endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
-+
- void kvmhv_save_host_pmu(void);
- void kvmhv_load_host_pmu(void);
- void kvmhv_save_guest_pmu(struct kvm_vcpu *vcpu, bool pmu_in_use);
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index 772740d..67a847f 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -759,11 +759,13 @@ BEGIN_FTR_SECTION
- 	b	91f
- END_FTR_SECTION(CPU_FTR_TM | CPU_FTR_P9_TM_HV_ASSIST, 0)
- 	/*
--	 * NOTE THAT THIS TRASHES ALL NON-VOLATILE REGISTERS INCLUDING CR
-+	 * NOTE THAT THIS TRASHES ALL NON-VOLATILE REGISTERS (but not CR)
- 	 */
- 	mr      r3, r4
- 	ld      r4, VCPU_MSR(r3)
-+	li	r5, 0			/* don't preserve non-vol regs */
- 	bl	kvmppc_restore_tm_hv
-+	nop
- 	ld	r4, HSTATE_KVM_VCPU(r13)
- 91:
- #endif
-@@ -1603,11 +1605,13 @@ BEGIN_FTR_SECTION
- 	b	91f
- END_FTR_SECTION(CPU_FTR_TM | CPU_FTR_P9_TM_HV_ASSIST, 0)
- 	/*
--	 * NOTE THAT THIS TRASHES ALL NON-VOLATILE REGISTERS INCLUDING CR
-+	 * NOTE THAT THIS TRASHES ALL NON-VOLATILE REGISTERS (but not CR)
- 	 */
- 	mr      r3, r9
- 	ld      r4, VCPU_MSR(r3)
-+	li	r5, 0			/* don't preserve non-vol regs */
- 	bl	kvmppc_save_tm_hv
-+	nop
- 	ld	r9, HSTATE_KVM_VCPU(r13)
- 91:
- #endif
-@@ -2486,11 +2490,13 @@ BEGIN_FTR_SECTION
- 	b	91f
- END_FTR_SECTION(CPU_FTR_TM | CPU_FTR_P9_TM_HV_ASSIST, 0)
- 	/*
--	 * NOTE THAT THIS TRASHES ALL NON-VOLATILE REGISTERS INCLUDING CR
-+	 * NOTE THAT THIS TRASHES ALL NON-VOLATILE REGISTERS (but not CR)
- 	 */
- 	ld	r3, HSTATE_KVM_VCPU(r13)
- 	ld      r4, VCPU_MSR(r3)
-+	li	r5, 0			/* don't preserve non-vol regs */
- 	bl	kvmppc_save_tm_hv
-+	nop
- 91:
- #endif
- 
-@@ -2606,11 +2612,13 @@ BEGIN_FTR_SECTION
- 	b	91f
- END_FTR_SECTION(CPU_FTR_TM | CPU_FTR_P9_TM_HV_ASSIST, 0)
- 	/*
--	 * NOTE THAT THIS TRASHES ALL NON-VOLATILE REGISTERS INCLUDING CR
-+	 * NOTE THAT THIS TRASHES ALL NON-VOLATILE REGISTERS (but not CR)
- 	 */
- 	mr      r3, r4
- 	ld      r4, VCPU_MSR(r3)
-+	li	r5, 0			/* don't preserve non-vol regs */
- 	bl	kvmppc_restore_tm_hv
-+	nop
- 	ld	r4, HSTATE_KVM_VCPU(r13)
- 91:
- #endif
-@@ -2943,10 +2951,12 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
-  * Save transactional state and TM-related registers.
-  * Called with r3 pointing to the vcpu struct and r4 containing
-  * the guest MSR value.
-- * This can modify all checkpointed registers, but
-+ * r5 is non-zero iff non-volatile register state needs to be maintained.
-+ * If r5 == 0, this can modify all checkpointed registers, but
-  * restores r1 and r2 before exit.
-  */
--kvmppc_save_tm_hv:
-+_GLOBAL_TOC(kvmppc_save_tm_hv)
-+EXPORT_SYMBOL_GPL(kvmppc_save_tm_hv)
- 	/* See if we need to handle fake suspend mode */
- BEGIN_FTR_SECTION
- 	b	__kvmppc_save_tm
-@@ -2974,12 +2984,6 @@ BEGIN_FTR_SECTION
- END_FTR_SECTION_IFSET(CPU_FTR_P9_TM_XER_SO_BUG)
- 	nop
- 
--	std	r1, HSTATE_HOST_R1(r13)
--
--	/* Clear the MSR RI since r1, r13 may be foobar. */
--	li	r5, 0
--	mtmsrd	r5, 1
--
- 	/* We have to treclaim here because that's the only way to do S->N */
- 	li	r3, TM_CAUSE_KVM_RESCHED
- 	TRECLAIM(R3)
-@@ -2988,22 +2992,13 @@ END_FTR_SECTION_IFSET(CPU_FTR_P9_TM_XER_SO_BUG)
- 	 * We were in fake suspend, so we are not going to save the
- 	 * register state as the guest checkpointed state (since
- 	 * we already have it), therefore we can now use any volatile GPR.
-+	 * In fact treclaim in fake suspend state doesn't modify
-+	 * any registers.
- 	 */
--	/* Reload PACA pointer, stack pointer and TOC. */
--	GET_PACA(r13)
--	ld	r1, HSTATE_HOST_R1(r13)
--	ld	r2, PACATOC(r13)
- 
--	/* Set MSR RI now we have r1 and r13 back. */
--	li	r5, MSR_RI
--	mtmsrd	r5, 1
--
--	HMT_MEDIUM
--	ld	r6, HSTATE_DSCR(r13)
--	mtspr	SPRN_DSCR, r6
--BEGIN_FTR_SECTION_NESTED(96)
-+BEGIN_FTR_SECTION
- 	bl	pnv_power9_force_smt4_release
--END_FTR_SECTION_NESTED(CPU_FTR_P9_TM_XER_SO_BUG, CPU_FTR_P9_TM_XER_SO_BUG, 96)
-+END_FTR_SECTION_IFSET(CPU_FTR_P9_TM_XER_SO_BUG)
- 	nop
- 
- 4:
-@@ -3029,10 +3024,12 @@ END_FTR_SECTION_NESTED(CPU_FTR_P9_TM_XER_SO_BUG, CPU_FTR_P9_TM_XER_SO_BUG, 96)
-  * Restore transactional state and TM-related registers.
-  * Called with r3 pointing to the vcpu struct
-  * and r4 containing the guest MSR value.
-+ * r5 is non-zero iff non-volatile register state needs to be maintained.
-  * This potentially modifies all checkpointed registers.
-  * It restores r1 and r2 from the PACA.
-  */
--kvmppc_restore_tm_hv:
-+_GLOBAL_TOC(kvmppc_restore_tm_hv)
-+EXPORT_SYMBOL_GPL(kvmppc_restore_tm_hv)
- 	/*
- 	 * If we are doing TM emulation for the guest on a POWER9 DD2,
- 	 * then we don't actually do a trechkpt -- we either set up
-diff --git a/arch/powerpc/kvm/tm.S b/arch/powerpc/kvm/tm.S
-index 90e330f..0531a14 100644
---- a/arch/powerpc/kvm/tm.S
-+++ b/arch/powerpc/kvm/tm.S
-@@ -28,17 +28,25 @@
-  * Save transactional state and TM-related registers.
-  * Called with:
-  * - r3 pointing to the vcpu struct
-- * - r4 points to the MSR with current TS bits:
-+ * - r4 containing the MSR with current TS bits:
-  * 	(For HV KVM, it is VCPU_MSR ; For PR KVM, it is host MSR).
-- * This can modify all checkpointed registers, but
-- * restores r1, r2 before exit.
-+ * - r5 containing a flag indicating that non-volatile registers
-+ *	must be preserved.
-+ * If r5 == 0, this can modify all checkpointed registers, but
-+ * restores r1, r2 before exit.  If r5 != 0, this restores the
-+ * MSR TM/FP/VEC/VSX bits to their state on entry.
-  */
- _GLOBAL(__kvmppc_save_tm)
- 	mflr	r0
- 	std	r0, PPC_LR_STKOFF(r1)
-+	stdu    r1, -SWITCH_FRAME_SIZE(r1)
-+
-+	mr	r9, r3
-+	cmpdi	cr7, r5, 0
- 
- 	/* Turn on TM. */
- 	mfmsr	r8
-+	mr	r10, r8
- 	li	r0, 1
- 	rldimi	r8, r0, MSR_TM_LG, 63-MSR_TM_LG
- 	ori     r8, r8, MSR_FP
-@@ -51,6 +59,27 @@ _GLOBAL(__kvmppc_save_tm)
- 	std	r1, HSTATE_SCRATCH2(r13)
- 	std	r3, HSTATE_SCRATCH1(r13)
- 
-+	/* Save CR on the stack - even if r5 == 0 we need to get cr7 back. */
-+	mfcr	r6
-+	SAVE_GPR(6, r1)
-+
-+	/* Save DSCR so we can restore it to avoid running with user value */
-+	mfspr	r7, SPRN_DSCR
-+	SAVE_GPR(7, r1)
-+
-+	/*
-+	 * We are going to do treclaim., which will modify all checkpointed
-+	 * registers.  Save the non-volatile registers on the stack if
-+	 * preservation of non-volatile state has been requested.
-+	 */
-+	beq	cr7, 3f
-+	SAVE_NVGPRS(r1)
-+
-+	/* MSR[TS] will be 0 (non-transactional) once we do treclaim. */
-+	li	r0, 0
-+	rldimi	r10, r0, MSR_TS_S_LG, 63 - MSR_TS_T_LG
-+	SAVE_GPR(10, r1)	/* final MSR value */
-+3:
- #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
- BEGIN_FTR_SECTION
- 	/* Emulation of the treclaim instruction needs TEXASR before treclaim */
-@@ -74,22 +103,25 @@ END_FTR_SECTION_IFSET(CPU_FTR_P9_TM_HV_ASSIST)
- 	std	r9, PACATMSCRATCH(r13)
- 	ld	r9, HSTATE_SCRATCH1(r13)
- 
--	/* Get a few more GPRs free. */
--	std	r29, VCPU_GPRS_TM(29)(r9)
--	std	r30, VCPU_GPRS_TM(30)(r9)
--	std	r31, VCPU_GPRS_TM(31)(r9)
--
--	/* Save away PPR and DSCR soon so don't run with user values. */
--	mfspr	r31, SPRN_PPR
-+	/* Save away PPR soon so we don't run with user value. */
-+	std	r0, VCPU_GPRS_TM(0)(r9)
-+	mfspr	r0, SPRN_PPR
- 	HMT_MEDIUM
--	mfspr	r30, SPRN_DSCR
--#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
--	ld	r29, HSTATE_DSCR(r13)
--	mtspr	SPRN_DSCR, r29
--#endif
- 
--	/* Save all but r9, r13 & r29-r31 */
--	reg = 0
-+	/* Reload stack pointer. */
-+	std	r1, VCPU_GPRS_TM(1)(r9)
-+	ld	r1, HSTATE_SCRATCH2(r13)
-+
-+	/* Set MSR RI now we have r1 and r13 back. */
-+	std	r2, VCPU_GPRS_TM(2)(r9)
-+	li	r2, MSR_RI
-+	mtmsrd	r2, 1
-+
-+	/* Reload TOC pointer. */
-+	ld	r2, PACATOC(r13)
-+
-+	/* Save all but r0-r2, r9 & r13 */
-+	reg = 3
- 	.rept	29
- 	.if (reg != 9) && (reg != 13)
- 	std	reg, VCPU_GPRS_TM(reg)(r9)
-@@ -103,33 +135,29 @@ END_FTR_SECTION_IFSET(CPU_FTR_P9_TM_HV_ASSIST)
- 	ld	r4, PACATMSCRATCH(r13)
- 	std	r4, VCPU_GPRS_TM(9)(r9)
- 
--	/* Reload stack pointer and TOC. */
--	ld	r1, HSTATE_SCRATCH2(r13)
--	ld	r2, PACATOC(r13)
--
--	/* Set MSR RI now we have r1 and r13 back. */
--	li	r5, MSR_RI
--	mtmsrd	r5, 1
-+	/* Restore host DSCR and CR values, after saving guest values */
-+	mfcr	r6
-+	mfspr	r7, SPRN_DSCR
-+	stw	r6, VCPU_CR_TM(r9)
-+	std	r7, VCPU_DSCR_TM(r9)
-+	REST_GPR(6, r1)
-+	REST_GPR(7, r1)
-+	mtcr	r6
-+	mtspr	SPRN_DSCR, r7
- 
--	/* Save away checkpinted SPRs. */
--	std	r31, VCPU_PPR_TM(r9)
--	std	r30, VCPU_DSCR_TM(r9)
-+	/* Save away checkpointed SPRs. */
-+	std	r0, VCPU_PPR_TM(r9)
- 	mflr	r5
--	mfcr	r6
- 	mfctr	r7
- 	mfspr	r8, SPRN_AMR
- 	mfspr	r10, SPRN_TAR
- 	mfxer	r11
- 	std	r5, VCPU_LR_TM(r9)
--	stw	r6, VCPU_CR_TM(r9)
- 	std	r7, VCPU_CTR_TM(r9)
- 	std	r8, VCPU_AMR_TM(r9)
- 	std	r10, VCPU_TAR_TM(r9)
- 	std	r11, VCPU_XER_TM(r9)
- 
--	/* Restore r12 as trap number. */
--	lwz	r12, VCPU_TRAP(r9)
--
- 	/* Save FP/VSX. */
- 	addi	r3, r9, VCPU_FPRS_TM
- 	bl	store_fp_state
-@@ -137,6 +165,11 @@ END_FTR_SECTION_IFSET(CPU_FTR_P9_TM_HV_ASSIST)
- 	bl	store_vr_state
- 	mfspr	r6, SPRN_VRSAVE
- 	stw	r6, VCPU_VRSAVE_TM(r9)
-+
-+	/* Restore non-volatile registers if requested to */
-+	beq	cr7, 1f
-+	REST_NVGPRS(r1)
-+	REST_GPR(10, r1)
- 1:
- 	/*
- 	 * We need to save these SPRs after the treclaim so that the software
-@@ -146,12 +179,16 @@ END_FTR_SECTION_IFSET(CPU_FTR_P9_TM_HV_ASSIST)
- 	 */
- 	mfspr	r7, SPRN_TEXASR
- 	std	r7, VCPU_TEXASR(r9)
--11:
- 	mfspr	r5, SPRN_TFHAR
- 	mfspr	r6, SPRN_TFIAR
- 	std	r5, VCPU_TFHAR(r9)
- 	std	r6, VCPU_TFIAR(r9)
- 
-+	/* Restore MSR state if requested */
-+	beq	cr7, 2f
-+	mtmsrd	r10, 0
-+2:
-+	addi	r1, r1, SWITCH_FRAME_SIZE
- 	ld	r0, PPC_LR_STKOFF(r1)
- 	mtlr	r0
- 	blr
-@@ -161,49 +198,22 @@ END_FTR_SECTION_IFSET(CPU_FTR_P9_TM_HV_ASSIST)
-  * be invoked from C function by PR KVM only.
-  */
- _GLOBAL(_kvmppc_save_tm_pr)
--	mflr	r5
--	std	r5, PPC_LR_STKOFF(r1)
--	stdu    r1, -SWITCH_FRAME_SIZE(r1)
--	SAVE_NVGPRS(r1)
--
--	/* save MSR since TM/math bits might be impacted
--	 * by __kvmppc_save_tm().
--	 */
--	mfmsr	r5
--	SAVE_GPR(5, r1)
--
--	/* also save DSCR/CR/TAR so that it can be recovered later */
--	mfspr   r6, SPRN_DSCR
--	SAVE_GPR(6, r1)
--
--	mfcr    r7
--	stw     r7, _CCR(r1)
-+	mflr	r0
-+	std	r0, PPC_LR_STKOFF(r1)
-+	stdu    r1, -PPC_MIN_STKFRM(r1)
- 
- 	mfspr   r8, SPRN_TAR
--	SAVE_GPR(8, r1)
-+	std	r8, PPC_MIN_STKFRM-8(r1)
- 
-+	li	r5, 1		/* preserve non-volatile registers */
- 	bl	__kvmppc_save_tm
- 
--	REST_GPR(8, r1)
-+	ld	r8, PPC_MIN_STKFRM-8(r1)
- 	mtspr   SPRN_TAR, r8
- 
--	ld      r7, _CCR(r1)
--	mtcr	r7
--
--	REST_GPR(6, r1)
--	mtspr   SPRN_DSCR, r6
--
--	/* need preserve current MSR's MSR_TS bits */
--	REST_GPR(5, r1)
--	mfmsr   r6
--	rldicl  r6, r6, 64 - MSR_TS_S_LG, 62
--	rldimi  r5, r6, MSR_TS_S_LG, 63 - MSR_TS_T_LG
--	mtmsrd  r5
--
--	REST_NVGPRS(r1)
--	addi    r1, r1, SWITCH_FRAME_SIZE
--	ld	r5, PPC_LR_STKOFF(r1)
--	mtlr	r5
-+	addi    r1, r1, PPC_MIN_STKFRM
-+	ld	r0, PPC_LR_STKOFF(r1)
-+	mtlr	r0
- 	blr
- 
- EXPORT_SYMBOL_GPL(_kvmppc_save_tm_pr);
-@@ -215,15 +225,21 @@ EXPORT_SYMBOL_GPL(_kvmppc_save_tm_pr);
-  *  - r4 is the guest MSR with desired TS bits:
-  * 	For HV KVM, it is VCPU_MSR
-  * 	For PR KVM, it is provided by caller
-- * This potentially modifies all checkpointed registers.
-- * It restores r1, r2 from the PACA.
-+ * - r5 containing a flag indicating that non-volatile registers
-+ *	must be preserved.
-+ * If r5 == 0, this potentially modifies all checkpointed registers, but
-+ * restores r1, r2 from the PACA before exit.
-+ * If r5 != 0, this restores the MSR TM/FP/VEC/VSX bits to their state on entry.
-  */
- _GLOBAL(__kvmppc_restore_tm)
- 	mflr	r0
- 	std	r0, PPC_LR_STKOFF(r1)
- 
-+	cmpdi	cr7, r5, 0
-+
- 	/* Turn on TM/FP/VSX/VMX so we can restore them. */
- 	mfmsr	r5
-+	mr	r10, r5
- 	li	r6, MSR_TM >> 32
- 	sldi	r6, r6, 32
- 	or	r5, r5, r6
-@@ -244,8 +260,7 @@ _GLOBAL(__kvmppc_restore_tm)
- 
- 	mr	r5, r4
- 	rldicl. r5, r5, 64 - MSR_TS_S_LG, 62
--	beqlr		/* TM not active in guest */
--	std	r1, HSTATE_SCRATCH2(r13)
-+	beq	9f		/* TM not active in guest */
- 
- 	/* Make sure the failure summary is set, otherwise we'll program check
- 	 * when we trechkpt.  It's possible that this might have been not set
-@@ -256,6 +271,26 @@ _GLOBAL(__kvmppc_restore_tm)
- 	mtspr	SPRN_TEXASR, r7
- 
- 	/*
-+	 * Make a stack frame and save non-volatile registers if requested.
-+	 */
-+	stdu	r1, -SWITCH_FRAME_SIZE(r1)
-+	std	r1, HSTATE_SCRATCH2(r13)
-+
-+	mfcr	r6
-+	mfspr	r7, SPRN_DSCR
-+	SAVE_GPR(2, r1)
-+	SAVE_GPR(6, r1)
-+	SAVE_GPR(7, r1)
-+
-+	beq	cr7, 4f
-+	SAVE_NVGPRS(r1)
-+
-+	/* MSR[TS] will be 1 (suspended) once we do trechkpt */
-+	li	r0, 1
-+	rldimi	r10, r0, MSR_TS_S_LG, 63 - MSR_TS_T_LG
-+	SAVE_GPR(10, r1)	/* final MSR value */
-+4:
-+	/*
- 	 * We need to load up the checkpointed state for the guest.
- 	 * We need to do this early as it will blow away any GPRs, VSRs and
- 	 * some SPRs.
-@@ -291,8 +326,6 @@ _GLOBAL(__kvmppc_restore_tm)
- 	ld	r29, VCPU_DSCR_TM(r3)
- 	ld	r30, VCPU_PPR_TM(r3)
- 
--	std	r2, PACATMSCRATCH(r13) /* Save TOC */
--
- 	/* Clear the MSR RI since r1, r13 are all going to be foobar. */
- 	li	r5, 0
- 	mtmsrd	r5, 1
-@@ -318,18 +351,31 @@ _GLOBAL(__kvmppc_restore_tm)
- 	/* Now let's get back the state we need. */
- 	HMT_MEDIUM
- 	GET_PACA(r13)
--#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
--	ld	r29, HSTATE_DSCR(r13)
--	mtspr	SPRN_DSCR, r29
--#endif
- 	ld	r1, HSTATE_SCRATCH2(r13)
--	ld	r2, PACATMSCRATCH(r13)
-+	REST_GPR(7, r1)
-+	mtspr	SPRN_DSCR, r7
- 
- 	/* Set the MSR RI since we have our registers back. */
- 	li	r5, MSR_RI
- 	mtmsrd	r5, 1
-+
-+	/* Restore TOC pointer and CR */
-+	REST_GPR(2, r1)
-+	REST_GPR(6, r1)
-+	mtcr	r6
-+
-+	/* Restore non-volatile registers if requested to. */
-+	beq	cr7, 5f
-+	REST_GPR(10, r1)
-+	REST_NVGPRS(r1)
-+
-+5:	addi	r1, r1, SWITCH_FRAME_SIZE
- 	ld	r0, PPC_LR_STKOFF(r1)
- 	mtlr	r0
-+
-+9:	/* Restore MSR bits if requested */
-+	beqlr	cr7
-+	mtmsrd	r10, 0
- 	blr
- 
- /*
-@@ -337,47 +383,23 @@ _GLOBAL(__kvmppc_restore_tm)
-  * can be invoked from C function by PR KVM only.
-  */
- _GLOBAL(_kvmppc_restore_tm_pr)
--	mflr	r5
--	std	r5, PPC_LR_STKOFF(r1)
--	stdu    r1, -SWITCH_FRAME_SIZE(r1)
--	SAVE_NVGPRS(r1)
--
--	/* save MSR to avoid TM/math bits change */
--	mfmsr	r5
--	SAVE_GPR(5, r1)
--
--	/* also save DSCR/CR/TAR so that it can be recovered later */
--	mfspr   r6, SPRN_DSCR
--	SAVE_GPR(6, r1)
--
--	mfcr    r7
--	stw     r7, _CCR(r1)
-+	mflr	r0
-+	std	r0, PPC_LR_STKOFF(r1)
-+	stdu    r1, -PPC_MIN_STKFRM(r1)
- 
-+	/* save TAR so that it can be recovered later */
- 	mfspr   r8, SPRN_TAR
--	SAVE_GPR(8, r1)
-+	std	r8, PPC_MIN_STKFRM-8(r1)
- 
-+	li	r5, 1
- 	bl	__kvmppc_restore_tm
- 
--	REST_GPR(8, r1)
-+	ld	r8, PPC_MIN_STKFRM-8(r1)
- 	mtspr   SPRN_TAR, r8
- 
--	ld      r7, _CCR(r1)
--	mtcr	r7
--
--	REST_GPR(6, r1)
--	mtspr   SPRN_DSCR, r6
--
--	/* need preserve current MSR's MSR_TS bits */
--	REST_GPR(5, r1)
--	mfmsr   r6
--	rldicl  r6, r6, 64 - MSR_TS_S_LG, 62
--	rldimi  r5, r6, MSR_TS_S_LG, 63 - MSR_TS_T_LG
--	mtmsrd  r5
--
--	REST_NVGPRS(r1)
--	addi    r1, r1, SWITCH_FRAME_SIZE
--	ld	r5, PPC_LR_STKOFF(r1)
--	mtlr	r5
-+	addi    r1, r1, PPC_MIN_STKFRM
-+	ld	r0, PPC_LR_STKOFF(r1)
-+	mtlr	r0
- 	blr
- 
- EXPORT_SYMBOL_GPL(_kvmppc_restore_tm_pr);
++		spin_lock(&vc->lock);
+ 		if (is_kvmppc_resume_guest(vcpu->arch.ret)) {
+ 			if (vcpu->arch.pending_exceptions)
+ 				kvmppc_core_prepare_to_enter(vcpu);
 -- 
 2.7.4
 
