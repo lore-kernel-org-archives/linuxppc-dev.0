@@ -5,19 +5,19 @@ X-Spam-Level:
 X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D785EC64EB8
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 07:43:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AA88BC64EBC
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 07:50:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 45FE22098A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 07:43:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 45FE22098A
+	by mail.kernel.org (Postfix) with ESMTPS id 0E174206B2
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 07:50:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0E174206B2
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42QlHK25wVzF3Hd
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 17:43:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42QlS06p0rzF3JD
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 17:50:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=redhat.com
@@ -28,27 +28,23 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42QlF61DXHzF3BS
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2018 17:41:13 +1000 (AEST)
-Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.phx2.redhat.com
- [10.5.11.13])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42QlPr2xK0zF3BS
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2018 17:48:48 +1000 (AEST)
+Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.phx2.redhat.com
+ [10.5.11.14])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 6DA7E4E91C;
- Thu,  4 Oct 2018 07:41:09 +0000 (UTC)
+ by mx1.redhat.com (Postfix) with ESMTPS id 3F45E811AC;
+ Thu,  4 Oct 2018 07:48:45 +0000 (UTC)
 Received: from [10.36.117.44] (ovpn-117-44.ams2.redhat.com [10.36.117.44])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 194861823E;
- Thu,  4 Oct 2018 07:40:56 +0000 (UTC)
+ by smtp.corp.redhat.com (Postfix) with ESMTP id CDFAC53;
+ Thu,  4 Oct 2018 07:48:33 +0000 (UTC)
 Subject: Re: [PATCH RFC] mm/memory_hotplug: Introduce memory block types
-To: Michal Hocko <mhocko@kernel.org>
+To: Dave Hansen <dave.hansen@linux.intel.com>, linux-mm@kvack.org
 References: <20180928150357.12942-1-david@redhat.com>
- <20181001084038.GD18290@dhcp22.suse.cz>
- <d54a8509-725f-f771-72f0-15a9d93e8a49@redhat.com>
- <20181002134734.GT18290@dhcp22.suse.cz>
- <98fb8d65-b641-2225-f842-8804c6f79a06@redhat.com>
- <20181003135407.GI4714@dhcp22.suse.cz>
- <9fef1f7d-2d7c-03f1-00e3-5fa657eda019@redhat.com>
- <20181004062811.GC22173@dhcp22.suse.cz>
+ <5dba97a5-5a18-5df1-5493-99987679cf3a@linux.intel.com>
+ <147d20c7-2a07-2305-9b44-76fdb735173b@redhat.com>
+ <05493150-5e4e-30bd-f772-0c6d88240030@linux.intel.com>
 From: David Hildenbrand <david@redhat.com>
 Openpgp: preference=signencrypt
 Autocrypt: addr=david@redhat.com; prefer-encrypt=mutual; keydata=
@@ -95,18 +91,18 @@ Autocrypt: addr=david@redhat.com; prefer-encrypt=mutual; keydata=
  +8Umfre0Xt4713VxMygW0PnQt5aSQdMD58jHFxTk092mU+yIHj5LeYgvwSgZN4airXk5yRXl
  SE+xAvmumFBY
 Organization: Red Hat GmbH
-Message-ID: <060bd891-f88e-13e1-2bb3-26d96f6d28cb@redhat.com>
-Date: Thu, 4 Oct 2018 09:40:56 +0200
+Message-ID: <746a61c2-ebc7-abff-3bcd-7e307ef449bd@redhat.com>
+Date: Thu, 4 Oct 2018 09:48:32 +0200
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.0
 MIME-Version: 1.0
-In-Reply-To: <20181004062811.GC22173@dhcp22.suse.cz>
+In-Reply-To: <05493150-5e4e-30bd-f772-0c6d88240030@linux.intel.com>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.13
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.14
 X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.38]); Thu, 04 Oct 2018 07:41:11 +0000 (UTC)
+ (mx1.redhat.com [10.5.110.27]); Thu, 04 Oct 2018 07:48:46 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -121,9 +117,8 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Cc: Kate Stewart <kstewart@linuxfoundation.org>, Rich Felker <dalias@libc.org>,
  linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
  Peter Zijlstra <peterz@infradead.org>,
- Dave Hansen <dave.hansen@linux.intel.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, linux-mm@kvack.org,
- Pavel Tatashin <pavel.tatashin@microsoft.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Pavel Tatashin <pavel.tatashin@microsoft.com>, Michal Hocko <mhocko@suse.com>,
  Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
  Rashmica Gupta <rashmica.g@gmail.com>, "K. Y. Srinivasan" <kys@microsoft.com>,
  Boris Ostrovsky <boris.ostrovsky@oracle.com>, linux-s390@vger.kernel.org,
@@ -155,54 +150,64 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 04/10/2018 08:28, Michal Hocko wrote:
-> On Wed 03-10-18 19:00:29, David Hildenbrand wrote:
-> [...]
->> Let me rephrase: You state that user space has to make the decision and
->> that user should be able to set/reconfigure rules. That is perfectly fine.
+On 01/10/2018 18:24, Dave Hansen wrote:
+>> How should a policy in user space look like when new memory gets added
+>> - on s390x? Not onlining paravirtualized memory is very wrong.
+> 
+> Because we're going to balloon it away in a moment anyway?
+
+No, rether somebody wanted this VM to have more memory, so it should use
+it - basically what HyperV or XEN also do. (in contrast to the concept
+of standby memory on s390).
+
+> > We have auto-onlining.  Why isn't that being used on s390?
+
+Do you mean the sys parameter? How would that help?
+
+> 
+> 
+>> So the type of memory is very important here to have in user space.
+>> Relying on checks like "isS390()", "isKVMGuest()" or "isHyperVGuest()"
+>> to decide whether to online memory and how to online memory is wrong.
+>> Only some specific memory types (which I call "normal") are to be
+>> handled by user space.
 >>
->> But then we should give user space access to sufficient information to
->> make a decision. This might be the type of memory as we learned (what
->> some part of this patch proposes), but maybe later more, e.g. to which
->> physical device memory belongs (e.g. to hotplug it all movable or all
->> normal) ...
+>> For the other ones, we exactly know what to do:
+>> - standby? don't online
 > 
-> I am pretty sure that user knows he/she wants to use ballooning in
-> HyperV or Xen, or that the memory hotplug should be used as a "RAS"
-> feature to allow add and remove DIMMs for reliability. Why shouldn't we
-> have a package to deploy an appropriate set of udev rules for each of
-> those usecases? I am pretty sure you need some other plumbing to enable
-> them anyway (e.g. RAS would require to have movable_node kernel
-> parameters, ballooning a kernel module etc.).
+> I think you're horribly conflating the software desire for what the stae
+> should be and the hardware itself.
+
+Agreed, user space should be able to configure it.
+
 > 
-> Really, one udev script to rule them all will simply never work.
+>>> As for the OOM issues, that sounds like something we need to fix by
+>>> refusing to do (or delaying) hot-add operations once we consume too much
+>>> ZONE_NORMAL from memmap[]s rather than trying to indirectly tell
+>>> userspace to hurry thing along.
+>>
+>> That is a moving target and doing that automatically is basically
+>> impossible.
+> 
+> Nah.  We know how much metadata we've allocated.  We know how much
+> ZONE_NORMAL we are eating.  We can *easily* add something to
+> add_memory() that just sleeps until the ratio is not out-of-whack.
+> 
+>> You can add a lot of memory to the movable zone and
+>> everything is fine. Suddenly a lot of processes are started - boom.
+>> MOVABLE should only every be used if you expect an unplug. And for
+>> paravirtualized devices, a "typical" unplug does not exist.
+> 
+> No, it's more complicated than that.  People use MOVABLE, for instance,
+> to allow more consistent huge page allocations.  It's certainly not just
+> hot-remove.
 > 
 
-I am on your side. We will need multiple ones. But we need sane
-defaults. And a default rule will always exist. And users will expect
-that the defaults somewhat match their expectation unless they really
-have some special use cases.
+As noted in the other thread, that's a good point. We have to allow to
+make a decision in user space.
 
-All I am saying is, again, that if user space is to make decisions, it
-should get sufficient information to make sane decision. And in my point
-of view, the type of memory allows us to make these decision and to
-provide a "single udev script to rule them all" with sane defaults.
-
-I at least think the distinction between "auto-online" and "standby" is
-required (what Dave suggested).
-
-The we can make a simple rule
-
-if (auto-online memory) {
-	if (virtual environment) {
-		"online"
-	} else {
-		"online_movable"
-	}
-}
-/* standby memory not onlined as default */
-
-We are able to provide sane defaults.
+I agree to your initial proposal to distinguish "standby" from
+"auto-online". It would allow to have sane defaults in user space.
 
 -- 
 
