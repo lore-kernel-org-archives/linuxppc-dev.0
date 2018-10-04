@@ -2,67 +2,50 @@ Return-Path: <SRS0=m9yV=MQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BDD3AC64EBC
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 04:58:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D3840C64EBC
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 05:22:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3C0E220684
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 04:58:46 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="D39+ddIX"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3C0E220684
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
+	by mail.kernel.org (Postfix) with ESMTPS id 64EBF20877
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 05:22:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 64EBF20877
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=popple.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42Qgdc4T7CzF3B8
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 14:58:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Qh8c1rCtzF37w
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 15:22:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=popple.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="D39+ddIX";
-	dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42QgX60lgzzF37M
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2018 14:53:58 +1000 (AEST)
+ spf=none (mailfrom) smtp.mailfrom=popple.id.au
+ (client-ip=150.101.137.136; helo=ipmail01.adl6.internode.on.net;
+ envelope-from=alistair@popple.id.au; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="D39+ddIX"; 
- dkim-atps=neutral
-Received: by ozlabs.org (Postfix)
- id 42QgX55m8zz9s8T; Thu,  4 Oct 2018 14:53:57 +1000 (AEST)
-Received: by ozlabs.org (Postfix, from userid 1003)
- id 42QgX555whz9s7T; Thu,  4 Oct 2018 14:53:57 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1538628837; bh=98nywkIcNGl4R3IEJLColDIPDgFIsoCPYXB8iuDtjbM=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=D39+ddIXpGSipf0dFiSZHSVCYLLb+cSDbzj3mSOPNAF+/y7C+g5e1Ehe4l1VHD1uj
- vholDANVSP5sPOQHZOahq+IgIkWmHEHJTQrxG26Z6ZOX4AH9pQCJqunINhLQTMfr9Z
- /iVMZJTy0La9LLUifPi+DjDM6i5x6Mjh++2vlweqgMj5BIRHg60RD17dnaTtOXQtvR
- QV2E2dWc+ZGk2nD0fLaSuud0B8y9+OM5kDNHLg0RJJApshJEQkgWC119G44YTn4zE1
- pBDDiTziePibs8AWHuU/1Hmvo8+mPZPlnxCEfn/YfmhfG4afV3dbZBM1SA/ULHtOFa
- oPqwdH+iNoJ+A==
-Date: Thu, 4 Oct 2018 13:03:21 +1000
-From: Paul Mackerras <paulus@ozlabs.org>
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH v3 30/33] KVM: PPC: Book3S HV: Allow HV module to load
- without hypervisor mode
-Message-ID: <20181004030321.GA16300@fergus>
-References: <1538479892-14835-1-git-send-email-paulus@ozlabs.org>
- <1538479892-14835-31-git-send-email-paulus@ozlabs.org>
- <20181003061514.GW1886@umbus.fritz.box>
+ dmarc=none (p=none dis=none) header.from=popple.id.au
+Received: from ipmail01.adl6.internode.on.net (ipmail01.adl6.internode.on.net
+ [150.101.137.136])
+ by lists.ozlabs.org (Postfix) with ESMTP id 42Qh6W50k7zF37p
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2018 15:20:19 +1000 (AEST)
+Received: from static-82-10.transact.net.au (HELO new-mexico.localnet)
+ ([122.99.82.10])
+ by ipmail01.adl6.internode.on.net with ESMTP; 04 Oct 2018 14:50:19 +0930
+From: Alistair Popple <alistair@popple.id.au>
+To: Mark Hairgrove <mhairgrove@nvidia.com>
+Subject: Re: [PATCH v2 1/3] powerpc/powernv/npu: Reduce eieio usage when
+ issuing ATSD invalidates
+Date: Thu, 04 Oct 2018 15:20:17 +1000
+Message-ID: <11512683.UXHImd5zj4@new-mexico>
+User-Agent: KMail/5.2.3 (Linux/4.17.0-0.bpo.1-amd64; KDE/5.28.0; x86_64; ; )
+In-Reply-To: <1538592694-18739-2-git-send-email-mhairgrove@nvidia.com>
+References: <1538592694-18739-1-git-send-email-mhairgrove@nvidia.com>
+ <1538592694-18739-2-git-send-email-mhairgrove@nvidia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20181003061514.GW1886@umbus.fritz.box>
-User-Agent: Mutt/1.5.24 (2015-08-30)
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,64 +57,191 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@ozlabs.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, Reza Arbab <arbab@us.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Oct 03, 2018 at 04:15:15PM +1000, David Gibson wrote:
-> On Tue, Oct 02, 2018 at 09:31:29PM +1000, Paul Mackerras wrote:
-> > With this, the KVM-HV module can be loaded in a guest running under
-> > KVM-HV, and if the hypervisor supports nested virtualization, this
-> > guest can now act as a nested hypervisor and run nested guests.
-> > 
-> > This also adds some checks to inform userspace that HPT guests are not
-> > supported by nested hypervisors, and to prevent userspace from
-> > configuring a guest to use HPT mode.
-> > 
-> > Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
-> > ---
-> >  arch/powerpc/kvm/book3s_hv.c | 20 ++++++++++++++++----
-> >  1 file changed, 16 insertions(+), 4 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> > index f630e91..196bff1 100644
-> > --- a/arch/powerpc/kvm/book3s_hv.c
-> > +++ b/arch/powerpc/kvm/book3s_hv.c
-> > @@ -4237,6 +4237,10 @@ static int kvm_vm_ioctl_get_smmu_info_hv(struct kvm *kvm,
-> >  {
-> >  	struct kvm_ppc_one_seg_page_size *sps;
-> >  
-> > +	/* If we're a nested hypervisor, we only support radix guests */
-> > +	if (kvmhv_on_pseries())
-> > +		return -EINVAL;
-> > +
-> >  	/*
-> >  	 * POWER7, POWER8 and POWER9 all support 32 storage keys for data.
-> >  	 * POWER7 doesn't support keys for instruction accesses,
-> > @@ -4822,11 +4826,15 @@ static int kvmppc_core_emulate_mfspr_hv(struct kvm_vcpu *vcpu, int sprn,
-> >  
-> >  static int kvmppc_core_check_processor_compat_hv(void)
-> >  {
-> > -	if (!cpu_has_feature(CPU_FTR_HVMODE) ||
-> > -	    !cpu_has_feature(CPU_FTR_ARCH_206))
-> > -		return -EIO;
-> > +	if (cpu_has_feature(CPU_FTR_HVMODE) &&
-> > +	    cpu_has_feature(CPU_FTR_ARCH_206))
-> > +		return 0;
-> >  
-> > -	return 0;
-> > +	/* Can run as nested hypervisor on POWER9 in radix mode. */
-> > +	if (cpu_has_feature(CPU_FTR_ARCH_300) && radix_enabled())
+Reviewed-by: Alistair Popple <alistair@popple.id.au>
+
+On Wednesday, 3 October 2018 11:51:32 AM AEST Mark Hairgrove wrote:
+> There are two types of ATSDs issued to the NPU: invalidates targeting a
+> specific virtual address and invalidates targeting the whole address
+> space. In both cases prior to this change, the sequence was:
 > 
-> Shouldn't we probe the parent hypervisor for ability to support nested
-> guests before we say "yes" here?
+>     for each NPU
+>         - Write the target address to the XTS_ATSD_AVA register
+>         - EIEIO
+>         - Write the launch value to issue the ATSD
+> 
+> First, a target address is not required when invalidating the whole
+> address space, so that write and the EIEIO have been removed. The AP
+> (size) field in the launch is not needed either.
+> 
+> Second, for per-address invalidates the above sequence is inefficient in
+> the common case of multiple NPUs because an EIEIO is issued per NPU. This
+> unnecessarily forces the launches of later ATSDs to be ordered with the
+> launches of earlier ones. The new sequence only issues a single EIEIO:
+> 
+>     for each NPU
+>         - Write the target address to the XTS_ATSD_AVA register
+>     EIEIO
+>     for each NPU
+>         - Write the launch value to issue the ATSD
+> 
+> Performance results were gathered using a microbenchmark which creates a
+> 1G allocation then uses mprotect with PROT_NONE to trigger invalidates in
+> strides across the allocation.
+> 
+> With only a single NPU active (one GPU) the difference is in the noise for
+> both types of invalidates (+/-1%).
+> 
+> With two NPUs active (on a 6-GPU system) the effect is more noticeable:
+> 
+>          mprotect rate (GB/s)
+> Stride   Before      After      Speedup
+> 64K         5.9        6.5          10%
+> 1M         31.2       33.4           7%
+> 2M         36.3       38.7           7%
+> 4M        322.6      356.7          11%
+> 
+> Signed-off-by: Mark Hairgrove <mhairgrove@nvidia.com>
+> ---
+>  arch/powerpc/platforms/powernv/npu-dma.c |   99 ++++++++++++++---------------
+>  1 files changed, 48 insertions(+), 51 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
+> index 8006c54..c8f438a 100644
+> --- a/arch/powerpc/platforms/powernv/npu-dma.c
+> +++ b/arch/powerpc/platforms/powernv/npu-dma.c
+> @@ -454,79 +454,76 @@ static void put_mmio_atsd_reg(struct npu *npu, int reg)
+>  }
+>  
+>  /* MMIO ATSD register offsets */
+> -#define XTS_ATSD_AVA  1
+> -#define XTS_ATSD_STAT 2
+> +#define XTS_ATSD_LAUNCH 0
+> +#define XTS_ATSD_AVA    1
+> +#define XTS_ATSD_STAT   2
+>  
+> -static void mmio_launch_invalidate(struct mmio_atsd_reg *mmio_atsd_reg,
+> -				unsigned long launch, unsigned long va)
+> +static unsigned long get_atsd_launch_val(unsigned long pid, unsigned long psize,
+> +					bool flush)
+>  {
+> -	struct npu *npu = mmio_atsd_reg->npu;
+> -	int reg = mmio_atsd_reg->reg;
+> +	unsigned long launch = 0;
+>  
+> -	__raw_writeq_be(va, npu->mmio_atsd_regs[reg] + XTS_ATSD_AVA);
+> -	eieio();
+> -	__raw_writeq_be(launch, npu->mmio_atsd_regs[reg]);
+> +	if (psize == MMU_PAGE_COUNT) {
+> +		/* IS set to invalidate entire matching PID */
+> +		launch |= PPC_BIT(12);
+> +	} else {
+> +		/* AP set to invalidate region of psize */
+> +		launch |= (u64)mmu_get_ap(psize) << PPC_BITLSHIFT(17);
+> +	}
+> +
+> +	/* PRS set to process-scoped */
+> +	launch |= PPC_BIT(13);
+> +
+> +	/* PID */
+> +	launch |= pid << PPC_BITLSHIFT(38);
+> +
+> +	/* No flush */
+> +	launch |= !flush << PPC_BITLSHIFT(39);
+> +
+> +	return launch;
+>  }
+>  
+> -static void mmio_invalidate_pid(struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS],
+> -				unsigned long pid, bool flush)
+> +static void mmio_atsd_regs_write(struct mmio_atsd_reg
+> +			mmio_atsd_reg[NV_MAX_NPUS], unsigned long offset,
+> +			unsigned long val)
+>  {
+> -	int i;
+> -	unsigned long launch;
+> +	struct npu *npu;
+> +	int i, reg;
+>  
+>  	for (i = 0; i <= max_npu2_index; i++) {
+> -		if (mmio_atsd_reg[i].reg < 0)
+> +		reg = mmio_atsd_reg[i].reg;
+> +		if (reg < 0)
+>  			continue;
+>  
+> -		/* IS set to invalidate matching PID */
+> -		launch = PPC_BIT(12);
+> -
+> -		/* PRS set to process-scoped */
+> -		launch |= PPC_BIT(13);
+> -
+> -		/* AP */
+> -		launch |= (u64)
+> -			mmu_get_ap(mmu_virtual_psize) << PPC_BITLSHIFT(17);
+> -
+> -		/* PID */
+> -		launch |= pid << PPC_BITLSHIFT(38);
+> +		npu = mmio_atsd_reg[i].npu;
+> +		__raw_writeq_be(val, npu->mmio_atsd_regs[reg] + offset);
+> +	}
+> +}
+>  
+> -		/* No flush */
+> -		launch |= !flush << PPC_BITLSHIFT(39);
+> +static void mmio_invalidate_pid(struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS],
+> +				unsigned long pid, bool flush)
+> +{
+> +	unsigned long launch = get_atsd_launch_val(pid, MMU_PAGE_COUNT, flush);
+>  
+> -		/* Invalidating the entire process doesn't use a va */
+> -		mmio_launch_invalidate(&mmio_atsd_reg[i], launch, 0);
+> -	}
+> +	/* Invalidating the entire process doesn't use a va */
+> +	mmio_atsd_regs_write(mmio_atsd_reg, XTS_ATSD_LAUNCH, launch);
+>  }
+>  
+>  static void mmio_invalidate_va(struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS],
+>  			unsigned long va, unsigned long pid, bool flush)
+>  {
+> -	int i;
+>  	unsigned long launch;
+>  
+> -	for (i = 0; i <= max_npu2_index; i++) {
+> -		if (mmio_atsd_reg[i].reg < 0)
+> -			continue;
+> -
+> -		/* IS set to invalidate target VA */
+> -		launch = 0;
+> +	launch = get_atsd_launch_val(pid, mmu_virtual_psize, flush);
+>  
+> -		/* PRS set to process scoped */
+> -		launch |= PPC_BIT(13);
+> +	/* Write all VAs first */
+> +	mmio_atsd_regs_write(mmio_atsd_reg, XTS_ATSD_AVA, va);
+>  
+> -		/* AP */
+> -		launch |= (u64)
+> -			mmu_get_ap(mmu_virtual_psize) << PPC_BITLSHIFT(17);
+> -
+> -		/* PID */
+> -		launch |= pid << PPC_BITLSHIFT(38);
+> -
+> -		/* No flush */
+> -		launch |= !flush << PPC_BITLSHIFT(39);
+> +	/* Issue one barrier for all address writes */
+> +	eieio();
+>  
+> -		mmio_launch_invalidate(&mmio_atsd_reg[i], launch, va);
+> -	}
+> +	/* Launch */
+> +	mmio_atsd_regs_write(mmio_atsd_reg, XTS_ATSD_LAUNCH, launch);
+>  }
+>  
+>  #define mn_to_npu_context(x) container_of(x, struct npu_context, mn)
+> 
 
-Well, we do check that the parent hypervisor can support nested
-hypervisors, it's just done later on.  And to match nitpick with
-nitpick, this is a function evaluating _processor_ compatibility, and
-a POWER9 processor in radix mode does have everything necessary to
-support nested hypervisors -- if the parent hypervisor doesn't support
-nested hypervisors, that's not a deficiency in the processor.
 
-Paul.
