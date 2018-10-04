@@ -2,53 +2,68 @@ Return-Path: <SRS0=m9yV=MQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AE113C64EBC
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 11:28:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E9DAC64EB8
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 12:00:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 09DCC20877
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 11:28:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 09DCC20877
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id E6EDA20684
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 12:00:16 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="Y0GzUZDj"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E6EDA20684
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42QrH02tTdzF3JY
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 21:28:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Qrzy4q0WzF3KC
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 22:00:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=arm.com
- (client-ip=217.140.101.70; helo=foss.arm.com;
- envelope-from=robin.murphy@arm.com; receiver=<UNKNOWN>)
+	dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="Y0GzUZDj";
+	dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42QrvT3Kt5zF3Jr
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2018 21:56:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 42QrDN45xbzF3Jm
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2018 21:25:54 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 505D37A9;
- Thu,  4 Oct 2018 04:25:50 -0700 (PDT)
-Received: from [10.4.12.131] (e110467-lin.emea.arm.com [10.4.12.131])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 036B03F5A0;
- Thu,  4 Oct 2018 04:25:48 -0700 (PDT)
-Subject: Re: [PATCH] dma-direct: Fix return value of dma_direct_supported
-To: Alexander Duyck <alexander.h.duyck@linux.intel.com>,
- iommu@lists.linux-foundation.org
-References: <20181003234746.3586.42014.stgit@localhost.localdomain>
-From: Robin Murphy <robin.murphy@arm.com>
-Message-ID: <5329f992-d3aa-c16c-1218-c26d758889b8@arm.com>
-Date: Thu, 4 Oct 2018 12:25:47 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
-MIME-Version: 1.0
-In-Reply-To: <20181003234746.3586.42014.stgit@localhost.localdomain>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-GB
-Content-Transfer-Encoding: 7bit
+ dmarc=none (p=none dis=none) header.from=ozlabs.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="Y0GzUZDj"; 
+ dkim-atps=neutral
+Received: by ozlabs.org (Postfix)
+ id 42QrvT2b3Lz9sj8; Thu,  4 Oct 2018 21:56:21 +1000 (AEST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPSA id 42QrvT14Bgz9sj3;
+ Thu,  4 Oct 2018 21:56:21 +1000 (AEST)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=ozlabs.org
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
+ t=1538654181; bh=LZ7YHdWgYUnWjnAjzveTEW6l+922CIaZwEKdlvAJOLE=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=Y0GzUZDjNEAW1NdvJnwzbQOZR5g+Ra1w+ODuhGAvpg9fEePXXV38ROUHrAtDsXRyn
+ yIyACPnjbSDPnxjpyke66dJhasXt8gBxGG064422uWBw7QTcakaZdveT6YpsealNzV
+ vF29oNFVNE0OrySOJM6G0ebqcX9/ljPwRO/91MQDdtylXhLFOGHEaqPVTdXrD5FksP
+ EUMJJ3+ork/vyaCK8PYBTzpemK4PscXxk0v6Y9K4+SQFBCUV2BQlPUe91yKMVX+pri
+ +jVD4kk9dd/iPVPntjE/RgOOc1YZevUTu0OHrWWEKTCZ/kZzip1l5FxiJWLvgySfoP
+ gp1bHWcpaNxVw==
+From: Paul Mackerras <paulus@ozlabs.org>
+To: kvm@vger.kernel.org,
+	kvm-ppc@vger.kernel.org
+Subject: [PATCH v4 04/32] KVM: PPC: Book3S HV: Move interrupt delivery on
+ guest entry to C code
+Date: Thu,  4 Oct 2018 21:55:41 +1000
+Message-Id: <1538654169-15602-5-git-send-email-paulus@ozlabs.org>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1538654169-15602-1-git-send-email-paulus@ozlabs.org>
+References: <1538654169-15602-1-git-send-email-paulus@ozlabs.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,57 +75,200 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux@roeck-us.net, gregkh@linuxfoundation.org
+Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 04/10/18 00:48, Alexander Duyck wrote:
-> It appears that in commit 9d7a224b463e ("dma-direct: always allow dma mask
-> <= physiscal memory size") the logic of the test was changed from a "<" to
-> a ">=" however I don't see any reason for that change. I am assuming that
-> there was some additional change planned, specifically I suspect the logic
-> was intended to be reversed and possibly used for a return. Since that is
-> the case I have gone ahead and done that.
+This is based on a patch by Suraj Jitindar Singh.
 
-Bah, seems I got hung up on the min_mask code above it and totally 
-overlooked that the condition itself got flipped. It probably also can't 
-help that it's an int return type, but treated as a bool by callers 
-rather than "0 for success" as int tends to imply in isolation.
+This moves the code in book3s_hv_rmhandlers.S that generates an
+external, decrementer or privileged doorbell interrupt just before
+entering the guest to C code in book3s_hv_builtin.c.  This is to
+make future maintenance and modification easier.  The algorithm
+expressed in the C code is almost identical to the previous
+algorithm.
 
-Anyway, paying a bit more attention this time, I think this looks like 
-the right fix - cheers Alex.
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+---
+ arch/powerpc/include/asm/kvm_ppc.h      |  1 +
+ arch/powerpc/kvm/book3s_hv.c            |  3 +-
+ arch/powerpc/kvm/book3s_hv_builtin.c    | 48 ++++++++++++++++++++++
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S | 70 ++++++++-------------------------
+ 4 files changed, 67 insertions(+), 55 deletions(-)
 
-Robin.
+diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+index e991821..83d61b8 100644
+--- a/arch/powerpc/include/asm/kvm_ppc.h
++++ b/arch/powerpc/include/asm/kvm_ppc.h
+@@ -652,6 +652,7 @@ int kvmppc_rm_h_ipi(struct kvm_vcpu *vcpu, unsigned long server,
+                     unsigned long mfrr);
+ int kvmppc_rm_h_cppr(struct kvm_vcpu *vcpu, unsigned long cppr);
+ int kvmppc_rm_h_eoi(struct kvm_vcpu *vcpu, unsigned long xirr);
++void kvmppc_guest_entry_inject_int(struct kvm_vcpu *vcpu);
+ 
+ /*
+  * Host-side operations we want to set up while running in real
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 3e3a715..49a686c 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -730,8 +730,7 @@ static bool kvmppc_doorbell_pending(struct kvm_vcpu *vcpu)
+ 	/*
+ 	 * Ensure that the read of vcore->dpdes comes after the read
+ 	 * of vcpu->doorbell_request.  This barrier matches the
+-	 * lwsync in book3s_hv_rmhandlers.S just before the
+-	 * fast_guest_return label.
++	 * smb_wmb() in kvmppc_guest_entry_inject().
+ 	 */
+ 	smp_rmb();
+ 	vc = vcpu->arch.vcore;
+diff --git a/arch/powerpc/kvm/book3s_hv_builtin.c b/arch/powerpc/kvm/book3s_hv_builtin.c
+index fc6bb96..ccfea5b 100644
+--- a/arch/powerpc/kvm/book3s_hv_builtin.c
++++ b/arch/powerpc/kvm/book3s_hv_builtin.c
+@@ -729,3 +729,51 @@ void kvmhv_p9_restore_lpcr(struct kvm_split_mode *sip)
+ 	smp_mb();
+ 	local_paca->kvm_hstate.kvm_split_mode = NULL;
+ }
++
++/*
++ * Is there a PRIV_DOORBELL pending for the guest (on POWER9)?
++ * Can we inject a Decrementer or a External interrupt?
++ */
++void kvmppc_guest_entry_inject_int(struct kvm_vcpu *vcpu)
++{
++	int ext;
++	unsigned long vec = 0;
++	unsigned long lpcr;
++
++	/* Insert EXTERNAL bit into LPCR at the MER bit position */
++	ext = (vcpu->arch.pending_exceptions >> BOOK3S_IRQPRIO_EXTERNAL) & 1;
++	lpcr = mfspr(SPRN_LPCR);
++	lpcr |= ext << LPCR_MER_SH;
++	mtspr(SPRN_LPCR, lpcr);
++	isync();
++
++	if (vcpu->arch.shregs.msr & MSR_EE) {
++		if (ext) {
++			vec = BOOK3S_INTERRUPT_EXTERNAL;
++		} else {
++			long int dec = mfspr(SPRN_DEC);
++			if (!(lpcr & LPCR_LD))
++				dec = (int) dec;
++			if (dec < 0)
++				vec = BOOK3S_INTERRUPT_DECREMENTER;
++		}
++	}
++	if (vec) {
++		unsigned long msr, old_msr = vcpu->arch.shregs.msr;
++
++		kvmppc_set_srr0(vcpu, kvmppc_get_pc(vcpu));
++		kvmppc_set_srr1(vcpu, old_msr);
++		kvmppc_set_pc(vcpu, vec);
++		msr = vcpu->arch.intr_msr;
++		if (MSR_TM_ACTIVE(old_msr))
++			msr |= MSR_TS_S;
++		vcpu->arch.shregs.msr = msr;
++	}
++
++	if (vcpu->arch.doorbell_request) {
++		mtspr(SPRN_DPDES, 1);
++		vcpu->arch.vcore->dpdes = 1;
++		smp_wmb();
++		vcpu->arch.doorbell_request = 0;
++	}
++}
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index 77960e6..6752da1 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -1101,13 +1101,20 @@ no_xive:
+ #endif /* CONFIG_KVM_XICS */
+ 
+ deliver_guest_interrupt:
+-	ld	r6, VCPU_CTR(r4)
+-	ld	r7, VCPU_XER(r4)
+-
+-	mtctr	r6
+-	mtxer	r7
+-
+ kvmppc_cede_reentry:		/* r4 = vcpu, r13 = paca */
++	/* Check if we can deliver an external or decrementer interrupt now */
++	ld	r0, VCPU_PENDING_EXC(r4)
++BEGIN_FTR_SECTION
++	/* On POWER9, also check for emulated doorbell interrupt */
++	lbz	r3, VCPU_DBELL_REQ(r4)
++	or	r0, r0, r3
++END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
++	cmpdi	r0, 0
++	beq	71f
++	mr	r3, r4
++	bl	kvmppc_guest_entry_inject_int
++	ld	r4, HSTATE_KVM_VCPU(r13)
++71:
+ 	ld	r10, VCPU_PC(r4)
+ 	ld	r11, VCPU_MSR(r4)
+ 	ld	r6, VCPU_SRR0(r4)
+@@ -1120,53 +1127,10 @@ kvmppc_cede_reentry:		/* r4 = vcpu, r13 = paca */
+ 	rotldi	r11, r11, 1 + MSR_HV_LG
+ 	ori	r11, r11, MSR_ME
+ 
+-	/* Check if we can deliver an external or decrementer interrupt now */
+-	ld	r0, VCPU_PENDING_EXC(r4)
+-	rldicl	r0, r0, 64 - BOOK3S_IRQPRIO_EXTERNAL, 63
+-	cmpdi	cr1, r0, 0
+-	andi.	r8, r11, MSR_EE
+-	mfspr	r8, SPRN_LPCR
+-	/* Insert EXTERNAL bit into LPCR at the MER bit position */
+-	rldimi	r8, r0, LPCR_MER_SH, 63 - LPCR_MER_SH
+-	mtspr	SPRN_LPCR, r8
+-	isync
+-	beq	5f
+-	li	r0, BOOK3S_INTERRUPT_EXTERNAL
+-	bne	cr1, 12f
+-	mfspr	r0, SPRN_DEC
+-BEGIN_FTR_SECTION
+-	/* On POWER9 check whether the guest has large decrementer enabled */
+-	andis.	r8, r8, LPCR_LD@h
+-	bne	15f
+-END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+-	extsw	r0, r0
+-15:	cmpdi	r0, 0
+-	li	r0, BOOK3S_INTERRUPT_DECREMENTER
+-	bge	5f
+-
+-12:	mtspr	SPRN_SRR0, r10
+-	mr	r10,r0
+-	mtspr	SPRN_SRR1, r11
+-	mr	r9, r4
+-	bl	kvmppc_msr_interrupt
+-5:
+-BEGIN_FTR_SECTION
+-	b	fast_guest_return
+-END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
+-	/* On POWER9, check for pending doorbell requests */
+-	lbz	r0, VCPU_DBELL_REQ(r4)
+-	cmpwi	r0, 0
+-	beq	fast_guest_return
+-	ld	r5, HSTATE_KVM_VCORE(r13)
+-	/* Set DPDES register so the CPU will take a doorbell interrupt */
+-	li	r0, 1
+-	mtspr	SPRN_DPDES, r0
+-	std	r0, VCORE_DPDES(r5)
+-	/* Make sure other cpus see vcore->dpdes set before dbell req clear */
+-	lwsync
+-	/* Clear the pending doorbell request */
+-	li	r0, 0
+-	stb	r0, VCPU_DBELL_REQ(r4)
++	ld	r6, VCPU_CTR(r4)
++	ld	r7, VCPU_XER(r4)
++	mtctr	r6
++	mtxer	r7
+ 
+ /*
+  * Required state:
+-- 
+2.7.4
 
-> This addresses issues I had on my system that prevented me from booting
-> with the above mentioned commit applied on an x86_64 system w/ Intel IOMMU.
-> 
-> Fixes: 9d7a224b463e ("dma-direct: always allow dma mask <= physiscal memory size")
-> Signed-off-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
-> ---
->   kernel/dma/direct.c |    4 +---
->   1 file changed, 1 insertion(+), 3 deletions(-)
-> 
-> diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
-> index 5a0806b5351b..65872f6c2e93 100644
-> --- a/kernel/dma/direct.c
-> +++ b/kernel/dma/direct.c
-> @@ -301,9 +301,7 @@ int dma_direct_supported(struct device *dev, u64 mask)
->   
->   	min_mask = min_t(u64, min_mask, (max_pfn - 1) << PAGE_SHIFT);
->   
-> -	if (mask >= phys_to_dma(dev, min_mask))
-> -		return 0;
-> -	return 1;
-> +	return mask >= phys_to_dma(dev, min_mask);
->   }
->   
->   int dma_direct_mapping_error(struct device *dev, dma_addr_t dma_addr)
-> 
-> _______________________________________________
-> iommu mailing list
-> iommu@lists.linux-foundation.org
-> https://lists.linuxfoundation.org/mailman/listinfo/iommu
-> 
