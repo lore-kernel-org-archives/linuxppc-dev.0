@@ -2,66 +2,85 @@ Return-Path: <SRS0=m9yV=MQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A389C64EBC
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 09:36:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D278AC64EBC
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 09:39:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C8A60213A2
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 09:36:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 511D4213A2
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 09:39:15 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="HcrovXDW"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C8A60213A2
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=secretlab-ca.20150623.gappssmtp.com header.i=@secretlab-ca.20150623.gappssmtp.com header.b="RMlBgxlU"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 511D4213A2
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=secretlab.ca
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42QnpB14zxzF3K5
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 19:36:34 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42QnsF17D8zF3JT
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 19:39:13 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=secretlab.ca
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="HcrovXDW";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=secretlab-ca.20150623.gappssmtp.com header.i=@secretlab-ca.20150623.gappssmtp.com header.b="RMlBgxlU";
 	dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42QnhT4m5czF3HC
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2018 19:31:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.org
+ spf=pass (mailfrom) smtp.mailfrom=secretlab.ca
+ (client-ip=2607:f8b0:4864:20::844; helo=mail-qt1-x844.google.com;
+ envelope-from=glikely@secretlab.ca; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=secretlab.ca
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="HcrovXDW"; 
+ unprotected) header.d=secretlab-ca.20150623.gappssmtp.com
+ header.i=@secretlab-ca.20150623.gappssmtp.com header.b="RMlBgxlU"; 
  dkim-atps=neutral
-Received: by ozlabs.org (Postfix)
- id 42QnhT35lZz9sB5; Thu,  4 Oct 2018 19:31:37 +1000 (AEST)
-Received: by ozlabs.org (Postfix, from userid 1003)
- id 42QnhT2YB5z9s8J; Thu,  4 Oct 2018 19:31:37 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1538645497; bh=kHu7eTXTFLhStg46p+AfnPsp/0+Xw5lB8M6GDc+tgdo=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=HcrovXDWLndMg6IBLJ7eTVymlW6l0rXPBXglcqcxUT5fYbluUIubSIZei9d3hLdsb
- HxnnIn9GGkMsMacT3wqVczfhElfOGaWGTQUhvkfc3rsb2joIYPtZKT8wwqZqfHRDRV
- ODQCb0dFzxqP0hIG/ji+YS6MGjIZ2sdqao9SSXRFdQkZvgj1E9xEhpWacg9u72tK6a
- RmcJCEbcvXP5Ur1e00+rcmR5wPQFHB1hbZcWn+/oKuczmqV47CahmxW3k+lVVYxM3r
- e33GjfXwuD1hhWDbyfNWyQ16w79nhsuzEilV6Wwvwdn0hJ8v7IdEGyZE6Tena7O0DP
- 6nrZ0e7yYfzrQ==
-Date: Thu, 4 Oct 2018 19:29:38 +1000
-From: Paul Mackerras <paulus@ozlabs.org>
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH v3 29/33] KVM: PPC: Book3S HV: Handle differing
- endianness for H_ENTER_NESTED
-Message-ID: <20181004092938.GB3255@fergus>
-References: <1538479892-14835-1-git-send-email-paulus@ozlabs.org>
- <1538479892-14835-30-git-send-email-paulus@ozlabs.org>
- <20181003061336.GV1886@umbus.fritz.box>
+Received: from mail-qt1-x844.google.com (mail-qt1-x844.google.com
+ [IPv6:2607:f8b0:4864:20::844])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42QnkL3nM6zF3HC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2018 19:33:10 +1000 (AEST)
+Received: by mail-qt1-x844.google.com with SMTP id c56-v6so9075168qtd.11
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Oct 2018 02:33:10 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=secretlab-ca.20150623.gappssmtp.com; s=20150623;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=sCKH4RQnTBpbeTBBN1euQfMgvs4V7eNXnGtZahTXz9o=;
+ b=RMlBgxlURbreXIvdBKCc8WEpGZTsp5EPcsqG5rqIft2HhSRlBjEA7MCj+q9wmhcyTK
+ UjVEWp9nnMwzmSaZkYgV626vgbEWhlqC05dGIhNWlhs/Gz1arFsjNWQNO51ASTEVeKhg
+ V2x2aXqVTJqcb4somx66vMEdK67w4LvQq7hAZvtY2t17z0eribA5YCtqcuVYiIQHCcwY
+ VXFYgR3lsSOYfGUjhb6r2/IFkhBuiNAa4UuAHg7nQgBxrs5PIGUziFeXSKEbyg1cTZZ1
+ yvEDWjLigph+Vqz+rkz/O7D2yUtJexolqzVy5cPuyeM8rXH6cLhEM5MXGwqx0WOKnBam
+ aFAA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=sCKH4RQnTBpbeTBBN1euQfMgvs4V7eNXnGtZahTXz9o=;
+ b=gnHMzuFdll6BGvBjc8OuRrznqzOXzJThMUwTfdcXfqVkOG9/YRnqBc60Dd3qcFBDBy
+ oOioj67WYLgXnJw9lwJ06EayKVDg6ThiyoPVePyhY4Wfena8XC09GfSe1GjeJrIFnuJS
+ aljXg55tMEmeHyrCXBquYpRHUOVz/hsqeCuqwsvYgSS4Aq9FHoBw69+AM77VWi9PrX12
+ y5o4kPcW9eD4CimF78TDLw8vEBYjxvIlcSp0wj9fwevKWZc6QhgeHFULqBQOLCtZh8wG
+ fCUNaJIRHrIAKew/+J9aX9r2Kvb1/24ybfXpHbuuJuZdEBNnxsmSDul+Ui3qJTPPm2n0
+ smrA==
+X-Gm-Message-State: ABuFfoinedts+95qhV4AniSzYpLrzsz/ecPhlkuzRQuRNIc4oNSaQFV0
+ 2Y7RBeza1EBOFcwDRuL+lNxIs2KVp1MHj9TkuozrlA==
+X-Google-Smtp-Source: ACcGV63u0comoE/bR2Z8HnA95ESTlTk6G33GXn5IO/aUkVWIic4fpDVQxIPIZkr0m2fg3z2S0/9iMzgocLHwGyFLv4g=
+X-Received: by 2002:ac8:1b87:: with SMTP id
+ z7-v6mr4513208qtj.321.1538645588379; 
+ Thu, 04 Oct 2018 02:33:08 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20181003061336.GV1886@umbus.fritz.box>
-User-Agent: Mutt/1.5.24 (2015-08-30)
+References: <CADRPPNT0QiBkJtJnxjW95Yf-mirL5OzRrvqj8rC-O8fiz17VnA@mail.gmail.com>
+ <CAL_JsqKRH8uEzSx6H6ZSRJF9Ecp4am1cNsxgQqf2OO5_aGR1zw@mail.gmail.com>
+ <CADRPPNQam-QUfqDMvu42KS+50VaHfGPhCZj-1jRHQ-Od0fbxuQ@mail.gmail.com>
+In-Reply-To: <CADRPPNQam-QUfqDMvu42KS+50VaHfGPhCZj-1jRHQ-Od0fbxuQ@mail.gmail.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 4 Oct 2018 10:32:56 +0100
+Message-ID: <CACxGe6u2FQ8r1Ya6-mWoGcs7g2OLMccu68uskZvDLS6ows-hXQ@mail.gmail.com>
+Subject: Re: drivers binding to device node with multiple compatible strings
+To: leoyang.li@nxp.com
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,31 +92,64 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@ozlabs.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
+Cc: "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
+ <devicetree@vger.kernel.org>, Grant Likely <grant.likely@arm.com>,
+ linuxppc-dev@lists.ozlabs.org,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Rob Herring <robh+dt@kernel.org>, Frank Rowand <frowand.list@gmail.com>,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Oct 03, 2018 at 04:13:36PM +1000, David Gibson wrote:
-> On Tue, Oct 02, 2018 at 09:31:28PM +1000, Paul Mackerras wrote:
-> > From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-> > 
-> > The hcall H_ENTER_NESTED takes as the two parameters the address in
-> > L1 guest memory of a hv_regs struct and a pt_regs struct which the
-> > L1 guest would like to use to run a L2 guest and in which are returned
-> > the exit state of the L2 guest.  For efficiency, these are in the
-> > endianness of the L1 guest, rather than being always big-endian as is
-> > usually the case for PAPR hypercalls.
-> 
-> Does that actually make a difference for efficiency?  I thought the
-> presence of the byte-reversing loads and stores meant byteswapping was
-> basically zero-cost on POWER.
+On Fri, Sep 28, 2018 at 10:01 PM Li Yang <leoyang.li@nxp.com> wrote:
+>
+> On Fri, Sep 28, 2018 at 3:07 PM Rob Herring <robh+dt@kernel.org> wrote:
+> >
+> > On Thu, Sep 27, 2018 at 5:25 PM Li Yang <leoyang.li@nxp.com> wrote:
+> > >
+> > > Hi Rob and Grant,
+> > >
+> > > Various device tree specs are recommending to include all the
+> > > potential compatible strings in the device node, with the order from
+> > > most specific to most general.  But it looks like Linux kernel doesn't
+> > > provide a way to bind the device to the most specific driver, however,
+> > > the first registered compatible driver will be bound.
+> > >
+> > > As more and more generic drivers are added to the Linux kernel, they
+> > > are competing with the more specific vendor drivers and causes problem
+> > > when both are built into the kernel.  I'm wondering if there is a
+> > > generic solution (or in plan) to make the most specific driver bound
+> > > to the device.   Or we have to disable the more general driver or
+> > > remove the more general compatible string from the device tree?
+> >
+> > It's been a known limitation for a long time. However, in practice it
+> > doesn't seem to be a common problem. Perhaps folks just remove the
+> > less specific compatible from their DT (though that's not ideal). For
+> > most modern bindings, there's so many other resources beyond
+> > compatible (clocks, resets, pinctrl, etc.) that there are few generic
+> > drivers that can work.
+> >
+> > I guess if we want to fix this, we'd need to have weighted matching in
+> > the driver core and unbind drivers when we get a better match. Though
+> > it could get messy if the better driver probe fails. Then we've got to
+> > rebind to the original driver.
+>
+> Probably we can populate the platform devices from device tree after
+> the device_init phase?  So that all built-in drivers are already
+> registered when the devices are created and we can try find the best
+> match in one go?  For more specific loadable modules we probably need
+> to unbind from the old driver and bind to the new one.  But I agree
+> with you that it could be messy.
 
-It means that the L1 hypervisor can pass a pointer to the regs struct
-in the kvm_vcpu struct rather than having to make a copy, and copy the
-values back after the H_ENTER_NESTED.  I'll reword the commit message
-to say it's mostly about convenience and to a lesser extent about
-performance.
-
-Paul.
-
+It's a tradeoff.
+>
+> >
+> > Do you have a specific case where you hit this?
+>
+> Maybe not a new issue but "snps,dw-pcie" is competing with various
+> "fsl,<chip>-pcie" compatibles.  Also a specific PHY
+> "ethernet-phy-idAAAA.BBBB" with generic "ethernet-phy-ieee802.3-c45".
+>
+> Regards,
+> Leo
