@@ -2,142 +2,72 @@ Return-Path: <SRS0=m9yV=MQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.0 required=3.0 tests=BAD_ENC_HEADER,
-	DATE_IN_PAST_12_24,DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 692B7C64EBC
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 14:17:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B6B25C64EB8
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 14:32:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B52F620652
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 14:17:01 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="SiQtLhKr"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B52F620652
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id 0E3622082A
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 14:32:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0E3622082A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42Qw1l3lTgzF3MW
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 00:16:59 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42QwN360BMzF3M0
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 00:32:51 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.b="SiQtLhKr";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=nxp.com
- (client-ip=40.107.0.71; helo=eur02-am5-obe.outbound.protection.outlook.com;
- envelope-from=vabhav.sharma@nxp.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=nxp.com header.i=@nxp.com header.b="SiQtLhKr"; 
- dkim-atps=neutral
-Received: from EUR02-AM5-obe.outbound.protection.outlook.com
- (mail-eopbgr00071.outbound.protection.outlook.com [40.107.0.71])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42QtX63KfqzF3KS
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2018 23:09:42 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1; 
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=/bww5dCczG3MSPykoxStXx8Urb3r8pR6ZuV65KXscxg=;
- b=SiQtLhKruSEBrHxwSIqdraGCRUJjykElxrBydRXw2u0Vzz3NZymhxJo/holIgq8uZZEv1juXnKT5qqIaXfCi8LHyEppcdZNJ1+6+I+8FyJi2a6lCtklFF2/aCTjTeYqtEZHJRC/hv6Q7ZLpKUxim81RHocl6VDk2NYe/Fy6EH3U=
-Authentication-Results: spf=none (sender IP is )
- smtp.mailfrom=vabhav.sharma@nxp.com; 
-Received: from uefi-OptiPlex-790.ap.freescale.net (14.143.30.134) by
- AM6PR04MB4792.eurprd04.prod.outlook.com (2603:10a6:20b:3::29) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.1185.24; Thu, 4 Oct 2018 13:09:31 +0000
-From: Vabhav Sharma <vabhav.sharma@nxp.com>
-To: sudeep.holla@arm.com, oss@buserror.net, linux-kernel@vger.kernel.org,
- devicetree@vger.kernel.org, robh+dt@kernel.org, mark.rutland@arm.com,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- mturquette@baylibre.com, sboyd@kernel.org, rjw@rjwysocki.net,
- viresh.kumar@linaro.org, linux-clk@vger.kernel.org,
- linux-pm@vger.kernel.org, linux-kernel-owner@vger.kernel.org,
- catalin.marinas@arm.com, will.deacon@arm.com, gregkh@linuxfoundation.org,
- arnd@arndb.de, kstewart@linuxfoundation.org, yamada.masahiro@socionext.com,
- leoyang.li@nxp.com, shawnguo@kernel.org
-Subject: [PATCH v4 6/6] arm64: dts: add LX2160ARDB board support
-Date: Thu,  4 Oct 2018 06:33:51 +0530
-Message-Id: <1538615031-7507-7-git-send-email-vabhav.sharma@nxp.com>
-X-Mailer: git-send-email 1.9.1
-In-Reply-To: <1538615031-7507-1-git-send-email-vabhav.sharma@nxp.com>
-References: <1538615031-7507-1-git-send-email-vabhav.sharma@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42QwJH2KHdzF3Fh
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Oct 2018 00:29:34 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 42QwJ74LTcz9ttKk;
+ Thu,  4 Oct 2018 16:29:27 +0200 (CEST)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id ORtGWJSX--q0; Thu,  4 Oct 2018 16:29:27 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 42QwJ73g5Hz9ttKg;
+ Thu,  4 Oct 2018 16:29:27 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 6853E8BB62;
+ Thu,  4 Oct 2018 16:29:30 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id Pbd-oTJ-Y7kY; Thu,  4 Oct 2018 16:29:30 +0200 (CEST)
+Received: from PO15451 (unknown [192.168.232.3])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id B23778BB5F;
+ Thu,  4 Oct 2018 16:29:29 +0200 (CEST)
+Subject: Re: [RFC PATCH v3 2/7] powerpc: Prepare for moving thread_info into
+ task_struct
+To: Nicholas Piggin <npiggin@gmail.com>
+References: <cover.1538396658.git.christophe.leroy@c-s.fr>
+ <8dd2cade6299099a244b5eb223d7b84b460d7cd9.1538396658.git.christophe.leroy@c-s.fr>
+ <20181003150253.5124e989@roar.ozlabs.ibm.com>
+ <8c53e2fd-c97e-7968-130f-8b5728e20cab@c-s.fr>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <dbca7acd-7d79-8237-b396-fd9cb7dd9361@c-s.fr>
+Date: Thu, 4 Oct 2018 16:29:29 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [14.143.30.134]
-X-ClientProxiedBy: PN1PR0101CA0006.INDPRD01.PROD.OUTLOOK.COM
- (2603:1096:c00:e::16) To AM6PR04MB4792.eurprd04.prod.outlook.com
- (2603:10a6:20b:3::29)
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 80c2fc6e-920e-4598-a1ed-08d629faa261
-X-MS-Office365-Filtering-HT: Tenant
-X-Microsoft-Antispam: BCL:0; PCL:0;
- RULEID:(7020095)(4652040)(8989299)(4534185)(7168020)(4627221)(201703031133081)(201702281549075)(8990200)(5600074)(711020)(4618075)(2017052603328)(7153060)(7193020);
- SRVR:AM6PR04MB4792; 
-X-Microsoft-Exchange-Diagnostics: 1; AM6PR04MB4792;
- 3:Q3XvJb+pZAZoGQEUbR5K3sUZ6Rw8nlaRVSzi3NgYSEczvwtyBRYZo3AUzZ4IlJCE78NMLNkHSsisSi7y1cRU7VXuuLk7HzP1cJDqU72EXk+ukIj03Y+mbas4ZPQpZbCa0BeQfPpCSBhJRAjvC6eRB3vSlQOTKEUNs6E00k6yWMlD0bOu4iPp8GMlae0ZhkNBpAql5/0GQMkb4PKgETbGJnAvoX+K4oZ0M510LbeP6CdosYyyvUkvCtBEnE4ZAGDd;
- 25:UWfYixiKvYcd8TZiPYbpDjH2zM93Dti73xvL6DQWFlsbK6m6fuSZekhq8XorROMa0G/KdFY7EJ/QEKFzzn2PAEgU+Z1ArH2nKi4OEw4dSoltIH4jT9IbcddEL7BfVFfX3gCF9EBj6o7CUE7/AXP8GXX9ylF0OC4EHs4HCH89XNCNDe66fQQB1uH+QhE2kWJUia4zN4DI9ezFr4UHyLsWObEKMdOzVsNQWw27+u8KlVdhXg1C15/7VTI+O9jva/bpTCuwJt9+nPKUoR4xCVp7i6jn8FDy1tNOmJzySHR/8fetzBxRTBdjnUGNK41jRG4KhhcuPQHJuahMpuTZtgaNAQ==;
- 31:Ljky9P+AI74hAqFBShTlaO5BbWNvHBqOEkYDaIhXbcWaE0O+Gvh4OusoLWZryGiCKmX4vsAHOtA6J3KdcoLfzfRUFWE+p10F/T3f3ymMBMZ0O/pUWfIXhhsh8117X1kZr+iiMyfc0ClURK31mTAgd1/AAxsvImCIhYb70qgjhp2jMEejothvG3dPBhlUczjMZzEzPaYRCX39NRYhD1Eq8hyRxnzronRpaL8tkF7kv/U=
-X-MS-TrafficTypeDiagnostic: AM6PR04MB4792:
-X-Microsoft-Exchange-Diagnostics: 1; AM6PR04MB4792;
- 20:EyBNRXdP4z+pSJv0MqqmCwDtOwL0+oI7Vk7I80G899XgdtCCesQI7HzqnIP99FjTL32MnETUuObHQ0uoyZx0pOClrkQrImDH/xrAaDTSPtFvOZxNqe6UAqNON8MtL/0Gb9QuYWzTZcms/2QKw8zop+jxrbBNop2D/I+XcHRh452DUGGcbez3iEAbmPic62QR70vNiwS0j8wYRbHt/mZI/J1nOl05KCfNBUA2n00PtZghhlcIh2pVJIi62NuEMPyh2z50wQgUtDCp/IRX3tUaTBWgVRMBWFUrbWgZk9qzeUIJWCy+Go2FLgELyDOeINNiMILgunfAUbH1HM+Q84bsKssYVotnndQW2Ro22OWp2zxoGTRL65z/YN8UGv7iNSDB1WmHYw21FHjPq8CrQGvZlcny/jJV6oOuDeqeAmXsbiJ2pszUqUo99Jl1MR7i0xAUG/J83JlB8Ue8yHj/UVH4ixuIGEkvOAP3sqtB8qovK18U/HS1xOcf0hRigHiBef8j;
- 4:TTXuccy1A/7K9bicOUZvi6DmC5TyciNcaHGPohlyyuLLqOisRjIHLEBq6WvQGHmnTBv9sW8yg8625hDTJt9xIz8W13Yj6ZDZ2rY9WBZU7j40zmFmv/5iLKGhfFdMls+yuBk9epikAMLgEhevXsSCi9M60+2G1vVINd1sv0/BJZgJEhbkiIcKEmNBVWAf4OsMMUwBoRGA1J7z7jTzXjOo/nOIT03x4Ll1RU17xLOZpCTz6/TokmyPzBf5nBSA2f16s655cfcT4R4FSZhZjUTqATwBtMTxwXTl7kD3Ts3JEI7ym9QrJ4Dnzq1TwILQ4Lvn
-X-Microsoft-Antispam-PRVS: <AM6PR04MB47926CC661BA8B882EBA3521F3EA0@AM6PR04MB4792.eurprd04.prod.outlook.com>
-X-Exchange-Antispam-Report-Test: UriScan:(185117386973197);
-X-MS-Exchange-SenderADCheck: 1
-X-Exchange-Antispam-Report-CFA-Test: BCL:0; PCL:0;
- RULEID:(8211001083)(6040522)(2401047)(8121501046)(5005006)(3231355)(944501410)(52105095)(10201501046)(3002001)(93006095)(93001095)(6055026)(149066)(150057)(6041310)(20161123564045)(20161123560045)(20161123562045)(20161123558120)(201703131423095)(201702281528075)(20161123555045)(201703061421075)(201703061406153)(201708071742011)(7699051);
- SRVR:AM6PR04MB4792; BCL:0; PCL:0; RULEID:; SRVR:AM6PR04MB4792; 
-X-Forefront-PRVS: 0815F8251E
-X-Forefront-Antispam-Report: SFV:NSPM;
- SFS:(10009020)(396003)(39860400002)(136003)(346002)(376002)(366004)(199004)(189003)(97736004)(48376002)(106356001)(8936002)(305945005)(3846002)(7416002)(54906003)(6116002)(7736002)(6486002)(81166006)(6512007)(478600001)(2906002)(53936002)(50466002)(68736007)(5009440100003)(105586002)(55236004)(6506007)(2616005)(956004)(446003)(11346002)(36756003)(386003)(16526019)(316002)(476003)(5660300001)(86362001)(66066001)(186003)(44832011)(25786009)(486006)(16586007)(6666003)(26005)(8676002)(76176011)(50226002)(51416003)(52116002)(81156014)(47776003)(4326008)(110426005)(921003)(1121003);
- DIR:OUT; SFP:1101; SCL:1; SRVR:AM6PR04MB4792;
- H:uefi-OptiPlex-790.ap.freescale.net; FPR:; SPF:None; LANG:en;
- PTR:InfoNoRecords; A:1; MX:1; 
-Received-SPF: None (protection.outlook.com: nxp.com does not designate
- permitted sender hosts)
-X-Microsoft-Exchange-Diagnostics: =?us-ascii?Q?1; AM6PR04MB4792;
- 23:598mxCwZT2GsEsZoCbBYfEhmSe0Myu4gJRsJ6XVGk?=
- =?us-ascii?Q?AXetXwkgAJIa7dOBIQFfxQ9hXHypKpAiI0t29fDEirCaz5efRsR730VIJBzY?=
- =?us-ascii?Q?T9Oq7rcIbx2kpSNvIiE2eWBMHDafcTtoNe7hAQvnAPzAtp0M8gV/ceJ9VFMU?=
- =?us-ascii?Q?ThcJ25ybr0glVTBg1Ldx35l67YzuI8CWxK+/YWmN27n49/WEQqth5Hhh9yJo?=
- =?us-ascii?Q?NXYoSo9eFC+IzNLu+Cg4di4SVLZyFAuX/CYb5vYLCAZWK/Ykv1Kj4tGc9m1F?=
- =?us-ascii?Q?0/vTyJqRaoQS7MsCRsx1NY7V+R7Hw5J+b+vs+ukNn4az+kh1KHUMhRHPsglw?=
- =?us-ascii?Q?eMi0RpIrOLiGFxXkTnZ1ODKf7ahWSoHI31CvWeHgD/fRA2uIMhKgDACsAAu8?=
- =?us-ascii?Q?BK3JxMV0Ptl1KYgkeqlCpmFPqT57A60x6/GwpBUOXCjeUx2IgZdg2fvRNP1f?=
- =?us-ascii?Q?AkY+xO3OTz4/o9Q1GdvrkaoS+WXM33ewCyFszSOMaBRShLjubpTyB9SHMSQP?=
- =?us-ascii?Q?yLwEMeZmFrInSWrFOS7DMfVK1eT/5go5K0+VbKYMkdrUzxAKw4u3xpkxgNfK?=
- =?us-ascii?Q?7G8StE1BESsMk62tlkyM7ldvn7Bb9WcztQAlBiZUzjxluYeVMZDH7JpdAKzw?=
- =?us-ascii?Q?zEmpZZGIIMvrAo3CXfB84Zu+kWBLGkP90DFmPJMd3MoSxQVm4Wr2FO4TXLpj?=
- =?us-ascii?Q?a5N7G6LFnbFbXHHaAN5MsyEpIwYhDkVv53XS/TBEfXhJvxSQtvHbx4MdYmf2?=
- =?us-ascii?Q?N0OOJycw3QKjOumNB7wctC0XshIV/BJcEzvJsdrEhBUH6vUSSBMNUS4h1RxI?=
- =?us-ascii?Q?sTQ7ek8vvLzeI6XW73fzqJqqrvoz3GWKz9/0z6hJx5SfuYym1r8ozIsBdoNM?=
- =?us-ascii?Q?B7caGcZ3peOTuZHO0gUnbAttLwqi6uttW6E5qTSuf0l7CwG3uG+gjJ6/6Uug?=
- =?us-ascii?Q?n2cDBfHBpF/laLzslTUGbLwBO8eT1O6loPGGgme6TTGYCxzJE6JTX+qVkYvP?=
- =?us-ascii?Q?WESeSsD+d0+DbW2fT/gBm0hR/zUnIf5kRqqRJNxjs5zy7giYsqgtmQfG9xkx?=
- =?us-ascii?Q?ZAcAu/ilWK+7l0xqFnBtz9R2YCJkZAvGzk5KdbQD8MrKzgF5D5IYP2f0I2TG?=
- =?us-ascii?Q?echsFItQ2VRKCskv5tFKcmPuWgpJb2Pcp3ewj60f+Rj9lshSAsW/N3BX89ly?=
- =?us-ascii?Q?Fpjs4ZDmZw5fEI1cXG/iYXv8B4Gaz1wvAI/23lY3tF20W3OMW/fzwwEfMNLh?=
- =?us-ascii?Q?BHUzGMYygizy3RBHo+s+PQkbOimO8oBt0ED1HT2EnATn00AXWcTCI+Pt8WyF?=
- =?us-ascii?Q?+UHfFlRur8lq3a1BX2LmU4=3D?=
-X-Microsoft-Antispam-Message-Info: UphZ+kgmqwgo1vucc6KIYEFVAMC7l2XYY0Y5Wl6ldBNRmhEOM2NF5HlwRsjqJEi2Pz4nJTQNumAi/UfRXd8IOUhcTaRh1mWmgy/JVKRHu0LZpTPA2cWFLNXFleuRqxoUts1162bOyQPc7h6qf4dTvuHOi6vyMfPfam/wGmqQ0fDzXeqOFaHHXtYksUw2478rsdO6yyplhdv7joramBh8a5LczrLI/QSw2aKhu2Gd4TJIDjQ9C8Dr5ZBA2uE4w+l+gkB5i9P18UqAHr6eS2V6G1Chh/VzqSlWTbJbGibpPQoa1kXWLtdhgpaMrtKUrCZsacl2dICPaRJv7QU08LgppH+7+B6waBi57HJNXxlhqVU=
-X-Microsoft-Exchange-Diagnostics: 1; AM6PR04MB4792;
- 6:h2XjizkCGkPMyavGmd/xoIJeiobUZ6BsVWORJJ4dEKineALc/JUCynoWSOiOHSo2g0mQt9UiN4YmtLCQ5Hwmisj+CPOpz7YE5PLucEl0JnZ8LvOyhDyvG/JlYpmf6fpUkgR5ci87V8yZ4UNBQ6pVs4Fr5H9btOxw7LiA4HruTMQJ8oQ8k5zV6VYRO51iFvkNYTGcjhT8nmUdE5/jRfT+MTGoEkhAr7ToZ64DTLlisFhLJCFcHfb/YjnSY2nc/tClz+CIzAzUh+6dG3t0KbImiL01hMb90VL7KO/ZoyP5geB5d7ghWXkznaRyW9fmgSl2k0T4AcAQUOXD4gKR1ZE5DBV+VbMjFc1BcylWmio4upR8nZ2adNGaOR9J1xmpRYguKGlwzmuGx3TpbdfpHFpwwh3955Jx3x3idRVgGCCt1KjavRrpgMeWAhAWbmy2G+1+18X2MNrKRq6blPi2MV/Wow==;
- 5:CsRgeFDjy3wsNxeFBTdXAllb9ATQvmPQih34aOw8+mUOgbBzbea+w7Vfmuu51slFXp4ldLrVBlBb4KCE4aplLd/SnOyjSuTidbFC7vmMhvXLuTSBoshTua2W/p6CPH6SGPvues+GvMQWplnSFd5y7ys2i+Y6ucFO+oSQp7JM51U=;
- 7:GLCh5xc5ko0afIwagUej/1KwwpNfUKDvVEdiLLkvLC+AyuaW5RBMy8qtatozrNo4M9V2sRM+QZIcQ0pJplRob6s/xK+tVqmyL9LhsfPEhLvcntt8d7bYwMADKWgkxK7Lbil5LTGF16xOvxFWtBSWxLj3Je724PY6T3E+KhYCeHXUKm5zqgKepp2cLw+Ey/GrBSPUK5zrEVHqvR1XeCy4xSrkYx1cCaKkUei7eRUIo4/8QYqygOrPnfC5QE6ubqB6
-SpamDiagnosticOutput: 1:99
-SpamDiagnosticMetadata: NSPM
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 04 Oct 2018 13:09:31.2371 (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 80c2fc6e-920e-4598-a1ed-08d629faa261
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM6PR04MB4792
+In-Reply-To: <8c53e2fd-c97e-7968-130f-8b5728e20cab@c-s.fr>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -149,141 +79,482 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: udit.kumar@nxp.com, Priyanka Jain <priyanka.jain@nxp.com>,
- pankaj.bansal@nxp.com, linux@armlinux.org.uk, V.Sethi@nxp.com,
- Vabhav Sharma <vabhav.sharma@nxp.com>, Sriram Dash <sriram.dash@nxp.com>
+Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ aneesh.kumar@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-LX2160A reference design board (RDB) is a high-performance
-computing, evaluation, and development platform with LX2160A
-SoC.
 
-Signed-off-by: Priyanka Jain <priyanka.jain@nxp.com>
-Signed-off-by: Sriram Dash <sriram.dash@nxp.com>
-Signed-off-by: Vabhav Sharma <vabhav.sharma@nxp.com>
----
- arch/arm64/boot/dts/freescale/Makefile            |   1 +
- arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts | 100 ++++++++++++++++++++++
- 2 files changed, 101 insertions(+)
- create mode 100644 arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts
 
-diff --git a/arch/arm64/boot/dts/freescale/Makefile b/arch/arm64/boot/dts/freescale/Makefile
-index 86e18ad..445b72b 100644
---- a/arch/arm64/boot/dts/freescale/Makefile
-+++ b/arch/arm64/boot/dts/freescale/Makefile
-@@ -13,3 +13,4 @@ dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2080a-rdb.dtb
- dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2080a-simu.dtb
- dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2088a-qds.dtb
- dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2088a-rdb.dtb
-+dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-lx2160a-rdb.dtb
-diff --git a/arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts b/arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts
-new file mode 100644
-index 0000000..1483071
---- /dev/null
-+++ b/arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts
-@@ -0,0 +1,100 @@
-+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
-+//
-+// Device Tree file for LX2160ARDB
-+//
-+// Copyright 2018 NXP
-+
-+/dts-v1/;
-+
-+#include "fsl-lx2160a.dtsi"
-+
-+/ {
-+	model = "NXP Layerscape LX2160ARDB";
-+	compatible = "fsl,lx2160a-rdb", "fsl,lx2160a";
-+
-+	chosen {
-+		stdout-path = "serial0:115200n8";
-+	};
-+
-+	sb_3v3: regulator-fixed {
-+		compatible = "regulator-fixed";
-+		regulator-name = "fixed-3.3V";
-+		regulator-min-microvolt = <3300000>;
-+		regulator-max-microvolt = <3300000>;
-+		regulator-boot-on;
-+		regulator-always-on;
-+	};
-+
-+};
-+
-+&uart0 {
-+	status = "okay";
-+};
-+
-+&uart1 {
-+	status = "okay";
-+};
-+
-+&i2c0 {
-+	status = "okay";
-+	i2c-mux@77 {
-+		compatible = "nxp,pca9547";
-+		reg = <0x77>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		i2c@2 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0x2>;
-+
-+			power-monitor@40 {
-+				compatible = "ti,ina220";
-+				reg = <0x40>;
-+				shunt-resistor = <1000>;
-+			};
-+		};
-+
-+		i2c@3 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0x3>;
-+
-+			temperature-sensor@4c {
-+				compatible = "nxp,sa56004";
-+				reg = <0x4c>;
-+				vcc-supply = <&sb_3v3>;
-+			};
-+
-+			temperature-sensor@4d {
-+				compatible = "nxp,sa56004";
-+				reg = <0x4d>;
-+				vcc-supply = <&sb_3v3>;
-+			};
-+		};
-+	};
-+};
-+
-+&i2c4 {
-+	status = "okay";
-+
-+	rtc@51 {
-+		compatible = "nxp,pcf2129";
-+		reg = <0x51>;
-+		// IRQ10_B
-+		interrupts = <0 150 0x4>;
-+		};
-+
-+};
-+
-+&usb0 {
-+	status = "okay";
-+};
-+
-+&usb1 {
-+	status = "okay";
-+};
-+
-+&crypto {
-+	status = "okay";
-+};
--- 
-2.7.4
+Le 03/10/2018 à 07:49, Christophe LEROY a écrit :
+> 
+> 
+> Le 03/10/2018 à 07:02, Nicholas Piggin a écrit :
+>> On Mon,  1 Oct 2018 12:30:21 +0000 (UTC)
+>> Christophe Leroy <christophe.leroy@c-s.fr> wrote:
+>>
+>>> This patch cleans the powerpc kernel before activating
+>>> CONFIG_THREAD_INFO_IN_TASK:
+>>> - The purpose of the pointer given to call_do_softirq() and
+>>> call_do_irq() is to point the new stack ==> change it to void*
+>>> - Don't use CURRENT_THREAD_INFO() to locate the stack.
+>>> - Fixed a few comments.
+>>> - TI_CPU is only used when CONFIG_SMP is set.
+>>> - Replace current_thread_info()->task by current
+>>> - Remove unnecessary casts to thread_info, as they'll become invalid
+>>> once thread_info is not in stack anymore.
+>>> - Ensure task_struct 'cpu' fields is not used directly out of SMP code
+>>> - Rename THREAD_INFO to TASK_STASK: As it is in fact the offset of the
+>>> pointer to the stack in task_struct, this pointer will not be impacted
+>>> by the move of THREAD_INFO.
+>>> - Makes TASK_STACK available to PPC64 which will need it to the get
+>>> stack pointer from current once the thread_info have been moved.
+>>>
+>>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>>> ---
+>>>   arch/powerpc/include/asm/irq.h       |  4 ++--
+>>>   arch/powerpc/include/asm/livepatch.h |  2 +-
+>>>   arch/powerpc/include/asm/processor.h |  4 ++--
+>>>   arch/powerpc/include/asm/reg.h       |  2 +-
+>>>   arch/powerpc/kernel/asm-offsets.c    |  2 +-
+>>>   arch/powerpc/kernel/entry_32.S       |  2 +-
+>>>   arch/powerpc/kernel/entry_64.S       |  2 +-
+>>>   arch/powerpc/kernel/head_32.S        |  4 ++--
+>>>   arch/powerpc/kernel/head_40x.S       |  4 ++--
+>>>   arch/powerpc/kernel/head_44x.S       |  2 +-
+>>>   arch/powerpc/kernel/head_8xx.S       |  2 +-
+>>>   arch/powerpc/kernel/head_booke.h     |  4 ++--
+>>>   arch/powerpc/kernel/head_fsl_booke.S |  6 ++++--
+>>>   arch/powerpc/kernel/irq.c            |  2 +-
+>>>   arch/powerpc/kernel/misc_32.S        |  8 ++++++--
+>>>   arch/powerpc/kernel/process.c        |  6 +++---
+>>>   arch/powerpc/kernel/setup_32.c       | 15 +++++----------
+>>>   arch/powerpc/kernel/smp.c            |  4 +++-
+>>>   arch/powerpc/xmon/xmon.c             |  2 +-
+>>>   19 files changed, 40 insertions(+), 37 deletions(-)
+>>>
+>>> diff --git a/arch/powerpc/include/asm/irq.h 
+>>> b/arch/powerpc/include/asm/irq.h
+>>> index ee39ce56b2a2..8108d1fe33ca 100644
+>>> --- a/arch/powerpc/include/asm/irq.h
+>>> +++ b/arch/powerpc/include/asm/irq.h
+>>> @@ -63,8 +63,8 @@ extern struct thread_info *hardirq_ctx[NR_CPUS];
+>>>   extern struct thread_info *softirq_ctx[NR_CPUS];
+>>>   extern void irq_ctx_init(void);
+>>> -extern void call_do_softirq(struct thread_info *tp);
+>>> -extern void call_do_irq(struct pt_regs *regs, struct thread_info *tp);
+>>> +extern void call_do_softirq(void *tp);
+>>> +extern void call_do_irq(struct pt_regs *regs, void *tp);
+>>
+>> void *sp for these ?
+> 
+> Yes, why not but it means changing the code. I wanted to minimise the 
+> changes and avoid cosmetic. Or maybe should add a cosmetic patch at the 
+> end ?
 
+In fact, I'll do it because the only additional impact is on a comment 
+in misc_32.S
+
+Christophe
+
+> 
+>>
+>> This all seems okay to me except the 32-bit code which I don't know.
+>> Would it be any trouble for you to put the TI_CPU bits into their own
+>> patch?
+> 
+> No problem, I can put the TI_CPU bits in a separate patch.
+> 
+>>
+>> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+>>
+> 
+> Thanks
+> Christophe
+> 
+>>
+>>>   extern void do_IRQ(struct pt_regs *regs);
+>>>   extern void __init init_IRQ(void);
+>>>   extern void __do_irq(struct pt_regs *regs);
+>>> diff --git a/arch/powerpc/include/asm/livepatch.h 
+>>> b/arch/powerpc/include/asm/livepatch.h
+>>> index 47a03b9b528b..818451bf629c 100644
+>>> --- a/arch/powerpc/include/asm/livepatch.h
+>>> +++ b/arch/powerpc/include/asm/livepatch.h
+>>> @@ -49,7 +49,7 @@ static inline void klp_init_thread_info(struct 
+>>> thread_info *ti)
+>>>       ti->livepatch_sp = (unsigned long *)(ti + 1) + 1;
+>>>   }
+>>>   #else
+>>> -static void klp_init_thread_info(struct thread_info *ti) { }
+>>> +static inline void klp_init_thread_info(struct thread_info *ti) { }
+>>>   #endif /* CONFIG_LIVEPATCH */
+>>>   #endif /* _ASM_POWERPC_LIVEPATCH_H */
+>>> diff --git a/arch/powerpc/include/asm/processor.h 
+>>> b/arch/powerpc/include/asm/processor.h
+>>> index 353879db3e98..31873614392f 100644
+>>> --- a/arch/powerpc/include/asm/processor.h
+>>> +++ b/arch/powerpc/include/asm/processor.h
+>>> @@ -40,7 +40,7 @@
+>>>   #ifndef __ASSEMBLY__
+>>>   #include <linux/types.h>
+>>> -#include <asm/thread_info.h>
+>>> +#include <linux/thread_info.h>
+>>>   #include <asm/ptrace.h>
+>>>   #include <asm/hw_breakpoint.h>
+>>> @@ -333,7 +333,7 @@ struct thread_struct {
+>>>   #define INIT_SP        (sizeof(init_stack) + (unsigned long) 
+>>> &init_stack)
+>>>   #define INIT_SP_LIMIT \
+>>> -    (_ALIGN_UP(sizeof(init_thread_info), 16) + (unsigned long) 
+>>> &init_stack)
+>>> +    (_ALIGN_UP(sizeof(struct thread_info), 16) + (unsigned long) 
+>>> &init_stack)
+>>>   #ifdef CONFIG_SPE
+>>>   #define SPEFSCR_INIT \
+>>> diff --git a/arch/powerpc/include/asm/reg.h 
+>>> b/arch/powerpc/include/asm/reg.h
+>>> index e5b314ed054e..f3a9cf19a986 100644
+>>> --- a/arch/powerpc/include/asm/reg.h
+>>> +++ b/arch/powerpc/include/asm/reg.h
+>>> @@ -1053,7 +1053,7 @@
+>>>    *    - SPRG9 debug exception scratch
+>>>    *
+>>>    * All 32-bit:
+>>> - *    - SPRG3 current thread_info pointer
+>>> + *    - SPRG3 current thread_struct physical addr pointer
+>>>    *        (virtual on BookE, physical on others)
+>>>    *
+>>>    * 32-bit classic:
+>>> diff --git a/arch/powerpc/kernel/asm-offsets.c 
+>>> b/arch/powerpc/kernel/asm-offsets.c
+>>> index ba9d0fc98730..d1f161e48945 100644
+>>> --- a/arch/powerpc/kernel/asm-offsets.c
+>>> +++ b/arch/powerpc/kernel/asm-offsets.c
+>>> @@ -85,10 +85,10 @@ int main(void)
+>>>       DEFINE(NMI_MASK, NMI_MASK);
+>>>       OFFSET(TASKTHREADPPR, task_struct, thread.ppr);
+>>>   #else
+>>> -    OFFSET(THREAD_INFO, task_struct, stack);
+>>>       DEFINE(THREAD_INFO_GAP, _ALIGN_UP(sizeof(struct thread_info), 
+>>> 16));
+>>>       OFFSET(KSP_LIMIT, thread_struct, ksp_limit);
+>>>   #endif /* CONFIG_PPC64 */
+>>> +    OFFSET(TASK_STACK, task_struct, stack);
+>>>   #ifdef CONFIG_LIVEPATCH
+>>>       OFFSET(TI_livepatch_sp, thread_info, livepatch_sp);
+>>> diff --git a/arch/powerpc/kernel/entry_32.S 
+>>> b/arch/powerpc/kernel/entry_32.S
+>>> index e58c3f467db5..12c0721f65ea 100644
+>>> --- a/arch/powerpc/kernel/entry_32.S
+>>> +++ b/arch/powerpc/kernel/entry_32.S
+>>> @@ -1166,7 +1166,7 @@ ret_from_debug_exc:
+>>>       mfspr    r9,SPRN_SPRG_THREAD
+>>>       lwz    r10,SAVED_KSP_LIMIT(r1)
+>>>       stw    r10,KSP_LIMIT(r9)
+>>> -    lwz    r9,THREAD_INFO-THREAD(r9)
+>>> +    lwz    r9,TASK_STACK-THREAD(r9)
+>>>       CURRENT_THREAD_INFO(r10, r1)
+>>>       lwz    r10,TI_PREEMPT(r10)
+>>>       stw    r10,TI_PREEMPT(r9)
+>>> diff --git a/arch/powerpc/kernel/entry_64.S 
+>>> b/arch/powerpc/kernel/entry_64.S
+>>> index 77a888bfcb53..697406572592 100644
+>>> --- a/arch/powerpc/kernel/entry_64.S
+>>> +++ b/arch/powerpc/kernel/entry_64.S
+>>> @@ -680,7 +680,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
+>>>   2:
+>>>   #endif /* CONFIG_PPC_BOOK3S_64 */
+>>> -    CURRENT_THREAD_INFO(r7, r8)  /* base of new stack */
+>>> +    clrrdi    r7, r8, THREAD_SHIFT    /* base of new stack */
+>>>       /* Note: this uses SWITCH_FRAME_SIZE rather than INT_FRAME_SIZE
+>>>          because we don't need to leave the 288-byte ABI gap at the
+>>>          top of the kernel stack. */
+>>> diff --git a/arch/powerpc/kernel/head_32.S 
+>>> b/arch/powerpc/kernel/head_32.S
+>>> index 61ca27929355..dce6f2ff07e5 100644
+>>> --- a/arch/powerpc/kernel/head_32.S
+>>> +++ b/arch/powerpc/kernel/head_32.S
+>>> @@ -261,7 +261,7 @@ __secondary_hold_acknowledge:
+>>>       tophys(r11,r1);            /* use tophys(r1) if kernel */ \
+>>>       beq    1f;        \
+>>>       mfspr    r11,SPRN_SPRG_THREAD;    \
+>>> -    lwz    r11,THREAD_INFO-THREAD(r11);    \
+>>> +    lwz    r11,TASK_STACK-THREAD(r11);    \
+>>>       addi    r11,r11,THREAD_SIZE;    \
+>>>       tophys(r11,r11);    \
+>>>   1:    subi    r11,r11,INT_FRAME_SIZE    /* alloc exc. frame */
+>>> @@ -841,7 +841,7 @@ __secondary_start:
+>>>       bl    init_idle_6xx
+>>>   #endif /* CONFIG_6xx */
+>>> -    /* get current_thread_info and current */
+>>> +    /* get current's stack and current */
+>>>       lis    r1,secondary_ti@ha
+>>>       tophys(r1,r1)
+>>>       lwz    r1,secondary_ti@l(r1)
+>>> diff --git a/arch/powerpc/kernel/head_40x.S 
+>>> b/arch/powerpc/kernel/head_40x.S
+>>> index b19d78410511..3088c9f29f5e 100644
+>>> --- a/arch/powerpc/kernel/head_40x.S
+>>> +++ b/arch/powerpc/kernel/head_40x.S
+>>> @@ -115,7 +115,7 @@ _ENTRY(saved_ksp_limit)
+>>>       andi.    r11,r11,MSR_PR;                             \
+>>>       beq    1f;                                 \
+>>>       mfspr    r1,SPRN_SPRG_THREAD;    /* if from user, start at top 
+>>> of   */\
+>>> -    lwz    r1,THREAD_INFO-THREAD(r1); /* this thread's kernel 
+>>> stack   */\
+>>> +    lwz    r1,TASK_STACK-THREAD(r1); /* this thread's kernel stack   
+>>> */\
+>>>       addi    r1,r1,THREAD_SIZE;                         \
+>>>   1:    subi    r1,r1,INT_FRAME_SIZE;    /* Allocate an exception 
+>>> frame     */\
+>>>       tophys(r11,r1);                                 \
+>>> @@ -158,7 +158,7 @@ _ENTRY(saved_ksp_limit)
+>>>       beq    1f;                                 \
+>>>       /* COMING FROM USER MODE */                         \
+>>>       mfspr    r11,SPRN_SPRG_THREAD;    /* if from user, start at top 
+>>> of   */\
+>>> -    lwz    r11,THREAD_INFO-THREAD(r11); /* this thread's kernel 
+>>> stack */\
+>>> +    lwz    r11,TASK_STACK-THREAD(r11); /* this thread's kernel stack 
+>>> */\
+>>>   1:    addi    r11,r11,THREAD_SIZE-INT_FRAME_SIZE; /* Alloc an excpt 
+>>> frm  */\
+>>>       tophys(r11,r11);                             \
+>>>       stw    r10,_CCR(r11);          /* save various registers       */\
+>>> diff --git a/arch/powerpc/kernel/head_44x.S 
+>>> b/arch/powerpc/kernel/head_44x.S
+>>> index 37e4a7cf0065..15d39b2499de 100644
+>>> --- a/arch/powerpc/kernel/head_44x.S
+>>> +++ b/arch/powerpc/kernel/head_44x.S
+>>> @@ -1020,7 +1020,7 @@ _GLOBAL(start_secondary_47x)
+>>>       /* Now we can get our task struct and real stack pointer */
+>>> -    /* Get current_thread_info and current */
+>>> +    /* Get current's stack and current */
+>>>       lis    r1,secondary_ti@ha
+>>>       lwz    r1,secondary_ti@l(r1)
+>>>       lwz    r2,TI_TASK(r1)
+>>> diff --git a/arch/powerpc/kernel/head_8xx.S 
+>>> b/arch/powerpc/kernel/head_8xx.S
+>>> index 6582f824d620..e56e36aa2b3d 100644
+>>> --- a/arch/powerpc/kernel/head_8xx.S
+>>> +++ b/arch/powerpc/kernel/head_8xx.S
+>>> @@ -124,7 +124,7 @@ turn_on_mmu:
+>>>       tophys(r11,r1);            /* use tophys(r1) if kernel */ \
+>>>       beq    1f;        \
+>>>       mfspr    r11,SPRN_SPRG_THREAD;    \
+>>> -    lwz    r11,THREAD_INFO-THREAD(r11);    \
+>>> +    lwz    r11,TASK_STACK-THREAD(r11);    \
+>>>       addi    r11,r11,THREAD_SIZE;    \
+>>>       tophys(r11,r11);    \
+>>>   1:    subi    r11,r11,INT_FRAME_SIZE    /* alloc exc. frame */
+>>> diff --git a/arch/powerpc/kernel/head_booke.h 
+>>> b/arch/powerpc/kernel/head_booke.h
+>>> index d0862a100d29..20fe0c93a0bd 100644
+>>> --- a/arch/powerpc/kernel/head_booke.h
+>>> +++ b/arch/powerpc/kernel/head_booke.h
+>>> @@ -44,7 +44,7 @@
+>>>       mr    r11, r1;                             \
+>>>       beq    1f;                                 \
+>>>       /* if from user, start at top of this thread's kernel stack 
+>>> */       \
+>>> -    lwz    r11, THREAD_INFO-THREAD(r10);                     \
+>>> +    lwz    r11, TASK_STACK-THREAD(r10);                     \
+>>>       ALLOC_STACK_FRAME(r11, THREAD_SIZE);                     \
+>>>   1 :    subi    r11, r11, INT_FRAME_SIZE; /* Allocate exception 
+>>> frame */     \
+>>>       stw    r13, _CCR(r11);        /* save various registers 
+>>> */         \
+>>> @@ -130,7 +130,7 @@
+>>>       DO_KVM    BOOKE_INTERRUPT_##intno 
+>>> exc_level_srr1;                     \
+>>>       andi.    r11,r11,MSR_PR;                             \
+>>>       mfspr    r11,SPRN_SPRG_THREAD;    /* if from user, start at top 
+>>> of   */\
+>>> -    lwz    r11,THREAD_INFO-THREAD(r11); /* this thread's kernel 
+>>> stack */\
+>>> +    lwz    r11,TASK_STACK-THREAD(r11); /* this thread's kernel stack 
+>>> */\
+>>>       addi    r11,r11,EXC_LVL_FRAME_OVERHEAD;    /* allocate stack 
+>>> frame    */\
+>>>       beq    1f;                                 \
+>>>       /* COMING FROM USER MODE */                         \
+>>> diff --git a/arch/powerpc/kernel/head_fsl_booke.S 
+>>> b/arch/powerpc/kernel/head_fsl_booke.S
+>>> index e2750b856c8f..239ad8a4754e 100644
+>>> --- a/arch/powerpc/kernel/head_fsl_booke.S
+>>> +++ b/arch/powerpc/kernel/head_fsl_booke.S
+>>> @@ -243,8 +243,10 @@ set_ivor:
+>>>       li    r0,0
+>>>       stwu    r0,THREAD_SIZE-STACK_FRAME_OVERHEAD(r1)
+>>> +#ifdef CONFIG_SMP
+>>>       CURRENT_THREAD_INFO(r22, r1)
+>>>       stw    r24, TI_CPU(r22)
+>>> +#endif
+>>>       bl    early_init
+>>> @@ -702,7 +704,7 @@ finish_tlb_load:
+>>>       /* Get the next_tlbcam_idx percpu var */
+>>>   #ifdef CONFIG_SMP
+>>> -    lwz    r12, THREAD_INFO-THREAD(r12)
+>>> +    lwz    r12, TASK_STACK-THREAD(r12)
+>>>       lwz    r15, TI_CPU(r12)
+>>>       lis     r14, __per_cpu_offset@h
+>>>       ori     r14, r14, __per_cpu_offset@l
+>>> @@ -1074,7 +1076,7 @@ __secondary_start:
+>>>       mr    r4,r24        /* Why? */
+>>>       bl    call_setup_cpu
+>>> -    /* get current_thread_info and current */
+>>> +    /* get current's stack and current */
+>>>       lis    r1,secondary_ti@ha
+>>>       lwz    r1,secondary_ti@l(r1)
+>>>       lwz    r2,TI_TASK(r1)
+>>> diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+>>> index 916ddc4aac44..aa53db3ba6e7 100644
+>>> --- a/arch/powerpc/kernel/irq.c
+>>> +++ b/arch/powerpc/kernel/irq.c
+>>> @@ -663,7 +663,7 @@ void do_IRQ(struct pt_regs *regs)
+>>>       struct thread_info *curtp, *irqtp, *sirqtp;
+>>>       /* Switch to the irq stack to handle this */
+>>> -    curtp = current_thread_info();
+>>> +    curtp = (void*)(current_stack_pointer() & ~(THREAD_SIZE - 1));
+>>>       irqtp = hardirq_ctx[raw_smp_processor_id()];
+>>>       sirqtp = softirq_ctx[raw_smp_processor_id()];
+>>> diff --git a/arch/powerpc/kernel/misc_32.S 
+>>> b/arch/powerpc/kernel/misc_32.S
+>>> index 695b24a2d954..24a7f18ea10c 100644
+>>> --- a/arch/powerpc/kernel/misc_32.S
+>>> +++ b/arch/powerpc/kernel/misc_32.S
+>>> @@ -60,7 +60,7 @@ _GLOBAL(call_do_softirq)
+>>>       blr
+>>>   /*
+>>> - * void call_do_irq(struct pt_regs *regs, struct thread_info *irqtp);
+>>> + * void call_do_irq(struct pt_regs *regs, void *irqtp);
+>>>    */
+>>>   _GLOBAL(call_do_irq)
+>>>       mflr    r0
+>>> @@ -183,10 +183,14 @@ _GLOBAL(low_choose_750fx_pll)
+>>>       or    r4,r4,r5
+>>>       mtspr    SPRN_HID1,r4
+>>> +#ifdef CONFIG_SMP
+>>>       /* Store new HID1 image */
+>>>       CURRENT_THREAD_INFO(r6, r1)
+>>>       lwz    r6,TI_CPU(r6)
+>>>       slwi    r6,r6,2
+>>> +#else
+>>> +    li    r6, 0
+>>> +#endif
+>>>       addis    r6,r6,nap_save_hid1@ha
+>>>       stw    r4,nap_save_hid1@l(r6)
+>>> @@ -599,7 +603,7 @@ EXPORT_SYMBOL(__bswapdi2)
+>>>   #ifdef CONFIG_SMP
+>>>   _GLOBAL(start_secondary_resume)
+>>>       /* Reset stack */
+>>> -    CURRENT_THREAD_INFO(r1, r1)
+>>> +    rlwinm    r1, r1, 0, 0, 31 - THREAD_SHIFT
+>>>       addi    r1,r1,THREAD_SIZE-STACK_FRAME_OVERHEAD
+>>>       li    r3,0
+>>>       stw    r3,0(r1)        /* Zero the stack frame pointer    */
+>>> diff --git a/arch/powerpc/kernel/process.c 
+>>> b/arch/powerpc/kernel/process.c
+>>> index 03c2e1f134bc..111abb4df2ec 100644
+>>> --- a/arch/powerpc/kernel/process.c
+>>> +++ b/arch/powerpc/kernel/process.c
+>>> @@ -1240,8 +1240,8 @@ struct task_struct *__switch_to(struct 
+>>> task_struct *prev,
+>>>           batch->active = 1;
+>>>       }
+>>> -    if (current_thread_info()->task->thread.regs) {
+>>> -        restore_math(current_thread_info()->task->thread.regs);
+>>> +    if (current->thread.regs) {
+>>> +        restore_math(current->thread.regs);
+>>>           /*
+>>>            * The copy-paste buffer can only store into foreign real
+>>> @@ -1251,7 +1251,7 @@ struct task_struct *__switch_to(struct 
+>>> task_struct *prev,
+>>>            * mappings, we must issue a cp_abort to clear any state and
+>>>            * prevent snooping, corruption or a covert channel.
+>>>            */
+>>> -        if (current_thread_info()->task->thread.used_vas)
+>>> +        if (current->thread.used_vas)
+>>>               asm volatile(PPC_CP_ABORT);
+>>>       }
+>>>   #endif /* CONFIG_PPC_BOOK3S_64 */
+>>> diff --git a/arch/powerpc/kernel/setup_32.c 
+>>> b/arch/powerpc/kernel/setup_32.c
+>>> index 8c507be12c3c..81ebf7d6f526 100644
+>>> --- a/arch/powerpc/kernel/setup_32.c
+>>> +++ b/arch/powerpc/kernel/setup_32.c
+>>> @@ -205,10 +205,8 @@ void __init irqstack_early_init(void)
+>>>       /* interrupt stacks must be in lowmem, we get that for free on 
+>>> ppc32
+>>>        * as the memblock is limited to lowmem by default */
+>>>       for_each_possible_cpu(i) {
+>>> -        softirq_ctx[i] = (struct thread_info *)
+>>> -            __va(memblock_alloc(THREAD_SIZE, THREAD_SIZE));
+>>> -        hardirq_ctx[i] = (struct thread_info *)
+>>> -            __va(memblock_alloc(THREAD_SIZE, THREAD_SIZE));
+>>> +        softirq_ctx[i] = __va(memblock_alloc(THREAD_SIZE, 
+>>> THREAD_SIZE));
+>>> +        hardirq_ctx[i] = __va(memblock_alloc(THREAD_SIZE, 
+>>> THREAD_SIZE));
+>>>       }
+>>>   }
+>>> @@ -226,13 +224,10 @@ void __init exc_lvl_early_init(void)
+>>>           hw_cpu = 0;
+>>>   #endif
+>>> -        critirq_ctx[hw_cpu] = (struct thread_info *)
+>>> -            __va(memblock_alloc(THREAD_SIZE, THREAD_SIZE));
+>>> +        critirq_ctx[hw_cpu] = __va(memblock_alloc(THREAD_SIZE, 
+>>> THREAD_SIZE));
+>>>   #ifdef CONFIG_BOOKE
+>>> -        dbgirq_ctx[hw_cpu] = (struct thread_info *)
+>>> -            __va(memblock_alloc(THREAD_SIZE, THREAD_SIZE));
+>>> -        mcheckirq_ctx[hw_cpu] = (struct thread_info *)
+>>> -            __va(memblock_alloc(THREAD_SIZE, THREAD_SIZE));
+>>> +        dbgirq_ctx[hw_cpu] = __va(memblock_alloc(THREAD_SIZE, 
+>>> THREAD_SIZE));
+>>> +        mcheckirq_ctx[hw_cpu] = __va(memblock_alloc(THREAD_SIZE, 
+>>> THREAD_SIZE));
+>>>   #endif
+>>>       }
+>>>   }
+>>> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+>>> index 61c1fadbc644..19dd0ea55714 100644
+>>> --- a/arch/powerpc/kernel/smp.c
+>>> +++ b/arch/powerpc/kernel/smp.c
+>>> @@ -20,6 +20,7 @@
+>>>   #include <linux/kernel.h>
+>>>   #include <linux/export.h>
+>>>   #include <linux/sched/mm.h>
+>>> +#include <linux/sched/task_stack.h>
+>>>   #include <linux/sched/topology.h>
+>>>   #include <linux/smp.h>
+>>>   #include <linux/interrupt.h>
+>>> @@ -812,7 +813,8 @@ static void cpu_idle_thread_init(unsigned int 
+>>> cpu, struct task_struct *idle)
+>>>   #ifdef CONFIG_PPC64
+>>>       paca_ptrs[cpu]->__current = idle;
+>>> -    paca_ptrs[cpu]->kstack = (unsigned long)ti + THREAD_SIZE - 
+>>> STACK_FRAME_OVERHEAD;
+>>> +    paca_ptrs[cpu]->kstack = (unsigned long)task_stack_page(idle) +
+>>> +                  THREAD_SIZE - STACK_FRAME_OVERHEAD;
+>>>   #endif
+>>>       ti->cpu = cpu;
+>>>       secondary_ti = current_set[cpu] = ti;
+>>> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+>>> index 694c1d92e796..0d8d6fee892a 100644
+>>> --- a/arch/powerpc/xmon/xmon.c
+>>> +++ b/arch/powerpc/xmon/xmon.c
+>>> @@ -2988,7 +2988,7 @@ static void show_task(struct task_struct *tsk)
+>>>       printf("%px %016lx %6d %6d %c %2d %s\n", tsk,
+>>>           tsk->thread.ksp,
+>>>           tsk->pid, tsk->parent->pid,
+>>> -        state, task_thread_info(tsk)->cpu,
+>>> +        state, task_cpu(tsk),
+>>>           tsk->comm);
+>>>   }
+>>> -- 
+>>> 2.13.3
+>>>
