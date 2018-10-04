@@ -7,60 +7,60 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3FCAFC64EB8
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 12:05:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B904C64EBC
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 12:07:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AF55220684
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 12:05:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E12F820684
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 12:07:41 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="NGb2umC/"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AF55220684
+	dkim=pass (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="ZATTgMps"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E12F820684
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42Qs5V3gVRzF3K7
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 22:05:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Qs8W70T1zF3KW
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 22:07:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="NGb2umC/";
+	dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="ZATTgMps";
 	dkim-atps=neutral
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42QrvT1TjPzF3Jq
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2018 21:56:21 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42QrvS51NTzF3Jm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2018 21:56:20 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="NGb2umC/"; 
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="ZATTgMps"; 
  dkim-atps=neutral
 Received: by ozlabs.org (Postfix)
- id 42QrvT0s8Yz9sRp; Thu,  4 Oct 2018 21:56:21 +1000 (AEST)
+ id 42QrvS46CQz9sBj; Thu,  4 Oct 2018 21:56:20 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 42QrvS6VXjz9sCw;
+ by ozlabs.org (Postfix) with ESMTPSA id 42QrvS2XL4z9sB5;
  Thu,  4 Oct 2018 21:56:20 +1000 (AEST)
 Authentication-Results: ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.org
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1538654181; bh=MVrjagpAlwh0kTcKfj5bpn3lKL2gakBXXZOfJY+zIlM=;
+ t=1538654180; bh=8V2j3xr2NE1HoPovoklhtLDx3tkVyeAgWcOstUXWzys=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=NGb2umC/akPohTGjvv1dlAnKs22OgcYJAbkM2EvI8U/PwWATFhF1q/W4m4wdcpHMI
- M4Cuv3v9eXillZFe0sOC/O1rIelGqQpkc+WgRm71RKJq66xrpqdYPS3H0jIk7163um
- UmWPFtMIS5v8PQMV7pozpSk/jV9j4R0KQ4sCevgg7XftdQw8wrErSaxOzCPViCS8u2
- MJ51q7Qwvm8luxUcGOx8ERaDNiQ1WGNXp47H2W2hI41sbB45eR3J76DgYjhJiPKE/D
- DrSXoQcYuRqYy6Udw0Dxxj2qE7dJjsN7sAp7mqd9oywHKdVS0YPYNSiMIkXCCk/JWq
- y8zA+/uD06Rvg==
+ b=ZATTgMpsfCC5WZ4rbcsVgJu/FMycPCVLzwIlbBXwxxDORyBFELC4AqLOSjMAj04YF
+ QaZeFKkT1tb7LCgB5uc/46ryNc/tadKJflEChOaJ1Yn8v1cKFmBA7Lqo4J6yJs5ls+
+ Y+9fNsD4O6dkmC4at1WI+l8xdLpsV9j3lLp20VBHHnGd3v4JeIJlwDWwmee01lb63D
+ G2huIn097ueqqonQPGdDueUW/IKmGl6gDlbJp92LI4QREOP9EFnWPGoL2E8ZniAyH2
+ k23Vq4UGXTg/wRNygd6Pw8SrTLW6AFJs8PKBi7hV4jLsElY8ng6U7ImxwbRrZNnPaO
+ 7KeIts641Z/ww==
 From: Paul Mackerras <paulus@ozlabs.org>
 To: kvm@vger.kernel.org,
 	kvm-ppc@vger.kernel.org
-Subject: [PATCH v4 03/32] KVM: PPC: Book3S HV: Remove left-over code in
- XICS-on-XIVE emulation
-Date: Thu,  4 Oct 2018 21:55:40 +1000
-Message-Id: <1538654169-15602-4-git-send-email-paulus@ozlabs.org>
+Subject: [PATCH v4 01/32] powerpc: Turn off CPU_FTR_P9_TM_HV_ASSIST in
+ non-hypervisor mode
+Date: Thu,  4 Oct 2018 21:55:38 +1000
+Message-Id: <1538654169-15602-2-git-send-email-paulus@ozlabs.org>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1538654169-15602-1-git-send-email-paulus@ozlabs.org>
 References: <1538654169-15602-1-git-send-email-paulus@ozlabs.org>
@@ -80,38 +80,37 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This removes code that clears the external interrupt pending bit in
-the pending_exceptions bitmap.  This is left over from an earlier
-iteration of the code where this bit was set when an escalation
-interrupt arrived in order to wake the vcpu from cede.  Currently
-we set the vcpu->arch.irq_pending flag instead for this purpose.
-Therefore there is no need to do anything with the pending_exceptions
-bitmap.
+When doing nested virtualization, it is only necessary to do the
+transactional memory hypervisor assist at level 0, that is, when
+we are in hypervisor mode.  Nested hypervisors can just use the TM
+facilities as architected.  Therefore we should clear the
+CPU_FTR_P9_TM_HV_ASSIST bit when we are not in hypervisor mode,
+along with the CPU_FTR_HVMODE bit.
+
+Doing this will not change anything at this stage because the only
+code that tests CPU_FTR_P9_TM_HV_ASSIST is in HV KVM, which currently
+can only be used when when CPU_FTR_HVMODE is set.
 
 Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/kvm/book3s_xive_template.c | 8 --------
- 1 file changed, 8 deletions(-)
+ arch/powerpc/kernel/cpu_setup_power.S | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_xive_template.c b/arch/powerpc/kvm/book3s_xive_template.c
-index 203ea65..033363d 100644
---- a/arch/powerpc/kvm/book3s_xive_template.c
-+++ b/arch/powerpc/kvm/book3s_xive_template.c
-@@ -280,14 +280,6 @@ X_STATIC unsigned long GLUE(X_PFX,h_xirr)(struct kvm_vcpu *vcpu)
- 	/* First collect pending bits from HW */
- 	GLUE(X_PFX,ack_pending)(xc);
- 
--	/*
--	 * Cleanup the old-style bits if needed (they may have been
--	 * set by pull or an escalation interrupts).
--	 */
--	if (test_bit(BOOK3S_IRQPRIO_EXTERNAL, &vcpu->arch.pending_exceptions))
--		clear_bit(BOOK3S_IRQPRIO_EXTERNAL,
--			  &vcpu->arch.pending_exceptions);
--
- 	pr_devel(" new pending=0x%02x hw_cppr=%d cppr=%d\n",
- 		 xc->pending, xc->hw_cppr, xc->cppr);
+diff --git a/arch/powerpc/kernel/cpu_setup_power.S b/arch/powerpc/kernel/cpu_setup_power.S
+index 458b928..c317080 100644
+--- a/arch/powerpc/kernel/cpu_setup_power.S
++++ b/arch/powerpc/kernel/cpu_setup_power.S
+@@ -147,8 +147,8 @@ __init_hvmode_206:
+ 	rldicl.	r0,r3,4,63
+ 	bnelr
+ 	ld	r5,CPU_SPEC_FEATURES(r4)
+-	LOAD_REG_IMMEDIATE(r6,CPU_FTR_HVMODE)
+-	xor	r5,r5,r6
++	LOAD_REG_IMMEDIATE(r6,CPU_FTR_HVMODE | CPU_FTR_P9_TM_HV_ASSIST)
++	andc	r5,r5,r6
+ 	std	r5,CPU_SPEC_FEATURES(r4)
+ 	blr
  
 -- 
 2.7.4
