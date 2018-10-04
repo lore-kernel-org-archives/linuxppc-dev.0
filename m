@@ -3,41 +3,39 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AF3ECC64EBC
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 06:32:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7536EC64EBC
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 06:34:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EDD8A213A2
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 06:32:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EDD8A213A2
+	by mail.kernel.org (Postfix) with ESMTPS id 18595213A2
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 06:34:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 18595213A2
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42QjjY6BNMzF3F8
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 16:32:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Qjlg1bfVzF3BM
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 16:34:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42QjKB2f4BzF38J
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42QjKB4b2XzF39S
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2018 16:14:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix)
- id 42QjKB15GVz9sj3; Thu,  4 Oct 2018 16:14:38 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 42QjKB0TGvz9sj8; Thu,  4 Oct 2018 16:14:37 +1000 (AEST)
+ id 42QjKB2KHkz9sj9; Thu,  4 Oct 2018 16:14:37 +1000 (AEST)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: db6711b7a17f03921e734e11e3a1e9bccb28bf46
-In-Reply-To: <20180920094111.4125-1-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+X-powerpc-patch-commit: 16d7c69c898531210d13dbd1eb2053759ff0946d
+In-Reply-To: <1537461907-32003-1-git-send-email-leitao@debian.org>
+To: Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc/perf: Add missing break in power7_marked_instr_event()
-Message-Id: <42QjKB0TGvz9sj8@ozlabs.org>
+Subject: Re: [1/3] powerpc: Redefine TIF_32BITS thread flag
+Message-Id: <42QjKB2KHkz9sj9@ozlabs.org>
 Date: Thu,  4 Oct 2018 16:14:37 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -50,52 +48,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: maddy@linux.ibm.com, paulus@samba.org
+Cc: Breno Leitao <leitao@debian.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2018-09-20 at 09:41:11 UTC, Michael Ellerman wrote:
-> In power7_marked_instr_event() there is a switch case that is missing
-> a break or an explicit fallthrough, it's not immediately clear which
-> it should be.
+On Thu, 2018-09-20 at 16:45:05 UTC, Breno Leitao wrote:
+> Moving TIF_32BIT to use bit 20 instead of 4 in the task flag field.
 > 
-> The function determines based on the PMU event code, whether the event
-> is a "marked" event (which then requires us to configure the PMU in a
-> certain way). On Power7 there is no specific bit(s) in the event to
-> tell us that, we just have to know.
+> This change is making room for an upcoming new task macro
+> (_TIF_SYSCALL_EMU) which is preferred to set a bit in the lower 16-bits
+> part of the word.
 > 
-> Rather than having a full list of every event and whether they are
-> marked, we pull apart the event code and for events with certain
-> values of certain fields we can say that those are all marked events.
+> This upcoming flag macro will take part in a composed macro
+> (_TIF_SYSCALL_DOTRACE) which will contain other flags as well, and it is
+> preferred that the whole _TIF_SYSCALL_DOTRACE macro only sets the lower 16
+> bits of a word, so, it could be handled using immediate operations (as load
+> immediate, add immediate, ...) where the immediate operand (SI) is limited
+> to 16-bits.
 > 
-> We take the psel (bits 0-7) of the event, and look at bits 4-7. For a
-> value of 6 we say that if the entire psel == 0x64 then if the pmc == 3
-> the event is marked, else not, and otherwise we continue.
+> Another possible solution would be using the LOAD_REG_IMMEDIATE() macro
+> to load a full 64-bits word immediate, but it takes 5 operations instead of
+> one.
 > 
-> It is then that we fallthrough to the 8 case, where we return true if
-> the unit == 0xd.
+> Having TIF_32BITS being redefined to use an upper bit is not a problem
+> since there is only one place in the assembly code where TIF_32BIT is being
+> used, and it could be replaced with an operation with right shift (addis),
+> since it is used alone, i.e. not being part of a composed macro, which has
+> different bits set, and would require LOAD_REG_IMMEDIATE().
 > 
-> The question is should the 6 case also fallthrough and check for
-> unit == 0xd, or should it return.
+> Tested on a 64 bits Big Endian machine running a 32 bits task.
 > 
-> Looking at the full list of events we see that there are zero events
-> where (psel >> 4) == 0x6 and unit == 0xd.
-> 
-> So the answer is it doesn't really matter, there are no valid event
-> codes that will return a different result whether we fallthrough or
-> break.
-> 
-> But equally, testing the 6 case events against unit == 0xd is slightly
-> bogus, as there are no such events. So to make the code clearer, and
-> avoid any future confusion, have the 6 case break rather than falling
-> through.
-> 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> Reviewed-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> Signed-off-by: Breno Leitao <leitao@debian.org>
 
-Applied to powerpc next.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/db6711b7a17f03921e734e11e3a1e9
+https://git.kernel.org/powerpc/c/16d7c69c898531210d13dbd1eb2053
 
 cheers
