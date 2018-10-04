@@ -7,61 +7,61 @@ X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 656C0C64EBC
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 04:56:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BDD3AC64EBC
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 04:58:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BB3EB20684
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 04:56:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 3C0E220684
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 04:58:46 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="SUmZuxBZ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BB3EB20684
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="D39+ddIX"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3C0E220684
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42QgZz0rsnzF3B8
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 14:56:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Qgdc4T7CzF3B8
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Oct 2018 14:58:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="SUmZuxBZ";
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="D39+ddIX";
 	dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42QgX61V2YzF37S
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42QgX60lgzzF37M
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2018 14:53:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="SUmZuxBZ"; 
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="D39+ddIX"; 
  dkim-atps=neutral
 Received: by ozlabs.org (Postfix)
- id 42QgX60lfYz9s7W; Thu,  4 Oct 2018 14:53:58 +1000 (AEST)
+ id 42QgX55m8zz9s8T; Thu,  4 Oct 2018 14:53:57 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1003)
- id 42QgX56fMcz9s7h; Thu,  4 Oct 2018 14:53:57 +1000 (AEST)
+ id 42QgX555whz9s7T; Thu,  4 Oct 2018 14:53:57 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1538628837; bh=Q0O9LP29vAe62Z5TLHPaXY0E5NgbBN6XPidNObqkXUs=;
+ t=1538628837; bh=98nywkIcNGl4R3IEJLColDIPDgFIsoCPYXB8iuDtjbM=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=SUmZuxBZTZChte2kOJoG9Dlj4Bbtcq/4Kw7sDOEXgiyNgkxWmVxvHHC9upN6Lua2B
- yA7qRWkwRuU3ZKhobiW09cKCkNVwYtwEXekV7jfiE/lceZDVbtfANmZ9cxL8uusspo
- rXjMfOMWOGOby75V1vhWv7GBErfnp7JqiVbsjllEd9iTgYJvJEPyiyb//Hk4Tf3W5u
- pSGktrjVNA2YEVHfBqsKedr02rNu15KeQlKwfHtqs8r6Ns9Z3GbgMi4679r1ImMVvE
- iiA/DxVsro47++zJtXy37tFoRfQFXiBOiIA5HlrKyhCIbALORF7O+a0LQHJtnD1ngu
- m1Rd+SFiIc68Q==
-Date: Thu, 4 Oct 2018 13:05:09 +1000
+ b=D39+ddIXpGSipf0dFiSZHSVCYLLb+cSDbzj3mSOPNAF+/y7C+g5e1Ehe4l1VHD1uj
+ vholDANVSP5sPOQHZOahq+IgIkWmHEHJTQrxG26Z6ZOX4AH9pQCJqunINhLQTMfr9Z
+ /iVMZJTy0La9LLUifPi+DjDM6i5x6Mjh++2vlweqgMj5BIRHg60RD17dnaTtOXQtvR
+ QV2E2dWc+ZGk2nD0fLaSuud0B8y9+OM5kDNHLg0RJJApshJEQkgWC119G44YTn4zE1
+ pBDDiTziePibs8AWHuU/1Hmvo8+mPZPlnxCEfn/YfmhfG4afV3dbZBM1SA/ULHtOFa
+ oPqwdH+iNoJ+A==
+Date: Thu, 4 Oct 2018 13:03:21 +1000
 From: Paul Mackerras <paulus@ozlabs.org>
 To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH v3 23/33] KVM: PPC: Book3S HV: Introduce rmap to track
- nested guest mappings
-Message-ID: <20181004030509.GB16300@fergus>
+Subject: Re: [PATCH v3 30/33] KVM: PPC: Book3S HV: Allow HV module to load
+ without hypervisor mode
+Message-ID: <20181004030321.GA16300@fergus>
 References: <1538479892-14835-1-git-send-email-paulus@ozlabs.org>
- <1538479892-14835-24-git-send-email-paulus@ozlabs.org>
- <20181003055637.GS1886@umbus.fritz.box>
+ <1538479892-14835-31-git-send-email-paulus@ozlabs.org>
+ <20181003061514.GW1886@umbus.fritz.box>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20181003055637.GS1886@umbus.fritz.box>
+In-Reply-To: <20181003061514.GW1886@umbus.fritz.box>
 User-Agent: Mutt/1.5.24 (2015-08-30)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -79,101 +79,59 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Oct 03, 2018 at 03:56:37PM +1000, David Gibson wrote:
-> On Tue, Oct 02, 2018 at 09:31:22PM +1000, Paul Mackerras wrote:
-> > From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+On Wed, Oct 03, 2018 at 04:15:15PM +1000, David Gibson wrote:
+> On Tue, Oct 02, 2018 at 09:31:29PM +1000, Paul Mackerras wrote:
+> > With this, the KVM-HV module can be loaded in a guest running under
+> > KVM-HV, and if the hypervisor supports nested virtualization, this
+> > guest can now act as a nested hypervisor and run nested guests.
 > > 
-> > When a host (L0) page which is mapped into a (L1) guest is in turn
-> > mapped through to a nested (L2) guest we keep a reverse mapping (rmap)
-> > so that these mappings can be retrieved later.
+> > This also adds some checks to inform userspace that HPT guests are not
+> > supported by nested hypervisors, and to prevent userspace from
+> > configuring a guest to use HPT mode.
 > > 
-> > Whenever we create an entry in a shadow_pgtable for a nested guest we
-> > create a corresponding rmap entry and add it to the list for the
-> > L1 guest memslot at the index of the L1 guest page it maps. This means
-> > at the L1 guest memslot we end up with lists of rmaps.
-> > 
-> > When we are notified of a host page being invalidated which has been
-> > mapped through to a (L1) guest, we can then walk the rmap list for that
-> > guest page, and find and invalidate all of the corresponding
-> > shadow_pgtable entries.
-> > 
-> > In order to reduce memory consumption, we compress the information for
-> > each rmap entry down to 52 bits -- 12 bits for the LPID and 40 bits
-> > for the guest real page frame number -- which will fit in a single
-> > unsigned long.  To avoid a scenario where a guest can trigger
-> > unbounded memory allocations, we scan the list when adding an entry to
-> > see if there is already an entry with the contents we need.  This can
-> > occur, because we don't ever remove entries from the middle of a list.
-> > 
-> > A struct nested guest rmap is a list pointer and an rmap entry;
-> > ----------------
-> > | next pointer |
-> > ----------------
-> > | rmap entry   |
-> > ----------------
-> > 
-> > Thus the rmap pointer for each guest frame number in the memslot can be
-> > either NULL, a single entry, or a pointer to a list of nested rmap entries.
-> > 
-> > gfn	 memslot rmap array
-> >  	-------------------------
-> >  0	| NULL			|	(no rmap entry)
-> >  	-------------------------
-> >  1	| single rmap entry	|	(rmap entry with low bit set)
-> >  	-------------------------
-> >  2	| list head pointer	|	(list of rmap entries)
-> >  	-------------------------
-> > 
-> > The final entry always has the lowest bit set and is stored in the next
-> > pointer of the last list entry, or as a single rmap entry.
-> > With a list of rmap entries looking like;
-> > 
-> > -----------------	-----------------	-------------------------
-> > | list head ptr	| ----> | next pointer	| ---->	| single rmap entry	|
-> > -----------------	-----------------	-------------------------
-> > 			| rmap entry	|	| rmap entry		|
-> > 			-----------------	-------------------------
-> > 
-> > Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
 > > Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 > > ---
-> >  arch/powerpc/include/asm/kvm_book3s.h    |   3 +
-> >  arch/powerpc/include/asm/kvm_book3s_64.h |  70 ++++++++++++++++-
-> >  arch/powerpc/kvm/book3s_64_mmu_radix.c   |  44 +++++++----
-> >  arch/powerpc/kvm/book3s_hv.c             |   1 +
-> >  arch/powerpc/kvm/book3s_hv_nested.c      | 130 ++++++++++++++++++++++++++++++-
-> >  5 files changed, 233 insertions(+), 15 deletions(-)
+> >  arch/powerpc/kvm/book3s_hv.c | 20 ++++++++++++++++----
+> >  1 file changed, 16 insertions(+), 4 deletions(-)
 > > 
-> > diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
-> > index d983778..1d2286d 100644
-> > --- a/arch/powerpc/include/asm/kvm_book3s.h
-> > +++ b/arch/powerpc/include/asm/kvm_book3s.h
-> > @@ -196,6 +196,9 @@ extern int kvmppc_mmu_radix_translate_table(struct kvm_vcpu *vcpu, gva_t eaddr,
-> >  			int table_index, u64 *pte_ret_p);
-> >  extern int kvmppc_mmu_radix_xlate(struct kvm_vcpu *vcpu, gva_t eaddr,
-> >  			struct kvmppc_pte *gpte, bool data, bool iswrite);
-> > +extern void kvmppc_unmap_pte(struct kvm *kvm, pte_t *pte, unsigned long gpa,
-> > +			unsigned int shift, struct kvm_memory_slot *memslot,
-> > +			unsigned int lpid);
-> >  extern bool kvmppc_hv_handle_set_rc(struct kvm *kvm, pgd_t *pgtable,
-> >  				    bool writing, unsigned long gpa,
-> >  				    unsigned int lpid);
-> > diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
-> > index 5496152..38614f0 100644
-> > --- a/arch/powerpc/include/asm/kvm_book3s_64.h
-> > +++ b/arch/powerpc/include/asm/kvm_book3s_64.h
-> > @@ -53,6 +53,66 @@ struct kvm_nested_guest {
-> >  	struct kvm_nested_guest *next;
-> >  };
+> > diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> > index f630e91..196bff1 100644
+> > --- a/arch/powerpc/kvm/book3s_hv.c
+> > +++ b/arch/powerpc/kvm/book3s_hv.c
+> > @@ -4237,6 +4237,10 @@ static int kvm_vm_ioctl_get_smmu_info_hv(struct kvm *kvm,
+> >  {
+> >  	struct kvm_ppc_one_seg_page_size *sps;
 > >  
-> > +/*
-> > + * We define a nested rmap entry as a single 64-bit quantity
-> > + * 0xFFF0000000000000	12-bit lpid field
-> > + * 0x000FFFFFFFFFF000	40-bit guest physical address field
+> > +	/* If we're a nested hypervisor, we only support radix guests */
+> > +	if (kvmhv_on_pseries())
+> > +		return -EINVAL;
+> > +
+> >  	/*
+> >  	 * POWER7, POWER8 and POWER9 all support 32 storage keys for data.
+> >  	 * POWER7 doesn't support keys for instruction accesses,
+> > @@ -4822,11 +4826,15 @@ static int kvmppc_core_emulate_mfspr_hv(struct kvm_vcpu *vcpu, int sprn,
+> >  
+> >  static int kvmppc_core_check_processor_compat_hv(void)
+> >  {
+> > -	if (!cpu_has_feature(CPU_FTR_HVMODE) ||
+> > -	    !cpu_has_feature(CPU_FTR_ARCH_206))
+> > -		return -EIO;
+> > +	if (cpu_has_feature(CPU_FTR_HVMODE) &&
+> > +	    cpu_has_feature(CPU_FTR_ARCH_206))
+> > +		return 0;
+> >  
+> > -	return 0;
+> > +	/* Can run as nested hypervisor on POWER9 in radix mode. */
+> > +	if (cpu_has_feature(CPU_FTR_ARCH_300) && radix_enabled())
 > 
-> I thought we could potentially support guests with >1TiB of RAM..?
+> Shouldn't we probe the parent hypervisor for ability to support nested
+> guests before we say "yes" here?
 
-We can, that's really a (4k) page frame number, not a physical
-address.  We can support 52-bit guest physical addresses.
+Well, we do check that the parent hypervisor can support nested
+hypervisors, it's just done later on.  And to match nitpick with
+nitpick, this is a function evaluating _processor_ compatibility, and
+a POWER9 processor in radix mode does have everything necessary to
+support nested hypervisors -- if the parent hypervisor doesn't support
+nested hypervisors, that's not a deficiency in the processor.
 
 Paul.
