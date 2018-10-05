@@ -2,50 +2,67 @@ Return-Path: <SRS0=9KTJ=MR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EAE4EC00449
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 12:26:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 296AEC00449
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 12:48:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 15E482084D
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 12:26:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 15E482084D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=the-dreams.de
+	by mail.kernel.org (Postfix) with ESMTPS id 6C3EA20875
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 12:48:47 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="c2cd0JUT"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6C3EA20875
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42RTX063HPzF3RF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 22:26:40 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=the-dreams.de
+	by lists.ozlabs.org (Postfix) with ESMTP id 42RV1T0j7KzF3S6
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 22:48:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=the-dreams.de
- (client-ip=88.99.104.3; helo=pokefinder.org; envelope-from=wsa@the-dreams.de;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=the-dreams.de
-X-Greylist: delayed 549 seconds by postgrey-1.36 at bilbo;
- Fri, 05 Oct 2018 22:24:32 AEST
-Received: from pokefinder.org (sauhun.de [88.99.104.3])
- by lists.ozlabs.org (Postfix) with ESMTP id 42RTTX30NdzF3R0
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Oct 2018 22:24:32 +1000 (AEST)
-Received: from localhost (p54B3360B.dip0.t-ipconnect.de [84.179.54.11])
- by pokefinder.org (Postfix) with ESMTPSA id AE5602C7EC3;
- Fri,  5 Oct 2018 14:15:19 +0200 (CEST)
-Date: Fri, 5 Oct 2018 14:15:19 +0200
-From: Wolfram Sang <wsa@the-dreams.de>
-To: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v2] i2c: Convert to using %pOFn instead of device_node.name
-Message-ID: <20181005121519.GF5433@kunai>
-References: <20180928224947.19058-1-robh@kernel.org>
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="c2cd0JUT";
+	dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42RTyS6QvkzF3R0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Oct 2018 22:46:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=canb.auug.org.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au
+ header.b="c2cd0JUT"; dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPSA id 42RTyS0BWXz9s7W;
+ Fri,  5 Oct 2018 22:46:07 +1000 (AEST)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=canb.auug.org.au
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=canb.auug.org.au;
+ s=201702; t=1538743568;
+ bh=kZ8YHf7LMkSrPJX1qYsUSDTKEmCCls6e5+J1C0ZeCvw=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+ b=c2cd0JUTS7+yGDV9+ZjiWOni/Gvh/dLtUt03p1ig3rRGw1kOjOC+4ptk9oEzZ0bRM
+ s/hogmcGLC0eT2Hau60M/Bpk2BjvnuedXVB9GkTHUV1dTe0ZvfAQEb3CQCD4h8qJkZ
+ 9tu3OyWdalJIUELYDe7G4D4y4FyhWe1vlXBEgk2GckVeIjR57FilPjSBtY7hF30IVW
+ kK9iUNEEu/y3WEoZC1cgIx14MaqszrHNeEa3CHaTrcJ26sqnGxGxUviJ5C7IceE8Yq
+ bp0DUszH/h0kOsELkl0u4ia3h1sTnhLBMzB1D6DakzpFfFjNXf0lIlrC+DfnQ9N2u/
+ m7/CC5QD2jXcA==
+Date: Fri, 5 Oct 2018 22:46:06 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: linux-next: build failure after merge of the akpm tree
+Message-ID: <20181005224606.2372fece@canb.auug.org.au>
+In-Reply-To: <87d0sok3dm.fsf@concordia.ellerman.id.au>
+References: <20181005161406.73ef8727@canb.auug.org.au>
+ <87d0sok3dm.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
- protocol="application/pgp-signature"; boundary="/aVve/J9H4Wl5yVO"
-Content-Disposition: inline
-In-Reply-To: <20180928224947.19058-1-robh@kernel.org>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/Vss.RuVkbVq2Ytp_cX61Awd"; protocol="application/pgp-signature"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,52 +74,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- linux-i2c@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Peter Rosin <peda@axentia.se>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Linux-Next Mailing List <linux-next@vger.kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ PowerPC <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
---/aVve/J9H4Wl5yVO
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--Sig_/Vss.RuVkbVq2Ytp_cX61Awd
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Sep 28, 2018 at 05:49:47PM -0500, Rob Herring wrote:
-> In preparation to remove the node name pointer from struct device_node,
-> convert printf users to use the %pOFn format specifier.
->=20
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Peter Rosin <peda@axentia.se>
-> Cc: linux-i2c@vger.kernel.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Signed-off-by: Rob Herring <robh@kernel.org>
+Hi Michael,
 
-Applied to for-next (with Peter's tag from v1), thanks!
+On Fri, 05 Oct 2018 22:02:45 +1000 Michael Ellerman <mpe@ellerman.id.au> wr=
+ote:
+>
+> Ah fudge, what are the chances we add a new include of bootmem.h just as
+> Mike's removing bootmem.
 
+In my experience, it was almost certain ... almost every API removal
+conflicts with new added uses.  :-)
 
---/aVve/J9H4Wl5yVO
-Content-Type: application/pgp-signature; name="signature.asc"
+> I could just apply that to my tree. memblock.h is where early_memtest() is
+> actually defined anyway.
+
+However min_low_pfn and max_low_pfn are defined in bootmem.h until
+after it is removed.
+
+--=20
+Cheers,
+Stephen Rothwell
+
+--Sig_/Vss.RuVkbVq2Ytp_cX61Awd
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAlu3Vc8ACgkQFA3kzBSg
-KbZbGA//TSsle8Y0hbsCLheqkV1zbEMBpC5F5/eaqcwxg20jF/6pD+9q5L2xPbCW
-PcaAC9SB5ftn/C9gJKk6wB5jKxoDU57rczj0csUN/tb0b066FkJVqx08vPQtNbXZ
-X9fr/rhwr/K88d384wFxailAR41r88BmIJoaNYmcbUcsBBYQC3USOQKmzd0lup+i
-1MeKAanXqQnCeEXJkf3in1u/dLEI+yI1e6/EEzo/glFw1l8tBFQJ4D6/VAnSX2He
-SfL4LRkJkw06PKRWuRMvox2nNuT6rUVqa81qlNLhrrfE/VzRAM9I5U6l5LbgZYdg
-LSzLPQNOyuLBkdxsxNjpoEV4HHvtM4ultHy+SBQzevJ9BsiZ78FyxugB4hg+1hxf
-qHlHAT1gCvzNfvGHPekYbP7c0iDa2N9JlznW5oNmT4tNt/gNAUGJr6rr64FO2rVI
-DIaYKIScjKAMAIixr3fIDr5sxmaxb8ewdva9Jro23QnNUjOAuVSwzmlZBa16Nn48
-t02PycWUlhXp4y3KFXVdPHZjXpcQCf2UaF6nkVXuZ9U9KRRo8C9mc/Q96XErM7vl
-oFxuZpWaiBXTWQzp3lER7aFY5AI91MxdlkcPVklq/9J5W/HXuJBSe+sOUi5DxH6d
-74p4Ki5FzP7HguGw+x5EcuIvKUPkr3RvBI5DNIOh7SVMuBhUvN4=
-=tLIh
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAlu3XQ4ACgkQAVBC80lX
+0GyI1Af/b457Gsh24moiyWRAUs9XuZnTCmO7kcIrjxJ2cDnqUnfYWL5Kewvzc+Pu
+fs/MYPLiKZ80JOW6oVoCmmVjr1sRZbxcVHJNPmWk73KLIomsfHuYMPBU4u1secC6
+kq8yXGA6AqdYkxOWOsnt36Z6V/WYb/vjr+m5h07AqfCkoNh4BxSx9DR3sX3qZDzo
+U7VS7sY1LZ7t7J5TklQuoRbXkPfgZT3IXuQIjIJuYKtIPPoB8LwNrg9ZIIgo/d5u
+nonuhc8IZjZvo8QSojKjJL9VG5VGI+g8+YXi8XIP5VeGClIDLiKNCF3shEC3LHbb
+zglQqbL6n/aTPDOPuuYLcNWDWy2O3w==
+=UriJ
 -----END PGP SIGNATURE-----
 
---/aVve/J9H4Wl5yVO--
+--Sig_/Vss.RuVkbVq2Ytp_cX61Awd--
