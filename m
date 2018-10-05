@@ -2,64 +2,65 @@ Return-Path: <SRS0=9KTJ=MR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DA8BBC00449
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 05:14:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0298DC00449
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 05:17:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4B4D520834
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 05:14:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 60B0B20834
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 05:17:09 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="isXVI4TV"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4B4D520834
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="GO0J/wUG"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 60B0B20834
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42RHxm2WYkzDqjV
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 15:14:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42RJ0M2XHlzF3KL
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 15:17:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="isXVI4TV";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="GO0J/wUG";
 	dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42RGjW55VbzF3JW
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Oct 2018 14:19:11 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42RGjX3B8nzF3Hd
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Oct 2018 14:19:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=gibson.dropbear.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.b="isXVI4TV"; dkim-atps=neutral
+ header.b="GO0J/wUG"; dkim-atps=neutral
 Received: by ozlabs.org (Postfix)
- id 42RGjW2cfmz9sBN; Fri,  5 Oct 2018 14:19:11 +1000 (AEST)
+ id 42RGjX1sN6zB2xk; Fri,  5 Oct 2018 14:19:12 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1007)
- id 42RGjW2CFQz9s3Z; Fri,  5 Oct 2018 14:19:11 +1000 (AEST)
+ id 42RGjX0XZzz9sj2; Fri,  5 Oct 2018 14:19:11 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1538713151;
- bh=pmLDeuyadFL10kmZ3nF6w0AQGL8x8KXh8m1tZ96RiYU=;
+ d=gibson.dropbear.id.au; s=201602; t=1538713152;
+ bh=n8UKnnn2cKtxY8EsUB5USH/aeDJzLbkfjJ0iohzSdhM=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=isXVI4TVrSd3oOePrxlHqE+8z6I3i6WbFFXgYhbGxTj1mD7K3YZegeiCguch9yySy
- 1CFcYLNcwF+aXNe+jDIB0D5MnISTfWIyzNBlHJNuQmccyngitrXDEIcw+j4s4FatMm
- fscrpp2mssgSeFnSrOgV6Q+tJfsl2BVCCyLEzLvE=
-Date: Fri, 5 Oct 2018 12:49:55 +1000
+ b=GO0J/wUGBPUugP2qKwdzunN+GXcee8hI8wJZlsp3LRMVsGHKG/odUoJxWFi+C0wT8
+ dpgLHZoPlyIanGUjcFOsl3xEUZnnH7TASNiv4A6DSLLYWsNrJlzbNimrmI8BE0CbOq
+ zYVW9uUFUo8YnXXP2EHnCJt4iGAYOHoiSdVpHkvM=
+Date: Fri, 5 Oct 2018 13:29:23 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Paul Mackerras <paulus@ozlabs.org>
-Subject: Re: [PATCH v4 22/32] KVM: PPC: Book3S HV: Introduce rmap to track
- nested guest mappings
-Message-ID: <20181005024955.GF7004@umbus.fritz.box>
-References: <1538654169-15602-1-git-send-email-paulus@ozlabs.org>
- <1538654169-15602-23-git-send-email-paulus@ozlabs.org>
+Subject: Re: [PATCH v3 33/33] KVM: PPC: Book3S HV: Add a VM capability to
+ enable nested virtualization
+Message-ID: <20181005032922.GC13763@umbus.fritz.box>
+References: <1538479892-14835-1-git-send-email-paulus@ozlabs.org>
+ <1538479892-14835-34-git-send-email-paulus@ozlabs.org>
+ <20181003062144.GY1886@umbus.fritz.box>
+ <20181004094826.GC3255@fergus>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="1Ow488MNN9B9o/ov"
+ protocol="application/pgp-signature"; boundary="8X7/QrJGcKSMr1RN"
 Content-Disposition: inline
-In-Reply-To: <1538654169-15602-23-git-send-email-paulus@ozlabs.org>
+In-Reply-To: <20181004094826.GC3255@fergus>
 User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -78,490 +79,48 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---1Ow488MNN9B9o/ov
+--8X7/QrJGcKSMr1RN
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Oct 04, 2018 at 09:55:59PM +1000, Paul Mackerras wrote:
-> From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+On Thu, Oct 04, 2018 at 07:48:26PM +1000, Paul Mackerras wrote:
+> On Wed, Oct 03, 2018 at 04:21:44PM +1000, David Gibson wrote:
+> > On Tue, Oct 02, 2018 at 09:31:32PM +1000, Paul Mackerras wrote:
+> > > With this, userspace can enable a KVM-HV guest to run nested guests
+> > > under it.
+> [snip]
+> > > +/* If set, guests are allowed to create and control nested guests */
+> > > +static bool enable_nested =3D true;
+> > > +module_param(enable_nested, bool, S_IRUGO | S_IWUSR);
+> > > +MODULE_PARM_DESC(enable_nested, "Enable nested virtualization (only =
+on POWER9)");
+> >=20
+> > I'd suggest calling the module parameter just "nested" to match x86.
 >=20
-> When a host (L0) page which is mapped into a (L1) guest is in turn
-> mapped through to a nested (L2) guest we keep a reverse mapping (rmap)
-> so that these mappings can be retrieved later.
+> OK.
 >=20
-> Whenever we create an entry in a shadow_pgtable for a nested guest we
-> create a corresponding rmap entry and add it to the list for the
-> L1 guest memslot at the index of the L1 guest page it maps. This means
-> at the L1 guest memslot we end up with lists of rmaps.
+> > >  /* If set, the threads on each CPU core have to be in the same MMU m=
+ode */
+> > >  static bool no_mixing_hpt_and_radix;
+> > > =20
+> > > @@ -5188,6 +5193,17 @@ static int kvmhv_configure_mmu(struct kvm *kvm=
+, struct kvm_ppc_mmuv3_cfg *cfg)
+> > >  	return err;
+> > >  }
+> > > =20
+> > > +static int kvmhv_enable_nested(struct kvm *kvm, bool enable)
+> > > +{
+> > > +	if (!(enable_nested && cpu_has_feature(CPU_FTR_ARCH_300)))
+> > > +		return -EINVAL;
+> >=20
+> > Maybe EPERM, rather than EINVAL.  There's nothing invalid about the
+> > ioctl() parameters - we just can't do what they want.
 >=20
-> When we are notified of a host page being invalidated which has been
-> mapped through to a (L1) guest, we can then walk the rmap list for that
-> guest page, and find and invalidate all of the corresponding
-> shadow_pgtable entries.
->=20
-> In order to reduce memory consumption, we compress the information for
-> each rmap entry down to 52 bits -- 12 bits for the LPID and 40 bits
-> for the guest real page frame number -- which will fit in a single
-> unsigned long.  To avoid a scenario where a guest can trigger
-> unbounded memory allocations, we scan the list when adding an entry to
-> see if there is already an entry with the contents we need.  This can
-> occur, because we don't ever remove entries from the middle of a list.
->=20
-> A struct nested guest rmap is a list pointer and an rmap entry;
-> ----------------
-> | next pointer |
-> ----------------
-> | rmap entry   |
-> ----------------
->=20
-> Thus the rmap pointer for each guest frame number in the memslot can be
-> either NULL, a single entry, or a pointer to a list of nested rmap entrie=
-s.
->=20
-> gfn	 memslot rmap array
->  	-------------------------
->  0	| NULL			|	(no rmap entry)
->  	-------------------------
->  1	| single rmap entry	|	(rmap entry with low bit set)
->  	-------------------------
->  2	| list head pointer	|	(list of rmap entries)
->  	-------------------------
->=20
-> The final entry always has the lowest bit set and is stored in the next
-> pointer of the last list entry, or as a single rmap entry.
-> With a list of rmap entries looking like;
->=20
-> -----------------	-----------------	-------------------------
-> | list head ptr	| ----> | next pointer	| ---->	| single rmap entry	|
-> -----------------	-----------------	-------------------------
-> 			| rmap entry	|	| rmap entry		|
-> 			-----------------	-------------------------
->=20
-> Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+> Just for pedantry's sake, I'll make it EPERM for !enable_nested and
+> ENODEV for !POWER9. :)
 
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
-
-> ---
->  arch/powerpc/include/asm/kvm_book3s.h    |   3 +
->  arch/powerpc/include/asm/kvm_book3s_64.h |  70 ++++++++++++++++-
->  arch/powerpc/kvm/book3s_64_mmu_radix.c   |  44 +++++++----
->  arch/powerpc/kvm/book3s_hv.c             |   1 +
->  arch/powerpc/kvm/book3s_hv_nested.c      | 130 +++++++++++++++++++++++++=
-+++++-
->  5 files changed, 233 insertions(+), 15 deletions(-)
->=20
-> diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include=
-/asm/kvm_book3s.h
-> index 63f7ccf..d7aeb6f 100644
-> --- a/arch/powerpc/include/asm/kvm_book3s.h
-> +++ b/arch/powerpc/include/asm/kvm_book3s.h
-> @@ -196,6 +196,9 @@ extern int kvmppc_mmu_radix_translate_table(struct kv=
-m_vcpu *vcpu, gva_t eaddr,
->  			int table_index, u64 *pte_ret_p);
->  extern int kvmppc_mmu_radix_xlate(struct kvm_vcpu *vcpu, gva_t eaddr,
->  			struct kvmppc_pte *gpte, bool data, bool iswrite);
-> +extern void kvmppc_unmap_pte(struct kvm *kvm, pte_t *pte, unsigned long =
-gpa,
-> +			unsigned int shift, struct kvm_memory_slot *memslot,
-> +			unsigned int lpid);
->  extern bool kvmppc_hv_handle_set_rc(struct kvm *kvm, pgd_t *pgtable,
->  				    bool writing, unsigned long gpa,
->  				    unsigned int lpid);
-> diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/incl=
-ude/asm/kvm_book3s_64.h
-> index 5496152..a02f0b3 100644
-> --- a/arch/powerpc/include/asm/kvm_book3s_64.h
-> +++ b/arch/powerpc/include/asm/kvm_book3s_64.h
-> @@ -53,6 +53,66 @@ struct kvm_nested_guest {
->  	struct kvm_nested_guest *next;
->  };
-> =20
-> +/*
-> + * We define a nested rmap entry as a single 64-bit quantity
-> + * 0xFFF0000000000000	12-bit lpid field
-> + * 0x000FFFFFFFFFF000	40-bit guest 4k page frame number
-> + * 0x0000000000000001	1-bit  single entry flag
-> + */
-> +#define RMAP_NESTED_LPID_MASK		0xFFF0000000000000UL
-> +#define RMAP_NESTED_LPID_SHIFT		(52)
-> +#define RMAP_NESTED_GPA_MASK		0x000FFFFFFFFFF000UL
-> +#define RMAP_NESTED_IS_SINGLE_ENTRY	0x0000000000000001UL
-> +
-> +/* Structure for a nested guest rmap entry */
-> +struct rmap_nested {
-> +	struct llist_node list;
-> +	u64 rmap;
-> +};
-> +
-> +/*
-> + * for_each_nest_rmap_safe - iterate over the list of nested rmap entries
-> + *			     safe against removal of the list entry or NULL list
-> + * @pos:	a (struct rmap_nested *) to use as a loop cursor
-> + * @node:	pointer to the first entry
-> + *		NOTE: this can be NULL
-> + * @rmapp:	an (unsigned long *) in which to return the rmap entries on e=
-ach
-> + *		iteration
-> + *		NOTE: this must point to already allocated memory
-> + *
-> + * The nested_rmap is a llist of (struct rmap_nested) entries pointed to=
- by the
-> + * rmap entry in the memslot. The list is always terminated by a "single=
- entry"
-> + * stored in the list element of the final entry of the llist. If there =
-is ONLY
-> + * a single entry then this is itself in the rmap entry of the memslot, =
-not a
-> + * llist head pointer.
-> + *
-> + * Note that the iterator below assumes that a nested rmap entry is alwa=
-ys
-> + * non-zero.  This is true for our usage because the LPID field is always
-> + * non-zero (zero is reserved for the host).
-> + *
-> + * This should be used to iterate over the list of rmap_nested entries w=
-ith
-> + * processing done on the u64 rmap value given by each iteration. This i=
-s safe
-> + * against removal of list entries and it is always safe to call free on=
- (pos).
-> + *
-> + * e.g.
-> + * struct rmap_nested *cursor;
-> + * struct llist_node *first;
-> + * unsigned long rmap;
-> + * for_each_nest_rmap_safe(cursor, first, &rmap) {
-> + *	do_something(rmap);
-> + *	free(cursor);
-> + * }
-> + */
-> +#define for_each_nest_rmap_safe(pos, node, rmapp)			       \
-> +	for ((pos) =3D llist_entry((node), typeof(*(pos)), list);		       \
-> +	     (node) &&							       \
-> +	     (*(rmapp) =3D ((RMAP_NESTED_IS_SINGLE_ENTRY & ((u64) (node))) ?   =
-  \
-> +			  ((u64) (node)) : ((pos)->rmap))) &&		       \
-> +	     (((node) =3D ((RMAP_NESTED_IS_SINGLE_ENTRY & ((u64) (node))) ?    =
-  \
-> +			 ((struct llist_node *) ((pos) =3D NULL)) :	       \
-> +			 (pos)->list.next)), true);			       \
-> +	     (pos) =3D llist_entry((node), typeof(*(pos)), list))
-> +
->  struct kvm_nested_guest *kvmhv_get_nested(struct kvm *kvm, int l1_lpid,
->  					  bool create);
->  void kvmhv_put_nested(struct kvm_nested_guest *gp);
-> @@ -551,7 +611,15 @@ static inline void copy_to_checkpoint(struct kvm_vcp=
-u *vcpu)
-> =20
->  extern int kvmppc_create_pte(struct kvm *kvm, pgd_t *pgtable, pte_t pte,
->  			     unsigned long gpa, unsigned int level,
-> -			     unsigned long mmu_seq, unsigned int lpid);
-> +			     unsigned long mmu_seq, unsigned int lpid,
-> +			     unsigned long *rmapp, struct rmap_nested **n_rmap);
-> +extern void kvmhv_insert_nest_rmap(struct kvm *kvm, unsigned long *rmapp,
-> +				   struct rmap_nested **n_rmap);
-> +extern void kvmhv_remove_nest_rmap_range(struct kvm *kvm,
-> +				struct kvm_memory_slot *memslot,
-> +				unsigned long gpa, unsigned long hpa,
-> +				unsigned long nbytes);
-> +extern void kvmhv_free_memslot_nest_rmap(struct kvm_memory_slot *free);
-> =20
->  #endif /* CONFIG_KVM_BOOK3S_HV_POSSIBLE */
-> =20
-> diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/bo=
-ok3s_64_mmu_radix.c
-> index c4b1a9e..4c1eccb 100644
-> --- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
-> +++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-> @@ -256,27 +256,38 @@ static void kvmppc_pmd_free(pmd_t *pmdp)
->  	kmem_cache_free(kvm_pmd_cache, pmdp);
->  }
-> =20
-> -void kvmppc_unmap_pte(struct kvm *kvm, pte_t *pte,
-> -		      unsigned long gpa, unsigned int shift,
-> -		      struct kvm_memory_slot *memslot,
-> +/* Called with kvm->mmu_lock held */
-> +void kvmppc_unmap_pte(struct kvm *kvm, pte_t *pte, unsigned long gpa,
-> +		      unsigned int shift, struct kvm_memory_slot *memslot,
->  		      unsigned int lpid)
-> =20
->  {
->  	unsigned long old;
-> +	unsigned long gfn =3D gpa >> PAGE_SHIFT;
-> +	unsigned long page_size =3D PAGE_SIZE;
-> +	unsigned long hpa;
-> =20
->  	old =3D kvmppc_radix_update_pte(kvm, pte, ~0UL, 0, gpa, shift);
->  	kvmppc_radix_tlbie_page(kvm, gpa, shift, lpid);
-> -	if ((old & _PAGE_DIRTY) && (lpid =3D=3D kvm->arch.lpid)) {
-> -		unsigned long gfn =3D gpa >> PAGE_SHIFT;
-> -		unsigned long page_size =3D PAGE_SIZE;
-> =20
-> -		if (shift)
-> -			page_size =3D 1ul << shift;
-> +	/* The following only applies to L1 entries */
-> +	if (lpid !=3D kvm->arch.lpid)
-> +		return;
-> +
-> +	if (!memslot) {
-> +		memslot =3D gfn_to_memslot(kvm, gfn);
->  		if (!memslot)
-> -			memslot =3D gfn_to_memslot(kvm, gfn);
-> -		if (memslot && memslot->dirty_bitmap)
-> -			kvmppc_update_dirty_map(memslot, gfn, page_size);
-> +			return;
->  	}
-> +	if (shift)
-> +		page_size =3D 1ul << shift;
-> +
-> +	gpa &=3D ~(page_size - 1);
-> +	hpa =3D old & PTE_RPN_MASK;
-> +	kvmhv_remove_nest_rmap_range(kvm, memslot, gpa, hpa, page_size);
-> +
-> +	if ((old & _PAGE_DIRTY) && memslot->dirty_bitmap)
-> +		kvmppc_update_dirty_map(memslot, gfn, page_size);
->  }
-> =20
->  /*
-> @@ -430,7 +441,8 @@ static void kvmppc_unmap_free_pud_entry_table(struct =
-kvm *kvm, pud_t *pud,
-> =20
->  int kvmppc_create_pte(struct kvm *kvm, pgd_t *pgtable, pte_t pte,
->  		      unsigned long gpa, unsigned int level,
-> -		      unsigned long mmu_seq, unsigned int lpid)
-> +		      unsigned long mmu_seq, unsigned int lpid,
-> +		      unsigned long *rmapp, struct rmap_nested **n_rmap)
->  {
->  	pgd_t *pgd;
->  	pud_t *pud, *new_pud =3D NULL;
-> @@ -509,6 +521,8 @@ int kvmppc_create_pte(struct kvm *kvm, pgd_t *pgtable=
-, pte_t pte,
->  			kvmppc_unmap_free_pud_entry_table(kvm, pud, gpa, lpid);
->  		}
->  		kvmppc_radix_set_pte_at(kvm, gpa, (pte_t *)pud, pte);
-> +		if (rmapp && n_rmap)
-> +			kvmhv_insert_nest_rmap(kvm, rmapp, n_rmap);
->  		ret =3D 0;
->  		goto out_unlock;
->  	}
-> @@ -559,6 +573,8 @@ int kvmppc_create_pte(struct kvm *kvm, pgd_t *pgtable=
-, pte_t pte,
->  			kvmppc_unmap_free_pmd_entry_table(kvm, pmd, gpa, lpid);
->  		}
->  		kvmppc_radix_set_pte_at(kvm, gpa, pmdp_ptep(pmd), pte);
-> +		if (rmapp && n_rmap)
-> +			kvmhv_insert_nest_rmap(kvm, rmapp, n_rmap);
->  		ret =3D 0;
->  		goto out_unlock;
->  	}
-> @@ -583,6 +599,8 @@ int kvmppc_create_pte(struct kvm *kvm, pgd_t *pgtable=
-, pte_t pte,
->  		goto out_unlock;
->  	}
->  	kvmppc_radix_set_pte_at(kvm, gpa, ptep, pte);
-> +	if (rmapp && n_rmap)
-> +		kvmhv_insert_nest_rmap(kvm, rmapp, n_rmap);
->  	ret =3D 0;
-> =20
->   out_unlock:
-> @@ -710,7 +728,7 @@ int kvmppc_book3s_instantiate_page(struct kvm_vcpu *v=
-cpu,
-> =20
->  	/* Allocate space in the tree and write the PTE */
->  	ret =3D kvmppc_create_pte(kvm, kvm->arch.pgtable, pte, gpa, level,
-> -				mmu_seq, kvm->arch.lpid);
-> +				mmu_seq, kvm->arch.lpid, NULL, NULL);
->  	if (inserted_pte)
->  		*inserted_pte =3D pte;
->  	if (levelp)
-> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> index 134d7c7..2d8209a 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -4269,6 +4269,7 @@ static void kvmppc_core_free_memslot_hv(struct kvm_=
-memory_slot *free,
->  					struct kvm_memory_slot *dont)
->  {
->  	if (!dont || free->arch.rmap !=3D dont->arch.rmap) {
-> +		kvmhv_free_memslot_nest_rmap(free);
->  		vfree(free->arch.rmap);
->  		free->arch.rmap =3D NULL;
->  	}
-> diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm/book3=
-s_hv_nested.c
-> index 9c04242..3947aa5 100644
-> --- a/arch/powerpc/kvm/book3s_hv_nested.c
-> +++ b/arch/powerpc/kvm/book3s_hv_nested.c
-> @@ -10,6 +10,7 @@
-> =20
->  #include <linux/kernel.h>
->  #include <linux/kvm_host.h>
-> +#include <linux/llist.h>
-> =20
->  #include <asm/kvm_ppc.h>
->  #include <asm/kvm_book3s.h>
-> @@ -541,6 +542,123 @@ void kvmhv_put_nested(struct kvm_nested_guest *gp)
->  		kvmhv_release_nested(gp);
->  }
-> =20
-> +static struct kvm_nested_guest *kvmhv_find_nested(struct kvm *kvm, int l=
-pid)
-> +{
-> +	if (lpid > kvm->arch.max_nested_lpid)
-> +		return NULL;
-> +	return kvm->arch.nested_guests[lpid];
-> +}
-> +
-> +static inline bool kvmhv_n_rmap_is_equal(u64 rmap_1, u64 rmap_2)
-> +{
-> +	return !((rmap_1 ^ rmap_2) & (RMAP_NESTED_LPID_MASK |
-> +				       RMAP_NESTED_GPA_MASK));
-> +}
-> +
-> +void kvmhv_insert_nest_rmap(struct kvm *kvm, unsigned long *rmapp,
-> +			    struct rmap_nested **n_rmap)
-> +{
-> +	struct llist_node *entry =3D ((struct llist_head *) rmapp)->first;
-> +	struct rmap_nested *cursor;
-> +	u64 rmap, new_rmap =3D (*n_rmap)->rmap;
-> +
-> +	/* Are there any existing entries? */
-> +	if (!(*rmapp)) {
-> +		/* No -> use the rmap as a single entry */
-> +		*rmapp =3D new_rmap | RMAP_NESTED_IS_SINGLE_ENTRY;
-> +		return;
-> +	}
-> +
-> +	/* Do any entries match what we're trying to insert? */
-> +	for_each_nest_rmap_safe(cursor, entry, &rmap) {
-> +		if (kvmhv_n_rmap_is_equal(rmap, new_rmap))
-> +			return;
-> +	}
-> +
-> +	/* Do we need to create a list or just add the new entry? */
-> +	rmap =3D *rmapp;
-> +	if (rmap & RMAP_NESTED_IS_SINGLE_ENTRY) /* Not previously a list */
-> +		*rmapp =3D 0UL;
-> +	llist_add(&((*n_rmap)->list), (struct llist_head *) rmapp);
-> +	if (rmap & RMAP_NESTED_IS_SINGLE_ENTRY) /* Not previously a list */
-> +		(*n_rmap)->list.next =3D (struct llist_node *) rmap;
-> +
-> +	/* Set NULL so not freed by caller */
-> +	*n_rmap =3D NULL;
-> +}
-> +
-> +static void kvmhv_remove_nest_rmap(struct kvm *kvm, u64 n_rmap,
-> +				   unsigned long hpa, unsigned long mask)
-> +{
-> +	struct kvm_nested_guest *gp;
-> +	unsigned long gpa;
-> +	unsigned int shift, lpid;
-> +	pte_t *ptep;
-> +
-> +	gpa =3D n_rmap & RMAP_NESTED_GPA_MASK;
-> +	lpid =3D (n_rmap & RMAP_NESTED_LPID_MASK) >> RMAP_NESTED_LPID_SHIFT;
-> +	gp =3D kvmhv_find_nested(kvm, lpid);
-> +	if (!gp)
-> +		return;
-> +
-> +	/* Find and invalidate the pte */
-> +	ptep =3D __find_linux_pte(gp->shadow_pgtable, gpa, NULL, &shift);
-> +	/* Don't spuriously invalidate ptes if the pfn has changed */
-> +	if (ptep && pte_present(*ptep) && ((pte_val(*ptep) & mask) =3D=3D hpa))
-> +		kvmppc_unmap_pte(kvm, ptep, gpa, shift, NULL, gp->shadow_lpid);
-> +}
-> +
-> +static void kvmhv_remove_nest_rmap_list(struct kvm *kvm, unsigned long *=
-rmapp,
-> +					unsigned long hpa, unsigned long mask)
-> +{
-> +	struct llist_node *entry =3D llist_del_all((struct llist_head *) rmapp);
-> +	struct rmap_nested *cursor;
-> +	unsigned long rmap;
-> +
-> +	for_each_nest_rmap_safe(cursor, entry, &rmap) {
-> +		kvmhv_remove_nest_rmap(kvm, rmap, hpa, mask);
-> +		kfree(cursor);
-> +	}
-> +}
-> +
-> +/* called with kvm->mmu_lock held */
-> +void kvmhv_remove_nest_rmap_range(struct kvm *kvm,
-> +				  struct kvm_memory_slot *memslot,
-> +				  unsigned long gpa, unsigned long hpa,
-> +				  unsigned long nbytes)
-> +{
-> +	unsigned long gfn, end_gfn;
-> +	unsigned long addr_mask;
-> +
-> +	if (!memslot)
-> +		return;
-> +	gfn =3D (gpa >> PAGE_SHIFT) - memslot->base_gfn;
-> +	end_gfn =3D gfn + (nbytes >> PAGE_SHIFT);
-> +
-> +	addr_mask =3D PTE_RPN_MASK & ~(nbytes - 1);
-> +	hpa &=3D addr_mask;
-> +
-> +	for (; gfn < end_gfn; gfn++) {
-> +		unsigned long *rmap =3D &memslot->arch.rmap[gfn];
-> +		kvmhv_remove_nest_rmap_list(kvm, rmap, hpa, addr_mask);
-> +	}
-> +}
-> +
-> +void kvmhv_free_memslot_nest_rmap(struct kvm_memory_slot *free)
-> +{
-> +	unsigned long page;
-> +
-> +	for (page =3D 0; page < free->npages; page++) {
-> +		unsigned long rmap, *rmapp =3D &free->arch.rmap[page];
-> +		struct rmap_nested *cursor;
-> +		struct llist_node *entry;
-> +
-> +		entry =3D llist_del_all((struct llist_head *) rmapp);
-> +		for_each_nest_rmap_safe(cursor, entry, &rmap)
-> +			kfree(cursor);
-> +	}
-> +}
-> +
->  static bool kvmhv_invalidate_shadow_pte(struct kvm_vcpu *vcpu,
->  					struct kvm_nested_guest *gp,
->  					long gpa, int *shift_ret)
-> @@ -692,11 +810,13 @@ static long int __kvmhv_nested_page_fault(struct kv=
-m_vcpu *vcpu,
->  {
->  	struct kvm *kvm =3D vcpu->kvm;
->  	struct kvm_memory_slot *memslot;
-> +	struct rmap_nested *n_rmap;
->  	struct kvmppc_pte gpte;
->  	pte_t pte, *pte_p;
->  	unsigned long mmu_seq;
->  	unsigned long dsisr =3D vcpu->arch.fault_dsisr;
->  	unsigned long ea =3D vcpu->arch.fault_dar;
-> +	unsigned long *rmapp;
->  	unsigned long n_gpa, gpa, gfn, perm =3D 0UL;
->  	unsigned int shift, l1_shift, level;
->  	bool writing =3D !!(dsisr & DSISR_ISSTORE);
-> @@ -830,8 +950,16 @@ static long int __kvmhv_nested_page_fault(struct kvm=
-_vcpu *vcpu,
-> =20
->  	/* 4. Insert the pte into our shadow_pgtable */
-> =20
-> +	n_rmap =3D kzalloc(sizeof(*n_rmap), GFP_KERNEL);
-> +	if (!n_rmap)
-> +		return RESUME_GUEST; /* Let the guest try again */
-> +	n_rmap->rmap =3D (n_gpa & RMAP_NESTED_GPA_MASK) |
-> +		(((unsigned long) gp->l1_lpid) << RMAP_NESTED_LPID_SHIFT);
-> +	rmapp =3D &memslot->arch.rmap[gfn - memslot->base_gfn];
->  	ret =3D kvmppc_create_pte(kvm, gp->shadow_pgtable, pte, n_gpa, level,
-> -				mmu_seq, gp->shadow_lpid);
-> +				mmu_seq, gp->shadow_lpid, rmapp, &n_rmap);
-> +	if (n_rmap)
-> +		kfree(n_rmap);
->  	if (ret =3D=3D -EAGAIN)
->  		ret =3D RESUME_GUEST;	/* Let the guest try again */
-> =20
+Sounds fair.
 
 --=20
 David Gibson			| I'll have my music baroque, and my code
@@ -569,24 +128,24 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---1Ow488MNN9B9o/ov
+--8X7/QrJGcKSMr1RN
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlu20VMACgkQbDjKyiDZ
-s5L1XBAAzNDQiSF3nm+NZqoVFOIEvGrsP3XjMG+qjuZlYWryL8PsKsfIcCgLA+gM
-1pX5vnahHuad8AylKZ7dNVIzUuub2c+egPx6DpNOTWMDT5dOvC3flG2w1j5JkPqF
-MhXLZD2DFN0pBrpE5SQcR3pWb5pbHAiwIwx3jw82GKwxawrcFCWqKC7ksRakyYJA
-Dkk4Jfc7VWn6cgt7O/TGUrqn4WCgoWs3g9ql962FCOoZQ+QNBMK21WKGL8LXSI33
-h+sbsWfn5uvUW/W5xzVf+eB1PqnGbEFuhs+fZ/Gnk1Wqpnxfrde7jEPNxK2CDEPM
-f2fJfJwD0uVsRfXPkq2+EMKFoH50QhNM/vGHvBTi+NbnVFCFrVuKQQ0k+fAg391W
-ToxF9Dm6GzeiDiAZ298XQe+a1ZKHJ6JBIwHGhM4vYN/9cyA3a3HPjLjEYlrK9+vP
-98h95hIrHBxO9DkVk4nwcJVlyKjjunYoiHJcEmTwUC7zvpbARdA74XnGkzmVGquV
-IzsiSkoWJSVm5I3u3gqZHqV6w3fjLc6qtPZR9RIqbpIOa0xkULLvffU3jh33lS5S
-+mFU06763hYdh5c0Q/XFrENj3UZvxKfAlEj7kYWp9bk9jl9J6+/IiRECi3W3/m21
-rvFjhKaEtxF6TAuFJgO4vi5JPorN1ApGRDL5y2lwVE7OvAgpfwo=
-=DNIg
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlu22pAACgkQbDjKyiDZ
+s5JuEhAA0c/od/SWKpzb/mNeF758xTwySEWScTrtMHwKsm+8wQAlwXZKVyzuuOnF
+DOn8zihObGuRyQm7TykHSuVrz+NOUytwvVh8W7kV4ofAFa/uAlX9lIBbULct89s1
+klg2QVTnls7p24siEQlrM+7AbJh/0j2/DL2j7S4Ngemcwx8VKZR5WHp7uifX/wxa
+/Anw0mxrbl7uuDA3MjpF5iRiIO8hqCNxRntoJHR7kWqjN9BNlMvjlqa9XSA5AgTV
+M56VaDvAAHSLb47VLa0vdtrvfByThmk709fqrBpObtFpj5rF7Ir5H2zhCrS/0LrP
+nEWKfQDd0Jvf3PaZwhmOWLwuHOVkCup9Ayx38ujzGFYoU4kGm4tMVEHMs7x6Omom
+ITEkaHguLsi975Af0JxX2XpsmF5Q/aCmAorCiFp++15El7o+1bff5WlCKg0i2MWW
+Wge21I4RCTO+thtM2iW5VKaUOkpxy2Yf4U8WMDQxwuR8lXxWN0IzGnr9/11W2BAT
+RXpqmedMD3Pg4evbrdwYpSuCCEVPYj0ZOqsWnlgm+624Fndym3RveHasT5jaMI+H
+AS5I6DfWlzkAvuwhEWIxCa4EAUKqnnKds3om96pnIca/994nwz9yJiiJsITcRI6B
+5CGqKKGTQ7UaXM0IKy1zwyPenotZiRG8T1prQRwo5Ibu1EGgVhI=
+=Yxab
 -----END PGP SIGNATURE-----
 
---1Ow488MNN9B9o/ov--
+--8X7/QrJGcKSMr1RN--
