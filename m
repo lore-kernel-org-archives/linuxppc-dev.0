@@ -2,57 +2,50 @@ Return-Path: <SRS0=9KTJ=MR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A929C00449
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 10:41:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 08F6EC00449
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 12:04:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9C82D2087D
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 10:41:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9C82D2087D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
+	by mail.kernel.org (Postfix) with ESMTPS id 5A82620875
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 12:04:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5A82620875
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42RRB90dDkzF3Wj
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 20:41:05 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=huawei.com
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=huawei.com
- (client-ip=45.249.212.191; helo=huawei.com;
- envelope-from=yuehaibing@huawei.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=huawei.com
-Received: from huawei.com (szxga05-in.huawei.com [45.249.212.191])
+	by lists.ozlabs.org (Postfix) with ESMTP id 42RT2S1ywSzF3Sc
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 22:04:32 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42RT0P72lgzF3RF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Oct 2018 22:02:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42RR804PRNzF3L9
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Oct 2018 20:39:11 +1000 (AEST)
-Received: from DGGEMS402-HUB.china.huawei.com (unknown [172.30.72.59])
- by Forcepoint Email with ESMTP id 6D2078A2F4FC5;
- Fri,  5 Oct 2018 18:39:06 +0800 (CST)
-Received: from localhost.localdomain.localdomain (10.175.113.25) by
- DGGEMS402-HUB.china.huawei.com (10.3.19.202) with Microsoft SMTP Server id
- 14.3.399.0; Fri, 5 Oct 2018 18:39:00 +0800
-From: YueHaibing <yuehaibing@huawei.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, David Hildenbrand
- <david@redhat.com>, Michael Neuling <mikey@neuling.org>, Balbir Singh
- <bsingharora@gmail.com>, Rashmica Gupta <rashmica.g@gmail.com>, Andrew Morton
- <akpm@linux-foundation.org>, Pavel Tatashin <pavel.tatashin@microsoft.com>,
- Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: [PATCH -next] powerpc/powernv: Fix debugfs_simple_attr.cocci warnings
-Date: Fri, 5 Oct 2018 10:50:31 +0000
-Message-ID: <1538736631-99728-1-git-send-email-yuehaibing@huawei.com>
-X-Mailer: git-send-email 1.8.3.1
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
+ by ozlabs.org (Postfix) with ESMTPSA id 42RT0P4DZbz9s4s;
+ Fri,  5 Oct 2018 22:02:45 +1000 (AEST)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Stephen Rothwell <sfr@canb.auug.org.au>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ PowerPC <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: linux-next: build failure after merge of the akpm tree
+In-Reply-To: <20181005161406.73ef8727@canb.auug.org.au>
+References: <20181005161406.73ef8727@canb.auug.org.au>
+Date: Fri, 05 Oct 2018 22:02:45 +1000
+Message-ID: <87d0sok3dm.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-X-Originating-IP: [10.175.113.25]
-X-CFilter-Loop: Reflected
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,53 +57,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, kernel-janitors@vger.kernel.org,
- YueHaibing <yuehaibing@huawei.com>, linux-kernel@vger.kernel.org
+Cc: Linux-Next Mailing List <linux-next@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Use DEFINE_DEBUGFS_ATTRIBUTE rather than DEFINE_SIMPLE_ATTRIBUTE
-for debugfs files.
+Stephen Rothwell <sfr@canb.auug.org.au> writes:
+> Hi Andrew,
+>
+> After merging the akpm tree, today's linux-next build (powerpc
+> ppc64_defconfig) failed like this:
+>
+> arch/powerpc/kernel/setup-common.c:36:10: fatal error: linux/bootmem.h: No such file or directory
+>  #include <linux/bootmem.h>
+>           ^~~~~~~~~~~~~~~~~
+>
+> Caused by commit
+>
+>   49353a51a758 ("mm: remove include/linux/bootmem.h")
+>
+> interacting with commit
+>
+>   d90fe2acd9b2 ("powerpc: Wire up memtest")
+>
+> from the powerpc tree.
 
-Semantic patch information:
-Rationale: DEFINE_SIMPLE_ATTRIBUTE + debugfs_create_file()
-imposes some significant overhead as compared to
-DEFINE_DEBUGFS_ATTRIBUTE + debugfs_create_file_unsafe().
+Ah fudge, what are the chances we add a new include of bootmem.h just as
+Mike's removing bootmem.
 
-Generated by: scripts/coccinelle/api/debugfs/debugfs_simple_attr.cocci
+> I applied the following patch for today:
+>
+> From: Stephen Rothwell <sfr@canb.auug.org.au>
+> Date: Fri, 5 Oct 2018 16:09:34 +1000
+> Subject: [PATCH] powerpc: fix up for removal of linux/bootmem.h
+>
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> ---
+>  arch/powerpc/kernel/setup-common.c | 1 -
+>  1 file changed, 1 deletion(-)
+>
+> diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+> index 2b56d1f30387..93ee3703b42f 100644
+> --- a/arch/powerpc/kernel/setup-common.c
+> +++ b/arch/powerpc/kernel/setup-common.c
+> @@ -33,7 +33,6 @@
+>  #include <linux/serial_8250.h>
+>  #include <linux/percpu.h>
+>  #include <linux/memblock.h>
+> -#include <linux/bootmem.h>
+>  #include <linux/of_platform.h>
+>  #include <linux/hugetlb.h>
+>  #include <asm/debugfs.h>
 
-Signed-off-by: YueHaibing <yuehaibing@huawei.com>
----
- arch/powerpc/platforms/powernv/memtrace.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+I could just apply that to my tree. memblock.h is where early_memtest() is
+actually defined anyway.
 
-diff --git a/arch/powerpc/platforms/powernv/memtrace.c b/arch/powerpc/platforms/powernv/memtrace.c
-index 84d038e..0cb6548 100644
---- a/arch/powerpc/platforms/powernv/memtrace.c
-+++ b/arch/powerpc/platforms/powernv/memtrace.c
-@@ -311,8 +311,8 @@ static int memtrace_enable_get(void *data, u64 *val)
- 	return 0;
- }
- 
--DEFINE_SIMPLE_ATTRIBUTE(memtrace_init_fops, memtrace_enable_get,
--					memtrace_enable_set, "0x%016llx\n");
-+DEFINE_DEBUGFS_ATTRIBUTE(memtrace_init_fops, memtrace_enable_get,
-+			 memtrace_enable_set, "0x%016llx\n");
- 
- static int memtrace_init(void)
- {
-@@ -321,8 +321,8 @@ static int memtrace_init(void)
- 	if (!memtrace_debugfs_dir)
- 		return -1;
- 
--	debugfs_create_file("enable", 0600, memtrace_debugfs_dir,
--			    NULL, &memtrace_init_fops);
-+	debugfs_create_file_unsafe("enable", 0600, memtrace_debugfs_dir, NULL,
-+				   &memtrace_init_fops);
- 
- 	return 0;
- }
-
-
-
+cheers
