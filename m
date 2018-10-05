@@ -2,95 +2,86 @@ Return-Path: <SRS0=9KTJ=MR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DDDD5C00449
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 15:14:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 74AEDC00449
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 15:26:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 853F42084D
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 15:14:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 853F42084D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id CB6892064E
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 15:26:41 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linaro.org header.i=@linaro.org header.b="DcgOq583"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CB6892064E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42RYG059PyzF3ZD
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 01:14:48 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42RYWg3DDszF3SM
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 01:26:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=rppt@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.b="DcgOq583";
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=linaro.org
+ (client-ip=2607:f8b0:4864:20::d41; helo=mail-io1-xd41.google.com;
+ envelope-from=ard.biesheuvel@linaro.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=linaro.org header.i=@linaro.org header.b="DcgOq583"; 
+ dkim-atps=neutral
+Received: from mail-io1-xd41.google.com (mail-io1-xd41.google.com
+ [IPv6:2607:f8b0:4864:20::d41])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42RY9Z0YXyzF3TV
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Oct 2018 01:10:57 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w95F5Ku0133595
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Oct 2018 11:10:55 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2mx91gd8ju-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Oct 2018 11:10:55 -0400
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.vnet.ibm.com>;
- Fri, 5 Oct 2018 16:05:51 +0100
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
- by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 5 Oct 2018 16:05:44 +0100
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- w95F5h3u63897732
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Fri, 5 Oct 2018 15:05:43 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1D453AE045;
- Fri,  5 Oct 2018 18:04:33 +0100 (BST)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C216EAE051;
- Fri,  5 Oct 2018 18:04:32 +0100 (BST)
-Received: from [9.148.204.169] (unknown [9.148.204.169])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri,  5 Oct 2018 18:04:32 +0100 (BST)
-Date: Fri, 05 Oct 2018 18:05:01 +0300
-User-Agent: K-9 Mail for Android
-In-Reply-To: <8891277c7de92e93d3bfc409df95810ee6f103cd.camel@kernel.crashing.org>
-References: <1538687224-17535-1-git-send-email-rppt@linux.vnet.ibm.com>
- <8891277c7de92e93d3bfc409df95810ee6f103cd.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42RYSk6qPCzDqjy
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Oct 2018 01:24:06 +1000 (AEST)
+Received: by mail-io1-xd41.google.com with SMTP id z16-v6so10964832iol.6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Oct 2018 08:24:06 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
+ h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+ :cc:content-transfer-encoding;
+ bh=LX+2MI+hHYUm+bKmtAJeiUXyAPi3Ulw5YVzm3/GssU0=;
+ b=DcgOq583cb1mX/Otso2cQlfpjY1bepjnzyun2QY6sz8Y/CNAwJq+ic036IDRhXsDJM
+ 5wPGox4R+fpwpJx0rqCvaBwMU3woOwzEVt4Ss5RmHusG0vbG4nzcf8X/Dc+Fq0GKDTQt
+ guUBLUkEDEsQpEx+4NBJML53DzgOb+3q/zOpI=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:in-reply-to:references:from:date
+ :message-id:subject:to:cc:content-transfer-encoding;
+ bh=LX+2MI+hHYUm+bKmtAJeiUXyAPi3Ulw5YVzm3/GssU0=;
+ b=PO8e05I3gfumMUK4ka61qWziApgJ0h30dfn50PsZStNwY/skSQ/VSrK1S5oeLjyrTn
+ LKkd6psDvDvRJB9A0D4jKUuh5uRB8p0/vY4YdCEZ9P9Grpk/YsxuVTse8QtjirWmXEY1
+ i7u/6ztEvLnWFlpxThtSbP/Q8Gy/bmhPMf+H3g9q/B8r/kJW8pYbC5Fgxi5oDFUG85VA
+ e002tS5aS5zl/91wHE+GqkbKrrWmaTeXOz0HFUz+6tdUZRzFepU+0E4k7xkqFO4I58UC
+ rAjmmUhRX4iVjq1shBu4qdF5H272yUOwYB8yUJxLl55nmXZELC2PSFqQO1o7I3Mlk3QK
+ +4UQ==
+X-Gm-Message-State: ABuFfojmRF+uBNgTTpqEcAzvt1ZJ8f8AOzimsPZyXwYxcVjcCWEFh5dF
+ GRovITiWdLXB8aJHSCFf2Wi2+/uTv1u6RqOEB5mLKw==
+X-Google-Smtp-Source: ACcGV61H+r0byvXHjqqSSVHL0DSrdOHfNZWI5KXAhm0WzubTqAY62t3z9by+L6aq5atxmrK8iitpD33kqV/xwmNyptU=
+X-Received: by 2002:a6b:be83:: with SMTP id
+ o125-v6mr8136071iof.173.1538753044011; 
+ Fri, 05 Oct 2018 08:24:04 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain;
- charset=utf-8
+Received: by 2002:a6b:5910:0:0:0:0:0 with HTTP;
+ Fri, 5 Oct 2018 08:24:03 -0700 (PDT)
+In-Reply-To: <9E0E08C8-0DFC-4E50-A4FA-73208835EF9E@amacapital.net>
+References: <20181005081333.15018-1-ard.biesheuvel@linaro.org>
+ <20181005081333.15018-2-ard.biesheuvel@linaro.org>
+ <20181005141433.GS19272@hirez.programming.kicks-ass.net>
+ <9E0E08C8-0DFC-4E50-A4FA-73208835EF9E@amacapital.net>
+From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+Date: Fri, 5 Oct 2018 17:24:03 +0200
+Message-ID: <CAKv+Gu9z503ZJXcsG+9Ys240BZiB-+GB=kNY4VGWpjvdzN4JtA@mail.gmail.com>
+Subject: Re: [RFC PATCH 1/9] kernel: add support for patchable function
+ pointers
+To: Andy Lutomirski <luto@amacapital.net>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH] memblock: stop using implicit alignement to
- SMP_CACHE_BYTES
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linux-mm@kvack.org
-From: Mike Rapoport <rppt@linux.vnet.ibm.com>
-X-TM-AS-GCONF: 00
-x-cbid: 18100515-0020-0000-0000-000002D00A38
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18100515-0021-0000-0000-0000211E6102
-Message-Id: <59C9470E-F718-4A11-BC65-FD68901723AC@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-10-05_08:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=701 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1807170000 definitions=main-1810050153
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,55 +93,114 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mips@linux-mips.org, linux-m68k@vger.kernel.org,
- Michal Hocko <mhocko@suse.com>, linux-ia64@vger.kernel.org,
- Catalin Marinas <catalin.marinas@arm.com>, Richard Weinberger <richard@nod.at>,
- Russell King <linux@armlinux.org.uk>, Ingo Molnar <mingo@redhat.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>, Matt Turner <mattst88@gmail.com>,
- linux-um@lists.infradead.org, Thomas Gleixner <tglx@linutronix.de>,
- Guan Xuetao <gxt@pku.edu.cn>, linux-arm-kernel@lists.infradead.org,
- Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>,
- Tony Luck <tony.luck@intel.com>, linux-kernel@vger.kernel.org,
- Paul Burton <paul.burton@mips.com>, linux-alpha@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: "Jason A . Donenfeld" <Jason@zx2c4.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
+ Samuel Neves <sneves@dei.uc.pt>, Paul Mackerras <paulus@samba.org>,
+ Herbert Xu <herbert@gondor.apana.org.au>, Richard Weinberger <richard@nod.at>,
+ Eric Biggers <ebiggers@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>,
+ Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+ linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ "open list:HARDWARE RANDOM NUMBER GENERATOR CORE"
+ <linux-crypto@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-On October 5, 2018 6:25:38 AM GMT+03:00, Benjamin Herrenschmidt <benh@kern=
-el=2Ecrashing=2Eorg> wrote:
->On Fri, 2018-10-05 at 00:07 +0300, Mike Rapoport wrote:
->> When a memblock allocation APIs are called with align =3D 0, the
->alignment is
->> implicitly set to SMP_CACHE_BYTES=2E
->>=20
->> Replace all such uses of memblock APIs with the 'align' parameter
->explicitly
->> set to SMP_CACHE_BYTES and stop implicit alignment assignment in the
->> memblock internal allocation functions=2E
->>=20
->> For the case when memblock APIs are used via helper functions, e=2Eg=2E
->like
->> iommu_arena_new_node() in Alpha, the helper functions were detected
->with
->> Coccinelle's help and then manually examined and updated where
->appropriate=2E
->>=20
->> The direct memblock APIs users were updated using the semantic patch
->below:
+On 5 October 2018 at 17:08, Andy Lutomirski <luto@amacapital.net> wrote:
 >
->What is the purpose of this ? It sounds rather counter-intuitive=2E=2E=2E
+>
+>> On Oct 5, 2018, at 7:14 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+>>
+>>> On Fri, Oct 05, 2018 at 10:13:25AM +0200, Ard Biesheuvel wrote:
+>>> diff --git a/include/linux/ffp.h b/include/linux/ffp.h
+>>> new file mode 100644
+>>> index 000000000000..8fc3b4c9b38f
+>>> --- /dev/null
+>>> +++ b/include/linux/ffp.h
+>>> @@ -0,0 +1,43 @@
+>>> +/* SPDX-License-Identifier: GPL-2.0 */
+>>> +
+>>> +#ifndef __LINUX_FFP_H
+>>> +#define __LINUX_FFP_H
+>>> +
+>>> +#include <linux/types.h>
+>>> +#include <linux/compiler.h>
+>>> +
+>>> +#ifdef CONFIG_HAVE_ARCH_FFP
+>>> +#include <asm/ffp.h>
+>>> +#else
+>>> +
+>>> +struct ffp {
+>>> +    void    (**fn)(void);
+>>> +    void    (*default_fn)(void);
+>>> +};
+>>> +
+>>> +#define DECLARE_FFP(_fn, _def)                        \
+>>> +    extern typeof(_def) *_fn;                    \
+>>> +    extern struct ffp const __ffp_ ## _fn
+>>> +
+>>> +#define DEFINE_FFP(_fn, _def)                        \
+>>> +    typeof(_def) *_fn =3D &_def;                    \
+>>> +    struct ffp const __ffp_ ## _fn                    \
+>>> +        =3D { (void(**)(void))&_fn, (void(*)(void))&_def };    \
+>>> +    EXPORT_SYMBOL(__ffp_ ## _fn)
+>>> +
+>>> +static inline void ffp_set_target(const struct ffp *m, void *new_fn)
+>>> +{
+>>> +    WRITE_ONCE(*m->fn, new_fn);
+>>> +}
+>>> +
+>>> +static inline void ffp_reset_target(const struct ffp *m)
+>>> +{
+>>> +    WRITE_ONCE(*m->fn, m->default_fn);
+>>> +}
+>>> +
+>>> +#endif
+>>> +
+>>> +#define SET_FFP(_fn, _new)    ffp_set_target(&__ffp_ ## _fn, _new)
+>>> +#define RESET_FFP(_fn)        ffp_reset_target(&__ffp_ ## _fn)
+>>> +
+>>> +#endif
+>>
+>> I don't understand this interface. There is no wrapper for the call
+>> site, so how are we going to patch all call-sites when you update the
+>> target?
+>
+> I=E2=80=99m also confused.
+>
+> Anyway, we have patchable functions on x86. They=E2=80=99re called PVOPs,=
+ and they=E2=80=99re way overcomplicated.
+>
+> I=E2=80=99ve proposed a better way that should generate better code, be m=
+ore portable, and be more maintainable.  It goes like this.
+>
+> To call the function, you literally just call  the default implementation=
+.  It *might* be necessary to call a nonexistent wrapper to avoid annoying =
+optimizations. At build time, the kernel is built with relocations, so the =
+object files contain relocation entries for the call. We collect these entr=
+ies into a table. If we=E2=80=99re using the =E2=80=9Cnonexistent wrapper=
+=E2=80=9D approach, we can link in a .S or linker script to alias them to t=
+he default implementation.
+>
+> To patch them, we just patch them. It can=E2=80=99t necessarily be done c=
+oncurrently because nothing forces the right alignment. But we can do it at=
+ boot time and module load time. (Maybe we can patch at runtime on architec=
+tures with appropriate instruction alignment.  Or we ask gcc for an extensi=
+on to align calls to a function.)
+>
+> Most of the machinery already exists: this is roughly how the module load=
+er resolves calls outside of a module.
 
-Why?
-I think it actually more intuitive to explicitly set alignment to SMP_CACH=
-E_BYTES rather than use align =3D 0 because deeply inside allocator it will=
- be implicitly reset to SMP_CACHE_BYTES=2E=2E=2E
+Yeah nothing is ever simple on x86 :-(
 
->Ben=2E
-
---=20
-Sincerely yours,
-Mike=2E
-
+So are you saying the approach i use in patch #2 (which would
+translate to emitting a jmpq instruction pointing to the default
+implementation, and patching it at runtime to point elsewhere) would
+not fly on x86?
