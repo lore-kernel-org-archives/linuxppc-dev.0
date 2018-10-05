@@ -2,68 +2,67 @@ Return-Path: <SRS0=9KTJ=MR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.2 required=3.0 tests=INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,UNWANTED_LANGUAGE_BODY,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A9A5CC00449
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 17:37:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 97583C00449
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 17:39:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2E7D220834
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 17:37:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2E7D220834
+	by mail.kernel.org (Postfix) with ESMTPS id 257CC20834
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 17:39:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 257CC20834
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42RcQM47qhzF3bV
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 03:37:15 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42RcSl1Yw9zF3bW
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 03:39:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.167.193; helo=mail-oi1-f193.google.com;
+ (client-ip=209.85.167.195; helo=mail-oi1-f195.google.com;
  envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mail-oi1-f193.google.com (mail-oi1-f193.google.com
- [209.85.167.193])
+Received: from mail-oi1-f195.google.com (mail-oi1-f195.google.com
+ [209.85.167.195])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42RbZW0sl9zF3TS
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Oct 2018 02:59:15 +1000 (AEST)
-Received: by mail-oi1-f193.google.com with SMTP id y81-v6so10952506oia.6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Oct 2018 09:59:15 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42RbZX2mwwzDrJl
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Oct 2018 02:59:16 +1000 (AEST)
+Received: by mail-oi1-f195.google.com with SMTP id a203-v6so10981845oib.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Oct 2018 09:59:16 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references;
- bh=D7OkSebvuDu3GYBwaaAJvmjae/fS/q7Ybf2TAf/0foQ=;
- b=lrwvrDywtRFHr8BRLPpS1/89MTtzDhwKnQHIlL8YG+IDVurt4dKzFQBwThkvL9LjUw
- 0Yli9xa8U8AawHchPMs4jYQX3PbFB1+ggsJrLYYDrNW99T8HuBzm1ohzSYYpW66WZdYo
- qA5uGBf5jJFMSaDOoDTeWLyb8SePNx1Eci/8KmV8dv+6GG6VYJLS66wJCmKpY5R/ltQt
- eLz2bvgztlF4AsKU40uj6DeyMshKcIoLvchCurbL/oVR4eDCqxU+sZZjQOysTfhA/T9y
- Mr/iXRlU6/e2OGj1KpeEtXUK76LGdgOaDWQVj4LjvgqtHvO7gJaFnzOBYTiqCfhSUTjN
- kfAQ==
-X-Gm-Message-State: ABuFfojh2adDpfCarvmmJLeHExPc/Fq3WW+KRdO4krjavd97cPk8qrm1
- UfPM6ep9LCdF/1Y839eD4w==
-X-Google-Smtp-Source: ACcGV603AZmYMM959ZiqeSNbPbCx6juZGnicL2LLW1xgg9bdM4NS/wyqNjo6TeDNGfZt8qWxvkdKFQ==
-X-Received: by 2002:aca:b485:: with SMTP id
- d127-v6mr6011131oif.165.1538758753133; 
- Fri, 05 Oct 2018 09:59:13 -0700 (PDT)
+ bh=O3XM1RBhY4v1WmTiSPBtIk0ka+l440+ODBKqqXu90pw=;
+ b=hlrMZP4Wtvyf7Q4nNcElYDjkp91mqghiy3JXeX8sNwL8bqauoLe83r47Y+P5iQG6v7
+ abrstijJv360G1Fli6XRyt/ufGGrGlhV9jalOjN7kyoEqQr0xpcP5MyrQiqnwxc8ITPz
+ oAwIMqVaGNECqKC3uG0elsQcunkt6RxRKwcV6xhSwe99PtQMEs+5GNlSg0hy1RYEGQjp
+ d5roHRcbfrBZrQSaJ8RDQe+4Rf96ZN5S7D5xXm1uip75H4frptslBFJq6Nm9xjldnrdY
+ ox8bxvvrY+VUHzhFdRT6OsSF62/teAcVwUFZPlgZlbCWMjpWMQTvlOj4myHTsIlHA9eI
+ Zyqg==
+X-Gm-Message-State: ABuFfohB3ksejE+FVpMiipJhxZyw0NmWUc14mW4skpiU1SgzJjiSsVRY
+ xuXbfvDYKTkmLpWvZ72UpQ==
+X-Google-Smtp-Source: ACcGV60AgRw3R5LJgV1x9+oI865q5N6/ndRU9D+ZWO2QIsss0NXUboNGgrxCF+DjBK6gh3Q57fTXXg==
+X-Received: by 2002:aca:490b:: with SMTP id
+ w11-v6mr5885174oia.126.1538758754465; 
+ Fri, 05 Oct 2018 09:59:14 -0700 (PDT)
 Received: from xps15.herring.priv (24-155-109-49.dyn.grandenetworks.net.
  [24.155.109.49]) by smtp.googlemail.com with ESMTPSA id
- u63-v6sm2904328ota.75.2018.10.05.09.59.11
+ u63-v6sm2904328ota.75.2018.10.05.09.59.13
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Fri, 05 Oct 2018 09:59:12 -0700 (PDT)
+ Fri, 05 Oct 2018 09:59:13 -0700 (PDT)
 From: Rob Herring <robh@kernel.org>
 To: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 16/36] dt-bindings: arm: Convert Alpine board/soc bindings to
+Subject: [PATCH 17/36] dt-bindings: arm: Convert Altera board/soc bindings to
  json-schema
-Date: Fri,  5 Oct 2018 11:58:28 -0500
-Message-Id: <20181005165848.3474-17-robh@kernel.org>
+Date: Fri,  5 Oct 2018 11:58:29 -0500
+Message-Id: <20181005165848.3474-18-robh@kernel.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20181005165848.3474-1-robh@kernel.org>
 References: <20181005165848.3474-1-robh@kernel.org>
@@ -82,78 +81,72 @@ Cc: Mark Rutland <mark.rutland@arm.com>, Tom Rini <trini@konsulko.com>,
  Kumar Gala <kumar.gala@linaro.org>, Grant Likely <glikely@secretlab.ca>,
  Arnd Bergmann <arnd@arndb.de>, Linus Walleij <linus.walleij@linaro.org>,
  Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
- Bjorn Andersson <bjorn.andersson@linaro.org>, Mark Brown <broonie@kernel.org>,
+ Bjorn Andersson <bjorn.andersson@linaro.org>,
+ Dinh Nguyen <dinguyen@kernel.org>, Mark Brown <broonie@kernel.org>,
  Geert Uytterhoeven <geert@linux-m68k.org>, Olof Johansson <olof@lixom.net>,
- Frank Rowand <frowand.list@gmail.com>,
- Antoine Tenart <antoine.tenart@free-electrons.com>,
- Jonathan Cameron <jic23@kernel.org>,
- Tsahee Zidenberg <tsahee@annapurnalabs.com>
+ Frank Rowand <frowand.list@gmail.com>, Jonathan Cameron <jic23@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Convert Alpine SoC bindings to DT schema format using json-schema.
+Convert Altera SoC bindings to DT schema format using json-schema.
 
-Cc: Tsahee Zidenberg <tsahee@annapurnalabs.com>
-Cc: Antoine Tenart <antoine.tenart@free-electrons.com>
 Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Dinh Nguyen <dinguyen@kernel.org>
 Cc: devicetree@vger.kernel.org
 Signed-off-by: Rob Herring <robh@kernel.org>
 ---
- .../devicetree/bindings/arm/al,alpine.txt     | 16 --------------
- .../devicetree/bindings/arm/al,alpine.yaml    | 21 +++++++++++++++++++
- 2 files changed, 21 insertions(+), 16 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/arm/al,alpine.txt
- create mode 100644 Documentation/devicetree/bindings/arm/al,alpine.yaml
+ .../devicetree/bindings/arm/altera.txt        | 14 -------------
+ .../devicetree/bindings/arm/altera.yaml       | 20 +++++++++++++++++++
+ 2 files changed, 20 insertions(+), 14 deletions(-)
+ delete mode 100644 Documentation/devicetree/bindings/arm/altera.txt
+ create mode 100644 Documentation/devicetree/bindings/arm/altera.yaml
 
-diff --git a/Documentation/devicetree/bindings/arm/al,alpine.txt b/Documentation/devicetree/bindings/arm/al,alpine.txt
+diff --git a/Documentation/devicetree/bindings/arm/altera.txt b/Documentation/devicetree/bindings/arm/altera.txt
 deleted file mode 100644
-index d00debe2e86f..000000000000
---- a/Documentation/devicetree/bindings/arm/al,alpine.txt
+index 558735aacca8..000000000000
+--- a/Documentation/devicetree/bindings/arm/altera.txt
 +++ /dev/null
-@@ -1,16 +0,0 @@
--Annapurna Labs Alpine Platform Device Tree Bindings
-----------------------------------------------------------------
+@@ -1,14 +0,0 @@
+-Altera's SoCFPGA platform device tree bindings
+----------------------------------------------
 -
--Boards in the Alpine family shall have the following properties:
+-Boards with Cyclone 5 SoC:
+-Required root node properties:
+-compatible = "altr,socfpga-cyclone5", "altr,socfpga";
 -
--* Required root node properties:
--compatible: must contain "al,alpine"
+-Boards with Arria 5 SoC:
+-Required root node properties:
+-compatible = "altr,socfpga-arria5", "altr,socfpga";
 -
--* Example:
--
--/ {
--	model = "Annapurna Labs Alpine Dev Board";
--	compatible = "al,alpine";
--
--	...
--}
-diff --git a/Documentation/devicetree/bindings/arm/al,alpine.yaml b/Documentation/devicetree/bindings/arm/al,alpine.yaml
+-Boards with Arria 10 SoC:
+-Required root node properties:
+-compatible = "altr,socfpga-arria10", "altr,socfpga";
+diff --git a/Documentation/devicetree/bindings/arm/altera.yaml b/Documentation/devicetree/bindings/arm/altera.yaml
 new file mode 100644
-index 000000000000..95f8629f7b0a
+index 000000000000..0fc6564badc3
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/arm/al,alpine.yaml
-@@ -0,0 +1,21 @@
++++ b/Documentation/devicetree/bindings/arm/altera.yaml
+@@ -0,0 +1,20 @@
 +# SPDX-License-Identifier: None
 +%YAML 1.2
 +---
-+$id: http://devicetree.org/schemas/bindings/arm/al,alpine.yaml#
++$id: http://devicetree.org/schemas/bindings/arm/altera.yaml#
 +$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-+title: Annapurna Labs Alpine Platform Device Tree Bindings
++title: Altera's SoCFPGA platform device tree bindings
 +
 +maintainers:
-+  - Tsahee Zidenberg <tsahee@annapurnalabs.com>
-+description: test
++  - Dinh Nguyen <dinguyen@opensource.altera.com>
 +
 +properties:
 +  compatible:
 +    items:
-+      - const: al,alpine
-+  model:
-+    items:
-+      - const: "Annapurna Labs Alpine Dev Board"
-+
++      - enum:
++        - altr,socfpga-cyclone5
++        - altr,socfpga-arria5
++        - altr,socfpga-arria10
++      - const: altr,socfpga
 +...
 -- 
 2.17.1
