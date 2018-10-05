@@ -2,42 +2,100 @@ Return-Path: <SRS0=9KTJ=MR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED,URIBL_SBL,URIBL_SBL_A autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B90F4C00449
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 13:24:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A611BC00449
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 13:31:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 20147208E7
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 13:24:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 20147208E7
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 0D7E320834
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 13:31:55 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="uIPECjwy"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0D7E320834
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42RVpS6JbMzF3RY
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 23:24:15 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 42RVzF5WFbzF3Rr
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 23:31:53 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="uIPECjwy";
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::544; helo=mail-pg1-x544.google.com;
+ envelope-from=groeck7@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=roeck-us.net
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="uIPECjwy"; 
+ dkim-atps=neutral
+Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
+ [IPv6:2607:f8b0:4864:20::544])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42RVlC4gDvzF3RT
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Oct 2018 23:21:27 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix)
- id 42RVlC2bvcz9s4V; Fri,  5 Oct 2018 23:21:27 +1000 (AEST)
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 42RVlC1q6Vz9s4s; Fri,  5 Oct 2018 23:21:27 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Don't print kernel instructions in
- show_user_instructions()
-Date: Fri,  5 Oct 2018 23:21:23 +1000
-Message-Id: <20181005132123.6038-1-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.17.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42RVs02BXCzDqf3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Oct 2018 23:26:27 +1000 (AEST)
+Received: by mail-pg1-x544.google.com with SMTP id g2-v6so4739589pgu.11
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Oct 2018 06:26:27 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=sender:subject:to:cc:references:from:message-id:date:user-agent
+ :mime-version:in-reply-to:content-language:content-transfer-encoding;
+ bh=UqUL9SkpdJz9RMWiehPVKTpihQd+cH0u1dIADWyIUYc=;
+ b=uIPECjwyICsYfVHlBsBAmw3FzqEaxWMs3feoxEhwlDDOIFCSEZIUPg4wQY96HcRxur
+ tVzxAwiinxN/L/N9inR/RwUZBup1Vb4/TLq5eX2tDYJzl+RKrTRoO+5HcwFwpc9sloFf
+ y3y6vC/kVeZ0ZQUJW5Dv3HME5x9cHb7UFuYkkHex8AbFa+iQyI7h304OIzCpNNflHwvL
+ 2FMzgQ0iQJkFReTscHJX6rOCRoJKrd8zhpqJA99hMZiR8OOK51ZmBZMTfs9q8ojjRqeP
+ DL9qYIs+vJmvOL8qYILQ8VGcMYACXtwoif28/JpSs4Xh7vK//XRdXuLEa2N+xh4giUCd
+ rNgg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:sender:subject:to:cc:references:from:message-id
+ :date:user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=UqUL9SkpdJz9RMWiehPVKTpihQd+cH0u1dIADWyIUYc=;
+ b=pMBpiEqdv6EGY28YtDp6u545iRye8z+xPLjmmpYvZhMBaNyRTJ4MWzrfRWAHcn8eyT
+ RpIeeNNbKAVQMtVwoMs1C2Uj8FtzaYeV1IU5THzDEE3cw8WXAu384rPUmC+EOFOJGN53
+ BkwzyPQ9wXeV6gHI/L+OAV0WntG0WWlFNkslk89Qub5rcuPjhckTppDP70E0YBzEc/lF
+ Qqep0cvAkj26YSy+5TWAkdB/4+bPIIzf4jx6p6msWEKzbXmyEjzdt+80Ie/a8Nu/cWgC
+ 8bm3PeybK5UNt97ItNSG4Mc22lZHnxc+0UzeKY1ZIlMvf7IlSD0fevpx2qMDMh/1u88u
+ JUYg==
+X-Gm-Message-State: ABuFfohG68tgDmzQPclnZaKrhD1a6NFV57p5R/Fp6pkn7eP7eTE9fG37
+ /HWRG0CZoRQmoQOVZCZW0qY=
+X-Google-Smtp-Source: ACcGV62Qd2brmznz6MFZ8e7pmOtgaouZpKNpf+oknrajkwogtA+t1wNZRRVtOfv0rEAwmLtQkg1KhQ==
+X-Received: by 2002:a63:1148:: with SMTP id
+ 8-v6mr10397630pgr.172.1538745985550; 
+ Fri, 05 Oct 2018 06:26:25 -0700 (PDT)
+Received: from server.roeck-us.net
+ (108-223-40-66.lightspeed.sntcca.sbcglobal.net. [108.223.40.66])
+ by smtp.gmail.com with ESMTPSA id n80-v6sm14580331pfh.166.2018.10.05.06.26.23
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Fri, 05 Oct 2018 06:26:24 -0700 (PDT)
+Subject: Re: [PATCH 15/16] of: unittest: initialize args before calling
+ of_irq_parse_one()
+To: frowand.list@gmail.com, Rob Herring <robh+dt@kernel.org>,
+ Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>,
+ Moritz Fischer <mdf@kernel.org>
+References: <1538712767-30394-1-git-send-email-frowand.list@gmail.com>
+ <1538712767-30394-16-git-send-email-frowand.list@gmail.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Message-ID: <7fc4b9da-5fdf-11c9-e168-ccb2d960adea@roeck-us.net>
+Date: Fri, 5 Oct 2018 06:26:22 -0700
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
+MIME-Version: 1.0
+In-Reply-To: <1538712767-30394-16-git-send-email-frowand.list@gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -49,58 +107,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: muriloo@linux.ibm.com, jannh@google.com
+Cc: devicetree@vger.kernel.org, linux-fpga@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Recently we implemented show_user_instructions() which dumps the code
-around the NIP when a user space process dies with an unhandled
-signal. This was modelled on the x86 code, and we even went so far as
-to implement the exact same bug, namely that if the user process
-crashed with its NIP pointing into the kernel we will dump kernel text
-to dmesg. eg:
+On 10/04/2018 09:12 PM, frowand.list@gmail.com wrote:
+> From: Frank Rowand <frank.rowand@sony.com>
+> 
+> Callers of of_irq_parse_one() blindly use the pointer args.np
+> without checking whether of_irq_parse_one() had an error and
+> thus did not set the value of args.np.  Initialize args to
+> zero so that using the format "%pOF" to show the value of
+> args.np will show "(null)" when of_irq_parse_one() has an
+> error and does not set args.np instead of trying to
+> dereference a random value.
+> 
+> Reported-by: Guenter Roeck <linux@roeck-us.net>
+> Signed-off-by: Frank Rowand <frank.rowand@sony.com>
 
-  bad-bctr[2996]: segfault (11) at c000000000010000 nip c000000000010000 lr 12d0b0894 code 1
-  bad-bctr[2996]: code: fbe10068 7cbe2b78 7c7f1b78 fb610048 38a10028 38810020 fb810050 7f8802a6
-  bad-bctr[2996]: code: 3860001c f8010080 48242371 60000000 <7c7b1b79> 4082002c e8010080 eb610048
+Reviewed-by: Guenter Roeck <linux@roeck-us.net>
 
-This was discovered on x86 by Jann Horn and fixed in commit
-342db04ae712 ("x86/dumpstack: Don't dump kernel memory based on usermode RIP").
+The same problem exists when of_parse_phandle_with_args() reports an error.
 
-Fix it by checking the adjusted NIP value (pc) and number of
-instructions against USER_DS, and bail if we fail the check, eg:
+Guenter
 
-  bad-bctr[2969]: segfault (11) at c000000000010000 nip c000000000010000 lr 107930894 code 1
-  bad-bctr[2969]: Bad NIP, not dumping instructions.
-
-Fixes: 88b0fe175735 ("powerpc: Add show_user_instructions()")
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/kernel/process.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
-
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 913c5725cdb2..bb6ac471a784 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1306,6 +1306,16 @@ void show_user_instructions(struct pt_regs *regs)
- 
- 	pc = regs->nip - (instructions_to_print * 3 / 4 * sizeof(int));
- 
-+	/*
-+	 * Make sure the NIP points at userspace, not kernel text/data or
-+	 * elsewhere.
-+	 */
-+	if (!__access_ok(pc, instructions_to_print * sizeof(int), USER_DS)) {
-+		pr_info("%s[%d]: Bad NIP, not dumping instructions.\n",
-+			current->comm, current->pid);
-+		return;
-+	}
-+
- 	pr_info("%s[%d]: code: ", current->comm, current->pid);
- 
- 	for (i = 0; i < instructions_to_print; i++) {
--- 
-2.17.1
+> ---
+>   drivers/of/unittest.c | 5 +++--
+>   1 file changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
+> index 6d80f474c8f2..b61a33f30a56 100644
+> --- a/drivers/of/unittest.c
+> +++ b/drivers/of/unittest.c
+> @@ -780,7 +780,7 @@ static void __init of_unittest_parse_interrupts(void)
+>   	for (i = 0; i < 4; i++) {
+>   		bool passed = true;
+>   
+> -		args.args_count = 0;
+> +		memset(&args, 0, sizeof(args));
+>   		rc = of_irq_parse_one(np, i, &args);
+>   
+>   		passed &= !rc;
+> @@ -801,7 +801,7 @@ static void __init of_unittest_parse_interrupts(void)
+>   	for (i = 0; i < 4; i++) {
+>   		bool passed = true;
+>   
+> -		args.args_count = 0;
+> +		memset(&args, 0, sizeof(args));
+>   		rc = of_irq_parse_one(np, i, &args);
+>   
+>   		/* Test the values from tests-phandle.dtsi */
+> @@ -854,6 +854,7 @@ static void __init of_unittest_parse_interrupts_extended(void)
+>   	for (i = 0; i < 7; i++) {
+>   		bool passed = true;
+>   
+> +		memset(&args, 0, sizeof(args));
+>   		rc = of_irq_parse_one(np, i, &args);
+>   
+>   		/* Test the values from tests-phandle.dtsi */
+> 
 
