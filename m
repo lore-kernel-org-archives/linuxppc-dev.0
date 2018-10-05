@@ -2,73 +2,71 @@ Return-Path: <SRS0=9KTJ=MR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.2 required=3.0 tests=INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,UNWANTED_LANGUAGE_BODY,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AE2BDC00449
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 17:35:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A9A5CC00449
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 17:37:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1B81220834
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 17:35:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1B81220834
+	by mail.kernel.org (Postfix) with ESMTPS id 2E7D220834
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 17:37:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2E7D220834
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42RcNC2McXzDqCq
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 03:35:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42RcQM47qhzF3bV
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 03:37:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.167.194; helo=mail-oi1-f194.google.com;
+ (client-ip=209.85.167.193; helo=mail-oi1-f193.google.com;
  envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mail-oi1-f194.google.com (mail-oi1-f194.google.com
- [209.85.167.194])
+Received: from mail-oi1-f193.google.com (mail-oi1-f193.google.com
+ [209.85.167.193])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42RbZT5GjbzF3TB
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Oct 2018 02:59:13 +1000 (AEST)
-Received: by mail-oi1-f194.google.com with SMTP id w81-v6so10931299oiw.9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Oct 2018 09:59:13 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42RbZW0sl9zF3TS
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Oct 2018 02:59:15 +1000 (AEST)
+Received: by mail-oi1-f193.google.com with SMTP id y81-v6so10952506oia.6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Oct 2018 09:59:15 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=CPjyBcDgH3rQvK5Topeu+rZwcMHC70P5llkoEmHzmYE=;
- b=mgrvBSsTjlAVy+Z9ImadFhybUv3x2jRyJLrBkqR3EnmMgLQpvvlmqxXy6XjI6BF78s
- YDK7tg4Uvak6YBOFhHLlxWM5OzN1htBZcHXu3FLIJRJyFJ2Fm0CWpJ3a3WCwZJEaSX8F
- uygD7iM9JRFJHGW4lkR3Jyi1m4IZLGmtlVjnBZ7DFKHXY7gQXwqdUOPKwye39mnvkUQm
- HVLsAmD0VpMPDxnhXmh8Cb4qULVOOYgDBY9aXDfQ0rMe5srHAf5yDGx87b+hCU8zayOv
- pyKDgEAXVl8SNEnX6uIxvE+H7daq0bGsbyB8SV/d38oNGkbL0gGgjrGk4ohVOvb1qdLU
- H05w==
-X-Gm-Message-State: ABuFfojoHstUMtroHqNgMGT604XnH36na+fELrN+R6NIjKikAKJ3ptXl
- 0ZCfrFz93bnsMuDtqxEs3w==
-X-Google-Smtp-Source: ACcGV63zJcemAHN9pGK3CQ96Xg0N80/A72O3lshCWxDxbzkvqiuBxIVevpG07Krmfcy6q/4N8CFL5A==
-X-Received: by 2002:aca:3585:: with SMTP id
- c127-v6mr1661072oia.63.1538758751756; 
- Fri, 05 Oct 2018 09:59:11 -0700 (PDT)
+ :references;
+ bh=D7OkSebvuDu3GYBwaaAJvmjae/fS/q7Ybf2TAf/0foQ=;
+ b=lrwvrDywtRFHr8BRLPpS1/89MTtzDhwKnQHIlL8YG+IDVurt4dKzFQBwThkvL9LjUw
+ 0Yli9xa8U8AawHchPMs4jYQX3PbFB1+ggsJrLYYDrNW99T8HuBzm1ohzSYYpW66WZdYo
+ qA5uGBf5jJFMSaDOoDTeWLyb8SePNx1Eci/8KmV8dv+6GG6VYJLS66wJCmKpY5R/ltQt
+ eLz2bvgztlF4AsKU40uj6DeyMshKcIoLvchCurbL/oVR4eDCqxU+sZZjQOysTfhA/T9y
+ Mr/iXRlU6/e2OGj1KpeEtXUK76LGdgOaDWQVj4LjvgqtHvO7gJaFnzOBYTiqCfhSUTjN
+ kfAQ==
+X-Gm-Message-State: ABuFfojh2adDpfCarvmmJLeHExPc/Fq3WW+KRdO4krjavd97cPk8qrm1
+ UfPM6ep9LCdF/1Y839eD4w==
+X-Google-Smtp-Source: ACcGV603AZmYMM959ZiqeSNbPbCx6juZGnicL2LLW1xgg9bdM4NS/wyqNjo6TeDNGfZt8qWxvkdKFQ==
+X-Received: by 2002:aca:b485:: with SMTP id
+ d127-v6mr6011131oif.165.1538758753133; 
+ Fri, 05 Oct 2018 09:59:13 -0700 (PDT)
 Received: from xps15.herring.priv (24-155-109-49.dyn.grandenetworks.net.
  [24.155.109.49]) by smtp.googlemail.com with ESMTPSA id
- u63-v6sm2904328ota.75.2018.10.05.09.59.10
+ u63-v6sm2904328ota.75.2018.10.05.09.59.11
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Fri, 05 Oct 2018 09:59:11 -0700 (PDT)
+ Fri, 05 Oct 2018 09:59:12 -0700 (PDT)
 From: Rob Herring <robh@kernel.org>
 To: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 15/36] dt-bindings: arm: Convert Actions Semi bindings to
- jsonschema
-Date: Fri,  5 Oct 2018 11:58:27 -0500
-Message-Id: <20181005165848.3474-16-robh@kernel.org>
+Subject: [PATCH 16/36] dt-bindings: arm: Convert Alpine board/soc bindings to
+ json-schema
+Date: Fri,  5 Oct 2018 11:58:28 -0500
+Message-Id: <20181005165848.3474-17-robh@kernel.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20181005165848.3474-1-robh@kernel.org>
 References: <20181005165848.3474-1-robh@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,128 +85,76 @@ Cc: Mark Rutland <mark.rutland@arm.com>, Tom Rini <trini@konsulko.com>,
  Bjorn Andersson <bjorn.andersson@linaro.org>, Mark Brown <broonie@kernel.org>,
  Geert Uytterhoeven <geert@linux-m68k.org>, Olof Johansson <olof@lixom.net>,
  Frank Rowand <frowand.list@gmail.com>,
- =?UTF-8?q?Andreas=20F=C3=A4rber?= <afaerber@suse.de>,
- Jonathan Cameron <jic23@kernel.org>
+ Antoine Tenart <antoine.tenart@free-electrons.com>,
+ Jonathan Cameron <jic23@kernel.org>,
+ Tsahee Zidenberg <tsahee@annapurnalabs.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Convert Actions Semi SoC bindings to DT schema format using json-schema.
+Convert Alpine SoC bindings to DT schema format using json-schema.
 
-Cc: "Andreas Färber" <afaerber@suse.de>
+Cc: Tsahee Zidenberg <tsahee@annapurnalabs.com>
+Cc: Antoine Tenart <antoine.tenart@free-electrons.com>
 Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: linux-arm-kernel@lists.infradead.org
 Cc: devicetree@vger.kernel.org
 Signed-off-by: Rob Herring <robh@kernel.org>
 ---
- .../devicetree/bindings/arm/actions.txt       | 56 -------------------
- .../devicetree/bindings/arm/actions.yaml      | 34 +++++++++++
- 2 files changed, 34 insertions(+), 56 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/arm/actions.txt
- create mode 100644 Documentation/devicetree/bindings/arm/actions.yaml
+ .../devicetree/bindings/arm/al,alpine.txt     | 16 --------------
+ .../devicetree/bindings/arm/al,alpine.yaml    | 21 +++++++++++++++++++
+ 2 files changed, 21 insertions(+), 16 deletions(-)
+ delete mode 100644 Documentation/devicetree/bindings/arm/al,alpine.txt
+ create mode 100644 Documentation/devicetree/bindings/arm/al,alpine.yaml
 
-diff --git a/Documentation/devicetree/bindings/arm/actions.txt b/Documentation/devicetree/bindings/arm/actions.txt
+diff --git a/Documentation/devicetree/bindings/arm/al,alpine.txt b/Documentation/devicetree/bindings/arm/al,alpine.txt
 deleted file mode 100644
-index d54f33c4e0da..000000000000
---- a/Documentation/devicetree/bindings/arm/actions.txt
+index d00debe2e86f..000000000000
+--- a/Documentation/devicetree/bindings/arm/al,alpine.txt
 +++ /dev/null
-@@ -1,56 +0,0 @@
--Actions Semi platforms device tree bindings
---------------------------------------------
+@@ -1,16 +0,0 @@
+-Annapurna Labs Alpine Platform Device Tree Bindings
+----------------------------------------------------------------
 -
+-Boards in the Alpine family shall have the following properties:
 -
--S500 SoC
--========
+-* Required root node properties:
+-compatible: must contain "al,alpine"
 -
--Required root node properties:
+-* Example:
 -
-- - compatible :  must contain "actions,s500"
+-/ {
+-	model = "Annapurna Labs Alpine Dev Board";
+-	compatible = "al,alpine";
 -
--
--Modules:
--
--Root node property compatible must contain, depending on module:
--
-- - LeMaker Guitar: "lemaker,guitar"
--
--
--Boards:
--
--Root node property compatible must contain, depending on board:
--
-- - Allo.com Sparky: "allo,sparky"
-- - Cubietech CubieBoard6: "cubietech,cubieboard6"
-- - LeMaker Guitar Base Board rev. B: "lemaker,guitar-bb-rev-b", "lemaker,guitar"
--
--
--S700 SoC
--========
--
--Required root node properties:
--
--- compatible :  must contain "actions,s700"
--
--
--Boards:
--
--Root node property compatible must contain, depending on board:
--
-- - Cubietech CubieBoard7: "cubietech,cubieboard7"
--
--
--S900 SoC
--========
--
--Required root node properties:
--
--- compatible :  must contain "actions,s900"
--
--
--Boards:
--
--Root node property compatible must contain, depending on board:
--
-- - uCRobotics Bubblegum-96: "ucrobotics,bubblegum-96"
-diff --git a/Documentation/devicetree/bindings/arm/actions.yaml b/Documentation/devicetree/bindings/arm/actions.yaml
+-	...
+-}
+diff --git a/Documentation/devicetree/bindings/arm/al,alpine.yaml b/Documentation/devicetree/bindings/arm/al,alpine.yaml
 new file mode 100644
-index 000000000000..af9345a228b4
+index 000000000000..95f8629f7b0a
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/arm/actions.yaml
-@@ -0,0 +1,34 @@
++++ b/Documentation/devicetree/bindings/arm/al,alpine.yaml
+@@ -0,0 +1,21 @@
++# SPDX-License-Identifier: None
 +%YAML 1.2
 +---
-+$id: http://devicetree.org/schemas/soc/arm/actions.yaml#
++$id: http://devicetree.org/schemas/bindings/arm/al,alpine.yaml#
 +$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-+title: Actions Semi platforms device tree bindings
++title: Annapurna Labs Alpine Platform Device Tree Bindings
 +
 +maintainers:
-+  - Andreas Färber <afaerber@suse.de>
-+
-+description: |
-+  The Actions Semi S500 is a quad-core ARM Cortex-A9 SoC. The Actions Semi
-+  S900 is a quad-core ARM Cortex-A53 SoC.
++  - Tsahee Zidenberg <tsahee@annapurnalabs.com>
++description: test
 +
 +properties:
 +  compatible:
-+    oneOf:
-+      - items:
-+          - enum:
-+              - lemaker,guitar-bb-rev-b
-+          - enum:
-+              - lemaker,guitar
-+              - allo,sparky
-+              - cubietech,cubieboard6
-+          - const: actions,s500
-+        minItems: 2
-+        maxItems: 3
-+        additionalItems: false
-+      - items:
-+          - const: cubietech,cubieboard7
-+          - const: actions,s700
-+      - items:
-+          - const: ucrobotics,bubblegum-96
-+          - const: actions,s900
++    items:
++      - const: al,alpine
++  model:
++    items:
++      - const: "Annapurna Labs Alpine Dev Board"
++
++...
 -- 
 2.17.1
 
