@@ -8,73 +8,73 @@ X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A7C61C00449
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 04:43:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D069C00449
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 04:46:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0DADE20834
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 04:43:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 7946A2084D
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 04:46:11 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="VD1oZyd6"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0DADE20834
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="RXtCl+Pt"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7946A2084D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42RHFq2m0MzF3K4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 14:43:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42RHJd0kpMzDqsy
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 14:46:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="VD1oZyd6";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="RXtCl+Pt";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::443; helo=mail-pf1-x443.google.com;
+ (client-ip=2607:f8b0:4864:20::444; helo=mail-pf1-x444.google.com;
  envelope-from=frowand.list@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="VD1oZyd6"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="RXtCl+Pt"; 
  dkim-atps=neutral
-Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
- [IPv6:2607:f8b0:4864:20::443])
+Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
+ [IPv6:2607:f8b0:4864:20::444])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42RGc36DYVzF3FT
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Oct 2018 14:14:27 +1000 (AEST)
-Received: by mail-pf1-x443.google.com with SMTP id u12-v6so1302759pfn.12
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Oct 2018 21:14:27 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42RGc45XvWzF3G3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Oct 2018 14:14:28 +1000 (AEST)
+Received: by mail-pf1-x444.google.com with SMTP id r9-v6so4278926pff.11
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Oct 2018 21:14:28 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=1eIq+bpAJjW92EtiaqYATBx5CfeVYNbB6/35CF3TsEg=;
- b=VD1oZyd6nZR5s6eoeZziT7Q/Ua+T8neq0Su8P0DImQMz3a+/1O63Jk034001UHACeV
- IHbJnfBq58HIHGH7UOFxisD8zJ8H4v+VgTVzR1bTCSyxOwg3LWrfu9LNEmJuBdri1ET4
- NH88d9H7ORpxIp6fuxYKIll13miXNBuMiTm6pVyJJ6qWaPzG0p7pc52Vp8Y8aPh/1qYr
- VYVjjueaaer0maZGtBNiEZmc/yhnch2bud6Dld9CcNbN7mDi1wS2T4iCtV+2wu2VgE4/
- LZLhPkmOWKUoVThhgRAq/VKZraeu0xaTDkpyEc+frBQQF1h9YBgS85hW//IUfThe71WK
- 0ahg==
+ bh=lm95wF8mJddYm0VhxCngjpzPemT2/wn0EO2jGZN6AyE=;
+ b=RXtCl+Pt8I5TiW0IoK8WaIIw+0Vop4aa9q/LAGN55Kebp2FAqNwu215I3/MLVyT/Qm
+ hAoEcySv92yL0DWdr3N25zW0vOZk4e1KGAbp2XM6krxU8mq8A+xqlOyqwN4LWQtQnHrX
+ T6vJGWmA3dtdZXNif9lfpdirK8+95HQWDyRGQf+YPLYEahV3gln00ENl6CRWrhvCrl0E
+ P659t2ziFQ35yGWbnrG/ogSdh1jx1LnLm/uv8dB2hLbJZYfvI7RdcYq/H9WP4CYA9F6U
+ voU4w+vLlNfLzLWg2yaoNEvsS/WqBmmJm9mTFl+sxJ3zjYARYxztK88nl7CCtQnn9Uwf
+ ox6Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references;
- bh=1eIq+bpAJjW92EtiaqYATBx5CfeVYNbB6/35CF3TsEg=;
- b=aqUc3hvvX13VrdOK5UXYguuAdgJ/PGUeL/NkosxC+FZmmtmZguhq6GVwqCq24atiYu
- fuzF1ddDzhkBr2OPqwt5ZOGtyKjkDiNbvAffFG2D9Jar19HPYs2nEuEbnXXAJu12WbzP
- jyZ++FSZ2nnFkyLrZQDzm891SYZBl7fOX8+FjtPuGAC574ABkz+65/HrHihCmUSULJXw
- sUeRm1qkKVnfdBrrR4wJq4c9Kpht6HcIdnfp0h1qeN51aOz4AcRmTNWm0YSwRT6d/B8W
- Zimluvnc6hk1oe5fPeitT+pAP4gDToHL5cFHUqRV0f5Hlb33sFSwMaVeHLhlUu5/zWLh
- mO5g==
-X-Gm-Message-State: ABuFfogrD014/JHDVi20qFZifwT61Tgq5pvDA5Nj4XzWMp8KXtlxbUyf
- WaFbD9hylWZUUITwuVJ8T9Y=
-X-Google-Smtp-Source: ACcGV604c4MC54e8MAXqw2eowfRjQIppMKzaL9j5NUOQvRQtOIKfJm8S+4u7TalFkxz8KVMNAKpjLw==
-X-Received: by 2002:a62:41d6:: with SMTP id
- g83-v6mr9907768pfd.44.1538712865912; 
- Thu, 04 Oct 2018 21:14:25 -0700 (PDT)
+ bh=lm95wF8mJddYm0VhxCngjpzPemT2/wn0EO2jGZN6AyE=;
+ b=hw7Knf+HIB34ntDnPQJESe8EZRSDrR/fSCzLcgazhLc6eAopOIQBLRBUWJoRSLth6z
+ heWZOl21wGwJf7EBsfMBGXdfauRzrg8ImjwdBTv7lJnMbxPScQU91frFd/+IPFZou3gP
+ uB8vEhbntFpcs34ASjYYi0gutT3exzvEiZvEiEwH/nxmLMxoh0c+ZELA6GF1D39wN4rt
+ AbTkxMWuTih2TUiD6WqPgaNZ6+hdKy6pf/Twr2rvPUuNXJcid0cymkOeN856B4p19Z5+
+ ut9FDEOEEGtRTXRPba14Hq6t+bCTTOk/ILpB7Q2d+i4JdBh0+ThqpAO2pmc8aYeVJ50q
+ t5+w==
+X-Gm-Message-State: ABuFfohSbhQYGwvobqtC26QDm/fyZdEfKTDtGhYiwD6Xk7wFyLKL+q/e
+ ZwvQDRtYqJB+QpkKk3fAoSI=
+X-Google-Smtp-Source: ACcGV63TQERvIoWWZhel2GHtFYgr9GqEeJFOImMPpydca6W9J95SIbyqnEz50FyYzcIrTk+zy7AozQ==
+X-Received: by 2002:a62:1ccb:: with SMTP id
+ c194-v6mr9830932pfc.203.1538712867133; 
+ Thu, 04 Oct 2018 21:14:27 -0700 (PDT)
 Received: from localhost.localdomain (c-24-6-192-50.hsd1.ca.comcast.net.
  [24.6.192.50])
- by smtp.gmail.com with ESMTPSA id n63-v6sm277975pfn.9.2018.10.04.21.14.24
+ by smtp.gmail.com with ESMTPSA id n63-v6sm277975pfn.9.2018.10.04.21.14.25
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
- Thu, 04 Oct 2018 21:14:25 -0700 (PDT)
+ Thu, 04 Oct 2018 21:14:26 -0700 (PDT)
 From: frowand.list@gmail.com
 To: Rob Herring <robh+dt@kernel.org>,
  Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
@@ -82,9 +82,10 @@ To: Rob Herring <robh+dt@kernel.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>,
  Moritz Fischer <mdf@kernel.org>
-Subject: [PATCH 11/16] of: overlay: test case of two fragments adding same node
-Date: Thu,  4 Oct 2018 21:12:42 -0700
-Message-Id: <1538712767-30394-12-git-send-email-frowand.list@gmail.com>
+Subject: [PATCH 12/16] of: overlay: check prevents multiple fragments add or
+ delete same node
+Date: Thu,  4 Oct 2018 21:12:43 -0700
+Message-Id: <1538712767-30394-13-git-send-email-frowand.list@gmail.com>
 X-Mailer: git-send-email 1.9.1
 In-Reply-To: <1538712767-30394-1-git-send-email-frowand.list@gmail.com>
 References: <1538712767-30394-1-git-send-email-frowand.list@gmail.com>
@@ -108,10 +109,12 @@ Sender: "Linuxppc-dev"
 From: Frank Rowand <frank.rowand@sony.com>
 
 Multiple overlay fragments adding or deleting the same node is not
-supported.  An attempt to do so results in an incorrect devicetree.
-The node name will be munged for the second add.
+supported.  Replace code comment of such, with check to detect the
+attempt and fail the overlay apply.
 
-After adding this patch, the unittest messages will show:
+Devicetree unittest where multiple fragments added the same node was
+added in the previous patch in the series.  After applying this patch
+the unittest messages will no longer include:
 
    Duplicate name in motor-1, renamed to "controller#1"
    OF: overlay: of_overlay_apply() err=0
@@ -122,102 +125,106 @@ After adding this patch, the unittest messages will show:
 
    ### dt-test ### end of unittest - 210 passed, 1 failed
 
-The incorrect (munged) node name "controller#1" can be seen in the
-/proc filesystem:
+but will instead include:
 
-   $ pwd
-   /proc/device-tree/testcase-data-2/substation@100/motor-1
-   $ ls
-   compatible    controller    controller#1  name          phandle       spin
-   $ ls controller
-   power_bus
-   $ ls controller#1
-   power_bus_emergency
+   OF: overlay: ERROR: multiple overlay fragments add and/or delete node /testcase-data-2/substation@100/motor-1/controller
+
+   ...
+
+   ### dt-test ### end of unittest - 211 passed, 0 failed
 
 Signed-off-by: Frank Rowand <frank.rowand@sony.com>
 ---
- drivers/of/unittest-data/Makefile                  |  1 +
- .../of/unittest-data/overlay_bad_add_dup_node.dts  | 28 ++++++++++++++++++++++
- drivers/of/unittest.c                              |  5 ++++
- 3 files changed, 34 insertions(+)
- create mode 100644 drivers/of/unittest-data/overlay_bad_add_dup_node.dts
 
-diff --git a/drivers/of/unittest-data/Makefile b/drivers/of/unittest-data/Makefile
-index 013d85e694c6..166dbdbfd1c5 100644
---- a/drivers/of/unittest-data/Makefile
-+++ b/drivers/of/unittest-data/Makefile
-@@ -17,6 +17,7 @@ obj-$(CONFIG_OF_OVERLAY) += overlay.dtb.o \
- 			    overlay_12.dtb.o \
- 			    overlay_13.dtb.o \
- 			    overlay_15.dtb.o \
-+			    overlay_bad_add_dup_node.dtb.o \
- 			    overlay_bad_phandle.dtb.o \
- 			    overlay_bad_symbol.dtb.o \
- 			    overlay_base.dtb.o
-diff --git a/drivers/of/unittest-data/overlay_bad_add_dup_node.dts b/drivers/of/unittest-data/overlay_bad_add_dup_node.dts
-new file mode 100644
-index 000000000000..145dfc3b1024
---- /dev/null
-+++ b/drivers/of/unittest-data/overlay_bad_add_dup_node.dts
-@@ -0,0 +1,28 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/dts-v1/;
-+/plugin/;
-+
-+/*
-+ * &electric_1/motor-1 and &spin_ctrl_1 are the same node:
-+ *   /testcase-data-2/substation@100/motor-1
+checkpatch errors "line over 80 characters" are ok, they will be
+fixed two patches later in this series
+
+ drivers/of/overlay.c | 58 ++++++++++++++++++++++++++++++++++++++++++++--------
+ 1 file changed, 49 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
+index f89383331b88..5376ae166caf 100644
+--- a/drivers/of/overlay.c
++++ b/drivers/of/overlay.c
+@@ -398,14 +398,6 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
+  *       a live devicetree created from Open Firmware.
+  *
+  * NOTE_2: Multiple mods of created nodes not supported.
+- *       If more than one fragment contains a node that does not already exist
+- *       in the live tree, then for each fragment of_changeset_attach_node()
+- *       will add a changeset entry to add the node.  When the changeset is
+- *       applied, __of_attach_node() will attach the node twice (once for
+- *       each fragment).  At this point the device tree will be corrupted.
+- *
+- *       TODO: add integrity check to ensure that multiple fragments do not
+- *             create the same node.
+  *
+  * Returns 0 on success, -ENOMEM if memory allocation failure, or -EINVAL if
+  * invalid @overlay.
+@@ -523,6 +515,54 @@ static int build_changeset_symbols_node(struct overlay_changeset *ovcs,
+ }
+ 
+ /**
++ * check_changeset_dup_add_node() - changeset validation: duplicate add node
++ * @ovcs:	Overlay changeset
 + *
-+ * Thus the new node "controller" in each fragment will
-+ * result in an attempt to add the same node twice.
-+ * This will result in an error and the overlay apply
-+ * will fail.
++ * Check changeset @ovcs->cset for multiple add node entries for the same
++ * node.
++ *
++ * Returns 0 on success, -ENOMEM if memory allocation failure, or -EINVAL if
++ * invalid overlay in @ovcs->fragments[].
 + */
++static int check_changeset_dup_add_node(struct overlay_changeset *ovcs)
++{
++	struct of_changeset_entry *ce_1, *ce_2;
++	char *fn_1, *fn_2;
++	int name_match;
 +
-+&electric_1 {
++	list_for_each_entry(ce_1, &ovcs->cset.entries, node) {
 +
-+	motor-1 {
-+		controller {
-+			power_bus = < 0x1 0x2 >;
-+		};
-+	};
-+};
++		if (ce_1->action == OF_RECONFIG_ATTACH_NODE ||
++		    ce_1->action == OF_RECONFIG_DETACH_NODE) {
 +
-+&spin_ctrl_1 {
-+		controller {
-+			power_bus_emergency = < 0x101 0x102 >;
-+		};
-+};
-diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
-index 722537e14848..471b8eb6e842 100644
---- a/drivers/of/unittest.c
-+++ b/drivers/of/unittest.c
-@@ -2147,6 +2147,7 @@ struct overlay_info {
- OVERLAY_INFO_EXTERN(overlay_12);
- OVERLAY_INFO_EXTERN(overlay_13);
- OVERLAY_INFO_EXTERN(overlay_15);
-+OVERLAY_INFO_EXTERN(overlay_bad_add_dup_node);
- OVERLAY_INFO_EXTERN(overlay_bad_phandle);
- OVERLAY_INFO_EXTERN(overlay_bad_symbol);
++			ce_2 = ce_1;
++			list_for_each_entry_continue(ce_2, &ovcs->cset.entries, node) {
++				if (ce_2->action == OF_RECONFIG_ATTACH_NODE ||
++				    ce_2->action == OF_RECONFIG_DETACH_NODE) {
++					/* inexpensive name compare */
++					if (!of_node_cmp(ce_1->np->full_name,
++					    ce_2->np->full_name)) {
++						/* expensive full path name compare */
++						fn_1 = kasprintf(GFP_KERNEL, "%pOF", ce_1->np);
++						fn_2 = kasprintf(GFP_KERNEL, "%pOF", ce_2->np);
++						name_match = !strcmp(fn_1, fn_2);
++						kfree(fn_1);
++						kfree(fn_2);
++						if (name_match) {
++							pr_err("ERROR: multiple overlay fragments add and/or delete node %pOF\n",
++							       ce_1->np);
++							return -EINVAL;
++						}
++					}
++				}
++			}
++		}
++	}
++
++	return 0;
++}
++
++/**
+  * build_changeset() - populate overlay changeset in @ovcs from @ovcs->fragments
+  * @ovcs:	Overlay changeset
+  *
+@@ -577,7 +617,7 @@ static int build_changeset(struct overlay_changeset *ovcs)
+ 		}
+ 	}
  
-@@ -2169,6 +2170,7 @@ struct overlay_info {
- 	OVERLAY_INFO(overlay_12, 0),
- 	OVERLAY_INFO(overlay_13, 0),
- 	OVERLAY_INFO(overlay_15, 0),
-+	OVERLAY_INFO(overlay_bad_add_dup_node, -EINVAL),
- 	OVERLAY_INFO(overlay_bad_phandle, -EINVAL),
- 	OVERLAY_INFO(overlay_bad_symbol, -EINVAL),
- 	{}
-@@ -2413,6 +2415,9 @@ static __init void of_unittest_overlay_high_level(void)
- 	unittest(overlay_data_apply("overlay", NULL),
- 		 "Adding overlay 'overlay' failed\n");
+-	return 0;
++	return check_changeset_dup_add_node(ovcs);
+ }
  
-+	unittest(overlay_data_apply("overlay_bad_add_dup_node", NULL),
-+		 "Adding overlay 'overlay_bad_add_dup_node' failed\n");
-+
- 	unittest(overlay_data_apply("overlay_bad_phandle", NULL),
- 		 "Adding overlay 'overlay_bad_phandle' failed\n");
- 
+ /*
 -- 
 Frank Rowand <frank.rowand@sony.com>
 
