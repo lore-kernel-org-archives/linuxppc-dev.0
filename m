@@ -2,24 +2,23 @@ Return-Path: <SRS0=9KTJ=MR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.2 required=3.0 tests=INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,UNWANTED_LANGUAGE_BODY,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E03FCC00449
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 18:03:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 533E7C00449
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 18:03:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 694692064A
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 18:03:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 694692064A
+	by mail.kernel.org (Postfix) with ESMTPS id CA9FC2064A
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 18:03:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CA9FC2064A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42Rd0q1KLRzF3bk
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 04:03:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Rcn51nWwzF3cL
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 03:53:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
@@ -31,38 +30,38 @@ Received: from mail-ot1-f66.google.com (mail-ot1-f66.google.com
  [209.85.210.66])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42RbZs1RzxzF3Sg
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Oct 2018 02:59:33 +1000 (AEST)
-Received: by mail-ot1-f66.google.com with SMTP id o21so13057296otb.13
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Oct 2018 09:59:33 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42RbZk3Tv3zF3TC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Oct 2018 02:59:26 +1000 (AEST)
+Received: by mail-ot1-f66.google.com with SMTP id h26-v6so13361201otl.9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Oct 2018 09:59:26 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references;
- bh=LOORFh/urY2tpLal8351MZgFcixXf0zNiASmMRG8pbs=;
- b=CAlJVJK3TskeLk6Y06qaRVAe3rUGd1jtOitwwyTfE8bM5IgE/3M25KWN/cNKdDTa+C
- Ikk1YCbPCJLSNuBDRWl80koYxjMtxQsBzigw8l5A9O3Dgkt/nQmOl9P60uuKyITvylbG
- Jyk/BNrY977ul435wEtgjIHSAYo+dbuw3i4CLpuKMwhxkMP3/vGVcFJAQ/Ui7EdJzRJ/
- 0jkNNrGNFLUzEk65L77LUJN3/CllgS+85dvZdflivEXESwIfKmqD/ucd1xKuBhOFAzsi
- rVf3YHgiIZge2wyexEbkzrzjlY7H1Xlvt/THUVGJTXr5jTLf931K/X98bEu5nTvK7zxd
- 7AbQ==
-X-Gm-Message-State: ABuFfoh2Ltacunl4/L6ErvoGgF27XN6ATGmbnZJ7rMNPPNS0YAtMTMeA
- aQBYzBWOA9JVYwXJzbTAdA==
-X-Google-Smtp-Source: ACcGV60HPR+pbaj1dQFpLhTmerD6pv64ZW1rbM+iqcvjlgNxGUawRGgPsyM+BCdKdKKRH+q0oFNToQ==
-X-Received: by 2002:a9d:308d:: with SMTP id s13mr7264781otc.359.1538758771196; 
- Fri, 05 Oct 2018 09:59:31 -0700 (PDT)
+ bh=y7aoVKyFfwtD/XX+mmuwaVWhSjIowWCZ6eMMY+0377c=;
+ b=Z6vKNcGAjv+rrooAGF9nm0yJE6WckJSDerFzWWoPxq2XatLx+v1lA31mVny29l7i7T
+ RZGbkZsYo/Omra7S7t6VM9+eOhosQnj/2U24oikDfDC/fIhXTjk02Jo6V0w8VGopjudF
+ ylvlnVnpiTMEj/VCcbYzPQPm2opLGtQWgZrVsiM5nCXclaCJohVjN9ZnCEquYOe4MyDQ
+ m3V03hxgIoGGNZN4graowtKumdm5HZeoqcp+DTk2yClbfg9bv41ppxj+DtLQTcH1tDtX
+ fM4FWn+Bq/A5DTml/1JrbD+2AnRZ5fpLnwlgWFNB82nAqyzClnA7CapH0g1rXp3Yb7+A
+ 8kcw==
+X-Gm-Message-State: ABuFfoh3fJHzWM0GfJSWTJGge+7lLOHc6CmTcZ57mKDCeZ7Us4IjJ5iY
+ 6cC0k65aGjkWOZQPCXGcXQ==
+X-Google-Smtp-Source: ACcGV63AXxjp9n2DA/7x8LwESe3X3ifNCO5wYGtNbwqG0vh+OYNB0OLz/egD72iUV3+eY0J8UGJKuQ==
+X-Received: by 2002:a9d:2af:: with SMTP id 44-v6mr6580039otl.244.1538758764568; 
+ Fri, 05 Oct 2018 09:59:24 -0700 (PDT)
 Received: from xps15.herring.priv (24-155-109-49.dyn.grandenetworks.net.
  [24.155.109.49]) by smtp.googlemail.com with ESMTPSA id
- u63-v6sm2904328ota.75.2018.10.05.09.59.29
+ u63-v6sm2904328ota.75.2018.10.05.09.59.23
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Fri, 05 Oct 2018 09:59:30 -0700 (PDT)
+ Fri, 05 Oct 2018 09:59:23 -0700 (PDT)
 From: Rob Herring <robh@kernel.org>
 To: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 29/36] dt-bindings: arm: Convert Renesas board/soc bindings to
- json-schema
-Date: Fri,  5 Oct 2018 11:58:41 -0500
-Message-Id: <20181005165848.3474-30-robh@kernel.org>
+Subject: [PATCH 24/36] dt-bindings: arm: Convert TI nspire board/soc bindings
+ to json-schema
+Date: Fri,  5 Oct 2018 11:58:36 -0500
+Message-Id: <20181005165848.3474-25-robh@kernel.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20181005165848.3474-1-robh@kernel.org>
 References: <20181005165848.3474-1-robh@kernel.org>
@@ -79,391 +78,76 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Mark Rutland <mark.rutland@arm.com>, Tom Rini <trini@konsulko.com>,
  Kumar Gala <kumar.gala@linaro.org>, Grant Likely <glikely@secretlab.ca>,
- Arnd Bergmann <arnd@arndb.de>, Simon Horman <horms@verge.net.au>,
- Linus Walleij <linus.walleij@linaro.org>,
+ Arnd Bergmann <arnd@arndb.de>, Linus Walleij <linus.walleij@linaro.org>,
  Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
- Bjorn Andersson <bjorn.andersson@linaro.org>,
- linux-renesas-soc@vger.kernel.org, Mark Brown <broonie@kernel.org>,
+ Bjorn Andersson <bjorn.andersson@linaro.org>, Mark Brown <broonie@kernel.org>,
  Geert Uytterhoeven <geert@linux-m68k.org>, Olof Johansson <olof@lixom.net>,
  Frank Rowand <frowand.list@gmail.com>, Jonathan Cameron <jic23@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Convert Renesas SoC bindings to DT schema format using json-schema.
+Convert TI NSpire SoC bindings to DT schema format using json-schema.
 
-Cc: Simon Horman <horms@verge.net.au>
-Cc: Magnus Damm <magnus.damm@gmail.com>
 Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: linux-renesas-soc@vger.kernel.org
 Cc: devicetree@vger.kernel.org
 Signed-off-by: Rob Herring <robh@kernel.org>
 ---
- .../devicetree/bindings/arm/shmobile.txt      | 143 ------------
- .../devicetree/bindings/arm/shmobile.yaml     | 205 ++++++++++++++++++
- 2 files changed, 205 insertions(+), 143 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/arm/shmobile.txt
- create mode 100644 Documentation/devicetree/bindings/arm/shmobile.yaml
+ .../devicetree/bindings/arm/nspire.txt        | 14 -----------
+ .../devicetree/bindings/arm/ti/nspire.yaml    | 24 +++++++++++++++++++
+ 2 files changed, 24 insertions(+), 14 deletions(-)
+ delete mode 100644 Documentation/devicetree/bindings/arm/nspire.txt
+ create mode 100644 Documentation/devicetree/bindings/arm/ti/nspire.yaml
 
-diff --git a/Documentation/devicetree/bindings/arm/shmobile.txt b/Documentation/devicetree/bindings/arm/shmobile.txt
+diff --git a/Documentation/devicetree/bindings/arm/nspire.txt b/Documentation/devicetree/bindings/arm/nspire.txt
 deleted file mode 100644
-index 619b765e5bee..000000000000
---- a/Documentation/devicetree/bindings/arm/shmobile.txt
+index 4d08518bd176..000000000000
+--- a/Documentation/devicetree/bindings/arm/nspire.txt
 +++ /dev/null
-@@ -1,143 +0,0 @@
--Renesas SH-Mobile, R-Mobile, and R-Car Platform Device Tree Bindings
----------------------------------------------------------------------
+@@ -1,14 +0,0 @@
+-TI-NSPIRE calculators
 -
--SoCs:
+-Required properties:
+-- compatible: Compatible property value should contain "ti,nspire".
+-	CX models should have "ti,nspire-cx"
+-	Touchpad models should have "ti,nspire-tp"
+-	Clickpad models should have "ti,nspire-clp"
 -
--  - Emma Mobile EV2
--    compatible = "renesas,emev2"
--  - RZ/A1H (R7S72100)
--    compatible = "renesas,r7s72100"
--  - SH-Mobile AG5 (R8A73A00/SH73A0)
--    compatible = "renesas,sh73a0"
--  - R-Mobile APE6 (R8A73A40)
--    compatible = "renesas,r8a73a4"
--  - R-Mobile A1 (R8A77400)
--    compatible = "renesas,r8a7740"
--  - RZ/G1H (R8A77420)
--    compatible = "renesas,r8a7742"
--  - RZ/G1M (R8A77430)
--    compatible = "renesas,r8a7743"
--  - RZ/G1N (R8A77440)
--    compatible = "renesas,r8a7744"
--  - RZ/G1E (R8A77450)
--    compatible = "renesas,r8a7745"
--  - RZ/G1C (R8A77470)
--    compatible = "renesas,r8a77470"
--  - R-Car M1A (R8A77781)
--    compatible = "renesas,r8a7778"
--  - R-Car H1 (R8A77790)
--    compatible = "renesas,r8a7779"
--  - R-Car H2 (R8A77900)
--    compatible = "renesas,r8a7790"
--  - R-Car M2-W (R8A77910)
--    compatible = "renesas,r8a7791"
--  - R-Car V2H (R8A77920)
--    compatible = "renesas,r8a7792"
--  - R-Car M2-N (R8A77930)
--    compatible = "renesas,r8a7793"
--  - R-Car E2 (R8A77940)
--    compatible = "renesas,r8a7794"
--  - R-Car H3 (R8A77950)
--    compatible = "renesas,r8a7795"
--  - R-Car M3-W (R8A77960)
--    compatible = "renesas,r8a7796"
--  - R-Car M3-N (R8A77965)
--    compatible = "renesas,r8a77965"
--  - R-Car V3M (R8A77970)
--    compatible = "renesas,r8a77970"
--  - R-Car V3H (R8A77980)
--    compatible = "renesas,r8a77980"
--  - R-Car E3 (R8A77990)
--    compatible = "renesas,r8a77990"
--  - R-Car D3 (R8A77995)
--    compatible = "renesas,r8a77995"
--  - RZ/N1D (R9A06G032)
--    compatible = "renesas,r9a06g032"
+-Example:
 -
--Boards:
--
--  - Alt (RTP0RC7794SEB00010S)
--    compatible = "renesas,alt", "renesas,r8a7794"
--  - APE6-EVM
--    compatible = "renesas,ape6evm", "renesas,r8a73a4"
--  - Atmark Techno Armadillo-800 EVA
--    compatible = "renesas,armadillo800eva", "renesas,r8a7740"
--  - Blanche (RTP0RC7792SEB00010S)
--    compatible = "renesas,blanche", "renesas,r8a7792"
--  - BOCK-W
--    compatible = "renesas,bockw", "renesas,r8a7778"
--  - Condor (RTP0RC77980SEB0010SS/RTP0RC77980SEB0010SA01)
--    compatible = "renesas,condor", "renesas,r8a77980"
--  - Draak (RTP0RC77995SEB0010S)
--    compatible = "renesas,draak", "renesas,r8a77995"
--  - Eagle (RTP0RC77970SEB0010S)
--    compatible = "renesas,eagle", "renesas,r8a77970"
--  - Ebisu (RTP0RC77990SEB0010S)
--    compatible = "renesas,ebisu", "renesas,r8a77990"
--  - Genmai (RTK772100BC00000BR)
--    compatible = "renesas,genmai", "renesas,r7s72100"
--  - GR-Peach (X28A-M01-E/F)
--    compatible = "renesas,gr-peach", "renesas,r7s72100"
--  - Gose (RTP0RC7793SEB00010S)
--    compatible = "renesas,gose", "renesas,r8a7793"
--  - H3ULCB (R-Car Starter Kit Premier, RTP0RC7795SKBX0010SA00 (H3 ES1.1))
--    H3ULCB (R-Car Starter Kit Premier, RTP0RC77951SKBX010SA00 (H3 ES2.0))
--    compatible = "renesas,h3ulcb", "renesas,r8a7795"
--  - Henninger
--    compatible = "renesas,henninger", "renesas,r8a7791"
--  - iWave Systems RZ/G1C Single Board Computer (iW-RainboW-G23S)
--    compatible = "iwave,g23s", "renesas,r8a77470"
--  - iWave Systems RZ/G1E SODIMM SOM Development Platform (iW-RainboW-G22D)
--    compatible = "iwave,g22d", "iwave,g22m", "renesas,r8a7745"
--  - iWave Systems RZ/G1E SODIMM System On Module (iW-RainboW-G22M-SM)
--    compatible = "iwave,g22m", "renesas,r8a7745"
--  - iWave Systems RZ/G1M Qseven Development Platform (iW-RainboW-G20D-Qseven)
--    compatible = "iwave,g20d", "iwave,g20m", "renesas,r8a7743"
--  - iWave Systems RZ/G1M Qseven System On Module (iW-RainboW-G20M-Qseven)
--    compatible = "iwave,g20m", "renesas,r8a7743"
--  - Kingfisher (SBEV-RCAR-KF-M03)
--    compatible = "shimafuji,kingfisher"
--  - Koelsch (RTP0RC7791SEB00010S)
--    compatible = "renesas,koelsch", "renesas,r8a7791"
--  - Kyoto Microcomputer Co. KZM-A9-Dual
--    compatible = "renesas,kzm9d", "renesas,emev2"
--  - Kyoto Microcomputer Co. KZM-A9-GT
--    compatible = "renesas,kzm9g", "renesas,sh73a0"
--  - Lager (RTP0RC7790SEB00010S)
--    compatible = "renesas,lager", "renesas,r8a7790"
--  - M3ULCB (R-Car Starter Kit Pro, RTP0RC7796SKBX0010SA09 (M3 ES1.0))
--    compatible = "renesas,m3ulcb", "renesas,r8a7796"
--  - Marzen (R0P7779A00010S)
--    compatible = "renesas,marzen", "renesas,r8a7779"
--  - Porter (M2-LCDP)
--    compatible = "renesas,porter", "renesas,r8a7791"
--  - RSKRZA1 (YR0K77210C000BE)
--    compatible = "renesas,rskrza1", "renesas,r7s72100"
--  - RZN1D-DB (RZ/N1D Demo Board for the RZ/N1D 400 pins package)
--    compatible = "renesas,rzn1d400-db", "renesas,r9a06g032"
--  - Salvator-X (RTP0RC7795SIPB0010S)
--    compatible = "renesas,salvator-x", "renesas,r8a7795"
--  - Salvator-X (RTP0RC7796SIPB0011S)
--    compatible = "renesas,salvator-x", "renesas,r8a7796"
--  - Salvator-X (RTP0RC7796SIPB0011S (M3-N))
--    compatible = "renesas,salvator-x", "renesas,r8a77965"
--  - Salvator-XS (Salvator-X 2nd version, RTP0RC7795SIPB0012S)
--    compatible = "renesas,salvator-xs", "renesas,r8a7795"
--  - Salvator-XS (Salvator-X 2nd version, RTP0RC7796SIPB0012S)
--    compatible = "renesas,salvator-xs", "renesas,r8a7796"
--  - Salvator-XS (Salvator-X 2nd version, RTP0RC77965SIPB012S)
--    compatible = "renesas,salvator-xs", "renesas,r8a77965"
--  - SILK (RTP0RC7794LCB00011S)
--    compatible = "renesas,silk", "renesas,r8a7794"
--  - SK-RZG1E (YR8A77450S000BE)
--    compatible = "renesas,sk-rzg1e", "renesas,r8a7745"
--  - SK-RZG1M (YR8A77430S000BE)
--    compatible = "renesas,sk-rzg1m", "renesas,r8a7743"
--  - Stout (ADAS Starterkit, Y-R-CAR-ADAS-SKH2-BOARD)
--    compatible = "renesas,stout", "renesas,r8a7790"
--  - V3HSK (Y-ASK-RCAR-V3H-WS10)
--    compatible = "renesas,v3hsk", "renesas,r8a77980"
--  - V3MSK (Y-ASK-RCAR-V3M-WS10)
--    compatible = "renesas,v3msk", "renesas,r8a77970"
--  - Wheat (RTP0RC7792ASKB0000JE)
--    compatible = "renesas,wheat", "renesas,r8a7792"
-diff --git a/Documentation/devicetree/bindings/arm/shmobile.yaml b/Documentation/devicetree/bindings/arm/shmobile.yaml
+-/ {
+-	model = "TI-NSPIRE CX";
+-	compatible = "ti,nspire-cx";
+-	...
+diff --git a/Documentation/devicetree/bindings/arm/ti/nspire.yaml b/Documentation/devicetree/bindings/arm/ti/nspire.yaml
 new file mode 100644
-index 000000000000..31009e7fb0ea
+index 000000000000..882f79f95942
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/arm/shmobile.yaml
-@@ -0,0 +1,205 @@
++++ b/Documentation/devicetree/bindings/arm/ti/nspire.yaml
+@@ -0,0 +1,24 @@
 +# SPDX-License-Identifier: None
 +%YAML 1.2
 +---
-+$id: http://devicetree.org/schemas/bindings/arm/shmobile.yaml#
++$id: http://devicetree.org/schemas/bindings/arm/nspire.yaml#
 +$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-+title: Renesas SH-Mobile, R-Mobile, and R-Car Platform Device Tree Bindings
++title: TI-NSPIRE calculators
 +
 +maintainers:
-+  - Geert Uytterhoeven <geert+renesas@glider.be>
++  - Daniel Tang <dt.tangr@gmail.com>
 +
 +properties:
 +  $nodename:
 +    const: '/'
 +  compatible:
-+    oneOf:
-+      - description: Emma Mobile EV2
-+        items:
-+          - enum:
-+              - renesas,kzm9d # Kyoto Microcomputer Co. KZM-A9-Dual
-+          - const: renesas,emev2
-+
-+      - description:  RZ/A1H (R7S72100)
-+        items:
-+          - enum:
-+              - renesas,genmai # Genmai (RTK772100BC00000BR)
-+              - renesas,gr-peach # GR-Peach (X28A-M01-E/F)
-+              - renesas,rskrza1 # RSKRZA1 (YR0K77210C000BE)
-+          - const: renesas,r7s72100
-+
-+      - description:  SH-Mobile AG5 (R8A73A00/SH73A0)
-+        items:
-+          - enum:
-+              - renesas,kzm9g # Kyoto Microcomputer Co. KZM-A9-GT
-+          - const: renesas,sh73a0
-+
-+      - description:  R-Mobile APE6 (R8A73A40)
-+        items:
-+          - enum:
-+              - renesas,ape6evm
-+          - const: renesas,r8a73a4
-+
-+      - description:  R-Mobile A1 (R8A77400)
-+        items:
-+          - enum:
-+              - renesas,armadillo800eva # Atmark Techno Armadillo-800 EVA
-+          - const: renesas,r8a7740
-+
-+      - description:  RZ/G1H (R8A77420)
-+        items:
-+          - const: renesas,r8a7742
-+
-+      - description: RZ/G1M (R8A77430)
-+        items:
-+          - enum:
-+              # iWave Systems RZ/G1M Qseven Development Platform (iW-RainboW-G20D-Qseven)
-+              - iwave,g20d
-+          - const: iwave,g20m
-+          - const: renesas,r8a7743
-+
-+      - items:
-+          - enum:
-+              # iWave Systems RZ/G1M Qseven System On Module (iW-RainboW-G20M-Qseven)
-+              - iwave,g20m
-+          - const: renesas,r8a7743
-+
-+      - description: RZ/G1N (R8A77440)
-+        items:
-+          - enum:
-+              - renesas,sk-rzg1m # SK-RZG1M (YR8A77430S000BE)
-+          - const: renesas,r8a7744
-+
-+      - description: RZ/G1E (R8A77450)
-+        items:
-+          - enum:
-+              - iwave,g22m # iWave Systems RZ/G1E SODIMM System On Module (iW-RainboW-G22M-SM)
-+              - renesas,sk-rzg1e # SK-RZG1E (YR8A77450S000BE)
-+          - const: renesas,r8a7745
-+      - items:
-+          # iWave Systems RZ/G1E SODIMM SOM Development Platform (iW-RainboW-G22D)
-+          - const: iwave,g22d
-+          - const: iwave,g22m
-+          - const: renesas,r8a7745
-+
-+      - description: RZ/G1C (R8A77470)
-+        items:
-+          - enum:
-+              - iwave,g23s #iWave Systems RZ/G1C Single Board Computer (iW-RainboW-G23S)
-+          - const: renesas,r8a77470
-+
-+      - description: R-Car M1A (R8A77781)
-+        items:
-+          - enum:
-+              - renesas,bockw
-+          - const: renesas,r8a7778
-+
-+      - description: R-Car H1 (R8A77790)
-+        items:
-+          - enum:
-+              - renesas,marzen # Marzen (R0P7779A00010S)
-+              - renesas,stout # Stout (ADAS Starterkit, Y-R-CAR-ADAS-SKH2-BOARD)
-+          - const: renesas,r8a7779
-+
-+      - description: R-Car H2 (R8A77900)
-+        items:
-+          - enum:
-+              - renesas,lager # Lager (RTP0RC7790SEB00010S)
-+          - const: renesas,r8a7790
-+
-+      - description: R-Car M2-W (R8A77910)
-+        items:
-+          - enum:
-+              - renesas,henninger
-+              - renesas,koelsch # Koelsch (RTP0RC7791SEB00010S)
-+              - renesas,porter # Porter (M2-LCDP)
-+          - const: renesas,r8a7791
-+
-+      - description: R-Car V2H (R8A77920)
-+        items:
-+          - enum:
-+              - renesas,blanche # Blanche (RTP0RC7792SEB00010S)
-+              - renesas,wheat # Wheat (RTP0RC7792ASKB0000JE)
-+          - const: renesas,r8a7792
-+
-+      - description: R-Car M2-N (R8A77930)
-+        items:
-+          - enum:
-+              - renesas,gose # Gose (RTP0RC7793SEB00010S)
-+          - const: renesas,r8a7793
-+
-+      - description: R-Car E2 (R8A77940)
-+        items:
-+          - enum:
-+              - renesas,alt # Alt (RTP0RC7794SEB00010S)
-+              - renesas,silk # SILK (RTP0RC7794LCB00011S)
-+          - const: renesas,r8a7794
-+
-+      - description: R-Car H3 (R8A77950)
-+        items:
-+          - enum:
-+                # H3ULCB (R-Car Starter Kit Premier, RTP0RC7795SKBX0010SA00 (H3 ES1.1))
-+                # H3ULCB (R-Car Starter Kit Premier, RTP0RC77951SKBX010SA00 (H3 ES2.0))
-+              - renesas,h3ulcb
-+              - renesas,salvator-x # Salvator-X (RTP0RC7795SIPB0010S)
-+              - renesas,salvator-xs # Salvator-XS (Salvator-X 2nd version, RTP0RC7795SIPB0012S)
-+          - const: renesas,r8a7795
-+
-+      - description: R-Car M3-W (R8A77960)
-+        items:
-+          - enum:
-+              - renesas,m3ulcb # M3ULCB (R-Car Starter Kit Pro, RTP0RC7796SKBX0010SA09 (M3 ES1.0))
-+              - renesas,salvator-x # Salvator-X (RTP0RC7796SIPB0011S)
-+              - renesas,salvator-xs # Salvator-XS (Salvator-X 2nd version, RTP0RC7796SIPB0012S)
-+          - const: renesas,r8a7796
-+
-+      - description: Kingfisher (SBEV-RCAR-KF-M03)
-+        items:
-+          - const: shimafuji,kingfisher
-+          - enum:
-+              - renesas,h3ulcb
-+              - renesas,m3ulcb
-+          - enum:
-+              - renesas,r8a7795
-+              - renesas,r8a7796
-+
-+      - description: R-Car M3-N (R8A77965)
-+        items:
-+          - enum:
-+              - renesas,salvator-x # Salvator-X (RTP0RC7796SIPB0011S (M3-N))
-+              - renesas,salvator-xs # Salvator-XS (Salvator-X 2nd version, RTP0RC77965SIPB012S)
-+          - const: renesas,r8a77965
-+
-+      - description: R-Car V3M (R8A77970)
-+        items:
-+          - enum:
-+              - renesas,eagle # Eagle (RTP0RC77970SEB0010S)
-+              - renesas,v3msk # V3MSK (Y-ASK-RCAR-V3M-WS10)
-+          - const: renesas,r8a77970
-+
-+      - description: R-Car V3H (R8A77980)
-+        items:
-+          - enum:
-+              - renesas,condor # Condor (RTP0RC77980SEB0010SS/RTP0RC77980SEB0010SA01)
-+              - renesas,v3hsk # V3HSK (Y-ASK-RCAR-V3H-WS10)
-+          - const: renesas,r8a77980
-+
-+      - description: R-Car E3 (R8A77990)
-+        items:
-+          - enum:
-+              - renesas,ebisu # Ebisu (RTP0RC77990SEB0010S)
-+          - const: renesas,r8a77990
-+
-+      - description: R-Car D3 (R8A77995)
-+        items:
-+          - enum:
-+              - renesas,draak # Draak (RTP0RC77995SEB0010S)
-+          - const: renesas,r8a77995
-+
-+      - description: RZ/N1D (R9A06G032)
-+        items:
-+          - enum:
-+              - renesas,rzn1d400-db # RZN1D-DB (RZ/N1D Demo Board for the RZ/N1D 400 pins package)
-+          - const: renesas,r9a06g032
-+
++    items:
++      - enum:
++          # CX models
++          - ti,nspire-cx
++          # Touchpad models
++          - ti,nspire-tp
++          # Clickpad models
++          - ti,nspire-clp
 +...
 -- 
 2.17.1
