@@ -4,77 +4,78 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,UNWANTED_LANGUAGE_BODY,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SPF_PASS,UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 25875C00449
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 08:33:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1894AC00449
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 08:36:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 80DD120875
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 08:33:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 8A55920875
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 08:36:01 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linaro.org header.i=@linaro.org header.b="WeDWUysr"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 80DD120875
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linaro.org header.i=@linaro.org header.b="e8esmuRC"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8A55920875
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42RNLw4GzlzF3Sf
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 18:33:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42RNPq3Jh2zF3S6
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 18:35:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.b="WeDWUysr";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.b="e8esmuRC";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linaro.org
- (client-ip=2a00:1450:4864:20::342; helo=mail-wm1-x342.google.com;
+ (client-ip=2a00:1450:4864:20::341; helo=mail-wm1-x341.google.com;
  envelope-from=ard.biesheuvel@linaro.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linaro.org header.i=@linaro.org header.b="WeDWUysr"; 
+ unprotected) header.d=linaro.org header.i=@linaro.org header.b="e8esmuRC"; 
  dkim-atps=neutral
-Received: from mail-wm1-x342.google.com (mail-wm1-x342.google.com
- [IPv6:2a00:1450:4864:20::342])
+Received: from mail-wm1-x341.google.com (mail-wm1-x341.google.com
+ [IPv6:2a00:1450:4864:20::341])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42RMwJ52QgzF3Mk
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Oct 2018 18:13:52 +1000 (AEST)
-Received: by mail-wm1-x342.google.com with SMTP id b19-v6so981270wme.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Oct 2018 01:13:52 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42RMwK6zhYzF3Jx
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Oct 2018 18:13:53 +1000 (AEST)
+Received: by mail-wm1-x341.google.com with SMTP id 206-v6so976947wmb.5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Oct 2018 01:13:53 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
  h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=7ykn0kdpAuelX0ufR1lLCrLMFlIy/5JjP//jovQ6hBA=;
- b=WeDWUysrCM1wTzn7PG9YlepPl9dIJg8fzOw1684WVaduAN0K8vgjCHF+9AEbojUJgw
- a6lay2dDQi7EbALoyTHW5TVZR0JGZnd8dl/TJiMHR5gduxF+udxOeiLpDmYl4u8nrdr4
- Yex3cYKNCM1K4/unt4EPkx1wx8ANl/+NncRN8=
+ bh=J4kMEdjdjyVuuZO5lYFdItsW+zGD6WfP39sVuKslDsg=;
+ b=e8esmuRCIp6ko/JwvDO3kBBIs0dTMMN1wtG2whhv2f4XMHEle3rjYH89bQUST5qiFq
+ y01wiSYV80GPMjl+jFCfCvbACNJysosMxzXmakYDLal79M0Jvjtc315CNojt1VlrX3wv
+ 1kEIFKnSbXS0TIqiC1s6eOzAaXSjfGUTetKb4=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references;
- bh=7ykn0kdpAuelX0ufR1lLCrLMFlIy/5JjP//jovQ6hBA=;
- b=GYcw9iS8PWmjFf9Q4Ag1mbLoEyDSvdTWqUztMPlb6rrHek9FHUv7Vo7Ei23oiHcttr
- ThQtyYkgsO3LwBVPaKyuhVWlxzdwx8JJVTUjW5rUCJTO3H66ZC26CZilcCQ7S4G1sQMM
- XBWuOHf/MSbELgY4a20EBvdwgsJUVUJE5Y+5IesTF1JFjf5UaeBlCVbuAWruRr3gBBb3
- UEkBZ6bnyhW0AUKTfxaNsPwAJGPilHjoyADkgpa9i91GJltWublzbfLwbCOmaup9ZSi/
- tbG9lXeiSzmGbkRZMOsHHFo+lVReSgozisHs6/8o0+qC2sGXoLbPIDWeTRUJIHEpdZfI
- kwbw==
-X-Gm-Message-State: ABuFfoiWup16DqpcxMxhtqNLwvllhR3n37C0d6+vZzUtmngbeBgGiHta
- iCsruA5FVooVptJS/ynLEfcxJA==
-X-Google-Smtp-Source: ACcGV63LMyLTdsFROQVq2F8T9xrNbOmEFXJ//dKfIs8ROq4/BvnQT8Qlj0D9nA/4mALqefT70j74+Q==
-X-Received: by 2002:a1c:9901:: with SMTP id b1-v6mr4381461wme.15.1538727229699; 
- Fri, 05 Oct 2018 01:13:49 -0700 (PDT)
+ bh=J4kMEdjdjyVuuZO5lYFdItsW+zGD6WfP39sVuKslDsg=;
+ b=YWKn7Xuw1OOteXS+PwmLJelc4fglLTwIJQmRc3ffprcZYka/AsGOvLUxswn9LvGpT1
+ oYQHw2MUFQh/WuJ1qM7gwgj1Re39MPkt8YIEffBhO57tzQelNI4LqsZOtSCMSeZ4QGFH
+ EIKNWQKXNezsPVXb3r9U6jAy/I1vnPkrmv+UNLlO7zsYv5gbrUwitc5pc/M4y1fOvQP+
+ rqn35OumBcd7dPXvbixkpoa9beSzrLrTMfFZm7zucn9267WUEE3xqVDjTlktRsht/fpJ
+ bQENm6KoAarjv64P81QP3y+1d8VoRuVah0uLP93UcZsRXLm1zUSDSioSL37TayoQkNnE
+ GGoA==
+X-Gm-Message-State: ABuFfog/lMNNr4KJ94iEmNpHPwB3B6MDMSnoSb/3vUbECvtb7IbLZi0+
+ lUNnLQSVj3mKZSKIrDO5fssD/g==
+X-Google-Smtp-Source: ACcGV61Ibe9AAfd/NquSGQgeZdTsN3JKQyq9DGyJgyEhxqZ5dP7RSW7Wle9DnyJkVviljI3UE2oc5w==
+X-Received: by 2002:a1c:14d1:: with SMTP id
+ 200-v6mr7368323wmu.106.1538727231291; 
+ Fri, 05 Oct 2018 01:13:51 -0700 (PDT)
 Received: from localhost.localdomain ([2a01:cb1d:112:6f00:697e:67d9:a05d:22c7])
- by smtp.gmail.com with ESMTPSA id t4-v6sm6565620wrb.45.2018.10.05.01.13.48
+ by smtp.gmail.com with ESMTPSA id t4-v6sm6565620wrb.45.2018.10.05.01.13.49
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Fri, 05 Oct 2018 01:13:49 -0700 (PDT)
+ Fri, 05 Oct 2018 01:13:50 -0700 (PDT)
 From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
 To: linux-kernel@vger.kernel.org
-Subject: [RFC PATCH 7/9] crypto: crct10dif/generic - switch crypto API driver
- to core library
-Date: Fri,  5 Oct 2018 10:13:31 +0200
-Message-Id: <20181005081333.15018-8-ard.biesheuvel@linaro.org>
+Subject: [RFC PATCH 8/9] crypto: crc-t10dif/powerpc - move PMULL based code
+ into core library
+Date: Fri,  5 Oct 2018 10:13:32 +0200
+Message-Id: <20181005081333.15018-9-ard.biesheuvel@linaro.org>
 X-Mailer: git-send-email 2.11.0
 In-Reply-To: <20181005081333.15018-1-ard.biesheuvel@linaro.org>
 References: <20181005081333.15018-1-ard.biesheuvel@linaro.org>
@@ -107,33 +108,99 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Move the PMULL based routines out of the crypto API into the core
+CRC-T10DIF library.
+
 Signed-off-by: Ard Biesheuvel <ard.biesheuvel@linaro.org>
 ---
- crypto/crct10dif_generic.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/crypto/crct10dif-vpmsum_glue.c | 55 +++-----------------
+ 1 file changed, 6 insertions(+), 49 deletions(-)
 
-diff --git a/crypto/crct10dif_generic.c b/crypto/crct10dif_generic.c
-index 8e94e29dc6fc..9ea4242c4921 100644
---- a/crypto/crct10dif_generic.c
-+++ b/crypto/crct10dif_generic.c
-@@ -53,7 +53,7 @@ static int chksum_update(struct shash_desc *desc, const u8 *data,
- {
- 	struct chksum_desc_ctx *ctx = shash_desc_ctx(desc);
+diff --git a/arch/powerpc/crypto/crct10dif-vpmsum_glue.c b/arch/powerpc/crypto/crct10dif-vpmsum_glue.c
+index 02ea277863d1..a4db7ecc0ccc 100644
+--- a/arch/powerpc/crypto/crct10dif-vpmsum_glue.c
++++ b/arch/powerpc/crypto/crct10dif-vpmsum_glue.c
+@@ -11,8 +11,8 @@
+  */
  
--	ctx->crc = crc_t10dif_generic(ctx->crc, data, length);
-+	ctx->crc = crc_t10dif_update(ctx->crc, data, length);
- 	return 0;
+ #include <linux/crc-t10dif.h>
+-#include <crypto/internal/hash.h>
+ #include <linux/init.h>
++#include <linux/ffp.h>
+ #include <linux/module.h>
+ #include <linux/string.h>
+ #include <linux/kernel.h>
+@@ -63,59 +63,18 @@ static u16 crct10dif_vpmsum(u16 crci, unsigned char const *p, size_t len)
+ 	return crc & 0xffff;
  }
  
-@@ -68,7 +68,7 @@ static int chksum_final(struct shash_desc *desc, u8 *out)
- static int __chksum_finup(__u16 *crcp, const u8 *data, unsigned int len,
- 			u8 *out)
+-static int crct10dif_vpmsum_init(struct shash_desc *desc)
+-{
+-	u16 *crc = shash_desc_ctx(desc);
+-
+-	*crc = 0;
+-	return 0;
+-}
+-
+-static int crct10dif_vpmsum_update(struct shash_desc *desc, const u8 *data,
+-			    unsigned int length)
+-{
+-	u16 *crc = shash_desc_ctx(desc);
+-
+-	*crc = crct10dif_vpmsum(*crc, data, length);
+-
+-	return 0;
+-}
+-
+-
+-static int crct10dif_vpmsum_final(struct shash_desc *desc, u8 *out)
+-{
+-	u16 *crcp = shash_desc_ctx(desc);
+-
+-	*(u16 *)out = *crcp;
+-	return 0;
+-}
+-
+-static struct shash_alg alg = {
+-	.init		= crct10dif_vpmsum_init,
+-	.update		= crct10dif_vpmsum_update,
+-	.final		= crct10dif_vpmsum_final,
+-	.descsize	= CRC_T10DIF_DIGEST_SIZE,
+-	.digestsize	= CRC_T10DIF_DIGEST_SIZE,
+-	.base		= {
+-		.cra_name		= "crct10dif",
+-		.cra_driver_name	= "crct10dif-vpmsum",
+-		.cra_priority		= 200,
+-		.cra_blocksize		= CRC_T10DIF_BLOCK_SIZE,
+-		.cra_module		= THIS_MODULE,
+-	}
+-};
+-
+ static int __init crct10dif_vpmsum_mod_init(void)
  {
--	*(__u16 *)out = crc_t10dif_generic(*crcp, data, len);
-+	*(__u16 *)out = crc_t10dif_update(*crcp, data, len);
- 	return 0;
+-	if (!cpu_has_feature(CPU_FTR_ARCH_207S))
+-		return -ENODEV;
++	SET_FFP(crc_t10dif_update_arch, crct10dif_vpmsum);
+ 
+-	return crypto_register_shash(&alg);
++	return 0;
  }
  
+ static void __exit crct10dif_vpmsum_mod_fini(void)
+ {
+-	crypto_unregister_shash(&alg);
++	RESET_FFP(crc_t10dif_update_arch);
++	/* wait for all users to switch back to the old version */
++	synchronize_rcu();
+ }
+ 
+ module_cpu_feature_match(PPC_MODULE_FEATURE_VEC_CRYPTO, crct10dif_vpmsum_mod_init);
+@@ -124,5 +83,3 @@ module_exit(crct10dif_vpmsum_mod_fini);
+ MODULE_AUTHOR("Daniel Axtens <dja@axtens.net>");
+ MODULE_DESCRIPTION("CRCT10DIF using vector polynomial multiply-sum instructions");
+ MODULE_LICENSE("GPL");
+-MODULE_ALIAS_CRYPTO("crct10dif");
+-MODULE_ALIAS_CRYPTO("crct10dif-vpmsum");
 -- 
 2.11.0
 
