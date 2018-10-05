@@ -2,67 +2,42 @@ Return-Path: <SRS0=9KTJ=MR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 296AEC00449
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 12:48:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B90F4C00449
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 13:24:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6C3EA20875
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 12:48:47 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="c2cd0JUT"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6C3EA20875
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
+	by mail.kernel.org (Postfix) with ESMTPS id 20147208E7
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 13:24:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 20147208E7
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42RV1T0j7KzF3S6
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 22:48:45 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="c2cd0JUT";
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 42RVpS6JbMzF3RY
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 23:24:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42RTyS6QvkzF3R0
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Oct 2018 22:46:08 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42RVlC4gDvzF3RT
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Oct 2018 23:21:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=canb.auug.org.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au
- header.b="c2cd0JUT"; dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 42RTyS0BWXz9s7W;
- Fri,  5 Oct 2018 22:46:07 +1000 (AEST)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=canb.auug.org.au
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=canb.auug.org.au;
- s=201702; t=1538743568;
- bh=kZ8YHf7LMkSrPJX1qYsUSDTKEmCCls6e5+J1C0ZeCvw=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=c2cd0JUTS7+yGDV9+ZjiWOni/Gvh/dLtUt03p1ig3rRGw1kOjOC+4ptk9oEzZ0bRM
- s/hogmcGLC0eT2Hau60M/Bpk2BjvnuedXVB9GkTHUV1dTe0ZvfAQEb3CQCD4h8qJkZ
- 9tu3OyWdalJIUELYDe7G4D4y4FyhWe1vlXBEgk2GckVeIjR57FilPjSBtY7hF30IVW
- kK9iUNEEu/y3WEoZC1cgIx14MaqszrHNeEa3CHaTrcJ26sqnGxGxUviJ5C7IceE8Yq
- bp0DUszH/h0kOsELkl0u4ia3h1sTnhLBMzB1D6DakzpFfFjNXf0lIlrC+DfnQ9N2u/
- m7/CC5QD2jXcA==
-Date: Fri, 5 Oct 2018 22:46:06 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: linux-next: build failure after merge of the akpm tree
-Message-ID: <20181005224606.2372fece@canb.auug.org.au>
-In-Reply-To: <87d0sok3dm.fsf@concordia.ellerman.id.au>
-References: <20181005161406.73ef8727@canb.auug.org.au>
- <87d0sok3dm.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/Vss.RuVkbVq2Ytp_cX61Awd"; protocol="application/pgp-signature"
+ header.from=ellerman.id.au
+Received: by ozlabs.org (Postfix)
+ id 42RVlC2bvcz9s4V; Fri,  5 Oct 2018 23:21:27 +1000 (AEST)
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 42RVlC1q6Vz9s4s; Fri,  5 Oct 2018 23:21:27 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: Don't print kernel instructions in
+ show_user_instructions()
+Date: Fri,  5 Oct 2018 23:21:23 +1000
+Message-Id: <20181005132123.6038-1-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.17.1
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,53 +49,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Linux-Next Mailing List <linux-next@vger.kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- PowerPC <linuxppc-dev@lists.ozlabs.org>
+Cc: muriloo@linux.ibm.com, jannh@google.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---Sig_/Vss.RuVkbVq2Ytp_cX61Awd
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Recently we implemented show_user_instructions() which dumps the code
+around the NIP when a user space process dies with an unhandled
+signal. This was modelled on the x86 code, and we even went so far as
+to implement the exact same bug, namely that if the user process
+crashed with its NIP pointing into the kernel we will dump kernel text
+to dmesg. eg:
 
-Hi Michael,
+  bad-bctr[2996]: segfault (11) at c000000000010000 nip c000000000010000 lr 12d0b0894 code 1
+  bad-bctr[2996]: code: fbe10068 7cbe2b78 7c7f1b78 fb610048 38a10028 38810020 fb810050 7f8802a6
+  bad-bctr[2996]: code: 3860001c f8010080 48242371 60000000 <7c7b1b79> 4082002c e8010080 eb610048
 
-On Fri, 05 Oct 2018 22:02:45 +1000 Michael Ellerman <mpe@ellerman.id.au> wr=
-ote:
->
-> Ah fudge, what are the chances we add a new include of bootmem.h just as
-> Mike's removing bootmem.
+This was discovered on x86 by Jann Horn and fixed in commit
+342db04ae712 ("x86/dumpstack: Don't dump kernel memory based on usermode RIP").
 
-In my experience, it was almost certain ... almost every API removal
-conflicts with new added uses.  :-)
+Fix it by checking the adjusted NIP value (pc) and number of
+instructions against USER_DS, and bail if we fail the check, eg:
 
-> I could just apply that to my tree. memblock.h is where early_memtest() is
-> actually defined anyway.
+  bad-bctr[2969]: segfault (11) at c000000000010000 nip c000000000010000 lr 107930894 code 1
+  bad-bctr[2969]: Bad NIP, not dumping instructions.
 
-However min_low_pfn and max_low_pfn are defined in bootmem.h until
-after it is removed.
+Fixes: 88b0fe175735 ("powerpc: Add show_user_instructions()")
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/kernel/process.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
---=20
-Cheers,
-Stephen Rothwell
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 913c5725cdb2..bb6ac471a784 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -1306,6 +1306,16 @@ void show_user_instructions(struct pt_regs *regs)
+ 
+ 	pc = regs->nip - (instructions_to_print * 3 / 4 * sizeof(int));
+ 
++	/*
++	 * Make sure the NIP points at userspace, not kernel text/data or
++	 * elsewhere.
++	 */
++	if (!__access_ok(pc, instructions_to_print * sizeof(int), USER_DS)) {
++		pr_info("%s[%d]: Bad NIP, not dumping instructions.\n",
++			current->comm, current->pid);
++		return;
++	}
++
+ 	pr_info("%s[%d]: code: ", current->comm, current->pid);
+ 
+ 	for (i = 0; i < instructions_to_print; i++) {
+-- 
+2.17.1
 
---Sig_/Vss.RuVkbVq2Ytp_cX61Awd
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAlu3XQ4ACgkQAVBC80lX
-0GyI1Af/b457Gsh24moiyWRAUs9XuZnTCmO7kcIrjxJ2cDnqUnfYWL5Kewvzc+Pu
-fs/MYPLiKZ80JOW6oVoCmmVjr1sRZbxcVHJNPmWk73KLIomsfHuYMPBU4u1secC6
-kq8yXGA6AqdYkxOWOsnt36Z6V/WYb/vjr+m5h07AqfCkoNh4BxSx9DR3sX3qZDzo
-U7VS7sY1LZ7t7J5TklQuoRbXkPfgZT3IXuQIjIJuYKtIPPoB8LwNrg9ZIIgo/d5u
-nonuhc8IZjZvo8QSojKjJL9VG5VGI+g8+YXi8XIP5VeGClIDLiKNCF3shEC3LHbb
-zglQqbL6n/aTPDOPuuYLcNWDWy2O3w==
-=UriJ
------END PGP SIGNATURE-----
-
---Sig_/Vss.RuVkbVq2Ytp_cX61Awd--
