@@ -2,77 +2,96 @@ Return-Path: <SRS0=9KTJ=MR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5BDDAC00449
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 18:49:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B5521C00449
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 18:56:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BDB3B208E7
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 18:49:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 0DA9220834
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 18:56:25 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="OiZ+idpX"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BDB3B208E7
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hQyIbIWa"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0DA9220834
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42Rf230fhpzF3gn
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 04:49:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Rf9g6xF5zF3dL
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 04:56:23 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="OiZ+idpX";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="hQyIbIWa";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=robh@kernel.org;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::542; helo=mail-pg1-x542.google.com;
+ envelope-from=frowand.list@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="OiZ+idpX"; 
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="hQyIbIWa"; 
  dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42RdfZ24kLzF3cl
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Oct 2018 04:32:53 +1000 (AEST)
-Received: from mail-qt1-f180.google.com (mail-qt1-f180.google.com
- [209.85.160.180])
+Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
+ [IPv6:2607:f8b0:4864:20::542])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 6AC8421473
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Oct 2018 18:32:51 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1538764371;
- bh=L7aZR9bc4bx416Kcx3JUEW4vGf0RwmDJdJ0uKLgpASM=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=OiZ+idpX4QxLI1Wnukl67lLVJZRlzobgRIT3DdYu+vZpOcs+5F4sbx5yBgYS1iHme
- qrKrX42KtQbvdMmuvtM3FC1z33iXHocjtp5JJwmaQ2uEqeghyI/Ow14oZdRDPERZXf
- QOPeCZQqc88ZZ4+irO2SbHAu3S4ATdnGgSP7AOGM=
-Received: by mail-qt1-f180.google.com with SMTP id x23-v6so14855506qtr.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Oct 2018 11:32:51 -0700 (PDT)
-X-Gm-Message-State: ABuFfojOPYKsBPmOMyAldKanhM2qezEC/a9rycKOpgaxZbDR8RQVpBIQ
- Z/YTAD12lHSFBIaoo1GW5cVNnV9gyhJaHk0OSA==
-X-Google-Smtp-Source: ACcGV63HX2zbcJlDZAtDgJDXMEzwREemvWoN9VcT34aMnZvXQt0FQ7Z1xKkSE7QN8Ct0AKR4OfbEHGIsu7eP+q5/xEY=
-X-Received: by 2002:ac8:148b:: with SMTP id
- l11-v6mr10739551qtj.27.1538764370602; 
- Fri, 05 Oct 2018 11:32:50 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Rf6j6r8dzDqVF
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Oct 2018 04:53:49 +1000 (AEST)
+Received: by mail-pg1-x542.google.com with SMTP id y18-v6so5126243pge.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Oct 2018 11:53:49 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=subject:to:cc:references:from:message-id:date:user-agent
+ :mime-version:in-reply-to:content-language:content-transfer-encoding;
+ bh=Ghk/Vg/V7vqswhgv++QqPn2eTXQmOf4Jw4JSP1UZmIg=;
+ b=hQyIbIWaCQF7mI/FUakxhjXbWrPeFxSFY5U1Xz13cC4z57F1vusu6AM31FTuKyZ57c
+ gqItLWA1LYy5XIU/Xnaw8SzQHsI3JganDf9FWgLZipeO9xu/Ts2uqa1QP77Zcxr5YOkL
+ 6oylO1X9+2wKsVmS+2Tgjv3twyEk0iOLPFE5Vk6P3MFZlZupbRWUXEiSi/+YCp4vmU3g
+ m92LPs5tAcXD3NU+M0d3WAp9f3yodRyCCxoc9tdnz/uAxooj+4dbsDBXK9LKGpPneP17
+ 8rUSvkw9JU3fG7fb5sRL1CShil71wU8E8ktQ47M+MZprkxEWrxH1PEoWw2O7YbI0a3sE
+ zrlQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=Ghk/Vg/V7vqswhgv++QqPn2eTXQmOf4Jw4JSP1UZmIg=;
+ b=PC43/dnPQ52aVSZl/XIEPSz9V+4bFpr+p6E94wJ3qNlNTVN0N3D2h8Gh3OsSt103DA
+ s8p0Tlo1DSgtgUevH0r4GCL9kzZiTIFD87Vk95+Mvc18lTOZx59x2VKGxGt7CQ7UsZEK
+ 2E6yh+w9//A/12aXw2TlUWdXBbRVEoJzQopZzuvuvJJPzlyBQfepEASTxaYSnzySUeQ9
+ GQ5hrXXA8GwBmWiXEVCduyeRb5cpRZVKiAe64WSs+0eSHRwmI/VAoLp66ZVSFNa8oIEQ
+ /5iG/v+B9462ct21M/jnpMiutiYSRsRinOdvbJVv+IdgIorlsBEpl+gRs8kN6WVZQ5W0
+ ujeg==
+X-Gm-Message-State: ABuFfogIza5dazYrL9exnHIDp8mhsI2bLQMBvCPwqP+JHrXUzz8/iHw+
+ G6cinkISTiN0pwkwSfMRgMo=
+X-Google-Smtp-Source: ACcGV62rVsZEojQh1DkNJ/f9gUcGjTdHHgWK05PWh5fTIYYLqbwJjApJLszxwWMSeOywvFtvJ1unBw==
+X-Received: by 2002:a62:c08b:: with SMTP id
+ g11-v6mr13303728pfk.72.1538765627852; 
+ Fri, 05 Oct 2018 11:53:47 -0700 (PDT)
+Received: from [192.168.1.70] (c-24-6-192-50.hsd1.ca.comcast.net.
+ [24.6.192.50])
+ by smtp.gmail.com with ESMTPSA id j75-v6sm11711334pfk.125.2018.10.05.11.53.46
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Fri, 05 Oct 2018 11:53:47 -0700 (PDT)
+Subject: Re: [PATCH 09/16] of: overlay: validate overlay properties
+ #address-cells and #size-cells
+To: Rob Herring <robh+dt@kernel.org>
+References: <1538712767-30394-1-git-send-email-frowand.list@gmail.com>
+ <1538712767-30394-10-git-send-email-frowand.list@gmail.com>
+ <CAL_JsqKK3f4W1DdPkzNed0=tx5Oxu9w=RKs8PnaXMfuShBpV1A@mail.gmail.com>
+From: Frank Rowand <frowand.list@gmail.com>
+Message-ID: <f39a84d3-f706-d31e-db22-4e3ebc72c447@gmail.com>
+Date: Fri, 5 Oct 2018 11:53:44 -0700
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
 MIME-Version: 1.0
-References: <20181005165848.3474-1-robh@kernel.org>
- <20181005165848.3474-20-robh@kernel.org>
- <20181005180725.GH5626@piout.net>
-In-Reply-To: <20181005180725.GH5626@piout.net>
-From: Rob Herring <robh@kernel.org>
-Date: Fri, 5 Oct 2018 13:32:38 -0500
-X-Gmail-Original-Message-ID: <CAL_JsqJBRaNf73feHzG4aYyEMxWso8a7Wt6L0JZJLGWecymoUg@mail.gmail.com>
-Message-ID: <CAL_JsqJBRaNf73feHzG4aYyEMxWso8a7Wt6L0JZJLGWecymoUg@mail.gmail.com>
-Subject: Re: [PATCH 19/36] dt-bindings: arm: Convert Atmel board/soc bindings
- to json-schema
-To: Alexandre Belloni <alexandre.belloni@bootlin.com>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <CAL_JsqKK3f4W1DdPkzNed0=tx5Oxu9w=RKs8PnaXMfuShBpV1A@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,114 +103,148 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org,
- Kumar Gala <kumar.gala@linaro.org>, Grant Likely <glikely@secretlab.ca>,
- Arnd Bergmann <arnd@arndb.de>, Tom Rini <trini@konsulko.com>,
- Frank Rowand <frowand.list@gmail.com>,
- Linus Walleij <linus.walleij@linaro.org>,
- Nicolas Ferre <nicolas.ferre@microchip.com>,
- Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
+Cc: devicetree@vger.kernel.org, Alan Tull <atull@kernel.org>,
+ linux-fpga@vger.kernel.org, Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Bjorn Andersson <bjorn.andersson@linaro.org>, Mark Brown <broonie@kernel.org>,
- Geert Uytterhoeven <geert@linux-m68k.org>, Jonathan Cameron <jic23@kernel.org>,
- Olof Johansson <olof@lixom.net>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>
+ Moritz Fischer <mdf@kernel.org>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Oct 5, 2018 at 1:07 PM Alexandre Belloni
-<alexandre.belloni@bootlin.com> wrote:
->
-> Hello,
->
-> On 05/10/2018 11:58:31-0500, Rob Herring wrote:
-> > diff --git a/Documentation/devicetree/bindings/arm/atmel-at91.yaml b/Documentation/devicetree/bindings/arm/atmel-at91.yaml
-> > new file mode 100644
-> > index 000000000000..f788315b94fa
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/arm/atmel-at91.yaml
-> > @@ -0,0 +1,132 @@
-> > +# SPDX-License-Identifier: None
-> > +%YAML 1.2
-> > +---
-> > +$id: http://devicetree.org/schemas/bindings/arm/atmel-at91.yaml#
-> > +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> > +
-> > +title: Atmel AT91 device tree bindings.
-> > +
-> > +maintainers:
-> > +  - Alexandre Belloni <alexandre.belloni@free-electrons.com>
-> > +  - Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
->
-> Jean-Christophe has not been active for years, I'd mention Ludovic
-> instead.
+On 10/05/18 08:07, Rob Herring wrote:
+> On Thu, Oct 4, 2018 at 11:14 PM <frowand.list@gmail.com> wrote:
+>>
+>> From: Frank Rowand <frank.rowand@sony.com>
+>>
+>> If overlay properties #address-cells or #size-cells are already in
+>> the live devicetree for any given node, then the values in the
+>> overlay must match the values in the live tree.
+>>
+>> If the properties are already in the live tree then there is no
+>> need to create a changeset entry to add them since they must
+>> have the same value.  This reduces the memory used by the
+>> changeset and eliminates a possible memory leak.  This is
+>> verified by 12 fewer warnings during the devicetree unittest,
+>> as the possible memory leak warnings about #address-cells and
+> 
+> and...?
 
-Will update. I generated these out of git log. I didn't use
-get_maintainers.pl because it seems lots of files don't have
-maintainers listed (other than Mark and me) and I didn't want to be
-it.
+#size-cells no longer occur.
 
->
-> > +description: |
-> > +  Boards with a SoC of the Atmel AT91 or SMART family shall have the following
-> > +
-> > +properties:
-> > +  $nodename:
-> > +    const: '/'
-> > +  compatible:
-> > +    oneOf:
-> > +      - items:
-> > +          - const: atmel,at91rm9200
-> > +      - items:
-> > +          - enum:
-> > +              - olimex,sam9-l9260
-> > +          - enum:
-> > +              - atmel,at91sam9260
-> > +              - atmel,at91sam9261
-> > +              - atmel,at91sam9263
-> > +              - atmel,at91sam9g20
-> > +              - atmel,at91sam9g45
-> > +              - atmel,at91sam9n12
-> > +              - atmel,at91sam9rl
-> > +              - atmel,at91sam9xe
-> > +          - const: atmel,at91sam9
-> > +
-> > +      - items:
-> > +          - enum:
-> > +              - atmel,at91sam9g15
-> > +              - atmel,at91sam9g25
-> > +              - atmel,at91sam9g35
-> > +              - atmel,at91sam9x25
-> > +              - atmel,at91sam9x35
-> > +          - const: atmel,at91sam9x5
-> > +          - const: atmel,at91sam9
-> > +
-> > +      - items:
-> > +          - const: atmel,sama5d27
-> > +          - const: atmel,sama5d2
-> > +          - const: atmel,sama5
-> > +
-> > +      - description: Nattis v2 board with Natte v2 power board
-> > +        items:
-> > +          - const: axentia,nattis-2
-> > +          - const: axentia,natte-2
-> > +          - const: axentia,linea
->
-> Shouldn't we have the board specific compatibles in a separate file to
-> avoid mixing everything with the SoC compatibles?
+(Thanks for catching that.)
 
-You can't validate it that way. I have to say "must be compatible A,
-B, C and in that order" and you can't if A, B, and C are in different
-files. We could do board vendor files, but then we have to duplicate
-the SoC compatibles. I don't think there's any board vendor with
-enough boards to justify that. The only place I've found that the
-compatible lists get kind of messy is when platforms have a variable
-number of compatible strings.
 
-We generally have not split things this way for most platforms except
-i.MX which this series changes. Looks like I forgot to remove the
-axentia.txt for Atmel.
+>>
+>> Signed-off-by: Frank Rowand <frank.rowand@sony.com>
+>> ---
+>>  drivers/of/overlay.c | 38 +++++++++++++++++++++++++++++++++++---
+>>  1 file changed, 35 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
+>> index 29c33a5c533f..e6fb3ffe9d93 100644
+>> --- a/drivers/of/overlay.c
+>> +++ b/drivers/of/overlay.c
+>> @@ -287,7 +287,12 @@ static struct property *dup_and_fixup_symbol_prop(
+>>   * @target may be either in the live devicetree or in a new subtree that
+>>   * is contained in the changeset.
+>>   *
+>> - * Some special properties are not updated (no error returned).
+>> + * Some special properties are not added or updated (no error returned):
+>> + * "name", "phandle", "linux,phandle".
+>> + *
+>> + * Properties "#address-cells" and "#size-cells" are not updated if they
+>> + * are already in the live tree, but if present in the live tree, the values
+>> + * in the overlay must match the values in the live tree.
+> 
+> Perhaps this should be generalized to apply to any property? We can't
+> really deal with property values changing on the fly anyways.
 
-Rob
+That is a bigger discussion.  I'd prefer to not hold up this series for that
+question to be resolved.  It will be easy enough to generalize in an add-on
+patch later.
+
+
+>>   *
+>>   * Update of property in symbols node is not allowed.
+>>   *
+>> @@ -300,6 +305,7 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
+>>  {
+>>         struct property *new_prop = NULL, *prop;
+>>         int ret = 0;
+>> +       bool check_for_non_overlay_node = false;
+>>
+>>         if (!of_prop_cmp(overlay_prop->name, "name") ||
+>>             !of_prop_cmp(overlay_prop->name, "phandle") ||
+>> @@ -322,13 +328,39 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
+>>         if (!new_prop)
+>>                 return -ENOMEM;
+>>
+>> -       if (!prop)
+>> +       if (!prop) {
+>> +
+> 
+> Remove the extra blank lines.
+
+Will do.
+
+> 
+>> +               check_for_non_overlay_node = true;
+>>                 ret = of_changeset_add_property(&ovcs->cset, target->np,
+>>                                                 new_prop);
+>> -       else
+>> +
+>> +       } else if (!of_prop_cmp(prop->name, "#address-cells")) {
+>> +
+>> +               if (prop->length != 4 || new_prop->length != 4 ||
+>> +                   *(u32 *)prop->value != *(u32 *)new_prop->value)
+> 
+> Technically these are __be32 types. This could use a helper (of_prop_val_eq).
+
+These are in a unpacked form, so cpu byte order, not FDT byte order.
+
+> 
+> I'm not sure we really need to validate the length here as dtc does
+> that (but yes, not everything is from dtc).
+
+Since I'm accessing 4 bytes of the values, I need to be sure the lengths
+are at least 4.  For #address-cells and #size-cells the property is
+specified as four bytes, so I could simplify the code for the specific case.
+
+If this gets extended to any arbitrary property then a new of_prop_val_eq()
+would check that the lengths are equal and the values (of size length) are
+also equal.
+
+
+> 
+>> +                       pr_err("ERROR: overlay and/or live tree #address-cells invalid in node %pOF\n",
+>> +                              target->np);
+>> +
+>> +       } else if (!of_prop_cmp(prop->name, "#size-cells")) {
+>> +
+>> +               if (prop->length != 4 || new_prop->length != 4 ||
+>> +                   *(u32 *)prop->value != *(u32 *)new_prop->value)
+>> +                       pr_err("ERROR: overlay and/or live tree #size-cells invalid in node %pOF\n",
+>> +                              target->np);
+>> +
+>> +       } else {
+>> +
+>> +               check_for_non_overlay_node = true;
+>>                 ret = of_changeset_update_property(&ovcs->cset, target->np,
+>>                                                    new_prop);
+>>
+>> +       }
+>> +
+>> +       if (check_for_non_overlay_node &&
+>> +           !of_node_check_flag(target->np, OF_OVERLAY))
+>> +               pr_err("WARNING: %s(), memory leak will occur if overlay removed.  Property: %pOF/%s\n",
+>> +                      __func__, target->np, new_prop->name);
+>> +
+>>         if (ret) {
+>>                 kfree(new_prop->name);
+>>                 kfree(new_prop->value);
+>> --
+>> Frank Rowand <frank.rowand@sony.com>
+>>
+> 
+
