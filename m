@@ -2,63 +2,76 @@ Return-Path: <SRS0=9KTJ=MR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,URIBL_SBL,URIBL_SBL_A
+X-Spam-Status: No, score=-3.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,URIBL_SBL,URIBL_SBL_A
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4BF4CC00449
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 14:29:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 93DACC00449
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 14:55:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A1F822084D
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 14:29:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A1F822084D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 01CDC2087D
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 14:55:45 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Tl+jE4rM"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 01CDC2087D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42RXFs2052zF3RM
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 00:29:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.intel.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42RXr00T7kzF3TM
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 00:55:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.intel.com
- (client-ip=134.134.136.20; helo=mga02.intel.com;
- envelope-from=alexander.h.duyck@linux.intel.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.intel.com
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="Tl+jE4rM";
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=robh+dt@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="Tl+jE4rM"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42RXCT6bTjzF3RM
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Oct 2018 00:27:33 +1000 (AEST)
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from orsmga003.jf.intel.com ([10.7.209.27])
- by orsmga101.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
- 05 Oct 2018 07:27:30 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.54,344,1534834800"; d="scan'208";a="89475080"
-Received: from ahduyck-mobl.amr.corp.intel.com (HELO [10.252.137.177])
- ([10.252.137.177])
- by orsmga003.jf.intel.com with ESMTP; 05 Oct 2018 07:27:30 -0700
-Subject: Re: linux-next: Tree for Oct 4
-To: Stephen Rothwell <sfr@canb.auug.org.au>, Guenter Roeck <linux@roeck-us.net>
-References: <20181004183449.36bcc93b@canb.auug.org.au>
- <20181004134644.GA9130@roeck-us.net>
- <CAMuHMdXfhbFi8HYtqd6BeACyG64_eQvoiSQ7DMpyOmdXEXPymg@mail.gmail.com>
- <20181005094445.4d0b68bc@canb.auug.org.au>
- <01c4a73c-7901-2fbb-8f87-95ff21dc5126@roeck-us.net>
- <20181005153905.126a005e@canb.auug.org.au>
-From: Alexander Duyck <alexander.h.duyck@linux.intel.com>
-Message-ID: <72f64b32-20f0-0e9a-a8f6-3e0845abb586@linux.intel.com>
-Date: Fri, 5 Oct 2018 07:27:29 -0700
-User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42RXnH3zNVzF3Rq
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Oct 2018 00:53:23 +1000 (AEST)
+Received: from mail-qt1-f174.google.com (mail-qt1-f174.google.com
+ [209.85.160.174])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 37FF021473
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Oct 2018 14:53:21 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1538751201;
+ bh=00zcc7T9LOqqvcw8lccqOwJaFe1MY6VWDH4ECJFlkn0=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=Tl+jE4rMsSuXm7vxnCkApF5zbU5S1iCkUWnHjuOXM7ME4r5SF+OThrHYbQoomG/3+
+ jNL3AGZ9XjeG95ghbh6wob3L/FurmTViXDIP8suDsFLOXIEGASFxk4u77iRB0ENTK6
+ Xtgvi/FBv3Gaq9ZBEtx8xBIcP/izrBjKwdvGwYF4=
+Received: by mail-qt1-f174.google.com with SMTP id l41-v6so1489441qtl.8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Oct 2018 07:53:21 -0700 (PDT)
+X-Gm-Message-State: ABuFfog+xNiccWRcZwTsoT2k3JPAjbitpMRsRbT+QShCpkcHNNeUv1Ff
+ ZDZB5FHYjBJEJtZjH+1zbv56FH0byjOVQ1Tz6w==
+X-Google-Smtp-Source: ACcGV61UtYTBgqWR4Mbl1nxSdTwcm9wKf7n/oxaa9XcPPvcWE+aikjffBw8WLByXacL/CLAsjyI6fN7yi6RSp/gnCnI=
+X-Received: by 2002:ac8:2ac9:: with SMTP id
+ c9-v6mr9642544qta.188.1538751200204; 
+ Fri, 05 Oct 2018 07:53:20 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20181005153905.126a005e@canb.auug.org.au>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+References: <1538712767-30394-1-git-send-email-frowand.list@gmail.com>
+ <1538712767-30394-16-git-send-email-frowand.list@gmail.com>
+In-Reply-To: <1538712767-30394-16-git-send-email-frowand.list@gmail.com>
+From: Rob Herring <robh+dt@kernel.org>
+Date: Fri, 5 Oct 2018 09:53:08 -0500
+X-Gmail-Original-Message-ID: <CAL_Jsq+dqRr54_WAdBQ88sJytAuLL=U9kF_Xbj5rJv4PVn9gQg@mail.gmail.com>
+Message-ID: <CAL_Jsq+dqRr54_WAdBQ88sJytAuLL=U9kF_Xbj5rJv4PVn9gQg@mail.gmail.com>
+Subject: Re: [PATCH 15/16] of: unittest: initialize args before calling
+ of_irq_parse_one()
+To: Frank Rowand <frowand.list@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,32 +83,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linus PPC <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- "open list:INTEL IOMMU \(VT-d\)" <iommu@lists.linux-foundation.org>,
- Linux-Next <linux-next@vger.kernel.org>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- Greg KH <gregkh@linuxfoundation.org>, Robin Murphy <robin.murphy@arm.com>,
- Christoph Hellwig <hch@lst.de>
+Cc: devicetree@vger.kernel.org, Alan Tull <atull@kernel.org>,
+ linux-fpga@vger.kernel.org, Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Moritz Fischer <mdf@kernel.org>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Guenter Roeck <linux@roeck-us.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 10/4/2018 10:39 PM, Stephen Rothwell wrote:
-> Hi Guenter,
-> 
-> On Thu, 4 Oct 2018 18:33:02 -0700 Guenter Roeck <linux@roeck-us.net> wrote:
->>
->> Most of the boot failures are hopefully fixed with
->> https://lore.kernel.org/patchwork/patch/995254/
-> 
-> I have added that commit to linux-next today.
-> 
+On Thu, Oct 4, 2018 at 11:14 PM <frowand.list@gmail.com> wrote:
+>
+> From: Frank Rowand <frank.rowand@sony.com>
+>
+> Callers of of_irq_parse_one() blindly use the pointer args.np
+> without checking whether of_irq_parse_one() had an error and
+> thus did not set the value of args.np.  Initialize args to
+> zero so that using the format "%pOF" to show the value of
+> args.np will show "(null)" when of_irq_parse_one() has an
+> error and does not set args.np instead of trying to
+> dereference a random value.
+>
+> Reported-by: Guenter Roeck <linux@roeck-us.net>
+> Signed-off-by: Frank Rowand <frank.rowand@sony.com>
+> ---
+>  drivers/of/unittest.c | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
 
-After getting over that I ended up running into an issues with a NULL 
-pointer dereference updating static keys/jump labels that was fixed by:
-https://lore.kernel.org/patchwork/patch/993864/
+Does this need to be part of this series?
 
-Thanks.
-
-- Alex
+Rob
