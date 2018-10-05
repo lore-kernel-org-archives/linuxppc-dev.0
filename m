@@ -2,117 +2,81 @@ Return-Path: <SRS0=9KTJ=MR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 24B60C00449
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 07:53:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BFBDBC00449
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 08:16:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9185D2064D
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 07:53:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9185D2064D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 259652064D
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 08:16:36 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linaro.org header.i=@linaro.org header.b="MWd+hOYP"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 259652064D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42RMT55cWgzF3d1
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 17:53:45 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42RMzP6kWdzF3Mb
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 18:16:33 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com; envelope-from=david@redhat.com;
- receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.b="MWd+hOYP";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=linaro.org
+ (client-ip=2a00:1450:4864:20::344; helo=mail-wm1-x344.google.com;
+ envelope-from=ard.biesheuvel@linaro.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=linaro.org header.i=@linaro.org header.b="MWd+hOYP"; 
+ dkim-atps=neutral
+Received: from mail-wm1-x344.google.com (mail-wm1-x344.google.com
+ [IPv6:2a00:1450:4864:20::344])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42RM6r266DzF3bW
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Oct 2018 17:37:55 +1000 (AEST)
-Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com
- [10.5.11.23])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 3A659308A941;
- Fri,  5 Oct 2018 07:37:52 +0000 (UTC)
-Received: from [10.36.116.131] (ovpn-116-131.ams2.redhat.com [10.36.116.131])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 40AAD2E02F;
- Fri,  5 Oct 2018 07:37:40 +0000 (UTC)
-Subject: Re: [PATCH RFC] mm/memory_hotplug: Introduce memory block types
-To: =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>
-References: <20181001084038.GD18290@dhcp22.suse.cz>
- <d54a8509-725f-f771-72f0-15a9d93e8a49@redhat.com>
- <20181002134734.GT18290@dhcp22.suse.cz>
- <98fb8d65-b641-2225-f842-8804c6f79a06@redhat.com>
- <8736tndubn.fsf@vitty.brq.redhat.com> <20181003134444.GH4714@dhcp22.suse.cz>
- <87zhvvcf3b.fsf@vitty.brq.redhat.com>
- <49456818-238e-2d95-9df6-d1934e9c8b53@linux.intel.com>
- <87tvm3cd5w.fsf@vitty.brq.redhat.com>
- <06a35970-e478-18f8-eae6-4022925a5192@redhat.com>
- <20181004061938.GB22173@dhcp22.suse.cz>
- <efd50413-4be4-06c4-5ef0-711fdf05db71@redhat.com>
- <20181004172807.1eef3a6b@kitsune.suse.cz>
- <14992b68-5402-9168-0050-b3c6ac4a8c90@redhat.com>
- <20181004195010.3616fc40@kitsune.suse.cz>
-From: David Hildenbrand <david@redhat.com>
-Openpgp: preference=signencrypt
-Autocrypt: addr=david@redhat.com; prefer-encrypt=mutual; keydata=
- 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
- SE+xAvmumFBY
-Organization: Red Hat GmbH
-Message-ID: <a0739be1-564a-2853-c814-3290e64f24af@redhat.com>
-Date: Fri, 5 Oct 2018 09:37:39 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.0
-MIME-Version: 1.0
-In-Reply-To: <20181004195010.3616fc40@kitsune.suse.cz>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.41]); Fri, 05 Oct 2018 07:37:53 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42RMw70nrtzF3Jh
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Oct 2018 18:13:42 +1000 (AEST)
+Received: by mail-wm1-x344.google.com with SMTP id a8-v6so1022890wmf.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Oct 2018 01:13:42 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references;
+ bh=M974k2iyDJIOjsCt9yr954r2LChEqIlYPLi3JqN8ezM=;
+ b=MWd+hOYP/XT8JhDN37zPYJpwEJYaMjz+DGw/Gv25gw+eg0s/a5gjnsTq2fxMFRjXfa
+ XOMVBcpP7CyWqNHbBWmey7hjHyMNnG+gxrzc/jDFOObGBsroeG0GPzJLFwCtev3yPYQp
+ vVyxleV0C7JUqQAW22vpLbZCcIWLOpw1cxhDg=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references;
+ bh=M974k2iyDJIOjsCt9yr954r2LChEqIlYPLi3JqN8ezM=;
+ b=kde0CtfEzr7T4AlAcbX1SMLOGt9QFv2tX4haYrsb0XDlCKuvJVICbJcQZJJe0Epgri
+ ty/euquNtdwbMx775e/T5NU1/En2eYveEHXAMtF6nGuHoijIkPfRMpWRcYO1GLwFTjAT
+ Ds535gEPqpjBBoMAvtNFiqZA4NjeliwC+TJRKJS79chPrGVKVx2QZa8xs+BItj+ZjPqP
+ Y84w4bTxCXZM7BDxYveAAWOEeCLYduc3gtBWOITkw0IiUTqZuQprMz5ZMmfRWA5IyTV7
+ +W96atd+yKRyEJ/6B6CZWMB1rTZyKuCSB2mReAAQRkDfAnUcrqmGoM1ReUjmAaZM51Lv
+ 8nsA==
+X-Gm-Message-State: ABuFfoj54PkCO0Fj5NNLsNLuVgS29J3tWxOdc/54TAOoAg74LI8Zr2nG
+ aUVvpaM2iemUznk3PkHtwYTQ5Q==
+X-Google-Smtp-Source: ACcGV614x+adL4bvBW2ETzXeZ17LWqoKCU2QTWwE8UtRdZ8cX4K5Bkp1v89Z9ZQ2IkgyOmpJzyMJig==
+X-Received: by 2002:a1c:9901:: with SMTP id b1-v6mr4381093wme.15.1538727220155; 
+ Fri, 05 Oct 2018 01:13:40 -0700 (PDT)
+Received: from localhost.localdomain ([2a01:cb1d:112:6f00:697e:67d9:a05d:22c7])
+ by smtp.gmail.com with ESMTPSA id t4-v6sm6565620wrb.45.2018.10.05.01.13.38
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Fri, 05 Oct 2018 01:13:39 -0700 (PDT)
+From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+To: linux-kernel@vger.kernel.org
+Subject: [RFC PATCH 1/9] kernel: add support for patchable function pointers
+Date: Fri,  5 Oct 2018 10:13:25 +0200
+Message-Id: <20181005081333.15018-2-ard.biesheuvel@linaro.org>
+X-Mailer: git-send-email 2.11.0
+In-Reply-To: <20181005081333.15018-1-ard.biesheuvel@linaro.org>
+References: <20181005081333.15018-1-ard.biesheuvel@linaro.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -124,89 +88,104 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kate Stewart <kstewart@linuxfoundation.org>, Rich Felker <dalias@libc.org>,
- linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Dave Hansen <dave.hansen@linux.intel.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Michal Hocko <mhocko@kernel.org>,
- linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>, Rashmica Gupta <rashmica.g@gmail.com>,
- Dan Williams <dan.j.williams@intel.com>,
- Stephen Rothwell <sfr@canb.auug.org.au>, Michael Neuling <mikey@neuling.org>,
- Stephen Hemminger <sthemmin@microsoft.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, linux-acpi@vger.kernel.org,
- Ingo Molnar <mingo@redhat.com>, xen-devel@lists.xenproject.org,
- Len Brown <lenb@kernel.org>, Pavel Tatashin <pavel.tatashin@microsoft.com>,
- Rob Herring <robh@kernel.org>, "mike.travis@hpe.com" <mike.travis@hpe.com>,
- Haiyang Zhang <haiyangz@microsoft.com>,
- Philippe Ombredanne <pombredanne@nexb.com>,
- =?UTF-8?Q?Jonathan_Neusch=c3=a4fer?= <j.neuschaefer@gmx.net>,
- Nicholas Piggin <npiggin@gmail.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- =?UTF-8?B?SsOpcsO0bWUgR2xpc3Nl?= <jglisse@redhat.com>,
- Mike Rapoport <rppt@linux.vnet.ibm.com>, Borislav Petkov <bp@alien8.de>,
- Andy Lutomirski <luto@kernel.org>,
- Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- Andrew Morton <akpm@linux-foundation.org>, Oscar Salvador <osalvador@suse.de>,
- Juergen Gross <jgross@suse.com>, Tony Luck <tony.luck@intel.com>,
- Mathieu Malaterre <malat@debian.org>, linux-s390@vger.kernel.org,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
- Fenghua Yu <fenghua.yu@intel.com>,
- Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Joe Perches <joe@perches.com>,
- devel@linuxdriverproject.org, Vitaly Kuznetsov <vkuznets@redhat.com>,
- linuxppc-dev@lists.ozlabs.org,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+Cc: "Jason A . Donenfeld" <Jason@zx2c4.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
+ Samuel Neves <sneves@dei.uc.pt>, Paul Mackerras <paulus@samba.org>,
+ Herbert Xu <herbert@gondor.apana.org.au>, Richard Weinberger <richard@nod.at>,
+ Eric Biggers <ebiggers@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>,
+ Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+ linux-arm-kernel@lists.infradead.org,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-crypto@vger.kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 04/10/2018 19:50, Michal Suchánek wrote:
-> On Thu, 4 Oct 2018 17:45:13 +0200
-> David Hildenbrand <david@redhat.com> wrote:
-> 
->> On 04/10/2018 17:28, Michal Suchánek wrote:
-> 
->>>
->>> The state of the art is to determine what to do with hotplugged
->>> memory in userspace based on platform and virtualization type.  
->>
->> Exactly.
->>
->>>
->>> Changing the default to depend on the driver that added the memory
->>> rather than platform type should solve the issue of VMs growing
->>> different types of memory device emulation.  
->>
->> Yes, my original proposal (this patch) was to handle it in the kernel
->> for known types. But as we learned, there might be some use cases that
->> might still require to make a decision in user space.
->>
->> So providing the user space either with some type hint (auto-online
->> vs. standby) or the driver that added it (system vs. hyper-v ...)
->> would solve the issue.
-> 
-> Is that not available in the udev event?
-> 
+Add a function pointer abstraction that can be implemented by the arch
+in a manner that avoids the downsides of function pointers, i.e., the
+fact that they are typically located in a writable data section, and
+their vulnerability to Spectre like defects.
 
-Not that I am aware. Memory blocks "devices" have no drivers.
+The FFP (or fast function pointer) is callable as a function, since
+the generic incarnation is simply that. However, due to the fact that
+C does not distinguish between functions and function pointers at the
+call site, the architecture can instead emit it as a patchable sequence
+of instructions consisting of ordinary branches.
 
-ls -la /sys/devices/system/memory/memory0/subsystem/drivers
-total 0
+Signed-off-by: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+---
+ arch/Kconfig        |  3 ++
+ include/linux/ffp.h | 43 ++++++++++++++++++++
+ 2 files changed, 46 insertions(+)
 
-(add_memory()/add_memory_resource() creates the memory block devices
-when called from a driver)
-
-
-> Thanks
-> 
-> Michal
-> 
-
-
+diff --git a/arch/Kconfig b/arch/Kconfig
+index 6801123932a5..2af3442a61d3 100644
+--- a/arch/Kconfig
++++ b/arch/Kconfig
+@@ -862,6 +862,9 @@ config HAVE_ARCH_PREL32_RELOCATIONS
+ 	  architectures, and don't require runtime relocation on relocatable
+ 	  kernels.
+ 
++config HAVE_ARCH_FFP
++	bool
++
+ source "kernel/gcov/Kconfig"
+ 
+ source "scripts/gcc-plugins/Kconfig"
+diff --git a/include/linux/ffp.h b/include/linux/ffp.h
+new file mode 100644
+index 000000000000..8fc3b4c9b38f
+--- /dev/null
++++ b/include/linux/ffp.h
+@@ -0,0 +1,43 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++
++#ifndef __LINUX_FFP_H
++#define __LINUX_FFP_H
++
++#include <linux/types.h>
++#include <linux/compiler.h>
++
++#ifdef CONFIG_HAVE_ARCH_FFP
++#include <asm/ffp.h>
++#else
++
++struct ffp {
++	void	(**fn)(void);
++	void	(*default_fn)(void);
++};
++
++#define DECLARE_FFP(_fn, _def)						\
++	extern typeof(_def) *_fn;					\
++	extern struct ffp const __ffp_ ## _fn
++
++#define DEFINE_FFP(_fn, _def)						\
++	typeof(_def) *_fn = &_def;					\
++	struct ffp const __ffp_ ## _fn					\
++		= { (void(**)(void))&_fn, (void(*)(void))&_def };	\
++	EXPORT_SYMBOL(__ffp_ ## _fn)
++
++static inline void ffp_set_target(const struct ffp *m, void *new_fn)
++{
++	WRITE_ONCE(*m->fn, new_fn);
++}
++
++static inline void ffp_reset_target(const struct ffp *m)
++{
++	WRITE_ONCE(*m->fn, m->default_fn);
++}
++
++#endif
++
++#define SET_FFP(_fn, _new)	ffp_set_target(&__ffp_ ## _fn, _new)
++#define RESET_FFP(_fn)		ffp_reset_target(&__ffp_ ## _fn)
++
++#endif
 -- 
+2.11.0
 
-Thanks,
-
-David / dhildenb
