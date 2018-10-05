@@ -2,63 +2,63 @@ Return-Path: <SRS0=9KTJ=MR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F3EEC00449
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 05:19:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D3EDFC00449
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 05:21:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6BF8420834
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 05:19:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 22FE620834
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 05:21:43 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="H4nghGfR"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6BF8420834
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="nLA0EeQl"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 22FE620834
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42RJ2z2L4WzF3L2
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 15:19:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42RJ5c6h5JzF3M4
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 15:21:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="H4nghGfR";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="nLA0EeQl";
 	dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42RGjX3wckzDrBy
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42RGjX3B94zF3Jl
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Oct 2018 14:19:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=gibson.dropbear.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.b="H4nghGfR"; dkim-atps=neutral
+ header.b="nLA0EeQl"; dkim-atps=neutral
 Received: by ozlabs.org (Postfix)
- id 42RGjX3Q1hz9sBN; Fri,  5 Oct 2018 14:19:12 +1000 (AEST)
+ id 42RGjX0ZCkzB2xQ; Fri,  5 Oct 2018 14:19:12 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1007)
- id 42RGjX2Z11z9sCr; Fri,  5 Oct 2018 14:19:11 +1000 (AEST)
+ id 42RGjW6P2Lz9sBj; Fri,  5 Oct 2018 14:19:11 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1538713152;
- bh=+7R98kGgdMpkaWgsTSa27WK+tyjoGYepf59g6QWw66A=;
+ d=gibson.dropbear.id.au; s=201602; t=1538713151;
+ bh=oOHLd/NjKxUseAZuzexnT4vvrPql5Rc5E1mLTFtrGYQ=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=H4nghGfRCQb/45gb5ddXmjq/Zwwq6AXMQ4g4ysq4Y8GQfiv3rwYrD3q3jyeniIRud
- a16w+ZQctOTKJrL32wndv0myptSZ68bofdWmt9ElHIXJYYRuJ12EFLprSuq3VSgCE9
- weSyOI5uC8LpSDz/M0a8rQ4i3IfJJts4MSaod220=
-Date: Fri, 5 Oct 2018 13:40:47 +1000
+ b=nLA0EeQlLdkUCizgC8OyUteuMszKvOzuzXHOusgW0MLt5KNKTTjlAKmoryJeKA8ub
+ 79NKPo50sM4pGbKUY7BWlNzfyJjzk0848K382peYExA1uFuv7x0SpPzy2veYyndnGr
+ j/Yv7s9NfSzT9e4gXAxz2oY9DyjzvSvYV7k8g9Jc=
+Date: Fri, 5 Oct 2018 13:45:11 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Paul Mackerras <paulus@ozlabs.org>
-Subject: Re: [PATCH v4 23/32] KVM: PPC: Book3S HV: Implement H_TLB_INVALIDATE
- hcall
-Message-ID: <20181005034047.GI7004@umbus.fritz.box>
+Subject: Re: [PATCH v4 24/32] KVM: PPC: Book3S HV: Use hypercalls for TLB
+ invalidation when nested
+Message-ID: <20181005034511.GJ7004@umbus.fritz.box>
 References: <1538654169-15602-1-git-send-email-paulus@ozlabs.org>
- <1538654169-15602-24-git-send-email-paulus@ozlabs.org>
+ <1538654169-15602-25-git-send-email-paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="itqfrb9Qq3wY07cp"
+ protocol="application/pgp-signature"; boundary="8jNwmpfkpox/fiJK"
 Content-Disposition: inline
-In-Reply-To: <1538654169-15602-24-git-send-email-paulus@ozlabs.org>
+In-Reply-To: <1538654169-15602-25-git-send-email-paulus@ozlabs.org>
 User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -77,117 +77,198 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---itqfrb9Qq3wY07cp
+--8jNwmpfkpox/fiJK
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Oct 04, 2018 at 09:56:00PM +1000, Paul Mackerras wrote:
-11;rgb:ffff/ffff/ffff> From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+On Thu, Oct 04, 2018 at 09:56:01PM +1000, Paul Mackerras wrote:
+> This adds code to call the H_TLB_INVALIDATE hypercall when running as
+> a guest, in the cases where we need to invalidate TLBs (or other MMU
+> caches) as part of managing the mappings for a nested guest.  Calling
+> H_TLB_INVALIDATE lets the nested hypervisor inform the parent
+> hypervisor about changes to partition-scoped page tables or the
+> partition table without needing to do hypervisor-privileged tlbie
+> instructions.
 >=20
-> When running a nested (L2) guest the guest (L1) hypervisor will use
-> the H_TLB_INVALIDATE hcall when it needs to change the partition
-> scoped page tables or the partition table which it manages.  It will
-> use this hcall in the situations where it would use a partition-scoped
-> tlbie instruction if it were running in hypervisor mode.
->=20
-> The H_TLB_INVALIDATE hcall can invalidate different scopes:
->=20
-> Invalidate TLB for a given target address:
-> - This invalidates a single L2 -> L1 pte
-> - We need to invalidate any L2 -> L0 shadow_pgtable ptes which map the L2
->   address space which is being invalidated. This is because a single
->   L2 -> L1 pte may have been mapped with more than one pte in the
->   L2 -> L0 page tables.
->=20
-> Invalidate the entire TLB for a given LPID or for all LPIDs:
-> - Invalidate the entire shadow_pgtable for a given nested guest, or
->   for all nested guests.
->=20
-> Invalidate the PWC (page walk cache) for a given LPID or for all LPIDs:
-> - We don't cache the PWC, so nothing to do.
->=20
-> Invalidate the entire TLB, PWC and partition table for a given/all LPIDs:
-> - Here we re-read the partition table entry and remove the nested state
->   for any nested guest for which the first doubleword of the partition
->   table entry is now zero.
->=20
-> The H_TLB_INVALIDATE hcall takes as parameters the tlbie instruction
-> word (of which only the RIC, PRS and R fields are used), the rS value
-> (giving the lpid, where required) and the rB value (giving the IS, AP
-> and EPN values).
->=20
-> [paulus@ozlabs.org - adapted to having the partition table in guest
-> memory, added the H_TLB_INVALIDATE implementation, removed tlbie
-> instruction emulation, reworded the commit message.]
->=20
-> Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
 > Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 
 Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
-That said, there's one change I think could make it substantially
-easier to read..
-
-[snip]
-> +static int kvmhv_emulate_tlbie_tlb_addr(struct kvm_vcpu *vcpu, int lpid,
-> +					int ap, long epn)
+> ---
+>  arch/powerpc/include/asm/kvm_book3s_64.h |  5 +++++
+>  arch/powerpc/kvm/book3s_64_mmu_radix.c   | 30 ++++++++++++++++++++++++++=
+++--
+>  arch/powerpc/kvm/book3s_hv_nested.c      | 30 ++++++++++++++++++++++++--=
+----
+>  3 files changed, 57 insertions(+), 8 deletions(-)
+>=20
+> diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/incl=
+ude/asm/kvm_book3s_64.h
+> index a02f0b3..aa5bf85 100644
+> --- a/arch/powerpc/include/asm/kvm_book3s_64.h
+> +++ b/arch/powerpc/include/asm/kvm_book3s_64.h
+> @@ -24,6 +24,7 @@
+>  #include <asm/bitops.h>
+>  #include <asm/book3s/64/mmu-hash.h>
+>  #include <asm/cpu_has_feature.h>
+> +#include <asm/ppc-opcode.h>
+> =20
+>  #ifdef CONFIG_PPC_PSERIES
+>  static inline bool kvmhv_on_pseries(void)
+> @@ -117,6 +118,10 @@ struct kvm_nested_guest *kvmhv_get_nested(struct kvm=
+ *kvm, int l1_lpid,
+>  					  bool create);
+>  void kvmhv_put_nested(struct kvm_nested_guest *gp);
+> =20
+> +/* Encoding of first parameter for H_TLB_INVALIDATE */
+> +#define H_TLBIE_P1_ENC(ric, prs, r)	(___PPC_RIC(ric) | ___PPC_PRS(prs) |=
+ \
+> +					 ___PPC_R(r))
+> +
+>  /* Power architecture requires HPT is at least 256kiB, at most 64TiB */
+>  #define PPC_MIN_HPT_ORDER	18
+>  #define PPC_MAX_HPT_ORDER	46
+> diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/bo=
+ok3s_64_mmu_radix.c
+> index 4c1eccb..ae0e3ed 100644
+> --- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
+> +++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
+> @@ -201,17 +201,43 @@ static void kvmppc_radix_tlbie_page(struct kvm *kvm=
+, unsigned long addr,
+>  				    unsigned int pshift, unsigned int lpid)
+>  {
+>  	unsigned long psize =3D PAGE_SIZE;
+> +	int psi;
+> +	long rc;
+> +	unsigned long rb;
+> =20
+>  	if (pshift)
+>  		psize =3D 1UL << pshift;
+> +	else
+> +		pshift =3D PAGE_SHIFT;
+> =20
+>  	addr &=3D ~(psize - 1);
+> -	radix__flush_tlb_lpid_page(lpid, addr, psize);
+> +
+> +	if (!kvmhv_on_pseries()) {
+> +		radix__flush_tlb_lpid_page(lpid, addr, psize);
+> +		return;
+> +	}
+> +
+> +	psi =3D shift_to_mmu_psize(pshift);
+> +	rb =3D addr | (mmu_get_ap(psi) << PPC_BITLSHIFT(58));
+> +	rc =3D plpar_hcall_norets(H_TLB_INVALIDATE, H_TLBIE_P1_ENC(0, 0, 1),
+> +				lpid, rb);
+> +	if (rc)
+> +		pr_err("KVM: TLB page invalidation hcall failed, rc=3D%ld\n", rc);
+>  }
+> =20
+>  static void kvmppc_radix_flush_pwc(struct kvm *kvm, unsigned int lpid)
+>  {
+> -	radix__flush_pwc_lpid(lpid);
+> +	long rc;
+> +
+> +	if (!kvmhv_on_pseries()) {
+> +		radix__flush_pwc_lpid(lpid);
+> +		return;
+> +	}
+> +
+> +	rc =3D plpar_hcall_norets(H_TLB_INVALIDATE, H_TLBIE_P1_ENC(1, 0, 1),
+> +				lpid, TLBIEL_INVAL_SET_LPID);
+> +	if (rc)
+> +		pr_err("KVM: TLB PWC invalidation hcall failed, rc=3D%ld\n", rc);
+>  }
+> =20
+>  static unsigned long kvmppc_radix_update_pte(struct kvm *kvm, pte_t *pte=
+p,
+> diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm/book3=
+s_hv_nested.c
+> index 26151e8..35f8111 100644
+> --- a/arch/powerpc/kvm/book3s_hv_nested.c
+> +++ b/arch/powerpc/kvm/book3s_hv_nested.c
+> @@ -298,14 +298,32 @@ void kvmhv_nested_exit(void)
+>  	}
+>  }
+> =20
+> +static void kvmhv_flush_lpid(unsigned int lpid)
 > +{
-> +	struct kvm *kvm =3D vcpu->kvm;
-> +	struct kvm_nested_guest *gp;
-> +	long npages;
-> +	int shift;
-> +	unsigned long addr;
+> +	long rc;
 > +
-> +	shift =3D ap_to_shift(ap);
-> +	addr =3D epn << 12;
-> +	if (shift < 0)
-> +		/* Invalid ap encoding */
-> +		return -EINVAL;
+> +	if (!kvmhv_on_pseries()) {
+> +		radix__flush_tlb_lpid(lpid);
+> +		return;
+> +	}
 > +
-> +	addr &=3D ~((1UL << shift) - 1);
-> +	npages =3D 1UL << (shift - PAGE_SHIFT);
+> +	rc =3D plpar_hcall_norets(H_TLB_INVALIDATE, H_TLBIE_P1_ENC(2, 0, 1),
+> +				lpid, TLBIEL_INVAL_SET_LPID);
+> +	if (rc)
+> +		pr_err("KVM: TLB LPID invalidation hcall failed, rc=3D%ld\n", rc);
+> +}
 > +
-> +	gp =3D kvmhv_get_nested(kvm, lpid, false);
-> +	if (!gp) /* No such guest -> nothing to do */
-> +		return 0;
-> +	mutex_lock(&gp->tlb_lock);
+>  void kvmhv_set_ptbl_entry(unsigned int lpid, u64 dw0, u64 dw1)
+>  {
+> -	if (cpu_has_feature(CPU_FTR_HVMODE)) {
+> +	if (!kvmhv_on_pseries()) {
+>  		mmu_partition_table_set_entry(lpid, dw0, dw1);
+> -	} else {
+> -		pseries_partition_tb[lpid].patb0 =3D cpu_to_be64(dw0);
+> -		pseries_partition_tb[lpid].patb1 =3D cpu_to_be64(dw1);
+> +		return;
+>  	}
 > +
-> +	/* There may be more than one host page backing this single guest pte */
-> +	do {
-> +		kvmhv_invalidate_shadow_pte(vcpu, gp, addr, &shift);
-> +
-> +		npages -=3D 1UL << (shift - PAGE_SHIFT);
-> +		addr +=3D 1UL << shift;
+> +	pseries_partition_tb[lpid].patb0 =3D cpu_to_be64(dw0);
+> +	pseries_partition_tb[lpid].patb1 =3D cpu_to_be64(dw1);
+> +	/* L0 will do the necessary barriers */
+> +	kvmhv_flush_lpid(lpid);
+>  }
+> =20
+>  static void kvmhv_set_nested_ptbl(struct kvm_nested_guest *gp)
+> @@ -482,7 +500,7 @@ static void kvmhv_flush_nested(struct kvm_nested_gues=
+t *gp)
+>  	spin_lock(&kvm->mmu_lock);
+>  	kvmppc_free_pgtable_radix(kvm, gp->shadow_pgtable, gp->shadow_lpid);
+>  	spin_unlock(&kvm->mmu_lock);
+> -	radix__flush_tlb_lpid(gp->shadow_lpid);
+> +	kvmhv_flush_lpid(gp->shadow_lpid);
+>  	kvmhv_update_ptbl_cache(gp);
+>  	if (gp->l1_gr_to_hr =3D=3D 0)
+>  		kvmhv_remove_nested(gp);
+> @@ -766,7 +784,7 @@ static void kvmhv_emulate_tlbie_lpid(struct kvm_vcpu =
+*vcpu,
+>  		spin_lock(&kvm->mmu_lock);
+>  		kvmppc_free_pgtable_radix(kvm, gp->shadow_pgtable,
+>  					  gp->shadow_lpid);
+> -		radix__flush_tlb_lpid(gp->shadow_lpid);
+> +		kvmhv_flush_lpid(gp->shadow_lpid);
+>  		spin_unlock(&kvm->mmu_lock);
+>  		break;
+>  	case 1:
 
-I read this about 6 times before realizing that 'shift' here has a
-different value to what it did before the loop (which it has to in
-order to be correct).  I'd suggest a loop local variable with a
-different name (maybe 'shadow_shift') to make that more obvious.
 --=20
 David Gibson			| I'll have my music baroque, and my code
 david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---itqfrb9Qq3wY07cp
+--8jNwmpfkpox/fiJK
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlu23TwACgkQbDjKyiDZ
-s5IU7A//b5Oa0tE4mrci6tjOXKF2wjFGMVzr3qzi2vfLXvijCNyZb1503NaYJ7wQ
-p5sQ7xe77VllqDZKUeeW66ygvwI47VJnkFITj4iU3OvPaxx1iNuxtVVN472p84gc
-CCMYW6ABOz4uzo4pMfTIxRJBHsPor1ivE8s6f0ggXt+p/oTE6ISs4PUTv+emfgSq
-ivetPtKvjT4UMk2Gj33iHTqYp4aBZJzogg9gezSX8re9bZ1yOKU6DVSQPmDOdmOf
-5Pooe1ID/b8DWAvDgVSmo43ql/RKRdgzMMEB5jL2tPhjatQgQTGS8w/84LqCqv2K
-4E46CfMUwiPeVJghQOG2AiGhZCsgHFtUDmSRpR7egKudLIIx8pdiENfB0JuVgIIz
-IYV8rbNdf9D/9SO0RQeYxYrLwf3DFYb6GlqvP/sShklbsDEOe/Ux3GFvzpBt5RzN
-VpaS/ey3/IYpsK1QxsxYJasioSuPLvO4WggRA3yayEs/Y2VLyRjB3Vng6l36Cpo/
-vu5WOrOg75WZ56Zagvd5S51CMuNDJ+su2TAgvb9/AIBqi/F260xcMGk+xhhMQmSe
-k0PSfoy5s/XaiChFjWTEQ57SOnMK9bWpA3nUgIn4ZzKyM3IDefUW4eSgpLHLIBEO
-PmTw/MoioxksVcSQE/imrFMwW0dk3wBycq1nVLgxfVmue3+ejcU=
-=aigY
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlu23kcACgkQbDjKyiDZ
+s5K8jBAAxfPii/YRyweXgMHAKuJijrt3C2HYfdNbkuOpBOo3KkR3xd2lmFq/54jk
+oZ1eNfAmU1E2+t7c9nlDEkq2P+6ULgd0jUMvFXsnUPUPhcKPEtRzAvxo2LW3ikxF
+V8b+yeUJjfbmCmt/ei7Rl/cNxkSATCAX+RhbQEIQZ5gFpHrLas41cEwT3RE0K6y4
+H9/yNO9DQEXfu8jRmLva+CC+hY6T4TX+FZV0jo8VNJIlVZGgw9GHfkFFBjczOXoK
+7JpBfzGUKp7qBxVDR4NkbysbEqUOEUPrWucOi2jGKEod1hbiUBNpdsTKrhmTcmQK
+rO3OnKfXyeXdH+8fpEQhKpkm2L3xhfS2rI/JFVbIISI+M7OTnk2LRCof0R+3QZLw
+iY1Au0qU6WahXaaztDLsOfa6Huw0P4Ke87n8yBTKVc5AM0e5yps/1rvaTaqa3l00
+34QI4X0x+j42wr4Vp3tij4ctWDRin8eRvdv0D/Co3At8i/XxLocsfmgPI9ZXoyey
+EoekcttTUm9d1gxylUzjTRumeRiC9zJipWrwweHjoIE2rsmQAeIGHxbRXQ5T0dq6
+S0wByfG3tM0tVNDW2Wv+AZjp74YVorVaF0i8FQk8Dgak5Wnn+SRynhhsl9t3E1zF
+O6taq0jehQYiWSLDR1DeHpO/Jj1x887IrAIKKzIX+4TxSVtHNhw=
+=Di5E
 -----END PGP SIGNATURE-----
 
---itqfrb9Qq3wY07cp--
+--8jNwmpfkpox/fiJK--
