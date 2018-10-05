@@ -6,62 +6,62 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 763AAC00449
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 17:26:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 177D2C00449
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 17:29:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 02B7C208E7
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 17:26:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 02B7C208E7
+	by mail.kernel.org (Postfix) with ESMTPS id 5FE7C213A2
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 17:29:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5FE7C213A2
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42RcBM0cs0zF3br
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 03:26:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42RcDv3gGZzF3TC
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 03:29:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.167.195; helo=mail-oi1-f195.google.com;
+ (client-ip=209.85.167.194; helo=mail-oi1-f194.google.com;
  envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mail-oi1-f195.google.com (mail-oi1-f195.google.com
- [209.85.167.195])
+Received: from mail-oi1-f194.google.com (mail-oi1-f194.google.com
+ [209.85.167.194])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42RbZN5tL1zF3TS
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Oct 2018 02:59:08 +1000 (AEST)
-Received: by mail-oi1-f195.google.com with SMTP id e17-v6so10927374oig.12
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Oct 2018 09:59:08 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42RbZP6N7VzDrJl
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Oct 2018 02:59:09 +1000 (AEST)
+Received: by mail-oi1-f194.google.com with SMTP id j68-v6so10952175oib.7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Oct 2018 09:59:09 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references;
- bh=mtTL2n+za36SdkRTg7E72YsIYoFfcWaRYH/h28h8iuc=;
- b=rav8itFw/aMt4gzKfR1hXDNK1ClKPPI6oxNmHQagcDbJFcFQMfVm+lIkWTSJVLU7c1
- zCDcjp5hflLxOhYohgB1Zk+VEQpG2YiaZzsHS4qCFEw5nlHvwS0BRBzvj1GXLMzZgKQq
- LjRBrZA1La9pJarthi8/4h2cDYc6fdP/0hXV1vmXTAeuW1WKdHiRS8U7+LkANLyKweNj
- opswdAQ5SAbVRLeKeIp7lVxRHV2L49xoMsRRlY2kHRmTU1V6ltYjx1YnZdmS5/9zjxwr
- 0zjpTObR7jKByO4TNhor2jFtDMQfSLphn+PvqbpU1tTsMiCxfPs+VVTGIS/WagQKvZGj
- t5HA==
-X-Gm-Message-State: ABuFfohzHDkO7ftobHl4JGFkOop1ZNuvNUsPyYB/sFBlFFRb674/DbFx
- BRKp7GF8DpsVm/469Qdgug==
-X-Google-Smtp-Source: ACcGV60BDLX8KtOES3un97imZHpPnq6mXTZnbumE/V2o7Ns5+cBG5Vc8I8ylUEkuzMxNiZ+Qlo0x5Q==
-X-Received: by 2002:aca:f342:: with SMTP id r63-v6mr6246368oih.6.1538758746338; 
- Fri, 05 Oct 2018 09:59:06 -0700 (PDT)
+ bh=WLcoBwwBfOERKzo9rW58qzDysAW/KcU3knA0lIoHGhc=;
+ b=t1PpoXG5UZ2bZ5IqWsd4PE501EPa3v3W/1KU3KXDFEEwLikloGWpT+uqbfU6V8RjWv
+ q1KENBf0wSLbk8Y/S2k7tDlMPNnKF/Q17lLpBv9myXE9zSyzmSfkgRh0t6Mvx7s8tG8Z
+ SMcGMhh5X5/Jc4oqMPKnBjww76g8dIvFvw3OKBfLtXqbIEMzvuwm/w+GG+Ai9uCJ0mDe
+ v/CMo+dkmf2xuUXGNpgU35Ncq0piebQkmOqDPVs07i6kVjT829oz3EB3Sd+vAIEbgspu
+ 2VWETm3QDCyS0rQbojav7beFRpb4scgQG1/Ox1nMd3lFDXjw9ne8+ztuHGIOhB9nLwFX
+ Cpcg==
+X-Gm-Message-State: ABuFfoiSol1hV4hT1rJChN4z/l/+YGVhST1dTczkYBiGt7eAXRVZUmRm
+ gX+sR0guou9ezlJs+REVJg==
+X-Google-Smtp-Source: ACcGV60J7rtswjZ/DjFAKrFgFiWxxCLcvzDcsjlMwmnqP4spAG3vze2mZS4MGcSGsiFY5xWDB1shtA==
+X-Received: by 2002:aca:c392:: with SMTP id
+ t140-v6mr6048578oif.325.1538758747750; 
+ Fri, 05 Oct 2018 09:59:07 -0700 (PDT)
 Received: from xps15.herring.priv (24-155-109-49.dyn.grandenetworks.net.
  [24.155.109.49]) by smtp.googlemail.com with ESMTPSA id
- u63-v6sm2904328ota.75.2018.10.05.09.59.04
+ u63-v6sm2904328ota.75.2018.10.05.09.59.06
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Fri, 05 Oct 2018 09:59:05 -0700 (PDT)
+ Fri, 05 Oct 2018 09:59:07 -0700 (PDT)
 From: Rob Herring <robh@kernel.org>
 To: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 11/36] dt-bindings: timer: Convert ARM timer bindings to
- json-schema
-Date: Fri,  5 Oct 2018 11:58:23 -0500
-Message-Id: <20181005165848.3474-12-robh@kernel.org>
+Subject: [PATCH 12/36] dt-bindings: arm: Convert cpu binding to json-schema
+Date: Fri,  5 Oct 2018 11:58:24 -0500
+Message-Id: <20181005165848.3474-13-robh@kernel.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20181005165848.3474-1-robh@kernel.org>
 References: <20181005165848.3474-1-robh@kernel.org>
@@ -79,472 +79,1034 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Cc: Mark Rutland <mark.rutland@arm.com>, Tom Rini <trini@konsulko.com>,
  Kumar Gala <kumar.gala@linaro.org>, Grant Likely <glikely@secretlab.ca>,
  Arnd Bergmann <arnd@arndb.de>, Linus Walleij <linus.walleij@linaro.org>,
- Daniel Lezcano <daniel.lezcano@linaro.org>,
  Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
- Bjorn Andersson <bjorn.andersson@linaro.org>, Mark Brown <broonie@kernel.org>,
+ Bjorn Andersson <bjorn.andersson@linaro.org>,
+ Matthias Brugger <matthias.bgg@gmail.com>, Mark Brown <broonie@kernel.org>,
  Geert Uytterhoeven <geert@linux-m68k.org>, Olof Johansson <olof@lixom.net>,
- Thomas Gleixner <tglx@linutronix.de>, Frank Rowand <frowand.list@gmail.com>,
+ linux-mediatek@lists.infradead.org, Frank Rowand <frowand.list@gmail.com>,
  Jonathan Cameron <jic23@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Convert ARM timers to DT schema format using json-schema.
+Convert ARM CPU binding to DT schema format using json-schema.
 
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
 Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Matthias Brugger <matthias.bgg@gmail.com>
 Cc: devicetree@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-mediatek@lists.infradead.org
 Signed-off-by: Rob Herring <robh@kernel.org>
 ---
- .../bindings/timer/arm,arch_timer.txt         | 112 ----------------
- .../bindings/timer/arm,arch_timer.yaml        | 103 +++++++++++++++
- .../bindings/timer/arm,arch_timer_mmio.yaml   | 120 ++++++++++++++++++
- .../bindings/timer/arm,global_timer.txt       |  27 ----
- .../bindings/timer/arm,global_timer.yaml      |  46 +++++++
- 5 files changed, 269 insertions(+), 139 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/timer/arm,arch_timer.txt
- create mode 100644 Documentation/devicetree/bindings/timer/arm,arch_timer.yaml
- create mode 100644 Documentation/devicetree/bindings/timer/arm,arch_timer_mmio.yaml
- delete mode 100644 Documentation/devicetree/bindings/timer/arm,global_timer.txt
- create mode 100644 Documentation/devicetree/bindings/timer/arm,global_timer.yaml
+ .../devicetree/bindings/arm/cpus.txt          | 490 -----------------
+ .../devicetree/bindings/arm/cpus.yaml         | 503 ++++++++++++++++++
+ 2 files changed, 503 insertions(+), 490 deletions(-)
+ delete mode 100644 Documentation/devicetree/bindings/arm/cpus.txt
+ create mode 100644 Documentation/devicetree/bindings/arm/cpus.yaml
 
-diff --git a/Documentation/devicetree/bindings/timer/arm,arch_timer.txt b/Documentation/devicetree/bindings/timer/arm,arch_timer.txt
+diff --git a/Documentation/devicetree/bindings/arm/cpus.txt b/Documentation/devicetree/bindings/arm/cpus.txt
 deleted file mode 100644
-index 68301b77e854..000000000000
---- a/Documentation/devicetree/bindings/timer/arm,arch_timer.txt
+index b0198a1cf403..000000000000
+--- a/Documentation/devicetree/bindings/arm/cpus.txt
 +++ /dev/null
-@@ -1,112 +0,0 @@
--* ARM architected timer
+@@ -1,490 +0,0 @@
+-=================
+-ARM CPUs bindings
+-=================
 -
--ARM cores may have a per-core architected timer, which provides per-cpu timers,
--or a memory mapped architected timer, which provides up to 8 frames with a
--physical and optional virtual timer per frame.
+-The device tree allows to describe the layout of CPUs in a system through
+-the "cpus" node, which in turn contains a number of subnodes (ie "cpu")
+-defining properties for every cpu.
 -
--The per-core architected timer is attached to a GIC to deliver its
--per-processor interrupts via PPIs. The memory mapped timer is attached to a GIC
--to deliver its interrupts via SPIs.
+-Bindings for CPU nodes follow the Devicetree Specification, available from:
 -
--** CP15 Timer node properties:
+-https://www.devicetree.org/specifications/
 -
--- compatible : Should at least contain one of
--	"arm,armv7-timer"
--	"arm,armv8-timer"
+-with updates for 32-bit and 64-bit ARM systems provided in this document.
 -
--- interrupts : Interrupt list for secure, non-secure, virtual and
--  hypervisor timers, in that order.
+-================================
+-Convention used in this document
+-================================
 -
--- clock-frequency : The frequency of the main counter, in Hz. Should be present
--  only where necessary to work around broken firmware which does not configure
--  CNTFRQ on all CPUs to a uniform correct value. Use of this property is
--  strongly discouraged; fix your firmware unless absolutely impossible.
+-This document follows the conventions described in the Devicetree
+-Specification, with the addition:
 -
--- always-on : a boolean property. If present, the timer is powered through an
--  always-on power domain, therefore it never loses context.
+-- square brackets define bitfields, eg reg[7:0] value of the bitfield in
+-  the reg property contained in bits 7 down to 0
 -
--- fsl,erratum-a008585 : A boolean property. Indicates the presence of
--  QorIQ erratum A-008585, which says that reading the counter is
--  unreliable unless the same value is returned by back-to-back reads.
--  This also affects writes to the tval register, due to the implicit
--  counter read.
+-=====================================
+-cpus and cpu node bindings definition
+-=====================================
 -
--- hisilicon,erratum-161010101 : A boolean property. Indicates the
--  presence of Hisilicon erratum 161010101, which says that reading the
--  counters is unreliable in some cases, and reads may return a value 32
--  beyond the correct value. This also affects writes to the tval
--  registers, due to the implicit counter read.
+-The ARM architecture, in accordance with the Devicetree Specification,
+-requires the cpus and cpu nodes to be present and contain the properties
+-described below.
 -
--** Optional properties:
+-- cpus node
 -
--- arm,cpu-registers-not-fw-configured : Firmware does not initialize
--  any of the generic timer CPU registers, which contain their
--  architecturally-defined reset values. Only supported for 32-bit
--  systems which follow the ARMv7 architected reset values.
+-	Description: Container of cpu nodes
 -
--- arm,no-tick-in-suspend : The main counter does not tick when the system is in
--  low-power system suspend on some SoCs. This behavior does not match the
--  Architecture Reference Manual's specification that the system counter "must
--  be implemented in an always-on power domain."
+-	The node name must be "cpus".
 -
+-	A cpus node must define the following properties:
 -
--Example:
+-	- #address-cells
+-		Usage: required
+-		Value type: <u32>
 -
--	timer {
--		compatible = "arm,cortex-a15-timer",
--			     "arm,armv7-timer";
--		interrupts = <1 13 0xf08>,
--			     <1 14 0xf08>,
--			     <1 11 0xf08>,
--			     <1 10 0xf08>;
--		clock-frequency = <100000000>;
--	};
+-		Definition depends on ARM architecture version and
+-		configuration:
 -
--** Memory mapped timer node properties:
+-			# On uniprocessor ARM architectures previous to v7
+-			  value must be 1, to enable a simple enumeration
+-			  scheme for processors that do not have a HW CPU
+-			  identification register.
+-			# On 32-bit ARM 11 MPcore, ARM v7 or later systems
+-			  value must be 1, that corresponds to CPUID/MPIDR
+-			  registers sizes.
+-			# On ARM v8 64-bit systems value should be set to 2,
+-			  that corresponds to the MPIDR_EL1 register size.
+-			  If MPIDR_EL1[63:32] value is equal to 0 on all CPUs
+-			  in the system, #address-cells can be set to 1, since
+-			  MPIDR_EL1[63:32] bits are not used for CPUs
+-			  identification.
+-	- #size-cells
+-		Usage: required
+-		Value type: <u32>
+-		Definition: must be set to 0
 -
--- compatible : Should at least contain "arm,armv7-timer-mem".
+-- cpu node
 -
--- clock-frequency : The frequency of the main counter, in Hz. Should be present
--  only when firmware has not configured the MMIO CNTFRQ registers.
+-	Description: Describes a CPU in an ARM based system
 -
--- reg : The control frame base address.
+-	PROPERTIES
 -
--Note that #address-cells, #size-cells, and ranges shall be present to ensure
--the CPU can address a frame's registers.
+-	- device_type
+-		Usage: required
+-		Value type: <string>
+-		Definition: must be "cpu"
+-	- reg
+-		Usage and definition depend on ARM architecture version and
+-		configuration:
 -
--A timer node has up to 8 frame sub-nodes, each with the following properties:
+-			# On uniprocessor ARM architectures previous to v7
+-			  this property is required and must be set to 0.
 -
--- frame-number: 0 to 7.
+-			# On ARM 11 MPcore based systems this property is
+-			  required and matches the CPUID[11:0] register bits.
 -
--- interrupts : Interrupt list for physical and virtual timers in that order.
--  The virtual timer interrupt is optional.
+-			  Bits [11:0] in the reg cell must be set to
+-			  bits [11:0] in CPU ID register.
 -
--- reg : The first and second view base addresses in that order. The second view
--  base address is optional.
+-			  All other bits in the reg cell must be set to 0.
 -
--- status : "disabled" indicates the frame is not available for use. Optional.
+-			# On 32-bit ARM v7 or later systems this property is
+-			  required and matches the CPU MPIDR[23:0] register
+-			  bits.
 -
--Example:
+-			  Bits [23:0] in the reg cell must be set to
+-			  bits [23:0] in MPIDR.
 -
--	timer@f0000000 {
--		compatible = "arm,armv7-timer-mem";
+-			  All other bits in the reg cell must be set to 0.
+-
+-			# On ARM v8 64-bit systems this property is required
+-			  and matches the MPIDR_EL1 register affinity bits.
+-
+-			  * If cpus node's #address-cells property is set to 2
+-
+-			    The first reg cell bits [7:0] must be set to
+-			    bits [39:32] of MPIDR_EL1.
+-
+-			    The second reg cell bits [23:0] must be set to
+-			    bits [23:0] of MPIDR_EL1.
+-
+-			  * If cpus node's #address-cells property is set to 1
+-
+-			    The reg cell bits [23:0] must be set to bits [23:0]
+-			    of MPIDR_EL1.
+-
+-			  All other bits in the reg cells must be set to 0.
+-
+-	- compatible:
+-		Usage: required
+-		Value type: <string>
+-		Definition: should be one of:
+-			    "arm,arm710t"
+-			    "arm,arm720t"
+-			    "arm,arm740t"
+-			    "arm,arm7ej-s"
+-			    "arm,arm7tdmi"
+-			    "arm,arm7tdmi-s"
+-			    "arm,arm9es"
+-			    "arm,arm9ej-s"
+-			    "arm,arm920t"
+-			    "arm,arm922t"
+-			    "arm,arm925"
+-			    "arm,arm926e-s"
+-			    "arm,arm926ej-s"
+-			    "arm,arm940t"
+-			    "arm,arm946e-s"
+-			    "arm,arm966e-s"
+-			    "arm,arm968e-s"
+-			    "arm,arm9tdmi"
+-			    "arm,arm1020e"
+-			    "arm,arm1020t"
+-			    "arm,arm1022e"
+-			    "arm,arm1026ej-s"
+-			    "arm,arm1136j-s"
+-			    "arm,arm1136jf-s"
+-			    "arm,arm1156t2-s"
+-			    "arm,arm1156t2f-s"
+-			    "arm,arm1176jzf"
+-			    "arm,arm1176jz-s"
+-			    "arm,arm1176jzf-s"
+-			    "arm,arm11mpcore"
+-			    "arm,cortex-a5"
+-			    "arm,cortex-a7"
+-			    "arm,cortex-a8"
+-			    "arm,cortex-a9"
+-			    "arm,cortex-a12"
+-			    "arm,cortex-a15"
+-			    "arm,cortex-a17"
+-			    "arm,cortex-a53"
+-			    "arm,cortex-a57"
+-			    "arm,cortex-a72"
+-			    "arm,cortex-a73"
+-			    "arm,cortex-m0"
+-			    "arm,cortex-m0+"
+-			    "arm,cortex-m1"
+-			    "arm,cortex-m3"
+-			    "arm,cortex-m4"
+-			    "arm,cortex-r4"
+-			    "arm,cortex-r5"
+-			    "arm,cortex-r7"
+-			    "brcm,brahma-b15"
+-			    "brcm,brahma-b53"
+-			    "brcm,vulcan"
+-			    "cavium,thunder"
+-			    "cavium,thunder2"
+-			    "faraday,fa526"
+-			    "intel,sa110"
+-			    "intel,sa1100"
+-			    "marvell,feroceon"
+-			    "marvell,mohawk"
+-			    "marvell,pj4a"
+-			    "marvell,pj4b"
+-			    "marvell,sheeva-v5"
+-			    "nvidia,tegra132-denver"
+-			    "nvidia,tegra186-denver"
+-			    "nvidia,tegra194-carmel"
+-			    "qcom,krait"
+-			    "qcom,kryo"
+-			    "qcom,kryo385"
+-			    "qcom,scorpion"
+-	- enable-method
+-		Value type: <stringlist>
+-		Usage and definition depend on ARM architecture version.
+-			# On ARM v8 64-bit this property is required and must
+-			  be one of:
+-			     "psci"
+-			     "spin-table"
+-			# On ARM 32-bit systems this property is optional and
+-			  can be one of:
+-			    "actions,s500-smp"
+-			    "allwinner,sun6i-a31"
+-			    "allwinner,sun8i-a23"
+-			    "allwinner,sun9i-a80-smp"
+-			    "amlogic,meson8-smp"
+-			    "amlogic,meson8b-smp"
+-			    "arm,realview-smp"
+-			    "brcm,bcm11351-cpu-method"
+-			    "brcm,bcm23550"
+-			    "brcm,bcm2836-smp"
+-			    "brcm,bcm-nsp-smp"
+-			    "brcm,brahma-b15"
+-			    "marvell,armada-375-smp"
+-			    "marvell,armada-380-smp"
+-			    "marvell,armada-390-smp"
+-			    "marvell,armada-xp-smp"
+-			    "marvell,98dx3236-smp"
+-			    "mediatek,mt6589-smp"
+-			    "mediatek,mt81xx-tz-smp"
+-			    "qcom,gcc-msm8660"
+-			    "qcom,kpss-acc-v1"
+-			    "qcom,kpss-acc-v2"
+-			    "renesas,apmu"
+-			    "renesas,r9a06g032-smp"
+-			    "rockchip,rk3036-smp"
+-			    "rockchip,rk3066-smp"
+-			    "ste,dbx500-smp"
+-
+-	- cpu-release-addr
+-		Usage: required for systems that have an "enable-method"
+-		       property value of "spin-table".
+-		Value type: <prop-encoded-array>
+-		Definition:
+-			# On ARM v8 64-bit systems must be a two cell
+-			  property identifying a 64-bit zero-initialised
+-			  memory location.
+-
+-	- qcom,saw
+-		Usage: required for systems that have an "enable-method"
+-		       property value of "qcom,kpss-acc-v1" or
+-		       "qcom,kpss-acc-v2"
+-		Value type: <phandle>
+-		Definition: Specifies the SAW[1] node associated with this CPU.
+-
+-	- qcom,acc
+-		Usage: required for systems that have an "enable-method"
+-		       property value of "qcom,kpss-acc-v1" or
+-		       "qcom,kpss-acc-v2"
+-		Value type: <phandle>
+-		Definition: Specifies the ACC[2] node associated with this CPU.
+-
+-	- cpu-idle-states
+-		Usage: Optional
+-		Value type: <prop-encoded-array>
+-		Definition:
+-			# List of phandles to idle state nodes supported
+-			  by this cpu [3].
+-
+-	- capacity-dmips-mhz
+-		Usage: Optional
+-		Value type: <u32>
+-		Definition:
+-			# u32 value representing CPU capacity [4] in
+-			  DMIPS/MHz, relative to highest capacity-dmips-mhz
+-			  in the system.
+-
+-	- rockchip,pmu
+-		Usage: optional for systems that have an "enable-method"
+-		       property value of "rockchip,rk3066-smp"
+-		       While optional, it is the preferred way to get access to
+-		       the cpu-core power-domains.
+-		Value type: <phandle>
+-		Definition: Specifies the syscon node controlling the cpu core
+-			    power domains.
+-
+-	- dynamic-power-coefficient
+-		Usage: optional
+-		Value type: <prop-encoded-array>
+-		Definition: A u32 value that represents the running time dynamic
+-			    power coefficient in units of uW/MHz/V^2. The
+-			    coefficient can either be calculated from power
+-			    measurements or derived by analysis.
+-
+-			    The dynamic power consumption of the CPU  is
+-			    proportional to the square of the Voltage (V) and
+-			    the clock frequency (f). The coefficient is used to
+-			    calculate the dynamic power as below -
+-
+-			    Pdyn = dynamic-power-coefficient * V^2 * f
+-
+-			    where voltage is in V, frequency is in MHz.
+-
+-Example 1 (dual-cluster big.LITTLE system 32-bit):
+-
+-	cpus {
+-		#size-cells = <0>;
 -		#address-cells = <1>;
--		#size-cells = <1>;
--		ranges;
--		reg = <0xf0000000 0x1000>;
--		clock-frequency = <50000000>;
 -
--		frame@f0001000 {
--			frame-number = <0>
--			interrupts = <0 13 0x8>,
--				     <0 14 0x8>;
--			reg = <0xf0001000 0x1000>,
--			      <0xf0002000 0x1000>;
+-		cpu@0 {
+-			device_type = "cpu";
+-			compatible = "arm,cortex-a15";
+-			reg = <0x0>;
 -		};
 -
--		frame@f0003000 {
--			frame-number = <1>
--			interrupts = <0 15 0x8>;
--			reg = <0xf0003000 0x1000>;
+-		cpu@1 {
+-			device_type = "cpu";
+-			compatible = "arm,cortex-a15";
+-			reg = <0x1>;
+-		};
+-
+-		cpu@100 {
+-			device_type = "cpu";
+-			compatible = "arm,cortex-a7";
+-			reg = <0x100>;
+-		};
+-
+-		cpu@101 {
+-			device_type = "cpu";
+-			compatible = "arm,cortex-a7";
+-			reg = <0x101>;
 -		};
 -	};
-diff --git a/Documentation/devicetree/bindings/timer/arm,arch_timer.yaml b/Documentation/devicetree/bindings/timer/arm,arch_timer.yaml
+-
+-Example 2 (Cortex-A8 uniprocessor 32-bit system):
+-
+-	cpus {
+-		#size-cells = <0>;
+-		#address-cells = <1>;
+-
+-		cpu@0 {
+-			device_type = "cpu";
+-			compatible = "arm,cortex-a8";
+-			reg = <0x0>;
+-		};
+-	};
+-
+-Example 3 (ARM 926EJ-S uniprocessor 32-bit system):
+-
+-	cpus {
+-		#size-cells = <0>;
+-		#address-cells = <1>;
+-
+-		cpu@0 {
+-			device_type = "cpu";
+-			compatible = "arm,arm926ej-s";
+-			reg = <0x0>;
+-		};
+-	};
+-
+-Example 4 (ARM Cortex-A57 64-bit system):
+-
+-cpus {
+-	#size-cells = <0>;
+-	#address-cells = <2>;
+-
+-	cpu@0 {
+-		device_type = "cpu";
+-		compatible = "arm,cortex-a57";
+-		reg = <0x0 0x0>;
+-		enable-method = "spin-table";
+-		cpu-release-addr = <0 0x20000000>;
+-	};
+-
+-	cpu@1 {
+-		device_type = "cpu";
+-		compatible = "arm,cortex-a57";
+-		reg = <0x0 0x1>;
+-		enable-method = "spin-table";
+-		cpu-release-addr = <0 0x20000000>;
+-	};
+-
+-	cpu@100 {
+-		device_type = "cpu";
+-		compatible = "arm,cortex-a57";
+-		reg = <0x0 0x100>;
+-		enable-method = "spin-table";
+-		cpu-release-addr = <0 0x20000000>;
+-	};
+-
+-	cpu@101 {
+-		device_type = "cpu";
+-		compatible = "arm,cortex-a57";
+-		reg = <0x0 0x101>;
+-		enable-method = "spin-table";
+-		cpu-release-addr = <0 0x20000000>;
+-	};
+-
+-	cpu@10000 {
+-		device_type = "cpu";
+-		compatible = "arm,cortex-a57";
+-		reg = <0x0 0x10000>;
+-		enable-method = "spin-table";
+-		cpu-release-addr = <0 0x20000000>;
+-	};
+-
+-	cpu@10001 {
+-		device_type = "cpu";
+-		compatible = "arm,cortex-a57";
+-		reg = <0x0 0x10001>;
+-		enable-method = "spin-table";
+-		cpu-release-addr = <0 0x20000000>;
+-	};
+-
+-	cpu@10100 {
+-		device_type = "cpu";
+-		compatible = "arm,cortex-a57";
+-		reg = <0x0 0x10100>;
+-		enable-method = "spin-table";
+-		cpu-release-addr = <0 0x20000000>;
+-	};
+-
+-	cpu@10101 {
+-		device_type = "cpu";
+-		compatible = "arm,cortex-a57";
+-		reg = <0x0 0x10101>;
+-		enable-method = "spin-table";
+-		cpu-release-addr = <0 0x20000000>;
+-	};
+-
+-	cpu@100000000 {
+-		device_type = "cpu";
+-		compatible = "arm,cortex-a57";
+-		reg = <0x1 0x0>;
+-		enable-method = "spin-table";
+-		cpu-release-addr = <0 0x20000000>;
+-	};
+-
+-	cpu@100000001 {
+-		device_type = "cpu";
+-		compatible = "arm,cortex-a57";
+-		reg = <0x1 0x1>;
+-		enable-method = "spin-table";
+-		cpu-release-addr = <0 0x20000000>;
+-	};
+-
+-	cpu@100000100 {
+-		device_type = "cpu";
+-		compatible = "arm,cortex-a57";
+-		reg = <0x1 0x100>;
+-		enable-method = "spin-table";
+-		cpu-release-addr = <0 0x20000000>;
+-	};
+-
+-	cpu@100000101 {
+-		device_type = "cpu";
+-		compatible = "arm,cortex-a57";
+-		reg = <0x1 0x101>;
+-		enable-method = "spin-table";
+-		cpu-release-addr = <0 0x20000000>;
+-	};
+-
+-	cpu@100010000 {
+-		device_type = "cpu";
+-		compatible = "arm,cortex-a57";
+-		reg = <0x1 0x10000>;
+-		enable-method = "spin-table";
+-		cpu-release-addr = <0 0x20000000>;
+-	};
+-
+-	cpu@100010001 {
+-		device_type = "cpu";
+-		compatible = "arm,cortex-a57";
+-		reg = <0x1 0x10001>;
+-		enable-method = "spin-table";
+-		cpu-release-addr = <0 0x20000000>;
+-	};
+-
+-	cpu@100010100 {
+-		device_type = "cpu";
+-		compatible = "arm,cortex-a57";
+-		reg = <0x1 0x10100>;
+-		enable-method = "spin-table";
+-		cpu-release-addr = <0 0x20000000>;
+-	};
+-
+-	cpu@100010101 {
+-		device_type = "cpu";
+-		compatible = "arm,cortex-a57";
+-		reg = <0x1 0x10101>;
+-		enable-method = "spin-table";
+-		cpu-release-addr = <0 0x20000000>;
+-	};
+-};
+-
+---
+-[1] arm/msm/qcom,saw2.txt
+-[2] arm/msm/qcom,kpss-acc.txt
+-[3] ARM Linux kernel documentation - idle states bindings
+-    Documentation/devicetree/bindings/arm/idle-states.txt
+-[4] ARM Linux kernel documentation - cpu capacity bindings
+-    Documentation/devicetree/bindings/arm/cpu-capacity.txt
+diff --git a/Documentation/devicetree/bindings/arm/cpus.yaml b/Documentation/devicetree/bindings/arm/cpus.yaml
 new file mode 100644
-index 000000000000..733ae2254c65
+index 000000000000..bb75914324a3
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/timer/arm,arch_timer.yaml
-@@ -0,0 +1,103 @@
++++ b/Documentation/devicetree/bindings/arm/cpus.yaml
+@@ -0,0 +1,503 @@
 +# SPDX-License-Identifier: None
 +%YAML 1.2
 +---
-+$id: http://devicetree.org/schemas/bindings/arm,arch_timer.yaml#
++$id: http://devicetree.org/schemas/bindings/arm/cpus.yaml#
 +$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-+title: ARM architected timer
++title: ARM CPUs bindings
 +
 +maintainers:
-+  - Marc Zyngier <marc.zyngier@arm.com>
-+  - Mark Rutland <mark.rutland@arm.com>
-+description: |+
-+  ARM cores may have a per-core architected timer, which provides per-cpu timers,
-+  or a memory mapped architected timer, which provides up to 8 frames with a
-+  physical and optional virtual timer per frame.
-+
-+  The per-core architected timer is attached to a GIC to deliver its
-+  per-processor interrupts via PPIs. The memory mapped timer is attached to a GIC
-+  to deliver its interrupts via SPIs.
-+
-+properties:
-+  compatible:
-+    oneOf:
-+      - items:
-+          - enum:
-+              - arm,cortex-a15-timer
-+          - enum:
-+              - arm,armv7-timer
-+      - items:
-+          - enum:
-+            - arm,armv7-timer
-+      - items:
-+          - enum:
-+            - arm,armv8-timer
-+
-+  interrupts:
-+    items:
-+      - description: secure timer irq
-+      - description: non-secure timer irq
-+      - description: virtual timer irq
-+      - description: hypervisor timer irq
-+
-+  clock-frequency:
-+    description: The frequency of the main counter, in Hz. Should be present
-+      only where necessary to work around broken firmware which does not configure
-+      CNTFRQ on all CPUs to a uniform correct value. Use of this property is
-+      strongly discouraged; fix your firmware unless absolutely impossible.
-+
-+  always-on:
-+    type: boolean
-+    description: If present, the timer is powered through an always-on power
-+      domain, therefore it never loses context.
-+
-+  fsl,erratum-a008585:
-+    type: boolean
-+    description: Indicates the presence of QorIQ erratum A-008585, which says
-+      that reading the counter is unreliable unless the same value is returned
-+      by back-to-back reads. This also affects writes to the tval register, due
-+      to the implicit counter read.
-+
-+  hisilicon,erratum-161010101:
-+    type: boolean
-+    description: Indicates the presence of Hisilicon erratum 161010101, which
-+      says that reading the counters is unreliable in some cases, and reads may
-+      return a value 32 beyond the correct value. This also affects writes to
-+      the tval registers, due to the implicit counter read.
-+
-+  arm,cpu-registers-not-fw-configured:
-+    type: boolean
-+    description: Firmware does not initialize any of the generic timer CPU
-+      registers, which contain their architecturally-defined reset values. Only
-+      supported for 32-bit systems which follow the ARMv7 architected reset
-+      values.
-+
-+  arm,no-tick-in-suspend:
-+    type: boolean
-+    description: The main counter does not tick when the system is in
-+      low-power system suspend on some SoCs. This behavior does not match the
-+      Architecture Reference Manual's specification that the system counter "must
-+      be implemented in an always-on power domain."
-+
-+required:
-+  - compatible
-+
-+oneOf:
-+  - required:
-+      - interrupts
-+  - required:
-+      - interrupts-extended
-+
-+examples:
-+  - |
-+    timer {
-+      compatible = "arm,cortex-a15-timer",
-+             "arm,armv7-timer";
-+      interrupts = <1 13 0xf08>,
-+             <1 14 0xf08>,
-+             <1 11 0xf08>,
-+             <1 10 0xf08>;
-+      clock-frequency = <100000000>;
-+    };
-+
-+...
-diff --git a/Documentation/devicetree/bindings/timer/arm,arch_timer_mmio.yaml b/Documentation/devicetree/bindings/timer/arm,arch_timer_mmio.yaml
-new file mode 100644
-index 000000000000..34c8ecfea2a5
---- /dev/null
-+++ b/Documentation/devicetree/bindings/timer/arm,arch_timer_mmio.yaml
-@@ -0,0 +1,120 @@
-+# SPDX-License-Identifier: None
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/bindings/arm,arch_timer_mmio.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: ARM memory mapped architected timer
-+
-+maintainers:
-+  - Marc Zyngier <marc.zyngier@arm.com>
-+  - Mark Rutland <mark.rutland@arm.com>
++  - Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 +
 +description: |+
-+  ARM cores may have a memory mapped architected timer, which provides up to 8
-+  frames with a physical and optional virtual timer per frame.
++  The device tree allows to describe the layout of CPUs in a system through
++  the "cpus" node, which in turn contains a number of subnodes (ie "cpu")
++  defining properties for every cpu.
 +
-+  The memory mapped timer is attached to a GIC to deliver its interrupts via SPIs.
++  Bindings for CPU nodes follow the Devicetree Specification, available from:
++
++  https://www.devicetree.org/specifications/
++
++  with updates for 32-bit and 64-bit ARM systems provided in this document.
++
++  ================================
++  Convention used in this document
++  ================================
++
++  This document follows the conventions described in the Devicetree
++  Specification, with the addition:
++
++  - square brackets define bitfields, eg reg[7:0] value of the bitfield in
++    the reg property contained in bits 7 down to 0
++
++  =====================================
++  cpus and cpu node bindings definition
++  =====================================
++
++  The ARM architecture, in accordance with the Devicetree Specification,
++  requires the cpus and cpu nodes to be present and contain the properties
++  described below.
 +
 +properties:
-+  compatible:
-+    items:
-+      - enum:
-+        - arm,armv7-timer-mem
-+
-+  reg:
-+    maxItems: 1
-+    description: The control frame base address
++  $nodename:
++    const: cpus
++    description: Container of cpu nodes
 +
 +  '#address-cells':
 +    enum: [1, 2]
++    description: |
++      Definition depends on ARM architecture version and configuration:
++
++      On uniprocessor ARM architectures previous to v7
++        value must be 1, to enable a simple enumeration
++        scheme for processors that do not have a HW CPU
++        identification register.
++      On 32-bit ARM 11 MPcore, ARM v7 or later systems
++        value must be 1, that corresponds to CPUID/MPIDR
++        registers sizes.
++      On ARM v8 64-bit systems value should be set to 2,
++        that corresponds to the MPIDR_EL1 register size.
++        If MPIDR_EL1[63:32] value is equal to 0 on all CPUs
++        in the system, #address-cells can be set to 1, since
++        MPIDR_EL1[63:32] bits are not used for CPUs
++        identification.
 +
 +  '#size-cells':
-+    const: 1
-+
-+  clock-frequency:
-+    description: The frequency of the main counter, in Hz. Should be present
-+      only where necessary to work around broken firmware which does not configure
-+      CNTFRQ on all CPUs to a uniform correct value. Use of this property is
-+      strongly discouraged; fix your firmware unless absolutely impossible.
-+
-+  always-on:
-+    type: boolean
-+    description: If present, the timer is powered through an always-on power
-+      domain, therefore it never loses context.
-+
-+  arm,cpu-registers-not-fw-configured:
-+    type: boolean
-+    description: Firmware does not initialize any of the generic timer CPU
-+      registers, which contain their architecturally-defined reset values. Only
-+      supported for 32-bit systems which follow the ARMv7 architected reset
-+      values.
-+
-+  arm,no-tick-in-suspend:
-+    type: boolean
-+    description: The main counter does not tick when the system is in
-+      low-power system suspend on some SoCs. This behavior does not match the
-+      Architecture Reference Manual's specification that the system counter "must
-+      be implemented in an always-on power domain."
++    const: 0
 +
 +patternProperties:
-+  '^frame@[0-9a-z]*$':
-+    description: A timer node has up to 8 frame sub-nodes, each with the following properties.
++  '^cpu@[0-9a-f]+$':
 +    properties:
-+      frame-number:
++      device_type:
++        const: cpu
++
++      reg:
++        maxItems: 1
++        description: |
++          Usage and definition depend on ARM architecture version and
++          configuration:
++
++          On uniprocessor ARM architectures previous to v7
++          this property is required and must be set to 0.
++
++          On ARM 11 MPcore based systems this property is
++            required and matches the CPUID[11:0] register bits.
++
++            Bits [11:0] in the reg cell must be set to
++            bits [11:0] in CPU ID register.
++
++            All other bits in the reg cell must be set to 0.
++
++          On 32-bit ARM v7 or later systems this property is
++            required and matches the CPU MPIDR[23:0] register
++            bits.
++
++            Bits [23:0] in the reg cell must be set to
++            bits [23:0] in MPIDR.
++
++            All other bits in the reg cell must be set to 0.
++
++          On ARM v8 64-bit systems this property is required
++            and matches the MPIDR_EL1 register affinity bits.
++
++            * If cpus node's #address-cells property is set to 2
++
++              The first reg cell bits [7:0] must be set to
++              bits [39:32] of MPIDR_EL1.
++
++              The second reg cell bits [23:0] must be set to
++              bits [23:0] of MPIDR_EL1.
++
++            * If cpus node's #address-cells property is set to 1
++
++              The reg cell bits [23:0] must be set to bits [23:0]
++              of MPIDR_EL1.
++
++          All other bits in the reg cells must be set to 0.
++
++      compatible:
++        items:
++          - enum:
++              - arm,arm710t
++              - arm,arm720t
++              - arm,arm740t
++              - arm,arm7ej-s
++              - arm,arm7tdmi
++              - arm,arm7tdmi-s
++              - arm,arm9es
++              - arm,arm9ej-s
++              - arm,arm920t
++              - arm,arm922t
++              - arm,arm925
++              - arm,arm926e-s
++              - arm,arm926ej-s
++              - arm,arm940t
++              - arm,arm946e-s
++              - arm,arm966e-s
++              - arm,arm968e-s
++              - arm,arm9tdmi
++              - arm,arm1020e
++              - arm,arm1020t
++              - arm,arm1022e
++              - arm,arm1026ej-s
++              - arm,arm1136j-s
++              - arm,arm1136jf-s
++              - arm,arm1156t2-s
++              - arm,arm1156t2f-s
++              - arm,arm1176jzf
++              - arm,arm1176jz-s
++              - arm,arm1176jzf-s
++              - arm,arm11mpcore
++              - arm,cortex-a5
++              - arm,cortex-a7
++              - arm,cortex-a8
++              - arm,cortex-a9
++              - arm,cortex-a12
++              - arm,cortex-a15
++              - arm,cortex-a17
++              - arm,cortex-a53
++              - arm,cortex-a57
++              - arm,cortex-a72
++              - arm,cortex-a73
++              - arm,cortex-m0
++              - arm,cortex-m0+
++              - arm,cortex-m1
++              - arm,cortex-m3
++              - arm,cortex-m4
++              - arm,cortex-r4
++              - arm,cortex-r5
++              - arm,cortex-r7
++              - brcm,brahma-b15
++              - brcm,brahma-b53
++              - brcm,vulcan
++              - cavium,thunder
++              - cavium,thunder2
++              - faraday,fa526
++              - intel,sa110
++              - intel,sa1100
++              - marvell,feroceon
++              - marvell,mohawk
++              - marvell,pj4a
++              - marvell,pj4b
++              - marvell,sheeva-v5
++              - nvidia,tegra132-denver
++              - nvidia,tegra186-denver
++              - nvidia,tegra194-carmel
++              - qcom,krait
++              - qcom,kryo
++              - qcom,kryo385
++              - qcom,scorpion
++
++      enable-method:
 +        allOf:
-+          - $ref: "/schemas/types.yaml#/definitions/uint32"
-+          - minimum: 0
-+            maximum: 7
++          - $ref: '/schemas/types.yaml#/definitions/string'
++          - oneOf:
++            # On ARM v8 64-bit this property is required
++            - enum:
++                - psci
++                - spin-table
++            # On ARM 32-bit systems this property is optional
++            - enum:
++                - actions,s500-smp
++                - allwinner,sun6i-a31
++                - allwinner,sun8i-a23
++                - allwinner,sun9i-a80-smp
++                - allwinner,sun8i-a83t-smp
++                - amlogic,meson8-smp
++                - amlogic,meson8b-smp
++                - arm,realview-smp
++                - brcm,bcm11351-cpu-method
++                - brcm,bcm23550
++                - brcm,bcm2836-smp
++                - brcm,bcm63138
++                - brcm,bcm-nsp-smp
++                - brcm,brahma-b15
++                - marvell,armada-375-smp
++                - marvell,armada-380-smp
++                - marvell,armada-390-smp
++                - marvell,armada-xp-smp
++                - marvell,98dx3236-smp
++                - mediatek,mt6589-smp
++                - mediatek,mt81xx-tz-smp
++                - qcom,gcc-msm8660
++                - qcom,kpss-acc-v1
++                - qcom,kpss-acc-v2
++                - renesas,apmu
++                - renesas,r9a06g032-smp
++                - rockchip,rk3036-smp
++                - rockchip,rk3066-smp
++                - ste,dbx500-smp
 +
-+      interrupts:
-+        minItems: 1
-+        maxItems: 2
-+        items:
-+          - description: physical timer irq
-+          - description: virtual timer irq
++      cpu-release-addr:
++        $ref: '/schemas/types.yaml#/definitions/uint64'
 +
-+      reg :
-+        minItems: 1
-+        maxItems: 2
-+        items:
-+          - description: 1st view base address
-+          - description: 2nd optional view base address
++        description:
++          Required for systems that have an "enable-method"
++            property value of "spin-table".
++          On ARM v8 64-bit systems must be a two cell
++            property identifying a 64-bit zero-initialised
++            memory location.
++
++      qcom,saw:
++        $ref: '/schemas/types.yaml#/definitions/phandle'
++        description: |
++          Usage: required for systems that have an "enable-method"
++                 property value of "qcom,kpss-acc-v1" or
++                 "qcom,kpss-acc-v2"
++          Definition: Specifies the SAW[1] node associated with this CPU.
++
++      qcom,acc:
++        $ref: '/schemas/types.yaml#/definitions/phandle'
++        description: |
++          Usage: required for systems that have an "enable-method"
++                 property value of "qcom,kpss-acc-v1" or
++                 "qcom,kpss-acc-v2"
++          Definition: Specifies the ACC[2] node associated with this CPU.
++
++      cpu-idle-states:
++        $ref: '/schemas/types.yaml#/definitions/phandle-array'
++        description: |
++          Usage: Optional
++          Value type: <prop-encoded-array>
++          description: List of phandles to idle state nodes supported
++            by this cpu [3].
++
++      capacity-dmips-mhz:
++        $ref: '/schemas/types.yaml#/definitions/uint32'
++        description:
++          u32 value representing CPU capacity [4] in
++          DMIPS/MHz, relative to highest capacity-dmips-mhz
++          in the system.
++
++      rockchip,pmu:
++        description: |
++          Optional for systems that have an "enable-method"
++          property value of "rockchip,rk3066-smp"
++          While optional, it is the preferred way to get access to
++          the cpu-core power-domains.
++          Value type: <phandle>
++          Definition: Specifies the syscon node controlling the cpu core
++                power domains.
++
++      dynamic-power-coefficient:
++        $ref: '/schemas/types.yaml#/definitions/uint32'
++        description:
++          A u32 value that represents the running time dynamic
++          power coefficient in units of uW/MHz/V^2. The
++          coefficient can either be calculated from power
++          measurements or derived by analysis.
++
++          The dynamic power consumption of the CPU  is
++          proportional to the square of the Voltage (V) and
++          the clock frequency (f). The coefficient is used to
++          calculate the dynamic power as below -
++
++          Pdyn = dynamic-power-coefficient * V^2 * f
++
++          where voltage is in V, frequency is in MHz.
 +
 +    required:
-+      - frame-number
-+      - interrupts
++      - device_type
 +      - reg
++      - compatible
++
++    dependencies:
++      cpu-release-addr: [enable-method]
++      rockchip,pmu: [enable-method]
 +
 +required:
-+  - compatible
-+  - reg
 +  - '#address-cells'
 +  - '#size-cells'
 +
 +examples:
 +  - |
-+    timer@f0000000 {
-+      compatible = "arm,armv7-timer-mem";
++    cpus {
++      #size-cells = <0>;
 +      #address-cells = <1>;
-+      #size-cells = <1>;
-+      ranges;
-+      reg = <0xf0000000 0x1000>;
-+      clock-frequency = <50000000>;
 +
-+      frame@f0001000 {
-+        frame-number = <0>;
-+        interrupts = <0 13 0x8>,
-+               <0 14 0x8>;
-+        reg = <0xf0001000 0x1000>,
-+              <0xf0002000 0x1000>;
++      cpu@0 {
++        device_type = "cpu";
++        compatible = "arm,cortex-a15";
++        reg = <0x0>;
 +      };
 +
-+      frame@f0003000 {
-+        frame-number = <1>;
-+        interrupts = <0 15 0x8>;
-+        reg = <0xf0003000 0x1000>;
++      cpu@1 {
++        device_type = "cpu";
++        compatible = "arm,cortex-a15";
++        reg = <0x1>;
++      };
++
++      cpu@100 {
++        device_type = "cpu";
++        compatible = "arm,cortex-a7";
++        reg = <0x100>;
++      };
++
++      cpu@101 {
++        device_type = "cpu";
++        compatible = "arm,cortex-a7";
++        reg = <0x101>;
 +      };
 +    };
 +
-+...
-diff --git a/Documentation/devicetree/bindings/timer/arm,global_timer.txt b/Documentation/devicetree/bindings/timer/arm,global_timer.txt
-deleted file mode 100644
-index bdae3a818793..000000000000
---- a/Documentation/devicetree/bindings/timer/arm,global_timer.txt
-+++ /dev/null
-@@ -1,27 +0,0 @@
--
--* ARM Global Timer
--	Cortex-A9 are often associated with a per-core Global timer.
--
--** Timer node required properties:
--
--- compatible : should contain
--	     * "arm,cortex-a5-global-timer" for Cortex-A5 global timers.
--	     * "arm,cortex-a9-global-timer" for Cortex-A9 global
--	         timers or any compatible implementation. Note: driver
--	         supports versions r2p0 and above.
--
--- interrupts : One interrupt to each core
--
--- reg : Specify the base address and the size of the GT timer
--	register window.
--
--- clocks : Should be phandle to a clock.
--
--Example:
--
--	timer@2c000600 {
--		compatible = "arm,cortex-a9-global-timer";
--		reg = <0x2c000600 0x20>;
--		interrupts = <1 13 0xf01>;
--		clocks = <&arm_periph_clk>;
--	};
-diff --git a/Documentation/devicetree/bindings/timer/arm,global_timer.yaml b/Documentation/devicetree/bindings/timer/arm,global_timer.yaml
-new file mode 100644
-index 000000000000..09090f677387
---- /dev/null
-+++ b/Documentation/devicetree/bindings/timer/arm,global_timer.yaml
-@@ -0,0 +1,46 @@
-+# SPDX-License-Identifier: None
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/bindings/arm,global_timer.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: ARM Global Timer
-+
-+maintainers:
-+  - Stuart Menefy <stuart.menefy@st.com>
-+
-+description:
-+  Cortex-A9 are often associated with a per-core Global timer.
-+
-+properties:
-+  compatible:
-+    items:
-+      - enum:
-+          - arm,cortex-a5-global-timer
-+          - arm,cortex-a9-global-timer
-+
-+    description: driver supports versions r2p0 and above.
-+
-+  reg:
-+    maxItems: 1
-+
-+  interrupts:
-+    maxItems: 1
-+
-+  clocks:
-+    maxItems: 1
-+
-+required:
-+  - compatible
-+  - reg
-+  - clocks
-+
-+examples:
 +  - |
-+    timer@2c000600 {
-+      compatible = "arm,cortex-a9-global-timer";
-+      reg = <0x2c000600 0x20>;
-+      interrupts = <1 13 0xf01>;
-+      clocks = <&arm_periph_clk>;
++    // Example 2 (Cortex-A8 uniprocessor 32-bit system):
++    cpus {
++      #size-cells = <0>;
++      #address-cells = <1>;
++
++      cpu@0 {
++        device_type = "cpu";
++        compatible = "arm,cortex-a8";
++        reg = <0x0>;
++      };
++    };
++
++  - |
++    // Example 3 (ARM 926EJ-S uniprocessor 32-bit system):
++    cpus {
++      #size-cells = <0>;
++      #address-cells = <1>;
++
++      cpu@0 {
++        device_type = "cpu";
++        compatible = "arm,arm926ej-s";
++        reg = <0x0>;
++      };
++    };
++
++  - |
++    //  Example 4 (ARM Cortex-A57 64-bit system):
++    cpus {
++      #size-cells = <0>;
++      #address-cells = <2>;
++
++      cpu@0 {
++        device_type = "cpu";
++        compatible = "arm,cortex-a57";
++        reg = <0x0 0x0>;
++        enable-method = "spin-table";
++        cpu-release-addr = <0 0x20000000>;
++      };
++
++      cpu@1 {
++        device_type = "cpu";
++        compatible = "arm,cortex-a57";
++        reg = <0x0 0x1>;
++        enable-method = "spin-table";
++        cpu-release-addr = <0 0x20000000>;
++      };
++
++      cpu@100 {
++        device_type = "cpu";
++        compatible = "arm,cortex-a57";
++        reg = <0x0 0x100>;
++        enable-method = "spin-table";
++        cpu-release-addr = <0 0x20000000>;
++      };
++
++      cpu@101 {
++        device_type = "cpu";
++        compatible = "arm,cortex-a57";
++        reg = <0x0 0x101>;
++        enable-method = "spin-table";
++        cpu-release-addr = <0 0x20000000>;
++      };
++
++      cpu@10000 {
++        device_type = "cpu";
++        compatible = "arm,cortex-a57";
++        reg = <0x0 0x10000>;
++        enable-method = "spin-table";
++        cpu-release-addr = <0 0x20000000>;
++      };
++
++      cpu@10001 {
++        device_type = "cpu";
++        compatible = "arm,cortex-a57";
++        reg = <0x0 0x10001>;
++        enable-method = "spin-table";
++        cpu-release-addr = <0 0x20000000>;
++      };
++
++      cpu@10100 {
++        device_type = "cpu";
++        compatible = "arm,cortex-a57";
++        reg = <0x0 0x10100>;
++        enable-method = "spin-table";
++        cpu-release-addr = <0 0x20000000>;
++      };
++
++      cpu@10101 {
++        device_type = "cpu";
++        compatible = "arm,cortex-a57";
++        reg = <0x0 0x10101>;
++        enable-method = "spin-table";
++        cpu-release-addr = <0 0x20000000>;
++      };
++
++      cpu@100000000 {
++        device_type = "cpu";
++        compatible = "arm,cortex-a57";
++        reg = <0x1 0x0>;
++        enable-method = "spin-table";
++        cpu-release-addr = <0 0x20000000>;
++      };
++
++      cpu@100000001 {
++        device_type = "cpu";
++        compatible = "arm,cortex-a57";
++        reg = <0x1 0x1>;
++        enable-method = "spin-table";
++        cpu-release-addr = <0 0x20000000>;
++      };
++
++      cpu@100000100 {
++        device_type = "cpu";
++        compatible = "arm,cortex-a57";
++        reg = <0x1 0x100>;
++        enable-method = "spin-table";
++        cpu-release-addr = <0 0x20000000>;
++      };
++
++      cpu@100000101 {
++        device_type = "cpu";
++        compatible = "arm,cortex-a57";
++        reg = <0x1 0x101>;
++        enable-method = "spin-table";
++        cpu-release-addr = <0 0x20000000>;
++      };
++
++      cpu@100010000 {
++        device_type = "cpu";
++        compatible = "arm,cortex-a57";
++        reg = <0x1 0x10000>;
++        enable-method = "spin-table";
++        cpu-release-addr = <0 0x20000000>;
++      };
++
++      cpu@100010001 {
++        device_type = "cpu";
++        compatible = "arm,cortex-a57";
++        reg = <0x1 0x10001>;
++        enable-method = "spin-table";
++        cpu-release-addr = <0 0x20000000>;
++      };
++
++      cpu@100010100 {
++        device_type = "cpu";
++        compatible = "arm,cortex-a57";
++        reg = <0x1 0x10100>;
++        enable-method = "spin-table";
++        cpu-release-addr = <0 0x20000000>;
++      };
++
++      cpu@100010101 {
++        device_type = "cpu";
++        compatible = "arm,cortex-a57";
++        reg = <0x1 0x10101>;
++        enable-method = "spin-table";
++        cpu-release-addr = <0 0x20000000>;
++      };
 +    };
 +...
 -- 
