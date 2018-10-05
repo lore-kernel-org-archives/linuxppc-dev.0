@@ -2,80 +2,72 @@ Return-Path: <SRS0=9KTJ=MR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E6F18C65BA7
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 13:56:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BE68BC00449
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 14:01:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6E901206B2
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 13:56:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6E901206B2
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 2C3B6206B2
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 14:01:56 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="o9nd7nhh"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2C3B6206B2
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42RWWC0kYJzF3Mp
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Oct 2018 23:56:07 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42RWRW1XSZzF13T
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Oct 2018 23:52:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42RWds714ZzDrRP
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 00:01:53 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 42RWRV6wjJz8t2L
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Oct 2018 23:52:54 +1000 (AEST)
-Received: by ozlabs.org (Postfix)
- id 42RWRV5zJzz9s8J; Fri,  5 Oct 2018 23:52:54 +1000 (AEST)
-Authentication-Results: ozlabs.org; spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="o9nd7nhh";
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=none (mailfrom) smtp.mailfrom=infradead.org
+ (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
+ envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=infradead.org
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 42RWRT6N0Yz9s7W
- for <linuxppc-dev@ozlabs.org>; Fri,  5 Oct 2018 23:52:53 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 42RWRL45cyz9ttS1;
- Fri,  5 Oct 2018 15:52:46 +0200 (CEST)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id TvAeHsBS6nkP; Fri,  5 Oct 2018 15:52:46 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 42RWRL3YKxz9ttRn;
- Fri,  5 Oct 2018 15:52:46 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 1B3A08BB9B;
- Fri,  5 Oct 2018 15:52:51 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id P50ly5jUTWKY; Fri,  5 Oct 2018 15:52:51 +0200 (CEST)
-Received: from PO15451 (po15451.idsi0.si.c-s.fr [172.25.231.3])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D5FFE8BB99;
- Fri,  5 Oct 2018 15:52:50 +0200 (CEST)
-Subject: Re: [PATCH] powerpc: Don't print kernel instructions in
- show_user_instructions()
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-References: <20181005132123.6038-1-mpe@ellerman.id.au>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <73301bba-c675-a930-83d6-5b258c07c26e@c-s.fr>
-Date: Fri, 5 Oct 2018 15:52:49 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42RWYd2C8yzDrRP
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Oct 2018 23:58:13 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
+ :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+ Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+ List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=icoPfttjeff5yY2o/Haqd75W+rJ7k66AdEgbHZsvZdQ=; b=o9nd7nhh2WiVbQs1DdQiuYphs
+ seUdvLWCxp4QN3r6XTlPbH0TjUKivXKBEUMzDpwh/YP5vR42vfXOs3h1R6wQ1jtnbtNAgx7OkQMa7
+ GOHyGIdJ82TTwSAlMhLjzS9lLT3uJ2kDTQQvYsAf/1XBRYK6AakQt2f6AmnIuA/M0nCkjFXshEJcC
+ xZYvI5Gi8JZ6zug3fkgvbZIwSfTsbQn8Lb6O7VA8ksT/5hUuoMbrt3Qe6BhrGLYCs3HdhwYwgQx2v
+ dZD4beQj8LOKRgzhaxS/Tff68AGvofZjxmEZoFdmuWX+uxXnebDdwCh3g7wdn/JNi7mwh5frOfRXC
+ JhOY3goog==;
+Received: from j217100.upc-j.chello.nl ([24.132.217.100]
+ helo=hirez.programming.kicks-ass.net)
+ by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
+ id 1g8Qbi-0005pU-Pi; Fri, 05 Oct 2018 13:57:31 +0000
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+ id 5078A202631DA; Fri,  5 Oct 2018 15:57:28 +0200 (CEST)
+Date: Fri, 5 Oct 2018 15:57:28 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+Subject: Re: [RFC PATCH 1/9] kernel: add support for patchable function
+ pointers
+Message-ID: <20181005135728.GR19272@hirez.programming.kicks-ass.net>
+References: <20181005081333.15018-1-ard.biesheuvel@linaro.org>
+ <20181005081333.15018-2-ard.biesheuvel@linaro.org>
 MIME-Version: 1.0
-In-Reply-To: <20181005132123.6038-1-mpe@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20181005081333.15018-2-ard.biesheuvel@linaro.org>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,69 +79,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: jannh@google.com, muriloo@linux.ibm.com
+Cc: "Jason A . Donenfeld" <Jason@zx2c4.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
+ Samuel Neves <sneves@dei.uc.pt>, Paul Mackerras <paulus@samba.org>,
+ Herbert Xu <herbert@gondor.apana.org.au>, Richard Weinberger <richard@nod.at>,
+ Eric Biggers <ebiggers@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>,
+ Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+ linux-arm-kernel@lists.infradead.org,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
+ linux-crypto@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Fri, Oct 05, 2018 at 10:13:25AM +0200, Ard Biesheuvel wrote:
+> Add a function pointer abstraction that can be implemented by the arch
+> in a manner that avoids the downsides of function pointers, i.e., the
+> fact that they are typically located in a writable data section, and
+> their vulnerability to Spectre like defects.
+> 
+> The FFP (or fast function pointer) is callable as a function, since
+> the generic incarnation is simply that. However, due to the fact that
+> C does not distinguish between functions and function pointers at the
+> call site, the architecture can instead emit it as a patchable sequence
+> of instructions consisting of ordinary branches.
 
-
-Le 05/10/2018 à 15:21, Michael Ellerman a écrit :
-> Recently we implemented show_user_instructions() which dumps the code
-> around the NIP when a user space process dies with an unhandled
-> signal. This was modelled on the x86 code, and we even went so far as
-> to implement the exact same bug, namely that if the user process
-> crashed with its NIP pointing into the kernel we will dump kernel text
-> to dmesg. eg:
-> 
->    bad-bctr[2996]: segfault (11) at c000000000010000 nip c000000000010000 lr 12d0b0894 code 1
->    bad-bctr[2996]: code: fbe10068 7cbe2b78 7c7f1b78 fb610048 38a10028 38810020 fb810050 7f8802a6
->    bad-bctr[2996]: code: 3860001c f8010080 48242371 60000000 <7c7b1b79> 4082002c e8010080 eb610048
-> 
-> This was discovered on x86 by Jann Horn and fixed in commit
-> 342db04ae712 ("x86/dumpstack: Don't dump kernel memory based on usermode RIP").
-> 
-> Fix it by checking the adjusted NIP value (pc) and number of
-> instructions against USER_DS, and bail if we fail the check, eg:
-> 
->    bad-bctr[2969]: segfault (11) at c000000000010000 nip c000000000010000 lr 107930894 code 1
->    bad-bctr[2969]: Bad NIP, not dumping instructions.
-> 
-> Fixes: 88b0fe175735 ("powerpc: Add show_user_instructions()")
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> ---
->   arch/powerpc/kernel/process.c | 10 ++++++++++
->   1 file changed, 10 insertions(+)
-> 
-> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-> index 913c5725cdb2..bb6ac471a784 100644
-> --- a/arch/powerpc/kernel/process.c
-> +++ b/arch/powerpc/kernel/process.c
-> @@ -1306,6 +1306,16 @@ void show_user_instructions(struct pt_regs *regs)
->   
->   	pc = regs->nip - (instructions_to_print * 3 / 4 * sizeof(int));
->   
-> +	/*
-> +	 * Make sure the NIP points at userspace, not kernel text/data or
-> +	 * elsewhere.
-> +	 */
-> +	if (!__access_ok(pc, instructions_to_print * sizeof(int), USER_DS)) {
-> +		pr_info("%s[%d]: Bad NIP, not dumping instructions.\n",
-> +			current->comm, current->pid);
-> +		return;
-> +	}
-> +
-
-This will conflict with my serie 
-https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=64611 
-which changes instructions_to_print to a constant. Will you merge it or 
-do you expect me to rebase my serie ?
-
-Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
-
-Christophe
-
->   	pr_info("%s[%d]: code: ", current->comm, current->pid);
->   
->   	for (i = 0; i < instructions_to_print; i++) {
-> 
+This is basically a static_key, except for indirection function calls?
+So why not call the thing static_func or static_call or something like
+that?
