@@ -2,44 +2,49 @@ Return-Path: <SRS0=wZlq=MS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 64C72C65C30
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 12:17:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 215ACC65C30
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 12:24:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 09AE32147D
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 12:17:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 09AE32147D
+	by mail.kernel.org (Postfix) with ESMTPS id CCEA1206B2
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 12:24:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CCEA1206B2
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42S5HR6nn2zF3bv
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 22:17:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42S5RD2gyKzF3cY
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 22:24:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42S5CC264ZzF3bY
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Oct 2018 22:14:15 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42S5Mb5JkvzF3bx
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Oct 2018 22:21:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix)
- id 42S5CC1YCdz9s47; Sat,  6 Oct 2018 22:14:15 +1000 (AEST)
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 42S5CC1Bmcz9s5b; Sat,  6 Oct 2018 22:14:15 +1000 (AEST)
-X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: a932ed3b718147c6537da290b7a91e990fdedb43
-In-Reply-To: <20181005132123.6038-1-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc: Don't print kernel instructions in
- show_user_instructions()
-Message-Id: <42S5CC1Bmcz9s5b@ozlabs.org>
-Date: Sat,  6 Oct 2018 22:14:15 +1000 (AEST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPSA id 42S5Mb0Zxjz9s1x;
+ Sat,  6 Oct 2018 22:21:31 +1000 (AEST)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH v4 0/9] powerpc: Switch to CONFIG_THREAD_INFO_IN_TASK
+In-Reply-To: <cover.1538541946.git.christophe.leroy@c-s.fr>
+References: <cover.1538541946.git.christophe.leroy@c-s.fr>
+Date: Sat, 06 Oct 2018 22:21:30 +1000
+Message-ID: <871s93jmet.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -51,39 +56,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: jannh@google.com, muriloo@linux.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 2018-10-05 at 13:21:23 UTC, Michael Ellerman wrote:
-> Recently we implemented show_user_instructions() which dumps the code
-> around the NIP when a user space process dies with an unhandled
-> signal. This was modelled on the x86 code, and we even went so far as
-> to implement the exact same bug, namely that if the user process
-> crashed with its NIP pointing into the kernel we will dump kernel text
-> to dmesg. eg:
-> 
->   bad-bctr[2996]: segfault (11) at c000000000010000 nip c000000000010000 lr 12d0b0894 code 1
->   bad-bctr[2996]: code: fbe10068 7cbe2b78 7c7f1b78 fb610048 38a10028 38810020 fb810050 7f8802a6
->   bad-bctr[2996]: code: 3860001c f8010080 48242371 60000000 <7c7b1b79> 4082002c e8010080 eb610048
-> 
-> This was discovered on x86 by Jann Horn and fixed in commit
-> 342db04ae712 ("x86/dumpstack: Don't dump kernel memory based on usermode RIP").
-> 
-> Fix it by checking the adjusted NIP value (pc) and number of
-> instructions against USER_DS, and bail if we fail the check, eg:
-> 
->   bad-bctr[2969]: segfault (11) at c000000000010000 nip c000000000010000 lr 107930894 code 1
->   bad-bctr[2969]: Bad NIP, not dumping instructions.
-> 
-> Fixes: 88b0fe175735 ("powerpc: Add show_user_instructions()")
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> Reviewed-by: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
+Christophe Leroy <christophe.leroy@c-s.fr> writes:
 
-Applied to powerpc fixes.
+> The purpose of this serie is to activate CONFIG_THREAD_INFO_IN_TASK which
+> moves the thread_info into task_struct.
+>
+> Moving thread_info into task_struct has the following advantages:
+> - It protects thread_info from corruption in the case of stack
+> overflows.
+> - Its address is harder to determine if stack addresses are
+> leaked, making a number of attacks more difficult.
 
-https://git.kernel.org/powerpc/c/a932ed3b718147c6537da290b7a91e
+We need to fixup bpf_jit32.h:
+
+#ifdef CONFIG_SMP
+#ifdef CONFIG_PPC64
+#define PPC_BPF_LOAD_CPU(r)		\
+	do { BUILD_BUG_ON(FIELD_SIZEOF(struct paca_struct, paca_index) != 2);	\
+		PPC_LHZ_OFFS(r, 13, offsetof(struct paca_struct, paca_index));	\
+	} while (0)
+#else
+#define PPC_BPF_LOAD_CPU(r)     \
+	do { BUILD_BUG_ON(FIELD_SIZEOF(struct thread_info, cpu) != 4);		\
+		PPC_LHZ_OFFS(r, (1 & ~(THREAD_SIZE - 1)),			\
+				offsetof(struct thread_info, cpu));		\
+	} while(0)
+#endif
+#else
+#define PPC_BPF_LOAD_CPU(r) do { PPC_LI(r, 0); } while(0)
+#endif
+
 
 cheers
