@@ -2,58 +2,51 @@ Return-Path: <SRS0=wZlq=MS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EA72DC65C30
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 12:30:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2DCA7C65C30
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 12:42:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6A41E2084D
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 12:30:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6A41E2084D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+	by mail.kernel.org (Postfix) with ESMTPS id C52972087D
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 12:42:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C52972087D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42S5YY15kbzF3ct
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 22:30:09 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
-Authentication-Results: lists.ozlabs.org; spf=permerror (mailfrom)
- smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57;
- helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=kernel.crashing.org
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 42S5qz5cy0zF35Q
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 22:42:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42S5WM1dR2zDqf1
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Oct 2018 22:28:14 +1000 (AEST)
-Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id w96CRqUH028316;
- Sat, 6 Oct 2018 07:27:52 -0500
-Received: (from segher@localhost)
- by gate.crashing.org (8.14.1/8.14.1/Submit) id w96CRokM028295;
- Sat, 6 Oct 2018 07:27:51 -0500
-X-Authentication-Warning: gate.crashing.org: segher set sender to
- segher@kernel.crashing.org using -f
-Date: Sat, 6 Oct 2018 07:27:50 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Raz <raziebe@gmail.com>
-Subject: Re: Looking for architecture papers
-Message-ID: <20181006122750.GF29268@gate.crashing.org>
-References: <CAPB=Z-rEoVWFFDBS_XhuOQyL+YxR8jScSAAQfO1X-n_Lbm=StA@mail.gmail.com>
- <87sh1nk70y.fsf@concordia.ellerman.id.au>
- <CAPB=Z-pLCkXcsAXD5YWt5pwPzFzJrdZsdDye_bZjE0-ea-Ur6A@mail.gmail.com>
- <20181004101640.t3o7v73fcipsjg3k@lt-gp.iram.es>
- <CAPB=Z-pW6FWEp=0PgphCo-mAh9pPgt0frjz_MkPp6YHuhX3-pQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAPB=Z-pW6FWEp=0PgphCo-mAh9pPgt0frjz_MkPp6YHuhX3-pQ@mail.gmail.com>
-User-Agent: Mutt/1.4.2.3i
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42S5nV2kbvzF31Y
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Oct 2018 22:40:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPSA id 42S5nV0RS2z9s55;
+ Sat,  6 Oct 2018 22:40:30 +1000 (AEST)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH v5 3/9] powerpc: Prepare for moving thread_info into
+ task_struct
+In-Reply-To: <65eac9f906b12b55010a00b477619f7739c1cac5.1538687075.git.christophe.leroy@c-s.fr>
+References: <cover.1538687073.git.christophe.leroy@c-s.fr>
+ <65eac9f906b12b55010a00b477619f7739c1cac5.1538687075.git.christophe.leroy@c-s.fr>
+Date: Sat, 06 Oct 2018 22:40:29 +1000
+Message-ID: <87tvlzi6yq.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,34 +58,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Oct 06, 2018 at 12:19:45PM +0300, Raz wrote:
-> Hey
-> How does HVSC works ?
-> I looked in the code and LoPAR documentation. It looks like there is
-> vector called
-> system_call_pSeries ( at 0xc00 ) that is supposed to be called when we
-> invoke HVSC from kernel
-> mode.
-> Now, I wrote a NULL call HSVC and patched the exceptions-64s.S to
-> return RFID immediately.
-> This does not work.
-> Would you be so kind to explain how HVSC works ?
-> thank you
+Christophe Leroy <christophe.leroy@c-s.fr> writes:
 
-If your kernel is not running in hypervisor mode, sc 1 does not call the
-kernel (but the hypervisor, instead).  If your kernel _is_ running in
-hypervisor mode, sc 1 does the same as sc 0, a normal system call.
+> diff --git a/arch/powerpc/include/asm/livepatch.h b/arch/powerpc/include/asm/livepatch.h
+> index 47a03b9b528b..818451bf629c 100644
+> --- a/arch/powerpc/include/asm/livepatch.h
+> +++ b/arch/powerpc/include/asm/livepatch.h
+> @@ -49,7 +49,7 @@ static inline void klp_init_thread_info(struct thread_info *ti)
+>  	ti->livepatch_sp = (unsigned long *)(ti + 1) + 1;
 
-I don't know which it is for you; you didn't say.
+We need to do something about this.
 
-I have no idea what "a NULL call HSVC" means.  If you make exception c00
-return immediately (as you suggest) then you have made all system calls
-non-functional, which indeed is unlikely to work as you want.
+Currently the thread_info sits at the low address of the stack, and we
+use the space immediately above that as a miniature upward growing stack
+for livepatching.
 
+If we keep the livepatch_sp in the thread_info then we need to
+initialise it somewhere when the task starts running on a stack. And I
+don't know how that works if we end up running on the emergency stack
+for example.
 
-Segher
+So I'm not sure that makes much sense.
+
+Instead we might need to keep the livepatch_sp on the stack page at the
+base, where thread_info currently lives.
+
+That obviously sucks because you can still overflow into it and trash
+it, but it's no worse than what we have now for livepatching.
+
+Need to think about it some more.
+
+cheers
