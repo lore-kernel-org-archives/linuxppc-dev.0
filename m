@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E819EC677E8
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 16:59:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 91ECDC67871
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 17:03:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 60DBC2089D
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 16:59:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 60DBC2089D
+	by mail.kernel.org (Postfix) with ESMTPS id 1BDDA2089D
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 17:03:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1BDDA2089D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42SCX76wyqzF3Qn
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Oct 2018 03:59:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42SCct5XwyzDr43
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Oct 2018 04:03:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
@@ -29,37 +29,40 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42SCLv0HZGzF3KC
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Oct 2018 03:51:17 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42SCLw2HKyzF3KC
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Oct 2018 03:51:20 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 42SCLf4QVCz9ttCB;
- Sat,  6 Oct 2018 18:51:06 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 42SCLk4F8lz9ttCF;
+ Sat,  6 Oct 2018 18:51:10 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 8v7ZINekMdD8; Sat,  6 Oct 2018 18:51:06 +0200 (CEST)
+ with ESMTP id Ly3DZzwfEgm0; Sat,  6 Oct 2018 18:51:10 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 42SCLf3pSgz9ttC7;
- Sat,  6 Oct 2018 18:51:06 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 42SCLk3bkpz9ttC7;
+ Sat,  6 Oct 2018 18:51:10 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 1F2AB8B793;
- Sat,  6 Oct 2018 18:51:13 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 0FBBD8B793;
+ Sat,  6 Oct 2018 18:51:17 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id dFL4D4wFWV9n; Sat,  6 Oct 2018 18:51:13 +0200 (CEST)
+ with ESMTP id IXV1vd-Gw-1U; Sat,  6 Oct 2018 18:51:17 +0200 (CEST)
 Received: from pc16082vm.idsi0.si.c-s.fr (unknown [192.168.232.3])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id AFC2E8B74B;
- Sat,  6 Oct 2018 18:51:12 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 805C28B74B;
+ Sat,  6 Oct 2018 18:51:16 +0200 (CEST)
 Received: by pc16082vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 5BAAB6F2BA; Sat,  6 Oct 2018 16:51:12 +0000 (UTC)
-Message-Id: <981244f0ffb38c1aa02c9eb831c7ebf479b8f564.1538789120.git.christophe.leroy@c-s.fr>
+ id 5B7C46F2BA; Sat,  6 Oct 2018 16:51:16 +0000 (UTC)
+Message-Id: <31d84480ca37b6b2bc76d5a0307163a55b03ced8.1538789120.git.christophe.leroy@c-s.fr>
+In-Reply-To: <981244f0ffb38c1aa02c9eb831c7ebf479b8f564.1538789120.git.christophe.leroy@c-s.fr>
+References: <981244f0ffb38c1aa02c9eb831c7ebf479b8f564.1538789120.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v4 1/3] powerpc/process: fix casting and missing header
+Subject: [PATCH v4 3/3] powerpc/process: Constify the number of insns printed
+ by show instructions functions.
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  muriloo@linux.ibm.com
-Date: Sat,  6 Oct 2018 16:51:12 +0000 (UTC)
+Date: Sat,  6 Oct 2018 16:51:16 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,60 +79,67 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch fixes the following warnings. The first ones are leftovers
-from when __get_user() was replaced by probe_kernel_address().
+instructions_to_print var is assigned value 16 and there is no
+way to change it.
 
-The last one is from when show_user_instructions() was added.
+This patch replaces it by a constant.
 
-arch/powerpc/kernel/process.c:1287:22: warning: incorrect type in argument 2 (different address spaces)
-arch/powerpc/kernel/process.c:1287:22:    expected void const *src
-arch/powerpc/kernel/process.c:1287:22:    got unsigned int [noderef] <asn:1>*<noident>
-arch/powerpc/kernel/process.c:1319:21: warning: incorrect type in argument 2 (different address spaces)
-arch/powerpc/kernel/process.c:1319:21:    expected void const *src
-arch/powerpc/kernel/process.c:1319:21:    got unsigned int [noderef] <asn:1>*<noident>
-arch/powerpc/kernel/process.c:1302:6: warning: symbol 'show_user_instructions' was not declared. Should it be static?
-
-Fixes: 7b051f665c32d ("powerpc: Use probe_kernel_address in show_instructions")
-Fixes: 88b0fe1757359 ("powerpc: Add show_user_instructions()")
 Reviewed-by: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- v4: no change. Serie rebased on top of latest powerpc/merge (87dbfc1308ee)
- v3: new in v3 to fix sparse warnings reported by snowpatch on the serie
+ v4: rebased
+ v3: no change
+ v2: no change
 
- arch/powerpc/kernel/process.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/process.c | 13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
 
 diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index d9d4eb2ea6c9..3396c419abf2 100644
+index 8dabf656d924..dd8447d3f0bf 100644
 --- a/arch/powerpc/kernel/process.c
 +++ b/arch/powerpc/kernel/process.c
-@@ -65,6 +65,7 @@
- #include <asm/livepatch.h>
- #include <asm/cpu_has_feature.h>
- #include <asm/asm-prototypes.h>
-+#include <asm/stacktrace.h>
+@@ -1258,17 +1258,16 @@ struct task_struct *__switch_to(struct task_struct *prev,
+ 	return last;
+ }
  
- #include <linux/kprobes.h>
- #include <linux/kdebug.h>
-@@ -1281,7 +1282,7 @@ static void show_instructions(struct pt_regs *regs)
- #endif
+-static int instructions_to_print = 16;
++#define NR_INSN_TO_PRINT	16
  
- 		if (!__kernel_text_address(pc) ||
--		     probe_kernel_address((unsigned int __user *)pc, instr)) {
-+		    probe_kernel_address((const void *)pc, instr)) {
- 			pr_cont("XXXXXXXX ");
- 		} else {
- 			if (regs->nip == pc)
-@@ -1323,7 +1324,7 @@ void show_user_instructions(struct pt_regs *regs)
- 			pr_info("%s[%d]: code: ", current->comm, current->pid);
- 		}
+ static void show_instructions(struct pt_regs *regs)
+ {
+ 	int i;
+-	unsigned long pc = regs->nip - (instructions_to_print * 3 / 4 *
+-			sizeof(int));
++	unsigned long pc = regs->nip - (NR_INSN_TO_PRINT * 3 / 4 * sizeof(int));
  
--		if (probe_kernel_address((unsigned int __user *)pc, instr)) {
-+		if (probe_kernel_address((const void *)pc, instr)) {
- 			pr_cont("XXXXXXXX ");
- 		} else {
- 			if (regs->nip == pc)
+ 	printk("Instruction dump:");
+ 
+-	for (i = 0; i < instructions_to_print; i++) {
++	for (i = 0; i < NR_INSN_TO_PRINT; i++) {
+ 		int instr;
+ 
+ 		if (!(i % 8))
+@@ -1301,17 +1300,17 @@ static void show_instructions(struct pt_regs *regs)
+ void show_user_instructions(struct pt_regs *regs)
+ {
+ 	unsigned long pc;
+-	int n = instructions_to_print;
++	int n = NR_INSN_TO_PRINT;
+ 	struct seq_buf s;
+ 	char buf[96]; /* enough for 8 times 9 + 2 chars */
+ 
+-	pc = regs->nip - (instructions_to_print * 3 / 4 * sizeof(int));
++	pc = regs->nip - (NR_INSN_TO_PRINT * 3 / 4 * sizeof(int));
+ 
+ 	/*
+ 	 * Make sure the NIP points at userspace, not kernel text/data or
+ 	 * elsewhere.
+ 	 */
+-	if (!__access_ok(pc, instructions_to_print * sizeof(int), USER_DS)) {
++	if (!__access_ok(pc, NR_INSN_TO_PRINT * sizeof(int), USER_DS)) {
+ 		pr_info("%s[%d]: Bad NIP, not dumping instructions.\n",
+ 			current->comm, current->pid);
+ 		return;
 -- 
 2.13.3
 
