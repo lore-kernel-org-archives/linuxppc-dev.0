@@ -2,88 +2,85 @@ Return-Path: <SRS0=wZlq=MS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-0.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BB108C64EB8
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 07:05:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6AD32C64EB8
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 09:22:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0A879208E7
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 07:04:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 71C5620644
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 09:22:24 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linaro.org header.i=@linaro.org header.b="NBNNzcf+"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0A879208E7
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="BNFRaC7W"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 71C5620644
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42RyLK2B8mzF3d1
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 17:04:57 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42S1Ns4RH7zF3cK
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 19:22:21 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.b="NBNNzcf+";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="BNFRaC7W";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linaro.org
- (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
- envelope-from=bjorn.andersson@linaro.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2a00:1450:4864:20::52b; helo=mail-ed1-x52b.google.com;
+ envelope-from=raziebe@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linaro.org header.i=@linaro.org header.b="NBNNzcf+"; 
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="BNFRaC7W"; 
  dkim-atps=neutral
-Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
- [IPv6:2607:f8b0:4864:20::442])
+Received: from mail-ed1-x52b.google.com (mail-ed1-x52b.google.com
+ [IPv6:2a00:1450:4864:20::52b])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42RyHl0tJqzF385
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Oct 2018 17:02:38 +1000 (AEST)
-Received: by mail-pf1-x442.google.com with SMTP id p24-v6so6056317pff.10
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 06 Oct 2018 00:02:38 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=yxuvBu+Fwt+lK+efudO8FJo6vyjQWM3N8/U9NFmxvos=;
- b=NBNNzcf+XT2vcflggfwGxwcUwEbcV+4BoJavPuiIXo92PniznQvrxXkzH2mi7Ok5sm
- ZsU/OCdsuCkHOwhUI/VGSbQ5R35qXCcRmM32NLxVnGTZx970MtD3IeYlUY0UNDQwPZVq
- vsLh01rG+tMjRWRLgKa/cFyR39gz878jTGLoY=
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42S1L92sBxzDrTQ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Oct 2018 19:20:00 +1000 (AEST)
+Received: by mail-ed1-x52b.google.com with SMTP id b7-v6so7023567edd.9
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 06 Oct 2018 02:20:00 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=sy96uoXMwPa+JcCZZrdPw6RSX+2+4of+Nt+57JsnX4I=;
+ b=BNFRaC7W6uE4X1lOKD8Dh68dN7ppwieFSDTeyi0+pMdwTfOmoCmAfbdV06AMnXHV9J
+ 029qKlB9eBhbcxs1U6j8rX/v63ShfC36rd3aB9kVKDxLC4VDSe4Dgu7g4pyJcmLjPvcM
+ fqZUZxQ76LV3h9i7BYZmBv0A5uHxCFzHuCAlXBVbKSQrQcTeJFp0xVkkBp25GI8Es2ES
+ 8dgP3Trjwanad6CRgixjtmjZCNloI1eT1BKG8jhlIm3OvSN+t8EL2mwJ53/9pdyn3yjc
+ pzuzAlkOcLueWARbF1sATCkFTe5KGnAIIKBsQF3QO2WgG1NIta+SD9cUbTOwL9GN9ViC
+ IXvg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=yxuvBu+Fwt+lK+efudO8FJo6vyjQWM3N8/U9NFmxvos=;
- b=IalTerRsm0KjDojoSwi3wnlWeLmMhqepBGiLkPfw58CP/2Bhd1dNL4oPRJ1VIW1/JR
- R30k5UZ6uKZIIeZHpj3uBZ0/10YASN/PcbIq1hI2/0+Ol9lWfsouJHE+t0PLS814zK4U
- +dcMWLB0i9w3wlOfhIr6bVomkJ/OCnS71Tzv2LX0EPh74G+I5F+5Vj/5ccf/FAheupOa
- KuEFSNp6Rys73LqiTpHI+KxHcqCkBeOPQvTxtZPeZW5GRG6IcBrZP24nfjyRWHQZU9+V
- HCSItg7xUjRPRnNjT/aUG8X2uCieIMxr3bdN3C1Q1Sn+2YP/2hZt60dlh+l88Bs0L7GN
- SDNg==
-X-Gm-Message-State: ABuFfoi4yC0bu+Z3DCdWaEb0Ttkrm2RCIVgAXWcjj8+UtuVQTX+mFGwD
- k6hDvyxuVU1/Xq1SkoossFsVhQ==
-X-Google-Smtp-Source: ACcGV60dGSKOxXNr63g3bSD2U1+VM5YZuF2x7KTrzF1isi7pBVPzBtAzQZonbp4SGaT2JDqwz8iFZw==
-X-Received: by 2002:a62:1407:: with SMTP id 7-v6mr15150079pfu.28.1538809356673; 
- Sat, 06 Oct 2018 00:02:36 -0700 (PDT)
-Received: from builder (104-188-17-28.lightspeed.sndgca.sbcglobal.net.
- [104.188.17.28])
- by smtp.gmail.com with ESMTPSA id g123-v6sm749112pfc.67.2018.10.06.00.02.34
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Sat, 06 Oct 2018 00:02:35 -0700 (PDT)
-Date: Sat, 6 Oct 2018 00:05:21 -0700
-From: Bjorn Andersson <bjorn.andersson@linaro.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH v2 05/17] compat_ioctl: move more drivers to
- generic_compat_ioctl_ptrarg
-Message-ID: <20181006070521.GM12063@builder>
-References: <20180912150142.157913-1-arnd@arndb.de>
- <20180912151134.436719-1-arnd@arndb.de>
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=sy96uoXMwPa+JcCZZrdPw6RSX+2+4of+Nt+57JsnX4I=;
+ b=HTM6KWx7MWq/lSWAq5DRghkh3jgY7WR3W+5FoF7dJNNscmeNq+5TAf2CMUbvMiWw6b
+ XmXggffkvoR3+M3rQwy/MNfM8eJhAQqMJrLoUmDuxbgBLGvzzzojQ3+KK07TOUNeJxeZ
+ BwAm8kpDDabZZcXJnid1OXg1fK/STr8yj1SrM1aBgrMH45/A2Dl+Dau3IvtLx8e5AnlW
+ i4HXk80vPK9WlhYSQ7ES13i5FWNVWTd2c2VHE1+80p1WO9jKZOL3oArE67Nd+9DYtotz
+ UcvBhl44FJ5tEyGH/kh9O36uBbX8ArusLKo3Orwk/xrN42M1CuJdZi31qusjz1ZPkyg0
+ nnoA==
+X-Gm-Message-State: ABuFfohF6JTpH/Tx+U73mJ/qurledKltGoPVR/Io/uNaVMjLvMbYtY8h
+ KOGFpICOlZEtj1CZN0SkKPhe5+coXCNWnPLpnrU=
+X-Google-Smtp-Source: ACcGV61tp5cFLo69avPT2AvyLHmOG73IlcKsR9IKFuq5TPUTnTXs/vE0PtOOBMHhHGHjq624z6E8K+THlPb0y4wKkQI=
+X-Received: by 2002:a50:ae45:: with SMTP id
+ c63-v6mr18818588edd.239.1538817597114; 
+ Sat, 06 Oct 2018 02:19:57 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20180912151134.436719-1-arnd@arndb.de>
-User-Agent: Mutt/1.10.0 (2018-05-17)
+References: <CAPB=Z-rEoVWFFDBS_XhuOQyL+YxR8jScSAAQfO1X-n_Lbm=StA@mail.gmail.com>
+ <87sh1nk70y.fsf@concordia.ellerman.id.au>
+ <CAPB=Z-pLCkXcsAXD5YWt5pwPzFzJrdZsdDye_bZjE0-ea-Ur6A@mail.gmail.com>
+ <20181004101640.t3o7v73fcipsjg3k@lt-gp.iram.es>
+In-Reply-To: <20181004101640.t3o7v73fcipsjg3k@lt-gp.iram.es>
+From: Raz <raziebe@gmail.com>
+Date: Sat, 6 Oct 2018 12:19:45 +0300
+Message-ID: <CAPB=Z-pW6FWEp=0PgphCo-mAh9pPgt0frjz_MkPp6YHuhX3-pQ@mail.gmail.com>
+Subject: Re: Looking for architecture papers
+To: paubert@iram.es
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,52 +92,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-fbdev@vger.kernel.org, linux-iio@vger.kernel.org,
- linux-pci@vger.kernel.org, linux-remoteproc@vger.kernel.org,
- linux-nvme@lists.infradead.org, platform-driver-x86@vger.kernel.org,
- sparclinux@vger.kernel.org, devel@driverdev.osuosl.org,
- linux-scsi@vger.kernel.org, linux-nvdimm@lists.01.org,
- linux-rdma@vger.kernel.org, qat-linux@intel.com, amd-gfx@lists.freedesktop.org,
- linux-input@vger.kernel.org, linux-media@vger.kernel.org,
- linaro-mm-sig@lists.linaro.org, dri-devel@lists.freedesktop.org,
- ceph-devel@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org,
- netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
- linux-btrfs@vger.kernel.org, viro@zeniv.linux.org.uk
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed 12 Sep 08:08 PDT 2018, Arnd Bergmann wrote:
+Hey
+How does HVSC works ?
+I looked in the code and LoPAR documentation. It looks like there is
+vector called
+system_call_pSeries ( at 0xc00 ) that is supposed to be called when we
+invoke HVSC from kernel
+mode.
+Now, I wrote a NULL call HSVC and patched the exceptions-64s.S to
+return RFID immediately.
+This does not work.
+Would you be so kind to explain how HVSC works ?
+thank you
 
-[..]
-> diff --git a/drivers/rpmsg/rpmsg_char.c b/drivers/rpmsg/rpmsg_char.c
-> index a76b963a7e50..02aefb2b2d47 100644
-> --- a/drivers/rpmsg/rpmsg_char.c
-> +++ b/drivers/rpmsg/rpmsg_char.c
-> @@ -285,7 +285,7 @@ static const struct file_operations rpmsg_eptdev_fops = {
->  	.write = rpmsg_eptdev_write,
->  	.poll = rpmsg_eptdev_poll,
->  	.unlocked_ioctl = rpmsg_eptdev_ioctl,
-> -	.compat_ioctl = rpmsg_eptdev_ioctl,
-> +	.compat_ioctl = generic_compat_ioctl_ptrarg,
->  };
->  
->  static ssize_t name_show(struct device *dev, struct device_attribute *attr,
-> @@ -446,7 +446,7 @@ static const struct file_operations rpmsg_ctrldev_fops = {
->  	.open = rpmsg_ctrldev_open,
->  	.release = rpmsg_ctrldev_release,
->  	.unlocked_ioctl = rpmsg_ctrldev_ioctl,
-> -	.compat_ioctl = rpmsg_ctrldev_ioctl,
-> +	.compat_ioctl = generic_compat_ioctl_ptrarg,
->  };
->  
 
-For rpmsg part
 
-Acked-by: Bjorn Andersson <bjorn.andersson@linaro.org>
 
-Regards,
-Bjorn
+
+
+
+
+On Thu, Oct 4, 2018 at 1:16 PM Gabriel Paubert <paubert@iram.es> wrote:
+>
+> On Thu, Oct 04, 2018 at 10:41:13AM +0300, Raz wrote:
+> > Frankly, the more I read the more perplexed I get. For example,
+> > according to BOOK III-S, chapter 3,
+> > the MSR bits are differ from the ones described in
+> > arch/powerpc/include/asm/reg.h.
+> > Bit zero, is LE, but in the book it is 64-bit mode.
+>
+> Just a problem of bit order definitions: IBM hardware definitions use
+> big-endian bit ordering, where bit 0 is the most significant bit.
+>
+> >
+> > Would someone be kind to explain what I do not understand?
+> >
+> > Thank you
+>
+>         Gabriel
