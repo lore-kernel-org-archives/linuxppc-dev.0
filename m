@@ -6,45 +6,46 @@ X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2DCA7C65C30
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 12:42:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 88721C65C31
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 12:49:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C52972087D
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 12:42:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C52972087D
+	by mail.kernel.org (Postfix) with ESMTPS id 0E9AE2087D
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 12:49:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0E9AE2087D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42S5qz5cy0zF35Q
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 22:42:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42S5zZ6s4zzF3KV
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 22:49:14 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42S5nV2kbvzF31Y
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Oct 2018 22:40:30 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42S5xB2x0TzF35T
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Oct 2018 22:47:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 42S5nV0RS2z9s55;
- Sat,  6 Oct 2018 22:40:30 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPSA id 42S5xB05D7z9s5b;
+ Sat,  6 Oct 2018 22:47:09 +1000 (AEST)
 Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
+To: Christophe LEROY <christophe.leroy@c-s.fr>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH v5 3/9] powerpc: Prepare for moving thread_info into
- task_struct
-In-Reply-To: <65eac9f906b12b55010a00b477619f7739c1cac5.1538687075.git.christophe.leroy@c-s.fr>
+Subject: Re: [PATCH v5 1/9] book3s/64: avoid circular header inclusion in
+ mmu-hash.h
+In-Reply-To: <8055896d-f1cd-3560-2f08-ab367270beae@c-s.fr>
 References: <cover.1538687073.git.christophe.leroy@c-s.fr>
- <65eac9f906b12b55010a00b477619f7739c1cac5.1538687075.git.christophe.leroy@c-s.fr>
-Date: Sat, 06 Oct 2018 22:40:29 +1000
-Message-ID: <87tvlzi6yq.fsf@concordia.ellerman.id.au>
+ <3ae99c06f76fc89de00b801a6e839952850c7abb.1538687074.git.christophe.leroy@c-s.fr>
+ <8055896d-f1cd-3560-2f08-ab367270beae@c-s.fr>
+Date: Sat, 06 Oct 2018 22:47:06 +1000
+Message-ID: <87r2h3i6np.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -63,34 +64,31 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy <christophe.leroy@c-s.fr> writes:
+Christophe LEROY <christophe.leroy@c-s.fr> writes:
 
-> diff --git a/arch/powerpc/include/asm/livepatch.h b/arch/powerpc/include/asm/livepatch.h
-> index 47a03b9b528b..818451bf629c 100644
-> --- a/arch/powerpc/include/asm/livepatch.h
-> +++ b/arch/powerpc/include/asm/livepatch.h
-> @@ -49,7 +49,7 @@ static inline void klp_init_thread_info(struct thread_info *ti)
->  	ti->livepatch_sp = (unsigned long *)(ti + 1) + 1;
+> The serie has been successfully compiled tested at 
+> http://kisskb.ellerman.id.au/kisskb/head/358723b36b126a381d827c82d04ee226321416b2/
 
-We need to do something about this.
+I guess we need to turn on BPF_JIT in some configs :)
 
-Currently the thread_info sits at the low address of the stack, and we
-use the space immediately above that as a miniature upward growing stack
-for livepatching.
+This works (builds), but not runtime tested:
 
-If we keep the livepatch_sp in the thread_info then we need to
-initialise it somewhere when the task starts running on a stack. And I
-don't know how that works if we end up running on the emergency stack
-for example.
+diff --git a/arch/powerpc/net/bpf_jit32.h b/arch/powerpc/net/bpf_jit32.h
+index 6f4daacad296..dc50a8d4b3b9 100644
+--- a/arch/powerpc/net/bpf_jit32.h
++++ b/arch/powerpc/net/bpf_jit32.h
+@@ -106,9 +106,8 @@ DECLARE_LOAD_FUNC(sk_load_byte_msh);
+ 	} while (0)
+ #else
+ #define PPC_BPF_LOAD_CPU(r)     \
+-	do { BUILD_BUG_ON(FIELD_SIZEOF(struct thread_info, cpu) != 4);		\
+-		PPC_LHZ_OFFS(r, (1 & ~(THREAD_SIZE - 1)),			\
+-				offsetof(struct thread_info, cpu));		\
++	do { BUILD_BUG_ON(FIELD_SIZEOF(struct task_struct, cpu) != 4);		\
++		PPC_LHZ_OFFS(r, 2, offsetof(struct task_struct, cpu));		\
+ 	} while(0)
+ #endif
+ #else
 
-So I'm not sure that makes much sense.
-
-Instead we might need to keep the livepatch_sp on the stack page at the
-base, where thread_info currently lives.
-
-That obviously sucks because you can still overflow into it and trash
-it, but it's no worse than what we have now for livepatching.
-
-Need to think about it some more.
 
 cheers
