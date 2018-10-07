@@ -1,68 +1,52 @@
-Return-Path: <SRS0=wZlq=MS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=LxjK=MT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 91ECDC67871
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 17:03:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 44AC8C00449
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Oct 2018 05:23:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1BDDA2089D
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Oct 2018 17:03:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1BDDA2089D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id B136E2088F
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Oct 2018 05:23:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B136E2088F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42SCct5XwyzDr43
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Oct 2018 04:03:26 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by lists.ozlabs.org (Postfix) with ESMTP id 42SX2x3LCFzF3FB
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Oct 2018 16:23:37 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
+ (client-ip=140.211.169.12; helo=mail.linuxfoundation.org;
+ envelope-from=gregkh@linuxfoundation.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linuxfoundation.org
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42SCLw2HKyzF3KC
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Oct 2018 03:51:20 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 42SCLk4F8lz9ttCF;
- Sat,  6 Oct 2018 18:51:10 +0200 (CEST)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id Ly3DZzwfEgm0; Sat,  6 Oct 2018 18:51:10 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 42SCLk3bkpz9ttC7;
- Sat,  6 Oct 2018 18:51:10 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0FBBD8B793;
- Sat,  6 Oct 2018 18:51:17 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id IXV1vd-Gw-1U; Sat,  6 Oct 2018 18:51:17 +0200 (CEST)
-Received: from pc16082vm.idsi0.si.c-s.fr (unknown [192.168.232.3])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 805C28B74B;
- Sat,  6 Oct 2018 18:51:16 +0200 (CEST)
-Received: by pc16082vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 5B7C46F2BA; Sat,  6 Oct 2018 16:51:16 +0000 (UTC)
-Message-Id: <31d84480ca37b6b2bc76d5a0307163a55b03ced8.1538789120.git.christophe.leroy@c-s.fr>
-In-Reply-To: <981244f0ffb38c1aa02c9eb831c7ebf479b8f564.1538789120.git.christophe.leroy@c-s.fr>
-References: <981244f0ffb38c1aa02c9eb831c7ebf479b8f564.1538789120.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v4 3/3] powerpc/process: Constify the number of insns printed
- by show instructions functions.
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
- muriloo@linux.ibm.com
-Date: Sat,  6 Oct 2018 16:51:16 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42SX0t28j9zF3Dc
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Oct 2018 16:21:49 +1100 (AEDT)
+Received: from localhost (ip-213-127-77-176.ip.prioritytelecom.net
+ [213.127.77.176])
+ by mail.linuxfoundation.org (Postfix) with ESMTPSA id 3B697CE9;
+ Sun,  7 Oct 2018 05:21:47 +0000 (UTC)
+Date: Sun, 7 Oct 2018 07:21:43 +0200
+From: Greg KH <gregkh@linuxfoundation.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [GIT PULL] Please pull powerpc/linux.git powerpc-4.19-4 tag
+Message-ID: <20181007052143.GA9243@kroah.com>
+References: <87y3bbi7pf.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87y3bbi7pf.fsf@concordia.ellerman.id.au>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,72 +58,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: srikar@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, joel@jms.id.au,
+ linuxppc-dev@lists.ozlabs.org, herbert@gondor.apana.org.au
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-instructions_to_print var is assigned value 16 and there is no
-way to change it.
+On Sat, Oct 06, 2018 at 10:24:28PM +1000, Michael Ellerman wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA512
+> 
+> Hi Greg,
+> 
+> Please pull some more powerpc fixes for 4.19:
+> 
+> The following changes since commit 7e0cf1c983b5b24426d130fd949a055d520acc9a:
+> 
+>   selftests/powerpc: Fix Makefiles for headers_install change (2018-09-28 15:07:45 +1000)
+> 
+> are available in the git repository at:
+> 
+>   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-4.19-4
 
-This patch replaces it by a constant.
+Now merged, thanks.
 
-Reviewed-by: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- v4: rebased
- v3: no change
- v2: no change
-
- arch/powerpc/kernel/process.c | 13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
-
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 8dabf656d924..dd8447d3f0bf 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1258,17 +1258,16 @@ struct task_struct *__switch_to(struct task_struct *prev,
- 	return last;
- }
- 
--static int instructions_to_print = 16;
-+#define NR_INSN_TO_PRINT	16
- 
- static void show_instructions(struct pt_regs *regs)
- {
- 	int i;
--	unsigned long pc = regs->nip - (instructions_to_print * 3 / 4 *
--			sizeof(int));
-+	unsigned long pc = regs->nip - (NR_INSN_TO_PRINT * 3 / 4 * sizeof(int));
- 
- 	printk("Instruction dump:");
- 
--	for (i = 0; i < instructions_to_print; i++) {
-+	for (i = 0; i < NR_INSN_TO_PRINT; i++) {
- 		int instr;
- 
- 		if (!(i % 8))
-@@ -1301,17 +1300,17 @@ static void show_instructions(struct pt_regs *regs)
- void show_user_instructions(struct pt_regs *regs)
- {
- 	unsigned long pc;
--	int n = instructions_to_print;
-+	int n = NR_INSN_TO_PRINT;
- 	struct seq_buf s;
- 	char buf[96]; /* enough for 8 times 9 + 2 chars */
- 
--	pc = regs->nip - (instructions_to_print * 3 / 4 * sizeof(int));
-+	pc = regs->nip - (NR_INSN_TO_PRINT * 3 / 4 * sizeof(int));
- 
- 	/*
- 	 * Make sure the NIP points at userspace, not kernel text/data or
- 	 * elsewhere.
- 	 */
--	if (!__access_ok(pc, instructions_to_print * sizeof(int), USER_DS)) {
-+	if (!__access_ok(pc, NR_INSN_TO_PRINT * sizeof(int), USER_DS)) {
- 		pr_info("%s[%d]: Bad NIP, not dumping instructions.\n",
- 			current->comm, current->pid);
- 		return;
--- 
-2.13.3
+greg k-h
 
