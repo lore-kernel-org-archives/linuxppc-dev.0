@@ -3,27 +3,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BFC63C65C1B
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Oct 2018 19:22:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B3D7FC65C1B
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Oct 2018 20:13:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2122B2087D
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Oct 2018 19:22:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E5B492086D
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Oct 2018 20:13:35 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="JnntvaDA"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2122B2087D
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="JZYB6Pxq"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E5B492086D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42StgH72sVzF3B0
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 06:22:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Svnn66GvzF38T
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 07:13:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="JnntvaDA";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="JZYB6Pxq";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
@@ -32,45 +32,45 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="JnntvaDA"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="JZYB6Pxq"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42StcY14YlzF384
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Oct 2018 06:20:28 +1100 (AEDT)
-Received: from mail-qk1-f170.google.com (mail-qk1-f170.google.com
- [209.85.222.170])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42SvlD0fXMzF36b
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Oct 2018 07:11:19 +1100 (AEDT)
+Received: from mail-qt1-f172.google.com (mail-qt1-f172.google.com
+ [209.85.160.172])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 61FCB2087D
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Oct 2018 19:20:25 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 5BEEC2089D
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Oct 2018 20:11:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1538940025;
- bh=q2hcIl/I/0R/umsZvda+xirHhaeeNaaYy23YsfrIp4A=;
+ s=default; t=1538943077;
+ bh=dgFy1AiGiANm/Ym2ioekXxDyRet8pPPlqlCfBFrivds=;
  h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=JnntvaDAKqilcGFoZOpH7KOXZkO9HjLbDBl0LUe3pSWtCy9/4vYXwonRR5RX9dY1Q
- x0+KsmxsgE68hA4sDEE2qN/w6pEOXWlYJpns7ttRTwD/hSmXjAmjiv/G0aZuhBltm2
- 377gm0KpYa9RkGKP18UhEKkFmTTsZtWwfMWuVk14=
-Received: by mail-qk1-f170.google.com with SMTP id q12-v6so10881629qkl.13
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 07 Oct 2018 12:20:25 -0700 (PDT)
-X-Gm-Message-State: ABuFfohuxRjdpk3WPPW9rqqKXHoAuqZJ2zm3LUX8ZWZJDf38cCxkXFgo
- c611Wl67E53wkdINLxeauHaCesLfOboVmhtKbQ==
-X-Google-Smtp-Source: ACcGV60lULwId0mAy0K8YBBSY6e95iEYKGelAvajvChfaaS5QmOHR1NAoRR2vPj3sqNFM1u17vv0bPL+tvTF2rvOwro=
-X-Received: by 2002:a37:4dc5:: with SMTP id
- a188-v6mr16008551qkb.326.1538940024583; 
- Sun, 07 Oct 2018 12:20:24 -0700 (PDT)
+ b=JZYB6PxqO/BHu8QAK4Phgg2HcJBZEd0LLr4uQJ3jTRwAK4RNPER2sZpivdIx/4qaF
+ LWZfZYhxN2F4PirKS8t8UZErFfm6mLZ8b3n0fE3WLAdn88/Wcgvu+KNCCWdo4ZWHp6
+ tPgsjwOLm4+4Q4lBf1A6K87yon4QCGjQtRK8+Pco=
+Received: by mail-qt1-f172.google.com with SMTP id l41-v6so6451171qtl.8
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 07 Oct 2018 13:11:17 -0700 (PDT)
+X-Gm-Message-State: ABuFfoi7pa8CATaK7QTYH6yNcV10bPh89+hwogCyYsGMWRxU31rgOg5p
+ PYIlcDEonM/H1lWgJce75j4U5Ed1s73G0Cb+yg==
+X-Google-Smtp-Source: ACcGV6387Kr7ZUbVftFd1KMdECkBbnlmYm3CVgx3BzpBYqQ0E/9UFWuiGRXbd4CCQl6rR8fxx+CXsllFRSSWld+/ACk=
+X-Received: by 2002:ac8:148b:: with SMTP id
+ l11-v6mr17291430qtj.27.1538943076484; 
+ Sun, 07 Oct 2018 13:11:16 -0700 (PDT)
 MIME-Version: 1.0
 References: <20181005165848.3474-1-robh@kernel.org>
- <20181005165848.3474-28-robh@kernel.org>
- <41eb7b19-dd26-16e2-bd80-b8b7d6f52f94@suse.de>
-In-Reply-To: <41eb7b19-dd26-16e2-bd80-b8b7d6f52f94@suse.de>
+ <20181005165848.3474-16-robh@kernel.org>
+ <c4909f78-bfa1-9253-e436-1159392b45a9@suse.de>
+In-Reply-To: <c4909f78-bfa1-9253-e436-1159392b45a9@suse.de>
 From: Rob Herring <robh@kernel.org>
-Date: Sun, 7 Oct 2018 14:20:12 -0500
-X-Gmail-Original-Message-ID: <CAL_Jsq+D7Hh6Ry+21Dvpp5YvPLjoLCur8x7r8xKpLUVv6ZoQ4Q@mail.gmail.com>
-Message-ID: <CAL_Jsq+D7Hh6Ry+21Dvpp5YvPLjoLCur8x7r8xKpLUVv6ZoQ4Q@mail.gmail.com>
-Subject: Re: [PATCH 27/36] dt-bindings: arm: Convert Realtek board/soc
- bindings to json-schema
+Date: Sun, 7 Oct 2018 15:11:04 -0500
+X-Gmail-Original-Message-ID: <CAL_JsqKiSz+a4s4=ZGokm5bNVw-hrZAnO=uHO3oLm=T-5U=z0A@mail.gmail.com>
+Message-ID: <CAL_JsqKiSz+a4s4=ZGokm5bNVw-hrZAnO=uHO3oLm=T-5U=z0A@mail.gmail.com>
+Subject: Re: [PATCH 15/36] dt-bindings: arm: Convert Actions Semi bindings to
+ jsonschema
 To: =?UTF-8?Q?Andreas_F=C3=A4rber?= <afaerber@suse.de>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
@@ -102,15 +102,22 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Oct 6, 2018 at 5:54 AM Andreas F=C3=A4rber <afaerber@suse.de> wrote=
+On Sat, Oct 6, 2018 at 5:40 AM Andreas F=C3=A4rber <afaerber@suse.de> wrote=
 :
 >
-> Am 05.10.18 um 18:58 schrieb Rob Herring:
-> > Convert Realtek SoC bindings to DT schema format using json-schema.
+> Hi Rob,
 >
-> YAML (2x)
+> Am 05.10.18 um 18:58 schrieb Rob Herring:
+> > Convert Actions Semi SoC bindings to DT schema format using json-schema=
+.
+>
+> This sounds like the next Yanny vs. Laurel... I fail to see any json. ;)
 
-?
+Read the docs in patch 8.
+
+> Also, it may help my understanding to be CC'ed on the cover letter, too?
+
+Sorry, trying to avoid a huge Cc list.
 
 > > Cc: "Andreas F=C3=A4rber" <afaerber@suse.de>
 > > Cc: Mark Rutland <mark.rutland@arm.com>
@@ -118,135 +125,209 @@ On Sat, Oct 6, 2018 at 5:54 AM Andreas F=C3=A4rber <afaerber@suse.de> wrote=
 > > Cc: devicetree@vger.kernel.org
 > > Signed-off-by: Rob Herring <robh@kernel.org>
 > > ---
-> >  .../devicetree/bindings/arm/realtek.txt       | 22 ----------------
-> >  .../devicetree/bindings/arm/realtek.yaml      | 25 +++++++++++++++++++
-> >  2 files changed, 25 insertions(+), 22 deletions(-)
-> >  delete mode 100644 Documentation/devicetree/bindings/arm/realtek.txt
-> >  create mode 100644 Documentation/devicetree/bindings/arm/realtek.yaml
+> >  .../devicetree/bindings/arm/actions.txt       | 56 -------------------
+> >  .../devicetree/bindings/arm/actions.yaml      | 34 +++++++++++
+> >  2 files changed, 34 insertions(+), 56 deletions(-)
+> >  delete mode 100644 Documentation/devicetree/bindings/arm/actions.txt
+> >  create mode 100644 Documentation/devicetree/bindings/arm/actions.yaml
 > >
-> > diff --git a/Documentation/devicetree/bindings/arm/realtek.txt b/Docume=
-ntation/devicetree/bindings/arm/realtek.txt
+> > diff --git a/Documentation/devicetree/bindings/arm/actions.txt b/Docume=
+ntation/devicetree/bindings/arm/actions.txt
 > > deleted file mode 100644
-> > index 95839e19ae92..000000000000
-> > --- a/Documentation/devicetree/bindings/arm/realtek.txt
+> > index d54f33c4e0da..000000000000
+> > --- a/Documentation/devicetree/bindings/arm/actions.txt
 > > +++ /dev/null
-> > @@ -1,22 +0,0 @@
-> > -Realtek platforms device tree bindings
-> > ---------------------------------------
+> > @@ -1,56 +0,0 @@
+> > -Actions Semi platforms device tree bindings
+> > --------------------------------------------
 > > -
 > > -
-> > -RTD1295 SoC
-> > -=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > -S500 SoC
+> > -=3D=3D=3D=3D=3D=3D=3D=3D
 > > -
 > > -Required root node properties:
 > > -
-> > - - compatible :  must contain "realtek,rtd1295"
+> > - - compatible :  must contain "actions,s500"
 > > -
+> > -
+> > -Modules:
+> > -
+> > -Root node property compatible must contain, depending on module:
+> > -
+> > - - LeMaker Guitar: "lemaker,guitar"
+> > -
+> > -
+> > -Boards:
 > > -
 > > -Root node property compatible must contain, depending on board:
 > > -
-> > - - MeLE V9: "mele,v9"
-> > - - ProBox2 AVA: "probox2,ava"
-> > - - Zidoo X9S: "zidoo,x9s"
+> > - - Allo.com Sparky: "allo,sparky"
+> > - - Cubietech CubieBoard6: "cubietech,cubieboard6"
+> > - - LeMaker Guitar Base Board rev. B: "lemaker,guitar-bb-rev-b", "lemak=
+er,guitar"
 > > -
 > > -
-> > -Example:
+> > -S700 SoC
+> > -=3D=3D=3D=3D=3D=3D=3D=3D
 > > -
-> > -    compatible =3D "zidoo,x9s", "realtek,rtd1295";
-> > diff --git a/Documentation/devicetree/bindings/arm/realtek.yaml b/Docum=
-entation/devicetree/bindings/arm/realtek.yaml
+> > -Required root node properties:
+> > -
+> > -- compatible :  must contain "actions,s700"
+> > -
+> > -
+> > -Boards:
+> > -
+> > -Root node property compatible must contain, depending on board:
+> > -
+> > - - Cubietech CubieBoard7: "cubietech,cubieboard7"
+> > -
+> > -
+> > -S900 SoC
+> > -=3D=3D=3D=3D=3D=3D=3D=3D
+> > -
+> > -Required root node properties:
+> > -
+> > -- compatible :  must contain "actions,s900"
+> > -
+> > -
+> > -Boards:
+> > -
+> > -Root node property compatible must contain, depending on board:
+> > -
+> > - - uCRobotics Bubblegum-96: "ucrobotics,bubblegum-96"
+> > diff --git a/Documentation/devicetree/bindings/arm/actions.yaml b/Docum=
+entation/devicetree/bindings/arm/actions.yaml
 > > new file mode 100644
-> > index 000000000000..9e3bb3249c77
+> > index 000000000000..af9345a228b4
 > > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/arm/realtek.yaml
-> > @@ -0,0 +1,25 @@
-> > +# SPDX-License-Identifier: None
->
-> What is the expected license for such bindings?
-
-Good question. I'd meant to figure something out for this placeholder.
-The default would be GPL-2 inheriting from the old doc. My preference
-would be to dual license these with BSD as they're not just kernel
-files, but I don't really want to track down copyright holders (also
-not explicitly declared) to do that.
-
-> You did not add such a line for actions.yaml.
->
+> > +++ b/Documentation/devicetree/bindings/arm/actions.yaml
+> > @@ -0,0 +1,34 @@
 > > +%YAML 1.2
 > > +---
-> > +$id: http://devicetree.org/schemas/bindings/arm/realtek.yaml#
+> > +$id: http://devicetree.org/schemas/soc/arm/actions.yaml#
 > > +$schema: http://devicetree.org/meta-schemas/core.yaml#
+>
+> 404 for the schema. Where does one find an explanation?
+
+In the docs. This could someday actually be hosted on devicetree.org,
+but for now only the path, not the host, matters.
+
+>
 > > +
-> > +title: Realtek platforms device tree bindings
+> > +title: Actions Semi platforms device tree bindings
 > > +
 > > +maintainers:
 > > +  - Andreas F=C3=A4rber <afaerber@suse.de>
-> > +
-> > +description: |+
 >
-> "|+"?
+> Mani is now officially reviewer and the closest I have to a
+> co-maintainer.
 
-The '|'  means a literal block. The '+' is a block chomping indicator:
+Okay, NP.
 
-http://yaml.org/spec/1.2/spec.html#id2794534
+> I suggest we add him here in some form. I assume this is
+> independent of MAINTAINERS patterns though, or will get_maintainers.pl
+> parse this, too?
 
-This was all converted using my doc2yaml script and ruamel.yaml
-decided it needed the '+'. I'm not sure exactly why. It may be based
-on how many trailing newlines the text had.
+It is independent. Not really ideal, but the bindings don't live just
+in the kernel. (And lots are missing a maintainer anyways).
 
-> > +  RTD1295 SoC
+> > +
+> > +description: |
+>
+> Does the | have any meaning, or a stray typo?
 
-In this case, this isn't really useful and we should just remove
-description unless you want to add something.
+Explained in other patch.
+
+> > +  The Actions Semi S500 is a quad-core ARM Cortex-A9 SoC. The Actions =
+Semi
+> > +  S900 is a quad-core ARM Cortex-A53 SoC.
+>
+> You forgot the S700 as another quad-core Cortex-A53 SoC.
+> Also, arm or Arm rather than ARM these days?
+
+I was going to say it's just copied out from the old file, but that
+doesn't seem to be the case here. I am sure I didn't spend time on
+nice descriptions. :)
 
 > > +
 > > +properties:
-> > +  $nodename:
-> > +    const: '/'
 > > +  compatible:
-> > +    items:
-> > +      - enum:
-> > +          - mele,v9
-> > +          - probox2,ava
-> > +          - zidoo,x9s
-> > +      - const: realtek,rtd1295
-> > +...
+> > +    oneOf:
+> > +      - items:
+> > +          - enum:
+> > +              - lemaker,guitar-bb-rev-b
+> > +          - enum:
+> > +              - lemaker,guitar
+> > +              - allo,sparky
+> > +              - cubietech,cubieboard6
+> > +          - const: actions,s500
+> > +        minItems: 2
+> > +        maxItems: 3
+> > +        additionalItems: false
 >
-> That does not look like a full "PATCH" yet? It also confuses me whether
-> or when leading dashes are necessary - for Actions Semi "items" had one.
+> Objection. You've managed to turn a perfectly human-comprehensible text
+> into a machine-parseable representation incomprehensible for humans.
+>
+> First, there should remain some free-text explanation of the values
+> defined here. Are comments allowed after the value or indented maybe?
 
-'...' is the end of YAML document marker.
+Yes, both. Comments are the major reason for using YAML over JSON file form=
+at.
 
-'-' means a list item (a YAML/JSON list, not to be confused with
-'items' the json-schema keyword). Actions uses 'oneOf' (which is a
-list of schemas) because there are multiple SoCs.
+> Alternatively we could have a per-vendor file =C3=A0 la vendor-prefixes.t=
+xt,
+> but that would seem inefficient.
 
-And also 'items' itself can be a list or dict, but we restrict it to
-lists for the DT meta-schema.
+You mean per board vendor files? We'd have to duplicate the SoC
+compatibles then as you can't really split the schema to 2 files.
 
-> I have preparations on my GitHub staging tree for three more SoCs, so we
-> should prepare the structure to ease adding SoCs and avoid re-indenting
-> patches - adding SoCs was much easier in the original flat text format.
-> Please also consider for other vendors.
+There's 2 SoC families doing per board vendor files: Atmel (only one
+vendor though) and i.MX. This series makes those 2 a single file like
+all other SoCs. I don't really care which way it is done, but I think
+we should be consistent and I'm not going to convert everyone's
+bindings to per board vendor files.
 
-Good point.
+> Next, the above items construct is horrible. What about nested oneOf:
+>
+> +      - items:
+> +          - oneOf:
+> +              - items:
+> +                  - enum:
+> +                      - lemaker,guitar-bb-rev-b
+> +                  - const: lemaker,guitar
+> +              - items:
+> +                  - enum:
+> +                      - allo,sparky
+> +                      - cubietech,cubieboard6
+> +          - const: actions,s500
 
-One option is always use 'oneOf' even if just 1 item. The problem is
-that the use of oneOf/allOf/anyOf makes the error reporting pretty
-vague.
+That's not actually doing what you think. That's saying the first item
+is a list of items (1 or 2 items). For example, you'd have to have
+data like this to be valid:
 
-Another option is to make each SoC a separate schema which could be
-either separate docs or multiple yaml docs within a file. The downside
-is just repeating all the top-level properties.
+[ [ allo,sparky ], actions,s500 ]
+
+(Note that [] are more json style list format, but allowed in yaml too.)
+
+Probably the best thing to do here is separate the 2 and 3 item cases.
+That also would eliminate some combinations here that are allowed, but
+not valid.
 
 >
-> Same comment as for Actions: We're losing a human description of the
-> enum values.
+> This grouping is much clearer to me and hopefully to anyone adding
+> further base boards for the module.
+> We will have the same issue for the BPi-S64 module with S700 below.
+>
+> > +      - items:
+> > +          - const: cubietech,cubieboard7
+> > +          - const: actions,s700
+> > +      - items:
+> > +          - const: ucrobotics,bubblegum-96
+> > +          - const: actions,s900
+>
+> Please make the board compatible an enum, even if only one is listed
+> today. That makes it clearer where/how (and easier) to add new boards.
 
-I kept those as comments when there was meaningful information. I did
-not feel that "MeLE V9" as a description of "mele,v9" added any value.
-If you want to add 'model' schema that would be better than having
-just comments, but I'm not going to find all the values of model which
-aren't documented.
+Yes, I did that in most cases, but not here some reason.
 
 Rob
