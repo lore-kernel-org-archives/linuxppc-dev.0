@@ -2,77 +2,71 @@ Return-Path: <SRS0=rj9n=MU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4ED9EC65C20
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 18:51:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 19A0DC65C20
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 18:55:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A34D720645
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 18:51:10 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 8F130205C9
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 18:55:47 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="y5Ffomd+"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A34D720645
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="uiI6lo7t"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8F130205C9
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42TTwC4gCQzF3F3
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 05:51:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42TV1Y1SSlzDqfZ
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 05:55:45 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="y5Ffomd+";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="uiI6lo7t";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=atull@kernel.org;
+ (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=srs0=urq0=mu=linuxfoundation.org=gregkh@kernel.org;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="y5Ffomd+"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="uiI6lo7t"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42TTqh12XxzF3Bd
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Oct 2018 05:47:12 +1100 (AEDT)
-Received: from mail-ed1-f41.google.com (mail-ed1-f41.google.com
- [209.85.208.41])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42TTwq53p7zDqfZ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Oct 2018 05:51:39 +1100 (AEDT)
+Received: from localhost (ip-213-127-77-176.ip.prioritytelecom.net
+ [213.127.77.176])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 23655214FE
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Oct 2018 18:47:10 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 27FEF2087D;
+ Mon,  8 Oct 2018 18:51:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1539024430;
- bh=FQ1+NFEIQx7zQORwnZtOKLLT2wTpOxHUv3M95cb+kPA=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=y5Ffomd+KlQgPz75uI3IIqS5CM/6SrYqkTHlJoaU2cp1QzLYgjFVF9/3wBECfPQ27
- 6GdLHt+aYZt7+P6e84Z5V5gyQSaNjlqfgi/Cq7lp5ppG8LD3fzDHQlv2uHFyZSLgGA
- 4bkht3A3t3NcOSIynezE8UOZCDos+fRJLL2UNsE0=
-Received: by mail-ed1-f41.google.com with SMTP id b7-v6so11921158edd.9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Oct 2018 11:47:10 -0700 (PDT)
-X-Gm-Message-State: ABuFfoin51AtWNB7J860/hWhNb/yUUnYqgZovyIpwq624VhtvsCzxb2d
- ThIsVX6btUtWcBDdJV74f1g4ruymJ+vAZbqeIuo=
-X-Google-Smtp-Source: ACcGV602UGSqxjOFjZjD6Ayly2eHh1Cm74lOkBBpEwLHE+50+6Nv2ql59x/Q/OfXX+VA333UGOYRZiPLsBTqfF8bCg4=
-X-Received: by 2002:a17:906:32d9:: with SMTP id
- k25-v6mr24852369ejk.211.1539024428448; 
- Mon, 08 Oct 2018 11:47:08 -0700 (PDT)
+ s=default; t=1539024697;
+ bh=jgXt5P9C9XUqVv/rDOmnPkruqRh6JMO08LtAxHJifrs=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=uiI6lo7tHjxqebEftQ8EabRwbe6iy/Yq9HH+PWQq/r0M4ZDZd8IefriyZb34dOyU4
+ rre/M81NgJivbBbEFv5TCDBzVrRp4TkI3tyGcRMpILpOMoZNC7HXSH9jLCcx9u95Q1
+ leoTFw5vBDKq94jFRLOEXQSuuv5dxaIC6jL+ON5I=
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 4.18 125/168] sched/topology: Set correct NUMA topology type
+Date: Mon,  8 Oct 2018 20:31:45 +0200
+Message-Id: <20181008175624.800138207@linuxfoundation.org>
+X-Mailer: git-send-email 2.19.0
+In-Reply-To: <20181008175620.043587728@linuxfoundation.org>
+References: <20181008175620.043587728@linuxfoundation.org>
+User-Agent: quilt/0.65
+X-stable: review
 MIME-Version: 1.0
-References: <1538712767-30394-1-git-send-email-frowand.list@gmail.com>
- <1538712767-30394-10-git-send-email-frowand.list@gmail.com>
- <CANk1AXQFTfdwy9n+WH2k98w6oyqLj3wLDRfaMmtTGk66sJjqUw@mail.gmail.com>
-In-Reply-To: <CANk1AXQFTfdwy9n+WH2k98w6oyqLj3wLDRfaMmtTGk66sJjqUw@mail.gmail.com>
-From: Alan Tull <atull@kernel.org>
-Date: Mon, 8 Oct 2018 13:46:31 -0500
-X-Gmail-Original-Message-ID: <CANk1AXRi90nFNTji+7RVPC-hb9NFX5+gJo6OpCKvyuVx8eX3Fw@mail.gmail.com>
-Message-ID: <CANk1AXRi90nFNTji+7RVPC-hb9NFX5+gJo6OpCKvyuVx8eX3Fw@mail.gmail.com>
-Subject: Re: [PATCH 09/16] of: overlay: validate overlay properties
- #address-cells and #size-cells
-To: Frank Rowand <frowand.list@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,164 +78,85 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
- <devicetree@vger.kernel.org>, linux-fpga@vger.kernel.org,
- Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
- linux-kernel <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>,
- Moritz Fischer <mdf@kernel.org>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ Rik van Riel <riel@surriel.com>,
+ "Peter Zijlstra \(Intel\)" <peterz@infradead.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Mel Gorman <mgorman@techsingularity.net>, stable@vger.kernel.org,
+ Sasha Levin <alexander.levin@microsoft.com>,
+ Suravee Suthikulpanit <suravee.suthikulpanit@amd.com>,
+ Andre Wild <wild@linux.vnet.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Oct 8, 2018 at 10:57 AM Alan Tull <atull@kernel.org> wrote:
->
-> On Thu, Oct 4, 2018 at 11:14 PM <frowand.list@gmail.com> wrote:
-> >
-> > From: Frank Rowand <frank.rowand@sony.com>
-> >
-> > If overlay properties #address-cells or #size-cells are already in
-> > the live devicetree for any given node, then the values in the
-> > overlay must match the values in the live tree.
->
-> Hi Frank,
->
-> I'm starting some FPGA testing on this patchset applied to v4.19-rc7.
-> That applied cleanly; if that's not the best base to test against,
-> please let me know.
->
-> On a very simple overlay, I'm seeing this patch's warning catching
-> things other than #address-cells or #size-cells.
+4.18-stable review patch.  If anyone has any objections, please let me know.
 
-What it's warning about are new properties being added to an existing
-node.  So !prop is true and !of_node_check_flag(target->np,
-OF_OVERLAY) also is true.  Is that a potential memory leak as you are
-warning?  If so, your code is working as planned and you'll just need
-to document that also in the header.
+------------------
 
-> I'm just getting
-> started looking at this, will spend time understanding this better and
-> I'll test other overlays.  The warnings were:
->
-> Applying dtbo: socfpga_overlay.dtb
-> [   33.117881] fpga_manager fpga0: writing soc_system.rbf to Altera
-> SOCFPGA FPGA Manager
-> [   33.575223] OF: overlay: WARNING: add_changeset_property(), memory
-> leak will occur if overlay removed.  Property:
-> /soc/base-fpga-region/firmware-name
-> [   33.588584] OF: overlay: WARNING: add_changeset_property(), memory
-> leak will occur if overlay removed.  Property:
-> /soc/base-fpga-region/fpga-bridges
-> [   33.601856] OF: overlay: WARNING: add_changeset_property(), memory
-> leak will occur if overlay removed.  Property:
-> /soc/base-fpga-region/ranges
->
-> Here's part of that overlay including the properties it's complaining about:
->
-> /dts-v1/;
-> /plugin/;
-> / {
->         fragment@0 {
->                 target = <&base_fpga_region>;
->                 #address-cells = <1>;
->                 #size-cells = <1>;
->                 __overlay__ {
->                         #address-cells = <1>;
->                         #size-cells = <1>;
->
->                         firmware-name = "soc_system.rbf";
->                         fpga-bridges = <&fpga_bridge1>;
->                         ranges = <0x20000 0xff200000 0x100000>,
->                         <0x0 0xc0000000 0x20000000>;
->
->                         gpio@10040 {
-> so on...
->
-> By the way, I didn't get any warnings when I subsequently removed this overlay.
->
-> Alan
->
-> >
-> > If the properties are already in the live tree then there is no
-> > need to create a changeset entry to add them since they must
-> > have the same value.  This reduces the memory used by the
-> > changeset and eliminates a possible memory leak.  This is
-> > verified by 12 fewer warnings during the devicetree unittest,
-> > as the possible memory leak warnings about #address-cells and
-> >
-> > Signed-off-by: Frank Rowand <frank.rowand@sony.com>
-> > ---
-> >  drivers/of/overlay.c | 38 +++++++++++++++++++++++++++++++++++---
-> >  1 file changed, 35 insertions(+), 3 deletions(-)
-> >
-> > diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
-> > index 29c33a5c533f..e6fb3ffe9d93 100644
-> > --- a/drivers/of/overlay.c
-> > +++ b/drivers/of/overlay.c
-> > @@ -287,7 +287,12 @@ static struct property *dup_and_fixup_symbol_prop(
-> >   * @target may be either in the live devicetree or in a new subtree that
-> >   * is contained in the changeset.
-> >   *
-> > - * Some special properties are not updated (no error returned).
-> > + * Some special properties are not added or updated (no error returned):
-> > + * "name", "phandle", "linux,phandle".
-> > + *
-> > + * Properties "#address-cells" and "#size-cells" are not updated if they
-> > + * are already in the live tree, but if present in the live tree, the values
-> > + * in the overlay must match the values in the live tree.
-> >   *
-> >   * Update of property in symbols node is not allowed.
-> >   *
-> > @@ -300,6 +305,7 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
-> >  {
-> >         struct property *new_prop = NULL, *prop;
-> >         int ret = 0;
-> > +       bool check_for_non_overlay_node = false;
-> >
-> >         if (!of_prop_cmp(overlay_prop->name, "name") ||
-> >             !of_prop_cmp(overlay_prop->name, "phandle") ||
-> > @@ -322,13 +328,39 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
-> >         if (!new_prop)
-> >                 return -ENOMEM;
-> >
-> > -       if (!prop)
-> > +       if (!prop) {
-> > +
-> > +               check_for_non_overlay_node = true;
-> >                 ret = of_changeset_add_property(&ovcs->cset, target->np,
-> >                                                 new_prop);
-> > -       else
-> > +
-> > +       } else if (!of_prop_cmp(prop->name, "#address-cells")) {
-> > +
-> > +               if (prop->length != 4 || new_prop->length != 4 ||
-> > +                   *(u32 *)prop->value != *(u32 *)new_prop->value)
-> > +                       pr_err("ERROR: overlay and/or live tree #address-cells invalid in node %pOF\n",
-> > +                              target->np);
-> > +
-> > +       } else if (!of_prop_cmp(prop->name, "#size-cells")) {
-> > +
-> > +               if (prop->length != 4 || new_prop->length != 4 ||
-> > +                   *(u32 *)prop->value != *(u32 *)new_prop->value)
-> > +                       pr_err("ERROR: overlay and/or live tree #size-cells invalid in node %pOF\n",
-> > +                              target->np);
-> > +
-> > +       } else {
-> > +
-> > +               check_for_non_overlay_node = true;
-> >                 ret = of_changeset_update_property(&ovcs->cset, target->np,
-> >                                                    new_prop);
-> >
-> > +       }
-> > +
-> > +       if (check_for_non_overlay_node &&
-> > +           !of_node_check_flag(target->np, OF_OVERLAY))
-> > +               pr_err("WARNING: %s(), memory leak will occur if overlay removed.  Property: %pOF/%s\n",
-> > +                      __func__, target->np, new_prop->name);
-> > +
-> >         if (ret) {
-> >                 kfree(new_prop->name);
-> >                 kfree(new_prop->value);
-> > --
-> > Frank Rowand <frank.rowand@sony.com>
-> >
+From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+
+[ Upstream commit e5e96fafd9028b1478b165db78c52d981c14f471 ]
+
+With the following commit:
+
+  051f3ca02e46 ("sched/topology: Introduce NUMA identity node sched domain")
+
+the scheduler introduced a new NUMA level. However this leads to the NUMA topology
+on 2 node systems to not be marked as NUMA_DIRECT anymore.
+
+After this commit, it gets reported as NUMA_BACKPLANE, because
+sched_domains_numa_level is now 2 on 2 node systems.
+
+Fix this by allowing setting systems that have up to 2 NUMA levels as
+NUMA_DIRECT.
+
+While here remove code that assumes that level can be 0.
+
+Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Cc: Andre Wild <wild@linux.vnet.ibm.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Mel Gorman <mgorman@techsingularity.net>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Rik van Riel <riel@surriel.com>
+Cc: Suravee Suthikulpanit <suravee.suthikulpanit@amd.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Fixes: 051f3ca02e46 "Introduce NUMA identity node sched domain"
+Link: http://lkml.kernel.org/r/1533920419-17410-1-git-send-email-srikar@linux.vnet.ibm.com
+Signed-off-by: Ingo Molnar <mingo@kernel.org>
+Signed-off-by: Sasha Levin <alexander.levin@microsoft.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ kernel/sched/topology.c |    5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+--- a/kernel/sched/topology.c
++++ b/kernel/sched/topology.c
+@@ -1295,7 +1295,7 @@ static void init_numa_topology_type(void
+ 
+ 	n = sched_max_numa_distance;
+ 
+-	if (sched_domains_numa_levels <= 1) {
++	if (sched_domains_numa_levels <= 2) {
+ 		sched_numa_topology_type = NUMA_DIRECT;
+ 		return;
+ 	}
+@@ -1380,9 +1380,6 @@ void sched_init_numa(void)
+ 			break;
+ 	}
+ 
+-	if (!level)
+-		return;
+-
+ 	/*
+ 	 * 'level' contains the number of unique distances
+ 	 *
+
+
