@@ -2,67 +2,71 @@ Return-Path: <SRS0=rj9n=MU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED,USER_AGENT_NEOMUTT
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E4AA8C65C20
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 12:23:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 99188C65C20
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 13:37:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1746A20858
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 12:23:32 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=verge.net.au header.i=@verge.net.au header.b="QY78mqlc"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1746A20858
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=verge.net.au
+	by mail.kernel.org (Postfix) with ESMTPS id 035EE20652
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 13:37:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 035EE20652
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42TKJy2vnnzF3DN
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 23:23:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=verge.net.au
+	by lists.ozlabs.org (Postfix) with ESMTP id 42TLyn4TRJzF3F6
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 00:37:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=verge.net.au header.i=@verge.net.au header.b="QY78mqlc";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=verge.net.au
- (client-ip=202.4.237.240; helo=kirsty.vergenet.net;
- envelope-from=horms@verge.net.au; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=verge.net.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=verge.net.au header.i=@verge.net.au header.b="QY78mqlc";
- dkim-atps=neutral
-Received: from kirsty.vergenet.net (kirsty.vergenet.net [202.4.237.240])
- by lists.ozlabs.org (Postfix) with ESMTP id 42TKBW29wvzDqf5
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Oct 2018 23:17:54 +1100 (AEDT)
-Received: from reginn.horms.nl (watermunt.horms.nl [80.127.179.77])
- by kirsty.vergenet.net (Postfix) with ESMTPA id C5B9F25B765;
- Mon,  8 Oct 2018 19:02:22 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=verge.net.au; s=mail;
- t=1538985743; bh=9vgC6sUSjJ9pL/32e+l5ypive1sbuCzbmwgjC3qUuvw=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=QY78mqlcOYb08SC9pbdoz2WJMJJx6TePPttRiijsj0zn5t+1yCoPLX/62D25YY+mD
- I8oUcxVvAEBo794CihAEWbPn+2n9X7mKpz8jUa8+7o5H2M4qTePTGdDoZYOZNXIW52
- jn7ahK/hxoyXedpkLmA0kHkG+FS9dQpyERYrzEKA=
-Received: by reginn.horms.nl (Postfix, from userid 7100)
- id A12DF94040B; Mon,  8 Oct 2018 10:02:20 +0200 (CEST)
-Date: Mon, 8 Oct 2018 10:02:20 +0200
-From: Simon Horman <horms@verge.net.au>
-To: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH 29/36] dt-bindings: arm: Convert Renesas board/soc
- bindings to json-schema
-Message-ID: <20181008080220.rmxk57ckdfmwuk62@verge.net.au>
-References: <20181005165848.3474-1-robh@kernel.org>
- <20181005165848.3474-30-robh@kernel.org>
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42TLnr4JZrzF3D6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Oct 2018 00:30:08 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 42TLnZ5L8Gz9ttC5;
+ Mon,  8 Oct 2018 15:29:54 +0200 (CEST)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id iZ47MVDwQMIN; Mon,  8 Oct 2018 15:29:54 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 42TLnZ4qClz9ttBY;
+ Mon,  8 Oct 2018 15:29:54 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 8AFDC8B7B0;
+ Mon,  8 Oct 2018 15:30:04 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id b8zbsA4bxLbQ; Mon,  8 Oct 2018 15:30:04 +0200 (CEST)
+Received: from pc16082vm.idsi0.si.c-s.fr (unknown [192.168.232.3])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id BA5A88B7B7;
+ Mon,  8 Oct 2018 15:30:03 +0200 (CEST)
+Subject: Re: [PATCH v5 0/9] powerpc: Switch to CONFIG_THREAD_INFO_IN_TASK
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+References: <cover.1538687073.git.christophe.leroy@c-s.fr>
+ <87pnwk1yw4.fsf@concordia.ellerman.id.au>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <23afad6f-7feb-b36f-e27e-d1b48350517d@c-s.fr>
+Date: Mon, 8 Oct 2018 13:30:01 +0000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.7.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20181005165848.3474-30-robh@kernel.org>
-Organisation: Horms Solutions BV
-User-Agent: NeoMutt/20170113 (1.7.2)
+In-Reply-To: <87pnwk1yw4.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,406 +78,175 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org,
- Kumar Gala <kumar.gala@linaro.org>, Grant Likely <glikely@secretlab.ca>,
- Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>,
- Arnd Bergmann <arnd@arndb.de>, Tom Rini <trini@konsulko.com>,
- Frank Rowand <frowand.list@gmail.com>,
- Linus Walleij <linus.walleij@linaro.org>,
- Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
- linux-kernel@vger.kernel.org, Bjorn Andersson <bjorn.andersson@linaro.org>,
- linux-renesas-soc@vger.kernel.org, Mark Brown <broonie@kernel.org>,
- Geert Uytterhoeven <geert@linux-m68k.org>, Jonathan Cameron <jic23@kernel.org>,
- Olof Johansson <olof@lixom.net>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Cc: "aneesh.kumar@linux.ibm.com" <aneesh.kumar@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Oct 05, 2018 at 11:58:41AM -0500, Rob Herring wrote:
-> Convert Renesas SoC bindings to DT schema format using json-schema.
+
+
+On 10/08/2018 11:06 AM, Michael Ellerman wrote:
+> Christophe Leroy <christophe.leroy@c-s.fr> writes:
 > 
-> Cc: Simon Horman <horms@verge.net.au>
-> Cc: Magnus Damm <magnus.damm@gmail.com>
-> Cc: Mark Rutland <mark.rutland@arm.com>
-> Cc: linux-renesas-soc@vger.kernel.org
-> Cc: devicetree@vger.kernel.org
-> Signed-off-by: Rob Herring <robh@kernel.org>
-
-This seems fine to me other than that it does not seem
-to apply cleanly to next.
-
-shmobile.txt sees a couple of updates per release cycle so from my point of
-view it would ideal if this change could hit -rc1 to allow patches for
-v4.21 to be accepted smoothly (already one from Sergei will need rebasing).
-
-> ---
->  .../devicetree/bindings/arm/shmobile.txt      | 143 ------------
->  .../devicetree/bindings/arm/shmobile.yaml     | 205 ++++++++++++++++++
->  2 files changed, 205 insertions(+), 143 deletions(-)
->  delete mode 100644 Documentation/devicetree/bindings/arm/shmobile.txt
->  create mode 100644 Documentation/devicetree/bindings/arm/shmobile.yaml
+>> The purpose of this serie is to activate CONFIG_THREAD_INFO_IN_TASK which
+>> moves the thread_info into task_struct.
+>>
+>> Moving thread_info into task_struct has the following advantages:
+>> - It protects thread_info from corruption in the case of stack
+>> overflows.
+>> - Its address is harder to determine if stack addresses are
+>> leaked, making a number of attacks more difficult.
 > 
-> diff --git a/Documentation/devicetree/bindings/arm/shmobile.txt b/Documentation/devicetree/bindings/arm/shmobile.txt
-> deleted file mode 100644
-> index 619b765e5bee..000000000000
-> --- a/Documentation/devicetree/bindings/arm/shmobile.txt
-> +++ /dev/null
-> @@ -1,143 +0,0 @@
-> -Renesas SH-Mobile, R-Mobile, and R-Car Platform Device Tree Bindings
-> ---------------------------------------------------------------------
-> -
-> -SoCs:
-> -
-> -  - Emma Mobile EV2
-> -    compatible = "renesas,emev2"
-> -  - RZ/A1H (R7S72100)
-> -    compatible = "renesas,r7s72100"
-> -  - SH-Mobile AG5 (R8A73A00/SH73A0)
-> -    compatible = "renesas,sh73a0"
-> -  - R-Mobile APE6 (R8A73A40)
-> -    compatible = "renesas,r8a73a4"
-> -  - R-Mobile A1 (R8A77400)
-> -    compatible = "renesas,r8a7740"
-> -  - RZ/G1H (R8A77420)
-> -    compatible = "renesas,r8a7742"
-> -  - RZ/G1M (R8A77430)
-> -    compatible = "renesas,r8a7743"
-> -  - RZ/G1N (R8A77440)
-> -    compatible = "renesas,r8a7744"
-> -  - RZ/G1E (R8A77450)
-> -    compatible = "renesas,r8a7745"
-> -  - RZ/G1C (R8A77470)
-> -    compatible = "renesas,r8a77470"
-> -  - R-Car M1A (R8A77781)
-> -    compatible = "renesas,r8a7778"
-> -  - R-Car H1 (R8A77790)
-> -    compatible = "renesas,r8a7779"
-> -  - R-Car H2 (R8A77900)
-> -    compatible = "renesas,r8a7790"
-> -  - R-Car M2-W (R8A77910)
-> -    compatible = "renesas,r8a7791"
-> -  - R-Car V2H (R8A77920)
-> -    compatible = "renesas,r8a7792"
-> -  - R-Car M2-N (R8A77930)
-> -    compatible = "renesas,r8a7793"
-> -  - R-Car E2 (R8A77940)
-> -    compatible = "renesas,r8a7794"
-> -  - R-Car H3 (R8A77950)
-> -    compatible = "renesas,r8a7795"
-> -  - R-Car M3-W (R8A77960)
-> -    compatible = "renesas,r8a7796"
-> -  - R-Car M3-N (R8A77965)
-> -    compatible = "renesas,r8a77965"
-> -  - R-Car V3M (R8A77970)
-> -    compatible = "renesas,r8a77970"
-> -  - R-Car V3H (R8A77980)
-> -    compatible = "renesas,r8a77980"
-> -  - R-Car E3 (R8A77990)
-> -    compatible = "renesas,r8a77990"
-> -  - R-Car D3 (R8A77995)
-> -    compatible = "renesas,r8a77995"
-> -  - RZ/N1D (R9A06G032)
-> -    compatible = "renesas,r9a06g032"
-> -
-> -Boards:
-> -
-> -  - Alt (RTP0RC7794SEB00010S)
-> -    compatible = "renesas,alt", "renesas,r8a7794"
-> -  - APE6-EVM
-> -    compatible = "renesas,ape6evm", "renesas,r8a73a4"
-> -  - Atmark Techno Armadillo-800 EVA
-> -    compatible = "renesas,armadillo800eva", "renesas,r8a7740"
-> -  - Blanche (RTP0RC7792SEB00010S)
-> -    compatible = "renesas,blanche", "renesas,r8a7792"
-> -  - BOCK-W
-> -    compatible = "renesas,bockw", "renesas,r8a7778"
-> -  - Condor (RTP0RC77980SEB0010SS/RTP0RC77980SEB0010SA01)
-> -    compatible = "renesas,condor", "renesas,r8a77980"
-> -  - Draak (RTP0RC77995SEB0010S)
-> -    compatible = "renesas,draak", "renesas,r8a77995"
-> -  - Eagle (RTP0RC77970SEB0010S)
-> -    compatible = "renesas,eagle", "renesas,r8a77970"
-> -  - Ebisu (RTP0RC77990SEB0010S)
-> -    compatible = "renesas,ebisu", "renesas,r8a77990"
-> -  - Genmai (RTK772100BC00000BR)
-> -    compatible = "renesas,genmai", "renesas,r7s72100"
-> -  - GR-Peach (X28A-M01-E/F)
-> -    compatible = "renesas,gr-peach", "renesas,r7s72100"
-> -  - Gose (RTP0RC7793SEB00010S)
-> -    compatible = "renesas,gose", "renesas,r8a7793"
-> -  - H3ULCB (R-Car Starter Kit Premier, RTP0RC7795SKBX0010SA00 (H3 ES1.1))
-> -    H3ULCB (R-Car Starter Kit Premier, RTP0RC77951SKBX010SA00 (H3 ES2.0))
-> -    compatible = "renesas,h3ulcb", "renesas,r8a7795"
-> -  - Henninger
-> -    compatible = "renesas,henninger", "renesas,r8a7791"
-> -  - iWave Systems RZ/G1C Single Board Computer (iW-RainboW-G23S)
-> -    compatible = "iwave,g23s", "renesas,r8a77470"
-> -  - iWave Systems RZ/G1E SODIMM SOM Development Platform (iW-RainboW-G22D)
-> -    compatible = "iwave,g22d", "iwave,g22m", "renesas,r8a7745"
-> -  - iWave Systems RZ/G1E SODIMM System On Module (iW-RainboW-G22M-SM)
-> -    compatible = "iwave,g22m", "renesas,r8a7745"
-> -  - iWave Systems RZ/G1M Qseven Development Platform (iW-RainboW-G20D-Qseven)
-> -    compatible = "iwave,g20d", "iwave,g20m", "renesas,r8a7743"
-> -  - iWave Systems RZ/G1M Qseven System On Module (iW-RainboW-G20M-Qseven)
-> -    compatible = "iwave,g20m", "renesas,r8a7743"
-> -  - Kingfisher (SBEV-RCAR-KF-M03)
-> -    compatible = "shimafuji,kingfisher"
-> -  - Koelsch (RTP0RC7791SEB00010S)
-> -    compatible = "renesas,koelsch", "renesas,r8a7791"
-> -  - Kyoto Microcomputer Co. KZM-A9-Dual
-> -    compatible = "renesas,kzm9d", "renesas,emev2"
-> -  - Kyoto Microcomputer Co. KZM-A9-GT
-> -    compatible = "renesas,kzm9g", "renesas,sh73a0"
-> -  - Lager (RTP0RC7790SEB00010S)
-> -    compatible = "renesas,lager", "renesas,r8a7790"
-> -  - M3ULCB (R-Car Starter Kit Pro, RTP0RC7796SKBX0010SA09 (M3 ES1.0))
-> -    compatible = "renesas,m3ulcb", "renesas,r8a7796"
-> -  - Marzen (R0P7779A00010S)
-> -    compatible = "renesas,marzen", "renesas,r8a7779"
-> -  - Porter (M2-LCDP)
-> -    compatible = "renesas,porter", "renesas,r8a7791"
-> -  - RSKRZA1 (YR0K77210C000BE)
-> -    compatible = "renesas,rskrza1", "renesas,r7s72100"
-> -  - RZN1D-DB (RZ/N1D Demo Board for the RZ/N1D 400 pins package)
-> -    compatible = "renesas,rzn1d400-db", "renesas,r9a06g032"
-> -  - Salvator-X (RTP0RC7795SIPB0010S)
-> -    compatible = "renesas,salvator-x", "renesas,r8a7795"
-> -  - Salvator-X (RTP0RC7796SIPB0011S)
-> -    compatible = "renesas,salvator-x", "renesas,r8a7796"
-> -  - Salvator-X (RTP0RC7796SIPB0011S (M3-N))
-> -    compatible = "renesas,salvator-x", "renesas,r8a77965"
-> -  - Salvator-XS (Salvator-X 2nd version, RTP0RC7795SIPB0012S)
-> -    compatible = "renesas,salvator-xs", "renesas,r8a7795"
-> -  - Salvator-XS (Salvator-X 2nd version, RTP0RC7796SIPB0012S)
-> -    compatible = "renesas,salvator-xs", "renesas,r8a7796"
-> -  - Salvator-XS (Salvator-X 2nd version, RTP0RC77965SIPB012S)
-> -    compatible = "renesas,salvator-xs", "renesas,r8a77965"
-> -  - SILK (RTP0RC7794LCB00011S)
-> -    compatible = "renesas,silk", "renesas,r8a7794"
-> -  - SK-RZG1E (YR8A77450S000BE)
-> -    compatible = "renesas,sk-rzg1e", "renesas,r8a7745"
-> -  - SK-RZG1M (YR8A77430S000BE)
-> -    compatible = "renesas,sk-rzg1m", "renesas,r8a7743"
-> -  - Stout (ADAS Starterkit, Y-R-CAR-ADAS-SKH2-BOARD)
-> -    compatible = "renesas,stout", "renesas,r8a7790"
-> -  - V3HSK (Y-ASK-RCAR-V3H-WS10)
-> -    compatible = "renesas,v3hsk", "renesas,r8a77980"
-> -  - V3MSK (Y-ASK-RCAR-V3M-WS10)
-> -    compatible = "renesas,v3msk", "renesas,r8a77970"
-> -  - Wheat (RTP0RC7792ASKB0000JE)
-> -    compatible = "renesas,wheat", "renesas,r8a7792"
-> diff --git a/Documentation/devicetree/bindings/arm/shmobile.yaml b/Documentation/devicetree/bindings/arm/shmobile.yaml
-> new file mode 100644
-> index 000000000000..31009e7fb0ea
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/arm/shmobile.yaml
-> @@ -0,0 +1,205 @@
-> +# SPDX-License-Identifier: None
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/bindings/arm/shmobile.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: Renesas SH-Mobile, R-Mobile, and R-Car Platform Device Tree Bindings
-> +
-> +maintainers:
-> +  - Geert Uytterhoeven <geert+renesas@glider.be>
-> +
-> +properties:
-> +  $nodename:
-> +    const: '/'
-> +  compatible:
-> +    oneOf:
-> +      - description: Emma Mobile EV2
-> +        items:
-> +          - enum:
-> +              - renesas,kzm9d # Kyoto Microcomputer Co. KZM-A9-Dual
-> +          - const: renesas,emev2
-> +
-> +      - description:  RZ/A1H (R7S72100)
-> +        items:
-> +          - enum:
-> +              - renesas,genmai # Genmai (RTK772100BC00000BR)
-> +              - renesas,gr-peach # GR-Peach (X28A-M01-E/F)
-> +              - renesas,rskrza1 # RSKRZA1 (YR0K77210C000BE)
-> +          - const: renesas,r7s72100
-> +
-> +      - description:  SH-Mobile AG5 (R8A73A00/SH73A0)
-> +        items:
-> +          - enum:
-> +              - renesas,kzm9g # Kyoto Microcomputer Co. KZM-A9-GT
-> +          - const: renesas,sh73a0
-> +
-> +      - description:  R-Mobile APE6 (R8A73A40)
-> +        items:
-> +          - enum:
-> +              - renesas,ape6evm
-> +          - const: renesas,r8a73a4
-> +
-> +      - description:  R-Mobile A1 (R8A77400)
-> +        items:
-> +          - enum:
-> +              - renesas,armadillo800eva # Atmark Techno Armadillo-800 EVA
-> +          - const: renesas,r8a7740
-> +
-> +      - description:  RZ/G1H (R8A77420)
-> +        items:
-> +          - const: renesas,r8a7742
-> +
-> +      - description: RZ/G1M (R8A77430)
-> +        items:
-> +          - enum:
-> +              # iWave Systems RZ/G1M Qseven Development Platform (iW-RainboW-G20D-Qseven)
-> +              - iwave,g20d
-> +          - const: iwave,g20m
-> +          - const: renesas,r8a7743
-> +
-> +      - items:
-> +          - enum:
-> +              # iWave Systems RZ/G1M Qseven System On Module (iW-RainboW-G20M-Qseven)
-> +              - iwave,g20m
-> +          - const: renesas,r8a7743
-> +
-> +      - description: RZ/G1N (R8A77440)
-> +        items:
-> +          - enum:
-> +              - renesas,sk-rzg1m # SK-RZG1M (YR8A77430S000BE)
-> +          - const: renesas,r8a7744
-> +
-> +      - description: RZ/G1E (R8A77450)
-> +        items:
-> +          - enum:
-> +              - iwave,g22m # iWave Systems RZ/G1E SODIMM System On Module (iW-RainboW-G22M-SM)
-> +              - renesas,sk-rzg1e # SK-RZG1E (YR8A77450S000BE)
-> +          - const: renesas,r8a7745
-> +      - items:
-> +          # iWave Systems RZ/G1E SODIMM SOM Development Platform (iW-RainboW-G22D)
-> +          - const: iwave,g22d
-> +          - const: iwave,g22m
-> +          - const: renesas,r8a7745
-> +
-> +      - description: RZ/G1C (R8A77470)
-> +        items:
-> +          - enum:
-> +              - iwave,g23s #iWave Systems RZ/G1C Single Board Computer (iW-RainboW-G23S)
-> +          - const: renesas,r8a77470
-> +
-> +      - description: R-Car M1A (R8A77781)
-> +        items:
-> +          - enum:
-> +              - renesas,bockw
-> +          - const: renesas,r8a7778
-> +
-> +      - description: R-Car H1 (R8A77790)
-> +        items:
-> +          - enum:
-> +              - renesas,marzen # Marzen (R0P7779A00010S)
-> +              - renesas,stout # Stout (ADAS Starterkit, Y-R-CAR-ADAS-SKH2-BOARD)
-> +          - const: renesas,r8a7779
-> +
-> +      - description: R-Car H2 (R8A77900)
-> +        items:
-> +          - enum:
-> +              - renesas,lager # Lager (RTP0RC7790SEB00010S)
-> +          - const: renesas,r8a7790
-> +
-> +      - description: R-Car M2-W (R8A77910)
-> +        items:
-> +          - enum:
-> +              - renesas,henninger
-> +              - renesas,koelsch # Koelsch (RTP0RC7791SEB00010S)
-> +              - renesas,porter # Porter (M2-LCDP)
-> +          - const: renesas,r8a7791
-> +
-> +      - description: R-Car V2H (R8A77920)
-> +        items:
-> +          - enum:
-> +              - renesas,blanche # Blanche (RTP0RC7792SEB00010S)
-> +              - renesas,wheat # Wheat (RTP0RC7792ASKB0000JE)
-> +          - const: renesas,r8a7792
-> +
-> +      - description: R-Car M2-N (R8A77930)
-> +        items:
-> +          - enum:
-> +              - renesas,gose # Gose (RTP0RC7793SEB00010S)
-> +          - const: renesas,r8a7793
-> +
-> +      - description: R-Car E2 (R8A77940)
-> +        items:
-> +          - enum:
-> +              - renesas,alt # Alt (RTP0RC7794SEB00010S)
-> +              - renesas,silk # SILK (RTP0RC7794LCB00011S)
-> +          - const: renesas,r8a7794
-> +
-> +      - description: R-Car H3 (R8A77950)
-> +        items:
-> +          - enum:
-> +                # H3ULCB (R-Car Starter Kit Premier, RTP0RC7795SKBX0010SA00 (H3 ES1.1))
-> +                # H3ULCB (R-Car Starter Kit Premier, RTP0RC77951SKBX010SA00 (H3 ES2.0))
-> +              - renesas,h3ulcb
-> +              - renesas,salvator-x # Salvator-X (RTP0RC7795SIPB0010S)
-> +              - renesas,salvator-xs # Salvator-XS (Salvator-X 2nd version, RTP0RC7795SIPB0012S)
-> +          - const: renesas,r8a7795
-> +
-> +      - description: R-Car M3-W (R8A77960)
-> +        items:
-> +          - enum:
-> +              - renesas,m3ulcb # M3ULCB (R-Car Starter Kit Pro, RTP0RC7796SKBX0010SA09 (M3 ES1.0))
-> +              - renesas,salvator-x # Salvator-X (RTP0RC7796SIPB0011S)
-> +              - renesas,salvator-xs # Salvator-XS (Salvator-X 2nd version, RTP0RC7796SIPB0012S)
-> +          - const: renesas,r8a7796
-> +
-> +      - description: Kingfisher (SBEV-RCAR-KF-M03)
-> +        items:
-> +          - const: shimafuji,kingfisher
-> +          - enum:
-> +              - renesas,h3ulcb
-> +              - renesas,m3ulcb
-> +          - enum:
-> +              - renesas,r8a7795
-> +              - renesas,r8a7796
-> +
-> +      - description: R-Car M3-N (R8A77965)
-> +        items:
-> +          - enum:
-> +              - renesas,salvator-x # Salvator-X (RTP0RC7796SIPB0011S (M3-N))
-> +              - renesas,salvator-xs # Salvator-XS (Salvator-X 2nd version, RTP0RC77965SIPB012S)
-> +          - const: renesas,r8a77965
-> +
-> +      - description: R-Car V3M (R8A77970)
-> +        items:
-> +          - enum:
-> +              - renesas,eagle # Eagle (RTP0RC77970SEB0010S)
-> +              - renesas,v3msk # V3MSK (Y-ASK-RCAR-V3M-WS10)
-> +          - const: renesas,r8a77970
-> +
-> +      - description: R-Car V3H (R8A77980)
-> +        items:
-> +          - enum:
-> +              - renesas,condor # Condor (RTP0RC77980SEB0010SS/RTP0RC77980SEB0010SA01)
-> +              - renesas,v3hsk # V3HSK (Y-ASK-RCAR-V3H-WS10)
-> +          - const: renesas,r8a77980
-> +
-> +      - description: R-Car E3 (R8A77990)
-> +        items:
-> +          - enum:
-> +              - renesas,ebisu # Ebisu (RTP0RC77990SEB0010S)
-> +          - const: renesas,r8a77990
-> +
-> +      - description: R-Car D3 (R8A77995)
-> +        items:
-> +          - enum:
-> +              - renesas,draak # Draak (RTP0RC77995SEB0010S)
-> +          - const: renesas,r8a77995
-> +
-> +      - description: RZ/N1D (R9A06G032)
-> +        items:
-> +          - enum:
-> +              - renesas,rzn1d400-db # RZN1D-DB (RZ/N1D Demo Board for the RZ/N1D 400 pins package)
-> +          - const: renesas,r9a06g032
-> +
-> +...
-> -- 
-> 2.17.1
+> This is blowing up pretty nicely with CONFIG_KMEMLEAK enabled, haven't
+> had time to dig further:
+
+Nice :)
+
+I have the same issue on PPC32.
+Seems like when descending the stack, save_context_stack() calls 
+validate_sp(), which in turn calls valid_irq_stack() when the first test 
+fails.
+But than early, hardirq_ctx[cpu] is NULL.
+With sp = 0, valid_irq_stack() used to return false because it expected 
+sp to be above the thread_info. But now that thread_info is gone, sp = 0 
+is valid when stack = NULL.
+
+The following fixes it:
+
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index afe76f7f316c..3e534147fd8f 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -2006,6 +2006,9 @@ int validate_sp(unsigned long sp, struct 
+task_struct *p,
+  {
+  	unsigned long stack_page = (unsigned long)task_stack_page(p);
+
++	if (sp < THREAD_SIZE)
++		return 0;
++
+  	if (sp >= stack_page + sizeof(struct thread_struct)
+  	    && sp <= stack_page + THREAD_SIZE - nbytes)
+  		return 1;
+
+
+Looking at this I also realise I forgot to remove the sizeof(struct 
+thread_struct) from here. And this sizeof() was buggy, it should have 
+been thread_info instead of thread_struct, but nevermind as it is going 
+away.
+
+Christophe
+> 
+> Unable to handle kernel paging request for data at address 0x00000000
+> Faulting instruction address: 0xc000000000022064
+> Oops: Kernel access of bad area, sig: 11 [#9]
+> LE SMP NR_CPUS=32 NUMA
+> Modules linked in:
+> CPU: 0 PID: 0 Comm: swapper Not tainted 4.19.0-rc3-gcc-7.3.1-00103-gc795acc08338 #268
+> NIP:  c000000000022064 LR: c0000000000220c0 CTR: c00000000001f5c0
+> REGS: c000000001244a50 TRAP: 0380   Not tainted  (4.19.0-rc3-gcc-7.3.1-00103-gc795acc08338)
+> MSR:  8000000000001033 <SF,ME,IR,DR,RI,LE>  CR: 48022244  XER: 20000000
+> CFAR: c0000000000220c4 IRQMASK: 1
+> GPR00: c0000000000220c0 c000000001244cd0 c00000000124b200 0000000000000001
+> GPR04: c000000001201180 0000000000000070 c000000001275ef8 0000000000000000
+> GPR08: 0000000000000000 0000000000000001 0000000000003f90 2b6e6f6d6d6f635f
+> GPR12: c00000000001f5c0 c000000001450000 0000000000000000 0000000002e2be38
+> GPR16: 000000007dc54c70 0000000002d854b8 0000000000000000 c000000000d87f00
+> GPR20: c000000000d87ef0 c000000000d87ee0 c000000000d87f08 c00000000006c1a8
+> GPR24: c000000000d87ec8 0000000000000000 7265677368657265 c000000000062a04
+> GPR28: 0000000000000006 c000000001201180 0000000000000000 0000000000000000
+> NIP [c000000000022064] show_stack+0xe4/0x2b0
+> LR [c0000000000220c0] show_stack+0x140/0x2b0
+> Call Trace:
+> [c000000001244cd0] [c00000000002217c] show_stack+0x1fc/0x2b0 (unreliable)
+> [c000000001244da0] [c00000000002245c] show_regs+0x22c/0x430
+> [c000000001244e50] [c00000000002ae8c] __die+0xfc/0x140
+> [c000000001244ed0] [c00000000002b954] die+0x74/0xf0
+> [c000000001244f10] [c00000000006e0f8] bad_page_fault+0xe8/0x180
+> [c000000001244f80] [c000000000074f48] slb_miss_large_addr+0x68/0x2e0
+> [c000000001244fc0] [c000000000008ce8] large_addr_slb+0x158/0x160
+> --- interrupt: 380 at show_stack+0xe4/0x2b0
+>      LR = show_stack+0x140/0x2b0
+> [c0000000012452b0] [c00000000002217c] show_stack+0x1fc/0x2b0 (unreliable)
+> [c000000001245380] [c00000000002245c] show_regs+0x22c/0x430
+> [c000000001245430] [c00000000002ae8c] __die+0xfc/0x140
+> [c0000000012454b0] [c00000000002b954] die+0x74/0xf0
+> [c0000000012454f0] [c00000000006e0f8] bad_page_fault+0xe8/0x180
+> [c000000001245560] [c000000000074f48] slb_miss_large_addr+0x68/0x2e0
+> [c0000000012455a0] [c000000000008ce8] large_addr_slb+0x158/0x160
+> --- interrupt: 380 at show_stack+0xe4/0x2b0
+>      LR = show_stack+0x140/0x2b0
+> [c000000001245890] [c00000000002217c] show_stack+0x1fc/0x2b0 (unreliable)
+> [c000000001245960] [c00000000002245c] show_regs+0x22c/0x430
+> [c000000001245a10] [c00000000002ae8c] __die+0xfc/0x140
+> [c000000001245a90] [c00000000002b954] die+0x74/0xf0
+> [c000000001245ad0] [c00000000006e0f8] bad_page_fault+0xe8/0x180
+> [c000000001245b40] [c000000000074f48] slb_miss_large_addr+0x68/0x2e0
+> [c000000001245b80] [c000000000008ce8] large_addr_slb+0x158/0x160
+> --- interrupt: 380 at show_stack+0xe4/0x2b0
+>      LR = show_stack+0x140/0x2b0
+> [c000000001245e70] [c00000000002217c] show_stack+0x1fc/0x2b0 (unreliable)
+> [c000000001245f40] [c00000000002245c] show_regs+0x22c/0x430
+> [c000000001245ff0] [c00000000002ae8c] __die+0xfc/0x140
+> [c000000001246070] [c00000000002b954] die+0x74/0xf0
+> [c0000000012460b0] [c00000000006e0f8] bad_page_fault+0xe8/0x180
+> [c000000001246120] [c000000000074f48] slb_miss_large_addr+0x68/0x2e0
+> [c000000001246160] [c000000000008ce8] large_addr_slb+0x158/0x160
+> --- interrupt: 380 at show_stack+0xe4/0x2b0
+>      LR = show_stack+0x140/0x2b0
+> [c000000001246450] [c00000000002217c] show_stack+0x1fc/0x2b0 (unreliable)
+> [c000000001246520] [c00000000002245c] show_regs+0x22c/0x430
+> [c0000000012465d0] [c00000000002ae8c] __die+0xfc/0x140
+> [c000000001246650] [c00000000002b954] die+0x74/0xf0
+> [c000000001246690] [c00000000006e0f8] bad_page_fault+0xe8/0x180
+> [c000000001246700] [c000000000074f48] slb_miss_large_addr+0x68/0x2e0
+> [c000000001246740] [c000000000008ce8] large_addr_slb+0x158/0x160
+> --- interrupt: 380 at show_stack+0xe4/0x2b0
+>      LR = show_stack+0x140/0x2b0
+> [c000000001246a30] [c00000000002217c] show_stack+0x1fc/0x2b0 (unreliable)
+> [c000000001246b00] [c00000000002245c] show_regs+0x22c/0x430
+> [c000000001246bb0] [c00000000002ae8c] __die+0xfc/0x140
+> [c000000001246c30] [c00000000002b954] die+0x74/0xf0
+> [c000000001246c70] [c00000000006e0f8] bad_page_fault+0xe8/0x180
+> [c000000001246ce0] [c000000000074f48] slb_miss_large_addr+0x68/0x2e0
+> [c000000001246d20] [c000000000008ce8] large_addr_slb+0x158/0x160
+> --- interrupt: 380 at show_stack+0xe4/0x2b0
+>      LR = show_stack+0x140/0x2b0
+> [c000000001247010] [c00000000002217c] show_stack+0x1fc/0x2b0 (unreliable)
+> [c0000000012470e0] [c00000000002245c] show_regs+0x22c/0x430
+> [c000000001247190] [c00000000002ae8c] __die+0xfc/0x140
+> [c000000001247210] [c00000000002b954] die+0x74/0xf0
+> [c000000001247250] [c00000000006e0f8] bad_page_fault+0xe8/0x180
+> [c0000000012472c0] [c000000000074f48] slb_miss_large_addr+0x68/0x2e0
+> [c000000001247300] [c000000000008ce8] large_addr_slb+0x158/0x160
+> --- interrupt: 380 at show_stack+0xe4/0x2b0
+>      LR = show_stack+0x140/0x2b0
+> [c0000000012475f0] [c00000000002217c] show_stack+0x1fc/0x2b0 (unreliable)
+> [c0000000012476c0] [c00000000002245c] show_regs+0x22c/0x430
+> [c000000001247770] [c00000000002ae8c] __die+0xfc/0x140
+> [c0000000012477f0] [c00000000002b954] die+0x74/0xf0
+> [c000000001247830] [c00000000006e0f8] bad_page_fault+0xe8/0x180
+> [c0000000012478a0] [c000000000074f48] slb_miss_large_addr+0x68/0x2e0
+> [c0000000012478e0] [c000000000008ce8] large_addr_slb+0x158/0x160
+> --- interrupt: 380 at save_context_stack+0x70/0x110
+>      LR = save_context_stack+0x64/0x110
+> [c000000001247bd0] [c000000001247c10] init_stack+0x3c10/0x4000 (unreliable)
+> [c000000001247c10] [c000000000ee2268] log_early+0xc0/0x100
+> [c000000001247c70] [c000000000ede7f8] memblock_virt_alloc_internal+0x1cc/0x210
+> [c000000001247d20] [c000000000edec00] memblock_virt_alloc_try_nid+0x94/0xfc
+> [c000000001247db0] [c000000000f08efc] early_init_dt_alloc_memory_arch+0x2c/0x40
+> [c000000001247dd0] [c000000000991200] __unflatten_device_tree+0xa0/0x1e0
+> [c000000001247e60] [c000000000f0a1d8] unflatten_device_tree+0x48/0x68
+> [c000000001247e90] [c000000000eab6fc] setup_arch+0x4c/0x3fc
+> [c000000001247f00] [c000000000ea3df8] start_kernel+0x88/0x604
+> Instruction dump:
+> 3ec2ffb4 3b800041 3bc00001 3b600000 3b18ccc8 3a73cd00 3a94ccf0 3ab5cce0
+> 635a7265 3ad6cd08 48000054 2e3e0000 <ea5f0000> ebdf0010 419200e8 7fbbf040
+> random: get_random_bytes called from print_oops_end_marker+0x6c/0xa0 with crng_init=0
+> ---[ end trace 0000000000000000 ]---
+> 
+> 
+> 
+> cheers
 > 
