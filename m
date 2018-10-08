@@ -2,103 +2,65 @@ Return-Path: <SRS0=rj9n=MU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E70C5C00449
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 07:12:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 98EBDC00449
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 07:15:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5F0032084D
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 07:12:54 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="H1oipPWZ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5F0032084D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 1669D2084D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 07:15:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1669D2084D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42TBQX3wH6zDrJq
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 18:12:52 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42TBT30hblzDqSL
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 18:15:03 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="H1oipPWZ";
-	dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=209.85.217.66; helo=mail-vs1-f66.google.com;
+ envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux-m68k.org
+Received: from mail-vs1-f66.google.com (mail-vs1-f66.google.com
+ [209.85.217.66])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42TBF810gjzF3JT
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Oct 2018 18:04:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="H1oipPWZ"; 
- dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 42TBF8082Vz8t2S
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Oct 2018 18:04:44 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 42TBF772cWz9sD2; Mon,  8 Oct 2018 18:04:43 +1100 (AEDT)
-Authentication-Results: ozlabs.org; spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::543; helo=mail-pg1-x543.google.com;
- envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="H1oipPWZ"; 
- dkim-atps=neutral
-Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
- [IPv6:2607:f8b0:4864:20::543])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 42TBF65n8Rz9sBh
- for <linuxppc-dev@ozlabs.org>; Mon,  8 Oct 2018 18:04:42 +1100 (AEDT)
-Received: by mail-pg1-x543.google.com with SMTP id t70-v6so7372657pgd.12
- for <linuxppc-dev@ozlabs.org>; Mon, 08 Oct 2018 00:04:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=+v9bT0mnPHL8DZDSfnwol5q+b37JczrvqpLCMZXxiX4=;
- b=H1oipPWZc+MKRqs7t5x1uc4BUspsCfMr1D/j4Tk0/AzMOCRrjYL2Ob6wgGPu+eXDUK
- fuerBmgxo6v7owjbHfCzucBvmby5wOmyghN9T2MSnOSv2TYsnhKs5rMKY024OdGayOuJ
- rTElk5aBH/npmDLp+eBkGIGeVCdCtnUiFv7PckGi+8QUfQgQQQcuZtV5T4NHZ84v+Z4P
- qsiy4d4wc/oaSNFNegghWBwweVXSP7To5ff3Ku7tIxdObJzUR8ubkvQCHFQMWjbEEM1A
- IRs9EN1aeLWv9ggVazeZImm6d8eHoleEZbjgGHt9s2vO45NS4UNwDIoZptH+8H/BkJCj
- RaiQ==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42TBGb66s8zF3KC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Oct 2018 18:05:59 +1100 (AEDT)
+Received: by mail-vs1-f66.google.com with SMTP id v18-v6so10797338vsl.11
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Oct 2018 00:05:59 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=+v9bT0mnPHL8DZDSfnwol5q+b37JczrvqpLCMZXxiX4=;
- b=pHJD0sknFmKqy4pEc78B5SugqjmeF4r+cR2UMAhB3jjgEPes0ZNARcyYCYSGe6kpcH
- VcDT1b/vbgnI0X3FibY5TrhRb1LGYq/s2C76vRh+9Dvum0+HT8ygR0iaB9qM3vHVGdug
- GlAxCuufgsGLwPmXziIqRPHPr++i81C2wG1Iw4o4sPpcE00GaSUbjbbD0bNBbp/SitlL
- aG/0Us9EIyl1FA8NKkXY984WnYtNfm6YAPWEnV/ohhXCanY7HuGZlbqEUHi88udKIA2H
- PAGk2hWuilpWbEtYgEUKWJ9gtcO9BdW2rPoUSFZylivG494MMrBp53r5TfGf4VhRLick
- IyPA==
-X-Gm-Message-State: ABuFfohKCqU4/Z+Xxtzr94vqn4QuA0t+dxRh9zyqrOaxgHQwZUK3xuUL
- pH3a52zJC+Mjupz0gc6tvfE=
-X-Google-Smtp-Source: ACcGV60SBHjEqumsgVkBiCoSmHxXpTGMyUd9tGiRPxfnoQue3NUBGgYkI85bUgBKX7pCOfYE/sya7w==
-X-Received: by 2002:a62:f553:: with SMTP id
- n80-v6mr23563853pfh.59.1538982280493; 
- Mon, 08 Oct 2018 00:04:40 -0700 (PDT)
-Received: from roar.ozlabs.ibm.com ([210.185.78.74])
- by smtp.gmail.com with ESMTPSA id 76-v6sm29562665pfk.134.2018.10.08.00.04.38
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Mon, 08 Oct 2018 00:04:39 -0700 (PDT)
-Date: Mon, 8 Oct 2018 17:04:35 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Fix HMIs on big-endian with CONFIG_RELOCATABLE=y
-Message-ID: <20181008170435.0ef2d573@roar.ozlabs.ibm.com>
-In-Reply-To: <e4bfa53ea8c777105359e1770df906909dde2c57.camel@kernel.crashing.org>
-References: <e4bfa53ea8c777105359e1770df906909dde2c57.camel@kernel.crashing.org>
-X-Mailer: Claws Mail 3.17.0 (GTK+ 2.24.32; x86_64-pc-linux-gnu)
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=osue1mJgsfaS1EFwpZk49zemL2dWAZG7kJzubCuh1oU=;
+ b=TVEG85GJynCtXFurSlM8a2FVmZTjBC2/UhqsTyvtIUqt86TkAIW6UBikwcoh/eEJlE
+ zT4uZhgKi4d5+qKoAYvOH6BAzaSYV8PMsyU24KXucY1s7qiDLvuhtd6w33NvjdlSt8Tk
+ +mVxQJo8aoID4KBVXVUeHgVo2lGkyzgjc5i8IqmKaXw4QQnkcXosKn3D9u5RJz/IN87z
+ A/TQ4GCFCWO+3vyGBSCmG4oVmoq9K3t5dpsqVXPG4pEb7/IxyGTHZlTzQLTrNSFwjvpc
+ FmFUadSqSqWL2xoqDjPQFlE/eUbIFQcoa95cvCuE6LwPUguHqcoHfx0oKwmZClJ5zb8H
+ 7fLA==
+X-Gm-Message-State: ABuFfoiJB9O4oqXisAGv3bkc0A+rckl8UfqVOMJeL0hfpmloKIuEcSIA
+ Of9e4w9nU87dYRJeEdv5bCLV6zm9u+mI49njLCM=
+X-Google-Smtp-Source: ACcGV63O0pQ2gzNbJoy0LYbI3d2s9A8d4XFSj/sseIF/MligeMeHm/bttdlCvYhsl9AqRoEt9ZhUSlCrK5hTfvIa3IE=
+X-Received: by 2002:a67:843:: with SMTP id 64mr5388261vsi.166.1538982356908;
+ Mon, 08 Oct 2018 00:05:56 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+References: <20181005165848.3474-1-robh@kernel.org>
+ <20181005165848.3474-6-robh@kernel.org>
+In-Reply-To: <20181005165848.3474-6-robh@kernel.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 8 Oct 2018 09:05:45 +0200
+Message-ID: <CAMuHMdV=HaVhGf-7-21OHb05dCc0q9MDUNknAcybEiGSxATeEA@mail.gmail.com>
+Subject: Re: [PATCH 05/36] dt-bindings: arm: renesas: Move 'renesas,prr'
+ binding to its own doc
+To: Rob Herring <robh@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,51 +72,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@ozlabs.org
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
+ <devicetree@vger.kernel.org>, Kumar Gala <kumar.gala@linaro.org>,
+ Grant Likely <glikely@secretlab.ca>, Arnd Bergmann <arnd@arndb.de>,
+ Tom Rini <trini@konsulko.com>, Simon Horman <horms@verge.net.au>,
+ Frank Rowand <frowand.list@gmail.com>,
+ Linus Walleij <linus.walleij@linaro.org>,
+ Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ =?UTF-8?Q?Bj=C3=B6rn_Andersson?= <bjorn.andersson@linaro.org>,
+ Linux-Renesas <linux-renesas-soc@vger.kernel.org>,
+ Mark Brown <broonie@kernel.org>, Jonathan Cameron <jic23@kernel.org>,
+ Olof Johansson <olof@lixom.net>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 08 Oct 2018 15:08:31 +1100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+Hi Rob,
 
-> HMIs will crash the kernel due to
-> 
-> 	BRANCH_LINK_TO_FAR(hmi_exception_realmode)
-> 
-> Calling into the OPD instead of the actual code.
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
-> 
-> This hack fixes it for me, but it's not great. Nick, any better idea ?
+On Fri, Oct 5, 2018 at 6:58 PM Rob Herring <robh@kernel.org> wrote:
+> In preparation to convert board-level bindings to json-schema, move
+> various misc SoC bindings out to their own file.
+>
+> Cc: Mark Rutland <mark.rutland@arm.com>
+> Cc: Simon Horman <horms@verge.net.au>
+> Cc: Magnus Damm <magnus.damm@gmail.com>
+> Cc: devicetree@vger.kernel.org
+> Cc: linux-renesas-soc@vger.kernel.org
+> Signed-off-by: Rob Herring <robh@kernel.org>
 
-Is it a hack because the ifdef gunk, or because there's something
-deeper wrong with using the .sym?
+Looks good to me, but needs a rebase, as the PRR section has been extended
+in -next.
 
-I guess all those handlers that load label address by hand could have
-the bug silently creep in. Can we have them use the DOTSYM() macro?
+Gr{oetje,eeting}s,
 
-Thanks,
-Nick
+                        Geert
 
-> 
-> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-> index ea04dfb..752709cc8 100644
-> --- a/arch/powerpc/kernel/exceptions-64s.S
-> +++ b/arch/powerpc/kernel/exceptions-64s.S
-> @@ -1119,7 +1119,11 @@ TRAMP_REAL_BEGIN(hmi_exception_early)
->  	EXCEPTION_PROLOG_COMMON_2(PACA_EXGEN)
->  	EXCEPTION_PROLOG_COMMON_3(0xe60)
->  	addi	r3,r1,STACK_FRAME_OVERHEAD
-> +#ifdef PPC64_ELF_ABI_v1
-> +	BRANCH_LINK_TO_FAR(.hmi_exception_realmode) /* Function call ABI */
-> +#else
->  	BRANCH_LINK_TO_FAR(hmi_exception_realmode) /* Function call ABI */
-> +#endif
->  	cmpdi	cr0,r3,0
->  
->  	/* Windup the stack. */
-> 
-> 
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
