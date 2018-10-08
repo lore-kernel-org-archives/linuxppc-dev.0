@@ -7,60 +7,60 @@ X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 42925C00449
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 05:49:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A5ED7C00449
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 05:52:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A13A72077C
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 05:49:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C96582087D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 05:52:18 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="Wz6SfxLh"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A13A72077C
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="FzWybXXB"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C96582087D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42T8Zq4P65zF38w
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 16:49:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42T8dX4xH1zDrcN
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 16:52:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="Wz6SfxLh";
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="FzWybXXB";
 	dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42T89c2RhGzF35x
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Oct 2018 16:31:32 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42T89d1zwpzF35x
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Oct 2018 16:31:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="Wz6SfxLh"; 
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="FzWybXXB"; 
  dkim-atps=neutral
 Received: by ozlabs.org (Postfix)
- id 42T89c13NPz9sCV; Mon,  8 Oct 2018 16:31:32 +1100 (AEDT)
+ id 42T89d15bpz9sjH; Mon,  8 Oct 2018 16:31:33 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 42T89b5HpZz9sD2;
- Mon,  8 Oct 2018 16:31:31 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPSA id 42T89c3QhLz9sCr;
+ Mon,  8 Oct 2018 16:31:32 +1100 (AEDT)
 Authentication-Results: ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.org
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1538976691; bh=ViYlrN+C8OR81fI/NWaYeCjbsgZGk//TFdZjk4avniY=;
+ t=1538976692; bh=O7W55VNG8mnnLdjhmtcnG9+QgltQcNuP9m9VLsULOdQ=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=Wz6SfxLhLDOnpTcs+y70o8IVh71TCNJFqKuWO1En522eMacv/e+kc95dtQ5gya3t8
- kA/EgzAK0z5zKWHA5S6OHKVxtUygINmljvAWISvE/FP3YIveaAwxL44272u4nUwryd
- XZYEf4XqTFm0edukf3cQsGR4SSRMVEWobY9q3NhSCcixUePEkz6ZPqRGWjsIGAEkoR
- 8JllOKHn6OFG1Y7WbUieT8QZDI++BeyOF0iooMSav+P3XFcSYPh9MVztofTW+QJANM
- l6j2QP02jcgGZybFqr+vRtrbPTtS7ua79DLNH1pIaLESRN5zrAW+ye2bU7O5Re9QLf
- V2jQvxKBRgmlg==
+ b=FzWybXXBov0rhZE7ecSeV02tktzAE9yR73OezL25aMQoEmMwkZsCq9ClZDuk/xGbO
+ RfsaFK7QO7wmI5JFYejhNBFokqntpeGafaDNzJY+ESmhHqaUhNS+BUXPQHNsna77Yw
+ 42ff6L1u9pLQjAMfDMMP2kgtM+GjtgZXV2nAqi8PBYEM/EkPZ1arM2T0Rs7jzJcpLu
+ 8WNpIQBPvWYVKN0MGnV9I18SSQxWtWbv7FkeIcO7nCtriU3PX94bL9EKTd7c+v5ugw
+ waR37TtGZ6zW3Kxt/u9f4+JnoX4833Kz9xUXSct/AFmnu0TeJ2rDG+OukKmOTnlPk+
+ F5jTg9eRgr3Ng==
 From: Paul Mackerras <paulus@ozlabs.org>
 To: kvm@vger.kernel.org,
 	kvm-ppc@vger.kernel.org
-Subject: [PATCH v5 06/33] KVM: PPC: Book3S HV: Simplify real-mode interrupt
- handling
-Date: Mon,  8 Oct 2018 16:30:52 +1100
-Message-Id: <1538976679-1363-7-git-send-email-paulus@ozlabs.org>
+Subject: [PATCH v5 07/33] KVM: PPC: Book3S: Rework TM save/restore code and
+ make it C-callable
+Date: Mon,  8 Oct 2018 16:30:53 +1100
+Message-Id: <1538976679-1363-8-git-send-email-paulus@ozlabs.org>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1538976679-1363-1-git-send-email-paulus@ozlabs.org>
 References: <1538976679-1363-1-git-send-email-paulus@ozlabs.org>
@@ -80,348 +80,590 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This streamlines the first part of the code that handles a hypervisor
-interrupt that occurred in the guest.  With this, all of the real-mode
-handling that occurs is done before the "guest_exit_cont" label; once
-we get to that label we are committed to exiting to host virtual mode.
-Thus the machine check and HMI real-mode handling is moved before that
-label.
+This adds a parameter to __kvmppc_save_tm and __kvmppc_restore_tm
+which allows the caller to indicate whether it wants the nonvolatile
+register state to be preserved across the call, as required by the C
+calling conventions.  This parameter being non-zero also causes the
+MSR bits that enable TM, FP, VMX and VSX to be preserved.  The
+condition register and DSCR are now always preserved.
 
-Also, the code to handle external interrupts is moved out of line, as
-is the code that calls kvmppc_realmode_hmi_handler().
+With this, kvmppc_save_tm_hv and kvmppc_restore_tm_hv can be called
+from C code provided the 3rd parameter is non-zero.  So that these
+functions can be called from modules, they now include code to set
+the TOC pointer (r2) on entry, as they can call other built-in C
+functions which will assume the TOC to have been set.
 
+Also, the fake suspend code in kvmppc_save_tm_hv is modified here to
+assume that treclaim in fake-suspend state does not modify any registers,
+which is the case on POWER9.  This enables the code to be simplified
+quite a bit.
+
+_kvmppc_save_tm_pr and _kvmppc_restore_tm_pr become much simpler with
+this change, since they now only need to save and restore TAR and pass
+1 for the 3rd argument to __kvmppc_{save,restore}_tm.
+
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/kvm/book3s_hv_ras.c        |   8 ++
- arch/powerpc/kvm/book3s_hv_rmhandlers.S | 220 ++++++++++++++++----------------
- 2 files changed, 119 insertions(+), 109 deletions(-)
+ arch/powerpc/include/asm/asm-prototypes.h |  10 ++
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S   |  49 +++---
+ arch/powerpc/kvm/tm.S                     | 250 ++++++++++++++++--------------
+ 3 files changed, 169 insertions(+), 140 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_hv_ras.c b/arch/powerpc/kvm/book3s_hv_ras.c
-index b11043b..ee564b6 100644
---- a/arch/powerpc/kvm/book3s_hv_ras.c
-+++ b/arch/powerpc/kvm/book3s_hv_ras.c
-@@ -331,5 +331,13 @@ long kvmppc_realmode_hmi_handler(void)
- 	} else {
- 		wait_for_tb_resync();
- 	}
-+
-+	/*
-+	 * Reset tb_offset_applied so the guest exit code won't try
-+	 * to subtract the previous timebase offset from the timebase.
-+	 */
-+	if (local_paca->kvm_hstate.kvm_vcore)
-+		local_paca->kvm_hstate.kvm_vcore->tb_offset_applied = 0;
-+
- 	return 0;
- }
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index 5b2ae34..fc360b5 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -1018,8 +1018,7 @@ ALT_FTR_SECTION_END_IFCLR(CPU_FTR_ARCH_300)
- no_xive:
- #endif /* CONFIG_KVM_XICS */
+diff --git a/arch/powerpc/include/asm/asm-prototypes.h b/arch/powerpc/include/asm/asm-prototypes.h
+index 024e8fc..0c1a2b0 100644
+--- a/arch/powerpc/include/asm/asm-prototypes.h
++++ b/arch/powerpc/include/asm/asm-prototypes.h
+@@ -150,6 +150,16 @@ extern s32 patch__memset_nocache, patch__memcpy_nocache;
  
--deliver_guest_interrupt:
--kvmppc_cede_reentry:		/* r4 = vcpu, r13 = paca */
-+deliver_guest_interrupt:	/* r4 = vcpu, r13 = paca */
- 	/* Check if we can deliver an external or decrementer interrupt now */
- 	ld	r0, VCPU_PENDING_EXC(r4)
- BEGIN_FTR_SECTION
-@@ -1269,18 +1268,26 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
- 	std	r3, VCPU_CTR(r9)
- 	std	r4, VCPU_XER(r9)
- 
--#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
--	/* For softpatch interrupt, go off and do TM instruction emulation */
--	cmpwi	r12, BOOK3S_INTERRUPT_HV_SOFTPATCH
--	beq	kvmppc_tm_emul
--#endif
-+	/* Save more register state  */
-+	mfdar	r3
-+	mfdsisr	r4
-+	std	r3, VCPU_DAR(r9)
-+	stw	r4, VCPU_DSISR(r9)
- 
- 	/* If this is a page table miss then see if it's theirs or ours */
- 	cmpwi	r12, BOOK3S_INTERRUPT_H_DATA_STORAGE
- 	beq	kvmppc_hdsi
-+	std	r3, VCPU_FAULT_DAR(r9)
-+	stw	r4, VCPU_FAULT_DSISR(r9)
- 	cmpwi	r12, BOOK3S_INTERRUPT_H_INST_STORAGE
- 	beq	kvmppc_hisi
+ extern long flush_count_cache;
  
 +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+	/* For softpatch interrupt, go off and do TM instruction emulation */
-+	cmpwi	r12, BOOK3S_INTERRUPT_HV_SOFTPATCH
-+	beq	kvmppc_tm_emul
-+#endif
++void kvmppc_save_tm_hv(struct kvm_vcpu *vcpu, u64 msr, bool preserve_nv);
++void kvmppc_restore_tm_hv(struct kvm_vcpu *vcpu, u64 msr, bool preserve_nv);
++#else
++static inline void kvmppc_save_tm_hv(struct kvm_vcpu *vcpu, u64 msr,
++				     bool preserve_nv) { }
++static inline void kvmppc_restore_tm_hv(struct kvm_vcpu *vcpu, u64 msr,
++					bool preserve_nv) { }
++#endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
 +
- 	/* See if this is a leftover HDEC interrupt */
- 	cmpwi	r12,BOOK3S_INTERRUPT_HV_DECREMENTER
- 	bne	2f
-@@ -1303,7 +1310,7 @@ BEGIN_FTR_SECTION
- END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
- 	lbz	r0, HSTATE_HOST_IPI(r13)
- 	cmpwi	r0, 0
--	beq	4f
-+	beq	maybe_reenter_guest
- 	b	guest_exit_cont
- 3:
- 	/* If it's a hypervisor facility unavailable interrupt, save HFSCR */
-@@ -1315,82 +1322,16 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
- 14:
- 	/* External interrupt ? */
- 	cmpwi	r12, BOOK3S_INTERRUPT_EXTERNAL
--	bne+	guest_exit_cont
--
--	/* External interrupt, first check for host_ipi. If this is
--	 * set, we know the host wants us out so let's do it now
--	 */
--	bl	kvmppc_read_intr
--
--	/*
--	 * Restore the active volatile registers after returning from
--	 * a C function.
--	 */
--	ld	r9, HSTATE_KVM_VCPU(r13)
--	li	r12, BOOK3S_INTERRUPT_EXTERNAL
--
--	/*
--	 * kvmppc_read_intr return codes:
--	 *
--	 * Exit to host (r3 > 0)
--	 *   1 An interrupt is pending that needs to be handled by the host
--	 *     Exit guest and return to host by branching to guest_exit_cont
--	 *
--	 *   2 Passthrough that needs completion in the host
--	 *     Exit guest and return to host by branching to guest_exit_cont
--	 *     However, we also set r12 to BOOK3S_INTERRUPT_HV_RM_HARD
--	 *     to indicate to the host to complete handling the interrupt
--	 *
--	 * Before returning to guest, we check if any CPU is heading out
--	 * to the host and if so, we head out also. If no CPUs are heading
--	 * check return values <= 0.
--	 *
--	 * Return to guest (r3 <= 0)
--	 *  0 No external interrupt is pending
--	 * -1 A guest wakeup IPI (which has now been cleared)
--	 *    In either case, we return to guest to deliver any pending
--	 *    guest interrupts.
--	 *
--	 * -2 A PCI passthrough external interrupt was handled
--	 *    (interrupt was delivered directly to guest)
--	 *    Return to guest to deliver any pending guest interrupts.
--	 */
--
--	cmpdi	r3, 1
--	ble	1f
--
--	/* Return code = 2 */
--	li	r12, BOOK3S_INTERRUPT_HV_RM_HARD
--	stw	r12, VCPU_TRAP(r9)
--	b	guest_exit_cont
--
--1:	/* Return code <= 1 */
--	cmpdi	r3, 0
--	bgt	guest_exit_cont
--
--	/* Return code <= 0 */
--4:	ld	r5, HSTATE_KVM_VCORE(r13)
--	lwz	r0, VCORE_ENTRY_EXIT(r5)
--	cmpwi	r0, 0x100
--	mr	r4, r9
--	blt	deliver_guest_interrupt
--
--guest_exit_cont:		/* r9 = vcpu, r12 = trap, r13 = paca */
--	/* Save more register state  */
--	mfdar	r6
--	mfdsisr	r7
--	std	r6, VCPU_DAR(r9)
--	stw	r7, VCPU_DSISR(r9)
--	/* don't overwrite fault_dar/fault_dsisr if HDSI */
--	cmpwi	r12,BOOK3S_INTERRUPT_H_DATA_STORAGE
--	beq	mc_cont
--	std	r6, VCPU_FAULT_DAR(r9)
--	stw	r7, VCPU_FAULT_DSISR(r9)
--
-+	beq	kvmppc_guest_external
- 	/* See if it is a machine check */
- 	cmpwi	r12, BOOK3S_INTERRUPT_MACHINE_CHECK
- 	beq	machine_check_realmode
--mc_cont:
-+	/* Or a hypervisor maintenance interrupt */
-+	cmpwi	r12, BOOK3S_INTERRUPT_HMI
-+	beq	hmi_realmode
-+
-+guest_exit_cont:		/* r9 = vcpu, r12 = trap, r13 = paca */
-+
- #ifdef CONFIG_KVM_BOOK3S_HV_EXIT_TIMING
- 	addi	r3, r9, VCPU_TB_RMEXIT
- 	mr	r4, r9
-@@ -1821,24 +1762,6 @@ BEGIN_FTR_SECTION
- 	mtspr	SPRN_DPDES, r8
- END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ void kvmhv_save_host_pmu(void);
+ void kvmhv_load_host_pmu(void);
+ void kvmhv_save_guest_pmu(struct kvm_vcpu *vcpu, bool pmu_in_use);
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index fc360b5..45dd637 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -759,11 +759,13 @@ BEGIN_FTR_SECTION
+ 	b	91f
+ END_FTR_SECTION(CPU_FTR_TM | CPU_FTR_P9_TM_HV_ASSIST, 0)
+ 	/*
+-	 * NOTE THAT THIS TRASHES ALL NON-VOLATILE REGISTERS INCLUDING CR
++	 * NOTE THAT THIS TRASHES ALL NON-VOLATILE REGISTERS (but not CR)
+ 	 */
+ 	mr      r3, r4
+ 	ld      r4, VCPU_MSR(r3)
++	li	r5, 0			/* don't preserve non-vol regs */
+ 	bl	kvmppc_restore_tm_hv
++	nop
+ 	ld	r4, HSTATE_KVM_VCPU(r13)
+ 91:
+ #endif
+@@ -1603,11 +1605,13 @@ BEGIN_FTR_SECTION
+ 	b	91f
+ END_FTR_SECTION(CPU_FTR_TM | CPU_FTR_P9_TM_HV_ASSIST, 0)
+ 	/*
+-	 * NOTE THAT THIS TRASHES ALL NON-VOLATILE REGISTERS INCLUDING CR
++	 * NOTE THAT THIS TRASHES ALL NON-VOLATILE REGISTERS (but not CR)
+ 	 */
+ 	mr      r3, r9
+ 	ld      r4, VCPU_MSR(r3)
++	li	r5, 0			/* don't preserve non-vol regs */
+ 	bl	kvmppc_save_tm_hv
++	nop
+ 	ld	r9, HSTATE_KVM_VCPU(r13)
+ 91:
+ #endif
+@@ -2486,11 +2490,13 @@ BEGIN_FTR_SECTION
+ 	b	91f
+ END_FTR_SECTION(CPU_FTR_TM | CPU_FTR_P9_TM_HV_ASSIST, 0)
+ 	/*
+-	 * NOTE THAT THIS TRASHES ALL NON-VOLATILE REGISTERS INCLUDING CR
++	 * NOTE THAT THIS TRASHES ALL NON-VOLATILE REGISTERS (but not CR)
+ 	 */
+ 	ld	r3, HSTATE_KVM_VCPU(r13)
+ 	ld      r4, VCPU_MSR(r3)
++	li	r5, 0			/* don't preserve non-vol regs */
+ 	bl	kvmppc_save_tm_hv
++	nop
+ 91:
+ #endif
  
--	/* If HMI, call kvmppc_realmode_hmi_handler() */
--	lwz	r12, STACK_SLOT_TRAP(r1)
--	cmpwi	r12, BOOK3S_INTERRUPT_HMI
--	bne	27f
--	bl	kvmppc_realmode_hmi_handler
--	nop
--	cmpdi	r3, 0
--	/*
--	 * At this point kvmppc_realmode_hmi_handler may have resync-ed
--	 * the TB, and if it has, we must not subtract the guest timebase
--	 * offset from the timebase. So, skip it.
--	 *
--	 * Also, do not call kvmppc_subcore_exit_guest() because it has
--	 * been invoked as part of kvmppc_realmode_hmi_handler().
--	 */
--	beq	30f
--
--27:
- 	/* Subtract timebase offset from timebase */
- 	ld	r8, VCORE_TB_OFFSET_APPL(r5)
- 	cmpdi	r8,0
-@@ -1856,7 +1779,16 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
- 	addis	r8,r8,0x100		/* if so, increment upper 40 bits */
- 	mtspr	SPRN_TBU40,r8
- 
--17:	bl	kvmppc_subcore_exit_guest
-+17:
-+	/*
-+	 * If this is an HMI, we called kvmppc_realmode_hmi_handler
-+	 * above, which may or may not have already called
-+	 * kvmppc_subcore_exit_guest.  Fortunately, all that
-+	 * kvmppc_subcore_exit_guest does is clear a flag, so calling
-+	 * it again here is benign even if kvmppc_realmode_hmi_handler
-+	 * has already called it.
-+	 */
-+	bl	kvmppc_subcore_exit_guest
+@@ -2606,11 +2612,13 @@ BEGIN_FTR_SECTION
+ 	b	91f
+ END_FTR_SECTION(CPU_FTR_TM | CPU_FTR_P9_TM_HV_ASSIST, 0)
+ 	/*
+-	 * NOTE THAT THIS TRASHES ALL NON-VOLATILE REGISTERS INCLUDING CR
++	 * NOTE THAT THIS TRASHES ALL NON-VOLATILE REGISTERS (but not CR)
+ 	 */
+ 	mr      r3, r4
+ 	ld      r4, VCPU_MSR(r3)
++	li	r5, 0			/* don't preserve non-vol regs */
+ 	bl	kvmppc_restore_tm_hv
++	nop
+ 	ld	r4, HSTATE_KVM_VCPU(r13)
+ 91:
+ #endif
+@@ -2943,10 +2951,12 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+  * Save transactional state and TM-related registers.
+  * Called with r3 pointing to the vcpu struct and r4 containing
+  * the guest MSR value.
+- * This can modify all checkpointed registers, but
++ * r5 is non-zero iff non-volatile register state needs to be maintained.
++ * If r5 == 0, this can modify all checkpointed registers, but
+  * restores r1 and r2 before exit.
+  */
+-kvmppc_save_tm_hv:
++_GLOBAL_TOC(kvmppc_save_tm_hv)
++EXPORT_SYMBOL_GPL(kvmppc_save_tm_hv)
+ 	/* See if we need to handle fake suspend mode */
+ BEGIN_FTR_SECTION
+ 	b	__kvmppc_save_tm
+@@ -2974,12 +2984,6 @@ BEGIN_FTR_SECTION
+ END_FTR_SECTION_IFSET(CPU_FTR_P9_TM_XER_SO_BUG)
  	nop
- 30:	ld	r5,HSTATE_KVM_VCORE(r13)
- 	ld	r4,VCORE_KVM(r5)	/* pointer to struct kvm */
-@@ -1910,6 +1842,67 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+ 
+-	std	r1, HSTATE_HOST_R1(r13)
+-
+-	/* Clear the MSR RI since r1, r13 may be foobar. */
+-	li	r5, 0
+-	mtmsrd	r5, 1
+-
+ 	/* We have to treclaim here because that's the only way to do S->N */
+ 	li	r3, TM_CAUSE_KVM_RESCHED
+ 	TRECLAIM(R3)
+@@ -2988,22 +2992,13 @@ END_FTR_SECTION_IFSET(CPU_FTR_P9_TM_XER_SO_BUG)
+ 	 * We were in fake suspend, so we are not going to save the
+ 	 * register state as the guest checkpointed state (since
+ 	 * we already have it), therefore we can now use any volatile GPR.
++	 * In fact treclaim in fake suspend state doesn't modify
++	 * any registers.
+ 	 */
+-	/* Reload PACA pointer, stack pointer and TOC. */
+-	GET_PACA(r13)
+-	ld	r1, HSTATE_HOST_R1(r13)
+-	ld	r2, PACATOC(r13)
+ 
+-	/* Set MSR RI now we have r1 and r13 back. */
+-	li	r5, MSR_RI
+-	mtmsrd	r5, 1
+-
+-	HMT_MEDIUM
+-	ld	r6, HSTATE_DSCR(r13)
+-	mtspr	SPRN_DSCR, r6
+-BEGIN_FTR_SECTION_NESTED(96)
++BEGIN_FTR_SECTION
+ 	bl	pnv_power9_force_smt4_release
+-END_FTR_SECTION_NESTED(CPU_FTR_P9_TM_XER_SO_BUG, CPU_FTR_P9_TM_XER_SO_BUG, 96)
++END_FTR_SECTION_IFSET(CPU_FTR_P9_TM_XER_SO_BUG)
+ 	nop
+ 
+ 4:
+@@ -3029,10 +3024,12 @@ END_FTR_SECTION_NESTED(CPU_FTR_P9_TM_XER_SO_BUG, CPU_FTR_P9_TM_XER_SO_BUG, 96)
+  * Restore transactional state and TM-related registers.
+  * Called with r3 pointing to the vcpu struct
+  * and r4 containing the guest MSR value.
++ * r5 is non-zero iff non-volatile register state needs to be maintained.
+  * This potentially modifies all checkpointed registers.
+  * It restores r1 and r2 from the PACA.
+  */
+-kvmppc_restore_tm_hv:
++_GLOBAL_TOC(kvmppc_restore_tm_hv)
++EXPORT_SYMBOL_GPL(kvmppc_restore_tm_hv)
+ 	/*
+ 	 * If we are doing TM emulation for the guest on a POWER9 DD2,
+ 	 * then we don't actually do a trechkpt -- we either set up
+diff --git a/arch/powerpc/kvm/tm.S b/arch/powerpc/kvm/tm.S
+index 90e330f..0531a14 100644
+--- a/arch/powerpc/kvm/tm.S
++++ b/arch/powerpc/kvm/tm.S
+@@ -28,17 +28,25 @@
+  * Save transactional state and TM-related registers.
+  * Called with:
+  * - r3 pointing to the vcpu struct
+- * - r4 points to the MSR with current TS bits:
++ * - r4 containing the MSR with current TS bits:
+  * 	(For HV KVM, it is VCPU_MSR ; For PR KVM, it is host MSR).
+- * This can modify all checkpointed registers, but
+- * restores r1, r2 before exit.
++ * - r5 containing a flag indicating that non-volatile registers
++ *	must be preserved.
++ * If r5 == 0, this can modify all checkpointed registers, but
++ * restores r1, r2 before exit.  If r5 != 0, this restores the
++ * MSR TM/FP/VEC/VSX bits to their state on entry.
+  */
+ _GLOBAL(__kvmppc_save_tm)
+ 	mflr	r0
+ 	std	r0, PPC_LR_STKOFF(r1)
++	stdu    r1, -SWITCH_FRAME_SIZE(r1)
++
++	mr	r9, r3
++	cmpdi	cr7, r5, 0
+ 
+ 	/* Turn on TM. */
+ 	mfmsr	r8
++	mr	r10, r8
+ 	li	r0, 1
+ 	rldimi	r8, r0, MSR_TM_LG, 63-MSR_TM_LG
+ 	ori     r8, r8, MSR_FP
+@@ -51,6 +59,27 @@ _GLOBAL(__kvmppc_save_tm)
+ 	std	r1, HSTATE_SCRATCH2(r13)
+ 	std	r3, HSTATE_SCRATCH1(r13)
+ 
++	/* Save CR on the stack - even if r5 == 0 we need to get cr7 back. */
++	mfcr	r6
++	SAVE_GPR(6, r1)
++
++	/* Save DSCR so we can restore it to avoid running with user value */
++	mfspr	r7, SPRN_DSCR
++	SAVE_GPR(7, r1)
++
++	/*
++	 * We are going to do treclaim., which will modify all checkpointed
++	 * registers.  Save the non-volatile registers on the stack if
++	 * preservation of non-volatile state has been requested.
++	 */
++	beq	cr7, 3f
++	SAVE_NVGPRS(r1)
++
++	/* MSR[TS] will be 0 (non-transactional) once we do treclaim. */
++	li	r0, 0
++	rldimi	r10, r0, MSR_TS_S_LG, 63 - MSR_TS_T_LG
++	SAVE_GPR(10, r1)	/* final MSR value */
++3:
+ #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+ BEGIN_FTR_SECTION
+ 	/* Emulation of the treclaim instruction needs TEXASR before treclaim */
+@@ -74,22 +103,25 @@ END_FTR_SECTION_IFSET(CPU_FTR_P9_TM_HV_ASSIST)
+ 	std	r9, PACATMSCRATCH(r13)
+ 	ld	r9, HSTATE_SCRATCH1(r13)
+ 
+-	/* Get a few more GPRs free. */
+-	std	r29, VCPU_GPRS_TM(29)(r9)
+-	std	r30, VCPU_GPRS_TM(30)(r9)
+-	std	r31, VCPU_GPRS_TM(31)(r9)
+-
+-	/* Save away PPR and DSCR soon so don't run with user values. */
+-	mfspr	r31, SPRN_PPR
++	/* Save away PPR soon so we don't run with user value. */
++	std	r0, VCPU_GPRS_TM(0)(r9)
++	mfspr	r0, SPRN_PPR
+ 	HMT_MEDIUM
+-	mfspr	r30, SPRN_DSCR
+-#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+-	ld	r29, HSTATE_DSCR(r13)
+-	mtspr	SPRN_DSCR, r29
+-#endif
+ 
+-	/* Save all but r9, r13 & r29-r31 */
+-	reg = 0
++	/* Reload stack pointer. */
++	std	r1, VCPU_GPRS_TM(1)(r9)
++	ld	r1, HSTATE_SCRATCH2(r13)
++
++	/* Set MSR RI now we have r1 and r13 back. */
++	std	r2, VCPU_GPRS_TM(2)(r9)
++	li	r2, MSR_RI
++	mtmsrd	r2, 1
++
++	/* Reload TOC pointer. */
++	ld	r2, PACATOC(r13)
++
++	/* Save all but r0-r2, r9 & r13 */
++	reg = 3
+ 	.rept	29
+ 	.if (reg != 9) && (reg != 13)
+ 	std	reg, VCPU_GPRS_TM(reg)(r9)
+@@ -103,33 +135,29 @@ END_FTR_SECTION_IFSET(CPU_FTR_P9_TM_HV_ASSIST)
+ 	ld	r4, PACATMSCRATCH(r13)
+ 	std	r4, VCPU_GPRS_TM(9)(r9)
+ 
+-	/* Reload stack pointer and TOC. */
+-	ld	r1, HSTATE_SCRATCH2(r13)
+-	ld	r2, PACATOC(r13)
+-
+-	/* Set MSR RI now we have r1 and r13 back. */
+-	li	r5, MSR_RI
+-	mtmsrd	r5, 1
++	/* Restore host DSCR and CR values, after saving guest values */
++	mfcr	r6
++	mfspr	r7, SPRN_DSCR
++	stw	r6, VCPU_CR_TM(r9)
++	std	r7, VCPU_DSCR_TM(r9)
++	REST_GPR(6, r1)
++	REST_GPR(7, r1)
++	mtcr	r6
++	mtspr	SPRN_DSCR, r7
+ 
+-	/* Save away checkpinted SPRs. */
+-	std	r31, VCPU_PPR_TM(r9)
+-	std	r30, VCPU_DSCR_TM(r9)
++	/* Save away checkpointed SPRs. */
++	std	r0, VCPU_PPR_TM(r9)
+ 	mflr	r5
+-	mfcr	r6
+ 	mfctr	r7
+ 	mfspr	r8, SPRN_AMR
+ 	mfspr	r10, SPRN_TAR
+ 	mfxer	r11
+ 	std	r5, VCPU_LR_TM(r9)
+-	stw	r6, VCPU_CR_TM(r9)
+ 	std	r7, VCPU_CTR_TM(r9)
+ 	std	r8, VCPU_AMR_TM(r9)
+ 	std	r10, VCPU_TAR_TM(r9)
+ 	std	r11, VCPU_XER_TM(r9)
+ 
+-	/* Restore r12 as trap number. */
+-	lwz	r12, VCPU_TRAP(r9)
+-
+ 	/* Save FP/VSX. */
+ 	addi	r3, r9, VCPU_FPRS_TM
+ 	bl	store_fp_state
+@@ -137,6 +165,11 @@ END_FTR_SECTION_IFSET(CPU_FTR_P9_TM_HV_ASSIST)
+ 	bl	store_vr_state
+ 	mfspr	r6, SPRN_VRSAVE
+ 	stw	r6, VCPU_VRSAVE_TM(r9)
++
++	/* Restore non-volatile registers if requested to */
++	beq	cr7, 1f
++	REST_NVGPRS(r1)
++	REST_GPR(10, r1)
+ 1:
+ 	/*
+ 	 * We need to save these SPRs after the treclaim so that the software
+@@ -146,12 +179,16 @@ END_FTR_SECTION_IFSET(CPU_FTR_P9_TM_HV_ASSIST)
+ 	 */
+ 	mfspr	r7, SPRN_TEXASR
+ 	std	r7, VCPU_TEXASR(r9)
+-11:
+ 	mfspr	r5, SPRN_TFHAR
+ 	mfspr	r6, SPRN_TFIAR
+ 	std	r5, VCPU_TFHAR(r9)
+ 	std	r6, VCPU_TFIAR(r9)
+ 
++	/* Restore MSR state if requested */
++	beq	cr7, 2f
++	mtmsrd	r10, 0
++2:
++	addi	r1, r1, SWITCH_FRAME_SIZE
+ 	ld	r0, PPC_LR_STKOFF(r1)
  	mtlr	r0
  	blr
- 
-+kvmppc_guest_external:
-+	/* External interrupt, first check for host_ipi. If this is
-+	 * set, we know the host wants us out so let's do it now
-+	 */
-+	bl	kvmppc_read_intr
-+
-+	/*
-+	 * Restore the active volatile registers after returning from
-+	 * a C function.
-+	 */
-+	ld	r9, HSTATE_KVM_VCPU(r13)
-+	li	r12, BOOK3S_INTERRUPT_EXTERNAL
-+
-+	/*
-+	 * kvmppc_read_intr return codes:
-+	 *
-+	 * Exit to host (r3 > 0)
-+	 *   1 An interrupt is pending that needs to be handled by the host
-+	 *     Exit guest and return to host by branching to guest_exit_cont
-+	 *
-+	 *   2 Passthrough that needs completion in the host
-+	 *     Exit guest and return to host by branching to guest_exit_cont
-+	 *     However, we also set r12 to BOOK3S_INTERRUPT_HV_RM_HARD
-+	 *     to indicate to the host to complete handling the interrupt
-+	 *
-+	 * Before returning to guest, we check if any CPU is heading out
-+	 * to the host and if so, we head out also. If no CPUs are heading
-+	 * check return values <= 0.
-+	 *
-+	 * Return to guest (r3 <= 0)
-+	 *  0 No external interrupt is pending
-+	 * -1 A guest wakeup IPI (which has now been cleared)
-+	 *    In either case, we return to guest to deliver any pending
-+	 *    guest interrupts.
-+	 *
-+	 * -2 A PCI passthrough external interrupt was handled
-+	 *    (interrupt was delivered directly to guest)
-+	 *    Return to guest to deliver any pending guest interrupts.
-+	 */
-+
-+	cmpdi	r3, 1
-+	ble	1f
-+
-+	/* Return code = 2 */
-+	li	r12, BOOK3S_INTERRUPT_HV_RM_HARD
-+	stw	r12, VCPU_TRAP(r9)
-+	b	guest_exit_cont
-+
-+1:	/* Return code <= 1 */
-+	cmpdi	r3, 0
-+	bgt	guest_exit_cont
-+
-+	/* Return code <= 0 */
-+maybe_reenter_guest:
-+	ld	r5, HSTATE_KVM_VCORE(r13)
-+	lwz	r0, VCORE_ENTRY_EXIT(r5)
-+	cmpwi	r0, 0x100
-+	mr	r4, r9
-+	blt	deliver_guest_interrupt
-+	b	guest_exit_cont
-+
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
- /*
-  * Softpatch interrupt for transactional memory emulation cases
-@@ -2685,13 +2678,7 @@ END_FTR_SECTION(CPU_FTR_TM | CPU_FTR_P9_TM_HV_ASSIST, 0)
- 	mr	r9, r4
- 	cmpdi	r3, 0
- 	bgt	guest_exit_cont
+@@ -161,49 +198,22 @@ END_FTR_SECTION_IFSET(CPU_FTR_P9_TM_HV_ASSIST)
+  * be invoked from C function by PR KVM only.
+  */
+ _GLOBAL(_kvmppc_save_tm_pr)
+-	mflr	r5
+-	std	r5, PPC_LR_STKOFF(r1)
+-	stdu    r1, -SWITCH_FRAME_SIZE(r1)
+-	SAVE_NVGPRS(r1)
 -
--	/* see if any other thread is already exiting */
--	lwz	r0,VCORE_ENTRY_EXIT(r5)
--	cmpwi	r0,0x100
--	bge	guest_exit_cont
+-	/* save MSR since TM/math bits might be impacted
+-	 * by __kvmppc_save_tm().
+-	 */
+-	mfmsr	r5
+-	SAVE_GPR(5, r1)
 -
--	b	kvmppc_cede_reentry	/* if not go back to guest */
-+	b	maybe_reenter_guest
+-	/* also save DSCR/CR/TAR so that it can be recovered later */
+-	mfspr   r6, SPRN_DSCR
+-	SAVE_GPR(6, r1)
+-
+-	mfcr    r7
+-	stw     r7, _CCR(r1)
++	mflr	r0
++	std	r0, PPC_LR_STKOFF(r1)
++	stdu    r1, -PPC_MIN_STKFRM(r1)
  
- 	/* cede when already previously prodded case */
- kvm_cede_prodded:
-@@ -2758,12 +2745,12 @@ machine_check_realmode:
- 	 */
- 	ld	r11, VCPU_MSR(r9)
- 	rldicl.	r0, r11, 64-MSR_HV_LG, 63 /* check if it happened in HV mode */
--	bne	mc_cont			/* if so, exit to host */
-+	bne	guest_exit_cont		/* if so, exit to host */
- 	/* Check if guest is capable of handling NMI exit */
- 	ld	r10, VCPU_KVM(r9)
- 	lbz	r10, KVM_FWNMI(r10)
- 	cmpdi	r10, 1			/* FWNMI capable? */
--	beq	mc_cont			/* if so, exit with KVM_EXIT_NMI. */
-+	beq	guest_exit_cont		/* if so, exit with KVM_EXIT_NMI. */
+ 	mfspr   r8, SPRN_TAR
+-	SAVE_GPR(8, r1)
++	std	r8, PPC_MIN_STKFRM-8(r1)
  
- 	/* if not, fall through for backward compatibility. */
- 	andi.	r10, r11, MSR_RI	/* check for unrecoverable exception */
-@@ -2777,6 +2764,21 @@ machine_check_realmode:
- 2:	b	fast_interrupt_c_return
++	li	r5, 1		/* preserve non-volatile registers */
+ 	bl	__kvmppc_save_tm
+ 
+-	REST_GPR(8, r1)
++	ld	r8, PPC_MIN_STKFRM-8(r1)
+ 	mtspr   SPRN_TAR, r8
+ 
+-	ld      r7, _CCR(r1)
+-	mtcr	r7
+-
+-	REST_GPR(6, r1)
+-	mtspr   SPRN_DSCR, r6
+-
+-	/* need preserve current MSR's MSR_TS bits */
+-	REST_GPR(5, r1)
+-	mfmsr   r6
+-	rldicl  r6, r6, 64 - MSR_TS_S_LG, 62
+-	rldimi  r5, r6, MSR_TS_S_LG, 63 - MSR_TS_T_LG
+-	mtmsrd  r5
+-
+-	REST_NVGPRS(r1)
+-	addi    r1, r1, SWITCH_FRAME_SIZE
+-	ld	r5, PPC_LR_STKOFF(r1)
+-	mtlr	r5
++	addi    r1, r1, PPC_MIN_STKFRM
++	ld	r0, PPC_LR_STKOFF(r1)
++	mtlr	r0
+ 	blr
+ 
+ EXPORT_SYMBOL_GPL(_kvmppc_save_tm_pr);
+@@ -215,15 +225,21 @@ EXPORT_SYMBOL_GPL(_kvmppc_save_tm_pr);
+  *  - r4 is the guest MSR with desired TS bits:
+  * 	For HV KVM, it is VCPU_MSR
+  * 	For PR KVM, it is provided by caller
+- * This potentially modifies all checkpointed registers.
+- * It restores r1, r2 from the PACA.
++ * - r5 containing a flag indicating that non-volatile registers
++ *	must be preserved.
++ * If r5 == 0, this potentially modifies all checkpointed registers, but
++ * restores r1, r2 from the PACA before exit.
++ * If r5 != 0, this restores the MSR TM/FP/VEC/VSX bits to their state on entry.
+  */
+ _GLOBAL(__kvmppc_restore_tm)
+ 	mflr	r0
+ 	std	r0, PPC_LR_STKOFF(r1)
+ 
++	cmpdi	cr7, r5, 0
++
+ 	/* Turn on TM/FP/VSX/VMX so we can restore them. */
+ 	mfmsr	r5
++	mr	r10, r5
+ 	li	r6, MSR_TM >> 32
+ 	sldi	r6, r6, 32
+ 	or	r5, r5, r6
+@@ -244,8 +260,7 @@ _GLOBAL(__kvmppc_restore_tm)
+ 
+ 	mr	r5, r4
+ 	rldicl. r5, r5, 64 - MSR_TS_S_LG, 62
+-	beqlr		/* TM not active in guest */
+-	std	r1, HSTATE_SCRATCH2(r13)
++	beq	9f		/* TM not active in guest */
+ 
+ 	/* Make sure the failure summary is set, otherwise we'll program check
+ 	 * when we trechkpt.  It's possible that this might have been not set
+@@ -256,6 +271,26 @@ _GLOBAL(__kvmppc_restore_tm)
+ 	mtspr	SPRN_TEXASR, r7
+ 
+ 	/*
++	 * Make a stack frame and save non-volatile registers if requested.
++	 */
++	stdu	r1, -SWITCH_FRAME_SIZE(r1)
++	std	r1, HSTATE_SCRATCH2(r13)
++
++	mfcr	r6
++	mfspr	r7, SPRN_DSCR
++	SAVE_GPR(2, r1)
++	SAVE_GPR(6, r1)
++	SAVE_GPR(7, r1)
++
++	beq	cr7, 4f
++	SAVE_NVGPRS(r1)
++
++	/* MSR[TS] will be 1 (suspended) once we do trechkpt */
++	li	r0, 1
++	rldimi	r10, r0, MSR_TS_S_LG, 63 - MSR_TS_T_LG
++	SAVE_GPR(10, r1)	/* final MSR value */
++4:
++	/*
+ 	 * We need to load up the checkpointed state for the guest.
+ 	 * We need to do this early as it will blow away any GPRs, VSRs and
+ 	 * some SPRs.
+@@ -291,8 +326,6 @@ _GLOBAL(__kvmppc_restore_tm)
+ 	ld	r29, VCPU_DSCR_TM(r3)
+ 	ld	r30, VCPU_PPR_TM(r3)
+ 
+-	std	r2, PACATMSCRATCH(r13) /* Save TOC */
+-
+ 	/* Clear the MSR RI since r1, r13 are all going to be foobar. */
+ 	li	r5, 0
+ 	mtmsrd	r5, 1
+@@ -318,18 +351,31 @@ _GLOBAL(__kvmppc_restore_tm)
+ 	/* Now let's get back the state we need. */
+ 	HMT_MEDIUM
+ 	GET_PACA(r13)
+-#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+-	ld	r29, HSTATE_DSCR(r13)
+-	mtspr	SPRN_DSCR, r29
+-#endif
+ 	ld	r1, HSTATE_SCRATCH2(r13)
+-	ld	r2, PACATMSCRATCH(r13)
++	REST_GPR(7, r1)
++	mtspr	SPRN_DSCR, r7
+ 
+ 	/* Set the MSR RI since we have our registers back. */
+ 	li	r5, MSR_RI
+ 	mtmsrd	r5, 1
++
++	/* Restore TOC pointer and CR */
++	REST_GPR(2, r1)
++	REST_GPR(6, r1)
++	mtcr	r6
++
++	/* Restore non-volatile registers if requested to. */
++	beq	cr7, 5f
++	REST_GPR(10, r1)
++	REST_NVGPRS(r1)
++
++5:	addi	r1, r1, SWITCH_FRAME_SIZE
+ 	ld	r0, PPC_LR_STKOFF(r1)
+ 	mtlr	r0
++
++9:	/* Restore MSR bits if requested */
++	beqlr	cr7
++	mtmsrd	r10, 0
+ 	blr
  
  /*
-+ * Call C code to handle a HMI in real mode.
-+ * Only the primary thread does the call, secondary threads are handled
-+ * by calling hmi_exception_realmode() after kvmppc_hv_entry returns.
-+ * r9 points to the vcpu on entry
-+ */
-+hmi_realmode:
-+	lbz	r0, HSTATE_PTID(r13)
-+	cmpwi	r0, 0
-+	bne	guest_exit_cont
-+	bl	kvmppc_realmode_hmi_handler
-+	ld	r9, HSTATE_KVM_VCPU(r13)
-+	li	r12, BOOK3S_INTERRUPT_HMI
-+	b	guest_exit_cont
-+
-+/*
-  * Check the reason we woke from nap, and take appropriate action.
-  * Returns (in r3):
-  *	0 if nothing needs to be done
+@@ -337,47 +383,23 @@ _GLOBAL(__kvmppc_restore_tm)
+  * can be invoked from C function by PR KVM only.
+  */
+ _GLOBAL(_kvmppc_restore_tm_pr)
+-	mflr	r5
+-	std	r5, PPC_LR_STKOFF(r1)
+-	stdu    r1, -SWITCH_FRAME_SIZE(r1)
+-	SAVE_NVGPRS(r1)
+-
+-	/* save MSR to avoid TM/math bits change */
+-	mfmsr	r5
+-	SAVE_GPR(5, r1)
+-
+-	/* also save DSCR/CR/TAR so that it can be recovered later */
+-	mfspr   r6, SPRN_DSCR
+-	SAVE_GPR(6, r1)
+-
+-	mfcr    r7
+-	stw     r7, _CCR(r1)
++	mflr	r0
++	std	r0, PPC_LR_STKOFF(r1)
++	stdu    r1, -PPC_MIN_STKFRM(r1)
+ 
++	/* save TAR so that it can be recovered later */
+ 	mfspr   r8, SPRN_TAR
+-	SAVE_GPR(8, r1)
++	std	r8, PPC_MIN_STKFRM-8(r1)
+ 
++	li	r5, 1
+ 	bl	__kvmppc_restore_tm
+ 
+-	REST_GPR(8, r1)
++	ld	r8, PPC_MIN_STKFRM-8(r1)
+ 	mtspr   SPRN_TAR, r8
+ 
+-	ld      r7, _CCR(r1)
+-	mtcr	r7
+-
+-	REST_GPR(6, r1)
+-	mtspr   SPRN_DSCR, r6
+-
+-	/* need preserve current MSR's MSR_TS bits */
+-	REST_GPR(5, r1)
+-	mfmsr   r6
+-	rldicl  r6, r6, 64 - MSR_TS_S_LG, 62
+-	rldimi  r5, r6, MSR_TS_S_LG, 63 - MSR_TS_T_LG
+-	mtmsrd  r5
+-
+-	REST_NVGPRS(r1)
+-	addi    r1, r1, SWITCH_FRAME_SIZE
+-	ld	r5, PPC_LR_STKOFF(r1)
+-	mtlr	r5
++	addi    r1, r1, PPC_MIN_STKFRM
++	ld	r0, PPC_LR_STKOFF(r1)
++	mtlr	r0
+ 	blr
+ 
+ EXPORT_SYMBOL_GPL(_kvmppc_restore_tm_pr);
 -- 
 2.7.4
 
