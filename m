@@ -7,60 +7,60 @@ X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0200FC00449
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 06:40:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C83A9C00449
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 06:42:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 70BA62087C
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 06:40:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 197F22087C
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 06:42:36 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="hqh3VZnY"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 70BA62087C
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="LmNFKPA8"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 197F22087C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42T9hv2dWWzF0BT
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 17:40:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42T9lY6sGYzDrDD
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 17:42:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="hqh3VZnY";
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="LmNFKPA8";
 	dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42T8B84tx6zF37Z
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Oct 2018 16:32:00 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42T8B91BWrzF35x
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Oct 2018 16:32:01 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="hqh3VZnY"; 
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="LmNFKPA8"; 
  dkim-atps=neutral
 Received: by ozlabs.org (Postfix)
- id 42T8B72SLBzB4PC; Mon,  8 Oct 2018 16:31:59 +1100 (AEDT)
+ id 42T8B84vKbz9sj6; Mon,  8 Oct 2018 16:32:00 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 42T8B64zt5zB4PB;
- Mon,  8 Oct 2018 16:31:58 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPSA id 42T8B76k52zB4PK;
+ Mon,  8 Oct 2018 16:31:59 +1100 (AEDT)
 Authentication-Results: ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.org
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1538976718; bh=goBbaIf3rpxwAa316AUikK3Sx9s9eduZKmGWI14rFaM=;
+ t=1538976720; bh=W9V0WVohEhVONTHNxDtUPrFsEOgNouaqG4E00cnMIqM=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=hqh3VZnYDPa9QqYP6TlVY3cc+yHICvxDEtR2Zt0PV/Hc7o6VBSWN6H3GOlXobLic/
- 30BFpDenZ5MhlDolTP/vsIJj76URILVClvEFNkTmCUhBHUqkvxBT/tsYXEwOF2Rm7o
- BLKKIPcCYiirAhOZ1/N7WA8hVhbIe8XCiLYzI+t0+PiaGbyusGpsi4IvWuMPPsyI4D
- k6waH8/mB9fpPtLTsXWjviNZtTjlPyjKmABeHHT+uOSiq+g0JWBN3bqvc5m/dSBUrR
- YUqI8Nu5T0CU6N4Cp/asa/es5J4bWHLOBaYf1CsbtuSFFl8A4B7k2MAjbSciw7G81x
- 9JxJ9cgk5S8zQ==
+ b=LmNFKPA8tPp6X7Kc30F3C8RS07Ei+WCEBmG6K5a0l9RKH2ccjiCt8HjOAqibp3Jky
+ v8jvSHAU+tpU+OEm4ZTFBai/6v1ih3fN5dB2Wt26ISrkkJiUGpPwJGHPSh0v4Lr0pu
+ QXu/etETQhMypST4OHxrwEai1ZrhxiDA2i7TIStE2xH+Y4H88YdJ7LYp7t8AfClkhP
+ dXP5Sdr9T5tZt1OTfji6FDphMSNB+hlKpWFxPa4lF8ipaIpqybmllGigtIT9vXjiOU
+ jHA0IR48tqFw1s4HffO0bJJvTE5efm9tniSLpYiZQkcPeHvSgZhEPkuKmW3xP/JEfW
+ sPiFJJeNCeKUg==
 From: Paul Mackerras <paulus@ozlabs.org>
 To: kvm@vger.kernel.org,
 	kvm-ppc@vger.kernel.org
-Subject: [PATCH v5 27/33] KVM: PPC: Book3S HV: Add one-reg interface to
- virtual PTCR register
-Date: Mon,  8 Oct 2018 16:31:13 +1100
-Message-Id: <1538976679-1363-28-git-send-email-paulus@ozlabs.org>
+Subject: [PATCH v5 28/33] KVM: PPC: Book3S HV: Sanitise hv_regs on nested
+ guest entry
+Date: Mon,  8 Oct 2018 16:31:14 +1100
+Message-Id: <1538976679-1363-29-git-send-email-paulus@ozlabs.org>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1538976679-1363-1-git-send-email-paulus@ozlabs.org>
 References: <1538976679-1363-1-git-send-email-paulus@ozlabs.org>
@@ -80,71 +80,83 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This adds a one-reg register identifier which can be used to read and
-set the virtual PTCR for the guest.  This register identifies the
-address and size of the virtual partition table for the guest, which
-contains information about the nested guests under this guest.
+From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
 
-Migrating this value is the only extra requirement for migrating a
-guest which has nested guests (assuming of course that the destination
-host supports nested virtualization in the kvm-hv module).
+restore_hv_regs() is used to copy the hv_regs L1 wants to set to run the
+nested (L2) guest into the vcpu structure. We need to sanitise these
+values to ensure we don't let the L1 guest hypervisor do things we don't
+want it to.
+
+We don't let data address watchpoints or completed instruction address
+breakpoints be set to match in hypervisor state.
+
+We also don't let L1 enable features in the hypervisor facility status
+and control register (HFSCR) for L2 which we have disabled for L1. That
+is L2 will get the subset of features which the L0 hypervisor has
+enabled for L1 and the features L1 wants to enable for L2. This could
+mean we give L1 a hypervisor facility unavailable interrupt for a
+facility it thinks it has enabled, however it shouldn't have enabled a
+facility it itself doesn't have for the L2 guest.
+
+We sanitise the registers when copying in the L2 hv_regs. We don't need
+to sanitise when copying back the L1 hv_regs since these shouldn't be
+able to contain invalid values as they're just what was copied out.
 
 Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- Documentation/virtual/kvm/api.txt   | 1 +
- arch/powerpc/include/uapi/asm/kvm.h | 1 +
- arch/powerpc/kvm/book3s_hv.c        | 6 ++++++
- 3 files changed, 8 insertions(+)
+ arch/powerpc/include/asm/reg.h      |  1 +
+ arch/powerpc/kvm/book3s_hv_nested.c | 17 +++++++++++++++++
+ 2 files changed, 18 insertions(+)
 
-diff --git a/Documentation/virtual/kvm/api.txt b/Documentation/virtual/kvm/api.txt
-index 647f941..2f5f9b7 100644
---- a/Documentation/virtual/kvm/api.txt
-+++ b/Documentation/virtual/kvm/api.txt
-@@ -1922,6 +1922,7 @@ registers, find a list below:
-   PPC   | KVM_REG_PPC_TIDR              | 64
-   PPC   | KVM_REG_PPC_PSSCR             | 64
-   PPC   | KVM_REG_PPC_DEC_EXPIRY        | 64
-+  PPC   | KVM_REG_PPC_PTCR              | 64
-   PPC   | KVM_REG_PPC_TM_GPR0           | 64
-           ...
-   PPC   | KVM_REG_PPC_TM_GPR31          | 64
-diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/uapi/asm/kvm.h
-index 1b32b56..8c876c1 100644
---- a/arch/powerpc/include/uapi/asm/kvm.h
-+++ b/arch/powerpc/include/uapi/asm/kvm.h
-@@ -634,6 +634,7 @@ struct kvm_ppc_cpu_char {
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index 6fda746..c9069897 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -415,6 +415,7 @@
+ #define   HFSCR_DSCR	__MASK(FSCR_DSCR_LG)
+ #define   HFSCR_VECVSX	__MASK(FSCR_VECVSX_LG)
+ #define   HFSCR_FP	__MASK(FSCR_FP_LG)
++#define   HFSCR_INTR_CAUSE (ASM_CONST(0xFF) << 56)	/* interrupt cause */
+ #define SPRN_TAR	0x32f	/* Target Address Register */
+ #define SPRN_LPCR	0x13E	/* LPAR Control Register */
+ #define   LPCR_VPM0		ASM_CONST(0x8000000000000000)
+diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm/book3s_hv_nested.c
+index a876dc3..e2305962 100644
+--- a/arch/powerpc/kvm/book3s_hv_nested.c
++++ b/arch/powerpc/kvm/book3s_hv_nested.c
+@@ -86,6 +86,22 @@ static void save_hv_return_state(struct kvm_vcpu *vcpu, int trap,
+ 	}
+ }
  
- #define KVM_REG_PPC_DEC_EXPIRY	(KVM_REG_PPC | KVM_REG_SIZE_U64 | 0xbe)
- #define KVM_REG_PPC_ONLINE	(KVM_REG_PPC | KVM_REG_SIZE_U32 | 0xbf)
-+#define KVM_REG_PPC_PTCR	(KVM_REG_PPC | KVM_REG_SIZE_U64 | 0xc0)
++static void sanitise_hv_regs(struct kvm_vcpu *vcpu, struct hv_guest_state *hr)
++{
++	/*
++	 * Don't let L1 enable features for L2 which we've disabled for L1,
++	 * but preserve the interrupt cause field.
++	 */
++	hr->hfscr &= (HFSCR_INTR_CAUSE | vcpu->arch.hfscr);
++
++	/* Don't let data address watchpoint match in hypervisor state */
++	hr->dawrx0 &= ~DAWRX_HYP;
++
++	/* Don't let completed instruction address breakpt match in HV state */
++	if ((hr->ciabr & CIABR_PRIV) == CIABR_PRIV_HYPER)
++		hr->ciabr &= ~CIABR_PRIV;
++}
++
+ static void restore_hv_regs(struct kvm_vcpu *vcpu, struct hv_guest_state *hr)
+ {
+ 	struct kvmppc_vcore *vc = vcpu->arch.vcore;
+@@ -198,6 +214,7 @@ long kvmhv_enter_nested_guest(struct kvm_vcpu *vcpu)
+ 	mask = LPCR_DPFD | LPCR_ILE | LPCR_TC | LPCR_AIL | LPCR_LD |
+ 		LPCR_LPES | LPCR_MER;
+ 	lpcr = (vc->lpcr & ~mask) | (l2_hv.lpcr & mask);
++	sanitise_hv_regs(vcpu, &l2_hv);
+ 	restore_hv_regs(vcpu, &l2_hv);
  
- /* Transactional Memory checkpointed state:
-  * This is all GPRs, all VSX regs and a subset of SPRs
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index b8f14ea..127bb5f 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -1710,6 +1710,9 @@ static int kvmppc_get_one_reg_hv(struct kvm_vcpu *vcpu, u64 id,
- 	case KVM_REG_PPC_ONLINE:
- 		*val = get_reg_val(id, vcpu->arch.online);
- 		break;
-+	case KVM_REG_PPC_PTCR:
-+		*val = get_reg_val(id, vcpu->kvm->arch.l1_ptcr);
-+		break;
- 	default:
- 		r = -EINVAL;
- 		break;
-@@ -1941,6 +1944,9 @@ static int kvmppc_set_one_reg_hv(struct kvm_vcpu *vcpu, u64 id,
- 			atomic_dec(&vcpu->arch.vcore->online_count);
- 		vcpu->arch.online = i;
- 		break;
-+	case KVM_REG_PPC_PTCR:
-+		vcpu->kvm->arch.l1_ptcr = set_reg_val(id, *val);
-+		break;
- 	default:
- 		r = -EINVAL;
- 		break;
+ 	vcpu->arch.ret = RESUME_GUEST;
 -- 
 2.7.4
 
