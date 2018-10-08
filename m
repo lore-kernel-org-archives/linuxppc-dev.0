@@ -7,60 +7,59 @@ X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C3428C00449
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 06:16:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 279B1C00449
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 06:19:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 43AAD2086D
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 06:16:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 835A92086D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 06:19:14 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="EEH7ivY2"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 43AAD2086D
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="GQFE/avm"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 835A92086D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42T99v2vj1zF3D5
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 17:16:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42T9Dc2sshzF3FG
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 17:19:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="EEH7ivY2";
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="GQFE/avm";
 	dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42T89t24VVzF35x
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Oct 2018 16:31:46 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42T89v6wPfzF35x
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Oct 2018 16:31:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="EEH7ivY2"; 
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="GQFE/avm"; 
  dkim-atps=neutral
 Received: by ozlabs.org (Postfix)
- id 42T89s6MKzzB4NP; Mon,  8 Oct 2018 16:31:45 +1100 (AEDT)
+ id 42T89v16jYz9shy; Mon,  8 Oct 2018 16:31:47 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 42T89s32yczB4Nk;
- Mon,  8 Oct 2018 16:31:45 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPSA id 42T89t3M5vz9sjF;
+ Mon,  8 Oct 2018 16:31:46 +1100 (AEDT)
 Authentication-Results: ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.org
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1538976705; bh=zlpVj0nTPGeGc7m5o+mF+/QVAvOKhbKjokMBx/uHbdU=;
+ t=1538976706; bh=dYpxlXxM75912peJ0eZ2GWx5mRaiCwbgfh+0cP5CuQU=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=EEH7ivY24kK/NdhcGU6hZUm/f2Rvd5r11WFx4PnjFxf/uwkeJjzln+dTf/se0TCw6
- ISuqWojzSXHStjkVG97toKLUMqJwk5z0KzDUK3QA9hUuEVaRTdF92sAhaHSi0KtTKa
- 5dGmB+B1xl/Sm8XUq6NLtIl6zILknHE30ECPCAFXtSS3Uum3QKu8rbKR0vE2K7dQzm
- CW0j2Dqr1I7T/sYds5R1o1rc1t5ieYGKYz/BXQXYgX06xX6M/E6vwbegmJlP/yuuIl
- b4zD1svJeAIZZv1Rl43Ky5wdqQ4XX8nD0TXaoYJBTLNTMp9gbhOYz1iPLha6NgkWM+
- gE5/R5s3Uh76A==
+ b=GQFE/avmFNagoBeQInBnr3n5mRKvK9EqITaynbbWx67BNa/xeBaSa3Y0q6m8E22tB
+ l3yXlgJzY1DU3uRRuN1x/GE4uzJwIukpBNecXXV68zbrSDLCRfpPqjl7qSTRko6fJ7
+ CgPzxbVyh11hxQm3gVs/afVAsvkR/BWNHnwx5/DVi+9RyO8Wz4jQVDeJDVu4uoIe35
+ y75WlQXMWardhXAXM4rFeyVCQzNHQ3vwsbntBZY1RERF2BHuDZTVvO1Gmljm1lFYEh
+ kZ5kxGSyYzmZVJfgJQCPpXw8tn2B5DRb+4PsprPwRZhd5Z2WjqAxerQzB8WTT5a5gj
+ VGiwRghdmQWrw==
 From: Paul Mackerras <paulus@ozlabs.org>
 To: kvm@vger.kernel.org,
 	kvm-ppc@vger.kernel.org
-Subject: [PATCH v5 17/33] KVM: PPC: Book3S HV: Framework and hcall stubs for
- nested virtualization
-Date: Mon,  8 Oct 2018 16:31:03 +1100
-Message-Id: <1538976679-1363-18-git-send-email-paulus@ozlabs.org>
+Subject: [PATCH v5 18/33] KVM: PPC: Book3S HV: Nested guest entry via hypercall
+Date: Mon,  8 Oct 2018 16:31:04 +1100
+Message-Id: <1538976679-1363-19-git-send-email-paulus@ozlabs.org>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1538976679-1363-1-git-send-email-paulus@ozlabs.org>
 References: <1538976679-1363-1-git-send-email-paulus@ozlabs.org>
@@ -80,574 +79,743 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This starts the process of adding the code to support nested HV-style
-virtualization.  It defines a new H_SET_PARTITION_TABLE hypercall which
-a nested hypervisor can use to set the base address and size of a
-partition table in its memory (analogous to the PTCR register).
-On the host (level 0 hypervisor) side, the H_SET_PARTITION_TABLE
-hypercall from the guest is handled by code that saves the virtual
-PTCR value for the guest.
+This adds a new hypercall, H_ENTER_NESTED, which is used by a nested
+hypervisor to enter one of its nested guests.  The hypercall supplies
+register values in two structs.  Those values are copied by the level 0
+(L0) hypervisor (the one which is running in hypervisor mode) into the
+vcpu struct of the L1 guest, and then the guest is run until an
+interrupt or error occurs which needs to be reported to L1 via the
+hypercall return value.
 
-This also adds code for creating and destroying nested guests and for
-reading the partition table entry for a nested guest from L1 memory.
-Each nested guest has its own shadow LPID value, different in general
-from the LPID value used by the nested hypervisor to refer to it.  The
-shadow LPID value is allocated at nested guest creation time.
+Currently this assumes that the L0 and L1 hypervisors are the same
+endianness, and the structs passed as arguments are in native
+endianness.  If they are of different endianness, the version number
+check will fail and the hcall will be rejected.
 
-Nested hypervisor functionality is only available for a radix guest,
-which therefore means a radix host on a POWER9 (or later) processor.
+Nested hypervisors do not support indep_threads_mode=N, so this adds
+code to print a warning message if the administrator has set
+indep_threads_mode=N, and treat it as Y.
 
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/include/asm/hvcall.h         |   5 +
- arch/powerpc/include/asm/kvm_book3s.h     |  10 +-
- arch/powerpc/include/asm/kvm_book3s_64.h  |  33 ++++
- arch/powerpc/include/asm/kvm_book3s_asm.h |   3 +
- arch/powerpc/include/asm/kvm_host.h       |   5 +
- arch/powerpc/kvm/Makefile                 |   3 +-
- arch/powerpc/kvm/book3s_hv.c              |  31 ++-
- arch/powerpc/kvm/book3s_hv_nested.c       | 301 ++++++++++++++++++++++++++++++
- 8 files changed, 384 insertions(+), 7 deletions(-)
- create mode 100644 arch/powerpc/kvm/book3s_hv_nested.c
+ arch/powerpc/include/asm/hvcall.h       |  36 +++++
+ arch/powerpc/include/asm/kvm_book3s.h   |   7 +
+ arch/powerpc/include/asm/kvm_host.h     |   5 +
+ arch/powerpc/kernel/asm-offsets.c       |   1 +
+ arch/powerpc/kvm/book3s_hv.c            | 214 ++++++++++++++++++++++++-----
+ arch/powerpc/kvm/book3s_hv_nested.c     | 230 ++++++++++++++++++++++++++++++++
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S |   8 ++
+ 7 files changed, 471 insertions(+), 30 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
-index a0b17f9..c95c651 100644
+index c95c651..45e8789 100644
 --- a/arch/powerpc/include/asm/hvcall.h
 +++ b/arch/powerpc/include/asm/hvcall.h
-@@ -322,6 +322,11 @@
- #define H_GET_24X7_DATA		0xF07C
- #define H_GET_PERF_COUNTER_INFO	0xF080
+@@ -466,6 +466,42 @@ struct h_cpu_char_result {
+ 	u64 behaviour;
+ };
  
-+/* Platform-specific hcalls used for nested HV KVM */
-+#define H_SET_PARTITION_TABLE	0xF800
-+#define H_ENTER_NESTED		0xF804
-+#define H_TLB_INVALIDATE	0xF808
-+
- /* Values for 2nd argument to H_SET_MODE */
- #define H_SET_MODE_RESOURCE_SET_CIABR		1
- #define H_SET_MODE_RESOURCE_SET_DAWR		2
-diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
-index 91c9779..43f212e 100644
---- a/arch/powerpc/include/asm/kvm_book3s.h
-+++ b/arch/powerpc/include/asm/kvm_book3s.h
-@@ -274,6 +274,13 @@ static inline void kvmppc_save_tm_sprs(struct kvm_vcpu *vcpu) {}
- static inline void kvmppc_restore_tm_sprs(struct kvm_vcpu *vcpu) {}
- #endif
- 
-+long kvmhv_nested_init(void);
-+void kvmhv_nested_exit(void);
-+void kvmhv_vm_nested_init(struct kvm *kvm);
-+long kvmhv_set_partition_table(struct kvm_vcpu *vcpu);
-+void kvmhv_set_ptbl_entry(unsigned int lpid, u64 dw0, u64 dw1);
-+void kvmhv_release_all_nested(struct kvm *kvm);
-+
- void kvmppc_giveup_fac(struct kvm_vcpu *vcpu, ulong fac);
- 
- extern int kvm_irq_bypass;
-@@ -387,9 +394,6 @@ extern int kvmppc_h_logical_ci_store(struct kvm_vcpu *vcpu);
- /* TO = 31 for unconditional trap */
- #define INS_TW				0x7fe00008
- 
--/* LPIDs we support with this build -- runtime limit may be lower */
--#define KVMPPC_NR_LPIDS			(LPID_RSVD + 1)
--
- #define SPLIT_HACK_MASK			0xff000000
- #define SPLIT_HACK_OFFS			0xfb000000
- 
-diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
-index 5c0e2d9..6d67b6a 100644
---- a/arch/powerpc/include/asm/kvm_book3s_64.h
-+++ b/arch/powerpc/include/asm/kvm_book3s_64.h
-@@ -23,6 +23,39 @@
- #include <linux/string.h>
- #include <asm/bitops.h>
- #include <asm/book3s/64/mmu-hash.h>
-+#include <asm/cpu_has_feature.h>
-+
-+#ifdef CONFIG_PPC_PSERIES
-+static inline bool kvmhv_on_pseries(void)
-+{
-+	return !cpu_has_feature(CPU_FTR_HVMODE);
-+}
-+#else
-+static inline bool kvmhv_on_pseries(void)
-+{
-+	return false;
-+}
-+#endif
-+
-+/*
-+ * Structure for a nested guest, that is, for a guest that is managed by
-+ * one of our guests.
-+ */
-+struct kvm_nested_guest {
-+	struct kvm *l1_host;		/* L1 VM that owns this nested guest */
-+	int l1_lpid;			/* lpid L1 guest thinks this guest is */
-+	int shadow_lpid;		/* real lpid of this nested guest */
-+	pgd_t *shadow_pgtable;		/* our page table for this guest */
-+	u64 l1_gr_to_hr;		/* L1's addr of part'n-scoped table */
-+	u64 process_table;		/* process table entry for this guest */
-+	long refcnt;			/* number of pointers to this struct */
-+	struct mutex tlb_lock;		/* serialize page faults and tlbies */
-+	struct kvm_nested_guest *next;
++/* Register state for entering a nested guest with H_ENTER_NESTED */
++struct hv_guest_state {
++	u64 version;		/* version of this structure layout */
++	u32 lpid;
++	u32 vcpu_token;
++	/* These registers are hypervisor privileged (at least for writing) */
++	u64 lpcr;
++	u64 pcr;
++	u64 amor;
++	u64 dpdes;
++	u64 hfscr;
++	s64 tb_offset;
++	u64 dawr0;
++	u64 dawrx0;
++	u64 ciabr;
++	u64 hdec_expiry;
++	u64 purr;
++	u64 spurr;
++	u64 ic;
++	u64 vtb;
++	u64 hdar;
++	u64 hdsisr;
++	u64 heir;
++	u64 asdr;
++	/* These are OS privileged but need to be set late in guest entry */
++	u64 srr0;
++	u64 srr1;
++	u64 sprg[4];
++	u64 pidr;
++	u64 cfar;
++	u64 ppr;
 +};
 +
-+struct kvm_nested_guest *kvmhv_get_nested(struct kvm *kvm, int l1_lpid,
-+					  bool create);
-+void kvmhv_put_nested(struct kvm_nested_guest *gp);
- 
- /* Power architecture requires HPT is at least 256kiB, at most 64TiB */
- #define PPC_MIN_HPT_ORDER	18
-diff --git a/arch/powerpc/include/asm/kvm_book3s_asm.h b/arch/powerpc/include/asm/kvm_book3s_asm.h
-index d978fdf..eb3ba63 100644
---- a/arch/powerpc/include/asm/kvm_book3s_asm.h
-+++ b/arch/powerpc/include/asm/kvm_book3s_asm.h
-@@ -25,6 +25,9 @@
- #define XICS_MFRR		0xc
- #define XICS_IPI		2	/* interrupt source # for IPIs */
- 
-+/* LPIDs we support with this build -- runtime limit may be lower */
-+#define KVMPPC_NR_LPIDS			(LPID_RSVD + 1)
++/* Latest version of hv_guest_state structure */
++#define HV_GUEST_STATE_VERSION	1
 +
- /* Maximum number of threads per physical core */
- #define MAX_SMT_THREADS		8
+ #endif /* __ASSEMBLY__ */
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_HVCALL_H */
+diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
+index 43f212e..093fd70 100644
+--- a/arch/powerpc/include/asm/kvm_book3s.h
++++ b/arch/powerpc/include/asm/kvm_book3s.h
+@@ -280,6 +280,13 @@ void kvmhv_vm_nested_init(struct kvm *kvm);
+ long kvmhv_set_partition_table(struct kvm_vcpu *vcpu);
+ void kvmhv_set_ptbl_entry(unsigned int lpid, u64 dw0, u64 dw1);
+ void kvmhv_release_all_nested(struct kvm *kvm);
++long kvmhv_enter_nested_guest(struct kvm_vcpu *vcpu);
++int kvmhv_run_single_vcpu(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu,
++			  u64 time_limit, unsigned long lpcr);
++void kvmhv_save_hv_regs(struct kvm_vcpu *vcpu, struct hv_guest_state *hr);
++void kvmhv_restore_hv_return_state(struct kvm_vcpu *vcpu,
++				   struct hv_guest_state *hr);
++long int kvmhv_nested_page_fault(struct kvm_vcpu *vcpu);
+ 
+ void kvmppc_giveup_fac(struct kvm_vcpu *vcpu, ulong fac);
  
 diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index c9cc42f..c35d4f2 100644
+index c35d4f2..ceb9f20 100644
 --- a/arch/powerpc/include/asm/kvm_host.h
 +++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -46,6 +46,7 @@
- #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
- #include <asm/kvm_book3s_asm.h>		/* for MAX_SMT_THREADS */
- #define KVM_MAX_VCPU_ID		(MAX_SMT_THREADS * KVM_MAX_VCORES)
-+#define KVM_MAX_NESTED_GUESTS	KVMPPC_NR_LPIDS
+@@ -95,6 +95,7 @@ struct dtl_entry;
  
- #else
- #define KVM_MAX_VCPU_ID		KVM_MAX_VCPUS
-@@ -287,6 +288,7 @@ struct kvm_arch {
- 	u8 radix;
- 	u8 fwnmi_enabled;
- 	bool threads_indep;
-+	bool nested_enable;
- 	pgd_t *pgtable;
- 	u64 process_table;
- 	struct dentry *debugfs_dir;
-@@ -312,6 +314,9 @@ struct kvm_arch {
- #endif
- 	struct kvmppc_ops *kvm_ops;
- #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
-+	u64 l1_ptcr;
-+	int max_nested_lpid;
-+	struct kvm_nested_guest *nested_guests[KVM_MAX_NESTED_GUESTS];
- 	/* This array can grow quite large, keep it at the end */
- 	struct kvmppc_vcore *vcores[KVM_MAX_VCORES];
- #endif
-diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
-index f872c04..e814f40 100644
---- a/arch/powerpc/kvm/Makefile
-+++ b/arch/powerpc/kvm/Makefile
-@@ -75,7 +75,8 @@ kvm-hv-y += \
- 	book3s_hv.o \
- 	book3s_hv_interrupts.o \
- 	book3s_64_mmu_hv.o \
--	book3s_64_mmu_radix.o
-+	book3s_64_mmu_radix.o \
-+	book3s_hv_nested.o
+ struct kvmppc_vcpu_book3s;
+ struct kvmppc_book3s_shadow_vcpu;
++struct kvm_nested_guest;
  
- kvm-hv-$(CONFIG_PPC_TRANSACTIONAL_MEM) += \
- 	book3s_hv_tm.o
+ struct kvm_vm_stat {
+ 	ulong remote_tlb_flush;
+@@ -786,6 +787,10 @@ struct kvm_vcpu_arch {
+ 	u32 emul_inst;
+ 
+ 	u32 online;
++
++	/* For support of nested guests */
++	struct kvm_nested_guest *nested;
++	u32 nested_vcpu_id;
+ #endif
+ 
+ #ifdef CONFIG_KVM_BOOK3S_HV_EXIT_TIMING
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index 7c3738d..d0abcbb 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -503,6 +503,7 @@ int main(void)
+ 	OFFSET(VCPU_VPA, kvm_vcpu, arch.vpa.pinned_addr);
+ 	OFFSET(VCPU_VPA_DIRTY, kvm_vcpu, arch.vpa.dirty);
+ 	OFFSET(VCPU_HEIR, kvm_vcpu, arch.emul_inst);
++	OFFSET(VCPU_NESTED, kvm_vcpu, arch.nested);
+ 	OFFSET(VCPU_CPU, kvm_vcpu, cpu);
+ 	OFFSET(VCPU_THREAD_CPU, kvm_vcpu, arch.thread_cpu);
+ #endif
 diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 8425d72..4c72f2f 100644
+index 4c72f2f..d58a4a6 100644
 --- a/arch/powerpc/kvm/book3s_hv.c
 +++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -934,6 +934,19 @@ int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
- 		if (ret == H_TOO_HARD)
- 			return RESUME_HOST;
+@@ -942,6 +942,13 @@ int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
  		break;
-+
-+	case H_SET_PARTITION_TABLE:
-+		ret = H_FUNCTION;
-+		if (vcpu->kvm->arch.nested_enable)
-+			ret = kvmhv_set_partition_table(vcpu);
-+		break;
-+	case H_ENTER_NESTED:
-+		ret = H_FUNCTION;
-+		break;
-+	case H_TLB_INVALIDATE:
-+		ret = H_FUNCTION;
-+		break;
-+
- 	default:
- 		return RESUME_HOST;
- 	}
-@@ -4153,8 +4166,7 @@ void kvmppc_setup_partition_table(struct kvm *kvm)
- 			__pa(kvm->arch.pgtable) | RADIX_PGD_INDEX_SIZE;
- 		dw1 = PATB_GR | kvm->arch.process_table;
- 	}
--
--	mmu_partition_table_set_entry(kvm->arch.lpid, dw0, dw1);
-+	kvmhv_set_ptbl_entry(kvm->arch.lpid, dw0, dw1);
+ 	case H_ENTER_NESTED:
+ 		ret = H_FUNCTION;
++		if (!vcpu->kvm->arch.nested_enable)
++			break;
++		ret = kvmhv_enter_nested_guest(vcpu);
++		if (ret == H_INTERRUPT) {
++			kvmppc_set_gpr(vcpu, 3, 0);
++			return -EINTR;
++		}
+ 		break;
+ 	case H_TLB_INVALIDATE:
+ 		ret = H_FUNCTION;
+@@ -1272,6 +1279,104 @@ static int kvmppc_handle_exit_hv(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 	return r;
  }
  
- /*
-@@ -4250,6 +4262,10 @@ static int kvmppc_hv_setup_htab_rma(struct kvm_vcpu *vcpu)
- /* Must be called with kvm->lock held and mmu_ready = 0 and no vcpus running */
- int kvmppc_switch_mmu_to_hpt(struct kvm *kvm)
- {
-+	if (kvm->arch.nested_enable) {
-+		kvm->arch.nested_enable = false;
-+		kvmhv_release_all_nested(kvm);
-+	}
- 	kvmppc_free_radix(kvm);
- 	kvmppc_update_lpcr(kvm, LPCR_VPM1,
- 			   LPCR_VPM1 | LPCR_UPRT | LPCR_GTSE | LPCR_HR);
-@@ -4370,6 +4386,8 @@ static int kvmppc_core_init_vm_hv(struct kvm *kvm)
- 
- 	kvmppc_alloc_host_rm_ops();
- 
-+	kvmhv_vm_nested_init(kvm);
-+
- 	/*
- 	 * Since we don't flush the TLB when tearing down a VM,
- 	 * and this lpid might have previously been used,
-@@ -4513,8 +4531,10 @@ static void kvmppc_core_destroy_vm_hv(struct kvm *kvm)
- 
- 	/* Perform global invalidation and return lpid to the pool */
- 	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-+		if (kvm->arch.nested_enable)
-+			kvmhv_release_all_nested(kvm);
- 		kvm->arch.process_table = 0;
--		kvmppc_setup_partition_table(kvm);
-+		kvmhv_set_ptbl_entry(kvm->arch.lpid, 0, 0);
- 	}
- 	kvmppc_free_lpid(kvm->arch.lpid);
- 
-@@ -4985,6 +5005,10 @@ static int kvmppc_book3s_init_hv(void)
- 	if (r < 0)
- 		return -ENODEV;
- 
-+	r = kvmhv_nested_init();
-+	if (r)
-+		return r;
-+
- 	r = kvm_init_subcore_bitmap();
- 	if (r)
- 		return r;
-@@ -5043,6 +5067,7 @@ static void kvmppc_book3s_exit_hv(void)
- 	if (kvmppc_radix_possible())
- 		kvmppc_radix_exit();
- 	kvmppc_hv_ops = NULL;
-+	kvmhv_nested_exit();
- }
- 
- module_init(kvmppc_book3s_init_hv);
-diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm/book3s_hv_nested.c
-new file mode 100644
-index 0000000..32782624
---- /dev/null
-+++ b/arch/powerpc/kvm/book3s_hv_nested.c
-@@ -0,0 +1,301 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Copyright IBM Corporation, 2018
-+ * Authors Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-+ *	   Paul Mackerras <paulus@ozlabs.org>
-+ *
-+ * Description: KVM functions specific to running nested KVM-HV guests
-+ * on Book3S processors (specifically POWER9 and later).
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/kvm_host.h>
-+
-+#include <asm/kvm_ppc.h>
-+#include <asm/mmu.h>
-+#include <asm/pgtable.h>
-+#include <asm/pgalloc.h>
-+
-+static struct patb_entry *pseries_partition_tb;
-+
-+static void kvmhv_update_ptbl_cache(struct kvm_nested_guest *gp);
-+
-+long kvmhv_nested_init(void)
++static int kvmppc_handle_nested_exit(struct kvm_vcpu *vcpu)
 +{
-+	long int ptb_order;
-+	unsigned long ptcr;
-+	long rc;
-+
-+	if (!kvmhv_on_pseries())
-+		return 0;
-+	if (!radix_enabled())
-+		return -ENODEV;
-+
-+	/* find log base 2 of KVMPPC_NR_LPIDS, rounding up */
-+	ptb_order = __ilog2(KVMPPC_NR_LPIDS - 1) + 1;
-+	if (ptb_order < 8)
-+		ptb_order = 8;
-+	pseries_partition_tb = kmalloc(sizeof(struct patb_entry) << ptb_order,
-+				       GFP_KERNEL);
-+	if (!pseries_partition_tb) {
-+		pr_err("kvm-hv: failed to allocated nested partition table\n");
-+		return -ENOMEM;
-+	}
-+
-+	ptcr = __pa(pseries_partition_tb) | (ptb_order - 8);
-+	rc = plpar_hcall_norets(H_SET_PARTITION_TABLE, ptcr);
-+	if (rc != H_SUCCESS) {
-+		pr_err("kvm-hv: Parent hypervisor does not support nesting (rc=%ld)\n",
-+		       rc);
-+		kfree(pseries_partition_tb);
-+		pseries_partition_tb = NULL;
-+		return -ENODEV;
-+	}
-+
-+	return 0;
-+}
-+
-+void kvmhv_nested_exit(void)
-+{
-+	/*
-+	 * N.B. the kvmhv_on_pseries() test is there because it enables
-+	 * the compiler to remove the call to plpar_hcall_norets()
-+	 * when CONFIG_PPC_PSERIES=n.
-+	 */
-+	if (kvmhv_on_pseries() && pseries_partition_tb) {
-+		plpar_hcall_norets(H_SET_PARTITION_TABLE, 0);
-+		kfree(pseries_partition_tb);
-+		pseries_partition_tb = NULL;
-+	}
-+}
-+
-+void kvmhv_set_ptbl_entry(unsigned int lpid, u64 dw0, u64 dw1)
-+{
-+	if (cpu_has_feature(CPU_FTR_HVMODE)) {
-+		mmu_partition_table_set_entry(lpid, dw0, dw1);
-+	} else {
-+		pseries_partition_tb[lpid].patb0 = cpu_to_be64(dw0);
-+		pseries_partition_tb[lpid].patb1 = cpu_to_be64(dw1);
-+	}
-+}
-+
-+static void kvmhv_set_nested_ptbl(struct kvm_nested_guest *gp)
-+{
-+	unsigned long dw0;
-+
-+	dw0 = PATB_HR | radix__get_tree_size() |
-+		__pa(gp->shadow_pgtable) | RADIX_PGD_INDEX_SIZE;
-+	kvmhv_set_ptbl_entry(gp->shadow_lpid, dw0, gp->process_table);
-+}
-+
-+void kvmhv_vm_nested_init(struct kvm *kvm)
-+{
-+	kvm->arch.max_nested_lpid = -1;
-+}
-+
-+/*
-+ * Handle the H_SET_PARTITION_TABLE hcall.
-+ * r4 = guest real address of partition table + log_2(size) - 12
-+ * (formatted as for the PTCR).
-+ */
-+long kvmhv_set_partition_table(struct kvm_vcpu *vcpu)
-+{
-+	struct kvm *kvm = vcpu->kvm;
-+	unsigned long ptcr = kvmppc_get_gpr(vcpu, 4);
++	int r;
 +	int srcu_idx;
-+	long ret = H_SUCCESS;
 +
-+	srcu_idx = srcu_read_lock(&kvm->srcu);
++	vcpu->stat.sum_exits++;
++
 +	/*
-+	 * Limit the partition table to 4096 entries (because that's what
-+	 * hardware supports), and check the base address.
++	 * This can happen if an interrupt occurs in the last stages
++	 * of guest entry or the first stages of guest exit (i.e. after
++	 * setting paca->kvm_hstate.in_guest to KVM_GUEST_MODE_GUEST_HV
++	 * and before setting it to KVM_GUEST_MODE_HOST_HV).
++	 * That can happen due to a bug, or due to a machine check
++	 * occurring at just the wrong time.
 +	 */
-+	if ((ptcr & PRTS_MASK) > 12 - 8 ||
-+	    !kvm_is_visible_gfn(vcpu->kvm, (ptcr & PRTB_MASK) >> PAGE_SHIFT))
-+		ret = H_PARAMETER;
-+	srcu_read_unlock(&kvm->srcu, srcu_idx);
-+	if (ret == H_SUCCESS)
-+		kvm->arch.l1_ptcr = ptcr;
-+	return ret;
-+}
-+
-+/*
-+ * Reload the partition table entry for a guest.
-+ * Caller must hold gp->tlb_lock.
-+ */
-+static void kvmhv_update_ptbl_cache(struct kvm_nested_guest *gp)
-+{
-+	int ret;
-+	struct patb_entry ptbl_entry;
-+	unsigned long ptbl_addr;
-+	struct kvm *kvm = gp->l1_host;
-+
-+	ret = -EFAULT;
-+	ptbl_addr = (kvm->arch.l1_ptcr & PRTB_MASK) + (gp->l1_lpid << 4);
-+	if (gp->l1_lpid < (1ul << ((kvm->arch.l1_ptcr & PRTS_MASK) + 8)))
-+		ret = kvm_read_guest(kvm, ptbl_addr,
-+				     &ptbl_entry, sizeof(ptbl_entry));
-+	if (ret) {
-+		gp->l1_gr_to_hr = 0;
-+		gp->process_table = 0;
-+	} else {
-+		gp->l1_gr_to_hr = be64_to_cpu(ptbl_entry.patb0);
-+		gp->process_table = be64_to_cpu(ptbl_entry.patb1);
++	if (vcpu->arch.shregs.msr & MSR_HV) {
++		pr_emerg("KVM trap in HV mode while nested!\n");
++		pr_emerg("trap=0x%x | pc=0x%lx | msr=0x%llx\n",
++			 vcpu->arch.trap, kvmppc_get_pc(vcpu),
++			 vcpu->arch.shregs.msr);
++		kvmppc_dump_regs(vcpu);
++		return RESUME_HOST;
 +	}
-+	kvmhv_set_nested_ptbl(gp);
++	switch (vcpu->arch.trap) {
++	/* We're good on these - the host merely wanted to get our attention */
++	case BOOK3S_INTERRUPT_HV_DECREMENTER:
++		vcpu->stat.dec_exits++;
++		r = RESUME_GUEST;
++		break;
++	case BOOK3S_INTERRUPT_EXTERNAL:
++		vcpu->stat.ext_intr_exits++;
++		r = RESUME_HOST;
++		break;
++	case BOOK3S_INTERRUPT_H_DOORBELL:
++	case BOOK3S_INTERRUPT_H_VIRT:
++		vcpu->stat.ext_intr_exits++;
++		r = RESUME_GUEST;
++		break;
++	/* SR/HMI/PMI are HV interrupts that host has handled. Resume guest.*/
++	case BOOK3S_INTERRUPT_HMI:
++	case BOOK3S_INTERRUPT_PERFMON:
++	case BOOK3S_INTERRUPT_SYSTEM_RESET:
++		r = RESUME_GUEST;
++		break;
++	case BOOK3S_INTERRUPT_MACHINE_CHECK:
++		/* Pass the machine check to the L1 guest */
++		r = RESUME_HOST;
++		/* Print the MCE event to host console. */
++		machine_check_print_event_info(&vcpu->arch.mce_evt, false);
++		break;
++	/*
++	 * We get these next two if the guest accesses a page which it thinks
++	 * it has mapped but which is not actually present, either because
++	 * it is for an emulated I/O device or because the corresonding
++	 * host page has been paged out.
++	 */
++	case BOOK3S_INTERRUPT_H_DATA_STORAGE:
++		srcu_idx = srcu_read_lock(&vcpu->kvm->srcu);
++		r = kvmhv_nested_page_fault(vcpu);
++		srcu_read_unlock(&vcpu->kvm->srcu, srcu_idx);
++		break;
++	case BOOK3S_INTERRUPT_H_INST_STORAGE:
++		vcpu->arch.fault_dar = kvmppc_get_pc(vcpu);
++		vcpu->arch.fault_dsisr = kvmppc_get_msr(vcpu) &
++					 DSISR_SRR1_MATCH_64S;
++		if (vcpu->arch.shregs.msr & HSRR1_HISI_WRITE)
++			vcpu->arch.fault_dsisr |= DSISR_ISSTORE;
++		srcu_idx = srcu_read_lock(&vcpu->kvm->srcu);
++		r = kvmhv_nested_page_fault(vcpu);
++		srcu_read_unlock(&vcpu->kvm->srcu, srcu_idx);
++		break;
++
++#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
++	case BOOK3S_INTERRUPT_HV_SOFTPATCH:
++		/*
++		 * This occurs for various TM-related instructions that
++		 * we need to emulate on POWER9 DD2.2.  We have already
++		 * handled the cases where the guest was in real-suspend
++		 * mode and was transitioning to transactional state.
++		 */
++		r = kvmhv_p9_tm_emulation(vcpu);
++		break;
++#endif
++
++	case BOOK3S_INTERRUPT_HV_RM_HARD:
++		vcpu->arch.trap = 0;
++		r = RESUME_GUEST;
++		if (!xive_enabled())
++			kvmppc_xics_rm_complete(vcpu, 0);
++		break;
++	default:
++		r = RESUME_HOST;
++		break;
++	}
++
++	return r;
 +}
 +
-+struct kvm_nested_guest *kvmhv_alloc_nested(struct kvm *kvm, unsigned int lpid)
-+{
-+	struct kvm_nested_guest *gp;
-+	long shadow_lpid;
+ static int kvm_arch_vcpu_ioctl_get_sregs_hv(struct kvm_vcpu *vcpu,
+ 					    struct kvm_sregs *sregs)
+ {
+@@ -3098,7 +3203,8 @@ static noinline void kvmppc_run_core(struct kvmppc_vcore *vc)
+ /*
+  * Load up hypervisor-mode registers on P9.
+  */
+-static int kvmhv_load_hv_regs_and_go(struct kvm_vcpu *vcpu, u64 time_limit)
++static int kvmhv_load_hv_regs_and_go(struct kvm_vcpu *vcpu, u64 time_limit,
++				     unsigned long lpcr)
+ {
+ 	struct kvmppc_vcore *vc = vcpu->arch.vcore;
+ 	s64 hdec;
+@@ -3155,7 +3261,7 @@ static int kvmhv_load_hv_regs_and_go(struct kvm_vcpu *vcpu, u64 time_limit)
+ 
+ 	mtspr(SPRN_AMOR, ~0UL);
+ 
+-	mtspr(SPRN_LPCR, vc->lpcr);
++	mtspr(SPRN_LPCR, lpcr);
+ 	isync();
+ 
+ 	kvmppc_xive_push_vcpu(vcpu);
+@@ -3225,7 +3331,8 @@ static int kvmhv_load_hv_regs_and_go(struct kvm_vcpu *vcpu, u64 time_limit)
+  * Virtual-mode guest entry for POWER9 and later when the host and
+  * guest are both using the radix MMU.  The LPIDR has already been set.
+  */
+-int kvmhv_p9_guest_entry(struct kvm_vcpu *vcpu, u64 time_limit)
++int kvmhv_p9_guest_entry(struct kvm_vcpu *vcpu, u64 time_limit,
++			 unsigned long lpcr)
+ {
+ 	struct kvmppc_vcore *vc = vcpu->arch.vcore;
+ 	unsigned long host_dscr = mfspr(SPRN_DSCR);
+@@ -3289,14 +3396,32 @@ int kvmhv_p9_guest_entry(struct kvm_vcpu *vcpu, u64 time_limit)
+ 
+ 	mtspr(SPRN_DEC, vcpu->arch.dec_expires - mftb());
+ 
+-	if (vcpu->arch.doorbell_request) {
+-		vc->dpdes = 1;
+-		smp_wmb();
+-		vcpu->arch.doorbell_request = 0;
++	if (kvmhv_on_pseries()) {
++		/* call our hypervisor to load up HV regs and go */
++		struct hv_guest_state hvregs;
 +
-+	gp = kzalloc(sizeof(*gp), GFP_KERNEL);
-+	if (!gp)
-+		return NULL;
-+	gp->l1_host = kvm;
-+	gp->l1_lpid = lpid;
-+	mutex_init(&gp->tlb_lock);
-+	gp->shadow_pgtable = pgd_alloc(kvm->mm);
-+	if (!gp->shadow_pgtable)
-+		goto out_free;
-+	shadow_lpid = kvmppc_alloc_lpid();
-+	if (shadow_lpid < 0)
-+		goto out_free2;
-+	gp->shadow_lpid = shadow_lpid;
-+
-+	return gp;
-+
-+ out_free2:
-+	pgd_free(kvm->mm, gp->shadow_pgtable);
-+ out_free:
-+	kfree(gp);
-+	return NULL;
-+}
-+
-+/*
-+ * Free up any resources allocated for a nested guest.
-+ */
-+static void kvmhv_release_nested(struct kvm_nested_guest *gp)
-+{
-+	kvmhv_set_ptbl_entry(gp->shadow_lpid, 0, 0);
-+	kvmppc_free_lpid(gp->shadow_lpid);
-+	if (gp->shadow_pgtable)
-+		pgd_free(gp->l1_host->mm, gp->shadow_pgtable);
-+	kfree(gp);
-+}
-+
-+static void kvmhv_remove_nested(struct kvm_nested_guest *gp)
-+{
-+	struct kvm *kvm = gp->l1_host;
-+	int lpid = gp->l1_lpid;
-+	long ref;
-+
-+	spin_lock(&kvm->mmu_lock);
-+	if (gp == kvm->arch.nested_guests[lpid]) {
-+		kvm->arch.nested_guests[lpid] = NULL;
-+		if (lpid == kvm->arch.max_nested_lpid) {
-+			while (--lpid >= 0 && !kvm->arch.nested_guests[lpid])
-+				;
-+			kvm->arch.max_nested_lpid = lpid;
++		kvmhv_save_hv_regs(vcpu, &hvregs);
++		hvregs.lpcr = lpcr;
++		vcpu->arch.regs.msr = vcpu->arch.shregs.msr;
++		hvregs.version = HV_GUEST_STATE_VERSION;
++		if (vcpu->arch.nested) {
++			hvregs.lpid = vcpu->arch.nested->shadow_lpid;
++			hvregs.vcpu_token = vcpu->arch.nested_vcpu_id;
++		} else {
++			hvregs.lpid = vcpu->kvm->arch.lpid;
++			hvregs.vcpu_token = vcpu->vcpu_id;
 +		}
-+		--gp->refcnt;
-+	}
-+	ref = gp->refcnt;
-+	spin_unlock(&kvm->mmu_lock);
-+	if (ref == 0)
-+		kvmhv_release_nested(gp);
-+}
-+
++		hvregs.hdec_expiry = time_limit;
++		trap = plpar_hcall_norets(H_ENTER_NESTED, __pa(&hvregs),
++					  __pa(&vcpu->arch.regs));
++		kvmhv_restore_hv_return_state(vcpu, &hvregs);
++		vcpu->arch.shregs.msr = vcpu->arch.regs.msr;
++		vcpu->arch.shregs.dar = mfspr(SPRN_DAR);
++		vcpu->arch.shregs.dsisr = mfspr(SPRN_DSISR);
++	} else {
++		trap = kvmhv_load_hv_regs_and_go(vcpu, time_limit, lpcr);
+ 	}
+ 
+-	trap = kvmhv_load_hv_regs_and_go(vcpu, time_limit);
+-
+ 	vcpu->arch.slb_max = 0;
+ 	dec = mfspr(SPRN_DEC);
+ 	tb = mftb();
+@@ -3535,6 +3660,11 @@ static void kvmppc_vcore_blocked(struct kvmppc_vcore *vc)
+ 	trace_kvmppc_vcore_wakeup(do_sleep, block_ns);
+ }
+ 
 +/*
-+ * Free up all nested resources allocated for this guest.
-+ * This is called with no vcpus of the guest running, when
-+ * switching the guest to HPT mode or when destroying the
-+ * guest.
++ * This never fails for a radix guest, as none of the operations it does
++ * for a radix guest can fail or have a way to report failure.
++ * kvmhv_run_single_vcpu() relies on this fact.
 + */
-+void kvmhv_release_all_nested(struct kvm *kvm)
-+{
-+	int i;
-+	struct kvm_nested_guest *gp;
-+	struct kvm_nested_guest *freelist = NULL;
-+
-+	spin_lock(&kvm->mmu_lock);
-+	for (i = 0; i <= kvm->arch.max_nested_lpid; i++) {
-+		gp = kvm->arch.nested_guests[i];
-+		if (!gp)
-+			continue;
-+		kvm->arch.nested_guests[i] = NULL;
-+		if (--gp->refcnt == 0) {
-+			gp->next = freelist;
-+			freelist = gp;
+ static int kvmhv_setup_mmu(struct kvm_vcpu *vcpu)
+ {
+ 	int r = 0;
+@@ -3684,13 +3814,16 @@ static int kvmppc_run_vcpu(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
+ 	return vcpu->arch.ret;
+ }
+ 
+-static int kvmhv_run_single_vcpu(struct kvm_run *kvm_run,
+-				 struct kvm_vcpu *vcpu, u64 time_limit)
++int kvmhv_run_single_vcpu(struct kvm_run *kvm_run,
++			  struct kvm_vcpu *vcpu, u64 time_limit,
++			  unsigned long lpcr)
+ {
+ 	int trap, r, pcpu, pcpu0;
+ 	int srcu_idx;
+ 	struct kvmppc_vcore *vc;
+ 	struct kvm *kvm = vcpu->kvm;
++	struct kvm_nested_guest *nested = vcpu->arch.nested;
++	unsigned long lpid;
+ 
+ 	trace_kvmppc_run_vcpu_enter(vcpu);
+ 
+@@ -3711,16 +3844,8 @@ static int kvmhv_run_single_vcpu(struct kvm_run *kvm_run,
+ 	vc->runner = vcpu;
+ 
+ 	/* See if the MMU is ready to go */
+-	if (!kvm->arch.mmu_ready) {
+-		r = kvmhv_setup_mmu(vcpu);
+-		if (r) {
+-			kvm_run->exit_reason = KVM_EXIT_FAIL_ENTRY;
+-			kvm_run->fail_entry.
+-				hardware_entry_failure_reason = 0;
+-			vcpu->arch.ret = r;
+-			goto out;
+-		}
+-	}
++	if (!kvm->arch.mmu_ready)
++		kvmhv_setup_mmu(vcpu);
+ 
+ 	if (need_resched())
+ 		cond_resched();
+@@ -3742,7 +3867,22 @@ static int kvmhv_run_single_vcpu(struct kvm_run *kvm_run,
+ 	if (lazy_irq_pending() || need_resched() || !kvm->arch.mmu_ready)
+ 		goto out;
+ 
+-	kvmppc_core_prepare_to_enter(vcpu);
++	if (!nested) {
++		kvmppc_core_prepare_to_enter(vcpu);
++		if (vcpu->arch.doorbell_request) {
++			vc->dpdes = 1;
++			smp_wmb();
++			vcpu->arch.doorbell_request = 0;
++		}
++		if (test_bit(BOOK3S_IRQPRIO_EXTERNAL,
++			     &vcpu->arch.pending_exceptions))
++			lpcr |= LPCR_MER;
++	} else if (vcpu->arch.pending_exceptions ||
++		   vcpu->arch.doorbell_request ||
++		   xive_interrupt_pending(vcpu)) {
++		vcpu->arch.ret = RESUME_HOST;
++		goto out;
++	}
+ 
+ 	kvmppc_clear_host_core(pcpu);
+ 
+@@ -3756,7 +3896,10 @@ static int kvmhv_run_single_vcpu(struct kvm_run *kvm_run,
+ 	vc->vcore_state = VCORE_RUNNING;
+ 	trace_kvmppc_run_core(vc, 0);
+ 
+-	mtspr(SPRN_LPID, vc->kvm->arch.lpid);
++	lpid = vc->kvm->arch.lpid;
++	if (nested)
++		lpid = nested->shadow_lpid;
++	mtspr(SPRN_LPID, lpid);
+ 	isync();
+ 
+ 	/* See comment above in kvmppc_run_core() about this */
+@@ -3765,7 +3908,7 @@ static int kvmhv_run_single_vcpu(struct kvm_run *kvm_run,
+ 		pcpu0 &= ~0x3UL;
+ 
+ 	if (cpumask_test_cpu(pcpu0, &kvm->arch.need_tlb_flush)) {
+-		radix__local_flush_tlb_lpid_guest(kvm->arch.lpid);
++		radix__local_flush_tlb_lpid_guest(lpid);
+ 		/* Clear the bit after the TLB flush */
+ 		cpumask_clear_cpu(pcpu0, &kvm->arch.need_tlb_flush);
+ 	}
+@@ -3777,7 +3920,7 @@ static int kvmhv_run_single_vcpu(struct kvm_run *kvm_run,
+ 
+ 	this_cpu_disable_ftrace();
+ 
+-	trap = kvmhv_p9_guest_entry(vcpu, time_limit);
++	trap = kvmhv_p9_guest_entry(vcpu, time_limit, lpcr);
+ 	vcpu->arch.trap = trap;
+ 
+ 	this_cpu_enable_ftrace();
+@@ -3805,8 +3948,12 @@ static int kvmhv_run_single_vcpu(struct kvm_run *kvm_run,
+ 
+ 	trace_kvm_guest_exit(vcpu);
+ 	r = RESUME_GUEST;
+-	if (trap)
+-		r = kvmppc_handle_exit_hv(kvm_run, vcpu, current);
++	if (trap) {
++		if (!nested)
++			r = kvmppc_handle_exit_hv(kvm_run, vcpu, current);
++		else
++			r = kvmppc_handle_nested_exit(vcpu);
++	}
+ 	vcpu->arch.ret = r;
+ 
+ 	if (is_kvmppc_resume_guest(r) && vcpu->arch.ceded &&
+@@ -3921,7 +4068,8 @@ static int kvmppc_vcpu_run_hv(struct kvm_run *run, struct kvm_vcpu *vcpu)
+ 
+ 	do {
+ 		if (kvm->arch.threads_indep && kvm_is_radix(kvm))
+-			r = kvmhv_run_single_vcpu(run, vcpu, ~(u64)0);
++			r = kvmhv_run_single_vcpu(run, vcpu, ~(u64)0,
++						  vcpu->arch.vcore->lpcr);
+ 		else
+ 			r = kvmppc_run_vcpu(run, vcpu);
+ 
+@@ -4475,8 +4623,14 @@ static int kvmppc_core_init_vm_hv(struct kvm *kvm)
+ 	 * On POWER9, we only need to do this if the "indep_threads_mode"
+ 	 * module parameter has been set to N.
+ 	 */
+-	if (cpu_has_feature(CPU_FTR_ARCH_300))
+-		kvm->arch.threads_indep = indep_threads_mode;
++	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
++		if (!indep_threads_mode && !cpu_has_feature(CPU_FTR_HVMODE)) {
++			pr_warn("KVM: Ignoring indep_threads_mode=N in nested hypervisor\n");
++			kvm->arch.threads_indep = true;
++		} else {
++			kvm->arch.threads_indep = indep_threads_mode;
 +		}
 +	}
-+	kvm->arch.max_nested_lpid = -1;
-+	spin_unlock(&kvm->mmu_lock);
-+	while ((gp = freelist) != NULL) {
-+		freelist = gp->next;
-+		kvmhv_release_nested(gp);
+ 	if (!kvm->arch.threads_indep)
+ 		kvm_hv_vm_activated();
+ 
+diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm/book3s_hv_nested.c
+index 32782624..5b9fd7c 100644
+--- a/arch/powerpc/kvm/book3s_hv_nested.c
++++ b/arch/powerpc/kvm/book3s_hv_nested.c
+@@ -20,6 +20,231 @@ static struct patb_entry *pseries_partition_tb;
+ 
+ static void kvmhv_update_ptbl_cache(struct kvm_nested_guest *gp);
+ 
++void kvmhv_save_hv_regs(struct kvm_vcpu *vcpu, struct hv_guest_state *hr)
++{
++	struct kvmppc_vcore *vc = vcpu->arch.vcore;
++
++	hr->pcr = vc->pcr;
++	hr->dpdes = vc->dpdes;
++	hr->hfscr = vcpu->arch.hfscr;
++	hr->tb_offset = vc->tb_offset;
++	hr->dawr0 = vcpu->arch.dawr;
++	hr->dawrx0 = vcpu->arch.dawrx;
++	hr->ciabr = vcpu->arch.ciabr;
++	hr->purr = vcpu->arch.purr;
++	hr->spurr = vcpu->arch.spurr;
++	hr->ic = vcpu->arch.ic;
++	hr->vtb = vc->vtb;
++	hr->srr0 = vcpu->arch.shregs.srr0;
++	hr->srr1 = vcpu->arch.shregs.srr1;
++	hr->sprg[0] = vcpu->arch.shregs.sprg0;
++	hr->sprg[1] = vcpu->arch.shregs.sprg1;
++	hr->sprg[2] = vcpu->arch.shregs.sprg2;
++	hr->sprg[3] = vcpu->arch.shregs.sprg3;
++	hr->pidr = vcpu->arch.pid;
++	hr->cfar = vcpu->arch.cfar;
++	hr->ppr = vcpu->arch.ppr;
++}
++
++static void save_hv_return_state(struct kvm_vcpu *vcpu, int trap,
++				 struct hv_guest_state *hr)
++{
++	struct kvmppc_vcore *vc = vcpu->arch.vcore;
++
++	hr->dpdes = vc->dpdes;
++	hr->hfscr = vcpu->arch.hfscr;
++	hr->purr = vcpu->arch.purr;
++	hr->spurr = vcpu->arch.spurr;
++	hr->ic = vcpu->arch.ic;
++	hr->vtb = vc->vtb;
++	hr->srr0 = vcpu->arch.shregs.srr0;
++	hr->srr1 = vcpu->arch.shregs.srr1;
++	hr->sprg[0] = vcpu->arch.shregs.sprg0;
++	hr->sprg[1] = vcpu->arch.shregs.sprg1;
++	hr->sprg[2] = vcpu->arch.shregs.sprg2;
++	hr->sprg[3] = vcpu->arch.shregs.sprg3;
++	hr->pidr = vcpu->arch.pid;
++	hr->cfar = vcpu->arch.cfar;
++	hr->ppr = vcpu->arch.ppr;
++	switch (trap) {
++	case BOOK3S_INTERRUPT_H_DATA_STORAGE:
++		hr->hdar = vcpu->arch.fault_dar;
++		hr->hdsisr = vcpu->arch.fault_dsisr;
++		hr->asdr = vcpu->arch.fault_gpa;
++		break;
++	case BOOK3S_INTERRUPT_H_INST_STORAGE:
++		hr->asdr = vcpu->arch.fault_gpa;
++		break;
++	case BOOK3S_INTERRUPT_H_EMUL_ASSIST:
++		hr->heir = vcpu->arch.emul_inst;
++		break;
 +	}
 +}
 +
-+/* caller must hold gp->tlb_lock */
-+void kvmhv_flush_nested(struct kvm_nested_guest *gp)
++static void restore_hv_regs(struct kvm_vcpu *vcpu, struct hv_guest_state *hr)
 +{
-+	kvmhv_update_ptbl_cache(gp);
-+	if (gp->l1_gr_to_hr == 0)
-+		kvmhv_remove_nested(gp);
++	struct kvmppc_vcore *vc = vcpu->arch.vcore;
++
++	vc->pcr = hr->pcr;
++	vc->dpdes = hr->dpdes;
++	vcpu->arch.hfscr = hr->hfscr;
++	vcpu->arch.dawr = hr->dawr0;
++	vcpu->arch.dawrx = hr->dawrx0;
++	vcpu->arch.ciabr = hr->ciabr;
++	vcpu->arch.purr = hr->purr;
++	vcpu->arch.spurr = hr->spurr;
++	vcpu->arch.ic = hr->ic;
++	vc->vtb = hr->vtb;
++	vcpu->arch.shregs.srr0 = hr->srr0;
++	vcpu->arch.shregs.srr1 = hr->srr1;
++	vcpu->arch.shregs.sprg0 = hr->sprg[0];
++	vcpu->arch.shregs.sprg1 = hr->sprg[1];
++	vcpu->arch.shregs.sprg2 = hr->sprg[2];
++	vcpu->arch.shregs.sprg3 = hr->sprg[3];
++	vcpu->arch.pid = hr->pidr;
++	vcpu->arch.cfar = hr->cfar;
++	vcpu->arch.ppr = hr->ppr;
 +}
 +
-+struct kvm_nested_guest *kvmhv_get_nested(struct kvm *kvm, int l1_lpid,
-+					  bool create)
++void kvmhv_restore_hv_return_state(struct kvm_vcpu *vcpu,
++				   struct hv_guest_state *hr)
 +{
-+	struct kvm_nested_guest *gp, *newgp;
++	struct kvmppc_vcore *vc = vcpu->arch.vcore;
 +
-+	if (l1_lpid >= KVM_MAX_NESTED_GUESTS ||
-+	    l1_lpid >= (1ul << ((kvm->arch.l1_ptcr & PRTS_MASK) + 12 - 4)))
-+		return NULL;
++	vc->dpdes = hr->dpdes;
++	vcpu->arch.hfscr = hr->hfscr;
++	vcpu->arch.purr = hr->purr;
++	vcpu->arch.spurr = hr->spurr;
++	vcpu->arch.ic = hr->ic;
++	vc->vtb = hr->vtb;
++	vcpu->arch.fault_dar = hr->hdar;
++	vcpu->arch.fault_dsisr = hr->hdsisr;
++	vcpu->arch.fault_gpa = hr->asdr;
++	vcpu->arch.emul_inst = hr->heir;
++	vcpu->arch.shregs.srr0 = hr->srr0;
++	vcpu->arch.shregs.srr1 = hr->srr1;
++	vcpu->arch.shregs.sprg0 = hr->sprg[0];
++	vcpu->arch.shregs.sprg1 = hr->sprg[1];
++	vcpu->arch.shregs.sprg2 = hr->sprg[2];
++	vcpu->arch.shregs.sprg3 = hr->sprg[3];
++	vcpu->arch.pid = hr->pidr;
++	vcpu->arch.cfar = hr->cfar;
++	vcpu->arch.ppr = hr->ppr;
++}
 +
-+	spin_lock(&kvm->mmu_lock);
-+	gp = kvm->arch.nested_guests[l1_lpid];
-+	if (gp)
-+		++gp->refcnt;
-+	spin_unlock(&kvm->mmu_lock);
++long kvmhv_enter_nested_guest(struct kvm_vcpu *vcpu)
++{
++	long int err, r;
++	struct kvm_nested_guest *l2;
++	struct pt_regs l2_regs, saved_l1_regs;
++	struct hv_guest_state l2_hv, saved_l1_hv;
++	struct kvmppc_vcore *vc = vcpu->arch.vcore;
++	u64 hv_ptr, regs_ptr;
++	u64 hdec_exp;
++	s64 delta_purr, delta_spurr, delta_ic, delta_vtb;
++	u64 mask;
++	unsigned long lpcr;
 +
-+	if (gp || !create)
-+		return gp;
++	if (vcpu->kvm->arch.l1_ptcr == 0)
++		return H_NOT_AVAILABLE;
 +
-+	newgp = kvmhv_alloc_nested(kvm, l1_lpid);
-+	if (!newgp)
-+		return NULL;
-+	spin_lock(&kvm->mmu_lock);
-+	if (kvm->arch.nested_guests[l1_lpid]) {
-+		/* someone else beat us to it */
-+		gp = kvm->arch.nested_guests[l1_lpid];
-+	} else {
-+		kvm->arch.nested_guests[l1_lpid] = newgp;
-+		++newgp->refcnt;
-+		gp = newgp;
-+		newgp = NULL;
-+		if (l1_lpid > kvm->arch.max_nested_lpid)
-+			kvm->arch.max_nested_lpid = l1_lpid;
++	/* copy parameters in */
++	hv_ptr = kvmppc_get_gpr(vcpu, 4);
++	err = kvm_vcpu_read_guest(vcpu, hv_ptr, &l2_hv,
++				  sizeof(struct hv_guest_state));
++	if (err)
++		return H_PARAMETER;
++	if (l2_hv.version != HV_GUEST_STATE_VERSION)
++		return H_P2;
++
++	regs_ptr = kvmppc_get_gpr(vcpu, 5);
++	err = kvm_vcpu_read_guest(vcpu, regs_ptr, &l2_regs,
++				  sizeof(struct pt_regs));
++	if (err)
++		return H_PARAMETER;
++
++	/* translate lpid */
++	l2 = kvmhv_get_nested(vcpu->kvm, l2_hv.lpid, true);
++	if (!l2)
++		return H_PARAMETER;
++	if (!l2->l1_gr_to_hr) {
++		mutex_lock(&l2->tlb_lock);
++		kvmhv_update_ptbl_cache(l2);
++		mutex_unlock(&l2->tlb_lock);
 +	}
-+	++gp->refcnt;
-+	spin_unlock(&kvm->mmu_lock);
 +
-+	if (newgp)
-+		kvmhv_release_nested(newgp);
++	/* save l1 values of things */
++	vcpu->arch.regs.msr = vcpu->arch.shregs.msr;
++	saved_l1_regs = vcpu->arch.regs;
++	kvmhv_save_hv_regs(vcpu, &saved_l1_hv);
 +
-+	return gp;
++	/* convert TB values/offsets to host (L0) values */
++	hdec_exp = l2_hv.hdec_expiry - vc->tb_offset;
++	vc->tb_offset += l2_hv.tb_offset;
++
++	/* set L1 state to L2 state */
++	vcpu->arch.nested = l2;
++	vcpu->arch.nested_vcpu_id = l2_hv.vcpu_token;
++	vcpu->arch.regs = l2_regs;
++	vcpu->arch.shregs.msr = vcpu->arch.regs.msr;
++	mask = LPCR_DPFD | LPCR_ILE | LPCR_TC | LPCR_AIL | LPCR_LD |
++		LPCR_LPES | LPCR_MER;
++	lpcr = (vc->lpcr & ~mask) | (l2_hv.lpcr & mask);
++	restore_hv_regs(vcpu, &l2_hv);
++
++	vcpu->arch.ret = RESUME_GUEST;
++	vcpu->arch.trap = 0;
++	do {
++		if (mftb() >= hdec_exp) {
++			vcpu->arch.trap = BOOK3S_INTERRUPT_HV_DECREMENTER;
++			r = RESUME_HOST;
++			break;
++		}
++		r = kvmhv_run_single_vcpu(vcpu->arch.kvm_run, vcpu, hdec_exp,
++					  lpcr);
++	} while (is_kvmppc_resume_guest(r));
++
++	/* save L2 state for return */
++	l2_regs = vcpu->arch.regs;
++	l2_regs.msr = vcpu->arch.shregs.msr;
++	delta_purr = vcpu->arch.purr - l2_hv.purr;
++	delta_spurr = vcpu->arch.spurr - l2_hv.spurr;
++	delta_ic = vcpu->arch.ic - l2_hv.ic;
++	delta_vtb = vc->vtb - l2_hv.vtb;
++	save_hv_return_state(vcpu, vcpu->arch.trap, &l2_hv);
++
++	/* restore L1 state */
++	vcpu->arch.nested = NULL;
++	vcpu->arch.regs = saved_l1_regs;
++	vcpu->arch.shregs.msr = saved_l1_regs.msr & ~MSR_TS_MASK;
++	/* set L1 MSR TS field according to L2 transaction state */
++	if (l2_regs.msr & MSR_TS_MASK)
++		vcpu->arch.shregs.msr |= MSR_TS_S;
++	vc->tb_offset = saved_l1_hv.tb_offset;
++	restore_hv_regs(vcpu, &saved_l1_hv);
++	vcpu->arch.purr += delta_purr;
++	vcpu->arch.spurr += delta_spurr;
++	vcpu->arch.ic += delta_ic;
++	vc->vtb += delta_vtb;
++
++	kvmhv_put_nested(l2);
++
++	/* copy l2_hv_state and regs back to guest */
++	err = kvm_vcpu_write_guest(vcpu, hv_ptr, &l2_hv,
++				   sizeof(struct hv_guest_state));
++	if (err)
++		return H_AUTHORITY;
++	err = kvm_vcpu_write_guest(vcpu, regs_ptr, &l2_regs,
++				   sizeof(struct pt_regs));
++	if (err)
++		return H_AUTHORITY;
++
++	if (r == -EINTR)
++		return H_INTERRUPT;
++
++	return vcpu->arch.trap;
 +}
 +
-+void kvmhv_put_nested(struct kvm_nested_guest *gp)
+ long kvmhv_nested_init(void)
+ {
+ 	long int ptb_order;
+@@ -299,3 +524,8 @@ void kvmhv_put_nested(struct kvm_nested_guest *gp)
+ 	if (ref == 0)
+ 		kvmhv_release_nested(gp);
+ }
++
++long kvmhv_nested_page_fault(struct kvm_vcpu *vcpu)
 +{
-+	struct kvm *kvm = gp->l1_host;
-+	long ref;
-+
-+	spin_lock(&kvm->mmu_lock);
-+	ref = --gp->refcnt;
-+	spin_unlock(&kvm->mmu_lock);
-+	if (ref == 0)
-+		kvmhv_release_nested(gp);
++	return RESUME_HOST;
 +}
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index 9cea2386..a945369 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -1393,6 +1393,10 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
+ BEGIN_FTR_SECTION
+ 	PPC_MSGSYNC
+ 	lwsync
++	/* always exit if we're running a nested guest */
++	ld	r0, VCPU_NESTED(r9)
++	cmpdi	r0, 0
++	bne	guest_exit_cont
+ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+ 	lbz	r0, HSTATE_HOST_IPI(r13)
+ 	cmpwi	r0, 0
+@@ -2199,6 +2203,10 @@ hcall_try_real_mode:
+ 	andi.	r0,r11,MSR_PR
+ 	/* sc 1 from userspace - reflect to guest syscall */
+ 	bne	sc_1_fast_return
++	/* sc 1 from nested guest - give it to L1 to handle */
++	ld	r0, VCPU_NESTED(r9)
++	cmpdi	r0, 0
++	bne	guest_exit_cont
+ 	clrrdi	r3,r3,2
+ 	cmpldi	r3,hcall_real_table_end - hcall_real_table
+ 	bge	guest_exit_cont
 -- 
 2.7.4
 
