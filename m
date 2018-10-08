@@ -2,23 +2,23 @@ Return-Path: <SRS0=rj9n=MU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A18CC00449
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 09:20:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 082A3C00449
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 09:22:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1629020878
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 09:20:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1629020878
+	by mail.kernel.org (Postfix) with ESMTPS id 8730320878
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 09:22:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8730320878
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42TFGB1f49zF3F3
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 20:20:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42TFJQ3K1HzF3D6
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 20:22:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
@@ -29,36 +29,38 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42TF9D0nxFzF3B1
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Oct 2018 20:16:30 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42TF9D6ZJzzF3BR
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Oct 2018 20:16:32 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 42TF8w1P6gz9ttBr;
- Mon,  8 Oct 2018 11:16:16 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 42TF8z6RDzz9ttCB;
+ Mon,  8 Oct 2018 11:16:19 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id ltSaMcG34F8i; Mon,  8 Oct 2018 11:16:16 +0200 (CEST)
+ with ESMTP id bPkG7KZzODRg; Mon,  8 Oct 2018 11:16:19 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 42TF8w0gGnz9ttBh;
- Mon,  8 Oct 2018 11:16:16 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 42TF8z5vTHz9ttC1;
+ Mon,  8 Oct 2018 11:16:19 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 8B8108B74B;
- Mon,  8 Oct 2018 11:16:25 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 55F9F8B79D;
+ Mon,  8 Oct 2018 11:16:29 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id rcnIQNJ0nvuI; Mon,  8 Oct 2018 11:16:25 +0200 (CEST)
+ with ESMTP id O0VOFX-Sz28L; Mon,  8 Oct 2018 11:16:29 +0200 (CEST)
 Received: from pc16082vm.idsi0.si.c-s.fr (unknown [192.168.232.3])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 1D70D8B79A;
- Mon,  8 Oct 2018 11:16:25 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 0332F8B79B;
+ Mon,  8 Oct 2018 11:16:29 +0200 (CEST)
 Received: by pc16082vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id B8E556F2C3; Mon,  8 Oct 2018 09:16:24 +0000 (UTC)
-Message-Id: <cover.1538954166.git.christophe.leroy@c-s.fr>
+ id B45256F2C3; Mon,  8 Oct 2018 09:16:28 +0000 (UTC)
+Message-Id: <221f61610931cb1446229afe57d91fdff4c5f19f.1538954167.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1538954166.git.christophe.leroy@c-s.fr>
+References: <cover.1538954166.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v6 0/9] powerpc: Switch to CONFIG_THREAD_INFO_IN_TASK
+Subject: [PATCH v6 2/9] powerpc: Only use task_struct 'cpu' field on SMP
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Mon,  8 Oct 2018 09:16:24 +0000 (UTC)
+Date: Mon,  8 Oct 2018 09:16:28 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,105 +77,67 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The purpose of this serie is to activate CONFIG_THREAD_INFO_IN_TASK which
-moves the thread_info into task_struct.
+When moving to CONFIG_THREAD_INFO_IN_TASK, the thread_info 'cpu' field
+gets moved into task_struct and only defined when CONFIG_SMP is set.
 
-Moving thread_info into task_struct has the following advantages:
-- It protects thread_info from corruption in the case of stack
-overflows.
-- Its address is harder to determine if stack addresses are
-leaked, making a number of attacks more difficult.
+This patch ensures that TI_CPU is only used when CONFIG_SMP is set and
+that task_struct 'cpu' field is not used directly out of SMP code.
 
-Changes since v5:
- - Fixed livepatch_sp setup by using end_of_stack() instead of hardcoding
- - Fixed PPC_BPF_LOAD_CPU() macro
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/kernel/head_fsl_booke.S | 2 ++
+ arch/powerpc/kernel/misc_32.S        | 4 ++++
+ arch/powerpc/xmon/xmon.c             | 2 +-
+ 3 files changed, 7 insertions(+), 1 deletion(-)
 
-Changes since v4:
- - Fixed a build failure on 32bits SMP when include/generated/asm-offsets.h is not
- already existing, was due to spaces instead of a tab in the Makefile
-
-Changes since RFC v3: (based on Nick's review)
- - Renamed task_size.h to task_size_user64.h to better relate to what it contains.
- - Handling of the isolation of thread_info cpu field inside CONFIG_SMP #ifdefs moved to a separate patch.
- - Removed CURRENT_THREAD_INFO macro completely.
- - Added a guard in asm/smp.h to avoid build failure before _TASK_CPU is defined.
- - Added a patch at the end to rename 'tp' pointers to 'sp' pointers
- - Renamed 'tp' into 'sp' pointers in preparation patch when relevant
- - Fixed a few commit logs
- - Fixed checkpatch report.
-
-Changes since RFC v2:
- - Removed the modification of names in asm-offsets
- - Created a rule in arch/powerpc/Makefile to append the offset of current->cpu in CFLAGS
- - Modified asm/smp.h to use the offset set in CFLAGS
- - Squashed the renaming of THREAD_INFO to TASK_STACK in the preparation patch
- - Moved the modification of current_pt_regs in the patch activating CONFIG_THREAD_INFO_IN_TASK
-
-Changes since RFC v1:
- - Removed the first patch which was modifying header inclusion order in timer
- - Modified some names in asm-offsets to avoid conflicts when including asm-offsets in C files
- - Modified asm/smp.h to avoid having to include linux/sched.h (using asm-offsets instead)
- - Moved some changes from the activation patch to the preparation patch.
-
-Christophe Leroy (9):
-  book3s/64: avoid circular header inclusion in mmu-hash.h
-  powerpc: Only use task_struct 'cpu' field on SMP
-  powerpc: Prepare for moving thread_info into task_struct
-  powerpc: Activate CONFIG_THREAD_INFO_IN_TASK
-  powerpc: regain entire stack space
-  powerpc: 'current_set' is now a table of task_struct pointers
-  powerpc/32: Remove CURRENT_THREAD_INFO and rename TI_CPU
-  powerpc/64: Remove CURRENT_THREAD_INFO
-  powerpc: clean stack pointers naming
-
- arch/powerpc/Kconfig                           |  1 +
- arch/powerpc/Makefile                          |  8 ++-
- arch/powerpc/include/asm/asm-prototypes.h      |  4 +-
- arch/powerpc/include/asm/book3s/64/mmu-hash.h  |  2 +-
- arch/powerpc/include/asm/exception-64s.h       |  4 +-
- arch/powerpc/include/asm/irq.h                 | 14 ++---
- arch/powerpc/include/asm/livepatch.h           |  7 ++-
- arch/powerpc/include/asm/processor.h           | 39 +------------
- arch/powerpc/include/asm/ptrace.h              |  2 +-
- arch/powerpc/include/asm/reg.h                 |  2 +-
- arch/powerpc/include/asm/smp.h                 | 17 +++++-
- arch/powerpc/include/asm/task_size_user64.h    | 42 ++++++++++++++
- arch/powerpc/include/asm/thread_info.h         | 19 -------
- arch/powerpc/kernel/asm-offsets.c              | 10 ++--
- arch/powerpc/kernel/entry_32.S                 | 66 ++++++++--------------
- arch/powerpc/kernel/entry_64.S                 | 12 ++--
- arch/powerpc/kernel/epapr_hcalls.S             |  5 +-
- arch/powerpc/kernel/exceptions-64e.S           | 13 +----
- arch/powerpc/kernel/exceptions-64s.S           |  2 +-
- arch/powerpc/kernel/head_32.S                  | 14 ++---
- arch/powerpc/kernel/head_40x.S                 |  4 +-
- arch/powerpc/kernel/head_44x.S                 |  8 +--
- arch/powerpc/kernel/head_64.S                  |  1 +
- arch/powerpc/kernel/head_8xx.S                 |  2 +-
- arch/powerpc/kernel/head_booke.h               | 12 +---
- arch/powerpc/kernel/head_fsl_booke.S           | 16 +++---
- arch/powerpc/kernel/idle_6xx.S                 |  8 +--
- arch/powerpc/kernel/idle_book3e.S              |  2 +-
- arch/powerpc/kernel/idle_e500.S                |  8 +--
- arch/powerpc/kernel/idle_power4.S              |  2 +-
- arch/powerpc/kernel/irq.c                      | 77 +++++---------------------
- arch/powerpc/kernel/kgdb.c                     | 28 ----------
- arch/powerpc/kernel/machine_kexec_64.c         |  6 +-
- arch/powerpc/kernel/misc_32.S                  | 17 +++---
- arch/powerpc/kernel/process.c                  | 17 +++---
- arch/powerpc/kernel/setup-common.c             |  2 +-
- arch/powerpc/kernel/setup_32.c                 | 15 ++---
- arch/powerpc/kernel/setup_64.c                 | 41 ++++----------
- arch/powerpc/kernel/smp.c                      | 16 +++---
- arch/powerpc/kernel/trace/ftrace_64_mprofile.S |  6 +-
- arch/powerpc/kvm/book3s_hv_hmi.c               |  1 +
- arch/powerpc/mm/hash_low_32.S                  | 14 ++---
- arch/powerpc/net/bpf_jit32.h                   |  5 +-
- arch/powerpc/sysdev/6xx-suspend.S              |  5 +-
- arch/powerpc/xmon/xmon.c                       |  2 +-
- 45 files changed, 230 insertions(+), 368 deletions(-)
- create mode 100644 arch/powerpc/include/asm/task_size_user64.h
-
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index e2750b856c8f..05b574f416b3 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -243,8 +243,10 @@ set_ivor:
+ 	li	r0,0
+ 	stwu	r0,THREAD_SIZE-STACK_FRAME_OVERHEAD(r1)
+ 
++#ifdef CONFIG_SMP
+ 	CURRENT_THREAD_INFO(r22, r1)
+ 	stw	r24, TI_CPU(r22)
++#endif
+ 
+ 	bl	early_init
+ 
+diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
+index 695b24a2d954..2f0fe8bfc078 100644
+--- a/arch/powerpc/kernel/misc_32.S
++++ b/arch/powerpc/kernel/misc_32.S
+@@ -183,10 +183,14 @@ _GLOBAL(low_choose_750fx_pll)
+ 	or	r4,r4,r5
+ 	mtspr	SPRN_HID1,r4
+ 
++#ifdef CONFIG_SMP
+ 	/* Store new HID1 image */
+ 	CURRENT_THREAD_INFO(r6, r1)
+ 	lwz	r6,TI_CPU(r6)
+ 	slwi	r6,r6,2
++#else
++	li	r6, 0
++#endif
+ 	addis	r6,r6,nap_save_hid1@ha
+ 	stw	r4,nap_save_hid1@l(r6)
+ 
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index c70d17c9a6ba..1731793e1277 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -2986,7 +2986,7 @@ static void show_task(struct task_struct *tsk)
+ 	printf("%px %016lx %6d %6d %c %2d %s\n", tsk,
+ 		tsk->thread.ksp,
+ 		tsk->pid, tsk->parent->pid,
+-		state, task_thread_info(tsk)->cpu,
++		state, task_cpu(tsk),
+ 		tsk->comm);
+ }
+ 
 -- 
 2.13.3
 
