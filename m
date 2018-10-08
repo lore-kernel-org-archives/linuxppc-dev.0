@@ -2,88 +2,65 @@ Return-Path: <SRS0=rj9n=MU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 60892C00449
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 07:32:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B73D0C00449
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 07:49:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CBB082087C
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 07:32:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CBB082087C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id E26B82075C
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 07:49:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E26B82075C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42TBrs5cYlzF3Ct
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 18:32:13 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42TCF64cQ4zF3Bb
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 18:49:46 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com;
- envelope-from=spopovyc@redhat.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=209.85.221.195; helo=mail-vk1-f195.google.com;
+ envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux-m68k.org
+Received: from mail-vk1-f195.google.com (mail-vk1-f195.google.com
+ [209.85.221.195])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42TBpS6lfFzF36m
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Oct 2018 18:30:04 +1100 (AEDT)
-Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.phx2.redhat.com
- [10.5.11.12])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 117E0C04B925;
- Mon,  8 Oct 2018 07:30:02 +0000 (UTC)
-Received: from v-cos7-x64-rh.tuxracer.vpn.as41781.net
- (ovpn-116-165.ams2.redhat.com [10.36.116.165])
- by smtp.corp.redhat.com (Postfix) with ESMTPS id 1ACA261147;
- Mon,  8 Oct 2018 07:29:56 +0000 (UTC)
-Subject: Re: [RFC PATCH kernel] vfio/spapr_tce: Get rid of possible infinite
- loop
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
-References: <20181002032231.7494-1-aik@ozlabs.ru>
-From: Serhii Popovych <spopovyc@redhat.com>
-Openpgp: preference=signencrypt
-Autocrypt: addr=spopovyc@redhat.com; prefer-encrypt=mutual; keydata=
- xsBNBFmvho4BCADMfRwAvr/tb7zXD5kYOukSIAUZz7lZY6mFiFD4+xcmHyhy4mrHzFsaQA5g
- j6PF9Z0J4OcYO4bJw4xEbzu+liQhekWXFdo3gwqttWg/PdVVeLLBtvRHxjK9cZYY9+OJ9Y2q
- CwRwxh7fDZJzp7oHlBQpSBcWkbYVh4rd775dIs49ayh87K73yw58TBDp211tyoqgNaztrQIB
- ZlSm87nls7E322ZsdpnBO9Wr+JVfPKxpODc3Hmqux3eD2zh+1Y2QCb3BMDe8pBRhkhSqLS+V
- Y8+oq8lWmQRD/zRc6g9kDCM+2szO/C2V96UAc6RVivwbQirraTVMlNBXr0ZRnd/pUtdtABEB
- AAHNKlNlcmhleSBQb3BvdnljaCA8c2VyaGUucG9wb3Z5Y2hAZ21haWwuY29tPsLAggQTAQIA
- LAIbAwcLCQgHAwIBBhUIAgkKCwQWAgMBAh4BAheAAhkBBQJbj6vKBQkDwVi8AAoJEBTawMmQ
- 61bB0Q4H/1nNRo0wdZileOAcsbgSaXVJiFGhj+QOdgLwBhpu3ITPPg7Neu3KAcndX1RhLwF/
- 9hgtzhjBiyGpe/Yb50CYS/3GFNTg30ObWyj25xpS9l6RdrEoUVtd1e7W41ar6Cc7kH/+j1Tb
- 9ucH3pBwQ5lvFi7zAK2YLkbHNhqGkxDG5AcacDzvHMTxLzgXckF4AFFY3tWeJoA/Y6s7+edY
- tD93835duXeaQcdbeUmqB9ATQdZFbdMTmP/ly76w9Wu/TKtszCmXw/iKfC1VKPC4GQoDpI5r
- X0Kwum/K1kTFmpvq2EtdYxpuFXalvAvVunH+0ekmY3ymcCOLQzalY+dcl2gbJqTOwE0EWa+G
- jgEIAKTdE/a3gw5WnUHzPdTP95V0xz5xgWZ66Q10cIjbFkUOl/UvxkemkqKV1Bw4EG901FzQ
- jvP/eZJhaN2XNRUogD3A3uAA7tW41d8+CCePDYGlGy/G0jzx0AeI+XCJtCyVNaHNzI3sQBy5
- 0Qcs1rKkagjtOPSX+IzDOjslNHDCVQ38RTr9Cwl60va+rAi1F5psdQcmIFM5L4WCWt2y416F
- o01UJQVwo071/Z7DWT2Jy/uDxnplI5+C8jmd3mkV8xzPtguM6AuektFQLVhdLzcMZdkA35fO
- UH55ku/HbGyEmxOlhXgzwhmtkrvz9JYe+MYKW1nx3TIXcJVtWS7D94zlZeUAEQEAAcLAZQQY
- AQIADwIbDAUCW4+sTgUJA8FZQAAKCRAU2sDJkOtWwaxRB/sHfDv7KHQAh8PBBLTI9XVv4duQ
- TRVIXscZpLvgITxdp6apMk+l1IqzWVU0/zHOfdh0eoA9VRDq0km7UsH4rv1/HYSkXIRXjLF+
- JZCsAjDMpnzpbP1L+r+y8RrA086KPoZXz0CknejVAUo3EOEeh5SrCO+s+mhe7GyXVJvkGD5F
- JaPLQq5v3xlGbA49tQ/FZIAKScY6jgLnEg+pva+/QCilU1Jo+YXsZcfG2LaVjc1ywwZVf8ry
- 0tM7SFKwzbRl47jXWGgap8qpyWYKw4mkA/g8J2XS4fRaW0Lxr42EzEHy+ecaJf4c4P95vmhg
- JFZShk/daSkIyLcj/AmcABZPNW0K
-Organization: Red Hat
-Message-ID: <74ee5fc5-839b-27d6-5731-1b2731f9f95b@redhat.com>
-Date: Mon, 8 Oct 2018 10:29:48 +0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:51.0) Gecko/20100101
- Firefox/51.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42TCBn0cT9zF36t
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Oct 2018 18:47:44 +1100 (AEDT)
+Received: by mail-vk1-f195.google.com with SMTP id h20-v6so1661014vke.7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Oct 2018 00:47:44 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=AIElAWjEC4+qiV3Uf4xf+PuGd22N3jcTDz6lLt7BuWM=;
+ b=bCioYIGG51a4kHYFyv869FU+rY6pp9MRTxd/YWZPHYbsJ/GDQDjVBlUfdUqaymlcHP
+ dndGem+QAAkQID8SxnQOcq/3IIKzJO9237dHT1uQVwoJAdgxKTq/SWlDhNF0CXzFSfgb
+ Lqm5Y2WS5vNBK18kfmNWWakI6ICyYMEtv4Cap+XZv5dLzCyXVdp2qhmMciSrIFXhwRy5
+ +eaa3KLl6v01GqPMH0qz5nXj9N204FcrAOtmj3C8QbQ2FrHixqr9K72OXXOYMCbULLP1
+ 2rwD0is4mXjWRtOUIHGO8Wsi3bLyAOuoJbv4+3Te+Wn3J81kiAxI6W+/2que5c9tZDW4
+ WvWg==
+X-Gm-Message-State: ABuFfojEQuOpl+DhoAgTTm4YdxWx1fjCgu0bag1ldHzr2z8bS/bmatN6
+ C0QliTyrNUxL9JF1Er6JQvIBQySNnHHqf9UDQws=
+X-Google-Smtp-Source: ACcGV61roA6wLlkVv7sk2NfIm6I4d3sLLnkmtKvKU8cMqiPVN27rjs7bnm1Jeo2z1DhH+O5Fbv/H492gE7znuBqzBIk=
+X-Received: by 2002:a1f:d507:: with SMTP id m7-v6mr8394416vkg.40.1538984861844; 
+ Mon, 08 Oct 2018 00:47:41 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20181002032231.7494-1-aik@ozlabs.ru>
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="mlNQ9P0PV7bTzILEy0bFLL1jJXITV6LBX"
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.12
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.31]); Mon, 08 Oct 2018 07:30:02 +0000 (UTC)
+References: <20181005165848.3474-1-robh@kernel.org>
+ <20181005165848.3474-30-robh@kernel.org>
+In-Reply-To: <20181005165848.3474-30-robh@kernel.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 8 Oct 2018 09:47:29 +0200
+Message-ID: <CAMuHMdU=rBV4b3EcenvtMPevx14pvTDcnQ7VDg02VZFiFuU-uw@mail.gmail.com>
+Subject: Re: [PATCH 29/36] dt-bindings: arm: Convert Renesas board/soc
+ bindings to json-schema
+To: Rob Herring <robh@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,114 +72,110 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alex Williamson <alex.williamson@redhat.com>, kvm-ppc@vger.kernel.org,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
+ <devicetree@vger.kernel.org>, Kumar Gala <kumar.gala@linaro.org>,
+ Grant Likely <glikely@secretlab.ca>, Arnd Bergmann <arnd@arndb.de>,
+ Tom Rini <trini@konsulko.com>, Simon Horman <horms@verge.net.au>,
+ Frank Rowand <frowand.list@gmail.com>,
+ Linus Walleij <linus.walleij@linaro.org>,
+ Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ =?UTF-8?Q?Bj=C3=B6rn_Andersson?= <bjorn.andersson@linaro.org>,
+ Linux-Renesas <linux-renesas-soc@vger.kernel.org>,
+ Mark Brown <broonie@kernel.org>, Jonathan Cameron <jic23@kernel.org>,
+ Olof Johansson <olof@lixom.net>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---mlNQ9P0PV7bTzILEy0bFLL1jJXITV6LBX
-Content-Type: multipart/mixed; boundary="m286uEMlX1QUTLnXN10RttdcTSXZj5F3F";
- protected-headers="v1"
-From: Serhii Popovych <spopovyc@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
-Cc: David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
- Alex Williamson <alex.williamson@redhat.com>
-Message-ID: <74ee5fc5-839b-27d6-5731-1b2731f9f95b@redhat.com>
-Subject: Re: [RFC PATCH kernel] vfio/spapr_tce: Get rid of possible infinite
- loop
-References: <20181002032231.7494-1-aik@ozlabs.ru>
-In-Reply-To: <20181002032231.7494-1-aik@ozlabs.ru>
+Hi Rob,
 
---m286uEMlX1QUTLnXN10RttdcTSXZj5F3F
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Fri, Oct 5, 2018 at 6:59 PM Rob Herring <robh@kernel.org> wrote:
+> Convert Renesas SoC bindings to DT schema format using json-schema.
+>
+> Cc: Simon Horman <horms@verge.net.au>
+> Cc: Magnus Damm <magnus.damm@gmail.com>
+> Cc: Mark Rutland <mark.rutland@arm.com>
+> Cc: linux-renesas-soc@vger.kernel.org
+> Cc: devicetree@vger.kernel.org
+> Signed-off-by: Rob Herring <robh@kernel.org>
 
-Alexey Kardashevskiy wrote:
-> As a part of cleanup, the SPAPR TCE IOMMU subdriver releases preregiste=
-red
-> memory. If there is a bug in memory release, the loop in
-> tce_iommu_release() becomes infinite; this actually happened to me.
->=20
-> This makes the loop finite and prints a warning on every failure to mak=
-e
-> the code more bug prone.
->=20
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
->  drivers/vfio/vfio_iommu_spapr_tce.c | 10 +++-------
->  1 file changed, 3 insertions(+), 7 deletions(-)
->=20
-> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_io=
-mmu_spapr_tce.c
-> index b1a8ab3..ece0651 100644
-> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
-> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> @@ -371,6 +371,7 @@ static void tce_iommu_release(void *iommu_data)
->  {
->  	struct tce_container *container =3D iommu_data;
->  	struct tce_iommu_group *tcegrp;
-> +	struct tce_iommu_prereg *tcemem, *tmtmp;
->  	long i;
-> =20
->  	while (tce_groups_attached(container)) {
-> @@ -393,13 +394,8 @@ static void tce_iommu_release(void *iommu_data)
->  		tce_iommu_free_table(container, tbl);
->  	}
-> =20
-> -	while (!list_empty(&container->prereg_list)) {
-> -		struct tce_iommu_prereg *tcemem;
-> -
-> -		tcemem =3D list_first_entry(&container->prereg_list,
-> -				struct tce_iommu_prereg, next);
-> -		WARN_ON_ONCE(tce_iommu_prereg_free(container, tcemem));
-> -	}
-> +	list_for_each_entry_safe(tcemem, tmtmp, &container->prereg_list, next=
-)
-> +		WARN_ON(tce_iommu_prereg_free(container, tcemem));
+Thanks for your patch!
 
-I'm not sure that tce_iommu_prereg_free() call under WARN_ON() is good
-idea because WARN_ON() is a preprocessor macro:
+Note that this will need a rebase, as more SoCs/boards have been added
+in -next.
 
-  if CONFIG_WARN=3Dn is added by the analogy with CONFIG_BUG=3Dn defining=
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/arm/shmobile.yaml
+> @@ -0,0 +1,205 @@
+> +# SPDX-License-Identifier: None
 
-  WARN_ON() as empty we will loose call to tce_iommu_prereg_free()
-  leaking resources.
+The old file didn't have an SPDX header, so it was GPL-2.0, implicitly?
 
-There is no problem at the moment: WARN_ON() defined for PPC in
-arch/powerpc/include/asm/bug.h unconditionally.
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/bindings/arm/shmobile.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: Renesas SH-Mobile, R-Mobile, and R-Car Platform Device Tree Bindings
+> +
+> +maintainers:
+> +  - Geert Uytterhoeven <geert+renesas@glider.be>
 
-So your first version with intermediate variable looks better to me.
+Simon Horman <horms@verge.net.au> (supporter:ARM/SHMOBILE ARM ARCHITECTURE)
+Magnus Damm <magnus.damm@gmail.com> (supporter:ARM/SHMOBILE ARM ARCHITECTURE)
 
-> =20
->  	tce_iommu_disable(container);
->  	if (container->mm)
->=20
+You had it right in the CC list, though...
 
+> +      - description: RZ/G1M (R8A77430)
+> +        items:
+> +          - enum:
+> +              # iWave Systems RZ/G1M Qseven Development Platform (iW-RainboW-G20D-Qseven)
+> +              - iwave,g20d
+> +          - const: iwave,g20m
+> +          - const: renesas,r8a7743
+> +
+> +      - items:
+> +          - enum:
+> +              # iWave Systems RZ/G1M Qseven System On Module (iW-RainboW-G20M-Qseven)
+> +              - iwave,g20m
+> +          - const: renesas,r8a7743
+> +
+> +      - description: RZ/G1N (R8A77440)
+> +        items:
+> +          - enum:
+> +              - renesas,sk-rzg1m # SK-RZG1M (YR8A77430S000BE)
 
---=20
-Thanks,
-Serhii
+This board belongs under the RZ/G1M section above
+(see also the 7743 in the part number).
 
+> +          - const: renesas,r8a7744
 
---m286uEMlX1QUTLnXN10RttdcTSXZj5F3F--
+> +      - description: Kingfisher (SBEV-RCAR-KF-M03)
+> +        items:
+> +          - const: shimafuji,kingfisher
+> +          - enum:
+> +              - renesas,h3ulcb
+> +              - renesas,m3ulcb
+> +          - enum:
+> +              - renesas,r8a7795
+> +              - renesas,r8a7796
 
---mlNQ9P0PV7bTzILEy0bFLL1jJXITV6LBX
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+This looks a bit funny: all other entries have the "const" last, and
+use it for the
+SoC number. May be correct, though.
+To clarify, this is an extension board that can fit both the [HM]3ULCB
+boards (actually also the new M3NULCB, I think).
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
+Gr{oetje,eeting}s,
 
-iQEcBAEBAgAGBQJbuwdxAAoJEBTawMmQ61bB/R0H/jQUzYa7A+l2JHPgyJ4hGrgI
-MoI+4Ar2QyMvRbwoYX5mT1TmpSLcNU5ygwlYr2owCzV/NjfOm0SNGIx0X525+5kX
-LK2ThUOikkgpoensvVMcAHKcmxd74t/MqbU+lWhkxcO82/YGOdmgQoF2TDUvkiHp
-1IXq1w1pSjUPidkyQG9ynwZdR/stw5mPRF0Y6HP+BmwSz7HhxTSv+TS+gLdRvb7+
-KZg66JYOlo4qIYXFhc5caxKZH0vysRyUkSKnsPGwGbB5VdVZ2xQKRZ2aWjHEezKp
-fTQ9T6Ph9UvDNQzVUWLCo80FYONbWNMFgWoQ4cGZ0KRurws5Cp+QqGBJsbMb0P8=
-=wktK
------END PGP SIGNATURE-----
+                        Geert
 
---mlNQ9P0PV7bTzILEy0bFLL1jJXITV6LBX--
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
