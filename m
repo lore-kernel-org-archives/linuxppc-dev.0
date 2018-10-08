@@ -7,60 +7,60 @@ X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_PASS,UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C63E7C00449
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 06:02:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C38A3C00449
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 06:04:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2B4ED2086D
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 06:02:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 3DDFD2086D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 06:04:27 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="YEDoQfgs"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2B4ED2086D
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="RLKKHCdw"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3DDFD2086D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42T8rm0RSKzF3Df
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 17:02:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42T8vY2BKPzDqf8
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 17:04:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="YEDoQfgs";
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="RLKKHCdw";
 	dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42T89j1q7TzF37f
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Oct 2018 16:31:37 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42T89l2b8MzF37f
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Oct 2018 16:31:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="YEDoQfgs"; 
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="RLKKHCdw"; 
  dkim-atps=neutral
 Received: by ozlabs.org (Postfix)
- id 42T89h74jFz9sD2; Mon,  8 Oct 2018 16:31:36 +1100 (AEDT)
+ id 42T89k0N8fz9sCV; Mon,  8 Oct 2018 16:31:38 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 42T89g56b1z9sRp;
- Mon,  8 Oct 2018 16:31:35 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPSA id 42T89j20VGzB2xk;
+ Mon,  8 Oct 2018 16:31:37 +1100 (AEDT)
 Authentication-Results: ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.org
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1538976695; bh=puzhdRhOGzkeS3FooLewvz7ZYyNYBvgXZmyKVw3ywf0=;
+ t=1538976697; bh=xq+sFUlPnFmxSg5+o4YQn9EPBqQshunYiJToElE7j2A=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=YEDoQfgszc2s70Tv95tA1EWX2r/FepvEcP+LuPF6qw6tNnAL1dj6Neuo5JWrTtXuc
- 6EXWGTRsNNY2az7spNZv9MMuu5NrOZ+auFvkxwr7VxOQ20KLA0X9pUNhW1NvK/hNrY
- 3IMzyec+7DpiHBT+VN8orvsYoQu3JR5CDlgWwb31dJBvX1Mq4qtWDeb4QYG2wcBSi0
- DVj+3zsHS5pd2gZdJVlA4o44iewBytUUM+lhoU7y7UBTshUYkNHBYFaYH0MzZ52tdY
- rg3mpJzbdS58Tl8OAJ5ua3FtRY7dBCo2NXcQXVMM+k0nUPGCeDuTFZobhh16c+8WZf
- hgwy2KaZtil4A==
+ b=RLKKHCdwlsyl0CEbiN/mq7nnCesp6qmGXG5+yQ4axPof7oKj/5w4JBxGn+PasuKxA
+ dUgt+m9krYueLqkwla0dg50eqn2cCajCbGcTmlCX1zxJBHEEtI2SqadrGlvYkCjK8h
+ oLz+VX8JmYcM7jzkbFan/YV5478zAa5uTw6IzFma8iFhZ0NovEc2gqhV8AW5Pn+jSr
+ gB38gX+/PaMqm7R9HQESb7CyGNumuk7go2cXINVRqnmG8cdNmA9ANDRTH4va1Ubtld
+ mRKGyLTlw9O9s3I35nH8oGwH2Dfvv/zXLf28e/sjAwiogogrU/y5zb/qIDVhO+czZh
+ Rpr1vwOs/mANw==
 From: Paul Mackerras <paulus@ozlabs.org>
 To: kvm@vger.kernel.org,
 	kvm-ppc@vger.kernel.org
-Subject: [PATCH v5 11/33] KVM: PPC: Book3S HV: Add a debugfs file to dump
- radix mappings
-Date: Mon,  8 Oct 2018 16:30:57 +1100
-Message-Id: <1538976679-1363-12-git-send-email-paulus@ozlabs.org>
+Subject: [PATCH v5 12/33] KVM: PPC: Use ccr field in pt_regs struct embedded
+ in vcpu struct
+Date: Mon,  8 Oct 2018 16:30:58 +1100
+Message-Id: <1538976679-1363-13-git-send-email-paulus@ozlabs.org>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1538976679-1363-1-git-send-email-paulus@ozlabs.org>
 References: <1538976679-1363-1-git-send-email-paulus@ozlabs.org>
@@ -80,255 +80,341 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This adds a file called 'radix' in the debugfs directory for the
-guest, which when read gives all of the valid leaf PTEs in the
-partition-scoped radix tree for a radix guest, in human-readable
-format.  It is analogous to the existing 'htab' file which dumps
-the HPT entries for a HPT guest.
+When the 'regs' field was added to struct kvm_vcpu_arch, the code
+was changed to use several of the fields inside regs (e.g., gpr, lr,
+etc.) but not the ccr field, because the ccr field in struct pt_regs
+is 64 bits on 64-bit platforms, but the cr field in kvm_vcpu_arch is
+only 32 bits.  This changes the code to use the regs.ccr field
+instead of cr, and changes the assembly code on 64-bit platforms to
+use 64-bit loads and stores instead of 32-bit ones.
 
 Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/include/asm/kvm_book3s_64.h |   1 +
- arch/powerpc/include/asm/kvm_host.h      |   1 +
- arch/powerpc/kvm/book3s_64_mmu_radix.c   | 179 +++++++++++++++++++++++++++++++
- arch/powerpc/kvm/book3s_hv.c             |   2 +
- 4 files changed, 183 insertions(+)
+ arch/powerpc/include/asm/kvm_book3s.h    |  4 ++--
+ arch/powerpc/include/asm/kvm_book3s_64.h |  4 ++--
+ arch/powerpc/include/asm/kvm_booke.h     |  4 ++--
+ arch/powerpc/include/asm/kvm_host.h      |  2 --
+ arch/powerpc/kernel/asm-offsets.c        |  4 ++--
+ arch/powerpc/kvm/book3s_emulate.c        | 12 ++++++------
+ arch/powerpc/kvm/book3s_hv.c             |  4 ++--
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S  |  4 ++--
+ arch/powerpc/kvm/book3s_hv_tm.c          |  6 +++---
+ arch/powerpc/kvm/book3s_hv_tm_builtin.c  |  5 +++--
+ arch/powerpc/kvm/book3s_pr.c             |  4 ++--
+ arch/powerpc/kvm/bookehv_interrupts.S    |  8 ++++----
+ arch/powerpc/kvm/emulate_loadstore.c     |  1 -
+ 13 files changed, 30 insertions(+), 32 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
+index 83a9aa3..dd18d81 100644
+--- a/arch/powerpc/include/asm/kvm_book3s.h
++++ b/arch/powerpc/include/asm/kvm_book3s.h
+@@ -301,12 +301,12 @@ static inline ulong kvmppc_get_gpr(struct kvm_vcpu *vcpu, int num)
+ 
+ static inline void kvmppc_set_cr(struct kvm_vcpu *vcpu, u32 val)
+ {
+-	vcpu->arch.cr = val;
++	vcpu->arch.regs.ccr = val;
+ }
+ 
+ static inline u32 kvmppc_get_cr(struct kvm_vcpu *vcpu)
+ {
+-	return vcpu->arch.cr;
++	return vcpu->arch.regs.ccr;
+ }
+ 
+ static inline void kvmppc_set_xer(struct kvm_vcpu *vcpu, ulong val)
 diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
-index dc435a5..af25aaa 100644
+index af25aaa..5c0e2d9 100644
 --- a/arch/powerpc/include/asm/kvm_book3s_64.h
 +++ b/arch/powerpc/include/asm/kvm_book3s_64.h
-@@ -435,6 +435,7 @@ static inline struct kvm_memslots *kvm_memslots_raw(struct kvm *kvm)
+@@ -483,7 +483,7 @@ static inline u64 sanitize_msr(u64 msr)
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+ static inline void copy_from_checkpoint(struct kvm_vcpu *vcpu)
+ {
+-	vcpu->arch.cr  = vcpu->arch.cr_tm;
++	vcpu->arch.regs.ccr  = vcpu->arch.cr_tm;
+ 	vcpu->arch.regs.xer = vcpu->arch.xer_tm;
+ 	vcpu->arch.regs.link  = vcpu->arch.lr_tm;
+ 	vcpu->arch.regs.ctr = vcpu->arch.ctr_tm;
+@@ -500,7 +500,7 @@ static inline void copy_from_checkpoint(struct kvm_vcpu *vcpu)
+ 
+ static inline void copy_to_checkpoint(struct kvm_vcpu *vcpu)
+ {
+-	vcpu->arch.cr_tm  = vcpu->arch.cr;
++	vcpu->arch.cr_tm  = vcpu->arch.regs.ccr;
+ 	vcpu->arch.xer_tm = vcpu->arch.regs.xer;
+ 	vcpu->arch.lr_tm  = vcpu->arch.regs.link;
+ 	vcpu->arch.ctr_tm = vcpu->arch.regs.ctr;
+diff --git a/arch/powerpc/include/asm/kvm_booke.h b/arch/powerpc/include/asm/kvm_booke.h
+index d513e3e..f0cef62 100644
+--- a/arch/powerpc/include/asm/kvm_booke.h
++++ b/arch/powerpc/include/asm/kvm_booke.h
+@@ -46,12 +46,12 @@ static inline ulong kvmppc_get_gpr(struct kvm_vcpu *vcpu, int num)
+ 
+ static inline void kvmppc_set_cr(struct kvm_vcpu *vcpu, u32 val)
+ {
+-	vcpu->arch.cr = val;
++	vcpu->arch.regs.ccr = val;
  }
  
- extern void kvmppc_mmu_debugfs_init(struct kvm *kvm);
-+extern void kvmhv_radix_debugfs_init(struct kvm *kvm);
+ static inline u32 kvmppc_get_cr(struct kvm_vcpu *vcpu)
+ {
+-	return vcpu->arch.cr;
++	return vcpu->arch.regs.ccr;
+ }
  
- extern void kvmhv_rm_send_ipi(int cpu);
- 
+ static inline void kvmppc_set_xer(struct kvm_vcpu *vcpu, ulong val)
 diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index 3cd0b9f..a3d4f61 100644
+index a3d4f61..c9cc42f 100644
 --- a/arch/powerpc/include/asm/kvm_host.h
 +++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -291,6 +291,7 @@ struct kvm_arch {
- 	u64 process_table;
- 	struct dentry *debugfs_dir;
- 	struct dentry *htab_dentry;
-+	struct dentry *radix_dentry;
- 	struct kvm_resize_hpt *resize_hpt; /* protected by kvm->lock */
- #endif /* CONFIG_KVM_BOOK3S_HV_POSSIBLE */
- #ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-index 933c574..71951b5 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-@@ -10,6 +10,9 @@
- #include <linux/string.h>
- #include <linux/kvm.h>
- #include <linux/kvm_host.h>
-+#include <linux/anon_inodes.h>
-+#include <linux/file.h>
-+#include <linux/debugfs.h>
+@@ -538,8 +538,6 @@ struct kvm_vcpu_arch {
+ 	ulong tar;
+ #endif
  
- #include <asm/kvm_ppc.h>
- #include <asm/kvm_book3s.h>
-@@ -853,6 +856,182 @@ static void pmd_ctor(void *addr)
- 	memset(addr, 0, RADIX_PMD_TABLE_SIZE);
+-	u32 cr;
+-
+ #ifdef CONFIG_PPC_BOOK3S
+ 	ulong hflags;
+ 	ulong guest_owned_ext;
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index 89cf155..7c3738d 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -438,7 +438,7 @@ int main(void)
+ #ifdef CONFIG_PPC_BOOK3S
+ 	OFFSET(VCPU_TAR, kvm_vcpu, arch.tar);
+ #endif
+-	OFFSET(VCPU_CR, kvm_vcpu, arch.cr);
++	OFFSET(VCPU_CR, kvm_vcpu, arch.regs.ccr);
+ 	OFFSET(VCPU_PC, kvm_vcpu, arch.regs.nip);
+ #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+ 	OFFSET(VCPU_MSR, kvm_vcpu, arch.shregs.msr);
+@@ -695,7 +695,7 @@ int main(void)
+ #endif /* CONFIG_PPC_BOOK3S_64 */
+ 
+ #else /* CONFIG_PPC_BOOK3S */
+-	OFFSET(VCPU_CR, kvm_vcpu, arch.cr);
++	OFFSET(VCPU_CR, kvm_vcpu, arch.regs.ccr);
+ 	OFFSET(VCPU_XER, kvm_vcpu, arch.regs.xer);
+ 	OFFSET(VCPU_LR, kvm_vcpu, arch.regs.link);
+ 	OFFSET(VCPU_CTR, kvm_vcpu, arch.regs.ctr);
+diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
+index 36b11c5..2654df2 100644
+--- a/arch/powerpc/kvm/book3s_emulate.c
++++ b/arch/powerpc/kvm/book3s_emulate.c
+@@ -110,7 +110,7 @@ static inline void kvmppc_copyto_vcpu_tm(struct kvm_vcpu *vcpu)
+ 	vcpu->arch.ctr_tm = vcpu->arch.regs.ctr;
+ 	vcpu->arch.tar_tm = vcpu->arch.tar;
+ 	vcpu->arch.lr_tm = vcpu->arch.regs.link;
+-	vcpu->arch.cr_tm = vcpu->arch.cr;
++	vcpu->arch.cr_tm = vcpu->arch.regs.ccr;
+ 	vcpu->arch.xer_tm = vcpu->arch.regs.xer;
+ 	vcpu->arch.vrsave_tm = vcpu->arch.vrsave;
  }
+@@ -129,7 +129,7 @@ static inline void kvmppc_copyfrom_vcpu_tm(struct kvm_vcpu *vcpu)
+ 	vcpu->arch.regs.ctr = vcpu->arch.ctr_tm;
+ 	vcpu->arch.tar = vcpu->arch.tar_tm;
+ 	vcpu->arch.regs.link = vcpu->arch.lr_tm;
+-	vcpu->arch.cr = vcpu->arch.cr_tm;
++	vcpu->arch.regs.ccr = vcpu->arch.cr_tm;
+ 	vcpu->arch.regs.xer = vcpu->arch.xer_tm;
+ 	vcpu->arch.vrsave = vcpu->arch.vrsave_tm;
+ }
+@@ -141,7 +141,7 @@ static void kvmppc_emulate_treclaim(struct kvm_vcpu *vcpu, int ra_val)
+ 	uint64_t texasr;
  
-+struct debugfs_radix_state {
-+	struct kvm	*kvm;
-+	struct mutex	mutex;
-+	unsigned long	gpa;
-+	int		chars_left;
-+	int		buf_index;
-+	char		buf[128];
-+	u8		hdr;
-+};
-+
-+static int debugfs_radix_open(struct inode *inode, struct file *file)
-+{
-+	struct kvm *kvm = inode->i_private;
-+	struct debugfs_radix_state *p;
-+
-+	p = kzalloc(sizeof(*p), GFP_KERNEL);
-+	if (!p)
-+		return -ENOMEM;
-+
-+	kvm_get_kvm(kvm);
-+	p->kvm = kvm;
-+	mutex_init(&p->mutex);
-+	file->private_data = p;
-+
-+	return nonseekable_open(inode, file);
-+}
-+
-+static int debugfs_radix_release(struct inode *inode, struct file *file)
-+{
-+	struct debugfs_radix_state *p = file->private_data;
-+
-+	kvm_put_kvm(p->kvm);
-+	kfree(p);
-+	return 0;
-+}
-+
-+static ssize_t debugfs_radix_read(struct file *file, char __user *buf,
-+				 size_t len, loff_t *ppos)
-+{
-+	struct debugfs_radix_state *p = file->private_data;
-+	ssize_t ret, r;
-+	unsigned long n;
-+	struct kvm *kvm;
-+	unsigned long gpa;
-+	pgd_t *pgt;
-+	pgd_t pgd, *pgdp;
-+	pud_t pud, *pudp;
-+	pmd_t pmd, *pmdp;
-+	pte_t *ptep;
-+	int shift;
-+	unsigned long pte;
-+
-+	kvm = p->kvm;
-+	if (!kvm_is_radix(kvm))
-+		return 0;
-+
-+	ret = mutex_lock_interruptible(&p->mutex);
-+	if (ret)
-+		return ret;
-+
-+	if (p->chars_left) {
-+		n = p->chars_left;
-+		if (n > len)
-+			n = len;
-+		r = copy_to_user(buf, p->buf + p->buf_index, n);
-+		n -= r;
-+		p->chars_left -= n;
-+		p->buf_index += n;
-+		buf += n;
-+		len -= n;
-+		ret = n;
-+		if (r) {
-+			if (!n)
-+				ret = -EFAULT;
-+			goto out;
-+		}
-+	}
-+
-+	gpa = p->gpa;
-+	pgt = kvm->arch.pgtable;
-+	while (len != 0 && gpa < RADIX_PGTABLE_RANGE) {
-+		if (!p->hdr) {
-+			n = scnprintf(p->buf, sizeof(p->buf),
-+				      "pgdir: %lx\n", (unsigned long)pgt);
-+			p->hdr = 1;
-+			goto copy;
-+		}
-+
-+		pgdp = pgt + pgd_index(gpa);
-+		pgd = READ_ONCE(*pgdp);
-+		if (!(pgd_val(pgd) & _PAGE_PRESENT)) {
-+			gpa = (gpa & PGDIR_MASK) + PGDIR_SIZE;
-+			continue;
-+		}
-+
-+		pudp = pud_offset(&pgd, gpa);
-+		pud = READ_ONCE(*pudp);
-+		if (!(pud_val(pud) & _PAGE_PRESENT)) {
-+			gpa = (gpa & PUD_MASK) + PUD_SIZE;
-+			continue;
-+		}
-+		if (pud_val(pud) & _PAGE_PTE) {
-+			pte = pud_val(pud);
-+			shift = PUD_SHIFT;
-+			goto leaf;
-+		}
-+
-+		pmdp = pmd_offset(&pud, gpa);
-+		pmd = READ_ONCE(*pmdp);
-+		if (!(pmd_val(pmd) & _PAGE_PRESENT)) {
-+			gpa = (gpa & PMD_MASK) + PMD_SIZE;
-+			continue;
-+		}
-+		if (pmd_val(pmd) & _PAGE_PTE) {
-+			pte = pmd_val(pmd);
-+			shift = PMD_SHIFT;
-+			goto leaf;
-+		}
-+
-+		ptep = pte_offset_kernel(&pmd, gpa);
-+		pte = pte_val(READ_ONCE(*ptep));
-+		if (!(pte & _PAGE_PRESENT)) {
-+			gpa += PAGE_SIZE;
-+			continue;
-+		}
-+		shift = PAGE_SHIFT;
-+	leaf:
-+		n = scnprintf(p->buf, sizeof(p->buf),
-+			      " %lx: %lx %d\n", gpa, pte, shift);
-+		gpa += 1ul << shift;
-+	copy:
-+		p->chars_left = n;
-+		if (n > len)
-+			n = len;
-+		r = copy_to_user(buf, p->buf, n);
-+		n -= r;
-+		p->chars_left -= n;
-+		p->buf_index = n;
-+		buf += n;
-+		len -= n;
-+		ret += n;
-+		if (r) {
-+			if (!ret)
-+				ret = -EFAULT;
-+			break;
-+		}
-+	}
-+	p->gpa = gpa;
-+
-+ out:
-+	mutex_unlock(&p->mutex);
-+	return ret;
-+}
-+
-+static ssize_t debugfs_radix_write(struct file *file, const char __user *buf,
-+			   size_t len, loff_t *ppos)
-+{
-+	return -EACCES;
-+}
-+
-+static const struct file_operations debugfs_radix_fops = {
-+	.owner	 = THIS_MODULE,
-+	.open	 = debugfs_radix_open,
-+	.release = debugfs_radix_release,
-+	.read	 = debugfs_radix_read,
-+	.write	 = debugfs_radix_write,
-+	.llseek	 = generic_file_llseek,
-+};
-+
-+void kvmhv_radix_debugfs_init(struct kvm *kvm)
-+{
-+	kvm->arch.radix_dentry = debugfs_create_file("radix", 0400,
-+						     kvm->arch.debugfs_dir, kvm,
-+						     &debugfs_radix_fops);
-+}
-+
- int kvmppc_radix_init(void)
- {
- 	unsigned long size = sizeof(void *) << RADIX_PTE_INDEX_SIZE;
+ 	/* CR0 = 0 | MSR[TS] | 0 */
+-	vcpu->arch.cr = (vcpu->arch.cr & ~(CR0_MASK << CR0_SHIFT)) |
++	vcpu->arch.regs.ccr = (vcpu->arch.regs.ccr & ~(CR0_MASK << CR0_SHIFT)) |
+ 		(((guest_msr & MSR_TS_MASK) >> (MSR_TS_S_LG - 1))
+ 		 << CR0_SHIFT);
+ 
+@@ -220,7 +220,7 @@ void kvmppc_emulate_tabort(struct kvm_vcpu *vcpu, int ra_val)
+ 	tm_abort(ra_val);
+ 
+ 	/* CR0 = 0 | MSR[TS] | 0 */
+-	vcpu->arch.cr = (vcpu->arch.cr & ~(CR0_MASK << CR0_SHIFT)) |
++	vcpu->arch.regs.ccr = (vcpu->arch.regs.ccr & ~(CR0_MASK << CR0_SHIFT)) |
+ 		(((guest_msr & MSR_TS_MASK) >> (MSR_TS_S_LG - 1))
+ 		 << CR0_SHIFT);
+ 
+@@ -494,8 +494,8 @@ int kvmppc_core_emulate_op_pr(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 
+ 			if (!(kvmppc_get_msr(vcpu) & MSR_PR)) {
+ 				preempt_disable();
+-				vcpu->arch.cr = (CR0_TBEGIN_FAILURE |
+-				  (vcpu->arch.cr & ~(CR0_MASK << CR0_SHIFT)));
++				vcpu->arch.regs.ccr = (CR0_TBEGIN_FAILURE |
++				  (vcpu->arch.regs.ccr & ~(CR0_MASK << CR0_SHIFT)));
+ 
+ 				vcpu->arch.texasr = (TEXASR_FS | TEXASR_EXACT |
+ 					(((u64)(TM_CAUSE_EMULATE | TM_CAUSE_PERSISTENT))
 diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index e310117..70ae0ce 100644
+index 70ae0ce..123bd18 100644
 --- a/arch/powerpc/kvm/book3s_hv.c
 +++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -4481,6 +4481,8 @@ static int kvmppc_core_init_vm_hv(struct kvm *kvm)
- 	snprintf(buf, sizeof(buf), "vm%d", current->pid);
- 	kvm->arch.debugfs_dir = debugfs_create_dir(buf, kvm_debugfs_dir);
- 	kvmppc_mmu_debugfs_init(kvm);
-+	if (radix_enabled())
-+		kvmhv_radix_debugfs_init(kvm);
+@@ -410,8 +410,8 @@ static void kvmppc_dump_regs(struct kvm_vcpu *vcpu)
+ 	       vcpu->arch.shregs.sprg0, vcpu->arch.shregs.sprg1);
+ 	pr_err("sprg2 = %.16llx sprg3 = %.16llx\n",
+ 	       vcpu->arch.shregs.sprg2, vcpu->arch.shregs.sprg3);
+-	pr_err("cr = %.8x  xer = %.16lx  dsisr = %.8x\n",
+-	       vcpu->arch.cr, vcpu->arch.regs.xer, vcpu->arch.shregs.dsisr);
++	pr_err("cr = %.8lx  xer = %.16lx  dsisr = %.8x\n",
++	       vcpu->arch.regs.ccr, vcpu->arch.regs.xer, vcpu->arch.shregs.dsisr);
+ 	pr_err("dar = %.16llx\n", vcpu->arch.shregs.dar);
+ 	pr_err("fault dar = %.16lx dsisr = %.8x\n",
+ 	       vcpu->arch.fault_dar, vcpu->arch.fault_dsisr);
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index ea84696..9cea2386 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -1092,7 +1092,7 @@ BEGIN_FTR_SECTION
+ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
  
- 	return 0;
+ 	ld	r5, VCPU_LR(r4)
+-	lwz	r6, VCPU_CR(r4)
++	ld	r6, VCPU_CR(r4)
+ 	mtlr	r5
+ 	mtcr	r6
+ 
+@@ -1280,7 +1280,7 @@ kvmppc_interrupt_hv:
+ 	std	r3, VCPU_GPR(R12)(r9)
+ 	/* CR is in the high half of r12 */
+ 	srdi	r4, r12, 32
+-	stw	r4, VCPU_CR(r9)
++	std	r4, VCPU_CR(r9)
+ BEGIN_FTR_SECTION
+ 	ld	r3, HSTATE_CFAR(r13)
+ 	std	r3, VCPU_CFAR(r9)
+diff --git a/arch/powerpc/kvm/book3s_hv_tm.c b/arch/powerpc/kvm/book3s_hv_tm.c
+index 0082850..888e260 100644
+--- a/arch/powerpc/kvm/book3s_hv_tm.c
++++ b/arch/powerpc/kvm/book3s_hv_tm.c
+@@ -130,7 +130,7 @@ int kvmhv_p9_tm_emulation(struct kvm_vcpu *vcpu)
+ 			return RESUME_GUEST;
+ 		}
+ 		/* Set CR0 to indicate previous transactional state */
+-		vcpu->arch.cr = (vcpu->arch.cr & 0x0fffffff) |
++		vcpu->arch.regs.ccr = (vcpu->arch.regs.ccr & 0x0fffffff) |
+ 			(((msr & MSR_TS_MASK) >> MSR_TS_S_LG) << 28);
+ 		/* L=1 => tresume, L=0 => tsuspend */
+ 		if (instr & (1 << 21)) {
+@@ -174,7 +174,7 @@ int kvmhv_p9_tm_emulation(struct kvm_vcpu *vcpu)
+ 		copy_from_checkpoint(vcpu);
+ 
+ 		/* Set CR0 to indicate previous transactional state */
+-		vcpu->arch.cr = (vcpu->arch.cr & 0x0fffffff) |
++		vcpu->arch.regs.ccr = (vcpu->arch.regs.ccr & 0x0fffffff) |
+ 			(((msr & MSR_TS_MASK) >> MSR_TS_S_LG) << 28);
+ 		vcpu->arch.shregs.msr &= ~MSR_TS_MASK;
+ 		return RESUME_GUEST;
+@@ -204,7 +204,7 @@ int kvmhv_p9_tm_emulation(struct kvm_vcpu *vcpu)
+ 		copy_to_checkpoint(vcpu);
+ 
+ 		/* Set CR0 to indicate previous transactional state */
+-		vcpu->arch.cr = (vcpu->arch.cr & 0x0fffffff) |
++		vcpu->arch.regs.ccr = (vcpu->arch.regs.ccr & 0x0fffffff) |
+ 			(((msr & MSR_TS_MASK) >> MSR_TS_S_LG) << 28);
+ 		vcpu->arch.shregs.msr = msr | MSR_TS_S;
+ 		return RESUME_GUEST;
+diff --git a/arch/powerpc/kvm/book3s_hv_tm_builtin.c b/arch/powerpc/kvm/book3s_hv_tm_builtin.c
+index b2c7c6f..3cf5863 100644
+--- a/arch/powerpc/kvm/book3s_hv_tm_builtin.c
++++ b/arch/powerpc/kvm/book3s_hv_tm_builtin.c
+@@ -89,7 +89,8 @@ int kvmhv_p9_tm_emulation_early(struct kvm_vcpu *vcpu)
+ 		if (instr & (1 << 21))
+ 			vcpu->arch.shregs.msr = (msr & ~MSR_TS_MASK) | MSR_TS_T;
+ 		/* Set CR0 to 0b0010 */
+-		vcpu->arch.cr = (vcpu->arch.cr & 0x0fffffff) | 0x20000000;
++		vcpu->arch.regs.ccr = (vcpu->arch.regs.ccr & 0x0fffffff) |
++			0x20000000;
+ 		return 1;
+ 	}
+ 
+@@ -105,5 +106,5 @@ void kvmhv_emulate_tm_rollback(struct kvm_vcpu *vcpu)
+ 	vcpu->arch.shregs.msr &= ~MSR_TS_MASK;	/* go to N state */
+ 	vcpu->arch.regs.nip = vcpu->arch.tfhar;
+ 	copy_from_checkpoint(vcpu);
+-	vcpu->arch.cr = (vcpu->arch.cr & 0x0fffffff) | 0xa0000000;
++	vcpu->arch.regs.ccr = (vcpu->arch.regs.ccr & 0x0fffffff) | 0xa0000000;
  }
+diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
+index 059683e4..4efd65d 100644
+--- a/arch/powerpc/kvm/book3s_pr.c
++++ b/arch/powerpc/kvm/book3s_pr.c
+@@ -167,7 +167,7 @@ void kvmppc_copy_to_svcpu(struct kvm_vcpu *vcpu)
+ 	svcpu->gpr[11] = vcpu->arch.regs.gpr[11];
+ 	svcpu->gpr[12] = vcpu->arch.regs.gpr[12];
+ 	svcpu->gpr[13] = vcpu->arch.regs.gpr[13];
+-	svcpu->cr  = vcpu->arch.cr;
++	svcpu->cr  = vcpu->arch.regs.ccr;
+ 	svcpu->xer = vcpu->arch.regs.xer;
+ 	svcpu->ctr = vcpu->arch.regs.ctr;
+ 	svcpu->lr  = vcpu->arch.regs.link;
+@@ -249,7 +249,7 @@ void kvmppc_copy_from_svcpu(struct kvm_vcpu *vcpu)
+ 	vcpu->arch.regs.gpr[11] = svcpu->gpr[11];
+ 	vcpu->arch.regs.gpr[12] = svcpu->gpr[12];
+ 	vcpu->arch.regs.gpr[13] = svcpu->gpr[13];
+-	vcpu->arch.cr  = svcpu->cr;
++	vcpu->arch.regs.ccr  = svcpu->cr;
+ 	vcpu->arch.regs.xer = svcpu->xer;
+ 	vcpu->arch.regs.ctr = svcpu->ctr;
+ 	vcpu->arch.regs.link  = svcpu->lr;
+diff --git a/arch/powerpc/kvm/bookehv_interrupts.S b/arch/powerpc/kvm/bookehv_interrupts.S
+index 81bd8a07..051af7d 100644
+--- a/arch/powerpc/kvm/bookehv_interrupts.S
++++ b/arch/powerpc/kvm/bookehv_interrupts.S
+@@ -182,7 +182,7 @@
+ 	 */
+ 	PPC_LL	r4, PACACURRENT(r13)
+ 	PPC_LL	r4, (THREAD + THREAD_KVM_VCPU)(r4)
+-	stw	r10, VCPU_CR(r4)
++	PPC_STL	r10, VCPU_CR(r4)
+ 	PPC_STL r11, VCPU_GPR(R4)(r4)
+ 	PPC_STL	r5, VCPU_GPR(R5)(r4)
+ 	PPC_STL	r6, VCPU_GPR(R6)(r4)
+@@ -292,7 +292,7 @@ _GLOBAL(kvmppc_handler_\intno\()_\srr1)
+ 	PPC_STL	r4, VCPU_GPR(R4)(r11)
+ 	PPC_LL	r4, THREAD_NORMSAVE(0)(r10)
+ 	PPC_STL	r5, VCPU_GPR(R5)(r11)
+-	stw	r13, VCPU_CR(r11)
++	PPC_STL	r13, VCPU_CR(r11)
+ 	mfspr	r5, \srr0
+ 	PPC_STL	r3, VCPU_GPR(R10)(r11)
+ 	PPC_LL	r3, THREAD_NORMSAVE(2)(r10)
+@@ -319,7 +319,7 @@ _GLOBAL(kvmppc_handler_\intno\()_\srr1)
+ 	PPC_STL	r4, VCPU_GPR(R4)(r11)
+ 	PPC_LL	r4, GPR9(r8)
+ 	PPC_STL	r5, VCPU_GPR(R5)(r11)
+-	stw	r9, VCPU_CR(r11)
++	PPC_STL	r9, VCPU_CR(r11)
+ 	mfspr	r5, \srr0
+ 	PPC_STL	r3, VCPU_GPR(R8)(r11)
+ 	PPC_LL	r3, GPR10(r8)
+@@ -643,7 +643,7 @@ lightweight_exit:
+ 	PPC_LL	r3, VCPU_LR(r4)
+ 	PPC_LL	r5, VCPU_XER(r4)
+ 	PPC_LL	r6, VCPU_CTR(r4)
+-	lwz	r7, VCPU_CR(r4)
++	PPC_LL	r7, VCPU_CR(r4)
+ 	PPC_LL	r8, VCPU_PC(r4)
+ 	PPC_LD(r9, VCPU_SHARED_MSR, r11)
+ 	PPC_LL	r0, VCPU_GPR(R0)(r4)
+diff --git a/arch/powerpc/kvm/emulate_loadstore.c b/arch/powerpc/kvm/emulate_loadstore.c
+index 75dce1e..f91b130 100644
+--- a/arch/powerpc/kvm/emulate_loadstore.c
++++ b/arch/powerpc/kvm/emulate_loadstore.c
+@@ -117,7 +117,6 @@ int kvmppc_emulate_loadstore(struct kvm_vcpu *vcpu)
+ 
+ 	emulated = EMULATE_FAIL;
+ 	vcpu->arch.regs.msr = vcpu->arch.shared->msr;
+-	vcpu->arch.regs.ccr = vcpu->arch.cr;
+ 	if (analyse_instr(&op, &vcpu->arch.regs, inst) == 0) {
+ 		int type = op.type & INSTR_TYPE_MASK;
+ 		int size = GETSIZE(op.type);
 -- 
 2.7.4
 
