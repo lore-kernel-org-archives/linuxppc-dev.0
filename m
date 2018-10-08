@@ -7,60 +7,60 @@ X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B9F68C00449
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 06:11:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 14849C64EB8
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 06:14:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 25F2D2086D
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 06:11:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 8A4822086D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 06:14:22 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="HfAEnKnQ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 25F2D2086D
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="SnBNNYsG"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8A4822086D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42T93y10nTzF3F2
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 17:11:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42T9702yq5zF1nb
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 17:14:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="HfAEnKnQ";
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="SnBNNYsG";
 	dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42T89s1RxNzF35x
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Oct 2018 16:31:45 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42T89r5t0bzF37f
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Oct 2018 16:31:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="HfAEnKnQ"; 
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="SnBNNYsG"; 
  dkim-atps=neutral
 Received: by ozlabs.org (Postfix)
- id 42T89r4V7jzB4NP; Mon,  8 Oct 2018 16:31:44 +1100 (AEDT)
+ id 42T89p6TYKz9sCV; Mon,  8 Oct 2018 16:31:42 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 42T89q1vL8zB4Nf;
- Mon,  8 Oct 2018 16:31:43 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPSA id 42T89p29xBzB4NX;
+ Mon,  8 Oct 2018 16:31:42 +1100 (AEDT)
 Authentication-Results: ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.org
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1538976703; bh=XdFtod+2nIEmDXnAd6/tGhgKKmau1MErO4hJSdIhmW8=;
+ t=1538976702; bh=/3SdPyHOgzFfdGZjSttxsKegQKsjarW3w8x8LJD5yHE=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=HfAEnKnQOPr06hwU5nMxErPhH9luuhfWh7ggGpLHgBU+0kvawWtt8RN/FWQlpCFaG
- DkENiCbMgLOCPsDyN0RNFwFVpANOv8pkMMNsSWlYLUBHqBzsicwzrvPG+b3/q+uTMg
- /2srfEJpVZEosssPm1hBzMuxJf0b4dietwhks0XgG9aP5iNc6mK4g31wAlzja017zd
- W2Mavo8Z609jQdjWW3HLuBesv99Thu50fgyypx3/svgO8c3ASm4Wet9uPhfKLbTBN+
- IB+Hei4kKdmAK4bq9T2XwTxI6DiUL2KyLzf17WICTlUlD9/EQ6dB4wlp+saW72vJRp
- P+YKWU69BCT2w==
+ b=SnBNNYsGxLHgx+rLzltfvLYzRSz7vEiDVSL7Qz7qOue6qj6rwVfYNjjHrB5cbVPgq
+ ax72CK0dtvX1YqXU9d7uswGI/nmwUm9JCZCIdculC8nNFSkNdN0vYXsQmNnRWEpcw2
+ LA3UabU3TfwO/I2SCTXyK3FvnkIVdtZ3S4ST25Ptpa3jK8jva+C2i/ZaLIjCM/V4TP
+ XNQh8QjYPMEIjkLsWLK+kqMYPSRIxbbTnR42uoc1v6WpIeF9YngeC+x64JMSTMa4++
+ 776trpUfk+DA965R+biffzlkhI8CzNSfJ4OhTe1hxr0pXbjgWuPAAwhKrgudTYDBuY
+ 8UP8dSWSLWmsw==
 From: Paul Mackerras <paulus@ozlabs.org>
 To: kvm@vger.kernel.org,
 	kvm-ppc@vger.kernel.org
-Subject: [PATCH v5 16/33] KVM: PPC: Book3S HV: Use kvmppc_unmap_pte() in
- kvm_unmap_radix()
-Date: Mon,  8 Oct 2018 16:31:02 +1100
-Message-Id: <1538976679-1363-17-git-send-email-paulus@ozlabs.org>
+Subject: [PATCH v5 15/33] KVM: PPC: Book3S HV: Refactor radix page fault
+ handler
+Date: Mon,  8 Oct 2018 16:31:01 +1100
+Message-Id: <1538976679-1363-16-git-send-email-paulus@ozlabs.org>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1538976679-1363-1-git-send-email-paulus@ozlabs.org>
 References: <1538976679-1363-1-git-send-email-paulus@ozlabs.org>
@@ -80,106 +80,287 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-kvmppc_unmap_pte() does a sequence of operations that are open-coded in
-kvm_unmap_radix().  This extends kvmppc_unmap_pte() a little so that it
-can be used by kvm_unmap_radix(), and makes kvm_unmap_radix() call it.
+From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+
+The radix page fault handler accounts for all cases, including just
+needing to insert a pte.  This breaks it up into separate functions for
+the two main cases; setting rc and inserting a pte.
+
+This allows us to make the setting of rc and inserting of a pte
+generic for any pgtable, not specific to the one for this guest.
+
+[paulus@ozlabs.org - reduced diffs from previous code]
 
 Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/kvm/book3s_64_mmu_radix.c | 33 +++++++++++++--------------------
- 1 file changed, 13 insertions(+), 20 deletions(-)
+ arch/powerpc/kvm/book3s_64_mmu_radix.c | 210 +++++++++++++++++++--------------
+ 1 file changed, 123 insertions(+), 87 deletions(-)
 
 diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-index 47f2b18..bd06a95 100644
+index f2976f4..47f2b18 100644
 --- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
 +++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-@@ -240,19 +240,22 @@ static void kvmppc_pmd_free(pmd_t *pmdp)
- }
+@@ -400,8 +400,9 @@ static void kvmppc_unmap_free_pud_entry_table(struct kvm *kvm, pud_t *pud,
+  */
+ #define PTE_BITS_MUST_MATCH (~(_PAGE_WRITE | _PAGE_DIRTY | _PAGE_ACCESSED))
  
- static void kvmppc_unmap_pte(struct kvm *kvm, pte_t *pte,
--			     unsigned long gpa, unsigned int shift)
-+			     unsigned long gpa, unsigned int shift,
-+			     struct kvm_memory_slot *memslot)
- 
+-static int kvmppc_create_pte(struct kvm *kvm, pte_t pte, unsigned long gpa,
+-			     unsigned int level, unsigned long mmu_seq)
++static int kvmppc_create_pte(struct kvm *kvm, pgd_t *pgtable, pte_t pte,
++			     unsigned long gpa, unsigned int level,
++			     unsigned long mmu_seq)
  {
--	unsigned long page_size = 1ul << shift;
- 	unsigned long old;
+ 	pgd_t *pgd;
+ 	pud_t *pud, *new_pud = NULL;
+@@ -410,7 +411,7 @@ static int kvmppc_create_pte(struct kvm *kvm, pte_t pte, unsigned long gpa,
+ 	int ret;
  
- 	old = kvmppc_radix_update_pte(kvm, pte, ~0UL, 0, gpa, shift);
- 	kvmppc_radix_tlbie_page(kvm, gpa, shift);
- 	if (old & _PAGE_DIRTY) {
- 		unsigned long gfn = gpa >> PAGE_SHIFT;
--		struct kvm_memory_slot *memslot;
-+		unsigned long page_size = PAGE_SIZE;
- 
--		memslot = gfn_to_memslot(kvm, gfn);
-+		if (shift)
-+			page_size = 1ul << shift;
-+		if (!memslot)
-+			memslot = gfn_to_memslot(kvm, gfn);
- 		if (memslot && memslot->dirty_bitmap)
- 			kvmppc_update_dirty_map(memslot, gfn, page_size);
- 	}
-@@ -282,7 +285,7 @@ static void kvmppc_unmap_free_pte(struct kvm *kvm, pte_t *pte, bool full)
- 			WARN_ON_ONCE(1);
- 			kvmppc_unmap_pte(kvm, p,
- 					 pte_pfn(*p) << PAGE_SHIFT,
--					 PAGE_SHIFT);
-+					 PAGE_SHIFT, NULL);
- 		}
- 	}
- 
-@@ -304,7 +307,7 @@ static void kvmppc_unmap_free_pmd(struct kvm *kvm, pmd_t *pmd, bool full)
- 				WARN_ON_ONCE(1);
- 				kvmppc_unmap_pte(kvm, (pte_t *)p,
- 					 pte_pfn(*(pte_t *)p) << PAGE_SHIFT,
--					 PMD_SHIFT);
-+					 PMD_SHIFT, NULL);
- 			}
- 		} else {
- 			pte_t *pte;
-@@ -468,7 +471,7 @@ static int kvmppc_create_pte(struct kvm *kvm, pgd_t *pgtable, pte_t pte,
- 			goto out_unlock;
- 		}
- 		/* Valid 1GB page here already, remove it */
--		kvmppc_unmap_pte(kvm, (pte_t *)pud, hgpa, PUD_SHIFT);
-+		kvmppc_unmap_pte(kvm, (pte_t *)pud, hgpa, PUD_SHIFT, NULL);
- 	}
- 	if (level == 2) {
- 		if (!pud_none(*pud)) {
-@@ -517,7 +520,7 @@ static int kvmppc_create_pte(struct kvm *kvm, pgd_t *pgtable, pte_t pte,
- 			goto out_unlock;
- 		}
- 		/* Valid 2MB page here already, remove it */
--		kvmppc_unmap_pte(kvm, pmdp_ptep(pmd), lgpa, PMD_SHIFT);
-+		kvmppc_unmap_pte(kvm, pmdp_ptep(pmd), lgpa, PMD_SHIFT, NULL);
- 	}
- 	if (level == 1) {
- 		if (!pmd_none(*pmd)) {
-@@ -780,20 +783,10 @@ int kvm_unmap_radix(struct kvm *kvm, struct kvm_memory_slot *memslot,
- 	pte_t *ptep;
- 	unsigned long gpa = gfn << PAGE_SHIFT;
- 	unsigned int shift;
--	unsigned long old;
- 
- 	ptep = __find_linux_pte(kvm->arch.pgtable, gpa, NULL, &shift);
--	if (ptep && pte_present(*ptep)) {
--		old = kvmppc_radix_update_pte(kvm, ptep, ~0UL, 0,
--					      gpa, shift);
--		kvmppc_radix_tlbie_page(kvm, gpa, shift);
--		if ((old & _PAGE_DIRTY) && memslot->dirty_bitmap) {
--			unsigned long psize = PAGE_SIZE;
--			if (shift)
--				psize = 1ul << shift;
--			kvmppc_update_dirty_map(memslot, gfn, psize);
--		}
--	}
-+	if (ptep && pte_present(*ptep))
-+		kvmppc_unmap_pte(kvm, ptep, gpa, shift, memslot);
- 	return 0;				
+ 	/* Traverse the guest's 2nd-level tree, allocate new levels needed */
+-	pgd = kvm->arch.pgtable + pgd_index(gpa);
++	pgd = pgtable + pgd_index(gpa);
+ 	pud = NULL;
+ 	if (pgd_present(*pgd))
+ 		pud = pud_offset(pgd, gpa);
+@@ -565,95 +566,49 @@ static int kvmppc_create_pte(struct kvm *kvm, pte_t pte, unsigned long gpa,
+ 	return ret;
  }
  
+-int kvmppc_book3s_radix_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
+-				   unsigned long ea, unsigned long dsisr)
++static bool kvmppc_hv_handle_set_rc(struct kvm *kvm, pgd_t *pgtable,
++				    bool writing, unsigned long gpa)
++{
++	unsigned long pgflags;
++	unsigned int shift;
++	pte_t *ptep;
++
++	/*
++	 * Need to set an R or C bit in the 2nd-level tables;
++	 * since we are just helping out the hardware here,
++	 * it is sufficient to do what the hardware does.
++	 */
++	pgflags = _PAGE_ACCESSED;
++	if (writing)
++		pgflags |= _PAGE_DIRTY;
++	/*
++	 * We are walking the secondary (partition-scoped) page table here.
++	 * We can do this without disabling irq because the Linux MM
++	 * subsystem doesn't do THP splits and collapses on this tree.
++	 */
++	ptep = __find_linux_pte(pgtable, gpa, NULL, &shift);
++	if (ptep && pte_present(*ptep) && (!writing || pte_write(*ptep))) {
++		kvmppc_radix_update_pte(kvm, ptep, 0, pgflags, gpa, shift);
++		return true;
++	}
++	return false;
++}
++
++static int kvmppc_book3s_instantiate_page(struct kvm_vcpu *vcpu,
++				unsigned long gpa,
++				struct kvm_memory_slot *memslot,
++				bool writing, bool kvm_ro,
++				pte_t *inserted_pte, unsigned int *levelp)
+ {
+ 	struct kvm *kvm = vcpu->kvm;
+-	unsigned long mmu_seq;
+-	unsigned long gpa, gfn, hva;
+-	struct kvm_memory_slot *memslot;
+ 	struct page *page = NULL;
+-	long ret;
+-	bool writing;
++	unsigned long mmu_seq;
++	unsigned long hva, gfn = gpa >> PAGE_SHIFT;
+ 	bool upgrade_write = false;
+ 	bool *upgrade_p = &upgrade_write;
+ 	pte_t pte, *ptep;
+-	unsigned long pgflags;
+ 	unsigned int shift, level;
+-
+-	/* Check for unusual errors */
+-	if (dsisr & DSISR_UNSUPP_MMU) {
+-		pr_err("KVM: Got unsupported MMU fault\n");
+-		return -EFAULT;
+-	}
+-	if (dsisr & DSISR_BADACCESS) {
+-		/* Reflect to the guest as DSI */
+-		pr_err("KVM: Got radix HV page fault with DSISR=%lx\n", dsisr);
+-		kvmppc_core_queue_data_storage(vcpu, ea, dsisr);
+-		return RESUME_GUEST;
+-	}
+-
+-	/* Translate the logical address and get the page */
+-	gpa = vcpu->arch.fault_gpa & ~0xfffUL;
+-	gpa &= ~0xF000000000000000ul;
+-	gfn = gpa >> PAGE_SHIFT;
+-	if (!(dsisr & DSISR_PRTABLE_FAULT))
+-		gpa |= ea & 0xfff;
+-	memslot = gfn_to_memslot(kvm, gfn);
+-
+-	/* No memslot means it's an emulated MMIO region */
+-	if (!memslot || (memslot->flags & KVM_MEMSLOT_INVALID)) {
+-		if (dsisr & (DSISR_PRTABLE_FAULT | DSISR_BADACCESS |
+-			     DSISR_SET_RC)) {
+-			/*
+-			 * Bad address in guest page table tree, or other
+-			 * unusual error - reflect it to the guest as DSI.
+-			 */
+-			kvmppc_core_queue_data_storage(vcpu, ea, dsisr);
+-			return RESUME_GUEST;
+-		}
+-		return kvmppc_hv_emulate_mmio(run, vcpu, gpa, ea,
+-					      dsisr & DSISR_ISSTORE);
+-	}
+-
+-	writing = (dsisr & DSISR_ISSTORE) != 0;
+-	if (memslot->flags & KVM_MEM_READONLY) {
+-		if (writing) {
+-			/* give the guest a DSI */
+-			dsisr = DSISR_ISSTORE | DSISR_PROTFAULT;
+-			kvmppc_core_queue_data_storage(vcpu, ea, dsisr);
+-			return RESUME_GUEST;
+-		}
+-		upgrade_p = NULL;
+-	}
+-
+-	if (dsisr & DSISR_SET_RC) {
+-		/*
+-		 * Need to set an R or C bit in the 2nd-level tables;
+-		 * since we are just helping out the hardware here,
+-		 * it is sufficient to do what the hardware does.
+-		 */
+-		pgflags = _PAGE_ACCESSED;
+-		if (writing)
+-			pgflags |= _PAGE_DIRTY;
+-		/*
+-		 * We are walking the secondary page table here. We can do this
+-		 * without disabling irq.
+-		 */
+-		spin_lock(&kvm->mmu_lock);
+-		ptep = __find_linux_pte(kvm->arch.pgtable,
+-					gpa, NULL, &shift);
+-		if (ptep && pte_present(*ptep) &&
+-		    (!writing || pte_write(*ptep))) {
+-			kvmppc_radix_update_pte(kvm, ptep, 0, pgflags,
+-						gpa, shift);
+-			dsisr &= ~DSISR_SET_RC;
+-		}
+-		spin_unlock(&kvm->mmu_lock);
+-		if (!(dsisr & (DSISR_BAD_FAULT_64S | DSISR_NOHPTE |
+-			       DSISR_PROTFAULT | DSISR_SET_RC)))
+-			return RESUME_GUEST;
+-	}
++	int ret;
+ 
+ 	/* used to check for invalidations in progress */
+ 	mmu_seq = kvm->mmu_notifier_seq;
+@@ -666,7 +621,7 @@ int kvmppc_book3s_radix_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 	 * is that the page is writable.
+ 	 */
+ 	hva = gfn_to_hva_memslot(memslot, gfn);
+-	if (upgrade_p && __get_user_pages_fast(hva, 1, 1, &page) == 1) {
++	if (!kvm_ro && __get_user_pages_fast(hva, 1, 1, &page) == 1) {
+ 		upgrade_write = true;
+ 	} else {
+ 		unsigned long pfn;
+@@ -724,7 +679,12 @@ int kvmppc_book3s_radix_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 	}
+ 
+ 	/* Allocate space in the tree and write the PTE */
+-	ret = kvmppc_create_pte(kvm, pte, gpa, level, mmu_seq);
++	ret = kvmppc_create_pte(kvm, kvm->arch.pgtable, pte, gpa, level,
++				mmu_seq);
++	if (inserted_pte)
++		*inserted_pte = pte;
++	if (levelp)
++		*levelp = level;
+ 
+ 	if (page) {
+ 		if (!ret && (pte_val(pte) & _PAGE_WRITE))
+@@ -732,6 +692,82 @@ int kvmppc_book3s_radix_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 		put_page(page);
+ 	}
+ 
++	return ret;
++}
++
++int kvmppc_book3s_radix_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
++				   unsigned long ea, unsigned long dsisr)
++{
++	struct kvm *kvm = vcpu->kvm;
++	unsigned long gpa, gfn;
++	struct kvm_memory_slot *memslot;
++	long ret;
++	bool writing = !!(dsisr & DSISR_ISSTORE);
++	bool kvm_ro = false;
++
++	/* Check for unusual errors */
++	if (dsisr & DSISR_UNSUPP_MMU) {
++		pr_err("KVM: Got unsupported MMU fault\n");
++		return -EFAULT;
++	}
++	if (dsisr & DSISR_BADACCESS) {
++		/* Reflect to the guest as DSI */
++		pr_err("KVM: Got radix HV page fault with DSISR=%lx\n", dsisr);
++		kvmppc_core_queue_data_storage(vcpu, ea, dsisr);
++		return RESUME_GUEST;
++	}
++
++	/* Translate the logical address */
++	gpa = vcpu->arch.fault_gpa & ~0xfffUL;
++	gpa &= ~0xF000000000000000ul;
++	gfn = gpa >> PAGE_SHIFT;
++	if (!(dsisr & DSISR_PRTABLE_FAULT))
++		gpa |= ea & 0xfff;
++
++	/* Get the corresponding memslot */
++	memslot = gfn_to_memslot(kvm, gfn);
++
++	/* No memslot means it's an emulated MMIO region */
++	if (!memslot || (memslot->flags & KVM_MEMSLOT_INVALID)) {
++		if (dsisr & (DSISR_PRTABLE_FAULT | DSISR_BADACCESS |
++			     DSISR_SET_RC)) {
++			/*
++			 * Bad address in guest page table tree, or other
++			 * unusual error - reflect it to the guest as DSI.
++			 */
++			kvmppc_core_queue_data_storage(vcpu, ea, dsisr);
++			return RESUME_GUEST;
++		}
++		return kvmppc_hv_emulate_mmio(run, vcpu, gpa, ea, writing);
++	}
++
++	if (memslot->flags & KVM_MEM_READONLY) {
++		if (writing) {
++			/* give the guest a DSI */
++			kvmppc_core_queue_data_storage(vcpu, ea, DSISR_ISSTORE |
++						       DSISR_PROTFAULT);
++			return RESUME_GUEST;
++		}
++		kvm_ro = true;
++	}
++
++	/* Failed to set the reference/change bits */
++	if (dsisr & DSISR_SET_RC) {
++		spin_lock(&kvm->mmu_lock);
++		if (kvmppc_hv_handle_set_rc(kvm, kvm->arch.pgtable,
++					    writing, gpa))
++			dsisr &= ~DSISR_SET_RC;
++		spin_unlock(&kvm->mmu_lock);
++
++		if (!(dsisr & (DSISR_BAD_FAULT_64S | DSISR_NOHPTE |
++			       DSISR_PROTFAULT | DSISR_SET_RC)))
++			return RESUME_GUEST;
++	}
++
++	/* Try to insert a pte */
++	ret = kvmppc_book3s_instantiate_page(vcpu, gpa, memslot, writing,
++					     kvm_ro, NULL, NULL);
++
+ 	if (ret == 0 || ret == -EAGAIN)
+ 		ret = RESUME_GUEST;
+ 	return ret;
 -- 
 2.7.4
 
