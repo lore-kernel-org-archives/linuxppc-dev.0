@@ -6,24 +6,24 @@ X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 46FFEC00449
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 07:00:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 87E2CC00449
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 07:03:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 89D8220878
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 07:00:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 04BEB20645
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 07:03:02 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="wJbQj23e"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 89D8220878
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="sJA04GC+"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 04BEB20645
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42TB8B3n7wzDqVC
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 18:00:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42TBC82JbHzF3Dy
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 18:03:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="wJbQj23e";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="sJA04GC+";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
@@ -32,37 +32,36 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="wJbQj23e"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="sJA04GC+"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42T8VJ0M3JzF38V
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Oct 2018 16:45:56 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42T8dj46n8zF39X
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Oct 2018 16:52:25 +1100 (AEDT)
 Received: from dragon (unknown [45.56.155.247])
  (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 055442077C;
- Mon,  8 Oct 2018 05:45:34 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id C85302085B;
+ Mon,  8 Oct 2018 05:52:13 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1538977554;
- bh=RZZO/5Wb+LmA4Gl7y+S1X5IM6fXZedbTBwaJ4vAJjkg=;
+ s=default; t=1538977943;
+ bh=v1ZfrDQruHnH6RL7RayS9eX9tDT9/ZoJFD4wLUvUrlY=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=wJbQj23e1Ojoj+ya/mk/JRmebpBXWDOi8aTJ9NO2/Cy1cVpUN6svTTQpMx6d2lqEy
- kNKNvZ3IkYF2/coKZQRq2r7bHG8zV6pItQNxIC3P/c14/DmXNzrA0+RicLI27eL3EW
- +8VO4iTyLvM0T/lSmZbtEQZ45u08ZXiDT4oo7H7s=
-Date: Mon, 8 Oct 2018 13:45:16 +0800
+ b=sJA04GC+K6jhrHzsvSx4HOK7CUbZQH89igFvhGxblAbYitGbmWwq27fLyIvMFF+ms
+ Hxyd0TTJb/jkcIPRI69Ok9XnBOdhdZJdjsxHtpDBN0Irf4RFV/NmZFApIWq4BdXzqR
+ aYua7tMo/mgE2I/cMhKip7c7pzv+YHNNdYvGd2jo=
+Date: Mon, 8 Oct 2018 13:52:01 +0800
 From: Shawn Guo <shawnguo@kernel.org>
 To: Vabhav Sharma <vabhav.sharma@nxp.com>
-Subject: Re: [PATCH v4 5/6] arm64: dts: add QorIQ LX2160A SoC support
-Message-ID: <20181008054510.GG3587@dragon>
+Subject: Re: [PATCH v4 6/6] arm64: dts: add LX2160ARDB board support
+Message-ID: <20181008055159.GH3587@dragon>
 References: <1538615031-7507-1-git-send-email-vabhav.sharma@nxp.com>
- <1538615031-7507-6-git-send-email-vabhav.sharma@nxp.com>
+ <1538615031-7507-7-git-send-email-vabhav.sharma@nxp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1538615031-7507-6-git-send-email-vabhav.sharma@nxp.com>
+In-Reply-To: <1538615031-7507-7-git-send-email-vabhav.sharma@nxp.com>
 User-Agent: Mutt/1.5.21 (2010-09-15)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -76,782 +75,167 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: mark.rutland@arm.com, kstewart@linuxfoundation.org,
- Yogesh Gaur <yogeshnarayan.gaur@nxp.com>, linux-kernel-owner@vger.kernel.org,
- catalin.marinas@arm.com, mturquette@baylibre.com, will.deacon@arm.com,
- yamada.masahiro@socionext.com, Sriram Dash <sriram.dash@nxp.com>,
- linux-clk@vger.kernel.org, pankaj.bansal@nxp.com, udit.kumar@nxp.com,
- linux@armlinux.org.uk, Priyanka Jain <priyanka.jain@nxp.com>,
- viresh.kumar@linaro.org, devicetree@vger.kernel.org, arnd@arndb.de,
- linux-pm@vger.kernel.org, oss@buserror.net, robh+dt@kernel.org,
- V.Sethi@nxp.com, Nipun Gupta <nipun.gupta@nxp.com>,
- linux-arm-kernel@lists.infradead.org,
- Ramneek Mehresh <ramneek.mehresh@nxp.com>, sboyd@kernel.org,
- gregkh@linuxfoundation.org, Zhang Ying-22455 <ying.zhang22455@nxp.com>,
- rjw@rjwysocki.net, linux-kernel@vger.kernel.org, leoyang.li@nxp.com,
- sudeep.holla@arm.com, linuxppc-dev@lists.ozlabs.org
+ linux-kernel-owner@vger.kernel.org, catalin.marinas@arm.com,
+ mturquette@baylibre.com, will.deacon@arm.com, yamada.masahiro@socionext.com,
+ Sriram Dash <sriram.dash@nxp.com>, linux-clk@vger.kernel.org,
+ pankaj.bansal@nxp.com, udit.kumar@nxp.com, linux@armlinux.org.uk,
+ Priyanka Jain <priyanka.jain@nxp.com>, viresh.kumar@linaro.org,
+ devicetree@vger.kernel.org, arnd@arndb.de, linux-pm@vger.kernel.org,
+ oss@buserror.net, robh+dt@kernel.org, V.Sethi@nxp.com,
+ linux-arm-kernel@lists.infradead.org, sboyd@kernel.org,
+ gregkh@linuxfoundation.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org,
+ leoyang.li@nxp.com, sudeep.holla@arm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Oct 04, 2018 at 06:33:50AM +0530, Vabhav Sharma wrote:
-> LX2160A SoC is based on Layerscape Chassis Generation 3.2 Architecture.
+On Thu, Oct 04, 2018 at 06:33:51AM +0530, Vabhav Sharma wrote:
+> LX2160A reference design board (RDB) is a high-performance
+> computing, evaluation, and development platform with LX2160A
+> SoC.
 > 
-> LX2160A features an advanced 16 64-bit ARM v8 CortexA72 processor cores
-> in 8 cluster, CCN508, GICv3,two 64-bit DDR4 memory controller, 8 I2C
-> controllers, 3 dspi, 2 esdhc,2 USB 3.0, mmu 500, 3 SATA, 4 PL011 SBSA
-> UARTs etc.
-> 
-> Signed-off-by: Ramneek Mehresh <ramneek.mehresh@nxp.com>
-> Signed-off-by: Zhang Ying-22455 <ying.zhang22455@nxp.com>
-> Signed-off-by: Nipun Gupta <nipun.gupta@nxp.com>
 > Signed-off-by: Priyanka Jain <priyanka.jain@nxp.com>
-> Signed-off-by: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>
 > Signed-off-by: Sriram Dash <sriram.dash@nxp.com>
 > Signed-off-by: Vabhav Sharma <vabhav.sharma@nxp.com>
 > ---
->  arch/arm64/boot/dts/freescale/fsl-lx2160a.dtsi | 702 +++++++++++++++++++++++++
->  1 file changed, 702 insertions(+)
->  create mode 100644 arch/arm64/boot/dts/freescale/fsl-lx2160a.dtsi
+>  arch/arm64/boot/dts/freescale/Makefile            |   1 +
+>  arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts | 100 ++++++++++++++++++++++
+>  2 files changed, 101 insertions(+)
+>  create mode 100644 arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts
 > 
-> diff --git a/arch/arm64/boot/dts/freescale/fsl-lx2160a.dtsi b/arch/arm64/boot/dts/freescale/fsl-lx2160a.dtsi
+> diff --git a/arch/arm64/boot/dts/freescale/Makefile b/arch/arm64/boot/dts/freescale/Makefile
+> index 86e18ad..445b72b 100644
+> --- a/arch/arm64/boot/dts/freescale/Makefile
+> +++ b/arch/arm64/boot/dts/freescale/Makefile
+> @@ -13,3 +13,4 @@ dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2080a-rdb.dtb
+>  dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2080a-simu.dtb
+>  dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2088a-qds.dtb
+>  dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2088a-rdb.dtb
+> +dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-lx2160a-rdb.dtb
+> diff --git a/arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts b/arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts
 > new file mode 100644
-> index 0000000..c758268
+> index 0000000..1483071
 > --- /dev/null
-> +++ b/arch/arm64/boot/dts/freescale/fsl-lx2160a.dtsi
-> @@ -0,0 +1,702 @@
+> +++ b/arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts
+> @@ -0,0 +1,100 @@
 > +// SPDX-License-Identifier: (GPL-2.0 OR MIT)
 > +//
-> +// Device Tree Include file for Layerscape-LX2160A family SoC.
+> +// Device Tree file for LX2160ARDB
 > +//
 > +// Copyright 2018 NXP
 > +
-> +#include <dt-bindings/interrupt-controller/arm-gic.h>
+> +/dts-v1/;
 > +
-> +/memreserve/ 0x80000000 0x00010000;
+> +#include "fsl-lx2160a.dtsi"
 > +
 > +/ {
-> +	compatible = "fsl,lx2160a";
-> +	interrupt-parent = <&gic>;
-> +	#address-cells = <2>;
-> +	#size-cells = <2>;
+> +	model = "NXP Layerscape LX2160ARDB";
+> +	compatible = "fsl,lx2160a-rdb", "fsl,lx2160a";
 > +
-> +	cpus {
+> +	chosen {
+> +		stdout-path = "serial0:115200n8";
+> +	};
+> +
+> +	sb_3v3: regulator-fixed {
+
+The node name should probably be named like regulator-sb3v3 or
+something, so that the pattern can be followed when we have another
+fixed regulator to be added.
+
+> +		compatible = "regulator-fixed";
+> +		regulator-name = "fixed-3.3V";
+
+The name should be something we can find on board schematics.
+
+> +		regulator-min-microvolt = <3300000>;
+> +		regulator-max-microvolt = <3300000>;
+> +		regulator-boot-on;
+> +		regulator-always-on;
+> +	};
+> +
+> +};
+> +
+> +&uart0 {
+> +	status = "okay";
+> +};
+> +
+> +&uart1 {
+> +	status = "okay";
+> +};
+> +
+> +&i2c0 {
+
+Please keep these labeled nodes sorted alphabetically.
+
+> +	status = "okay";
+
+Have a newline between properties and child node.
+
+> +	i2c-mux@77 {
+> +		compatible = "nxp,pca9547";
+> +		reg = <0x77>;
 > +		#address-cells = <1>;
 > +		#size-cells = <0>;
 > +
-> +		// 8 clusters having 2 Cortex-A72 cores each
-> +		cpu@0 {
-> +			device_type = "cpu";
-> +			compatible = "arm,cortex-a72";
-> +			enable-method = "psci";
-> +			reg = <0x0>;
-> +			clocks = <&clockgen 1 0>;
-> +			d-cache-size = <0x8000>;
-> +			d-cache-line-size = <64>;
-> +			d-cache-sets = <128>;
-> +			i-cache-size = <0xC000>;
-> +			i-cache-line-size = <64>;
-> +			i-cache-sets = <192>;
-> +			next-level-cache = <&cluster0_l2>;
-> +		};
-> +
-> +		cpu@1 {
-> +			device_type = "cpu";
-> +			compatible = "arm,cortex-a72";
-> +			enable-method = "psci";
-> +			reg = <0x1>;
-> +			clocks = <&clockgen 1 0>;
-> +			d-cache-size = <0x8000>;
-> +			d-cache-line-size = <64>;
-> +			d-cache-sets = <128>;
-> +			i-cache-size = <0xC000>;
-> +			i-cache-line-size = <64>;
-> +			i-cache-sets = <192>;
-> +			next-level-cache = <&cluster0_l2>;
-> +		};
-> +
-> +		cpu@100 {
-> +			device_type = "cpu";
-> +			compatible = "arm,cortex-a72";
-> +			enable-method = "psci";
-> +			reg = <0x100>;
-> +			clocks = <&clockgen 1 1>;
-> +			d-cache-size = <0x8000>;
-> +			d-cache-line-size = <64>;
-> +			d-cache-sets = <128>;
-> +			i-cache-size = <0xC000>;
-> +			i-cache-line-size = <64>;
-> +			i-cache-sets = <192>;
-> +			next-level-cache = <&cluster1_l2>;
-> +		};
-> +
-> +		cpu@101 {
-> +			device_type = "cpu";
-> +			compatible = "arm,cortex-a72";
-> +			enable-method = "psci";
-> +			reg = <0x101>;
-> +			clocks = <&clockgen 1 1>;
-> +			d-cache-size = <0x8000>;
-> +			d-cache-line-size = <64>;
-> +			d-cache-sets = <128>;
-> +			i-cache-size = <0xC000>;
-> +			i-cache-line-size = <64>;
-> +			i-cache-sets = <192>;
-> +			next-level-cache = <&cluster1_l2>;
-> +		};
-> +
-> +		cpu@200 {
-> +			device_type = "cpu";
-> +			compatible = "arm,cortex-a72";
-> +			enable-method = "psci";
-> +			reg = <0x200>;
-> +			clocks = <&clockgen 1 2>;
-> +			d-cache-size = <0x8000>;
-> +			d-cache-line-size = <64>;
-> +			d-cache-sets = <128>;
-> +			i-cache-size = <0xC000>;
-> +			i-cache-line-size = <64>;
-> +			i-cache-sets = <192>;
-> +			next-level-cache = <&cluster2_l2>;
-> +		};
-> +
-> +		cpu@201 {
-> +			device_type = "cpu";
-> +			compatible = "arm,cortex-a72";
-> +			enable-method = "psci";
-> +			reg = <0x201>;
-> +			clocks = <&clockgen 1 2>;
-> +			d-cache-size = <0x8000>;
-> +			d-cache-line-size = <64>;
-> +			d-cache-sets = <128>;
-> +			i-cache-size = <0xC000>;
-> +			i-cache-line-size = <64>;
-> +			i-cache-sets = <192>;
-> +			next-level-cache = <&cluster2_l2>;
-> +		};
-> +
-> +		cpu@300 {
-> +			device_type = "cpu";
-> +			compatible = "arm,cortex-a72";
-> +			enable-method = "psci";
-> +			reg = <0x300>;
-> +			clocks = <&clockgen 1 3>;
-> +			d-cache-size = <0x8000>;
-> +			d-cache-line-size = <64>;
-> +			d-cache-sets = <128>;
-> +			i-cache-size = <0xC000>;
-> +			i-cache-line-size = <64>;
-> +			i-cache-sets = <192>;
-> +			next-level-cache = <&cluster3_l2>;
-> +		};
-> +
-> +		cpu@301 {
-> +			device_type = "cpu";
-> +			compatible = "arm,cortex-a72";
-> +			enable-method = "psci";
-> +			reg = <0x301>;
-> +			clocks = <&clockgen 1 3>;
-> +			d-cache-size = <0x8000>;
-> +			d-cache-line-size = <64>;
-> +			d-cache-sets = <128>;
-> +			i-cache-size = <0xC000>;
-> +			i-cache-line-size = <64>;
-> +			i-cache-sets = <192>;
-> +			next-level-cache = <&cluster3_l2>;
-> +		};
-> +
-> +		cpu@400 {
-> +			device_type = "cpu";
-> +			compatible = "arm,cortex-a72";
-> +			enable-method = "psci";
-> +			reg = <0x400>;
-> +			clocks = <&clockgen 1 4>;
-> +			d-cache-size = <0x8000>;
-> +			d-cache-line-size = <64>;
-> +			d-cache-sets = <128>;
-> +			i-cache-size = <0xC000>;
-> +			i-cache-line-size = <64>;
-> +			i-cache-sets = <192>;
-> +			next-level-cache = <&cluster4_l2>;
-> +		};
-> +
-> +		cpu@401 {
-> +			device_type = "cpu";
-> +			compatible = "arm,cortex-a72";
-> +			enable-method = "psci";
-> +			reg = <0x401>;
-> +			clocks = <&clockgen 1 4>;
-> +			d-cache-size = <0x8000>;
-> +			d-cache-line-size = <64>;
-> +			d-cache-sets = <128>;
-> +			i-cache-size = <0xC000>;
-> +			i-cache-line-size = <64>;
-> +			i-cache-sets = <192>;
-> +			next-level-cache = <&cluster4_l2>;
-> +		};
-> +
-> +		cpu@500 {
-> +			device_type = "cpu";
-> +			compatible = "arm,cortex-a72";
-> +			enable-method = "psci";
-> +			reg = <0x500>;
-> +			clocks = <&clockgen 1 5>;
-> +			d-cache-size = <0x8000>;
-> +			d-cache-line-size = <64>;
-> +			d-cache-sets = <128>;
-> +			i-cache-size = <0xC000>;
-> +			i-cache-line-size = <64>;
-> +			i-cache-sets = <192>;
-> +			next-level-cache = <&cluster5_l2>;
-> +		};
-> +
-> +		cpu@501 {
-> +			device_type = "cpu";
-> +			compatible = "arm,cortex-a72";
-> +			enable-method = "psci";
-> +			reg = <0x501>;
-> +			clocks = <&clockgen 1 5>;
-> +			d-cache-size = <0x8000>;
-> +			d-cache-line-size = <64>;
-> +			d-cache-sets = <128>;
-> +			i-cache-size = <0xC000>;
-> +			i-cache-line-size = <64>;
-> +			i-cache-sets = <192>;
-> +			next-level-cache = <&cluster5_l2>;
-> +		};
-> +
-> +		cpu@600 {
-> +			device_type = "cpu";
-> +			compatible = "arm,cortex-a72";
-> +			enable-method = "psci";
-> +			reg = <0x600>;
-> +			clocks = <&clockgen 1 6>;
-> +			d-cache-size = <0x8000>;
-> +			d-cache-line-size = <64>;
-> +			d-cache-sets = <128>;
-> +			i-cache-size = <0xC000>;
-> +			i-cache-line-size = <64>;
-> +			i-cache-sets = <192>;
-> +			next-level-cache = <&cluster6_l2>;
-> +		};
-> +
-> +		cpu@601 {
-> +			device_type = "cpu";
-> +			compatible = "arm,cortex-a72";
-> +			enable-method = "psci";
-> +			reg = <0x601>;
-> +			clocks = <&clockgen 1 6>;
-> +			d-cache-size = <0x8000>;
-> +			d-cache-line-size = <64>;
-> +			d-cache-sets = <128>;
-> +			i-cache-size = <0xC000>;
-> +			i-cache-line-size = <64>;
-> +			i-cache-sets = <192>;
-> +			next-level-cache = <&cluster6_l2>;
-> +		};
-> +
-> +		cpu@700 {
-> +			device_type = "cpu";
-> +			compatible = "arm,cortex-a72";
-> +			enable-method = "psci";
-> +			reg = <0x700>;
-> +			clocks = <&clockgen 1 7>;
-> +			d-cache-size = <0x8000>;
-> +			d-cache-line-size = <64>;
-> +			d-cache-sets = <128>;
-> +			i-cache-size = <0xC000>;
-> +			i-cache-line-size = <64>;
-> +			i-cache-sets = <192>;
-> +			next-level-cache = <&cluster7_l2>;
-> +		};
-> +
-> +		cpu@701 {
-> +			device_type = "cpu";
-> +			compatible = "arm,cortex-a72";
-> +			enable-method = "psci";
-> +			reg = <0x701>;
-> +			clocks = <&clockgen 1 7>;
-> +			d-cache-size = <0x8000>;
-> +			d-cache-line-size = <64>;
-> +			d-cache-sets = <128>;
-> +			i-cache-size = <0xC000>;
-> +			i-cache-line-size = <64>;
-> +			i-cache-sets = <192>;
-> +			next-level-cache = <&cluster7_l2>;
-> +		};
-> +
-> +		cluster0_l2: l2-cache0 {
-> +			compatible = "cache";
-> +			cache-size = <0x100000>;
-> +			cache-line-size = <64>;
-> +			cache-sets = <1024>;
-> +			cache-level = <2>;
-> +		};
-> +
-> +		cluster1_l2: l2-cache1 {
-> +			compatible = "cache";
-> +			cache-size = <0x100000>;
-> +			cache-line-size = <64>;
-> +			cache-sets = <1024>;
-> +			cache-level = <2>;
-> +		};
-> +
-> +		cluster2_l2: l2-cache2 {
-> +			compatible = "cache";
-> +			cache-size = <0x100000>;
-> +			cache-line-size = <64>;
-> +			cache-sets = <1024>;
-> +			cache-level = <2>;
-> +		};
-> +
-> +		cluster3_l2: l2-cache3 {
-> +			compatible = "cache";
-> +			cache-size = <0x100000>;
-> +			cache-line-size = <64>;
-> +			cache-sets = <1024>;
-> +			cache-level = <2>;
-> +		};
-> +
-> +		cluster4_l2: l2-cache4 {
-> +			compatible = "cache";
-> +			cache-size = <0x100000>;
-> +			cache-line-size = <64>;
-> +			cache-sets = <1024>;
-> +			cache-level = <2>;
-> +		};
-> +
-> +		cluster5_l2: l2-cache5 {
-> +			compatible = "cache";
-> +			cache-size = <0x100000>;
-> +			cache-line-size = <64>;
-> +			cache-sets = <1024>;
-> +			cache-level = <2>;
-> +		};
-> +
-> +		cluster6_l2: l2-cache6 {
-> +			compatible = "cache";
-> +			cache-size = <0x100000>;
-> +			cache-line-size = <64>;
-> +			cache-sets = <1024>;
-> +			cache-level = <2>;
-> +		};
-> +
-> +		cluster7_l2: l2-cache7 {
-> +			compatible = "cache";
-> +			cache-size = <0x100000>;
-> +			cache-line-size = <64>;
-> +			cache-sets = <1024>;
-> +			cache-level = <2>;
-> +		};
-> +	};
-> +
-> +	gic: interrupt-controller@6000000 {
-> +		compatible = "arm,gic-v3";
-> +		reg = <0x0 0x06000000 0 0x10000>, // GIC Dist
-> +			<0x0 0x06200000 0 0x200000>, // GICR (RD_base +
-> +						     // SGI_base)
-> +			<0x0 0x0c0c0000 0 0x2000>, // GICC
-> +			<0x0 0x0c0d0000 0 0x1000>, // GICH
-> +			<0x0 0x0c0e0000 0 0x20000>; // GICV
-> +		#interrupt-cells = <3>;
-> +		#address-cells = <2>;
-> +		#size-cells = <2>;
-> +		ranges;
-> +		interrupt-controller;
-> +		interrupts = <GIC_PPI 9 IRQ_TYPE_LEVEL_HIGH>;
-> +
-> +		its: gic-its@6020000 {
-> +			compatible = "arm,gic-v3-its";
-> +			msi-controller;
-> +			reg = <0x0 0x6020000 0 0x20000>;
-> +		};
-> +	};
-> +
-> +	timer {
-> +		compatible = "arm,armv8-timer";
-> +		interrupts = <GIC_PPI 13 IRQ_TYPE_LEVEL_HIGH>,
-> +			     <GIC_PPI 14 IRQ_TYPE_LEVEL_HIGH>,
-> +			     <GIC_PPI 11 IRQ_TYPE_LEVEL_HIGH>,
-> +			     <GIC_PPI 10 IRQ_TYPE_LEVEL_HIGH>;
-> +	};
-> +
-> +	pmu {
-> +		compatible = "arm,cortex-a72-pmu";
-> +		interrupts = <GIC_PPI 7 IRQ_TYPE_LEVEL_LOW>;
-> +	};
-> +
-> +	psci {
-> +		compatible = "arm,psci-0.2";
-> +		method = "smc";
-> +	};
-> +
-> +	memory@80000000 {
-> +		// DRAM space - 1, size : 2 GB DRAM
-> +		device_type = "memory";
-> +		reg = <0x00000000 0x80000000 0 0x80000000>;
-> +	};
-> +
-> +	ddr1: memory-controller@1080000 {
-> +		compatible = "fsl,qoriq-memory-controller";
-> +		reg = <0x0 0x1080000 0x0 0x1000>;
-> +		interrupts = <GIC_SPI 17 IRQ_TYPE_LEVEL_HIGH>;
-> +		little-endian;
-> +	};
-> +
-> +	ddr2: memory-controller@1090000 {
-> +		compatible = "fsl,qoriq-memory-controller";
-> +		reg = <0x0 0x1090000 0x0 0x1000>;
-> +		interrupts = <GIC_SPI 18 IRQ_TYPE_LEVEL_HIGH>;
-> +		little-endian;
-> +	};
-> +
-> +	sysclk: sysclk {
-
-Name the node a bit generic like clock-xxx.
-
-> +		compatible = "fixed-clock";
-> +		#clock-cells = <0>;
-> +		clock-frequency = <100000000>;
-> +		clock-output-names = "sysclk";
-> +	};
-> +
-> +	soc {
-> +		compatible = "simple-bus";
-> +		#address-cells = <2>;
-> +		#size-cells = <2>;
-> +		ranges;
-> +
-> +		clockgen: clocking@1300000 {
-
-clock-controller for node name.
-
-> +			compatible = "fsl,lx2160a-clockgen";
-> +			reg = <0 0x1300000 0 0xa0000>;
-> +			#clock-cells = <2>;
-> +			clocks = <&sysclk>;
-> +		};
-> +
-> +		crypto: crypto@8000000 {
-> +			compatible = "fsl,sec-v5.0", "fsl,sec-v4.0";
-> +			fsl,sec-era = <10>;
+> +		i2c@2 {
 > +			#address-cells = <1>;
-> +			#size-cells = <1>;
-> +			ranges = <0x0 0x00 0x8000000 0x100000>;
-> +			reg = <0x00 0x8000000 0x0 0x100000>;
-> +			interrupts = <GIC_SPI 139 IRQ_TYPE_LEVEL_HIGH>;
-> +			dma-coherent;
-> +			status = "disabled";
+> +			#size-cells = <0>;
+> +			reg = <0x2>;
 > +
-> +			sec_jr0: jr@10000 {
-> +				compatible = "fsl,sec-v5.0-job-ring",
-> +					     "fsl,sec-v4.0-job-ring";
-> +				reg        = <0x10000 0x10000>;
-> +				interrupts = <GIC_SPI 140 IRQ_TYPE_LEVEL_HIGH>;
-> +			};
-> +
-> +			sec_jr1: jr@20000 {
-> +				compatible = "fsl,sec-v5.0-job-ring",
-> +					     "fsl,sec-v4.0-job-ring";
-> +				reg        = <0x20000 0x10000>;
-> +				interrupts = <GIC_SPI 141 IRQ_TYPE_LEVEL_HIGH>;
-> +			};
-> +
-> +			sec_jr2: jr@30000 {
-> +				compatible = "fsl,sec-v5.0-job-ring",
-> +					     "fsl,sec-v4.0-job-ring";
-> +				reg        = <0x30000 0x10000>;
-> +				interrupts = <GIC_SPI 142 IRQ_TYPE_LEVEL_HIGH>;
-> +			};
-> +
-> +			sec_jr3: jr@40000 {
-> +				compatible = "fsl,sec-v5.0-job-ring",
-> +					     "fsl,sec-v4.0-job-ring";
-> +				reg        = <0x40000 0x10000>;
-> +				interrupts = <GIC_SPI 143 IRQ_TYPE_LEVEL_HIGH>;
+> +			power-monitor@40 {
+> +				compatible = "ti,ina220";
+> +				reg = <0x40>;
+> +				shunt-resistor = <1000>;
 > +			};
 > +		};
 > +
-> +		dcfg: dcfg@1e00000 {
-
-As per suggestion from devicetree specification, we can "syscon" as
-a more generic node name?
-
-> +			compatible = "fsl,lx2160a-dcfg", "syscon";
-> +			reg = <0x0 0x1e00000 0x0 0x10000>;
-> +			little-endian;
-> +		};
-> +
-> +		gpio0: gpio@2300000 {
-> +			compatible = "fsl,qoriq-gpio";
-> +			reg = <0x0 0x2300000 0x0 0x10000>;
-> +			interrupts = <GIC_SPI 36 IRQ_TYPE_LEVEL_HIGH>;
-> +			gpio-controller;
-> +			little-endian;
-> +			#gpio-cells = <2>;
-> +			interrupt-controller;
-> +			#interrupt-cells = <2>;
-> +		};
-> +
-> +		gpio1: gpio@2310000 {
-> +			compatible = "fsl,qoriq-gpio";
-> +			reg = <0x0 0x2310000 0x0 0x10000>;
-> +			interrupts = <GIC_SPI 36 IRQ_TYPE_LEVEL_HIGH>;
-> +			gpio-controller;
-> +			little-endian;
-> +			#gpio-cells = <2>;
-> +			interrupt-controller;
-> +			#interrupt-cells = <2>;
-> +		};
-> +
-> +		gpio2: gpio@2320000 {
-> +			compatible = "fsl,qoriq-gpio";
-> +			reg = <0x0 0x2320000 0x0 0x10000>;
-> +			interrupts = <GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;
-> +			gpio-controller;
-> +			little-endian;
-> +			#gpio-cells = <2>;
-> +			interrupt-controller;
-> +			#interrupt-cells = <2>;
-> +		};
-> +
-> +		gpio3: gpio@2330000 {
-> +			compatible = "fsl,qoriq-gpio";
-> +			reg = <0x0 0x2330000 0x0 0x10000>;
-> +			interrupts = <GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;
-> +			gpio-controller;
-> +			little-endian;
-> +			#gpio-cells = <2>;
-> +			interrupt-controller;
-> +			#interrupt-cells = <2>;
-> +		};
-> +
-> +		i2c0: i2c@2000000 {
-
-Sort the nodes under bus in order of unit-address.
-
-> +			compatible = "fsl,vf610-i2c";
+> +		i2c@3 {
 > +			#address-cells = <1>;
 > +			#size-cells = <0>;
-> +			reg = <0x0 0x2000000 0x0 0x10000>;
-> +			interrupts = <GIC_SPI 34 IRQ_TYPE_LEVEL_HIGH>;
-> +			clock-names = "i2c";
-> +			clocks = <&clockgen 4 7>;
-> +			fsl-scl-gpio = <&gpio2 15 0>;
+> +			reg = <0x3>;
+> +
+> +			temperature-sensor@4c {
+> +				compatible = "nxp,sa56004";
+> +				reg = <0x4c>;
+> +				vcc-supply = <&sb_3v3>;
+> +			};
+> +
+> +			temperature-sensor@4d {
+> +				compatible = "nxp,sa56004";
+> +				reg = <0x4d>;
+> +				vcc-supply = <&sb_3v3>;
+> +			};
+> +		};
+> +	};
+> +};
+> +
+> +&i2c4 {
+> +	status = "okay";
+> +
+> +	rtc@51 {
+> +		compatible = "nxp,pcf2129";
+> +		reg = <0x51>;
+> +		// IRQ10_B
+> +		interrupts = <0 150 0x4>;
+> +		};
 
-I cannot find this property in fsl,vf610-i2c bindings.
-
-> +			status = "disabled";
-> +		};
-> +
-> +		i2c1: i2c@2010000 {
-> +			compatible = "fsl,vf610-i2c";
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			reg = <0x0 0x2010000 0x0 0x10000>;
-> +			interrupts = <GIC_SPI 34 IRQ_TYPE_LEVEL_HIGH>;
-> +			clock-names = "i2c";
-> +			clocks = <&clockgen 4 7>;
-> +			status = "disabled";
-> +		};
-> +
-> +		i2c2: i2c@2020000 {
-> +			compatible = "fsl,vf610-i2c";
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			reg = <0x0 0x2020000 0x0 0x10000>;
-> +			interrupts = <GIC_SPI 35 IRQ_TYPE_LEVEL_HIGH>;
-> +			clock-names = "i2c";
-> +			clocks = <&clockgen 4 7>;
-> +			status = "disabled";
-> +		};
-> +
-> +		i2c3: i2c@2030000 {
-> +			compatible = "fsl,vf610-i2c";
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			reg = <0x0 0x2030000 0x0 0x10000>;
-> +			interrupts = <GIC_SPI 35 IRQ_TYPE_LEVEL_HIGH>;
-> +			clock-names = "i2c";
-> +			clocks = <&clockgen 4 7>;
-> +			status = "disabled";
-> +		};
-> +
-> +		i2c4: i2c@2040000 {
-> +			compatible = "fsl,vf610-i2c";
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			reg = <0x0 0x2040000 0x0 0x10000>;
-> +			interrupts = <GIC_SPI 74 IRQ_TYPE_LEVEL_HIGH>;
-> +			clock-names = "i2c";
-> +			clocks = <&clockgen 4 7>;
-> +			fsl-scl-gpio = <&gpio2 16 0>;
-> +			status = "disabled";
-> +		};
-> +
-> +		i2c5: i2c@2050000 {
-> +			compatible = "fsl,vf610-i2c";
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			reg = <0x0 0x2050000 0x0 0x10000>;
-> +			interrupts = <GIC_SPI 74 IRQ_TYPE_LEVEL_HIGH>;
-> +			clock-names = "i2c";
-> +			clocks = <&clockgen 4 7>;
-> +			status = "disabled";
-> +		};
-> +
-> +		i2c6: i2c@2060000 {
-> +			compatible = "fsl,vf610-i2c";
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			reg = <0x0 0x2060000 0x0 0x10000>;
-> +			interrupts = <GIC_SPI 75 IRQ_TYPE_LEVEL_HIGH>;
-> +			clock-names = "i2c";
-> +			clocks = <&clockgen 4 7>;
-> +			status = "disabled";
-> +		};
-> +
-> +		i2c7: i2c@2070000 {
-> +			compatible = "fsl,vf610-i2c";
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			reg = <0x0 0x2070000 0x0 0x10000>;
-> +			interrupts = <GIC_SPI 75 IRQ_TYPE_LEVEL_HIGH>;
-> +			clock-names = "i2c";
-> +			clocks = <&clockgen 4 7>;
-> +			status = "disabled";
-> +		};
-> +
-> +		uart0: serial@21c0000 {
-> +			device_type = "serial";
-
-Quote from devicetree specification:
-
-The device_type property was used in IEEE 1275 to describe the device’s
-FCode programming model. Because DTSpec does not have FCode, new use of
-the property is deprecated, and it should be included only on cpu and
-memory nodes for compatibility with IEEE 1275–derived devicetrees.
-
-> +			compatible = "arm,sbsa-uart","arm,pl011";
-> +			reg = <0x0 0x21c0000 0x0 0x1000>;
-> +			interrupts = <GIC_SPI 32 IRQ_TYPE_LEVEL_HIGH>;
-> +			current-speed = <115200>;
-> +			status = "disabled";
-> +		};
-> +
-> +		uart1: serial@21d0000 {
-> +			device_type = "serial";
-> +			compatible = "arm,sbsa-uart","arm,pl011";
-> +			reg = <0x0 0x21d0000 0x0 0x1000>;
-> +			interrupts = <GIC_SPI 33 IRQ_TYPE_LEVEL_HIGH>;
-> +			current-speed = <115200>;
-> +			status = "disabled";
-> +		};
-> +
-> +		uart2: serial@21e0000 {
-> +			device_type = "serial";
-> +			compatible = "arm,sbsa-uart","arm,pl011";
-> +			reg = <0x0 0x21e0000 0x0 0x1000>;
-> +			interrupts = <GIC_SPI 72 IRQ_TYPE_LEVEL_HIGH>;
-> +			current-speed = <115200>;
-> +			status = "disabled";
-> +		};
-> +
-> +		uart3: serial@21f0000 {
-> +			device_type = "serial";
-> +			compatible = "arm,sbsa-uart","arm,pl011";
-> +			reg = <0x0 0x21f0000 0x0 0x1000>;
-> +			interrupts = <GIC_SPI 73 IRQ_TYPE_LEVEL_HIGH>;
-> +			current-speed = <115200>;
-> +			status = "disabled";
-> +		};
-> +
-> +		smmu: iommu@5000000 {
-> +			compatible = "arm,mmu-500";
-> +			reg = <0 0x5000000 0 0x800000>;
-> +			#iommu-cells = <1>;
-> +			#global-interrupts = <14>;
-> +			interrupts = <0 13 4>, // global secure fault
-
-Can we use defines for interrupt cells just like other device nodes?
-
-> +				     <0 14 4>, // combined secure interrupt
-> +				     <0 15 4>, // global non-secure fault
-> +				     <0 16 4>, // combined non-secure interrupt
-> +				// performance counter interrupts 0-9
-> +				     <0 211 4>, <0 212 4>,
-> +				     <0 213 4>, <0 214 4>,
-> +				     <0 215 4>, <0 216 4>,
-> +				     <0 217 4>, <0 218 4>,
-> +				     <0 219 4>, <0 220 4>,
-> +				// per context interrupt, 64 interrupts
-> +				     <0 146 4>, <0 147 4>,
-> +				     <0 148 4>, <0 149 4>,
-> +				     <0 150 4>, <0 151 4>,
-> +				     <0 152 4>, <0 153 4>,
-> +				     <0 154 4>, <0 155 4>,
-> +				     <0 156 4>, <0 157 4>,
-> +				     <0 158 4>, <0 159 4>,
-> +				     <0 160 4>, <0 161 4>,
-> +				     <0 162 4>, <0 163 4>,
-> +				     <0 164 4>, <0 165 4>,
-> +				     <0 166 4>, <0 167 4>,
-> +				     <0 168 4>, <0 169 4>,
-> +				     <0 170 4>, <0 171 4>,
-> +				     <0 172 4>, <0 173 4>,
-> +				     <0 174 4>, <0 175 4>,
-> +				     <0 176 4>, <0 177 4>,
-> +				     <0 178 4>, <0 179 4>,
-> +				     <0 180 4>, <0 181 4>,
-> +				     <0 182 4>, <0 183 4>,
-> +				     <0 184 4>, <0 185 4>,
-> +				     <0 186 4>, <0 187 4>,
-> +				     <0 188 4>, <0 189 4>,
-> +				     <0 190 4>, <0 191 4>,
-> +				     <0 192 4>, <0 193 4>,
-> +				     <0 194 4>, <0 195 4>,
-> +				     <0 196 4>, <0 197 4>,
-> +				     <0 198 4>, <0 199 4>,
-> +				     <0 200 4>, <0 201 4>,
-> +				     <0 202 4>, <0 203 4>,
-> +				     <0 204 4>, <0 205 4>,
-> +				     <0 206 4>, <0 207 4>,
-> +				     <0 208 4>, <0 209 4>;
-> +			dma-coherent;
-> +		};
-> +
-> +		usb0: usb3@3100000 {
-
-usb for node name.
+Bad indentation.
 
 Shawn
 
-> +			compatible = "snps,dwc3";
-> +			reg = <0x0 0x3100000 0x0 0x10000>;
-> +			interrupts = <GIC_SPI 80 IRQ_TYPE_LEVEL_HIGH>;
-> +			dr_mode = "host";
-> +			snps,quirk-frame-length-adjustment = <0x20>;
-> +			snps,dis_rxdet_inp3_quirk;
-> +			status = "disabled";
-> +		};
 > +
-> +		usb1: usb3@3110000 {
-> +			compatible = "snps,dwc3";
-> +			reg = <0x0 0x3110000 0x0 0x10000>;
-> +			interrupts = <GIC_SPI 81 IRQ_TYPE_LEVEL_HIGH>;
-> +			dr_mode = "host";
-> +			snps,quirk-frame-length-adjustment = <0x20>;
-> +			snps,dis_rxdet_inp3_quirk;
-> +			status = "disabled";
-> +		};
+> +};
 > +
-> +		watchdog@23a0000 {
-> +			compatible = "arm,sbsa-gwdt";
-> +			reg = <0x0 0x23a0000 0 0x1000>,
-> +			      <0x0 0x2390000 0 0x1000>;
-> +			interrupts = <GIC_SPI 59 IRQ_TYPE_LEVEL_HIGH>;
-> +			timeout-sec = <30>;
-> +		};
-> +	};
+> +&usb0 {
+> +	status = "okay";
+> +};
+> +
+> +&usb1 {
+> +	status = "okay";
+> +};
+> +
+> +&crypto {
+> +	status = "okay";
 > +};
 > -- 
 > 2.7.4
