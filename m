@@ -7,60 +7,60 @@ X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B9AFC00449
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 06:21:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 46FABC00449
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 06:23:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 16F0820841
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 06:21:36 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B4A6B20841
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 06:23:51 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="lD/RLIcU"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 16F0820841
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="Qxb9r66G"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B4A6B20841
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42T9HL0rfDzF3Dw
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 17:21:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42T9Kx4vCfzDrS9
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 17:23:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="lD/RLIcU";
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="Qxb9r66G";
 	dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42T89w4WcvzF37n
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Oct 2018 16:31:48 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42T89y6qsszF37W
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Oct 2018 16:31:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="lD/RLIcU"; 
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="Qxb9r66G"; 
  dkim-atps=neutral
 Received: by ozlabs.org (Postfix)
- id 42T89w2nMMzB4NT; Mon,  8 Oct 2018 16:31:48 +1100 (AEDT)
+ id 42T89x4FSdzB4Mj; Mon,  8 Oct 2018 16:31:49 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 42T89v2wp9z9sj2;
- Mon,  8 Oct 2018 16:31:47 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPSA id 42T89w4mcsz9shy;
+ Mon,  8 Oct 2018 16:31:48 +1100 (AEDT)
 Authentication-Results: ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.org
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1538976707; bh=WwD5MLH2ANOX2Y8esOjMfBuaSZoYTlo2VIaBLD/D5eY=;
+ t=1538976708; bh=OTdurTnYEoEmYgCvORAVtcVdHpy4gT7np5i8ErcLImw=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=lD/RLIcUid41ao0l5IaImoqu2aynwG0452dSUzGc5JQNbkQNHO/EtdSH+uH4uL3n9
- 6v45j3CzTeKaGmgvyD3faaUHv56+ptcpAxMOY8jR3lpEX8Fj9GefIlRNvPSa8ssYk0
- UaFgL6Egej9U0YMZ5X4ReNvKA9EH6pCP834OwLkWP9241yNeJCdq/ReX3HRbBjtwnH
- cbD3lgOdeCbUxNoEZKrfYbXiCYM+qP2EvsUG/mv14y1OIvShyBkv6sM2Mzpbd6IR2P
- JPprI0sjTJe4EeWcYI7msIXQYD9oWzAkPwJCQQSwqKkMI35gwqlgERa9fss4lyYKY8
- 525xCHkaaVleA==
+ b=Qxb9r66GwORrqCeI6jZBJoAz1ndzu7/LhIdSeoCw/rCDKvYVH1hihFQlprcLu11Kp
+ Nc3zGJ/KGpc6TJixK6scsyCAAMyc92Z5I+QBKqCEFCC0DlRiSMYfF82jamAgkr2FJC
+ KqNDE6MoD4Mnptu8Keaqmya4GK1C8rmLYAP1Oy4SKC3oeOSznomr25mSIB6rKUiRWQ
+ SdGAsSzmWAYXODZNeoLIw3ybK3kiUGATAR9OTdUH3/0UsQ14NfPyxzfeWITQuy5BNd
+ HBLGSo9T51idwRdfqj3fOw6QE5x/y2JtzqbJ4Y8Om0+zKMhYWXYXS22NZpiC2+DZtu
+ rbmER393oCRJA==
 From: Paul Mackerras <paulus@ozlabs.org>
 To: kvm@vger.kernel.org,
 	kvm-ppc@vger.kernel.org
-Subject: [PATCH v5 19/33] KVM: PPC: Book3S HV: Use XICS hypercalls when
- running as a nested hypervisor
-Date: Mon,  8 Oct 2018 16:31:05 +1100
-Message-Id: <1538976679-1363-20-git-send-email-paulus@ozlabs.org>
+Subject: [PATCH v5 20/33] KVM: PPC: Book3S HV: Handle hypercalls correctly
+ when nested
+Date: Mon,  8 Oct 2018 16:31:06 +1100
+Message-Id: <1538976679-1363-21-git-send-email-paulus@ozlabs.org>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1538976679-1363-1-git-send-email-paulus@ozlabs.org>
 References: <1538976679-1363-1-git-send-email-paulus@ozlabs.org>
@@ -80,139 +80,167 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This adds code to call the H_IPI and H_EOI hypercalls when we are
-running as a nested hypervisor (i.e. without the CPU_FTR_HVMODE cpu
-feature) and we would otherwise access the XICS interrupt controller
-directly or via an OPAL call.
+When we are running as a nested hypervisor, we use a hypercall to
+enter the guest rather than code in book3s_hv_rmhandlers.S.  This means
+that the hypercall handlers listed in hcall_real_table never get called.
+There are some hypercalls that are handled there and not in
+kvmppc_pseries_do_hcall(), which therefore won't get processed for
+a nested guest.
+
+To fix this, we add cases to kvmppc_pseries_do_hcall() to handle those
+hypercalls, with the following exceptions:
+
+- The HPT hypercalls (H_ENTER, H_REMOVE, etc.) are not handled because
+  we only support radix mode for nested guests.
+
+- H_CEDE has to be handled specially because the cede logic in
+  kvmhv_run_single_vcpu assumes that it has been processed by the time
+  that kvmhv_p9_guest_entry() returns.  Therefore we put a special
+  case for H_CEDE in kvmhv_p9_guest_entry().
+
+For the XICS hypercalls, if real-mode processing is enabled, then the
+virtual-mode handlers assume that they are being called only to finish
+up the operation.  Therefore we turn off the real-mode flag in the XICS
+code when running as a nested hypervisor.
 
 Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/kvm/book3s_hv.c         |  7 +++++-
- arch/powerpc/kvm/book3s_hv_builtin.c | 44 +++++++++++++++++++++++++++++-------
- arch/powerpc/kvm/book3s_hv_rm_xics.c |  8 +++++++
- 3 files changed, 50 insertions(+), 9 deletions(-)
+ arch/powerpc/include/asm/asm-prototypes.h |  4 +++
+ arch/powerpc/kvm/book3s_hv.c              | 43 +++++++++++++++++++++++++++++++
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S   |  2 ++
+ arch/powerpc/kvm/book3s_xics.c            |  3 ++-
+ 4 files changed, 51 insertions(+), 1 deletion(-)
 
+diff --git a/arch/powerpc/include/asm/asm-prototypes.h b/arch/powerpc/include/asm/asm-prototypes.h
+index 5c9b00c..c55ba3b 100644
+--- a/arch/powerpc/include/asm/asm-prototypes.h
++++ b/arch/powerpc/include/asm/asm-prototypes.h
+@@ -167,4 +167,8 @@ void kvmhv_load_guest_pmu(struct kvm_vcpu *vcpu);
+ 
+ int __kvmhv_vcpu_entry_p9(struct kvm_vcpu *vcpu);
+ 
++long kvmppc_h_set_dabr(struct kvm_vcpu *vcpu, unsigned long dabr);
++long kvmppc_h_set_xdabr(struct kvm_vcpu *vcpu, unsigned long dabr,
++			unsigned long dabrx);
++
+ #endif /* _ASM_POWERPC_ASM_PROTOTYPES_H */
 diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index d58a4a6..dd84252 100644
+index dd84252..dc25461 100644
 --- a/arch/powerpc/kvm/book3s_hv.c
 +++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -173,6 +173,10 @@ static bool kvmppc_ipi_thread(int cpu)
+@@ -50,6 +50,7 @@
+ #include <asm/reg.h>
+ #include <asm/ppc-opcode.h>
+ #include <asm/asm-prototypes.h>
++#include <asm/archrandom.h>
+ #include <asm/debug.h>
+ #include <asm/disassemble.h>
+ #include <asm/cputable.h>
+@@ -915,6 +916,19 @@ int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
+ 			break;
+ 		}
+ 		return RESUME_HOST;
++	case H_SET_DABR:
++		ret = kvmppc_h_set_dabr(vcpu, kvmppc_get_gpr(vcpu, 4));
++		break;
++	case H_SET_XDABR:
++		ret = kvmppc_h_set_xdabr(vcpu, kvmppc_get_gpr(vcpu, 4),
++						kvmppc_get_gpr(vcpu, 5));
++		break;
++	case H_GET_TCE:
++		ret = kvmppc_h_get_tce(vcpu, kvmppc_get_gpr(vcpu, 4),
++						kvmppc_get_gpr(vcpu, 5));
++		if (ret == H_TOO_HARD)
++			return RESUME_HOST;
++		break;
+ 	case H_PUT_TCE:
+ 		ret = kvmppc_h_put_tce(vcpu, kvmppc_get_gpr(vcpu, 4),
+ 						kvmppc_get_gpr(vcpu, 5),
+@@ -938,6 +952,10 @@ int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
+ 		if (ret == H_TOO_HARD)
+ 			return RESUME_HOST;
+ 		break;
++	case H_RANDOM:
++		if (!powernv_get_random_long(&vcpu->arch.regs.gpr[4]))
++			ret = H_HARDWARE;
++		break;
+ 
+ 	case H_SET_PARTITION_TABLE:
+ 		ret = H_FUNCTION;
+@@ -966,6 +984,24 @@ int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
+ 	return RESUME_GUEST;
+ }
+ 
++/*
++ * Handle H_CEDE in the nested virtualization case where we haven't
++ * called the real-mode hcall handlers in book3s_hv_rmhandlers.S.
++ * This has to be done early, not in kvmppc_pseries_do_hcall(), so
++ * that the cede logic in kvmppc_run_single_vcpu() works properly.
++ */
++static void kvmppc_nested_cede(struct kvm_vcpu *vcpu)
++{
++	vcpu->arch.shregs.msr |= MSR_EE;
++	vcpu->arch.ceded = 1;
++	smp_mb();
++	if (vcpu->arch.prodded) {
++		vcpu->arch.prodded = 0;
++		smp_mb();
++		vcpu->arch.ceded = 0;
++	}
++}
++
+ static int kvmppc_hcall_impl_hv(unsigned long cmd)
  {
- 	unsigned long msg = PPC_DBELL_TYPE(PPC_DBELL_SERVER);
+ 	switch (cmd) {
+@@ -3422,6 +3458,13 @@ int kvmhv_p9_guest_entry(struct kvm_vcpu *vcpu, u64 time_limit,
+ 		vcpu->arch.shregs.msr = vcpu->arch.regs.msr;
+ 		vcpu->arch.shregs.dar = mfspr(SPRN_DAR);
+ 		vcpu->arch.shregs.dsisr = mfspr(SPRN_DSISR);
++
++		/* H_CEDE has to be handled now, not later */
++		if (trap == BOOK3S_INTERRUPT_SYSCALL && !vcpu->arch.nested &&
++		    kvmppc_get_gpr(vcpu, 3) == H_CEDE) {
++			kvmppc_nested_cede(vcpu);
++			trap = 0;
++		}
+ 	} else {
+ 		trap = kvmhv_load_hv_regs_and_go(vcpu, time_limit, lpcr);
+ 	}
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index a945369..9b8d50a 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -2466,6 +2466,7 @@ hcall_real_table:
+ hcall_real_table_end:
  
-+	/* If we're a nested hypervisor, fall back to ordinary IPIs for now */
-+	if (kvmhv_on_pseries())
-+		return false;
-+
- 	/* On POWER9 we can use msgsnd to IPI any cpu */
- 	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
- 		msg |= get_hard_smp_processor_id(cpu);
-@@ -5173,7 +5177,8 @@ static int kvmppc_book3s_init_hv(void)
- 	 * indirectly, via OPAL.
- 	 */
- #ifdef CONFIG_SMP
--	if (!xive_enabled() && !local_paca->kvm_hstate.xics_phys) {
-+	if (!xive_enabled() && !kvmhv_on_pseries() &&
-+	    !local_paca->kvm_hstate.xics_phys) {
- 		struct device_node *np;
+ _GLOBAL(kvmppc_h_set_xdabr)
++EXPORT_SYMBOL_GPL(kvmppc_h_set_xdabr)
+ 	andi.	r0, r5, DABRX_USER | DABRX_KERNEL
+ 	beq	6f
+ 	li	r0, DABRX_USER | DABRX_KERNEL | DABRX_BTI
+@@ -2475,6 +2476,7 @@ _GLOBAL(kvmppc_h_set_xdabr)
+ 	blr
  
- 		np = of_find_compatible_node(NULL, NULL, "ibm,opal-intc");
-diff --git a/arch/powerpc/kvm/book3s_hv_builtin.c b/arch/powerpc/kvm/book3s_hv_builtin.c
-index ccfea5b..a71e2fc 100644
---- a/arch/powerpc/kvm/book3s_hv_builtin.c
-+++ b/arch/powerpc/kvm/book3s_hv_builtin.c
-@@ -231,6 +231,15 @@ void kvmhv_rm_send_ipi(int cpu)
- 	void __iomem *xics_phys;
- 	unsigned long msg = PPC_DBELL_TYPE(PPC_DBELL_SERVER);
+ _GLOBAL(kvmppc_h_set_dabr)
++EXPORT_SYMBOL_GPL(kvmppc_h_set_dabr)
+ 	li	r5, DABRX_USER | DABRX_KERNEL
+ 3:
+ BEGIN_FTR_SECTION
+diff --git a/arch/powerpc/kvm/book3s_xics.c b/arch/powerpc/kvm/book3s_xics.c
+index d9ba1b0..b0b2bfc 100644
+--- a/arch/powerpc/kvm/book3s_xics.c
++++ b/arch/powerpc/kvm/book3s_xics.c
+@@ -1390,7 +1390,8 @@ static int kvmppc_xics_create(struct kvm_device *dev, u32 type)
+ 	}
  
-+	/* For a nested hypervisor, use the XICS via hcall */
-+	if (kvmhv_on_pseries()) {
-+		unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
-+
-+		plpar_hcall_raw(H_IPI, retbuf, get_hard_smp_processor_id(cpu),
-+				IPI_PRIORITY);
-+		return;
-+	}
-+
- 	/* On POWER9 we can use msgsnd for any destination cpu. */
- 	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
- 		msg |= get_hard_smp_processor_id(cpu);
-@@ -460,12 +469,19 @@ static long kvmppc_read_one_intr(bool *again)
- 		return 1;
- 
- 	/* Now read the interrupt from the ICP */
--	xics_phys = local_paca->kvm_hstate.xics_phys;
--	rc = 0;
--	if (!xics_phys)
--		rc = opal_int_get_xirr(&xirr, false);
--	else
--		xirr = __raw_rm_readl(xics_phys + XICS_XIRR);
-+	if (kvmhv_on_pseries()) {
-+		unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
-+
-+		rc = plpar_hcall_raw(H_XIRR, retbuf, 0xFF);
-+		xirr = cpu_to_be32(retbuf[0]);
-+	} else {
-+		xics_phys = local_paca->kvm_hstate.xics_phys;
-+		rc = 0;
-+		if (!xics_phys)
-+			rc = opal_int_get_xirr(&xirr, false);
-+		else
-+			xirr = __raw_rm_readl(xics_phys + XICS_XIRR);
-+	}
- 	if (rc < 0)
- 		return 1;
- 
-@@ -494,7 +510,13 @@ static long kvmppc_read_one_intr(bool *again)
- 	 */
- 	if (xisr == XICS_IPI) {
- 		rc = 0;
--		if (xics_phys) {
-+		if (kvmhv_on_pseries()) {
-+			unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
-+
-+			plpar_hcall_raw(H_IPI, retbuf,
-+					hard_smp_processor_id(), 0xff);
-+			plpar_hcall_raw(H_EOI, retbuf, h_xirr);
-+		} else if (xics_phys) {
- 			__raw_rm_writeb(0xff, xics_phys + XICS_MFRR);
- 			__raw_rm_writel(xirr, xics_phys + XICS_XIRR);
- 		} else {
-@@ -520,7 +542,13 @@ static long kvmppc_read_one_intr(bool *again)
- 			/* We raced with the host,
- 			 * we need to resend that IPI, bummer
- 			 */
--			if (xics_phys)
-+			if (kvmhv_on_pseries()) {
-+				unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
-+
-+				plpar_hcall_raw(H_IPI, retbuf,
-+						hard_smp_processor_id(),
-+						IPI_PRIORITY);
-+			} else if (xics_phys)
- 				__raw_rm_writeb(IPI_PRIORITY,
- 						xics_phys + XICS_MFRR);
- 			else
-diff --git a/arch/powerpc/kvm/book3s_hv_rm_xics.c b/arch/powerpc/kvm/book3s_hv_rm_xics.c
-index 8b9f356..b3f5786 100644
---- a/arch/powerpc/kvm/book3s_hv_rm_xics.c
-+++ b/arch/powerpc/kvm/book3s_hv_rm_xics.c
-@@ -767,6 +767,14 @@ static void icp_eoi(struct irq_chip *c, u32 hwirq, __be32 xirr, bool *again)
- 	void __iomem *xics_phys;
- 	int64_t rc;
- 
-+	if (kvmhv_on_pseries()) {
-+		unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
-+
-+		iosync();
-+		plpar_hcall_raw(H_EOI, retbuf, hwirq);
-+		return;
-+	}
-+
- 	rc = pnv_opal_pci_msi_eoi(c, hwirq);
- 
- 	if (rc)
+ #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+-	if (cpu_has_feature(CPU_FTR_ARCH_206)) {
++	if (cpu_has_feature(CPU_FTR_ARCH_206) &&
++	    cpu_has_feature(CPU_FTR_HVMODE)) {
+ 		/* Enable real mode support */
+ 		xics->real_mode = ENABLE_REALMODE;
+ 		xics->real_mode_dbg = DEBUG_REALMODE;
 -- 
 2.7.4
 
