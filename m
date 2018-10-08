@@ -2,76 +2,70 @@ Return-Path: <SRS0=rj9n=MU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 03524C65C20
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 16:01:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 55A7EC65C20
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 16:19:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7123420878
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 16:01:05 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="lVVMB6Wn"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7123420878
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id C2F7F2089D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 16:19:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C2F7F2089D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42TQ7z2cQ8zF3Bk
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 03:01:03 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42TQYW5sfPzF3FB
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 03:19:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="lVVMB6Wn";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=atull@kernel.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="lVVMB6Wn"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42TQ5540l5zF3BS
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Oct 2018 02:58:30 +1100 (AEDT)
-Received: from mail-ed1-f42.google.com (mail-ed1-f42.google.com
- [209.85.208.42])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 5DD1221508
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Oct 2018 15:58:28 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1539014308;
- bh=6bPHYSqqcTTnoh7EbtIq2dGvzt+kn8l1/Vy8N6/2ZE0=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=lVVMB6WnhtlOrKU6Uam3oRjjnjKl7hQgp4eJobLHfX0B+2NTyqXrJyLN+ZsGK4TVx
- mPEnH41p/ng5qwAzBtcskGhhOLcq4Xt55BQkyOK2V+MNc8ejNbbEj7B/lEd/GErRtX
- /UDiy8+o3rytV/6c6d4lJaukIkFHtGjLXqdHLnGg=
-Received: by mail-ed1-f42.google.com with SMTP id y19-v6so18077029edd.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Oct 2018 08:58:28 -0700 (PDT)
-X-Gm-Message-State: ABuFfoh6orTODsD5HiF1xwnVvgyYtv0oUHSGakMcEdUmfzEYlErnNIcr
- WMm2fD8fQTWZTLLBaIUHKkIbvaFNE8NMi0Ehzi4=
-X-Google-Smtp-Source: ACcGV60Ps4cDrZT7OM2ci2vuqoiu+j0y3Fy2Ojhh9Dj1yCwNlNrQxNTxmn3esfrjv6UX735D08iXf2hG0NzFUTY/XL0=
-X-Received: by 2002:a17:906:7384:: with SMTP id
- f4-v6mr23743432ejl.8.1539014306619; 
- Mon, 08 Oct 2018 08:58:26 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42TQWR4s2QzF3BS
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Oct 2018 03:17:55 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 42TQW95s7qz9ttBZ;
+ Mon,  8 Oct 2018 18:17:41 +0200 (CEST)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id jzJwmQuxMRkR; Mon,  8 Oct 2018 18:17:41 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 42TQW95Kfpz9ttBY;
+ Mon,  8 Oct 2018 18:17:41 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id BD8178B7D0;
+ Mon,  8 Oct 2018 18:17:51 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id IysNyAM1mikM; Mon,  8 Oct 2018 18:17:51 +0200 (CEST)
+Received: from PO15451 (unknown [192.168.232.3])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D1FAC8B7BD;
+ Mon,  8 Oct 2018 18:17:50 +0200 (CEST)
+Subject: Re: [PATCH v2 3/3] powerpc: machine check interrupt is a non-maskable
+ interrupt
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+References: <20170719065912.19183-1-npiggin@gmail.com>
+ <20170719065912.19183-4-npiggin@gmail.com>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <30487984-752a-960d-6aae-6571c55c7ba5@c-s.fr>
+Date: Mon, 8 Oct 2018 17:39:11 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
 MIME-Version: 1.0
-References: <1538712767-30394-1-git-send-email-frowand.list@gmail.com>
- <1538712767-30394-10-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1538712767-30394-10-git-send-email-frowand.list@gmail.com>
-From: Alan Tull <atull@kernel.org>
-Date: Mon, 8 Oct 2018 10:57:50 -0500
-X-Gmail-Original-Message-ID: <CANk1AXQFTfdwy9n+WH2k98w6oyqLj3wLDRfaMmtTGk66sJjqUw@mail.gmail.com>
-Message-ID: <CANk1AXQFTfdwy9n+WH2k98w6oyqLj3wLDRfaMmtTGk66sJjqUw@mail.gmail.com>
-Subject: Re: [PATCH 09/16] of: overlay: validate overlay properties
- #address-cells and #size-cells
-To: Frank Rowand <frowand.list@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20170719065912.19183-4-npiggin@gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,154 +77,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
- <devicetree@vger.kernel.org>, linux-fpga@vger.kernel.org,
- Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
- linux-kernel <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>,
- Moritz Fischer <mdf@kernel.org>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Oct 4, 2018 at 11:14 PM <frowand.list@gmail.com> wrote:
->
-> From: Frank Rowand <frank.rowand@sony.com>
->
-> If overlay properties #address-cells or #size-cells are already in
-> the live devicetree for any given node, then the values in the
-> overlay must match the values in the live tree.
+Hi Nick,
 
-Hi Frank,
-
-I'm starting some FPGA testing on this patchset applied to v4.19-rc7.
-That applied cleanly; if that's not the best base to test against,
-please let me know.
-
-On a very simple overlay, I'm seeing this patch's warning catching
-things other than #address-cells or #size-cells.  I'm just getting
-started looking at this, will spend time understanding this better and
-I'll test other overlays.  The warnings were:
-
-Applying dtbo: socfpga_overlay.dtb
-[   33.117881] fpga_manager fpga0: writing soc_system.rbf to Altera
-SOCFPGA FPGA Manager
-[   33.575223] OF: overlay: WARNING: add_changeset_property(), memory
-leak will occur if overlay removed.  Property:
-/soc/base-fpga-region/firmware-name
-[   33.588584] OF: overlay: WARNING: add_changeset_property(), memory
-leak will occur if overlay removed.  Property:
-/soc/base-fpga-region/fpga-bridges
-[   33.601856] OF: overlay: WARNING: add_changeset_property(), memory
-leak will occur if overlay removed.  Property:
-/soc/base-fpga-region/ranges
-
-Here's part of that overlay including the properties it's complaining about:
-
-/dts-v1/;
-/plugin/;
-/ {
-        fragment@0 {
-                target = <&base_fpga_region>;
-                #address-cells = <1>;
-                #size-cells = <1>;
-                __overlay__ {
-                        #address-cells = <1>;
-                        #size-cells = <1>;
-
-                        firmware-name = "soc_system.rbf";
-                        fpga-bridges = <&fpga_bridge1>;
-                        ranges = <0x20000 0xff200000 0x100000>,
-                        <0x0 0xc0000000 0x20000000>;
-
-                        gpio@10040 {
-so on...
-
-By the way, I didn't get any warnings when I subsequently removed this overlay.
-
-Alan
-
->
-> If the properties are already in the live tree then there is no
-> need to create a changeset entry to add them since they must
-> have the same value.  This reduces the memory used by the
-> changeset and eliminates a possible memory leak.  This is
-> verified by 12 fewer warnings during the devicetree unittest,
-> as the possible memory leak warnings about #address-cells and
->
-> Signed-off-by: Frank Rowand <frank.rowand@sony.com>
+Le 19/07/2017 à 08:59, Nicholas Piggin a écrit :
+> Use nmi_enter similarly to system reset interrupts. This uses NMI
+> printk NMI buffers and turns off various debugging facilities that
+> helps avoid tripping on ourselves or other CPUs.
+> 
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 > ---
->  drivers/of/overlay.c | 38 +++++++++++++++++++++++++++++++++++---
->  1 file changed, 35 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
-> index 29c33a5c533f..e6fb3ffe9d93 100644
-> --- a/drivers/of/overlay.c
-> +++ b/drivers/of/overlay.c
-> @@ -287,7 +287,12 @@ static struct property *dup_and_fixup_symbol_prop(
->   * @target may be either in the live devicetree or in a new subtree that
->   * is contained in the changeset.
->   *
-> - * Some special properties are not updated (no error returned).
-> + * Some special properties are not added or updated (no error returned):
-> + * "name", "phandle", "linux,phandle".
-> + *
-> + * Properties "#address-cells" and "#size-cells" are not updated if they
-> + * are already in the live tree, but if present in the live tree, the values
-> + * in the overlay must match the values in the live tree.
->   *
->   * Update of property in symbols node is not allowed.
->   *
-> @@ -300,6 +305,7 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
->  {
->         struct property *new_prop = NULL, *prop;
->         int ret = 0;
-> +       bool check_for_non_overlay_node = false;
->
->         if (!of_prop_cmp(overlay_prop->name, "name") ||
->             !of_prop_cmp(overlay_prop->name, "phandle") ||
-> @@ -322,13 +328,39 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
->         if (!new_prop)
->                 return -ENOMEM;
->
-> -       if (!prop)
-> +       if (!prop) {
-> +
-> +               check_for_non_overlay_node = true;
->                 ret = of_changeset_add_property(&ovcs->cset, target->np,
->                                                 new_prop);
-> -       else
-> +
-> +       } else if (!of_prop_cmp(prop->name, "#address-cells")) {
-> +
-> +               if (prop->length != 4 || new_prop->length != 4 ||
-> +                   *(u32 *)prop->value != *(u32 *)new_prop->value)
-> +                       pr_err("ERROR: overlay and/or live tree #address-cells invalid in node %pOF\n",
-> +                              target->np);
-> +
-> +       } else if (!of_prop_cmp(prop->name, "#size-cells")) {
-> +
-> +               if (prop->length != 4 || new_prop->length != 4 ||
-> +                   *(u32 *)prop->value != *(u32 *)new_prop->value)
-> +                       pr_err("ERROR: overlay and/or live tree #size-cells invalid in node %pOF\n",
-> +                              target->np);
-> +
-> +       } else {
-> +
-> +               check_for_non_overlay_node = true;
->                 ret = of_changeset_update_property(&ovcs->cset, target->np,
->                                                    new_prop);
->
-> +       }
-> +
-> +       if (check_for_non_overlay_node &&
-> +           !of_node_check_flag(target->np, OF_OVERLAY))
-> +               pr_err("WARNING: %s(), memory leak will occur if overlay removed.  Property: %pOF/%s\n",
-> +                      __func__, target->np, new_prop->name);
-> +
->         if (ret) {
->                 kfree(new_prop->name);
->                 kfree(new_prop->value);
-> --
-> Frank Rowand <frank.rowand@sony.com>
->
+>   arch/powerpc/kernel/traps.c | 9 ++++++---
+>   1 file changed, 6 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+> index 2849c4f50324..6d31f9d7c333 100644
+> --- a/arch/powerpc/kernel/traps.c
+> +++ b/arch/powerpc/kernel/traps.c
+> @@ -789,8 +789,10 @@ int machine_check_generic(struct pt_regs *regs)
+>   
+>   void machine_check_exception(struct pt_regs *regs)
+>   {
+> -	enum ctx_state prev_state = exception_enter();
+>   	int recover = 0;
+> +	bool nested = in_nmi();
+> +	if (!nested)
+> +		nmi_enter();
+
+This alters preempt_count, then when die() is called
+in_interrupt() returns true allthough the trap didn't happen in 
+interrupt, so oops_end() panics for "fatal exception in interrupt" 
+instead of gently sending SIGBUS the faulting app.
+
+Any idea on how to fix this ?
+
+Christophe
+
+>   
+>   	__this_cpu_inc(irq_stat.mce_exceptions);
+>   
+> @@ -820,10 +822,11 @@ void machine_check_exception(struct pt_regs *regs)
+>   
+>   	/* Must die if the interrupt is not recoverable */
+>   	if (!(regs->msr & MSR_RI))
+> -		panic("Unrecoverable Machine check");
+> +		nmi_panic(regs, "Unrecoverable Machine check");
+>   
+>   bail:
+> -	exception_exit(prev_state);
+> +	if (!nested)
+> +		nmi_exit();
+>   }
+>   
+>   void SMIException(struct pt_regs *regs)
+> 
