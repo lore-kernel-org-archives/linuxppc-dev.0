@@ -7,60 +7,60 @@ X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8DF83C00449
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 06:09:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B9F68C00449
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 06:11:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A0D7D2086D
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 06:09:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 25F2D2086D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 06:11:44 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="dqzZZn+V"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A0D7D2086D
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="HfAEnKnQ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 25F2D2086D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42T90t28k5zF1nb
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 17:09:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42T93y10nTzF3F2
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Oct 2018 17:11:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="dqzZZn+V";
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="HfAEnKnQ";
 	dkim-atps=neutral
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42T89n63fvzF37R
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Oct 2018 16:31:41 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42T89s1RxNzF35x
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Oct 2018 16:31:45 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="dqzZZn+V"; 
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="HfAEnKnQ"; 
  dkim-atps=neutral
 Received: by ozlabs.org (Postfix)
- id 42T89m26Fzz9sCV; Mon,  8 Oct 2018 16:31:40 +1100 (AEDT)
+ id 42T89r4V7jzB4NP; Mon,  8 Oct 2018 16:31:44 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 42T89l74zHz9sjH;
- Mon,  8 Oct 2018 16:31:39 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPSA id 42T89q1vL8zB4Nf;
+ Mon,  8 Oct 2018 16:31:43 +1100 (AEDT)
 Authentication-Results: ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.org
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1538976700; bh=881mtBhEyL7zBy3MpJn/kXrdAJyEgya8MnUBg6sbQaQ=;
+ t=1538976703; bh=XdFtod+2nIEmDXnAd6/tGhgKKmau1MErO4hJSdIhmW8=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=dqzZZn+V1gk9hx8kEQ4SVMRsggA1qhk4Vbie2BgY0FsNOT98Nw8VJKAP1Za/Jg+p6
- OcHKJ9DDE0zSgwjha/Z1BRnOLyRaQdloLLsiAiXsj52jq2m/ZO293aAd3RB80HnLz7
- dnlBWhNcWvRSsOB6lGke+vW46JAHn0qqYLR3OB1FGXUJJfSNzR07ltJE4J3vB4SbdE
- Q5KwaMIrvdOZeZ/fb11bDS/GYdmFxEzKfCqxHX/qo8xswGwHya9TcYTxJqCCMtiviP
- G5GR/uPKd59WoH33E9/mmZsxwGoB0fKq/FUd4eoEOaP7oEt7+OWLMS1Drjn7gTCeih
- /b4fgMlEOWVZQ==
+ b=HfAEnKnQOPr06hwU5nMxErPhH9luuhfWh7ggGpLHgBU+0kvawWtt8RN/FWQlpCFaG
+ DkENiCbMgLOCPsDyN0RNFwFVpANOv8pkMMNsSWlYLUBHqBzsicwzrvPG+b3/q+uTMg
+ /2srfEJpVZEosssPm1hBzMuxJf0b4dietwhks0XgG9aP5iNc6mK4g31wAlzja017zd
+ W2Mavo8Z609jQdjWW3HLuBesv99Thu50fgyypx3/svgO8c3ASm4Wet9uPhfKLbTBN+
+ IB+Hei4kKdmAK4bq9T2XwTxI6DiUL2KyLzf17WICTlUlD9/EQ6dB4wlp+saW72vJRp
+ P+YKWU69BCT2w==
 From: Paul Mackerras <paulus@ozlabs.org>
 To: kvm@vger.kernel.org,
 	kvm-ppc@vger.kernel.org
-Subject: [PATCH v5 14/33] KVM: PPC: Book3S HV: Make kvmppc_mmu_radix_xlate
- process/partition table agnostic
-Date: Mon,  8 Oct 2018 16:31:00 +1100
-Message-Id: <1538976679-1363-15-git-send-email-paulus@ozlabs.org>
+Subject: [PATCH v5 16/33] KVM: PPC: Book3S HV: Use kvmppc_unmap_pte() in
+ kvm_unmap_radix()
+Date: Mon,  8 Oct 2018 16:31:02 +1100
+Message-Id: <1538976679-1363-17-git-send-email-paulus@ozlabs.org>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1538976679-1363-1-git-send-email-paulus@ozlabs.org>
 References: <1538976679-1363-1-git-send-email-paulus@ozlabs.org>
@@ -80,208 +80,106 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-
-kvmppc_mmu_radix_xlate() is used to translate an effective address
-through the process tables. The process table and partition tables have
-identical layout. Exploit this fact to make the kvmppc_mmu_radix_xlate()
-function able to translate either an effective address through the
-process tables or a guest real address through the partition tables.
-
-[paulus@ozlabs.org - reduced diffs from previous code]
+kvmppc_unmap_pte() does a sequence of operations that are open-coded in
+kvm_unmap_radix().  This extends kvmppc_unmap_pte() a little so that it
+can be used by kvm_unmap_radix(), and makes kvm_unmap_radix() call it.
 
 Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
-Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/include/asm/kvm_book3s.h  |   3 +
- arch/powerpc/kvm/book3s_64_mmu_radix.c | 109 +++++++++++++++++++++++----------
- 2 files changed, 78 insertions(+), 34 deletions(-)
+ arch/powerpc/kvm/book3s_64_mmu_radix.c | 33 +++++++++++++--------------------
+ 1 file changed, 13 insertions(+), 20 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
-index dd18d81..91c9779 100644
---- a/arch/powerpc/include/asm/kvm_book3s.h
-+++ b/arch/powerpc/include/asm/kvm_book3s.h
-@@ -188,6 +188,9 @@ extern int kvmppc_book3s_hcall_implemented(struct kvm *kvm, unsigned long hc);
- extern int kvmppc_book3s_radix_page_fault(struct kvm_run *run,
- 			struct kvm_vcpu *vcpu,
- 			unsigned long ea, unsigned long dsisr);
-+extern int kvmppc_mmu_radix_translate_table(struct kvm_vcpu *vcpu, gva_t eaddr,
-+			struct kvmppc_pte *gpte, u64 table,
-+			int table_index, u64 *pte_ret_p);
- extern int kvmppc_mmu_radix_xlate(struct kvm_vcpu *vcpu, gva_t eaddr,
- 			struct kvmppc_pte *gpte, bool data, bool iswrite);
- extern int kvmppc_init_vm_radix(struct kvm *kvm);
 diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-index 71951b5..f2976f4 100644
+index 47f2b18..bd06a95 100644
 --- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
 +++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-@@ -29,83 +29,92 @@
-  */
- static int p9_supported_radix_bits[4] = { 5, 9, 9, 13 };
+@@ -240,19 +240,22 @@ static void kvmppc_pmd_free(pmd_t *pmdp)
+ }
  
--int kvmppc_mmu_radix_xlate(struct kvm_vcpu *vcpu, gva_t eaddr,
--			   struct kvmppc_pte *gpte, bool data, bool iswrite)
-+/*
-+ * Used to walk a partition or process table radix tree in guest memory
-+ * Note: We exploit the fact that a partition table and a process
-+ * table have the same layout, a partition-scoped page table and a
-+ * process-scoped page table have the same layout, and the 2nd
-+ * doubleword of a partition table entry has the same layout as
-+ * the PTCR register.
-+ */
-+int kvmppc_mmu_radix_translate_table(struct kvm_vcpu *vcpu, gva_t eaddr,
-+				     struct kvmppc_pte *gpte, u64 table,
-+				     int table_index, u64 *pte_ret_p)
+ static void kvmppc_unmap_pte(struct kvm *kvm, pte_t *pte,
+-			     unsigned long gpa, unsigned int shift)
++			     unsigned long gpa, unsigned int shift,
++			     struct kvm_memory_slot *memslot)
+ 
  {
- 	struct kvm *kvm = vcpu->kvm;
--	u32 pid;
- 	int ret, level, ps;
--	__be64 prte, rpte;
--	unsigned long ptbl;
--	unsigned long root, pte, index;
-+	unsigned long ptbl, root;
- 	unsigned long rts, bits, offset;
--	unsigned long gpa;
--	unsigned long proc_tbl_size;
-+	unsigned long size, index;
-+	struct prtb_entry entry;
-+	u64 pte, base, gpa;
-+	__be64 rpte;
+-	unsigned long page_size = 1ul << shift;
+ 	unsigned long old;
  
--	/* Work out effective PID */
--	switch (eaddr >> 62) {
--	case 0:
--		pid = vcpu->arch.pid;
--		break;
--	case 3:
--		pid = 0;
--		break;
--	default:
-+	if ((table & PRTS_MASK) > 24)
- 		return -EINVAL;
--	}
--	proc_tbl_size = 1 << ((kvm->arch.process_table & PRTS_MASK) + 12);
--	if (pid * 16 >= proc_tbl_size)
-+	size = 1ul << ((table & PRTS_MASK) + 12);
-+
-+	/* Is the table big enough to contain this entry? */
-+	if ((table_index * sizeof(entry)) >= size)
- 		return -EINVAL;
+ 	old = kvmppc_radix_update_pte(kvm, pte, ~0UL, 0, gpa, shift);
+ 	kvmppc_radix_tlbie_page(kvm, gpa, shift);
+ 	if (old & _PAGE_DIRTY) {
+ 		unsigned long gfn = gpa >> PAGE_SHIFT;
+-		struct kvm_memory_slot *memslot;
++		unsigned long page_size = PAGE_SIZE;
  
--	/* Read partition table to find root of tree for effective PID */
--	ptbl = (kvm->arch.process_table & PRTB_MASK) + (pid * 16);
--	ret = kvm_read_guest(kvm, ptbl, &prte, sizeof(prte));
-+	/* Read the table to find the root of the radix tree */
-+	ptbl = (table & PRTB_MASK) + (table_index * sizeof(entry));
-+	ret = kvm_read_guest(kvm, ptbl, &entry, sizeof(entry));
- 	if (ret)
- 		return ret;
- 
--	root = be64_to_cpu(prte);
-+	/* Root is stored in the first double word */
-+	root = be64_to_cpu(entry.prtb0);
- 	rts = ((root & RTS1_MASK) >> (RTS1_SHIFT - 3)) |
- 		((root & RTS2_MASK) >> RTS2_SHIFT);
- 	bits = root & RPDS_MASK;
--	root = root & RPDB_MASK;
-+	base = root & RPDB_MASK;
- 
- 	offset = rts + 31;
- 
--	/* current implementations only support 52-bit space */
-+	/* Current implementations only support 52-bit space */
- 	if (offset != 52)
- 		return -EINVAL;
- 
-+	/* Walk each level of the radix tree */
- 	for (level = 3; level >= 0; --level) {
-+		/* Check a valid size */
- 		if (level && bits != p9_supported_radix_bits[level])
- 			return -EINVAL;
- 		if (level == 0 && !(bits == 5 || bits == 9))
- 			return -EINVAL;
- 		offset -= bits;
- 		index = (eaddr >> offset) & ((1UL << bits) - 1);
--		/* check that low bits of page table base are zero */
--		if (root & ((1UL << (bits + 3)) - 1))
-+		/* Check that low bits of page table base are zero */
-+		if (base & ((1UL << (bits + 3)) - 1))
- 			return -EINVAL;
--		ret = kvm_read_guest(kvm, root + index * 8,
-+		/* Read the entry from guest memory */
-+		ret = kvm_read_guest(kvm, base + (index * sizeof(rpte)),
- 				     &rpte, sizeof(rpte));
- 		if (ret)
- 			return ret;
- 		pte = __be64_to_cpu(rpte);
- 		if (!(pte & _PAGE_PRESENT))
- 			return -ENOENT;
-+		/* Check if a leaf entry */
- 		if (pte & _PAGE_PTE)
- 			break;
--		bits = pte & 0x1f;
--		root = pte & 0x0fffffffffffff00ul;
-+		/* Get ready to walk the next level */
-+		base = pte & RPDB_MASK;
-+		bits = pte & RPDS_MASK;
+-		memslot = gfn_to_memslot(kvm, gfn);
++		if (shift)
++			page_size = 1ul << shift;
++		if (!memslot)
++			memslot = gfn_to_memslot(kvm, gfn);
+ 		if (memslot && memslot->dirty_bitmap)
+ 			kvmppc_update_dirty_map(memslot, gfn, page_size);
  	}
--	/* need a leaf at lowest level; 512GB pages not supported */
-+
-+	/* Need a leaf at lowest level; 512GB pages not supported */
- 	if (level < 0 || level == 3)
- 		return -EINVAL;
+@@ -282,7 +285,7 @@ static void kvmppc_unmap_free_pte(struct kvm *kvm, pte_t *pte, bool full)
+ 			WARN_ON_ONCE(1);
+ 			kvmppc_unmap_pte(kvm, p,
+ 					 pte_pfn(*p) << PAGE_SHIFT,
+-					 PAGE_SHIFT);
++					 PAGE_SHIFT, NULL);
+ 		}
+ 	}
  
--	/* offset is now log base 2 of the page size */
-+	/* We found a valid leaf PTE */
-+	/* Offset is now log base 2 of the page size */
- 	gpa = pte & 0x01fffffffffff000ul;
- 	if (gpa & ((1ul << offset) - 1))
- 		return -EINVAL;
--	gpa += eaddr & ((1ul << offset) - 1);
-+	gpa |= eaddr & ((1ul << offset) - 1);
- 	for (ps = MMU_PAGE_4K; ps < MMU_PAGE_COUNT; ++ps)
- 		if (offset == mmu_psize_defs[ps].shift)
- 			break;
-@@ -118,6 +127,38 @@ int kvmppc_mmu_radix_xlate(struct kvm_vcpu *vcpu, gva_t eaddr,
- 	gpte->may_read = !!(pte & _PAGE_READ);
- 	gpte->may_write = !!(pte & _PAGE_WRITE);
- 	gpte->may_execute = !!(pte & _PAGE_EXEC);
-+
-+	if (pte_ret_p)
-+		*pte_ret_p = pte;
-+
-+	return 0;
-+}
-+
-+int kvmppc_mmu_radix_xlate(struct kvm_vcpu *vcpu, gva_t eaddr,
-+			   struct kvmppc_pte *gpte, bool data, bool iswrite)
-+{
-+	u32 pid;
-+	u64 pte;
-+	int ret;
-+
-+	/* Work out effective PID */
-+	switch (eaddr >> 62) {
-+	case 0:
-+		pid = vcpu->arch.pid;
-+		break;
-+	case 3:
-+		pid = 0;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	ret = kvmppc_mmu_radix_translate_table(vcpu, eaddr, gpte,
-+				vcpu->kvm->arch.process_table, pid, &pte);
-+	if (ret)
-+		return ret;
-+
-+	/* Check privilege (applies only to process scoped translations) */
- 	if (kvmppc_get_msr(vcpu) & MSR_PR) {
- 		if (pte & _PAGE_PRIVILEGED) {
- 			gpte->may_read = 0;
+@@ -304,7 +307,7 @@ static void kvmppc_unmap_free_pmd(struct kvm *kvm, pmd_t *pmd, bool full)
+ 				WARN_ON_ONCE(1);
+ 				kvmppc_unmap_pte(kvm, (pte_t *)p,
+ 					 pte_pfn(*(pte_t *)p) << PAGE_SHIFT,
+-					 PMD_SHIFT);
++					 PMD_SHIFT, NULL);
+ 			}
+ 		} else {
+ 			pte_t *pte;
+@@ -468,7 +471,7 @@ static int kvmppc_create_pte(struct kvm *kvm, pgd_t *pgtable, pte_t pte,
+ 			goto out_unlock;
+ 		}
+ 		/* Valid 1GB page here already, remove it */
+-		kvmppc_unmap_pte(kvm, (pte_t *)pud, hgpa, PUD_SHIFT);
++		kvmppc_unmap_pte(kvm, (pte_t *)pud, hgpa, PUD_SHIFT, NULL);
+ 	}
+ 	if (level == 2) {
+ 		if (!pud_none(*pud)) {
+@@ -517,7 +520,7 @@ static int kvmppc_create_pte(struct kvm *kvm, pgd_t *pgtable, pte_t pte,
+ 			goto out_unlock;
+ 		}
+ 		/* Valid 2MB page here already, remove it */
+-		kvmppc_unmap_pte(kvm, pmdp_ptep(pmd), lgpa, PMD_SHIFT);
++		kvmppc_unmap_pte(kvm, pmdp_ptep(pmd), lgpa, PMD_SHIFT, NULL);
+ 	}
+ 	if (level == 1) {
+ 		if (!pmd_none(*pmd)) {
+@@ -780,20 +783,10 @@ int kvm_unmap_radix(struct kvm *kvm, struct kvm_memory_slot *memslot,
+ 	pte_t *ptep;
+ 	unsigned long gpa = gfn << PAGE_SHIFT;
+ 	unsigned int shift;
+-	unsigned long old;
+ 
+ 	ptep = __find_linux_pte(kvm->arch.pgtable, gpa, NULL, &shift);
+-	if (ptep && pte_present(*ptep)) {
+-		old = kvmppc_radix_update_pte(kvm, ptep, ~0UL, 0,
+-					      gpa, shift);
+-		kvmppc_radix_tlbie_page(kvm, gpa, shift);
+-		if ((old & _PAGE_DIRTY) && memslot->dirty_bitmap) {
+-			unsigned long psize = PAGE_SIZE;
+-			if (shift)
+-				psize = 1ul << shift;
+-			kvmppc_update_dirty_map(memslot, gfn, psize);
+-		}
+-	}
++	if (ptep && pte_present(*ptep))
++		kvmppc_unmap_pte(kvm, ptep, gpa, shift, memslot);
+ 	return 0;				
+ }
+ 
 -- 
 2.7.4
 
