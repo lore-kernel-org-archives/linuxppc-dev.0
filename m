@@ -7,59 +7,59 @@ X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 988C8C6787A
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 01:11:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D661C67879
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 01:13:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 01DCB2075C
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 01:11:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 4493E2075C
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 01:13:24 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="B7iwTaBa"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 01DCB2075C
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="navOPcKl"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4493E2075C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42TfLd6wTlzF3BQ
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 12:11:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42TfPG09B3zF3Fm
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 12:13:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="B7iwTaBa";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="navOPcKl";
 	dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Tf204LlrzF3CP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Tf204LjmzF3C4
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Oct 2018 11:56:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=gibson.dropbear.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.b="B7iwTaBa"; dkim-atps=neutral
+ header.b="navOPcKl"; dkim-atps=neutral
 Received: by ozlabs.org (Postfix)
- id 42Tf200GSJzB4NB; Tue,  9 Oct 2018 11:56:40 +1100 (AEDT)
+ id 42Tf201cvzzB4MZ; Tue,  9 Oct 2018 11:56:40 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1007)
- id 42Tf1z70LXzB4Mj; Tue,  9 Oct 2018 11:56:39 +1100 (AEDT)
+ id 42Tf200vVDzB4N2; Tue,  9 Oct 2018 11:56:39 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1539046599;
- bh=O148qTpG04lpoKN+Tqt0+sfJGot3UziNTNcwBlaGppU=;
+ d=gibson.dropbear.id.au; s=201602; t=1539046600;
+ bh=E+yFElIla7ei5C5KQZgMyK2rh08Ucr/9I9FU3t/5m28=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=B7iwTaBaQk07Q2Ixde9ofnPRRBwYHDlAhbNwxoR8kyPTKFLE0OfJU28SJJK/X1DWD
- 5fCq7ONZkw21za5gBavM5TC8P/H5ZpnFFW16xq11hoHFj8DVYNwrEEQAxrAeCD+rSc
- CpogTDjQMjs5yQfyefPMrq0a6kH6T0yuufQQRHCw=
-Date: Tue, 9 Oct 2018 11:26:49 +1100
+ b=navOPcKl65mZHBtgvjAFODQbORZTUrZ39MVJxeylqPmh5MhKvoZKq2tY5fyTUTQ+B
+ fsbKHfBVEvkRGMefxIgV43pD5jzuKBEU+RePZ2CZ2DjygU2hs+1abhhzftxEkJyPon
+ ZyieWoDLu3gwE51xN6uvzrrRws01nq80RmlQdsE0=
+Date: Tue, 9 Oct 2018 11:05:44 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Paul Mackerras <paulus@ozlabs.org>
-Subject: Re: [PATCH v5 22/33] KVM: PPC: Book3S HV: Introduce rmap to track
- nested guest mappings
-Message-ID: <20181009002649.GG7004@umbus.fritz.box>
+Subject: Re: [PATCH v5 06/33] KVM: PPC: Book3S HV: Simplify real-mode
+ interrupt handling
+Message-ID: <20181009000544.GE7004@umbus.fritz.box>
 References: <1538976679-1363-1-git-send-email-paulus@ozlabs.org>
- <1538976679-1363-23-git-send-email-paulus@ozlabs.org>
+ <1538976679-1363-7-git-send-email-paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="2eauhx3HRLXw1WRo"
+ protocol="application/pgp-signature"; boundary="DHdTHwZuIuFUI+Ax"
 Content-Disposition: inline
-In-Reply-To: <1538976679-1363-23-git-send-email-paulus@ozlabs.org>
+In-Reply-To: <1538976679-1363-7-git-send-email-paulus@ozlabs.org>
 User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -78,517 +78,361 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---2eauhx3HRLXw1WRo
+--DHdTHwZuIuFUI+Ax
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Oct 08, 2018 at 04:31:08PM +1100, Paul Mackerras wrote:
-> From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+On Mon, Oct 08, 2018 at 04:30:52PM +1100, Paul Mackerras wrote:
+> This streamlines the first part of the code that handles a hypervisor
+> interrupt that occurred in the guest.  With this, all of the real-mode
+> handling that occurs is done before the "guest_exit_cont" label; once
+> we get to that label we are committed to exiting to host virtual mode.
+> Thus the machine check and HMI real-mode handling is moved before that
+> label.
 >=20
-> When a host (L0) page which is mapped into a (L1) guest is in turn
-> mapped through to a nested (L2) guest we keep a reverse mapping (rmap)
-> so that these mappings can be retrieved later.
+> Also, the code to handle external interrupts is moved out of line, as
+> is the code that calls kvmppc_realmode_hmi_handler().
 >=20
-> Whenever we create an entry in a shadow_pgtable for a nested guest we
-> create a corresponding rmap entry and add it to the list for the
-> L1 guest memslot at the index of the L1 guest page it maps. This means
-> at the L1 guest memslot we end up with lists of rmaps.
->=20
-> When we are notified of a host page being invalidated which has been
-> mapped through to a (L1) guest, we can then walk the rmap list for that
-> guest page, and find and invalidate all of the corresponding
-> shadow_pgtable entries.
->=20
-> In order to reduce memory consumption, we compress the information for
-> each rmap entry down to 52 bits -- 12 bits for the LPID and 40 bits
-> for the guest real page frame number -- which will fit in a single
-> unsigned long.  To avoid a scenario where a guest can trigger
-> unbounded memory allocations, we scan the list when adding an entry to
-> see if there is already an entry with the contents we need.  This can
-> occur, because we don't ever remove entries from the middle of a list.
->=20
-> A struct nested guest rmap is a list pointer and an rmap entry;
-> ----------------
-> | next pointer |
-> ----------------
-> | rmap entry   |
-> ----------------
->=20
-> Thus the rmap pointer for each guest frame number in the memslot can be
-> either NULL, a single entry, or a pointer to a list of nested rmap entrie=
-s.
->=20
-> gfn	 memslot rmap array
->  	-------------------------
->  0	| NULL			|	(no rmap entry)
->  	-------------------------
->  1	| single rmap entry	|	(rmap entry with low bit set)
->  	-------------------------
->  2	| list head pointer	|	(list of rmap entries)
->  	-------------------------
->=20
-> The final entry always has the lowest bit set and is stored in the next
-> pointer of the last list entry, or as a single rmap entry.
-> With a list of rmap entries looking like;
->=20
-> -----------------	-----------------	-------------------------
-> | list head ptr	| ----> | next pointer	| ---->	| single rmap entry	|
-> -----------------	-----------------	-------------------------
-> 			| rmap entry	|	| rmap entry		|
-> 			-----------------	-------------------------
->=20
-> Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
 > Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 
 Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
 > ---
->  arch/powerpc/include/asm/kvm_book3s.h    |   3 +
->  arch/powerpc/include/asm/kvm_book3s_64.h |  69 +++++++++++++++-
->  arch/powerpc/kvm/book3s_64_mmu_radix.c   |  44 +++++++---
->  arch/powerpc/kvm/book3s_hv.c             |   1 +
->  arch/powerpc/kvm/book3s_hv_nested.c      | 138 +++++++++++++++++++++++++=
-+++++-
->  5 files changed, 240 insertions(+), 15 deletions(-)
+>  arch/powerpc/kvm/book3s_hv_ras.c        |   8 ++
+>  arch/powerpc/kvm/book3s_hv_rmhandlers.S | 220 ++++++++++++++++----------=
+------
+>  2 files changed, 119 insertions(+), 109 deletions(-)
 >=20
-> diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include=
-/asm/kvm_book3s.h
-> index 63f7ccf..d7aeb6f 100644
-> --- a/arch/powerpc/include/asm/kvm_book3s.h
-> +++ b/arch/powerpc/include/asm/kvm_book3s.h
-> @@ -196,6 +196,9 @@ extern int kvmppc_mmu_radix_translate_table(struct kv=
-m_vcpu *vcpu, gva_t eaddr,
->  			int table_index, u64 *pte_ret_p);
->  extern int kvmppc_mmu_radix_xlate(struct kvm_vcpu *vcpu, gva_t eaddr,
->  			struct kvmppc_pte *gpte, bool data, bool iswrite);
-> +extern void kvmppc_unmap_pte(struct kvm *kvm, pte_t *pte, unsigned long =
-gpa,
-> +			unsigned int shift, struct kvm_memory_slot *memslot,
-> +			unsigned int lpid);
->  extern bool kvmppc_hv_handle_set_rc(struct kvm *kvm, pgd_t *pgtable,
->  				    bool writing, unsigned long gpa,
->  				    unsigned int lpid);
-> diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/incl=
-ude/asm/kvm_book3s_64.h
-> index 5496152..c2a9146 100644
-> --- a/arch/powerpc/include/asm/kvm_book3s_64.h
-> +++ b/arch/powerpc/include/asm/kvm_book3s_64.h
-> @@ -53,6 +53,66 @@ struct kvm_nested_guest {
->  	struct kvm_nested_guest *next;
->  };
-> =20
-> +/*
-> + * We define a nested rmap entry as a single 64-bit quantity
-> + * 0xFFF0000000000000	12-bit lpid field
-> + * 0x000FFFFFFFFFF000	40-bit guest 4k page frame number
-> + * 0x0000000000000001	1-bit  single entry flag
-> + */
-> +#define RMAP_NESTED_LPID_MASK		0xFFF0000000000000UL
-> +#define RMAP_NESTED_LPID_SHIFT		(52)
-> +#define RMAP_NESTED_GPA_MASK		0x000FFFFFFFFFF000UL
-> +#define RMAP_NESTED_IS_SINGLE_ENTRY	0x0000000000000001UL
-> +
-> +/* Structure for a nested guest rmap entry */
-> +struct rmap_nested {
-> +	struct llist_node list;
-> +	u64 rmap;
-> +};
-> +
-> +/*
-> + * for_each_nest_rmap_safe - iterate over the list of nested rmap entries
-> + *			     safe against removal of the list entry or NULL list
-> + * @pos:	a (struct rmap_nested *) to use as a loop cursor
-> + * @node:	pointer to the first entry
-> + *		NOTE: this can be NULL
-> + * @rmapp:	an (unsigned long *) in which to return the rmap entries on e=
-ach
-> + *		iteration
-> + *		NOTE: this must point to already allocated memory
-> + *
-> + * The nested_rmap is a llist of (struct rmap_nested) entries pointed to=
- by the
-> + * rmap entry in the memslot. The list is always terminated by a "single=
- entry"
-> + * stored in the list element of the final entry of the llist. If there =
-is ONLY
-> + * a single entry then this is itself in the rmap entry of the memslot, =
-not a
-> + * llist head pointer.
-> + *
-> + * Note that the iterator below assumes that a nested rmap entry is alwa=
-ys
-> + * non-zero.  This is true for our usage because the LPID field is always
-> + * non-zero (zero is reserved for the host).
-> + *
-> + * This should be used to iterate over the list of rmap_nested entries w=
-ith
-> + * processing done on the u64 rmap value given by each iteration. This i=
-s safe
-> + * against removal of list entries and it is always safe to call free on=
- (pos).
-> + *
-> + * e.g.
-> + * struct rmap_nested *cursor;
-> + * struct llist_node *first;
-> + * unsigned long rmap;
-> + * for_each_nest_rmap_safe(cursor, first, &rmap) {
-> + *	do_something(rmap);
-> + *	free(cursor);
-> + * }
-> + */
-> +#define for_each_nest_rmap_safe(pos, node, rmapp)			       \
-> +	for ((pos) =3D llist_entry((node), typeof(*(pos)), list);		       \
-> +	     (node) &&							       \
-> +	     (*(rmapp) =3D ((RMAP_NESTED_IS_SINGLE_ENTRY & ((u64) (node))) ?   =
-  \
-> +			  ((u64) (node)) : ((pos)->rmap))) &&		       \
-> +	     (((node) =3D ((RMAP_NESTED_IS_SINGLE_ENTRY & ((u64) (node))) ?    =
-  \
-> +			 ((struct llist_node *) ((pos) =3D NULL)) :	       \
-> +			 (pos)->list.next)), true);			       \
-> +	     (pos) =3D llist_entry((node), typeof(*(pos)), list))
-> +
->  struct kvm_nested_guest *kvmhv_get_nested(struct kvm *kvm, int l1_lpid,
->  					  bool create);
->  void kvmhv_put_nested(struct kvm_nested_guest *gp);
-> @@ -551,7 +611,14 @@ static inline void copy_to_checkpoint(struct kvm_vcp=
-u *vcpu)
-> =20
->  extern int kvmppc_create_pte(struct kvm *kvm, pgd_t *pgtable, pte_t pte,
->  			     unsigned long gpa, unsigned int level,
-> -			     unsigned long mmu_seq, unsigned int lpid);
-> +			     unsigned long mmu_seq, unsigned int lpid,
-> +			     unsigned long *rmapp, struct rmap_nested **n_rmap);
-> +extern void kvmhv_insert_nest_rmap(struct kvm *kvm, unsigned long *rmapp,
-> +				   struct rmap_nested **n_rmap);
-> +extern void kvmhv_remove_nest_rmap_range(struct kvm *kvm,
-> +				struct kvm_memory_slot *memslot,
-> +				unsigned long gpa, unsigned long hpa,
-> +				unsigned long nbytes);
-> =20
->  #endif /* CONFIG_KVM_BOOK3S_HV_POSSIBLE */
-> =20
-> diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/bo=
-ok3s_64_mmu_radix.c
-> index c4b1a9e..4c1eccb 100644
-> --- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
-> +++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-> @@ -256,27 +256,38 @@ static void kvmppc_pmd_free(pmd_t *pmdp)
->  	kmem_cache_free(kvm_pmd_cache, pmdp);
->  }
-> =20
-> -void kvmppc_unmap_pte(struct kvm *kvm, pte_t *pte,
-> -		      unsigned long gpa, unsigned int shift,
-> -		      struct kvm_memory_slot *memslot,
-> +/* Called with kvm->mmu_lock held */
-> +void kvmppc_unmap_pte(struct kvm *kvm, pte_t *pte, unsigned long gpa,
-> +		      unsigned int shift, struct kvm_memory_slot *memslot,
->  		      unsigned int lpid)
-> =20
->  {
->  	unsigned long old;
-> +	unsigned long gfn =3D gpa >> PAGE_SHIFT;
-> +	unsigned long page_size =3D PAGE_SIZE;
-> +	unsigned long hpa;
-> =20
->  	old =3D kvmppc_radix_update_pte(kvm, pte, ~0UL, 0, gpa, shift);
->  	kvmppc_radix_tlbie_page(kvm, gpa, shift, lpid);
-> -	if ((old & _PAGE_DIRTY) && (lpid =3D=3D kvm->arch.lpid)) {
-> -		unsigned long gfn =3D gpa >> PAGE_SHIFT;
-> -		unsigned long page_size =3D PAGE_SIZE;
-> =20
-> -		if (shift)
-> -			page_size =3D 1ul << shift;
-> +	/* The following only applies to L1 entries */
-> +	if (lpid !=3D kvm->arch.lpid)
-> +		return;
-> +
-> +	if (!memslot) {
-> +		memslot =3D gfn_to_memslot(kvm, gfn);
->  		if (!memslot)
-> -			memslot =3D gfn_to_memslot(kvm, gfn);
-> -		if (memslot && memslot->dirty_bitmap)
-> -			kvmppc_update_dirty_map(memslot, gfn, page_size);
-> +			return;
+> diff --git a/arch/powerpc/kvm/book3s_hv_ras.c b/arch/powerpc/kvm/book3s_h=
+v_ras.c
+> index b11043b..ee564b6 100644
+> --- a/arch/powerpc/kvm/book3s_hv_ras.c
+> +++ b/arch/powerpc/kvm/book3s_hv_ras.c
+> @@ -331,5 +331,13 @@ long kvmppc_realmode_hmi_handler(void)
+>  	} else {
+>  		wait_for_tb_resync();
 >  	}
-> +	if (shift)
-> +		page_size =3D 1ul << shift;
 > +
-> +	gpa &=3D ~(page_size - 1);
-> +	hpa =3D old & PTE_RPN_MASK;
-> +	kvmhv_remove_nest_rmap_range(kvm, memslot, gpa, hpa, page_size);
+> +	/*
+> +	 * Reset tb_offset_applied so the guest exit code won't try
+> +	 * to subtract the previous timebase offset from the timebase.
+> +	 */
+> +	if (local_paca->kvm_hstate.kvm_vcore)
+> +		local_paca->kvm_hstate.kvm_vcore->tb_offset_applied =3D 0;
 > +
-> +	if ((old & _PAGE_DIRTY) && memslot->dirty_bitmap)
-> +		kvmppc_update_dirty_map(memslot, gfn, page_size);
->  }
-> =20
->  /*
-> @@ -430,7 +441,8 @@ static void kvmppc_unmap_free_pud_entry_table(struct =
-kvm *kvm, pud_t *pud,
-> =20
->  int kvmppc_create_pte(struct kvm *kvm, pgd_t *pgtable, pte_t pte,
->  		      unsigned long gpa, unsigned int level,
-> -		      unsigned long mmu_seq, unsigned int lpid)
-> +		      unsigned long mmu_seq, unsigned int lpid,
-> +		      unsigned long *rmapp, struct rmap_nested **n_rmap)
->  {
->  	pgd_t *pgd;
->  	pud_t *pud, *new_pud =3D NULL;
-> @@ -509,6 +521,8 @@ int kvmppc_create_pte(struct kvm *kvm, pgd_t *pgtable=
-, pte_t pte,
->  			kvmppc_unmap_free_pud_entry_table(kvm, pud, gpa, lpid);
->  		}
->  		kvmppc_radix_set_pte_at(kvm, gpa, (pte_t *)pud, pte);
-> +		if (rmapp && n_rmap)
-> +			kvmhv_insert_nest_rmap(kvm, rmapp, n_rmap);
->  		ret =3D 0;
->  		goto out_unlock;
->  	}
-> @@ -559,6 +573,8 @@ int kvmppc_create_pte(struct kvm *kvm, pgd_t *pgtable=
-, pte_t pte,
->  			kvmppc_unmap_free_pmd_entry_table(kvm, pmd, gpa, lpid);
->  		}
->  		kvmppc_radix_set_pte_at(kvm, gpa, pmdp_ptep(pmd), pte);
-> +		if (rmapp && n_rmap)
-> +			kvmhv_insert_nest_rmap(kvm, rmapp, n_rmap);
->  		ret =3D 0;
->  		goto out_unlock;
->  	}
-> @@ -583,6 +599,8 @@ int kvmppc_create_pte(struct kvm *kvm, pgd_t *pgtable=
-, pte_t pte,
->  		goto out_unlock;
->  	}
->  	kvmppc_radix_set_pte_at(kvm, gpa, ptep, pte);
-> +	if (rmapp && n_rmap)
-> +		kvmhv_insert_nest_rmap(kvm, rmapp, n_rmap);
->  	ret =3D 0;
-> =20
->   out_unlock:
-> @@ -710,7 +728,7 @@ int kvmppc_book3s_instantiate_page(struct kvm_vcpu *v=
-cpu,
-> =20
->  	/* Allocate space in the tree and write the PTE */
->  	ret =3D kvmppc_create_pte(kvm, kvm->arch.pgtable, pte, gpa, level,
-> -				mmu_seq, kvm->arch.lpid);
-> +				mmu_seq, kvm->arch.lpid, NULL, NULL);
->  	if (inserted_pte)
->  		*inserted_pte =3D pte;
->  	if (levelp)
-> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> index dc25461..cb9e738 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -4482,6 +4482,7 @@ int kvmppc_switch_mmu_to_radix(struct kvm *kvm)
->  	kvmppc_free_hpt(&kvm->arch.hpt);
->  	kvmppc_update_lpcr(kvm, LPCR_UPRT | LPCR_GTSE | LPCR_HR,
->  			   LPCR_VPM1 | LPCR_UPRT | LPCR_GTSE | LPCR_HR);
-> +	kvmppc_rmap_reset(kvm);
->  	kvm->arch.radix =3D 1;
 >  	return 0;
 >  }
-> diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm/book3=
-s_hv_nested.c
-> index 21a210c..3fa676b 100644
-> --- a/arch/powerpc/kvm/book3s_hv_nested.c
-> +++ b/arch/powerpc/kvm/book3s_hv_nested.c
-> @@ -10,6 +10,7 @@
+> diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/b=
+ook3s_hv_rmhandlers.S
+> index 5b2ae34..fc360b5 100644
+> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> @@ -1018,8 +1018,7 @@ ALT_FTR_SECTION_END_IFCLR(CPU_FTR_ARCH_300)
+>  no_xive:
+>  #endif /* CONFIG_KVM_XICS */
 > =20
->  #include <linux/kernel.h>
->  #include <linux/kvm_host.h>
-> +#include <linux/llist.h>
+> -deliver_guest_interrupt:
+> -kvmppc_cede_reentry:		/* r4 =3D vcpu, r13 =3D paca */
+> +deliver_guest_interrupt:	/* r4 =3D vcpu, r13 =3D paca */
+>  	/* Check if we can deliver an external or decrementer interrupt now */
+>  	ld	r0, VCPU_PENDING_EXC(r4)
+>  BEGIN_FTR_SECTION
+> @@ -1269,18 +1268,26 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
+>  	std	r3, VCPU_CTR(r9)
+>  	std	r4, VCPU_XER(r9)
 > =20
->  #include <asm/kvm_ppc.h>
->  #include <asm/kvm_book3s.h>
-> @@ -22,6 +23,7 @@
->  static struct patb_entry *pseries_partition_tb;
+> -#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> -	/* For softpatch interrupt, go off and do TM instruction emulation */
+> -	cmpwi	r12, BOOK3S_INTERRUPT_HV_SOFTPATCH
+> -	beq	kvmppc_tm_emul
+> -#endif
+> +	/* Save more register state  */
+> +	mfdar	r3
+> +	mfdsisr	r4
+> +	std	r3, VCPU_DAR(r9)
+> +	stw	r4, VCPU_DSISR(r9)
 > =20
->  static void kvmhv_update_ptbl_cache(struct kvm_nested_guest *gp);
-> +static void kvmhv_free_memslot_nest_rmap(struct kvm_memory_slot *free);
+>  	/* If this is a page table miss then see if it's theirs or ours */
+>  	cmpwi	r12, BOOK3S_INTERRUPT_H_DATA_STORAGE
+>  	beq	kvmppc_hdsi
+> +	std	r3, VCPU_FAULT_DAR(r9)
+> +	stw	r4, VCPU_FAULT_DSISR(r9)
+>  	cmpwi	r12, BOOK3S_INTERRUPT_H_INST_STORAGE
+>  	beq	kvmppc_hisi
 > =20
->  void kvmhv_save_hv_regs(struct kvm_vcpu *vcpu, struct hv_guest_state *hr)
->  {
-> @@ -456,6 +458,8 @@ void kvmhv_release_all_nested(struct kvm *kvm)
->  	int i;
->  	struct kvm_nested_guest *gp;
->  	struct kvm_nested_guest *freelist =3D NULL;
-> +	struct kvm_memory_slot *memslot;
-> +	int srcu_idx;
+> +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> +	/* For softpatch interrupt, go off and do TM instruction emulation */
+> +	cmpwi	r12, BOOK3S_INTERRUPT_HV_SOFTPATCH
+> +	beq	kvmppc_tm_emul
+> +#endif
+> +
+>  	/* See if this is a leftover HDEC interrupt */
+>  	cmpwi	r12,BOOK3S_INTERRUPT_HV_DECREMENTER
+>  	bne	2f
+> @@ -1303,7 +1310,7 @@ BEGIN_FTR_SECTION
+>  END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+>  	lbz	r0, HSTATE_HOST_IPI(r13)
+>  	cmpwi	r0, 0
+> -	beq	4f
+> +	beq	maybe_reenter_guest
+>  	b	guest_exit_cont
+>  3:
+>  	/* If it's a hypervisor facility unavailable interrupt, save HFSCR */
+> @@ -1315,82 +1322,16 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+>  14:
+>  	/* External interrupt ? */
+>  	cmpwi	r12, BOOK3S_INTERRUPT_EXTERNAL
+> -	bne+	guest_exit_cont
+> -
+> -	/* External interrupt, first check for host_ipi. If this is
+> -	 * set, we know the host wants us out so let's do it now
+> -	 */
+> -	bl	kvmppc_read_intr
+> -
+> -	/*
+> -	 * Restore the active volatile registers after returning from
+> -	 * a C function.
+> -	 */
+> -	ld	r9, HSTATE_KVM_VCPU(r13)
+> -	li	r12, BOOK3S_INTERRUPT_EXTERNAL
+> -
+> -	/*
+> -	 * kvmppc_read_intr return codes:
+> -	 *
+> -	 * Exit to host (r3 > 0)
+> -	 *   1 An interrupt is pending that needs to be handled by the host
+> -	 *     Exit guest and return to host by branching to guest_exit_cont
+> -	 *
+> -	 *   2 Passthrough that needs completion in the host
+> -	 *     Exit guest and return to host by branching to guest_exit_cont
+> -	 *     However, we also set r12 to BOOK3S_INTERRUPT_HV_RM_HARD
+> -	 *     to indicate to the host to complete handling the interrupt
+> -	 *
+> -	 * Before returning to guest, we check if any CPU is heading out
+> -	 * to the host and if so, we head out also. If no CPUs are heading
+> -	 * check return values <=3D 0.
+> -	 *
+> -	 * Return to guest (r3 <=3D 0)
+> -	 *  0 No external interrupt is pending
+> -	 * -1 A guest wakeup IPI (which has now been cleared)
+> -	 *    In either case, we return to guest to deliver any pending
+> -	 *    guest interrupts.
+> -	 *
+> -	 * -2 A PCI passthrough external interrupt was handled
+> -	 *    (interrupt was delivered directly to guest)
+> -	 *    Return to guest to deliver any pending guest interrupts.
+> -	 */
+> -
+> -	cmpdi	r3, 1
+> -	ble	1f
+> -
+> -	/* Return code =3D 2 */
+> -	li	r12, BOOK3S_INTERRUPT_HV_RM_HARD
+> -	stw	r12, VCPU_TRAP(r9)
+> -	b	guest_exit_cont
+> -
+> -1:	/* Return code <=3D 1 */
+> -	cmpdi	r3, 0
+> -	bgt	guest_exit_cont
+> -
+> -	/* Return code <=3D 0 */
+> -4:	ld	r5, HSTATE_KVM_VCORE(r13)
+> -	lwz	r0, VCORE_ENTRY_EXIT(r5)
+> -	cmpwi	r0, 0x100
+> -	mr	r4, r9
+> -	blt	deliver_guest_interrupt
+> -
+> -guest_exit_cont:		/* r9 =3D vcpu, r12 =3D trap, r13 =3D paca */
+> -	/* Save more register state  */
+> -	mfdar	r6
+> -	mfdsisr	r7
+> -	std	r6, VCPU_DAR(r9)
+> -	stw	r7, VCPU_DSISR(r9)
+> -	/* don't overwrite fault_dar/fault_dsisr if HDSI */
+> -	cmpwi	r12,BOOK3S_INTERRUPT_H_DATA_STORAGE
+> -	beq	mc_cont
+> -	std	r6, VCPU_FAULT_DAR(r9)
+> -	stw	r7, VCPU_FAULT_DSISR(r9)
+> -
+> +	beq	kvmppc_guest_external
+>  	/* See if it is a machine check */
+>  	cmpwi	r12, BOOK3S_INTERRUPT_MACHINE_CHECK
+>  	beq	machine_check_realmode
+> -mc_cont:
+> +	/* Or a hypervisor maintenance interrupt */
+> +	cmpwi	r12, BOOK3S_INTERRUPT_HMI
+> +	beq	hmi_realmode
+> +
+> +guest_exit_cont:		/* r9 =3D vcpu, r12 =3D trap, r13 =3D paca */
+> +
+>  #ifdef CONFIG_KVM_BOOK3S_HV_EXIT_TIMING
+>  	addi	r3, r9, VCPU_TB_RMEXIT
+>  	mr	r4, r9
+> @@ -1821,24 +1762,6 @@ BEGIN_FTR_SECTION
+>  	mtspr	SPRN_DPDES, r8
+>  END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
 > =20
->  	spin_lock(&kvm->mmu_lock);
->  	for (i =3D 0; i <=3D kvm->arch.max_nested_lpid; i++) {
-> @@ -474,6 +478,11 @@ void kvmhv_release_all_nested(struct kvm *kvm)
->  		freelist =3D gp->next;
->  		kvmhv_release_nested(gp);
->  	}
-> +
-> +	srcu_idx =3D srcu_read_lock(&kvm->srcu);
-> +	kvm_for_each_memslot(memslot, kvm_memslots(kvm))
-> +		kvmhv_free_memslot_nest_rmap(memslot);
-> +	srcu_read_unlock(&kvm->srcu, srcu_idx);
->  }
+> -	/* If HMI, call kvmppc_realmode_hmi_handler() */
+> -	lwz	r12, STACK_SLOT_TRAP(r1)
+> -	cmpwi	r12, BOOK3S_INTERRUPT_HMI
+> -	bne	27f
+> -	bl	kvmppc_realmode_hmi_handler
+> -	nop
+> -	cmpdi	r3, 0
+> -	/*
+> -	 * At this point kvmppc_realmode_hmi_handler may have resync-ed
+> -	 * the TB, and if it has, we must not subtract the guest timebase
+> -	 * offset from the timebase. So, skip it.
+> -	 *
+> -	 * Also, do not call kvmppc_subcore_exit_guest() because it has
+> -	 * been invoked as part of kvmppc_realmode_hmi_handler().
+> -	 */
+> -	beq	30f
+> -
+> -27:
+>  	/* Subtract timebase offset from timebase */
+>  	ld	r8, VCORE_TB_OFFSET_APPL(r5)
+>  	cmpdi	r8,0
+> @@ -1856,7 +1779,16 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+>  	addis	r8,r8,0x100		/* if so, increment upper 40 bits */
+>  	mtspr	SPRN_TBU40,r8
 > =20
->  /* caller must hold gp->tlb_lock */
-> @@ -544,6 +553,123 @@ void kvmhv_put_nested(struct kvm_nested_guest *gp)
->  		kvmhv_release_nested(gp);
->  }
+> -17:	bl	kvmppc_subcore_exit_guest
+> +17:
+> +	/*
+> +	 * If this is an HMI, we called kvmppc_realmode_hmi_handler
+> +	 * above, which may or may not have already called
+> +	 * kvmppc_subcore_exit_guest.  Fortunately, all that
+> +	 * kvmppc_subcore_exit_guest does is clear a flag, so calling
+> +	 * it again here is benign even if kvmppc_realmode_hmi_handler
+> +	 * has already called it.
+> +	 */
+> +	bl	kvmppc_subcore_exit_guest
+>  	nop
+>  30:	ld	r5,HSTATE_KVM_VCORE(r13)
+>  	ld	r4,VCORE_KVM(r5)	/* pointer to struct kvm */
+> @@ -1910,6 +1842,67 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+>  	mtlr	r0
+>  	blr
 > =20
-> +static struct kvm_nested_guest *kvmhv_find_nested(struct kvm *kvm, int l=
-pid)
-> +{
-> +	if (lpid > kvm->arch.max_nested_lpid)
-> +		return NULL;
-> +	return kvm->arch.nested_guests[lpid];
-> +}
+> +kvmppc_guest_external:
+> +	/* External interrupt, first check for host_ipi. If this is
+> +	 * set, we know the host wants us out so let's do it now
+> +	 */
+> +	bl	kvmppc_read_intr
 > +
-> +static inline bool kvmhv_n_rmap_is_equal(u64 rmap_1, u64 rmap_2)
-> +{
-> +	return !((rmap_1 ^ rmap_2) & (RMAP_NESTED_LPID_MASK |
-> +				       RMAP_NESTED_GPA_MASK));
-> +}
+> +	/*
+> +	 * Restore the active volatile registers after returning from
+> +	 * a C function.
+> +	 */
+> +	ld	r9, HSTATE_KVM_VCPU(r13)
+> +	li	r12, BOOK3S_INTERRUPT_EXTERNAL
 > +
-> +void kvmhv_insert_nest_rmap(struct kvm *kvm, unsigned long *rmapp,
-> +			    struct rmap_nested **n_rmap)
-> +{
-> +	struct llist_node *entry =3D ((struct llist_head *) rmapp)->first;
-> +	struct rmap_nested *cursor;
-> +	u64 rmap, new_rmap =3D (*n_rmap)->rmap;
+> +	/*
+> +	 * kvmppc_read_intr return codes:
+> +	 *
+> +	 * Exit to host (r3 > 0)
+> +	 *   1 An interrupt is pending that needs to be handled by the host
+> +	 *     Exit guest and return to host by branching to guest_exit_cont
+> +	 *
+> +	 *   2 Passthrough that needs completion in the host
+> +	 *     Exit guest and return to host by branching to guest_exit_cont
+> +	 *     However, we also set r12 to BOOK3S_INTERRUPT_HV_RM_HARD
+> +	 *     to indicate to the host to complete handling the interrupt
+> +	 *
+> +	 * Before returning to guest, we check if any CPU is heading out
+> +	 * to the host and if so, we head out also. If no CPUs are heading
+> +	 * check return values <=3D 0.
+> +	 *
+> +	 * Return to guest (r3 <=3D 0)
+> +	 *  0 No external interrupt is pending
+> +	 * -1 A guest wakeup IPI (which has now been cleared)
+> +	 *    In either case, we return to guest to deliver any pending
+> +	 *    guest interrupts.
+> +	 *
+> +	 * -2 A PCI passthrough external interrupt was handled
+> +	 *    (interrupt was delivered directly to guest)
+> +	 *    Return to guest to deliver any pending guest interrupts.
+> +	 */
 > +
-> +	/* Are there any existing entries? */
-> +	if (!(*rmapp)) {
-> +		/* No -> use the rmap as a single entry */
-> +		*rmapp =3D new_rmap | RMAP_NESTED_IS_SINGLE_ENTRY;
-> +		return;
-> +	}
+> +	cmpdi	r3, 1
+> +	ble	1f
 > +
-> +	/* Do any entries match what we're trying to insert? */
-> +	for_each_nest_rmap_safe(cursor, entry, &rmap) {
-> +		if (kvmhv_n_rmap_is_equal(rmap, new_rmap))
-> +			return;
-> +	}
+> +	/* Return code =3D 2 */
+> +	li	r12, BOOK3S_INTERRUPT_HV_RM_HARD
+> +	stw	r12, VCPU_TRAP(r9)
+> +	b	guest_exit_cont
 > +
-> +	/* Do we need to create a list or just add the new entry? */
-> +	rmap =3D *rmapp;
-> +	if (rmap & RMAP_NESTED_IS_SINGLE_ENTRY) /* Not previously a list */
-> +		*rmapp =3D 0UL;
-> +	llist_add(&((*n_rmap)->list), (struct llist_head *) rmapp);
-> +	if (rmap & RMAP_NESTED_IS_SINGLE_ENTRY) /* Not previously a list */
-> +		(*n_rmap)->list.next =3D (struct llist_node *) rmap;
+> +1:	/* Return code <=3D 1 */
+> +	cmpdi	r3, 0
+> +	bgt	guest_exit_cont
 > +
-> +	/* Set NULL so not freed by caller */
-> +	*n_rmap =3D NULL;
-> +}
+> +	/* Return code <=3D 0 */
+> +maybe_reenter_guest:
+> +	ld	r5, HSTATE_KVM_VCORE(r13)
+> +	lwz	r0, VCORE_ENTRY_EXIT(r5)
+> +	cmpwi	r0, 0x100
+> +	mr	r4, r9
+> +	blt	deliver_guest_interrupt
+> +	b	guest_exit_cont
 > +
-> +static void kvmhv_remove_nest_rmap(struct kvm *kvm, u64 n_rmap,
-> +				   unsigned long hpa, unsigned long mask)
-> +{
-> +	struct kvm_nested_guest *gp;
-> +	unsigned long gpa;
-> +	unsigned int shift, lpid;
-> +	pte_t *ptep;
-> +
-> +	gpa =3D n_rmap & RMAP_NESTED_GPA_MASK;
-> +	lpid =3D (n_rmap & RMAP_NESTED_LPID_MASK) >> RMAP_NESTED_LPID_SHIFT;
-> +	gp =3D kvmhv_find_nested(kvm, lpid);
-> +	if (!gp)
-> +		return;
-> +
-> +	/* Find and invalidate the pte */
-> +	ptep =3D __find_linux_pte(gp->shadow_pgtable, gpa, NULL, &shift);
-> +	/* Don't spuriously invalidate ptes if the pfn has changed */
-> +	if (ptep && pte_present(*ptep) && ((pte_val(*ptep) & mask) =3D=3D hpa))
-> +		kvmppc_unmap_pte(kvm, ptep, gpa, shift, NULL, gp->shadow_lpid);
-> +}
-> +
-> +static void kvmhv_remove_nest_rmap_list(struct kvm *kvm, unsigned long *=
-rmapp,
-> +					unsigned long hpa, unsigned long mask)
-> +{
-> +	struct llist_node *entry =3D llist_del_all((struct llist_head *) rmapp);
-> +	struct rmap_nested *cursor;
-> +	unsigned long rmap;
-> +
-> +	for_each_nest_rmap_safe(cursor, entry, &rmap) {
-> +		kvmhv_remove_nest_rmap(kvm, rmap, hpa, mask);
-> +		kfree(cursor);
-> +	}
-> +}
-> +
-> +/* called with kvm->mmu_lock held */
-> +void kvmhv_remove_nest_rmap_range(struct kvm *kvm,
-> +				  struct kvm_memory_slot *memslot,
-> +				  unsigned long gpa, unsigned long hpa,
-> +				  unsigned long nbytes)
-> +{
-> +	unsigned long gfn, end_gfn;
-> +	unsigned long addr_mask;
-> +
-> +	if (!memslot)
-> +		return;
-> +	gfn =3D (gpa >> PAGE_SHIFT) - memslot->base_gfn;
-> +	end_gfn =3D gfn + (nbytes >> PAGE_SHIFT);
-> +
-> +	addr_mask =3D PTE_RPN_MASK & ~(nbytes - 1);
-> +	hpa &=3D addr_mask;
-> +
-> +	for (; gfn < end_gfn; gfn++) {
-> +		unsigned long *rmap =3D &memslot->arch.rmap[gfn];
-> +		kvmhv_remove_nest_rmap_list(kvm, rmap, hpa, addr_mask);
-> +	}
-> +}
-> +
-> +static void kvmhv_free_memslot_nest_rmap(struct kvm_memory_slot *free)
-> +{
-> +	unsigned long page;
-> +
-> +	for (page =3D 0; page < free->npages; page++) {
-> +		unsigned long rmap, *rmapp =3D &free->arch.rmap[page];
-> +		struct rmap_nested *cursor;
-> +		struct llist_node *entry;
-> +
-> +		entry =3D llist_del_all((struct llist_head *) rmapp);
-> +		for_each_nest_rmap_safe(cursor, entry, &rmap)
-> +			kfree(cursor);
-> +	}
-> +}
-> +
->  static bool kvmhv_invalidate_shadow_pte(struct kvm_vcpu *vcpu,
->  					struct kvm_nested_guest *gp,
->  					long gpa, int *shift_ret)
-> @@ -695,11 +821,13 @@ static long int __kvmhv_nested_page_fault(struct kv=
-m_vcpu *vcpu,
->  {
->  	struct kvm *kvm =3D vcpu->kvm;
->  	struct kvm_memory_slot *memslot;
-> +	struct rmap_nested *n_rmap;
->  	struct kvmppc_pte gpte;
->  	pte_t pte, *pte_p;
->  	unsigned long mmu_seq;
->  	unsigned long dsisr =3D vcpu->arch.fault_dsisr;
->  	unsigned long ea =3D vcpu->arch.fault_dar;
-> +	unsigned long *rmapp;
->  	unsigned long n_gpa, gpa, gfn, perm =3D 0UL;
->  	unsigned int shift, l1_shift, level;
->  	bool writing =3D !!(dsisr & DSISR_ISSTORE);
-> @@ -833,8 +961,16 @@ static long int __kvmhv_nested_page_fault(struct kvm=
-_vcpu *vcpu,
+>  #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+>  /*
+>   * Softpatch interrupt for transactional memory emulation cases
+> @@ -2685,13 +2678,7 @@ END_FTR_SECTION(CPU_FTR_TM | CPU_FTR_P9_TM_HV_ASSI=
+ST, 0)
+>  	mr	r9, r4
+>  	cmpdi	r3, 0
+>  	bgt	guest_exit_cont
+> -
+> -	/* see if any other thread is already exiting */
+> -	lwz	r0,VCORE_ENTRY_EXIT(r5)
+> -	cmpwi	r0,0x100
+> -	bge	guest_exit_cont
+> -
+> -	b	kvmppc_cede_reentry	/* if not go back to guest */
+> +	b	maybe_reenter_guest
 > =20
->  	/* 4. Insert the pte into our shadow_pgtable */
+>  	/* cede when already previously prodded case */
+>  kvm_cede_prodded:
+> @@ -2758,12 +2745,12 @@ machine_check_realmode:
+>  	 */
+>  	ld	r11, VCPU_MSR(r9)
+>  	rldicl.	r0, r11, 64-MSR_HV_LG, 63 /* check if it happened in HV mode */
+> -	bne	mc_cont			/* if so, exit to host */
+> +	bne	guest_exit_cont		/* if so, exit to host */
+>  	/* Check if guest is capable of handling NMI exit */
+>  	ld	r10, VCPU_KVM(r9)
+>  	lbz	r10, KVM_FWNMI(r10)
+>  	cmpdi	r10, 1			/* FWNMI capable? */
+> -	beq	mc_cont			/* if so, exit with KVM_EXIT_NMI. */
+> +	beq	guest_exit_cont		/* if so, exit with KVM_EXIT_NMI. */
 > =20
-> +	n_rmap =3D kzalloc(sizeof(*n_rmap), GFP_KERNEL);
-> +	if (!n_rmap)
-> +		return RESUME_GUEST; /* Let the guest try again */
-> +	n_rmap->rmap =3D (n_gpa & RMAP_NESTED_GPA_MASK) |
-> +		(((unsigned long) gp->l1_lpid) << RMAP_NESTED_LPID_SHIFT);
-> +	rmapp =3D &memslot->arch.rmap[gfn - memslot->base_gfn];
->  	ret =3D kvmppc_create_pte(kvm, gp->shadow_pgtable, pte, n_gpa, level,
-> -				mmu_seq, gp->shadow_lpid);
-> +				mmu_seq, gp->shadow_lpid, rmapp, &n_rmap);
-> +	if (n_rmap)
-> +		kfree(n_rmap);
->  	if (ret =3D=3D -EAGAIN)
->  		ret =3D RESUME_GUEST;	/* Let the guest try again */
+>  	/* if not, fall through for backward compatibility. */
+>  	andi.	r10, r11, MSR_RI	/* check for unrecoverable exception */
+> @@ -2777,6 +2764,21 @@ machine_check_realmode:
+>  2:	b	fast_interrupt_c_return
 > =20
+>  /*
+> + * Call C code to handle a HMI in real mode.
+> + * Only the primary thread does the call, secondary threads are handled
+> + * by calling hmi_exception_realmode() after kvmppc_hv_entry returns.
+> + * r9 points to the vcpu on entry
+> + */
+> +hmi_realmode:
+> +	lbz	r0, HSTATE_PTID(r13)
+> +	cmpwi	r0, 0
+> +	bne	guest_exit_cont
+> +	bl	kvmppc_realmode_hmi_handler
+> +	ld	r9, HSTATE_KVM_VCPU(r13)
+> +	li	r12, BOOK3S_INTERRUPT_HMI
+> +	b	guest_exit_cont
+> +
+> +/*
+>   * Check the reason we woke from nap, and take appropriate action.
+>   * Returns (in r3):
+>   *	0 if nothing needs to be done
 
 --=20
 David Gibson			| I'll have my music baroque, and my code
@@ -596,24 +440,24 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---2eauhx3HRLXw1WRo
+--DHdTHwZuIuFUI+Ax
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlu79ckACgkQbDjKyiDZ
-s5LhvhAA0/zW6AmWnQXmg9ojmvW7U/Pdd9Udi3dXT5gjYQMaB0s5SLleerBAx/Dx
-6vfckn2J64xFyBPF9RIkeNhY/uAGWLsZU8LRturwkEJ29TYv13DMeNkqnEElVBM1
-oSaKBHHpouthM0ZWiZBn35u2J3C/2gWNKBg/UN1IKjpi11FZ+KDOqTeIOHunSWvt
-9jdUQCncyB+TCNw+mkzR/0G4H1Y8JALlFdBsAEPOP71UfhHsuMzAQOmFQUxmC4qb
-k3sbku22MsApVQLqNcdiQXQF+UR7yU48hMzZov3HQ+EfCk8CAlU2AdI1e/CGMGnE
-z0JsSTZanxWPUncPQInjkT4JbRHFTllN5ahEOg0Oj8eoO02AKHdQpw/oTmh+cCPc
-V2ggQFAK6fL8idHHzc+GMuC7BxirpsC6ky+XiNv3KoTGwMtI75gA5wTWPqTyi7HA
-WC9K1V4+ksPoUcOMKcqJaxwrtyCa/XUnkhhaJTkThXzH/TwYWIJ+JdZOCQKVTPMU
-iDT8LAbuyzXGFOlOhQvyl8he5Jger1z1WMg3rreDgefT1cRH9TejEuBnTn6vSALs
-bdOG0EUZ2eE3nv0xPchk62nR/MQpFc3i1sO4rnjFBG4ehlpgup7tRvcsHBbnx/K9
-7iGA1IzsYBa3xOdpdGQ9B5d0OKu/+0Uz8hfVgDwzPV9hmqusmwo=
-=YXQD
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlu78NUACgkQbDjKyiDZ
+s5IjKg/+L2x2J2vhZY6UudAd6DuG8oym53Pl1CUaHUaqdPMok92l8tkRVoG5a+eF
+1GZ026tNT2FnzsiZokNSdCjOBBzQu4Nms5D+4X+r4Qi0YpzpxtG/gXLLQNhQQsdb
+yxujzPBLujWGzcjWcoGWP/q42q0Z3U/mUxgAFYpqyfZewbqM+1Kb8CW2phBE2QIy
+D0UdXfPKT3NMCu6izrZi/GkClZlFhOap0AmOtrQOmr5u9DFLHaFRKZXm/x4Rf2Wb
+E7ECkDP4fdFku5pVSFxm2BFyAbTqGSp8wl6jlz6mAYeIohBCO+M8g4AmT0GK28sn
+ne9F+kUAd9psSfpRQAydmdOa4clezP0Pq3fx9HK1MKxY01n+inXh7Sz1PFHJSfmn
+hTP/nJeJBcUGwhGGKogqlBuYnP+BTF1CT/irppjcex4EX46uCmD74fwmy6yK8wrC
+YUSROfJiTlBftXpGnp09PXLjaV2FBtf7BFkZbJl5AYAZ4t5IV+8kOu4fUAuQ9ZQM
+4KdNzcfWYRXpmMq15RxiVrxd1MI0wORETdCtpJXQADAJKmJc9cUAUQxZrcLqgP2e
+Gfp0AFEW6klEjH/yafsOdk9LjReGpvALgLQBRkk/OFZ+3nEhBpHB3lnL6nS+k5T1
+EJYfp0XtI1zFHco0xIzLu+RGONnVRr8Rx4ja0ymXgs/Llpplnk0=
+=PaCt
 -----END PGP SIGNATURE-----
 
---2eauhx3HRLXw1WRo--
+--DHdTHwZuIuFUI+Ax--
