@@ -6,70 +6,48 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 61811C64EB8
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 10:27:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 24D2DC64EAD
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 10:39:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 851D121479
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 10:27:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 851D121479
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 966BC21479
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 10:39:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 966BC21479
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42Tthm2dPGzF3Dc
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 21:27:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Ttym3fLCzF35n
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 21:39:44 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Ttfn6HxjzF37B
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Oct 2018 21:25:53 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 42TtfS23vNz9ttCW;
- Tue,  9 Oct 2018 12:25:36 +0200 (CEST)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 7bD5Opdj_XaS; Tue,  9 Oct 2018 12:25:36 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 42TtfS1SFvz9ttCT;
- Tue,  9 Oct 2018 12:25:36 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A8EBF8B7FC;
- Tue,  9 Oct 2018 12:25:47 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id lVx0-OH54nbz; Tue,  9 Oct 2018 12:25:47 +0200 (CEST)
-Received: from localhost.localdomain (unknown [192.168.232.3])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 5EB848B7FA;
- Tue,  9 Oct 2018 12:25:47 +0200 (CEST)
-Subject: Re: [PATCH v2 3/3] powerpc: machine check interrupt is a non-maskable
- interrupt
-To: Nicholas Piggin <npiggin@gmail.com>
-References: <20170719065912.19183-1-npiggin@gmail.com>
- <20170719065912.19183-4-npiggin@gmail.com>
- <30487984-752a-960d-6aae-6571c55c7ba5@c-s.fr>
- <20181009143241.026f3e7f@roar.ozlabs.ibm.com>
- <ccf61fc2-1f2e-7b67-c481-fa4c00a65aae@c-s.fr>
- <20181009153058.2564e7a1@roar.ozlabs.ibm.com>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <0539727f-8420-3176-30b5-f4a6a1ccd4a4@c-s.fr>
-Date: Tue, 9 Oct 2018 09:36:18 +0000
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.7.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42TtwQ3kqgzF384
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Oct 2018 21:37:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: by ozlabs.org (Postfix)
+ id 42TtwQ383qz9s8F; Tue,  9 Oct 2018 21:37:42 +1100 (AEDT)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPSA id 42TtwQ15wGz9s89;
+ Tue,  9 Oct 2018 21:37:42 +1100 (AEDT)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH] powerpc: Fix HMIs on big-endian with CONFIG_RELOCATABLE=y
+In-Reply-To: <898c4d47e80562b843fcf4c7ba03eb6f4c9c5d5b.camel@kernel.crashing.org>
+References: <e4bfa53ea8c777105359e1770df906909dde2c57.camel@kernel.crashing.org>
+ <20181008170435.0ef2d573@roar.ozlabs.ibm.com>
+ <898c4d47e80562b843fcf4c7ba03eb6f4c9c5d5b.camel@kernel.crashing.org>
+Date: Tue, 09 Oct 2018 21:37:41 +1100
+Message-ID: <87tvlv1k3u.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20181009153058.2564e7a1@roar.ozlabs.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,162 +59,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+> On Mon, 2018-10-08 at 17:04 +1000, Nicholas Piggin wrote:
+>> On Mon, 08 Oct 2018 15:08:31 +1100
+>> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+>> 
+>> > HMIs will crash the kernel due to
+>> > 
+>> > 	BRANCH_LINK_TO_FAR(hmi_exception_realmode)
+>> > 
+>> > Calling into the OPD instead of the actual code.
+>> > 
+>> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>> > ---
+>> > 
+>> > This hack fixes it for me, but it's not great. Nick, any better idea ?
+>> 
+>> Is it a hack because the ifdef gunk, or because there's something
+>> deeper wrong with using the .sym?
+>
+> I'd say ifdef gunk, also the KVM use doesn't need it bcs the kvm entry
+> isn't an OPD.
+>
+>> I guess all those handlers that load label address by hand could have
+>> the bug silently creep in. Can we have them use the DOTSYM() macro?
+>
+> The KVM one doesnt have a dotsym does it ?
+>
+> Also should we load the TOC from the OPD ?
+
+Technically yes. But I thought because we build with mcmodel=medium
+we'll never actually get multiple TOCs in the kernel itself, so it
+doesn't actually matter.
+
+So this seems to work for now:
+
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 301a6a86a20f..e5566e248a02 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -1149,7 +1149,7 @@ TRAMP_REAL_BEGIN(hmi_exception_early)
+ 	EXCEPTION_PROLOG_COMMON_2(PACA_EXGEN)
+ 	EXCEPTION_PROLOG_COMMON_3(0xe60)
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	BRANCH_LINK_TO_FAR(hmi_exception_realmode) /* Function call ABI */
++	BRANCH_LINK_TO_FAR(DOTSYM(hmi_exception_realmode)) /* Function call ABI */
+ 	cmpdi	cr0,r3,0
+ 
+ 	/* Windup the stack. */
 
 
-On 10/09/2018 05:30 AM, Nicholas Piggin wrote:
-> On Tue, 9 Oct 2018 06:46:30 +0200
-> Christophe LEROY <christophe.leroy@c-s.fr> wrote:
-> 
->> Le 09/10/2018 à 06:32, Nicholas Piggin a écrit :
->>> On Mon, 8 Oct 2018 17:39:11 +0200
->>> Christophe LEROY <christophe.leroy@c-s.fr> wrote:
->>>    
->>>> Hi Nick,
->>>>
->>>> Le 19/07/2017 à 08:59, Nicholas Piggin a écrit :
->>>>> Use nmi_enter similarly to system reset interrupts. This uses NMI
->>>>> printk NMI buffers and turns off various debugging facilities that
->>>>> helps avoid tripping on ourselves or other CPUs.
->>>>>
->>>>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
->>>>> ---
->>>>>     arch/powerpc/kernel/traps.c | 9 ++++++---
->>>>>     1 file changed, 6 insertions(+), 3 deletions(-)
->>>>>
->>>>> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
->>>>> index 2849c4f50324..6d31f9d7c333 100644
->>>>> --- a/arch/powerpc/kernel/traps.c
->>>>> +++ b/arch/powerpc/kernel/traps.c
->>>>> @@ -789,8 +789,10 @@ int machine_check_generic(struct pt_regs *regs)
->>>>>     
->>>>>     void machine_check_exception(struct pt_regs *regs)
->>>>>     {
->>>>> -	enum ctx_state prev_state = exception_enter();
->>>>>     	int recover = 0;
->>>>> +	bool nested = in_nmi();
->>>>> +	if (!nested)
->>>>> +		nmi_enter();
->>>>
->>>> This alters preempt_count, then when die() is called
->>>> in_interrupt() returns true allthough the trap didn't happen in
->>>> interrupt, so oops_end() panics for "fatal exception in interrupt"
->>>> instead of gently sending SIGBUS the faulting app.
->>>
->>> Thanks for tracking that down.
->>>    
->>>> Any idea on how to fix this ?
->>>
->>> I would say we have to deliver the sigbus by hand.
->>>
->>>       if ((user_mode(regs)))
->>>           _exception(SIGBUS, regs, BUS_MCEERR_AR, regs->nip);
->>>       else
->>>           die("Machine check", regs, SIGBUS);
->>>    
->>
->> And what about all the other things done by 'die()' ?
->>
->> And what if it is a kernel thread ?
->>
->> In one of my boards, I have a kernel thread regularly checking the HW,
->> and if it gets a machine check I expect it to gently stop and the die
->> notification to be delivered to all registered notifiers.
->>
->> Until before this patch, it was working well.
-> 
-> I guess the alternative is we could check regs->trap for machine
-> check in the die test. Complication is having to account for MCE
-> in an interrupt handler.
-> 
->         if (in_interrupt()) {
->                  if (!IS_MCHECK_EXC(regs) || (irq_count() - (NMI_OFFSET + HARDIRQ_OFFSET)))
->                      panic("Fatal exception in interrupt");
->         }
-> 
-> Something like that might work for you? We needs a ppc64 macro for the
-> MCE, and can probably add something like in_nmi_from_interrupt() for
-> the second part of the test.
-
-Don't know, I'm away from home on business trip so I won't be able to 
-test anything before next week. However it looks more or less like a 
-hack, doesn't it ?
-
-What about the following ?
-
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index fd58749b4d6b..1f09033a5103 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -208,7 +208,7 @@ static unsigned long oops_begin(struct pt_regs *regs)
-  NOKPROBE_SYMBOL(oops_begin);
-
-  static void oops_end(unsigned long flags, struct pt_regs *regs,
--			       int signr)
-+		     int signr, bool is_in_interrupt)
-  {
-  	bust_spinlocks(0);
-  	add_taint(TAINT_DIE, LOCKDEP_NOW_UNRELIABLE);
-@@ -247,7 +247,7 @@ static void oops_end(unsigned long flags, struct 
-pt_regs *regs,
-  		mdelay(MSEC_PER_SEC);
-  	}
-
--	if (in_interrupt())
-+	if (is_in_interrupt)
-  		panic("Fatal exception in interrupt");
-  	if (panic_on_oops)
-  		panic("Fatal exception");
-@@ -288,7 +288,7 @@ static int __die(const char *str, struct pt_regs 
-*regs, long err)
-  }
-  NOKPROBE_SYMBOL(__die);
-
--void die(const char *str, struct pt_regs *regs, long err)
-+static void nmi_die(const char *str, struct pt_regs *regs, long err, 
-bool is_in_interrupt)
-  {
-  	unsigned long flags;
-
-@@ -303,7 +303,13 @@ void die(const char *str, struct pt_regs *regs, 
-long err)
-  	flags = oops_begin(regs);
-  	if (__die(str, regs, err))
-  		err = 0;
--	oops_end(flags, regs, err);
-+	oops_end(flags, regs, err, is_in_interrupt);
-+}
-+NOKPROBE_SYMBOL(nmi_die);
-+
-+void die(const char *str, struct pt_regs *regs, long err)
-+{
-+	nmi_die(str, regs, err, in_interrupt());
-  }
-  NOKPROBE_SYMBOL(die);
-
-@@ -737,6 +743,7 @@ int machine_check_generic(struct pt_regs *regs)
-  void machine_check_exception(struct pt_regs *regs)
-  {
-  	int recover = 0;
-+	bool is_in_interrupt = in_interrupt();
-  	bool nested = in_nmi();
-  	if (!nested)
-  		nmi_enter();
-@@ -765,7 +772,7 @@ void machine_check_exception(struct pt_regs *regs)
-  	if (check_io_access(regs))
-  		goto bail;
-
--	die("Machine check", regs, SIGBUS);
-+	nmi_die("Machine check", regs, SIGBUS, is_in_interrupt);
-
-  	/* Must die if the interrupt is not recoverable */
-  	if (!(regs->msr & MSR_RI))
-
-
-Thanks
-Christophe
+cheers
