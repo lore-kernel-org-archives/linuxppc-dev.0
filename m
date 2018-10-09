@@ -4,26 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 56109C64EAD
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 14:27:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DC5DC64EAD
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 14:30:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AC31F213A2
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 14:27:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B467F213A2
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 14:30:14 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="PEtGZznv"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AC31F213A2
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="VhBM8FnV"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B467F213A2
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42V01g19xbzF3FC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Oct 2018 01:27:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42V04h6BPxzDqfD
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Oct 2018 01:30:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="PEtGZznv";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="VhBM8FnV";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
@@ -34,34 +35,35 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="PEtGZznv"; dkim-atps=neutral
+ header.b="VhBM8FnV"; dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Tyg965FFzF38J
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Oct 2018 00:26:29 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42TygC0W3DzF38h
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Oct 2018 00:26:31 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
  :Reply-To:Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From
  :Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
  List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=5zhArYVOfpz3UhaczPVMIKMuoMp45C3OR3JQcBbTR4Q=; b=PEtGZznvqjw8wP1A7IE3s7HgqV
- Decd25/6zt9jn4oWWFRxPmPK4LgotMOtwUgznAoFNeRbLrz/ug+wyEKCPIcF8WwlxqdyVO59W9yDE
- SKC/H5Ajlt6IlmlXMXFY/7a5Y06GWXqghS2wIrFZf9/O/IuZf/ay77uUu0cv3mycX3mvSnl8EnBCh
- gerYHus3pBh9CkGKEgQybx44AxRQ1erJlyA7MM86Ml/ravdyD4DQ3CUa09sY0pCH5LUFYj0o3aKqP
- IsilkrZNkNMGCo6dspHltDxM3yX7cNLTTb5mVYjMrkf+VCORu/lPswZCu987zHcheUK4F8UI9rvBi
- QD7c1j/A==;
+ bh=Ql7aNHvXxzTTeGCBs2l+3pR2u55du0W8IqjAoV6Ofu0=; b=VhBM8FnV/Qb+hJcAxNWpyw9fjs
+ 6Q0QpkQut2T2b2x7zH2vBrGPoBZ7Nddazm5NgWlGmEITQuh/VYiWFXAgEFmdG2tFGTp1XTNf4xule
+ QvTfYZnRF035flgMM6Zlgs40ULWxeyO72tDCMRb/k8HL6h2mW5DnASyOnevYy6Z/gJJ9OV5imIhLO
+ qiW9dwSI1vDt+rx3oM7OeCTS9CWUXBMcKitKCyIkg36gRE8UzpDCLxlDaanT1k3jpSCHKIVMWw4Do
+ hfp7AF2F70U9I5gFCs7JlLzGtuCNeZ2iuVRs6zqNwIJCahrt5+e+/NUl2esH4mmei2gIY0GuAc0P1
+ 0tZPIB3A==;
 Received: from clnet-p19-102.ikbnet.co.at ([83.175.77.102] helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
- id 1g9s1d-0001Y9-ME; Tue, 09 Oct 2018 13:26:14 +0000
+ id 1g9s1b-0001Wk-6c; Tue, 09 Oct 2018 13:26:11 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH 28/33] powerpc/dma: use phys_to_dma instead of get_dma_offset
-Date: Tue,  9 Oct 2018 15:24:55 +0200
-Message-Id: <20181009132500.17643-29-hch@lst.de>
+Subject: [PATCH 27/33] dma-mapping,
+ powerpc: simplify the arch dma_set_mask override
+Date: Tue,  9 Oct 2018 15:24:54 +0200
+Message-Id: <20181009132500.17643-28-hch@lst.de>
 X-Mailer: git-send-email 2.19.0
 In-Reply-To: <20181009132500.17643-1-hch@lst.de>
 References: <20181009132500.17643-1-hch@lst.de>
@@ -87,78 +89,154 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Use the standard portable helper instead of the powerpc specific one,
-which is about to go away.
+Instead of letting the architecture supply all of dma_set_mask just
+give it an additional hook selected by Kconfig.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/kernel/dma-swiotlb.c |  2 +-
- arch/powerpc/kernel/dma.c         | 10 +++++-----
- 2 files changed, 6 insertions(+), 6 deletions(-)
+ arch/powerpc/Kconfig                   |  1 +
+ arch/powerpc/include/asm/dma-mapping.h |  3 ---
+ arch/powerpc/kernel/dma-swiotlb.c      |  8 ++++++++
+ arch/powerpc/kernel/dma.c              | 12 ------------
+ arch/powerpc/sysdev/fsl_pci.c          |  4 ----
+ include/linux/dma-mapping.h            | 11 ++++++++---
+ kernel/dma/Kconfig                     |  3 +++
+ 7 files changed, 20 insertions(+), 22 deletions(-)
 
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 7097019d8907..7ea01687995d 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -126,6 +126,7 @@ config PPC
+ 	# Please keep this list sorted alphabetically.
+ 	#
+ 	select ARCH_HAS_DEVMEM_IS_ALLOWED
++	select ARCH_HAS_DMA_SET_MASK		if SWIOTLB
+ 	select ARCH_HAS_ELF_RANDOMIZE
+ 	select ARCH_HAS_FORTIFY_SOURCE
+ 	select ARCH_HAS_GCOV_PROFILE_ALL
+diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
+index b1999880fc61..7694985f05ee 100644
+--- a/arch/powerpc/include/asm/dma-mapping.h
++++ b/arch/powerpc/include/asm/dma-mapping.h
+@@ -109,8 +109,5 @@ static inline void set_dma_offset(struct device *dev, dma_addr_t off)
+ 		dev->archdata.dma_offset = off;
+ }
+ 
+-#define HAVE_ARCH_DMA_SET_MASK 1
+-extern int dma_set_mask(struct device *dev, u64 dma_mask);
+-
+ #endif /* __KERNEL__ */
+ #endif	/* _ASM_DMA_MAPPING_H */
 diff --git a/arch/powerpc/kernel/dma-swiotlb.c b/arch/powerpc/kernel/dma-swiotlb.c
-index dba216dd70fd..d33caff8c684 100644
+index e05d95ff50ad..dba216dd70fd 100644
 --- a/arch/powerpc/kernel/dma-swiotlb.c
 +++ b/arch/powerpc/kernel/dma-swiotlb.c
-@@ -11,7 +11,7 @@
-  *
-  */
+@@ -22,6 +22,14 @@
+ #include <asm/swiotlb.h>
+ #include <asm/dma.h>
  
--#include <linux/dma-mapping.h>
-+#include <linux/dma-direct.h>
- #include <linux/memblock.h>
- #include <linux/pfn.h>
- #include <linux/of_platform.h>
++bool arch_dma_set_mask(struct device *dev, u64 dma_mask)
++{
++	if (!ppc_md.dma_set_mask)
++		return 0;
++	return ppc_md.dma_set_mask(dev, dma_mask);
++}
++EXPORT_SYMBOL(arch_dma_set_mask);
++
+ unsigned int ppc_swiotlb_enable;
+ 
+ /*
 diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
-index 795afe387c91..7f7f3a069b63 100644
+index e3d2c15b209c..795afe387c91 100644
 --- a/arch/powerpc/kernel/dma.c
 +++ b/arch/powerpc/kernel/dma.c
-@@ -6,7 +6,7 @@
-  */
+@@ -197,18 +197,6 @@ const struct dma_map_ops dma_nommu_ops = {
+ };
+ EXPORT_SYMBOL(dma_nommu_ops);
  
- #include <linux/device.h>
--#include <linux/dma-mapping.h>
-+#include <linux/dma-direct.h>
- #include <linux/dma-debug.h>
- #include <linux/gfp.h>
- #include <linux/memblock.h>
-@@ -42,7 +42,7 @@ static u64 __maybe_unused get_pfn_limit(struct device *dev)
- int dma_nommu_dma_supported(struct device *dev, u64 mask)
+-int dma_set_mask(struct device *dev, u64 dma_mask)
+-{
+-	if (ppc_md.dma_set_mask)
+-		return ppc_md.dma_set_mask(dev, dma_mask);
+-
+-	if (!dev->dma_mask || !dma_supported(dev, dma_mask))
+-		return -EIO;
+-	*dev->dma_mask = dma_mask;
+-	return 0;
+-}
+-EXPORT_SYMBOL(dma_set_mask);
+-
+ static int __init dma_init(void)
  {
- #ifdef CONFIG_PPC64
--	u64 limit = get_dma_offset(dev) + (memblock_end_of_DRAM() - 1);
-+	u64 limit = phys_to_dma(dev, (memblock_end_of_DRAM() - 1));
+ #ifdef CONFIG_IBMVIO
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 296ffabc9386..cb91a3d113d1 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -135,9 +135,6 @@ static inline void setup_swiotlb_ops(struct pci_controller *hose) {}
  
- 	/* Limit fits in the mask, we are good */
- 	if (mask >= limit)
-@@ -100,7 +100,7 @@ void *__dma_nommu_alloc_coherent(struct device *dev, size_t size,
- 		return NULL;
- 	ret = page_address(page);
- 	memset(ret, 0, size);
--	*dma_handle = __pa(ret) + get_dma_offset(dev);
-+	*dma_handle = phys_to_dma(dev,__pa(ret));
+ static int fsl_pci_dma_set_mask(struct device *dev, u64 dma_mask)
+ {
+-	if (!dev->dma_mask || !dma_supported(dev, dma_mask))
+-		return -EIO;
+-
+ 	/*
+ 	 * Fix up PCI devices that are able to DMA to the large inbound
+ 	 * mapping that allows addressing any RAM address from across PCI.
+@@ -147,7 +144,6 @@ static int fsl_pci_dma_set_mask(struct device *dev, u64 dma_mask)
+ 		set_dma_offset(dev, pci64_dma_offset);
+ 	}
  
- 	return ret;
- }
-@@ -139,7 +139,7 @@ int dma_nommu_map_sg(struct device *dev, struct scatterlist *sgl,
- 	int i;
- 
- 	for_each_sg(sgl, sg, nents, i) {
--		sg->dma_address = sg_phys(sg) + get_dma_offset(dev);
-+		sg->dma_address = phys_to_dma(dev, sg_phys(sg));
- 		sg->dma_length = sg->length;
- 
- 		if (attrs & DMA_ATTR_SKIP_CPU_SYNC)
-@@ -158,7 +158,7 @@ dma_addr_t dma_nommu_map_page(struct device *dev, struct page *page,
- 	if (!(attrs & DMA_ATTR_SKIP_CPU_SYNC))
- 		__dma_sync_page(page, offset, size, dir);
- 
--	return page_to_phys(page) + offset + get_dma_offset(dev);
-+	return phys_to_dma(dev, page_to_phys(page)) + offset;
+-	*dev->dma_mask = dma_mask;
+ 	return 0;
  }
  
- #ifdef CONFIG_NOT_COHERENT_CACHE
+diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
+index 15bd41447025..8dd19e66c0e5 100644
+--- a/include/linux/dma-mapping.h
++++ b/include/linux/dma-mapping.h
+@@ -598,18 +598,23 @@ static inline int dma_supported(struct device *dev, u64 mask)
+ 	return ops->dma_supported(dev, mask);
+ }
+ 
+-#ifndef HAVE_ARCH_DMA_SET_MASK
++#ifdef CONFIG_ARCH_HAS_DMA_SET_MASK
++bool arch_dma_set_mask(struct device *dev, u64 mask);
++#else
++#define arch_dma_set_mask(dev, mask)		true
++#endif
++
+ static inline int dma_set_mask(struct device *dev, u64 mask)
+ {
+ 	if (!dev->dma_mask || !dma_supported(dev, mask))
+ 		return -EIO;
+-
++	if (!arch_dma_set_mask(dev, mask))
++		return -EIO;
+ 	dma_check_mask(dev, mask);
+ 
+ 	*dev->dma_mask = mask;
+ 	return 0;
+ }
+-#endif
+ 
+ static inline u64 dma_get_mask(struct device *dev)
+ {
+diff --git a/kernel/dma/Kconfig b/kernel/dma/Kconfig
+index 645c7a2ecde8..951045c90c2c 100644
+--- a/kernel/dma/Kconfig
++++ b/kernel/dma/Kconfig
+@@ -16,6 +16,9 @@ config ARCH_DMA_ADDR_T_64BIT
+ config ARCH_HAS_DMA_COHERENCE_H
+ 	bool
+ 
++config ARCH_HAS_DMA_SET_MASK
++	bool
++
+ config HAVE_GENERIC_DMA_COHERENT
+ 	bool
+ 
 -- 
 2.19.0
 
