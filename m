@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 37345C64EB0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 20:41:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C46B2C64EB0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 20:43:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 98D75213A2
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 20:41:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 98D75213A2
+	by mail.kernel.org (Postfix) with ESMTPS id 48DCB213A2
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 20:43:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 48DCB213A2
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42V8K253L4zF310
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Oct 2018 07:41:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42V8M93QklzF2Fb
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Oct 2018 07:43:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
@@ -30,48 +30,48 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42V8CT2ByDzF318
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Oct 2018 07:36:37 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42V8Cm66kDzF31T
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Oct 2018 07:36:52 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w99KSkw3061874
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Oct 2018 16:36:35 -0400
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2n11abde36-1
+ w99KSk7M129084
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Oct 2018 16:36:50 -0400
+Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2n11vam07e-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Oct 2018 16:36:35 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Oct 2018 16:36:50 -0400
 Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Tue, 9 Oct 2018 14:36:34 -0600
-Received: from b03cxnp08025.gho.boulder.ibm.com (9.17.130.17)
- by e36.co.us.ibm.com (192.168.1.136) with IBM ESMTP SMTP Gateway: Authorized
+ Tue, 9 Oct 2018 16:36:49 -0400
+Received: from b01cxnp22036.gho.pok.ibm.com (9.57.198.26)
+ by e16.ny.us.ibm.com (146.89.104.203) with IBM ESMTP SMTP Gateway: Authorized
  Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 9 Oct 2018 14:36:32 -0600
-Received: from b03ledav004.gho.boulder.ibm.com
- (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- w99KaVaa24903896
+ Tue, 9 Oct 2018 16:36:47 -0400
+Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
+ [9.57.199.106])
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ w99KakIU36045012
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Tue, 9 Oct 2018 13:36:31 -0700
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 22A4D7805C;
- Tue,  9 Oct 2018 14:36:31 -0600 (MDT)
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 053FE7805F;
- Tue,  9 Oct 2018 14:36:30 -0600 (MDT)
+ Tue, 9 Oct 2018 20:36:46 GMT
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B0D7A2805A;
+ Tue,  9 Oct 2018 16:34:16 -0400 (EDT)
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 87C6228058;
+ Tue,  9 Oct 2018 16:34:16 -0400 (EDT)
 Received: from ltcalpine2-lp9.aus.stglabs.ibm.com (unknown [9.40.195.192])
- by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
- Tue,  9 Oct 2018 14:36:30 -0600 (MDT)
+ by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP;
+ Tue,  9 Oct 2018 16:34:16 -0400 (EDT)
 Received: from ltcalpine2-lp9.aus.stglabs.ibm.com (localhost [IPv6:::1])
- by ltcalpine2-lp9.aus.stglabs.ibm.com (Postfix) with ESMTP id 82E0F283621F;
- Tue,  9 Oct 2018 15:36:30 -0500 (CDT)
-Subject: [PATCH v04 2/5] powerpc/drmem: Add internal_flags feature
+ by ltcalpine2-lp9.aus.stglabs.ibm.com (Postfix) with ESMTP id 34C53283621F;
+ Tue,  9 Oct 2018 15:36:46 -0500 (CDT)
+Subject: [PATCH v04 3/5] migration/memory: Add hotplug READD_MULTIPLE
 From: Michael Bringmann <mwb@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, mwb@linux.vnet.ibm.com
-Date: Tue, 09 Oct 2018 15:36:30 -0500
+Date: Tue, 09 Oct 2018 15:36:46 -0500
 In-Reply-To: <20181009203520.26091.86781.stgit@ltcalpine2-lp9.aus.stglabs.ibm.com>
 References: <20181009203520.26091.86781.stgit@ltcalpine2-lp9.aus.stglabs.ibm.com>
 User-Agent: StGit/0.18-105-g416a
@@ -79,21 +79,21 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
-x-cbid: 18100920-0020-0000-0000-00000E75C6DB
+x-cbid: 18100920-0072-0000-0000-000003B2304A
 X-IBM-SpamModules-Scores: 
 X-IBM-SpamModules-Versions: BY=3.00009849; HX=3.00000242; KW=3.00000007;
  PH=3.00000004; SC=3.00000268; SDB=6.01100294; UDB=6.00569266; IPR=6.00880342; 
- MB=3.00023685; MTD=3.00000008; XFM=3.00000015; UTC=2018-10-09 20:36:33
+ MB=3.00023685; MTD=3.00000008; XFM=3.00000015; UTC=2018-10-09 20:36:48
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18100920-0021-0000-0000-00006350FCA8
-Message-Id: <20181009203616.26091.12840.stgit@ltcalpine2-lp9.aus.stglabs.ibm.com>
+x-cbparentid: 18100920-0073-0000-0000-000049B2F935
+Message-Id: <20181009203635.26091.67563.stgit@ltcalpine2-lp9.aus.stglabs.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2018-10-09_14:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=935 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1807170000 definitions=main-1810090194
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -113,86 +113,92 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-powerpc/drmem: Add internal_flags field to each LMB to allow
-marking of kernel software-specific operations that need not
-be exported to other users.  For instance, if information about
-selected LMBs needs to be maintained for subsequent passes
-through the system, it can be encoded into the LMB array itself
-without requiring the allocation and maintainance of additional
-data structures.
+migration/memory: This patch adds a new pseries hotplug action
+for CPU and memory operations, PSERIES_HP_ELOG_ACTION_READD_MULTIPLE.
+This is a variant of the READD operation which performs the action
+upon multiple instances of the resource at one time.  The operation
+is to be triggered by device-tree analysis of updates by RTAS events
+analyzed by 'migation_store' during post-migration processing.  It
+will be used for memory updates, initially.
 
 Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 ---
 Changes in v04:
-  -- Add another initialization of 'lmb->internal_flags' to
-     init_drmem_v2_lmbs.
+  -- Move init of 'lmb->internal_flags' in init_drmem_v2_lmbs to
+     previous patch.
+  -- Pull in implementation of dlpar_memory_readd_multiple() to go
+     with operation flag.
 ---
- arch/powerpc/include/asm/drmem.h |   18 ++++++++++++++++++
- arch/powerpc/mm/drmem.c          |    3 +++
- 2 files changed, 21 insertions(+)
+ arch/powerpc/include/asm/rtas.h                 |    1 +
+ arch/powerpc/platforms/pseries/hotplug-memory.c |   31 +++++++++++++++++++++++
+ 2 files changed, 32 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/drmem.h b/arch/powerpc/include/asm/drmem.h
-index 1fbb684..6c5df92 100644
---- a/arch/powerpc/include/asm/drmem.h
-+++ b/arch/powerpc/include/asm/drmem.h
-@@ -17,6 +17,7 @@ struct drmem_lmb {
- 	u32     drc_index;
- 	u32     aa_index;
- 	u32     flags;
-+	u32     internal_flags;
- };
+diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
+index 0183e95..cc00451 100644
+--- a/arch/powerpc/include/asm/rtas.h
++++ b/arch/powerpc/include/asm/rtas.h
+@@ -333,6 +333,7 @@ struct pseries_hp_errorlog {
+ #define PSERIES_HP_ELOG_ACTION_ADD	1
+ #define PSERIES_HP_ELOG_ACTION_REMOVE	2
+ #define PSERIES_HP_ELOG_ACTION_READD	3
++#define PSERIES_HP_ELOG_ACTION_READD_MULTIPLE	4
  
- struct drmem_lmb_info {
-@@ -101,6 +102,23 @@ static inline bool drmem_lmb_reserved(struct drmem_lmb *lmb)
- 	return lmb->flags & DRMEM_LMB_RESERVED;
+ #define PSERIES_HP_ELOG_ID_DRC_NAME	1
+ #define PSERIES_HP_ELOG_ID_DRC_INDEX	2
+diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+index 9a15d39..bf2420a 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-memory.c
++++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+@@ -546,6 +546,30 @@ static int dlpar_memory_readd_by_index(u32 drc_index)
+ 	return rc;
  }
  
-+#define DRMEM_LMBINT_UPDATE	0x00000001
-+
-+static inline void drmem_mark_lmb_update(struct drmem_lmb *lmb)
++static int dlpar_memory_readd_multiple(void)
 +{
-+	lmb->internal_flags |= DRMEM_LMBINT_UPDATE;
++	struct drmem_lmb *lmb;
++	int rc;
++
++	pr_info("Attempting to update multiple LMBs\n");
++
++	for_each_drmem_lmb(lmb) {
++		if (drmem_lmb_update(lmb)) {
++			rc = dlpar_remove_lmb(lmb);
++
++			if (!rc) {
++				rc = dlpar_add_lmb(lmb);
++				if (rc)
++					dlpar_release_drc(lmb->drc_index);
++			}
++
++			drmem_remove_lmb_update(lmb);
++		}
++	}
++
++	return rc;
 +}
 +
-+static inline void drmem_remove_lmb_update(struct drmem_lmb *lmb)
-+{
-+	lmb->internal_flags &= ~DRMEM_LMBINT_UPDATE;
-+}
-+
-+static inline bool drmem_lmb_update(struct drmem_lmb *lmb)
-+{
-+	return lmb->internal_flags & DRMEM_LMBINT_UPDATE;
-+}
-+
- u64 drmem_lmb_memory_max(void);
- void __init walk_drmem_lmbs(struct device_node *dn,
- 			void (*func)(struct drmem_lmb *, const __be32 **));
-diff --git a/arch/powerpc/mm/drmem.c b/arch/powerpc/mm/drmem.c
-index 13d2abb..2228586 100644
---- a/arch/powerpc/mm/drmem.c
-+++ b/arch/powerpc/mm/drmem.c
-@@ -207,6 +207,7 @@ static void read_drconf_v1_cell(struct drmem_lmb *lmb,
- 
- 	lmb->aa_index = of_read_number(p++, 1);
- 	lmb->flags = of_read_number(p++, 1);
-+	lmb->internal_flags = 0;
- 
- 	*prop = p;
+ static int dlpar_memory_remove_by_ic(u32 lmbs_to_remove, u32 drc_index)
+ {
+ 	struct drmem_lmb *lmb, *start_lmb, *end_lmb;
+@@ -646,6 +670,10 @@ static int dlpar_memory_readd_by_index(u32 drc_index)
+ {
+ 	return -EOPNOTSUPP;
  }
-@@ -265,6 +266,7 @@ static void __walk_drmem_v2_lmbs(const __be32 *prop, const __be32 *usm,
++static int dlpar_memory_readd_multiple(void)
++{
++	return -EOPNOTSUPP;
++}
  
- 			lmb.aa_index = dr_cell.aa_index;
- 			lmb.flags = dr_cell.flags;
-+			lmb.internal_flags = 0;
- 
- 			func(&lmb, &usm);
- 		}
-@@ -420,6 +422,7 @@ static void init_drmem_v2_lmbs(const __be32 *prop,
- 
- 			lmb->aa_index = dr_cell.aa_index;
- 			lmb->flags = dr_cell.flags;
-+			lmb->internal_flags = 0;
- 		}
- 	}
- }
+ static int dlpar_memory_remove_by_ic(u32 lmbs_to_remove, u32 drc_index)
+ {
+@@ -923,6 +951,9 @@ int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
+ 		drc_index = hp_elog->_drc_u.drc_index;
+ 		rc = dlpar_memory_readd_by_index(drc_index);
+ 		break;
++	case PSERIES_HP_ELOG_ACTION_READD_MULTIPLE:
++		rc = dlpar_memory_readd_multiple();
++		break;
+ 	default:
+ 		pr_err("Invalid action (%d) specified\n", hp_elog->action);
+ 		rc = -EINVAL;
 
