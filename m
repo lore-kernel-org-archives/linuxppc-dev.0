@@ -2,85 +2,88 @@ Return-Path: <SRS0=lRG+=MW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E801FC43441
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Oct 2018 04:26:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BD023C43441
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Oct 2018 04:31:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 61DAE21479
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Oct 2018 04:26:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 61DAE21479
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 1D99F21479
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Oct 2018 04:31:16 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=ti.com header.i=@ti.com header.b="VhWG3IyO"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1D99F21479
+Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=ti.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42VLf1055yzF35f
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Oct 2018 15:26:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42VLl717ZxzF35h
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Oct 2018 15:31:15 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=srikar@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=ti.com header.i=@ti.com header.b="VhWG3IyO";
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=ti.com
+ (client-ip=198.47.19.142; helo=fllv0016.ext.ti.com;
+ envelope-from=nsekhar@ti.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=quarantine dis=none) header.from=ti.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=ti.com header.i=@ti.com header.b="VhWG3IyO"; 
+ dkim-atps=neutral
+X-Greylist: delayed 852 seconds by postgrey-1.36 at bilbo;
+ Tue, 09 Oct 2018 23:13:58 AEDT
+Received: from fllv0016.ext.ti.com (fllv0016.ext.ti.com [198.47.19.142])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42VLbx0jxdzF325
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Oct 2018 15:25:00 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w9A4OAnE095375
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Oct 2018 00:24:58 -0400
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2n16eyygtu-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Oct 2018 00:24:58 -0400
-Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srikar@linux.vnet.ibm.com>;
- Wed, 10 Oct 2018 05:24:56 +0100
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 10 Oct 2018 05:24:55 +0100
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- w9A4OsPA41091252
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Wed, 10 Oct 2018 04:24:54 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8FAF15204E;
- Wed, 10 Oct 2018 07:24:27 +0100 (BST)
-Received: from srikart450.in.ibm.com (unknown [9.85.71.232])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id BB80C52050;
- Wed, 10 Oct 2018 07:24:25 +0100 (BST)
-From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH] powerpc/topology: Update numa mask when cpu node mapping
- changes
-Date: Wed, 10 Oct 2018 09:54:46 +0530
-X-Mailer: git-send-email 2.7.4
-X-TM-AS-GCONF: 00
-x-cbid: 18101004-0012-0000-0000-000002B4EA75
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18101004-0013-0000-0000-000020E94085
-Message-Id: <1539145486-10250-1-git-send-email-srikar@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-10-09_14:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1807170000 definitions=main-1810100043
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Tx3V5qjvzF38t
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Oct 2018 23:13:57 +1100 (AEDT)
+Received: from dlelxv90.itg.ti.com ([172.17.2.17])
+ by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id w99BxC5d031707;
+ Tue, 9 Oct 2018 06:59:12 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
+ s=ti-com-17Q1; t=1539086352;
+ bh=IwNa+1TnhCVLX42CgDNqqHC4xRsXgRi1vCPFardr5p8=;
+ h=Subject:To:CC:References:From:Date:In-Reply-To;
+ b=VhWG3IyOJXLXEmcmORjWWOYrPM6bDfc6kVX9GZ+FN06oaTpai55wdQO53m0Af3GAa
+ Dhzbod+Ieo7z0YAS0SeydsBZ64LLEvrIceVKhjc6MHl5fNEkbxe4DZxfwqwXrrW0FJ
+ QV3mAuAHFnBnVMmDuLPlDq5qN3UVvUxA1cPvGNsw=
+Received: from DFLE109.ent.ti.com (dfle109.ent.ti.com [10.64.6.30])
+ by dlelxv90.itg.ti.com (8.14.3/8.13.8) with ESMTP id w99BxCul016873;
+ Tue, 9 Oct 2018 06:59:12 -0500
+Received: from DFLE105.ent.ti.com (10.64.6.26) by DFLE109.ent.ti.com
+ (10.64.6.30) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1466.3; Tue, 9 Oct
+ 2018 06:59:12 -0500
+Received: from dlep32.itg.ti.com (157.170.170.100) by DFLE105.ent.ti.com
+ (10.64.6.26) with Microsoft SMTP Server (version=TLS1_0,
+ cipher=TLS_RSA_WITH_AES_256_CBC_SHA) id 15.1.1466.3 via Frontend Transport;
+ Tue, 9 Oct 2018 06:59:12 -0500
+Received: from [172.24.190.172] (ileax41-snat.itg.ti.com [10.172.224.153])
+ by dlep32.itg.ti.com (8.14.3/8.13.8) with ESMTP id w99Bx63W022342;
+ Tue, 9 Oct 2018 06:59:07 -0500
+Subject: Re: [PATCH 21/36] dt-bindings: arm: Convert TI davinci board/soc
+ bindings to json-schema
+To: Rob Herring <robh@kernel.org>, <linux-kernel@vger.kernel.org>,
+ <devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+ <linuxppc-dev@lists.ozlabs.org>
+References: <20181005165848.3474-1-robh@kernel.org>
+ <20181005165848.3474-22-robh@kernel.org>
+From: Sekhar Nori <nsekhar@ti.com>
+Message-ID: <e8aeb321-9f9a-8636-2f1d-f5082e635fb1@ti.com>
+Date: Tue, 9 Oct 2018 17:29:06 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
+MIME-Version: 1.0
+In-Reply-To: <20181005165848.3474-22-robh@kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+X-Mailman-Approved-At: Wed, 10 Oct 2018 15:28:55 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,63 +95,106 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
- Michael Bringmann <mbringm@us.ibm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, Tom Rini <trini@konsulko.com>,
+ Kumar Gala <kumar.gala@linaro.org>, Grant Likely <glikely@secretlab.ca>,
+ Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>,
+ Linus Walleij <linus.walleij@linaro.org>,
+ Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
+ Bjorn Andersson <bjorn.andersson@linaro.org>, Mark Brown <broonie@kernel.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, Olof Johansson <olof@lixom.net>,
+ Frank Rowand <frowand.list@gmail.com>, Jonathan Cameron <jic23@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Commit 2ea626306810 ("powerpc/topology: Get topology for shared
-processors at boot") will update the cpu node topology for shared lpars
-on PowerVM.
+On Friday 05 October 2018 10:28 PM, Rob Herring wrote:
+> Convert TI Davinci SoC bindings to DT schema format using json-schema.
+> 
+> Cc: Sekhar Nori <nsekhar@ti.com>
+> Cc: Kevin Hilman <khilman@kernel.org>
+> Cc: Mark Rutland <mark.rutland@arm.com>
+> Cc: devicetree@vger.kernel.org
+> Signed-off-by: Rob Herring <robh@kernel.org>
+> ---
+>  .../devicetree/bindings/arm/davinci.txt       | 25 ------------------
+>  .../bindings/arm/ti/ti,davinci.yaml           | 26 +++++++++++++++++++
+>  2 files changed, 26 insertions(+), 25 deletions(-)
+>  delete mode 100644 Documentation/devicetree/bindings/arm/davinci.txt
+>  create mode 100644 Documentation/devicetree/bindings/arm/ti/ti,davinci.yaml
+> 
+> diff --git a/Documentation/devicetree/bindings/arm/davinci.txt b/Documentation/devicetree/bindings/arm/davinci.txt
+> deleted file mode 100644
+> index 715622c36260..000000000000
+> --- a/Documentation/devicetree/bindings/arm/davinci.txt
+> +++ /dev/null
+> @@ -1,25 +0,0 @@
+> -Texas Instruments DaVinci Platforms Device Tree Bindings
+> ---------------------------------------------------------
+> -
+> -DA850/OMAP-L138/AM18x Evaluation Module (EVM) board
+> -Required root node properties:
+> -    - compatible = "ti,da850-evm", "ti,da850";
+> -
+> -DA850/OMAP-L138/AM18x L138/C6748 Development Kit (LCDK) board
+> -Required root node properties:
+> -    - compatible = "ti,da850-lcdk", "ti,da850";
+> -
+> -EnBW AM1808 based CMC board
+> -Required root node properties:
+> -    - compatible = "enbw,cmc", "ti,da850;
+> -
+> -LEGO MINDSTORMS EV3 (AM1808 based)
+> -Required root node properties:
+> -    - compatible = "lego,ev3", "ti,da850";
+> -
+> -Generic DaVinci Boards
+> -----------------------
+> -
+> -DA850/OMAP-L138/AM18x generic board
+> -Required root node properties:
+> -    - compatible = "ti,da850";
+> diff --git a/Documentation/devicetree/bindings/arm/ti/ti,davinci.yaml b/Documentation/devicetree/bindings/arm/ti/ti,davinci.yaml
+> new file mode 100644
+> index 000000000000..2675cae91a60
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/arm/ti/ti,davinci.yaml
+> @@ -0,0 +1,26 @@
+> +# SPDX-License-Identifier: None
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/bindings/arm/davinci.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: Texas Instruments DaVinci Platforms Device Tree Bindings
+> +
+> +maintainers:
+> +  - Sekhar Nori <nsekhar@ti.com>
+> +description: |
+> +  DA850/OMAP-L138/AM18x based boards
+> +
+> +
+> +properties:
+> +  $nodename:
+> +    const: '/'
+> +  compatible:
+> +    items:
+> +      - enum:
+> +          - ti,da850-evm
+> +          - ti,da850-lcdk
+> +          - enbw,cmc
+> +          - lego,ev3
 
-However shared lpars on PowerVM also support VPHN and PRRN events.
-On receiving a VPHN, PRRN events, cpu to node mapping might change.
+The boards had some reasonable human readable description earlier, which
+has been lost now. Is there a way to bring that back?
 
-Scheduler maintains sched_domains_numa_masks[], which is currently not
-updated on cpu to node mapping changes. This can lead to machine
-regressions and performance regressions.
+Apart from that, looks good to me.
 
-Fix numa_update_cpu_topology() to update sched_domains_numa_masks[].
+Thanks,
+Sekhar
 
-Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
----
- arch/powerpc/mm/numa.c | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
-
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 3ea5b05ee6be..bf34384aa314 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -29,6 +29,7 @@
- #include <linux/seq_file.h>
- #include <linux/uaccess.h>
- #include <linux/slab.h>
-+#include <linux/sched/hotplug.h>
- #include <asm/cputhreads.h>
- #include <asm/sparsemem.h>
- #include <asm/prom.h>
-@@ -1424,6 +1425,19 @@ int numa_update_cpu_topology(bool cpus_locked)
- 		changed = 1;
- 	}
- 
-+	/*
-+	 * Scheduler maintains a sched_domain_numa_masks table that needs to
-+	 * be updated whenever cpu-node mapping changes. Cpu-node mapping
-+	 * change only with vphn and prrn.
-+	 */
-+	if (!(topology_inited && (vphn_enabled || prrn_enabled)))
-+		goto out;
-+
-+	for_each_cpu(cpu, &updated_cpus) {
-+		sched_cpu_deactivate(cpu);
-+		sched_cpu_activate(cpu);
-+	}
-+
- out:
- 	kfree(updates);
- 	topology_update_needed = 0;
--- 
-2.12.3
+> +      - const: ti,da850
+> +...
+> -- 
+> 2.17.1
+> 
 
