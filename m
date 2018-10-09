@@ -7,59 +7,59 @@ X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D096CC6787A
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 01:08:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 988C8C6787A
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 01:11:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3A96C205C9
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 01:08:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 01DCB2075C
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 01:11:07 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="kNAh5JEU"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3A96C205C9
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="B7iwTaBa"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 01DCB2075C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42TfHr00MtzF31L
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 12:08:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42TfLd6wTlzF3BQ
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 12:11:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="kNAh5JEU";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="B7iwTaBa";
 	dkim-atps=neutral
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Tf1z4KJbzF37J
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Oct 2018 11:56:39 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Tf204LlrzF3CP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Oct 2018 11:56:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=gibson.dropbear.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.b="kNAh5JEU"; dkim-atps=neutral
+ header.b="B7iwTaBa"; dkim-atps=neutral
 Received: by ozlabs.org (Postfix)
- id 42Tf1z2wt7z9sj6; Tue,  9 Oct 2018 11:56:39 +1100 (AEDT)
+ id 42Tf200GSJzB4NB; Tue,  9 Oct 2018 11:56:40 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1007)
- id 42Tf1z1sYhz9sCr; Tue,  9 Oct 2018 11:56:39 +1100 (AEDT)
+ id 42Tf1z70LXzB4Mj; Tue,  9 Oct 2018 11:56:39 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=gibson.dropbear.id.au; s=201602; t=1539046599;
- bh=bEJ19bhK+ll2wVGimVyyKUjgglFHTMXwvUksA2etBNM=;
+ bh=O148qTpG04lpoKN+Tqt0+sfJGot3UziNTNcwBlaGppU=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=kNAh5JEUQGdB5alCdOo+EitbzRqXDJl4bYEKUOPE2qIx9T/yzVEH2hF+XPl+V9Ff3
- 05X5IrplekT5yfFJIT5vL1HyUEjBxu1JzPxo/UlGfh3IIJOf2q28gL7Wv/SvHRKpw5
- WZNO7cc88c5qGh7XaaNYvxn5/ioXY6r7BxC+++g0=
-Date: Tue, 9 Oct 2018 10:30:04 +1100
+ b=B7iwTaBaQk07Q2Ixde9ofnPRRBwYHDlAhbNwxoR8kyPTKFLE0OfJU28SJJK/X1DWD
+ 5fCq7ONZkw21za5gBavM5TC8P/H5ZpnFFW16xq11hoHFj8DVYNwrEEQAxrAeCD+rSc
+ CpogTDjQMjs5yQfyefPMrq0a6kH6T0yuufQQRHCw=
+Date: Tue, 9 Oct 2018 11:26:49 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Paul Mackerras <paulus@ozlabs.org>
-Subject: Re: [PATCH v5 17/33] KVM: PPC: Book3S HV: Framework and hcall stubs
- for nested virtualization
-Message-ID: <20181008233004.GA7004@umbus.fritz.box>
+Subject: Re: [PATCH v5 22/33] KVM: PPC: Book3S HV: Introduce rmap to track
+ nested guest mappings
+Message-ID: <20181009002649.GG7004@umbus.fritz.box>
 References: <1538976679-1363-1-git-send-email-paulus@ozlabs.org>
- <1538976679-1363-18-git-send-email-paulus@ozlabs.org>
+ <1538976679-1363-23-git-send-email-paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="1ozVqH6bFr/3sC51"
+ protocol="application/pgp-signature"; boundary="2eauhx3HRLXw1WRo"
 Content-Disposition: inline
-In-Reply-To: <1538976679-1363-18-git-send-email-paulus@ozlabs.org>
+In-Reply-To: <1538976679-1363-23-git-send-email-paulus@ozlabs.org>
 User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -78,608 +78,517 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---1ozVqH6bFr/3sC51
+--2eauhx3HRLXw1WRo
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Oct 08, 2018 at 04:31:03PM +1100, Paul Mackerras wrote:
-> This starts the process of adding the code to support nested HV-style
-> virtualization.  It defines a new H_SET_PARTITION_TABLE hypercall which
-> a nested hypervisor can use to set the base address and size of a
-> partition table in its memory (analogous to the PTCR register).
-> On the host (level 0 hypervisor) side, the H_SET_PARTITION_TABLE
-> hypercall from the guest is handled by code that saves the virtual
-> PTCR value for the guest.
+On Mon, Oct 08, 2018 at 04:31:08PM +1100, Paul Mackerras wrote:
+> From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
 >=20
-> This also adds code for creating and destroying nested guests and for
-> reading the partition table entry for a nested guest from L1 memory.
-> Each nested guest has its own shadow LPID value, different in general
-> from the LPID value used by the nested hypervisor to refer to it.  The
-> shadow LPID value is allocated at nested guest creation time.
+> When a host (L0) page which is mapped into a (L1) guest is in turn
+> mapped through to a nested (L2) guest we keep a reverse mapping (rmap)
+> so that these mappings can be retrieved later.
 >=20
-> Nested hypervisor functionality is only available for a radix guest,
-> which therefore means a radix host on a POWER9 (or later) processor.
+> Whenever we create an entry in a shadow_pgtable for a nested guest we
+> create a corresponding rmap entry and add it to the list for the
+> L1 guest memslot at the index of the L1 guest page it maps. This means
+> at the L1 guest memslot we end up with lists of rmaps.
 >=20
+> When we are notified of a host page being invalidated which has been
+> mapped through to a (L1) guest, we can then walk the rmap list for that
+> guest page, and find and invalidate all of the corresponding
+> shadow_pgtable entries.
+>=20
+> In order to reduce memory consumption, we compress the information for
+> each rmap entry down to 52 bits -- 12 bits for the LPID and 40 bits
+> for the guest real page frame number -- which will fit in a single
+> unsigned long.  To avoid a scenario where a guest can trigger
+> unbounded memory allocations, we scan the list when adding an entry to
+> see if there is already an entry with the contents we need.  This can
+> occur, because we don't ever remove entries from the middle of a list.
+>=20
+> A struct nested guest rmap is a list pointer and an rmap entry;
+> ----------------
+> | next pointer |
+> ----------------
+> | rmap entry   |
+> ----------------
+>=20
+> Thus the rmap pointer for each guest frame number in the memslot can be
+> either NULL, a single entry, or a pointer to a list of nested rmap entrie=
+s.
+>=20
+> gfn	 memslot rmap array
+>  	-------------------------
+>  0	| NULL			|	(no rmap entry)
+>  	-------------------------
+>  1	| single rmap entry	|	(rmap entry with low bit set)
+>  	-------------------------
+>  2	| list head pointer	|	(list of rmap entries)
+>  	-------------------------
+>=20
+> The final entry always has the lowest bit set and is stored in the next
+> pointer of the last list entry, or as a single rmap entry.
+> With a list of rmap entries looking like;
+>=20
+> -----------------	-----------------	-------------------------
+> | list head ptr	| ----> | next pointer	| ---->	| single rmap entry	|
+> -----------------	-----------------	-------------------------
+> 			| rmap entry	|	| rmap entry		|
+> 			-----------------	-------------------------
+>=20
+> Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
 > Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 
 Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
-
 > ---
->  arch/powerpc/include/asm/hvcall.h         |   5 +
->  arch/powerpc/include/asm/kvm_book3s.h     |  10 +-
->  arch/powerpc/include/asm/kvm_book3s_64.h  |  33 ++++
->  arch/powerpc/include/asm/kvm_book3s_asm.h |   3 +
->  arch/powerpc/include/asm/kvm_host.h       |   5 +
->  arch/powerpc/kvm/Makefile                 |   3 +-
->  arch/powerpc/kvm/book3s_hv.c              |  31 ++-
->  arch/powerpc/kvm/book3s_hv_nested.c       | 301 ++++++++++++++++++++++++=
-++++++
->  8 files changed, 384 insertions(+), 7 deletions(-)
->  create mode 100644 arch/powerpc/kvm/book3s_hv_nested.c
+>  arch/powerpc/include/asm/kvm_book3s.h    |   3 +
+>  arch/powerpc/include/asm/kvm_book3s_64.h |  69 +++++++++++++++-
+>  arch/powerpc/kvm/book3s_64_mmu_radix.c   |  44 +++++++---
+>  arch/powerpc/kvm/book3s_hv.c             |   1 +
+>  arch/powerpc/kvm/book3s_hv_nested.c      | 138 +++++++++++++++++++++++++=
++++++-
+>  5 files changed, 240 insertions(+), 15 deletions(-)
 >=20
-> diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm=
-/hvcall.h
-> index a0b17f9..c95c651 100644
-> --- a/arch/powerpc/include/asm/hvcall.h
-> +++ b/arch/powerpc/include/asm/hvcall.h
-> @@ -322,6 +322,11 @@
->  #define H_GET_24X7_DATA		0xF07C
->  #define H_GET_PERF_COUNTER_INFO	0xF080
-> =20
-> +/* Platform-specific hcalls used for nested HV KVM */
-> +#define H_SET_PARTITION_TABLE	0xF800
-> +#define H_ENTER_NESTED		0xF804
-> +#define H_TLB_INVALIDATE	0xF808
-> +
->  /* Values for 2nd argument to H_SET_MODE */
->  #define H_SET_MODE_RESOURCE_SET_CIABR		1
->  #define H_SET_MODE_RESOURCE_SET_DAWR		2
 > diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include=
 /asm/kvm_book3s.h
-> index 91c9779..43f212e 100644
+> index 63f7ccf..d7aeb6f 100644
 > --- a/arch/powerpc/include/asm/kvm_book3s.h
 > +++ b/arch/powerpc/include/asm/kvm_book3s.h
-> @@ -274,6 +274,13 @@ static inline void kvmppc_save_tm_sprs(struct kvm_vc=
-pu *vcpu) {}
->  static inline void kvmppc_restore_tm_sprs(struct kvm_vcpu *vcpu) {}
->  #endif
-> =20
-> +long kvmhv_nested_init(void);
-> +void kvmhv_nested_exit(void);
-> +void kvmhv_vm_nested_init(struct kvm *kvm);
-> +long kvmhv_set_partition_table(struct kvm_vcpu *vcpu);
-> +void kvmhv_set_ptbl_entry(unsigned int lpid, u64 dw0, u64 dw1);
-> +void kvmhv_release_all_nested(struct kvm *kvm);
-> +
->  void kvmppc_giveup_fac(struct kvm_vcpu *vcpu, ulong fac);
-> =20
->  extern int kvm_irq_bypass;
-> @@ -387,9 +394,6 @@ extern int kvmppc_h_logical_ci_store(struct kvm_vcpu =
-*vcpu);
->  /* TO =3D 31 for unconditional trap */
->  #define INS_TW				0x7fe00008
-> =20
-> -/* LPIDs we support with this build -- runtime limit may be lower */
-> -#define KVMPPC_NR_LPIDS			(LPID_RSVD + 1)
-> -
->  #define SPLIT_HACK_MASK			0xff000000
->  #define SPLIT_HACK_OFFS			0xfb000000
-> =20
+> @@ -196,6 +196,9 @@ extern int kvmppc_mmu_radix_translate_table(struct kv=
+m_vcpu *vcpu, gva_t eaddr,
+>  			int table_index, u64 *pte_ret_p);
+>  extern int kvmppc_mmu_radix_xlate(struct kvm_vcpu *vcpu, gva_t eaddr,
+>  			struct kvmppc_pte *gpte, bool data, bool iswrite);
+> +extern void kvmppc_unmap_pte(struct kvm *kvm, pte_t *pte, unsigned long =
+gpa,
+> +			unsigned int shift, struct kvm_memory_slot *memslot,
+> +			unsigned int lpid);
+>  extern bool kvmppc_hv_handle_set_rc(struct kvm *kvm, pgd_t *pgtable,
+>  				    bool writing, unsigned long gpa,
+>  				    unsigned int lpid);
 > diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/incl=
 ude/asm/kvm_book3s_64.h
-> index 5c0e2d9..6d67b6a 100644
+> index 5496152..c2a9146 100644
 > --- a/arch/powerpc/include/asm/kvm_book3s_64.h
 > +++ b/arch/powerpc/include/asm/kvm_book3s_64.h
-> @@ -23,6 +23,39 @@
->  #include <linux/string.h>
->  #include <asm/bitops.h>
->  #include <asm/book3s/64/mmu-hash.h>
-> +#include <asm/cpu_has_feature.h>
-> +
-> +#ifdef CONFIG_PPC_PSERIES
-> +static inline bool kvmhv_on_pseries(void)
-> +{
-> +	return !cpu_has_feature(CPU_FTR_HVMODE);
-> +}
-> +#else
-> +static inline bool kvmhv_on_pseries(void)
-> +{
-> +	return false;
-> +}
-> +#endif
-> +
+> @@ -53,6 +53,66 @@ struct kvm_nested_guest {
+>  	struct kvm_nested_guest *next;
+>  };
+> =20
 > +/*
-> + * Structure for a nested guest, that is, for a guest that is managed by
-> + * one of our guests.
+> + * We define a nested rmap entry as a single 64-bit quantity
+> + * 0xFFF0000000000000	12-bit lpid field
+> + * 0x000FFFFFFFFFF000	40-bit guest 4k page frame number
+> + * 0x0000000000000001	1-bit  single entry flag
 > + */
-> +struct kvm_nested_guest {
-> +	struct kvm *l1_host;		/* L1 VM that owns this nested guest */
-> +	int l1_lpid;			/* lpid L1 guest thinks this guest is */
-> +	int shadow_lpid;		/* real lpid of this nested guest */
-> +	pgd_t *shadow_pgtable;		/* our page table for this guest */
-> +	u64 l1_gr_to_hr;		/* L1's addr of part'n-scoped table */
-> +	u64 process_table;		/* process table entry for this guest */
-> +	long refcnt;			/* number of pointers to this struct */
-> +	struct mutex tlb_lock;		/* serialize page faults and tlbies */
-> +	struct kvm_nested_guest *next;
+> +#define RMAP_NESTED_LPID_MASK		0xFFF0000000000000UL
+> +#define RMAP_NESTED_LPID_SHIFT		(52)
+> +#define RMAP_NESTED_GPA_MASK		0x000FFFFFFFFFF000UL
+> +#define RMAP_NESTED_IS_SINGLE_ENTRY	0x0000000000000001UL
+> +
+> +/* Structure for a nested guest rmap entry */
+> +struct rmap_nested {
+> +	struct llist_node list;
+> +	u64 rmap;
 > +};
 > +
-> +struct kvm_nested_guest *kvmhv_get_nested(struct kvm *kvm, int l1_lpid,
-> +					  bool create);
-> +void kvmhv_put_nested(struct kvm_nested_guest *gp);
-> =20
->  /* Power architecture requires HPT is at least 256kiB, at most 64TiB */
->  #define PPC_MIN_HPT_ORDER	18
-> diff --git a/arch/powerpc/include/asm/kvm_book3s_asm.h b/arch/powerpc/inc=
-lude/asm/kvm_book3s_asm.h
-> index d978fdf..eb3ba63 100644
-> --- a/arch/powerpc/include/asm/kvm_book3s_asm.h
-> +++ b/arch/powerpc/include/asm/kvm_book3s_asm.h
-> @@ -25,6 +25,9 @@
->  #define XICS_MFRR		0xc
->  #define XICS_IPI		2	/* interrupt source # for IPIs */
-> =20
-> +/* LPIDs we support with this build -- runtime limit may be lower */
-> +#define KVMPPC_NR_LPIDS			(LPID_RSVD + 1)
+> +/*
+> + * for_each_nest_rmap_safe - iterate over the list of nested rmap entries
+> + *			     safe against removal of the list entry or NULL list
+> + * @pos:	a (struct rmap_nested *) to use as a loop cursor
+> + * @node:	pointer to the first entry
+> + *		NOTE: this can be NULL
+> + * @rmapp:	an (unsigned long *) in which to return the rmap entries on e=
+ach
+> + *		iteration
+> + *		NOTE: this must point to already allocated memory
+> + *
+> + * The nested_rmap is a llist of (struct rmap_nested) entries pointed to=
+ by the
+> + * rmap entry in the memslot. The list is always terminated by a "single=
+ entry"
+> + * stored in the list element of the final entry of the llist. If there =
+is ONLY
+> + * a single entry then this is itself in the rmap entry of the memslot, =
+not a
+> + * llist head pointer.
+> + *
+> + * Note that the iterator below assumes that a nested rmap entry is alwa=
+ys
+> + * non-zero.  This is true for our usage because the LPID field is always
+> + * non-zero (zero is reserved for the host).
+> + *
+> + * This should be used to iterate over the list of rmap_nested entries w=
+ith
+> + * processing done on the u64 rmap value given by each iteration. This i=
+s safe
+> + * against removal of list entries and it is always safe to call free on=
+ (pos).
+> + *
+> + * e.g.
+> + * struct rmap_nested *cursor;
+> + * struct llist_node *first;
+> + * unsigned long rmap;
+> + * for_each_nest_rmap_safe(cursor, first, &rmap) {
+> + *	do_something(rmap);
+> + *	free(cursor);
+> + * }
+> + */
+> +#define for_each_nest_rmap_safe(pos, node, rmapp)			       \
+> +	for ((pos) =3D llist_entry((node), typeof(*(pos)), list);		       \
+> +	     (node) &&							       \
+> +	     (*(rmapp) =3D ((RMAP_NESTED_IS_SINGLE_ENTRY & ((u64) (node))) ?   =
+  \
+> +			  ((u64) (node)) : ((pos)->rmap))) &&		       \
+> +	     (((node) =3D ((RMAP_NESTED_IS_SINGLE_ENTRY & ((u64) (node))) ?    =
+  \
+> +			 ((struct llist_node *) ((pos) =3D NULL)) :	       \
+> +			 (pos)->list.next)), true);			       \
+> +	     (pos) =3D llist_entry((node), typeof(*(pos)), list))
 > +
->  /* Maximum number of threads per physical core */
->  #define MAX_SMT_THREADS		8
+>  struct kvm_nested_guest *kvmhv_get_nested(struct kvm *kvm, int l1_lpid,
+>  					  bool create);
+>  void kvmhv_put_nested(struct kvm_nested_guest *gp);
+> @@ -551,7 +611,14 @@ static inline void copy_to_checkpoint(struct kvm_vcp=
+u *vcpu)
 > =20
-> diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/a=
-sm/kvm_host.h
-> index c9cc42f..c35d4f2 100644
-> --- a/arch/powerpc/include/asm/kvm_host.h
-> +++ b/arch/powerpc/include/asm/kvm_host.h
-> @@ -46,6 +46,7 @@
->  #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
->  #include <asm/kvm_book3s_asm.h>		/* for MAX_SMT_THREADS */
->  #define KVM_MAX_VCPU_ID		(MAX_SMT_THREADS * KVM_MAX_VCORES)
-> +#define KVM_MAX_NESTED_GUESTS	KVMPPC_NR_LPIDS
+>  extern int kvmppc_create_pte(struct kvm *kvm, pgd_t *pgtable, pte_t pte,
+>  			     unsigned long gpa, unsigned int level,
+> -			     unsigned long mmu_seq, unsigned int lpid);
+> +			     unsigned long mmu_seq, unsigned int lpid,
+> +			     unsigned long *rmapp, struct rmap_nested **n_rmap);
+> +extern void kvmhv_insert_nest_rmap(struct kvm *kvm, unsigned long *rmapp,
+> +				   struct rmap_nested **n_rmap);
+> +extern void kvmhv_remove_nest_rmap_range(struct kvm *kvm,
+> +				struct kvm_memory_slot *memslot,
+> +				unsigned long gpa, unsigned long hpa,
+> +				unsigned long nbytes);
 > =20
->  #else
->  #define KVM_MAX_VCPU_ID		KVM_MAX_VCPUS
-> @@ -287,6 +288,7 @@ struct kvm_arch {
->  	u8 radix;
->  	u8 fwnmi_enabled;
->  	bool threads_indep;
-> +	bool nested_enable;
->  	pgd_t *pgtable;
->  	u64 process_table;
->  	struct dentry *debugfs_dir;
-> @@ -312,6 +314,9 @@ struct kvm_arch {
->  #endif
->  	struct kvmppc_ops *kvm_ops;
->  #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
-> +	u64 l1_ptcr;
-> +	int max_nested_lpid;
-> +	struct kvm_nested_guest *nested_guests[KVM_MAX_NESTED_GUESTS];
->  	/* This array can grow quite large, keep it at the end */
->  	struct kvmppc_vcore *vcores[KVM_MAX_VCORES];
->  #endif
-> diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
-> index f872c04..e814f40 100644
-> --- a/arch/powerpc/kvm/Makefile
-> +++ b/arch/powerpc/kvm/Makefile
-> @@ -75,7 +75,8 @@ kvm-hv-y +=3D \
->  	book3s_hv.o \
->  	book3s_hv_interrupts.o \
->  	book3s_64_mmu_hv.o \
-> -	book3s_64_mmu_radix.o
-> +	book3s_64_mmu_radix.o \
-> +	book3s_hv_nested.o
+>  #endif /* CONFIG_KVM_BOOK3S_HV_POSSIBLE */
 > =20
->  kvm-hv-$(CONFIG_PPC_TRANSACTIONAL_MEM) +=3D \
->  	book3s_hv_tm.o
-> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> index 8425d72..4c72f2f 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -934,6 +934,19 @@ int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
->  		if (ret =3D=3D H_TOO_HARD)
->  			return RESUME_HOST;
->  		break;
+> diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/bo=
+ok3s_64_mmu_radix.c
+> index c4b1a9e..4c1eccb 100644
+> --- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
+> +++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
+> @@ -256,27 +256,38 @@ static void kvmppc_pmd_free(pmd_t *pmdp)
+>  	kmem_cache_free(kvm_pmd_cache, pmdp);
+>  }
+> =20
+> -void kvmppc_unmap_pte(struct kvm *kvm, pte_t *pte,
+> -		      unsigned long gpa, unsigned int shift,
+> -		      struct kvm_memory_slot *memslot,
+> +/* Called with kvm->mmu_lock held */
+> +void kvmppc_unmap_pte(struct kvm *kvm, pte_t *pte, unsigned long gpa,
+> +		      unsigned int shift, struct kvm_memory_slot *memslot,
+>  		      unsigned int lpid)
+> =20
+>  {
+>  	unsigned long old;
+> +	unsigned long gfn =3D gpa >> PAGE_SHIFT;
+> +	unsigned long page_size =3D PAGE_SIZE;
+> +	unsigned long hpa;
+> =20
+>  	old =3D kvmppc_radix_update_pte(kvm, pte, ~0UL, 0, gpa, shift);
+>  	kvmppc_radix_tlbie_page(kvm, gpa, shift, lpid);
+> -	if ((old & _PAGE_DIRTY) && (lpid =3D=3D kvm->arch.lpid)) {
+> -		unsigned long gfn =3D gpa >> PAGE_SHIFT;
+> -		unsigned long page_size =3D PAGE_SIZE;
+> =20
+> -		if (shift)
+> -			page_size =3D 1ul << shift;
+> +	/* The following only applies to L1 entries */
+> +	if (lpid !=3D kvm->arch.lpid)
+> +		return;
 > +
-> +	case H_SET_PARTITION_TABLE:
-> +		ret =3D H_FUNCTION;
-> +		if (vcpu->kvm->arch.nested_enable)
-> +			ret =3D kvmhv_set_partition_table(vcpu);
-> +		break;
-> +	case H_ENTER_NESTED:
-> +		ret =3D H_FUNCTION;
-> +		break;
-> +	case H_TLB_INVALIDATE:
-> +		ret =3D H_FUNCTION;
-> +		break;
-> +
->  	default:
->  		return RESUME_HOST;
+> +	if (!memslot) {
+> +		memslot =3D gfn_to_memslot(kvm, gfn);
+>  		if (!memslot)
+> -			memslot =3D gfn_to_memslot(kvm, gfn);
+> -		if (memslot && memslot->dirty_bitmap)
+> -			kvmppc_update_dirty_map(memslot, gfn, page_size);
+> +			return;
 >  	}
-> @@ -4153,8 +4166,7 @@ void kvmppc_setup_partition_table(struct kvm *kvm)
->  			__pa(kvm->arch.pgtable) | RADIX_PGD_INDEX_SIZE;
->  		dw1 =3D PATB_GR | kvm->arch.process_table;
->  	}
-> -
-> -	mmu_partition_table_set_entry(kvm->arch.lpid, dw0, dw1);
-> +	kvmhv_set_ptbl_entry(kvm->arch.lpid, dw0, dw1);
+> +	if (shift)
+> +		page_size =3D 1ul << shift;
+> +
+> +	gpa &=3D ~(page_size - 1);
+> +	hpa =3D old & PTE_RPN_MASK;
+> +	kvmhv_remove_nest_rmap_range(kvm, memslot, gpa, hpa, page_size);
+> +
+> +	if ((old & _PAGE_DIRTY) && memslot->dirty_bitmap)
+> +		kvmppc_update_dirty_map(memslot, gfn, page_size);
 >  }
 > =20
 >  /*
-> @@ -4250,6 +4262,10 @@ static int kvmppc_hv_setup_htab_rma(struct kvm_vcp=
-u *vcpu)
->  /* Must be called with kvm->lock held and mmu_ready =3D 0 and no vcpus r=
-unning */
->  int kvmppc_switch_mmu_to_hpt(struct kvm *kvm)
+> @@ -430,7 +441,8 @@ static void kvmppc_unmap_free_pud_entry_table(struct =
+kvm *kvm, pud_t *pud,
+> =20
+>  int kvmppc_create_pte(struct kvm *kvm, pgd_t *pgtable, pte_t pte,
+>  		      unsigned long gpa, unsigned int level,
+> -		      unsigned long mmu_seq, unsigned int lpid)
+> +		      unsigned long mmu_seq, unsigned int lpid,
+> +		      unsigned long *rmapp, struct rmap_nested **n_rmap)
 >  {
-> +	if (kvm->arch.nested_enable) {
-> +		kvm->arch.nested_enable =3D false;
-> +		kvmhv_release_all_nested(kvm);
-> +	}
->  	kvmppc_free_radix(kvm);
->  	kvmppc_update_lpcr(kvm, LPCR_VPM1,
->  			   LPCR_VPM1 | LPCR_UPRT | LPCR_GTSE | LPCR_HR);
-> @@ -4370,6 +4386,8 @@ static int kvmppc_core_init_vm_hv(struct kvm *kvm)
-> =20
->  	kvmppc_alloc_host_rm_ops();
-> =20
-> +	kvmhv_vm_nested_init(kvm);
-> +
->  	/*
->  	 * Since we don't flush the TLB when tearing down a VM,
->  	 * and this lpid might have previously been used,
-> @@ -4513,8 +4531,10 @@ static void kvmppc_core_destroy_vm_hv(struct kvm *=
-kvm)
-> =20
->  	/* Perform global invalidation and return lpid to the pool */
->  	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-> +		if (kvm->arch.nested_enable)
-> +			kvmhv_release_all_nested(kvm);
->  		kvm->arch.process_table =3D 0;
-> -		kvmppc_setup_partition_table(kvm);
-> +		kvmhv_set_ptbl_entry(kvm->arch.lpid, 0, 0);
+>  	pgd_t *pgd;
+>  	pud_t *pud, *new_pud =3D NULL;
+> @@ -509,6 +521,8 @@ int kvmppc_create_pte(struct kvm *kvm, pgd_t *pgtable=
+, pte_t pte,
+>  			kvmppc_unmap_free_pud_entry_table(kvm, pud, gpa, lpid);
+>  		}
+>  		kvmppc_radix_set_pte_at(kvm, gpa, (pte_t *)pud, pte);
+> +		if (rmapp && n_rmap)
+> +			kvmhv_insert_nest_rmap(kvm, rmapp, n_rmap);
+>  		ret =3D 0;
+>  		goto out_unlock;
 >  	}
->  	kvmppc_free_lpid(kvm->arch.lpid);
+> @@ -559,6 +573,8 @@ int kvmppc_create_pte(struct kvm *kvm, pgd_t *pgtable=
+, pte_t pte,
+>  			kvmppc_unmap_free_pmd_entry_table(kvm, pmd, gpa, lpid);
+>  		}
+>  		kvmppc_radix_set_pte_at(kvm, gpa, pmdp_ptep(pmd), pte);
+> +		if (rmapp && n_rmap)
+> +			kvmhv_insert_nest_rmap(kvm, rmapp, n_rmap);
+>  		ret =3D 0;
+>  		goto out_unlock;
+>  	}
+> @@ -583,6 +599,8 @@ int kvmppc_create_pte(struct kvm *kvm, pgd_t *pgtable=
+, pte_t pte,
+>  		goto out_unlock;
+>  	}
+>  	kvmppc_radix_set_pte_at(kvm, gpa, ptep, pte);
+> +	if (rmapp && n_rmap)
+> +		kvmhv_insert_nest_rmap(kvm, rmapp, n_rmap);
+>  	ret =3D 0;
 > =20
-> @@ -4985,6 +5005,10 @@ static int kvmppc_book3s_init_hv(void)
->  	if (r < 0)
->  		return -ENODEV;
+>   out_unlock:
+> @@ -710,7 +728,7 @@ int kvmppc_book3s_instantiate_page(struct kvm_vcpu *v=
+cpu,
 > =20
-> +	r =3D kvmhv_nested_init();
-> +	if (r)
-> +		return r;
-> +
->  	r =3D kvm_init_subcore_bitmap();
->  	if (r)
->  		return r;
-> @@ -5043,6 +5067,7 @@ static void kvmppc_book3s_exit_hv(void)
->  	if (kvmppc_radix_possible())
->  		kvmppc_radix_exit();
->  	kvmppc_hv_ops =3D NULL;
-> +	kvmhv_nested_exit();
+>  	/* Allocate space in the tree and write the PTE */
+>  	ret =3D kvmppc_create_pte(kvm, kvm->arch.pgtable, pte, gpa, level,
+> -				mmu_seq, kvm->arch.lpid);
+> +				mmu_seq, kvm->arch.lpid, NULL, NULL);
+>  	if (inserted_pte)
+>  		*inserted_pte =3D pte;
+>  	if (levelp)
+> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> index dc25461..cb9e738 100644
+> --- a/arch/powerpc/kvm/book3s_hv.c
+> +++ b/arch/powerpc/kvm/book3s_hv.c
+> @@ -4482,6 +4482,7 @@ int kvmppc_switch_mmu_to_radix(struct kvm *kvm)
+>  	kvmppc_free_hpt(&kvm->arch.hpt);
+>  	kvmppc_update_lpcr(kvm, LPCR_UPRT | LPCR_GTSE | LPCR_HR,
+>  			   LPCR_VPM1 | LPCR_UPRT | LPCR_GTSE | LPCR_HR);
+> +	kvmppc_rmap_reset(kvm);
+>  	kvm->arch.radix =3D 1;
+>  	return 0;
 >  }
-> =20
->  module_init(kvmppc_book3s_init_hv);
 > diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm/book3=
 s_hv_nested.c
-> new file mode 100644
-> index 0000000..32782624
-> --- /dev/null
+> index 21a210c..3fa676b 100644
+> --- a/arch/powerpc/kvm/book3s_hv_nested.c
 > +++ b/arch/powerpc/kvm/book3s_hv_nested.c
-> @@ -0,0 +1,301 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * Copyright IBM Corporation, 2018
-> + * Authors Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-> + *	   Paul Mackerras <paulus@ozlabs.org>
-> + *
-> + * Description: KVM functions specific to running nested KVM-HV guests
-> + * on Book3S processors (specifically POWER9 and later).
-> + */
-> +
-> +#include <linux/kernel.h>
-> +#include <linux/kvm_host.h>
-> +
-> +#include <asm/kvm_ppc.h>
-> +#include <asm/mmu.h>
-> +#include <asm/pgtable.h>
-> +#include <asm/pgalloc.h>
-> +
-> +static struct patb_entry *pseries_partition_tb;
-> +
-> +static void kvmhv_update_ptbl_cache(struct kvm_nested_guest *gp);
-> +
-> +long kvmhv_nested_init(void)
-> +{
-> +	long int ptb_order;
-> +	unsigned long ptcr;
-> +	long rc;
-> +
-> +	if (!kvmhv_on_pseries())
-> +		return 0;
-> +	if (!radix_enabled())
-> +		return -ENODEV;
-> +
-> +	/* find log base 2 of KVMPPC_NR_LPIDS, rounding up */
-> +	ptb_order =3D __ilog2(KVMPPC_NR_LPIDS - 1) + 1;
-> +	if (ptb_order < 8)
-> +		ptb_order =3D 8;
-> +	pseries_partition_tb =3D kmalloc(sizeof(struct patb_entry) << ptb_order,
-> +				       GFP_KERNEL);
-> +	if (!pseries_partition_tb) {
-> +		pr_err("kvm-hv: failed to allocated nested partition table\n");
-> +		return -ENOMEM;
-> +	}
-> +
-> +	ptcr =3D __pa(pseries_partition_tb) | (ptb_order - 8);
-> +	rc =3D plpar_hcall_norets(H_SET_PARTITION_TABLE, ptcr);
-> +	if (rc !=3D H_SUCCESS) {
-> +		pr_err("kvm-hv: Parent hypervisor does not support nesting (rc=3D%ld)\=
-n",
-> +		       rc);
-> +		kfree(pseries_partition_tb);
-> +		pseries_partition_tb =3D NULL;
-> +		return -ENODEV;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +void kvmhv_nested_exit(void)
-> +{
-> +	/*
-> +	 * N.B. the kvmhv_on_pseries() test is there because it enables
-> +	 * the compiler to remove the call to plpar_hcall_norets()
-> +	 * when CONFIG_PPC_PSERIES=3Dn.
-> +	 */
-> +	if (kvmhv_on_pseries() && pseries_partition_tb) {
-> +		plpar_hcall_norets(H_SET_PARTITION_TABLE, 0);
-> +		kfree(pseries_partition_tb);
-> +		pseries_partition_tb =3D NULL;
-> +	}
-> +}
-> +
-> +void kvmhv_set_ptbl_entry(unsigned int lpid, u64 dw0, u64 dw1)
-> +{
-> +	if (cpu_has_feature(CPU_FTR_HVMODE)) {
-> +		mmu_partition_table_set_entry(lpid, dw0, dw1);
-> +	} else {
-> +		pseries_partition_tb[lpid].patb0 =3D cpu_to_be64(dw0);
-> +		pseries_partition_tb[lpid].patb1 =3D cpu_to_be64(dw1);
-
-To double check my understanding: we don't need any locking on pseries
-on pseries_partition_tb, because the allocation of lpids is properly
-synchronized, so we assume that code which knows about an lpid "owns"
-that slot in the table.  Is that right?
-
-> +	}
-> +}
-> +
-> +static void kvmhv_set_nested_ptbl(struct kvm_nested_guest *gp)
-> +{
-> +	unsigned long dw0;
-> +
-> +	dw0 =3D PATB_HR | radix__get_tree_size() |
-> +		__pa(gp->shadow_pgtable) | RADIX_PGD_INDEX_SIZE;
-> +	kvmhv_set_ptbl_entry(gp->shadow_lpid, dw0, gp->process_table);
-> +}
-> +
-> +void kvmhv_vm_nested_init(struct kvm *kvm)
-> +{
-> +	kvm->arch.max_nested_lpid =3D -1;
-> +}
-> +
-> +/*
-> + * Handle the H_SET_PARTITION_TABLE hcall.
-> + * r4 =3D guest real address of partition table + log_2(size) - 12
-> + * (formatted as for the PTCR).
-> + */
-> +long kvmhv_set_partition_table(struct kvm_vcpu *vcpu)
-> +{
-> +	struct kvm *kvm =3D vcpu->kvm;
-> +	unsigned long ptcr =3D kvmppc_get_gpr(vcpu, 4);
+> @@ -10,6 +10,7 @@
+> =20
+>  #include <linux/kernel.h>
+>  #include <linux/kvm_host.h>
+> +#include <linux/llist.h>
+> =20
+>  #include <asm/kvm_ppc.h>
+>  #include <asm/kvm_book3s.h>
+> @@ -22,6 +23,7 @@
+>  static struct patb_entry *pseries_partition_tb;
+> =20
+>  static void kvmhv_update_ptbl_cache(struct kvm_nested_guest *gp);
+> +static void kvmhv_free_memslot_nest_rmap(struct kvm_memory_slot *free);
+> =20
+>  void kvmhv_save_hv_regs(struct kvm_vcpu *vcpu, struct hv_guest_state *hr)
+>  {
+> @@ -456,6 +458,8 @@ void kvmhv_release_all_nested(struct kvm *kvm)
+>  	int i;
+>  	struct kvm_nested_guest *gp;
+>  	struct kvm_nested_guest *freelist =3D NULL;
+> +	struct kvm_memory_slot *memslot;
 > +	int srcu_idx;
-> +	long ret =3D H_SUCCESS;
+> =20
+>  	spin_lock(&kvm->mmu_lock);
+>  	for (i =3D 0; i <=3D kvm->arch.max_nested_lpid; i++) {
+> @@ -474,6 +478,11 @@ void kvmhv_release_all_nested(struct kvm *kvm)
+>  		freelist =3D gp->next;
+>  		kvmhv_release_nested(gp);
+>  	}
 > +
 > +	srcu_idx =3D srcu_read_lock(&kvm->srcu);
-> +	/*
-> +	 * Limit the partition table to 4096 entries (because that's what
-> +	 * hardware supports), and check the base address.
-> +	 */
-> +	if ((ptcr & PRTS_MASK) > 12 - 8 ||
-> +	    !kvm_is_visible_gfn(vcpu->kvm, (ptcr & PRTB_MASK) >> PAGE_SHIFT))
-> +		ret =3D H_PARAMETER;
-
-Note there's a subtle dependency on 64k page size here, since you only
-validate the table's base address.
-
+> +	kvm_for_each_memslot(memslot, kvm_memslots(kvm))
+> +		kvmhv_free_memslot_nest_rmap(memslot);
 > +	srcu_read_unlock(&kvm->srcu, srcu_idx);
-> +	if (ret =3D=3D H_SUCCESS)
-> +		kvm->arch.l1_ptcr =3D ptcr;
-> +	return ret;
-> +}
-> +
-> +/*
-> + * Reload the partition table entry for a guest.
-> + * Caller must hold gp->tlb_lock.
-> + */
-> +static void kvmhv_update_ptbl_cache(struct kvm_nested_guest *gp)
+>  }
+> =20
+>  /* caller must hold gp->tlb_lock */
+> @@ -544,6 +553,123 @@ void kvmhv_put_nested(struct kvm_nested_guest *gp)
+>  		kvmhv_release_nested(gp);
+>  }
+> =20
+> +static struct kvm_nested_guest *kvmhv_find_nested(struct kvm *kvm, int l=
+pid)
 > +{
-> +	int ret;
-> +	struct patb_entry ptbl_entry;
-> +	unsigned long ptbl_addr;
-> +	struct kvm *kvm =3D gp->l1_host;
-> +
-> +	ret =3D -EFAULT;
-> +	ptbl_addr =3D (kvm->arch.l1_ptcr & PRTB_MASK) + (gp->l1_lpid << 4);
-> +	if (gp->l1_lpid < (1ul << ((kvm->arch.l1_ptcr & PRTS_MASK) + 8)))
-> +		ret =3D kvm_read_guest(kvm, ptbl_addr,
-> +				     &ptbl_entry, sizeof(ptbl_entry));
-> +	if (ret) {
-> +		gp->l1_gr_to_hr =3D 0;
-> +		gp->process_table =3D 0;
-> +	} else {
-> +		gp->l1_gr_to_hr =3D be64_to_cpu(ptbl_entry.patb0);
-> +		gp->process_table =3D be64_to_cpu(ptbl_entry.patb1);
-> +	}
-> +	kvmhv_set_nested_ptbl(gp);
+> +	if (lpid > kvm->arch.max_nested_lpid)
+> +		return NULL;
+> +	return kvm->arch.nested_guests[lpid];
 > +}
 > +
-> +struct kvm_nested_guest *kvmhv_alloc_nested(struct kvm *kvm, unsigned in=
-t lpid)
+> +static inline bool kvmhv_n_rmap_is_equal(u64 rmap_1, u64 rmap_2)
+> +{
+> +	return !((rmap_1 ^ rmap_2) & (RMAP_NESTED_LPID_MASK |
+> +				       RMAP_NESTED_GPA_MASK));
+> +}
+> +
+> +void kvmhv_insert_nest_rmap(struct kvm *kvm, unsigned long *rmapp,
+> +			    struct rmap_nested **n_rmap)
+> +{
+> +	struct llist_node *entry =3D ((struct llist_head *) rmapp)->first;
+> +	struct rmap_nested *cursor;
+> +	u64 rmap, new_rmap =3D (*n_rmap)->rmap;
+> +
+> +	/* Are there any existing entries? */
+> +	if (!(*rmapp)) {
+> +		/* No -> use the rmap as a single entry */
+> +		*rmapp =3D new_rmap | RMAP_NESTED_IS_SINGLE_ENTRY;
+> +		return;
+> +	}
+> +
+> +	/* Do any entries match what we're trying to insert? */
+> +	for_each_nest_rmap_safe(cursor, entry, &rmap) {
+> +		if (kvmhv_n_rmap_is_equal(rmap, new_rmap))
+> +			return;
+> +	}
+> +
+> +	/* Do we need to create a list or just add the new entry? */
+> +	rmap =3D *rmapp;
+> +	if (rmap & RMAP_NESTED_IS_SINGLE_ENTRY) /* Not previously a list */
+> +		*rmapp =3D 0UL;
+> +	llist_add(&((*n_rmap)->list), (struct llist_head *) rmapp);
+> +	if (rmap & RMAP_NESTED_IS_SINGLE_ENTRY) /* Not previously a list */
+> +		(*n_rmap)->list.next =3D (struct llist_node *) rmap;
+> +
+> +	/* Set NULL so not freed by caller */
+> +	*n_rmap =3D NULL;
+> +}
+> +
+> +static void kvmhv_remove_nest_rmap(struct kvm *kvm, u64 n_rmap,
+> +				   unsigned long hpa, unsigned long mask)
 > +{
 > +	struct kvm_nested_guest *gp;
-> +	long shadow_lpid;
+> +	unsigned long gpa;
+> +	unsigned int shift, lpid;
+> +	pte_t *ptep;
 > +
-> +	gp =3D kzalloc(sizeof(*gp), GFP_KERNEL);
+> +	gpa =3D n_rmap & RMAP_NESTED_GPA_MASK;
+> +	lpid =3D (n_rmap & RMAP_NESTED_LPID_MASK) >> RMAP_NESTED_LPID_SHIFT;
+> +	gp =3D kvmhv_find_nested(kvm, lpid);
 > +	if (!gp)
-> +		return NULL;
-> +	gp->l1_host =3D kvm;
-> +	gp->l1_lpid =3D lpid;
-> +	mutex_init(&gp->tlb_lock);
-> +	gp->shadow_pgtable =3D pgd_alloc(kvm->mm);
-> +	if (!gp->shadow_pgtable)
-> +		goto out_free;
-> +	shadow_lpid =3D kvmppc_alloc_lpid();
-> +	if (shadow_lpid < 0)
-> +		goto out_free2;
-> +	gp->shadow_lpid =3D shadow_lpid;
+> +		return;
 > +
-> +	return gp;
-> +
-> + out_free2:
-> +	pgd_free(kvm->mm, gp->shadow_pgtable);
-> + out_free:
-> +	kfree(gp);
-> +	return NULL;
+> +	/* Find and invalidate the pte */
+> +	ptep =3D __find_linux_pte(gp->shadow_pgtable, gpa, NULL, &shift);
+> +	/* Don't spuriously invalidate ptes if the pfn has changed */
+> +	if (ptep && pte_present(*ptep) && ((pte_val(*ptep) & mask) =3D=3D hpa))
+> +		kvmppc_unmap_pte(kvm, ptep, gpa, shift, NULL, gp->shadow_lpid);
 > +}
 > +
-> +/*
-> + * Free up any resources allocated for a nested guest.
-> + */
-> +static void kvmhv_release_nested(struct kvm_nested_guest *gp)
+> +static void kvmhv_remove_nest_rmap_list(struct kvm *kvm, unsigned long *=
+rmapp,
+> +					unsigned long hpa, unsigned long mask)
 > +{
-> +	kvmhv_set_ptbl_entry(gp->shadow_lpid, 0, 0);
-> +	kvmppc_free_lpid(gp->shadow_lpid);
-> +	if (gp->shadow_pgtable)
-> +		pgd_free(gp->l1_host->mm, gp->shadow_pgtable);
-> +	kfree(gp);
-> +}
+> +	struct llist_node *entry =3D llist_del_all((struct llist_head *) rmapp);
+> +	struct rmap_nested *cursor;
+> +	unsigned long rmap;
 > +
-> +static void kvmhv_remove_nested(struct kvm_nested_guest *gp)
-> +{
-> +	struct kvm *kvm =3D gp->l1_host;
-> +	int lpid =3D gp->l1_lpid;
-> +	long ref;
-> +
-> +	spin_lock(&kvm->mmu_lock);
-> +	if (gp =3D=3D kvm->arch.nested_guests[lpid]) {
-> +		kvm->arch.nested_guests[lpid] =3D NULL;
-> +		if (lpid =3D=3D kvm->arch.max_nested_lpid) {
-> +			while (--lpid >=3D 0 && !kvm->arch.nested_guests[lpid])
-> +				;
-> +			kvm->arch.max_nested_lpid =3D lpid;
-> +		}
-> +		--gp->refcnt;
-> +	}
-> +	ref =3D gp->refcnt;
-> +	spin_unlock(&kvm->mmu_lock);
-> +	if (ref =3D=3D 0)
-> +		kvmhv_release_nested(gp);
-> +}
-> +
-> +/*
-> + * Free up all nested resources allocated for this guest.
-> + * This is called with no vcpus of the guest running, when
-> + * switching the guest to HPT mode or when destroying the
-> + * guest.
-> + */
-> +void kvmhv_release_all_nested(struct kvm *kvm)
-> +{
-> +	int i;
-> +	struct kvm_nested_guest *gp;
-> +	struct kvm_nested_guest *freelist =3D NULL;
-> +
-> +	spin_lock(&kvm->mmu_lock);
-> +	for (i =3D 0; i <=3D kvm->arch.max_nested_lpid; i++) {
-> +		gp =3D kvm->arch.nested_guests[i];
-> +		if (!gp)
-> +			continue;
-> +		kvm->arch.nested_guests[i] =3D NULL;
-> +		if (--gp->refcnt =3D=3D 0) {
-> +			gp->next =3D freelist;
-> +			freelist =3D gp;
-> +		}
-> +	}
-> +	kvm->arch.max_nested_lpid =3D -1;
-> +	spin_unlock(&kvm->mmu_lock);
-> +	while ((gp =3D freelist) !=3D NULL) {
-> +		freelist =3D gp->next;
-> +		kvmhv_release_nested(gp);
+> +	for_each_nest_rmap_safe(cursor, entry, &rmap) {
+> +		kvmhv_remove_nest_rmap(kvm, rmap, hpa, mask);
+> +		kfree(cursor);
 > +	}
 > +}
 > +
-> +/* caller must hold gp->tlb_lock */
-> +void kvmhv_flush_nested(struct kvm_nested_guest *gp)
+> +/* called with kvm->mmu_lock held */
+> +void kvmhv_remove_nest_rmap_range(struct kvm *kvm,
+> +				  struct kvm_memory_slot *memslot,
+> +				  unsigned long gpa, unsigned long hpa,
+> +				  unsigned long nbytes)
 > +{
-> +	kvmhv_update_ptbl_cache(gp);
-> +	if (gp->l1_gr_to_hr =3D=3D 0)
-> +		kvmhv_remove_nested(gp);
-> +}
+> +	unsigned long gfn, end_gfn;
+> +	unsigned long addr_mask;
 > +
-> +struct kvm_nested_guest *kvmhv_get_nested(struct kvm *kvm, int l1_lpid,
-> +					  bool create)
-> +{
-> +	struct kvm_nested_guest *gp, *newgp;
+> +	if (!memslot)
+> +		return;
+> +	gfn =3D (gpa >> PAGE_SHIFT) - memslot->base_gfn;
+> +	end_gfn =3D gfn + (nbytes >> PAGE_SHIFT);
 > +
-> +	if (l1_lpid >=3D KVM_MAX_NESTED_GUESTS ||
-> +	    l1_lpid >=3D (1ul << ((kvm->arch.l1_ptcr & PRTS_MASK) + 12 - 4)))
-> +		return NULL;
+> +	addr_mask =3D PTE_RPN_MASK & ~(nbytes - 1);
+> +	hpa &=3D addr_mask;
 > +
-> +	spin_lock(&kvm->mmu_lock);
-> +	gp =3D kvm->arch.nested_guests[l1_lpid];
-> +	if (gp)
-> +		++gp->refcnt;
-> +	spin_unlock(&kvm->mmu_lock);
-> +
-> +	if (gp || !create)
-> +		return gp;
-> +
-> +	newgp =3D kvmhv_alloc_nested(kvm, l1_lpid);
-> +	if (!newgp)
-> +		return NULL;
-> +	spin_lock(&kvm->mmu_lock);
-> +	if (kvm->arch.nested_guests[l1_lpid]) {
-> +		/* someone else beat us to it */
-> +		gp =3D kvm->arch.nested_guests[l1_lpid];
-> +	} else {
-> +		kvm->arch.nested_guests[l1_lpid] =3D newgp;
-> +		++newgp->refcnt;
-> +		gp =3D newgp;
-> +		newgp =3D NULL;
-> +		if (l1_lpid > kvm->arch.max_nested_lpid)
-> +			kvm->arch.max_nested_lpid =3D l1_lpid;
+> +	for (; gfn < end_gfn; gfn++) {
+> +		unsigned long *rmap =3D &memslot->arch.rmap[gfn];
+> +		kvmhv_remove_nest_rmap_list(kvm, rmap, hpa, addr_mask);
 > +	}
-> +	++gp->refcnt;
-> +	spin_unlock(&kvm->mmu_lock);
-> +
-> +	if (newgp)
-> +		kvmhv_release_nested(newgp);
-> +
-> +	return gp;
 > +}
 > +
-> +void kvmhv_put_nested(struct kvm_nested_guest *gp)
+> +static void kvmhv_free_memslot_nest_rmap(struct kvm_memory_slot *free)
 > +{
-> +	struct kvm *kvm =3D gp->l1_host;
-> +	long ref;
+> +	unsigned long page;
 > +
-> +	spin_lock(&kvm->mmu_lock);
-> +	ref =3D --gp->refcnt;
-> +	spin_unlock(&kvm->mmu_lock);
-> +	if (ref =3D=3D 0)
-> +		kvmhv_release_nested(gp);
+> +	for (page =3D 0; page < free->npages; page++) {
+> +		unsigned long rmap, *rmapp =3D &free->arch.rmap[page];
+> +		struct rmap_nested *cursor;
+> +		struct llist_node *entry;
+> +
+> +		entry =3D llist_del_all((struct llist_head *) rmapp);
+> +		for_each_nest_rmap_safe(cursor, entry, &rmap)
+> +			kfree(cursor);
+> +	}
 > +}
+> +
+>  static bool kvmhv_invalidate_shadow_pte(struct kvm_vcpu *vcpu,
+>  					struct kvm_nested_guest *gp,
+>  					long gpa, int *shift_ret)
+> @@ -695,11 +821,13 @@ static long int __kvmhv_nested_page_fault(struct kv=
+m_vcpu *vcpu,
+>  {
+>  	struct kvm *kvm =3D vcpu->kvm;
+>  	struct kvm_memory_slot *memslot;
+> +	struct rmap_nested *n_rmap;
+>  	struct kvmppc_pte gpte;
+>  	pte_t pte, *pte_p;
+>  	unsigned long mmu_seq;
+>  	unsigned long dsisr =3D vcpu->arch.fault_dsisr;
+>  	unsigned long ea =3D vcpu->arch.fault_dar;
+> +	unsigned long *rmapp;
+>  	unsigned long n_gpa, gpa, gfn, perm =3D 0UL;
+>  	unsigned int shift, l1_shift, level;
+>  	bool writing =3D !!(dsisr & DSISR_ISSTORE);
+> @@ -833,8 +961,16 @@ static long int __kvmhv_nested_page_fault(struct kvm=
+_vcpu *vcpu,
+> =20
+>  	/* 4. Insert the pte into our shadow_pgtable */
+> =20
+> +	n_rmap =3D kzalloc(sizeof(*n_rmap), GFP_KERNEL);
+> +	if (!n_rmap)
+> +		return RESUME_GUEST; /* Let the guest try again */
+> +	n_rmap->rmap =3D (n_gpa & RMAP_NESTED_GPA_MASK) |
+> +		(((unsigned long) gp->l1_lpid) << RMAP_NESTED_LPID_SHIFT);
+> +	rmapp =3D &memslot->arch.rmap[gfn - memslot->base_gfn];
+>  	ret =3D kvmppc_create_pte(kvm, gp->shadow_pgtable, pte, n_gpa, level,
+> -				mmu_seq, gp->shadow_lpid);
+> +				mmu_seq, gp->shadow_lpid, rmapp, &n_rmap);
+> +	if (n_rmap)
+> +		kfree(n_rmap);
+>  	if (ret =3D=3D -EAGAIN)
+>  		ret =3D RESUME_GUEST;	/* Let the guest try again */
+> =20
 
 --=20
 David Gibson			| I'll have my music baroque, and my code
@@ -687,24 +596,24 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---1ozVqH6bFr/3sC51
+--2eauhx3HRLXw1WRo
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlu76HkACgkQbDjKyiDZ
-s5KTwBAAkplFXlmCVIObO2b3SwARQkgYblAtK/RtkiRiywRCp/hdBIet5Bn1XflM
-QdXVkqdYDGx6MmGJH1UcrCyn6sd3mSbGEN9KHqNsvoDoaXFmhumqQDzcqRIiq0bu
-5i1HYdnImA8nUoaBgUV+w6A/zbRx4TTIOSuEA2igeHuNKHA/d0G8Ngg2FXsOzdfK
-PzxM8kgNCmqIeY75SXKArc8ZaB35Cw+LQmAz86tyUYiXdJLRvmLmMHdNXPg/mzH1
-7hGU7C+HFHh25bg4xNGQLqpd6rTbPAMMW8FaWBAFLuglWlxcC/pPTFxH1unAff6x
-LzdyWmeCNqVb2SMqzvTi3KD51qb4mdyyIOQYi24KaVtiGGoYxNeTLpVjCiX4WBnL
-DLSY6R30/6/4t5EVr7UdRilWz7mmxvVAk8llqWP3Jh5T+J4JwQKensaadzdgKDNq
-oIVoyLKgeV5hGGK4+BUn4sHkn4nF+zjgONBraclImcFKfOw0VahR1UlBvIDzbfUg
-XBYj5px8RM3eOxbGaUhJ/ob/Dh5rdOD1dECVo8+I2tFjdQZ30on07EOnboitKsKw
-LU1JSn/wGLZKiv37zkvuSWxrzigwrPC1EyIuZl6wf6CSGnKs0I3YHVAv70Rip06o
-5SmbHpnaSVtsaNvbkLdSDYQtjOSrLPko6BoG5b6bmM/ziiVPb+w=
-=RWXs
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlu79ckACgkQbDjKyiDZ
+s5LhvhAA0/zW6AmWnQXmg9ojmvW7U/Pdd9Udi3dXT5gjYQMaB0s5SLleerBAx/Dx
+6vfckn2J64xFyBPF9RIkeNhY/uAGWLsZU8LRturwkEJ29TYv13DMeNkqnEElVBM1
+oSaKBHHpouthM0ZWiZBn35u2J3C/2gWNKBg/UN1IKjpi11FZ+KDOqTeIOHunSWvt
+9jdUQCncyB+TCNw+mkzR/0G4H1Y8JALlFdBsAEPOP71UfhHsuMzAQOmFQUxmC4qb
+k3sbku22MsApVQLqNcdiQXQF+UR7yU48hMzZov3HQ+EfCk8CAlU2AdI1e/CGMGnE
+z0JsSTZanxWPUncPQInjkT4JbRHFTllN5ahEOg0Oj8eoO02AKHdQpw/oTmh+cCPc
+V2ggQFAK6fL8idHHzc+GMuC7BxirpsC6ky+XiNv3KoTGwMtI75gA5wTWPqTyi7HA
+WC9K1V4+ksPoUcOMKcqJaxwrtyCa/XUnkhhaJTkThXzH/TwYWIJ+JdZOCQKVTPMU
+iDT8LAbuyzXGFOlOhQvyl8he5Jger1z1WMg3rreDgefT1cRH9TejEuBnTn6vSALs
+bdOG0EUZ2eE3nv0xPchk62nR/MQpFc3i1sO4rnjFBG4ehlpgup7tRvcsHBbnx/K9
+7iGA1IzsYBa3xOdpdGQ9B5d0OKu/+0Uz8hfVgDwzPV9hmqusmwo=
+=YXQD
 -----END PGP SIGNATURE-----
 
---1ozVqH6bFr/3sC51--
+--2eauhx3HRLXw1WRo--
