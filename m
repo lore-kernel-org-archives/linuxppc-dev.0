@@ -2,62 +2,72 @@ Return-Path: <SRS0=k2O5=MV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 91A84C64EAD
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 04:40:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 34B98C64EAD
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 04:48:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DBCA62075C
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 04:40:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DBCA62075C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=perches.com
+	by mail.kernel.org (Postfix) with ESMTPS id 74AC620C0A
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 04:48:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 74AC620C0A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42Tl0L5mxkzF3FZ
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 15:40:34 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=perches.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Tl9957BDzF3CX
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 15:48:13 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=perches.com
- (client-ip=216.40.44.170; helo=smtprelay.hostedemail.com;
- envelope-from=joe@perches.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=perches.com
-Received: from smtprelay.hostedemail.com (smtprelay0170.hostedemail.com
- [216.40.44.170])
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42TkyJ3j6SzF1fF
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Oct 2018 15:38:48 +1100 (AEDT)
-Received: from filter.hostedemail.com (clb03-v110.bra.tucows.net
- [216.40.38.60])
- by smtprelay01.hostedemail.com (Postfix) with ESMTP id D9563100E86C4;
- Tue,  9 Oct 2018 04:38:43 +0000 (UTC)
-X-Session-Marker: 6A6F6540706572636865732E636F6D
-X-HE-Tag: glue43_864aa42fe6b16
-X-Filterd-Recvd-Size: 2264
-Received: from XPS-9350.home (unknown [47.151.153.53])
- (Authenticated sender: joe@perches.com)
- by omf06.hostedemail.com (Postfix) with ESMTPA;
- Tue,  9 Oct 2018 04:38:42 +0000 (UTC)
-Message-ID: <5f968a498c3d9848389ce5c6e04d98fc59c6438a.camel@perches.com>
-Subject: Re: [PATCH] powerpc/xmon/ppc-opc: Use ARRAY_SIZE macro
-From: Joe Perches <joe@perches.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, "Gustavo A. R. Silva"
- <gustavo@embeddedor.com>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>,  Paul Mackerras <paulus@samba.org>
-Date: Mon, 08 Oct 2018 21:38:41 -0700
-In-Reply-To: <874ldv3hty.fsf@concordia.ellerman.id.au>
-References: <20181004171036.GA1907@embeddedor.com>
- <8e2f906a85c3cfe0715982370a6d96f08a37987c.camel@perches.com>
- <874ldv3hty.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset="ISO-8859-1"
-User-Agent: Evolution 3.30.1-1 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Tl7J2rs9zF3CP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Oct 2018 15:46:35 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 42Tl712hhDz9ttBx;
+ Tue,  9 Oct 2018 06:46:21 +0200 (CEST)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id fL7PvXFbq8vy; Tue,  9 Oct 2018 06:46:21 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 42Tl7120Rkz9ttBR;
+ Tue,  9 Oct 2018 06:46:21 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1B1FE8B775;
+ Tue,  9 Oct 2018 06:46:31 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id oyboibtDw4Se; Tue,  9 Oct 2018 06:46:31 +0200 (CEST)
+Received: from PO15451 (unknown [192.168.232.3])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 4F9E68B75B;
+ Tue,  9 Oct 2018 06:46:31 +0200 (CEST)
+Subject: Re: [PATCH v2 3/3] powerpc: machine check interrupt is a non-maskable
+ interrupt
+To: Nicholas Piggin <npiggin@gmail.com>
+References: <20170719065912.19183-1-npiggin@gmail.com>
+ <20170719065912.19183-4-npiggin@gmail.com>
+ <30487984-752a-960d-6aae-6571c55c7ba5@c-s.fr>
+ <20181009143241.026f3e7f@roar.ozlabs.ibm.com>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <ccf61fc2-1f2e-7b67-c481-fa4c00a65aae@c-s.fr>
+Date: Tue, 9 Oct 2018 06:46:30 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
+MIME-Version: 1.0
+In-Reply-To: <20181009143241.026f3e7f@roar.ozlabs.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,47 +79,69 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2018-10-09 at 14:43 +1100, Michael Ellerman wrote:
-> Joe Perches <joe@perches.com> writes:
+
+
+Le 09/10/2018 à 06:32, Nicholas Piggin a écrit :
+> On Mon, 8 Oct 2018 17:39:11 +0200
+> Christophe LEROY <christophe.leroy@c-s.fr> wrote:
 > 
-> > On Thu, 2018-10-04 at 19:10 +0200, Gustavo A. R. Silva wrote:
-> > > Use ARRAY_SIZE instead of dividing sizeof array with sizeof an element.
-> > []
-> > > diff --git a/arch/powerpc/xmon/ppc-opc.c b/arch/powerpc/xmon/ppc-opc.c
-> > []
-> > > @@ -966,8 +966,7 @@ const struct powerpc_operand powerpc_operands[] =
-> > >    { 0xff, 11, NULL, NULL, PPC_OPERAND_SIGNOPT },
-> > >  };
-> > >  
-> > > -const unsigned int num_powerpc_operands = (sizeof (powerpc_operands)
-> > > -					   / sizeof (powerpc_operands[0]));
-> > > +const unsigned int num_powerpc_operands = ARRAY_SIZE(powerpc_operands);
-> > 
-> > It seems this is unused and could be deleted.
+>> Hi Nick,
+>>
+>> Le 19/07/2017 à 08:59, Nicholas Piggin a écrit :
+>>> Use nmi_enter similarly to system reset interrupts. This uses NMI
+>>> printk NMI buffers and turns off various debugging facilities that
+>>> helps avoid tripping on ourselves or other CPUs.
+>>>
+>>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+>>> ---
+>>>    arch/powerpc/kernel/traps.c | 9 ++++++---
+>>>    1 file changed, 6 insertions(+), 3 deletions(-)
+>>>
+>>> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+>>> index 2849c4f50324..6d31f9d7c333 100644
+>>> --- a/arch/powerpc/kernel/traps.c
+>>> +++ b/arch/powerpc/kernel/traps.c
+>>> @@ -789,8 +789,10 @@ int machine_check_generic(struct pt_regs *regs)
+>>>    
+>>>    void machine_check_exception(struct pt_regs *regs)
+>>>    {
+>>> -	enum ctx_state prev_state = exception_enter();
+>>>    	int recover = 0;
+>>> +	bool nested = in_nmi();
+>>> +	if (!nested)
+>>> +		nmi_enter();
+>>
+>> This alters preempt_count, then when die() is called
+>> in_interrupt() returns true allthough the trap didn't happen in
+>> interrupt, so oops_end() panics for "fatal exception in interrupt"
+>> instead of gently sending SIGBUS the faulting app.
 > 
-> The code in this file is copied from binutils.
+> Thanks for tracking that down.
 > 
-> We don't want to needlessly diverge it.
+>> Any idea on how to fix this ?
 > 
-> I've said this before:
+> I would say we have to deliver the sigbus by hand.
 > 
->   https://lore.kernel.org/linuxppc-dev/874lfxjnzl.fsf@concordia.ellerman.id.au/
+>      if ((user_mode(regs)))
+>          _exception(SIGBUS, regs, BUS_MCEERR_AR, regs->nip);
+>      else
+>          die("Machine check", regs, SIGBUS);
+> 
 
-Don't expect people to remember this.
+And what about all the other things done by 'die()' ?
 
-> Is there some way we can blacklist this file from checkpatch, Coccinelle
-> etc?
+And what if it is a kernel thread ?
 
-Modify both to look for some specific tag
-in a file and then update the scripts to
-read the file when looking at patches too.
+In one of my boards, I have a kernel thread regularly checking the HW, 
+and if it gets a machine check I expect it to gently stop and the die 
+notification to be delivered to all registered notifiers.
 
-Otherwise, no.
+Until before this patch, it was working well.
 
-
-
+Christophe
