@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B16BC64EAD
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 04:53:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 63714C64EB0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 04:54:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F2BFC20C0A
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 04:53:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F2BFC20C0A
+	by mail.kernel.org (Postfix) with ESMTPS id CC0B32086D
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 04:54:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CC0B32086D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42TlGq07SYzF3Mw
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 15:53:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42TlJc6kpQzF3NZ
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 15:54:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
@@ -29,39 +29,38 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42TlB26tG6zF3CP
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Oct 2018 15:48:58 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42TlB52ypPzF3Mg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Oct 2018 15:49:01 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 42Tl9m4zR4z9ttBy;
- Tue,  9 Oct 2018 06:48:44 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 42Tl9q3K8bz9ttC7;
+ Tue,  9 Oct 2018 06:48:47 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 2itEt8kJSmiZ; Tue,  9 Oct 2018 06:48:44 +0200 (CEST)
+ with ESMTP id UdZ_NTscVJtU; Tue,  9 Oct 2018 06:48:47 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 42Tl9m4Qm6z9ttBR;
- Tue,  9 Oct 2018 06:48:44 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 42Tl9q2sCzz9ttBR;
+ Tue,  9 Oct 2018 06:48:47 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 46AF28B775;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D4B338B75B;
  Tue,  9 Oct 2018 06:48:55 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id dD-bEpgmmz0A; Tue,  9 Oct 2018 06:48:54 +0200 (CEST)
+ with ESMTP id 00slid3r1jqY; Tue,  9 Oct 2018 06:48:55 +0200 (CEST)
 Received: from pc16082vm.idsi0.si.c-s.fr (unknown [192.168.232.3])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id AE4828B75B;
- Tue,  9 Oct 2018 06:48:53 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 474758B7BD;
+ Tue,  9 Oct 2018 06:48:54 +0200 (CEST)
 Received: by pc16082vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 529FB6F2C5; Tue,  9 Oct 2018 04:48:52 +0000 (UTC)
-Message-Id: <8e8caebd43c163f65112be87ea8c3403c26822e8.1539040628.git.christophe.leroy@c-s.fr>
+ id 58FBD6F2C6; Tue,  9 Oct 2018 04:48:54 +0000 (UTC)
+Message-Id: <221f61610931cb1446229afe57d91fdff4c5f19f.1539040628.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1539040628.git.christophe.leroy@c-s.fr>
 References: <cover.1539040628.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v7 1/9] book3s/64: avoid circular header inclusion in
- mmu-hash.h
+Subject: [PATCH v7 2/9] powerpc: Only use task_struct 'cpu' field on SMP
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Tue,  9 Oct 2018 04:48:52 +0000 (UTC)
+Date: Tue,  9 Oct 2018 04:48:54 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,143 +77,67 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When activating CONFIG_THREAD_INFO_IN_TASK, linux/sched.h
-includes asm/current.h. This generates a circular dependency.
-To avoid that, asm/processor.h shall not be included in mmu-hash.h
+When moving to CONFIG_THREAD_INFO_IN_TASK, the thread_info 'cpu' field
+gets moved into task_struct and only defined when CONFIG_SMP is set.
 
-In order to do that, this patch moves into a new header called
-asm/task_size_user64.h the information from asm/processor.h required
-by mmu-hash.h
+This patch ensures that TI_CPU is only used when CONFIG_SMP is set and
+that task_struct 'cpu' field is not used directly out of SMP code.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/include/asm/book3s/64/mmu-hash.h |  2 +-
- arch/powerpc/include/asm/processor.h          | 34 +---------------------
- arch/powerpc/include/asm/task_size_user64.h   | 42 +++++++++++++++++++++++++++
- arch/powerpc/kvm/book3s_hv_hmi.c              |  1 +
- 4 files changed, 45 insertions(+), 34 deletions(-)
- create mode 100644 arch/powerpc/include/asm/task_size_user64.h
+ arch/powerpc/kernel/head_fsl_booke.S | 2 ++
+ arch/powerpc/kernel/misc_32.S        | 4 ++++
+ arch/powerpc/xmon/xmon.c             | 2 +-
+ 3 files changed, 7 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-index e0e4ce8f77d6..02955d867067 100644
---- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-@@ -23,7 +23,7 @@
-  */
- #include <asm/book3s/64/pgtable.h>
- #include <asm/bug.h>
--#include <asm/processor.h>
-+#include <asm/task_size_user64.h>
- #include <asm/cpu_has_feature.h>
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index e2750b856c8f..05b574f416b3 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -243,8 +243,10 @@ set_ivor:
+ 	li	r0,0
+ 	stwu	r0,THREAD_SIZE-STACK_FRAME_OVERHEAD(r1)
  
- /*
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index 52fadded5c1e..13589274fe9b 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -101,40 +101,8 @@ void release_thread(struct task_struct *);
- #endif
- 
- #ifdef CONFIG_PPC64
--/*
-- * 64-bit user address space can have multiple limits
-- * For now supported values are:
-- */
--#define TASK_SIZE_64TB  (0x0000400000000000UL)
--#define TASK_SIZE_128TB (0x0000800000000000UL)
--#define TASK_SIZE_512TB (0x0002000000000000UL)
--#define TASK_SIZE_1PB   (0x0004000000000000UL)
--#define TASK_SIZE_2PB   (0x0008000000000000UL)
--/*
-- * With 52 bits in the address we can support
-- * upto 4PB of range.
-- */
--#define TASK_SIZE_4PB   (0x0010000000000000UL)
- 
--/*
-- * For now 512TB is only supported with book3s and 64K linux page size.
-- */
--#if defined(CONFIG_PPC_BOOK3S_64) && defined(CONFIG_PPC_64K_PAGES)
--/*
-- * Max value currently used:
-- */
--#define TASK_SIZE_USER64		TASK_SIZE_4PB
--#define DEFAULT_MAP_WINDOW_USER64	TASK_SIZE_128TB
--#define TASK_CONTEXT_SIZE		TASK_SIZE_512TB
--#else
--#define TASK_SIZE_USER64		TASK_SIZE_64TB
--#define DEFAULT_MAP_WINDOW_USER64	TASK_SIZE_64TB
--/*
-- * We don't need to allocate extended context ids for 4K page size, because
-- * we limit the max effective address on this config to 64TB.
-- */
--#define TASK_CONTEXT_SIZE		TASK_SIZE_64TB
--#endif
-+#include <asm/task_size_user64.h>
- 
- /*
-  * 32-bit user address space is 4GB - 1 page
-diff --git a/arch/powerpc/include/asm/task_size_user64.h b/arch/powerpc/include/asm/task_size_user64.h
-new file mode 100644
-index 000000000000..a4043075864b
---- /dev/null
-+++ b/arch/powerpc/include/asm/task_size_user64.h
-@@ -0,0 +1,42 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+#ifndef _ASM_POWERPC_TASK_SIZE_USER64_H
-+#define _ASM_POWERPC_TASK_SIZE_USER64_H
-+
-+#ifdef CONFIG_PPC64
-+/*
-+ * 64-bit user address space can have multiple limits
-+ * For now supported values are:
-+ */
-+#define TASK_SIZE_64TB  (0x0000400000000000UL)
-+#define TASK_SIZE_128TB (0x0000800000000000UL)
-+#define TASK_SIZE_512TB (0x0002000000000000UL)
-+#define TASK_SIZE_1PB   (0x0004000000000000UL)
-+#define TASK_SIZE_2PB   (0x0008000000000000UL)
-+/*
-+ * With 52 bits in the address we can support
-+ * upto 4PB of range.
-+ */
-+#define TASK_SIZE_4PB   (0x0010000000000000UL)
-+
-+/*
-+ * For now 512TB is only supported with book3s and 64K linux page size.
-+ */
-+#if defined(CONFIG_PPC_BOOK3S_64) && defined(CONFIG_PPC_64K_PAGES)
-+/*
-+ * Max value currently used:
-+ */
-+#define TASK_SIZE_USER64		TASK_SIZE_4PB
-+#define DEFAULT_MAP_WINDOW_USER64	TASK_SIZE_128TB
-+#define TASK_CONTEXT_SIZE		TASK_SIZE_512TB
-+#else
-+#define TASK_SIZE_USER64		TASK_SIZE_64TB
-+#define DEFAULT_MAP_WINDOW_USER64	TASK_SIZE_64TB
-+/*
-+ * We don't need to allocate extended context ids for 4K page size, because
-+ * we limit the max effective address on this config to 64TB.
-+ */
-+#define TASK_CONTEXT_SIZE		TASK_SIZE_64TB
++#ifdef CONFIG_SMP
+ 	CURRENT_THREAD_INFO(r22, r1)
+ 	stw	r24, TI_CPU(r22)
 +#endif
-+
-+#endif /* CONFIG_PPC64 */
-+#endif /* _ASM_POWERPC_TASK_SIZE_USER64_H */
-diff --git a/arch/powerpc/kvm/book3s_hv_hmi.c b/arch/powerpc/kvm/book3s_hv_hmi.c
-index e3f738eb1cac..64b5011475c7 100644
---- a/arch/powerpc/kvm/book3s_hv_hmi.c
-+++ b/arch/powerpc/kvm/book3s_hv_hmi.c
-@@ -24,6 +24,7 @@
- #include <linux/compiler.h>
- #include <asm/paca.h>
- #include <asm/hmi.h>
-+#include <asm/processor.h>
  
- void wait_for_subcore_guest_exit(void)
- {
+ 	bl	early_init
+ 
+diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
+index 695b24a2d954..2f0fe8bfc078 100644
+--- a/arch/powerpc/kernel/misc_32.S
++++ b/arch/powerpc/kernel/misc_32.S
+@@ -183,10 +183,14 @@ _GLOBAL(low_choose_750fx_pll)
+ 	or	r4,r4,r5
+ 	mtspr	SPRN_HID1,r4
+ 
++#ifdef CONFIG_SMP
+ 	/* Store new HID1 image */
+ 	CURRENT_THREAD_INFO(r6, r1)
+ 	lwz	r6,TI_CPU(r6)
+ 	slwi	r6,r6,2
++#else
++	li	r6, 0
++#endif
+ 	addis	r6,r6,nap_save_hid1@ha
+ 	stw	r4,nap_save_hid1@l(r6)
+ 
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index c70d17c9a6ba..1731793e1277 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -2986,7 +2986,7 @@ static void show_task(struct task_struct *tsk)
+ 	printf("%px %016lx %6d %6d %c %2d %s\n", tsk,
+ 		tsk->thread.ksp,
+ 		tsk->pid, tsk->parent->pid,
+-		state, task_thread_info(tsk)->cpu,
++		state, task_cpu(tsk),
+ 		tsk->comm);
+ }
+ 
 -- 
 2.13.3
 
