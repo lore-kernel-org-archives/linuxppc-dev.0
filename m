@@ -2,95 +2,83 @@ Return-Path: <SRS0=k2O5=MV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 880BEC64EB0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 05:33:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 43AF0C64EAD
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 05:57:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0086C20C0A
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 05:33:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 7A5FB20C0A
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 05:57:08 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="MFimOmF9"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0086C20C0A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="qhCeto5G"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7A5FB20C0A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=jms.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42Tm9N6DmyzF3M5
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 16:33:28 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Tmhf2yR4zF3Nb
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 16:57:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=jms.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="MFimOmF9";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="qhCeto5G";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
- envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+ (client-ip=2607:f8b0:4864:20::544; helo=mail-pg1-x544.google.com;
+ envelope-from=joel.stan@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
+ dmarc=none (p=none dis=none) header.from=jms.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="MFimOmF9"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="qhCeto5G"; 
  dkim-atps=neutral
-Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
- [IPv6:2607:f8b0:4864:20::442])
+Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
+ [IPv6:2607:f8b0:4864:20::544])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Tm6f1JctzF3M2
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Oct 2018 16:31:06 +1100 (AEDT)
-Received: by mail-pf1-x442.google.com with SMTP id r64-v6so220976pfb.13
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Oct 2018 22:31:05 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Tmf70b3CzF3DG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Oct 2018 16:54:54 +1100 (AEDT)
+Received: by mail-pg1-x544.google.com with SMTP id i4-v6so245099pgq.9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Oct 2018 22:54:54 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=PAvZi4B1j4NUthD1J1hm7F7WJLP0ZYFQKrPDBjle3/I=;
- b=MFimOmF9SksYsYcT8VPs6I3K/pPiB505J6wUH2b4mHsPIkbzygU2OdfrAhTOejnWI5
- Ib3HIsPyTbs46dfcE2KNWmyp7SLYmarR2WzEVkgs61z1EzqEA+OPihc3Pur+0801wnId
- MHYJ6OTRQ8/NrghTAk0XtobAzNiomu1oG9fl1Z1EolH0Ta5J7B6K+9hqzwSA4BrkBVwz
- fBgReZeRCwOIw82ohiLt89prrdDnEhjfAsMPHxHhuian+Cg+y4Lxy81x0+boQ0Cy1FFB
- i5Sq6DO9yklXjTSAdNcvh+V1l3W93wWVRVxznr6N+NlowDmBjprYquxBtpigKYdTnT39
- +/Jw==
+ h=sender:from:to:cc:subject:date:message-id;
+ bh=7O2LsVWyoBpCdlGR06mw0gBTtPpY0TZyV1YjI0/huSQ=;
+ b=qhCeto5Gg/f3Q1FCkGMVAHSvYNMPK/o65eVcNQmKSlGqvR0jwivZd4v3bMQFq504RW
+ GrABOZcQnoDKM8+l7yct9XQguEholEf2Mm7b4l+MpHxe/QGtjns+8YDe3Cnc3fRpvFrW
+ y0xIRn56fvW4YX3Ta6UcXpQ/VLLvJYmVqowoQosT0KXVBTXoSGSnlq+XoP4sqDzk67YN
+ FGB/V0S9lXAE8p7jJGwBOyOZ8ctvfherSGcKsiNL+8PhE1oWaT0+ou6f5HQQ8QK1DCps
+ DxDM6Mwbhkd+r+HI48FSBEuw59jZ97dlIiHxvXEzlOoJatS0aWwV8jC2gHyuEzxuljm9
+ 6IWA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=PAvZi4B1j4NUthD1J1hm7F7WJLP0ZYFQKrPDBjle3/I=;
- b=NT4zOWTUdu8bQKHxFag0vvdPkNZ22FErQos40rBWnzNzQT26z1glzvgkICgazDABbp
- uriW+FPOz1WaHjG3lCymgeXRV9SzHDpJtr7mI25CjZKFiDdu9RZMUzA2IJxrREktz9g5
- SseHO4Ekpx2B7pQYmDDVvFpzNtiBwfWYI1D5mXgM9zMLR1YtrtZ5MxcEmOjoE2CO5Ntx
- qW7l9/I3kMnXTJ2h8AbE+AbN4guXuZVq28t6qZoUU4CJZ4QbcHk1zCrbvJ+YOEBgHC4w
- 64Dt7+JUixqUALd1Gm3Y2H14FPvjvHKPalGwXiq2AjL6P9OtCfq36wJqWSN8pKK8mi+4
- apGQ==
-X-Gm-Message-State: ABuFfoiz8cvO0IRjkuw/ZRNLXP24C+vcCivmmgeHzPHAvBeFIQ+OmhCA
- ag7oDYwvJ9BUXa8mgFaMW0w=
-X-Google-Smtp-Source: ACcGV62AQ6Y1odG1G6Vt4IF4Mx3jylHpUFFAuW5mqudSHYKGPFtd2Ly6FRxHIaRjh2pBbgRRfYTkHA==
-X-Received: by 2002:a62:42d4:: with SMTP id
- h81-v6mr29132563pfd.0.1539063063910; 
- Mon, 08 Oct 2018 22:31:03 -0700 (PDT)
-Received: from roar.ozlabs.ibm.com (60-240-121-136.tpgi.com.au.
- [60.240.121.136])
- by smtp.gmail.com with ESMTPSA id x69-v6sm26733261pff.175.2018.10.08.22.31.01
+ h=x-gm-message-state:sender:from:to:cc:subject:date:message-id;
+ bh=7O2LsVWyoBpCdlGR06mw0gBTtPpY0TZyV1YjI0/huSQ=;
+ b=j+b/XAHGpCVCeW0vec/GwagaUCPJQ2M51nlAKuKqjS/lPeIOs3/aMCnwr3gtivJshR
+ 5X4kF+ixHRmw7wAVfDPrbHjfZeH7l4GEF2gs/x3j1uBiNMQsACLJkGLs8Ui1xf8GvMlz
+ Ddx/AywMAqzzdntJTjkZvm5o/kngLrMhWqiPpkcWYntiu8AmiVBxYvbln/zv3pP6V/xM
+ iwnU9NlNsUGYhnxBjg6+nuF7sA1LDgt7qR9A592GK430nENx+Z6tQXBHWWiVrGh6o2QQ
+ 14OegeXMIxw4CbzMVuT9RR6LXMUpfjUHGT6W0pZ2sjhWQB0f8vRiR63JGKgYrdkAsPp9
+ dX1A==
+X-Gm-Message-State: ABuFfogj/lsBX+m0wCc86jqAhjv6lW1+uY6FQGAiiAj5/XSDeg1pJ2JL
+ KC2FzjGbsrpAv6SR6TGGIuo=
+X-Google-Smtp-Source: ACcGV618brXvxtBfCAqzZbsYEoVpL3A/Y+6xNU6cw1CkSiaKJu5PjF4YuJSvzRtX8JPEAQXwXqH7nw==
+X-Received: by 2002:a62:1906:: with SMTP id 6-v6mr29166708pfz.9.1539064491809; 
+ Mon, 08 Oct 2018 22:54:51 -0700 (PDT)
+Received: from aurora.jms.id.au ([45.124.203.15])
+ by smtp.gmail.com with ESMTPSA id m27-v6sm27660699pff.187.2018.10.08.22.54.48
  (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Mon, 08 Oct 2018 22:31:03 -0700 (PDT)
-Date: Tue, 9 Oct 2018 15:30:58 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Christophe LEROY <christophe.leroy@c-s.fr>
-Subject: Re: [PATCH v2 3/3] powerpc: machine check interrupt is a
- non-maskable interrupt
-Message-ID: <20181009153058.2564e7a1@roar.ozlabs.ibm.com>
-In-Reply-To: <ccf61fc2-1f2e-7b67-c481-fa4c00a65aae@c-s.fr>
-References: <20170719065912.19183-1-npiggin@gmail.com>
- <20170719065912.19183-4-npiggin@gmail.com>
- <30487984-752a-960d-6aae-6571c55c7ba5@c-s.fr>
- <20181009143241.026f3e7f@roar.ozlabs.ibm.com>
- <ccf61fc2-1f2e-7b67-c481-fa4c00a65aae@c-s.fr>
-X-Mailer: Claws Mail 3.17.0 (GTK+ 2.24.32; x86_64-pc-linux-gnu)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+ Mon, 08 Oct 2018 22:54:50 -0700 (PDT)
+Received: by aurora.jms.id.au (sSMTP sendmail emulation);
+ Tue, 09 Oct 2018 16:24:44 +1030
+From: Joel Stanley <joel@jms.id.au>
+To: Paul Mackerras <paulus@samba.org>,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc/perf: Quiet PMU registration message
+Date: Tue,  9 Oct 2018 16:24:44 +1030
+Message-Id: <20181009055444.20317-1-joel@jms.id.au>
+X-Mailer: git-send-email 2.17.1
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,85 +90,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 9 Oct 2018 06:46:30 +0200
-Christophe LEROY <christophe.leroy@c-s.fr> wrote:
+On a Power9 box we get a few screens full of these on boot. Drop
+them to pr_debug.
 
-> Le 09/10/2018 =C3=A0 06:32, Nicholas Piggin a =C3=A9crit=C2=A0:
-> > On Mon, 8 Oct 2018 17:39:11 +0200
-> > Christophe LEROY <christophe.leroy@c-s.fr> wrote:
-> >  =20
-> >> Hi Nick,
-> >>
-> >> Le 19/07/2017 =C3=A0 08:59, Nicholas Piggin a =C3=A9crit=C2=A0: =20
-> >>> Use nmi_enter similarly to system reset interrupts. This uses NMI
-> >>> printk NMI buffers and turns off various debugging facilities that
-> >>> helps avoid tripping on ourselves or other CPUs.
-> >>>
-> >>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> >>> ---
-> >>>    arch/powerpc/kernel/traps.c | 9 ++++++---
-> >>>    1 file changed, 6 insertions(+), 3 deletions(-)
-> >>>
-> >>> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-> >>> index 2849c4f50324..6d31f9d7c333 100644
-> >>> --- a/arch/powerpc/kernel/traps.c
-> >>> +++ b/arch/powerpc/kernel/traps.c
-> >>> @@ -789,8 +789,10 @@ int machine_check_generic(struct pt_regs *regs)
-> >>>   =20
-> >>>    void machine_check_exception(struct pt_regs *regs)
-> >>>    {
-> >>> -	enum ctx_state prev_state =3D exception_enter();
-> >>>    	int recover =3D 0;
-> >>> +	bool nested =3D in_nmi();
-> >>> +	if (!nested)
-> >>> +		nmi_enter(); =20
-> >>
-> >> This alters preempt_count, then when die() is called
-> >> in_interrupt() returns true allthough the trap didn't happen in
-> >> interrupt, so oops_end() panics for "fatal exception in interrupt"
-> >> instead of gently sending SIGBUS the faulting app. =20
-> >=20
-> > Thanks for tracking that down.
-> >  =20
-> >> Any idea on how to fix this ? =20
-> >=20
-> > I would say we have to deliver the sigbus by hand.
-> >=20
-> >      if ((user_mode(regs)))
-> >          _exception(SIGBUS, regs, BUS_MCEERR_AR, regs->nip);
-> >      else
-> >          die("Machine check", regs, SIGBUS);
-> >  =20
->=20
-> And what about all the other things done by 'die()' ?
->=20
-> And what if it is a kernel thread ?
->=20
-> In one of my boards, I have a kernel thread regularly checking the HW,=20
-> and if it gets a machine check I expect it to gently stop and the die=20
-> notification to be delivered to all registered notifiers.
->=20
-> Until before this patch, it was working well.
+[    5.993645] nest_centaur6_imc performance monitor hardware support registered
+[    5.993728] nest_centaur7_imc performance monitor hardware support registered
+[    5.996510] core_imc performance monitor hardware support registered
+[    5.996569] nest_mba0_imc performance monitor hardware support registered
+[    5.996631] nest_mba1_imc performance monitor hardware support registered
+[    5.996685] nest_mba2_imc performance monitor hardware support registered
 
-I guess the alternative is we could check regs->trap for machine
-check in the die test. Complication is having to account for MCE
-in an interrupt handler.
+Signed-off-by: Joel Stanley <joel@jms.id.au>
+---
+ arch/powerpc/perf/core-book3s.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-       if (in_interrupt()) {
-                if (!IS_MCHECK_EXC(regs) || (irq_count() - (NMI_OFFSET + HA=
-RDIRQ_OFFSET)))
-                    panic("Fatal exception in interrupt");
-       }
+diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+index 81f8a0c838ae..a01c521694e8 100644
+--- a/arch/powerpc/perf/core-book3s.c
++++ b/arch/powerpc/perf/core-book3s.c
+@@ -2249,8 +2249,8 @@ int register_power_pmu(struct power_pmu *pmu)
+ 		return -EBUSY;		/* something's already registered */
+ 
+ 	ppmu = pmu;
+-	pr_info("%s performance monitor hardware support registered\n",
+-		pmu->name);
++	pr_debug("%s performance monitor hardware support registered\n",
++		 pmu->name);
+ 
+ 	power_pmu.attr_groups = ppmu->attr_groups;
+ 
+-- 
+2.17.1
 
-Something like that might work for you? We needs a ppc64 macro for the
-MCE, and can probably add something like in_nmi_from_interrupt() for
-the second part of the test.
-
-Thanks,
-Nick
