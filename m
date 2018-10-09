@@ -7,24 +7,24 @@ X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D4BA9C64EAD
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 13:54:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 53285C64EAD
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 13:57:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 482B92086D
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 13:54:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C89962086D
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 13:57:04 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="bUOPlX+g"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 482B92086D
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="L7giyn18"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C89962086D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42TzH62VCHzF38c
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Oct 2018 00:54:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42TzLQ6r3bzDr3b
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Oct 2018 00:57:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="bUOPlX+g";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="L7giyn18";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
@@ -35,12 +35,12 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="bUOPlX+g"; dkim-atps=neutral
+ header.b="L7giyn18"; dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Tyfg4dCxzF38T
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Tyfg0MZ1zF38J
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Oct 2018 00:26:03 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
@@ -48,21 +48,21 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  :Reply-To:Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From
  :Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
  List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=iBezZyCUYUHpLQ5Y3LKMHLLyBboeGujJBJLf+LkXLnA=; b=bUOPlX+gR0aQqEckjE1Q7voPc7
- eecdKM5E0BO906GDTzCM3rqqcTN6BOkXIAOMyKwQPyZbDLrgLyMGNse2JOecBVfX1HhaCcbNgRaIl
- QDuKmcTcS6M5lgAGvhULYVhYiprSq+CbYf9PwBIxpgTqKkjCplgda9p8uYkjUODiqhudnDExjCrIw
- jSfSAZlQ/wTzU4XpmHSPD0zD4zHNyz+LaUQPGwCmW31N2bd1ZmZ8jQoU+bpj7hDeal+5RFPDCdxp0
- TgvkuIyayUdvtSsE5KEWaE1EbLHTmn6jrFt17PWtH//et0xf9DvCyppJPf22sAWbrtk/6dYFR4Iyh
- kdEcNwbA==;
+ bh=hhwdg0p6cD+tBZ2LvXC+nRssqLc7D1MCrzZuVKtcd0k=; b=L7giyn18J6TxYDQfxVkMj3gVH0
+ Ew5szJrxKfbV8637Zyd7t+IvyFu01/sTfwQoJXXPYHsjeVSN7AJVLrm78NpBozF9m95TIAg3rAHTG
+ DMehxdVSNaIpP/YiAYToVnZif0ptzHQZOZUgDrsqtlskp3Ce6JvS4mGseSB8jxoe72IfS3MdzGye0
+ 9yiMTmZdkZIos2z1Ldn5zJMstPlRJuGdlPjfLagCcNYC0i6dezrYl0iLUyXImOVMYC+pJbuFZnEyV
+ IF4SegwaByNeKspz2z1zC6fAejtlQzyFPWjOjCAdT4IJLfjj2Iqd+6h96fed9QAkiieHe+TcliUab
+ jOZlftXg==;
 Received: from clnet-p19-102.ikbnet.co.at ([83.175.77.102] helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
- id 1g9s1A-0001Fg-FM; Tue, 09 Oct 2018 13:25:44 +0000
+ id 1g9s11-0001Bk-GY; Tue, 09 Oct 2018 13:25:35 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH 17/33] powerpc/powernv: use the generic iommu bypass code
-Date: Tue,  9 Oct 2018 15:24:44 +0200
-Message-Id: <20181009132500.17643-18-hch@lst.de>
+Subject: [PATCH 14/33] powerpc/dart: use the generic iommu bypass code
+Date: Tue,  9 Oct 2018 15:24:41 +0200
+Message-Id: <20181009132500.17643-15-hch@lst.de>
 X-Mailer: git-send-email 2.19.0
 In-Reply-To: <20181009132500.17643-1-hch@lst.de>
 References: <20181009132500.17643-1-hch@lst.de>
@@ -92,141 +92,83 @@ Use the generic iommu bypass code instead of overriding set_dma_mask.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c | 92 ++++++-----------------
- 1 file changed, 25 insertions(+), 67 deletions(-)
+ arch/powerpc/sysdev/dart_iommu.c | 45 +++++++++++---------------------
+ 1 file changed, 15 insertions(+), 30 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index b6db65917bb4..5748b62e2e86 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1739,86 +1739,45 @@ static int pnv_pci_ioda_dma_64bit_bypass(struct pnv_ioda_pe *pe)
- 	return -EIO;
+diff --git a/arch/powerpc/sysdev/dart_iommu.c b/arch/powerpc/sysdev/dart_iommu.c
+index ce5dd2048f57..e7d1645a2d2e 100644
+--- a/arch/powerpc/sysdev/dart_iommu.c
++++ b/arch/powerpc/sysdev/dart_iommu.c
+@@ -360,13 +360,6 @@ static void iommu_table_dart_setup(void)
+ 	set_bit(iommu_table_dart.it_size - 1, iommu_table_dart.it_map);
  }
  
--static int pnv_pci_ioda_dma_set_mask(struct pci_dev *pdev, u64 dma_mask)
-+static bool pnv_pci_ioda_iommu_bypass_supported(struct pci_dev *pdev,
-+		u64 dma_mask)
- {
- 	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
- 	struct pnv_phb *phb = hose->private_data;
- 	struct pci_dn *pdn = pci_get_pdn(pdev);
- 	struct pnv_ioda_pe *pe;
--	uint64_t top;
--	bool bypass = false;
--	s64 rc;
- 
- 	if (WARN_ON(!pdn || pdn->pe_number == IODA_INVALID_PE))
- 		return -ENODEV;
- 
- 	pe = &phb->ioda.pe_array[pdn->pe_number];
- 	if (pe->tce_bypass_enabled) {
--		top = pe->tce_bypass_base + memblock_end_of_DRAM() - 1;
--		bypass = (dma_mask >= top);
-+		u64 top = pe->tce_bypass_base + memblock_end_of_DRAM() - 1;
-+		if (dma_mask >= top)
-+			return true;
- 	}
- 
--	if (bypass) {
--		dev_info(&pdev->dev, "Using 64-bit DMA iommu bypass\n");
--		set_dma_ops(&pdev->dev, &dma_nommu_ops);
--	} else {
--		/*
--		 * If the device can't set the TCE bypass bit but still wants
--		 * to access 4GB or more, on PHB3 we can reconfigure TVE#0 to
--		 * bypass the 32-bit region and be usable for 64-bit DMAs.
--		 * The device needs to be able to address all of this space.
--		 */
--		if (dma_mask >> 32 &&
--		    dma_mask > (memory_hotplug_max() + (1ULL << 32)) &&
--		    /* pe->pdev should be set if it's a single device, pe->pbus if not */
--		    (pe->device_count == 1 || !pe->pbus) &&
--		    phb->model == PNV_PHB_MODEL_PHB3) {
--			/* Configure the bypass mode */
--			rc = pnv_pci_ioda_dma_64bit_bypass(pe);
--			if (rc)
--				return rc;
--			/* 4GB offset bypasses 32-bit space */
--			set_dma_offset(&pdev->dev, (1ULL << 32));
--			set_dma_ops(&pdev->dev, &dma_nommu_ops);
--		} else if (dma_mask >> 32 && dma_mask != DMA_BIT_MASK(64)) {
--			/*
--			 * Fail the request if a DMA mask between 32 and 64 bits
--			 * was requested but couldn't be fulfilled. Ideally we
--			 * would do this for 64-bits but historically we have
--			 * always fallen back to 32-bits.
--			 */
--			return -ENOMEM;
--		} else {
--			dev_info(&pdev->dev, "Using 32-bit DMA via iommu\n");
--			set_dma_ops(&pdev->dev, &dma_iommu_ops);
--		}
-+	/*
-+	 * If the device can't set the TCE bypass bit but still wants
-+	 * to access 4GB or more, on PHB3 we can reconfigure TVE#0 to
-+	 * bypass the 32-bit region and be usable for 64-bit DMAs.
-+	 * The device needs to be able to address all of this space.
-+	 */
-+	if (dma_mask >> 32 &&
-+	    dma_mask > (memory_hotplug_max() + (1ULL << 32)) &&
-+	    /* pe->pdev should be set if it's a single device, pe->pbus if not */
-+	    (pe->device_count == 1 || !pe->pbus) &&
-+	    phb->model == PNV_PHB_MODEL_PHB3) {
-+		/* Configure the bypass mode */
-+		s64 rc = pnv_pci_ioda_dma_64bit_bypass(pe);
-+		if (rc)
-+			return rc;
-+		/* 4GB offset bypasses 32-bit space */
-+		set_dma_offset(&pdev->dev, (1ULL << 32));
-+		return true;
- 	}
--	*pdev->dev.dma_mask = dma_mask;
- 
--	return 0;
+-static void pci_dma_dev_setup_dart(struct pci_dev *dev)
+-{
+-	if (dart_is_u4)
+-		set_dma_offset(&dev->dev, DART_U4_BYPASS_BASE);
+-	set_iommu_table_base(&dev->dev, &iommu_table_dart);
 -}
 -
--static u64 pnv_pci_ioda_dma_get_required_mask(struct pci_dev *pdev)
--{
--	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
--	struct pnv_phb *phb = hose->private_data;
--	struct pci_dn *pdn = pci_get_pdn(pdev);
--	struct pnv_ioda_pe *pe;
--	u64 end, mask;
--
--	if (WARN_ON(!pdn || pdn->pe_number == IODA_INVALID_PE))
--		return 0;
--
--	pe = &phb->ioda.pe_array[pdn->pe_number];
--	if (!pe->tce_bypass_enabled)
--		return __dma_get_required_mask(&pdev->dev);
--
--
--	end = pe->tce_bypass_base + memblock_end_of_DRAM();
--	mask = 1ULL << (fls64(end) - 1);
--	mask += mask - 1;
--
--	return mask;
-+	return false;
+ static void pci_dma_bus_setup_dart(struct pci_bus *bus)
+ {
+ 	if (!iommu_table_dart_inited) {
+@@ -390,27 +383,16 @@ static bool dart_device_on_pcie(struct device *dev)
+ 	return false;
  }
  
- static void pnv_ioda_setup_bus_dma(struct pnv_ioda_pe *pe,
-@@ -3456,6 +3415,7 @@ static void pnv_pci_ioda_shutdown(struct pci_controller *hose)
- static const struct pci_controller_ops pnv_pci_ioda_controller_ops = {
- 	.dma_dev_setup		= pnv_pci_dma_dev_setup,
- 	.dma_bus_setup		= pnv_pci_dma_bus_setup,
-+	.iommu_bypass_supported	= pnv_pci_ioda_iommu_bypass_supported,
- #ifdef CONFIG_PCI_MSI
- 	.setup_msi_irqs		= pnv_setup_msi_irqs,
- 	.teardown_msi_irqs	= pnv_teardown_msi_irqs,
-@@ -3465,8 +3425,6 @@ static const struct pci_controller_ops pnv_pci_ioda_controller_ops = {
- 	.window_alignment	= pnv_pci_window_alignment,
- 	.setup_bridge		= pnv_pci_setup_bridge,
- 	.reset_secondary_bus	= pnv_pci_reset_secondary_bus,
--	.dma_set_mask		= pnv_pci_ioda_dma_set_mask,
--	.dma_get_required_mask	= pnv_pci_ioda_dma_get_required_mask,
- 	.shutdown		= pnv_pci_ioda_shutdown,
- };
+-static int dart_dma_set_mask(struct device *dev, u64 dma_mask)
++static void pci_dma_dev_setup_dart(struct pci_dev *dev)
+ {
+-	if (!dev->dma_mask || !dma_supported(dev, dma_mask))
+-		return -EIO;
+-
+-	/* U4 supports a DART bypass, we use it for 64-bit capable
+-	 * devices to improve performances. However, that only works
+-	 * for devices connected to U4 own PCIe interface, not bridged
+-	 * through hypertransport. We need the device to support at
+-	 * least 40 bits of addresses.
+-	 */
+-	if (dart_device_on_pcie(dev) && dma_mask >= DMA_BIT_MASK(40)) {
+-		dev_info(dev, "Using 64-bit DMA iommu bypass\n");
+-		set_dma_ops(dev, &dma_nommu_ops);
+-	} else {
+-		dev_info(dev, "Using 32-bit DMA via iommu\n");
+-		set_dma_ops(dev, &dma_iommu_ops);
+-	}
++	if (dart_is_u4 && dart_device_on_pcie(&dev->dev))
++		set_dma_offset(&dev->dev, DART_U4_BYPASS_BASE);
++	set_iommu_table_base(&dev->dev, &iommu_table_dart);
++}
  
+-	*dev->dma_mask = dma_mask;
+-	return 0;
++static bool iommu_bypass_supported_dart(struct pci_dev *dev, u64 mask)
++{
++	return dart_is_u4 && dart_device_on_pcie(&dev->dev);
+ }
+ 
+ void __init iommu_init_early_dart(struct pci_controller_ops *controller_ops)
+@@ -430,12 +412,15 @@ void __init iommu_init_early_dart(struct pci_controller_ops *controller_ops)
+ 	if (dart_init(dn) != 0)
+ 		return;
+ 
+-	/* Setup bypass if supported */
+-	if (dart_is_u4)
+-		ppc_md.dma_set_mask = dart_dma_set_mask;
+-
++	/*
++	 * U4 supports a DART bypass, we use it for 64-bit capable devices to
++	 * improve performance.  However, that only works for devices connected
++	 * to the U4 own PCIe interface, not bridged through hypertransport.
++	 * We need the device to support at least 40 bits of addresses.
++	 */
+ 	controller_ops->dma_dev_setup = pci_dma_dev_setup_dart;
+ 	controller_ops->dma_bus_setup = pci_dma_bus_setup_dart;
++	controller_ops->iommu_bypass_supported = iommu_bypass_supported_dart;
+ 
+ 	/* Setup pci_dma ops */
+ 	set_pci_dma_ops(&dma_iommu_ops);
 -- 
 2.19.0
 
