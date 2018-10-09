@@ -2,51 +2,54 @@ Return-Path: <SRS0=k2O5=MV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BC9B8C67803
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 11:56:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C2FDAC64EAD
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 11:59:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3B1A420835
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 11:56:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3B1A420835
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 3D7DF20C0A
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 11:59:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3D7DF20C0A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42Twgc1Py0zF3D2
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 22:56:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Twd102H5zF39g
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Oct 2018 22:54:29 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 42Twcz5Ylpz9s89;
- Tue,  9 Oct 2018 22:54:27 +1100 (AEDT)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: christophe leroy <christophe.leroy@c-s.fr>,
- Dan Carpenter <dan.carpenter@oracle.com>, Geoff Levand <geoff@infradead.org>,
- Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [PATCH] powerpc: signedness bug in update_flash_db()
-In-Reply-To: <6fa5827e-3346-4057-ca44-c6d9758f5837@c-s.fr>
-References: <20181001164458.GB29197@mwanda>
- <6fa5827e-3346-4057-ca44-c6d9758f5837@c-s.fr>
-Date: Tue, 09 Oct 2018 22:54:27 +1100
-Message-ID: <87in2b1gjw.fsf@concordia.ellerman.id.au>
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Twl364ZNzF3Dp
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 22:59:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=arm.com
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=arm.com
+ (client-ip=217.140.101.70; helo=foss.arm.com;
+ envelope-from=will.deacon@arm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 42TwhL0NkQzF39g
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Oct 2018 22:57:18 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 597FE15BE;
+ Tue,  9 Oct 2018 04:57:14 -0700 (PDT)
+Received: from edgewater-inn.cambridge.arm.com
+ (usa-sjc-imap-foss1.foss.arm.com [10.72.51.249])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 2A9D23F5D3;
+ Tue,  9 Oct 2018 04:57:14 -0700 (PDT)
+Received: by edgewater-inn.cambridge.arm.com (Postfix, from userid 1000)
+ id 782B61AE03D0; Tue,  9 Oct 2018 12:57:13 +0100 (BST)
+Date: Tue, 9 Oct 2018 12:57:13 +0100
+From: Will Deacon <will.deacon@arm.com>
+To: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH 13/36] dt-bindings: arm: Convert PMU binding to json-schema
+Message-ID: <20181009115713.GE6248@arm.com>
+References: <20181005165848.3474-1-robh@kernel.org>
+ <20181005165848.3474-14-robh@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20181005165848.3474-14-robh@kernel.org>
+User-Agent: Mutt/1.5.23 (2014-03-12)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,44 +61,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel-janitors@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org,
+ Kumar Gala <kumar.gala@linaro.org>, Grant Likely <glikely@secretlab.ca>,
+ Arnd Bergmann <arnd@arndb.de>, Tom Rini <trini@konsulko.com>,
+ Frank Rowand <frowand.list@gmail.com>,
+ Linus Walleij <linus.walleij@linaro.org>,
+ Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
+ linux-kernel@vger.kernel.org, Bjorn Andersson <bjorn.andersson@linaro.org>,
+ Mark Brown <broonie@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>,
+ Jonathan Cameron <jic23@kernel.org>, Olof Johansson <olof@lixom.net>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-christophe leroy <christophe.leroy@c-s.fr> writes:
+Hi Rob,
 
-> Le 01/10/2018 =C3=A0 18:44, Dan Carpenter a =C3=A9crit=C2=A0:
->> The "count < sizeof(struct os_area_db)" comparison is type promoted to
->> size_t so negative values of "count" are treated as very high values and
->> we accidentally return success instead of a negative error code.
->>=20
->> This doesn't really change runtime much but it fixes a static checker
->> warning.
->>=20
->> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
->>=20
->> diff --git a/arch/powerpc/platforms/ps3/os-area.c b/arch/powerpc/platfor=
-ms/ps3/os-area.c
->> index cdbfc5cfd6f3..f5387ad82279 100644
->> --- a/arch/powerpc/platforms/ps3/os-area.c
->> +++ b/arch/powerpc/platforms/ps3/os-area.c
->> @@ -664,7 +664,7 @@ static int update_flash_db(void)
->>   	db_set_64(db, &os_area_db_id_rtc_diff, saved_params.rtc_diff);
->>=20=20=20
->>   	count =3D os_area_flash_write(db, sizeof(struct os_area_db), pos);
->> -	if (count < sizeof(struct os_area_db)) {
->> +	if (count < 0 || count < sizeof(struct os_area_db)) {
->
-> Why not simply add a cast ? :
->
-> if (count < (ssize_t)sizeof(struct os_area_db)) {
+On Fri, Oct 05, 2018 at 11:58:25AM -0500, Rob Herring wrote:
+> Convert ARM PMU binding to DT schema format using json-schema.
+> 
+> Cc: Will Deacon <will.deacon@arm.com>
+> Cc: Mark Rutland <mark.rutland@arm.com>
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: devicetree@vger.kernel.org
+> Signed-off-by: Rob Herring <robh@kernel.org>
+> ---
+>  Documentation/devicetree/bindings/arm/pmu.txt | 70 --------------
+>  .../devicetree/bindings/arm/pmu.yaml          | 96 +++++++++++++++++++
+>  2 files changed, 96 insertions(+), 70 deletions(-)
+>  delete mode 100644 Documentation/devicetree/bindings/arm/pmu.txt
+>  create mode 100644 Documentation/devicetree/bindings/arm/pmu.yaml
 
-The explicit check against 0 is much clearer IMO.
+[...]
 
-The original author and all reviewers since obviously didn't realise
-that count was being implicitly cast, so fixing that with another cast
-seems likely to just confuse people even more :)
+> -- interrupts : 1 combined interrupt or 1 per core. If the interrupt is a per-cpu
+> -               interrupt (PPI) then 1 interrupt should be specified.
 
-cheers
+[...]
+
+> +  interrupts:
+> +    oneOf:
+> +      - maxItems: 1
+> +      - minItems: 2
+> +        maxItems: 8
+> +        description: 1 interrupt per core.
+> +
+> +  interrupts-extended:
+> +    $ref: '#/properties/interrupts'
+
+This seems like a semantic different between the two representations, or am
+I missing something here? Specifically, both the introduction of
+interrupts-extended and also dropping any mention of using a single per-cpu
+interrupt (the single combined case is no longer support by Linux; not sure
+if you want to keep it in the binding).
+
+Will
