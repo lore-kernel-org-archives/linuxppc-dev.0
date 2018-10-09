@@ -4,92 +4,47 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B343C64EB0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 06:25:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CB183C64EAD
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 07:02:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B913B213A2
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 06:25:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B913B213A2
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 3583E2075C
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 07:02:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3583E2075C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42TnJt5pC2zF38b
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 17:25:02 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
-Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=maddy@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Tp7V5JFMzF39C
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 18:01:58 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Tp5Q0bkhzDrGp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Oct 2018 18:00:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42TnGw3hBVzF3MH
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Oct 2018 17:23:20 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w996Iopw092560
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Oct 2018 02:23:18 -0400
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2n0psdrgyh-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Oct 2018 02:23:17 -0400
-Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Tue, 9 Oct 2018 07:23:16 +0100
-Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
- by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 9 Oct 2018 07:23:13 +0100
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- w996NCQu66584728
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Tue, 9 Oct 2018 06:23:12 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id AC0554C04A;
- Tue,  9 Oct 2018 09:22:49 +0100 (BST)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 334884C044;
- Tue,  9 Oct 2018 09:22:49 +0100 (BST)
-Received: from [9.193.12.96] (unknown [9.193.12.96])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue,  9 Oct 2018 09:22:49 +0100 (BST)
-Subject: Re: [PATCH v2] powerpc/perf: Quiet IMC PMU registration message
-To: Joel Stanley <joel@jms.id.au>
-References: <20181009062038.29695-1-joel@jms.id.au>
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Date: Tue, 9 Oct 2018 11:53:11 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ by ozlabs.org (Postfix) with ESMTPSA id 42Tp5P1wtPz9s47;
+ Tue,  9 Oct 2018 18:00:08 +1100 (AEDT)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: YueHaibing <yuehaibing@huawei.com>, benh@kernel.crashing.org,
+ paulus@samba.org, nfont@linux.vnet.ibm.com
+Subject: Re: [PATCH v2 -next] powerpc/pseries/memory-hotplug: Fix return value
+ type of find_aa_index
+In-Reply-To: <20181004094113.5492-1-yuehaibing@huawei.com>
+References: <20181004094113.5492-1-yuehaibing@huawei.com>
+Date: Tue, 09 Oct 2018 18:00:08 +1100
+Message-ID: <871s8z38qv.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20181009062038.29695-1-joel@jms.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Language: en-US
-X-TM-AS-GCONF: 00
-x-cbid: 18100906-0016-0000-0000-000002105E21
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18100906-0017-0000-0000-00003267C201
-Message-Id: <a04a06ac-fe29-3e35-26dc-83f1c4551988@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-10-09_04:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1807170000 definitions=main-1810090066
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,44 +56,104 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: YueHaibing <yuehaibing@huawei.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-On Tuesday 09 October 2018 11:50 AM, Joel Stanley wrote:
-> On a Power9 box we get a few screens full of these on boot. Drop
-> them to pr_debug.
+YueHaibing <yuehaibing@huawei.com> writes:
+> 'aa_index' is defined as an unsigned value, but find_aa_index
+> may return -1 when dlpar_clone_property fails. So we use an rc
+> value to track the validation of finding the aa_index instead
+> of the 'aa_index' value itself
 >
-> [    5.993645] nest_centaur6_imc performance monitor hardware support registered
-> [    5.993728] nest_centaur7_imc performance monitor hardware support registered
-> [    5.996510] core_imc performance monitor hardware support registered
-> [    5.996569] nest_mba0_imc performance monitor hardware support registered
-> [    5.996631] nest_mba1_imc performance monitor hardware support registered
-> [    5.996685] nest_mba2_imc performance monitor hardware support registered
-
-Reviewed-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-
-> Signed-off-by: Joel Stanley <joel@jms.id.au>
+> Fixes: c05a5a40969e ("powerpc/pseries: Dynamic add entires to associativity lookup array")
+> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 > ---
-> v2: patch the correct file, update commit title
->
->   arch/powerpc/perf/imc-pmu.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
-> index 1fafc32b12a0..6954636b16d1 100644
-> --- a/arch/powerpc/perf/imc-pmu.c
-> +++ b/arch/powerpc/perf/imc-pmu.c
-> @@ -1392,7 +1392,7 @@ int init_imc_pmu(struct device_node *parent, struct imc_pmu *pmu_ptr, int pmu_id
->   	if (ret)
->   		goto err_free_cpuhp_mem;
->
-> -	pr_info("%s performance monitor hardware support registered\n",
-> +	pr_debug("%s performance monitor hardware support registered\n",
->   							pmu_ptr->pmu.name);
->
->   	return 0;
+> v2: use 'rc' track the validation of aa_index
 
+Thanks for sending a v2, some more comments ...
+
+> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+> index 9a15d39..796e68b 100644
+> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
+> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+> @@ -101,13 +101,12 @@ static struct property *dlpar_clone_property(struct property *prop,
+>  	return new_prop;
+>  }
+>  
+> -static u32 find_aa_index(struct device_node *dr_node,
+> -			 struct property *ala_prop, const u32 *lmb_assoc)
+> +static int find_aa_index(struct device_node *dr_node, struct property *ala_prop,
+> +			 const u32 *lmb_assoc, u32 *aa_index)
+>  {
+>  	u32 *assoc_arrays;
+> -	u32 aa_index;
+>  	int aa_arrays, aa_array_entries, aa_array_sz;
+> -	int i, index;
+> +	int i, index, rc = -1;
+
+It's preferable to leave rc uninitialised until we actually need to
+initialise it, that gives the compiler the chance to warn us if we use
+it inadvertently before that.
+
+>  
+>  	/*
+>  	 * The ibm,associativity-lookup-arrays property is defined to be
+> @@ -121,18 +120,18 @@ static u32 find_aa_index(struct device_node *dr_node,
+>  	aa_array_entries = be32_to_cpu(assoc_arrays[1]);
+>  	aa_array_sz = aa_array_entries * sizeof(u32);
+>  
+> -	aa_index = -1;
+
+So that would be here:
+	rc = -1;
+
+But ..
+
+>  	for (i = 0; i < aa_arrays; i++) {
+>  		index = (i * aa_array_entries) + 2;
+>  
+>  		if (memcmp(&assoc_arrays[index], &lmb_assoc[1], aa_array_sz))
+>  			continue;
+>  
+> -		aa_index = i;
+> +		*aa_index = i;
+> +		rc = 0;
+>  		break;
+>  	}
+
+The 'rc' variable is basically a boolean now, it means "we found something".
+
+And all we do with it in the found case (rc = 0) is test it below and return.
+
+So can't we just return directly in the for loop above, rather than breaking?
+
+In which case we don't need the rc variable at all.
+
+And the whole function may as well return bool, rather than int.
+
+Does that make sense?
+
+cheers
+
+> -	if (aa_index == -1) {
+> +	if (rc == -1) {
+>  		struct property *new_prop;
+>  		u32 new_prop_size;
+>  
+> @@ -157,10 +156,11 @@ static u32 find_aa_index(struct device_node *dr_node,
+>  		 * number of entries - 1 since we added its associativity
+>  		 * to the end of the lookup array.
+>  		 */
+> -		aa_index = be32_to_cpu(assoc_arrays[0]) - 1;
+> +		*aa_index = be32_to_cpu(assoc_arrays[0]) - 1;
+> +		rc = 0;
+>  	}
+>  
+> -	return aa_index;
+> +	return rc;
+>  }
+>  
+>  static int update_lmb_associativity_index(struct drmem_lmb *lmb)
