@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BCFD7C64EAD
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 15:09:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 82C26C64EAD
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 15:11:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 39375214C4
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 15:09:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 39375214C4
+	by mail.kernel.org (Postfix) with ESMTPS id 0DEF3213A2
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Oct 2018 15:11:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0DEF3213A2
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42V0yC346gzF3ML
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Oct 2018 02:09:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42V10V2Yl6zF3LG
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Oct 2018 02:11:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
@@ -29,35 +29,36 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42TzD94cdFzF39y
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Oct 2018 00:51:37 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42TzDC6nfFzDrQ1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Oct 2018 00:51:39 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 42TzCt4nV2z9ttSj;
- Tue,  9 Oct 2018 15:51:22 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 42TzCx0WkXz9ttSh;
+ Tue,  9 Oct 2018 15:51:25 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id Liyy-lUo66M5; Tue,  9 Oct 2018 15:51:22 +0200 (CEST)
+ with ESMTP id 7yNJaNovY7mD; Tue,  9 Oct 2018 15:51:25 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 42TzCt4CdHz9ttRm;
- Tue,  9 Oct 2018 15:51:22 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 42TzCw73V3z9ttRm;
+ Tue,  9 Oct 2018 15:51:24 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 424F48B80A;
- Tue,  9 Oct 2018 15:51:34 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 899AC8B80C;
+ Tue,  9 Oct 2018 15:51:36 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id abCXGTy6nRFq; Tue,  9 Oct 2018 15:51:34 +0200 (CEST)
+ with ESMTP id MywqY15iighl; Tue,  9 Oct 2018 15:51:36 +0200 (CEST)
 Received: from pc13168vm.idsi0.si.c-s.fr (unknown [192.168.232.3])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id E79C58B80C;
- Tue,  9 Oct 2018 15:51:33 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 0B85E8B80B;
+ Tue,  9 Oct 2018 15:51:36 +0200 (CEST)
 Received: by pc13168vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id C7E7C6F444; Tue,  9 Oct 2018 13:51:33 +0000 (UTC)
-Message-Id: <c454a5dbb215719991e3b0e6470309101d870fbb.1539092111.git.christophe.leroy@c-s.fr>
+ id CE91C6F444; Tue,  9 Oct 2018 13:51:35 +0000 (UTC)
+Message-Id: <25348d7faf67d5e2829aad03aef8096cd5f6908d.1539092111.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1539092111.git.christophe.leroy@c-s.fr>
 References: <cover.1539092111.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 01/24] powerpc/32: Add ioremap_wt() and ioremap_coherent()
+Subject: [PATCH v3 02/24] drivers/video/fbdev: use ioremap_wc/wt() instead of
+ __ioremap()
 To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Dominik Brodowski <linux@dominikbrodowski.net>,
@@ -66,7 +67,7 @@ To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
  Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
  Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>,
  aneesh.kumar@linux.vnet.ibm.com
-Date: Tue,  9 Oct 2018 13:51:33 +0000 (UTC)
+Date: Tue,  9 Oct 2018 13:51:35 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,102 +86,149 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Other arches have ioremap_wt() to map IO areas write-through.
-Implement it on PPC as well in order to avoid drivers using
-__ioremap(_PAGE_WRITETHRU)
+_PAGE_NO_CACHE is a platform specific flag. In addition, this flag
+is misleading because one would think it requests a noncached page
+whereas a noncached page is _PAGE_NO_CACHE | _PAGE_GUARDED
 
-Also implement ioremap_coherent() to avoid drivers using
-__ioremap(_PAGE_COHERENT)
+_PAGE_NO_CACHE alone means write combined noncached page, so lets
+use ioremap_wc() instead.
+
+_PAGE_WRITETHRU is also platform specific flag. Use ioremap_wt()
+instead.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/io.h |  9 +++++++++
- arch/powerpc/mm/pgtable_32.c  | 16 ++++++++++++++++
- arch/powerpc/mm/pgtable_64.c  | 10 ++++++++++
- 3 files changed, 35 insertions(+)
+ drivers/video/fbdev/chipsfb.c    |  3 +--
+ drivers/video/fbdev/controlfb.c  |  5 +----
+ drivers/video/fbdev/platinumfb.c |  5 +----
+ drivers/video/fbdev/valkyriefb.c | 12 ++++++------
+ 4 files changed, 9 insertions(+), 16 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
-index e0331e754568..cdccab3938db 100644
---- a/arch/powerpc/include/asm/io.h
-+++ b/arch/powerpc/include/asm/io.h
-@@ -3,6 +3,9 @@
- #ifdef __KERNEL__
+diff --git a/drivers/video/fbdev/chipsfb.c b/drivers/video/fbdev/chipsfb.c
+index f103665cad43..40182ed85648 100644
+--- a/drivers/video/fbdev/chipsfb.c
++++ b/drivers/video/fbdev/chipsfb.c
+@@ -27,7 +27,6 @@
+ #include <linux/init.h>
+ #include <linux/pci.h>
+ #include <linux/console.h>
+-#include <asm/io.h>
  
- #define ARCH_HAS_IOREMAP_WC
-+#ifdef CONFIG_PPC32
-+#define ARCH_HAS_IOREMAP_WT
+ #ifdef CONFIG_PMAC_BACKLIGHT
+ #include <asm/backlight.h>
+@@ -401,7 +400,7 @@ static int chipsfb_pci_init(struct pci_dev *dp, const struct pci_device_id *ent)
+ #endif /* CONFIG_PMAC_BACKLIGHT */
+ 
+ #ifdef CONFIG_PPC
+-	p->screen_base = __ioremap(addr, 0x200000, _PAGE_NO_CACHE);
++	p->screen_base = ioremap_wc(addr, 0x200000);
+ #else
+ 	p->screen_base = ioremap(addr, 0x200000);
+ #endif
+diff --git a/drivers/video/fbdev/controlfb.c b/drivers/video/fbdev/controlfb.c
+index 8d14b29aafea..9cb0ef7ac29e 100644
+--- a/drivers/video/fbdev/controlfb.c
++++ b/drivers/video/fbdev/controlfb.c
+@@ -48,9 +48,7 @@
+ #include <linux/nvram.h>
+ #include <linux/adb.h>
+ #include <linux/cuda.h>
+-#include <asm/io.h>
+ #include <asm/prom.h>
+-#include <asm/pgtable.h>
+ #include <asm/btext.h>
+ 
+ #include "macmodes.h"
+@@ -715,8 +713,7 @@ static int __init control_of_init(struct device_node *dp)
+ 		goto error_out;
+ 	}
+ 	/* map at most 8MB for the frame buffer */
+-	p->frame_buffer = __ioremap(p->frame_buffer_phys, 0x800000,
+-				    _PAGE_WRITETHRU);
++	p->frame_buffer = ioremap_wt(p->frame_buffer_phys, 0x800000);
+ 
+ 	if (!p->control_regs_phys ||
+ 	    !request_mem_region(p->control_regs_phys, p->control_regs_size,
+diff --git a/drivers/video/fbdev/platinumfb.c b/drivers/video/fbdev/platinumfb.c
+index 377d3399a3ad..bf6b7fb83cf4 100644
+--- a/drivers/video/fbdev/platinumfb.c
++++ b/drivers/video/fbdev/platinumfb.c
+@@ -32,9 +32,7 @@
+ #include <linux/nvram.h>
+ #include <linux/of_device.h>
+ #include <linux/of_platform.h>
+-#include <asm/io.h>
+ #include <asm/prom.h>
+-#include <asm/pgtable.h>
+ 
+ #include "macmodes.h"
+ #include "platinumfb.h"
+@@ -577,8 +575,7 @@ static int platinumfb_probe(struct platform_device* odev)
+ 
+ 	/* frame buffer - map only 4MB */
+ 	pinfo->frame_buffer_phys = pinfo->rsrc_fb.start;
+-	pinfo->frame_buffer = __ioremap(pinfo->rsrc_fb.start, 0x400000,
+-					_PAGE_WRITETHRU);
++	pinfo->frame_buffer = ioremap_wt(pinfo->rsrc_fb.start, 0x400000);
+ 	pinfo->base_frame_buffer = pinfo->frame_buffer;
+ 
+ 	/* registers */
+diff --git a/drivers/video/fbdev/valkyriefb.c b/drivers/video/fbdev/valkyriefb.c
+index 275fb98236d3..d51c3a8009cb 100644
+--- a/drivers/video/fbdev/valkyriefb.c
++++ b/drivers/video/fbdev/valkyriefb.c
+@@ -54,13 +54,11 @@
+ #include <linux/nvram.h>
+ #include <linux/adb.h>
+ #include <linux/cuda.h>
+-#include <asm/io.h>
+ #ifdef CONFIG_MAC
+ #include <asm/macintosh.h>
+ #else
+ #include <asm/prom.h>
+ #endif
+-#include <asm/pgtable.h>
+ 
+ #include "macmodes.h"
+ #include "valkyriefb.h"
+@@ -318,7 +316,7 @@ static void __init valkyrie_choose_mode(struct fb_info_valkyrie *p)
+ int __init valkyriefb_init(void)
+ {
+ 	struct fb_info_valkyrie	*p;
+-	unsigned long frame_buffer_phys, cmap_regs_phys, flags;
++	unsigned long frame_buffer_phys, cmap_regs_phys;
+ 	int err;
+ 	char *option = NULL;
+ 
+@@ -337,7 +335,6 @@ int __init valkyriefb_init(void)
+ 	/* Hardcoded addresses... welcome to 68k Macintosh country :-) */
+ 	frame_buffer_phys = 0xf9000000;
+ 	cmap_regs_phys = 0x50f24000;
+-	flags = IOMAP_NOCACHE_SER; /* IOMAP_WRITETHROUGH?? */
+ #else /* ppc (!CONFIG_MAC) */
+ 	{
+ 		struct device_node *dp;
+@@ -354,7 +351,6 @@ int __init valkyriefb_init(void)
+ 
+ 		frame_buffer_phys = r.start;
+ 		cmap_regs_phys = r.start + 0x304000;
+-		flags = _PAGE_WRITETHRU;
+ 	}
+ #endif /* ppc (!CONFIG_MAC) */
+ 
+@@ -369,7 +365,11 @@ int __init valkyriefb_init(void)
+ 	}
+ 	p->total_vram = 0x100000;
+ 	p->frame_buffer_phys = frame_buffer_phys;
+-	p->frame_buffer = __ioremap(frame_buffer_phys, p->total_vram, flags);
++#ifdef CONFIG_MAC
++	p->frame_buffer = ioremap_nocache(frame_buffer_phys, p->total_vram);
++#else
++	p->frame_buffer = ioremap_wt(frame_buffer_phys, p->total_vram);
 +#endif
- 
- /*
-  * This program is free software; you can redistribute it and/or
-@@ -746,6 +749,10 @@ static inline void iosync(void)
-  *
-  * * ioremap_wc enables write combining
-  *
-+ * * ioremap_wt enables write through
-+ *
-+ * * ioremap_coherent maps coherent cached memory
-+ *
-  * * iounmap undoes such a mapping and can be hooked
-  *
-  * * __ioremap_at (and the pending __iounmap_at) are low level functions to
-@@ -767,6 +774,8 @@ extern void __iomem *ioremap(phys_addr_t address, unsigned long size);
- extern void __iomem *ioremap_prot(phys_addr_t address, unsigned long size,
- 				  unsigned long flags);
- extern void __iomem *ioremap_wc(phys_addr_t address, unsigned long size);
-+void __iomem *ioremap_wt(phys_addr_t address, unsigned long size);
-+void __iomem *ioremap_coherent(phys_addr_t address, unsigned long size);
- #define ioremap_nocache(addr, size)	ioremap((addr), (size))
- #define ioremap_uc(addr, size)		ioremap((addr), (size))
- #define ioremap_cache(addr, size) \
-diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index 120a49bfb9c6..4c3adde09d95 100644
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -90,6 +90,22 @@ ioremap_wc(phys_addr_t addr, unsigned long size)
- EXPORT_SYMBOL(ioremap_wc);
- 
- void __iomem *
-+ioremap_wt(phys_addr_t addr, unsigned long size)
-+{
-+	return __ioremap_caller(addr, size, _PAGE_WRITETHRU,
-+				__builtin_return_address(0));
-+}
-+EXPORT_SYMBOL(ioremap_wt);
-+
-+void __iomem *
-+ioremap_coherent(phys_addr_t addr, unsigned long size)
-+{
-+	return __ioremap_caller(addr, size, _PAGE_COHERENT,
-+				__builtin_return_address(0));
-+}
-+EXPORT_SYMBOL(ioremap_coherent);
-+
-+void __iomem *
- ioremap_prot(phys_addr_t addr, unsigned long size, unsigned long flags)
- {
- 	/* writeable implies dirty for kernel addresses */
-diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-index e15e63079ba8..c0f356d9b135 100644
---- a/arch/powerpc/mm/pgtable_64.c
-+++ b/arch/powerpc/mm/pgtable_64.c
-@@ -222,6 +222,16 @@ void __iomem * ioremap_wc(phys_addr_t addr, unsigned long size)
- 	return __ioremap_caller(addr, size, flags, caller);
- }
- 
-+void __iomem *ioremap_coherent(phys_addr_t addr, unsigned long size)
-+{
-+	unsigned long flags = pgprot_val(pgprot_cached(__pgprot(0)));
-+	void *caller = __builtin_return_address(0);
-+
-+	if (ppc_md.ioremap)
-+		return ppc_md.ioremap(addr, size, flags, caller);
-+	return __ioremap_caller(addr, size, flags, caller);
-+}
-+
- void __iomem * ioremap_prot(phys_addr_t addr, unsigned long size,
- 			     unsigned long flags)
- {
+ 	p->cmap_regs_phys = cmap_regs_phys;
+ 	p->cmap_regs = ioremap(p->cmap_regs_phys, 0x1000);
+ 	p->valkyrie_regs_phys = cmap_regs_phys+0x6000;
 -- 
 2.13.3
 
