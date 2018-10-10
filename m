@@ -2,51 +2,88 @@ Return-Path: <SRS0=lRG+=MW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 50AE9C43441
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Oct 2018 08:01:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 715C6C43441
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Oct 2018 09:37:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B28572064E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Oct 2018 08:01:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B28572064E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id B2A3520835
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Oct 2018 09:37:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B2A3520835
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=st.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42VRQ532sDzF2QM
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Oct 2018 19:01:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42VTX04ngJzF1S0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Oct 2018 20:37:04 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=st.com
 Authentication-Results: lists.ozlabs.org;
- spf=softfail (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=mhocko@kernel.org;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=st.com
+ (client-ip=62.209.51.94; helo=mx07-00178001.pphosted.com;
+ envelope-from=patrice.chotard@st.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=st.com
+X-Greylist: delayed 876 seconds by postgrey-1.36 at bilbo;
+ Wed, 10 Oct 2018 20:34:45 AEDT
+Received: from mx07-00178001.pphosted.com (mx07-00178001.pphosted.com
+ [62.209.51.94])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42VRLg477WzF116
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Oct 2018 18:58:51 +1100 (AEDT)
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx1.suse.de (Postfix) with ESMTP id BC818AC68;
- Wed, 10 Oct 2018 07:58:47 +0000 (UTC)
-Date: Wed, 10 Oct 2018 09:58:44 +0200
-From: Michal Hocko <mhocko@kernel.org>
-To: Mike Rapoport <rppt@linux.vnet.ibm.com>
-Subject: Re: [PATCH] memblock: stop using implicit alignement to
- SMP_CACHE_BYTES
-Message-ID: <20181010075844.GA5873@dhcp22.suse.cz>
-References: <1538687224-17535-1-git-send-email-rppt@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42VTTK5qv1zF1QC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Oct 2018 20:34:44 +1100 (AEDT)
+Received: from pps.filterd (m0046037.ppops.net [127.0.0.1])
+ by mx07-.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id w9A9FHkl000534;
+ Wed, 10 Oct 2018 11:19:16 +0200
+Received: from beta.dmz-eu.st.com (beta.dmz-eu.st.com [164.129.1.35])
+ by mx07-00178001.pphosted.com with ESMTP id 2n0se6p1h4-1
+ (version=TLSv1 cipher=ECDHE-RSA-AES256-SHA bits=256 verify=NOT);
+ Wed, 10 Oct 2018 11:19:16 +0200
+Received: from zeta.dmz-eu.st.com (zeta.dmz-eu.st.com [164.129.230.9])
+ by beta.dmz-eu.st.com (STMicroelectronics) with ESMTP id 17ECA3A;
+ Wed, 10 Oct 2018 09:19:15 +0000 (GMT)
+Received: from Webmail-eu.st.com (sfhdag6node2.st.com [10.75.127.17])
+ by zeta.dmz-eu.st.com (STMicroelectronics) with ESMTP id C1B7A2A21;
+ Wed, 10 Oct 2018 09:19:14 +0000 (GMT)
+Received: from SFHDAG6NODE3.st.com (10.75.127.18) by SFHDAG6NODE2.st.com
+ (10.75.127.17) with Microsoft SMTP Server (TLS) id 15.0.1347.2; Wed, 10 Oct
+ 2018 11:19:14 +0200
+Received: from SFHDAG6NODE3.st.com ([fe80::d04:5337:ab17:b6f6]) by
+ SFHDAG6NODE3.st.com ([fe80::d04:5337:ab17:b6f6%20]) with mapi id
+ 15.00.1347.000; Wed, 10 Oct 2018 11:19:14 +0200
+From: Patrice CHOTARD <patrice.chotard@st.com>
+To: Rob Herring <robh@kernel.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org"
+ <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH 32/36] dt-bindings: arm: Convert ST STi board/soc bindings
+ to json-schema
+Thread-Topic: [PATCH 32/36] dt-bindings: arm: Convert ST STi board/soc
+ bindings to json-schema
+Thread-Index: AQHUXMzM1NtcA3SB1EW1oq/y0cRgRKUYGX2A
+Date: Wed, 10 Oct 2018 09:19:14 +0000
+Message-ID: <34e8ddcb-4b33-9082-b242-9ab2dee8eb7c@st.com>
+References: <20181005165848.3474-1-robh@kernel.org>
+ <20181005165848.3474-33-robh@kernel.org>
+In-Reply-To: <20181005165848.3474-33-robh@kernel.org>
+Accept-Language: fr-FR, en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+user-agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
+x-ms-exchange-messagesentrepresentingtype: 1
+x-ms-exchange-transport-fromentityheader: Hosted
+x-originating-ip: [10.75.127.45]
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <8FC3997611AF2B40B01C81BF1D93C36E@st.com>
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1538687224-17535-1-git-send-email-rppt@linux.vnet.ibm.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-10-10_07:, , signatures=0
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,93 +95,62 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- Catalin Marinas <catalin.marinas@arm.com>, linux-mm@kvack.org,
- Richard Weinberger <richard@nod.at>, Russell King <linux@armlinux.org.uk>,
- Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
- Matt Turner <mattst88@gmail.com>, linux-um@lists.infradead.org,
- linux-m68k@lists.linux-m68k.org, Thomas Gleixner <tglx@linutronix.de>,
- Guan Xuetao <gxt@pku.edu.cn>, linux-arm-kernel@lists.infradead.org,
- Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>,
- Tony Luck <tony.luck@intel.com>, linux-kernel@vger.kernel.org,
- Paul Burton <paul.burton@mips.com>, linux-alpha@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Mark Rutland <mark.rutland@arm.com>, Tom Rini <trini@konsulko.com>,
+ Kumar Gala <kumar.gala@linaro.org>, Grant Likely <glikely@secretlab.ca>,
+ Arnd Bergmann <arnd@arndb.de>, Linus Walleij <linus.walleij@linaro.org>,
+ Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
+ Bjorn Andersson <bjorn.andersson@linaro.org>, Mark Brown <broonie@kernel.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, Olof Johansson <olof@lixom.net>,
+ Frank Rowand <frowand.list@gmail.com>, Jonathan Cameron <jic23@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri 05-10-18 00:07:04, Mike Rapoport wrote:
-> When a memblock allocation APIs are called with align = 0, the alignment is
-> implicitly set to SMP_CACHE_BYTES.
-
-I would add something like
-"
-Implicit alignment is done deep in the memblock allocator and it can
-come as a surprise. Not that such an alignment would be wrong even when
-used incorrectly but it is better to be explicit for the sake of clarity
-and the prinicple of the least surprise.
-"
-
-> Replace all such uses of memblock APIs with the 'align' parameter explicitly
-> set to SMP_CACHE_BYTES and stop implicit alignment assignment in the
-> memblock internal allocation functions.
-> 
-> For the case when memblock APIs are used via helper functions, e.g. like
-> iommu_arena_new_node() in Alpha, the helper functions were detected with
-> Coccinelle's help and then manually examined and updated where appropriate.
-> 
-> The direct memblock APIs users were updated using the semantic patch below:
-> 
-> @@
-> expression size, min_addr, max_addr, nid;
-> @@
-> (
-> |
-> - memblock_alloc_try_nid_raw(size, 0, min_addr, max_addr, nid)
-> + memblock_alloc_try_nid_raw(size, SMP_CACHE_BYTES, min_addr, max_addr,
-> nid)
-> |
-> - memblock_alloc_try_nid_nopanic(size, 0, min_addr, max_addr, nid)
-> + memblock_alloc_try_nid_nopanic(size, SMP_CACHE_BYTES, min_addr, max_addr,
-> nid)
-> |
-> - memblock_alloc_try_nid(size, 0, min_addr, max_addr, nid)
-> + memblock_alloc_try_nid(size, SMP_CACHE_BYTES, min_addr, max_addr, nid)
-> |
-> - memblock_alloc(size, 0)
-> + memblock_alloc(size, SMP_CACHE_BYTES)
-> |
-> - memblock_alloc_raw(size, 0)
-> + memblock_alloc_raw(size, SMP_CACHE_BYTES)
-> |
-> - memblock_alloc_from(size, 0, min_addr)
-> + memblock_alloc_from(size, SMP_CACHE_BYTES, min_addr)
-> |
-> - memblock_alloc_nopanic(size, 0)
-> + memblock_alloc_nopanic(size, SMP_CACHE_BYTES)
-> |
-> - memblock_alloc_low(size, 0)
-> + memblock_alloc_low(size, SMP_CACHE_BYTES)
-> |
-> - memblock_alloc_low_nopanic(size, 0)
-> + memblock_alloc_low_nopanic(size, SMP_CACHE_BYTES)
-> |
-> - memblock_alloc_from_nopanic(size, 0, min_addr)
-> + memblock_alloc_from_nopanic(size, SMP_CACHE_BYTES, min_addr)
-> |
-> - memblock_alloc_node(size, 0, nid)
-> + memblock_alloc_node(size, SMP_CACHE_BYTES, nid)
-> )
-> 
-> Suggested-by: Michal Hocko <mhocko@suse.com>
-> Signed-off-by: Mike Rapoport <rppt@linux.vnet.ibm.com>
-
-I do agree that this is an improvement. I would also add WARN_ON_ONCE on
-0 alignment to catch some left overs. If we ever grown a user which
-would explicitly require the zero alignment (I would be surprised) then
-we can remove the warning.
-
-Acked-by: Michal Hocko <mhocko@suse.com>
--- 
-Michal Hocko
-SUSE Labs
+SGkgUm9iDQoNCk9uIDEwLzA1LzIwMTggMDY6NTggUE0sIFJvYiBIZXJyaW5nIHdyb3RlOg0KPiBD
+b252ZXJ0IFNUIFNUaSBTb0MgYmluZGluZ3MgdG8gRFQgc2NoZW1hIGZvcm1hdCB1c2luZyBqc29u
+LXNjaGVtYS4NCj4gDQo+IENjOiBQYXRyaWNlIENob3RhcmQgPHBhdHJpY2UuY2hvdGFyZEBzdC5j
+b20+DQo+IENjOiBNYXJrIFJ1dGxhbmQgPG1hcmsucnV0bGFuZEBhcm0uY29tPg0KPiBDYzogZGV2
+aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmcNCj4gU2lnbmVkLW9mZi1ieTogUm9iIEhlcnJpbmcgPHJv
+YmhAa2VybmVsLm9yZz4NCj4gLS0tDQo+ICBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGlu
+Z3MvYXJtL3N0aS50eHQgfCAyMyAtLS0tLS0tLS0tLS0tLS0tLS0tDQo+ICAuLi4vZGV2aWNldHJl
+ZS9iaW5kaW5ncy9hcm0vc3RpLnlhbWwgICAgICAgICAgfCAyMyArKysrKysrKysrKysrKysrKysr
+DQo+ICAyIGZpbGVzIGNoYW5nZWQsIDIzIGluc2VydGlvbnMoKyksIDIzIGRlbGV0aW9ucygtKQ0K
+PiAgZGVsZXRlIG1vZGUgMTAwNjQ0IERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9h
+cm0vc3RpLnR4dA0KPiAgY3JlYXRlIG1vZGUgMTAwNjQ0IERvY3VtZW50YXRpb24vZGV2aWNldHJl
+ZS9iaW5kaW5ncy9hcm0vc3RpLnlhbWwNCj4gDQo+IGRpZmYgLS1naXQgYS9Eb2N1bWVudGF0aW9u
+L2RldmljZXRyZWUvYmluZGluZ3MvYXJtL3N0aS50eHQgYi9Eb2N1bWVudGF0aW9uL2RldmljZXRy
+ZWUvYmluZGluZ3MvYXJtL3N0aS50eHQNCj4gZGVsZXRlZCBmaWxlIG1vZGUgMTAwNjQ0DQo+IGlu
+ZGV4IDhkMjdmNmIwODRjNy4uMDAwMDAwMDAwMDAwDQo+IC0tLSBhL0RvY3VtZW50YXRpb24vZGV2
+aWNldHJlZS9iaW5kaW5ncy9hcm0vc3RpLnR4dA0KPiArKysgL2Rldi9udWxsDQo+IEBAIC0xLDIz
+ICswLDAgQEANCj4gLVNUIFNUaSBQbGF0Zm9ybXMgRGV2aWNlIFRyZWUgQmluZGluZ3MNCj4gLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KPiAtDQo+IC1Cb2FyZHMgd2l0
+aCB0aGUgU1QgU1RpSDQxNSBTb0Mgc2hhbGwgaGF2ZSB0aGUgZm9sbG93aW5nIHByb3BlcnRpZXM6
+DQo+IC1SZXF1aXJlZCByb290IG5vZGUgcHJvcGVydHk6DQo+IC1jb21wYXRpYmxlID0gInN0LHN0
+aWg0MTUiOw0KPiAtDQo+IC1Cb2FyZHMgd2l0aCB0aGUgU1QgU1RpSDQxNiBTb0Mgc2hhbGwgaGF2
+ZSB0aGUgZm9sbG93aW5nIHByb3BlcnRpZXM6DQo+IC1SZXF1aXJlZCByb290IG5vZGUgcHJvcGVy
+dHk6DQo+IC1jb21wYXRpYmxlID0gInN0LHN0aWg0MTYiOw0KPiAtDQo+IC1Cb2FyZHMgd2l0aCB0
+aGUgU1QgU1RpSDQwNyBTb0Mgc2hhbGwgaGF2ZSB0aGUgZm9sbG93aW5nIHByb3BlcnRpZXM6DQo+
+IC1SZXF1aXJlZCByb290IG5vZGUgcHJvcGVydHk6DQo+IC1jb21wYXRpYmxlID0gInN0LHN0aWg0
+MDciOw0KPiAtDQo+IC1Cb2FyZHMgd2l0aCB0aGUgU1QgU1RpSDQxMCBTb0Mgc2hhbGwgaGF2ZSB0
+aGUgZm9sbG93aW5nIHByb3BlcnRpZXM6DQo+IC1SZXF1aXJlZCByb290IG5vZGUgcHJvcGVydHk6
+DQo+IC1jb21wYXRpYmxlID0gInN0LHN0aWg0MTAiOw0KPiAtDQo+IC1Cb2FyZHMgd2l0aCB0aGUg
+U1QgU1RpSDQxOCBTb0Mgc2hhbGwgaGF2ZSB0aGUgZm9sbG93aW5nIHByb3BlcnRpZXM6DQo+IC1S
+ZXF1aXJlZCByb290IG5vZGUgcHJvcGVydHk6DQo+IC1jb21wYXRpYmxlID0gInN0LHN0aWg0MTgi
+Ow0KPiAtDQo+IGRpZmYgLS1naXQgYS9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3Mv
+YXJtL3N0aS55YW1sIGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2FybS9zdGku
+eWFtbA0KPiBuZXcgZmlsZSBtb2RlIDEwMDY0NA0KPiBpbmRleCAwMDAwMDAwMDAwMDAuLjEwODE0
+MzM0Y2ZjOQ0KPiAtLS0gL2Rldi9udWxsDQo+ICsrKyBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJl
+ZS9iaW5kaW5ncy9hcm0vc3RpLnlhbWwNCj4gQEAgLTAsMCArMSwyMyBAQA0KPiArIyBTUERYLUxp
+Y2Vuc2UtSWRlbnRpZmllcjogTm9uZQ0KPiArJVlBTUwgMS4yDQo+ICstLS0NCj4gKyRpZDogaHR0
+cDovL2RldmljZXRyZWUub3JnL3NjaGVtYXMvYmluZGluZ3MvYXJtL3N0aS55YW1sIw0KPiArJHNj
+aGVtYTogaHR0cDovL2RldmljZXRyZWUub3JnL21ldGEtc2NoZW1hcy9jb3JlLnlhbWwjDQo+ICsN
+Cj4gK3RpdGxlOiBTVCBTVGkgUGxhdGZvcm1zIERldmljZSBUcmVlIEJpbmRpbmdzDQo+ICsNCj4g
+K21haW50YWluZXJzOg0KPiArICAtIE1heGltZSBDb3F1ZWxpbiA8bWF4aW1lLmNvcXVlbGluQHN0
+LmNvbT4NCg0KTWF4aW1lIGhhcyBsZWZ0IFNUTWljcm9lbGVjdHJvbmljcywgeW91IGNhbiByZXBs
+YWNlIGl0cyBlbWFpbCBieSBtaW5lDQpQYXRyaWNlIENob3RhcmQgPHBhdHJpY2UuY2hvdGFyZEBz
+dC5jb20+DQoNCg0KVGhhbmtzDQoNClBhdHJpY2UNCg0KPiArDQo+ICtwcm9wZXJ0aWVzOg0KPiAr
+ICAkbm9kZW5hbWU6DQo+ICsgICAgY29uc3Q6ICcvJw0KPiArICBjb21wYXRpYmxlOg0KPiArICAg
+IGl0ZW1zOg0KPiArICAgICAgLSBlbnVtOg0KPiArICAgICAgICAgIC0gc3Qsc3RpaDQxNQ0KPiAr
+ICAgICAgICAgIC0gc3Qsc3RpaDQxNg0KPiArICAgICAgICAgIC0gc3Qsc3RpaDQwNw0KPiArICAg
+ICAgICAgIC0gc3Qsc3RpaDQxMA0KPiArICAgICAgICAgIC0gc3Qsc3RpaDQxOA0KPiArLi4uDQo+
+IA==
