@@ -2,100 +2,109 @@ Return-Path: <SRS0=lRG+=MW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.2 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BC2F3C43441
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Oct 2018 13:01:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 62B1CC43441
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Oct 2018 14:48:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0334921479
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Oct 2018 13:01:12 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0334921479
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id B56EB2087A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Oct 2018 14:48:27 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="OOPSBOw0"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B56EB2087A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42VZ3R1P50zF1QG
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Oct 2018 00:01:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42VcRF3mWMzF1Pw
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Oct 2018 01:48:25 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=sebott@linux.ibm.com; receiver=<UNKNOWN>)
+	dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.b="OOPSBOw0";
+	dkim-atps=neutral
+Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42VcNN1YxzzF1Pp
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Oct 2018 01:45:56 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ dmarc=pass (p=none dis=none) header.from=chromium.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=chromium.org header.i=@chromium.org header.b="OOPSBOw0";
+ dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 42VcNN12jDz8t7b
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Oct 2018 01:45:56 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 42VcNN0rlSz9sCh; Thu, 11 Oct 2018 01:45:56 +1100 (AEDT)
+Authentication-Results: ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=chromium.org
+ (client-ip=2607:f8b0:4864:20::c41; helo=mail-yw1-xc41.google.com;
+ envelope-from=keescook@chromium.org; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=chromium.org
+Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=chromium.org header.i=@chromium.org header.b="OOPSBOw0";
+ dkim-atps=neutral
+Received: from mail-yw1-xc41.google.com (mail-yw1-xc41.google.com
+ [IPv6:2607:f8b0:4864:20::c41])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42VYwl4jkMzF1QG
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Oct 2018 23:55:18 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w9ACsAeH115406
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Oct 2018 08:55:16 -0400
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2n1exh025q-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Oct 2018 08:55:16 -0400
-Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sebott@linux.ibm.com>;
- Wed, 10 Oct 2018 13:55:13 +0100
-Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
- by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 10 Oct 2018 13:55:09 +0100
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- w9ACt8gs328022
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Wed, 10 Oct 2018 12:55:08 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 3C8B94C052;
- Wed, 10 Oct 2018 15:54:45 +0100 (BST)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E93ED4C059;
- Wed, 10 Oct 2018 15:54:44 +0100 (BST)
-Received: from dyn-9-152-212-155.boeblingen.de.ibm.com (unknown
- [9.152.212.155])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Wed, 10 Oct 2018 15:54:44 +0100 (BST)
-Date: Wed, 10 Oct 2018 14:55:07 +0200 (CEST)
-From: Sebastian Ott <sebott@linux.ibm.com>
-X-X-Sender: sebott@schleppi.aag-de.ibmmobiledemo.com
-To: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCH 0/2] sriov enablement on s390
-In-Reply-To: <20180912130205.GG118330@bhelgaas-glaptop.roam.corp.google.com>
-References: <20180912123411.23229-1-sebott@linux.ibm.com>
- <20180912130205.GG118330@bhelgaas-glaptop.roam.corp.google.com>
-User-Agent: Alpine 2.21 (LFD 202 2017-01-01)
-Organization: =?ISO-8859-15?Q?=22IBM_Deutschland_Research_&_Development_GmbH?=
- =?ISO-8859-15?Q?_=2F_Vorsitzende_des_Aufsichtsrats=3A_Martina?=
- =?ISO-8859-15?Q?_Koederitz_Gesch=E4ftsf=FChrung=3A_Dirk_Wittkopp?=
- =?ISO-8859-15?Q?_Sitz_der_Gesellschaft=3A_B=F6blingen_=2F_Reg?=
- =?ISO-8859-15?Q?istergericht=3A_Amtsgericht_Stuttgart=2C_HRB_2432?=
- =?ISO-8859-15?Q?94=22?=
+ by ozlabs.org (Postfix) with ESMTPS id 42VcNM1DMNz9sC7
+ for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2018 01:45:54 +1100 (AEDT)
+Received: by mail-yw1-xc41.google.com with SMTP id m129-v6so2270091ywc.1
+ for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2018 07:45:54 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
+ h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+ :cc; bh=51PI37LRLqDUZzoWqPCdRdbaP/JlYkO7fxDvlA3GKxc=;
+ b=OOPSBOw0RhBKvW+P8e2ywCYbXN+AdDYCgaoJaT1TKcA/ni2srssUFjTqD4nXBrYJgu
+ ZbUQnf0TfnfM7qadQzKYqOsnYp+JloFcRpESzdqxevUjUnuoMo4eazSyhkbdg3LyBLmB
+ sJK1+zo34RgCAoU/z8q6dZpnM/SrsavGaTKIo=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:in-reply-to:references:from:date
+ :message-id:subject:to:cc;
+ bh=51PI37LRLqDUZzoWqPCdRdbaP/JlYkO7fxDvlA3GKxc=;
+ b=D+qyzDiaeDcGHY9zvUfdKVBbHPxR2C9IPaudzPNjqe2xuNoEZk+2Wbsx5oXMTF1M1Z
+ DOPzkitceEVOfMYMtAV+tadBJnaH/znqUdbUuISafhsW+tHetZSavhKO9zXJO1KtDzif
+ rbGYVPkviil8Xs6UT/SaxcATNgcCdauFk91L9U5JcZJTD/oyWN6hUZBp0IaTMw+NAw83
+ 057+6+Ayoa62jeA9cLzvOVu2OzqOZn3anzfpMcDrRkM4Rn8L2YigvL+J7DfzZRoP/HGZ
+ b/WmGxw2PQZaPnxtOR0K0MQWze5oma5Ew3roEGX5v2Oq9BUm8ZMc7Kfvr/ZcdLATz24Y
+ WLIg==
+X-Gm-Message-State: ABuFfoj4Qs04cC1hjh8KMzCSeoTi8T0HEpN+f+nnGu3yp5WMRV879p2s
+ cz7SMacYitNouUvUD7Yk8e7+H4qMTTY=
+X-Google-Smtp-Source: ACcGV63ztzwTTqqzu/IoG/+uR95R/jtSDo1/VZuQEns/tyC44Cti3KjxoZLjw/OI4C7kVpYbQmphzQ==
+X-Received: by 2002:a0d:d54c:: with SMTP id
+ x73-v6mr19397340ywd.130.1539182752405; 
+ Wed, 10 Oct 2018 07:45:52 -0700 (PDT)
+Received: from mail-yb1-f174.google.com (mail-yb1-f174.google.com.
+ [209.85.219.174])
+ by smtp.gmail.com with ESMTPSA id o63-v6sm7638679ywc.36.2018.10.10.07.45.50
+ for <linuxppc-dev@ozlabs.org>
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Wed, 10 Oct 2018 07:45:52 -0700 (PDT)
+Received: by mail-yb1-f174.google.com with SMTP id 184-v6so2306737ybg.1
+ for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2018 07:45:50 -0700 (PDT)
+X-Received: by 2002:a25:2395:: with SMTP id
+ j143-v6mr18738794ybj.137.1539182750135; 
+ Wed, 10 Oct 2018 07:45:50 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-X-TM-AS-GCONF: 00
-x-cbid: 18101012-0016-0000-0000-000002112186
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18101012-0017-0000-0000-00003268902E
-Message-Id: <alpine.LFD.2.21.1810101451310.32089@schleppi.aag-de.ibmmobiledemo.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-10-10_09:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1807170000 definitions=main-1810100130
+Received: by 2002:a25:d116:0:0:0:0:0 with HTTP; Wed, 10 Oct 2018 07:45:49
+ -0700 (PDT)
+In-Reply-To: <20181010051308.25422-3-mpe@ellerman.id.au>
+References: <20181010051308.25422-1-mpe@ellerman.id.au>
+ <20181010051308.25422-3-mpe@ellerman.id.au>
+From: Kees Cook <keescook@chromium.org>
+Date: Wed, 10 Oct 2018 07:45:49 -0700
+X-Gmail-Original-Message-ID: <CAGXu5jKUP573d2PFnGchT_uE=YmO83sdBUWOyAR-1UfskE5m9A@mail.gmail.com>
+Message-ID: <CAGXu5jKUP573d2PFnGchT_uE=YmO83sdBUWOyAR-1UfskE5m9A@mail.gmail.com>
+Subject: Re: [PATCH 3/4] powerpc: Add -Wvla to arch CFLAGS
+To: Michael Ellerman <mpe@ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,43 +116,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-pci@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Bjorn Helgaas <bhelgaas@google.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, maddy@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello Bjorn,
+On Tue, Oct 9, 2018 at 10:13 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> Upstream has declared that Variable Length Array's (VLAs) are a bad
+> idea, and eventually -Wvla will be added to the top-level Makefile. We
+> can go one better and make sure we don't introduce any more by adding
+> it to the arch Makefile.
+>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+>  arch/powerpc/Kbuild | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/Kbuild b/arch/powerpc/Kbuild
+> index 1625a06802ca..86b261d6bde5 100644
+> --- a/arch/powerpc/Kbuild
+> +++ b/arch/powerpc/Kbuild
+> @@ -1,4 +1,5 @@
+> -subdir-ccflags-$(CONFIG_PPC_WERROR) := -Werror
+> +subdir-ccflags-y := $(call cc-option, -Wvla)
+> +subdir-ccflags-$(CONFIG_PPC_WERROR) += -Werror
+>
+>  obj-y += kernel/
+>  obj-y += mm/
 
-On Wed, 12 Sep 2018, Bjorn Helgaas wrote:
-> On Wed, Sep 12, 2018 at 02:34:09PM +0200, Sebastian Ott wrote:
-> > On s390 we currently handle SRIOV within firmware. Which means
-> > that the PF is under firmware control and not visible to operating
-> > systems. SRIOV enablement happens within firmware and VFs are
-> > passed through to logical partitions.
-> > 
-> > I'm working on a new mode were the PF is under operating system
-> > control (including SRIOV enablement). However we still need
-> > firmware support to access the VFs. The way this is supposed
-> > to work is that when firmware traps the SRIOV enablement it
-> > will present machine checks to the logical partition that
-> > triggered the SRIOV enablement and provide the VFs via hotplug
-> > events.
-> > 
-> > The problem I'm faced with is that the VF detection code in
-> > sriov_enable leads to unusable functions in s390.
-> 
-> We're moving away from the weak function implementation style.  Can
-> you take a look at Arnd's work here, which uses pci_host_bridge
-> callbacks instead?
-> 
->   https://lkml.kernel.org/r/20180817102645.3839621-1-arnd@arndb.de
+-Wvla will be going into the top-level Makefile in the merge window
+(see linux-next), so this will be redundant.
 
-What's the status of Arnd's patches - will they go upstream in the next
-couple of versions? What about my patches that I rebased on Arnd's branch
-will they be considered?
+-Kees
 
-Regards,
-Sebastian
-
+-- 
+Kees Cook
+Pixel Security
