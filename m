@@ -2,82 +2,93 @@ Return-Path: <SRS0=lRG+=MW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E4836C43441
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Oct 2018 05:25:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CDF33C43441
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Oct 2018 05:39:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 53B7020841
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Oct 2018 05:25:33 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="G0SCj/Pl"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 53B7020841
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 268B22085B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Oct 2018 05:39:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 268B22085B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42VMxk5jH9zF33c
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Oct 2018 16:25:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42VNGH3Cz8zF14b
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Oct 2018 16:39:51 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="G0SCj/Pl";
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::643; helo=mail-pl1-x643.google.com;
- envelope-from=oohall@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="G0SCj/Pl"; 
- dkim-atps=neutral
-Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
- [IPv6:2607:f8b0:4864:20::643])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=srikar@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42VMv70QYgzDqfX
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Oct 2018 16:23:14 +1100 (AEDT)
-Received: by mail-pl1-x643.google.com with SMTP id y15-v6so1920271plr.12
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Oct 2018 22:23:14 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id;
- bh=HDc9DIxeQLjP12HWtbcAEsECA9aLaRIXkV11FebGvfg=;
- b=G0SCj/Pl8llhRoQLhdiDnMa7kAsGmtBMhG9+csD4f5LLn4HHW9+BIp28Y1+vTeZziL
- lzOhqv+WAxLkrI/cmm2ruMSIol8+tH9yLLsgPBJGwH++sLgmlS61ekaLg/a22LiPG1fz
- AdBHiFZyHWk/qLN3cxXYGztbVXUYXky12Idu8Z2gJPoyJKhAUXm8Q03g1aMslNIuOtSJ
- y9bcwHkNnxz8hXUudxJ0tcIGRz+B9U45Ag9Hb4pyFfweo+k7I/ZhRLnZl09QcreGJNt8
- 6Njy5vOSl2tn0uV9+k+4hwQdQEC06jVp5G/47O5/pTXJ3R0ZgiSeXSeMnH3nMDDe0lIl
- fz6g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id;
- bh=HDc9DIxeQLjP12HWtbcAEsECA9aLaRIXkV11FebGvfg=;
- b=iMxfN0LrBTBLVtFQhxdLNCzUwJog31Yi3xOucAypcRriQvzjlo5VG/h133zyOeIOi7
- 0hmTyYIcKC6DQu44wvTzYiGYLv4v1n7+fd/Xkk8HwTfiqp2NkgFzHKp2Q+7jP2RyPWec
- fHL8bw2q9tlHVgIm5her3ObPUYM0udIRIPxA+9FpyPgKev4lVJZu0aqBYpcQtzO33/ER
- Ds+beYkTSz24AFj3b9CcL5HMMGO/oKbUWWHCq2UPTvvEjV08YXXnTFdmtkU7T13F4htb
- dWEitkvWSFrFbFhuLrU82t9ReaXfiVXYG4OprV6ZLt3ZB2SqcMCVVSruXuDgzIM33pZJ
- TImQ==
-X-Gm-Message-State: ABuFfoivPUHdFvPiHecBz8HdoC/CcS0RsdPugKq1I1b9UYXV4zStnqyC
- babytcgHXR5VPlumIQkoMr9FpPCQ
-X-Google-Smtp-Source: ACcGV62OsN8c/xHLKbLvc/2jJ9aJ5y2yn7vsT960/ffXkxvu3jreZAyDdwGIH5bEjp7PiFUSb7cemw==
-X-Received: by 2002:a17:902:d20a:: with SMTP id
- t10-v6mr31720761ply.256.1539148992334; 
- Tue, 09 Oct 2018 22:23:12 -0700 (PDT)
-Received: from flat-canetoad.ozlabs.ibm.com ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id f81-v6sm41827496pfh.46.2018.10.09.22.23.10
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 09 Oct 2018 22:23:11 -0700 (PDT)
-From: Oliver O'Halloran <oohall@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/rtasd: Improve unknown error logging
-Date: Wed, 10 Oct 2018 16:23:02 +1100
-Message-Id: <20181010052302.18094-1-oohall@gmail.com>
-X-Mailer: git-send-email 2.9.5
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42VND343QKzF0RK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Oct 2018 16:37:54 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w9A5TOeW107463
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Oct 2018 01:37:52 -0400
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2n17jqy896-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Oct 2018 01:37:52 -0400
+Received: from localhost
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <srikar@linux.vnet.ibm.com>;
+ Wed, 10 Oct 2018 06:37:51 +0100
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 10 Oct 2018 06:37:47 +0100
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ w9A5bkll4129142
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Wed, 10 Oct 2018 05:37:46 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 03E7DAE045;
+ Wed, 10 Oct 2018 08:36:31 +0100 (BST)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 4620CAE057;
+ Wed, 10 Oct 2018 08:36:29 +0100 (BST)
+Received: from linux.vnet.ibm.com (unknown [9.85.71.232])
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with SMTP;
+ Wed, 10 Oct 2018 08:36:29 +0100 (BST)
+Date: Wed, 10 Oct 2018 11:07:44 +0530
+From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/topology: Update numa mask when cpu node mapping
+ changes
+References: <1539145486-10250-1-git-send-email-srikar@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <1539145486-10250-1-git-send-email-srikar@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.24 (2015-08-30)
+X-TM-AS-GCONF: 00
+x-cbid: 18101005-0028-0000-0000-00000304EFFE
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18101005-0029-0000-0000-000023BF4549
+Message-Id: <20181010053744.GA4903@linux.vnet.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-10-10_04:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1807170000 definitions=main-1810100055
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,37 +100,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Oliver O'Halloran <oohall@gmail.com>
+Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Michael Bringmann <mbringm@us.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Currently when we get an unknown RTAS event it prints the type as
-"Unknown" and no other useful information. Add the raw type code to the
-log message so that we have something to work off.
+* Srikar Dronamraju <srikar@linux.vnet.ibm.com> [2018-10-10 09:54:46]:
 
-Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
----
- arch/powerpc/kernel/rtasd.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+> Commit 2ea626306810 ("powerpc/topology: Get topology for shared
+> processors at boot") will update the cpu node topology for shared lpars
+> on PowerVM.
+> 
+> However shared lpars on PowerVM also support VPHN and PRRN events.
+> On receiving a VPHN, PRRN events, cpu to node mapping might change.
+> 
+> Scheduler maintains sched_domains_numa_masks[], which is currently not
+> updated on cpu to node mapping changes. This can lead to machine
+> regressions and performance regressions.
 
-diff --git a/arch/powerpc/kernel/rtasd.c b/arch/powerpc/kernel/rtasd.c
-index 44d66c33d59d..6fafc82c04b0 100644
---- a/arch/powerpc/kernel/rtasd.c
-+++ b/arch/powerpc/kernel/rtasd.c
-@@ -150,8 +150,10 @@ static void printk_log_rtas(char *buf, int len)
- 	} else {
- 		struct rtas_error_log *errlog = (struct rtas_error_log *)buf;
- 
--		printk(RTAS_DEBUG "event: %d, Type: %s, Severity: %d\n",
--		       error_log_cnt, rtas_event_type(rtas_error_type(errlog)),
-+		printk(RTAS_DEBUG "event: %d, Type: %s (%d), Severity: %d\n",
-+		       error_log_cnt,
-+		       rtas_event_type(rtas_error_type(errlog)),
-+		       rtas_error_type(errlog),
- 		       rtas_error_severity(errlog));
- 	}
- }
+s/regressions and performance regressions./hangs or performance hit./
+
+> 
+> Fix numa_update_cpu_topology() to update sched_domains_numa_masks[].
+> 
+
 -- 
-2.9.5
+Thanks and Regards
+Srikar Dronamraju
 
