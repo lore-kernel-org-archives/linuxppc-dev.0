@@ -5,80 +5,84 @@ X-Spam-Level:
 X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 49E57C43441
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Oct 2018 22:46:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A19AEC43441
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Oct 2018 22:49:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 842BB20659
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Oct 2018 22:46:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E32F62085B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Oct 2018 22:49:16 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hGCfanEY"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 842BB20659
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="jqgLX+60"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E32F62085B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42Vq364pQ3zF1Nj
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Oct 2018 09:46:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Vq626mSlzF1QH
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Oct 2018 09:49:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="hGCfanEY";
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="jqgLX+60";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::544; helo=mail-pg1-x544.google.com;
+ (client-ip=2607:f8b0:4864:20::642; helo=mail-pl1-x642.google.com;
  envelope-from=oohall@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="hGCfanEY"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="jqgLX+60"; 
  dkim-atps=neutral
-Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
- [IPv6:2607:f8b0:4864:20::544])
+Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com
+ [IPv6:2607:f8b0:4864:20::642])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Vq0K6Y7zzDsN0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Oct 2018 09:44:17 +1100 (AEDT)
-Received: by mail-pg1-x544.google.com with SMTP id f18-v6so3191479pgv.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Oct 2018 15:44:17 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Vq0N2wcGzDsN0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Oct 2018 09:44:20 +1100 (AEDT)
+Received: by mail-pl1-x642.google.com with SMTP id 1-v6so3195948plv.7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Oct 2018 15:44:20 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id;
- bh=15qMBgA0Tf7BeQ7Plu1O3swu94GZd7L3VoIkZu/MErI=;
- b=hGCfanEYV6x2+IdTpEURncaDiXkelPo4Wb+lKMDYhg35+Km1kTJD1S/2LIGkk0LaHx
- n+dInITIca0y0oore9DBmzl4YBJgEtVbhr+iBCD9Gd0n4reh4+Ge7kZO7B6JNbUteMaM
- LenYm2JNGK+zFYUpiV0C/pESiM8Cxem7pK1bDkUtZ66DHg1IJm4O2ODdGJUckVlXSZjI
- y4PEQmgVy/kRGbh3zFbCB0cFqC2KAjJmkqVm8fhUAbeV25kaFdAfKXdw8MafhlG8A1K7
- wwrARCKmInUcMDlwJuw8yCNykkOt1++NcYFgjSC2tm3gR6+XygGiXRwS5vhN/EYPGDL0
- jwPA==
+ h=from:to:cc:subject:date:message-id:in-reply-to:references;
+ bh=hhvsHInOTO9wcdXMP2e4kM5wd2yrrOKuRMckOA+X1I0=;
+ b=jqgLX+602p93f9V+kO6ALL5714t4oRgIh7RO9DsCmmZnFF+WZEeez47VQDb7SywgRQ
+ dxcmmmZz+28VizJmsjNnq1sLRUAYkJmuTVk4ReeGuKXbtkzeNUgGB/fncBQ/zCVr+Vgy
+ 0bq89rOdlQEYpd0LZdpzAG+nAW3ZpjAHRWNwZdYrle1cv/3TvDa1LiegwLrBp7sbvV/H
+ ZCB3tkP+/heKdAe2QCHZZAel4EWlhlJgo9+NdqREivq/jk1IKEF1cgEO1/ieMXjMdznp
+ TCGA9OaHieOStYI0w014+DaIPTdDn7Fl++smb/AgsxsR4sbyLBbr47z/MuHQM7ByJTdb
+ tsWg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id;
- bh=15qMBgA0Tf7BeQ7Plu1O3swu94GZd7L3VoIkZu/MErI=;
- b=a8gfw4sPLdnl3k+ReTlohNpTLlz+b8mHrEFborQPt1zlEDLUHigh29wWFKZrzhgkHZ
- QxxlzM1jdT630b3eXLZ3HnxhJosU1v6upJeS7q2E87O968rJcDT+xQIH5wwe050Q9aim
- SfEBKDDm9vL29F04r98RYiz0ybNerPC76qt5rpbvKyHkFUxEFCb23VuFsu4bu0y0F80p
- 8OLOL/7GoDS53Xe0opy0fUgqp8uloGk7kr6/I7otmfoCqPkB0CS7N9x1jxxKn3Q4u8tB
- VhWExeQTUwzUiYPRIrSxoDc/gU1QjrpYzRtqyJmLx9xTPK06kZ+9h+kIls9XBbzcXS2o
- hJ4A==
-X-Gm-Message-State: ABuFfoh6sP7ISxQ7cHrVShh19l8HaIBsvioxr5SeCrnR32NjoPoSblpO
- tZRSV1oy9Hblcel97GwIV7EotQah
-X-Google-Smtp-Source: ACcGV60W9RxtkxSaCdg7QFpz4i/GCwaxxtpoV36iZ0IGH2l1MdaMUytxRC4V0y5lgs0c9m0p1ylDEw==
-X-Received: by 2002:a63:69c9:: with SMTP id
- e192-v6mr18509818pgc.143.1539211455478; 
- Wed, 10 Oct 2018 15:44:15 -0700 (PDT)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references;
+ bh=hhvsHInOTO9wcdXMP2e4kM5wd2yrrOKuRMckOA+X1I0=;
+ b=eN4m6VoRVOyeCnviVI+Fv3B+cBgPAEt/TFswiIVdJzv+2nIWNA2dSo+e58BwfM0USe
+ BaRWEfjrb8Yc1X5cVJcfZ6TdrwIhwwoEYZx5lLFPmMIj4Un9fS1IypBEEqELklbYZ7Zk
+ RuHmxAjw1Y7ahRbzNGhNrDL2MfBC+WOyvxHkawxdZWCVBpOoTf1HqZKjw+NJ/QtfWRWG
+ oQ1R4gYOd3Ev+9UjFgszv67ZICdQ2gMLie1sa41Z+Sm/dqpfFMHUQCHF0ifrMNPUHQ/p
+ Shk9HR6Gn3XZp7RGh1MgEZ8eLqzUHF8Q8mOebvCY2DcPweeqcqKXDplOoPlN8Jb2ByDi
+ nwzA==
+X-Gm-Message-State: ABuFfogoqa4S2raB5O/ZMJJwij812jQqP7HDqwtWwWMVCw8BSz3UJkUp
+ ykHeBCYBB8VnpeW+4YfVUzlN9nfk
+X-Google-Smtp-Source: ACcGV61o/MI1euRbIhCuAbnEc7t9FHcztspc1VIFpSrQ2CoV6PTp2bW46Br6QRPc6u1PPS4x38P2nA==
+X-Received: by 2002:a17:902:680e:: with SMTP id
+ h14-v6mr34906226plk.177.1539211458174; 
+ Wed, 10 Oct 2018 15:44:18 -0700 (PDT)
 Received: from localhost.localdomain (110-175-105-191.tpgi.com.au.
  [110.175.105.191])
- by smtp.gmail.com with ESMTPSA id z4-v6sm29526847pgs.50.2018.10.10.15.44.13
+ by smtp.gmail.com with ESMTPSA id z4-v6sm29526847pgs.50.2018.10.10.15.44.15
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Wed, 10 Oct 2018 15:44:14 -0700 (PDT)
+ Wed, 10 Oct 2018 15:44:17 -0700 (PDT)
 From: Oliver O'Halloran <oohall@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 1/2] powerpc/pseries: PAPR persistent memory support
-Date: Thu, 11 Oct 2018 09:43:54 +1100
-Message-Id: <20181010224355.10475-1-oohall@gmail.com>
+Subject: [PATCH v2 2/2] powerpc/pseries: Add driver for PAPR SCM regions
+Date: Thu, 11 Oct 2018 09:43:55 +1100
+Message-Id: <20181010224355.10475-2-oohall@gmail.com>
 X-Mailer: git-send-email 2.9.5
+In-Reply-To: <20181010224355.10475-1-oohall@gmail.com>
+References: <20181010224355.10475-1-oohall@gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,347 +99,404 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch implements support for discovering storage class memory
-devices at boot and for handling hotplug of new regions via RTAS
-hotplug events.
+Adds a driver that implements support for enabling and accessing PAPR
+SCM regions. Unfortunately due to how the PAPR interface works we can't
+use the existing of_pmem driver (yet) because:
+
+ a) The guest is required to use the H_SCM_BIND_MEM h-call to add
+    add the SCM region to it's physical address space, and
+ b) There is currently no mechanism for relating a bare of_pmem region
+    to the backing DIMM (or not-a-DIMM for our case).
+
+Both of these are easily handled by rolling the functionality into a
+seperate driver so here we are...
 
 Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
 ---
-v2: Added missing pmem.c file
+The alternative implementation here is that we have the pseries code
+do the h-calls and craft a pmem-region@<addr> node based on that.
+However, that doesn't solve b) and mpe has expressed his dislike of
+adding new stuff to the DT at runtime so i'd say that's a non-starter.
 ---
- arch/powerpc/include/asm/firmware.h       |   3 +-
- arch/powerpc/include/asm/hvcall.h         |  10 +-
- arch/powerpc/include/asm/rtas.h           |   2 +
- arch/powerpc/kernel/rtasd.c               |   2 +
- arch/powerpc/platforms/pseries/Makefile   |   2 +-
- arch/powerpc/platforms/pseries/dlpar.c    |   4 +
- arch/powerpc/platforms/pseries/firmware.c |   1 +
- arch/powerpc/platforms/pseries/pmem.c     | 164 ++++++++++++++++++++++++++++++
- arch/powerpc/platforms/pseries/pseries.h  |   5 +
- arch/powerpc/platforms/pseries/ras.c      |   3 +-
- 10 files changed, 192 insertions(+), 4 deletions(-)
- create mode 100644 arch/powerpc/platforms/pseries/pmem.c
+ arch/powerpc/platforms/pseries/Kconfig    |   7 +
+ arch/powerpc/platforms/pseries/Makefile   |   1 +
+ arch/powerpc/platforms/pseries/papr_scm.c | 340 ++++++++++++++++++++++++++++++
+ 3 files changed, 348 insertions(+)
+ create mode 100644 arch/powerpc/platforms/pseries/papr_scm.c
 
-diff --git a/arch/powerpc/include/asm/firmware.h b/arch/powerpc/include/asm/firmware.h
-index 7a051bd21f87..113c64d5d394 100644
---- a/arch/powerpc/include/asm/firmware.h
-+++ b/arch/powerpc/include/asm/firmware.h
-@@ -52,6 +52,7 @@
- #define FW_FEATURE_PRRN		ASM_CONST(0x0000000200000000)
- #define FW_FEATURE_DRMEM_V2	ASM_CONST(0x0000000400000000)
- #define FW_FEATURE_DRC_INFO	ASM_CONST(0x0000000800000000)
-+#define FW_FEATURE_PAPR_SCM 	ASM_CONST(0x0000001000000000)
- 
- #ifndef __ASSEMBLY__
- 
-@@ -69,7 +70,7 @@ enum {
- 		FW_FEATURE_SET_MODE | FW_FEATURE_BEST_ENERGY |
- 		FW_FEATURE_TYPE1_AFFINITY | FW_FEATURE_PRRN |
- 		FW_FEATURE_HPT_RESIZE | FW_FEATURE_DRMEM_V2 |
--		FW_FEATURE_DRC_INFO,
-+		FW_FEATURE_DRC_INFO | FW_FEATURE_PAPR_SCM,
- 	FW_FEATURE_PSERIES_ALWAYS = 0,
- 	FW_FEATURE_POWERNV_POSSIBLE = FW_FEATURE_OPAL,
- 	FW_FEATURE_POWERNV_ALWAYS = 0,
-diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
-index a0b17f9f1ea4..0e81ef83b35a 100644
---- a/arch/powerpc/include/asm/hvcall.h
-+++ b/arch/powerpc/include/asm/hvcall.h
-@@ -295,7 +295,15 @@
- #define H_INT_ESB               0x3C8
- #define H_INT_SYNC              0x3CC
- #define H_INT_RESET             0x3D0
--#define MAX_HCALL_OPCODE	H_INT_RESET
-+#define H_SCM_READ_METADATA     0x3E4
-+#define H_SCM_WRITE_METADATA    0x3E8
-+#define H_SCM_BIND_MEM          0x3EC
-+#define H_SCM_UNBIND_MEM        0x3F0
-+#define H_SCM_QUERY_BLOCK_MEM_BINDING 0x3F4
-+#define H_SCM_QUERY_LOGICAL_MEM_BINDING 0x3F8
-+#define H_SCM_MEM_QUERY	        0x3FC
-+#define H_SCM_BLOCK_CLEAR       0x400
-+#define MAX_HCALL_OPCODE	H_SCM_BLOCK_CLEAR
- 
- /* H_VIOCTL functions */
- #define H_GET_VIOA_DUMP_SIZE	0x01
-diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
-index 71e393c46a49..1e81f3d55457 100644
---- a/arch/powerpc/include/asm/rtas.h
-+++ b/arch/powerpc/include/asm/rtas.h
-@@ -125,6 +125,7 @@ struct rtas_suspend_me_data {
- #define RTAS_TYPE_INFO			0xE2
- #define RTAS_TYPE_DEALLOC		0xE3
- #define RTAS_TYPE_DUMP			0xE4
-+#define RTAS_TYPE_HOTPLUG		0xE5
- /* I don't add PowerMGM events right now, this is a different topic */ 
- #define RTAS_TYPE_PMGM_POWER_SW_ON	0x60
- #define RTAS_TYPE_PMGM_POWER_SW_OFF	0x61
-@@ -316,6 +317,7 @@ struct pseries_hp_errorlog {
- #define PSERIES_HP_ELOG_RESOURCE_MEM	2
- #define PSERIES_HP_ELOG_RESOURCE_SLOT	3
- #define PSERIES_HP_ELOG_RESOURCE_PHB	4
-+#define PSERIES_HP_ELOG_RESOURCE_PMEM   6
- 
- #define PSERIES_HP_ELOG_ACTION_ADD	1
- #define PSERIES_HP_ELOG_ACTION_REMOVE	2
-diff --git a/arch/powerpc/kernel/rtasd.c b/arch/powerpc/kernel/rtasd.c
-index 6fafc82c04b0..fad0baddfcba 100644
---- a/arch/powerpc/kernel/rtasd.c
-+++ b/arch/powerpc/kernel/rtasd.c
-@@ -91,6 +91,8 @@ static char *rtas_event_type(int type)
- 			return "Dump Notification Event";
- 		case RTAS_TYPE_PRRN:
- 			return "Platform Resource Reassignment Event";
-+		case RTAS_TYPE_HOTPLUG:
-+			return "Hotplug Event";
- 	}
- 
- 	return rtas_type[0];
+diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
+index 0c698fd6d491..4b0fcb80efe5 100644
+--- a/arch/powerpc/platforms/pseries/Kconfig
++++ b/arch/powerpc/platforms/pseries/Kconfig
+@@ -140,3 +140,10 @@ config IBMEBUS
+ 	bool "Support for GX bus based adapters"
+ 	help
+ 	  Bus device driver for GX bus based adapters.
++
++config PAPR_SCM
++	depends on PPC_PSERIES && MEMORY_HOTPLUG
++	select LIBNVDIMM
++	tristate "Support for the PAPR Storage Class Memory interface"
++	help
++	  Enable access to hypervisor provided storage class memory.
 diff --git a/arch/powerpc/platforms/pseries/Makefile b/arch/powerpc/platforms/pseries/Makefile
-index 7e89d5c47068..892b27ced973 100644
+index 892b27ced973..a43ec843c8e2 100644
 --- a/arch/powerpc/platforms/pseries/Makefile
 +++ b/arch/powerpc/platforms/pseries/Makefile
-@@ -13,7 +13,7 @@ obj-$(CONFIG_KEXEC_CORE)	+= kexec.o
- obj-$(CONFIG_PSERIES_ENERGY)	+= pseries_energy.o
+@@ -24,6 +24,7 @@ obj-$(CONFIG_IO_EVENT_IRQ)	+= io_event_irq.o
+ obj-$(CONFIG_LPARCFG)		+= lparcfg.o
+ obj-$(CONFIG_IBMVIO)		+= vio.o
+ obj-$(CONFIG_IBMEBUS)		+= ibmebus.o
++obj-$(CONFIG_PAPR_SCM)		+= papr_scm.o
  
- obj-$(CONFIG_HOTPLUG_CPU)	+= hotplug-cpu.o
--obj-$(CONFIG_MEMORY_HOTPLUG)	+= hotplug-memory.o
-+obj-$(CONFIG_MEMORY_HOTPLUG)	+= hotplug-memory.o pmem.o
- 
- obj-$(CONFIG_HVC_CONSOLE)	+= hvconsole.o
- obj-$(CONFIG_HVCS)		+= hvcserver.o
-diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-index a0b20c03f078..795996fefdb9 100644
---- a/arch/powerpc/platforms/pseries/dlpar.c
-+++ b/arch/powerpc/platforms/pseries/dlpar.c
-@@ -357,6 +357,10 @@ static int handle_dlpar_errorlog(struct pseries_hp_errorlog *hp_elog)
- 	case PSERIES_HP_ELOG_RESOURCE_CPU:
- 		rc = dlpar_cpu(hp_elog);
- 		break;
-+	case PSERIES_HP_ELOG_RESOURCE_PMEM:
-+		rc = dlpar_hp_pmem(hp_elog);
-+		break;
-+
- 	default:
- 		pr_warn_ratelimited("Invalid resource (%d) specified\n",
- 				    hp_elog->resource);
-diff --git a/arch/powerpc/platforms/pseries/firmware.c b/arch/powerpc/platforms/pseries/firmware.c
-index a3bbeb43689e..4927de57d8ee 100644
---- a/arch/powerpc/platforms/pseries/firmware.c
-+++ b/arch/powerpc/platforms/pseries/firmware.c
-@@ -65,6 +65,7 @@ hypertas_fw_features_table[] = {
- 	{FW_FEATURE_SET_MODE,		"hcall-set-mode"},
- 	{FW_FEATURE_BEST_ENERGY,	"hcall-best-energy-1*"},
- 	{FW_FEATURE_HPT_RESIZE,		"hcall-hpt-resize"},
-+	{FW_FEATURE_PAPR_SCM,		"hcall-scm"},
- };
- 
- /* Build up the firmware features bitmask using the contents of
-diff --git a/arch/powerpc/platforms/pseries/pmem.c b/arch/powerpc/platforms/pseries/pmem.c
+ ifdef CONFIG_PPC_PSERIES
+ obj-$(CONFIG_SUSPEND)		+= suspend.o
+diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/platforms/pseries/papr_scm.c
 new file mode 100644
-index 000000000000..a27f40eb57b1
+index 000000000000..87d4dbc18845
 --- /dev/null
-+++ b/arch/powerpc/platforms/pseries/pmem.c
-@@ -0,0 +1,164 @@
++++ b/arch/powerpc/platforms/pseries/papr_scm.c
+@@ -0,0 +1,340 @@
 +// SPDX-License-Identifier: GPL-2.0
 +
-+/*
-+ * Handles hot and cold plug of persistent memory regions on pseries.
-+ */
++#define pr_fmt(fmt)	"papr-scm: " fmt
 +
-+#define pr_fmt(fmt)     "pseries-pmem: " fmt
-+
-+#include <linux/kernel.h>
-+#include <linux/interrupt.h>
-+#include <linux/delay.h>
-+#include <linux/sched.h>	/* for idle_task_exit */
-+#include <linux/sched/hotplug.h>
-+#include <linux/cpu.h>
 +#include <linux/of.h>
-+#include <linux/of_platform.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/ioport.h>
 +#include <linux/slab.h>
-+#include <asm/prom.h>
-+#include <asm/rtas.h>
-+#include <asm/firmware.h>
-+#include <asm/machdep.h>
-+#include <asm/vdso_datapage.h>
++#include <linux/ndctl.h>
++#include <linux/libnvdimm.h>
++#include <linux/platform_device.h>
++
 +#include <asm/plpar_wrappers.h>
-+#include <asm/topology.h>
 +
-+#include "pseries.h"
-+#include "offline_states.h"
++#define BIND_ANY_ADDR (~0ul)
 +
-+static struct device_node *pmem_node;
++#define PAPR_SCM_DIMM_CMD_MASK \
++	((1ul << ND_CMD_GET_CONFIG_SIZE) | \
++	 (1ul << ND_CMD_GET_CONFIG_DATA) | \
++	 (1ul << ND_CMD_SET_CONFIG_DATA))
 +
-+static ssize_t pmem_drc_add_node(u32 drc_index)
-+{
++struct papr_scm_priv {
++	struct platform_device *pdev;
 +	struct device_node *dn;
-+	int rc;
++	uint32_t drc_index;
++	uint64_t blocks;
++	uint64_t block_size;
++	int metadata_size;
 +
-+	pr_debug("Attempting to add pmem node, drc index: %x\n", drc_index);
++	uint64_t bound_addr;
 +
-+	rc = dlpar_acquire_drc(drc_index);
++	struct nvdimm_bus_descriptor bus_desc;
++	struct nvdimm_bus *bus;
++	struct nvdimm *nvdimm;
++	struct resource res;
++	struct nd_region *region;
++	struct nd_interleave_set nd_set;
++};
++
++static int drc_pmem_bind(struct papr_scm_priv *p)
++{
++	unsigned long ret[PLPAR_HCALL_BUFSIZE];
++	uint64_t rc, token;
++
++	/*
++	 * When the hypervisor cannot map all the requested memory in a single
++	 * hcall it returns H_BUSY and we call again with the token until
++	 * we get H_SUCCESS. Aborting the retry loop before getting H_SUCCESS
++	 * leave the system in an undefined state, so we wait.
++	 */
++	token = 0;
++
++	do {
++		rc = plpar_hcall(H_SCM_BIND_MEM, ret, p->drc_index, 0,
++				p->blocks, BIND_ANY_ADDR, token);
++		token = be64_to_cpu(ret[0]);
++	} while (rc == H_BUSY);
++
 +	if (rc) {
-+		pr_err("Failed to acquire DRC, rc: %d, drc index: %x\n",
-+			rc, drc_index);
-+		return -EINVAL;
++		dev_err(&p->pdev->dev, "bind err: %lld\n", rc);
++		return -ENXIO;
 +	}
 +
-+	dn = dlpar_configure_connector(cpu_to_be32(drc_index), pmem_node);
-+	if (!dn) {
-+		pr_err("configure-connector failed for drc %x\n", drc_index);
-+		dlpar_release_drc(drc_index);
-+		return -EINVAL;
-+	}
++	p->bound_addr = be64_to_cpu(ret[1]);
 +
-+	/* NB: The of reconfig notifier creates platform device from the node */
-+	rc = dlpar_attach_node(dn, pmem_node);
-+	if (rc) {
-+		pr_err("Failed to attach node %s, rc: %d, drc index: %x\n",
-+			dn->name, rc, drc_index);
-+
-+		if (dlpar_release_drc(drc_index))
-+			dlpar_free_cc_nodes(dn);
-+
-+		return rc;
-+	}
-+
-+	pr_info("Successfully added %pOF, drc index: %x\n", dn, drc_index);
++	dev_dbg(&p->pdev->dev, "bound drc %x to %pR\n", p->drc_index, &p->res);
 +
 +	return 0;
 +}
 +
-+static ssize_t pmem_drc_remove_node(u32 drc_index)
++static int drc_pmem_unbind(struct papr_scm_priv *p)
 +{
-+	struct device_node *dn;
-+	uint32_t index;
-+	int rc;
++	unsigned long ret[PLPAR_HCALL_BUFSIZE];
++	uint64_t rc, token;
 +
-+	for_each_child_of_node(pmem_node, dn) {
-+		if (of_property_read_u32(dn, "ibm,my-drc-index", &index))
-+			continue;
-+		if (index == drc_index)
-+			break;
-+	}
++	token = 0;
 +
-+	if (!dn) {
-+		pr_err("Attempting to remove unused DRC index %x\n", drc_index);
-+		return -ENODEV;
-+	}
++	/* NB: unbind has the same retry requirements mentioned above */
++	do {
++		rc = plpar_hcall(H_SCM_UNBIND_MEM, ret, p->drc_index,
++				p->bound_addr, p->blocks, token);
++		token = be64_to_cpu(ret);
++	} while (rc == H_BUSY);
 +
-+	pr_debug("Attempting to remove %pOF, drc index: %x\n", dn, drc_index);
-+
-+	/* * NB: tears down the ibm,pmemory device as a side-effect */
-+	rc = dlpar_detach_node(dn);
 +	if (rc)
-+		return rc;
++		dev_err(&p->pdev->dev, "unbind error: %lld\n", rc);
 +
-+	rc = dlpar_release_drc(drc_index);
-+	if (rc) {
-+		pr_err("Failed to release drc (%x) for CPU %s, rc: %d\n",
-+			drc_index, dn->name, rc);
-+		dlpar_attach_node(dn, pmem_node);
-+		return rc;
-+	}
++	return !!rc;
++}
 +
-+	pr_info("Successfully removed PMEM with drc index: %x\n", drc_index);
++static int papr_scm_meta_get(struct papr_scm_priv *p,
++			struct nd_cmd_get_config_data_hdr *hdr)
++{
++	unsigned long data[PLPAR_HCALL_BUFSIZE];
++	int64_t ret;
++
++	if (hdr->in_offset >= p->metadata_size || hdr->in_length != 1)
++		return -EINVAL;
++
++	ret = plpar_hcall(H_SCM_READ_METADATA, data, p->drc_index,
++			hdr->in_offset, 1);
++
++	if (ret == H_PARAMETER) /* bad DRC index */
++		return -ENODEV;
++	if (ret)
++		return -EINVAL; /* other invalid parameter */
++
++	hdr->out_buf[0] = data[0] & 0xff;
 +
 +	return 0;
 +}
 +
-+int dlpar_hp_pmem(struct pseries_hp_errorlog *hp_elog)
++static int papr_scm_meta_set(struct papr_scm_priv *p,
++			struct nd_cmd_set_config_hdr *hdr)
 +{
-+	u32 count, drc_index;
-+	int rc;
++	int64_t ret;
 +
-+	/* slim chance, but we might get a hotplug event while booting */
-+	if (!pmem_node)
-+		pmem_node = of_find_node_by_type(NULL, "ibm,persistent-memory");
-+	if (!pmem_node) {
-+		pr_err("Hotplug event for a pmem device, but none exists\n");
++	if (hdr->in_offset >= p->metadata_size || hdr->in_length != 1)
++		return -EINVAL;
++
++	ret = plpar_hcall_norets(H_SCM_WRITE_METADATA,
++			p->drc_index, hdr->in_offset, hdr->in_buf[0], 1);
++
++	if (ret == H_PARAMETER) /* bad DRC index */
 +		return -ENODEV;
-+	}
++	if (ret)
++		return -EINVAL; /* other invalid parameter */
 +
-+	if (hp_elog->id_type != PSERIES_HP_ELOG_ID_DRC_INDEX) {
-+		pr_err("Unsupported hotplug event type %d\n",
-+				hp_elog->id_type);
++	return 0;
++}
++
++int papr_scm_ndctl(struct nvdimm_bus_descriptor *nd_desc, struct nvdimm *nvdimm,
++		unsigned int cmd, void *buf, unsigned int buf_len, int *cmd_rc)
++{
++	struct nd_cmd_get_config_size *get_size_hdr;
++	struct papr_scm_priv *p;
++
++	/* Only dimm-specific calls are supported atm */
++	if (!nvdimm)
++		return -EINVAL;
++
++	p = nvdimm_provider_data(nvdimm);
++
++	switch (cmd) {
++	case ND_CMD_GET_CONFIG_SIZE:
++		get_size_hdr = buf;
++
++		get_size_hdr->status = 0;
++		get_size_hdr->max_xfer = 1;
++		get_size_hdr->config_size = p->metadata_size;
++		*cmd_rc = 0;
++		break;
++
++	case ND_CMD_GET_CONFIG_DATA:
++		*cmd_rc = papr_scm_meta_get(p, buf);
++		break;
++
++	case ND_CMD_SET_CONFIG_DATA:
++		*cmd_rc = papr_scm_meta_set(p, buf);
++		break;
++
++	default:
 +		return -EINVAL;
 +	}
 +
-+	count = hp_elog->_drc_u.drc_count;
-+	drc_index = hp_elog->_drc_u.drc_index;
++	dev_dbg(&p->pdev->dev, "returned with cmd_rc = %d\n", *cmd_rc);
 +
-+	lock_device_hotplug();
++	return 0;
++}
 +
-+	if (hp_elog->action == PSERIES_HP_ELOG_ACTION_ADD) {
-+		rc = pmem_drc_add_node(drc_index);
-+	} else if (hp_elog->action == PSERIES_HP_ELOG_ACTION_REMOVE) {
-+		rc = pmem_drc_remove_node(drc_index);
-+	} else {
-+		pr_err("Unsupported hotplug action (%d)\n", hp_elog->action);
-+		rc = -EINVAL;
++static const struct attribute_group *region_attr_groups[] = {
++	&nd_region_attribute_group,
++	&nd_device_attribute_group,
++	&nd_mapping_attribute_group,
++	&nd_numa_attribute_group,
++	NULL,
++};
++
++static const struct attribute_group *bus_attr_groups[] = {
++	&nvdimm_bus_attribute_group,
++	NULL,
++};
++
++static const struct attribute_group *papr_scm_dimm_groups[] = {
++	&nvdimm_attribute_group,
++	&nd_device_attribute_group,
++	NULL,
++};
++
++static int papr_scm_nvdimm_init(struct papr_scm_priv *p)
++{
++	struct device *dev = &p->pdev->dev;
++	struct nd_mapping_desc mapping;
++	struct nd_region_desc ndr_desc;
++	unsigned long dimm_flags;
++
++	p->bus_desc.ndctl = papr_scm_ndctl;
++	p->bus_desc.module = THIS_MODULE;
++	p->bus_desc.of_node = p->pdev->dev.of_node;
++	p->bus_desc.attr_groups = bus_attr_groups;
++	p->bus_desc.provider_name = kstrdup(p->pdev->name, GFP_KERNEL);
++
++	if (!p->bus_desc.provider_name)
++		return -ENOMEM;
++
++	p->bus = nvdimm_bus_register(NULL, &p->bus_desc);
++	if (!p->bus) {
++		dev_err(dev, "Error creating nvdimm bus %pOF\n", p->dn);
++		return -ENXIO;
 +	}
 +
-+	unlock_device_hotplug();
++	dimm_flags = 0;
++	set_bit(NDD_ALIASING, &dimm_flags);
++
++	p->nvdimm = nvdimm_create(p->bus, p, papr_scm_dimm_groups,
++				dimm_flags, PAPR_SCM_DIMM_CMD_MASK, 0, NULL);
++	if (!p->nvdimm) {
++		dev_err(dev, "Error creating DIMM object for %pOF\n", p->dn);
++		goto err;
++	}
++
++	/* now add the region */
++
++	memset(&mapping, 0, sizeof(mapping));
++	mapping.nvdimm = p->nvdimm;
++	mapping.start = p->res.start;
++	mapping.size = p->blocks * p->block_size; // XXX: potential overflow?
++
++	memset(&ndr_desc, 0, sizeof(ndr_desc));
++	ndr_desc.attr_groups = region_attr_groups;
++	ndr_desc.numa_node = dev_to_node(&p->pdev->dev);
++	ndr_desc.res = &p->res;
++	ndr_desc.of_node = p->dn;
++	ndr_desc.provider_data = p;
++	ndr_desc.mapping = &mapping;
++	ndr_desc.num_mappings = 1;
++	ndr_desc.nd_set = &p->nd_set;
++	set_bit(ND_REGION_PAGEMAP, &ndr_desc.flags);
++
++	p->region = nvdimm_pmem_region_create(p->bus, &ndr_desc);
++	if (!p->region) {
++		dev_err(dev, "Error registering region %pR from %pOF\n",
++				ndr_desc.res, p->dn);
++		goto err;
++	}
++
++	return 0;
++
++err:	nvdimm_bus_unregister(p->bus);
++	kfree(p->bus_desc.provider_name);
++	return -ENXIO;
++}
++
++static int papr_scm_probe(struct platform_device *pdev)
++{
++	uint32_t drc_index, metadata_size, unit_cap[2];
++	struct device_node *dn = pdev->dev.of_node;
++	struct papr_scm_priv *p;
++	int rc;
++
++	/* check we have all the required DT properties */
++	if (of_property_read_u32(dn, "ibm,my-drc-index", &drc_index)) {
++		dev_err(&pdev->dev, "%pOF: missing drc-index!\n", dn);
++		return -ENODEV;
++	}
++
++	if (of_property_read_u32_array(dn, "ibm,unit-capacity", unit_cap, 2)) {
++		dev_err(&pdev->dev, "%pOF: missing unit-capacity!\n", dn);
++		return -ENODEV;
++	}
++
++	p = kzalloc(sizeof(*p), GFP_KERNEL);
++	if (!p)
++		return -ENOMEM;
++
++	/* optional DT properties */
++	of_property_read_u32(dn, "ibm,metadata-size", &metadata_size);
++
++	p->dn = dn;
++	p->drc_index = drc_index;
++	p->block_size = unit_cap[0];
++	p->blocks     = unit_cap[1];
++
++	/* might be zero */
++	p->metadata_size = metadata_size;
++	p->pdev = pdev;
++
++	/* request the hypervisor to bind this region to somewhere in memory */
++	rc = drc_pmem_bind(p);
++	if (rc)
++		goto err;
++
++	/* setup the resource for the newly bound range */
++	p->res.start = p->bound_addr;
++	p->res.end   = p->bound_addr + p->blocks * p->block_size;
++	p->res.name  = pdev->name;
++	p->res.flags = IORESOURCE_MEM;
++
++	rc = papr_scm_nvdimm_init(p);
++	if (rc)
++		goto err2;
++
++	return 0;
++
++err2:	drc_pmem_unbind(p);
++err:	kfree(p);
 +	return rc;
 +}
 +
-+const struct of_device_id drc_pmem_match[] = {
-+	{ .type = "ibm,persistent-memory", },
-+	{}
-+};
-+
-+static int pseries_pmem_init(void)
++static int papr_scm_remove(struct platform_device *pdev)
 +{
-+	pmem_node = of_find_node_by_type(NULL, "ibm,persistent-memory");
-+	if (!pmem_node)
-+		return 0;
++	struct papr_scm_priv *p = platform_get_drvdata(pdev);
 +
-+	/*
-+	 * The generic OF bus probe/populate handles creating platform devices
-+	 * from the child (ibm,pmemory) nodes. The generic code registers an of
-+	 * reconfig notifier to handle the hot-add/remove cases too.
-+	 */
-+	of_platform_bus_probe(pmem_node, drc_pmem_match, NULL);
++	nvdimm_bus_unregister(p->bus);
++	drc_pmem_unbind(p);
++	kfree(p);
 +
 +	return 0;
 +}
-+machine_arch_initcall(pseries, pseries_pmem_init);
-diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
-index 60db2ee511fb..d0829677c896 100644
---- a/arch/powerpc/platforms/pseries/pseries.h
-+++ b/arch/powerpc/platforms/pseries/pseries.h
-@@ -63,11 +63,16 @@ void queue_hotplug_event(struct pseries_hp_errorlog *hp_errlog,
- 			 struct completion *hotplug_done, int *rc);
- #ifdef CONFIG_MEMORY_HOTPLUG
- int dlpar_memory(struct pseries_hp_errorlog *hp_elog);
-+int dlpar_hp_pmem(struct pseries_hp_errorlog *hp_elog);
- #else
- static inline int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
- {
- 	return -EOPNOTSUPP;
- }
-+int dlpar_hp_pmem(struct pseries_hp_errorlog *hp_elog)
-+{
-+	return -EOPNOTSUPP;
++
++static const struct of_device_id papr_scm_match[] = {
++	{ .compatible = "ibm,pmemory" },
++	{ },
 +};
- #endif
- 
- #ifdef CONFIG_HOTPLUG_CPU
-diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
-index 851ce326874a..ae22fc007276 100644
---- a/arch/powerpc/platforms/pseries/ras.c
-+++ b/arch/powerpc/platforms/pseries/ras.c
-@@ -237,7 +237,8 @@ static irqreturn_t ras_hotplug_interrupt(int irq, void *dev_id)
- 	 * hotplug events on the ras_log_buf to be handled by rtas_errd.
- 	 */
- 	if (hp_elog->resource == PSERIES_HP_ELOG_RESOURCE_MEM ||
--	    hp_elog->resource == PSERIES_HP_ELOG_RESOURCE_CPU)
-+	    hp_elog->resource == PSERIES_HP_ELOG_RESOURCE_CPU ||
-+	    hp_elog->resource == PSERIES_HP_ELOG_RESOURCE_PMEM)
- 		queue_hotplug_event(hp_elog, NULL, NULL);
- 	else
- 		log_error(ras_log_buf, ERR_TYPE_RTAS_LOG, 0);
++
++static struct platform_driver papr_scm_driver = {
++	.probe = papr_scm_probe,
++	.remove = papr_scm_remove,
++	.driver = {
++		.name = "papr_scm",
++		.owner = THIS_MODULE,
++		.of_match_table = papr_scm_match,
++	},
++};
++
++module_platform_driver(papr_scm_driver);
++MODULE_DEVICE_TABLE(of, papr_scm_match);
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("IBM Corporation");
 -- 
 2.9.5
 
