@@ -2,93 +2,94 @@ Return-Path: <SRS0=4kvs=MX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+X-Spam-Status: No, score=-6.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1AD20C677FC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Oct 2018 19:58:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1230BC677FC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Oct 2018 20:01:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 607D220835
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Oct 2018 19:58:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 711D420658
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Oct 2018 20:01:28 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="iiPtGSK+"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 607D220835
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Cf0OD1Ld"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 711D420658
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42WMH019JhzF3KG
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Oct 2018 06:58:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42WMKy1DVszF3JW
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Oct 2018 07:01:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="iiPtGSK+";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="Cf0OD1Ld";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
+ (client-ip=2607:f8b0:4864:20::444; helo=mail-pf1-x444.google.com;
  envelope-from=frowand.list@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="iiPtGSK+"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="Cf0OD1Ld"; 
  dkim-atps=neutral
-Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
- [IPv6:2607:f8b0:4864:20::442])
+Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
+ [IPv6:2607:f8b0:4864:20::444])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42WMCY46RnzF0RC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Oct 2018 06:55:53 +1100 (AEDT)
-Received: by mail-pf1-x442.google.com with SMTP id j23-v6so4934008pfi.4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Oct 2018 12:55:53 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42WMCf46dbzF3JT
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Oct 2018 06:55:58 +1100 (AEDT)
+Received: by mail-pf1-x444.google.com with SMTP id l81-v6so4944458pfg.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Oct 2018 12:55:58 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=subject:to:cc:references:from:message-id:date:user-agent
  :mime-version:in-reply-to:content-language:content-transfer-encoding;
- bh=MksRJ+C2rJrllRc3ReKK6Yfk7dgXChe1JArvN/CPh3I=;
- b=iiPtGSK+nhwXd4auAjQKgRCtQb/NKh7L6j+TjTalEiEGz/GvBZxuxcuAX9uOPmokoR
- 7Ii3TJLQVYLZpa+xA5Rr1Vsr9/FfO7Ez9uo/uwaa+y//AjOpB+ZowcLu1N5H4TXnsy7G
- sQB3AEnCD0zFK7Dzs/SLpM4d/v4xpHg4+fc2HSWS7Lj/xiWY0IfVYg0ANxpMUpKpNN+2
- d3UbIQlKyK45PM30Jn1sXySveoYg+UbuMrh6mpuiSASMMpDsT0GIhm8jQjKSBvZLBH11
- sdi4+DYzZ8SpG2dOmg76k2vXo/ad7nu5T0DJe89UzOQDmczkx1TDpfEr/DAwJ6JrfxwM
- /gZQ==
+ bh=R+JpQBEsN1n1PrBH/iXS+DoMYo8KgrT+7C24wo4ZKeA=;
+ b=Cf0OD1LdtEwnZPEvK9cOLnaIdQfraatC+VA/YbpdIOsrsRvmYXsF5q9sSuCKeGrhQF
+ W5X0W7DHIy1b2r5UiwuUm88aowmW0GAngK+y+oSaUt6GUTiCbfyteSKxJsTgMYUN1Bpt
+ 7cGk0Zs42QoAAQqjzCzhCXaPoSW3f5k+kg3WzUtmbxx/J5hXcMNYE9fvbTdcPOsdtUtq
+ /A2KUH+guzAKcEokP3vgJX8ZZnWkVzrL0CZjQHC5Y0M/8DKypKupjnGT9ihGYC8KAdLZ
+ ShV6gSTHT75iUuTOI7abyw773ciKgGY9nWI71spBvO18W8yCanZgnLpufTG5004CiozN
+ J8HQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:subject:to:cc:references:from:message-id:date
  :user-agent:mime-version:in-reply-to:content-language
  :content-transfer-encoding;
- bh=MksRJ+C2rJrllRc3ReKK6Yfk7dgXChe1JArvN/CPh3I=;
- b=Vy1R530AgYbfRa8ma5p/VA6yAUBqT0taPN1XO0oQXhirUD5/kexEnTaUBHqbahEZeW
- s2jP6GXQqLNKGQ1sdDBfoyWdYZwDcVNVzB5JFZnu/iO9DG2m/7qN+L9dK8hQwa1H5TwS
- ADhGFW/h4yhJdjY2uiRnFANdhNhhDDe63R65TgyL1Df4i5+jJbnTzCBKaS6u+IuZfpTN
- i2sCksFu/6kvoitAfR1ObIy1rjZrkf3S34LJoiVkTG98R2bm/gPPLb8ASk74xeSuVqXw
- MfM+yc2Rnb57oTFi/F9v72NCnxAV3HTlqLNsPKWS5drAoBpwNzX/lxk/4Q1Zf/zoZAer
- I3RA==
-X-Gm-Message-State: ABuFfojseHxFJG5OwVOz/qWtZMwfbuyVoaNoMT5Q6UBQ2yY4iDsHx4/t
- t7hhwMn9IPE5+ly9mElpXz0=
-X-Google-Smtp-Source: ACcGV61Dw62Yvmxevnd+knkWbxY84KVl16ZFrLzf2j2QRkaE0qFKocZpKM1oHYn2ivA3XnBzGqUlPQ==
-X-Received: by 2002:a62:6dc3:: with SMTP id
- i186-v6mr2959194pfc.218.1539287751395; 
- Thu, 11 Oct 2018 12:55:51 -0700 (PDT)
+ bh=R+JpQBEsN1n1PrBH/iXS+DoMYo8KgrT+7C24wo4ZKeA=;
+ b=QGxlmvC9ReWKALVncHSffpydQe1u4TuUb8shPXswv6o1DbwBE9AkesNbcjb8q9/vdU
+ H877mGnyHOOwHd3EwQgproxToA0e/xfxuF7nAzVLPVp0saniZvkPFrWfaQN6wOPn3NyK
+ Nh1xdKqRLDsgFGvqmXhIW/CgnCNDvEzQoazTZg4gVyeU0gMltMh4NqXcQQ8aJGW9lIkA
+ pkOFKX7MxdyoXNXpnWUPXbmsDKtkNpPjcIlLj8SM87UXNT+m66q88XvYEj7XaC8r39GC
+ DjHEKcccGdsJRJ1GNjMFWW4rgScN4V1wzmA43aVMO4Ng4t5K8aCD26CWnN1bto8rHP9D
+ EmLQ==
+X-Gm-Message-State: ABuFfoiZIXEmncWuYy79vvEDqHPh4wXGpTOvOJkeY1DAXKkDJcG1/R9J
+ 9D01B3q9HkVYeJ8M3HQQ5eQ=
+X-Google-Smtp-Source: ACcGV626jV5kHFxT4Qlj2l9VQbmVeM/msz4CCCOf7oNLdJcJKfQSpJrIKQ8eGx2XbniND2G3GK3ByA==
+X-Received: by 2002:a62:ccd4:: with SMTP id
+ j81-v6mr3017356pfk.76.1539287756749; 
+ Thu, 11 Oct 2018 12:55:56 -0700 (PDT)
 Received: from [192.168.1.70] (c-24-6-192-50.hsd1.ca.comcast.net.
  [24.6.192.50])
- by smtp.gmail.com with ESMTPSA id u1-v6sm27113907pgr.61.2018.10.11.12.55.50
+ by smtp.gmail.com with ESMTPSA id l83-v6sm67245938pfi.172.2018.10.11.12.55.55
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Thu, 11 Oct 2018 12:55:50 -0700 (PDT)
-Subject: Re: [RFC PATCH v2 0/3] New device-tree format and Opal based idle
- save-restore
+ Thu, 11 Oct 2018 12:55:56 -0700 (PDT)
+Subject: Re: [RFC PATCH v2 1/3] cpuidle/powernv: Add support for states with
+ ibm,cpuidle-state-v1
 To: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
  linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 References: <20181011132237.14604-1-akshay.adiga@linux.vnet.ibm.com>
+ <20181011132237.14604-2-akshay.adiga@linux.vnet.ibm.com>
 From: Frank Rowand <frowand.list@gmail.com>
-Message-ID: <1b6bcd31-1dc8-abf7-304a-4de95b8f998b@gmail.com>
-Date: Thu, 11 Oct 2018 12:55:49 -0700
+Message-ID: <e1e585e3-5605-0f03-f145-95ced05ca682@gmail.com>
+Date: Thu, 11 Oct 2018 12:55:55 -0700
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
  Thunderbird/52.9.1
 MIME-Version: 1.0
-In-Reply-To: <20181011132237.14604-1-akshay.adiga@linux.vnet.ibm.com>
+In-Reply-To: <20181011132237.14604-2-akshay.adiga@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
@@ -111,6 +112,9 @@ Sender: "Linuxppc-dev"
 + devicetree mail list
 
 On 10/11/18 06:22, Akshay Adiga wrote:
+> This patch adds support for new device-tree format for idle state
+> description.
+> 
 > Previously if a older kernel runs on a newer firmware, it may enable
 > all available states irrespective of its capability of handling it.
 > New device tree format adds a compatible flag, so that only kernel
@@ -120,12 +124,12 @@ On 10/11/18 06:22, Akshay Adiga wrote:
 > Older kernel will still see stop0 and stop0_lite in older format and we
 > will depricate it after some time.
 > 
-> 1) Idea is to bump up the version string in firmware if we find a bug or
+> 1) Idea is to bump up the version in firmware if we find a bug or
 > regression in stop states. A fix will be provided in linux which would
 > now know about the bumped up version of stop states, where as kernel
 > without fixes would ignore the states.
 > 
-> 2) Slowly deprecate cpuidle/cpuhotplug threshold which is hard-coded
+> 2) Slowly deprecate cpuidle /cpuhotplug threshold which is hard-coded
 > into cpuidle-powernv driver. Instead use compatible strings to indicate
 > if idle state is suitable for cpuidle and hotplug.
 > 
@@ -142,8 +146,8 @@ On 10/11/18 06:22, Akshay Adiga wrote:
 >                      stop4 {
 >                          flags = <0x207000>;
 >                          compatible = "ibm,state-v1",
-> 				      "opal-support";
-> 			 type = "cpuidle";
+>                                       "opal-supported";
+>                          type = "cpuidle";
 >                          psscr-mask = <0x0 0x3003ff>;
 >                          handle = <0x102>;
 >                          latency-ns = <0x186a0>;
@@ -154,83 +158,320 @@ On 10/11/18 06:22, Akshay Adiga wrote:
 >                     stop11 {
 >                      ...
 >                          compatible = "ibm,state-v1",
-> 				      "opal-support";
-> 			 type = "cpuoffline";
+>                                       "opal-supported";
+>                          type = "cpuoffline";
 >                          ...
 >                   };
 >              };
+> type strings :
+> "cpuidle" : indicates it should be used by cpuidle-driver
+> "cpuoffline" : indicates it should be used by hotplug driver
 > 
-> High-level parsing algorithm :
+> compatible strings :
+> "ibm,state-v1" : kernel checks if it knows about this version
+> "opal-supported" : indicates kernel can fall back to use opal
+> 		   for stop-transitions
 > 
-> Say Known version string = "ibm,state-v1"
-> 
-> for each stop state node in device tree:
-> 	if (compatible has known version string)
-> 		kernel takes care of stop-transitions
-> 	else if (compatible has "opal-support")
-> 		OPAL takes care of stop-transitions
-> 	else
-> 		Skip All deeper states
-> 
-> When a state does not have both version support and opal support,
-> Its possible to exit from a shallower state. Hence skipping all
-> deeper states.
-> 
-> OPAL support for idle states
-> ----------------------------
-> 
-> With this patch series, all the states that loose hypervisor state
-> will be handled through opal_call.
-> 
-> Patch 3 adds support for Saving/restoring of SPRs and resync-timebase
-> in OPAL. Also all the decision making such as identifying first thread
-> in the core and taking locks before restoring, etc are implemented in
-> OPAL.
-> 
-> How does it work ?
-> -------------------
-> 
-> Consider a case that stop4 has a bug. We take the following steps to
-> mitigate the problem.
-> 
-> 1) Change compatible string for stop4 in OPAL to "ibm-state-v2" and
-> remove "opal-supported". ship the new firmware.
-> The kernel ignores stop4 and all deeper states. But we will still have
-> shallower states. Prevents from completely disabling stop states.
-> 
-> 2) Implement workaround in OPAL and add "opal-supported". Ship new firmware
-> The kernel uses opal for stop-transtion , which has workaround implemented.
-> We get stop4 and deeper states working without kernel changes and backports.
-> (and considerably less time)
-> 
-> 3) Implement workaround in kernel and add "ibm-state-v2" as known versions
-> The kernel will now be able to handle stop4 and deeper states.
+> Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+> ---
 > 
 > Changes from v1 :
 >  - Code is rebased on Nick Piggin's v4 patch "powerpc/64s: reimplement book3s
 >    idle code in C"
-> 	http://patchwork.ozlabs.org/patch/969596/
->  - All the states that loses hypervisor states will be handled by OPAL
->  - All the decision making such as identifying first thread in
->    the core and taking locks before restoring in such cases have also been
->    moved to OPAL
+>  - Moved "cpuidle" and "cpuoffline" as seperate property called
+>    "type"
+>  
 > 
+>  arch/powerpc/include/asm/cpuidle.h    |   9 ++
+>  arch/powerpc/platforms/powernv/idle.c | 132 +++++++++++++++++++++++++-
+>  drivers/cpuidle/cpuidle-powernv.c     |  31 ++++--
+>  3 files changed, 160 insertions(+), 12 deletions(-)
 > 
-> Abhishek Goel (1):
->   cpuidle/powernv: save-restore sprs in opal
-> 
-> Akshay Adiga (2):
->   cpuidle/powernv: Add support for states with ibm,cpuidle-state-v1
->   powernv/cpuidle: Pass pointers instead of values to  stop loop
-> 
->  arch/powerpc/include/asm/cpuidle.h            |   9 +
->  arch/powerpc/include/asm/opal-api.h           |   4 +-
->  arch/powerpc/include/asm/opal.h               |   3 +
->  arch/powerpc/include/asm/processor.h          |   8 +-
->  arch/powerpc/kernel/idle_book3s.S             |   6 +-
->  arch/powerpc/platforms/powernv/idle.c         | 247 ++++++++++++++----
->  .../powerpc/platforms/powernv/opal-wrappers.S |   2 +
->  drivers/cpuidle/cpuidle-powernv.c             |  46 ++--
->  8 files changed, 251 insertions(+), 74 deletions(-)
+> diff --git a/arch/powerpc/include/asm/cpuidle.h b/arch/powerpc/include/asm/cpuidle.h
+> index 9844b3ded187..e920a15e797f 100644
+> --- a/arch/powerpc/include/asm/cpuidle.h
+> +++ b/arch/powerpc/include/asm/cpuidle.h
+> @@ -70,14 +70,23 @@
+>  
+>  #ifndef __ASSEMBLY__
+>  
+> +enum idle_state_type_t {
+> +	CPUIDLE_TYPE,
+> +	CPUOFFLINE_TYPE
+> +};
+> +
+> +#define POWERNV_THRESHOLD_LATENCY_NS 200000
+> +#define PNV_VER_NAME_LEN    32
+>  #define PNV_IDLE_NAME_LEN    16
+>  struct pnv_idle_states_t {
+>  	char name[PNV_IDLE_NAME_LEN];
+> +	char version[PNV_VER_NAME_LEN];
+>  	u32 latency_ns;
+>  	u32 residency_ns;
+>  	u64 psscr_val;
+>  	u64 psscr_mask;
+>  	u32 flags;
+> +	enum idle_state_type_t type;
+>  	bool valid;
+>  };
+>  
+> diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
+> index 96186af9e953..755918402591 100644
+> --- a/arch/powerpc/platforms/powernv/idle.c
+> +++ b/arch/powerpc/platforms/powernv/idle.c
+> @@ -54,6 +54,20 @@ static bool default_stop_found;
+>  static u64 pnv_first_tb_loss_level = MAX_STOP_STATE + 1;
+>  static u64 pnv_first_hv_loss_level = MAX_STOP_STATE + 1;
+>  
+> +
+> +static int parse_dt_v1(struct device_node *np);
+> +struct stop_version_t {
+> +	const char name[PNV_VER_NAME_LEN];
+> +	int (*parser_fn)(struct device_node *np);
+> +};
+> +struct stop_version_t known_versions[] = {
+> +		{
+> +			.name =  "ibm,state-v1",
+> +			.parser_fn = parse_dt_v1,
+> +		}
+> +	};
+> +const int nr_known_versions = 1;
+> +
+>  /*
+>   * psscr value and mask of the deepest stop idle state.
+>   * Used when a cpu is offlined.
+> @@ -1195,6 +1209,77 @@ static void __init pnv_probe_idle_states(void)
+>  		supported_cpuidle_states |= pnv_idle_states[i].flags;
+>  }
+>  
+> +static int parse_dt_v1(struct device_node *dt_node)
+> +{
+> +	const char *temp_str;
+> +	int rc;
+> +	int i = nr_pnv_idle_states;
+> +
+> +	if (!dt_node) {
+> +		pr_err("Invalid device_node\n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	rc = of_property_read_string(dt_node, "name", &temp_str);
+> +	if (rc) {
+> +		pr_err("error reading names rc= %d\n", rc);
+> +		return -EINVAL;
+> +	}
+> +	strncpy(pnv_idle_states[i].name, temp_str, PNV_IDLE_NAME_LEN);
+> +	rc = of_property_read_u32(dt_node, "residency-ns",
+> +				  &pnv_idle_states[i].residency_ns);
+> +	if (rc) {
+> +		pr_err("error reading residency rc= %d\n", rc);
+> +		return -EINVAL;
+> +	}
+> +	rc = of_property_read_u32(dt_node, "latency-ns",
+> +				  &pnv_idle_states[i].latency_ns);
+> +	if (rc) {
+> +		pr_err("error reading latency rc= %d\n", rc);
+> +		return -EINVAL;
+> +	}
+> +	rc = of_property_read_u32(dt_node, "flags",
+> +				  &pnv_idle_states[i].flags);
+> +	if (rc) {
+> +		pr_err("error reading flags rc= %d\n", rc);
+> +		return -EINVAL;
+> +	}
+> +
+> +	/* We are not expecting power8 device-tree in this format */
+> +	rc = of_property_read_u64(dt_node, "psscr-mask",
+> +				  &pnv_idle_states[i].psscr_mask);
+> +	if (rc) {
+> +		pr_err("error reading psscr-mask rc= %d\n", rc);
+> +		return -EINVAL;
+> +	}
+> +	rc = of_property_read_u64(dt_node, "psscr",
+> +				  &pnv_idle_states[i].psscr_val);
+> +	if (rc) {
+> +		pr_err("error reading psscr rc= %d\n", rc);
+> +		return -EINVAL;
+> +	}
+> +
+> +	/*
+> +	 * TODO : save the version strings in data structure
+> +	 */
+> +	rc = of_property_read_string(dt_node, "type", &temp_str);
+> +	pr_info("type = %s\n", temp_str);
+> +	if (rc) {
+> +		pr_err("error reading type rc= %d\n", rc);
+> +		return -EINVAL;
+> +	}
+> +	if (strcmp(temp_str, "cpuidle") == 0)
+> +		pnv_idle_states[i].type = CPUIDLE_TYPE;
+> +	else if (strcmp(temp_str, "cpuoffline") == 0)
+> +		pnv_idle_states[i].type = CPUOFFLINE_TYPE;
+> +	else {
+> +		pr_err("Invalid type skipping %s\n",
+> +					pnv_idle_states[i].name);
+> +		return -EINVAL;
+> +	}
+> +	return 0;
+> +
+> +}
+>  /*
+>   * This function parses device-tree and populates all the information
+>   * into pnv_idle_states structure. It also sets up nr_pnv_idle_states
+> @@ -1203,8 +1288,9 @@ static void __init pnv_probe_idle_states(void)
+>  
+>  static int pnv_parse_cpuidle_dt(void)
+>  {
+> -	struct device_node *np;
+> +	struct device_node *np, *np1, *dt_node;
+>  	int nr_idle_states, i;
+> +	int additional_states = 0;
+>  	int rc = 0;
+>  	u32 *temp_u32;
+>  	u64 *temp_u64;
+> @@ -1218,8 +1304,14 @@ static int pnv_parse_cpuidle_dt(void)
+>  	nr_idle_states = of_property_count_u32_elems(np,
+>  						"ibm,cpu-idle-state-flags");
+>  
+> -	pnv_idle_states = kcalloc(nr_idle_states, sizeof(*pnv_idle_states),
+> -				  GFP_KERNEL);
+> +	np1 = of_find_node_by_path("/ibm,opal/power-mgt/ibm,idle-states");
+> +	if (np1) {
+> +		for_each_child_of_node(np1, dt_node)
+> +			additional_states++;
+> +	}
+> +	pr_info("states in new format : %d\n", additional_states);
+> +	pnv_idle_states = kcalloc(nr_idle_states + additional_states,
+> +				  sizeof(*pnv_idle_states), GFP_KERNEL);
+>  	temp_u32 = kcalloc(nr_idle_states, sizeof(u32),  GFP_KERNEL);
+>  	temp_u64 = kcalloc(nr_idle_states, sizeof(u64),  GFP_KERNEL);
+>  	temp_string = kcalloc(nr_idle_states, sizeof(char *),  GFP_KERNEL);
+> @@ -1298,8 +1390,40 @@ static int pnv_parse_cpuidle_dt(void)
+>  	for (i = 0; i < nr_idle_states; i++)
+>  		strlcpy(pnv_idle_states[i].name, temp_string[i],
+>  			PNV_IDLE_NAME_LEN);
+> +
+> +	/* Mark states as CPUIDLE_TYPE /CPUOFFLINE for older version*/
+> +	for (i = 0; i < nr_idle_states; i++) {
+> +		if (pnv_idle_states[i].latency_ns > POWERNV_THRESHOLD_LATENCY_NS)
+> +			pnv_idle_states[i].type  = CPUOFFLINE_TYPE;
+> +		else
+> +			pnv_idle_states[i].type  = CPUIDLE_TYPE;
+> +	}
+>  	nr_pnv_idle_states = nr_idle_states;
+> -	rc = 0;
+> +	/* Parsing node-based idle states device-tree format */
+> +	if (!np1) {
+> +		pr_info("dt does not contain ibm,idle_states");
+> +		goto out;
+> +	}
+> +	/* Parse each child node with appropriate parser_fn */
+> +	for_each_child_of_node(np1, dt_node) {
+> +		bool found_known_version = false;
+> +		/* we don't have state falling back to opal*/
+> +		for (i = 0; i < nr_known_versions ; i++) {
+> +			if (of_device_is_compatible(dt_node, known_versions[i].name)) {
+> +				rc = known_versions[i].parser_fn(dt_node);
+> +				if (rc) {
+> +					pr_err("%s could not parse\n", known_versions[i].name);
+> +					continue;
+> +				}
+> +				found_known_version = true;
+> +			}
+> +		}
+> +		if (!found_known_version) {
+> +			pr_info("Unsupported state, skipping all further state\n");
+> +			goto out;
+> +		}
+> +		nr_pnv_idle_states++;
+> +	}
+>  out:
+>  	kfree(temp_u32);
+>  	kfree(temp_u64);
+> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+> index 84b1ebe212b3..a15514ebd1c3 100644
+> --- a/drivers/cpuidle/cpuidle-powernv.c
+> +++ b/drivers/cpuidle/cpuidle-powernv.c
+> @@ -26,7 +26,6 @@
+>   * Expose only those Hardware idle states via the cpuidle framework
+>   * that have latency value below POWERNV_THRESHOLD_LATENCY_NS.
+>   */
+> -#define POWERNV_THRESHOLD_LATENCY_NS 200000
+>  
+>  static struct cpuidle_driver powernv_idle_driver = {
+>  	.name             = "powernv_idle",
+> @@ -265,7 +264,7 @@ extern u32 pnv_get_supported_cpuidle_states(void);
+>  static int powernv_add_idle_states(void)
+>  {
+>  	int nr_idle_states = 1; /* Snooze */
+> -	int dt_idle_states;
+> +	int dt_idle_states = 0;
+>  	u32 has_stop_states = 0;
+>  	int i;
+>  	u32 supported_flags = pnv_get_supported_cpuidle_states();
+> @@ -277,14 +276,19 @@ static int powernv_add_idle_states(void)
+>  		goto out;
+>  	}
+>  
+> -	/* TODO: Count only states which are eligible for cpuidle */
+> -	dt_idle_states = nr_pnv_idle_states;
+> +	/* Count only cpuidle states*/
+> +	for (i = 0; i < nr_pnv_idle_states; i++) {
+> +		if (pnv_idle_states[i].type == CPUIDLE_TYPE)
+> +			dt_idle_states++;
+> +	}
+> +	pr_info("idle states in dt = %d , states with idle flag = %d",
+> +					nr_pnv_idle_states, dt_idle_states);
+>  
+>  	/*
+>  	 * Since snooze is used as first idle state, max idle states allowed is
+>  	 * CPUIDLE_STATE_MAX -1
+>  	 */
+> -	if (nr_pnv_idle_states > CPUIDLE_STATE_MAX - 1) {
+> +	if (dt_idle_states > CPUIDLE_STATE_MAX - 1) {
+>  		pr_warn("cpuidle-powernv: discovered idle states more than allowed");
+>  		dt_idle_states = CPUIDLE_STATE_MAX - 1;
+>  	}
+> @@ -305,8 +309,15 @@ static int powernv_add_idle_states(void)
+>  		 * Skip the platform idle state whose flag isn't in
+>  		 * the supported_cpuidle_states flag mask.
+>  		 */
+> -		if ((state->flags & supported_flags) != state->flags)
+> +		if ((state->flags & supported_flags) != state->flags) {
+> +			pr_warn("State %d does not have supported flag\n", i);
+> +			continue;
+> +		}
+> +		if (state->type != CPUIDLE_TYPE) {
+> +			pr_info("State %d is not idletype, it of %d type\n", i,
+> +								state->type);
+>  			continue;
+> +		}
+>  		/*
+>  		 * If an idle state has exit latency beyond
+>  		 * POWERNV_THRESHOLD_LATENCY_NS then don't use it
+> @@ -321,8 +332,10 @@ static int powernv_add_idle_states(void)
+>  		exit_latency = DIV_ROUND_UP(state->latency_ns, 1000);
+>  		target_residency = DIV_ROUND_UP(state->residency_ns, 1000);
+>  
+> -		if (has_stop_states && !(state->valid))
+> +		if (has_stop_states && !(state->valid)) {
+> +			pr_warn("State %d is invalid\n", i);
+>  				continue;
+> +		}
+>  
+>  		if (state->flags & OPAL_PM_TIMEBASE_STOP)
+>  			stops_timebase = true;
+> @@ -360,8 +373,10 @@ static int powernv_add_idle_states(void)
+>  					  state->psscr_mask);
+>  		}
+>  #endif
+> -		else
+> +		else {
+> +			pr_warn("cpuidle-powernv : could not add state\n");
+>  			continue;
+> +		}
+>  		nr_idle_states++;
+>  	}
+>  out:
 > 
 
