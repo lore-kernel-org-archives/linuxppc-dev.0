@@ -4,21 +4,21 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 43618C32788
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Oct 2018 14:10:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D7373C32788
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Oct 2018 14:25:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A494D20841
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Oct 2018 14:10:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A494D20841
+	by mail.kernel.org (Postfix) with ESMTPS id 41A1D204FD
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Oct 2018 14:25:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 41A1D204FD
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42WCXR22ttzF3JW
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Oct 2018 01:09:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42WCtD5jWdzF3L4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Oct 2018 01:25:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
@@ -29,47 +29,48 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42WCV92lDdzF13T
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Oct 2018 01:08:01 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42WCr63GrczF1F0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Oct 2018 01:23:34 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 42WCV02j8gz9ttwC;
- Thu, 11 Oct 2018 16:07:52 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 42WCqs3dzzz9ttn0;
+ Thu, 11 Oct 2018 16:23:21 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id gPCVKpeayoJm; Thu, 11 Oct 2018 16:07:52 +0200 (CEST)
+ with ESMTP id sJaHp8wQ6q0Q; Thu, 11 Oct 2018 16:23:21 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 42WCV01rtKz9ttvy;
- Thu, 11 Oct 2018 16:07:52 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 42WCqs33TSz9ttBX;
+ Thu, 11 Oct 2018 16:23:21 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 4D7D88B87A;
- Thu, 11 Oct 2018 16:07:54 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 9E0008B881;
+ Thu, 11 Oct 2018 16:23:23 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id P2Ec4KOxg47O; Thu, 11 Oct 2018 16:07:54 +0200 (CEST)
+ with ESMTP id oqLQZIft6Xuf; Thu, 11 Oct 2018 16:23:23 +0200 (CEST)
 Received: from PO15451 (unknown [192.168.232.3])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A200F8B86C;
- Thu, 11 Oct 2018 16:07:53 +0200 (CEST)
-Subject: Re: [PATCH v3 02/24] drivers/video/fbdev: use ioremap_wc/wt() instead
- of __ioremap()
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 487858B86C;
+ Thu, 11 Oct 2018 16:23:23 +0200 (CEST)
+Subject: Re: [PATCH v2 3/3] powerpc: machine check interrupt is a non-maskable
+ interrupt
+To: Nicholas Piggin <npiggin@gmail.com>
+References: <20170719065912.19183-1-npiggin@gmail.com>
+ <20170719065912.19183-4-npiggin@gmail.com>
+ <30487984-752a-960d-6aae-6571c55c7ba5@c-s.fr>
+ <20181009143241.026f3e7f@roar.ozlabs.ibm.com>
+ <ccf61fc2-1f2e-7b67-c481-fa4c00a65aae@c-s.fr>
+ <20181009153058.2564e7a1@roar.ozlabs.ibm.com>
+ <0539727f-8420-3176-30b5-f4a6a1ccd4a4@c-s.fr>
+ <20181009211650.042d428c@roar.ozlabs.ibm.com>
+ <e4c9e983-db3e-ab50-c30b-9d538e202147@c-s.fr>
+ <20181009221446.33b926e3@roar.ozlabs.ibm.com>
 From: Christophe LEROY <christophe.leroy@c-s.fr>
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Dominik Brodowski <linux@dominikbrodowski.net>,
- Geoff Levand <geoff@infradead.org>, Jens Axboe <axboe@kernel.dk>,
- Kumar Gala <galak@kernel.crashing.org>, Li Yang <leoyang.li@nxp.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>,
- aneesh.kumar@linux.vnet.ibm.com
-References: <cover.1539092111.git.christophe.leroy@c-s.fr>
- <25348d7faf67d5e2829aad03aef8096cd5f6908d.1539092111.git.christophe.leroy@c-s.fr>
-Message-ID: <8bd4cbe3-3c7e-1ecb-b627-1970ed7c48af@c-s.fr>
-Date: Thu, 11 Oct 2018 16:07:52 +0200
+Message-ID: <8281d664-6c4b-3476-ac2d-9fc9ba2c7e03@c-s.fr>
+Date: Thu, 11 Oct 2018 16:23:23 +0200
 User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:52.0) Gecko/20100101
  Thunderbird/52.9.1
 MIME-Version: 1.0
-In-Reply-To: <25348d7faf67d5e2829aad03aef8096cd5f6908d.1539092111.git.christophe.leroy@c-s.fr>
+In-Reply-To: <20181009221446.33b926e3@roar.ozlabs.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: fr
 Content-Transfer-Encoding: 8bit
@@ -84,166 +85,126 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-block@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
 
-Le 09/10/2018 à 15:51, Christophe Leroy a écrit :
-> _PAGE_NO_CACHE is a platform specific flag. In addition, this flag
-> is misleading because one would think it requests a noncached page
-> whereas a noncached page is _PAGE_NO_CACHE | _PAGE_GUARDED
+Le 09/10/2018 à 14:14, Nicholas Piggin a écrit :
+> On Tue, 9 Oct 2018 14:01:37 +0200
+> Christophe LEROY <christophe.leroy@c-s.fr> wrote:
 > 
-> _PAGE_NO_CACHE alone means write combined noncached page, so lets
-> use ioremap_wc() instead.
+>> Le 09/10/2018 à 13:16, Nicholas Piggin a écrit :
+>>> On Tue, 9 Oct 2018 09:36:18 +0000
+>>> Christophe Leroy <christophe.leroy@c-s.fr> wrote:
+>>>    
+>>>> On 10/09/2018 05:30 AM, Nicholas Piggin wrote:
+>>>>> On Tue, 9 Oct 2018 06:46:30 +0200
+>>>>> Christophe LEROY <christophe.leroy@c-s.fr> wrote:
+>>>>>       
+>>>>>> Le 09/10/2018 à 06:32, Nicholas Piggin a écrit :
+>>>>>>> On Mon, 8 Oct 2018 17:39:11 +0200
+>>>>>>> Christophe LEROY <christophe.leroy@c-s.fr> wrote:
+>>>>>>>          
+>>>>>>>> Hi Nick,
+>>>>>>>>
+>>>>>>>> Le 19/07/2017 à 08:59, Nicholas Piggin a écrit :
+>>>>>>>>> Use nmi_enter similarly to system reset interrupts. This uses NMI
+>>>>>>>>> printk NMI buffers and turns off various debugging facilities that
+>>>>>>>>> helps avoid tripping on ourselves or other CPUs.
+>>>>>>>>>
+>>>>>>>>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+>>>>>>>>> ---
+>>>>>>>>>       arch/powerpc/kernel/traps.c | 9 ++++++---
+>>>>>>>>>       1 file changed, 6 insertions(+), 3 deletions(-)
+>>>>>>>>>
+>>>>>>>>> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+>>>>>>>>> index 2849c4f50324..6d31f9d7c333 100644
+>>>>>>>>> --- a/arch/powerpc/kernel/traps.c
+>>>>>>>>> +++ b/arch/powerpc/kernel/traps.c
+>>>>>>>>> @@ -789,8 +789,10 @@ int machine_check_generic(struct pt_regs *regs)
+>>>>>>>>>       
+>>>>>>>>>       void machine_check_exception(struct pt_regs *regs)
+>>>>>>>>>       {
+>>>>>>>>> -	enum ctx_state prev_state = exception_enter();
+>>>>>>>>>       	int recover = 0;
+>>>>>>>>> +	bool nested = in_nmi();
+>>>>>>>>> +	if (!nested)
+>>>>>>>>> +		nmi_enter();
+>>>>>>>>
+>>>>>>>> This alters preempt_count, then when die() is called
+>>>>>>>> in_interrupt() returns true allthough the trap didn't happen in
+>>>>>>>> interrupt, so oops_end() panics for "fatal exception in interrupt"
+>>>>>>>> instead of gently sending SIGBUS the faulting app.
+>>>>>>>
+>>>>>>> Thanks for tracking that down.
+>>>>>>>          
+>>>>>>>> Any idea on how to fix this ?
+>>>>>>>
+>>>>>>> I would say we have to deliver the sigbus by hand.
+>>>>>>>
+>>>>>>>         if ((user_mode(regs)))
+>>>>>>>             _exception(SIGBUS, regs, BUS_MCEERR_AR, regs->nip);
+>>>>>>>         else
+>>>>>>>             die("Machine check", regs, SIGBUS);
+>>>>>>>          
+>>>>>>
+>>>>>> And what about all the other things done by 'die()' ?
+>>>>>>
+>>>>>> And what if it is a kernel thread ?
+>>>>>>
+>>>>>> In one of my boards, I have a kernel thread regularly checking the HW,
+>>>>>> and if it gets a machine check I expect it to gently stop and the die
+>>>>>> notification to be delivered to all registered notifiers.
+>>>>>>
+>>>>>> Until before this patch, it was working well.
+>>>>>
+>>>>> I guess the alternative is we could check regs->trap for machine
+>>>>> check in the die test. Complication is having to account for MCE
+>>>>> in an interrupt handler.
+>>>>>
+>>>>>           if (in_interrupt()) {
+>>>>>                    if (!IS_MCHECK_EXC(regs) || (irq_count() - (NMI_OFFSET + HARDIRQ_OFFSET)))
+>>>>>                        panic("Fatal exception in interrupt");
+>>>>>           }
+>>>>>
+>>>>> Something like that might work for you? We needs a ppc64 macro for the
+>>>>> MCE, and can probably add something like in_nmi_from_interrupt() for
+>>>>> the second part of the test.
+>>>>
+>>>> Don't know, I'm away from home on business trip so I won't be able to
+>>>> test anything before next week. However it looks more or less like a
+>>>> hack, doesn't it ?
+>>>
+>>> I thought it seemed okay (with the right functions added). Actually it
+>>> could be a bit nicer to do this, then it works generally :
+>>>
+>>>            if (in_interrupt()) {
+>>>                     if (!in_nmi() || in_nmi_from_interrupt())
+>>>                         panic("Fatal exception in interrupt");
+>>>            }
+>>
+>>
+>> Yes looks nice, but:
+>> 1/ what is in_nmi_from_interrupt() ? Is it (in_nmi() && (in_irq() ||
+>> in_softirq()) ?
 > 
-> _PAGE_WRITETHRU is also platform specific flag. Use ioremap_wt()
-> instead.
+>    return (irq_count() - (NMI_OFFSET + HARDIRQ_OFFSET))) != 0;
 > 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> (basically just in_interrupt() with the nmi_enter undone)
+> 
+>> 2/ what about in_nmi_from_nmi(), how do we detect that ?
+> 
+> Oh good point, I'm not sure. I guess we could irq_enter() in the
+> nested case, I think that would make in_nmi_from_interrupt()
+> return true.
 
-Forgot to add back the acked-by: tags.
+Yes we could, but I find it ugly.
 
-Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Don't you think it looks less strange to just check in_interrupt() 
+before calling nmi_enter()  ?
 
-Thanks
 Christophe
-
-> ---
->   drivers/video/fbdev/chipsfb.c    |  3 +--
->   drivers/video/fbdev/controlfb.c  |  5 +----
->   drivers/video/fbdev/platinumfb.c |  5 +----
->   drivers/video/fbdev/valkyriefb.c | 12 ++++++------
->   4 files changed, 9 insertions(+), 16 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/chipsfb.c b/drivers/video/fbdev/chipsfb.c
-> index f103665cad43..40182ed85648 100644
-> --- a/drivers/video/fbdev/chipsfb.c
-> +++ b/drivers/video/fbdev/chipsfb.c
-> @@ -27,7 +27,6 @@
->   #include <linux/init.h>
->   #include <linux/pci.h>
->   #include <linux/console.h>
-> -#include <asm/io.h>
->   
->   #ifdef CONFIG_PMAC_BACKLIGHT
->   #include <asm/backlight.h>
-> @@ -401,7 +400,7 @@ static int chipsfb_pci_init(struct pci_dev *dp, const struct pci_device_id *ent)
->   #endif /* CONFIG_PMAC_BACKLIGHT */
->   
->   #ifdef CONFIG_PPC
-> -	p->screen_base = __ioremap(addr, 0x200000, _PAGE_NO_CACHE);
-> +	p->screen_base = ioremap_wc(addr, 0x200000);
->   #else
->   	p->screen_base = ioremap(addr, 0x200000);
->   #endif
-> diff --git a/drivers/video/fbdev/controlfb.c b/drivers/video/fbdev/controlfb.c
-> index 8d14b29aafea..9cb0ef7ac29e 100644
-> --- a/drivers/video/fbdev/controlfb.c
-> +++ b/drivers/video/fbdev/controlfb.c
-> @@ -48,9 +48,7 @@
->   #include <linux/nvram.h>
->   #include <linux/adb.h>
->   #include <linux/cuda.h>
-> -#include <asm/io.h>
->   #include <asm/prom.h>
-> -#include <asm/pgtable.h>
->   #include <asm/btext.h>
->   
->   #include "macmodes.h"
-> @@ -715,8 +713,7 @@ static int __init control_of_init(struct device_node *dp)
->   		goto error_out;
->   	}
->   	/* map at most 8MB for the frame buffer */
-> -	p->frame_buffer = __ioremap(p->frame_buffer_phys, 0x800000,
-> -				    _PAGE_WRITETHRU);
-> +	p->frame_buffer = ioremap_wt(p->frame_buffer_phys, 0x800000);
->   
->   	if (!p->control_regs_phys ||
->   	    !request_mem_region(p->control_regs_phys, p->control_regs_size,
-> diff --git a/drivers/video/fbdev/platinumfb.c b/drivers/video/fbdev/platinumfb.c
-> index 377d3399a3ad..bf6b7fb83cf4 100644
-> --- a/drivers/video/fbdev/platinumfb.c
-> +++ b/drivers/video/fbdev/platinumfb.c
-> @@ -32,9 +32,7 @@
->   #include <linux/nvram.h>
->   #include <linux/of_device.h>
->   #include <linux/of_platform.h>
-> -#include <asm/io.h>
->   #include <asm/prom.h>
-> -#include <asm/pgtable.h>
->   
->   #include "macmodes.h"
->   #include "platinumfb.h"
-> @@ -577,8 +575,7 @@ static int platinumfb_probe(struct platform_device* odev)
->   
->   	/* frame buffer - map only 4MB */
->   	pinfo->frame_buffer_phys = pinfo->rsrc_fb.start;
-> -	pinfo->frame_buffer = __ioremap(pinfo->rsrc_fb.start, 0x400000,
-> -					_PAGE_WRITETHRU);
-> +	pinfo->frame_buffer = ioremap_wt(pinfo->rsrc_fb.start, 0x400000);
->   	pinfo->base_frame_buffer = pinfo->frame_buffer;
->   
->   	/* registers */
-> diff --git a/drivers/video/fbdev/valkyriefb.c b/drivers/video/fbdev/valkyriefb.c
-> index 275fb98236d3..d51c3a8009cb 100644
-> --- a/drivers/video/fbdev/valkyriefb.c
-> +++ b/drivers/video/fbdev/valkyriefb.c
-> @@ -54,13 +54,11 @@
->   #include <linux/nvram.h>
->   #include <linux/adb.h>
->   #include <linux/cuda.h>
-> -#include <asm/io.h>
->   #ifdef CONFIG_MAC
->   #include <asm/macintosh.h>
->   #else
->   #include <asm/prom.h>
->   #endif
-> -#include <asm/pgtable.h>
->   
->   #include "macmodes.h"
->   #include "valkyriefb.h"
-> @@ -318,7 +316,7 @@ static void __init valkyrie_choose_mode(struct fb_info_valkyrie *p)
->   int __init valkyriefb_init(void)
->   {
->   	struct fb_info_valkyrie	*p;
-> -	unsigned long frame_buffer_phys, cmap_regs_phys, flags;
-> +	unsigned long frame_buffer_phys, cmap_regs_phys;
->   	int err;
->   	char *option = NULL;
->   
-> @@ -337,7 +335,6 @@ int __init valkyriefb_init(void)
->   	/* Hardcoded addresses... welcome to 68k Macintosh country :-) */
->   	frame_buffer_phys = 0xf9000000;
->   	cmap_regs_phys = 0x50f24000;
-> -	flags = IOMAP_NOCACHE_SER; /* IOMAP_WRITETHROUGH?? */
->   #else /* ppc (!CONFIG_MAC) */
->   	{
->   		struct device_node *dp;
-> @@ -354,7 +351,6 @@ int __init valkyriefb_init(void)
->   
->   		frame_buffer_phys = r.start;
->   		cmap_regs_phys = r.start + 0x304000;
-> -		flags = _PAGE_WRITETHRU;
->   	}
->   #endif /* ppc (!CONFIG_MAC) */
->   
-> @@ -369,7 +365,11 @@ int __init valkyriefb_init(void)
->   	}
->   	p->total_vram = 0x100000;
->   	p->frame_buffer_phys = frame_buffer_phys;
-> -	p->frame_buffer = __ioremap(frame_buffer_phys, p->total_vram, flags);
-> +#ifdef CONFIG_MAC
-> +	p->frame_buffer = ioremap_nocache(frame_buffer_phys, p->total_vram);
-> +#else
-> +	p->frame_buffer = ioremap_wt(frame_buffer_phys, p->total_vram);
-> +#endif
->   	p->cmap_regs_phys = cmap_regs_phys;
->   	p->cmap_regs = ioremap(p->cmap_regs_phys, 0x1000);
->   	p->valkyrie_regs_phys = cmap_regs_phys+0x6000;
-> 
