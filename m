@@ -2,84 +2,91 @@ Return-Path: <SRS0=4kvs=MX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D1865C43441
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Oct 2018 02:45:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A4045C32788
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Oct 2018 03:56:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1106F204EC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Oct 2018 02:45:43 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="WudHE5ED"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1106F204EC
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=jms.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id EA65120644
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Oct 2018 03:56:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EA65120644
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42VwLs4TwLzF1Nj
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Oct 2018 13:45:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=jms.id.au
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Vxw43QFKzF2Dx
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Oct 2018 14:56:04 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="WudHE5ED";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
- envelope-from=joel.stan@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=jms.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="WudHE5ED"; 
- dkim-atps=neutral
-Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
- [IPv6:2607:f8b0:4864:20::442])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42VwJ70Mt0zF18l
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Oct 2018 13:43:18 +1100 (AEDT)
-Received: by mail-pf1-x442.google.com with SMTP id p24-v6so3591006pff.10
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Oct 2018 19:43:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=sender:from:to:cc:subject:date:message-id;
- bh=StUQslNWZh2skf/DXGddDSCS1225GEf83n+5tIIWU4A=;
- b=WudHE5EDv6BT4OYe0X57OSC6UQqx/F1e9XZZ99FHjZiS+9D2Y204wiH/8DVhX1PqvJ
- Ott+Snb2kFMNjkL9mwVRYhDiKLo8PE2Sv9aZvmiLp9sPK8PKzgcoL7VBbAg1phe/Zprz
- ySk1rteqj9QBJeepQcOleO3XH51xk4MbNIzLqzez6A6xptE+he2b+F6YZ1ACSKeOcITa
- vPkPlFaRyAwhUyqIoqir+i8haj+x4mxVTnggmwmAP6Qh4DvgJBIA0H281GUBsmJ14hRn
- O5ddllACYyXtkUp1Xo7hA1IYqd3Nu/MtchMG86SoLSd//JceYwgYS2pBkNSoNpVjultJ
- UTEg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:sender:from:to:cc:subject:date:message-id;
- bh=StUQslNWZh2skf/DXGddDSCS1225GEf83n+5tIIWU4A=;
- b=NAkIHi+JRgdGGuO6HO6Q+6NdIG/MlIuJxj+FKUowU51FUsC4q3GP3vpmIoNxzEb28V
- QmrvSB8xk7qWA/Mr4+MpR2D8oJu0UF5WoGyH0rlH2W7hxlTVvbHcd77Qcf6G+AP1t6QE
- jwlFfM86RbpomuW6tcM76CIk5I1G17fQsrYhB9MYMYqEFm/a9yOlf8uNcpj4NpYVaaTP
- Cet+j6/wj/2qnWMM2FMq874UJIkM6dXImORjmePnu3+C93HpqnTNNs4j92i+KRsqILmW
- Udhl4Je0+F36+EygxYFafArV2KelJ4mD8/Ou1mD53OOQsgUrC+nSt37fWvK6ekJj/Kna
- w80A==
-X-Gm-Message-State: ABuFfojs7ickDNmcBzt9fxv9lmiZ383MUFiJVRbmfxiHcB8gCy5dQnMG
- Y6IjTFQBAMM60Te+hB1zTbWukb4i
-X-Google-Smtp-Source: ACcGV60/ncbSvK8EjjwMe18sJu7KTfpitXObUHW/KRXhKYzlYh1exW8hHRplt7PwwIjwF2jJ10pMEw==
-X-Received: by 2002:a62:1316:: with SMTP id
- b22-v6mr37283738pfj.37.1539225796299; 
- Wed, 10 Oct 2018 19:43:16 -0700 (PDT)
-Received: from aurora.jms.id.au ([45.124.203.19])
- by smtp.gmail.com with ESMTPSA id i21-v6sm41431915pgj.55.2018.10.10.19.43.12
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Wed, 10 Oct 2018 19:43:15 -0700 (PDT)
-Received: by aurora.jms.id.au (sSMTP sendmail emulation);
- Thu, 11 Oct 2018 13:13:08 +1030
-From: Joel Stanley <joel@jms.id.au>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3] powerpc/Makefile: Fix PPC_BOOK3S_64 ASFLAGS
-Date: Thu, 11 Oct 2018 13:13:03 +1030
-Message-Id: <20181011024303.23921-1-joel@jms.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Vxrv3sf4zF1QG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Oct 2018 14:53:19 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w9B3oLwV057899
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Oct 2018 23:53:16 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2n1u3qystu-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Oct 2018 23:53:16 -0400
+Received: from localhost
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Wed, 10 Oct 2018 21:53:16 -0600
+Received: from b03cxnp08028.gho.boulder.ibm.com (9.17.130.20)
+ by e34.co.us.ibm.com (192.168.1.134) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 10 Oct 2018 21:53:12 -0600
+Received: from b03ledav004.gho.boulder.ibm.com
+ (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ w9B3rBwl23134458
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Wed, 10 Oct 2018 20:53:11 -0700
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 6738978064;
+ Wed, 10 Oct 2018 21:53:11 -0600 (MDT)
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 09BCD78067;
+ Wed, 10 Oct 2018 21:53:08 -0600 (MDT)
+Received: from skywalker.ibmuc.com (unknown [9.85.73.187])
+ by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Wed, 10 Oct 2018 21:53:08 -0600 (MDT)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: akpm@linux-foundation.org, mpe@ellerman.id.au, benh@kernel.crashing.org
+Subject: [PATCH 0/5] NestMMU pte upgrade workaround for mprotect and autonuma
+Date: Thu, 11 Oct 2018 09:22:42 +0530
 X-Mailer: git-send-email 2.17.1
+X-TM-AS-GCONF: 00
+x-cbid: 18101103-0016-0000-0000-0000093F5F92
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00009857; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000268; SDB=6.01100919; UDB=6.00569641; IPR=6.00880964; 
+ MB=3.00023702; MTD=3.00000008; XFM=3.00000015; UTC=2018-10-11 03:53:14
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18101103-0017-0000-0000-000040A9328D
+Message-Id: <20181011035247.30687-1-aneesh.kumar@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-10-11_01:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=427 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1807170000 definitions=main-1810110036
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,90 +98,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nick Desaulniers <ndesaulniers@google.com>,
- Nicholas Piggin <npiggin@gmail.com>
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Ever since commit 15a3204d24a3 ("powerpc/64s: Set assembler machine type
-to POWER4") we force -mpower4 to be passed to the assembler irrespective
-of the CFLAGS used.
+We can upgrade pte access (R -> RW transition) via mprotect or autonuma. We need
+to make sure we follow the recommended pte update sequence as outlined in
+commit: bd5050e38aec ("powerpc/mm/radix: Change pte relax sequence to handle nest MMU hang")
+for such updates. This patch series do that.
 
-When building a powerpc64 kernel with clang, clang will not add -many to
-the assembler flags, so any instructions that the compiler has generated
-that are not available on power4 will cause an error:
+Aneesh Kumar K.V (5):
+  mm: Update ptep_modify_prot_start/commit to take vm_area_struct as arg
+  mm: update ptep_modify_prot_commit to take old pte value as arg
+  arch/powerpc/mm: Nest MMU workaround for mprotect/autonuma RW upgrade.
+  mm/hugetlb: Add prot_modify_start/commit sequence for hugetlb update
+  arch/powerpc/mm/hugetlb: NestMMU workaround for hugetlb mprotect RW
+    upgrade
 
- /usr/bin/as -a64 -mppc64 -mlittle-endian -mpower8 \
-  -I ./arch/powerpc/include -I ./arch/powerpc/include/generated \
-  -I ./include -I ./arch/powerpc/include/uapi \
-  -I ./arch/powerpc/include/generated/uapi -I ./include/uapi \
-  -I ./include/generated/uapi -I arch/powerpc -I arch/powerpc \
-  -maltivec -mpower4 -o init/do_mounts.o /tmp/do_mounts-3b0a3d.s
- /tmp/do_mounts-51ce54.s:748: Error: unrecognized opcode: `isel'
+ arch/powerpc/include/asm/book3s/64/hugetlb.h |  8 +++++
+ arch/powerpc/include/asm/book3s/64/pgtable.h | 18 ++++++++++
+ arch/powerpc/include/asm/hugetlb.h           |  2 +-
+ arch/powerpc/mm/hugetlbpage.c                | 35 ++++++++++++++++++++
+ arch/powerpc/mm/pgtable-book3s64.c           | 34 +++++++++++++++++++
+ arch/s390/include/asm/pgtable.h              |  5 +--
+ arch/s390/mm/pgtable.c                       |  8 +++--
+ arch/x86/include/asm/paravirt.h              |  9 +++--
+ fs/proc/task_mmu.c                           |  8 +++--
+ include/asm-generic/pgtable.h                | 10 +++---
+ include/linux/hugetlb.h                      | 18 ++++++++++
+ mm/hugetlb.c                                 |  8 +++--
+ mm/memory.c                                  |  8 ++---
+ mm/mprotect.c                                |  6 ++--
+ 14 files changed, 150 insertions(+), 27 deletions(-)
 
-GCC does include -many, so the GCC driven gas call will succeed:
-
-  as -v -I ./arch/powerpc/include -I ./arch/powerpc/include/generated -I
-  ./include -I ./arch/powerpc/include/uapi
-  -I ./arch/powerpc/include/generated/uapi -I ./include/uapi
-  -I ./include/generated/uapi -I arch/powerpc -I arch/powerpc
-   -a64 -mpower8 -many -mlittle -maltivec -mpower4 -o init/do_mounts.o
-
-Note that isel is power7 and above for IBM CPUs. GCC only generates it
-for Power9 and above, but the above test was run against the clang
-generated assembly.
-
-Peter Bergner explains:
-
- > When using -many -mpower4, gas will first try and find a matching
- > power4 mnemonic and failing that, it will then allow any valid mnemonic
- > that gas knows about.  GCC's use of -many predates me though.
- >
- > IIRC, Alan looked at trying to remove it, but I forget why he didn't.
- > Could be either a gcc or gas issue at the time.  I'm not sure whether
- > issue still exists or not.  He and I have modified how gas works
- > internally a fair amount since he tried removing gcc use of -many
- >
- > I will also note that when using -many, gas will choose the first
- > mnemonic that matches in the mnemonic table and we have (mostly) sorted
- > the table so that server mnemonics show up earlier in the table than
- > other mnemonics, so they'll be seen/chosen first
-
-By explicitly setting -many we can build with Clang and GCC while
-retaining the -mpower4 option.
-
-Signed-off-by: Joel Stanley <joel@jms.id.au>
----
-Following up on:
-https://lore.kernel.org/linuxppc-dev/20180914040649.1794-2-joel@jms.id.au/
-https://lore.kernel.org/linuxppc-dev/20180821010203.23213-1-anton@ozlabs.org/
-
-mpe, please trim the commit message if you think it's a bit verbose
-
-We could test for these flags in case -many is removed in the future,
-but if an assembler does not support -many then -mpower4 will probably
-break it anyway.
-
- arch/powerpc/Makefile | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 81552c7b46eb..ae097fa9abe9 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -249,7 +249,10 @@ cpu-as-$(CONFIG_4xx)		+= -Wa,-m405
- cpu-as-$(CONFIG_ALTIVEC)	+= $(call as-option,-Wa$(comma)-maltivec)
- cpu-as-$(CONFIG_E200)		+= -Wa,-me200
- cpu-as-$(CONFIG_E500)		+= -Wa,-me500
--cpu-as-$(CONFIG_PPC_BOOK3S_64)	+= -Wa,-mpower4
-+# When using -many -mpower4 gas will first try and find a matching power4
-+# mnemonic and failing that it will allow any valid mnemonic that GAS knows
-+# about. GCC will pass -many to GAS when assembling, clang does not
-+cpu-as-$(CONFIG_PPC_BOOK3S_64)	+= -Wa,-mpower4 -Wa,-many
- cpu-as-$(CONFIG_PPC_E500MC)	+= $(call as-option,-Wa$(comma)-me500mc)
- 
- KBUILD_AFLAGS += $(cpu-as-y)
 -- 
 2.17.1
 
