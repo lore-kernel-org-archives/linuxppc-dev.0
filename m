@@ -2,139 +2,80 @@ Return-Path: <SRS0=4kvs=MX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D009C32788
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Oct 2018 15:52:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A0300C677FC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Oct 2018 19:36:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B2FDF2085B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Oct 2018 15:52:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B2FDF2085B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=embeddedor.com
+	by mail.kernel.org (Postfix) with ESMTPS id 012E72075C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Oct 2018 19:36:36 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="oLmmeOo6"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 012E72075C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42WFpk54PTzF3JF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Oct 2018 02:52:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=embeddedor.com
-Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 42WLnH00XlzF3JR
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Oct 2018 06:36:35 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="oLmmeOo6";
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=atull@kernel.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="oLmmeOo6"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42WFjR17MnzF36K
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Oct 2018 02:47:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=embeddedor.com
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 42WFjP1QJFz8vK6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Oct 2018 02:47:53 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 42WFjP0Cv2zB4PN; Fri, 12 Oct 2018 02:47:53 +1100 (AEDT)
-Authentication-Results: ozlabs.org;
- spf=permerror (mailfrom) smtp.mailfrom=embeddedor.com
- (client-ip=192.185.179.26; helo=gateway36.websitewelcome.com;
- envelope-from=gustavo@embeddedor.com; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=embeddedor.com
-X-Greylist: delayed 1401 seconds by postgrey-1.36 at bilbo;
- Fri, 12 Oct 2018 02:47:51 AEDT
-Received: from gateway36.websitewelcome.com (gateway36.websitewelcome.com
- [192.185.179.26])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42WLkT05wvzF3JG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Oct 2018 06:34:08 +1100 (AEDT)
+Received: from mail-ed1-f51.google.com (mail-ed1-f51.google.com
+ [209.85.208.51])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 42WFjM6kkVzB4PB
- for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2018 02:47:50 +1100 (AEDT)
-Received: from cm15.websitewelcome.com (cm15.websitewelcome.com [100.42.49.9])
- by gateway36.websitewelcome.com (Postfix) with ESMTP id 4FB13400E46A4
- for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2018 09:31:09 -0500 (CDT)
-Received: from gator4166.hostgator.com ([108.167.133.22]) by cmsmtp with SMTP
- id Acomg2G7t8YaUAcozgTgL0; Thu, 11 Oct 2018 10:24:26 -0500
-X-Authority-Reason: nr=8
-Received: from 57.154.24.109.rev.sfr.net ([109.24.154.57]:39904
- helo=[192.168.43.69]) by gator4166.hostgator.com with esmtpsa
- (TLSv1.2:ECDHE-RSA-AES128-GCM-SHA256:128) (Exim 4.91)
- (envelope-from <gustavo@embeddedor.com>)
- id 1gAcom-004EkG-26; Thu, 11 Oct 2018 10:24:04 -0500
-Subject: Re: [PATCH 4/4] powerpc: Add -Wimplicit-fallthrough to arch CFLAGS
-To: Michael Ellerman <mpe@ellerman.id.au>, Kees Cook <keescook@chromium.org>
-References: <20181010051308.25422-1-mpe@ellerman.id.au>
- <20181010051308.25422-4-mpe@ellerman.id.au>
- <CAGXu5jJqX6ogFgX1q9czwWtufK_nvzUnfN3Xf-74eOBOpcXWVg@mail.gmail.com>
- <874ldt2uhd.fsf@concordia.ellerman.id.au>
-From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-Openpgp: preference=signencrypt
-Autocrypt: addr=gustavo@embeddedor.com; keydata=
- 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
- VtSixD1uOgytAP7RWS474w==
-Message-ID: <d86b4613-af42-02ab-6a0c-c1ea0e78f601@embeddedor.com>
-Date: Thu, 11 Oct 2018 17:23:57 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.2.1
+ by mail.kernel.org (Postfix) with ESMTPSA id 9CB7F21476
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Oct 2018 19:34:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1539286446;
+ bh=zqgx2pIivn7Ux9M/b303jA60rKWMgt6xDAk/V5tHA8Y=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=oLmmeOo6RRXHw1GTGGs+zfa/aj0Tko4QB5gK65Ae6uwR1tNX7DSNCtVB/KlaqQ6ko
+ tMU+cpvOXG47CWTY73JcZuMOtFx3KPpVr2XOR8hxO9PDWxiv6WRGoVjlzfRMMVGc8c
+ LxjHMLriNuVSEP/vQMYUcJr6fOBc50C0kc8m6z2k=
+Received: by mail-ed1-f51.google.com with SMTP id b7-v6so9337086edd.9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Oct 2018 12:34:06 -0700 (PDT)
+X-Gm-Message-State: ABuFfohEqpE1NuN7mKYYSRZRzA79R1QQj3698K76VCJjcEMWWImLfhEp
+ MRwtAhioL+nhqtM03Fqf6kHGDx5Qy0G0Wd+Rb9Y=
+X-Google-Smtp-Source: ACcGV61yHB6rCPVPmLKUxRzusYlst9bpNZUHCTj4c8yq/NKrVYhPfDBOuz9ohAnd+BMpSEJ1xm7OZx/c2kVQaeNS7Lg=
+X-Received: by 2002:a50:8bd5:: with SMTP id
+ n21-v6mr4852793edn.41.1539286444998; 
+ Thu, 11 Oct 2018 12:34:04 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <874ldt2uhd.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-GB
-Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse,
- please include it with any abuse report
-X-AntiAbuse: Primary Hostname - gator4166.hostgator.com
-X-AntiAbuse: Original Domain - ozlabs.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - embeddedor.com
-X-BWhitelist: no
-X-Source-IP: 109.24.154.57
-X-Source-L: No
-X-Exim-ID: 1gAcom-004EkG-26
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
-X-Source-Sender: 57.154.24.109.rev.sfr.net ([192.168.43.69])
- [109.24.154.57]:39904
-X-Source-Auth: gustavo@embeddedor.com
-X-Email-Count: 3
-X-Source-Cap: Z3V6aWRpbmU7Z3V6aWRpbmU7Z2F0b3I0MTY2Lmhvc3RnYXRvci5jb20=
-X-Local-Domain: yes
+References: <CANk1AXQScT_b1_UOiVuWNcB=LiA3gvvZrw53H1XVSCNqsGPqtA@mail.gmail.com>
+ <1539151495-8110-1-git-send-email-frowand.list@gmail.com>
+ <f20d06c3-5db7-3547-7b8b-d43d474683f1@gmail.com>
+ <CANk1AXQ+-X51unT_ZHw+wxHG3tyGUKUihVsdzOZZ2NJ2zfS3Rg@mail.gmail.com>
+ <e32a99a2-1db5-80e6-5022-83cd8fd07180@gmail.com>
+ <bcbba4ca-0656-aa27-c058-064fb7175d38@gmail.com>
+In-Reply-To: <bcbba4ca-0656-aa27-c058-064fb7175d38@gmail.com>
+From: Alan Tull <atull@kernel.org>
+Date: Thu, 11 Oct 2018 14:33:28 -0500
+X-Gmail-Original-Message-ID: <CANk1AXSRifmwu1FQRY_hsuqDESEzcMET_hpLNZOeW4QLrUwsdw@mail.gmail.com>
+Message-ID: <CANk1AXSRifmwu1FQRY_hsuqDESEzcMET_hpLNZOeW4QLrUwsdw@mail.gmail.com>
+Subject: Re: [PATCH 05.1/16] of:overlay: missing name, phandle, linux, phandle
+ in new nodes
+To: Frank Rowand <frowand.list@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -146,25 +87,140 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@ozlabs.org, maddy@linux.ibm.com
+Cc: "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
+ <devicetree@vger.kernel.org>, linux-fpga@vger.kernel.org,
+ Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>,
+ Moritz Fischer <mdf@kernel.org>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Michael,
+On Thu, Oct 11, 2018 at 12:39 AM Frank Rowand <frowand.list@gmail.com> wrote:
 
-On 10/11/18 2:32 AM, Michael Ellerman wrote:
+[resend of my messed up rejected email of a minute ago, sorry]
 
-> It still pops a few errors, including in linux/signal.h & compat.h, so
-> it's somewhat aspirational until we can get those fixed up :)
-> 
+>
+> On 10/10/18 14:03, Frank Rowand wrote:
+> > On 10/10/18 13:40, Alan Tull wrote:
+> >> On Wed, Oct 10, 2018 at 1:49 AM Frank Rowand <frowand.list@gmail.com> wrote:
+> >>>
+> >>> On 10/09/18 23:04, frowand.list@gmail.com wrote:
+> >>>> From: Frank Rowand <frank.rowand@sony.com>
+> >>>>
+> >>>>
+> >>>> "of: overlay: use prop add changeset entry for property in new nodes"
+> >>>> fixed a problem where an 'update property' changeset entry was
+> >>>> created for properties contained in nodes added by a changeset.
+> >>>> The fix was to use an 'add property' changeset entry.
+> >>>>
+> >>>> This exposed more bugs in the apply overlay code.  The properties
+> >>>> 'name', 'phandle', and 'linux,phandle' were filtered out by
+> >>>> add_changeset_property() as special properties.  Change the filter
+> >>>> to be only for existing nodes, not newly added nodes.
+> >>>>
+> >>>> The second bug is that the 'name' property does not exist in the
+> >>>> newest FDT version, and has to be constructed from the node's
+> >>>> full_name.  Construct an 'add property' changeset entry for
+> >>>> newly added nodes.
+> >>>>
+> >>>> Signed-off-by: Frank Rowand <frank.rowand@sony.com>
+> >>>> ---
+> >>>>
+> >>>>
+> >>>> Hi Alan,
+> >>>>
+> >>>> Thanks for reporting the problem with missing node names.
+> >>>>
+> >>>> I was able to replicate the problem, and have created this preliminary
+> >>>> version of a patch to fix the problem.
+> >>>>
+> >>>> I have not extensively reviewed the patch yet, but would appreciate
+> >>>> if you can confirm this fixes your problem.
+> >>>>
+> >>>> I created this patch as patch 17 of the series, but have also
+> >>>> applied it as patch 05.1, immediately after patch 05/16, and
+> >>>> built the kernel, booted, and verified name and phandle for
+> >>>> one of the nodes in a unittest overlay for both cases.  So
+> >>>> minimal testing so far on my part.
+> >>>>
+> >>>> I have not verified whether the series builds and boots after
+> >>>> each of patches 06..16 if this patch is applied as patch 05.1.
+> >>>>
+> >>>> There is definitely more work needed for me to complete this
+> >>>> patch because it allocates some more memory, but does not yet
+> >>>> free it when the overlay is released.
+> >>>>
+> >>>> -Frank
+> >>>>
+> >>>>
+> >>>>  drivers/of/overlay.c | 72 ++++++++++++++++++++++++++++++++++++++++++++++++----
+> >>>>  1 file changed, 67 insertions(+), 5 deletions(-)
+> >>>>
+> >>>> diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
+> >>>> index 0b0904f44bc7..9746cea2aa91 100644
+> >>>> --- a/drivers/of/overlay.c
+> >>>> +++ b/drivers/of/overlay.c
+> >>>> @@ -301,10 +301,11 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
+> >>>>       struct property *new_prop = NULL, *prop;
+> >>>>       int ret = 0;
+> >>>>
+> >>>> -     if (!of_prop_cmp(overlay_prop->name, "name") ||
+> >>>> -         !of_prop_cmp(overlay_prop->name, "phandle") ||
+> >>>> -         !of_prop_cmp(overlay_prop->name, "linux,phandle"))
+> >>>> -             return 0;
+> >>>> +     if (target->in_livetree)
+> >>>> +             if (!of_prop_cmp(overlay_prop->name, "name") ||
+> >>>> +                 !of_prop_cmp(overlay_prop->name, "phandle") ||
+> >>>> +                 !of_prop_cmp(overlay_prop->name, "linux,phandle"))
+> >>>> +                     return 0;
+> >>>
+> >>> This is a big hammer patch.
+> >>>
+> >>> Nobody should waste time reviewing this patch.
+> >>
+> >> I wasn't clear if you still could use the testing so I did re-run my
+> >> test.  This patch adds back some of the missing properties, but the
+> >> the kobject names aren't set as dev_name() returns NULL:
+> >>
+> >> * without this patch some of_node properties don't show up in sysfs:
+> >> root@arria10:~# ls
+> >> /sys/bus/platform/drivers/altera_freeze_br/ff200450.\<NULL\>/of_node
+> >> clocks            compatible        interrupt-parent  interrupts        reg
+> >>
+> >> * with this patch, the of_node properties phandle and name are back:
+> >> root@arria10:~#  ls
+> >> /sys/bus/platform/drivers/altera_freeze_br/ff200450.\<NULL\>/of_node
+> >> clocks            compatible        interrupt-parent  interrupts
+> >>  name              phandle           reg
+> >
+> > Thanks for the testing.  I'll keep chasing after this problem today.
 
-I wonder if you have a log containing those warnings that you can
-share with me.
+Glad to help!  Thanks for all your work in this area!
+> >
+> > This is useful data for me as I was not looking under the /sys/bus/...
+> > tree that you reported, but was instead looking at /proc/device-tree/...
+> > which showed the same type of problem since the overlay I was using
+> > does not show up under /sys/bus/...
+> >
+> > I'll have to create a useful overlay test case that will show up under
+> > /sys/bus/...
+> >
+> > In the meantime, can you send me the base FDT and the overlay FDT for
+> > your test case?
+>
+> I now have a test case that shows the problem under /sys/bus/... so I
+> no longer need the base FDT and overlay FDT for your test case.
+>
+> I have determined the location that sets the name to "<NULL>" but do
+> not have the fix yet.  Still working on that.
 
-I'd like to fix them up.
+I understand you're quite busy with all this, but I'm wondering
+whether it might be worth it go ahead and make the properties be
+kernel objects also at this point.  That would be an improvement for
+the case of overlay properties added to non-overlay nodes, so the
+lifespan of the overlay property memory can be coupled with the
+properties kobj's instead of the node kobj's.
 
-Thanks
---
-Gustavo
-
+Alan
