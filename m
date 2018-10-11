@@ -2,108 +2,98 @@ Return-Path: <SRS0=4kvs=MX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C3CC2C32788
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Oct 2018 05:42:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C19E9C32788
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Oct 2018 05:47:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3B13E2085B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Oct 2018 05:42:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3B13E2085B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 2887D2085B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Oct 2018 05:47:01 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="PzqnqfTg"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2887D2085B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42W0HJ1qbNzDqBy
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Oct 2018 16:42:52 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42W0N3076fzDqdg
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Oct 2018 16:46:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=ego@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="PzqnqfTg";
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::443; helo=mail-pf1-x443.google.com;
+ envelope-from=frowand.list@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="PzqnqfTg"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
+ [IPv6:2607:f8b0:4864:20::443])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42W04H5SF5zF35Y
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Oct 2018 16:33:19 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w9B5Sx9C067281
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Oct 2018 01:33:17 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2n1y39u1hr-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Oct 2018 01:33:17 -0400
-Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Wed, 10 Oct 2018 23:33:16 -0600
-Received: from b03cxnp08028.gho.boulder.ibm.com (9.17.130.20)
- by e35.co.us.ibm.com (192.168.1.135) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 10 Oct 2018 23:33:12 -0600
-Received: from b03ledav005.gho.boulder.ibm.com
- (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- w9B5XBbj27263052
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Wed, 10 Oct 2018 22:33:11 -0700
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 293C4BE04F;
- Wed, 10 Oct 2018 23:33:11 -0600 (MDT)
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D200ABE054;
- Wed, 10 Oct 2018 23:33:10 -0600 (MDT)
-Received: from sofia.ibm.com (unknown [9.124.35.51])
- by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
- Wed, 10 Oct 2018 23:33:10 -0600 (MDT)
-Received: by sofia.ibm.com (Postfix, from userid 1000)
- id 4D3B62E3D80; Thu, 11 Oct 2018 11:03:09 +0530 (IST)
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-To: Dave Hansen <dave.hansen@intel.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Neuling <mikey@neuling.org>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- "Oliver O'Halloran" <oohall@gmail.com>,
- Nicholas Piggin <npiggin@gmail.com>,
- Murilo Opsfelder Araujo <muriloo@linux.ibm.com>,
- Anton Blanchard <anton@samba.org>
-Subject: [PATCH v10 3/3] powerpc/cacheinfo: Report the correct shared_cpu_map
- on big-cores
-Date: Thu, 11 Oct 2018 11:03:03 +0530
-X-Mailer: git-send-email 1.8.3.1
-In-Reply-To: <1539235983-25259-1-git-send-email-ego@linux.vnet.ibm.com>
-References: <1539235983-25259-1-git-send-email-ego@linux.vnet.ibm.com>
-X-TM-AS-GCONF: 00
-x-cbid: 18101105-0012-0000-0000-000016C613D4
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00009858; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000268; SDB=6.01100952; UDB=6.00569661; IPR=6.00880998; 
- MB=3.00023704; MTD=3.00000008; XFM=3.00000015; UTC=2018-10-11 05:33:15
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18101105-0013-0000-0000-000054B666B1
-Message-Id: <1539235983-25259-4-git-send-email-ego@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-10-11_01:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=823 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1807170000 definitions=main-1810110052
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42W0CS2JltzF3G0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Oct 2018 16:39:32 +1100 (AEDT)
+Received: by mail-pf1-x443.google.com with SMTP id l17-v6so3808422pff.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Oct 2018 22:39:32 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=subject:from:to:cc:references:message-id:date:user-agent
+ :mime-version:in-reply-to:content-language:content-transfer-encoding;
+ bh=MRJ2JkSQVQLcCyhOF6PIPBESqPWGBQbMJ2kc83eAAp8=;
+ b=PzqnqfTgNKNaOrxLPkda81K5gBS/BtUhArjE2wvFiF1qZeFx5NVRdwwV2cTYPdDfdY
+ mXt/RxVtub/mA7L/OZFsUto/I7LkoOaPBElwQX+Jbtp8D30UF8jScVCASjfVjwBUYCA6
+ m1tZWAiF0t8e+p6oZLBm1V7GWHiLGZbmQLgqZpIGDDV6CJAk+NW0aqaxx+nns8AAac+X
+ 8WKW4T6k3pT7opA6yTbyvYjRaifX1hbsr2gRBpPUiNRduh5jfa4rFhWDfkloJyUkgp7k
+ XGK+Mo16GIFArSHYg11joMxSu+c+CMOoIvuEpyGAFvg9eeQL5cyfM36BK+cC3UstpqRx
+ ljLA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:subject:from:to:cc:references:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=MRJ2JkSQVQLcCyhOF6PIPBESqPWGBQbMJ2kc83eAAp8=;
+ b=AekTvEWGprM1sUq60913cOn84qNlqLMfSGYCZ51cOy00CvZuL98YSQpj53FUJrIC6u
+ f/4bvsN2TUxqw/6n2GvnOQe2vNYVyoxiR5At1njguG2uzugszlK6sz4uRka/bL4+BYHO
+ 3uacHdca54cjr02CClg9UqXfddR4EbbHCuBmmphXlGqtJTYZI1fFyr0FcE/9L11hf/ou
+ u55Ii0tD5Pk//yF3qXUNmlWJwP53XsDLkJEiEO0eIXm0b8M4A+T26B4QmV5k7YcRpWqN
+ q5lIeSA1vazBZAAdV0zGUlpoLz4d+aJqO93VuYlWtMm1yCIhTgrE/nK4HhlGYlY4v4Yg
+ n+HA==
+X-Gm-Message-State: ABuFfogxNhXB20Vp7JTWi6HoZrjE6HjJa+WjhRh/yQJAYeN/pavNfjNz
+ Rj8lJa9kJ3o3r5mEnmjqXN8=
+X-Google-Smtp-Source: ACcGV619M0QhVtPfHTUoRdUBdxc2jLbWc1MJzzR2CkUSynfzJ4QXhKmGgxeP+6tr6BSxakpSnsI/tA==
+X-Received: by 2002:a62:c957:: with SMTP id
+ k84-v6mr135249pfg.205.1539236370295; 
+ Wed, 10 Oct 2018 22:39:30 -0700 (PDT)
+Received: from [192.168.1.70] (c-24-6-192-50.hsd1.ca.comcast.net.
+ [24.6.192.50])
+ by smtp.gmail.com with ESMTPSA id x17-v6sm31399937pfn.59.2018.10.10.22.39.28
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Wed, 10 Oct 2018 22:39:29 -0700 (PDT)
+Subject: Re: [PATCH 05.1/16] of:overlay: missing name, phandle, linux, phandle
+ in new nodes
+From: Frank Rowand <frowand.list@gmail.com>
+To: Alan Tull <atull@kernel.org>
+References: <CANk1AXQScT_b1_UOiVuWNcB=LiA3gvvZrw53H1XVSCNqsGPqtA@mail.gmail.com>
+ <1539151495-8110-1-git-send-email-frowand.list@gmail.com>
+ <f20d06c3-5db7-3547-7b8b-d43d474683f1@gmail.com>
+ <CANk1AXQ+-X51unT_ZHw+wxHG3tyGUKUihVsdzOZZ2NJ2zfS3Rg@mail.gmail.com>
+ <e32a99a2-1db5-80e6-5022-83cd8fd07180@gmail.com>
+Message-ID: <bcbba4ca-0656-aa27-c058-064fb7175d38@gmail.com>
+Date: Wed, 10 Oct 2018 22:39:28 -0700
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
+MIME-Version: 1.0
+In-Reply-To: <e32a99a2-1db5-80e6-5022-83cd8fd07180@gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -115,104 +105,253 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
+ <devicetree@vger.kernel.org>, linux-fpga@vger.kernel.org,
+ Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>,
+ Moritz Fischer <mdf@kernel.org>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+On 10/10/18 14:03, Frank Rowand wrote:
+> On 10/10/18 13:40, Alan Tull wrote:
+>> On Wed, Oct 10, 2018 at 1:49 AM Frank Rowand <frowand.list@gmail.com> wrote:
+>>>
+>>> On 10/09/18 23:04, frowand.list@gmail.com wrote:
+>>>> From: Frank Rowand <frank.rowand@sony.com>
+>>>>
+>>>>
+>>>> "of: overlay: use prop add changeset entry for property in new nodes"
+>>>> fixed a problem where an 'update property' changeset entry was
+>>>> created for properties contained in nodes added by a changeset.
+>>>> The fix was to use an 'add property' changeset entry.
+>>>>
+>>>> This exposed more bugs in the apply overlay code.  The properties
+>>>> 'name', 'phandle', and 'linux,phandle' were filtered out by
+>>>> add_changeset_property() as special properties.  Change the filter
+>>>> to be only for existing nodes, not newly added nodes.
+>>>>
+>>>> The second bug is that the 'name' property does not exist in the
+>>>> newest FDT version, and has to be constructed from the node's
+>>>> full_name.  Construct an 'add property' changeset entry for
+>>>> newly added nodes.
+>>>>
+>>>> Signed-off-by: Frank Rowand <frank.rowand@sony.com>
+>>>> ---
+>>>>
+>>>>
+>>>> Hi Alan,
+>>>>
+>>>> Thanks for reporting the problem with missing node names.
+>>>>
+>>>> I was able to replicate the problem, and have created this preliminary
+>>>> version of a patch to fix the problem.
+>>>>
+>>>> I have not extensively reviewed the patch yet, but would appreciate
+>>>> if you can confirm this fixes your problem.
+>>>>
+>>>> I created this patch as patch 17 of the series, but have also
+>>>> applied it as patch 05.1, immediately after patch 05/16, and
+>>>> built the kernel, booted, and verified name and phandle for
+>>>> one of the nodes in a unittest overlay for both cases.  So
+>>>> minimal testing so far on my part.
+>>>>
+>>>> I have not verified whether the series builds and boots after
+>>>> each of patches 06..16 if this patch is applied as patch 05.1.
+>>>>
+>>>> There is definitely more work needed for me to complete this
+>>>> patch because it allocates some more memory, but does not yet
+>>>> free it when the overlay is released.
+>>>>
+>>>> -Frank
+>>>>
+>>>>
+>>>>  drivers/of/overlay.c | 72 ++++++++++++++++++++++++++++++++++++++++++++++++----
+>>>>  1 file changed, 67 insertions(+), 5 deletions(-)
+>>>>
+>>>> diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
+>>>> index 0b0904f44bc7..9746cea2aa91 100644
+>>>> --- a/drivers/of/overlay.c
+>>>> +++ b/drivers/of/overlay.c
+>>>> @@ -301,10 +301,11 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
+>>>>       struct property *new_prop = NULL, *prop;
+>>>>       int ret = 0;
+>>>>
+>>>> -     if (!of_prop_cmp(overlay_prop->name, "name") ||
+>>>> -         !of_prop_cmp(overlay_prop->name, "phandle") ||
+>>>> -         !of_prop_cmp(overlay_prop->name, "linux,phandle"))
+>>>> -             return 0;
+>>>> +     if (target->in_livetree)
+>>>> +             if (!of_prop_cmp(overlay_prop->name, "name") ||
+>>>> +                 !of_prop_cmp(overlay_prop->name, "phandle") ||
+>>>> +                 !of_prop_cmp(overlay_prop->name, "linux,phandle"))
+>>>> +                     return 0;
+>>>
+>>> This is a big hammer patch.
+>>>
+>>> Nobody should waste time reviewing this patch.
+>>
+>> I wasn't clear if you still could use the testing so I did re-run my
+>> test.  This patch adds back some of the missing properties, but the
+>> the kobject names aren't set as dev_name() returns NULL:
+>>
+>> * without this patch some of_node properties don't show up in sysfs:
+>> root@arria10:~# ls
+>> /sys/bus/platform/drivers/altera_freeze_br/ff200450.\<NULL\>/of_node
+>> clocks            compatible        interrupt-parent  interrupts        reg
+>>
+>> * with this patch, the of_node properties phandle and name are back:
+>> root@arria10:~#  ls
+>> /sys/bus/platform/drivers/altera_freeze_br/ff200450.\<NULL\>/of_node
+>> clocks            compatible        interrupt-parent  interrupts
+>>  name              phandle           reg
+> 
+> Thanks for the testing.  I'll keep chasing after this problem today.
+> 
+> This is useful data for me as I was not looking under the /sys/bus/...
+> tree that you reported, but was instead looking at /proc/device-tree/...
+> which showed the same type of problem since the overlay I was using
+> does not show up under /sys/bus/...
+> 
+> I'll have to create a useful overlay test case that will show up under
+> /sys/bus/...
+> 
+> In the meantime, can you send me the base FDT and the overlay FDT for
+> your test case?
 
-Currently on POWER9 SMT8 cores systems, in sysfs, we report the
-shared_cache_map for L1 caches (both data and instruction) to be the
-cpu-ids of the threads in SMT8 cores. This is incorrect since on
-POWER9 SMT8 cores there are two groups of threads, each of which
-shares its own L1 cache.
+I now have a test case that shows the problem under /sys/bus/... so I
+no longer need the base FDT and overlay FDT for your test case.
 
-This patch addresses this by reporting the shared_cpu_map correctly in
-sysfs for L1 caches.
+I have determined the location that sets the name to "<NULL>" but do
+not have the fix yet.  Still working on that.
 
-Before the patch
-   /sys/devices/system/cpu/cpu0/cache/index0/shared_cpu_map : 000000ff
-   /sys/devices/system/cpu/cpu0/cache/index1/shared_cpu_map : 000000ff
-   /sys/devices/system/cpu/cpu1/cache/index0/shared_cpu_map : 000000ff
-   /sys/devices/system/cpu/cpu1/cache/index1/shared_cpu_map : 000000ff
+-Frank
 
-After the patch
-   /sys/devices/system/cpu/cpu0/cache/index0/shared_cpu_map : 00000055
-   /sys/devices/system/cpu/cpu0/cache/index1/shared_cpu_map : 00000055
-   /sys/devices/system/cpu/cpu1/cache/index0/shared_cpu_map : 000000aa
-   /sys/devices/system/cpu/cpu1/cache/index1/shared_cpu_map : 000000aa
-
-Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/cacheinfo.c | 37 +++++++++++++++++++++++++++++++++++--
- 1 file changed, 35 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kernel/cacheinfo.c b/arch/powerpc/kernel/cacheinfo.c
-index a8f20e5..be57bd0 100644
---- a/arch/powerpc/kernel/cacheinfo.c
-+++ b/arch/powerpc/kernel/cacheinfo.c
-@@ -20,6 +20,8 @@
- #include <linux/percpu.h>
- #include <linux/slab.h>
- #include <asm/prom.h>
-+#include <asm/cputhreads.h>
-+#include <asm/smp.h>
- 
- #include "cacheinfo.h"
- 
-@@ -627,17 +629,48 @@ static ssize_t level_show(struct kobject *k, struct kobj_attribute *attr, char *
- static struct kobj_attribute cache_level_attr =
- 	__ATTR(level, 0444, level_show, NULL);
- 
-+static unsigned int index_dir_to_cpu(struct cache_index_dir *index)
-+{
-+	struct kobject *index_dir_kobj = &index->kobj;
-+	struct kobject *cache_dir_kobj = index_dir_kobj->parent;
-+	struct kobject *cpu_dev_kobj = cache_dir_kobj->parent;
-+	struct device *dev = kobj_to_dev(cpu_dev_kobj);
-+
-+	return dev->id;
-+}
-+
-+/*
-+ * On big-core systems, each core has two groups of CPUs each of which
-+ * has its own L1-cache. The thread-siblings which share l1-cache with
-+ * @cpu can be obtained via cpu_smallcore_mask().
-+ */
-+static const struct cpumask *get_big_core_shared_cpu_map(int cpu, struct cache *cache)
-+{
-+	if (cache->level == 1)
-+		return cpu_smallcore_mask(cpu);
-+
-+	return &cache->shared_cpu_map;
-+}
-+
- static ssize_t shared_cpu_map_show(struct kobject *k, struct kobj_attribute *attr, char *buf)
- {
- 	struct cache_index_dir *index;
- 	struct cache *cache;
--	int ret;
-+	const struct cpumask *mask;
-+	int ret, cpu;
- 
- 	index = kobj_to_cache_index_dir(k);
- 	cache = index->cache;
- 
-+	if (has_big_cores) {
-+		cpu = index_dir_to_cpu(index);
-+		mask = get_big_core_shared_cpu_map(cpu, cache);
-+	} else {
-+		mask  = &cache->shared_cpu_map;
-+	}
-+
- 	ret = scnprintf(buf, PAGE_SIZE - 1, "%*pb\n",
--			cpumask_pr_args(&cache->shared_cpu_map));
-+			cpumask_pr_args(mask));
- 	buf[ret++] = '\n';
- 	buf[ret] = '\0';
- 	return ret;
--- 
-1.9.4
+> 
+> Thanks,
+> 
+> Frank
+> 
+> 
+>>
+>> root@arria10:~# cat
+>> /sys/bus/platform/drivers/altera_freeze_br/ff200450.\<NULL\>/of_node/name
+>> freeze_controllerroot@arria10:~#  ("freeze_controller" w/o the \n so
+>> the name is correct)
+>>
+>> * with or without the patch I see the behavior I reported yesterday,
+>> kobj names are NULL.
+>> root@arria10:~# ls /sys/bus/platform/drivers/altera_freeze_br/
+>> bind             ff200450.<NULL>  uevent           unbind
+>>
+>> root@arria10:~# ls /sys/bus/platform/drivers/altera_gpio/
+>> bind             ff200010.<NULL>  ff200020.<NULL>  ff200030.<NULL>
+>> uevent           unbind
+>>
+>> Alan
+>>
+>> Alan
+>>
+>>>
+>>> The following part should not be needed (though the above section might have
+>>> to become _slightly_ more complex).
+>>>
+>>> -Frank
+>>>>
+>>>>       if (target->in_livetree)
+>>>>               prop = of_find_property(target->np, overlay_prop->name, NULL);
+>>>> @@ -443,10 +444,13 @@ static int build_changeset_next_level(struct overlay_changeset *ovcs,
+>>>>               struct target *target, const struct device_node *overlay_node)
+>>>>  {
+>>>>       struct device_node *child;
+>>>> -     struct property *prop;
+>>>> +     struct property *prop, *name_prop;
+>>>> +     bool has_name = false;
+>>>>       int ret;
+>>>>
+>>>>       for_each_property_of_node(overlay_node, prop) {
+>>>> +             if (!strcmp(prop->name, "name"))
+>>>> +                     has_name = true;
+>>>>               ret = add_changeset_property(ovcs, target, prop, 0);
+>>>>               if (ret) {
+>>>>                       pr_debug("Failed to apply prop @%pOF/%s, err=%d\n",
+>>>> @@ -455,6 +459,57 @@ static int build_changeset_next_level(struct overlay_changeset *ovcs,
+>>>>               }
+>>>>       }
+>>>>
+>>>> +     /*
+>>>> +      * With FDT version 0x10 we may not have the name property,
+>>>> +      * recreate it here from the unit name if absent
+>>>> +      */
+>>>> +
+>>>> +     if (!has_name) {
+>>>> +             const char *p = target->np->full_name, *ps = p, *pa = NULL;
+>>>> +             int len;
+>>>> +
+>>>> +             /*
+>>>> +              * zzz
+>>>> +              * TODO: stash name_prop on a list in ovcs, to be freed
+>>>> +              * after overlay removed
+>>>> +              */
+>>>> +
+>>>> +             while (*p) {
+>>>> +                     if ((*p) == '@')
+>>>> +                             pa = p;
+>>>> +                     else if ((*p) == '/')
+>>>> +                             ps = p + 1;
+>>>> +                     p++;
+>>>> +             }
+>>>> +
+>>>> +             if (pa < ps)
+>>>> +                     pa = p;
+>>>> +             len = (pa - ps) + 1;
+>>>> +
+>>>> +             name_prop = kmalloc(sizeof(*name_prop), GFP_KERNEL);
+>>>> +             if (!name_prop)
+>>>> +                     return -ENOMEM;
+>>>> +
+>>>> +             name_prop->name = kstrdup("name", GFP_KERNEL);
+>>>> +             name_prop->value = kmalloc(len, GFP_KERNEL);
+>>>> +             if (!name_prop->name || !name_prop->value) {
+>>>> +                     ret = -ENOMEM;
+>>>> +                     goto err_free_name_prop;
+>>>> +             }
+>>>> +
+>>>> +             memcpy(name_prop->value, ps, len - 1);
+>>>> +             ((char *)name_prop->value)[len - 1] = 0;
+>>>> +
+>>>> +             name_prop->length = strlen(name_prop->value) + 1;
+>>>> +
+>>>> +             ret = add_changeset_property(ovcs, target, name_prop, 0);
+>>>> +             if (ret) {
+>>>> +                     pr_debug("Failed to apply name_prop @%pOF/%s, err=%d\n",
+>>>> +                              target->np, name_prop->name, ret);
+>>>> +                     goto err_free_name_prop;
+>>>> +             }
+>>>> +     }
+>>>> +
+>>>>       for_each_child_of_node(overlay_node, child) {
+>>>>               ret = add_changeset_node(ovcs, target, child);
+>>>>               if (ret) {
+>>>> @@ -466,6 +521,13 @@ static int build_changeset_next_level(struct overlay_changeset *ovcs,
+>>>>       }
+>>>>
+>>>>       return 0;
+>>>> +
+>>>> +err_free_name_prop:
+>>>> +     kfree(name_prop->name);
+>>>> +     kfree(name_prop->value);
+>>>> +     kfree(name_prop);
+>>>> +     return ret;
+>>>> +
+>>>>  }
+>>>>
+>>>>  /*
+>>>>
+>>>
+>>
+> 
+> 
 
