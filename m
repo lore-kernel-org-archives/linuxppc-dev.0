@@ -2,142 +2,77 @@ Return-Path: <SRS0=4kvs=MX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 21E77C32788
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Oct 2018 13:42:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 43618C32788
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Oct 2018 14:10:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7575F20652
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Oct 2018 13:42:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7575F20652
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=embeddedor.com
+	by mail.kernel.org (Postfix) with ESMTPS id A494D20841
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Oct 2018 14:10:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A494D20841
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42WBwX3SmbzF3Jw
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Oct 2018 00:42:20 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=embeddedor.com
-Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 42WCXR22ttzF3JW
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Oct 2018 01:09:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42WBn42sqpzF31w
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Oct 2018 00:35:52 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=embeddedor.com
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 42WBn409T4z8sxN
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Oct 2018 00:35:52 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 42WBn35lCqz9sRp; Fri, 12 Oct 2018 00:35:51 +1100 (AEDT)
-Authentication-Results: ozlabs.org;
- spf=permerror (mailfrom) smtp.mailfrom=embeddedor.com
- (client-ip=192.185.49.60; helo=gateway23.websitewelcome.com;
- envelope-from=gustavo@embeddedor.com; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=embeddedor.com
-X-Greylist: delayed 1437 seconds by postgrey-1.36 at bilbo;
- Fri, 12 Oct 2018 00:35:50 AEDT
-Received: from gateway23.websitewelcome.com (gateway23.websitewelcome.com
- [192.185.49.60])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 42WBn2681gz9sC2
- for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2018 00:35:50 +1100 (AEDT)
-Received: from cm17.websitewelcome.com (cm17.websitewelcome.com [100.42.49.20])
- by gateway23.websitewelcome.com (Postfix) with ESMTP id 0F28794DC
- for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2018 08:11:51 -0500 (CDT)
-Received: from gator4166.hostgator.com ([108.167.133.22]) by cmsmtp with SMTP
- id AakKgiM7VPvAdAakcgXU95; Thu, 11 Oct 2018 08:11:50 -0500
-X-Authority-Reason: nr=8
-Received: from lputeaux-656-1-34-183.w80-15.abo.wanadoo.fr
- ([80.15.51.183]:60726 helo=[10.88.108.42])
- by gator4166.hostgator.com with esmtpsa
- (TLSv1.2:ECDHE-RSA-AES128-GCM-SHA256:128) (Exim 4.91)
- (envelope-from <gustavo@embeddedor.com>)
- id 1gAakJ-002kBy-KZ; Thu, 11 Oct 2018 08:11:19 -0500
-To: Kees Cook <keescook@chromium.org>, Michael Ellerman <mpe@ellerman.id.au>
-References: <20181010051308.25422-1-mpe@ellerman.id.au>
- <20181010051308.25422-4-mpe@ellerman.id.au>
- <CAGXu5jJqX6ogFgX1q9czwWtufK_nvzUnfN3Xf-74eOBOpcXWVg@mail.gmail.com>
- <874ldt2uhd.fsf@concordia.ellerman.id.au>
- <CAGXu5j+ShUkNdmE=FYoGcDv9eUJHv5PD3cmPdivxJK-9n1jr+A@mail.gmail.com>
-From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-Openpgp: preference=signencrypt
-Autocrypt: addr=gustavo@embeddedor.com; keydata=
- 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
- VtSixD1uOgytAP7RWS474w==
-Subject: Re: [PATCH 4/4] powerpc: Add -Wimplicit-fallthrough to arch CFLAGS
-Message-ID: <2bbd4988-50a4-e9ca-2e38-295874eb6e97@embeddedor.com>
-Date: Thu, 11 Oct 2018 15:11:17 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.2.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42WCV92lDdzF13T
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Oct 2018 01:08:01 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 42WCV02j8gz9ttwC;
+ Thu, 11 Oct 2018 16:07:52 +0200 (CEST)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id gPCVKpeayoJm; Thu, 11 Oct 2018 16:07:52 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 42WCV01rtKz9ttvy;
+ Thu, 11 Oct 2018 16:07:52 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 4D7D88B87A;
+ Thu, 11 Oct 2018 16:07:54 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id P2Ec4KOxg47O; Thu, 11 Oct 2018 16:07:54 +0200 (CEST)
+Received: from PO15451 (unknown [192.168.232.3])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id A200F8B86C;
+ Thu, 11 Oct 2018 16:07:53 +0200 (CEST)
+Subject: Re: [PATCH v3 02/24] drivers/video/fbdev: use ioremap_wc/wt() instead
+ of __ioremap()
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Dominik Brodowski <linux@dominikbrodowski.net>,
+ Geoff Levand <geoff@infradead.org>, Jens Axboe <axboe@kernel.dk>,
+ Kumar Gala <galak@kernel.crashing.org>, Li Yang <leoyang.li@nxp.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>,
+ aneesh.kumar@linux.vnet.ibm.com
+References: <cover.1539092111.git.christophe.leroy@c-s.fr>
+ <25348d7faf67d5e2829aad03aef8096cd5f6908d.1539092111.git.christophe.leroy@c-s.fr>
+Message-ID: <8bd4cbe3-3c7e-1ecb-b627-1970ed7c48af@c-s.fr>
+Date: Thu, 11 Oct 2018 16:07:52 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
 MIME-Version: 1.0
-In-Reply-To: <CAGXu5j+ShUkNdmE=FYoGcDv9eUJHv5PD3cmPdivxJK-9n1jr+A@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-GB
+In-Reply-To: <25348d7faf67d5e2829aad03aef8096cd5f6908d.1539092111.git.christophe.leroy@c-s.fr>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
 Content-Transfer-Encoding: 8bit
-X-AntiAbuse: This header was added to track abuse,
- please include it with any abuse report
-X-AntiAbuse: Primary Hostname - gator4166.hostgator.com
-X-AntiAbuse: Original Domain - ozlabs.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - embeddedor.com
-X-BWhitelist: no
-X-Source-IP: 80.15.51.183
-X-Source-L: No
-X-Exim-ID: 1gAakJ-002kBy-KZ
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
-X-Source-Sender: lputeaux-656-1-34-183.w80-15.abo.wanadoo.fr ([10.88.108.42])
- [80.15.51.183]:60726
-X-Source-Auth: gustavo@embeddedor.com
-X-Email-Count: 3
-X-Source-Cap: Z3V6aWRpbmU7Z3V6aWRpbmU7Z2F0b3I0MTY2Lmhvc3RnYXRvci5jb20=
-X-Local-Domain: yes
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -149,40 +84,166 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@ozlabs.org, maddy@linux.ibm.com
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-block@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
 
-On 10/11/18 3:35 AM, Kees Cook wrote:
-> On Wed, Oct 10, 2018 at 5:32 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
->> Kees Cook <keescook@chromium.org> writes:
->>> On Tue, Oct 9, 2018 at 10:13 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
->>>> Warn whenever a switch statement has a fallthrough without a comment
->>>> annotating it.
->>>>
->>>> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
->>>
->>> Yes please. :)
->>>
->>> Reviewed-by: Kees Cook <keescook@chromium.org>
->>
->> Haha, thanks.
->>
->> It still pops a few errors, including in linux/signal.h & compat.h, so
->> it's somewhat aspirational until we can get those fixed up :)
+Le 09/10/2018 à 15:51, Christophe Leroy a écrit :
+> _PAGE_NO_CACHE is a platform specific flag. In addition, this flag
+> is misleading because one would think it requests a noncached page
+> whereas a noncached page is _PAGE_NO_CACHE | _PAGE_GUARDED
 > 
-> Gustavo, any chance you can target those two files? It could get us a
-> whole architecture using the flag. :)
+> _PAGE_NO_CACHE alone means write combined noncached page, so lets
+> use ioremap_wc() instead.
 > 
+> _PAGE_WRITETHRU is also platform specific flag. Use ioremap_wt()
+> instead.
+> 
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-Yep. Sure thing.
+Forgot to add back the acked-by: tags.
 
-I'm already taking a look.
+Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
 Thanks
---
-Gustavo
+Christophe
 
+> ---
+>   drivers/video/fbdev/chipsfb.c    |  3 +--
+>   drivers/video/fbdev/controlfb.c  |  5 +----
+>   drivers/video/fbdev/platinumfb.c |  5 +----
+>   drivers/video/fbdev/valkyriefb.c | 12 ++++++------
+>   4 files changed, 9 insertions(+), 16 deletions(-)
+> 
+> diff --git a/drivers/video/fbdev/chipsfb.c b/drivers/video/fbdev/chipsfb.c
+> index f103665cad43..40182ed85648 100644
+> --- a/drivers/video/fbdev/chipsfb.c
+> +++ b/drivers/video/fbdev/chipsfb.c
+> @@ -27,7 +27,6 @@
+>   #include <linux/init.h>
+>   #include <linux/pci.h>
+>   #include <linux/console.h>
+> -#include <asm/io.h>
+>   
+>   #ifdef CONFIG_PMAC_BACKLIGHT
+>   #include <asm/backlight.h>
+> @@ -401,7 +400,7 @@ static int chipsfb_pci_init(struct pci_dev *dp, const struct pci_device_id *ent)
+>   #endif /* CONFIG_PMAC_BACKLIGHT */
+>   
+>   #ifdef CONFIG_PPC
+> -	p->screen_base = __ioremap(addr, 0x200000, _PAGE_NO_CACHE);
+> +	p->screen_base = ioremap_wc(addr, 0x200000);
+>   #else
+>   	p->screen_base = ioremap(addr, 0x200000);
+>   #endif
+> diff --git a/drivers/video/fbdev/controlfb.c b/drivers/video/fbdev/controlfb.c
+> index 8d14b29aafea..9cb0ef7ac29e 100644
+> --- a/drivers/video/fbdev/controlfb.c
+> +++ b/drivers/video/fbdev/controlfb.c
+> @@ -48,9 +48,7 @@
+>   #include <linux/nvram.h>
+>   #include <linux/adb.h>
+>   #include <linux/cuda.h>
+> -#include <asm/io.h>
+>   #include <asm/prom.h>
+> -#include <asm/pgtable.h>
+>   #include <asm/btext.h>
+>   
+>   #include "macmodes.h"
+> @@ -715,8 +713,7 @@ static int __init control_of_init(struct device_node *dp)
+>   		goto error_out;
+>   	}
+>   	/* map at most 8MB for the frame buffer */
+> -	p->frame_buffer = __ioremap(p->frame_buffer_phys, 0x800000,
+> -				    _PAGE_WRITETHRU);
+> +	p->frame_buffer = ioremap_wt(p->frame_buffer_phys, 0x800000);
+>   
+>   	if (!p->control_regs_phys ||
+>   	    !request_mem_region(p->control_regs_phys, p->control_regs_size,
+> diff --git a/drivers/video/fbdev/platinumfb.c b/drivers/video/fbdev/platinumfb.c
+> index 377d3399a3ad..bf6b7fb83cf4 100644
+> --- a/drivers/video/fbdev/platinumfb.c
+> +++ b/drivers/video/fbdev/platinumfb.c
+> @@ -32,9 +32,7 @@
+>   #include <linux/nvram.h>
+>   #include <linux/of_device.h>
+>   #include <linux/of_platform.h>
+> -#include <asm/io.h>
+>   #include <asm/prom.h>
+> -#include <asm/pgtable.h>
+>   
+>   #include "macmodes.h"
+>   #include "platinumfb.h"
+> @@ -577,8 +575,7 @@ static int platinumfb_probe(struct platform_device* odev)
+>   
+>   	/* frame buffer - map only 4MB */
+>   	pinfo->frame_buffer_phys = pinfo->rsrc_fb.start;
+> -	pinfo->frame_buffer = __ioremap(pinfo->rsrc_fb.start, 0x400000,
+> -					_PAGE_WRITETHRU);
+> +	pinfo->frame_buffer = ioremap_wt(pinfo->rsrc_fb.start, 0x400000);
+>   	pinfo->base_frame_buffer = pinfo->frame_buffer;
+>   
+>   	/* registers */
+> diff --git a/drivers/video/fbdev/valkyriefb.c b/drivers/video/fbdev/valkyriefb.c
+> index 275fb98236d3..d51c3a8009cb 100644
+> --- a/drivers/video/fbdev/valkyriefb.c
+> +++ b/drivers/video/fbdev/valkyriefb.c
+> @@ -54,13 +54,11 @@
+>   #include <linux/nvram.h>
+>   #include <linux/adb.h>
+>   #include <linux/cuda.h>
+> -#include <asm/io.h>
+>   #ifdef CONFIG_MAC
+>   #include <asm/macintosh.h>
+>   #else
+>   #include <asm/prom.h>
+>   #endif
+> -#include <asm/pgtable.h>
+>   
+>   #include "macmodes.h"
+>   #include "valkyriefb.h"
+> @@ -318,7 +316,7 @@ static void __init valkyrie_choose_mode(struct fb_info_valkyrie *p)
+>   int __init valkyriefb_init(void)
+>   {
+>   	struct fb_info_valkyrie	*p;
+> -	unsigned long frame_buffer_phys, cmap_regs_phys, flags;
+> +	unsigned long frame_buffer_phys, cmap_regs_phys;
+>   	int err;
+>   	char *option = NULL;
+>   
+> @@ -337,7 +335,6 @@ int __init valkyriefb_init(void)
+>   	/* Hardcoded addresses... welcome to 68k Macintosh country :-) */
+>   	frame_buffer_phys = 0xf9000000;
+>   	cmap_regs_phys = 0x50f24000;
+> -	flags = IOMAP_NOCACHE_SER; /* IOMAP_WRITETHROUGH?? */
+>   #else /* ppc (!CONFIG_MAC) */
+>   	{
+>   		struct device_node *dp;
+> @@ -354,7 +351,6 @@ int __init valkyriefb_init(void)
+>   
+>   		frame_buffer_phys = r.start;
+>   		cmap_regs_phys = r.start + 0x304000;
+> -		flags = _PAGE_WRITETHRU;
+>   	}
+>   #endif /* ppc (!CONFIG_MAC) */
+>   
+> @@ -369,7 +365,11 @@ int __init valkyriefb_init(void)
+>   	}
+>   	p->total_vram = 0x100000;
+>   	p->frame_buffer_phys = frame_buffer_phys;
+> -	p->frame_buffer = __ioremap(frame_buffer_phys, p->total_vram, flags);
+> +#ifdef CONFIG_MAC
+> +	p->frame_buffer = ioremap_nocache(frame_buffer_phys, p->total_vram);
+> +#else
+> +	p->frame_buffer = ioremap_wt(frame_buffer_phys, p->total_vram);
+> +#endif
+>   	p->cmap_regs_phys = cmap_regs_phys;
+>   	p->cmap_regs = ioremap(p->cmap_regs_phys, 0x1000);
+>   	p->valkyrie_regs_phys = cmap_regs_phys+0x6000;
+> 
