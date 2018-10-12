@@ -2,127 +2,115 @@ Return-Path: <SRS0=vFFG=MY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E5E8EC28CF8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Oct 2018 01:13:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BB2FAC28CF8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Oct 2018 02:28:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5BD6A2086A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Oct 2018 01:13:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5BD6A2086A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 0D80D2085B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Oct 2018 02:28:55 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="sSiymMOB"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0D80D2085B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42WVGJ2ZfXzF3KN
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Oct 2018 12:13:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42WWx16Nw7zF2Dv
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Oct 2018 13:28:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=mwb@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	dkim=pass (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.b="sSiymMOB";
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=permerror (mailfrom) smtp.mailfrom=nxp.com
+ (client-ip=2a01:111:f400:fe09::623;
+ helo=eur03-ve1-obe.outbound.protection.outlook.com;
+ envelope-from=peng.ma@nxp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=nxp.com header.i=@nxp.com header.b="sSiymMOB"; 
+ dkim-atps=neutral
+Received: from EUR03-VE1-obe.outbound.protection.outlook.com
+ (mail-ve1eur03on0623.outbound.protection.outlook.com
+ [IPv6:2a01:111:f400:fe09::623])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42WVD34BL6zF3JT
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Oct 2018 12:11:47 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w9C15mld144385
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Oct 2018 21:11:45 -0400
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2n2fyr3e3e-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Oct 2018 21:11:45 -0400
-Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Thu, 11 Oct 2018 19:11:44 -0600
-Received: from b03cxnp08028.gho.boulder.ibm.com (9.17.130.20)
- by e33.co.us.ibm.com (192.168.1.133) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 11 Oct 2018 19:11:43 -0600
-Received: from b03ledav006.gho.boulder.ibm.com
- (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- w9C1Bg9Y26411258
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Thu, 11 Oct 2018 18:11:42 -0700
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 69C37C6057;
- Thu, 11 Oct 2018 19:11:42 -0600 (MDT)
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 840DDC6055;
- Thu, 11 Oct 2018 19:11:41 -0600 (MDT)
-Received: from oc5000245537.ibm.com (unknown [9.80.227.10])
- by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
- Thu, 11 Oct 2018 19:11:41 -0600 (MDT)
-Subject: Re: [PATCH v04 1/5] powerpc/drmem: Export 'dynamic-memory' loader
-To: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-References: <20181009203520.26091.86781.stgit@ltcalpine2-lp9.aus.stglabs.ibm.com>
- <20181009203541.26091.11334.stgit@ltcalpine2-lp9.aus.stglabs.ibm.com>
- <5fccb6bf-75d7-904c-b712-84aef503bf46@linux.vnet.ibm.com>
- <16ed4667-21d9-371c-fd19-8605b3e7c5c9@linux.vnet.ibm.com>
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Openpgp: preference=signencrypt
-Autocrypt: addr=mwb@linux.vnet.ibm.com; prefer-encrypt=mutual; keydata=
- xsBNBFcY7GcBCADzw3en+yzo9ASFGCfldVkIg95SAMPK0myXp2XJYET3zT45uBsX/uj9/2nA
- lBmXXeOSXnPfJ9V3vtiwcfATnWIsVt3tL6n1kqikzH9nXNxZT7MU/7gqzWZngMAWh/GJ9qyg
- DTOZdjsvdUNUWxtiLvBo7y+reA4HjlQhwhYxxvCpXBeRoF0qDWfQ8DkneemqINzDZPwSQ7zY
- t4F5iyN1I9GC5RNK8Y6jiKmm6bDkrrbtXPOtzXKs0J0FqWEIab/u3BDrRP3STDVPdXqViHua
- AjEzthQbGZm0VCxI4a7XjMi99g614/qDcXZCs00GLZ/VYIE8hB9C5Q+l66S60PLjRrxnABEB
- AAHNLU1pY2hhZWwgVy4gQnJpbmdtYW5uIDxtd2JAbGludXgudm5ldC5pYm0uY29tPsLAeAQT
- AQIAIgUCVxjsZwIbAwYLCQgHAwIGFQgCCQoLBBYCAwECHgECF4AACgkQSEdag3dpuTI0NAf8
- CKYTDKQLgOSjVrU2L5rM4lXaJRmQV6oidD3vIhKSnWRvPq9C29ifRG6ri20prTHAlc0vycgm
- 41HHg0y2vsGgNXGTWC2ObemoZBI7mySXe/7Tq5mD/semGzOp0YWZ7teqrkiSR8Bw0p+LdE7K
- QmT7tpjjvuhrtQ3RRojUYcuy1nWUsc4D+2cxsnZslsx84FUKxPbLagDgZmgBhUw/sUi40s6S
- AkdViVCVS0WANddLIpG0cfdsV0kCae/XdjK3mRK6drFKv1z+QFjvOhc8QIkkxFD0da9w3tJj
- oqnqHFV5gLcHO6/wizPx/NV90y6RngeBORkQiRFWxTXS4Oj9GVI/Us7ATQRXGOxnAQgAmJ5Y
- ikTWrMWPfiveUacETyEhWVl7u8UhZcx3yy2te8O0ay7t9fYcZgIEfQPPVVus89acIXlG3wYL
- DDPvb21OprLxi+ZJ2a0S5we+LcSWN1jByxJlbWBq+/LcMtGAOhNLpysY1gD0Y4UW/eKS+TFZ
- 562qKC3k1dBvnV9JXCgeS1taYFxRdVAn+2DwK3nuyG/DDq/XgJ5BtmyC3MMx8CiW3POj+O+l
- 6SedIeAfZlZ7/xhijx82g93h07VavUQRwMZgZFsqmuxBxVGiav2HB+dNvs3PFB087Pvc9OHe
- qhajPWOP/gNLMmvBvknn1NToM9a8/E8rzcIZXoYs4RggRRYh6wARAQABwsBfBBgBAgAJBQJX
- GOxnAhsMAAoJEEhHWoN3abky+RUH/jE08/r5QzaNKYeVhu0uVbgXu5fsxqr2cAxhf+KuwT3T
- efhEP2alarxzUZdEh4MsG6c+X2NYLbD3cryiXxVx/7kSAJEFQJfA5P06g8NLR25Qpq9BLsN7
- ++dxQ+CLKzSEb1X24hYAJZpOhS8ev3ii+M/XIo+olDBKuTaTgB6elrg3CaxUsVgLBJ+jbRkW
- yQe2S5f/Ja1ThDpSSLLWLiLK/z7+gaqwhnwjQ8Z8Y9D2itJQcj4itHilwImsqwLG7SxzC0NX
- IQ5KaAFYdRcOgwR8VhhkOIVd70ObSZU+E4pTET1WDz4o65xZ89yfose1No0+r5ht/xWOOrh8
- 53/hcWvxHVs=
-Organization: IBM Linux Technology Center
-Date: Thu, 11 Oct 2018 20:11:40 -0500
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
-MIME-Version: 1.0
-In-Reply-To: <16ed4667-21d9-371c-fd19-8605b3e7c5c9@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42WWsB0dMwzF3LC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Oct 2018 13:25:32 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1; 
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=BEPuJYPNk1z0wLpvPnt4NGHi7SZhNYly9jlMcrLja5E=;
+ b=sSiymMOBCKcFvA1Uwxrsd/kUoYNRv/CKm93ZWv7TkhdIOZ21a0qYam0OWeBEYwA1176HvdiQ2WrG9atQvYjqaH7e5XZky7hqmEQOzJk8W21mkJuundbR30jy7IXF0PfBHjMZ3SccpCzQN41Pp/7p91kfluyyqP3hE5YVlHFcIVE=
+Received: from VI1PR04MB4431.eurprd04.prod.outlook.com (20.177.55.159) by
+ VI1PR04MB3069.eurprd04.prod.outlook.com (10.170.228.155) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.1228.21; Fri, 12 Oct 2018 02:25:25 +0000
+Received: from VI1PR04MB4431.eurprd04.prod.outlook.com
+ ([fe80::55f:bf59:aa19:6d15]) by VI1PR04MB4431.eurprd04.prod.outlook.com
+ ([fe80::55f:bf59:aa19:6d15%5]) with mapi id 15.20.1228.020; Fri, 12 Oct 2018
+ 02:25:25 +0000
+From: Peng Ma <peng.ma@nxp.com>
+To: Rob Herring <robh@kernel.org>
+Subject: RE: [PATCH 7/7] dt-bindings: fsl-qdma: Add NXP Layerscpae qDMA
+ controller bindings
+Thread-Topic: [PATCH 7/7] dt-bindings: fsl-qdma: Add NXP Layerscpae qDMA
+ controller bindings
+Thread-Index: AQHUYUfnfef79U8+2U+c9ZUjA2cLVaUam2SAgABGYzA=
+Date: Fri, 12 Oct 2018 02:25:25 +0000
+Message-ID: <VI1PR04MB44310889ACCA73AFB29CAEEFEDE20@VI1PR04MB4431.eurprd04.prod.outlook.com>
+References: <20181011094655.45707-1-peng.ma@nxp.com>
+ <20181011094655.45707-7-peng.ma@nxp.com> <20181011220845.GA20860@bogus>
+In-Reply-To: <20181011220845.GA20860@bogus>
+Accept-Language: zh-CN, en-US
 Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-x-cbid: 18101201-0036-0000-0000-00000A490075
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00009863; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000268; SDB=6.01101345; UDB=6.00569897; IPR=6.00881391; 
- MB=3.00023720; MTD=3.00000008; XFM=3.00000015; UTC=2018-10-12 01:11:44
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18101201-0037-0000-0000-000049412478
-Message-Id: <4031f946-3c29-9e96-aaa6-e1a8534dffa8@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-10-11_12:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1807170000 definitions=main-1810120009
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=peng.ma@nxp.com; 
+x-originating-ip: [119.31.174.73]
+x-ms-publictraffictype: Email
+x-microsoft-exchange-diagnostics: 1; VI1PR04MB3069;
+ 6:8dEXN2xEyerHJTuoSNpch7HVorlqiZ8rmJRVFOFk4OlvDPhfxWMMpIgqCD5jiSzo5B8u4mQ1vBplr7FlcEb/UWbe2KZdKtNGWaxC2Ku/kM9fjRLOqPB2p4zCTHZny7qUZ5VyqbrFPHLLyLvulvkUG+DBQvBtUMcinXqsYxqk8EOM6GptMMfU9d1a0+ajpvggJ8RZpAHlnXpb+xb3fT4od9dXlynXsWiWzBfIt6OcHf1s/79MB+uTGW0yDwlUBpsGdbX4o/Pi7jwu5VoG3RPBBPYiW+ivQ+bAgFrWyaF9yY0rsPA25RA3ww1HZghAwWOtNUKtRnZxI/+aACjRvvWI2X9BAIT58k7N0km5vXb0ZoKGd0f2Fgao2qfzz4Ks+VQCTaprgvTnh2XXatp1rchLQmM9sf11LajtJjpjqZXsMAm2/gyy/vkDEI+DeFioaFG3fA6y3T0OJ2AJaL+jdpv3AA==;
+ 5:Ag/qYl2rWwL6QDzWMzfZ1rAgYK+/3AhVpm3t1lNJi/qjwL30hXXFeF5rl7zOVd2dD8zaf+ve0wNwEg7zztvQEXD99c7waIy6TnUTrVww7wU8Z3qeEqM3OYMFUODDRqoG12rhGurIYYY4F7os5zVdc2QaJLi7krmWjqNcclIWUx0=;
+ 7:N740wIJrl711C6XQ8Vd3ZD1EuMm+u/nYbF90hW8axUAEtBxnY5AOP/2JnK5bXidrqh2n3oph7WtH+kQhDndA6dzxLv9fKdGSPmgoT+uqHw+BpQSUqLDuQ8Ha65zLu5oYiH7eXr9ZpLklphrACVmC6lwO3ICCRMKtQppB5hWk9tNygO5nbaBqVj0zP6941OWDiZ4ajwRLqjgSFZzu2FGPN5xQp9zr7BuG7CaxljZx6uDaEhSrQma6iN/EyScSvkQU
+x-ms-exchange-antispam-srfa-diagnostics: SOS;
+x-ms-office365-filtering-correlation-id: 162b054a-f9c4-453b-9f95-08d62fe9f84a
+x-ms-office365-filtering-ht: Tenant
+x-microsoft-antispam: BCL:0; PCL:0;
+ RULEID:(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600074)(711020)(4618075)(2017052603328)(7153060)(7193020);
+ SRVR:VI1PR04MB3069; 
+x-ms-traffictypediagnostic: VI1PR04MB3069:
+x-microsoft-antispam-prvs: <VI1PR04MB306921481739838D81228E27EDE20@VI1PR04MB3069.eurprd04.prod.outlook.com>
+x-exchange-antispam-report-test: UriScan:(180628864354917)(228905959029699)(9452136761055)(258649278758335)(65623756079841)(185117386973197);
+x-ms-exchange-senderadcheck: 1
+x-exchange-antispam-report-cfa-test: BCL:0; PCL:0;
+ RULEID:(8211001083)(6040522)(2401047)(5005006)(8121501046)(93006095)(93001095)(10201501046)(3002001)(3231355)(944501410)(52105095)(6055026)(149066)(150057)(6041310)(20161123558120)(20161123562045)(20161123564045)(201703131423095)(201702281528075)(20161123555045)(201703061421075)(201703061406153)(20161123560045)(201708071742011)(7699051)(76991067);
+ SRVR:VI1PR04MB3069; BCL:0; PCL:0; RULEID:; SRVR:VI1PR04MB3069; 
+x-forefront-prvs: 0823A5777B
+x-forefront-antispam-report: SFV:NSPM;
+ SFS:(10009020)(136003)(396003)(346002)(366004)(376002)(39860400002)(189003)(199004)(13464003)(81156014)(229853002)(71190400001)(9686003)(71200400001)(97736004)(6246003)(8936002)(486006)(14454004)(68736007)(305945005)(66066001)(81166006)(86362001)(256004)(26005)(478600001)(53546011)(102836004)(6506007)(186003)(55016002)(7696005)(6436002)(5250100002)(76176011)(106356001)(105586002)(446003)(2900100001)(25786009)(54906003)(53936002)(33656002)(476003)(7736002)(4326008)(8676002)(74316002)(6116002)(2906002)(5660300001)(3846002)(7416002)(316002)(44832011)(6916009)(11346002)(99286004);
+ DIR:OUT; SFP:1101; SCL:1; SRVR:VI1PR04MB3069;
+ H:VI1PR04MB4431.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
+ PTR:InfoNoRecords; MX:1; A:1; 
+received-spf: None (protection.outlook.com: nxp.com does not designate
+ permitted sender hosts)
+x-microsoft-antispam-message-info: azP0XJEi05/VPKapS9CGcCdzLroOOULgXIosAS4nLAkz4M6rU25c0y/ps9C5VHgrQee68Z1Z3GdXxzzCkU+gIBnTx8fXckN4Lr9CvtdD6u4OS3JM7X1y6qbua374T2tMN2GquMh6jrnlx7XsBdvYFHZMC5yVwRVWlueMs6Axx6pjyglZ1hq1o0/c7Snv5A0KsB9N96Oct+3uXuF0PVqBzQpxXCI3YjpyvdqZoUgXk6WSdnTa4A2T/6IgSw1BZBxWII4HphErGp3pE14xXMu0TVfvSIqf3r6MLepEICxqWd663AOae9/pZpep4qAIKYesfFqMf8amoUQVy8LI7AcZbIx3+hZsIg0iuSm+E1egEyA=
+spamdiagnosticoutput: 1:99
+spamdiagnosticmetadata: NSPM
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
+MIME-Version: 1.0
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 162b054a-f9c4-453b-9f95-08d62fe9f84a
+X-MS-Exchange-CrossTenant-originalarrivaltime: 12 Oct 2018 02:25:25.7128 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR04MB3069
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -134,299 +122,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Juliet Kim <minkim@us.ibm.com>, Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Leo Li <leoyang.li@nxp.com>, "zw@zh-kernel.org" <zw@zh-kernel.org>,
+ "vkoul@kernel.org" <vkoul@kernel.org>,
+ "dmaengine@vger.kernel.org" <dmaengine@vger.kernel.org>,
+ "dan.j.williams@intel.com" <dan.j.williams@intel.com>,
+ "shawnguo@kernel.org" <shawnguo@kernel.org>, Jiafei Pan <jiafei.pan@nxp.com>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Checked my notes.  I changed read_drconf_v1_cell/read_drconf_v2_cell
-to use of_read_number in place of dt_mem_next_cell, because the function
-is marked __init, and is not loaded in memory after a migration, so the
-system crashes.  So, we need that modification, unless we also add some
-changes to kernel/drivers/of/fdt.c to the mix.
-
-On 10/10/2018 12:34 PM, Michael Bringmann wrote:
-> On 10/10/2018 11:54 AM, Nathan Fontenot wrote:
->> On 10/09/2018 03:36 PM, Michael Bringmann wrote:
->>> powerpc/drmem: Export many of the functions of DRMEM to parse
->>> "ibm,dynamic-memory" and "ibm,dynamic-memory-v2" during hotplug
->>> operations and for Post Migration events.
->>>
->>> Also modify the DRMEM initialization code to allow it to,
->>>
->>> * Be called after system initialization
->>> * Provide a separate user copy of the LMB array that is produces
->>> * Free the user copy upon request
->>>
->>> In addition, a couple of changes were made to make the creation
->>> of additional copies of the LMB array more useful including,
->>>
->>> * Add new iterator to work through a pair of drmem_info arrays.
->>> * Modify DRMEM code to replace usages of dt_root_addr_cells, and
->>>   dt_mem_next_cell, as these are only available at first boot.
->>>
->>> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
->>> ---
->>>  arch/powerpc/include/asm/drmem.h |   15 ++++++++
->>>  arch/powerpc/mm/drmem.c          |   75 ++++++++++++++++++++++++++++----------
->>>  2 files changed, 70 insertions(+), 20 deletions(-)
->>>
->>> diff --git a/arch/powerpc/include/asm/drmem.h b/arch/powerpc/include/asm/drmem.h
->>> index 7c1d8e7..1fbb684 100644
->>> --- a/arch/powerpc/include/asm/drmem.h
->>> +++ b/arch/powerpc/include/asm/drmem.h
->>> @@ -35,6 +35,18 @@ struct drmem_lmb_info {
->>>  		&drmem_info->lmbs[0],				\
->>>  		&drmem_info->lmbs[drmem_info->n_lmbs - 1])
->>>
->>> +#define for_each_dinfo_lmb(dinfo, lmb)				\
->>> +	for_each_drmem_lmb_in_range((lmb),			\
->>> +		&dinfo->lmbs[0],				\
->>> +		&dinfo->lmbs[dinfo->n_lmbs - 1])
->>> +
->>> +#define for_each_pair_dinfo_lmb(dinfo1, lmb1, dinfo2, lmb2)	\
->>> +	for ((lmb1) = (&dinfo1->lmbs[0]),			\
->>> +	     (lmb2) = (&dinfo2->lmbs[0]);			\
->>> +	     ((lmb1) <= (&dinfo1->lmbs[dinfo1->n_lmbs - 1])) &&	\
->>> +	     ((lmb2) <= (&dinfo2->lmbs[dinfo2->n_lmbs - 1]));	\
->>> +	     (lmb1)++, (lmb2)++)
->>> +
->>
->> The macros for traversing seem to be getting a bit unwieldy with these
->> updates. I wonder if we should move to just using walk routine
->> for all traversing of the drmem lmbs.
-> 
-> We can do that.  One new routine + one API - several macros + 2 files changed.
-> 
->>
->>>  /*
->>>   * The of_drconf_cell_v1 struct defines the layout of the LMB data
->>>   * specified in the ibm,dynamic-memory device tree property.
->>> @@ -94,6 +106,9 @@ void __init walk_drmem_lmbs(struct device_node *dn,
->>>  			void (*func)(struct drmem_lmb *, const __be32 **));
->>>  int drmem_update_dt(void);
->>>
->>> +struct drmem_lmb_info *drmem_lmbs_init(struct property *prop);
->>> +void drmem_lmbs_free(struct drmem_lmb_info *dinfo);
->>> +
->>>  #ifdef CONFIG_PPC_PSERIES
->>>  void __init walk_drmem_lmbs_early(unsigned long node,
->>>  			void (*func)(struct drmem_lmb *, const __be32 **));
->>> diff --git a/arch/powerpc/mm/drmem.c b/arch/powerpc/mm/drmem.c
->>> index 3f18036..13d2abb 100644
->>> --- a/arch/powerpc/mm/drmem.c
->>> +++ b/arch/powerpc/mm/drmem.c
->>> @@ -20,6 +20,7 @@
->>>
->>>  static struct drmem_lmb_info __drmem_info;
->>>  struct drmem_lmb_info *drmem_info = &__drmem_info;
->>> +static int n_root_addr_cells;
->>>
->>>  u64 drmem_lmb_memory_max(void)
->>>  {
->>> @@ -193,12 +194,13 @@ int drmem_update_dt(void)
->>>  	return rc;
->>>  }
->>>
->>> -static void __init read_drconf_v1_cell(struct drmem_lmb *lmb,
->>> +static void read_drconf_v1_cell(struct drmem_lmb *lmb,
->>>  				       const __be32 **prop)
->>>  {
->>>  	const __be32 *p = *prop;
->>>
->>> -	lmb->base_addr = dt_mem_next_cell(dt_root_addr_cells, &p);
->>> +	lmb->base_addr = of_read_number(p, n_root_addr_cells);
->>> +	p += n_root_addr_cells;
->>
->> Any reason this can't just be
->> 	lmb->base_addr= dt_mem_next_cell(n_root_addr_cells, &p);
-> 
-> Probably, not.  I will rebuild/retest with this.
-> 
->>
->>>  	lmb->drc_index = of_read_number(p++, 1);
->>>
->>>  	p++; /* skip reserved field */
->>> @@ -209,7 +211,7 @@ static void __init read_drconf_v1_cell(struct drmem_lmb *lmb,
->>>  	*prop = p;
->>>  }
->>>
->>> -static void __init __walk_drmem_v1_lmbs(const __be32 *prop, const __be32 *usm,
->>> +static void __walk_drmem_v1_lmbs(const __be32 *prop, const __be32 *usm,
->>>  			void (*func)(struct drmem_lmb *, const __be32 **))
->>>  {
->>>  	struct drmem_lmb lmb;
->>> @@ -225,13 +227,14 @@ static void __init __walk_drmem_v1_lmbs(const __be32 *prop, const __be32 *usm,
->>>  	}
->>>  }
->>>
->>> -static void __init read_drconf_v2_cell(struct of_drconf_cell_v2 *dr_cell,
->>> +static void read_drconf_v2_cell(struct of_drconf_cell_v2 *dr_cell,
->>>  				       const __be32 **prop)
->>>  {
->>>  	const __be32 *p = *prop;
->>>
->>>  	dr_cell->seq_lmbs = of_read_number(p++, 1);
->>> -	dr_cell->base_addr = dt_mem_next_cell(dt_root_addr_cells, &p);
->>> +	dr_cell->base_addr = of_read_number(p, n_root_addr_cells);
->>> +	p += n_root_addr_cells;
->>
->> Same here.
-> 
-> Same.
-> 
->>
->> -Nathan
->>
->>>  	dr_cell->drc_index = of_read_number(p++, 1);
->>>  	dr_cell->aa_index = of_read_number(p++, 1);
->>>  	dr_cell->flags = of_read_number(p++, 1);
->>> @@ -239,7 +242,7 @@ static void __init read_drconf_v2_cell(struct of_drconf_cell_v2 *dr_cell,
->>>  	*prop = p;
->>>  }
->>>
->>> -static void __init __walk_drmem_v2_lmbs(const __be32 *prop, const __be32 *usm,
->>> +static void __walk_drmem_v2_lmbs(const __be32 *prop, const __be32 *usm,
->>>  			void (*func)(struct drmem_lmb *, const __be32 **))
->>>  {
->>>  	struct of_drconf_cell_v2 dr_cell;
->>> @@ -275,6 +278,9 @@ void __init walk_drmem_lmbs_early(unsigned long node,
->>>  	const __be32 *prop, *usm;
->>>  	int len;
->>>
->>> +	if (n_root_addr_cells == 0)
->>> +		n_root_addr_cells = dt_root_addr_cells;
->>> +
->>>  	prop = of_get_flat_dt_prop(node, "ibm,lmb-size", &len);
->>>  	if (!prop || len < dt_root_size_cells * sizeof(__be32))
->>>  		return;
->>> @@ -353,24 +359,26 @@ void __init walk_drmem_lmbs(struct device_node *dn,
->>>  	}
->>>  }
->>>
->>> -static void __init init_drmem_v1_lmbs(const __be32 *prop)
->>> +static void init_drmem_v1_lmbs(const __be32 *prop,
->>> +				struct drmem_lmb_info *dinfo)
->>>  {
->>>  	struct drmem_lmb *lmb;
->>>> -	drmem_info->n_lmbs = of_read_number(prop++, 1);
->>> -	if (drmem_info->n_lmbs == 0)
->>> +	dinfo->n_lmbs = of_read_number(prop++, 1);
->>> +	if (dinfo->n_lmbs == 0)
->>>  		return;
->>>
->>> -	drmem_info->lmbs = kcalloc(drmem_info->n_lmbs, sizeof(*lmb),
->>> +	dinfo->lmbs = kcalloc(dinfo->n_lmbs, sizeof(*lmb),
->>>  				   GFP_KERNEL);
->>> -	if (!drmem_info->lmbs)
->>> +	if (!dinfo->lmbs)
->>>  		return;
->>>
->>> -	for_each_drmem_lmb(lmb)
->>> +	for_each_dinfo_lmb(dinfo, lmb)
->>>  		read_drconf_v1_cell(lmb, &prop);
->>>  }
->>>
->>> -static void __init init_drmem_v2_lmbs(const __be32 *prop)
->>> +static void init_drmem_v2_lmbs(const __be32 *prop,
->>> +				struct drmem_lmb_info *dinfo)
->>>  {
->>>  	struct drmem_lmb *lmb;
->>>  	struct of_drconf_cell_v2 dr_cell;
->>> @@ -386,12 +394,12 @@ static void __init init_drmem_v2_lmbs(const __be32 *prop)
->>>  	p = prop;
->>>  	for (i = 0; i < lmb_sets; i++) {
->>>  		read_drconf_v2_cell(&dr_cell, &p);
->>> -		drmem_info->n_lmbs += dr_cell.seq_lmbs;
->>> +		dinfo->n_lmbs += dr_cell.seq_lmbs;
->>>  	}
->>>
->>> -	drmem_info->lmbs = kcalloc(drmem_info->n_lmbs, sizeof(*lmb),
->>> +	dinfo->lmbs = kcalloc(dinfo->n_lmbs, sizeof(*lmb),
->>>  				   GFP_KERNEL);
->>> -	if (!drmem_info->lmbs)
->>> +	if (!dinfo->lmbs)
->>>  		return;
->>>
->>>  	/* second pass, read in the LMB information */
->>> @@ -402,10 +410,10 @@ static void __init init_drmem_v2_lmbs(const __be32 *prop)
->>>  		read_drconf_v2_cell(&dr_cell, &p);
->>>
->>>  		for (j = 0; j < dr_cell.seq_lmbs; j++) {
->>> -			lmb = &drmem_info->lmbs[lmb_index++];
->>> +			lmb = &dinfo->lmbs[lmb_index++];
->>>
->>>  			lmb->base_addr = dr_cell.base_addr;
->>> -			dr_cell.base_addr += drmem_info->lmb_size;
->>> +			dr_cell.base_addr += dinfo->lmb_size;
->>>
->>>  			lmb->drc_index = dr_cell.drc_index;
->>>  			dr_cell.drc_index++;
->>> @@ -416,11 +424,38 @@ static void __init init_drmem_v2_lmbs(const __be32 *prop)
->>>  	}
->>>  }
->>>
->>> +void drmem_lmbs_free(struct drmem_lmb_info *dinfo)
->>> +{
->>> +	if (dinfo) {
->>> +		kfree(dinfo->lmbs);
->>> +		kfree(dinfo);
->>> +	}
->>> +}
->>> +
->>> +struct drmem_lmb_info *drmem_lmbs_init(struct property *prop)
->>> +{
->>> +	struct drmem_lmb_info *dinfo;
->>> +
->>> +	dinfo = kzalloc(sizeof(*dinfo), GFP_KERNEL);
->>> +	if (!dinfo)
->>> +		return NULL;
->>> +
->>> +	if (!strcmp("ibm,dynamic-memory", prop->name))
->>> +		init_drmem_v1_lmbs(prop->value, dinfo);
->>> +	else if (!strcmp("ibm,dynamic-memory-v2", prop->name))
->>> +		init_drmem_v2_lmbs(prop->value, dinfo);
->>> +
->>> +	return dinfo;
->>> +}
->>> +
->>>  static int __init drmem_init(void)
->>>  {
->>>  	struct device_node *dn;
->>>  	const __be32 *prop;
->>>
->>> +	if (n_root_addr_cells == 0)
->>> +		n_root_addr_cells = dt_root_addr_cells;
->>> +
->>>  	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
->>>  	if (!dn) {
->>>  		pr_info("No dynamic reconfiguration memory found\n");
->>> @@ -434,11 +469,11 @@ static int __init drmem_init(void)
->>>
->>>  	prop = of_get_property(dn, "ibm,dynamic-memory", NULL);
->>>  	if (prop) {
->>> -		init_drmem_v1_lmbs(prop);
->>> +		init_drmem_v1_lmbs(prop, drmem_info);
->>>  	} else {
->>>  		prop = of_get_property(dn, "ibm,dynamic-memory-v2", NULL);
->>>  		if (prop)
->>> -			init_drmem_v2_lmbs(prop);
->>> +			init_drmem_v2_lmbs(prop, drmem_info);
->>>  	}
->>>
->>>  	of_node_put(dn);
->>>
->>
->>
-> 
-
--- 
-Michael W. Bringmann
-Linux Technology Center
-IBM Corporation
-Tie-Line  363-5196
-External: (512) 286-5196
-Cell:       (512) 466-0650
-mwb@linux.vnet.ibm.com
-
+SGkgUm9iLA0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFJvYiBIZXJy
+aW5nIFttYWlsdG86cm9iaEBrZXJuZWwub3JnXQ0KPiBTZW50OiAyMDE4xOoxMNTCMTLI1SA2OjA5
+DQo+IFRvOiBQZW5nIE1hIDxwZW5nLm1hQG54cC5jb20+DQo+IENjOiB2a291bEBrZXJuZWwub3Jn
+OyBMZW8gTGkgPGxlb3lhbmcubGlAbnhwLmNvbT47IG1hcmsucnV0bGFuZEBhcm0uY29tOw0KPiBz
+aGF3bmd1b0BrZXJuZWwub3JnOyBkYW4uai53aWxsaWFtc0BpbnRlbC5jb207IHp3QHpoLWtlcm5l
+bC5vcmc7DQo+IGRtYWVuZ2luZUB2Z2VyLmtlcm5lbC5vcmc7IGRldmljZXRyZWVAdmdlci5rZXJu
+ZWwub3JnOw0KPiBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyBsaW51eC1hcm0ta2VybmVs
+QGxpc3RzLmluZnJhZGVhZC5vcmc7DQo+IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnDQo+
+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggNy83XSBkdC1iaW5kaW5nczogZnNsLXFkbWE6IEFkZCBOWFAg
+TGF5ZXJzY3BhZSBxRE1BDQo+IGNvbnRyb2xsZXIgYmluZGluZ3MNCj4gDQo+IE9uIFRodSwgT2N0
+IDExLCAyMDE4IGF0IDA1OjQ2OjU1UE0gKzA4MDAsIFBlbmcgTWEgd3JvdGU6DQo+ID4gRG9jdW1l
+bnQgdGhlIGRldmljZXRyZWUgYmluZGluZ3MgZm9yIE5YUCBMYXllcnNjYXBlIHFETUEgY29udHJv
+bGxlcg0KPiA+IHdoaWNoIGNvdWxkIGJlIGZvdW5kIG9uIE5YUCBRb3JJUSBMYXllcnNjYXBlIFNv
+Q3MuDQo+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBQZW5nIE1hIDxwZW5nLm1hQG54cC5jb20+DQo+
+IA0KPiBXaGF0IGhhcHBlbmVkIHRvIHRoZSB2ZXJzaW9uIGZyb20gV2VuIEhlIHRoYXQgd2FzIG9u
+IHY3IGFuZCB0aGF0IEkgYWxyZWFkeQ0KPiBnYXZlIG15IFJldmlld2VkLWJ5IG9uPw0KDQpbUGVu
+ZyBNYV0gdGhlIGRtYSBvd25lciBpcyBjaGFuZ2VkIGFuZCBxZG1hIGRyaXZlciBtYWRlIHNvbWUg
+Y2hhbmdlcywgc28gSSBuZWVkIHNlbmQgdGhvc2UgcGF0Y2ggYWdhaW4gdG8gcmV2aWV3IQ0KDQpC
+ZXN0IHJlZ2FyZHMNCglQZW5nIE1hDQo+IA0KPiA+IC0tLQ0KPiA+ICBEb2N1bWVudGF0aW9uL2Rl
+dmljZXRyZWUvYmluZGluZ3MvZG1hL2ZzbC1xZG1hLnR4dCB8ICAgNTMNCj4gKysrKysrKysrKysr
+KysrKysrKysNCj4gPiAgMSBmaWxlcyBjaGFuZ2VkLCA1MyBpbnNlcnRpb25zKCspLCAwIGRlbGV0
+aW9ucygtKSAgY3JlYXRlIG1vZGUgMTAwNjQ0DQo+ID4gRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVl
+L2JpbmRpbmdzL2RtYS9mc2wtcWRtYS50eHQNCg0K
