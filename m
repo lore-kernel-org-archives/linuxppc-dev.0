@@ -2,102 +2,84 @@ Return-Path: <SRS0=vFFG=MY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_NEOMUTT autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 57E12C6787C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Oct 2018 22:38:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 190B3C6787C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Oct 2018 22:43:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B7FAB20835
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Oct 2018 22:38:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 6D9BD20868
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Oct 2018 22:43:02 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=shutemov-name.20150623.gappssmtp.com header.i=@shutemov-name.20150623.gappssmtp.com header.b="Q7MBCldy"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B7FAB20835
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=shutemov.name
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=intel-com.20150623.gappssmtp.com header.i=@intel-com.20150623.gappssmtp.com header.b="1rVvFqMt"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6D9BD20868
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42X2n50SV7zF3Hv
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 09:38:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=shutemov.name
+	by lists.ozlabs.org (Postfix) with ESMTP id 42X2sw05ZyzF3L5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 09:43:00 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=shutemov-name.20150623.gappssmtp.com header.i=@shutemov-name.20150623.gappssmtp.com header.b="Q7MBCldy";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel-com.20150623.gappssmtp.com header.i=@intel-com.20150623.gappssmtp.com header.b="1rVvFqMt";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=shutemov.name
- (client-ip=2607:f8b0:4864:20::642; helo=mail-pl1-x642.google.com;
- envelope-from=kirill@shutemov.name; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=intel.com
+ (client-ip=2607:f8b0:4864:20::241; helo=mail-oi1-x241.google.com;
+ envelope-from=dan.j.williams@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=shutemov.name
+ dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=shutemov-name.20150623.gappssmtp.com
- header.i=@shutemov-name.20150623.gappssmtp.com header.b="Q7MBCldy"; 
+ unprotected) header.d=intel-com.20150623.gappssmtp.com
+ header.i=@intel-com.20150623.gappssmtp.com header.b="1rVvFqMt"; 
  dkim-atps=neutral
-Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com
- [IPv6:2607:f8b0:4864:20::642])
+Received: from mail-oi1-x241.google.com (mail-oi1-x241.google.com
+ [IPv6:2607:f8b0:4864:20::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42X1TW5hxrzF3LD
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Oct 2018 08:40:15 +1100 (AEDT)
-Received: by mail-pl1-x642.google.com with SMTP id q19-v6so3419406pll.5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Oct 2018 14:40:15 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42X2lJ4Q3hzF3TD
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Oct 2018 09:37:10 +1100 (AEDT)
+Received: by mail-oi1-x241.google.com with SMTP id u74-v6so11021484oia.11
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Oct 2018 15:37:10 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=shutemov-name.20150623.gappssmtp.com; s=20150623;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:content-transfer-encoding:in-reply-to
- :user-agent; bh=EZ6AbY0+QEnL8HzuWmhaSK57wwCzlnbyYarLpRCj7aE=;
- b=Q7MBCldyZ+B/JLvaaWb2BMtFheBm5otzXbhsmcIEVD1EtSsxlAuCLFEl3Qc9pQvALC
- OQ51TCa4SHitV2rlVUpX3cM0p+/om0n5xzX3/rZS/fRPaTfcdmGyTACXh/UCtpVx+tey
- t8B5BykJZgHPVDKJPRm0A5ZSASpImmXPcYBQvXSamjRHhwRlGrcyKkA930swlfj92SWS
- pCp04U3HKrqug2Ljbc1e2tkQdP63fnpVyLcEWWWj/2cEOxqu6DOQ29jS+ZKX9Dnvh6dY
- xV/QUedFYwWz1E7NKGs3C2fT6MKWqRGH5aQEFuLubHYXLKyxnHGCRSChPda1hBOJq2br
- s0yA==
+ d=intel-com.20150623.gappssmtp.com; s=20150623;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=wAhIph4cij21gC9sgavgMTS6a3bopqgRgmPVcXHpsoM=;
+ b=1rVvFqMtRAhz92lXUzd9TN4BJEYFvyOO7OQAAj3dAHXME2QNgLfVJSJI3SfNYTy8KD
+ s/mAMeIBSkNjqfSRH02VUCRI6lxA0I/Dy44WM6J6ZMh0j9TZYoze5t+Lc0Bk0hixi75x
+ JXh7Z06OXPqft3x3lPxb5YntC4bAUMsmD+X9zYxef0I0rmqsIDRW/UJQpQJfrNNoLrd3
+ p5Ig+mFVkjXehx3Hnid1itfbAccvcS6bVVLuRkenLalI8xC7n4ECfnpj/IIJ6x1Aijpu
+ QgV0U2uduARzDvA7AoCussKKYI6OSJVYsQ4n+5okuMjcVMoJlj2DoAibt4C2kfoA0lc1
+ 6QoA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:content-transfer-encoding
- :in-reply-to:user-agent;
- bh=EZ6AbY0+QEnL8HzuWmhaSK57wwCzlnbyYarLpRCj7aE=;
- b=NhOR9jpLcD4NDXhri+4mMDjR/m1FhV8cRbcMq3oJ1MXpRhuyEaAbrX51Wc2IQZKOLT
- F6ASb6bW/tafb/XKoHYgZdRY9952R0mao+qIsSC1Siy6x8dUwpYTpzjXg6AsiUqE9HcR
- 8S2CSDWL8rUx5m/B8Pc2LxYbB0euHVyOltbFdNvb6OjvvD5vtioitWrjLno7Kg0GWWZI
- 5nMNLtv3dyBJjfvFul47uHmc7SKAY9Z5bHHtP0FVGHXYw9f9Chcpox5sjTKCiuC9E+Ys
- wA6XnD+19vvQHLOFzbM+8O6ilYQKGzyaX8sy6NQtCnxhq+IKJlRNPxVRA/S04JzKkDxj
- DdBA==
-X-Gm-Message-State: ABuFfoimtN4R2FYc9YduFjBfUrltKMb69or5QasFE2NhlcNzxO9Ygn6e
- K4FOYqXV6C+lnyPbZkdAbHvnGg==
-X-Google-Smtp-Source: ACcGV62d4s8oK2nDlUWN514RERavyrSsHNwTTo+k9wMz9Jnjk7To6L0I7Xbsikct+spe0KRWje8CWA==
-X-Received: by 2002:a17:902:b491:: with SMTP id
- y17-v6mr2579110plr.122.1539380413742; 
- Fri, 12 Oct 2018 14:40:13 -0700 (PDT)
-Received: from kshutemo-mobl1.localdomain (fmdmzpr03-ext.fm.intel.com.
- [192.55.54.38])
- by smtp.gmail.com with ESMTPSA id a79-v6sm3576671pfa.124.2018.10.12.14.40.11
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Fri, 12 Oct 2018 14:40:12 -0700 (PDT)
-Received: by kshutemo-mobl1.localdomain (Postfix, from userid 1000)
- id 710CC300030; Sat, 13 Oct 2018 00:40:08 +0300 (+03)
-Date: Sat, 13 Oct 2018 00:40:08 +0300
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: Anton Ivanov <anton.ivanov@kot-begemot.co.uk>
-Subject: Re: [PATCH v2 2/2] mm: speed up mremap by 500x on large regions
-Message-ID: <20181012214008.jj7vhh76vte7xj7i@kshutemo-mobl1>
-References: <20181012013756.11285-1-joel@joelfernandes.org>
- <20181012013756.11285-2-joel@joelfernandes.org>
- <9ed82f9e-88c4-8e4f-8c45-3ef153469603@kot-begemot.co.uk>
- <20181012143728.t42uvr6etg7gp7fh@kshutemo-mobl1>
- <4dd52e22-5b51-9b30-7178-fde603a08f88@kot-begemot.co.uk>
- <97cb3fe1-7bc1-12ff-d602-56c72a5496c5@kot-begemot.co.uk>
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=wAhIph4cij21gC9sgavgMTS6a3bopqgRgmPVcXHpsoM=;
+ b=p80uJSEOtNcch6ItFYhnvfy6oSLP7mzDY5PDnGUtjSLBVZPo4oHLlGZJPbs3Ekj/Ud
+ Y/SYR1Ht6ls6w0a1d7G7qUAN8+pUcwo/3lOj2R4Z4kM3ippB/ahwXTpLMyuZRzCWfIUx
+ nyPYWey5LyRSdrhnA/5ZrDjUML3E0o025BszaicyhTVZXnEfiKVp5Ri4yX7nNrmz5Ueg
+ WYREmKkN6L67OqBmI0crNaygQ7Ny3UKl+S6TCw3sq1D3BGrfkK107EUCwjWg38GKImMx
+ YjNBg5Oc3eJxCipiJnAELDVJv2Dg2VoA6ddGae2MzYFNtutTFuL2KMzu1dKeBgJ20zUC
+ TPTg==
+X-Gm-Message-State: ABuFfog3uyswFO/F4qYjPbe3TULrh3ctFshSt+8/rguVuyMmJbDMxg3O
+ DWKxrp04JJzc9OLoIUga46w/YVyYoDaTajjN4L7P4A==
+X-Google-Smtp-Source: ACcGV61fSMVh1sv8FftwrTbJp6jnpawlXfO/aQCkjGZ95F989ykyO/U3KuKHttrvFepA5xtQHA17tWjFD1td1xj9v2s=
+X-Received: by 2002:a54:4199:: with SMTP id
+ 25-v6mr4506863oiy.105.1539383828212; 
+ Fri, 12 Oct 2018 15:37:08 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <97cb3fe1-7bc1-12ff-d602-56c72a5496c5@kot-begemot.co.uk>
-User-Agent: NeoMutt/20180716
-X-Mailman-Approved-At: Sat, 13 Oct 2018 08:58:21 +1100
+References: <20181010060812.20068-1-oohall@gmail.com>
+ <20181010060812.20068-3-oohall@gmail.com>
+In-Reply-To: <20181010060812.20068-3-oohall@gmail.com>
+From: Dan Williams <dan.j.williams@intel.com>
+Date: Fri, 12 Oct 2018 15:36:55 -0700
+Message-ID: <CAPcyv4jhs9f2DdOk30KU9___mWMtowQi0LP-OD1E+_5xFbxWgA@mail.gmail.com>
+Subject: Re: [PATCH 2/2] powerpc/pseries: Add driver for PAPR SCM regions
+To: "Oliver O'Halloran" <oohall@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,165 +91,323 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mips@linux-mips.org, Rich Felker <dalias@libc.org>,
- linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Dave Hansen <dave.hansen@linux.intel.com>, Will Deacon <will.deacon@arm.com>,
- mhocko@kernel.org, linux-mm@kvack.org, lokeshgidra@google.com,
- "Joel Fernandes \(Google\)" <joel@joelfernandes.org>,
- linux-riscv@lists.infradead.org, elfring@users.sourceforge.net,
- Jonas Bonn <jonas@southpole.se>, linux-s390@vger.kernel.org, dancol@google.com,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Max Filippov <jcmvbkbc@gmail.com>,
- linux-hexagon@vger.kernel.org, Helge Deller <deller@gmx.de>,
- "maintainer:X86 ARCHITECTURE 32-BIT AND 64-BIT" <x86@kernel.org>,
- hughd@google.com, "James E.J. Bottomley" <jejb@parisc-linux.org>,
- kasan-dev@googlegroups.com, kvmarm@lists.cs.columbia.edu,
- Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
- Andrey Ryabinin <aryabinin@virtuozzo.com>, linux-snps-arc@lists.infradead.org,
- kernel-team@android.com, Sam Creasey <sammy@sammy.net>,
- linux-xtensa@linux-xtensa.org, Jeff Dike <jdike@addtoit.com>,
- linux-alpha@vger.kernel.org, linux-um@lists.infradead.org,
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- Julia Lawall <Julia.Lawall@lip6.fr>, linux-m68k@lists.linux-m68k.org,
- openrisc@lists.librecores.org, Borislav Petkov <bp@alien8.de>,
- Andy Lutomirski <luto@kernel.org>, nios2-dev@lists.rocketboards.org,
- Stafford Horne <shorne@gmail.com>, Guan Xuetao <gxt@pku.edu.cn>,
- linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>,
- Tony Luck <tony.luck@intel.com>, linux-parisc@vger.kernel.org,
- pantin@google.com, linux-kernel@vger.kernel.org,
- Fenghua Yu <fenghua.yu@intel.com>, minchan@kernel.org,
- Thomas Gleixner <tglx@linutronix.de>, Richard Weinberger <richard@nod.at>,
- sparclinux@vger.kernel.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
- Ley Foon Tan <lftan@altera.com>
+Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-nvdimm <linux-nvdimm@lists.01.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Oct 12, 2018 at 05:42:24PM +0100, Anton Ivanov wrote:
-> 
-> On 10/12/18 3:48 PM, Anton Ivanov wrote:
-> > On 12/10/2018 15:37, Kirill A. Shutemov wrote:
-> > > On Fri, Oct 12, 2018 at 03:09:49PM +0100, Anton Ivanov wrote:
-> > > > On 10/12/18 2:37 AM, Joel Fernandes (Google) wrote:
-> > > > > Android needs to mremap large regions of memory during
-> > > > > memory management
-> > > > > related operations. The mremap system call can be really
-> > > > > slow if THP is
-> > > > > not enabled. The bottleneck is move_page_tables, which is copying each
-> > > > > pte at a time, and can be really slow across a large map.
-> > > > > Turning on THP
-> > > > > may not be a viable option, and is not for us. This patch
-> > > > > speeds up the
-> > > > > performance for non-THP system by copying at the PMD level
-> > > > > when possible.
-> > > > > 
-> > > > > The speed up is three orders of magnitude. On a 1GB mremap, the mremap
-> > > > > completion times drops from 160-250 millesconds to 380-400
-> > > > > microseconds.
-> > > > > 
-> > > > > Before:
-> > > > > Total mremap time for 1GB data: 242321014 nanoseconds.
-> > > > > Total mremap time for 1GB data: 196842467 nanoseconds.
-> > > > > Total mremap time for 1GB data: 167051162 nanoseconds.
-> > > > > 
-> > > > > After:
-> > > > > Total mremap time for 1GB data: 385781 nanoseconds.
-> > > > > Total mremap time for 1GB data: 388959 nanoseconds.
-> > > > > Total mremap time for 1GB data: 402813 nanoseconds.
-> > > > > 
-> > > > > Incase THP is enabled, the optimization is skipped. I also flush the
-> > > > > tlb every time we do this optimization since I couldn't find a way to
-> > > > > determine if the low-level PTEs are dirty. It is seen that the cost of
-> > > > > doing so is not much compared the improvement, on both
-> > > > > x86-64 and arm64.
-> > > > > 
-> > > > > Cc: minchan@kernel.org
-> > > > > Cc: pantin@google.com
-> > > > > Cc: hughd@google.com
-> > > > > Cc: lokeshgidra@google.com
-> > > > > Cc: dancol@google.com
-> > > > > Cc: mhocko@kernel.org
-> > > > > Cc: kirill@shutemov.name
-> > > > > Cc: akpm@linux-foundation.org
-> > > > > Signed-off-by: Joel Fernandes (Google) <joel@joelfernandes.org>
-> > > > > ---
-> > > > >    mm/mremap.c | 62
-> > > > > +++++++++++++++++++++++++++++++++++++++++++++++++++++
-> > > > >    1 file changed, 62 insertions(+)
-> > > > > 
-> > > > > diff --git a/mm/mremap.c b/mm/mremap.c
-> > > > > index 9e68a02a52b1..d82c485822ef 100644
-> > > > > --- a/mm/mremap.c
-> > > > > +++ b/mm/mremap.c
-> > > > > @@ -191,6 +191,54 @@ static void move_ptes(struct
-> > > > > vm_area_struct *vma, pmd_t *old_pmd,
-> > > > >            drop_rmap_locks(vma);
-> > > > >    }
-> > > > > +static bool move_normal_pmd(struct vm_area_struct *vma,
-> > > > > unsigned long old_addr,
-> > > > > +          unsigned long new_addr, unsigned long old_end,
-> > > > > +          pmd_t *old_pmd, pmd_t *new_pmd, bool *need_flush)
-> > > > > +{
-> > > > > +    spinlock_t *old_ptl, *new_ptl;
-> > > > > +    struct mm_struct *mm = vma->vm_mm;
-> > > > > +
-> > > > > +    if ((old_addr & ~PMD_MASK) || (new_addr & ~PMD_MASK)
-> > > > > +        || old_end - old_addr < PMD_SIZE)
-> > > > > +        return false;
-> > > > > +
-> > > > > +    /*
-> > > > > +     * The destination pmd shouldn't be established, free_pgtables()
-> > > > > +     * should have release it.
-> > > > > +     */
-> > > > > +    if (WARN_ON(!pmd_none(*new_pmd)))
-> > > > > +        return false;
-> > > > > +
-> > > > > +    /*
-> > > > > +     * We don't have to worry about the ordering of src and dst
-> > > > > +     * ptlocks because exclusive mmap_sem prevents deadlock.
-> > > > > +     */
-> > > > > +    old_ptl = pmd_lock(vma->vm_mm, old_pmd);
-> > > > > +    if (old_ptl) {
-> > > > > +        pmd_t pmd;
-> > > > > +
-> > > > > +        new_ptl = pmd_lockptr(mm, new_pmd);
-> > > > > +        if (new_ptl != old_ptl)
-> > > > > +            spin_lock_nested(new_ptl, SINGLE_DEPTH_NESTING);
-> > > > > +
-> > > > > +        /* Clear the pmd */
-> > > > > +        pmd = *old_pmd;
-> > > > > +        pmd_clear(old_pmd);
-> > > > > +
-> > > > > +        VM_BUG_ON(!pmd_none(*new_pmd));
-> > > > > +
-> > > > > +        /* Set the new pmd */
-> > > > > +        set_pmd_at(mm, new_addr, new_pmd, pmd);
-> > > > UML does not have set_pmd_at at all
-> > > Every architecture does. :)
-> > 
-> > I tried to build it patching vs 4.19-rc before I made this statement and
-> > ran into that.
-> > 
-> > Presently it does not.
-> > 
-> > https://elixir.bootlin.com/linux/v4.19-rc7/ident/set_pmd_at - UML is not
-> > on the list.
-> 
-> Once this problem as well as the omissions in the include changes for UML in
-> patch one have been fixed it appears to be working.
-> 
-> What it needs is attached.
+On Tue, Oct 9, 2018 at 11:21 PM Oliver O'Halloran <oohall@gmail.com> wrote:
+>
+> Adds a driver that implements support for enabling and accessing PAPR
+> SCM regions. Unfortunately due to how the PAPR interface works we can't
+> use the existing of_pmem driver (yet) because:
+>
+>  a) The guest is required to use the H_SCM_BIND_MEM h-call to add
+>     add the SCM region to it's physical address space, and
+>  b) There is currently no mechanism for relating a bare of_pmem region
+>     to the backing DIMM (or not-a-DIMM for our case).
+>
+> Both of these are easily handled by rolling the functionality into a
+> seperate driver so here we are...
+>
+> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+> ---
+> The alternative implementation here is that we have the pseries code
+> do the h-calls and craft a pmem-region@<addr> node based on that.
+> However, that doesn't solve b) and mpe has expressed his dislike of
+> adding new stuff to the DT at runtime so i'd say that's a non-starter.
+> ---
+>  arch/powerpc/platforms/pseries/Kconfig    |   7 +
+>  arch/powerpc/platforms/pseries/Makefile   |   1 +
+>  arch/powerpc/platforms/pseries/papr_scm.c | 340 ++++++++++++++++++++++++++++++
+>  3 files changed, 348 insertions(+)
+>  create mode 100644 arch/powerpc/platforms/pseries/papr_scm.c
+>
+> diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
+> index 0c698fd6d491..4b0fcb80efe5 100644
+> --- a/arch/powerpc/platforms/pseries/Kconfig
+> +++ b/arch/powerpc/platforms/pseries/Kconfig
+> @@ -140,3 +140,10 @@ config IBMEBUS
+>         bool "Support for GX bus based adapters"
+>         help
+>           Bus device driver for GX bus based adapters.
+> +
+> +config PAPR_SCM
+> +       depends on PPC_PSERIES && MEMORY_HOTPLUG
+> +       select LIBNVDIMM
+> +       tristate "Support for the PAPR Storage Class Memory interface"
+> +       help
+> +         Enable access to hypervisor provided storage class memory.
+> diff --git a/arch/powerpc/platforms/pseries/Makefile b/arch/powerpc/platforms/pseries/Makefile
+> index 892b27ced973..a43ec843c8e2 100644
+> --- a/arch/powerpc/platforms/pseries/Makefile
+> +++ b/arch/powerpc/platforms/pseries/Makefile
+> @@ -24,6 +24,7 @@ obj-$(CONFIG_IO_EVENT_IRQ)    += io_event_irq.o
+>  obj-$(CONFIG_LPARCFG)          += lparcfg.o
+>  obj-$(CONFIG_IBMVIO)           += vio.o
+>  obj-$(CONFIG_IBMEBUS)          += ibmebus.o
+> +obj-$(CONFIG_PAPR_SCM)         += papr_scm.o
+>
+>  ifdef CONFIG_PPC_PSERIES
+>  obj-$(CONFIG_SUSPEND)          += suspend.o
+> diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/platforms/pseries/papr_scm.c
+> new file mode 100644
+> index 000000000000..87d4dbc18845
+> --- /dev/null
+> +++ b/arch/powerpc/platforms/pseries/papr_scm.c
+> @@ -0,0 +1,340 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +
+> +#define pr_fmt(fmt)    "papr-scm: " fmt
+> +
+> +#include <linux/of.h>
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/ioport.h>
+> +#include <linux/slab.h>
+> +#include <linux/ndctl.h>
+> +#include <linux/libnvdimm.h>
+> +#include <linux/platform_device.h>
+> +
+> +#include <asm/plpar_wrappers.h>
+> +
+> +#define BIND_ANY_ADDR (~0ul)
+> +
+> +#define PAPR_SCM_DIMM_CMD_MASK \
+> +       ((1ul << ND_CMD_GET_CONFIG_SIZE) | \
+> +        (1ul << ND_CMD_GET_CONFIG_DATA) | \
+> +        (1ul << ND_CMD_SET_CONFIG_DATA))
+> +
+> +struct papr_scm_priv {
+> +       struct platform_device *pdev;
+> +       struct device_node *dn;
+> +       uint32_t drc_index;
+> +       uint64_t blocks;
+> +       uint64_t block_size;
+> +       int metadata_size;
+> +
+> +       uint64_t bound_addr;
+> +
+> +       struct nvdimm_bus_descriptor bus_desc;
+> +       struct nvdimm_bus *bus;
+> +       struct nvdimm *nvdimm;
+> +       struct resource res;
+> +       struct nd_region *region;
+> +       struct nd_interleave_set nd_set;
+> +};
+> +
+> +static int drc_pmem_bind(struct papr_scm_priv *p)
+> +{
+> +       unsigned long ret[PLPAR_HCALL_BUFSIZE];
+> +       uint64_t rc, token;
+> +
+> +       /*
+> +        * When the hypervisor cannot map all the requested memory in a single
+> +        * hcall it returns H_BUSY and we call again with the token until
+> +        * we get H_SUCCESS. Aborting the retry loop before getting H_SUCCESS
+> +        * leave the system in an undefined state, so we wait.
+> +        */
+> +       token = 0;
+> +
+> +       do {
+> +               rc = plpar_hcall(H_SCM_BIND_MEM, ret, p->drc_index, 0,
+> +                               p->blocks, BIND_ANY_ADDR, token);
+> +               token = be64_to_cpu(ret[0]);
 
-Well, the optization is only suitable for arch that has 3 or more levels
-of page tables. Otherwise it will not have [non-folded] pmd.
+Does plpar_hcall sleep? Should there be a cond_resched() here if not?
 
-And in this case arch/um already should have set_pmd_at(), see
-3_LEVEL_PGTABLES.
+> +       } while (rc == H_BUSY);
+> +
+> +       if (rc) {
+> +               dev_err(&p->pdev->dev, "bind err: %lld\n", rc);
+> +               return -ENXIO;
+> +       }
+> +
+> +       p->bound_addr = be64_to_cpu(ret[1]);
+> +
+> +       dev_dbg(&p->pdev->dev, "bound drc %x to %pR\n", p->drc_index, &p->res);
+> +
+> +       return 0;
+> +}
+> +
+> +static int drc_pmem_unbind(struct papr_scm_priv *p)
+> +{
+> +       unsigned long ret[PLPAR_HCALL_BUFSIZE];
+> +       uint64_t rc, token;
+> +
+> +       token = 0;
+> +
+> +       /* NB: unbind has the same retry requirements mentioned above */
+> +       do {
+> +               rc = plpar_hcall(H_SCM_UNBIND_MEM, ret, p->drc_index,
+> +                               p->bound_addr, p->blocks, token);
+> +               token = be64_to_cpu(ret);
 
-To port on 2-level paging, it has to be handled on pgd level. It
-complicates the code and will not bring much value.
+...same busy loop comment.
 
--- 
- Kirill A. Shutemov
+> +       } while (rc == H_BUSY);
+> +
+> +       if (rc)
+> +               dev_err(&p->pdev->dev, "unbind error: %lld\n", rc);
+> +
+> +       return !!rc;
+> +}
+> +
+> +static int papr_scm_meta_get(struct papr_scm_priv *p,
+> +                       struct nd_cmd_get_config_data_hdr *hdr)
+> +{
+> +       unsigned long data[PLPAR_HCALL_BUFSIZE];
+> +       int64_t ret;
+> +
+> +       if (hdr->in_offset >= p->metadata_size || hdr->in_length != 1)
+> +               return -EINVAL;
+> +
+> +       ret = plpar_hcall(H_SCM_READ_METADATA, data, p->drc_index,
+> +                       hdr->in_offset, 1);
+> +
+> +       if (ret == H_PARAMETER) /* bad DRC index */
+> +               return -ENODEV;
+> +       if (ret)
+> +               return -EINVAL; /* other invalid parameter */
+> +
+> +       hdr->out_buf[0] = data[0] & 0xff;
+> +
+> +       return 0;
+> +}
+> +
+> +static int papr_scm_meta_set(struct papr_scm_priv *p,
+> +                       struct nd_cmd_set_config_hdr *hdr)
+> +{
+> +       int64_t ret;
+> +
+> +       if (hdr->in_offset >= p->metadata_size || hdr->in_length != 1)
+> +               return -EINVAL;
+> +
+> +       ret = plpar_hcall_norets(H_SCM_WRITE_METADATA,
+> +                       p->drc_index, hdr->in_offset, hdr->in_buf[0], 1);
+> +
+> +       if (ret == H_PARAMETER) /* bad DRC index */
+> +               return -ENODEV;
+> +       if (ret)
+> +               return -EINVAL; /* other invalid parameter */
+> +
+> +       return 0;
+> +}
+> +
+> +int papr_scm_ndctl(struct nvdimm_bus_descriptor *nd_desc, struct nvdimm *nvdimm,
+> +               unsigned int cmd, void *buf, unsigned int buf_len, int *cmd_rc)
+> +{
+> +       struct nd_cmd_get_config_size *get_size_hdr;
+> +       struct papr_scm_priv *p;
+> +
+> +       /* Only dimm-specific calls are supported atm */
+> +       if (!nvdimm)
+> +               return -EINVAL;
+> +
+> +       p = nvdimm_provider_data(nvdimm);
+> +
+> +       switch (cmd) {
+> +       case ND_CMD_GET_CONFIG_SIZE:
+> +               get_size_hdr = buf;
+> +
+> +               get_size_hdr->status = 0;
+> +               get_size_hdr->max_xfer = 1;
+> +               get_size_hdr->config_size = p->metadata_size;
+> +               *cmd_rc = 0;
+> +               break;
+> +
+> +       case ND_CMD_GET_CONFIG_DATA:
+> +               *cmd_rc = papr_scm_meta_get(p, buf);
+> +               break;
+> +
+> +       case ND_CMD_SET_CONFIG_DATA:
+> +               *cmd_rc = papr_scm_meta_set(p, buf);
+> +               break;
+> +
+> +       default:
+> +               return -EINVAL;
+> +       }
+> +
+> +       dev_dbg(&p->pdev->dev, "returned with cmd_rc = %d\n", *cmd_rc);
+> +
+> +       return 0;
+> +}
+> +
+> +static const struct attribute_group *region_attr_groups[] = {
+> +       &nd_region_attribute_group,
+> +       &nd_device_attribute_group,
+> +       &nd_mapping_attribute_group,
+> +       &nd_numa_attribute_group,
+> +       NULL,
+> +};
+> +
+> +static const struct attribute_group *bus_attr_groups[] = {
+> +       &nvdimm_bus_attribute_group,
+> +       NULL,
+> +};
+> +
+> +static const struct attribute_group *papr_scm_dimm_groups[] = {
+> +       &nvdimm_attribute_group,
+> +       &nd_device_attribute_group,
+> +       NULL,
+> +};
+> +
+> +static int papr_scm_nvdimm_init(struct papr_scm_priv *p)
+> +{
+> +       struct device *dev = &p->pdev->dev;
+> +       struct nd_mapping_desc mapping;
+> +       struct nd_region_desc ndr_desc;
+> +       unsigned long dimm_flags;
+> +
+> +       p->bus_desc.ndctl = papr_scm_ndctl;
+> +       p->bus_desc.module = THIS_MODULE;
+> +       p->bus_desc.of_node = p->pdev->dev.of_node;
+> +       p->bus_desc.attr_groups = bus_attr_groups;
+> +       p->bus_desc.provider_name = kstrdup(p->pdev->name, GFP_KERNEL);
+> +
+> +       if (!p->bus_desc.provider_name)
+> +               return -ENOMEM;
+> +
+> +       p->bus = nvdimm_bus_register(NULL, &p->bus_desc);
+> +       if (!p->bus) {
+> +               dev_err(dev, "Error creating nvdimm bus %pOF\n", p->dn);
+> +               return -ENXIO;
+> +       }
+> +
+> +       dimm_flags = 0;
+> +       set_bit(NDD_ALIASING, &dimm_flags);
+> +
+> +       p->nvdimm = nvdimm_create(p->bus, p, papr_scm_dimm_groups,
+> +                               dimm_flags, PAPR_SCM_DIMM_CMD_MASK, 0, NULL);
+
+Looks good, although I'm just about to push out commits that change
+this function signature to take a 'security_ops' pointer. If you need
+a stable branch to base this on, let me know.
+
+> +       if (!p->nvdimm) {
+> +               dev_err(dev, "Error creating DIMM object for %pOF\n", p->dn);
+> +               goto err;
+> +       }
+> +
+> +       /* now add the region */
+> +
+> +       memset(&mapping, 0, sizeof(mapping));
+> +       mapping.nvdimm = p->nvdimm;
+> +       mapping.start = p->res.start;
+> +       mapping.size = p->blocks * p->block_size; // XXX: potential overflow?
+
+Ideally, should be nvdimm relative addresses. Since you have just a
+single DIMM per-region I would expect this to be 0 to
+nvdimm->region_size. That said I don't think anything breaks if you
+make the nvdimm address equal to the system-physical address, just
+wanted to point out the intent. This only matters when you have
+multiple DIMMs per region and need to record the per-DIMM contribution
+in the labels on each DIMM.
+
+Other than that looks ok to me:
+
+Acked-by: Dan Williams <dan.j.williams@intel.com>
+
+...just the matter of what to do about function signature change.
