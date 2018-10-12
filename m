@@ -2,73 +2,90 @@ Return-Path: <SRS0=vFFG=MY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B5573C6787C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Oct 2018 22:32:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1CA7DC6787C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Oct 2018 22:34:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 17D352098A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Oct 2018 22:32:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 17D352098A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=users.sourceforge.net
+	by mail.kernel.org (Postfix) with ESMTPS id 7399E2098A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Oct 2018 22:34:16 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=joelfernandes.org header.i=@joelfernandes.org header.b="Z8gYJNm7"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7399E2098A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=joelfernandes.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42X2dH0p7mzDqdw
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 09:32:03 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=users.sourceforge.net
-Authentication-Results: lists.ozlabs.org; spf=pass (mailfrom)
- smtp.mailfrom=users.sourceforge.net (client-ip=212.227.17.11; helo=mout.web.de;
- envelope-from=elfring@users.sourceforge.net; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42X2gp3F8jzF3HX
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 09:34:14 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=joelfernandes.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=joelfernandes.org header.i=@joelfernandes.org header.b="Z8gYJNm7";
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=joelfernandes.org
+ (client-ip=2607:f8b0:4864:20::443; helo=mail-pf1-x443.google.com;
+ envelope-from=joel@joelfernandes.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=users.sourceforge.net
-X-Greylist: delayed 607 seconds by postgrey-1.36 at bilbo;
- Sat, 13 Oct 2018 06:11:56 AEDT
-Received: from mout.web.de (mout.web.de [212.227.17.11])
+ header.from=joelfernandes.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=joelfernandes.org header.i=@joelfernandes.org
+ header.b="Z8gYJNm7"; dkim-atps=neutral
+Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
+ [IPv6:2607:f8b0:4864:20::443])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42WyBN0X7FzF3M7
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Oct 2018 06:11:54 +1100 (AEDT)
-Received: from [192.168.1.2] ([77.182.238.221]) by smtp.web.de (mrweb102
- [213.165.67.124]) with ESMTPSA (Nemesis) id 0M6V1T-1fRTIY0mGx-00yNhT; Fri, 12
- Oct 2018 20:52:01 +0200
-Received: from [192.168.1.2] ([77.182.238.221]) by smtp.web.de (mrweb102
- [213.165.67.124]) with ESMTPSA (Nemesis) id 0M6V1T-1fRTIY0mGx-00yNhT; Fri, 12
- Oct 2018 20:52:01 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42WysM5h6FzDrCQ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Oct 2018 06:42:14 +1100 (AEDT)
+Received: by mail-pf1-x443.google.com with SMTP id l17-v6so6692221pff.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Oct 2018 12:42:14 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=joelfernandes.org; s=google;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:content-transfer-encoding:in-reply-to
+ :user-agent; bh=7HZNZsB1jLEFaholpalHaVYnkWxxqdQS2UbsT4fFuJY=;
+ b=Z8gYJNm7ONxx3qybdg27wFRSoVULBn2tUUBtRitXwUvZz3AhLFXo+FQIkGmVSgFidC
+ qSw7CPJOp1WJWKXTflv0xxIw2LNh5s0xIfzOfYgIhSxjNXxUmUyqLzzwB0ATx3kCdzlg
+ oxaGTQ7SptXZTjdi/GmovUe6gMn7aR4yslCfc=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:content-transfer-encoding
+ :in-reply-to:user-agent;
+ bh=7HZNZsB1jLEFaholpalHaVYnkWxxqdQS2UbsT4fFuJY=;
+ b=BQOMyv/4gpsa+j8aMBmij6fgBjZhqXD379H+/Zsp8WZ+NXIXBHnHCthRjBzgUbAbMJ
+ LHr90mEZNeggQRBh35LXQXk4Lqg1dOM6epsycUlW9sm3MNWEKnRDdXU7917k3w9h85vT
+ jMTyx4xVwlb9pQyVojFOAyTvDfF/lmVtpX6Dpt8OuGha3c2rw7jKc3pdjV9F72LI619b
+ hcmjRWgtNWyzdLXfpfER/opH3V1DwqzY0LbSJHXkSMHH6TFkoONpsm30d0HDPa8CnlnO
+ sHBDaSZcjg3KCSWA1rcmIgxQj8qRufUb7Xrd+bkPfETo24Uy0UTXPk7+95C0vdpquCXX
+ wnTw==
+X-Gm-Message-State: ABuFfogijRUpIjzWeA12dKuyKiVRVm5SsZQs+FTAU7uv878ItB9vvheJ
+ mIsw0LUFRZWfkQ3nPB18BcjBfA==
+X-Google-Smtp-Source: ACcGV62ghsr+2nsme8ztf1h/ejIwFwjRsZeeKiC6kJsMYRGK5dHID+ZMDEAPamf9Lz3JQcU3Yz/xdw==
+X-Received: by 2002:a63:f922:: with SMTP id
+ h34-v6mr6748971pgi.154.1539373332263; 
+ Fri, 12 Oct 2018 12:42:12 -0700 (PDT)
+Received: from localhost ([2620:0:1000:1601:3aef:314f:b9ea:889f])
+ by smtp.gmail.com with ESMTPSA id k70-v6sm3054384pfc.76.2018.10.12.12.42.10
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Fri, 12 Oct 2018 12:42:11 -0700 (PDT)
+Date: Fri, 12 Oct 2018 12:42:10 -0700
+From: Joel Fernandes <joel@joelfernandes.org>
+To: SF Markus Elfring <elfring@users.sourceforge.net>
 Subject: Re: [PATCH v2 1/2] treewide: remove unused address argument from
  pte_alloc functions
-To: Joel Fernandes <joel@joelfernandes.org>, kernel-janitors@vger.kernel.org
+Message-ID: <20181012194210.GA27630@joelaf.mtv.corp.google.com>
 References: <20181012013756.11285-1-joel@joelfernandes.org>
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Message-ID: <03b524f3-5f3a-baa0-2254-9c588103d2d6@users.sourceforge.net>
-Date: Fri, 12 Oct 2018 20:51:45 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.2.1
+ <03b524f3-5f3a-baa0-2254-9c588103d2d6@users.sourceforge.net>
 MIME-Version: 1.0
-In-Reply-To: <20181012013756.11285-1-joel@joelfernandes.org>
 Content-Type: text/plain; charset=utf-8
-Content-Language: en-GB
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-Provags-ID: V03:K1:kL1jfGghCfX5IqF0iVRDf8mQoouSapQgO45dI9woF05xgJDfw/d
- AA5sy1osx5PoQoz8e05NX77GNXJPHw9DPR0si3tMAft3cP3Og/UHQyAFEv44VXROloUsniB
- Y8tHxhnCqGSXk3sDOvyIeh0eyIwAL0z+iO5ZuRU8MJFacaGuv/K0/oO3MnIdqboq2zbaeLx
- atswja9Z0HU2X9bmK8r2Q==
-X-UI-Out-Filterresults: notjunk:1;V01:K0:3Bmprhxpdt4=:Bxy18Bonkv4GGZtZHkRtdh
- RznFT050WPU5ac/yiDhi4GvzmHK2nKJPe0JU8W43EQUAwghOUFdXYoDPhXbQxo1+rkWi3inGc
- IxG8jn0JdUHfPGS7Wj8g7yPD2N3YK5D26FejpxHRejZUwfVp3V1s0BqC2Du3n5WN/sK8hH43g
- A873o3xo3ve9JvROgL2IM2NiVSMZkWz8XRMK9IL1Is86VxCbNcQ3aIqFTo3ZHQ7utxos5xAKp
- wY5LLH5CUg+vgPWpHwg6QmUUjK9wxjKkxhI59xavlHW7KBjYc1n9ANMb86FxF0jEq97FpJFab
- lv61bWDVOQpzKslNrWhEoFQ4BxLky9gQZMAO5zbRFusGjl0yN82bbY3FzOeE9P7aR7L9s0tCT
- XyoLz5u6VnnTwRxBdAObGYCTLjUGXe5cMprAw76qDkIyiYkF94Mn54a2AGKix9t9Rw2sNvcwh
- l1VTTGY1wDfM73caOBdesxcdRLWLzT9T3KEzYju5kJQqxWmnCauzdTB/hJsNlVGObw1iErWmJ
- e1WVeKKMK1tnIJN0+v2OuWFpIE0rY+swV5DZIqA2IYcUD8J1fn7Jtb4PqwBfCTqpRphExliy/
- ixAeu4ydfdfVH9u8q3srgmS+M2zMoNBx3zt4oEp2JPST2bBiSTj8zTtV/lWohtRJIb9HI7SNm
- dt1nYOdFizxVtn9/nWKMdWruLoUnyQ8bNwC4TUkGssMT9S4Ct+nBAxXR5IGmDIMV1xVDm1CRL
- GyTOIhSFtiSqioti/yQeNXGNHeGaLcQXyX4FcN6WgklzhBpay81VK1RBixXopJioQuSE+vtrd
- kz8PnbOsMLdcvFf5l9kygJAjqAx31Pp1MeaRZfgHNi3SB1gNkg=
+In-Reply-To: <03b524f3-5f3a-baa0-2254-9c588103d2d6@users.sourceforge.net>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-Mailman-Approved-At: Sat, 13 Oct 2018 08:58:21 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -85,7 +102,7 @@ Cc: linux-mips@linux-mips.org, Rich Felker <dalias@libc.org>,
  linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
  Peter Zijlstra <peterz@infradead.org>,
  Catalin Marinas <catalin.marinas@arm.com>,
- Dave Hansen <dave.hansen@linux.intel.com>, Will Deacon <will.deacon@arm.com>,
+ Dave Hansen <dave.hansen@linux.intel.com>, kernel-janitors@vger.kernel.org,
  Michal Hocko <mhocko@kernel.org>, linux-mm@kvack.org,
  Lokesh Gidra <lokeshgidra@google.com>, sparclinux@vger.kernel.org,
  linux-riscv@lists.infradead.org, kvmarm@lists.cs.columbia.edu,
@@ -99,8 +116,8 @@ Cc: linux-mips@linux-mips.org, Rich Felker <dalias@libc.org>,
  Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
  Andrey Ryabinin <aryabinin@virtuozzo.com>, linux-snps-arc@lists.infradead.org,
  kernel-team@android.com, Sam Creasey <sammy@sammy.net>,
- Fenghua Yu <fenghua.yu@intel.com>, Jeff Dike <jdike@addtoit.com>,
- linux-um@lists.infradead.org,
+ Fenghua Yu <fenghua.yu@intel.com>, Will Deacon <will.deacon@arm.com>,
+ Jeff Dike <jdike@addtoit.com>, linux-um@lists.infradead.org,
  Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
  Julia Lawall <Julia.Lawall@lip6.fr>, linux-m68k@lists.linux-m68k.org,
  openrisc@lists.librecores.org, Borislav Petkov <bp@alien8.de>,
@@ -118,50 +135,59 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-> The changes were obtained by applying the following Coccinelle script.
+On Fri, Oct 12, 2018 at 08:51:45PM +0200, SF Markus Elfring wrote:
+> > The changes were obtained by applying the following Coccinelle script.
+> 
+> A bit of clarification happened for its implementation details.
+> https://systeme.lip6.fr/pipermail/cocci/2018-October/005374.html
+> 
+> I have taken also another look at the following SmPL code.
+> 
+> 
+> > identifier fn =~
+> > "^(__pte_alloc|pte_alloc_one|pte_alloc|__pte_alloc_kernel|pte_alloc_one_kernel)$";
+> 
+> I suggest to adjust the regular expression for this constraint
+> and in subsequent SmPL rules.
+> "^(?:pte_alloc(?:_one(?:_kernel)?)?|__pte_alloc(?:_kernel)?)$";
 
-A bit of clarification happened for its implementation details.
-https://systeme.lip6.fr/pipermail/cocci/2018-October/005374.html
+Sure it looks more clever, but why? Ugh that's harder to read and confusing.
 
-I have taken also another look at the following SmPL code.
-
-
-> identifier fn =~
-> "^(__pte_alloc|pte_alloc_one|pte_alloc|__pte_alloc_kernel|pte_alloc_one_kernel)$";
-
-I suggest to adjust the regular expression for this constraint
-and in subsequent SmPL rules.
-
-"^(?:pte_alloc(?:_one(?:_kernel)?)?|__pte_alloc(?:_kernel)?)$";
-
-
+> > (
+> > - T3 fn(T1 E1, T2 E2);
+> > + T3 fn(T1 E1);
+> > |
+> > - T3 fn(T1 E1, T2 E2, T4 E4);
+> > + T3 fn(T1 E1, T2 E2);
+> > )
+> 
+> I propose to take an other SmPL disjunction into account here.
+> 
+>  T3 fn(T1 E1,
 > (
-> - T3 fn(T1 E1, T2 E2);
-> + T3 fn(T1 E1);
-> |
-> - T3 fn(T1 E1, T2 E2, T4 E4);
-> + T3 fn(T1 E1, T2 E2);
-> )
+> -      T2 E2
+> |      T2 E2,
+> -      T4 E4
+> )      );
 
-I propose to take an other SmPL disjunction into account here.
+Again this is confusing. It makes one think that maybe the second argument
+can also be removed and requires careful observation that the ");" follows.
 
- T3 fn(T1 E1,
-(
--      T2 E2
-|      T2 E2,
--      T4 E4
-)      );
+> > (
+> > - #define fn(a, b, c)@p e
+> > + #define fn(a, b) e
+> > |
+> > - #define fn(a, b)@p e
+> > + #define fn(a) e
+> > )
+> 
+> How do you think about to omit the metavariable “position p” here?
 
+Right, I don't need it in this case. But the script works either way.
 
-> (
-> - #define fn(a, b, c)@p e
-> + #define fn(a, b) e
-> |
-> - #define fn(a, b)@p e
-> + #define fn(a) e
-> )
+I like to take more of a problem solving approach that makes sense, than
+aiming for perfection, after all this is a useful script that we do not
+need to check in once we finish with it.
 
-How do you think about to omit the metavariable “position p” here?
+ - Joel
 
-Regards,
-Markus
