@@ -2,87 +2,87 @@ Return-Path: <SRS0=vFFG=MY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BD5D0C6787C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Oct 2018 22:00:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D1859C6787C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Oct 2018 22:03:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9FBCF20835
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Oct 2018 22:00:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 432D120835
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Oct 2018 22:03:00 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=joelfernandes.org header.i=@joelfernandes.org header.b="cuTpq2Kx"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9FBCF20835
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=joelfernandes.org header.i=@joelfernandes.org header.b="YyM56XCq"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 432D120835
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=joelfernandes.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42X1wz5yZhzF3S4
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 09:00:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42X1zk20nSzF3Qq
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 09:02:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=joelfernandes.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=joelfernandes.org header.i=@joelfernandes.org header.b="cuTpq2Kx";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=joelfernandes.org header.i=@joelfernandes.org header.b="YyM56XCq";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=joelfernandes.org
- (client-ip=2607:f8b0:4864:20::641; helo=mail-pl1-x641.google.com;
+ (client-ip=2607:f8b0:4864:20::542; helo=mail-pg1-x542.google.com;
  envelope-from=joel@joelfernandes.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=joelfernandes.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=joelfernandes.org header.i=@joelfernandes.org
- header.b="cuTpq2Kx"; dkim-atps=neutral
-Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
- [IPv6:2607:f8b0:4864:20::641])
+ header.b="YyM56XCq"; dkim-atps=neutral
+Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
+ [IPv6:2607:f8b0:4864:20::542])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Wnkg68ymzDr49
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Oct 2018 23:50:51 +1100 (AEDT)
-Received: by mail-pl1-x641.google.com with SMTP id y11-v6so5903681plt.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Oct 2018 05:50:51 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Wthv4PSLzF3T8
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Oct 2018 03:34:38 +1100 (AEDT)
+Received: by mail-pg1-x542.google.com with SMTP id v133-v6so6092404pgb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Oct 2018 09:34:38 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=joelfernandes.org; s=google;
  h=date:from:to:cc:subject:message-id:references:mime-version
  :content-disposition:in-reply-to:user-agent;
- bh=QKN0QLgWMdeaFShuOKgUCdS+KZEgqTytMiliL2mzgC0=;
- b=cuTpq2KxjzFREjuReJCgXoTtmsf4MapPO/GKTB1jBLxsEEu2m7M7ZkvRB6q79tS5tz
- O6mqiraSPEsjDSeGINirN/8v2zV5PUlYs/7NG0sKTsmNtz6ADZ+8u7AlqnAMULoHIM7r
- c98gGt3pHgL5ok5lR90IVL9Vuy1e12CI4gJLs=
+ bh=GeJJXCqJMCDTI+MXwHMrbk77W318YMmfXGKRapf9/Sk=;
+ b=YyM56XCqSfyaUBYDgdLpuQEKq1ABQCtIjAm3mexn7sHI103AKL5IRtu1yDgRXWcUmR
+ +5dV4+N0dIsXdoQdM+bIK2ixBQF6EMK+bJUmgO404S133rpaNqZgC3hsYM6bPD/0A+T8
+ ZZ1OQ9M/ZdWJax92mEDJBrHQFwC2/LW1LA+LY=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:date:from:to:cc:subject:message-id:references
  :mime-version:content-disposition:in-reply-to:user-agent;
- bh=QKN0QLgWMdeaFShuOKgUCdS+KZEgqTytMiliL2mzgC0=;
- b=rmUFPEEiMMt2kvK9QSE3LN43ogVzCTeNjXPaBHGMGQBpxeZylBxsn/S8MSrOeech9i
- z+H3VOD0ES+JTy6Qb8++LeacDkWPjJ1Wg/K6yFTHkyamt8har1MDEhHLnmmpaPGOBW6H
- tBz+S0hNH0XuyH+OdLYByEz6Age+mR+zk2XdlTrMWCxj+fapDZCCjhkU13vDCkNFSCmx
- cIhfP5rmjPnTeE5xShkpvw+/+x2VpYaqOW+W4k/nm5cCxGXbpVeSy9jYr/H+vIwv5sDY
- Y2ETFVYGlaR+cgwgwtAwJWc504LdhWeWAhfwpBhBjnDWpmCgYVUPEgzAFLpI2H5tSE1h
- oWAw==
-X-Gm-Message-State: ABuFfojTpF2XCwu946Y/2QwVHkIPO1DYmfbdWd1iHcLICbSHLwVoRS81
- 3pZARNukTERTtfXzK+zj6yOHWQ==
-X-Google-Smtp-Source: ACcGV62U4sAceqM+O5tNywkqcriJ8B2EehkajcnFr0AxLQ8/wmf9zrWd7Nv4vm7gsM8YPAJpgdeQnw==
-X-Received: by 2002:a17:902:22a:: with SMTP id
- 39-v6mr5923316plc.267.1539348649157; 
- Fri, 12 Oct 2018 05:50:49 -0700 (PDT)
+ bh=GeJJXCqJMCDTI+MXwHMrbk77W318YMmfXGKRapf9/Sk=;
+ b=fxJHP7jCpvF/ZPcpw/eAjXU6r8ZQuIhcnYGmCpZjQcODNgN0ztL/5kqNfVOO0mdWah
+ TyhjcQZKJmraVFAsR9K2XOPF9Ow95I+KUmohWufIy0DyI+AifsTlsV57vu9/a826+lJE
+ +gnSTD7k4+k5AUyBxTiF49kAX1MPHRjPEfqjt5ZJWoLlKt5wSlW57zV7sCI/mMdA9On5
+ NNFoRofxAzkt3rMBYRn44UCzmVFuscjW+xQj+Ns+qgj2Hk1caIfwDAicF+meWMJIM+8S
+ VbuoWFZH4XqFuff6tF8pcWckleAwY1mMWHGRiCCS9vudxPU+RwpG1YFRx3Pox43ybhCe
+ 8beg==
+X-Gm-Message-State: ABuFfojR4MjSDA5Yzw1M695gwRE7U0HKbF2wMBOWGB2fzjBKruKEiOu/
+ YFzgJ8bHufhkp2rwzgj1nAFkIg==
+X-Google-Smtp-Source: ACcGV60O5IRpWWZ7ZD+hGXAxlNIP90i6xDrWPRRFvZcxuenG86m+xkw+7WT83DyNZ2L6qLNSI0RNkQ==
+X-Received: by 2002:aa7:80cd:: with SMTP id
+ a13-v6mr6747047pfn.86.1539362076258; 
+ Fri, 12 Oct 2018 09:34:36 -0700 (PDT)
 Received: from localhost ([2620:0:1000:1601:3aef:314f:b9ea:889f])
- by smtp.gmail.com with ESMTPSA id z11-v6sm4395226pfg.85.2018.10.12.05.50.47
+ by smtp.gmail.com with ESMTPSA id l71-v6sm2751559pgd.31.2018.10.12.09.34.34
  (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Fri, 12 Oct 2018 05:50:47 -0700 (PDT)
-Date: Fri, 12 Oct 2018 05:50:46 -0700
+ Fri, 12 Oct 2018 09:34:34 -0700 (PDT)
+Date: Fri, 12 Oct 2018 09:34:33 -0700
 From: Joel Fernandes <joel@joelfernandes.org>
-To: "Kirill A. Shutemov" <kirill@shutemov.name>
-Subject: Re: [PATCH v2 2/2] mm: speed up mremap by 500x on large regions
-Message-ID: <20181012125046.GA170912@joelaf.mtv.corp.google.com>
+To: Anton Ivanov <anton.ivanov@kot-begemot.co.uk>
+Subject: Re: [PATCH v2 1/2] treewide: remove unused address argument from
+ pte_alloc functions
+Message-ID: <20181012163433.GA223066@joelaf.mtv.corp.google.com>
 References: <20181012013756.11285-1-joel@joelfernandes.org>
- <20181012013756.11285-2-joel@joelfernandes.org>
- <20181012113056.gxhcbrqyu7k7xnyv@kshutemo-mobl1>
+ <594fc952-5e87-3162-b2f9-963479d16eb3@kot-begemot.co.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20181012113056.gxhcbrqyu7k7xnyv@kshutemo-mobl1>
+In-Reply-To: <594fc952-5e87-3162-b2f9-963479d16eb3@kot-begemot.co.uk>
 User-Agent: Mutt/1.10.1 (2018-07-13)
 X-Mailman-Approved-At: Sat, 13 Oct 2018 08:58:20 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -101,99 +101,181 @@ Cc: linux-mips@linux-mips.org, Rich Felker <dalias@libc.org>,
  Peter Zijlstra <peterz@infradead.org>,
  Catalin Marinas <catalin.marinas@arm.com>,
  Dave Hansen <dave.hansen@linux.intel.com>, Will Deacon <will.deacon@arm.com>,
- mhocko@kernel.org, linux-mm@kvack.org, lokeshgidra@google.com,
+ Michal Hocko <mhocko@kernel.org>, linux-mm@kvack.org, lokeshgidra@google.com,
  sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org,
  elfring@users.sourceforge.net, Jonas Bonn <jonas@southpole.se>,
  linux-s390@vger.kernel.org, dancol@google.com,
- Yoshinori Sato <ysato@users.sourceforge.jp>, linux-xtensa@linux-xtensa.org,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Max Filippov <jcmvbkbc@gmail.com>,
  linux-hexagon@vger.kernel.org, Helge Deller <deller@gmx.de>,
- "maintainer:X86 ARCHITECTURE \(32-BIT AND 64-BIT\)" <x86@kernel.org>,
+ "maintainer:X86 ARCHITECTURE 32-BIT AND 64-BIT" <x86@kernel.org>,
  hughd@google.com, "James E.J. Bottomley" <jejb@parisc-linux.org>,
  kasan-dev@googlegroups.com, kvmarm@lists.cs.columbia.edu,
  Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
  Andrey Ryabinin <aryabinin@virtuozzo.com>, linux-snps-arc@lists.infradead.org,
  kernel-team@android.com, Sam Creasey <sammy@sammy.net>,
- Fenghua Yu <fenghua.yu@intel.com>, Jeff Dike <jdike@addtoit.com>,
- linux-um@lists.infradead.org,
+ linux-xtensa@linux-xtensa.org, Jeff Dike <jdike@addtoit.com>,
+ linux-alpha@vger.kernel.org, linux-um@lists.infradead.org,
  Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
  Julia Lawall <Julia.Lawall@lip6.fr>, linux-m68k@lists.linux-m68k.org,
  openrisc@lists.librecores.org, Borislav Petkov <bp@alien8.de>,
- Andy Lutomirski <luto@kernel.org>, nios2-dev@lists.rocketboards.org,
- Stafford Horne <shorne@gmail.com>, Guan Xuetao <gxt@pku.edu.cn>,
- linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>,
- Tony Luck <tony.luck@intel.com>, Richard Weinberger <richard@nod.at>,
- linux-parisc@vger.kernel.org, pantin@google.com,
- Max Filippov <jcmvbkbc@gmail.com>, linux-kernel@vger.kernel.org,
- minchan@kernel.org, Thomas Gleixner <tglx@linutronix.de>,
- linux-alpha@vger.kernel.org, Ley Foon Tan <lftan@altera.com>,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+ Andy Lutomirski <luto@kernel.org>, Ley Foon Tan <lftan@altera.com>,
+ kirill@shutemov.name, Stafford Horne <shorne@gmail.com>,
+ Guan Xuetao <gxt@pku.edu.cn>, linux-arm-kernel@lists.infradead.org,
+ Chris Zankel <chris@zankel.net>, Tony Luck <tony.luck@intel.com>,
+ linux-parisc@vger.kernel.org, pantin@google.com, linux-kernel@vger.kernel.org,
+ Fenghua Yu <fenghua.yu@intel.com>, minchan@kernel.org,
+ Thomas Gleixner <tglx@linutronix.de>, Richard Weinberger <richard@nod.at>,
+ nios2-dev@lists.rocketboards.org, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Oct 12, 2018 at 02:30:56PM +0300, Kirill A. Shutemov wrote:
-> On Thu, Oct 11, 2018 at 06:37:56PM -0700, Joel Fernandes (Google) wrote:
-> > Android needs to mremap large regions of memory during memory management
-> > related operations. The mremap system call can be really slow if THP is
-> > not enabled. The bottleneck is move_page_tables, which is copying each
-> > pte at a time, and can be really slow across a large map. Turning on THP
-> > may not be a viable option, and is not for us. This patch speeds up the
-> > performance for non-THP system by copying at the PMD level when possible.
-> > 
-> > The speed up is three orders of magnitude. On a 1GB mremap, the mremap
-> > completion times drops from 160-250 millesconds to 380-400 microseconds.
-> > 
-> > Before:
-> > Total mremap time for 1GB data: 242321014 nanoseconds.
-> > Total mremap time for 1GB data: 196842467 nanoseconds.
-> > Total mremap time for 1GB data: 167051162 nanoseconds.
-> > 
-> > After:
-> > Total mremap time for 1GB data: 385781 nanoseconds.
-> > Total mremap time for 1GB data: 388959 nanoseconds.
-> > Total mremap time for 1GB data: 402813 nanoseconds.
-> > 
-> > Incase THP is enabled, the optimization is skipped. I also flush the
-> > tlb every time we do this optimization since I couldn't find a way to
-> > determine if the low-level PTEs are dirty. It is seen that the cost of
-> > doing so is not much compared the improvement, on both x86-64 and arm64.
+On Fri, Oct 12, 2018 at 02:56:19PM +0100, Anton Ivanov wrote:
 > 
-> I looked into the code more and noticed move_pte() helper called from
-> move_ptes(). It changes PTE entry to suite new address.
+> On 10/12/18 2:37 AM, Joel Fernandes (Google) wrote:
+> > This series speeds up mremap(2) syscall by copying page tables at the
+> > PMD level even for non-THP systems. There is concern that the extra
+> > 'address' argument that mremap passes to pte_alloc may do something
+> > subtle architecture related in the future, that makes the scheme not
+> > work.  Also we find that there is no point in passing the 'address' to
+> > pte_alloc since its unused.
+> > 
+> > This patch therefore removes this argument tree-wide resulting in a nice
+> > negative diff as well. Also ensuring along the way that the architecture
+> > does not do anything funky with 'address' argument that goes unnoticed.
+> > 
+> > Build and boot tested on x86-64. Build tested on arm64.
+> > 
+> > The changes were obtained by applying the following Coccinelle script.
+> > The pte_fragment_alloc was manually fixed up since it was only 2
+> > occurences and could not be easily generalized (and thanks Julia for
+> > answering all my silly and not-silly Coccinelle questions!).
+> > 
+> > // Options: --include-headers --no-includes
+> > // Note: I split the 'identifier fn' line, so if you are manually
+> > // running it, please unsplit it so it runs for you.
+> > 
+> > virtual patch
+> > 
+> > @pte_alloc_func_def depends on patch exists@
+> > identifier E2;
+> > identifier fn =~
+> > "^(__pte_alloc|pte_alloc_one|pte_alloc|__pte_alloc_kernel|pte_alloc_one_kernel)$";
+> > type T2;
+> > @@
+> > 
+> >   fn(...
+> > - , T2 E2
+> >   )
+> >   { ... }
+> > 
+> > @pte_alloc_func_proto depends on patch exists@
+> > identifier E1, E2, E4;
+> > type T1, T2, T3, T4;
+> > identifier fn =~
+> > "^(__pte_alloc|pte_alloc_one|pte_alloc|__pte_alloc_kernel|pte_alloc_one_kernel)$";
+> > @@
+> > 
+> > (
+> > - T3 fn(T1 E1, T2 E2);
+> > + T3 fn(T1 E1);
+> > |
+> > - T3 fn(T1 E1, T2 E2, T4 E4);
+> > + T3 fn(T1 E1, T2 E2);
+> > )
+> > 
+> > @pte_alloc_func_call depends on patch exists@
+> > expression E2;
+> > identifier fn =~
+> > "^(__pte_alloc|pte_alloc_one|pte_alloc|__pte_alloc_kernel|pte_alloc_one_kernel)$";
+> > @@
+> > 
+> >   fn(...
+> > -,  E2
+> >   )
+> > 
+> > @pte_alloc_macro depends on patch exists@
+> > identifier fn =~
+> > "^(__pte_alloc|pte_alloc_one|pte_alloc|__pte_alloc_kernel|pte_alloc_one_kernel)$";
+> > identifier a, b, c;
+> > expression e;
+> > position p;
+> > @@
+> > 
+> > (
+> > - #define fn(a, b, c)@p e
+> > + #define fn(a, b) e
+> > |
+> > - #define fn(a, b)@p e
+> > + #define fn(a) e
+> > )
+> > 
+> > Suggested-by: Kirill A. Shutemov <kirill@shutemov.name>
+> > Cc: Michal Hocko <mhocko@kernel.org>
+> > Cc: Julia Lawall <Julia.Lawall@lip6.fr>
+> > Cc: elfring@users.sourceforge.net
+> > Signed-off-by: Joel Fernandes (Google) <joel@joelfernandes.org>
+> > ---
+> >   arch/alpha/include/asm/pgalloc.h             |  6 +++---
+> >   arch/arc/include/asm/pgalloc.h               |  5 ++---
+> >   arch/arm/include/asm/pgalloc.h               |  4 ++--
+> >   arch/arm64/include/asm/pgalloc.h             |  4 ++--
+> >   arch/hexagon/include/asm/pgalloc.h           |  6 ++----
+> >   arch/ia64/include/asm/pgalloc.h              |  5 ++---
+> >   arch/m68k/include/asm/mcf_pgalloc.h          |  8 ++------
+> >   arch/m68k/include/asm/motorola_pgalloc.h     |  4 ++--
+> >   arch/m68k/include/asm/sun3_pgalloc.h         |  6 ++----
+> >   arch/microblaze/include/asm/pgalloc.h        | 19 ++-----------------
+> >   arch/microblaze/mm/pgtable.c                 |  3 +--
+> >   arch/mips/include/asm/pgalloc.h              |  6 ++----
+> >   arch/nds32/include/asm/pgalloc.h             |  5 ++---
+> >   arch/nios2/include/asm/pgalloc.h             |  6 ++----
+> >   arch/openrisc/include/asm/pgalloc.h          |  5 ++---
+> >   arch/openrisc/mm/ioremap.c                   |  3 +--
+> >   arch/parisc/include/asm/pgalloc.h            |  4 ++--
+> >   arch/powerpc/include/asm/book3s/32/pgalloc.h |  4 ++--
+> >   arch/powerpc/include/asm/book3s/64/pgalloc.h | 12 +++++-------
+> >   arch/powerpc/include/asm/nohash/32/pgalloc.h |  4 ++--
+> >   arch/powerpc/include/asm/nohash/64/pgalloc.h |  6 ++----
+> >   arch/powerpc/mm/pgtable-book3s64.c           |  2 +-
+> >   arch/powerpc/mm/pgtable_32.c                 |  4 ++--
+> >   arch/riscv/include/asm/pgalloc.h             |  6 ++----
+> >   arch/s390/include/asm/pgalloc.h              |  4 ++--
+> >   arch/sh/include/asm/pgalloc.h                |  6 ++----
+> >   arch/sparc/include/asm/pgalloc_32.h          |  5 ++---
+> >   arch/sparc/include/asm/pgalloc_64.h          |  6 ++----
+> >   arch/sparc/mm/init_64.c                      |  6 ++----
+> >   arch/sparc/mm/srmmu.c                        |  4 ++--
+> >   arch/um/kernel/mem.c                         |  4 ++--
 > 
-> It is only defined in non-trivial way on Sparc. I don't know much about
-> Sparc and it's hard for me to say if the optimization will break anything
-> there.
+> There is a declaration of pte_alloc_one in arch/um/include/asm/pgalloc.h
+> 
+> This patch missed it.
 
-Sparc's move_pte seems to be flushing the D-cache to prevent aliasing. It is
-not modifying the PTE itself AFAICS:
+Ah, true. Thanks. Couldn't test every arch obviously. The reason this was
+missed is the script could not find matches with prototypes without named
+parameters:
 
-#ifdef DCACHE_ALIASING_POSSIBLE
-#define __HAVE_ARCH_MOVE_PTE
-#define move_pte(pte, prot, old_addr, new_addr)                         \
-({                                                                      \
-        pte_t newpte = (pte);                                           \
-        if (tlb_type != hypervisor && pte_present(pte)) {               \
-                unsigned long this_pfn = pte_pfn(pte);                  \
-                                                                        \
-                if (pfn_valid(this_pfn) &&                              \
-                    (((old_addr) ^ (new_addr)) & (1 << 13)))            \
-                        flush_dcache_page_all(current->mm,              \
-                                              pfn_to_page(this_pfn));   \
-        }                                                               \
-        newpte;                                                         \
-})
-#endif
+extern pgtable_t pte_alloc_one(struct mm_struct *, unsigned long);
 
-If its an issue, then how do transparent huge pages work on Sparc?  I don't
-see the huge page code (move_huge_pages) during mremap doing anything special
-for Sparc architecture when moving PMDs..
+I wrote something like this as below but it failed to compile, Julia any
+suggestions on how to express this?
 
-Also, do we not flush the caches from any path when we munmap address space?
-We do call do_munmap on the old mapping from mremap after moving to the new one.
+@pte_alloc_func_proto depends on patch exists@
+type T1, T2, T3, T4;
+identifier fn =~
+"^(__pte_alloc|pte_alloc_one|pte_alloc|__pte_alloc_kernel|pte_alloc_one_kernel)$";
+@@
+
+(
+- T3 fn(T1, T2);
++ T3 fn(T1);
+|
+- T3 fn(T1, T2, T4);
++ T3 fn(T1, T2);
+)
 
 thanks,
 
  - Joel
-
