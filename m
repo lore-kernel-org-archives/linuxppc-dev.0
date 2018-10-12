@@ -2,84 +2,41 @@ Return-Path: <SRS0=vFFG=MY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 190B3C6787C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Oct 2018 22:43:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AD4FEC6787C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Oct 2018 23:00:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6D9BD20868
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Oct 2018 22:43:02 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=intel-com.20150623.gappssmtp.com header.i=@intel-com.20150623.gappssmtp.com header.b="1rVvFqMt"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6D9BD20868
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 1CFF421477
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Oct 2018 23:00:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1CFF421477
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42X2sw05ZyzF3L5
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 09:43:00 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel-com.20150623.gappssmtp.com header.i=@intel-com.20150623.gappssmtp.com header.b="1rVvFqMt";
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=intel.com
- (client-ip=2607:f8b0:4864:20::241; helo=mail-oi1-x241.google.com;
- envelope-from=dan.j.williams@intel.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=intel-com.20150623.gappssmtp.com
- header.i=@intel-com.20150623.gappssmtp.com header.b="1rVvFqMt"; 
- dkim-atps=neutral
-Received: from mail-oi1-x241.google.com (mail-oi1-x241.google.com
- [IPv6:2607:f8b0:4864:20::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 42X3Fs6zmCzF3Sl
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 10:00:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42X2lJ4Q3hzF3TD
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Oct 2018 09:37:10 +1100 (AEDT)
-Received: by mail-oi1-x241.google.com with SMTP id u74-v6so11021484oia.11
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Oct 2018 15:37:10 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=intel-com.20150623.gappssmtp.com; s=20150623;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=wAhIph4cij21gC9sgavgMTS6a3bopqgRgmPVcXHpsoM=;
- b=1rVvFqMtRAhz92lXUzd9TN4BJEYFvyOO7OQAAj3dAHXME2QNgLfVJSJI3SfNYTy8KD
- s/mAMeIBSkNjqfSRH02VUCRI6lxA0I/Dy44WM6J6ZMh0j9TZYoze5t+Lc0Bk0hixi75x
- JXh7Z06OXPqft3x3lPxb5YntC4bAUMsmD+X9zYxef0I0rmqsIDRW/UJQpQJfrNNoLrd3
- p5Ig+mFVkjXehx3Hnid1itfbAccvcS6bVVLuRkenLalI8xC7n4ECfnpj/IIJ6x1Aijpu
- QgV0U2uduARzDvA7AoCussKKYI6OSJVYsQ4n+5okuMjcVMoJlj2DoAibt4C2kfoA0lc1
- 6QoA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=wAhIph4cij21gC9sgavgMTS6a3bopqgRgmPVcXHpsoM=;
- b=p80uJSEOtNcch6ItFYhnvfy6oSLP7mzDY5PDnGUtjSLBVZPo4oHLlGZJPbs3Ekj/Ud
- Y/SYR1Ht6ls6w0a1d7G7qUAN8+pUcwo/3lOj2R4Z4kM3ippB/ahwXTpLMyuZRzCWfIUx
- nyPYWey5LyRSdrhnA/5ZrDjUML3E0o025BszaicyhTVZXnEfiKVp5Ri4yX7nNrmz5Ueg
- WYREmKkN6L67OqBmI0crNaygQ7Ny3UKl+S6TCw3sq1D3BGrfkK107EUCwjWg38GKImMx
- YjNBg5Oc3eJxCipiJnAELDVJv2Dg2VoA6ddGae2MzYFNtutTFuL2KMzu1dKeBgJ20zUC
- TPTg==
-X-Gm-Message-State: ABuFfog3uyswFO/F4qYjPbe3TULrh3ctFshSt+8/rguVuyMmJbDMxg3O
- DWKxrp04JJzc9OLoIUga46w/YVyYoDaTajjN4L7P4A==
-X-Google-Smtp-Source: ACcGV61fSMVh1sv8FftwrTbJp6jnpawlXfO/aQCkjGZ95F989ykyO/U3KuKHttrvFepA5xtQHA17tWjFD1td1xj9v2s=
-X-Received: by 2002:a54:4199:: with SMTP id
- 25-v6mr4506863oiy.105.1539383828212; 
- Fri, 12 Oct 2018 15:37:08 -0700 (PDT)
-MIME-Version: 1.0
-References: <20181010060812.20068-1-oohall@gmail.com>
- <20181010060812.20068-3-oohall@gmail.com>
-In-Reply-To: <20181010060812.20068-3-oohall@gmail.com>
-From: Dan Williams <dan.j.williams@intel.com>
-Date: Fri, 12 Oct 2018 15:36:55 -0700
-Message-ID: <CAPcyv4jhs9f2DdOk30KU9___mWMtowQi0LP-OD1E+_5xFbxWgA@mail.gmail.com>
-Subject: Re: [PATCH 2/2] powerpc/pseries: Add driver for PAPR SCM regions
-To: "Oliver O'Halloran" <oohall@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42X3Cx50DTzF3Kk
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Oct 2018 09:58:37 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: by ozlabs.org (Postfix)
+ id 42X3Cx4TxJz9s7T; Sat, 13 Oct 2018 09:58:37 +1100 (AEDT)
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 42X3Cx46p4z9s89; Sat, 13 Oct 2018 09:58:37 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: Fix stackprotector detection for non-glibc toolchains
+Date: Sat, 13 Oct 2018 09:58:32 +1100
+Message-Id: <20181012225832.13827-1-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.17.1
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,323 +48,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-nvdimm <linux-nvdimm@lists.01.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Oct 9, 2018 at 11:21 PM Oliver O'Halloran <oohall@gmail.com> wrote:
->
-> Adds a driver that implements support for enabling and accessing PAPR
-> SCM regions. Unfortunately due to how the PAPR interface works we can't
-> use the existing of_pmem driver (yet) because:
->
->  a) The guest is required to use the H_SCM_BIND_MEM h-call to add
->     add the SCM region to it's physical address space, and
->  b) There is currently no mechanism for relating a bare of_pmem region
->     to the backing DIMM (or not-a-DIMM for our case).
->
-> Both of these are easily handled by rolling the functionality into a
-> seperate driver so here we are...
->
-> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
-> ---
-> The alternative implementation here is that we have the pseries code
-> do the h-calls and craft a pmem-region@<addr> node based on that.
-> However, that doesn't solve b) and mpe has expressed his dislike of
-> adding new stuff to the DT at runtime so i'd say that's a non-starter.
-> ---
->  arch/powerpc/platforms/pseries/Kconfig    |   7 +
->  arch/powerpc/platforms/pseries/Makefile   |   1 +
->  arch/powerpc/platforms/pseries/papr_scm.c | 340 ++++++++++++++++++++++++++++++
->  3 files changed, 348 insertions(+)
->  create mode 100644 arch/powerpc/platforms/pseries/papr_scm.c
->
-> diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
-> index 0c698fd6d491..4b0fcb80efe5 100644
-> --- a/arch/powerpc/platforms/pseries/Kconfig
-> +++ b/arch/powerpc/platforms/pseries/Kconfig
-> @@ -140,3 +140,10 @@ config IBMEBUS
->         bool "Support for GX bus based adapters"
->         help
->           Bus device driver for GX bus based adapters.
-> +
-> +config PAPR_SCM
-> +       depends on PPC_PSERIES && MEMORY_HOTPLUG
-> +       select LIBNVDIMM
-> +       tristate "Support for the PAPR Storage Class Memory interface"
-> +       help
-> +         Enable access to hypervisor provided storage class memory.
-> diff --git a/arch/powerpc/platforms/pseries/Makefile b/arch/powerpc/platforms/pseries/Makefile
-> index 892b27ced973..a43ec843c8e2 100644
-> --- a/arch/powerpc/platforms/pseries/Makefile
-> +++ b/arch/powerpc/platforms/pseries/Makefile
-> @@ -24,6 +24,7 @@ obj-$(CONFIG_IO_EVENT_IRQ)    += io_event_irq.o
->  obj-$(CONFIG_LPARCFG)          += lparcfg.o
->  obj-$(CONFIG_IBMVIO)           += vio.o
->  obj-$(CONFIG_IBMEBUS)          += ibmebus.o
-> +obj-$(CONFIG_PAPR_SCM)         += papr_scm.o
->
->  ifdef CONFIG_PPC_PSERIES
->  obj-$(CONFIG_SUSPEND)          += suspend.o
-> diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/platforms/pseries/papr_scm.c
-> new file mode 100644
-> index 000000000000..87d4dbc18845
-> --- /dev/null
-> +++ b/arch/powerpc/platforms/pseries/papr_scm.c
-> @@ -0,0 +1,340 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +
-> +#define pr_fmt(fmt)    "papr-scm: " fmt
-> +
-> +#include <linux/of.h>
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/ioport.h>
-> +#include <linux/slab.h>
-> +#include <linux/ndctl.h>
-> +#include <linux/libnvdimm.h>
-> +#include <linux/platform_device.h>
-> +
-> +#include <asm/plpar_wrappers.h>
-> +
-> +#define BIND_ANY_ADDR (~0ul)
-> +
-> +#define PAPR_SCM_DIMM_CMD_MASK \
-> +       ((1ul << ND_CMD_GET_CONFIG_SIZE) | \
-> +        (1ul << ND_CMD_GET_CONFIG_DATA) | \
-> +        (1ul << ND_CMD_SET_CONFIG_DATA))
-> +
-> +struct papr_scm_priv {
-> +       struct platform_device *pdev;
-> +       struct device_node *dn;
-> +       uint32_t drc_index;
-> +       uint64_t blocks;
-> +       uint64_t block_size;
-> +       int metadata_size;
-> +
-> +       uint64_t bound_addr;
-> +
-> +       struct nvdimm_bus_descriptor bus_desc;
-> +       struct nvdimm_bus *bus;
-> +       struct nvdimm *nvdimm;
-> +       struct resource res;
-> +       struct nd_region *region;
-> +       struct nd_interleave_set nd_set;
-> +};
-> +
-> +static int drc_pmem_bind(struct papr_scm_priv *p)
-> +{
-> +       unsigned long ret[PLPAR_HCALL_BUFSIZE];
-> +       uint64_t rc, token;
-> +
-> +       /*
-> +        * When the hypervisor cannot map all the requested memory in a single
-> +        * hcall it returns H_BUSY and we call again with the token until
-> +        * we get H_SUCCESS. Aborting the retry loop before getting H_SUCCESS
-> +        * leave the system in an undefined state, so we wait.
-> +        */
-> +       token = 0;
-> +
-> +       do {
-> +               rc = plpar_hcall(H_SCM_BIND_MEM, ret, p->drc_index, 0,
-> +                               p->blocks, BIND_ANY_ADDR, token);
-> +               token = be64_to_cpu(ret[0]);
+If GCC is not built with glibc support then we must explicitly tell it
+which register to use for TLS mode stack protector, otherwise it will
+error out and the cc-option check will fail.
 
-Does plpar_hcall sleep? Should there be a cond_resched() here if not?
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/Kconfig | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-> +       } while (rc == H_BUSY);
-> +
-> +       if (rc) {
-> +               dev_err(&p->pdev->dev, "bind err: %lld\n", rc);
-> +               return -ENXIO;
-> +       }
-> +
-> +       p->bound_addr = be64_to_cpu(ret[1]);
-> +
-> +       dev_dbg(&p->pdev->dev, "bound drc %x to %pR\n", p->drc_index, &p->res);
-> +
-> +       return 0;
-> +}
-> +
-> +static int drc_pmem_unbind(struct papr_scm_priv *p)
-> +{
-> +       unsigned long ret[PLPAR_HCALL_BUFSIZE];
-> +       uint64_t rc, token;
-> +
-> +       token = 0;
-> +
-> +       /* NB: unbind has the same retry requirements mentioned above */
-> +       do {
-> +               rc = plpar_hcall(H_SCM_UNBIND_MEM, ret, p->drc_index,
-> +                               p->bound_addr, p->blocks, token);
-> +               token = be64_to_cpu(ret);
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 1888636c9eb6..3d008115fe18 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -180,7 +180,8 @@ config PPC
+ 	select HAVE_ARCH_SECCOMP_FILTER
+ 	select HAVE_ARCH_TRACEHOOK
+ 	select HAVE_CBPF_JIT			if !PPC64
+-	select HAVE_STACKPROTECTOR		if $(cc-option,-mstack-protector-guard=tls)
++	select HAVE_STACKPROTECTOR		if PPC64 && $(cc-option,-mstack-protector-guard=tls -mstack-protector-guard-reg=r13)
++	select HAVE_STACKPROTECTOR		if PPC32 && $(cc-option,-mstack-protector-guard=tls -mstack-protector-guard-reg=r2)
+ 	select HAVE_CONTEXT_TRACKING		if PPC64
+ 	select HAVE_DEBUG_KMEMLEAK
+ 	select HAVE_DEBUG_STACKOVERFLOW
+-- 
+2.17.1
 
-...same busy loop comment.
-
-> +       } while (rc == H_BUSY);
-> +
-> +       if (rc)
-> +               dev_err(&p->pdev->dev, "unbind error: %lld\n", rc);
-> +
-> +       return !!rc;
-> +}
-> +
-> +static int papr_scm_meta_get(struct papr_scm_priv *p,
-> +                       struct nd_cmd_get_config_data_hdr *hdr)
-> +{
-> +       unsigned long data[PLPAR_HCALL_BUFSIZE];
-> +       int64_t ret;
-> +
-> +       if (hdr->in_offset >= p->metadata_size || hdr->in_length != 1)
-> +               return -EINVAL;
-> +
-> +       ret = plpar_hcall(H_SCM_READ_METADATA, data, p->drc_index,
-> +                       hdr->in_offset, 1);
-> +
-> +       if (ret == H_PARAMETER) /* bad DRC index */
-> +               return -ENODEV;
-> +       if (ret)
-> +               return -EINVAL; /* other invalid parameter */
-> +
-> +       hdr->out_buf[0] = data[0] & 0xff;
-> +
-> +       return 0;
-> +}
-> +
-> +static int papr_scm_meta_set(struct papr_scm_priv *p,
-> +                       struct nd_cmd_set_config_hdr *hdr)
-> +{
-> +       int64_t ret;
-> +
-> +       if (hdr->in_offset >= p->metadata_size || hdr->in_length != 1)
-> +               return -EINVAL;
-> +
-> +       ret = plpar_hcall_norets(H_SCM_WRITE_METADATA,
-> +                       p->drc_index, hdr->in_offset, hdr->in_buf[0], 1);
-> +
-> +       if (ret == H_PARAMETER) /* bad DRC index */
-> +               return -ENODEV;
-> +       if (ret)
-> +               return -EINVAL; /* other invalid parameter */
-> +
-> +       return 0;
-> +}
-> +
-> +int papr_scm_ndctl(struct nvdimm_bus_descriptor *nd_desc, struct nvdimm *nvdimm,
-> +               unsigned int cmd, void *buf, unsigned int buf_len, int *cmd_rc)
-> +{
-> +       struct nd_cmd_get_config_size *get_size_hdr;
-> +       struct papr_scm_priv *p;
-> +
-> +       /* Only dimm-specific calls are supported atm */
-> +       if (!nvdimm)
-> +               return -EINVAL;
-> +
-> +       p = nvdimm_provider_data(nvdimm);
-> +
-> +       switch (cmd) {
-> +       case ND_CMD_GET_CONFIG_SIZE:
-> +               get_size_hdr = buf;
-> +
-> +               get_size_hdr->status = 0;
-> +               get_size_hdr->max_xfer = 1;
-> +               get_size_hdr->config_size = p->metadata_size;
-> +               *cmd_rc = 0;
-> +               break;
-> +
-> +       case ND_CMD_GET_CONFIG_DATA:
-> +               *cmd_rc = papr_scm_meta_get(p, buf);
-> +               break;
-> +
-> +       case ND_CMD_SET_CONFIG_DATA:
-> +               *cmd_rc = papr_scm_meta_set(p, buf);
-> +               break;
-> +
-> +       default:
-> +               return -EINVAL;
-> +       }
-> +
-> +       dev_dbg(&p->pdev->dev, "returned with cmd_rc = %d\n", *cmd_rc);
-> +
-> +       return 0;
-> +}
-> +
-> +static const struct attribute_group *region_attr_groups[] = {
-> +       &nd_region_attribute_group,
-> +       &nd_device_attribute_group,
-> +       &nd_mapping_attribute_group,
-> +       &nd_numa_attribute_group,
-> +       NULL,
-> +};
-> +
-> +static const struct attribute_group *bus_attr_groups[] = {
-> +       &nvdimm_bus_attribute_group,
-> +       NULL,
-> +};
-> +
-> +static const struct attribute_group *papr_scm_dimm_groups[] = {
-> +       &nvdimm_attribute_group,
-> +       &nd_device_attribute_group,
-> +       NULL,
-> +};
-> +
-> +static int papr_scm_nvdimm_init(struct papr_scm_priv *p)
-> +{
-> +       struct device *dev = &p->pdev->dev;
-> +       struct nd_mapping_desc mapping;
-> +       struct nd_region_desc ndr_desc;
-> +       unsigned long dimm_flags;
-> +
-> +       p->bus_desc.ndctl = papr_scm_ndctl;
-> +       p->bus_desc.module = THIS_MODULE;
-> +       p->bus_desc.of_node = p->pdev->dev.of_node;
-> +       p->bus_desc.attr_groups = bus_attr_groups;
-> +       p->bus_desc.provider_name = kstrdup(p->pdev->name, GFP_KERNEL);
-> +
-> +       if (!p->bus_desc.provider_name)
-> +               return -ENOMEM;
-> +
-> +       p->bus = nvdimm_bus_register(NULL, &p->bus_desc);
-> +       if (!p->bus) {
-> +               dev_err(dev, "Error creating nvdimm bus %pOF\n", p->dn);
-> +               return -ENXIO;
-> +       }
-> +
-> +       dimm_flags = 0;
-> +       set_bit(NDD_ALIASING, &dimm_flags);
-> +
-> +       p->nvdimm = nvdimm_create(p->bus, p, papr_scm_dimm_groups,
-> +                               dimm_flags, PAPR_SCM_DIMM_CMD_MASK, 0, NULL);
-
-Looks good, although I'm just about to push out commits that change
-this function signature to take a 'security_ops' pointer. If you need
-a stable branch to base this on, let me know.
-
-> +       if (!p->nvdimm) {
-> +               dev_err(dev, "Error creating DIMM object for %pOF\n", p->dn);
-> +               goto err;
-> +       }
-> +
-> +       /* now add the region */
-> +
-> +       memset(&mapping, 0, sizeof(mapping));
-> +       mapping.nvdimm = p->nvdimm;
-> +       mapping.start = p->res.start;
-> +       mapping.size = p->blocks * p->block_size; // XXX: potential overflow?
-
-Ideally, should be nvdimm relative addresses. Since you have just a
-single DIMM per-region I would expect this to be 0 to
-nvdimm->region_size. That said I don't think anything breaks if you
-make the nvdimm address equal to the system-physical address, just
-wanted to point out the intent. This only matters when you have
-multiple DIMMs per region and need to record the per-DIMM contribution
-in the labels on each DIMM.
-
-Other than that looks ok to me:
-
-Acked-by: Dan Williams <dan.j.williams@intel.com>
-
-...just the matter of what to do about function signature change.
