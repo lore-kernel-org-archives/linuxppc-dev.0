@@ -6,36 +6,36 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E6E2C28CF8
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 13:30:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6BF1AC28CF8
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 13:32:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8C9D720895
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 13:30:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8C9D720895
+	by mail.kernel.org (Postfix) with ESMTPS id D485820895
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 13:32:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D485820895
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42XQZ22P1nzF3Cd
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Oct 2018 00:30:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42XQcm6FhlzF3DQ
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Oct 2018 00:32:56 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42XQJx5PRfzF3D5
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Oct 2018 00:19:13 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42XQJy4SjvzF3D5
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Oct 2018 00:19:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 42XQJx4jRdz9sCt; Sun, 14 Oct 2018 00:19:13 +1100 (AEDT)
+ id 42XQJy3cMfz9sB5; Sun, 14 Oct 2018 00:19:14 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 42XQJx4MRHz9sCm; Sun, 14 Oct 2018 00:19:13 +1100 (AEDT)
+ id 42XQJy33kjz9sCt; Sun, 14 Oct 2018 00:19:14 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 4/6] powerpc/64s/hash: Add a SLB preload cache
-Date: Sun, 14 Oct 2018 00:18:34 +1100
-Message-Id: <20181013131836.26764-4-mpe@ellerman.id.au>
+Subject: [PATCH 5/6] powerpc/64s/hash: Simplify slb_flush_and_rebolt()
+Date: Sun, 14 Oct 2018 00:18:35 +1100
+Message-Id: <20181013131836.26764-5-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20181013131836.26764-1-mpe@ellerman.id.au>
 References: <20181013131836.26764-1-mpe@ellerman.id.au>
@@ -57,420 +57,166 @@ Sender: "Linuxppc-dev"
 
 From: Nicholas Piggin <npiggin@gmail.com>
 
-When switching processes, currently all user SLBEs are cleared, and a
-few (exec_base, pc, and stack) are preloaded. In trivial testing with
-small apps, this tends to miss the heap and low 256MB segments, and it
-will also miss commonly accessed segments on large memory workloads.
+slb_flush_and_rebolt() is misleading, it is called in virtual mode, so
+it can not possibly change the stack, so it should not be touching the
+shadow area. And since vmalloc is no longer bolted, it should not
+change any bolted mappings at all.
 
-Add a simple round-robin preload cache that just inserts the last SLB
-miss into the head of the cache and preloads those at context switch
-time. Every 256 context switches, the oldest entry is removed from the
-cache to shrink the cache and require fewer slbmte if they are unused.
-
-Much more could go into this, including into the SLB entry reclaim
-side to track some LRU information etc, which would require a study of
-large memory workloads. But this is a simple thing we can do now that
-is an obvious win for common workloads.
-
-With the full series, process switching speed on the context_switch
-benchmark on POWER9/hash (with kernel speculation security masures
-disabled) increases from 140K/s to 178K/s (27%).
-
-POWER8 does not change much (within 1%), it's unclear why it does not
-see a big gain like POWER9.
-
-Booting to busybox init with 256MB segments has SLB misses go down
-from 945 to 69, and with 1T segments 900 to 21. These could almost all
-be eliminated by preloading a bit more carefully with ELF binary
-loading.
+Change the name to slb_flush_and_restore_bolted(), and have it just
+load the kernel stack from what's currently in the shadow SLB area.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/processor.h   |   1 +
- arch/powerpc/include/asm/thread_info.h |   5 +
- arch/powerpc/kernel/process.c          |   7 +
- arch/powerpc/mm/mmu_context_book3s64.c |   4 +
- arch/powerpc/mm/slb.c                  | 208 +++++++++++++++++++------
- 5 files changed, 181 insertions(+), 44 deletions(-)
+ arch/powerpc/include/asm/book3s/64/mmu-hash.h |  2 +-
+ arch/powerpc/kernel/swsusp_asm64.S            |  2 +-
+ arch/powerpc/mm/hash_utils_64.c               |  4 +-
+ arch/powerpc/mm/slb.c                         | 46 +++++++------------
+ arch/powerpc/mm/slice.c                       |  2 +-
+ 5 files changed, 21 insertions(+), 35 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index 3fefb8a65b17..7d04d60a39c9 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -273,6 +273,7 @@ struct thread_struct {
- #endif /* CONFIG_HAVE_HW_BREAKPOINT */
- 	struct arch_hw_breakpoint hw_brk; /* info on the hardware breakpoint */
- 	unsigned long	trap_nr;	/* last trap # on this thread */
-+	u8 load_slb;			/* Ages out SLB preload cache entries */
- 	u8 load_fp;
- #ifdef CONFIG_ALTIVEC
- 	u8 load_vec;
-diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
-index 916a3d67b592..544cac0474cb 100644
---- a/arch/powerpc/include/asm/thread_info.h
-+++ b/arch/powerpc/include/asm/thread_info.h
-@@ -29,6 +29,7 @@
- #include <asm/page.h>
- #include <asm/accounting.h>
- 
-+#define SLB_PRELOAD_NR	16U
- /*
-  * low level task data.
-  */
-@@ -44,6 +45,10 @@ struct thread_info {
- #if defined(CONFIG_VIRT_CPU_ACCOUNTING_NATIVE) && defined(CONFIG_PPC32)
- 	struct cpu_accounting_data accounting;
- #endif
-+	unsigned char slb_preload_nr;
-+	unsigned char slb_preload_tail;
-+	u32 slb_preload_esid[SLB_PRELOAD_NR];
-+
- 	/* low level flags - has atomic operations done on it */
- 	unsigned long	flags ____cacheline_aligned_in_smp;
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+index 14e552ea5e52..60cda8fb0677 100644
+--- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
++++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+@@ -503,7 +503,7 @@ struct slb_entry {
  };
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 96cd9cd1a119..7ad304a3cc7d 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1727,6 +1727,8 @@ int copy_thread(unsigned long clone_flags, unsigned long usp,
- 	return 0;
- }
  
-+void preload_new_slb_context(unsigned long start, unsigned long sp);
-+
- /*
-  * Set up a thread for executing a new program
-  */
-@@ -1734,6 +1736,10 @@ void start_thread(struct pt_regs *regs, unsigned long start, unsigned long sp)
- {
- #ifdef CONFIG_PPC64
- 	unsigned long load_addr = regs->gpr[2];	/* saved by ELF_PLAT_INIT */
-+
-+#ifdef CONFIG_PPC_BOOK3S_64
-+	preload_new_slb_context(start, sp);
-+#endif
+ extern void slb_initialize(void);
+-extern void slb_flush_and_rebolt(void);
++void slb_flush_and_restore_bolted(void);
+ void slb_flush_all_realmode(void);
+ void __slb_restore_bolted_realmode(void);
+ void slb_restore_bolted_realmode(void);
+diff --git a/arch/powerpc/kernel/swsusp_asm64.S b/arch/powerpc/kernel/swsusp_asm64.S
+index f83bf6f72cb0..185216becb8b 100644
+--- a/arch/powerpc/kernel/swsusp_asm64.S
++++ b/arch/powerpc/kernel/swsusp_asm64.S
+@@ -262,7 +262,7 @@ END_FW_FTR_SECTION_IFCLR(FW_FEATURE_LPAR)
+ 
+ 	addi	r1,r1,-128
+ #ifdef CONFIG_PPC_BOOK3S_64
+-	bl	slb_flush_and_rebolt
++	bl	slb_flush_and_restore_bolted
  #endif
+ 	bl	do_after_copyback
+ 	addi	r1,r1,128
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 854edc3722e0..0cc7fbc3bd1c 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -1125,7 +1125,7 @@ void demote_segment_4k(struct mm_struct *mm, unsigned long addr)
+ 	if ((get_paca_psize(addr) != MMU_PAGE_4K) && (current->mm == mm)) {
  
- 	/*
-@@ -1824,6 +1830,7 @@ void start_thread(struct pt_regs *regs, unsigned long start, unsigned long sp)
- #ifdef CONFIG_VSX
- 	current->thread.used_vsr = 0;
- #endif
-+	current->thread.load_slb = 0;
- 	current->thread.load_fp = 0;
- 	memset(&current->thread.fp_state, 0, sizeof(current->thread.fp_state));
- 	current->thread.fp_save_area = NULL;
-diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/mmu_context_book3s64.c
-index f7352c66b6b8..510f103d7813 100644
---- a/arch/powerpc/mm/mmu_context_book3s64.c
-+++ b/arch/powerpc/mm/mmu_context_book3s64.c
-@@ -53,6 +53,8 @@ int hash__alloc_context_id(void)
- }
- EXPORT_SYMBOL_GPL(hash__alloc_context_id);
- 
-+void slb_setup_new_exec(void);
-+
- static int hash__init_new_context(struct mm_struct *mm)
- {
- 	int index;
-@@ -87,6 +89,8 @@ static int hash__init_new_context(struct mm_struct *mm)
- void hash__setup_new_exec(void)
- {
- 	slice_setup_new_exec();
-+
-+	slb_setup_new_exec();
- }
- 
- static int radix__init_new_context(struct mm_struct *mm)
-diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
-index ed61639fe4f4..3b7d8af09724 100644
---- a/arch/powerpc/mm/slb.c
-+++ b/arch/powerpc/mm/slb.c
-@@ -257,41 +257,148 @@ void slb_vmalloc_update(void)
- 	slb_flush_and_rebolt();
- }
- 
--/* Helper function to compare esids.  There are four cases to handle.
-- * 1. The system is not 1T segment size capable.  Use the GET_ESID compare.
-- * 2. The system is 1T capable, both addresses are < 1T, use the GET_ESID compare.
-- * 3. The system is 1T capable, only one of the two addresses is > 1T.  This is not a match.
-- * 4. The system is 1T capable, both addresses are > 1T, use the GET_ESID_1T macro to compare.
-- */
--static inline int esids_match(unsigned long addr1, unsigned long addr2)
-+static bool preload_hit(struct thread_info *ti, unsigned long esid)
- {
--	int esid_1t_count;
-+	unsigned char i;
- 
--	/* System is not 1T segment size capable. */
--	if (!mmu_has_feature(MMU_FTR_1T_SEGMENT))
--		return (GET_ESID(addr1) == GET_ESID(addr2));
-+	for (i = 0; i < ti->slb_preload_nr; i++) {
-+		unsigned char idx;
-+
-+		idx = (ti->slb_preload_tail + i) % SLB_PRELOAD_NR;
-+		if (esid == ti->slb_preload_esid[idx])
-+			return true;
-+	}
-+	return false;
-+}
-+
-+static bool preload_add(struct thread_info *ti, unsigned long ea)
-+{
-+	unsigned char idx;
-+	unsigned long esid;
-+
-+	if (mmu_has_feature(MMU_FTR_1T_SEGMENT)) {
-+		/* EAs are stored >> 28 so 256MB segments don't need clearing */
-+		if (ea & ESID_MASK_1T)
-+			ea &= ESID_MASK_1T;
-+	}
- 
--	esid_1t_count = (((addr1 >> SID_SHIFT_1T) != 0) +
--				((addr2 >> SID_SHIFT_1T) != 0));
-+	esid = ea >> SID_SHIFT;
- 
--	/* both addresses are < 1T */
--	if (esid_1t_count == 0)
--		return (GET_ESID(addr1) == GET_ESID(addr2));
-+	if (preload_hit(ti, esid))
-+		return false;
- 
--	/* One address < 1T, the other > 1T.  Not a match */
--	if (esid_1t_count == 1)
--		return 0;
-+	idx = (ti->slb_preload_tail + ti->slb_preload_nr) % SLB_PRELOAD_NR;
-+	ti->slb_preload_esid[idx] = esid;
-+	if (ti->slb_preload_nr == SLB_PRELOAD_NR)
-+		ti->slb_preload_tail = (ti->slb_preload_tail + 1) % SLB_PRELOAD_NR;
-+	else
-+		ti->slb_preload_nr++;
- 
--	/* Both addresses are > 1T. */
--	return (GET_ESID_1T(addr1) == GET_ESID_1T(addr2));
-+	return true;
- }
- 
-+static void preload_age(struct thread_info *ti)
-+{
-+	if (!ti->slb_preload_nr)
-+		return;
-+	ti->slb_preload_nr--;
-+	ti->slb_preload_tail = (ti->slb_preload_tail + 1) % SLB_PRELOAD_NR;
-+}
-+
-+void slb_setup_new_exec(void)
-+{
-+	struct thread_info *ti = current_thread_info();
-+	struct mm_struct *mm = current->mm;
-+	unsigned long exec = 0x10000000;
-+
-+	WARN_ON(irqs_disabled());
-+
-+	/*
-+	 * preload cache can only be used to determine whether a SLB
-+	 * entry exists if it does not start to overflow.
-+	 */
-+	if (ti->slb_preload_nr + 2 > SLB_PRELOAD_NR)
-+		return;
-+
-+	hard_irq_disable();
-+
-+	/*
-+	 * We have no good place to clear the slb preload cache on exec,
-+	 * flush_thread is about the earliest arch hook but that happens
-+	 * after we switch to the mm and have aleady preloaded the SLBEs.
-+	 *
-+	 * For the most part that's probably okay to use entries from the
-+	 * previous exec, they will age out if unused. It may turn out to
-+	 * be an advantage to clear the cache before switching to it,
-+	 * however.
-+	 */
-+
-+	/*
-+	 * preload some userspace segments into the SLB.
-+	 * Almost all 32 and 64bit PowerPC executables are linked at
-+	 * 0x10000000 so it makes sense to preload this segment.
-+	 */
-+	if (!is_kernel_addr(exec)) {
-+		if (preload_add(ti, exec))
-+			slb_allocate_user(mm, exec);
-+	}
-+
-+	/* Libraries and mmaps. */
-+	if (!is_kernel_addr(mm->mmap_base)) {
-+		if (preload_add(ti, mm->mmap_base))
-+			slb_allocate_user(mm, mm->mmap_base);
-+	}
-+
-+	/* see switch_slb */
-+	asm volatile("isync" : : : "memory");
-+
-+	local_irq_enable();
-+}
-+
-+void preload_new_slb_context(unsigned long start, unsigned long sp)
-+{
-+	struct thread_info *ti = current_thread_info();
-+	struct mm_struct *mm = current->mm;
-+	unsigned long heap = mm->start_brk;
-+
-+	WARN_ON(irqs_disabled());
-+
-+	/* see above */
-+	if (ti->slb_preload_nr + 3 > SLB_PRELOAD_NR)
-+		return;
-+
-+	hard_irq_disable();
-+
-+	/* Userspace entry address. */
-+	if (!is_kernel_addr(start)) {
-+		if (preload_add(ti, start))
-+			slb_allocate_user(mm, start);
-+	}
-+
-+	/* Top of stack, grows down. */
-+	if (!is_kernel_addr(sp)) {
-+		if (preload_add(ti, sp))
-+			slb_allocate_user(mm, sp);
-+	}
-+
-+	/* Bottom of heap, grows up. */
-+	if (heap && !is_kernel_addr(heap)) {
-+		if (preload_add(ti, heap))
-+			slb_allocate_user(mm, heap);
-+	}
-+
-+	/* see switch_slb */
-+	asm volatile("isync" : : : "memory");
-+
-+	local_irq_enable();
-+}
-+
-+
- /* Flush all user entries from the segment table of the current processor. */
- void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
- {
--	unsigned long pc = KSTK_EIP(tsk);
--	unsigned long stack = KSTK_ESP(tsk);
--	unsigned long exec_base;
-+	struct thread_info *ti = task_thread_info(tsk);
-+	unsigned char i;
- 
- 	/*
- 	 * We need interrupts hard-disabled here, not just soft-disabled,
-@@ -300,6 +407,7 @@ void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
- 	 * which would update the slb_cache/slb_cache_ptr fields in the PACA.
- 	 */
- 	hard_irq_disable();
-+	asm volatile("isync" : : : "memory");
- 	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
- 		/*
- 		 * SLBIA IH=3 invalidates all Class=1 SLBEs and their
-@@ -307,16 +415,14 @@ void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
- 		 * switch_slb wants. So ARCH_300 does not use the slb
- 		 * cache.
- 		 */
--		asm volatile("isync ; " PPC_SLBIA(3)" ; isync");
-+		asm volatile(PPC_SLBIA(3));
- 	} else {
- 		unsigned long offset = get_paca()->slb_cache_ptr;
- 
- 		if (!mmu_has_feature(MMU_FTR_NO_SLBIE_B) &&
- 		    offset <= SLB_CACHE_ENTRIES) {
- 			unsigned long slbie_data = 0;
--			int i;
- 
--			asm volatile("isync" : : : "memory");
- 			for (i = 0; i < offset; i++) {
- 				/* EA */
- 				slbie_data = (unsigned long)
-@@ -331,7 +437,6 @@ void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
- 			if (!cpu_has_feature(CPU_FTR_ARCH_207S) && offset == 1)
- 				asm volatile("slbie %0" : : "r" (slbie_data));
- 
--			asm volatile("isync" : : : "memory");
- 		} else {
- 			struct slb_shadow *p = get_slb_shadow();
- 			unsigned long ksp_esid_data =
-@@ -339,8 +444,7 @@ void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
- 			unsigned long ksp_vsid_data =
- 				be64_to_cpu(p->save_area[KSTACK_INDEX].vsid);
- 
--			asm volatile("isync\n"
--				     PPC_SLBIA(1) "\n"
-+			asm volatile(PPC_SLBIA(1) "\n"
- 				     "slbmte	%0,%1\n"
- 				     "isync"
- 				     :: "r"(ksp_vsid_data),
-@@ -356,24 +460,35 @@ void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
- 	copy_mm_to_paca(mm);
- 
- 	/*
--	 * preload some userspace segments into the SLB.
--	 * Almost all 32 and 64bit PowerPC executables are linked at
--	 * 0x10000000 so it makes sense to preload this segment.
-+	 * We gradually age out SLBs after a number of context switches to
-+	 * reduce reload overhead of unused entries (like we do with FP/VEC
-+	 * reload). Each time we wrap 256 switches, take an entry out of the
-+	 * SLB preload cache.
- 	 */
--	exec_base = 0x10000000;
-+	tsk->thread.load_slb++;
-+	if (!tsk->thread.load_slb) {
-+		unsigned long pc = KSTK_EIP(tsk);
- 
--	if (is_kernel_addr(pc) || is_kernel_addr(stack) ||
--	    is_kernel_addr(exec_base))
--		return;
-+		preload_age(ti);
-+		preload_add(ti, pc);
-+	}
-+
-+	for (i = 0; i < ti->slb_preload_nr; i++) {
-+		unsigned char idx;
-+		unsigned long ea;
- 
--	slb_allocate_user(mm, pc);
-+		idx = (ti->slb_preload_tail + i) % SLB_PRELOAD_NR;
-+		ea = (unsigned long)ti->slb_preload_esid[idx] << SID_SHIFT;
- 
--	if (!esids_match(pc, stack))
--		slb_allocate_user(mm, stack);
-+		slb_allocate_user(mm, ea);
-+	}
- 
--	if (!esids_match(pc, exec_base) &&
--	    !esids_match(stack, exec_base))
--		slb_allocate_user(mm, exec_base);
-+	/*
-+	 * Synchronize slbmte preloads with possible subsequent user memory
-+	 * address accesses by the kernel (user mode won't happen until
-+	 * rfid, which is safe).
-+	 */
-+	asm volatile("isync" : : : "memory");
- }
- 
- void slb_set_size(u16 size)
-@@ -642,11 +757,16 @@ long do_slb_fault(struct pt_regs *regs, unsigned long ea)
- 		return slb_allocate_kernel(ea, id);
- 	} else {
- 		struct mm_struct *mm = current->mm;
-+		long err;
- 
- 		if (unlikely(!mm))
- 			return -EFAULT;
- 
--		return slb_allocate_user(mm, ea);
-+		err = slb_allocate_user(mm, ea);
-+		if (!err)
-+			preload_add(current_thread_info(), ea);
-+
-+		return err;
+ 		copy_mm_to_paca(mm);
+-		slb_flush_and_rebolt();
++		slb_flush_and_restore_bolted();
  	}
  }
+ #endif /* CONFIG_PPC_64K_PAGES */
+@@ -1197,7 +1197,7 @@ static void check_paca_psize(unsigned long ea, struct mm_struct *mm,
+ 	if (user_region) {
+ 		if (psize != get_paca_psize(ea)) {
+ 			copy_mm_to_paca(mm);
+-			slb_flush_and_rebolt();
++			slb_flush_and_restore_bolted();
+ 		}
+ 	} else if (get_paca()->vmalloc_sllp !=
+ 		   mmu_psize_defs[mmu_vmalloc_psize].sllp) {
+diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
+index 3b7d8af09724..d8d9c9bd15d3 100644
+--- a/arch/powerpc/mm/slb.c
++++ b/arch/powerpc/mm/slb.c
+@@ -115,8 +115,6 @@ void __slb_restore_bolted_realmode(void)
  
+ /*
+  * Insert the bolted entries into an empty SLB.
+- * This is not the same as rebolt because the bolted segments are not
+- * changed, just loaded from the shadow area.
+  */
+ void slb_restore_bolted_realmode(void)
+ {
+@@ -135,12 +133,15 @@ void slb_flush_all_realmode(void)
+ 	asm volatile("slbmte %0,%0; slbia" : : "r" (0));
+ }
+ 
+-void slb_flush_and_rebolt(void)
++/*
++ * This flushes non-bolted entries, it can be run in virtual mode. Must
++ * be called with interrupts disabled.
++ */
++void slb_flush_and_restore_bolted(void)
+ {
+-	/* If you change this make sure you change SLB_NUM_BOLTED
+-	 * and PR KVM appropriately too. */
+-	unsigned long linear_llp, lflags;
+-	unsigned long ksp_esid_data, ksp_vsid_data;
++	struct slb_shadow *p = get_slb_shadow();
++
++	BUILD_BUG_ON(SLB_NUM_BOLTED != 2);
+ 
+ 	WARN_ON(!irqs_disabled());
+ 
+@@ -150,30 +151,12 @@ void slb_flush_and_rebolt(void)
+ 	 */
+ 	hard_irq_disable();
+ 
+-	linear_llp = mmu_psize_defs[mmu_linear_psize].sllp;
+-	lflags = SLB_VSID_KERNEL | linear_llp;
+-
+-	ksp_esid_data = mk_esid_data(get_paca()->kstack, mmu_kernel_ssize, KSTACK_INDEX);
+-	if ((ksp_esid_data & ~0xfffffffUL) <= PAGE_OFFSET) {
+-		ksp_esid_data &= ~SLB_ESID_V;
+-		ksp_vsid_data = 0;
+-		slb_shadow_clear(KSTACK_INDEX);
+-	} else {
+-		/* Update stack entry; others don't change */
+-		slb_shadow_update(get_paca()->kstack, mmu_kernel_ssize, lflags, KSTACK_INDEX);
+-		ksp_vsid_data =
+-			be64_to_cpu(get_slb_shadow()->save_area[KSTACK_INDEX].vsid);
+-	}
+-
+-	/* We need to do this all in asm, so we're sure we don't touch
+-	 * the stack between the slbia and rebolting it. */
+ 	asm volatile("isync\n"
+ 		     "slbia\n"
+-		     /* Slot 1 - kernel stack */
+-		     "slbmte	%0,%1\n"
+-		     "isync"
+-		     :: "r"(ksp_vsid_data),
+-		        "r"(ksp_esid_data)
++		     "slbmte  %0, %1\n"
++		     "isync\n"
++		     :: "r" (be64_to_cpu(p->save_area[KSTACK_INDEX].vsid)),
++			"r" (be64_to_cpu(p->save_area[KSTACK_INDEX].esid))
+ 		     : "memory");
+ 
+ 	get_paca()->slb_cache_ptr = 0;
+@@ -254,7 +237,10 @@ void slb_dump_contents(struct slb_entry *slb_ptr)
+ 
+ void slb_vmalloc_update(void)
+ {
+-	slb_flush_and_rebolt();
++	/*
++	 * vmalloc is not bolted, so just have to flush non-bolted.
++	 */
++	slb_flush_and_restore_bolted();
+ }
+ 
+ static bool preload_hit(struct thread_info *ti, unsigned long esid)
+diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
+index 546dd07c8083..50ba3d0456a5 100644
+--- a/arch/powerpc/mm/slice.c
++++ b/arch/powerpc/mm/slice.c
+@@ -219,7 +219,7 @@ static void slice_flush_segments(void *parm)
+ 	copy_mm_to_paca(current->active_mm);
+ 
+ 	local_irq_save(flags);
+-	slb_flush_and_rebolt();
++	slb_flush_and_restore_bolted();
+ 	local_irq_restore(flags);
+ #endif
+ }
 -- 
 2.17.1
 
