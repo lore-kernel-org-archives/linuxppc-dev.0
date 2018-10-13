@@ -2,56 +2,74 @@ Return-Path: <SRS0=geFq=M2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 59109C6787C
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Oct 2018 03:34:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7BD93C6787C
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Oct 2018 05:53:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 89F532077C
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Oct 2018 03:34:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 89F532077C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id B746920835
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Oct 2018 05:53:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B746920835
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=users.sourceforge.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42XnHL4jJ2zF3Ff
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Oct 2018 14:34:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42XnFH32BYzF3DN
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Oct 2018 14:32:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42XrMz6jhGzF3BP
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Oct 2018 16:53:19 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=users.sourceforge.net
+Authentication-Results: lists.ozlabs.org; spf=pass (mailfrom)
+ smtp.mailfrom=users.sourceforge.net (client-ip=212.227.15.14; helo=mout.web.de;
+ envelope-from=elfring@users.sourceforge.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ header.from=users.sourceforge.net
+Received: from mout.web.de (mout.web.de [212.227.15.14])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 42XnFB5DWjz9s7h;
- Sun, 14 Oct 2018 14:32:14 +1100 (AEDT)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Dominik Brodowski <linux@dominikbrodowski.net>,
- Geoff Levand <geoff@infradead.org>, Jens Axboe <axboe@kernel.dk>,
- Kumar Gala <galak@kernel.crashing.org>, Li Yang <leoyang.li@nxp.com>,
- Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>,
- Scott Wood <oss@buserror.net>, aneesh.kumar@linux.vnet.ibm.com
-Subject: Re: [PATCH v3 06/24] powerpc/mm: properly set PAGE_KERNEL flags in
- ioremap()
-In-Reply-To: <52bd80b06bae0d854d04501e1e136575b77fa9fa.1539092111.git.christophe.leroy@c-s.fr>
-References: <cover.1539092111.git.christophe.leroy@c-s.fr>
- <52bd80b06bae0d854d04501e1e136575b77fa9fa.1539092111.git.christophe.leroy@c-s.fr>
-Date: Sun, 14 Oct 2018 14:32:13 +1100
-Message-ID: <87d0sd19vm.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42XK7S490NzF35X
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Oct 2018 20:25:38 +1100 (AEDT)
+Received: from [192.168.1.2] ([77.182.109.121]) by smtp.web.de (mrweb004
+ [213.165.67.108]) with ESMTPSA (Nemesis) id 0Ljgd6-1fe7F90cKO-00bZio; Sat, 13
+ Oct 2018 11:23:11 +0200
+Received: from [192.168.1.2] ([77.182.109.121]) by smtp.web.de (mrweb004
+ [213.165.67.108]) with ESMTPSA (Nemesis) id 0Ljgd6-1fe7F90cKO-00bZio; Sat, 13
+ Oct 2018 11:23:11 +0200
+Subject: Re: [PATCH v2 1/2] treewide: remove unused address argument from
+ pte_alloc functions
+To: Joel Fernandes <joel@joelfernandes.org>
+References: <20181012013756.11285-1-joel@joelfernandes.org>
+ <03b524f3-5f3a-baa0-2254-9c588103d2d6@users.sourceforge.net>
+ <20181012194210.GA27630@joelaf.mtv.corp.google.com>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Message-ID: <e1be1dda-90ab-052d-496b-3de01ffc80d1@users.sourceforge.net>
+Date: Sat, 13 Oct 2018 11:22:49 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.2.1
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <20181012194210.GA27630@joelaf.mtv.corp.google.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-GB
+Content-Transfer-Encoding: 8bit
+X-Provags-ID: V03:K1:opVsTsdRSQYHnglK8xvkCUZUswSzgAiKoS+KIhCNIvHd3Yq3Ufx
+ ceTjZIQMEq4s0BqtUDsQA+V/NSZ/iWF9ovz8l3V5T+EzWg7BbDd+DB1TsHw9ObirhajDCPf
+ m94io4so/kUaQ+paPJXJjuENjQDWI0XLcPpR7a3huBeUNpGTXKQjSmr/JDL+b4gW6p57u4Z
+ 1BzRLcEsMoiZQwc663VQA==
+X-UI-Out-Filterresults: notjunk:1;V01:K0:v6MarwJQGgc=:Ymq3Px86/PQtPzMwB8SDWz
+ 2sVTW3LAMS2aIZ8Ekzl7/SDvldDrpm06rM73xwb0uYPMZ3GHwT//p8vaal6x17s8ay7WilQrz
+ K1Bg967tVvkE9O+bHYv3RH85K5N3GlfnSnpVrzbF5FATwM77bmyW3MOdfKY7APM2E6r4svqKH
+ MjIc6EhkL1944Pl4HVJszGwMBqx/ea3HMQWVGQE7Fd0Ebm1oh0deQfClHVkLGh8/eDgF8Djb6
+ zhE9SKkfVZD6CWg7y9Zr8UuLknPaHhds4jQlAMO+YyPfNMHH3UXbXN3LViy8PQi9Sfu/wr8jr
+ 3+NabdySRdW+Eh9PkizWR+WbpiupacwKtItrKdb/mvDoVJACLixppwElNeEYZJCv3pD52wuiM
+ eNEH08JILjZld6narndqV/zqIowHw7k2AsltgBKw0Mqlcd3QvKYQQZP0kzRbToXq5ZBasFKx6
+ U+BMMQhDfw/6IIb5b051oCjD+wiruFio921rpsNCRU5y6aHnm+w7j8hRQukryGIa8LOrD4JCW
+ yaRthF7hb06kDcJkklIkR9xn6uu3m37H3Ya+z/Dsj+VDmHFNkctUwe9XY3r0EKO0MJqy4riYs
+ Lund5+9Dymq/dXSENAL9MmfFRdRSfOQ12yYUHLRKcOYrSNFpBluxLsiBkqcJq5jwuxdjSZhRe
+ QzXp5jsYL6wwfiq9dly7RAYyGqQBu1TI8IMDHj5CyOWHrrPCt6S8e7162OjoHxsMqNTW8Aaoo
+ z0PdDLyq3fVbSyAsDljIS3uoxrzwE7ryXbtER5vO5qv8MegP+wfnql8gFgSZR2DOoTwd1GhVk
+ Nw4MxMBjGx6rPT068O9XO/l/2SyaNynS07fdGT4KUxwYM+p1nk=
+X-Mailman-Approved-At: Sun, 14 Oct 2018 16:51:35 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,134 +81,130 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-block@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: linux-mips@linux-mips.org, Rich Felker <dalias@libc.org>,
+ linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+ Peter Zijlstra <peterz@infradead.org>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Dave Hansen <dave.hansen@linux.intel.com>, kernel-janitors@vger.kernel.org,
+ Michal Hocko <mhocko@kernel.org>, linux-mm@kvack.org,
+ Lokesh Gidra <lokeshgidra@google.com>, sparclinux@vger.kernel.org,
+ linux-riscv@lists.infradead.org, kvmarm@lists.cs.columbia.edu,
+ Jonas Bonn <jonas@southpole.se>, linux-s390@vger.kernel.org,
+ Daniel Colascione <dancol@google.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Max Filippov <jcmvbkbc@gmail.com>,
+ linux-hexagon@vger.kernel.org, Helge Deller <deller@gmx.de>,
+ "maintainer:X86 ARCHITECTURE \(32-BIT AND 64-BIT\)" <x86@kernel.org>,
+ Hugh Dickins <hughd@google.com>,
+ "James E. J. Bottomley" <jejb@parisc-linux.org>, kasan-dev@googlegroups.com,
+ Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
+ Andrey Ryabinin <aryabinin@virtuozzo.com>, linux-snps-arc@lists.infradead.org,
+ kernel-team@android.com, Sam Creasey <sammy@sammy.net>,
+ Fenghua Yu <fenghua.yu@intel.com>, Will Deacon <will.deacon@arm.com>,
+ Jeff Dike <jdike@addtoit.com>, linux-um@lists.infradead.org,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ Julia Lawall <Julia.Lawall@lip6.fr>, linux-m68k@lists.linux-m68k.org,
+ openrisc@lists.librecores.org, Borislav Petkov <bp@alien8.de>,
+ Andy Lutomirski <luto@kernel.org>, nios2-dev@lists.rocketboards.org,
+ "Kirill A. Shutemov" <kirill@shutemov.name>, Stafford Horne <shorne@gmail.com>,
+ Guan Xuetao <gxt@pku.edu.cn>, linux-arm-kernel@lists.infradead.org,
+ Chris Zankel <chris@zankel.net>, Tony Luck <tony.luck@intel.com>,
+ Richard Weinberger <richard@nod.at>, linux-parisc@vger.kernel.org,
+ pantin@google.com, linux-kernel@vger.kernel.org,
+ Minchan Kim <minchan@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+ linux-alpha@vger.kernel.org, Ley Foon Tan <lftan@altera.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy <christophe.leroy@c-s.fr> writes:
+>>> The changes were obtained by applying the following Coccinelle script.
 
-> Set PAGE_KERNEL directly in the caller and do not rely on a
-> hack adding PAGE_KERNEL flags when _PAGE_PRESENT is not set.
->
-> As already done for PPC64, use pgprot_cache() helpers instead of
-> _PAGE_XXX flags in PPC32 ioremap() derived functions.
->
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+How do you think about to adjust the order of provided information
+in the commit description?
+1. Update goals
+2. Transformation implementation at the end
 
-Something in here is breaking my p5020ds (both 32-bit and 64-bit):
 
-# first bad commit: [cb9220cc18345a2a1ec287752e576a2c88fa4a2b] powerpc/mm: properly set PAGE_KERNEL flags in ioremap()
+>> "^(?:pte_alloc(?:_one(?:_kernel)?)?|__pte_alloc(?:_kernel)?)$";
+> 
+> Sure it looks more clever, but why?
 
-64-bit:
+1. Usage of non-capturing parentheses
+2. Clearer specification which parts can be treated as optional
+   in the search pattern.
 
-  io scheduler mq-deadline registered
-  io scheduler kyber registered
-  pcieport 0000:00:00.0: AER enabled with IRQ 482
-  pcieport 2000:00:00.0: AER enabled with IRQ 480
-  Unable to handle kernel paging request for data at address 0x8000080080080000
-  Faulting instruction address: 0xc0000000000152e4
-  Oops: Kernel access of bad area, sig: 11 [#1]
-  BE SMP NR_CPUS=32 CoreNet Generic
-  Modules linked in:
-  CPU: 1 PID: 1 Comm: swapper/0 Not tainted 4.19.0-rc3-gcc-7.3.1-00135-gcb9220cc1834 #16
-  NIP:  c0000000000152e4 LR: c0000000005173b8 CTR: 0000000000100000
-  REGS: c0000000f30eb420 TRAP: 0300   Not tainted  (4.19.0-rc3-gcc-7.3.1-00135-gcb9220cc1834)
-  MSR:  0000000080029000 <CE,EE,ME>  CR: 24000224  XER: 00000000
-  DEAR: 8000080080080000 ESR: 0000000000800000 IRQMASK: 0 
-  GPR00: c0000000005173a0 c0000000f30eb6a0 c000000000f86e00 8000080080080000 
-  GPR04: 0000000000000000 0000000000400000 00000ffbff000004 0000000000000008 
-  GPR08: 0000000000000000 0000000000100000 0000000000000000 0000000000000080 
-  GPR12: 0000000084000422 c00000003ffff7c0 c00000000000263c 0000000000000000 
-  GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
-  GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
-  GPR24: c000000000dbe0a0 c000000000d41bf8 8000080080080000 c0000000ffff89a8 
-  GPR28: c0000000f3492400 c0000000f3492410 0000000000400000 c000000000ff0a18 
-  NIP [c0000000000152e4] ._memset_io+0x6c/0x9c
-  LR [c0000000005173b8] .fsl_qman_probe+0x188/0x918
-  Call Trace:
-  [c0000000f30eb6a0] [c0000000005173a0] .fsl_qman_probe+0x170/0x918 (unreliable)
-  [c0000000f30eb740] [c0000000005797dc] .platform_drv_probe+0x58/0xac
-  [c0000000f30eb7c0] [c0000000005772b0] .really_probe+0x2a8/0x380
-  [c0000000f30eb860] [c0000000005776f0] .__driver_attach+0x138/0x13c
-  [c0000000f30eb8f0] [c000000000574550] .bus_for_each_dev+0x9c/0x110
-  [c0000000f30eb9a0] [c000000000576a18] .driver_attach+0x24/0x38
-  [c0000000f30eba10] [c0000000005761ec] .bus_add_driver+0x16c/0x2ac
-  [c0000000f30ebab0] [c000000000578194] .driver_register+0x88/0x178
-  [c0000000f30ebb30] [c000000000579770] .__platform_driver_register+0x48/0x5c
-  [c0000000f30ebba0] [c000000000d85744] .fsl_qman_driver_init+0x1c/0x30
-  [c0000000f30ebc10] [c000000000002374] .do_one_initcall+0x70/0x258
-  [c0000000f30ebcf0] [c000000000d4a244] .kernel_init_freeable+0x340/0x43c
-  [c0000000f30ebdb0] [c000000000002658] .kernel_init+0x1c/0x130
-  [c0000000f30ebe30] [c0000000000009e4] .ret_from_kernel_thread+0x58/0x74
-  Instruction dump:
-  4e800020 2ba50003 40dd003c 3925fffc 5488402e 7929f082 7d082378 39290001 
-  550a801e 7d2903a6 7d4a4378 794a0020 <91430000> 38630004 4200fff8 70a50003 
-  ---[ end trace 372a57fd67efb6fe ]---
 
-32 bit:
+> Ugh that's harder to read and confusing.
 
-  [    1.076133] pcieport 2000:02:00.0: AER enabled with IRQ 480
-  [    1.082106] Unable to handle kernel paging request for data at address 0xf1100000
-  [    1.089488] Faulting instruction address: 0xc0011c80
-  [    1.094437] Oops: Kernel access of bad area, sig: 11 [#1]
-  [    1.099816] BE SMP NR_CPUS=24 CoreNet Generic
-  [    1.104157] Modules linked in:
-  [    1.107197] CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.19.0-rc3-gcc7x-g8f0c636b0542 #1
-  [    1.115181] NIP:  c0011c80 LR: c058f970 CTR: 00100000
-  [    1.120216] REGS: e8107c80 TRAP: 0300   Not tainted  (4.19.0-rc3-gcc7x-g8f0c636b0542)
-  [    1.128026] MSR:  00029002 <CE,EE,ME>  CR: 24000284  XER: 00000000
-  [    1.134190] DEAR: f1100000 ESR: 00800000 
-  [    1.134190] GPR00: c058f958 e8107d30 e8108000 f1100000 00000000 00400000 e8107cd8 e8107d0c 
-  [    1.134190] GPR08: 00000000 00100000 00000000 ff000000 24000282 00000000 c0003340 00000000 
-  [    1.134190] GPR16: 00000000 00000000 00000000 00000000 c0d64410 c0edb34c c0ec6700 00000007 
-  [    1.134190] GPR24: c0ef0000 f1100000 efffcab8 c0ef0000 e8231c00 e8231c10 0040003f c101d290 
-  [    1.171519] NIP [c0011c80] _memset_io+0x90/0xd0
-  [    1.176030] LR [c058f970] fsl_qman_probe+0x190/0x8c0
-  [    1.180975] Call Trace:
-  [    1.183410] [e8107d30] [c001f6c0] ioremap_prot+0x40/0x50 (unreliable)
-  [    1.189830] [e8107d40] [c058f958] fsl_qman_probe+0x178/0x8c0
-  [    1.195475] [e8107d70] [c0600894] platform_drv_probe+0x54/0xb0
-  [    1.201287] [e8107d90] [c05fe15c] really_probe+0x28c/0x350
-  [    1.206756] [e8107dc0] [c05fe73c] __driver_attach+0x12c/0x130
-  [    1.212485] [e8107de0] [c05fb5a8] bus_for_each_dev+0x98/0x110
-  [    1.218213] [e8107e10] [c05fd048] bus_add_driver+0x158/0x2b0
-  [    1.223855] [e8107e40] [c05ff1c4] driver_register+0x94/0x180
-  [    1.229498] [e8107e60] [c0002fc4] do_one_initcall+0x54/0x2d0
-  [    1.235144] [e8107ed0] [c0d650e8] kernel_init_freeable+0x2e8/0x3bc
-  [    1.241302] [e8107f20] [c0003364] kernel_init+0x24/0x130
-  [    1.246599] [e8107f40] [c0015298] ret_from_kernel_thread+0x14/0x1c
-  [    1.252758] Instruction dump:
-  [    1.255711] 2b850003 40dd0040 5488402e 3925fffc 7d082378 5529f0be 550a801e 39290001 
-  [    1.263435] 7d4a4378 7d2903a6 60000000 60000000 <91430000> 38630004 4200fff8 70a50003 
-  [    1.271337] ---[ end trace f6eb249464967cf7 ]---
-  [    1.275934] 
-  [    2.277413] BUG: sleeping function called from invalid context at ./include/linux/percpu-rwsem.h:34
-  [    2.286358] in_atomic(): 0, irqs_disabled(): 1, pid: 1, name: swapper/0
-  [    2.292956] CPU: 0 PID: 1 Comm: swapper/0 Tainted: G      D           4.19.0-rc3-gcc7x-g8f0c636b0542 #1
-  [    2.302328] Call Trace:
-  [    2.304762] [e8107b80] [c0aa3774] dump_stack+0x88/0xc4 (unreliable)
-  [    2.311011] [e8107ba0] [c0074e10] ___might_sleep+0xe0/0x130
-  [    2.316567] [e8107bb0] [c0055410] exit_signals+0x50/0x2d0
-  [    2.321949] [e8107bf0] [c00434dc] do_exit+0xcc/0xad0
-  [    2.326897] [e8107c40] [c000ee98] die+0x228/0x390
-  [    2.331582] [e8107c70] [c00153f4] handle_page_fault+0x34/0x38
-  [    2.337311] --- interrupt: 300 at _memset_io+0x90/0xd0
-  [    2.337311]     LR = fsl_qman_probe+0x190/0x8c0
-  [    2.346945] [e8107d30] [c001f6c0] ioremap_prot+0x40/0x50 (unreliable)
-  [    2.353368] [e8107d40] [c058f958] fsl_qman_probe+0x178/0x8c0
-  [    2.359010] [e8107d70] [c0600894] platform_drv_probe+0x54/0xb0
-  [    2.364825] [e8107d90] [c05fe15c] really_probe+0x28c/0x350
-  [    2.370294] [e8107dc0] [c05fe73c] __driver_attach+0x12c/0x130
-  [    2.376023] [e8107de0] [c05fb5a8] bus_for_each_dev+0x98/0x110
-  [    2.381751] [e8107e10] [c05fd048] bus_add_driver+0x158/0x2b0
-  [    2.387394] [e8107e40] [c05ff1c4] driver_register+0x94/0x180
-  [    2.393035] [e8107e60] [c0002fc4] do_one_initcall+0x54/0x2d0
-  [    2.398678] [e8107ed0] [c0d650e8] kernel_init_freeable+0x2e8/0x3bc
-  [    2.404840] [e8107f20] [c0003364] kernel_init+0x24/0x130
-  [    2.410135] [e8107f40] [c0015298] ret_from_kernel_thread+0x14/0x1c
-  [    2.416312] Kernel panic - not syncing: Attempted to kill init! exitcode=0x0000000b
+* Do you care for coding style and execution speed of regular expressions?
 
-cheers
+* If you would prefer to list function names without placeholders,
+  you can eventually specify them also within SmPL disjunctions directly.
+
+* It can look simpler to use an identifier list as a constraint variant.
+  http://coccinelle.lip6.fr/docs/main_grammar002.html
+
+
+> Again this is confusing.
+
+The view points can be different for such SmPL code.
+
+ T3 fn(T1 E1
+(
+-           , T2 E2
+|           , T2 E2
+-           , T4 E4
+)     );
+
+
+> It makes one think that maybe the second argument can also be removed
+
+You expressed this as the first transformation possibility, didn't you?
+
+You would like to delete an argument from the end of a function
+or macro parameter (or expression) list.
+I suggest then again to avoid the SmPL specification of source code additions
+(plus lines in the file difference format).
+
+
+> and requires careful observation that the ");" follows.
+
+Yes, of course.
+
+Would you care more in the distinction which code parts should be kept unchanged?
+
+
+> Right, I don't need it in this case.
+
+Thanks for your understanding that the metavariable “position p”
+can be deleted in the SmPL rule “pte_alloc_macro”.
+
+
+> But the script works either way.
+
+I imagine that you can become interested in a bit nicer run time characteristics.
+
+
+> I like to take more of a problem solving approach that makes sense,
+
+This is usual.
+
+
+> than aiming for perfection,
+
+If you will work more with scripts for the semantic patch language,
+you might become used to additional coding variants.
+
+
+> after all this is a useful script that we do not need to check
+> in once we finish with it.
+
+I am curious if there will evolve a need to add similar transformation approaches
+to a known script collection.
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/scripts/coccinelle?id=79fc170b1f5c36f486d886bfbd59eb4e62321128
+
+Would you eventually like to run such scripts once more?
+
+Regards,
+Markus
