@@ -6,37 +6,40 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9912CC28CF8
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 10:58:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 73D46C28CF8
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 11:00:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D03BB20645
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 10:58:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D03BB20645
+	by mail.kernel.org (Postfix) with ESMTPS id E045D206B2
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 11:00:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E045D206B2
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42XMC11YbbzDsGm
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 21:58:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42XMF873lqzF3DR
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 22:00:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42XM8y0WRVzF368
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42XM8y6C3DzF368
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Oct 2018 21:57:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 42XM8x6nmrz9s89; Sat, 13 Oct 2018 21:57:05 +1100 (AEDT)
+ id 42XM8y5Svhz9s89; Sat, 13 Oct 2018 21:57:06 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 42XM8x6PDLz9s9J; Sat, 13 Oct 2018 21:57:05 +1100 (AEDT)
+ id 42XM8y4prQz9s9N; Sat, 13 Oct 2018 21:57:06 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/3] powerpc: Split user/kernel definitions of struct pt_regs
-Date: Sat, 13 Oct 2018 21:56:44 +1100
-Message-Id: <20181013105646.5147-1-mpe@ellerman.id.au>
+Subject: [PATCH 2/3] powerpc/ptrace: Don't use sizeof(struct pt_regs) in
+ ptrace code
+Date: Sat, 13 Oct 2018 21:56:45 +1100
+Message-Id: <20181013105646.5147-2-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20181013105646.5147-1-mpe@ellerman.id.au>
+References: <20181013105646.5147-1-mpe@ellerman.id.au>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -53,134 +56,79 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We use a shared definition for struct pt_regs in uapi/asm/ptrace.h.
-That means the layout of the structure is ABI, ie. we can't change it.
+Now that we've split the user & kernel versions of pt_regs we need to
+be more careful in the ptrace code.
 
-That would be fine if it was only used to describe the user-visible
-register state of a process, but it's also the struct we use in the
-kernel to describe the registers saved in an interrupt frame.
+For now we've ensured the location of the fields in both structs is
+the same, so most of the ptrace code doesn't need updating.
 
-We'd like more flexibility in the content (and possibly layout) of the
-kernel version of the struct, but currently that's not possible.
+But there are a few places where we use sizeof(pt_regs), and these
+will be wrong as soon as we increase the size of the kernel structure.
 
-So split the definition into a user-visible definition which remains
-unchanged, and a kernel internal one.
-
-At the moment they're still identical, and we check that at build
-time. That's because we have code (in ptrace etc.) that assumes that
-they are the same. We will fix that code in future patches, and then
-we can break the strict symmetry between the two structs.
+So flip them all to use sizeof(user_pt_regs).
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/ptrace.h      | 27 ++++++++++++++++++
- arch/powerpc/include/uapi/asm/ptrace.h |  7 ++++-
- arch/powerpc/kernel/ptrace.c           | 39 ++++++++++++++++++++++++++
- 3 files changed, 72 insertions(+), 1 deletion(-)
+ arch/powerpc/kernel/ptrace.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
-index 447cbd1bee99..3dd15024db93 100644
---- a/arch/powerpc/include/asm/ptrace.h
-+++ b/arch/powerpc/include/asm/ptrace.h
-@@ -26,6 +26,33 @@
- #include <uapi/asm/ptrace.h>
- #include <asm/asm-const.h>
- 
-+#ifndef __ASSEMBLY__
-+struct pt_regs
-+{
-+	union {
-+		struct user_pt_regs user_regs;
-+		struct {
-+			unsigned long gpr[32];
-+			unsigned long nip;
-+			unsigned long msr;
-+			unsigned long orig_gpr3;
-+			unsigned long ctr;
-+			unsigned long link;
-+			unsigned long xer;
-+			unsigned long ccr;
-+#ifdef CONFIG_PPC64
-+			unsigned long softe;
-+#else
-+			unsigned long mq;
-+#endif
-+			unsigned long trap;
-+			unsigned long dar;
-+			unsigned long dsisr;
-+			unsigned long result;
-+		};
-+	};
-+};
-+#endif
- 
- #ifdef __powerpc64__
- 
-diff --git a/arch/powerpc/include/uapi/asm/ptrace.h b/arch/powerpc/include/uapi/asm/ptrace.h
-index 55c7a131d2ab..f5f1ccc740fc 100644
---- a/arch/powerpc/include/uapi/asm/ptrace.h
-+++ b/arch/powerpc/include/uapi/asm/ptrace.h
-@@ -29,7 +29,12 @@
- 
- #ifndef __ASSEMBLY__
- 
--struct pt_regs {
-+#ifdef __KERNEL__
-+struct user_pt_regs
-+#else
-+struct pt_regs
-+#endif
-+{
- 	unsigned long gpr[32];
- 	unsigned long nip;
- 	unsigned long msr;
 diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index 4e372f54088f..939d7f81bbbe 100644
+index 939d7f81bbbe..c7d0d0c1e34d 100644
 --- a/arch/powerpc/kernel/ptrace.c
 +++ b/arch/powerpc/kernel/ptrace.c
-@@ -3335,3 +3335,42 @@ void do_syscall_trace_leave(struct pt_regs *regs)
+@@ -297,7 +297,7 @@ int ptrace_get_reg(struct task_struct *task, int regno, unsigned long *data)
+ 	}
+ #endif
  
- 	user_enter();
+-	if (regno < (sizeof(struct pt_regs) / sizeof(unsigned long))) {
++	if (regno < (sizeof(struct user_pt_regs) / sizeof(unsigned long))) {
+ 		*data = ((unsigned long *)task->thread.regs)[regno];
+ 		return 0;
+ 	}
+@@ -360,10 +360,10 @@ static int gpr_get(struct task_struct *target, const struct user_regset *regset,
+ 		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+ 					  &target->thread.regs->orig_gpr3,
+ 					  offsetof(struct pt_regs, orig_gpr3),
+-					  sizeof(struct pt_regs));
++					  sizeof(struct user_pt_regs));
+ 	if (!ret)
+ 		ret = user_regset_copyout_zero(&pos, &count, &kbuf, &ubuf,
+-					       sizeof(struct pt_regs), -1);
++					       sizeof(struct user_pt_regs), -1);
+ 
+ 	return ret;
  }
-+
-+void __init pt_regs_check(void)
-+{
-+	BUILD_BUG_ON(offsetof(struct pt_regs, gpr) !=
-+		     offsetof(struct user_pt_regs, gpr));
-+	BUILD_BUG_ON(offsetof(struct pt_regs, nip) !=
-+		     offsetof(struct user_pt_regs, nip));
-+	BUILD_BUG_ON(offsetof(struct pt_regs, msr) !=
-+		     offsetof(struct user_pt_regs, msr));
-+	BUILD_BUG_ON(offsetof(struct pt_regs, msr) !=
-+		     offsetof(struct user_pt_regs, msr));
-+	BUILD_BUG_ON(offsetof(struct pt_regs, orig_gpr3) !=
-+		     offsetof(struct user_pt_regs, orig_gpr3));
-+	BUILD_BUG_ON(offsetof(struct pt_regs, ctr) !=
-+		     offsetof(struct user_pt_regs, ctr));
-+	BUILD_BUG_ON(offsetof(struct pt_regs, link) !=
-+		     offsetof(struct user_pt_regs, link));
-+	BUILD_BUG_ON(offsetof(struct pt_regs, xer) !=
-+		     offsetof(struct user_pt_regs, xer));
-+	BUILD_BUG_ON(offsetof(struct pt_regs, ccr) !=
-+		     offsetof(struct user_pt_regs, ccr));
-+#ifdef __powerpc64__
-+	BUILD_BUG_ON(offsetof(struct pt_regs, softe) !=
-+		     offsetof(struct user_pt_regs, softe));
-+#else
-+	BUILD_BUG_ON(offsetof(struct pt_regs, mq) !=
-+		     offsetof(struct user_pt_regs, mq));
-+#endif
-+	BUILD_BUG_ON(offsetof(struct pt_regs, trap) !=
-+		     offsetof(struct user_pt_regs, trap));
-+	BUILD_BUG_ON(offsetof(struct pt_regs, dar) !=
-+		     offsetof(struct user_pt_regs, dar));
-+	BUILD_BUG_ON(offsetof(struct pt_regs, dsisr) !=
-+		     offsetof(struct user_pt_regs, dsisr));
-+	BUILD_BUG_ON(offsetof(struct pt_regs, result) !=
-+		     offsetof(struct user_pt_regs, result));
-+
-+	BUILD_BUG_ON(sizeof(struct user_pt_regs) > sizeof(struct pt_regs));
-+}
+@@ -853,10 +853,10 @@ static int tm_cgpr_get(struct task_struct *target,
+ 		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+ 					  &target->thread.ckpt_regs.orig_gpr3,
+ 					  offsetof(struct pt_regs, orig_gpr3),
+-					  sizeof(struct pt_regs));
++					  sizeof(struct user_pt_regs));
+ 	if (!ret)
+ 		ret = user_regset_copyout_zero(&pos, &count, &kbuf, &ubuf,
+-					       sizeof(struct pt_regs), -1);
++					       sizeof(struct user_pt_regs), -1);
+ 
+ 	return ret;
+ }
+@@ -3131,7 +3131,7 @@ long arch_ptrace(struct task_struct *child, long request,
+ 	case PTRACE_GETREGS:	/* Get all pt_regs from the child. */
+ 		return copy_regset_to_user(child, &user_ppc_native_view,
+ 					   REGSET_GPR,
+-					   0, sizeof(struct pt_regs),
++					   0, sizeof(struct user_pt_regs),
+ 					   datavp);
+ 
+ #ifdef CONFIG_PPC64
+@@ -3140,7 +3140,7 @@ long arch_ptrace(struct task_struct *child, long request,
+ 	case PTRACE_SETREGS:	/* Set all gp regs in the child. */
+ 		return copy_regset_from_user(child, &user_ppc_native_view,
+ 					     REGSET_GPR,
+-					     0, sizeof(struct pt_regs),
++					     0, sizeof(struct user_pt_regs),
+ 					     datavp);
+ 
+ 	case PTRACE_GETFPREGS: /* Get the child FPU state (FPR0...31 + FPSCR) */
 -- 
 2.17.1
 
