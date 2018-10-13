@@ -2,112 +2,89 @@ Return-Path: <SRS0=nAH3=MZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C7F01C6787C
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 01:25:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 72AA9C6787C
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 01:38:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 16B93204EC
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 01:25:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id CE36520868
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 01:38:01 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="K+kRbdJh"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 16B93204EC
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=joelfernandes.org header.i=@joelfernandes.org header.b="t/bdXm4a"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CE36520868
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=joelfernandes.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42X6Tw15ZQzF3T3
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 12:25:56 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=chromium.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42X6lq3Vf0zF3Sp
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 12:37:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=joelfernandes.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.b="K+kRbdJh";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=joelfernandes.org header.i=@joelfernandes.org header.b="t/bdXm4a";
 	dkim-atps=neutral
-Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42X6RF5FDFzF3Sm
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Oct 2018 12:23:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=chromium.org
+ spf=pass (mailfrom) smtp.mailfrom=joelfernandes.org
+ (client-ip=2607:f8b0:4864:20::642; helo=mail-pl1-x642.google.com;
+ envelope-from=joel@joelfernandes.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=joelfernandes.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=chromium.org header.i=@chromium.org header.b="K+kRbdJh";
- dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 42X6RF4WWTz8tPx
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Oct 2018 12:23:37 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 42X6RF4Lycz9sBZ; Sat, 13 Oct 2018 12:23:37 +1100 (AEDT)
-Authentication-Results: ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=chromium.org
- (client-ip=2607:f8b0:4864:20::b41; helo=mail-yb1-xb41.google.com;
- envelope-from=keescook@chromium.org; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=chromium.org
-Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=chromium.org header.i=@chromium.org header.b="K+kRbdJh";
- dkim-atps=neutral
-Received: from mail-yb1-xb41.google.com (mail-yb1-xb41.google.com
- [IPv6:2607:f8b0:4864:20::b41])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ unprotected) header.d=joelfernandes.org header.i=@joelfernandes.org
+ header.b="t/bdXm4a"; dkim-atps=neutral
+Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com
+ [IPv6:2607:f8b0:4864:20::642])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 42X6RD3lFtz9s8F
- for <linuxppc-dev@ozlabs.org>; Sat, 13 Oct 2018 12:23:35 +1100 (AEDT)
-Received: by mail-yb1-xb41.google.com with SMTP id o8-v6so5588512ybk.13
- for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2018 18:23:35 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
- h=mime-version:in-reply-to:references:from:date:message-id:subject:to
- :cc; bh=JbOxpfFGdPswa4bZ/efSE4CbecsUEZMlH7KeeVCOkxM=;
- b=K+kRbdJhpTUdAzVkZ9yiTf4n6iaSlPr9FzyFCs+NRCVGXMbnRMixRdXcr3v4eCc+Dh
- zOJdwwIYHEagT9GIDx767kuqDNbyDAQUuPKrviM/A13lnPviTrsOT9MzdDUpMpZsyXhz
- fW4ipz+k2UOMQTWakM07v9AFcLgAB9Wbwpy5c=
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42X6jF1LCdzF3Kk
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Oct 2018 12:35:45 +1100 (AEDT)
+Received: by mail-pl1-x642.google.com with SMTP id 30-v6so6668387plb.10
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Oct 2018 18:35:44 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=joelfernandes.org; s=google;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=WNSmz6gPUWl0psy6VYdrKZKj8jjeGLoBOEaYk7PTF5E=;
+ b=t/bdXm4ahfHUsC1W/kmIGtZM4IaaXFvhptMHyl/MsEl85wogOLcBRPLXwHtXoa2xTR
+ d2M48uB6euL4d5IaKV5t6nT5ABUr0y0qRBKJlUNuiclAcNB1bktYaPSMWAk89SYK1P2v
+ +doypv+PPbaJGW2yXU+EaPjAWnWnd1ZXLhamE=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:in-reply-to:references:from:date
- :message-id:subject:to:cc;
- bh=JbOxpfFGdPswa4bZ/efSE4CbecsUEZMlH7KeeVCOkxM=;
- b=i65qvRsxih3y4Odeq2zR6Nw3WxMLlDpBR3NCZ8TvVJfkTUMGPJPcn2WsrV9V5L+6xp
- qB/Yn1WGX9x/GwerdHmVKLSxz5h77CIDfTo7+9dz8hNGBvCMhuq4lW7MrL2VNP0iiNMT
- GD/8C/yEn5D/Mpj67z5P26FWQ8NAsMslxri2ydcnrVencQbowSUiQmb7c36aV06Ho9wa
- il9fC7A0PDbL9RSQKQFfm8O5lbB6ur4e3U7uHw3b6RMuSrblmVXS5UfY7hJxro58of1W
- S4ATu8jSrLh6jc98D6wHwVFjN4mAnD/iMCyLReMfPHsgdJu2F/3zuWfUQrGH+I64lldf
- Qf9A==
-X-Gm-Message-State: ABuFfojyETAhmpyk6iMILZDB8wPLk5Q4tk5OMjWjLQJ8ygT0dPzzuwy7
- 1pOTpMDwKT7JCOjcMK6YeB/SSwT4SoQ=
-X-Google-Smtp-Source: ACcGV62TVO2EmvASgu+iYorzfrhTl7LdOcSO14iU/GjsLDNtUCKgVe4pjNK7PNvHs4z0uPv8zPREFw==
-X-Received: by 2002:a5b:50f:: with SMTP id o15-v6mr4461926ybp.7.1539393812929; 
- Fri, 12 Oct 2018 18:23:32 -0700 (PDT)
-Received: from mail-yb1-f173.google.com (mail-yb1-f173.google.com.
- [209.85.219.173])
- by smtp.gmail.com with ESMTPSA id b19-v6sm708810ywh.29.2018.10.12.18.23.30
- for <linuxppc-dev@ozlabs.org>
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Fri, 12 Oct 2018 18:23:31 -0700 (PDT)
-Received: by mail-yb1-f173.google.com with SMTP id o8-v6so5588489ybk.13
- for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2018 18:23:30 -0700 (PDT)
-X-Received: by 2002:a25:2395:: with SMTP id
- j143-v6mr4532688ybj.137.1539393810363; 
- Fri, 12 Oct 2018 18:23:30 -0700 (PDT)
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=WNSmz6gPUWl0psy6VYdrKZKj8jjeGLoBOEaYk7PTF5E=;
+ b=Dm2yPRSvuM3okatCZWBBo4SLfYRvVf6XrdBbZTPCthrBDF3v6MhEWklRRpuF9W8MSg
+ YCry5P5OWHNzH1vAHOqLzrxoghKXMOEb0UC1hWlDxpSeZ2OYorGdx4TJq4akUFbSYVNe
+ K/V/XMiTz0TI3qPzU4bZ3IjtWBKsDuJ99tTCcOPslJz61M7pcQbN6VxEFefW53h+gGuU
+ Z1xvjTyOEdgafYrybz8DKWUEuxlS89qQXTAnzGFkA42EgdePLPbAAdqRn7rvGBTvOTjU
+ dMZrMhu2/CrZ3PJ1sk96ZuFuFfRxQunisxu6ZuAyp4WIF1GU4cqTGdxAr+KVkZ3zX4EA
+ qFPw==
+X-Gm-Message-State: ABuFfoi7D2vPC1dEPmwL0wy9dCgPeE2B5xkQNJcvckFmDTdCbJX2nQAz
+ QizutkjRcD0oLjYFdvSnfKkWPQ==
+X-Google-Smtp-Source: ACcGV63YcGHLeWFH+zMcDfPGfwOAvPK81iWmstN1Bsc/dCjm29V/T1DgWrxlTjwp6QBDN3hA/VReOg==
+X-Received: by 2002:a17:902:d20a:: with SMTP id
+ t10-v6mr8118444ply.256.1539394543039; 
+ Fri, 12 Oct 2018 18:35:43 -0700 (PDT)
+Received: from localhost ([2620:0:1000:1601:3aef:314f:b9ea:889f])
+ by smtp.gmail.com with ESMTPSA id 20-v6sm3688934pge.77.2018.10.12.18.35.41
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Fri, 12 Oct 2018 18:35:41 -0700 (PDT)
+Date: Fri, 12 Oct 2018 18:35:40 -0700
+From: Joel Fernandes <joel@joelfernandes.org>
+To: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH v2 2/2] mm: speed up mremap by 500x on large regions
+Message-ID: <20181013013540.GA207108@joelaf.mtv.corp.google.com>
+References: <20181012013756.11285-2-joel@joelfernandes.org>
+ <20181012113056.gxhcbrqyu7k7xnyv@kshutemo-mobl1>
+ <20181012125046.GA170912@joelaf.mtv.corp.google.com>
+ <20181012.111836.1569129998592378186.davem@davemloft.net>
 MIME-Version: 1.0
-Received: by 2002:a25:d116:0:0:0:0:0 with HTTP; Fri, 12 Oct 2018 18:23:29
- -0700 (PDT)
-In-Reply-To: <0de89924-ac22-b03a-b041-c79837d3c8cc@embeddedor.com>
-References: <20181010051308.25422-1-mpe@ellerman.id.au>
- <20181010051308.25422-4-mpe@ellerman.id.au>
- <CAGXu5jJqX6ogFgX1q9czwWtufK_nvzUnfN3Xf-74eOBOpcXWVg@mail.gmail.com>
- <874ldt2uhd.fsf@concordia.ellerman.id.au>
- <d86b4613-af42-02ab-6a0c-c1ea0e78f601@embeddedor.com>
- <87woqn1pdm.fsf@concordia.ellerman.id.au>
- <0de89924-ac22-b03a-b041-c79837d3c8cc@embeddedor.com>
-From: Kees Cook <keescook@chromium.org>
-Date: Fri, 12 Oct 2018 18:23:29 -0700
-X-Gmail-Original-Message-ID: <CAGXu5j+-iRoDpxQMwNfEb-qnxN2VXyHz0JX2=WH51v7g+avwFQ@mail.gmail.com>
-Message-ID: <CAGXu5j+-iRoDpxQMwNfEb-qnxN2VXyHz0JX2=WH51v7g+avwFQ@mail.gmail.com>
-Subject: Re: [PATCH 4/4] powerpc: Add -Wimplicit-fallthrough to arch CFLAGS
-To: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20181012.111836.1569129998592378186.davem@davemloft.net>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -119,57 +96,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: maddy@linux.ibm.com, linuxppc-dev@ozlabs.org
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linux-sh@vger.kernel.org, peterz@infradead.org, catalin.marinas@arm.com,
+ dave.hansen@linux.intel.com, mhocko@kernel.org, linux-mm@kvack.org,
+ lokeshgidra@google.com, linux-riscv@lists.infradead.org,
+ elfring@users.sourceforge.net, jonas@southpole.se, linux-s390@vger.kernel.org,
+ dancol@google.com, linux-xtensa@linux-xtensa.org,
+ linux-hexagon@vger.kernel.org, deller@gmx.de, hughd@google.com,
+ jejb@parisc-linux.org, kasan-dev@googlegroups.com,
+ kvmarm@lists.cs.columbia.edu, mingo@redhat.com, geert@linux-m68k.org,
+ aryabinin@virtuozzo.com, linux-snps-arc@lists.infradead.org,
+ kernel-team@android.com, fenghua.yu@intel.com, jdike@addtoit.com,
+ linux-um@lists.infradead.org, Julia.Lawall@lip6.fr,
+ linux-m68k@lists.linux-m68k.org, bp@alien8.de, luto@kernel.org,
+ nios2-dev@lists.rocketboards.org, kirill@shutemov.name, gxt@pku.edu.cn,
+ chris@zankel.net, richard@nod.at, linux-parisc@vger.kernel.org,
+ pantin@google.com, jcmvbkbc@gmail.com, linux-kernel@vger.kernel.org,
+ minchan@kernel.org, linux-alpha@vger.kernel.org, lftan@altera.com,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Oct 12, 2018 at 2:59 AM, Gustavo A. R. Silva
-<gustavo@embeddedor.com> wrote:
->
->
-> On 10/12/18 11:32 AM, Michael Ellerman wrote:
->>
->> Sure. The kbuild report up thread has some or most of them.
->>
->> But here's a full list:
->>
->> Failed 279/290
->> http://kisskb.ellerman.id.au/kisskb/head/1d59e2c78793d8aea9949ca71323c4583c78f488/
->>   Failed: powerpc-next/ppc64_defconfig/powerpc-gcc8           (http://kisskb.ellerman.id.au/kisskb/buildresult/13542791/log/)
->>     /kisskb/src/arch/powerpc/platforms/powermac/feature.c:1477:6: error: this statement may fall through [-Werror=implicit-fallthrough=]
->>     /kisskb/src/include/linux/signal.h:180:22: error: this statement may fall through [-Werror=implicit-fallthrough=]
->>     /kisskb/src/include/linux/compat.h:495:51: error: this statement may fall through [-Werror=implicit-fallthrough=]
->>     /kisskb/src/include/linux/compat.h:496:51: error: this statement may fall through [-Werror=implicit-fallthrough=]
->>     /kisskb/src/include/linux/compat.h:494:51: error: this statement may fall through [-Werror=implicit-fallthrough=]
->>   Failed: powerpc-next/corenet64_smp_defconfig/powerpc-gcc8           (http://kisskb.ellerman.id.au/kisskb/buildresult/13542786/log/)
->>     /kisskb/src/include/linux/compat.h:494:51: error: this statement may fall through [-Werror=implicit-fallthrough=]
->>     /kisskb/src/include/linux/compat.h:495:51: error: this statement may fall through [-Werror=implicit-fallthrough=]
->>     /kisskb/src/include/linux/compat.h:496:51: error: this statement may fall through [-Werror=implicit-fallthrough=]
->>   Failed: powerpc-next/ppc64le_defconfig/powerpc-gcc8         (http://kisskb.ellerman.id.au/kisskb/buildresult/13542777/log/)
->>     /kisskb/src/include/linux/signal.h:180:22: error: this statement may fall through [-Werror=implicit-fallthrough=]
->>   Failed: powerpc-next/powernv_defconfig/powerpc-gcc8         (http://kisskb.ellerman.id.au/kisskb/buildresult/13542776/log/)
->>     /kisskb/src/include/linux/signal.h:180:22: error: this statement may fall through [-Werror=implicit-fallthrough=]
->>
->
-> Thanks, Michael.
->
->
-> Kees, can you take the patches?
->
-> Apparently, neither signal.h nor compat.h have a dedicated maintainer:
->
-> $ scripts/get_maintainer.pl --nokeywords --nogit --nogit-fallback include/linux/signal.h
-> linux-kernel@vger.kernel.org (open list)
->
-> $ scripts/get_maintainer.pl --nokeywords --nogit --nogit-fallback include/linux/compat.h
-> linux-kernel@vger.kernel.org (open list)
+On Fri, Oct 12, 2018 at 11:18:36AM -0700, David Miller wrote:
+> From: Joel Fernandes <joel@joelfernandes.org>
+[...]
+> > Also, do we not flush the caches from any path when we munmap
+> > address space?  We do call do_munmap on the old mapping from mremap
+> > after moving to the new one.
+> 
+> Sparc makes sure that shared mapping have consistent colors.  Therefore
+> all that's left are private mappings and those will be initialized by
+> block stores to clear the page out or similar.
+> 
+> Also, when creating new mappings, we flush the D-cache when necessary
+> in update_mmu_cache().
+> 
+> We also maintain a bit in the page struct to track when a page which
+> was potentially written to on one cpu ends up mapped into another
+> address space and flush as necessary.
+> 
+> The cache is write-through, which simplifies the preconditions we have
+> to maintain.
 
-Normally things like that go through akpm, but I'm happy to carry them
-if needed.
+Makes sense, thanks. For the moment I sent patches to enable this on arm64
+and x86. We can enable it on sparc as well at a later time as it sounds it
+could be a safe optimization to apply to that architecture as well.
 
--Kees
+thanks,
 
--- 
-Kees Cook
-Pixel Security
+ - Joel
+
