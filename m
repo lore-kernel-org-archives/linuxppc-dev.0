@@ -7,24 +7,24 @@ X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C6814C28CF8
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 15:41:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 179CBC28CF8
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 15:43:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 19F5620659
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 15:41:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 8C43D20659
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 15:43:25 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="u8uhjz0l"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 19F5620659
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="l6lfmgac"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8C43D20659
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42XTSh6VVmzF3Jw
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Oct 2018 02:41:08 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42XTWH4Zr2zF2Dv
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Oct 2018 02:43:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="u8uhjz0l";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="l6lfmgac";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
@@ -35,39 +35,38 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="u8uhjz0l"; dkim-atps=neutral
+ header.b="l6lfmgac"; dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42XTQ52rhKzF2Dv
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Oct 2018 02:38:53 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42XTQ76mryzF2Dv
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Oct 2018 02:38:55 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
- Content-Type:MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:
- To:From:Sender:Reply-To:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=Nm1QlJJRyF2xjNFv5r9tVlXvgAX48gyY7OQjIrXdCSc=; b=u8uhjz0lZngbDcIKcg5qNt426
- YkKfsSRjwZ3cLStdWta2VyBxc+01C+Mi/TY0LDWDQ7YJGGdaAhUSXIZXP3ocph17HlSSra8Gd7w90
- lsNiWfi9iFx/mAX/HvWHxPlPca15h1BeoeJHg4Rv1mkde5kRSOqUPGwVRKdqHkBmFWRPAhXaLa4fx
- cnmiChYcq1gX7rGOBJfS4/fazXWrN8/xPrBTiyr5WiozImhWVmEc8j/1oVCQmpu/ubp9seWGlgPtv
- 6FYYYdHBJOiHyn+mpwxYJVDqjcts6A9pW8XvuxM+IWYFsoXd9g5w+rUtxWDy6M+OEIynThgS8Bg6+
- eWPKSWrYw==;
+ MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
+ :Reply-To:Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From
+ :Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
+ List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=4KnDnsDd5PAywnB9BlCvHW1koC0hdetxQg1aO7hfXyA=; b=l6lfmgac58iV0uNWJLEEprBzT5
+ u3W5sUxjHd2Yzknn+VifdYZUIh8IedbqZduA93sW5yzU7zyjrZiWPFbR9EaRH69VCXEEiRYe573fz
+ m3XR+gjco3gVmOjnB8rTgS/9NGKzblG+cj6Cb1/txDdIjsNDid/RwVtKWy2MIhVSdIZOFJYZpjHeT
+ ce4HsIG64NEetUrRFRQ9IyE7QCtFHHa2PFb6/68SVafgMWzt88jX9mI1SXXhXIcrxF9lE3i2GkyvC
+ 1vav2UhJ7HEnhRopYTmZIRzq87d594z7128L6qd/jTZFERrmvpfbZxeODrI0VOOIMGDMshZF4JVfv
+ UvtKZ/cw==;
 Received: from 089144199123.atnat0008.highway.a1.net ([89.144.199.123]
  helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
- id 1gBLYb-0002rE-H6; Sat, 13 Oct 2018 15:10:21 +0000
+ id 1gBLYe-0002rO-3Z; Sat, 13 Oct 2018 15:10:24 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Masahiro Yamada <yamada.masahiro@socionext.com>
-Subject: [PATCH 1/8] aha152x: rename the PCMCIA define
-Date: Sat, 13 Oct 2018 17:10:09 +0200
-Message-Id: <20181013151016.31674-2-hch@lst.de>
+Subject: [PATCH 2/8] powerpc: simplify CONFIG_PCI_QSPAN Kconfig magic
+Date: Sat, 13 Oct 2018 17:10:10 +0200
+Message-Id: <20181013151016.31674-3-hch@lst.de>
 X-Mailer: git-send-email 2.19.1
 In-Reply-To: <20181013151016.31674-1-hch@lst.de>
 References: <20181013151016.31674-1-hch@lst.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
  bombadil.infradead.org. See http://www.infradead.org/rpr.html
@@ -90,88 +89,37 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We plan to enable building the pcmcia core and drivers, and the
-non-prefixed PCMCIA name clashes with some arch headers.
+The way how CONFIG_PCI_QSPAN selects the CONFIG_PCI default is highly
+unusual and gets in the way of moving CONFIG_PCI into
+drivers/pci/Kconfig.  Simplify it by just having it depend on
+CONFIG_PCI.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- drivers/scsi/aha152x.c             | 14 +++++++-------
- drivers/scsi/pcmcia/aha152x_core.c |  2 +-
- 2 files changed, 8 insertions(+), 8 deletions(-)
+ arch/powerpc/Kconfig | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/scsi/aha152x.c b/drivers/scsi/aha152x.c
-index 4d7b0e0adbf7..301b3cad15f8 100644
---- a/drivers/scsi/aha152x.c
-+++ b/drivers/scsi/aha152x.c
-@@ -269,7 +269,7 @@ static LIST_HEAD(aha152x_host_list);
- /* DEFINES */
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index a80669209155..6fa6f92edb7f 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -955,7 +955,6 @@ config PCI
+ 	bool "PCI support" if PPC_PCI_CHOICE
+ 	default y if !40x && !CPM2 && !PPC_8xx && !PPC_83xx \
+ 		&& !PPC_85xx && !PPC_86xx && !GAMECUBE_COMMON
+-	default PCI_QSPAN if PPC_8xx
+ 	select GENERIC_PCI_IOMAP
+ 	help
+ 	  Find out whether your system includes a PCI bus. PCI is the name of
+@@ -971,7 +970,7 @@ config PCI_SYSCALL
  
- /* For PCMCIA cards, always use AUTOCONF */
--#if defined(PCMCIA) || defined(MODULE)
-+#if defined(AHA152X_PCMCIA) || defined(MODULE)
- #if !defined(AUTOCONF)
- #define AUTOCONF
- #endif
-@@ -297,7 +297,7 @@ CMD_INC_RESID(struct scsi_cmnd *cmd, int inc)
- 
- #define DELAY_DEFAULT 1000
- 
--#if defined(PCMCIA)
-+#if defined(AHA152X_PCMCIA)
- #define IRQ_MIN 0
- #define IRQ_MAX 16
- #else
-@@ -328,7 +328,7 @@ MODULE_AUTHOR("Jürgen Fischer");
- MODULE_DESCRIPTION(AHA152X_REVID);
- MODULE_LICENSE("GPL");
- 
--#if !defined(PCMCIA)
-+#if !defined(AHA152X_PCMCIA)
- #if defined(MODULE)
- static int io[] = {0, 0};
- module_param_hw_array(io, int, ioport, NULL, 0);
-@@ -391,7 +391,7 @@ static struct isapnp_device_id id_table[] = {
- MODULE_DEVICE_TABLE(isapnp, id_table);
- #endif /* ISAPNP */
- 
--#endif /* !PCMCIA */
-+#endif /* !AHA152X_PCMCIA */
- 
- static struct scsi_host_template aha152x_driver_template;
- 
-@@ -863,7 +863,7 @@ void aha152x_release(struct Scsi_Host *shpnt)
- 	if (shpnt->irq)
- 		free_irq(shpnt->irq, shpnt);
- 
--#if !defined(PCMCIA)
-+#if !defined(AHA152X_PCMCIA)
- 	if (shpnt->io_port)
- 		release_region(shpnt->io_port, IO_RANGE);
- #endif
-@@ -2924,7 +2924,7 @@ static struct scsi_host_template aha152x_driver_template = {
- 	.slave_alloc			= aha152x_adjust_queue,
- };
- 
--#if !defined(PCMCIA)
-+#if !defined(AHA152X_PCMCIA)
- static int setup_count;
- static struct aha152x_setup setup[2];
- 
-@@ -3392,4 +3392,4 @@ static int __init aha152x_setup(char *str)
- __setup("aha152x=", aha152x_setup);
- #endif
- 
--#endif /* !PCMCIA */
-+#endif /* !AHA152X_PCMCIA */
-diff --git a/drivers/scsi/pcmcia/aha152x_core.c b/drivers/scsi/pcmcia/aha152x_core.c
-index dba3716511c5..24b89228b241 100644
---- a/drivers/scsi/pcmcia/aha152x_core.c
-+++ b/drivers/scsi/pcmcia/aha152x_core.c
-@@ -1,3 +1,3 @@
--#define PCMCIA	1
-+#define AHA152X_PCMCIA 1
- #define AHA152X_STAT 1
- #include "aha152x.c"
+ config PCI_QSPAN
+ 	bool "QSpan PCI"
+-	depends on PPC_8xx
++	depends on PPC_8xx && PCI
+ 	select PPC_I8259
+ 	help
+ 	  Say Y here if you have a system based on a Motorola 8xx-series
 -- 
 2.19.1
 
