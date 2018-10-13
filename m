@@ -3,64 +3,79 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A69AC28CF8
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 06:36:17 +0000 (UTC)
-Received: from lists.ozlabs.org (unknown [203.11.71.2])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EFB20C28CF8
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 07:34:10 +0000 (UTC)
+Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C43802087D
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 06:36:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C43802087D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kot-begemot.co.uk
+	by mail.kernel.org (Postfix) with ESMTPS id 25C7E20835
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 07:34:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 25C7E20835
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42XFMy1m25zF3VL
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 17:36:14 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kot-begemot.co.uk
+	by lists.ozlabs.org (Postfix) with ESMTP id 42XGfl654HzF39s
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 18:34:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42XGcm6r0tzF1Pw
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Oct 2018 18:32:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kot-begemot.co.uk
- (client-ip=5.153.251.140; helo=www.kot-begemot.co.uk;
- envelope-from=anton.ivanov@kot-begemot.co.uk; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=kot-begemot.co.uk
-Received: from www.kot-begemot.co.uk (ivanoab6.miniserver.com [5.153.251.140])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42XDqG67DJzF3HZ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Oct 2018 17:11:18 +1100 (AEDT)
-Received: from [192.168.17.6] (helo=smaug.kot-begemot.co.uk)
- by www.kot-begemot.co.uk with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
- (Exim 4.89) (envelope-from <anton.ivanov@kot-begemot.co.uk>)
- id 1gBD8b-00065c-TA; Sat, 13 Oct 2018 06:10:57 +0000
-Received: from wyvern.kot-begemot.co.uk ([192.168.3.72])
- by smaug.kot-begemot.co.uk with esmtps
- (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128) (Exim 4.89)
- (envelope-from <anton.ivanov@kot-begemot.co.uk>)
- id 1gBD8b-0006dA-6n; Sat, 13 Oct 2018 07:10:57 +0100
-Subject: Re: [PATCH v2 2/2] mm: speed up mremap by 500x on large regions
-To: "Kirill A. Shutemov" <kirill@shutemov.name>
-References: <20181012013756.11285-1-joel@joelfernandes.org>
- <20181012013756.11285-2-joel@joelfernandes.org>
- <9ed82f9e-88c4-8e4f-8c45-3ef153469603@kot-begemot.co.uk>
- <20181012143728.t42uvr6etg7gp7fh@kshutemo-mobl1>
- <4dd52e22-5b51-9b30-7178-fde603a08f88@kot-begemot.co.uk>
- <97cb3fe1-7bc1-12ff-d602-56c72a5496c5@kot-begemot.co.uk>
- <20181012214008.jj7vhh76vte7xj7i@kshutemo-mobl1>
-From: Anton Ivanov <anton.ivanov@kot-begemot.co.uk>
-Message-ID: <4e3d560b-afce-7d87-bbdb-9701d87ef44e@kot-begemot.co.uk>
-Date: Sat, 13 Oct 2018 07:10:56 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.0
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 42XGcm6BTtz8sWN
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Oct 2018 18:32:24 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 42XGcm5rrtz9s7W; Sat, 13 Oct 2018 18:32:24 +1100 (AEDT)
+Authentication-Results: ozlabs.org; spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 42XGcl6sS7z9s4Z
+ for <linuxppc-dev@ozlabs.org>; Sat, 13 Oct 2018 18:32:23 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 42XGcb0Rgqz9ttFk;
+ Sat, 13 Oct 2018 09:32:15 +0200 (CEST)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id ebsbFZdv0_aP; Sat, 13 Oct 2018 09:32:15 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 42XGcZ6tCcz9ttFY;
+ Sat, 13 Oct 2018 09:32:14 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 263E28B781;
+ Sat, 13 Oct 2018 09:32:20 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id BC6alJhzjQg0; Sat, 13 Oct 2018 09:32:20 +0200 (CEST)
+Received: from PO15451 (unknown [192.168.232.3])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D40B48B74B;
+ Sat, 13 Oct 2018 09:32:19 +0200 (CEST)
+Subject: Re: [PATCH] powerpc: Fix stackprotector detection for non-glibc
+ toolchains
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+References: <20181012225832.13827-1-mpe@ellerman.id.au>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <7e1acec1-c840-321b-0a93-99679fce6cb3@c-s.fr>
+Date: Sat, 13 Oct 2018 09:32:19 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
 MIME-Version: 1.0
-In-Reply-To: <20181012214008.jj7vhh76vte7xj7i@kshutemo-mobl1>
+In-Reply-To: <20181012225832.13827-1-mpe@ellerman.id.au>
 Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
 Content-Transfer-Encoding: 8bit
-Content-Language: en-US
-X-Clacks-Overhead: GNU Terry Pratchett
-X-Mailman-Approved-At: Sat, 13 Oct 2018 17:34:23 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,164 +87,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mips@linux-mips.org, Rich Felker <dalias@libc.org>,
- linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Dave Hansen <dave.hansen@linux.intel.com>, Will Deacon <will.deacon@arm.com>,
- mhocko@kernel.org, linux-mm@kvack.org, lokeshgidra@google.com,
- "Joel Fernandes \(Google\)" <joel@joelfernandes.org>,
- linux-riscv@lists.infradead.org, elfring@users.sourceforge.net,
- Jonas Bonn <jonas@southpole.se>, linux-s390@vger.kernel.org, dancol@google.com,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Max Filippov <jcmvbkbc@gmail.com>,
- linux-hexagon@vger.kernel.org, Helge Deller <deller@gmx.de>,
- "maintainer:X86 ARCHITECTURE 32-BIT AND 64-BIT" <x86@kernel.org>,
- hughd@google.com, "James E.J. Bottomley" <jejb@parisc-linux.org>,
- kasan-dev@googlegroups.com, kvmarm@lists.cs.columbia.edu,
- Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
- Andrey Ryabinin <aryabinin@virtuozzo.com>, linux-snps-arc@lists.infradead.org,
- kernel-team@android.com, Sam Creasey <sammy@sammy.net>,
- linux-xtensa@linux-xtensa.org, Jeff Dike <jdike@addtoit.com>,
- linux-alpha@vger.kernel.org, linux-um@lists.infradead.org,
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- Julia Lawall <Julia.Lawall@lip6.fr>, linux-m68k@lists.linux-m68k.org,
- openrisc@lists.librecores.org, Borislav Petkov <bp@alien8.de>,
- Andy Lutomirski <luto@kernel.org>, nios2-dev@lists.rocketboards.org,
- Stafford Horne <shorne@gmail.com>, Guan Xuetao <gxt@pku.edu.cn>,
- linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>,
- Tony Luck <tony.luck@intel.com>, linux-parisc@vger.kernel.org,
- pantin@google.com, linux-kernel@vger.kernel.org,
- Fenghua Yu <fenghua.yu@intel.com>, minchan@kernel.org,
- Thomas Gleixner <tglx@linutronix.de>, Richard Weinberger <richard@nod.at>,
- sparclinux@vger.kernel.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
- Ley Foon Tan <lftan@altera.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 12/10/2018 22:40, Kirill A. Shutemov wrote:
-> On Fri, Oct 12, 2018 at 05:42:24PM +0100, Anton Ivanov wrote:
->> On 10/12/18 3:48 PM, Anton Ivanov wrote:
->>> On 12/10/2018 15:37, Kirill A. Shutemov wrote:
->>>> On Fri, Oct 12, 2018 at 03:09:49PM +0100, Anton Ivanov wrote:
->>>>> On 10/12/18 2:37 AM, Joel Fernandes (Google) wrote:
->>>>>> Android needs to mremap large regions of memory during
->>>>>> memory management
->>>>>> related operations. The mremap system call can be really
->>>>>> slow if THP is
->>>>>> not enabled. The bottleneck is move_page_tables, which is copying each
->>>>>> pte at a time, and can be really slow across a large map.
->>>>>> Turning on THP
->>>>>> may not be a viable option, and is not for us. This patch
->>>>>> speeds up the
->>>>>> performance for non-THP system by copying at the PMD level
->>>>>> when possible.
->>>>>>
->>>>>> The speed up is three orders of magnitude. On a 1GB mremap, the mremap
->>>>>> completion times drops from 160-250 millesconds to 380-400
->>>>>> microseconds.
->>>>>>
->>>>>> Before:
->>>>>> Total mremap time for 1GB data: 242321014 nanoseconds.
->>>>>> Total mremap time for 1GB data: 196842467 nanoseconds.
->>>>>> Total mremap time for 1GB data: 167051162 nanoseconds.
->>>>>>
->>>>>> After:
->>>>>> Total mremap time for 1GB data: 385781 nanoseconds.
->>>>>> Total mremap time for 1GB data: 388959 nanoseconds.
->>>>>> Total mremap time for 1GB data: 402813 nanoseconds.
->>>>>>
->>>>>> Incase THP is enabled, the optimization is skipped. I also flush the
->>>>>> tlb every time we do this optimization since I couldn't find a way to
->>>>>> determine if the low-level PTEs are dirty. It is seen that the cost of
->>>>>> doing so is not much compared the improvement, on both
->>>>>> x86-64 and arm64.
->>>>>>
->>>>>> Cc: minchan@kernel.org
->>>>>> Cc: pantin@google.com
->>>>>> Cc: hughd@google.com
->>>>>> Cc: lokeshgidra@google.com
->>>>>> Cc: dancol@google.com
->>>>>> Cc: mhocko@kernel.org
->>>>>> Cc: kirill@shutemov.name
->>>>>> Cc: akpm@linux-foundation.org
->>>>>> Signed-off-by: Joel Fernandes (Google) <joel@joelfernandes.org>
->>>>>> ---
->>>>>>     mm/mremap.c | 62
->>>>>> +++++++++++++++++++++++++++++++++++++++++++++++++++++
->>>>>>     1 file changed, 62 insertions(+)
->>>>>>
->>>>>> diff --git a/mm/mremap.c b/mm/mremap.c
->>>>>> index 9e68a02a52b1..d82c485822ef 100644
->>>>>> --- a/mm/mremap.c
->>>>>> +++ b/mm/mremap.c
->>>>>> @@ -191,6 +191,54 @@ static void move_ptes(struct
->>>>>> vm_area_struct *vma, pmd_t *old_pmd,
->>>>>>             drop_rmap_locks(vma);
->>>>>>     }
->>>>>> +static bool move_normal_pmd(struct vm_area_struct *vma,
->>>>>> unsigned long old_addr,
->>>>>> +          unsigned long new_addr, unsigned long old_end,
->>>>>> +          pmd_t *old_pmd, pmd_t *new_pmd, bool *need_flush)
->>>>>> +{
->>>>>> +    spinlock_t *old_ptl, *new_ptl;
->>>>>> +    struct mm_struct *mm = vma->vm_mm;
->>>>>> +
->>>>>> +    if ((old_addr & ~PMD_MASK) || (new_addr & ~PMD_MASK)
->>>>>> +        || old_end - old_addr < PMD_SIZE)
->>>>>> +        return false;
->>>>>> +
->>>>>> +    /*
->>>>>> +     * The destination pmd shouldn't be established, free_pgtables()
->>>>>> +     * should have release it.
->>>>>> +     */
->>>>>> +    if (WARN_ON(!pmd_none(*new_pmd)))
->>>>>> +        return false;
->>>>>> +
->>>>>> +    /*
->>>>>> +     * We don't have to worry about the ordering of src and dst
->>>>>> +     * ptlocks because exclusive mmap_sem prevents deadlock.
->>>>>> +     */
->>>>>> +    old_ptl = pmd_lock(vma->vm_mm, old_pmd);
->>>>>> +    if (old_ptl) {
->>>>>> +        pmd_t pmd;
->>>>>> +
->>>>>> +        new_ptl = pmd_lockptr(mm, new_pmd);
->>>>>> +        if (new_ptl != old_ptl)
->>>>>> +            spin_lock_nested(new_ptl, SINGLE_DEPTH_NESTING);
->>>>>> +
->>>>>> +        /* Clear the pmd */
->>>>>> +        pmd = *old_pmd;
->>>>>> +        pmd_clear(old_pmd);
->>>>>> +
->>>>>> +        VM_BUG_ON(!pmd_none(*new_pmd));
->>>>>> +
->>>>>> +        /* Set the new pmd */
->>>>>> +        set_pmd_at(mm, new_addr, new_pmd, pmd);
->>>>> UML does not have set_pmd_at at all
->>>> Every architecture does. :)
->>> I tried to build it patching vs 4.19-rc before I made this statement and
->>> ran into that.
->>>
->>> Presently it does not.
->>>
->>> https://elixir.bootlin.com/linux/v4.19-rc7/ident/set_pmd_at - UML is not
->>> on the list.
->> Once this problem as well as the omissions in the include changes for UML in
->> patch one have been fixed it appears to be working.
->>
->> What it needs is attached.
-> Well, the optization is only suitable for arch that has 3 or more levels
-> of page tables. Otherwise it will not have [non-folded] pmd.
->
-> And in this case arch/um already should have set_pmd_at(), see
-> 3_LEVEL_PGTABLES.
->
-> To port on 2-level paging, it has to be handled on pgd level. It
-> complicates the code and will not bring much value.
->
-UML has 3 level page tables on 64 bit.
 
-A.
 
+Le 13/10/2018 à 00:58, Michael Ellerman a écrit :
+> If GCC is not built with glibc support then we must explicitly tell it
+> which register to use for TLS mode stack protector, otherwise it will
+> error out and the cc-option check will fail.
+
+Oh ? I didn't encounter such a problem with the nolibc GCC from 
+https://mirrors.edge.kernel.org/pub/tools/crosstool/
+
+I did all my tests with powerpc64-linux-gcc 8.1 on x86_64
+
+Christophe
+
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+
+Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
+
+> ---
+>   arch/powerpc/Kconfig | 3 ++-
+>   1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 1888636c9eb6..3d008115fe18 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -180,7 +180,8 @@ config PPC
+>   	select HAVE_ARCH_SECCOMP_FILTER
+>   	select HAVE_ARCH_TRACEHOOK
+>   	select HAVE_CBPF_JIT			if !PPC64
+> -	select HAVE_STACKPROTECTOR		if $(cc-option,-mstack-protector-guard=tls)
+> +	select HAVE_STACKPROTECTOR		if PPC64 && $(cc-option,-mstack-protector-guard=tls -mstack-protector-guard-reg=r13)
+> +	select HAVE_STACKPROTECTOR		if PPC32 && $(cc-option,-mstack-protector-guard=tls -mstack-protector-guard-reg=r2)
+>   	select HAVE_CONTEXT_TRACKING		if PPC64
+>   	select HAVE_DEBUG_KMEMLEAK
+>   	select HAVE_DEBUG_STACKOVERFLOW
+> 
