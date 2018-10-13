@@ -2,92 +2,95 @@ Return-Path: <SRS0=nAH3=MZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E2517C28CF8
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 16:50:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C8C20C28CF8
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 17:53:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4302320645
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 16:50:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4302320645
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 0BAAA206B2
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 17:53:11 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=joelfernandes.org header.i=@joelfernandes.org header.b="gtX/3bFK"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0BAAA206B2
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=joelfernandes.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42XW0Z2NSLzF3BV
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Oct 2018 03:50:22 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42XXP12LQ7zF3J1
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Oct 2018 04:53:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=joelfernandes.org
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=joelfernandes.org header.i=@joelfernandes.org header.b="gtX/3bFK";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=joelfernandes.org
+ (client-ip=2607:f8b0:4864:20::542; helo=mail-pg1-x542.google.com;
+ envelope-from=joel@joelfernandes.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=joelfernandes.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=joelfernandes.org header.i=@joelfernandes.org
+ header.b="gtX/3bFK"; dkim-atps=neutral
+Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
+ [IPv6:2607:f8b0:4864:20::542])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42XVyW5jm6zF3BZ
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Oct 2018 03:48:35 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w9DGibdM084490
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Oct 2018 12:48:33 -0400
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2n3d7kugvh-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Oct 2018 12:48:33 -0400
-Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Sat, 13 Oct 2018 10:48:32 -0600
-Received: from b03cxnp07029.gho.boulder.ibm.com (9.17.130.16)
- by e34.co.us.ibm.com (192.168.1.134) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Sat, 13 Oct 2018 10:48:29 -0600
-Received: from b03ledav002.gho.boulder.ibm.com
- (b03ledav002.gho.boulder.ibm.com [9.17.130.233])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- w9DGmSR740960200
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Sat, 13 Oct 2018 09:48:28 -0700
-Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id AEB73136053;
- Sat, 13 Oct 2018 10:48:28 -0600 (MDT)
-Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C846C13604F;
- Sat, 13 Oct 2018 10:48:25 -0600 (MDT)
-Received: from skywalker.ibmuc.com (unknown [9.85.75.68])
- by b03ledav002.gho.boulder.ibm.com (Postfix) with ESMTP;
- Sat, 13 Oct 2018 10:48:25 -0600 (MDT)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: npiggin@gmail.com, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, Christophe LEROY <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc/mm: Fix WARN_ON with THP NUMA migration
-Date: Sat, 13 Oct 2018 22:18:15 +0530
-X-Mailer: git-send-email 2.17.1
-X-TM-AS-GCONF: 00
-x-cbid: 18101316-0016-0000-0000-00000941D1DA
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00009872; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000268; SDB=6.01102137; UDB=6.00570372; IPR=6.00882183; 
- MB=3.00023743; MTD=3.00000008; XFM=3.00000015; UTC=2018-10-13 16:48:31
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18101316-0017-0000-0000-000040B16A2D
-Message-Id: <20181013164815.8858-1-aneesh.kumar@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-10-13_12:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=781 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1807170000 definitions=main-1810130157
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42XXLF484nzF3DT
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Oct 2018 04:50:44 +1100 (AEDT)
+Received: by mail-pg1-x542.google.com with SMTP id f18-v6so7282987pgv.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Oct 2018 10:50:44 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=joelfernandes.org; s=google;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=GoWsMygASIRyu7PZgD3N2dBBnQZB9nQ/7GbuLV2HYnY=;
+ b=gtX/3bFKdysbo0S38lPP9ATjDdsTysp7ptOg+SsEzBQmc5jRhOODzCYik6fd+BjPNr
+ xu2Vp+XyGO4o3VTbAkLtyvZfSWRtUUHxernM8wIzLOXHfZUYx/YsB2m5iu16tCWuQG1m
+ dx/4Vn6wKESA5zdAVp2ssOawvrRQIiujDiDAU=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=GoWsMygASIRyu7PZgD3N2dBBnQZB9nQ/7GbuLV2HYnY=;
+ b=DR3j63PowWebF0lmTpLP3WEOv6+BoMtoAO0SBN+bG2Pm8MhLJD4MSOzmRZKRVpCSO6
+ P3SULCnzC8g5HsrKRDdz84rJwUQG9JyXqMNBZLogSzLWgw2Ulq/6d4Yb4brN0feM1FSx
+ R3D7Nq3yYFFtcgWWv7QJA55bDyWPdttQYCOP9aBLlf6mJflTHW+8DNxr4WYBMhP5afhN
+ Q1IgT/1P/r4EIHGOhVX9blgiSxhvgHkNYAAYn1VjyOg6/Hd4dnRUHefC7JD1PlQAyJSD
+ i/NaO4HSdSFbA+mRnvst3HAXIWyL4F4Zp5IMcGfXgujj9c35ROb2wPdynffUo3noPLVh
+ p2wg==
+X-Gm-Message-State: ABuFfojTVAhxys/+8nbv8g5aMNauMoO9LLutDtXqTSFJUqlYq1uEip0r
+ 39JCI37ZoxE/sSxnfT1bDKqCig==
+X-Google-Smtp-Source: ACcGV61mIIBnEva6K1s4pwIUv1udY8Qs2DvoHn+puuc+AYRgF7l/b6wUFQE1+gRiz97iAhmfFDPhRQ==
+X-Received: by 2002:a63:f64f:: with SMTP id
+ u15-v6mr10134944pgj.258.1539453041895; 
+ Sat, 13 Oct 2018 10:50:41 -0700 (PDT)
+Received: from localhost ([2620:0:1000:1601:3aef:314f:b9ea:889f])
+ by smtp.gmail.com with ESMTPSA id t26-v6sm7479626pfa.158.2018.10.13.10.50.40
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Sat, 13 Oct 2018 10:50:40 -0700 (PDT)
+Date: Sat, 13 Oct 2018 10:50:39 -0700
+From: Joel Fernandes <joel@joelfernandes.org>
+To: dancol@google.com
+Subject: Re: [PATCH v2 2/2] mm: speed up mremap by 500x on large regions
+Message-ID: <20181013175039.GB213522@joelaf.mtv.corp.google.com>
+References: <20181012013756.11285-2-joel@joelfernandes.org>
+ <20181012113056.gxhcbrqyu7k7xnyv@kshutemo-mobl1>
+ <20181012125046.GA170912@joelaf.mtv.corp.google.com>
+ <20181012.111836.1569129998592378186.davem@davemloft.net>
+ <20181013013540.GA207108@joelaf.mtv.corp.google.com>
+ <CAKOZueuNvWvn18vffJWpbpg7h-uScT8gXrrudTB2pnT4M2HJ_w@mail.gmail.com>
+ <20181013014429.GB207108@joelaf.mtv.corp.google.com>
+ <CAKOZues25aaKz3_AiyfJ=r2QBd5MghgY3ky_ptg4Z8=ST4DCgw@mail.gmail.com>
+ <20181013021057.GA213522@joelaf.mtv.corp.google.com>
+ <CAKOZueu2wdkeUFYLQ8qE48yJs1_uRz-9RVJRkp==CL=jp=Q8+g@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAKOZueu2wdkeUFYLQ8qE48yJs1_uRz-9RVJRkp==CL=jp=Q8+g@mail.gmail.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,86 +102,68 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+ catalin.marinas@arm.com, dave.hansen@linux.intel.com,
+ Michal Hocko <mhocko@kernel.org>, linux-mm <linux-mm@kvack.org>,
+ Lokesh Gidra <lokeshgidra@google.com>, linux-riscv@lists.infradead.org,
+ elfring@users.sourceforge.net, Jonas Bonn <jonas@southpole.se>,
+ linux-s390@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ linux-hexagon@vger.kernel.org, deller@gmx.de, Hugh Dickins <hughd@google.com>,
+ jejb@parisc-linux.org, kasan-dev@googlegroups.com,
+ kvmarm@lists.cs.columbia.edu, mingo@redhat.com, geert@linux-m68k.org,
+ aryabinin@virtuozzo.com, linux-snps-arc@lists.infradead.org,
+ kernel-team@android.com, fenghua.yu@intel.com, jdike@addtoit.com,
+ linux-um@lists.infradead.org, Julia Lawall <Julia.Lawall@lip6.fr>,
+ linux-m68k@lists.linux-m68k.org, bp@alien8.de, luto@kernel.org,
+ nios2-dev@lists.rocketboards.org, kirill@shutemov.name, gxt@pku.edu.cn,
+ Chris Zankel <chris@zankel.net>, richard@nod.at, linux-parisc@vger.kernel.org,
+ Ramon Pantin <pantin@google.com>, Max Filippov <jcmvbkbc@gmail.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>, Minchan Kim <minchan@kernel.org>,
+ linux-alpha@vger.kernel.org, lftan@altera.com,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ David Miller <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
- WARNING: CPU: 12 PID: 4322 at /arch/powerpc/mm/pgtable-book3s64.c:76 set_pmd_at+0x4c/0x2b0
- Modules linked in:
- CPU: 12 PID: 4322 Comm: qemu-system-ppc Tainted: G        W         4.19.0-rc3-00758-g8f0c636b0542 #36
- NIP:  c0000000000872fc LR: c000000000484eec CTR: 0000000000000000
- REGS: c000003fba876fe0 TRAP: 0700   Tainted: G        W          (4.19.0-rc3-00758-g8f0c636b0542)
- MSR:  900000010282b033 <SF,HV,VEC,VSX,EE,FP,ME,IR,DR,RI,LE,TM[E]>  CR: 24282884  XER: 00000000
- CFAR: c000000000484ee8 IRQMASK: 0
- GPR00: c000000000484eec c000003fba877268 c000000001f0ec00 c000003fbd229f80
- GPR04: 00007c8fe8e00000 c000003f864c5a38 860300853e0000c0 0000000000000080
- GPR08: 0000000080000000 0000000000000001 0401000000000080 0000000000000001
- GPR12: 0000000000002000 c000003fffff5400 c000003fce292000 00007c9024570000
- GPR16: 0000000000000000 0000000000ffffff 0000000000000001 c000000001885950
- GPR20: 0000000000000000 001ffffc0004807c 0000000000000008 c000000001f49d05
- GPR24: 00007c8fe8e00000 c0000000020f2468 ffffffffffffffff c000003fcd33b090
- GPR28: 00007c8fe8e00000 c000003fbd229f80 c000003f864c5a38 860300853e0000c0
- NIP [c0000000000872fc] set_pmd_at+0x4c/0x2b0
- LR [c000000000484eec] do_huge_pmd_numa_page+0xb1c/0xc20
- Call Trace:
- [c000003fba877268] [c00000000045931c] mpol_misplaced+0x1bc/0x230 (unreliable)
- [c000003fba8772c8] [c000000000484eec] do_huge_pmd_numa_page+0xb1c/0xc20
- [c000003fba877398] [c00000000040d344] __handle_mm_fault+0x5e4/0x2300
- [c000003fba8774d8] [c00000000040f400] handle_mm_fault+0x3a0/0x420
- [c000003fba877528] [c0000000003ff6f4] __get_user_pages+0x2e4/0x560
- [c000003fba877628] [c000000000400314] get_user_pages_unlocked+0x104/0x2a0
- [c000003fba8776c8] [c000000000118f44] __gfn_to_pfn_memslot+0x284/0x6a0
- [c000003fba877748] [c0000000001463a0] kvmppc_book3s_radix_page_fault+0x360/0x12d0
- [c000003fba877838] [c000000000142228] kvmppc_book3s_hv_page_fault+0x48/0x1300
- [c000003fba877988] [c00000000013dc08] kvmppc_vcpu_run_hv+0x1808/0x1b50
- [c000003fba877af8] [c000000000126b44] kvmppc_vcpu_run+0x34/0x50
- [c000003fba877b18] [c000000000123268] kvm_arch_vcpu_ioctl_run+0x288/0x2d0
- [c000003fba877b98] [c00000000011253c] kvm_vcpu_ioctl+0x1fc/0x8c0
- [c000003fba877d08] [c0000000004e9b24] do_vfs_ioctl+0xa44/0xae0
- [c000003fba877db8] [c0000000004e9c44] ksys_ioctl+0x84/0xf0
- [c000003fba877e08] [c0000000004e9cd8] sys_ioctl+0x28/0x80
+On Fri, Oct 12, 2018 at 07:25:08PM -0700, Daniel Colascione wrote:
+[...] 
+> > But anyway, I think this runtime detection thing is not needed. THP is
+> > actually expected to be as fast as this anyway, so if that's available then
+> > we should already be as fast.
+> 
+> Ah, I think the commit message is confusing. (Or else I'm misreading
+> the patch now.) It's not quite that we're disabling the feature when
+> THP is enabled anywhere, but rather that we use the move_huge_pmd path
+> for huge PMDs and use the new code only for non-huge PMDs. (Right?) If
+> that's the case, the commit message shouldn't say "Incase THP is
+> enabled, the optimization is skipped". Even if THP is enabled on a
+> system generally, we might use the new PMD-moving code for mapping
+> types that don't support THP-ization, right?
 
-We removed the pte_protnone check earlier with the understanding that we
-mark the pte invalid before the set_pte/set_pmd usage. But the huge pmd
-autonuma still use the set_pmd_at directly. This is ok because a protnone pte
-won't have translation cache in TLB.
+That is true. Ok, I guess I can update the commit message to be more accurate
+about that.
 
-Fixes: da7ad366b497 ("powerpc/mm/book3s: Update pmd_present to look at _PAGE_PRESENT bit")
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
----
- arch/powerpc/mm/pgtable-book3s64.c | 3 ++-
- arch/powerpc/mm/pgtable.c          | 2 +-
- 2 files changed, 3 insertions(+), 2 deletions(-)
+> > This is for non-THP where THP cannot be enabled
+> > and there is still room for some improvement. Most/all architectures will be
+> > just fine with this. This flag is more of a safety-net type of thing where in
+> > the future if there is this one or two weird architectures that don't play
+> > well, then they can turn it off at the architecture level by not selecting
+> > the flag. See my latest patches for the per-architecture compile-time
+> > controls. Ideally we'd like to blanket turn it on on all, but this is just
+> > playing it extra safe as Kirill and me were discussing on other threads.
+> 
+> Sure. I'm just pointing out that the 500x performance different turns
+> the operation into a qualitatively different feature, so if we expect
+> to actually ship a mainstream architecture without support for this
+> thing, we should make it explicit. If we're not, we shouldn't.
 
-diff --git a/arch/powerpc/mm/pgtable-book3s64.c b/arch/powerpc/mm/pgtable-book3s64.c
-index 43e99e1d947b..9f93c9f985c5 100644
---- a/arch/powerpc/mm/pgtable-book3s64.c
-+++ b/arch/powerpc/mm/pgtable-book3s64.c
-@@ -73,7 +73,8 @@ void set_pmd_at(struct mm_struct *mm, unsigned long addr,
- 	 * Make sure hardware valid bit is not set. We don't do
- 	 * tlb flush for this update.
- 	 */
--	WARN_ON(pte_val(pmd_pte(*pmdp)) & _PAGE_PRESENT);
-+
-+	WARN_ON(pte_hw_valid(pmd_pte(*pmdp)) && !pte_protnone(pmd_pte(*pmdp)));
- 	assert_spin_locked(pmd_lockptr(mm, pmdp));
- 	WARN_ON(!(pmd_large(pmd) || pmd_devmap(pmd)));
- #endif
-diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
-index ca4b1f7ac39d..010e1c616cb2 100644
---- a/arch/powerpc/mm/pgtable.c
-+++ b/arch/powerpc/mm/pgtable.c
-@@ -184,7 +184,7 @@ void set_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
- 	 * Make sure hardware valid bit is not set. We don't do
- 	 * tlb flush for this update.
- 	 */
--	VM_WARN_ON(pte_hw_valid(*ptep));
-+	VM_WARN_ON(pte_hw_valid(*ptep) && !pte_protnone(*ptep));
- 
- 	/* Add the pte bit when trying to set a pte */
- 	pte = pte_mkpte(pte);
--- 
-2.17.1
+We can make it explicit by enabling it in such a mainstream architecture is
+my point. Also if the optimization is not doing what its supposed to, then
+userspace will also just know by measuring the time.
+
+thanks,
+
+ - Joel
 
