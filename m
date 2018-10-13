@@ -2,71 +2,69 @@ Return-Path: <SRS0=nAH3=MZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A2C81C28CF8
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 15:45:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 02234C28CF8
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 15:50:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 23C7A20659
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 15:45:35 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="KUtd94DE"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 23C7A20659
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id 44D5720659
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 15:50:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 44D5720659
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42XTYm3phHzDqYK
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Oct 2018 02:45:32 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lst.de
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="KUtd94DE";
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
- smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
- helo=bombadil.infradead.org;
- envelope-from=batv+5d6e0690757439347628+5529+infradead.org+hch@bombadil.srs.infradead.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lst.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="KUtd94DE"; dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 42XTgd35ZRzF3Fb
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Oct 2018 02:50:37 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42XTQB1vwwzF3Fb
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Oct 2018 02:38:58 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
- MIME-Version:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
- Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
- Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=Cwcwm2vgjyIKuNqAgBAUGLyrP6a8beJUjg7kDKl0syw=; b=KUtd94DEljRYiEfSHwPvOLY4r
- udKaT2I3zOGnid/1SY2czwxyzKtNAix8OpVy6AP4tfZV3ecVJIZWf/qom9/BDgLnkVki6Vl0CLGQ9
- ZxQPUYbcsN4nsbADILOWFihznR73DSo0N/Ay1DQ1iJMbp8jgajUiotZzcxedvU/2Fh8Ar84B3/ZyZ
- 8356fVhpB4eURHA3r1yMaRS7HeQoZCaQs7iZw7igPHrRDxD9sq5Wi3lqFaJ7AwxnJXWmmc6AOubJI
- k2LKa/hz1PdmcWFuj/40WnxUVnOgNomDVsE8W0L5++5ZJnTsDsOJCHRAC2Zz6ECCvdVu5GxY38jJo
- zdGoV82UQ==;
-Received: from 089144199123.atnat0008.highway.a1.net ([89.144.199.123]
- helo=localhost)
- by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
- id 1gBLYY-0002r5-Te; Sat, 13 Oct 2018 15:10:19 +0000
-From: Christoph Hellwig <hch@lst.de>
-To: Masahiro Yamada <yamada.masahiro@socionext.com>
-Subject: move bus (PCI, PCMCIA, EISA, rapdio) config to drivers/
-Date: Sat, 13 Oct 2018 17:10:08 +0200
-Message-Id: <20181013151016.31674-1-hch@lst.de>
-X-Mailer: git-send-email 2.19.1
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
- bombadil.infradead.org. See http://www.infradead.org/rpr.html
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42XTdV3f2czDqKg
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Oct 2018 02:48:46 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=kernel.crashing.org
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 42XTdV30KJz8tPx
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Oct 2018 02:48:46 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 42XTdV2jkrz9sCT; Sun, 14 Oct 2018 02:48:46 +1100 (AEDT)
+Authentication-Results: ozlabs.org; spf=permerror (mailfrom)
+ smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57;
+ helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=kernel.crashing.org
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 42XTdT2fjzz9sB5;
+ Sun, 14 Oct 2018 02:48:44 +1100 (AEDT)
+Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id w9DFmXvl030903;
+ Sat, 13 Oct 2018 10:48:34 -0500
+Received: (from segher@localhost)
+ by gate.crashing.org (8.14.1/8.14.1/Submit) id w9DFmVQs030894;
+ Sat, 13 Oct 2018 10:48:31 -0500
+X-Authentication-Warning: gate.crashing.org: segher set sender to
+ segher@kernel.crashing.org using -f
+Date: Sat, 13 Oct 2018 10:48:30 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: Fix stackprotector detection for non-glibc
+ toolchains
+Message-ID: <20181013154829.GO29268@gate.crashing.org>
+References: <20181012225832.13827-1-mpe@ellerman.id.au>
+ <7e1acec1-c840-321b-0a93-99679fce6cb3@c-s.fr>
+ <87k1mm12p6.fsf@concordia.ellerman.id.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87k1mm12p6.fsf@concordia.ellerman.id.au>
+User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,19 +76,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-scsi@vger.kernel.org,
- linux-kbuild@vger.kernel.org, linux-pci@vger.kernel.org,
- linux-kernel@vger.kernel.org, Dominik Brodowski <linux@dominikbrodowski.net>,
- Alexandre Bounine <alex.bou9@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi all,
+On Sat, Oct 13, 2018 at 10:55:01PM +1100, Michael Ellerman wrote:
+> So it's only my cross compilers that don't work.
+> 
+> The kernel.org ones are:
+>   Configured with: /home/arnd/git/gcc/configure --target=powerpc64-linux
+>   --enable-targets=all
+>   --prefix=/home/arnd/cross/x86_64/gcc-8.1.0-nolibc/powerpc64-linux
+>   --enable-languages=c --without-headers --disable-bootstrap
+>   --disable-nls --disable-threads --disable-shared --disable-libmudflap
+>   --disable-libssp --disable-libgomp --disable-decimal-float
+>   --disable-libquadmath --disable-libatomic --disable-libcc1
+>   --disable-libmpx --enable-checking=release
+> 
+> Whereas mine is:
+>   Configured with: ../../src/gcc/configure
+>   --prefix=/home/kerkins/workspace/gcc-build/gcc/gcc-8-branch/target/ppc/build/install/powerpc-linux
+>   --disable-multilib --disable-bootstrap --enable-languages=c
+>   --with-pkgversion='Custom 2c79ff811dfcee1c' --target=powerpc-linux
+>   --enable-targets=all
+> 
+> 
+> So I wonder if something in there is making the difference?
 
-currently every architecture that wants to provide on of the common
-periphal busses needs to add some boilerplate code and include the
-right Kconfig files.   This series instead just selects the presence
-(when needed) and then handles everything in the bus-specific
-Kconfig file under drivers/.
+You have --disable-libssp on the buildall-built compiler, which makes GCC
+assume your libc has the SSP support routines, which gives you these default
+offsets (which are what they are on glibc).  Never mind that you explicitly
+do not have a libc ;-)
 
+> I guess I'll just rewrite the change log to say "some toolchains".
+
+Or "most".
+
+
+Segher
