@@ -7,77 +7,77 @@ X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7454DC6787C
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 02:54:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B5F1EC6787C
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 02:56:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DAC1120895
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 02:54:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 1DC1320895
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 02:56:24 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=joelfernandes.org header.i=@joelfernandes.org header.b="pvEfVikz"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DAC1120895
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=joelfernandes.org header.i=@joelfernandes.org header.b="hu1RRoD4"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1DC1320895
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=joelfernandes.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42X8RW02cGzF3TL
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 13:53:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42X8VF420SzF3Kk
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 13:56:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=joelfernandes.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=joelfernandes.org header.i=@joelfernandes.org header.b="pvEfVikz";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=joelfernandes.org header.i=@joelfernandes.org header.b="hu1RRoD4";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=joelfernandes.org
- (client-ip=2607:f8b0:4864:20::444; helo=mail-pf1-x444.google.com;
+ (client-ip=2607:f8b0:4864:20::644; helo=mail-pl1-x644.google.com;
  envelope-from=joel@joelfernandes.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=joelfernandes.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=joelfernandes.org header.i=@joelfernandes.org
- header.b="pvEfVikz"; dkim-atps=neutral
-Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
- [IPv6:2607:f8b0:4864:20::444])
+ header.b="hu1RRoD4"; dkim-atps=neutral
+Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
+ [IPv6:2607:f8b0:4864:20::644])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42X6dR5GqgzF3Sn
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Oct 2018 12:32:27 +1100 (AEDT)
-Received: by mail-pf1-x444.google.com with SMTP id l81-v6so7017646pfg.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Oct 2018 18:32:27 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42X6dV6VcmzF3St
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Oct 2018 12:32:30 +1100 (AEDT)
+Received: by mail-pl1-x644.google.com with SMTP id f8-v6so6695212plb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Oct 2018 18:32:30 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=joelfernandes.org; s=google;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=bjYTsH4Iq69Ub7N2c7p2HOCfpyLGuHcm9WhDWE1Dnwg=;
- b=pvEfVikziMJRWxtTRTm3WwDM1z7pcXybcAtnjCIyQdfWN8O5jRGdCgjUlGTjsMAT/F
- saWeGlI2HK0vC3ro6vBYXn3xIZY1BMwuP8djzpt6M+eKMtkHqPqZ+mldfVclfk22srUA
- b5EsPUgxygKFL8hgKZ6UMDusfAYxbbW7exB4M=
+ bh=jtAK3pAlFMeOO6SUm8Lh3Bmb29tPAciRzUtn881iM5M=;
+ b=hu1RRoD4zGFkh1NvswXMY0Mcf7RReZIxK6TbDCgMDMi1xCXvjQWNtmb8jA6UW1Q5ZI
+ bybcFeJfratqjTeqEb7mRWAGReU9tL9VCuSkWsUqyCZbL3y+XtXFIKgHbMuC6INYU+VH
+ z4FmPqYFb3J2yvvfenwn9pAR6sobi8QuQFyFE=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=bjYTsH4Iq69Ub7N2c7p2HOCfpyLGuHcm9WhDWE1Dnwg=;
- b=MgbWKFMExOj+xjCu2SU2x3kKBLlPW98Tm6PmIXqxSuQRFnqNhX0Diafoz9KG+IWig1
- zuca2LSuDIaQFT/iFE5cMOrZw2crl8yQzgg25pdtxUFrGgtdQZ5kFO6vnUvEABf6kyeg
- c4BpPVl/Kg5x801lmdleVnAl1fPY4dL9QIjD0ECWxLXuxtGVR+SmaVUDCyLYNdVyavsC
- 9bPARHX0mGrsLFVNmdf0SpFzwVBeID5/nCFJrAISKM6967da3vbg1keLyO6vYEw0dkOn
- qliHxbKTfxS4Jxwh98hlqQ8we0hwb1eLSmxvuAESJA0TNw8ajCfV1SRsI8AJfqre1a/C
- gM7w==
-X-Gm-Message-State: ABuFfoiIVp680eUVfV+iMuVG+/CxPfZ4oB1nLUOeVjcObUEY5eEOtXyG
- aafUVtOnZBcrK4Eabx7Wr7zUIg==
-X-Google-Smtp-Source: ACcGV60ecPJwErRYv7rdeDNNhheUXmreqwFNvyYIFQM0w7YuygsKhKKgtC5tCiolpW/Ws3yIGetyhA==
-X-Received: by 2002:a63:2a11:: with SMTP id
- q17-v6mr7630469pgq.374.1539394345842; 
- Fri, 12 Oct 2018 18:32:25 -0700 (PDT)
+ bh=jtAK3pAlFMeOO6SUm8Lh3Bmb29tPAciRzUtn881iM5M=;
+ b=l6bva46p4U/E3tmsDBprPiecYRPciGKgE/KzT+0iM9Kqjf+0bZ5l7D4N42mBtXgMNJ
+ Uzeg47I644ZkLKai15hwx+O7kLUPcfKQXCxHiFF2cSdQaz0XvsN8j7X4KsBCGExUnd05
+ nBGFS2T/Lq7XV/5zbsxko/kC+FThvIfCs4E5ZHJ5Ysae0dKRACm59//cfwEYJOnvU8j5
+ D7xtq5ssiHVuzLir/6pV6b0mEJMHpB4iJhHeQKFXeTe4IXnFWB4eMRB6SN+bzQOrUtAA
+ qd1YCl9j+VZbXZIFbG1Q2bpv40Mz1xBeptmOEYXLCW4hu4PW0qWIZiqNOI1yBwZ7LjdI
+ qefg==
+X-Gm-Message-State: ABuFfoiVMx13l39Awv2mPDYWWLJCHK/qtBidpbSMch+//VYGbtXxjZ7q
+ 5Uq0pyfIAZfrTmJohrq1lvLWYQ==
+X-Google-Smtp-Source: ACcGV60cRgU0XyfJPBpItPjBh+EP7iRiHLZbhDbgbD69TJC4FgrTPRZLx9S2q81RSPgQ8LHOmiT4Xw==
+X-Received: by 2002:a17:902:8687:: with SMTP id
+ g7-v6mr8297604plo.30.1539394348522; 
+ Fri, 12 Oct 2018 18:32:28 -0700 (PDT)
 Received: from joelaf.mtv.corp.google.com
  ([2620:0:1000:1601:3aef:314f:b9ea:889f])
- by smtp.gmail.com with ESMTPSA id q7-v6sm6507828pfd.164.2018.10.12.18.32.23
+ by smtp.gmail.com with ESMTPSA id q7-v6sm6507828pfd.164.2018.10.12.18.32.25
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Fri, 12 Oct 2018 18:32:24 -0700 (PDT)
+ Fri, 12 Oct 2018 18:32:27 -0700 (PDT)
 From: "Joel Fernandes (Google)" <joel@joelfernandes.org>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 3/4] arm64: select HAVE_MOVE_PMD for faster mremap (v1)
-Date: Fri, 12 Oct 2018 18:31:59 -0700
-Message-Id: <20181013013200.206928-4-joel@joelfernandes.org>
+Subject: [PATCH 4/4] x86: select HAVE_MOVE_PMD for faster mremap (v1)
+Date: Fri, 12 Oct 2018 18:32:00 -0700
+Message-Id: <20181013013200.206928-5-joel@joelfernandes.org>
 X-Mailer: git-send-email 2.19.0.605.g01d371f741-goog
 In-Reply-To: <20181013013200.206928-1-joel@joelfernandes.org>
 References: <20181013013200.206928-1-joel@joelfernandes.org>
@@ -130,26 +130,26 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Moving page-tables at the PMD-level on arm64 is known to be safe. Enable
+Moving page-tables at the PMD-level on x86 is known to be safe. Enable
 this option so that we can do fast mremap when possible.
 
 Signed-off-by: Joel Fernandes (Google) <joel@joelfernandes.org>
 ---
- arch/arm64/Kconfig | 1 +
+ arch/x86/Kconfig | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index 1b1a0e95c751..5d7c35c6f90c 100644
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -135,6 +135,7 @@ config ARM64
- 	select HAVE_IRQ_TIME_ACCOUNTING
- 	select HAVE_MEMBLOCK
- 	select HAVE_MEMBLOCK_NODE_MAP if NUMA
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 1a0be022f91d..01c02a9d7825 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -171,6 +171,7 @@ config X86
+ 	select HAVE_MEMBLOCK_NODE_MAP
+ 	select HAVE_MIXED_BREAKPOINTS_REGS
+ 	select HAVE_MOD_ARCH_SPECIFIC
 +	select HAVE_MOVE_PMD
  	select HAVE_NMI
- 	select HAVE_PATA_PLATFORM
- 	select HAVE_PERF_EVENTS
+ 	select HAVE_OPROFILE
+ 	select HAVE_OPTPROBES
 -- 
 2.19.0.605.g01d371f741-goog
 
