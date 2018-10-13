@@ -2,50 +2,105 @@ Return-Path: <SRS0=nAH3=MZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B150BC28CF8
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 12:10:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F5FAC28CF8
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 12:31:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2167420645
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 12:10:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2167420645
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 6C12520895
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 12:31:22 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="LLzz/Zom"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6C12520895
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42XNnw5W65zF3Bl
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 23:10:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 42XPFg6FGqzF3Hs
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 23:31:19 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="LLzz/Zom";
+	dkim-atps=neutral
+Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42XNlJ1GPYzDrP2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Oct 2018 23:08:28 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42XP9y72lbzF3Cm
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Oct 2018 23:28:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="LLzz/Zom"; 
+ dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 42XP9x6mlCz8sfw
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Oct 2018 23:28:05 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 42XP9x4clpz9s9J; Sat, 13 Oct 2018 23:28:05 +1100 (AEDT)
+Authentication-Results: ozlabs.org; spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
+ envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="LLzz/Zom"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
+ [IPv6:2607:f8b0:4864:20::442])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 42XNlH3YcWz9s9J;
- Sat, 13 Oct 2018 23:08:27 +1100 (AEDT)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Dan Williams <dan.j.williams@intel.com>,
- Oliver O'Halloran <oohall@gmail.com>
-Subject: Re: [PATCH 2/2] powerpc/pseries: Add driver for PAPR SCM regions
-In-Reply-To: <CAPcyv4jhs9f2DdOk30KU9___mWMtowQi0LP-OD1E+_5xFbxWgA@mail.gmail.com>
-References: <20181010060812.20068-1-oohall@gmail.com>
- <20181010060812.20068-3-oohall@gmail.com>
- <CAPcyv4jhs9f2DdOk30KU9___mWMtowQi0LP-OD1E+_5xFbxWgA@mail.gmail.com>
-Date: Sat, 13 Oct 2018 23:08:26 +1100
-Message-ID: <87h8hq122t.fsf@concordia.ellerman.id.au>
+ by ozlabs.org (Postfix) with ESMTPS id 42XP9w3Zzjz9s3Z
+ for <linuxppc-dev@ozlabs.org>; Sat, 13 Oct 2018 23:28:04 +1100 (AEDT)
+Received: by mail-pf1-x442.google.com with SMTP id 78-v6so5112145pfq.0
+ for <linuxppc-dev@ozlabs.org>; Sat, 13 Oct 2018 05:28:04 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:to:cc:subject:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=VfSR2/+Ae5sJTPDTUv7XaAeRZfCY5JMtwndKAnigq1M=;
+ b=LLzz/ZomzW6O3KsRx9CdjG2+YW81K3kzM+aVFf4Yr8n5qIHO0DwYuMn9E+u/ATrlmC
+ BqnyxqltCUP5G0TsefE3GqsZSqdlVCYlyKngGOtnXZudSIrzM5/m4q00F9DsZ9vpPqxs
+ 3pRcBp5DtpZ2E9vWt1FtPJLRdgA4YOl6qGZyN3r5QjLjVp/L+b2hMlrt2yB8Y24PCguG
+ w4wVInk16q2ZmPpFr3fb2NnMu2I+BTtUwlcKq++P5riOy5Rc5lpajKW0mBAUkxlZ5cwp
+ om0qKYVXGGpGCQpCFCEhACofjMJxORSizS68jp2FBsZGlYqPCVjMr/WHo67EOrfGdrvo
+ vZXg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=VfSR2/+Ae5sJTPDTUv7XaAeRZfCY5JMtwndKAnigq1M=;
+ b=WIXShEbt/bKs+5OQRc/fwHjLNIIZAR+CuTinreG6mH5QMQgdxLyT7/vVFz6pyDHnU5
+ NOG8K83qXKk7sc9eQW4fJY/d1ybryfbAnPaMAussRVSq7+BhzeGljIqS7gpDFbEyFJ8E
+ 2HLX7r0I51jp4ePiaJAyB5yJMrur9qe0h681L/33py7GRFEbQU3CniYnMPBshhlYZjBq
+ FyTU8d3+nrh9Fp6Y+kJxgaM2vITm1282NbSNCBEz8Cvr8uYlqOUAPQD+j34dLX/H2xhi
+ Yv14j9RIT1PGbHrWe2Mi+UFcY0UhlrESEUmX9cN5SBD3cRY2jUF4XpjcAsn8LYASIpjH
+ Tufw==
+X-Gm-Message-State: ABuFfojkMMdQ0KMZ74D4kTZofBzVdrDcotTajtsND7CTkxt/NcX9pfpV
+ vEwLdMRPeOw+l6wX0jjXf7A=
+X-Google-Smtp-Source: ACcGV63E+8gdEHoL09dTIR4ZHDwxdpUEMx7zqpvu3/5L8+JVQ8w1jHaA+eVoa+qxMTH6nrse908WMg==
+X-Received: by 2002:a63:4cb:: with SMTP id
+ 194-v6mr9173155pge.183.1539433682537; 
+ Sat, 13 Oct 2018 05:28:02 -0700 (PDT)
+Received: from roar.ozlabs.ibm.com (61-68-185-28.tpgi.com.au. [61.68.185.28])
+ by smtp.gmail.com with ESMTPSA id
+ 3-v6sm5565495pga.12.2018.10.13.05.28.00
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Sat, 13 Oct 2018 05:28:01 -0700 (PDT)
+Date: Sat, 13 Oct 2018 22:27:56 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH 1/3] powerpc: Split user/kernel definitions of struct
+ pt_regs
+Message-ID: <20181013222756.2e9ca459@roar.ozlabs.ibm.com>
+In-Reply-To: <20181013105646.5147-1-mpe@ellerman.id.au>
+References: <20181013105646.5147-1-mpe@ellerman.id.au>
+X-Mailer: Claws Mail 3.17.0 (GTK+ 2.24.32; x86_64-pc-linux-gnu)
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,68 +112,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-nvdimm <linux-nvdimm@lists.01.org>
+Cc: linuxppc-dev@ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Dan Williams <dan.j.williams@intel.com> writes:
-> On Tue, Oct 9, 2018 at 11:21 PM Oliver O'Halloran <oohall@gmail.com> wrote:
->>
->> Adds a driver that implements support for enabling and accessing PAPR
->> SCM regions. Unfortunately due to how the PAPR interface works we can't
->> use the existing of_pmem driver (yet) because:
->>
-...
->> +
->> +static int papr_scm_nvdimm_init(struct papr_scm_priv *p)
->> +{
->> +       struct device *dev = &p->pdev->dev;
->> +       struct nd_mapping_desc mapping;
->> +       struct nd_region_desc ndr_desc;
->> +       unsigned long dimm_flags;
->> +
->> +       p->bus_desc.ndctl = papr_scm_ndctl;
->> +       p->bus_desc.module = THIS_MODULE;
->> +       p->bus_desc.of_node = p->pdev->dev.of_node;
->> +       p->bus_desc.attr_groups = bus_attr_groups;
->> +       p->bus_desc.provider_name = kstrdup(p->pdev->name, GFP_KERNEL);
->> +
->> +       if (!p->bus_desc.provider_name)
->> +               return -ENOMEM;
->> +
->> +       p->bus = nvdimm_bus_register(NULL, &p->bus_desc);
->> +       if (!p->bus) {
->> +               dev_err(dev, "Error creating nvdimm bus %pOF\n", p->dn);
->> +               return -ENXIO;
->> +       }
->> +
->> +       dimm_flags = 0;
->> +       set_bit(NDD_ALIASING, &dimm_flags);
->> +
->> +       p->nvdimm = nvdimm_create(p->bus, p, papr_scm_dimm_groups,
->> +                               dimm_flags, PAPR_SCM_DIMM_CMD_MASK, 0, NULL);
->
-> Looks good, although I'm just about to push out commits that change
-> this function signature to take a 'security_ops' pointer. If you need
-> a stable branch to base this on, let me know.
-...
->
-> Other than that looks ok to me:
->
-> Acked-by: Dan Williams <dan.j.williams@intel.com>
->
-> ...just the matter of what to do about function signature change.
+On Sat, 13 Oct 2018 21:56:44 +1100
+Michael Ellerman <mpe@ellerman.id.au> wrote:
 
-Yeah that's a bit of a bother.
+> We use a shared definition for struct pt_regs in uapi/asm/ptrace.h.
+> That means the layout of the structure is ABI, ie. we can't change it.
+> 
+> That would be fine if it was only used to describe the user-visible
+> register state of a process, but it's also the struct we use in the
+> kernel to describe the registers saved in an interrupt frame.
+> 
+> We'd like more flexibility in the content (and possibly layout) of the
+> kernel version of the struct, but currently that's not possible.
+> 
+> So split the definition into a user-visible definition which remains
+> unchanged, and a kernel internal one.
+> 
+> At the moment they're still identical, and we check that at build
+> time. That's because we have code (in ptrace etc.) that assumes that
+> they are the same. We will fix that code in future patches, and then
+> we can break the strict symmetry between the two structs.
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-The ideal for me would be that you put the commit that changes the
-signature by itself in a branch based on 4.19-rc3 (or earlier), and then
-we could both just merge that.
+Yeah this looks much better than my int_frame thing, thanks.
 
-But not sure if that will work with whatever else you're trying to sync
-up with.
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 
-cheers
+Thanks,
+Nick
