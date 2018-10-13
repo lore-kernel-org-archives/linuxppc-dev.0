@@ -6,80 +6,81 @@ X-Spam-Status: No, score=-0.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
 	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4394EC6787C
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 02:58:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 11EC0C6787C
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 03:00:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9F54420895
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 02:58:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5945D20895
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 03:00:58 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="mRAnllfV"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9F54420895
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="oO7CQBJ0"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5945D20895
 Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42X8Xr4f2bzF3Rt
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 13:58:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42X8bX2kbVzF3TN
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Oct 2018 14:00:56 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.b="mRAnllfV";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.b="oO7CQBJ0";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=google.com
- (client-ip=2607:f8b0:4864:20::d43; helo=mail-io1-xd43.google.com;
+ (client-ip=2607:f8b0:4864:20::342; helo=mail-ot1-x342.google.com;
  envelope-from=dancol@google.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=google.com header.i=@google.com header.b="mRAnllfV"; 
+ unprotected) header.d=google.com header.i=@google.com header.b="oO7CQBJ0"; 
  dkim-atps=neutral
-Received: from mail-io1-xd43.google.com (mail-io1-xd43.google.com
- [IPv6:2607:f8b0:4864:20::d43])
+Received: from mail-ot1-x342.google.com (mail-ot1-x342.google.com
+ [IPv6:2607:f8b0:4864:20::342])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42X6p35kmpzF0fg
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Oct 2018 12:39:49 +1100 (AEDT)
-Received: by mail-io1-xd43.google.com with SMTP id w11-v6so10536850iob.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Oct 2018 18:39:49 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42X7722ZPZzF3SH
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Oct 2018 12:54:37 +1100 (AEDT)
+Received: by mail-ot1-x342.google.com with SMTP id l1so14072345otj.5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Oct 2018 18:54:37 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
  h=mime-version:in-reply-to:references:from:date:message-id:subject:to
- :cc; bh=Wde0HcwExXY831MfxZDBcHjXK7XvngyeZU1X9StNjyk=;
- b=mRAnllfVhCFMlnCIOcENVRpZ9fWtdthn5GIa/84lOa1zfYRyC7orxaopMW45sB8eGB
- ivJ95/M5otzqwf+a9a0kBxZZQSGJZfhDMo+nmJKVkyBRnP8qxtUI1xy15rJyzhFmnyt0
- 8+wcDDhVwfzIxE7o4UdypM1uFOyBZO+dsZHL9V9EjcRk/t9uN1N8+jXX+FQbQNwLNM6+
- Yw/NuPi1khJ60fOVJAglTvakPu+RdegP9nyurUbv1ptWNwxhwQDL9ydwtFB3Y4wuPcbb
- mQP4MZorbCaZStz3SOglr9oedZvionoAiMgHFAr+d3BHihJaHkX9rSbjnDxfL9w+LOjP
- xsfg==
+ :cc; bh=ruDqHADLGhUq/OqjXNRFevT5jDn0habRcwA3l0QGuG8=;
+ b=oO7CQBJ0o3h4W+oksCLNlcAMMdo7sg4Jtv1VCUZcuw6SrUuKQoC7/yRbVEByqVegR5
+ 2XakAmI6gLBq49bXmjVYz4+acBeAcuwKtUHPjj2sGXy+jzOkdhqdTL0YPcZPqB+LKt6o
+ bhRful9oO7cRR8nbmHw1A7uqI9ttcB1fV31XpSXw7a9IcC+joMzcgVc8TxQKKcRQt8Re
+ zoNMfZUWu+1do2+6RW0MSWVyN/9DUjKrGt5dJpbjxpWiCS22HxYleuy9uZIoJeze7/q0
+ zCoyyhRBLvqgZ71FAynWB3xe4pRvB3ibgZGe60xwaYIUrVPx8bwkXyzud+F7R7U1MaXx
+ /VYA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:mime-version:in-reply-to:references:from:date
  :message-id:subject:to:cc;
- bh=Wde0HcwExXY831MfxZDBcHjXK7XvngyeZU1X9StNjyk=;
- b=kTvVMPmgYLBOL5EpGLs9bZjlpCLPWMnt3U4DEgvyyz0q7w0u4b4rYS4m/b0g/pUwn9
- 6c3LnZc8Zl5y5STKxXzVBTq2+6zXA8Ts/GQes8xzKAoUo4P/KP+AvLZk2zL/VqUmkqob
- e36WQeU38d8YEM3gbEmF4tIDxyq0lq+zOhCwMgIJgNlCS1nCfACfgsZDQbtBzZLrqNuf
- H/FDLbez6gxy70H3TVmD5TRQxijVyACSPzPgpDydIMimIHfc5LcEGXYy4iq/P6/zP1jb
- fnOP5MLHZsEpTZtcGoPxAcvYbmpxNzHYCC3McTQGE5ZJNJ4qJTU79D5fdIU+gSxOEDx+
- ytkw==
-X-Gm-Message-State: ABuFfogu/BLiCjSOGBu6xdHjcBpxCzRkVjkzlzDdxntmxcQyNlz49wME
- vD8vjTEvYaiZxgrmXABxKX9Fus0XPRoWqU+AA0mZdg==
-X-Google-Smtp-Source: ACcGV63O+2oHow+MnmDFFN/fGr+ypIXJq0Jebw7vm8a3hwEac10cSSqcJGLdjRO5qFIM+0mJ+lFBqqSZgai2siyMk8M=
-X-Received: by 2002:a6b:b249:: with SMTP id
- b70-v6mr5998814iof.252.1539394786418; 
- Fri, 12 Oct 2018 18:39:46 -0700 (PDT)
+ bh=ruDqHADLGhUq/OqjXNRFevT5jDn0habRcwA3l0QGuG8=;
+ b=E8pNbuRqgSIhLLmg2+/9L6N8XyYn5a+mIfdH20mrS7YnzOLnvhBqx1BY9sYCyj/U0J
+ o0VRW6p5cKr4hyEOde6ktvYYdKFGRNEkYEZ2OnDSQ1CURr4I9gnX+PlBMWl0x7zlqXpx
+ pn9/YslLJ6JuhDtSGlHa3SWrQvtDkaRA1USfWqMwGCCSwEq8C86ZZV7K+7rpK+2/Z6sg
+ t8BRaSmFTh4G9S8j1UTrc7tAarZkux067iqkeuiEw9OO55QYVhWCG/WfV9OWPSTn+QiQ
+ smr82H1JLLMedtgjqsS6nB8SR4BsS4a5IDbOaIEc+qzE/O9R5CD0mFEgpFnSlbuwhywr
+ oTsA==
+X-Gm-Message-State: ABuFfoiRwFidVJWxD68beI7TtFtzFubnEmdnVE4eDjKU4UXrbpMItSbu
+ ncH8glkSCLlFBU1Gf/mmEuOS0lVHGaetL7GLvZKlTQ==
+X-Google-Smtp-Source: ACcGV61wTHJT8KA0FRbB4T8HJavFhx8DCnBEFcv7It/8YmRplkdtkLJbpEFBtddWCai0iE4efhP92rfUMrMKw3tumlM=
+X-Received: by 2002:a9d:3a21:: with SMTP id j30mr2325823otc.237.1539395674440; 
+ Fri, 12 Oct 2018 18:54:34 -0700 (PDT)
 MIME-Version: 1.0
-Received: by 2002:a4f:d604:0:0:0:0:0 with HTTP; Fri, 12 Oct 2018 18:39:45
+Received: by 2002:ac9:56d8:0:0:0:0:0 with HTTP; Fri, 12 Oct 2018 18:54:33
  -0700 (PDT)
-In-Reply-To: <20181013013540.GA207108@joelaf.mtv.corp.google.com>
+In-Reply-To: <20181013014429.GB207108@joelaf.mtv.corp.google.com>
 References: <20181012013756.11285-2-joel@joelfernandes.org>
  <20181012113056.gxhcbrqyu7k7xnyv@kshutemo-mobl1>
  <20181012125046.GA170912@joelaf.mtv.corp.google.com>
  <20181012.111836.1569129998592378186.davem@davemloft.net>
  <20181013013540.GA207108@joelaf.mtv.corp.google.com>
+ <CAKOZueuNvWvn18vffJWpbpg7h-uScT8gXrrudTB2pnT4M2HJ_w@mail.gmail.com>
+ <20181013014429.GB207108@joelaf.mtv.corp.google.com>
 From: Daniel Colascione <dancol@google.com>
-Date: Fri, 12 Oct 2018 18:39:45 -0700
-Message-ID: <CAKOZueuNvWvn18vffJWpbpg7h-uScT8gXrrudTB2pnT4M2HJ_w@mail.gmail.com>
+Date: Fri, 12 Oct 2018 18:54:33 -0700
+Message-ID: <CAKOZues25aaKz3_AiyfJ=r2QBd5MghgY3ky_ptg4Z8=ST4DCgw@mail.gmail.com>
 Subject: Re: [PATCH v2 2/2] mm: speed up mremap by 500x on large regions
 To: Joel Fernandes <joel@joelfernandes.org>
 Content-Type: text/plain; charset="UTF-8"
@@ -119,33 +120,23 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Not 32-bit ARM?
+I wonder whether it makes sense to expose to userspace somehow whether
+mremap is "fast" for a particular architecture. If a feature relies on
+fast mremap, it might be better for some userland component to disable
+that feature entirely rather than blindly use mremap and end up
+performing very poorly. If we're disabling fast mremap when THP is
+enabled, the userland component can't just rely on an architecture
+switch and some kind of runtime feature detection becomes even more
+important.
 
-On Fri, Oct 12, 2018 at 6:35 PM, Joel Fernandes <joel@joelfernandes.org> wrote:
-> On Fri, Oct 12, 2018 at 11:18:36AM -0700, David Miller wrote:
->> From: Joel Fernandes <joel@joelfernandes.org>
-> [...]
->> > Also, do we not flush the caches from any path when we munmap
->> > address space?  We do call do_munmap on the old mapping from mremap
->> > after moving to the new one.
->>
->> Sparc makes sure that shared mapping have consistent colors.  Therefore
->> all that's left are private mappings and those will be initialized by
->> block stores to clear the page out or similar.
->>
->> Also, when creating new mappings, we flush the D-cache when necessary
->> in update_mmu_cache().
->>
->> We also maintain a bit in the page struct to track when a page which
->> was potentially written to on one cpu ends up mapped into another
->> address space and flush as necessary.
->>
->> The cache is write-through, which simplifies the preconditions we have
->> to maintain.
+On Fri, Oct 12, 2018 at 6:44 PM, Joel Fernandes <joel@joelfernandes.org> wrote:
+> On Fri, Oct 12, 2018 at 06:39:45PM -0700, Daniel Colascione wrote:
+>> Not 32-bit ARM?
 >
-> Makes sense, thanks. For the moment I sent patches to enable this on arm64
-> and x86. We can enable it on sparc as well at a later time as it sounds it
-> could be a safe optimization to apply to that architecture as well.
+> Well, I didn't want to enable every possible architecture we could in a
+> single go. Certainly arm32 can be a follow on enablement as can be other
+> architectures. The point of this series is to upstream this feature and
+> enable a hand-picked few architectures as a first step.
 >
 > thanks,
 >
