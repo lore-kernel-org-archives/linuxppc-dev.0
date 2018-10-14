@@ -2,91 +2,64 @@ Return-Path: <SRS0=geFq=M2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C1FEEC6787C
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Oct 2018 07:38:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3866BC6787C
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Oct 2018 07:42:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0A3F720659
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Oct 2018 07:38:37 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="Ro7LCiAd"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0A3F720659
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9A4B520659
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Oct 2018 07:42:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9A4B520659
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42XtjR2DLZzF3Cj
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Oct 2018 18:38:35 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=oracle.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42XtnZ3CJgzF3DG
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Oct 2018 18:42:10 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.b="Ro7LCiAd";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=oracle.com
- (client-ip=141.146.126.78; helo=aserp2120.oracle.com;
- envelope-from=liran.alon@oracle.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=oracle.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=oracle.com header.i=@oracle.com header.b="Ro7LCiAd"; 
- dkim-atps=neutral
-Received: from aserp2120.oracle.com (aserp2120.oracle.com [141.146.126.78])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42XtTG3FS8zF1Pp
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Oct 2018 18:27:56 +1100 (AEDT)
-Received: from pps.filterd (aserp2120.oracle.com [127.0.0.1])
- by aserp2120.oracle.com (8.16.0.22/8.16.0.22) with SMTP id w9E7KWth090057;
- Sun, 14 Oct 2018 07:27:00 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
- h=content-type :
- mime-version : subject : from : in-reply-to : date : cc :
- content-transfer-encoding : message-id : references : to;
- s=corp-2018-07-02; bh=x1rPStnyMjgTZ4kR6etWB0TFzQLk4cy1o7iAyMPR8Vo=;
- b=Ro7LCiAdB43Hgv9VAbgRuwwoo7nGoz/tvkwJLuKy3j7bitZKDEZ+2cSIX2wYLRDCTjC8
- 8+bn/O6I+ifjC9ZwEv4/7hFQOrR1EOtCdtYhKm4n6xRiJbuhiRHBi039uY42lugiJ+67
- yw0Xte6X4P5YTH47Cuvc4QwzEDpNHhK+7+6L0YAXZ/pHxCU5f08WMQ3sKH2tvjPodQ63
- Y39eRtFhkCqrOp1q/g9DtCsmrdATn4VGH9oLAWmm7OCvNrpAhMs5yTir0HlalJ1jPIBV
- g2ZSs3Mr+XPejy7vLLWEZPtUrKRPnJVvi2O0RiErPB2WqgGtUUspqH898xM5nWodTu3i 7w== 
-Received: from aserv0021.oracle.com (aserv0021.oracle.com [141.146.126.233])
- by aserp2120.oracle.com with ESMTP id 2n38npmcvd-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Sun, 14 Oct 2018 07:27:00 +0000
-Received: from aserv0122.oracle.com (aserv0122.oracle.com [141.146.126.236])
- by aserv0021.oracle.com (8.14.4/8.14.4) with ESMTP id w9E7QvEd010730
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Sun, 14 Oct 2018 07:26:57 GMT
-Received: from abhmp0004.oracle.com (abhmp0004.oracle.com [141.146.116.10])
- by aserv0122.oracle.com (8.14.4/8.14.4) with ESMTP id w9E7Qq6c027817;
- Sun, 14 Oct 2018 07:26:53 GMT
-Received: from [192.168.14.112] (/79.182.224.107)
- by default (Oracle Beehive Gateway v4.0)
- with ESMTP ; Sun, 14 Oct 2018 07:26:51 +0000
-Content-Type: text/plain;
-	charset=utf-8
-Mime-Version: 1.0 (Mac OS X Mail 11.1 \(3445.4.7\))
-Subject: Re: [PATCH V4 2/15] KVM/MMU: Add tlb flush with range helper function
-From: Liran Alon <liran.alon@oracle.com>
-In-Reply-To: <20181013145406.4911-3-Tianyu.Lan@microsoft.com>
-Date: Sun, 14 Oct 2018 10:26:41 +0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42XtlG17KVzDq6t
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Oct 2018 18:40:10 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 42Xtl305GZz9ttC5;
+ Sun, 14 Oct 2018 09:39:59 +0200 (CEST)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id vqMnBiHOcmsx; Sun, 14 Oct 2018 09:39:58 +0200 (CEST)
+Received: from vm-hermes.si.c-s.fr (vm-hermes.si.c-s.fr [192.168.25.253])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 42Xtl26HB5z9ttBy;
+ Sun, 14 Oct 2018 09:39:58 +0200 (CEST)
+Received: by vm-hermes.si.c-s.fr (Postfix, from userid 33)
+ id C60A02E; Sun, 14 Oct 2018 09:39:57 +0200 (CEST)
+Received: from 37.169.125.255 ([37.169.125.255]) by messagerie.si.c-s.fr
+ (Horde Framework) with HTTP; Sun, 14 Oct 2018 09:39:57 +0200
+Date: Sun, 14 Oct 2018 09:39:57 +0200
+Message-ID: <20181014093957.Horde.CdijSMuadjLRcoigbh8m9A1@messagerie.si.c-s.fr>
+From: LEROY Christophe <christophe.leroy@c-s.fr>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v3 06/24] powerpc/mm: properly set PAGE_KERNEL flags in
+ ioremap()
+References: <cover.1539092111.git.christophe.leroy@c-s.fr>
+ <52bd80b06bae0d854d04501e1e136575b77fa9fa.1539092111.git.christophe.leroy@c-s.fr>
+ <87d0sd19vm.fsf@concordia.ellerman.id.au>
+In-Reply-To: <87d0sd19vm.fsf@concordia.ellerman.id.au>
+User-Agent: Internet Messaging Program (IMP) H5 (6.2.3)
+Content-Type: text/plain; charset=UTF-8; format=flowed; DelSp=Yes
+MIME-Version: 1.0
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
-Message-Id: <4D709C3A-A91C-4CA7-922A-E77618EF21B4@oracle.com>
-References: <20181013145406.4911-1-Tianyu.Lan@microsoft.com>
- <20181013145406.4911-3-Tianyu.Lan@microsoft.com>
-To: lantianyu1986@gmail.com
-X-Mailer: Apple Mail (2.3445.4.7)
-X-Proofpoint-Virus-Version: vendor=nai engine=5900 definitions=9045
- signatures=668706
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=1
- malwarescore=0
- phishscore=0 bulkscore=0 spamscore=0 mlxscore=0 mlxlogscore=865
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.0.1-1807170000 definitions=main-1810140071
-X-Mailman-Approved-At: Sun, 14 Oct 2018 18:36:23 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,96 +71,187 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mips@linux-mips.org, linux@armlinux.org, kvm@vger.kernel.org,
- rkrcmar@redhat.com, catalin.marinas@arm.com, will.deacon@arm.com,
- linux-kernel@vger.kernel.org, hpa@zytor.com, kys@microsoft.com,
- kvmarm@lists.cs.columbia.edu, sthemmin@microsoft.com, x86@kernel.org,
- michael.h.kelley@microsoft.com, mingo@redhat.com, jhogan@kernel.org,
- Lan Tianyu <Tianyu.Lan@microsoft.com>, marc.zyngier@arm.com,
- haiyangz@microsoft.com, kvm-ppc@vger.kernel.org, devel@linuxdriverproject.org,
- tglx@linutronix.de, linux-arm-kernel@lists.infradead.org,
- christoffer.dall@arm.com, ralf@linux-mips.org, paul.burton@mips.com,
- pbonzini@redhat.com, vkuznets@redhat.com, linuxppc-dev@lists.ozlabs.org
+Cc: Jens Axboe <axboe@kernel.dk>, Scott Wood <oss@buserror.net>,
+ linux-fbdev@vger.kernel.org, Dominik Brodowski <linux@dominikbrodowski.net>,
+ Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+ Geoff Levand <geoff@infradead.org>, Nicholas Piggin <npiggin@gmail.com>,
+ linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ Li Yang <leoyang.li@nxp.com>, linux-block@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, aneesh.kumar@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Michael Ellerman <mpe@ellerman.id.au> a =C3=A9crit=C2=A0:
 
+> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+>
+>> Set PAGE_KERNEL directly in the caller and do not rely on a
+>> hack adding PAGE_KERNEL flags when _PAGE_PRESENT is not set.
+>>
+>> As already done for PPC64, use pgprot_cache() helpers instead of
+>> _PAGE_XXX flags in PPC32 ioremap() derived functions.
+>>
+>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>
+> Something in here is breaking my p5020ds (both 32-bit and 64-bit):
+>
+> # first bad commit: [cb9220cc18345a2a1ec287752e576a2c88fa4a2b]=20=20
+>=20powerpc/mm: properly set PAGE_KERNEL flags in ioremap()
 
-> On 13 Oct 2018, at 17:53, lantianyu1986@gmail.com wrote:
->=20
-> From: Lan Tianyu <Tianyu.Lan@microsoft.com>
->=20
-> This patch is to add wrapper functions for tlb_remote_flush_with_range
-> callback.
->=20
-> Signed-off-by: Lan Tianyu <Tianyu.Lan@microsoft.com>
-> ---
-> Change sicne V3:
->       Remove code of updating "tlbs_dirty"
-> Change since V2:
->       Fix comment in the kvm_flush_remote_tlbs_with_range()
-> ---
-> arch/x86/kvm/mmu.c | 40 ++++++++++++++++++++++++++++++++++++++++
-> 1 file changed, 40 insertions(+)
->=20
-> diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
-> index c73d9f650de7..ff656d85903a 100644
-> --- a/arch/x86/kvm/mmu.c
-> +++ b/arch/x86/kvm/mmu.c
-> @@ -264,6 +264,46 @@ static void mmu_spte_set(u64 *sptep, u64 spte);
-> static union kvm_mmu_page_role
-> kvm_mmu_calc_root_page_role(struct kvm_vcpu *vcpu);
->=20
-> +
-> +static inline bool kvm_available_flush_tlb_with_range(void)
-> +{
-> +	return kvm_x86_ops->tlb_remote_flush_with_range;
-> +}
+Strange, it is calling ioremap_prot(), it should have been calling=20=20
+ioremap_cache()=20hence ioremap() since patch 4  of the serie. Did patch=20=
+=20
+4=20apply correctly ?
 
-Seems that kvm_available_flush_tlb_with_range() is not used in this =
-patch=E2=80=A6
+Christophe
 
-> +
-> +static void kvm_flush_remote_tlbs_with_range(struct kvm *kvm,
-> +		struct kvm_tlb_range *range)
-> +{
-> +	int ret =3D -ENOTSUPP;
-> +
-> +	if (range && kvm_x86_ops->tlb_remote_flush_with_range)
-> +		ret =3D kvm_x86_ops->tlb_remote_flush_with_range(kvm, =
-range);
-> +
-> +	if (ret)
-> +		kvm_flush_remote_tlbs(kvm);
-> +}
-> +
-> +static void kvm_flush_remote_tlbs_with_list(struct kvm *kvm,
-> +		struct list_head *flush_list)
-> +{
-> +	struct kvm_tlb_range range;
-> +
-> +	range.flush_list =3D flush_list;
-> +
-> +	kvm_flush_remote_tlbs_with_range(kvm, &range);
-> +}
-> +
-> +static void kvm_flush_remote_tlbs_with_address(struct kvm *kvm,
-> +		u64 start_gfn, u64 pages)
-> +{
-> +	struct kvm_tlb_range range;
-> +
-> +	range.start_gfn =3D start_gfn;
-> +	range.pages =3D pages;
-> +	range.flush_list =3D NULL;
-> +
-> +	kvm_flush_remote_tlbs_with_range(kvm, &range);
-> +}
-> +
-> void kvm_mmu_set_mmio_spte_mask(u64 mmio_mask, u64 mmio_value)
-> {
-> 	BUG_ON((mmio_mask & mmio_value) !=3D mmio_value);
-> --=20
-> 2.14.4
->=20
+>
+> 64-bit:
+>
+>   io scheduler mq-deadline registered
+>   io scheduler kyber registered
+>   pcieport 0000:00:00.0: AER enabled with IRQ 482
+>   pcieport 2000:00:00.0: AER enabled with IRQ 480
+>   Unable to handle kernel paging request for data at address=20=20
+>=200x8000080080080000
+>   Faulting instruction address: 0xc0000000000152e4
+>   Oops: Kernel access of bad area, sig: 11 [#1]
+>   BE SMP NR_CPUS=3D32 CoreNet Generic
+>   Modules linked in:
+>   CPU: 1 PID: 1 Comm: swapper/0 Not tainted=20=20
+>=204.19.0-rc3-gcc-7.3.1-00135-gcb9220cc1834 #16
+>   NIP:  c0000000000152e4 LR: c0000000005173b8 CTR: 0000000000100000
+>   REGS: c0000000f30eb420 TRAP: 0300   Not tainted=20=20=20
+>=20(4.19.0-rc3-gcc-7.3.1-00135-gcb9220cc1834)
+>   MSR:  0000000080029000 <CE,EE,ME>  CR: 24000224  XER: 00000000
+>   DEAR: 8000080080080000 ESR: 0000000000800000 IRQMASK: 0
+>   GPR00: c0000000005173a0 c0000000f30eb6a0 c000000000f86e00 8000080080080=
+000
+>   GPR04: 0000000000000000 0000000000400000 00000ffbff000004 0000000000000=
+008
+>   GPR08: 0000000000000000 0000000000100000 0000000000000000 0000000000000=
+080
+>   GPR12: 0000000084000422 c00000003ffff7c0 c00000000000263c 0000000000000=
+000
+>   GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000=
+000
+>   GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000=
+000
+>   GPR24: c000000000dbe0a0 c000000000d41bf8 8000080080080000 c0000000ffff8=
+9a8
+>   GPR28: c0000000f3492400 c0000000f3492410 0000000000400000 c000000000ff0=
+a18
+>   NIP [c0000000000152e4] ._memset_io+0x6c/0x9c
+>   LR [c0000000005173b8] .fsl_qman_probe+0x188/0x918
+>   Call Trace:
+>   [c0000000f30eb6a0] [c0000000005173a0] .fsl_qman_probe+0x170/0x918=20=20
+>=20(unreliable)
+>   [c0000000f30eb740] [c0000000005797dc] .platform_drv_probe+0x58/0xac
+>   [c0000000f30eb7c0] [c0000000005772b0] .really_probe+0x2a8/0x380
+>   [c0000000f30eb860] [c0000000005776f0] .__driver_attach+0x138/0x13c
+>   [c0000000f30eb8f0] [c000000000574550] .bus_for_each_dev+0x9c/0x110
+>   [c0000000f30eb9a0] [c000000000576a18] .driver_attach+0x24/0x38
+>   [c0000000f30eba10] [c0000000005761ec] .bus_add_driver+0x16c/0x2ac
+>   [c0000000f30ebab0] [c000000000578194] .driver_register+0x88/0x178
+>   [c0000000f30ebb30] [c000000000579770] .__platform_driver_register+0x48/=
+0x5c
+>   [c0000000f30ebba0] [c000000000d85744] .fsl_qman_driver_init+0x1c/0x30
+>   [c0000000f30ebc10] [c000000000002374] .do_one_initcall+0x70/0x258
+>   [c0000000f30ebcf0] [c000000000d4a244] .kernel_init_freeable+0x340/0x43c
+>   [c0000000f30ebdb0] [c000000000002658] .kernel_init+0x1c/0x130
+>   [c0000000f30ebe30] [c0000000000009e4] .ret_from_kernel_thread+0x58/0x74
+>   Instruction dump:
+>   4e800020 2ba50003 40dd003c 3925fffc 5488402e 7929f082 7d082378 39290001
+>   550a801e 7d2903a6 7d4a4378 794a0020 <91430000> 38630004 4200fff8 70a500=
+03
+>   ---[ end trace 372a57fd67efb6fe ]---
+>
+> 32 bit:
+>
+>   [    1.076133] pcieport 2000:02:00.0: AER enabled with IRQ 480
+>   [    1.082106] Unable to handle kernel paging request for data at=20=20
+>=20address 0xf1100000
+>   [    1.089488] Faulting instruction address: 0xc0011c80
+>   [    1.094437] Oops: Kernel access of bad area, sig: 11 [#1]
+>   [    1.099816] BE SMP NR_CPUS=3D24 CoreNet Generic
+>   [    1.104157] Modules linked in:
+>   [    1.107197] CPU: 0 PID: 1 Comm: swapper/0 Not tainted=20=20
+>=204.19.0-rc3-gcc7x-g8f0c636b0542 #1
+>   [    1.115181] NIP:  c0011c80 LR: c058f970 CTR: 00100000
+>   [    1.120216] REGS: e8107c80 TRAP: 0300   Not tainted=20=20=20
+>=20(4.19.0-rc3-gcc7x-g8f0c636b0542)
+>   [    1.128026] MSR:  00029002 <CE,EE,ME>  CR: 24000284  XER: 00000000
+>   [    1.134190] DEAR: f1100000 ESR: 00800000
+>   [    1.134190] GPR00: c058f958 e8107d30 e8108000 f1100000 00000000=20=
+=20
+>=2000400000 e8107cd8 e8107d0c
+>   [    1.134190] GPR08: 00000000 00100000 00000000 ff000000 24000282=20=
+=20
+>=2000000000 c0003340 00000000
+>   [    1.134190] GPR16: 00000000 00000000 00000000 00000000 c0d64410=20=
+=20
+>=20c0edb34c c0ec6700 00000007
+>   [    1.134190] GPR24: c0ef0000 f1100000 efffcab8 c0ef0000 e8231c00=20=
+=20
+>=20e8231c10 0040003f c101d290
+>   [    1.171519] NIP [c0011c80] _memset_io+0x90/0xd0
+>   [    1.176030] LR [c058f970] fsl_qman_probe+0x190/0x8c0
+>   [    1.180975] Call Trace:
+>   [    1.183410] [e8107d30] [c001f6c0] ioremap_prot+0x40/0x50 (unreliable=
+)
+>   [    1.189830] [e8107d40] [c058f958] fsl_qman_probe+0x178/0x8c0
+>   [    1.195475] [e8107d70] [c0600894] platform_drv_probe+0x54/0xb0
+>   [    1.201287] [e8107d90] [c05fe15c] really_probe+0x28c/0x350
+>   [    1.206756] [e8107dc0] [c05fe73c] __driver_attach+0x12c/0x130
+>   [    1.212485] [e8107de0] [c05fb5a8] bus_for_each_dev+0x98/0x110
+>   [    1.218213] [e8107e10] [c05fd048] bus_add_driver+0x158/0x2b0
+>   [    1.223855] [e8107e40] [c05ff1c4] driver_register+0x94/0x180
+>   [    1.229498] [e8107e60] [c0002fc4] do_one_initcall+0x54/0x2d0
+>   [    1.235144] [e8107ed0] [c0d650e8] kernel_init_freeable+0x2e8/0x3bc
+>   [    1.241302] [e8107f20] [c0003364] kernel_init+0x24/0x130
+>   [    1.246599] [e8107f40] [c0015298] ret_from_kernel_thread+0x14/0x1c
+>   [    1.252758] Instruction dump:
+>   [    1.255711] 2b850003 40dd0040 5488402e 3925fffc 7d082378=20=20
+>=205529f0be 550a801e 39290001
+>   [    1.263435] 7d4a4378 7d2903a6 60000000 60000000 <91430000>=20=20
+>=2038630004 4200fff8 70a50003
+>   [    1.271337] ---[ end trace f6eb249464967cf7 ]---
+>   [    1.275934]
+>   [    2.277413] BUG: sleeping function called from invalid context=20=20
+>=20at ./include/linux/percpu-rwsem.h:34
+>   [    2.286358] in_atomic(): 0, irqs_disabled(): 1, pid: 1, name: swappe=
+r/0
+>   [    2.292956] CPU: 0 PID: 1 Comm: swapper/0 Tainted: G      D=20=20=20=
+=20=20=20
+>=20      4.19.0-rc3-gcc7x-g8f0c636b0542 #1
+>   [    2.302328] Call Trace:
+>   [    2.304762] [e8107b80] [c0aa3774] dump_stack+0x88/0xc4 (unreliable)
+>   [    2.311011] [e8107ba0] [c0074e10] ___might_sleep+0xe0/0x130
+>   [    2.316567] [e8107bb0] [c0055410] exit_signals+0x50/0x2d0
+>   [    2.321949] [e8107bf0] [c00434dc] do_exit+0xcc/0xad0
+>   [    2.326897] [e8107c40] [c000ee98] die+0x228/0x390
+>   [    2.331582] [e8107c70] [c00153f4] handle_page_fault+0x34/0x38
+>   [    2.337311] --- interrupt: 300 at _memset_io+0x90/0xd0
+>   [    2.337311]     LR =3D fsl_qman_probe+0x190/0x8c0
+>   [    2.346945] [e8107d30] [c001f6c0] ioremap_prot+0x40/0x50 (unreliable=
+)
+>   [    2.353368] [e8107d40] [c058f958] fsl_qman_probe+0x178/0x8c0
+>   [    2.359010] [e8107d70] [c0600894] platform_drv_probe+0x54/0xb0
+>   [    2.364825] [e8107d90] [c05fe15c] really_probe+0x28c/0x350
+>   [    2.370294] [e8107dc0] [c05fe73c] __driver_attach+0x12c/0x130
+>   [    2.376023] [e8107de0] [c05fb5a8] bus_for_each_dev+0x98/0x110
+>   [    2.381751] [e8107e10] [c05fd048] bus_add_driver+0x158/0x2b0
+>   [    2.387394] [e8107e40] [c05ff1c4] driver_register+0x94/0x180
+>   [    2.393035] [e8107e60] [c0002fc4] do_one_initcall+0x54/0x2d0
+>   [    2.398678] [e8107ed0] [c0d650e8] kernel_init_freeable+0x2e8/0x3bc
+>   [    2.404840] [e8107f20] [c0003364] kernel_init+0x24/0x130
+>   [    2.410135] [e8107f40] [c0015298] ret_from_kernel_thread+0x14/0x1c
+>   [    2.416312] Kernel panic - not syncing: Attempted to kill init!=20=
+=20
+>=20exitcode=3D0x0000000b
+>
+> cheers
+
 
