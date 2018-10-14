@@ -2,57 +2,54 @@ Return-Path: <SRS0=geFq=M2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6BF4FC6787C
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Oct 2018 07:04:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 81190C6787C
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Oct 2018 07:06:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E190620659
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Oct 2018 07:04:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E190620659
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 2279020659
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Oct 2018 07:06:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2279020659
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42XsyD43RBzF3CB
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Oct 2018 18:04:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Xt0H1t66zF3Bw
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Oct 2018 18:06:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linutronix.de
+Authentication-Results: lists.ozlabs.org;
+ spf=none (mailfrom) smtp.mailfrom=linutronix.de
+ (client-ip=2a01:7a0:2:106d:700::1; helo=galois.linutronix.de;
+ envelope-from=tglx@linutronix.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linutronix.de
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a01:7a0:2:106d:700::1])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Xsw64t2gzF39s
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Oct 2018 18:02:46 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 42Xsw54Pw9z9s3Z;
- Sun, 14 Oct 2018 18:02:45 +1100 (AEDT)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Dominik Brodowski <linux@dominikbrodowski.net>,
- Geoff Levand <geoff@infradead.org>, Jens Axboe <axboe@kernel.dk>,
- Kumar Gala <galak@kernel.crashing.org>, Li Yang <leoyang.li@nxp.com>,
- Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>,
- Scott Wood <oss@buserror.net>, aneesh.kumar@linux.vnet.ibm.com
-Subject: Re: [PATCH v3 06/24] powerpc/mm: properly set PAGE_KERNEL flags in
- ioremap()
-In-Reply-To: <87d0sd19vm.fsf@concordia.ellerman.id.au>
-References: <cover.1539092111.git.christophe.leroy@c-s.fr>
- <52bd80b06bae0d854d04501e1e136575b77fa9fa.1539092111.git.christophe.leroy@c-s.fr>
- <87d0sd19vm.fsf@concordia.ellerman.id.au>
-Date: Sun, 14 Oct 2018 18:02:45 +1100
-Message-ID: <87a7nh104q.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Xswp4zjPzF3Cd
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Oct 2018 18:03:22 +1100 (AEDT)
+Received: from p5492fe24.dip0.t-ipconnect.de ([84.146.254.36] helo=nanos)
+ by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
+ (Exim 4.80) (envelope-from <tglx@linutronix.de>)
+ id 1gBZny-0007bP-Ve; Sun, 14 Oct 2018 08:23:11 +0200
+Date: Sun, 14 Oct 2018 08:23:10 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Christoph Hellwig <hch@lst.de>
+Subject: Re: move bus (PCI, PCMCIA, EISA, rapdio) config to drivers/
+In-Reply-To: <20181013151016.31674-1-hch@lst.de>
+Message-ID: <alpine.DEB.2.21.1810140822540.1438@nanos.tec.linutronix.de>
+References: <20181013151016.31674-1-hch@lst.de>
+User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
+X-Linutronix-Spam-Score: -1.0
+X-Linutronix-Spam-Level: -
+X-Linutronix-Spam-Status: No , -1.0 points, 5.0 required, ALL_TRUSTED=-1,
+ SHORTCIRCUIT=-0.0001
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,32 +61,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-block@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: linux-arch@vger.kernel.org, linux-scsi@vger.kernel.org,
+ linux-kbuild@vger.kernel.org, linux-pci@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Dominik Brodowski <linux@dominikbrodowski.net>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Alexandre Bounine <alex.bou9@gmail.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
+On Sat, 13 Oct 2018, Christoph Hellwig wrote:
 
-> Christophe Leroy <christophe.leroy@c-s.fr> writes:
->
->> Set PAGE_KERNEL directly in the caller and do not rely on a
->> hack adding PAGE_KERNEL flags when _PAGE_PRESENT is not set.
->>
->> As already done for PPC64, use pgprot_cache() helpers instead of
->> _PAGE_XXX flags in PPC32 ioremap() derived functions.
->>
->> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->
-> Something in here is breaking my p5020ds (both 32-bit and 64-bit):
+> Hi all,
+> 
+> currently every architecture that wants to provide on of the common
+> periphal busses needs to add some boilerplate code and include the
+> right Kconfig files.   This series instead just selects the presence
+> (when needed) and then handles everything in the bus-specific
+> Kconfig file under drivers/.
 
-Oh duh.
+Nice cleanup.
 
-That's because I didn't take patch 4.
-
-It didn't have any acks, but I guess I'll just merge it rather than
-breaking things.
-
-cheers
+Acked-by: Thomas Gleixner <tglx@linutronix.de>
