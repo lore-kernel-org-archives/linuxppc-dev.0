@@ -2,56 +2,92 @@ Return-Path: <SRS0=geFq=M2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 36087C6787C
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Oct 2018 08:19:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AD8A7C6787C
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Oct 2018 09:23:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8E6A820835
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Oct 2018 08:19:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8E6A820835
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linutronix.de
+	by mail.kernel.org (Postfix) with ESMTPS id 023AB20652
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Oct 2018 09:23:34 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="a3saD1Uh"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 023AB20652
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42Xvcj6C30zF3DQ
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Oct 2018 19:19:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linutronix.de
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Xx2X1mskzF3Dl
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Oct 2018 20:23:32 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=oracle.com
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linutronix.de
- (client-ip=2a01:7a0:2:106d:700::1; helo=galois.linutronix.de;
- envelope-from=tglx@linutronix.de; receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.b="a3saD1Uh";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linutronix.de
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2a01:7a0:2:106d:700::1])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+ spf=pass (mailfrom) smtp.mailfrom=oracle.com
+ (client-ip=156.151.31.86; helo=userp2130.oracle.com;
+ envelope-from=liran.alon@oracle.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=oracle.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=oracle.com header.i=@oracle.com header.b="a3saD1Uh"; 
+ dkim-atps=neutral
+Received: from userp2130.oracle.com (userp2130.oracle.com [156.151.31.86])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42XvZV0RR2zDqC7
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Oct 2018 19:17:38 +1100 (AEDT)
-Received: from p5492fe24.dip0.t-ipconnect.de ([84.146.254.36] helo=nanos)
- by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
- (Exim 4.80) (envelope-from <tglx@linutronix.de>)
- id 1gBba5-0000FJ-No; Sun, 14 Oct 2018 10:16:57 +0200
-Date: Sun, 14 Oct 2018 10:16:56 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Liran Alon <liran.alon@oracle.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Xwzw219HzF3Cd
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Oct 2018 20:21:16 +1100 (AEDT)
+Received: from pps.filterd (userp2130.oracle.com [127.0.0.1])
+ by userp2130.oracle.com (8.16.0.22/8.16.0.22) with SMTP id w9E9JMlx173978;
+ Sun, 14 Oct 2018 09:20:23 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
+ h=content-type :
+ mime-version : subject : from : in-reply-to : date : cc :
+ content-transfer-encoding : message-id : references : to;
+ s=corp-2018-07-02; bh=05aD9b0I3N3/wDsl3G63PtCqLhzcjnbZvj4TP1v3z6Q=;
+ b=a3saD1UhUdXuDuQCVlXFzaHb7xL1UeEvThQ7j1YSnEJm+Ss1x9YNtelHPEM9jbraqyhG
+ sWDN18+GZeG702VM3IhGAInbg/wcS4i55KReLkR8EQT+ZSA8U8WyTdKOCoghnIeeGaoR
+ qepHpaPBPyPtvACg199H3ipuM80R5RgInxENp4Lqu/YjzSmJGI6iRcFw1vrKUJ66uvfc
+ UFolgaJyJEmvozuzcmPlkLovOhPOn8fa+jc/sB6UjHT89wtShMDKaNZvESdZ6hcO2oDS
+ jcff5EXhRLYFXrSWroeJhyYZPDI0P2RkzQ6L7dmOPH98Ge8ARUcATCc/Igu81D3TYufb Qg== 
+Received: from userv0021.oracle.com (userv0021.oracle.com [156.151.31.71])
+ by userp2130.oracle.com with ESMTP id 2n384tmv5u-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Sun, 14 Oct 2018 09:20:23 +0000
+Received: from userv0121.oracle.com (userv0121.oracle.com [156.151.31.72])
+ by userv0021.oracle.com (8.14.4/8.14.4) with ESMTP id w9E9KKUX011508
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Sun, 14 Oct 2018 09:20:21 GMT
+Received: from abhmp0016.oracle.com (abhmp0016.oracle.com [141.146.116.22])
+ by userv0121.oracle.com (8.14.4/8.13.8) with ESMTP id w9E9KAq9004060;
+ Sun, 14 Oct 2018 09:20:12 GMT
+Received: from [192.168.14.112] (/79.182.224.107)
+ by default (Oracle Beehive Gateway v4.0)
+ with ESMTP ; Sun, 14 Oct 2018 09:20:10 +0000
+Content-Type: text/plain;
+	charset=utf-8
+Mime-Version: 1.0 (Mac OS X Mail 11.1 \(3445.4.7\))
 Subject: Re: [PATCH V4 2/15] KVM/MMU: Add tlb flush with range helper function
-In-Reply-To: <4D709C3A-A91C-4CA7-922A-E77618EF21B4@oracle.com>
-Message-ID: <alpine.DEB.2.21.1810141014350.1438@nanos.tec.linutronix.de>
+From: Liran Alon <liran.alon@oracle.com>
+In-Reply-To: <alpine.DEB.2.21.1810141014350.1438@nanos.tec.linutronix.de>
+Date: Sun, 14 Oct 2018 12:20:00 +0300
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <1BDC7949-CFED-46C2-9D05-42864B0AD0F0@oracle.com>
 References: <20181013145406.4911-1-Tianyu.Lan@microsoft.com>
  <20181013145406.4911-3-Tianyu.Lan@microsoft.com>
  <4D709C3A-A91C-4CA7-922A-E77618EF21B4@oracle.com>
-User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="8323329-68457485-1539505017=:1438"
-X-Linutronix-Spam-Score: -1.0
-X-Linutronix-Spam-Level: -
-X-Linutronix-Spam-Status: No , -1.0 points, 5.0 required, ALL_TRUSTED=-1,
- SHORTCIRCUIT=-0.0001
+ <alpine.DEB.2.21.1810141014350.1438@nanos.tec.linutronix.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+X-Mailer: Apple Mail (2.3445.4.7)
+X-Proofpoint-Virus-Version: vendor=nai engine=5900 definitions=9045
+ signatures=668706
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0
+ malwarescore=0
+ phishscore=0 bulkscore=0 spamscore=0 mlxscore=0 mlxlogscore=999
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.0.1-1807170000 definitions=main-1810140091
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,54 +113,39 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
---8323329-68457485-1539505017=:1438
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
 
-On Sun, 14 Oct 2018, Liran Alon wrote:
-> > On 13 Oct 2018, at 17:53, lantianyu1986@gmail.com wrote:
-> > 
-> > From: Lan Tianyu <Tianyu.Lan@microsoft.com>
-> > 
-> > This patch is to add wrapper functions for tlb_remote_flush_with_range
-> > callback.
-> > 
-> > Signed-off-by: Lan Tianyu <Tianyu.Lan@microsoft.com>
-> > ---
-> > Change sicne V3:
-> >       Remove code of updating "tlbs_dirty"
-> > Change since V2:
-> >       Fix comment in the kvm_flush_remote_tlbs_with_range()
-> > ---
-> > arch/x86/kvm/mmu.c | 40 ++++++++++++++++++++++++++++++++++++++++
-> > 1 file changed, 40 insertions(+)
-> > 
-> > diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
-> > index c73d9f650de7..ff656d85903a 100644
-> > --- a/arch/x86/kvm/mmu.c
-> > +++ b/arch/x86/kvm/mmu.c
-> > @@ -264,6 +264,46 @@ static void mmu_spte_set(u64 *sptep, u64 spte);
-> > static union kvm_mmu_page_role
-> > kvm_mmu_calc_root_page_role(struct kvm_vcpu *vcpu);
-> > 
-> > +
-> > +static inline bool kvm_available_flush_tlb_with_range(void)
-> > +{
-> > +	return kvm_x86_ops->tlb_remote_flush_with_range;
-> > +}
-> 
-> Seems that kvm_available_flush_tlb_with_range() is not used in this patch…
+> On 14 Oct 2018, at 11:16, Thomas Gleixner <tglx@linutronix.de> wrote:
+>=20
+> On Sun, 14 Oct 2018, Liran Alon wrote:
+>>> On 13 Oct 2018, at 17:53, lantianyu1986@gmail.com wrote:
+>>>=20
+>>> +
+>>> +static inline bool kvm_available_flush_tlb_with_range(void)
+>>> +{
+>>> +	return kvm_x86_ops->tlb_remote_flush_with_range;
+>>> +}
+>>=20
+>> Seems that kvm_available_flush_tlb_with_range() is not used in this =
+patch=E2=80=A6
+>=20
+> What's wrong with that?=20
+>=20
+> It provides the implementation and later patches make use of it. It's =
+a
+> sensible way to split patches into small, self contained entities.
+>=20
+> Thanks,
+>=20
+> 	tglx
+> =09
 
-What's wrong with that? 
+I guess it=E2=80=99s a matter of taste, but I prefer to not add =
+dead-code for patches
+in order for each commit to compile nicely without warnings of declared =
+and unused functions.
+I would prefer to just add this utility function on the patch that =
+actually use it.
 
-It provides the implementation and later patches make use of it. It's a
-sensible way to split patches into small, self contained entities.
+-Liran
 
-Thanks,
-
-	tglx
-	
---8323329-68457485-1539505017=:1438--
