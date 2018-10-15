@@ -2,125 +2,67 @@ Return-Path: <SRS0=mWF2=M3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=0.2 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,
+	URIBL_SBL,URIBL_SBL_A autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E0B5C04AA5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 20:03:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7BE87C04AA5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 20:15:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EFC7120881
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 20:03:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EFC7120881
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id DFF27208D9
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 20:15:01 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="OIV7RZsb"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DFF27208D9
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42YqBH5756zF3Mn
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 07:03:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42YqRl5hyfzF3MD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 07:14:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=mwb@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="OIV7RZsb";
+	dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42YqP76NVbzF3CZ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 07:12:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ header.from=canb.auug.org.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au
+ header.b="OIV7RZsb"; dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Yq3D0mkLzDqMh
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 06:57:11 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w9FJs8nl097618
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 15:57:09 -0400
-Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2n51570qu1-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 15:57:09 -0400
-Received: from localhost
- by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Mon, 15 Oct 2018 15:57:09 -0400
-Received: from b01cxnp22033.gho.pok.ibm.com (9.57.198.23)
- by e12.ny.us.ibm.com (146.89.104.199) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 15 Oct 2018 15:57:06 -0400
-Received: from b01ledav002.gho.pok.ibm.com (b01ledav002.gho.pok.ibm.com
- [9.57.199.107])
- by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- w9FJv5DW29556946
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Mon, 15 Oct 2018 19:57:05 GMT
-Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0CA86124053;
- Mon, 15 Oct 2018 16:56:46 -0400 (EDT)
-Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 71128124054;
- Mon, 15 Oct 2018 16:56:45 -0400 (EDT)
-Received: from oc5000245537.ibm.com (unknown [9.53.179.212])
- by b01ledav002.gho.pok.ibm.com (Postfix) with ESMTP;
- Mon, 15 Oct 2018 16:56:45 -0400 (EDT)
-Subject: [PATCH v06 2/5] powerpc/drmem: Add internal_flags feature
-References: <20181015194723.5705.51193.stgit@ltcalpine2-lp9.aus.stglabs.ibm.com>
-In-Reply-To: <20181015194723.5705.51193.stgit@ltcalpine2-lp9.aus.stglabs.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Openpgp: preference=signencrypt
-Autocrypt: addr=mwb@linux.vnet.ibm.com; prefer-encrypt=mutual; keydata=
- xsBNBFcY7GcBCADzw3en+yzo9ASFGCfldVkIg95SAMPK0myXp2XJYET3zT45uBsX/uj9/2nA
- lBmXXeOSXnPfJ9V3vtiwcfATnWIsVt3tL6n1kqikzH9nXNxZT7MU/7gqzWZngMAWh/GJ9qyg
- DTOZdjsvdUNUWxtiLvBo7y+reA4HjlQhwhYxxvCpXBeRoF0qDWfQ8DkneemqINzDZPwSQ7zY
- t4F5iyN1I9GC5RNK8Y6jiKmm6bDkrrbtXPOtzXKs0J0FqWEIab/u3BDrRP3STDVPdXqViHua
- AjEzthQbGZm0VCxI4a7XjMi99g614/qDcXZCs00GLZ/VYIE8hB9C5Q+l66S60PLjRrxnABEB
- AAHNLU1pY2hhZWwgVy4gQnJpbmdtYW5uIDxtd2JAbGludXgudm5ldC5pYm0uY29tPsLAeAQT
- AQIAIgUCVxjsZwIbAwYLCQgHAwIGFQgCCQoLBBYCAwECHgECF4AACgkQSEdag3dpuTI0NAf8
- CKYTDKQLgOSjVrU2L5rM4lXaJRmQV6oidD3vIhKSnWRvPq9C29ifRG6ri20prTHAlc0vycgm
- 41HHg0y2vsGgNXGTWC2ObemoZBI7mySXe/7Tq5mD/semGzOp0YWZ7teqrkiSR8Bw0p+LdE7K
- QmT7tpjjvuhrtQ3RRojUYcuy1nWUsc4D+2cxsnZslsx84FUKxPbLagDgZmgBhUw/sUi40s6S
- AkdViVCVS0WANddLIpG0cfdsV0kCae/XdjK3mRK6drFKv1z+QFjvOhc8QIkkxFD0da9w3tJj
- oqnqHFV5gLcHO6/wizPx/NV90y6RngeBORkQiRFWxTXS4Oj9GVI/Us7ATQRXGOxnAQgAmJ5Y
- ikTWrMWPfiveUacETyEhWVl7u8UhZcx3yy2te8O0ay7t9fYcZgIEfQPPVVus89acIXlG3wYL
- DDPvb21OprLxi+ZJ2a0S5we+LcSWN1jByxJlbWBq+/LcMtGAOhNLpysY1gD0Y4UW/eKS+TFZ
- 562qKC3k1dBvnV9JXCgeS1taYFxRdVAn+2DwK3nuyG/DDq/XgJ5BtmyC3MMx8CiW3POj+O+l
- 6SedIeAfZlZ7/xhijx82g93h07VavUQRwMZgZFsqmuxBxVGiav2HB+dNvs3PFB087Pvc9OHe
- qhajPWOP/gNLMmvBvknn1NToM9a8/E8rzcIZXoYs4RggRRYh6wARAQABwsBfBBgBAgAJBQJX
- GOxnAhsMAAoJEEhHWoN3abky+RUH/jE08/r5QzaNKYeVhu0uVbgXu5fsxqr2cAxhf+KuwT3T
- efhEP2alarxzUZdEh4MsG6c+X2NYLbD3cryiXxVx/7kSAJEFQJfA5P06g8NLR25Qpq9BLsN7
- ++dxQ+CLKzSEb1X24hYAJZpOhS8ev3ii+M/XIo+olDBKuTaTgB6elrg3CaxUsVgLBJ+jbRkW
- yQe2S5f/Ja1ThDpSSLLWLiLK/z7+gaqwhnwjQ8Z8Y9D2itJQcj4itHilwImsqwLG7SxzC0NX
- IQ5KaAFYdRcOgwR8VhhkOIVd70ObSZU+E4pTET1WDz4o65xZ89yfose1No0+r5ht/xWOOrh8
- 53/hcWvxHVs=
-Organization: IBM Linux Technology Center
-X-Forwarded-Message-Id: <20181015194723.5705.51193.stgit@ltcalpine2-lp9.aus.stglabs.ibm.com>
-Date: Mon, 15 Oct 2018 14:57:04 -0500
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ by ozlabs.org (Postfix) with ESMTPSA id 42YqP73C9Vz9s3q;
+ Tue, 16 Oct 2018 07:12:43 +1100 (AEDT)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=canb.auug.org.au
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=canb.auug.org.au;
+ s=201702; t=1539634363;
+ bh=6AgZ7dZ2EjiBcOd6Y6IVNK7Vd5/C10XFtiYaN5J+PYs=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+ b=OIV7RZsb66qjH3EgsJnfC04ffM9K8C4o7gI4bUCo8TZEoOmSK6i0Vfv/GawzpG9yx
+ ko7cd2vZguPYIZBnb7RWVQMQt//E7Xro28nYUSovfRkJ8WDvoMb+ti4hXZzIq/EFt5
+ QTIv/q2Y9sLKBwyfkXQC5T4tEwdc1Ps1rru4uum7d89qyTadGyoYNtGVBTTu7ucrAO
+ C4z4kg+7yUu82l+tCeszKixacyO13hjDZB0/GFgOzdpQTOi2NpyZIqz2s34a1UQ8V9
+ hWnkXqAaa1DB48HiZPRMPVEjkj5Il6KLD56bNvhcRbcUIm57jdxE3Y9yYYwu3TJRxB
+ 1KROLFCEmoIrw==
+Date: Tue, 16 Oct 2018 07:12:40 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: linux-next: Tree for Oct 15
+Message-ID: <20181016071240.3f62816d@canb.auug.org.au>
+In-Reply-To: <20181015182637.GA16445@roeck-us.net>
+References: <20181015192546.15faf3a1@canb.auug.org.au>
+ <20181015182637.GA16445@roeck-us.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-x-cbid: 18101519-0060-0000-0000-000002C117B5
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00009881; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000268; SDB=6.01103154; UDB=6.00570985; IPR=6.00883206; 
- MB=3.00023767; MTD=3.00000008; XFM=3.00000015; UTC=2018-10-15 19:57:07
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18101519-0061-0000-0000-000046DB7C1D
-Message-Id: <80ea73f8-7095-2bd7-75cd-9d8e7201a874@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-10-15_10:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1807170000 definitions=main-1810150171
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/ZSIJ7xZ8HAvUsYu/KWBJ6gY"; protocol="application/pgp-signature"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -132,94 +74,147 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
- Michael Bringmann <mwb@linux.vnet.ibm.com>, Juliet Kim <minkim@us.ibm.com>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Linux-Next Mailing List <linux-next@vger.kernel.org>,
+ Rob Herring <robherring2@gmail.com>, PowerPC <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-powerpc/drmem: Add internal_flags field to each LMB to allow
-marking of kernel software-specific operations that need not
-be exported to other users.  For instance, if information about
-selected LMBs needs to be maintained for subsequent passes
-through the system, it can be encoded into the LMB array itself
-without requiring the allocation and maintainance of additional
-data structures.
+--Sig_/ZSIJ7xZ8HAvUsYu/KWBJ6gY
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
----
-Changes in v04:
-  -- Add another initialization of 'lmb->internal_flags' to
-     init_drmem_v2_lmbs.
----
- arch/powerpc/include/asm/drmem.h |   18 ++++++++++++++++++
- arch/powerpc/mm/drmem.c          |    3 +++
- 2 files changed, 21 insertions(+)
+Hi Guenter,
 
-diff --git a/arch/powerpc/include/asm/drmem.h b/arch/powerpc/include/asm/drmem.h
-index cfe8598..dbb3e6c 100644
---- a/arch/powerpc/include/asm/drmem.h
-+++ b/arch/powerpc/include/asm/drmem.h
-@@ -17,6 +17,7 @@ struct drmem_lmb {
- 	u32     drc_index;
- 	u32     aa_index;
- 	u32     flags;
-+	u32     internal_flags;
- };
+[Just cc'ing the PPC and devicetree folks]
 
- struct drmem_lmb_info {
-@@ -94,6 +95,23 @@ static inline bool drmem_lmb_reserved(struct drmem_lmb *lmb)
- 	return lmb->flags & DRMEM_LMB_RESERVED;
- }
+On Mon, 15 Oct 2018 11:26:37 -0700 Guenter Roeck <linux@roeck-us.net> wrote:
+>
+> On Mon, Oct 15, 2018 at 07:25:46PM +1100, Stephen Rothwell wrote:
+> >=20
+> > My qemu boots of a powerpc pseries_le_defconfig kernel failed today.
+>=20
+> Same here. Interestingly, this only affects little endian pseries
+> boots; big endian works fine. I'll try to bisect later.
+>=20
+> ALl ppc qemu tests (including big endian pseries) also generate a warning.
+>=20
+> WARNING: CPU: 0 PID: 0 at mm/memblock.c:1301 .memblock_alloc_range_nid+0x=
+20/0x68
+> Modules linked in:
+> CPU: 0 PID: 0 Comm: swapper Not tainted 4.19.0-rc7-next-20181015 #1
+> NIP:  c000000000f99198 LR: c000000000f99490 CTR: c000000000bb8364
+> REGS: c000000001217a78 TRAP: 0700   Not tainted  (4.19.0-rc7-next-2018101=
+5)
+> MSR:  0000000080021000 <CE,ME>  CR: 24000422  XER: 20000000
+> IRQMASK: 1=20
+> GPR00: c000000000f99490 c000000001217d00 c00000000121a500 00000000000000c=
+0=20
+> GPR04: 0000000000000000 0000000000000000 0000000000000000 fffffffffffffff=
+f=20
+> GPR08: 0000000000000000 00000000000000c0 0000000000000018 00000000000000b=
+7=20
+> GPR12: 0000000000000040 c000000000fe7840 0000000000000000 000000000000000=
+0=20
+> GPR16: 0000000000000000 0000000000000000 0000000000000000 000000000000000=
+0=20
+> GPR20: 0000000000000000 0000000000000000 0000000000000000 000000000000000=
+0=20
+> GPR24: 0000000000000000 0000000000000000 0000000000000000 000000000000000=
+0=20
+> GPR28: c000000000000304 c000000001262088 00000000000000c0 c000000000fea50=
+0=20
+> NIP [c000000000f99198] .memblock_alloc_range_nid+0x20/0x68
+> LR [c000000000f99490] .memblock_alloc_base+0x18/0x48
+> Call Trace:
+> [c000000001217d00] [c000000002a00000] 0xc000000002a00000 (unreliable)
+> [c000000001217d80] [c000000000f99490] .memblock_alloc_base+0x18/0x48
+> [c000000001217df0] [c000000000f7a274] .allocate_paca_ptrs+0x3c/0x74
+> [c000000001217e70] [c000000000f78bf0] .early_init_devtree+0x288/0x320
+> [c000000001217f10] [c000000000f79b6c] .early_setup+0x80/0x130
+> [c000000001217f90] [c000000000000528] start_here_multiplatform+0x68/0x80
+>=20
+>=20
+> sparc images crash, starting with next-20181009. Bisect with
+> next-201810112 points to the merge of devicetree/for-next, though
+> devicetree/for-next itself does not have the problem (bisect log
+> attached below). The crash is in devicetree code.
+>=20
+> Crash logs:
+> https://kerneltests.org/builders/qemu-sparc64-next/builds/981/steps/qemub=
+uildcommand_1/logs/stdio
+> https://kerneltests.org/builders/qemu-sparc-next/builds/975/steps/qemubui=
+ldcommand_1/logs/stdio
+>=20
+> Guenter
+>=20
+> ---
+> # bad: [774ea0551a2966c8fc29a6f675c3e28c5c6fa586] Add linux-next specific=
+ files for 20181012
+> # good: [0238df646e6224016a45505d2c111a24669ebe21] Linux 4.19-rc7
+> git bisect start 'HEAD' 'v4.19-rc7'
+> # good: [dfbf78faefa3c26d94208398e62bf25ea798e7f2] Merge remote-tracking =
+branch 'spi-nor/spi-nor/next'
+> git bisect good dfbf78faefa3c26d94208398e62bf25ea798e7f2
+> # bad: [3f296bb430327676912966c56d2f078f74e6b4ab] Merge remote-tracking b=
+ranch 'tip/auto-latest'
+> git bisect bad 3f296bb430327676912966c56d2f078f74e6b4ab
+> # good: [efad9cbc89fbef3c4b3905e1c01a8191eae4c772] Merge remote-tracking =
+branch 'sound/for-next'
+> git bisect good efad9cbc89fbef3c4b3905e1c01a8191eae4c772
+> # good: [7d12a265b24001fbff1ff260c2f6bd802224a7c0] Merge remote-tracking =
+branch 'iommu/next'
+> git bisect good 7d12a265b24001fbff1ff260c2f6bd802224a7c0
+> # good: [4fc72c0ef3c1e792caf06d25ef68c7c871730e31] Merge branch 'ras/core'
+> git bisect good 4fc72c0ef3c1e792caf06d25ef68c7c871730e31
+> # good: [d74865bd3996c7a6f3e8ce6e626c1fe474e39494] Merge branch 'x86/mm'
+> git bisect good d74865bd3996c7a6f3e8ce6e626c1fe474e39494
+> # bad: [1b1ab6a98adab8a0436024b369305a978e365a13] Merge remote-tracking b=
+ranch 'mailbox/mailbox-for-next'
+> git bisect bad 1b1ab6a98adab8a0436024b369305a978e365a13
+> # good: [389d0a8a7af8ff8bb6301382333c7e8f748d7cd6] Merge branch 'dt/cpu-t=
+ype-rework' into dt/next
+> git bisect good 389d0a8a7af8ff8bb6301382333c7e8f748d7cd6
+> # good: [4355151de47c2b4bc72c026ee743bd9ed7f71ba3] Merge branch 'all-dtbs=
+' into dt/next
+> git bisect good 4355151de47c2b4bc72c026ee743bd9ed7f71ba3
+> # good: [60d744213fd9433b10b23afafb694a44c8e96cb8] Merge remote-tracking =
+branch 'vfio/next'
+> git bisect good 60d744213fd9433b10b23afafb694a44c8e96cb8
+> # good: [9f0a0a381c5db56e7922dbeea6831f27db58372f] mailbox: mediatek: Add=
+ check for possible failure of kzalloc
+> git bisect good 9f0a0a381c5db56e7922dbeea6831f27db58372f
+> # good: [157b4129ded8ba756ef17c058192e734889673e4] dt-bindings: arm: fsl:=
+ Move DCFG and SCFG bindings to their own docs
+> git bisect good 157b4129ded8ba756ef17c058192e734889673e4
+> # bad: [bed61948ea6c57bc73fb3ded9421c1bdd8cbe4d9] Merge remote-tracking b=
+ranch 'devicetree/for-next'
+> git bisect bad bed61948ea6c57bc73fb3ded9421c1bdd8cbe4d9
+> # good: [d81cc4a8e47219fbe60d49446f04ed3e9c1657d9] dt-bindings: arm: zte:=
+ Move sysctrl bindings to their own doc
+> git bisect good d81cc4a8e47219fbe60d49446f04ed3e9c1657d9
+> # first bad commit: [bed61948ea6c57bc73fb3ded9421c1bdd8cbe4d9] Merge remo=
+te-tracking branch 'devicetree/for-next'
 
-+#define DRMEM_LMBINT_UPDATE	0x00000001
-+
-+static inline void drmem_mark_lmb_update(struct drmem_lmb *lmb)
-+{
-+	lmb->internal_flags |= DRMEM_LMBINT_UPDATE;
-+}
-+
-+static inline void drmem_remove_lmb_update(struct drmem_lmb *lmb)
-+{
-+	lmb->internal_flags &= ~DRMEM_LMBINT_UPDATE;
-+}
-+
-+static inline bool drmem_lmb_update(struct drmem_lmb *lmb)
-+{
-+	return lmb->internal_flags & DRMEM_LMBINT_UPDATE;
-+}
-+
- u64 drmem_lmb_memory_max(void);
- void __init walk_drmem_lmbs(struct device_node *dn,
- 			void (*func)(struct drmem_lmb *, const __be32 **));
-diff --git a/arch/powerpc/mm/drmem.c b/arch/powerpc/mm/drmem.c
-index ded9dbf..f199fe5 100644
---- a/arch/powerpc/mm/drmem.c
-+++ b/arch/powerpc/mm/drmem.c
-@@ -207,6 +207,7 @@ static void read_drconf_v1_cell(struct drmem_lmb *lmb,
+--=20
+Cheers,
+Stephen Rothwell
 
- 	lmb->aa_index = of_read_number(p++, 1);
- 	lmb->flags = of_read_number(p++, 1);
-+	lmb->internal_flags = 0;
+--Sig_/ZSIJ7xZ8HAvUsYu/KWBJ6gY
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
 
- 	*prop = p;
- }
-@@ -265,6 +266,7 @@ static void __walk_drmem_v2_lmbs(const __be32 *prop, const __be32 *usm,
+-----BEGIN PGP SIGNATURE-----
 
- 			lmb.aa_index = dr_cell.aa_index;
- 			lmb.flags = dr_cell.flags;
-+			lmb.internal_flags = 0;
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAlvE9LgACgkQAVBC80lX
+0GxwHQf/fNYk7AFvyVgw0TUAUi59uwdnIICb+ZoyonRCmuYvqZFGWILr5MuwsrzQ
+MzjpAFGnOzA21TB4rzorM8yTdMsRJ1Op5Sbm7RimZwbYyFTmdSWf/VqVgv/2U7KW
+0lVSDM9Z6lKMp4/h64GioROwHgrTeX5xyXAfA5gFM+RIiC8SgBE7m8j03Sutam6x
+JL3R2KmgSVgI8vluHp2R0EvcQVkIjR1zKbqeusojiuIcXDfzfPR/3GPocMzJez+Z
+iqetpUMxFCIoXt0x15QHcEiXw9ucGzj/9EjUfS8yhAV1k3N3zM8vF2vr+KYrcACk
+fVrJndrOKxDLqvC6wTTQfK5dILBqdw==
+=AfU+
+-----END PGP SIGNATURE-----
 
- 			func(&lmb, &usm);
- 		}
-@@ -441,6 +443,7 @@ static void init_drmem_v2_lmbs(const __be32 *prop,
-
- 			lmb->aa_index = dr_cell.aa_index;
- 			lmb->flags = dr_cell.flags;
-+			lmb->internal_flags = 0;
- 		}
- 	}
- }
-
+--Sig_/ZSIJ7xZ8HAvUsYu/KWBJ6gY--
