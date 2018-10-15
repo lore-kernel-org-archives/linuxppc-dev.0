@@ -2,90 +2,76 @@ Return-Path: <SRS0=mWF2=M3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B608C04AA5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 18:59:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 77E65C04AA5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 19:04:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DFEE5208D9
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 18:59:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DFEE5208D9
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id EDCA1208B3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 19:04:12 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="c63NcWYq"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EDCA1208B3
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42Ynmf4qFTzF3Nb
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 05:59:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Ynt25bGxzF3MD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 06:04:10 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=naveen.n.rao@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="c63NcWYq";
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=atull@kernel.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="c63NcWYq"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Ynkf28T9zF38b
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 05:57:45 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w9FIsVoM050364
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 14:57:43 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2n50h4888r-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 14:57:43 -0400
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Mon, 15 Oct 2018 19:57:41 +0100
-Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
- by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 15 Oct 2018 19:57:38 +0100
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- w9FIvb7D3014922
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Mon, 15 Oct 2018 18:57:37 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E96474C046;
- Mon, 15 Oct 2018 21:57:10 +0100 (BST)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id BA5234C040;
- Mon, 15 Oct 2018 21:57:09 +0100 (BST)
-Received: from naverao1-tp.ibm.com (unknown [9.77.214.234])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon, 15 Oct 2018 21:57:09 +0100 (BST)
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- mikey@linux.ibm.com
-Subject: [PATCH RFC] powerpc/ftrace: Handle large kernel configs
-Date: Tue, 16 Oct 2018 00:27:25 +0530
-X-Mailer: git-send-email 2.19.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42YnqR63BgzF38h
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 06:01:55 +1100 (AEDT)
+Received: from mail-ed1-f51.google.com (mail-ed1-f51.google.com
+ [209.85.208.51])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id ABFBB21479
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 19:01:53 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1539630114;
+ bh=HZTikMm58VpHYYjCoXzcMq7g8Vxcno1d4W4fqZ5OWo0=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=c63NcWYqrFADrJk84i2f5NGXW5CFjvuqPg3BfCINay/kU+P7FUBPrxuLuZ4ZW4P22
+ D7O2QLDinOgkRJiv78fDMC6bvPelOoGCkgcNotVQyVaLoQhEdOFW7TTF1lzyRpZpSD
+ b0p3DVDtQOcsUc8O1DyUCtaz0xoibU+YPG8N/xD4=
+Received: by mail-ed1-f51.google.com with SMTP id w19-v6so18892504eds.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 12:01:53 -0700 (PDT)
+X-Gm-Message-State: ABuFfojGA/zdMtlkLz6HtVYjM7LQwPiwNRMaQXcGtL6Cyw8q7RlxD9PK
+ EF9mrEEd9/zYMOe7nB42fmVvrCACFhxW8TsjlcM=
+X-Google-Smtp-Source: ACcGV6146qI+cOqdKHB+Qj+knr8+y8I0gxkOYol7MAfdqtRpsbM+R8Vnd3PAXY2mg54pDeTtTxji2N+fBPOWsFBHtN8=
+X-Received: by 2002:a17:906:7384:: with SMTP id
+ f4-v6mr20302835ejl.8.1539630111956; 
+ Mon, 15 Oct 2018 12:01:51 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 18101518-0020-0000-0000-000002D46A6C
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18101518-0021-0000-0000-00002123703C
-Message-Id: <20181015185725.425-1-naveen.n.rao@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-10-15_10:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1807170000 definitions=main-1810150163
+References: <1539563070-12969-1-git-send-email-frowand.list@gmail.com>
+ <1539563070-12969-10-git-send-email-frowand.list@gmail.com>
+In-Reply-To: <1539563070-12969-10-git-send-email-frowand.list@gmail.com>
+From: Alan Tull <atull@kernel.org>
+Date: Mon, 15 Oct 2018 14:01:15 -0500
+X-Gmail-Original-Message-ID: <CANk1AXQNkYDA9hRCMR_MkOJiobPjmYoJN8Gv+3YN9ReV+q5XEw@mail.gmail.com>
+Message-ID: <CANk1AXQNkYDA9hRCMR_MkOJiobPjmYoJN8Gv+3YN9ReV+q5XEw@mail.gmail.com>
+Subject: Re: [PATCH v3 09/18] of: overlay: validate overlay properties
+ #address-cells and #size-cells
+To: Frank Rowand <frowand.list@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,245 +83,143 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
+ <devicetree@vger.kernel.org>, linux-fpga@vger.kernel.org,
+ Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>,
+ Moritz Fischer <mdf@kernel.org>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Currently, we expect to be able to reach ftrace_caller() from all
-ftrace-enabled functions through a single relative branch. With large
-kernel configs, we see functions farther than 32MB of ftrace_caller()
-causing ftrace_init() to bail.
+On Sun, Oct 14, 2018 at 7:26 PM <frowand.list@gmail.com> wrote:
+>
+> From: Frank Rowand <frank.rowand@sony.com>
+>
+> If overlay properties #address-cells or #size-cells are already in
+> the live devicetree for any given node, then the values in the
+> overlay must match the values in the live tree.
+>
+> If the properties are already in the live tree then there is no
+> need to create a changeset entry to add them since they must
+> have the same value.  This reduces the memory used by the
+> changeset and eliminates a possible memory leak.  This is
+> verified by 12 fewer warnings during the devicetree unittest,
+> as the possible memory leak warnings about #address-cells and
+>
+> Signed-off-by: Frank Rowand <frank.rowand@sony.com>
+> ---
+>  drivers/of/overlay.c | 38 +++++++++++++++++++++++++++++++++++---
+>  1 file changed, 35 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
+> index 272a0d1a5e18..ee66651db553 100644
+> --- a/drivers/of/overlay.c
+> +++ b/drivers/of/overlay.c
+> @@ -287,7 +287,12 @@ static struct property *dup_and_fixup_symbol_prop(
+>   * @target may be either in the live devicetree or in a new subtree that
+>   * is contained in the changeset.
+>   *
+> - * Some special properties are not updated (no error returned).
+> + * Some special properties are not added or updated (no error returned):
+> + * "name", "phandle", "linux,phandle".
+> + *
+> + * Properties "#address-cells" and "#size-cells" are not updated if they
+> + * are already in the live tree, but if present in the live tree, the values
+> + * in the overlay must match the values in the live tree.
+>   *
+>   * Update of property in symbols node is not allowed.
+>   *
+> @@ -300,6 +305,7 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
+>  {
+>         struct property *new_prop = NULL, *prop;
+>         int ret = 0;
+> +       bool check_for_non_overlay_node = false;
+>
+>         if (!of_prop_cmp(overlay_prop->name, "name") ||
+>             !of_prop_cmp(overlay_prop->name, "phandle") ||
+> @@ -322,13 +328,39 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
+>         if (!new_prop)
+>                 return -ENOMEM;
+>
+> -       if (!prop)
+> +       if (!prop) {
+> +
+> +               check_for_non_overlay_node = true;
+>                 ret = of_changeset_add_property(&ovcs->cset, target->np,
+>                                                 new_prop);
+> -       else
+> +
+> +       } else if (!of_prop_cmp(prop->name, "#address-cells")) {
+> +
 
-One way to solve this is by adding additional trampolines around .text,
-.init.text and any other sections with profiled functions.  However,
-such trampolines only help if a section does not exceed 64MB.  With
-allyesconfig, .text section alone can grow upwards of 100MB, which will
-then require us to insert trampolines in the middle of .text... somehow.
+Hi Frank,
 
-In such configurations, gcc/ld emits two types of trampolines for mcount():
-1. A long_branch, which has a single branch to mcount() for functions that
-   are one hop away from mcount():
-	c0000000019e8544 <00031b56.long_branch._mcount>:
-	c0000000019e8544:	4a 69 3f ac 	b       c00000000007c4f0 <._mcount>
+If we get these ERROR messages, I suggest that this function should
+return an error so the overlay will be rejected.
 
-2. A plt_branch, for functions that are farther away from mcount():
-	c0000000051f33f8 <0008ba04.plt_branch._mcount>:
-	c0000000051f33f8:	3d 82 ff a4 	addis   r12,r2,-92
-	c0000000051f33fc:	e9 8c 04 20 	ld      r12,1056(r12)
-	c0000000051f3400:	7d 89 03 a6 	mtctr   r12
-	c0000000051f3404:	4e 80 04 20 	bctr
+> +               if (prop->length != 4 || new_prop->length != 4 ||
+> +                   *(u32 *)prop->value != *(u32 *)new_prop->value)
 
-We can reuse those trampolines for ftrace if we can have those
-trampolines go to ftrace_caller() instead. On powerpc, we don't support
-!CONFIG_DYNAMIC_FTRACE anymore. As such, we can simply patch mcount() to
-branch to ftrace_caller() (or to ftrace_regs_caller() on
--mprofile-kernel) allowing us to use those gcc-generated trampolines for
-ftrace.
+                        *(u32 *)prop->value != *(u32 *)new_prop->value) {
 
-We note down all the existing gcc-generated trampolines during
-ftrace_init() and patch branches to those if ftrace_caller() is not
-reachable.
+> +                       pr_err("ERROR: overlay and/or live tree #address-cells invalid in node %pOF\n",
+> +                              target->np);
 
-Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
----
-The one aspect I am not entirely sure about is if the plt_branch is fine 
-for -mprofile-kernel as it depends on r2 being properly setup. If it 
-isn't, we will have to setup separate trampolines just for 
--mprofile-kernel.
+                       ret = -EINVAL;
+                }
 
-- Naveen
+Otherwise there is an ERROR message, but it continues trying to apply
+the invalid overlay anyway and I get an oops.  By adding the ret =
+-EINVAL, the overlay gets rejected and the oops is avoided.
 
+> +
+> +       } else if (!of_prop_cmp(prop->name, "#size-cells")) {
+> +
+> +               if (prop->length != 4 || new_prop->length != 4 ||
+> +                   *(u32 *)prop->value != *(u32 *)new_prop->value)
+> +                       pr_err("ERROR: overlay and/or live tree #size-cells invalid in node %pOF\n",
+> +                              target->np);
 
- arch/powerpc/kernel/trace/ftrace.c | 131 ++++++++++++++++++++++++++++-
- 1 file changed, 129 insertions(+), 2 deletions(-)
+Add the ret = -EINVAL here also.  This give me the following (if my
+overlay changes #address-cells):
 
-diff --git a/arch/powerpc/kernel/trace/ftrace.c b/arch/powerpc/kernel/trace/ftrace.c
-index 4bfbb54dee51..5fcc05866a23 100644
---- a/arch/powerpc/kernel/trace/ftrace.c
-+++ b/arch/powerpc/kernel/trace/ftrace.c
-@@ -30,6 +30,10 @@
- 
- 
- #ifdef CONFIG_DYNAMIC_FTRACE
-+
-+#define	NUM_FTRACE_TRAMPS	8
-+static unsigned long ftrace_cc_tramps[NUM_FTRACE_TRAMPS];
-+
- static unsigned int
- ftrace_call_replace(unsigned long ip, unsigned long addr, int link)
- {
-@@ -270,6 +274,52 @@ __ftrace_make_nop(struct module *mod,
- #endif /* PPC64 */
- #endif /* CONFIG_MODULES */
- 
-+static void add_ftrace_cc_tramp(unsigned long tramp)
-+{
-+	int i;
-+
-+	for (i = 0; i < NUM_FTRACE_TRAMPS; i++)
-+		if (!ftrace_cc_tramps[i]) {
-+			ftrace_cc_tramps[i] = tramp;
-+			return;
-+		} else if (ftrace_cc_tramps[i] == tramp)
-+			return;
-+
-+	WARN(1, "No ftrace cc tramp slots available");
-+}
-+
-+static int __ftrace_make_nop_kernel(struct dyn_ftrace *rec, unsigned long addr)
-+{
-+	unsigned long tramp, ip = rec->ip;
-+	unsigned int op;
-+
-+	/* read where this goes */
-+	if (probe_kernel_read(&op, (void *)ip, sizeof(int))) {
-+		pr_err("Fetching opcode failed.\n");
-+		return -EFAULT;
-+	}
-+
-+	/* Make sure that that this is still a 24bit jump */
-+	if (!is_bl_op(op)) {
-+		pr_err("Not expected bl: opcode is %x\n", op);
-+		return -EINVAL;
-+	}
-+
-+	/* lets find where the pointer goes */
-+	tramp = find_bl_target(ip, op);
-+
-+	pr_devel("ip:%lx jumps to %lx", ip, tramp);
-+
-+	add_ftrace_cc_tramp(tramp);
-+
-+	if (patch_instruction((unsigned int *)ip, PPC_INST_NOP)) {
-+		pr_err("Patching NOP failed.\n");
-+		return -EPERM;
-+	}
-+
-+	return 0;
-+}
-+
- int ftrace_make_nop(struct module *mod,
- 		    struct dyn_ftrace *rec, unsigned long addr)
- {
-@@ -286,7 +336,8 @@ int ftrace_make_nop(struct module *mod,
- 		old = ftrace_call_replace(ip, addr, 1);
- 		new = PPC_INST_NOP;
- 		return ftrace_modify_code(ip, old, new);
--	}
-+	} else if (core_kernel_text(ip))
-+		return __ftrace_make_nop_kernel(rec, addr);
- 
- #ifdef CONFIG_MODULES
- 	/*
-@@ -456,6 +507,40 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
- #endif /* CONFIG_PPC64 */
- #endif /* CONFIG_MODULES */
- 
-+static int __ftrace_make_call_kernel(struct dyn_ftrace *rec, unsigned long addr)
-+{
-+	unsigned int op, i;
-+	void *ip = (void *)rec->ip;
-+
-+	/* read where this goes */
-+	if (probe_kernel_read(&op, ip, sizeof(op)))
-+		return -EFAULT;
-+
-+	if (op != PPC_INST_NOP) {
-+		pr_err("Unexpected call sequence at %p: %x\n", ip, op);
-+		return -EINVAL;
-+	}
-+
-+	for (i = 0; i < NUM_FTRACE_TRAMPS; i++) {
-+		if (!ftrace_cc_tramps[i])
-+			break;
-+
-+		if (!create_branch(ip, ftrace_cc_tramps[i], BRANCH_SET_LINK))
-+			continue;
-+
-+		if (patch_branch(ip, ftrace_cc_tramps[i], BRANCH_SET_LINK)) {
-+			pr_err("Error patching branch to ftrace tramp!\n");
-+			return -EINVAL;
-+		}
-+
-+		return 0;
-+	}
-+
-+	pr_err("No trampolines are reachable from %p\n", ip);
-+
-+	return -EINVAL;
-+}
-+
- int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
- {
- 	unsigned long ip = rec->ip;
-@@ -471,7 +556,8 @@ int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
- 		old = PPC_INST_NOP;
- 		new = ftrace_call_replace(ip, addr, 1);
- 		return ftrace_modify_code(ip, old, new);
--	}
-+	} else if (core_kernel_text(ip))
-+		return __ftrace_make_call_kernel(rec, addr);
- 
- #ifdef CONFIG_MODULES
- 	/*
-@@ -603,6 +689,12 @@ int ftrace_modify_call(struct dyn_ftrace *rec, unsigned long old_addr,
- 		old = ftrace_call_replace(ip, old_addr, 1);
- 		new = ftrace_call_replace(ip, addr, 1);
- 		return ftrace_modify_code(ip, old, new);
-+	} else if (core_kernel_text(ip)) {
-+		/*
-+		 * We always patch out of range locations to go to the regs
-+		 * variant, so there is nothing to do here
-+		 */
-+		return 0;
- 	}
- 
- #ifdef CONFIG_MODULES
-@@ -654,8 +746,43 @@ void arch_ftrace_update_code(int command)
- 	ftrace_modify_all_code(command);
- }
- 
-+/*
-+ * Patch _mcount() to jump to ftrace_caller/ftrace_regs_caller for catching
-+ * ftrace entry from far functions in a large kernel.
-+ */
- int __init ftrace_dyn_arch_init(void)
- {
-+	unsigned long ip = ppc_global_function_entry((void *)_mcount);
-+	unsigned long ftrace_call_entry;
-+	unsigned int op;
-+
-+#ifdef CONFIG_MPROFILE_KERNEL
-+	ftrace_call_entry = (unsigned long)ftrace_regs_caller;
-+#else
-+	ftrace_call_entry = ppc_global_function_entry((void *)ftrace_caller);
-+#endif
-+
-+	if (probe_kernel_read(&op, (void *)ip, MCOUNT_INSN_SIZE)) {
-+		pr_err("Fetching instruction at %lx failed.\n", ip);
-+		return -EFAULT;
-+	}
-+
-+	/* We expect either a mflr r0 (ppc32), or a mflr r12 (ppc64) */
-+	if ((op & 0xfc1fffff) != PPC_INST_MFLR) {
-+		pr_err("Unexpected instruction %08x in _mcount()\n", op);
-+		return -EINVAL;
-+	}
-+
-+	if (!create_branch((unsigned int *)ip, ftrace_call_entry, 0)) {
-+		pr_err("Branch out of range\n");
-+		return -EINVAL;
-+	}
-+
-+	if (patch_branch((unsigned int *)ip, ftrace_call_entry, 0)) {
-+		pr_err("REL24 out of range!\n");
-+		return -EINVAL;
-+	}
-+
- 	return 0;
- }
- #endif /* CONFIG_DYNAMIC_FTRACE */
--- 
-2.19.1
+[   21.167551] OF: overlay: ERROR: overlay and/or live tree
+#address-cells invalid in node /soc/base_fpga_region
+[   21.177442] OF: overlay: add_changeset_property ret=-22
+[   21.182656] create_overlay: Failed to create overlay (err=-22)
 
+Also, I wonder if the ERROR message could be more direct.  Currently
+it says the #address-cells property is invalid but that doesn't say
+anything about why it's invalid.  How about something like:
+
+ OF: overlay: ERROR: changing #address-cells not allowed (/soc/base_fpga_region)
+
+The 'OF: overlay' part still makes it clear it's overlay related.  The
+rest of it makes it clear *why* it's invalid.  This ERROR will be a
+surprise for people who have been using overlays, so that could be
+helpful to light the way a bit.
+
+Alan
+
+> +
+> +       } else {
+> +
+> +               check_for_non_overlay_node = true;
+>                 ret = of_changeset_update_property(&ovcs->cset, target->np,
+>                                                    new_prop);
+>
+> +       }
+> +
+> +       if (check_for_non_overlay_node &&
+> +           !of_node_check_flag(target->np, OF_OVERLAY))
+> +               pr_err("WARNING: %s(), memory leak will occur if overlay removed.  Property: %pOF/%s\n",
+> +                      __func__, target->np, new_prop->name);
+> +
+>         if (ret) {
+>                 kfree(new_prop->name);
+>                 kfree(new_prop->value);
+> --
+> Frank Rowand <frank.rowand@sony.com>
+>
