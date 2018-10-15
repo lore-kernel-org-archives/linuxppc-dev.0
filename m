@@ -3,42 +3,43 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 03E12C28CF8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 04:15:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B202C28CF8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 04:17:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 99820205F4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 04:15:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 99820205F4
+	by mail.kernel.org (Postfix) with ESMTPS id D27A920652
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 04:17:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D27A920652
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42YQ955chjzF3BN
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 15:15:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42YQC75VXlzDrPt
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 15:17:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42YPqx1qFSzF26K
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42YPqx4710zF13h
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 15:01:01 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 42YPqw6BMKz9sDX; Mon, 15 Oct 2018 15:01:00 +1100 (AEDT)
+ id 42YPqx34z3z9sj2; Mon, 15 Oct 2018 15:01:01 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: c9f80734cd552ddba50567bc43b0ff250a4b2c17
-In-Reply-To: <20180920083358.2359-1-aneesh.kumar@linux.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, npiggin@gmail.com,
- benh@kernel.crashing.org, paulus@samba.org
+X-powerpc-patch-commit: dfd718a2ed1f678e66749ffe41bdeafedf3f4314
+In-Reply-To: <1538390439-17072-1-git-send-email-ego@linux.vnet.ibm.com>
+To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [V2,
- 1/2] powerpc/mm/hash: Rename get_ea_context to get_user_context
-Message-Id: <42YPqw6BMKz9sDX@ozlabs.org>
-Date: Mon, 15 Oct 2018 15:01:00 +1100 (AEDT)
+Subject: Re: [v2] powerpc/rtas: Fix a potential race between CPU-Offline &
+ Migration
+Message-Id: <42YPqx34z3z9sj2@ozlabs.org>
+Date: Mon, 15 Oct 2018 15:01:01 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -50,20 +51,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2018-09-20 at 08:33:57 UTC, "Aneesh Kumar K.V" wrote:
-> We will be adding get_kernel_context later. Update function name to indicate
-> this handle context allocation user space address.
+On Mon, 2018-10-01 at 10:40:39 UTC, "Gautham R. Shenoy" wrote:
+> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 > 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+> Live Partition Migrations require all the present CPUs to execute the
+> H_JOIN call, and hence rtas_ibm_suspend_me() onlines any offline CPUs
+> before initiating the migration for this purpose.
+> 
+> The commit 85a88cabad57
+> ("powerpc/pseries: Disable CPU hotplug across migrations")
+> disables any CPU-hotplug operations once all the offline CPUs are
+> brought online to prevent any further state change. Once the
+> CPU-Hotplug operation is disabled, the code assumes that all the CPUs
+> are online.
+> 
+> However, there is a minor window in rtas_ibm_suspend_me() between
+> onlining the offline CPUs and disabling CPU-Hotplug when a concurrent
+> CPU-offline operations initiated by the userspace can succeed thereby
+> nullifying the the aformentioned assumption. In this unlikely case
+> these offlined CPUs will not call H_JOIN, resulting in a system hang.
+> 
+> Fix this by verifying that all the present CPUs are actually online
+> after CPU-Hotplug has been disabled, failing which we restore the
+> state of the offline CPUs in rtas_ibm_suspend_me() and return an
+> -EBUSY.
+> 
+> Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+> Cc: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+> Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> Reviewed-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/c9f80734cd552ddba50567bc43b0ff
+https://git.kernel.org/powerpc/c/dfd718a2ed1f678e66749ffe41bdea
 
 cheers
