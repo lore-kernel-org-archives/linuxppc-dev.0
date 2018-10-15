@@ -2,77 +2,138 @@ Return-Path: <SRS0=mWF2=M3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2EBD9C28CF8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 06:49:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 01D5BC28CF8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 07:20:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 970082086A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 06:49:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 925C320652
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 07:20:18 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="GyLZ+46i"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 970082086A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="t9gaukgJ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 925C320652
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42YTYr3TqyzF3F1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 17:49:04 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=socionext.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42YVFl6nmLzF39m
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 18:20:11 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nifty.com header.i=@nifty.com header.b="GyLZ+46i";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="t9gaukgJ";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- spf=softfail (mailfrom) smtp.mailfrom=socionext.com
- (client-ip=210.131.2.83; helo=conssluserg-04.nifty.com;
- envelope-from=yamada.masahiro@socionext.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
+ (client-ip=2607:f8b0:4864:20::642; helo=mail-pl1-x642.google.com;
+ envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=socionext.com
+ dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nifty.com header.i=@nifty.com header.b="GyLZ+46i"; 
+ unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
+ header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="t9gaukgJ"; 
  dkim-atps=neutral
-Received: from conssluserg-04.nifty.com (conssluserg-04.nifty.com
- [210.131.2.83])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com
+ [IPv6:2607:f8b0:4864:20::642])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42YTLV3ThJzF3DZ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 17:39:14 +1100 (AEDT)
-Received: from mail-vs1-f41.google.com (mail-vs1-f41.google.com
- [209.85.217.41]) (authenticated)
- by conssluserg-04.nifty.com with ESMTP id w9F6ctJU009676
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 15:38:56 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conssluserg-04.nifty.com w9F6ctJU009676
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1539585536;
- bh=FYdlgiyhR1emINlVOJJ7iG9fxuZSD3FtlSJJ8ALoZNU=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=GyLZ+46iwH58pJJ9dZBfBo8O5ZR3Qcof4bp1jimBMk1j24qPE5O5PllVNUuoJNlSo
- kVNBk/bXs+Y6UrPJtC8i8Nb3TZY+jqdo+JJqJyAjeOOaHfy+DVDTTJHwcPwkmfXqyU
- 07L887dEMPMhDzfjC9hRW5TmI9sEIsobXU/EkltwyG0CDdThQuBPaqaGHF6wQ9F14X
- UJKHNqeiu2bDZTdzUnbslyduAqHG6Jx8SFWDihmr31vps6IUBArmWoVp0ZTbjPPFZD
- BV0jUIeixJQh/hAEaw35ZVEJUTqsiksYhGfdFOE11fGdD+N2VceeuNhrfVQjZ+wDIr
- iCyYGEuFwM8OA==
-X-Nifty-SrcIP: [209.85.217.41]
-Received: by mail-vs1-f41.google.com with SMTP id g201so15591230vsd.12
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Oct 2018 23:38:55 -0700 (PDT)
-X-Gm-Message-State: ABuFfojOfa0PsWVCHNdNk8iFeVD8IFv6wvxaK1E4nPK2xD/fOQtu2JW+
- tFWfCCueEzuBO+Vt4NoLnfs6ejG119QZISL0In8=
-X-Google-Smtp-Source: ACcGV61s6G43qzxF+3g7ymfJAzcYzoexaIe7pUXSgcq/yzNXU3xzYFOQWFpatejDM62wd4WC7af4ZLpHLdSEPMIxqqM=
-X-Received: by 2002:a67:61c1:: with SMTP id v184mr6208631vsb.179.1539585535007; 
- Sun, 14 Oct 2018 23:38:55 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42YVCC1nvRzF38p
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 18:17:58 +1100 (AEDT)
+Received: by mail-pl1-x642.google.com with SMTP id v5-v6so8829298plz.13
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 00:17:58 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
+ h=subject:to:cc:references:from:openpgp:autocrypt:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=D/dSejNFHe/P/TPnnHjYO+zMsdJUCxfhnXXCkhHfsoY=;
+ b=t9gaukgJoAdAU0xZB8kDpRrdGjq3/XggGsR2Ah+5lZv8FtWa4/P78TrgAMSnrL683h
+ UdmlNFq8eLYkKGJQmjuBSHJkrUdR6GM8g2jH+Rsb/b7u+2kszClHoyUW5ke2HlQ0cwBS
+ PZiDFaeBOyG2Uz2qLpfWYW2IkMk9SkaepSQXORKWIebNoZej3Z5p0c4NEuwrmQMBSvg7
+ bk4TC5/+s3vlWTw1uQWxo8NLfVJ1GUfbfc9DWsB7nr9Z9NuvdIUdGQyZQcg2QKJqdVTP
+ zEWtbuspqEn0E6MHVq889W3AjTSrld2CZYIKgJOqSC4FuuRZsuslXE8e+N1oJ+eiku+i
+ zB4Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:subject:to:cc:references:from:openpgp:autocrypt
+ :message-id:date:user-agent:mime-version:in-reply-to
+ :content-language:content-transfer-encoding;
+ bh=D/dSejNFHe/P/TPnnHjYO+zMsdJUCxfhnXXCkhHfsoY=;
+ b=oFyXSmasX7xdXB6oWjUyk6huLL1C1kMu8aqBvcBgpQR1R0KAucI1PRnFBG+eiywP9+
+ lA7Rhj3/oiZ2GCx+9LxshHYiFo2Lr/44fB7f+AtRSciqskezNFdLv72sjiXTiCfB6l4f
+ Zvmfbt01brFofJqNB4ciSqw2Mzj2dvNLDfTcPgqz6pVNlXqYPrpf10rpnvLplCNivS0j
+ zIDF6IoJy3KtekAx9ftUC+fN8yXQck/kzXSyvywmeH8359/P+RDojQW03dinl/e6mfMh
+ l0P/kbjyzT3ilGCLXwAS27ZRan515Xikfvqwu4jbzgldhQWO73sSmrJMUZvz7vUVBHCB
+ jigQ==
+X-Gm-Message-State: ABuFfohTNTIT7zOj9+7fLnopxfXOALxeYvZLfumF59b7hEoAzGbgEgVu
+ FKRXcaVYA5mD51Jv99+W8JjiNA==
+X-Google-Smtp-Source: ACcGV61cqSbYyMXktcI1WEDa2S/lBxAeM1BX/gT093qxGKdQ/V8tUlznCEu2C6euggn9BDAmZrl2Sg==
+X-Received: by 2002:a17:902:9a07:: with SMTP id
+ v7-v6mr15546856plp.14.1539587876531; 
+ Mon, 15 Oct 2018 00:17:56 -0700 (PDT)
+Received: from [10.61.2.175] ([122.99.82.10])
+ by smtp.gmail.com with ESMTPSA id x23-v6sm11204493pfm.113.2018.10.15.00.17.53
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Mon, 15 Oct 2018 00:17:55 -0700 (PDT)
+Subject: Re: [PATCH kernel v2] powerpc/ioda/npu: Call skiboot's hot reset hook
+ when disabling NPU2
+To: linuxppc-dev@lists.ozlabs.org
+References: <20181002032021.7126-1-aik@ozlabs.ru>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Openpgp: preference=signencrypt
+Autocrypt: addr=aik@ozlabs.ru; keydata=
+ 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
+Message-ID: <ac59afe1-cc7b-41f2-e19d-a7809d27b15a@ozlabs.ru>
+Date: Mon, 15 Oct 2018 18:17:51 +1100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.2.1
 MIME-Version: 1.0
-References: <20181013151016.31674-1-hch@lst.de>
-In-Reply-To: <20181013151016.31674-1-hch@lst.de>
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-Date: Mon, 15 Oct 2018 15:38:18 +0900
-X-Gmail-Original-Message-ID: <CAK7LNAQ3SNStaA6-tOWhm0QHWpNczO07x9T2F7gMcusduMS7GA@mail.gmail.com>
-Message-ID: <CAK7LNAQ3SNStaA6-tOWhm0QHWpNczO07x9T2F7gMcusduMS7GA@mail.gmail.com>
-Subject: Re: move bus (PCI, PCMCIA, EISA, rapdio) config to drivers/
-To: Christoph Hellwig <hch@lst.de>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20181002032021.7126-1-aik@ozlabs.ru>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,37 +145,68 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch <linux-arch@vger.kernel.org>,
- linux-scsi <linux-scsi@vger.kernel.org>,
- Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
- linux-pci@vger.kernel.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Dominik Brodowski <linux@dominikbrodowski.net>, alex.bou9@gmail.com,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Alistair Popple <alistair@popple.id.au>, Reza Arbab <arbab@linux.ibm.com>,
+ David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, Oct 14, 2018 at 12:10 AM Christoph Hellwig <hch@lst.de> wrote:
->
-> Hi all,
->
-> currently every architecture that wants to provide on of the common
-> periphal busses needs to add some boilerplate code and include the
-> right Kconfig files.   This series instead just selects the presence
-> (when needed) and then handles everything in the bus-specific
-> Kconfig file under drivers/.
->
-
-Thanks for great work again.
-
-However, I suspect some breakages
-(not testing yet, just quick review by my eyes.)
-
-I left some comments in individual patches.
+Ping?
 
 
+On 02/10/2018 13:20, Alexey Kardashevskiy wrote:
+> The skiboot firmware has a hot reset handler which fences the NVIDIA V100
+> GPU RAM on Witherspoons and makes accesses no-op instead of throwing HMIs:
+> https://github.com/open-power/skiboot/commit/fca2b2b839a67
+> 
+> Now we are going to pass V100 via VFIO which most certainly involves
+> KVM guests which are often terminated without getting a chance to offline
+> GPU RAM so we end up with a running machine with misconfigured memory.
+> Accessing this memory produces hardware management interrupts (HMI)
+> which bring the host down.
+> 
+> To suppress HMIs, this wires up this hot reset hook to vfio_pci_disable()
+> via pci_disable_device() which switches NPU2 to a safe mode and prevents
+> HMIs.
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+> Changes:
+> v2:
+> * updated the commit log
+> ---
+>  arch/powerpc/platforms/powernv/pci-ioda.c | 10 ++++++++++
+>  1 file changed, 10 insertions(+)
+> 
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index cde7102..e37b9cc 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -3688,6 +3688,15 @@ static void pnv_pci_release_device(struct pci_dev *pdev)
+>  		pnv_ioda_release_pe(pe);
+>  }
+>  
+> +static void pnv_npu_disable_device(struct pci_dev *pdev)
+> +{
+> +	struct eeh_dev *edev = pci_dev_to_eeh_dev(pdev);
+> +	struct eeh_pe *eehpe = edev ? edev->pe : NULL;
+> +
+> +	if (eehpe && eeh_ops && eeh_ops->reset)
+> +		eeh_ops->reset(eehpe, EEH_RESET_HOT);
+> +}
+> +
+>  static void pnv_pci_ioda_shutdown(struct pci_controller *hose)
+>  {
+>  	struct pnv_phb *phb = hose->private_data;
+> @@ -3732,6 +3741,7 @@ static const struct pci_controller_ops pnv_npu_ioda_controller_ops = {
+>  	.reset_secondary_bus	= pnv_pci_reset_secondary_bus,
+>  	.dma_set_mask		= pnv_npu_dma_set_mask,
+>  	.shutdown		= pnv_pci_ioda_shutdown,
+> +	.disable_device		= pnv_npu_disable_device,
+>  };
+>  
+>  static const struct pci_controller_ops pnv_npu_ocapi_ioda_controller_ops = {
+> 
 
---
-Best Regards
-Masahiro Yamada
+-- 
+Alexey
