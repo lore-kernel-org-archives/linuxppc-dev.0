@@ -2,94 +2,68 @@ Return-Path: <SRS0=mWF2=M3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=0.2 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,
+	URIBL_SBL,URIBL_SBL_A autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A8EEFC04AA5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 20:26:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CF43AC04AA5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 20:29:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 28DFE208B3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 20:26:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 1357D208B3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 20:29:20 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="e+u0dv9L"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 28DFE208B3
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="GcXk6ShA"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1357D208B3
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42Yqhy6pPSzF3LM
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 07:26:26 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42YqmG2qrvzF3LF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 07:29:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="e+u0dv9L";
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="GcXk6ShA";
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::441; helo=mail-pf1-x441.google.com;
- envelope-from=frowand.list@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="e+u0dv9L"; 
- dkim-atps=neutral
-Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
- [IPv6:2607:f8b0:4864:20::441])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Yqf918B8zF3CC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 07:24:01 +1100 (AEDT)
-Received: by mail-pf1-x441.google.com with SMTP id u12-v6so10227019pfn.12
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 13:24:00 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=subject:to:cc:references:from:message-id:date:user-agent
- :mime-version:in-reply-to:content-language:content-transfer-encoding;
- bh=mWqF+YgcDjLi/P3g+a8dO4mmNeQ3j0U2pPA/EZ4jNVQ=;
- b=e+u0dv9LhPG/56bNKdYUERkv2htICow4c0kh+bLIjNETrFTHCca/SfGJjtYzc9/bBU
- bH4HLIdhonXX1Z8zAdMsucVmrn6rFVP5pJDOQeG3gYo2P45nOYdSg5Tp0yPECh09C7l8
- qUV6uNucLz76BFKqBtjD8PgqxHtEP9ihSvABlAnH0ITdJWtOdVCS8d6zS/kcbsUeXL/L
- I5A70vGh7SwHtOCl0UDeAdyIk6voaGRq+mHUBK4rZM0KNeUgARSa4COxLSfiqEnbFsdF
- j3hfmn1QfBklNhMqms+s1LdEE1n7jXEWtih1AEa2INgQ2QWnDq0qwYE83Xa3kpMyHQOV
- l+0g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=mWqF+YgcDjLi/P3g+a8dO4mmNeQ3j0U2pPA/EZ4jNVQ=;
- b=nx7TlDoaKPlDSE2x9M9OvFKGGM3itLlZ3BNZxCWv03jMSgwdEOpLELTzDRTI8373UN
- 9VNFLLgVlPWnTGDlhhygGQ5g4sB+UBLrYmzVHp/1Wqgh1ib4I7aQcQN7CUqjPt/YL4vB
- NxT3fOqJX4LkfVIWWz6BtY281FHroEZbt4ky+vxTg2QPwLr+YdxVUT3nVSO5kIQKkkPI
- pDcfnvPa9sFbtXDYXSX15juwKDeR7hWq3A2/zdNkOOcY4/I7wCuQTJ4x6tRhoGWhaU8P
- eRmI+aXOfuWjzbFVBueCQN8J4/IodjUNfWOnM04Rv6dM9ubxj4kaAZJTHG1+IZKZgDf2
- KZcQ==
-X-Gm-Message-State: ABuFfohvHx3vqXgP8+d2F3CuMOxewNWVfW5bvb9473hUteHBhR3DYilZ
- QSWQL1NrdfKyn/JYTbumw8E=
-X-Google-Smtp-Source: ACcGV60JdZg9uWWGAdJAxlTOv380BaPJCCb3wipjeO0VTKR3TujAHxY/0dybGiZcD+eIiiAWpojRZg==
-X-Received: by 2002:a63:f347:: with SMTP id
- t7-v6mr17410662pgj.255.1539635039268; 
- Mon, 15 Oct 2018 13:23:59 -0700 (PDT)
-Received: from [192.168.1.70] (c-24-6-192-50.hsd1.ca.comcast.net.
- [24.6.192.50])
- by smtp.gmail.com with ESMTPSA id z26-v6sm14465935pfh.77.2018.10.15.13.23.57
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Mon, 15 Oct 2018 13:23:58 -0700 (PDT)
-Subject: Re: [PATCH v3 00/18] of: overlay: validation checks, subsequent fixes
-To: Alan Tull <atull@kernel.org>
-References: <1539563070-12969-1-git-send-email-frowand.list@gmail.com>
- <CANk1AXTmY7v03m7NNZHVtzyU1Mwm0GYtOJQzmObFLASs=PEfLA@mail.gmail.com>
-From: Frank Rowand <frowand.list@gmail.com>
-Message-ID: <34775737-d82b-b766-16d7-ac2de3231948@gmail.com>
-Date: Mon, 15 Oct 2018 13:23:57 -0700
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Yqfz08wmzF3KP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 07:24:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=canb.auug.org.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au
+ header.b="GcXk6ShA"; dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPSA id 42Yqfy2h5Hz9s9J;
+ Tue, 16 Oct 2018 07:24:42 +1100 (AEDT)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=canb.auug.org.au
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=canb.auug.org.au;
+ s=201702; t=1539635082;
+ bh=Lz4ij2tyxiZO7V+1Ri/ommqQAIxbC9spWXjAfQr67nQ=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+ b=GcXk6ShAIMFdCPHfBKMVomwqmpgAXuKfZQ2h5o9mZKvDjReEdSQ6mnDGmM7uadtR1
+ huBQk0zXsgVj19qckHm3Sic/zLBNoa6590Srog9GbW6CWuoIU5gtPJPvKehkVqN7BJ
+ BBuAjTFEvypcuVo1jsphU+QEh0TO0UT4qBq94tzYQALncnCsh+cKgTdo/KOxrwyOHA
+ RPBwr3gUcKGlClGrMGrt/B+2d1U0MMfocxkY+NSRMEYV3zlyTAughNeP/bqs6hj/0G
+ z+0hEpjhqeu4aCi0/dF0t3mi4WQwXd4xY83qz1pIpBgOtBPBtgb5sGKEciOjplxoAJ
+ 29U1OEk/ootIg==
+Date: Tue, 16 Oct 2018 07:24:39 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: linux-next: Tree for Oct 15
+Message-ID: <20181016072439.42613abd@canb.auug.org.au>
+In-Reply-To: <20181016071240.3f62816d@canb.auug.org.au>
+References: <20181015192546.15faf3a1@canb.auug.org.au>
+ <20181015182637.GA16445@roeck-us.net>
+ <20181016071240.3f62816d@canb.auug.org.au>
 MIME-Version: 1.0
-In-Reply-To: <CANk1AXTmY7v03m7NNZHVtzyU1Mwm0GYtOJQzmObFLASs=PEfLA@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/hFNmF3Jj0D7c+SX.8sV79qt"; protocol="application/pgp-signature"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,181 +75,101 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
- <devicetree@vger.kernel.org>, linux-fpga@vger.kernel.org,
- Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
- linux-kernel <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>,
- Moritz Fischer <mdf@kernel.org>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Mike Rapoport <rppt@linux.vnet.ibm.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Linux-Next Mailing List <linux-next@vger.kernel.org>,
+ Rob Herring <robherring2@gmail.com>, Andrew Morton <akpm@linux-foundation.org>,
+ PowerPC <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 10/15/18 12:21, Alan Tull wrote:
-> On Sun, Oct 14, 2018 at 7:26 PM <frowand.list@gmail.com> wrote:
->>
->> From: Frank Rowand <frank.rowand@sony.com>
->>
->> Add checks to (1) overlay apply process and (2) memory freeing
->> triggered by overlay release.  The checks are intended to detect
->> possible memory leaks and invalid overlays.
->>
->> The checks revealed bugs in existing code.  Fixed the bugs.
->>
->> While fixing bugs, noted other issues, which are fixed in
->> separate patches.
->>
->> *****  Powerpc folks: I was not able to test the patches that
->> *****  directly impact Powerpc systems that use dynamic
->> *****  devicetree.  Please review that code carefully and
->> *****  test.  The specific patches are: 03/16, 04/16, 07/16
->>
->> FPGA folks:
->>
->>   I made the validation checks that should result in an
->>   invalid live devicetree report "ERROR" and cause the overlay apply
->>   to fail.
->>
->>   I made the memory leak validation tests report "WARNING" and allow
->>   the overlay apply to complete successfully.  Please let me know
->>   if you encounter the warnings.  There are at least two paths
->>   forward to deal with the cases that trigger the warning: (1) change
->>   the warning to an error and fail the overlay apply, or (2) find a
->>   way to detect the potential memory leaks and free the memory
->>   appropriately.
-> 
-> I reran my FPGA testing.  The strings are fixed, no longer NULL.  I
+--Sig_/hFNmF3Jj0D7c+SX.8sV79qt
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Thanks for the further testing!
+Hi all,
 
+On Tue, 16 Oct 2018 07:12:40 +1100 Stephen Rothwell <sfr@canb.auug.org.au> =
+wrote:
+>
+> On Mon, 15 Oct 2018 11:26:37 -0700 Guenter Roeck <linux@roeck-us.net> wro=
+te:
+> >
+> > ALl ppc qemu tests (including big endian pseries) also generate a warni=
+ng.
+> >=20
+> > WARNING: CPU: 0 PID: 0 at mm/memblock.c:1301 .memblock_alloc_range_nid+=
+0x20/0x68
 
-> have functionality back, my test passes now.  I'm seeing the intended
-> warnings about any properties added to existing nodes.  That includes
-> warnings about added symbols.  Below is a simplified part to show some
-> of what I'm seeing.
-> 
-> By the way my testing is all using Pantelis' DT overlay configfs interface.
-> 
-> root@arria10:~# ./apply-static-region.sh
-> 
-> Applying dtbo: socfpga_arria10_socdk_sdmmc_ghrd_ovl_ext_cfg.dtb
-> 
-> [ 1821.088640] OF: overlay: WARNING: add_changeset_property(), memory
-> leak will occur if overlay removed.  Property:
-> /soc/base_fpga_region/ranges
-> [ 1821.103307] OF: overlay: WARNING: add_changeset_property(), memory
-> leak will occur if overlay removed.  Property:
-> /soc/base_fpga_region/external-fpga-config
-> [ 1821.117359] OF: overlay: WARNING: add_changeset_property(), memory
-> leak will occur if overlay removed.  Property:
-> /soc/base_fpga_region/clocks
-> [ 1821.130130] OF: overlay: WARNING: add_changeset_property(), memory
-> leak will occur if overlay removed.  Property:
-> /soc/base_fpga_region/clock-names
-> [ 1821.143449] OF: overlay: WARNING: add_changeset_property(), memory
-> leak will occur if overlay removed.  Property: /__symbols__/clk_0
-> [ 1821.155357] OF: overlay: WARNING: add_changeset_property(), memory
-> leak will occur if overlay removed.  Property: /__symbols__/ILC
-> [ 1821.167074] OF: overlay: WARNING: add_changeset_property(), memory
-> leak will occur if overlay removed.  Property:
-> /__symbols__/freeze_controller_0
-> [ 1821.180171] OF: overlay: WARNING: add_changeset_property(), memory
-> leak will occur if overlay removed.  Property:
-> /__symbols__/sysid_qsys_0
-> [ 1821.192662] OF: overlay: WARNING: add_changeset_property(), memory
-> leak will occur if overlay removed.  Property: /__symbols__/led_pio
-> [ 1821.204720] OF: overlay: WARNING: add_changeset_property(), memory
-> leak will occur if overlay removed.  Property: /__symbols__/button_pio
-> [ 1821.217034] OF: overlay: WARNING: add_changeset_property(), memory
-> leak will occur if overlay removed.  Property: /__symbols__/dipsw_pio
-> [ 1821.231977] of-fpga-region soc:base_fpga_region:fpga_pr_region0:
-> FPGA Region probed
-> [ 1821.240144] altera_freeze_br ff200450.freeze_controller: fpga
-> bridge [freeze] registered
-> 
-> root@arria10:~# ./apply-static-region.sh root@arria10:~# rmdir
-> /sys/kernel/config/device-tree/overlays/1-socfpga_arria10_socdk_sdmmc_ghrd_ovl_ext_cfg.dtb
-> 
+That is:
 
+static phys_addr_t __init memblock_alloc_range_nid(phys_addr_t size,
+                                        phys_addr_t align, phys_addr_t star=
+t,
+                                        phys_addr_t end, int nid,
+                                        enum memblock_flags flags)
+{
+       if (WARN_ON_ONCE(!align))
+                align =3D SMP_CACHE_BYTES;
 
-> [ 1823.805564] OF: ERROR: memory leak - destroy cset entry: attach
-> overlay node /soc/base_fpga_region/clk_0 with refcount 2
+Looks like patch
 
-That is indicating that an unbalanced of_node_get() / of_node_put()
-exists for that node.  I'll have to update that message to be more
-explicit about that.
+  "memblock: stop using implicit alignment to SMP_CACHE_BYTES"
 
--Frank
+missed some places ...
 
-> 
-> Alan
-> 
-> 
-> Alan
-> 
-> 
-> 
->>
->> ALL people:
->>
->>   The validations do _not_ address another major concern I have with
->>   releasing overlays, which is use after free errors.
->>
->> Changes since v2:
->>
->>   - 13/18: Use continue to reduce indentation in find_dup_cset_node_entry()
->>     and find_dup_cset_prop()
->>
->> Changes since v1:
->>
->>   - move patch 16/16 to 17/18
->>   - move patch 15/16 to 18/18
->>   - new patch 15/18
->>   - new patch 16/18
->>
->>   - 05/18: add_changeset_node() header comment: incorrect comment for @target
->>
->>   - 18/18: add same fix for of_parse_phandle_with_args()
->>   - 18/18: add same fix for of_parse_phandle_with_args_map()
->>
->> Frank Rowand (18):
->>   of: overlay: add tests to validate kfrees from overlay removal
->>   of: overlay: add missing of_node_put() after add new node to changeset
->>   of: overlay: add missing of_node_get() in __of_attach_node_sysfs
->>   powerpc/pseries: add of_node_put() in dlpar_detach_node()
->>   of: overlay: use prop add changeset entry for property in new nodes
->>   of: overlay: do not duplicate properties from overlay for new nodes
->>   of: dynamic: change type of of_{at,de}tach_node() to void
->>   of: overlay: reorder fields in struct fragment
->>   of: overlay: validate overlay properties #address-cells and
->>     #size-cells
->>   of: overlay: make all pr_debug() and pr_err() messages unique
->>   of: overlay: test case of two fragments adding same node
->>   of: overlay: check prevents multiple fragments add or delete same node
->>   of: overlay: check prevents multiple fragments touching same property
->>   of: unittest: remove unused of_unittest_apply_overlay() argument
->>   of: overlay: set node fields from properties when add new overlay node
->>   of: unittest: allow base devicetree to have symbol metadata
->>   of: unittest: find overlays[] entry by name instead of index
->>   of: unittest: initialize args before calling of_*parse_*()
->>
->>  arch/powerpc/platforms/pseries/dlpar.c             |  15 +-
->>  arch/powerpc/platforms/pseries/reconfig.c          |   6 +-
->>  drivers/of/dynamic.c                               |  68 +++--
->>  drivers/of/kobj.c                                  |   4 +-
->>  drivers/of/overlay.c                               | 298 ++++++++++++++++-----
->>  drivers/of/unittest-data/Makefile                  |   2 +
->>  .../of/unittest-data/overlay_bad_add_dup_node.dts  |  28 ++
->>  .../of/unittest-data/overlay_bad_add_dup_prop.dts  |  24 ++
->>  drivers/of/unittest-data/overlay_base.dts          |   1 +
->>  drivers/of/unittest.c                              |  96 +++++--
->>  include/linux/of.h                                 |  19 +-
->>  11 files changed, 439 insertions(+), 122 deletions(-)
->>  create mode 100644 drivers/of/unittest-data/overlay_bad_add_dup_node.dts
->>  create mode 100644 drivers/of/unittest-data/overlay_bad_add_dup_prop.dts
->>
->> --
->> Frank Rowand <frank.rowand@sony.com>
->>
-> 
+> > Modules linked in:
+> > CPU: 0 PID: 0 Comm: swapper Not tainted 4.19.0-rc7-next-20181015 #1
+> > NIP:  c000000000f99198 LR: c000000000f99490 CTR: c000000000bb8364
+> > REGS: c000000001217a78 TRAP: 0700   Not tainted  (4.19.0-rc7-next-20181=
+015)
+> > MSR:  0000000080021000 <CE,ME>  CR: 24000422  XER: 20000000
+> > IRQMASK: 1=20
+> > GPR00: c000000000f99490 c000000001217d00 c00000000121a500 0000000000000=
+0c0=20
+> > GPR04: 0000000000000000 0000000000000000 0000000000000000 fffffffffffff=
+fff=20
+> > GPR08: 0000000000000000 00000000000000c0 0000000000000018 0000000000000=
+0b7=20
+> > GPR12: 0000000000000040 c000000000fe7840 0000000000000000 0000000000000=
+000=20
+> > GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000=
+000=20
+> > GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000=
+000=20
+> > GPR24: 0000000000000000 0000000000000000 0000000000000000 0000000000000=
+000=20
+> > GPR28: c000000000000304 c000000001262088 00000000000000c0 c000000000fea=
+500=20
+> > NIP [c000000000f99198] .memblock_alloc_range_nid+0x20/0x68
+> > LR [c000000000f99490] .memblock_alloc_base+0x18/0x48
+> > Call Trace:
+> > [c000000001217d00] [c000000002a00000] 0xc000000002a00000 (unreliable)
+> > [c000000001217d80] [c000000000f99490] .memblock_alloc_base+0x18/0x48
+> > [c000000001217df0] [c000000000f7a274] .allocate_paca_ptrs+0x3c/0x74
+> > [c000000001217e70] [c000000000f78bf0] .early_init_devtree+0x288/0x320
+> > [c000000001217f10] [c000000000f79b6c] .early_setup+0x80/0x130
+> > [c000000001217f90] [c000000000000528] start_here_multiplatform+0x68/0x80
 
+--=20
+Cheers,
+Stephen Rothwell
+
+--Sig_/hFNmF3Jj0D7c+SX.8sV79qt
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAlvE94cACgkQAVBC80lX
+0Gx72Af+J7j/HQpnXqTOaoXhTJfrn/kMP1PLBJQ/AqSa43liPmSQ+1KZ5iDtF6GW
+p0+1gQyLCEYwnxadat4Pmfs6iadVo4NUoVshTTps9vx8U0xLxO0xEHTR7fwqsc7E
+X4thIt2RlvN5W5ikPWaUqMfvtXiFe+5+sHjyHA5ADyDdmX4TqAM0R27Dw2Wd+VJw
+5Iw+zqsK6YLtkQGfLea78o3wvOlqKs9N+h9kPws1Rf0p0bCMDkeBPYtQTHEZM8vr
+sgDAFuWcVc1wMkEI11i8tzzwOzKpGRt6lLLmrgPdiQldgbX1DHLJ0w7W6stq3MQN
+t+KS1u65FdG3t0Qdfb4YzNMjN0nByQ==
+=lsXR
+-----END PGP SIGNATURE-----
+
+--Sig_/hFNmF3Jj0D7c+SX.8sV79qt--
