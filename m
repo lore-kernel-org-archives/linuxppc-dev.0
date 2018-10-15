@@ -6,37 +6,37 @@ X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C6763C7112A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 04:35:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 08544C28CF8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 04:37:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7F35B2086A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 04:35:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7F35B2086A
+	by mail.kernel.org (Postfix) with ESMTPS id 5879A20842
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 04:37:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5879A20842
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42YQbX45CXzF3Hx
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 15:35:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42YQdf311DzF3SD
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 15:37:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42YPr54Zh3zF35r
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42YPr56ZdSzF36f
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 15:01:09 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 42YPr362yWz9sDJ; Mon, 15 Oct 2018 15:01:07 +1100 (AEDT)
+ id 42YPr53Snlz9sjH; Mon, 15 Oct 2018 15:01:08 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 5e9dcb6188a40e604e66dc30fab30c2be89aa1cc
-In-Reply-To: <20181009232803.15072-2-joel@jms.id.au>
+X-powerpc-patch-commit: 960e30029863db95ec79a71009272d4661db5991
+In-Reply-To: <20181011024303.23921-1-joel@jms.id.au>
 To: Joel Stanley <joel@jms.id.au>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [1/2] powerpc/boot: Expose Kconfig symbols to wrapper
-Message-Id: <42YPr362yWz9sDJ@ozlabs.org>
-Date: Mon, 15 Oct 2018 15:01:07 +1100 (AEDT)
+Subject: Re: [v3] powerpc/Makefile: Fix PPC_BOOK3S_64 ASFLAGS
+Message-Id: <42YPr53Snlz9sjH@ozlabs.org>
+Date: Mon, 15 Oct 2018 15:01:08 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,24 +48,64 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Oliver O'Halloran <oohall@gmail.com>
+Cc: Nick Desaulniers <ndesaulniers@google.com>,
+ Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2018-10-09 at 23:28:02 UTC, Joel Stanley wrote:
-> Currently the wrapper is built without including anything in
-> $(src)/include/, which means there are no CONFIG_ symbols defined. This
-> means the platform specific serial drivers were never enabled.
+On Thu, 2018-10-11 at 02:43:03 UTC, Joel Stanley wrote:
+> Ever since commit 15a3204d24a3 ("powerpc/64s: Set assembler machine type
+> to POWER4") we force -mpower4 to be passed to the assembler irrespective
+> of the CFLAGS used.
 > 
-> We now copy the definitions into the boot directory, so any C file can
-> now include autoconf.h to depend on configuration options.
+> When building a powerpc64 kernel with clang, clang will not add -many to
+> the assembler flags, so any instructions that the compiler has generated
+> that are not available on power4 will cause an error:
 > 
-> Fixes: 866bfc75f40e ("powerpc: conditionally compile platform-specific serial drivers")
+>  /usr/bin/as -a64 -mppc64 -mlittle-endian -mpower8 \
+>   -I ./arch/powerpc/include -I ./arch/powerpc/include/generated \
+>   -I ./include -I ./arch/powerpc/include/uapi \
+>   -I ./arch/powerpc/include/generated/uapi -I ./include/uapi \
+>   -I ./include/generated/uapi -I arch/powerpc -I arch/powerpc \
+>   -maltivec -mpower4 -o init/do_mounts.o /tmp/do_mounts-3b0a3d.s
+>  /tmp/do_mounts-51ce54.s:748: Error: unrecognized opcode: `isel'
+> 
+> GCC does include -many, so the GCC driven gas call will succeed:
+> 
+>   as -v -I ./arch/powerpc/include -I ./arch/powerpc/include/generated -I
+>   ./include -I ./arch/powerpc/include/uapi
+>   -I ./arch/powerpc/include/generated/uapi -I ./include/uapi
+>   -I ./include/generated/uapi -I arch/powerpc -I arch/powerpc
+>    -a64 -mpower8 -many -mlittle -maltivec -mpower4 -o init/do_mounts.o
+> 
+> Note that isel is power7 and above for IBM CPUs. GCC only generates it
+> for Power9 and above, but the above test was run against the clang
+> generated assembly.
+> 
+> Peter Bergner explains:
+> 
+>  > When using -many -mpower4, gas will first try and find a matching
+>  > power4 mnemonic and failing that, it will then allow any valid mnemonic
+>  > that gas knows about.  GCC's use of -many predates me though.
+>  >
+>  > IIRC, Alan looked at trying to remove it, but I forget why he didn't.
+>  > Could be either a gcc or gas issue at the time.  I'm not sure whether
+>  > issue still exists or not.  He and I have modified how gas works
+>  > internally a fair amount since he tried removing gcc use of -many
+>  >
+>  > I will also note that when using -many, gas will choose the first
+>  > mnemonic that matches in the mnemonic table and we have (mostly) sorted
+>  > the table so that server mnemonics show up earlier in the table than
+>  > other mnemonics, so they'll be seen/chosen first
+> 
+> By explicitly setting -many we can build with Clang and GCC while
+> retaining the -mpower4 option.
+> 
 > Signed-off-by: Joel Stanley <joel@jms.id.au>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/5e9dcb6188a40e604e66dc30fab30c
+https://git.kernel.org/powerpc/c/960e30029863db95ec79a71009272d
 
 cheers
