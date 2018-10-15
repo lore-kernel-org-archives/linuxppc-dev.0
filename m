@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7BE52C070C3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 02:58:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E59A1C070C3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 03:00:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EA2CE2086A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 02:58:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EA2CE2086A
+	by mail.kernel.org (Postfix) with ESMTPS id 8A3232086A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 03:00:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8A3232086A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42YNRd709BzF36w
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 13:58:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42YNTf3QZwzF37q
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 14:00:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: lists.ozlabs.org; spf=permerror (mailfrom)
  smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57;
@@ -29,17 +29,16 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42YNJ71xXczF386
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 13:51:50 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42YNJ853RczF0yj
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 13:51:52 +1100 (AEDT)
 Received: from pasglop.ozlabs.ibm.com (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id w9F2o7jT008210;
- Sun, 14 Oct 2018 21:50:29 -0500
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id w9F2o7jO008210;
+ Sun, 14 Oct 2018 21:50:20 -0500
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 12/12] powerpc/prom_init: Generate "phandle" instead of "linux,
- phandle"
-Date: Mon, 15 Oct 2018 13:50:00 +1100
-Message-Id: <20181015025000.4522-12-benh@kernel.crashing.org>
+Subject: [PATCH 07/12] powerpc/prom_init: Move ibm_arch_vec to __prombss
+Date: Mon, 15 Oct 2018 13:49:55 +1100
+Message-Id: <20181015025000.4522-7-benh@kernel.crashing.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20181015025000.4522-1-benh@kernel.crashing.org>
 References: <20181015025000.4522-1-benh@kernel.crashing.org>
@@ -58,49 +57,47 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When creating the boot-time FDT from an actual Open Firmware live
-tree, let's generate "phandle" properties for the phandles instead
-of the old deprecated "linux,phandle".
+Make the existing initialized definition constant and copy
+it to a __prombss copy
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/kernel/prom_init.c | 12 +++++-------
- 1 file changed, 5 insertions(+), 7 deletions(-)
+ arch/powerpc/kernel/prom_init.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index 57762f19f136..64409d2ecaee 100644
+index 70f2bde06ab3..03b171bb1c29 100644
 --- a/arch/powerpc/kernel/prom_init.c
 +++ b/arch/powerpc/kernel/prom_init.c
-@@ -2407,14 +2407,12 @@ static void __init scan_dt_build_struct(phandle node, unsigned long *mem_start,
- 			has_phandle = 1;
- 	}
+@@ -788,7 +788,7 @@ struct ibm_arch_vec {
+ 	struct option_vector6 vec6;
+ } __packed;
  
--	/* Add a "linux,phandle" property if no "phandle" property already
--	 * existed.
--	 */
-+	/* Add a "phandle" property if none already exist */
- 	if (!has_phandle) {
--		soff = dt_find_string("linux,phandle");
-+		soff = dt_find_string("phandle");
- 		if (soff == 0)
- 			prom_printf("WARNING: Can't find string index for"
--				    " <linux-phandle> node %s\n", path);
-+				    " <phandle> node %s\n", path);
- 		else {
- 			dt_push_token(OF_DT_PROP, mem_start, mem_end);
- 			dt_push_token(4, mem_start, mem_end);
-@@ -2474,9 +2472,9 @@ static void __init flatten_device_tree(void)
- 	dt_string_start = mem_start;
- 	mem_start += 4; /* hole */
+-struct ibm_arch_vec __cacheline_aligned ibm_architecture_vec = {
++static const struct ibm_arch_vec ibm_architecture_vec_template = {
+ 	.pvrs = {
+ 		{
+ 			.mask = cpu_to_be32(0xfffe0000), /* POWER5/POWER5+ */
+@@ -926,6 +926,8 @@ struct ibm_arch_vec __cacheline_aligned ibm_architecture_vec = {
+ 	},
+ };
  
--	/* Add "linux,phandle" in there, we'll need it */
-+	/* Add "phandle" in there, we'll need it */
- 	namep = make_room(&mem_start, &mem_end, 16, 1);
--	strcpy(namep, "linux,phandle");
-+	strcpy(namep, "phandle");
- 	mem_start = (unsigned long)namep + strlen(namep) + 1;
- 
- 	/* Build string array */
++static struct ibm_arch_vec __prombss ibm_architecture_vec  ____cacheline_aligned;
++
+ /* Old method - ELF header with PT_NOTE sections only works on BE */
+ #ifdef __BIG_ENDIAN__
+ static const struct fake_elf {
+@@ -1135,6 +1137,10 @@ static void __init prom_check_platform_support(void)
+ 	};
+ 	int prop_len = prom_getproplen(prom.chosen,
+ 				       "ibm,arch-vec-5-platform-support");
++
++	/* First copy the architecture vec template */
++	ibm_architecture_vec = ibm_architecture_vec_template;
++
+ 	if (prop_len > 1) {
+ 		int i;
+ 		u8 vec[prop_len];
 -- 
 2.17.1
 
