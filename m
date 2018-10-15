@@ -2,149 +2,49 @@ Return-Path: <SRS0=o62n=O6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F60FC43387
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Dec 2018 09:36:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B983C43387
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Dec 2018 13:17:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8F10A218E0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Dec 2018 09:36:47 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="a4faB2EM"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8F10A218E0
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4F08A21916
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Dec 2018 13:17:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4F08A21916
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Lk6P0jz8zDrFl
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Dec 2018 20:36:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=redhat.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="a4faB2EM";
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2a00:1450:4864:20::343; helo=mail-wm1-x343.google.com;
- envelope-from=paolo.bonzini@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=redhat.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="a4faB2EM"; 
- dkim-atps=neutral
-Received: from mail-wm1-x343.google.com (mail-wm1-x343.google.com
- [IPv6:2a00:1450:4864:20::343])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 43Lq192wGBzDrF0
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Dec 2018 00:17:33 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+Authentication-Results: lists.ozlabs.org; spf=permerror (mailfrom)
+ smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57;
+ helo=gate.crashing.org; envelope-from=benh@kernel.crashing.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=kernel.crashing.org
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43Lk1Q0xdDzDrCB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Dec 2018 20:32:25 +1100 (AEDT)
-Received: by mail-wm1-x343.google.com with SMTP id m1so4637268wml.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Dec 2018 01:32:25 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=sender:subject:to:cc:references:from:openpgp:autocrypt:message-id
- :date:user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=+fN/h94TFzyeT8dOZ+uMS0YktL5gqzo6kfvRvZ3NbPI=;
- b=a4faB2EMQqnvm9POPXcEL/qmqOSM0WyPIPbYrze+/8BXrJS009sT4H7nNsAkkJEMPN
- 8G7UZtru+m0rErJvBptVyCxguMvkNg4jdZYoAwNaa4ypVSOp6NlyjlvjrosixJwOAmeH
- 86rTpQdcCvbAkn1nSs11+Htm+ypSopGyaMBYHDHKDrL8ritLmYbgycUz54+u4mkoGpWa
- UUxIHX7+D2QldmmUCAgLkoKmFVAbxJHvWiu5UUhuv554guABnxWA3RhXM5UIYjUMm6ik
- gXXicaq8z3HmksWE2ueyUfjD8e3bGS4z+Ek8wKTB24msjE070aecj6NO6zOUup7+woqC
- TNVw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:sender:subject:to:cc:references:from:openpgp
- :autocrypt:message-id:date:user-agent:mime-version:in-reply-to
- :content-language:content-transfer-encoding;
- bh=+fN/h94TFzyeT8dOZ+uMS0YktL5gqzo6kfvRvZ3NbPI=;
- b=acPpoPxpLPunyYmnoHR4Wc53mzgw0hPv1olFpDA62Lp7j3mFIdRnmNhKswfYFyY7yg
- xZyi90Oi+5/vhwyLuNJ/PdSXipf/KrPZz3rtY5vEtaZlVlBxN1YEUsNBCxqIJ5cStN5p
- 67SMpBsta3ljyI2ZXpk5uZ1uYhW2zj7GEoGh7GeQ7N+UgGU0c3o/HnJh46LYW+zuzF3F
- 2CfAEyJsb84VZdL6ERNfiqaDHXGMlWx8LgmUnBXKucrHlPTteJDx0flb33WMVsPGmOPS
- MUSxkxnu7jifiuFUCarOF0O/lc3yT46nW10NFe4rXiPGud6u2nfkIEiVG5wu+KRnxt0N
- qapQ==
-X-Gm-Message-State: AA+aEWZsfFKXCMZwOZ+8p788+TXKG6CEv7dgo6CZgkVo8LDpC7xiVR1B
- xm1fVcKUd+TZOOVyX5FuOCg=
-X-Google-Smtp-Source: ALg8bN67V5K91BLn/F9RefeBRJV6/EYwtkVcu44d9Kl+YkZhLQawY1HJa7NjOTTC1SrzVII1OLjRzw==
-X-Received: by 2002:a1c:3d44:: with SMTP id k65mr2010349wma.76.1545384743270; 
- Fri, 21 Dec 2018 01:32:23 -0800 (PST)
-Received: from [192.168.10.150] ([93.56.166.5])
- by smtp.googlemail.com with ESMTPSA id
- y145sm10629640wmd.30.2018.12.21.01.32.21
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Fri, 21 Dec 2018 01:32:22 -0800 (PST)
-Subject: Re: [Resend PATCH V5 2/10] x86/hyper-v: Add HvFlushGuestAddressList
- hypercall support
-To: lantianyu1986@gmail.com
-References: <20181206132113.2691-1-Tianyu.Lan@microsoft.com>
- <20181206132113.2691-3-Tianyu.Lan@microsoft.com>
-From: Paolo Bonzini <pbonzini@redhat.com>
-Openpgp: preference=signencrypt
-Autocrypt: addr=pbonzini@redhat.com; keydata=
- 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
- uUHgL9dKIfvpm+rNXRn9wAwGjk0X/A==
-Message-ID: <3f936a6e-b727-c152-05fb-4d77f33e1745@redhat.com>
-Date: Fri, 21 Dec 2018 10:32:21 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.3.1
-MIME-Version: 1.0
-In-Reply-To: <20181206132113.2691-3-Tianyu.Lan@microsoft.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Lpyp28jVzDqfB
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Dec 2018 00:15:29 +1100 (AEDT)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id w9F0lDBk027228;
+ Sun, 14 Oct 2018 19:47:15 -0500
+Message-ID: <9cfe508c687068853a6e5e030962a78467a8d313.camel@kernel.crashing.org>
+Subject: Re: [PATCH 01/33] powerpc: use mm zones more sensibly
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Christoph Hellwig <hch@lst.de>, Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Date: Mon, 15 Oct 2018 11:47:13 +1100
+In-Reply-To: <20181009132500.17643-2-hch@lst.de>
+References: <20181009132500.17643-1-hch@lst.de>
+ <20181009132500.17643-2-hch@lst.de>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5 (3.28.5-1.fc28) 
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -157,30 +57,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mips@linux-mips.org, kvm@vger.kernel.org, rkrcmar@redhat.com,
- catalin.marinas@arm.com, will.deacon@arm.com, linux-kernel@vger.kernel.org,
- hpa@zytor.com, kys@microsoft.com, kvmarm@lists.cs.columbia.edu,
- sthemmin@microsoft.com, x86@kernel.org, linux@armlinux.org.uk,
- michael.h.kelley@microsoft.com, mingo@redhat.com, jhogan@kernel.org,
- Lan Tianyu <Tianyu.Lan@microsoft.com>, marc.zyngier@arm.com,
- haiyangz@microsoft.com, kvm-ppc@vger.kernel.org, bp@alien8.de,
- tglx@linutronix.de, linux-arm-kernel@lists.infradead.org,
- christoffer.dall@arm.com, ralf@linux-mips.org, paul.burton@mips.com,
- devel@linuxdriverproject.org, vkuznets@redhat.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: linux-arch@vger.kernel.org, linux-mm@kvack.org,
+ iommu@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 06/12/18 14:21, lantianyu1986@gmail.com wrote:
->  static inline int hyperv_flush_guest_mapping(u64 as) { return -1; }
-> +static inline int hyperv_flush_guest_mapping_range(u64 as,
-> +		hyperv_fill_flush_list_func fill_func, void *data);
-> +{
-> +	return -1;
+On Tue, 2018-10-09 at 15:24 +0200, Christoph Hellwig wrote:
+>   * Find the least restrictive zone that is entirely below the
+> @@ -324,11 +305,14 @@ void __init paging_init(void)
+>         printk(KERN_DEBUG "Memory hole size: %ldMB\n",
+>                (long int)((top_of_ram - total_ram) >> 20));
+>  
+> +#ifdef CONFIG_ZONE_DMA
+> +       max_zone_pfns[ZONE_DMA] = min(max_low_pfn, 0x7fffffffUL >> PAGE_SHIFT);
+> +#endif
+> +       max_zone_pfns[ZONE_NORMAL] = max_low_pfn;
+>  #ifdef CONFIG_HIGHMEM
+> -       limit_zone_pfn(ZONE_NORMAL, lowmem_end_addr >> PAGE_SHIFT);
+> +       max_zone_pfns[ZONE_HIGHMEM] = max_pfn
+                                               ^
+Missing a  ";" here  --------------------------|
 
-This part for !IS_ENABLED(CONFIG_HYPERV) does not compile.
+Sorry ... works with that fix on an old laptop with highmem.
 
-No big deal, but please add that to your testing procedures.
+>  #endif
+> -       limit_zone_pfn(TOP_ZONE, top_of_ram >> PAGE_SHIFT);
+> -       zone_limits_final = true;
+> +
+>         free_area_init_nodes(max_zone_pfns);
+>  
 
-Paolo
