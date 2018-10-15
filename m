@@ -2,28 +2,28 @@ Return-Path: <SRS0=mWF2=M3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 77E65C04AA5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 19:04:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E9CCEC04AA5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 19:24:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EDCA1208B3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 19:04:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 4FDBD208D9
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 19:24:37 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="c63NcWYq"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EDCA1208B3
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="lXssOpZP"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4FDBD208D9
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42Ynt25bGxzF3MD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 06:04:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42YpKb32k6zF3HC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 06:24:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="c63NcWYq";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="lXssOpZP";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
@@ -32,44 +32,42 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="c63NcWYq"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="lXssOpZP"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42YnqR63BgzF38h
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 06:01:55 +1100 (AEDT)
-Received: from mail-ed1-f51.google.com (mail-ed1-f51.google.com
- [209.85.208.51])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42YpGz3QxmzF3CP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 06:22:19 +1100 (AEDT)
+Received: from mail-ed1-f49.google.com (mail-ed1-f49.google.com
+ [209.85.208.49])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id ABFBB21479
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 19:01:53 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 0FB9D2098A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 19:22:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1539630114;
- bh=HZTikMm58VpHYYjCoXzcMq7g8Vxcno1d4W4fqZ5OWo0=;
+ s=default; t=1539631337;
+ bh=ZPil9R+QKO8poIw11LkPFCCgJT/t/NekTHonWAJibQ8=;
  h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=c63NcWYqrFADrJk84i2f5NGXW5CFjvuqPg3BfCINay/kU+P7FUBPrxuLuZ4ZW4P22
- D7O2QLDinOgkRJiv78fDMC6bvPelOoGCkgcNotVQyVaLoQhEdOFW7TTF1lzyRpZpSD
- b0p3DVDtQOcsUc8O1DyUCtaz0xoibU+YPG8N/xD4=
-Received: by mail-ed1-f51.google.com with SMTP id w19-v6so18892504eds.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 12:01:53 -0700 (PDT)
-X-Gm-Message-State: ABuFfojGA/zdMtlkLz6HtVYjM7LQwPiwNRMaQXcGtL6Cyw8q7RlxD9PK
- EF9mrEEd9/zYMOe7nB42fmVvrCACFhxW8TsjlcM=
-X-Google-Smtp-Source: ACcGV6146qI+cOqdKHB+Qj+knr8+y8I0gxkOYol7MAfdqtRpsbM+R8Vnd3PAXY2mg54pDeTtTxji2N+fBPOWsFBHtN8=
-X-Received: by 2002:a17:906:7384:: with SMTP id
- f4-v6mr20302835ejl.8.1539630111956; 
- Mon, 15 Oct 2018 12:01:51 -0700 (PDT)
+ b=lXssOpZPf5eraYSYN/wXeykVTyEAcGr04qUm/1/L6+sSnJ0DGTr9suSHv/aJWpN+a
+ zsiltdMMv5luJxUkE0X1t2HhQE1VNSKNHHwt8pu/SwY+27hZDGVsYwxEshB09Lx3AF
+ S13Om4Gbc9hqh8s3d2sk1uvCQGfhyhH5CmiSSPqI=
+Received: by mail-ed1-f49.google.com with SMTP id y19-v6so18961606edd.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 12:22:16 -0700 (PDT)
+X-Gm-Message-State: ABuFfogb5/XQXU7jAUnnns+uqH2I60HaPLUdoEKbqJ7UVhPeu8PCneLu
+ rq+zULyA5sspVB5nJYaFZQSB9Dh82H4B6vbVX0s=
+X-Google-Smtp-Source: ACcGV61Qnys+eQd1yoQzFrVSX51ay/Zm2n8MJL7Ym6LqdOBIc72xmf2aOfNSCAnOvpozkGxWc3ElIs3yiSLGOFpDfMo=
+X-Received: by 2002:a50:fc06:: with SMTP id
+ i6-v6mr22468551edr.153.1539631335410; 
+ Mon, 15 Oct 2018 12:22:15 -0700 (PDT)
 MIME-Version: 1.0
 References: <1539563070-12969-1-git-send-email-frowand.list@gmail.com>
- <1539563070-12969-10-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1539563070-12969-10-git-send-email-frowand.list@gmail.com>
+In-Reply-To: <1539563070-12969-1-git-send-email-frowand.list@gmail.com>
 From: Alan Tull <atull@kernel.org>
-Date: Mon, 15 Oct 2018 14:01:15 -0500
-X-Gmail-Original-Message-ID: <CANk1AXQNkYDA9hRCMR_MkOJiobPjmYoJN8Gv+3YN9ReV+q5XEw@mail.gmail.com>
-Message-ID: <CANk1AXQNkYDA9hRCMR_MkOJiobPjmYoJN8Gv+3YN9ReV+q5XEw@mail.gmail.com>
-Subject: Re: [PATCH v3 09/18] of: overlay: validate overlay properties
- #address-cells and #size-cells
+Date: Mon, 15 Oct 2018 14:21:39 -0500
+X-Gmail-Original-Message-ID: <CANk1AXTmY7v03m7NNZHVtzyU1Mwm0GYtOJQzmObFLASs=PEfLA@mail.gmail.com>
+Message-ID: <CANk1AXTmY7v03m7NNZHVtzyU1Mwm0GYtOJQzmObFLASs=PEfLA@mail.gmail.com>
+Subject: Re: [PATCH v3 00/18] of: overlay: validation checks, subsequent fixes
 To: Frank Rowand <frowand.list@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -97,129 +95,151 @@ On Sun, Oct 14, 2018 at 7:26 PM <frowand.list@gmail.com> wrote:
 >
 > From: Frank Rowand <frank.rowand@sony.com>
 >
-> If overlay properties #address-cells or #size-cells are already in
-> the live devicetree for any given node, then the values in the
-> overlay must match the values in the live tree.
+> Add checks to (1) overlay apply process and (2) memory freeing
+> triggered by overlay release.  The checks are intended to detect
+> possible memory leaks and invalid overlays.
 >
-> If the properties are already in the live tree then there is no
-> need to create a changeset entry to add them since they must
-> have the same value.  This reduces the memory used by the
-> changeset and eliminates a possible memory leak.  This is
-> verified by 12 fewer warnings during the devicetree unittest,
-> as the possible memory leak warnings about #address-cells and
+> The checks revealed bugs in existing code.  Fixed the bugs.
 >
-> Signed-off-by: Frank Rowand <frank.rowand@sony.com>
-> ---
->  drivers/of/overlay.c | 38 +++++++++++++++++++++++++++++++++++---
->  1 file changed, 35 insertions(+), 3 deletions(-)
+> While fixing bugs, noted other issues, which are fixed in
+> separate patches.
 >
-> diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
-> index 272a0d1a5e18..ee66651db553 100644
-> --- a/drivers/of/overlay.c
-> +++ b/drivers/of/overlay.c
-> @@ -287,7 +287,12 @@ static struct property *dup_and_fixup_symbol_prop(
->   * @target may be either in the live devicetree or in a new subtree that
->   * is contained in the changeset.
->   *
-> - * Some special properties are not updated (no error returned).
-> + * Some special properties are not added or updated (no error returned):
-> + * "name", "phandle", "linux,phandle".
-> + *
-> + * Properties "#address-cells" and "#size-cells" are not updated if they
-> + * are already in the live tree, but if present in the live tree, the values
-> + * in the overlay must match the values in the live tree.
->   *
->   * Update of property in symbols node is not allowed.
->   *
-> @@ -300,6 +305,7 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
->  {
->         struct property *new_prop = NULL, *prop;
->         int ret = 0;
-> +       bool check_for_non_overlay_node = false;
+> *****  Powerpc folks: I was not able to test the patches that
+> *****  directly impact Powerpc systems that use dynamic
+> *****  devicetree.  Please review that code carefully and
+> *****  test.  The specific patches are: 03/16, 04/16, 07/16
 >
->         if (!of_prop_cmp(overlay_prop->name, "name") ||
->             !of_prop_cmp(overlay_prop->name, "phandle") ||
-> @@ -322,13 +328,39 @@ static int add_changeset_property(struct overlay_changeset *ovcs,
->         if (!new_prop)
->                 return -ENOMEM;
+> FPGA folks:
 >
-> -       if (!prop)
-> +       if (!prop) {
-> +
-> +               check_for_non_overlay_node = true;
->                 ret = of_changeset_add_property(&ovcs->cset, target->np,
->                                                 new_prop);
-> -       else
-> +
-> +       } else if (!of_prop_cmp(prop->name, "#address-cells")) {
-> +
+>   I made the validation checks that should result in an
+>   invalid live devicetree report "ERROR" and cause the overlay apply
+>   to fail.
+>
+>   I made the memory leak validation tests report "WARNING" and allow
+>   the overlay apply to complete successfully.  Please let me know
+>   if you encounter the warnings.  There are at least two paths
+>   forward to deal with the cases that trigger the warning: (1) change
+>   the warning to an error and fail the overlay apply, or (2) find a
+>   way to detect the potential memory leaks and free the memory
+>   appropriately.
 
-Hi Frank,
+I reran my FPGA testing.  The strings are fixed, no longer NULL.  I
+have functionality back, my test passes now.  I'm seeing the intended
+warnings about any properties added to existing nodes.  That includes
+warnings about added symbols.  Below is a simplified part to show some
+of what I'm seeing.
 
-If we get these ERROR messages, I suggest that this function should
-return an error so the overlay will be rejected.
+By the way my testing is all using Pantelis' DT overlay configfs interface.
 
-> +               if (prop->length != 4 || new_prop->length != 4 ||
-> +                   *(u32 *)prop->value != *(u32 *)new_prop->value)
+root@arria10:~# ./apply-static-region.sh
 
-                        *(u32 *)prop->value != *(u32 *)new_prop->value) {
+Applying dtbo: socfpga_arria10_socdk_sdmmc_ghrd_ovl_ext_cfg.dtb
 
-> +                       pr_err("ERROR: overlay and/or live tree #address-cells invalid in node %pOF\n",
-> +                              target->np);
+[ 1821.088640] OF: overlay: WARNING: add_changeset_property(), memory
+leak will occur if overlay removed.  Property:
+/soc/base_fpga_region/ranges
+[ 1821.103307] OF: overlay: WARNING: add_changeset_property(), memory
+leak will occur if overlay removed.  Property:
+/soc/base_fpga_region/external-fpga-config
+[ 1821.117359] OF: overlay: WARNING: add_changeset_property(), memory
+leak will occur if overlay removed.  Property:
+/soc/base_fpga_region/clocks
+[ 1821.130130] OF: overlay: WARNING: add_changeset_property(), memory
+leak will occur if overlay removed.  Property:
+/soc/base_fpga_region/clock-names
+[ 1821.143449] OF: overlay: WARNING: add_changeset_property(), memory
+leak will occur if overlay removed.  Property: /__symbols__/clk_0
+[ 1821.155357] OF: overlay: WARNING: add_changeset_property(), memory
+leak will occur if overlay removed.  Property: /__symbols__/ILC
+[ 1821.167074] OF: overlay: WARNING: add_changeset_property(), memory
+leak will occur if overlay removed.  Property:
+/__symbols__/freeze_controller_0
+[ 1821.180171] OF: overlay: WARNING: add_changeset_property(), memory
+leak will occur if overlay removed.  Property:
+/__symbols__/sysid_qsys_0
+[ 1821.192662] OF: overlay: WARNING: add_changeset_property(), memory
+leak will occur if overlay removed.  Property: /__symbols__/led_pio
+[ 1821.204720] OF: overlay: WARNING: add_changeset_property(), memory
+leak will occur if overlay removed.  Property: /__symbols__/button_pio
+[ 1821.217034] OF: overlay: WARNING: add_changeset_property(), memory
+leak will occur if overlay removed.  Property: /__symbols__/dipsw_pio
+[ 1821.231977] of-fpga-region soc:base_fpga_region:fpga_pr_region0:
+FPGA Region probed
+[ 1821.240144] altera_freeze_br ff200450.freeze_controller: fpga
+bridge [freeze] registered
 
-                       ret = -EINVAL;
-                }
+root@arria10:~# ./apply-static-region.sh root@arria10:~# rmdir
+/sys/kernel/config/device-tree/overlays/1-socfpga_arria10_socdk_sdmmc_ghrd_ovl_ext_cfg.dtb
 
-Otherwise there is an ERROR message, but it continues trying to apply
-the invalid overlay anyway and I get an oops.  By adding the ret =
--EINVAL, the overlay gets rejected and the oops is avoided.
-
-> +
-> +       } else if (!of_prop_cmp(prop->name, "#size-cells")) {
-> +
-> +               if (prop->length != 4 || new_prop->length != 4 ||
-> +                   *(u32 *)prop->value != *(u32 *)new_prop->value)
-> +                       pr_err("ERROR: overlay and/or live tree #size-cells invalid in node %pOF\n",
-> +                              target->np);
-
-Add the ret = -EINVAL here also.  This give me the following (if my
-overlay changes #address-cells):
-
-[   21.167551] OF: overlay: ERROR: overlay and/or live tree
-#address-cells invalid in node /soc/base_fpga_region
-[   21.177442] OF: overlay: add_changeset_property ret=-22
-[   21.182656] create_overlay: Failed to create overlay (err=-22)
-
-Also, I wonder if the ERROR message could be more direct.  Currently
-it says the #address-cells property is invalid but that doesn't say
-anything about why it's invalid.  How about something like:
-
- OF: overlay: ERROR: changing #address-cells not allowed (/soc/base_fpga_region)
-
-The 'OF: overlay' part still makes it clear it's overlay related.  The
-rest of it makes it clear *why* it's invalid.  This ERROR will be a
-surprise for people who have been using overlays, so that could be
-helpful to light the way a bit.
+[ 1823.805564] OF: ERROR: memory leak - destroy cset entry: attach
+overlay node /soc/base_fpga_region/clk_0 with refcount 2
 
 Alan
 
-> +
-> +       } else {
-> +
-> +               check_for_non_overlay_node = true;
->                 ret = of_changeset_update_property(&ovcs->cset, target->np,
->                                                    new_prop);
+
+Alan
+
+
+
 >
-> +       }
-> +
-> +       if (check_for_non_overlay_node &&
-> +           !of_node_check_flag(target->np, OF_OVERLAY))
-> +               pr_err("WARNING: %s(), memory leak will occur if overlay removed.  Property: %pOF/%s\n",
-> +                      __func__, target->np, new_prop->name);
-> +
->         if (ret) {
->                 kfree(new_prop->name);
->                 kfree(new_prop->value);
+> ALL people:
+>
+>   The validations do _not_ address another major concern I have with
+>   releasing overlays, which is use after free errors.
+>
+> Changes since v2:
+>
+>   - 13/18: Use continue to reduce indentation in find_dup_cset_node_entry()
+>     and find_dup_cset_prop()
+>
+> Changes since v1:
+>
+>   - move patch 16/16 to 17/18
+>   - move patch 15/16 to 18/18
+>   - new patch 15/18
+>   - new patch 16/18
+>
+>   - 05/18: add_changeset_node() header comment: incorrect comment for @target
+>
+>   - 18/18: add same fix for of_parse_phandle_with_args()
+>   - 18/18: add same fix for of_parse_phandle_with_args_map()
+>
+> Frank Rowand (18):
+>   of: overlay: add tests to validate kfrees from overlay removal
+>   of: overlay: add missing of_node_put() after add new node to changeset
+>   of: overlay: add missing of_node_get() in __of_attach_node_sysfs
+>   powerpc/pseries: add of_node_put() in dlpar_detach_node()
+>   of: overlay: use prop add changeset entry for property in new nodes
+>   of: overlay: do not duplicate properties from overlay for new nodes
+>   of: dynamic: change type of of_{at,de}tach_node() to void
+>   of: overlay: reorder fields in struct fragment
+>   of: overlay: validate overlay properties #address-cells and
+>     #size-cells
+>   of: overlay: make all pr_debug() and pr_err() messages unique
+>   of: overlay: test case of two fragments adding same node
+>   of: overlay: check prevents multiple fragments add or delete same node
+>   of: overlay: check prevents multiple fragments touching same property
+>   of: unittest: remove unused of_unittest_apply_overlay() argument
+>   of: overlay: set node fields from properties when add new overlay node
+>   of: unittest: allow base devicetree to have symbol metadata
+>   of: unittest: find overlays[] entry by name instead of index
+>   of: unittest: initialize args before calling of_*parse_*()
+>
+>  arch/powerpc/platforms/pseries/dlpar.c             |  15 +-
+>  arch/powerpc/platforms/pseries/reconfig.c          |   6 +-
+>  drivers/of/dynamic.c                               |  68 +++--
+>  drivers/of/kobj.c                                  |   4 +-
+>  drivers/of/overlay.c                               | 298 ++++++++++++++++-----
+>  drivers/of/unittest-data/Makefile                  |   2 +
+>  .../of/unittest-data/overlay_bad_add_dup_node.dts  |  28 ++
+>  .../of/unittest-data/overlay_bad_add_dup_prop.dts  |  24 ++
+>  drivers/of/unittest-data/overlay_base.dts          |   1 +
+>  drivers/of/unittest.c                              |  96 +++++--
+>  include/linux/of.h                                 |  19 +-
+>  11 files changed, 439 insertions(+), 122 deletions(-)
+>  create mode 100644 drivers/of/unittest-data/overlay_bad_add_dup_node.dts
+>  create mode 100644 drivers/of/unittest-data/overlay_bad_add_dup_prop.dts
+>
 > --
 > Frank Rowand <frank.rowand@sony.com>
 >
