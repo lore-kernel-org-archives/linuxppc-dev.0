@@ -7,79 +7,79 @@ X-Spam-Status: No, score=-1.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	URIBL_SBL,URIBL_SBL_A,USER_AGENT_MUTT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 17803C04EB9
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 22:30:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 57249C04EB9
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 22:36:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 703852089D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 22:30:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id BBC49208B3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 22:36:56 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="KT8fPDks"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 703852089D
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="cRYD5k2c"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BBC49208B3
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42YtSX2xSGzF32n
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 09:30:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42YtbV54P9zF3Ry
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 09:36:54 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="KT8fPDks";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="cRYD5k2c";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::643; helo=mail-pl1-x643.google.com;
+ (client-ip=2607:f8b0:4864:20::542; helo=mail-pg1-x542.google.com;
  envelope-from=groeck7@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=roeck-us.net
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="KT8fPDks"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="cRYD5k2c"; 
  dkim-atps=neutral
-Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
- [IPv6:2607:f8b0:4864:20::643])
+Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
+ [IPv6:2607:f8b0:4864:20::542])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42YtPq40cfzF32n
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 09:28:31 +1100 (AEDT)
-Received: by mail-pl1-x643.google.com with SMTP id f8-v6so9984838plb.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 15:28:31 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42YtXh2JwtzF37q
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 09:34:28 +1100 (AEDT)
+Received: by mail-pg1-x542.google.com with SMTP id 80-v6so9820803pgh.10
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 15:34:27 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=sender:date:from:to:cc:subject:message-id:references:mime-version
  :content-disposition:in-reply-to:user-agent;
- bh=dWVpC3Z0p8Yi2I+5AFELWxj3oONe1yBlk+kn5RUH27U=;
- b=KT8fPDks5lmH5/rmnNVOEVQP2N2IjWQ4GtfqPTRoxzOTi673Jw5ocxyK+b/IVUdkB1
- taHa5zB/PYwxtB1hF4ZdRK2LL2DcvGToQgn0hObwJyUpRuRr7TrzUDVurwZu79bmHnJV
- +ND/i2eTclCBzWpSLLVwIQsFLR8O/XhN8VF9lVQlrr/GQTMVqxkRaj/TWd2FwbJ9Zwcr
- YP4857JIfHy+UxO/pWsQR+ZlHumHys445Hc6bqDcr3Q3fR2PBn+MY4KH+Oh2JnSbWSFo
- BY0IA9+fkdekMVd2n6hRUnmE+dgr93Tvf487j62glaCFsrcpJgIH+2k+Al/c5P6AiTwk
- aMzQ==
+ bh=5VJjn0qxh8BGzPUn1BkdZ8LH2wng3UZRuYsFxbKuJ20=;
+ b=cRYD5k2c6dLXs9z+tyPBRUg8es8L9RQhpJ2Rsp2U4urq8rI3ukNN2/ZM6+j1P2O3lM
+ 2iHTDeNoWQUmgaUsCABZrz9IyLTTa3M7h6X9ZRQAodU7tkQvuCki0xT21gbNImJ7jLG6
+ rtpuFu5iiJmnluz9IMYZTdcfZV88M/Wkb7n87vYDHjg4LFfAXuA+KzXQsvkiC0EGpj0M
+ d02dMg9WDVRuYoe2AfHWhTMao5/TsI1UxsbDprZpt4fZRDy6N7+uFeG0ZtOj9cvPtbP4
+ uwkA/IOKdC0Y4k0hdR9dkGtBl5T6G3Pz0WiKN6eA4zZJ0DmrxOctVvfEdaEE104PnWE2
+ cJGg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:sender:date:from:to:cc:subject:message-id
  :references:mime-version:content-disposition:in-reply-to:user-agent;
- bh=dWVpC3Z0p8Yi2I+5AFELWxj3oONe1yBlk+kn5RUH27U=;
- b=Fs0WqZlDW1B9xfl0lErKuwjQMsdCPWlDtQaO9RdPkomoB8ej4fMxGlrn9x+ElyAy8R
- kNYXsARsTO6F3A97jaXkYalBjHGSk5uZ9PwgROXlvW0dc37ehtf1QgSKEoKjdsXNYYR7
- dXASGtjvUYgbSIu1JR7I/eltcWVKwByPxo+eT7CIcDKxeGpSPu3k613p3YS/7/8bRCrq
- 6F7tvPLdEJobIJjg0En6Huz7AITsUkVHnK4Wamkg1VE/PdzdreGele4Elwb9dQ90uStR
- VyB8RyAX1Ule4lC7rlFh016AhBXJq7EXlQ2rANfrT21oeDoeQKHa49eWYRebnsnKjkqp
- H6DQ==
-X-Gm-Message-State: ABuFfogrkDEhm0qDIoTghu+9dkOL2qJoloKpCPQn0Y2Rch/5HdeO27tm
- UL9YA+k/tbHWkwTB0rXR6AM=
-X-Google-Smtp-Source: ACcGV61k9OZTAmoQI0dpzqSTD3o6RAz/NJw6MpCXB4fcBqVKViobFxrQOOsqDzzJtBnFYuWDF0tsWQ==
-X-Received: by 2002:a17:902:728e:: with SMTP id
- d14-v6mr19161637pll.51.1539642509527; 
- Mon, 15 Oct 2018 15:28:29 -0700 (PDT)
+ bh=5VJjn0qxh8BGzPUn1BkdZ8LH2wng3UZRuYsFxbKuJ20=;
+ b=mmkPlclARZlDeMVpvsHRJ4CVTSodSuuVjujfBjcrtq3SwH7qbcidHPtnYi7PbCSzUl
+ HNcN0EbUQMzB4fTbqahjqHNtpsa/pJqmtksDV5Dx4w8hsF1PjxZIpisZuvAyitUph6Xq
+ zwnBzRDEkai4gJjyJvUJ697Z1JkHQal7pahmPQ9ESXB60gvntTV791l2MmyzhEos+j2I
+ BHONDP6rWBXZ1HGK2IMqoVrkWpYgBt2o8XSearoS9OhyEotixu7r16O0g+KNOPtGDglb
+ qz8R4t/j8G6frDrtCDdZDTPsZLkPYNHQs/Z06wcWRCV4Xg3SE5Tgf3pRC2a2g3zPaYm0
+ v24A==
+X-Gm-Message-State: ABuFfog56iytLvq2lgBIyjMbd7HY3qHQ/cL45V+QBqUYmbRITtZ1V/70
+ PZJJskf5H8HJ9MHVpVUvkaE=
+X-Google-Smtp-Source: ACcGV63cMBgvKYN7sxzc1vGh22K9xrH+kbs35MlzlFVUFKbNt4Ouu/j2jifAIxh5pCee05rslR1A6A==
+X-Received: by 2002:a62:1e42:: with SMTP id
+ e63-v6mr11386760pfe.149.1539642866206; 
+ Mon, 15 Oct 2018 15:34:26 -0700 (PDT)
 Received: from localhost (108-223-40-66.lightspeed.sntcca.sbcglobal.net.
  [108.223.40.66])
- by smtp.gmail.com with ESMTPSA id r81-v6sm20571184pfa.110.2018.10.15.15.28.28
+ by smtp.gmail.com with ESMTPSA id p4-v6sm15016491pfg.188.2018.10.15.15.34.24
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Mon, 15 Oct 2018 15:28:28 -0700 (PDT)
-Date: Mon, 15 Oct 2018 15:28:22 -0700
+ Mon, 15 Oct 2018 15:34:25 -0700 (PDT)
+Date: Mon, 15 Oct 2018 15:34:24 -0700
 From: Guenter Roeck <linux@roeck-us.net>
 To: Rob Herring <robherring2@gmail.com>
 Subject: Re: linux-next: Tree for Oct 15
-Message-ID: <20181015222822.GA31706@roeck-us.net>
+Message-ID: <20181015223424.GA31977@roeck-us.net>
 References: <20181015192546.15faf3a1@canb.auug.org.au>
  <20181015182637.GA16445@roeck-us.net>
  <20181016071240.3f62816d@canb.auug.org.au>
@@ -192,16 +192,16 @@ On Mon, Oct 15, 2018 at 05:13:08PM -0500, Rob Herring wrote:
 > QEMU emulator version 2.11.1(Debian 1:2.11+dfsg-1ubuntu7.5)
 > 
 
-This works for me:
+Update: Works for me with
+	QEMU emulator version 2.11.93 (Debian 1:2.12~rc3+dfsg-1)
+with the following command line.
 
 qemu-system-sparc -M SS-4 -kernel arch/sparc/boot/zImage -no-reboot \
 	-drive file=hda.sqf,if=scsi,format=raw \
 	-append 'root=/dev/sda rw init=/sbin/init.sh panic=1 console=ttyS0' \
 	-nographic -monitor none
 
-arch/sparc/boot/image works as well.
-
-This is with qemu 2.5 (from Ubuntu 16.04). I'll try with 2.11 tonight.
-My current private version is based on qemu 3.0.
+I have to enable DEVTMPFS and SQUASHFS for my root file system to work,
+but otherwise it is sparc32_defconfig.
 
 Guenter
