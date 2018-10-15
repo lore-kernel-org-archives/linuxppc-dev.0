@@ -2,53 +2,43 @@ Return-Path: <SRS0=mWF2=M3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+X-Spam-Status: No, score=-2.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B0449C7112B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 09:54:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 005FCC7112A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 09:56:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 300AB2064E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 09:54:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 300AB2064E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id ABB4320853
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 09:56:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ABB4320853
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42YYgW26LNzF3Jm
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 20:54:15 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42YYH51SxJzF3NY
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 20:36:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix)
- id 42YYH50VwFz9sBq; Mon, 15 Oct 2018 20:36:33 +1100 (AEDT)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 42YYH45xVGz9s5c;
- Mon, 15 Oct 2018 20:36:32 +1100 (AEDT)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Fix stackprotector detection for non-glibc
- toolchains
-In-Reply-To: <20181013154829.GO29268@gate.crashing.org>
-References: <20181012225832.13827-1-mpe@ellerman.id.au>
- <7e1acec1-c840-321b-0a93-99679fce6cb3@c-s.fr>
- <87k1mm12p6.fsf@concordia.ellerman.id.au>
- <20181013154829.GO29268@gate.crashing.org>
-Date: Mon, 15 Oct 2018 20:36:32 +1100
-Message-ID: <87woqjzh3z.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+	by lists.ozlabs.org (Postfix) with ESMTP id 42YYjX5HHwzDqNG
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 20:56:00 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
+ (client-ip=107.173.13.209; helo=ozlabs.ru; envelope-from=aik@ozlabs.ru;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=ozlabs.ru
+Received: from ozlabs.ru (unknown [107.173.13.209])
+ by lists.ozlabs.org (Postfix) with ESMTP id 42YYQ64GX4zDrWW
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 20:42:38 +1100 (AEDT)
+Received: from vpl1.ozlabs.ibm.com (localhost [IPv6:::1])
+ by ozlabs.ru (Postfix) with ESMTP id 6386EAE807F6;
+ Mon, 15 Oct 2018 05:42:35 -0400 (EDT)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH kernel 0/3] vfio/spapr_tce: Reworks for NVIDIA V100 + P9
+ passthrough (part 3)
+Date: Mon, 15 Oct 2018 20:42:30 +1100
+Message-Id: <20181015094233.1324-1-aik@ozlabs.ru>
+X-Mailer: git-send-email 2.11.0
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,48 +50,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@ozlabs.org
+Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Alistair Popple <alistair@popple.id.au>, kvm-ppc@vger.kernel.org,
+ Alex Williamson <alex.williamson@redhat.com>, Reza Arbab <arbab@linux.ibm.com>,
+ David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Segher Boessenkool <segher@kernel.crashing.org> writes:
-> On Sat, Oct 13, 2018 at 10:55:01PM +1100, Michael Ellerman wrote:
->> So it's only my cross compilers that don't work.
->> 
->> The kernel.org ones are:
->>   Configured with: /home/arnd/git/gcc/configure --target=powerpc64-linux
->>   --enable-targets=all
->>   --prefix=/home/arnd/cross/x86_64/gcc-8.1.0-nolibc/powerpc64-linux
->>   --enable-languages=c --without-headers --disable-bootstrap
->>   --disable-nls --disable-threads --disable-shared --disable-libmudflap
->>   --disable-libssp --disable-libgomp --disable-decimal-float
->>   --disable-libquadmath --disable-libatomic --disable-libcc1
->>   --disable-libmpx --enable-checking=release
->> 
->> Whereas mine is:
->>   Configured with: ../../src/gcc/configure
->>   --prefix=/home/kerkins/workspace/gcc-build/gcc/gcc-8-branch/target/ppc/build/install/powerpc-linux
->>   --disable-multilib --disable-bootstrap --enable-languages=c
->>   --with-pkgversion='Custom 2c79ff811dfcee1c' --target=powerpc-linux
->>   --enable-targets=all
->> 
->> 
->> So I wonder if something in there is making the difference?
->
-> You have --disable-libssp on the buildall-built compiler, which makes GCC
-> assume your libc has the SSP support routines, which gives you these default
-> offsets (which are what they are on glibc).  Never mind that you explicitly
-> do not have a libc ;-)
 
-OK thanks, things just get weirder and weirder :)
+This is a third set of patches required for passing through NVIDIA V100
+with coherent memory. The full patchset is here:
+https://github.com/aik/linux/tree/nv2
+The matching QEMU is here:
+https://github.com/aik/qemu/tree/nv2
 
->> I guess I'll just rewrite the change log to say "some toolchains".
->
-> Or "most".
+This implements a subdriver for NVIDIA V100 GPU with coherent memory and
+NPU/ATS support available in the POWER9 CPU.
 
-As it happens I forgot to update the change log anyway :/
+This does not address the interconnected GPUs, this will be posted as
+a separate patchset in a few days.
 
-Oh well.
+This depends on:
+[PATCH kernel 0/4] vfio/spapr_tce: Reworks for NVIDIA V100 + P9 passthrough (part 1)
+[PATCH kernel 0/5] powerpc/powernv/npu: Reworks for NVIDIA V100 + P9 passthrough (part 2)
+[PATCH kernel RFC 3/3] powerpc/pseries/iommu: Use memory@ nodes in max RAM address calculation
 
-cheers
+Please comment. Thanks.
+
+
+
+Alexey Kardashevskiy (3):
+  vfio_pci: Allow mapping extra regions
+  vfio_pci: Allow regions to add own capabilities
+  vfio_pci: Add NVIDIA GV100GL [Tesla V100 SXM2] [10de:1db1] subdriver
+
+ drivers/vfio/pci/Makefile           |   1 +
+ drivers/vfio/pci/vfio_pci_private.h |   8 +
+ include/uapi/linux/vfio.h           |  18 ++
+ drivers/vfio/pci/vfio_pci.c         |  51 ++++-
+ drivers/vfio/pci/vfio_pci_nvlink2.c | 409 ++++++++++++++++++++++++++++++++++++
+ drivers/vfio/pci/Kconfig            |   4 +
+ 6 files changed, 489 insertions(+), 2 deletions(-)
+ create mode 100644 drivers/vfio/pci/vfio_pci_nvlink2.c
+
+-- 
+2.11.0
+
