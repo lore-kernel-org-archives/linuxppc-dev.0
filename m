@@ -2,80 +2,69 @@ Return-Path: <SRS0=mWF2=M3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C8F2C04AA5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 13:31:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3BF72C04AA5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 16:51:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A0D612064A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 13:31:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A0D612064A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 805E22064A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 16:51:03 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="cqj8iPOm"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 805E22064A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42YfVP4j3yzF3Nh
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 00:31:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42YfS23lpRzDqSh
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 00:29:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42YkwP49chzF3Rx
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 03:51:01 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 42YfS2375kz8t7b
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 00:29:38 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 42YfS22x3Cz9sCw; Tue, 16 Oct 2018 00:29:38 +1100 (AEDT)
-Authentication-Results: ozlabs.org; spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="cqj8iPOm";
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=sboyd@kernel.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="cqj8iPOm"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Yksd28sYzF3Lp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 03:48:36 +1100 (AEDT)
+Received: from localhost (unknown [104.132.0.74])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 42YfS13PjYz9sBq
- for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2018 00:29:37 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 42YfRl01NQz9ttBt;
- Mon, 15 Oct 2018 15:29:23 +0200 (CEST)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 3lrpGNo3TB9b; Mon, 15 Oct 2018 15:29:22 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 42YfRk6cskz9ttBp;
- Mon, 15 Oct 2018 15:29:22 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 371268B7AD;
- Mon, 15 Oct 2018 15:29:32 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id nw5oPrBRTuap; Mon, 15 Oct 2018 15:29:32 +0200 (CEST)
-Received: from PO15451 (po15451.idsi0.si.c-s.fr [172.25.231.2])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 04AE48B7A5;
- Mon, 15 Oct 2018 15:29:32 +0200 (CEST)
-Subject: Re: Stack protector crash in pnv_smp_cpu_kill_self()
-To: Michael Ellerman <mpe@ellerman.id.au>,
- "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-References: <87k1mjz6hd.fsf@concordia.ellerman.id.au>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <a23f6298-f860-190c-4b45-333198fdc160@c-s.fr>
-Date: Mon, 15 Oct 2018 15:29:31 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ by mail.kernel.org (Postfix) with ESMTPSA id 2C1E62064A;
+ Mon, 15 Oct 2018 16:48:34 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1539622114;
+ bh=znxwo/KkYuHQ7BZTi+VB2plhm/XsXVWQ2KyC/W+QbvM=;
+ h=To:From:In-Reply-To:Cc:References:Subject:Date:From;
+ b=cqj8iPOmE0KwFpKdbX+XPS0iIcDG2F7RmFYwZnmFdWHEv2canwwM0bYQk7OAqdWgW
+ tfNy6Xzn3VcFhdN1j7pB1p9YDeuPrlkh/XVNdObILkeArwMQEQqxBce/C42ZypoCQ4
+ YmW7nuNfDVUq6uBl1ynceoY1bGkrDANf+PyLHZ+E=
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-In-Reply-To: <87k1mjz6hd.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
+To: Shawn Guo <shawnguo@kernel.org>, Vabhav Sharma <vabhav.sharma@nxp.com>
+From: Stephen Boyd <sboyd@kernel.org>
+In-Reply-To: <VI1PR04MB4800C0AB214B258793AF9ABAF3FD0@VI1PR04MB4800.eurprd04.prod.outlook.com>
+References: <1538615031-7507-1-git-send-email-vabhav.sharma@nxp.com>
+ <1538615031-7507-6-git-send-email-vabhav.sharma@nxp.com>
+ <20181008054510.GG3587@dragon>
+ <VI1PR04MB4800C0AB214B258793AF9ABAF3FD0@VI1PR04MB4800.eurprd04.prod.outlook.com>
+Message-ID: <153962211360.5275.18031876744546062419@swboyd.mtv.corp.google.com>
+User-Agent: alot/0.7
+Subject: RE: [PATCH v4 5/6] arm64: dts: add QorIQ LX2160A SoC support
+Date: Mon, 15 Oct 2018 09:48:33 -0700
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,47 +76,79 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
+ "kstewart@linuxfoundation.org" <kstewart@linuxfoundation.org>,
+ Yogesh Narayan Gaur <yogeshnarayan.gaur@nxp.com>,
+ "linux-kernel-owner@vger.kernel.org" <linux-kernel-owner@vger.kernel.org>,
+ "catalin.marinas@arm.com" <catalin.marinas@arm.com>,
+ "mturquette@baylibre.com" <mturquette@baylibre.com>,
+ "will.deacon@arm.com" <will.deacon@arm.com>,
+ "yamada.masahiro@socionext.com" <yamada.masahiro@socionext.com>,
+ Sriram Dash <sriram.dash@nxp.com>,
+ "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
+ Pankaj Bansal <pankaj.bansal@nxp.com>, Udit Kumar <udit.kumar@nxp.com>,
+ "linux@armlinux.org.uk" <linux@armlinux.org.uk>,
+ Priyanka Jain <priyanka.jain@nxp.com>,
+ "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "arnd@arndb.de" <arnd@arndb.de>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ "oss@buserror.net" <oss@buserror.net>,
+ "robh+dt@kernel.org" <robh+dt@kernel.org>, Varun Sethi <V.Sethi@nxp.com>,
+ Nipun Gupta <nipun.gupta@nxp.com>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Ramneek Mehresh <ramneek.mehresh@nxp.com>,
+ "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
+ Ying Zhang <ying.zhang22455@nxp.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Leo Li <leoyang.li@nxp.com>, "sudeep.holla@arm.com" <sudeep.holla@arm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Looks like a lack of initialisation of the canary for the non-boot CPUs 
-on SMP, you applied this morning the patch I sent you for that.
+Quoting Vabhav Sharma (2018-10-14 19:58:15)
+> > > +
+> > > +   pmu {
+> > > +           compatible =3D "arm,cortex-a72-pmu";
+> > > +           interrupts =3D <GIC_PPI 7 IRQ_TYPE_LEVEL_LOW>;
+> > > +   };
+> > > +
+> > > +   psci {
+> > > +           compatible =3D "arm,psci-0.2";
+> > > +           method =3D "smc";
+> > > +   };
+> > > +
+> > > +   memory@80000000 {
+> > > +           // DRAM space - 1, size : 2 GB DRAM
+> > > +           device_type =3D "memory";
+> > > +           reg =3D <0x00000000 0x80000000 0 0x80000000>;
+> > > +   };
+> > > +
+> > > +   ddr1: memory-controller@1080000 {
+> > > +           compatible =3D "fsl,qoriq-memory-controller";
+> > > +           reg =3D <0x0 0x1080000 0x0 0x1000>;
+> > > +           interrupts =3D <GIC_SPI 17 IRQ_TYPE_LEVEL_HIGH>;
+> > > +           little-endian;
+> > > +   };
+> > > +
+> > > +   ddr2: memory-controller@1090000 {
+> > > +           compatible =3D "fsl,qoriq-memory-controller";
+> > > +           reg =3D <0x0 0x1090000 0x0 0x1000>;
+> > > +           interrupts =3D <GIC_SPI 18 IRQ_TYPE_LEVEL_HIGH>;
+> > > +           little-endian;
+> > > +   };
+> > > +
+> > > +   sysclk: sysclk {
+> > =
 
-Is the patch in ?
+> > Name the node a bit generic like clock-xxx.
+> There is only one clock-unit, Bootloader(U-boot) require sysclk node duri=
+ng device tree fix-up as different platform support varied platform frequen=
+cy as per reset configuration word used.
+> Referred other ARM based platform with one clock using name as x: x
 
-Christophe
+Please add a comment above this node with this information. Newcomers
+reading this DTS file won't have any idea why this node is specially
+named and a comment will help tremendously here.
 
-Le 15/10/2018 à 15:26, Michael Ellerman a écrit :
-> Hi all,
-> 
-> Spotted this today, haven't had time to debug it further, just FYI in
-> case anyone else sees it.
-> 
->    Running tests in cpufreq
->    ========================================
->    selftests: cpufreq: main.sh
->    pid 9727's current affinity mask: ffffffffffffffffffffffffffffffffffffffffffff
->    pid 9727's new affinity mask: 1
->    Kernel panic - not syncing: stack-protector: Kernel stack is corrupted in: pnv_smp_cpu_kill_self+0x2a0/0x2b0
->    
->    CPU: 1 PID: 0 Comm: swapper/1 Not tainted 4.19.0-rc3-gcc-7.3.1-00168-g4ffe713b7587 #94
->    Call Trace:
->    [c000000007a1fb00] [c000000000ae7b4c] dump_stack+0xb0/0xf4 (unreliable)
->    [c000000007a1fb40] [c0000000000e59cc] panic+0x144/0x328
->    [c000000007a1fbe0] [c0000000000e544c] __stack_chk_fail+0x2c/0x30
->    [c000000007a1fc40] [c00000000009eca0] pnv_smp_cpu_kill_self+0x2a0/0x2b0
->    [c000000007a1fe10] [c0000000000475f8] cpu_die+0x48/0x70
->    [c000000007a1fe30] [c000000000020620] arch_cpu_idle_dead+0x20/0x40
->    [c000000007a1fe50] [c00000000012da94] do_idle+0x274/0x390
->    [c000000007a1fec0] [c00000000012de08] cpu_startup_entry+0x38/0x50
->    [c000000007a1fef0] [c000000000047334] start_secondary+0x5e4/0x600
->    [c000000007a1ff90] [c00000000000ac70] start_secondary_prolog+0x10/0x14
->    Rebooting in 10 seconds..
->    [39378.502863506,5] OPAL: Reboot request
-> 
-> 
-> 
-> cheers
-> 
