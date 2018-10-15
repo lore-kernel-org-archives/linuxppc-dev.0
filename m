@@ -2,48 +2,50 @@ Return-Path: <SRS0=mWF2=M3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DF94FC04AA5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 10:35:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DD860C04AA5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 11:10:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0A3992054F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 10:35:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0A3992054F
+	by mail.kernel.org (Postfix) with ESMTPS id C76332064A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 11:10:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C76332064A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42YZbT3VPBzF3DQ
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 21:35:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42YbMK3BYFzF3Ny
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 22:10:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42YZYH5pt8zF3Cn
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 21:33:55 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42YbK96J1MzF3MY
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 22:08:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 42YZYH3f5sz9s55;
- Mon, 15 Oct 2018 21:33:52 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPSA id 42YbK9424wz9s55;
+ Mon, 15 Oct 2018 22:08:29 +1100 (AEDT)
 Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Meelis Roos <mroos@linux.ee>, linux-kernel@vger.kernel.org,
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
  linuxppc-dev@lists.ozlabs.org
-Subject: Re: 32-bit poweroc compile failure in v4.19-rc7-166-g7ec21823634d
-In-Reply-To: <17d36e6c-f99a-abfb-12cd-fa4b14bc7e09@linux.ee>
-References: <17d36e6c-f99a-abfb-12cd-fa4b14bc7e09@linux.ee>
-Date: Mon, 15 Oct 2018 21:33:49 +1100
-Message-ID: <87tvlnzegi.fsf@concordia.ellerman.id.au>
+Subject: Re: [PATCH 1/3] powerpc: Split user/kernel definitions of struct
+ pt_regs
+In-Reply-To: <458fb5e1-3654-e8db-dfa7-074195decb11@linux.vnet.ibm.com>
+References: <20181013105646.5147-1-mpe@ellerman.id.au>
+ <458fb5e1-3654-e8db-dfa7-074195decb11@linux.vnet.ibm.com>
+Date: Mon, 15 Oct 2018 22:08:28 +1100
+Message-ID: <87sh17zcur.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,76 +61,73 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Meelis Roos <mroos@linux.ee> writes:
-> I tried to test the fix to 32-bit poweroc boot hang but found that curren=
-t git does not compile on 32bit poweroc at all for me:
+Madhavan Srinivasan <maddy@linux.vnet.ibm.com> writes:
 
-That's GCC 8 I think?
+> On Saturday 13 October 2018 04:26 PM, Michael Ellerman wrote:
+>> We use a shared definition for struct pt_regs in uapi/asm/ptrace.h.
+>> That means the layout of the structure is ABI, ie. we can't change it.
+>>
+>> That would be fine if it was only used to describe the user-visible
+>> register state of a process, but it's also the struct we use in the
+>> kernel to describe the registers saved in an interrupt frame.
+>>
+>> We'd like more flexibility in the content (and possibly layout) of the
+>> kernel version of the struct, but currently that's not possible.
+>>
+>> So split the definition into a user-visible definition which remains
+>> unchanged, and a kernel internal one.
+>>
+>> At the moment they're still identical, and we check that at build
+>> time. That's because we have code (in ptrace etc.) that assumes that
+>> they are the same. We will fix that code in future patches, and then
+>> we can break the strict symmetry between the two structs.
+>
+> Nice and awesome. But just trying to understand. What will
+> *regs will point to in the "struct sigcontext".
 
-I have seen that but couldn't work out what the hell GCC is thinking.
+Yeah that's a bit fishy.
 
-I don't think there's an actual bug, the size of the copy is bounded by
-the count parameter, which *doesn't* come from user space, it's hard
-coded.
+It should always point to a user_pt_regs.
 
-I suspect the logic is just to convoluted for GCC.
+So in the kernel we want:
 
-We should fix it somehow, but I haven't worked out what's the best option.
+  struct sigcontext {
+  	...
+  	struct user_pt_regs	__user *regs;
+
+And in userspace we want:
+
+  struct sigcontext {
+  	...
+  	struct pt_regs	__user *regs;
+
+
+I think it's not actually broken at the moment, because it's just a
+pointer, and we don't do anything based on the sizeof() the type.
+
+But still we should fix it.
+
+I guess I'll do this:
+
+diff --git a/arch/powerpc/include/uapi/asm/sigcontext.h b/arch/powerpc/include/uapi/asm/sigcontext.h
+index 2fbe485acdb4..630aeda56d59 100644
+--- a/arch/powerpc/include/uapi/asm/sigcontext.h
++++ b/arch/powerpc/include/uapi/asm/sigcontext.h
+@@ -22,7 +22,11 @@ struct sigcontext {
+ #endif
+ 	unsigned long	handler;
+ 	unsigned long	oldmask;
+-	struct pt_regs	__user *regs;
++#ifdef __KERNEL__
++	struct user_pt_regs __user *regs;
++#else
++	struct pt_regs	*regs;
++#endif
+ #ifdef __powerpc64__
+ 	elf_gregset_t	gp_regs;
+ 	elf_fpregset_t	fp_regs;
+
+
+Thanks for the review.
 
 cheers
-
-
->    CC      arch/powerpc/kernel/ptrace.o
-> In file included from ./include/linux/bitmap.h:9,
->                   from ./include/linux/cpumask.h:12,
->                   from ./include/linux/rcupdate.h:44,
->                   from ./include/linux/rculist.h:11,
->                   from ./include/linux/pid.h:5,
->                   from ./include/linux/sched.h:14,
->                   from arch/powerpc/kernel/ptrace.c:19:
-> In function =E2=80=98memcpy=E2=80=99,
->      inlined from =E2=80=98user_regset_copyin=E2=80=99 at ./include/linux=
-/regset.h:295:4,
->      inlined from =E2=80=98vr_set=E2=80=99 at arch/powerpc/kernel/ptrace.=
-c:619:9:
-> ./include/linux/string.h:345:9: error: =E2=80=98__builtin_memcpy=E2=80=99=
- offset [-527, -529] is out of the bounds [0, 16] of object =E2=80=98vrsave=
-=E2=80=99 with type =E2=80=98union <anonymous>=E2=80=99 [-Werror=3Darray-bo=
-unds]
->    return __builtin_memcpy(p, q, size);
->           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> arch/powerpc/kernel/ptrace.c: In function =E2=80=98vr_set=E2=80=99:
-> arch/powerpc/kernel/ptrace.c:614:5: note: =E2=80=98vrsave=E2=80=99 declar=
-ed here
->     } vrsave;
->       ^~~~~~
-> In file included from ./include/linux/bitmap.h:9,
->                   from ./include/linux/cpumask.h:12,
->                   from ./include/linux/rcupdate.h:44,
->                   from ./include/linux/rculist.h:11,
->                   from ./include/linux/pid.h:5,
->                   from ./include/linux/sched.h:14,
->                   from arch/powerpc/kernel/ptrace.c:19:
-> In function =E2=80=98memcpy=E2=80=99,
->      inlined from =E2=80=98user_regset_copyout=E2=80=99 at ./include/linu=
-x/regset.h:270:4,
->      inlined from =E2=80=98vr_get=E2=80=99 at arch/powerpc/kernel/ptrace.=
-c:572:9:
-> ./include/linux/string.h:345:9: error: =E2=80=98__builtin_memcpy=E2=80=99=
- offset [-527, -529] is out of the bounds [0, 16] of object =E2=80=98vrsave=
-=E2=80=99 with type =E2=80=98union <anonymous>=E2=80=99 [-Werror=3Darray-bo=
-unds]
->    return __builtin_memcpy(p, q, size);
->           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> arch/powerpc/kernel/ptrace.c: In function =E2=80=98vr_get=E2=80=99:
-> arch/powerpc/kernel/ptrace.c:567:5: note: =E2=80=98vrsave=E2=80=99 declar=
-ed here
->     } vrsave;
->       ^~~~~~
-> cc1: all warnings being treated as errors
-> make[1]: *** [scripts/Makefile.build:306: arch/powerpc/kernel/ptrace.o] E=
-rror 1
-> make: *** [Makefile:1052: arch/powerpc/kernel] Error 2
->
-> --=20
-> Meelis Roos <mroos@linux.ee>
