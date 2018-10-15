@@ -2,43 +2,47 @@ Return-Path: <SRS0=mWF2=M3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AADBEC28CF8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 04:50:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 190C6C28CF8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 04:52:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4E40320842
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 04:50:12 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4E40320842
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id B8D2E20652
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 04:52:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B8D2E20652
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42YQwf1ydHzF35s
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 15:50:10 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42YPrC5pB5zF36C
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 15:01:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42YQzj5sf0zDrPg
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 15:52:49 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+Authentication-Results: lists.ozlabs.org; spf=permerror (mailfrom)
+ smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57;
+ helo=gate.crashing.org; envelope-from=benh@kernel.crashing.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix)
- id 42YPrC3fMbzB2xk; Mon, 15 Oct 2018 15:01:15 +1100 (AEDT)
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 42YPrC29s5z9sDJ; Mon, 15 Oct 2018 15:01:14 +1100 (AEDT)
-X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 50530f5eac0c023cfc313d7ed342d4f1731becdb
-In-Reply-To: <20181015022339.27140-1-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc/xmon: Show the stack protector canary in xmon
-Message-Id: <42YPrC29s5z9sDJ@ozlabs.org>
-Date: Mon, 15 Oct 2018 15:01:14 +1100 (AEDT)
+ header.from=kernel.crashing.org
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42YQqS5kHzzF3Jm
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 15:45:40 +1100 (AEDT)
+Received: from pasglop.ozlabs.ibm.com (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id w9F2o7jQ008210;
+ Sun, 14 Oct 2018 21:50:23 -0500
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 09/12] powerpc/prom_init: Move a few remaining statics to
+ appropriate sections
+Date: Mon, 15 Oct 2018 13:49:57 +1100
+Message-Id: <20181015025000.4522-9-benh@kernel.crashing.org>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20181015025000.4522-1-benh@kernel.crashing.org>
+References: <20181015025000.4522-1-benh@kernel.crashing.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -54,13 +58,53 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 2018-10-15 at 02:23:39 UTC, Michael Ellerman wrote:
-> This is helpful for debugging stack protector crashes.
-> 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/kernel/prom_init.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-Applied to powerpc next.
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index cbd54fe30367..306562d4d818 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -173,7 +173,7 @@ static unsigned long __prombss prom_tce_alloc_end;
+ #endif
+ 
+ #ifdef CONFIG_PPC_PSERIES
+-static bool prom_radix_disable __prombss;
++static bool __prombss prom_radix_disable;
+ #endif
+ 
+ struct platform_support {
+@@ -210,7 +210,7 @@ static int __prombss mem_reserve_cnt;
+ 
+ static cell_t __prombss regbuf[1024];
+ 
+-static bool rtas_has_query_cpu_stopped;
++static bool  __prombss rtas_has_query_cpu_stopped;
+ 
+ 
+ /*
+@@ -525,8 +525,8 @@ static void add_string(char **str, const char *q)
+ 
+ static char *tohex(unsigned int x)
+ {
+-	static char digits[] = "0123456789abcdef";
+-	static char result[9];
++	static const char digits[] __initconst = "0123456789abcdef";
++	static char result[9] __prombss;
+ 	int i;
+ 
+ 	result[8] = 0;
+@@ -2324,7 +2324,7 @@ static void __init scan_dt_build_struct(phandle node, unsigned long *mem_start,
+ 	char *namep, *prev_name, *sstart, *p, *ep, *lp, *path;
+ 	unsigned long soff;
+ 	unsigned char *valp;
+-	static char pname[MAX_PROPERTY_NAME];
++	static char pname[MAX_PROPERTY_NAME] __prombss;
+ 	int l, room, has_phandle = 0;
+ 
+ 	dt_push_token(OF_DT_BEGIN_NODE, mem_start, mem_end);
+-- 
+2.17.1
 
-https://git.kernel.org/powerpc/c/50530f5eac0c023cfc313d7ed342d4
-
-cheers
