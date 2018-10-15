@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F80CC7112B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 09:48:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CFF8EC7112B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 09:49:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9F3EF2064A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 09:48:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9F3EF2064A
+	by mail.kernel.org (Postfix) with ESMTPS id 469902064A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 09:49:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 469902064A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42YYXP4x93zF3LW
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 20:48:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42YYZS2gH9zF3NY
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 20:49:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
@@ -27,16 +27,17 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Received: from ozlabs.ru (unknown [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 42YYCq1MN8zF3Fj
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 20:33:43 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 42YYCt1BWGzDr1F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 20:33:46 +1100 (AEDT)
 Received: from vpl1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 31491AE807EF;
- Mon, 15 Oct 2018 05:33:09 -0400 (EDT)
+ by ozlabs.ru (Postfix) with ESMTP id 865B9AE807F1;
+ Mon, 15 Oct 2018 05:33:12 -0400 (EDT)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel 3/5] powerpc/powernv: Detach npu struct from pnv_phb
-Date: Mon, 15 Oct 2018 20:32:59 +1100
-Message-Id: <20181015093301.1007-4-aik@ozlabs.ru>
+Subject: [PATCH kernel 4/5] powerpc/powernv/npu: Factor out OPAL calls from
+ context manipulation
+Date: Mon, 15 Oct 2018 20:33:00 +1100
+Message-Id: <20181015093301.1007-5-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.11.0
 In-Reply-To: <20181015093301.1007-1-aik@ozlabs.ru>
 References: <20181015093301.1007-1-aik@ozlabs.ru>
@@ -60,189 +61,270 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The powernv PCI code stores NPU data in the pnv_phb struct. The latter
-is referenced by pci_controller::private_data. We are going to have NPU2
-support in the pseries platform as well but it does not store any
-private_data in in the pci_controller struct; and even if it did,
-it would be a different data structure.
+At the moment the NPU context init/destroy code calls OPAL. The init
+handler in OPAL configures the NPU to pass ATS requests to nested MMU,
+the destroy handler does nothing besides sanity checks.
 
-This adds a global list of NPUs so each platform can register and use
-these in the same fashion.
+Since the init handler programs the NPU with a wildcard for LPID/PID,
+this can be done at the point where a GPU is mapped to an LPAR; it also
+makes calling opal_npu_destroy_context() unnecessary in this context
+(this will change with VFIO later though).
+
+Also, the pnv_npu2_init() helper does not really need to call OPAL as
+well as it inialized an NPU structure and does not interact with GPU or
+NPU at that moment.
+
+This moves OPAL calls to a separate helper. With this change, the API
+for GPUs does not do any OPAL calls and therefore can be used by both
+pseries and powernv platforms. The new pnv_npu2_map_lpar_phb() helper
+should be called on powernv only as it does OPAL calls and it takes
+an MSR mask which NPU adds to ATS requests so nested MMU knows what
+translations are permitted; the VFIO/KVM will not set MSR_HV.
+
+This removes the check for FW_FEATURE_OPAL as pnv_npu2_init_context/
+pnv_npu2_release_context/pnv_npu2_init do not call OPAL anymore.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- arch/powerpc/platforms/powernv/pci.h     | 16 -------
- arch/powerpc/platforms/powernv/npu-dma.c | 71 +++++++++++++++++++++++++-------
- 2 files changed, 57 insertions(+), 30 deletions(-)
+ arch/powerpc/include/asm/pci.h            |   1 +
+ arch/powerpc/platforms/powernv/pci.h      |   2 +-
+ arch/powerpc/platforms/powernv/npu-dma.c  | 100 +++++++++++++++---------------
+ arch/powerpc/platforms/powernv/pci-ioda.c |   7 ++-
+ 4 files changed, 57 insertions(+), 53 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
+index 1a96075..f196df6 100644
+--- a/arch/powerpc/include/asm/pci.h
++++ b/arch/powerpc/include/asm/pci.h
+@@ -130,5 +130,6 @@ extern void pcibios_scan_phb(struct pci_controller *hose);
+ extern struct pci_dev *pnv_pci_get_gpu_dev(struct pci_dev *npdev);
+ extern struct pci_dev *pnv_pci_get_npu_dev(struct pci_dev *gpdev, int index);
+ extern void pnv_npu2_devices_init(void);
++extern int pnv_npu2_init(struct pci_controller *hose);
+ 
+ #endif /* __ASM_POWERPC_PCI_H */
 diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index 8b37b28..3b7617d 100644
+index 3b7617d..ca2ce4b 100644
 --- a/arch/powerpc/platforms/powernv/pci.h
 +++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -8,9 +8,6 @@
+@@ -224,7 +224,7 @@ extern long pnv_npu_set_window(struct pnv_ioda_pe *npe, int num,
+ extern long pnv_npu_unset_window(struct pnv_ioda_pe *npe, int num);
+ extern void pnv_npu_take_ownership(struct pnv_ioda_pe *npe);
+ extern void pnv_npu_release_ownership(struct pnv_ioda_pe *npe);
+-extern int pnv_npu2_init(struct pnv_phb *phb);
++extern void pnv_npu2_map_lpar_phb(struct pnv_phb *nphb, unsigned long msr);
  
- struct pci_dn;
- 
--/* Maximum possible number of ATSD MMIO registers per NPU */
--#define NV_NMMU_ATSD_REGS 8
--
- enum pnv_phb_type {
- 	PNV_PHB_IODA1		= 0,
- 	PNV_PHB_IODA2		= 1,
-@@ -180,19 +177,6 @@ struct pnv_phb {
- 	unsigned int		diag_data_size;
- 	u8			*diag_data;
- 
--	/* Nvlink2 data */
--	struct npu {
--		int index;
--		__be64 *mmio_atsd_regs[NV_NMMU_ATSD_REGS];
--		unsigned int mmio_atsd_count;
--
--		/* Bitmask for MMIO register usage */
--		unsigned long mmio_atsd_usage;
--
--		/* Do we need to explicitly flush the nest mmu? */
--		bool nmmu_flush;
--	} npu;
--
- 	int p2p_target_count;
- };
- 
+ /* pci-ioda-tce.c */
+ #define POWERNV_IOMMU_DEFAULT_LEVELS	1
 diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
-index 01402f9..cb2b4f9 100644
+index cb2b4f9..677f30a 100644
 --- a/arch/powerpc/platforms/powernv/npu-dma.c
 +++ b/arch/powerpc/platforms/powernv/npu-dma.c
-@@ -378,6 +378,25 @@ struct pnv_ioda_pe *pnv_pci_npu_setup_iommu(struct pnv_ioda_pe *npe)
- /*
-  * NPU2 ATS
-  */
-+/* Maximum possible number of ATSD MMIO registers per NPU */
-+#define NV_NMMU_ATSD_REGS 8
-+
-+struct npu {
-+	int index;
-+	__be64 *mmio_atsd_regs[NV_NMMU_ATSD_REGS];
-+	unsigned int mmio_atsd_count;
-+
-+	/* Bitmask for MMIO register usage */
-+	unsigned long mmio_atsd_usage;
-+
-+	/* Do we need to explicitly flush the nest mmu? */
-+	bool nmmu_flush;
-+
-+	struct list_head next;
-+
-+	struct pci_controller *hose;
-+};
-+
- static struct {
- 	/*
- 	 * spinlock to protect initialisation of an npu_context for
-@@ -396,22 +415,27 @@ static struct {
- 	uint64_t atsd_threshold;
- 	struct dentry *atsd_threshold_dentry;
- 
-+	struct list_head npu_list;
- } npu2_devices;
- 
- void pnv_npu2_devices_init(void)
- {
- 	memset(&npu2_devices, 0, sizeof(npu2_devices));
-+	INIT_LIST_HEAD(&npu2_devices.npu_list);
- 	spin_lock_init(&npu2_devices.context_lock);
- 	npu2_devices.atsd_threshold = 2 * 1024 * 1024;
- }
- 
- static struct npu *npdev_to_npu(struct pci_dev *npdev)
- {
+@@ -762,7 +762,6 @@ struct npu_context *pnv_npu2_init_context(struct pci_dev *gpdev,
+ 	u32 nvlink_index;
+ 	struct device_node *nvlink_dn;
+ 	struct mm_struct *mm = current->mm;
 -	struct pnv_phb *nphb;
-+	struct pci_controller *hose = pci_bus_to_host(npdev->bus);
-+	struct npu *npu;
+ 	struct npu *npu;
+ 	struct npu_context *npu_context;
+ 
+@@ -772,9 +771,6 @@ struct npu_context *pnv_npu2_init_context(struct pci_dev *gpdev,
+ 	 */
+ 	struct pci_dev *npdev = pnv_pci_get_npu_dev(gpdev, 0);
+ 
+-	if (!firmware_has_feature(FW_FEATURE_OPAL))
+-		return ERR_PTR(-ENODEV);
+-
+ 	if (!npdev)
+ 		/* No nvlink associated with this GPU device */
+ 		return ERR_PTR(-ENODEV);
+@@ -792,22 +788,9 @@ struct npu_context *pnv_npu2_init_context(struct pci_dev *gpdev,
+ 		return ERR_PTR(-EINVAL);
+ 	}
  
 -	nphb = pci_bus_to_host(npdev->bus)->private_data;
-+	list_for_each_entry(npu, &npu2_devices.npu_list, next)
-+		if (hose == npu->hose)
-+			return npu;
+ 	npu = npdev_to_npu(npdev);
  
--	return &nphb->npu;
-+	return NULL;
- }
- 
- /* Maximum number of nvlinks per npu */
-@@ -843,7 +867,7 @@ struct npu_context *pnv_npu2_init_context(struct pci_dev *gpdev,
+ 	/*
+-	 * Setup the NPU context table for a particular GPU. These need to be
+-	 * per-GPU as we need the tables to filter ATSDs when there are no
+-	 * active contexts on a particular GPU. It is safe for these to be
+-	 * called concurrently with destroy as the OPAL call takes appropriate
+-	 * locks and refcounts on init/destroy.
+-	 */
+-	rc = opal_npu_init_context(nphb->opal_id, mm->context.id, flags,
+-				PCI_DEVID(gpdev->bus->number, gpdev->devfn));
+-	if (rc < 0)
+-		return ERR_PTR(-ENOSPC);
+-
+-	/*
+ 	 * We store the npu pci device so we can more easily get at the
+ 	 * associated npus.
  	 */
- 	WRITE_ONCE(npu_context->npdev[npu->index][nvlink_index], npdev);
- 
--	if (!nphb->npu.nmmu_flush) {
-+	if (!npu->nmmu_flush) {
- 		/*
- 		 * If we're not explicitly flushing ourselves we need to mark
- 		 * the thread for global flushes
-@@ -967,6 +991,13 @@ int pnv_npu2_init(struct pnv_phb *phb)
- 	struct pci_dev *gpdev;
- 	static int npu_index;
- 	uint64_t rc = 0;
-+	struct pci_controller *hose = phb->hose;
-+	struct npu *npu;
-+	int ret;
-+
-+	npu = kzalloc(sizeof(*npu), GFP_KERNEL);
-+	if (!npu)
-+		return -ENOMEM;
- 
- 	if (!npu2_devices.atsd_threshold_dentry) {
- 		npu2_devices.atsd_threshold_dentry = debugfs_create_x64(
-@@ -974,8 +1005,7 @@ int pnv_npu2_init(struct pnv_phb *phb)
- 				&npu2_devices.atsd_threshold);
- 	}
- 
--	phb->npu.nmmu_flush =
--		of_property_read_bool(phb->hose->dn, "ibm,nmmu-flush");
-+	npu->nmmu_flush = of_property_read_bool(hose->dn, "ibm,nmmu-flush");
- 	for_each_child_of_node(phb->hose->dn, dn) {
- 		gpdev = pnv_pci_get_gpu_dev(get_pci_dev(dn));
- 		if (gpdev) {
-@@ -989,18 +1019,31 @@ int pnv_npu2_init(struct pnv_phb *phb)
+@@ -817,9 +800,6 @@ struct npu_context *pnv_npu2_init_context(struct pci_dev *gpdev,
+ 		if (npu_context->release_cb != cb ||
+ 			npu_context->priv != priv) {
+ 			spin_unlock(&npu2_devices.context_lock);
+-			opal_npu_destroy_context(nphb->opal_id, mm->context.id,
+-						PCI_DEVID(gpdev->bus->number,
+-							gpdev->devfn));
+ 			return ERR_PTR(-EINVAL);
  		}
+ 
+@@ -845,9 +825,6 @@ struct npu_context *pnv_npu2_init_context(struct pci_dev *gpdev,
+ 
+ 		if (rc) {
+ 			kfree(npu_context);
+-			opal_npu_destroy_context(nphb->opal_id, mm->context.id,
+-					PCI_DEVID(gpdev->bus->number,
+-						gpdev->devfn));
+ 			return ERR_PTR(rc);
+ 		}
+ 
+@@ -900,7 +877,6 @@ void pnv_npu2_destroy_context(struct npu_context *npu_context,
+ 			struct pci_dev *gpdev)
+ {
+ 	int removed;
+-	struct pnv_phb *nphb;
+ 	struct npu *npu;
+ 	struct pci_dev *npdev = pnv_pci_get_npu_dev(gpdev, 0);
+ 	struct device_node *nvlink_dn;
+@@ -909,18 +885,12 @@ void pnv_npu2_destroy_context(struct npu_context *npu_context,
+ 	if (WARN_ON(!npdev))
+ 		return;
+ 
+-	if (!firmware_has_feature(FW_FEATURE_OPAL))
+-		return;
+-
+-	nphb = pci_bus_to_host(npdev->bus)->private_data;
+ 	npu = npdev_to_npu(npdev);
+ 	nvlink_dn = of_parse_phandle(npdev->dev.of_node, "ibm,nvlink", 0);
+ 	if (WARN_ON(of_property_read_u32(nvlink_dn, "ibm,npu-link-index",
+ 							&nvlink_index)))
+ 		return;
+ 	WRITE_ONCE(npu_context->npdev[npu->index][nvlink_index], NULL);
+-	opal_npu_destroy_context(nphb->opal_id, npu_context->mm->context.id,
+-				PCI_DEVID(gpdev->bus->number, gpdev->devfn));
+ 	spin_lock(&npu2_devices.context_lock);
+ 	removed = kref_put(&npu_context->kref, pnv_npu2_release_context);
+ 	spin_unlock(&npu2_devices.context_lock);
+@@ -952,9 +922,6 @@ int pnv_npu2_handle_fault(struct npu_context *context, uintptr_t *ea,
+ 	/* mmap_sem should be held so the struct_mm must be present */
+ 	struct mm_struct *mm = context->mm;
+ 
+-	if (!firmware_has_feature(FW_FEATURE_OPAL))
+-		return -ENODEV;
+-
+ 	WARN_ON(!rwsem_is_locked(&mm->mmap_sem));
+ 
+ 	for (i = 0; i < count; i++) {
+@@ -983,15 +950,11 @@ int pnv_npu2_handle_fault(struct npu_context *context, uintptr_t *ea,
+ }
+ EXPORT_SYMBOL(pnv_npu2_handle_fault);
+ 
+-int pnv_npu2_init(struct pnv_phb *phb)
++int pnv_npu2_init(struct pci_controller *hose)
+ {
+ 	unsigned int i;
+ 	u64 mmio_atsd;
+-	struct device_node *dn;
+-	struct pci_dev *gpdev;
+ 	static int npu_index;
+-	uint64_t rc = 0;
+-	struct pci_controller *hose = phb->hose;
+ 	struct npu *npu;
+ 	int ret;
+ 
+@@ -1006,18 +969,6 @@ int pnv_npu2_init(struct pnv_phb *phb)
  	}
  
--	for (i = 0; !of_property_read_u64_index(phb->hose->dn, "ibm,mmio-atsd",
-+	for (i = 0; !of_property_read_u64_index(hose->dn, "ibm,mmio-atsd",
+ 	npu->nmmu_flush = of_property_read_bool(hose->dn, "ibm,nmmu-flush");
+-	for_each_child_of_node(phb->hose->dn, dn) {
+-		gpdev = pnv_pci_get_gpu_dev(get_pci_dev(dn));
+-		if (gpdev) {
+-			rc = opal_npu_map_lpar(phb->opal_id,
+-				PCI_DEVID(gpdev->bus->number, gpdev->devfn),
+-				0, 0);
+-			if (rc)
+-				dev_err(&gpdev->dev,
+-					"Error %lld mapping device to LPAR\n",
+-					rc);
+-		}
+-	}
+ 
+ 	for (i = 0; !of_property_read_u64_index(hose->dn, "ibm,mmio-atsd",
  							i, &mmio_atsd); i++)
--		phb->npu.mmio_atsd_regs[i] = ioremap(mmio_atsd, 32);
-+		npu->mmio_atsd_regs[i] = ioremap(mmio_atsd, 32);
+@@ -1047,3 +998,52 @@ int pnv_npu2_init(struct pnv_phb *phb)
  
--	pr_info("NPU%lld: Found %d MMIO ATSD registers", phb->opal_id, i);
--	phb->npu.mmio_atsd_count = i;
--	phb->npu.mmio_atsd_usage = 0;
-+	pr_info("NPU%d: Found %d MMIO ATSD registers", hose->global_number, i);
-+	npu->mmio_atsd_count = i;
-+	npu->mmio_atsd_usage = 0;
- 	npu_index++;
--	if (WARN_ON(npu_index >= NV_MAX_NPUS))
--		return -ENOSPC;
-+	if (WARN_ON(npu_index >= NV_MAX_NPUS)) {
-+		ret = -ENOSPC;
-+		goto fail_exit;
-+	}
- 	npu2_devices.max_index = npu_index;
--	phb->npu.index = npu_index;
-+	npu->index = npu_index;
-+	npu->hose = hose;
-+
-+	list_add(&npu->next, &npu2_devices.npu_list);
- 
- 	return 0;
-+
-+fail_exit:
-+	for (i = 0; i < npu->mmio_atsd_count; ++i)
-+		iounmap(npu->mmio_atsd_regs[i]);
-+
-+	kfree(npu);
-+
-+	return ret;
+ 	return ret;
  }
++
++void pnv_npu2_map_lpar_phb(struct pnv_phb *nphb, unsigned long msr)
++{
++	struct pci_dev *gpdev;
++	struct device_node *dn;
++	int ret;
++	struct pci_controller *hose = nphb->hose;
++
++	for_each_child_of_node(hose->dn, dn) {
++		gpdev = pnv_pci_get_gpu_dev(get_pci_dev(dn));
++		if (!gpdev)
++			continue;
++
++		dev_dbg(&gpdev->dev, "Map LPAR opalid=%llu\n", nphb->opal_id);
++		ret = opal_npu_map_lpar(nphb->opal_id,
++				PCI_DEVID(gpdev->bus->number, gpdev->devfn),
++				0, 0);
++		if (!ret)
++			continue;
++		dev_err(&gpdev->dev, "Error %d mapping device to LPAR\n", ret);
++	}
++
++	/*
++	 * It seems that touching NPU2_XTS_BDF_MAP in the way
++	 * the opal_npu_map_lpar() does somehow affects the result of
++	 * what opal_npu_init_context() does so let's put the latter in
++	 * a separate loop.
++	 */
++	for_each_child_of_node(hose->dn, dn) {
++		gpdev = pnv_pci_get_gpu_dev(get_pci_dev(dn));
++		if (!gpdev)
++			continue;
++
++		/*
++		 * Setup the NPU context table for a particular GPU. These need
++		 * to be per-GPU as we need the tables to filter ATSDs when
++		 * there are no active contexts on a particular GPU. It is safe
++		 * for these to be called concurrently with destroy as the OPAL
++		 * call takes appropriate locks and refcounts on init/destroy.
++		 */
++		dev_dbg(&gpdev->dev, "init context opalid=%llu\n",
++				nphb->opal_id);
++		ret = opal_npu_init_context(nphb->opal_id, 0/*__unused*/, msr,
++				PCI_DEVID(gpdev->bus->number, gpdev->devfn));
++		if (!ret)
++			continue;
++		dev_err(&gpdev->dev, "Failed to init context: %d\n", ret);
++	}
++}
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 0cc81c0..56a1398 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -1287,8 +1287,11 @@ static void pnv_pci_ioda_setup_PEs(void)
+ 			/* PE#0 is needed for error reporting */
+ 			pnv_ioda_reserve_pe(phb, 0);
+ 			pnv_ioda_setup_npu_PEs(hose->bus);
+-			if (phb->model == PNV_PHB_MODEL_NPU2)
+-				pnv_npu2_init(phb);
++			if (phb->model == PNV_PHB_MODEL_NPU2) {
++				pnv_npu2_init(hose);
++				pnv_npu2_map_lpar_phb(phb,
++						MSR_DR | MSR_PR | MSR_HV);
++			}
+ 		}
+ 		if (phb->type == PNV_PHB_NPU_OCAPI) {
+ 			bus = hose->bus;
 -- 
 2.11.0
 
