@@ -3,41 +3,42 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A5D1C28CF8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 04:08:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 582E1C28CF8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 04:10:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 84D9520652
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 04:08:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 84D9520652
+	by mail.kernel.org (Postfix) with ESMTPS id ECC2720652
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 04:10:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ECC2720652
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42YQ0p4J9gzF31s
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 15:08:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42YQ2s5Mh1zF38P
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 15:10:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42YPqv21RdzF26K
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42YPqv5PVnzF2Ct
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 15:00:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 42YPqt6XJnz9sCw; Mon, 15 Oct 2018 15:00:58 +1100 (AEDT)
+ id 42YPqv1dT2z9sDJ; Mon, 15 Oct 2018 15:00:59 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: bc276ecba132caccb1fda5863a652c15def2b8c6
-In-Reply-To: <20180827030302.17541-2-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+X-powerpc-patch-commit: 0792a2c8e0bbda3605b8d42c6b9635be7b19982a
+In-Reply-To: <7a0748d8cd97964a99879a0b9f1c0243c677c7c3.1536709753.git.fthain@telegraphics.com.au>
+To: Finn Thain <fthain@telegraphics.com.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [1/2] powerpc/64s/hash: do not use PPC_INVALIDATE_ERAT on CPUs
- before POWER9
-Message-Id: <42YPqt6XJnz9sCw@ozlabs.org>
-Date: Mon, 15 Oct 2018 15:00:58 +1100 (AEDT)
+Subject: Re: [1/7] macintosh: Use common code to access RTC
+Message-Id: <42YPqv1dT2z9sDJ@ozlabs.org>
+Date: Mon, 15 Oct 2018 15:00:59 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -49,28 +50,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-m68k@lists.linux-m68k.org,
+ Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org,
+ Arnd Bergmann <arnd@arndb.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 2018-08-27 at 03:03:01 UTC, Nicholas Piggin wrote:
-> PPC_INVALIDATE_ERAT is slbia IH=7 which is a new variant introduced
-> with POWER9, and the result is undefined on earlier CPUs.
+On Wed, 2018-09-12 at 00:18:44 UTC, Finn Thain wrote:
+> Now that the 68k Mac port has adopted the via-pmu driver, the same RTC
+> code can be shared between m68k and powerpc. Replace duplicated code in
+> arch/powerpc and arch/m68k with common RTC accessors for Cuda and PMU.
 > 
-> Commits 7b9f71f974 ("powerpc/64s: POWER9 machine check handler") and
-> d4748276ae ("powerpc/64s: Improve local TLB flush for boot and MCE on
-> POWER9") caused POWER7/8 code to use this instruction. Remove it. An
-> ERAT flush can be made by invalidatig the SLB, but before POWER9 that
-> requires a flush and rebolt.
+> Drop the problematic WARN_ON which was introduced in commit 22db552b50fa
+> ("powerpc/powermac: Fix rtc read/write functions").
 > 
-> Fixes: 7b9f71f974 ("powerpc/64s: POWER9 machine check handler")
-> Fixes: d4748276ae ("powerpc/64s: Improve local TLB flush for boot and
-> MCE on POWER9")
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> Tested-by: Stan Johnson <userm57@yahoo.com>
+> Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+> Cc: Arnd Bergmann <arnd@arndb.de>
+> Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
 Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/bc276ecba132caccb1fda5863a652c
+https://git.kernel.org/powerpc/c/0792a2c8e0bbda3605b8d42c6b9635
 
 cheers
