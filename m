@@ -2,74 +2,104 @@ Return-Path: <SRS0=mWF2=M3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E9CCEC04AA5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 19:24:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F2DBC7113E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 19:33:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4FDBD208D9
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 19:24:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 8F959208D9
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 19:33:06 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="lXssOpZP"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4FDBD208D9
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="eG5xK6o7"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8F959208D9
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42YpKb32k6zF3HC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 06:24:35 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42YpWN2Q50zF3Cb
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 06:33:04 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="lXssOpZP";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="eG5xK6o7";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=atull@kernel.org;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::543; helo=mail-pg1-x543.google.com;
+ envelope-from=frowand.list@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="lXssOpZP"; 
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="eG5xK6o7"; 
  dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42YpGz3QxmzF3CP
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 06:22:19 +1100 (AEDT)
-Received: from mail-ed1-f49.google.com (mail-ed1-f49.google.com
- [209.85.208.49])
+Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
+ [IPv6:2607:f8b0:4864:20::543])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 0FB9D2098A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 19:22:17 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1539631337;
- bh=ZPil9R+QKO8poIw11LkPFCCgJT/t/NekTHonWAJibQ8=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=lXssOpZPf5eraYSYN/wXeykVTyEAcGr04qUm/1/L6+sSnJ0DGTr9suSHv/aJWpN+a
- zsiltdMMv5luJxUkE0X1t2HhQE1VNSKNHHwt8pu/SwY+27hZDGVsYwxEshB09Lx3AF
- S13Om4Gbc9hqh8s3d2sk1uvCQGfhyhH5CmiSSPqI=
-Received: by mail-ed1-f49.google.com with SMTP id y19-v6so18961606edd.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 12:22:16 -0700 (PDT)
-X-Gm-Message-State: ABuFfogb5/XQXU7jAUnnns+uqH2I60HaPLUdoEKbqJ7UVhPeu8PCneLu
- rq+zULyA5sspVB5nJYaFZQSB9Dh82H4B6vbVX0s=
-X-Google-Smtp-Source: ACcGV61Qnys+eQd1yoQzFrVSX51ay/Zm2n8MJL7Ym6LqdOBIc72xmf2aOfNSCAnOvpozkGxWc3ElIs3yiSLGOFpDfMo=
-X-Received: by 2002:a50:fc06:: with SMTP id
- i6-v6mr22468551edr.153.1539631335410; 
- Mon, 15 Oct 2018 12:22:15 -0700 (PDT)
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42YpS75fVlzF3CT
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 06:30:15 +1100 (AEDT)
+Received: by mail-pg1-x543.google.com with SMTP id 23-v6so9627489pgc.8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 12:30:15 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=subject:from:to:cc:references:message-id:date:user-agent
+ :mime-version:in-reply-to:content-language:content-transfer-encoding;
+ bh=txs08WYIQldNuSxsaJcvv7BGm6c3Ca6Y9k3ss7JzIpk=;
+ b=eG5xK6o7Qi3i2C02Ow7uOTNgscIeoDf1ygA3c2Wd5NzemriGEcMe2s/ZrOiOTuBh/9
+ Q+TR/0y82oz0Yb3hrHgGCH3lXkElwqu2WEJqV0+gg+9SQMvQsf19PGC0W7YuPdd7OuNa
+ M1+9LGvoWXufhw33MKagu+9wwHmUNVcyZXiv9IdiYSkkA2rzI0AOJMF9i76pj0g5W55w
+ CR3L4VE9wIwaXW2Vv5VSMp0GNl7Rs+0bKKea4eeXKmWk0zHvsWDjABN88I2ipINhq/Xs
+ +17WluOtUFsc/ME8FIGO8P5k1BJlfSnJYq94tYiYV4sg7aWU9dpEBVIAdMnHQn++/A7o
+ fZhQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:subject:from:to:cc:references:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=txs08WYIQldNuSxsaJcvv7BGm6c3Ca6Y9k3ss7JzIpk=;
+ b=id/Ac7yHOL5fuDUC84IAr6a34ulfyLZEpRhauO31olG7UwxDpb6passWy8oCXktPQO
+ eSvkqtyzjIdjKkblsvTDYo2LV0Mbnd2ARQd9Gmj0GFRkbkNp3b8JjZAvFhp6DUuwF/L8
+ 9+oRVjWVDrip2u8Q4OeMRItRKcb9PPSZOBsQImwrf9R5eco/QgI8vHR3lD7QF8154WdX
+ 0UCu2Z+i6cVwJg8OW5L4BgTRcdilHVGNfLCl9FM9S6bTY7jysYqYxXyvSq0cg5HYhHZ2
+ Ti9+qlNWzzDNkuCJuvkXbzTk44omfreODE4lsuR/atChZA78tCLKCbOrW+P/E4WtNoCs
+ TVyA==
+X-Gm-Message-State: ABuFfog0K2b8J/D4wzrz86N3r9m/+jy47BgaZwhCleUcGafkJCR0l0px
+ INc7EmzYU9S9MVjU27mJRIY=
+X-Google-Smtp-Source: ACcGV61vKAmZkHDZIt5EegVYVDuoF5zWvgrjGdX41VfDHrb/akBxa8lQQqC+xsTkIOOPkyZUzkXrgQ==
+X-Received: by 2002:a62:4681:: with SMTP id
+ o1-v6mr18721802pfi.108.1539631813699; 
+ Mon, 15 Oct 2018 12:30:13 -0700 (PDT)
+Received: from [192.168.1.70] (c-24-6-192-50.hsd1.ca.comcast.net.
+ [24.6.192.50])
+ by smtp.gmail.com with ESMTPSA id c21-v6sm23955309pfe.93.2018.10.15.12.30.12
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Mon, 15 Oct 2018 12:30:13 -0700 (PDT)
+Subject: Re: [PATCH v3 13/18] of: overlay: check prevents multiple fragments
+ touching same property
+From: Frank Rowand <frowand.list@gmail.com>
+To: Joe Perches <joe@perches.com>, Rob Herring <robh+dt@kernel.org>,
+ Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>,
+ Moritz Fischer <mdf@kernel.org>
 References: <1539563070-12969-1-git-send-email-frowand.list@gmail.com>
-In-Reply-To: <1539563070-12969-1-git-send-email-frowand.list@gmail.com>
-From: Alan Tull <atull@kernel.org>
-Date: Mon, 15 Oct 2018 14:21:39 -0500
-X-Gmail-Original-Message-ID: <CANk1AXTmY7v03m7NNZHVtzyU1Mwm0GYtOJQzmObFLASs=PEfLA@mail.gmail.com>
-Message-ID: <CANk1AXTmY7v03m7NNZHVtzyU1Mwm0GYtOJQzmObFLASs=PEfLA@mail.gmail.com>
-Subject: Re: [PATCH v3 00/18] of: overlay: validation checks, subsequent fixes
-To: Frank Rowand <frowand.list@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+ <1539563070-12969-14-git-send-email-frowand.list@gmail.com>
+ <b6ee53f7e02cc3ea52713ae82402e97d7050cb3e.camel@perches.com>
+ <850f0866-1189-5a49-01c5-79caf270abbd@gmail.com>
+ <16f48648393366d91e43cd66b3d0a346b1ed29ab.camel@perches.com>
+ <e045d69a-7896-3ff1-8472-2f51c2468d7f@gmail.com>
+Message-ID: <f7797d5b-7b9c-5279-b388-31c7a01f48d1@gmail.com>
+Date: Mon, 15 Oct 2018 12:30:11 -0700
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
+MIME-Version: 1.0
+In-Reply-To: <e045d69a-7896-3ff1-8472-2f51c2468d7f@gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,165 +111,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
- <devicetree@vger.kernel.org>, linux-fpga@vger.kernel.org,
- Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
- linux-kernel <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>,
- Moritz Fischer <mdf@kernel.org>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: devicetree@vger.kernel.org, linux-fpga@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, Oct 14, 2018 at 7:26 PM <frowand.list@gmail.com> wrote:
->
-> From: Frank Rowand <frank.rowand@sony.com>
->
-> Add checks to (1) overlay apply process and (2) memory freeing
-> triggered by overlay release.  The checks are intended to detect
-> possible memory leaks and invalid overlays.
->
-> The checks revealed bugs in existing code.  Fixed the bugs.
->
-> While fixing bugs, noted other issues, which are fixed in
-> separate patches.
->
-> *****  Powerpc folks: I was not able to test the patches that
-> *****  directly impact Powerpc systems that use dynamic
-> *****  devicetree.  Please review that code carefully and
-> *****  test.  The specific patches are: 03/16, 04/16, 07/16
->
-> FPGA folks:
->
->   I made the validation checks that should result in an
->   invalid live devicetree report "ERROR" and cause the overlay apply
->   to fail.
->
->   I made the memory leak validation tests report "WARNING" and allow
->   the overlay apply to complete successfully.  Please let me know
->   if you encounter the warnings.  There are at least two paths
->   forward to deal with the cases that trigger the warning: (1) change
->   the warning to an error and fail the overlay apply, or (2) find a
->   way to detect the potential memory leaks and free the memory
->   appropriately.
+On 10/14/18 20:21, Frank Rowand wrote:
+> On 10/14/18 18:55, Joe Perches wrote:
+>> On Sun, 2018-10-14 at 18:52 -0700, Frank Rowand wrote:
+>>> On 10/14/18 18:06, Joe Perches wrote:
+>>>> On Sun, 2018-10-14 at 17:24 -0700, frowand.list@gmail.com wrote:
+>>>>> From: Frank Rowand <frank.rowand@sony.com>
+>>>>>
+>>>>> Add test case of two fragments updating the same property.  After
+>>>>> adding the test case, the system hangs at end of boot, after
+>>>>> after slub stack dumps from kfree() in crypto modprobe code.
+>> []
+>>>> I think this is worse performance than before.
+>>>>
+>>>> This now walks all entries when before it would
+>>>> return -EINVAL directly when it found a match.
+>>>
+>>> Yes, it is worse performance, but that is OK.
+>>>
+>>> This is a check that is done when a devicetree overlay is applied.
+>>> If an error occurs then that means that the overlay was incorrectly
+>>> specified.  The file drivers/of/unittest-data/overlay_bad_add_dup_prop.dts
+>>> in this patch provides an example of how a bad overlay can be created.
+>>>
+>>> Once an error was detected, the check could return immediately, or it
+>>> could continue to give a complete list of detected errors.  I chose to
+>>> give the complete list of detected errors.
+>>
+>> Swell.  Please describe that in the commit message.
+> 
+> If a version 4 of the series is created I will update the commit
+> message.  As a stand alone item I do not think it is worth a
+> new version.
 
-I reran my FPGA testing.  The strings are fixed, no longer NULL.  I
-have functionality back, my test passes now.  I'm seeing the intended
-warnings about any properties added to existing nodes.  That includes
-warnings about added symbols.  Below is a simplified part to show some
-of what I'm seeing.
+And there will be a version 4, so I will update the commit message.
 
-By the way my testing is all using Pantelis' DT overlay configfs interface.
-
-root@arria10:~# ./apply-static-region.sh
-
-Applying dtbo: socfpga_arria10_socdk_sdmmc_ghrd_ovl_ext_cfg.dtb
-
-[ 1821.088640] OF: overlay: WARNING: add_changeset_property(), memory
-leak will occur if overlay removed.  Property:
-/soc/base_fpga_region/ranges
-[ 1821.103307] OF: overlay: WARNING: add_changeset_property(), memory
-leak will occur if overlay removed.  Property:
-/soc/base_fpga_region/external-fpga-config
-[ 1821.117359] OF: overlay: WARNING: add_changeset_property(), memory
-leak will occur if overlay removed.  Property:
-/soc/base_fpga_region/clocks
-[ 1821.130130] OF: overlay: WARNING: add_changeset_property(), memory
-leak will occur if overlay removed.  Property:
-/soc/base_fpga_region/clock-names
-[ 1821.143449] OF: overlay: WARNING: add_changeset_property(), memory
-leak will occur if overlay removed.  Property: /__symbols__/clk_0
-[ 1821.155357] OF: overlay: WARNING: add_changeset_property(), memory
-leak will occur if overlay removed.  Property: /__symbols__/ILC
-[ 1821.167074] OF: overlay: WARNING: add_changeset_property(), memory
-leak will occur if overlay removed.  Property:
-/__symbols__/freeze_controller_0
-[ 1821.180171] OF: overlay: WARNING: add_changeset_property(), memory
-leak will occur if overlay removed.  Property:
-/__symbols__/sysid_qsys_0
-[ 1821.192662] OF: overlay: WARNING: add_changeset_property(), memory
-leak will occur if overlay removed.  Property: /__symbols__/led_pio
-[ 1821.204720] OF: overlay: WARNING: add_changeset_property(), memory
-leak will occur if overlay removed.  Property: /__symbols__/button_pio
-[ 1821.217034] OF: overlay: WARNING: add_changeset_property(), memory
-leak will occur if overlay removed.  Property: /__symbols__/dipsw_pio
-[ 1821.231977] of-fpga-region soc:base_fpga_region:fpga_pr_region0:
-FPGA Region probed
-[ 1821.240144] altera_freeze_br ff200450.freeze_controller: fpga
-bridge [freeze] registered
-
-root@arria10:~# ./apply-static-region.sh root@arria10:~# rmdir
-/sys/kernel/config/device-tree/overlays/1-socfpga_arria10_socdk_sdmmc_ghrd_ovl_ext_cfg.dtb
-
-[ 1823.805564] OF: ERROR: memory leak - destroy cset entry: attach
-overlay node /soc/base_fpga_region/clk_0 with refcount 2
-
-Alan
-
-
-Alan
-
-
-
->
-> ALL people:
->
->   The validations do _not_ address another major concern I have with
->   releasing overlays, which is use after free errors.
->
-> Changes since v2:
->
->   - 13/18: Use continue to reduce indentation in find_dup_cset_node_entry()
->     and find_dup_cset_prop()
->
-> Changes since v1:
->
->   - move patch 16/16 to 17/18
->   - move patch 15/16 to 18/18
->   - new patch 15/18
->   - new patch 16/18
->
->   - 05/18: add_changeset_node() header comment: incorrect comment for @target
->
->   - 18/18: add same fix for of_parse_phandle_with_args()
->   - 18/18: add same fix for of_parse_phandle_with_args_map()
->
-> Frank Rowand (18):
->   of: overlay: add tests to validate kfrees from overlay removal
->   of: overlay: add missing of_node_put() after add new node to changeset
->   of: overlay: add missing of_node_get() in __of_attach_node_sysfs
->   powerpc/pseries: add of_node_put() in dlpar_detach_node()
->   of: overlay: use prop add changeset entry for property in new nodes
->   of: overlay: do not duplicate properties from overlay for new nodes
->   of: dynamic: change type of of_{at,de}tach_node() to void
->   of: overlay: reorder fields in struct fragment
->   of: overlay: validate overlay properties #address-cells and
->     #size-cells
->   of: overlay: make all pr_debug() and pr_err() messages unique
->   of: overlay: test case of two fragments adding same node
->   of: overlay: check prevents multiple fragments add or delete same node
->   of: overlay: check prevents multiple fragments touching same property
->   of: unittest: remove unused of_unittest_apply_overlay() argument
->   of: overlay: set node fields from properties when add new overlay node
->   of: unittest: allow base devicetree to have symbol metadata
->   of: unittest: find overlays[] entry by name instead of index
->   of: unittest: initialize args before calling of_*parse_*()
->
->  arch/powerpc/platforms/pseries/dlpar.c             |  15 +-
->  arch/powerpc/platforms/pseries/reconfig.c          |   6 +-
->  drivers/of/dynamic.c                               |  68 +++--
->  drivers/of/kobj.c                                  |   4 +-
->  drivers/of/overlay.c                               | 298 ++++++++++++++++-----
->  drivers/of/unittest-data/Makefile                  |   2 +
->  .../of/unittest-data/overlay_bad_add_dup_node.dts  |  28 ++
->  .../of/unittest-data/overlay_bad_add_dup_prop.dts  |  24 ++
->  drivers/of/unittest-data/overlay_base.dts          |   1 +
->  drivers/of/unittest.c                              |  96 +++++--
->  include/linux/of.h                                 |  19 +-
->  11 files changed, 439 insertions(+), 122 deletions(-)
->  create mode 100644 drivers/of/unittest-data/overlay_bad_add_dup_node.dts
->  create mode 100644 drivers/of/unittest-data/overlay_bad_add_dup_prop.dts
->
-> --
-> Frank Rowand <frank.rowand@sony.com>
->
+-Frank
