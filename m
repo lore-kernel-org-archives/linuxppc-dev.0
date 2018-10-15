@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E680C070C3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 02:56:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7BE52C070C3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 02:58:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1033D2086A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 02:56:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1033D2086A
+	by mail.kernel.org (Postfix) with ESMTPS id EA2CE2086A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 02:58:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EA2CE2086A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42YNPd5XczzF37k
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 13:56:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42YNRd709BzF36w
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 13:58:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: lists.ozlabs.org; spf=permerror (mailfrom)
  smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57;
@@ -29,16 +29,17 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42YNJ64f1YzF35x
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42YNJ71xXczF386
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 13:51:50 +1100 (AEDT)
 Received: from pasglop.ozlabs.ibm.com (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id w9F2o7jS008210;
- Sun, 14 Oct 2018 21:50:28 -0500
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id w9F2o7jT008210;
+ Sun, 14 Oct 2018 21:50:29 -0500
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 11/12] powerpc: Check prom_init for disallowed sections
-Date: Mon, 15 Oct 2018 13:49:59 +1100
-Message-Id: <20181015025000.4522-11-benh@kernel.crashing.org>
+Subject: [PATCH 12/12] powerpc/prom_init: Generate "phandle" instead of "linux,
+ phandle"
+Date: Mon, 15 Oct 2018 13:50:00 +1100
+Message-Id: <20181015025000.4522-12-benh@kernel.crashing.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20181015025000.4522-1-benh@kernel.crashing.org>
 References: <20181015025000.4522-1-benh@kernel.crashing.org>
@@ -57,51 +58,49 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-prom_init.c must not modify the kernel image outside
-of the .bss.prominit section. Thus make sure that
-prom_init.o doesn't have anything in any of these:
-
-	.data
-	.bss
-	.init.data
+When creating the boot-time FDT from an actual Open Firmware live
+tree, let's generate "phandle" properties for the phandles instead
+of the old deprecated "linux,phandle".
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/kernel/prom_init_check.sh | 16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
+ arch/powerpc/kernel/prom_init.c | 12 +++++-------
+ 1 file changed, 5 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/kernel/prom_init_check.sh b/arch/powerpc/kernel/prom_init_check.sh
-index acb6b9226352..667df97d2595 100644
---- a/arch/powerpc/kernel/prom_init_check.sh
-+++ b/arch/powerpc/kernel/prom_init_check.sh
-@@ -28,6 +28,18 @@ OBJ="$2"
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index 57762f19f136..64409d2ecaee 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -2407,14 +2407,12 @@ static void __init scan_dt_build_struct(phandle node, unsigned long *mem_start,
+ 			has_phandle = 1;
+ 	}
  
- ERROR=0
+-	/* Add a "linux,phandle" property if no "phandle" property already
+-	 * existed.
+-	 */
++	/* Add a "phandle" property if none already exist */
+ 	if (!has_phandle) {
+-		soff = dt_find_string("linux,phandle");
++		soff = dt_find_string("phandle");
+ 		if (soff == 0)
+ 			prom_printf("WARNING: Can't find string index for"
+-				    " <linux-phandle> node %s\n", path);
++				    " <phandle> node %s\n", path);
+ 		else {
+ 			dt_push_token(OF_DT_PROP, mem_start, mem_end);
+ 			dt_push_token(4, mem_start, mem_end);
+@@ -2474,9 +2472,9 @@ static void __init flatten_device_tree(void)
+ 	dt_string_start = mem_start;
+ 	mem_start += 4; /* hole */
  
-+function check_section()
-+{
-+    file=$1
-+    section=$2
-+    size=$(objdump -h -j $section $file 2>/dev/null | awk "\$2 == \"$section\" {print \$3}")
-+    size=${size:-0}
-+    if [ $size -ne 0 ]; then
-+	ERROR=1
-+	echo "Error: Section $section not empty in prom_init.c" >&2
-+    fi
-+}
-+
- for UNDEF in $($NM -u $OBJ | awk '{print $2}')
- do
- 	# On 64-bit nm gives us the function descriptors, which have
-@@ -66,4 +78,8 @@ do
- 	fi
- done
+-	/* Add "linux,phandle" in there, we'll need it */
++	/* Add "phandle" in there, we'll need it */
+ 	namep = make_room(&mem_start, &mem_end, 16, 1);
+-	strcpy(namep, "linux,phandle");
++	strcpy(namep, "phandle");
+ 	mem_start = (unsigned long)namep + strlen(namep) + 1;
  
-+check_section $OBJ .data
-+check_section $OBJ .bss
-+check_section $OBJ .init.data
-+
- exit $ERROR
+ 	/* Build string array */
 -- 
 2.17.1
 
