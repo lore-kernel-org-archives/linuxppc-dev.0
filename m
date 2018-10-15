@@ -2,64 +2,141 @@ Return-Path: <SRS0=mWF2=M3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 42DE1C28CF8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 07:22:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D3715C28CF8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 07:31:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B3FCD2086A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 07:22:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B3FCD2086A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 48C882086A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 07:31:30 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="WgChJVEG"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 48C882086A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42YVJX5wYJzF3Dc
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 18:22:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by lists.ozlabs.org (Postfix) with ESMTP id 42YVVm2253zF3Bd
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 18:31:28 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="WgChJVEG";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
+ (client-ip=2607:f8b0:4864:20::643; helo=mail-pl1-x643.google.com;
+ envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=ozlabs.ru
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
+ header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="WgChJVEG"; 
+ dkim-atps=neutral
+Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
+ [IPv6:2607:f8b0:4864:20::643])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42YVGT2zHdzF38p
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 18:20:49 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 42YVGF4X1zz9ttC9;
- Mon, 15 Oct 2018 09:20:37 +0200 (CEST)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id uUBbCTsWsVga; Mon, 15 Oct 2018 09:20:37 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 42YVGF3s5hz9ttC7;
- Mon, 15 Oct 2018 09:20:37 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 5A85A8B788;
- Mon, 15 Oct 2018 09:20:46 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id PAdd9vrN0XhQ; Mon, 15 Oct 2018 09:20:46 +0200 (CEST)
-Received: from pc13168vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
- [172.25.231.2])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 1B2258B786;
- Mon, 15 Oct 2018 09:20:45 +0200 (CEST)
-Received: by pc13168vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id AF1DE6F46D; Mon, 15 Oct 2018 07:20:45 +0000 (UTC)
-Message-Id: <c96ba8d949aa62604af12cfa030e2357f9a93597.1539587888.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc/traps: fix machine check handlers to use pr_cont()
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Mon, 15 Oct 2018 07:20:45 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42YVS360d3zF0Vv
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 18:29:07 +1100 (AEDT)
+Received: by mail-pl1-x643.google.com with SMTP id y15-v6so8848825plr.12
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 00:29:07 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
+ h=subject:from:to:cc:references:openpgp:autocrypt:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=zCpgQap9yJfHoZDx9whXGfsWad6eBfos032JLmZ0PYg=;
+ b=WgChJVEGixmsnso6XPC+P7Vb2cyS/4KynqjmgiUnOgDdELE3HuKXBF6AgRbJR8iToL
+ RJmUoGFwIWS4QhnldkCD8Cdap1CRgLBtp906XT89HDInWqjPcWJllodpGEEFnL9OrxBr
+ Fq2zNeKxe/9i9hNJY7govWyJ/cvYsPUmWNzBVzmHAwP9PK7KQXmyrW4VDc2tEgGHIlQ7
+ wzE/PTJ6zsru8PEPko0Y4KdK7xM7KgKwaCNhtHxhiZV+Pp3i8ld2a7S2hUm1vdy4BLl3
+ M9RFSVSeYkRGvfpP+iguK7RG7Ju+98YDTcKQlmvRVbqu8Xj6p/jaB3ju9qzW6yQ+YnAX
+ DGFw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:subject:from:to:cc:references:openpgp:autocrypt
+ :message-id:date:user-agent:mime-version:in-reply-to
+ :content-language:content-transfer-encoding;
+ bh=zCpgQap9yJfHoZDx9whXGfsWad6eBfos032JLmZ0PYg=;
+ b=D4jQeLxjP1/3va4rxNAU/qZAZ0plxHqL5EnG+FfjmhNzuEvdd4Dgif3x0zwbz0fIUa
+ 6DGnqWQrHSHmSvoUbsD5R4frdv5bs7k90YAaRZLiipGnSpHcm//1gBbHmnJb1fR+ROX5
+ f6xnKhLUm8nvlx6yfoW5KRiLY9IWDDDtf9cV7LGzh7w1OgczkhmL+U14NBYI0ej2rUbZ
+ WD3DIaq6y8LOT8/8VNOMWufyqzVE++5jDpMaxLHKN3mWO0aUSKr//+B6+ZIIGuAl8KZA
+ G1BAqsT4C3aD8jb/Ny7ICo858GHZnf7Sb/2O8DrtQ1mAzW5vspaJ1xLyQbZ48YAQ3Ejg
+ b5mA==
+X-Gm-Message-State: ABuFfog9JbvpWbHdzFv+cvCFDYmlZeomEXyQLeVWQqpCbft+jzMuRwnj
+ qpGY3ObXFipVuBxO+p5HivYmUQ==
+X-Google-Smtp-Source: ACcGV60bMV1wIrXMLQSmK1EHedPMNsiTVhVHHVFh8UaUhTSwdAX8P3GcKAN8g34KZsohvAdcVQ5b/Q==
+X-Received: by 2002:a17:902:b182:: with SMTP id
+ s2-v6mr15893674plr.84.1539588545821; 
+ Mon, 15 Oct 2018 00:29:05 -0700 (PDT)
+Received: from [10.61.2.175] ([122.99.82.10])
+ by smtp.gmail.com with ESMTPSA id d2-v6sm14651032pfj.122.2018.10.15.00.29.02
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Mon, 15 Oct 2018 00:29:04 -0700 (PDT)
+Subject: Re: [PATCH kernel RFC 0/3] powerpc/pseries/iommu: GPU coherent memory
+ pass through
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+References: <20180725095032.2196-1-aik@ozlabs.ru>
+ <f5bb1df3-1b15-9c2b-8bb1-7733bb743926@ozlabs.ru>
+ <a28c139e-deb6-cdb3-1eb5-b8d6e7378ce1@ozlabs.ru>
+ <cc415da6-74e9-536c-9065-5b2f0a10f5a1@ozlabs.ru>
+Openpgp: preference=signencrypt
+Autocrypt: addr=aik@ozlabs.ru; keydata=
+ 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
+Message-ID: <7a7dedb5-f852-3bc0-d379-edf35846e5aa@ozlabs.ru>
+Date: Mon, 15 Oct 2018 18:29:00 +1100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.2.1
+MIME-Version: 1.0
+In-Reply-To: <cc415da6-74e9-536c-9065-5b2f0a10f5a1@ozlabs.ru>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,235 +148,96 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: kvm-ppc@vger.kernel.org, David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When printing the machine check cause, the cause appears on the
-following line due to bad use of printk without \n:
+Ping?
 
-[   33.663993] Machine check in kernel mode.
-[   33.664011] Caused by (from SRR1=9032):
-[   33.664036] Data access error at address c90c8000
 
-This patch fixes it by using pr_cont() for the second part:
+On 17/09/2018 17:05, Alexey Kardashevskiy wrote:
+> Ping?
+> 
+> The problem is still there...
+> 
+> 
+> On 24/08/2018 13:04, Alexey Kardashevskiy wrote:
+>>
+>>
+>> On 09/08/2018 14:41, Alexey Kardashevskiy wrote:
+>>>
+>>>
+>>> On 25/07/2018 19:50, Alexey Kardashevskiy wrote:
+>>>> I am trying to pass through a 3D controller:
+>>>> [0302]: NVIDIA Corporation GV100GL [Tesla V100 SXM2] [10de:1db1] (rev a1)
+>>>>
+>>>> which has a quite unique feature as coherent memory directly accessible
+>>>> from a POWER9 CPU via an NVLink2 transport.
+>>>>
+>>>> So in addition to passing a PCI device + accompanying NPU devices,
+>>>> we will also be passing the host physical address range as it is done
+>>>> on the bare metal system.
+>>>>
+>>>> The memory on the host is presented as:
+>>>>
+>>>> ===
+>>>> [aik@yc02goos ~]$ lsprop /proc/device-tree/memory@42000000000
+>>>> ibm,chip-id      000000fe (254)
+>>>> device_type      "memory"
+>>>> compatible       "ibm,coherent-device-memory"
+>>>> reg              00000420 00000000 00000020 00000000
+>>>> linux,usable-memory
+>>>>                  00000420 00000000 00000000 00000000
+>>>> phandle          00000726 (1830)
+>>>> name             "memory"
+>>>> ibm,associativity
+>>>>                  00000004 000000fe 000000fe 000000fe 000000fe
+>>>> ===
+>>>>
+>>>> and the host does not touch it as the second 64bit value of
+>>>> "linux,usable-memory" - the size - is null. Later on the NVIDIA driver
+>>>> trains the NVLink2 and probes this memory and this is how it becomes
+>>>> onlined.
+>>>>
+>>>> In the virtual environment I am planning on doing the same thing,
+>>>> however there is a difference in 64bit DMA handling. The powernv
+>>>> platform uses a PHB3 bypass mode and that just works but
+>>>> the pseries platform uses DDW RTAS API to achieve the same
+>>>> result and the problem with this is that we need a huge DMA
+>>>> window to start from zero (because this GPU supports less than
+>>>> 50bits for DMA address space) and cover not just present memory
+>>>> but also this new coherent memory.
+>>>>
+>>>>
+>>>> This is based on sha1
+>>>> d72e90f3 Linus Torvalds "Linux 4.18-rc6".
+>>>>
+>>>> Please comment. Thanks.
+>>>
+>>>
+>>> Ping?
+>>
+>>
+>> Ping?
+>>
+>>>
+>>>
+>>>>
+>>>>
+>>>>
+>>>> Alexey Kardashevskiy (3):
+>>>>   powerpc/pseries/iommu: Allow dynamic window to start from zero
+>>>>   powerpc/pseries/iommu: Force default DMA window removal
+>>>>   powerpc/pseries/iommu: Use memory@ nodes in max RAM address
+>>>>     calculation
+>>>>
+>>>>  arch/powerpc/platforms/pseries/iommu.c | 77 ++++++++++++++++++++++++++++++----
+>>>>  1 file changed, 70 insertions(+), 7 deletions(-)
+>>>>
+>>>
+>>
+> 
 
-[  133.258131] Machine check in kernel mode.
-[  133.258146] Caused by (from SRR1=9032): Data access error at address c90c8000
-
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/kernel/traps.c                | 78 +++++++++++++++---------------
- arch/powerpc/platforms/8xx/machine_check.c |  4 +-
- 2 files changed, 41 insertions(+), 41 deletions(-)
-
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 4f880c2a6e4c..39fde4b40b6e 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -535,10 +535,10 @@ int machine_check_e500mc(struct pt_regs *regs)
- 	printk("Caused by (from MCSR=%lx): ", reason);
- 
- 	if (reason & MCSR_MCP)
--		printk("Machine Check Signal\n");
-+		pr_cont("Machine Check Signal\n");
- 
- 	if (reason & MCSR_ICPERR) {
--		printk("Instruction Cache Parity Error\n");
-+		pr_cont("Instruction Cache Parity Error\n");
- 
- 		/*
- 		 * This is recoverable by invalidating the i-cache.
-@@ -556,7 +556,7 @@ int machine_check_e500mc(struct pt_regs *regs)
- 	}
- 
- 	if (reason & MCSR_DCPERR_MC) {
--		printk("Data Cache Parity Error\n");
-+		pr_cont("Data Cache Parity Error\n");
- 
- 		/*
- 		 * In write shadow mode we auto-recover from the error, but it
-@@ -575,38 +575,38 @@ int machine_check_e500mc(struct pt_regs *regs)
- 	}
- 
- 	if (reason & MCSR_L2MMU_MHIT) {
--		printk("Hit on multiple TLB entries\n");
-+		pr_cont("Hit on multiple TLB entries\n");
- 		recoverable = 0;
- 	}
- 
- 	if (reason & MCSR_NMI)
--		printk("Non-maskable interrupt\n");
-+		pr_cont("Non-maskable interrupt\n");
- 
- 	if (reason & MCSR_IF) {
--		printk("Instruction Fetch Error Report\n");
-+		pr_cont("Instruction Fetch Error Report\n");
- 		recoverable = 0;
- 	}
- 
- 	if (reason & MCSR_LD) {
--		printk("Load Error Report\n");
-+		pr_cont("Load Error Report\n");
- 		recoverable = 0;
- 	}
- 
- 	if (reason & MCSR_ST) {
--		printk("Store Error Report\n");
-+		pr_cont("Store Error Report\n");
- 		recoverable = 0;
- 	}
- 
- 	if (reason & MCSR_LDG) {
--		printk("Guarded Load Error Report\n");
-+		pr_cont("Guarded Load Error Report\n");
- 		recoverable = 0;
- 	}
- 
- 	if (reason & MCSR_TLBSYNC)
--		printk("Simultaneous tlbsync operations\n");
-+		pr_cont("Simultaneous tlbsync operations\n");
- 
- 	if (reason & MCSR_BSL2_ERR) {
--		printk("Level 2 Cache Error\n");
-+		pr_cont("Level 2 Cache Error\n");
- 		recoverable = 0;
- 	}
- 
-@@ -616,7 +616,7 @@ int machine_check_e500mc(struct pt_regs *regs)
- 		addr = mfspr(SPRN_MCAR);
- 		addr |= (u64)mfspr(SPRN_MCARU) << 32;
- 
--		printk("Machine Check %s Address: %#llx\n",
-+		pr_cont("Machine Check %s Address: %#llx\n",
- 		       reason & MCSR_MEA ? "Effective" : "Physical", addr);
- 	}
- 
-@@ -640,29 +640,29 @@ int machine_check_e500(struct pt_regs *regs)
- 	printk("Caused by (from MCSR=%lx): ", reason);
- 
- 	if (reason & MCSR_MCP)
--		printk("Machine Check Signal\n");
-+		pr_cont("Machine Check Signal\n");
- 	if (reason & MCSR_ICPERR)
--		printk("Instruction Cache Parity Error\n");
-+		pr_cont("Instruction Cache Parity Error\n");
- 	if (reason & MCSR_DCP_PERR)
--		printk("Data Cache Push Parity Error\n");
-+		pr_cont("Data Cache Push Parity Error\n");
- 	if (reason & MCSR_DCPERR)
--		printk("Data Cache Parity Error\n");
-+		pr_cont("Data Cache Parity Error\n");
- 	if (reason & MCSR_BUS_IAERR)
--		printk("Bus - Instruction Address Error\n");
-+		pr_cont("Bus - Instruction Address Error\n");
- 	if (reason & MCSR_BUS_RAERR)
--		printk("Bus - Read Address Error\n");
-+		pr_cont("Bus - Read Address Error\n");
- 	if (reason & MCSR_BUS_WAERR)
--		printk("Bus - Write Address Error\n");
-+		pr_cont("Bus - Write Address Error\n");
- 	if (reason & MCSR_BUS_IBERR)
--		printk("Bus - Instruction Data Error\n");
-+		pr_cont("Bus - Instruction Data Error\n");
- 	if (reason & MCSR_BUS_RBERR)
--		printk("Bus - Read Data Bus Error\n");
-+		pr_cont("Bus - Read Data Bus Error\n");
- 	if (reason & MCSR_BUS_WBERR)
--		printk("Bus - Write Data Bus Error\n");
-+		pr_cont("Bus - Write Data Bus Error\n");
- 	if (reason & MCSR_BUS_IPERR)
--		printk("Bus - Instruction Parity Error\n");
-+		pr_cont("Bus - Instruction Parity Error\n");
- 	if (reason & MCSR_BUS_RPERR)
--		printk("Bus - Read Parity Error\n");
-+		pr_cont("Bus - Read Parity Error\n");
- 
- 	return 0;
- }
-@@ -680,19 +680,19 @@ int machine_check_e200(struct pt_regs *regs)
- 	printk("Caused by (from MCSR=%lx): ", reason);
- 
- 	if (reason & MCSR_MCP)
--		printk("Machine Check Signal\n");
-+		pr_cont("Machine Check Signal\n");
- 	if (reason & MCSR_CP_PERR)
--		printk("Cache Push Parity Error\n");
-+		pr_cont("Cache Push Parity Error\n");
- 	if (reason & MCSR_CPERR)
--		printk("Cache Parity Error\n");
-+		pr_cont("Cache Parity Error\n");
- 	if (reason & MCSR_EXCP_ERR)
--		printk("ISI, ITLB, or Bus Error on first instruction fetch for an exception handler\n");
-+		pr_cont("ISI, ITLB, or Bus Error on first instruction fetch for an exception handler\n");
- 	if (reason & MCSR_BUS_IRERR)
--		printk("Bus - Read Bus Error on instruction fetch\n");
-+		pr_cont("Bus - Read Bus Error on instruction fetch\n");
- 	if (reason & MCSR_BUS_DRERR)
--		printk("Bus - Read Bus Error on data load\n");
-+		pr_cont("Bus - Read Bus Error on data load\n");
- 	if (reason & MCSR_BUS_WRERR)
--		printk("Bus - Write Bus Error on buffered store or cache line push\n");
-+		pr_cont("Bus - Write Bus Error on buffered store or cache line push\n");
- 
- 	return 0;
- }
-@@ -705,30 +705,30 @@ int machine_check_generic(struct pt_regs *regs)
- 	printk("Caused by (from SRR1=%lx): ", reason);
- 	switch (reason & 0x601F0000) {
- 	case 0x80000:
--		printk("Machine check signal\n");
-+		pr_cont("Machine check signal\n");
- 		break;
- 	case 0:		/* for 601 */
- 	case 0x40000:
- 	case 0x140000:	/* 7450 MSS error and TEA */
--		printk("Transfer error ack signal\n");
-+		pr_cont("Transfer error ack signal\n");
- 		break;
- 	case 0x20000:
--		printk("Data parity error signal\n");
-+		pr_cont("Data parity error signal\n");
- 		break;
- 	case 0x10000:
--		printk("Address parity error signal\n");
-+		pr_cont("Address parity error signal\n");
- 		break;
- 	case 0x20000000:
--		printk("L1 Data Cache error\n");
-+		pr_cont("L1 Data Cache error\n");
- 		break;
- 	case 0x40000000:
--		printk("L1 Instruction Cache error\n");
-+		pr_cont("L1 Instruction Cache error\n");
- 		break;
- 	case 0x00100000:
--		printk("L2 data cache parity error\n");
-+		pr_cont("L2 data cache parity error\n");
- 		break;
- 	default:
--		printk("Unknown values in msr\n");
-+		pr_cont("Unknown values in msr\n");
- 	}
- 	return 0;
- }
-diff --git a/arch/powerpc/platforms/8xx/machine_check.c b/arch/powerpc/platforms/8xx/machine_check.c
-index 402016705a39..9944fc303df0 100644
---- a/arch/powerpc/platforms/8xx/machine_check.c
-+++ b/arch/powerpc/platforms/8xx/machine_check.c
-@@ -18,9 +18,9 @@ int machine_check_8xx(struct pt_regs *regs)
- 	pr_err("Machine check in kernel mode.\n");
- 	pr_err("Caused by (from SRR1=%lx): ", reason);
- 	if (reason & 0x40000000)
--		pr_err("Fetch error at address %lx\n", regs->nip);
-+		pr_cont("Fetch error at address %lx\n", regs->nip);
- 	else
--		pr_err("Data access error at address %lx\n", regs->dar);
-+		pr_cont("Data access error at address %lx\n", regs->dar);
- 
- #ifdef CONFIG_PCI
- 	/* the qspan pci read routines can cause machine checks -- Cort
 -- 
-2.13.3
-
+Alexey
