@@ -3,22 +3,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D3489C070C3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 02:54:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E680C070C3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 02:56:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 77ACA2086A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 02:54:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 77ACA2086A
+	by mail.kernel.org (Postfix) with ESMTPS id 1033D2086A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 02:56:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1033D2086A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42YNMP3kHzzF36D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 13:54:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42YNPd5XczzF37k
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 13:56:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: lists.ozlabs.org; spf=permerror (mailfrom)
  smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57;
@@ -29,16 +29,16 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42YNGs0Rj6zF386
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 13:50:44 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42YNJ64f1YzF35x
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 13:51:50 +1100 (AEDT)
 Received: from pasglop.ozlabs.ibm.com (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id w9F2o7jJ008210;
- Sun, 14 Oct 2018 21:50:10 -0500
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id w9F2o7jS008210;
+ Sun, 14 Oct 2018 21:50:28 -0500
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 02/12] powerpc/prom_init: Make "fake_elf" const
-Date: Mon, 15 Oct 2018 13:49:50 +1100
-Message-Id: <20181015025000.4522-2-benh@kernel.crashing.org>
+Subject: [PATCH 11/12] powerpc: Check prom_init for disallowed sections
+Date: Mon, 15 Oct 2018 13:49:59 +1100
+Message-Id: <20181015025000.4522-11-benh@kernel.crashing.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20181015025000.4522-1-benh@kernel.crashing.org>
 References: <20181015025000.4522-1-benh@kernel.crashing.org>
@@ -57,26 +57,51 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-It is never modified
+prom_init.c must not modify the kernel image outside
+of the .bss.prominit section. Thus make sure that
+prom_init.o doesn't have anything in any of these:
+
+	.data
+	.bss
+	.init.data
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/kernel/prom_init.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/kernel/prom_init_check.sh | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index a1ba56e8c917..e44f55be64ba 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -922,7 +922,7 @@ struct ibm_arch_vec __cacheline_aligned ibm_architecture_vec = {
+diff --git a/arch/powerpc/kernel/prom_init_check.sh b/arch/powerpc/kernel/prom_init_check.sh
+index acb6b9226352..667df97d2595 100644
+--- a/arch/powerpc/kernel/prom_init_check.sh
++++ b/arch/powerpc/kernel/prom_init_check.sh
+@@ -28,6 +28,18 @@ OBJ="$2"
  
- /* Old method - ELF header with PT_NOTE sections only works on BE */
- #ifdef __BIG_ENDIAN__
--static struct fake_elf {
-+static const struct fake_elf {
- 	Elf32_Ehdr	elfhdr;
- 	Elf32_Phdr	phdr[2];
- 	struct chrpnote {
+ ERROR=0
+ 
++function check_section()
++{
++    file=$1
++    section=$2
++    size=$(objdump -h -j $section $file 2>/dev/null | awk "\$2 == \"$section\" {print \$3}")
++    size=${size:-0}
++    if [ $size -ne 0 ]; then
++	ERROR=1
++	echo "Error: Section $section not empty in prom_init.c" >&2
++    fi
++}
++
+ for UNDEF in $($NM -u $OBJ | awk '{print $2}')
+ do
+ 	# On 64-bit nm gives us the function descriptors, which have
+@@ -66,4 +78,8 @@ do
+ 	fi
+ done
+ 
++check_section $OBJ .data
++check_section $OBJ .bss
++check_section $OBJ .init.data
++
+ exit $ERROR
 -- 
 2.17.1
 
