@@ -7,86 +7,91 @@ X-Spam-Status: No, score=-1.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	URIBL_SBL,URIBL_SBL_A,USER_AGENT_MUTT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C2A1EC04EB9
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 22:24:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 17803C04EB9
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 22:30:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1929E2089D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 22:24:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 703852089D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 22:30:54 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="GIagEI/a"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1929E2089D
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="KT8fPDks"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 703852089D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42YtKL1FcHzF3SN
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 09:24:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42YtSX2xSGzF32n
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 09:30:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="GIagEI/a";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="KT8fPDks";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::444; helo=mail-pf1-x444.google.com;
+ (client-ip=2607:f8b0:4864:20::643; helo=mail-pl1-x643.google.com;
  envelope-from=groeck7@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=roeck-us.net
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="GIagEI/a"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="KT8fPDks"; 
  dkim-atps=neutral
-Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
- [IPv6:2607:f8b0:4864:20::444])
+Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
+ [IPv6:2607:f8b0:4864:20::643])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42YtGd17yzzF1PT
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 09:22:16 +1100 (AEDT)
-Received: by mail-pf1-x444.google.com with SMTP id l81-v6so10380919pfg.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 15:22:16 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42YtPq40cfzF32n
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 09:28:31 +1100 (AEDT)
+Received: by mail-pl1-x643.google.com with SMTP id f8-v6so9984838plb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 15:28:31 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=sender:date:from:to:cc:subject:message-id:references:mime-version
  :content-disposition:in-reply-to:user-agent;
- bh=idVPqMTWnPvxBijvXlg2fqOnfCoxVCmgtyviF8N53kc=;
- b=GIagEI/aodGYY6t77UWsjU2UaAG1VTxCuI8qwS/eHVxYuCoMAb//s9Md3Hbgd4sMzQ
- FpKT0vnIeNu8crTTRYeu6aV0Ek4vFTP3GO3yNTZQqGHkbJFGGMzSupnq2sT+iVZC4hzq
- xtw0yPfdKFRCyjLtv6M4NvVQFFWmnqIEUXqz7Uw2msmX2EYAuZ9U1gqVSwy9oAlzZbHa
- 6xhBEMpjPN3qybaWfbmCqmsGNmiV/HWmHTRQG/IrKCw0aHvAsPtrCrLsC7flxfanwSrc
- dNRQYtLYeksP0j5PGCMuEyV5irdZhYV4kfyuS3Dm+au3ZJEwPX3RiGy7FO3/4IsbqwT/
- 5QIQ==
+ bh=dWVpC3Z0p8Yi2I+5AFELWxj3oONe1yBlk+kn5RUH27U=;
+ b=KT8fPDks5lmH5/rmnNVOEVQP2N2IjWQ4GtfqPTRoxzOTi673Jw5ocxyK+b/IVUdkB1
+ taHa5zB/PYwxtB1hF4ZdRK2LL2DcvGToQgn0hObwJyUpRuRr7TrzUDVurwZu79bmHnJV
+ +ND/i2eTclCBzWpSLLVwIQsFLR8O/XhN8VF9lVQlrr/GQTMVqxkRaj/TWd2FwbJ9Zwcr
+ YP4857JIfHy+UxO/pWsQR+ZlHumHys445Hc6bqDcr3Q3fR2PBn+MY4KH+Oh2JnSbWSFo
+ BY0IA9+fkdekMVd2n6hRUnmE+dgr93Tvf487j62glaCFsrcpJgIH+2k+Al/c5P6AiTwk
+ aMzQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:sender:date:from:to:cc:subject:message-id
  :references:mime-version:content-disposition:in-reply-to:user-agent;
- bh=idVPqMTWnPvxBijvXlg2fqOnfCoxVCmgtyviF8N53kc=;
- b=RoyuL/zrszok0RtIoEumzCj2vBdCaPuhTQTtlLqS+AjptKE4s1uMqOjHVxLPkoWHgs
- +YkyVRNY1h3yMuG5+c8eVdw1PWW2O13zJOh8AA9+4dn5A/Q2CvypXsuw64GfMUEueOf0
- WALxDbFYrJG7u9AFpFAkE6tfdGqPERCmrylQV7oQtmZzjjWRSC2+JBsvfjgkLU2iwBce
- wEJa8zXh6OkSosTrkp90pn7dUf0KCNJTr8zYLxGz+MIJxWvphFmr1uXVgTRPut54+LCg
- 5F0oy9NlyPTlY4SZpVtMH/P1xDW15CPjZtSyicL5+p9HZrUZpLK9TrbQ7t4nv+GAi1gK
- hD/A==
-X-Gm-Message-State: ABuFfogVvSpWmdOb48OGpqQ3vYArUK6UM6R2LqUY+HSYyBcmDxz/1Je7
- tW3qkvNZ6cxMf3RiVaB29PY=
-X-Google-Smtp-Source: ACcGV608YX+dmEzvd4xuzRBip+CAKD7WG91TZg7l8Jf/VKkyb5tfoM8qmqyInCnctvpNb+JO/iHI4A==
-X-Received: by 2002:a63:bd41:: with SMTP id
- d1-v6mr16819671pgp.367.1539642135083; 
- Mon, 15 Oct 2018 15:22:15 -0700 (PDT)
+ bh=dWVpC3Z0p8Yi2I+5AFELWxj3oONe1yBlk+kn5RUH27U=;
+ b=Fs0WqZlDW1B9xfl0lErKuwjQMsdCPWlDtQaO9RdPkomoB8ej4fMxGlrn9x+ElyAy8R
+ kNYXsARsTO6F3A97jaXkYalBjHGSk5uZ9PwgROXlvW0dc37ehtf1QgSKEoKjdsXNYYR7
+ dXASGtjvUYgbSIu1JR7I/eltcWVKwByPxo+eT7CIcDKxeGpSPu3k613p3YS/7/8bRCrq
+ 6F7tvPLdEJobIJjg0En6Huz7AITsUkVHnK4Wamkg1VE/PdzdreGele4Elwb9dQ90uStR
+ VyB8RyAX1Ule4lC7rlFh016AhBXJq7EXlQ2rANfrT21oeDoeQKHa49eWYRebnsnKjkqp
+ H6DQ==
+X-Gm-Message-State: ABuFfogrkDEhm0qDIoTghu+9dkOL2qJoloKpCPQn0Y2Rch/5HdeO27tm
+ UL9YA+k/tbHWkwTB0rXR6AM=
+X-Google-Smtp-Source: ACcGV61k9OZTAmoQI0dpzqSTD3o6RAz/NJw6MpCXB4fcBqVKViobFxrQOOsqDzzJtBnFYuWDF0tsWQ==
+X-Received: by 2002:a17:902:728e:: with SMTP id
+ d14-v6mr19161637pll.51.1539642509527; 
+ Mon, 15 Oct 2018 15:28:29 -0700 (PDT)
 Received: from localhost (108-223-40-66.lightspeed.sntcca.sbcglobal.net.
  [108.223.40.66])
- by smtp.gmail.com with ESMTPSA id r65-v6sm15768554pfj.5.2018.10.15.15.22.13
+ by smtp.gmail.com with ESMTPSA id r81-v6sm20571184pfa.110.2018.10.15.15.28.28
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Mon, 15 Oct 2018 15:22:14 -0700 (PDT)
-Date: Mon, 15 Oct 2018 15:22:13 -0700
+ Mon, 15 Oct 2018 15:28:28 -0700 (PDT)
+Date: Mon, 15 Oct 2018 15:28:22 -0700
 From: Guenter Roeck <linux@roeck-us.net>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Rob Herring <robherring2@gmail.com>
 Subject: Re: linux-next: Tree for Oct 15
-Message-ID: <20181015222213.GA31415@roeck-us.net>
+Message-ID: <20181015222822.GA31706@roeck-us.net>
 References: <20181015192546.15faf3a1@canb.auug.org.au>
- <20181015193914.GA9881@roeck-us.net>
- <20181016073359.3fa7bb32@canb.auug.org.au>
+ <20181015182637.GA16445@roeck-us.net>
+ <20181016071240.3f62816d@canb.auug.org.au>
+ <CAL_Jsq+DAEEa6i9xb-9MMSxu-znc9tZLZwFRADqE+kcxQYXrTg@mail.gmail.com>
+ <20181015211815.GA24993@roeck-us.net>
+ <CAL_JsqKXS0rmmwHgLRDy+6k=GYRt-nFJHJD1A+CkFCDEAEAKvg@mail.gmail.com>
+ <20181015221053.GA19822@roeck-us.net>
+ <CAL_JsqLSBE9FFB7=o5bDJ1hxfNP6mAPJ-qXyEVHfY+xwfgDuWw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20181016073359.3fa7bb32@canb.auug.org.au>
+In-Reply-To: <CAL_JsqLSBE9FFB7=o5bDJ1hxfNP6mAPJ-qXyEVHfY+xwfgDuWw@mail.gmail.com>
 User-Agent: Mutt/1.5.24 (2015-08-30)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -99,69 +104,104 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Mike Rapoport <rppt@linux.vnet.ibm.com>,
- Linux-Next Mailing List <linux-next@vger.kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- PowerPC <linuxppc-dev@lists.ozlabs.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linux-next <linux-next@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Oct 16, 2018 at 07:33:59AM +1100, Stephen Rothwell wrote:
-> Hi Guenter,
-> 
-> [Again, just cc'ing the PPC folks]
-> 
-> On Mon, 15 Oct 2018 12:39:14 -0700 Guenter Roeck <linux@roeck-us.net> wrote:
+On Mon, Oct 15, 2018 at 05:13:08PM -0500, Rob Herring wrote:
+> On Mon, Oct 15, 2018 at 5:10 PM Guenter Roeck <linux@roeck-us.net> wrote:
 > >
-> > On Mon, Oct 15, 2018 at 07:25:46PM +1100, Stephen Rothwell wrote:
-> > > Hi all,
-> > > 
-> > > Changes since 20181012:
-> > > 
-> > > My qemu boots of a powerpc pseries_le_defconfig kernel failed today.
-> > >   
-> > 
-> > Bisect log:
-> > 
+> > On Mon, Oct 15, 2018 at 04:48:27PM -0500, Rob Herring wrote:
+> > > On Mon, Oct 15, 2018 at 4:18 PM Guenter Roeck <linux@roeck-us.net> wrote:
+> > > >
+> > > > On Mon, Oct 15, 2018 at 03:35:12PM -0500, Rob Herring wrote:
+> > > > > On Mon, Oct 15, 2018 at 3:12 PM Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> > > > > >
+> > > > > > Hi Guenter,
+> > > > > >
+> > > > > > [Just cc'ing the PPC and devicetree folks]
+> > > > > >
+> > > > > > On Mon, 15 Oct 2018 11:26:37 -0700 Guenter Roeck <linux@roeck-us.net> wrote:
+> > > > > > >
+> > > > > > > On Mon, Oct 15, 2018 at 07:25:46PM +1100, Stephen Rothwell wrote:
+> > > > > > > >
+> > > > > > > > My qemu boots of a powerpc pseries_le_defconfig kernel failed today.
+> > > > > > >
+> > > > > > > Same here. Interestingly, this only affects little endian pseries
+> > > > > > > boots; big endian works fine. I'll try to bisect later.
+> > > > > > >
+> > > > > > > ALl ppc qemu tests (including big endian pseries) also generate a warning.
+> > > > > > >
+> > > > > > > WARNING: CPU: 0 PID: 0 at mm/memblock.c:1301 .memblock_alloc_range_nid+0x20/0x68
+> > > > > > > Modules linked in:
+> > > > > > > CPU: 0 PID: 0 Comm: swapper Not tainted 4.19.0-rc7-next-20181015 #1
+> > > > > > > NIP:  c000000000f99198 LR: c000000000f99490 CTR: c000000000bb8364
+> > > > > > > REGS: c000000001217a78 TRAP: 0700   Not tainted  (4.19.0-rc7-next-20181015)
+> > > > > > > MSR:  0000000080021000 <CE,ME>  CR: 24000422  XER: 20000000
+> > > > > > > IRQMASK: 1
+> > > > > > > GPR00: c000000000f99490 c000000001217d00 c00000000121a500 00000000000000c0
+> > > > > > > GPR04: 0000000000000000 0000000000000000 0000000000000000 ffffffffffffffff
+> > > > > > > GPR08: 0000000000000000 00000000000000c0 0000000000000018 00000000000000b7
+> > > > > > > GPR12: 0000000000000040 c000000000fe7840 0000000000000000 0000000000000000
+> > > > > > > GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+> > > > > > > GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+> > > > > > > GPR24: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+> > > > > > > GPR28: c000000000000304 c000000001262088 00000000000000c0 c000000000fea500
+> > > > > > > NIP [c000000000f99198] .memblock_alloc_range_nid+0x20/0x68
+> > > > > > > LR [c000000000f99490] .memblock_alloc_base+0x18/0x48
+> > > > > > > Call Trace:
+> > > > > > > [c000000001217d00] [c000000002a00000] 0xc000000002a00000 (unreliable)
+> > > > > > > [c000000001217d80] [c000000000f99490] .memblock_alloc_base+0x18/0x48
+> > > > > > > [c000000001217df0] [c000000000f7a274] .allocate_paca_ptrs+0x3c/0x74
+> > > > > > > [c000000001217e70] [c000000000f78bf0] .early_init_devtree+0x288/0x320
+> > > > > > > [c000000001217f10] [c000000000f79b6c] .early_setup+0x80/0x130
+> > > > > > > [c000000001217f90] [c000000000000528] start_here_multiplatform+0x68/0x80
+> > > > > > >
+> > > > > > >
+> > > > > > > sparc images crash, starting with next-20181009. Bisect with
+> > > > > > > next-201810112 points to the merge of devicetree/for-next, though
+> > > > > > > devicetree/for-next itself does not have the problem (bisect log
+> > > > > > > attached below). The crash is in devicetree code.
+> > > > > > >
+> > > > > > > Crash logs:
+> > > > > > > https://kerneltests.org/builders/qemu-sparc64-next/builds/981/steps/qemubuildcommand_1/logs/stdio
+> > > > > > > https://kerneltests.org/builders/qemu-sparc-next/builds/975/steps/qemubuildcommand_1/logs/stdio
+> > > > >
+> > > > > The sparc crash appears to be related to changes I made. Looking into it.
+> > > > >
+> > > >
+> > > > Let me know if you need me to test anything or do some debugging.
+> > >
+> > > Well, I'm not having any luck getting sparc qemu to work. Here's what
+> > > I'm trying with a sparc32_defconfig kernel:
+> > >
+> > > $ qemu-system-sparc -kernel .build-sparc/vmlinux -M SS-4 -nographic -m
+> > > 256 -no-reboot
+> > > rom: requested regions overlap (rom phdr #0: .build-sparc/vmlinux.
+> > > free=0x000000000000057a, addr=0x0000000000000000)
+> > > qemu-system-sparc: rom check and register reset failed
+> > >
+> >
+> > What is your qemu version ?
+> 
+> 2.11 from ubuntu 18.04:
+> QEMU emulator version 2.11.1(Debian 1:2.11+dfsg-1ubuntu7.5)
+> 
 
-Trying again. Not very useful since some of the steps fail with compile errors.
-The problem does seem to be related to the bootmem changes, though.
+This works for me:
 
-I might try again tonight if I find the time.
+qemu-system-sparc -M SS-4 -kernel arch/sparc/boot/zImage -no-reboot \
+	-drive file=hda.sqf,if=scsi,format=raw \
+	-append 'root=/dev/sda rw init=/sbin/init.sh panic=1 console=ttyS0' \
+	-nographic -monitor none
+
+arch/sparc/boot/image works as well.
+
+This is with qemu 2.5 (from Ubuntu 16.04). I'll try with 2.11 tonight.
+My current private version is based on qemu 3.0.
 
 Guenter
-
-# bad: [ca0591d03a2d373e0019ad357fbbee69c8272381] Add linux-next specific files for 20181015
-# good: [0238df646e6224016a45505d2c111a24669ebe21] Linux 4.19-rc7
-git bisect start 'HEAD' 'v4.19-rc7'
-# good: [2fc8fb4c02a0f7b9d5e5b4de80cbcef7c808068b] Merge remote-tracking branch 'spi-nor/spi-nor/next'
-git bisect good 2fc8fb4c02a0f7b9d5e5b4de80cbcef7c808068b
-# good: [a54eefdf4d208f6904da9e836ff32d7dde0c9516] Merge remote-tracking branch 'tip/auto-latest'
-git bisect good a54eefdf4d208f6904da9e836ff32d7dde0c9516
-# good: [d71e0d25be750d02a3d04500aeb151bb94465811] Merge remote-tracking branch 'staging/staging-next'
-git bisect good d71e0d25be750d02a3d04500aeb151bb94465811
-# good: [7961c8ea9d81f927a78e30bb7c194310ed6b7c1d] Merge remote-tracking branch 'pinctrl/for-next'
-git bisect good 7961c8ea9d81f927a78e30bb7c194310ed6b7c1d
-# good: [c3d392e6aae57d54fdc683f7432c3e248602bebb] Merge remote-tracking branch 'xarray/xarray'
-git bisect good c3d392e6aae57d54fdc683f7432c3e248602bebb
-# good: [880c1034475c873963d6250eb95ebbbf5604a281] userfaultfd: selftest: cleanup help messages
-git bisect good 880c1034475c873963d6250eb95ebbbf5604a281
-# good: [9f1fa0ab60f7b09d335bbaf33db9116241059708] reiserfs: propagate errors from fill_with_dentries() properly
-git bisect good 9f1fa0ab60f7b09d335bbaf33db9116241059708
-# good: [596046ffd571f32fa3d3e7ffdf7861b71a258552] memblock: replace alloc_bootmem_low with memblock_alloc_low (2)
-git bisect good 596046ffd571f32fa3d3e7ffdf7861b71a258552
-# bad: [ef07e25e5bb02b420cb66004420cea3e0d65d107] dma-direct: fix up for the removal of linux/bootmem.h
-git bisect bad ef07e25e5bb02b420cb66004420cea3e0d65d107
-# good: [ddaa897c9ab76969a74d67a65b6616895f349644] memblock: replace alloc_bootmem with memblock_alloc
-git bisect good ddaa897c9ab76969a74d67a65b6616895f349644
-# good: [3b79243c2ef23d829a2f01f8c9526f17b80a7a32] memblock: rename free_all_bootmem to memblock_free_all
-git bisect good 3b79243c2ef23d829a2f01f8c9526f17b80a7a32
-# good: [d5fa9634892df2bc6bab6101f18df6ba5a2490c5] mm: remove nobootmem
-git bisect good d5fa9634892df2bc6bab6101f18df6ba5a2490c5
-# bad: [75fd637c22bc9bb5c959b7f93c2c5e5f0495992c] mm: remove include/linux/bootmem.h
-git bisect bad 75fd637c22bc9bb5c959b7f93c2c5e5f0495992c
-# good: [979961b3058df1a6d24ab423dd6fa6f20982f591] memblock: replace BOOTMEM_ALLOC_* with MEMBLOCK variants
-git bisect good 979961b3058df1a6d24ab423dd6fa6f20982f591
-# first bad commit: [75fd637c22bc9bb5c959b7f93c2c5e5f0495992c] mm: remove include/linux/bootmem.h
