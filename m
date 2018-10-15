@@ -2,23 +2,23 @@ Return-Path: <SRS0=mWF2=M3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 005FCC7112A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 09:56:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 00F63C7112A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 09:57:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id ABB4320853
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 09:56:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ABB4320853
+	by mail.kernel.org (Postfix) with ESMTPS id 546ED20853
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 09:57:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 546ED20853
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42YYjX5HHwzDqNG
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 20:56:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42YYlW2ZPLzF3NY
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 20:57:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
@@ -27,18 +27,19 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Received: from ozlabs.ru (unknown [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 42YYQ64GX4zDrWW
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 20:42:38 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 42YYQB1ksCzF3F3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 20:42:42 +1100 (AEDT)
 Received: from vpl1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 6386EAE807F6;
- Mon, 15 Oct 2018 05:42:35 -0400 (EDT)
+ by ozlabs.ru (Postfix) with ESMTP id 9FD24AE807F9;
+ Mon, 15 Oct 2018 05:42:39 -0400 (EDT)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel 0/3] vfio/spapr_tce: Reworks for NVIDIA V100 + P9
- passthrough (part 3)
-Date: Mon, 15 Oct 2018 20:42:30 +1100
-Message-Id: <20181015094233.1324-1-aik@ozlabs.ru>
+Subject: [PATCH kernel 2/3] vfio_pci: Allow regions to add own capabilities
+Date: Mon, 15 Oct 2018 20:42:32 +1100
+Message-Id: <20181015094233.1324-3-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.11.0
+In-Reply-To: <20181015094233.1324-1-aik@ozlabs.ru>
+References: <20181015094233.1324-1-aik@ozlabs.ru>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,42 +59,58 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+VFIO regions already support region capabilities with a limited set of
+fields. However the subdriver might have to report to the userspace
+additional bits.
 
-This is a third set of patches required for passing through NVIDIA V100
-with coherent memory. The full patchset is here:
-https://github.com/aik/linux/tree/nv2
-The matching QEMU is here:
-https://github.com/aik/qemu/tree/nv2
+This adds an add_capability() hook to vfio_pci_regops.
 
-This implements a subdriver for NVIDIA V100 GPU with coherent memory and
-NPU/ATS support available in the POWER9 CPU.
+This is aiming Witherspoon POWER9 machines which have multiple
+interconnected NVIDIA V100 GPUs with coherent RAM; each GPU's RAM
+is mapped to a system bus and to each of GPU internal system bus and
+the GPUs use this for DMA routing as DMA trafic can go via any
+of many NVLink2 (GPU-GPU or GPU-CPU) or even stay local within a GPU.
 
-This does not address the interconnected GPUs, this will be posted as
-a separate patchset in a few days.
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
 
-This depends on:
-[PATCH kernel 0/4] vfio/spapr_tce: Reworks for NVIDIA V100 + P9 passthrough (part 1)
-[PATCH kernel 0/5] powerpc/powernv/npu: Reworks for NVIDIA V100 + P9 passthrough (part 2)
-[PATCH kernel RFC 3/3] powerpc/pseries/iommu: Use memory@ nodes in max RAM address calculation
+This is based on top of "vfio_pci: Allow mapping extra regions"
+---
+ drivers/vfio/pci/vfio_pci_private.h | 3 +++
+ drivers/vfio/pci/vfio_pci.c         | 6 ++++++
+ 2 files changed, 9 insertions(+)
 
-Please comment. Thanks.
-
-
-
-Alexey Kardashevskiy (3):
-  vfio_pci: Allow mapping extra regions
-  vfio_pci: Allow regions to add own capabilities
-  vfio_pci: Add NVIDIA GV100GL [Tesla V100 SXM2] [10de:1db1] subdriver
-
- drivers/vfio/pci/Makefile           |   1 +
- drivers/vfio/pci/vfio_pci_private.h |   8 +
- include/uapi/linux/vfio.h           |  18 ++
- drivers/vfio/pci/vfio_pci.c         |  51 ++++-
- drivers/vfio/pci/vfio_pci_nvlink2.c | 409 ++++++++++++++++++++++++++++++++++++
- drivers/vfio/pci/Kconfig            |   4 +
- 6 files changed, 489 insertions(+), 2 deletions(-)
- create mode 100644 drivers/vfio/pci/vfio_pci_nvlink2.c
-
+diff --git a/drivers/vfio/pci/vfio_pci_private.h b/drivers/vfio/pci/vfio_pci_private.h
+index 86aab05..93c1738 100644
+--- a/drivers/vfio/pci/vfio_pci_private.h
++++ b/drivers/vfio/pci/vfio_pci_private.h
+@@ -62,6 +62,9 @@ struct vfio_pci_regops {
+ 	int	(*mmap)(struct vfio_pci_device *vdev,
+ 			struct vfio_pci_region *region,
+ 			struct vm_area_struct *vma);
++	int	(*add_capability)(struct vfio_pci_device *vdev,
++				  struct vfio_pci_region *region,
++				  struct vfio_info_cap *caps);
+ };
+ 
+ struct vfio_pci_region {
+diff --git a/drivers/vfio/pci/vfio_pci.c b/drivers/vfio/pci/vfio_pci.c
+index 7923314..4a3b93e 100644
+--- a/drivers/vfio/pci/vfio_pci.c
++++ b/drivers/vfio/pci/vfio_pci.c
+@@ -759,6 +759,12 @@ static long vfio_pci_ioctl(void *device_data,
+ 			if (ret)
+ 				return ret;
+ 
++			if (vdev->region[i].ops->add_capability) {
++				ret = vdev->region[i].ops->add_capability(vdev,
++						&vdev->region[i], &caps);
++				if (ret)
++					return ret;
++			}
+ 		}
+ 		}
+ 
 -- 
 2.11.0
 
