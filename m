@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 00F63C7112A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 09:57:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E352CC7112B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 09:59:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 546ED20853
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 09:57:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 546ED20853
+	by mail.kernel.org (Postfix) with ESMTPS id 58A652064E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 09:59:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 58A652064E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42YYlW2ZPLzF3NY
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 20:57:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42YYnT3QQtzF3Nb
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Oct 2018 20:59:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
@@ -27,16 +27,16 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Received: from ozlabs.ru (unknown [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 42YYQB1ksCzF3F3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 20:42:42 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 42YYQk4Nh0zF3NW
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 20:43:10 +1100 (AEDT)
 Received: from vpl1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 9FD24AE807F9;
- Mon, 15 Oct 2018 05:42:39 -0400 (EDT)
+ by ozlabs.ru (Postfix) with ESMTP id 6CBDCAE807F7;
+ Mon, 15 Oct 2018 05:42:37 -0400 (EDT)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel 2/3] vfio_pci: Allow regions to add own capabilities
-Date: Mon, 15 Oct 2018 20:42:32 +1100
-Message-Id: <20181015094233.1324-3-aik@ozlabs.ru>
+Subject: [PATCH kernel 1/3] vfio_pci: Allow mapping extra regions
+Date: Mon, 15 Oct 2018 20:42:31 +1100
+Message-Id: <20181015094233.1324-2-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.11.0
 In-Reply-To: <20181015094233.1324-1-aik@ozlabs.ru>
 References: <20181015094233.1324-1-aik@ozlabs.ru>
@@ -59,58 +59,60 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-VFIO regions already support region capabilities with a limited set of
-fields. However the subdriver might have to report to the userspace
-additional bits.
+So far we only allowed mapping of MMIO BARs to the userspace. However
+there there are GPUs with on-board coherent RAM accessible via side
+channels which we also want to map to the userspace. The first client
+for this is NVIDIA V100 GPU with NVLink2 direct links to a POWER9
+NPU-enabled CPU; such GPUs have 16GB RAM which is coherently mapped
+to the system address space, we are going to export these as an extra
+PCI region.
 
-This adds an add_capability() hook to vfio_pci_regops.
-
-This is aiming Witherspoon POWER9 machines which have multiple
-interconnected NVIDIA V100 GPUs with coherent RAM; each GPU's RAM
-is mapped to a system bus and to each of GPU internal system bus and
-the GPUs use this for DMA routing as DMA trafic can go via any
-of many NVLink2 (GPU-GPU or GPU-CPU) or even stay local within a GPU.
+We already support extra PCI regions and this adds support for mapping
+them to the userspace.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
-
-This is based on top of "vfio_pci: Allow mapping extra regions"
+Changes:
+v2:
+* reverted one of mistakenly removed error checks
 ---
  drivers/vfio/pci/vfio_pci_private.h | 3 +++
- drivers/vfio/pci/vfio_pci.c         | 6 ++++++
- 2 files changed, 9 insertions(+)
+ drivers/vfio/pci/vfio_pci.c         | 8 ++++++++
+ 2 files changed, 11 insertions(+)
 
 diff --git a/drivers/vfio/pci/vfio_pci_private.h b/drivers/vfio/pci/vfio_pci_private.h
-index 86aab05..93c1738 100644
+index cde3b5d..86aab05 100644
 --- a/drivers/vfio/pci/vfio_pci_private.h
 +++ b/drivers/vfio/pci/vfio_pci_private.h
-@@ -62,6 +62,9 @@ struct vfio_pci_regops {
- 	int	(*mmap)(struct vfio_pci_device *vdev,
- 			struct vfio_pci_region *region,
- 			struct vm_area_struct *vma);
-+	int	(*add_capability)(struct vfio_pci_device *vdev,
-+				  struct vfio_pci_region *region,
-+				  struct vfio_info_cap *caps);
+@@ -59,6 +59,9 @@ struct vfio_pci_regops {
+ 		      size_t count, loff_t *ppos, bool iswrite);
+ 	void	(*release)(struct vfio_pci_device *vdev,
+ 			   struct vfio_pci_region *region);
++	int	(*mmap)(struct vfio_pci_device *vdev,
++			struct vfio_pci_region *region,
++			struct vm_area_struct *vma);
  };
  
  struct vfio_pci_region {
 diff --git a/drivers/vfio/pci/vfio_pci.c b/drivers/vfio/pci/vfio_pci.c
-index 7923314..4a3b93e 100644
+index d9af440..7923314 100644
 --- a/drivers/vfio/pci/vfio_pci.c
 +++ b/drivers/vfio/pci/vfio_pci.c
-@@ -759,6 +759,12 @@ static long vfio_pci_ioctl(void *device_data,
- 			if (ret)
- 				return ret;
- 
-+			if (vdev->region[i].ops->add_capability) {
-+				ret = vdev->region[i].ops->add_capability(vdev,
-+						&vdev->region[i], &caps);
-+				if (ret)
-+					return ret;
-+			}
- 		}
- 		}
- 
+@@ -1126,6 +1126,14 @@ static int vfio_pci_mmap(void *device_data, struct vm_area_struct *vma)
+ 		return -EINVAL;
+ 	if ((vma->vm_flags & VM_SHARED) == 0)
+ 		return -EINVAL;
++	if (index >= VFIO_PCI_NUM_REGIONS) {
++		int regnum = index - VFIO_PCI_NUM_REGIONS;
++		struct vfio_pci_region *region = vdev->region + regnum;
++
++		if (region && region->ops && region->ops->mmap)
++			return region->ops->mmap(vdev, region, vma);
++		return -EINVAL;
++	}
+ 	if (index >= VFIO_PCI_ROM_REGION_INDEX)
+ 		return -EINVAL;
+ 	if (!vdev->bar_mmap_supported[index])
 -- 
 2.11.0
 
