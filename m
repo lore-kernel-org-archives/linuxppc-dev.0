@@ -2,141 +2,97 @@ Return-Path: <SRS0=rnOA=M4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=0.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLACK autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4068AC04EBD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 07:58:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D7FC7C04EBD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 08:37:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7D2E120869
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 07:58:12 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="FtJgTUZT"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7D2E120869
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	by mail.kernel.org (Postfix) with ESMTPS id 44A1120869
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 08:37:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 44A1120869
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42Z7363mFPzF3Wl
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 18:58:10 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Z7wc6JkrzF3XG
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 19:37:36 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="FtJgTUZT";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
- (client-ip=2607:f8b0:4864:20::642; helo=mail-pl1-x642.google.com;
- envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.ru
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
- header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="FtJgTUZT"; 
- dkim-atps=neutral
-Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com
- [IPv6:2607:f8b0:4864:20::642])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Z70W2bkGzDrVn
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 18:55:54 +1100 (AEDT)
-Received: by mail-pl1-x642.google.com with SMTP id c8-v6so10591111plo.9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 00:55:54 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
- h=subject:to:cc:references:from:openpgp:autocrypt:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=7en4wgObF3G/SBGXa2eTTqfinAN/cWpNmbRITU1aLJA=;
- b=FtJgTUZTAkjCSBzSp3tRrmkz7LYTxrI+KiHb2yl50+mMj6QLsOIw1vfiRa1d7/yNAu
- Mkz5QXapeWZJEe8u5XDZsKSvFvZShaZDFqIzTBJglPpifZXAdOhGifwe59wf1wVnxuZw
- FFXEGKtrK0BfjWCYrs7Z5O/EnvlgLdo41aNRqe3mYhcyy95KwenDdb+YGpLPmVbHmaG2
- 6BZ9YQ2rx7EYksoSzgoEfn4r/lGFa//ylQJOcfVyNauNy2Agt9CMJwsU8X9bZsw9eoXh
- uKSW6vBl3q/Mtr+yMHtSxiIdKm8qNIF5Fl4PGfyQwo3KjWeVdjna7UI9EN0QXa+yRaJn
- m/FA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:openpgp:autocrypt
- :message-id:date:user-agent:mime-version:in-reply-to
- :content-language:content-transfer-encoding;
- bh=7en4wgObF3G/SBGXa2eTTqfinAN/cWpNmbRITU1aLJA=;
- b=QpdqNI03IlV4SjEZXNGvxKeSRN+wIFIDZSXtLXOP6F/DQX2cBMRHkybBX2SpGEe4N8
- lhWrKfZjwDIqPJRMgQfTXUwSQ6B4aCHR2YbTOYUhQQZVMUIFAjX9e/ghs+CQXWSFE1te
- 4h7dehhUj+vUK9xHmy2zZkXDMw+2XRHRj89LhPygxkbiNVBWDlM7UQVvcXbrC6ydkuVv
- 7AE6fAzZeqHyPX6yXmq3iFmOg+mmI1cW5o3femMNXIfUdqVjJDGg1nc5hckm+E9heLk+
- Vl38rvHORACfV8yF0AU26Vfjtla4JZK59mYxxjYhbcy2MxiWfsx352p7gsYHmrLs4FDS
- xwfw==
-X-Gm-Message-State: ABuFfoixCOEtY37FJtx7NDe9SmSnGxqGOP9Ry/zYSCKys/xgAnHwv819
- Guo4dqBo6w7eZuIibOsdfdVutw==
-X-Google-Smtp-Source: ACcGV63csmCcgyzXvOiwQVAFF8hhTvrzs4CFAR0E/zjnIaIO1bac5D0Sb3i77ihFY2hcPauFmpfjng==
-X-Received: by 2002:a17:902:1104:: with SMTP id
- d4-v6mr14497127pla.289.1539676553096; 
- Tue, 16 Oct 2018 00:55:53 -0700 (PDT)
-Received: from [10.61.2.175] ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id r1-v6sm21546853pff.145.2018.10.16.00.55.50
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 16 Oct 2018 00:55:52 -0700 (PDT)
-Subject: Re: [PATCH kernel v2] powerpc/ioda/npu: Call skiboot's hot reset hook
- when disabling NPU2
-To: Alistair Popple <alistair@popple.id.au>
-References: <20181002032021.7126-1-aik@ozlabs.ru>
- <2184134.UzzIe8q8zq@new-mexico>
- <374a32c1-8787-2b82-af5d-163d9a496a25@ozlabs.ru>
- <2086775.d8i5QI7OoB@new-mexico>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Openpgp: preference=signencrypt
-Autocrypt: addr=aik@ozlabs.ru; keydata=
- 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
-Message-ID: <45098cfd-5420-f4bd-f7fe-394ce2c704d0@ozlabs.ru>
-Date: Tue, 16 Oct 2018 18:55:49 +1100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.2.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Z7tM5Yh6zF3WF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 19:35:38 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w9G8Yw1Q045651
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 04:35:35 -0400
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2n5b2dc3u7-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 04:35:34 -0400
+Received: from localhost
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Tue, 16 Oct 2018 09:35:33 +0100
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
+ by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Tue, 16 Oct 2018 09:35:28 +0100
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ w9G8ZSkE4391236
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Tue, 16 Oct 2018 08:35:28 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C8E17A404D;
+ Tue, 16 Oct 2018 11:34:57 +0100 (BST)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2204AA4057;
+ Tue, 16 Oct 2018 11:34:56 +0100 (BST)
+Received: from skywalker (unknown [9.199.58.69])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with SMTP;
+ Tue, 16 Oct 2018 11:34:55 +0100 (BST)
+Received: (nullmailer pid 25992 invoked by uid 1000);
+ Tue, 16 Oct 2018 08:35:25 -0000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, akpm@linux-foundation.org,
+ Michal Hocko <mhocko@kernel.org>, mpe@ellerman.id.au
+Subject: Re: [PATCH V3 1/2] mm: Add get_user_pages_cma_migrate
+In-Reply-To: <485adcad-4996-ae2c-c098-9dc7bcd2d29a@ozlabs.ru>
+References: <20180918115839.22154-1-aneesh.kumar@linux.ibm.com>
+ <20180918115839.22154-2-aneesh.kumar@linux.ibm.com>
+ <6112386d-65cd-fc1f-b012-e33da2c3b8fe@ozlabs.ru>
+ <87murewecs.fsf@linux.ibm.com>
+ <485adcad-4996-ae2c-c098-9dc7bcd2d29a@ozlabs.ru>
+Date: Tue, 16 Oct 2018 14:05:25 +0530
 MIME-Version: 1.0
-In-Reply-To: <2086775.d8i5QI7OoB@new-mexico>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+x-cbid: 18101608-0012-0000-0000-000002B79DEA
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18101608-0013-0000-0000-000020EC1312
+Message-Id: <87in22wape.fsf@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-10-16_05:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=44 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=830 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1807170000 definitions=main-1810160076
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -148,152 +104,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Reza Arbab <arbab@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Alexey Kardashevskiy <aik@ozlabs.ru> writes:
 
+> On 16/10/2018 18:16, Aneesh Kumar K.V wrote:
+>> Alexey Kardashevskiy <aik@ozlabs.ru> writes:
+>> 
+>>> +			}
+>>>> +		}
+>>>> +	}
+>>>> +	if (!list_empty(&cma_page_list)) {
+>>>> +		/*
+>>>> +		 * drop the above get_user_pages reference.
+>>>> +		 */
+>
+>
+> btw, can these pages be used by somebody else in this short window
+> before we migrated and pinned them?
 
-On 16/10/2018 18:32, Alistair Popple wrote:
-> On Tuesday, 16 October 2018 1:22:53 PM AEDT Alexey Kardashevskiy wrote:
->>
->> On 16/10/2018 13:19, Alistair Popple wrote:
->>>> reset_ntl() does what npu2_dev_procedure_reset() does plus more stuff,
->>>> there nothing really in npu2_dev_procedure_reset() which reset_ntl()
->>>> does not do already from the hardware standpoint. And it did stop HMIs
->>>> for me though.
->>>>
->>>> but ok, what will be sufficient then if not reset_ntl()?
->>>
->>> Argh, yes you are correct. Specifically both npu2_dev_procedure_reset() and
->>> reset_ntl() contain:
->>>
->>> 	/* NTL Reset */
->>> 	val = npu2_read(ndev->npu, NPU2_NTL_MISC_CFG1(ndev));
->>> 	val |= PPC_BIT(8) | PPC_BIT(9);
->>> 	npu2_write(ndev->npu, NPU2_NTL_MISC_CFG1(ndev), val);
->>>
->>> Which should fence the brick. However from what I recall there was more to
->>> reliably preventing HMIs than merely fencing the brick. It invovled a sequence
->>> of fencing and flushing the cache with dcbf instructions at the right time which
->>> is why we also have the FLR. Unfortunately I don't know the precise details,
->>> perhaps if we send enough coffee Balbir's way he might be able remind us?
->>
->>
->> He suggested and ack'ed that skiboot patch, I can repeat beers^wcoffee
->> but it won't change much ;)
-> 
-> Ha. Couldn't hurt ;)
-> 
-> I was pretty sure flushing the caches was an important part of the sequence to
-> avoid HMI's. I believe you are trying to deal with unexpected guest terminations
-> which means the driver won't have a chance to flush the caches prior to
-> termination so
+isolate lru page make sure that we remove them from lru list. So lru
+walkers won't find the page. If somebody happen to increment the page
+reference count in that window, the migrate_pages will fail. That is
+handled via migrate_page_move_mapping returning EAGAIN
 
-Correct.
-
-> wouldn't you also need to do that somewhere? Unless the driver
-> does it at startup?
-
-
-VFIO performs GPU reset so I'd expect the GPUs to flush its caches
-without any software interactions. Am I hoping for too much here?
-
-
-
-
-> 
-> - Alistair
-> 
->>>
->>> - Alistair
->>>
->>>>
->>>>
->>>>>
->>>>> - Alistair
->>>>>
->>>>>>
->>>>>>
->>>>>>
->>>>>>>
->>>>>>> - Alistair
->>>>>>>
->>>>>>> On Monday, 15 October 2018 6:17:51 PM AEDT Alexey Kardashevskiy wrote:
->>>>>>>> Ping?
->>>>>>>>
->>>>>>>>
->>>>>>>> On 02/10/2018 13:20, Alexey Kardashevskiy wrote:
->>>>>>>>> The skiboot firmware has a hot reset handler which fences the NVIDIA V100
->>>>>>>>> GPU RAM on Witherspoons and makes accesses no-op instead of throwing HMIs:
->>>>>>>>> https://github.com/open-power/skiboot/commit/fca2b2b839a67
->>>>>>>>>
->>>>>>>>> Now we are going to pass V100 via VFIO which most certainly involves
->>>>>>>>> KVM guests which are often terminated without getting a chance to offline
->>>>>>>>> GPU RAM so we end up with a running machine with misconfigured memory.
->>>>>>>>> Accessing this memory produces hardware management interrupts (HMI)
->>>>>>>>> which bring the host down.
->>>>>>>>>
->>>>>>>>> To suppress HMIs, this wires up this hot reset hook to vfio_pci_disable()
->>>>>>>>> via pci_disable_device() which switches NPU2 to a safe mode and prevents
->>>>>>>>> HMIs.
->>>>>>>>>
->>>>>>>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->>>>>>>>> ---
->>>>>>>>> Changes:
->>>>>>>>> v2:
->>>>>>>>> * updated the commit log
->>>>>>>>> ---
->>>>>>>>>  arch/powerpc/platforms/powernv/pci-ioda.c | 10 ++++++++++
->>>>>>>>>  1 file changed, 10 insertions(+)
->>>>>>>>>
->>>>>>>>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->>>>>>>>> index cde7102..e37b9cc 100644
->>>>>>>>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
->>>>>>>>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->>>>>>>>> @@ -3688,6 +3688,15 @@ static void pnv_pci_release_device(struct pci_dev *pdev)
->>>>>>>>>  		pnv_ioda_release_pe(pe);
->>>>>>>>>  }
->>>>>>>>>  
->>>>>>>>> +static void pnv_npu_disable_device(struct pci_dev *pdev)
->>>>>>>>> +{
->>>>>>>>> +	struct eeh_dev *edev = pci_dev_to_eeh_dev(pdev);
->>>>>>>>> +	struct eeh_pe *eehpe = edev ? edev->pe : NULL;
->>>>>>>>> +
->>>>>>>>> +	if (eehpe && eeh_ops && eeh_ops->reset)
->>>>>>>>> +		eeh_ops->reset(eehpe, EEH_RESET_HOT);
->>>>>>>>> +}
->>>>>>>>> +
->>>>>>>>>  static void pnv_pci_ioda_shutdown(struct pci_controller *hose)
->>>>>>>>>  {
->>>>>>>>>  	struct pnv_phb *phb = hose->private_data;
->>>>>>>>> @@ -3732,6 +3741,7 @@ static const struct pci_controller_ops pnv_npu_ioda_controller_ops = {
->>>>>>>>>  	.reset_secondary_bus	= pnv_pci_reset_secondary_bus,
->>>>>>>>>  	.dma_set_mask		= pnv_npu_dma_set_mask,
->>>>>>>>>  	.shutdown		= pnv_pci_ioda_shutdown,
->>>>>>>>> +	.disable_device		= pnv_npu_disable_device,
->>>>>>>>>  };
->>>>>>>>>  
->>>>>>>>>  static const struct pci_controller_ops pnv_npu_ocapi_ioda_controller_ops = {
->>>>>>>>>
->>>>>>>>
->>>>>>>>
->>>>>>>
->>>>>>>
->>>>>>
->>>>>>
->>>>>
->>>>>
->>>>
->>>>
+>
+>
+>>>> +		for (i = 0; i < ret; ++i)
+>>>> +			put_page(pages[i]);
+>>>> +
+>>>> +		if (migrate_pages(&cma_page_list, new_non_cma_page,
+>>>> +				  NULL, 0, MIGRATE_SYNC, MR_CONTIG_RANGE)) {
+>>>> +			/*
+>>>> +			 * some of the pages failed migration. Do get_user_pages
+>>>> +			 * without migration.
+>>>> +			 */
+>>>> +			migrate_allow = false;
 >>>
 >>>
->>
->>
-> 
-> 
+>>> migrate_allow seems useless, simply calling get_user_pages_fast() should
+>>> make the code easier to read imho. And the comment says
+>>> get_user_pages(), where does this guy hide?
+>> 
+>> I didn't get that suggestion. What we want to do here is try to migrate pages as
+>> long as we find CMA pages in the result of get_user_pages_fast. If we
+>> failed any migration attempt, don't try to migrate again.
+>
+>
+> Setting migrate_allow to false here means you jump up, call
+> get_user_pages_fast() and then run the loop which will do nothing just
+> because if(...migrate_allow) is false. Instead of jumping up you could
+> just call get_user_pages_fast().
 
--- 
-Alexey
+ok, that is coding preference I guess, I prefer to avoid multiple
+get_user_pages_fast there. Since we droped the page reference, we need
+to _go back_ and get the page reference without attempting to migrate. That
+is the way I was looking at this.
+
+>
+> btw what is migrate_pages() leaves something in cma_page_list (I cannot
+> see it removing pages)? Won't it loop indefinitely?
+>
+
+putback_movable_pages take care of that. The below hunk.
+
+			if (!list_empty(&cma_page_list))
+				putback_movable_pages(&cma_page_list);
+
+-aneesh
+
