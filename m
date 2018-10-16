@@ -2,42 +2,92 @@ Return-Path: <SRS0=rnOA=M4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.1 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLACK
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 24BB4C04EBD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 05:51:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BB8CAC04EBD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 07:18:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 89967208B3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 05:51:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 89967208B3
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	by mail.kernel.org (Postfix) with ESMTPS id 1D65B20869
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 07:18:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1D65B20869
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42Z4Dw3T3czF3W9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 16:51:28 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Z69l3j5PzF3Wf
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 18:18:51 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
- (client-ip=107.173.13.209; helo=ozlabs.ru; envelope-from=aik@ozlabs.ru;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.ru
-Received: from ozlabs.ru (unknown [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 42Z4Bp0mR2zDqnK
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 16:49:38 +1100 (AEDT)
-Received: from vpl1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id CAB73AE80026;
- Tue, 16 Oct 2018 01:49:04 -0400 (EDT)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel] powerpc/powernv/tce: Implement pnv_phb::tce_invalidate
-Date: Tue, 16 Oct 2018 16:49:01 +1100
-Message-Id: <20181016054901.22050-1-aik@ozlabs.ru>
-X-Mailer: git-send-email 2.11.0
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Z67b4rwwzF3VB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 18:16:59 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w9G79ZVf131712
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 03:16:57 -0400
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2n57pwqrqy-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 03:16:56 -0400
+Received: from localhost
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Tue, 16 Oct 2018 08:16:54 +0100
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Tue, 16 Oct 2018 08:16:50 +0100
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ w9G7GnSl48627920
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Tue, 16 Oct 2018 07:16:49 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2A70F5205A;
+ Tue, 16 Oct 2018 07:16:49 +0000 (GMT)
+Received: from skywalker (unknown [9.199.58.69])
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with SMTP id CD04052052;
+ Tue, 16 Oct 2018 07:16:36 +0000 (GMT)
+Received: (nullmailer pid 21845 invoked by uid 1000);
+ Tue, 16 Oct 2018 07:16:35 -0000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, akpm@linux-foundation.org,
+ Michal Hocko <mhocko@kernel.org>, mpe@ellerman.id.au
+Subject: Re: [PATCH V3 1/2] mm: Add get_user_pages_cma_migrate
+In-Reply-To: <6112386d-65cd-fc1f-b012-e33da2c3b8fe@ozlabs.ru>
+References: <20180918115839.22154-1-aneesh.kumar@linux.ibm.com>
+ <20180918115839.22154-2-aneesh.kumar@linux.ibm.com>
+ <6112386d-65cd-fc1f-b012-e33da2c3b8fe@ozlabs.ru>
+Date: Tue, 16 Oct 2018 12:46:35 +0530
+MIME-Version: 1.0
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+x-cbid: 18101607-4275-0000-0000-000002CC9BD3
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18101607-4276-0000-0000-000037D7A21D
+Message-Id: <87murewecs.fsf@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-10-16_04:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=44 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1807170000 definitions=main-1810160065
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -49,576 +99,260 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- Alistair Popple <alistair@popple.id.au>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-At the moment there are 5 types of TCE invalidation:
-- IODA1/POWER7 - uses raw PHB registers;
-- IODA2 "direct" - uses raw PHB3 registers;
-- IODA2 "opal" - calls OPAL for invalidation;
-- NPU - always invalidates the entire cache;
-- NPU2 - calls OPAL for invalidation but uses wrong OPAL_PCI_TCE_KILL
-(which is an OPAL token and @kill_type should be one of
-OPAL_PCI_TCE_KILL_xxx).
+Alexey Kardashevskiy <aik@ozlabs.ru> writes:
 
-We also have separate helpers for invalidating entire PE or some pages,
-with ambiguous names such as pnv_pci_phb3_tce_invalidate_pe() and
-pnv_pci_ioda2_tce_invalidate_pe() which difference is not clear at all.
+> On 18/09/2018 21:58, Aneesh Kumar K.V wrote:
+>> This helper does a get_user_pages_fast and if it find pages in the CMA area
+>> it will try to migrate them before taking page reference. This makes sure that
+>> we don't keep non-movable pages (due to page reference count) in the CMA area.
+>> Not able to move pages out of CMA area result in CMA allocation failures.
+>> 
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+>> ---
+>>  include/linux/hugetlb.h |   2 +
+>>  include/linux/migrate.h |   3 +
+>>  mm/hugetlb.c            |   4 +-
+>>  mm/migrate.c            | 132 ++++++++++++++++++++++++++++++++++++++++
+>>  4 files changed, 139 insertions(+), 2 deletions(-)
+>> 
+>> diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
+>> index 6b68e345f0ca..1abccb1a1ecc 100644
+>> --- a/include/linux/hugetlb.h
+>> +++ b/include/linux/hugetlb.h
+>> @@ -357,6 +357,8 @@ struct page *alloc_huge_page_nodemask(struct hstate *h, int preferred_nid,
+>>  				nodemask_t *nmask);
+>>  struct page *alloc_huge_page_vma(struct hstate *h, struct vm_area_struct *vma,
+>>  				unsigned long address);
+>> +struct page *alloc_migrate_huge_page(struct hstate *h, gfp_t gfp_mask,
+>> +				     int nid, nodemask_t *nmask);
+>>  int huge_add_to_page_cache(struct page *page, struct address_space *mapping,
+>>  			pgoff_t idx);
+>>  
+>> diff --git a/include/linux/migrate.h b/include/linux/migrate.h
+>> index f2b4abbca55e..d82b35afd2eb 100644
+>> --- a/include/linux/migrate.h
+>> +++ b/include/linux/migrate.h
+>> @@ -286,6 +286,9 @@ static inline int migrate_vma(const struct migrate_vma_ops *ops,
+>>  }
+>>  #endif /* IS_ENABLED(CONFIG_MIGRATE_VMA_HELPER) */
+>>  
+>> +extern int get_user_pages_cma_migrate(unsigned long start, int nr_pages, int write,
+>> +				      struct page **pages);
+>> +
+>>  #endif /* CONFIG_MIGRATION */
+>>  
+>>  #endif /* _LINUX_MIGRATE_H */
+>> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+>> index 3c21775f196b..1abbfcb84f66 100644
+>> --- a/mm/hugetlb.c
+>> +++ b/mm/hugetlb.c
+>> @@ -1585,8 +1585,8 @@ static struct page *alloc_surplus_huge_page(struct hstate *h, gfp_t gfp_mask,
+>>  	return page;
+>>  }
+>>  
+>> -static struct page *alloc_migrate_huge_page(struct hstate *h, gfp_t gfp_mask,
+>> -		int nid, nodemask_t *nmask)
+>> +struct page *alloc_migrate_huge_page(struct hstate *h, gfp_t gfp_mask,
+>> +				     int nid, nodemask_t *nmask)
+>>  {
+>>  	struct page *page;
+>>  
+>> diff --git a/mm/migrate.c b/mm/migrate.c
+>> index d6a2e89b086a..2f92534ea7a1 100644
+>> --- a/mm/migrate.c
+>> +++ b/mm/migrate.c
+>> @@ -3006,3 +3006,135 @@ int migrate_vma(const struct migrate_vma_ops *ops,
+>>  }
+>>  EXPORT_SYMBOL(migrate_vma);
+>>  #endif /* defined(MIGRATE_VMA_HELPER) */
+>> +
+>> +static struct page *new_non_cma_page(struct page *page, unsigned long private)
+>> +{
+>> +	/*
+>> +	 * We want to make sure we allocate the new page from the same node
+>> +	 * as the source page.
+>> +	 */
+>> +	int nid = page_to_nid(page);
+>> +	gfp_t gfp_mask = GFP_USER | __GFP_THISNODE;
+>> +
+>> +	if (PageHighMem(page))
+>> +		gfp_mask |= __GFP_HIGHMEM;
+>> +
+>> +	if (PageTransHuge(page)) {
+>> +		struct page *thp;
+>> +		gfp_t thp_gfpmask = GFP_TRANSHUGE | __GFP_THISNODE;
+>> +
+>> +		/*
+>> +		 * Remove the movable mask so that we don't allocate from
+>> +		 * CMA area again.
+>> +		 */
+>> +		thp_gfpmask &= ~__GFP_MOVABLE;
+>> +		thp = __alloc_pages_node(nid, thp_gfpmask, HPAGE_PMD_ORDER);
+>
+>
+> HPAGE_PMD_ORDER is 2MB or 1GB? THP are always that PMD order?
 
-This defines a new powernv-phb hook: tce_invalidate(). This adds a new
-helper - pnv_pci_tce_invalidate() - which walks through all attached
-PEs and calls tce_invalidate(). Depending on parameters, new hook
-invalidates TCE for specific pages or for the entire PE.
+2M or 16M. THP is at PMD level.
 
-This defines a pnv_pci_ioda_tce_invalidate_pe() helper to invalidate a PE,
-and uses it instead of pnv_pci_ioda2_tce_invalidate_entire() (NPU) and
-pnv_pci_ioda2_tce_invalidate_pe() (IODA2). This does not cause a change
-as for NPU2 skiboot falls through to OPAL_PCI_TCE_KILL_ALL since the NPU2
-introduction anyway.
+>
+>
+>> +		if (!thp)
+>> +			return NULL;
+>> +		prep_transhuge_page(thp);
+>> +		return thp;
+>> +
+>> +#ifdef  CONFIG_HUGETLB_PAGE
+>> +	} else if (PageHuge(page)) {
+>> +
+>> +		struct hstate *h = page_hstate(page);
+>> +		/*
+>> +		 * We don't want to dequeue from the pool because pool pages will
+>> +		 * mostly be from the CMA region.
+>> +		 */
+>> +		return alloc_migrate_huge_page(h, gfp_mask, nid, NULL);
+>> +#endif
+>> +	}
+>> +
+>> +	return __alloc_pages_node(nid, gfp_mask, 0);
+>> +}
+>> +
+>> +/**
+>> + * get_user_pages_cma_migrate() - pin user pages in memory by migrating pages in CMA region
+>> + * @start:	starting user address
+>> + * @nr_pages:	number of pages from start to pin
+>> + * @write:	whether pages will be written to
+>> + * @pages:	array that receives pointers to the pages pinned.
+>> + *		Should be at least nr_pages long.
+>> + *
+>> + * Attempt to pin user pages in memory without taking mm->mmap_sem.
+>> + * If not successful, it will fall back to taking the lock and
+>> + * calling get_user_pages().
+>
+>
+> I do not see any locking or get_user_pages(), hidden somewhere?
+>
 
-While we at it, this changes IODA1's iommu_table_ops to use the same
-get/clear/exchange handlers which now get more generic name (i.e.
-s/ioda2/ioda/).
+The rules are same as get_user_pages_fast, which does that pin attempt
+without taking mm->mmap_sem. If it fail get_user_pages_fast will take
+the mmap_sem and try to pin the pages. The details are in
+get_user_pages_fast. You can look at get_user_pages_unlocked
 
-As a result, the redesigned code uses now the correct kill_type
-for NPU2 PHBs.
 
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
- arch/powerpc/platforms/powernv/pci.h          |  10 +-
- arch/powerpc/platforms/powernv/npu-dma.c      |   8 +-
- arch/powerpc/platforms/powernv/pci-ioda-tce.c |  16 ++
- arch/powerpc/platforms/powernv/pci-ioda.c     | 310 ++++++++++----------------
- 4 files changed, 147 insertions(+), 197 deletions(-)
+>> + *
+>> + * If the pinned pages are backed by CMA region, we migrate those pages out,
+>> + * allocating new pages from non-CMA region. This helps in avoiding keeping
+>> + * pages pinned in the CMA region for a long time thereby resulting in
+>> + * CMA allocation failures.
+>> + *
+>> + * Returns number of pages pinned. This may be fewer than the number
+>> + * requested. If nr_pages is 0 or negative, returns 0. If no pages
+>> + * were pinned, returns -errno.
+>> + */
+>> +
+>> +int get_user_pages_cma_migrate(unsigned long start, int nr_pages, int write,
+>> +			       struct page **pages)
+>> +{
+>> +	int i, ret;
+>> +	bool drain_allow = true;
+>> +	bool migrate_allow = true;
+>> +	LIST_HEAD(cma_page_list);
+>> +
+>> +get_user_again:
+>> +	ret = get_user_pages_fast(start, nr_pages, write, pages);
+>> +	if (ret <= 0)
+>> +		return ret;
+>> +
+>> +	for (i = 0; i < ret; ++i) {
+>> +		/*
+>> +		 * If we get a page from the CMA zone, since we are going to
+>> +		 * be pinning these entries, we might as well move them out
+>> +		 * of the CMA zone if possible.
+>> +		 */
+>> +		if (is_migrate_cma_page(pages[i]) && migrate_allow) {
+>> +			if (PageHuge(pages[i]))
+>> +				isolate_huge_page(pages[i], &cma_page_list);
+>> +			else {
+>> +				struct page *head = compound_head(pages[i]);
+>> +
+>> +				if (!PageLRU(head) && drain_allow) {
+>> +					lru_add_drain_all();
+>> +					drain_allow = false;
+>> +				}
+>> +
+>> +				if (!isolate_lru_page(head)) {
+>> +					list_add_tail(&head->lru, &cma_page_list);
+>> +					mod_node_page_state(page_pgdat(head),
+>> +							    NR_ISOLATED_ANON +
+>> +							    page_is_file_cache(head),
+>> +							    hpage_nr_pages(head));
+>
+>
+> Above 10 lines I cannot really comment due to my massive ignorance in
+> this area, especially about what lru_add_drain_all() and
+> mod_node_page_state() :(
 
-diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index 2131373..a4b4863 100644
---- a/arch/powerpc/platforms/powernv/pci.h
-+++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -119,6 +119,9 @@ struct pnv_phb {
- 	int (*get_pe_state)(struct pnv_phb *phb, int pe_no);
- 	void (*freeze_pe)(struct pnv_phb *phb, int pe_no);
- 	int (*unfreeze_pe)(struct pnv_phb *phb, int pe_no, int opt);
-+	void (*tce_invalidate)(struct pnv_phb *phb, struct pnv_ioda_pe *pe,
-+			struct iommu_table *tbl, unsigned long index,
-+			unsigned long npages, bool realmode);
+That makes sure we move the pages from per cpu lru vec and add them to
+the right lru list so that we can isolate the pages correctly.
+
+>
+>
+>> +				}
+>> +			}
+>> +		}
+>> +	}
+>> +	if (!list_empty(&cma_page_list)) {
+>> +		/*
+>> +		 * drop the above get_user_pages reference.
+>> +		 */
+>> +		for (i = 0; i < ret; ++i)
+>> +			put_page(pages[i]);
+>> +
+>> +		if (migrate_pages(&cma_page_list, new_non_cma_page,
+>> +				  NULL, 0, MIGRATE_SYNC, MR_CONTIG_RANGE)) {
+>> +			/*
+>> +			 * some of the pages failed migration. Do get_user_pages
+>> +			 * without migration.
+>> +			 */
+>> +			migrate_allow = false;
+>
+>
+> migrate_allow seems useless, simply calling get_user_pages_fast() should
+> make the code easier to read imho. And the comment says
+> get_user_pages(), where does this guy hide?
+
+I didn't get that suggestion. What we want to do here is try to migrate pages as
+long as we find CMA pages in the result of get_user_pages_fast. If we
+failed any migration attempt, don't try to migrate again.
+
+>
+>> +
+>> +			if (!list_empty(&cma_page_list))
+>> +				putback_movable_pages(&cma_page_list);
+>> +		}
+>> +		/*
+>> +		 * We did migrate all the pages, Try to get the page references again
+>> +		 * migrating any new CMA pages which we failed to isolate earlier.
+>> +		 */
+>> +		drain_allow = true;
+>
+> Move this "drain_allow = true" right after "get_user_again:"? 1
  
- 	struct {
- 		/* Global bridge info */
-@@ -229,7 +232,6 @@ extern void pe_level_printk(const struct pnv_ioda_pe *pe, const char *level,
- 
- /* Nvlink functions */
- extern void pnv_npu_try_dma_set_bypass(struct pci_dev *gpdev, bool bypass);
--extern void pnv_pci_ioda2_tce_invalidate_entire(struct pnv_phb *phb, bool rm);
- extern struct pnv_ioda_pe *pnv_pci_npu_setup_iommu(struct pnv_ioda_pe *npe);
- extern long pnv_npu_set_window(struct pnv_ioda_pe *npe, int num,
- 		struct iommu_table *tbl);
-@@ -266,5 +268,11 @@ extern void pnv_pci_unlink_table_and_group(struct iommu_table *tbl,
- extern void pnv_pci_setup_iommu_table(struct iommu_table *tbl,
- 		void *tce_mem, u64 tce_size,
- 		u64 dma_offset, unsigned int page_shift);
-+extern void pnv_pci_tce_invalidate(struct iommu_table *tbl,
-+		unsigned long index, unsigned long npages, bool realmode);
-+static inline void pnv_pci_ioda_tce_invalidate_pe(struct pnv_ioda_pe *pe)
-+{
-+	pe->phb->tce_invalidate(pe->phb, pe, NULL, 0, 0, false);
-+}
- 
- #endif /* __POWERNV_PCI_H */
-diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
-index 8006c54..7931d42 100644
---- a/arch/powerpc/platforms/powernv/npu-dma.c
-+++ b/arch/powerpc/platforms/powernv/npu-dma.c
-@@ -223,7 +223,7 @@ long pnv_npu_set_window(struct pnv_ioda_pe *npe, int num,
- 		pe_err(npe, "Failed to configure TCE table, err %lld\n", rc);
- 		return rc;
- 	}
--	pnv_pci_ioda2_tce_invalidate_entire(phb, false);
-+	pnv_pci_ioda_tce_invalidate_pe(npe);
- 
- 	/* Add the table to the list so its TCE cache will get invalidated */
- 	pnv_pci_link_table_and_group(phb->hose->node, num,
-@@ -247,7 +247,7 @@ long pnv_npu_unset_window(struct pnv_ioda_pe *npe, int num)
- 		pe_err(npe, "Unmapping failed, ret = %lld\n", rc);
- 		return rc;
- 	}
--	pnv_pci_ioda2_tce_invalidate_entire(phb, false);
-+	pnv_pci_ioda_tce_invalidate_pe(npe);
- 
- 	pnv_pci_unlink_table_and_group(npe->table_group.tables[num],
- 			&npe->table_group);
-@@ -313,7 +313,7 @@ static int pnv_npu_dma_set_bypass(struct pnv_ioda_pe *npe)
- 			0 /* bypass base */, top);
- 
- 	if (rc == OPAL_SUCCESS)
--		pnv_pci_ioda2_tce_invalidate_entire(phb, false);
-+		pnv_pci_ioda_tce_invalidate_pe(npe);
- 
- 	return rc;
- }
-@@ -377,7 +377,7 @@ void pnv_npu_take_ownership(struct pnv_ioda_pe *npe)
- 		pe_err(npe, "Failed to disable bypass, err %lld\n", rc);
- 		return;
- 	}
--	pnv_pci_ioda2_tce_invalidate_entire(npe->phb, false);
-+	pnv_pci_ioda_tce_invalidate_pe(npe);
- }
- 
- struct pnv_ioda_pe *pnv_pci_npu_setup_iommu(struct pnv_ioda_pe *npe)
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda-tce.c b/arch/powerpc/platforms/powernv/pci-ioda-tce.c
-index fe96910..1942c40 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda-tce.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda-tce.c
-@@ -84,6 +84,22 @@ static __be64 *pnv_tce(struct iommu_table *tbl, bool user, long idx, bool alloc)
- 	return tmp + idx;
- }
- 
-+void pnv_pci_tce_invalidate(struct iommu_table *tbl,
-+		unsigned long index, unsigned long npages, bool rm)
-+{
-+	struct iommu_table_group_link *tgl;
-+
-+	list_for_each_entry_lockless(tgl, &tbl->it_group_list, next) {
-+		struct pnv_ioda_pe *pe = container_of(tgl->table_group,
-+			struct pnv_ioda_pe, table_group);
-+
-+		if (!pe->phb->tce_invalidate)
-+			continue;
-+
-+		pe->phb->tce_invalidate(pe->phb, pe, tbl, index, npages, rm);
-+	}
-+}
-+
- int pnv_tce_build(struct iommu_table *tbl, long index, long npages,
- 		unsigned long uaddr, enum dma_data_direction direction,
- 		unsigned long attrs)
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 15a4556..c76c395 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1947,15 +1947,11 @@ static inline __be64 __iomem *pnv_ioda_get_inval_reg(struct pnv_phb *phb,
- 		(phb->regs + 0x210);
- }
- 
--static void pnv_pci_p7ioc_tce_invalidate(struct iommu_table *tbl,
-+static void pnv_ioda1_tce_invalidate(struct pnv_phb *phb,
-+		struct pnv_ioda_pe *pe, struct iommu_table *tbl,
- 		unsigned long index, unsigned long npages, bool rm)
- {
--	struct iommu_table_group_link *tgl = list_first_entry_or_null(
--			&tbl->it_group_list, struct iommu_table_group_link,
--			next);
--	struct pnv_ioda_pe *pe = container_of(tgl->table_group,
--			struct pnv_ioda_pe, table_group);
--	__be64 __iomem *invalidate = pnv_ioda_get_inval_reg(pe->phb, rm);
-+	__be64 __iomem *invalidate = pnv_ioda_get_inval_reg(phb, rm);
- 	unsigned long start, end, inc;
- 
- 	start = __pa(((__be64 *)tbl->it_base) + index - tbl->it_offset);
-@@ -1984,7 +1980,7 @@ static void pnv_pci_p7ioc_tce_invalidate(struct iommu_table *tbl,
- 	 */
- }
- 
--static int pnv_ioda1_tce_build(struct iommu_table *tbl, long index,
-+static int pnv_ioda_tce_build(struct iommu_table *tbl, long index,
- 		long npages, unsigned long uaddr,
- 		enum dma_data_direction direction,
- 		unsigned long attrs)
-@@ -1993,220 +1989,66 @@ static int pnv_ioda1_tce_build(struct iommu_table *tbl, long index,
- 			attrs);
- 
- 	if (!ret)
--		pnv_pci_p7ioc_tce_invalidate(tbl, index, npages, false);
-+		pnv_pci_tce_invalidate(tbl, index, npages, false);
- 
- 	return ret;
- }
- 
- #ifdef CONFIG_IOMMU_API
--static int pnv_ioda1_tce_xchg(struct iommu_table *tbl, long index,
-+static int pnv_ioda_tce_xchg(struct iommu_table *tbl, long index,
- 		unsigned long *hpa, enum dma_data_direction *direction)
- {
- 	long ret = pnv_tce_xchg(tbl, index, hpa, direction, true);
- 
- 	if (!ret)
--		pnv_pci_p7ioc_tce_invalidate(tbl, index, 1, false);
-+		pnv_pci_tce_invalidate(tbl, index, 1, false);
- 
- 	return ret;
- }
- 
--static int pnv_ioda1_tce_xchg_rm(struct iommu_table *tbl, long index,
-+static int pnv_ioda_tce_xchg_rm(struct iommu_table *tbl, long index,
- 		unsigned long *hpa, enum dma_data_direction *direction)
- {
- 	long ret = pnv_tce_xchg(tbl, index, hpa, direction, false);
- 
- 	if (!ret)
--		pnv_pci_p7ioc_tce_invalidate(tbl, index, 1, true);
-+		pnv_pci_tce_invalidate(tbl, index, 1, true);
- 
- 	return ret;
- }
- #endif
- 
--static void pnv_ioda1_tce_free(struct iommu_table *tbl, long index,
-+static void pnv_ioda_tce_free(struct iommu_table *tbl, long index,
- 		long npages)
- {
- 	pnv_tce_free(tbl, index, npages);
- 
--	pnv_pci_p7ioc_tce_invalidate(tbl, index, npages, false);
--}
--
--static struct iommu_table_ops pnv_ioda1_iommu_ops = {
--	.set = pnv_ioda1_tce_build,
--#ifdef CONFIG_IOMMU_API
--	.exchange = pnv_ioda1_tce_xchg,
--	.exchange_rm = pnv_ioda1_tce_xchg_rm,
--	.useraddrptr = pnv_tce_useraddrptr,
--#endif
--	.clear = pnv_ioda1_tce_free,
--	.get = pnv_tce_get,
--};
--
--#define PHB3_TCE_KILL_INVAL_ALL		PPC_BIT(0)
--#define PHB3_TCE_KILL_INVAL_PE		PPC_BIT(1)
--#define PHB3_TCE_KILL_INVAL_ONE		PPC_BIT(2)
--
--static void pnv_pci_phb3_tce_invalidate_entire(struct pnv_phb *phb, bool rm)
--{
--	__be64 __iomem *invalidate = pnv_ioda_get_inval_reg(phb, rm);
--	const unsigned long val = PHB3_TCE_KILL_INVAL_ALL;
--
--	mb(); /* Ensure previous TCE table stores are visible */
--	if (rm)
--		__raw_rm_writeq_be(val, invalidate);
--	else
--		__raw_writeq_be(val, invalidate);
--}
--
--static inline void pnv_pci_phb3_tce_invalidate_pe(struct pnv_ioda_pe *pe)
--{
--	/* 01xb - invalidate TCEs that match the specified PE# */
--	__be64 __iomem *invalidate = pnv_ioda_get_inval_reg(pe->phb, false);
--	unsigned long val = PHB3_TCE_KILL_INVAL_PE | (pe->pe_number & 0xFF);
--
--	mb(); /* Ensure above stores are visible */
--	__raw_writeq_be(val, invalidate);
--}
--
--static void pnv_pci_phb3_tce_invalidate(struct pnv_ioda_pe *pe, bool rm,
--					unsigned shift, unsigned long index,
--					unsigned long npages)
--{
--	__be64 __iomem *invalidate = pnv_ioda_get_inval_reg(pe->phb, rm);
--	unsigned long start, end, inc;
--
--	/* We'll invalidate DMA address in PE scope */
--	start = PHB3_TCE_KILL_INVAL_ONE;
--	start |= (pe->pe_number & 0xFF);
--	end = start;
--
--	/* Figure out the start, end and step */
--	start |= (index << shift);
--	end |= ((index + npages - 1) << shift);
--	inc = (0x1ull << shift);
--	mb();
--
--	while (start <= end) {
--		if (rm)
--			__raw_rm_writeq_be(start, invalidate);
--		else
--			__raw_writeq_be(start, invalidate);
--		start += inc;
--	}
--}
--
--static inline void pnv_pci_ioda2_tce_invalidate_pe(struct pnv_ioda_pe *pe)
--{
--	struct pnv_phb *phb = pe->phb;
--
--	if (phb->model == PNV_PHB_MODEL_PHB3 && phb->regs)
--		pnv_pci_phb3_tce_invalidate_pe(pe);
--	else
--		opal_pci_tce_kill(phb->opal_id, OPAL_PCI_TCE_KILL_PE,
--				  pe->pe_number, 0, 0, 0);
--}
--
--static void pnv_pci_ioda2_tce_invalidate(struct iommu_table *tbl,
--		unsigned long index, unsigned long npages, bool rm)
--{
--	struct iommu_table_group_link *tgl;
--
--	list_for_each_entry_lockless(tgl, &tbl->it_group_list, next) {
--		struct pnv_ioda_pe *pe = container_of(tgl->table_group,
--				struct pnv_ioda_pe, table_group);
--		struct pnv_phb *phb = pe->phb;
--		unsigned int shift = tbl->it_page_shift;
--
--		/*
--		 * NVLink1 can use the TCE kill register directly as
--		 * it's the same as PHB3. NVLink2 is different and
--		 * should go via the OPAL call.
--		 */
--		if (phb->model == PNV_PHB_MODEL_NPU) {
--			/*
--			 * The NVLink hardware does not support TCE kill
--			 * per TCE entry so we have to invalidate
--			 * the entire cache for it.
--			 */
--			pnv_pci_phb3_tce_invalidate_entire(phb, rm);
--			continue;
--		}
--		if (phb->model == PNV_PHB_MODEL_PHB3 && phb->regs)
--			pnv_pci_phb3_tce_invalidate(pe, rm, shift,
--						    index, npages);
--		else
--			opal_pci_tce_kill(phb->opal_id,
--					  OPAL_PCI_TCE_KILL_PAGES,
--					  pe->pe_number, 1u << shift,
--					  index << shift, npages);
--	}
--}
--
--void pnv_pci_ioda2_tce_invalidate_entire(struct pnv_phb *phb, bool rm)
--{
--	if (phb->model == PNV_PHB_MODEL_NPU || phb->model == PNV_PHB_MODEL_PHB3)
--		pnv_pci_phb3_tce_invalidate_entire(phb, rm);
--	else
--		opal_pci_tce_kill(phb->opal_id, OPAL_PCI_TCE_KILL, 0, 0, 0, 0);
--}
--
--static int pnv_ioda2_tce_build(struct iommu_table *tbl, long index,
--		long npages, unsigned long uaddr,
--		enum dma_data_direction direction,
--		unsigned long attrs)
--{
--	int ret = pnv_tce_build(tbl, index, npages, uaddr, direction,
--			attrs);
--
--	if (!ret)
--		pnv_pci_ioda2_tce_invalidate(tbl, index, npages, false);
--
--	return ret;
--}
--
--#ifdef CONFIG_IOMMU_API
--static int pnv_ioda2_tce_xchg(struct iommu_table *tbl, long index,
--		unsigned long *hpa, enum dma_data_direction *direction)
--{
--	long ret = pnv_tce_xchg(tbl, index, hpa, direction, true);
--
--	if (!ret)
--		pnv_pci_ioda2_tce_invalidate(tbl, index, 1, false);
--
--	return ret;
--}
--
--static int pnv_ioda2_tce_xchg_rm(struct iommu_table *tbl, long index,
--		unsigned long *hpa, enum dma_data_direction *direction)
--{
--	long ret = pnv_tce_xchg(tbl, index, hpa, direction, false);
--
--	if (!ret)
--		pnv_pci_ioda2_tce_invalidate(tbl, index, 1, true);
--
--	return ret;
--}
--#endif
--
--static void pnv_ioda2_tce_free(struct iommu_table *tbl, long index,
--		long npages)
--{
--	pnv_tce_free(tbl, index, npages);
--
--	pnv_pci_ioda2_tce_invalidate(tbl, index, npages, false);
-+	pnv_pci_tce_invalidate(tbl, index, npages, false);
- }
- 
- static struct iommu_table_ops pnv_ioda2_iommu_ops = {
--	.set = pnv_ioda2_tce_build,
-+	.set = pnv_ioda_tce_build,
- #ifdef CONFIG_IOMMU_API
--	.exchange = pnv_ioda2_tce_xchg,
--	.exchange_rm = pnv_ioda2_tce_xchg_rm,
-+	.exchange = pnv_ioda_tce_xchg,
-+	.exchange_rm = pnv_ioda_tce_xchg_rm,
- 	.useraddrptr = pnv_tce_useraddrptr,
- #endif
--	.clear = pnv_ioda2_tce_free,
-+	.clear = pnv_ioda_tce_free,
- 	.get = pnv_tce_get,
- 	.free = pnv_pci_ioda2_table_free_pages,
- };
- 
-+static struct iommu_table_ops pnv_ioda1_iommu_ops = {
-+	.set = pnv_ioda_tce_build,
-+#ifdef CONFIG_IOMMU_API
-+	.exchange = pnv_ioda_tce_xchg,
-+	.exchange_rm = pnv_ioda_tce_xchg_rm,
-+	.useraddrptr = pnv_tce_useraddrptr,
-+#endif
-+	.clear = pnv_ioda_tce_free,
-+	.get = pnv_tce_get,
-+};
-+
- static int pnv_pci_ioda_dev_dma_weight(struct pci_dev *dev, void *data)
- {
- 	unsigned int *weight = (unsigned int *)data;
-@@ -2413,7 +2255,7 @@ static long pnv_pci_ioda2_set_window(struct iommu_table_group *table_group,
- 
- 	pnv_pci_link_table_and_group(phb->hose->node, num,
- 			tbl, &pe->table_group);
--	pnv_pci_ioda2_tce_invalidate_pe(pe);
-+	pnv_pci_ioda_tce_invalidate_pe(pe);
- 
- 	return 0;
- }
-@@ -2547,7 +2389,7 @@ static long pnv_pci_ioda2_unset_window(struct iommu_table_group *table_group,
- 	if (ret)
- 		pe_warn(pe, "Unmapping failed, ret = %ld\n", ret);
- 	else
--		pnv_pci_ioda2_tce_invalidate_pe(pe);
-+		pnv_pci_ioda_tce_invalidate_pe(pe);
- 
- 	pnv_pci_unlink_table_and_group(table_group->tables[num], table_group);
- 
-@@ -3525,7 +3367,7 @@ static void pnv_pci_ioda1_release_pe_dma(struct pnv_ioda_pe *pe)
- 	if (rc != OPAL_SUCCESS)
- 		return;
- 
--	pnv_pci_p7ioc_tce_invalidate(tbl, tbl->it_offset, tbl->it_size, false);
-+	pnv_pci_tce_invalidate(tbl, tbl->it_offset, tbl->it_size, false);
- 	if (pe->table_group.group) {
- 		iommu_group_put(pe->table_group.group);
- 		WARN_ON(pe->table_group.group);
-@@ -3730,6 +3572,82 @@ static const struct pci_controller_ops pnv_npu_ocapi_ioda_controller_ops = {
- 	.shutdown		= pnv_pci_ioda_shutdown,
- };
- 
-+#define PHB3_TCE_KILL_INVAL_ALL		PPC_BIT(0)
-+#define PHB3_TCE_KILL_INVAL_PE		PPC_BIT(1)
-+#define PHB3_TCE_KILL_INVAL_ONE		PPC_BIT(2)
-+
-+static void pnv_ioda2_direct_tce_invalidate(struct pnv_phb *phb,
-+		struct pnv_ioda_pe *pe, struct iommu_table *tbl,
-+		unsigned long index, unsigned long npages, bool rm)
-+{
-+	__be64 __iomem *invalidate = pnv_ioda_get_inval_reg(phb, rm);
-+	unsigned int shift = tbl->it_page_shift;
-+	unsigned long start, end, inc;
-+
-+	if (!tbl || tbl->it_size == npages) {
-+		/* 01xb - invalidate TCEs that match the specified PE# */
-+		unsigned long val = PHB3_TCE_KILL_INVAL_PE |
-+				(pe->pe_number & 0xFF);
-+
-+		mb(); /* Ensure above stores are visible */
-+		__raw_writeq_be(val, invalidate);
-+		return;
-+	}
-+
-+	/* We'll invalidate DMA address in PE scope */
-+	start = PHB3_TCE_KILL_INVAL_ONE;
-+	start |= (pe->pe_number & 0xFF);
-+	end = start;
-+
-+	/* Figure out the start, end and step */
-+	start |= (index << shift);
-+	end |= ((index + npages - 1) << shift);
-+	inc = (0x1ull << shift);
-+	mb(); /* Ensure above stores are visible */
-+
-+	while (start <= end) {
-+		if (rm)
-+			__raw_rm_writeq_be(start, invalidate);
-+		else
-+			__raw_writeq_be(start, invalidate);
-+		start += inc;
-+	}
-+}
-+
-+static void pnv_ioda2_opal_tce_invalidate(struct pnv_phb *phb,
-+		struct pnv_ioda_pe *pe, struct iommu_table *tbl,
-+		unsigned long index, unsigned long npages, bool realmode)
-+{
-+	if (!tbl || tbl->it_size == npages) {
-+		opal_pci_tce_kill(phb->opal_id, OPAL_PCI_TCE_KILL_PE,
-+				pe->pe_number, 0, 0, 0);
-+		return;
-+	}
-+
-+	opal_pci_tce_kill(phb->opal_id, OPAL_PCI_TCE_KILL_PAGES, pe->pe_number,
-+			1u << tbl->it_page_shift, index << tbl->it_page_shift,
-+			npages);
-+}
-+
-+static void pnv_ioda2_npu_tce_invalidate(struct pnv_phb *phb,
-+		struct pnv_ioda_pe *npe, struct iommu_table *tbl,
-+		unsigned long index, unsigned long npages, bool rm)
-+{
-+	/*
-+	 * The NVLink hardware does not support TCE kill
-+	 * per TCE entry so we have to invalidate
-+	 * the entire cache for it.
-+	 */
-+	__be64 __iomem *invalidate = pnv_ioda_get_inval_reg(phb, rm);
-+	const unsigned long val = PHB3_TCE_KILL_INVAL_ALL;
-+
-+	mb(); /* Ensure previous TCE table stores are visible */
-+	if (rm)
-+		__raw_rm_writeq_be(val, invalidate);
-+	else
-+		__raw_writeq_be(val, invalidate);
-+}
-+
- static void __init pnv_pci_init_ioda_phb(struct device_node *np,
- 					 u64 hub_id, int ioda_type)
- {
-@@ -3787,16 +3705,22 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
- 	mutex_init(&phb->ioda.pe_alloc_mutex);
- 
- 	/* Detect specific models for error handling */
--	if (of_device_is_compatible(np, "ibm,p7ioc-pciex"))
-+	if (of_device_is_compatible(np, "ibm,p7ioc-pciex")) {
- 		phb->model = PNV_PHB_MODEL_P7IOC;
--	else if (of_device_is_compatible(np, "ibm,power8-pciex"))
-+		phb->tce_invalidate = pnv_ioda1_tce_invalidate;
-+	} else if (of_device_is_compatible(np, "ibm,power8-pciex")) {
- 		phb->model = PNV_PHB_MODEL_PHB3;
--	else if (of_device_is_compatible(np, "ibm,power8-npu-pciex"))
-+		phb->tce_invalidate = pnv_ioda2_opal_tce_invalidate;
-+	} else if (of_device_is_compatible(np, "ibm,power8-npu-pciex")) {
- 		phb->model = PNV_PHB_MODEL_NPU;
--	else if (of_device_is_compatible(np, "ibm,power9-npu-pciex"))
-+		phb->tce_invalidate = pnv_ioda2_npu_tce_invalidate;
-+	} else if (of_device_is_compatible(np, "ibm,power9-npu-pciex")) {
- 		phb->model = PNV_PHB_MODEL_NPU2;
--	else
-+		phb->tce_invalidate = pnv_ioda2_opal_tce_invalidate;
-+	} else {
- 		phb->model = PNV_PHB_MODEL_UNKNOWN;
-+		phb->tce_invalidate = pnv_ioda2_opal_tce_invalidate;
-+	}
- 
- 	/* Initialize diagnostic data buffer */
- 	prop32 = of_get_property(np, "ibm,phb-diag-data-size", NULL);
-@@ -3816,6 +3740,8 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
- 		phb->regs = ioremap(r.start, resource_size(&r));
- 		if (phb->regs == NULL)
- 			pr_err("  Failed to map registers !\n");
-+		else if (phb->model == PNV_PHB_MODEL_PHB3)
-+			phb->tce_invalidate = pnv_ioda2_direct_tce_invalidate;
- 	}
- 
- 	/* Initialize more IODA stuff */
--- 
-2.11.0
+>
+>
+>> +		goto get_user_again;
+>> +	}
+>> +	return ret;
+>> +}
+>> 
+>
+> -- 
+> Alexey
+
+-aneesh
 
