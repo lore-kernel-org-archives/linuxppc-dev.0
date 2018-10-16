@@ -2,51 +2,71 @@ Return-Path: <SRS0=rnOA=M4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D69EC04EBD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 09:49:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 92305C04EBD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 10:51:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 06AA52083C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 09:49:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 06AA52083C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id EB57D20881
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 10:51:11 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="NWjbfROv"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EB57D20881
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42Z9Wd5zHQzF3XQ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 20:49:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Z9TF0yrBzF3FB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 20:47:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42ZBtj2PtLzF3Wf
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 21:51:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="NWjbfROv";
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=srs0=ypgj=m4=linuxfoundation.org=gregkh@kernel.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ header.from=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="NWjbfROv"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42ZBqR3t8yzF3WF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 21:48:19 +1100 (AEDT)
+Received: from localhost (ip-213-127-77-176.ip.prioritytelecom.net
+ [213.127.77.176])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 42Z9TD448fz9s0t;
- Tue, 16 Oct 2018 20:47:28 +1100 (AEDT)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: frowand.list@gmail.com, Rob Herring <robh+dt@kernel.org>,
- Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>,
- Moritz Fischer <mdf@kernel.org>
-Subject: Re: [PATCH v4 00/18] of: overlay: validation checks, subsequent fixes
-In-Reply-To: <1539657458-24401-1-git-send-email-frowand.list@gmail.com>
-References: <1539657458-24401-1-git-send-email-frowand.list@gmail.com>
-Date: Tue, 16 Oct 2018 20:47:27 +1100
-Message-ID: <87murekyts.fsf@concordia.ellerman.id.au>
+ by mail.kernel.org (Postfix) with ESMTPSA id C05712089E;
+ Tue, 16 Oct 2018 10:48:15 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1539686896;
+ bh=fE/XmmY2hkqcv6th2dVvPuRnofzNhARCYzY9GtU+phk=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=NWjbfROvhmuFh+qacaL3pli/QvHcqLXzqg5xJO2LKEAyRmvlSvM7tWgtHE7Vh3I8H
+ Z2SIsFDoPuuAZZzmtszK3XQVuC51EpOZgvDQzmFTzeyqZX+bF+RcMWkLgY8xkgGL9a
+ h/eSA2O/+7rhAEpDsmCUSfBxXjwLjbnKDRiB7IM8=
+Date: Tue, 16 Oct 2018 12:48:14 +0200
+From: Greg KH <gregkh@linuxfoundation.org>
+To: Ioana Ciornei <ioana.ciornei@nxp.com>
+Subject: Re: [PATCH] driver core: device: add BUS_ATTR_WO macro
+Message-ID: <20181016104814.GA4768@kroah.com>
+References: <1538407972-9340-1-git-send-email-ioana.ciornei@nxp.com>
+ <20181001210804.GA24332@kroah.com>
+ <HE1PR0401MB236354F325B7A56355068E35E0E80@HE1PR0401MB2363.eurprd04.prod.outlook.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <HE1PR0401MB236354F325B7A56355068E35E0E80@HE1PR0401MB2363.eurprd04.prod.outlook.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,35 +78,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, linux-fpga@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: "elder@kernel.org" <elder@kernel.org>,
+ "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+ "sage@redhat.com" <sage@redhat.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-block@vger.kernel.org" <linux-block@vger.kernel.org>,
+ "idryomov@gmail.com" <idryomov@gmail.com>, "jth@kernel.org" <jth@kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "ceph-devel@vger.kernel.org" <ceph-devel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-frowand.list@gmail.com writes:
+On Tue, Oct 02, 2018 at 09:43:35AM +0000, Ioana Ciornei wrote:
+> > > Add BUS_ATTR_WO macro to make it easier to add attributes without
+> > > auditing the mode settings. Also, use the newly added macro where
+> > > appropriate.
+> > >
+> > > Signed-off-by: Ioana Ciornei <ioana.ciornei@nxp.com>
+> > > ---
+> > >  arch/powerpc/platforms/pseries/ibmebus.c | 12 ++++----
+> > >  drivers/block/rbd.c                      | 48 ++++++++++++++++----------------
+> > >  drivers/scsi/fcoe/fcoe_sysfs.c           |  4 +--
+> > >  drivers/scsi/fcoe/fcoe_transport.c       | 10 +++----
+> > >  include/linux/device.h                   |  2 ++
+> > >  include/scsi/libfcoe.h                   |  8 +++---
+> > >  6 files changed, 43 insertions(+), 41 deletions(-)
+> > 
+> > Nice!  This duplicates a lot of the work I did back in July but have not pushed out
+> > very far due to the other things that ended up happening around that time:
+> > 	https://git.kernel.org/pub/scm/linux/kernel/git/gregkh/driver-core.git/log/?h=bus_cleanup 
+> > 
+> > As the patch series seen at that link shows, you can do this in more places than
+> > just what you did here.
+> > 
+> > Either way, you should break this up into the individual patches, like I did or you
+> > can take my patches if you want.  Getting the BUS_ATTR_WO() macro added is
+> > good to do now, and then you can go and hit up all of the different subsystems
+> > that should be converted over to it.
+> 
+> I can of course split my patch into individual ones and resubmit them, but as you already have the entire patch set ready, I feel like we can just push those. I looked through your changes and it seems like you covered all the subsystems. Please let me know if there is something else I should do.
+> 
+> My intention here was to first add the _WO attribute so that afterwards I can add a new bus attribute in the fsl-mc bus.
 
-> From: Frank Rowand <frank.rowand@sony.com>
->
-> Add checks to (1) overlay apply process and (2) memory freeing
-> triggered by overlay release.  The checks are intended to detect
-> possible memory leaks and invalid overlays.
->
-> The checks revealed bugs in existing code.  Fixed the bugs.
->
-> While fixing bugs, noted other issues, which are fixed in
-> separate patches.
->
-> *****  Powerpc folks: I was not able to test the patches that
-> *****  directly impact Powerpc systems that use dynamic
-> *****  devicetree.  Please review that code carefully and
-> *****  test.  The specific patches are: 03/16, 04/16, 07/16
+Ok, I've queued up the patch that adds the _WO attribute now, so that
+you should be able to use this after 4.20-rc1.  I'll work on getting my
+other patches merged in that series at that time as well.
 
-Hi Frank,
+thanks,
 
-Do you have this series in a git tree somewhere?
-
-I tried applying it on top of linux-next but hit some conflicts which I
-couldn't easily resolve.
-
-cheers
+greg k-h
