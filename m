@@ -4,90 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-5.1 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLACK
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BB8CAC04EBD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 07:18:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3422AC04EBD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 07:34:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1D65B20869
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 07:18:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1D65B20869
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 6E7FF20881
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 07:34:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6E7FF20881
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=popple.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42Z69l3j5PzF3Wf
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 18:18:51 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Z6WK30kVzF3Vm
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 18:34:05 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=popple.id.au
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=popple.id.au
+ (client-ip=150.101.137.145; helo=ipmail06.adl6.internode.on.net;
+ envelope-from=alistair@popple.id.au; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Z67b4rwwzF3VB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 18:16:59 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w9G79ZVf131712
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 03:16:57 -0400
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2n57pwqrqy-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 03:16:56 -0400
-Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Tue, 16 Oct 2018 08:16:54 +0100
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
- by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 16 Oct 2018 08:16:50 +0100
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- w9G7GnSl48627920
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Tue, 16 Oct 2018 07:16:49 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2A70F5205A;
- Tue, 16 Oct 2018 07:16:49 +0000 (GMT)
-Received: from skywalker (unknown [9.199.58.69])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with SMTP id CD04052052;
- Tue, 16 Oct 2018 07:16:36 +0000 (GMT)
-Received: (nullmailer pid 21845 invoked by uid 1000);
- Tue, 16 Oct 2018 07:16:35 -0000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, akpm@linux-foundation.org,
- Michal Hocko <mhocko@kernel.org>, mpe@ellerman.id.au
-Subject: Re: [PATCH V3 1/2] mm: Add get_user_pages_cma_migrate
-In-Reply-To: <6112386d-65cd-fc1f-b012-e33da2c3b8fe@ozlabs.ru>
-References: <20180918115839.22154-1-aneesh.kumar@linux.ibm.com>
- <20180918115839.22154-2-aneesh.kumar@linux.ibm.com>
- <6112386d-65cd-fc1f-b012-e33da2c3b8fe@ozlabs.ru>
-Date: Tue, 16 Oct 2018 12:46:35 +0530
+ dmarc=none (p=none dis=none) header.from=popple.id.au
+Received: from ipmail06.adl6.internode.on.net (ipmail06.adl6.internode.on.net
+ [150.101.137.145])
+ by lists.ozlabs.org (Postfix) with ESMTP id 42Z6TB602jzF3PJ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 18:32:14 +1100 (AEDT)
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: A2BpBQCh299Z/3oKyHleGwEBAQMBAQEJAQEBgy8uZG4nhVmJNI4+AYF1LwGWDYIELYRJSQQCAoQ+WAECAQEBAQECayiFHgEFJxMcIxALDgoJFRAPASkeBhOKHRGtTjqLPAEBAQEBBQEBAQEfBYMthUKDKoQ/KgWGCwWhRIdejX6SHpckV4EOHBYYCQgZGYVjHBmBYiw2iSKCNQEBAQ
+Received: from 121-200-10-122.nbn.syd.aussiebb.net (HELO new-mexico.localnet)
+ ([121.200.10.122])
+ by ipmail06.adl6.internode.on.net with ESMTP; 16 Oct 2018 18:02:14 +1030
+From: Alistair Popple <alistair@popple.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: [PATCH kernel v2] powerpc/ioda/npu: Call skiboot's hot reset hook
+ when disabling NPU2
+Date: Tue, 16 Oct 2018 18:32:10 +1100
+Message-ID: <2086775.d8i5QI7OoB@new-mexico>
+User-Agent: KMail/5.2.3 (Linux/4.17.0-0.bpo.1-amd64; KDE/5.28.0; x86_64; ; )
+In-Reply-To: <374a32c1-8787-2b82-af5d-163d9a496a25@ozlabs.ru>
+References: <20181002032021.7126-1-aik@ozlabs.ru>
+ <2184134.UzzIe8q8zq@new-mexico>
+ <374a32c1-8787-2b82-af5d-163d9a496a25@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-x-cbid: 18101607-4275-0000-0000-000002CC9BD3
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18101607-4276-0000-0000-000037D7A21D
-Message-Id: <87murewecs.fsf@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-10-16_04:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=44 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1807170000 definitions=main-1810160065
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,260 +60,134 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: Reza Arbab <arbab@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Alexey Kardashevskiy <aik@ozlabs.ru> writes:
+On Tuesday, 16 October 2018 1:22:53 PM AEDT Alexey Kardashevskiy wrote:
+> 
+> On 16/10/2018 13:19, Alistair Popple wrote:
+> >> reset_ntl() does what npu2_dev_procedure_reset() does plus more stuff,
+> >> there nothing really in npu2_dev_procedure_reset() which reset_ntl()
+> >> does not do already from the hardware standpoint. And it did stop HMIs
+> >> for me though.
+> >>
+> >> but ok, what will be sufficient then if not reset_ntl()?
+> > 
+> > Argh, yes you are correct. Specifically both npu2_dev_procedure_reset() and
+> > reset_ntl() contain:
+> > 
+> > 	/* NTL Reset */
+> > 	val = npu2_read(ndev->npu, NPU2_NTL_MISC_CFG1(ndev));
+> > 	val |= PPC_BIT(8) | PPC_BIT(9);
+> > 	npu2_write(ndev->npu, NPU2_NTL_MISC_CFG1(ndev), val);
+> > 
+> > Which should fence the brick. However from what I recall there was more to
+> > reliably preventing HMIs than merely fencing the brick. It invovled a sequence
+> > of fencing and flushing the cache with dcbf instructions at the right time which
+> > is why we also have the FLR. Unfortunately I don't know the precise details,
+> > perhaps if we send enough coffee Balbir's way he might be able remind us?
+> 
+> 
+> He suggested and ack'ed that skiboot patch, I can repeat beers^wcoffee
+> but it won't change much ;)
 
-> On 18/09/2018 21:58, Aneesh Kumar K.V wrote:
->> This helper does a get_user_pages_fast and if it find pages in the CMA area
->> it will try to migrate them before taking page reference. This makes sure that
->> we don't keep non-movable pages (due to page reference count) in the CMA area.
->> Not able to move pages out of CMA area result in CMA allocation failures.
->> 
->> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
->> ---
->>  include/linux/hugetlb.h |   2 +
->>  include/linux/migrate.h |   3 +
->>  mm/hugetlb.c            |   4 +-
->>  mm/migrate.c            | 132 ++++++++++++++++++++++++++++++++++++++++
->>  4 files changed, 139 insertions(+), 2 deletions(-)
->> 
->> diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
->> index 6b68e345f0ca..1abccb1a1ecc 100644
->> --- a/include/linux/hugetlb.h
->> +++ b/include/linux/hugetlb.h
->> @@ -357,6 +357,8 @@ struct page *alloc_huge_page_nodemask(struct hstate *h, int preferred_nid,
->>  				nodemask_t *nmask);
->>  struct page *alloc_huge_page_vma(struct hstate *h, struct vm_area_struct *vma,
->>  				unsigned long address);
->> +struct page *alloc_migrate_huge_page(struct hstate *h, gfp_t gfp_mask,
->> +				     int nid, nodemask_t *nmask);
->>  int huge_add_to_page_cache(struct page *page, struct address_space *mapping,
->>  			pgoff_t idx);
->>  
->> diff --git a/include/linux/migrate.h b/include/linux/migrate.h
->> index f2b4abbca55e..d82b35afd2eb 100644
->> --- a/include/linux/migrate.h
->> +++ b/include/linux/migrate.h
->> @@ -286,6 +286,9 @@ static inline int migrate_vma(const struct migrate_vma_ops *ops,
->>  }
->>  #endif /* IS_ENABLED(CONFIG_MIGRATE_VMA_HELPER) */
->>  
->> +extern int get_user_pages_cma_migrate(unsigned long start, int nr_pages, int write,
->> +				      struct page **pages);
->> +
->>  #endif /* CONFIG_MIGRATION */
->>  
->>  #endif /* _LINUX_MIGRATE_H */
->> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
->> index 3c21775f196b..1abbfcb84f66 100644
->> --- a/mm/hugetlb.c
->> +++ b/mm/hugetlb.c
->> @@ -1585,8 +1585,8 @@ static struct page *alloc_surplus_huge_page(struct hstate *h, gfp_t gfp_mask,
->>  	return page;
->>  }
->>  
->> -static struct page *alloc_migrate_huge_page(struct hstate *h, gfp_t gfp_mask,
->> -		int nid, nodemask_t *nmask)
->> +struct page *alloc_migrate_huge_page(struct hstate *h, gfp_t gfp_mask,
->> +				     int nid, nodemask_t *nmask)
->>  {
->>  	struct page *page;
->>  
->> diff --git a/mm/migrate.c b/mm/migrate.c
->> index d6a2e89b086a..2f92534ea7a1 100644
->> --- a/mm/migrate.c
->> +++ b/mm/migrate.c
->> @@ -3006,3 +3006,135 @@ int migrate_vma(const struct migrate_vma_ops *ops,
->>  }
->>  EXPORT_SYMBOL(migrate_vma);
->>  #endif /* defined(MIGRATE_VMA_HELPER) */
->> +
->> +static struct page *new_non_cma_page(struct page *page, unsigned long private)
->> +{
->> +	/*
->> +	 * We want to make sure we allocate the new page from the same node
->> +	 * as the source page.
->> +	 */
->> +	int nid = page_to_nid(page);
->> +	gfp_t gfp_mask = GFP_USER | __GFP_THISNODE;
->> +
->> +	if (PageHighMem(page))
->> +		gfp_mask |= __GFP_HIGHMEM;
->> +
->> +	if (PageTransHuge(page)) {
->> +		struct page *thp;
->> +		gfp_t thp_gfpmask = GFP_TRANSHUGE | __GFP_THISNODE;
->> +
->> +		/*
->> +		 * Remove the movable mask so that we don't allocate from
->> +		 * CMA area again.
->> +		 */
->> +		thp_gfpmask &= ~__GFP_MOVABLE;
->> +		thp = __alloc_pages_node(nid, thp_gfpmask, HPAGE_PMD_ORDER);
->
->
-> HPAGE_PMD_ORDER is 2MB or 1GB? THP are always that PMD order?
+Ha. Couldn't hurt ;)
 
-2M or 16M. THP is at PMD level.
+I was pretty sure flushing the caches was an important part of the sequence to
+avoid HMI's. I believe you are trying to deal with unexpected guest terminations
+which means the driver won't have a chance to flush the caches prior to
+termination so wouldn't you also need to do that somewhere? Unless the driver
+does it at startup?
 
->
->
->> +		if (!thp)
->> +			return NULL;
->> +		prep_transhuge_page(thp);
->> +		return thp;
->> +
->> +#ifdef  CONFIG_HUGETLB_PAGE
->> +	} else if (PageHuge(page)) {
->> +
->> +		struct hstate *h = page_hstate(page);
->> +		/*
->> +		 * We don't want to dequeue from the pool because pool pages will
->> +		 * mostly be from the CMA region.
->> +		 */
->> +		return alloc_migrate_huge_page(h, gfp_mask, nid, NULL);
->> +#endif
->> +	}
->> +
->> +	return __alloc_pages_node(nid, gfp_mask, 0);
->> +}
->> +
->> +/**
->> + * get_user_pages_cma_migrate() - pin user pages in memory by migrating pages in CMA region
->> + * @start:	starting user address
->> + * @nr_pages:	number of pages from start to pin
->> + * @write:	whether pages will be written to
->> + * @pages:	array that receives pointers to the pages pinned.
->> + *		Should be at least nr_pages long.
->> + *
->> + * Attempt to pin user pages in memory without taking mm->mmap_sem.
->> + * If not successful, it will fall back to taking the lock and
->> + * calling get_user_pages().
->
->
-> I do not see any locking or get_user_pages(), hidden somewhere?
->
+- Alistair
 
-The rules are same as get_user_pages_fast, which does that pin attempt
-without taking mm->mmap_sem. If it fail get_user_pages_fast will take
-the mmap_sem and try to pin the pages. The details are in
-get_user_pages_fast. You can look at get_user_pages_unlocked
+> >
+> > - Alistair
+> > 
+> >>
+> >>
+> >>>
+> >>> - Alistair
+> >>>
+> >>>>
+> >>>>
+> >>>>
+> >>>>>
+> >>>>> - Alistair
+> >>>>>
+> >>>>> On Monday, 15 October 2018 6:17:51 PM AEDT Alexey Kardashevskiy wrote:
+> >>>>>> Ping?
+> >>>>>>
+> >>>>>>
+> >>>>>> On 02/10/2018 13:20, Alexey Kardashevskiy wrote:
+> >>>>>>> The skiboot firmware has a hot reset handler which fences the NVIDIA V100
+> >>>>>>> GPU RAM on Witherspoons and makes accesses no-op instead of throwing HMIs:
+> >>>>>>> https://github.com/open-power/skiboot/commit/fca2b2b839a67
+> >>>>>>>
+> >>>>>>> Now we are going to pass V100 via VFIO which most certainly involves
+> >>>>>>> KVM guests which are often terminated without getting a chance to offline
+> >>>>>>> GPU RAM so we end up with a running machine with misconfigured memory.
+> >>>>>>> Accessing this memory produces hardware management interrupts (HMI)
+> >>>>>>> which bring the host down.
+> >>>>>>>
+> >>>>>>> To suppress HMIs, this wires up this hot reset hook to vfio_pci_disable()
+> >>>>>>> via pci_disable_device() which switches NPU2 to a safe mode and prevents
+> >>>>>>> HMIs.
+> >>>>>>>
+> >>>>>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> >>>>>>> ---
+> >>>>>>> Changes:
+> >>>>>>> v2:
+> >>>>>>> * updated the commit log
+> >>>>>>> ---
+> >>>>>>>  arch/powerpc/platforms/powernv/pci-ioda.c | 10 ++++++++++
+> >>>>>>>  1 file changed, 10 insertions(+)
+> >>>>>>>
+> >>>>>>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> >>>>>>> index cde7102..e37b9cc 100644
+> >>>>>>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> >>>>>>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> >>>>>>> @@ -3688,6 +3688,15 @@ static void pnv_pci_release_device(struct pci_dev *pdev)
+> >>>>>>>  		pnv_ioda_release_pe(pe);
+> >>>>>>>  }
+> >>>>>>>  
+> >>>>>>> +static void pnv_npu_disable_device(struct pci_dev *pdev)
+> >>>>>>> +{
+> >>>>>>> +	struct eeh_dev *edev = pci_dev_to_eeh_dev(pdev);
+> >>>>>>> +	struct eeh_pe *eehpe = edev ? edev->pe : NULL;
+> >>>>>>> +
+> >>>>>>> +	if (eehpe && eeh_ops && eeh_ops->reset)
+> >>>>>>> +		eeh_ops->reset(eehpe, EEH_RESET_HOT);
+> >>>>>>> +}
+> >>>>>>> +
+> >>>>>>>  static void pnv_pci_ioda_shutdown(struct pci_controller *hose)
+> >>>>>>>  {
+> >>>>>>>  	struct pnv_phb *phb = hose->private_data;
+> >>>>>>> @@ -3732,6 +3741,7 @@ static const struct pci_controller_ops pnv_npu_ioda_controller_ops = {
+> >>>>>>>  	.reset_secondary_bus	= pnv_pci_reset_secondary_bus,
+> >>>>>>>  	.dma_set_mask		= pnv_npu_dma_set_mask,
+> >>>>>>>  	.shutdown		= pnv_pci_ioda_shutdown,
+> >>>>>>> +	.disable_device		= pnv_npu_disable_device,
+> >>>>>>>  };
+> >>>>>>>  
+> >>>>>>>  static const struct pci_controller_ops pnv_npu_ocapi_ioda_controller_ops = {
+> >>>>>>>
+> >>>>>>
+> >>>>>>
+> >>>>>
+> >>>>>
+> >>>>
+> >>>>
+> >>>
+> >>>
+> >>
+> >>
+> > 
+> > 
+> 
+> 
 
-
->> + *
->> + * If the pinned pages are backed by CMA region, we migrate those pages out,
->> + * allocating new pages from non-CMA region. This helps in avoiding keeping
->> + * pages pinned in the CMA region for a long time thereby resulting in
->> + * CMA allocation failures.
->> + *
->> + * Returns number of pages pinned. This may be fewer than the number
->> + * requested. If nr_pages is 0 or negative, returns 0. If no pages
->> + * were pinned, returns -errno.
->> + */
->> +
->> +int get_user_pages_cma_migrate(unsigned long start, int nr_pages, int write,
->> +			       struct page **pages)
->> +{
->> +	int i, ret;
->> +	bool drain_allow = true;
->> +	bool migrate_allow = true;
->> +	LIST_HEAD(cma_page_list);
->> +
->> +get_user_again:
->> +	ret = get_user_pages_fast(start, nr_pages, write, pages);
->> +	if (ret <= 0)
->> +		return ret;
->> +
->> +	for (i = 0; i < ret; ++i) {
->> +		/*
->> +		 * If we get a page from the CMA zone, since we are going to
->> +		 * be pinning these entries, we might as well move them out
->> +		 * of the CMA zone if possible.
->> +		 */
->> +		if (is_migrate_cma_page(pages[i]) && migrate_allow) {
->> +			if (PageHuge(pages[i]))
->> +				isolate_huge_page(pages[i], &cma_page_list);
->> +			else {
->> +				struct page *head = compound_head(pages[i]);
->> +
->> +				if (!PageLRU(head) && drain_allow) {
->> +					lru_add_drain_all();
->> +					drain_allow = false;
->> +				}
->> +
->> +				if (!isolate_lru_page(head)) {
->> +					list_add_tail(&head->lru, &cma_page_list);
->> +					mod_node_page_state(page_pgdat(head),
->> +							    NR_ISOLATED_ANON +
->> +							    page_is_file_cache(head),
->> +							    hpage_nr_pages(head));
->
->
-> Above 10 lines I cannot really comment due to my massive ignorance in
-> this area, especially about what lru_add_drain_all() and
-> mod_node_page_state() :(
-
-That makes sure we move the pages from per cpu lru vec and add them to
-the right lru list so that we can isolate the pages correctly.
-
->
->
->> +				}
->> +			}
->> +		}
->> +	}
->> +	if (!list_empty(&cma_page_list)) {
->> +		/*
->> +		 * drop the above get_user_pages reference.
->> +		 */
->> +		for (i = 0; i < ret; ++i)
->> +			put_page(pages[i]);
->> +
->> +		if (migrate_pages(&cma_page_list, new_non_cma_page,
->> +				  NULL, 0, MIGRATE_SYNC, MR_CONTIG_RANGE)) {
->> +			/*
->> +			 * some of the pages failed migration. Do get_user_pages
->> +			 * without migration.
->> +			 */
->> +			migrate_allow = false;
->
->
-> migrate_allow seems useless, simply calling get_user_pages_fast() should
-> make the code easier to read imho. And the comment says
-> get_user_pages(), where does this guy hide?
-
-I didn't get that suggestion. What we want to do here is try to migrate pages as
-long as we find CMA pages in the result of get_user_pages_fast. If we
-failed any migration attempt, don't try to migrate again.
-
->
->> +
->> +			if (!list_empty(&cma_page_list))
->> +				putback_movable_pages(&cma_page_list);
->> +		}
->> +		/*
->> +		 * We did migrate all the pages, Try to get the page references again
->> +		 * migrating any new CMA pages which we failed to isolate earlier.
->> +		 */
->> +		drain_allow = true;
->
-> Move this "drain_allow = true" right after "get_user_again:"? 1
- 
->
->
->> +		goto get_user_again;
->> +	}
->> +	return ret;
->> +}
->> 
->
-> -- 
-> Alexey
-
--aneesh
 
