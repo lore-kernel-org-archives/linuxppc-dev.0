@@ -2,57 +2,70 @@ Return-Path: <SRS0=rnOA=M4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E962EC04EB9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 02:21:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CED65C04EB9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 02:23:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 62E202089E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 02:21:12 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 62E202089E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=popple.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 40125208D9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 02:23:29 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="O6ps0C+m"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 40125208D9
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42YzZG0z2CzF3Vy
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 13:21:10 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=popple.id.au
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Yzcv0PNDzF326
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 13:23:27 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=popple.id.au
- (client-ip=150.101.137.136; helo=ipmail01.adl6.internode.on.net;
- envelope-from=alistair@popple.id.au; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=popple.id.au
-Received: from ipmail01.adl6.internode.on.net (ipmail01.adl6.internode.on.net
- [150.101.137.136])
- by lists.ozlabs.org (Postfix) with ESMTP id 42YzWx4BDRzF31T
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 13:19:09 +1100 (AEDT)
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: =?us-ascii?q?A2A+AACZScVb/x4SUcpjGwEBAQEDAQEBB?=
- =?us-ascii?q?wMBAQGBVAMBAQELAYJpbRIohTWHNo1YjXKJKYFmMAgBg3pGAoR+NwoNAQMBAQI?=
- =?us-ascii?q?BAQJtHAyFOQEBAQMBJxM/BQsLDgoJFRAPAUcGE4MhgXkHEKgCM4obBYtjggCBE?=
- =?us-ascii?q?oMSgxsCgRsqBYVxAohWlVQJgg+ERoodCQJSj0GMQ4tDIoFVHxQaCBcZgyeCJhc?=
- =?us-ascii?q?RgzaKZiswgQMBiCWCPgEB?=
-Received: from bh02i525f01.au.ibm.com (HELO new-mexico.localnet)
- ([202.81.18.30])
- by ipmail01.adl6.internode.on.net with ESMTP; 16 Oct 2018 12:49:08 +1030
-From: Alistair Popple <alistair@popple.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH kernel v2] powerpc/ioda/npu: Call skiboot's hot reset hook
- when disabling NPU2
-Date: Tue, 16 Oct 2018 13:19:06 +1100
-Message-ID: <2184134.UzzIe8q8zq@new-mexico>
-User-Agent: KMail/5.2.3 (Linux/4.17.0-0.bpo.1-amd64; KDE/5.28.0; x86_64; ; )
-In-Reply-To: <6b37ac1c-d611-49b1-4a1b-dec96a58c91b@ozlabs.ru>
-References: <20181002032021.7126-1-aik@ozlabs.ru>
- <1625714.Rr8qeDJm6q@new-mexico>
- <6b37ac1c-d611-49b1-4a1b-dec96a58c91b@ozlabs.ru>
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="O6ps0C+m";
+	dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42YzXJ3qTJzF3WV
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 13:19:28 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=canb.auug.org.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au
+ header.b="O6ps0C+m"; dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPSA id 42YzXJ1QNHz9sCT;
+ Tue, 16 Oct 2018 13:19:28 +1100 (AEDT)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=canb.auug.org.au
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=canb.auug.org.au;
+ s=201702; t=1539656368;
+ bh=JGKbPkIJTpQICeV106B4lunVFzv8Q93qlHtDURju9Mw=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+ b=O6ps0C+m1qX/BEMje/tXWeYkxaEF2d6VXsD/gMib25wrFE85BrpfOeH/MEllN1kmJ
+ rbg0D0PMIkYfCEaJiWjF+cjk1Cj3fnbn2dlXVusBI5JM2O26kCUwfst8b+/OvS+zov
+ tbnZfir5B7bpHpkitQz17AT41DazAkFn194XBSjRiegRaEJyPi/k0LSvpbQO+hOVww
+ Dxzf3fsSbZkY9wIb9w80UR2KQzIkB8VOjcZFCrol/fdATgm2tnAYOxdSJcPE0IkxRn
+ qrCEa5WmFclR7Iqa7V+wry3PS6g7JJpMMnKLOTQ9P1BPkYnVyIxW8cwTodwdFL28KA
+ hSbWIayiCLZfg==
+Date: Tue, 16 Oct 2018 13:19:27 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: linux-next: Tree for Oct 15
+Message-ID: <20181016131927.6ceba6ab@canb.auug.org.au>
+In-Reply-To: <20181016130216.3a417381@canb.auug.org.au>
+References: <20181015192546.15faf3a1@canb.auug.org.au>
+ <20181015193914.GA9881@roeck-us.net>
+ <20181016073359.3fa7bb32@canb.auug.org.au>
+ <20181015222213.GA31415@roeck-us.net>
+ <20181016130216.3a417381@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/j_E700Tl6v3gnhQuir/=FN3"; protocol="application/pgp-signature"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,112 +77,95 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Reza Arbab <arbab@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Mike Rapoport <rppt@linux.vnet.ibm.com>,
+ Linux-Next Mailing List <linux-next@vger.kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ PowerPC <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-> reset_ntl() does what npu2_dev_procedure_reset() does plus more stuff,
-> there nothing really in npu2_dev_procedure_reset() which reset_ntl()
-> does not do already from the hardware standpoint. And it did stop HMIs
-> for me though.
-> 
-> but ok, what will be sufficient then if not reset_ntl()?
+--Sig_/j_E700Tl6v3gnhQuir/=FN3
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Argh, yes you are correct. Specifically both npu2_dev_procedure_reset() and
-reset_ntl() contain:
+Hi all,
 
-	/* NTL Reset */
-	val = npu2_read(ndev->npu, NPU2_NTL_MISC_CFG1(ndev));
-	val |= PPC_BIT(8) | PPC_BIT(9);
-	npu2_write(ndev->npu, NPU2_NTL_MISC_CFG1(ndev), val);
+On Tue, 16 Oct 2018 13:02:16 +1100 Stephen Rothwell <sfr@canb.auug.org.au> =
+wrote:
+>
+> Reverting fe3d2a45e8079fdd7d4da1ff07f4b40bc3cb499f (and the following 2
+> commits) produces a kernel that boots.
 
-Which should fence the brick. However from what I recall there was more to
-reliably preventing HMIs than merely fencing the brick. It invovled a sequence
-of fencing and flushing the cache with dcbf instructions at the right time which
-is why we also have the FLR. Unfortunately I don't know the precise details,
-perhaps if we send enough coffee Balbir's way he might be able remind us?
+Instead of that, I applied this patch on top of linux-next and it boots
+and produces a stack trace ...
 
-- Alistair
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Tue, 16 Oct 2018 13:07:01 +1100
+Subject: [PATCH] mm/memblock.c: use dump_stack() instead of WARN_ON_ONCE for
+ the alignment checks
 
-> 
-> 
-> > 
-> > - Alistair
-> > 
-> >>
-> >>
-> >>
-> >>>
-> >>> - Alistair
-> >>>
-> >>> On Monday, 15 October 2018 6:17:51 PM AEDT Alexey Kardashevskiy wrote:
-> >>>> Ping?
-> >>>>
-> >>>>
-> >>>> On 02/10/2018 13:20, Alexey Kardashevskiy wrote:
-> >>>>> The skiboot firmware has a hot reset handler which fences the NVIDIA V100
-> >>>>> GPU RAM on Witherspoons and makes accesses no-op instead of throwing HMIs:
-> >>>>> https://github.com/open-power/skiboot/commit/fca2b2b839a67
-> >>>>>
-> >>>>> Now we are going to pass V100 via VFIO which most certainly involves
-> >>>>> KVM guests which are often terminated without getting a chance to offline
-> >>>>> GPU RAM so we end up with a running machine with misconfigured memory.
-> >>>>> Accessing this memory produces hardware management interrupts (HMI)
-> >>>>> which bring the host down.
-> >>>>>
-> >>>>> To suppress HMIs, this wires up this hot reset hook to vfio_pci_disable()
-> >>>>> via pci_disable_device() which switches NPU2 to a safe mode and prevents
-> >>>>> HMIs.
-> >>>>>
-> >>>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> >>>>> ---
-> >>>>> Changes:
-> >>>>> v2:
-> >>>>> * updated the commit log
-> >>>>> ---
-> >>>>>  arch/powerpc/platforms/powernv/pci-ioda.c | 10 ++++++++++
-> >>>>>  1 file changed, 10 insertions(+)
-> >>>>>
-> >>>>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> >>>>> index cde7102..e37b9cc 100644
-> >>>>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> >>>>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> >>>>> @@ -3688,6 +3688,15 @@ static void pnv_pci_release_device(struct pci_dev *pdev)
-> >>>>>  		pnv_ioda_release_pe(pe);
-> >>>>>  }
-> >>>>>  
-> >>>>> +static void pnv_npu_disable_device(struct pci_dev *pdev)
-> >>>>> +{
-> >>>>> +	struct eeh_dev *edev = pci_dev_to_eeh_dev(pdev);
-> >>>>> +	struct eeh_pe *eehpe = edev ? edev->pe : NULL;
-> >>>>> +
-> >>>>> +	if (eehpe && eeh_ops && eeh_ops->reset)
-> >>>>> +		eeh_ops->reset(eehpe, EEH_RESET_HOT);
-> >>>>> +}
-> >>>>> +
-> >>>>>  static void pnv_pci_ioda_shutdown(struct pci_controller *hose)
-> >>>>>  {
-> >>>>>  	struct pnv_phb *phb = hose->private_data;
-> >>>>> @@ -3732,6 +3741,7 @@ static const struct pci_controller_ops pnv_npu_ioda_controller_ops = {
-> >>>>>  	.reset_secondary_bus	= pnv_pci_reset_secondary_bus,
-> >>>>>  	.dma_set_mask		= pnv_npu_dma_set_mask,
-> >>>>>  	.shutdown		= pnv_pci_ioda_shutdown,
-> >>>>> +	.disable_device		= pnv_npu_disable_device,
-> >>>>>  };
-> >>>>>  
-> >>>>>  static const struct pci_controller_ops pnv_npu_ocapi_ioda_controller_ops = {
-> >>>>>
-> >>>>
-> >>>>
-> >>>
-> >>>
-> >>
-> >>
-> > 
-> > 
-> 
-> 
+Using WARN_ON_ONCE too early causes the PowerPC kernel to fail.
 
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ mm/memblock.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
+diff --git a/mm/memblock.c b/mm/memblock.c
+index 5fefc70253ee..f2ef3915a356 100644
+--- a/mm/memblock.c
++++ b/mm/memblock.c
+@@ -1298,8 +1298,10 @@ static phys_addr_t __init memblock_alloc_range_nid(p=
+hys_addr_t size,
+ {
+ 	phys_addr_t found;
+=20
+-	if (WARN_ON_ONCE(!align))
++	if (!align) {
++		dump_stack();
+ 		align =3D SMP_CACHE_BYTES;
++	}
+=20
+ 	found =3D memblock_find_in_range_node(size, align, start, end, nid,
+ 					    flags);
+@@ -1423,8 +1425,10 @@ static void * __init memblock_alloc_internal(
+ 	if (WARN_ON_ONCE(slab_is_available()))
+ 		return kzalloc_node(size, GFP_NOWAIT, nid);
+=20
+-	if (WARN_ON_ONCE(!align))
++	if (!align) {
++		dump_stack();
+ 		align =3D SMP_CACHE_BYTES;
++	}
+=20
+ 	if (max_addr > memblock.current_limit)
+ 		max_addr =3D memblock.current_limit;
+--=20
+2.18.0
+
+So, patch "memblock: stop using implicit alignment to SMP_CACHE_BYTES"
+should *not* remove the 0 -> SMP_CACHE_BYTES update from mm/memblock.c
+and just add the dump_stack().
+--=20
+Cheers,
+Stephen Rothwell
+
+--Sig_/j_E700Tl6v3gnhQuir/=FN3
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAlvFSq8ACgkQAVBC80lX
+0Gz+ywf/T90EMZ0R3tFjrcmUpFEmGa2TFSBV6p/JeR+noxv+SOMpS8u9NuxxzUQr
+eU7HgWqjyJ+pWsq5AfzalpVL4LBFHx1sVUFOe+K1DP2cYWO3njbQgOCKMfK5eRvu
+hQYvktyvomKwCg+95pHtoPrLbrvL+TcmdW7dGv+naFC8tnvRY4o8w9zxqdAnmeF9
+6eFa0CFta79sUGQSi6lZNZyzziw7FI/tBz3VaFmr99uaPnPdBHlaSv3hTKgT2lKs
+kKpqRBkFmDh9ebca6r4/du9w8H4dC/3y0aRL6P3ZsE3KfovXRfN2br24KcXQOQ5Q
+VbBg3u6MSG7cZGD9tdzGPZI1D3DYeA==
+=PHN3
+-----END PGP SIGNATURE-----
+
+--Sig_/j_E700Tl6v3gnhQuir/=FN3--
