@@ -2,65 +2,78 @@ Return-Path: <SRS0=rnOA=M4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 37ACEC04EBD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 05:26:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 49CA3C04EBD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 05:29:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A790B208E4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 05:26:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A790B208E4
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id BE754208E4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 05:29:31 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="wKUwQx2/"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BE754208E4
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42Z3hM60gLzF3Wp
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 16:26:43 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Z3lY42TfzF3WH
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 16:29:29 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nifty.com header.i=@nifty.com header.b="wKUwQx2/";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ spf=softfail (mailfrom) smtp.mailfrom=socionext.com
+ (client-ip=210.131.2.90; helo=conssluserg-05.nifty.com;
+ envelope-from=yamada.masahiro@socionext.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=socionext.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=nifty.com header.i=@nifty.com header.b="wKUwQx2/"; 
+ dkim-atps=neutral
+Received: from conssluserg-05.nifty.com (conssluserg-05.nifty.com
+ [210.131.2.90])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Z3Fp5glKzF38b
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 16:07:10 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 42Z3FX5KQtz9ttBv;
- Tue, 16 Oct 2018 07:06:56 +0200 (CEST)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id aWT-N8jzLTsD; Tue, 16 Oct 2018 07:06:56 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 42Z3FX4nL4z9ttBh;
- Tue, 16 Oct 2018 07:06:56 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0FDAC8B78F;
- Tue, 16 Oct 2018 07:07:07 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id mDUwMObQ-Y6F; Tue, 16 Oct 2018 07:07:07 +0200 (CEST)
-Received: from pc13168vm.idsi0.si.c-s.fr (unknown [192.168.232.3])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D0AB98B755;
- Tue, 16 Oct 2018 07:07:06 +0200 (CEST)
-Received: by pc13168vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 8CAA56F4C9; Tue, 16 Oct 2018 05:07:06 +0000 (UTC)
-Message-Id: <a931d77b41569b0052be54df1fb76e48adcb0095.1539623260.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1539623258.git.christophe.leroy@c-s.fr>
-References: <cover.1539623258.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v8 9/9] powerpc: clean stack pointers naming
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Tue, 16 Oct 2018 05:07:06 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Z3ZH5lYLzF3X6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 16:21:26 +1100 (AEDT)
+Received: from mail-ua1-f51.google.com (mail-ua1-f51.google.com
+ [209.85.222.51]) (authenticated)
+ by conssluserg-05.nifty.com with ESMTP id w9G5L0Y8007269
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 14:21:01 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conssluserg-05.nifty.com w9G5L0Y8007269
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
+ s=dec2015msa; t=1539667261;
+ bh=FDIGmE5b5K9BmEWUF/OrPaKAb5bJ4bsEha3Y3EORDIQ=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=wKUwQx2/7aUUkj6aNVBCk7JlQa/hx5qmnIOiipqx1nYUzBT1Ylk17jmg5SbzyJ2+X
+ 8hAR3pHmKBKgKpG29FYkn7uUmc3nXr+7mz6FUDyCH8Tq/yX21nIEb6j/A5MrUbMEsP
+ QRnCdvBRs1yGFrc/ec9o9sFiG7yKonhZW98yEpFnrJqP2rpcsQgDpD5VEkeNTcDwBY
+ Qs4JHmK/+tGqaYwY2h5Bj1LC5hLfOJc5DQReLucQ2fqHOP7PwrOrRjrwZz7qQpTXJJ
+ LlxDPKotTjsKfWFfpAFgkaUxizlRPXTp/ncLEAhELy3uSe9xDigURJSAkB83RXNETi
+ XQ15TCc8gVlwg==
+X-Nifty-SrcIP: [209.85.222.51]
+Received: by mail-ua1-f51.google.com with SMTP id c1so2891767uaq.9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2018 22:21:00 -0700 (PDT)
+X-Gm-Message-State: ABuFfojBLk4EKDe4yn438Yfy66+GVCoQKCRjPJxc0YBaEw95k/FENOZw
+ OmJaeFW9/GlCkUg/s4X/BfmN1JbbPJQqygPmk84=
+X-Google-Smtp-Source: ACcGV61ZnDsm1Nha0a5yHh0vPG6Piw2+qTgZ1yt8n6hzXeBJoavGmeMzDMu+IRdRHaaAVTWbfsMClBFk4YUYrnVrW8o=
+X-Received: by 2002:ab0:7093:: with SMTP id m19mr8698603ual.55.1539667259783; 
+ Mon, 15 Oct 2018 22:20:59 -0700 (PDT)
+MIME-Version: 1.0
+References: <20181013151016.31674-1-hch@lst.de>
+ <20181013151016.31674-9-hch@lst.de>
+In-Reply-To: <20181013151016.31674-9-hch@lst.de>
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+Date: Tue, 16 Oct 2018 14:20:23 +0900
+X-Gmail-Original-Message-ID: <CAK7LNAQwyWUq_ohVMe9QLLbyHHQdjkrkM9DPd3pgYLz8UhG6rA@mail.gmail.com>
+Message-ID: <CAK7LNAQwyWUq_ohVMe9QLLbyHHQdjkrkM9DPd3pgYLz8UhG6rA@mail.gmail.com>
+Subject: Re: [PATCH 8/8] kconfig: remove CONFIG_MCA leftovers
+To: Christoph Hellwig <hch@lst.de>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,102 +85,85 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linux-arch <linux-arch@vger.kernel.org>,
+ linux-scsi <linux-scsi@vger.kernel.org>,
+ Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
+ linux-pci@vger.kernel.org,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Dominik Brodowski <linux@dominikbrodowski.net>,
+ Alex Bounine <alex.bou9@gmail.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Some stack pointers used to also be thread_info pointers
-and were called tp. Now that they are only stack pointers,
-rename them sp.
+On Sun, Oct 14, 2018 at 12:11 AM Christoph Hellwig <hch@lst.de> wrote:
+>
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> ---
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/kernel/irq.c      | 17 +++++++----------
- arch/powerpc/kernel/setup_64.c | 20 ++++++++++----------
- 2 files changed, 17 insertions(+), 20 deletions(-)
 
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 62cfccf4af89..754f0efc507b 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -659,21 +659,21 @@ void __do_irq(struct pt_regs *regs)
- void do_IRQ(struct pt_regs *regs)
- {
- 	struct pt_regs *old_regs = set_irq_regs(regs);
--	void *curtp, *irqtp, *sirqtp;
-+	void *cursp, *irqsp, *sirqsp;
- 
- 	/* Switch to the irq stack to handle this */
--	curtp = (void *)(current_stack_pointer() & ~(THREAD_SIZE - 1));
--	irqtp = hardirq_ctx[raw_smp_processor_id()];
--	sirqtp = softirq_ctx[raw_smp_processor_id()];
-+	cursp = (void *)(current_stack_pointer() & ~(THREAD_SIZE - 1));
-+	irqsp = hardirq_ctx[raw_smp_processor_id()];
-+	sirqsp = softirq_ctx[raw_smp_processor_id()];
- 
- 	/* Already there ? */
--	if (unlikely(curtp == irqtp || curtp == sirqtp)) {
-+	if (unlikely(cursp == irqsp || cursp == sirqsp)) {
- 		__do_irq(regs);
- 		set_irq_regs(old_regs);
- 		return;
- 	}
- 	/* Switch stack and call */
--	call_do_irq(regs, irqtp);
-+	call_do_irq(regs, irqsp);
- 
- 	set_irq_regs(old_regs);
- }
-@@ -732,10 +732,7 @@ void irq_ctx_init(void)
- 
- void do_softirq_own_stack(void)
- {
--	void *irqtp;
--
--	irqtp = softirq_ctx[smp_processor_id()];
--	call_do_softirq(irqtp);
-+	call_do_softirq(softirq_ctx[smp_processor_id()]);
- }
- 
- irq_hw_number_t virq_to_hw(unsigned int virq)
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 6792e9c90689..4912ec0320b8 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -717,22 +717,22 @@ void __init emergency_stack_init(void)
- 	limit = min(ppc64_bolted_size(), ppc64_rma_size);
- 
- 	for_each_possible_cpu(i) {
--		void *ti;
-+		void *sp;
- 
--		ti = alloc_stack(limit, i);
--		memset(ti, 0, THREAD_SIZE);
--		paca_ptrs[i]->emergency_sp = ti + THREAD_SIZE;
-+		sp = alloc_stack(limit, i);
-+		memset(sp, 0, THREAD_SIZE);
-+		paca_ptrs[i]->emergency_sp = sp + THREAD_SIZE;
- 
- #ifdef CONFIG_PPC_BOOK3S_64
- 		/* emergency stack for NMI exception handling. */
--		ti = alloc_stack(limit, i);
--		memset(ti, 0, THREAD_SIZE);
--		paca_ptrs[i]->nmi_emergency_sp = ti + THREAD_SIZE;
-+		sp = alloc_stack(limit, i);
-+		memset(sp, 0, THREAD_SIZE);
-+		paca_ptrs[i]->nmi_emergency_sp = sp + THREAD_SIZE;
- 
- 		/* emergency stack for machine check exception handling. */
--		ti = alloc_stack(limit, i);
--		memset(ti, 0, THREAD_SIZE);
--		paca_ptrs[i]->mc_emergency_sp = ti + THREAD_SIZE;
-+		sp = alloc_stack(limit, i);
-+		memset(sp, 0, THREAD_SIZE);
-+		paca_ptrs[i]->mc_emergency_sp = sp + THREAD_SIZE;
- #endif
- 	}
- }
+Can you use "powerpc:" or something
+for the subject line?
+
+I'd like to see "kconfig:" only for patches
+that touch the scripts/kconfig/ directory.
+
+
+
+
+>  arch/powerpc/Kconfig | 4 ----
+>  drivers/scsi/Kconfig | 6 +++---
+>  2 files changed, 3 insertions(+), 7 deletions(-)
+>
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index f0ea460653cd..8b9edf7caf96 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -944,10 +944,6 @@ config FSL_GTM
+>         help
+>           Freescale General-purpose Timers support
+>
+> -# Yes MCA RS/6000s exist but Linux-PPC does not currently support any
+> -config MCA
+> -       bool
+> -
+>  config PCI_DOMAINS
+>         def_bool PCI
+>
+> diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
+> index 7c097006c54d..d3734c54aec9 100644
+> --- a/drivers/scsi/Kconfig
+> +++ b/drivers/scsi/Kconfig
+> @@ -535,7 +535,7 @@ config SCSI_HPTIOP
+>
+>  config SCSI_BUSLOGIC
+>         tristate "BusLogic SCSI support"
+> -       depends on (PCI || ISA || MCA) && SCSI && ISA_DMA_API && VIRT_TO_BUS
+> +       depends on (PCI || ISA) && SCSI && ISA_DMA_API && VIRT_TO_BUS
+>         ---help---
+>           This is support for BusLogic MultiMaster and FlashPoint SCSI Host
+>           Adapters. Consult the SCSI-HOWTO, available from
+> @@ -1142,12 +1142,12 @@ config SCSI_LPFC_DEBUG_FS
+>
+>  config SCSI_SIM710
+>         tristate "Simple 53c710 SCSI support (Compaq, NCR machines)"
+> -       depends on (EISA || MCA) && SCSI
+> +       depends on EISA && SCSI
+>         select SCSI_SPI_ATTRS
+>         ---help---
+>           This driver is for NCR53c710 based SCSI host adapters.
+>
+> -         It currently supports Compaq EISA cards and NCR MCA cards
+> +         It currently supports Compaq EISA cards.
+>
+>  config SCSI_DC395x
+>         tristate "Tekram DC395(U/UW/F) and DC315(U) SCSI support"
+> --
+> 2.19.1
+>
+
+
 -- 
-2.13.3
-
+Best Regards
+Masahiro Yamada
