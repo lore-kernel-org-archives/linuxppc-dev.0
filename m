@@ -2,53 +2,102 @@ Return-Path: <SRS0=rnOA=M4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.1 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLACK
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3422AC04EBD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 07:34:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2EC2DC04EBD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 07:36:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6E7FF20881
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 07:34:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6E7FF20881
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=popple.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id B067020881
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 07:36:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B067020881
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42Z6WK30kVzF3Vm
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 18:34:05 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=popple.id.au
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Z6Yv6HNZzF3WS
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Oct 2018 18:36:19 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=popple.id.au
- (client-ip=150.101.137.145; helo=ipmail06.adl6.internode.on.net;
- envelope-from=alistair@popple.id.au; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=popple.id.au
-Received: from ipmail06.adl6.internode.on.net (ipmail06.adl6.internode.on.net
- [150.101.137.145])
- by lists.ozlabs.org (Postfix) with ESMTP id 42Z6TB602jzF3PJ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 18:32:14 +1100 (AEDT)
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: A2BpBQCh299Z/3oKyHleGwEBAQMBAQEJAQEBgy8uZG4nhVmJNI4+AYF1LwGWDYIELYRJSQQCAoQ+WAECAQEBAQECayiFHgEFJxMcIxALDgoJFRAPASkeBhOKHRGtTjqLPAEBAQEBBQEBAQEfBYMthUKDKoQ/KgWGCwWhRIdejX6SHpckV4EOHBYYCQgZGYVjHBmBYiw2iSKCNQEBAQ
-Received: from 121-200-10-122.nbn.syd.aussiebb.net (HELO new-mexico.localnet)
- ([121.200.10.122])
- by ipmail06.adl6.internode.on.net with ESMTP; 16 Oct 2018 18:02:14 +1030
-From: Alistair Popple <alistair@popple.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH kernel v2] powerpc/ioda/npu: Call skiboot's hot reset hook
- when disabling NPU2
-Date: Tue, 16 Oct 2018 18:32:10 +1100
-Message-ID: <2086775.d8i5QI7OoB@new-mexico>
-User-Agent: KMail/5.2.3 (Linux/4.17.0-0.bpo.1-amd64; KDE/5.28.0; x86_64; ; )
-In-Reply-To: <374a32c1-8787-2b82-af5d-163d9a496a25@ozlabs.ru>
-References: <20181002032021.7126-1-aik@ozlabs.ru>
- <2184134.UzzIe8q8zq@new-mexico>
- <374a32c1-8787-2b82-af5d-163d9a496a25@ozlabs.ru>
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=aravinda@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Z6Wg0D2bzDqD5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 18:34:22 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w9G7YJW7067103
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 03:34:21 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2n56qqtb52-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 03:34:19 -0400
+Received: from localhost
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aravinda@linux.vnet.ibm.com>;
+ Tue, 16 Oct 2018 01:33:44 -0600
+Received: from b03cxnp08027.gho.boulder.ibm.com (9.17.130.19)
+ by e34.co.us.ibm.com (192.168.1.134) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Tue, 16 Oct 2018 01:33:42 -0600
+Received: from b03ledav006.gho.boulder.ibm.com
+ (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ w9G7Xfik52625634
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Tue, 16 Oct 2018 00:33:41 -0700
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 0F2ABC6057;
+ Tue, 16 Oct 2018 07:33:41 +0000 (GMT)
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C3310C6055;
+ Tue, 16 Oct 2018 07:33:38 +0000 (GMT)
+Received: from [9.85.71.130] (unknown [9.85.71.130])
+ by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Tue, 16 Oct 2018 07:33:38 +0000 (GMT)
+Subject: Re: [PATCH] powerpc/pseries: Export maximum memory value
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>
+References: <153916697991.21165.5694207762066031403.stgit@aravinda>
+ <0c429575-93e1-0ca9-9c75-29dec1e4105c@linux.vnet.ibm.com>
+ <1539190032.dzxxjmgaua.naveen@linux.ibm.com>
+From: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
+Date: Tue, 16 Oct 2018 13:03:36 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.6.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1539190032.dzxxjmgaua.naveen@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 18101607-0016-0000-0000-000009431900
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00009884; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000268; SDB=6.01103386; UDB=6.00571125; IPR=6.00883438; 
+ MB=3.00023774; MTD=3.00000008; XFM=3.00000015; UTC=2018-10-16 07:33:42
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18101607-0017-0000-0000-000040B8C9C4
+Message-Id: <3b851bf0-7938-51e4-88c6-d2ce0e0b3d00@linux.vnet.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-10-16_04:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1807170000 definitions=main-1810160068
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,134 +109,79 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Reza Arbab <arbab@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tuesday, 16 October 2018 1:22:53 PM AEDT Alexey Kardashevskiy wrote:
-> 
-> On 16/10/2018 13:19, Alistair Popple wrote:
-> >> reset_ntl() does what npu2_dev_procedure_reset() does plus more stuff,
-> >> there nothing really in npu2_dev_procedure_reset() which reset_ntl()
-> >> does not do already from the hardware standpoint. And it did stop HMIs
-> >> for me though.
-> >>
-> >> but ok, what will be sufficient then if not reset_ntl()?
-> > 
-> > Argh, yes you are correct. Specifically both npu2_dev_procedure_reset() and
-> > reset_ntl() contain:
-> > 
-> > 	/* NTL Reset */
-> > 	val = npu2_read(ndev->npu, NPU2_NTL_MISC_CFG1(ndev));
-> > 	val |= PPC_BIT(8) | PPC_BIT(9);
-> > 	npu2_write(ndev->npu, NPU2_NTL_MISC_CFG1(ndev), val);
-> > 
-> > Which should fence the brick. However from what I recall there was more to
-> > reliably preventing HMIs than merely fencing the brick. It invovled a sequence
-> > of fencing and flushing the cache with dcbf instructions at the right time which
-> > is why we also have the FLR. Unfortunately I don't know the precise details,
-> > perhaps if we send enough coffee Balbir's way he might be able remind us?
-> 
-> 
-> He suggested and ack'ed that skiboot patch, I can repeat beers^wcoffee
-> but it won't change much ;)
 
-Ha. Couldn't hurt ;)
 
-I was pretty sure flushing the caches was an important part of the sequence to
-avoid HMI's. I believe you are trying to deal with unexpected guest terminations
-which means the driver won't have a chance to flush the caches prior to
-termination so wouldn't you also need to do that somewhere? Unless the driver
-does it at startup?
-
-- Alistair
-
-> >
-> > - Alistair
-> > 
-> >>
-> >>
-> >>>
-> >>> - Alistair
-> >>>
-> >>>>
-> >>>>
-> >>>>
-> >>>>>
-> >>>>> - Alistair
-> >>>>>
-> >>>>> On Monday, 15 October 2018 6:17:51 PM AEDT Alexey Kardashevskiy wrote:
-> >>>>>> Ping?
-> >>>>>>
-> >>>>>>
-> >>>>>> On 02/10/2018 13:20, Alexey Kardashevskiy wrote:
-> >>>>>>> The skiboot firmware has a hot reset handler which fences the NVIDIA V100
-> >>>>>>> GPU RAM on Witherspoons and makes accesses no-op instead of throwing HMIs:
-> >>>>>>> https://github.com/open-power/skiboot/commit/fca2b2b839a67
-> >>>>>>>
-> >>>>>>> Now we are going to pass V100 via VFIO which most certainly involves
-> >>>>>>> KVM guests which are often terminated without getting a chance to offline
-> >>>>>>> GPU RAM so we end up with a running machine with misconfigured memory.
-> >>>>>>> Accessing this memory produces hardware management interrupts (HMI)
-> >>>>>>> which bring the host down.
-> >>>>>>>
-> >>>>>>> To suppress HMIs, this wires up this hot reset hook to vfio_pci_disable()
-> >>>>>>> via pci_disable_device() which switches NPU2 to a safe mode and prevents
-> >>>>>>> HMIs.
-> >>>>>>>
-> >>>>>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> >>>>>>> ---
-> >>>>>>> Changes:
-> >>>>>>> v2:
-> >>>>>>> * updated the commit log
-> >>>>>>> ---
-> >>>>>>>  arch/powerpc/platforms/powernv/pci-ioda.c | 10 ++++++++++
-> >>>>>>>  1 file changed, 10 insertions(+)
-> >>>>>>>
-> >>>>>>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> >>>>>>> index cde7102..e37b9cc 100644
-> >>>>>>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> >>>>>>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> >>>>>>> @@ -3688,6 +3688,15 @@ static void pnv_pci_release_device(struct pci_dev *pdev)
-> >>>>>>>  		pnv_ioda_release_pe(pe);
-> >>>>>>>  }
-> >>>>>>>  
-> >>>>>>> +static void pnv_npu_disable_device(struct pci_dev *pdev)
-> >>>>>>> +{
-> >>>>>>> +	struct eeh_dev *edev = pci_dev_to_eeh_dev(pdev);
-> >>>>>>> +	struct eeh_pe *eehpe = edev ? edev->pe : NULL;
-> >>>>>>> +
-> >>>>>>> +	if (eehpe && eeh_ops && eeh_ops->reset)
-> >>>>>>> +		eeh_ops->reset(eehpe, EEH_RESET_HOT);
-> >>>>>>> +}
-> >>>>>>> +
-> >>>>>>>  static void pnv_pci_ioda_shutdown(struct pci_controller *hose)
-> >>>>>>>  {
-> >>>>>>>  	struct pnv_phb *phb = hose->private_data;
-> >>>>>>> @@ -3732,6 +3741,7 @@ static const struct pci_controller_ops pnv_npu_ioda_controller_ops = {
-> >>>>>>>  	.reset_secondary_bus	= pnv_pci_reset_secondary_bus,
-> >>>>>>>  	.dma_set_mask		= pnv_npu_dma_set_mask,
-> >>>>>>>  	.shutdown		= pnv_pci_ioda_shutdown,
-> >>>>>>> +	.disable_device		= pnv_npu_disable_device,
-> >>>>>>>  };
-> >>>>>>>  
-> >>>>>>>  static const struct pci_controller_ops pnv_npu_ocapi_ioda_controller_ops = {
-> >>>>>>>
-> >>>>>>
-> >>>>>>
-> >>>>>
-> >>>>>
-> >>>>
-> >>>>
-> >>>
-> >>>
-> >>
-> >>
-> > 
-> > 
+On Wednesday 10 October 2018 10:19 PM, Naveen N. Rao wrote:
+> Nathan Fontenot wrote:
+>> On 10/10/2018 05:22 AM, Aravinda Prasad wrote:
+>>> This patch exports the maximum possible amount of memory
+>>> configured on the system via /proc/powerpc/lparcfg.
+>>>
+>>> Signed-off-by: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
+>>> ---
+>>>  arch/powerpc/platforms/pseries/lparcfg.c |   13 +++++++++++++
+>>>  1 file changed, 13 insertions(+)
+>>>
+>>> diff --git a/arch/powerpc/platforms/pseries/lparcfg.c
+>>> b/arch/powerpc/platforms/pseries/lparcfg.c
+>>> index 7c872dc..aa82f55 100644
+>>> --- a/arch/powerpc/platforms/pseries/lparcfg.c
+>>> +++ b/arch/powerpc/platforms/pseries/lparcfg.c
+>>> @@ -26,6 +26,7 @@
+>>>  #include <linux/seq_file.h>
+>>>  #include <linux/slab.h>
+>>>  #include <linux/uaccess.h>
+>>> +#include <linux/hugetlb.h>
+>>>  #include <asm/lppaca.h>
+>>>  #include <asm/hvcall.h>
+>>>  #include <asm/firmware.h>
+>>> @@ -36,6 +37,7 @@
+>>>  #include <asm/vio.h>
+>>>  #include <asm/mmu.h>
+>>>  #include <asm/machdep.h>
+>>> +#include <asm/drmem.h>
+>>>
+>>>  #include "pseries.h"
+>>>
+>>> @@ -433,6 +435,16 @@ static void parse_em_data(struct seq_file *m)
+>>>          seq_printf(m, "power_mode_data=%016lx\n", retbuf[0]);
+>>>  }
+>>>
+>>> +static void maxmem_data(struct seq_file *m)
+>>> +{
+>>> +    unsigned long maxmem = 0;
+>>> +
+>>> +    maxmem += drmem_info->n_lmbs * drmem_info->lmb_size;
+>>> +    maxmem += hugetlb_total_pages() * PAGE_SIZE;
+>>> +
+>>> +    seq_printf(m, "MaxMem=%ld\n", maxmem);
+>>
+>> Should this be MaxPossibleMem?
+>>
+>> At least for the drmem memory the value calculated is the maximum
+>> possible
+>> memory. I wonder if calling it MaxMem would lead users to think they have
+>> that much memory available to them.
 > 
+> That's a good point. This seems to be referred to as just 'maximum
+> memory' in the LPAR configuration as well as in the lparstat
+> documentation, but it shouldn't hurt to rename it here.
+
+As Naveen mentioned, I am using the term referred in the LPAR
+configuration. But, I can rename it.
+
+Regards,
+Aravinda
+
+> 
+> - Naveen
 > 
 
+-- 
+Regards,
+Aravinda
 
