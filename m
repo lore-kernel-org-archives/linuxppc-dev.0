@@ -2,99 +2,76 @@ Return-Path: <SRS0=nnl5=M5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9656EECDE32
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 19:49:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ED3C3ECDE3B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 21:19:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1F6932086E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 19:49:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1F6932086E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 343D8208E4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 21:19:45 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="WrXjuZHZ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 343D8208E4
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42b2nF1KvWzF3bF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Oct 2018 06:49:21 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42b4nW0f7ZzF3Zm
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Oct 2018 08:19:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=mwb@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="WrXjuZHZ";
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=atull@kernel.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="WrXjuZHZ"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42b2YQ2TY7zF3Hn
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Oct 2018 06:39:06 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w9HJZ6Nu011519
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Oct 2018 15:39:03 -0400
-Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2n6awch8bs-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Oct 2018 15:39:03 -0400
-Received: from localhost
- by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Wed, 17 Oct 2018 15:39:02 -0400
-Received: from b01cxnp23033.gho.pok.ibm.com (9.57.198.28)
- by e11.ny.us.ibm.com (146.89.104.198) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 17 Oct 2018 15:38:59 -0400
-Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
- [9.57.199.106])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- w9HJcwoC29229264
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Wed, 17 Oct 2018 19:38:58 GMT
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id BF27F2805A;
- Wed, 17 Oct 2018 19:38:58 +0000 (GMT)
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 96D5B28059;
- Wed, 17 Oct 2018 19:38:58 +0000 (GMT)
-Received: from ltcalpine2-lp9.aus.stglabs.ibm.com (unknown [9.40.195.192])
- by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP;
- Wed, 17 Oct 2018 19:38:58 +0000 (GMT)
-Received: from ltcalpine2-lp9.aus.stglabs.ibm.com (localhost [IPv6:::1])
- by ltcalpine2-lp9.aus.stglabs.ibm.com (Postfix) with ESMTP id 463522087F42;
- Wed, 17 Oct 2018 14:38:58 -0500 (CDT)
-Subject: [PATCH v07 5/5] migration/memory: Support 'ibm,dynamic-memory-v2'
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, mwb@linux.vnet.ibm.com
-Date: Wed, 17 Oct 2018 14:38:58 -0500
-In-Reply-To: <20181017193745.4844.11915.stgit@ltcalpine2-lp9.aus.stglabs.ibm.com>
-References: <20181017193745.4844.11915.stgit@ltcalpine2-lp9.aus.stglabs.ibm.com>
-User-Agent: StGit/0.18-105-g416a
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42b4kv5LR3zF3Zj
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Oct 2018 08:17:27 +1100 (AEDT)
+Received: from mail-ed1-f45.google.com (mail-ed1-f45.google.com
+ [209.85.208.45])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 775CE21479
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Oct 2018 21:17:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1539811045;
+ bh=g2il2KgyF0vLxwMylQFDgfxo+XL4J5qudxh9j/KR35g=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=WrXjuZHZ824L7He7U1uvSiBNpx9QBSCtBr9wVYZ1T5aapuFl4NzhNVVE+U/zD8siF
+ upTWTXPMCfcC25luy1HX+O28/Hked8dd52902RKqjn3PPCd0mrcYC49E6oYUHNq609
+ zcVvrsG754iSk+Pm6yQdJc7zROvG/7a1h52Rf+IU=
+Received: by mail-ed1-f45.google.com with SMTP id w19-v6so26250503eds.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Oct 2018 14:17:25 -0700 (PDT)
+X-Gm-Message-State: ABuFfohV9f/DxnwRini2Nn8lmBq4iziXIKsH4aV4UzfguzqmzkdRqEoF
+ DYW3QvkAQIEen59Q2mlZrV3+L7Iit9HmH4F814k=
+X-Google-Smtp-Source: ACcGV616i1NX6BUJvbOs8GjNFRy5Boj0HC7hOVmHumIBdrfNuHf+DMwGpsYLlnNvNAfTlu0bTE8YlDYvFoCrfL4H8Bo=
+X-Received: by 2002:a50:cd57:: with SMTP id
+ d23-v6mr1716930edj.60.1539811043733; 
+ Wed, 17 Oct 2018 14:17:23 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-x-cbid: 18101719-2213-0000-0000-00000304FA95
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00009893; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000268; SDB=6.01104107; UDB=6.00571556; IPR=6.00884159; 
- MB=3.00023798; MTD=3.00000008; XFM=3.00000015; UTC=2018-10-17 19:39:01
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18101719-2214-0000-0000-00005BEDDFE7
-Message-Id: <20181017193850.4844.1794.stgit@ltcalpine2-lp9.aus.stglabs.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-10-16_14:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1807170000 definitions=main-1810170162
+References: <1539657458-24401-1-git-send-email-frowand.list@gmail.com>
+ <87murekyts.fsf@concordia.ellerman.id.au>
+ <bbbbe52c-8415-e22a-48d7-95f919942c68@gmail.com>
+In-Reply-To: <bbbbe52c-8415-e22a-48d7-95f919942c68@gmail.com>
+From: Alan Tull <atull@kernel.org>
+Date: Wed, 17 Oct 2018 16:16:47 -0500
+X-Gmail-Original-Message-ID: <CANk1AXSa1bMHxp7-PiTtfniDukDO51M=4P5u98Xc=rRo06zP7Q@mail.gmail.com>
+Message-ID: <CANk1AXSa1bMHxp7-PiTtfniDukDO51M=4P5u98Xc=rRo06zP7Q@mail.gmail.com>
+Subject: Re: [PATCH v4 00/18] of: overlay: validation checks, subsequent fixes
+To: Frank Rowand <frowand.list@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,38 +83,73 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Juliet Kim <minkim@us.ibm.com>, Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Cc: "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
+ <devicetree@vger.kernel.org>, linux-fpga@vger.kernel.org,
+ Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>,
+ Moritz Fischer <mdf@kernel.org>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-migration/memory: This patch adds recognition for changes to the
-associativity of memory blocks described by 'ibm,dynamic-memory-v2'.
-If the associativity of an LMB has changed, it should be readded to
-the system in order to update local and general kernel data structures.
-This patch builds upon previous enhancements that scan the device-tree
-"ibm,dynamic-memory" properties using the base LMB array, and a copy
-derived from the updated properties.
+On Tue, Oct 16, 2018 at 10:08 PM Frank Rowand <frowand.list@gmail.com> wrote:
+>
+> On 10/16/18 02:47, Michael Ellerman wrote:
+> > frowand.list@gmail.com writes:
+> >
+> >> From: Frank Rowand <frank.rowand@sony.com>
+> >>
+> >> Add checks to (1) overlay apply process and (2) memory freeing
+> >> triggered by overlay release.  The checks are intended to detect
+> >> possible memory leaks and invalid overlays.
+> >>
+> >> The checks revealed bugs in existing code.  Fixed the bugs.
+> >>
+> >> While fixing bugs, noted other issues, which are fixed in
+> >> separate patches.
+> >>
+> >> *****  Powerpc folks: I was not able to test the patches that
+> >> *****  directly impact Powerpc systems that use dynamic
+> >> *****  devicetree.  Please review that code carefully and
+> >> *****  test.  The specific patches are: 03/16, 04/16, 07/16
+> >
+> > Hi Frank,
+> >
+> > Do you have this series in a git tree somewhere?
+> >
+> > I tried applying it on top of linux-next but hit some conflicts which I
+> > couldn't easily resolve.
+> >
+> > cheers
+> >
+>
+>
+>
+> git://git.kernel.org/pub/scm/linux/kernel/git/frowand/linux.git
+>
+> $ git checkout v4.19-rc1--kfree_validate--v4
+>
+> $ git log --oneline v4.19-rc1..
+> 2ba1b7d353dd of: unittest: initialize args before calling of_*parse_*()
+> 4f9108209f79 of: unittest: find overlays[] entry by name instead of index
+> 353403c76ff8 of: unittest: allow base devicetree to have symbol metadata
+> 8fc37e04a01b of: overlay: set node fields from properties when add new overlay n
+> 05d5df0e5151 of: unittest: remove unused of_unittest_apply_overlay() argument
+> 8c021cba757a of: overlay: check prevents multiple fragments touching same proper
+> 797a6f66e039 of: overlay: check prevents multiple fragments add or delete same n
+> c385e25a040d of: overlay: test case of two fragments adding same node
+> c88fd240f0e0 of: overlay: make all pr_debug() and pr_err() messages unique
+> 1028a215d32a of: overlay: validate overlay properties #address-cells and #size-c
+> f1a97ef74ce4 of: overlay: reorder fields in struct fragment
+> ffe78cf7a1fb of: dynamic: change type of of_{at,de}tach_node() to void
+> 5f5ff8ec0c0c of: overlay: do not duplicate properties from overlay for new nodes
+> 06e72dcb2bb0 of: overlay: use prop add changeset entry for property in new nodes
+> a02f8d326a08 powerpc/pseries: add of_node_put() in dlpar_detach_node()
+> e203be664330 of: overlay: add missing of_node_get() in __of_attach_node_sysfs
+> 8eb46208e7c8 of: overlay: add missing of_node_put() after add new node to change
+> b22067db7cf9 of: overlay: add tests to validate kfrees from overlay removal
 
-Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/pseries/hotplug-memory.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+That branch is a real time saver, thanks!
 
-diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-index 6856010..03c5e49 100644
---- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-@@ -1187,7 +1187,8 @@ static int pseries_memory_notifier(struct notifier_block *nb,
- 		err = pseries_remove_mem_node(rd->dn);
- 		break;
- 	case OF_RECONFIG_UPDATE_PROPERTY:
--		if (!strcmp(rd->prop->name, "ibm,dynamic-memory")) {
-+		if (!strcmp(rd->prop->name, "ibm,dynamic-memory") ||
-+		    !strcmp(rd->prop->name, "ibm,dynamic-memory-v2")) {
- 			struct drmem_lmb_info *dinfo =
- 				drmem_lmbs_init(rd->prop);
- 			if (!dinfo)
-
+ALan
