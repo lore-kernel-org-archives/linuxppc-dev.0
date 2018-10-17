@@ -2,89 +2,97 @@ Return-Path: <SRS0=nnl5=M5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2DBF8ECDE32
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 19:29:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DC37ECDE3B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 19:39:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 60FBD213A2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 19:29:07 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="WVpKLd9o"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 60FBD213A2
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=debian.org
+	by mail.kernel.org (Postfix) with ESMTPS id EE3892086E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 19:39:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EE3892086E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42b2Kr6Q9hzF3YJ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Oct 2018 06:29:04 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=debian.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42b2ZJ71MlzF3Zx
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Oct 2018 06:39:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="WVpKLd9o";
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2a00:1450:4864:20::441; helo=mail-wr1-x441.google.com;
- envelope-from=mathieu.malaterre@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=debian.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="WVpKLd9o"; 
- dkim-atps=neutral
-Received: from mail-wr1-x441.google.com (mail-wr1-x441.google.com
- [IPv6:2a00:1450:4864:20::441])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=mwb@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42b2GS3FxnzF3Yx
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Oct 2018 06:26:07 +1100 (AEDT)
-Received: by mail-wr1-x441.google.com with SMTP id g15-v6so30960747wru.9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Oct 2018 12:26:07 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=sender:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=jqjlq7mZDerPRopuOpz2ST/dUsC5C43Ae0k8tEaHxas=;
- b=WVpKLd9opJWWrBExvYR/Ah4pvuPR29lQ3A4oaXnUdHlGtAKS2qTWHy6O7MCIhvSU1z
- fLdbqYa+BTpJvI5qYHUAXFinmqoBNwz5jERurXWsyqIMbFQebLU7XRvVCwywksVU1N8U
- NTftiJf6utYTcHqE6I9ae8lrVGMwIoNT5NDBUk9XXkjGaEMzOmpo3RbeMYuQukVbCLsY
- NcbwWI3iRTqDSCqpqyey/4PT3Nm1HWlzMqP9XXNVZm0k3BNngQS/pTtyjm+Srcl9Ai85
- GbZRCsU0R1IaDTozkRBwksfBMpSNu6BjvdgG9k7xlErerAzgafu9LwVUGELesDHYE045
- JOtw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
- :mime-version:content-transfer-encoding;
- bh=jqjlq7mZDerPRopuOpz2ST/dUsC5C43Ae0k8tEaHxas=;
- b=g91HeBKPeZkSSZI1ouFFXhHPzFIzYiWYm/eK//pOGoc+n2EhuZ8PyeTyAzZ2ybd09Q
- pDgyDGY3ggmkFIWzXzXxuUj4rwo7wt7m/JHfZ0vJ1AD494HGAtS4pu7jPE4BjIFY5Kq3
- qpgLDskrlbsLeCKGiJ3WnN+rEV1aogY8bfN2/JlZt5/94FMdSUdhNXouXweLHdZ+QPV7
- EEHwIqUuoD4+SfEZK8j/4f8R+5s9skp8D/xE68S6CuMeQQ94Ml9YugO+PjtpozJzZT1M
- XZMzZ18oeHzHTsnq2BIrFcpGzshrjjgYytTlxHg+AwBOHuFD5AdFGfN4bkTIpEbpc+Hj
- Sgww==
-X-Gm-Message-State: ABuFfoi4A0ZN9ZpiPlCEzXDhOXwMeGn31miZk9TxVUSalAfGPy5diJNy
- gYbKj1kPIVPTH5xLHimoZKs=
-X-Google-Smtp-Source: ACcGV612E9OUbPufP0Ft4lULmNOCb4sLe2L7KWXwfQVwTNdX0kwbYmVfmMyaUuhOQvlTQZxzWHc9rQ==
-X-Received: by 2002:a5d:620b:: with SMTP id
- y11-v6mr24939393wru.105.1539804364985; 
- Wed, 17 Oct 2018 12:26:04 -0700 (PDT)
-Received: from macbookpro.malat.net (bru31-1-78-225-224-134.fbx.proxad.net.
- [78.225.224.134])
- by smtp.gmail.com with ESMTPSA id t66-v6sm1678872wmt.5.2018.10.17.12.26.03
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Wed, 17 Oct 2018 12:26:04 -0700 (PDT)
-Received: by macbookpro.malat.net (Postfix, from userid 1000)
- id A140111439C3; Wed, 17 Oct 2018 21:26:02 +0200 (CEST)
-From: Mathieu Malaterre <malat@debian.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH] powerpc: Add missing include <asm/stacktrace.h>
-Date: Wed, 17 Oct 2018 21:25:58 +0200
-Message-Id: <20181017192558.8039-1-malat@debian.org>
-X-Mailer: git-send-email 2.11.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42b2XB0YJpzF3G8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Oct 2018 06:38:01 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w9HJYxdR143031
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Oct 2018 15:37:59 -0400
+Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2n6981nf2w-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Oct 2018 15:37:59 -0400
+Received: from localhost
+ by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
+ Wed, 17 Oct 2018 15:37:58 -0400
+Received: from b01cxnp22033.gho.pok.ibm.com (9.57.198.23)
+ by e16.ny.us.ibm.com (146.89.104.203) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 17 Oct 2018 15:37:55 -0400
+Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
+ [9.57.199.110])
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ w9HJbs1W45154522
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Wed, 17 Oct 2018 19:37:54 GMT
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 23A99AE060;
+ Wed, 17 Oct 2018 19:37:54 +0000 (GMT)
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 0507FAE066;
+ Wed, 17 Oct 2018 19:37:53 +0000 (GMT)
+Received: from ltcalpine2-lp9.aus.stglabs.ibm.com (unknown [9.40.195.192])
+ by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP;
+ Wed, 17 Oct 2018 19:37:53 +0000 (GMT)
+Received: from ltcalpine2-lp9.aus.stglabs.ibm.com (localhost [IPv6:::1])
+ by ltcalpine2-lp9.aus.stglabs.ibm.com (Postfix) with ESMTP id 1CC3B2079A59;
+ Wed, 17 Oct 2018 14:37:53 -0500 (CDT)
+Subject: [PATCH v07 0/5] powerpc/migration: Affinity fix for memory
+From: Michael Bringmann <mwb@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, mwb@linux.vnet.ibm.com
+Date: Wed, 17 Oct 2018 14:37:53 -0500
+User-Agent: StGit/0.18-105-g416a
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 18101719-0072-0000-0000-000003B75580
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00009893; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000268; SDB=6.01104107; UDB=6.00571556; IPR=6.00884159; 
+ MB=3.00023798; MTD=3.00000008; XFM=3.00000015; UTC=2018-10-17 19:37:56
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18101719-0073-0000-0000-000049CA6E59
+Message-Id: <20181017193745.4844.11915.stgit@ltcalpine2-lp9.aus.stglabs.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-10-16_14:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1807170000 definitions=main-1810170162
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,38 +104,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mathieu Malaterre <malat@debian.org>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Juliet Kim <minkim@us.ibm.com>, Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In commit 88b0fe175735 ("powerpc: Add show_user_instructions()") the
-function show_user_instructions was added.
+The migration of LPARs across Power systems affects many attributes
+including that of the associativity of memory blocks.  The patches
+in this set execute when a system is coming up fresh upon a migration
+target.  They are intended to,
 
-This commit adds an include of header file <asm/stacktrace.h> to provide
-the missing function prototype. Silence the following gcc warning
-(treated as error with W=1):
+* Recognize changes to the associativity of memory recorded in
+  internal data structures when compared to the latest copies in
+  the device tree (e.g. ibm,dynamic-memory, ibm,dynamic-memory-v2).
+* Recognize changes to the associativity mapping (e.g. ibm,
+  associativity-lookup-arrays), locate all assigned memory blocks
+  corresponding to each changed row, and readd all such blocks.
+* Generate calls to other code layers to reset the data structures
+  related to associativity of memory.
+* Re-register the 'changed' entities into the target system.
+  Re-registration of memory blocks mostly entails acting as if they
+  have been newly hot-added into the target system.
 
-  arch/powerpc/kernel/process.c:1302:6: error: no previous prototype for ‘show_user_instructions’ [-Werror=missing-prototypes]
+This code builds upon features introduced in a previous patch set
+that updates CPUs for affinity changes that may occur during LPM.
 
-Signed-off-by: Mathieu Malaterre <malat@debian.org>
+Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
+
+Michael Bringmann (5):
+  powerpc/drmem: Export 'dynamic-memory' loader
+  powerpc/drmem: Add internal_flags feature
+  migration/memory: Add hotplug flags READD_MULTIPLE
+  migration/memory: Evaluate LMB assoc changes
+  migration/memory: Support 'ibm,dynamic-memory-v2'
 ---
- arch/powerpc/kernel/process.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index bb6ac471a784..1c64491e9702 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -65,6 +65,7 @@
- #include <asm/livepatch.h>
- #include <asm/cpu_has_feature.h>
- #include <asm/asm-prototypes.h>
-+#include <asm/stacktrace.h>
- 
- #include <linux/kprobes.h>
- #include <linux/kdebug.h>
--- 
-2.11.0
+Changes in v07:
+  -- Provide more useful return value from dlpar_memory_readd_multiple
+Changes in v06:
+  -- Rebase to powerpc next branch to account for recent code changes.
+  -- Fix prototype problem when CONFIG_MEMORY_HOTPLUG not defined.
+Changes in v05:
+  -- Add walk_drmem_lmbs_pairs to replace macro for_each_pair_lmb
+  -- Use walk_drmem_lmbs_pairs and callback instead of local loop
+  -- Provide dlpar_memory_readd_helper routine to compress some common code
+  -- Move common structure from numa.c + hotplug-memory.c to header file.
+  -- Clarify some comments.
+Changes in v04:
+  -- Move dlpar_memory_readd_multiple() to patch with new ACTION
+     constant.
+  -- Move init of 'lmb->internal_flags' in init_drmem_v2_lmbs to
+     patch with other references to flag.
+  -- Correct spacing in one of the patches
+Changes in v03:
+  -- Change operation to tag changed LMBs in DRMEM array instead of
+     queuing a potentially huge number of structures.
+  -- Added another hotplug queue event for CPU/memory operations
+  -- Added internal_flags feature to DRMEM
+  -- Improve the patch description language for the patch set.
+  -- Revise patch set to queue worker for memory association
+     updates directly to pseries worker queue.
 
