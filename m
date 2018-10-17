@@ -7,61 +7,58 @@ X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B39AEECDE30
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 08:05:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 46262ECDE32
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 08:07:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1FB01214C3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 08:05:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 85DC82151D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 08:07:31 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="UbX2d1R6"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1FB01214C3
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="X7MU2yqV"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 85DC82151D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42Zl8n16J4zF3ZC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 19:05:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42ZlCP4YLzzF3Y4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 19:07:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="UbX2d1R6";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="X7MU2yqV";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
- smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
+ smtp.mailfrom=bombadil.srs.infradead.org (client-ip=198.137.202.133;
  helo=bombadil.infradead.org;
  envelope-from=batv+09575c8a9ff34f5a189b+5533+infradead.org+hch@bombadil.srs.infradead.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="UbX2d1R6"; dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
+ [198.137.202.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Zl5m3hm2zF3G0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Oct 2018 19:02:36 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Zl5g2pSQzF3VB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Oct 2018 19:02:28 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
  :Reply-To:Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From
  :Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
  List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=bwP8TBlf4wpx94m8V8QfxmwgA8m3w7x2v1gyqrLd8Z8=; b=UbX2d1R6Z+ZTuhkAb3wbfMUUhS
- ogfNjqSU6R9jk9n4uzxxlrMKMfkwr0aAvinRbmsnQV6ZD2eju8GNLXSi7etPOqMP2dZc4snep4Ml6
- lSvqdCIJh/iMoajAfMJ3CFlrdGoaI+0NeWcFEgWJ5eaQ6/4QUVlBdnXCrK2uxHFsiPlUWHPKbj9Z/
- QyOmx/pfDeEN6wg4jVX18cF5XVfQTTm7LP7fJB+bEDlUb0EHUNVfWracp0CMhI5h9gAxXGjNCdrUv
- GMfxt2gGvx6PKoZZoabPPD4GHkrHatfdHxOPwyB5WuaCZULFVcgbaoKbWXigOawCK3VBV7JAuMEdw
- 8inG168g==;
+ bh=yoAjUj25y4R5GH19rZSL/JJsy5pd/GhDvZgdcIB62yA=; b=X7MU2yqVEazsuPyRnacvedaPZs
+ CsZ3UgrEyqpk+KX71xFAxo5avenQuxLrMo7sZNbYJ01awLxfPLW8rsyOF+CwbMVqupXfm0slqPxVc
+ sxkswDsXfRb5hlcpbirxzqTf9FtK4uTSZ4m27wjj5ryNrZ0V1AYA97KSgtZKcUScHKL0g1HW3+evo
+ jia79FxVUj7IP24meksQRq3pUqQGZYI6hGJRHlhBPnJ7BMIGmP2RuwgSvz8ShsYQVBRPNzu4bB8jt
+ VhXbgJApHbyDQG5NhN2gmUJ1B8GbDycaQyJ4uh1P5OzLsQoWTX5vEIew8hki7y1N4dAkvPIkQ8EIq
+ PP3PF9gQ==;
 Received: from clnet-p19-102.ikbnet.co.at ([83.175.77.102] helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
- id 1gCgmf-0003Mu-5z; Wed, 17 Oct 2018 08:02:25 +0000
+ id 1gCgmR-0003GY-0K; Wed, 17 Oct 2018 08:02:11 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Masahiro Yamada <yamada.masahiro@socionext.com>
-Subject: [PATCH 7/8] eisa: consolidate EISA Kconfig entry in drivers/eisa
-Date: Wed, 17 Oct 2018 10:02:00 +0200
-Message-Id: <20181017080201.10866-8-hch@lst.de>
+Subject: [PATCH 2/8] powerpc: remove CONFIG_PCI_QSPAN
+Date: Wed, 17 Oct 2018 10:01:55 +0200
+Message-Id: <20181017080201.10866-3-hch@lst.de>
 X-Mailer: git-send-email 2.19.1
 In-Reply-To: <20181017080201.10866-1-hch@lst.de>
 References: <20181017080201.10866-1-hch@lst.de>
@@ -88,304 +85,40 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Let architectures opt into EISA support by selecting HAS_EISA and
-handle everything else in drivers/eisa.
+This option isn't actually used anywhere.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
-Acked-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- arch/alpha/Kconfig     | 10 +++-------
- arch/arm/Kconfig       | 16 +---------------
- arch/mips/Kconfig      | 31 +++++--------------------------
- arch/powerpc/Kconfig   |  3 ---
- arch/x86/Kconfig       | 19 +------------------
- drivers/Kconfig        |  1 +
- drivers/eisa/Kconfig   | 21 ++++++++++++++++++++-
- drivers/parisc/Kconfig | 11 +----------
- 8 files changed, 32 insertions(+), 80 deletions(-)
+ arch/powerpc/Kconfig | 9 ---------
+ 1 file changed, 9 deletions(-)
 
-diff --git a/arch/alpha/Kconfig b/arch/alpha/Kconfig
-index 96f02268ea16..779e25255d78 100644
---- a/arch/alpha/Kconfig
-+++ b/arch/alpha/Kconfig
-@@ -6,6 +6,9 @@ config ALPHA
- 	select ARCH_MIGHT_HAVE_PC_SERIO
- 	select ARCH_NO_PREEMPT
- 	select ARCH_USE_CMPXCHG_LOCKREF
-+	select HAVE_EISA if ALPHA_GENERIC || ALPHA_JENSEN || ALPHA_ALCOR || \
-+				ALPHA_MIKASA || ALPHA_SABLE || ALPHA_LYNX || \
-+				ALPHA_NORITAKE || ALPHA_RAWHIDE
- 	select HAVE_PCI if !ALPHA_JENSEN
- 	select PCI if !ALPHA_JENSEN
- 	select HAVE_AOUT
-@@ -518,11 +521,6 @@ config ALPHA_SRM
- 
- 	  If unsure, say N.
- 
--config EISA
--	bool
--	depends on ALPHA_GENERIC || ALPHA_JENSEN || ALPHA_ALCOR || ALPHA_MIKASA || ALPHA_SABLE || ALPHA_LYNX || ALPHA_NORITAKE || ALPHA_RAWHIDE
--	default y
--
- config ARCH_MAY_HAVE_PC_FDC
- 	def_bool y
- 
-@@ -673,8 +671,6 @@ config HZ
- 	default 1200 if HZ_1200
- 	default 1024
- 
--source "drivers/eisa/Kconfig"
--
- config SRM_ENV
- 	tristate "SRM environment through procfs"
- 	depends on PROC_FS
-diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index 60e37b9a715d..c90a1a4d6079 100644
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -59,6 +59,7 @@ config ARM
- 	select HAVE_ARCH_TRACEHOOK
- 	select HAVE_ARM_SMCCC if CPU_V7
- 	select HAVE_EBPF_JIT if !CPU_ENDIAN_BE32
-+	select HAVE_EISA
- 	select HAVE_CONTEXT_TRACKING
- 	select HAVE_C_RECORDMCOUNT
- 	select HAVE_DEBUG_KMEMLEAK
-@@ -162,21 +163,6 @@ config HAVE_PROC_CPU
- config NO_IOPORT_MAP
- 	bool
- 
--config EISA
--	bool
--	---help---
--	  The Extended Industry Standard Architecture (EISA) bus was
--	  developed as an open alternative to the IBM MicroChannel bus.
--
--	  The EISA bus provided some of the features of the IBM MicroChannel
--	  bus while maintaining backward compatibility with cards made for
--	  the older ISA bus.  The EISA bus saw limited use between 1988 and
--	  1995 when it was made obsolete by the PCI bus.
--
--	  Say Y here if you are building a kernel for an EISA-based machine.
--
--	  Otherwise, say N.
--
- config SBUS
- 	bool
- 
-diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
-index 96198f8375e1..7cf58031a43e 100644
---- a/arch/mips/Kconfig
-+++ b/arch/mips/Kconfig
-@@ -23,6 +23,7 @@ config MIPS
- 	select GENERIC_CPU_AUTOPROBE
- 	select GENERIC_IRQ_PROBE
- 	select GENERIC_IRQ_SHOW
-+	select GENERIC_ISA_DMA if EISA
- 	select GENERIC_LIB_ASHLDI3
- 	select GENERIC_LIB_ASHRDI3
- 	select GENERIC_LIB_CMPDI2
-@@ -72,6 +73,7 @@ config MIPS
- 	select HAVE_SYSCALL_TRACEPOINTS
- 	select HAVE_VIRT_CPU_ACCOUNTING_GEN if 64BIT || !SMP
- 	select IRQ_FORCED_THREADING
-+	select ISA if EISA
- 	select MODULES_USE_ELF_RELA if MODULES && 64BIT
- 	select MODULES_USE_ELF_REL if MODULES
- 	select PCI_DOMAINS if PCI
-@@ -634,7 +636,7 @@ config SGI_IP22
- 	select CSRC_R4K
- 	select DEFAULT_SGI_PARTITION
- 	select DMA_NONCOHERENT
--	select HW_HAS_EISA
-+	select HAVE_EISA
- 	select I8253
- 	select I8259
- 	select IP22_CPU_SCACHE
-@@ -699,7 +701,7 @@ config SGI_IP28
- 	select DMA_NONCOHERENT
- 	select GENERIC_ISA_DMA_SUPPORT_BROKEN
- 	select IRQ_MIPS_CPU
--	select HW_HAS_EISA
-+	select HAVE_EISA
- 	select I8253
- 	select I8259
- 	select SGI_HAS_I8042
-@@ -842,8 +844,8 @@ config SNI_RM
- 	select DEFAULT_SGI_PARTITION if CPU_BIG_ENDIAN
- 	select DMA_NONCOHERENT
- 	select GENERIC_ISA_DMA
-+	select HAVE_EISA
- 	select HAVE_PCSPKR_PLATFORM
--	select HW_HAS_EISA
- 	select HAVE_PCI
- 	select IRQ_MIPS_CPU
- 	select I8253
-@@ -2991,9 +2993,6 @@ config MIPS_AUTO_PFN_OFFSET
- 
- menu "Bus options (PCI, PCMCIA, EISA, ISA, TC)"
- 
--config HW_HAS_EISA
--	bool
--
- config HT_PCI
- 	bool "Support for HT-linked PCI"
- 	default y
-@@ -3027,26 +3026,6 @@ config PCI_DRIVERS_LEGACY
- config ISA
- 	bool
- 
--config EISA
--	bool "EISA support"
--	depends on HW_HAS_EISA
--	select ISA
--	select GENERIC_ISA_DMA
--	---help---
--	  The Extended Industry Standard Architecture (EISA) bus was
--	  developed as an open alternative to the IBM MicroChannel bus.
--
--	  The EISA bus provided some of the features of the IBM MicroChannel
--	  bus while maintaining backward compatibility with cards made for
--	  the older ISA bus.  The EISA bus saw limited use between 1988 and
--	  1995 when it was made obsolete by the PCI bus.
--
--	  Say Y here if you are building a kernel for an EISA-based machine.
--
--	  Otherwise, say N.
--
--source "drivers/eisa/Kconfig"
--
- config TC
- 	bool "TURBOchannel support"
- 	depends on MACH_DECSTATION
 diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index ee28bb22732b..f2001fff14d1 100644
+index a80669209155..e8c8970248bc 100644
 --- a/arch/powerpc/Kconfig
 +++ b/arch/powerpc/Kconfig
-@@ -900,9 +900,6 @@ config PPC_INDIRECT_PCI
- 	default y if 40x || 44x
- 	default n
- 
--config EISA
--	bool
--
- config SBUS
- 	bool
- 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 6fe3740018f6..c9f9f62700d8 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -144,6 +144,7 @@ config X86
- 	select HAVE_DYNAMIC_FTRACE_WITH_REGS
- 	select HAVE_EBPF_JIT
- 	select HAVE_EFFICIENT_UNALIGNED_ACCESS
-+	select HAVE_EISA
- 	select HAVE_EXIT_THREAD
- 	select HAVE_FENTRY			if X86_64 || DYNAMIC_FTRACE
- 	select HAVE_FTRACE_MCOUNT_RECORD
-@@ -2680,24 +2681,6 @@ config ISA
- 	  (MCA) or VESA.  ISA is an older system, now being displaced by PCI;
- 	  newer boards don't support it.  If you have ISA, say Y, otherwise N.
- 
--config EISA
--	bool "EISA support"
--	depends on ISA
--	---help---
--	  The Extended Industry Standard Architecture (EISA) bus was
--	  developed as an open alternative to the IBM MicroChannel bus.
--
--	  The EISA bus provided some of the features of the IBM MicroChannel
--	  bus while maintaining backward compatibility with cards made for
--	  the older ISA bus.  The EISA bus saw limited use between 1988 and
--	  1995 when it was made obsolete by the PCI bus.
--
--	  Say Y here if you are building a kernel for an EISA-based machine.
--
--	  Otherwise, say N.
--
--source "drivers/eisa/Kconfig"
--
- config SCx200
- 	tristate "NatSemi SCx200 support"
- 	---help---
-diff --git a/drivers/Kconfig b/drivers/Kconfig
-index 065d308fcb00..ea58a6b99288 100644
---- a/drivers/Kconfig
-+++ b/drivers/Kconfig
-@@ -4,6 +4,7 @@ menu "Device Drivers"
- # Keep I/O buses first
- 
- source "drivers/amba/Kconfig"
-+source "drivers/eisa/Kconfig"
- source "drivers/pci/Kconfig"
- source "drivers/pcmcia/Kconfig"
- source "drivers/rapidio/Kconfig"
-diff --git a/drivers/eisa/Kconfig b/drivers/eisa/Kconfig
-index 2705284f6223..4570e3bca42c 100644
---- a/drivers/eisa/Kconfig
-+++ b/drivers/eisa/Kconfig
-@@ -1,6 +1,26 @@
- #
- # EISA configuration
- #
-+
-+config HAVE_EISA
-+	bool
-+
-+menuconfig EISA
-+	bool "EISA support"
-+	depends on HAVE_EISA
-+	---help---
-+	  The Extended Industry Standard Architecture (EISA) bus was
-+	  developed as an open alternative to the IBM MicroChannel bus.
-+
-+	  The EISA bus provided some of the features of the IBM MicroChannel
-+	  bus while maintaining backward compatibility with cards made for
-+	  the older ISA bus.  The EISA bus saw limited use between 1988 and
-+	  1995 when it was made obsolete by the PCI bus.
-+
-+	  Say Y here if you are building a kernel for an EISA-based machine.
-+
-+	  Otherwise, say N.
-+
- config EISA_VLB_PRIMING
- 	bool "Vesa Local Bus priming"
- 	depends on X86 && EISA
-@@ -53,4 +73,3 @@ config EISA_NAMES
- 	  names.
- 
- 	  When in doubt, say Y.
--
-diff --git a/drivers/parisc/Kconfig b/drivers/parisc/Kconfig
-index 1a55763d1245..74e119adca01 100644
---- a/drivers/parisc/Kconfig
-+++ b/drivers/parisc/Kconfig
-@@ -2,6 +2,7 @@ menu "Bus options (PCI, PCMCIA, EISA, GSC, ISA)"
- 
- config GSC
- 	bool "VSC/GSC/HSC bus support"
-+	select HAVE_EISA
- 	default y
+@@ -955,7 +955,6 @@ config PCI
+ 	bool "PCI support" if PPC_PCI_CHOICE
+ 	default y if !40x && !CPM2 && !PPC_8xx && !PPC_83xx \
+ 		&& !PPC_85xx && !PPC_86xx && !GAMECUBE_COMMON
+-	default PCI_QSPAN if PPC_8xx
+ 	select GENERIC_PCI_IOMAP
  	help
- 	  The VSC, GSC and HSC busses were used from the earliest 700-series
-@@ -46,16 +47,6 @@ config GSC_WAX
- 	  used), a HIL interface chip and is also known to be used as the
- 	  GSC bridge for an X.25 GSC card.
+ 	  Find out whether your system includes a PCI bus. PCI is the name of
+@@ -969,14 +968,6 @@ config PCI_DOMAINS
+ config PCI_SYSCALL
+ 	def_bool PCI
  
--config EISA
--	bool "EISA support"
--	depends on GSC
+-config PCI_QSPAN
+-	bool "QSpan PCI"
+-	depends on PPC_8xx
+-	select PPC_I8259
 -	help
--	  Say Y here if you have an EISA bus in your machine.  This code
--	  supports both the Mongoose & Wax EISA adapters.  It is sadly
--	  incomplete and lacks support for card-to-host DMA.
+-	  Say Y here if you have a system based on a Motorola 8xx-series
+-	  embedded processor with a QSPAN PCI interface, otherwise say N.
 -
--source "drivers/eisa/Kconfig"
--
- config ISA
- 	bool "ISA support"
- 	depends on EISA
+ config PCI_8260
+ 	bool
+ 	depends on PCI && 8260
 -- 
 2.19.1
 
