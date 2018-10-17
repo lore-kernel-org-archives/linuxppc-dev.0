@@ -2,140 +2,65 @@ Return-Path: <SRS0=nnl5=M5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E538C5ACC6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 03:37:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C3EB8C04EB9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 04:51:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DF7BD214C4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 03:37:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 78D41214C3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 04:51:52 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="a4NKFYP4"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DF7BD214C4
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="C8GIr4K4"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 78D41214C3
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42ZdCK4l3kzF3Wl
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 14:37:01 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Zfsd62RLzF3Xx
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 15:51:49 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="a4NKFYP4";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="C8GIr4K4";
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
- (client-ip=2607:f8b0:4864:20::641; helo=mail-pl1-x641.google.com;
- envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.ru
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
- header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="a4NKFYP4"; 
- dkim-atps=neutral
-Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
- [IPv6:2607:f8b0:4864:20::641])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Zd8c0QRLzF3Vn
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Oct 2018 14:34:39 +1100 (AEDT)
-Received: by mail-pl1-x641.google.com with SMTP id 1-v6so11976913plv.7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 20:34:38 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
- h=subject:to:cc:references:from:openpgp:autocrypt:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=HE4r0CsUNJJWnJKCALq9eKD11+/TpsphXAp9SzGSZag=;
- b=a4NKFYP4v2l6iTlFFkPrSXOZgjpvz70gyzose3rQk41nuxMwKIy1fJEBYjATHz1nXQ
- Xyk06bobePi1gsqzHrlJyWb8X2kdmNh9HUlypcbbP6h3RGqttQK0I1C5oBaC53FZcAT3
- vDl2fP7HdXR14GlAIa5tNw97ezoW33ybrY0t3ElH59hZ8ZJGU849OPnUcCJhYcp0K2gb
- 6e3V/VXaUdE5NOty0mLThspfaYQfMNf7J3qIUG4QCkFuNCG/XYvpcwd8Ae0qABGY2YLP
- jhiMQbYTcq26HvlbTjKeHJJt2PXTF/5myrH4AfNJ6LIbMRsxVwswD5XQg1yfMiZNvd1N
- gM0w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:openpgp:autocrypt
- :message-id:date:user-agent:mime-version:in-reply-to
- :content-language:content-transfer-encoding;
- bh=HE4r0CsUNJJWnJKCALq9eKD11+/TpsphXAp9SzGSZag=;
- b=d4rFhWL+pGLoAbgDcQbc0/8EhU0ao3u77M7KUS67jgwRiN/HIgSuGG0aN0MJNLIy6t
- JIM07Yjh5lgNdykiCTF6JByH67IllTpqCRUxVE8XEpsIGw1o47ZpztLvZ54olYeoemnz
- RuCC/q5Bg6j2clD79aK2vsEGoLmGIEby2Btm9rwOoPIkcj7aGmKK29oyWBo92JzIaqWj
- 8BspMVh6qhVrj0ALe5GQDZ2zu+7uPQ9gCGKAekYW+/27p1J+CdJuHXxOzjptbvOkeGju
- UvR7RzeCDCyyA1u+8iDBIJVwgnNtaekUhOYYoKmZKEXFei4gmWEWlbuvODv5Ln6d9YD5
- gAjQ==
-X-Gm-Message-State: ABuFfojS3JJTPv7jGTRiUIvjPIBvoAk4RIXqiXJnljWymYTkSucRutR3
- tD8fa/TewBL2WJEg4owu+MxE8Q==
-X-Google-Smtp-Source: ACcGV620H2UjEGjNp3C2ZJiEoyJvncr7oi3VKPR6dT2rYXeWLzTRxsbg7bBOT1duLP6qfGRdXBaclw==
-X-Received: by 2002:a17:902:bd0a:: with SMTP id
- p10-v6mr23503689pls.245.1539747276935; 
- Tue, 16 Oct 2018 20:34:36 -0700 (PDT)
-Received: from [10.61.2.175] ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id q127-v6sm32972793pgq.19.2018.10.16.20.34.34
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 16 Oct 2018 20:34:36 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Zfq06SYWzF3Xc
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Oct 2018 15:49:32 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=gibson.dropbear.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
+ header.b="C8GIr4K4"; dkim-atps=neutral
+Received: by ozlabs.org (Postfix, from userid 1007)
+ id 42Zfq05BTJz9sC2; Wed, 17 Oct 2018 15:49:32 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=gibson.dropbear.id.au; s=201602; t=1539751772;
+ bh=qvCRm79Pz2KdC9MALRtWpenzksNa8W0cXqzChDTbF60=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=C8GIr4K4Xv4L9pShz44niUjCPW4/u13U3c1xaP50nPv15Ai2LOIHuTCmyyH1ewiHU
+ OVJKTMQ4Tyw0YyhXB/kRHSRaQ8djctuUGMj5UaThdHFGQ0NJ5RFBgXhsswdsVDoGXM
+ ixHf6oeNLDsRN42XMxE5Aw50DxInk3YTGlEYMsos=
+Date: Wed, 17 Oct 2018 15:45:48 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
 Subject: Re: [PATCH kernel 3/4] powerpc/mm/iommu: Make mm_iommu_new() fail on
  existing regions
-To: David Gibson <david@gibson.dropbear.id.au>
+Message-ID: <20181017044548.GD30180@umbus.fritz.box>
 References: <20181015092416.47380-1-aik@ozlabs.ru>
  <20181015092416.47380-4-aik@ozlabs.ru>
  <20181017010022.GA30180@umbus.fritz.box>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Openpgp: preference=signencrypt
-Autocrypt: addr=aik@ozlabs.ru; keydata=
- xsFNBE+rT0sBEADFEI2UtPRsLLvnRf+tI9nA8T91+jDK3NLkqV+2DKHkTGPP5qzDZpRSH6mD
- EePO1JqpVuIow/wGud9xaPA5uvuVgRS1q7RU8otD+7VLDFzPRiRE4Jfr2CW89Ox6BF+q5ZPV
- /pS4v4G9eOrw1v09lEKHB9WtiBVhhxKK1LnUjPEH3ifkOkgW7jFfoYgTdtB3XaXVgYnNPDFo
- PTBYsJy+wr89XfyHr2Ev7BB3Xaf7qICXdBF8MEVY8t/UFsesg4wFWOuzCfqxFmKEaPDZlTuR
- tfLAeVpslNfWCi5ybPlowLx6KJqOsI9R2a9o4qRXWGP7IwiMRAC3iiPyk9cknt8ee6EUIxI6
- t847eFaVKI/6WcxhszI0R6Cj+N4y+1rHfkGWYWupCiHwj9DjILW9iEAncVgQmkNPpUsZECLT
- WQzMuVSxjuXW4nJ6f4OFHqL2dU//qR+BM/eJ0TT3OnfLcPqfucGxubhT7n/CXUxEy+mvWwnm
- s9p4uqVpTfEuzQ0/bE6t7dZdPBua7eYox1AQnk8JQDwC3Rn9kZq2O7u5KuJP5MfludMmQevm
- pHYEMF4vZuIpWcOrrSctJfIIEyhDoDmR34bCXAZfNJ4p4H6TPqPh671uMQV82CfTxTrMhGFq
- 8WYU2AH86FrVQfWoH09z1WqhlOm/KZhAV5FndwVjQJs1MRXD8QARAQABzSRBbGV4ZXkgS2Fy
- ZGFzaGV2c2tpeSA8YWlrQG96bGFicy5ydT7CwXgEEwECACIFAk+rT0sCGwMGCwkIBwMCBhUI
- AgkKCwQWAgMBAh4BAheAAAoJEIYTPdgrwSC5fAIP/0wf/oSYaCq9PhO0UP9zLSEz66SSZUf7
- AM9O1rau1lJpT8RoNa0hXFXIVbqPPKPZgorQV8SVmYRLr0oSmPnTiZC82x2dJGOR8x4E01gK
- TanY53J/Z6+CpYykqcIpOlGsytUTBA+AFOpdaFxnJ9a8p2wA586fhCZHVpV7W6EtUPH1SFTQ
- q5xvBmr3KkWGjz1FSLH4FeB70zP6uyuf/B2KPmdlPkyuoafl2UrU8LBADi/efc53PZUAREih
- sm3ch4AxaL4QIWOmlE93S+9nHZSRo9jgGXB1LzAiMRII3/2Leg7O4hBHZ9Nki8/fbDo5///+
- kD4L7UNbSUM/ACWHhd4m1zkzTbyRzvL8NAVQ3rckLOmju7Eu9whiPueGMi5sihy9VQKHmEOx
- OMEhxLRQbzj4ypRLS9a+oxk1BMMu9cd/TccNy0uwx2UUjDQw/cXw2rRWTRCxoKmUsQ+eNWEd
- iYLW6TCfl9CfHlT6A7Zmeqx2DCeFafqEd69DqR9A8W5rx6LQcl0iOlkNqJxxbbW3ddDsLU/Y
- r4cY20++WwOhSNghhtrroP+gouTOIrNE/tvG16jHs8nrYBZuc02nfX1/gd8eguNfVX/ZTHiR
- gHBWe40xBKwBEK2UeqSpeVTohYWGBkcd64naGtK9qHdo1zY1P55lHEc5Uhlk743PgAnOi27Q
- ns5zzsFNBE+rT0sBEACnV6GBSm+25ACT+XAE0t6HHAwDy+UKfPNaQBNTTt31GIk5aXb2Kl/p
- AgwZhQFEjZwDbl9D/f2GtmUHWKcCmWsYd5M/6Ljnbp0Ti5/xi6FyfqnO+G/wD2VhGcKBId1X
- Em/B5y1kZVbzcGVjgD3HiRTqE63UPld45bgK2XVbi2+x8lFvzuFq56E3ZsJZ+WrXpArQXib2
- hzNFwQleq/KLBDOqTT7H+NpjPFR09Qzfa7wIU6pMNF2uFg5ihb+KatxgRDHg70+BzQfa6PPA
- o1xioKXW1eHeRGMmULM0Eweuvpc7/STD3K7EJ5bBq8svoXKuRxoWRkAp9Ll65KTUXgfS+c0x
- gkzJAn8aTG0z/oEJCKPJ08CtYQ5j7AgWJBIqG+PpYrEkhjzSn+DZ5Yl8r+JnZ2cJlYsUHAB9
- jwBnWmLCR3gfop65q84zLXRQKWkASRhBp4JK3IS2Zz7Nd/Sqsowwh8x+3/IUxVEIMaVoUaxk
- Wt8kx40h3VrnLTFRQwQChm/TBtXqVFIuv7/Mhvvcq11xnzKjm2FCnTvCh6T2wJw3de6kYjCO
- 7wsaQ2y3i1Gkad45S0hzag/AuhQJbieowKecuI7WSeV8AOFVHmgfhKti8t4Ff758Z0tw5Fpc
- BFDngh6Lty9yR/fKrbkkp6ux1gJ2QncwK1v5kFks82Cgj+DSXK6GUQARAQABwsFfBBgBAgAJ
- BQJPq09LAhsMAAoJEIYTPdgrwSC5NYEP/2DmcEa7K9A+BT2+G5GXaaiFa098DeDrnjmRvumJ
- BhA1UdZRdfqICBADmKHlJjj2xYo387sZpS6ABbhrFxM6s37g/pGPvFUFn49C47SqkoGcbeDz
- Ha7JHyYUC+Tz1dpB8EQDh5xHMXj7t59mRDgsZ2uVBKtXj2ZkbizSHlyoeCfs1gZKQgQE8Ffc
- F8eWKoqAQtn3j4nE3RXbxzTJJfExjFB53vy2wV48fUBdyoXKwE85fiPglQ8bU++0XdOr9oyy
- j1llZlB9t3tKVv401JAdX8EN0++ETiOovQdzE1m+6ioDCtKEx84ObZJM0yGSEGEanrWjiwsa
- nzeK0pJQM9EwoEYi8TBGhHC9ksaAAQipSH7F2OHSYIlYtd91QoiemgclZcSgrxKSJhyFhmLr
- QEiEILTKn/pqJfhHU/7R7UtlDAmFMUp7ByywB4JLcyD10lTmrEJ0iyRRTVfDrfVP82aMBXgF
- tKQaCxcmLCaEtrSrYGzd1sSPwJne9ssfq0SE/LM1J7VdCjm6OWV33SwKrfd6rOtvOzgadrG6
- 3bgUVBw+bsXhWDd8tvuCXmdY4bnUblxF2B6GOwSY43v6suugBttIyW5Bl2tXSTwP+zQisOJo
- +dpVG2pRr39h+buHB3NY83NEPXm1kUOhduJUA17XUY6QQCAaN4sdwPqHq938S3EmtVhs
-Message-ID: <39886bd3-5122-de68-f167-e010a1d12c33@ozlabs.ru>
-Date: Wed, 17 Oct 2018 14:34:32 +1100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.2.1
+ <39886bd3-5122-de68-f167-e010a1d12c33@ozlabs.ru>
 MIME-Version: 1.0
-In-Reply-To: <20181017010022.GA30180@umbus.fritz.box>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="VV4b6MQE+OnNyhkM"
+Content-Disposition: inline
+In-Reply-To: <39886bd3-5122-de68-f167-e010a1d12c33@ozlabs.ru>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -154,45 +79,91 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
+--VV4b6MQE+OnNyhkM
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On 17/10/2018 12:00, David Gibson wrote:
-> On Mon, Oct 15, 2018 at 08:24:15PM +1100, Alexey Kardashevskiy wrote:
->> Since we are going to have 2 different preregistering helpers, let's
->> make it clear that mm_iommu_new() is only for the normal (i.e. not device)
->> memory and for existing areas mm_iommu_get() should be used instead.
->>
->> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> 
-> I think the idea is sensible.  However (and, yes, this is really an
-> existing bug) - shouldn't we check for a request to add anything
-> overlapping with an existing region, not just one that exactly
-> matches?
+On Wed, Oct 17, 2018 at 02:34:32PM +1100, Alexey Kardashevskiy wrote:
+>=20
+>=20
+> On 17/10/2018 12:00, David Gibson wrote:
+> > On Mon, Oct 15, 2018 at 08:24:15PM +1100, Alexey Kardashevskiy wrote:
+> >> Since we are going to have 2 different preregistering helpers, let's
+> >> make it clear that mm_iommu_new() is only for the normal (i.e. not dev=
+ice)
+> >> memory and for existing areas mm_iommu_get() should be used instead.
+> >>
+> >> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> >=20
+> > I think the idea is sensible.  However (and, yes, this is really an
+> > existing bug) - shouldn't we check for a request to add anything
+> > overlapping with an existing region, not just one that exactly
+> > matches?
+>=20
+> The overlap check is below the changed hunk:
+>=20
+> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/a=
+rch/powerpc/mm/mmu_context_iommu.c#n150
 
-The overlap check is below the changed hunk:
+Ah, right.
 
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/powerpc/mm/mmu_context_iommu.c#n150
+In that case can't you just drop this whole if.  I don't see that
+there's any use in giving different error codes for "tried to register
+exactly a region you registered before" and "tried to register a
+region overlapping one you registered before.
 
 
-> 
->> ---
->>  arch/powerpc/mm/mmu_context_iommu.c | 3 +--
->>  1 file changed, 1 insertion(+), 2 deletions(-)
->>
->> diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_context_iommu.c
->> index a8c4a3c..839dbce 100644
->> --- a/arch/powerpc/mm/mmu_context_iommu.c
->> +++ b/arch/powerpc/mm/mmu_context_iommu.c
->> @@ -141,8 +141,7 @@ long mm_iommu_new(struct mm_struct *mm, unsigned long ua, unsigned long entries,
->>  	list_for_each_entry_rcu(mem, &mm->context.iommu_group_mem_list,
->>  			next) {
->>  		if ((mem->ua == ua) && (mem->entries == entries)) {
->> -			++mem->used;
->> -			*pmem = mem;
->> +			ret = -EBUSY;
->>  			goto unlock_exit;
->>  		}
->>  
-> 
+>=20
+>=20
+> >=20
+> >> ---
+> >>  arch/powerpc/mm/mmu_context_iommu.c | 3 +--
+> >>  1 file changed, 1 insertion(+), 2 deletions(-)
+> >>
+> >> diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu=
+_context_iommu.c
+> >> index a8c4a3c..839dbce 100644
+> >> --- a/arch/powerpc/mm/mmu_context_iommu.c
+> >> +++ b/arch/powerpc/mm/mmu_context_iommu.c
+> >> @@ -141,8 +141,7 @@ long mm_iommu_new(struct mm_struct *mm, unsigned l=
+ong ua, unsigned long entries,
+> >>  	list_for_each_entry_rcu(mem, &mm->context.iommu_group_mem_list,
+> >>  			next) {
+> >>  		if ((mem->ua =3D=3D ua) && (mem->entries =3D=3D entries)) {
+> >> -			++mem->used;
+> >> -			*pmem =3D mem;
+> >> +			ret =3D -EBUSY;
+> >>  			goto unlock_exit;
+> >>  		}
+> >> =20
+> >=20
+>=20
 
--- 
-Alexey
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--VV4b6MQE+OnNyhkM
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlvGvnoACgkQbDjKyiDZ
+s5J9ng//YU51Mvb9QxrZQjAv+13YxOFX3vneViU0EiYPYJd7HDcTJ3i7eht8BtJM
+ynfAo0HzIjTg52eAewBXfIEdhVmsoflntsE4ZbIW15UzS22kl3vcEm8hYKpp4EmW
+XXU4NjaV+4tF0VpZ/61gBFOG4EuQ2Hf9Bqy4eJoDa/MwE0F9nzwUqXjSNReQI9ft
+SIQgVebvMkjffXsdiRmhqSp0KL5Xa1hqUCAZepEy3nXcOyKlbhNogkolaSfgv8xF
+2ZWtlSJ8GH1GtVXG0burYkabd80oym2C7USk2bxCPmplVSw+pcIrY0CJRN9I+UVi
+nAJQGmGrk4oXwQX9UPJxFMvztGv0BnIm8l9WGwKwq1pCOWa2Zo0FbnUU6Z4YoQK7
+ssfzQK3ZFywtXozogRmSGMvX3YjZQBWpvAhVfO87I48W63eABLyeUqd5T4zu3j35
+E+pPHZEsPBVtUb1lhP4WeRz37ptO0Uu3zHTYX4hzWyrkHtecR5UkOH2vFj8+v7QN
+Qv3eMvQUGCSWKkpHcMLmhhdXeT6Y0QpUbf6NjYhjEMJB3Vm1irNdT/RCI8PdoN3m
+Jtl5sABFZZzT+ySW8wnL28JgrWi2BA0R0lDeFYkD+D1x7PV2jMCPcQc4ikbL1kZx
+GsH2TuAu6jAv8cVAVfIs8/f2fDaDkkSpOoq2wTAzII+2Gx/wD3Q=
+=9aql
+-----END PGP SIGNATURE-----
+
+--VV4b6MQE+OnNyhkM--
