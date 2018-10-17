@@ -2,70 +2,73 @@ Return-Path: <SRS0=nnl5=M5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7457BECDE30
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 07:51:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B39AEECDE30
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 08:05:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B36E121526
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 07:51:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 1FB01214C3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 08:05:14 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="gi+951KH"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B36E121526
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="UbX2d1R6"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1FB01214C3
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42ZkrM6PzlzF3Xv
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 18:50:59 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Zl8n16J4zF3ZC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 19:05:13 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="gi+951KH";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="UbX2d1R6";
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=srs0=2cro=m5=linuxfoundation.org=gregkh@kernel.org;
+Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
+ smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
+ helo=bombadil.infradead.org;
+ envelope-from=batv+09575c8a9ff34f5a189b+5533+infradead.org+hch@bombadil.srs.infradead.org;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="gi+951KH"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Zknh2qsCzF3NT
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Oct 2018 18:48:36 +1100 (AEDT)
-Received: from localhost (unknown [188.88.119.206])
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=lst.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.b="UbX2d1R6"; dkim-atps=neutral
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 05FE2214C3;
- Wed, 17 Oct 2018 07:48:33 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1539762514;
- bh=DH0a2DtgbaKHK9xmp9Xrj/M2dX3cgPzO9DrTkfK4MeA=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=gi+951KH3zqKli0DmzmNbwMdXNnBuBcURr648sYbdFD0zt+r0+OgQhq5D/hW54VeE
- 4bgyD1p5/e+ZYFcuU3EY7+sdcofHndVpVY1fFnAHgPf4WAOeTvZcA3Q9hTaWBDVGvq
- Pms/eZwwpRub2BSbe3Kic5vcI1GezcR09ho4FtoI=
-Date: Wed, 17 Oct 2018 09:48:31 +0200
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Paul Mackerras <paulus@ozlabs.org>
-Subject: Re: [PATCH 4.18 086/135] KVM: PPC: Book3S HV: Dont use
- compound_order to determine host mapping size
-Message-ID: <20181017074831.GF25537@kroah.com>
-References: <20181016170515.447235311@linuxfoundation.org>
- <20181016170521.241312038@linuxfoundation.org>
- <20181016223224.GA27627@blackberry>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Zl5m3hm2zF3G0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Oct 2018 19:02:36 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
+ MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
+ :Reply-To:Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From
+ :Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
+ List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=bwP8TBlf4wpx94m8V8QfxmwgA8m3w7x2v1gyqrLd8Z8=; b=UbX2d1R6Z+ZTuhkAb3wbfMUUhS
+ ogfNjqSU6R9jk9n4uzxxlrMKMfkwr0aAvinRbmsnQV6ZD2eju8GNLXSi7etPOqMP2dZc4snep4Ml6
+ lSvqdCIJh/iMoajAfMJ3CFlrdGoaI+0NeWcFEgWJ5eaQ6/4QUVlBdnXCrK2uxHFsiPlUWHPKbj9Z/
+ QyOmx/pfDeEN6wg4jVX18cF5XVfQTTm7LP7fJB+bEDlUb0EHUNVfWracp0CMhI5h9gAxXGjNCdrUv
+ GMfxt2gGvx6PKoZZoabPPD4GHkrHatfdHxOPwyB5WuaCZULFVcgbaoKbWXigOawCK3VBV7JAuMEdw
+ 8inG168g==;
+Received: from clnet-p19-102.ikbnet.co.at ([83.175.77.102] helo=localhost)
+ by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
+ id 1gCgmf-0003Mu-5z; Wed, 17 Oct 2018 08:02:25 +0000
+From: Christoph Hellwig <hch@lst.de>
+To: Masahiro Yamada <yamada.masahiro@socionext.com>
+Subject: [PATCH 7/8] eisa: consolidate EISA Kconfig entry in drivers/eisa
+Date: Wed, 17 Oct 2018 10:02:00 +0200
+Message-Id: <20181017080201.10866-8-hch@lst.de>
+X-Mailer: git-send-email 2.19.1
+In-Reply-To: <20181017080201.10866-1-hch@lst.de>
+References: <20181017080201.10866-1-hch@lst.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20181016223224.GA27627@blackberry>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
+ bombadil.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,29 +80,312 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>, linux-kernel@vger.kernel.org,
- kvm-ppc@vger.kernel.org, Sasha Levin <alexander.levin@microsoft.com>,
- stable@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: linux-arch@vger.kernel.org, linux-scsi@vger.kernel.org,
+ linux-kbuild@vger.kernel.org, linux-pci@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Dominik Brodowski <linux@dominikbrodowski.net>,
+ Alexandre Bounine <alex.bou9@gmail.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Oct 17, 2018 at 09:32:25AM +1100, Paul Mackerras wrote:
-> On Tue, Oct 16, 2018 at 07:05:16PM +0200, Greg Kroah-Hartman wrote:
-> > 4.18-stable review patch.  If anyone has any objections, please let me know.
-> > 
-> > ------------------
-> > 
-> > From: Nicholas Piggin <npiggin@gmail.com>
-> > 
-> > [ Upstream commit 71d29f43b6332badc5598c656616a62575e83342 ]
-> 
-> If you take 71d29f43b633 then you also need 6579804c4317 ("KVM: PPC:
-> Book3S HV: Avoid crash from THP collapse during radix page fault",
-> 2018-10-04).
+Let architectures opt into EISA support by selecting HAS_EISA and
+handle everything else in drivers/eisa.
 
-Thanks, now queued up.
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+Acked-by: Thomas Gleixner <tglx@linutronix.de>
+---
+ arch/alpha/Kconfig     | 10 +++-------
+ arch/arm/Kconfig       | 16 +---------------
+ arch/mips/Kconfig      | 31 +++++--------------------------
+ arch/powerpc/Kconfig   |  3 ---
+ arch/x86/Kconfig       | 19 +------------------
+ drivers/Kconfig        |  1 +
+ drivers/eisa/Kconfig   | 21 ++++++++++++++++++++-
+ drivers/parisc/Kconfig | 11 +----------
+ 8 files changed, 32 insertions(+), 80 deletions(-)
 
-greg k-h
+diff --git a/arch/alpha/Kconfig b/arch/alpha/Kconfig
+index 96f02268ea16..779e25255d78 100644
+--- a/arch/alpha/Kconfig
++++ b/arch/alpha/Kconfig
+@@ -6,6 +6,9 @@ config ALPHA
+ 	select ARCH_MIGHT_HAVE_PC_SERIO
+ 	select ARCH_NO_PREEMPT
+ 	select ARCH_USE_CMPXCHG_LOCKREF
++	select HAVE_EISA if ALPHA_GENERIC || ALPHA_JENSEN || ALPHA_ALCOR || \
++				ALPHA_MIKASA || ALPHA_SABLE || ALPHA_LYNX || \
++				ALPHA_NORITAKE || ALPHA_RAWHIDE
+ 	select HAVE_PCI if !ALPHA_JENSEN
+ 	select PCI if !ALPHA_JENSEN
+ 	select HAVE_AOUT
+@@ -518,11 +521,6 @@ config ALPHA_SRM
+ 
+ 	  If unsure, say N.
+ 
+-config EISA
+-	bool
+-	depends on ALPHA_GENERIC || ALPHA_JENSEN || ALPHA_ALCOR || ALPHA_MIKASA || ALPHA_SABLE || ALPHA_LYNX || ALPHA_NORITAKE || ALPHA_RAWHIDE
+-	default y
+-
+ config ARCH_MAY_HAVE_PC_FDC
+ 	def_bool y
+ 
+@@ -673,8 +671,6 @@ config HZ
+ 	default 1200 if HZ_1200
+ 	default 1024
+ 
+-source "drivers/eisa/Kconfig"
+-
+ config SRM_ENV
+ 	tristate "SRM environment through procfs"
+ 	depends on PROC_FS
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index 60e37b9a715d..c90a1a4d6079 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -59,6 +59,7 @@ config ARM
+ 	select HAVE_ARCH_TRACEHOOK
+ 	select HAVE_ARM_SMCCC if CPU_V7
+ 	select HAVE_EBPF_JIT if !CPU_ENDIAN_BE32
++	select HAVE_EISA
+ 	select HAVE_CONTEXT_TRACKING
+ 	select HAVE_C_RECORDMCOUNT
+ 	select HAVE_DEBUG_KMEMLEAK
+@@ -162,21 +163,6 @@ config HAVE_PROC_CPU
+ config NO_IOPORT_MAP
+ 	bool
+ 
+-config EISA
+-	bool
+-	---help---
+-	  The Extended Industry Standard Architecture (EISA) bus was
+-	  developed as an open alternative to the IBM MicroChannel bus.
+-
+-	  The EISA bus provided some of the features of the IBM MicroChannel
+-	  bus while maintaining backward compatibility with cards made for
+-	  the older ISA bus.  The EISA bus saw limited use between 1988 and
+-	  1995 when it was made obsolete by the PCI bus.
+-
+-	  Say Y here if you are building a kernel for an EISA-based machine.
+-
+-	  Otherwise, say N.
+-
+ config SBUS
+ 	bool
+ 
+diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
+index 96198f8375e1..7cf58031a43e 100644
+--- a/arch/mips/Kconfig
++++ b/arch/mips/Kconfig
+@@ -23,6 +23,7 @@ config MIPS
+ 	select GENERIC_CPU_AUTOPROBE
+ 	select GENERIC_IRQ_PROBE
+ 	select GENERIC_IRQ_SHOW
++	select GENERIC_ISA_DMA if EISA
+ 	select GENERIC_LIB_ASHLDI3
+ 	select GENERIC_LIB_ASHRDI3
+ 	select GENERIC_LIB_CMPDI2
+@@ -72,6 +73,7 @@ config MIPS
+ 	select HAVE_SYSCALL_TRACEPOINTS
+ 	select HAVE_VIRT_CPU_ACCOUNTING_GEN if 64BIT || !SMP
+ 	select IRQ_FORCED_THREADING
++	select ISA if EISA
+ 	select MODULES_USE_ELF_RELA if MODULES && 64BIT
+ 	select MODULES_USE_ELF_REL if MODULES
+ 	select PCI_DOMAINS if PCI
+@@ -634,7 +636,7 @@ config SGI_IP22
+ 	select CSRC_R4K
+ 	select DEFAULT_SGI_PARTITION
+ 	select DMA_NONCOHERENT
+-	select HW_HAS_EISA
++	select HAVE_EISA
+ 	select I8253
+ 	select I8259
+ 	select IP22_CPU_SCACHE
+@@ -699,7 +701,7 @@ config SGI_IP28
+ 	select DMA_NONCOHERENT
+ 	select GENERIC_ISA_DMA_SUPPORT_BROKEN
+ 	select IRQ_MIPS_CPU
+-	select HW_HAS_EISA
++	select HAVE_EISA
+ 	select I8253
+ 	select I8259
+ 	select SGI_HAS_I8042
+@@ -842,8 +844,8 @@ config SNI_RM
+ 	select DEFAULT_SGI_PARTITION if CPU_BIG_ENDIAN
+ 	select DMA_NONCOHERENT
+ 	select GENERIC_ISA_DMA
++	select HAVE_EISA
+ 	select HAVE_PCSPKR_PLATFORM
+-	select HW_HAS_EISA
+ 	select HAVE_PCI
+ 	select IRQ_MIPS_CPU
+ 	select I8253
+@@ -2991,9 +2993,6 @@ config MIPS_AUTO_PFN_OFFSET
+ 
+ menu "Bus options (PCI, PCMCIA, EISA, ISA, TC)"
+ 
+-config HW_HAS_EISA
+-	bool
+-
+ config HT_PCI
+ 	bool "Support for HT-linked PCI"
+ 	default y
+@@ -3027,26 +3026,6 @@ config PCI_DRIVERS_LEGACY
+ config ISA
+ 	bool
+ 
+-config EISA
+-	bool "EISA support"
+-	depends on HW_HAS_EISA
+-	select ISA
+-	select GENERIC_ISA_DMA
+-	---help---
+-	  The Extended Industry Standard Architecture (EISA) bus was
+-	  developed as an open alternative to the IBM MicroChannel bus.
+-
+-	  The EISA bus provided some of the features of the IBM MicroChannel
+-	  bus while maintaining backward compatibility with cards made for
+-	  the older ISA bus.  The EISA bus saw limited use between 1988 and
+-	  1995 when it was made obsolete by the PCI bus.
+-
+-	  Say Y here if you are building a kernel for an EISA-based machine.
+-
+-	  Otherwise, say N.
+-
+-source "drivers/eisa/Kconfig"
+-
+ config TC
+ 	bool "TURBOchannel support"
+ 	depends on MACH_DECSTATION
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index ee28bb22732b..f2001fff14d1 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -900,9 +900,6 @@ config PPC_INDIRECT_PCI
+ 	default y if 40x || 44x
+ 	default n
+ 
+-config EISA
+-	bool
+-
+ config SBUS
+ 	bool
+ 
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 6fe3740018f6..c9f9f62700d8 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -144,6 +144,7 @@ config X86
+ 	select HAVE_DYNAMIC_FTRACE_WITH_REGS
+ 	select HAVE_EBPF_JIT
+ 	select HAVE_EFFICIENT_UNALIGNED_ACCESS
++	select HAVE_EISA
+ 	select HAVE_EXIT_THREAD
+ 	select HAVE_FENTRY			if X86_64 || DYNAMIC_FTRACE
+ 	select HAVE_FTRACE_MCOUNT_RECORD
+@@ -2680,24 +2681,6 @@ config ISA
+ 	  (MCA) or VESA.  ISA is an older system, now being displaced by PCI;
+ 	  newer boards don't support it.  If you have ISA, say Y, otherwise N.
+ 
+-config EISA
+-	bool "EISA support"
+-	depends on ISA
+-	---help---
+-	  The Extended Industry Standard Architecture (EISA) bus was
+-	  developed as an open alternative to the IBM MicroChannel bus.
+-
+-	  The EISA bus provided some of the features of the IBM MicroChannel
+-	  bus while maintaining backward compatibility with cards made for
+-	  the older ISA bus.  The EISA bus saw limited use between 1988 and
+-	  1995 when it was made obsolete by the PCI bus.
+-
+-	  Say Y here if you are building a kernel for an EISA-based machine.
+-
+-	  Otherwise, say N.
+-
+-source "drivers/eisa/Kconfig"
+-
+ config SCx200
+ 	tristate "NatSemi SCx200 support"
+ 	---help---
+diff --git a/drivers/Kconfig b/drivers/Kconfig
+index 065d308fcb00..ea58a6b99288 100644
+--- a/drivers/Kconfig
++++ b/drivers/Kconfig
+@@ -4,6 +4,7 @@ menu "Device Drivers"
+ # Keep I/O buses first
+ 
+ source "drivers/amba/Kconfig"
++source "drivers/eisa/Kconfig"
+ source "drivers/pci/Kconfig"
+ source "drivers/pcmcia/Kconfig"
+ source "drivers/rapidio/Kconfig"
+diff --git a/drivers/eisa/Kconfig b/drivers/eisa/Kconfig
+index 2705284f6223..4570e3bca42c 100644
+--- a/drivers/eisa/Kconfig
++++ b/drivers/eisa/Kconfig
+@@ -1,6 +1,26 @@
+ #
+ # EISA configuration
+ #
++
++config HAVE_EISA
++	bool
++
++menuconfig EISA
++	bool "EISA support"
++	depends on HAVE_EISA
++	---help---
++	  The Extended Industry Standard Architecture (EISA) bus was
++	  developed as an open alternative to the IBM MicroChannel bus.
++
++	  The EISA bus provided some of the features of the IBM MicroChannel
++	  bus while maintaining backward compatibility with cards made for
++	  the older ISA bus.  The EISA bus saw limited use between 1988 and
++	  1995 when it was made obsolete by the PCI bus.
++
++	  Say Y here if you are building a kernel for an EISA-based machine.
++
++	  Otherwise, say N.
++
+ config EISA_VLB_PRIMING
+ 	bool "Vesa Local Bus priming"
+ 	depends on X86 && EISA
+@@ -53,4 +73,3 @@ config EISA_NAMES
+ 	  names.
+ 
+ 	  When in doubt, say Y.
+-
+diff --git a/drivers/parisc/Kconfig b/drivers/parisc/Kconfig
+index 1a55763d1245..74e119adca01 100644
+--- a/drivers/parisc/Kconfig
++++ b/drivers/parisc/Kconfig
+@@ -2,6 +2,7 @@ menu "Bus options (PCI, PCMCIA, EISA, GSC, ISA)"
+ 
+ config GSC
+ 	bool "VSC/GSC/HSC bus support"
++	select HAVE_EISA
+ 	default y
+ 	help
+ 	  The VSC, GSC and HSC busses were used from the earliest 700-series
+@@ -46,16 +47,6 @@ config GSC_WAX
+ 	  used), a HIL interface chip and is also known to be used as the
+ 	  GSC bridge for an X.25 GSC card.
+ 
+-config EISA
+-	bool "EISA support"
+-	depends on GSC
+-	help
+-	  Say Y here if you have an EISA bus in your machine.  This code
+-	  supports both the Mongoose & Wax EISA adapters.  It is sadly
+-	  incomplete and lacks support for card-to-host DMA.
+-
+-source "drivers/eisa/Kconfig"
+-
+ config ISA
+ 	bool "ISA support"
+ 	depends on EISA
+-- 
+2.19.1
+
