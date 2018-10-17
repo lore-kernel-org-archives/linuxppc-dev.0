@@ -2,65 +2,79 @@ Return-Path: <SRS0=nnl5=M5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C3EB8C04EB9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 04:51:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BBE3CC5ACC6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 06:03:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 78D41214C3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 04:51:52 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="C8GIr4K4"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 78D41214C3
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 296FA2150D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 06:03:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 296FA2150D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42Zfsd62RLzF3Xx
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 15:51:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+	by lists.ozlabs.org (Postfix) with ESMTP id 42ZhRp2RZrzF3X5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 17:03:02 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="C8GIr4K4";
-	dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Zfq06SYWzF3Xc
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Oct 2018 15:49:32 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=gibson.dropbear.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.b="C8GIr4K4"; dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1007)
- id 42Zfq05BTJz9sC2; Wed, 17 Oct 2018 15:49:32 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1539751772;
- bh=qvCRm79Pz2KdC9MALRtWpenzksNa8W0cXqzChDTbF60=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=C8GIr4K4Xv4L9pShz44niUjCPW4/u13U3c1xaP50nPv15Ai2LOIHuTCmyyH1ewiHU
- OVJKTMQ4Tyw0YyhXB/kRHSRaQ8djctuUGMj5UaThdHFGQ0NJ5RFBgXhsswdsVDoGXM
- ixHf6oeNLDsRN42XMxE5Aw50DxInk3YTGlEYMsos=
-Date: Wed, 17 Oct 2018 15:45:48 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH kernel 3/4] powerpc/mm/iommu: Make mm_iommu_new() fail on
- existing regions
-Message-ID: <20181017044548.GD30180@umbus.fritz.box>
-References: <20181015092416.47380-1-aik@ozlabs.ru>
- <20181015092416.47380-4-aik@ozlabs.ru>
- <20181017010022.GA30180@umbus.fritz.box>
- <39886bd3-5122-de68-f167-e010a1d12c33@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42ZhPD4ghbzF3WD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Oct 2018 17:00:48 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 42ZhNw2L0Jz9ttBc;
+ Wed, 17 Oct 2018 08:00:32 +0200 (CEST)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id f7F0ekkE_V2B; Wed, 17 Oct 2018 08:00:32 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 42ZhNw1dxsz9ttBY;
+ Wed, 17 Oct 2018 08:00:32 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 7107E8B7E8;
+ Wed, 17 Oct 2018 08:00:44 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id wm9FhLnt1yX0; Wed, 17 Oct 2018 08:00:44 +0200 (CEST)
+Received: from pc13168vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
+ [172.25.231.2])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1DEA78B75F;
+ Wed, 17 Oct 2018 08:00:44 +0200 (CEST)
+Subject: Re: Crash on FSL Book3E due to pte_pgprot()? (was Re: [PATCH v3
+ 12/24] powerpc/mm: use pte helpers in generic code)
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Dominik Brodowski <linux@dominikbrodowski.net>,
+ Geoff Levand <geoff@infradead.org>, Jens Axboe <axboe@kernel.dk>,
+ Kumar Gala <galak@kernel.crashing.org>, Li Yang <leoyang.li@nxp.com>,
+ Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ Scott Wood <oss@buserror.net>, aneesh.kumar@linux.vnet.ibm.com
+References: <cover.1539092111.git.christophe.leroy@c-s.fr>
+ <343c844bbc5081d13ee4c9aa27ff3118f607e1cc.1539092112.git.christophe.leroy@c-s.fr>
+ <87va61jsma.fsf@concordia.ellerman.id.au>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <236d72cd-e6d7-61e5-2c80-e4311e41b4f6@c-s.fr>
+Date: Wed, 17 Oct 2018 06:00:10 +0000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.7.0
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="VV4b6MQE+OnNyhkM"
-Content-Disposition: inline
-In-Reply-To: <39886bd3-5122-de68-f167-e010a1d12c33@ozlabs.ru>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <87va61jsma.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,98 +86,164 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alex Williamson <alex.williamson@redhat.com>, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-block@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---VV4b6MQE+OnNyhkM
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Wed, Oct 17, 2018 at 02:34:32PM +1100, Alexey Kardashevskiy wrote:
->=20
->=20
-> On 17/10/2018 12:00, David Gibson wrote:
-> > On Mon, Oct 15, 2018 at 08:24:15PM +1100, Alexey Kardashevskiy wrote:
-> >> Since we are going to have 2 different preregistering helpers, let's
-> >> make it clear that mm_iommu_new() is only for the normal (i.e. not dev=
-ice)
-> >> memory and for existing areas mm_iommu_get() should be used instead.
-> >>
-> >> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> >=20
-> > I think the idea is sensible.  However (and, yes, this is really an
-> > existing bug) - shouldn't we check for a request to add anything
-> > overlapping with an existing region, not just one that exactly
-> > matches?
->=20
-> The overlap check is below the changed hunk:
->=20
-> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/a=
-rch/powerpc/mm/mmu_context_iommu.c#n150
+On 10/17/2018 12:59 AM, Michael Ellerman wrote:
+> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+> 
+>> Get rid of platform specific _PAGE_XXXX in powerpc common code and
+>> use helpers instead.
+>>
+>> mm/dump_linuxpagetables.c will be handled separately
+>>
+>> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>> ---
+>>   arch/powerpc/include/asm/book3s/32/pgtable.h |  9 +++------
+>>   arch/powerpc/include/asm/nohash/32/pgtable.h | 12 ++++++++----
+>>   arch/powerpc/include/asm/nohash/pgtable.h    |  3 +--
+>>   arch/powerpc/mm/pgtable.c                    | 21 +++++++--------------
+>>   arch/powerpc/mm/pgtable_32.c                 | 15 ++++++++-------
+>>   arch/powerpc/mm/pgtable_64.c                 | 14 +++++++-------
+>>   arch/powerpc/xmon/xmon.c                     | 12 +++++++-----
+>>   7 files changed, 41 insertions(+), 45 deletions(-)
+> 
+> So turns out this patch *also* breaks my p5020ds :)
+> 
+> Even with patch 4 merged, see next.
+> 
+> It's the same crash:
+> 
+>    pcieport 2000:00:00.0: AER enabled with IRQ 480
+>    Unable to handle kernel paging request for data at address 0x8000080080080000
+>    Faulting instruction address: 0xc0000000000192cc
+>    Oops: Kernel access of bad area, sig: 11 [#1]
+>    BE SMP NR_CPUS=24 CoreNet Generic
+>    Modules linked in:
+>    CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.19.0-rc3-gcc7x-g98c847323b3a #1
+>    NIP:  c0000000000192cc LR: c0000000005d0f9c CTR: 0000000000100000
+>    REGS: c0000000f31bb400 TRAP: 0300   Not tainted  (4.19.0-rc3-gcc7x-g98c847323b3a)
+>    MSR:  0000000080029000 <CE,EE,ME>  CR: 24000224  XER: 00000000
+>    DEAR: 8000080080080000 ESR: 0000000000800000 IRQMASK: 0
+>    GPR00: c0000000005d0f84 c0000000f31bb688 c00000000117dc00 8000080080080000
+>    GPR04: 0000000000000000 0000000000400000 00000ffbff241010 c0000000f31b8000
+>    GPR08: 0000000000000000 0000000000100000 0000000000000000 c0000000012d4710
+>    GPR12: 0000000084000422 c0000000012ff000 c000000000002774 0000000000000000
+>    GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+>    GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+>    GPR24: 0000000000000000 0000000000000000 8000080080080000 c0000000ffff89a8
+>    GPR28: c0000000f3576400 c0000000f3576410 0000000000400000 c0000000012ecc98
+>    NIP [c0000000000192cc] ._memset_io+0x6c/0x9c
+>    LR [c0000000005d0f9c] .fsl_qman_probe+0x198/0x928
+>    Call Trace:
+>    [c0000000f31bb688] [c0000000005d0f84] .fsl_qman_probe+0x180/0x928 (unreliable)
+>    [c0000000f31bb728] [c0000000006432ec] .platform_drv_probe+0x60/0xb4
+>    [c0000000f31bb7a8] [c00000000064083c] .really_probe+0x294/0x35c
+>    [c0000000f31bb848] [c000000000640d2c] .__driver_attach+0x148/0x14c
+>    [c0000000f31bb8d8] [c00000000063d7dc] .bus_for_each_dev+0xb0/0x118
+>    [c0000000f31bb988] [c00000000063ff28] .driver_attach+0x34/0x4c
+>    [c0000000f31bba08] [c00000000063f648] .bus_add_driver+0x174/0x2bc
+>    [c0000000f31bbaa8] [c0000000006418bc] .driver_register+0x90/0x180
+>    [c0000000f31bbb28] [c000000000643270] .__platform_driver_register+0x60/0x7c
+>    [c0000000f31bbba8] [c000000000ee2a70] .fsl_qman_driver_init+0x24/0x38
+>    [c0000000f31bbc18] [c0000000000023fc] .do_one_initcall+0x64/0x2b8
+>    [c0000000f31bbcf8] [c000000000e9f480] .kernel_init_freeable+0x3a8/0x494
+>    [c0000000f31bbda8] [c000000000002798] .kernel_init+0x24/0x148
+>    [c0000000f31bbe28] [c0000000000009e8] .ret_from_kernel_thread+0x58/0x70
+>    Instruction dump:
+>    4e800020 2ba50003 40dd003c 3925fffc 5488402e 7929f082 7d082378 39290001
+>    550a801e 7d2903a6 7d4a4378 794a0020 <91430000> 38630004 4200fff8 70a50003
+> 
+> 
+> Comparing a working vs broken kernel, it seems to boil down to the fact
+> that we're filtering out more PTE bits now that we use pte_pgprot() in
+> ioremap_prot().
+> 
+> With the old code we get:
+>    ioremap_prot: addr 0xff800000 flags 0x241215
+>    ioremap_prot: addr 0xff800000 flags 0x241215
+>    map_kernel_page: ea 0x8000080080080000 pa 0xff800000 pte 0xff800241215
+> 
+> 
+> And now we get:
+>    ioremap_prot: addr 0xff800000 flags 0x241215 pte 0x241215
+>    ioremap_prot: addr 0xff800000 pte 0x241215
+>    ioremap_prot: addr 0xff800000 prot 0x241014
+>    map_kernel_page: ea 0x8000080080080000 pa 0xff800000 pte 0xff800241014
+> 
+> So we're losing 0x201, which for nohash book3e is:
+> 
+>    #define _PAGE_PRESENT	0x000001 /* software: pte contains a translation */
+>    #define _PAGE_PSIZE_4K	0x000200
+> 
+> 
+> I haven't worked out if it's one or both of those that matter.
 
-Ah, right.
+At least missing _PAGE_PRESENT is an issue I believe.
+> 
+> The question is what's the right way to fix it? Should pte_pgprot() not
+> be filtering those bits out on book3e?
 
-In that case can't you just drop this whole if.  I don't see that
-there's any use in giving different error codes for "tried to register
-exactly a region you registered before" and "tried to register a
-region overlapping one you registered before.
+I think we should not use pte_pggrot() for that then. What about the 
+below fix ?
+
+Christophe
+
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Date: Wed, 17 Oct 2018 05:56:25 +0000
+Subject: [PATCH] powerpc/mm: don't use pte_pgprot() in ioremap_prot()
+
+pte_pgprot() filters out some required flags like _PAGE_PRESENT.
+
+This patch replaces pte_pgprot() by __pgprot(pte_val())
+in ioremap_prot()
+
+Fixes: 26973fa5ac0e ("powerpc/mm: use pte helpers in generic code")
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+  arch/powerpc/mm/pgtable_32.c | 3 ++-
+  arch/powerpc/mm/pgtable_64.c | 4 ++--
+  2 files changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index 5877f5aa8f5d..a606e2f4937b 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -122,7 +122,8 @@ ioremap_prot(phys_addr_t addr, unsigned long size, 
+unsigned long flags)
+  	pte = pte_exprotect(pte);
+  	pte = pte_mkprivileged(pte);
+
+-	return __ioremap_caller(addr, size, pte_pgprot(pte), 
+__builtin_return_address(0));
++	return __ioremap_caller(addr, size, __pgprot(pte_val(pte)),
++				__builtin_return_address(0));
+  }
+  EXPORT_SYMBOL(ioremap_prot);
+
+diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+index fb1375c07e8c..836bf436cabb 100644
+--- a/arch/powerpc/mm/pgtable_64.c
++++ b/arch/powerpc/mm/pgtable_64.c
+@@ -245,8 +245,8 @@ void __iomem * ioremap_prot(phys_addr_t addr, 
+unsigned long size,
+  	pte = pte_mkprivileged(pte);
+
+  	if (ppc_md.ioremap)
+-		return ppc_md.ioremap(addr, size, pte_pgprot(pte), caller);
+-	return __ioremap_caller(addr, size, pte_pgprot(pte), caller);
++		return ppc_md.ioremap(addr, size, __pgprot(pte_val(pte)), caller);
++	return __ioremap_caller(addr, size, __pgprot(pte_val(pte)), caller);
+  }
 
 
->=20
->=20
-> >=20
-> >> ---
-> >>  arch/powerpc/mm/mmu_context_iommu.c | 3 +--
-> >>  1 file changed, 1 insertion(+), 2 deletions(-)
-> >>
-> >> diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu=
-_context_iommu.c
-> >> index a8c4a3c..839dbce 100644
-> >> --- a/arch/powerpc/mm/mmu_context_iommu.c
-> >> +++ b/arch/powerpc/mm/mmu_context_iommu.c
-> >> @@ -141,8 +141,7 @@ long mm_iommu_new(struct mm_struct *mm, unsigned l=
-ong ua, unsigned long entries,
-> >>  	list_for_each_entry_rcu(mem, &mm->context.iommu_group_mem_list,
-> >>  			next) {
-> >>  		if ((mem->ua =3D=3D ua) && (mem->entries =3D=3D entries)) {
-> >> -			++mem->used;
-> >> -			*pmem =3D mem;
-> >> +			ret =3D -EBUSY;
-> >>  			goto unlock_exit;
-> >>  		}
-> >> =20
-> >=20
->=20
+-- 
+2.13.3
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---VV4b6MQE+OnNyhkM
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlvGvnoACgkQbDjKyiDZ
-s5J9ng//YU51Mvb9QxrZQjAv+13YxOFX3vneViU0EiYPYJd7HDcTJ3i7eht8BtJM
-ynfAo0HzIjTg52eAewBXfIEdhVmsoflntsE4ZbIW15UzS22kl3vcEm8hYKpp4EmW
-XXU4NjaV+4tF0VpZ/61gBFOG4EuQ2Hf9Bqy4eJoDa/MwE0F9nzwUqXjSNReQI9ft
-SIQgVebvMkjffXsdiRmhqSp0KL5Xa1hqUCAZepEy3nXcOyKlbhNogkolaSfgv8xF
-2ZWtlSJ8GH1GtVXG0burYkabd80oym2C7USk2bxCPmplVSw+pcIrY0CJRN9I+UVi
-nAJQGmGrk4oXwQX9UPJxFMvztGv0BnIm8l9WGwKwq1pCOWa2Zo0FbnUU6Z4YoQK7
-ssfzQK3ZFywtXozogRmSGMvX3YjZQBWpvAhVfO87I48W63eABLyeUqd5T4zu3j35
-E+pPHZEsPBVtUb1lhP4WeRz37ptO0Uu3zHTYX4hzWyrkHtecR5UkOH2vFj8+v7QN
-Qv3eMvQUGCSWKkpHcMLmhhdXeT6Y0QpUbf6NjYhjEMJB3Vm1irNdT/RCI8PdoN3m
-Jtl5sABFZZzT+ySW8wnL28JgrWi2BA0R0lDeFYkD+D1x7PV2jMCPcQc4ikbL1kZx
-GsH2TuAu6jAv8cVAVfIs8/f2fDaDkkSpOoq2wTAzII+2Gx/wD3Q=
-=9aql
------END PGP SIGNATURE-----
-
---VV4b6MQE+OnNyhkM--
