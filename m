@@ -2,48 +2,51 @@ Return-Path: <SRS0=nnl5=M5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9CB4DC5ACCC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 00:17:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 202E0C5ACCC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 00:45:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 009652147E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 00:17:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 009652147E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+	by mail.kernel.org (Postfix) with ESMTPS id 92A50204FD
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 00:45:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 92A50204FD
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42ZXn764WfzF3V3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 11:17:31 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
-Authentication-Results: lists.ozlabs.org; spf=permerror (mailfrom)
- smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57;
- helo=gate.crashing.org; envelope-from=benh@kernel.crashing.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=kernel.crashing.org
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 42ZYPM2vcFzF3SN
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 11:45:27 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42ZXkN1jLlzDqRM
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Oct 2018 11:15:07 +1100 (AEDT)
-Received: from localhost (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id w9H0EIaZ022868;
- Tue, 16 Oct 2018 19:14:23 -0500
-Message-ID: <cd4f6bd709b80646bad628f94724505fdb352459.camel@kernel.crashing.org>
-Subject: Re: What is an address translation in powerISA jarogn ?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Raz <raziebe@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Date: Wed, 17 Oct 2018 11:14:15 +1100
-In-Reply-To: <CAPB=Z-ospEB9cyjaqk1zKy8axVKnri4=A=wBRHB_fMM_MKgCbA@mail.gmail.com>
-References: <CAPB=Z-ospEB9cyjaqk1zKy8axVKnri4=A=wBRHB_fMM_MKgCbA@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5 (3.28.5-1.fc28) 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42ZYML6f62zF3Nw
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Oct 2018 11:43:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPSA id 42ZYML4RFHz9s9h;
+ Wed, 17 Oct 2018 11:43:42 +1100 (AEDT)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v06 3/5] migration/memory: Add hotplug READD_MULTIPLE
+In-Reply-To: <80494db2-6a01-059f-890c-df7c410714f7@linux.vnet.ibm.com>
+References: <20181015194738.5705.88953.stgit@ltcalpine2-lp9.aus.stglabs.ibm.com>
+ <f38687fe-7d46-830b-e4bb-ef78a7f99a65@linux.vnet.ibm.com>
+ <87sh16lo72.fsf@concordia.ellerman.id.au>
+ <80494db2-6a01-059f-890c-df7c410714f7@linux.vnet.ibm.com>
+Date: Wed, 17 Oct 2018 11:43:41 +1100
+Message-ID: <874ldll7wi.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,50 +58,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>, Juliet Kim <minkim@us.ibm.com>,
+ Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2018-10-16 at 20:58 +0300, Raz wrote:
-> Section 5.7.3
-> "Storage accesses in real, hypervisor real, and virtual real
-> addressing modes are performed in a manner that depends on the
-> contents of MSR HV , VPM, VRMASD, HRMOR, RMLS, RMOR (see Chapter 2),
-> bit 0 of the
-> effective address (EA0),"
-> 
-> Hello
-> 1. If MSR_IR = 0 and MSR_DR = 0, does it mean that addresses are not
-> translated by the MMU ?
+Tyrel Datwyler <tyreld@linux.vnet.ibm.com> writes:
+> On 10/15/2018 05:39 PM, Michael Ellerman wrote:
+>> Michael Bringmann <mwb@linux.vnet.ibm.com> writes:
+>>> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+>>> index 2b796da..9c76345 100644
+>>> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
+>>> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+>>> @@ -541,6 +549,23 @@ static int dlpar_memory_readd_by_index(u32 drc_index)
+>>>  	return rc;
+>>>  }
+>>>
+>>> +static int dlpar_memory_readd_multiple(void)
+>>> +{
+>>> +	struct drmem_lmb *lmb;
+>>> +	int rc;
+>>> +
+>>> +	pr_info("Attempting to update multiple LMBs\n");
+>>> +
+>>> +	for_each_drmem_lmb(lmb) {
+>>> +		if (drmem_lmb_update(lmb)) {
+>>> +			rc = dlpar_memory_readd_helper(lmb);
+>>> +			drmem_remove_lmb_update(lmb);
+>>> +		}
+>>> +	}
+>>> +
+>>> +	return rc;
+>>> +}
+>> 
+>> This leaves rc potentially uninitialised.
+>> 
+>> What should the result be in that case, -EINVAL ?
+>
+> On another note if there are multiple LMBs to update the value of rc
+> only reflects the final dlpar_memory_readd_helper() call.
 
-It depends.
+Good point.
 
-If HV=1 (hypervisor mode), then they are only translated to the extent
-that HRMOR is applied if the MSB is 0, and untranslated if the MSB is
-1.
-
-If HV=0 (guest mode), then they *are* translated but using a different
-mechanism than what's normally used when IR/DR=1. This mechanism
-depends on whether you are using the Radix or the Hash MMU, and the top
-2 bits are ignored.
-
-With hash MMU, it's using things like VRMASD etc... (RMOR is deprecated
-afaik) to lookup a "Virtual real mode" area in the hash table. It's
-essentially a mapping of the guest "physical" space to real physical
-space. It's usually initialized (and maintained) by the HV but the
-guest can extend it using things like H_ENTER afaik.
-
-With the radix MMU, it's the guest physical space as mapped by the 2nd
-level page tables maintained by the hypervisor.
-
-> 2. If EA0 is the 63-rd bit of the effective address e address ? Does
-> this mean that the translation model is
->    derived from the address ? a non privileged context may access
-> privileged memory.
-
-Nope.
-
-Cheers,
-Ben.
-
-
+cheers
