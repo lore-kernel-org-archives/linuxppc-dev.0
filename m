@@ -2,79 +2,52 @@ Return-Path: <SRS0=nnl5=M5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BBE3CC5ACC6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 06:03:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E521C5ACCE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 06:06:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 296FA2150D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 06:03:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 296FA2150D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id DE5532151D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 06:06:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DE5532151D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42ZhRp2RZrzF3X5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 17:03:02 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by lists.ozlabs.org (Postfix) with ESMTP id 42ZhWv4wT3zF3XB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 17:06:35 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=nxp.com
+ (client-ip=92.121.34.21; helo=inva021.nxp.com; envelope-from=peng.ma@nxp.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42ZhPD4ghbzF3WD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Oct 2018 17:00:48 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 42ZhNw2L0Jz9ttBc;
- Wed, 17 Oct 2018 08:00:32 +0200 (CEST)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id f7F0ekkE_V2B; Wed, 17 Oct 2018 08:00:32 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 42ZhNw1dxsz9ttBY;
- Wed, 17 Oct 2018 08:00:32 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 7107E8B7E8;
- Wed, 17 Oct 2018 08:00:44 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id wm9FhLnt1yX0; Wed, 17 Oct 2018 08:00:44 +0200 (CEST)
-Received: from pc13168vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
- [172.25.231.2])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 1DEA78B75F;
- Wed, 17 Oct 2018 08:00:44 +0200 (CEST)
-Subject: Re: Crash on FSL Book3E due to pte_pgprot()? (was Re: [PATCH v3
- 12/24] powerpc/mm: use pte helpers in generic code)
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Dominik Brodowski <linux@dominikbrodowski.net>,
- Geoff Levand <geoff@infradead.org>, Jens Axboe <axboe@kernel.dk>,
- Kumar Gala <galak@kernel.crashing.org>, Li Yang <leoyang.li@nxp.com>,
- Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>,
- Scott Wood <oss@buserror.net>, aneesh.kumar@linux.vnet.ibm.com
-References: <cover.1539092111.git.christophe.leroy@c-s.fr>
- <343c844bbc5081d13ee4c9aa27ff3118f607e1cc.1539092112.git.christophe.leroy@c-s.fr>
- <87va61jsma.fsf@concordia.ellerman.id.au>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <236d72cd-e6d7-61e5-2c80-e4311e41b4f6@c-s.fr>
-Date: Wed, 17 Oct 2018 06:00:10 +0000
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.7.0
-MIME-Version: 1.0
-In-Reply-To: <87va61jsma.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42ZhSv3j04zF3L4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Oct 2018 17:03:58 +1100 (AEDT)
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id BEA6E2001C2;
+ Wed, 17 Oct 2018 08:03:54 +0200 (CEST)
+Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
+ [165.114.16.14])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 6D2AD20019B;
+ Wed, 17 Oct 2018 08:03:48 +0200 (CEST)
+Received: from titan.ap.freescale.net (TITAN.ap.freescale.net [10.192.208.233])
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 7143D402AE;
+ Wed, 17 Oct 2018 14:03:40 +0800 (SGT)
+From: Peng Ma <peng.ma@nxp.com>
+To: vkoul@kernel.org
+Subject: [v9 1/7] dmaengine: fsldma: Replace DMA_IN/OUT by FSL_DMA_IN/OUT
+Date: Wed, 17 Oct 2018 13:59:51 +0800
+Message-Id: <20181017055957.542-1-peng.ma@nxp.com>
+X-Mailer: git-send-email 2.14.1
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,164 +59,102 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-block@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, Wen He <wen.he_1@nxp.com>,
+ linuxppc-dev@lists.ozlabs.org, Peng Ma <peng.ma@nxp.com>,
+ linux-kernel@vger.kernel.org, leoyang.li@nxp.com, zw@zh-kernel.org,
+ robh+dt@kernel.org, dmaengine@vger.kernel.org, dan.j.williams@intel.com,
+ shawnguo@kernel.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+From: Wen He <wen.he_1@nxp.com>
 
+This patch implement a standard macro call functions is
+used to NXP dma drivers.
 
-On 10/17/2018 12:59 AM, Michael Ellerman wrote:
-> Christophe Leroy <christophe.leroy@c-s.fr> writes:
-> 
->> Get rid of platform specific _PAGE_XXXX in powerpc common code and
->> use helpers instead.
->>
->> mm/dump_linuxpagetables.c will be handled separately
->>
->> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
->> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->> ---
->>   arch/powerpc/include/asm/book3s/32/pgtable.h |  9 +++------
->>   arch/powerpc/include/asm/nohash/32/pgtable.h | 12 ++++++++----
->>   arch/powerpc/include/asm/nohash/pgtable.h    |  3 +--
->>   arch/powerpc/mm/pgtable.c                    | 21 +++++++--------------
->>   arch/powerpc/mm/pgtable_32.c                 | 15 ++++++++-------
->>   arch/powerpc/mm/pgtable_64.c                 | 14 +++++++-------
->>   arch/powerpc/xmon/xmon.c                     | 12 +++++++-----
->>   7 files changed, 41 insertions(+), 45 deletions(-)
-> 
-> So turns out this patch *also* breaks my p5020ds :)
-> 
-> Even with patch 4 merged, see next.
-> 
-> It's the same crash:
-> 
->    pcieport 2000:00:00.0: AER enabled with IRQ 480
->    Unable to handle kernel paging request for data at address 0x8000080080080000
->    Faulting instruction address: 0xc0000000000192cc
->    Oops: Kernel access of bad area, sig: 11 [#1]
->    BE SMP NR_CPUS=24 CoreNet Generic
->    Modules linked in:
->    CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.19.0-rc3-gcc7x-g98c847323b3a #1
->    NIP:  c0000000000192cc LR: c0000000005d0f9c CTR: 0000000000100000
->    REGS: c0000000f31bb400 TRAP: 0300   Not tainted  (4.19.0-rc3-gcc7x-g98c847323b3a)
->    MSR:  0000000080029000 <CE,EE,ME>  CR: 24000224  XER: 00000000
->    DEAR: 8000080080080000 ESR: 0000000000800000 IRQMASK: 0
->    GPR00: c0000000005d0f84 c0000000f31bb688 c00000000117dc00 8000080080080000
->    GPR04: 0000000000000000 0000000000400000 00000ffbff241010 c0000000f31b8000
->    GPR08: 0000000000000000 0000000000100000 0000000000000000 c0000000012d4710
->    GPR12: 0000000084000422 c0000000012ff000 c000000000002774 0000000000000000
->    GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
->    GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
->    GPR24: 0000000000000000 0000000000000000 8000080080080000 c0000000ffff89a8
->    GPR28: c0000000f3576400 c0000000f3576410 0000000000400000 c0000000012ecc98
->    NIP [c0000000000192cc] ._memset_io+0x6c/0x9c
->    LR [c0000000005d0f9c] .fsl_qman_probe+0x198/0x928
->    Call Trace:
->    [c0000000f31bb688] [c0000000005d0f84] .fsl_qman_probe+0x180/0x928 (unreliable)
->    [c0000000f31bb728] [c0000000006432ec] .platform_drv_probe+0x60/0xb4
->    [c0000000f31bb7a8] [c00000000064083c] .really_probe+0x294/0x35c
->    [c0000000f31bb848] [c000000000640d2c] .__driver_attach+0x148/0x14c
->    [c0000000f31bb8d8] [c00000000063d7dc] .bus_for_each_dev+0xb0/0x118
->    [c0000000f31bb988] [c00000000063ff28] .driver_attach+0x34/0x4c
->    [c0000000f31bba08] [c00000000063f648] .bus_add_driver+0x174/0x2bc
->    [c0000000f31bbaa8] [c0000000006418bc] .driver_register+0x90/0x180
->    [c0000000f31bbb28] [c000000000643270] .__platform_driver_register+0x60/0x7c
->    [c0000000f31bbba8] [c000000000ee2a70] .fsl_qman_driver_init+0x24/0x38
->    [c0000000f31bbc18] [c0000000000023fc] .do_one_initcall+0x64/0x2b8
->    [c0000000f31bbcf8] [c000000000e9f480] .kernel_init_freeable+0x3a8/0x494
->    [c0000000f31bbda8] [c000000000002798] .kernel_init+0x24/0x148
->    [c0000000f31bbe28] [c0000000000009e8] .ret_from_kernel_thread+0x58/0x70
->    Instruction dump:
->    4e800020 2ba50003 40dd003c 3925fffc 5488402e 7929f082 7d082378 39290001
->    550a801e 7d2903a6 7d4a4378 794a0020 <91430000> 38630004 4200fff8 70a50003
-> 
-> 
-> Comparing a working vs broken kernel, it seems to boil down to the fact
-> that we're filtering out more PTE bits now that we use pte_pgprot() in
-> ioremap_prot().
-> 
-> With the old code we get:
->    ioremap_prot: addr 0xff800000 flags 0x241215
->    ioremap_prot: addr 0xff800000 flags 0x241215
->    map_kernel_page: ea 0x8000080080080000 pa 0xff800000 pte 0xff800241215
-> 
-> 
-> And now we get:
->    ioremap_prot: addr 0xff800000 flags 0x241215 pte 0x241215
->    ioremap_prot: addr 0xff800000 pte 0x241215
->    ioremap_prot: addr 0xff800000 prot 0x241014
->    map_kernel_page: ea 0x8000080080080000 pa 0xff800000 pte 0xff800241014
-> 
-> So we're losing 0x201, which for nohash book3e is:
-> 
->    #define _PAGE_PRESENT	0x000001 /* software: pte contains a translation */
->    #define _PAGE_PSIZE_4K	0x000200
-> 
-> 
-> I haven't worked out if it's one or both of those that matter.
-
-At least missing _PAGE_PRESENT is an issue I believe.
-> 
-> The question is what's the right way to fix it? Should pte_pgprot() not
-> be filtering those bits out on book3e?
-
-I think we should not use pte_pggrot() for that then. What about the 
-below fix ?
-
-Christophe
-
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Date: Wed, 17 Oct 2018 05:56:25 +0000
-Subject: [PATCH] powerpc/mm: don't use pte_pgprot() in ioremap_prot()
-
-pte_pgprot() filters out some required flags like _PAGE_PRESENT.
-
-This patch replaces pte_pgprot() by __pgprot(pte_val())
-in ioremap_prot()
-
-Fixes: 26973fa5ac0e ("powerpc/mm: use pte helpers in generic code")
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Signed-off-by: Wen He <wen.he_1@nxp.com>
+Signed-off-by: Peng Ma <peng.ma@nxp.com>
 ---
-  arch/powerpc/mm/pgtable_32.c | 3 ++-
-  arch/powerpc/mm/pgtable_64.c | 4 ++--
-  2 files changed, 4 insertions(+), 3 deletions(-)
+change in v9:
+	- no
 
-diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index 5877f5aa8f5d..a606e2f4937b 100644
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -122,7 +122,8 @@ ioremap_prot(phys_addr_t addr, unsigned long size, 
-unsigned long flags)
-  	pte = pte_exprotect(pte);
-  	pte = pte_mkprivileged(pte);
+ drivers/dma/fsldma.c |   16 ++++++++--------
+ drivers/dma/fsldma.h |    4 ++--
+ 2 files changed, 10 insertions(+), 10 deletions(-)
 
--	return __ioremap_caller(addr, size, pte_pgprot(pte), 
-__builtin_return_address(0));
-+	return __ioremap_caller(addr, size, __pgprot(pte_val(pte)),
-+				__builtin_return_address(0));
-  }
-  EXPORT_SYMBOL(ioremap_prot);
-
-diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-index fb1375c07e8c..836bf436cabb 100644
---- a/arch/powerpc/mm/pgtable_64.c
-+++ b/arch/powerpc/mm/pgtable_64.c
-@@ -245,8 +245,8 @@ void __iomem * ioremap_prot(phys_addr_t addr, 
-unsigned long size,
-  	pte = pte_mkprivileged(pte);
-
-  	if (ppc_md.ioremap)
--		return ppc_md.ioremap(addr, size, pte_pgprot(pte), caller);
--	return __ioremap_caller(addr, size, pte_pgprot(pte), caller);
-+		return ppc_md.ioremap(addr, size, __pgprot(pte_val(pte)), caller);
-+	return __ioremap_caller(addr, size, __pgprot(pte_val(pte)), caller);
-  }
-
-
+diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+index 1117b51..39871e0 100644
+--- a/drivers/dma/fsldma.c
++++ b/drivers/dma/fsldma.c
+@@ -53,42 +53,42 @@
+ 
+ static void set_sr(struct fsldma_chan *chan, u32 val)
+ {
+-	DMA_OUT(chan, &chan->regs->sr, val, 32);
++	FSL_DMA_OUT(chan, &chan->regs->sr, val, 32);
+ }
+ 
+ static u32 get_sr(struct fsldma_chan *chan)
+ {
+-	return DMA_IN(chan, &chan->regs->sr, 32);
++	return FSL_DMA_IN(chan, &chan->regs->sr, 32);
+ }
+ 
+ static void set_mr(struct fsldma_chan *chan, u32 val)
+ {
+-	DMA_OUT(chan, &chan->regs->mr, val, 32);
++	FSL_DMA_OUT(chan, &chan->regs->mr, val, 32);
+ }
+ 
+ static u32 get_mr(struct fsldma_chan *chan)
+ {
+-	return DMA_IN(chan, &chan->regs->mr, 32);
++	return FSL_DMA_IN(chan, &chan->regs->mr, 32);
+ }
+ 
+ static void set_cdar(struct fsldma_chan *chan, dma_addr_t addr)
+ {
+-	DMA_OUT(chan, &chan->regs->cdar, addr | FSL_DMA_SNEN, 64);
++	FSL_DMA_OUT(chan, &chan->regs->cdar, addr | FSL_DMA_SNEN, 64);
+ }
+ 
+ static dma_addr_t get_cdar(struct fsldma_chan *chan)
+ {
+-	return DMA_IN(chan, &chan->regs->cdar, 64) & ~FSL_DMA_SNEN;
++	return FSL_DMA_IN(chan, &chan->regs->cdar, 64) & ~FSL_DMA_SNEN;
+ }
+ 
+ static void set_bcr(struct fsldma_chan *chan, u32 val)
+ {
+-	DMA_OUT(chan, &chan->regs->bcr, val, 32);
++	FSL_DMA_OUT(chan, &chan->regs->bcr, val, 32);
+ }
+ 
+ static u32 get_bcr(struct fsldma_chan *chan)
+ {
+-	return DMA_IN(chan, &chan->regs->bcr, 32);
++	return FSL_DMA_IN(chan, &chan->regs->bcr, 32);
+ }
+ 
+ /*
+diff --git a/drivers/dma/fsldma.h b/drivers/dma/fsldma.h
+index 4787d48..982845b 100644
+--- a/drivers/dma/fsldma.h
++++ b/drivers/dma/fsldma.h
+@@ -223,10 +223,10 @@ static void out_le64(u64 __iomem *addr, u64 val)
+ }
+ #endif
+ 
+-#define DMA_IN(fsl_chan, addr, width)					\
++#define FSL_DMA_IN(fsl_chan, addr, width)				\
+ 		(((fsl_chan)->feature & FSL_DMA_BIG_ENDIAN) ?		\
+ 			in_be##width(addr) : in_le##width(addr))
+-#define DMA_OUT(fsl_chan, addr, val, width)				\
++#define FSL_DMA_OUT(fsl_chan, addr, val, width)			\
+ 		(((fsl_chan)->feature & FSL_DMA_BIG_ENDIAN) ?		\
+ 			out_be##width(addr, val) : out_le##width(addr, val))
+ 
 -- 
-2.13.3
+1.7.1
 
