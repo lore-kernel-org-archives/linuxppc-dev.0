@@ -7,57 +7,56 @@ X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A5009C5ACC6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 02:27:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 174A7C5ACCC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 02:29:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E4DE7214C3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 02:27:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 76E5F214C3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 02:29:30 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="aoRSHU86"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E4DE7214C3
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="IMm4b1zr"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 76E5F214C3
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42Zbfn4RQxzF3X2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 13:27:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42ZbjN36yGzF3LH
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 13:29:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="aoRSHU86";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="IMm4b1zr";
 	dkim-atps=neutral
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Zbbz1BvZzF3Wl
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Zbbz1ccdzF3Wm
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Oct 2018 13:24:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=gibson.dropbear.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.b="aoRSHU86"; dkim-atps=neutral
+ header.b="IMm4b1zr"; dkim-atps=neutral
 Received: by ozlabs.org (Postfix, from userid 1007)
- id 42Zbby6hcRz9s8F; Wed, 17 Oct 2018 13:24:46 +1100 (AEDT)
+ id 42Zbbz09lqz9s9h; Wed, 17 Oct 2018 13:24:46 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1539743086;
- bh=tUlXX7igIdocLYL6xUslZneb2kz04KFoBPTOivAH7FA=;
+ d=gibson.dropbear.id.au; s=201602; t=1539743087;
+ bh=OvRWtHkE3PE3vXbr6KCwkJ7IfmQmEDXp2C8ExSPT3VY=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=aoRSHU862FG27gc8rtqSfa0KOJGLtz573JNbMBe5R4ujJ29fdA99s4rQDOn9qb7wd
- Kix9vdxRIrrcrnF0nUShnXhVdjd4lNWHtNCNRfpsJ7Be7XSFL8L+Q/Ky+N6VtTBJ6A
- QMtUXrwPKPXEQ5+0+jZwU6zoN3AKSt3xWdFm1D0Y=
-Date: Wed, 17 Oct 2018 11:46:14 +1100
+ b=IMm4b1zreEF8sZsSw3OaaWUwHG8EJ/2adu56m/0SDFMb4QiHQSFiPpgolf17JX21a
+ 9R6BjIN47lnBIq0AmFgnNmyng/drFHxbyv0GgqhpQAGrvu0ZjCGheNNHQbP4bxau2/
+ X9XxPUuly1x/VCKAoNVBUbo8+MjsyKL5B6w0fwFE=
+Date: Wed, 17 Oct 2018 11:44:34 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH kernel 2/4] powerpc/mm/iommu/vfio_spapr_tce: Change
- mm_iommu_get to reference a region
-Message-ID: <20181017004614.GM16167@umbus.fritz.box>
+Subject: Re: [PATCH kernel 1/4] powerpc/mm/iommu: Rename mm_iommu_get
+Message-ID: <20181017004434.GL16167@umbus.fritz.box>
 References: <20181015092416.47380-1-aik@ozlabs.ru>
- <20181015092416.47380-3-aik@ozlabs.ru>
+ <20181015092416.47380-2-aik@ozlabs.ru>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="dzI2QqkSBOAresgT"
+ protocol="application/pgp-signature"; boundary="umrsQkkrw7viUWFs"
 Content-Disposition: inline
-In-Reply-To: <20181015092416.47380-3-aik@ozlabs.ru>
+In-Reply-To: <20181015092416.47380-2-aik@ozlabs.ru>
 User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -77,135 +76,144 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---dzI2QqkSBOAresgT
+--umrsQkkrw7viUWFs
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Oct 15, 2018 at 08:24:14PM +1100, Alexey Kardashevskiy wrote:
-> We are going to add another helper to preregister device memory so
-> instead of having mm_iommu_new() which pre-registers the normal memory
-> and references the region, we need separate helpers for pre-registerign
-> and referencing.
+On Mon, Oct 15, 2018 at 08:24:13PM +1100, Alexey Kardashevskiy wrote:
+> Normally mm_iommu_get() is supposed to add a reference and
+> mm_iommu_put() to remove it. However historically mm_iommu_find() does
+> the referencing and mm_iommu_get() is doing allocation and referencing.
 >=20
-> To make the mm_iommu_get name reflect what it is supposed to do, this
-> changes mm_iommu_get() to reference the region so from now on for every
-> mm_iommu_get() we need a matching mm_iommu_put().
+> This is step 1 towards simpler mm_iommu_get().
+>=20
+> This renames:
+> - mm_iommu_get to mm_iommu_new;
+> - mm_iommu_find to mm_iommu_get.
+>=20
+> This should cause no behavioural change.
 >=20
 > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
-=2E. ah, I see.
-
-I think this should be folded with the first patch, so we don't have
-an interim step where mm_iommu_get() has a misleading name.
+Erm.. as far as I can tell, mm_iommu_find() doesn't adjust any
+reference counts, so renaming it to mm_iommu_get() doesn't really make
+sense.
 
 > ---
->  arch/powerpc/mm/mmu_context_iommu.c |  5 +++++
->  drivers/vfio/vfio_iommu_spapr_tce.c | 33 ++++++++++++++++++++++---------=
---
->  2 files changed, 27 insertions(+), 11 deletions(-)
+>  arch/powerpc/include/asm/mmu_context.h | 4 ++--
+>  arch/powerpc/mm/mmu_context_iommu.c    | 8 ++++----
+>  drivers/vfio/vfio_iommu_spapr_tce.c    | 6 +++---
+>  3 files changed, 9 insertions(+), 9 deletions(-)
 >=20
+> diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/includ=
+e/asm/mmu_context.h
+> index b694d6a..59d4941 100644
+> --- a/arch/powerpc/include/asm/mmu_context.h
+> +++ b/arch/powerpc/include/asm/mmu_context.h
+> @@ -21,7 +21,7 @@ struct mm_iommu_table_group_mem_t;
+> =20
+>  extern int isolate_lru_page(struct page *page);	/* from internal.h */
+>  extern bool mm_iommu_preregistered(struct mm_struct *mm);
+> -extern long mm_iommu_get(struct mm_struct *mm,
+> +extern long mm_iommu_new(struct mm_struct *mm,
+>  		unsigned long ua, unsigned long entries,
+>  		struct mm_iommu_table_group_mem_t **pmem);
+>  extern long mm_iommu_put(struct mm_struct *mm,
+> @@ -32,7 +32,7 @@ extern struct mm_iommu_table_group_mem_t *mm_iommu_look=
+up(struct mm_struct *mm,
+>  		unsigned long ua, unsigned long size);
+>  extern struct mm_iommu_table_group_mem_t *mm_iommu_lookup_rm(
+>  		struct mm_struct *mm, unsigned long ua, unsigned long size);
+> -extern struct mm_iommu_table_group_mem_t *mm_iommu_find(struct mm_struct=
+ *mm,
+> +extern struct mm_iommu_table_group_mem_t *mm_iommu_get(struct mm_struct =
+*mm,
+>  		unsigned long ua, unsigned long entries);
+>  extern long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
+>  		unsigned long ua, unsigned int pageshift, unsigned long *hpa);
 > diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_co=
 ntext_iommu.c
-> index 8eeb99d..a8c4a3c 100644
+> index 56c2234..8eeb99d 100644
 > --- a/arch/powerpc/mm/mmu_context_iommu.c
 > +++ b/arch/powerpc/mm/mmu_context_iommu.c
-> @@ -373,13 +373,18 @@ struct mm_iommu_table_group_mem_t *mm_iommu_get(str=
-uct mm_struct *mm,
->  {
->  	struct mm_iommu_table_group_mem_t *mem, *ret =3D NULL;
-> =20
-> +	mutex_lock(&mem_list_mutex);
-> +
->  	list_for_each_entry_rcu(mem, &mm->context.iommu_group_mem_list, next) {
->  		if ((mem->ua =3D=3D ua) && (mem->entries =3D=3D entries)) {
->  			ret =3D mem;
-> +			++mem->used;
->  			break;
->  		}
->  	}
-> =20
-> +	mutex_unlock(&mem_list_mutex);
-> +
->  	return ret;
+> @@ -126,7 +126,7 @@ static int mm_iommu_move_page_from_cma(struct page *p=
+age)
+>  	return 0;
 >  }
->  EXPORT_SYMBOL_GPL(mm_iommu_get);
-> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iomm=
-u_spapr_tce.c
-> index 1701798..56db071 100644
-> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
-> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> @@ -151,7 +151,8 @@ static long tce_iommu_unregister_pages(struct tce_con=
-tainer *container,
+> =20
+> -long mm_iommu_get(struct mm_struct *mm, unsigned long ua, unsigned long =
+entries,
+> +long mm_iommu_new(struct mm_struct *mm, unsigned long ua, unsigned long =
+entries,
+>  		struct mm_iommu_table_group_mem_t **pmem)
 >  {
 >  	struct mm_iommu_table_group_mem_t *mem;
->  	struct tce_iommu_prereg *tcemem;
-> -	bool found =3D false;
-> +	bool found;
-> +	long ret;
+> @@ -252,7 +252,7 @@ long mm_iommu_get(struct mm_struct *mm, unsigned long=
+ ua, unsigned long entries,
 > =20
+>  	return ret;
+>  }
+> -EXPORT_SYMBOL_GPL(mm_iommu_get);
+> +EXPORT_SYMBOL_GPL(mm_iommu_new);
+> =20
+>  static void mm_iommu_unpin(struct mm_iommu_table_group_mem_t *mem)
+>  {
+> @@ -368,7 +368,7 @@ struct mm_iommu_table_group_mem_t *mm_iommu_lookup_rm=
+(struct mm_struct *mm,
+>  	return ret;
+>  }
+> =20
+> -struct mm_iommu_table_group_mem_t *mm_iommu_find(struct mm_struct *mm,
+> +struct mm_iommu_table_group_mem_t *mm_iommu_get(struct mm_struct *mm,
+>  		unsigned long ua, unsigned long entries)
+>  {
+>  	struct mm_iommu_table_group_mem_t *mem, *ret =3D NULL;
+> @@ -382,7 +382,7 @@ struct mm_iommu_table_group_mem_t *mm_iommu_find(stru=
+ct mm_struct *mm,
+> =20
+>  	return ret;
+>  }
+> -EXPORT_SYMBOL_GPL(mm_iommu_find);
+> +EXPORT_SYMBOL_GPL(mm_iommu_get);
+> =20
+>  long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
+>  		unsigned long ua, unsigned int pageshift, unsigned long *hpa)
+> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iomm=
+u_spapr_tce.c
+> index ad63725..1701798 100644
+> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
+> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+> @@ -156,7 +156,7 @@ static long tce_iommu_unregister_pages(struct tce_con=
+tainer *container,
 >  	if ((vaddr & ~PAGE_MASK) || (size & ~PAGE_MASK))
 >  		return -EINVAL;
-> @@ -168,9 +169,13 @@ static long tce_iommu_unregister_pages(struct tce_co=
-ntainer *container,
->  	}
 > =20
->  	if (!found)
-> -		return -ENOENT;
-> +		ret =3D -ENOENT;
-> +	else
-> +		ret =3D tce_iommu_prereg_free(container, tcemem);
+> -	mem =3D mm_iommu_find(container->mm, vaddr, size >> PAGE_SHIFT);
+> +	mem =3D mm_iommu_get(container->mm, vaddr, size >> PAGE_SHIFT);
+>  	if (!mem)
+>  		return -ENOENT;
 > =20
-> -	return tce_iommu_prereg_free(container, tcemem);
-> +	mm_iommu_put(container->mm, mem);
-> +
-> +	return ret;
->  }
+> @@ -185,7 +185,7 @@ static long tce_iommu_register_pages(struct tce_conta=
+iner *container,
+>  			((vaddr + size) < vaddr))
+>  		return -EINVAL;
 > =20
->  static long tce_iommu_register_pages(struct tce_container *container,
-> @@ -188,19 +193,21 @@ static long tce_iommu_register_pages(struct tce_con=
-tainer *container,
->  	mem =3D mm_iommu_get(container->mm, vaddr, entries);
+> -	mem =3D mm_iommu_find(container->mm, vaddr, entries);
+> +	mem =3D mm_iommu_get(container->mm, vaddr, entries);
 >  	if (mem) {
 >  		list_for_each_entry(tcemem, &container->prereg_list, next) {
-> -			if (tcemem->mem =3D=3D mem)
-> -				return -EBUSY;
-> +			if (tcemem->mem =3D=3D mem) {
-> +				ret =3D -EBUSY;
-> +				goto put_exit;
-> +			}
+>  			if (tcemem->mem =3D=3D mem)
+> @@ -193,7 +193,7 @@ static long tce_iommu_register_pages(struct tce_conta=
+iner *container,
 >  		}
-> +	} else {
-> +		ret =3D mm_iommu_new(container->mm, vaddr, entries, &mem);
-> +		if (ret)
-> +			return ret;
 >  	}
 > =20
-> -	ret =3D mm_iommu_new(container->mm, vaddr, entries, &mem);
-> -	if (ret)
-> -		return ret;
-> -
->  	tcemem =3D kzalloc(sizeof(*tcemem), GFP_KERNEL);
->  	if (!tcemem) {
-> -		mm_iommu_put(container->mm, mem);
-> -		return -ENOMEM;
-> +		ret =3D -ENOMEM;
-> +		goto put_exit;
->  	}
+> -	ret =3D mm_iommu_get(container->mm, vaddr, entries, &mem);
+> +	ret =3D mm_iommu_new(container->mm, vaddr, entries, &mem);
+>  	if (ret)
+>  		return ret;
 > =20
->  	tcemem->mem =3D mem;
-> @@ -209,6 +216,10 @@ static long tce_iommu_register_pages(struct tce_cont=
-ainer *container,
->  	container->enabled =3D true;
-> =20
->  	return 0;
-> +
-> +put_exit:
-> +	mm_iommu_put(container->mm, mem);
-> +	return ret;
->  }
-> =20
->  static bool tce_page_is_contained(struct page *page, unsigned page_shift)
 
 --=20
 David Gibson			| I'll have my music baroque, and my code
@@ -213,24 +221,24 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---dzI2QqkSBOAresgT
+--umrsQkkrw7viUWFs
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlvGhlYACgkQbDjKyiDZ
-s5K4Aw//Z1+YxlK4/FofI4UN+VrK90kuvsUxu1DPKnjVZMx9wFh6tNqdvxKsTj0t
-6fc/HwEkEz34eIE//1yp5HTduAik4Rs6AvsVn+dd+RG/32NFGk74nxpEbs6TpS4u
-nxWLTdIt94pZ2aXdpSBcncoJbaC3M+2LrDWhEN1R8+WGeVd4Gqcsax3H0u0+v9AC
-vsppxI6XyQsM9htvs5G+ATZpbmA/4eAwEuXG2ZHMVF38zb7wDsLDNDCR0ojynhiM
-vUK0YehqnVHPEAII1vgycVffuMlwVi8EJJQfdwxLg4SYNJ8mXMgP5JE47HzIbzLO
-S2hHBLhe6tJjHnRuuF4+Y2HJZT1sxPklhckVnkl3AYwKXv6g2DWz1tV0PrzTBNfY
-yuItj8fRg95QPE/3vAvD0Br2ACG+nGDzgNm7zHAnOozUgbv8/nQasIQW4WXDvBz6
-X6pYJBX58kwUrDH07mAGiVzcMjcfDliy1osClnI3Xq9qKT1smEb6mS4gDDa1tI1M
-cUX7bs7pXod9SHn18qcQFnq1R6Pgj5uGiP2GaLh7+mCo7Lv6+V8z8inwABYJpvMa
-gEN4wOWvJMUpQNz21xmrpqhsANf39IPktONiO+tw+R/u4g18sEwbk9AYi0T4ArPR
-h3WuUAui+MUAd0oGp8N2bvZTqLWXQu3AxMjOl4iDk0UoLjkwetM=
-=6KaP
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlvGhe8ACgkQbDjKyiDZ
+s5KK8g//Sxra0bJobEyLPqYnWTCaOkK5o0UhKq63uNtuzAfnS00Xr9/mNozRG4AH
+ryaVWN0YJuXeyfdseYCOOOFc27I+ZGYw1CS7s76QE28JiduINCcpdH1xiy6s/EPi
+IEPogg9Ha3P3+asvKlExyJtFpNVoVyc5Fm5+t1XCa+/+zMTNuDvqwWRXFJSdT2+L
+GiDHsKraqjcRuvnewwxYPZJscnaOT566TqC4XXG9o4ir4G/8KFqfeDaVdBkWxd+q
+vZxpSQRQ+B1AYFpmDj3wmj1secektjT1jB2vAbCgyJyKPeoxL06enOKk64Ez5bgt
+EY+VnchDGRl1l8RnFRMhgdDMllYT+hj1gzW3x2lccB8ERgaNI3iJdR5FglEmM6ek
+mRulqsPDW6SfZQK4wP+/XBJIRC71TkMiMWYawpFzbkTfXHWezfYos6h8yjR5vAHM
+GI0/ahhXUsI5FWoIEQh+cGa7nuXKkEevPZVKbG6VvlxoFRe6+mLkBkDbFulbHG8/
+fhcfuMfb2a0q9Yrx4a9RF+5LACmN5kbdH47aKAct+m6Qp/leTSNxanfWm21GZtS6
+Ly/HERpfhPbdlvn68PrGoILn4dmNp+PmH00/BuJUroVQztYzmiWTuPe56llwurgF
+X0XRWPgCHcjvW4Oezt3t/ZkTqfXPRTQ5GfUvwnbTUJgnjlTUikQ=
+=Fu4h
 -----END PGP SIGNATURE-----
 
---dzI2QqkSBOAresgT--
+--umrsQkkrw7viUWFs--
