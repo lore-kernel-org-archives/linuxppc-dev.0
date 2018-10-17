@@ -4,26 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C5832ECDE30
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 07:02:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E28E9ECDE30
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 07:04:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 42FE62148D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 07:02:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 4DD6E2148D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 07:04:34 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="clkoYGm5"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 42FE62148D
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="QosqBfsL"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4DD6E2148D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42Zjlt0sJMzF3Jt
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 18:02:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42Zjpm1V0LzF3Xf
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 18:04:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.b="clkoYGm5";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.b="QosqBfsL";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=russell.cc
@@ -33,44 +34,44 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.b="clkoYGm5"; dkim-atps=neutral
+ header.b="QosqBfsL"; dkim-atps=neutral
 Received: from wout1-smtp.messagingengine.com (wout1-smtp.messagingengine.com
  [64.147.123.24])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42ZjY12HRKzF3Hh
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42ZjY12WwgzF3J2
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Oct 2018 17:52:37 +1100 (AEDT)
 Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
- by mailout.west.internal (Postfix) with ESMTP id 908E6951;
- Wed, 17 Oct 2018 02:44:55 -0400 (EDT)
+ by mailout.west.internal (Postfix) with ESMTP id 7996CC13;
+ Wed, 17 Oct 2018 02:44:50 -0400 (EDT)
 Received: from mailfrontend2 ([10.202.2.163])
- by compute6.internal (MEProxy); Wed, 17 Oct 2018 02:44:55 -0400
+ by compute6.internal (MEProxy); Wed, 17 Oct 2018 02:44:50 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
  messagingengine.com; h=cc:content-transfer-encoding:date:from
  :in-reply-to:message-id:mime-version:references:subject:to
  :x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
- fm1; bh=lOjV0qCQfAkymINK77lLdjCytp5YLH3pqs/kVkC95wQ=; b=clkoYGm5
- qieRwlQLJ+HWk410D4pUv23iudR2+Fjz00OfeZVyI9xS5aajM4EowVG3cBXlgRJt
- FVN5mSazTIE7Q1Mm0yszTxBnM2HEiqexd8CQamYsK7FX2Hdz/ZEdmJIEeDM+KFVe
- Ks0A4PagJdnJSOVfNzUs1NizuqrwfkTN2fEAqdLbRek1+/T1al8faZBwWJJValMi
- bRKp2awIg/6rRJDgVBRbCen6Vh+9GI03qu0VHbuLplYELqQY4FVS0JccbtpIvxzb
- 4it2P19KeSKIqQeFRUPBJKmvmm5X9EOSex7MkzwEa8dEyTkzdNg8ul1WDQbLLftD
- 9aTOJgxmMX79VQ==
-X-ME-Sender: <xms:Z9rGW-oZzOeOwTt-pomAMB4AmZ8_kAVMYMfQahrBymSuiIWyg0-czg>
-X-ME-Proxy: <xmx:Z9rGWxiih8cQG39_P7fm8YoV7ZLK9mNVR_6HocOnuv-5QU_eCmFeoA>
- <xmx:Z9rGWxL99FItpYbrDYqx500HYqpLFym0KRoNmgW4aInLL6hTlAfGSg>
- <xmx:Z9rGW3eT8-gLjyXgft5ECYYDd7ywlWf6a75H1-0j-Gp8rlzlOvBzJQ>
- <xmx:Z9rGWxOkeWxgtshSr5YFfWhWMT8pLx1Fu3wGfMKny-3jqiJiXl6EKA>
- <xmx:Z9rGWxIjaAijoQKXgQM0qmQIoWA2z0FkQKG-zhxBHg7Zp0t7JBQ2bg>
- <xmx:Z9rGWyw5NKvuxaG0bGHeW3N-G5S-MEUqW0NzBgeYEeuacqBC-30UDw>
+ fm1; bh=bplNJQefl6J6fctYabjbENmmxSGt1qT9P8rzG8qQtaE=; b=QosqBfsL
+ QFR30/ok2d4F4vy/BQNCd+tGNZRtrKez9Y0IHgCcL7K+t2IAxujBO7LFt8nx4GIL
+ hjMkAq3LkaT2ZebI1tkVJ5eQLK8S3ljW9+Iou1I0pA6vIXZlI+V1X0na5nmfNgdg
+ zVCIb15/nDQev8SbAxlnj4OI+US7XXLUwut85j1UykXW1zHmzPJI9cRYNQ0snh8B
+ V8Xexbh0yJvMquXWJLnJi+koXryn+XzNLUUcy5NL++hTthEMRdBkWTHlylR+IYea
+ WJEU2TIiKRqNDWEAU5fv2URrzD+slnom+AHtNNJ3DuRyZgbnK40kqZ8ZVQKZC7UW
+ 9WSx/cS27KlCxQ==
+X-ME-Sender: <xms:YdrGW-6-71IVJFTSQ_ExKcOE5-E2CqqMPvLgsloGyc4rotEeNeAZrg>
+X-ME-Proxy: <xmx:YtrGW3E8YoPQH1V7u3HSLj4ZnDEkfa_pI74OY4s1m8p_Pp6LosLcwg>
+ <xmx:YtrGW6232dqHUFOObNaGniLkS-L4roRDGryLJeYPa38QtcoALy4ddg>
+ <xmx:YtrGW8VDMYIQLzWmIZBusvn_ClnebhYSQM3e1ZyOvyTimr4agtbMSA>
+ <xmx:YtrGW_Ft2T-zwdE11xlVoiOEx_8s_35yue0BM1xe-dNJzx_WsZCSfQ>
+ <xmx:YtrGW2mOd3z9dNLNqCH0sI4lh2wXniY8OZleyjtauSucQuUfpAKIrA>
+ <xmx:YtrGW4AkluQaECGIbUBEUcxNGtcGKAckRkEo3OJQe2ucO70dVRMUpA>
 Received: from crackle.ozlabs.ibm.com (unknown [122.99.82.10])
- by mail.messagingengine.com (Postfix) with ESMTPA id ED9A6102DE;
- Wed, 17 Oct 2018 02:44:52 -0400 (EDT)
+ by mail.messagingengine.com (Postfix) with ESMTPA id D77CD102DE;
+ Wed, 17 Oct 2018 02:44:47 -0400 (EDT)
 From: Russell Currey <ruscur@russell.cc>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 5/5] powerpc/64s: Document that PPC supports nosmap
-Date: Wed, 17 Oct 2018 17:44:23 +1100
-Message-Id: <20181017064422.26119-5-ruscur@russell.cc>
+Subject: [PATCH 3/5] powerpc/lib: checksum KHRAP support
+Date: Wed, 17 Oct 2018 17:44:21 +1100
+Message-Id: <20181017064422.26119-3-ruscur@russell.cc>
 X-Mailer: git-send-email 2.19.1
 In-Reply-To: <20181017064422.26119-1-ruscur@russell.cc>
 References: <20181017064422.26119-1-ruscur@russell.cc>
@@ -92,24 +93,51 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Wrap the checksumming code in KHRAP locks and unlocks.
+
 Signed-off-by: Russell Currey <ruscur@russell.cc>
 ---
- Documentation/admin-guide/kernel-parameters.txt | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/lib/checksum_wrappers.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index a5ad67d5cb16..8f78e75965f0 100644
---- a/Documentation/admin-guide/kernel-parameters.txt
-+++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -2764,7 +2764,7 @@
- 			noexec=on: enable non-executable mappings (default)
- 			noexec=off: disable non-executable mappings
+diff --git a/arch/powerpc/lib/checksum_wrappers.c b/arch/powerpc/lib/checksum_wrappers.c
+index a0cb63fb76a1..695460a29c9f 100644
+--- a/arch/powerpc/lib/checksum_wrappers.c
++++ b/arch/powerpc/lib/checksum_wrappers.c
+@@ -26,7 +26,7 @@
+ __wsum csum_and_copy_from_user(const void __user *src, void *dst,
+ 			       int len, __wsum sum, int *err_ptr)
+ {
+-	unsigned int csum;
++	unsigned int csum, amr = unlock_user_access();
  
--	nosmap		[X86]
-+	nosmap		[X86,PPC]
- 			Disable SMAP (Supervisor Mode Access Prevention)
- 			even if it is supported by processor.
+ 	might_sleep();
  
+@@ -60,6 +60,7 @@ __wsum csum_and_copy_from_user(const void __user *src, void *dst,
+ 	}
+ 
+ out:
++	lock_user_access(amr);
+ 	return (__force __wsum)csum;
+ }
+ EXPORT_SYMBOL(csum_and_copy_from_user);
+@@ -67,7 +68,7 @@ EXPORT_SYMBOL(csum_and_copy_from_user);
+ __wsum csum_and_copy_to_user(const void *src, void __user *dst, int len,
+ 			     __wsum sum, int *err_ptr)
+ {
+-	unsigned int csum;
++	unsigned int csum, amr = unlock_user_access();
+ 
+ 	might_sleep();
+ 
+@@ -97,6 +98,7 @@ __wsum csum_and_copy_to_user(const void *src, void __user *dst, int len,
+ 	}
+ 
+ out:
++	lock_user_access(amr);
+ 	return (__force __wsum)csum;
+ }
+ EXPORT_SYMBOL(csum_and_copy_to_user);
 -- 
 2.19.1
 
