@@ -2,98 +2,140 @@ Return-Path: <SRS0=nnl5=M5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 470BCC5ACCC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 03:11:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E538C5ACC6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 03:37:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8BAA7214DA
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 03:11:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id DF7BD214C4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 03:37:03 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ifGLbXmc"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8BAA7214DA
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="a4NKFYP4"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DF7BD214C4
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42Zcdw2ck0zF3SN
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 14:11:32 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42ZdCK4l3kzF3Wl
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Oct 2018 14:37:01 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="ifGLbXmc";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="a4NKFYP4";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::443; helo=mail-pf1-x443.google.com;
- envelope-from=frowand.list@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
+ (client-ip=2607:f8b0:4864:20::641; helo=mail-pl1-x641.google.com;
+ envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
+ dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="ifGLbXmc"; 
+ unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
+ header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="a4NKFYP4"; 
  dkim-atps=neutral
-Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
- [IPv6:2607:f8b0:4864:20::443])
+Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
+ [IPv6:2607:f8b0:4864:20::641])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42Zcb054QjzF3Nw
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Oct 2018 14:09:00 +1100 (AEDT)
-Received: by mail-pf1-x443.google.com with SMTP id r64-v6so12432357pfb.13
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 20:09:00 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=subject:to:cc:references:from:message-id:date:user-agent
- :mime-version:in-reply-to:content-language:content-transfer-encoding;
- bh=M8dsvmIzTHKKVGxULcihjzEM6chTWJouSjLpkb54LPM=;
- b=ifGLbXmcpizvBdesXdgVMr3YZTGTF/CtB0PZe7ML9KFJBzRwhDmiJyMgx7mG+ZW2p8
- 9lVfxt/FkFbj6KD6Xnr/DScxUbxk4MH6jpBI/w9sqr5dIgQGWrdoAFF1mslp+/A6fT+n
- EDvtfxfu514wq6RTVMwmLXFRLDQki4cxwhx0Gl2Nz7LpCGJOIW62uaMyohLO3FwrKJu4
- 4Ft7izkRpIAarqu2l9MsjiVXuM8OfjkAZx5vfgNena+Vh3/vqsBRe79nQAjiIMDlwvAg
- ynsxhnlqDkpoaWpQtOfOzpNRSOV3i4pyAyXP3mx2UbAOX6YAHUAhWbOZMWL4A2C9BkyK
- Wyhg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42Zd8c0QRLzF3Vn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Oct 2018 14:34:39 +1100 (AEDT)
+Received: by mail-pl1-x641.google.com with SMTP id 1-v6so11976913plv.7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2018 20:34:38 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
+ h=subject:to:cc:references:from:openpgp:autocrypt:message-id:date
  :user-agent:mime-version:in-reply-to:content-language
  :content-transfer-encoding;
- bh=M8dsvmIzTHKKVGxULcihjzEM6chTWJouSjLpkb54LPM=;
- b=Jwrxpw/5wugmj7uj9SYu/LAmbQFh5C2XRzJFYtw4FWRa/RB9VV5YUkU0LjJa0roWN0
- qKLy1k6WVrJWEfB74N2hSqXv389bFR+UGR9VAcYC5MXVu9uMPOJ1fKMc3oWxKUSxcHta
- 7KCHdqAP1CWybl/0o41R5gQ9br6u4gXIPJWbLNyXGuUdpOIrpPyVVppd7o1s4/J+Iebu
- nbS9sfDhDeiIhqbOLWg/5ukNV/NXfc/ERWkLwHkaQmEY+wTjxsjmbGgq5CNPI/Z/Lq+E
- LZOJFXydRArGoi+zcT4FU98MaXxZyRGynJ8n8w4HyfSbRMOFGssa7FfnlIJ8Bejt9PU7
- 5Aug==
-X-Gm-Message-State: ABuFfoi/26dFBJvrEAJvjnLeIYtWCW7BmCs8mEK0ey/mC3GcP3pFiWPP
- YN/8vxld6MKLgJF2W2x7Jt4=
-X-Google-Smtp-Source: ACcGV62utJhNiCiVnZIOUxf7080hkbzQIIGCr2VOMiRJS8kPQdoYy/Na/J1D1Me2MFpc6n7vtLLA8Q==
-X-Received: by 2002:a65:5347:: with SMTP id
- w7-v6mr23278154pgr.17.1539745738177; 
- Tue, 16 Oct 2018 20:08:58 -0700 (PDT)
-Received: from [192.168.1.70] (c-24-6-192-50.hsd1.ca.comcast.net.
- [24.6.192.50])
- by smtp.gmail.com with ESMTPSA id r23-v6sm17618979pfh.79.2018.10.16.20.08.56
+ bh=HE4r0CsUNJJWnJKCALq9eKD11+/TpsphXAp9SzGSZag=;
+ b=a4NKFYP4v2l6iTlFFkPrSXOZgjpvz70gyzose3rQk41nuxMwKIy1fJEBYjATHz1nXQ
+ Xyk06bobePi1gsqzHrlJyWb8X2kdmNh9HUlypcbbP6h3RGqttQK0I1C5oBaC53FZcAT3
+ vDl2fP7HdXR14GlAIa5tNw97ezoW33ybrY0t3ElH59hZ8ZJGU849OPnUcCJhYcp0K2gb
+ 6e3V/VXaUdE5NOty0mLThspfaYQfMNf7J3qIUG4QCkFuNCG/XYvpcwd8Ae0qABGY2YLP
+ jhiMQbYTcq26HvlbTjKeHJJt2PXTF/5myrH4AfNJ6LIbMRsxVwswD5XQg1yfMiZNvd1N
+ gM0w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:subject:to:cc:references:from:openpgp:autocrypt
+ :message-id:date:user-agent:mime-version:in-reply-to
+ :content-language:content-transfer-encoding;
+ bh=HE4r0CsUNJJWnJKCALq9eKD11+/TpsphXAp9SzGSZag=;
+ b=d4rFhWL+pGLoAbgDcQbc0/8EhU0ao3u77M7KUS67jgwRiN/HIgSuGG0aN0MJNLIy6t
+ JIM07Yjh5lgNdykiCTF6JByH67IllTpqCRUxVE8XEpsIGw1o47ZpztLvZ54olYeoemnz
+ RuCC/q5Bg6j2clD79aK2vsEGoLmGIEby2Btm9rwOoPIkcj7aGmKK29oyWBo92JzIaqWj
+ 8BspMVh6qhVrj0ALe5GQDZ2zu+7uPQ9gCGKAekYW+/27p1J+CdJuHXxOzjptbvOkeGju
+ UvR7RzeCDCyyA1u+8iDBIJVwgnNtaekUhOYYoKmZKEXFei4gmWEWlbuvODv5Ln6d9YD5
+ gAjQ==
+X-Gm-Message-State: ABuFfojS3JJTPv7jGTRiUIvjPIBvoAk4RIXqiXJnljWymYTkSucRutR3
+ tD8fa/TewBL2WJEg4owu+MxE8Q==
+X-Google-Smtp-Source: ACcGV620H2UjEGjNp3C2ZJiEoyJvncr7oi3VKPR6dT2rYXeWLzTRxsbg7bBOT1duLP6qfGRdXBaclw==
+X-Received: by 2002:a17:902:bd0a:: with SMTP id
+ p10-v6mr23503689pls.245.1539747276935; 
+ Tue, 16 Oct 2018 20:34:36 -0700 (PDT)
+Received: from [10.61.2.175] ([122.99.82.10])
+ by smtp.gmail.com with ESMTPSA id q127-v6sm32972793pgq.19.2018.10.16.20.34.34
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 16 Oct 2018 20:08:57 -0700 (PDT)
-Subject: Re: [PATCH v4 00/18] of: overlay: validation checks, subsequent fixes
-To: Michael Ellerman <mpe@ellerman.id.au>, Rob Herring <robh+dt@kernel.org>,
- Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>,
- Moritz Fischer <mdf@kernel.org>
-References: <1539657458-24401-1-git-send-email-frowand.list@gmail.com>
- <87murekyts.fsf@concordia.ellerman.id.au>
-From: Frank Rowand <frowand.list@gmail.com>
-Message-ID: <bbbbe52c-8415-e22a-48d7-95f919942c68@gmail.com>
-Date: Tue, 16 Oct 2018 20:08:56 -0700
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ Tue, 16 Oct 2018 20:34:36 -0700 (PDT)
+Subject: Re: [PATCH kernel 3/4] powerpc/mm/iommu: Make mm_iommu_new() fail on
+ existing regions
+To: David Gibson <david@gibson.dropbear.id.au>
+References: <20181015092416.47380-1-aik@ozlabs.ru>
+ <20181015092416.47380-4-aik@ozlabs.ru>
+ <20181017010022.GA30180@umbus.fritz.box>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Openpgp: preference=signencrypt
+Autocrypt: addr=aik@ozlabs.ru; keydata=
+ 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
+Message-ID: <39886bd3-5122-de68-f167-e010a1d12c33@ozlabs.ru>
+Date: Wed, 17 Oct 2018 14:34:32 +1100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.2.1
 MIME-Version: 1.0
-In-Reply-To: <87murekyts.fsf@concordia.ellerman.id.au>
+In-Reply-To: <20181017010022.GA30180@umbus.fritz.box>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,63 +147,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, linux-fpga@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Alex Williamson <alex.williamson@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ kvm-ppc@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 10/16/18 02:47, Michael Ellerman wrote:
-> frowand.list@gmail.com writes:
-> 
->> From: Frank Rowand <frank.rowand@sony.com>
+
+
+On 17/10/2018 12:00, David Gibson wrote:
+> On Mon, Oct 15, 2018 at 08:24:15PM +1100, Alexey Kardashevskiy wrote:
+>> Since we are going to have 2 different preregistering helpers, let's
+>> make it clear that mm_iommu_new() is only for the normal (i.e. not device)
+>> memory and for existing areas mm_iommu_get() should be used instead.
 >>
->> Add checks to (1) overlay apply process and (2) memory freeing
->> triggered by overlay release.  The checks are intended to detect
->> possible memory leaks and invalid overlays.
+>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> 
+> I think the idea is sensible.  However (and, yes, this is really an
+> existing bug) - shouldn't we check for a request to add anything
+> overlapping with an existing region, not just one that exactly
+> matches?
+
+The overlap check is below the changed hunk:
+
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/powerpc/mm/mmu_context_iommu.c#n150
+
+
+> 
+>> ---
+>>  arch/powerpc/mm/mmu_context_iommu.c | 3 +--
+>>  1 file changed, 1 insertion(+), 2 deletions(-)
 >>
->> The checks revealed bugs in existing code.  Fixed the bugs.
->>
->> While fixing bugs, noted other issues, which are fixed in
->> separate patches.
->>
->> *****  Powerpc folks: I was not able to test the patches that
->> *****  directly impact Powerpc systems that use dynamic
->> *****  devicetree.  Please review that code carefully and
->> *****  test.  The specific patches are: 03/16, 04/16, 07/16
-> 
-> Hi Frank,
-> 
-> Do you have this series in a git tree somewhere?
-> 
-> I tried applying it on top of linux-next but hit some conflicts which I
-> couldn't easily resolve.
-> 
-> cheers
+>> diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_context_iommu.c
+>> index a8c4a3c..839dbce 100644
+>> --- a/arch/powerpc/mm/mmu_context_iommu.c
+>> +++ b/arch/powerpc/mm/mmu_context_iommu.c
+>> @@ -141,8 +141,7 @@ long mm_iommu_new(struct mm_struct *mm, unsigned long ua, unsigned long entries,
+>>  	list_for_each_entry_rcu(mem, &mm->context.iommu_group_mem_list,
+>>  			next) {
+>>  		if ((mem->ua == ua) && (mem->entries == entries)) {
+>> -			++mem->used;
+>> -			*pmem = mem;
+>> +			ret = -EBUSY;
+>>  			goto unlock_exit;
+>>  		}
+>>  
 > 
 
-
-
-git://git.kernel.org/pub/scm/linux/kernel/git/frowand/linux.git
-
-$ git checkout v4.19-rc1--kfree_validate--v4
-
-$ git log --oneline v4.19-rc1..
-2ba1b7d353dd of: unittest: initialize args before calling of_*parse_*()
-4f9108209f79 of: unittest: find overlays[] entry by name instead of index
-353403c76ff8 of: unittest: allow base devicetree to have symbol metadata
-8fc37e04a01b of: overlay: set node fields from properties when add new overlay n
-05d5df0e5151 of: unittest: remove unused of_unittest_apply_overlay() argument
-8c021cba757a of: overlay: check prevents multiple fragments touching same proper
-797a6f66e039 of: overlay: check prevents multiple fragments add or delete same n
-c385e25a040d of: overlay: test case of two fragments adding same node
-c88fd240f0e0 of: overlay: make all pr_debug() and pr_err() messages unique
-1028a215d32a of: overlay: validate overlay properties #address-cells and #size-c
-f1a97ef74ce4 of: overlay: reorder fields in struct fragment
-ffe78cf7a1fb of: dynamic: change type of of_{at,de}tach_node() to void
-5f5ff8ec0c0c of: overlay: do not duplicate properties from overlay for new nodes
-06e72dcb2bb0 of: overlay: use prop add changeset entry for property in new nodes
-a02f8d326a08 powerpc/pseries: add of_node_put() in dlpar_detach_node()
-e203be664330 of: overlay: add missing of_node_get() in __of_attach_node_sysfs
-8eb46208e7c8 of: overlay: add missing of_node_put() after add new node to change
-b22067db7cf9 of: overlay: add tests to validate kfrees from overlay removal
+-- 
+Alexey
