@@ -6,68 +6,67 @@ X-Spam-Status: No, score=-8.5 required=3.0 tests=INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5786EC5ACCC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Oct 2018 17:07:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F58DC5ACCC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Oct 2018 17:11:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B83A421477
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Oct 2018 17:07:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B83A421477
+	by mail.kernel.org (Postfix) with ESMTPS id 99CD92064A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Oct 2018 17:11:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 99CD92064A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42bb7m5sKLzF3Fx
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 04:07:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42bbDV3GJrzF3Rn
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 04:11:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.167.194; helo=mail-oi1-f194.google.com;
+ (client-ip=209.85.210.65; helo=mail-ot1-f65.google.com;
  envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mail-oi1-f194.google.com (mail-oi1-f194.google.com
- [209.85.167.194])
+Received: from mail-ot1-f65.google.com (mail-ot1-f65.google.com
+ [209.85.210.65])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42bb5G0lXkzF3G8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2018 04:05:05 +1100 (AEDT)
-Received: by mail-oi1-f194.google.com with SMTP id a203-v6so24630887oib.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Oct 2018 10:05:05 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42bbBR0lT5zF33P
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2018 04:09:34 +1100 (AEDT)
+Received: by mail-ot1-f65.google.com with SMTP id v2so23365662otk.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Oct 2018 10:09:34 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:date:from:to:cc:subject:message-id:references
  :mime-version:content-disposition:in-reply-to:user-agent;
- bh=6M+qZS7XzLqQ84XTnjeDXwncE2T8D23MD4m/VgPQ9Qs=;
- b=BZxkP/2ft+yhBotVUedHUv1F/mrfiwUY0f8z0Dzad/J3ScESEZCQx2aauIysofDJ37
- nOO3YFoQwvTGMSkQ6L2UTKOs8ZJNgxqQGHvDh24ejbk3GavN4cUAbn1jfN2we3N9K9+D
- jo5OHPnf+4UXTGH+OZU3405e811dCT+EakMw8pMvET2JsmKVteU/K8H4uHiNo76vxUg1
- SR9E0UKQNlYYsAQQTt89+8pFultGuidmht3N8XT73/Dv9D4YdT+0C8anTjkA7HjP5DSU
- /uMOd/IecwQKR4xcLa0F0tYpGG7VDHRXRNGCR7Gp7DCHeJkrl73loSjTcBZ2vKNgqsp7
- N0Uw==
-X-Gm-Message-State: ABuFfojP4MqPxAtEJ8DSJSospUoaEy1ZdnF8fr1Tnqf84iOZh9JfWWj4
- ZVMkSbEBO8zeIAv+VRCKoQ==
-X-Google-Smtp-Source: ACcGV61L8O77Qw7iX+T0760BVD9y+cMb61QydYzzRTtD8HB9t5+RhMmw9PLMZBPKq8uE+Z7rR01adA==
-X-Received: by 2002:aca:7288:: with SMTP id
- p130-v6mr15463816oic.252.1539882303891; 
- Thu, 18 Oct 2018 10:05:03 -0700 (PDT)
+ bh=HXcWGVzkOfaVHlss2GLVKMCrtIPoMyYNFPKDV+16whQ=;
+ b=VaTO34DYrLAjYvzvjkA/eiN72Zii8dPD3aBBblGrRDJh/zs0DA9cpJnU9njADPF8LA
+ KQWGydwPpFtC9TaA94e84jryCwDHiYHp+7o2VYZ9wPJttz734t/Jsdobqq9OhdCwSUKo
+ ihRrGrtF26E7znJpLM4Sr+jHIeRqM02lFmMqALdhQ4+zd0Dt6Hxm7hzD0aioVX5ZwUhH
+ GVSUSgH4gL43tdopM34fUUQpH2rE6kMKzt8ZLeibLQv27BUonYvXXMlKeAV/E21rF8pe
+ k3y8SVESv/3vEYG/hCt4Ha97tdRYMML24RA2BCuuZ8SfjJzpIKCKavslFggGSsZ3DvFW
+ OMMA==
+X-Gm-Message-State: ABuFfoisevSOpa35pxrjNdaKvnJiFOU8F+fd4MR2vjVX5EtJnHnIszrv
+ FbH0G/s3GPwsuhmOjRR4PA==
+X-Google-Smtp-Source: ACcGV604rMfo3OfFb/7pa7GuBL6T7JBbycfNuE1EBytvF7LFox1KN+GieJOMROEZqKdpbXic1gms3w==
+X-Received: by 2002:a9d:2014:: with SMTP id n20mr20468462ota.308.1539882572821; 
+ Thu, 18 Oct 2018 10:09:32 -0700 (PDT)
 Received: from localhost (24-155-109-49.dyn.grandenetworks.net.
  [24.155.109.49])
- by smtp.gmail.com with ESMTPSA id x65-v6sm6540284oix.47.2018.10.18.10.05.03
+ by smtp.gmail.com with ESMTPSA id u123-v6sm7422757oie.22.2018.10.18.10.09.31
  (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Thu, 18 Oct 2018 10:05:03 -0700 (PDT)
-Date: Thu, 18 Oct 2018 12:05:02 -0500
+ Thu, 18 Oct 2018 10:09:31 -0700 (PDT)
+Date: Thu, 18 Oct 2018 12:09:31 -0500
 From: Rob Herring <robh@kernel.org>
 To: frowand.list@gmail.com
-Subject: Re: [PATCH v4 02/18] of: overlay: add missing of_node_put() after
- add new node to changeset
-Message-ID: <20181018170502.GB15557@bogus>
+Subject: Re: [PATCH v4 04/18] powerpc/pseries: add of_node_put() in
+ dlpar_detach_node()
+Message-ID: <20181018170931.GC15557@bogus>
 References: <1539657458-24401-1-git-send-email-frowand.list@gmail.com>
- <1539657458-24401-3-git-send-email-frowand.list@gmail.com>
+ <1539657458-24401-5-git-send-email-frowand.list@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1539657458-24401-3-git-send-email-frowand.list@gmail.com>
+In-Reply-To: <1539657458-24401-5-git-send-email-frowand.list@gmail.com>
 User-Agent: Mutt/1.9.4 (2018-02-28)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -88,68 +87,49 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Oct 15, 2018 at 07:37:22PM -0700, frowand.list@gmail.com wrote:
+On Mon, Oct 15, 2018 at 07:37:24PM -0700, frowand.list@gmail.com wrote:
 > From: Frank Rowand <frank.rowand@sony.com>
 > 
-> The refcount of a newly added overlay node decrements to one
-> (instead of zero) when the overlay changeset is destroyed.  This
-> change will cause the final decrement be to zero.
+> "of: overlay: add missing of_node_get() in __of_attach_node_sysfs"
+> added a missing of_node_get() to __of_attach_node_sysfs().  This
+> results in a refcount imbalance for nodes attached with
+> dlpar_attach_node().  The calling sequence from dlpar_attach_node()
+> to __of_attach_node_sysfs() is:
 > 
-> After applying this patch, new validation warnings will be
-> reported from the devicetree unittest during boot due to
-> a pre-existing devicetree bug.  The warnings will be similar to:
-> 
->   OF: ERROR: memory leak of_node_release() overlay node /testcase-data/overlay-node/test-bus/test-unittest4 before free overlay changeset
+>    dlpar_attach_node()
+>       of_attach_node()
+>          __of_attach_node_sysfs()
 
-Same comment on formatting.
+IIRC, there's a long standing item in the todo (Grant's) to convert the 
+open coded dlpar code. Maybe you want to do that first?
 
-> 
-> This pre-existing devicetree bug will also trigger a WARN_ONCE() from
-> refcount_sub_and_test_checked() when an overlay changeset is
-> destroyed without having first been applied.  This scenario occurs
-> when an error in the overlay is detected during the overlay changeset
-> creation:
-> 
->   WARNING: CPU: 0 PID: 1 at lib/refcount.c:187 refcount_sub_and_test_checked+0xa8/0xbc
->   refcount_t: underflow; use-after-free.
-> 
->   (unwind_backtrace) from (show_stack+0x10/0x14)
->   (show_stack) from (dump_stack+0x6c/0x8c)
->   (dump_stack) from (__warn+0xdc/0x104)
->   (__warn) from (warn_slowpath_fmt+0x44/0x6c)
->   (warn_slowpath_fmt) from (refcount_sub_and_test_checked+0xa8/0xbc)
->   (refcount_sub_and_test_checked) from (kobject_put+0x24/0x208)
->   (kobject_put) from (of_changeset_destroy+0x2c/0xb4)
->   (of_changeset_destroy) from (free_overlay_changeset+0x1c/0x9c)
->   (free_overlay_changeset) from (of_overlay_remove+0x284/0x2cc)
->   (of_overlay_remove) from (of_unittest_apply_revert_overlay_check.constprop.4+0xf8/0x1e8)
->   (of_unittest_apply_revert_overlay_check.constprop.4) from (of_unittest_overlay+0x960/0xed8)
->   (of_unittest_overlay) from (of_unittest+0x1cc4/0x2138)
->   (of_unittest) from (do_one_initcall+0x4c/0x28c)
->   (do_one_initcall) from (kernel_init_freeable+0x29c/0x378)
->   (kernel_init_freeable) from (kernel_init+0x8/0x110)
->   (kernel_init) from (ret_from_fork+0x14/0x2c)
 > 
 > Signed-off-by: Frank Rowand <frank.rowand@sony.com>
 > ---
->  drivers/of/overlay.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
 > 
-> diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
-> index 1176cb4b6e4e..32cfee68f2e3 100644
-> --- a/drivers/of/overlay.c
-> +++ b/drivers/of/overlay.c
-> @@ -379,7 +379,9 @@ static int add_changeset_node(struct overlay_changeset *ovcs,
->  		if (ret)
->  			return ret;
+> ***** UNTESTED.  I need people with the affected PowerPC systems
+> *****            (systems that dynamically allocate and deallocate
+> *****            devicetree nodes) to test this patch.
+
+Can't we write a test case that does the same thing?
+
+> 
+>  arch/powerpc/platforms/pseries/dlpar.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+> index a0b20c03f078..e3010b14aea5 100644
+> --- a/arch/powerpc/platforms/pseries/dlpar.c
+> +++ b/arch/powerpc/platforms/pseries/dlpar.c
+> @@ -272,6 +272,8 @@ int dlpar_detach_node(struct device_node *dn)
+>  	if (rc)
+>  		return rc;
 >  
-> -		return build_changeset_next_level(ovcs, tchild, node);
-> +		ret = build_changeset_next_level(ovcs, tchild, node);
-> +		of_node_put(tchild);
-> +		return ret;
->  	}
+> +	of_node_put(dn);
+> +
+>  	return 0;
+>  }
 >  
->  	if (node->phandle && tchild->phandle)
 > -- 
 > Frank Rowand <frank.rowand@sony.com>
 > 
