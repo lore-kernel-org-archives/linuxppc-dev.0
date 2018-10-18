@@ -2,83 +2,68 @@ Return-Path: <SRS0=VXin=M6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,
-	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C9F18ECDE3D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Oct 2018 02:07:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4856FC5ACCC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Oct 2018 04:39:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 39D7B2083A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Oct 2018 02:07:21 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="Wl672WWF"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 39D7B2083A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
+	by mail.kernel.org (Postfix) with ESMTPS id 70D772145D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Oct 2018 04:39:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 70D772145D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42bC9M4XnDzF3T9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Oct 2018 13:07:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=russell.cc
+	by lists.ozlabs.org (Postfix) with ESMTP id 42bGXx0llPzF3S8
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Oct 2018 15:39:29 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.b="Wl672WWF";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=russell.cc
- (client-ip=64.147.123.24; helo=wout1-smtp.messagingengine.com;
- envelope-from=ruscur@russell.cc; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=russell.cc
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.b="Wl672WWF"; dkim-atps=neutral
-Received: from wout1-smtp.messagingengine.com (wout1-smtp.messagingengine.com
- [64.147.123.24])
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42bC4s6N0pzF3V3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Oct 2018 13:03:25 +1100 (AEDT)
-Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
- by mailout.west.internal (Postfix) with ESMTP id 6AA1D93A;
- Wed, 17 Oct 2018 22:03:23 -0400 (EDT)
-Received: from mailfrontend2 ([10.202.2.163])
- by compute6.internal (MEProxy); Wed, 17 Oct 2018 22:03:23 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
- messagingengine.com; h=cc:content-transfer-encoding:content-type
- :date:from:in-reply-to:message-id:mime-version:references
- :subject:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
- :x-sasl-enc; s=fm1; bh=UgoQ5PLHrjFwmt6s0P4s+yJpIdBde79IadwsASg81
- 44=; b=Wl672WWF/KQjBHXdUjtSvxyO4HCjPkuSK4odBHRrPPp2VeZ9XVFzjzH8N
- Yv1jSsw/H3CivjDX15ymDWrTdZ9EEA2uGGLDzxMyW8HouNScLfKsKdvrKPsH7KQd
- q7iEfFH5NiTBsmYewAsFRzNWNN4FLcAClLQygD2F75dVKUn5A5BfYzEyWsH8PeQp
- cWHdNbHbs8FrmcPwQWS7ywUWhmkIOUoBT11npRRtpuQrPMOBeIJMs5+8A7tE1/RA
- UeWaHYY7Kn6b+bZR0B9ogcjdY+CqJ5qswJEvIo4UKcNjVnrL4OVsKpnz49O93BJt
- dtSWBodtk95DmpnhBdnfBieB88QKA==
-X-ME-Sender: <xms:6unHW2vxvSqEBfTxwgiVsmXjMtWks-XIPQChWZ4uPBAglfoWIgYvvg>
-X-ME-Proxy: <xmx:6unHW6uojuKpssUm3WnTFmGjO_Sk9ccnCyS2Wf39slL0cbAUVAG6Bg>
- <xmx:6unHW0cQEbCg0tLzvUZhPCsVh4Z6NA-eWLCWlHkrCLnq6ra1S8DgCw>
- <xmx:6unHW2p_xPrb-kICx0mXh7N2S25zAC4F4tq0oEhmBGFlCziAP4ptkw>
- <xmx:6unHW6-_mYbRWwvB4AwYuWkdct42kW7t4WTmCPRrxaFT_f37I03cbQ>
- <xmx:6unHW34uOv8A6Lw7ugEZhiSXCZtQX4n2J54eVWK-ZiFpRR7ss5rtJQ>
- <xmx:6-nHWyUhtVCw3Svc3JRdWXvCBUr-j6K7qPHLWWoQhMOs3Evye5PtTA>
-Received: from crackle.ozlabs.ibm.com (unknown [122.99.82.10])
- by mail.messagingengine.com (Postfix) with ESMTPA id 903B9102E9;
- Wed, 17 Oct 2018 22:03:20 -0400 (EDT)
-Message-ID: <50aa928e893a75cfaaa87f8a3b4591a28a2b6dce.camel@russell.cc>
-Subject: Re: [PATCH 1/5] powerpc/64s: Kernel Hypervisor Restricted Access
- Prevention
-From: Russell Currey <ruscur@russell.cc>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Date: Thu, 18 Oct 2018 13:03:19 +1100
-In-Reply-To: <87bm7sero1.fsf@concordia.ellerman.id.au>
-References: <20181017064422.26119-1-ruscur@russell.cc>
- <87bm7sero1.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.30.1 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42bGVp0hyfzF369
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Oct 2018 15:37:36 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 42bGVg0t0Fz9ttBQ;
+ Thu, 18 Oct 2018 06:37:31 +0200 (CEST)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id d6mWIti8UK_J; Thu, 18 Oct 2018 06:37:31 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 42bGVg0GC9z9ttBP;
+ Thu, 18 Oct 2018 06:37:31 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 961A58B75E;
+ Thu, 18 Oct 2018 06:37:32 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id bhsoszzXT9TN; Thu, 18 Oct 2018 06:37:32 +0200 (CEST)
+Received: from PO15451 (unknown [192.168.232.3])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 180858B74C;
+ Thu, 18 Oct 2018 06:37:31 +0200 (CEST)
+Subject: Re: [PATCH] powerpc: Add missing include <asm/stacktrace.h>
+To: Mathieu Malaterre <malat@debian.org>, Michael Ellerman <mpe@ellerman.id.au>
+References: <20181017192558.8039-1-malat@debian.org>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <373dd30b-70d1-5e06-c55e-45f8f6763edf@c-s.fr>
+Date: Thu, 18 Oct 2018 06:37:31 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
+MIME-Version: 1.0
+In-Reply-To: <20181017192558.8039-1-malat@debian.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,44 +75,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mikey@neuling.org
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 2018-10-17 at 22:30 +1100, Michael Ellerman wrote:
-> Russell Currey <ruscur@russell.cc> writes:
-> > diff --git a/arch/powerpc/kernel/entry_64.S
-> > b/arch/powerpc/kernel/entry_64.S
-> > index 7b1693adff2a..090f72cbb02d 100644
-> > --- a/arch/powerpc/kernel/entry_64.S
-> > +++ b/arch/powerpc/kernel/entry_64.S
-> > @@ -286,6 +286,9 @@ BEGIN_FTR_SECTION
-> >  	HMT_MEDIUM_LOW
-> >  END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
-> >  
-> > +	/* headed back to userspace, so unlock the AMR */
-> > +	UNLOCK_AMR(r2)
-> > +
-> 
-> This one needs an ifdef, or preferable an empty version in a header
-> for
-> non-book3s 64, otherwise we get:
-> 
->   arch/powerpc/kernel/entry_64.S: Assembler messages:
->   arch/powerpc/kernel/entry_64.S:290: Error: unrecognized opcode:
-> `unlock_amr(%r2)'
->   scripts/Makefile.build:405: recipe for target
-> 'arch/powerpc/kernel/entry_64.o' failed
-> 
-> That's a corenet64-ish defconfig.
 
-Yep, sorry.  I knew it wouldn't build on non-64s but I just wanted to
-get the main part out there so people could start looking at it.  Will
-fix.
 
-- Russell
-
+Le 17/10/2018 à 21:25, Mathieu Malaterre a écrit :
+> In commit 88b0fe175735 ("powerpc: Add show_user_instructions()") the
+> function show_user_instructions was added.
 > 
-> cheers
+> This commit adds an include of header file <asm/stacktrace.h> to provide
+> the missing function prototype. Silence the following gcc warning
+> (treated as error with W=1):
+> 
+>    arch/powerpc/kernel/process.c:1302:6: error: no previous prototype for ‘show_user_instructions’ [-Werror=missing-prototypes]
+> 
+> Signed-off-by: Mathieu Malaterre <malat@debian.org>
 
+This is already fixed, see 
+https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/commit/?id=c9386bfd37d37f29588de9ea9add455510049c33
+
+Christophe
+
+> ---
+>   arch/powerpc/kernel/process.c | 1 +
+>   1 file changed, 1 insertion(+)
+> 
+> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+> index bb6ac471a784..1c64491e9702 100644
+> --- a/arch/powerpc/kernel/process.c
+> +++ b/arch/powerpc/kernel/process.c
+> @@ -65,6 +65,7 @@
+>   #include <asm/livepatch.h>
+>   #include <asm/cpu_has_feature.h>
+>   #include <asm/asm-prototypes.h>
+> +#include <asm/stacktrace.h>
+>   
+>   #include <linux/kprobes.h>
+>   #include <linux/kdebug.h>
+> 
