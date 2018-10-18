@@ -2,23 +2,23 @@ Return-Path: <SRS0=VXin=M6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8778CC5ACCC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Oct 2018 07:55:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E39CBC5ACCC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Oct 2018 07:57:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EC1BB204EC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Oct 2018 07:55:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EC1BB204EC
+	by mail.kernel.org (Postfix) with ESMTPS id 6DE762145D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Oct 2018 07:57:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6DE762145D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42bLtp4PN0zF3NN
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Oct 2018 18:55:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42bLx043hVzF3LS
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Oct 2018 18:57:08 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
@@ -27,17 +27,20 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Received: from ozlabs.ru (unknown [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 42bLrf3mbyzF3Fm
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Oct 2018 18:53:21 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 42bLrg2r19zF3Fm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Oct 2018 18:53:23 +1100 (AEDT)
 Received: from vpl1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id E7EAFAE80015;
- Thu, 18 Oct 2018 03:52:47 -0400 (EDT)
+ by ozlabs.ru (Postfix) with ESMTP id 19479AE80037;
+ Thu, 18 Oct 2018 03:52:49 -0400 (EDT)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel 0/2] powerpc/iommu: Redo iommu groups
-Date: Thu, 18 Oct 2018 18:52:41 +1100
-Message-Id: <20181018075243.4798-1-aik@ozlabs.ru>
+Subject: [PATCH kernel 1/2] powerpc/pseries: Remove IOMMU API support for
+ non-LPAR systems
+Date: Thu, 18 Oct 2018 18:52:42 +1100
+Message-Id: <20181018075243.4798-2-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.11.0
+In-Reply-To: <20181018075243.4798-1-aik@ozlabs.ru>
+References: <20181018075243.4798-1-aik@ozlabs.ru>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,35 +58,56 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The aim is to:
+The pci_dma_bus_setup_pSeries and pci_dma_dev_setup_pSeries hooks are
+registered for the pseries platform which does not have FW_FEATURE_LPAR;
+these would be pre-powernv platforms which we never supported PCI pass
+through for anyway so remove it.
 
-1. simplify the code
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
 
-2. get rid of iommu_table_group_link.
-Now: iommu_table points to a list of iommu_table_group_link which
-point to iommu_table_group (powerpc specific part of an IOMMU group);
-one iommu_table_group_link per iommu_table_group per IODA PE.
+Propably should remove all pseries-but-not-lpar code.
+---
+ arch/powerpc/platforms/pseries/iommu.c | 9 ++-------
+ 1 file changed, 2 insertions(+), 7 deletions(-)
 
-Plan: add support of multiple IODA PEs per one generic IOMMU group,
-I am just not sure how yet. We already have a case of GPU+NPU groups,
-and a worse one is coming, with 3xGPU + 6xNVLink2.
-
-
-Please comment. Thanks.
-
-
-
-Alexey Kardashevskiy (2):
-  powerpc/pseries: Remove IOMMU API support for non-LPAR systems
-  powerpc/powernv/pseries: Rework device adding to IOMMU groups
-
- arch/powerpc/include/asm/iommu.h          | 12 +++----
- arch/powerpc/kernel/iommu.c               | 58 ++-----------------------------
- arch/powerpc/platforms/powernv/pci-ioda.c | 10 +-----
- arch/powerpc/platforms/powernv/pci.c      | 43 ++++++++++++++++++++++-
- arch/powerpc/platforms/pseries/iommu.c    | 55 ++++++++++++++---------------
- 5 files changed, 76 insertions(+), 102 deletions(-)
-
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index cf90582..eae2578 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -648,7 +648,6 @@ static void pci_dma_bus_setup_pSeries(struct pci_bus *bus)
+ 	iommu_table_setparms(pci->phb, dn, tbl);
+ 	tbl->it_ops = &iommu_table_pseries_ops;
+ 	iommu_init_table(tbl, pci->phb->node);
+-	iommu_register_group(pci->table_group, pci_domain_nr(bus), 0);
+ 
+ 	/* Divide the rest (1.75GB) among the children */
+ 	pci->phb->dma_window_size = 0x80000000ul;
+@@ -759,10 +758,7 @@ static void pci_dma_dev_setup_pSeries(struct pci_dev *dev)
+ 		iommu_table_setparms(phb, dn, tbl);
+ 		tbl->it_ops = &iommu_table_pseries_ops;
+ 		iommu_init_table(tbl, phb->node);
+-		iommu_register_group(PCI_DN(dn)->table_group,
+-				pci_domain_nr(phb->bus), 0);
+ 		set_iommu_table_base(&dev->dev, tbl);
+-		iommu_add_device(&dev->dev);
+ 		return;
+ 	}
+ 
+@@ -773,11 +769,10 @@ static void pci_dma_dev_setup_pSeries(struct pci_dev *dev)
+ 	while (dn && PCI_DN(dn) && PCI_DN(dn)->table_group == NULL)
+ 		dn = dn->parent;
+ 
+-	if (dn && PCI_DN(dn)) {
++	if (dn && PCI_DN(dn))
+ 		set_iommu_table_base(&dev->dev,
+ 				PCI_DN(dn)->table_group->tables[0]);
+-		iommu_add_device(&dev->dev);
+-	} else
++	else
+ 		printk(KERN_WARNING "iommu: Device %s has no iommu table\n",
+ 		       pci_name(dev));
+ }
 -- 
 2.11.0
 
