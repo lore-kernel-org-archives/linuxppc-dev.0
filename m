@@ -2,72 +2,91 @@ Return-Path: <SRS0=VXin=M6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6241FECDE43
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Oct 2018 18:15:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F1F65C5ACCC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Oct 2018 18:42:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DC469204FD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Oct 2018 18:15:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DC469204FD
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 3E7CA20644
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Oct 2018 18:42:54 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="VJNlv7sb"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3E7CA20644
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nvidia.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42bcfn3RLVzF3Hb
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 05:15:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42bdG41FZgzF3HS
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 05:42:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.210.68; helo=mail-ot1-f68.google.com;
- envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="VJNlv7sb";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mail-ot1-f68.google.com (mail-ot1-f68.google.com
- [209.85.210.68])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42bccP6C2szF10b
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2018 05:13:41 +1100 (AEDT)
-Received: by mail-ot1-f68.google.com with SMTP id l58so30711173otd.6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Oct 2018 11:13:41 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=rDBJm4nqmeaWFBJegkp3BQkCCdXjYEENsmO3iMF20io=;
- b=FRubtjmjZkf7Gk5gph/cUooR5d/ozfQi2Fr8qY9ThL4c+Dcz1GTtNoMlzX+i7f6tlH
- WdNpRGN7GZdnvc78cOnzKyYzl/hp6smcx7ZNiF+1zukG7xuXt3Gc1b2UrT7TAChWU/Hc
- LA5KrSWeZmPQa9SyqzB82SPWn0vSCSLc3mgLE97EUWqn4UKdnG1i/Rbsspkr1b5Sn91O
- SCfXS/FCqEHKWDjNS4Va4xxCh3UCvxgiNHy4mupFiKTVmGQpd+Rl7bBih9yhRr4rwQNw
- cq/Lk2DDc9thRZ8Y0aln0d3ZvnzHPalLRZcIfCDscMST9UZwQSJmDKxiEHDAmaFD7TLL
- f/XA==
-X-Gm-Message-State: ABuFfohJnCWprMPo3lmHD4tRT8PI0ALvwK4uCfJGzPM26aY3Cj8tMmTp
- LCn9WpBfJhxLuixJ91C7Mw==
-X-Google-Smtp-Source: ACcGV60nfGlaU/lcwaRenMZMvmmeXcFbwlfgCJJenxTqj8a+3KPHewNwOEJ2JrqNvTrBGvXgP5PmWg==
-X-Received: by 2002:a9d:2e30:: with SMTP id q45mr18918099otb.69.1539886419710; 
- Thu, 18 Oct 2018 11:13:39 -0700 (PDT)
-Received: from localhost (24-155-109-49.dyn.grandenetworks.net.
- [24.155.109.49])
- by smtp.gmail.com with ESMTPSA id w128-v6sm5629737oiw.15.2018.10.18.11.13.38
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Thu, 18 Oct 2018 11:13:39 -0700 (PDT)
-Date: Thu, 18 Oct 2018 13:13:38 -0500
-From: Rob Herring <robh@kernel.org>
-To: frowand.list@gmail.com
-Subject: Re: [PATCH v4 09/18] of: overlay: validate overlay properties
- #address-cells and #size-cells
-Message-ID: <20181018181338.GD15557@bogus>
-References: <1539657458-24401-1-git-send-email-frowand.list@gmail.com>
- <1539657458-24401-10-git-send-email-frowand.list@gmail.com>
+ spf=pass (mailfrom) smtp.mailfrom=nvidia.com
+ (client-ip=216.228.121.64; helo=hqemgate15.nvidia.com;
+ envelope-from=pjaroszynski@nvidia.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=nvidia.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=nvidia.com header.i=@nvidia.com header.b="VJNlv7sb"; 
+ dkim-atps=neutral
+Received: from hqemgate15.nvidia.com (hqemgate15.nvidia.com [216.228.121.64])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42bdCG2wJ1zF3FB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2018 05:40:26 +1100 (AEDT)
+Received: from hqpgpgate102.nvidia.com (Not Verified[216.228.121.13]) by
+ hqemgate15.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
+ id <B5bc8d3910000>; Thu, 18 Oct 2018 11:40:17 -0700
+Received: from HQMAIL104.nvidia.com ([172.20.161.6])
+ by hqpgpgate102.nvidia.com (PGP Universal service);
+ Thu, 18 Oct 2018 11:40:22 -0700
+X-PGP-Universal: processed;
+ by hqpgpgate102.nvidia.com on Thu, 18 Oct 2018 11:40:22 -0700
+Received: from [10.2.169.16] (10.2.169.16) by HQMAIL104.nvidia.com
+ (172.18.146.11) with Microsoft SMTP Server (TLS) id 15.0.1395.4; Thu, 18 Oct
+ 2018 18:40:19 +0000
+Subject: Re: [PATCH kernel 3/3] vfio_pci: Add NVIDIA GV100GL [Tesla V100 SXM2]
+ [10de:1db1] subdriver
+To: Alex Williamson <alex.williamson@redhat.com>
+References: <20181015094233.1324-1-aik@ozlabs.ru>
+ <20181015094233.1324-4-aik@ozlabs.ru> <20181016130824.20be215b@w520.home>
+ <71c11c53-c83d-b0b6-5036-574df45009e4@ozlabs.ru>
+ <20181017155252.2f15d0f0@w520.home>
+ <2175dbbd-21d9-df26-67f5-4b41f90ab1bc@ozlabs.ru>
+ <20181018105503.088a343f@w520.home>
+ <0e0db29d-a1e8-af85-b715-c1ba1a2f3875@nvidia.com>
+ <20181018120502.057feb7a@w520.home>
+X-Nvconfidentiality: public
+From: Piotr Jaroszynski <pjaroszynski@nvidia.com>
+Message-ID: <a8a71caf-bf86-ecd4-cb38-9e138e616994@nvidia.com>
+Date: Thu, 18 Oct 2018 11:40:19 -0700
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1539657458-24401-10-git-send-email-frowand.list@gmail.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+In-Reply-To: <20181018120502.057feb7a@w520.home>
+X-Originating-IP: [10.2.169.16]
+X-ClientProxiedBy: HQMAIL108.nvidia.com (172.18.146.13) To
+ HQMAIL104.nvidia.com (172.18.146.11)
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
+ t=1539888018; bh=xff4byW8Ey2P82ogfJqmPee1R4zE/JaHqL+TmF0hNxs=;
+ h=X-PGP-Universal:Subject:To:CC:References:X-Nvconfidentiality:From:
+ Message-ID:Date:User-Agent:MIME-Version:In-Reply-To:
+ X-Originating-IP:X-ClientProxiedBy:Content-Type:Content-Language:
+ Content-Transfer-Encoding;
+ b=VJNlv7sbz/vpPKFPITx96HuYX/v4ZRbPwcZY65260fnLViuQG2YfOHTVqeqjLtTgu
+ sPPgKHp0MnoVLYrbLRmajC/TRuyvZGKdrKPK8RZGEaW9hr7gZo14bdZZ0ZsOv5rq9E
+ 8UvGkP8Ql/E0wMldzrRFFnHhqpkW8Uo5vcw4LEMMB2GZrIiBSui3gS9KE2YGofkTC/
+ TGOfY7zkzxHyc9qNQUwLWfLUnxZKVKOhxAG4Rd9OUMrR1MFUEk33YGiJM+bpnq2dHn
+ Os/wqkD2fD6i2fDLC7hPqGPaSKCAHvCIL91QHiGaXPnhdNoEPyQScXvwvKdzF49clO
+ ecvLfKmecWMxQ==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,44 +98,139 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, Alan Tull <atull@kernel.org>,
- linux-fpga@vger.kernel.org, Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
- linux-kernel@vger.kernel.org, Moritz Fischer <mdf@kernel.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Reza Arbab <arbab@linux.ibm.com>, kvm@vger.kernel.org,
+ Alexey Kardashevskiy <aik@ozlabs.ru>, Alistair Popple <alistair@popple.id.au>,
+ kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Oct 15, 2018 at 07:37:29PM -0700, frowand.list@gmail.com wrote:
-> From: Frank Rowand <frank.rowand@sony.com>
+On 10/18/18 11:05 AM, Alex Williamson wrote:
+> On Thu, 18 Oct 2018 10:37:46 -0700
+> Piotr Jaroszynski <pjaroszynski@nvidia.com> wrote:
 > 
-> If overlay properties #address-cells or #size-cells are already in
-> the live devicetree for any given node, then the values in the
-> overlay must match the values in the live tree.
+>> On 10/18/18 9:55 AM, Alex Williamson wrote:
+>>> On Thu, 18 Oct 2018 11:31:33 +1100
+>>> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+>>>    
+>>>> On 18/10/2018 08:52, Alex Williamson wrote:
+>>>>> On Wed, 17 Oct 2018 12:19:20 +1100
+>>>>> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+>>>>>       
+>>>>>> On 17/10/2018 06:08, Alex Williamson wrote:
+>>>>>>> On Mon, 15 Oct 2018 20:42:33 +1100
+>>>>>>> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+>>>>>>>> +
+>>>>>>>> +	if (pdev->vendor == PCI_VENDOR_ID_IBM &&
+>>>>>>>> +			pdev->device == 0x04ea) {
+>>>>>>>> +		ret = vfio_pci_ibm_npu2_init(vdev);
+>>>>>>>> +		if (ret) {
+>>>>>>>> +			dev_warn(&vdev->pdev->dev,
+>>>>>>>> +					"Failed to setup NVIDIA NV2 ATSD region\n");
+>>>>>>>> +			goto disable_exit;
+>>>>>>>>    		}
+>>>>>>>
+>>>>>>> So the NPU is also actually owned by vfio-pci and assigned to the VM?
+>>>>>>
+>>>>>> Yes. On a running system it looks like:
+>>>>>>
+>>>>>> 0007:00:00.0 Bridge: IBM Device 04ea (rev 01)
+>>>>>> 0007:00:00.1 Bridge: IBM Device 04ea (rev 01)
+>>>>>> 0007:00:01.0 Bridge: IBM Device 04ea (rev 01)
+>>>>>> 0007:00:01.1 Bridge: IBM Device 04ea (rev 01)
+>>>>>> 0007:00:02.0 Bridge: IBM Device 04ea (rev 01)
+>>>>>> 0007:00:02.1 Bridge: IBM Device 04ea (rev 01)
+>>>>>> 0035:00:00.0 PCI bridge: IBM Device 04c1
+>>>>>> 0035:01:00.0 PCI bridge: PLX Technology, Inc. Device 8725 (rev ca)
+>>>>>> 0035:02:04.0 PCI bridge: PLX Technology, Inc. Device 8725 (rev ca)
+>>>>>> 0035:02:05.0 PCI bridge: PLX Technology, Inc. Device 8725 (rev ca)
+>>>>>> 0035:02:0d.0 PCI bridge: PLX Technology, Inc. Device 8725 (rev ca)
+>>>>>> 0035:03:00.0 3D controller: NVIDIA Corporation GV100GL [Tesla V100 SXM2]
+>>>>>> (rev a1
+>>>>>> 0035:04:00.0 3D controller: NVIDIA Corporation GV100GL [Tesla V100 SXM2]
+>>>>>> (rev a1)
+>>>>>> 0035:05:00.0 3D controller: NVIDIA Corporation GV100GL [Tesla V100 SXM2]
+>>>>>> (rev a1)
+>>>>>>
+>>>>>> One "IBM Device" bridge represents one NVLink2, i.e. a piece of NPU.
+>>>>>> They all and 3 GPUs go to the same IOMMU group and get passed through to
+>>>>>> a guest.
+>>>>>>
+>>>>>> The entire NPU does not have representation via sysfs as a whole though.
+>>>>>
+>>>>> So the NPU is a bridge, but it uses a normal header type so vfio-pci
+>>>>> will bind to it?
+>>>>
+>>>> An NPU is a NVLink bridge, it is not PCI in any sense. We (the host
+>>>> powerpc firmware known as "skiboot" or "opal") have chosen to emulate a
+>>>> virtual bridge per 1 NVLink on the firmware level. So for each physical
+>>>> NPU there are 6 virtual bridges. So the NVIDIA driver does not need to
+>>>> know much about NPUs.
+>>>>   
+>>>>> And the ATSD register that we need on it is not
+>>>>> accessible through these PCI representations of the sub-pieces of the
+>>>>> NPU?  Thanks,
+>>>>
+>>>> No, only via the device tree. The skiboot puts the ATSD register address
+>>>> to the PHB's DT property called 'ibm,mmio-atsd' of these virtual bridges.
+>>>
+>>> Ok, so the NPU is essential a virtual device already, mostly just a
+>>> stub.  But it seems that each NPU is associated to a specific GPU, how
+>>> is that association done?  In the use case here it seems like it's just
+>>> a vehicle to provide this ibm,mmio-atsd property to guest DT and the tgt
+>>> routing information to the GPU.  So if both of those were attached to
+>>> the GPU, there'd be no purpose in assigning the NPU other than it's in
+>>> the same IOMMU group with a type 0 header, so something needs to be
+>>> done with it.  If it's a virtual device, perhaps it could have a type 1
+>>> header so vfio wouldn't care about it, then we would only assign the
+>>> GPU with these extra properties, which seems easier for management
+>>> tools and users.  If the guest driver needs a visible NPU device, QEMU
+>>> could possibly emulate one to make the GPU association work
+>>> automatically.  Maybe this isn't really a problem, but I wonder if
+>>> you've looked up the management stack to see what tools need to know to
+>>> assign these NPU devices and whether specific configurations are
+>>> required to make the NPU to GPU association work.  Thanks,
+>>
+>> I'm not that familiar with how this was originally set up, but note that
+>> Alexey is just making it work exactly like baremetal does. The baremetal
+>> GPU driver works as-is in the VM and expects the same properties in the
+>> device-tree. Obviously it doesn't have to be that way, but there is
+>> value in keeping it identical.
+>>
+>> Another probably bigger point is that the NPU device also implements the
+>> nvlink HW interface and is required for actually training and
+>> maintaining the link up. The driver in the guest trains the links by
+>> programming both the GPU end and the NPU end of each link so the NPU
+>> device needs to be exposed to the guest.
 > 
-> If the properties are already in the live tree then there is no
-> need to create a changeset entry to add them since they must
-> have the same value.  This reduces the memory used by the
-> changeset and eliminates a possible memory leak.  This is
-> verified by 12 fewer warnings during the devicetree unittest,
-> as the possible memory leak warnings about #address-cells and
+> Ok, so there is functionality in assigning the NPU device itself, it's
+> not just an attachment point for meta data.  But it still seems there
+> must be some association of NPU to GPU, the tgt address seems to pair
+> the NPU with a specific GPU, they're not simply a fungible set of NPUs
+> and GPUs.  Is that association explicit anywhere or is it related to
+> the topology or device numbering that needs to match between the host
+> and guest?  Thanks,
 
-Still missing the rest...
+GPUs are linked to NPU devices through device tree properties, I think. 
+Linux has a helper to look up linked NPU devices for a PCI device 
+pnv_pci_get_npu_dev() here:
+https://elixir.bootlin.com/linux/latest/source/arch/powerpc/platforms/powernv/npu-dma.c#L86
+ From what Alexey said, it sounds like the NPU devices are actually 
+virtualized by the firmware, but they do map to real hardware in the end 
+and each GPU needs to be accompanied by the same NPU devices as on 
+baremetal. Currently, there are two types of P9+GV100 systems, one with 
+2 CPU<->GPU links per GPU and hence 2 linked NPU devices per GPU. And a 
+second system with 3 CPU<->GPU links per GPU and hence 3 linked NPU 
+devices per GPU.
 
-And what about my other comments too?
+Having the user assign all the NPUs and GPUs correctly does seem a bit 
+cumbersome, but maybe higher level tools on top of qemu can simplify 
+that somehow by pulling them in automatically? FWIW, whenever a GPU is 
+assigned to a guest, its linked NPU devices are likely not very useful 
+to anything else so grouping them together somehow would make sense.
 
 > 
-> Signed-off-by: Frank Rowand <frank.rowand@sony.com>
-> ---
-> Changes since v3:
->   - for errors of an overlay changing the value of #size-cells or
->     #address-cells, return -EINVAL so that overlay apply will fail
->   - for errors of an overlay changing the value of #size-cells or
->     #address-cells, make the message more direct.
->     Old message:
->       OF: overlay: ERROR: overlay and/or live tree #size-cells invalid in node /soc/base_fpga_region
->     New message:
->       OF: overlay: ERROR: changing value of /soc/base_fpga_region/#size-cells not allowed
+> Alex
 > 
->  drivers/of/overlay.c | 42 +++++++++++++++++++++++++++++++++++++++---
->  1 file changed, 39 insertions(+), 3 deletions(-)
+
