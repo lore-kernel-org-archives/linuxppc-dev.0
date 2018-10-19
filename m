@@ -6,36 +6,36 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D28FECDE3D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 04:08:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AC0C2ECDE3D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 04:14:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AC8992145D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 04:08:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AC8992145D
+	by mail.kernel.org (Postfix) with ESMTPS id 476F72145D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 04:14:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 476F72145D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42bspD54ZpzF3RY
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 15:08:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42bsxt1PsszF3WK
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 15:14:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42bsmD5YjHzF3Nd
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2018 15:06:20 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42bsvn19FvzF3SV
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2018 15:12:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 42bsmD2YJkz9sDJ; Fri, 19 Oct 2018 15:06:20 +1100 (AEDT)
+ id 42bsvn0cpQz9sCm; Fri, 19 Oct 2018 15:12:53 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 42bsmD1kvQz9sDK; Fri, 19 Oct 2018 15:06:20 +1100 (AEDT)
+ id 42bsvn0Ms5z9sDJ; Fri, 19 Oct 2018 15:12:52 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] selftests/powerpc: Fix out-of-tree build errors
-Date: Fri, 19 Oct 2018 15:06:16 +1100
-Message-Id: <20181019040616.345-1-mpe@ellerman.id.au>
+Subject: [PATCH] powerpc/mm: Fix page table dump to work on Radix
+Date: Fri, 19 Oct 2018 15:12:50 +1100
+Message-Id: <20181019041250.3831-1-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.17.2
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -48,72 +48,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: aneesh.kumar@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Some of our Makefiles don't do the right thing when building the
-selftests with O=, fix them up.
+When we're running on Book3S with the Radix MMU enabled the page table
+dump currently prints the wrong addresses because it uses the wrong
+start address.
+
+Fix it to use PAGE_OFFSET rather than KERN_VIRT_START.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- tools/testing/selftests/powerpc/cache_shape/Makefile   | 2 --
- tools/testing/selftests/powerpc/ptrace/Makefile        | 2 --
- tools/testing/selftests/powerpc/signal/Makefile        | 2 --
- tools/testing/selftests/powerpc/switch_endian/Makefile | 1 +
- 4 files changed, 1 insertion(+), 6 deletions(-)
+ arch/powerpc/mm/dump_linuxpagetables.c | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
-diff --git a/tools/testing/selftests/powerpc/cache_shape/Makefile b/tools/testing/selftests/powerpc/cache_shape/Makefile
-index ede4d3dae750..62e947ca9921 100644
---- a/tools/testing/selftests/powerpc/cache_shape/Makefile
-+++ b/tools/testing/selftests/powerpc/cache_shape/Makefile
-@@ -1,8 +1,6 @@
- # SPDX-License-Identifier: GPL-2.0
- TEST_PROGS := cache_shape
+diff --git a/arch/powerpc/mm/dump_linuxpagetables.c b/arch/powerpc/mm/dump_linuxpagetables.c
+index e60aa6d7456d..2b74f8adf4d0 100644
+--- a/arch/powerpc/mm/dump_linuxpagetables.c
++++ b/arch/powerpc/mm/dump_linuxpagetables.c
+@@ -267,12 +267,13 @@ static void walk_pagetables(struct pg_state *st)
+ 	unsigned int i;
+ 	unsigned long addr;
  
--all: $(TEST_PROGS)
--
- $(TEST_PROGS): ../harness.c ../utils.c
- 
- top_srcdir = ../../../../..
-diff --git a/tools/testing/selftests/powerpc/ptrace/Makefile b/tools/testing/selftests/powerpc/ptrace/Makefile
-index 9b35ca8e8f13..6ac71b629276 100644
---- a/tools/testing/selftests/powerpc/ptrace/Makefile
-+++ b/tools/testing/selftests/powerpc/ptrace/Makefile
-@@ -7,8 +7,6 @@ TEST_PROGS := ptrace-gpr ptrace-tm-gpr ptrace-tm-spd-gpr \
- top_srcdir = ../../../../..
- include ../../lib.mk
- 
--all: $(TEST_PROGS)
--
- CFLAGS += -m64 -I../../../../../usr/include -I../tm -mhtm -fno-pie
- 
- ptrace-pkey core-pkey: child.h
-diff --git a/tools/testing/selftests/powerpc/signal/Makefile b/tools/testing/selftests/powerpc/signal/Makefile
-index 1fca25c6ace0..d34a7c7710db 100644
---- a/tools/testing/selftests/powerpc/signal/Makefile
-+++ b/tools/testing/selftests/powerpc/signal/Makefile
-@@ -1,8 +1,6 @@
- # SPDX-License-Identifier: GPL-2.0
- TEST_PROGS := signal signal_tm
- 
--all: $(TEST_PROGS)
--
- $(TEST_PROGS): ../harness.c ../utils.c signal.S
- 
- CFLAGS += -maltivec
-diff --git a/tools/testing/selftests/powerpc/switch_endian/Makefile b/tools/testing/selftests/powerpc/switch_endian/Makefile
-index fcd2dcb8972b..bdc081afedb0 100644
---- a/tools/testing/selftests/powerpc/switch_endian/Makefile
-+++ b/tools/testing/selftests/powerpc/switch_endian/Makefile
-@@ -8,6 +8,7 @@ EXTRA_CLEAN = $(OUTPUT)/*.o $(OUTPUT)/check-reversed.S
- top_srcdir = ../../../../..
- include ../../lib.mk
- 
-+$(OUTPUT)/switch_endian_test: ASFLAGS += -I $(OUTPUT)
- $(OUTPUT)/switch_endian_test: $(OUTPUT)/check-reversed.S
- 
- $(OUTPUT)/check-reversed.o: $(OUTPUT)/check.o
++	addr = st->start_address;
++
+ 	/*
+ 	 * Traverse the linux pagetable structure and dump pages that are in
+ 	 * the hash pagetable.
+ 	 */
+-	for (i = 0; i < PTRS_PER_PGD; i++, pgd++) {
+-		addr = KERN_VIRT_START + i * PGDIR_SIZE;
++	for (i = 0; i < PTRS_PER_PGD; i++, pgd++, addr += PGDIR_SIZE) {
+ 		if (!pgd_none(*pgd) && !pgd_huge(*pgd))
+ 			/* pgd exists */
+ 			walk_pud(st, pgd, addr);
+@@ -321,9 +322,14 @@ static int ptdump_show(struct seq_file *m, void *v)
+ {
+ 	struct pg_state st = {
+ 		.seq = m,
+-		.start_address = KERN_VIRT_START,
+ 		.marker = address_markers,
+ 	};
++
++	if (radix_enabled())
++		st.start_address = PAGE_OFFSET;
++	else
++		st.start_address = KERN_VIRT_START;
++
+ 	/* Traverse kernel page tables */
+ 	walk_pagetables(&st);
+ 	note_page(&st, 0, 0, 0);
 -- 
 2.17.2
 
