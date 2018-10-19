@@ -2,77 +2,78 @@ Return-Path: <SRS0=4s7t=M7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DAE9ECDE44
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 13:02:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 15FC1ECDE43
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 13:05:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E236620644
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 13:02:23 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 863D82087A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 13:05:57 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="lpz/fs9J"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E236620644
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="rI/Nr7pP"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 863D82087A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42c5fh3hvRzF3c6
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Oct 2018 00:02:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42c5kp70TtzF3Zn
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Oct 2018 00:05:54 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nifty.com header.i=@nifty.com header.b="lpz/fs9J";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nifty.com header.i=@nifty.com header.b="rI/Nr7pP";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (mailfrom) smtp.mailfrom=socionext.com
- (client-ip=210.131.2.91; helo=conssluserg-06.nifty.com;
+ (client-ip=210.131.2.80; helo=conssluserg-01.nifty.com;
  envelope-from=yamada.masahiro@socionext.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nifty.com header.i=@nifty.com header.b="lpz/fs9J"; 
+ unprotected) header.d=nifty.com header.i=@nifty.com header.b="rI/Nr7pP"; 
  dkim-atps=neutral
-Received: from conssluserg-06.nifty.com (conssluserg-06.nifty.com
- [210.131.2.91])
+Received: from conssluserg-01.nifty.com (conssluserg-01.nifty.com
+ [210.131.2.80])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42c5YS3BWVzDrP2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2018 23:57:47 +1100 (AEDT)
-Received: from mail-ua1-f47.google.com (mail-ua1-f47.google.com
- [209.85.222.47]) (authenticated)
- by conssluserg-06.nifty.com with ESMTP id w9JCvBMo026704
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2018 21:57:12 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conssluserg-06.nifty.com w9JCvBMo026704
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42c5bz2fM3zF3Tc
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2018 23:59:58 +1100 (AEDT)
+Received: from mail-vk1-f176.google.com (mail-vk1-f176.google.com
+ [209.85.221.176]) (authenticated)
+ by conssluserg-01.nifty.com with ESMTP id w9JCxNtR006977
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2018 21:59:23 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conssluserg-01.nifty.com w9JCxNtR006977
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1539953832;
- bh=Gq+3Ld2a9I8XpUsYwDmPMl4YFsFY0o/2/Az/R14YyMk=;
+ s=dec2015msa; t=1539953964;
+ bh=TzNt9vFzOmeru9+0ICk7t+QXt1OoO7XrIfBO4dZLhZA=;
  h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=lpz/fs9Jy4/Y7041ZzGJbETYaWGtKcQJGM+GaCZpEwCnYYFcmS+6tuqmsFrpurFC6
- OL0ZftqDx2mi6cmGYFV78uuS+cY6S9fZRk6D0IzPBagyOidF8RCbPwdQe1pWoAa3TM
- C/PSWoSn0bf1ZsyUotvwbkEmisQtEn+2qJmcsIMCjcKEWUF7JTqk8CROWgjKHFpsMv
- ZVa2g1SpxD3YXzywmn/jpIsL64GKJvsHLfXk2Y6nScPp9tVTGX9os/A1lVokiScl53
- 6XycF6P2344x9N5OqQloXeVgb4D0EvjXtdaeP23slNdJWH7m12xfZ2Tu6VomNMzJzf
- +1szLlWpaNb+g==
-X-Nifty-SrcIP: [209.85.222.47]
-Received: by mail-ua1-f47.google.com with SMTP id o17so4655286uad.8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2018 05:57:11 -0700 (PDT)
-X-Gm-Message-State: ABuFfohCyPOc2HczGYwPTgtPmvbDuWtMQkJcNiUyNP7Mk8JrSM/wz2kc
- mG7BgNF6Li2D2TF+hCdEtqbOro5534re8tf6Buo=
-X-Google-Smtp-Source: ACcGV61X1bzrIsFQWEoWVcGsHYTpyfbXhPp5BlcP63vGcyIM6DnI7rbGVuMZiHaMY+tzDAeaKL5s36q2zXrOfzloNDc=
-X-Received: by 2002:ab0:115b:: with SMTP id g27mr15609617uac.89.1539953830707; 
- Fri, 19 Oct 2018 05:57:10 -0700 (PDT)
+ b=rI/Nr7pP7Ia7xtwh+JypN6pe08zYyemauTat478xqXU9YnkP0t6mftcWukmsYyLrk
+ QUtjhRMRF6nXV/9sUVJEk/ANyrwh4EGcSvWyKfDIzcU1vHEGitDqpt4Tk7mhZw9qaf
+ ASY4jOo8JDRJfUf1llqtlXTjYfZNiyBcKuKpCRrlEdpGtiUauq1D96s76Ox3rlOAEN
+ gCufX9cbf0/lcAUMr6ZAuJ2gZ6ZH+8tyw4pAm0wuMxLJ0i0SpHLOMs5GPCPPMDaJ91
+ 3l8zsH6pHzawJZXL3T8c5tepvW68/Q8dXyXIPFyvwX32c73OXIgrMsH5X2Q9l50Q/q
+ X2z0QjZidKkfg==
+X-Nifty-SrcIP: [209.85.221.176]
+Received: by mail-vk1-f176.google.com with SMTP id b207so4700632vke.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2018 05:59:23 -0700 (PDT)
+X-Gm-Message-State: ABuFfoh/FI6a3y+3Bby67pajkzPIB3gFCCoPmecbEqVhCH6FyAwaGoYs
+ L6Ny0lZdk/rs01YeHsl1K4O2+klaeWxmKCCNclA=
+X-Google-Smtp-Source: ACcGV62BIuydGNY+mLEeiEF2HWEKzurX1J12Va0O1ytVraXQTMcjAw4Oe1mR8XsTknT0Do4e63p51yoUpggMgMjGtdM=
+X-Received: by 2002:a1f:a014:: with SMTP id j20mr7965499vke.64.1539953962704; 
+ Fri, 19 Oct 2018 05:59:22 -0700 (PDT)
 MIME-Version: 1.0
 References: <20181019120952.32763-1-hch@lst.de>
- <20181019120952.32763-3-hch@lst.de>
-In-Reply-To: <20181019120952.32763-3-hch@lst.de>
+ <20181019120952.32763-7-hch@lst.de>
+ <20181019122228.GJ30658@n2100.armlinux.org.uk>
+In-Reply-To: <20181019122228.GJ30658@n2100.armlinux.org.uk>
 From: Masahiro Yamada <yamada.masahiro@socionext.com>
-Date: Fri, 19 Oct 2018 21:56:34 +0900
-X-Gmail-Original-Message-ID: <CAK7LNATc54ZMaKLzabW=NqCQ+WSr-3C7PNAGL6OmOnQf_kgOyQ@mail.gmail.com>
-Message-ID: <CAK7LNATc54ZMaKLzabW=NqCQ+WSr-3C7PNAGL6OmOnQf_kgOyQ@mail.gmail.com>
-Subject: Re: [PATCH 2/9] arm: remove EISA kconfig option
-To: Christoph Hellwig <hch@lst.de>
+Date: Fri, 19 Oct 2018 21:58:46 +0900
+X-Gmail-Original-Message-ID: <CAK7LNATZ8LagrTrTae_QCQbSuTW7_y6sDrdTHfTyONPrsYDs4A@mail.gmail.com>
+Message-ID: <CAK7LNATZ8LagrTrTae_QCQbSuTW7_y6sDrdTHfTyONPrsYDs4A@mail.gmail.com>
+Subject: Re: [PATCH 6/9] PCI: consolidate PCI config entry in drivers/pci
+To: Russell King <linux@armlinux.org.uk>
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -91,82 +92,43 @@ Cc: linux-arch <linux-arch@vger.kernel.org>,
  linux-pci@vger.kernel.org,
  Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
  Dominik Brodowski <linux@dominikbrodowski.net>,
- Russell King <linux@armlinux.org.uk>, Alex Bounine <alex.bou9@gmail.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Alex Bounine <alex.bou9@gmail.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Christoph Hellwig <hch@lst.de>,
  linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Oct 19, 2018 at 9:10 PM Christoph Hellwig <hch@lst.de> wrote:
+On Fri, Oct 19, 2018 at 9:23 PM Russell King - ARM Linux
+<linux@armlinux.org.uk> wrote:
+
+> > index a68b34183107..b185794549be 100644
+> > --- a/arch/arm/mach-pxa/Kconfig
+> > +++ b/arch/arm/mach-pxa/Kconfig
+> > @@ -125,7 +125,7 @@ config MACH_ARMCORE
+> >       bool "CompuLab CM-X255/CM-X270 modules"
+> >       select ARCH_HAS_DMA_SET_COHERENT_MASK if PCI
+> >       select IWMMXT
+> > -     select MIGHT_HAVE_PCI
+> > +     select HAVE_PCI
+> >       select NEED_MACH_IO_H if PCI
+> >       select PXA25x
+> >       select PXA27x
 >
-> No arm config enables EISA, and arm does not include drivers/eisa/Kconfig
-> which provides support for things like PCI to EISA bridges, so it is most
-> likely dead.
->
-> If this is wrong we will be able to resurrect it easily by selecting
-> HAVE_EISA for the right arm configs after this series.
-
-What is your concern?
-
-This absolutely looks dead to me.
+> This is wrong.  "MIGHT_HAVE_PCI" is _not_ the same as "HAVE_PCI" - we
+> have a bunch of platforms that mandatorily have PCI and these select
+> PCI directly.  "MIGHT_HAVE_PCI" controls the _visibility_ of the PCI
+> menu option, but does not prevent it being selected.  Your patch will
+> cause Kconfig to complain for those which mandatorily have PCI but
+> do not set HAVE_PCI.
 
 
-> Suggested-by: Masahiro Yamada <yamada.masahiro@socionext.com>
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
-> ---
->  arch/arm/Kconfig | 15 ---------------
->  1 file changed, 15 deletions(-)
->
-> diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-> index e8cd55a5b04c..e33735ce1c14 100644
-> --- a/arch/arm/Kconfig
-> +++ b/arch/arm/Kconfig
-> @@ -165,21 +165,6 @@ config HAVE_PROC_CPU
->  config NO_IOPORT_MAP
->         bool
->
-> -config EISA
-> -       bool
+Good catch!
+But, adding a bunch of 'select HAVE_PCI' along with 'select PCI' is ugly.
 
-There is no prompt for this symbol.
-Hence, there is no way for a user to enable this directly.
+Do you have any suggestion?
 
-'select EISA' is the only way to enable it.
-
-git grep 'select EISA'
-gave no hit.
-
-So, we can say it is dead.
-
-
-
-
-
-> -       ---help---
-> -         The Extended Industry Standard Architecture (EISA) bus was
-> -         developed as an open alternative to the IBM MicroChannel bus.
-> -
-> -         The EISA bus provided some of the features of the IBM MicroChannel
-> -         bus while maintaining backward compatibility with cards made for
-> -         the older ISA bus.  The EISA bus saw limited use between 1988 and
-> -         1995 when it was made obsolete by the PCI bus.
-> -
-> -         Say Y here if you are building a kernel for an EISA-based machine.
-> -
-> -         Otherwise, say N.
-> -
->  config SBUS
->         bool
-
-
-
-I guess the situation is the same as powerpc.
-
-The difference between arm and powerpc is the presence of help.
-
-You fold the powerpc change in 9/9.
-
+How about letting CONFIG_ARM to select HAVE_PCI ?
 
 -- 
 Best Regards
