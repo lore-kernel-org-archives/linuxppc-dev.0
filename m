@@ -2,79 +2,82 @@ Return-Path: <SRS0=4s7t=M7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5187CECDE3D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 06:22:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D7227ECDE43
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 06:57:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 99E002083E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 06:22:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 99E002083E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 2AA792086E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 06:57:15 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="q5rMAmLH"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2AA792086E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42bwng3qKVzDqfN
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 17:22:47 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42bwlW2NqmzF3G2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2018 17:20:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42bxYN6dkPzF3VL
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 17:57:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 42bwlW1jjbz8sfp
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2018 17:20:55 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 42bwlW1Kwcz9sDP; Fri, 19 Oct 2018 17:20:55 +1100 (AEDT)
-Authentication-Results: ozlabs.org; spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="q5rMAmLH";
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
+ smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
+ helo=bombadil.infradead.org;
+ envelope-from=batv+1390e5f2eb4877bdb648+5535+infradead.org+hch@bombadil.srs.infradead.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.b="q5rMAmLH"; dkim-atps=neutral
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 42bwlV2S7Yz9sCm
- for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2018 17:20:54 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 42bwlQ3m7Kz9ttFT;
- Fri, 19 Oct 2018 08:20:50 +0200 (CEST)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id dENBL3M3rn42; Fri, 19 Oct 2018 08:20:50 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 42bwlQ32Pgz9ttFM;
- Fri, 19 Oct 2018 08:20:50 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 834608B784;
- Fri, 19 Oct 2018 08:20:51 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id D2Y4Sf4s9gWl; Fri, 19 Oct 2018 08:20:51 +0200 (CEST)
-Received: from PO15451 (po15451.idsi0.si.c-s.fr [172.25.231.2])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 575778B75B;
- Fri, 19 Oct 2018 08:20:51 +0200 (CEST)
-Subject: Re: [PATCH] powerpc: Fix stack protector crashes on CPU hotplug
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-References: <20181019055927.20009-1-mpe@ellerman.id.au>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <b5aaf1d3-79dc-b73a-0143-e19b2d99e0a8@c-s.fr>
-Date: Fri, 19 Oct 2018 08:20:50 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42bxTW0gjrzF3T9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2018 17:53:51 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
+ :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+ Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+ List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=kk6LKDJu78Y3SBt1H6s0s9UL+Y53kBuqIgXhT68sGy8=; b=q5rMAmLHwQheK7pHHVndTL3/6
+ E/sFpADIL+cMOWzZ9bjjNGfxq3Oo4PR4tSWL96GIBwikdtRHbFBKQr3yXMdXmtUmA9O3S6QelGdzi
+ OIgkzV4j53qBVZ7NAON1lLHkJtOKgYSKsLsNy2YIP/q+Rl8WKaIcDs6NbLkp+Ea3DeQz21SGGlrXO
+ BlQDMVrmupuLCFZXxZ+lslUlnKJ/hg4U83uo04OJcOkkIX4WVKk49pjoHCLvBx+PZb3BbnH52ew+Q
+ lIgJbxCvbKKjjlzMVy0yfTw+mXcfEYOePCavJGLpDYZ9EWRQPLEiZWzCx6mZGIh8bKvfDAhzQc/ct
+ QTamGu8SA==;
+Received: from hch by bombadil.infradead.org with local (Exim 4.90_1 #2 (Red
+ Hat Linux)) id 1gDOEE-0006WI-R5; Fri, 19 Oct 2018 06:25:46 +0000
+Date: Thu, 18 Oct 2018 23:25:46 -0700
+From: Christoph Hellwig <hch@infradead.org>
+To: Piotr Jaroszynski <pjaroszynski@nvidia.com>
+Subject: Re: [PATCH kernel 3/3] vfio_pci: Add NVIDIA GV100GL [Tesla V100
+ SXM2] [10de:1db1] subdriver
+Message-ID: <20181019062546.GA18804@infradead.org>
+References: <20181015094233.1324-1-aik@ozlabs.ru>
+ <20181015094233.1324-4-aik@ozlabs.ru>
+ <20181016130824.20be215b@w520.home>
+ <71c11c53-c83d-b0b6-5036-574df45009e4@ozlabs.ru>
+ <20181017155252.2f15d0f0@w520.home>
+ <2175dbbd-21d9-df26-67f5-4b41f90ab1bc@ozlabs.ru>
+ <20181018105503.088a343f@w520.home>
+ <0e0db29d-a1e8-af85-b715-c1ba1a2f3875@nvidia.com>
+ <20181018120502.057feb7a@w520.home>
+ <a8a71caf-bf86-ecd4-cb38-9e138e616994@nvidia.com>
 MIME-Version: 1.0
-In-Reply-To: <20181019055927.20009-1-mpe@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a8a71caf-bf86-ecd4-cb38-9e138e616994@nvidia.com>
+User-Agent: Mutt/1.9.2 (2017-12-15)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
+ bombadil.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,102 +89,19 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: abdhalee@linux.vnet.ibm.com, joel@jms.id.au
+Cc: Reza Arbab <arbab@linux.ibm.com>, kvm@vger.kernel.org,
+ Alexey Kardashevskiy <aik@ozlabs.ru>, Alistair Popple <alistair@popple.id.au>,
+ kvm-ppc@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
+ linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Thu, Oct 18, 2018 at 11:40:19AM -0700, Piotr Jaroszynski wrote:
+> GPUs are linked to NPU devices through device tree properties, I think.
+> Linux has a helper to look up linked NPU devices for a PCI device
+> pnv_pci_get_npu_dev() here:
+> https://elixir.bootlin.com/linux/latest/source/arch/powerpc/platforms/powernv/npu-dma.c#L86
 
-
-Le 19/10/2018 à 07:59, Michael Ellerman a écrit :
-> Recently in commit 7241d26e8175 ("powerpc/64: properly initialise
-> the stackprotector canary on SMP.") we fixed a crash with stack
-> protector on SMP by initialising the stack canary in
-> cpu_idle_thread_init().
-> 
-> But this can also causes crashes, when a CPU comes back online after
-> being offline:
-> 
->    Kernel panic - not syncing: stack-protector: Kernel stack is corrupted in: pnv_smp_cpu_kill_self+0x2a0/0x2b0
->    CPU: 1 PID: 0 Comm: swapper/1 Not tainted 4.19.0-rc3-gcc-7.3.1-00168-g4ffe713b7587 #94
->    Call Trace:
->      dump_stack+0xb0/0xf4 (unreliable)
->      panic+0x144/0x328
->      __stack_chk_fail+0x2c/0x30
->      pnv_smp_cpu_kill_self+0x2a0/0x2b0
->      cpu_die+0x48/0x70
->      arch_cpu_idle_dead+0x20/0x40
->      do_idle+0x274/0x390
->      cpu_startup_entry+0x38/0x50
->      start_secondary+0x5e4/0x600
->      start_secondary_prolog+0x10/0x14
-> 
-> Looking at the stack we see that the canary value in the stack frame
-> doesn't match the canary in the task/paca. That is because we have
-> reinitialised the task/paca value, but then the CPU coming online has
-> returned into a function using the old canary value. That causes the
-> comparison to fail.
-> 
-> Instead we can call boot_init_stack_canary() from start_secondary()
-> which never returns. This is essentially what the generic code does in
-> cpu_startup_entry() under #ifdef X86, we should make that non-x86
-> specific in a future patch.
-
-This shall not be done on arches that uses a global canary, so I think 
-it has to be kept arch specific. Indeed I think x86 should move it to 
-cpu_bringup_and_idle(). I'll propose them a patch for that.
-
-Christophe
-
-> 
-> Fixes: 7241d26e8175 ("powerpc/64: properly initialise the stackprotector canary on SMP.")
-> Reported-by: Joel Stanley <joel@jms.id.au>
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-
-Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
-
-
-
-> ---
->   arch/powerpc/kernel/smp.c | 10 +++-------
->   1 file changed, 3 insertions(+), 7 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-> index 8e3a5da24d59..951c476faffc 100644
-> --- a/arch/powerpc/kernel/smp.c
-> +++ b/arch/powerpc/kernel/smp.c
-> @@ -61,6 +61,7 @@
->   #include <asm/asm-prototypes.h>
->   #include <asm/cpu_has_feature.h>
->   #include <asm/ftrace.h>
-> +#include <asm/stackprotector.h>
->   
->   #ifdef DEBUG
->   #include <asm/udbg.h>
-> @@ -1014,16 +1015,9 @@ static void cpu_idle_thread_init(unsigned int cpu, struct task_struct *idle)
->   {
->   	struct thread_info *ti = task_thread_info(idle);
->   
-> -#ifdef CONFIG_STACKPROTECTOR
-> -	idle->stack_canary = get_random_canary();
-> -#endif
-> -
->   #ifdef CONFIG_PPC64
->   	paca_ptrs[cpu]->__current = idle;
->   	paca_ptrs[cpu]->kstack = (unsigned long)ti + THREAD_SIZE - STACK_FRAME_OVERHEAD;
-> -#ifdef CONFIG_STACKPROTECTOR
-> -	paca_ptrs[cpu]->canary = idle->stack_canary;
-> -#endif
->   #endif
->   	ti->cpu = cpu;
->   	secondary_ti = current_set[cpu] = ti;
-> @@ -1316,6 +1310,8 @@ void start_secondary(void *unused)
->   	notify_cpu_starting(cpu);
->   	set_cpu_online(cpu, true);
->   
-> +	boot_init_stack_canary();
-> +
->   	local_irq_enable();
->   
->   	/* We can enable ftrace for secondary cpus now */
-> 
+FYI, all this code has never been used in the three years it was in the
+tree, so I'm going to remove it pretty soon.
