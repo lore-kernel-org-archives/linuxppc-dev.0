@@ -7,24 +7,24 @@ X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5760CECDE3D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 12:29:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 03B1FECDE44
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 12:34:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A0F252087A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 12:29:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 7ADAD21486
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 12:34:23 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="JBtkL/RV"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A0F252087A
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="d41ltsyQ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7ADAD21486
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42c4wc3mBwzF3bY
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 23:29:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42c52P12llzDqMl
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 23:34:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="JBtkL/RV";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="d41ltsyQ";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
@@ -35,33 +35,33 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="JBtkL/RV"; dkim-atps=neutral
+ header.b="d41ltsyQ"; dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42c4Vz0gp7zF3b5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2018 23:10:34 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42c4W1296xzF3bJ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2018 23:10:37 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
  :Reply-To:Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From
  :Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
  List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=g3Ofp2yKFio2DWF3K0YYAwI8DA2raI+ejnrdGDleVlk=; b=JBtkL/RVN396nN53LFB0IS8f4d
- edXyd1isCPYn8lfy5jeFzCX0GUUGrrL/dP7vCO+fVJhP541VEzUed3MWaUZrSBuEyB0yyF1kw9TdJ
- in+3z7FLkYYCU7f47BFXLA+Em/wq8aNtetItuoOvMe41fgorzklZc0/zazP6tbFLwttowWFYnqRk+
- hHuabtcD4WEfYUfhN2aVQKwc9ca86mXSdEgxQoInneTo4ZZh3cOMg9f/ToNYlr7WcQnd2Ahd/k+VW
- OtOFoYkRhjj2BK3oCRmL0aoUuUZ10Ob65TuBBNP46iwMXWmfEIA47+dfWQTAyjtgLN1bmHWrapG3j
- CxxqRQ5g==;
+ bh=NU8hc3wOH75SjWyKDE305NVPfLPJR7iXVJpwS3eg4UQ=; b=d41ltsyQvMVGnhOAYaACQHPr5a
+ FJSjrZiOABjQFiSTEySnPgFFTMKT3n7RRhpjO6YdBtFnhsKDzovM9H6Ue45CH6LUHTZBZ8vf6cfx3
+ H64llrxlOBR/6xmhAIjRUPlg7xCa5hi+viBhPMF4mnSVWwKd9LLgmlTpNtNW65uNc3uo4lpfPT08J
+ aV5eTKRfdc8HvJ0o6JOsrtLMkjCHzGnVWIBlvYPIPjOgk2F1YQovGm2kqcrc70rclZ+cHWo1ug59b
+ 0UUcGqadzml09l9k+bkUuoyFbT58Cg9KoKxyZjkG0ZZe84C/jMzIQqNJCWH+9jrrqDLh5a9V13sPJ
+ U5a65TMQ==;
 Received: from clnet-p19-102.ikbnet.co.at ([83.175.77.102] helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
- id 1gDTbT-00010a-P2; Fri, 19 Oct 2018 12:10:08 +0000
+ id 1gDTbW-00016N-UD; Fri, 19 Oct 2018 12:10:11 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Masahiro Yamada <yamada.masahiro@socionext.com>
-Subject: [PATCH 4/9] powerpc: remove CONFIG_MCA leftovers
-Date: Fri, 19 Oct 2018 14:09:47 +0200
-Message-Id: <20181019120952.32763-5-hch@lst.de>
+Subject: [PATCH 5/9] powerpc: PCI_MSI needs PCI
+Date: Fri, 19 Oct 2018 14:09:48 +0200
+Message-Id: <20181019120952.32763-6-hch@lst.de>
 X-Mailer: git-send-email 2.19.1
 In-Reply-To: <20181019120952.32763-1-hch@lst.de>
 References: <20181019120952.32763-1-hch@lst.de>
@@ -89,56 +89,58 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Various powerpc boards select the PCI_MSI config option without selecting
+PCI, resulting in potentially not compilable configurations if the by
+default enabled PCI option is disabled.  Explicitly select PCI to ensure
+we always have valid configs.
+
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 Acked-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- arch/powerpc/Kconfig | 4 ----
- drivers/scsi/Kconfig | 6 +++---
- 2 files changed, 3 insertions(+), 7 deletions(-)
+ arch/powerpc/platforms/40x/Kconfig | 1 +
+ arch/powerpc/platforms/44x/Kconfig | 3 +++
+ 2 files changed, 4 insertions(+)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index e8c8970248bc..d4e97469a5f0 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -941,10 +941,6 @@ config FSL_GTM
+diff --git a/arch/powerpc/platforms/40x/Kconfig b/arch/powerpc/platforms/40x/Kconfig
+index 60254a321a91..d5361e63e0bb 100644
+--- a/arch/powerpc/platforms/40x/Kconfig
++++ b/arch/powerpc/platforms/40x/Kconfig
+@@ -33,6 +33,7 @@ config KILAUEA
+ 	select 405EX
+ 	select PPC40x_SIMPLE
+ 	select PPC4xx_PCI_EXPRESS
++	select PCI
+ 	select PCI_MSI
+ 	select PPC4xx_MSI
  	help
- 	  Freescale General-purpose Timers support
- 
--# Yes MCA RS/6000s exist but Linux-PPC does not currently support any
--config MCA
--	bool
--
- # Platforms that what PCI turned unconditionally just do select PCI
- # in their config node.  Platforms that want to choose at config
- # time should select PPC_PCI_CHOICE
-diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
-index 7c097006c54d..d3734c54aec9 100644
---- a/drivers/scsi/Kconfig
-+++ b/drivers/scsi/Kconfig
-@@ -535,7 +535,7 @@ config SCSI_HPTIOP
- 
- config SCSI_BUSLOGIC
- 	tristate "BusLogic SCSI support"
--	depends on (PCI || ISA || MCA) && SCSI && ISA_DMA_API && VIRT_TO_BUS
-+	depends on (PCI || ISA) && SCSI && ISA_DMA_API && VIRT_TO_BUS
- 	---help---
- 	  This is support for BusLogic MultiMaster and FlashPoint SCSI Host
- 	  Adapters. Consult the SCSI-HOWTO, available from
-@@ -1142,12 +1142,12 @@ config SCSI_LPFC_DEBUG_FS
- 
- config SCSI_SIM710
- 	tristate "Simple 53c710 SCSI support (Compaq, NCR machines)"
--	depends on (EISA || MCA) && SCSI
-+	depends on EISA && SCSI
- 	select SCSI_SPI_ATTRS
- 	---help---
- 	  This driver is for NCR53c710 based SCSI host adapters.
- 
--	  It currently supports Compaq EISA cards and NCR MCA cards
-+	  It currently supports Compaq EISA cards.
- 
- config SCSI_DC395x
- 	tristate "Tekram DC395(U/UW/F) and DC315(U) SCSI support"
+diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
+index a6011422b861..70856a213663 100644
+--- a/arch/powerpc/platforms/44x/Kconfig
++++ b/arch/powerpc/platforms/44x/Kconfig
+@@ -24,6 +24,7 @@ config BLUESTONE
+ 	default n
+ 	select PPC44x_SIMPLE
+ 	select APM821xx
++	select PCI
+ 	select PCI_MSI
+ 	select PPC4xx_MSI
+ 	select PPC4xx_PCI_EXPRESS
+@@ -78,6 +79,7 @@ config KATMAI
+ 	select 440SPe
+ 	select PCI
+ 	select PPC4xx_PCI_EXPRESS
++	select PCI
+ 	select PCI_MSI
+ 	select PPC4xx_MSI
+ 	help
+@@ -219,6 +221,7 @@ config AKEBONO
+ 	select SWIOTLB
+ 	select 476FPE
+ 	select PPC4xx_PCI_EXPRESS
++	select PCI
+ 	select PCI_MSI
+ 	select PPC4xx_HSTA_MSI
+ 	select I2C
 -- 
 2.19.1
 
