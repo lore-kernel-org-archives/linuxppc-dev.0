@@ -2,67 +2,89 @@ Return-Path: <SRS0=4s7t=M7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F2BDCECDE43
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 09:31:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 62133ECDE3D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 10:04:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 49A1C21470
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 09:31:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 49A1C21470
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id AB7F821479
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 10:03:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AB7F821479
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42c0zT0GzhzF3Vp
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 20:31:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by lists.ozlabs.org (Postfix) with ESMTP id 42c1hs3V89zF3bv
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 21:03:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=suse.com
+ (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=jgross@suse.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ dmarc=none (p=none dis=none) header.from=suse.com
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42c0xC3tb4zF3Vp
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2018 20:29:31 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 42c0wx3HM5z9ttFp;
- Fri, 19 Oct 2018 11:29:21 +0200 (CEST)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id PTkX-FbHhTio; Fri, 19 Oct 2018 11:29:21 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 42c0wx1y8Nz9ttBP;
- Fri, 19 Oct 2018 11:29:21 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A18798B902;
- Fri, 19 Oct 2018 11:29:22 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 5_R4DiSewkGy; Fri, 19 Oct 2018 11:29:22 +0200 (CEST)
-Received: from pc13168vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
- [172.25.231.2])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 724CB8B8F6;
- Fri, 19 Oct 2018 11:29:22 +0200 (CEST)
-Received: by pc13168vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 4907B6F496; Fri, 19 Oct 2018 09:29:22 +0000 (UTC)
-Message-Id: <f1b058d6a73cfb68b36dc755df5aaa7a064875b1.1539935852.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] idle/x86: remove the call to boot_init_stack_canary() from
- cpu_startup_entry()
-To: Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- Juergen Gross <jgross@suse.com>, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
- "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
-Date: Fri, 19 Oct 2018 09:29:22 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42c1fp36hgzF3Zm
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2018 21:02:03 +1100 (AEDT)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+ by mx1.suse.de (Postfix) with ESMTP id EBED2AF53;
+ Fri, 19 Oct 2018 10:01:59 +0000 (UTC)
+Subject: Re: [PATCH] idle/x86: remove the call to boot_init_stack_canary()
+ from cpu_startup_entry()
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>,
+ Peter Zijlstra <peterz@infradead.org>
+References: <f1b058d6a73cfb68b36dc755df5aaa7a064875b1.1539935852.git.christophe.leroy@c-s.fr>
+From: Juergen Gross <jgross@suse.com>
+Openpgp: preference=signencrypt
+Autocrypt: addr=jgross@suse.com; prefer-encrypt=mutual; keydata=
+ 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
+Message-ID: <b9727c41-8278-7b83-e5e1-61268dc768d5@suse.com>
+Date: Fri, 19 Oct 2018 12:01:58 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.2.1
+MIME-Version: 1.0
+In-Reply-To: <f1b058d6a73cfb68b36dc755df5aaa7a064875b1.1539935852.git.christophe.leroy@c-s.fr>
+Content-Type: text/plain; charset=utf-8
+Content-Language: de-DE
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,75 +102,40 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-commit d7880812b359 ("idle: Add the stack canary init to
-cpu_startup_entry()") added the call to boot_init_stack_canary()
-in cpu_startup_entry() in an #ifdef CONFIG_X86 statement, with
-the intention to remove that #ifdef later.
+On 19/10/2018 11:29, Christophe Leroy wrote:
+> commit d7880812b359 ("idle: Add the stack canary init to
+> cpu_startup_entry()") added the call to boot_init_stack_canary()
+> in cpu_startup_entry() in an #ifdef CONFIG_X86 statement, with
+> the intention to remove that #ifdef later.
+> 
+> While implementing stack protector for powerpc, it has been
+> observed that calling boot_init_stack_canary() is also needed
+> for powerpc which uses per task (TLS) stack canary like the X86.
+> 
+> However, calling boot_init_stack_canary() would break arches
+> using global stack canary (ARM, SH, MIPS and XTENSA).
+> 
+> Instead of adding modifying the #ifdef in a
+> implemented the call to boot_init_stack_canary() in the function
+> calling cpu_startup_entry()
 
-While implementing stack protector for powerpc, it has been
-observed that calling boot_init_stack_canary() is also needed
-for powerpc which uses per task (TLS) stack canary like the X86.
+I can't parse this sentence.
 
-However, calling boot_init_stack_canary() would break arches
-using global stack canary (ARM, SH, MIPS and XTENSA).
+> 
+> On x86, we have two functions calling cpu_startup_entry():
+> - start_secondary()
+> - cpu_bringup_and_idle()
+> 
+> start_secondary() already calls boot_init_stack_canary().
+> 
+> This patch adds the call to boot_init_stack_canary() in
+> cpu_bringup_and_idle() and removes it from cpu_startup_entry()
+> 
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-Instead of adding modifying the #ifdef in a
-implemented the call to boot_init_stack_canary() in the function
-calling cpu_startup_entry()
+With the commit message made understandable you can add my
 
-On x86, we have two functions calling cpu_startup_entry():
-- start_secondary()
-- cpu_bringup_and_idle()
+Reviewed-by: Juergen Gross <jgross@suse.com>
 
-start_secondary() already calls boot_init_stack_canary().
 
-This patch adds the call to boot_init_stack_canary() in
-cpu_bringup_and_idle() and removes it from cpu_startup_entry()
-
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/x86/xen/smp_pv.c |  1 +
- kernel/sched/idle.c   | 15 ---------------
- 2 files changed, 1 insertion(+), 15 deletions(-)
-
-diff --git a/arch/x86/xen/smp_pv.c b/arch/x86/xen/smp_pv.c
-index e3b18ad49889..0e05e8e23998 100644
---- a/arch/x86/xen/smp_pv.c
-+++ b/arch/x86/xen/smp_pv.c
-@@ -88,6 +88,7 @@ static void cpu_bringup(void)
- asmlinkage __visible void cpu_bringup_and_idle(void)
- {
- 	cpu_bringup();
-+	boot_init_stack_canary();
- 	cpu_startup_entry(CPUHP_AP_ONLINE_IDLE);
- }
- 
-diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
-index 16f84142f2f4..f5516bae0c1b 100644
---- a/kernel/sched/idle.c
-+++ b/kernel/sched/idle.c
-@@ -347,21 +347,6 @@ EXPORT_SYMBOL_GPL(play_idle);
- 
- void cpu_startup_entry(enum cpuhp_state state)
- {
--	/*
--	 * This #ifdef needs to die, but it's too late in the cycle to
--	 * make this generic (ARM and SH have never invoked the canary
--	 * init for the non boot CPUs!). Will be fixed in 3.11
--	 */
--#ifdef CONFIG_X86
--	/*
--	 * If we're the non-boot CPU, nothing set the stack canary up
--	 * for us. The boot CPU already has it initialized but no harm
--	 * in doing it again. This is a good place for updating it, as
--	 * we wont ever return from this function (so the invalid
--	 * canaries already on the stack wont ever trigger).
--	 */
--	boot_init_stack_canary();
--#endif
- 	arch_cpu_idle_prepare();
- 	cpuhp_online_idle(state);
- 	while (1)
--- 
-2.13.3
-
+Juergen
