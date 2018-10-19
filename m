@@ -6,39 +6,39 @@ X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C016C67863
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 03:17:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C1014C67863
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 03:18:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 099DF20836
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 03:16:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 099DF20836
+	by mail.kernel.org (Postfix) with ESMTPS id 30EA120836
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 03:18:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 30EA120836
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42brgG01kdzF3Vf
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 14:16:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42brjD0t8szF3KR
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 14:18:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42br5m6bZ7zF3Sr
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2018 13:51:24 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42br5p0vn2zF3St
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2018 13:51:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 42br5m5cmJz9sj7; Fri, 19 Oct 2018 13:51:24 +1100 (AEDT)
+ id 42br5n5GTQzB4N5; Fri, 19 Oct 2018 13:51:25 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 422123ccb9a13dcea2e008194ae6c262fbb64604
-In-Reply-To: <c96ba8d949aa62604af12cfa030e2357f9a93597.1539587888.git.christophe.leroy@c-s.fr>
+X-powerpc-patch-commit: bd03fd84a53ac9ddaeb0a0fc4c4c9836e12f3ab9
+In-Reply-To: <52facff7ae5377f1f0d023917dddb588350a7028.1539589080.git.christophe.leroy@c-s.fr>
 To: Christophe Leroy <christophe.leroy@c-s.fr>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc/traps: fix machine check handlers to use pr_cont()
-Message-Id: <42br5m5cmJz9sj7@ozlabs.org>
-Date: Fri, 19 Oct 2018 13:51:24 +1100 (AEDT)
+Subject: Re: powerpc/traps: remove redundant in_interrupt panic in die()
+Message-Id: <42br5n5GTQzB4N5@ozlabs.org>
+Date: Fri, 19 Oct 2018 13:51:25 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,23 +55,15 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 2018-10-15 at 07:20:45 UTC, Christophe Leroy wrote:
-> When printing the machine check cause, the cause appears on the
-> following line due to bad use of printk without \n:
+On Mon, 2018-10-15 at 07:38:10 UTC, Christophe Leroy wrote:
+> do_exit() already includes a test to panic() is in_interrupt()
 > 
-> [   33.663993] Machine check in kernel mode.
-> [   33.664011] Caused by (from SRR1=9032):
-> [   33.664036] Data access error at address c90c8000
-> 
-> This patch fixes it by using pr_cont() for the second part:
-> 
-> [  133.258131] Machine check in kernel mode.
-> [  133.258146] Caused by (from SRR1=9032): Data access error at address c90c8000
+> This patch removes powerpc one which is redundant.
 > 
 > Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/422123ccb9a13dcea2e008194ae6c2
+https://git.kernel.org/powerpc/c/bd03fd84a53ac9ddaeb0a0fc4c4c98
 
 cheers
