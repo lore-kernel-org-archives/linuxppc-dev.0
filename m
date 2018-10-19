@@ -3,42 +3,42 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 361D2C67863
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 03:09:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EB86DC67863
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 03:11:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CC98C20836
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 03:09:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CC98C20836
+	by mail.kernel.org (Postfix) with ESMTPS id 8729E20836
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 03:11:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8729E20836
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42brVs0HfCzF3Td
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 14:09:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42brY03c2wzF27J
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 14:11:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42br5h2X4jzF3S8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2018 13:51:20 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42br5j412XzF3S8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2018 13:51:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 42br5h1313zB2xb; Fri, 19 Oct 2018 13:51:19 +1100 (AEDT)
+ id 42br5j0WQfz9sjG; Fri, 19 Oct 2018 13:51:20 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 8ca2d5151e7f5cbef42eda780eac56acc0eab47a
-In-Reply-To: <20181015025000.4522-9-benh@kernel.crashing.org>
+X-powerpc-patch-commit: 5f69e38885c3483a1838dd946aaf0166b727ecbd
+In-Reply-To: <20181015025000.4522-10-benh@kernel.crashing.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [09/12] powerpc/prom_init: Move a few remaining statics to
- appropriate sections
-Message-Id: <42br5h1313zB2xb@ozlabs.org>
-Date: Fri, 19 Oct 2018 13:51:19 +1100 (AEDT)
+Subject: Re: [10/12] powerpc/prom_init: Move __prombss to it's own section and
+ store it in .bss
+Message-Id: <42br5j0WQfz9sjG@ozlabs.org>
+Date: Fri, 19 Oct 2018 13:51:20 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -54,11 +54,17 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 2018-10-15 at 02:49:57 UTC, Benjamin Herrenschmidt wrote:
+On Mon, 2018-10-15 at 02:49:58 UTC, Benjamin Herrenschmidt wrote:
+> This makes __prombss its own section, and for now store
+> it in .bss.
+> 
+> This will give us the ability later to store it elsewhere
+> and/or free it after boot (it's about 8KB).
+> 
 > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/8ca2d5151e7f5cbef42eda780eac56
+https://git.kernel.org/powerpc/c/5f69e38885c3483a1838dd946aaf01
 
 cheers
