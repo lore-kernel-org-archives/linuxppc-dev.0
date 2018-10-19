@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C309ECDE43
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 07:42:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A792ECDE3D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 07:43:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F05752087A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 07:42:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F05752087A
+	by mail.kernel.org (Postfix) with ESMTPS id CA3202087A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 07:43:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CA3202087A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42byY86PMhzF3bq
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 18:42:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42byb35RGDzF3bZ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 18:43:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=lst.de
@@ -29,21 +29,22 @@ Authentication-Results: lists.ozlabs.org;
 Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42bxcl0HzKzF3BY
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2018 18:00:06 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42bxgR6756zF3Tp
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2018 18:02:27 +1100 (AEDT)
 Received: by newverein.lst.de (Postfix, from userid 2407)
- id 41DD268C78; Fri, 19 Oct 2018 09:00:02 +0200 (CEST)
-Date: Fri, 19 Oct 2018 09:00:01 +0200
+ id 9C19C68C76; Fri, 19 Oct 2018 09:02:24 +0200 (CEST)
+Date: Fri, 19 Oct 2018 09:02:24 +0200
 From: Christoph Hellwig <hch@lst.de>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: move bus (PCI, PCMCIA, EISA, rapdio) config to drivers/ v2
-Message-ID: <20181019070001.GA30556@lst.de>
+To: Masahiro Yamada <yamada.masahiro@socionext.com>
+Subject: Re: [PATCH 4/8] PCI: consolidate PCI config entry in drivers/pci
+Message-ID: <20181019070224.GB30556@lst.de>
 References: <20181017080201.10866-1-hch@lst.de>
- <CAMuHMdWMtxxu8iivcnT=uWTMHsp=iSq_QzXqDWQut5OHwTU8Sg@mail.gmail.com>
+ <20181017080201.10866-5-hch@lst.de>
+ <CAK7LNASJaRrut2neRa92CudohW4A-2=GHMzgEpOzT97VdGuhng@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CAMuHMdWMtxxu8iivcnT=uWTMHsp=iSq_QzXqDWQut5OHwTU8Sg@mail.gmail.com>
+In-Reply-To: <CAK7LNASJaRrut2neRa92CudohW4A-2=GHMzgEpOzT97VdGuhng@mail.gmail.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -56,25 +57,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux-Arch <linux-arch@vger.kernel.org>, scsi <linux-scsi@vger.kernel.org>,
- linux-kbuild <linux-kbuild@vger.kernel.org>,
- linux-pci <linux-pci@vger.kernel.org>,
+Cc: linux-arch <linux-arch@vger.kernel.org>,
+ linux-scsi <linux-scsi@vger.kernel.org>,
+ Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
+ linux-pci@vger.kernel.org,
  Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
  Dominik Brodowski <linux@dominikbrodowski.net>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
  Alex Bounine <alex.bou9@gmail.com>,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Christoph Hellwig <hch@lst.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Oct 17, 2018 at 10:30:49AM +0200, Geert Uytterhoeven wrote:
-> Please use "git format-patch -v<N> --cover" to prepare patch series
-> for sending with git-send-email.
-> 
->   "-v<N>" to prefix all patches with version number <N>,
->   "--cover" to have a "[PATCH 0/<M>]" prefix in the cover letter.
+On Fri, Oct 19, 2018 at 02:07:04PM +0900, Masahiro Yamada wrote:
+> We could add 'depends on HAVE_PCI' or something
+> to guard it to avoid changing the logic.
 
-We had that discussion before and I strongly disagree with messing
-up the subject lines like that.  The git-send-email defaults are
-perfectly fine.
+I guess that makes sense.
+
+> config PCI_ENDPOINT
+>         bool "PCI Endpoint Support"
+>         depends on HAVE_PCI     # Is this correct ??
+>         depends on HAS_DMA
+> 
+> 
+> or better to have 'depends on PCI' ?
+
+It does not depend on the normal PCI support, so I don't think this
+is the right thing to do.
