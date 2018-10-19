@@ -2,74 +2,58 @@ Return-Path: <SRS0=4s7t=M7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 07C9BECDE3D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 10:35:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 77F43ECDE3D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 10:37:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 763DB21479
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 10:35:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 763DB21479
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 043DD214AB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 10:37:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 043DD214AB
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42c2P93MbgzF3ZF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 21:35:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by lists.ozlabs.org (Postfix) with ESMTP id 42c2Rj746tzF3Tc
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 21:37:37 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=arm.com
+ (client-ip=217.140.101.70; helo=foss.arm.com;
+ envelope-from=will.deacon@arm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42c2LX1Vx5zF3T8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2018 21:33:08 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 42c2LQ5yGqz9ttFs;
- Fri, 19 Oct 2018 12:33:02 +0200 (CEST)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 7d6wqLIv8ToS; Fri, 19 Oct 2018 12:33:02 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 42c2LQ5NKtz9ttBP;
- Fri, 19 Oct 2018 12:33:02 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 2C6408B912;
- Fri, 19 Oct 2018 12:33:04 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id wVYY97TnjaL8; Fri, 19 Oct 2018 12:33:04 +0200 (CEST)
-Received: from PO15451 (po15451.idsi0.si.c-s.fr [172.25.231.2])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id ED2E68B90C;
- Fri, 19 Oct 2018 12:33:03 +0200 (CEST)
-Subject: Re: [PATCH] idle/x86: remove the call to boot_init_stack_canary()
- from cpu_startup_entry()
-To: Juergen Gross <jgross@suse.com>,
- Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- Borislav Petkov <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>,
- Peter Zijlstra <peterz@infradead.org>
-References: <f1b058d6a73cfb68b36dc755df5aaa7a064875b1.1539935852.git.christophe.leroy@c-s.fr>
- <b9727c41-8278-7b83-e5e1-61268dc768d5@suse.com>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <be4bccb4-9573-360d-5c49-d0bf1a3ecf70@c-s.fr>
-Date: Fri, 19 Oct 2018 12:33:03 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 42c2NW6YDhzF3bL
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2018 21:34:50 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id B11B180D;
+ Fri, 19 Oct 2018 03:34:48 -0700 (PDT)
+Received: from edgewater-inn.cambridge.arm.com
+ (usa-sjc-imap-foss1.foss.arm.com [10.72.51.249])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 805603F71D;
+ Fri, 19 Oct 2018 03:34:48 -0700 (PDT)
+Received: by edgewater-inn.cambridge.arm.com (Postfix, from userid 1000)
+ id 8599C1AE06EF; Fri, 19 Oct 2018 11:34:51 +0100 (BST)
+Date: Fri, 19 Oct 2018 11:34:51 +0100
+From: Will Deacon <will.deacon@arm.com>
+To: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH 13/36] dt-bindings: arm: Convert PMU binding to json-schema
+Message-ID: <20181019103451.GB14246@arm.com>
+References: <20181005165848.3474-1-robh@kernel.org>
+ <20181005165848.3474-14-robh@kernel.org>
+ <20181009115713.GE6248@arm.com>
+ <CAL_JsqLeG3WUa2peOWFGUoMuonWaWJoU-7A6d8cqXp-_e3B3XA@mail.gmail.com>
+ <20181010165048.GB16512@arm.com>
+ <CAL_Jsq+NExxsksmhA6z5_eTutVkm_NFthayvHz-vvq1gkSeXNA@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <b9727c41-8278-7b83-e5e1-61268dc768d5@suse.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAL_Jsq+NExxsksmhA6z5_eTutVkm_NFthayvHz-vvq1gkSeXNA@mail.gmail.com>
+User-Agent: Mutt/1.5.23 (2014-03-12)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,53 +65,56 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: xen-devel@lists.xenproject.org, x86@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org,
+ Kumar Gala <kumar.gala@linaro.org>, Grant Likely <glikely@secretlab.ca>,
+ Arnd Bergmann <arnd@arndb.de>, Tom Rini <trini@konsulko.com>,
+ Frank Rowand <frowand.list@gmail.com>,
+ Linus Walleij <linus.walleij@linaro.org>,
+ Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Bjorn Andersson <bjorn.andersson@linaro.org>, Mark Brown <broonie@kernel.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, Jonathan Cameron <jic23@kernel.org>,
+ Olof Johansson <olof@lixom.net>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
+ <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Hi Rob,
 
+On Wed, Oct 10, 2018 at 01:51:24PM -0500, Rob Herring wrote:
+> On Wed, Oct 10, 2018 at 11:50 AM Will Deacon <will.deacon@arm.com> wrote:
+> > On Tue, Oct 09, 2018 at 01:14:02PM -0500, Rob Herring wrote:
+> > > I guess the single interrupt case is less obvious now with no
+> > > description (it's the first list item of 'oneOf'). The schema If the
+> > > single interrupt is not supported, then we can drop it here.
+> >
+> > Well the description says "1 interrupt per core" which is incorrect.
+> 
+> You are reading the schema wrong. There are 2 cases supported as
+> defined by each '-'. The 2nd case is all the keywords until the
+> indentation decreases. So 'description' is just description of the 2nd
+> case. The first case is just "maxItems: 1". I probably didn't put a
+> description because why write in free form text what the schema says
+> (other than of course no one knows json-schema...).
 
-Le 19/10/2018 à 12:01, Juergen Gross a écrit :
-> On 19/10/2018 11:29, Christophe Leroy wrote:
->> commit d7880812b359 ("idle: Add the stack canary init to
->> cpu_startup_entry()") added the call to boot_init_stack_canary()
->> in cpu_startup_entry() in an #ifdef CONFIG_X86 statement, with
->> the intention to remove that #ifdef later.
->>
->> While implementing stack protector for powerpc, it has been
->> observed that calling boot_init_stack_canary() is also needed
->> for powerpc which uses per task (TLS) stack canary like the X86.
->>
->> However, calling boot_init_stack_canary() would break arches
->> using global stack canary (ARM, SH, MIPS and XTENSA).
->>
->> Instead of adding modifying the #ifdef in a
->> implemented the call to boot_init_stack_canary() in the function
->> calling cpu_startup_entry()
-> 
-> I can't parse this sentence.
+Apologies, I've not read one of these things before and looks like I
+completely misread it.
 
-Oops, git commit took the #if for a comment and droped it. Fixed in v2.
+> YAML combines the best of Makefiles and python. You can't have tabs
+> and Indentation is significant. :)
 
-> 
->>
->> On x86, we have two functions calling cpu_startup_entry():
->> - start_secondary()
->> - cpu_bringup_and_idle()
->>
->> start_secondary() already calls boot_init_stack_canary().
->>
->> This patch adds the call to boot_init_stack_canary() in
->> cpu_bringup_and_idle() and removes it from cpu_startup_entry()
->>
->> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> 
-> With the commit message made understandable you can add my
-> 
-> Reviewed-by: Juergen Gross <jgross@suse.com>
-> 
+Oh wow, I'm in way over my head here!
 
-Thanks
-Christophe
+> > I also
+> > don't understand why maxItems is 8.
+> 
+> Humm, I probably just made that up based on GICv2 limitations. What
+> should it be? If there's not any inherit maximum, can we put something
+> reasonable? There's not really any way to express that it should match
+> the number of cores in the system.
+
+What's the largest number you can think of?
+
+Will
