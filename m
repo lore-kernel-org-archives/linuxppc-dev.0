@@ -2,93 +2,88 @@ Return-Path: <SRS0=4s7t=M7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C79CC67863
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 00:56:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 00498C67863
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 01:23:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6A0842145D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 00:56:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 3EFFD20C0E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 01:23:16 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="t39nXYsk"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6A0842145D
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="F1SJHITg"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3EFFD20C0E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42bnY81wnCzF3S2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 11:56:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42bp820xQYzF3Ss
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Oct 2018 12:23:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="t39nXYsk";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="F1SJHITg";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
- (client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
+ (client-ip=2607:f8b0:4864:20::643; helo=mail-pl1-x643.google.com;
  envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
- header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="t39nXYsk"; 
+ header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="F1SJHITg"; 
  dkim-atps=neutral
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
- [IPv6:2607:f8b0:4864:20::541])
+Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
+ [IPv6:2607:f8b0:4864:20::643])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42bnVM1GM7zF3RT
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2018 11:54:01 +1100 (AEDT)
-Received: by mail-pg1-x541.google.com with SMTP id 32-v6so3808011pgu.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Oct 2018 17:54:01 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42bp5R6M6hzF3Hc
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2018 12:20:59 +1100 (AEDT)
+Received: by mail-pl1-x643.google.com with SMTP id v5-v6so15095267plz.13
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Oct 2018 18:20:59 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
  h=subject:to:cc:references:from:openpgp:autocrypt:message-id:date
  :user-agent:mime-version:in-reply-to:content-language
  :content-transfer-encoding;
- bh=4WFTcOLMA75ltygT2KrzdJPVDUMV+I67iBEsAuNYnp4=;
- b=t39nXYskPZNqbejXd8vZdawboBSeKVUhC/p3g8Tn/LaC7feA7AThprbpNar9bOhcI+
- c0H4uzrfWp44gXjZZ1pmWuAEIrWAILt9zoKKWUR9c1JsZbbgschM6RTN+yLcfK6KHB5R
- oNKlH0rBYJsd1AVUk3KzKQvqeycE379JHN5roBwMyOUtL2xrjVjXG7HgbcgIQAgpoXI1
- 3GFM6WsZPkSvA+PIeKzV8PDIbTNql+pa909OMC9vpHGHOc3l2qMLENx2+d2YP+yCBp0Z
- QnY7Fuvo90GjE9noM5rAPQjc/QPluyD4R7RDs7a7Q1B4Ffm/b4sq28LP0+cNr9D9PA3j
- ozfg==
+ bh=RNZzBdrthCryzpb6ENOJShXTE69DUE6pijp7dRPdtAg=;
+ b=F1SJHITgysGHLyZu1Rk0lUEWpQaIh7lNQATpC5hshs1G/u6i3kgrreuIEGiEBcEMcX
+ RAeUtSuRoxMe88UHtH71I5gXFki0inDx+P1tCtA3AwiXaWYekZ3Up8c2VXtvXrBsbbUG
+ UNk47l03MHlpTBOQTmdCTopSwJM09Bbk37gVviDMD940ic1+YmP0UGeAQVFx0YTAmxD6
+ eHaXO0rUJOoPXt8JpSjXEh2Kh72J9+cb7SlFXKLr/gWsw1f2CaRcxJgU971RP5dN59+u
+ DlPhOMNlO9LPCbDLpqrUNSSvux8ydNJmYP0OSglUNtJ+GpkBEqiUhwU0ZVtTbJS6haQt
+ LWRA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:subject:to:cc:references:from:openpgp:autocrypt
  :message-id:date:user-agent:mime-version:in-reply-to
  :content-language:content-transfer-encoding;
- bh=4WFTcOLMA75ltygT2KrzdJPVDUMV+I67iBEsAuNYnp4=;
- b=FQH9zVTuJgAM+S23S6IWtcoaekQrB91uVNTNiYcGkV+Unq4Y2QyjrH0kniF2e94Nm/
- m6RQYIc5vi3a25ZaZr4oRgwMsmbutbqKS/PDqLVUvvULLynvYZRaRwx0SgwSVRwG9R6q
- CXCo4KhApsS1mXDJQe62xripMPltWELuAp7uxiNvR6H1z/oO/EQsHz/A8PCtBDF6upNf
- K9n8OM7pt9y05DWPFlwUZ2V/MSgHUR0+jjRREYy6Qb59G995O9DxzGYd+pA0YIuG8cI8
- +ivKebmMOvxV+sh4wlsncMXFO5DzWzJg07SzUiROiyV7Hu6QM4Uf/inQ8qB06Wf5xq5t
- Dheg==
-X-Gm-Message-State: ABuFfojM+0kRxxDg+hkw26LAE39hG5Ru9Ol2Lu11j0uUFxXf8/AwiqWK
- +MntvGV/CngIPYReOGskmscENg==
-X-Google-Smtp-Source: ACcGV63angqTGWJYADzq/AtKwDowgxa4bPGIlcXI7Y5TAtz5HUJH+nsRrqLzytioyp6q7Uo/d8WllA==
-X-Received: by 2002:a63:b25e:: with SMTP id
- t30-v6mr30520033pgo.401.1539910439160; 
- Thu, 18 Oct 2018 17:53:59 -0700 (PDT)
+ bh=RNZzBdrthCryzpb6ENOJShXTE69DUE6pijp7dRPdtAg=;
+ b=BqN5iCn8UIJ4C1XJH5RWp54sz7+poUAJp8tQxRa3eo45PoilqrgEP6Sfr6S25Ea6KJ
+ ktQK9BkflbO6SY1P0cXOWCNS7zR6ttxvx/XflLopGeNX6PY9klEUkbhrLBUjTgUMWgAa
+ gza3QyWQVxGJ99zhVM5e+Bjh9zfowkcI8pFDwNOaw2b7t1A83PKfUUpNC1FZKudS/Pvh
+ 0xswhh4K//ysVST832A1s8DQX35TZOXBUay3CKfobVHDDdfL+tvl3VIuRAryKVL5oMQm
+ 1Nbl5eoernrp3C2+jImxZ+9Dc++qCwt1DclbsonIztLMYD9umejr1OqcSefQvN0dYU5X
+ 34IA==
+X-Gm-Message-State: ABuFfohxSLaUGkrwF5cb/h4fGi87648BxyET18C9gkJxd8OW02/qVvuX
+ wsIG8qrmjFuqy+pC0Mp+k9Vh3w==
+X-Google-Smtp-Source: ACcGV62sIgEtTHIkpotTCGVOhhGY02RoeOoWGTFv2ryv+5fg95dvcOFbSSYI9iw+gx0dwueX+ftOBg==
+X-Received: by 2002:a17:902:bb96:: with SMTP id
+ m22-v6mr31894505pls.117.1539912057453; 
+ Thu, 18 Oct 2018 18:20:57 -0700 (PDT)
 Received: from [10.61.2.175] ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id 19-v6sm36245503pft.97.2018.10.18.17.53.55
+ by smtp.gmail.com with ESMTPSA id m7-v6sm22405237pgq.59.2018.10.18.18.20.54
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Thu, 18 Oct 2018 17:53:58 -0700 (PDT)
-Subject: Re: [PATCH kernel 3/3] vfio_pci: Add NVIDIA GV100GL [Tesla V100 SXM2]
- [10de:1db1] subdriver
-To: Alex Williamson <alex.williamson@redhat.com>,
- Piotr Jaroszynski <pjaroszynski@nvidia.com>
-References: <20181015094233.1324-1-aik@ozlabs.ru>
- <20181015094233.1324-4-aik@ozlabs.ru> <20181016130824.20be215b@w520.home>
- <71c11c53-c83d-b0b6-5036-574df45009e4@ozlabs.ru>
- <20181017155252.2f15d0f0@w520.home>
- <2175dbbd-21d9-df26-67f5-4b41f90ab1bc@ozlabs.ru>
- <20181018105503.088a343f@w520.home>
- <0e0db29d-a1e8-af85-b715-c1ba1a2f3875@nvidia.com>
- <20181018120502.057feb7a@w520.home>
+ Thu, 18 Oct 2018 18:20:56 -0700 (PDT)
+Subject: Re: [PATCH kernel v2] powerpc/ioda/npu: Call skiboot's hot reset hook
+ when disabling NPU2
+To: Alistair Popple <alistair@popple.id.au>
+References: <20181002032021.7126-1-aik@ozlabs.ru>
+ <2086775.d8i5QI7OoB@new-mexico>
+ <45098cfd-5420-f4bd-f7fe-394ce2c704d0@ozlabs.ru>
+ <11968808.7zhiiyAbUF@townsend>
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 Openpgp: preference=signencrypt
 Autocrypt: addr=aik@ozlabs.ru; keydata=
@@ -133,12 +128,12 @@ Autocrypt: addr=aik@ozlabs.ru; keydata=
  tKQaCxcmLCaEtrSrYGzd1sSPwJne9ssfq0SE/LM1J7VdCjm6OWV33SwKrfd6rOtvOzgadrG6
  3bgUVBw+bsXhWDd8tvuCXmdY4bnUblxF2B6GOwSY43v6suugBttIyW5Bl2tXSTwP+zQisOJo
  +dpVG2pRr39h+buHB3NY83NEPXm1kUOhduJUA17XUY6QQCAaN4sdwPqHq938S3EmtVhs
-Message-ID: <918290dc-59c3-f269-38d4-a07d323173f9@ozlabs.ru>
-Date: Fri, 19 Oct 2018 11:53:53 +1100
+Message-ID: <87caa06c-0f67-f2f1-6bc0-215f5c672bd8@ozlabs.ru>
+Date: Fri, 19 Oct 2018 12:20:52 +1100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.2.1
 MIME-Version: 1.0
-In-Reply-To: <20181018120502.057feb7a@w520.home>
+In-Reply-To: <11968808.7zhiiyAbUF@townsend>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
@@ -153,161 +148,121 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, Alistair Popple <alistair@popple.id.au>,
- linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
- Reza Arbab <arbab@linux.ibm.com>, David Gibson <david@gibson.dropbear.id.au>
+Cc: Reza Arbab <arbab@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
 
-On 19/10/2018 05:05, Alex Williamson wrote:
-> On Thu, 18 Oct 2018 10:37:46 -0700
-> Piotr Jaroszynski <pjaroszynski@nvidia.com> wrote:
+On 18/10/2018 12:05, Alistair Popple wrote:
+> Hi Alexey,
 > 
->> On 10/18/18 9:55 AM, Alex Williamson wrote:
->>> On Thu, 18 Oct 2018 11:31:33 +1100
->>> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
->>>   
->>>> On 18/10/2018 08:52, Alex Williamson wrote:  
->>>>> On Wed, 17 Oct 2018 12:19:20 +1100
->>>>> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
->>>>>      
->>>>>> On 17/10/2018 06:08, Alex Williamson wrote:  
->>>>>>> On Mon, 15 Oct 2018 20:42:33 +1100
->>>>>>> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:    
->>>>>>>> +
->>>>>>>> +	if (pdev->vendor == PCI_VENDOR_ID_IBM &&
->>>>>>>> +			pdev->device == 0x04ea) {
->>>>>>>> +		ret = vfio_pci_ibm_npu2_init(vdev);
->>>>>>>> +		if (ret) {
->>>>>>>> +			dev_warn(&vdev->pdev->dev,
->>>>>>>> +					"Failed to setup NVIDIA NV2 ATSD region\n");
->>>>>>>> +			goto disable_exit;
->>>>>>>>   		}  
->>>>>>>
->>>>>>> So the NPU is also actually owned by vfio-pci and assigned to the VM?  
->>>>>>
->>>>>> Yes. On a running system it looks like:
->>>>>>
->>>>>> 0007:00:00.0 Bridge: IBM Device 04ea (rev 01)
->>>>>> 0007:00:00.1 Bridge: IBM Device 04ea (rev 01)
->>>>>> 0007:00:01.0 Bridge: IBM Device 04ea (rev 01)
->>>>>> 0007:00:01.1 Bridge: IBM Device 04ea (rev 01)
->>>>>> 0007:00:02.0 Bridge: IBM Device 04ea (rev 01)
->>>>>> 0007:00:02.1 Bridge: IBM Device 04ea (rev 01)
->>>>>> 0035:00:00.0 PCI bridge: IBM Device 04c1
->>>>>> 0035:01:00.0 PCI bridge: PLX Technology, Inc. Device 8725 (rev ca)
->>>>>> 0035:02:04.0 PCI bridge: PLX Technology, Inc. Device 8725 (rev ca)
->>>>>> 0035:02:05.0 PCI bridge: PLX Technology, Inc. Device 8725 (rev ca)
->>>>>> 0035:02:0d.0 PCI bridge: PLX Technology, Inc. Device 8725 (rev ca)
->>>>>> 0035:03:00.0 3D controller: NVIDIA Corporation GV100GL [Tesla V100 SXM2]
->>>>>> (rev a1
->>>>>> 0035:04:00.0 3D controller: NVIDIA Corporation GV100GL [Tesla V100 SXM2]
->>>>>> (rev a1)
->>>>>> 0035:05:00.0 3D controller: NVIDIA Corporation GV100GL [Tesla V100 SXM2]
->>>>>> (rev a1)
->>>>>>
->>>>>> One "IBM Device" bridge represents one NVLink2, i.e. a piece of NPU.
->>>>>> They all and 3 GPUs go to the same IOMMU group and get passed through to
->>>>>> a guest.
->>>>>>
->>>>>> The entire NPU does not have representation via sysfs as a whole though.  
->>>>>
->>>>> So the NPU is a bridge, but it uses a normal header type so vfio-pci
->>>>> will bind to it?  
->>>>
->>>> An NPU is a NVLink bridge, it is not PCI in any sense. We (the host
->>>> powerpc firmware known as "skiboot" or "opal") have chosen to emulate a
->>>> virtual bridge per 1 NVLink on the firmware level. So for each physical
->>>> NPU there are 6 virtual bridges. So the NVIDIA driver does not need to
->>>> know much about NPUs.
->>>>  
->>>>> And the ATSD register that we need on it is not
->>>>> accessible through these PCI representations of the sub-pieces of the
->>>>> NPU?  Thanks,  
->>>>
->>>> No, only via the device tree. The skiboot puts the ATSD register address
->>>> to the PHB's DT property called 'ibm,mmio-atsd' of these virtual bridges.  
+>>> wouldn't you also need to do that somewhere? Unless the driver
+>>> does it at startup?
+>>
+>> VFIO performs GPU reset so I'd expect the GPUs to flush its caches
+>> without any software interactions. Am I hoping for too much here?
+> 
+> Sadly you are. It's not the GPU caches that need flushing, it's the CPU caches. 
+> This needs to happen as part of the reset sequence, so I guess you would need 
+> to add it to the VFIO driver.
+
+Well, ok. Caches need flushing, will look into this but this fencing is
+still needed, is not it?
+
+
+
+> 
+> - Alistair
+> 
+>>
+>>> - Alistair
 >>>
->>> Ok, so the NPU is essential a virtual device already, mostly just a
->>> stub.  But it seems that each NPU is associated to a specific GPU, how
->>> is that association done?  In the use case here it seems like it's just
->>> a vehicle to provide this ibm,mmio-atsd property to guest DT and the tgt
->>> routing information to the GPU.  So if both of those were attached to
->>> the GPU, there'd be no purpose in assigning the NPU other than it's in
->>> the same IOMMU group with a type 0 header, so something needs to be
->>> done with it.  If it's a virtual device, perhaps it could have a type 1
->>> header so vfio wouldn't care about it, then we would only assign the
->>> GPU with these extra properties, which seems easier for management
->>> tools and users.  If the guest driver needs a visible NPU device, QEMU
->>> could possibly emulate one to make the GPU association work
->>> automatically.  Maybe this isn't really a problem, but I wonder if
->>> you've looked up the management stack to see what tools need to know to
->>> assign these NPU devices and whether specific configurations are
->>> required to make the NPU to GPU association work.  Thanks,  
->>
->> I'm not that familiar with how this was originally set up, but note that 
->> Alexey is just making it work exactly like baremetal does. The baremetal 
->> GPU driver works as-is in the VM and expects the same properties in the 
->> device-tree. Obviously it doesn't have to be that way, but there is 
->> value in keeping it identical.
->>
->> Another probably bigger point is that the NPU device also implements the 
->> nvlink HW interface and is required for actually training and 
->> maintaining the link up. The driver in the guest trains the links by 
->> programming both the GPU end and the NPU end of each link so the NPU 
->> device needs to be exposed to the guest.
+>>>>> - Alistair
+>>>>>
+>>>>>>> - Alistair
+>>>>>>>
+>>>>>>>>> - Alistair
+>>>>>>>>>
+>>>>>>>>> On Monday, 15 October 2018 6:17:51 PM AEDT Alexey Kardashevskiy 
+> wrote:
+>>>>>>>>>> Ping?
+>>>>>>>>>>
+>>>>>>>>>> On 02/10/2018 13:20, Alexey Kardashevskiy wrote:
+>>>>>>>>>>> The skiboot firmware has a hot reset handler which fences the
+>>>>>>>>>>> NVIDIA V100
+>>>>>>>>>>> GPU RAM on Witherspoons and makes accesses no-op instead of
+>>>>>>>>>>> throwing HMIs:
+>>>>>>>>>>> https://github.com/open-power/skiboot/commit/fca2b2b839a67
+>>>>>>>>>>>
+>>>>>>>>>>> Now we are going to pass V100 via VFIO which most certainly
+>>>>>>>>>>> involves
+>>>>>>>>>>> KVM guests which are often terminated without getting a chance to
+>>>>>>>>>>> offline
+>>>>>>>>>>> GPU RAM so we end up with a running machine with misconfigured
+>>>>>>>>>>> memory.
+>>>>>>>>>>> Accessing this memory produces hardware management interrupts
+>>>>>>>>>>> (HMI)
+>>>>>>>>>>> which bring the host down.
+>>>>>>>>>>>
+>>>>>>>>>>> To suppress HMIs, this wires up this hot reset hook to
+>>>>>>>>>>> vfio_pci_disable()
+>>>>>>>>>>> via pci_disable_device() which switches NPU2 to a safe mode and
+>>>>>>>>>>> prevents
+>>>>>>>>>>> HMIs.
+>>>>>>>>>>>
+>>>>>>>>>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>>>>>>>>>>> ---
+>>>>>>>>>>> Changes:
+>>>>>>>>>>> v2:
+>>>>>>>>>>> * updated the commit log
+>>>>>>>>>>> ---
+>>>>>>>>>>>
+>>>>>>>>>>>  arch/powerpc/platforms/powernv/pci-ioda.c | 10 ++++++++++
+>>>>>>>>>>>  1 file changed, 10 insertions(+)
+>>>>>>>>>>>
+>>>>>>>>>>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>>>>>>>>> b/arch/powerpc/platforms/powernv/pci-ioda.c index
+>>>>>>>>>>> cde7102..e37b9cc 100644
+>>>>>>>>>>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>>>>>>>>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>>>>>>>>> @@ -3688,6 +3688,15 @@ static void pnv_pci_release_device(struct
+>>>>>>>>>>> pci_dev *pdev)>>>>>>>>> 
+>>>>>>>>>>>  		pnv_ioda_release_pe(pe);
+>>>>>>>>>>>  
+>>>>>>>>>>>  }
+>>>>>>>>>>>
+>>>>>>>>>>> +static void pnv_npu_disable_device(struct pci_dev *pdev)
+>>>>>>>>>>> +{
+>>>>>>>>>>> +	struct eeh_dev *edev = pci_dev_to_eeh_dev(pdev);
+>>>>>>>>>>> +	struct eeh_pe *eehpe = edev ? edev->pe : NULL;
+>>>>>>>>>>> +
+>>>>>>>>>>> +	if (eehpe && eeh_ops && eeh_ops->reset)
+>>>>>>>>>>> +		eeh_ops->reset(eehpe, EEH_RESET_HOT);
+>>>>>>>>>>> +}
+>>>>>>>>>>> +
+>>>>>>>>>>>
+>>>>>>>>>>>  static void pnv_pci_ioda_shutdown(struct pci_controller *hose)
+>>>>>>>>>>>  {
+>>>>>>>>>>>  
+>>>>>>>>>>>  	struct pnv_phb *phb = hose->private_data;
+>>>>>>>>>>>
+>>>>>>>>>>> @@ -3732,6 +3741,7 @@ static const struct pci_controller_ops
+>>>>>>>>>>> pnv_npu_ioda_controller_ops = {>>>>>>>>> 
+>>>>>>>>>>>  	.reset_secondary_bus	= pnv_pci_reset_secondary_bus,
+>>>>>>>>>>>  	.dma_set_mask		= pnv_npu_dma_set_mask,
+>>>>>>>>>>>  	.shutdown		= pnv_pci_ioda_shutdown,
+>>>>>>>>>>>
+>>>>>>>>>>> +	.disable_device		= pnv_npu_disable_device,
+>>>>>>>>>>>
+>>>>>>>>>>>  };
+>>>>>>>>>>>  
+>>>>>>>>>>>  static const struct pci_controller_ops
+>>>>>>>>>>>  pnv_npu_ocapi_ioda_controller_ops = {
 > 
-> Ok, so there is functionality in assigning the NPU device itself, it's
-> not just an attachment point for meta data.  But it still seems there
-> must be some association of NPU to GPU, the tgt address seems to pair
-> the NPU with a specific GPU, they're not simply a fungible set of NPUs
-> and GPUs.  Is that association explicit anywhere or is it related to
-> the topology or device numbering that needs to match between the host
-> and guest?  Thanks,
-
-It is in the device tree (phandle is a node ID).
-
-NPU:
-xscom@623fc00000000/npu@5011000
-
-NVLinks:
-xscom@623fc00000000/npu@5011000/link@0
-xscom@623fc00000000/npu@5011000/link@1
-xscom@623fc00000000/npu@5011000/link@2
-xscom@623fc00000000/npu@5011000/link@3
-xscom@623fc00000000/npu@5011000/link@5
-xscom@623fc00000000/npu@5011000/link@6
-
-GPU RAM:
-memory@240000000000
-memory@242000000000
-memory@244000000000
-
-GPUs:
-pciex@620c3c0500000/pci@0/pci@0/pci@4/3d-controller@0
-	ibm,npu property - 2 phandles of associated virtual
-		bridges as in my config a GPU has 2 NVLinks
-		to the CPU (or NPU in particular)
-pciex@620c3c0500000/pci@0/pci@0/pci@5/3d-controller@0
-pciex@620c3c0500000/pci@0/pci@0/pci@d/3d-controller@0
-
-Virtual bridges:
-pciex@6230200000000/pci@0
-	ibm,gpu property - a phandle of associated GPU
-	memory-region property - a phandle of a GPU RAM block
-	ibm,nvlink property - a phandle of an NVLink
-	ibm,device-tgt-addr property - the short physical
-		address of a GPU RAM (0x00000c00.00000000
-		in this example)
-pciex@6230200000000/pci@0,1
-pciex@6230200000000/pci@1
-pciex@6230200000000/pci@1,1
-pciex@6230200000000/pci@2
-pciex@6230200000000/pci@2,1
-
+> 
 
 -- 
 Alexey
