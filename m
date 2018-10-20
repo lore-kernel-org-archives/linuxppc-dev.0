@@ -2,65 +2,61 @@ Return-Path: <SRS0=IXoQ=NA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 64231C67863
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Oct 2018 09:57:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 469A9C67863
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Oct 2018 22:59:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9DD7421476
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Oct 2018 09:57:20 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="moN6I8qN"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9DD7421476
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
+	by mail.kernel.org (Postfix) with ESMTPS id 4E9B821550
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Oct 2018 22:59:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4E9B821550
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=buserror.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42cdVk0K4xzF33P
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Oct 2018 20:57:18 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42cysK4btXzF1hT
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Oct 2018 09:59:33 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=buserror.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="moN6I8qN";
-	dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ spf=none (mailfrom) smtp.mailfrom=buserror.net
+ (client-ip=165.227.176.147; helo=baldur.buserror.net;
+ envelope-from=oss@buserror.net; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=buserror.net
+Received: from baldur.buserror.net (baldur.buserror.net [165.227.176.147])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42cdS65RmdzF31V
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Oct 2018 20:55:02 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="moN6I8qN"; 
- dkim-atps=neutral
-Received: by ozlabs.org (Postfix)
- id 42cdS64kXcz9sCm; Sat, 20 Oct 2018 20:55:02 +1100 (AEDT)
-Received: by ozlabs.org (Postfix, from userid 1003)
- id 42cdS64BR6z9sCt; Sat, 20 Oct 2018 20:55:02 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1540029302; bh=oqhZiYBBct14AT27BQObH6fHkGa9lEW36BuSNpIydWA=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=moN6I8qNuTtvKrjG2Wf3qGNbq2ysw2pDQcsYj4bnO9ViULRdeVkBNWMV/bFrLB82p
- s6cQ6LSHRwstHjLWInwQFsl7KI3OhHtWVrq9/IE7EuF2LM7RAN6KjQzIP/ksGmwBH3
- mnV909ZB5WMXLFj20Y6Ea3pZsDB6XX8fY8ZbpmQybXJ2oV3ib9LpIzHrQS3ak56g+H
- IoCDQEoJNU40BeqtxnJTYm/x25QzfdPLIBiLaC2sdnxIwPEKpb09z80vW9Qt1b0SYe
- J0qJXHaTpz1WHVKyVzwXTg7aIyFPhRsM4CKi+nqeLZsE50UrvAno/H4YS0hoTldpf4
- x/+Fde4Hwdt5g==
-Date: Sat, 20 Oct 2018 20:54:55 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
-Subject: [PATCH v2] KVM: PPC: Use exported tb_to_ns() function in decrementer
- emulation
-Message-ID: <20181020095455.GA12489@blackberry>
-References: <20181019100722.GB6230@blackberry>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20181019100722.GB6230@blackberry>
-User-Agent: Mutt/1.5.24 (2015-08-30)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42cyqC13CKzF0BV
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Oct 2018 09:57:39 +1100 (AEDT)
+Received: from [2601:449:8400:7293:12bf:48ff:fe84:c9a0]
+ by baldur.buserror.net with esmtpsa (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.89) (envelope-from <oss@buserror.net>)
+ id 1gE09S-0007SS-LN; Sat, 20 Oct 2018 17:55:22 -0500
+Message-ID: <5c5b0d6dbbfb23811f3c6de062f50e035f441cab.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: Darren Stevens <darren@stevens-zone.net>
+Date: Sat, 20 Oct 2018 17:55:21 -0500
+In-Reply-To: <f98693387706211e2ced1de2606b7ac7dcd3fcb3.camel@buserror.net>
+References: <0F797F4E-755B-499C-BA74-48CC03235393@xenosoft.de>
+ <76A7B415-F6D4-4BF8-B4B7-B146C5337CF8@xenosoft.de>
+ <196C6151-3085-4A42-B6D6-5891F4AF9759@xenosoft.de>
+ <07ad630cccbd33c81031f690fd17cdc30b662e49.camel@buserror.net>
+ <4c796dccb9b.4d269848@auth.smtp.1and1.co.uk>
+ <f98693387706211e2ced1de2606b7ac7dcd3fcb3.camel@buserror.net>
+Organization: Red Hat
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.1-2 
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-SA-Exim-Connect-IP: 2601:449:8400:7293:12bf:48ff:fe84:c9a0
+X-SA-Exim-Rcpt-To: darren@stevens-zone.net, chzigotzky@xenosoft.de,
+ linuxppc-dev@lists.ozlabs.org
+X-SA-Exim-Mail-From: oss@buserror.net
+Subject: Re: FSL/NXP P5020: USB problems with the latest Git kernels
+X-SA-Exim-Version: 4.2.1 (built Tue, 02 Aug 2016 21:08:31 +0000)
+X-SA-Exim-Scanned: Yes (on baldur.buserror.net)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,60 +68,56 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michael Ellerman <michael@ellerman.id.au>, linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, Christian Zigotzky <chzigotzky@xenosoft.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This changes the KVM code that emulates the decrementer function to do
-the conversion of decrementer values to time intervals in nanoseconds
-by calling the tb_to_ns() function exported by the powerpc timer code,
-in preference to open-coded arithmetic using values from the
-decrementer_clockevent struct.  Similarly, the HV-KVM code that did
-the same conversion using arithmetic on tb_ticks_per_sec also now
-uses tb_to_ns().
+On Wed, 2018-08-29 at 18:30 -0500, Scott Wood wrote:
+> On Tue, 2018-08-28 at 20:13 +0100, Darren Stevens wrote:
+> > Hello Scott
+> > 
+> > On 27/08/2018, Scott Wood wrote:
+> > > On Mon, 2018-08-27 at 20:15 +0200, Christian Zigotzky wrote:
+> > > > Hello,
+> > > > 
+> > > > Our users tested the RC1 of kernel 4.19 on their P5020 boards today.
+> > > > Unfortunately the USB bug still exists. With mem values bigger than
+> > > > 4096M,
+> > > > the USB mouse and keyboard doesn't work. With the bootarg mem=4096M,
+> > > > the
+> > > > USB
+> > > > devices work without any problems. Please compile the RC1 and test it
+> > > > on
+> > > > your P5020 board. There is a problem with the memory management since
+> > > > 22/08/18. 
+> > > 
+> > > I just tested 4.19-rc1 on a T4240 and got a similar problem with
+> > > MMC.  MMC
+> > > and
+> > > USB on these chips both have a 32-bit DMA limitation.  I'll look into
+> > > it.
+> > 
+> > I've run a bisect locally on my system and found the following bad commit:
+> > 
+> > # first bad commit: [1b1eeca7e4c19fa76d409d4c7b338dba21f2df45] init: allow
+> > initcall tables to be emitted using relative references
+> > 
+> > I can't see why this would fail though, and it only seems to affect fsl
+> > machines, and on mine it killed the onboard sata as well.
+> > 
+> > Hope this helps.
+> 
+> 
+> The patch is changing the order of initcalls.  swiotlb_setup_bus_notifier()
+> and corenet_gen_publish_devices() are both machine_arch_initcall(), and if
+> the
+> latter happens before the former, then the bus notifier gets missed and
+> swiotlb doesn't get used.
 
-Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
----
-v2: don't delete the second do_div in kvmppc_emulate_dec(), we need it.
+While it would be nice to fix this ordering dependency at some point, the
+change was reverted on PPC by commit ff69279a44e9ba876466 ("powerpc: disable
+support for relative ksymtab references").
 
- arch/powerpc/kvm/book3s_hv.c | 3 +--
- arch/powerpc/kvm/emulate.c   | 7 +++----
- 2 files changed, 4 insertions(+), 6 deletions(-)
-
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index bf8def2..d65b961 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -2337,8 +2337,7 @@ static void kvmppc_set_timer(struct kvm_vcpu *vcpu)
- 		kvmppc_core_prepare_to_enter(vcpu);
- 		return;
- 	}
--	dec_nsec = (vcpu->arch.dec_expires - now) * NSEC_PER_SEC
--		   / tb_ticks_per_sec;
-+	dec_nsec = tb_to_ns(vcpu->arch.dec_expires - now);
- 	hrtimer_start(&vcpu->arch.dec_timer, dec_nsec, HRTIMER_MODE_REL);
- 	vcpu->arch.timer_running = 1;
- }
-diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
-index fa888bf..9f5b8c0 100644
---- a/arch/powerpc/kvm/emulate.c
-+++ b/arch/powerpc/kvm/emulate.c
-@@ -61,11 +61,10 @@ void kvmppc_emulate_dec(struct kvm_vcpu *vcpu)
- 
- 	dec_time = vcpu->arch.dec;
- 	/*
--	 * Guest timebase ticks at the same frequency as host decrementer.
--	 * So use the host decrementer calculations for decrementer emulation.
-+	 * Guest timebase ticks at the same frequency as host timebase.
-+	 * So use the host timebase calculations for decrementer emulation.
- 	 */
--	dec_time = dec_time << decrementer_clockevent.shift;
--	do_div(dec_time, decrementer_clockevent.mult);
-+	dec_time = tb_to_ns(dec_time);
- 	dec_nsec = do_div(dec_time, NSEC_PER_SEC);
- 	hrtimer_start(&vcpu->arch.dec_timer,
- 		ktime_set(dec_time, dec_nsec), HRTIMER_MODE_REL);
--- 
-2.7.4
+-Scott
 
