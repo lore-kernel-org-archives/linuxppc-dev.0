@@ -2,69 +2,66 @@ Return-Path: <SRS0=IXoQ=NA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BAAACC67863
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Oct 2018 07:02:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0AC47C67863
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Oct 2018 07:28:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D4EB121486
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Oct 2018 07:02:06 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="kYPGjBPq"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D4EB121486
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
+	by mail.kernel.org (Postfix) with ESMTPS id 396AA2087A
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Oct 2018 07:28:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 396AA2087A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42cYcX270dzF39v
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Oct 2018 18:02:04 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42cZC80dZyzF35j
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Oct 2018 18:28:36 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="kYPGjBPq";
-	dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42cYYq0qZkzF18l
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Oct 2018 17:59:43 +1100 (AEDT)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="kYPGjBPq"; 
- dkim-atps=neutral
-Received: by ozlabs.org (Postfix)
- id 42cYYp71rXz9sDK; Sat, 20 Oct 2018 17:59:42 +1100 (AEDT)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 42cYYk0kwSz9sCs;
- Sat, 20 Oct 2018 17:59:37 +1100 (AEDT)
-Authentication-Results: ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.org
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1540018782; bh=W5m2t7bke8mdzOVyIMhE+lPjpUu7nJ6q+f7/Uhwus/c=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=kYPGjBPq+Wj8Eh+35R8VOEDpuN30IRzM8Bv65eLB7156gnBBxTdcDinDMd9ZxTQnT
- lUPADglieX5+s62aWGrUI7M1An1oQ6Zqwvte9kgXOo+qAYXcc17exfGnI3RNcEL8LB
- 3VxBG/EPKpxbcBFQSsgiDgjH5yFzrB00QlCrITaUtmRKAT7d+xr6WWgMver31pvtQe
- Tm3YCbD2uR1TzPwoDttdXie7rT2iQrZjWVg/F6aJ3rGHRbAapNfnLSjtK1VBDSnNtL
- 1Z6bfQmzBOWQHhw667zE7+uO1FWPhEKBuhBOgTb6xhj8u7FHw84mIe+C10O1g/aJ0q
- ldtw1mIscouHg==
-Date: Sat, 20 Oct 2018 17:59:23 +1100
-From: Anton Blanchard <anton@ozlabs.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/time: Fix clockevent_decrementer initalisation
- for PR KVM
-Message-ID: <20181020175923.4cbc5434@kryten>
-In-Reply-To: <20181019042319.9457-1-mpe@ellerman.id.au>
-References: <20181019042319.9457-1-mpe@ellerman.id.au>
-X-Mailer: Mutt/1.8.0 (2017-02-23)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42cZ993pxBzF323
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Oct 2018 18:26:53 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 42cZ9559KQz9ttS7;
+ Sat, 20 Oct 2018 09:26:49 +0200 (CEST)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id MN86taMaP71s; Sat, 20 Oct 2018 09:26:49 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 42cZ954Zlkz9ttCM;
+ Sat, 20 Oct 2018 09:26:49 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id DB6208B77B;
+ Sat, 20 Oct 2018 09:26:49 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id kqnlCIC1IWIZ; Sat, 20 Oct 2018 09:26:49 +0200 (CEST)
+Received: from pc16082vm.idsi0.si.c-s.fr (unknown [192.168.232.53])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 9486F8B74B;
+ Sat, 20 Oct 2018 09:26:49 +0200 (CEST)
+Received: by pc16082vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 5B59310483E; Sat, 20 Oct 2018 09:26:49 +0200 (CEST)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+To: Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ Juergen Gross <jgross@suse.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+ "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
+Subject: [PATCH v3] idle/x86: remove the call to boot_init_stack_canary() from
+ cpu_startup_entry()
+Message-Id: <20181020072649.5B59310483E@pc16082vm.idsi0.si.c-s.fr>
+Date: Sat, 20 Oct 2018 09:26:49 +0200 (CEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,55 +73,108 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, kvm-ppc@vger.kernel.org
+Cc: xen-devel@lists.xenproject.org, x86@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 19 Oct 2018 15:23:19 +1100
-Michael Ellerman <mpe@ellerman.id.au> wrote:
+commit d7880812b359 ("idle: Add the stack canary init to
+cpu_startup_entry()") added the call to boot_init_stack_canary()
+in cpu_startup_entry() in an #ifdef CONFIG_X86 statement, with
+the intention to remove that #ifdef later.
 
-> In the recent commit 8b78fdb045de ("powerpc/time: Use
-> clockevents_register_device(), fixing an issue with large
-> decrementer") we changed the way we initialise the decrementer
-> clockevent(s).
-> 
-> We no longer initialise the mult & shift values of
-> decrementer_clockevent itself.
-> 
-> This has the effect of breaking PR KVM, because it uses those values
-> in kvmppc_emulate_dec(). The symptom is guest kernels spin forever
-> mid-way through boot.
-> 
-> For now fix it by assigning back to decrementer_clockevent the mult
-> and shift values.
+While implementing stack protector for powerpc, it has been
+observed that calling boot_init_stack_canary() is also needed
+for powerpc which uses per task (TLS) stack canary like the X86.
 
-Thanks Michael, I missed that completely.
+However, calling boot_init_stack_canary() would break arches
+using global stack canary (ARM, SH, MIPS and XTENSA).
 
-Acked-by: Anton Blanchard <anton@samba.org>
+Instead of modifying the #ifdef CONFIG_X86 in an
+ #if defined(CONFIG_X86) || defined(CONFIG_PPC), powerpc
+implemented the call to boot_init_stack_canary() in the function
+calling cpu_startup_entry()
 
-Anton
+On x86, we have two functions calling cpu_startup_entry():
+- start_secondary()
+- cpu_bringup_and_idle()
 
-> 
-> Fixes: 8b78fdb045de ("powerpc/time: Use
-> clockevents_register_device(), fixing an issue with large
-> decrementer") Signed-off-by: Michael Ellerman <mpe@ellerman.id.au> ---
->  arch/powerpc/kernel/time.c | 4 ++++
->  1 file changed, 4 insertions(+)
-> 
-> diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-> index 40868f3ee113..68e8f963d108 100644
-> --- a/arch/powerpc/kernel/time.c
-> +++ b/arch/powerpc/kernel/time.c
-> @@ -989,6 +989,10 @@ static void register_decrementer_clockevent(int
-> cpu) 
->  	printk_once(KERN_DEBUG "clockevent: %s mult[%x] shift[%d]
-> cpu[%d]\n", dec->name, dec->mult, dec->shift, cpu);
-> +
-> +	/* Set values for KVM, see kvm_emulate_dec() */
-> +	decrementer_clockevent.mult = dec->mult;
-> +	decrementer_clockevent.shift = dec->shift;
->  }
->  
->  static void enable_large_decrementer(void)
+start_secondary() already calls boot_init_stack_canary().
+
+This patch adds the call to boot_init_stack_canary() in
+cpu_bringup_and_idle() and removes it from cpu_startup_entry()
+
+Reviewed-by: Juergen Gross <jgross@suse.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ v3: Fixed linux/stackprotector.h inclusion
+
+ v2: Revised commit log (#if defined  had been droped by 'git commit')
+
+ arch/x86/xen/smp_pv.c |  2 ++
+ kernel/sched/idle.c   | 15 ---------------
+ kernel/sched/sched.h  |  1 -
+ 3 files changed, 2 insertions(+), 16 deletions(-)
+
+diff --git a/arch/x86/xen/smp_pv.c b/arch/x86/xen/smp_pv.c
+index e3b18ad49889..145506f9fdbe 100644
+--- a/arch/x86/xen/smp_pv.c
++++ b/arch/x86/xen/smp_pv.c
+@@ -22,6 +22,7 @@
+ #include <linux/tick.h>
+ #include <linux/nmi.h>
+ #include <linux/cpuhotplug.h>
++#include <linux/stackprotector.h>
+ 
+ #include <asm/paravirt.h>
+ #include <asm/desc.h>
+@@ -88,6 +89,7 @@ static void cpu_bringup(void)
+ asmlinkage __visible void cpu_bringup_and_idle(void)
+ {
+ 	cpu_bringup();
++	boot_init_stack_canary();
+ 	cpu_startup_entry(CPUHP_AP_ONLINE_IDLE);
+ }
+ 
+diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
+index 16f84142f2f4..f5516bae0c1b 100644
+--- a/kernel/sched/idle.c
++++ b/kernel/sched/idle.c
+@@ -347,21 +347,6 @@ EXPORT_SYMBOL_GPL(play_idle);
+ 
+ void cpu_startup_entry(enum cpuhp_state state)
+ {
+-	/*
+-	 * This #ifdef needs to die, but it's too late in the cycle to
+-	 * make this generic (ARM and SH have never invoked the canary
+-	 * init for the non boot CPUs!). Will be fixed in 3.11
+-	 */
+-#ifdef CONFIG_X86
+-	/*
+-	 * If we're the non-boot CPU, nothing set the stack canary up
+-	 * for us. The boot CPU already has it initialized but no harm
+-	 * in doing it again. This is a good place for updating it, as
+-	 * we wont ever return from this function (so the invalid
+-	 * canaries already on the stack wont ever trigger).
+-	 */
+-	boot_init_stack_canary();
+-#endif
+ 	arch_cpu_idle_prepare();
+ 	cpuhp_online_idle(state);
+ 	while (1)
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index 455fa330de04..75a718ef771d 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -56,7 +56,6 @@
+ #include <linux/profile.h>
+ #include <linux/rcupdate_wait.h>
+ #include <linux/security.h>
+-#include <linux/stackprotector.h>
+ #include <linux/stop_machine.h>
+ #include <linux/suspend.h>
+ #include <linux/swait.h>
+-- 
+2.17.1
 
