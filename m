@@ -6,39 +6,39 @@ X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D55C3C67863
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Oct 2018 10:14:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 25D6EC67863
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Oct 2018 10:16:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8791820658
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Oct 2018 10:14:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8791820658
+	by mail.kernel.org (Postfix) with ESMTPS id A529920658
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Oct 2018 10:16:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A529920658
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42dsp64bkGzDrTk
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Oct 2018 21:14:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42dsrC5fWfzF36b
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Oct 2018 21:16:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42ds234hXszDrYZ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Oct 2018 20:40:11 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42ds2P6bj2zDrYb
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Oct 2018 20:40:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 42ds2340bRz9sD3; Mon, 22 Oct 2018 20:40:11 +1100 (AEDT)
+ id 42ds2P61Jrz9sDL; Mon, 22 Oct 2018 20:40:29 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 42ds233ZW4z9sDC; Mon, 22 Oct 2018 20:40:11 +1100 (AEDT)
+ id 42ds2P5bdVz9sDJ; Mon, 22 Oct 2018 20:40:29 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: b4d16ab58c41ff0125822464bdff074cebd0fe47
-In-Reply-To: <20181019042319.9457-1-mpe@ellerman.id.au>
+X-powerpc-patch-commit: b6aeddea74b08518289fc86545297cf18a0b53a7
+In-Reply-To: <20181019055927.20009-1-mpe@ellerman.id.au>
 To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc/time: Fix clockevent_decrementer initalisation for PR KVM
-Message-Id: <42ds233ZW4z9sDC@ozlabs.org>
-Date: Mon, 22 Oct 2018 20:40:10 +1100 (AEDT)
+Subject: Re: powerpc: Fix stack protector crashes on CPU hotplug
+Message-Id: <42ds2P5bdVz9sDJ@ozlabs.org>
+Date: Mon, 22 Oct 2018 20:40:29 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -50,33 +50,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: paulus@samba.org, anton@samba.org, kvm-ppc@vger.kernel.org
+Cc: abdhalee@linux.vnet.ibm.com, joel@jms.id.au
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 2018-10-19 at 04:23:19 UTC, Michael Ellerman wrote:
-> In the recent commit 8b78fdb045de ("powerpc/time: Use
-> clockevents_register_device(), fixing an issue with large
-> decrementer") we changed the way we initialise the decrementer
-> clockevent(s).
+On Fri, 2018-10-19 at 05:59:27 UTC, Michael Ellerman wrote:
+> Recently in commit 7241d26e8175 ("powerpc/64: properly initialise
+> the stackprotector canary on SMP.") we fixed a crash with stack
+> protector on SMP by initialising the stack canary in
+> cpu_idle_thread_init().
 > 
-> We no longer initialise the mult & shift values of
-> decrementer_clockevent itself.
+> But this can also causes crashes, when a CPU comes back online after
+> being offline:
 > 
-> This has the effect of breaking PR KVM, because it uses those values
-> in kvmppc_emulate_dec(). The symptom is guest kernels spin forever
-> mid-way through boot.
+>   Kernel panic - not syncing: stack-protector: Kernel stack is corrupted in: pnv_smp_cpu_kill_self+0x2a0/0x2b0
+>   CPU: 1 PID: 0 Comm: swapper/1 Not tainted 4.19.0-rc3-gcc-7.3.1-00168-g4ffe713b7587 #94
+>   Call Trace:
+>     dump_stack+0xb0/0xf4 (unreliable)
+>     panic+0x144/0x328
+>     __stack_chk_fail+0x2c/0x30
+>     pnv_smp_cpu_kill_self+0x2a0/0x2b0
+>     cpu_die+0x48/0x70
+>     arch_cpu_idle_dead+0x20/0x40
+>     do_idle+0x274/0x390
+>     cpu_startup_entry+0x38/0x50
+>     start_secondary+0x5e4/0x600
+>     start_secondary_prolog+0x10/0x14
 > 
-> For now fix it by assigning back to decrementer_clockevent the mult
-> and shift values.
+> Looking at the stack we see that the canary value in the stack frame
+> doesn't match the canary in the task/paca. That is because we have
+> reinitialised the task/paca value, but then the CPU coming online has
+> returned into a function using the old canary value. That causes the
+> comparison to fail.
 > 
-> Fixes: 8b78fdb045de ("powerpc/time: Use clockevents_register_device(), fixing an issue with large decrementer")
+> Instead we can call boot_init_stack_canary() from start_secondary()
+> which never returns. This is essentially what the generic code does in
+> cpu_startup_entry() under #ifdef X86, we should make that non-x86
+> specific in a future patch.
+> 
+> Fixes: 7241d26e8175 ("powerpc/64: properly initialise the stackprotector canary on SMP.")
+> Reported-by: Joel Stanley <joel@jms.id.au>
 > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> Acked-by: Anton Blanchard <anton@samba.org>
+> Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 Applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/b4d16ab58c41ff0125822464bdff07
+https://git.kernel.org/powerpc/c/b6aeddea74b08518289fc86545297c
 
 cheers
