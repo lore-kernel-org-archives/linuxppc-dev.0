@@ -2,88 +2,53 @@ Return-Path: <SRS0=8rOk=ND=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
+	UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D5E0C46475
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Oct 2018 10:38:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C6C62C46475
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Oct 2018 10:50:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 94FCD20652
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Oct 2018 10:38:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 94FCD20652
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 28A2020671
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Oct 2018 10:50:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 28A2020671
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=infinera.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42fVHG4tPRzF36p
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Oct 2018 21:38:50 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42fVXS2NStzF1Pl
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Oct 2018 21:50:16 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=infinera.com
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=shilpa.bhat@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42fVFF3cTBzDrhS
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Oct 2018 21:37:05 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w9NASl91137053
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Oct 2018 06:37:02 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2n9xmm1pv2-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Oct 2018 06:37:02 -0400
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
- Tue, 23 Oct 2018 11:36:59 +0100
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
- by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 23 Oct 2018 11:36:58 +0100
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- w9NAavIb27787366
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Tue, 23 Oct 2018 10:36:57 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 07E73AE045;
- Tue, 23 Oct 2018 10:36:57 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 17DE7AE053;
- Tue, 23 Oct 2018 10:36:56 +0000 (GMT)
-Received: from oc4502181600.in.ibm.com (unknown [9.124.35.202])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 23 Oct 2018 10:36:55 +0000 (GMT)
-From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Subject: [PATCH v2] powernv: sensor-groups: Add debugfs file to enable/disable
- sensor groups
-Date: Tue, 23 Oct 2018 16:06:30 +0530
-X-Mailer: git-send-email 1.8.3.1
-X-TM-AS-GCONF: 00
-x-cbid: 18102310-0020-0000-0000-000002D8D037
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18102310-0021-0000-0000-00002127F166
-Message-Id: <1540290990-22503-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-10-23_03:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1807170000 definitions=main-1810230094
+ spf=permerror (mailfrom) smtp.mailfrom=infinera.com
+ (client-ip=31.15.61.139; helo=smtp.transmode.se;
+ envelope-from=mathias.thore@infinera.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=infinera.com
+X-Greylist: delayed 303 seconds by postgrey-1.36 at bilbo;
+ Tue, 23 Oct 2018 00:01:46 AEDT
+Received: from smtp.transmode.se (smtp.transmode.se [31.15.61.139])
+ by lists.ozlabs.org (Postfix) with ESMTP id 42dxVf0qgBzDrhS
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Oct 2018 00:01:46 +1100 (AEDT)
+Received: from se-math-lx.infinera.com (se-math-lx.infinera.com [10.210.72.58])
+ by smtp.transmode.se (Postfix) with ESMTP id 061C31186FBC;
+ Mon, 22 Oct 2018 14:56:30 +0200 (CEST)
+Received: from se-math-lx.infinera.com (se-math-lx.infinera.com [127.0.0.1])
+ by se-math-lx.infinera.com (8.14.9/8.14.9) with ESMTP id w9MCuThm031224;
+ Mon, 22 Oct 2018 14:56:29 +0200
+Received: (from math@localhost)
+ by se-math-lx.infinera.com (8.14.9/8.14.9/Submit) id w9MCuThv031222;
+ Mon, 22 Oct 2018 14:56:29 +0200
+From: Mathias Thore <mathias.thore@infinera.com>
+To: qiang.zhao@nxp.com, linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, 
+ joakim.tjernlund@infinera.com, david.gounaris@infinera.com
+Subject: [PATCH] net/wan/fsl_ucc_hdlc: error counters
+Date: Mon, 22 Oct 2018 14:55:50 +0200
+Message-Id: <20181022125550.31170-1-mathias.thore@infinera.com>
+X-Mailer: git-send-email 2.18.1
+X-Mailman-Approved-At: Tue, 23 Oct 2018 21:48:35 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,401 +60,157 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ego@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Cc: Mathias Thore <mathias.thore@infinera.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch provides support to disable and enable platform specific
-sensor groups like performance, utilization and frequency which are
-currently not supported in hwmon.
+Extract error information from rx and tx buffer descriptors,
+and update error counters.
 
-Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Signed-off-by: Mathias Thore <mathias.thore@infinera.com>
 ---
-Changes from V1:
-- As per Michael Ellerman's suggestion, adding the "enable" files to debugfs.
-  The original code had been written in mind to accomodate the "enable" file
-  in the same path as "clear" attribute. As this is not required anymore
-  the code is cleaned up to bifurcate the functions adding "enable" and
-  "clear" attribute.
+ drivers/net/wan/fsl_ucc_hdlc.c | 51 +++++++++++++++++++++++++++++-----
+ include/soc/fsl/qe/ucc_fast.h  |  8 +++++-
+ 2 files changed, 51 insertions(+), 8 deletions(-)
 
- .../powerpc/platforms/powernv/opal-sensor-groups.c | 284 ++++++++++++++-------
- 1 file changed, 186 insertions(+), 98 deletions(-)
-
-diff --git a/arch/powerpc/platforms/powernv/opal-sensor-groups.c b/arch/powerpc/platforms/powernv/opal-sensor-groups.c
-index f7d04b6..e270dba 100644
---- a/arch/powerpc/platforms/powernv/opal-sensor-groups.c
-+++ b/arch/powerpc/platforms/powernv/opal-sensor-groups.c
-@@ -15,22 +15,21 @@
- #include <linux/kobject.h>
- #include <linux/slab.h>
+diff --git a/drivers/net/wan/fsl_ucc_hdlc.c b/drivers/net/wan/fsl_ucc_hdlc.c
+index 5f0366a125e2..934fc149c6b3 100644
+--- a/drivers/net/wan/fsl_ucc_hdlc.c
++++ b/drivers/net/wan/fsl_ucc_hdlc.c
+@@ -36,6 +36,7 @@
+ #define DRV_NAME "ucc_hdlc"
  
-+#include <asm/debugfs.h>
- #include <asm/opal.h>
+ #define TDM_PPPOHT_SLIC_MAXIN
++#define RX_BD_ERRORS (R_CD_S | R_OV_S | R_CR_S | R_AB_S | R_NO_S | R_LG_S)
  
--DEFINE_MUTEX(sg_mutex);
-+#define SENSOR_GROUPS_DIR_STR	"sensor_groups"
- 
- static struct kobject *sg_kobj;
- 
--struct sg_attr {
--	u32 handle;
--	struct kobj_attribute attr;
--};
--
- static struct sensor_group {
--	char name[20];
-+	struct kobj_attribute sattr;
- 	struct attribute_group sg;
--	struct sg_attr *sgattrs;
--} *sgs;
-+	struct mutex mutex;
-+	char name[20];
-+	u32 handle;
-+	u32 enable;
-+} *sgroups;
- 
- int sensor_group_enable(u32 handle, bool enable)
- {
-@@ -60,10 +59,12 @@ int sensor_group_enable(u32 handle, bool enable)
- }
- EXPORT_SYMBOL_GPL(sensor_group_enable);
- 
--static ssize_t sg_store(struct kobject *kobj, struct kobj_attribute *attr,
--			const char *buf, size_t count)
-+static ssize_t sgroup_clear_store(struct kobject *kobj,
-+				  struct kobj_attribute *attr,
-+				  const char *buf, size_t count)
- {
--	struct sg_attr *sattr = container_of(attr, struct sg_attr, attr);
-+	struct sensor_group *sgroup = container_of(attr, struct sensor_group,
-+						   sattr);
- 	struct opal_msg msg;
- 	u32 data;
- 	int ret, token;
-@@ -81,11 +82,11 @@ static ssize_t sg_store(struct kobject *kobj, struct kobj_attribute *attr,
- 		return token;
- 	}
- 
--	ret = mutex_lock_interruptible(&sg_mutex);
-+	ret = mutex_lock_interruptible(&sgroup->mutex);
- 	if (ret)
- 		goto out_token;
- 
--	ret = opal_sensor_group_clear(sattr->handle, token);
-+	ret = opal_sensor_group_clear(sgroup->handle, token);
- 	switch (ret) {
- 	case OPAL_ASYNC_COMPLETION:
- 		ret = opal_async_wait_response(token, &msg);
-@@ -106,135 +107,222 @@ static ssize_t sg_store(struct kobject *kobj, struct kobj_attribute *attr,
- 	}
- 
- out:
--	mutex_unlock(&sg_mutex);
-+	mutex_unlock(&sgroup->mutex);
- out_token:
- 	opal_async_release_token(token);
- 	return ret;
+ static struct ucc_tdm_info utdm_primary_info = {
+ 	.uf_info = {
+@@ -420,12 +421,25 @@ static netdev_tx_t ucc_hdlc_tx(struct sk_buff *skb, struct net_device *dev)
+ 	return NETDEV_TX_OK;
  }
  
--static struct sg_ops_info {
--	int opal_no;
--	const char *attr_name;
--	ssize_t (*store)(struct kobject *kobj, struct kobj_attribute *attr,
--			const char *buf, size_t count);
--} ops_info[] = {
--	{ OPAL_SENSOR_GROUP_CLEAR, "clear", sg_store },
--};
-+static int find_nr_groups(struct device_node *sensor_group_node, int opal_no)
++static int hdlc_tx_restart(struct ucc_hdlc_private *priv)
 +{
-+	struct devce_node *node;
-+	int count = 0;
++	u32 cecr_subblock;
 +
-+	for_each_child_of_node(sensor_group_node, node) {
-+		u32 sgid, op;
++	cecr_subblock =
++		ucc_fast_get_qe_cr_subblock(priv->ut_info->uf_info.ucc_num);
 +
-+		if (of_device_is_compatible(node, "ibm,opal-sensor"))
-+			continue;
-+
-+		if (of_property_read_u32(node, "ops", &op))
-+			continue;
-+
-+		if (op != opal_no)
-+			continue;
-+
-+		if (of_property_read_u32(node, "sensor-group-id", &sgid))
-+			continue;
-+		count++;
-+	}
-+
-+	return count;
-+}
- 
--static void add_attr(int handle, struct sg_attr *attr, int index)
-+#ifdef CONFIG_DEBUG_FS
-+static int sgroup_enable_get(void *data, u64 *val)
- {
--	attr->handle = handle;
--	sysfs_attr_init(&attr->attr.attr);
--	attr->attr.attr.name = ops_info[index].attr_name;
--	attr->attr.attr.mode = 0220;
--	attr->attr.store = ops_info[index].store;
-+	struct sensor_group *sgroup = (struct sensor_group *)data;
-+
-+	*val = sgroup->enable;
++	qe_issue_cmd(QE_RESTART_TX, cecr_subblock,
++		     QE_CR_PROTOCOL_UNSPECIFIED, 0);
 +	return 0;
- }
- 
--static int add_attr_group(const __be32 *ops, int len, struct sensor_group *sg,
--			   u32 handle)
-+static int sgroup_enable_set(void *data, u64 val)
++}
++
+ static int hdlc_tx_done(struct ucc_hdlc_private *priv)
  {
--	int i, j;
--	int count = 0;
-+	struct sensor_group *sgroup = (struct sensor_group *)data;
-+	int rc;
-+
-+	if (val != 0 && val != 1)
-+		return -EINVAL;
-+
-+	rc = mutex_lock_interruptible(&sgroup->mutex);
-+	if (rc)
-+		return rc;
+ 	/* Start from the next BD that should be filled */
+ 	struct net_device *dev = priv->ndev;
+ 	struct qe_bd *bd;		/* BD pointer */
+ 	u16 bd_status;
++	int tx_restart = 0;
  
--	for (i = 0; i < len; i++)
--		for (j = 0; j < ARRAY_SIZE(ops_info); j++)
--			if (be32_to_cpu(ops[i]) == ops_info[j].opal_no) {
--				add_attr(handle, &sg->sgattrs[count], j);
--				sg->sg.attrs[count] =
--					&sg->sgattrs[count].attr.attr;
--				count++;
--			}
-+	if (val != sgroup->enable) {
-+		rc = sensor_group_enable(sgroup->handle, val);
-+		if (!rc)
-+			sgroup->enable = val;
-+	}
+ 	bd = priv->dirty_tx;
+ 	bd_status = ioread16be(&bd->status);
+@@ -434,6 +448,15 @@ static int hdlc_tx_done(struct ucc_hdlc_private *priv)
+ 	while ((bd_status & T_R_S) == 0) {
+ 		struct sk_buff *skb;
  
--	return sysfs_create_group(sg_kobj, &sg->sg);
-+	mutex_unlock(&sgroup->mutex);
-+	return rc;
- }
- 
--static int get_nr_attrs(const __be32 *ops, int len)
-+DEFINE_DEBUGFS_ATTRIBUTE(sensor_debugfs_ops, sgroup_enable_get,
-+			 sgroup_enable_set, "%llx\n");
-+static struct dentry *sensor_debugfs_parent;
-+static struct sensor_group *dgroups;
-+
-+static void add_debugfs_attrs(struct device_node *sensor_group_node)
- {
--	int i, j;
--	int nr_attrs = 0;
-+	struct device_node *node;
-+	int i = 0, count;
-+
-+	count = find_nr_groups(sensor_group_node, OPAL_SENSOR_GROUP_ENABLE);
-+	if (!count)
-+		return;
- 
--	for (i = 0; i < len; i++)
--		for (j = 0; j < ARRAY_SIZE(ops_info); j++)
--			if (be32_to_cpu(ops[i]) == ops_info[j].opal_no)
--				nr_attrs++;
-+	dgroups = kcalloc(count, sizeof(*dgroups), GFP_KERNEL);
-+	if (!sgroups)
-+		return;
-+
-+	sensor_debugfs_parent = debugfs_create_dir(SENSOR_GROUPS_DIR_STR,
-+						   powerpc_debugfs_root);
-+	if (!sensor_debugfs_parent)
-+		goto out_dgroups;
- 
--	return nr_attrs;
-+	for_each_child_of_node(sensor_group_node, node) {
-+		struct dentry *group;
-+		u32 op, sgid, chipid;
-+
-+		if (of_device_is_compatible(node, "ibm,opal-sensor"))
-+			continue;
-+
-+		if (of_property_read_u32(node, "ops", &op))
-+			continue;
-+
-+		if (op != OPAL_SENSOR_GROUP_ENABLE)
-+			continue;
-+
-+		if (of_property_read_u32(node, "sensor-group-id", &sgid))
-+			continue;
-+
-+		if (!of_property_read_u32(node, "ibm,chip-id", &chipid))
-+			sprintf(dgroups[i].name, "%s%d", node->name, chipid);
-+		else
-+			sprintf(dgroups[i].name, "%s", node->name);
-+
-+		dgroups[i].handle = sgid;
-+		dgroups[i].enable = 1;
-+		mutex_init(&dgroups[i].mutex);
-+		group = debugfs_create_dir(dgroups[i].name,
-+					   sensor_debugfs_parent);
-+		if (!group) {
-+			of_node_put(node);
-+			goto out_debugfs;
++		if (bd_status & T_UN_S) { /* Underrun */
++			dev->stats.tx_fifo_errors++;
++			tx_restart = 1;
++		}
++		if (bd_status & T_CT_S) { /* Carrier lost */
++			dev->stats.tx_carrier_errors++;
++			tx_restart = 1;
 +		}
 +
-+		if (!debugfs_create_file("enable", 0664, group, &dgroups[i],
-+					 &sensor_debugfs_ops)) {
-+			of_node_put(node);
-+			goto out_debugfs;
-+		}
-+		i++;
-+	}
-+
-+	return;
-+
-+out_debugfs:
-+	debugfs_remove_recursive(sensor_debugfs_parent);
-+out_dgroups:
-+	kfree(dgroups);
- }
-+#endif /* CONFIG_DEBUG_FS */
- 
- void __init opal_sensor_groups_init(void)
- {
--	struct device_node *sg, *node;
--	int i = 0;
-+	struct device_node *sensor_group_node, *node;
-+	int i = 0, count;
- 
--	sg = of_find_compatible_node(NULL, NULL, "ibm,opal-sensor-group");
--	if (!sg) {
-+	sensor_group_node = of_find_compatible_node(NULL, NULL,
-+						    "ibm,opal-sensor-group");
-+	if (!sensor_group_node) {
- 		pr_devel("Sensor groups node not found\n");
- 		return;
+ 		/* BD contains already transmitted buffer.   */
+ 		/* Handle the transmitted buffer and release */
+ 		/* the BD to be used with the current frame  */
+@@ -465,6 +488,9 @@ static int hdlc_tx_done(struct ucc_hdlc_private *priv)
  	}
+ 	priv->dirty_tx = bd;
  
--	sgs = kcalloc(of_get_child_count(sg), sizeof(*sgs), GFP_KERNEL);
--	if (!sgs)
--		return;
-+	count = find_nr_groups(sensor_group_node, OPAL_SENSOR_GROUP_CLEAR);
-+	if (!count)
-+		goto out_node_put;
- 
--	sg_kobj = kobject_create_and_add("sensor_groups", opal_kobj);
-+	sgroups = kcalloc(count, sizeof(*sgroups), GFP_KERNEL);
-+	if (!sgroups)
-+		goto out_node_put;
++	if (tx_restart)
++		hdlc_tx_restart(priv);
 +
-+	sg_kobj = kobject_create_and_add(SENSOR_GROUPS_DIR_STR, opal_kobj);
- 	if (!sg_kobj) {
- 		pr_warn("Failed to create sensor group kobject\n");
--		goto out_sgs;
-+		goto out_sgroups;
- 	}
+ 	return 0;
+ }
  
--	for_each_child_of_node(sg, node) {
--		const __be32 *ops;
--		u32 sgid, len, nr_attrs, chipid;
-+	for_each_child_of_node(sensor_group_node, node) {
-+		u32 sgid, chipid, op;
+@@ -483,11 +509,22 @@ static int hdlc_rx_done(struct ucc_hdlc_private *priv, int rx_work_limit)
  
--		ops = of_get_property(node, "ops", &len);
--		if (!ops)
-+		if (of_property_read_u32(node, "ops", &op))
- 			continue;
- 
--		nr_attrs = get_nr_attrs(ops, len);
--		if (!nr_attrs)
-+		if (op != OPAL_SENSOR_GROUP_CLEAR)
- 			continue;
- 
--		sgs[i].sgattrs = kcalloc(nr_attrs, sizeof(*sgs[i].sgattrs),
--					 GFP_KERNEL);
--		if (!sgs[i].sgattrs)
--			goto out_sgs_sgattrs;
--
--		sgs[i].sg.attrs = kcalloc(nr_attrs + 1,
--					  sizeof(*sgs[i].sg.attrs),
--					  GFP_KERNEL);
--
--		if (!sgs[i].sg.attrs) {
--			kfree(sgs[i].sgattrs);
--			goto out_sgs_sgattrs;
--		}
--
--		if (of_property_read_u32(node, "sensor-group-id", &sgid)) {
--			pr_warn("sensor-group-id property not found\n");
--			goto out_sgs_sgattrs;
--		}
-+		if (of_property_read_u32(node, "sensor-group-id", &sgid))
-+			continue;
- 
- 		if (!of_property_read_u32(node, "ibm,chip-id", &chipid))
--			sprintf(sgs[i].name, "%s%d", node->name, chipid);
-+			sprintf(sgroups[i].name, "%s%d", node->name, chipid);
- 		else
--			sprintf(sgs[i].name, "%s", node->name);
-+			sprintf(sgroups[i].name, "%s", node->name);
+ 	/* while there are received buffers and BD is full (~R_E) */
+ 	while (!((bd_status & (R_E_S)) || (--rx_work_limit < 0))) {
+-		if (bd_status & R_OV_S)
+-			dev->stats.rx_over_errors++;
+-		if (bd_status & R_CR_S) {
+-			dev->stats.rx_crc_errors++;
+-			dev->stats.rx_dropped++;
++		if (bd_status & (RX_BD_ERRORS)) {
++			dev->stats.rx_errors++;
 +
-+		sgroups[i].sg.attrs = kzalloc(sizeof(struct attribute *) * 2,
-+					      GFP_KERNEL);
-+		if (!sgroups[i].sg.attrs) {
-+			of_node_put(node);
-+			goto out_sg_attrs;
-+		}
- 
--		sgs[i].sg.name = sgs[i].name;
--		if (add_attr_group(ops, len, &sgs[i], sgid)) {
-+		sgroups[i].sg.name = sgroups[i].name;
-+		sgroups[i].handle = sgid;
-+		sysfs_attr_init(sgroups[i].sattr.attr);
-+		sgroups[i].sattr.attr.name = "clear";
-+		sgroups[i].sattr.attr.mode = 0220;
-+		sgroups[i].sattr.store = sgroup_clear_store;
-+		sgroups[i].sg.attrs[0] = &sgroups[i].sattr.attr;
-+		sgroups[i].sg.attrs[1] = NULL;
-+		mutex_init(&sgroups[i].mutex);
++			if (bd_status & R_CD_S)
++				dev->stats.collisions++;
++			if (bd_status & R_OV_S)
++				dev->stats.rx_fifo_errors++;
++			if (bd_status & R_CR_S)
++				dev->stats.rx_crc_errors++;
++			if (bd_status & R_AB_S)
++				dev->stats.rx_over_errors++;
++			if (bd_status & R_NO_S)
++				dev->stats.rx_frame_errors++;
++			if (bd_status & R_LG_S)
++				dev->stats.rx_length_errors++;
 +
-+		if (sysfs_create_group(sg_kobj, &sgroups[i].sg)) {
- 			pr_warn("Failed to create sensor attribute group %s\n",
--				sgs[i].sg.name);
--			goto out_sgs_sgattrs;
-+				sgroups[i].sg.name);
-+			kfree(sgroups[i].sg.attrs);
-+			of_node_put(node);
-+			goto out_sg_attrs;
+ 			goto recycle;
  		}
-+
- 		i++;
- 	}
+ 		bdbuffer = priv->rx_buffer +
+@@ -535,7 +572,7 @@ static int hdlc_rx_done(struct ucc_hdlc_private *priv, int rx_work_limit)
+ 		netif_receive_skb(skb);
  
--	return;
-+#ifdef CONFIG_DEBUG_FS
-+	add_debugfs_attrs(sensor_group_node);
-+#endif /* CONFIG_DEBUG_FS */
+ recycle:
+-		iowrite16be(bd_status | R_E_S | R_I_S, &bd->status);
++		iowrite16be((bd_status & R_W_S) | R_E_S | R_I_S, &bd->status);
  
--out_sgs_sgattrs:
--	while (--i >= 0) {
--		kfree(sgs[i].sgattrs);
--		kfree(sgs[i].sg.attrs);
--	}
-+	goto out_node_put;
-+
-+out_sg_attrs:
-+	while (i-- > 0)
-+		kfree(sgroups[i].sg.attrs);
- 	kobject_put(sg_kobj);
--out_sgs:
--	kfree(sgs);
-+out_sgroups:
-+	kfree(sgroups);
-+out_node_put:
-+	of_node_put(sensor_group_node);
- }
+ 		/* update to point at the next bd */
+ 		if (bd_status & R_W_S) {
+@@ -611,7 +648,7 @@ static irqreturn_t ucc_hdlc_irq_handler(int irq, void *dev_id)
+ 
+ 	/* Errors and other events */
+ 	if (ucce >> 16 & UCC_HDLC_UCCE_BSY)
+-		dev->stats.rx_errors++;
++		dev->stats.rx_missed_errors++;
+ 	if (ucce >> 16 & UCC_HDLC_UCCE_TXE)
+ 		dev->stats.tx_errors++;
+ 
+diff --git a/include/soc/fsl/qe/ucc_fast.h b/include/soc/fsl/qe/ucc_fast.h
+index 3ee9e7c1a7d7..dcd6b865b590 100644
+--- a/include/soc/fsl/qe/ucc_fast.h
++++ b/include/soc/fsl/qe/ucc_fast.h
+@@ -41,8 +41,12 @@
+ #define R_L_S	0x0800	/* last */
+ #define R_F_S	0x0400	/* first */
+ #define R_CM_S	0x0200	/* continuous mode */
++#define R_LG_S  0x0020  /* frame length */
++#define R_NO_S  0x0010  /* nonoctet */
++#define R_AB_S  0x0008  /* abort */
+ #define R_CR_S	0x0004	/* crc */
+-#define R_OV_S	0x0002	/* crc */
++#define R_OV_S	0x0002	/* overrun */
++#define R_CD_S  0x0001  /* carrier detect */
+ 
+ /* transmit BD's status */
+ #define T_R_S	0x8000	/* ready bit */
+@@ -51,6 +55,8 @@
+ #define T_L_S	0x0800	/* last */
+ #define T_TC_S	0x0400	/* crc */
+ #define T_TM_S	0x0200	/* continuous mode */
++#define T_UN_S  0x0002  /* hdlc underrun */
++#define T_CT_S  0x0001  /* hdlc carrier lost */
+ 
+ /* Rx Data buffer must be 4 bytes aligned in most cases */
+ #define UCC_FAST_RX_ALIGN			4
 -- 
-1.8.3.1
+2.18.1
 
