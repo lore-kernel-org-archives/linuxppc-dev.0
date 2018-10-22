@@ -2,91 +2,74 @@ Return-Path: <SRS0=Olcr=NC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 834B9C67863
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Oct 2018 21:18:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 643CAC004D3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Oct 2018 21:27:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3C01420651
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Oct 2018 21:18:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3C01420651
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=debian.org
+	by mail.kernel.org (Postfix) with ESMTPS id 29E1620663
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Oct 2018 21:27:28 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="seE+hmgN"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 29E1620663
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42f8Wc50w3zF36p
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Oct 2018 08:18:20 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=debian.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42f8k56sYdzDrPm
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Oct 2018 08:27:25 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=debian.org
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=leitao@debian.org; receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="seE+hmgN";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=debian.org
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=atull@kernel.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="seE+hmgN"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42f8Tc5qXbzDrvG
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Oct 2018 08:16:36 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w9ML4G1X002463
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Oct 2018 17:16:34 -0400
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2n9ny9gwg6-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Oct 2018 17:16:33 -0400
-Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <leitao@debian.org>;
- Mon, 22 Oct 2018 15:16:33 -0600
-Received: from b03cxnp07028.gho.boulder.ibm.com (9.17.130.15)
- by e31.co.us.ibm.com (192.168.1.131) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 22 Oct 2018 15:16:31 -0600
-Received: from b03ledav004.gho.boulder.ibm.com
- (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- w9MLGUtb63832122
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Mon, 22 Oct 2018 14:16:30 -0700
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 156827805C;
- Mon, 22 Oct 2018 21:16:30 +0000 (GMT)
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id EF74978060;
- Mon, 22 Oct 2018 21:16:27 +0000 (GMT)
-Received: from debra.ibm.com (unknown [9.85.163.197])
- by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
- Mon, 22 Oct 2018 21:16:27 +0000 (GMT)
-From: Breno Leitao <leitao@debian.org>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] selftests/powerpc: Fix ptrace tm failure
-Date: Mon, 22 Oct 2018 18:16:26 -0300
-X-Mailer: git-send-email 1.8.3.1
-X-TM-AS-GCONF: 00
-x-cbid: 18102221-8235-0000-0000-00000E1A13E9
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00009918; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000268; SDB=6.01106501; UDB=6.00573012; IPR=6.00886585; 
- MB=3.00023861; MTD=3.00000008; XFM=3.00000015; UTC=2018-10-22 21:16:32
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18102221-8236-0000-0000-00004317F0BC
-Message-Id: <1540242986-7510-1-git-send-email-leitao@debian.org>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-10-22_11:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=901 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1807170000 definitions=main-1810220178
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42f8gN5lK7zDsFP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Oct 2018 08:25:04 +1100 (AEDT)
+Received: from mail-ed1-f53.google.com (mail-ed1-f53.google.com
+ [209.85.208.53])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 9F9F220672
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Oct 2018 21:25:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1540243501;
+ bh=J5KXlHq0ykYvkTpQd8RTxRXAiMeYwd3ZqmH5ZY+miK0=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=seE+hmgNxKYVNoTgH8ClvDNdJ1ir4JBkHHipXuMkznuS7/mDnp5vwLAJbvUsp9sJg
+ orjO/nZgMbt/qWWEpJ/7fFp7l3jTOohv9zKyVLbTV6Dnj1X4o5z7HpUFUM0guxXmm7
+ 9k+hv75nu5PKc0SmDxTd4dIOIbXMp7FFqp5r7zzs=
+Received: by mail-ed1-f53.google.com with SMTP id r1-v6so39377782edd.7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Oct 2018 14:25:01 -0700 (PDT)
+X-Gm-Message-State: AGRZ1gIxfvy9g9bbqfETbhUNoUdfT2kc2TuOdexnNXKDC0Sfq776MFwh
+ HNdq06nvXSBCGmfz8WALW9DAODP+v/6DL9givzw=
+X-Google-Smtp-Source: AJdET5caEsiwVSlUwSAjryIBOEYgWxo1ZnaopgHGUj+bbgMyGw/96+OjLlidoRf+uZtC0CtEhvWeSMBKdJ/6W/dcGuU=
+X-Received: by 2002:a50:cd4b:: with SMTP id
+ d11-v6mr4278153edj.60.1540243499796; 
+ Mon, 22 Oct 2018 14:24:59 -0700 (PDT)
+MIME-Version: 1.0
+References: <1539902796-8382-1-git-send-email-frowand.list@gmail.com>
+In-Reply-To: <1539902796-8382-1-git-send-email-frowand.list@gmail.com>
+From: Alan Tull <atull@kernel.org>
+Date: Mon, 22 Oct 2018 16:24:23 -0500
+X-Gmail-Original-Message-ID: <CANk1AXSLZLn6XjC=nv3+pK_NQc_VL5MxWfOW9mLCgv_eFYvPPw@mail.gmail.com>
+Message-ID: <CANk1AXSLZLn6XjC=nv3+pK_NQc_VL5MxWfOW9mLCgv_eFYvPPw@mail.gmail.com>
+Subject: Re: [PATCH v5 00/18] of: overlay: validation checks, subsequent fixes
+To: Frank Rowand <frowand.list@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,61 +81,138 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Breno Leitao <leitao@debian.org>, mikey@neuling.org, stable@vger.kernel.org,
- gromero@linux.vnet.ibm.com
+Cc: "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
+ <devicetree@vger.kernel.org>, linux-fpga@vger.kernel.org,
+ Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>,
+ Moritz Fischer <mdf@kernel.org>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Test ptrace-tm-spd-gpr fails on current kernel (4.19) due to a segmentation
-fault that happens on the child process prior to setting cptr[2] = 1. This
-causes the parent process to wait forever at 'while (!pptr[2])' and the test to
-be killed by the test harness framework by timeout, thus, failing.
+On Thu, Oct 18, 2018 at 5:48 PM <frowand.list@gmail.com> wrote:
+>
+> From: Frank Rowand <frank.rowand@sony.com>
+>
+> Add checks to (1) overlay apply process and (2) memory freeing
+> triggered by overlay release.  The checks are intended to detect
+> possible memory leaks and invalid overlays.
 
-The segmentation fault happens because of a inline assembly being
-generated as:
+I've tested v5, nothing new to report.
 
-	0x10000355c <tm_spd_gpr+492>    lfs    f0, 0(0)
+Alan
 
-This is reading memory position 0x0 and causing the segmentation fault.
-
-This code is being generated by ASM_LOAD_FPR_SINGLE_PRECISION(flt_4), where
-flt_4 is passed to the inline assembly block as:
-
-	[flt_4] "r" (&d)
-
-Since the inline assembly 'r' constraint means any GPR, gpr0 is being
-chosen, thus causing this issue when issuing a Load Floating-Point Single
-instruction.
-
-This patch simply changes the constraint to 'b', which specify that this
-register will be used as base, and r0 is not allowed to be used, avoiding
-this issue.
-
-Other than that, removing flt_2 register from the input operands, since it
-is not used by the inline assembly code at all.
-
-Cc: stable@vger.kernel.org
-Signed-off-by: Breno Leitao <leitao@debian.org>
----
- tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-gpr.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-gpr.c b/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-gpr.c
-index 327fa943c7f3..dbdffa2e2c82 100644
---- a/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-gpr.c
-+++ b/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-gpr.c
-@@ -67,8 +67,8 @@ void tm_spd_gpr(void)
- 		"3: ;"
- 		: [res] "=r" (result), [texasr] "=r" (texasr)
- 		: [gpr_1]"i"(GPR_1), [gpr_2]"i"(GPR_2), [gpr_4]"i"(GPR_4),
--		[sprn_texasr] "i" (SPRN_TEXASR), [flt_1] "r" (&a),
--		[flt_2] "r" (&b), [flt_4] "r" (&d)
-+		[sprn_texasr] "i" (SPRN_TEXASR), [flt_1] "b" (&a),
-+		[flt_4] "b" (&d)
- 		: "memory", "r5", "r6", "r7",
- 		"r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15",
- 		"r16", "r17", "r18", "r19", "r20", "r21", "r22", "r23",
--- 
-2.19.0
-
+>
+> The checks revealed bugs in existing code.  Fixed the bugs.
+>
+> While fixing bugs, noted other issues, which are fixed in
+> separate patches.
+>
+> *****  Powerpc folks: I was not able to test the patches that
+> *****  directly impact Powerpc systems that use dynamic
+> *****  devicetree.  Please review that code carefully and
+> *****  test.  The specific patches are: 03/16, 04/16, 07/16
+>
+> FPGA folks:
+>
+>   I made the validation checks that should result in an
+>   invalid live devicetree report "ERROR" and cause the overlay apply
+>   to fail.
+>
+>   I made the memory leak validation tests report "WARNING" and allow
+>   the overlay apply to complete successfully.  Please let me know
+>   if you encounter the warnings.  There are at least two paths
+>   forward to deal with the cases that trigger the warning: (1) change
+>   the warning to an error and fail the overlay apply, or (2) find a
+>   way to detect the potential memory leaks and free the memory
+>   appropriately.
+>
+> ALL people:
+>
+>   The validations do _not_ address another major concern I have with
+>   releasing overlays, which is use after free errors.
+>
+> Changes since v4:
+>   - 01/18: make error message format consistent, error first, path last
+>   - 09/18: create of_prop_val_eq() and change open code to use it
+>   - 09/18: remove extra blank lines
+>
+> Changes since v3:
+>   - 01/18: Add expected value of refcount for destroy cset entry error.  Also
+>     explain the cause of the error.
+>
+>   - 09/18: for errors of an overlay changing the value of #size-cells or
+>     #address-cells, return -EINVAL so that overlay apply will fail
+>   - 09/18: for errors of an overlay changing the value of #size-cells or
+>     #address-cells, make the message more direct.
+>     Old message:
+>       OF: overlay: ERROR: overlay and/or live tree #size-cells invalid in node /soc/base_fpga_region
+>     New message:
+>       OF: overlay: ERROR: changing value of /soc/base_fpga_region/#size-cells not allowed
+>
+>   - 13/18: Update patch comment header to state that this patch modifies the
+>     previous patch to not return immediately on fragment error and
+>     explain this is not a performance issue.
+>   - 13/18: remove redundant "overlay" from two error messages.  "OF: overlay:"
+>     is already present in pr_fmt()
+>
+> Changes since v2:
+>
+>   - 13/18: Use continue to reduce indentation in find_dup_cset_node_entry()
+>     and find_dup_cset_prop()
+>
+> Changes since v1:
+>
+>   - move patch 16/16 to 17/18
+>   - move patch 15/16 to 18/18
+>   - new patch 15/18
+>   - new patch 16/18
+>
+>   - 05/18: add_changeset_node() header comment: incorrect comment for @target
+>
+>   - 18/18: add same fix for of_parse_phandle_with_args()
+>   - 18/18: add same fix for of_parse_phandle_with_args_map()
+>
+>
+> *** BLURB HERE ***
+>
+> Frank Rowand (18):
+>   of: overlay: add tests to validate kfrees from overlay removal
+>   of: overlay: add missing of_node_put() after add new node to changeset
+>   of: overlay: add missing of_node_get() in __of_attach_node_sysfs
+>   powerpc/pseries: add of_node_put() in dlpar_detach_node()
+>   of: overlay: use prop add changeset entry for property in new nodes
+>   of: overlay: do not duplicate properties from overlay for new nodes
+>   of: dynamic: change type of of_{at,de}tach_node() to void
+>   of: overlay: reorder fields in struct fragment
+>   of: overlay: validate overlay properties #address-cells and
+>     #size-cells
+>   of: overlay: make all pr_debug() and pr_err() messages unique
+>   of: overlay: test case of two fragments adding same node
+>   of: overlay: check prevents multiple fragments add or delete same node
+>   of: overlay: check prevents multiple fragments touching same property
+>   of: unittest: remove unused of_unittest_apply_overlay() argument
+>   of: overlay: set node fields from properties when add new overlay node
+>   of: unittest: allow base devicetree to have symbol metadata
+>   of: unittest: find overlays[] entry by name instead of index
+>   of: unittest: initialize args before calling of_*parse_*()
+>
+>  arch/powerpc/platforms/pseries/dlpar.c             |  15 +-
+>  arch/powerpc/platforms/pseries/reconfig.c          |   6 +-
+>  drivers/of/dynamic.c                               |  68 +++--
+>  drivers/of/kobj.c                                  |   4 +-
+>  drivers/of/overlay.c                               | 292 ++++++++++++++++-----
+>  drivers/of/unittest-data/Makefile                  |   2 +
+>  .../of/unittest-data/overlay_bad_add_dup_node.dts  |  28 ++
+>  .../of/unittest-data/overlay_bad_add_dup_prop.dts  |  24 ++
+>  drivers/of/unittest-data/overlay_base.dts          |   1 +
+>  drivers/of/unittest.c                              |  96 +++++--
+>  include/linux/of.h                                 |  25 +-
+>  11 files changed, 439 insertions(+), 122 deletions(-)
+>  create mode 100644 drivers/of/unittest-data/overlay_bad_add_dup_node.dts
+>  create mode 100644 drivers/of/unittest-data/overlay_bad_add_dup_prop.dts
+>
+> --
+> Frank Rowand <frank.rowand@sony.com>
+>
