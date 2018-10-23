@@ -6,80 +6,80 @@ X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D0525C46475
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Oct 2018 06:27:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A3A5C46475
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Oct 2018 06:29:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 518CD2064C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Oct 2018 06:27:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C1E922064C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Oct 2018 06:29:21 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="nU06CDGd"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 518CD2064C
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="jME5vagu"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C1E922064C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=jms.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42fNhk23JPzDrcQ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Oct 2018 17:27:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42fNlM3dC4zDrMG
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Oct 2018 17:29:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=jms.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="nU06CDGd";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="jME5vagu";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::443; helo=mail-pf1-x443.google.com;
+ (client-ip=2607:f8b0:4864:20::642; helo=mail-pl1-x642.google.com;
  envelope-from=joel.stan@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=jms.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="nU06CDGd"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="jME5vagu"; 
  dkim-atps=neutral
-Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
- [IPv6:2607:f8b0:4864:20::443])
+Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com
+ [IPv6:2607:f8b0:4864:20::642])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42fNTk1WgtzF1Hp
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Oct 2018 17:17:30 +1100 (AEDT)
-Received: by mail-pf1-x443.google.com with SMTP id f78-v6so166136pfe.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Oct 2018 23:17:29 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42fNTr5yfKzF14t
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Oct 2018 17:17:36 +1100 (AEDT)
+Received: by mail-pl1-x642.google.com with SMTP id 30-v6so131263plb.10
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Oct 2018 23:17:36 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=sender:from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=zh5a0oXfAbjeEOgFxGihzvB+6U1+ro2b74+S+sXuMNA=;
- b=nU06CDGd2YGQj8WTj6v61F6jiqwWWp9IwJGQGBmI+okH/f00JTe3IN0P4W8cf8d3cI
- H6nLPevdDTCX9XPusSQekvDJuPOJvQFSMdpJNRi4Jj755FwqBuEH0RYZrqIDqHQBRvy5
- /A8GrYsiB8SdEfyEzbCc7/h7bSgyf5mM3NITXW2rZT8RAv38W+4jsN8qdmq6rCBO3HJh
- fd369hzm/qD0y0/YZk/GrAFF233fFGfF+ZLEwEIt20XUa2r6SJQzcDShdL56y7GKcGmF
- zdtMNTrtXp5x1KMYdz9VpCsP6b9lvgUdED6bVEkBf4Ji2bWrIVJn9R2q0BwStUSQVEN1
- pOgg==
+ bh=7KMMdFSw10DcDKiCmHQOwnGojU9vuBRNUucRAK3vrzA=;
+ b=jME5vagubvW3EyStbGr1XxEkEkmBOsGi6AoIu6VmIVTBiLgZ83GcOizdWDm6LBB5ZR
+ Ewz4jOukyZJdPR6QVCO2AnDdvTC5PwlW3XwbuqqSZF58YeW9SiRg58rxe5s49SfiIHJf
+ 65Ng02BHZZlMzY8VmiIh4sbiDrVD57w06hJMnYHF3PK6mzcp4xBOhC3sBf16MhvKx9Lq
+ j31+1F6uXH93UeZXtTTnpIhnxCWubrZaF/7z1czXeW+seV1gprOHMs/ih/r7ba1zICQT
+ k/gzLG9comRZUFHsFlN4FQ/Lp435v9ErntocrS8q5Y715Iz3A9xXZCHyFdmjVKbKOcdw
+ CPkQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
  :in-reply-to:references:mime-version:content-transfer-encoding;
- bh=zh5a0oXfAbjeEOgFxGihzvB+6U1+ro2b74+S+sXuMNA=;
- b=pfU3eXt4WQmEwdTwQcjLOtrnHnSQ5xJAzLwp+uldKlZ9KTUMjcsX/1BsOrgpzVax2Q
- /lfwnqc0EG9EaTl70/ckNGhxe0WCWcFDsxNo5ZIgiqaMG9Qi9qne9xF4Zy1wNPTUNtJb
- nQjbUlNjLPGTBVdDkIGVFx7UXbME5oLwURM0HyXOpW3v9Tls3zH4cp8w1Aq+N8lFz02l
- 80q2Oxb6u8xTzWnTqbTvTwDvVx91hbq1IO81zA3/bqKl5aCXvFlnYHQemDIqjEjxRuS6
- YUHVaJv66XlIrMVUMz5UwuhWkqQ4kvBnzmr7X25b6SeMkUnoYnt+R87X3OroLCFxI3x1
- AMcw==
-X-Gm-Message-State: ABuFfogu7oxPEJYvdWEnRUoz5MORIUU0TI7MD9lV8d/I9sZgHGSFLWHo
- 4avSaZL8tsJA+3ufYvNI/iK7LMEk
-X-Google-Smtp-Source: ACcGV62TgPSlJB5jt/fewdp9Eo5NI1MfnAG9NIKMiKYAeyFKODwky7oS6klNT3Enhp9pQtikNoV5sA==
-X-Received: by 2002:a63:aa48:: with SMTP id
- x8-v6mr44674758pgo.87.1540275448069; 
- Mon, 22 Oct 2018 23:17:28 -0700 (PDT)
+ bh=7KMMdFSw10DcDKiCmHQOwnGojU9vuBRNUucRAK3vrzA=;
+ b=Xu5t0QP2EG0XJ/3IB/yR4jsF49z0NbHrpj2Q4A58+v+ykq+P2qq+R/Y4D3zyg14qgu
+ ybH5TUZIiJD0K1/c0Dawx5HNrCLNr7w8jcXz6Meg9QRCEYxQpamb+htxLfQhA1U7lBdl
+ DaRYey9tUB/jRgLsqYv8IsxTEirMWa10iWHLIJ2fyTnEO8xqQ1blKS2Hgo5wsVsGLuT+
+ g1FjImuJhAP+XcMji7+rgPnr2nWmS5rAyklThCSu8qwM5gfdLFzCl1CnSJMjuutaj1DA
+ 2r4oXqQkcetdcgwgX408NAhroMnDIiAOGVz7rQDhVjWAe9CbWyAqEf1dB9u1n9Ee3W4+
+ gtCQ==
+X-Gm-Message-State: ABuFfogiZ+qPtUqFiX1/7LAbg6kYe9EyIBnkhrMMMWZkF73A3l10W3zT
+ 4J/A/X9zYJYoyTbL+qEJyb58Fewj
+X-Google-Smtp-Source: ACcGV61ZsxPEKB+YewbJh1bxLOdgxhbGklIx2f0oB++OvZEhz2SgQSMMLjvg+nPeguaHbKcoGr9W3w==
+X-Received: by 2002:a17:902:1ea:: with SMTP id
+ b97-v6mr48414523plb.152.1540275454466; 
+ Mon, 22 Oct 2018 23:17:34 -0700 (PDT)
 Received: from aurora.jms.id.au ([45.124.203.19])
- by smtp.gmail.com with ESMTPSA id a16-v6sm1491074pgb.6.2018.10.22.23.17.25
+ by smtp.gmail.com with ESMTPSA id 90-v6sm871825pfk.134.2018.10.22.23.17.31
  (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Mon, 22 Oct 2018 23:17:27 -0700 (PDT)
+ Mon, 22 Oct 2018 23:17:33 -0700 (PDT)
 Received: by aurora.jms.id.au (sSMTP sendmail emulation);
- Tue, 23 Oct 2018 16:47:22 +1030
+ Tue, 23 Oct 2018 16:47:28 +1030
 From: Joel Stanley <joel@jms.id.au>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 3/6] selftests: powerpc/ptrace: Fix linking against pthread
-Date: Tue, 23 Oct 2018 16:46:54 +1030
-Message-Id: <20181023061657.18007-4-joel@jms.id.au>
+Subject: [PATCH 4/6] selftests: powerpc/signal: Make tests build
+Date: Tue, 23 Oct 2018 16:46:55 +1030
+Message-Id: <20181023061657.18007-5-joel@jms.id.au>
 X-Mailer: git-send-email 2.19.1
 In-Reply-To: <20181023061657.18007-1-joel@jms.id.au>
 References: <20181023061657.18007-1-joel@jms.id.au>
@@ -101,34 +101,36 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Some of the ptrace tests require -ptrace when linking:
+According to lib.mk, TEST_PROGS is for shell scripts. It appears we need
+to define the programs as TEST_GEN_PROGS to ensure they are built.
 
- /usr/bin/ld: /tmp/ccH32S9w.o: in function `init_child_sync':
- core-pkey.c:(.text+0x1d64): undefined reference to `sem_init'
-
-The targets for these tests are modfied in lib.mk to add the $(OUTPUT)
-prefix. The makefile needs to specify that modifying those rules, or
-else they do not match and we miss out on the extra flags.
+The definition must also happen below the inclusion of lib.mk.
 
 Signed-off-by: Joel Stanley <joel@jms.id.au>
 ---
- tools/testing/selftests/powerpc/ptrace/Makefile | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ tools/testing/selftests/powerpc/signal/Makefile | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
-diff --git a/tools/testing/selftests/powerpc/ptrace/Makefile b/tools/testing/selftests/powerpc/ptrace/Makefile
-index 58de6d4a0cf4..8d3f006c98cc 100644
---- a/tools/testing/selftests/powerpc/ptrace/Makefile
-+++ b/tools/testing/selftests/powerpc/ptrace/Makefile
-@@ -9,7 +9,7 @@ include ../../lib.mk
+diff --git a/tools/testing/selftests/powerpc/signal/Makefile b/tools/testing/selftests/powerpc/signal/Makefile
+index d34a7c7710db..25d0973df5b3 100644
+--- a/tools/testing/selftests/powerpc/signal/Makefile
++++ b/tools/testing/selftests/powerpc/signal/Makefile
+@@ -1,7 +1,5 @@
+ # SPDX-License-Identifier: GPL-2.0
+-TEST_PROGS := signal signal_tm
+-
+-$(TEST_PROGS): ../harness.c ../utils.c signal.S
++TEST_GEN_PROGS := signal signal_tm
  
- CFLAGS += -m64 -I../../../../../usr/include -I../tm -mhtm -fno-pie
+ CFLAGS += -maltivec
+ signal_tm: CFLAGS += -mhtm
+@@ -9,5 +7,4 @@ signal_tm: CFLAGS += -mhtm
+ top_srcdir = ../../../../..
+ include ../../lib.mk
  
--ptrace-pkey core-pkey: child.h
--ptrace-pkey core-pkey: LDLIBS += -pthread
-+$(OUTPUT)/ptrace-pkey $(OUTPUT)/core-pkey: child.h
-+$(OUTPUT)/ptrace-pkey $(OUTPUT)/core-pkey: LDLIBS += -pthread
- 
- $(TEST_GEN_PROGS): ../harness.c ../utils.c ../lib/reg.S ptrace.h
+-clean:
+-	rm -f $(TEST_PROGS) *.o
++$(TEST_GEN_PROGS): ../harness.c ../utils.c signal.S
 -- 
 2.19.1
 
