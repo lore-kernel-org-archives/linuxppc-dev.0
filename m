@@ -2,84 +2,56 @@ Return-Path: <SRS0=8rOk=ND=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS autolearn=ham
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EDAD8C46475
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Oct 2018 10:58:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0328CC46475
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Oct 2018 10:59:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5699920665
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Oct 2018 10:58:07 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="dkwiM0ks"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5699920665
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 8220120665
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Oct 2018 10:59:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8220120665
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42fVjT0F4YzF36n
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Oct 2018 21:58:05 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42fVlW3Sj3zF36n
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Oct 2018 21:59:51 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="dkwiM0ks";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=intel.com
+ (client-ip=192.55.52.88; helo=mga01.intel.com;
+ envelope-from=ying.huang@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::b44; helo=mail-yb1-xb44.google.com;
- envelope-from=getarunks@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="dkwiM0ks"; 
- dkim-atps=neutral
-Received: from mail-yb1-xb44.google.com (mail-yb1-xb44.google.com
- [IPv6:2607:f8b0:4864:20::b44])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42fLTT6NZczDrpw
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Oct 2018 15:47:06 +1100 (AEDT)
-Received: by mail-yb1-xb44.google.com with SMTP id n140-v6so30926yba.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Oct 2018 21:47:06 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=TlO+0k0SfBCasUX3r7X/bJP9P1ED24TAjIuARBv6nck=;
- b=dkwiM0ksWYqCCVIo+vWjiu86bPCXgnsVPRGIu0AmEooJ2evzojdi5JorLfNUJdHhp7
- CmupJ2bF4/bOgtbkD/56WbYT4g3EVcfSKdXFZ8X7RA9ujsFL61NK0v8Y6qKnSG/gwjzW
- WStbnawYjSkYPldg13qgiH223ht4tT8G/q1WqfFVUG+cXjE+uIs0xrysOuiyLDUcxEvQ
- bjvax2jkVraIx8xGS8J4VgTdqwObcn+jyOMZl3xN9we8EoPcWe60s4FSUInT2P+anmp8
- X7KsbMYwx64MCVbMalKXdOYvRkQKK0+Ro+oMh37CCSMQ7rSn5DMdu/oy+wYFhBRDtddc
- LObQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=TlO+0k0SfBCasUX3r7X/bJP9P1ED24TAjIuARBv6nck=;
- b=HEil9yTypwXssa08fIR9XGXFewz4Or4X2+95O1m0xR6BcYoNl1FLq7jhcxMRKnQbjR
- bz+9Cggcft+wK7PExPyrDRl3zvr4OiuHxkyQ01albW5cOZFteoQeBlmAOEE5I6b6lW1V
- +KiWga2lmGSVwovOCiRUaC7OzdpayPpCrHYmLoTQQpQl9N/FUEAzBkwR7Dn/9aefGXmQ
- nk4w7XA5ddBIy/hOonvbhyP+T/HBp1bObn7M+A0PADQcJi06VvJNuqiXP6BF34S0mZ4d
- KZV/9Tq+vWlwj+7JsI63MbJTyz3QyOE//yFG3JGbI1NzsYf0bH/AK+QnASgZa5ug+aFi
- TJHQ==
-X-Gm-Message-State: ABuFfohqhrWcwHvWCv2u8306zebhBTeg9J2f64RnfpeFXBTaKa8VQQuf
- pRV4KyGnIJkw9JbxbSwccGUwMzsdifvHs4gnXaQ=
-X-Google-Smtp-Source: ACcGV61Aok09sZz1VwmhdTA4yM5aQzDOHnnx8/Sdb5oIExzMWUZAnD1LfCF26d9FwKzbFomdjWPs15GkA+qnFxkVuRs=
-X-Received: by 2002:a25:3c7:: with SMTP id
- 190-v6mr34473821ybd.457.1540270023614; 
- Mon, 22 Oct 2018 21:47:03 -0700 (PDT)
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42fMbf6FH9zDrbV
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Oct 2018 16:37:30 +1100 (AEDT)
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga004.fm.intel.com ([10.253.24.48])
+ by fmsmga101.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 22 Oct 2018 22:37:28 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.54,414,1534834800"; d="scan'208";a="99849695"
+Received: from yhuang-dev.sh.intel.com (HELO yhuang-dev) ([10.239.13.27])
+ by fmsmga004.fm.intel.com with ESMTP; 22 Oct 2018 22:37:02 -0700
+From: "Huang\, Ying" <ying.huang@intel.com>
+To: Arun KS <arunks@codeaurora.org>
+Subject: Re: [PATCH] mm: convert totalram_pages,
+ totalhigh_pages and managed_pages to atomic.
 References: <1540229092-25207-1-git-send-email-arunks@codeaurora.org>
- <20181022181122.GK18839@dhcp22.suse.cz>
-In-Reply-To: <20181022181122.GK18839@dhcp22.suse.cz>
-From: Arun Sudhilal <getarunks@gmail.com>
-Date: Tue, 23 Oct 2018 10:16:51 +0530
-Message-ID: <CABOM9Zpq41Ox8wQvsNjgfCtwuqh6CnyeW1B09DWa1TQN+JKf0w@mail.gmail.com>
-Subject: Re: [PATCH] mm: convert totalram_pages, totalhigh_pages and
- managed_pages to atomic.
-To: mhocko@kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 23 Oct 2018 13:37:01 +0800
+In-Reply-To: <1540229092-25207-1-git-send-email-arunks@codeaurora.org> (Arun
+ KS's message of "Mon, 22 Oct 2018 22:53:22 +0530")
+Message-ID: <874lddxlz6.fsf@yhuang-dev.intel.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/25.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ascii
 X-Mailman-Approved-At: Tue, 23 Oct 2018 21:48:35 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -92,99 +64,133 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: snitzer@redhat.com, kemi.wang@intel.com, dri-devel@lists.freedesktop.org,
- bfields@fieldses.org, linux-sctp@vger.kernel.org, paulus@samba.org,
- pavel@ucw.cz, cl@linux.com, kys@microsoft.com, sumit.semwal@linaro.org,
- David1.Zhou@amd.com, ptesarik@suse.com, ceph-devel@vger.kernel.org,
- jejb@parisc-linux.org, kasan-dev@googlegroups.com, marcos.souza.org@gmail.com,
- steven.hill@cavium.com, rientjes@google.com, anthony.yznaga@oracle.com,
- neelx@redhat.com, guro@fb.com, len.brown@intel.com, linux-pm@vger.kernel.org,
- vbabka@suse.cz, linux-um@lists.infradead.org, rppt@linux.vnet.ibm.com,
- viro@zeniv.linux.org.uk, tglx@linutronix.de, trond.myklebust@hammerspace.com,
- anton@tuxera.com, linux-parisc@vger.kernel.org, malat@debian.org,
- gregkh@linuxfoundation.org, rdunlap@infradead.org, rjw@rjwysocki.net,
- linux-kernel@vger.kernel.org, cyrilbur@gmail.com, arve@android.com,
- netfilter-devel@vger.kernel.org, jrdr.linux@gmail.com,
- dmitry.kasatkin@gmail.com, alexander.deucher@amd.com, arunks@codeaurora.org,
- Andrew Morton <akpm@linux-foundation.org>, andrew-ct.chen@mediatek.com,
- gustavo@embeddedor.com, airlied@linux.ie, dm-devel@redhat.com,
- namit@vmware.com, osandov@fb.com, agk@redhat.com, linux-s390@vger.kernel.org,
- sthemmin@microsoft.com, intel-gfx@lists.freedesktop.org, deller@gmx.de,
- hughd@google.com, mcgrof@kernel.org, coreteam@netfilter.org,
- kadlec@blackhole.kfki.hu, aryabinin@virtuozzo.com, linux-media@vger.kernel.org,
- yuehaibing@huawei.com, tkjos@android.com, pombredanne@nexb.com,
- jani.nikula@linux.intel.com, jia.he@hxt-semitech.com,
- Tejun Heo <tj@kernel.org>, shakeelb@google.com, houlong.wei@mediatek.com,
- devel@linuxdriverproject.org, boris.ostrovsky@oracle.com, maco@android.com,
- linux-arm-kernel@lists.infradead.org, khalid@gonehiking.org,
- oded.gabbay@gmail.com, linaro-mm-sig@lists.linaro.org,
- linux-ntfs-dev@lists.sourceforge.net, corbet@lwn.net, fw@strlen.de,
- anna.schumaker@netapp.com, penberg@kernel.org, minchan@kernel.org,
- ebiederm@xmission.com, aneesh.kumar@linux.ibm.com, schwidefsky@de.ibm.com,
- iamjoonsoo.kim@lge.com, kstewart@linuxfoundation.org,
- marcelo.leitner@gmail.com, linux-fsdevel@vger.kernel.org,
- penguin-kernel@i-love.sakura.ne.jp, joonas.lahtinen@linux.intel.com,
- heiko.carstens@de.ibm.com, stefan@agner.ch, jmorris@namei.org,
- netdev@vger.kernel.org, amd-gfx@lists.freedesktop.org, jack@suse.cz,
- alexander.h.duyck@linux.intel.com, gerrit@erg.abdn.ac.uk,
- andriy.shevchenko@linux.intel.com, miklos@szeredi.hu, david@redhat.com,
- willy@infradead.org, khlebnikov@yandex-team.ru, matthew.auld@intel.com,
- ren_guo@c-sky.com, ying.huang@intel.com, kuznet@ms2.inr.ac.ru,
- idryomov@gmail.com, adobriyan@gmail.com, pablo@netfilter.org, serge@hallyn.com,
- keescook@chromium.org, arnd@arndb.de, haiyangz@microsoft.com,
- broonie@kernel.org, bp@alien8.de, rodrigo.vivi@intel.com,
- dan.j.williams@intel.com, mchehab@kernel.org, ddstreet@ieee.org,
- osalvador@suse.de, linux-nfs@vger.kernel.org, nhorman@tuxdriver.com,
- tvrtko.ursulin@intel.com, jlayton@kernel.org, edumazet@google.com,
- jeyu@kernel.org, joe@perches.com, davem@davemloft.net,
- kirill.shutemov@linux.intel.com, minghsiu.tsai@mediatek.com,
- christian.koenig@amd.com, pv-drivers@vmware.com, bigeasy@linutronix.de,
- chris@chris-wilson.co.uk, linux-mm@kvack.org, glider@google.com, hpa@zytor.com,
- cpandya@codeaurora.org, devel@driverdev.osuosl.org, zyan@redhat.com,
- xen-devel@lists.xenproject.org, sage@redhat.com, dccp@vger.kernel.org,
- richard@nod.at, sjenning@redhat.com, x86@kernel.org, mingo@redhat.com,
- labbott@redhat.com, zohar@linux.vnet.ibm.com, jdike@addtoit.com,
- pavel.tatashin@microsoft.com, jannh@google.com, xdeguillard@vmware.com,
- hannes@cmpxchg.org, jglisse@redhat.com, ktkhai@virtuozzo.com,
- linux-mediatek@lists.infradead.org, matthias.bgg@gmail.com,
- tiffany.lin@mediatek.com, linux-integrity@vger.kernel.org, dvyukov@google.com,
- jgross@suse.com, yang.shi@linux.alibaba.com, yoshfuji@linux-ipv6.org,
- linuxppc-dev@lists.ozlabs.org, vyasevich@gmail.com,
- linux-decnet-user@lists.sourceforge.net, kexec@lists.infradead.org,
- linux-security-module@vger.kernel.org, tzimmermann@suse.de,
- mika.kuoppala@linux.intel.com, mgorman@techsingularity.net
+Cc: Mike Snitzer <snitzer@redhat.com>, Kemi Wang <kemi.wang@intel.com>,
+ dri-devel@lists.freedesktop.org, "J. Bruce Fields" <bfields@fieldses.org>,
+ linux-sctp@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ Pavel Machek <pavel@ucw.cz>, Christoph Lameter <cl@linux.com>,
+ "K. Y. Srinivasan" <kys@microsoft.com>, Sumit Semwal <sumit.semwal@linaro.org>,
+ "David \(ChunMing\) Zhou" <David1.Zhou@amd.com>,
+ Petr Tesarik <ptesarik@suse.com>, ceph-devel@vger.kernel.org,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>, kasan-dev@googlegroups.com,
+ Marcos Paulo de Souza <marcos.souza.org@gmail.com>,
+ "Steven J. Hill" <steven.hill@cavium.com>,
+ David Rientjes <rientjes@google.com>,
+ Anthony Yznaga <anthony.yznaga@oracle.com>, Daniel Vacek <neelx@redhat.com>,
+ Roman Gushchin <guro@fb.com>, Len Brown <len.brown@intel.com>,
+ linux-pm@vger.kernel.org, Vlastimil Babka <vbabka@suse.cz>,
+ linux-um@lists.infradead.org, Mike Rapoport <rppt@linux.vnet.ibm.com>,
+ Alexander Viro <viro@zeniv.linux.org.uk>, Thomas Gleixner <tglx@linutronix.de>,
+ Trond Myklebust <trond.myklebust@hammerspace.com>,
+ Anton Altaparmakov <anton@tuxera.com>, linux-parisc@vger.kernel.org,
+ Mathieu Malaterre <malat@debian.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Randy Dunlap <rdunlap@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ linux-kernel@vger.kernel.org, Cyril Bur <cyrilbur@gmail.com>,
+ Arve =?utf-8?B?SGrDuG5uZXbDpWc=?= <arve@android.com>,
+ netfilter-devel@vger.kernel.org, Souptick Joarder <jrdr.linux@gmail.com>,
+ Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
+ Alex Deucher <alexander.deucher@amd.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Andrew-CT Chen <andrew-ct.chen@mediatek.com>,
+ "Gustavo A. R. Silva" <gustavo@embeddedor.com>,
+ David Airlie <airlied@linux.ie>, dm-devel@redhat.com,
+ Nadav Amit <namit@vmware.com>, Omar Sandoval <osandov@fb.com>,
+ Alasdair Kergon <agk@redhat.com>, linux-s390@vger.kernel.org,
+ Stephen Hemminger <sthemmin@microsoft.com>, intel-gfx@lists.freedesktop.org,
+ Helge Deller <deller@gmx.de>, Hugh Dickins <hughd@google.com>,
+ "Luis R. Rodriguez" <mcgrof@kernel.org>, coreteam@netfilter.org,
+ Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>,
+ Andrey Ryabinin <aryabinin@virtuozzo.com>, linux-media@vger.kernel.org,
+ YueHaibing <yuehaibing@huawei.com>, Todd Kjos <tkjos@android.com>,
+ Philippe Ombredanne <pombredanne@nexb.com>,
+ Jani Nikula <jani.nikula@linux.intel.com>, Jia He <jia.he@hxt-semitech.com>,
+ Tejun Heo <tj@kernel.org>, Shakeel Butt <shakeelb@google.com>,
+ Houlong Wei <houlong.wei@mediatek.com>, devel@linuxdriverproject.org,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ Martijn Coenen <maco@android.com>, linux-arm-kernel@lists.infradead.org,
+ Khalid Aziz <khalid@gonehiking.org>, Oded Gabbay <oded.gabbay@gmail.com>,
+ linaro-mm-sig@lists.linaro.org, linux-ntfs-dev@lists.sourceforge.net,
+ Jonathan Corbet <corbet@lwn.net>, Florian Westphal <fw@strlen.de>,
+ Anna Schumaker <anna.schumaker@netapp.com>, Pekka Enberg <penberg@kernel.org>,
+ Minchan Kim <minchan@kernel.org>, Eric Biederman <ebiederm@xmission.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ Kate Stewart <kstewart@linuxfoundation.org>,
+ Marcelo Ricardo Leitner <marcelo.leitner@gmail.com>,
+ linux-fsdevel@vger.kernel.org,
+ Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+ Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Stefan Agner <stefan@agner.ch>,
+ James Morris <jmorris@namei.org>, netdev@vger.kernel.org,
+ amd-gfx@lists.freedesktop.org, Jan Kara <jack@suse.cz>,
+ Alexander Duyck <alexander.h.duyck@linux.intel.com>,
+ Gerrit Renker <gerrit@erg.abdn.ac.uk>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Miklos Szeredi <miklos@szeredi.hu>, David Hildenbrand <david@redhat.com>,
+ Matthew Wilcox <willy@infradead.org>,
+ Konstantin Khlebnikov <khlebnikov@yandex-team.ru>,
+ Matthew Auld <matthew.auld@intel.com>, Guo Ren <ren_guo@c-sky.com>,
+ Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>, Ilya Dryomov <idryomov@gmail.com>,
+ Alexey Dobriyan <adobriyan@gmail.com>, Pablo Neira Ayuso <pablo@netfilter.org>,
+ "Serge E. Hallyn" <serge@hallyn.com>, Kees Cook <keescook@chromium.org>,
+ Arnd Bergmann <arnd@arndb.de>, Haiyang Zhang <haiyangz@microsoft.com>,
+ Mark Brown <broonie@kernel.org>, Borislav Petkov <bp@alien8.de>,
+ Rodrigo Vivi <rodrigo.vivi@intel.com>, Dan Williams <dan.j.williams@intel.com>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>, Dan Streetman <ddstreet@ieee.org>,
+ Oscar Salvador <osalvador@suse.de>, linux-nfs@vger.kernel.org,
+ Neil Horman <nhorman@tuxdriver.com>, Tvrtko Ursulin <tvrtko.ursulin@intel.com>,
+ Jeff Layton <jlayton@kernel.org>, Eric Dumazet <edumazet@google.com>,
+ Jessica Yu <jeyu@kernel.org>, Joe Perches <joe@perches.com>,
+ "David S. Miller" <davem@davemloft.net>,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
+ Michal Hocko <mhocko@suse.com>, Minghsiu Tsai <minghsiu.tsai@mediatek.com>,
+ Christian =?utf-8?Q?K=C3=B6nig?= <christian.koenig@amd.com>, "VMware,
+ Inc." <pv-drivers@vmware.com>,
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+ Chris Wilson <chris@chris-wilson.co.uk>, linux-mm@kvack.org,
+ Alexander Potapenko <glider@google.com>, "H. Peter Anvin" <hpa@zytor.com>,
+ getarunks@gmail.com, Chintan Pandya <cpandya@codeaurora.org>,
+ devel@driverdev.osuosl.org, "Yan, Zheng" <zyan@redhat.com>,
+ xen-devel@lists.xenproject.org, Sage Weil <sage@redhat.com>,
+ dccp@vger.kernel.org, Richard Weinberger <richard@nod.at>,
+ Seth Jennings <sjenning@redhat.com>, x86@kernel.org,
+ Ingo Molnar <mingo@redhat.com>, Laura Abbott <labbott@redhat.com>,
+ Mimi Zohar <zohar@linux.vnet.ibm.com>, Jeff Dike <jdike@addtoit.com>,
+ Pavel Tatashin <pavel.tatashin@microsoft.com>, Jann Horn <jannh@google.com>,
+ Xavier Deguillard <xdeguillard@vmware.com>,
+ Johannes Weiner <hannes@cmpxchg.org>,
+ =?utf-8?B?SsOpcsO0bWU=?= Glisse <jglisse@redhat.com>,
+ Kirill Tkhai <ktkhai@virtuozzo.com>, linux-mediatek@lists.infradead.org,
+ Matthias Brugger <matthias.bgg@gmail.com>,
+ Tiffany Lin <tiffany.lin@mediatek.com>, linux-integrity@vger.kernel.org,
+ Dmitry Vyukov <dvyukov@google.com>, Juergen Gross <jgross@suse.com>,
+ Yang Shi <yang.shi@linux.alibaba.com>,
+ Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>, linuxppc-dev@lists.ozlabs.org,
+ Vlad Yasevich <vyasevich@gmail.com>, linux-decnet-user@lists.sourceforge.net,
+ kexec@lists.infradead.org, linux-security-module@vger.kernel.org,
+ Thomas Zimmermann <tzimmermann@suse.de>,
+ Mika Kuoppala <mika.kuoppala@linux.intel.com>,
+ Mel Gorman <mgorman@techsingularity.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Oct 22, 2018 at 11:41 PM Michal Hocko <mhocko@kernel.org> wrote:
+Arun KS <arunks@codeaurora.org> writes:
+
+> Remove managed_page_count_lock spinlock and instead use atomic
+> variables.
 >
-> On Mon 22-10-18 22:53:22, Arun KS wrote:
-> > Remove managed_page_count_lock spinlock and instead use atomic
-> > variables.
+> Suggested-by: Michal Hocko <mhocko@suse.com>
+> Suggested-by: Vlastimil Babka <vbabka@suse.cz>
+> Signed-off-by: Arun KS <arunks@codeaurora.org>
 >
+> ---
+> As discussed here,
+> https://patchwork.kernel.org/patch/10627521/#22261253
 
-Hello Michal,
-> I assume this has been auto-generated. If yes, it would be better to
-> mention the script so that people can review it and regenerate for
-> comparision. Such a large change is hard to review manually.
+My 2 cents.  I think you should include at least part of the discussion
+in the patch description to make it more readable by itself.
 
-Changes were made partially with script.  For totalram_pages and
-totalhigh_pages,
-
-find dir -type f -exec sed -i
-'s/totalram_pages/atomic_long_read(\&totalram_pages)/g' {} \;
-find dir -type f -exec sed -i
-'s/totalhigh_pages/atomic_long_read(\&totalhigh_pages)/g' {} \;
-
-For managed_pages it was mostly manual edits after using,
-find mm/ -type f -exec sed -i
-'s/zone->managed_pages/atomic_long_read(\&zone->managed_pages)/g' {}
-\;
-
-Regards,
-Arun
-
-> --
-> Michal Hocko
-> SUSE Labs
+Best Regards,
+Huang, Ying
