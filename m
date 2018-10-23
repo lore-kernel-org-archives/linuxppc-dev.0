@@ -2,55 +2,91 @@ Return-Path: <SRS0=8rOk=ND=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EEBF3C004D3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Oct 2018 00:27:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D72DC004D3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Oct 2018 01:34:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B1F4120651
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Oct 2018 00:27:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B1F4120651
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=buserror.net
+	by mail.kernel.org (Postfix) with ESMTPS id 41A0620665
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Oct 2018 01:34:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 41A0620665
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42fDjF4nKfzDrq6
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Oct 2018 11:26:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=buserror.net
+	by lists.ozlabs.org (Postfix) with ESMTP id 42fGBk3VS6zF36s
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Oct 2018 12:34:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=buserror.net
- (client-ip=165.227.176.147; helo=baldur.buserror.net;
- envelope-from=oss@buserror.net; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=buserror.net
-Received: from baldur.buserror.net (baldur.buserror.net [165.227.176.147])
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=tyreld@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42fDg93nRxzDrq6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Oct 2018 11:25:08 +1100 (AEDT)
-Received: from [2601:449:8400:7293:12bf:48ff:fe84:c9a0]
- (helo=home.buserror.net)
- by baldur.buserror.net with esmtpsa (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
- (Exim 4.89) (envelope-from <oss@buserror.net>)
- id 1gEkTF-00051K-Fp; Mon, 22 Oct 2018 19:22:53 -0500
-Date: Mon, 22 Oct 2018 19:22:51 -0500
-From: Scott Wood <oss@buserror.net>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Message-ID: <20181023002251.GA30200@home.buserror.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.9.4 (2018-02-28)
-X-SA-Exim-Connect-IP: 2601:449:8400:7293:12bf:48ff:fe84:c9a0
-X-SA-Exim-Rcpt-To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- galak@kernel.crashing.org
-X-SA-Exim-Mail-From: oss@buserror.net
-Subject: Pull request: scottwood/linux.git next
-X-SA-Exim-Version: 4.2.1 (built Tue, 02 Aug 2016 21:08:31 +0000)
-X-SA-Exim-Scanned: Yes (on baldur.buserror.net)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42fG8j0Zc1zDrSt
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Oct 2018 12:32:20 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w9N1OTcC086235
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Oct 2018 21:32:18 -0400
+Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2n9msjb8at-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Oct 2018 21:32:18 -0400
+Received: from localhost
+ by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
+ Mon, 22 Oct 2018 21:32:17 -0400
+Received: from b01cxnp23034.gho.pok.ibm.com (9.57.198.29)
+ by e12.ny.us.ibm.com (146.89.104.199) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Mon, 22 Oct 2018 21:32:16 -0400
+Received: from b01ledav004.gho.pok.ibm.com (b01ledav004.gho.pok.ibm.com
+ [9.57.199.109])
+ by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ w9N1WFSI28639336
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Tue, 23 Oct 2018 01:32:15 GMT
+Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 49C81112061;
+ Tue, 23 Oct 2018 01:32:15 +0000 (GMT)
+Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D2F66112066;
+ Tue, 23 Oct 2018 01:32:14 +0000 (GMT)
+Received: from ltcalpine2-lp18.aus.stglabs.ibm.com (unknown [9.40.195.201])
+ by b01ledav004.gho.pok.ibm.com (Postfix) with ESMTP;
+ Tue, 23 Oct 2018 01:32:14 +0000 (GMT)
+From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Subject: [PATCH] powerpc/pseries: add missing cpumask.h include file
+Date: Mon, 22 Oct 2018 20:32:12 -0500
+X-Mailer: git-send-email 2.7.4
+X-TM-AS-GCONF: 00
+x-cbid: 18102301-0060-0000-0000-000002C50FB5
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00009919; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000268; SDB=6.01106586; UDB=6.00573063; IPR=6.00886670; 
+ MB=3.00023863; MTD=3.00000008; XFM=3.00000015; UTC=2018-10-23 01:32:17
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18102301-0061-0000-0000-000046F059F0
+Message-Id: <1540258332-15520-1-git-send-email-tyreld@linux.vnet.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-10-22_15:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=855 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1807170000 definitions=main-1810230011
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,35 +98,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ nfont@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This contains a couple device tree updates, and a fix for a missing
-prototype warning.
+Build error is encountered when inlcuding <asm/rtas.h> if no explicit or
+implicit include of cpumask.h exists in the including file.
 
-The following changes since commit a0e102914aa3f619a5bc68a0d33e17d1788cdf4c:
+In file included from arch/powerpc/platforms/pseries/hotplug-pci.c:3:0:
+./arch/powerpc/include/asm/rtas.h:360:34: error: unknown type name 'cpumask_var_t'
+ extern int rtas_online_cpus_mask(cpumask_var_t cpus);
+                                  ^
+./arch/powerpc/include/asm/rtas.h:361:35: error: unknown type name 'cpumask_var_t'
+ extern int rtas_offline_cpus_mask(cpumask_var_t cpus);
 
-  powerpc/io: remove old GCC version implementation (2018-10-19 00:56:17 +1100)
+Fixes: 120496ac2d2d ("powerpc: Bring all threads online prior to migration/hibernation")
+Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/rtas.h | 1 +
+ 1 file changed, 1 insertion(+)
 
-are available in the Git repository at:
+diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
+index 71e393c..06b8dd3 100644
+--- a/arch/powerpc/include/asm/rtas.h
++++ b/arch/powerpc/include/asm/rtas.h
+@@ -5,6 +5,7 @@
+ #include <linux/spinlock.h>
+ #include <asm/page.h>
+ #include <linux/time.h>
++#include <linux/cpumask.h>
+ 
+ /*
+  * Definitions for talking to the RTAS on CHRP machines.
+-- 
+2.7.4
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git next
-
-for you to fetch changes up to b6ae3550c8e2ca8f7ce1b7f04585dc12a0eb5cbd:
-
-  powerpc/8xx: add missing header in 8xx_mmu.c (2018-10-22 19:11:58 -0500)
-
-----------------------------------------------------------------
-Camelia Groza (1):
-      powerpc/dts/fsl: t2080rdb: reorder the Cortina PHY XFI lanes
-
-Christophe Leroy (2):
-      powerpc/8xx: Add DT node for using the SEC engine of the MPC885
-      powerpc/8xx: add missing header in 8xx_mmu.c
-
- arch/powerpc/boot/dts/fsl/t2080rdb.dts |  4 ++--
- arch/powerpc/boot/dts/mpc885ads.dts    | 13 ++++++++++++-
- arch/powerpc/mm/8xx_mmu.c              |  1 +
- 3 files changed, 15 insertions(+), 3 deletions(-)
