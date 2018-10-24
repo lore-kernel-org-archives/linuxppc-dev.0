@@ -2,74 +2,82 @@ Return-Path: <SRS0=Hff1=NE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BA63DC004D3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Oct 2018 08:40:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 63EF7C67863
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Oct 2018 09:00:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D7D07206B5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Oct 2018 08:40:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5CC3B20824
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Oct 2018 09:00:34 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="dN76Of2N"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D7D07206B5
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=globallogic.com header.i=@globallogic.com header.b="T0jxbwQ/"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5CC3B20824
+Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=globallogic.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42g3cD5D7wzDrS3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Oct 2018 19:40:28 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42g43N0BbJzDrM8
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Oct 2018 20:00:32 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=globallogic.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="dN76Of2N";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=globallogic.com header.i=@globallogic.com header.b="T0jxbwQ/";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=infradead.org
- (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
- envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="dN76Of2N"; dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=globallogic.com
+ (client-ip=2607:f8b0:4864:20::743; helo=mail-qk1-x743.google.com;
+ envelope-from=maksym.kokhan@globallogic.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none)
+ header.from=globallogic.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=globallogic.com header.i=@globallogic.com
+ header.b="T0jxbwQ/"; dkim-atps=neutral
+Received: from mail-qk1-x743.google.com (mail-qk1-x743.google.com
+ [IPv6:2607:f8b0:4864:20::743])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42g3Yg0bgKzDrJq
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Oct 2018 19:38:14 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
- :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=d2jfpjjB7oLmUkq3D7u7NPvUnHT/Qv4wl7bB9GP1+OQ=; b=dN76Of2NrI7shDByrYt1spoOs
- fBUYXsTsK9Kj4I1LXQDJPK2xbkMaXWpCmI4B0RLlP+9OXOkAtMmh68ZXCVO3S/pBN6dU0lgxD8gWX
- nB/Mk2BBYcQ3IlsOKSD/gdq8fN/Vp8fQ1SEFiYUfrNVfW57MgKQ9LrENYhjAozBIELFjQvTEPJNi5
- bz9uiXLHG17dG6EVwpehVjKZCtfq1bMHlqor9mgtNLP7WP2m2pWVDPspQzaKuMyTnFdPaDUhc/6kR
- mJe495zAtAHoUNeijZ1k8/AMfxQaYrE6a6RZnTBSeFiJ345Pm3weHdfiQbp0l9zYh1YwhM+nt6XPS
- SmRzIXzSw==;
-Received: from [185.7.230.213] (helo=worktop)
- by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
- id 1gFEfH-0004So-Sa; Wed, 24 Oct 2018 08:37:20 +0000
-Received: by worktop (Postfix, from userid 1000)
- id EDB716E08AB; Wed, 24 Oct 2018 10:37:16 +0200 (CEST)
-Date: Wed, 24 Oct 2018 10:37:16 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: "Joel Fernandes (Google)" <joel@joelfernandes.org>
-Subject: Re: [PATCH 1/4] treewide: remove unused address argument from
- pte_alloc functions (v2)
-Message-ID: <20181024083716.GN3109@worktop.c.hoisthospitality.com>
-References: <20181013013200.206928-1-joel@joelfernandes.org>
- <20181013013200.206928-2-joel@joelfernandes.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42g40Q3skPzDrJv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Oct 2018 19:57:57 +1100 (AEDT)
+Received: by mail-qk1-x743.google.com with SMTP id q184-v6so2654650qkd.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Oct 2018 01:57:57 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=globallogic.com; s=google;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=P5D5+wbYvFpm0tdJgRcE+2WrrJ+FHACmNE2eQnVA+Rs=;
+ b=T0jxbwQ/IMtXTPmiRhxrz1dyHOaxB0otLcS6qSCgIoj/ZIb3gqrvQ8n0BBzlqTgQtv
+ n2w94rrDc0HbzNRZo3fF9wCbHhKFY/okTC0mLazTecjsg6yeew3DOh6ZQFMB5gT8jiSm
+ fbe+ePGG5l0r9wTKn+fKuAJC1lbS5y/F81yJ8=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=P5D5+wbYvFpm0tdJgRcE+2WrrJ+FHACmNE2eQnVA+Rs=;
+ b=jCmWao1rf/SoWqtO5YskJ2W1nKDuotZ9+uAiRLIphVBnn9hdsRUBBE/2iyrIp542pm
+ qcgIqvNiz7MJbJiyGwmg56lDZu+4NGtAqGJLBgJB8lbpqDS+GAoctmvKXdsWR/CmP2w+
+ md4cnHfSNUuDmXQF+yzBQMe6YpN8t/vytZdoawWd92sNsz9FKklkGOteim5WC5sMHXVb
+ RtY2IYgXcTilZZm5lBbPebN4zHA6dcOZtG148Tl2oHUzEzbBju6slYeVVtAhjXMM2p39
+ uRuUXPmO70xohDzkSlCZcFtQd5I4iWeaWET6h1b70GBqSy72g5YobgLlcJGDShrA3O06
+ 1bqA==
+X-Gm-Message-State: AGRZ1gK9pyQcZ+zKSaNotZ7AUmWi1zdEDOyP9eATzpdqNxYrdPKj0lIi
+ /QNAuQNUpMDnK0bWHK2nXmqQdhO7lf063BF80WJEjw==
+X-Google-Smtp-Source: AJdET5e9VvhF6uwwaf7KJaXHG6ft6oCIpV7twnhvj5/91jdS+1Uk2+5SdTALGVsyBN2FJrWuHdYEDwZOODMoFMEZNEI=
+X-Received: by 2002:a37:1b46:: with SMTP id b67mr1512491qkb.144.1540371475912; 
+ Wed, 24 Oct 2018 01:57:55 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20181013013200.206928-2-joel@joelfernandes.org>
-User-Agent: Mutt/1.5.22.1 (2013-10-16)
+References: <1538067309-5711-1-git-send-email-maksym.kokhan@globallogic.com>
+ <20180929181725.GB27441@fifo99.com>
+ <CAMT6-xiQ0vGcKpA+SiWHQWQFwU9Oo9j=Zin+UXDoPqKTz5fbeA@mail.gmail.com>
+ <CAMT6-xj1rjVAy1AWFiMHc5wH36eu=TUSMtdKU=-qRtUbwr9bkg@mail.gmail.com>
+ <20181023144815.GP30658@n2100.armlinux.org.uk>
+In-Reply-To: <20181023144815.GP30658@n2100.armlinux.org.uk>
+From: Maksym Kokhan <maksym.kokhan@globallogic.com>
+Date: Wed, 24 Oct 2018 11:57:44 +0300
+Message-ID: <CAMT6-xhvqy5PeQmkQ8tsLRiML_pNJTxyq7dizRRvZTEqc7uzgg@mail.gmail.com>
+Subject: Re: [PATCH 0/8] add generic builtin command line
+To: Russell King <linux@armlinux.org.uk>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,52 +89,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mips@linux-mips.org, Rich Felker <dalias@libc.org>,
- linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
- Catalin Marinas <catalin.marinas@arm.com>,
- Dave Hansen <dave.hansen@linux.intel.com>, Will Deacon <will.deacon@arm.com>,
- Michal Hocko <mhocko@kernel.org>, linux-mm@kvack.org, lokeshgidra@google.com,
- sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org,
- elfring@users.sourceforge.net, Jonas Bonn <jonas@southpole.se>,
- kvmarm@lists.cs.columbia.edu, dancol@google.com,
- Yoshinori Sato <ysato@users.sourceforge.jp>, linux-xtensa@linux-xtensa.org,
- linux-hexagon@vger.kernel.org, Helge Deller <deller@gmx.de>,
- "maintainer:X86 ARCHITECTURE \(32-BIT AND 64-BIT\)" <x86@kernel.org>,
- hughd@google.com, "James E.J. Bottomley" <jejb@parisc-linux.org>,
- kasan-dev@googlegroups.com, anton.ivanov@kot-begemot.co.uk,
- Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
- Andrey Ryabinin <aryabinin@virtuozzo.com>, linux-snps-arc@lists.infradead.org,
- kernel-team@android.com, Sam Creasey <sammy@sammy.net>,
- Fenghua Yu <fenghua.yu@intel.com>, linux-s390@vger.kernel.org,
- Jeff Dike <jdike@addtoit.com>, linux-um@lists.infradead.org,
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- Julia Lawall <Julia.Lawall@lip6.fr>, linux-m68k@lists.linux-m68k.org,
- Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
- nios2-dev@lists.rocketboards.org, "Kirill A . Shutemov" <kirill@shutemov.name>,
- Stafford Horne <shorne@gmail.com>, Guan Xuetao <gxt@pku.edu.cn>,
- Chris Zankel <chris@zankel.net>, Tony Luck <tony.luck@intel.com>,
- Richard Weinberger <richard@nod.at>, linux-parisc@vger.kernel.org,
- Max Filippov <jcmvbkbc@gmail.com>, pantin@google.com,
- linux-kernel@vger.kernel.org, minchan@kernel.org,
- Thomas Gleixner <tglx@linutronix.de>, linux-alpha@vger.kernel.org,
- Ley Foon Tan <lftan@altera.com>, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: linux-mips@linux-mips.org, linux-efi@vger.kernel.org,
+ Ruslan Bilovol <rbilovol@cisco.com>, Will Deacon <will.deacon@arm.com>,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ Daniel Walker <dwalker@fifo99.com>, Frank Rowand <frowand.list@gmail.com>,
+ x86@kernel.org, Ingo Molnar <mingo@redhat.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, James Hogan <jhogan@kernel.org>,
+ Daniel Walker <danielwa@cisco.com>, devicetree@vger.kernel.org,
+ Rob Herring <robh+dt@kernel.org>, Borislav Petkov <bp@alien8.de>,
+ Thomas Gleixner <tglx@linutronix.de>, Andrii Bordunov <aborduno@cisco.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>, linux-kernel@vger.kernel.org,
+ Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Oct 12, 2018 at 06:31:57PM -0700, Joel Fernandes (Google) wrote:
-> This series speeds up mremap(2) syscall by copying page tables at the
-> PMD level even for non-THP systems. There is concern that the extra
-> 'address' argument that mremap passes to pte_alloc may do something
-> subtle architecture related in the future that may make the scheme not
-> work.  Also we find that there is no point in passing the 'address' to
-> pte_alloc since its unused. So this patch therefore removes this
-> argument tree-wide resulting in a nice negative diff as well. Also
-> ensuring along the way that the enabled architectures do not do anything
-> funky with 'address' argument that goes unnoticed by the optimization.
-
-Did you happen to look at the history of where that address argument
-came from? -- just being curious here. ISTR something vague about
-architectures having different paging structure for different memory
-ranges.
+Do you mean, that you haven't seen patch for ARM, which I sent on
+September 27 along with cover and patch 1? It is strange, because
+you was the one from recipients. If so, you can see this patch here:
+https://lore.kernel.org/patchwork/patch/992779/
+On Tue, Oct 23, 2018 at 5:48 PM Russell King - ARM Linux
+<linux@armlinux.org.uk> wrote:
+>
+> On Tue, Oct 23, 2018 at 05:43:18PM +0300, Maksym Kokhan wrote:
+> > We still have no response to patches for x86, arm, arm64 and powerpc.
+> > Is current generic command line implementation appropriate for these
+> > architectures?
+> > Is it possible to merge these patches in the current form (for x86,
+> > arm, arm64 and powerpc)?
+>
+> You may wish to consider your recipients - I seem to only have received
+> the cover and patch 1 (which doesn't include any ARM specific bits).
+> It may be that you're not getting responses because people haven't seen
+> your patches.
+>
+> Thanks.
+>
+> --
+> RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
+> FTTC broadband for 0.8mile line in suburbia: sync at 12.1Mbps down 622kbps up
+> According to speedtest.net: 11.9Mbps down 500kbps up
