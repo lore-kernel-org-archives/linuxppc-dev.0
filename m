@@ -2,93 +2,97 @@ Return-Path: <SRS0=Hff1=NE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9DB2EC67863
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Oct 2018 07:08:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E087C004D3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Oct 2018 07:38:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0A9F42081B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Oct 2018 07:08:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0A9F42081B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 93689204FD
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Oct 2018 07:38:51 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=baylibre-com.20150623.gappssmtp.com header.i=@baylibre-com.20150623.gappssmtp.com header.b="pfkrmEOR"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 93689204FD
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42g1Yd5kDWzDrPq
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Oct 2018 18:08:05 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42g2F51TYszDrNS
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Oct 2018 18:38:49 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=baylibre.com
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=anju@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=baylibre-com.20150623.gappssmtp.com header.i=@baylibre-com.20150623.gappssmtp.com header.b="pfkrmEOR";
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=softfail (mailfrom) smtp.mailfrom=baylibre.com
+ (client-ip=2a00:1450:4864:20::341; helo=mail-wm1-x341.google.com;
+ envelope-from=clabbe@baylibre.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=baylibre.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=baylibre-com.20150623.gappssmtp.com
+ header.i=@baylibre-com.20150623.gappssmtp.com header.b="pfkrmEOR"; 
+ dkim-atps=neutral
+Received: from mail-wm1-x341.google.com (mail-wm1-x341.google.com
+ [IPv6:2a00:1450:4864:20::341])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42g1Wk1FVczDrMD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Oct 2018 18:06:24 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w9O70jkp140405
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Oct 2018 03:06:21 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2nahwmdh8w-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Oct 2018 03:06:21 -0400
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
- Wed, 24 Oct 2018 08:06:19 +0100
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
- by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 24 Oct 2018 08:06:15 +0100
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- w9O76E6734799844
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Wed, 24 Oct 2018 07:06:14 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9D4BD4C044;
- Wed, 24 Oct 2018 07:06:14 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 79EF44C050;
- Wed, 24 Oct 2018 07:06:14 +0000 (GMT)
-Received: from [9.145.30.82] (unknown [9.145.30.82])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Wed, 24 Oct 2018 07:06:14 +0000 (GMT)
-Subject: Re: [bug report] powerpc/perf: Add nest IMC PMU support
-To: Dan Carpenter <dan.carpenter@oracle.com>
-References: <20181018093346.gw72isttyope3nxe@kili.mountain>
-From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-Date: Wed, 24 Oct 2018 12:36:14 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.0
-MIME-Version: 1.0
-In-Reply-To: <20181018093346.gw72isttyope3nxe@kili.mountain>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Language: en-US
-X-TM-AS-GCONF: 00
-x-cbid: 18102407-0020-0000-0000-000002D9423F
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18102407-0021-0000-0000-0000212868DA
-Message-Id: <863df4bd-0741-e31b-ab86-12c63b3186d3@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-10-24_03:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=918 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1807170000 definitions=main-1810240064
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42g29y5PqPzDqfP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Oct 2018 18:36:06 +1100 (AEDT)
+Received: by mail-wm1-x341.google.com with SMTP id 143-v6so4210256wmf.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Oct 2018 00:36:06 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=baylibre-com.20150623.gappssmtp.com; s=20150623;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references;
+ bh=ODwBHD32jhW5oV5hnzfkQNF20S9JHF60nxTCzvRSMYs=;
+ b=pfkrmEORvWmmg6GoJ03HKgHQ8eTPVFFjYvexK1/zzvQJg7xheXYDhOUzbe4ACG5Gxd
+ Bw9QisgsUh/U4Pt90JYcgjXSceSyQuCTGLLFwwlJxvhl+xNEdBeRlu/kZrt4K9nWlvvY
+ q0p206waxa2KR5mKjmrHL3JKegjqLlkYkG5UsPIMauavt9eSJ/NvbZ5+JsdhvOw+Cj1b
+ M7liZto0DEioToL16biSi4evCbACexl2fMZQpDf8wbVWFaS+xhra/oYO0UI+JgT+FPyV
+ dwymaBxmoUsPVQWoNj1RvQJA3PnHi225DYgNJm54qrEtVF6GBvdkoB24jbL6jHatWYL4
+ DzOg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references;
+ bh=ODwBHD32jhW5oV5hnzfkQNF20S9JHF60nxTCzvRSMYs=;
+ b=eYNgw5inxgx5ZojkYnYbeLBFmjM/0d+36VsjCAFRBUXla4RL1z3UTzGojFXHiX+Hm9
+ zGo+SGr46dmG51BSIKJFnybiWfjX2Jw0+0h7HMn9spYhh0OblvQdwuES6lm1MYMceGKc
+ 0X7/dtKZMJw5J0qyH1maTghi1blwrOmn3vVEQCveThHGBztpi4VocZ/fC+kPJjtuRk/Y
+ nUKVDiASe3JSYVMg+yDtf1vSlZPTTySzsKKkNlGO61MHHdYVQF0pW/4RRE/j3TmBvuAn
+ dqFeR1qewits2GqWPdlkFAOk0rkxIxAUjT1LEplf+MJxXF21fo6XmV6pgRHeeSJN9ma6
+ O23A==
+X-Gm-Message-State: AGRZ1gKW0++m7m+ZxjoNulDZKFcg7S2g1m5vGYmcfdla1gtUlQ6EGM+g
+ ndSXJi16zS1si2ShVLgY+DH00w==
+X-Google-Smtp-Source: AJdET5d78+A2+vMixTRSJJBFDDMLMmQrKX+AsmD1m7hBABZmN4pDksUn2KpW3a6Wd6LQVPP2Wj7WjA==
+X-Received: by 2002:a1c:9d90:: with SMTP id
+ g138-v6mr1469825wme.41.1540366563869; 
+ Wed, 24 Oct 2018 00:36:03 -0700 (PDT)
+Received: from localhost.localdomain ([51.15.160.169])
+ by smtp.googlemail.com with ESMTPSA id
+ b139-v6sm6254351wmd.36.2018.10.24.00.36.02
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
+ Wed, 24 Oct 2018 00:36:03 -0700 (PDT)
+From: Corentin Labbe <clabbe@baylibre.com>
+To: Gilles.Muller@lip6.fr, Julia.Lawall@lip6.fr, agust@denx.de,
+ airlied@linux.ie, alexandre.torgue@st.com, alistair@popple.id.au,
+ benh@kernel.crashing.org, carlo@caione.org, davem@davemloft.net,
+ galak@kernel.crashing.org, joabreu@synopsys.com, khilman@baylibre.com,
+ matthias.bgg@gmail.com, maxime.ripard@bootlin.com, michal.lkml@markovi.net,
+ mpe@ellerman.id.au, mporter@kernel.crashing.org, narmstrong@baylibre.com,
+ nicolas.palix@imag.fr, oss@buserror.net, paulus@samba.org,
+ peppe.cavallaro@st.com, tj@kernel.org, vitb@kernel.crashing.org,
+ wens@csie.org
+Subject: [PATCH v3 2/7] include: add setbits_leXX/clrbits_leXX/clrsetbits_leXX
+ in linux/setbits.h
+Date: Wed, 24 Oct 2018 07:35:48 +0000
+Message-Id: <1540366553-18541-3-git-send-email-clabbe@baylibre.com>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1540366553-18541-1-git-send-email-clabbe@baylibre.com>
+References: <1540366553-18541-1-git-send-email-clabbe@baylibre.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,38 +104,115 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-ide@vger.kernel.org,
+ linux-sunxi@googlegroups.com, linux-mediatek@lists.infradead.org,
+ Corentin Labbe <clabbe@baylibre.com>, linux-amlogic@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, cocci@systeme.lip6.fr,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+This patch adds setbits_le32/clrbits_le32/clrsetbits_le32 and
+setbits_le64/clrbits_le64/clrsetbits_le64 in linux/setbits.h header.
 
+Signed-off-by: Corentin Labbe <clabbe@baylibre.com>
+---
+ include/linux/setbits.h | 84 +++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 84 insertions(+)
+ create mode 100644 include/linux/setbits.h
 
-On 10/18/18 3:03 PM, Dan Carpenter wrote:
-> Hello Anju T Sudhakar,
->
-> The patch 885dcd709ba9: "powerpc/perf: Add nest IMC PMU support" from
-> Jul 19, 2017, leads to the following static checker warning:
->
-> 	arch/powerpc/perf/imc-pmu.c:506 nest_imc_event_init()
-> 	warn: 'pcni' can't be NULL.
-
-Unfortunately this warning didn't appear when I checked with smatch.
-
-Could you please provide the steps to reproduce this?
-
-This is the commit id with which I build smatch: commit 
-79fe36620a7a3a45d1a51d62238da250fb8db920
-
-But anyway I am looking into the code part. Thanks for mentioning this.
-
-I will update soon.
-
-
-Thanks,
-
-Anju
-
-
+diff --git a/include/linux/setbits.h b/include/linux/setbits.h
+new file mode 100644
+index 000000000000..c82faf8d7fe4
+--- /dev/null
++++ b/include/linux/setbits.h
+@@ -0,0 +1,84 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++#ifndef __LINUX_SETBITS_H
++#define __LINUX_SETBITS_H
++
++#include <linux/io.h>
++
++#define __setbits(rfn, wfn, addr, set) wfn((rfn(addr) | (set)), addr)
++#define __clrbits(rfn, wfn, addr, mask) wfn((rfn(addr) & ~(mask)), addr)
++#define __clrsetbits(rfn, wfn, addr, mask, set) wfn(((rfn(addr) & ~(mask)) | (set)), addr)
++#define __setclrbits(rfn, wfn, addr, mask, set) wfn(((rfn(addr) | (set)) & ~(mask)), addr)
++
++#ifndef setbits_le32
++#define setbits_le32(addr, set) __setbits(readl, writel, addr, set)
++#endif
++#ifndef setbits_le32_relaxed
++#define setbits_le32_relaxed(addr, set) __setbits(readl_relaxed, writel_relaxed, \
++					       addr, set)
++#endif
++
++#ifndef clrbits_le32
++#define clrbits_le32(addr, mask) __clrbits(readl, writel, addr, mask)
++#endif
++#ifndef clrbits_le32_relaxed
++#define clrbits_le32_relaxed(addr, mask) __clrbits(readl_relaxed, writel_relaxed, \
++						addr, mask)
++#endif
++
++#ifndef clrsetbits_le32
++#define clrsetbits_le32(addr, mask, set) __clrsetbits(readl, writel, addr, mask, set)
++#endif
++#ifndef clrsetbits_le32_relaxed
++#define clrsetbits_le32_relaxed(addr, mask, set) __clrsetbits(readl_relaxed, \
++							   writel_relaxed, \
++							   addr, mask, set)
++#endif
++
++#ifndef setclrbits_le32
++#define setclrbits_le32(addr, mask, set) __setclrbits(readl, writel, addr, mask, set)
++#endif
++#ifndef setclrbits_le32_relaxed
++#define setclrbits_le32_relaxed(addr, mask, set) __setclrbits(readl_relaxed, \
++							   writel_relaxed, \
++							   addr, mask, set)
++#endif
++
++/* We cannot use CONFIG_64BIT as some x86 drivers use non-atomicwriteq() */
++#if defined(writeq) && defined(readq)
++#ifndef setbits_le64
++#define setbits_le64(addr, set) __setbits(readq, writeq, addr, set)
++#endif
++#ifndef setbits_le64_relaxed
++#define setbits_le64_relaxed(addr, set) __setbits(readq_relaxed, writeq_relaxed, \
++					       addr, set)
++#endif
++
++#ifndef clrbits_le64
++#define clrbits_le64(addr, mask) __clrbits(readq, writeq, addr, mask)
++#endif
++#ifndef clrbits_le64_relaxed
++#define clrbits_le64_relaxed(addr, mask) __clrbits(readq_relaxed, writeq_relaxed, \
++						addr, mask)
++#endif
++
++#ifndef clrsetbits_le64
++#define clrsetbits_le64(addr, mask, set) __clrsetbits(readq, writeq, addr, mask, set)
++#endif
++#ifndef clrsetbits_le64_relaxed
++#define clrsetbits_le64_relaxed(addr, mask, set) __clrsetbits(readq_relaxed, \
++							   writeq_relaxed, \
++							   addr, mask, set)
++#endif
++
++#ifndef setclrbits_le64
++#define setclrbits_le64(addr, mask, set) __setclrbits(readq, writeq, addr, mask, set)
++#endif
++#ifndef setclrbits_le64_relaxed
++#define setclrbits_le64_relaxed(addr, mask, set) __setclrbits(readq_relaxed, \
++							   writeq_relaxed, \
++							   addr, mask, set)
++#endif
++
++#endif /* writeq/readq */
++
++#endif /* __LINUX_SETBITS_H */
+-- 
+2.18.1
 
