@@ -2,75 +2,76 @@ Return-Path: <SRS0=Hff1=NE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 029CAECDE44
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Oct 2018 21:28:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A0BECECDE46
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Oct 2018 21:41:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 27FE42082E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Oct 2018 21:28:26 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="WFc9fBtW"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 27FE42082E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 27F6320652
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Oct 2018 21:41:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 27F6320652
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42gNfH6gNgzDrNx
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Oct 2018 08:28:23 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42gNxl3CFWzDrPp
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Oct 2018 08:41:47 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="WFc9fBtW";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=209.85.167.194; helo=mail-oi1-f194.google.com;
+ envelope-from=pku.leo@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=robh@kernel.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="WFc9fBtW"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42gNbb0wWxzDrGp
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Oct 2018 08:26:02 +1100 (AEDT)
-Received: from mail-qk1-f172.google.com (mail-qk1-f172.google.com
- [209.85.222.172])
+ dmarc=fail (p=none dis=none) header.from=nxp.com
+Received: from mail-oi1-f194.google.com (mail-oi1-f194.google.com
+ [209.85.167.194])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 065FC20832
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Oct 2018 21:26:00 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1540416360;
- bh=DrYv3rOz4s3YKUAS25iDFbj9u1gmDS7kDGOLP8aXMPU=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=WFc9fBtW/wQk5rRBn8pd4zZ4GV3BDaqF2IH3xf//pL9gti9zT6wmhauZ04ZVAXXAX
- tEwOtwUKBf3yqR/uZINoF0Q7yqXohdhB5HZrxBB0n6o3r1fLXBC0QLTGFNZeObXs3r
- Pmm6zykqDp7m/QuWcNSZX2FpHTMf09MjtrWfpZfw=
-Received: by mail-qk1-f172.google.com with SMTP id 131so1625260qkd.4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Oct 2018 14:25:59 -0700 (PDT)
-X-Gm-Message-State: AGRZ1gKHnGugPtqapAuxobPEjgoYl1xz4jKgR0RHC3RAwNsfZHV5z2G5
- YNs94gJkY/vZHiT+WKrzqngTmBGsIYCAYY9McA==
-X-Google-Smtp-Source: AJdET5fLeqEQvAx6hoB3x+b9qFI1ZHrue/yG2wOqJqu736uN/9NeIxzvWV7airWmV10BuVn5dG9cretcBZt5Df4K5Vc=
-X-Received: by 2002:ae9:edd8:: with SMTP id c207mr1630980qkg.184.1540416359162; 
- Wed, 24 Oct 2018 14:25:59 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42gNvW3gklzDrP4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Oct 2018 08:39:51 +1100 (AEDT)
+Received: by mail-oi1-f194.google.com with SMTP id u74-v6so5356283oia.11
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Oct 2018 14:39:51 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=SEqOUWzeYMJpqTHsCRJGXGDeUUUUuGFzoEAGmrKeWoM=;
+ b=NHlBw+QKnHnzHoJpXt+rN062tcQk4Vow9J7Zau1ib4rMjyNMRDncodlPCMDJDhY7XC
+ z7dkQ4GFSGgQUJ9GMRn3dAV+DYrRmKF/EsZxDU3bGzW89EK6JevUx8GsrZxGuRfon8wy
+ FGv90bnPfeEzsFwO2w9CionCrVbD2lOih/sWzEsWQrI56/L4rxxDjVzZSGkf1bs33IUC
+ pDkVomCySSANmwgwRaIDxmVDfzUH1K4CBX6pqtl5h+zOmc1PksQCEY3dughLXKGZ+Vsz
+ 58bdPEJRkySh0QnjYpv9RK2rqSEw/Q7NVP5TAEzZIZbC4X0rxzD7JjpIv/I0MlZEKfWK
+ ZiKw==
+X-Gm-Message-State: AGRZ1gLS3ktlqjhMrYxy4j5VBDcwHaMfNGfDjvLvO665GGXBCtevy8M0
+ B0fw0QkbySUcqglUMMpNEImYmsfFzWc=
+X-Google-Smtp-Source: AJdET5cpOGFoPdwJSaazAyMEGVUolOUq3j7odTIYgYArU3j6FGcqJejt8pomMikrYmN9iyPtLaDXKA==
+X-Received: by 2002:aca:4d51:: with SMTP id
+ a78-v6mr2252555oib.205.1540417188699; 
+ Wed, 24 Oct 2018 14:39:48 -0700 (PDT)
+Received: from mail-oi1-f180.google.com (mail-oi1-f180.google.com.
+ [209.85.167.180])
+ by smtp.gmail.com with ESMTPSA id k54sm2561714otb.8.2018.10.24.14.39.46
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Wed, 24 Oct 2018 14:39:47 -0700 (PDT)
+Received: by mail-oi1-f180.google.com with SMTP id k19-v6so5370107oiw.5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Oct 2018 14:39:46 -0700 (PDT)
+X-Received: by 2002:aca:3195:: with SMTP id
+ x143-v6mr2279303oix.213.1540417186346; 
+ Wed, 24 Oct 2018 14:39:46 -0700 (PDT)
 MIME-Version: 1.0
-References: <20181024193256.23734-1-f.fainelli@gmail.com>
- <CAL_Jsq+KCOv6pXXHhHDZ+7-QUrmtMDvSjEVhK15yZ3qbnn61Ag@mail.gmail.com>
- <6e647f76-8523-09d3-9b72-d8d8abd213a4@gmail.com>
-In-Reply-To: <6e647f76-8523-09d3-9b72-d8d8abd213a4@gmail.com>
-From: Rob Herring <robh@kernel.org>
-Date: Wed, 24 Oct 2018 16:25:47 -0500
-X-Gmail-Original-Message-ID: <CAL_JsqKC6+8gobdk1uhMLLdMUHEO8D0c3m6+F_3y3NTU_KidOw@mail.gmail.com>
-Message-ID: <CAL_JsqKC6+8gobdk1uhMLLdMUHEO8D0c3m6+F_3y3NTU_KidOw@mail.gmail.com>
-Subject: Re: [PATCH v2 0/2] arm64: Cut rebuild time when changing
- CONFIG_BLK_DEV_INITRD
-To: Florian Fainelli <f.fainelli@gmail.com>
+References: <1539536883-1928-1-git-send-email-vabhav.sharma@nxp.com>
+ <1539536883-1928-3-git-send-email-vabhav.sharma@nxp.com>
+In-Reply-To: <1539536883-1928-3-git-send-email-vabhav.sharma@nxp.com>
+From: Li Yang <leoyang.li@nxp.com>
+Date: Wed, 24 Oct 2018 16:39:35 -0500
+X-Gmail-Original-Message-ID: <CADRPPNTwpQRu9fxt8PTVb6VoNJEFFrMHpCrRa5T7YEddSVnq-w@mail.gmail.com>
+Message-ID: <CADRPPNTwpQRu9fxt8PTVb6VoNJEFFrMHpCrRa5T7YEddSVnq-w@mail.gmail.com>
+Subject: Re: [PATCH v5 2/6] soc/fsl/guts: Add definition for LX2160A
+To: Vabhav Sharma <vabhav.sharma@nxp.com>
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -83,88 +84,67 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux-MIPS <linux-mips@linux-mips.org>, linux-ia64@vger.kernel.org,
- SH-Linux <linux-sh@vger.kernel.org>, Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>, devicetree@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org,
- "open list:GENERIC INCLUDE/ASM HEADER FILES" <linux-arch@vger.kernel.org>,
- linux-s390@vger.kernel.org, linux-c6x-dev@linux-c6x.org,
- linux-hexagon@vger.kernel.org, arcml <linux-snps-arc@lists.infradead.org>,
- "moderated list:H8/300 ARCHITECTURE" <uclinux-h8-devel@lists.sourceforge.jp>,
- linux-xtensa@linux-xtensa.org, Arnd Bergmann <arnd@arndb.de>,
- Marc Zyngier <marc.zyngier@arm.com>, linux-um@lists.infradead.org,
- linux-m68k@lists.linux-m68k.org, Openrisc <openrisc@lists.librecores.org>,
- "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>, linux-parisc@vger.kernel.org,
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ Kate Stewart <kstewart@linuxfoundation.org>,
+ Ulf Hansson <ulf.hansson@linaro.org>, linux-kernel-owner@vger.kernel.org,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Michael Turquette <mturquette@baylibre.com>, Will Deacon <will.deacon@arm.com>,
+ Adrian Hunter <adrian.hunter@intel.com>, yamada.masahiro@socionext.com,
+ linux-clk <linux-clk@vger.kernel.org>, pankaj.bansal@nxp.com,
+ udit.kumar@nxp.com, Russell King <linux@armlinux.org.uk>,
+ Viresh Kumar <viresh.kumar@linaro.org>, Yinbo Zhu <yinbo.zhu@nxp.com>,
+ "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
+ <devicetree@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+ linux-pm@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Scott Wood <oss@buserror.net>, Rob Herring <robh+dt@kernel.org>,
+ V.Sethi@nxp.com, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
+ <linux-arm-kernel@lists.infradead.org>, sboyd@kernel.org,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- linux-alpha@vger.kernel.org, Olof Johansson <olof@lixom.net>,
- nios2-dev@lists.rocketboards.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, lkml <linux-kernel@vger.kernel.org>,
+ Sudeep Holla <sudeep.holla@arm.com>, Shawn Guo <shawnguo@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Oct 24, 2018 at 3:01 PM Florian Fainelli <f.fainelli@gmail.com> wrote:
+On Mon, Oct 15, 2018 at 12:14 AM Vabhav Sharma <vabhav.sharma@nxp.com> wrote:
 >
-> On 10/24/18 12:55 PM, Rob Herring wrote:
-> > On Wed, Oct 24, 2018 at 2:33 PM Florian Fainelli <f.fainelli@gmail.com> wrote:
-> >>
-> >> Hi all,
-> >>
-> >> While investigating why ARM64 required a ton of objects to be rebuilt
-> >> when toggling CONFIG_DEV_BLK_INITRD, it became clear that this was
-> >> because we define __early_init_dt_declare_initrd() differently and we do
-> >> that in arch/arm64/include/asm/memory.h which gets included by a fair
-> >> amount of other header files, and translation units as well.
-> >
-> > I scratch my head sometimes as to why some config options rebuild so
-> > much stuff. One down, ? to go. :)
-> >
+> Adding compatible string "lx2160a-dcfg" to
+> initialize guts driver for lx2160 and SoC die
+> attribute definition for LX2160A
 >
-> This one was by far the most invasive one due to its include chain, but
-> yes, there would be many more that could be optimized.
->
-> >> Changing the value of CONFIG_DEV_BLK_INITRD is a common thing with build
-> >> systems that generate two kernels: one with the initramfs and one
-> >> without. buildroot is one of these build systems, OpenWrt is also
-> >> another one that does this.
-> >>
-> >> This patch series proposes adding an empty initrd.h to satisfy the need
-> >> for drivers/of/fdt.c to unconditionally include that file, and moves the
-> >> custom __early_init_dt_declare_initrd() definition away from
-> >> asm/memory.h
-> >>
-> >> This cuts the number of objects rebuilds from 1920 down to 26, so a
-> >> factor 73 approximately.
-> >>
-> >> Apologies for the long CC list, please let me know how you would go
-> >> about merging that and if another approach would be preferable, e.g:
-> >> introducing a CONFIG_ARCH_INITRD_BELOW_START_OK Kconfig option or
-> >> something like that.
-> >
-> > There may be a better way as of 4.20 because bootmem is now gone and
-> > only memblock is used. This should unify what each arch needs to do
-> > with initrd early. We need the physical address early for memblock
-> > reserving. Then later on we need the virtual address to access the
-> > initrd. Perhaps we should just change initrd_start and initrd_end to
-> > physical addresses (or add 2 new variables would be less invasive and
-> > allow for different translation than __va()). The sanity checks and
-> > memblock reserve could also perhaps be moved to a common location.
-> >
-> > Alternatively, given arm64 is the only oddball, I'd be fine with an
-> > "if (IS_ENABLED(CONFIG_ARM64))" condition in the default
-> > __early_init_dt_declare_initrd as long as we have a path to removing
-> > it like the above option.
->
-> OK, let me cook a patch doing that and meanwhile I will look at how much
-> work is involved to implement the above option you outlined, which also
-> sounds entirely reasonable.
+> Signed-off-by: Vabhav Sharma <vabhav.sharma@nxp.com>
+> Signed-off-by: Yinbo Zhu <yinbo.zhu@nxp.com>
 
-BTW, I would suspect that initrd_below_start_ok being 1 is not okay
-for most arches. I'm not sure how that would work. min_low_pfn is
-typically based on the start of memory. arm64 is not even setting it.
+Acked-by: Li Yang <leoyang.li@nxp.com>
 
-Rob
-
+> ---
+>  drivers/soc/fsl/guts.c | 6 ++++++
+>  1 file changed, 6 insertions(+)
+>
+> diff --git a/drivers/soc/fsl/guts.c b/drivers/soc/fsl/guts.c
+> index 302e0c8..bcab1ee 100644
+> --- a/drivers/soc/fsl/guts.c
+> +++ b/drivers/soc/fsl/guts.c
+> @@ -100,6 +100,11 @@ static const struct fsl_soc_die_attr fsl_soc_die[] = {
+>           .svr          = 0x87000000,
+>           .mask         = 0xfff70000,
+>         },
+> +       /* Die: LX2160A, SoC: LX2160A/LX2120A/LX2080A */
+> +       { .die          = "LX2160A",
+> +         .svr          = 0x87360000,
+> +         .mask         = 0xff3f0000,
+> +       },
+>         { },
+>  };
+>
+> @@ -222,6 +227,7 @@ static const struct of_device_id fsl_guts_of_match[] = {
+>         { .compatible = "fsl,ls1088a-dcfg", },
+>         { .compatible = "fsl,ls1012a-dcfg", },
+>         { .compatible = "fsl,ls1046a-dcfg", },
+> +       { .compatible = "fsl,lx2160a-dcfg", },
+>         {}
+>  };
+>  MODULE_DEVICE_TABLE(of, fsl_guts_of_match);
 > --
-> Florian
+> 2.7.4
+>
