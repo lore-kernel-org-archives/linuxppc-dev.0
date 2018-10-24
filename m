@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B0DDC46475
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Oct 2018 02:24:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A9A4BC46475
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Oct 2018 02:26:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 719102054F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Oct 2018 02:24:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 719102054F
+	by mail.kernel.org (Postfix) with ESMTPS id 059112054F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Oct 2018 02:26:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 059112054F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42fvGC00VDzF37d
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Oct 2018 13:24:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42fvJC56XkzF379
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Oct 2018 13:26:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=nxp.com
@@ -26,32 +26,34 @@ Authentication-Results: lists.ozlabs.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=nxp.com
+X-Greylist: delayed 422 seconds by postgrey-1.36 at bilbo;
+ Wed, 24 Oct 2018 13:22:39 AEDT
 Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42fvDH4P66zDrSg
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42fvDH2wjhzDrPw
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Oct 2018 13:22:39 +1100 (AEDT)
 Received: from inva020.nxp.com (localhost [127.0.0.1])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 9DF3C1A00FA;
- Wed, 24 Oct 2018 04:15:37 +0200 (CEST)
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id A47231A00FC;
+ Wed, 24 Oct 2018 04:15:34 +0200 (CEST)
 Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
  [165.114.16.14])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 7E7591A0040;
- Wed, 24 Oct 2018 04:15:31 +0200 (CEST)
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 85B681A00E6;
+ Wed, 24 Oct 2018 04:15:28 +0200 (CEST)
 Received: from titan.ap.freescale.net (TITAN.ap.freescale.net [10.192.208.233])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 01B92402EE;
- Wed, 24 Oct 2018 10:15:23 +0800 (SGT)
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 6E9D7402A9;
+ Wed, 24 Oct 2018 10:15:21 +0800 (SGT)
 From: andy.tang@nxp.com
 To: sboyd@kernel.org,
 	mturquette@baylibre.com,
 	oss@buserror.net
-Subject: [PATCH 3/3 v2] clk: qoriq: update clock driver
-Date: Wed, 24 Oct 2018 10:11:22 +0800
-Message-Id: <20181024021122.3942-3-andy.tang@nxp.com>
+Subject: [PATCH 2/3 v2] clk: qoriq: remove legacy bindings and add more
+ compatibles
+Date: Wed, 24 Oct 2018 10:11:21 +0800
+Message-Id: <20181024021122.3942-2-andy.tang@nxp.com>
 X-Mailer: git-send-email 2.14.1
-In-Reply-To: <20181024021122.3942-2-andy.tang@nxp.com>
+In-Reply-To: <20181024021122.3942-1-andy.tang@nxp.com>
 References: <20181024021122.3942-1-andy.tang@nxp.com>
- <20181024021122.3942-2-andy.tang@nxp.com>
 X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -74,222 +76,144 @@ Sender: "Linuxppc-dev"
 
 From: Yuantian Tang <andy.tang@nxp.com>
 
-Legacy bindings are deleted. So the legacy support in driver
-can be deleted safely.
-Add more chip-specific compatible as well to support more Socs.
+The new bindings will be used, so delete the old bindings.
+Add more SOC compatibles as needed as well.
 
 Signed-off-by: Tang Yuantian <andy.tang@nxp.com>
 ---
 v2:
-  - remove all legacy code
+  - involve more chips
 
- drivers/clk/clk-qoriq.c |  159 +++-------------------------------------------
- 1 files changed, 11 insertions(+), 148 deletions(-)
+ .../devicetree/bindings/clock/qoriq-clock.txt      |  112 +------------------
+ 1 files changed, 6 insertions(+), 106 deletions(-)
 
-diff --git a/drivers/clk/clk-qoriq.c b/drivers/clk/clk-qoriq.c
-index 3a1812f..405a9ab 100644
---- a/drivers/clk/clk-qoriq.c
-+++ b/drivers/clk/clk-qoriq.c
-@@ -914,43 +914,6 @@ static void __init create_muxes(struct clockgen *cg)
- 	}
+diff --git a/Documentation/devicetree/bindings/clock/qoriq-clock.txt b/Documentation/devicetree/bindings/clock/qoriq-clock.txt
+index 97f46ad..8484d90 100644
+--- a/Documentation/devicetree/bindings/clock/qoriq-clock.txt
++++ b/Documentation/devicetree/bindings/clock/qoriq-clock.txt
+@@ -28,6 +28,12 @@ Required properties:
+ 	* "fsl,p4080-clockgen"
+ 	* "fsl,p5020-clockgen"
+ 	* "fsl,p5040-clockgen"
++	* "fsl,t1023-clockgen"
++	* "fsl,t1024-clockgen"
++	* "fsl,t1040-clockgen"
++	* "fsl,t1042-clockgen"
++	* "fsl,t2080-clockgen"
++	* "fsl,t2081-clockgen"
+ 	* "fsl,t4240-clockgen"
+ 	* "fsl,b4420-clockgen"
+ 	* "fsl,b4860-clockgen"
+@@ -96,109 +102,3 @@ second cell is the clock index for the specified type.
+ 		...
+ 	};
  }
- 
--static void __init clockgen_init(struct device_node *np);
+-4. Legacy Child Nodes
 -
--/*
-- * Legacy nodes may get probed before the parent clockgen node.
-- * It is assumed that device trees with legacy nodes will not
-- * contain a "clocks" property -- otherwise the input clocks may
-- * not be initialized at this point.
-- */
--static void __init legacy_init_clockgen(struct device_node *np)
--{
--	if (!clockgen.node)
--		clockgen_init(of_get_parent(np));
--}
+-NOTE: These nodes are deprecated.  Kernels should continue to support
+-device trees with these nodes, but new device trees should not use them.
 -
--/* Legacy node */
--static void __init core_mux_init(struct device_node *np)
--{
--	struct clk *clk;
--	struct resource res;
--	int idx, rc;
+-Most of the bindings are from the common clock binding[1].
+- [1] Documentation/devicetree/bindings/clock/clock-bindings.txt
 -
--	legacy_init_clockgen(np);
+-Required properties:
+-- compatible : Should include one of the following:
+-	* "fsl,qoriq-core-pll-1.0" for core PLL clocks (v1.0)
+-	* "fsl,qoriq-core-pll-2.0" for core PLL clocks (v2.0)
+-	* "fsl,qoriq-core-mux-1.0" for core mux clocks (v1.0)
+-	* "fsl,qoriq-core-mux-2.0" for core mux clocks (v2.0)
+-	* "fsl,qoriq-sysclk-1.0": for input system clock (v1.0).
+-		It takes parent's clock-frequency as its clock.
+-	* "fsl,qoriq-sysclk-2.0": for input system clock (v2.0).
+-		It takes parent's clock-frequency as its clock.
+-	* "fsl,qoriq-platform-pll-1.0" for the platform PLL clock (v1.0)
+-	* "fsl,qoriq-platform-pll-2.0" for the platform PLL clock (v2.0)
+-- #clock-cells: From common clock binding. The number of cells in a
+-	clock-specifier. Should be <0> for "fsl,qoriq-sysclk-[1,2].0"
+-	clocks, or <1> for "fsl,qoriq-core-pll-[1,2].0" clocks.
+-	For "fsl,qoriq-core-pll-[1,2].0" clocks, the single
+-	clock-specifier cell may take the following values:
+-	* 0 - equal to the PLL frequency
+-	* 1 - equal to the PLL frequency divided by 2
+-	* 2 - equal to the PLL frequency divided by 4
 -
--	if (of_address_to_resource(np, 0, &res))
--		return;
+-Recommended properties:
+-- clocks: Should be the phandle of input parent clock
+-- clock-names: From common clock binding, indicates the clock name
+-- clock-output-names: From common clock binding, indicates the names of
+-	output clocks
+-- reg: Should be the offset and length of clock block base address.
+-	The length should be 4.
 -
--	idx = (res.start & 0xf0) >> 5;
--	clk = clockgen.cmux[idx];
+-Legacy Example:
+-/ {
+-	clockgen: global-utilities@e1000 {
+-		compatible = "fsl,p5020-clockgen", "fsl,qoriq-clockgen-1.0";
+-		ranges = <0x0 0xe1000 0x1000>;
+-		clock-frequency = <133333333>;
+-		reg = <0xe1000 0x1000>;
+-		#address-cells = <1>;
+-		#size-cells = <1>;
 -
--	rc = of_clk_add_provider(np, of_clk_src_simple_get, clk);
--	if (rc) {
--		pr_err("%s: Couldn't register clk provider for node %s: %d\n",
--		       __func__, np->name, rc);
--		return;
--	}
--}
+-		sysclk: sysclk {
+-			#clock-cells = <0>;
+-			compatible = "fsl,qoriq-sysclk-1.0";
+-			clock-output-names = "sysclk";
+-		};
 -
- static struct clk __init
- *sysclk_from_fixed(struct device_node *node, const char *name)
- {
-@@ -1036,30 +999,9 @@ static void __init core_mux_init(struct device_node *np)
- 	if (!IS_ERR(clk))
- 		return clk;
- 
--	/*
--	 * This indicates a mix of legacy nodes with the new coreclk
--	 * mechanism, which should never happen.  If this error occurs,
--	 * don't use the wrong input clock just because coreclk isn't
--	 * ready yet.
--	 */
--	if (WARN_ON(PTR_ERR(clk) == -EPROBE_DEFER))
--		return clk;
+-		pll0: pll0@800 {
+-			#clock-cells = <1>;
+-			reg = <0x800 0x4>;
+-			compatible = "fsl,qoriq-core-pll-1.0";
+-			clocks = <&sysclk>;
+-			clock-output-names = "pll0", "pll0-div2";
+-		};
 -
- 	return NULL;
- }
- 
--/* Legacy node */
--static void __init sysclk_init(struct device_node *node)
--{
--	struct clk *clk;
+-		pll1: pll1@820 {
+-			#clock-cells = <1>;
+-			reg = <0x820 0x4>;
+-			compatible = "fsl,qoriq-core-pll-1.0";
+-			clocks = <&sysclk>;
+-			clock-output-names = "pll1", "pll1-div2";
+-		};
 -
--	legacy_init_clockgen(node);
+-		mux0: mux0@0 {
+-			#clock-cells = <0>;
+-			reg = <0x0 0x4>;
+-			compatible = "fsl,qoriq-core-mux-1.0";
+-			clocks = <&pll0 0>, <&pll0 1>, <&pll1 0>, <&pll1 1>;
+-			clock-names = "pll0", "pll0-div2", "pll1", "pll1-div2";
+-			clock-output-names = "cmux0";
+-		};
 -
--	clk = clockgen.sysclk;
--	if (clk)
--		of_clk_add_provider(node, of_clk_src_simple_get, clk);
--}
+-		mux1: mux1@20 {
+-			#clock-cells = <0>;
+-			reg = <0x20 0x4>;
+-			compatible = "fsl,qoriq-core-mux-1.0";
+-			clocks = <&pll0 0>, <&pll0 1>, <&pll1 0>, <&pll1 1>;
+-			clock-names = "pll0", "pll0-div2", "pll1", "pll1-div2";
+-			clock-output-names = "cmux1";
+-		};
 -
- #define PLL_KILL BIT(31)
- 
- static void __init create_one_pll(struct clockgen *cg, int idx)
-@@ -1162,82 +1104,6 @@ static void __init create_plls(struct clockgen *cg)
- 		create_one_pll(cg, i);
- }
- 
--static void __init legacy_pll_init(struct device_node *np, int idx)
--{
--	struct clockgen_pll *pll;
--	struct clk_onecell_data *onecell_data;
--	struct clk **subclks;
--	int count, rc;
+-		platform-pll: platform-pll@c00 {
+-			#clock-cells = <1>;
+-			reg = <0xc00 0x4>;
+-			compatible = "fsl,qoriq-platform-pll-1.0";
+-			clocks = <&sysclk>;
+-			clock-output-names = "platform-pll", "platform-pll-div2";
+-		};
+-	};
+-};
 -
--	legacy_init_clockgen(np);
+-Example for legacy clock consumer:
 -
--	pll = &clockgen.pll[idx];
--	count = of_property_count_strings(np, "clock-output-names");
--
--	BUILD_BUG_ON(ARRAY_SIZE(pll->div) < 4);
--	subclks = kcalloc(4, sizeof(struct clk *), GFP_KERNEL);
--	if (!subclks)
--		return;
--
--	onecell_data = kmalloc(sizeof(*onecell_data), GFP_KERNEL);
--	if (!onecell_data)
--		goto err_clks;
--
--	if (count <= 3) {
--		subclks[0] = pll->div[0].clk;
--		subclks[1] = pll->div[1].clk;
--		subclks[2] = pll->div[3].clk;
--	} else {
--		subclks[0] = pll->div[0].clk;
--		subclks[1] = pll->div[1].clk;
--		subclks[2] = pll->div[2].clk;
--		subclks[3] = pll->div[3].clk;
--	}
--
--	onecell_data->clks = subclks;
--	onecell_data->clk_num = count;
--
--	rc = of_clk_add_provider(np, of_clk_src_onecell_get, onecell_data);
--	if (rc) {
--		pr_err("%s: Couldn't register clk provider for node %s: %d\n",
--		       __func__, np->name, rc);
--		goto err_cell;
--	}
--
--	return;
--err_cell:
--	kfree(onecell_data);
--err_clks:
--	kfree(subclks);
--}
--
--/* Legacy node */
--static void __init pltfrm_pll_init(struct device_node *np)
--{
--	legacy_pll_init(np, PLATFORM_PLL);
--}
--
--/* Legacy node */
--static void __init core_pll_init(struct device_node *np)
--{
--	struct resource res;
--	int idx;
--
--	if (of_address_to_resource(np, 0, &res))
--		return;
--
--	if ((res.start & 0xfff) == 0xc00) {
--		/*
--		 * ls1021a devtree labels the platform PLL
--		 * with the core PLL compatible
--		 */
--		pltfrm_pll_init(np);
--	} else {
--		idx = (res.start & 0xf0) >> 5;
--		legacy_pll_init(np, CGA_PLL1 + idx);
--	}
--}
--
- static struct clk *clockgen_clk_get(struct of_phandle_args *clkspec, void *data)
- {
- 	struct clockgen *cg = data;
-@@ -1347,10 +1213,6 @@ static void __init clockgen_init(struct device_node *np)
- 	int i, ret;
- 	bool is_old_ls1021a = false;
- 
--	/* May have already been called by a legacy probe */
--	if (clockgen.node)
--		return;
--
- 	clockgen.node = np;
- 	clockgen.regs = of_iomap(np, 0);
- 	if (!clockgen.regs &&
-@@ -1418,19 +1280,20 @@ static void __init clockgen_init(struct device_node *np)
- 
- CLK_OF_DECLARE(qoriq_clockgen_1, "fsl,qoriq-clockgen-1.0", clockgen_init);
- CLK_OF_DECLARE(qoriq_clockgen_2, "fsl,qoriq-clockgen-2.0", clockgen_init);
-+CLK_OF_DECLARE(qoriq_clockgen_b4420, "fsl,fsl,b4420-clockgen", clockgen_init);
-+CLK_OF_DECLARE(qoriq_clockgen_b4860, "fsl,fsl,b4860-clockgen", clockgen_init);
- CLK_OF_DECLARE(qoriq_clockgen_ls1012a, "fsl,ls1012a-clockgen", clockgen_init);
- CLK_OF_DECLARE(qoriq_clockgen_ls1021a, "fsl,ls1021a-clockgen", clockgen_init);
- CLK_OF_DECLARE(qoriq_clockgen_ls1043a, "fsl,ls1043a-clockgen", clockgen_init);
- CLK_OF_DECLARE(qoriq_clockgen_ls1046a, "fsl,ls1046a-clockgen", clockgen_init);
- CLK_OF_DECLARE(qoriq_clockgen_ls1088a, "fsl,ls1088a-clockgen", clockgen_init);
- CLK_OF_DECLARE(qoriq_clockgen_ls2080a, "fsl,ls2080a-clockgen", clockgen_init);
--
--/* Legacy nodes */
--CLK_OF_DECLARE(qoriq_sysclk_1, "fsl,qoriq-sysclk-1.0", sysclk_init);
--CLK_OF_DECLARE(qoriq_sysclk_2, "fsl,qoriq-sysclk-2.0", sysclk_init);
--CLK_OF_DECLARE(qoriq_core_pll_1, "fsl,qoriq-core-pll-1.0", core_pll_init);
--CLK_OF_DECLARE(qoriq_core_pll_2, "fsl,qoriq-core-pll-2.0", core_pll_init);
--CLK_OF_DECLARE(qoriq_core_mux_1, "fsl,qoriq-core-mux-1.0", core_mux_init);
--CLK_OF_DECLARE(qoriq_core_mux_2, "fsl,qoriq-core-mux-2.0", core_mux_init);
--CLK_OF_DECLARE(qoriq_pltfrm_pll_1, "fsl,qoriq-platform-pll-1.0", pltfrm_pll_init);
--CLK_OF_DECLARE(qoriq_pltfrm_pll_2, "fsl,qoriq-platform-pll-2.0", pltfrm_pll_init);
-+CLK_OF_DECLARE(qoriq_clockgen_p2041, "fsl,p2041-clockgen", clockgen_init);
-+CLK_OF_DECLARE(qoriq_clockgen_p3041, "fsl,p3041-clockgen", clockgen_init);
-+CLK_OF_DECLARE(qoriq_clockgen_p4080, "fsl,p4080-clockgen", clockgen_init);
-+CLK_OF_DECLARE(qoriq_clockgen_p5020, "fsl,p5020-clockgen", clockgen_init);
-+CLK_OF_DECLARE(qoriq_clockgen_p5040, "fsl,p5040-clockgen", clockgen_init);
-+CLK_OF_DECLARE(qoriq_clockgen_t1023, "fsl,t1023-clockgen", clockgen_init);
-+CLK_OF_DECLARE(qoriq_clockgen_t1040, "fsl,t1040-clockgen", clockgen_init);
-+CLK_OF_DECLARE(qoriq_clockgen_t2080, "fsl,t2080-clockgen", clockgen_init);
-+CLK_OF_DECLARE(qoriq_clockgen_t4240, "fsl,t4240-clockgen", clockgen_init);
+-/ {
+-	cpu0: PowerPC,e5500@0 {
+-		...
+-		clocks = <&mux0>;
+-		...
+-	};
+-};
 -- 
 1.7.1
 
