@@ -2,99 +2,74 @@ Return-Path: <SRS0=Hff1=NE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B8FD2C004D3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Oct 2018 08:00:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BA63DC004D3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Oct 2018 08:40:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 25D86206B5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Oct 2018 08:00:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id D7D07206B5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Oct 2018 08:40:31 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=cogentembedded-com.20150623.gappssmtp.com header.i=@cogentembedded-com.20150623.gappssmtp.com header.b="lSTuWwRw"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 25D86206B5
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=cogentembedded.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="dN76Of2N"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D7D07206B5
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42g2jq3brRzDrNP
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Oct 2018 19:00:15 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=cogentembedded.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42g3cD5D7wzDrS3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Oct 2018 19:40:28 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=cogentembedded-com.20150623.gappssmtp.com header.i=@cogentembedded-com.20150623.gappssmtp.com header.b="lSTuWwRw";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="dN76Of2N";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=cogentembedded.com
- (client-ip=2a00:1450:4864:20::143; helo=mail-lf1-x143.google.com;
- envelope-from=sergei.shtylyov@cogentembedded.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=cogentembedded.com
+ spf=none (mailfrom) smtp.mailfrom=infradead.org
+ (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
+ envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=cogentembedded-com.20150623.gappssmtp.com
- header.i=@cogentembedded-com.20150623.gappssmtp.com header.b="lSTuWwRw"; 
- dkim-atps=neutral
-Received: from mail-lf1-x143.google.com (mail-lf1-x143.google.com
- [IPv6:2a00:1450:4864:20::143])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.b="dN76Of2N"; dkim-atps=neutral
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42g2gG53xPzDqfB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Oct 2018 18:57:59 +1100 (AEDT)
-Received: by mail-lf1-x143.google.com with SMTP id w16-v6so1090735lfc.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Oct 2018 00:57:58 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=cogentembedded-com.20150623.gappssmtp.com; s=20150623;
- h=subject:to:references:cc:from:message-id:date:user-agent
- :mime-version:in-reply-to:content-transfer-encoding;
- bh=V2JxQ9bo1qI+nhXdlK58QIW5s19i3I6plF2Wm8La7tg=;
- b=lSTuWwRw+w4s0c6dnCFrgC2Ld3jUFS30Z4N8hxaNUmj1aVbNWQGhyYVwm05Fznzvv0
- vDt/786ivZubvxT5fZoiumDQ4+rF5Qy1Ev/nIx+KZxXkwrU9gEi/mdjIAIT/K1WhsjjS
- AyWbrNUUSjkTmTnsrHkYdX+kKeEgczFRp2W56nbOS0Ik/4AXjO7EZ+bwRSravPjIJW7j
- kaTEyiX+w6uWoW2WNZ+tdTBCKwJYbYgEDIwf/yqqNC3D9aulvvGwXeTkP6wuACOFt6jw
- uCGCSYmAzZc+Z6TQsNDfc6J6SX6aJERYzTdGQpdlp4hFSyA7bbbT5Ve15FYI+4jQIk6Q
- ZPyg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:references:cc:from:message-id:date
- :user-agent:mime-version:in-reply-to:content-transfer-encoding;
- bh=V2JxQ9bo1qI+nhXdlK58QIW5s19i3I6plF2Wm8La7tg=;
- b=Cj2Osg4LRiAo+agNdhz+Pr27aF4ktag4GYKUIavtieiWqwjH5zfJQYluNyxU7f7Xv2
- w0zSyUREHIUx+c+vyPUhukCNPH6PO5H16KW5ppueH0UB3QXZOoB1l96K8z0IXPwEWVH7
- RuZkeXvC0rd7r7kVD/v3hHfT1+/aUogpLS6+opYA9oM66qAK9rR2vgZcpu1jquC0V92m
- 1CvKX23a30eZY/1NWAAwYsc8vQHLckYCN+ceSV8LdBLTs3/eiyTTNCSeKzp/fZTivVtq
- 877/MpQr8JMKUIuko88qg44YjuQSPvaSUIoDMgvV44QlyIqV1rwebi3qAxUVd8CcQb0F
- Mngw==
-X-Gm-Message-State: ABuFfoj3h0Z+R6+m1R88rQy5ORF9DuKhvWvbSpHoHsqWPyc1xwhOQ0pC
- 31CTHI+nDu1Al+pBOwfxApyuLg==
-X-Google-Smtp-Source: ACcGV62uYJH8DMiyK5GKYiczfyqB98ujW+uN85c+acc8oigvD5Qj6uIm52nRHcmBCYDFjU2bnn5Y5A==
-X-Received: by 2002:a19:5510:: with SMTP id n16mr8139579lfe.68.1540367875507; 
- Wed, 24 Oct 2018 00:57:55 -0700 (PDT)
-Received: from [192.168.0.200] ([31.173.82.66])
- by smtp.gmail.com with ESMTPSA id u20-v6sm586980lfk.55.2018.10.24.00.57.52
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Wed, 24 Oct 2018 00:57:54 -0700 (PDT)
-Subject: Re: [PATCH v3 4/7] ata: ahci_sunxi: use xxxsetbitsi_le32 functions
-To: Corentin Labbe <clabbe@baylibre.com>, Gilles.Muller@lip6.fr,
- Julia.Lawall@lip6.fr, agust@denx.de, airlied@linux.ie,
- alexandre.torgue@st.com, alistair@popple.id.au, benh@kernel.crashing.org,
- carlo@caione.org, davem@davemloft.net, galak@kernel.crashing.org,
- joabreu@synopsys.com, khilman@baylibre.com, matthias.bgg@gmail.com,
- maxime.ripard@bootlin.com, michal.lkml@markovi.net, mpe@ellerman.id.au,
- mporter@kernel.crashing.org, narmstrong@baylibre.com, nicolas.palix@imag.fr,
- oss@buserror.net, paulus@samba.org, peppe.cavallaro@st.com, tj@kernel.org,
- vitb@kernel.crashing.org, wens@csie.org
-References: <1540366553-18541-1-git-send-email-clabbe@baylibre.com>
- <1540366553-18541-5-git-send-email-clabbe@baylibre.com>
-From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
-Message-ID: <83472722-c7e7-820f-b97f-37016ff32893@cogentembedded.com>
-Date: Wed, 24 Oct 2018 10:57:49 +0300
-User-Agent: Mozilla/5.0 (Windows NT 6.3; WOW64; rv:45.0) Gecko/20100101
- Thunderbird/45.8.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42g3Yg0bgKzDrJq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Oct 2018 19:38:14 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
+ :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+ Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+ List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=d2jfpjjB7oLmUkq3D7u7NPvUnHT/Qv4wl7bB9GP1+OQ=; b=dN76Of2NrI7shDByrYt1spoOs
+ fBUYXsTsK9Kj4I1LXQDJPK2xbkMaXWpCmI4B0RLlP+9OXOkAtMmh68ZXCVO3S/pBN6dU0lgxD8gWX
+ nB/Mk2BBYcQ3IlsOKSD/gdq8fN/Vp8fQ1SEFiYUfrNVfW57MgKQ9LrENYhjAozBIELFjQvTEPJNi5
+ bz9uiXLHG17dG6EVwpehVjKZCtfq1bMHlqor9mgtNLP7WP2m2pWVDPspQzaKuMyTnFdPaDUhc/6kR
+ mJe495zAtAHoUNeijZ1k8/AMfxQaYrE6a6RZnTBSeFiJ345Pm3weHdfiQbp0l9zYh1YwhM+nt6XPS
+ SmRzIXzSw==;
+Received: from [185.7.230.213] (helo=worktop)
+ by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
+ id 1gFEfH-0004So-Sa; Wed, 24 Oct 2018 08:37:20 +0000
+Received: by worktop (Postfix, from userid 1000)
+ id EDB716E08AB; Wed, 24 Oct 2018 10:37:16 +0200 (CEST)
+Date: Wed, 24 Oct 2018 10:37:16 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Joel Fernandes (Google)" <joel@joelfernandes.org>
+Subject: Re: [PATCH 1/4] treewide: remove unused address argument from
+ pte_alloc functions (v2)
+Message-ID: <20181024083716.GN3109@worktop.c.hoisthospitality.com>
+References: <20181013013200.206928-1-joel@joelfernandes.org>
+ <20181013013200.206928-2-joel@joelfernandes.org>
 MIME-Version: 1.0
-In-Reply-To: <1540366553-18541-5-git-send-email-clabbe@baylibre.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20181013013200.206928-2-joel@joelfernandes.org>
+User-Agent: Mutt/1.5.22.1 (2013-10-16)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,25 +81,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-ide@vger.kernel.org,
- linux-sunxi@googlegroups.com, linux-mediatek@lists.infradead.org,
- linux-amlogic@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- cocci@systeme.lip6.fr, linux-arm-kernel@lists.infradead.org
+Cc: linux-mips@linux-mips.org, Rich Felker <dalias@libc.org>,
+ linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Dave Hansen <dave.hansen@linux.intel.com>, Will Deacon <will.deacon@arm.com>,
+ Michal Hocko <mhocko@kernel.org>, linux-mm@kvack.org, lokeshgidra@google.com,
+ sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org,
+ elfring@users.sourceforge.net, Jonas Bonn <jonas@southpole.se>,
+ kvmarm@lists.cs.columbia.edu, dancol@google.com,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, linux-xtensa@linux-xtensa.org,
+ linux-hexagon@vger.kernel.org, Helge Deller <deller@gmx.de>,
+ "maintainer:X86 ARCHITECTURE \(32-BIT AND 64-BIT\)" <x86@kernel.org>,
+ hughd@google.com, "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ kasan-dev@googlegroups.com, anton.ivanov@kot-begemot.co.uk,
+ Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
+ Andrey Ryabinin <aryabinin@virtuozzo.com>, linux-snps-arc@lists.infradead.org,
+ kernel-team@android.com, Sam Creasey <sammy@sammy.net>,
+ Fenghua Yu <fenghua.yu@intel.com>, linux-s390@vger.kernel.org,
+ Jeff Dike <jdike@addtoit.com>, linux-um@lists.infradead.org,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ Julia Lawall <Julia.Lawall@lip6.fr>, linux-m68k@lists.linux-m68k.org,
+ Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
+ nios2-dev@lists.rocketboards.org, "Kirill A . Shutemov" <kirill@shutemov.name>,
+ Stafford Horne <shorne@gmail.com>, Guan Xuetao <gxt@pku.edu.cn>,
+ Chris Zankel <chris@zankel.net>, Tony Luck <tony.luck@intel.com>,
+ Richard Weinberger <richard@nod.at>, linux-parisc@vger.kernel.org,
+ Max Filippov <jcmvbkbc@gmail.com>, pantin@google.com,
+ linux-kernel@vger.kernel.org, minchan@kernel.org,
+ Thomas Gleixner <tglx@linutronix.de>, linux-alpha@vger.kernel.org,
+ Ley Foon Tan <lftan@altera.com>, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello!
+On Fri, Oct 12, 2018 at 06:31:57PM -0700, Joel Fernandes (Google) wrote:
+> This series speeds up mremap(2) syscall by copying page tables at the
+> PMD level even for non-THP systems. There is concern that the extra
+> 'address' argument that mremap passes to pte_alloc may do something
+> subtle architecture related in the future that may make the scheme not
+> work.  Also we find that there is no point in passing the 'address' to
+> pte_alloc since its unused. So this patch therefore removes this
+> argument tree-wide resulting in a nice negative diff as well. Also
+> ensuring along the way that the enabled architectures do not do anything
+> funky with 'address' argument that goes unnoticed by the optimization.
 
-    Typo in the subject: s/xxxsetbitsi/xxxsetbits/.
-
-On 24.10.2018 10:35, Corentin Labbe wrote:
-
-> This patch converts ahci_sunxi to use xxxsetbits_le32 functions
->
-> Signed-off-by: Corentin Labbe <clabbe@baylibre.com>
-[...]
-
-MBR, Sergei
-
+Did you happen to look at the history of where that address argument
+came from? -- just being curious here. ISTR something vague about
+architectures having different paging structure for different memory
+ranges.
