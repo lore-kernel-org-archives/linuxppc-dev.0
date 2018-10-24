@@ -2,92 +2,95 @@ Return-Path: <SRS0=Hff1=NE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+X-Spam-Status: No, score=-5.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,
-	USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
+	USER_AGENT_NEOMUTT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A4AB5C004D3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Oct 2018 13:20:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C8CCCC004D3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Oct 2018 13:24:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0951920824
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Oct 2018 13:20:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 303F620824
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Oct 2018 13:24:03 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="rxvOMkoP"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0951920824
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=shutemov-name.20150623.gappssmtp.com header.i=@shutemov-name.20150623.gappssmtp.com header.b="QUWcy6Sl"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 303F620824
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=shutemov.name
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42g9ql2sPPzDrMp
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Oct 2018 00:20:51 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42g9vN5VZFzDrJl
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Oct 2018 00:24:00 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=shutemov.name
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="rxvOMkoP";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=shutemov-name.20150623.gappssmtp.com header.i=@shutemov-name.20150623.gappssmtp.com header.b="QUWcy6Sl";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
- envelope-from=bsingharora@gmail.com; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=shutemov.name
+ (client-ip=2607:f8b0:4864:20::641; helo=mail-pl1-x641.google.com;
+ envelope-from=kirill@shutemov.name; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
+ dmarc=none (p=none dis=none) header.from=shutemov.name
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="rxvOMkoP"; 
+ unprotected) header.d=shutemov-name.20150623.gappssmtp.com
+ header.i=@shutemov-name.20150623.gappssmtp.com header.b="QUWcy6Sl"; 
  dkim-atps=neutral
-Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
- [IPv6:2607:f8b0:4864:20::442])
+Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
+ [IPv6:2607:f8b0:4864:20::641])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42g7zr374PzDrKW
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Oct 2018 22:57:40 +1100 (AEDT)
-Received: by mail-pf1-x442.google.com with SMTP id b11-v6so644369pfi.5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Oct 2018 04:57:40 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42g9Jv1MBVzDrDf
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Oct 2018 23:57:35 +1100 (AEDT)
+Received: by mail-pl1-x641.google.com with SMTP id t6-v6so2169742plo.9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Oct 2018 05:57:34 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=shutemov-name.20150623.gappssmtp.com; s=20150623;
  h=date:from:to:cc:subject:message-id:references:mime-version
  :content-disposition:in-reply-to:user-agent;
- bh=r4S1JZtjtEoZRmv1cmbD7oqQ5fBxxZJ0gckdgeOcI14=;
- b=rxvOMkoPR1fl+wChK1gmiyTy80jYizuSzzLNsN1UW/nn68lcvDelAzg7q5xRULAFwF
- 88m9+eaacj9fu1oQRgbn9o9rL5OobsROYLsUPy8Jgnz+ao671RDA5Lk1ggZYlGqX9SbG
- 9RUUixIOumM9W9fFeC11ng0GECm2HV0kpOJEacCyBhFOab2Q3i4VFHF0QbnxQWZzkmCY
- Lire1m9l7AF9VgUbUKgofuhPxpehLdKNOXRb6mUKntibxqs2pslottwNtAIjzUINJV13
- bV4f1WLD9yCA7Iyr+h+lgaNFbMHR6/U4tmHoxnhQ/7prUqBNDcYtn35v7xWxzF+rGnLI
- 1zrQ==
+ bh=u4uba2fx6yj15XJfXzXAGhRcWjDfkikfuZTGMLXtNuw=;
+ b=QUWcy6Sl2uKBSxMKyAQKgPHaaZkxUyGKW1j/tcrhbSXB3vW5a56lXmFSTP0gzGbZK3
+ vffkJDQW2WMbIFLuD1+6ufBku/+pf6UeruhfzRwNYwFgIuIJTiBEFtQd6OUHFAQ6eayl
+ P+oyst7tx7B2tcyac+nAMIUnZnHfXCn48NySbAEzmKBcKrbkCpbDR97BYPvJugxN++Cj
+ APyxLuPJd0VjY9bkSUeFLpZ1THRyudEGwY77knuPasZkTOLS31IxwdJtMwVSEmSEjNTT
+ gafpbeBUtbqb+qibgmoy3fyXe8MHjyx6PnKU0Is89VSk3GMj5Rt4EKiaVNHGw+K4Tm+L
+ MPaA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:date:from:to:cc:subject:message-id:references
  :mime-version:content-disposition:in-reply-to:user-agent;
- bh=r4S1JZtjtEoZRmv1cmbD7oqQ5fBxxZJ0gckdgeOcI14=;
- b=UKcUupGi1cRL2ivIzh5VwvUP62sSpeZRa1CIJmIKIYI0oN9HiAaryA00JweZw04nu0
- RLxWma/IXNeTVmEoiB+u7XHP8cUDOOusAorXVv8a5rXU4ZNhIJ6dGKOkhUXQ+aHVb5uV
- W3nzJAo3pwHVi3KBGPJim5T0RUopDSCydSiM5EA76x4drkSjWmaJ3lbZRNf/p5LonnZj
- ueqfBtUHpn/Wu+HD+51JsaPm8ys6i2/48apM89WfN5Gm7yMSl7/9gi8yN7oz1UJArYFw
- IfkJzu5l9CvKatnoYu+kb0YMVmRBSOJceSDDdnSgCw1BZVYiEsg3/DrmHfns55X211FK
- 0bxQ==
-X-Gm-Message-State: AGRZ1gKs9GMnDUqtB7VQZR7Re5IT/K6XqQJFf11x9JY+I6bgZUzvUTeQ
- ZEumK7D8Obs3xsKRHEOlHYM=
-X-Google-Smtp-Source: AJdET5fJWm/yEunoAdHkJCNfHZyAKT69zWrP0KZ/06Nf8Zmi/6rvBn7LEzBt+uDaB55Nx51vc0n+3g==
-X-Received: by 2002:a62:6383:: with SMTP id
- x125-v6mr2334785pfb.13.1540382257876; 
- Wed, 24 Oct 2018 04:57:37 -0700 (PDT)
-Received: from localhost (14-202-194-140.static.tpgi.com.au. [14.202.194.140])
- by smtp.gmail.com with ESMTPSA id
- t5-v6sm3677450pfm.26.2018.10.24.04.57.35
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Wed, 24 Oct 2018 04:57:36 -0700 (PDT)
-Date: Wed, 24 Oct 2018 22:57:33 +1100
-From: Balbir Singh <bsingharora@gmail.com>
-To: "Kirill A. Shutemov" <kirill@shutemov.name>
+ bh=u4uba2fx6yj15XJfXzXAGhRcWjDfkikfuZTGMLXtNuw=;
+ b=Ho1D4lkfMC6x24cUbpaBq1LW4HTkND55q6apedS3CPvdHLqfYfbGCpz8J/OfgPX1Ni
+ tn9VoOYYSJIvoRBr4VO+SGrpyEYOZYH+6ilviJCRtqt5+Ux+DSrui2kYRZsZxt/mN6qc
+ ACTQsTzQwR8qY9F/4+/J4ZlgpVi7k+FucdvTWL1HSfy8o7opr2gOhtiMWeizbuv+aFRs
+ VJZE0FmWpkXPa2Rmtw3L3j9mCRinGXeU+xHmbDZFrdWXHBpJ84IQR/+Zp6XHf+O9dUFN
+ oc1plTBLZdRrecPyVAIDjoRKD9VXbGpQIBuDpswgQvgjZdLwVq1pSguGrmhWF+j21Y3V
+ h2kw==
+X-Gm-Message-State: AGRZ1gID4nJB5bo2VsJMvG2MgPAbnHyEh+OfNDlWUGsLCfZfMaIcrOn7
+ i8guY1K93R+OCpX8tMPCnDnEdw==
+X-Google-Smtp-Source: AJdET5f0Q09g2nkZdpmB3hAoSyWMxOfqRQx8u4VGhcieEr9jQ0pioGElufWMbGpMlhoL8pENMWgATQ==
+X-Received: by 2002:a17:902:bf02:: with SMTP id
+ bi2-v6mr2470661plb.186.1540385850462; 
+ Wed, 24 Oct 2018 05:57:30 -0700 (PDT)
+Received: from kshutemo-mobl1.localdomain ([192.55.54.44])
+ by smtp.gmail.com with ESMTPSA id l83-v6sm10557314pfi.172.2018.10.24.05.57.28
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Wed, 24 Oct 2018 05:57:29 -0700 (PDT)
+Received: by kshutemo-mobl1.localdomain (Postfix, from userid 1000)
+ id 1845F300225; Wed, 24 Oct 2018 15:57:24 +0300 (+03)
+Date: Wed, 24 Oct 2018 15:57:24 +0300
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: Balbir Singh <bsingharora@gmail.com>
 Subject: Re: [PATCH 2/4] mm: speed up mremap by 500x on large regions (v2)
-Message-ID: <20181024115733.GN8537@350D>
+Message-ID: <20181024125724.yf6frdimjulf35do@kshutemo-mobl1>
 References: <20181013013200.206928-1-joel@joelfernandes.org>
  <20181013013200.206928-3-joel@joelfernandes.org>
  <20181024101255.it4lptrjogalxbey@kshutemo-mobl1>
+ <20181024115733.GN8537@350D>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20181024101255.it4lptrjogalxbey@kshutemo-mobl1>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+In-Reply-To: <20181024115733.GN8537@350D>
+User-Agent: NeoMutt/20180716
 X-Mailman-Approved-At: Thu, 25 Oct 2018 00:18:02 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -136,73 +139,55 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Oct 24, 2018 at 01:12:56PM +0300, Kirill A. Shutemov wrote:
-> On Fri, Oct 12, 2018 at 06:31:58PM -0700, Joel Fernandes (Google) wrote:
-> > diff --git a/mm/mremap.c b/mm/mremap.c
-> > index 9e68a02a52b1..2fd163cff406 100644
-> > --- a/mm/mremap.c
-> > +++ b/mm/mremap.c
-> > @@ -191,6 +191,54 @@ static void move_ptes(struct vm_area_struct *vma, pmd_t *old_pmd,
-> >  		drop_rmap_locks(vma);
-> >  }
-> >  
-> > +static bool move_normal_pmd(struct vm_area_struct *vma, unsigned long old_addr,
-> > +		  unsigned long new_addr, unsigned long old_end,
-> > +		  pmd_t *old_pmd, pmd_t *new_pmd, bool *need_flush)
-> > +{
-> > +	spinlock_t *old_ptl, *new_ptl;
-> > +	struct mm_struct *mm = vma->vm_mm;
-> > +
-> > +	if ((old_addr & ~PMD_MASK) || (new_addr & ~PMD_MASK)
-> > +	    || old_end - old_addr < PMD_SIZE)
-> > +		return false;
-> > +
-> > +	/*
-> > +	 * The destination pmd shouldn't be established, free_pgtables()
-> > +	 * should have release it.
-> > +	 */
-> > +	if (WARN_ON(!pmd_none(*new_pmd)))
-> > +		return false;
-> > +
-> > +	/*
-> > +	 * We don't have to worry about the ordering of src and dst
-> > +	 * ptlocks because exclusive mmap_sem prevents deadlock.
-> > +	 */
-> > +	old_ptl = pmd_lock(vma->vm_mm, old_pmd);
-> > +	if (old_ptl) {
+On Wed, Oct 24, 2018 at 10:57:33PM +1100, Balbir Singh wrote:
+> On Wed, Oct 24, 2018 at 01:12:56PM +0300, Kirill A. Shutemov wrote:
+> > On Fri, Oct 12, 2018 at 06:31:58PM -0700, Joel Fernandes (Google) wrote:
+> > > diff --git a/mm/mremap.c b/mm/mremap.c
+> > > index 9e68a02a52b1..2fd163cff406 100644
+> > > --- a/mm/mremap.c
+> > > +++ b/mm/mremap.c
+> > > @@ -191,6 +191,54 @@ static void move_ptes(struct vm_area_struct *vma, pmd_t *old_pmd,
+> > >  		drop_rmap_locks(vma);
+> > >  }
+> > >  
+> > > +static bool move_normal_pmd(struct vm_area_struct *vma, unsigned long old_addr,
+> > > +		  unsigned long new_addr, unsigned long old_end,
+> > > +		  pmd_t *old_pmd, pmd_t *new_pmd, bool *need_flush)
+> > > +{
+> > > +	spinlock_t *old_ptl, *new_ptl;
+> > > +	struct mm_struct *mm = vma->vm_mm;
+> > > +
+> > > +	if ((old_addr & ~PMD_MASK) || (new_addr & ~PMD_MASK)
+> > > +	    || old_end - old_addr < PMD_SIZE)
+> > > +		return false;
+> > > +
+> > > +	/*
+> > > +	 * The destination pmd shouldn't be established, free_pgtables()
+> > > +	 * should have release it.
+> > > +	 */
+> > > +	if (WARN_ON(!pmd_none(*new_pmd)))
+> > > +		return false;
+> > > +
+> > > +	/*
+> > > +	 * We don't have to worry about the ordering of src and dst
+> > > +	 * ptlocks because exclusive mmap_sem prevents deadlock.
+> > > +	 */
+> > > +	old_ptl = pmd_lock(vma->vm_mm, old_pmd);
+> > > +	if (old_ptl) {
+> > 
+> > How can it ever be false?
+> > 
+> > > +		pmd_t pmd;
+> > > +
+> > > +		new_ptl = pmd_lockptr(mm, new_pmd);
 > 
-> How can it ever be false?
 > 
-> > +		pmd_t pmd;
-> > +
-> > +		new_ptl = pmd_lockptr(mm, new_pmd);
+> Looks like this is largely inspired by move_huge_pmd(), I guess a lot of
+> the code applies, why not just reuse as much as possible? The same comments
+> w.r.t mmap_sem helping protect against lock order issues applies as well.
 
+pmd_lock() cannot fail, but __pmd_trans_huge_lock() can. We should not
+copy the code blindly.
 
-Looks like this is largely inspired by move_huge_pmd(), I guess a lot of
-the code applies, why not just reuse as much as possible? The same comments
-w.r.t mmap_sem helping protect against lock order issues applies as well.
-
-> > +		if (new_ptl != old_ptl)
-> > +			spin_lock_nested(new_ptl, SINGLE_DEPTH_NESTING);
-> > +
-> > +		/* Clear the pmd */
-> > +		pmd = *old_pmd;
-> > +		pmd_clear(old_pmd);
-> > +
-> > +		VM_BUG_ON(!pmd_none(*new_pmd));
-> > +
-> > +		/* Set the new pmd */
-> > +		set_pmd_at(mm, new_addr, new_pmd, pmd);
-> > +		if (new_ptl != old_ptl)
-> > +			spin_unlock(new_ptl);
-> > +		spin_unlock(old_ptl);
-> > +
-> > +		*need_flush = true;
-> > +		return true;
-> > +	}
-> > +	return false;
-> > +}
-> > +
-> -- 
->  Kirill A. Shutemov
-> 
+-- 
+ Kirill A. Shutemov
