@@ -2,72 +2,79 @@ Return-Path: <SRS0=ruO2=NF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D07EC46475
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Oct 2018 21:54:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 62CE1C46475
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Oct 2018 22:09:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 81F1120834
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Oct 2018 21:54:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 81F1120834
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 76DE6207DD
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Oct 2018 22:09:53 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=jms.id.au header.i=@jms.id.au header.b="Xhk7xyV+"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 76DE6207DD
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=jms.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42h1BD6PhXzF3CN
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Oct 2018 08:54:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42h1Wg0sgZzF2Ds
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Oct 2018 09:09:51 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=jms.id.au
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (1024-bit key; secure) header.d=jms.id.au header.i=@jms.id.au header.b="Xhk7xyV+";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.167.195; helo=mail-oi1-f195.google.com;
- envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
+ (client-ip=2607:f8b0:4864:20::841; helo=mail-qt1-x841.google.com;
+ envelope-from=joel.stan@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mail-oi1-f195.google.com (mail-oi1-f195.google.com
- [209.85.167.195])
+ dmarc=none (p=none dis=none) header.from=jms.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ secure) header.d=jms.id.au header.i=@jms.id.au header.b="Xhk7xyV+"; 
+ dkim-atps=neutral
+Received: from mail-qt1-x841.google.com (mail-qt1-x841.google.com
+ [IPv6:2607:f8b0:4864:20::841])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42h1822Q0vzF3Cm
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Oct 2018 08:52:50 +1100 (AEDT)
-Received: by mail-oi1-f195.google.com with SMTP id p125-v6so8060677oic.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Oct 2018 14:52:50 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42h1St1TNwzF2Ds
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Oct 2018 09:07:26 +1100 (AEDT)
+Received: by mail-qt1-x841.google.com with SMTP id l41-v6so11826861qtl.8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Oct 2018 15:07:26 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=jms.id.au; s=google;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=TUBidomvoH/Apxm80HzLvAN3a3t8ShLP0h0KAo04q48=;
+ b=Xhk7xyV+jTV7bw2mkVFCZ8q7zeoJc05L1JFO3z01gaRp0Iq/X6Wh1nKOvh4fhyeLAm
+ lF4M6/xb6U5fIOCxQYzR4OCp5p/rpiYX2xR4xHAkn0kVgHclw36nevbuu4s9TEuZCF9D
+ v6VSokwSnxxl0Bhbmab3WU9eWsS6D4YLG/QlE=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=iqbQl5ihR/SM/+0e/deIgeI7mi+Rh+Z/cWXJhlKJTSk=;
- b=kFkimEcN9UAOuXoSK3FLK54VK1h42HoeQmHpVduCYGMqQ+oIpX5w462S3gfoUFqq2z
- 2Edk/5zT+HgLlj5qlgBeKv7eSHy5jh756k4GYQrOHNWE9YDioaZ0WEA4IAmZwZj2ucTJ
- 7J5m6KSOL5Tf5s76BJGp9AdLhDo4zJdGdOz+AyEOEf4J5XCgNmMCQRt656hbJ7uM5nRS
- faqMISzB1twb7sdKsTxcmoNMiQG6QKGp8XTjcIP9dEe7Wc1roR26BxqPh0bY9TJVim63
- AXyytly3QZrC1pFYtVpJJznFsTZMoD2PwVFYgA2uQnvLk+vJqlti/Y92orTmIjfVQh0D
- SHaA==
-X-Gm-Message-State: AGRZ1gLnsrsasVBq2mHLuhWaZb+TojN+tFoMm4j1mlP69MjMiZVoOgoE
- ElqqyB49ptnT/9JjShBdwQ==
-X-Google-Smtp-Source: AJdET5e/v/ewadxX7/s7dgp0flO1DICwZqrullxD2vkDwAhBG75EfP6NMelbZSwQqcD9Ihicu10SvQ==
-X-Received: by 2002:aca:a6d1:: with SMTP id
- t78-v6mr598067oij.341.1540504367881; 
- Thu, 25 Oct 2018 14:52:47 -0700 (PDT)
-Received: from localhost (24-155-109-49.dyn.grandenetworks.net.
- [24.155.109.49])
- by smtp.gmail.com with ESMTPSA id n63-v6sm2822805oia.52.2018.10.25.14.52.47
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Thu, 25 Oct 2018 14:52:47 -0700 (PDT)
-Date: Thu, 25 Oct 2018 16:52:46 -0500
-From: Rob Herring <robh@kernel.org>
-To: Xiaowei Bao <xiaowei.bao@nxp.com>
-Subject: Re: [PATCH 3/6] PCI: layerscape: Add the EP mode support
-Message-ID: <20181025215246.GA14861@bogus>
-References: <20181025110901.5680-1-xiaowei.bao@nxp.com>
- <20181025110901.5680-3-xiaowei.bao@nxp.com>
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=TUBidomvoH/Apxm80HzLvAN3a3t8ShLP0h0KAo04q48=;
+ b=VI+sG5DbrnHxSGsCjC0uiuZ3xFMswBJ5RSJS7KjbAXZu0WdgFjd3AyE7iwJ8i6I9+T
+ ePWeNaB7TvtTZ/LkdlhDdnVY+WliIdZIy/eI9zuzsoULCY9Bxxy4QAA2KQ0ZT/Yvfyj9
+ UzdRZHkSA56xQI631KimiDNQ7p6hqs/GACPZxTY9yT17fmtoNRjJZPlQ9PNaPPvr219x
+ Q8M9HQo1gsA8qDnpxPW89T+72KoJ4M/gaPYTpVpoLM8lLncNIbesUaUYf1+wiGeLHpQO
+ QybIRsuOPWrhtxwbefLSRJtNYUaDj/SdY8Qprc9s4JF2LwXHXZd5Dj2c3cfCGdpJB9wW
+ HjTw==
+X-Gm-Message-State: AGRZ1gLgwRKEFkjOpMfmzXberXmn/YtJXNtHT+VQMe/spVDxiSfNTLcC
+ T5fna7rDHavod1DojieordUzicl8WPeoYD7p39A=
+X-Google-Smtp-Source: AJdET5dzkQhzFFP7LE4xRvx8AQVGqP8HTP+zXdScggcFZ+xJEAfe4K1G0sTthmUNzOCqlfL64+9qB1goOOM37j6EBcU=
+X-Received: by 2002:ac8:7445:: with SMTP id
+ h5-v6mr1004681qtr.284.1540505243862; 
+ Thu, 25 Oct 2018 15:07:23 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20181025110901.5680-3-xiaowei.bao@nxp.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+References: <20181023080456.2558-1-naveen.n.rao@linux.vnet.ibm.com>
+In-Reply-To: <20181023080456.2558-1-naveen.n.rao@linux.vnet.ibm.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Fri, 26 Oct 2018 08:37:11 +1030
+Message-ID: <CACPK8XfK-uQdkh0mb55bs8LnN-e3CgWJh2guRDfjx0NqTSTbPg@mail.gmail.com>
+Subject: Re: [PATCH] selftests/powerpc: Relax L1d miss targets for rfi_flush
+ test
+To: naveen.n.rao@linux.vnet.ibm.com
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,44 +86,88 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mark.rutland@arm.com, roy.zang@nxp.com, lorenzo.pieralisi@arm.com,
- arnd@arndb.de, devicetree@vger.kernel.org, gregkh@linuxfoundation.org,
- kstewart@linuxfoundation.org, niklas.cassel@axis.com,
- linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, kishon@ti.com,
- minghuan.Lian@nxp.com, cyrille.pitchen@free-electrons.com,
- linux-arm-kernel@lists.infradead.org, pombredanne@nexb.com,
- bhelgaas@google.com, leoyang.li@nxp.com, shawnguo@kernel.org,
- shawn.lin@rock-chips.com, mingkai.hu@nxp.com, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Oct 25, 2018 at 07:08:58PM +0800, Xiaowei Bao wrote:
-> Add the EP mode support.
-> 
-> Signed-off-by: Xiaowei Bao <xiaowei.bao@nxp.com>
-> ---
->  .../devicetree/bindings/pci/layerscape-pci.txt     |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/pci/layerscape-pci.txt b/Documentation/devicetree/bindings/pci/layerscape-pci.txt
-> index 66df1e8..d3d7be1 100644
-> --- a/Documentation/devicetree/bindings/pci/layerscape-pci.txt
-> +++ b/Documentation/devicetree/bindings/pci/layerscape-pci.txt
-> @@ -13,12 +13,15 @@ information.
->  
->  Required properties:
->  - compatible: should contain the platform identifier such as:
-> +  RC mode:
->          "fsl,ls1021a-pcie", "snps,dw-pcie"
->          "fsl,ls2080a-pcie", "fsl,ls2085a-pcie", "snps,dw-pcie"
->          "fsl,ls2088a-pcie"
->          "fsl,ls1088a-pcie"
->          "fsl,ls1046a-pcie"
->          "fsl,ls1012a-pcie"
-> +  EP mode:
-> +        "fsl,ls-pcie-ep"
+On Tue, 23 Oct 2018 at 18:35, Naveen N. Rao
+<naveen.n.rao@linux.vnet.ibm.com> wrote:
+>
+> When running the rfi_flush test, if the system is loaded, we see two
+> issues:
+> 1. The L1d misses when rfi_flush is disabled increase significantly due
+> to other workloads interfering with the cache.
+> 2. The L1d misses when rfi_flush is enabled sometimes goes slightly
+> below the expected number of misses.
+>
+> To address these, let's relax the expected number of L1d misses:
+> 1. When rfi_flush is disabled, we allow upto half the expected number of
+> the misses for when rfi_flush is enabled.
+> 2. When rfi_flush is enabled, we allow ~1% lower number of cache misses.
+>
+> Reported-by: Joel Stanley <joel@jms.id.au>
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 
-You need SoC specific compatibles for the same reasons as the RC.
+Thanks, this now passes 10/10 runs on my Romulus machine. A log is
+attached below.
 
-Rob
+Tested-by: Joel Stanley <joel@jms.id.au>
+
+Cheers,
+
+Joel
+
+---
+
+for i in `seq 1 10`; do sudo ./rfi_flush; done
+test: rfi_flush_test
+tags: git_version:next-20181018-67-g61f7abf00719
+PASS (L1D misses with rfi_flush=0: 5013939 < 95000000) [10/10 pass]
+PASS (L1D misses with rfi_flush=1: 195054696 > 190000000) [10/10 pass]
+success: rfi_flush_test
+test: rfi_flush_test
+tags: git_version:next-20181018-67-g61f7abf00719
+PASS (L1D misses with rfi_flush=0: 11015957 < 95000000) [10/10 pass]
+PASS (L1D misses with rfi_flush=1: 195053292 > 190000000) [10/10 pass]
+success: rfi_flush_test
+test: rfi_flush_test
+tags: git_version:next-20181018-67-g61f7abf00719
+PASS (L1D misses with rfi_flush=0: 8017248 < 95000000) [10/10 pass]
+PASS (L1D misses with rfi_flush=1: 195145579 > 190000000) [10/10 pass]
+success: rfi_flush_test
+test: rfi_flush_test
+tags: git_version:next-20181018-67-g61f7abf00719
+PASS (L1D misses with rfi_flush=0: 11015308 < 95000000) [10/10 pass]
+PASS (L1D misses with rfi_flush=1: 195042376 > 190000000) [10/10 pass]
+success: rfi_flush_test
+test: rfi_flush_test
+tags: git_version:next-20181018-67-g61f7abf00719
+PASS (L1D misses with rfi_flush=0: 1021356 < 95000000) [10/10 pass]
+PASS (L1D misses with rfi_flush=1: 195031624 > 190000000) [10/10 pass]
+success: rfi_flush_test
+test: rfi_flush_test
+tags: git_version:next-20181018-67-g61f7abf00719
+PASS (L1D misses with rfi_flush=0: 6015342 < 95000000) [10/10 pass]
+PASS (L1D misses with rfi_flush=1: 195037322 > 190000000) [10/10 pass]
+success: rfi_flush_test
+test: rfi_flush_test
+tags: git_version:next-20181018-67-g61f7abf00719
+PASS (L1D misses with rfi_flush=0: 16635 < 95000000) [10/10 pass]
+PASS (L1D misses with rfi_flush=1: 195032476 > 190000000) [10/10 pass]
+success: rfi_flush_test
+test: rfi_flush_test
+tags: git_version:next-20181018-67-g61f7abf00719
+PASS (L1D misses with rfi_flush=0: 6013599 < 95000000) [10/10 pass]
+PASS (L1D misses with rfi_flush=1: 195060037 > 190000000) [10/10 pass]
+success: rfi_flush_test
+test: rfi_flush_test
+tags: git_version:next-20181018-67-g61f7abf00719
+PASS (L1D misses with rfi_flush=0: 25236 < 95000000) [10/10 pass]
+PASS (L1D misses with rfi_flush=1: 195052859 > 190000000) [10/10 pass]
+success: rfi_flush_test
+test: rfi_flush_test
+tags: git_version:next-20181018-67-g61f7abf00719
+PASS (L1D misses with rfi_flush=0: 18120 < 95000000) [10/10 pass]
+PASS (L1D misses with rfi_flush=1: 195014212 > 190000000) [10/10 pass]
+success: rfi_flush_test
