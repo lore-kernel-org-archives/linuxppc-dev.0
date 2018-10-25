@@ -1,93 +1,89 @@
-Return-Path: <SRS0=Hff1=NE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=ruO2=NF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F5B6ECDE44
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Oct 2018 22:48:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 71AA9ECDE46
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Oct 2018 02:23:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 869DA2082E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Oct 2018 22:48:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C87DA20831
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Oct 2018 02:23:36 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=netronome-com.20150623.gappssmtp.com header.i=@netronome-com.20150623.gappssmtp.com header.b="n1yTQjYd"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 869DA2082E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=netronome.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=joelfernandes.org header.i=@joelfernandes.org header.b="WhUgko4o"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C87DA20831
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=joelfernandes.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42gQQv0F93zDrPn
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Oct 2018 09:48:39 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=netronome.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42gWBt3f1DzDrP0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Oct 2018 13:23:34 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=joelfernandes.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=netronome-com.20150623.gappssmtp.com header.i=@netronome-com.20150623.gappssmtp.com header.b="n1yTQjYd";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=joelfernandes.org header.i=@joelfernandes.org header.b="WhUgko4o";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=netronome.com
- (client-ip=2607:f8b0:4864:20::842; helo=mail-qt1-x842.google.com;
- envelope-from=jakub.kicinski@netronome.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=netronome.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=netronome-com.20150623.gappssmtp.com
- header.i=@netronome-com.20150623.gappssmtp.com header.b="n1yTQjYd"; 
- dkim-atps=neutral
-Received: from mail-qt1-x842.google.com (mail-qt1-x842.google.com
- [IPv6:2607:f8b0:4864:20::842])
+ spf=pass (mailfrom) smtp.mailfrom=joelfernandes.org
+ (client-ip=2607:f8b0:4864:20::542; helo=mail-pg1-x542.google.com;
+ envelope-from=joel@joelfernandes.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=joelfernandes.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=joelfernandes.org header.i=@joelfernandes.org
+ header.b="WhUgko4o"; dkim-atps=neutral
+Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
+ [IPv6:2607:f8b0:4864:20::542])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42gQNM1HXszDrPn
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Oct 2018 09:46:23 +1100 (AEDT)
-Received: by mail-qt1-x842.google.com with SMTP id r22-v6so7640900qtm.5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Oct 2018 15:46:23 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42gW8N63hgzDrNS
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Oct 2018 13:21:23 +1100 (AEDT)
+Received: by mail-pg1-x542.google.com with SMTP id f8-v6so3249954pgq.5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Oct 2018 19:21:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=netronome-com.20150623.gappssmtp.com; s=20150623;
- h=date:from:to:cc:subject:message-id:in-reply-to:references
- :organization:mime-version:content-transfer-encoding;
- bh=dn0YGRDoNbTjAH4ZG5NZaQVwCZKtUjfVuIFMEzZr3z8=;
- b=n1yTQjYdW93x9b7hcjqt4fcA/inYzLGTPFi5lYkjgaZW79nsxO7jXyDgviHR94gvvI
- NgGOtSTNtdly0C4pl57vlMFtFyHYajZcDARy8KeprtbS9YAUBW9hueXEY3zFOl8Eclj9
- a+iFVnb06UCFqodjRDGp4J+kwn57Q/xN6Q0z3lgcJkPeYOKXO2oJNWI3DPH8zNYTsbTK
- H0fYuGSND6f/UyupddzfKQOZk8LstoyKRORliyANRJf70RbKbtL54z6OMzcrgxG+UaGG
- 0mVbfYTpSPGBrbFDDMkJkRlTf+KCpXgZAQfaG4z/MGrsI8ZOypQANUHFCibnkqqdxdsn
- nHBw==
+ d=joelfernandes.org; s=google;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=a3qWVWJhvBgQDe8YRsbgtRjpHQfuWQV3NPWrQqOgjm0=;
+ b=WhUgko4o5JcJhUwoWI8kPjvkrH9YQTvlMUDHtdL2JJ5mCTuig+Mqt2sFNrTVhmJSgZ
+ 34O62c+REJyhBfJwS4DhKcn3WHO4O/TKsj/DlxdzkUHTNLB9x+bJAzgHPxnnVjbdI5DC
+ PQKlOZe6+0JIfKGXqhkPj1W7WBMfDG+7PFQCQ=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:in-reply-to
- :references:organization:mime-version:content-transfer-encoding;
- bh=dn0YGRDoNbTjAH4ZG5NZaQVwCZKtUjfVuIFMEzZr3z8=;
- b=E+/B/eUSvmM4Sez5yYmwXXee0FPmMJmXcWIiLdSp51OSu5vHEJmah/i8SzkiyMLloy
- RAwbv259tf+Fy3Qlp54M2lRub0uFtHd4Gl+lwF/Rp1Rt7+OymSwmZ/r9nNaRH94XII6y
- bImwe2Ub7z9pcrH2cpABeK/fiSGnJMJgBH+N0k+jTXIIRnifMG2yHmJaQPRmVZJfhOTf
- BPzeAbnhGhfA+xLVs9hpcxKARo4HWmIwsYehQgOgP0DGsFtdfLAaJskE0DfA78NqqyaR
- reOkG/VU73zvI0APvSYG9rHB4qwb8t5Irfv7KJkUzeZRvFQ/8h4RaXZxTf67w7bir4kp
- H9ng==
-X-Gm-Message-State: AGRZ1gKNAboHj+nTPbF1p1sfilQtbL4j/bwVGA8NEa0S0mMrhIidyDH7
- glBsuCVcbApR+zwsLx/UVGC4Cw==
-X-Google-Smtp-Source: AJdET5d/DrQo5+0+Im9zOPgyl3dyBtBXC6okdzwVqfQuSOTOTyt4y8EbDAJXmK4UExJ2eWUTQ3KVHg==
-X-Received: by 2002:aed:26c7:: with SMTP id
- q65-v6mr4469873qtd.282.1540421180993; 
- Wed, 24 Oct 2018 15:46:20 -0700 (PDT)
-Received: from cakuba.netronome.com ([66.60.152.14])
- by smtp.gmail.com with ESMTPSA id i11-v6sm5688061qtc.96.2018.10.24.15.46.17
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=a3qWVWJhvBgQDe8YRsbgtRjpHQfuWQV3NPWrQqOgjm0=;
+ b=oEzBCgFdxtDby8b0z2VIRr0gCqT5DihWB8ETMztmE4muvB3XMzPXTPBcML4TfOAmJ6
+ /ECH5Uw670vKN5EQ4XdvJ7+T4jOEaRfu2wqXfeUax+03KRafuojOPIdTquWId1DuILsM
+ 8515oQ4T8qmbv4rrYX27NJOL6VXqS6p9NCwhKT9Xn5ClVZe/2ufEQGRARIhkml/oJ7iF
+ YJs7544109tWVdsqJnojvTX0FQ+liZpAGk3L+VlbGGskE0Xo3EaW4sBgIXBvqgqtw53J
+ klByexORcM/yceKIVaU76/JZkau40xRk9r5fQGvTNPBV4eh1OIplvBSluAiLchSQv/Os
+ IQiQ==
+X-Gm-Message-State: AGRZ1gJHnftB7vjh58D+X7w3trFEJJEQCl858Pt8gfXoc0keVC68QGpR
+ i3SkwtkXgO3rFPZAfkOwE6/3hQ==
+X-Google-Smtp-Source: AJdET5fQ846491taIkpUacXcNZHbPUwGXEdQnQATNy2W0qACW8LZiE3r2xKx5hJLJ1WKuWwXbkkY2Q==
+X-Received: by 2002:a63:88c7:: with SMTP id l190mr4758613pgd.110.1540434081712; 
+ Wed, 24 Oct 2018 19:21:21 -0700 (PDT)
+Received: from localhost ([2620:0:1000:1601:3aef:314f:b9ea:889f])
+ by smtp.gmail.com with ESMTPSA id 11-v6sm8041192pfs.108.2018.10.24.19.21.20
  (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Wed, 24 Oct 2018 15:46:20 -0700 (PDT)
-Date: Wed, 24 Oct 2018 15:46:13 -0700
-From: Jakub Kicinski <jakub.kicinski@netronome.com>
-To: Corentin Labbe <clabbe@baylibre.com>
-Subject: Re: [PATCH v3 2/7] include: add
- setbits_leXX/clrbits_leXX/clrsetbits_leXX in linux/setbits.h
-Message-ID: <20181024154613.3ecc96dc@cakuba.netronome.com>
-In-Reply-To: <1540366553-18541-3-git-send-email-clabbe@baylibre.com>
-References: <1540366553-18541-1-git-send-email-clabbe@baylibre.com>
- <1540366553-18541-3-git-send-email-clabbe@baylibre.com>
-Organization: Netronome Systems, Ltd.
+ Wed, 24 Oct 2018 19:21:20 -0700 (PDT)
+Date: Wed, 24 Oct 2018 19:21:19 -0700
+From: Joel Fernandes <joel@joelfernandes.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 1/4] treewide: remove unused address argument from
+ pte_alloc functions (v2)
+Message-ID: <20181025022119.GC13560@joelaf.mtv.corp.google.com>
+References: <20181013013200.206928-1-joel@joelfernandes.org>
+ <20181013013200.206928-2-joel@joelfernandes.org>
+ <20181024083716.GN3109@worktop.c.hoisthospitality.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20181024083716.GN3109@worktop.c.hoisthospitality.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,123 +95,63 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Gilles.Muller@lip6.fr, maxime.ripard@bootlin.com,
- dri-devel@lists.freedesktop.org, linux-ide@vger.kernel.org,
- linux-sunxi@googlegroups.com, paulus@samba.org,
- linux-amlogic@lists.infradead.org, cocci@systeme.lip6.fr,
- narmstrong@baylibre.com, airlied@linux.ie, wens@csie.org, joabreu@synopsys.com,
- agust@denx.de, alexandre.torgue@st.com, alistair@popple.id.au,
- nicolas.palix@imag.fr, oss@buserror.net, Julia.Lawall@lip6.fr,
- linux-mediatek@lists.infradead.org, matthias.bgg@gmail.com,
- peppe.cavallaro@st.com, linux-arm-kernel@lists.infradead.org,
- michal.lkml@markovi.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- khilman@baylibre.com, carlo@caione.org, tj@kernel.org,
- linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Cc: linux-mips@linux-mips.org, Rich Felker <dalias@libc.org>,
+ linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Dave Hansen <dave.hansen@linux.intel.com>, Will Deacon <will.deacon@arm.com>,
+ Michal Hocko <mhocko@kernel.org>, linux-mm@kvack.org, lokeshgidra@google.com,
+ sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org,
+ elfring@users.sourceforge.net, Jonas Bonn <jonas@southpole.se>,
+ kvmarm@lists.cs.columbia.edu, dancol@google.com,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, linux-xtensa@linux-xtensa.org,
+ linux-hexagon@vger.kernel.org, Helge Deller <deller@gmx.de>,
+ "maintainer:X86 ARCHITECTURE \(32-BIT AND 64-BIT\)" <x86@kernel.org>,
+ hughd@google.com, "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ kasan-dev@googlegroups.com, anton.ivanov@kot-begemot.co.uk,
+ Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
+ Andrey Ryabinin <aryabinin@virtuozzo.com>, linux-snps-arc@lists.infradead.org,
+ kernel-team@android.com, Sam Creasey <sammy@sammy.net>,
+ Fenghua Yu <fenghua.yu@intel.com>, linux-s390@vger.kernel.org,
+ Jeff Dike <jdike@addtoit.com>, linux-um@lists.infradead.org,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ Julia Lawall <Julia.Lawall@lip6.fr>, linux-m68k@lists.linux-m68k.org,
+ Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
+ nios2-dev@lists.rocketboards.org, "Kirill A . Shutemov" <kirill@shutemov.name>,
+ Stafford Horne <shorne@gmail.com>, Guan Xuetao <gxt@pku.edu.cn>,
+ Chris Zankel <chris@zankel.net>, Tony Luck <tony.luck@intel.com>,
+ Richard Weinberger <richard@nod.at>, linux-parisc@vger.kernel.org,
+ Max Filippov <jcmvbkbc@gmail.com>, pantin@google.com,
+ linux-kernel@vger.kernel.org, minchan@kernel.org,
+ Thomas Gleixner <tglx@linutronix.de>, linux-alpha@vger.kernel.org,
+ Ley Foon Tan <lftan@altera.com>, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 24 Oct 2018 07:35:48 +0000, Corentin Labbe wrote:
-> This patch adds setbits_le32/clrbits_le32/clrsetbits_le32 and
-> setbits_le64/clrbits_le64/clrsetbits_le64 in linux/setbits.h header.
+On Wed, Oct 24, 2018 at 10:37:16AM +0200, Peter Zijlstra wrote:
+> On Fri, Oct 12, 2018 at 06:31:57PM -0700, Joel Fernandes (Google) wrote:
+> > This series speeds up mremap(2) syscall by copying page tables at the
+> > PMD level even for non-THP systems. There is concern that the extra
+> > 'address' argument that mremap passes to pte_alloc may do something
+> > subtle architecture related in the future that may make the scheme not
+> > work.  Also we find that there is no point in passing the 'address' to
+> > pte_alloc since its unused. So this patch therefore removes this
+> > argument tree-wide resulting in a nice negative diff as well. Also
+> > ensuring along the way that the enabled architectures do not do anything
+> > funky with 'address' argument that goes unnoticed by the optimization.
 > 
-> Signed-off-by: Corentin Labbe <clabbe@baylibre.com>
+> Did you happen to look at the history of where that address argument
+> came from? -- just being curious here. ISTR something vague about
+> architectures having different paging structure for different memory
+> ranges.
 
-Did you have a look at all the functions defined in bitfield.h?
-(including the magic macro-generated ones?)  Perhaps those could be
-used here?
+I didn't happen to do that analysis but from code analysis, no architecutre
+is using it. Since its unused in the kernel, may be such architectures don't
+exist or were removed, so we don't need to bother? Could you share more about
+your concern with the removal of this argument?
 
-I also share the concerns about the non-atomic RMW.  Obviously correct
-beats short IMHO.
+thanks,
 
-> diff --git a/include/linux/setbits.h b/include/linux/setbits.h
-> new file mode 100644
-> index 000000000000..c82faf8d7fe4
-> --- /dev/null
-> +++ b/include/linux/setbits.h
-> @@ -0,0 +1,84 @@
-> +/* SPDX-License-Identifier: GPL-2.0 */
-> +#ifndef __LINUX_SETBITS_H
-> +#define __LINUX_SETBITS_H
-> +
-> +#include <linux/io.h>
-> +
-> +#define __setbits(rfn, wfn, addr, set) wfn((rfn(addr) | (set)), addr)
-> +#define __clrbits(rfn, wfn, addr, mask) wfn((rfn(addr) & ~(mask)), addr)
-> +#define __clrsetbits(rfn, wfn, addr, mask, set) wfn(((rfn(addr) & ~(mask)) | (set)), addr)
-> +#define __setclrbits(rfn, wfn, addr, mask, set) wfn(((rfn(addr) | (set)) & ~(mask)), addr)
-> +
-> +#ifndef setbits_le32
-> +#define setbits_le32(addr, set) __setbits(readl, writel, addr, set)
-> +#endif
-> +#ifndef setbits_le32_relaxed
-> +#define setbits_le32_relaxed(addr, set) __setbits(readl_relaxed, writel_relaxed, \
-> +					       addr, set)
-> +#endif
-> +
-> +#ifndef clrbits_le32
-> +#define clrbits_le32(addr, mask) __clrbits(readl, writel, addr, mask)
-> +#endif
-> +#ifndef clrbits_le32_relaxed
-> +#define clrbits_le32_relaxed(addr, mask) __clrbits(readl_relaxed, writel_relaxed, \
-> +						addr, mask)
-> +#endif
-> +
-> +#ifndef clrsetbits_le32
-> +#define clrsetbits_le32(addr, mask, set) __clrsetbits(readl, writel, addr, mask, set)
-> +#endif
-> +#ifndef clrsetbits_le32_relaxed
-> +#define clrsetbits_le32_relaxed(addr, mask, set) __clrsetbits(readl_relaxed, \
-> +							   writel_relaxed, \
-> +							   addr, mask, set)
-> +#endif
-> +
-> +#ifndef setclrbits_le32
-> +#define setclrbits_le32(addr, mask, set) __setclrbits(readl, writel, addr, mask, set)
-> +#endif
-> +#ifndef setclrbits_le32_relaxed
-> +#define setclrbits_le32_relaxed(addr, mask, set) __setclrbits(readl_relaxed, \
-> +							   writel_relaxed, \
-> +							   addr, mask, set)
-> +#endif
-> +
-> +/* We cannot use CONFIG_64BIT as some x86 drivers use non-atomicwriteq() */
-> +#if defined(writeq) && defined(readq)
-> +#ifndef setbits_le64
-> +#define setbits_le64(addr, set) __setbits(readq, writeq, addr, set)
-> +#endif
-> +#ifndef setbits_le64_relaxed
-> +#define setbits_le64_relaxed(addr, set) __setbits(readq_relaxed, writeq_relaxed, \
-> +					       addr, set)
-> +#endif
-> +
-> +#ifndef clrbits_le64
-> +#define clrbits_le64(addr, mask) __clrbits(readq, writeq, addr, mask)
-> +#endif
-> +#ifndef clrbits_le64_relaxed
-> +#define clrbits_le64_relaxed(addr, mask) __clrbits(readq_relaxed, writeq_relaxed, \
-> +						addr, mask)
-> +#endif
-> +
-> +#ifndef clrsetbits_le64
-> +#define clrsetbits_le64(addr, mask, set) __clrsetbits(readq, writeq, addr, mask, set)
-> +#endif
-> +#ifndef clrsetbits_le64_relaxed
-> +#define clrsetbits_le64_relaxed(addr, mask, set) __clrsetbits(readq_relaxed, \
-> +							   writeq_relaxed, \
-> +							   addr, mask, set)
-> +#endif
-> +
-> +#ifndef setclrbits_le64
-> +#define setclrbits_le64(addr, mask, set) __setclrbits(readq, writeq, addr, mask, set)
-> +#endif
-> +#ifndef setclrbits_le64_relaxed
-> +#define setclrbits_le64_relaxed(addr, mask, set) __setclrbits(readq_relaxed, \
-> +							   writeq_relaxed, \
-> +							   addr, mask, set)
-> +#endif
-> +
-> +#endif /* writeq/readq */
-> +
-> +#endif /* __LINUX_SETBITS_H */
+ - Joel
 
