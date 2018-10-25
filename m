@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0CF56C46475
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Oct 2018 11:33:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0FE2AC46475
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Oct 2018 11:35:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8ABBB2082D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Oct 2018 11:33:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8ABBB2082D
+	by mail.kernel.org (Postfix) with ESMTPS id 524AF2082D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Oct 2018 11:35:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 524AF2082D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42glP75fCTzF39Y
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Oct 2018 22:33:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42glRH30kGzDrcP
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Oct 2018 22:35:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=nxp.com
@@ -29,18 +29,18 @@ Authentication-Results: lists.ozlabs.org;
 Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42gl8v4JNLzF38n
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42gl8v3yqMzF38F
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Oct 2018 22:22:39 +1100 (AEDT)
 Received: from inva020.nxp.com (localhost [127.0.0.1])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 854891A0199;
- Thu, 25 Oct 2018 13:13:25 +0200 (CEST)
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 386AF1A0148;
+ Thu, 25 Oct 2018 13:13:17 +0200 (CEST)
 Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
  [165.114.16.14])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 5C7A81A0079;
- Thu, 25 Oct 2018 13:13:15 +0200 (CEST)
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 0E5B31A0146;
+ Thu, 25 Oct 2018 13:13:07 +0200 (CEST)
 Received: from titan.ap.freescale.net (TITAN.ap.freescale.net [10.192.208.233])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id D95D540323;
- Thu, 25 Oct 2018 19:13:02 +0800 (SGT)
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id BC9F4402BE;
+ Thu, 25 Oct 2018 19:12:54 +0800 (SGT)
 From: Xiaowei Bao <xiaowei.bao@nxp.com>
 To: bhelgaas@google.com, robh+dt@kernel.org, mark.rutland@arm.com,
  shawnguo@kernel.org, leoyang.li@nxp.com, kishon@ti.com,
@@ -51,12 +51,10 @@ To: bhelgaas@google.com, robh+dt@kernel.org, mark.rutland@arm.com,
  linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 5/6] pci: layerscape: Add the EP mode support.
-Date: Thu, 25 Oct 2018 19:09:00 +0800
-Message-Id: <20181025110901.5680-5-xiaowei.bao@nxp.com>
+Subject: [PATCH 1/6] arm64: dts: Add the status property disable PCIe
+Date: Thu, 25 Oct 2018 19:08:56 +0800
+Message-Id: <20181025110901.5680-1-xiaowei.bao@nxp.com>
 X-Mailer: git-send-email 2.14.1
-In-Reply-To: <20181025110901.5680-1-xiaowei.bao@nxp.com>
-References: <20181025110901.5680-1-xiaowei.bao@nxp.com>
 X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -69,200 +67,157 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Xiaowei Bao <xiaowei.bao@nxp.com>
+Cc: Bao Xiaowei <xiaowei.bao@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add the PCIe EP mode support for layerscape platform.
+From: Bao Xiaowei <xiaowei.bao@nxp.com>
 
-Signed-off-by: Xiaowei Bao <xiaowei.bao@nxp.com>
+Add the status property disable the PCIe, the property will be enable
+by bootloader.
+
+Signed-off-by: Bao Xiaowei <xiaowei.bao@nxp.com>
 ---
- drivers/pci/controller/dwc/Makefile            |    2 +-
- drivers/pci/controller/dwc/pci-layerscape-ep.c |  161 ++++++++++++++++++++++++
- 2 files changed, 162 insertions(+), 1 deletions(-)
- create mode 100644 drivers/pci/controller/dwc/pci-layerscape-ep.c
+ arch/arm64/boot/dts/freescale/fsl-ls1012a.dtsi |    1 +
+ arch/arm64/boot/dts/freescale/fsl-ls1043a.dtsi |    3 +++
+ arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi |    3 +++
+ arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi |    3 +++
+ arch/arm64/boot/dts/freescale/fsl-ls208xa.dtsi |    4 ++++
+ 5 files changed, 14 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/pci/controller/dwc/Makefile b/drivers/pci/controller/dwc/Makefile
-index 5d2ce72..b26d617 100644
---- a/drivers/pci/controller/dwc/Makefile
-+++ b/drivers/pci/controller/dwc/Makefile
-@@ -8,7 +8,7 @@ obj-$(CONFIG_PCI_EXYNOS) += pci-exynos.o
- obj-$(CONFIG_PCI_IMX6) += pci-imx6.o
- obj-$(CONFIG_PCIE_SPEAR13XX) += pcie-spear13xx.o
- obj-$(CONFIG_PCI_KEYSTONE) += pci-keystone-dw.o pci-keystone.o
--obj-$(CONFIG_PCI_LAYERSCAPE) += pci-layerscape.o
-+obj-$(CONFIG_PCI_LAYERSCAPE) += pci-layerscape.o pci-layerscape-ep.o
- obj-$(CONFIG_PCIE_QCOM) += pcie-qcom.o
- obj-$(CONFIG_PCIE_ARMADA_8K) += pcie-armada8k.o
- obj-$(CONFIG_PCIE_ARTPEC6) += pcie-artpec6.o
-diff --git a/drivers/pci/controller/dwc/pci-layerscape-ep.c b/drivers/pci/controller/dwc/pci-layerscape-ep.c
-new file mode 100644
-index 0000000..3b33bbc
---- /dev/null
-+++ b/drivers/pci/controller/dwc/pci-layerscape-ep.c
-@@ -0,0 +1,161 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * PCIe controller EP driver for Freescale Layerscape SoCs
-+ *
-+ * Copyright (C) 2018 NXP Semiconductor.
-+ *
-+ * Author: Xiaowei Bao <xiaowei.bao@nxp.com>
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/of_pci.h>
-+#include <linux/of_platform.h>
-+#include <linux/of_address.h>
-+#include <linux/pci.h>
-+#include <linux/platform_device.h>
-+#include <linux/resource.h>
-+
-+#include "pcie-designware.h"
-+
-+#define PCIE_DBI2_OFFSET		0x1000	/* DBI2 base address*/
-+
-+struct ls_pcie_ep {
-+	struct dw_pcie		*pci;
-+};
-+
-+#define to_ls_pcie_ep(x)	dev_get_drvdata((x)->dev)
-+
-+static bool ls_pcie_is_bridge(struct ls_pcie_ep *pcie)
-+{
-+	struct dw_pcie *pci = pcie->pci;
-+	u32 header_type;
-+
-+	header_type = ioread8(pci->dbi_base + PCI_HEADER_TYPE);
-+	header_type &= 0x7f;
-+
-+	return header_type == PCI_HEADER_TYPE_BRIDGE;
-+}
-+
-+static int ls_pcie_establish_link(struct dw_pcie *pci)
-+{
-+	return 0;
-+}
-+
-+static const struct dw_pcie_ops ls_pcie_ep_ops = {
-+	.start_link = ls_pcie_establish_link,
-+};
-+
-+static const struct of_device_id ls_pcie_ep_of_match[] = {
-+	{ .compatible = "fsl,ls-pcie-ep",},
-+	{ },
-+};
-+
-+static void ls_pcie_ep_init(struct dw_pcie_ep *ep)
-+{
-+	struct dw_pcie *pci = to_dw_pcie_from_ep(ep);
-+	struct pci_epc *epc = ep->epc;
-+	enum pci_barno bar;
-+
-+	for (bar = BAR_0; bar <= BAR_5; bar++)
-+		dw_pcie_ep_reset_bar(pci, bar);
-+
-+	epc->features |= EPC_FEATURE_NO_LINKUP_NOTIFIER;
-+}
-+
-+static int ls_pcie_ep_raise_irq(struct dw_pcie_ep *ep, u8 func_no,
-+				  enum pci_epc_irq_type type, u16 interrupt_num)
-+{
-+	struct dw_pcie *pci = to_dw_pcie_from_ep(ep);
-+
-+	switch (type) {
-+	case PCI_EPC_IRQ_LEGACY:
-+		return dw_pcie_ep_raise_legacy_irq(ep, func_no);
-+	case PCI_EPC_IRQ_MSI:
-+		return dw_pcie_ep_raise_msi_irq(ep, func_no, interrupt_num);
-+	case PCI_EPC_IRQ_MSIX:
-+		return dw_pcie_ep_raise_msix_irq(ep, func_no, interrupt_num);
-+	default:
-+		dev_err(pci->dev, "UNKNOWN IRQ type\n");
-+	}
-+
-+	return 0;
-+}
-+
-+static struct dw_pcie_ep_ops pcie_ep_ops = {
-+	.ep_init = ls_pcie_ep_init,
-+	.raise_irq = ls_pcie_ep_raise_irq,
-+};
-+
-+static int __init ls_add_pcie_ep(struct ls_pcie_ep *pcie,
-+					struct platform_device *pdev)
-+{
-+	struct dw_pcie *pci = pcie->pci;
-+	struct device *dev = pci->dev;
-+	struct dw_pcie_ep *ep;
-+	struct resource *res;
-+	int ret;
-+
-+	ep = &pci->ep;
-+	ep->ops = &pcie_ep_ops;
-+
-+	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "addr_space");
-+	if (!res)
-+		return -EINVAL;
-+
-+	ep->phys_base = res->start;
-+	ep->addr_size = resource_size(res);
-+
-+	ret = dw_pcie_ep_init(ep);
-+	if (ret) {
-+		dev_err(dev, "failed to initialize endpoint\n");
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static int __init ls_pcie_ep_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct dw_pcie *pci;
-+	struct ls_pcie_ep *pcie;
-+	struct resource *dbi_base;
-+	int ret;
-+
-+	pcie = devm_kzalloc(dev, sizeof(*pcie), GFP_KERNEL);
-+	if (!pcie)
-+		return -ENOMEM;
-+
-+	pci = devm_kzalloc(dev, sizeof(*pci), GFP_KERNEL);
-+	if (!pci)
-+		return -ENOMEM;
-+
-+	dbi_base = platform_get_resource_byname(pdev, IORESOURCE_MEM, "regs");
-+	pci->dbi_base = devm_pci_remap_cfg_resource(dev, dbi_base);
-+	if (IS_ERR(pci->dbi_base))
-+		return PTR_ERR(pci->dbi_base);
-+
-+	pci->dbi_base2 = pci->dbi_base + PCIE_DBI2_OFFSET;
-+	pci->dev = dev;
-+	pci->ops = &ls_pcie_ep_ops;
-+	pcie->pci = pci;
-+
-+	if (ls_pcie_is_bridge(pcie))
-+		return -ENODEV;
-+
-+	platform_set_drvdata(pdev, pcie);
-+
-+	ret = ls_add_pcie_ep(pcie, pdev);
-+
-+	return ret;
-+}
-+
-+static struct platform_driver ls_pcie_ep_driver = {
-+	.driver = {
-+		.name = "layerscape-pcie-ep",
-+		.of_match_table = ls_pcie_ep_of_match,
-+		.suppress_bind_attrs = true,
-+	},
-+};
-+builtin_platform_driver_probe(ls_pcie_ep_driver, ls_pcie_ep_probe);
+diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1012a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls1012a.dtsi
+index 5da732f..21f2b3b 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-ls1012a.dtsi
++++ b/arch/arm64/boot/dts/freescale/fsl-ls1012a.dtsi
+@@ -496,6 +496,7 @@
+ 					<0000 0 0 2 &gic 0 111 IRQ_TYPE_LEVEL_HIGH>,
+ 					<0000 0 0 3 &gic 0 112 IRQ_TYPE_LEVEL_HIGH>,
+ 					<0000 0 0 4 &gic 0 113 IRQ_TYPE_LEVEL_HIGH>;
++			status = "disabled";
+ 		};
+ 	};
+ 
+diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1043a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls1043a.dtsi
+index 3fed504..760d510 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-ls1043a.dtsi
++++ b/arch/arm64/boot/dts/freescale/fsl-ls1043a.dtsi
+@@ -683,6 +683,7 @@
+ 					<0000 0 0 2 &gic 0 111 0x4>,
+ 					<0000 0 0 3 &gic 0 112 0x4>,
+ 					<0000 0 0 4 &gic 0 113 0x4>;
++			status = "disabled";
+ 		};
+ 
+ 		pcie@3500000 {
+@@ -708,6 +709,7 @@
+ 					<0000 0 0 2 &gic 0 121 0x4>,
+ 					<0000 0 0 3 &gic 0 122 0x4>,
+ 					<0000 0 0 4 &gic 0 123 0x4>;
++			status = "disabled";
+ 		};
+ 
+ 		pcie@3600000 {
+@@ -733,6 +735,7 @@
+ 					<0000 0 0 2 &gic 0 155 0x4>,
+ 					<0000 0 0 3 &gic 0 156 0x4>,
+ 					<0000 0 0 4 &gic 0 157 0x4>;
++			status = "disabled";
+ 		};
+ 	};
+ 
+diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi
+index 51cbd50..64d334c 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi
++++ b/arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi
+@@ -652,6 +652,7 @@
+ 					<0000 0 0 2 &gic GIC_SPI 110 IRQ_TYPE_LEVEL_HIGH>,
+ 					<0000 0 0 3 &gic GIC_SPI 110 IRQ_TYPE_LEVEL_HIGH>,
+ 					<0000 0 0 4 &gic GIC_SPI 110 IRQ_TYPE_LEVEL_HIGH>;
++			status = "disabled";
+ 		};
+ 
+ 		pcie@3500000 {
+@@ -677,6 +678,7 @@
+ 					<0000 0 0 2 &gic GIC_SPI 120 IRQ_TYPE_LEVEL_HIGH>,
+ 					<0000 0 0 3 &gic GIC_SPI 120 IRQ_TYPE_LEVEL_HIGH>,
+ 					<0000 0 0 4 &gic GIC_SPI 120 IRQ_TYPE_LEVEL_HIGH>;
++			status = "disabled";
+ 		};
+ 
+ 		pcie@3600000 {
+@@ -702,6 +704,7 @@
+ 					<0000 0 0 2 &gic GIC_SPI 154 IRQ_TYPE_LEVEL_HIGH>,
+ 					<0000 0 0 3 &gic GIC_SPI 154 IRQ_TYPE_LEVEL_HIGH>,
+ 					<0000 0 0 4 &gic GIC_SPI 154 IRQ_TYPE_LEVEL_HIGH>;
++			status = "disabled";
+ 		};
+ 
+ 	};
+diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
+index a07f612..9deb9cb 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
++++ b/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
+@@ -533,6 +533,7 @@
+ 					<0000 0 0 2 &gic 0 0 0 110 IRQ_TYPE_LEVEL_HIGH>,
+ 					<0000 0 0 3 &gic 0 0 0 111 IRQ_TYPE_LEVEL_HIGH>,
+ 					<0000 0 0 4 &gic 0 0 0 112 IRQ_TYPE_LEVEL_HIGH>;
++			status = "disabled";
+ 		};
+ 
+ 		pcie@3500000 {
+@@ -557,6 +558,7 @@
+ 					<0000 0 0 2 &gic 0 0 0 115 IRQ_TYPE_LEVEL_HIGH>,
+ 					<0000 0 0 3 &gic 0 0 0 116 IRQ_TYPE_LEVEL_HIGH>,
+ 					<0000 0 0 4 &gic 0 0 0 117 IRQ_TYPE_LEVEL_HIGH>;
++			status = "disabled";
+ 		};
+ 
+ 		pcie@3600000 {
+@@ -581,6 +583,7 @@
+ 					<0000 0 0 2 &gic 0 0 0 120 IRQ_TYPE_LEVEL_HIGH>,
+ 					<0000 0 0 3 &gic 0 0 0 121 IRQ_TYPE_LEVEL_HIGH>,
+ 					<0000 0 0 4 &gic 0 0 0 122 IRQ_TYPE_LEVEL_HIGH>;
++			status = "disabled";
+ 		};
+ 
+ 		cluster1_core0_watchdog: wdt@c000000 {
+diff --git a/arch/arm64/boot/dts/freescale/fsl-ls208xa.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls208xa.dtsi
+index d188774..5732e3b 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-ls208xa.dtsi
++++ b/arch/arm64/boot/dts/freescale/fsl-ls208xa.dtsi
+@@ -648,6 +648,7 @@
+ 					<0000 0 0 2 &gic 0 0 0 110 4>,
+ 					<0000 0 0 3 &gic 0 0 0 111 4>,
+ 					<0000 0 0 4 &gic 0 0 0 112 4>;
++			status = "disabled";
+ 		};
+ 
+ 		pcie2: pcie@3500000 {
+@@ -669,6 +670,7 @@
+ 					<0000 0 0 2 &gic 0 0 0 115 4>,
+ 					<0000 0 0 3 &gic 0 0 0 116 4>,
+ 					<0000 0 0 4 &gic 0 0 0 117 4>;
++			status = "disabled";
+ 		};
+ 
+ 		pcie3: pcie@3600000 {
+@@ -690,6 +692,7 @@
+ 					<0000 0 0 2 &gic 0 0 0 120 4>,
+ 					<0000 0 0 3 &gic 0 0 0 121 4>,
+ 					<0000 0 0 4 &gic 0 0 0 122 4>;
++			status = "disabled";
+ 		};
+ 
+ 		pcie4: pcie@3700000 {
+@@ -711,6 +714,7 @@
+ 					<0000 0 0 2 &gic 0 0 0 125 4>,
+ 					<0000 0 0 3 &gic 0 0 0 126 4>,
+ 					<0000 0 0 4 &gic 0 0 0 127 4>;
++			status = "disabled";
+ 		};
+ 
+ 		sata0: sata@3200000 {
 -- 
 1.7.1
 
