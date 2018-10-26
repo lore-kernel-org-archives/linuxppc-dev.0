@@ -2,71 +2,79 @@ Return-Path: <SRS0=7Aff=NG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CE924ECDE44
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Oct 2018 19:11:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8EF33ECDE44
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Oct 2018 20:38:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D62052054F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Oct 2018 19:11:16 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="mSq0g4py"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D62052054F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id B149720856
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Oct 2018 20:38:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B149720856
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42hYW64xfFzF3J9
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Oct 2018 06:11:14 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42hbSC241mzF3JC
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Oct 2018 07:38:51 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="mSq0g4py";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=209.85.210.66; helo=mail-ot1-f66.google.com;
+ envelope-from=pku.leo@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=infradead.org
- (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
- envelope-from=willy@infradead.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="mSq0g4py"; dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=fail (p=none dis=none) header.from=nxp.com
+Received: from mail-ot1-f66.google.com (mail-ot1-f66.google.com
+ [209.85.210.66])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42hYSW0SY9zF3Hg
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Oct 2018 06:08:59 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Transfer-Encoding
- :Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:
- Sender:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
- Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
- List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=SabYTyncpD8UPUQFeRelrBxoXbfzyxS099TcIq9mJaQ=; b=mSq0g4pyoUK8es7/BgD+bw/HkX
- 4h9DhC3UyLv2sLE7EP+VrPgMLu77T1avjQg1yS8fEM7KPvo2WjteyXPTDIb1ULoCbSeRgyVai0+fp
- 0P38CmcrZ5RReUZkclxFn+5qIDTNbBOLCq3btUzvuhJFwbzAVWxKQqhBFtwnNJxNjB3ARhM5snZVM
- ATTaWTdvjFkJ0svThOWZ6Q5R4YafTHAaF84FxO6S6xxpCmmyMG5FAT3xmjj4Ohmg4VO0zta7HZm5G
- 0Dk9FUMFs83NKCEWmUUfzYkk428soI7hkE8pB+km/mVBUbgEAGSLBdyv5QcEU/tWWyN/nY0Q4WhK5
- NSSWKoGA==;
-Received: from willy by bombadil.infradead.org with local (Exim 4.90_1 #2 (Red
- Hat Linux)) id 1gG71m-0008Sa-1Y; Fri, 26 Oct 2018 18:40:10 +0000
-Date: Fri, 26 Oct 2018 11:40:09 -0700
-From: Matthew Wilcox <willy@infradead.org>
-To: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-Subject: Re: [PATCH] Documentation: fix spelling mistake, EACCESS -> EACCES
-Message-ID: <20181026184009.GV25444@bombadil.infradead.org>
-References: <20181026172549.3628-1-colin.king@canonical.com>
- <CANiq72nFZS=3KGaQpGjRbprh8HTBiTcSpxScE2uacDmg-xqDGA@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42hbQ40160zF3J1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Oct 2018 07:36:59 +1100 (AEDT)
+Received: by mail-ot1-f66.google.com with SMTP id k9so2266523otl.10
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Oct 2018 13:36:59 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc:content-transfer-encoding;
+ bh=o1J+Vua8+v3VyCFKW1e5R0do6+wn43nklh3RHSZ8CoI=;
+ b=KhBEBB/qovHRGqF/87007Xg2A0TJrD1Ow4BrC30MM4fbcUCjMk/Y/PUgGgxnFbP5kZ
+ wg/ktVP+ncHVzazpOEO2lXHjYF80HNX6aVwB9T28l4yoe4dyUWy5QhYyY7X0dHbgzcgh
+ vpwNKRHgD8qBGJlf4B5mHu4mNeoJ0/ggZ7Hv3oGrg1fPAVeVtM3RKcZSrGKH+sD7o3qn
+ xDVSyFq+8leJX1PBW79BBrCQQ5hfTzs/DlIGq79jaYExoDhw8NfLBxzbeiEu96Fyrkry
+ lUsycNseZo/QoSwPz0jHrJspZOPoSmRYH/S2ax/PxEwpBAufJhPo6tm7abNZfcDvq/rO
+ BJdg==
+X-Gm-Message-State: AGRZ1gJcP7qE23f8/FK+1Og+3EzxDGfZL2dSiU++VgsBUtvk3wNk6Y2d
+ YHDOt3/DZCKZARWMZngOQcRqWw/JgCU=
+X-Google-Smtp-Source: AJdET5f5Vtjitq6pBxDT4KJzOyDKdgWNaJ9HLXWxjawRBzbta0OdPJXK/2ggBQlZ0vllMazMOKrJ3Q==
+X-Received: by 2002:a9d:d61:: with SMTP id 88mr3203200oti.245.1540586217158;
+ Fri, 26 Oct 2018 13:36:57 -0700 (PDT)
+Received: from mail-ot1-f47.google.com (mail-ot1-f47.google.com.
+ [209.85.210.47])
+ by smtp.gmail.com with ESMTPSA id b3-v6sm5777702oih.0.2018.10.26.13.36.57
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Fri, 26 Oct 2018 13:36:57 -0700 (PDT)
+Received: by mail-ot1-f47.google.com with SMTP id c23so2268165otl.9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Oct 2018 13:36:57 -0700 (PDT)
+X-Received: by 2002:a9d:3cd0:: with SMTP id t16mr3143200otf.158.1540585724826; 
+ Fri, 26 Oct 2018 13:28:44 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CANiq72nFZS=3KGaQpGjRbprh8HTBiTcSpxScE2uacDmg-xqDGA@mail.gmail.com>
-User-Agent: Mutt/1.9.2 (2017-12-15)
+References: <20181025110901.5680-1-xiaowei.bao@nxp.com>
+ <20181025110901.5680-3-xiaowei.bao@nxp.com>
+ <20181025215246.GA14861@bogus>
+ <HE1PR04MB149735C7EF2A23AEE982BB9FF5F00@HE1PR04MB1497.eurprd04.prod.outlook.com>
+ <CAK8P3a3Ty4bRuHiVHY6dh55b1ms8z7RpG2sALM0Dn_8Yd39-xQ@mail.gmail.com>
+ <HE1PR04MB14972C9176E68EEDBD3AD64BF5F00@HE1PR04MB1497.eurprd04.prod.outlook.com>
+In-Reply-To: <HE1PR04MB14972C9176E68EEDBD3AD64BF5F00@HE1PR04MB1497.eurprd04.prod.outlook.com>
+From: Li Yang <leoyang.li@nxp.com>
+Date: Fri, 26 Oct 2018 15:28:33 -0500
+X-Gmail-Original-Message-ID: <CADRPPNRP5RORVr0O59=O-PhRRerirFkPeOmAcKq3pNumf4Mriw@mail.gmail.com>
+Message-ID: <CADRPPNRP5RORVr0O59=O-PhRRerirFkPeOmAcKq3pNumf4Mriw@mail.gmail.com>
+Subject: Re: [PATCH 3/6] PCI: layerscape: Add the EP mode support
+To: xiaowei.bao@nxp.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,34 +86,87 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel-janitors@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
- Dave Airlie <airlied@linux.ie>, linuxppc-dev@lists.ozlabs.org,
- Linux Doc Mailing List <linux-doc@vger.kernel.org>,
- maarten.lankhorst@linux.intel.com, linux-kernel <linux-kernel@vger.kernel.org>,
- maxime.ripard@bootlin.com, jk@ozlabs.org, colin.king@canonical.com,
- sean@poorly.run
+Cc: Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh@kernel.org>,
+ lorenzo.pieralisi@arm.com, Arnd Bergmann <arnd@arndb.de>,
+ Roy Zang <roy.zang@nxp.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Kate Stewart <kstewart@linuxfoundation.org>, niklas.cassel@axis.com,
+ linux-pci@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>, kishon@ti.com,
+ Minghuan Lian <minghuan.lian@nxp.com>,
+ "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
+ <devicetree@vger.kernel.org>, cyrille.pitchen@free-electrons.com,
+ "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
+ <linux-arm-kernel@lists.infradead.org>,
+ Philippe Ombredanne <pombredanne@nexb.com>,
+ Bjorn Helgaas <bhelgaas@google.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Shawn Guo <shawnguo@kernel.org>,
+ shawn.lin@rock-chips.com, Mingkai Hu <mingkai.hu@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Oct 26, 2018 at 08:20:12PM +0200, Miguel Ojeda wrote:
-> On Fri, Oct 26, 2018 at 7:27 PM Colin King <colin.king@canonical.com> wrote:
+On Fri, Oct 26, 2018 at 2:43 AM Xiaowei Bao <xiaowei.bao@nxp.com> wrote:
+>
+>
+>
+> -----Original Message-----
+> From: arndbergmann@gmail.com <arndbergmann@gmail.com> On Behalf Of Arnd B=
+ergmann
+> Sent: 2018=E5=B9=B410=E6=9C=8826=E6=97=A5 15:01
+> To: Xiaowei Bao <xiaowei.bao@nxp.com>
+> Cc: Rob Herring <robh@kernel.org>; bhelgaas@google.com; mark.rutland@arm.=
+com; shawnguo@kernel.org; Leo Li <leoyang.li@nxp.com>; kishon@ti.com; loren=
+zo.pieralisi@arm.com; gregkh@linuxfoundation.org; M.h. Lian <minghuan.lian@=
+nxp.com>; Mingkai Hu <mingkai.hu@nxp.com>; Roy Zang <roy.zang@nxp.com>; kst=
+ewart@linuxfoundation.org; cyrille.pitchen@free-electrons.com; pombredanne@=
+nexb.com; shawn.lin@rock-chips.com; niklas.cassel@axis.com; linux-pci@vger.=
+kernel.org; devicetree@vger.kernel.org; linux-kernel@vger.kernel.org; linux=
+-arm-kernel@lists.infradead.org; linuxppc-dev@lists.ozlabs.org
+> Subject: Re: [PATCH 3/6] PCI: layerscape: Add the EP mode support
+>
+> On 10/26/18, Xiaowei Bao <xiaowei.bao@nxp.com> wrote:
+> > From: Rob Herring <robh@kernel.org>
+> >> On Thu, Oct 25, 2018 at 07:08:58PM +0800, Xiaowei Bao wrote:
+> >>>          "fsl,ls2080a-pcie", "fsl,ls2085a-pcie", "snps,dw-pcie"
+> >>>          "fsl,ls2088a-pcie"
+> >>>          "fsl,ls1088a-pcie"
+> >>>          "fsl,ls1046a-pcie"
+> >>>          "fsl,ls1012a-pcie
+> >>> +  EP mode:
+> >>> +        "fsl,ls-pcie-ep"
+> >>
+> > > You need SoC specific compatibles for the same reasons as the RC.
 > >
-> > From: Colin Ian King <colin.king@canonical.com>
-> >
-> > Trivial fix to a spelling mistake of the error access name EACCESS,
-> > rename to EACCES
-> 
-> ? It is not a typo, it is the name of the error (POSIX). Same thing
-> for the rest of the patches.
+> > [Xiaowei Bao] I want to contains all layerscape platform use one
+> > compatible if the PCIe controller work in EP mode.
+>
+> Do you mean only one of the SoCs that support RC mode has EP mode?
+> I think you still need a SoC specific compatible as Rob explained, in cas=
+e there will be a second one in the future.
+>
+> If you want to ensure that you don't have to update the device driver for=
+ each new chip that comes in when the EP mode is compatible, the way this i=
+s handled is to list multiple values in the compatible property, listing th=
+e first SoC that introduced the specific version of that IP block as the mo=
+st generic type, e.g.
+>
+>   copatible =3D "fsl,ls2088a-pcie-ep", "fsl,ls1012a-pcie-ep", "snps,dw-pc=
+ie-ep";
+>
+> For consistency, it probably is best to match each RC mode value with the=
+ corresponding EP mode string for each device that can support both (if the=
+re is more than one).
+>
+>       Arnd
+> [Xiaowei Bao] My mean is that the ls-pcie-ep compatibles will contain all=
+ layerscape SOCs of NXP, e.g: ls1046a-pcie-ep, fsl,ls2088a-pcie-ep, ls2088a=
+-pcie-ep and so on, other layerscape SOCs have not test except the ls1046a,=
+ I think it is compatible if the new chip or other SOCs use the DW core, OK=
+, I will discuss this issue internally, and reply to you later.
 
-Are you sure?  From open(2):
+You can define a generic compatible string for the EP mode of all
+these platforms.  But like Rob and Arnd mentioned, it is good to also
+define the SoC specific compatible strings just in case that we need
+special treatment for certain SoCs in the future.
 
-       EACCES The  requested access to the file is not allowed, or search per‐
-              mission is denied for one of the directories in the path  prefix
-              of  pathname,  or the file did not exist yet and write access to
-              the parent directory is not  allowed.   (See  also  path_resolu‐
-              tion(7).)
-
-include/uapi/asm-generic/errno-base.h:#define   EACCES          13      /* Permission denied */
-
+Regards,
+Leo
