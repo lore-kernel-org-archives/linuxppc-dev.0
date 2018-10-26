@@ -2,81 +2,88 @@ Return-Path: <SRS0=7Aff=NG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 29E6FC6786E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Oct 2018 06:51:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A781C6786E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Oct 2018 07:03:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 803CE20834
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Oct 2018 06:51:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 7026F20824
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Oct 2018 07:03:47 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="vj7POfyd"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 803CE20834
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Ew9UJZX+"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7026F20824
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42hF5K6TLtzF3GK
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Oct 2018 17:51:17 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=russell.cc
+	by lists.ozlabs.org (Postfix) with ESMTP id 42hFMj2MTDzF3G7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Oct 2018 18:03:45 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.b="vj7POfyd";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="Ew9UJZX+";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=russell.cc
- (client-ip=64.147.123.24; helo=wout1-smtp.messagingengine.com;
- envelope-from=ruscur@russell.cc; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::741; helo=mail-qk1-x741.google.com;
+ envelope-from=arndbergmann@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=russell.cc
+ dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.b="vj7POfyd"; dkim-atps=neutral
-Received: from wout1-smtp.messagingengine.com (wout1-smtp.messagingengine.com
- [64.147.123.24])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="Ew9UJZX+"; 
+ dkim-atps=neutral
+Received: from mail-qk1-x741.google.com (mail-qk1-x741.google.com
+ [IPv6:2607:f8b0:4864:20::741])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42hDlT137FzF3FX
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Oct 2018 17:35:49 +1100 (AEDT)
-Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
- by mailout.west.internal (Postfix) with ESMTP id 9B5B8D56;
- Fri, 26 Oct 2018 02:35:46 -0400 (EDT)
-Received: from mailfrontend2 ([10.202.2.163])
- by compute6.internal (MEProxy); Fri, 26 Oct 2018 02:35:47 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
- messagingengine.com; h=cc:content-transfer-encoding:date:from
- :in-reply-to:message-id:mime-version:references:subject:to
- :x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
- fm1; bh=lOjV0qCQfAkymINK77lLdjCytp5YLH3pqs/kVkC95wQ=; b=vj7POfyd
- Qo7f7ZjKv+EiQyCvDmhyd90NZK13+QTG9nJy32vH2rxBKjmOl67lGGG26amb6FfJ
- i2M2+SvxuJkqVqXP70DbUmLE2iSS7tsA5v82Kgz6UEHSWJA1AtABDJR5Ks6d+swY
- 0G++mqYpcwYMlHG8JU1ues6i0Wsm37rFyhlL3r6bbjyyByYwCfuqmaEeJ7L4JP/8
- MSFj+4XukY9pZE+7WhyLlsfY1N6qd0l2Avw+RfBwVvhpyl/jbbidVOsz+fbsSFmT
- PTS71nZcTFFr2dWnLOrv3Fc6JlC+Z1awdvgQSuLnlnl3PGPERmIJ6OZwmhWj9z+x
- 9arvq2/Fn2HzAg==
-X-ME-Sender: <xms:wrXSW1tfCqCiVA02kr-olCJ51-cRSgpSKMoziCVXko3YW5y5z0lWPw>
-X-ME-Proxy: <xmx:wrXSWx30j4Ba852zQbukny99WPox-5bGLmdd8KjBJr9hqT7VZPH9NQ>
- <xmx:wrXSWysu2cRR5zsPu9tbS4M_0b_C4qwUzuTp6vLDCV6toCQNWyhzbQ>
- <xmx:wrXSW34AOducswoupDtxDa12ykanC19SfHwh8ST4igE19Pu4WMAUBg>
- <xmx:wrXSW-dl5Q6rS7zoLnuDxvYKDiIF_uzzfavQIJMv8YseQl7pjp_Hgg>
- <xmx:wrXSW0zU-SuBdLPtFefMvgKk5rfRGWXZEvidubwcU8tDDigS84HOqw>
- <xmx:wrXSWwaWENHcAGoZmfshhsS0vvIF5uTj1OBQnXAl_JF5OqD6q1fBow>
-Received: from crackle.ozlabs.ibm.com (pa49-195-157-6.pa.nsw.optusnet.com.au
- [49.195.157.6])
- by mail.messagingengine.com (Postfix) with ESMTPA id 01259102EE;
- Fri, 26 Oct 2018 02:35:42 -0400 (EDT)
-From: Russell Currey <ruscur@russell.cc>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 5/5] powerpc/64s: Document that PPC supports nosmap
-Date: Fri, 26 Oct 2018 17:35:13 +1100
-Message-Id: <20181026063513.30806-6-ruscur@russell.cc>
-X-Mailer: git-send-email 2.19.1
-In-Reply-To: <20181026063513.30806-1-ruscur@russell.cc>
-References: <20181026063513.30806-1-ruscur@russell.cc>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42hFK31V2wzF38H
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Oct 2018 18:01:23 +1100 (AEDT)
+Received: by mail-qk1-x741.google.com with SMTP id p3-v6so69033qkb.5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Oct 2018 00:01:23 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:sender:in-reply-to:references:from:date:message-id
+ :subject:to:cc;
+ bh=ygtCwwNpN9rX8xntHSLNe3Y94i+g9J6A4JU6Fak5aok=;
+ b=Ew9UJZX+o7hzahXLJ/Qxd829ksNmWDMrBzMXCfWaW1qOgxP2HDNsJMH9ok+FMthYBz
+ AtQtOscM4B4nymGyfUVa/uhTM7C488pdrptULDJuqLh1LUXrk2zsq/7Xn1SzrNbWF5eO
+ xbL5GAmV/kJOWghSVRMWwLld3E7pcjIoQ8WCXxsTYNYGFzpwZIkxJJybjAn0vvtT3kav
+ BwmX3h+Pi89O5q2jTEY/bA04IC5+n8hyhn9YgCm3jurn9O908EGhfTRcpaUeK0EqwhZZ
+ cKk2GPPHmddvDtE8eFotr59fZqXdSw7OuuPWFeuMKqD9jkDr0TzBtL+B3uazWvwdcyJg
+ L0og==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:sender:in-reply-to:references:from
+ :date:message-id:subject:to:cc;
+ bh=ygtCwwNpN9rX8xntHSLNe3Y94i+g9J6A4JU6Fak5aok=;
+ b=RqS6t8ooJVdr7HZebKN8qdUPb3kr6kyXj2e2tk/AnOJTwtdzImvasa72ddjJTzMsy6
+ EkQJ4ei7jxNLjlYP0Ij9H+V/JWbh+WT1bPK9SWUnD95rwbMOLob/7U8Tcw4KV4PvvYoQ
+ zvaYku/quzZXpfA2vHo2+AlW76i42K9fpwRe2sYmRIVjNsvMaZ8VB0OA2z6KXt1LqTkX
+ wfFyZu6r2MnioYlbPSHPSj9tpa5k/pczqcDbmDuGf/C7p5IkcNVo2k17YNvEzRstlbty
+ 2v7gm2jTyJoa/mWVmGMCfHbdF2SVk1Y1J8fhhGgwWrHVtVOXOZQvGd1UUZ80bvOSY6fL
+ 59ZQ==
+X-Gm-Message-State: AGRZ1gLhzkFtHqmyS35ZZSzSU0MGS6eZ826qJNtIMHp8BNMGmmVHOXzm
+ +akjOsmyMEeo6tLDPTM1VHPxO4O8BQMiVTxY1PE=
+X-Google-Smtp-Source: AJdET5cJM9iepXUIUSudaP/W2MSSmSgmT2lmwUjeVpNFoerI4E3MkgdT3IUA4SXKfAW6xwoXCf13ce7ckh/ast9vFK8=
+X-Received: by 2002:a37:4116:: with SMTP id
+ o22-v6mr1907286qka.107.1540537279997; 
+ Fri, 26 Oct 2018 00:01:19 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Received: by 2002:a0c:988d:0:0:0:0:0 with HTTP; Fri, 26 Oct 2018 00:01:19
+ -0700 (PDT)
+In-Reply-To: <HE1PR04MB149735C7EF2A23AEE982BB9FF5F00@HE1PR04MB1497.eurprd04.prod.outlook.com>
+References: <20181025110901.5680-1-xiaowei.bao@nxp.com>
+ <20181025110901.5680-3-xiaowei.bao@nxp.com>
+ <20181025215246.GA14861@bogus>
+ <HE1PR04MB149735C7EF2A23AEE982BB9FF5F00@HE1PR04MB1497.eurprd04.prod.outlook.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Fri, 26 Oct 2018 09:01:19 +0200
+X-Google-Sender-Auth: 13NSssZsIICiZBH18QZjyKXH8-I
+Message-ID: <CAK8P3a3Ty4bRuHiVHY6dh55b1ms8z7RpG2sALM0Dn_8Yd39-xQ@mail.gmail.com>
+Subject: Re: [PATCH 3/6] PCI: layerscape: Add the EP mode support
+To: Xiaowei Bao <xiaowei.bao@nxp.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,29 +95,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mikey@neuling.org, Russell Currey <ruscur@russell.cc>, npiggin@gmail.com
+Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
+ Rob Herring <robh@kernel.org>,
+ "lorenzo.pieralisi@arm.com" <lorenzo.pieralisi@arm.com>,
+ Roy Zang <roy.zang@nxp.com>,
+ "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
+ "kstewart@linuxfoundation.org" <kstewart@linuxfoundation.org>,
+ "niklas.cassel@axis.com" <niklas.cassel@axis.com>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "kishon@ti.com" <kishon@ti.com>, "M.h. Lian" <minghuan.lian@nxp.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "cyrille.pitchen@free-electrons.com" <cyrille.pitchen@free-electrons.com>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "pombredanne@nexb.com" <pombredanne@nexb.com>,
+ "bhelgaas@google.com" <bhelgaas@google.com>, Leo Li <leoyang.li@nxp.com>,
+ "shawnguo@kernel.org" <shawnguo@kernel.org>,
+ "shawn.lin@rock-chips.com" <shawn.lin@rock-chips.com>,
+ Mingkai Hu <mingkai.hu@nxp.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Signed-off-by: Russell Currey <ruscur@russell.cc>
----
- Documentation/admin-guide/kernel-parameters.txt | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On 10/26/18, Xiaowei Bao <xiaowei.bao@nxp.com> wrote:
+> From: Rob Herring <robh@kernel.org>
+>> On Thu, Oct 25, 2018 at 07:08:58PM +0800, Xiaowei Bao wrote:
+>>>          "fsl,ls2080a-pcie", "fsl,ls2085a-pcie", "snps,dw-pcie"
+>>>          "fsl,ls2088a-pcie"
+>>>          "fsl,ls1088a-pcie"
+>>>          "fsl,ls1046a-pcie"
+>>>          "fsl,ls1012a-pcie"
+>>> +  EP mode:
+>>> +        "fsl,ls-pcie-ep"
+>>
+> > You need SoC specific compatibles for the same reasons as the RC.
+>
+> [Xiaowei Bao] I want to contains all layerscape platform use one compatible
+> if the PCIe controller work in EP mode.
 
-diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index a5ad67d5cb16..8f78e75965f0 100644
---- a/Documentation/admin-guide/kernel-parameters.txt
-+++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -2764,7 +2764,7 @@
- 			noexec=on: enable non-executable mappings (default)
- 			noexec=off: disable non-executable mappings
- 
--	nosmap		[X86]
-+	nosmap		[X86,PPC]
- 			Disable SMAP (Supervisor Mode Access Prevention)
- 			even if it is supported by processor.
- 
--- 
-2.19.1
+Do you mean only one of the SoCs that support RC mode has EP mode?
+I think you still need a SoC specific compatible as Rob explained, in case
+there will be a second one in the future.
 
+If you want to ensure that you don't have to update the device driver
+for each new chip that comes in when the EP mode is compatible,
+the way this is handled is to list multiple values in the compatible
+property, listing the first SoC that introduced the specific version of
+that IP block as the most generic type, e.g.
+
+  copatible = "fsl,ls2088a-pcie-ep", "fsl,ls1012a-pcie-ep", "snps,dw-pcie-ep";
+
+For consistency, it probably is best to match each RC mode value with
+the corresponding EP mode string for each device that can support both
+(if there is more than one).
+
+      Arnd
