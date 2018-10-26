@@ -6,24 +6,24 @@ X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B7D58C6786E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Oct 2018 06:48:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 29E6FC6786E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Oct 2018 06:51:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 13E4220834
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Oct 2018 06:48:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 803CE20834
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Oct 2018 06:51:19 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="XTrucS2k"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 13E4220834
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="vj7POfyd"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 803CE20834
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42hF2S0xnnzDrNS
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Oct 2018 17:48:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42hF5K6TLtzF3GK
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Oct 2018 17:51:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.b="XTrucS2k";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.b="vj7POfyd";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=russell.cc
@@ -33,45 +33,45 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.b="XTrucS2k"; dkim-atps=neutral
+ header.b="vj7POfyd"; dkim-atps=neutral
 Received: from wout1-smtp.messagingengine.com (wout1-smtp.messagingengine.com
  [64.147.123.24])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42hDlP39hYzF3G3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Oct 2018 17:35:45 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42hDlT137FzF3FX
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Oct 2018 17:35:49 +1100 (AEDT)
 Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
- by mailout.west.internal (Postfix) with ESMTP id 23F29B64;
- Fri, 26 Oct 2018 02:35:43 -0400 (EDT)
+ by mailout.west.internal (Postfix) with ESMTP id 9B5B8D56;
+ Fri, 26 Oct 2018 02:35:46 -0400 (EDT)
 Received: from mailfrontend2 ([10.202.2.163])
- by compute6.internal (MEProxy); Fri, 26 Oct 2018 02:35:43 -0400
+ by compute6.internal (MEProxy); Fri, 26 Oct 2018 02:35:47 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
  messagingengine.com; h=cc:content-transfer-encoding:date:from
  :in-reply-to:message-id:mime-version:references:subject:to
  :x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
- fm1; bh=OaG9flm6THUx8KzpU5DIrxABEc00tTkUvovifPQ+rsg=; b=XTrucS2k
- aJHS5AGOV28XnADRBXPL993/bdKM1ad0ybLDcz68j/ULWXBmfayhBxj3aXcODzRl
- l+6vX5t/KMsLIzPfP0MFR7IyKq+fIbKj/E0ki8qNTqOgHgdYHoO78FRSSQIQc9iE
- j+MxpS6IE/zXzcgsJLFCBf8Hp0nXqyOf8B3hRhgVVSGTe7vdsu0GmY5BCfYwkkgs
- XdFUJH2Rfbv0D9uyAoTi0PRbZVFFlCEBUd9zgGBsixft/7HAr53APtIieE23rq6s
- ZfoUtOFcbkMNiiBVfTfuj9ylaxSSVOYxzGEaCK9nmRdgMLVgcMJ0YlLKB1XdaJDN
- 78iiPzX+BCeJjw==
-X-ME-Sender: <xms:vrXSW-ccCZxj-N4TShLqF1SsVCB1Fe4s64ohFXJ3JC3yuPJnVU5CFA>
-X-ME-Proxy: <xmx:vrXSWzxaheFxbiRB6sOWOxTKu2Q9tsvdoRLKPLrM4KBw_AIHo-BOXw>
- <xmx:vrXSW7dJckBIyfhKMadV2z76r98-nqe4TZk6hsATcE2EVssXACPfkg>
- <xmx:vrXSW_IVcu1cjbDC695TBjhB6oqr0ixKgQMRr7_n64ZuS7owK89-XA>
- <xmx:vrXSW8FBKZqGDkbT0xXTCSmszu8Y3oVbVSAZ5XZgNlD_Ql7ny6awtw>
- <xmx:vrXSW5pQKE4I_mW5x1qG1_umSU5r8SgjgS8vgKOB8UXTgrBvwDHugw>
- <xmx:vrXSWxl0Kssukn8BMi4YVq6BwRxNU_ILxIg8NPrTovdmCdwn142qrQ>
+ fm1; bh=lOjV0qCQfAkymINK77lLdjCytp5YLH3pqs/kVkC95wQ=; b=vj7POfyd
+ Qo7f7ZjKv+EiQyCvDmhyd90NZK13+QTG9nJy32vH2rxBKjmOl67lGGG26amb6FfJ
+ i2M2+SvxuJkqVqXP70DbUmLE2iSS7tsA5v82Kgz6UEHSWJA1AtABDJR5Ks6d+swY
+ 0G++mqYpcwYMlHG8JU1ues6i0Wsm37rFyhlL3r6bbjyyByYwCfuqmaEeJ7L4JP/8
+ MSFj+4XukY9pZE+7WhyLlsfY1N6qd0l2Avw+RfBwVvhpyl/jbbidVOsz+fbsSFmT
+ PTS71nZcTFFr2dWnLOrv3Fc6JlC+Z1awdvgQSuLnlnl3PGPERmIJ6OZwmhWj9z+x
+ 9arvq2/Fn2HzAg==
+X-ME-Sender: <xms:wrXSW1tfCqCiVA02kr-olCJ51-cRSgpSKMoziCVXko3YW5y5z0lWPw>
+X-ME-Proxy: <xmx:wrXSWx30j4Ba852zQbukny99WPox-5bGLmdd8KjBJr9hqT7VZPH9NQ>
+ <xmx:wrXSWysu2cRR5zsPu9tbS4M_0b_C4qwUzuTp6vLDCV6toCQNWyhzbQ>
+ <xmx:wrXSW34AOducswoupDtxDa12ykanC19SfHwh8ST4igE19Pu4WMAUBg>
+ <xmx:wrXSW-dl5Q6rS7zoLnuDxvYKDiIF_uzzfavQIJMv8YseQl7pjp_Hgg>
+ <xmx:wrXSW0zU-SuBdLPtFefMvgKk5rfRGWXZEvidubwcU8tDDigS84HOqw>
+ <xmx:wrXSWwaWENHcAGoZmfshhsS0vvIF5uTj1OBQnXAl_JF5OqD6q1fBow>
 Received: from crackle.ozlabs.ibm.com (pa49-195-157-6.pa.nsw.optusnet.com.au
  [49.195.157.6])
- by mail.messagingengine.com (Postfix) with ESMTPA id 4E949102E0;
- Fri, 26 Oct 2018 02:35:38 -0400 (EDT)
+ by mail.messagingengine.com (Postfix) with ESMTPA id 01259102EE;
+ Fri, 26 Oct 2018 02:35:42 -0400 (EDT)
 From: Russell Currey <ruscur@russell.cc>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 4/5] powerpc/64s: Disable GUAP with nosmap option
-Date: Fri, 26 Oct 2018 17:35:12 +1100
-Message-Id: <20181026063513.30806-5-ruscur@russell.cc>
+Subject: [PATCH 5/5] powerpc/64s: Document that PPC supports nosmap
+Date: Fri, 26 Oct 2018 17:35:13 +1100
+Message-Id: <20181026063513.30806-6-ruscur@russell.cc>
 X-Mailer: git-send-email 2.19.1
 In-Reply-To: <20181026063513.30806-1-ruscur@russell.cc>
 References: <20181026063513.30806-1-ruscur@russell.cc>
@@ -93,54 +93,24 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-GUAP is similar to SMAP on x86 platforms, so implement support for
-the same kernel parameter.
-
 Signed-off-by: Russell Currey <ruscur@russell.cc>
 ---
- arch/powerpc/mm/init_64.c | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+ Documentation/admin-guide/kernel-parameters.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index 7a9886f98b0c..b26641df36f2 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -312,6 +312,7 @@ void register_page_bootmem_memmap(unsigned long section_nr,
+diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+index a5ad67d5cb16..8f78e75965f0 100644
+--- a/Documentation/admin-guide/kernel-parameters.txt
++++ b/Documentation/admin-guide/kernel-parameters.txt
+@@ -2764,7 +2764,7 @@
+ 			noexec=on: enable non-executable mappings (default)
+ 			noexec=off: disable non-executable mappings
  
- #ifdef CONFIG_PPC_BOOK3S_64
- static bool disable_radix = !IS_ENABLED(CONFIG_PPC_RADIX_MMU_DEFAULT);
-+static bool disable_guap = !IS_ENABLED(CONFIG_PPC_RADIX_GUAP);
+-	nosmap		[X86]
++	nosmap		[X86,PPC]
+ 			Disable SMAP (Supervisor Mode Access Prevention)
+ 			even if it is supported by processor.
  
- static int __init parse_disable_radix(char *p)
- {
-@@ -328,6 +329,18 @@ static int __init parse_disable_radix(char *p)
- }
- early_param("disable_radix", parse_disable_radix);
- 
-+static int __init parse_nosmap(char *p)
-+{
-+	/*
-+	 * nosmap is an existing option on x86 where it doesn't return -EINVAL
-+	 * if the parameter is set to something, so even though it's different
-+	 * to disable_radix, don't return an error for compatibility.
-+	 */
-+	disable_guap = true;
-+	return 0;
-+}
-+early_param("nosmap", parse_nosmap);
-+
- /*
-  * If we're running under a hypervisor, we need to check the contents of
-  * /chosen/ibm,architecture-vec-5 to see if the hypervisor is willing to do
-@@ -381,6 +394,8 @@ void __init mmu_early_init_devtree(void)
- 	/* Disable radix mode based on kernel command line. */
- 	if (disable_radix)
- 		cur_cpu_spec->mmu_features &= ~MMU_FTR_TYPE_RADIX;
-+	if (disable_radix || disable_guap)
-+		cur_cpu_spec->mmu_features &= ~MMU_FTR_RADIX_GUAP;
- 
- 	/*
- 	 * Check /chosen/ibm,architecture-vec-5 if running as a guest.
 -- 
 2.19.1
 
