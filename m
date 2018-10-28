@@ -2,55 +2,97 @@ Return-Path: <SRS0=mX83=NI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=FROM_EXCESS_BASE64,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
+X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9789AC6786F
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Oct 2018 18:27:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 111F4C2BC61
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Oct 2018 22:51:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DFD482082B
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Oct 2018 18:26:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DFD482082B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
+	by mail.kernel.org (Postfix) with ESMTPS id 36DDA2064C
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Oct 2018 22:51:54 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hzlz7jFW"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 36DDA2064C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42jmR55GJPzDsM2
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Oct 2018 05:26:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.de
+	by lists.ozlabs.org (Postfix) with ESMTP id 42jtJm4Sp5zDrcN
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Oct 2018 09:51:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=suse.de
- (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=msuchanek@suse.de;
- receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="hzlz7jFW";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=suse.de
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
+ envelope-from=bsingharora@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="hzlz7jFW"; 
+ dkim-atps=neutral
+Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
+ [IPv6:2607:f8b0:4864:20::541])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42jmP66FZczDrHF
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Oct 2018 05:25:13 +1100 (AEDT)
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx1.suse.de (Postfix) with ESMTP id 9A699AE8A;
- Sun, 28 Oct 2018 18:25:10 +0000 (UTC)
-Date: Sun, 28 Oct 2018 19:25:08 +0100
-From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
-To: Florian Fainelli <f.fainelli@gmail.com>
-Subject: Re: ethernet "bus" number in DTS ?
-Message-ID: <20181028192508.6a1ace51@naga.suse.cz>
-In-Reply-To: <27720d1a-a002-5090-d4fc-92ea59b5839a@gmail.com>
-References: <88328977dfeaf667a98d791074b721fe730d285b.camel@infinera.com>
- <518e0cf1-ef7e-b251-a153-34e01a80267d@gmail.com>
- <694b6f4f6b66eb35176e3eb48bbec474c9647007.camel@infinera.com>
- <8225ba9e-ce8f-b0e0-8f3d-73783693eea4@gmail.com>
- <20181024082239.5ee41017@naga.suse.cz>
- <27720d1a-a002-5090-d4fc-92ea59b5839a@gmail.com>
-X-Mailer: Claws Mail 3.17.1 (GTK+ 2.24.32; x86_64-suse-linux-gnu)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42jt3F6m7nzDr3b
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Oct 2018 09:40:09 +1100 (AEDT)
+Received: by mail-pg1-x541.google.com with SMTP id w3-v6so2916409pgs.11
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Oct 2018 15:40:09 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=GFtksEV3l5eq+mnfMA1OwOjA0oBp/IcRdRQ8wGi247I=;
+ b=hzlz7jFWANzmnQYBfUjAY47ntJv9ruGodd92q7E4yeWjWXy4EZl6bPRcEO0kKVxcET
+ 8l/LxbyoIEOMIv2Qws7VhhdBdB2WSqhVRO2xFO6BoL6UVCnvmAbklAgUnFIPczbls2XR
+ 8t+tWl9FODh8azBtSJSVtOJ8ASXQGH4rOt//srkRKwJB3n5TPhA7eLFTkuIKOx//Tn6i
+ wCdbM58gxJCZ3Wya+Xx9knz+xP1bKelI2gOlUgbKzh9xt2GwpzMnGwoSI1DVJtDgp4Fn
+ d+gXcEV0Ha0CDx7RrL2gR1D2FtTk3tSVbj1J8r71HdedlxSopPgWOCsGk19JAS3kF9ps
+ MWOA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=GFtksEV3l5eq+mnfMA1OwOjA0oBp/IcRdRQ8wGi247I=;
+ b=WmDNGI8ztYC8QYMXjJqAZJO5437Yhh3Ycm0yjULO25Q/kdWsoNQHOJpo5M+O3MaYxP
+ Kc+pJA+bZoo6iyemnkyOv0ICEkNwZme0hpUdLyliLBlNroLTQ/6YtFAcZaj1dhfFHJmE
+ lTjHk15sr0iVEw+LIi1X7v0IeM0Jph2D+KOlXFbH172cWc4imXCT2PxzM9YDb9OKBVoy
+ Rev/Sg6GkviRI8JdztjgYFOogNvb//Wdtvs4OWba6vxWFJ3LNXG0DY8m5GwOQ381kXp3
+ I75CYjagqfyoAMlMF03Z6uZfWx2bktCNOP2F2ZPSpfYAgIhwWOBl6pG4DEcisQXkG+mQ
+ 0wkA==
+X-Gm-Message-State: AGRZ1gJ4v1gpipVateG5cuKaGgvV9DUtawIiabBtfwvufR2jMzbkaVvT
+ b3MTX9gImiIedFw/xNI/a+w=
+X-Google-Smtp-Source: AJdET5fu0DqTEYAGDBSaxsVyd0K3i3CEEiTSqETAuxd4rlFGA5L/e1X97o5DIUSGPTfJJWdGWN6dQw==
+X-Received: by 2002:a63:181:: with SMTP id
+ 123-v6mr11570471pgb.149.1540766407194; 
+ Sun, 28 Oct 2018 15:40:07 -0700 (PDT)
+Received: from localhost (14-202-194-140.static.tpgi.com.au. [14.202.194.140])
+ by smtp.gmail.com with ESMTPSA id
+ t4-v6sm19146464pfb.44.2018.10.28.15.40.05
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Sun, 28 Oct 2018 15:40:05 -0700 (PDT)
+Date: Mon, 29 Oct 2018 09:40:02 +1100
+From: Balbir Singh <bsingharora@gmail.com>
+To: Joel Fernandes <joel@joelfernandes.org>
+Subject: Re: [PATCH 2/4] mm: speed up mremap by 500x on large regions (v2)
+Message-ID: <20181028224002.GA16399@350D>
+References: <20181013013200.206928-1-joel@joelfernandes.org>
+ <20181013013200.206928-3-joel@joelfernandes.org>
+ <20181024101255.it4lptrjogalxbey@kshutemo-mobl1>
+ <20181024115733.GN8537@350D>
+ <20181025021350.GB13560@joelaf.mtv.corp.google.com>
+ <20181027102102.GO8537@350D>
+ <20181027193917.GA51131@joelaf.mtv.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20181027193917.GA51131@joelaf.mtv.corp.google.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
+X-Mailman-Approved-At: Mon, 29 Oct 2018 09:49:37 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,182 +104,90 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "andrew@lunn.ch" <andrew@lunn.ch>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- robh@kernel.org
+Cc: linux-mips@linux-mips.org, Rich Felker <dalias@libc.org>,
+ linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+ Peter Zijlstra <peterz@infradead.org>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Dave Hansen <dave.hansen@linux.intel.com>, Will Deacon <will.deacon@arm.com>,
+ mhocko@kernel.org, linux-mm@kvack.org, lokeshgidra@google.com,
+ sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org,
+ elfring@users.sourceforge.net, Jonas Bonn <jonas@southpole.se>,
+ kvmarm@lists.cs.columbia.edu, dancol@google.com,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, linux-xtensa@linux-xtensa.org,
+ linux-hexagon@vger.kernel.org, Helge Deller <deller@gmx.de>,
+ "maintainer:X86 ARCHITECTURE \(32-BIT AND 64-BIT\)" <x86@kernel.org>,
+ hughd@google.com, "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ kasan-dev@googlegroups.com, anton.ivanov@kot-begemot.co.uk,
+ Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
+ Andrey Ryabinin <aryabinin@virtuozzo.com>, linux-snps-arc@lists.infradead.org,
+ kernel-team@android.com, Sam Creasey <sammy@sammy.net>,
+ Fenghua Yu <fenghua.yu@intel.com>, linux-s390@vger.kernel.org,
+ Jeff Dike <jdike@addtoit.com>, linux-um@lists.infradead.org,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ Julia Lawall <Julia.Lawall@lip6.fr>, linux-m68k@lists.linux-m68k.org,
+ Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
+ nios2-dev@lists.rocketboards.org, "Kirill A. Shutemov" <kirill@shutemov.name>,
+ Stafford Horne <shorne@gmail.com>, Guan Xuetao <gxt@pku.edu.cn>,
+ Chris Zankel <chris@zankel.net>, Tony Luck <tony.luck@intel.com>,
+ Richard Weinberger <richard@nod.at>, linux-parisc@vger.kernel.org,
+ pantin@google.com, Max Filippov <jcmvbkbc@gmail.com>,
+ linux-kernel@vger.kernel.org, minchan@kernel.org,
+ Thomas Gleixner <tglx@linutronix.de>, linux-alpha@vger.kernel.org,
+ Ley Foon Tan <lftan@altera.com>, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 26 Oct 2018 15:57:15 -0700
-Florian Fainelli <f.fainelli@gmail.com> wrote:
+On Sat, Oct 27, 2018 at 12:39:17PM -0700, Joel Fernandes wrote:
+> Hi Balbir,
+> 
+> On Sat, Oct 27, 2018 at 09:21:02PM +1100, Balbir Singh wrote:
+> > On Wed, Oct 24, 2018 at 07:13:50PM -0700, Joel Fernandes wrote:
+> > > On Wed, Oct 24, 2018 at 10:57:33PM +1100, Balbir Singh wrote:
+> > > [...]
+> > > > > > +		pmd_t pmd;
+> > > > > > +
+> > > > > > +		new_ptl = pmd_lockptr(mm, new_pmd);
+> > > > 
+> > > > 
+> > > > Looks like this is largely inspired by move_huge_pmd(), I guess a lot of
+> > > > the code applies, why not just reuse as much as possible? The same comments
+> > > > w.r.t mmap_sem helping protect against lock order issues applies as well.
+> > > 
+> > > I thought about this and when I looked into it, it seemed there are subtle
+> > > differences that make such sharing not worth it (or not possible).
+> > >
+> > 
+> > Could you elaborate on them?
+> 
+> The move_huge_page function is defined only for CONFIG_TRANSPARENT_HUGEPAGE
+> so we cannot reuse it to begin with, since we have it disabled on our
+> systems. I am not sure if it is a good idea to split that out and refactor it
+> for reuse especially since our case is quite simple compared to huge pages.
+> 
+> There are also a couple of subtle differences between the move_normal_pmd and
+> the move_huge_pmd. Atleast 2 of them are:
+> 
+> 1. We don't concern ourself with the PMD dirty bit, since the pages being
+> moved are normal pages and at the soft-dirty bit accounting is at the PTE
+> level, since we are not moving PTEs, we don't need to do that.
+> 
+> 2. The locking is simpler as Kirill pointed, pmd_lock cannot fail however
+> __pmd_trans_huge_lock can.
+> 
+> I feel it is not super useful to refactor move_huge_pmd to support our case
+> especially since move_normal_pmd is quite small, so IMHO the benefit of code
+> reuse isn't there very much.
+>
 
-> On 10/23/18 11:22 PM, Michal Such=C3=A1nek wrote:
-> > On Tue, 23 Oct 2018 11:20:36 -0700
-> > Florian Fainelli <f.fainelli@gmail.com> wrote:
-> >  =20
-> >> On 10/23/18 11:02 AM, Joakim Tjernlund wrote: =20
-> >>> On Tue, 2018-10-23 at 10:03 -0700, Florian Fainelli wrote:   =20
-> >  =20
-> >>>
-> >>> I also noted that using status =3D "disabled" didn't work either to
-> >>> create a fix name scheme. Even worse, all the eth I/F after gets
-> >>> renumbered. It seems to me there is value in having stability in
-> >>> eth I/F naming at boot. Then userspace(udev) can rename if need
-> >>> be.=20
-> >>>
-> >>> Sure would like to known more about why this feature is not
-> >>> wanted ?
-> >>>
-> >>> I found
-> >>>   https://patchwork.kernel.org/patch/4122441/
-> >>> You quote policy as reason but surely it must be better to
-> >>> have something stable, connected to the hardware name, than
-> >>> semirandom naming?   =20
-> >>
-> >> If the Device Tree nodes are ordered by ascending base register
-> >> address, my understanding is that you get the same order as far as
-> >> platform_device creation goes, this may not be true in the future
-> >> if Rob decides to randomize that, but AFAICT this is still true.
-> >> This may not work well with status =3D disabled properties being
-> >> inserted here and there, but we have used that here and it has
-> >> worked for as far as I can remember doing it. =20
-> >=20
-> > So this is unstable in several respects. First is changing the
-> > enabled/disabled status in the deivecetrees provided by the kernel.
-> >=20
-> > Second is if you have hardware hotplug mechanism either by firmware
-> > or by loading device overlays.
-> >=20
-> > Third is the case when the devicetree is not built as part of the
-> > kernel but is instead provided by firmware that initializes the
-> > low-level hardware details. Then the ordering by address is not
-> > guaranteed nor is that the same address will be used to access the
-> > same interface every time. There might be multiple ways to
-> > configure the hardware depending on firmware configuration and/or
-> > version.
-> >=20
-> >   =20
-> >> Second, you might want to name network devices ethX, but what if I
-> >> want to name them ethernetX or fooX or barX? Should we be
-> >> accepting a mechanism in the kernel that would allow someone to
-> >> name the interfaces the way they want straight from a name being
-> >> provided in Device Tree? =20
-> >=20
-> > Clearly if there is text Ethernet1 printed above the Ethernet port
-> > we should provide a mechanism to name the port Ethernet1 by
-> > default. =20
->=20
-> Yes, but then have a specific property that is flexible enough to
-> retrieve things like "vital product information". For DSA switches, we
-> have an optional "label" property which names the network device
-> directly like it would be found on the product's case. Ideally this
-> should be much more flexible such that it can point to the appropriate
-> node/firmware service/whatever to get that name, which is what some
-> people have been working on lately, see [1].
->=20
-> [1]: https://lkml.org/lkml/2018/8/14/1039
+My big concern is that any bug fixes will need to monitor both paths.
+Do you see a big overhead in checking the soft dirty bit? The locking is
+a little different. Having said that, I am not strictly opposed to the
+extra code, just concerned about missing fixes/updates as we find them.
+ 
+> Do let me know your thoughts and thanks for your interest in this.
+> 
+>
 
-That's nice for something unique per-device like MAC address. However,
-for something per-model like port labels DT properties should suffice.
-
->=20
-> The point is don't re-purpose the aliases which is something that
-> exists within Device Tree to basically provide a shorter path to a
-> specific set of nodes for the boot program to mangle and muck with
-> instead of having to resolve a full path to a node. At least that is
-> how I conceive it.
->=20
-> Now what complicates the matter is that some OSes like Linux tend to
-> use it to also generate seemingly stable index for peripherals that
-> are numbered by index such as SPI, I2C, etc buses, which is why we are
-> having this conversation here, see below for more.
->=20
-> >  =20
-> >>
-> >> Aliases are fine for providing relative stability within the Device
-> >> Tree itself and boot programs that might need to modify the Device
-> >> Tree (e.g: inserting MAC addresses) such that you don't have to
-> >> encode logic to search for nodes by compatible strings etc. but
-> >> outside of that use case, it seems to me that you can resolve every
-> >> naming decision in user-space. =20
-> >=20
-> > However, this is pushing platform-specific knowledge to userspace.
-> > The way the Ethernet interface is attached and hence the device
-> > properties usable for identifying the device uniquely are
-> > platform-specific. =20
->=20
-> There is always going to be some amount of platform specific knowledge
-> to user-space, what matters is the level of abstraction that is
-> presented to you.
->=20
-> >=20
-> > On the other hand, aliases are universal when provided. If they are
-> > good enough to assign a MAC address they are good enough to provide
-> > a stable default name. =20
->=20
-> We are not talking about the same aliases then. The special Device
-> Tree node named "aliases" is a way to create shorted Device Tree node
-> paths, it is not by any means an equivalent for what I would rather
-> call a "label", or "port name" or silk screen annotation on a PCB for
-> instance.
-
-However, if the kernel ethN names are deterministic based on something
-like aliases it is trivial to translate them to "port name". As it is
-they are pretty much random which is the issue aliases *can* solve.
-
->=20
-> >=20
-> > I think this is indeed forcing the userspace to reinvent several
-> > wheels for no good reason. =20
->=20
-> udev or systemd will come up with some stable names for your network
-> device right off the bat.
-
-As has been already pointed out these names are not stable for various
-reasons. *Making* them stable is the whole point of this discussion.
-=20
-> If you are deeply embedded maybe you don't
-> want those, but then use something like the full path in /sys to get
-> some stable names based on the SoC's topology.
-
-However, it some devices might be disabled depending on the device
-configuration generating stable names is not that easy. Also if bus
-topology may differ depending on device/firmware configuration you
-cannot assign stable names based just on /sys hierarchy. Also it is
-said that /sys hierarchy is not an ABI in the kernel docs so you should
-not base your stable device names which *are* an ABI on the
-unstable /sys hierarchy.
-
->=20
-> >=20
-> > What is the problem with adding the aliases? =20
->=20
-> aliases is IMHO the wrong tool for the job because it is too limiting,
-> you want it to be used to have Ethernet controller instance N to be
-> named "ethN", what if someone tomorrows says, no this is not good, I
-> want the aliases to automatically name my network devices
-> "ethernet-controllerN" or "blahblahN"? You see where I am getting
-> with that?
-
-Then you can write udev rule to translate ethN to blahlbahN and so long
-as the ethN is stable the translation is stable as well. Alternatively
-you might want to use a different devicetree property if one existed.
-
->=20
-> And yes, I do realize that Linux has traditionally named Ethernet
-> adapters ethN, but also allows people to name interfaces just the way
-> they want even from within the drivers themselves.
->=20
-> Now imagine your platform uses ACPI, and there are no aliases there to
-> point a node with a shorter name, how we would go about naming your
-> Ethernet controller unless there is a specific VPD/label/sticker
-> property that can be somehow be retried?
-
-There is biosdevname for that which uses proprietary BIOS extensions to
-look up device names in BIOS.
-
-Thanks
-
-Michal
+Balbir Singh. 
