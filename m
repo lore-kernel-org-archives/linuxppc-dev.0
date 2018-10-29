@@ -2,82 +2,79 @@ Return-Path: <SRS0=d/0/=NJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6277CC0044C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Oct 2018 16:53:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D3DFC0044C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Oct 2018 17:03:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C2D7D20824
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Oct 2018 16:53:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B63AF20824
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Oct 2018 17:03:31 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="EVq9T6bf"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C2D7D20824
-Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="DJ6J2bSZ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B63AF20824
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42kLJL4YFdzDrRP
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Oct 2018 03:53:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42kLXK3hN4zDrhn
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Oct 2018 04:03:29 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.b="EVq9T6bf";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="DJ6J2bSZ";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=google.com
- (client-ip=2607:f8b0:4864:20::341; helo=mail-ot1-x341.google.com;
- envelope-from=jannh@google.com; receiver=<UNKNOWN>)
+ spf=pass (helo) smtp.helo=mo6-p00-ob.smtp.rzone.de
+ (client-ip=2a01:238:20a:202:5300::6; helo=mo6-p00-ob.smtp.rzone.de;
+ envelope-from=chzigotzky@xenosoft.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=reject dis=none) header.from=google.com
+ dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=google.com header.i=@google.com header.b="EVq9T6bf"; 
+ unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="DJ6J2bSZ"; 
  dkim-atps=neutral
-Received: from mail-ot1-x341.google.com (mail-ot1-x341.google.com
- [IPv6:2607:f8b0:4864:20::341])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5300::6])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42kLCb5f85zF0yl
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Oct 2018 03:48:59 +1100 (AEDT)
-Received: by mail-ot1-x341.google.com with SMTP id q5so2767687otl.13
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Oct 2018 09:48:59 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=ZUGdCRhBfd3pStc0PE075EXlzQWP7KBBcXNaG7b06O4=;
- b=EVq9T6bf5Kom2Cbah/P4VxFAXoGNOFYV9wKLqMadUgr0Su0JK0kKfpNOApbLRMYqZq
- O7YUCvTq2Q2D/oDE8+JDRNG1yXqbtG2OEt/Hfd+DSOmIGsS1/2tvOCVg8RXtOPaE3RSj
- 4XHN/X86AHV4H+mpQg4onOdQTprciX5TaFOWhznGigO8Xow+XwHLf4mHgZbQt3ZMAg6w
- GxgET9iqO8m6BVT2YkDZph8TFBqvQc0RI4yWtOTHQCUxrFul6d47a8Hz6o/h32akvfmT
- W4An1tmNJSa9nSNW49vlXRu5fg+Vho4/LfJnQSLlCx8YpqcSAOmh3awvGfym+rRB6GRb
- dGxg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=ZUGdCRhBfd3pStc0PE075EXlzQWP7KBBcXNaG7b06O4=;
- b=p6pUST057wTT9UWoTThbClSO1UUwRMiWeZnlMpujPmNZnZV9ubpK5O1yLUKggCek4U
- 1miWnuOhgI8itZBrf4Solk6OO6P30IAP7hrPpDL2ddUQu57ER1/IqBRL/dTZCBaJM+RJ
- MSBjyPfPXPY6HMdEURr/3AE73UVbISakedJzeGOVSzaZGj/cmMNn9N4ylN2Aoh/O/Y0G
- UlyvuqHe2Z3o/Hhuap6J5lRYbRvPunBlCJlANdE/oGmoiYj4jybNz3nQUOjN1q2ib8h1
- YiJuxtlKymyAr3T+Hk6GVNzSFE5hFEng5Yn9Zd0KvWgLiCSBlOG6RRVF6i+ofWuopyTf
- H4Pg==
-X-Gm-Message-State: AGRZ1gKQpEnFn5qv93/NucnFz0NJVVtZP7P+7JY2eA8beN5gOli4cNQz
- 3iqA3Eg8EYrxi8ott6VXlOJLAOLUunpwCj2l5kWmhA==
-X-Google-Smtp-Source: AJdET5e14aEdHubEpCct6T8pGnwnIY9cVrT4Mo4J8ocMMd8gkijAzph6YQcU7TGBVB/ARa1oWWiUr4rMxSFPgVGSJF0=
-X-Received: by 2002:a9d:4c15:: with SMTP id l21mr9370309otf.242.1540831737043; 
- Mon, 29 Oct 2018 09:48:57 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42kLTD3L9hzDrVM
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Oct 2018 04:00:45 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1540832441;
+ s=strato-dkim-0002; d=xenosoft.de;
+ h=In-Reply-To:Date:Message-ID:From:References:To:Subject:
+ X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
+ bh=MKJeFjaIw5mPkodWu6m/hzr9M7RGdL9gD5WTnhVLMY8=;
+ b=DJ6J2bSZpk+0cRCY3j5WRy4t2pZ8kiMDQ//VLZSuvTdSZoMzDMtPEnb2VV90sCe0d7
+ smcJOOVWuLIluqFZkUObdYdOMwKYU+kFEdQuWVZPkYdUWacm+0NuEgpxTfBuM2rpA/Xb
+ znERMO5YjNt/lq+Dk7ok82c2KF3qJcUM3fbtPubfbfjn3IJrxxBJ0pUAdftCkJzu28Vm
+ aXVICiQtFAqxOfeSjj7zFJJjIz/VYEuhA3omm3ZE6Q3WgkqH4SJKwjiOzFUrek/i++/L
+ qo0Alxutp1fsXmCMrHf7E5u3Bsnq/f4k+2YHuYXbaruY0INBGkYgCMx/jc1tUo+aCPU9
+ mgqw==
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5G5MdirQj0WG7ClZirntg4BQeFAskdh+lTNnUESg5A=="
+X-RZG-CLASS-ID: mo00
+Received: from [IPv6:2a02:8109:a400:162c:f480:79db:8173:9556]
+ by smtp.strato.de (RZmta 44.3 AUTH) with ESMTPSA id Z0624cu9TH0f8bm
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
+ 521 ECDH bits, eq. 15360 bits RSA))
+ (Client did not present a certificate)
+ for <linuxppc-dev@lists.ozlabs.org>;
+ Mon, 29 Oct 2018 18:00:41 +0100 (CET)
+Subject: Re: NXP P50XX/e5500: SMP doesn't work anymore with the latest Git
+ kernel
+To: linuxppc-dev@lists.ozlabs.org
+References: <6bcb4b23-bb78-d1a5-7fd0-5f892115d302@xenosoft.de>
+ <99266ac6-640c-b2a9-eef3-4e89ee1e0ad5@xenosoft.de>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Message-ID: <f6ca1728-d312-1267-d9d7-18d2369f1bf7@xenosoft.de>
+Date: Mon, 29 Oct 2018 18:00:40 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
 MIME-Version: 1.0
-References: <20181029112343.27454-1-msammler@mpi-sws.org>
- <CAGXu5jJ2fFmEXfUzga3XBXcsHPuPWWf5zLeyn8+Z1oZVa8oTuQ@mail.gmail.com>
- <7d93080b-68bd-7563-bd3b-e7ee1545e367@intel.com>
-In-Reply-To: <7d93080b-68bd-7563-bd3b-e7ee1545e367@intel.com>
-From: Jann Horn <jannh@google.com>
-Date: Mon, 29 Oct 2018 17:48:30 +0100
-Message-ID: <CAG48ez1mY7Osdsc4iJ1JKq=C60wb9bQF=aHbi1fb=pb_V2XMJA@mail.gmail.com>
-Subject: Re: [RFC PATCH] seccomp: Add protection keys into seccomp_data
-To: Dave Hansen <dave.hansen@intel.com>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <99266ac6-640c-b2a9-eef3-4e89ee1e0ad5@xenosoft.de>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
+Content-Language: de-DE
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,42 +86,144 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: wad@chromium.org, Kees Cook <keescook@chromium.org>,
- Linux API <linux-api@vger.kernel.org>,
- Dave Hansen <dave.hansen@linux.intel.com>, linuxram@us.ibm.com,
- Andy Lutomirski <luto@amacapital.net>, msammler@mpi-sws.org,
- linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Oct 29, 2018 at 5:37 PM Dave Hansen <dave.hansen@intel.com> wrote:
-> On 10/29/18 9:25 AM, Kees Cook wrote:
-> > On Mon, Oct 29, 2018 at 4:23 AM, Michael Sammler <msammler@mpi-sws.org> wrote:
-> >> Add the current value of an architecture specific protection keys
-> >> register (currently PKRU on x86) to data available for seccomp-bpf
-> >> programs to work on. This allows filters based on the currently
-> >> enabled protection keys.
+Hello,
+
+I figured out that the problem is in the OF source code of the commit: 
+Merge tag devicetree-for-4.20. [1]
+
+I reverted the following OF files and SMP works!
+
+drivers/of/base.c
+drivers/of/device.c
+drivers/of/of_mdio.c
+drivers/of/of_numa.c
+drivers/of/of_private.h
+drivers/of/overlay.c
+drivers/of/platform.c
+drivers/of/unittest-data/overlay_15.dts
+drivers/of/unittest-data/tests-overlay.dtsi
+drivers/of/unittest.c
+include/linux/of.h
+
+Cheers,
+Christian
+
+[1] 
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=b27186abb37b7bd19e0ca434f4f425c807dbd708
+
+
+On 29 October 2018 at 10:56AM, Christian Zigotzky wrote:
+> Hello,
 >
-> How does the current "assignment" of protection keys to the various uses
-> get communicated to the filter?
+> I have figured out that the commit 'devicetree-for-4.20' [1] is 
+> responsible for the SMP problem. I was able to revert this commit with 
+> 'git revert b27186abb37b7bd19e0ca434f4f425c807dbd708 -m 1' today.
+>
+> [master ec81438] Revert "Merge tag 'devicetree-for-4.20' of 
+> git://git.kernel.org/pub/scm/linux/kernel/git/robh/linux"
+> 138 files changed, 931 insertions(+), 1538 deletions(-)
+> rename Documentation/devicetree/bindings/arm/{atmel-sysregs.txt => 
+> atmel-at91.txt} (67%)
+> delete mode 100644 
+> Documentation/devicetree/bindings/arm/freescale/fsl,layerscape-dcfg.txt
+> delete mode 100644 
+> Documentation/devicetree/bindings/arm/freescale/fsl,layerscape-scfg.txt
+> rename Documentation/devicetree/bindings/arm/{zte,sysctrl.txt => 
+> zte.txt} (62%)
+> delete mode 100644 Documentation/devicetree/bindings/misc/lwn-bk4.txt
+> create mode 100644 arch/c6x/boot/dts/linked_dtb.S
+> delete mode 100644 arch/nios2/boot/dts/Makefile
+> create mode 100644 arch/nios2/boot/linked_dtb.S
+> delete mode 100644 arch/powerpc/boot/dts/Makefile
+> delete mode 100644 arch/powerpc/boot/dts/fsl/Makefile
+> delete mode 100644 scripts/dtc/yamltree.c
+>
+> It solves the SMP problem! SMP works again on my P5020 board and on 
+> virtual e5500 QEMU machines.
+>
+> QEMU command: ./qemu-system-ppc64 -M ppce500 -cpu e5500 -m 2048 
+> -kernel /home/christian/Downloads/uImage-4.20-alpha5 -drive 
+> format=raw,file=/home/christian/Dokumente/ubuntu_MATE_16.04.3_LTS_PowerPC_QEMU/ubuntu_MATE_16.04_PowerPC.img,index=0,if=virtio 
+> -nic user,model=e1000 -append "rw root=/dev/vda3" -device virtio-vga 
+> -device virtio-mouse-pci -device virtio-keyboard-pci -soundhw es1370 
+> -smp 4
+>
+> Screenshot: 
+> https://plus.google.com/u/0/photos/photo/115515624056477014971/6617705776207990082
+>
+> Do we need a new dtb file or is it a bug?
+>
+> Thanks,
+> Christian
+>
+> [1] 
+> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=b27186abb37b7bd19e0ca434f4f425c807dbd708
+>
+>
+> On 28 October 2018 at 5:35PM, Christian Zigotzky wrote:
+>> Hello,
+>>
+>> SMP doesn't work anymore with the latest Git kernel (28/10/18 11:12AM 
+>> GMT) on my P5020 board and on virtual e5500 QEMU machines.
+>>
+>> Board with P5020 dual core CPU:
+>>
+>> [    0.000000] -----------------------------------------------------
+>> [    0.000000] phys_mem_size     = 0x200000000
+>> [    0.000000] dcache_bsize      = 0x40
+>> [    0.000000] icache_bsize      = 0x40
+>> [    0.000000] cpu_features      = 0x00000003008003b4
+>> [    0.000000]   possible        = 0x00000003009003b4
+>> [    0.000000]   always          = 0x00000003008003b4
+>> [    0.000000] cpu_user_features = 0xcc008000 0x08000000
+>> [    0.000000] mmu_features      = 0x000a0010
+>> [    0.000000] firmware_features = 0x0000000000000000
+>> [    0.000000] -----------------------------------------------------
+>> [    0.000000] CoreNet Generic board
+>>
+>>     ...
+>>
+>> [    0.002161] smp: Bringing up secondary CPUs ...
+>> [    0.002339] No cpu-release-addr for cpu 1
+>> [    0.002347] smp: failed starting cpu 1 (rc -2)
+>> [    0.002401] smp: Brought up 1 node, 1 CPU
+>>
+>> Virtual e5500 quad core QEMU machine:
+>>
+>> [    0.026394] smp: Bringing up secondary CPUs ...
+>> [    0.027831] No cpu-release-addr for cpu 1
+>> [    0.027989] smp: failed starting cpu 1 (rc -2)
+>> [    0.030143] No cpu-release-addr for cpu 2
+>> [    0.030304] smp: failed starting cpu 2 (rc -2)
+>> [    0.032400] No cpu-release-addr for cpu 3
+>> [    0.032533] smp: failed starting cpu 3 (rc -2)
+>> [    0.033117] smp: Brought up 1 node, 1 CPU
+>>
+>> QEMU command: ./qemu-system-ppc64 -M ppce500 -cpu e5500 -m 2048 
+>> -kernel 
+>> /home/christian/Downloads/vmlinux-4.20-alpha4-AmigaOne_X1000_X5000/X5000_and_QEMU_e5500/uImage-4.20 
+>> -drive 
+>> format=raw,file=/home/christian/Downloads/MATE_PowerPC_Remix_2017_0.9.img,index=0,if=virtio 
+>> -nic user,model=e1000 -append "rw root=/dev/vda" -device virtio-vga 
+>> -device virtio-mouse-pci -device virtio-keyboard-pci -usb -soundhw 
+>> es1370 -smp 4
+>>
+>> .config:
+>>
+>> ...
+>> CONFIG_SMP=y
+>> CONFIG_NR_CPUS=4
+>> ...
+>>
+>> Please test the latest Git kernel on your NXP P50XX boards.
+>>
+>> Thanks,
+>> Christian
+>>
+>
+>
 
-I assume that you first allocate your protection keys, then install the filter?
-
-> I'm not sure this is a great use for PKRU.  I *think* the basic problem
-> is that you want to communicate some rights information down into a
-> filter, and you want to communicate it with PKRU.  While it's handy to
-> have an extra register that nobody (generally) mucks with, I'm not quite
-> convinced that we want to repurpose it this way.
-
-That's not how I understand it; I believe that the context is probably
-https://arxiv.org/pdf/1801.06822.pdf ?
-My understanding is that PKRU is used for lightweight in-process
-sandboxing, and to extend this sandbox protection to the syscall
-interface, it is necessary to expose PKRU state to seccomp filters.
-In other words, this isn't using PKRU exclusively for passing rights
-into a filter, but it has to use PKRU anyway.
-
-> Also, I'm not sure the kernel provides the PKRU guarantees you want at
-> the moment.  Our implementation *probably* works, but it's mostly by
-> accident.
