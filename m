@@ -2,60 +2,95 @@ Return-Path: <SRS0=d/0/=NJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1305FC2BC61
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Oct 2018 13:32:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1163CC0044C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Oct 2018 14:48:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 64FFC2082D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Oct 2018 13:32:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 64FFC2082D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4B8B32082D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Oct 2018 14:48:11 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Xb0Cf25S"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4B8B32082D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42kFrl2906zDsM2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Oct 2018 00:32:23 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42kHX916mlzDrhn
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Oct 2018 01:48:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=intel.com
- (client-ip=192.55.52.136; helo=mga12.intel.com; envelope-from=lkp@intel.com;
- receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="Xb0Cf25S";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::c44; helo=mail-yw1-xc44.google.com;
+ envelope-from=pku.leo@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="Xb0Cf25S"; 
+ dkim-atps=neutral
+Received: from mail-yw1-xc44.google.com (mail-yw1-xc44.google.com
+ [IPv6:2607:f8b0:4864:20::c44])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42kFlZ0p2JzDrYf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Oct 2018 00:27:53 +1100 (AEDT)
-X-Amp-Result: UNKNOWN
-X-Amp-Original-Verdict: FILE UNKNOWN
-X-Amp-File-Uploaded: False
-Received: from fmsmga005.fm.intel.com ([10.253.24.32])
- by fmsmga106.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
- 29 Oct 2018 06:27:50 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.54,440,1534834800"; 
- d="gz'50?scan'50,208,50";a="275334703"
-Received: from lkp-server01.sh.intel.com (HELO lkp-server01) ([10.239.97.150])
- by fmsmga005.fm.intel.com with ESMTP; 29 Oct 2018 06:27:49 -0700
-Received: from kbuild by lkp-server01 with local (Exim 4.89)
- (envelope-from <lkp@intel.com>)
- id 1gH7a8-0002Mt-Py; Mon, 29 Oct 2018 21:27:48 +0800
-Date: Mon, 29 Oct 2018 21:27:33 +0800
-From: kbuild test robot <lkp@intel.com>
-To: Russell Currey <ruscur@russell.cc>
-Subject: Re: [PATCH 1/5] powerpc/64s: Guarded Userspace Access Prevention
-Message-ID: <201810292131.n5Wi7QKI%fengguang.wu@intel.com>
-References: <20181026063513.30806-2-ruscur@russell.cc>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="envbJBWh7q8WU6mo"
-Content-Disposition: inline
-In-Reply-To: <20181026063513.30806-2-ruscur@russell.cc>
-User-Agent: Mutt/1.5.23 (2014-03-12)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42kHTG0pPQzDrS4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Oct 2018 01:45:37 +1100 (AEDT)
+Received: by mail-yw1-xc44.google.com with SMTP id j75-v6so3447670ywj.10
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Oct 2018 07:45:37 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:subject:from:in-reply-to:date:cc
+ :content-transfer-encoding:message-id:references:to;
+ bh=OupCyM1v/7DUSb/Y4S5TjO0exjXdP7eHE5GrHzEcPxw=;
+ b=Xb0Cf25SCyui39SNJ+bktuL66JoZ7Joa/SFsprGgYwcyz5n83x25f1/xfzQBAOs7Ah
+ B+upUpBUmvvHnjsce+ygrPFSYAQItMW07Rdr2IOLOJgSJZ0ghzLkMYM/LiMHOivSoNRJ
+ FikbsyCElVKOusx4yGL4Pj8CHgu5jEAAOhLonI+TXF1KY9aCA9UB/5FzaUMcs/5AI8fh
+ ecfmX4qCOTdJW19kocXXnOqjxwbE6utdh9F3uYbao5GCuwdaO8pKkYTcj6YSmvHo0CAR
+ 1GezEndN4Z9YE7lB7O/6EARQcGqqjBdiktTksQpCz+Zq37UTKOaKTpxE+SD3j5lCosSr
+ 3tfA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:subject:from:in-reply-to:date:cc
+ :content-transfer-encoding:message-id:references:to;
+ bh=OupCyM1v/7DUSb/Y4S5TjO0exjXdP7eHE5GrHzEcPxw=;
+ b=GZBtQMZtKbLlhUogtpAZRYReD9IlKHsa6LuMXfPOVwrKl1tdtHAglnPC4fZQKgx8LQ
+ BN7pj/VPgJ5cczTVlEqUq3aIjS1bt3/9VGbuthIDtcneM/MmruF37wtJR9Rmz0PmBmAT
+ HXNeKgAVij6CNkG6lvLG8/BfuTGHrRpDBqiUSiYj/9+i5ztEvlcy/mZt9leHdKFuaoO/
+ CjeH8l7zFYPtSLwSxYJFKBovvgGWqWlb7C1V8K/Wuqlb/oVHd5fCBaNKbqHTDRDnZInD
+ zyl4s71FE8HYZL4vI+2WQwg2CbfrMQ9EbFyNq0GYQCQwKJnZ2BeqGgKExpe+I8TJq/nb
+ k5mw==
+X-Gm-Message-State: AGRZ1gI/oTYbkqu6PB+0y922qF4V1HPBYfSrPM0jvBja3xmWQKLGvQif
+ qpH9Tf4O8Z+PblcuuBH2qb0=
+X-Google-Smtp-Source: AJdET5fa/A58rYHP7PoTEDd5rASRrYeLjKY4NLPMLzQlDzUSorqjZZsZGL28KCebsoJ2gWxhn4Y5xA==
+X-Received: by 2002:a0d:f505:: with SMTP id
+ e5-v6mr13977653ywf.304.1540824335175; 
+ Mon, 29 Oct 2018 07:45:35 -0700 (PDT)
+Received: from ?IPv6:2605:a601:41fb:3c00:f807:6b09:6e40:bee6?
+ ([2605:a601:41fb:3c00:f807:6b09:6e40:bee6])
+ by smtp.gmail.com with ESMTPSA id j74-v6sm2762758ywj.20.2018.10.29.07.45.34
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Mon, 29 Oct 2018 07:45:34 -0700 (PDT)
+Content-Type: text/plain;
+	charset=utf-8
+Mime-Version: 1.0 (1.0)
+Subject: Re: [PATCH 3/7] dmaengine: fsl-qdma: Add qDMA controller driver for
+ Layerscape SoCs
+From: Li Yang <pku.leo@gmail.com>
+X-Mailer: iPhone Mail (16A404)
+In-Reply-To: <VI1PR04MB443154EF740DCE49CCA6043BEDF30@VI1PR04MB4431.eurprd04.prod.outlook.com>
+Date: Mon, 29 Oct 2018 09:45:33 -0500
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <D704B5F0-932E-4EF5-B821-012459FC88ED@gmail.com>
+References: <20181026095240.33668-1-peng.ma@nxp.com>
+ <20181026095240.33668-3-peng.ma@nxp.com>
+ <CADRPPNRu3vEcLMegMC3-5xGe6D2JkZyb6+mmYzZFatffUosF3w@mail.gmail.com>
+ <VI1PR04MB443154EF740DCE49CCA6043BEDF30@VI1PR04MB4431.eurprd04.prod.outlook.com>
+To: Peng Ma <peng.ma@nxp.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,473 +102,1499 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mikey@neuling.org, linuxppc-dev@lists.ozlabs.org, kbuild-all@01.org,
- npiggin@gmail.com
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
+ <devicetree@vger.kernel.org>, Wen He <wen.he_1@nxp.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ lkml <linux-kernel@vger.kernel.org>, Leo Li <leoyang.li@nxp.com>,
+ Vinod <vkoul@kernel.org>, Rob Herring <robh+dt@kernel.org>,
+ "dmaengine@vger.kernel.org" <dmaengine@vger.kernel.org>,
+ Dan Williams <dan.j.williams@intel.com>, Shawn Guo <shawnguo@kernel.org>,
+ Jiaheng Fan <jiaheng.fan@nxp.com>,
+ "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
+ <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---envbJBWh7q8WU6mo
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
 
-Hi Russell,
+> On Oct 29, 2018, at 4:51 AM, Peng Ma <peng.ma@nxp.com> wrote:
+>=20
+>=20
+>=20
+>> -----Original Message-----
+>> From: Li Yang <leoyang.li@nxp.com>
+>> Sent: 2018=E5=B9=B410=E6=9C=8827=E6=97=A5 4:48
+>> To: Peng Ma <peng.ma@nxp.com>
+>> Cc: Vinod <vkoul@kernel.org>; Rob Herring <robh+dt@kernel.org>; Mark
+>> Rutland <mark.rutland@arm.com>; Shawn Guo <shawnguo@kernel.org>; Dan
+>> Williams <dan.j.williams@intel.com>; dmaengine@vger.kernel.org; open
+>> list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS
+>> <devicetree@vger.kernel.org>; lkml <linux-kernel@vger.kernel.org>;
+>> moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE
+>> <linux-arm-kernel@lists.infradead.org>; linuxppc-dev
+>> <linuxppc-dev@lists.ozlabs.org>; Wen He <wen.he_1@nxp.com>; Jiaheng Fan
+>> <jiaheng.fan@nxp.com>
+>> Subject: Re: [PATCH 3/7] dmaengine: fsl-qdma: Add qDMA controller driver f=
+or
+>> Layerscape SoCs
+>>=20
+>>> On Fri, Oct 26, 2018 at 4:57 AM Peng Ma <peng.ma@nxp.com> wrote:
+>>>=20
+>>> NXP Queue DMA controller(qDMA) on Layerscape SoCs supports channel
+>>> virtuallization by allowing DMA jobs to be enqueued into different
+>>> command queues.
+>>>=20
+>>> Note that this module depends on NXP DPAA.
+>>=20
+>> It is not clear if you are saying that the driver can only work on
+>> SoCs with a DPAA hardware block, or the driver is actually depending
+>> on the DPAA drivers also.  If it is the later case, you also should
+>> express that in the Kconfig you added below.
+>>=20
+> [Peng Ma] Ok, I will express it in the Kconfig.
+>>>=20
+>>> Signed-off-by: Wen He <wen.he_1@nxp.com>
+>>> Signed-off-by: Jiaheng Fan <jiaheng.fan@nxp.com>
+>>> Signed-off-by: Peng Ma <peng.ma@nxp.com>
+>>> ---
+>>> change in v10:
+>>>        - no
+>>>=20
+>>> drivers/dma/Kconfig    |   13 +
+>>> drivers/dma/Makefile   |    1 +
+>>> drivers/dma/fsl-qdma.c | 1257
+>> ++++++++++++++++++++++++++++++++++++++++++++++++
+>>> 3 files changed, 1271 insertions(+), 0 deletions(-)
+>>> create mode 100644 drivers/dma/fsl-qdma.c
+>>>=20
+>>> diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
+>>> index dacf3f4..50e19d7 100644
+>>> --- a/drivers/dma/Kconfig
+>>> +++ b/drivers/dma/Kconfig
+>>> @@ -218,6 +218,19 @@ config FSL_EDMA
+>>>          multiplexing capability for DMA request sources(slot).
+>>>          This module can be found on Freescale Vybrid and LS-1 SoCs.
+>>>=20
+>>> +config FSL_QDMA
+>>> +       tristate "NXP Layerscape qDMA engine support"
+>>> +       depends on ARM || ARM64
+>>> +       select DMA_ENGINE
+>>> +       select DMA_VIRTUAL_CHANNELS
+>>> +       select DMA_ENGINE_RAID
+>>> +       select ASYNC_TX_ENABLE_CHANNEL_SWITCH
+>>> +       help
+>>> +         Support the NXP Layerscape qDMA engine with command queue
+>> and legacy mode.
+>>> +         Channel virtualization is supported through enqueuing of DMA
+>> jobs to,
+>>> +         or dequeuing DMA jobs from, different work queues.
+>>> +         This module can be found on NXP Layerscape SoCs.
+>>> +
+>>> config FSL_RAID
+>>>         tristate "Freescale RAID engine Support"
+>>>         depends on FSL_SOC
+>> && !ASYNC_TX_ENABLE_CHANNEL_SWITCH
+>>> diff --git a/drivers/dma/Makefile b/drivers/dma/Makefile
+>>> index c91702d..2d1b586 100644
+>>> --- a/drivers/dma/Makefile
+>>> +++ b/drivers/dma/Makefile
+>>> @@ -32,6 +32,7 @@ obj-$(CONFIG_DW_DMAC_CORE) +=3D dw/
+>>> obj-$(CONFIG_EP93XX_DMA) +=3D ep93xx_dma.o
+>>> obj-$(CONFIG_FSL_DMA) +=3D fsldma.o
+>>> obj-$(CONFIG_FSL_EDMA) +=3D fsl-edma.o
+>>> +obj-$(CONFIG_FSL_QDMA) +=3D fsl-qdma.o
+>>> obj-$(CONFIG_FSL_RAID) +=3D fsl_raid.o
+>>> obj-$(CONFIG_HSU_DMA) +=3D hsu/
+>>> obj-$(CONFIG_IMG_MDC_DMA) +=3D img-mdc-dma.o
+>>> diff --git a/drivers/dma/fsl-qdma.c b/drivers/dma/fsl-qdma.c
+>>> new file mode 100644
+>>> index 0000000..404869e
+>>> --- /dev/null
+>>> +++ b/drivers/dma/fsl-qdma.c
+>>> @@ -0,0 +1,1257 @@
+>>> +// SPDX-License-Identifier: GPL-2.0
+>>> +// Copyright 2018 NXP
+>>=20
+>> I'm not sure if this is really the case.  The driver at least has been
+>> sent out in 2015.  We should keep these copyright claims, even the
+>> legacy Freescale copyright claims.
+>>=20
+> [Peng Ma]=20
+>    I am not sure this patch sent out in 2015, but the git log earliest sho=
+ws the patch cteated at Dec 20 2017. so if i changed the "Copyright 2018 NXP=
+" to " Copyright 2017-2018 NXP "
 
-I love your patch! Yet something to improve:
+You can find early versions of this patch in previous SDK releases or the up=
+stream versions with a google search.  These existing copyright claims shoul=
+d not be removed in the first place.
 
-[auto build test ERROR on powerpc/next]
-[also build test ERROR on next-20181029]
-[cannot apply to v4.19]
-[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+>=20
+> Best regards
+>    Peng Ma
+>>> +
+>>> +/*
+>>> + * Driver for NXP Layerscape Queue Direct Memory Access Controller
+>>> + *
+>>> + * Author:
+>>> + *  Wen He <wen.he_1@nxp.com>
+>>> + *  Jiaheng Fan <jiaheng.fan@nxp.com>
+>>> + *
+>>> + */
+>>> +
+>>> +#include <linux/module.h>
+>>> +#include <linux/delay.h>
+>>> +#include <linux/of_irq.h>
+>>> +#include <linux/of_platform.h>
+>>> +#include <linux/of_dma.h>
+>>> +#include <linux/dma-mapping.h>
+>>> +
+>>> +#include "virt-dma.h"
+>>> +#include "fsldma.h"
+>>> +
+>>> +/* Register related definition */
+>>> +#define FSL_QDMA_DMR                   0x0
+>>> +#define FSL_QDMA_DSR                   0x4
+>>> +#define FSL_QDMA_DEIER                 0xe00
+>>> +#define FSL_QDMA_DEDR                  0xe04
+>>> +#define FSL_QDMA_DECFDW0R              0xe10
+>>> +#define FSL_QDMA_DECFDW1R              0xe14
+>>> +#define FSL_QDMA_DECFDW2R              0xe18
+>>> +#define FSL_QDMA_DECFDW3R              0xe1c
+>>> +#define FSL_QDMA_DECFQIDR              0xe30
+>>> +#define FSL_QDMA_DECBR                 0xe34
+>>> +
+>>> +#define FSL_QDMA_BCQMR(x)              (0xc0 + 0x100 * (x))
+>>> +#define FSL_QDMA_BCQSR(x)              (0xc4 + 0x100 * (x))
+>>> +#define FSL_QDMA_BCQEDPA_SADDR(x)      (0xc8 + 0x100 * (x))
+>>> +#define FSL_QDMA_BCQDPA_SADDR(x)       (0xcc + 0x100 * (x))
+>>> +#define FSL_QDMA_BCQEEPA_SADDR(x)      (0xd0 + 0x100 * (x))
+>>> +#define FSL_QDMA_BCQEPA_SADDR(x)       (0xd4 + 0x100 * (x))
+>>> +#define FSL_QDMA_BCQIER(x)             (0xe0 + 0x100 * (x))
+>>> +#define FSL_QDMA_BCQIDR(x)             (0xe4 + 0x100 * (x))
+>>> +
+>>> +#define FSL_QDMA_SQDPAR                        0x80c
+>>> +#define FSL_QDMA_SQEPAR                        0x814
+>>> +#define FSL_QDMA_BSQMR                 0x800
+>>> +#define FSL_QDMA_BSQSR                 0x804
+>>> +#define FSL_QDMA_BSQICR                        0x828
+>>> +#define FSL_QDMA_CQMR                  0xa00
+>>> +#define FSL_QDMA_CQDSCR1               0xa08
+>>> +#define FSL_QDMA_CQDSCR2                0xa0c
+>>> +#define FSL_QDMA_CQIER                 0xa10
+>>> +#define FSL_QDMA_CQEDR                 0xa14
+>>> +#define FSL_QDMA_SQCCMR                        0xa20
+>>> +
+>>> +/* Registers for bit and genmask */
+>>> +#define FSL_QDMA_CQIDR_SQT             BIT(15)
+>>> +#define QDMA_CCDF_FOTMAT               BIT(29)
+>>> +#define QDMA_CCDF_SER                  BIT(30)
+>>> +#define QDMA_SG_FIN                    BIT(30)
+>>> +#define QDMA_SG_LEN_MASK               GENMASK(29, 0)
+>>> +#define QDMA_CCDF_MASK                 GENMASK(28, 20)
+>>> +
+>>> +#define FSL_QDMA_DEDR_CLEAR            GENMASK(31, 0)
+>>> +#define FSL_QDMA_BCQIDR_CLEAR          GENMASK(31, 0)
+>>> +#define FSL_QDMA_DEIER_CLEAR           GENMASK(31, 0)
+>>> +
+>>> +#define FSL_QDMA_BCQIER_CQTIE          BIT(15)
+>>> +#define FSL_QDMA_BCQIER_CQPEIE         BIT(23)
+>>> +#define FSL_QDMA_BSQICR_ICEN           BIT(31)
+>>> +
+>>> +#define FSL_QDMA_BSQICR_ICST(x)                ((x) << 16)
+>>> +#define FSL_QDMA_CQIER_MEIE            BIT(31)
+>>> +#define FSL_QDMA_CQIER_TEIE            BIT(0)
+>>> +#define FSL_QDMA_SQCCMR_ENTER_WM       BIT(21)
+>>> +
+>>> +#define FSL_QDMA_BCQMR_EN              BIT(31)
+>>> +#define FSL_QDMA_BCQMR_EI              BIT(30)
+>>> +#define FSL_QDMA_BCQMR_CD_THLD(x)      ((x) << 20)
+>>> +#define FSL_QDMA_BCQMR_CQ_SIZE(x)      ((x) << 16)
+>>> +
+>>> +#define FSL_QDMA_BCQSR_QF              BIT(16)
+>>> +#define FSL_QDMA_BCQSR_XOFF            BIT(0)
+>>> +
+>>> +#define FSL_QDMA_BSQMR_EN              BIT(31)
+>>> +#define FSL_QDMA_BSQMR_DI              BIT(30)
+>>> +#define FSL_QDMA_BSQMR_CQ_SIZE(x)      ((x) << 16)
+>>> +
+>>> +#define FSL_QDMA_BSQSR_QE              BIT(17)
+>>> +
+>>> +#define FSL_QDMA_DMR_DQD               BIT(30)
+>>> +#define FSL_QDMA_DSR_DB                BIT(31)
+>>> +
+>>> +/* Size related definition */
+>>> +#define FSL_QDMA_QUEUE_MAX             8
+>>> +#define FSL_QDMA_COMMAND_BUFFER_SIZE   64
+>>> +#define FSL_QDMA_DESCRIPTOR_BUFFER_SIZE 32
+>>> +#define FSL_QDMA_CIRCULAR_DESC_SIZE_MIN        64
+>>> +#define FSL_QDMA_CIRCULAR_DESC_SIZE_MAX        16384
+>>> +#define FSL_QDMA_QUEUE_NUM_MAX         8
+>>> +
+>>> +/* Field definition for CMD */
+>>> +#define FSL_QDMA_CMD_RWTTYPE           0x4
+>>> +#define FSL_QDMA_CMD_LWC                0x2
+>>> +#define FSL_QDMA_CMD_RWTTYPE_OFFSET    28
+>>> +#define FSL_QDMA_CMD_NS_OFFSET         27
+>>> +#define FSL_QDMA_CMD_DQOS_OFFSET       24
+>>> +#define FSL_QDMA_CMD_WTHROTL_OFFSET    20
+>>> +#define FSL_QDMA_CMD_DSEN_OFFSET       19
+>>> +#define FSL_QDMA_CMD_LWC_OFFSET                16
+>>> +
+>>> +/* Field definition for Descriptor offset */
+>>> +#define QDMA_CCDF_STATUS               20
+>>> +#define QDMA_CCDF_OFFSET               20
+>>> +
+>>> +/* Field definition for safe loop count*/
+>>> +#define FSL_QDMA_HALT_COUNT            1500
+>>> +#define FSL_QDMA_MAX_SIZE              16385
+>>> +#define        FSL_QDMA_COMP_TIMEOUT           1000
+>>> +#define FSL_COMMAND_QUEUE_OVERFLLOW    10
+>>> +
+>>> +#define FSL_QDMA_BLOCK_BASE_OFFSET(fsl_qdma_engine, x)
+>> \
+>>> +       (((fsl_qdma_engine)->block_offset) * (x))
+>>> +
+>>> +/**
+>>> + * struct fsl_qdma_format - This is the struct holding describing compo=
+und
+>>> + *                         descriptor format with qDMA.
+>>> + * @status:                Command status and enqueue status
+>> notification.
+>>> + * @cfg:                   Frame offset and frame format.
+>>> + * @addr_lo:               Holding the compound descriptor of the
+>> lower
+>>> + *                         32-bits address in memory 40-bit address.
+>>> + * @addr_hi:               Same as above member, but point high
+>> 8-bits in
+>>> + *                         memory 40-bit address.
+>>> + * @__reserved1:           Reserved field.
+>>> + * @cfg8b_w1:              Compound descriptor command queue
+>> origin produced
+>>> + *                         by qDMA and dynamic debug field.
+>>> + * @data                   Pointer to the memory 40-bit address,
+>> describes DMA
+>>> + *                         source information and DMA destination
+>> information.
+>>> + */
+>>> +struct fsl_qdma_format {
+>>> +       __le32 status;
+>>> +       __le32 cfg;
+>>> +       union {
+>>> +               struct {
+>>> +                       __le32 addr_lo;
+>>> +                       u8 addr_hi;
+>>> +                       u8 __reserved1[2];
+>>> +                       u8 cfg8b_w1;
+>>> +               } __packed;
+>>> +               __le64 data;
+>>> +       };
+>>> +} __packed;
+>>> +
+>>> +/* qDMA status notification pre information */
+>>> +struct fsl_pre_status {
+>>> +       u64 addr;
+>>> +       u8 queue;
+>>> +};
+>>> +
+>>> +static DEFINE_PER_CPU(struct fsl_pre_status, pre);
+>>> +
+>>> +struct fsl_qdma_chan {
+>>> +       struct virt_dma_chan            vchan;
+>>> +       struct virt_dma_desc            vdesc;
+>>> +       enum dma_status                 status;
+>>> +       struct fsl_qdma_engine          *qdma;
+>>> +       struct fsl_qdma_queue           *queue;
+>>> +};
+>>> +
+>>> +struct fsl_qdma_queue {
+>>> +       struct fsl_qdma_format  *virt_head;
+>>> +       struct fsl_qdma_format  *virt_tail;
+>>> +       struct list_head        comp_used;
+>>> +       struct list_head        comp_free;
+>>> +       struct dma_pool         *comp_pool;
+>>> +       struct dma_pool         *desc_pool;
+>>> +       spinlock_t              queue_lock;
+>>> +       dma_addr_t              bus_addr;
+>>> +       u32                     n_cq;
+>>> +       u32                     id;
+>>> +       struct fsl_qdma_format  *cq;
+>>> +       void __iomem            *block_base;
+>>> +};
+>>> +
+>>> +struct fsl_qdma_comp {
+>>> +       dma_addr_t              bus_addr;
+>>> +       dma_addr_t              desc_bus_addr;
+>>> +       struct fsl_qdma_format  *virt_addr;
+>>> +       struct fsl_qdma_format  *desc_virt_addr;
+>>> +       struct fsl_qdma_chan    *qchan;
+>>> +       struct virt_dma_desc    vdesc;
+>>> +       struct list_head        list;
+>>> +};
+>>> +
+>>> +struct fsl_qdma_engine {
+>>> +       struct dma_device       dma_dev;
+>>> +       void __iomem            *ctrl_base;
+>>> +       void __iomem            *status_base;
+>>> +       void __iomem            *block_base;
+>>> +       u32                     n_chans;
+>>> +       u32                     n_queues;
+>>> +       struct mutex            fsl_qdma_mutex;
+>>> +       int                     error_irq;
+>>> +       int                     *queue_irq;
+>>> +       u32                     feature;
+>>> +       struct fsl_qdma_queue   *queue;
+>>> +       struct fsl_qdma_queue   **status;
+>>> +       struct fsl_qdma_chan    *chans;
+>>> +       int                     block_number;
+>>> +       int                     block_offset;
+>>> +       int                     irq_base;
+>>> +       int                     desc_allocated;
+>>> +
+>>> +};
+>>> +
+>>> +static inline u64
+>>> +qdma_ccdf_addr_get64(const struct fsl_qdma_format *ccdf)
+>>> +{
+>>> +       return le64_to_cpu(ccdf->data) & (U64_MAX >> 24);
+>>> +}
+>>> +
+>>> +static inline void
+>>> +qdma_desc_addr_set64(struct fsl_qdma_format *ccdf, u64 addr)
+>>> +{
+>>> +       ccdf->addr_hi =3D upper_32_bits(addr);
+>>> +       ccdf->addr_lo =3D cpu_to_le32(lower_32_bits(addr));
+>>> +}
+>>> +
+>>> +static inline u8
+>>> +qdma_ccdf_get_queue(const struct fsl_qdma_format *ccdf)
+>>> +{
+>>> +       return ccdf->cfg8b_w1 & U8_MAX;
+>>> +}
+>>> +
+>>> +static inline int
+>>> +qdma_ccdf_get_offset(const struct fsl_qdma_format *ccdf)
+>>> +{
+>>> +       return (le32_to_cpu(ccdf->cfg) & QDMA_CCDF_MASK) >>
+>> QDMA_CCDF_OFFSET;
+>>> +}
+>>> +
+>>> +static inline void
+>>> +qdma_ccdf_set_format(struct fsl_qdma_format *ccdf, int offset)
+>>> +{
+>>> +       ccdf->cfg =3D cpu_to_le32(QDMA_CCDF_FOTMAT | offset);
+>>> +}
+>>> +
+>>> +static inline int
+>>> +qdma_ccdf_get_status(const struct fsl_qdma_format *ccdf)
+>>> +{
+>>> +       return (le32_to_cpu(ccdf->status) & QDMA_CCDF_MASK) >>
+>> QDMA_CCDF_STATUS;
+>>> +}
+>>> +
+>>> +static inline void
+>>> +qdma_ccdf_set_ser(struct fsl_qdma_format *ccdf, int status)
+>>> +{
+>>> +       ccdf->status =3D cpu_to_le32(QDMA_CCDF_SER | status);
+>>> +}
+>>> +
+>>> +static inline void qdma_csgf_set_len(struct fsl_qdma_format *csgf, int l=
+en)
+>>> +{
+>>> +       csgf->cfg =3D cpu_to_le32(len & QDMA_SG_LEN_MASK);
+>>> +}
+>>> +
+>>> +static inline void qdma_csgf_set_f(struct fsl_qdma_format *csgf, int le=
+n)
+>>> +{
+>>> +       csgf->cfg =3D cpu_to_le32(QDMA_SG_FIN | (len &
+>> QDMA_SG_LEN_MASK));
+>>> +}
+>>> +
+>>> +static u32 qdma_readl(struct fsl_qdma_engine *qdma, void __iomem
+>> *addr)
+>>> +{
+>>> +       return FSL_DMA_IN(qdma, addr, 32);
+>>> +}
+>>> +
+>>> +static void qdma_writel(struct fsl_qdma_engine *qdma, u32 val,
+>>> +                       void __iomem *addr)
+>>> +{
+>>> +       FSL_DMA_OUT(qdma, addr, val, 32);
+>>> +}
+>>> +
+>>> +static struct fsl_qdma_chan *to_fsl_qdma_chan(struct dma_chan *chan)
+>>> +{
+>>> +       return container_of(chan, struct fsl_qdma_chan, vchan.chan);
+>>> +}
+>>> +
+>>> +static struct fsl_qdma_comp *to_fsl_qdma_comp(struct virt_dma_desc *vd)=
 
-url:    https://github.com/0day-ci/linux/commits/Russell-Currey/Guarded-Userspace-Access-Prevention-on-Radix/20181026-145017
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
-config: powerpc-ppc64e_defconfig (attached as .config)
-compiler: powerpc64-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
-reproduce:
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # save the attached .config to linux build tree
-        GCC_VERSION=7.2.0 make.cross ARCH=powerpc 
+>>> +{
+>>> +       return container_of(vd, struct fsl_qdma_comp, vdesc);
+>>> +}
+>>> +
+>>> +static void fsl_qdma_free_chan_resources(struct dma_chan *chan)
+>>> +{
+>>> +       struct fsl_qdma_chan *fsl_chan =3D to_fsl_qdma_chan(chan);
+>>> +       struct fsl_qdma_queue *fsl_queue =3D fsl_chan->queue;
+>>> +       struct fsl_qdma_engine *fsl_qdma =3D fsl_chan->qdma;
+>>> +       struct fsl_qdma_comp *comp_temp, *_comp_temp;
+>>> +       unsigned long flags;
+>>> +       LIST_HEAD(head);
+>>> +
+>>> +       spin_lock_irqsave(&fsl_chan->vchan.lock, flags);
+>>> +       vchan_get_all_descriptors(&fsl_chan->vchan, &head);
+>>> +       spin_unlock_irqrestore(&fsl_chan->vchan.lock, flags);
+>>> +
+>>> +       vchan_dma_desc_free_list(&fsl_chan->vchan, &head);
+>>> +
+>>> +       if (!fsl_queue->comp_pool && !fsl_queue->comp_pool)
+>>> +               return;
+>>> +
+>>> +       list_for_each_entry_safe(comp_temp, _comp_temp,
+>>> +                                &fsl_queue->comp_used, list) {
+>>> +               dma_pool_free(fsl_queue->comp_pool,
+>>> +                             comp_temp->virt_addr,
+>>> +                             comp_temp->bus_addr);
+>>> +               dma_pool_free(fsl_queue->desc_pool,
+>>> +                             comp_temp->desc_virt_addr,
+>>> +                             comp_temp->desc_bus_addr);
+>>> +               list_del(&comp_temp->list);
+>>> +               kfree(comp_temp);
+>>> +       }
+>>> +
+>>> +       list_for_each_entry_safe(comp_temp, _comp_temp,
+>>> +                                &fsl_queue->comp_free, list) {
+>>> +               dma_pool_free(fsl_queue->comp_pool,
+>>> +                             comp_temp->virt_addr,
+>>> +                             comp_temp->bus_addr);
+>>> +               dma_pool_free(fsl_queue->desc_pool,
+>>> +                             comp_temp->desc_virt_addr,
+>>> +                             comp_temp->desc_bus_addr);
+>>> +               list_del(&comp_temp->list);
+>>> +               kfree(comp_temp);
+>>> +       }
+>>> +
+>>> +       dma_pool_destroy(fsl_queue->comp_pool);
+>>> +       dma_pool_destroy(fsl_queue->desc_pool);
+>>> +
+>>> +       fsl_qdma->desc_allocated--;
+>>> +       fsl_queue->comp_pool =3D NULL;
+>>> +       fsl_queue->desc_pool =3D NULL;
+>>> +}
+>>> +
+>>> +static void fsl_qdma_comp_fill_memcpy(struct fsl_qdma_comp *fsl_comp,
+>>> +                                     dma_addr_t dst, dma_addr_t
+>> src, u32 len)
+>>> +{
+>>> +       struct fsl_qdma_format *sdf, *ddf;
+>>> +       struct fsl_qdma_format *ccdf, *csgf_desc, *csgf_src, *csgf_dest;=
 
-All error/warnings (new ones prefixed by >>):
+>>> +
+>>> +       ccdf =3D fsl_comp->virt_addr;
+>>> +       csgf_desc =3D fsl_comp->virt_addr + 1;
+>>> +       csgf_src =3D fsl_comp->virt_addr + 2;
+>>> +       csgf_dest =3D fsl_comp->virt_addr + 3;
+>>> +       sdf =3D fsl_comp->desc_virt_addr;
+>>> +       ddf =3D fsl_comp->desc_virt_addr + 1;
+>>> +
+>>> +       memset(fsl_comp->virt_addr, 0,
+>> FSL_QDMA_COMMAND_BUFFER_SIZE);
+>>> +       memset(fsl_comp->desc_virt_addr, 0,
+>> FSL_QDMA_DESCRIPTOR_BUFFER_SIZE);
+>>> +       /* Head Command Descriptor(Frame Descriptor) */
+>>> +       qdma_desc_addr_set64(ccdf, fsl_comp->bus_addr + 16);
+>>> +       qdma_ccdf_set_format(ccdf, qdma_ccdf_get_offset(ccdf));
+>>> +       qdma_ccdf_set_ser(ccdf, qdma_ccdf_get_status(ccdf));
+>>> +       /* Status notification is enqueued to status queue. */
+>>> +       /* Compound Command Descriptor(Frame List Table) */
+>>> +       qdma_desc_addr_set64(csgf_desc, fsl_comp->desc_bus_addr);
+>>> +       /* It must be 32 as Compound S/G Descriptor */
+>>> +       qdma_csgf_set_len(csgf_desc, 32);
+>>> +       qdma_desc_addr_set64(csgf_src, src);
+>>> +       qdma_csgf_set_len(csgf_src, len);
+>>> +       qdma_desc_addr_set64(csgf_dest, dst);
+>>> +       qdma_csgf_set_len(csgf_dest, len);
+>>> +       /* This entry is the last entry. */
+>>> +       qdma_csgf_set_f(csgf_dest, len);
+>>> +       /* Descriptor Buffer */
+>>> +       sdf->data =3D
+>>> +               cpu_to_le64(FSL_QDMA_CMD_RWTTYPE <<
+>>> +                           FSL_QDMA_CMD_RWTTYPE_OFFSET);
+>>> +       ddf->data =3D
+>>> +               cpu_to_le64(FSL_QDMA_CMD_RWTTYPE <<
+>>> +                           FSL_QDMA_CMD_RWTTYPE_OFFSET);
+>>> +       ddf->data |=3D
+>>> +               cpu_to_le64(FSL_QDMA_CMD_LWC <<
+>> FSL_QDMA_CMD_LWC_OFFSET);
+>>> +}
+>>> +
+>>> +/*
+>>> + * Pre-request full command descriptor for enqueue.
+>>> + */
+>>> +static int fsl_qdma_pre_request_enqueue_desc(struct fsl_qdma_queue
+>> *queue)
+>>> +{
+>>> +       int i;
+>>> +       struct fsl_qdma_comp *comp_temp, *_comp_temp;
+>>> +
+>>> +       for (i =3D 0; i < queue->n_cq + FSL_COMMAND_QUEUE_OVERFLLOW;
+>> i++) {
+>>> +               comp_temp =3D kzalloc(sizeof(*comp_temp),
+>> GFP_KERNEL);
+>>> +               if (!comp_temp)
+>>> +                       goto err_alloc;
+>>> +               comp_temp->virt_addr =3D
+>>> +                       dma_pool_alloc(queue->comp_pool,
+>> GFP_KERNEL,
+>>> +                                      &comp_temp->bus_addr);
+>>> +               if (!comp_temp->virt_addr)
+>>> +                       goto err_dma_alloc;
+>>> +
+>>> +               comp_temp->desc_virt_addr =3D
+>>> +                       dma_pool_alloc(queue->desc_pool,
+>> GFP_KERNEL,
+>>> +
+>> &comp_temp->desc_bus_addr);
+>>> +               if (!comp_temp->desc_virt_addr)
+>>> +                       goto err_desc_dma_alloc;
+>>> +
+>>> +               list_add_tail(&comp_temp->list, &queue->comp_free);
+>>> +       }
+>>> +
+>>> +       return 0;
+>>> +
+>>> +err_desc_dma_alloc:
+>>> +       dma_pool_free(queue->comp_pool, comp_temp->virt_addr,
+>>> +                     comp_temp->bus_addr);
+>>> +
+>>> +err_dma_alloc:
+>>> +       kfree(comp_temp);
+>>> +
+>>> +err_alloc:
+>>> +       list_for_each_entry_safe(comp_temp, _comp_temp,
+>>> +                                &queue->comp_free, list) {
+>>> +               if (comp_temp->virt_addr)
+>>> +                       dma_pool_free(queue->comp_pool,
+>>> +                                     comp_temp->virt_addr,
+>>> +                                     comp_temp->bus_addr);
+>>> +               if (comp_temp->desc_virt_addr)
+>>> +                       dma_pool_free(queue->desc_pool,
+>>> +                                     comp_temp->desc_virt_addr,
+>>> +
+>> comp_temp->desc_bus_addr);
+>>> +
+>>> +               list_del(&comp_temp->list);
+>>> +               kfree(comp_temp);
+>>> +       }
+>>> +
+>>> +       return -ENOMEM;
+>>> +}
+>>> +
+>>> +/*
+>>> + * Request a command descriptor for enqueue.
+>>> + */
+>>> +static struct fsl_qdma_comp
+>>> +*fsl_qdma_request_enqueue_desc(struct fsl_qdma_chan *fsl_chan)
+>>> +{
+>>> +       unsigned long flags;
+>>> +       struct fsl_qdma_comp *comp_temp;
+>>> +       int timeout =3D FSL_QDMA_COMP_TIMEOUT;
+>>> +       struct fsl_qdma_queue *queue =3D fsl_chan->queue;
+>>> +
+>>> +       while (timeout--) {
+>>> +               spin_lock_irqsave(&queue->queue_lock, flags);
+>>> +               if (!list_empty(&queue->comp_free)) {
+>>> +                       comp_temp =3D
+>> list_first_entry(&queue->comp_free,
+>>> +                                                    struct
+>> fsl_qdma_comp,
+>>> +                                                    list);
+>>> +                       list_del(&comp_temp->list);
+>>> +
+>>> +                       spin_unlock_irqrestore(&queue->queue_lock,
+>> flags);
+>>> +                       comp_temp->qchan =3D fsl_chan;
+>>> +                       return comp_temp;
+>>> +               }
+>>> +               spin_unlock_irqrestore(&queue->queue_lock, flags);
+>>> +               udelay(1);
+>>> +       }
+>>> +
+>>> +       return NULL;
+>>> +}
+>>> +
+>>> +static struct fsl_qdma_queue
+>>> +*fsl_qdma_alloc_queue_resources(struct platform_device *pdev,
+>>> +                               struct fsl_qdma_engine *fsl_qdma)
+>>> +{
+>>> +       int ret, len, i, j;
+>>> +       int queue_num, block_number;
+>>> +       unsigned int queue_size[FSL_QDMA_QUEUE_MAX];
+>>> +       struct fsl_qdma_queue *queue_head, *queue_temp;
+>>> +
+>>> +       queue_num =3D fsl_qdma->n_queues;
+>>> +       block_number =3D fsl_qdma->block_number;
+>>> +
+>>> +       if (queue_num > FSL_QDMA_QUEUE_MAX)
+>>> +               queue_num =3D FSL_QDMA_QUEUE_MAX;
+>>> +       len =3D sizeof(*queue_head) * queue_num * block_number;
+>>> +       queue_head =3D devm_kzalloc(&pdev->dev, len, GFP_KERNEL);
+>>> +       if (!queue_head)
+>>> +               return NULL;
+>>> +
+>>> +       ret =3D device_property_read_u32_array(&pdev->dev, "queue-sizes"=
+,
+>>> +                                            queue_size,
+>> queue_num);
+>>> +       if (ret) {
+>>> +               dev_err(&pdev->dev, "Can't get queue-sizes.\n");
+>>> +               return NULL;
+>>> +       }
+>>> +       for (j =3D 0; j < block_number; j++) {
+>>> +               for (i =3D 0; i < queue_num; i++) {
+>>> +                       if (queue_size[i] >
+>> FSL_QDMA_CIRCULAR_DESC_SIZE_MAX ||
+>>> +                           queue_size[i] <
+>> FSL_QDMA_CIRCULAR_DESC_SIZE_MIN) {
+>>> +                               dev_err(&pdev->dev,
+>>> +                                       "Get wrong
+>> queue-sizes.\n");
+>>> +                               return NULL;
+>>> +                       }
+>>> +                       queue_temp =3D queue_head + i + (j *
+>> queue_num);
+>>> +
+>>> +                       queue_temp->cq =3D
+>>> +                       dma_alloc_coherent(&pdev->dev,
+>>> +                                          sizeof(struct
+>> fsl_qdma_format) *
+>>> +                                          queue_size[i],
+>>> +
+>> &queue_temp->bus_addr,
+>>> +                                          GFP_KERNEL);
+>>> +                       if (!queue_temp->cq)
+>>> +                               return NULL;
+>>> +                       queue_temp->block_base =3D
+>> fsl_qdma->block_base +
+>>> +
+>> FSL_QDMA_BLOCK_BASE_OFFSET(fsl_qdma, j);
+>>> +                       queue_temp->n_cq =3D queue_size[i];
+>>> +                       queue_temp->id =3D i;
+>>> +                       queue_temp->virt_head =3D queue_temp->cq;
+>>> +                       queue_temp->virt_tail =3D queue_temp->cq;
+>>> +                       /*
+>>> +                        * List for queue command buffer
+>>> +                        */
+>>> +                       INIT_LIST_HEAD(&queue_temp->comp_used);
+>>> +                       spin_lock_init(&queue_temp->queue_lock);
+>>> +               }
+>>> +       }
+>>> +       return queue_head;
+>>> +}
+>>> +
+>>> +static struct fsl_qdma_queue
+>>> +*fsl_qdma_prep_status_queue(struct platform_device *pdev)
+>>> +{
+>>> +       int ret;
+>>> +       unsigned int status_size;
+>>> +       struct fsl_qdma_queue *status_head;
+>>> +       struct device_node *np =3D pdev->dev.of_node;
+>>> +
+>>> +       ret =3D of_property_read_u32(np, "status-sizes", &status_size);
+>>> +       if (ret) {
+>>> +               dev_err(&pdev->dev, "Can't get status-sizes.\n");
+>>> +               return NULL;
+>>> +       }
+>>> +       if (status_size > FSL_QDMA_CIRCULAR_DESC_SIZE_MAX ||
+>>> +           status_size < FSL_QDMA_CIRCULAR_DESC_SIZE_MIN) {
+>>> +               dev_err(&pdev->dev, "Get wrong status_size.\n");
+>>> +               return NULL;
+>>> +       }
+>>> +       status_head =3D devm_kzalloc(&pdev->dev,
+>>> +                                  sizeof(*status_head),
+>> GFP_KERNEL);
+>>> +       if (!status_head)
+>>> +               return NULL;
+>>> +
+>>> +       /*
+>>> +        * Buffer for queue command
+>>> +        */
+>>> +       status_head->cq =3D dma_alloc_coherent(&pdev->dev,
+>>> +                                            sizeof(struct
+>> fsl_qdma_format) *
+>>> +                                            status_size,
+>>> +
+>> &status_head->bus_addr,
+>>> +                                            GFP_KERNEL);
+>>> +       if (!status_head->cq) {
+>>> +               devm_kfree(&pdev->dev, status_head);
+>>> +               return NULL;
+>>> +       }
+>>> +       status_head->n_cq =3D status_size;
+>>> +       status_head->virt_head =3D status_head->cq;
+>>> +       status_head->virt_tail =3D status_head->cq;
+>>> +       status_head->comp_pool =3D NULL;
+>>> +
+>>> +       return status_head;
+>>> +}
+>>> +
+>>> +static int fsl_qdma_halt(struct fsl_qdma_engine *fsl_qdma)
+>>> +{
+>>> +       u32 reg;
+>>> +       int i, j, count =3D FSL_QDMA_HALT_COUNT;
+>>> +       void __iomem *block, *ctrl =3D fsl_qdma->ctrl_base;
+>>> +
+>>> +       /* Disable the command queue and wait for idle state. */
+>>> +       reg =3D qdma_readl(fsl_qdma, ctrl + FSL_QDMA_DMR);
+>>> +       reg |=3D FSL_QDMA_DMR_DQD;
+>>> +       qdma_writel(fsl_qdma, reg, ctrl + FSL_QDMA_DMR);
+>>> +       for (j =3D 0; j < fsl_qdma->block_number; j++) {
+>>> +               block =3D fsl_qdma->block_base +
+>>> +                       FSL_QDMA_BLOCK_BASE_OFFSET(fsl_qdma, j);
+>>> +               for (i =3D 0; i < FSL_QDMA_QUEUE_NUM_MAX; i++)
+>>> +                       qdma_writel(fsl_qdma, 0, block +
+>> FSL_QDMA_BCQMR(i));
+>>> +       }
+>>> +       while (1) {
+>>> +               reg =3D qdma_readl(fsl_qdma, ctrl + FSL_QDMA_DSR);
+>>> +               if (!(reg & FSL_QDMA_DSR_DB))
+>>> +                       break;
+>>> +               if (count-- < 0)
+>>> +                       return -EBUSY;
+>>> +               udelay(100);
+>>> +       }
+>>> +
+>>> +       for (j =3D 0; j < fsl_qdma->block_number; j++) {
+>>> +               block =3D fsl_qdma->block_base +
+>>> +                       FSL_QDMA_BLOCK_BASE_OFFSET(fsl_qdma, j);
+>>> +
+>>> +               /* Disable status queue. */
+>>> +               qdma_writel(fsl_qdma, 0, block + FSL_QDMA_BSQMR);
+>>> +
+>>> +               /*
+>>> +                * clear the command queue interrupt detect register for=
 
-   In file included from arch/powerpc/kernel/asm-offsets.c:31:0:
-   arch/powerpc/kernel/asm-offsets.c: In function 'main':
->> include/linux/compiler_types.h:229:35: error: 'struct paca_struct' has no member named 'user_access_allowed'
-    #define __compiler_offsetof(a, b) __builtin_offsetof(a, b)
-                                      ^
-   include/linux/kbuild.h:6:62: note: in definition of macro 'DEFINE'
-     asm volatile("\n.ascii \"->" #sym " %0 " #val "\"" : : "i" (val))
-                                                                 ^~~
-   include/linux/stddef.h:17:32: note: in expansion of macro '__compiler_offsetof'
-    #define offsetof(TYPE, MEMBER) __compiler_offsetof(TYPE, MEMBER)
-                                   ^~~~~~~~~~~~~~~~~~~
->> include/linux/kbuild.h:11:14: note: in expansion of macro 'offsetof'
-     DEFINE(sym, offsetof(struct str, mem))
-                 ^~~~~~~~
->> arch/powerpc/kernel/asm-offsets.c:263:2: note: in expansion of macro 'OFFSET'
-     OFFSET(PACA_USER_ACCESS_ALLOWED, paca_struct, user_access_allowed);
-     ^~~~~~
-   make[2]: *** [arch/powerpc/kernel/asm-offsets.s] Error 1
-   make[2]: Target '__build' not remade because of errors.
-   make[1]: *** [prepare0] Error 2
-   make[1]: Target 'prepare' not remade because of errors.
-   make: *** [sub-make] Error 2
+>>> +                * all queues.
+>>> +                */
+>>> +               qdma_writel(fsl_qdma, FSL_QDMA_BCQIDR_CLEAR,
+>>> +                           block + FSL_QDMA_BCQIDR(0));
+>>> +       }
+>>> +
+>>> +       return 0;
+>>> +}
+>>> +
+>>> +static int
+>>> +fsl_qdma_queue_transfer_complete(struct fsl_qdma_engine *fsl_qdma,
+>>> +                                void *block,
+>>> +                                int id)
+>>> +{
+>>> +       bool duplicate;
+>>> +       u32 reg, i, count;
+>>> +       struct fsl_qdma_queue *temp_queue;
+>>> +       struct fsl_qdma_format *status_addr;
+>>> +       struct fsl_qdma_comp *fsl_comp =3D NULL;
+>>> +       struct fsl_qdma_queue *fsl_queue =3D fsl_qdma->queue;
+>>> +       struct fsl_qdma_queue *fsl_status =3D fsl_qdma->status[id];
+>>> +
+>>> +       count =3D FSL_QDMA_MAX_SIZE;
+>>> +
+>>> +       while (count--) {
+>>> +               duplicate =3D 0;
+>>> +               reg =3D qdma_readl(fsl_qdma, block + FSL_QDMA_BSQSR);
+>>> +               if (reg & FSL_QDMA_BSQSR_QE)
+>>> +                       return 0;
+>>> +
+>>> +               status_addr =3D fsl_status->virt_head;
+>>> +
+>>> +               if (qdma_ccdf_get_queue(status_addr) =3D=3D
+>>> +                  __this_cpu_read(pre.queue) &&
+>>> +                       qdma_ccdf_addr_get64(status_addr) =3D=3D
+>>> +                       __this_cpu_read(pre.addr))
+>>> +                       duplicate =3D 1;
+>>> +               i =3D qdma_ccdf_get_queue(status_addr) +
+>>> +                       id * fsl_qdma->n_queues;
+>>> +               __this_cpu_write(pre.addr,
+>> qdma_ccdf_addr_get64(status_addr));
+>>> +               __this_cpu_write(pre.queue,
+>> qdma_ccdf_get_queue(status_addr));
+>>> +               temp_queue =3D fsl_queue + i;
+>>> +
+>>> +               spin_lock(&temp_queue->queue_lock);
+>>> +               if (list_empty(&temp_queue->comp_used)) {
+>>> +                       if (!duplicate) {
+>>> +
+>> spin_unlock(&temp_queue->queue_lock);
+>>> +                               return -EAGAIN;
+>>> +                       }
+>>> +               } else {
+>>> +                       fsl_comp =3D
+>> list_first_entry(&temp_queue->comp_used,
+>>> +                                                   struct
+>> fsl_qdma_comp, list);
+>>> +                       if (fsl_comp->bus_addr + 16 !=3D
+>>> +                               __this_cpu_read(pre.addr)) {
+>>> +                               if (!duplicate) {
+>>> +
+>> spin_unlock(&temp_queue->queue_lock);
+>>> +                                       return -EAGAIN;
+>>> +                               }
+>>> +                       }
+>>> +               }
+>>> +
+>>> +               if (duplicate) {
+>>> +                       reg =3D qdma_readl(fsl_qdma, block +
+>> FSL_QDMA_BSQMR);
+>>> +                       reg |=3D FSL_QDMA_BSQMR_DI;
+>>> +                       qdma_desc_addr_set64(status_addr, 0x0);
+>>> +                       fsl_status->virt_head++;
+>>> +                       if (fsl_status->virt_head =3D=3D fsl_status->cq
+>>> +                                                  +
+>> fsl_status->n_cq)
+>>> +                               fsl_status->virt_head =3D
+>> fsl_status->cq;
+>>> +                       qdma_writel(fsl_qdma, reg, block +
+>> FSL_QDMA_BSQMR);
+>>> +                       spin_unlock(&temp_queue->queue_lock);
+>>> +                       continue;
+>>> +               }
+>>> +               list_del(&fsl_comp->list);
+>>> +
+>>> +               reg =3D qdma_readl(fsl_qdma, block +
+>> FSL_QDMA_BSQMR);
+>>> +               reg |=3D FSL_QDMA_BSQMR_DI;
+>>> +               qdma_desc_addr_set64(status_addr, 0x0);
+>>> +               fsl_status->virt_head++;
+>>> +               if (fsl_status->virt_head =3D=3D fsl_status->cq +
+>> fsl_status->n_cq)
+>>> +                       fsl_status->virt_head =3D fsl_status->cq;
+>>> +               qdma_writel(fsl_qdma, reg, block +
+>> FSL_QDMA_BSQMR);
+>>> +               spin_unlock(&temp_queue->queue_lock);
+>>> +
+>>> +               spin_lock(&fsl_comp->qchan->vchan.lock);
+>>> +               vchan_cookie_complete(&fsl_comp->vdesc);
+>>> +               fsl_comp->qchan->status =3D DMA_COMPLETE;
+>>> +               spin_unlock(&fsl_comp->qchan->vchan.lock);
+>>> +       }
+>>> +
+>>> +       return 0;
+>>> +}
+>>> +
+>>> +static irqreturn_t fsl_qdma_error_handler(int irq, void *dev_id)
+>>> +{
+>>> +       unsigned int intr;
+>>> +       struct fsl_qdma_engine *fsl_qdma =3D dev_id;
+>>> +       void __iomem *status =3D fsl_qdma->status_base;
+>>> +
+>>> +       intr =3D qdma_readl(fsl_qdma, status + FSL_QDMA_DEDR);
+>>> +
+>>> +       if (intr) {
+>>> +               dev_err(fsl_qdma->dma_dev.dev, "DMA transaction
+>> error!\n");
+>>> +               return IRQ_NONE;
+>>> +       }
+>>> +
+>>> +       qdma_writel(fsl_qdma, FSL_QDMA_DEDR_CLEAR, status +
+>> FSL_QDMA_DEDR);
+>>> +       return IRQ_HANDLED;
+>>> +}
+>>> +
+>>> +static irqreturn_t fsl_qdma_queue_handler(int irq, void *dev_id)
+>>> +{
+>>> +       int id;
+>>> +       unsigned int intr, reg;
+>>> +       struct fsl_qdma_engine *fsl_qdma =3D dev_id;
+>>> +       void __iomem *block, *ctrl =3D fsl_qdma->ctrl_base;
+>>> +
+>>> +       id =3D irq - fsl_qdma->irq_base;
+>>> +       if (id < 0 && id > fsl_qdma->block_number) {
+>>> +               dev_err(fsl_qdma->dma_dev.dev,
+>>> +                       "irq %d is wrong irq_base is %d\n",
+>>> +                       irq, fsl_qdma->irq_base);
+>>> +       }
+>>> +
+>>> +       block =3D fsl_qdma->block_base +
+>>> +               FSL_QDMA_BLOCK_BASE_OFFSET(fsl_qdma, id);
+>>> +
+>>> +       intr =3D qdma_readl(fsl_qdma, block + FSL_QDMA_BCQIDR(0));
+>>> +
+>>> +       if ((intr & FSL_QDMA_CQIDR_SQT) !=3D 0)
+>>> +               intr =3D fsl_qdma_queue_transfer_complete(fsl_qdma,
+>> block, id);
+>>> +
+>>> +       if (intr !=3D 0) {
+>>> +               reg =3D qdma_readl(fsl_qdma, ctrl + FSL_QDMA_DMR);
+>>> +               reg |=3D FSL_QDMA_DMR_DQD;
+>>> +               qdma_writel(fsl_qdma, reg, ctrl + FSL_QDMA_DMR);
+>>> +               qdma_writel(fsl_qdma, 0, block +
+>> FSL_QDMA_BCQIER(0));
+>>> +               dev_err(fsl_qdma->dma_dev.dev, "QDMA: status
+>> err!\n");
+>>> +       }
+>>> +
+>>> +       /* Clear all detected events and interrupts. */
+>>> +       qdma_writel(fsl_qdma, FSL_QDMA_BCQIDR_CLEAR,
+>>> +                   block + FSL_QDMA_BCQIDR(0));
+>>> +
+>>> +       return IRQ_HANDLED;
+>>> +}
+>>> +
+>>> +static int
+>>> +fsl_qdma_irq_init(struct platform_device *pdev,
+>>> +                 struct fsl_qdma_engine *fsl_qdma)
+>>> +{
+>>> +       int i;
+>>> +       int cpu;
+>>> +       int ret;
+>>> +       char irq_name[20];
+>>> +
+>>> +       fsl_qdma->error_irq =3D
+>>> +               platform_get_irq_byname(pdev, "qdma-error");
+>>> +       if (fsl_qdma->error_irq < 0) {
+>>> +               dev_err(&pdev->dev, "Can't get qdma controller irq.\n");=
 
-vim +229 include/linux/compiler_types.h
+>>> +               return fsl_qdma->error_irq;
+>>> +       }
+>>> +
+>>> +       ret =3D devm_request_irq(&pdev->dev, fsl_qdma->error_irq,
+>>> +                              fsl_qdma_error_handler, 0,
+>>> +                              "qDMA error", fsl_qdma);
+>>> +       if (ret) {
+>>> +               dev_err(&pdev->dev, "Can't register qDMA controller
+>> IRQ.\n");
+>>> +               return  ret;
+>>> +       }
+>>> +
+>>> +       for (i =3D 0; i < fsl_qdma->block_number; i++) {
+>>> +               sprintf(irq_name, "qdma-queue%d", i);
+>>> +               fsl_qdma->queue_irq[i] =3D
+>>> +                               platform_get_irq_byname(pdev,
+>> irq_name);
+>>> +
+>>> +               if (fsl_qdma->queue_irq[i] < 0) {
+>>> +                       dev_err(&pdev->dev,
+>>> +                               "Can't get qdma queue %d irq.\n", i);
+>>> +                       return fsl_qdma->queue_irq[i];
+>>> +               }
+>>> +
+>>> +               ret =3D devm_request_irq(&pdev->dev,
+>>> +                                      fsl_qdma->queue_irq[i],
+>>> +                                      fsl_qdma_queue_handler,
+>>> +                                      0,
+>>> +                                      "qDMA queue",
+>>> +                                      fsl_qdma);
+>>> +               if (ret) {
+>>> +                       dev_err(&pdev->dev,
+>>> +                               "Can't register qDMA queue
+>> IRQ.\n");
+>>> +                       return  ret;
+>>> +               }
+>>> +
+>>> +               cpu =3D i % num_online_cpus();
+>>> +               ret =3D irq_set_affinity_hint(fsl_qdma->queue_irq[i],
+>>> +                                           get_cpu_mask(cpu));
+>>> +               if (ret) {
+>>> +                       dev_err(&pdev->dev,
+>>> +                               "Can't set cpu %d affinity to
+>> IRQ %d.\n",
+>>> +                               cpu,
+>>> +                               fsl_qdma->queue_irq[i]);
+>>> +                       return  ret;
+>>> +               }
+>>> +       }
+>>> +
+>>> +       return 0;
+>>> +}
+>>> +
+>>> +static void fsl_qdma_irq_exit(struct platform_device *pdev,
+>>> +                             struct fsl_qdma_engine *fsl_qdma)
+>>> +{
+>>> +       int i;
+>>> +
+>>> +       devm_free_irq(&pdev->dev, fsl_qdma->error_irq, fsl_qdma);
+>>> +       for (i =3D 0; i < fsl_qdma->block_number; i++)
+>>> +               devm_free_irq(&pdev->dev, fsl_qdma->queue_irq[i],
+>> fsl_qdma);
+>>> +}
+>>> +
+>>> +static int fsl_qdma_reg_init(struct fsl_qdma_engine *fsl_qdma)
+>>> +{
+>>> +       u32 reg;
+>>> +       int i, j, ret;
+>>> +       struct fsl_qdma_queue *temp;
+>>> +       void __iomem *status =3D fsl_qdma->status_base;
+>>> +       void __iomem *block, *ctrl =3D fsl_qdma->ctrl_base;
+>>> +       struct fsl_qdma_queue *fsl_queue =3D fsl_qdma->queue;
+>>> +
+>>> +       /* Try to halt the qDMA engine first. */
+>>> +       ret =3D fsl_qdma_halt(fsl_qdma);
+>>> +       if (ret) {
+>>> +               dev_err(fsl_qdma->dma_dev.dev, "DMA halt failed!");
+>>> +               return ret;
+>>> +       }
+>>> +
+>>> +       for (i =3D 0; i < fsl_qdma->block_number; i++) {
+>>> +               /*
+>>> +                * Clear the command queue interrupt detect register
+>> for
+>>> +                * all queues.
+>>> +                */
+>>> +
+>>> +               block =3D fsl_qdma->block_base +
+>>> +                       FSL_QDMA_BLOCK_BASE_OFFSET(fsl_qdma, i);
+>>> +               qdma_writel(fsl_qdma, FSL_QDMA_BCQIDR_CLEAR,
+>>> +                           block + FSL_QDMA_BCQIDR(0));
+>>> +       }
+>>> +
+>>> +       for (j =3D 0; j < fsl_qdma->block_number; j++) {
+>>> +               block =3D fsl_qdma->block_base +
+>>> +                       FSL_QDMA_BLOCK_BASE_OFFSET(fsl_qdma, j);
+>>> +               for (i =3D 0; i < fsl_qdma->n_queues; i++) {
+>>> +                       temp =3D fsl_queue + i + (j *
+>> fsl_qdma->n_queues);
+>>> +                       /*
+>>> +                        * Initialize Command Queue registers to
+>>> +                        * point to the first
+>>> +                        * command descriptor in memory.
+>>> +                        * Dequeue Pointer Address Registers
+>>> +                        * Enqueue Pointer Address Registers
+>>> +                        */
+>>> +
+>>> +                       qdma_writel(fsl_qdma, temp->bus_addr,
+>>> +                                   block +
+>> FSL_QDMA_BCQDPA_SADDR(i));
+>>> +                       qdma_writel(fsl_qdma, temp->bus_addr,
+>>> +                                   block +
+>> FSL_QDMA_BCQEPA_SADDR(i));
+>>> +
+>>> +                       /* Initialize the queue mode. */
+>>> +                       reg =3D FSL_QDMA_BCQMR_EN;
+>>> +                       reg |=3D
+>> FSL_QDMA_BCQMR_CD_THLD(ilog2(temp->n_cq) - 4);
+>>> +                       reg |=3D
+>> FSL_QDMA_BCQMR_CQ_SIZE(ilog2(temp->n_cq) - 6);
+>>> +                       qdma_writel(fsl_qdma, reg, block +
+>> FSL_QDMA_BCQMR(i));
+>>> +               }
+>>> +
+>>> +               /*
+>>> +                * Workaround for erratum: ERR010812.
+>>> +                * We must enable XOFF to avoid the enqueue rejection
+>> occurs.
+>>> +                * Setting SQCCMR ENTER_WM to 0x20.
+>>> +                */
+>>> +
+>>> +               qdma_writel(fsl_qdma,
+>> FSL_QDMA_SQCCMR_ENTER_WM,
+>>> +                           block + FSL_QDMA_SQCCMR);
+>>> +
+>>> +               /*
+>>> +                * Initialize status queue registers to point to the fir=
+st
+>>> +                * command descriptor in memory.
+>>> +                * Dequeue Pointer Address Registers
+>>> +                * Enqueue Pointer Address Registers
+>>> +                */
+>>> +
+>>> +               qdma_writel(fsl_qdma, fsl_qdma->status[j]->bus_addr,
+>>> +                           block + FSL_QDMA_SQEPAR);
+>>> +               qdma_writel(fsl_qdma, fsl_qdma->status[j]->bus_addr,
+>>> +                           block + FSL_QDMA_SQDPAR);
+>>> +               /* Initialize status queue interrupt. */
+>>> +               qdma_writel(fsl_qdma, FSL_QDMA_BCQIER_CQTIE,
+>>> +                           block + FSL_QDMA_BCQIER(0));
+>>> +               qdma_writel(fsl_qdma, FSL_QDMA_BSQICR_ICEN |
+>>> +                                  FSL_QDMA_BSQICR_ICST(5) |
+>> 0x8000,
+>>> +                                  block + FSL_QDMA_BSQICR);
+>>> +               qdma_writel(fsl_qdma, FSL_QDMA_CQIER_MEIE |
+>>> +                                  FSL_QDMA_CQIER_TEIE,
+>>> +                                  block + FSL_QDMA_CQIER);
+>>> +
+>>> +               /* Initialize the status queue mode. */
+>>> +               reg =3D FSL_QDMA_BSQMR_EN;
+>>> +               reg |=3D FSL_QDMA_BSQMR_CQ_SIZE(ilog2
+>>> +                       (fsl_qdma->status[j]->n_cq) - 6);
+>>> +
+>>> +               qdma_writel(fsl_qdma, reg, block +
+>> FSL_QDMA_BSQMR);
+>>> +               reg =3D qdma_readl(fsl_qdma, block +
+>> FSL_QDMA_BSQMR);
+>>> +       }
+>>> +
+>>> +       /* Initialize controller interrupt register. */
+>>> +       qdma_writel(fsl_qdma, FSL_QDMA_DEDR_CLEAR, status +
+>> FSL_QDMA_DEDR);
+>>> +       qdma_writel(fsl_qdma, FSL_QDMA_DEIER_CLEAR, status +
+>> FSL_QDMA_DEIER);
+>>> +
+>>> +       reg =3D qdma_readl(fsl_qdma, ctrl + FSL_QDMA_DMR);
+>>> +       reg &=3D ~FSL_QDMA_DMR_DQD;
+>>> +       qdma_writel(fsl_qdma, reg, ctrl + FSL_QDMA_DMR);
+>>> +
+>>> +       return 0;
+>>> +}
+>>> +
+>>> +static struct dma_async_tx_descriptor *
+>>> +fsl_qdma_prep_memcpy(struct dma_chan *chan, dma_addr_t dst,
+>>> +                    dma_addr_t src, size_t len, unsigned long flags)
+>>> +{
+>>> +       struct fsl_qdma_comp *fsl_comp;
+>>> +       struct fsl_qdma_chan *fsl_chan =3D to_fsl_qdma_chan(chan);
+>>> +
+>>> +       fsl_comp =3D fsl_qdma_request_enqueue_desc(fsl_chan);
+>>> +
+>>> +       if (!fsl_comp)
+>>> +               return NULL;
+>>> +
+>>> +       fsl_qdma_comp_fill_memcpy(fsl_comp, dst, src, len);
+>>> +
+>>> +       return vchan_tx_prep(&fsl_chan->vchan, &fsl_comp->vdesc, flags);=
 
-815f0ddb Nick Desaulniers 2018-08-22  228  
-815f0ddb Nick Desaulniers 2018-08-22 @229  #define __compiler_offsetof(a, b)	__builtin_offsetof(a, b)
-815f0ddb Nick Desaulniers 2018-08-22  230  
+>>> +}
+>>> +
+>>> +static void fsl_qdma_enqueue_desc(struct fsl_qdma_chan *fsl_chan)
+>>> +{
+>>> +       u32 reg;
+>>> +       struct virt_dma_desc *vdesc;
+>>> +       struct fsl_qdma_comp *fsl_comp;
+>>> +       struct fsl_qdma_queue *fsl_queue =3D fsl_chan->queue;
+>>> +       void __iomem *block =3D fsl_queue->block_base;
+>>> +
+>>> +       reg =3D qdma_readl(fsl_chan->qdma, block +
+>> FSL_QDMA_BCQSR(fsl_queue->id));
+>>> +       if (reg & (FSL_QDMA_BCQSR_QF | FSL_QDMA_BCQSR_XOFF))
+>>> +               return;
+>>> +       vdesc =3D vchan_next_desc(&fsl_chan->vchan);
+>>> +       if (!vdesc)
+>>> +               return;
+>>> +       list_del(&vdesc->node);
+>>> +       fsl_comp =3D to_fsl_qdma_comp(vdesc);
+>>> +
+>>> +       memcpy(fsl_queue->virt_head++,
+>>> +              fsl_comp->virt_addr, sizeof(struct fsl_qdma_format));
+>>> +       if (fsl_queue->virt_head =3D=3D fsl_queue->cq + fsl_queue->n_cq)=
 
-:::::: The code at line 229 was first introduced by commit
-:::::: 815f0ddb346c196018d4d8f8f55c12b83da1de3f include/linux/compiler*.h: make compiler-*.h mutually exclusive
+>>> +               fsl_queue->virt_head =3D fsl_queue->cq;
+>>> +
+>>> +       list_add_tail(&fsl_comp->list, &fsl_queue->comp_used);
+>>> +       barrier();
+>>> +       reg =3D qdma_readl(fsl_chan->qdma, block +
+>> FSL_QDMA_BCQMR(fsl_queue->id));
+>>> +       reg |=3D FSL_QDMA_BCQMR_EI;
+>>> +       qdma_writel(fsl_chan->qdma, reg, block +
+>> FSL_QDMA_BCQMR(fsl_queue->id));
+>>> +       fsl_chan->status =3D DMA_IN_PROGRESS;
+>>> +}
+>>> +
+>>> +static void fsl_qdma_free_desc(struct virt_dma_desc *vdesc)
+>>> +{
+>>> +       unsigned long flags;
+>>> +       struct fsl_qdma_comp *fsl_comp;
+>>> +       struct fsl_qdma_queue *fsl_queue;
+>>> +
+>>> +       fsl_comp =3D to_fsl_qdma_comp(vdesc);
+>>> +       fsl_queue =3D fsl_comp->qchan->queue;
+>>> +
+>>> +       spin_lock_irqsave(&fsl_queue->queue_lock, flags);
+>>> +       list_add_tail(&fsl_comp->list, &fsl_queue->comp_free);
+>>> +       spin_unlock_irqrestore(&fsl_queue->queue_lock, flags);
+>>> +}
+>>> +
+>>> +static void fsl_qdma_issue_pending(struct dma_chan *chan)
+>>> +{
+>>> +       unsigned long flags;
+>>> +       struct fsl_qdma_chan *fsl_chan =3D to_fsl_qdma_chan(chan);
+>>> +       struct fsl_qdma_queue *fsl_queue =3D fsl_chan->queue;
+>>> +
+>>> +       spin_lock_irqsave(&fsl_queue->queue_lock, flags);
+>>> +       spin_lock(&fsl_chan->vchan.lock);
+>>> +       if (vchan_issue_pending(&fsl_chan->vchan))
+>>> +               fsl_qdma_enqueue_desc(fsl_chan);
+>>> +       spin_unlock(&fsl_chan->vchan.lock);
+>>> +       spin_unlock_irqrestore(&fsl_queue->queue_lock, flags);
+>>> +}
+>>> +
+>>> +static void fsl_qdma_synchronize(struct dma_chan *chan)
+>>> +{
+>>> +       struct fsl_qdma_chan *fsl_chan =3D to_fsl_qdma_chan(chan);
+>>> +
+>>> +       vchan_synchronize(&fsl_chan->vchan);
+>>> +}
+>>> +
+>>> +static int fsl_qdma_terminate_all(struct dma_chan *chan)
+>>> +{
+>>> +       LIST_HEAD(head);
+>>> +       unsigned long flags;
+>>> +       struct fsl_qdma_chan *fsl_chan =3D to_fsl_qdma_chan(chan);
+>>> +
+>>> +       spin_lock_irqsave(&fsl_chan->vchan.lock, flags);
+>>> +       vchan_get_all_descriptors(&fsl_chan->vchan, &head);
+>>> +       spin_unlock_irqrestore(&fsl_chan->vchan.lock, flags);
+>>> +       vchan_dma_desc_free_list(&fsl_chan->vchan, &head);
+>>> +       return 0;
+>>> +}
+>>> +
+>>> +static int fsl_qdma_alloc_chan_resources(struct dma_chan *chan)
+>>> +{
+>>> +       int ret;
+>>> +       struct fsl_qdma_chan *fsl_chan =3D to_fsl_qdma_chan(chan);
+>>> +       struct fsl_qdma_engine *fsl_qdma =3D fsl_chan->qdma;
+>>> +       struct fsl_qdma_queue *fsl_queue =3D fsl_chan->queue;
+>>> +
+>>> +       if (fsl_queue->comp_pool && fsl_queue->desc_pool)
+>>> +               return fsl_qdma->desc_allocated;
+>>> +
+>>> +       INIT_LIST_HEAD(&fsl_queue->comp_free);
+>>> +
+>>> +       /*
+>>> +        * The dma pool for queue command buffer
+>>> +        */
+>>> +       fsl_queue->comp_pool =3D
+>>> +       dma_pool_create("comp_pool",
+>>> +                       chan->device->dev,
+>>> +                       FSL_QDMA_COMMAND_BUFFER_SIZE,
+>>> +                       64, 0);
+>>> +       if (!fsl_queue->comp_pool)
+>>> +               return -ENOMEM;
+>>> +
+>>> +       /*
+>>> +        * The dma pool for Descriptor(SD/DD) buffer
+>>> +        */
+>>> +       fsl_queue->desc_pool =3D
+>>> +       dma_pool_create("desc_pool",
+>>> +                       chan->device->dev,
+>>> +                       FSL_QDMA_DESCRIPTOR_BUFFER_SIZE,
+>>> +                       32, 0);
+>>> +       if (!fsl_queue->desc_pool)
+>>> +               goto err_desc_pool;
+>>> +
+>>> +       ret =3D fsl_qdma_pre_request_enqueue_desc(fsl_queue);
+>>> +       if (ret) {
+>>> +               dev_err(chan->device->dev,
+>>> +                       "failed to alloc dma buffer for S/G
+>> descriptor\n");
+>>> +               goto err_mem;
+>>> +       }
+>>> +
+>>> +       fsl_qdma->desc_allocated++;
+>>> +       return fsl_qdma->desc_allocated;
+>>> +
+>>> +err_mem:
+>>> +       dma_pool_destroy(fsl_queue->desc_pool);
+>>> +err_desc_pool:
+>>> +       dma_pool_destroy(fsl_queue->comp_pool);
+>>> +       return -ENOMEM;
+>>> +}
+>>> +
+>>> +static int fsl_qdma_probe(struct platform_device *pdev)
+>>> +{
+>>> +       int ret, i;
+>>> +       int blk_num, blk_off;
+>>> +       u32 len, chans, queues;
+>>> +       struct resource *res;
+>>> +       struct fsl_qdma_chan *fsl_chan;
+>>> +       struct fsl_qdma_engine *fsl_qdma;
+>>> +       struct device_node *np =3D pdev->dev.of_node;
+>>> +
+>>> +       ret =3D of_property_read_u32(np, "dma-channels", &chans);
+>>> +       if (ret) {
+>>> +               dev_err(&pdev->dev, "Can't get dma-channels.\n");
+>>> +               return ret;
+>>> +       }
+>>> +
+>>> +       ret =3D of_property_read_u32(np, "block-offset", &blk_off);
+>>> +       if (ret) {
+>>> +               dev_err(&pdev->dev, "Can't get block-offset.\n");
+>>> +               return ret;
+>>> +       }
+>>> +
+>>> +       ret =3D of_property_read_u32(np, "block-number", &blk_num);
+>>> +       if (ret) {
+>>> +               dev_err(&pdev->dev, "Can't get block-number.\n");
+>>> +               return ret;
+>>> +       }
+>>> +
+>>> +       blk_num =3D min_t(int, blk_num, num_online_cpus());
+>>> +
+>>> +       len =3D sizeof(*fsl_qdma);
+>>> +       fsl_qdma =3D devm_kzalloc(&pdev->dev, len, GFP_KERNEL);
+>>> +       if (!fsl_qdma)
+>>> +               return -ENOMEM;
+>>> +
+>>> +       len =3D sizeof(*fsl_chan) * chans;
+>>> +       fsl_qdma->chans =3D devm_kzalloc(&pdev->dev, len, GFP_KERNEL);
+>>> +       if (!fsl_qdma->chans)
+>>> +               return -ENOMEM;
+>>> +
+>>> +       len =3D sizeof(struct fsl_qdma_queue *) * blk_num;
+>>> +       fsl_qdma->status =3D devm_kzalloc(&pdev->dev, len, GFP_KERNEL);
+>>> +       if (!fsl_qdma->status)
+>>> +               return -ENOMEM;
+>>> +
+>>> +       len =3D sizeof(int) * blk_num;
+>>> +       fsl_qdma->queue_irq =3D devm_kzalloc(&pdev->dev, len,
+>> GFP_KERNEL);
+>>> +       if (!fsl_qdma->queue_irq)
+>>> +               return -ENOMEM;
+>>> +
+>>> +       ret =3D of_property_read_u32(np, "fsl,dma-queues", &queues);
+>>> +       if (ret) {
+>>> +               dev_err(&pdev->dev, "Can't get queues.\n");
+>>> +               return ret;
+>>> +       }
+>>> +
+>>> +       fsl_qdma->desc_allocated =3D 0;
+>>> +       fsl_qdma->n_chans =3D chans;
+>>> +       fsl_qdma->n_queues =3D queues;
+>>> +       fsl_qdma->block_number =3D blk_num;
+>>> +       fsl_qdma->block_offset =3D blk_off;
+>>> +
+>>> +       mutex_init(&fsl_qdma->fsl_qdma_mutex);
+>>> +
+>>> +       for (i =3D 0; i < fsl_qdma->block_number; i++) {
+>>> +               fsl_qdma->status[i] =3D
+>> fsl_qdma_prep_status_queue(pdev);
+>>> +               if (!fsl_qdma->status[i])
+>>> +                       return -ENOMEM;
+>>> +       }
+>>> +       res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
+>>> +       fsl_qdma->ctrl_base =3D devm_ioremap_resource(&pdev->dev, res);
+>>> +       if (IS_ERR(fsl_qdma->ctrl_base))
+>>> +               return PTR_ERR(fsl_qdma->ctrl_base);
+>>> +
+>>> +       res =3D platform_get_resource(pdev, IORESOURCE_MEM, 1);
+>>> +       fsl_qdma->status_base =3D devm_ioremap_resource(&pdev->dev,
+>> res);
+>>> +       if (IS_ERR(fsl_qdma->status_base))
+>>> +               return PTR_ERR(fsl_qdma->status_base);
+>>> +
+>>> +       res =3D platform_get_resource(pdev, IORESOURCE_MEM, 2);
+>>> +       fsl_qdma->block_base =3D devm_ioremap_resource(&pdev->dev,
+>> res);
+>>> +       if (IS_ERR(fsl_qdma->block_base))
+>>> +               return PTR_ERR(fsl_qdma->block_base);
+>>> +       fsl_qdma->queue =3D fsl_qdma_alloc_queue_resources(pdev,
+>> fsl_qdma);
+>>> +       if (!fsl_qdma->queue)
+>>> +               return -ENOMEM;
+>>> +
+>>> +       ret =3D fsl_qdma_irq_init(pdev, fsl_qdma);
+>>> +       if (ret)
+>>> +               return ret;
+>>> +
+>>> +       fsl_qdma->irq_base =3D platform_get_irq_byname(pdev,
+>> "qdma-queue0");
+>>> +       fsl_qdma->feature =3D of_property_read_bool(np, "big-endian");
+>>> +       INIT_LIST_HEAD(&fsl_qdma->dma_dev.channels);
+>>> +
+>>> +       for (i =3D 0; i < fsl_qdma->n_chans; i++) {
+>>> +               struct fsl_qdma_chan *fsl_chan =3D &fsl_qdma->chans[i];
+>>> +
+>>> +               fsl_chan->qdma =3D fsl_qdma;
+>>> +               fsl_chan->queue =3D fsl_qdma->queue + i %
+>> (fsl_qdma->n_queues *
+>>> +
+>> fsl_qdma->block_number);
+>>> +               fsl_chan->vchan.desc_free =3D fsl_qdma_free_desc;
+>>> +               vchan_init(&fsl_chan->vchan, &fsl_qdma->dma_dev);
+>>> +       }
+>>> +
+>>> +       dma_cap_set(DMA_MEMCPY, fsl_qdma->dma_dev.cap_mask);
+>>> +
+>>> +       fsl_qdma->dma_dev.dev =3D &pdev->dev;
+>>> +       fsl_qdma->dma_dev.device_free_chan_resources =3D
+>>> +               fsl_qdma_free_chan_resources;
+>>> +       fsl_qdma->dma_dev.device_alloc_chan_resources =3D
+>>> +               fsl_qdma_alloc_chan_resources;
+>>> +       fsl_qdma->dma_dev.device_tx_status =3D dma_cookie_status;
+>>> +       fsl_qdma->dma_dev.device_prep_dma_memcpy =3D
+>> fsl_qdma_prep_memcpy;
+>>> +       fsl_qdma->dma_dev.device_issue_pending =3D
+>> fsl_qdma_issue_pending;
+>>> +       fsl_qdma->dma_dev.device_synchronize =3D fsl_qdma_synchronize;
+>>> +       fsl_qdma->dma_dev.device_terminate_all =3D
+>> fsl_qdma_terminate_all;
+>>> +
+>>> +       dma_set_mask(&pdev->dev, DMA_BIT_MASK(40));
+>>> +
+>>> +       platform_set_drvdata(pdev, fsl_qdma);
+>>> +
+>>> +       ret =3D dma_async_device_register(&fsl_qdma->dma_dev);
+>>> +       if (ret) {
+>>> +               dev_err(&pdev->dev,
+>>> +                       "Can't register NXP Layerscape qDMA
+>> engine.\n");
+>>> +               return ret;
+>>> +       }
+>>> +
+>>> +       ret =3D fsl_qdma_reg_init(fsl_qdma);
+>>> +       if (ret) {
+>>> +               dev_err(&pdev->dev, "Can't Initialize the qDMA
+>> engine.\n");
+>>> +               return ret;
+>>> +       }
+>>> +
+>>> +       return 0;
+>>> +}
+>>> +
+>>> +static void fsl_qdma_cleanup_vchan(struct dma_device *dmadev)
+>>> +{
+>>> +       struct fsl_qdma_chan *chan, *_chan;
+>>> +
+>>> +       list_for_each_entry_safe(chan, _chan,
+>>> +                                &dmadev->channels,
+>> vchan.chan.device_node) {
+>>> +               list_del(&chan->vchan.chan.device_node);
+>>> +               tasklet_kill(&chan->vchan.task);
+>>> +       }
+>>> +}
+>>> +
+>>> +static int fsl_qdma_remove(struct platform_device *pdev)
+>>> +{
+>>> +       int i;
+>>> +       struct fsl_qdma_queue *status;
+>>> +       struct device_node *np =3D pdev->dev.of_node;
+>>> +       struct fsl_qdma_engine *fsl_qdma =3D platform_get_drvdata(pdev);=
 
-:::::: TO: Nick Desaulniers <ndesaulniers@google.com>
-:::::: CC: Linus Torvalds <torvalds@linux-foundation.org>
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
-
---envbJBWh7q8WU6mo
-Content-Type: application/gzip
-Content-Disposition: attachment; filename=".config.gz"
-Content-Transfer-Encoding: base64
-
-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
-9P8LLHfoA1kBAA==
-
---envbJBWh7q8WU6mo--
+>>> +
+>>> +       fsl_qdma_irq_exit(pdev, fsl_qdma);
+>>> +       fsl_qdma_cleanup_vchan(&fsl_qdma->dma_dev);
+>>> +       of_dma_controller_free(np);
+>>> +       dma_async_device_unregister(&fsl_qdma->dma_dev);
+>>> +
+>>> +       for (i =3D 0; i < fsl_qdma->block_number; i++) {
+>>> +               status =3D fsl_qdma->status[i];
+>>> +               dma_free_coherent(&pdev->dev, sizeof(struct
+>> fsl_qdma_format) *
+>>> +                               status->n_cq, status->cq,
+>> status->bus_addr);
+>>> +       }
+>>> +       return 0;
+>>> +}
+>>> +
+>>> +static const struct of_device_id fsl_qdma_dt_ids[] =3D {
+>>> +       { .compatible =3D "fsl,ls1021a-qdma", },
+>>> +       { /* sentinel */ }
+>>> +};
+>>> +MODULE_DEVICE_TABLE(of, fsl_qdma_dt_ids);
+>>> +
+>>> +static struct platform_driver fsl_qdma_driver =3D {
+>>> +       .driver         =3D {
+>>> +               .name   =3D "fsl-qdma",
+>>> +               .of_match_table =3D fsl_qdma_dt_ids,
+>>> +       },
+>>> +       .probe          =3D fsl_qdma_probe,
+>>> +       .remove         =3D fsl_qdma_remove,
+>>> +};
+>>> +
+>>> +module_platform_driver(fsl_qdma_driver);
+>>> +
+>>> +MODULE_ALIAS("platform:fsl-qdma");
+>>> +MODULE_DESCRIPTION("NXP Layerscape qDMA engine driver");
+>>> --
+>>> 1.7.1
+>>>=20
