@@ -1,98 +1,84 @@
-Return-Path: <SRS0=mX83=NI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=d/0/=NJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 111F4C2BC61
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Oct 2018 22:51:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F12EC2BC61
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Oct 2018 01:09:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 36DDA2064C
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Oct 2018 22:51:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 146B62082D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Oct 2018 01:08:59 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hzlz7jFW"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 36DDA2064C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="CDBkB3Rc"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 146B62082D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42jtJm4Sp5zDrcN
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Oct 2018 09:51:52 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42jxLx3pb8zDsPf
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Oct 2018 12:08:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="hzlz7jFW";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.b="CDBkB3Rc";
 	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (helo)
+ smtp.helo=out3-smtp.messagingengine.com (client-ip=66.111.4.27;
+ helo=out3-smtp.messagingengine.com; envelope-from=ruscur@russell.cc;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
- envelope-from=bsingharora@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
+ dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="hzlz7jFW"; 
- dkim-atps=neutral
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
- [IPv6:2607:f8b0:4864:20::541])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ unprotected) header.d=messagingengine.com header.i=@messagingengine.com
+ header.b="CDBkB3Rc"; dkim-atps=neutral
+Received: from out3-smtp.messagingengine.com (out3-smtp.messagingengine.com
+ [66.111.4.27])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42jt3F6m7nzDr3b
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Oct 2018 09:40:09 +1100 (AEDT)
-Received: by mail-pg1-x541.google.com with SMTP id w3-v6so2916409pgs.11
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Oct 2018 15:40:09 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=GFtksEV3l5eq+mnfMA1OwOjA0oBp/IcRdRQ8wGi247I=;
- b=hzlz7jFWANzmnQYBfUjAY47ntJv9ruGodd92q7E4yeWjWXy4EZl6bPRcEO0kKVxcET
- 8l/LxbyoIEOMIv2Qws7VhhdBdB2WSqhVRO2xFO6BoL6UVCnvmAbklAgUnFIPczbls2XR
- 8t+tWl9FODh8azBtSJSVtOJ8ASXQGH4rOt//srkRKwJB3n5TPhA7eLFTkuIKOx//Tn6i
- wCdbM58gxJCZ3Wya+Xx9knz+xP1bKelI2gOlUgbKzh9xt2GwpzMnGwoSI1DVJtDgp4Fn
- d+gXcEV0Ha0CDx7RrL2gR1D2FtTk3tSVbj1J8r71HdedlxSopPgWOCsGk19JAS3kF9ps
- MWOA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=GFtksEV3l5eq+mnfMA1OwOjA0oBp/IcRdRQ8wGi247I=;
- b=WmDNGI8ztYC8QYMXjJqAZJO5437Yhh3Ycm0yjULO25Q/kdWsoNQHOJpo5M+O3MaYxP
- Kc+pJA+bZoo6iyemnkyOv0ICEkNwZme0hpUdLyliLBlNroLTQ/6YtFAcZaj1dhfFHJmE
- lTjHk15sr0iVEw+LIi1X7v0IeM0Jph2D+KOlXFbH172cWc4imXCT2PxzM9YDb9OKBVoy
- Rev/Sg6GkviRI8JdztjgYFOogNvb//Wdtvs4OWba6vxWFJ3LNXG0DY8m5GwOQ381kXp3
- I75CYjagqfyoAMlMF03Z6uZfWx2bktCNOP2F2ZPSpfYAgIhwWOBl6pG4DEcisQXkG+mQ
- 0wkA==
-X-Gm-Message-State: AGRZ1gJ4v1gpipVateG5cuKaGgvV9DUtawIiabBtfwvufR2jMzbkaVvT
- b3MTX9gImiIedFw/xNI/a+w=
-X-Google-Smtp-Source: AJdET5fu0DqTEYAGDBSaxsVyd0K3i3CEEiTSqETAuxd4rlFGA5L/e1X97o5DIUSGPTfJJWdGWN6dQw==
-X-Received: by 2002:a63:181:: with SMTP id
- 123-v6mr11570471pgb.149.1540766407194; 
- Sun, 28 Oct 2018 15:40:07 -0700 (PDT)
-Received: from localhost (14-202-194-140.static.tpgi.com.au. [14.202.194.140])
- by smtp.gmail.com with ESMTPSA id
- t4-v6sm19146464pfb.44.2018.10.28.15.40.05
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Sun, 28 Oct 2018 15:40:05 -0700 (PDT)
-Date: Mon, 29 Oct 2018 09:40:02 +1100
-From: Balbir Singh <bsingharora@gmail.com>
-To: Joel Fernandes <joel@joelfernandes.org>
-Subject: Re: [PATCH 2/4] mm: speed up mremap by 500x on large regions (v2)
-Message-ID: <20181028224002.GA16399@350D>
-References: <20181013013200.206928-1-joel@joelfernandes.org>
- <20181013013200.206928-3-joel@joelfernandes.org>
- <20181024101255.it4lptrjogalxbey@kshutemo-mobl1>
- <20181024115733.GN8537@350D>
- <20181025021350.GB13560@joelaf.mtv.corp.google.com>
- <20181027102102.GO8537@350D>
- <20181027193917.GA51131@joelaf.mtv.corp.google.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20181027193917.GA51131@joelaf.mtv.corp.google.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
-X-Mailman-Approved-At: Mon, 29 Oct 2018 09:49:37 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42jxJT2GxbzDrYf
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Oct 2018 12:06:47 +1100 (AEDT)
+Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
+ by mailout.nyi.internal (Postfix) with ESMTP id DE5F12112B;
+ Sun, 28 Oct 2018 21:06:44 -0400 (EDT)
+Received: from mailfrontend2 ([10.202.2.163])
+ by compute6.internal (MEProxy); Sun, 28 Oct 2018 21:06:44 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+ messagingengine.com; h=cc:content-transfer-encoding:content-type
+ :date:from:in-reply-to:message-id:mime-version:references
+ :subject:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
+ :x-sasl-enc; s=fm1; bh=b/ubvb9E3Rm1V9m509uQbu3goKdQY/1iEyKuXSUmJ
+ JM=; b=CDBkB3Rcwqt0AYyqyIdZ/d7UxTXq8j0xyJjNM8t08Fqc1LImAM2VyIn60
+ GvfpDJ+OlAisEwO1PPcUjj2d2iZ1JkawQCWpCKbFoR0PKPb03yghyAv85Wdx9KI1
+ Vo56tbh1X9aUCLPbcuxfbFZw1Wm8RH4oZST/Rrcy1O+GcRPLVUjhGFk9jFCOOhqJ
+ eqqYKOP5QBVmCYnKcpy9V4M8XdeYs3DJLAO4BcyO3Wwgze9z4ICAQENi2EaGWEp5
+ wULG9YbsDMa/bIlmiyxp2BsV9jNV2aGH5wcNJISa96cmbWL11fEYxSgoQnwDhYo3
+ DTY1716wM3rqR/Zm7uQxQvtt6oeMg==
+X-ME-Sender: <xms:I13WW5JCKPKMbjU1e5BU_2U57Ndduoz2QkylkOB9iFuq1dkb4FNG2A>
+X-ME-Proxy: <xmx:I13WWxsDHg035moiXFdsAWD5NEo62USwJy-E7Ln0vyco3GN6ijrlbg>
+ <xmx:I13WWzpqMgWlOBJHaxtDa4NIW2n08p5S7gSsUVFyzCiXP9u1qtiDRw>
+ <xmx:I13WW5CJTFi7NQlsF1Snvxn8-zpLdqwM-dWD29fYBI5AJy5xDniAPw>
+ <xmx:I13WW9_0VRwzi2NV9QrbOA6sIPsGOv3kTjngUnBfLCFtLLoE9UzgBw>
+ <xmx:I13WW9bTXDgevbmecAc39zPH5E8ER02PSULovgnH6NqYiLOJovj8zA>
+ <xmx:JF3WW3aW_KRy_ZldECkY-cS_hjemPerjl9QLyo8IBUeA2166w7V3DQ>
+Received: from crackle.ozlabs.ibm.com (unknown [122.99.82.10])
+ by mail.messagingengine.com (Postfix) with ESMTPA id D6036102E4;
+ Sun, 28 Oct 2018 21:06:41 -0400 (EDT)
+Message-ID: <7b3e80077b4d9f22da891c143c78bb743cc24136.camel@russell.cc>
+Subject: Re: [PATCH 5/5] powerpc/64s: Document that PPC supports nosmap
+From: Russell Currey <ruscur@russell.cc>
+To: LEROY Christophe <christophe.leroy@c-s.fr>
+Date: Mon, 29 Oct 2018 12:06:51 +1100
+In-Reply-To: <20181026183525.Horde.tXUVv2_ZCCOci3XQBF4ZYw1@messagerie.si.c-s.fr>
+References: <20181026063513.30806-1-ruscur@russell.cc>
+ <20181026063513.30806-6-ruscur@russell.cc>
+ <20181026183525.Horde.tXUVv2_ZCCOci3XQBF4ZYw1@messagerie.si.c-s.fr>
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.30.2 
+Mime-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,90 +90,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mips@linux-mips.org, Rich Felker <dalias@libc.org>,
- linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Dave Hansen <dave.hansen@linux.intel.com>, Will Deacon <will.deacon@arm.com>,
- mhocko@kernel.org, linux-mm@kvack.org, lokeshgidra@google.com,
- sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org,
- elfring@users.sourceforge.net, Jonas Bonn <jonas@southpole.se>,
- kvmarm@lists.cs.columbia.edu, dancol@google.com,
- Yoshinori Sato <ysato@users.sourceforge.jp>, linux-xtensa@linux-xtensa.org,
- linux-hexagon@vger.kernel.org, Helge Deller <deller@gmx.de>,
- "maintainer:X86 ARCHITECTURE \(32-BIT AND 64-BIT\)" <x86@kernel.org>,
- hughd@google.com, "James E.J. Bottomley" <jejb@parisc-linux.org>,
- kasan-dev@googlegroups.com, anton.ivanov@kot-begemot.co.uk,
- Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
- Andrey Ryabinin <aryabinin@virtuozzo.com>, linux-snps-arc@lists.infradead.org,
- kernel-team@android.com, Sam Creasey <sammy@sammy.net>,
- Fenghua Yu <fenghua.yu@intel.com>, linux-s390@vger.kernel.org,
- Jeff Dike <jdike@addtoit.com>, linux-um@lists.infradead.org,
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- Julia Lawall <Julia.Lawall@lip6.fr>, linux-m68k@lists.linux-m68k.org,
- Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
- nios2-dev@lists.rocketboards.org, "Kirill A. Shutemov" <kirill@shutemov.name>,
- Stafford Horne <shorne@gmail.com>, Guan Xuetao <gxt@pku.edu.cn>,
- Chris Zankel <chris@zankel.net>, Tony Luck <tony.luck@intel.com>,
- Richard Weinberger <richard@nod.at>, linux-parisc@vger.kernel.org,
- pantin@google.com, Max Filippov <jcmvbkbc@gmail.com>,
- linux-kernel@vger.kernel.org, minchan@kernel.org,
- Thomas Gleixner <tglx@linutronix.de>, linux-alpha@vger.kernel.org,
- Ley Foon Tan <lftan@altera.com>, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: mikey@neuling.org, linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Oct 27, 2018 at 12:39:17PM -0700, Joel Fernandes wrote:
-> Hi Balbir,
+On Fri, 2018-10-26 at 18:35 +0200, LEROY Christophe wrote:
+> Why not call our new functionnality SMAP instead of calling it GUAP ?
+
+mpe wasn't a fan of using the same terminology as other architectures. 
+Having a separate term does avoid some assumptions about how things
+work or are implemented, but sharing compatibility with an existing
+parameter is nice.
+
+Personally I don't really care too much about the name.
+
+- Russell
+
 > 
-> On Sat, Oct 27, 2018 at 09:21:02PM +1100, Balbir Singh wrote:
-> > On Wed, Oct 24, 2018 at 07:13:50PM -0700, Joel Fernandes wrote:
-> > > On Wed, Oct 24, 2018 at 10:57:33PM +1100, Balbir Singh wrote:
-> > > [...]
-> > > > > > +		pmd_t pmd;
-> > > > > > +
-> > > > > > +		new_ptl = pmd_lockptr(mm, new_pmd);
-> > > > 
-> > > > 
-> > > > Looks like this is largely inspired by move_huge_pmd(), I guess a lot of
-> > > > the code applies, why not just reuse as much as possible? The same comments
-> > > > w.r.t mmap_sem helping protect against lock order issues applies as well.
-> > > 
-> > > I thought about this and when I looked into it, it seemed there are subtle
-> > > differences that make such sharing not worth it (or not possible).
-> > >
+> Christophe
+> 
+> Russell Currey <ruscur@russell.cc> a écrit :
+> 
+> > Signed-off-by: Russell Currey <ruscur@russell.cc>
+> > ---
+> >  Documentation/admin-guide/kernel-parameters.txt | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
 > > 
-> > Could you elaborate on them?
+> > diff --git a/Documentation/admin-guide/kernel-parameters.txt  
+> > b/Documentation/admin-guide/kernel-parameters.txt
+> > index a5ad67d5cb16..8f78e75965f0 100644
+> > --- a/Documentation/admin-guide/kernel-parameters.txt
+> > +++ b/Documentation/admin-guide/kernel-parameters.txt
+> > @@ -2764,7 +2764,7 @@
+> >  			noexec=on: enable non-executable mappings
+> > (default)
+> >  			noexec=off: disable non-executable mappings
+> > 
+> > -	nosmap		[X86]
+> > +	nosmap		[X86,PPC]
+> >  			Disable SMAP (Supervisor Mode Access
+> > Prevention)
+> >  			even if it is supported by processor.
+> > 
+> > --
+> > 2.19.1
 > 
-> The move_huge_page function is defined only for CONFIG_TRANSPARENT_HUGEPAGE
-> so we cannot reuse it to begin with, since we have it disabled on our
-> systems. I am not sure if it is a good idea to split that out and refactor it
-> for reuse especially since our case is quite simple compared to huge pages.
 > 
-> There are also a couple of subtle differences between the move_normal_pmd and
-> the move_huge_pmd. Atleast 2 of them are:
-> 
-> 1. We don't concern ourself with the PMD dirty bit, since the pages being
-> moved are normal pages and at the soft-dirty bit accounting is at the PTE
-> level, since we are not moving PTEs, we don't need to do that.
-> 
-> 2. The locking is simpler as Kirill pointed, pmd_lock cannot fail however
-> __pmd_trans_huge_lock can.
-> 
-> I feel it is not super useful to refactor move_huge_pmd to support our case
-> especially since move_normal_pmd is quite small, so IMHO the benefit of code
-> reuse isn't there very much.
->
 
-My big concern is that any bug fixes will need to monitor both paths.
-Do you see a big overhead in checking the soft dirty bit? The locking is
-a little different. Having said that, I am not strictly opposed to the
-extra code, just concerned about missing fixes/updates as we find them.
- 
-> Do let me know your thoughts and thanks for your interest in this.
-> 
->
-
-Balbir Singh. 
