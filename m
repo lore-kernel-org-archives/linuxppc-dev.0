@@ -2,28 +2,28 @@ Return-Path: <SRS0=d/0/=NJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F12EC2BC61
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Oct 2018 01:09:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E3C4C2BC61
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Oct 2018 01:11:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 146B62082D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Oct 2018 01:08:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 06DB72082D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Oct 2018 01:11:14 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="CDBkB3Rc"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 146B62082D
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="mFreGYMS"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 06DB72082D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42jxLx3pb8zDsPf
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Oct 2018 12:08:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42jxPY0PhyzDsG1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Oct 2018 12:11:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.b="CDBkB3Rc";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.b="mFreGYMS";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (helo)
  smtp.helo=out3-smtp.messagingengine.com (client-ip=66.111.4.27;
@@ -33,48 +33,48 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.b="CDBkB3Rc"; dkim-atps=neutral
+ header.b="mFreGYMS"; dkim-atps=neutral
 Received: from out3-smtp.messagingengine.com (out3-smtp.messagingengine.com
  [66.111.4.27])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42jxJT2GxbzDrYf
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Oct 2018 12:06:47 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42jxKl5GpKzDsQ7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Oct 2018 12:07:55 +1100 (AEDT)
 Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
- by mailout.nyi.internal (Postfix) with ESMTP id DE5F12112B;
- Sun, 28 Oct 2018 21:06:44 -0400 (EDT)
-Received: from mailfrontend2 ([10.202.2.163])
- by compute6.internal (MEProxy); Sun, 28 Oct 2018 21:06:44 -0400
+ by mailout.nyi.internal (Postfix) with ESMTP id 7A4C221D3C;
+ Sun, 28 Oct 2018 21:07:53 -0400 (EDT)
+Received: from mailfrontend1 ([10.202.2.162])
+ by compute6.internal (MEProxy); Sun, 28 Oct 2018 21:07:53 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
  messagingengine.com; h=cc:content-transfer-encoding:content-type
  :date:from:in-reply-to:message-id:mime-version:references
  :subject:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
- :x-sasl-enc; s=fm1; bh=b/ubvb9E3Rm1V9m509uQbu3goKdQY/1iEyKuXSUmJ
- JM=; b=CDBkB3Rcwqt0AYyqyIdZ/d7UxTXq8j0xyJjNM8t08Fqc1LImAM2VyIn60
- GvfpDJ+OlAisEwO1PPcUjj2d2iZ1JkawQCWpCKbFoR0PKPb03yghyAv85Wdx9KI1
- Vo56tbh1X9aUCLPbcuxfbFZw1Wm8RH4oZST/Rrcy1O+GcRPLVUjhGFk9jFCOOhqJ
- eqqYKOP5QBVmCYnKcpy9V4M8XdeYs3DJLAO4BcyO3Wwgze9z4ICAQENi2EaGWEp5
- wULG9YbsDMa/bIlmiyxp2BsV9jNV2aGH5wcNJISa96cmbWL11fEYxSgoQnwDhYo3
- DTY1716wM3rqR/Zm7uQxQvtt6oeMg==
-X-ME-Sender: <xms:I13WW5JCKPKMbjU1e5BU_2U57Ndduoz2QkylkOB9iFuq1dkb4FNG2A>
-X-ME-Proxy: <xmx:I13WWxsDHg035moiXFdsAWD5NEo62USwJy-E7Ln0vyco3GN6ijrlbg>
- <xmx:I13WWzpqMgWlOBJHaxtDa4NIW2n08p5S7gSsUVFyzCiXP9u1qtiDRw>
- <xmx:I13WW5CJTFi7NQlsF1Snvxn8-zpLdqwM-dWD29fYBI5AJy5xDniAPw>
- <xmx:I13WW9_0VRwzi2NV9QrbOA6sIPsGOv3kTjngUnBfLCFtLLoE9UzgBw>
- <xmx:I13WW9bTXDgevbmecAc39zPH5E8ER02PSULovgnH6NqYiLOJovj8zA>
- <xmx:JF3WW3aW_KRy_ZldECkY-cS_hjemPerjl9QLyo8IBUeA2166w7V3DQ>
+ :x-sasl-enc; s=fm1; bh=h3F6TomMKrex/zNRUDLskmYKbnYpc2cCv/vNWRMmZ
+ 5M=; b=mFreGYMSR9IcAxlks8d0LhCmyL4rAqolyFbZLZ8vRtsYTORfP5+crXZdt
+ OTUoaVM4WGyACGWKsTNebfxaWmY3lEVkR1Nhhw75SPpF915qHbonIE9GrQHkFotK
+ 92thxcQ7GL8xVF3XMAM1p2/wd+yC3X2D0yU38z5QF8f99/3aBNDSq8SmYXyLIFYc
+ uz1JILb+LUaZmkIzIuUJiuHF7LD/Y6zYs9apHcvnRpTY3Ro2QuYpoOvJ1gzPe4ox
+ CGR4JjksBYuxya6O/GcrxS0JYd+RqQfWfBaWVHW8Ups5hhSEvSgW+G+XSCflQtZ2
+ rhVL/F2+arbvf915iCYCIK+Tm6yZw==
+X-ME-Sender: <xms:aV3WWzNgKvP2TBqODbjhNVrbT5t7Swlq_WxA-Ckj6QoF8beYd-tcyQ>
+X-ME-Proxy: <xmx:aV3WW-MWGgylCVLRl7MBGLPtjSVTHG8CSykYVJgmgUIyKgHgb1JV4g>
+ <xmx:aV3WW675ybLvdIeaTOnczoP6EzuzwoCTsy7mSIFOLGq2262xceAGWA>
+ <xmx:aV3WW80ggJAvgMMUJlWiNEv1P7pZClKNuZt0cst_-oxB_SqbQ0iStA>
+ <xmx:aV3WW7YQmkQh_u9_z7vssvgH7iobHtlIsShbzr2IUtp6MpB48D7TOg>
+ <xmx:aV3WW0BU-bd-Kocn0WyfOk0V3_Fucsi3Z1sGfx8OuIx1-USeMLl6bg>
+ <xmx:aV3WW3GZYk26bTW2Hpo2LV_fvvojz6pKerzgTfYUn4C7bPgHDwp1oQ>
 Received: from crackle.ozlabs.ibm.com (unknown [122.99.82.10])
- by mail.messagingengine.com (Postfix) with ESMTPA id D6036102E4;
- Sun, 28 Oct 2018 21:06:41 -0400 (EDT)
-Message-ID: <7b3e80077b4d9f22da891c143c78bb743cc24136.camel@russell.cc>
-Subject: Re: [PATCH 5/5] powerpc/64s: Document that PPC supports nosmap
+ by mail.messagingengine.com (Postfix) with ESMTPA id 9055DE4892;
+ Sun, 28 Oct 2018 21:07:51 -0400 (EDT)
+Message-ID: <8f359a830d9b86837130f9333c54233180793c98.camel@russell.cc>
+Subject: Re: [PATCH 2/5] powerpc/futex: GUAP support for futex ops
 From: Russell Currey <ruscur@russell.cc>
 To: LEROY Christophe <christophe.leroy@c-s.fr>
-Date: Mon, 29 Oct 2018 12:06:51 +1100
-In-Reply-To: <20181026183525.Horde.tXUVv2_ZCCOci3XQBF4ZYw1@messagerie.si.c-s.fr>
+Date: Mon, 29 Oct 2018 12:08:01 +1100
+In-Reply-To: <20181026183238.Horde.Qb6gGcTLnJI-ma8mXsMeBA1@messagerie.si.c-s.fr>
 References: <20181026063513.30806-1-ruscur@russell.cc>
- <20181026063513.30806-6-ruscur@russell.cc>
- <20181026183525.Horde.tXUVv2_ZCCOci3XQBF4ZYw1@messagerie.si.c-s.fr>
+ <20181026063513.30806-3-ruscur@russell.cc>
+ <20181026183238.Horde.Qb6gGcTLnJI-ma8mXsMeBA1@messagerie.si.c-s.fr>
 Content-Type: text/plain; charset="UTF-8"
 User-Agent: Evolution 3.30.2 
 Mime-Version: 1.0
@@ -95,43 +95,74 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 2018-10-26 at 18:35 +0200, LEROY Christophe wrote:
-> Why not call our new functionnality SMAP instead of calling it GUAP ?
+On Fri, 2018-10-26 at 18:32 +0200, LEROY Christophe wrote:
+> Russell Currey <ruscur@russell.cc> a écrit :
+> 
+> > Wrap the futex operations in GUAP locks and unlocks.
+> 
+> Does it means futex doesn't work anymore once only patch 1 is
+> applied  
+> ? If so, then you should split patch 1 in two parts and reorder  
+> patches so that guap can only be activated once all necessary
+> changes  
+> are done. Otherwise the serie won't be bisectable
 
-mpe wasn't a fan of using the same terminology as other architectures. 
-Having a separate term does avoid some assumptions about how things
-work or are implemented, but sharing compatibility with an existing
-parameter is nice.
-
-Personally I don't really care too much about the name.
+Yeah, I agree.  I just wanted to remove some amount of breadth from
+what already is one gigantic patch.  Bisectability is more important
+than that, however.
 
 - Russell
 
 > 
 > Christophe
 > 
-> Russell Currey <ruscur@russell.cc> a écrit :
-> 
 > > Signed-off-by: Russell Currey <ruscur@russell.cc>
 > > ---
-> >  Documentation/admin-guide/kernel-parameters.txt | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> >  arch/powerpc/include/asm/futex.h | 4 ++++
+> >  1 file changed, 4 insertions(+)
 > > 
-> > diff --git a/Documentation/admin-guide/kernel-parameters.txt  
-> > b/Documentation/admin-guide/kernel-parameters.txt
-> > index a5ad67d5cb16..8f78e75965f0 100644
-> > --- a/Documentation/admin-guide/kernel-parameters.txt
-> > +++ b/Documentation/admin-guide/kernel-parameters.txt
-> > @@ -2764,7 +2764,7 @@
-> >  			noexec=on: enable non-executable mappings
-> > (default)
-> >  			noexec=off: disable non-executable mappings
+> > diff --git a/arch/powerpc/include/asm/futex.h  
+> > b/arch/powerpc/include/asm/futex.h
+> > index 94542776a62d..3aed640ee9ef 100644
+> > --- a/arch/powerpc/include/asm/futex.h
+> > +++ b/arch/powerpc/include/asm/futex.h
+> > @@ -35,6 +35,7 @@ static inline int
+> > arch_futex_atomic_op_inuser(int  
+> > op, int oparg, int *oval,
+> >  {
+> >  	int oldval = 0, ret;
 > > 
-> > -	nosmap		[X86]
-> > +	nosmap		[X86,PPC]
-> >  			Disable SMAP (Supervisor Mode Access
-> > Prevention)
-> >  			even if it is supported by processor.
+> > +	unlock_user_access();
+> >  	pagefault_disable();
+> > 
+> >  	switch (op) {
+> > @@ -62,6 +63,7 @@ static inline int
+> > arch_futex_atomic_op_inuser(int  
+> > op, int oparg, int *oval,
+> >  	if (!ret)
+> >  		*oval = oldval;
+> > 
+> > +	lock_user_access();
+> >  	return ret;
+> >  }
+> > 
+> > @@ -75,6 +77,7 @@ futex_atomic_cmpxchg_inatomic(u32 *uval, u32
+> > __user *uaddr,
+> >  	if (!access_ok(VERIFY_WRITE, uaddr, sizeof(u32)))
+> >  		return -EFAULT;
+> > 
+> > +	unlock_user_access();
+> >          __asm__ __volatile__ (
+> >          PPC_ATOMIC_ENTRY_BARRIER
+> >  "1:     lwarx   %1,0,%3         # futex_atomic_cmpxchg_inatomic\n\
+> > @@ -95,6 +98,7 @@ futex_atomic_cmpxchg_inatomic(u32 *uval, u32
+> > __user *uaddr,
+> >          : "cc", "memory");
+> > 
+> >  	*uval = prev;
+> > +	lock_user_access();
+> >          return ret;
+> >  }
 > > 
 > > --
 > > 2.19.1
