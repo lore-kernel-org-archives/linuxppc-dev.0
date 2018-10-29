@@ -7,78 +7,79 @@ X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B624C2BC61
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Oct 2018 18:11:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B762C2BC61
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Oct 2018 18:13:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 800512082D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Oct 2018 18:11:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C2DCA2084A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Oct 2018 18:13:32 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="ViKF3X5Q"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 800512082D
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="Adw2RJaw"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C2DCA2084A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42kN2S3JVzzDrS4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Oct 2018 05:11:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42kN566XCczF0h9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Oct 2018 05:13:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.b="ViKF3X5Q";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.b="Adw2RJaw";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=chromium.org
- (client-ip=2607:f8b0:4864:20::543; helo=mail-pg1-x543.google.com;
+ (client-ip=2607:f8b0:4864:20::542; helo=mail-pg1-x542.google.com;
  envelope-from=dianders@chromium.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=chromium.org header.i=@chromium.org header.b="ViKF3X5Q";
+ unprotected) header.d=chromium.org header.i=@chromium.org header.b="Adw2RJaw";
  dkim-atps=neutral
-Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
- [IPv6:2607:f8b0:4864:20::543])
+Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
+ [IPv6:2607:f8b0:4864:20::542])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42kMzR6p4qzDrS4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Oct 2018 05:08:35 +1100 (AEDT)
-Received: by mail-pg1-x543.google.com with SMTP id w3-v6so4276315pgs.11
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Oct 2018 11:08:35 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42kMzW0XbxzDrS4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Oct 2018 05:08:38 +1100 (AEDT)
+Received: by mail-pg1-x542.google.com with SMTP id o14-v6so4289043pgv.7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Oct 2018 11:08:38 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=5KlK5EoYecHiEwx2KYOj1AK3WWuK24K/BTuRZp/Hgn0=;
- b=ViKF3X5QZz1G04Kuc+UrpCLOIvvtASddvUpgEhbE2NwCsDxuq6JsW/AfF3MtdzfNcH
- x4aFvJIFkNdrS8l2CQjvpOEnAdP+LsFKZAoe9CdyAH5M9odaITFSuzPbsiwDohBeU3UQ
- YDDibS0wr7JOOkRxMW/g3gib7jVbkYmN9FZJo=
+ bh=CroHCjy2cXyW18SnvnT99u56hhAhS32VgKvRG9qriMk=;
+ b=Adw2RJawkgnaC/jpDoSz7kz4ztVYqXNmBSnL2SvigdwN21Qq4qG0Pe+1/1PrUPKs9S
+ bDz7ozuAXF3qkF3GBazKl/rEQgxQHcyekO1KrYK9RL32KkbqUTGP8wOmE1NGu3DekUXx
+ VI2tl0dPwLK1ovDongsGFEfW+cu+jec5xtADY=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=5KlK5EoYecHiEwx2KYOj1AK3WWuK24K/BTuRZp/Hgn0=;
- b=rWPzD8Kz/424k72FE8iumg42E9xzVYdQ53fEqEtvLTsrFiGrew58+GjBmO7soRIOht
- nguLSQ14hT8+BxHW0S+fMCdM6kfXXmciV2ys2brAxIZ5KIBm7eMXDYa6ApmCLBzwMLQS
- Ks9YkueKQTvWwaUKq/F3rTZXS4Jso592dNxwcSvobBVRsMsIhCEYeN+Rdr1VoP7EsqzJ
- eUVSLgKlalLwUmNlUKObkhzB4ZZre5TCKzO4k8MluaIQmw1Bf4gmDuVmipC6geae+Uvp
- n7eupChnrMD5KmzqS7DgkMxMKaTVThHdw3UqjjUhaWr+jepfmWz1TAAFhWrBXgCDQQ7m
- Y+iw==
-X-Gm-Message-State: AGRZ1gLUbSjFptZpz/Jz/b3qn7VFb6ZToiOzcBu+7O8hNH6WUdeKXdzn
- CF9iuzmeeitDz7gy4L5gb/Oeeg==
-X-Google-Smtp-Source: AJdET5dnes+lqSdsKf+M8kej513uIWGXuNg0nbxyLNaYWMhztTpOmHr2lEByvMdxDcC5rsUHz1VWbw==
-X-Received: by 2002:a62:7a92:: with SMTP id
- v140-v6mr9434788pfc.46.1540836514355; 
- Mon, 29 Oct 2018 11:08:34 -0700 (PDT)
+ bh=CroHCjy2cXyW18SnvnT99u56hhAhS32VgKvRG9qriMk=;
+ b=DErCiI2TOKizF2rJeNwcIijaOrmf4ha/3oEhNlU0yb7p4oh9ZrfIEy8xStF1W0QqQY
+ Tvug3JjRCfhsmp9zGcXtr/LZvOUYcJYeSxj+zj2Su3XSRV3UDtCV833gFJEd/8t1sVKa
+ T307lWShOBfiBEoABRMANm/ZOxEVrhSS/07QLQET4Kst34JdQzrpcH54/aBKuVEvDEc4
+ StMGzZ+jCV4Ns0MoYRSHKzCCj+saBZDeIwSmVipJvyk0nozdMZSa7+Q/f7rUNVs/Lb7E
+ XT+Vo1vmC89E+iR/GsdX/iMI36T7PkBP9tQAtmBwbbWjp4wTVN1PR/YUGjwoVfN8zgdZ
+ JPmA==
+X-Gm-Message-State: AGRZ1gIa3uxT+UwNYnvjDsMdcW894T92mtAVhoeWXNd3yLLlumDdrWRx
+ 21TFgmfM6m5Eo4q8MhmoMlqFgw==
+X-Google-Smtp-Source: AJdET5d1BEiS9eVnpREP9GcY6nBDc+TgRpo6cR3NLiALJXXRpfCKZMOIAtRRC3z9kZ0u7UVM6sOi9A==
+X-Received: by 2002:a62:a50d:: with SMTP id
+ v13-v6mr16095653pfm.18.1540836517190; 
+ Mon, 29 Oct 2018 11:08:37 -0700 (PDT)
 Received: from tictac2.mtv.corp.google.com
  ([2620:15c:202:1:c8e0:70d7:4be7:a36])
- by smtp.gmail.com with ESMTPSA id u13-v6sm20537765pgp.18.2018.10.29.11.08.32
+ by smtp.gmail.com with ESMTPSA id u13-v6sm20537765pgp.18.2018.10.29.11.08.34
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Mon, 29 Oct 2018 11:08:33 -0700 (PDT)
+ Mon, 29 Oct 2018 11:08:35 -0700 (PDT)
 From: Douglas Anderson <dianders@chromium.org>
 To: Jason Wessel <jason.wessel@windriver.com>,
  Daniel Thompson <daniel.thompson@linaro.org>, tglx@linutronix.de,
  mingo@kernel.org, gregkh@linuxfoundation.org
-Subject: [PATCH 6/7] smp: Don't yell about IRQs disabled in kgdb_roundup_cpus()
-Date: Mon, 29 Oct 2018 11:07:06 -0700
-Message-Id: <20181029180707.207546-7-dianders@chromium.org>
+Subject: [PATCH 7/7] kgdb: Remove irq flags and local_irq_enable/disable from
+ roundup
+Date: Mon, 29 Oct 2018 11:07:07 -0700
+Message-Id: <20181029180707.207546-8-dianders@chromium.org>
 X-Mailer: git-send-email 2.19.1.568.g152ad8e336-goog
 In-Reply-To: <20181029180707.207546-1-dianders@chromium.org>
 References: <20181029180707.207546-1-dianders@chromium.org>
@@ -95,99 +96,283 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org, peterz@infradead.org,
- linux-arm-msm@vger.kernel.org, frederic@kernel.org, riel@surriel.com,
- Douglas Anderson <dianders@chromium.org>, linux-kernel@vger.kernel.org,
- luto@kernel.org, kgdb-bugreport@lists.sourceforge.net,
- sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org,
- linux-snps-arc@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Cc: kstewart@linuxfoundation.org, linux-mips@linux-mips.org, dalias@libc.org,
+ catalin.marinas@arm.com, linux-sh@vger.kernel.org, will.deacon@arm.com,
+ linux-kernel@vger.kernel.org, mhocko@suse.com, paulus@samba.org, hpa@zytor.com,
+ sparclinux@vger.kernel.org, sfr@canb.auug.org.au, ysato@users.sourceforge.jp,
+ x86@kernel.org, linux@armlinux.org.uk, mingo@redhat.com,
+ kgdb-bugreport@lists.sourceforge.net, jhogan@kernel.org,
+ linux-snps-arc@lists.infradead.org, linux-arm-msm@vger.kernel.org,
+ ying.huang@intel.com, rppt@linux.vnet.ibm.com, bp@alien8.de,
+ linux-arm-kernel@lists.infradead.org, pombredanne@nexb.com,
+ vgupta@synopsys.com, Douglas Anderson <dianders@chromium.org>,
+ ralf@linux-mips.org, rkuo@codeaurora.org, paul.burton@mips.com,
+ linux-hexagon@vger.kernel.org, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In kgdb_roundup_cpus() we've got code that looks like:
-  local_irq_enable();
-  smp_call_function(kgdb_call_nmi_hook, NULL, 0);
-  local_irq_disable();
+The function kgdb_roundup_cpus() was passed a parameter that was
+documented as:
 
-In certain cases when we drop into kgdb (like with sysrq-g on a serial
-console) we'll get a big yell that looks like:
+> the flags that will be used when restoring the interrupts. There is
+> local_irq_save() call before kgdb_roundup_cpus().
 
-  sysrq: SysRq : DEBUG
-  ------------[ cut here ]------------
+Nobody used those flags.  Anyone who wanted to temporarily turn on
+interrupts just did local_irq_enable() and local_irq_disable() without
+looking at them.  So we can definitely remove the flags.
+
+Speaking of calling local_irq_enable(), it seems like a bad idea and
+it caused a nice splat on my system with lockdep turned on.
+Specifically it hit:
   DEBUG_LOCKS_WARN_ON(current->hardirq_context)
-  WARNING: CPU: 0 PID: 0 at .../kernel/locking/lockdep.c:2875 lockdep_hardirqs_on+0xf0/0x160
-  CPU: 0 PID: 0 Comm: swapper/0 Not tainted 4.19.0 #27
-  pstate: 604003c9 (nZCv DAIF +PAN -UAO)
-  pc : lockdep_hardirqs_on+0xf0/0x160
-  ...
-  Call trace:
-   lockdep_hardirqs_on+0xf0/0x160
-   trace_hardirqs_on+0x188/0x1ac
-   kgdb_roundup_cpus+0x14/0x3c
-   kgdb_cpu_enter+0x53c/0x5cc
-   kgdb_handle_exception+0x180/0x1d4
-   kgdb_compiled_brk_fn+0x30/0x3c
-   brk_handler+0x134/0x178
-   do_debug_exception+0xfc/0x178
-   el1_dbg+0x18/0x78
-   kgdb_breakpoint+0x34/0x58
-   sysrq_handle_dbg+0x54/0x5c
-   __handle_sysrq+0x114/0x21c
-   handle_sysrq+0x30/0x3c
-   qcom_geni_serial_isr+0x2dc/0x30c
-  ...
-  ...
-  irq event stamp: ...45
-  hardirqs last  enabled at (...44): [...] __do_softirq+0xd8/0x4e4
-  hardirqs last disabled at (...45): [...] el1_irq+0x74/0x130
-  softirqs last  enabled at (...42): [...] _local_bh_enable+0x2c/0x34
-  softirqs last disabled at (...43): [...] irq_exit+0xa8/0x100
-  ---[ end trace adf21f830c46e638 ]---
 
-Let's add kgdb to the list of reasons not to warn in
-smp_call_function_many().  That will allow us (in a future patch) to
-stop calling local_irq_enable() which will get rid of the original
-splat.
+See the previous patch in this series ("smp: Don't yell about IRQs
+disabled in kgdb_roundup_cpus()") for more details, but the last few
+things on the stack were this on my arm64 board:
+  lockdep_hardirqs_on+0xf0/0x160
+  trace_hardirqs_on+0x188/0x1ac
+  kgdb_roundup_cpus+0x14/0x3c
 
-NOTE: with this change comes the obvious question: will we start
-deadlocking more often now when we drop into the debugger.  I can't
-say that for sure one way or the other, but the fact that we do the
-same logic for "oops_in_progress" makes me feel like it shouldn't
-happen too often.  Also note that the old logic of turning on
-interrupts temporarily wasn't exactly safe since (I presume) that
-could have violated spin_lock_irqsave() semantics and ended up with a
-deadlock of its own.
+As agrued in the the commit text of ("smp: Don't yell about IRQs
+disabled in kgdb_roundup_cpus()"), it seems better to make
+smp_call_function() lenient about kgdb than to locally turn on IRQs
+here.  Thus let's totally remove all the local_irq_enable() and
+local_irq_disable() calls from all of the kgdb_roundup_cpus() calls.
 
 Signed-off-by: Douglas Anderson <dianders@chromium.org>
 ---
 
- kernel/smp.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ arch/arc/kernel/kgdb.c     |  4 +---
+ arch/arm/kernel/kgdb.c     |  4 +---
+ arch/arm64/kernel/kgdb.c   |  4 +---
+ arch/hexagon/kernel/kgdb.c | 11 ++---------
+ arch/mips/kernel/kgdb.c    |  4 +---
+ arch/powerpc/kernel/kgdb.c |  2 +-
+ arch/sh/kernel/kgdb.c      |  4 +---
+ arch/sparc/kernel/smp_64.c |  2 +-
+ arch/x86/kernel/kgdb.c     |  9 ++-------
+ include/linux/kgdb.h       |  9 ++-------
+ kernel/debug/debug_core.c  |  2 +-
+ 11 files changed, 14 insertions(+), 41 deletions(-)
 
-diff --git a/kernel/smp.c b/kernel/smp.c
-index 163c451af42e..bb581e58c8dc 100644
---- a/kernel/smp.c
-+++ b/kernel/smp.c
-@@ -19,6 +19,7 @@
- #include <linux/sched.h>
- #include <linux/sched/idle.h>
- #include <linux/hypervisor.h>
-+#include <linux/kgdb.h>
+diff --git a/arch/arc/kernel/kgdb.c b/arch/arc/kernel/kgdb.c
+index 9a3c34af2ae8..d94d3cb7f9e8 100644
+--- a/arch/arc/kernel/kgdb.c
++++ b/arch/arc/kernel/kgdb.c
+@@ -197,11 +197,9 @@ static void kgdb_call_nmi_hook(void *ignored)
+ 	kgdb_nmicallback(raw_smp_processor_id(), NULL);
+ }
  
- #include "smpboot.h"
+-void kgdb_roundup_cpus(unsigned long flags)
++void kgdb_roundup_cpus(void)
+ {
+-	local_irq_enable();
+ 	smp_call_function(kgdb_call_nmi_hook, NULL, 0);
+-	local_irq_disable();
+ }
  
-@@ -413,7 +414,8 @@ void smp_call_function_many(const struct cpumask *mask,
- 	 * can't happen.
- 	 */
- 	WARN_ON_ONCE(cpu_online(this_cpu) && irqs_disabled()
--		     && !oops_in_progress && !early_boot_irqs_disabled);
-+		     && !oops_in_progress && !early_boot_irqs_disabled
-+		     && !in_dbg_master());
+ struct kgdb_arch arch_kgdb_ops = {
+diff --git a/arch/arm/kernel/kgdb.c b/arch/arm/kernel/kgdb.c
+index caa0dbe3dc61..a80e9259f7e9 100644
+--- a/arch/arm/kernel/kgdb.c
++++ b/arch/arm/kernel/kgdb.c
+@@ -175,11 +175,9 @@ static void kgdb_call_nmi_hook(void *ignored)
+        kgdb_nmicallback(raw_smp_processor_id(), get_irq_regs());
+ }
  
- 	/* Try to fastpath.  So, what's a CPU they want? Ignoring this one. */
- 	cpu = cpumask_first_and(mask, cpu_online_mask);
+-void kgdb_roundup_cpus(unsigned long flags)
++void kgdb_roundup_cpus(void)
+ {
+-       local_irq_enable();
+        smp_call_function(kgdb_call_nmi_hook, NULL, 0);
+-       local_irq_disable();
+ }
+ 
+ static int __kgdb_notify(struct die_args *args, unsigned long cmd)
+diff --git a/arch/arm64/kernel/kgdb.c b/arch/arm64/kernel/kgdb.c
+index a20de58061a8..5d171c26788f 100644
+--- a/arch/arm64/kernel/kgdb.c
++++ b/arch/arm64/kernel/kgdb.c
+@@ -289,11 +289,9 @@ static void kgdb_call_nmi_hook(void *ignored)
+ 	kgdb_nmicallback(raw_smp_processor_id(), get_irq_regs());
+ }
+ 
+-void kgdb_roundup_cpus(unsigned long flags)
++void kgdb_roundup_cpus(void)
+ {
+-	local_irq_enable();
+ 	smp_call_function(kgdb_call_nmi_hook, NULL, 0);
+-	local_irq_disable();
+ }
+ 
+ static int __kgdb_notify(struct die_args *args, unsigned long cmd)
+diff --git a/arch/hexagon/kernel/kgdb.c b/arch/hexagon/kernel/kgdb.c
+index 16c24b22d0b2..30fbc491cf45 100644
+--- a/arch/hexagon/kernel/kgdb.c
++++ b/arch/hexagon/kernel/kgdb.c
+@@ -119,17 +119,12 @@ void kgdb_arch_set_pc(struct pt_regs *regs, unsigned long pc)
+ 
+ /**
+  * kgdb_roundup_cpus - Get other CPUs into a holding pattern
+- * @flags: Current IRQ state
+  *
+  * On SMP systems, we need to get the attention of the other CPUs
+  * and get them be in a known state.  This should do what is needed
+  * to get the other CPUs to call kgdb_wait(). Note that on some arches,
+  * the NMI approach is not used for rounding up all the CPUs. For example,
+- * in case of MIPS, smp_call_function() is used to roundup CPUs. In
+- * this case, we have to make sure that interrupts are enabled before
+- * calling smp_call_function(). The argument to this function is
+- * the flags that will be used when restoring the interrupts. There is
+- * local_irq_save() call before kgdb_roundup_cpus().
++ * in case of MIPS, smp_call_function() is used to roundup CPUs.
+  *
+  * On non-SMP systems, this is not called.
+  */
+@@ -139,11 +134,9 @@ static void hexagon_kgdb_nmi_hook(void *ignored)
+ 	kgdb_nmicallback(raw_smp_processor_id(), get_irq_regs());
+ }
+ 
+-void kgdb_roundup_cpus(unsigned long flags)
++void kgdb_roundup_cpus(void)
+ {
+-	local_irq_enable();
+ 	smp_call_function(hexagon_kgdb_nmi_hook, NULL, 0);
+-	local_irq_disable();
+ }
+ #endif
+ 
+diff --git a/arch/mips/kernel/kgdb.c b/arch/mips/kernel/kgdb.c
+index eb6c0d582626..6671a279966f 100644
+--- a/arch/mips/kernel/kgdb.c
++++ b/arch/mips/kernel/kgdb.c
+@@ -219,11 +219,9 @@ static void kgdb_call_nmi_hook(void *ignored)
+ 	set_fs(old_fs);
+ }
+ 
+-void kgdb_roundup_cpus(unsigned long flags)
++void kgdb_roundup_cpus(void)
+ {
+-	local_irq_enable();
+ 	smp_call_function(kgdb_call_nmi_hook, NULL, 0);
+-	local_irq_disable();
+ }
+ 
+ static int compute_signal(int tt)
+diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
+index 59c578f865aa..b0e804844be0 100644
+--- a/arch/powerpc/kernel/kgdb.c
++++ b/arch/powerpc/kernel/kgdb.c
+@@ -124,7 +124,7 @@ static int kgdb_call_nmi_hook(struct pt_regs *regs)
+ }
+ 
+ #ifdef CONFIG_SMP
+-void kgdb_roundup_cpus(unsigned long flags)
++void kgdb_roundup_cpus(void)
+ {
+ 	smp_send_debugger_break();
+ }
+diff --git a/arch/sh/kernel/kgdb.c b/arch/sh/kernel/kgdb.c
+index 4f04c6638a4d..86b3ea927e42 100644
+--- a/arch/sh/kernel/kgdb.c
++++ b/arch/sh/kernel/kgdb.c
+@@ -319,11 +319,9 @@ static void kgdb_call_nmi_hook(void *ignored)
+ 	kgdb_nmicallback(raw_smp_processor_id(), get_irq_regs());
+ }
+ 
+-void kgdb_roundup_cpus(unsigned long flags)
++void kgdb_roundup_cpus(void)
+ {
+-	local_irq_enable();
+ 	smp_call_function(kgdb_call_nmi_hook, NULL, 0);
+-	local_irq_disable();
+ }
+ 
+ static int __kgdb_notify(struct die_args *args, unsigned long cmd)
+diff --git a/arch/sparc/kernel/smp_64.c b/arch/sparc/kernel/smp_64.c
+index 4792e08ad36b..f45d876983f1 100644
+--- a/arch/sparc/kernel/smp_64.c
++++ b/arch/sparc/kernel/smp_64.c
+@@ -1014,7 +1014,7 @@ void flush_dcache_page_all(struct mm_struct *mm, struct page *page)
+ }
+ 
+ #ifdef CONFIG_KGDB
+-void kgdb_roundup_cpus(unsigned long flags)
++void kgdb_roundup_cpus(void)
+ {
+ 	smp_cross_call(&xcall_kgdb_capture, 0, 0, 0);
+ }
+diff --git a/arch/x86/kernel/kgdb.c b/arch/x86/kernel/kgdb.c
+index 8e36f249646e..ac6291a4178d 100644
+--- a/arch/x86/kernel/kgdb.c
++++ b/arch/x86/kernel/kgdb.c
+@@ -422,21 +422,16 @@ static void kgdb_disable_hw_debug(struct pt_regs *regs)
+ #ifdef CONFIG_SMP
+ /**
+  *	kgdb_roundup_cpus - Get other CPUs into a holding pattern
+- *	@flags: Current IRQ state
+  *
+  *	On SMP systems, we need to get the attention of the other CPUs
+  *	and get them be in a known state.  This should do what is needed
+  *	to get the other CPUs to call kgdb_wait(). Note that on some arches,
+  *	the NMI approach is not used for rounding up all the CPUs. For example,
+- *	in case of MIPS, smp_call_function() is used to roundup CPUs. In
+- *	this case, we have to make sure that interrupts are enabled before
+- *	calling smp_call_function(). The argument to this function is
+- *	the flags that will be used when restoring the interrupts. There is
+- *	local_irq_save() call before kgdb_roundup_cpus().
++ *	in case of MIPS, smp_call_function() is used to roundup CPUs.
+  *
+  *	On non-SMP systems, this is not called.
+  */
+-void kgdb_roundup_cpus(unsigned long flags)
++void kgdb_roundup_cpus(void)
+ {
+ 	apic->send_IPI_allbutself(APIC_DM_NMI);
+ }
+diff --git a/include/linux/kgdb.h b/include/linux/kgdb.h
+index e465bb15912d..05e5b2eb0d32 100644
+--- a/include/linux/kgdb.h
++++ b/include/linux/kgdb.h
+@@ -178,21 +178,16 @@ kgdb_arch_handle_exception(int vector, int signo, int err_code,
+ 
+ /**
+  *	kgdb_roundup_cpus - Get other CPUs into a holding pattern
+- *	@flags: Current IRQ state
+  *
+  *	On SMP systems, we need to get the attention of the other CPUs
+  *	and get them into a known state.  This should do what is needed
+  *	to get the other CPUs to call kgdb_wait(). Note that on some arches,
+  *	the NMI approach is not used for rounding up all the CPUs. For example,
+- *	in case of MIPS, smp_call_function() is used to roundup CPUs. In
+- *	this case, we have to make sure that interrupts are enabled before
+- *	calling smp_call_function(). The argument to this function is
+- *	the flags that will be used when restoring the interrupts. There is
+- *	local_irq_save() call before kgdb_roundup_cpus().
++ *	in case of MIPS, smp_call_function() is used to roundup CPUs.
+  *
+  *	On non-SMP systems, this is not called.
+  */
+-extern void kgdb_roundup_cpus(unsigned long flags);
++extern void kgdb_roundup_cpus(void);
+ 
+ /**
+  *	kgdb_arch_set_pc - Generic call back to the program counter
+diff --git a/kernel/debug/debug_core.c b/kernel/debug/debug_core.c
+index 65c0f1363788..f3cadda45f07 100644
+--- a/kernel/debug/debug_core.c
++++ b/kernel/debug/debug_core.c
+@@ -593,7 +593,7 @@ static int kgdb_cpu_enter(struct kgdb_state *ks, struct pt_regs *regs,
+ 
+ 	/* Signal the other CPUs to enter kgdb_wait() */
+ 	else if ((!kgdb_single_step) && kgdb_do_roundup)
+-		kgdb_roundup_cpus(flags);
++		kgdb_roundup_cpus();
+ #endif
+ 
+ 	/*
 -- 
 2.19.1.568.g152ad8e336-goog
 
