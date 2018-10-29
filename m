@@ -3,49 +3,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B9C91C0044C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Oct 2018 17:10:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8FC96C0044C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Oct 2018 17:31:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 44F9D204FD
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Oct 2018 17:10:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 44F9D204FD
+	by mail.kernel.org (Postfix) with ESMTPS id A0E9B20657
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Oct 2018 17:31:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A0E9B20657
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42kLhj2Z8lzDsPf
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Oct 2018 04:10:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42kM8V2JN1zF13P
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Oct 2018 04:31:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=intel.com
- (client-ip=134.134.136.126; helo=mga18.intel.com;
+ (client-ip=134.134.136.65; helo=mga03.intel.com;
  envelope-from=dave.hansen@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42kLcf1g2ZzDsMm
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Oct 2018 04:07:12 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42kM6B0lTqzDrhn
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Oct 2018 04:29:20 +1100 (AEDT)
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
 Received: from orsmga001.jf.intel.com ([10.7.209.18])
- by orsmga106.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
- 29 Oct 2018 10:07:10 -0700
+ by orsmga103.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 29 Oct 2018 10:29:18 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.54,441,1534834800"; d="scan'208";a="103666626"
+X-IronPort-AV: E=Sophos;i="5.54,441,1534834800"; d="scan'208";a="103672740"
 Received: from ray.jf.intel.com (HELO [10.7.201.133]) ([10.7.201.133])
- by orsmga001.jf.intel.com with ESMTP; 29 Oct 2018 10:07:09 -0700
+ by orsmga001.jf.intel.com with ESMTP; 29 Oct 2018 10:29:18 -0700
 Subject: Re: [RFC PATCH] seccomp: Add protection keys into seccomp_data
-To: Michael Sammler <msammler@mpi-sws.org>, Jann Horn <jannh@google.com>
+To: Jann Horn <jannh@google.com>
 References: <20181029112343.27454-1-msammler@mpi-sws.org>
  <CAGXu5jJ2fFmEXfUzga3XBXcsHPuPWWf5zLeyn8+Z1oZVa8oTuQ@mail.gmail.com>
  <7d93080b-68bd-7563-bd3b-e7ee1545e367@intel.com>
  <CAG48ez1mY7Osdsc4iJ1JKq=C60wb9bQF=aHbi1fb=pb_V2XMJA@mail.gmail.com>
- <24afa443-92e8-8202-845a-c1e1df1a3226@mpi-sws.org>
 From: Dave Hansen <dave.hansen@intel.com>
 Openpgp: preference=signencrypt
 Autocrypt: addr=dave.hansen@intel.com; keydata=
@@ -91,12 +91,12 @@ Autocrypt: addr=dave.hansen@intel.com; keydata=
  OPsw5tV/LmQ5GXH0JQ/TZXWygyRFyyI2FqNTx4WHqUn3yFj8rwTAU1tluRUYyeLy0ayUlKBH
  ybj0N71vWO936MqP6haFERzuPAIpxj2ezwu0xb1GjTk4ynna6h5GjnKgdfOWoRtoWndMZxbA
  z5cecg==
-Message-ID: <9534815a-6d58-9e21-6ea5-51b9900b16e2@intel.com>
-Date: Mon, 29 Oct 2018 10:07:09 -0700
+Message-ID: <62e09400-0443-8db9-a389-ba4f4201226b@intel.com>
+Date: Mon, 29 Oct 2018 10:29:18 -0700
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.2.1
 MIME-Version: 1.0
-In-Reply-To: <24afa443-92e8-8202-845a-c1e1df1a3226@mpi-sws.org>
+In-Reply-To: <CAG48ez1mY7Osdsc4iJ1JKq=C60wb9bQF=aHbi1fb=pb_V2XMJA@mail.gmail.com>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 8bit
@@ -112,28 +112,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: wad@chromium.org, Kees Cook <keescook@chromium.org>,
- Rik van Riel <riel@surriel.com>, Linux API <linux-api@vger.kernel.org>,
+ Linux API <linux-api@vger.kernel.org>,
  Dave Hansen <dave.hansen@linux.intel.com>, linuxram@us.ibm.com,
- Andy Lutomirski <luto@amacapital.net>, linuxppc-dev@lists.ozlabs.org
+ Andy Lutomirski <luto@amacapital.net>, msammler@mpi-sws.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 10/29/18 10:02 AM, Michael Sammler wrote:
->>> Also, I'm not sure the kernel provides the PKRU guarantees you want at
->>> the moment.  Our implementation *probably* works, but it's mostly by
->>> accident.
-> I don't know, which guarantees about the PKRU are provided at the
-> moment, but the only guarantee needed for this patch is, that the kernel
-> does not change the bits of the PKRU register, which belong to pkeys
-> allocated by the user program, between the syscall entry and the call to
-> secure_computing(). Is there are use case where the kernel would like to
-> modify these bits of the PKRU?
+On 10/29/18 9:48 AM, Jann Horn wrote:
+> On Mon, Oct 29, 2018 at 5:37 PM Dave Hansen <dave.hansen@intel.com> wrote:
+>> I'm not sure this is a great use for PKRU.  I *think* the basic problem
+>> is that you want to communicate some rights information down into a
+>> filter, and you want to communicate it with PKRU.  While it's handy to
+>> have an extra register that nobody (generally) mucks with, I'm not quite
+>> convinced that we want to repurpose it this way.
+> 
+> That's not how I understand it; I believe that the context is probably
+> https://arxiv.org/pdf/1801.06822.pdf ?
+> My understanding is that PKRU is used for lightweight in-process
+> sandboxing, and to extend this sandbox protection to the syscall
+> interface, it is necessary to expose PKRU state to seccomp filters.
+> In other words, this isn't using PKRU exclusively for passing rights
+> into a filter, but it has to use PKRU anyway.
 
-We've been talking about doing more lax save/restore of the XSAVE
-content (PKRU is part of this content).  We would, for instance, only
-restore it when returning to userspace, but PKRU might not be up-to-date
-with the value in current->fpu.
+PKRU gives information about rights to various bits of application data.
+ From that, a seccomp filter can infer the context, and thus the ability
+for the code to call a given syscall at a certain point in time.
 
-It's not a deal-breaker with your approach, it's just something to be
-careful of and make sure PKRU is up-to-date before you go use it.
+This makes PKRU an opt-in part of the syscall ABI, which is pretty
+interesting.  We _could_ do the same kind of thing with any callee-saved
+general purpose register, but PKRU is particularly attractive because
+there is only one instruction that writes to it (well, outside of
+XSAVE*), and random library code is very unlikely at this point to be
+using it.
+
+PKRU getting reset on signals, and the requirement now that it *can't*
+be changed if you make syscalls probably needs to get thought about very
+carefully before we do this, though.
