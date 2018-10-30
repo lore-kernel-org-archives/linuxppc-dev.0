@@ -2,61 +2,84 @@ Return-Path: <SRS0=S6eX=NK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 21064C6786F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Oct 2018 15:52:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A4667C6786F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Oct 2018 15:54:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 66A6020664
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Oct 2018 15:52:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 66A6020664
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 08DF720664
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Oct 2018 15:54:25 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="AaHrOuNj"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 08DF720664
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42kwvX3cm7zF35T
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 02:52:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.intel.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42kwy76zktzF1Ph
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 02:54:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.intel.com
- (client-ip=192.55.52.43; helo=mga05.intel.com;
- envelope-from=andriy.shevchenko@linux.intel.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.intel.com
-Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="AaHrOuNj";
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::641; helo=mail-pl1-x641.google.com;
+ envelope-from=tsu.yubo@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="AaHrOuNj"; 
+ dkim-atps=neutral
+Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
+ [IPv6:2607:f8b0:4864:20::641])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42krZK0gxQzDrhk;
- Tue, 30 Oct 2018 23:36:51 +1100 (AEDT)
-X-Amp-Result: UNKNOWN
-X-Amp-Original-Verdict: FILE UNKNOWN
-X-Amp-File-Uploaded: False
-Received: from fmsmga003.fm.intel.com ([10.253.24.29])
- by fmsmga105.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
- 30 Oct 2018 05:36:48 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.54,444,1534834800"; d="scan'208";a="92375856"
-Received: from smile.fi.intel.com (HELO smile) ([10.237.72.86])
- by FMSMGA003.fm.intel.com with ESMTP; 30 Oct 2018 05:36:31 -0700
-Received: from andy by smile with local (Exim 4.91)
- (envelope-from <andriy.shevchenko@linux.intel.com>)
- id 1gHTFz-00049a-Ck; Tue, 30 Oct 2018 14:36:27 +0200
-Date: Tue, 30 Oct 2018 14:36:27 +0200
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Douglas Anderson <dianders@chromium.org>
-Subject: Re: [PATCH 0/7] serial: Finish kgdb on qcom_geni; fix many lockdep
- splats w/ kgdb
-Message-ID: <20181030123627.GS10650@smile.fi.intel.com>
-References: <20181029180707.207546-1-dianders@chromium.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20181029180707.207546-1-dianders@chromium.org>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
-User-Agent: Mutt/1.10.1 (2018-07-13)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42ksZr5JlbzDqYd
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2018 00:22:25 +1100 (AEDT)
+Received: by mail-pl1-x641.google.com with SMTP id f10-v6so5560276plr.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Oct 2018 06:22:25 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id;
+ bh=ZX25RBS0K0zGBNNwI85JRx7aiFM3svnHk/4qU82CIr4=;
+ b=AaHrOuNjnMLy6zinBnhx5R3wWOognmxuVQjVyjSquApDYa594r635V5lLXGqQGdy5I
+ GGnhQXKTpA5CCYKpJO4FsYR1mgH4PXTWH2nrcKn3CqosnemseNIn+xJIpNaxDf0oCvNz
+ vm31b5e5R5wtTQXUlDfSB1qH5f0j24rBTxzQ/WD1lWD21mq9hr84myNyfIbCMUK9A2Mn
+ Jrp2w7sjrDd68RR4QMwzZSmVxlMlC+SwIF9hMreSdx1nZxo4gs/RQkreUxUtaQgkX6fo
+ wz2rJ0nbp1f/ss5C6B50i9fWGWax4Jrh+PTtkxQ6lGYQG8chzFKU2LohOSWY50RpzpEF
+ 66Lg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id;
+ bh=ZX25RBS0K0zGBNNwI85JRx7aiFM3svnHk/4qU82CIr4=;
+ b=c1L7lwwkwewgZdY+yyix6vzipPs9LgiJZ7+/N+KuW60Q4wnFmsxhCIumMlVaC707WH
+ NO4BHcws1MP/A03R3CGbnRgWATf7/bgc8cvyJCBW7BmeWL5aRthX1pEpH6ug5rob+ENt
+ E+ZZL0Bi+55btN8V46a6CfNlcDT1XaIkS8KbfRw1E4D5JSAsveBbiZW3bKQt3U0v6fwn
+ qMR0imCo2QbX+vW5GCTm6Yuwdj8p2FiWxsjuZGRywPuYTqZ9LBXokb6qMze6N5tWuRNW
+ ojH/W1qbE3AF83X+5BRjN7+iAZsDkI/M9Be+sIC24krs29+4URqGIKaElnOJjMlXORg2
+ 0xcg==
+X-Gm-Message-State: AGRZ1gLAeBkHdknj6ZhLcP6uHZz67iMZ2waUVgGLxKxoqw/fzZNMjiqY
+ qiXJeqvzSE0pj9R94UPmKeA=
+X-Google-Smtp-Source: AJdET5eW+SZrYa+BrKRhEZ9hE6939oamm2r04ock8KPSG1UWi0DNBUWbSXTgrXImazZcQ1xdonlg7w==
+X-Received: by 2002:a17:902:a5c3:: with SMTP id
+ t3-v6mr18820570plq.287.1540905743465; 
+ Tue, 30 Oct 2018 06:22:23 -0700 (PDT)
+Received: from localhost.localdomain ([191.101.9.198])
+ by smtp.gmail.com with ESMTPSA id b11-v6sm11765566pgi.10.2018.10.30.06.22.22
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
+ Tue, 30 Oct 2018 06:22:22 -0700 (PDT)
+From: Bo YU <tsu.yubo@gmail.com>
+To: benh@kernel.crashing.org,
+	paulus@samba.org,
+	mpe@ellerman.id.au
+Subject: [PATCH] arch: fix without checked-return value with lseek
+Date: Tue, 30 Oct 2018 09:21:55 -0400
+Message-Id: <1540905715-4266-1-git-send-email-tsu.yubo@gmail.com>
+X-Mailer: git-send-email 2.1.4
 X-Mailman-Approved-At: Wed, 31 Oct 2018 02:47:32 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -69,112 +92,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nm@ti.com, linux-mips@linux-mips.org, dalias@libc.org, vigneshr@ti.com,
- linux-aspeed@lists.ozlabs.org, linux-sh@vger.kernel.org, peterz@infradead.org,
- catalin.marinas@arm.com, will.deacon@arm.com, mhocko@suse.com,
- paulus@samba.org, hpa@zytor.com, sparclinux@vger.kernel.org, jslaby@suse.com,
- mingo@kernel.org, marex@denx.de, sfr@canb.auug.org.au,
- Daniel Thompson <daniel.thompson@linaro.org>, ysato@users.sourceforge.jp,
- linux-hexagon@vger.kernel.org, x86@kernel.org, linux@armlinux.org.uk,
- tony@atomide.com, mingo@redhat.com, joel@jms.id.au,
- linux-serial@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
- jhogan@kernel.org, rolf.evers.fischer@aptiv.com, asierra@xes-inc.com,
- linux-snps-arc@lists.infradead.org, dan.carpenter@oracle.com,
- ying.huang@intel.com, Jisheng.Zhang@synaptics.com, riel@surriel.com,
- linux-arm-msm@vger.kernel.org, frederic@kernel.org, pombredanne@nexb.com,
- rppt@linux.vnet.ibm.com, bp@alien8.de, luto@kernel.org, tglx@linutronix.de,
- linux-arm-kernel@lists.infradead.org, andrew@aj.id.au,
- gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, ralf@linux-mips.org,
- rkuo@codeaurora.org, paul.burton@mips.com, vgupta@synopsys.com, jk@ozlabs.org,
- Jason Wessel <jason.wessel@windriver.com>, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, davem@davemloft.net,
- kstewart@linuxfoundation.org
+Cc: linuxppc-dev@lists.ozlabs.org, Bo YU <tsu.yubo@gmail.com>,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Oct 29, 2018 at 11:07:00AM -0700, Douglas Anderson wrote:
-> I started out this series trying to make sysrq work over the serial
-> console on qcom_geni_serial, then fell into a rat's nest.
-> 
-> To solve the deadlock I faced when enabling sysrq I tried to borrow
-> code from '8250_port.c' which avoided grabbing the port lock in
-> console_write().  ...but since these days I try to run with lockdep on
-> all the time, I found it caused an annoying lockdep splat (which I
-> also reproduced on my rk3399 board).  ...so I instead changed my
-> qcom_geni_serial solution to borrow code from 'msm_serial.c'
-> 
-> I wasn't super happy with the solution in 'msm_serial.c' though.  I
-> don't like releasing the spinlock there.  Not only is it ugly but it
-> means we are unlocking / re-locking _all the time_ even though sysrq
-> characters are rare.  ...so I came up with what I think is a better
-> solution and then implemented it for qcom_geni_serial.
-> 
-> Since I had a good way to test 8250-based UARTs, I also fixed that
-> driver to use my new method.  When doing so, I ran into a missing
-> msm_serial.c at all, so I didn't switch that (or all other serial
-> drivers for that matter) to the new method.
-> 
-> After fixing all the above issues, I found the next lockdep splat in
-> kgdb and I think I've worked around it in a good-enough way, but I'm
-> much less confident about this.  Hopefully folks can take a look at
-> it.
-> 
-> In general, patches earlier in this series should be "less
-> controversial" and hopefully can land even if people don't like
-> patches later in the series.  ;-)
-> 
-> Looking back, this is pretty much two series squashed that could be
-> treated indepdently.  The first is a serial series and the second is a
-> kgdb series.
-> 
-> For all serial patches I'd expect them to go through the tty tree once
-> they've been reviewed.
-> 
-> If folks are OK w/ the 'smp' patch it probably should go in some core
-> kernel tree.  The kgdb patch won't work without it, though, so to land
-> that we'd need coordination between the folks landing that and the
-> folks landing the 'smp' patch.
+lseek should have returned value but we miss it maybe.
+This is detected by Coverity scan:
+CID: 1440481
 
-I have got only 0/7 and 5/7, everything okay with your mail client and other tools?
+Signed-off-by: Bo YU <tsu.yubo@gmail.com>
+---
+ arch/powerpc/boot/addnote.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-> 
-> 
-> Douglas Anderson (7):
->   serial: qcom_geni_serial: Finish supporting sysrq
->   serial: core: Allow processing sysrq at port unlock time
->   serial: qcom_geni_serial: Process sysrq at port unlock time
->   serial: core: Include console.h from serial_core.h
->   serial: 8250: Process sysrq at port unlock time
->   smp: Don't yell about IRQs disabled in kgdb_roundup_cpus()
->   kgdb: Remove irq flags and local_irq_enable/disable from roundup
-> 
->  arch/arc/kernel/kgdb.c                      |  4 +--
->  arch/arm/kernel/kgdb.c                      |  4 +--
->  arch/arm64/kernel/kgdb.c                    |  4 +--
->  arch/hexagon/kernel/kgdb.c                  | 11 ++----
->  arch/mips/kernel/kgdb.c                     |  4 +--
->  arch/powerpc/kernel/kgdb.c                  |  2 +-
->  arch/sh/kernel/kgdb.c                       |  4 +--
->  arch/sparc/kernel/smp_64.c                  |  2 +-
->  arch/x86/kernel/kgdb.c                      |  9 ++---
->  drivers/tty/serial/8250/8250_aspeed_vuart.c |  6 +++-
->  drivers/tty/serial/8250/8250_fsl.c          |  6 +++-
->  drivers/tty/serial/8250/8250_omap.c         |  6 +++-
->  drivers/tty/serial/8250/8250_port.c         |  8 ++---
->  drivers/tty/serial/qcom_geni_serial.c       | 10 ++++--
->  include/linux/kgdb.h                        |  9 ++---
->  include/linux/serial_core.h                 | 38 ++++++++++++++++++++-
->  kernel/debug/debug_core.c                   |  2 +-
->  kernel/smp.c                                |  4 ++-
->  18 files changed, 80 insertions(+), 53 deletions(-)
-> 
-> -- 
-> 2.19.1.568.g152ad8e336-goog
-> 
-
+diff --git a/arch/powerpc/boot/addnote.c b/arch/powerpc/boot/addnote.c
+index 9d9f6f334d3c..3da3e2b1b51b 100644
+--- a/arch/powerpc/boot/addnote.c
++++ b/arch/powerpc/boot/addnote.c
+@@ -223,7 +223,11 @@ main(int ac, char **av)
+ 	PUT_16(E_PHNUM, np + 2);
+ 
+ 	/* write back */
+-	lseek(fd, (long) 0, SEEK_SET);
++	i = lseek(fd, (long) 0, SEEK_SET);
++	if (i < 0) {
++		perror("lseek");
++		exit(1);
++	}
+ 	i = write(fd, buf, n);
+ 	if (i < 0) {
+ 		perror("write");
 -- 
-With Best Regards,
-Andy Shevchenko
-
+2.11.0
 
