@@ -6,58 +6,58 @@ X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EA939C2BC61
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Oct 2018 05:33:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 81261C2BC61
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Oct 2018 05:35:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4780A20664
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Oct 2018 05:33:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C3E6B20664
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Oct 2018 05:35:45 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="f2io8mIX"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4780A20664
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="h2ExxK/k"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C3E6B20664
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42kg9l1CR5zF18l
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Oct 2018 16:33:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42kgDH5kv0zF1Q0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Oct 2018 16:35:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="f2io8mIX";
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="h2ExxK/k";
 	dkim-atps=neutral
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42kg723RS2zDrS7
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42kg721td6zDrPy
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Oct 2018 16:31:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="f2io8mIX"; 
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="h2ExxK/k"; 
  dkim-atps=neutral
 Received: by ozlabs.org (Postfix, from userid 1003)
- id 42kg7211jhz9s1x; Tue, 30 Oct 2018 16:31:09 +1100 (AEDT)
+ id 42kg716Zqpz9s5c; Tue, 30 Oct 2018 16:31:09 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1540877470; bh=vCXcIR/UMEz1AYXUbnf1bgkV3zYpHdIWPiVwpSCjJrg=;
+ t=1540877469; bh=xd9ydww8gS29Rw1cBwuvThzBA7hOWHhPVkHqbT5SIsY=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=f2io8mIXGtJB/j1wT5X6GVN7BeEp1nzfE1Kkv0C8GIpjqVnlTPfxYjAMluyhELJ8V
- eAR+ZAPoPTGzimGeZ1oVblmy/9L9sG+rc+nPB8LEb/Dl3IsWJad+KlfvcF2siChWp4
- xb+hNVlI2KvgAh8EGffOk3cpAxNPMIfCUZCHSLnNlsq4HiSTmrTquT2dPBFq/WowGv
- aRVdMKWjcU+PbWf1zLGIdWOwWrrK0LpivJC7vznXMaruOxtOOTKfaQREc0sVZ25H+e
- 7+4dl0q8igoc9rN5IZK5Ml6qfEjH+jXbx9Sbvq0T+eweKxv/zackBzb2wwRxeI4qVX
- 8CAC8Avcy9AYw==
-Date: Tue, 30 Oct 2018 16:29:57 +1100
+ b=h2ExxK/kHtA1O0hXERTk6wuIwBQ29R3ytACygD7W80LlBTzXj1+4mnnQemQhycsOs
+ TzYTRj9B74ejT9g7TBvZW9em+6ohjKha5d+YhNTtrvmy3buHXUduimaRWwU0mG32VC
+ R7kv2scxWseBLbiCsvn+OqjIon7J5igYnVk7UQksLIUZxLLhPyaWkvGLw0wK+IJqev
+ kvGcGxXs784v5B+fVkMvW9pVZa9s4CivAOXD1F3AedeytaB/9LXxwm6vYDHAZy4Gkt
+ tpT7w+6rz78PK8tha0R1usY08oYKNyM6tzvja+i36GTvC58jrbEDRt0xZRUV6MnnDZ
+ 5a9K4emqQ8fNg==
+Date: Tue, 30 Oct 2018 16:26:46 +1100
 From: Paul Mackerras <paulus@ozlabs.org>
 To: Bharata B Rao <bharata@linux.ibm.com>
-Subject: Re: [RFC PATCH v1 3/4] kvmppc: H_SVM_INIT_START and H_SVM_INIT_DONE
- hcalls
-Message-ID: <20181030052957.GC11072@blackberry>
+Subject: Re: [RFC PATCH v1 2/4] kvmppc: Add support for shared pages in HMM
+ driver
+Message-ID: <20181030052646.GB11072@blackberry>
 References: <20181022051837.1165-1-bharata@linux.ibm.com>
- <20181022051837.1165-4-bharata@linux.ibm.com>
+ <20181022051837.1165-3-bharata@linux.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20181022051837.1165-4-bharata@linux.ibm.com>
+In-Reply-To: <20181022051837.1165-3-bharata@linux.ibm.com>
 User-Agent: Mutt/1.5.24 (2015-08-30)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -77,167 +77,138 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Oct 22, 2018 at 10:48:36AM +0530, Bharata B Rao wrote:
-> H_SVM_INIT_START: Initiate securing a VM
-> H_SVM_INIT_DONE: Conclude securing a VM
-> 
-> During early guest init, these hcalls will be issued by UV.
-> As part of these hcalls, [un]register memslots with UV.
+On Mon, Oct 22, 2018 at 10:48:35AM +0530, Bharata B Rao wrote:
+> A secure guest will share some of its pages with hypervisor (Eg. virtio
+> bounce buffers etc). Support shared pages in HMM driver.
 > 
 > Signed-off-by: Bharata B Rao <bharata@linux.ibm.com>
 
 Comments below...
 
 > ---
->  arch/powerpc/include/asm/hvcall.h    |  4 ++-
->  arch/powerpc/include/asm/kvm_host.h  |  1 +
->  arch/powerpc/include/asm/ucall-api.h |  6 ++++
->  arch/powerpc/kvm/book3s_hv.c         | 54 ++++++++++++++++++++++++++++
->  4 files changed, 64 insertions(+), 1 deletion(-)
+>  arch/powerpc/kvm/book3s_hv_hmm.c | 69 ++++++++++++++++++++++++++++++--
+>  1 file changed, 65 insertions(+), 4 deletions(-)
 > 
-> diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
-> index 89e6b70c1857..6091276fef07 100644
-> --- a/arch/powerpc/include/asm/hvcall.h
-> +++ b/arch/powerpc/include/asm/hvcall.h
-> @@ -300,7 +300,9 @@
->  #define H_INT_RESET             0x3D0
->  #define H_SVM_PAGE_IN		0x3D4
->  #define H_SVM_PAGE_OUT		0x3D8
-> -#define MAX_HCALL_OPCODE	H_SVM_PAGE_OUT
-> +#define H_SVM_INIT_START	0x3DC
-> +#define H_SVM_INIT_DONE		0x3E0
-> +#define MAX_HCALL_OPCODE	H_SVM_INIT_DONE
-
-Same comments about hcall number assignments as for patch 1.
-
->  /* H_VIOCTL functions */
->  #define H_GET_VIOA_DUMP_SIZE	0x01
-> diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-> index 194e6e0ff239..267f8c568bc3 100644
-> --- a/arch/powerpc/include/asm/kvm_host.h
-> +++ b/arch/powerpc/include/asm/kvm_host.h
-> @@ -292,6 +292,7 @@ struct kvm_arch {
->  	struct dentry *debugfs_dir;
->  	struct dentry *htab_dentry;
->  	struct kvm_resize_hpt *resize_hpt; /* protected by kvm->lock */
-> +	bool svm_init_start; /* Indicates H_SVM_INIT_START has been called */
-
-That doesn't seem like a good name for the field.  How about just
-'secure'?
-
->  #endif /* CONFIG_KVM_BOOK3S_HV_POSSIBLE */
->  #ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
->  	struct mutex hpt_mutex;
-> diff --git a/arch/powerpc/include/asm/ucall-api.h b/arch/powerpc/include/asm/ucall-api.h
-> index 2c12f514f8ab..9ddfcf541211 100644
-> --- a/arch/powerpc/include/asm/ucall-api.h
-> +++ b/arch/powerpc/include/asm/ucall-api.h
-> @@ -17,4 +17,10 @@ static inline int uv_page_out(u64 lpid, u64 dw0, u64 dw1, u64 dw2, u64 dw3)
->  	return U_SUCCESS;
->  }
->  
-> +static inline int uv_register_mem_slot(u64 lpid, u64 dw0, u64 dw1, u64 dw2,
-> +				       u64 dw3)
-> +{
-> +	return 0;
-> +}
-
-Please give the parameters descriptive names.
-
-> +
->  #endif	/* _ASM_POWERPC_UCALL_API_H */
-> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> index 05084eb8aadd..47f366f634fd 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -819,6 +819,50 @@ static int kvmppc_get_yield_count(struct kvm_vcpu *vcpu)
->  	return yield_count;
->  }
->  
-> +#ifdef CONFIG_PPC_SVM
-> +#include <asm/ucall-api.h>
-> +/*
-> + * TODO: Check if memslots related calls here need to be called
-> + * under any lock.
-> + */
-> +static unsigned long kvmppc_h_svm_init_start(struct kvm *kvm)
-> +{
-> +	struct kvm_memslots *slots;
-> +	struct kvm_memory_slot *memslot;
-> +	int ret;
-> +
-> +	slots = kvm_memslots(kvm);
-
-I think you need the srcu read lock around this stuff.
-
-> +	kvm_for_each_memslot(memslot, slots) {
-> +		ret = uv_register_mem_slot(kvm->arch.lpid,
-> +					   memslot->base_gfn << PAGE_SHIFT,
-> +					   memslot->npages * PAGE_SIZE,
-> +					   0, memslot->id);
-> +		if (ret < 0)
-> +			return H_PARAMETER;
-
-That doesn't seem like the right error code to use...
-
-> +	}
-> +	kvm->arch.svm_init_start = true;
-> +	return H_SUCCESS;
-> +}
-> +
-> +static unsigned long kvmppc_h_svm_init_done(struct kvm *kvm)
-> +{
-> +	if (kvm->arch.svm_init_start)
-> +		return H_SUCCESS;
-> +	else
-> +		return H_UNSUPPORTED;
-> +}
-> +#else
-> +static unsigned long kvmppc_h_svm_init_start(struct kvm *kvm)
-> +{
-> +	return H_UNSUPPORTED;
-> +}
-> +
-> +static unsigned long kvmppc_h_svm_init_done(struct kvm *kvm)
-> +{
-> +	return H_UNSUPPORTED;
-> +}
-> +#endif
-> +
->  int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
->  {
->  	unsigned long req = kvmppc_get_gpr(vcpu, 3);
-> @@ -950,6 +994,12 @@ int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
->  					    kvmppc_get_gpr(vcpu, 6),
->  					    kvmppc_get_gpr(vcpu, 7));
->  		break;
-> +	case H_SVM_INIT_START:
-> +		ret = kvmppc_h_svm_init_start(vcpu->kvm);
-> +		break;
-> +	case H_SVM_INIT_DONE:
-> +		ret = kvmppc_h_svm_init_done(vcpu->kvm);
-> +		break;
->  	default:
->  		return RESUME_HOST;
->  	}
-> @@ -978,6 +1028,8 @@ static int kvmppc_hcall_impl_hv(unsigned long cmd)
->  #endif
->  	case H_SVM_PAGE_IN:
->  	case H_SVM_PAGE_OUT:
-> +	case H_SVM_INIT_START:
-> +	case H_SVM_INIT_DONE:
->  		return 1;
->  	}
->  
-> @@ -4413,6 +4465,8 @@ static unsigned int default_hcall_list[] = {
->  #endif
->  	H_SVM_PAGE_IN,
->  	H_SVM_PAGE_OUT,
-> +	H_SVM_INIT_START,
-> +	H_SVM_INIT_DONE,
->  	0
+> diff --git a/arch/powerpc/kvm/book3s_hv_hmm.c b/arch/powerpc/kvm/book3s_hv_hmm.c
+> index a2ee3163a312..09b8e19b7605 100644
+> --- a/arch/powerpc/kvm/book3s_hv_hmm.c
+> +++ b/arch/powerpc/kvm/book3s_hv_hmm.c
+> @@ -50,6 +50,7 @@ struct kvmppc_hmm_page_pvt {
+>  	struct hlist_head *hmm_hash;
+>  	unsigned int lpid;
+>  	unsigned long gpa;
+> +	bool skip_page_out;
 >  };
 >  
+>  struct kvmppc_hmm_migrate_args {
+> @@ -278,6 +279,65 @@ static unsigned long kvmppc_gpa_to_hva(struct kvm *kvm, unsigned long gpa,
+>  	return hva;
+>  }
+>  
+> +/*
+> + * Shares the page with HV, thus making it a normal page.
+> + *
+> + * - If the page is already secure, then provision a new page and share
+> + * - If the page is a normal page, share the existing page
+> + *
+> + * In the former case, uses the HMM fault handler to release the HMM page.
+> + */
+> +static unsigned long
+> +kvmppc_share_page(struct kvm *kvm, unsigned long gpa,
+> +		  unsigned long addr, unsigned long page_shift)
+> +{
+> +
+> +	int ret;
+> +	struct hlist_head *list, *hmm_hash;
+> +	unsigned int lpid = kvm->arch.lpid;
+> +	unsigned long flags;
+> +	struct kvmppc_hmm_pfn_entry *p;
+> +	struct page *hmm_page, *page;
+> +	struct kvmppc_hmm_page_pvt *pvt;
+> +	unsigned long pfn;
+> +
+> +	/*
+> +	 * First check if the requested page has already been given to
+> +	 * UV as a secure page. If so, ensure that we don't issue a
+> +	 * UV_PAGE_OUT but instead directly send the page
+> +	 */
+> +	spin_lock_irqsave(&kvmppc_hmm_lock, flags);
+> +	hmm_hash = kvm->arch.hmm_hash;
+> +	list = &hmm_hash[kvmppc_hmm_pfn_hash_fn(gpa)];
+> +	hlist_for_each_entry(p, list, hlist) {
+> +		if (p->addr == gpa) {
+> +			hmm_page = pfn_to_page(p->hmm_pfn);
+> +			get_page(hmm_page); /* TODO: Necessary ? */
+> +			pvt = (struct kvmppc_hmm_page_pvt *)
+> +				hmm_devmem_page_get_drvdata(hmm_page);
+> +			pvt->skip_page_out = true;
+> +			put_page(hmm_page);
+> +			break;
+> +		}
+> +	}
+> +	spin_unlock_irqrestore(&kvmppc_hmm_lock, flags);
+> +
+> +	ret = get_user_pages_fast(addr, 1, 0, &page);
+
+Why are we calling this with write==0?  Surely in general the secure
+guest will expect to be able to write to the shared page?
+
+Also, in general get_user_pages_fast isn't sufficient to translate a
+host virtual address (derived from a guest real address) into a pfn.
+See for example hva_to_pfn() in virt/kvm/kvm_main.c and the things it
+does to cope with the various cases that one can hit.  I can imagine
+in future that the secure guest might want to establish a shared
+mapping to a PCI device, for instance.
+
+> +	if (ret != 1)
+> +		return H_PARAMETER;
+> +
+> +	pfn = page_to_pfn(page);
+> +	if (is_zero_pfn(pfn)) {
+> +		put_page(page);
+> +		return H_SUCCESS;
+> +	}
+
+The ultravisor still needs a page to map into the guest in this case,
+doesn't it?  What's the point of returning without giving the
+ultravisor a page to use?
+
+> +
+> +	ret = uv_page_in(lpid, pfn << page_shift, gpa, 0, page_shift);
+> +	put_page(page);
+> +
+> +	return (ret == U_SUCCESS) ? H_SUCCESS : H_PARAMETER;
+> +}
+> +
+>  /*
+>   * Move page from normal memory to secure memory.
+>   */
+> @@ -300,8 +360,8 @@ kvmppc_h_svm_page_in(struct kvm *kvm, unsigned long gpa,
+>  		return H_PARAMETER;
+>  	end = addr + (1UL << page_shift);
+>  
+> -	if (flags)
+> -		return H_P2;
+> +	if (flags & H_PAGE_IN_SHARED)
+> +		return kvmppc_share_page(kvm, gpa, addr, page_shift);
+
+Would be best to fail if any unknown flags are set, I would think.
+
+>  
+>  	args.hmm_hash = kvm->arch.hmm_hash;
+>  	args.lpid = kvm->arch.lpid;
+> @@ -349,8 +409,9 @@ kvmppc_hmm_fault_migrate_alloc_and_copy(struct vm_area_struct *vma,
+>  	       hmm_devmem_page_get_drvdata(spage);
+>  
+>  	pfn = page_to_pfn(dpage);
+> -	ret = uv_page_out(pvt->lpid, pfn << PAGE_SHIFT,
+> -			  pvt->gpa, 0, PAGE_SHIFT);
+> +	if (!pvt->skip_page_out)
+> +		ret = uv_page_out(pvt->lpid, pfn << PAGE_SHIFT,
+> +				  pvt->gpa, 0, PAGE_SHIFT);
+>  	if (ret == U_SUCCESS)
+>  		*dst_pfn = migrate_pfn(pfn) | MIGRATE_PFN_LOCKED;
+>  }
 > -- 
 > 2.17.1
 
