@@ -3,22 +3,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 46EF2C0044C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Oct 2018 02:49:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DA03FC2BC61
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Oct 2018 02:51:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B946520824
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Oct 2018 02:49:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B946520824
+	by mail.kernel.org (Postfix) with ESMTPS id 6251520824
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Oct 2018 02:51:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6251520824
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42kbXC6rnDzDqq7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Oct 2018 13:49:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42kbZB3DgKzDsN0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Oct 2018 13:50:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=nxp.com
@@ -29,23 +29,23 @@ Authentication-Results: lists.ozlabs.org;
 Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42kbL13z4RzDrMm
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Oct 2018 13:40:25 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42kbL8323WzF10S
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Oct 2018 13:40:32 +1100 (AEDT)
 Received: from inva021.nxp.com (localhost [127.0.0.1])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 6DBFD20008C;
- Tue, 30 Oct 2018 03:40:22 +0100 (CET)
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 3F1BD200157;
+ Tue, 30 Oct 2018 03:40:29 +0100 (CET)
 Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
  [165.114.16.14])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id F102020004B;
- Tue, 30 Oct 2018 03:40:15 +0100 (CET)
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id CC4C620004B;
+ Tue, 30 Oct 2018 03:40:22 +0100 (CET)
 Received: from titan.ap.freescale.net (TITAN.ap.freescale.net [10.192.208.233])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id AF2084030E;
- Tue, 30 Oct 2018 10:40:07 +0800 (SGT)
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 41DAF40326;
+ Tue, 30 Oct 2018 10:40:09 +0800 (SGT)
 From: Peng Ma <peng.ma@nxp.com>
 To: vkoul@kernel.org
-Subject: [v11 5/7] arm64: dts: ls1043a: add qdma device tree nodes
-Date: Tue, 30 Oct 2018 10:36:02 +0800
-Message-Id: <20181030023604.34027-5-peng.ma@nxp.com>
+Subject: [v11 6/7] arm64: dts: ls1046a: add qdma device tree nodes
+Date: Tue, 30 Oct 2018 10:36:03 +0800
+Message-Id: <20181030023604.34027-6-peng.ma@nxp.com>
 X-Mailer: git-send-email 2.14.1
 In-Reply-To: <20181030023604.34027-1-peng.ma@nxp.com>
 References: <20181030023604.34027-1-peng.ma@nxp.com>
@@ -70,7 +70,7 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-add the qDMA device tree nodes for LS1043A devices.
+add the qDMA device tree nodes for LS1046A devices.
 
 Signed-off-by: Wen He <wen.he_1@nxp.com>
 Signed-off-by: Peng Ma <peng.ma@nxp.com>
@@ -78,20 +78,19 @@ Signed-off-by: Peng Ma <peng.ma@nxp.com>
 change in v11:
 	- no
 
- arch/arm64/boot/dts/freescale/fsl-ls1043a.dtsi |   22 ++++++++++++++++++++++
- 1 files changed, 22 insertions(+), 0 deletions(-)
+ arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi |   21 +++++++++++++++++++++
+ 1 files changed, 21 insertions(+), 0 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1043a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls1043a.dtsi
-index 7881e3d..d560141 100644
---- a/arch/arm64/boot/dts/freescale/fsl-ls1043a.dtsi
-+++ b/arch/arm64/boot/dts/freescale/fsl-ls1043a.dtsi
-@@ -734,6 +734,28 @@
- 					<0000 0 0 3 &gic 0 156 0x4>,
- 					<0000 0 0 4 &gic 0 157 0x4>;
+diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi
+index ef83786..dc65318 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi
++++ b/arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi
+@@ -704,6 +704,27 @@
+ 					<0000 0 0 4 &gic GIC_SPI 154 IRQ_TYPE_LEVEL_HIGH>;
  		};
-+
+ 
 +		qdma: dma-controller@8380000 {
-+			compatible = "fsl,ls1021a-qdma", "fsl,ls1043a-qdma";
++			compatible = "fsl,ls1046a-qdma", "fsl,ls1021a-qdma";
 +			reg = <0x0 0x8380000 0x0 0x1000>, /* Controller regs */
 +			      <0x0 0x8390000 0x0 0x10000>, /* Status regs */
 +			      <0x0 0x83a0000 0x0 0x40000>; /* Block regs */
@@ -113,7 +112,7 @@ index 7881e3d..d560141 100644
 +
  	};
  
- 	firmware {
+ 	reserved-memory {
 -- 
 1.7.1
 
