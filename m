@@ -2,66 +2,63 @@ Return-Path: <SRS0=S6eX=NK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 43599C2BC61
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Oct 2018 04:25:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EA939C2BC61
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Oct 2018 05:33:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8066C20823
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Oct 2018 04:25:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 4780A20664
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Oct 2018 05:33:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="QMIHH3VI"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8066C20823
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="f2io8mIX"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4780A20664
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42kdg22vNWzF0RC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Oct 2018 15:25:18 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=socionext.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42kg9l1CR5zF18l
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Oct 2018 16:33:31 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nifty.com header.i=@nifty.com header.b="QMIHH3VI";
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="f2io8mIX";
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=softfail (mailfrom) smtp.mailfrom=socionext.com
- (client-ip=210.131.2.76; helo=conuserg-09.nifty.com;
- envelope-from=yamada.masahiro@socionext.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=socionext.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nifty.com header.i=@nifty.com header.b="QMIHH3VI"; 
- dkim-atps=neutral
-Received: from conuserg-09.nifty.com (conuserg-09.nifty.com [210.131.2.76])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42kdcV042lzF0RC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Oct 2018 15:23:05 +1100 (AEDT)
-Received: from pug.e01.socionext.com (p14092-ipngnfx01kyoto.kyoto.ocn.ne.jp
- [153.142.97.92]) (authenticated)
- by conuserg-09.nifty.com with ESMTP id w9U4LgZK000764;
- Tue, 30 Oct 2018 13:21:42 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-09.nifty.com w9U4LgZK000764
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1540873303;
- bh=U06X4wzGUcKfpT3rd6eTAurlLB8yHi+i7Y+oD+BqWGI=;
- h=From:To:Cc:Subject:Date:From;
- b=QMIHH3VIc22lCyApk6nAwVLVVVeGu5tpxb0dOTThkGDf2WyypYKO8jE7lypabKmVp
- beRCiYw0UDlfLYtD8ksbR2gtf6c9QSAv41ijLHfJBrWbIMt8fOYrQz8Mky5n5ypcby
- ivcuUn34IkFJxRon5eCgL0VeT0yQSGhXq7GcVlW2A9hCszA/bAxAYpKMk1F0gb1vMp
- 1aFUsTYRLzRxovPIsEbJmtQLNQf/cqiDrJwp8nx9R49r8XUsJfVd8tLe3LBFBklaQg
- cgfnRry5me4+5DGjfz/Wb2LC/0QJeOzeHIqOwl6NX+hxO1tD0gmNPlDihoNO3HFpQH
- HGqmmbzoKb7og==
-X-Nifty-SrcIP: [153.142.97.92]
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-To: linux-kbuild@vger.kernel.org
-Subject: [PATCH 1/2] kbuild: replace cc-name test with CONFIG_CC_IS_CLANG
-Date: Tue, 30 Oct 2018 13:21:32 +0900
-Message-Id: <1540873293-29817-1-git-send-email-yamada.masahiro@socionext.com>
-X-Mailer: git-send-email 2.7.4
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42kg723RS2zDrS7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Oct 2018 16:31:10 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=ozlabs.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="f2io8mIX"; 
+ dkim-atps=neutral
+Received: by ozlabs.org (Postfix, from userid 1003)
+ id 42kg7211jhz9s1x; Tue, 30 Oct 2018 16:31:09 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
+ t=1540877470; bh=vCXcIR/UMEz1AYXUbnf1bgkV3zYpHdIWPiVwpSCjJrg=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=f2io8mIXGtJB/j1wT5X6GVN7BeEp1nzfE1Kkv0C8GIpjqVnlTPfxYjAMluyhELJ8V
+ eAR+ZAPoPTGzimGeZ1oVblmy/9L9sG+rc+nPB8LEb/Dl3IsWJad+KlfvcF2siChWp4
+ xb+hNVlI2KvgAh8EGffOk3cpAxNPMIfCUZCHSLnNlsq4HiSTmrTquT2dPBFq/WowGv
+ aRVdMKWjcU+PbWf1zLGIdWOwWrrK0LpivJC7vznXMaruOxtOOTKfaQREc0sVZ25H+e
+ 7+4dl0q8igoc9rN5IZK5Ml6qfEjH+jXbx9Sbvq0T+eweKxv/zackBzb2wwRxeI4qVX
+ 8CAC8Avcy9AYw==
+Date: Tue, 30 Oct 2018 16:29:57 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Bharata B Rao <bharata@linux.ibm.com>
+Subject: Re: [RFC PATCH v1 3/4] kvmppc: H_SVM_INIT_START and H_SVM_INIT_DONE
+ hcalls
+Message-ID: <20181030052957.GC11072@blackberry>
+References: <20181022051837.1165-1-bharata@linux.ibm.com>
+ <20181022051837.1165-4-bharata@linux.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20181022051837.1165-4-bharata@linux.ibm.com>
+User-Agent: Mutt/1.5.24 (2015-08-30)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,106 +70,175 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mips@linux-mips.org, Michal Marek <michal.lkml@markovi.net>,
- James Hogan <jhogan@kernel.org>, linux-kernel@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Paul Burton <paul.burton@mips.com>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxram@us.ibm.com, kvm-ppc@vger.kernel.org, benh@linux.ibm.com,
+ linux-mm@kvack.org, jglisse@redhat.com, aneesh.kumar@linux.vnet.ibm.com,
+ paulus@au1.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Evaluating cc-name invokes the compiler every time even when you are
-not compiling anything, like 'make help'. This is not efficient.
+On Mon, Oct 22, 2018 at 10:48:36AM +0530, Bharata B Rao wrote:
+> H_SVM_INIT_START: Initiate securing a VM
+> H_SVM_INIT_DONE: Conclude securing a VM
+> 
+> During early guest init, these hcalls will be issued by UV.
+> As part of these hcalls, [un]register memslots with UV.
+> 
+> Signed-off-by: Bharata B Rao <bharata@linux.ibm.com>
 
-The compiler type has been already detected in the Kconfig stage.
-Use CONFIG_CC_IS_CLANG, instead.
+Comments below...
 
-Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
----
+> ---
+>  arch/powerpc/include/asm/hvcall.h    |  4 ++-
+>  arch/powerpc/include/asm/kvm_host.h  |  1 +
+>  arch/powerpc/include/asm/ucall-api.h |  6 ++++
+>  arch/powerpc/kvm/book3s_hv.c         | 54 ++++++++++++++++++++++++++++
+>  4 files changed, 64 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
+> index 89e6b70c1857..6091276fef07 100644
+> --- a/arch/powerpc/include/asm/hvcall.h
+> +++ b/arch/powerpc/include/asm/hvcall.h
+> @@ -300,7 +300,9 @@
+>  #define H_INT_RESET             0x3D0
+>  #define H_SVM_PAGE_IN		0x3D4
+>  #define H_SVM_PAGE_OUT		0x3D8
+> -#define MAX_HCALL_OPCODE	H_SVM_PAGE_OUT
+> +#define H_SVM_INIT_START	0x3DC
+> +#define H_SVM_INIT_DONE		0x3E0
+> +#define MAX_HCALL_OPCODE	H_SVM_INIT_DONE
 
- Makefile                   | 2 +-
- arch/mips/Makefile         | 2 +-
- arch/mips/vdso/Makefile    | 2 +-
- arch/powerpc/Makefile      | 4 ++--
- scripts/Makefile.extrawarn | 2 +-
- 5 files changed, 6 insertions(+), 6 deletions(-)
+Same comments about hcall number assignments as for patch 1.
 
-diff --git a/Makefile b/Makefile
-index 0a42d06..bd93bc3 100644
---- a/Makefile
-+++ b/Makefile
-@@ -707,7 +707,7 @@ stackp-flags-$(CONFIG_STACKPROTECTOR_STRONG)      := -fstack-protector-strong
- 
- KBUILD_CFLAGS += $(stackp-flags-y)
- 
--ifeq ($(cc-name),clang)
-+ifeq ($(CONFIG_CC_IS_CLANG),y)
- KBUILD_CPPFLAGS += $(call cc-option,-Qunused-arguments,)
- KBUILD_CFLAGS += $(call cc-disable-warning, format-invalid-specifier)
- KBUILD_CFLAGS += $(call cc-disable-warning, gnu)
-diff --git a/arch/mips/Makefile b/arch/mips/Makefile
-index 15a84cf..ad1c418 100644
---- a/arch/mips/Makefile
-+++ b/arch/mips/Makefile
-@@ -128,7 +128,7 @@ cflags-y += -ffreestanding
- # clang's output will be based upon the build machine. So for clang we simply
- # unconditionally specify -EB or -EL as appropriate.
- #
--ifeq ($(cc-name),clang)
-+ifeq ($(CONFIG_CC_IS_CLANG),y)
- cflags-$(CONFIG_CPU_BIG_ENDIAN)		+= -EB
- cflags-$(CONFIG_CPU_LITTLE_ENDIAN)	+= -EL
- else
-diff --git a/arch/mips/vdso/Makefile b/arch/mips/vdso/Makefile
-index 34605ca..e2b055e 100644
---- a/arch/mips/vdso/Makefile
-+++ b/arch/mips/vdso/Makefile
-@@ -10,7 +10,7 @@ ccflags-vdso := \
- 	$(filter -march=%,$(KBUILD_CFLAGS)) \
- 	-D__VDSO__
- 
--ifeq ($(cc-name),clang)
-+ifeq ($(CONFIG_CC_IS_CLANG),y)
- ccflags-vdso += $(filter --target=%,$(KBUILD_CFLAGS))
- endif
- 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 17be664..338e827 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -96,7 +96,7 @@ aflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mabi=elfv1)
- aflags-$(CONFIG_CPU_LITTLE_ENDIAN)	+= -mabi=elfv2
- endif
- 
--ifneq ($(cc-name),clang)
-+ifneq ($(CONFIG_CC_IS_CLANG),y)
-   cflags-$(CONFIG_CPU_LITTLE_ENDIAN)	+= -mno-strict-align
- endif
- 
-@@ -175,7 +175,7 @@ endif
- # Work around gcc code-gen bugs with -pg / -fno-omit-frame-pointer in gcc <= 4.8
- # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=44199
- # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=52828
--ifneq ($(cc-name),clang)
-+ifneq ($(CONFIG_CC_IS_CLANG),y)
- CC_FLAGS_FTRACE	+= $(call cc-ifversion, -lt, 0409, -mno-sched-epilog)
- endif
- endif
-diff --git a/scripts/Makefile.extrawarn b/scripts/Makefile.extrawarn
-index 24b2fb1..88129e5 100644
---- a/scripts/Makefile.extrawarn
-+++ b/scripts/Makefile.extrawarn
-@@ -64,7 +64,7 @@ endif
- KBUILD_CFLAGS += $(warning)
- else
- 
--ifeq ($(cc-name),clang)
-+ifeq ($(CONFIG_CC_IS_CLANG),y)
- KBUILD_CFLAGS += $(call cc-disable-warning, initializer-overrides)
- KBUILD_CFLAGS += $(call cc-disable-warning, unused-value)
- KBUILD_CFLAGS += $(call cc-disable-warning, format)
--- 
-2.7.4
+>  /* H_VIOCTL functions */
+>  #define H_GET_VIOA_DUMP_SIZE	0x01
+> diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+> index 194e6e0ff239..267f8c568bc3 100644
+> --- a/arch/powerpc/include/asm/kvm_host.h
+> +++ b/arch/powerpc/include/asm/kvm_host.h
+> @@ -292,6 +292,7 @@ struct kvm_arch {
+>  	struct dentry *debugfs_dir;
+>  	struct dentry *htab_dentry;
+>  	struct kvm_resize_hpt *resize_hpt; /* protected by kvm->lock */
+> +	bool svm_init_start; /* Indicates H_SVM_INIT_START has been called */
 
+That doesn't seem like a good name for the field.  How about just
+'secure'?
+
+>  #endif /* CONFIG_KVM_BOOK3S_HV_POSSIBLE */
+>  #ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
+>  	struct mutex hpt_mutex;
+> diff --git a/arch/powerpc/include/asm/ucall-api.h b/arch/powerpc/include/asm/ucall-api.h
+> index 2c12f514f8ab..9ddfcf541211 100644
+> --- a/arch/powerpc/include/asm/ucall-api.h
+> +++ b/arch/powerpc/include/asm/ucall-api.h
+> @@ -17,4 +17,10 @@ static inline int uv_page_out(u64 lpid, u64 dw0, u64 dw1, u64 dw2, u64 dw3)
+>  	return U_SUCCESS;
+>  }
+>  
+> +static inline int uv_register_mem_slot(u64 lpid, u64 dw0, u64 dw1, u64 dw2,
+> +				       u64 dw3)
+> +{
+> +	return 0;
+> +}
+
+Please give the parameters descriptive names.
+
+> +
+>  #endif	/* _ASM_POWERPC_UCALL_API_H */
+> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> index 05084eb8aadd..47f366f634fd 100644
+> --- a/arch/powerpc/kvm/book3s_hv.c
+> +++ b/arch/powerpc/kvm/book3s_hv.c
+> @@ -819,6 +819,50 @@ static int kvmppc_get_yield_count(struct kvm_vcpu *vcpu)
+>  	return yield_count;
+>  }
+>  
+> +#ifdef CONFIG_PPC_SVM
+> +#include <asm/ucall-api.h>
+> +/*
+> + * TODO: Check if memslots related calls here need to be called
+> + * under any lock.
+> + */
+> +static unsigned long kvmppc_h_svm_init_start(struct kvm *kvm)
+> +{
+> +	struct kvm_memslots *slots;
+> +	struct kvm_memory_slot *memslot;
+> +	int ret;
+> +
+> +	slots = kvm_memslots(kvm);
+
+I think you need the srcu read lock around this stuff.
+
+> +	kvm_for_each_memslot(memslot, slots) {
+> +		ret = uv_register_mem_slot(kvm->arch.lpid,
+> +					   memslot->base_gfn << PAGE_SHIFT,
+> +					   memslot->npages * PAGE_SIZE,
+> +					   0, memslot->id);
+> +		if (ret < 0)
+> +			return H_PARAMETER;
+
+That doesn't seem like the right error code to use...
+
+> +	}
+> +	kvm->arch.svm_init_start = true;
+> +	return H_SUCCESS;
+> +}
+> +
+> +static unsigned long kvmppc_h_svm_init_done(struct kvm *kvm)
+> +{
+> +	if (kvm->arch.svm_init_start)
+> +		return H_SUCCESS;
+> +	else
+> +		return H_UNSUPPORTED;
+> +}
+> +#else
+> +static unsigned long kvmppc_h_svm_init_start(struct kvm *kvm)
+> +{
+> +	return H_UNSUPPORTED;
+> +}
+> +
+> +static unsigned long kvmppc_h_svm_init_done(struct kvm *kvm)
+> +{
+> +	return H_UNSUPPORTED;
+> +}
+> +#endif
+> +
+>  int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
+>  {
+>  	unsigned long req = kvmppc_get_gpr(vcpu, 3);
+> @@ -950,6 +994,12 @@ int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
+>  					    kvmppc_get_gpr(vcpu, 6),
+>  					    kvmppc_get_gpr(vcpu, 7));
+>  		break;
+> +	case H_SVM_INIT_START:
+> +		ret = kvmppc_h_svm_init_start(vcpu->kvm);
+> +		break;
+> +	case H_SVM_INIT_DONE:
+> +		ret = kvmppc_h_svm_init_done(vcpu->kvm);
+> +		break;
+>  	default:
+>  		return RESUME_HOST;
+>  	}
+> @@ -978,6 +1028,8 @@ static int kvmppc_hcall_impl_hv(unsigned long cmd)
+>  #endif
+>  	case H_SVM_PAGE_IN:
+>  	case H_SVM_PAGE_OUT:
+> +	case H_SVM_INIT_START:
+> +	case H_SVM_INIT_DONE:
+>  		return 1;
+>  	}
+>  
+> @@ -4413,6 +4465,8 @@ static unsigned int default_hcall_list[] = {
+>  #endif
+>  	H_SVM_PAGE_IN,
+>  	H_SVM_PAGE_OUT,
+> +	H_SVM_INIT_START,
+> +	H_SVM_INIT_DONE,
+>  	0
+>  };
+>  
+> -- 
+> 2.17.1
+
+Paul.
