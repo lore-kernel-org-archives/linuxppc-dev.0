@@ -2,85 +2,74 @@ Return-Path: <SRS0=S6eX=NK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A4667C6786F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Oct 2018 15:54:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8398EC2BC61
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Oct 2018 15:57:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 08DF720664
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Oct 2018 15:54:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 0741820664
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Oct 2018 15:57:41 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="AaHrOuNj"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 08DF720664
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="hrjdgZYK"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0741820664
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42kwy76zktzF1Ph
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 02:54:23 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42kx1w0yyBzF1RG
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 02:57:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="AaHrOuNj";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="hrjdgZYK";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::641; helo=mail-pl1-x641.google.com;
- envelope-from=tsu.yubo@gmail.com; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=infradead.org
+ (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
+ envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
+ dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="AaHrOuNj"; 
- dkim-atps=neutral
-Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
- [IPv6:2607:f8b0:4864:20::641])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.b="hrjdgZYK"; dkim-atps=neutral
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42ksZr5JlbzDqYd
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2018 00:22:25 +1100 (AEDT)
-Received: by mail-pl1-x641.google.com with SMTP id f10-v6so5560276plr.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Oct 2018 06:22:25 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id;
- bh=ZX25RBS0K0zGBNNwI85JRx7aiFM3svnHk/4qU82CIr4=;
- b=AaHrOuNjnMLy6zinBnhx5R3wWOognmxuVQjVyjSquApDYa594r635V5lLXGqQGdy5I
- GGnhQXKTpA5CCYKpJO4FsYR1mgH4PXTWH2nrcKn3CqosnemseNIn+xJIpNaxDf0oCvNz
- vm31b5e5R5wtTQXUlDfSB1qH5f0j24rBTxzQ/WD1lWD21mq9hr84myNyfIbCMUK9A2Mn
- Jrp2w7sjrDd68RR4QMwzZSmVxlMlC+SwIF9hMreSdx1nZxo4gs/RQkreUxUtaQgkX6fo
- wz2rJ0nbp1f/ss5C6B50i9fWGWax4Jrh+PTtkxQ6lGYQG8chzFKU2LohOSWY50RpzpEF
- 66Lg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id;
- bh=ZX25RBS0K0zGBNNwI85JRx7aiFM3svnHk/4qU82CIr4=;
- b=c1L7lwwkwewgZdY+yyix6vzipPs9LgiJZ7+/N+KuW60Q4wnFmsxhCIumMlVaC707WH
- NO4BHcws1MP/A03R3CGbnRgWATf7/bgc8cvyJCBW7BmeWL5aRthX1pEpH6ug5rob+ENt
- E+ZZL0Bi+55btN8V46a6CfNlcDT1XaIkS8KbfRw1E4D5JSAsveBbiZW3bKQt3U0v6fwn
- qMR0imCo2QbX+vW5GCTm6Yuwdj8p2FiWxsjuZGRywPuYTqZ9LBXokb6qMze6N5tWuRNW
- ojH/W1qbE3AF83X+5BRjN7+iAZsDkI/M9Be+sIC24krs29+4URqGIKaElnOJjMlXORg2
- 0xcg==
-X-Gm-Message-State: AGRZ1gLAeBkHdknj6ZhLcP6uHZz67iMZ2waUVgGLxKxoqw/fzZNMjiqY
- qiXJeqvzSE0pj9R94UPmKeA=
-X-Google-Smtp-Source: AJdET5eW+SZrYa+BrKRhEZ9hE6939oamm2r04ock8KPSG1UWi0DNBUWbSXTgrXImazZcQ1xdonlg7w==
-X-Received: by 2002:a17:902:a5c3:: with SMTP id
- t3-v6mr18820570plq.287.1540905743465; 
- Tue, 30 Oct 2018 06:22:23 -0700 (PDT)
-Received: from localhost.localdomain ([191.101.9.198])
- by smtp.gmail.com with ESMTPSA id b11-v6sm11765566pgi.10.2018.10.30.06.22.22
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
- Tue, 30 Oct 2018 06:22:22 -0700 (PDT)
-From: Bo YU <tsu.yubo@gmail.com>
-To: benh@kernel.crashing.org,
-	paulus@samba.org,
-	mpe@ellerman.id.au
-Subject: [PATCH] arch: fix without checked-return value with lseek
-Date: Tue, 30 Oct 2018 09:21:55 -0400
-Message-Id: <1540905715-4266-1-git-send-email-tsu.yubo@gmail.com>
-X-Mailer: git-send-email 2.1.4
-X-Mailman-Approved-At: Wed, 31 Oct 2018 02:47:32 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42kwvw43RnzF35j
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2018 02:52:26 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
+ :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+ Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+ List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=JrT+GY2FMwB2T1XAI7yMtLPtyidWS9RM37PHU0M8ADE=; b=hrjdgZYKhW66jsqwqYy7iBEqT
+ aNllxbN4/e8ECyE0JYYVlRz4hYMQq+5XyXBhJug9T7NXVMGsZYNnB48zQ5AONXgGCCz5pSF7PKDGv
+ pUVDc3Gfy6dNIDOhDp3hygtwI+6Ayy/kWZdsh+gXrZwiOSnojSmqIpKvUnWw65wIWG/RWwAdU+PXE
+ ybavT2cUzBF09n3j7ot0t/xu+zRu2FHWKXET0xypzw3UeDhmVbOVREEUYAxmV9gYCr96vhkDYDukA
+ /HU86umn8HQtqmSEHxnQN9yJjjim6IzloRma9Rh3rDily9mqzwc2/lKjda/4VtIWu1flnKNK/ibTj
+ tmapDlxkw==;
+Received: from [24.132.217.100] (helo=hirez.programming.kicks-ass.net)
+ by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
+ id 1gHPLh-000790-S1; Tue, 30 Oct 2018 08:26:51 +0000
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+ id 47C7E202A40A3; Tue, 30 Oct 2018 09:25:25 +0100 (CET)
+Date: Tue, 30 Oct 2018 09:25:25 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: Douglas Anderson <dianders@chromium.org>
+Subject: Re: [PATCH 6/7] smp: Don't yell about IRQs disabled in
+ kgdb_roundup_cpus()
+Message-ID: <20181030082525.GA13436@hirez.programming.kicks-ass.net>
+References: <20181029180707.207546-1-dianders@chromium.org>
+ <20181029180707.207546-7-dianders@chromium.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20181029180707.207546-7-dianders@chromium.org>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,38 +81,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Bo YU <tsu.yubo@gmail.com>,
- linux-kernel@vger.kernel.org
+Cc: linux-mips@linux-mips.org, Daniel Thompson <daniel.thompson@linaro.org>,
+ linux-sh@vger.kernel.org, gregkh@linuxfoundation.org, frederic@kernel.org,
+ Jason Wessel <jason.wessel@windriver.com>, linux-kernel@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ luto@kernel.org, linux-arm-msm@vger.kernel.org,
+ kgdb-bugreport@lists.sourceforge.net, linux-hexagon@vger.kernel.org,
+ tglx@linutronix.de, linux-snps-arc@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, mingo@kernel.org, riel@surriel.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-lseek should have returned value but we miss it maybe.
-This is detected by Coverity scan:
-CID: 1440481
+On Mon, Oct 29, 2018 at 11:07:06AM -0700, Douglas Anderson wrote:
+> In kgdb_roundup_cpus() we've got code that looks like:
+>   local_irq_enable();
+>   smp_call_function(kgdb_call_nmi_hook, NULL, 0);
+>   local_irq_disable();
 
-Signed-off-by: Bo YU <tsu.yubo@gmail.com>
----
- arch/powerpc/boot/addnote.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+> Let's add kgdb to the list of reasons not to warn in
+> smp_call_function_many().  That will allow us (in a future patch) to
+> stop calling local_irq_enable() which will get rid of the original
+> splat.
+> 
+> NOTE: with this change comes the obvious question: will we start
+> deadlocking more often now when we drop into the debugger.  I can't
+> say that for sure one way or the other, but the fact that we do the
+> same logic for "oops_in_progress" makes me feel like it shouldn't
+> happen too often.  Also note that the old logic of turning on
+> interrupts temporarily wasn't exactly safe since (I presume) that
+> could have violated spin_lock_irqsave() semantics and ended up with a
+> deadlock of its own.
 
-diff --git a/arch/powerpc/boot/addnote.c b/arch/powerpc/boot/addnote.c
-index 9d9f6f334d3c..3da3e2b1b51b 100644
---- a/arch/powerpc/boot/addnote.c
-+++ b/arch/powerpc/boot/addnote.c
-@@ -223,7 +223,11 @@ main(int ac, char **av)
- 	PUT_16(E_PHNUM, np + 2);
- 
- 	/* write back */
--	lseek(fd, (long) 0, SEEK_SET);
-+	i = lseek(fd, (long) 0, SEEK_SET);
-+	if (i < 0) {
-+		perror("lseek");
-+		exit(1);
-+	}
- 	i = write(fd, buf, n);
- 	if (i < 0) {
- 		perror("write");
--- 
-2.11.0
+How is any of that not utterly and terminally broken?
 
+> @@ -413,7 +414,8 @@ void smp_call_function_many(const struct cpumask *mask,
+>  	 * can't happen.
+>  	 */
+>  	WARN_ON_ONCE(cpu_online(this_cpu) && irqs_disabled()
+> -		     && !oops_in_progress && !early_boot_irqs_disabled);
+> +		     && !oops_in_progress && !early_boot_irqs_disabled
+> +		     && !in_dbg_master());
+>  
+>  	/* Try to fastpath.  So, what's a CPU they want? Ignoring this one. */
+>  	cpu = cpumask_first_and(mask, cpu_online_mask);
+
+Not a fan of this. There is a distinct difference between
+oops_in_progress and dropping into kgdb in that you don't ever expect to
+return/survive oopses, whereas we do expect to survive kgdb.
+
+Also, how does kgdb work at all without actual NMIs ?
+
+So no, NAK on this.
