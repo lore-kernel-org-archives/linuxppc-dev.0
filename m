@@ -2,96 +2,80 @@ Return-Path: <SRS0=1E/h=NL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 78644C0044C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 15:48:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F0DB2ECDE44
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 16:09:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E46CF2080A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 15:48:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E46CF2080A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 59D5220664
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 16:09:15 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="JqvdN7ba"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 59D5220664
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42lXmn2DBTzF3G6
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 02:48:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42lYDn0pMZzF3KP
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 03:09:13 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=bauerman@linux.ibm.com; receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nifty.com header.i=@nifty.com header.b="JqvdN7ba";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ spf=softfail (mailfrom) smtp.mailfrom=socionext.com
+ (client-ip=210.131.2.82; helo=conssluserg-03.nifty.com;
+ envelope-from=yamada.masahiro@socionext.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=socionext.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=nifty.com header.i=@nifty.com header.b="JqvdN7ba"; 
+ dkim-atps=neutral
+Received: from conssluserg-03.nifty.com (conssluserg-03.nifty.com
+ [210.131.2.82])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42lXjZ3DVjzF3Kx
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Nov 2018 02:45:37 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w9VFiadd055700
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2018 11:45:35 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2nfd9dxhtj-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2018 11:45:35 -0400
-Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.ibm.com>;
- Wed, 31 Oct 2018 15:45:34 -0000
-Received: from b03cxnp08027.gho.boulder.ibm.com (9.17.130.19)
- by e35.co.us.ibm.com (192.168.1.135) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 31 Oct 2018 15:45:32 -0000
-Received: from b03ledav006.gho.boulder.ibm.com
- (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- w9VFjVAO20971720
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Wed, 31 Oct 2018 15:45:31 GMT
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 45C48C6055;
- Wed, 31 Oct 2018 15:45:31 +0000 (GMT)
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D84C0C6059;
- Wed, 31 Oct 2018 15:45:29 +0000 (GMT)
-Received: from morokweng.localdomain (unknown [9.80.223.149])
- by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTPS;
- Wed, 31 Oct 2018 15:45:29 +0000 (GMT)
-References: <1540996702-27161-1-git-send-email-leitao@debian.org>
- <1540996702-27161-3-git-send-email-leitao@debian.org>
-User-agent: mu4e 1.0; emacs 25.3.1
-From: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-To: Breno Leitao <leitao@debian.org>
-Subject: Re: [PATCH v2 3/3] selftests/powerpc: Skip test instead of failing
-In-reply-to: <1540996702-27161-3-git-send-email-leitao@debian.org>
-Date: Wed, 31 Oct 2018 12:45:27 -0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42lY9b5MQBzF31Y
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Nov 2018 03:06:26 +1100 (AEDT)
+Received: from mail-ua1-f54.google.com (mail-ua1-f54.google.com
+ [209.85.222.54]) (authenticated)
+ by conssluserg-03.nifty.com with ESMTP id w9VG633M015366
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Nov 2018 01:06:04 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conssluserg-03.nifty.com w9VG633M015366
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
+ s=dec2015msa; t=1541001964;
+ bh=rm4KBd9Y1DjyNm7gMyiNo8tn1N+1kLxAGdNLudCccdI=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=JqvdN7baYjxm3y4SffjP5dcqILVQxN1PONQylmH4GekjpfMQrGc0Gs20G1DxmPwwf
+ 2Ulw9WdymD1ePio94lpLlfQ1YS4kpIsF+0a4a5KtZ+7jTPhbfudfn7NsiqwCCotI9g
+ 1Bib5DRqKCQVrpddlKGJ6PZM/kUk3uUImVBaun4a/pyHQLn1ja3reeDiQBXUORPBIZ
+ DYNxeCtBchszGB1DRll9bVzF3cxEoEmK04Xa4I9jSgsmhPLyLxBgkVbuXt7bDfQKHT
+ U0mzY7fNxM2rWftsNgEhMYlolBjnLDPS2q9ZIEqNibzyyVveuQX4NBZnIWcYhvMpTR
+ FQHlP5fw5dFZg==
+X-Nifty-SrcIP: [209.85.222.54]
+Received: by mail-ua1-f54.google.com with SMTP id w19so6114927uaj.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2018 09:06:04 -0700 (PDT)
+X-Gm-Message-State: AGRZ1gKQPOEAtzM8Tm7zZ4BZqFeEDtJCo8KN7kiBtcLi0RfmFEycQfus
+ RoTZBV03EeV0MZOwjT6MaVTvfFyftlaFK6JCp5c=
+X-Google-Smtp-Source: AJdET5cPwAWbY9PNn2LZNg5TFvXRL1rtx5qnkG8+zSU8HbppT4T4TbtM5UymtdBlQNISyrl8mdSfRVTcQzB5blYEUyo=
+X-Received: by 2002:ab0:5444:: with SMTP id o4mr1665827uaa.55.1541001962702;
+ Wed, 31 Oct 2018 09:06:02 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-x-cbid: 18103115-0012-0000-0000-000016D2210D
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00009960; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000268; SDB=6.01110673; UDB=6.00575520; IPR=6.00890766; 
- MB=3.00023981; MTD=3.00000008; XFM=3.00000015; UTC=2018-10-31 15:45:33
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18103115-0013-0000-0000-000054F478D1
-Message-Id: <87zhuup1bc.fsf@morokweng.localdomain>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-10-31_06:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1807170000 definitions=main-1810310131
+References: <20181019120952.32763-1-hch@lst.de>
+ <20181019120952.32763-7-hch@lst.de>
+ <20181019122228.GJ30658@n2100.armlinux.org.uk>
+ <CAK7LNATZ8LagrTrTae_QCQbSuTW7_y6sDrdTHfTyONPrsYDs4A@mail.gmail.com>
+In-Reply-To: <CAK7LNATZ8LagrTrTae_QCQbSuTW7_y6sDrdTHfTyONPrsYDs4A@mail.gmail.com>
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+Date: Thu, 1 Nov 2018 01:05:26 +0900
+X-Gmail-Original-Message-ID: <CAK7LNASUArREw1AWUzcOoQCe5=4jyifbs+x2CdCK+qXJ+woAdw@mail.gmail.com>
+Message-ID: <CAK7LNASUArREw1AWUzcOoQCe5=4jyifbs+x2CdCK+qXJ+woAdw@mail.gmail.com>
+Subject: Re: [PATCH 6/9] PCI: consolidate PCI config entry in drivers/pci
+To: Christoph Hellwig <hch@lst.de>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,57 +87,75 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Cc: linux-arch <linux-arch@vger.kernel.org>,
+ linux-scsi <linux-scsi@vger.kernel.org>,
+ Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
+ linux-pci@vger.kernel.org,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Dominik Brodowski <linux@dominikbrodowski.net>,
+ Russell King <linux@armlinux.org.uk>, Alex Bounine <alex.bou9@gmail.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Hi Christoph,
 
-Breno Leitao <leitao@debian.org> writes:
 
-> Current core-pkey selftest fails if the test runs without privileges to
-> write into the core pattern file (/proc/sys/kernel/core_pattern). This
-> causes the test to fail and give the impression that the subsystem being
-> tested is broken, when, in fact, the test is being executed without the
-> proper privileges. This is the current error:
+On Fri, Oct 19, 2018 at 9:58 PM Masahiro Yamada
+<yamada.masahiro@socionext.com> wrote:
 >
-> 	test: core_pkey
-> 	tags: git_version:v4.19-3-g9e3363be9bce-dirty
-> 	Error writing to core_pattern file: Permission denied
-> 	failure: core_pkey
+> On Fri, Oct 19, 2018 at 9:23 PM Russell King - ARM Linux
+> <linux@armlinux.org.uk> wrote:
 >
-> This patch simply skips this test if it runs without the proper privileges,
-> avoiding this undesired failure.
+> > > index a68b34183107..b185794549be 100644
+> > > --- a/arch/arm/mach-pxa/Kconfig
+> > > +++ b/arch/arm/mach-pxa/Kconfig
+> > > @@ -125,7 +125,7 @@ config MACH_ARMCORE
+> > >       bool "CompuLab CM-X255/CM-X270 modules"
+> > >       select ARCH_HAS_DMA_SET_COHERENT_MASK if PCI
+> > >       select IWMMXT
+> > > -     select MIGHT_HAVE_PCI
+> > > +     select HAVE_PCI
+> > >       select NEED_MACH_IO_H if PCI
+> > >       select PXA25x
+> > >       select PXA27x
+> >
+> > This is wrong.  "MIGHT_HAVE_PCI" is _not_ the same as "HAVE_PCI" - we
+> > have a bunch of platforms that mandatorily have PCI and these select
+> > PCI directly.  "MIGHT_HAVE_PCI" controls the _visibility_ of the PCI
+> > menu option, but does not prevent it being selected.  Your patch will
+> > cause Kconfig to complain for those which mandatorily have PCI but
+> > do not set HAVE_PCI.
 >
-> CC: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-> CC: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-> Signed-off-by: Breno Leitao <leitao@debian.org>
-
-Reviewed-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-
-> ---
->  tools/testing/selftests/powerpc/ptrace/core-pkey.c | 5 +----
->  1 file changed, 1 insertion(+), 4 deletions(-)
 >
-> diff --git a/tools/testing/selftests/powerpc/ptrace/core-pkey.c b/tools/testing/selftests/powerpc/ptrace/core-pkey.c
-> index e23e2e199eb4..d5c64fee032d 100644
-> --- a/tools/testing/selftests/powerpc/ptrace/core-pkey.c
-> +++ b/tools/testing/selftests/powerpc/ptrace/core-pkey.c
-> @@ -352,10 +352,7 @@ static int write_core_pattern(const char *core_pattern)
->  	FILE *f;
->  
->  	f = fopen(core_pattern_file, "w");
-> -	if (!f) {
-> -		perror("Error writing to core_pattern file");
-> -		return TEST_FAIL;
-> -	}
-> +	SKIP_IF_MSG(!f, "Try with root privileges");
->  
->  	ret = fwrite(core_pattern, 1, len, f);
->  	fclose(f);
+> Good catch!
+> But, adding a bunch of 'select HAVE_PCI' along with 'select PCI' is ugly.
+>
+> Do you have any suggestion?
+>
+> How about letting CONFIG_ARM to select HAVE_PCI ?
+>
 
 
--- 
-Thiago Jung Bauermann
-IBM Linux Technology Center
+I applied 1/9, 3/9, 4/9, 5/9.
+(I think 2/9 should be squashed to 9/9)
 
+As Russell pointed out, we need to avoid
+the unmet dependency.
+
+
+Are you planning to send
+the updated version for 6/9 through - 9/9 ?
+
+If so, could you please rebase 6/9
+so that it is cleanly applicable ?
+
+
+Thanks.
+
+
+--
+Best Regards
+Masahiro Yamada
