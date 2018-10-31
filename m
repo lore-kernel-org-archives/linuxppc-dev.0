@@ -2,60 +2,130 @@ Return-Path: <SRS0=1E/h=NL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B8E26C6786F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 01:53:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E238C6786F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 02:35:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 078CD20664
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 01:53:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 078CD20664
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 925812082B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 02:35:53 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="d317BbKW"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 925812082B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42lBFp3tCTzF2Dw
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 12:53:50 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42lCBH0nm3zF2Ds
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 13:35:51 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=intel.com
- (client-ip=134.134.136.126; helo=mga18.intel.com; envelope-from=lkp@intel.com;
- receiver=<UNKNOWN>)
+	dkim=pass (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.b="d317BbKW";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=nxp.com
+ (client-ip=40.107.5.85; helo=eur03-ve1-obe.outbound.protection.outlook.com;
+ envelope-from=xiaowei.bao@nxp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=nxp.com header.i=@nxp.com header.b="d317BbKW"; 
+ dkim-atps=neutral
+Received: from EUR03-VE1-obe.outbound.protection.outlook.com
+ (mail-eopbgr50085.outbound.protection.outlook.com [40.107.5.85])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42lBCk5JkqzDrYb
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2018 12:51:59 +1100 (AEDT)
-X-Amp-Result: UNSCANNABLE
-X-Amp-File-Uploaded: False
-Received: from fmsmga003.fm.intel.com ([10.253.24.29])
- by orsmga106.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
- 30 Oct 2018 18:51:55 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.54,446,1534834800"; 
- d="gz'50?scan'50,208,50";a="92535584"
-Received: from lkp-server01.sh.intel.com (HELO lkp-server01) ([10.239.97.150])
- by FMSMGA003.fm.intel.com with ESMTP; 30 Oct 2018 18:51:50 -0700
-Received: from kbuild by lkp-server01 with local (Exim 4.89)
- (envelope-from <lkp@intel.com>)
- id 1gHffh-000F3L-IV; Wed, 31 Oct 2018 09:51:49 +0800
-Date: Wed, 31 Oct 2018 09:51:16 +0800
-From: kbuild test robot <lkp@intel.com>
-To: Douglas Anderson <dianders@chromium.org>
-Subject: Re: [PATCH v2 2/2] kgdb: Fix kgdb_roundup_cpus() for arches who used
- smp_call_function()
-Message-ID: <201810310910.2tQCnmCV%fengguang.wu@intel.com>
-References: <20181030221843.121254-3-dianders@chromium.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42lC7M5t5RzF1fD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2018 13:33:14 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1; 
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=HfdeKBHoTN4yjFZGub7rGGKHayCSlcUg7MJm87td+Hk=;
+ b=d317BbKWGZFx+YtC3UlLDLwobdOtDi9tbKZT4FYKJtnDcco08MV1BXcR10ZMQw0SmjIlhtceWPozIs6NcNCeTSnsA8xCn8ydcVvBd9VNOTMP+plEivz+PmQCNK40/QMRcNXIWNPNThjcKn680yOuasfgbo8Pd4S30PlPRVfMdi0=
+Received: from HE1PR04MB1497.eurprd04.prod.outlook.com (10.163.176.23) by
+ HE1PR04MB1308.eurprd04.prod.outlook.com (10.162.249.30) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.1273.26; Wed, 31 Oct 2018 02:33:05 +0000
+Received: from HE1PR04MB1497.eurprd04.prod.outlook.com
+ ([fe80::4070:91bb:7cd2:1f63]) by HE1PR04MB1497.eurprd04.prod.outlook.com
+ ([fe80::4070:91bb:7cd2:1f63%2]) with mapi id 15.20.1273.027; Wed, 31 Oct 2018
+ 02:33:05 +0000
+From: Xiaowei Bao <xiaowei.bao@nxp.com>
+To: Kishon Vijay Abraham I <kishon@ti.com>, "bhelgaas@google.com"
+ <bhelgaas@google.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>,
+ "mark.rutland@arm.com" <mark.rutland@arm.com>, "shawnguo@kernel.org"
+ <shawnguo@kernel.org>, Leo Li <leoyang.li@nxp.com>,
+ "lorenzo.pieralisi@arm.com" <lorenzo.pieralisi@arm.com>, "arnd@arndb.de"
+ <arnd@arndb.de>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
+ "M.h. Lian" <minghuan.lian@nxp.com>, Mingkai Hu <mingkai.hu@nxp.com>, Roy
+ Zang <roy.zang@nxp.com>, "kstewart@linuxfoundation.org"
+ <kstewart@linuxfoundation.org>, "cyrille.pitchen@free-electrons.com"
+ <cyrille.pitchen@free-electrons.com>, "pombredanne@nexb.com"
+ <pombredanne@nexb.com>, "shawn.lin@rock-chips.com"
+ <shawn.lin@rock-chips.com>, "niklas.cassel@axis.com"
+ <niklas.cassel@axis.com>, "linux-pci@vger.kernel.org"
+ <linux-pci@vger.kernel.org>, "devicetree@vger.kernel.org"
+ <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [PATCH 5/6] pci: layerscape: Add the EP mode support.
+Thread-Topic: [PATCH 5/6] pci: layerscape: Add the EP mode support.
+Thread-Index: AQHUbFPBC6aEqg5WuUCTs5ZVrmqyDqUxAPsAgAA8nBCAB2zBkA==
+Date: Wed, 31 Oct 2018 02:33:04 +0000
+Message-ID: <HE1PR04MB14979058170FA16A7465FF9EF5CD0@HE1PR04MB1497.eurprd04.prod.outlook.com>
+References: <20181025110901.5680-1-xiaowei.bao@nxp.com>
+ <20181025110901.5680-5-xiaowei.bao@nxp.com>
+ <d9d07e05-556b-a56d-bb7f-eaec9fb739b8@ti.com>
+ <HE1PR04MB1497DF7D9428A5C791CB6A03F5F00@HE1PR04MB1497.eurprd04.prod.outlook.com>
+In-Reply-To: <HE1PR04MB1497DF7D9428A5C791CB6A03F5F00@HE1PR04MB1497.eurprd04.prod.outlook.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=xiaowei.bao@nxp.com; 
+x-originating-ip: [119.31.174.73]
+x-ms-publictraffictype: Email
+x-microsoft-exchange-diagnostics: 1; HE1PR04MB1308;
+ 6:/ImTVOn7PWkZuWVgn26nhlToKASvALSA3zIBRRxWfh2JKhwdIi19RSSW7D52FlD4A1Y1ms+BqkTVP9XhpTSjNp/ubH+onJIPJmKqtLGMRQxD04LiZ71I8Ay9ui+mRvsZCSo2D1BZ5TIBw0QrM4xa1drnFkuPjcr9W2r5sqwW2DXkyNKz228eRLXkt32/emArdrOGzfBPoyPgc8bL8zzKkk3aZiWwCj2U2TyL7qaOfgRSVHBJwy8rMa77lInSo4Il8fe/tgekAsYrHAtRLw0TQyUJ6Ck6frpcfgyrHucyw2TGy9xN/nY2zfB1N3G0rWGsmqpCpyuLhgJoBh6zBOdqWsbMq7EbYa5JEQ2FYNPG0Wppf3jignRLtD/bXIWuO7cJHhxg9ES5MBP51H1H6a6sAYFywDUFwJd/03vEPtFHBI1iIjN+u74s3MsmYZ+G4kdEfFwKG24Imz/+Z2WpGijPkw==;
+ 5:POu6yZfSJmFeckwiecHKKCZfEa0knOokxR1ZGZd2aS+PJVnOZySPE17pIglTsICjvU9CNRk2aTJNANWX2e2ozyVlWfrPImkeV/AduqjCTu6E3qMREWK42uT8cywUtzLdue307JEGltEr33ZmoS/ZYZjxU49IfF3U5rgkqNVSf6s=;
+ 7:Sgv6rrZzdRHYzY4sfynFeXCuLDukpz2f/9ci7/4E3rP8FboKoF49p4QHI80n6HVyGTe28V6eZWucMEKrcqv3mwo/Gc0fyMkIqomqcTdQp2Cri2JkSLWqI7gdNhfiABNFNEkfKt8Q1QWLkzC2bNH8sw==
+x-ms-office365-filtering-correlation-id: 3d6be900-b6a7-4391-76c2-08d63ed92fde
+x-ms-office365-filtering-ht: Tenant
+x-microsoft-antispam: BCL:0; PCL:0;
+ RULEID:(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600074)(711020)(4618075)(2017052603328)(7153060)(7193020);
+ SRVR:HE1PR04MB1308; 
+x-ms-traffictypediagnostic: HE1PR04MB1308:
+x-microsoft-antispam-prvs: <HE1PR04MB13082F343E4CE326D9F0CE40F5CD0@HE1PR04MB1308.eurprd04.prod.outlook.com>
+x-exchange-antispam-report-test: UriScan:(211936372134217)(180628864354917)(58145275503218)(9452136761055)(258649278758335)(65623756079841)(31051911155226)(185117386973197);
+x-ms-exchange-senderadcheck: 1
+x-exchange-antispam-report-cfa-test: BCL:0; PCL:0;
+ RULEID:(8211001083)(6040522)(2401047)(8121501046)(5005006)(3231382)(944501410)(52105095)(93006095)(93001095)(3002001)(10201501046)(6055026)(148016)(149066)(150057)(6041310)(20161123562045)(20161123560045)(20161123558120)(20161123564045)(201703131423095)(201702281528075)(20161123555045)(201703061421075)(201703061406153)(201708071742011)(7699051)(76991095);
+ SRVR:HE1PR04MB1308; BCL:0; PCL:0; RULEID:; SRVR:HE1PR04MB1308; 
+x-forefront-prvs: 084285FC5C
+x-forefront-antispam-report: SFV:NSPM;
+ SFS:(10009020)(366004)(39860400002)(346002)(136003)(376002)(396003)(199004)(189003)(13464003)(575784001)(53546011)(11346002)(446003)(99286004)(33656002)(76176011)(2201001)(86362001)(7696005)(106356001)(105586002)(14454004)(93886005)(44832011)(102836004)(486006)(6506007)(476003)(26005)(2900100001)(316002)(256004)(71190400001)(71200400001)(186003)(478600001)(4326008)(68736007)(74316002)(6116002)(3846002)(81166006)(66066001)(305945005)(25786009)(229853002)(55016002)(5250100002)(6436002)(53936002)(7416002)(2501003)(81156014)(6246003)(7736002)(8936002)(5660300001)(110136005)(2906002)(97736004)(9686003)(8676002)(921003)(1121003);
+ DIR:OUT; SFP:1101; SCL:1; SRVR:HE1PR04MB1308;
+ H:HE1PR04MB1497.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
+ PTR:InfoNoRecords; A:1; MX:1; 
+received-spf: None (protection.outlook.com: nxp.com does not designate
+ permitted sender hosts)
+x-microsoft-antispam-message-info: /j4oySNFe+6dK/nISAvc8vU8TqSmHtEmItUgnp4G9tT/reu9jtf0lugoWgfTPATBAors1qAfqs0nGf9sm7J0zJ1x5pFLz234yjYRcZGh7s68DWJ8LS8DPaAb+JR7ZSA2YwPufHJkjMZc5zwdJz18bc4mj82H8nUsV8781XAgBmPss2l2lqPnxWLhIrRzOVtwlaRxM+SciU1FgKjgrBRbSfbttE8eL2Xtfo/TCvoeNJz/9/X8ACM4XtzPfe39/mbRgF2Q+Hx59pbVAnI/gq1HP9OQvgZ/Jbe3MZ/a3WPAKWBhy6/a1lpclbRHDe3f1n36nGWxCLY56NMBKHUR9b5QWBOpoFI0PTxCqq721M9teIQ=
+spamdiagnosticoutput: 1:99
+spamdiagnosticmetadata: NSPM
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="wac7ysb48OaltWcw"
-Content-Disposition: inline
-In-Reply-To: <20181030221843.121254-3-dianders@chromium.org>
-User-Agent: Mutt/1.5.23 (2014-03-12)
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 3d6be900-b6a7-4391-76c2-08d63ed92fde
+X-MS-Exchange-CrossTenant-originalarrivaltime: 31 Oct 2018 02:33:04.9093 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: HE1PR04MB1308
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,286 +137,142 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kate Stewart <kstewart@linuxfoundation.org>, linux-mips@linux-mips.org,
- Rich Felker <dalias@libc.org>, linux-sh@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Daniel Thompson <daniel.thompson@linaro.org>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, linux-hexagon@vger.kernel.org,
- Russell King <linux@armlinux.org.uk>, kgdb-bugreport@lists.sourceforge.net,
- James Hogan <jhogan@kernel.org>, linux-snps-arc@lists.infradead.org,
- Jason Wessel <jason.wessel@windriver.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- Vineet Gupta <vgupta@synopsys.com>, Douglas Anderson <dianders@chromium.org>,
- Ralf Baechle <ralf@linux-mips.org>, Richard Kuo <rkuo@codeaurora.org>,
- Paul Burton <paul.burton@mips.com>, kbuild-all@01.org,
- Philippe Ombredanne <pombredanne@nexb.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Jiafei Pan <jiafei.pan@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
---wac7ysb48OaltWcw
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-Hi Douglas,
-
-Thank you for the patch! Perhaps something to improve:
-
-[auto build test WARNING on kgdb/kgdb-next]
-[also build test WARNING on v4.19 next-20181030]
-[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
-
-url:    https://github.com/0day-ci/linux/commits/Douglas-Anderson/kgdb-Fix-kgdb_roundup_cpus/20181031-063733
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/jwessel/kgdb.git kgdb-next
-reproduce: make htmldocs
-
-All warnings (new ones prefixed by >>):
-
-   WARNING: convert(1) not found, for SVG to PDF conversion install ImageMagick (https://www.imagemagick.org)
-   include/linux/srcu.h:175: warning: Function parameter or member 'p' not described in 'srcu_dereference_notrace'
-   include/linux/srcu.h:175: warning: Function parameter or member 'sp' not described in 'srcu_dereference_notrace'
-   include/linux/gfp.h:1: warning: no structured comments found
->> include/linux/kgdb.h:188: warning: Function parameter or member 'ignored' not described in 'kgdb_call_nmi_hook'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4381: warning: Function parameter or member 'wext.ibss' not described in 'wireless_dev'
-   include/net/cfg80211.h:4381: warning: Function parameter or member 'wext.connect' not described in 'wireless_dev'
-   include/net/cfg80211.h:4381: warning: Function parameter or member 'wext.keys' not described in 'wireless_dev'
-   include/net/cfg80211.h:4381: warning: Function parameter or member 'wext.ie' not described in 'wireless_dev'
-   include/net/cfg80211.h:4381: warning: Function parameter or member 'wext.ie_len' not described in 'wireless_dev'
-   include/net/cfg80211.h:4381: warning: Function parameter or member 'wext.bssid' not described in 'wireless_dev'
-   include/net/cfg80211.h:4381: warning: Function parameter or member 'wext.ssid' not described in 'wireless_dev'
-   include/net/cfg80211.h:4381: warning: Function parameter or member 'wext.default_key' not described in 'wireless_dev'
-   include/net/cfg80211.h:4381: warning: Function parameter or member 'wext.default_mgmt_key' not described in 'wireless_dev'
-   include/net/cfg80211.h:4381: warning: Function parameter or member 'wext.prev_bssid_valid' not described in 'wireless_dev'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-   include/net/cfg80211.h:4869: warning: Excess function parameter 'ptr' description in 'reg_query_regdb_wmm'
-
-vim +188 include/linux/kgdb.h
-
- > 188	
-   189	
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
-
---wac7ysb48OaltWcw
-Content-Type: application/gzip
-Content-Disposition: attachment; filename=".config.gz"
-Content-Transfer-Encoding: base64
-
-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
-
---wac7ysb48OaltWcw--
+DQoNCi0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQpGcm9tOiBYaWFvd2VpIEJhbyANClNlbnQ6
+IDIwMTjlubQxMOaciDI25pelIDE3OjE5DQpUbzogJ0tpc2hvbiBWaWpheSBBYnJhaGFtIEknIDxr
+aXNob25AdGkuY29tPjsgYmhlbGdhYXNAZ29vZ2xlLmNvbTsgcm9iaCtkdEBrZXJuZWwub3JnOyBt
+YXJrLnJ1dGxhbmRAYXJtLmNvbTsgc2hhd25ndW9Aa2VybmVsLm9yZzsgTGVvIExpIDxsZW95YW5n
+LmxpQG54cC5jb20+OyBsb3JlbnpvLnBpZXJhbGlzaUBhcm0uY29tOyBhcm5kQGFybmRiLmRlOyBn
+cmVna2hAbGludXhmb3VuZGF0aW9uLm9yZzsgTS5oLiBMaWFuIDxtaW5naHVhbi5saWFuQG54cC5j
+b20+OyBNaW5na2FpIEh1IDxtaW5na2FpLmh1QG54cC5jb20+OyBSb3kgWmFuZyA8cm95LnphbmdA
+bnhwLmNvbT47IGtzdGV3YXJ0QGxpbnV4Zm91bmRhdGlvbi5vcmc7IGN5cmlsbGUucGl0Y2hlbkBm
+cmVlLWVsZWN0cm9ucy5jb207IHBvbWJyZWRhbm5lQG5leGIuY29tOyBzaGF3bi5saW5Acm9jay1j
+aGlwcy5jb207IG5pa2xhcy5jYXNzZWxAYXhpcy5jb207IGxpbnV4LXBjaUB2Z2VyLmtlcm5lbC5v
+cmc7IGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnOyBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwu
+b3JnOyBsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmc7IGxpbnV4cHBjLWRldkBs
+aXN0cy5vemxhYnMub3JnDQpDYzogSmlhZmVpIFBhbiA8amlhZmVpLnBhbkBueHAuY29tPg0KU3Vi
+amVjdDogUkU6IFtQQVRDSCA1LzZdIHBjaTogbGF5ZXJzY2FwZTogQWRkIHRoZSBFUCBtb2RlIHN1
+cHBvcnQuDQoNCg0KDQotLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KRnJvbTogS2lzaG9uIFZp
+amF5IEFicmFoYW0gSSA8a2lzaG9uQHRpLmNvbT4NClNlbnQ6IDIwMTjlubQxMOaciDI25pelIDEz
+OjI5DQpUbzogWGlhb3dlaSBCYW8gPHhpYW93ZWkuYmFvQG54cC5jb20+OyBiaGVsZ2Fhc0Bnb29n
+bGUuY29tOyByb2JoK2R0QGtlcm5lbC5vcmc7IG1hcmsucnV0bGFuZEBhcm0uY29tOyBzaGF3bmd1
+b0BrZXJuZWwub3JnOyBMZW8gTGkgPGxlb3lhbmcubGlAbnhwLmNvbT47IGxvcmVuem8ucGllcmFs
+aXNpQGFybS5jb207IGFybmRAYXJuZGIuZGU7IGdyZWdraEBsaW51eGZvdW5kYXRpb24ub3JnOyBN
+LmguIExpYW4gPG1pbmdodWFuLmxpYW5AbnhwLmNvbT47IE1pbmdrYWkgSHUgPG1pbmdrYWkuaHVA
+bnhwLmNvbT47IFJveSBaYW5nIDxyb3kuemFuZ0BueHAuY29tPjsga3N0ZXdhcnRAbGludXhmb3Vu
+ZGF0aW9uLm9yZzsgY3lyaWxsZS5waXRjaGVuQGZyZWUtZWxlY3Ryb25zLmNvbTsgcG9tYnJlZGFu
+bmVAbmV4Yi5jb207IHNoYXduLmxpbkByb2NrLWNoaXBzLmNvbTsgbmlrbGFzLmNhc3NlbEBheGlz
+LmNvbTsgbGludXgtcGNpQHZnZXIua2VybmVsLm9yZzsgZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5v
+cmc7IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LWFybS1rZXJuZWxAbGlzdHMu
+aW5mcmFkZWFkLm9yZzsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcNClN1YmplY3Q6IFJl
+OiBbUEFUQ0ggNS82XSBwY2k6IGxheWVyc2NhcGU6IEFkZCB0aGUgRVAgbW9kZSBzdXBwb3J0Lg0K
+DQpIaSwNCg0KT24gVGh1cnNkYXkgMjUgT2N0b2JlciAyMDE4IDA0OjM5IFBNLCBYaWFvd2VpIEJh
+byB3cm90ZToNCj4gQWRkIHRoZSBQQ0llIEVQIG1vZGUgc3VwcG9ydCBmb3IgbGF5ZXJzY2FwZSBw
+bGF0Zm9ybS4NCj4gDQo+IFNpZ25lZC1vZmYtYnk6IFhpYW93ZWkgQmFvIDx4aWFvd2VpLmJhb0Bu
+eHAuY29tPg0KPiAtLS0NCj4gIGRyaXZlcnMvcGNpL2NvbnRyb2xsZXIvZHdjL01ha2VmaWxlICAg
+ICAgICAgICAgfCAgICAyICstDQo+ICBkcml2ZXJzL3BjaS9jb250cm9sbGVyL2R3Yy9wY2ktbGF5
+ZXJzY2FwZS1lcC5jIHwgIDE2MQ0KPiArKysrKysrKysrKysrKysrKysrKysrKysNCj4gIDIgZmls
+ZXMgY2hhbmdlZCwgMTYyIGluc2VydGlvbnMoKyksIDEgZGVsZXRpb25zKC0pICBjcmVhdGUgbW9k
+ZQ0KPiAxMDA2NDQgZHJpdmVycy9wY2kvY29udHJvbGxlci9kd2MvcGNpLWxheWVyc2NhcGUtZXAu
+Yw0KPiANCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvcGNpL2NvbnRyb2xsZXIvZHdjL01ha2VmaWxl
+DQo+IGIvZHJpdmVycy9wY2kvY29udHJvbGxlci9kd2MvTWFrZWZpbGUNCj4gaW5kZXggNWQyY2U3
+Mi4uYjI2ZDYxNyAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy9wY2kvY29udHJvbGxlci9kd2MvTWFr
+ZWZpbGUNCj4gKysrIGIvZHJpdmVycy9wY2kvY29udHJvbGxlci9kd2MvTWFrZWZpbGUNCj4gQEAg
+LTgsNyArOCw3IEBAIG9iai0kKENPTkZJR19QQ0lfRVhZTk9TKSArPSBwY2ktZXh5bm9zLm8NCj4g
+IG9iai0kKENPTkZJR19QQ0lfSU1YNikgKz0gcGNpLWlteDYubw0KPiAgb2JqLSQoQ09ORklHX1BD
+SUVfU1BFQVIxM1hYKSArPSBwY2llLXNwZWFyMTN4eC5vDQo+ICBvYmotJChDT05GSUdfUENJX0tF
+WVNUT05FKSArPSBwY2kta2V5c3RvbmUtZHcubyBwY2kta2V5c3RvbmUubw0KPiAtb2JqLSQoQ09O
+RklHX1BDSV9MQVlFUlNDQVBFKSArPSBwY2ktbGF5ZXJzY2FwZS5vDQo+ICtvYmotJChDT05GSUdf
+UENJX0xBWUVSU0NBUEUpICs9IHBjaS1sYXllcnNjYXBlLm8gcGNpLWxheWVyc2NhcGUtZXAubw0K
+PiAgb2JqLSQoQ09ORklHX1BDSUVfUUNPTSkgKz0gcGNpZS1xY29tLm8NCj4gIG9iai0kKENPTkZJ
+R19QQ0lFX0FSTUFEQV84SykgKz0gcGNpZS1hcm1hZGE4ay5vDQo+ICBvYmotJChDT05GSUdfUENJ
+RV9BUlRQRUM2KSArPSBwY2llLWFydHBlYzYubyBkaWZmIC0tZ2l0IA0KPiBhL2RyaXZlcnMvcGNp
+L2NvbnRyb2xsZXIvZHdjL3BjaS1sYXllcnNjYXBlLWVwLmMNCj4gYi9kcml2ZXJzL3BjaS9jb250
+cm9sbGVyL2R3Yy9wY2ktbGF5ZXJzY2FwZS1lcC5jDQo+IG5ldyBmaWxlIG1vZGUgMTAwNjQ0DQo+
+IGluZGV4IDAwMDAwMDAuLjNiMzNiYmMNCj4gLS0tIC9kZXYvbnVsbA0KPiArKysgYi9kcml2ZXJz
+L3BjaS9jb250cm9sbGVyL2R3Yy9wY2ktbGF5ZXJzY2FwZS1lcC5jDQo+IEBAIC0wLDAgKzEsMTYx
+IEBADQo+ICsvLyBTUERYLUxpY2Vuc2UtSWRlbnRpZmllcjogR1BMLTIuMA0KPiArLyoNCj4gKyAq
+IFBDSWUgY29udHJvbGxlciBFUCBkcml2ZXIgZm9yIEZyZWVzY2FsZSBMYXllcnNjYXBlIFNvQ3MN
+Cj4gKyAqDQo+ICsgKiBDb3B5cmlnaHQgKEMpIDIwMTggTlhQIFNlbWljb25kdWN0b3IuDQo+ICsg
+Kg0KPiArICogQXV0aG9yOiBYaWFvd2VpIEJhbyA8eGlhb3dlaS5iYW9AbnhwLmNvbT4gICovDQo+
+ICsNCj4gKyNpbmNsdWRlIDxsaW51eC9rZXJuZWwuaD4NCj4gKyNpbmNsdWRlIDxsaW51eC9pbml0
+Lmg+DQo+ICsjaW5jbHVkZSA8bGludXgvb2ZfcGNpLmg+DQo+ICsjaW5jbHVkZSA8bGludXgvb2Zf
+cGxhdGZvcm0uaD4NCj4gKyNpbmNsdWRlIDxsaW51eC9vZl9hZGRyZXNzLmg+DQo+ICsjaW5jbHVk
+ZSA8bGludXgvcGNpLmg+DQo+ICsjaW5jbHVkZSA8bGludXgvcGxhdGZvcm1fZGV2aWNlLmg+DQo+
+ICsjaW5jbHVkZSA8bGludXgvcmVzb3VyY2UuaD4NCj4gKw0KPiArI2luY2x1ZGUgInBjaWUtZGVz
+aWdud2FyZS5oIg0KPiArDQo+ICsjZGVmaW5lIFBDSUVfREJJMl9PRkZTRVQJCTB4MTAwMAkvKiBE
+QkkyIGJhc2UgYWRkcmVzcyovDQoNClRoZSBiYXNlIGFkZHJlc3Mgc2hvdWxkIGNvbWUgZnJvbSBk
+dC4NCj4gKw0KPiArc3RydWN0IGxzX3BjaWVfZXAgew0KPiArCXN0cnVjdCBkd19wY2llCQkqcGNp
+Ow0KPiArfTsNCj4gKw0KPiArI2RlZmluZSB0b19sc19wY2llX2VwKHgpCWRldl9nZXRfZHJ2ZGF0
+YSgoeCktPmRldikNCj4gKw0KPiArc3RhdGljIGJvb2wgbHNfcGNpZV9pc19icmlkZ2Uoc3RydWN0
+IGxzX3BjaWVfZXAgKnBjaWUpIHsNCj4gKwlzdHJ1Y3QgZHdfcGNpZSAqcGNpID0gcGNpZS0+cGNp
+Ow0KPiArCXUzMiBoZWFkZXJfdHlwZTsNCj4gKw0KPiArCWhlYWRlcl90eXBlID0gaW9yZWFkOChw
+Y2ktPmRiaV9iYXNlICsgUENJX0hFQURFUl9UWVBFKTsNCj4gKwloZWFkZXJfdHlwZSAmPSAweDdm
+Ow0KPiArDQo+ICsJcmV0dXJuIGhlYWRlcl90eXBlID09IFBDSV9IRUFERVJfVFlQRV9CUklER0U7
+IH0NCj4gKw0KPiArc3RhdGljIGludCBsc19wY2llX2VzdGFibGlzaF9saW5rKHN0cnVjdCBkd19w
+Y2llICpwY2kpIHsNCj4gKwlyZXR1cm4gMDsNCj4gK30NCg0KVGhlcmUgc2hvdWxkIGJlIHNvbWUg
+d2F5IGJ5IHdoaWNoIEVQIHNob3VsZCB0ZWxsIFJDIHRoYXQgaXQgaXMgbm90IGNvbmZpZ3VyZWQg
+eWV0LiBBcmUgdGhlcmUgbm8gYml0cyB0byBjb250cm9sIExUU1NNIHN0YXRlIGluaXRpYWxpemF0
+aW9uIG9yIENvbmZpZ3VyYXRpb24gcmV0cnkgc3RhdHVzIGVuYWJsaW5nPw0KW1hpYW93ZWkgQmFv
+XSBUaGVyZSBoYXZlIG5vdCBiaXRzIHRvIGNvbnRyb2wgTFRTU00gc3RhdGUgdG8gdGVsbCB0aGUg
+UkMgaXQgaXMgY29uZmlndXJlZC4gVGhlIHN0YXJ0IGxpbmsgaXMgYXV0byBjb21wbGV0ZWQuDQpb
+WGlhb3dlaSBCYW9dIEhpIEtpc2hvbiwgaXMgdGhlcmUgYW55IGFkdmljZT8NCj4gKw0KPiArc3Rh
+dGljIGNvbnN0IHN0cnVjdCBkd19wY2llX29wcyBsc19wY2llX2VwX29wcyA9IHsNCj4gKwkuc3Rh
+cnRfbGluayA9IGxzX3BjaWVfZXN0YWJsaXNoX2xpbmssIH07DQo+ICsNCj4gK3N0YXRpYyBjb25z
+dCBzdHJ1Y3Qgb2ZfZGV2aWNlX2lkIGxzX3BjaWVfZXBfb2ZfbWF0Y2hbXSA9IHsNCj4gKwl7IC5j
+b21wYXRpYmxlID0gImZzbCxscy1wY2llLWVwIix9LA0KPiArCXsgfSwNCj4gK307DQo+ICsNCj4g
+K3N0YXRpYyB2b2lkIGxzX3BjaWVfZXBfaW5pdChzdHJ1Y3QgZHdfcGNpZV9lcCAqZXApIHsNCj4g
+KwlzdHJ1Y3QgZHdfcGNpZSAqcGNpID0gdG9fZHdfcGNpZV9mcm9tX2VwKGVwKTsNCj4gKwlzdHJ1
+Y3QgcGNpX2VwYyAqZXBjID0gZXAtPmVwYzsNCj4gKwllbnVtIHBjaV9iYXJubyBiYXI7DQo+ICsN
+Cj4gKwlmb3IgKGJhciA9IEJBUl8wOyBiYXIgPD0gQkFSXzU7IGJhcisrKQ0KPiArCQlkd19wY2ll
+X2VwX3Jlc2V0X2JhcihwY2ksIGJhcik7DQo+ICsNCj4gKwllcGMtPmZlYXR1cmVzIHw9IEVQQ19G
+RUFUVVJFX05PX0xJTktVUF9OT1RJRklFUjsgfQ0KPiArDQo+ICtzdGF0aWMgaW50IGxzX3BjaWVf
+ZXBfcmFpc2VfaXJxKHN0cnVjdCBkd19wY2llX2VwICplcCwgdTggZnVuY19ubywNCj4gKwkJCQkg
+IGVudW0gcGNpX2VwY19pcnFfdHlwZSB0eXBlLCB1MTYgaW50ZXJydXB0X251bSkgew0KPiArCXN0
+cnVjdCBkd19wY2llICpwY2kgPSB0b19kd19wY2llX2Zyb21fZXAoZXApOw0KPiArDQo+ICsJc3dp
+dGNoICh0eXBlKSB7DQo+ICsJY2FzZSBQQ0lfRVBDX0lSUV9MRUdBQ1k6DQo+ICsJCXJldHVybiBk
+d19wY2llX2VwX3JhaXNlX2xlZ2FjeV9pcnEoZXAsIGZ1bmNfbm8pOw0KPiArCWNhc2UgUENJX0VQ
+Q19JUlFfTVNJOg0KPiArCQlyZXR1cm4gZHdfcGNpZV9lcF9yYWlzZV9tc2lfaXJxKGVwLCBmdW5j
+X25vLCBpbnRlcnJ1cHRfbnVtKTsNCj4gKwljYXNlIFBDSV9FUENfSVJRX01TSVg6DQo+ICsJCXJl
+dHVybiBkd19wY2llX2VwX3JhaXNlX21zaXhfaXJxKGVwLCBmdW5jX25vLCBpbnRlcnJ1cHRfbnVt
+KTsNCj4gKwlkZWZhdWx0Og0KPiArCQlkZXZfZXJyKHBjaS0+ZGV2LCAiVU5LTk9XTiBJUlEgdHlw
+ZVxuIik7DQo+ICsJfQ0KPiArDQo+ICsJcmV0dXJuIDA7DQo+ICt9DQo+ICsNCj4gK3N0YXRpYyBz
+dHJ1Y3QgZHdfcGNpZV9lcF9vcHMgcGNpZV9lcF9vcHMgPSB7DQo+ICsJLmVwX2luaXQgPSBsc19w
+Y2llX2VwX2luaXQsDQo+ICsJLnJhaXNlX2lycSA9IGxzX3BjaWVfZXBfcmFpc2VfaXJxLA0KPiAr
+fTsNCj4gKw0KPiArc3RhdGljIGludCBfX2luaXQgbHNfYWRkX3BjaWVfZXAoc3RydWN0IGxzX3Bj
+aWVfZXAgKnBjaWUsDQo+ICsJCQkJCXN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpDQo+ICt7
+DQo+ICsJc3RydWN0IGR3X3BjaWUgKnBjaSA9IHBjaWUtPnBjaTsNCj4gKwlzdHJ1Y3QgZGV2aWNl
+ICpkZXYgPSBwY2ktPmRldjsNCj4gKwlzdHJ1Y3QgZHdfcGNpZV9lcCAqZXA7DQo+ICsJc3RydWN0
+IHJlc291cmNlICpyZXM7DQo+ICsJaW50IHJldDsNCj4gKw0KPiArCWVwID0gJnBjaS0+ZXA7DQo+
+ICsJZXAtPm9wcyA9ICZwY2llX2VwX29wczsNCj4gKw0KPiArCXJlcyA9IHBsYXRmb3JtX2dldF9y
+ZXNvdXJjZV9ieW5hbWUocGRldiwgSU9SRVNPVVJDRV9NRU0sICJhZGRyX3NwYWNlIik7DQo+ICsJ
+aWYgKCFyZXMpDQo+ICsJCXJldHVybiAtRUlOVkFMOw0KPiArDQo+ICsJZXAtPnBoeXNfYmFzZSA9
+IHJlcy0+c3RhcnQ7DQo+ICsJZXAtPmFkZHJfc2l6ZSA9IHJlc291cmNlX3NpemUocmVzKTsNCj4g
+Kw0KPiArCXJldCA9IGR3X3BjaWVfZXBfaW5pdChlcCk7DQo+ICsJaWYgKHJldCkgew0KPiArCQlk
+ZXZfZXJyKGRldiwgImZhaWxlZCB0byBpbml0aWFsaXplIGVuZHBvaW50XG4iKTsNCj4gKwkJcmV0
+dXJuIHJldDsNCj4gKwl9DQo+ICsNCj4gKwlyZXR1cm4gMDsNCj4gK30NCj4gKw0KPiArc3RhdGlj
+IGludCBfX2luaXQgbHNfcGNpZV9lcF9wcm9iZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2
+KSB7DQo+ICsJc3RydWN0IGRldmljZSAqZGV2ID0gJnBkZXYtPmRldjsNCj4gKwlzdHJ1Y3QgZHdf
+cGNpZSAqcGNpOw0KPiArCXN0cnVjdCBsc19wY2llX2VwICpwY2llOw0KPiArCXN0cnVjdCByZXNv
+dXJjZSAqZGJpX2Jhc2U7DQo+ICsJaW50IHJldDsNCj4gKw0KPiArCXBjaWUgPSBkZXZtX2t6YWxs
+b2MoZGV2LCBzaXplb2YoKnBjaWUpLCBHRlBfS0VSTkVMKTsNCj4gKwlpZiAoIXBjaWUpDQo+ICsJ
+CXJldHVybiAtRU5PTUVNOw0KPiArDQo+ICsJcGNpID0gZGV2bV9remFsbG9jKGRldiwgc2l6ZW9m
+KCpwY2kpLCBHRlBfS0VSTkVMKTsNCj4gKwlpZiAoIXBjaSkNCj4gKwkJcmV0dXJuIC1FTk9NRU07
+DQo+ICsNCj4gKwlkYmlfYmFzZSA9IHBsYXRmb3JtX2dldF9yZXNvdXJjZV9ieW5hbWUocGRldiwg
+SU9SRVNPVVJDRV9NRU0sICJyZWdzIik7DQo+ICsJcGNpLT5kYmlfYmFzZSA9IGRldm1fcGNpX3Jl
+bWFwX2NmZ19yZXNvdXJjZShkZXYsIGRiaV9iYXNlKTsNCj4gKwlpZiAoSVNfRVJSKHBjaS0+ZGJp
+X2Jhc2UpKQ0KPiArCQlyZXR1cm4gUFRSX0VSUihwY2ktPmRiaV9iYXNlKTsNCj4gKw0KPiArCXBj
+aS0+ZGJpX2Jhc2UyID0gcGNpLT5kYmlfYmFzZSArIFBDSUVfREJJMl9PRkZTRVQ7DQo+ICsJcGNp
+LT5kZXYgPSBkZXY7DQo+ICsJcGNpLT5vcHMgPSAmbHNfcGNpZV9lcF9vcHM7DQo+ICsJcGNpZS0+
+cGNpID0gcGNpOw0KPiArDQo+ICsJaWYgKGxzX3BjaWVfaXNfYnJpZGdlKHBjaWUpKQ0KPiArCQly
+ZXR1cm4gLUVOT0RFVjsNCg0KRm9yIGFuIGVuZHBvaW50IHRoaXMgY29uZGl0aW9uIHNob3VsZCBu
+ZXZlciBvY2N1ci4gVGhpcyBzaG91bGQgb25seSBtZWFuLCBhIHdyb25nIGNvbXBhdGlibGUgaGFz
+IGJlZW4gdXNlZCBpbiBkdC4NCltYaWFvd2VpIEJhb10gVGhpcyBmdW5jdGlvbiBpcyBhIHdheSB0
+aGF0IGNhbiBjaGVjayB0aGUgUENJIGNvbnRyb2xsZXIgd2hldGhlciB3b3JrIGluIEVQIG1vZGUs
+IEkgdGhpbmsgaXQgaXMgbW9yZSBzYWZlci4gT2YgY291cnNlLCBpdCBjYW4gYmUgcmVtb3ZlZC4N
+CltYaWFvd2VpIEJhb10gSGkgS2lzaG9uLCBpcyB0aGVyZSBhbnkgYWR2aWNlPw0KVGhhbmtzDQpL
+aXNob24NCg0K
