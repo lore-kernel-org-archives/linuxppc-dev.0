@@ -2,48 +2,52 @@ Return-Path: <SRS0=1E/h=NL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A47FC0044C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 09:43:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DA606ECDE44
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 09:45:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 64BD520685
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 09:43:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 64BD520685
+	by mail.kernel.org (Postfix) with ESMTPS id 62D0520685
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 09:45:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 62D0520685
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42lNgq2dPJzF3Gn
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 20:43:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42lNjr30XSzF3KP
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 20:45:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42lNdf0YfWzDsN0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2018 20:41:42 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42lNfd479PzDrS7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2018 20:42:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 42lNdd5BcTz9s3l;
- Wed, 31 Oct 2018 20:41:41 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPSA id 42lNfd1SKrz9s3T;
+ Wed, 31 Oct 2018 20:42:33 +1100 (AEDT)
 Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org
+ Thiago Jung Bauermann <bauerman@linux.ibm.com>,
+ Breno Leitao <leitao@debian.org>
 Subject: Re: [PATCH 2/2] selftests/powerpc: Skip test instead of failing
-In-Reply-To: <56cdd832-6229-bf95-58ee-1783f931e7bd@linux.vnet.ibm.com>
+In-Reply-To: <fd8d4568-c69c-5e90-27f6-574a4bc88d2c@linux.vnet.ibm.com>
 References: <1540326197-15537-1-git-send-email-leitao@debian.org>
  <1540326197-15537-2-git-send-email-leitao@debian.org>
  <56cdd832-6229-bf95-58ee-1783f931e7bd@linux.vnet.ibm.com>
-Date: Wed, 31 Oct 2018 20:41:39 +1100
-Message-ID: <87lg6eihbg.fsf@concordia.ellerman.id.au>
+ <132d7e4f-153f-8ba4-95f2-f0d9c1a66f28@debian.org>
+ <87efc8be37.fsf@morokweng.localdomain>
+ <87r2g7ihwi.fsf@concordia.ellerman.id.au>
+ <fd8d4568-c69c-5e90-27f6-574a4bc88d2c@linux.vnet.ibm.com>
+Date: Wed, 31 Oct 2018 20:42:31 +1100
+Message-ID: <87in1iiha0.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -57,63 +61,86 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 Tyrel Datwyler <tyreld@linux.vnet.ibm.com> writes:
-> On 10/23/2018 01:23 PM, Breno Leitao wrote:
->> Current core-pkey selftest fails if the test runs without privileges to
->> write into the core pattern file (/proc/sys/kernel/core_pattern). This
->> causes the test to fail and give the impression that the subsystem being
->> tested is broken, when, in fact, the test is being executed without the
->> proper privileges. This is the current error:
+> On 10/30/2018 08:16 AM, Michael Ellerman wrote:
+>> Thiago Jung Bauermann <bauerman@linux.ibm.com> writes:
 >> 
->> 	test: core_pkey
->> 	tags: git_version:v4.19-3-g9e3363be9bce-dirty
->> 	Error writing to core_pattern file: Permission denied
->> 	failure: core_pkey
+>>> Breno Leitao <leitao@debian.org> writes:
+>>>
+>>>> Hi Tyrel,
+>>>>
+>>>> On 10/23/2018 05:41 PM, Tyrel Datwyler wrote:
+>>>>>> --- a/tools/testing/selftests/powerpc/ptrace/core-pkey.c
+>>>>>> +++ b/tools/testing/selftests/powerpc/ptrace/core-pkey.c
+>>>>>> @@ -352,17 +352,11 @@ static int write_core_pattern(const char *core_pattern)
+>>>>>>  	FILE *f;
+>>>>>>
+>>>>>>  	f = fopen(core_pattern_file, "w");
+>>>>>> -	if (!f) {
+>>>>>> -		perror("Error writing to core_pattern file");
+>>>>>> -		return TEST_FAIL;
+>>>>>> -	}
+>>>>>> +	SKIP_IF(!f);
+>>>>>>
+>>>>>>  	ret = fwrite(core_pattern, 1, len, f);
+>>>>>>  	fclose(f);
+>>>>>> -	if (ret != len) {
+>>>>>> -		perror("Error writing to core_pattern file");
+>>>>>> -		return TEST_FAIL;
+>>>>>> -	}
+>>>>>> +	SKIP_IF(ret != len);
+>>>>
+>>>>> If we don't have proper privileges we should fail on the open, right?
+>>>>> So wouldn't we still want to fail on the write if something goes
+>>>>> wrong?
+>>>>
+>>>> That is a good point. Should the test fail or skip if it is not possible
+>>>> to create the infrastructure to run the core test?
+>>>>
+>>>> Trying to find the answer in the current test sets, I find tests where
+>>>> the self test skips if the test environment is not able to be set up, as
+>>>> for example, when a memory allocation fails.
+>>>>
+>>>> File: tools/testing/selftests/powerpc/alignment/alignment_handler.c
+>>>>
+>>>>         ci1 = mmap(NULL, bufsize, PROT_WRITE, MAP_SHARED,
+>>>>                    fd, bufsize);
+>>>>         if ((ci0 == MAP_FAILED) || (ci1 == MAP_FAILED)) {
+>>>>                 printf("\n");
+>>>>                 perror("mmap failed");
+>>>>                 SKIP_IF(1);
+>>>>         }
+>>>
+>>> I think TEST_FAIL means the test was able to exercise the feature
+>>> and found a problem with it. In this case, the test wasn't able to
+>>> exercise the feature so it's not appropriate.
+>>>
+>>> Ideally, there should be a TEST_ERROR result for a case like this where
+>>> an unexpected problem prevented the testcase from exercising the
+>>> feature.
+>>>
+>>> If we're to use the an existing result then I vote for SKIP_IF.
 >> 
->> This patch simply skips this test if it runs without the proper privileges,
->> avoiding this undesired failure.
+>> Yeah I agree.
 >> 
->> CC: Thiago Jung Bauermann <bauerman@linux.ibm.com>
->> Signed-off-by: Breno Leitao <leitao@debian.org>
->> ---
->>  tools/testing/selftests/powerpc/ptrace/core-pkey.c | 10 ++--------
->>  1 file changed, 2 insertions(+), 8 deletions(-)
+>> See for example some of the TM tests, which skip if TM is not available.
+>> Or the alignment test which skips if it can't open /dev/fb0.
 >> 
->> diff --git a/tools/testing/selftests/powerpc/ptrace/core-pkey.c b/tools/testing/selftests/powerpc/ptrace/core-pkey.c
->> index e23e2e199eb4..e07949120fc8 100644
->> --- a/tools/testing/selftests/powerpc/ptrace/core-pkey.c
->> +++ b/tools/testing/selftests/powerpc/ptrace/core-pkey.c
->> @@ -352,17 +352,11 @@ static int write_core_pattern(const char *core_pattern)
->>  	FILE *f;
->> 
->>  	f = fopen(core_pattern_file, "w");
->> -	if (!f) {
->> -		perror("Error writing to core_pattern file");
->> -		return TEST_FAIL;
->> -	}
->> +	SKIP_IF(!f);
->> 
->>  	ret = fwrite(core_pattern, 1, len, f);
->>  	fclose(f);
->> -	if (ret != len) {
->> -		perror("Error writing to core_pattern file");
->> -		return TEST_FAIL;
->> -	}
->> +	SKIP_IF(ret != len);
+>> In this case it should print "you need to be root to run this" and then
+>> skip.
 >
-> If we don't have proper privileges we should fail on the open, right?
-> So wouldn't we still want to fail on the write if something goes
-> wrong?
+> Agreed that there should be some indicator of why we are skipping the
+> test. My original point I was trying to make was that I thought
+> skipping a failed open was okay because we are likely not root.
+> However, I wasn't sure that a failed write was okay to skip as that
+> could be an indicator that something has actually been broken.
 
-Yes you're right. If we don't have permission then the open should have
-failed, and we skip then.
-
-But if the open succeeded and the write fails then we don't know what's
-going on and the test should fail.
+Yes I agree. I didn't read your mail closely enough. Have just replied
+to it.
 
 cheers
