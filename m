@@ -3,40 +3,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CAC81ECDE44
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 05:55:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F3B15C0044C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 05:56:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6A7D320657
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 05:55:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6A7D320657
+	by mail.kernel.org (Postfix) with ESMTPS id 9620F20657
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 05:56:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9620F20657
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42lHcH4B2XzF3KX
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 16:55:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42lHfK4wTjzF3Kc
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 16:56:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42lHLD1nkNzDrJn
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42lHLD3Cg7zF3Jy
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2018 16:43:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 42lHLC6tWXz9sMM; Wed, 31 Oct 2018 16:42:59 +1100 (AEDT)
+ id 42lHLD2GqWz9sNF; Wed, 31 Oct 2018 16:43:00 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 48dc0ef19044bfb69193302fbe3a834e3331b7ae
-In-Reply-To: <1540242986-7510-1-git-send-email-leitao@debian.org>
-To: Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org
+X-powerpc-patch-commit: 8dce6b2215eaa91dbf04463e11098a48748da5ab
+In-Reply-To: <1540258332-15520-1-git-send-email-tyreld@linux.vnet.ibm.com>
+To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: selftests/powerpc: Fix ptrace tm failure
-Message-Id: <42lHLC6tWXz9sMM@ozlabs.org>
-Date: Wed, 31 Oct 2018 16:42:59 +1100 (AEDT)
+Subject: Re: powerpc/pseries: add missing cpumask.h include file
+Message-Id: <42lHLD2GqWz9sNF@ozlabs.org>
+Date: Wed, 31 Oct 2018 16:43:00 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,47 +48,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Breno Leitao <leitao@debian.org>, mikey@neuling.org, stable@vger.kernel.org,
- gromero@linux.vnet.ibm.com
+Cc: nfont@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 2018-10-22 at 21:16:26 UTC, Breno Leitao wrote:
-> Test ptrace-tm-spd-gpr fails on current kernel (4.19) due to a segmentation
-> fault that happens on the child process prior to setting cptr[2] = 1. This
-> causes the parent process to wait forever at 'while (!pptr[2])' and the test to
-> be killed by the test harness framework by timeout, thus, failing.
+On Tue, 2018-10-23 at 01:32:12 UTC, Tyrel Datwyler wrote:
+> Build error is encountered when inlcuding <asm/rtas.h> if no explicit or
+> implicit include of cpumask.h exists in the including file.
 > 
-> The segmentation fault happens because of a inline assembly being
-> generated as:
+> In file included from arch/powerpc/platforms/pseries/hotplug-pci.c:3:0:
+> ./arch/powerpc/include/asm/rtas.h:360:34: error: unknown type name 'cpumask_var_t'
+>  extern int rtas_online_cpus_mask(cpumask_var_t cpus);
+>                                   ^
+> ./arch/powerpc/include/asm/rtas.h:361:35: error: unknown type name 'cpumask_var_t'
+>  extern int rtas_offline_cpus_mask(cpumask_var_t cpus);
 > 
-> 	0x10000355c <tm_spd_gpr+492>    lfs    f0, 0(0)
-> 
-> This is reading memory position 0x0 and causing the segmentation fault.
-> 
-> This code is being generated by ASM_LOAD_FPR_SINGLE_PRECISION(flt_4), where
-> flt_4 is passed to the inline assembly block as:
-> 
-> 	[flt_4] "r" (&d)
-> 
-> Since the inline assembly 'r' constraint means any GPR, gpr0 is being
-> chosen, thus causing this issue when issuing a Load Floating-Point Single
-> instruction.
-> 
-> This patch simply changes the constraint to 'b', which specify that this
-> register will be used as base, and r0 is not allowed to be used, avoiding
-> this issue.
-> 
-> Other than that, removing flt_2 register from the input operands, since it
-> is not used by the inline assembly code at all.
-> 
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Breno Leitao <leitao@debian.org>
-> Acked-by: Segher Boessenkool <segher@kernel.crashing.org>
+> Fixes: 120496ac2d2d ("powerpc: Bring all threads online prior to migration/hibernation")
+> Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/48dc0ef19044bfb69193302fbe3a83
+https://git.kernel.org/powerpc/c/8dce6b2215eaa91dbf04463e11098a
 
 cheers
