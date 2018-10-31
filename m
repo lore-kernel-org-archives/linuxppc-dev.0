@@ -2,104 +2,90 @@ Return-Path: <SRS0=1E/h=NL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ED6FFC6786F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 00:11:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 95C71C6786F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 01:12:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4453920664
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 00:11:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4453920664
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id F2AFD2082B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 01:12:18 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="C2DIpTnR"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F2AFD2082B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=jms.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42l7zh6M4DzF2Pp
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 11:11:28 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42l9Kr5GX6zF2P4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 12:12:16 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=jms.id.au
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=tyreld@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="C2DIpTnR";
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::642; helo=mail-pl1-x642.google.com;
+ envelope-from=joel.stan@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=jms.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="C2DIpTnR"; 
+ dkim-atps=neutral
+Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com
+ [IPv6:2607:f8b0:4864:20::642])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42l7xh0QjKzF1fD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2018 11:09:43 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w9V04aT2083380
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Oct 2018 20:09:41 -0400
-Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2nexwxw847-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Oct 2018 20:09:41 -0400
-Received: from localhost
- by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Wed, 31 Oct 2018 00:09:40 -0000
-Received: from b01cxnp22035.gho.pok.ibm.com (9.57.198.25)
- by e12.ny.us.ibm.com (146.89.104.199) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 31 Oct 2018 00:09:37 -0000
-Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
- [9.57.199.106])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- w9V09aQr43188410
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Wed, 31 Oct 2018 00:09:36 GMT
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 62A162805C;
- Wed, 31 Oct 2018 00:09:36 +0000 (GMT)
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A58402805A;
- Wed, 31 Oct 2018 00:09:35 +0000 (GMT)
-Received: from oc6857751186.ibm.com (unknown [9.85.171.36])
- by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP;
- Wed, 31 Oct 2018 00:09:35 +0000 (GMT)
-Subject: Re: [PATCH 2/2] selftests/powerpc: Skip test instead of failing
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42l9Gx3XqszF1cK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2018 12:09:45 +1100 (AEDT)
+Received: by mail-pl1-x642.google.com with SMTP id bb7-v6so6399731plb.13
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Oct 2018 18:09:45 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=sender:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=Y/aHLKfP04KRTXs5sn80en5K36ivXpunn7RcbndGFIw=;
+ b=C2DIpTnRDqAaNl19whcaiV6VCAjEYRC9noCLMCJAYSieladzPqZfyrJT2yFXZsXWyJ
+ uyId0D62fXV7EG56+eqAwb2MppY/UFGdlC59kAwU/+lJxmxHNOOwzc1UWxdm8CEPQRTr
+ G9W555xueUQNs6j71fuiX4xFxSDvB/hmsObUGfLkMVmHySYXLcqMqwFC2eK/sxNqfvtR
+ 41SkmakjDPYyxU4tnwSge0T2QsqsD34uJdatsur0yWoOw7P1nwv4X9E9iiD+ZLb/K6Q5
+ /q6J57Z0vIBjF93T49okGVxec5Y4iYZuOmF/sBSsfJElrSuJsQtj6iAxDV6Bp2xOk8HG
+ YwzA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
+ :mime-version:content-transfer-encoding;
+ bh=Y/aHLKfP04KRTXs5sn80en5K36ivXpunn7RcbndGFIw=;
+ b=dvfcE/741Ka6uhPwDu1o1tRv4ovbIffsJDHA2hO8tf/XgA610KRTIeWCZXEKkoY+IR
+ zV5C6xzYXqVEI7U61AFnyMkbxkwy/CZ83I8dklz+AZGnu4QoKH9ALzpr6ZVAY8ivUknQ
+ xcHiPzqjgOfBof9jHwDlLGsg7vxUMqV62Q2xN/i9RAhfZTDjxkz2GU2cxopW61KPdLoO
+ LODedYWJFjuDE+0v0yO66rcKE7xYFuwefKHeexG5cDv7EXJsnSQZiMdZwm2u5iAKoJmB
+ 6CkzteVS9WgC3YuZzf4qmX4GHT0XtDhdF9zrRVQqI/YdjF6mWXIgcBPco2CBeImuYR2v
+ r1Lw==
+X-Gm-Message-State: AGRZ1gLgX2F1yanDCJGZ47E+q4W1wDXbblrCwAxYT5RbfxVgRBGgfbNT
+ 0kVnE0X+K6Psp6K0DP//IcA=
+X-Google-Smtp-Source: AJdET5dkzsyKCWDd4ODp3Rd5oYME1u2PFtrNtnO1rWTKRZIiCfIUcfJEJGj1Q61VR2gI3br1xHpEyQ==
+X-Received: by 2002:a17:902:bd91:: with SMTP id
+ q17-v6mr1044739pls.105.1540948183247; 
+ Tue, 30 Oct 2018 18:09:43 -0700 (PDT)
+Received: from aurora.jms.id.au ([45.124.203.15])
+ by smtp.gmail.com with ESMTPSA id s30-v6sm18584404pga.57.2018.10.30.18.09.39
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Tue, 30 Oct 2018 18:09:41 -0700 (PDT)
+Received: by aurora.jms.id.au (sSMTP sendmail emulation);
+ Wed, 31 Oct 2018 11:39:36 +1030
+From: Joel Stanley <joel@jms.id.au>
 To: Michael Ellerman <mpe@ellerman.id.au>,
- Thiago Jung Bauermann <bauerman@linux.ibm.com>,
- Breno Leitao <leitao@debian.org>
-References: <1540326197-15537-1-git-send-email-leitao@debian.org>
- <1540326197-15537-2-git-send-email-leitao@debian.org>
- <56cdd832-6229-bf95-58ee-1783f931e7bd@linux.vnet.ibm.com>
- <132d7e4f-153f-8ba4-95f2-f0d9c1a66f28@debian.org>
- <87efc8be37.fsf@morokweng.localdomain>
- <87r2g7ihwi.fsf@concordia.ellerman.id.au>
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Date: Tue, 30 Oct 2018 17:09:35 -0700
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/xmon: Relax frame size for clang
+Date: Wed, 31 Oct 2018 11:39:34 +1030
+Message-Id: <20181031010934.3627-1-joel@jms.id.au>
+X-Mailer: git-send-email 2.19.1
 MIME-Version: 1.0
-In-Reply-To: <87r2g7ihwi.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-x-cbid: 18103100-0060-0000-0000-000002CA129C
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00009956; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000268; SDB=6.01110361; UDB=6.00575332; IPR=6.00890454; 
- MB=3.00023971; MTD=3.00000008; XFM=3.00000015; UTC=2018-10-31 00:09:38
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18103100-0061-0000-0000-00004708633A
-Message-Id: <fd8d4568-c69c-5e90-27f6-574a4bc88d2c@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-10-30_14:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1807170000 definitions=main-1810300199
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -111,83 +97,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Cc: Nick Desaulniers <ndesaulniers@google.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 10/30/2018 08:16 AM, Michael Ellerman wrote:
-> Thiago Jung Bauermann <bauerman@linux.ibm.com> writes:
-> 
->> Breno Leitao <leitao@debian.org> writes:
->>
->>> Hi Tyrel,
->>>
->>> On 10/23/2018 05:41 PM, Tyrel Datwyler wrote:
->>>>> --- a/tools/testing/selftests/powerpc/ptrace/core-pkey.c
->>>>> +++ b/tools/testing/selftests/powerpc/ptrace/core-pkey.c
->>>>> @@ -352,17 +352,11 @@ static int write_core_pattern(const char *core_pattern)
->>>>>  	FILE *f;
->>>>>
->>>>>  	f = fopen(core_pattern_file, "w");
->>>>> -	if (!f) {
->>>>> -		perror("Error writing to core_pattern file");
->>>>> -		return TEST_FAIL;
->>>>> -	}
->>>>> +	SKIP_IF(!f);
->>>>>
->>>>>  	ret = fwrite(core_pattern, 1, len, f);
->>>>>  	fclose(f);
->>>>> -	if (ret != len) {
->>>>> -		perror("Error writing to core_pattern file");
->>>>> -		return TEST_FAIL;
->>>>> -	}
->>>>> +	SKIP_IF(ret != len);
->>>
->>>> If we don't have proper privileges we should fail on the open, right?
->>>> So wouldn't we still want to fail on the write if something goes
->>>> wrong?
->>>
->>> That is a good point. Should the test fail or skip if it is not possible
->>> to create the infrastructure to run the core test?
->>>
->>> Trying to find the answer in the current test sets, I find tests where
->>> the self test skips if the test environment is not able to be set up, as
->>> for example, when a memory allocation fails.
->>>
->>> File: tools/testing/selftests/powerpc/alignment/alignment_handler.c
->>>
->>>         ci1 = mmap(NULL, bufsize, PROT_WRITE, MAP_SHARED,
->>>                    fd, bufsize);
->>>         if ((ci0 == MAP_FAILED) || (ci1 == MAP_FAILED)) {
->>>                 printf("\n");
->>>                 perror("mmap failed");
->>>                 SKIP_IF(1);
->>>         }
->>
->> I think TEST_FAIL means the test was able to exercise the feature
->> and found a problem with it. In this case, the test wasn't able to
->> exercise the feature so it's not appropriate.
->>
->> Ideally, there should be a TEST_ERROR result for a case like this where
->> an unexpected problem prevented the testcase from exercising the
->> feature.
->>
->> If we're to use the an existing result then I vote for SKIP_IF.
-> 
-> Yeah I agree.
-> 
-> See for example some of the TM tests, which skip if TM is not available.
-> Or the alignment test which skips if it can't open /dev/fb0.
-> 
-> In this case it should print "you need to be root to run this" and then
-> skip.
+When building with clang (8 trunk, 7.0 release) the frame size limit is
+hit:
 
-Agreed that there should be some indicator of why we are skipping the test. My original point I was trying to make was that I thought skipping a failed open was okay because we are likely not root. However, I wasn't sure that a failed write was okay to skip as that could be an indicator that something has actually been broken.
+ arch/powerpc/xmon/xmon.c:452:12: warning: stack frame size of 2576
+ bytes in function 'xmon_core' [-Wframe-larger-than=]
 
--Tyrel
+Some investigation by Naveen indicates this is due to clang saving the
+addresses to printf format strings on the stack.
 
-> 
-> cheers
-> 
+While this issue is investigated, bump up the frame size limit for xmon
+when building with clang.
+
+Link: https://github.com/ClangBuiltLinux/linux/issues/252
+Signed-off-by: Joel Stanley <joel@jms.id.au>
+---
+ arch/powerpc/xmon/Makefile | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/arch/powerpc/xmon/Makefile b/arch/powerpc/xmon/Makefile
+index 69e7fb47bcaa..878f9c1d3615 100644
+--- a/arch/powerpc/xmon/Makefile
++++ b/arch/powerpc/xmon/Makefile
+@@ -11,6 +11,12 @@ UBSAN_SANITIZE := n
+ ORIG_CFLAGS := $(KBUILD_CFLAGS)
+ KBUILD_CFLAGS = $(subst $(CC_FLAGS_FTRACE),,$(ORIG_CFLAGS))
+ 
++ifdef CONFIG_CC_IS_CLANG
++# clang stores addresses on the stack causing the frame size to blow
++# out. See https://github.com/ClangBuiltLinux/linux/issues/252
++KBUILD_CFLAGS += -Wframe-larger-than=4096
++endif
++
+ ccflags-$(CONFIG_PPC64) := $(NO_MINIMAL_TOC)
+ 
+ obj-y			+= xmon.o nonstdio.o spr_access.o
+-- 
+2.19.1
 
