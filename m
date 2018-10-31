@@ -2,80 +2,92 @@ Return-Path: <SRS0=1E/h=NL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 295F5C0044C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 15:38:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D7DCEECDE44
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 15:40:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9A3F22054F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 15:38:04 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="jaUhc7Sp"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9A3F22054F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
+	by mail.kernel.org (Postfix) with ESMTPS id 60C562054F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 15:40:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 60C562054F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42lXXp6cbnzF3G6
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 02:38:02 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=socionext.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42lXbp1445zF3G9
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 02:40:38 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nifty.com header.i=@nifty.com header.b="jaUhc7Sp";
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=softfail (mailfrom) smtp.mailfrom=socionext.com
- (client-ip=210.131.2.83; helo=conssluserg-04.nifty.com;
- envelope-from=yamada.masahiro@socionext.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=socionext.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nifty.com header.i=@nifty.com header.b="jaUhc7Sp"; 
- dkim-atps=neutral
-Received: from conssluserg-04.nifty.com (conssluserg-04.nifty.com
- [210.131.2.83])
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=naveen.n.rao@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42lXSL6ZBXzF3N0
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Nov 2018 02:34:10 +1100 (AEDT)
-Received: from mail-vk1-f182.google.com (mail-vk1-f182.google.com
- [209.85.221.182]) (authenticated)
- by conssluserg-04.nifty.com with ESMTP id w9VFXfPM005499
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Nov 2018 00:33:41 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conssluserg-04.nifty.com w9VFXfPM005499
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1541000021;
- bh=7MVqzDRPdYZDW53V3e7ri//BecS61EPHkL2jRn69Nm0=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=jaUhc7SpUqcQl6UKFLIbCDG52ekg8Pl3Ap7rsCe8VL2betxB2GweIv0bMCLuOs6fh
- hVr3R5S/oyQN0RBI/qpxqdFUmMRH/mZVJaVitQY9qXCVyw+xXKlxC1rD3dmgkw+54I
- LWZbrA9oEQJ9jTDDeyqLB81AaoZOylaTUf6Dz1zgaX1A5w2nFXsgupn1xDCWSWzMb3
- J+NZR2VE1RMf3mnhkb+5vJJM/6WbwATSFh0HKSH6oRFA8DAxu5ied5nsQraKmXXIfY
- 2EouAvcmJ0qtbzSEL53Z97+iQWCBxkRVnxBX+5Rtgqpvct1MwEH41mVRxc6zGXw7kJ
- vXppOSOrk0n9w==
-X-Nifty-SrcIP: [209.85.221.182]
-Received: by mail-vk1-f182.google.com with SMTP id m199-v6so4010500vke.9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2018 08:33:41 -0700 (PDT)
-X-Gm-Message-State: AGRZ1gJU2hB3VqwdV0VflMpfI6Y/a4YIftwgagWGTADHClUyULhxG6Nw
- 3r0FZFLFXTNpRDZTDN5faXtddrL8e7SRXKMIDjM=
-X-Google-Smtp-Source: AJdET5cSKM07kpQyZQ73G/EvgXpVGTYb+L6+vGDKhCWRoPmOB0xQTbJTKCGHcBBdV8iKhtsZJhGWT++V5NCTdRKbt4o=
-X-Received: by 2002:a1f:1d4b:: with SMTP id
- d72-v6mr1474118vkd.34.1541000020309; 
- Wed, 31 Oct 2018 08:33:40 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42lXYX32XHzDqnG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Nov 2018 02:38:39 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w9VFaCfC138890
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2018 11:38:36 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2nff6906cp-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2018 11:38:36 -0400
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Wed, 31 Oct 2018 15:38:34 -0000
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 31 Oct 2018 15:38:33 -0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ w9VFcWIL6160810
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Wed, 31 Oct 2018 15:38:32 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 6E1B0AE051;
+ Wed, 31 Oct 2018 15:38:32 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 0CAA6AE057;
+ Wed, 31 Oct 2018 15:38:32 +0000 (GMT)
+Received: from localhost (unknown [9.79.185.251])
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed, 31 Oct 2018 15:38:31 +0000 (GMT)
+Date: Wed, 31 Oct 2018 21:08:28 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [PATCH] selftests: powerpc: Fix warning for security subdir
+To: Joel Stanley <joel@jms.id.au>, linuxppc-dev@lists.ozlabs.org
+References: <20181022120926.12797-1-joel@jms.id.au>
+In-Reply-To: <20181022120926.12797-1-joel@jms.id.au>
+User-Agent: astroid/0.14.0 (https://github.com/astroidmail/astroid)
 MIME-Version: 1.0
-References: <20181019120952.32763-1-hch@lst.de>
- <20181019120952.32763-6-hch@lst.de>
- <20181019151019.GA5618@localhost>
-In-Reply-To: <20181019151019.GA5618@localhost>
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-Date: Thu, 1 Nov 2018 00:33:04 +0900
-X-Gmail-Original-Message-ID: <CAK7LNARa7xqG1iyQb9PE271L8QTC7nsaVXSAofm0hzku8T5Xvg@mail.gmail.com>
-Message-ID: <CAK7LNARa7xqG1iyQb9PE271L8QTC7nsaVXSAofm0hzku8T5Xvg@mail.gmail.com>
-Subject: Re: [PATCH 5/9] powerpc: PCI_MSI needs PCI
-To: Josh Triplett <josh@joshtriplett.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-TM-AS-GCONF: 00
+x-cbid: 18103115-0016-0000-0000-0000021D16FE
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18103115-0017-0000-0000-000032754292
+Message-Id: <1541000230.shsllwkgjc.naveen@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-10-31_06:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1807170000 definitions=main-1810310130
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,72 +99,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch <linux-arch@vger.kernel.org>,
- linux-scsi <linux-scsi@vger.kernel.org>,
- Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
- linux-pci@vger.kernel.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Dominik Brodowski <linux@dominikbrodowski.net>,
- Alex Bounine <alex.bou9@gmail.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Christoph Hellwig <hch@lst.de>,
- linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Oct 20, 2018 at 12:10 AM Josh Triplett <josh@joshtriplett.org> wrote:
->
-> On Fri, Oct 19, 2018 at 02:09:48PM +0200, Christoph Hellwig wrote:
-> > Various powerpc boards select the PCI_MSI config option without selecting
-> > PCI, resulting in potentially not compilable configurations if the by
-> > default enabled PCI option is disabled.  Explicitly select PCI to ensure
-> > we always have valid configs.
-> [...]
-> > --- a/arch/powerpc/platforms/44x/Kconfig
-> > +++ b/arch/powerpc/platforms/44x/Kconfig
-> > @@ -24,6 +24,7 @@ config BLUESTONE
-> >       default n
-> >       select PPC44x_SIMPLE
-> >       select APM821xx
-> > +     select PCI
-> >       select PCI_MSI
-> >       select PPC4xx_MSI
-> >       select PPC4xx_PCI_EXPRESS
-> > @@ -78,6 +79,7 @@ config KATMAI
-> >       select 440SPe
-> >       select PCI
-> >       select PPC4xx_PCI_EXPRESS
-> > +     select PCI
-> >       select PCI_MSI
->
-> This case already had PCI selected a couple of lines above.
+Joel Stanley wrote:
+> typing 'make' inside tools/testing/selftests/powerpc gave a build
+> warning:
+>=20
+> BUILD_TARGET=3Dtools/testing/selftests/powerpc/security; mkdir -p $BUILD_=
+TARGET; make OUTPUT=3D$BUILD_TARGET -k -C security all
+> make[1]: Entering directory 'tools/testing/selftests/powerpc/security'
+> ../../lib.mk:20: ../../../../scripts/subarch.include: No such file or dir=
+ectory
+> make[1]: *** No rule to make target '../../../../scripts/subarch.include'=
+.
+> make[1]: Failed to remake makefile '../../../../scripts/subarch.include'.
+>=20
+> The build is one level deeper than lib.mk thinks it is. Set top_srcdir
+> to set things straight.
+>=20
+> Note that the test program is still built.
+>=20
+> Signed-off-by: Joel Stanley <joel@jms.id.au>
 
+Thanks.
+Tested-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 
-Good catch!
+=
 
-I dropped this hunk,
-and applied to linux-kbuild.
-
-
-
-
-
-> >       select PPC4xx_MSI
-> >       help
-> > @@ -219,6 +221,7 @@ config AKEBONO
-> >       select SWIOTLB
-> >       select 476FPE
-> >       select PPC4xx_PCI_EXPRESS
-> > +     select PCI
-> >       select PCI_MSI
-> >       select PPC4xx_HSTA_MSI
-> >       select I2C
-> > --
-> > 2.19.1
-> >
-
-
-
--- 
-Best Regards
-Masahiro Yamada
