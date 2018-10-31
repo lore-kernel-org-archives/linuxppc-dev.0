@@ -6,86 +6,81 @@ X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E9238ECDE44
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 11:06:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 96B9DC0044C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 12:36:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4D45D20657
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 11:06:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id CECD420685
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 12:36:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="PL7+NanL"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4D45D20657
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="OPb+Z7nC"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CECD420685
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=debian.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42lQWX07cWzF31L
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 22:06:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42lSWL6RywzF3GG
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 23:36:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=debian.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="PL7+NanL";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="OPb+Z7nC";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2a00:1450:4864:20::444; helo=mail-wr1-x444.google.com;
+ (client-ip=2a00:1450:4864:20::344; helo=mail-wm1-x344.google.com;
  envelope-from=mathieu.malaterre@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=debian.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="PL7+NanL"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="OPb+Z7nC"; 
  dkim-atps=neutral
-Received: from mail-wr1-x444.google.com (mail-wr1-x444.google.com
- [IPv6:2a00:1450:4864:20::444])
+Received: from mail-wm1-x344.google.com (mail-wm1-x344.google.com
+ [IPv6:2a00:1450:4864:20::344])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42lQS14RDZzF1Ph
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2018 22:03:27 +1100 (AEDT)
-Received: by mail-wr1-x444.google.com with SMTP id x12-v6so15971541wrw.8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2018 04:03:27 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42lSQT3BrCzF1pS
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2018 23:32:17 +1100 (AEDT)
+Received: by mail-wm1-x344.google.com with SMTP id s10-v6so14939558wmc.5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2018 05:32:17 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=sender:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=pW4p5ekuQgWSAo3EpgmHNfRh/OxQhAWSXR6ZJn3Wn3w=;
- b=PL7+NanLkJYIdGjDn/qRqt7LINX3lNIF9/jaavHlbvaGNwgNtPklLdNMhcl/wUNxEK
- pME6NnczybMlsZc5EXsXueBApl1SmHgLvmEhrGJLpYfEeYP0C5r6c9Hia4izZyfrHZj3
- Obw6o0EP44frTBlm5ZwXU7OVTYO5AG07CEFGQVKH0rc5F8RG/6oBVGcBqqnasLUS/TQx
- 0LblAczbbXtHaejDEtmtJPjF7jT4V/2qnKM9MjuJ7wnkg8+Yff1lVFM9rRCzNfLZgKD2
- G/7PWTZIHkGCF1ypWBbIwxPeSKO4tyufUiXfNTaQAm82UYmq8Yhst5km9b88r8AFWBsn
- 4H0g==
+ h=sender:from:to:cc:subject:date:message-id;
+ bh=WgHkHlKH5h23Lr+mABtPK0cTX37CfKxS8tJSHtuvTgU=;
+ b=OPb+Z7nC1bds8q6XTLEpUH8R3d7sSdK1ZoHBkVXN4fq3n0yPCB57hZONT7M0I+9H9S
+ AyOC6E/S+3TKPjgSAyE3/Xk8RBzyxdBdtFFzypUx18EWM7hYGEYYcb4B0mRIW170Qt5f
+ qf9HesTCPjTbDXfYCqh2lP/XGc+FLDfKwmSrvDb1lxUJUtJLk8+c8Y33bdghVIrNakPq
+ Cwcwsn3rfDSnqO1rSo2mFe3AgGQFKGCmNm9PSFbKddWJCJEdSN+hipL+JUafWKaV9PMB
+ ww4IDeT9E0TkRb1TAVbwQQNUNmM8xPFwWjM1MSAw9SbeE+4IuYJquGe1fYpIY5WVTU2x
+ OHXQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
- :mime-version:content-transfer-encoding;
- bh=pW4p5ekuQgWSAo3EpgmHNfRh/OxQhAWSXR6ZJn3Wn3w=;
- b=YFJQIxzNJdkONBMp6L//2W0vpIv2gxDzF3nS8rRzaVM9jowUtUHVxRVHPPC9bpkOjK
- 4ne44jariG7coNpOVhnse/s/9NGxdamIsaRYsBhT+dcuEDKNyvwI8J46O/6h5Wmclt6O
- aNdXvVF1Lg2zKOyHUQpcWUKNu5asgCq224htiUi0zyXs4uBK6Zphm1tL2S9sLSBbUNvz
- WoDugl0NI465eEA+pFGoh8Oqtynqf8d3k9ivmdSkjV65GoIWri8y6L3VyDq2R9PsTmPh
- DYXeb0yrSPwNHssljf1QO514ysBNNI/0D04RBlpvGydws/GJdf1/sGk+0XAS0fqaVWuc
- yUaQ==
-X-Gm-Message-State: AGRZ1gIArSh61cOe9Ui/7UDTK8n4sr5iRycAhtpR+dNPAy1Qhy5YmASE
- FsJIEfguGnyVnfoA5lLoTIZcS84y
-X-Google-Smtp-Source: AJdET5fshi4tDPpym8Jo9Z4K5Ndwa/fv8W1OjBREuTaYwyUw/LyR6mYycLkVb2WDLYqZy3wI9WkQRQ==
-X-Received: by 2002:a5d:570d:: with SMTP id
- a13-v6mr2448052wrv.289.1540983804438; 
- Wed, 31 Oct 2018 04:03:24 -0700 (PDT)
+ h=x-gm-message-state:sender:from:to:cc:subject:date:message-id;
+ bh=WgHkHlKH5h23Lr+mABtPK0cTX37CfKxS8tJSHtuvTgU=;
+ b=bThCrnh9CwVncyYNm3KbYH9kSEBOZf1Ln0a0WzecvEebfXuoMir0gOD2zJvV2G4/dl
+ grib7rUXMafCbCY86itUEUaeJek8oaD4ss8MDzE85cf0cxdKi42+q989bpQ4+LXuU5WP
+ dPQ/RH5odmhIsT4z5INYPYAKw0qCe214FoGi4dgKoiBNUuyw338TUL47GBjYzAdvoDkH
+ I55iNwLYHrzqV84puG7Ef8PdmCYJumCReV7Rkdu0VT+10TfCJC9A7XrC9af3Rvr5tktM
+ pWoRZSIRynYsnyEH/l9qwj7GTSE1BmJ6B3ge3iNjaIS/i+tYp3tLGIe8OpbkU/6/Drj2
+ HIFA==
+X-Gm-Message-State: AGRZ1gIlUFUx1N/o8JJdOR31h0Fh0t/4t4aIlj3Atl8sAsHZwuoSWWlV
+ E+Xa5k0Zi7qZbkuiWusHeu0=
+X-Google-Smtp-Source: AJdET5fh+LKAmHufCXnnBYzzusrl7/Jg3ns1oFwjgqrqw353cRrnremPG2q6tATkA6aiRVG1BYP/Kw==
+X-Received: by 2002:a1c:1694:: with SMTP id
+ 142-v6mr2288120wmw.113.1540989132627; 
+ Wed, 31 Oct 2018 05:32:12 -0700 (PDT)
 Received: from macbookpro.malat.net (bru31-1-78-225-224-134.fbx.proxad.net.
  [78.225.224.134])
- by smtp.gmail.com with ESMTPSA id b71-v6sm21113557wma.13.2018.10.31.04.03.23
+ by smtp.gmail.com with ESMTPSA id v11-v6sm17398781wrw.3.2018.10.31.05.32.11
  (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Wed, 31 Oct 2018 04:03:23 -0700 (PDT)
+ Wed, 31 Oct 2018 05:32:11 -0700 (PDT)
 Received: by macbookpro.malat.net (Postfix, from userid 1000)
- id 36D81114491C; Wed, 31 Oct 2018 12:03:21 +0100 (CET)
+ id 4DEAE1142338; Wed, 31 Oct 2018 13:32:10 +0100 (CET)
 From: Mathieu Malaterre <malat@debian.org>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH] =?UTF-8?q?powerpc/mm:=20remove=20const=20type=20qualifier?=
- =?UTF-8?q?=20from=20function=20=E2=80=98pud=5Fpfn=E2=80=99?=
-Date: Wed, 31 Oct 2018 12:03:07 +0100
-Message-Id: <20181031110308.8194-1-malat@debian.org>
+Subject: [PATCH] powerpc/32: Add .data..Lubsan_data*/.data..Lubsan_type*
+ sections explicitly
+Date: Wed, 31 Oct 2018 13:31:56 +0100
+Message-Id: <20181031123157.24947-1-malat@debian.org>
 X-Mailer: git-send-email 2.11.0
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,28 +98,43 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Type qualifier on return type is ignored. Remove warning in W=1:
+When both `CONFIG_LD_DEAD_CODE_DATA_ELIMINATION=y` and `CONFIG_UBSAN=y`
+are set, link step typically produce numberous warnings about orphan
+section:
 
-  arch/powerpc/include/asm/book3s/64/pgtable.h:1268:25: error: type qualifiers ignored on function return type [-Werror=ignored-qualifiers]
+  + powerpc-linux-gnu-ld -EB -m elf32ppc -Bstatic --orphan-handling=warn --build-id --gc-sections -X -o .tmp_vmlinux1 -T ./arch/powerpc/kernel/vmlinux.lds --who
+  le-archive built-in.a --no-whole-archive --start-group lib/lib.a --end-group
+  powerpc-linux-gnu-ld: warning: orphan section `.data..Lubsan_data393' from `init/main.o' being placed in section `.data..Lubsan_data393'.
+  powerpc-linux-gnu-ld: warning: orphan section `.data..Lubsan_data394' from `init/main.o' being placed in section `.data..Lubsan_data394'.
+  ...
+  powerpc-linux-gnu-ld: warning: orphan section `.data..Lubsan_type11' from `init/main.o' being placed in section `.data..Lubsan_type11'.
+  powerpc-linux-gnu-ld: warning: orphan section `.data..Lubsan_type12' from `init/main.o' being placed in section `.data..Lubsan_type12'.
+  ...
 
+This commit remove those warnings produced at W=1.
+
+Link: https://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg135407.html
+Suggested-by: Nicholas Piggin <npiggin@gmail.com>
 Signed-off-by: Mathieu Malaterre <malat@debian.org>
 ---
- arch/powerpc/include/asm/book3s/64/pgtable.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/kernel/vmlinux.lds.S | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index 6c99e846a8c9..2e6ada28da64 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -1304,7 +1304,7 @@ static inline int pgd_devmap(pgd_t pgd)
- }
- #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
- 
--static inline const int pud_pfn(pud_t pud)
-+static inline int pud_pfn(pud_t pud)
- {
- 	/*
- 	 * Currently all calls to pud_pfn() are gated around a pud_devmap()
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index 434581bcd5b4..1148c3c60c3b 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -308,6 +308,10 @@ SECTIONS
+ #ifdef CONFIG_PPC32
+ 	.data : AT(ADDR(.data) - LOAD_OFFSET) {
+ 		DATA_DATA
++#ifdef CONFIG_UBSAN
++		*(.data..Lubsan_data*)
++		*(.data..Lubsan_type*)
++#endif
+ 		*(.data.rel*)
+ 		*(SDATA_MAIN)
+ 		*(.sdata2)
 -- 
 2.11.0
 
