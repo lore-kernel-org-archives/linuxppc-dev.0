@@ -2,83 +2,88 @@ Return-Path: <SRS0=1E/h=NL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4766CC0044C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 04:03:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 80002C0044C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 04:18:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A773D2081B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 04:03:36 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="rOZPEezz"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A773D2081B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
+	by mail.kernel.org (Postfix) with ESMTPS id B8D9020821
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 04:18:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B8D9020821
+Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=ti.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42lF7V274dzF2QG
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 15:03:34 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=russell.cc
+	by lists.ozlabs.org (Postfix) with ESMTP id 42lFSW3VZmzF2P4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 15:18:19 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.b="rOZPEezz";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=ti.com
+ (client-ip=198.47.19.142; helo=fllv0016.ext.ti.com;
+ envelope-from=kishon@ti.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=russell.cc
- (client-ip=64.147.123.24; helo=wout1-smtp.messagingengine.com;
- envelope-from=ruscur@russell.cc; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=russell.cc
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.b="rOZPEezz"; dkim-atps=neutral
-Received: from wout1-smtp.messagingengine.com (wout1-smtp.messagingengine.com
- [64.147.123.24])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ dmarc=pass (p=quarantine dis=none) header.from=ti.com
+Received: from fllv0016.ext.ti.com (fllv0016.ext.ti.com [198.47.19.142])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42lF3m3VYSzDrPq
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2018 15:00:20 +1100 (AEDT)
-Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
- by mailout.west.internal (Postfix) with ESMTP id 19183FD5;
- Wed, 31 Oct 2018 00:00:17 -0400 (EDT)
-Received: from mailfrontend2 ([10.202.2.163])
- by compute6.internal (MEProxy); Wed, 31 Oct 2018 00:00:17 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
- messagingengine.com; h=cc:content-transfer-encoding:content-type
- :date:from:in-reply-to:message-id:mime-version:references
- :subject:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
- :x-sasl-enc; s=fm1; bh=u1ODISTENN6BuUavJC7zxVncfz21d+eOGCvVCFslg
- XU=; b=rOZPEezzWrBUqgw544rCXx5iBgP5cDQRXuiuAt5vpEktMP+X3tMYtUSGF
- TgY1hjlrdtv12uGOjU19d7CjlJH4gHacDDK1+XT2xodiZj/qGCgXuaOBFxuwwBEy
- gkwbunuXpDAeouVjkrOI6jSAJD37bzaIj72x6O9kxdLyluFKEo4yLP4iSYBe0hMQ
- eV4UMl9BPAfmQBPTxzMgc6V0TImpVWhvumS1XeXo+o8ifN8onFVAMC/DO32SzfvU
- BW7iyp2rzqAStvpB+jNI39gD8G9mBzvf0Vsfwxl2XqQ3DOPmZKV8FJKsCjprw8FT
- AL0I6wAmfLeaaZL6rkHSkdtGW95gQ==
-X-ME-Sender: <xms:zijZW_q2pckgjzF63WxmYxsVkBvVofWXx-6d4QWZCiKoJS05l-vRdw>
-X-ME-Proxy: <xmx:zijZW8IEC22HHxDy0zKFTI-_g5Pk7F60dPsaNFukBJt7Z1ZB3LK3pw>
- <xmx:zijZW1Gsy_aSChz_eyfPDB9vZNJTyjvTGVYHmIQG3x-K5sUDGb9dJA>
- <xmx:zijZW4RsboAhVYtFhOXbGWCvlCoSPOP0NvcAdlJlLVdWM_uu8JwqRg>
- <xmx:zijZW5cNpF2jZkpuffqbHEEShW43BjuVTCT7I1cOcKYvpLxfaJUfvA>
- <xmx:zijZW_rNBgWjgcTnUvWpC5FCpvwzO-2RSeXDHc4686ziIxGOMVbNqg>
- <xmx:0CjZW9URbz9zy6wie_JQj17iLCC24o8Oe5TPD3hnrcwpkRL_U7x3Qg>
-Received: from crackle.ozlabs.ibm.com (unknown [122.99.82.10])
- by mail.messagingengine.com (Postfix) with ESMTPA id 0FDDD102EA;
- Wed, 31 Oct 2018 00:00:12 -0400 (EDT)
-Message-ID: <eaf851ae401556d25d2da5decf6337296ef20a35.camel@russell.cc>
-Subject: Re: [PATCH 1/5] powerpc/64s: Guarded Userspace Access Prevention
-From: Russell Currey <ruscur@russell.cc>
-To: LEROY Christophe <christophe.leroy@c-s.fr>
-Date: Wed, 31 Oct 2018 15:00:24 +1100
-In-Reply-To: <20181028185706.Horde.lU9x8hQG5ISmBGg3l1SFdw1@messagerie.si.c-s.fr>
-References: <20181026063513.30806-1-ruscur@russell.cc>
- <20181026063513.30806-2-ruscur@russell.cc>
- <20181028185706.Horde.lU9x8hQG5ISmBGg3l1SFdw1@messagerie.si.c-s.fr>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.30.2 
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42lFQR5l34zF22T
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2018 15:16:30 +1100 (AEDT)
+Received: from fllv0035.itg.ti.com ([10.64.41.0])
+ by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id w9V4Fp8f099877;
+ Tue, 30 Oct 2018 23:15:51 -0500
+Received: from DLEE106.ent.ti.com (dlee106.ent.ti.com [157.170.170.36])
+ by fllv0035.itg.ti.com (8.15.2/8.15.2) with ESMTPS id w9V4FpTH013463
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Tue, 30 Oct 2018 23:15:51 -0500
+Received: from DLEE114.ent.ti.com (157.170.170.25) by DLEE106.ent.ti.com
+ (157.170.170.36) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1466.3; Tue, 30
+ Oct 2018 23:15:51 -0500
+Received: from dlep32.itg.ti.com (157.170.170.100) by DLEE114.ent.ti.com
+ (157.170.170.25) with Microsoft SMTP Server (version=TLS1_0,
+ cipher=TLS_RSA_WITH_AES_256_CBC_SHA) id 15.1.1466.3 via Frontend Transport;
+ Tue, 30 Oct 2018 23:15:51 -0500
+Received: from [172.24.190.233] (ileax41-snat.itg.ti.com [10.172.224.153])
+ by dlep32.itg.ti.com (8.14.3/8.13.8) with ESMTP id w9V4Fjtr001295;
+ Tue, 30 Oct 2018 23:15:45 -0500
+Subject: Re: [PATCH 5/6] pci: layerscape: Add the EP mode support.
+To: Xiaowei Bao <xiaowei.bao@nxp.com>, "bhelgaas@google.com"
+ <bhelgaas@google.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>,
+ "mark.rutland@arm.com" <mark.rutland@arm.com>, "shawnguo@kernel.org"
+ <shawnguo@kernel.org>, Leo Li <leoyang.li@nxp.com>,
+ "lorenzo.pieralisi@arm.com" <lorenzo.pieralisi@arm.com>, "arnd@arndb.de"
+ <arnd@arndb.de>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
+ "M.h. Lian" <minghuan.lian@nxp.com>, Mingkai Hu <mingkai.hu@nxp.com>, Roy
+ Zang <roy.zang@nxp.com>, "kstewart@linuxfoundation.org"
+ <kstewart@linuxfoundation.org>, "cyrille.pitchen@free-electrons.com"
+ <cyrille.pitchen@free-electrons.com>, "pombredanne@nexb.com"
+ <pombredanne@nexb.com>, "shawn.lin@rock-chips.com"
+ <shawn.lin@rock-chips.com>, "niklas.cassel@axis.com"
+ <niklas.cassel@axis.com>, "linux-pci@vger.kernel.org"
+ <linux-pci@vger.kernel.org>, "devicetree@vger.kernel.org"
+ <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+References: <20181025110901.5680-1-xiaowei.bao@nxp.com>
+ <20181025110901.5680-5-xiaowei.bao@nxp.com>
+ <d9d07e05-556b-a56d-bb7f-eaec9fb739b8@ti.com>
+ <HE1PR04MB1497DF7D9428A5C791CB6A03F5F00@HE1PR04MB1497.eurprd04.prod.outlook.com>
+ <HE1PR04MB14979058170FA16A7465FF9EF5CD0@HE1PR04MB1497.eurprd04.prod.outlook.com>
+From: Kishon Vijay Abraham I <kishon@ti.com>
+Message-ID: <a85a6900-2478-0750-6f33-2e787cf80d1d@ti.com>
+Date: Wed, 31 Oct 2018 09:45:21 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.2.1
+MIME-Version: 1.0
+In-Reply-To: <HE1PR04MB14979058170FA16A7465FF9EF5CD0@HE1PR04MB1497.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
+X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,630 +95,216 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mikey@neuling.org, linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com
+Cc: Jiafei Pan <jiafei.pan@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, 2018-10-28 at 18:57 +0100, LEROY Christophe wrote:
-> Russell Currey <ruscur@russell.cc> a écrit :
-> 
-> > Guarded Userspace Access Prevention (GUAP)  utilises a feature of
-> > the Radix MMU which disallows read and write access to userspace
-> > addresses.  By utilising this, the kernel is prevented from
-> > accessing
-> > user data from outside of trusted paths that perform proper safety
-> > checks,
-> > such as copy_{to/from}_user() and friends.
-> > 
-> > Userspace access is disabled from early boot and is only enabled
-> > when:
-> > 
-> > 	- exiting the kernel and entering userspace
-> > 	- performing an operation like copy_{to/from}_user()
-> > 	- context switching to a process that has access enabled
-> > 
-> > and similarly, access is disabled again when exiting userspace and
-> > entering
-> > the kernel.
-> > 
-> > This feature has a slight performance impact which I roughly
-> > measured to be
-> > 3% slower in the worst case (performing 1GB of 1 byte
-> > read()/write()
-> > syscalls), and is gated behind the CONFIG_PPC_RADIX_GUAP option for
-> > performance-critical builds.
-> > 
-> > This feature can be tested by using the lkdtm driver
-> > (CONFIG_LKDTM=y) and
-> > performing the following:
-> > 
-> > 	echo ACCESS_USERSPACE > [debugfs]/provoke-crash/DIRECT
-> > 
-> > if enabled, this should send SIGSEGV to the thread.
-> > 
-> > Signed-off-by: Russell Currey <ruscur@russell.cc>
-> 
-> I think this patch should be split in at least two parts:
-> First part for implementing the generic part, including the changes
-> to  
-> futex and csum, and a second part implementing the radix part.
+Hi,
 
-I'll see how I go making generic handlers - I am concerned about the
-implementation becoming more complex than it needs to be just to
-accommodate potential future changes that could end up having different
-requirements anyway, rather than something simple that works today.
+On 31/10/18 8:03 AM, Xiaowei Bao wrote:
+> 
+> 
+> -----Original Message-----
+> From: Xiaowei Bao 
+> Sent: 2018年10月26日 17:19
+> To: 'Kishon Vijay Abraham I' <kishon@ti.com>; bhelgaas@google.com; robh+dt@kernel.org; mark.rutland@arm.com; shawnguo@kernel.org; Leo Li <leoyang.li@nxp.com>; lorenzo.pieralisi@arm.com; arnd@arndb.de; gregkh@linuxfoundation.org; M.h. Lian <minghuan.lian@nxp.com>; Mingkai Hu <mingkai.hu@nxp.com>; Roy Zang <roy.zang@nxp.com>; kstewart@linuxfoundation.org; cyrille.pitchen@free-electrons.com; pombredanne@nexb.com; shawn.lin@rock-chips.com; niklas.cassel@axis.com; linux-pci@vger.kernel.org; devicetree@vger.kernel.org; linux-kernel@vger.kernel.org; linux-arm-kernel@lists.infradead.org; linuxppc-dev@lists.ozlabs.org
+> Cc: Jiafei Pan <jiafei.pan@nxp.com>
+> Subject: RE: [PATCH 5/6] pci: layerscape: Add the EP mode support.
+> 
+> 
+> 
+> -----Original Message-----
+> From: Kishon Vijay Abraham I <kishon@ti.com>
+> Sent: 2018年10月26日 13:29
+> To: Xiaowei Bao <xiaowei.bao@nxp.com>; bhelgaas@google.com; robh+dt@kernel.org; mark.rutland@arm.com; shawnguo@kernel.org; Leo Li <leoyang.li@nxp.com>; lorenzo.pieralisi@arm.com; arnd@arndb.de; gregkh@linuxfoundation.org; M.h. Lian <minghuan.lian@nxp.com>; Mingkai Hu <mingkai.hu@nxp.com>; Roy Zang <roy.zang@nxp.com>; kstewart@linuxfoundation.org; cyrille.pitchen@free-electrons.com; pombredanne@nexb.com; shawn.lin@rock-chips.com; niklas.cassel@axis.com; linux-pci@vger.kernel.org; devicetree@vger.kernel.org; linux-kernel@vger.kernel.org; linux-arm-kernel@lists.infradead.org; linuxppc-dev@lists.ozlabs.org
+> Subject: Re: [PATCH 5/6] pci: layerscape: Add the EP mode support.
+> 
+> Hi,
+> 
+> On Thursday 25 October 2018 04:39 PM, Xiaowei Bao wrote:
+>> Add the PCIe EP mode support for layerscape platform.
+>>
+>> Signed-off-by: Xiaowei Bao <xiaowei.bao@nxp.com>
+>> ---
+>>  drivers/pci/controller/dwc/Makefile            |    2 +-
+>>  drivers/pci/controller/dwc/pci-layerscape-ep.c |  161
+>> ++++++++++++++++++++++++
+>>  2 files changed, 162 insertions(+), 1 deletions(-)  create mode
+>> 100644 drivers/pci/controller/dwc/pci-layerscape-ep.c
+>>
+>> diff --git a/drivers/pci/controller/dwc/Makefile
+>> b/drivers/pci/controller/dwc/Makefile
+>> index 5d2ce72..b26d617 100644
+>> --- a/drivers/pci/controller/dwc/Makefile
+>> +++ b/drivers/pci/controller/dwc/Makefile
+>> @@ -8,7 +8,7 @@ obj-$(CONFIG_PCI_EXYNOS) += pci-exynos.o
+>>  obj-$(CONFIG_PCI_IMX6) += pci-imx6.o
+>>  obj-$(CONFIG_PCIE_SPEAR13XX) += pcie-spear13xx.o
+>>  obj-$(CONFIG_PCI_KEYSTONE) += pci-keystone-dw.o pci-keystone.o
+>> -obj-$(CONFIG_PCI_LAYERSCAPE) += pci-layerscape.o
+>> +obj-$(CONFIG_PCI_LAYERSCAPE) += pci-layerscape.o pci-layerscape-ep.o
+>>  obj-$(CONFIG_PCIE_QCOM) += pcie-qcom.o
+>>  obj-$(CONFIG_PCIE_ARMADA_8K) += pcie-armada8k.o
+>>  obj-$(CONFIG_PCIE_ARTPEC6) += pcie-artpec6.o diff --git 
+>> a/drivers/pci/controller/dwc/pci-layerscape-ep.c
+>> b/drivers/pci/controller/dwc/pci-layerscape-ep.c
+>> new file mode 100644
+>> index 0000000..3b33bbc
+>> --- /dev/null
+>> +++ b/drivers/pci/controller/dwc/pci-layerscape-ep.c
+>> @@ -0,0 +1,161 @@
+>> +// SPDX-License-Identifier: GPL-2.0
+>> +/*
+>> + * PCIe controller EP driver for Freescale Layerscape SoCs
+>> + *
+>> + * Copyright (C) 2018 NXP Semiconductor.
+>> + *
+>> + * Author: Xiaowei Bao <xiaowei.bao@nxp.com>  */
+>> +
+>> +#include <linux/kernel.h>
+>> +#include <linux/init.h>
+>> +#include <linux/of_pci.h>
+>> +#include <linux/of_platform.h>
+>> +#include <linux/of_address.h>
+>> +#include <linux/pci.h>
+>> +#include <linux/platform_device.h>
+>> +#include <linux/resource.h>
+>> +
+>> +#include "pcie-designware.h"
+>> +
+>> +#define PCIE_DBI2_OFFSET		0x1000	/* DBI2 base address*/
+> 
+> The base address should come from dt.
+>> +
+>> +struct ls_pcie_ep {
+>> +	struct dw_pcie		*pci;
+>> +};
+>> +
+>> +#define to_ls_pcie_ep(x)	dev_get_drvdata((x)->dev)
+>> +
+>> +static bool ls_pcie_is_bridge(struct ls_pcie_ep *pcie) {
+>> +	struct dw_pcie *pci = pcie->pci;
+>> +	u32 header_type;
+>> +
+>> +	header_type = ioread8(pci->dbi_base + PCI_HEADER_TYPE);
+>> +	header_type &= 0x7f;
+>> +
+>> +	return header_type == PCI_HEADER_TYPE_BRIDGE; }
+>> +
+>> +static int ls_pcie_establish_link(struct dw_pcie *pci) {
+>> +	return 0;
+>> +}
+> 
+> There should be some way by which EP should tell RC that it is not configured yet. Are there no bits to control LTSSM state initialization or Configuration retry status enabling?
+> [Xiaowei Bao] There have not bits to control LTSSM state to tell the RC it is configured. The start link is auto completed.
+> [Xiaowei Bao] Hi Kishon, is there any advice?
 
-> > ---
-> > Since the previous version of this patchset (named KHRAP) there
-> > have been
-> > several changes, some of which include:
-> > 
-> >         - macro naming, suggested by Nick
-> >         - builds should be fixed outside of 64s
-> >         - no longer unlock heading out to userspace
-> >         - removal of unnecessary isyncs
-> >         - more config option testing
-> >         - removal of save/restore
-> >         - use pr_crit() and reword message on fault
-> > 
-> >  arch/powerpc/include/asm/exception-64e.h |  3 ++
-> >  arch/powerpc/include/asm/exception-64s.h | 19 +++++++-
-> >  arch/powerpc/include/asm/mmu.h           |  7 +++
-> >  arch/powerpc/include/asm/paca.h          |  3 ++
-> >  arch/powerpc/include/asm/reg.h           |  1 +
-> >  arch/powerpc/include/asm/uaccess.h       | 57
-> > ++++++++++++++++++++----
-> >  arch/powerpc/kernel/asm-offsets.c        |  1 +
-> >  arch/powerpc/kernel/dt_cpu_ftrs.c        |  4 ++
-> >  arch/powerpc/kernel/entry_64.S           | 17 ++++++-
-> >  arch/powerpc/mm/fault.c                  | 12 +++++
-> >  arch/powerpc/mm/pgtable-radix.c          |  2 +
-> >  arch/powerpc/mm/pkeys.c                  |  7 ++-
-> >  arch/powerpc/platforms/Kconfig.cputype   | 15 +++++++
-> >  13 files changed, 135 insertions(+), 13 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/include/asm/exception-64e.h  
-> > b/arch/powerpc/include/asm/exception-64e.h
-> > index 555e22d5e07f..bf25015834ee 100644
-> > --- a/arch/powerpc/include/asm/exception-64e.h
-> > +++ b/arch/powerpc/include/asm/exception-64e.h
-> > @@ -215,5 +215,8 @@ exc_##label##_book3e:
-> >  #define RFI_TO_USER						
-> > 	\
-> >  	rfi
-> > 
-> > +#define UNLOCK_USER_ACCESS(reg)
-> > +#define LOCK_USER_ACCESS(reg)
-> > +
-> >  #endif /* _ASM_POWERPC_EXCEPTION_64E_H */
-> > 
-> > diff --git a/arch/powerpc/include/asm/exception-64s.h  
-> > b/arch/powerpc/include/asm/exception-64s.h
-> > index 3b4767ed3ec5..0cac5bd380ca 100644
-> > --- a/arch/powerpc/include/asm/exception-64s.h
-> > +++ b/arch/powerpc/include/asm/exception-64s.h
-> > @@ -264,6 +264,19 @@ BEGIN_FTR_SECTION_NESTED(943)			
-> > 			\
-> >  	std	ra,offset(r13);						\
-> >  END_FTR_SECTION_NESTED(ftr,ftr,943)
-> > 
-> > +#define LOCK_USER_ACCESS(reg)					
-> > 		\
-> > +BEGIN_MMU_FTR_SECTION_NESTED(944)					
-> > \
-> > +	LOAD_REG_IMMEDIATE(reg,AMR_LOCKED);				\
-> > +	mtspr	SPRN_AMR,reg;						
-> > \
-> > +END_MMU_FTR_SECTION_NESTED(MMU_FTR_RADIX_GUAP,MMU_FTR_RADIX_GUAP,9
-> > 44)
-> > +
-> > +#define UNLOCK_USER_ACCESS(reg)					
-> > 		\
-> > +BEGIN_MMU_FTR_SECTION_NESTED(945)					
-> > \
-> > +	li	reg,0;							\
-> > +	mtspr	SPRN_AMR,reg;						
-> > \
-> > +	isync								
-> > \
-> > +END_MMU_FTR_SECTION_NESTED(MMU_FTR_RADIX_GUAP,MMU_FTR_RADIX_GUAP,9
-> > 45)
-> > +
-> >  #define EXCEPTION_PROLOG_0(area)					
-> > \
-> >  	GET_PACA(r13);							
-> > \
-> >  	std	r9,area+EX_R9(r13);	/* save r9 */			\
-> > @@ -500,7 +513,11 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
-> >  	beq	4f;			/* if from kernel mode		*/
-> > \
-> >  	ACCOUNT_CPU_USER_ENTRY(r13, r9, r10);				
-> >    \
-> >  	SAVE_PPR(area, r9);						   
-> > \
-> > -4:	EXCEPTION_PROLOG_COMMON_2(area)					
-> >    \
-> > +4:	lbz	r9,PACA_USER_ACCESS_ALLOWED(r13);			   
-> > \
-> > +	cmpwi	cr1,r9,0;						
-> >    \
-> > +	beq	5f;							   
-> > \
-> > +	LOCK_USER_ACCESS(r9);						
-> > 	   \
-> > +5:	EXCEPTION_PROLOG_COMMON_2(area)					
-> > \
-> >  	EXCEPTION_PROLOG_COMMON_3(n)					
-> >    \
-> >  	ACCOUNT_STOLEN_TIME
-> > 
-> > diff --git a/arch/powerpc/include/asm/mmu.h
-> > b/arch/powerpc/include/asm/mmu.h
-> > index eb20eb3b8fb0..3b31ed702785 100644
-> > --- a/arch/powerpc/include/asm/mmu.h
-> > +++ b/arch/powerpc/include/asm/mmu.h
-> > @@ -107,6 +107,10 @@
-> >   */
-> >  #define MMU_FTR_1T_SEGMENT		ASM_CONST(0x40000000)
-> > 
-> > +/* Supports GUAP (key 0 controlling userspace addresses) on radix
-> > + */
-> > +#define MMU_FTR_RADIX_GUAP		ASM_CONST(0x80000000)
-> > +
-> >  /* MMU feature bit sets for various CPUs */
-> >  #define MMU_FTRS_DEFAULT_HPTE_ARCH_V2	\
-> >  	MMU_FTR_HPTE_TABLE | MMU_FTR_PPCAS_ARCH_V2
-> > @@ -143,6 +147,9 @@ enum {
-> >  		MMU_FTR_KERNEL_RO | MMU_FTR_68_BIT_VA |
-> >  #ifdef CONFIG_PPC_RADIX_MMU
-> >  		MMU_FTR_TYPE_RADIX |
-> > +#endif
-> > +#ifdef CONFIG_PPC_RADIX_GUAP
-> > +		MMU_FTR_RADIX_GUAP |
+If there is no HW support, I don't think anything could be done here. This
+could result in RC reading configuration space even before EP is fully initialized.
+>> +
+>> +static const struct dw_pcie_ops ls_pcie_ep_ops = {
+>> +	.start_link = ls_pcie_establish_link, };
+>> +
+>> +static const struct of_device_id ls_pcie_ep_of_match[] = {
+>> +	{ .compatible = "fsl,ls-pcie-ep",},
+>> +	{ },
+>> +};
+>> +
+>> +static void ls_pcie_ep_init(struct dw_pcie_ep *ep) {
+>> +	struct dw_pcie *pci = to_dw_pcie_from_ep(ep);
+>> +	struct pci_epc *epc = ep->epc;
+>> +	enum pci_barno bar;
+>> +
+>> +	for (bar = BAR_0; bar <= BAR_5; bar++)
+>> +		dw_pcie_ep_reset_bar(pci, bar);
+>> +
+>> +	epc->features |= EPC_FEATURE_NO_LINKUP_NOTIFIER; }
+>> +
+>> +static int ls_pcie_ep_raise_irq(struct dw_pcie_ep *ep, u8 func_no,
+>> +				  enum pci_epc_irq_type type, u16 interrupt_num) {
+>> +	struct dw_pcie *pci = to_dw_pcie_from_ep(ep);
+>> +
+>> +	switch (type) {
+>> +	case PCI_EPC_IRQ_LEGACY:
+>> +		return dw_pcie_ep_raise_legacy_irq(ep, func_no);
+>> +	case PCI_EPC_IRQ_MSI:
+>> +		return dw_pcie_ep_raise_msi_irq(ep, func_no, interrupt_num);
+>> +	case PCI_EPC_IRQ_MSIX:
+>> +		return dw_pcie_ep_raise_msix_irq(ep, func_no, interrupt_num);
+>> +	default:
+>> +		dev_err(pci->dev, "UNKNOWN IRQ type\n");
+>> +	}
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static struct dw_pcie_ep_ops pcie_ep_ops = {
+>> +	.ep_init = ls_pcie_ep_init,
+>> +	.raise_irq = ls_pcie_ep_raise_irq,
+>> +};
+>> +
+>> +static int __init ls_add_pcie_ep(struct ls_pcie_ep *pcie,
+>> +					struct platform_device *pdev)
+>> +{
+>> +	struct dw_pcie *pci = pcie->pci;
+>> +	struct device *dev = pci->dev;
+>> +	struct dw_pcie_ep *ep;
+>> +	struct resource *res;
+>> +	int ret;
+>> +
+>> +	ep = &pci->ep;
+>> +	ep->ops = &pcie_ep_ops;
+>> +
+>> +	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "addr_space");
+>> +	if (!res)
+>> +		return -EINVAL;
+>> +
+>> +	ep->phys_base = res->start;
+>> +	ep->addr_size = resource_size(res);
+>> +
+>> +	ret = dw_pcie_ep_init(ep);
+>> +	if (ret) {
+>> +		dev_err(dev, "failed to initialize endpoint\n");
+>> +		return ret;
+>> +	}
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static int __init ls_pcie_ep_probe(struct platform_device *pdev) {
+>> +	struct device *dev = &pdev->dev;
+>> +	struct dw_pcie *pci;
+>> +	struct ls_pcie_ep *pcie;
+>> +	struct resource *dbi_base;
+>> +	int ret;
+>> +
+>> +	pcie = devm_kzalloc(dev, sizeof(*pcie), GFP_KERNEL);
+>> +	if (!pcie)
+>> +		return -ENOMEM;
+>> +
+>> +	pci = devm_kzalloc(dev, sizeof(*pci), GFP_KERNEL);
+>> +	if (!pci)
+>> +		return -ENOMEM;
+>> +
+>> +	dbi_base = platform_get_resource_byname(pdev, IORESOURCE_MEM, "regs");
+>> +	pci->dbi_base = devm_pci_remap_cfg_resource(dev, dbi_base);
+>> +	if (IS_ERR(pci->dbi_base))
+>> +		return PTR_ERR(pci->dbi_base);
+>> +
+>> +	pci->dbi_base2 = pci->dbi_base + PCIE_DBI2_OFFSET;
+>> +	pci->dev = dev;
+>> +	pci->ops = &ls_pcie_ep_ops;
+>> +	pcie->pci = pci;
+>> +
+>> +	if (ls_pcie_is_bridge(pcie))
+>> +		return -ENODEV;
 > 
-> Can this exist without MMT_FTR_TYPE_RADIX ?
+> For an endpoint this condition should never occur. This should only mean, a wrong compatible has been used in dt.
+> [Xiaowei Bao] This function is a way that can check the PCI controller whether work in EP mode, I think it is more safer. Of course, it can be removed.
+> [Xiaowei Bao] Hi Kishon, is there any advice?
 
-No, no it can't.
+IMHO this check is not required.
 
-> 
-> >  #endif
-> >  		0,
-> >  };
-> > diff --git a/arch/powerpc/include/asm/paca.h  
-> > b/arch/powerpc/include/asm/paca.h
-> > index e843bc5d1a0f..e905f09b2d38 100644
-> > --- a/arch/powerpc/include/asm/paca.h
-> > +++ b/arch/powerpc/include/asm/paca.h
-> > @@ -169,6 +169,9 @@ struct paca_struct {
-> >  	u64 saved_r1;			/* r1 save for RTAS calls
-> > or PM or EE=0 */
-> >  	u64 saved_msr;			/* MSR saved here by
-> > enter_rtas */
-> >  	u16 trap_save;			/* Used when bad stack is
-> > encountered */
-> > +#ifdef CONFIG_PPC_RADIX_GUAP
-> > +	u8 user_access_allowed;		/* set when AMR allows user
-> > accesses */
-> > +#endif
-> >  	u8 irq_soft_mask;		/* mask for irq soft masking */
-> >  	u8 irq_happened;		/* irq happened while soft-disabled 
-> > */
-> >  	u8 io_sync;			/* writel() needs spin_unlock sync
-> > */
-> > diff --git a/arch/powerpc/include/asm/reg.h
-> > b/arch/powerpc/include/asm/reg.h
-> > index 640a4d818772..b994099a906b 100644
-> > --- a/arch/powerpc/include/asm/reg.h
-> > +++ b/arch/powerpc/include/asm/reg.h
-> > @@ -246,6 +246,7 @@
-> >  #define SPRN_DSCR	0x11
-> >  #define SPRN_CFAR	0x1c	/* Come From Address Register */
-> >  #define SPRN_AMR	0x1d	/* Authority Mask Register */
-> > +#define   AMR_LOCKED	0xC000000000000000ULL /* Read & Write
-> > disabled */
-> 
-> Why ULL ? mtspr() takes unsigned long arg.
-> 
-> >  #define SPRN_UAMOR	0x9d	/* User Authority Mask Override
-> > Register */
-> >  #define SPRN_AMOR	0x15d	/* Authority Mask Override Register
-> > */
-> >  #define SPRN_ACOP	0x1F	/* Available Coprocessor Register
-> > */
-> > diff --git a/arch/powerpc/include/asm/uaccess.h  
-> > b/arch/powerpc/include/asm/uaccess.h
-> > index 15bea9a0f260..209bfc47c340 100644
-> > --- a/arch/powerpc/include/asm/uaccess.h
-> > +++ b/arch/powerpc/include/asm/uaccess.h
-> > @@ -62,6 +62,27 @@ static inline int __access_ok(unsigned long
-> > addr,  
-> > unsigned long size,
-> > 
-> >  #endif
-> > 
-> > +static inline void unlock_user_access(void)
-> > +{
-> > +#ifdef CONFIG_PPC_RADIX_GUAP
-> > +	if (mmu_has_feature(MMU_FTR_RADIX_GUAP)) {
-> 
-> You need to include the .h which provides mmu_has_feature()
-> 
-> I think uaccess.h should only include the empty function for when  
-> CONFIG_PPC_GUAP is not defined. Radix guap function should go in a  
-> radix header file.
-> 
-> > +		mtspr(SPRN_AMR, 0);
-> > +		isync();
-> > +		get_paca()->user_access_allowed = 1;
-> > +	}
-> > +#endif
-> > +}
-> > +
-> > +static inline void lock_user_access(void)
-> > +{
-> > +#ifdef CONFIG_PPC_RADIX_GUAP
-> > +	if (mmu_has_feature(MMU_FTR_RADIX_GUAP)) {
-> > +		mtspr(SPRN_AMR, AMR_LOCKED);
-> > +		get_paca()->user_access_allowed = 0;
-> > +	}
-> > +#endif
-> > +}
-> > +
-> >  #define access_ok(type, addr, size)		\
-> >  	(__chk_user_ptr(addr),			\
-> >  	 __access_ok((__force unsigned long)(addr), (size), get_fs()))
-> > @@ -141,6 +162,7 @@ extern long __put_user_bad(void);
-> >  #define __put_user_size(x, ptr, size, retval)			
-> > \
-> >  do {								
-> > \
-> >  	retval = 0;						\
-> > +	unlock_user_access();					\
-> >  	switch (size) {						\
-> >  	  case 1: __put_user_asm(x, ptr, retval, "stb"); break;	\
-> >  	  case 2: __put_user_asm(x, ptr, retval, "sth"); break;	\
-> > @@ -148,6 +170,7 @@ do {						
-> > 		\
-> >  	  case 8: __put_user_asm2(x, ptr, retval); break;	\
-> >  	  default: __put_user_bad();				\
-> >  	}							\
-> > +	lock_user_access();					\
-> >  } while (0)
-> > 
-> >  #define __put_user_nocheck(x, ptr, size)			\
-> > @@ -240,6 +263,7 @@ do {						
-> > 		\
-> >  	__chk_user_ptr(ptr);					\
-> >  	if (size > sizeof(x))					\
-> >  		(x) = __get_user_bad();				\
-> > +	unlock_user_access();					\
-> >  	switch (size) {						\
-> >  	case 1: __get_user_asm(x, ptr, retval, "lbz"); break;	\
-> >  	case 2: __get_user_asm(x, ptr, retval, "lhz"); break;	\
-> > @@ -247,6 +271,7 @@ do {						
-> > 		\
-> >  	case 8: __get_user_asm2(x, ptr, retval);  break;	\
-> >  	default: (x) = __get_user_bad();			\
-> >  	}							\
-> > +	lock_user_access();					\
-> >  } while (0)
-> > 
-> >  /*
-> > @@ -306,15 +331,20 @@ extern unsigned long
-> > __copy_tofrom_user(void  
-> > __user *to,
-> >  static inline unsigned long
-> >  raw_copy_in_user(void __user *to, const void __user *from,
-> > unsigned long n)
-> >  {
-> > -	return __copy_tofrom_user(to, from, n);
-> > +	unsigned long ret;
-> > +	unlock_user_access();					\
-> > +	ret = __copy_tofrom_user(to, from, n);			\
-> > +	lock_user_access();					\
-> > +	return ret;						\
-> >  }
-> >  #endif /* __powerpc64__ */
-> > 
-> >  static inline unsigned long raw_copy_from_user(void *to,
-> >  		const void __user *from, unsigned long n)
-> >  {
-> > +	unsigned long ret;
-> >  	if (__builtin_constant_p(n) && (n <= 8)) {
-> > -		unsigned long ret = 1;
-> > +		ret = 1;
-> > 
-> >  		switch (n) {
-> >  		case 1:
-> > @@ -339,14 +369,18 @@ static inline unsigned long  
-> > raw_copy_from_user(void *to,
-> >  	}
-> > 
-> >  	barrier_nospec();
-> > -	return __copy_tofrom_user((__force void __user *)to, from, n);
-> > +	unlock_user_access();
-> > +	ret = __copy_tofrom_user((__force void __user *)to, from, n);
-> > +	lock_user_access();
-> > +	return ret;
-> >  }
-> > 
-> >  static inline unsigned long raw_copy_to_user(void __user *to,
-> >  		const void *from, unsigned long n)
-> >  {
-> > +	unsigned long ret;
-> >  	if (__builtin_constant_p(n) && (n <= 8)) {
-> > -		unsigned long ret = 1;
-> > +		ret = 1;
-> > 
-> >  		switch (n) {
-> >  		case 1:
-> > @@ -366,17 +400,24 @@ static inline unsigned long  
-> > raw_copy_to_user(void __user *to,
-> >  			return 0;
-> >  	}
-> > 
-> > -	return __copy_tofrom_user(to, (__force const void __user
-> > *)from, n);
-> > +	unlock_user_access();
-> > +	ret = __copy_tofrom_user(to, (__force const void __user *)from,
-> > n);
-> > +	lock_user_access();
-> > +	return ret;
-> >  }
-> > 
-> >  extern unsigned long __clear_user(void __user *addr, unsigned long
-> > size);
-> > 
-> >  static inline unsigned long clear_user(void __user *addr,
-> > unsigned  
-> > long size)
-> >  {
-> > +	unsigned long ret = size;
-> >  	might_fault();
-> > -	if (likely(access_ok(VERIFY_WRITE, addr, size)))
-> > -		return __clear_user(addr, size);
-> > -	return size;
-> > +	if (likely(access_ok(VERIFY_WRITE, addr, size))) {
-> > +		unlock_user_access();
-> > +		ret = __clear_user(addr, size);
-> > +		lock_user_access();
-> > +	}
-> > +	return ret;
-> >  }
-> > 
-> >  extern long strncpy_from_user(char *dst, const char __user *src,  
-> > long count);
-> > diff --git a/arch/powerpc/kernel/asm-offsets.c  
-> > b/arch/powerpc/kernel/asm-offsets.c
-> > index 10ef2e4db2fd..5050f15ad2f5 100644
-> > --- a/arch/powerpc/kernel/asm-offsets.c
-> > +++ b/arch/powerpc/kernel/asm-offsets.c
-> > @@ -260,6 +260,7 @@ int main(void)
-> >  	OFFSET(ACCOUNT_STARTTIME_USER, paca_struct,
-> > accounting.starttime_user);
-> >  	OFFSET(ACCOUNT_USER_TIME, paca_struct, accounting.utime);
-> >  	OFFSET(ACCOUNT_SYSTEM_TIME, paca_struct, accounting.stime);
-> > +	OFFSET(PACA_USER_ACCESS_ALLOWED, paca_struct,
-> > user_access_allowed);
-> >  	OFFSET(PACA_TRAP_SAVE, paca_struct, trap_save);
-> >  	OFFSET(PACA_NAPSTATELOST, paca_struct, nap_state_lost);
-> >  	OFFSET(PACA_SPRG_VDSO, paca_struct, sprg_vdso);
-> > diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c  
-> > b/arch/powerpc/kernel/dt_cpu_ftrs.c
-> > index f432054234a4..df4716624840 100644
-> > --- a/arch/powerpc/kernel/dt_cpu_ftrs.c
-> > +++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
-> > @@ -337,6 +337,10 @@ static int __init
-> > feat_enable_mmu_radix(struct  
-> > dt_cpu_feature *f)
-> >  	cur_cpu_spec->mmu_features |= MMU_FTRS_HASH_BASE;
-> >  	cur_cpu_spec->cpu_user_features |= PPC_FEATURE_HAS_MMU;
-> > 
-> > +#ifdef CONFIG_PPC_RADIX_GUAP
-> > +	cur_cpu_spec->mmu_features |= MMU_FTR_RADIX_GUAP;
-> > +#endif
-> > +
-> >  	return 1;
-> >  #endif
-> >  	return 0;
-> > diff --git a/arch/powerpc/kernel/entry_64.S
-> > b/arch/powerpc/kernel/entry_64.S
-> > index 7b1693adff2a..23f0944185d3 100644
-> > --- a/arch/powerpc/kernel/entry_64.S
-> > +++ b/arch/powerpc/kernel/entry_64.S
-> > @@ -297,7 +297,12 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
-> >  	b	.	/* prevent speculative execution */
-> > 
-> >  	/* exit to kernel */
-> > -1:	ld	r2,GPR2(r1)
-> > +1:	/* if the AMR was unlocked before, unlock it again */
-> > +	lbz	r2,PACA_USER_ACCESS_ALLOWED(r13)
-> > +	cmpwi	cr1,0
-> > +	bne	2f
-> > +	UNLOCK_USER_ACCESS(r2)
-> > +2:	ld	r2,GPR2(r1)
-> >  	ld	r1,GPR1(r1)
-> >  	mtlr	r4
-> >  	mtcr	r5
-> > @@ -965,6 +970,7 @@ BEGIN_FTR_SECTION
-> >  	ld	r2,_PPR(r1)
-> >  	mtspr	SPRN_PPR,r2
-> >  END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
-> > +
-> >  	ACCOUNT_CPU_USER_EXIT(r13, r2, r4)
-> >  	REST_GPR(13, r1)
-> > 
-> > @@ -983,7 +989,14 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
-> >  	RFI_TO_USER
-> >  	b	.	/* prevent speculative execution */
-> > 
-> > -1:	mtspr	SPRN_SRR1,r3
-> > +1:	/* exit to kernel */
-> > +	/* if the AMR was unlocked before, unlock it again */
-> > +	lbz	r2,PACA_USER_ACCESS_ALLOWED(r13)
-> > +	cmpwi	cr1,0
-> > +	bne	2f
-> > +	UNLOCK_USER_ACCESS(r2)
-> > +
-> > +2:	mtspr	SPRN_SRR1,r3
-> > 
-> >  	ld	r2,_CCR(r1)
-> >  	mtcrf	0xFF,r2
-> > diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-> > index d51cf5f4e45e..17fd8c6b055b 100644
-> > --- a/arch/powerpc/mm/fault.c
-> > +++ b/arch/powerpc/mm/fault.c
-> > @@ -462,6 +462,18 @@ static int __do_page_fault(struct pt_regs  
-> > *regs, unsigned long address,
-> >  		return bad_key_fault_exception(regs, address,
-> >  					       get_mm_addr_key(mm,
-> > address));
-> > 
-> > +#ifdef CONFIG_PPC_RADIX_SMAP
-> 
-> SMAP ?
-
-Whoops, leftover.  Good catch.
-
-> 
-> > +	if (mmu_has_feature(MMU_FTR_RADIX_GUAP)) {
-> > +		if (unlikely(!is_user &&
-> > +			     (error_code & DSISR_PROTFAULT) &&
-> > +			     (mfspr(SPRN_AMR) & AMR_LOCKED))) {
-> 
-> Do you mean that in case of fault in user copy, we leave the  
-> protection open for handling the exception ? What is the purpose of  
-> the new paca flag then ?
-
-No.  The protection doesn't get left open for handling the exception -
-in fact the opposite, the protection gets enforced again on entry. The
-PACA flag is to make sure that on exception exit we unlock the AMR on
-the way back out during usercopy, without it there is no way of knowing
-whether we're supposed to go back to the kernel locked or unlocked.
-
-> 
-> > +			pr_crit("Kernel attempted to access user data"
-> > +			        " unsafely, possible exploit
-> > attempt\n");
-> > +			return bad_area_nosemaphore(regs, address);
-> > +		}
-> > +	}
-> 
-> Are we sure it is an access to user data ?
-
-No, this condition could in theory be hit by another kind of PROTFAULT
-hit in the kernel.  I haven't seen that happen, but I should try
-checking the address or something. 
-
-> 
-> > +#endif
-> > +
-> >  	/*
-> >  	 * We want to do this outside mmap_sem, because reading code
-> > around nip
-> >  	 * can result in fault, which will cause a deadlock when called
-> > with
-> > diff --git a/arch/powerpc/mm/pgtable-radix.c  
-> > b/arch/powerpc/mm/pgtable-radix.c
-> > index c879979faa73..9e5b98887a05 100644
-> > --- a/arch/powerpc/mm/pgtable-radix.c
-> > +++ b/arch/powerpc/mm/pgtable-radix.c
-> > @@ -29,6 +29,7 @@
-> >  #include <asm/powernv.h>
-> >  #include <asm/sections.h>
-> >  #include <asm/trace.h>
-> > +#include <asm/uaccess.h>
-> > 
-> >  #include <trace/events/thp.h>
-> > 
-> > @@ -608,6 +609,7 @@ void __init radix__early_init_mmu(void)
-> >  		mtspr(SPRN_LPCR, lpcr | LPCR_UPRT | LPCR_HR);
-> >  		radix_init_partition_table();
-> >  		radix_init_amor();
-> > +		lock_user_access();
-> >  	} else {
-> >  		radix_init_pseries();
-> >  	}
-> > diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
-> > index b271b283c785..0b9bc320138c 100644
-> > --- a/arch/powerpc/mm/pkeys.c
-> > +++ b/arch/powerpc/mm/pkeys.c
-> > @@ -7,6 +7,7 @@
-> > 
-> >  #include <asm/mman.h>
-> >  #include <asm/setup.h>
-> > +#include <asm/uaccess.h>
-> >  #include <linux/pkeys.h>
-> >  #include <linux/of_device.h>
-> > 
-> > @@ -266,7 +267,8 @@ int __arch_set_user_pkey_access(struct  
-> > task_struct *tsk, int pkey,
-> > 
-> >  void thread_pkey_regs_save(struct thread_struct *thread)
-> >  {
-> > -	if (static_branch_likely(&pkey_disabled))
-> > +	if (static_branch_likely(&pkey_disabled) &&
-> > +	    !mmu_has_feature(MMU_FTR_RADIX_GUAP))
-> >  		return;
-> > 
-> >  	/*
-> > @@ -280,7 +282,8 @@ void thread_pkey_regs_save(struct thread_struct
-> > *thread)
-> >  void thread_pkey_regs_restore(struct thread_struct *new_thread,
-> >  			      struct thread_struct *old_thread)
-> >  {
-> > -	if (static_branch_likely(&pkey_disabled))
-> > +	if (static_branch_likely(&pkey_disabled) &&
-> > +	    !mmu_has_feature(MMU_FTR_RADIX_GUAP))
-> >  		return;
-> > 
-> >  	if (old_thread->amr != new_thread->amr)
-> > diff --git a/arch/powerpc/platforms/Kconfig.cputype  
-> > b/arch/powerpc/platforms/Kconfig.cputype
-> > index f4e2c5729374..6617d3e415a7 100644
-> > --- a/arch/powerpc/platforms/Kconfig.cputype
-> > +++ b/arch/powerpc/platforms/Kconfig.cputype
-> > @@ -351,6 +351,21 @@ config PPC_RADIX_MMU_DEFAULT
-> > 
-> >  	  If you're unsure, say Y.
-> > 
-> > +config PPC_RADIX_GUAP
-> > +	bool "Guarded Userspace Access Prevention on Radix"
-> > +	depends on PPC_RADIX_MMU
-> > +	default y
-> > +	help
-> > +	  Enable support for Guarded Userspace Access Prevention (GUAP)
-> > +	  when using the Radix MMU.  GUAP is a security feature
-> > +	  preventing the kernel from directly accessing userspace data
-> > +	  without going through the proper checks.
-> > +
-> > +	  GUAP has a minor performance impact on context switching and
-> > can be
-> > +	  disabled at boot time using the "nosmap" kernel command line
-> > option.
-> > +
-> > +	  If you're unsure, say Y.
-> > +
-> 
-> I think this should be a named in a generic way without the radix
-> thing.
-> Then one day it will be reused by the 8xx
-
-I agree in theory, will have to play with making it more generic.
-
-Thanks for the review.
-
-- Russell
-
-> 
-> Christophe
-> 
-> >  config ARCH_ENABLE_HUGEPAGE_MIGRATION
-> >  	def_bool y
-> >  	depends on PPC_BOOK3S_64 && HUGETLB_PAGE && MIGRATION
-> > --
-> > 2.19.1
-> 
-> 
-
+Thanks
+Kishon
