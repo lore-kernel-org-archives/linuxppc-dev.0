@@ -2,91 +2,90 @@ Return-Path: <SRS0=1E/h=NL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS
+X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A6856C0044C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 21:49:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3825FC0044C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 22:05:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 06A6020821
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 21:49:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 7CDE62080A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 22:05:32 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="hRfi3Kd5"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 06A6020821
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="eX6VSrP5"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7CDE62080A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42lhnW6y2wzF3Kk
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 08:49:35 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=chromium.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42lj7t0cvWzF3Kt
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 09:05:30 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.b="hRfi3Kd5";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="eX6VSrP5";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=chromium.org
- (client-ip=2607:f8b0:4864:20::a44; helo=mail-vk1-xa44.google.com;
- envelope-from=dianders@chromium.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::444; helo=mail-pf1-x444.google.com;
+ envelope-from=groeck7@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=chromium.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=chromium.org header.i=@chromium.org header.b="hRfi3Kd5";
+ dmarc=none (p=none dis=none) header.from=roeck-us.net
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="eX6VSrP5"; 
  dkim-atps=neutral
-Received: from mail-vk1-xa44.google.com (mail-vk1-xa44.google.com
- [IPv6:2607:f8b0:4864:20::a44])
+Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
+ [IPv6:2607:f8b0:4864:20::444])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42lhkr4bcJzF3KQ
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Nov 2018 08:47:15 +1100 (AEDT)
-Received: by mail-vk1-xa44.google.com with SMTP id b207so4315951vke.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2018 14:47:15 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=9OZBU7xBbZRq91LmWRsKb1e+HamrGUSqJjfkZGsW5iY=;
- b=hRfi3Kd5G9/BLYolaPFaixRBSy8QElOUfTm0fyNwi5G2el/3A087MYoMPAXTtCvmr6
- aqtzB3yUpqwbaMtfyXn9KPe/xCBryhqzS5lXRDQiilI7KlDKS9tpNMeE3EhIpseZtToC
- y5ZSqIZ1fBG/MJmna3J4vq+E8lJ01mfbgfTEg=
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42lj4z2YHCzF31Y
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Nov 2018 09:02:59 +1100 (AEDT)
+Received: by mail-pf1-x444.google.com with SMTP id c25-v6so8270524pfe.6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2018 15:02:59 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=sender:date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=d/3VpCZ0Aa3ShjyLzNxCDT9XMSAT4U74mvB3YJDt8sk=;
+ b=eX6VSrP5jr3ebobFPu8mkzOocEIGmM5qPE5p74+wGHr9YyBSLjT06ItmcchYyiR85y
+ FXxmzmyrgWHkQgBKfNqtTq9dq6yIERA4x19Pfp7d3AKAg5CSyhxqivbNpS7yKCX+hqKV
+ mOqZg+ugCoIAPvh98FNcB5u0vmFa5n8+suXYA34YdnNHoMKlRrSCYYL1FRf9++2Yibkn
+ yAlVCnUmOKzOk5SqMrsAVMeslpnKW0/kaehkSZ7DNB2M218fjlcNg+HABi+fevxuRoLK
+ PGcBlT+KpnthEkk2HsdmmJQoDZeJ+3st59Bwm8CW7sXCxHVkePD/yEg7brB5DkYvPtk6
+ F5Iw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=9OZBU7xBbZRq91LmWRsKb1e+HamrGUSqJjfkZGsW5iY=;
- b=Ngpun1cxNVSX5Z+RD1O9wjInjmUSzrSCHg6JJYDEh5wDoDmt07qmkHWVCQ1Twrzxvt
- HMrZDKCXAOlV1aOs7SKJU1ebMq9V0bqZu2zdVb+dlce0MPPeHuEhMldaM0+x1JS0i/Vh
- k6PJIuAJfsRy68tvZiLrpU31iPX1Hen5/HkYkMRNm24h6tscx8i4qa0xcF5RdWZ3Uc80
- GeWgt0kyleBlzvRYPF4HU5HbVkYtUWJrSb+qFOLuev+QzumrWRsAKdR5fIyMTp9xzjWb
- e5Zombx+t+yWadZDM1VA7pwz7CjUWybIvbFpuHHgwP6ljLJQ/+B6c9HRUamNMhIAoeCJ
- 5ekw==
-X-Gm-Message-State: AGRZ1gJ/P+yZlI+OA56KzatWZJuYj/EK2NA/QcsJcH0Cx7i6ZWtXASig
- yLv4AOFoVoi55+iVV1WW3VrCsmvH3Vw=
-X-Google-Smtp-Source: AJdET5cHKb0iqXxwubIprEWfWJNuSmdkywD5OupA1PGBROeBc8Nq2E58iF5xFPefHZFcrCSGRO8nIA==
-X-Received: by 2002:a1f:c20d:: with SMTP id s13mr2222182vkf.9.1541022432714;
- Wed, 31 Oct 2018 14:47:12 -0700 (PDT)
-Received: from mail-vs1-f50.google.com (mail-vs1-f50.google.com.
- [209.85.217.50])
- by smtp.gmail.com with ESMTPSA id x1sm12377873vsh.5.2018.10.31.14.47.12
- for <linuxppc-dev@lists.ozlabs.org>
+ h=x-gm-message-state:sender:date:from:to:cc:subject:message-id
+ :references:mime-version:content-disposition:in-reply-to:user-agent;
+ bh=d/3VpCZ0Aa3ShjyLzNxCDT9XMSAT4U74mvB3YJDt8sk=;
+ b=Lvzm3nlz+BI5vtSx8ki4OS2g/fTTGdC+PJAJuA32z2ymGQ9DJUdG4wd1S6eE7/1QZY
+ eRWeAR8OH9nwzClTwtKxtJMSSiAiGUm7VZKpuKGSYaY9uIRrm99Pm5nsypW4YMCcLDIi
+ 0pOig2Wu/rEm0n+BNoQfLFCHHdrFv1f7tTXNAX1WwzoUQSa8UEMqLfPt47psYEWGrDvb
+ 3chU4bkG43yFlxv04nTpI7hfkbehHICYCVIJGh5lNGrCc/Wz4X9kJG7BG0SEknrT4Nbd
+ X5OC5VF5XVpYvEYeWA7g7KCV5cyCSDDgjiCeeqBE3+q2w9VHb7m0XLiZVYeDXgcdNtRC
+ eJQg==
+X-Gm-Message-State: AGRZ1gKGi5/SGXFSBKVUNjYNcphXXwCX4jkoUdAk+0lhZ+c+qku5FL0U
+ Qt3Wb3/okuH/0Ce04rwRix4=
+X-Google-Smtp-Source: AJdET5eEsyeFs/lpJXpJYu/HYdX2RxwOsfZDwN5MUryd3bU0YO93jcAbvzClWY6bJOjVIthccDcfRw==
+X-Received: by 2002:a65:47cb:: with SMTP id
+ f11-v6mr4900412pgs.166.1541023377095; 
+ Wed, 31 Oct 2018 15:02:57 -0700 (PDT)
+Received: from localhost ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
+ by smtp.gmail.com with ESMTPSA id q76-v6sm60412618pfa.18.2018.10.31.15.02.54
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Wed, 31 Oct 2018 14:47:12 -0700 (PDT)
-Received: by mail-vs1-f50.google.com with SMTP id w194so11022341vsc.11
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2018 14:47:12 -0700 (PDT)
-X-Received: by 2002:a67:6642:: with SMTP id a63mr2174631vsc.42.1541022087194; 
- Wed, 31 Oct 2018 14:41:27 -0700 (PDT)
+ Wed, 31 Oct 2018 15:02:55 -0700 (PDT)
+Date: Wed, 31 Oct 2018 15:02:53 -0700
+From: Guenter Roeck <linux@roeck-us.net>
+To: Paul Burton <paul.burton@mips.com>
+Subject: Re: [RFC PATCH] lib: Introduce generic __cmpxchg_u64() and use it
+ where needed
+Message-ID: <20181031220253.GA15505@roeck-us.net>
+References: <1541015538-11382-1-git-send-email-linux@roeck-us.net>
+ <20181031213240.zhh7dfcm47ucuyfl@pburton-laptop>
 MIME-Version: 1.0
-References: <20181030221843.121254-1-dianders@chromium.org>
- <20181030221843.121254-3-dianders@chromium.org>
- <20181031184050.sd5opni3mznaapkv@holly.lan>
-In-Reply-To: <20181031184050.sd5opni3mznaapkv@holly.lan>
-From: Doug Anderson <dianders@chromium.org>
-Date: Wed, 31 Oct 2018 14:41:14 -0700
-X-Gmail-Original-Message-ID: <CAD=FV=V1eHo7Wz31DTMMNi394qwEaESTxJCYVE60Q7hpDEqRmQ@mail.gmail.com>
-Message-ID: <CAD=FV=V1eHo7Wz31DTMMNi394qwEaESTxJCYVE60Q7hpDEqRmQ@mail.gmail.com>
-Subject: Re: [PATCH v2 2/2] kgdb: Fix kgdb_roundup_cpus() for arches who used
- smp_call_function()
-To: Daniel Thompson <daniel.thompson@linaro.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20181031213240.zhh7dfcm47ucuyfl@pburton-laptop>
+User-Agent: Mutt/1.5.24 (2015-08-30)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,141 +97,66 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kate Stewart <kstewart@linuxfoundation.org>, linux-mips@linux-mips.org,
- dalias@libc.org, linux-sh@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- LKML <linux-kernel@vger.kernel.org>, paulus@samba.org,
- Yoshinori Sato <ysato@users.sourceforge.jp>, linux-hexagon@vger.kernel.org,
- Russell King - ARM Linux <linux@armlinux.org.uk>,
- kgdb-bugreport@lists.sourceforge.net, jhogan@kernel.org,
- linux-snps-arc@lists.infradead.org, Philippe Ombredanne <pombredanne@nexb.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>,
- Vineet Gupta <vgupta@synopsys.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Ralf Baechle <ralf@linux-mips.org>, rkuo@codeaurora.org, paul.burton@mips.com,
- Jason Wessel <jason.wessel@windriver.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
+ Arnd Bergmann <arnd@arndb.de>, James Hogan <jhogan@kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Ralf Baechle <ralf@linux-mips.org>, Paul Mackerras <paulus@samba.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Trond Myklebust <trond.myklebust@hammerspace.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
-
-On Wed, Oct 31, 2018 at 11:40 AM Daniel Thompson
-<daniel.thompson@linaro.org> wrote:
->
-> On Tue, Oct 30, 2018 at 03:18:43PM -0700, Douglas Anderson wrote:
-> > diff --git a/kernel/debug/debug_core.c b/kernel/debug/debug_core.c
-> > index f3cadda45f07..9a3f952de6ed 100644
-> > --- a/kernel/debug/debug_core.c
-> > +++ b/kernel/debug/debug_core.c
-> > @@ -55,6 +55,7 @@
-> >  #include <linux/mm.h>
-> >  #include <linux/vmacache.h>
-> >  #include <linux/rcupdate.h>
-> > +#include <linux/irq.h>
-> >
-> >  #include <asm/cacheflush.h>
-> >  #include <asm/byteorder.h>
-> > @@ -220,6 +221,39 @@ int __weak kgdb_skipexception(int exception, struct pt_regs *regs)
-> >       return 0;
-> >  }
-> >
+On Wed, Oct 31, 2018 at 09:32:43PM +0000, Paul Burton wrote:
+> Hi Guenter,
+> 
+> On Wed, Oct 31, 2018 at 12:52:18PM -0700, Guenter Roeck wrote:
 > > +/*
-> > + * Default (weak) implementation for kgdb_roundup_cpus
+> > + * Generic version of __cmpxchg_u64, to be used for cmpxchg64().
+> > + * Takes u64 parameters.
 > > + */
-> > +
-> > +static DEFINE_PER_CPU(call_single_data_t, kgdb_roundup_csd);
-> > +
-> > +void __weak kgdb_call_nmi_hook(void *ignored)
+> > +u64 __cmpxchg_u64(u64 *ptr, u64 old, u64 new)
 > > +{
-> > +     kgdb_nmicallback(raw_smp_processor_id(), get_irq_regs());
+> > +	raw_spinlock_t *lock = lock_addr(ptr);
+> > +	unsigned long flags;
+> > +	u64 prev;
+> > +
+> > +	raw_spin_lock_irqsave(lock, flags);
+> > +	prev = READ_ONCE(*ptr);
+> > +	if (prev == old)
+> > +		*ptr = new;
+> > +	raw_spin_unlock_irqrestore(lock, flags);
+> > +
+> > +	return prev;
 > > +}
-> > +
-> > +void __weak kgdb_roundup_cpus(void)
-> > +{
-> > +     call_single_data_t *csd;
-> > +     int cpu;
-> > +
-> > +     for_each_cpu(cpu, cpu_online_mask) {
-> > +             csd = &per_cpu(kgdb_roundup_csd, cpu);
-> > +             smp_call_function_single_async(cpu, csd);
-> > +     }
->
-> smp_call_function() automatically skips the calling CPU but this code does
-> not. It isn't a hard bug since kgdb_nmicallback() does a re-entrancy
-> check but I'd still prefer to skip the calling CPU.
+> > +EXPORT_SYMBOL(__cmpxchg_u64);
+> 
+> This is only going to work if we know that memory modified using
+> __cmpxchg_u64() is *always* modified using __cmpxchg_u64(). Without that
+> guarantee there's nothing to stop some other CPU writing to *ptr after
+> the READ_ONCE() above but before we write new to it.
+> 
+> As far as I'm aware this is not a guarantee we currently provide, so it
+> would mean making that a requirement for cmpxchg64() users & auditing
+> them all. That would also leave cmpxchg64() with semantics that differ
+> from plain cmpxchg(), and semantics that may surprise people. In my view
+> that's probably not worth it, and it would be better to avoid using
+> cmpxchg64() on systems that can't properly support it.
+> 
 
-I'll incorporate this into the next version.
+Good point. Unfortunately this is also true for the architectures with
+similar implementations, ie at least sparc32 (and possibly parisc).
 
+The alternatives I can see are
+- Do not use cmpxchg64() outside architecture code (ie drop its use from
+  the offending driver, and keep doing the same whenever the problem comes
+  up again).
+or
+- Introduce something like ARCH_HAS_CMPXCHG64 and use it to determine
+  if cmpxchg64 is supported or not.
 
-> As mentioned in another part of the thread we can also add robustness
-> by skipping a cpu where csd->flags != 0 (and adding an appropriately
-> large comment regarding why). Doing the check directly is abusing
-> internal knowledge that smp.c normally keeps to itself so an accessor
-> of some kind would be needed.
+Any preference ?
 
-Sure.  I could add smp_async_func_finished() that just looked like:
-
-int smp_async_func_finished(call_single_data_t *csd)
-{
-  return !(csd->flags & CSD_FLAG_LOCK);
-}
-
-My understanding of all the mutual exclusion / memory barrier concepts
-employed by smp.c is pretty weak, though.  I'm hoping that it's safe
-to just access the structure and check the bit directly.
-
-...but do you think adding a generic accessor like this is better than
-just keeping track of this in kgdb directly?  I could avoid the
-accessor by adding a "rounding_up" member to "struct
-debuggerinfo_struct" and doing something like this in roundup:
-
-  /* If it didn't round up last time, don't try again */
-  if (kgdb_info[cpu].rounding_up)
-    continue
-
-  kgdb_info[cpu].rounding_up = true
-  smp_call_function_single_async(cpu, csd);
-
-...and then in kgdb_nmicallback() I could just add:
-
-  kgdb_info[cpu].rounding_up = false
-
-In that case we're not adding a generic accessor to smp.c that most
-people should never use.
-
-
-I'll wait to hear back from you if you think the accessor is OK.  It
-seems like it might be nice not to have to add something to smp.c just
-for this one use case.
-
-
-> > +}
-> > +
-> > +static void kgdb_generic_roundup_init(void)
-> > +{
-> > +     call_single_data_t *csd;
-> > +     int cpu;
-> > +
-> > +     for_each_possible_cpu(cpu) {
-> > +             csd = &per_cpu(kgdb_roundup_csd, cpu);
-> > +             csd->func = kgdb_call_nmi_hook;
-> > +     }
-> > +}
->
-> I can't help noticing this code is very similar to kgdb_roundup_cpus. Do
-> we really gain much from ahead-of-time initializing csd->func?
-
-Oh!  Right...  At first I thought about just trying to put the "csd"
-on the stack in kgdb_roundup_cpus() but then I realized that it needed
-to persist past the end of kgdb_roundup_cpus().  ...and once I gave up
-on the idea of putting it on the stack I decided I needed the init.
-
-...but you're right that I don't really.  The only thing I'm initting
-is the function pointer and it totally wouldn't hurt to just init that
-over and over again every time kgdb_roundup_cpus() is called.
-
--Doug
+Thanks,
+Guenter
