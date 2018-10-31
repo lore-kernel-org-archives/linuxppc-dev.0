@@ -2,87 +2,80 @@ Return-Path: <SRS0=1E/h=NL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C2C59C6786F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 03:31:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A9B3CC0044C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 03:55:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0668E20821
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 03:31:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 928122054F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 03:55:09 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ukcOrHEV"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0668E20821
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=jms.id.au
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="jJm1SAOf"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 928122054F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42lDPr2s0qzF22r
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 14:30:56 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=jms.id.au
+	by lists.ozlabs.org (Postfix) with ESMTP id 42lDxl38KjzF2Dw
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 14:55:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="ukcOrHEV";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.b="jJm1SAOf";
 	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (helo)
+ smtp.helo=out3-smtp.messagingengine.com (client-ip=66.111.4.27;
+ helo=out3-smtp.messagingengine.com; envelope-from=ruscur@russell.cc;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::643; helo=mail-pl1-x643.google.com;
- envelope-from=joel.stan@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=jms.id.au
+ dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="ukcOrHEV"; 
- dkim-atps=neutral
-Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
- [IPv6:2607:f8b0:4864:20::643])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ unprotected) header.d=messagingengine.com header.i=@messagingengine.com
+ header.b="jJm1SAOf"; dkim-atps=neutral
+Received: from out3-smtp.messagingengine.com (out3-smtp.messagingengine.com
+ [66.111.4.27])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42lDMG3P5lzF1Q6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2018 14:28:42 +1100 (AEDT)
-Received: by mail-pl1-x643.google.com with SMTP id o19-v6so6542677pll.12
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Oct 2018 20:28:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=sender:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=hkiQMuZb68Bws7nm5qJb3wroH0iBRmJTrQHyerd/nO4=;
- b=ukcOrHEVCv2LEMCZE//ejDKs7a5piuP2u4nyoWJQcmu/xXveMEECC3WuhN8BSs1TYc
- 0dXKTKHhpRZ/c7YD13HmHtFbxebdOXABl5qWgPt5k3WIu3PrmEReQ0i7YIFU2a8HDHK8
- HPhVzrFWmKSAyDoaxX9+1aAmIMcQFIC+rJ7niHGoQo+9HxuR7NpdiKfJE6JfcAAsbzYD
- 0dks3Pv6QSOVRrNGqo/BasXMTCDyOLWk9AzIYDGdP8Bt7YVqKwwVXCCJ7Q49QIgDQ9dx
- FCzimZViXPmStK/FVmxOGfChOF1coZ12IwaIi+wmWaQDUBHiekPieDv0Ho9sTyYpULwb
- 1OTQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
- :mime-version:content-transfer-encoding;
- bh=hkiQMuZb68Bws7nm5qJb3wroH0iBRmJTrQHyerd/nO4=;
- b=Ut2wTx1IQAuZ7Ydyo5S4nKe4dHKAKkryzxfbP/AJAtc3rx/coeAqVBSnR79OdyC+xA
- 2gNNHClq498XcuMkHzAAT9kWivBi56bjGvonMvg+mcAc4O1tGsNwpXy8wRXtCIJ+a2Dz
- xL+zNxAdAj+aRIrGbUtA0A/+GHYtYA3wXYCW9zRCuAtx3rxA0zg1dkob4ISURNhSVqER
- ijpTgm72ZvM3rKw2sm14OOm1VmV+cnTpzj1GBcVKeRQDxO0nEwm7fpagIuhcUmJZDFOR
- DRP5PMRFXnJWu8eBL8znUufM2zshRjBd5CFctchGVFVkqEia55lGhHEBz9h1u3+ov7lA
- OrZA==
-X-Gm-Message-State: AGRZ1gIUW87z4nM6jsV6EIgsTlY7eCWaqUrK9glAAh9MKc7Y388TsCGT
- T+7eQd7ULTie/lQzXscf8l4=
-X-Google-Smtp-Source: AJdET5ekT1N4gQefzp/9Q2i4Yh1OE/2oSEa0bXUqfygddbX/1/Tx44yxD2f4cIDbdA4tf1f2mRSWLQ==
-X-Received: by 2002:a17:902:6909:: with SMTP id
- j9-v6mr1439240plk.221.1540956520142; 
- Tue, 30 Oct 2018 20:28:40 -0700 (PDT)
-Received: from aurora.jms.id.au ([45.124.203.15])
- by smtp.gmail.com with ESMTPSA id b62-v6sm27195786pfa.159.2018.10.30.20.28.35
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Tue, 30 Oct 2018 20:28:38 -0700 (PDT)
-Received: by aurora.jms.id.au (sSMTP sendmail emulation);
- Wed, 31 Oct 2018 13:58:31 +1030
-From: Joel Stanley <joel@jms.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] raid6/ppc: Fix build for clang
-Date: Wed, 31 Oct 2018 13:58:29 +1030
-Message-Id: <20181031032829.18131-1-joel@jms.id.au>
-X-Mailer: git-send-email 2.19.1
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42lDvF0T2SzDrNT
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2018 14:52:55 +1100 (AEDT)
+Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
+ by mailout.nyi.internal (Postfix) with ESMTP id 6204F22167;
+ Tue, 30 Oct 2018 23:52:52 -0400 (EDT)
+Received: from mailfrontend2 ([10.202.2.163])
+ by compute6.internal (MEProxy); Tue, 30 Oct 2018 23:52:52 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+ messagingengine.com; h=cc:content-transfer-encoding:content-type
+ :date:from:in-reply-to:message-id:mime-version:references
+ :subject:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
+ :x-sasl-enc; s=fm1; bh=HuXb3ZETaNnu7DroutzC7ZxNk8RBCgljtuNYK8NfJ
+ gw=; b=jJm1SAOfu3r31ZduulCl2m2tQ9+N5h61uBIp4ZH3fVK0C53dWH+CP4n3n
+ 9uSt+qvHE6c15JFlbujxpwZ2iZuBYNnjW8pvQA6FbTrlw/LBh86AHtRGlfrrO9BB
+ H95zMgRGds0CL6XCu4r2chmHpbtRNDaw1zbvJBCVvsEapiLuNX9U2872nrqSGa83
+ 6yaCj0IFKnmho+assOlgMvNAcC0YKHRWOWL4QPcFvcx6PLRk47k9yPMdyrz1ldET
+ m+on3Nehrmlv+bcKD7tv04ERZhrfVUdB6D+dyv2RAtCE0XnPkgKWq1TkRaw2pN17
+ TY53ZEEDysfN3u6wuRjnZ0AmovrqQ==
+X-ME-Sender: <xms:EifZW7-uFioFYPuWqid-FzjdFdKIaQOQUQDajCDr8O7QDBEs5FYJxg>
+X-ME-Proxy: <xmx:EifZW7D5wm00jxq96P3YPi4DYW0GgMgnQCac6RFm7DDIYNsgfElhoQ>
+ <xmx:EifZW_V9uI9cCIlU3UKXKgu7ziL2uP2L1LwCpUL5JF3PqkkYi411Ng>
+ <xmx:EifZWxD11DPqJBZmNrKVOWw3WUQyyo-Diyr3v70tIvFu4kE3IwMePw>
+ <xmx:EifZW68FL38yMQ7POq2k5-a9NiVKtba_O2ITsbcehSwY8skzcgG6VA>
+ <xmx:EifZWwG5X-259v5KUPU51Nc3W-8oRaq7xdm9L0CpApDXtQMLpH7kfQ>
+ <xmx:FCfZW1P2q6yQ_gfeed2r825_kp7eT6HPf3iqwDQm3rO2KKLuGAUcvQ>
+Received: from crackle.ozlabs.ibm.com (unknown [122.99.82.10])
+ by mail.messagingengine.com (Postfix) with ESMTPA id E6E39102EA;
+ Tue, 30 Oct 2018 23:52:48 -0400 (EDT)
+Message-ID: <0e66ee72293811f580bd02ab4ed7967a4b703d70.camel@russell.cc>
+Subject: Re: [PATCH 0/5] Guarded Userspace Access Prevention on Radix
+From: Russell Currey <ruscur@russell.cc>
+To: LEROY Christophe <christophe.leroy@c-s.fr>
+Date: Wed, 31 Oct 2018 14:53:00 +1100
+In-Reply-To: <20181026182916.Horde.8LHYJj4tB_PV5JLEA5Czjw1@messagerie.si.c-s.fr>
+References: <20181026182916.Horde.8LHYJj4tB_PV5JLEA5Czjw1@messagerie.si.c-s.fr>
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.30.2 
+Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -95,60 +88,176 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jinsong Ji <jji@us.ibm.com>, Nick Desaulniers <ndesaulniers@google.com>,
- Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>
+Cc: mikey@neuling.org, linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We cannot build these files with clang as it does not allow altivec
-instructions in assembly when -msoft-float is passed.
+On Fri, 2018-10-26 at 18:29 +0200, LEROY Christophe wrote:
+> Russell Currey <ruscur@russell.cc> a écrit :
+> 
+> > Guarded Userspace Access Prevention is a security mechanism that
+> > prevents
+> > the kernel from being able to read and write userspace addresses
+> > outside of
+> > the allowed paths, most commonly copy_{to/from}_user().
+> > 
+> > At present, the only CPU that supports this is POWER9, and only
+> > while using
+> > the Radix MMU.  Privileged reads and writes cannot access user data
+> > when
+> > key 0 of the AMR is set.  This is described in the "Radix Tree
+> > Translation
+> > Storage Protection" section of the POWER ISA as of version 3.0.
+> 
+> It is not right that only power9 can support that.
 
-Jinsong Ji <jji@us.ibm.com> wrote:
-> We currently disable Altivec/VSX support when enabling soft-float.  So
-> any usage of vector builtins will break.
->
-> Enable Altivec/VSX with soft-float may need quite some clean up work, so
-> I guess this is currently a limitation.
->
-> Removing -msoft-float will make it work (and we are lucky that no
-> floating point instructions will be generated as well).
+It's true that not only P9 can support it, but there are more
+considerations under hash than radix, implementing this for radix is a
+first step.
 
-This is a workaround until the issue is resolved in clang.
+> 
+> The 8xx has mmu access protection registers which can serve the
+> same  
+> purpose. Today on the 8xx kernel space is group 0 and user space is  
+> group 1. Group 0 is set to "page defined access permission" in
+> MD_AP  
+> and MI_AP registers, and group 1 is set to "all accesses done with  
+> supervisor rights". By setting group 1 to "user and supervisor  
+> interpretation swapped" we can forbid kernel access to user space  
+> while still allowing user access to it. Then by simply changing
+> group  
+> 1 mode at dedicated places we can lock/unlock kernel access to user  
+> space.
+> 
+> Could you implement something as generic as possible having that in  
+> mind for a future patch ?
 
-Link: https://bugs.llvm.org/show_bug.cgi?id=31177
-Link: https://github.com/ClangBuiltLinux/linux/issues/239
-Signed-off-by: Joel Stanley <joel@jms.id.au>
----
- lib/raid6/Makefile | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+I don't think anything in this series is particularly problematic in
+relation to future work for hash.  I am interested in doing a hash
+implementation in future too.
 
-diff --git a/lib/raid6/Makefile b/lib/raid6/Makefile
-index 2f8b61dfd9b0..3a844e6fd01c 100644
---- a/lib/raid6/Makefile
-+++ b/lib/raid6/Makefile
-@@ -18,6 +18,21 @@ quiet_cmd_unroll = UNROLL  $@
- 
- ifeq ($(CONFIG_ALTIVEC),y)
- altivec_flags := -maltivec $(call cc-option,-mabi=altivec)
-+
-+ifdef CONFIG_CC_IS_CLANG
-+# clang ppc port does not yet support -maltifec when -msoft-float is
-+# enabled. A future release of clang will resolve this
-+# https://bugs.llvm.org/show_bug.cgi?id=31177
-+CFLAGS_REMOVE_altivec1.o  += -msoft-float
-+CFLAGS_REMOVE_altivec2.o  += -msoft-float
-+CFLAGS_REMOVE_altivec4.o  += -msoft-float
-+CFLAGS_REMOVE_altivec8.o  += -msoft-float
-+CFLAGS_REMOVE_altivec8.o  += -msoft-float
-+CFLAGS_REMOVE_vpermxor1.o += -msoft-float
-+CFLAGS_REMOVE_vpermxor2.o += -msoft-float
-+CFLAGS_REMOVE_vpermxor4.o += -msoft-float
-+CFLAGS_REMOVE_vpermxor8.o += -msoft-float
-+endif
- endif
- 
- # The GCC option -ffreestanding is required in order to compile code containing
--- 
-2.19.1
+- Russell
+
+> 
+> Christophe
+> 
+> > GUAP code sets key 0 of the AMR (thus disabling accesses of user
+> > data)
+> > early during boot, and only ever "unlocks" access prior to certain
+> > operations, like copy_{to/from}_user(), futex ops, etc.  Setting
+> > this does
+> > not prevent unprivileged access, so userspace can operate fine
+> > while access
+> > is locked.
+> > 
+> > There is a performance impact, although I don't consider it
+> > heavy.  Running
+> > a worst-case benchmark of a 1GB copy 1 byte at a time (and thus
+> > constant
+> > read(1) write(1) syscalls), I found enabling GUAP to be 3.5% slower
+> > than
+> > when disabled.  In most cases, the difference is negligible.  The
+> > main
+> > performance impact is the mtspr instruction, which is quite slow.
+> > 
+> > There are a few caveats with this series that could be improved
+> > upon in
+> > future.  Right now there is no saving and restoring of the AMR
+> > value -
+> > there is no userspace exploitation of the AMR on Radix in POWER9,
+> > but if
+> > this were to change in future, saving and restoring the value would
+> > be
+> > necessary.
+> > 
+> > No attempt to optimise cases of repeated calls - for example, if
+> > some
+> > code was repeatedly calling copy_to_user() for small sizes very
+> > frequently,
+> > it would be slower than the equivalent of wrapping that code in an
+> > unlock
+> > and lock and only having to modify the AMR once.
+> > 
+> > There are some interesting cases that I've attempted to handle,
+> > such as if
+> > the AMR is unlocked (i.e. because a copy_{to_from}_user is in
+> > progress)...
+> > 
+> >     - and an exception is taken, the kernel would then be running
+> > with the
+> >     AMR unlocked and freely able to access userspace again.  I am
+> > working
+> >     around this by storing a flag in the PACA to indicate if the
+> > AMR is
+> >     unlocked (to save a costly SPR read), and if so, locking the
+> > AMR in
+> >     the exception entry path and unlocking it on the way out.
+> > 
+> >     - and gets context switched out, goes into a path that locks
+> > the AMR,
+> >     then context switches back, access will be disabled and will
+> > fault.
+> >     As a result, I context switch the AMR between tasks as if it
+> > was used
+> >     by userspace like hash (which already implements this).
+> > 
+> > Another consideration is use of the isync instruction.  Without an
+> > isync
+> > following the mtspr instruction, there is no guarantee that the
+> > change
+> > takes effect.  The issue is that isync is very slow, and so I tried
+> > to
+> > avoid them wherever necessary.  In this series, the only place an
+> > isync
+> > gets used is after *unlocking* the AMR, because if an access takes
+> > place
+> > and access is still prevented, the kernel will fault.
+> > 
+> > On the flipside, a slight delay in unlocking caused by skipping an
+> > isync
+> > potentially allows a small window of vulnerability.  It is my
+> > opinion
+> > that this window is practically impossible to exploit, but if
+> > someone
+> > thinks otherwise, please do share.
+> > 
+> > This series is my first attempt at POWER assembly so all feedback
+> > is very
+> > welcome.
+> > 
+> > The official theme song of this series can be found here:
+> >     https://www.youtube.com/watch?v=QjTrnKAcYjE
+> > 
+> > Russell Currey (5):
+> >   powerpc/64s: Guarded Userspace Access Prevention
+> >   powerpc/futex: GUAP support for futex ops
+> >   powerpc/lib: checksum GUAP support
+> >   powerpc/64s: Disable GUAP with nosmap option
+> >   powerpc/64s: Document that PPC supports nosmap
+> > 
+> >  .../admin-guide/kernel-parameters.txt         |  2 +-
+> >  arch/powerpc/include/asm/exception-64e.h      |  3 +
+> >  arch/powerpc/include/asm/exception-64s.h      | 19 ++++++-
+> >  arch/powerpc/include/asm/futex.h              |  6 ++
+> >  arch/powerpc/include/asm/mmu.h                |  7 +++
+> >  arch/powerpc/include/asm/paca.h               |  3 +
+> >  arch/powerpc/include/asm/reg.h                |  1 +
+> >  arch/powerpc/include/asm/uaccess.h            | 57
+> > ++++++++++++++++---
+> >  arch/powerpc/kernel/asm-offsets.c             |  1 +
+> >  arch/powerpc/kernel/dt_cpu_ftrs.c             |  4 ++
+> >  arch/powerpc/kernel/entry_64.S                | 17 +++++-
+> >  arch/powerpc/lib/checksum_wrappers.c          |  6 +-
+> >  arch/powerpc/mm/fault.c                       |  9 +++
+> >  arch/powerpc/mm/init_64.c                     | 15 +++++
+> >  arch/powerpc/mm/pgtable-radix.c               |  2 +
+> >  arch/powerpc/mm/pkeys.c                       |  7 ++-
+> >  arch/powerpc/platforms/Kconfig.cputype        | 15 +++++
+> >  17 files changed, 158 insertions(+), 16 deletions(-)
+> > 
+> > --
+> > 2.19.1
+> 
+> 
 
