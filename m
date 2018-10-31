@@ -2,64 +2,86 @@ Return-Path: <SRS0=1E/h=NL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 23E2DECDE44
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 17:07:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D11F7C0044C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 17:20:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9B75D2080A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 17:07:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9B75D2080A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 16EDF2080A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 17:20:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 16EDF2080A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42lZXP3n05zF3LJ
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 04:07:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by lists.ozlabs.org (Postfix) with ESMTP id 42lZqB6GYfzF3KS
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 04:20:38 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=naveen.n.rao@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42lZVQ0DFzzF3Gp
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Nov 2018 04:06:06 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 42lZVL5jtYz9ttFb;
- Wed, 31 Oct 2018 18:06:02 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id QiJW8iMKI7MV; Wed, 31 Oct 2018 18:06:02 +0100 (CET)
-Received: from vm-hermes.si.c-s.fr (vm-hermes.si.c-s.fr [192.168.25.253])
- by pegase1.c-s.fr (Postfix) with ESMTP id 42lZVL57Htz9ttBW;
- Wed, 31 Oct 2018 18:06:02 +0100 (CET)
-Received: by vm-hermes.si.c-s.fr (Postfix, from userid 33)
- id 169CF6E2; Wed, 31 Oct 2018 18:06:00 +0100 (CET)
-Received: from 37.165.103.10 ([37.165.103.10]) by messagerie.si.c-s.fr
- (Horde Framework) with HTTP; Wed, 31 Oct 2018 18:06:00 +0100
-Date: Wed, 31 Oct 2018 18:06:00 +0100
-Message-ID: <20181031180600.Horde.kVKtXiq495pINPnz1AJ3sg1@messagerie.si.c-s.fr>
-From: LEROY Christophe <christophe.leroy@c-s.fr>
-To: Russell Currey <ruscur@russell.cc>
-Subject: Re: [PATCH 5/5] powerpc/64s: Document that PPC supports nosmap
-References: <20181026063513.30806-1-ruscur@russell.cc>
- <20181026063513.30806-6-ruscur@russell.cc>
- <20181026183525.Horde.tXUVv2_ZCCOci3XQBF4ZYw1@messagerie.si.c-s.fr>
- <7b3e80077b4d9f22da891c143c78bb743cc24136.camel@russell.cc>
-In-Reply-To: <7b3e80077b4d9f22da891c143c78bb743cc24136.camel@russell.cc>
-User-Agent: Internet Messaging Program (IMP) H5 (6.2.3)
-Content-Type: text/plain; charset=UTF-8; format=flowed; DelSp=Yes
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42lZmw1RFdzF3HY
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Nov 2018 04:18:40 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w9VHFWJT143747
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2018 13:18:38 -0400
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2nfgf8rku5-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2018 13:18:37 -0400
+Received: from localhost
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Wed, 31 Oct 2018 17:18:31 -0000
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 31 Oct 2018 17:18:29 -0000
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ w9VHISpZ59900102
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Wed, 31 Oct 2018 17:18:28 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id A590E52054;
+ Wed, 31 Oct 2018 17:18:28 +0000 (GMT)
+Received: from naverao1-tp.ibm.com (unknown [9.79.185.251])
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 10EA552050;
+ Wed, 31 Oct 2018 17:18:26 +0000 (GMT)
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, Breno Leitao <leitao@debian.org>
+Subject: [PATCH] selftests/powerpc: Fix compilation issue due to asm label
+Date: Wed, 31 Oct 2018 22:48:13 +0530
+X-Mailer: git-send-email 2.19.1
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 18103117-0008-0000-0000-0000028926FA
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18103117-0009-0000-0000-000021F349BD
+Message-Id: <20181031171813.8970-1-naveen.n.rao@linux.vnet.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-10-31_06:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1807170000 definitions=main-1810310144
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,62 +93,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mikey@neuling.org, linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Russell Currey <ruscur@russell.cc> a =C3=A9crit=C2=A0:
+We are using 'dscr_insn' as a label in inline asm to identify if a
+SIGILL was generated by the mtspr instruction at that point. However,
+with inline assembly, the compiler is still free to duplicate the asm
+statement for optimization purposes, which results in the label being
+defined twice with the error:
+	/tmp/ccerQCql.s:874: Error: symbol `dscr_insn' is already defined
 
-> On Fri, 2018-10-26 at 18:35 +0200, LEROY Christophe wrote:
->> Why not call our new functionnality SMAP instead of calling it GUAP ?
->
-> mpe wasn't a fan of using the same terminology as other architectures.
+With different compiler versions, we may also see:
+	/tmp/ccJzLDlN.o:(.toc+0x0): undefined reference to `dscr_insn'
 
-I don't like too much the word 'guarded' because it means something=20=20
-different=20for powerpc MMUs.
+Remove the use of the label in the inline assembly. Instead, just look
+for the offending instruction in the signal handler.
 
-What about something like 'user space access protection' ?
+Reported-by: Breno Leitao <leitao@debian.org>
+Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+---
+ tools/testing/selftests/powerpc/utils.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Christophe
-
-> Having a separate term does avoid some assumptions about how things
-> work or are implemented, but sharing compatibility with an existing
-> parameter is nice.
->
-> Personally I don't really care too much about the name.
->
-> - Russell
->
->>
->> Christophe
->>
->> Russell Currey <ruscur@russell.cc> a =C3=A9crit :
->>
->> > Signed-off-by: Russell Currey <ruscur@russell.cc>
->> > ---
->> >  Documentation/admin-guide/kernel-parameters.txt | 2 +-
->> >  1 file changed, 1 insertion(+), 1 deletion(-)
->> >
->> > diff --git a/Documentation/admin-guide/kernel-parameters.txt
->> > b/Documentation/admin-guide/kernel-parameters.txt
->> > index a5ad67d5cb16..8f78e75965f0 100644
->> > --- a/Documentation/admin-guide/kernel-parameters.txt
->> > +++ b/Documentation/admin-guide/kernel-parameters.txt
->> > @@ -2764,7 +2764,7 @@
->> >  			noexec=3Don: enable non-executable mappings
->> > (default)
->> >  			noexec=3Doff: disable non-executable mappings
->> >
->> > -	nosmap		[X86]
->> > +	nosmap		[X86,PPC]
->> >  			Disable SMAP (Supervisor Mode Access
->> > Prevention)
->> >  			even if it is supported by processor.
->> >
->> > --
->> > 2.19.1
->>
->>
-
+diff --git a/tools/testing/selftests/powerpc/utils.c b/tools/testing/selftests/powerpc/utils.c
+index 43c342845be0..ed62f4153d3e 100644
+--- a/tools/testing/selftests/powerpc/utils.c
++++ b/tools/testing/selftests/powerpc/utils.c
+@@ -25,7 +25,6 @@
+ #include "utils.h"
+ 
+ static char auxv[4096];
+-extern unsigned int dscr_insn[];
+ 
+ int read_auxv(char *buf, ssize_t buf_size)
+ {
+@@ -247,7 +246,8 @@ static void sigill_handler(int signr, siginfo_t *info, void *unused)
+ 	ucontext_t *ctx = (ucontext_t *)unused;
+ 	unsigned long *pc = &UCONTEXT_NIA(ctx);
+ 
+-	if (*pc == (unsigned long)&dscr_insn) {
++	/* mtspr 3,RS to check for move to DSCR below */
++	if ((*((unsigned int *)*pc) & 0xfc1fffff) == 0x7c0303a6) {
+ 		if (!warned++)
+ 			printf("WARNING: Skipping over dscr setup. Consider running 'ppc64_cpu --dscr=1' manually.\n");
+ 		*pc += 4;
+@@ -271,5 +271,5 @@ void set_dscr(unsigned long val)
+ 		init = 1;
+ 	}
+ 
+-	asm volatile("dscr_insn: mtspr %1,%0" : : "r" (val), "i" (SPRN_DSCR));
++	asm volatile("mtspr %1,%0" : : "r" (val), "i" (SPRN_DSCR));
+ }
+-- 
+2.19.1
 
