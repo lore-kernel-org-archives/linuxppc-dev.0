@@ -2,28 +2,28 @@ Return-Path: <SRS0=1E/h=NL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 55BB6C0044C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 15:35:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 295F5C0044C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 15:38:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BBF4620664
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 15:35:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9A3F22054F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 15:38:04 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="2Iac1IMO"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BBF4620664
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="jaUhc7Sp"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9A3F22054F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42lXTN6ms2zF3NF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 02:35:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42lXXp6cbnzF3G6
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 02:38:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nifty.com header.i=@nifty.com header.b="2Iac1IMO";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nifty.com header.i=@nifty.com header.b="jaUhc7Sp";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (mailfrom) smtp.mailfrom=socionext.com
@@ -32,47 +32,49 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nifty.com header.i=@nifty.com header.b="2Iac1IMO"; 
+ unprotected) header.d=nifty.com header.i=@nifty.com header.b="jaUhc7Sp"; 
  dkim-atps=neutral
 Received: from conssluserg-04.nifty.com (conssluserg-04.nifty.com
  [210.131.2.83])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42lXQf5TDYzDqC3
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Nov 2018 02:32:42 +1100 (AEDT)
-Received: from mail-vs1-f44.google.com (mail-vs1-f44.google.com
- [209.85.217.44]) (authenticated)
- by conssluserg-04.nifty.com with ESMTP id w9VFW4ig004870
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Nov 2018 00:32:05 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conssluserg-04.nifty.com w9VFW4ig004870
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42lXSL6ZBXzF3N0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Nov 2018 02:34:10 +1100 (AEDT)
+Received: from mail-vk1-f182.google.com (mail-vk1-f182.google.com
+ [209.85.221.182]) (authenticated)
+ by conssluserg-04.nifty.com with ESMTP id w9VFXfPM005499
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Nov 2018 00:33:41 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conssluserg-04.nifty.com w9VFXfPM005499
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1540999925;
- bh=07s5qVlFf5CFxCuPhatWQ5nOszbFSlj1AR7fmT3wgxE=;
+ s=dec2015msa; t=1541000021;
+ bh=7MVqzDRPdYZDW53V3e7ri//BecS61EPHkL2jRn69Nm0=;
  h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=2Iac1IMOJ03M5i6zNXU51op5Kt83bUT9SD6UoRGpoNKu8wCfLiOQMS/uXk8Dfkyfl
- dqVaiXQ7nPpPWRniokNaPJxhHkBzwi/8kod9R8SBOY8rUL9Ka6QGZeME79487MHUbo
- KsGh5/KOqLWNQflUR7Ul56C4hWaq6H6DpTRUntqOpZPbs2EJ6Z3FYxzuqaEfFPuXxx
- RQ8GGN7ufSa5AYGZ1/J/oLzpkaP4fhp4zwEJep9R68tFs4hNKVwmJs2QgDqvp/54iN
- N5zpAz+G+ZRe5Xqs7eu6ThTwHlzvw3jYbZxL09Dqv1jqZ1JtFWlQlgf3fwK6NXQt7u
- ap9QGkPMJ+Prw==
-X-Nifty-SrcIP: [209.85.217.44]
-Received: by mail-vs1-f44.google.com with SMTP id p74so3276577vsc.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2018 08:32:04 -0700 (PDT)
-X-Gm-Message-State: AGRZ1gKpBOBSxV9mvCQy7FbWoY/RqbOD3llnU/+X9eI1FHaoZ6I4AFp6
- /vjB1GTJRaB7XhrAGiKXCpNdgm6Upom7rdMc9V4=
-X-Google-Smtp-Source: AJdET5e1R3V1R5oNYg8AjXwbFZyc/SSr/BQ1Hht1wcuXq9OQOcH0pfyo0NYyfNeiEWgTbAkK7g5sbnsjNk2SmNe/qdw=
-X-Received: by 2002:a67:5f03:: with SMTP id t3mr1509356vsb.155.1540999923821; 
- Wed, 31 Oct 2018 08:32:03 -0700 (PDT)
+ b=jaUhc7SpUqcQl6UKFLIbCDG52ekg8Pl3Ap7rsCe8VL2betxB2GweIv0bMCLuOs6fh
+ hVr3R5S/oyQN0RBI/qpxqdFUmMRH/mZVJaVitQY9qXCVyw+xXKlxC1rD3dmgkw+54I
+ LWZbrA9oEQJ9jTDDeyqLB81AaoZOylaTUf6Dz1zgaX1A5w2nFXsgupn1xDCWSWzMb3
+ J+NZR2VE1RMf3mnhkb+5vJJM/6WbwATSFh0HKSH6oRFA8DAxu5ied5nsQraKmXXIfY
+ 2EouAvcmJ0qtbzSEL53Z97+iQWCBxkRVnxBX+5Rtgqpvct1MwEH41mVRxc6zGXw7kJ
+ vXppOSOrk0n9w==
+X-Nifty-SrcIP: [209.85.221.182]
+Received: by mail-vk1-f182.google.com with SMTP id m199-v6so4010500vke.9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2018 08:33:41 -0700 (PDT)
+X-Gm-Message-State: AGRZ1gJU2hB3VqwdV0VflMpfI6Y/a4YIftwgagWGTADHClUyULhxG6Nw
+ 3r0FZFLFXTNpRDZTDN5faXtddrL8e7SRXKMIDjM=
+X-Google-Smtp-Source: AJdET5cSKM07kpQyZQ73G/EvgXpVGTYb+L6+vGDKhCWRoPmOB0xQTbJTKCGHcBBdV8iKhtsZJhGWT++V5NCTdRKbt4o=
+X-Received: by 2002:a1f:1d4b:: with SMTP id
+ d72-v6mr1474118vkd.34.1541000020309; 
+ Wed, 31 Oct 2018 08:33:40 -0700 (PDT)
 MIME-Version: 1.0
 References: <20181019120952.32763-1-hch@lst.de>
- <20181019120952.32763-5-hch@lst.de>
-In-Reply-To: <20181019120952.32763-5-hch@lst.de>
+ <20181019120952.32763-6-hch@lst.de>
+ <20181019151019.GA5618@localhost>
+In-Reply-To: <20181019151019.GA5618@localhost>
 From: Masahiro Yamada <yamada.masahiro@socionext.com>
-Date: Thu, 1 Nov 2018 00:31:27 +0900
-X-Gmail-Original-Message-ID: <CAK7LNAQb3PkB_z6-3D=qotWExHGAedA5i-_ZNr83=mC6q1JtwQ@mail.gmail.com>
-Message-ID: <CAK7LNAQb3PkB_z6-3D=qotWExHGAedA5i-_ZNr83=mC6q1JtwQ@mail.gmail.com>
-Subject: Re: [PATCH 4/9] powerpc: remove CONFIG_MCA leftovers
-To: Christoph Hellwig <hch@lst.de>
+Date: Thu, 1 Nov 2018 00:33:04 +0900
+X-Gmail-Original-Message-ID: <CAK7LNARa7xqG1iyQb9PE271L8QTC7nsaVXSAofm0hzku8T5Xvg@mail.gmail.com>
+Message-ID: <CAK7LNARa7xqG1iyQb9PE271L8QTC7nsaVXSAofm0hzku8T5Xvg@mail.gmail.com>
+Subject: Re: [PATCH 5/9] powerpc: PCI_MSI needs PCI
+To: Josh Triplett <josh@joshtriplett.org>
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -92,72 +94,63 @@ Cc: linux-arch <linux-arch@vger.kernel.org>,
  Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
  Dominik Brodowski <linux@dominikbrodowski.net>,
  Alex Bounine <alex.bou9@gmail.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Christoph Hellwig <hch@lst.de>,
  linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Oct 19, 2018 at 9:12 PM Christoph Hellwig <hch@lst.de> wrote:
+On Sat, Oct 20, 2018 at 12:10 AM Josh Triplett <josh@joshtriplett.org> wrote:
 >
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
-> Acked-by: Thomas Gleixner <tglx@linutronix.de>
-> ---
+> On Fri, Oct 19, 2018 at 02:09:48PM +0200, Christoph Hellwig wrote:
+> > Various powerpc boards select the PCI_MSI config option without selecting
+> > PCI, resulting in potentially not compilable configurations if the by
+> > default enabled PCI option is disabled.  Explicitly select PCI to ensure
+> > we always have valid configs.
+> [...]
+> > --- a/arch/powerpc/platforms/44x/Kconfig
+> > +++ b/arch/powerpc/platforms/44x/Kconfig
+> > @@ -24,6 +24,7 @@ config BLUESTONE
+> >       default n
+> >       select PPC44x_SIMPLE
+> >       select APM821xx
+> > +     select PCI
+> >       select PCI_MSI
+> >       select PPC4xx_MSI
+> >       select PPC4xx_PCI_EXPRESS
+> > @@ -78,6 +79,7 @@ config KATMAI
+> >       select 440SPe
+> >       select PCI
+> >       select PPC4xx_PCI_EXPRESS
+> > +     select PCI
+> >       select PCI_MSI
+>
+> This case already had PCI selected a couple of lines above.
 
-Applied to linux-kbuild.
+
+Good catch!
+
+I dropped this hunk,
+and applied to linux-kbuild.
 
 
 
->  arch/powerpc/Kconfig | 4 ----
->  drivers/scsi/Kconfig | 6 +++---
->  2 files changed, 3 insertions(+), 7 deletions(-)
->
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index e8c8970248bc..d4e97469a5f0 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -941,10 +941,6 @@ config FSL_GTM
->         help
->           Freescale General-purpose Timers support
->
-> -# Yes MCA RS/6000s exist but Linux-PPC does not currently support any
-> -config MCA
-> -       bool
-> -
->  # Platforms that what PCI turned unconditionally just do select PCI
->  # in their config node.  Platforms that want to choose at config
->  # time should select PPC_PCI_CHOICE
-> diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
-> index 7c097006c54d..d3734c54aec9 100644
-> --- a/drivers/scsi/Kconfig
-> +++ b/drivers/scsi/Kconfig
-> @@ -535,7 +535,7 @@ config SCSI_HPTIOP
->
->  config SCSI_BUSLOGIC
->         tristate "BusLogic SCSI support"
-> -       depends on (PCI || ISA || MCA) && SCSI && ISA_DMA_API && VIRT_TO_BUS
-> +       depends on (PCI || ISA) && SCSI && ISA_DMA_API && VIRT_TO_BUS
->         ---help---
->           This is support for BusLogic MultiMaster and FlashPoint SCSI Host
->           Adapters. Consult the SCSI-HOWTO, available from
-> @@ -1142,12 +1142,12 @@ config SCSI_LPFC_DEBUG_FS
->
->  config SCSI_SIM710
->         tristate "Simple 53c710 SCSI support (Compaq, NCR machines)"
-> -       depends on (EISA || MCA) && SCSI
-> +       depends on EISA && SCSI
->         select SCSI_SPI_ATTRS
->         ---help---
->           This driver is for NCR53c710 based SCSI host adapters.
->
-> -         It currently supports Compaq EISA cards and NCR MCA cards
-> +         It currently supports Compaq EISA cards.
->
->  config SCSI_DC395x
->         tristate "Tekram DC395(U/UW/F) and DC315(U) SCSI support"
-> --
-> 2.19.1
->
+
+
+> >       select PPC4xx_MSI
+> >       help
+> > @@ -219,6 +221,7 @@ config AKEBONO
+> >       select SWIOTLB
+> >       select 476FPE
+> >       select PPC4xx_PCI_EXPRESS
+> > +     select PCI
+> >       select PCI_MSI
+> >       select PPC4xx_HSTA_MSI
+> >       select I2C
+> > --
+> > 2.19.1
+> >
+
 
 
 -- 
