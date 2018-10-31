@@ -2,54 +2,80 @@ Return-Path: <SRS0=1E/h=NL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DA606ECDE44
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 09:45:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 314B8ECDE44
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 10:12:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 62D0520685
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 09:45:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 62D0520685
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id C3E1620685
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 10:12:11 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="ZBPzbmxk"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C3E1620685
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42lNjr30XSzF3KP
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 20:45:20 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42lNfd479PzDrS7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2018 20:42:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 42lPJn5qdgzF3F7
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Oct 2018 21:12:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="ZBPzbmxk";
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (helo) smtp.helo=mo6-p00-ob.smtp.rzone.de
+ (client-ip=2a01:238:20a:202:5300::5; helo=mo6-p00-ob.smtp.rzone.de;
+ envelope-from=chzigotzky@xenosoft.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=xenosoft.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="ZBPzbmxk"; 
+ dkim-atps=neutral
+Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5300::5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 42lNfd1SKrz9s3T;
- Wed, 31 Oct 2018 20:42:33 +1100 (AEDT)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- Thiago Jung Bauermann <bauerman@linux.ibm.com>,
- Breno Leitao <leitao@debian.org>
-Subject: Re: [PATCH 2/2] selftests/powerpc: Skip test instead of failing
-In-Reply-To: <fd8d4568-c69c-5e90-27f6-574a4bc88d2c@linux.vnet.ibm.com>
-References: <1540326197-15537-1-git-send-email-leitao@debian.org>
- <1540326197-15537-2-git-send-email-leitao@debian.org>
- <56cdd832-6229-bf95-58ee-1783f931e7bd@linux.vnet.ibm.com>
- <132d7e4f-153f-8ba4-95f2-f0d9c1a66f28@debian.org>
- <87efc8be37.fsf@morokweng.localdomain>
- <87r2g7ihwi.fsf@concordia.ellerman.id.au>
- <fd8d4568-c69c-5e90-27f6-574a4bc88d2c@linux.vnet.ibm.com>
-Date: Wed, 31 Oct 2018 20:42:31 +1100
-Message-ID: <87in1iiha0.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42lPG274QfzF31W
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2018 21:09:45 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1540980578;
+ s=strato-dkim-0002; d=xenosoft.de;
+ h=In-Reply-To:Date:Message-ID:From:References:To:Subject:
+ X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
+ bh=h3+aUpYeRtVbFj/cTwtiD48wizUVMiMFbLhPDnqLohM=;
+ b=ZBPzbmxkr2nOwIKRs554mcL/TLBn7/d8li3IlhmOmX1WrLJOLl9BAZWZ6XtWicWri9
+ uMUKbkf/lDNwzD0TudiDUG3b9PdqsokgRjZerWG0BFCMpF14rFSIXjXDeVeD4zvyTFmw
+ rbbD6cJn6GTx9XTgYgzHiJ+hyyLunf0gqCscIF+nlCkjYUy6gQXj1SnlF3seXhrAeq76
+ KGoixvPsGKwNGl5LbJaK6O+KaxLZ8Nw/WHcLB0HFa114jH/Vn5/q5TFaV0hTviA3I7cS
+ Es6Eo2sDRYtAalgK70wKtXtczx/+7yHikNf8qBaLwX+svHMHieYjUfpMIYZaBTsIZwbm
+ fKsA==
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5G5MdirQj0WG7Clbhp9bayqLMHIFV3bP6ZGRVRmKHA=="
+X-RZG-CLASS-ID: mo00
+Received: from [IPv6:2a02:8109:a400:162c:d842:f065:35df:e394]
+ by smtp.strato.de (RZmta 44.3 AUTH) with ESMTPSA id Z0624cu9VA9cHts
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
+ 521 ECDH bits, eq. 15360 bits RSA))
+ (Client did not present a certificate);
+ Wed, 31 Oct 2018 11:09:38 +0100 (CET)
+Subject: Re: arch/powerpc/kvm/trace.h:9:0: error: "TRACE_INCLUDE_PATH"
+ redefined
+To: linuxppc-dev@lists.ozlabs.org,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
+References: <6bcb4b23-bb78-d1a5-7fd0-5f892115d302@xenosoft.de>
+ <99266ac6-640c-b2a9-eef3-4e89ee1e0ad5@xenosoft.de>
+ <009777be-1025-a309-2804-c76cd00d3947@xenosoft.de>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Message-ID: <a999fed3-ad83-ae96-0639-0640053cad55@xenosoft.de>
+Date: Wed, 31 Oct 2018 11:09:37 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <009777be-1025-a309-2804-c76cd00d3947@xenosoft.de>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
+Content-Language: de-DE
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,86 +87,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Tyrel Datwyler <tyreld@linux.vnet.ibm.com> writes:
-> On 10/30/2018 08:16 AM, Michael Ellerman wrote:
->> Thiago Jung Bauermann <bauerman@linux.ibm.com> writes:
->> 
->>> Breno Leitao <leitao@debian.org> writes:
->>>
->>>> Hi Tyrel,
->>>>
->>>> On 10/23/2018 05:41 PM, Tyrel Datwyler wrote:
->>>>>> --- a/tools/testing/selftests/powerpc/ptrace/core-pkey.c
->>>>>> +++ b/tools/testing/selftests/powerpc/ptrace/core-pkey.c
->>>>>> @@ -352,17 +352,11 @@ static int write_core_pattern(const char *core_pattern)
->>>>>>  	FILE *f;
->>>>>>
->>>>>>  	f = fopen(core_pattern_file, "w");
->>>>>> -	if (!f) {
->>>>>> -		perror("Error writing to core_pattern file");
->>>>>> -		return TEST_FAIL;
->>>>>> -	}
->>>>>> +	SKIP_IF(!f);
->>>>>>
->>>>>>  	ret = fwrite(core_pattern, 1, len, f);
->>>>>>  	fclose(f);
->>>>>> -	if (ret != len) {
->>>>>> -		perror("Error writing to core_pattern file");
->>>>>> -		return TEST_FAIL;
->>>>>> -	}
->>>>>> +	SKIP_IF(ret != len);
->>>>
->>>>> If we don't have proper privileges we should fail on the open, right?
->>>>> So wouldn't we still want to fail on the write if something goes
->>>>> wrong?
->>>>
->>>> That is a good point. Should the test fail or skip if it is not possible
->>>> to create the infrastructure to run the core test?
->>>>
->>>> Trying to find the answer in the current test sets, I find tests where
->>>> the self test skips if the test environment is not able to be set up, as
->>>> for example, when a memory allocation fails.
->>>>
->>>> File: tools/testing/selftests/powerpc/alignment/alignment_handler.c
->>>>
->>>>         ci1 = mmap(NULL, bufsize, PROT_WRITE, MAP_SHARED,
->>>>                    fd, bufsize);
->>>>         if ((ci0 == MAP_FAILED) || (ci1 == MAP_FAILED)) {
->>>>                 printf("\n");
->>>>                 perror("mmap failed");
->>>>                 SKIP_IF(1);
->>>>         }
->>>
->>> I think TEST_FAIL means the test was able to exercise the feature
->>> and found a problem with it. In this case, the test wasn't able to
->>> exercise the feature so it's not appropriate.
->>>
->>> Ideally, there should be a TEST_ERROR result for a case like this where
->>> an unexpected problem prevented the testcase from exercising the
->>> feature.
->>>
->>> If we're to use the an existing result then I vote for SKIP_IF.
->> 
->> Yeah I agree.
->> 
->> See for example some of the TM tests, which skip if TM is not available.
->> Or the alignment test which skips if it can't open /dev/fb0.
->> 
->> In this case it should print "you need to be root to run this" and then
->> skip.
+Hello,
+
+I compiled the latest Git kernel today. The error 'TRACE_INCLUDE_PATH 
+redefined' still exist.
+
+Cheers,
+Christian
+
+
+On 29 October 2018 at 11:22AM, Christian Zigotzky wrote:
+> Hello,
 >
-> Agreed that there should be some indicator of why we are skipping the
-> test. My original point I was trying to make was that I thought
-> skipping a failed open was okay because we are likely not root.
-> However, I wasn't sure that a failed write was okay to skip as that
-> could be an indicator that something has actually been broken.
+> The latest Git kernel doesn't compile currently because of the 
+> following error:
+>
+>
+> christian@christian-virtual-machine:~/Downloads/a$ env LANG=C make 
+> CROSS_COMPILE=powerpc-linux-gnu- ARCH=powerpc uImage
+>   CALL    scripts/checksyscalls.sh
+>   CHK     include/generated/compile.h
+>   CALL    arch/powerpc/kernel/systbl_chk.sh
+>   CC      arch/powerpc/kvm/powerpc.o
+> In file included from arch/powerpc/kvm/powerpc.c:51:0:
+> arch/powerpc/kvm/trace.h:9:0: error: "TRACE_INCLUDE_PATH" redefined 
+> [-Werror]
+>  #define TRACE_INCLUDE_PATH .
+>  ^
+> In file included from arch/powerpc/kvm/../mm/mmu_decl.h:25:0,
+>                  from arch/powerpc/kvm/powerpc.c:48:
+> ./arch/powerpc/include/asm/trace.h:224:0: note: this is the location 
+> of the previous definition
+>  #define TRACE_INCLUDE_PATH asm
+>  ^
+> cc1: all warnings being treated as errors
+> scripts/Makefile.build:305: recipe for target 
+> 'arch/powerpc/kvm/powerpc.o' failed
+> make[2]: *** [arch/powerpc/kvm/powerpc.o] Error 1
+> scripts/Makefile.build:546: recipe for target 'arch/powerpc/kvm' failed
+> make[1]: *** [arch/powerpc/kvm] Error 2
+> Makefile:1052: recipe for target 'arch/powerpc' failed
+> make: *** [arch/powerpc] Error 2
+>
+> ---
+>
+> I deleted the definition of 'TRACE_INCLUDE_PATH' in 
+> 'arch/powerpc/kvm/trace.h'. After that the kernel compiled without any 
+> problems.
+>
+> -- Christian
+>
 
-Yes I agree. I didn't read your mail closely enough. Have just replied
-to it.
-
-cheers
