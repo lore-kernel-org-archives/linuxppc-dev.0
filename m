@@ -2,48 +2,139 @@ Return-Path: <SRS0=OEx3=NM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A0FCC0044C
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 04:40:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A883BC0044C
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 04:43:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E6E1320820
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 04:40:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E6E1320820
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id D3A9B20820
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 04:43:45 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="DcUTHQGp"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D3A9B20820
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42lsvN5tJnzF3LY
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 15:40:16 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 42lszM3QKlzF3Ln
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 15:43:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="DcUTHQGp";
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
+ (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
+ envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=ozlabs.ru
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
+ header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="DcUTHQGp"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
+ [IPv6:2607:f8b0:4864:20::442])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42lssR3vZgzF3L1
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Nov 2018 15:38:35 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 42lssR1f4Rz9sRt;
- Thu,  1 Nov 2018 15:38:35 +1100 (AEDT)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nick Desaulniers <ndesaulniers@google.com>, joel@jms.id.au
-Subject: Re: [PATCH] raid6/ppc: Fix build for clang
-In-Reply-To: <CAKwvOdm8rFNEG39_6f5voZo3nU1g9eC6M8uxeQPVE8=JUoB3mg@mail.gmail.com>
-References: <20181031032829.18131-1-joel@jms.id.au>
- <CAKwvOdm8rFNEG39_6f5voZo3nU1g9eC6M8uxeQPVE8=JUoB3mg@mail.gmail.com>
-Date: Thu, 01 Nov 2018 15:38:35 +1100
-Message-ID: <87y3ad76pg.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42lswV0KryzF3HK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Nov 2018 15:41:12 +1100 (AEDT)
+Received: by mail-pf1-x442.google.com with SMTP id z2-v6so6113747pfe.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2018 21:41:12 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
+ h=subject:to:cc:references:from:openpgp:autocrypt:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=HZAaBK91ByW9CEv5+vqKlwdoih8ONMYnS1DZPHiTye4=;
+ b=DcUTHQGpldi0CL9DDvmEEmTQG81Si0xWupcNGV5taZ+FbrUsBVR5lnsw/GvbQq1UpU
+ Gjx866Cohq26G6Qkx/1AhaN2uh8t3lDv86L2ZELs3H6u4C3OYU6ERHq6shiAfVvJAFDK
+ q8wieh2e5nFgVXm7j8QGnLFoKFI/W5XIkbOUo6uydqyLPG+cQKb+uV8KDTcS5OPnuxnX
+ Dp29xgofEVv41jjO1aZoJMgobeovnL64y2ppoXxf2mOS9GbQu+a65SN0lM4WX9wI4ZVN
+ EGHy7kF71liKT9QUPJWElwbMonSmXtBhvbML/bidyTiKnC/wvztjeunQUiHgre10ny6z
+ OmNg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:subject:to:cc:references:from:openpgp:autocrypt
+ :message-id:date:user-agent:mime-version:in-reply-to
+ :content-language:content-transfer-encoding;
+ bh=HZAaBK91ByW9CEv5+vqKlwdoih8ONMYnS1DZPHiTye4=;
+ b=Okje0k4wBFNi3M3HRIlVEej+sueUxuA9xKS9rvhZV6rX4UQvwQUnKVYJav0OVUBYwe
+ R9JALdtj0O+etfBj+Z0pnwm+5M0ImhWmsXGE7TZ4FO8I+URT5Y5sM5CYFlM6ONxwgbkl
+ 31UTNUZc9XxJrD8+BRVFbxn+RXBGR4IHRZIbGdG3DhfCZaPMTgo5Ngl8h8zkFDUmGndI
+ y42UnJ2gSBwSJcXpOP01YiaxmcMWAfkINzE5JyvAwllHaZAo5Moky3PsC9myZ4kDmg87
+ DBicEsHd6NKsjOpUGLYSikGUhSHFMhs7oFDDkkevp/Lu2nfZSh5flK2EHp3y7DwbrXFS
+ P8jg==
+X-Gm-Message-State: AGRZ1gKaJUvG58fqjIiv82p6PsimMBlq0APEwgiI/AbkxSmR08uJeiOr
+ PedrZNDD4itXB4K+tMbQWBHBMA==
+X-Google-Smtp-Source: AJdET5d7F+g0LtlODcT5SSipZNgK5G8oTw4hIipTCoioJmGVdD99HVCsDU7zWupL1M+BTUz6r6TNGQ==
+X-Received: by 2002:a63:d64b:: with SMTP id
+ d11-v6mr5778510pgj.450.1541047270027; 
+ Wed, 31 Oct 2018 21:41:10 -0700 (PDT)
+Received: from [10.61.2.175] ([122.99.82.10])
+ by smtp.gmail.com with ESMTPSA id w2-v6sm48624490pfk.140.2018.10.31.21.41.05
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Wed, 31 Oct 2018 21:41:09 -0700 (PDT)
+Subject: Re: [PATCH] powerpc/powernv: remove dead npu-dma code
+To: Christoph Hellwig <hch@lst.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+References: <20181030133122.GA31102@lst.de>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Openpgp: preference=signencrypt
+Autocrypt: addr=aik@ozlabs.ru; keydata=
+ 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
+Message-ID: <2c87f9d2-3beb-6c7e-71a4-db8a905f57b1@ozlabs.ru>
+Date: Thu, 1 Nov 2018 15:41:02 +1100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.2.1
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <20181030133122.GA31102@lst.de>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,63 +146,1447 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: jji@us.ibm.com, linuxppc-dev@lists.ozlabs.org,
- LKML <linux-kernel@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
- Kees Cook <keescook@chromium.org>
+Cc: James Bottomley <jejb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Nick Desaulniers <ndesaulniers@google.com> writes:
-> On Tue, Oct 30, 2018 at 8:28 PM Joel Stanley <joel@jms.id.au> wrote:
->>
->> We cannot build these files with clang as it does not allow altivec
->> instructions in assembly when -msoft-float is passed.
->>
->> Jinsong Ji <jji@us.ibm.com> wrote:
->> > We currently disable Altivec/VSX support when enabling soft-float.  So
->> > any usage of vector builtins will break.
->> >
->> > Enable Altivec/VSX with soft-float may need quite some clean up work, so
->> > I guess this is currently a limitation.
->> >
->> > Removing -msoft-float will make it work (and we are lucky that no
->> > floating point instructions will be generated as well).
->>
->> This is a workaround until the issue is resolved in clang.
->>
->> Link: https://bugs.llvm.org/show_bug.cgi?id=31177
->> Link: https://github.com/ClangBuiltLinux/linux/issues/239
->> Signed-off-by: Joel Stanley <joel@jms.id.au>
->
-> Hopefully we can have this fixed up soon.  I'll try to see who works
-> on Clang+PPC here and see if they can help move that bug along. Thanks
-> for the patch!
->
->> ---
->>  lib/raid6/Makefile | 15 +++++++++++++++
->>  1 file changed, 15 insertions(+)
->>
->> diff --git a/lib/raid6/Makefile b/lib/raid6/Makefile
->> index 2f8b61dfd9b0..3a844e6fd01c 100644
->> --- a/lib/raid6/Makefile
->> +++ b/lib/raid6/Makefile
->> @@ -18,6 +18,21 @@ quiet_cmd_unroll = UNROLL  $@
->>
->>  ifeq ($(CONFIG_ALTIVEC),y)
->>  altivec_flags := -maltivec $(call cc-option,-mabi=altivec)
->> +
->> +ifdef CONFIG_CC_IS_CLANG
->
-> Note that the top level makefile detects clang via:
->
-> ifeq ($(cc-name),clang)
->
-> Does that not work here? I'd prefer to keep compiler detection in
-> Makefiles consistent, if it works?
 
-cc-name is being removed in favor of CONFIG_CC_IS_CLANG:
 
-https://lore.kernel.org/lkml/1540905994-6073-1-git-send-email-yamada.masahiro@socionext.com/
+On 31/10/2018 00:31, Christoph Hellwig wrote:
+> This code has never been unused in the kernel since it was merged, and
+> there has been no attempt that I could find to even submit users for
+> it.  Besides the general policy of not keep 1000+ lines of dead
+> code, it helps cleaning up the DMA code and making powerpc user common
+> infrastructure.
+> 
+> This effectively reverts commit 5d2aa710 ("powerpc/powernv: Add support
+> for Nvlink NPUs").
+> 
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> ---
+> 
+> [this is a follow up to the brief maintainer summit discussion]
+> 
+>  arch/powerpc/include/asm/pci.h            |   3 -
+>  arch/powerpc/include/asm/powernv.h        |  23 -
+>  arch/powerpc/platforms/powernv/Makefile   |   2 +-
+>  arch/powerpc/platforms/powernv/npu-dma.c  | 989 ----------------------
+>  arch/powerpc/platforms/powernv/pci-ioda.c | 243 ------
+>  arch/powerpc/platforms/powernv/pci.h      |  11 -
+>  6 files changed, 1 insertion(+), 1270 deletions(-)
+>  delete mode 100644 arch/powerpc/platforms/powernv/npu-dma.c
+> 
+> diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
+> index 2af9ded80540..a01d2e3d6ff9 100644
+> --- a/arch/powerpc/include/asm/pci.h
+> +++ b/arch/powerpc/include/asm/pci.h
+> @@ -127,7 +127,4 @@ extern void pcibios_scan_phb(struct pci_controller *hose);
+>  
+>  #endif	/* __KERNEL__ */
+>  
+> -extern struct pci_dev *pnv_pci_get_gpu_dev(struct pci_dev *npdev);
+> -extern struct pci_dev *pnv_pci_get_npu_dev(struct pci_dev *gpdev, int index);
+> -
+>  #endif /* __ASM_POWERPC_PCI_H */
+> diff --git a/arch/powerpc/include/asm/powernv.h b/arch/powerpc/include/asm/powernv.h
+> index 2f3ff7a27881..4848a6b3c6b2 100644
+> --- a/arch/powerpc/include/asm/powernv.h
+> +++ b/arch/powerpc/include/asm/powernv.h
+> @@ -11,33 +11,10 @@
+>  #define _ASM_POWERNV_H
+>  
+>  #ifdef CONFIG_PPC_POWERNV
+> -#define NPU2_WRITE 1
+>  extern void powernv_set_nmmu_ptcr(unsigned long ptcr);
+> -extern struct npu_context *pnv_npu2_init_context(struct pci_dev *gpdev,
+> -			unsigned long flags,
+> -			void (*cb)(struct npu_context *, void *),
+> -			void *priv);
+> -extern void pnv_npu2_destroy_context(struct npu_context *context,
+> -				struct pci_dev *gpdev);
+> -extern int pnv_npu2_handle_fault(struct npu_context *context, uintptr_t *ea,
+> -				unsigned long *flags, unsigned long *status,
+> -				int count);
+> -
+>  void pnv_tm_init(void);
+>  #else
+>  static inline void powernv_set_nmmu_ptcr(unsigned long ptcr) { }
+> -static inline struct npu_context *pnv_npu2_init_context(struct pci_dev *gpdev,
+> -			unsigned long flags,
+> -			struct npu_context *(*cb)(struct npu_context *, void *),
+> -			void *priv) { return ERR_PTR(-ENODEV); }
+> -static inline void pnv_npu2_destroy_context(struct npu_context *context,
+> -					struct pci_dev *gpdev) { }
+> -
+> -static inline int pnv_npu2_handle_fault(struct npu_context *context,
+> -					uintptr_t *ea, unsigned long *flags,
+> -					unsigned long *status, int count) {
+> -	return -ENODEV;
+> -}
+>  
+>  static inline void pnv_tm_init(void) { }
+>  static inline void pnv_power9_force_smt4(void) { }
+> diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
+> index b540ce8eec55..2b13e9dd137c 100644
+> --- a/arch/powerpc/platforms/powernv/Makefile
+> +++ b/arch/powerpc/platforms/powernv/Makefile
+> @@ -6,7 +6,7 @@ obj-y			+= opal-msglog.o opal-hmi.o opal-power.o opal-irqchip.o
+>  obj-y			+= opal-kmsg.o opal-powercap.o opal-psr.o opal-sensor-groups.o
+>  
+>  obj-$(CONFIG_SMP)	+= smp.o subcore.o subcore-asm.o
+> -obj-$(CONFIG_PCI)	+= pci.o pci-ioda.o npu-dma.o pci-ioda-tce.o
+> +obj-$(CONFIG_PCI)	+= pci.o pci-ioda.o pci-ioda-tce.o
+>  obj-$(CONFIG_CXL_BASE)	+= pci-cxl.o
+>  obj-$(CONFIG_EEH)	+= eeh-powernv.o
+>  obj-$(CONFIG_PPC_SCOM)	+= opal-xscom.o
+> diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
+> deleted file mode 100644
+> index 6f60e0931922..000000000000
+> --- a/arch/powerpc/platforms/powernv/npu-dma.c
+> +++ /dev/null
+> @@ -1,989 +0,0 @@
+> -/*
+> - * This file implements the DMA operations for NVLink devices. The NPU
+> - * devices all point to the same iommu table as the parent PCI device.
+> - *
+> - * Copyright Alistair Popple, IBM Corporation 2015.
+> - *
+> - * This program is free software; you can redistribute it and/or
+> - * modify it under the terms of version 2 of the GNU General Public
+> - * License as published by the Free Software Foundation.
+> - */
+> -
+> -#include <linux/slab.h>
+> -#include <linux/mmu_notifier.h>
+> -#include <linux/mmu_context.h>
+> -#include <linux/of.h>
+> -#include <linux/export.h>
+> -#include <linux/pci.h>
+> -#include <linux/memblock.h>
+> -#include <linux/iommu.h>
+> -#include <linux/sizes.h>
+> -
+> -#include <asm/debugfs.h>
+> -#include <asm/tlb.h>
+> -#include <asm/powernv.h>
+> -#include <asm/reg.h>
+> -#include <asm/opal.h>
+> -#include <asm/io.h>
+> -#include <asm/iommu.h>
+> -#include <asm/pnv-pci.h>
+> -#include <asm/msi_bitmap.h>
+> -#include <asm/opal.h>
+> -
+> -#include "powernv.h"
+> -#include "pci.h"
+> -
+> -#define npu_to_phb(x) container_of(x, struct pnv_phb, npu)
+> -
+> -/*
+> - * spinlock to protect initialisation of an npu_context for a particular
+> - * mm_struct.
+> - */
+> -static DEFINE_SPINLOCK(npu_context_lock);
+> -
+> -/*
+> - * Other types of TCE cache invalidation are not functional in the
+> - * hardware.
+> - */
+> -static struct pci_dev *get_pci_dev(struct device_node *dn)
+> -{
+> -	struct pci_dn *pdn = PCI_DN(dn);
+> -
+> -	return pci_get_domain_bus_and_slot(pci_domain_nr(pdn->phb->bus),
+> -					   pdn->busno, pdn->devfn);
+> -}
+> -
+> -/* Given a NPU device get the associated PCI device. */
+> -struct pci_dev *pnv_pci_get_gpu_dev(struct pci_dev *npdev)
+> -{
+> -	struct device_node *dn;
+> -	struct pci_dev *gpdev;
+> -
+> -	if (WARN_ON(!npdev))
+> -		return NULL;
+> -
+> -	if (WARN_ON(!npdev->dev.of_node))
+> -		return NULL;
+> -
+> -	/* Get assoicated PCI device */
+> -	dn = of_parse_phandle(npdev->dev.of_node, "ibm,gpu", 0);
+> -	if (!dn)
+> -		return NULL;
+> -
+> -	gpdev = get_pci_dev(dn);
+> -	of_node_put(dn);
+> -
+> -	return gpdev;
+> -}
+> -EXPORT_SYMBOL(pnv_pci_get_gpu_dev);
+> -
+> -/* Given the real PCI device get a linked NPU device. */
+> -struct pci_dev *pnv_pci_get_npu_dev(struct pci_dev *gpdev, int index)
+> -{
+> -	struct device_node *dn;
+> -	struct pci_dev *npdev;
+> -
+> -	if (WARN_ON(!gpdev))
+> -		return NULL;
+> -
+> -	/* Not all PCI devices have device-tree nodes */
+> -	if (!gpdev->dev.of_node)
+> -		return NULL;
+> -
+> -	/* Get assoicated PCI device */
+> -	dn = of_parse_phandle(gpdev->dev.of_node, "ibm,npu", index);
+> -	if (!dn)
+> -		return NULL;
+> -
+> -	npdev = get_pci_dev(dn);
+> -	of_node_put(dn);
+> -
+> -	return npdev;
+> -}
+> -EXPORT_SYMBOL(pnv_pci_get_npu_dev);
+> -
+> -#define NPU_DMA_OP_UNSUPPORTED()					\
+> -	dev_err_once(dev, "%s operation unsupported for NVLink devices\n", \
+> -		__func__)
+> -
+> -static void *dma_npu_alloc(struct device *dev, size_t size,
+> -			   dma_addr_t *dma_handle, gfp_t flag,
+> -			   unsigned long attrs)
+> -{
+> -	NPU_DMA_OP_UNSUPPORTED();
+> -	return NULL;
+> -}
+> -
+> -static void dma_npu_free(struct device *dev, size_t size,
+> -			 void *vaddr, dma_addr_t dma_handle,
+> -			 unsigned long attrs)
+> -{
+> -	NPU_DMA_OP_UNSUPPORTED();
+> -}
+> -
+> -static dma_addr_t dma_npu_map_page(struct device *dev, struct page *page,
+> -				   unsigned long offset, size_t size,
+> -				   enum dma_data_direction direction,
+> -				   unsigned long attrs)
+> -{
+> -	NPU_DMA_OP_UNSUPPORTED();
+> -	return 0;
+> -}
+> -
+> -static int dma_npu_map_sg(struct device *dev, struct scatterlist *sglist,
+> -			  int nelems, enum dma_data_direction direction,
+> -			  unsigned long attrs)
+> -{
+> -	NPU_DMA_OP_UNSUPPORTED();
+> -	return 0;
+> -}
+> -
+> -static int dma_npu_dma_supported(struct device *dev, u64 mask)
+> -{
+> -	NPU_DMA_OP_UNSUPPORTED();
+> -	return 0;
+> -}
+> -
+> -static u64 dma_npu_get_required_mask(struct device *dev)
+> -{
+> -	NPU_DMA_OP_UNSUPPORTED();
+> -	return 0;
+> -}
+> -
+> -static const struct dma_map_ops dma_npu_ops = {
+> -	.map_page		= dma_npu_map_page,
+> -	.map_sg			= dma_npu_map_sg,
+> -	.alloc			= dma_npu_alloc,
+> -	.free			= dma_npu_free,
+> -	.dma_supported		= dma_npu_dma_supported,
+> -	.get_required_mask	= dma_npu_get_required_mask,
+> -};
+> -
+> -/*
+> - * Returns the PE assoicated with the PCI device of the given
+> - * NPU. Returns the linked pci device if pci_dev != NULL.
+> - */
+> -static struct pnv_ioda_pe *get_gpu_pci_dev_and_pe(struct pnv_ioda_pe *npe,
+> -						  struct pci_dev **gpdev)
+> -{
+> -	struct pnv_phb *phb;
+> -	struct pci_controller *hose;
+> -	struct pci_dev *pdev;
+> -	struct pnv_ioda_pe *pe;
+> -	struct pci_dn *pdn;
+> -
+> -	pdev = pnv_pci_get_gpu_dev(npe->pdev);
+> -	if (!pdev)
+> -		return NULL;
+> -
+> -	pdn = pci_get_pdn(pdev);
+> -	if (WARN_ON(!pdn || pdn->pe_number == IODA_INVALID_PE))
+> -		return NULL;
+> -
+> -	hose = pci_bus_to_host(pdev->bus);
+> -	phb = hose->private_data;
+> -	pe = &phb->ioda.pe_array[pdn->pe_number];
+> -
+> -	if (gpdev)
+> -		*gpdev = pdev;
+> -
+> -	return pe;
+> -}
+> -
+> -long pnv_npu_set_window(struct pnv_ioda_pe *npe, int num,
+> -		struct iommu_table *tbl)
+> -{
+> -	struct pnv_phb *phb = npe->phb;
+> -	int64_t rc;
+> -	const unsigned long size = tbl->it_indirect_levels ?
+> -		tbl->it_level_size : tbl->it_size;
+> -	const __u64 start_addr = tbl->it_offset << tbl->it_page_shift;
+> -	const __u64 win_size = tbl->it_size << tbl->it_page_shift;
+> -
+> -	pe_info(npe, "Setting up window %llx..%llx pg=%lx\n",
+> -			start_addr, start_addr + win_size - 1,
+> -			IOMMU_PAGE_SIZE(tbl));
+> -
+> -	rc = opal_pci_map_pe_dma_window(phb->opal_id,
+> -			npe->pe_number,
+> -			npe->pe_number,
+> -			tbl->it_indirect_levels + 1,
+> -			__pa(tbl->it_base),
+> -			size << 3,
+> -			IOMMU_PAGE_SIZE(tbl));
+> -	if (rc) {
+> -		pe_err(npe, "Failed to configure TCE table, err %lld\n", rc);
+> -		return rc;
+> -	}
+> -	pnv_pci_ioda2_tce_invalidate_entire(phb, false);
+> -
+> -	/* Add the table to the list so its TCE cache will get invalidated */
+> -	pnv_pci_link_table_and_group(phb->hose->node, num,
+> -			tbl, &npe->table_group);
+> -
+> -	return 0;
+> -}
+> -
+> -long pnv_npu_unset_window(struct pnv_ioda_pe *npe, int num)
+> -{
+> -	struct pnv_phb *phb = npe->phb;
+> -	int64_t rc;
+> -
+> -	pe_info(npe, "Removing DMA window\n");
+> -
+> -	rc = opal_pci_map_pe_dma_window(phb->opal_id, npe->pe_number,
+> -			npe->pe_number,
+> -			0/* levels */, 0/* table address */,
+> -			0/* table size */, 0/* page size */);
+> -	if (rc) {
+> -		pe_err(npe, "Unmapping failed, ret = %lld\n", rc);
+> -		return rc;
+> -	}
+> -	pnv_pci_ioda2_tce_invalidate_entire(phb, false);
+> -
+> -	pnv_pci_unlink_table_and_group(npe->table_group.tables[num],
+> -			&npe->table_group);
+> -
+> -	return 0;
+> -}
+> -
+> -/*
+> - * Enables 32 bit DMA on NPU.
+> - */
+> -static void pnv_npu_dma_set_32(struct pnv_ioda_pe *npe)
+> -{
+> -	struct pci_dev *gpdev;
+> -	struct pnv_ioda_pe *gpe;
+> -	int64_t rc;
+> -
+> -	/*
+> -	 * Find the assoicated PCI devices and get the dma window
+> -	 * information from there.
+> -	 */
+> -	if (!npe->pdev || !(npe->flags & PNV_IODA_PE_DEV))
+> -		return;
+> -
+> -	gpe = get_gpu_pci_dev_and_pe(npe, &gpdev);
+> -	if (!gpe)
+> -		return;
+> -
+> -	rc = pnv_npu_set_window(npe, 0, gpe->table_group.tables[0]);
+> -
+> -	/*
+> -	 * We don't initialise npu_pe->tce32_table as we always use
+> -	 * dma_npu_ops which are nops.
+> -	 */
+> -	set_dma_ops(&npe->pdev->dev, &dma_npu_ops);
+> -}
+> -
+> -/*
+> - * Enables bypass mode on the NPU. The NPU only supports one
+> - * window per link, so bypass needs to be explicitly enabled or
+> - * disabled. Unlike for a PHB3 bypass and non-bypass modes can't be
+> - * active at the same time.
+> - */
+> -static int pnv_npu_dma_set_bypass(struct pnv_ioda_pe *npe)
+> -{
+> -	struct pnv_phb *phb = npe->phb;
+> -	int64_t rc = 0;
+> -	phys_addr_t top = memblock_end_of_DRAM();
+> -
+> -	if (phb->type != PNV_PHB_NPU_NVLINK || !npe->pdev)
+> -		return -EINVAL;
+> -
+> -	rc = pnv_npu_unset_window(npe, 0);
+> -	if (rc != OPAL_SUCCESS)
+> -		return rc;
+> -
+> -	/* Enable the bypass window */
+> -
+> -	top = roundup_pow_of_two(top);
+> -	dev_info(&npe->pdev->dev, "Enabling bypass for PE %x\n",
+> -			npe->pe_number);
+> -	rc = opal_pci_map_pe_dma_window_real(phb->opal_id,
+> -			npe->pe_number, npe->pe_number,
+> -			0 /* bypass base */, top);
+> -
+> -	if (rc == OPAL_SUCCESS)
+> -		pnv_pci_ioda2_tce_invalidate_entire(phb, false);
+> -
+> -	return rc;
+> -}
+> -
+> -void pnv_npu_try_dma_set_bypass(struct pci_dev *gpdev, bool bypass)
+> -{
+> -	int i;
+> -	struct pnv_phb *phb;
+> -	struct pci_dn *pdn;
+> -	struct pnv_ioda_pe *npe;
+> -	struct pci_dev *npdev;
+> -
+> -	for (i = 0; ; ++i) {
+> -		npdev = pnv_pci_get_npu_dev(gpdev, i);
+> -
+> -		if (!npdev)
+> -			break;
+> -
+> -		pdn = pci_get_pdn(npdev);
+> -		if (WARN_ON(!pdn || pdn->pe_number == IODA_INVALID_PE))
+> -			return;
+> -
+> -		phb = pci_bus_to_host(npdev->bus)->private_data;
+> -
+> -		/* We only do bypass if it's enabled on the linked device */
+> -		npe = &phb->ioda.pe_array[pdn->pe_number];
+> -
+> -		if (bypass) {
+> -			dev_info(&npdev->dev,
+> -					"Using 64-bit DMA iommu bypass\n");
+> -			pnv_npu_dma_set_bypass(npe);
+> -		} else {
+> -			dev_info(&npdev->dev, "Using 32-bit DMA via iommu\n");
+> -			pnv_npu_dma_set_32(npe);
+> -		}
+> -	}
+> -}
+> -
+> -/* Switch ownership from platform code to external user (e.g. VFIO) */
+> -void pnv_npu_take_ownership(struct pnv_ioda_pe *npe)
+> -{
+> -	struct pnv_phb *phb = npe->phb;
+> -	int64_t rc;
+> -
+> -	/*
+> -	 * Note: NPU has just a single TVE in the hardware which means that
+> -	 * while used by the kernel, it can have either 32bit window or
+> -	 * DMA bypass but never both. So we deconfigure 32bit window only
+> -	 * if it was enabled at the moment of ownership change.
+> -	 */
+> -	if (npe->table_group.tables[0]) {
+> -		pnv_npu_unset_window(npe, 0);
+> -		return;
+> -	}
+> -
+> -	/* Disable bypass */
+> -	rc = opal_pci_map_pe_dma_window_real(phb->opal_id,
+> -			npe->pe_number, npe->pe_number,
+> -			0 /* bypass base */, 0);
+> -	if (rc) {
+> -		pe_err(npe, "Failed to disable bypass, err %lld\n", rc);
+> -		return;
+> -	}
+> -	pnv_pci_ioda2_tce_invalidate_entire(npe->phb, false);
+> -}
+> -
+> -struct pnv_ioda_pe *pnv_pci_npu_setup_iommu(struct pnv_ioda_pe *npe)
+> -{
+> -	struct pnv_phb *phb = npe->phb;
+> -	struct pci_bus *pbus = phb->hose->bus;
+> -	struct pci_dev *npdev, *gpdev = NULL, *gptmp;
+> -	struct pnv_ioda_pe *gpe = get_gpu_pci_dev_and_pe(npe, &gpdev);
+> -
+> -	if (!gpe || !gpdev)
+> -		return NULL;
+> -
+> -	list_for_each_entry(npdev, &pbus->devices, bus_list) {
+> -		gptmp = pnv_pci_get_gpu_dev(npdev);
+> -
+> -		if (gptmp != gpdev)
+> -			continue;
+> -
+> -		pe_info(gpe, "Attached NPU %s\n", dev_name(&npdev->dev));
+> -		iommu_group_add_device(gpe->table_group.group, &npdev->dev);
+> -	}
+> -
+> -	return gpe;
+> -}
+> -
+> -/* Maximum number of nvlinks per npu */
+> -#define NV_MAX_LINKS 6
+> -
+> -/* Maximum index of npu2 hosts in the system. Always < NV_MAX_NPUS */
+> -static int max_npu2_index;
+> -
+> -struct npu_context {
+> -	struct mm_struct *mm;
+> -	struct pci_dev *npdev[NV_MAX_NPUS][NV_MAX_LINKS];
+> -	struct mmu_notifier mn;
+> -	struct kref kref;
+> -	bool nmmu_flush;
+> -
+> -	/* Callback to stop translation requests on a given GPU */
+> -	void (*release_cb)(struct npu_context *context, void *priv);
+> -
+> -	/*
+> -	 * Private pointer passed to the above callback for usage by
+> -	 * device drivers.
+> -	 */
+> -	void *priv;
+> -};
+> -
+> -struct mmio_atsd_reg {
+> -	struct npu *npu;
+> -	int reg;
+> -};
+> -
+> -/*
+> - * Find a free MMIO ATSD register and mark it in use. Return -ENOSPC
+> - * if none are available.
+> - */
+> -static int get_mmio_atsd_reg(struct npu *npu)
+> -{
+> -	int i;
+> -
+> -	for (i = 0; i < npu->mmio_atsd_count; i++) {
+> -		if (!test_bit(i, &npu->mmio_atsd_usage))
+> -			if (!test_and_set_bit_lock(i, &npu->mmio_atsd_usage))
+> -				return i;
+> -	}
+> -
+> -	return -ENOSPC;
+> -}
+> -
+> -static void put_mmio_atsd_reg(struct npu *npu, int reg)
+> -{
+> -	clear_bit_unlock(reg, &npu->mmio_atsd_usage);
+> -}
+> -
+> -/* MMIO ATSD register offsets */
+> -#define XTS_ATSD_LAUNCH 0
+> -#define XTS_ATSD_AVA    1
+> -#define XTS_ATSD_STAT   2
+> -
+> -static unsigned long get_atsd_launch_val(unsigned long pid, unsigned long psize)
+> -{
+> -	unsigned long launch = 0;
+> -
+> -	if (psize == MMU_PAGE_COUNT) {
+> -		/* IS set to invalidate entire matching PID */
+> -		launch |= PPC_BIT(12);
+> -	} else {
+> -		/* AP set to invalidate region of psize */
+> -		launch |= (u64)mmu_get_ap(psize) << PPC_BITLSHIFT(17);
+> -	}
+> -
+> -	/* PRS set to process-scoped */
+> -	launch |= PPC_BIT(13);
+> -
+> -	/* PID */
+> -	launch |= pid << PPC_BITLSHIFT(38);
+> -
+> -	/* Leave "No flush" (bit 39) 0 so every ATSD performs a flush */
+> -
+> -	return launch;
+> -}
+> -
+> -static void mmio_atsd_regs_write(struct mmio_atsd_reg
+> -			mmio_atsd_reg[NV_MAX_NPUS], unsigned long offset,
+> -			unsigned long val)
+> -{
+> -	struct npu *npu;
+> -	int i, reg;
+> -
+> -	for (i = 0; i <= max_npu2_index; i++) {
+> -		reg = mmio_atsd_reg[i].reg;
+> -		if (reg < 0)
+> -			continue;
+> -
+> -		npu = mmio_atsd_reg[i].npu;
+> -		__raw_writeq_be(val, npu->mmio_atsd_regs[reg] + offset);
+> -	}
+> -}
+> -
+> -static void mmio_invalidate_pid(struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS],
+> -				unsigned long pid)
+> -{
+> -	unsigned long launch = get_atsd_launch_val(pid, MMU_PAGE_COUNT);
+> -
+> -	/* Invalidating the entire process doesn't use a va */
+> -	mmio_atsd_regs_write(mmio_atsd_reg, XTS_ATSD_LAUNCH, launch);
+> -}
+> -
+> -static void mmio_invalidate_range(struct mmio_atsd_reg
+> -			mmio_atsd_reg[NV_MAX_NPUS], unsigned long pid,
+> -			unsigned long start, unsigned long psize)
+> -{
+> -	unsigned long launch = get_atsd_launch_val(pid, psize);
+> -
+> -	/* Write all VAs first */
+> -	mmio_atsd_regs_write(mmio_atsd_reg, XTS_ATSD_AVA, start);
+> -
+> -	/* Issue one barrier for all address writes */
+> -	eieio();
+> -
+> -	/* Launch */
+> -	mmio_atsd_regs_write(mmio_atsd_reg, XTS_ATSD_LAUNCH, launch);
+> -}
+> -
+> -#define mn_to_npu_context(x) container_of(x, struct npu_context, mn)
+> -
+> -static void mmio_invalidate_wait(
+> -	struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS])
+> -{
+> -	struct npu *npu;
+> -	int i, reg;
+> -
+> -	/* Wait for all invalidations to complete */
+> -	for (i = 0; i <= max_npu2_index; i++) {
+> -		if (mmio_atsd_reg[i].reg < 0)
+> -			continue;
+> -
+> -		/* Wait for completion */
+> -		npu = mmio_atsd_reg[i].npu;
+> -		reg = mmio_atsd_reg[i].reg;
+> -		while (__raw_readq(npu->mmio_atsd_regs[reg] + XTS_ATSD_STAT))
+> -			cpu_relax();
+> -	}
+> -}
+> -
+> -/*
+> - * Acquires all the address translation shootdown (ATSD) registers required to
+> - * launch an ATSD on all links this npu_context is active on.
+> - */
+> -static void acquire_atsd_reg(struct npu_context *npu_context,
+> -			struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS])
+> -{
+> -	int i, j;
+> -	struct npu *npu;
+> -	struct pci_dev *npdev;
+> -	struct pnv_phb *nphb;
+> -
+> -	for (i = 0; i <= max_npu2_index; i++) {
+> -		mmio_atsd_reg[i].reg = -1;
+> -		for (j = 0; j < NV_MAX_LINKS; j++) {
+> -			/*
+> -			 * There are no ordering requirements with respect to
+> -			 * the setup of struct npu_context, but to ensure
+> -			 * consistent behaviour we need to ensure npdev[][] is
+> -			 * only read once.
+> -			 */
+> -			npdev = READ_ONCE(npu_context->npdev[i][j]);
+> -			if (!npdev)
+> -				continue;
+> -
+> -			nphb = pci_bus_to_host(npdev->bus)->private_data;
+> -			npu = &nphb->npu;
+> -			mmio_atsd_reg[i].npu = npu;
+> -			mmio_atsd_reg[i].reg = get_mmio_atsd_reg(npu);
+> -			while (mmio_atsd_reg[i].reg < 0) {
+> -				mmio_atsd_reg[i].reg = get_mmio_atsd_reg(npu);
+> -				cpu_relax();
+> -			}
+> -			break;
+> -		}
+> -	}
+> -}
+> -
+> -/*
+> - * Release previously acquired ATSD registers. To avoid deadlocks the registers
+> - * must be released in the same order they were acquired above in
+> - * acquire_atsd_reg.
+> - */
+> -static void release_atsd_reg(struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS])
+> -{
+> -	int i;
+> -
+> -	for (i = 0; i <= max_npu2_index; i++) {
+> -		/*
+> -		 * We can't rely on npu_context->npdev[][] being the same here
+> -		 * as when acquire_atsd_reg() was called, hence we use the
+> -		 * values stored in mmio_atsd_reg during the acquire phase
+> -		 * rather than re-reading npdev[][].
+> -		 */
+> -		if (mmio_atsd_reg[i].reg < 0)
+> -			continue;
+> -
+> -		put_mmio_atsd_reg(mmio_atsd_reg[i].npu, mmio_atsd_reg[i].reg);
+> -	}
+> -}
+> -
+> -/*
+> - * Invalidate a virtual address range
+> - */
+> -static void mmio_invalidate(struct npu_context *npu_context,
+> -			unsigned long start, unsigned long size)
+> -{
+> -	struct mmio_atsd_reg mmio_atsd_reg[NV_MAX_NPUS];
+> -	unsigned long pid = npu_context->mm->context.id;
+> -	unsigned long atsd_start = 0;
+> -	unsigned long end = start + size - 1;
+> -	int atsd_psize = MMU_PAGE_COUNT;
+> -
+> -	/*
+> -	 * Convert the input range into one of the supported sizes. If the range
+> -	 * doesn't fit, use the next larger supported size. Invalidation latency
+> -	 * is high, so over-invalidation is preferred to issuing multiple
+> -	 * invalidates.
+> -	 *
+> -	 * A 4K page size isn't supported by NPU/GPU ATS, so that case is
+> -	 * ignored.
+> -	 */
+> -	if (size == SZ_64K) {
+> -		atsd_start = start;
+> -		atsd_psize = MMU_PAGE_64K;
+> -	} else if (ALIGN_DOWN(start, SZ_2M) == ALIGN_DOWN(end, SZ_2M)) {
+> -		atsd_start = ALIGN_DOWN(start, SZ_2M);
+> -		atsd_psize = MMU_PAGE_2M;
+> -	} else if (ALIGN_DOWN(start, SZ_1G) == ALIGN_DOWN(end, SZ_1G)) {
+> -		atsd_start = ALIGN_DOWN(start, SZ_1G);
+> -		atsd_psize = MMU_PAGE_1G;
+> -	}
+> -
+> -	if (npu_context->nmmu_flush)
+> -		/*
+> -		 * Unfortunately the nest mmu does not support flushing specific
+> -		 * addresses so we have to flush the whole mm once before
+> -		 * shooting down the GPU translation.
+> -		 */
+> -		flush_all_mm(npu_context->mm);
+> -
+> -	/*
+> -	 * Loop over all the NPUs this process is active on and launch
+> -	 * an invalidate.
+> -	 */
+> -	acquire_atsd_reg(npu_context, mmio_atsd_reg);
+> -
+> -	if (atsd_psize == MMU_PAGE_COUNT)
+> -		mmio_invalidate_pid(mmio_atsd_reg, pid);
+> -	else
+> -		mmio_invalidate_range(mmio_atsd_reg, pid, atsd_start,
+> -					atsd_psize);
+> -
+> -	mmio_invalidate_wait(mmio_atsd_reg);
+> -
+> -	/*
+> -	 * The GPU requires two flush ATSDs to ensure all entries have been
+> -	 * flushed. We use PID 0 as it will never be used for a process on the
+> -	 * GPU.
+> -	 */
+> -	mmio_invalidate_pid(mmio_atsd_reg, 0);
+> -	mmio_invalidate_wait(mmio_atsd_reg);
+> -	mmio_invalidate_pid(mmio_atsd_reg, 0);
+> -	mmio_invalidate_wait(mmio_atsd_reg);
+> -
+> -	release_atsd_reg(mmio_atsd_reg);
+> -}
+> -
+> -static void pnv_npu2_mn_release(struct mmu_notifier *mn,
+> -				struct mm_struct *mm)
+> -{
+> -	struct npu_context *npu_context = mn_to_npu_context(mn);
+> -
+> -	/* Call into device driver to stop requests to the NMMU */
+> -	if (npu_context->release_cb)
+> -		npu_context->release_cb(npu_context, npu_context->priv);
+> -
+> -	/*
+> -	 * There should be no more translation requests for this PID, but we
+> -	 * need to ensure any entries for it are removed from the TLB.
+> -	 */
+> -	mmio_invalidate(npu_context, 0, ~0UL);
+> -}
+> -
+> -static void pnv_npu2_mn_change_pte(struct mmu_notifier *mn,
+> -				struct mm_struct *mm,
+> -				unsigned long address,
+> -				pte_t pte)
+> -{
+> -	struct npu_context *npu_context = mn_to_npu_context(mn);
+> -	mmio_invalidate(npu_context, address, PAGE_SIZE);
+> -}
+> -
+> -static void pnv_npu2_mn_invalidate_range(struct mmu_notifier *mn,
+> -					struct mm_struct *mm,
+> -					unsigned long start, unsigned long end)
+> -{
+> -	struct npu_context *npu_context = mn_to_npu_context(mn);
+> -	mmio_invalidate(npu_context, start, end - start);
+> -}
+> -
+> -static const struct mmu_notifier_ops nv_nmmu_notifier_ops = {
+> -	.release = pnv_npu2_mn_release,
+> -	.change_pte = pnv_npu2_mn_change_pte,
+> -	.invalidate_range = pnv_npu2_mn_invalidate_range,
+> -};
+> -
+> -/*
+> - * Call into OPAL to setup the nmmu context for the current task in
+> - * the NPU. This must be called to setup the context tables before the
+> - * GPU issues ATRs. pdev should be a pointed to PCIe GPU device.
+> - *
+> - * A release callback should be registered to allow a device driver to
+> - * be notified that it should not launch any new translation requests
+> - * as the final TLB invalidate is about to occur.
+> - *
+> - * Returns an error if there no contexts are currently available or a
+> - * npu_context which should be passed to pnv_npu2_handle_fault().
+> - *
+> - * mmap_sem must be held in write mode and must not be called from interrupt
+> - * context.
+> - */
+> -struct npu_context *pnv_npu2_init_context(struct pci_dev *gpdev,
+> -			unsigned long flags,
+> -			void (*cb)(struct npu_context *, void *),
+> -			void *priv)
 
-cheers
+> -{
+> -	int rc;
+> -	u32 nvlink_index;
+> -	struct device_node *nvlink_dn;
+> -	struct mm_struct *mm = current->mm;
+> -	struct pnv_phb *nphb;
+> -	struct npu *npu;
+> -	struct npu_context *npu_context;
+> -
+> -	/*
+> -	 * At present we don't support GPUs connected to multiple NPUs and I'm
+> -	 * not sure the hardware does either.
+> -	 */
+> -	struct pci_dev *npdev = pnv_pci_get_npu_dev(gpdev, 0);
+> -
+> -	if (!firmware_has_feature(FW_FEATURE_OPAL))
+> -		return ERR_PTR(-ENODEV);
+> -
+> -	if (!npdev)
+> -		/* No nvlink associated with this GPU device */
+> -		return ERR_PTR(-ENODEV);
+> -
+> -	nvlink_dn = of_parse_phandle(npdev->dev.of_node, "ibm,nvlink", 0);
+> -	if (WARN_ON(of_property_read_u32(nvlink_dn, "ibm,npu-link-index",
+> -							&nvlink_index)))
+> -		return ERR_PTR(-ENODEV);
+> -
+> -	if (!mm || mm->context.id == 0) {
+> -		/*
+> -		 * Kernel thread contexts are not supported and context id 0 is
+> -		 * reserved on the GPU.
+> -		 */
+> -		return ERR_PTR(-EINVAL);
+> -	}
+> -
+> -	nphb = pci_bus_to_host(npdev->bus)->private_data;
+> -	npu = &nphb->npu;
+> -
+> -	/*
+> -	 * Setup the NPU context table for a particular GPU. These need to be
+> -	 * per-GPU as we need the tables to filter ATSDs when there are no
+> -	 * active contexts on a particular GPU. It is safe for these to be
+> -	 * called concurrently with destroy as the OPAL call takes appropriate
+> -	 * locks and refcounts on init/destroy.
+> -	 */
+> -	rc = opal_npu_init_context(nphb->opal_id, mm->context.id, flags,
+> -				PCI_DEVID(gpdev->bus->number, gpdev->devfn));
+> -	if (rc < 0)
+> -		return ERR_PTR(-ENOSPC);
+> -
+> -	/*
+> -	 * We store the npu pci device so we can more easily get at the
+> -	 * associated npus.
+> -	 */
+> -	spin_lock(&npu_context_lock);
+> -	npu_context = mm->context.npu_context;
+> -	if (npu_context) {
+> -		if (npu_context->release_cb != cb ||
+> -			npu_context->priv != priv) {
+> -			spin_unlock(&npu_context_lock);
+> -			opal_npu_destroy_context(nphb->opal_id, mm->context.id,
+> -						PCI_DEVID(gpdev->bus->number,
+> -							gpdev->devfn));
+> -			return ERR_PTR(-EINVAL);
+> -		}
+> -
+> -		WARN_ON(!kref_get_unless_zero(&npu_context->kref));
+> -	}
+> -	spin_unlock(&npu_context_lock);
+> -
+> -	if (!npu_context) {
+> -		/*
+> -		 * We can set up these fields without holding the
+> -		 * npu_context_lock as the npu_context hasn't been returned to
+> -		 * the caller meaning it can't be destroyed. Parallel allocation
+> -		 * is protected against by mmap_sem.
+> -		 */
+> -		rc = -ENOMEM;
+> -		npu_context = kzalloc(sizeof(struct npu_context), GFP_KERNEL);
+> -		if (npu_context) {
+> -			kref_init(&npu_context->kref);
+> -			npu_context->mm = mm;
+> -			npu_context->mn.ops = &nv_nmmu_notifier_ops;
+> -			rc = __mmu_notifier_register(&npu_context->mn, mm);
+> -		}
+> -
+> -		if (rc) {
+> -			kfree(npu_context);
+> -			opal_npu_destroy_context(nphb->opal_id, mm->context.id,
+> -					PCI_DEVID(gpdev->bus->number,
+> -						gpdev->devfn));
+> -			return ERR_PTR(rc);
+> -		}
+> -
+> -		mm->context.npu_context = npu_context;
+> -	}
+> -
+> -	npu_context->release_cb = cb;
+> -	npu_context->priv = priv;
+> -
+> -	/*
+> -	 * npdev is a pci_dev pointer setup by the PCI code. We assign it to
+> -	 * npdev[][] to indicate to the mmu notifiers that an invalidation
+> -	 * should also be sent over this nvlink. The notifiers don't use any
+> -	 * other fields in npu_context, so we just need to ensure that when they
+> -	 * deference npu_context->npdev[][] it is either a valid pointer or
+> -	 * NULL.
+> -	 */
+> -	WRITE_ONCE(npu_context->npdev[npu->index][nvlink_index], npdev);
+> -
+> -	if (!nphb->npu.nmmu_flush) {
+> -		/*
+> -		 * If we're not explicitly flushing ourselves we need to mark
+> -		 * the thread for global flushes
+> -		 */
+> -		npu_context->nmmu_flush = false;
+> -		mm_context_add_copro(mm);
+> -	} else
+> -		npu_context->nmmu_flush = true;
+> -
+> -	return npu_context;
+> -}
+> -EXPORT_SYMBOL(pnv_npu2_init_context);
+> -
+> -static void pnv_npu2_release_context(struct kref *kref)
+> -{
+> -	struct npu_context *npu_context =
+> -		container_of(kref, struct npu_context, kref);
+> -
+> -	if (!npu_context->nmmu_flush)
+> -		mm_context_remove_copro(npu_context->mm);
+> -
+> -	npu_context->mm->context.npu_context = NULL;
+> -}
+> -
+> -/*
+> - * Destroy a context on the given GPU. May free the npu_context if it is no
+> - * longer active on any GPUs. Must not be called from interrupt context.
+> - */
+> -void pnv_npu2_destroy_context(struct npu_context *npu_context,
+> -			struct pci_dev *gpdev)
+> -{
+> -	int removed;
+> -	struct pnv_phb *nphb;
+> -	struct npu *npu;
+> -	struct pci_dev *npdev = pnv_pci_get_npu_dev(gpdev, 0);
+> -	struct device_node *nvlink_dn;
+> -	u32 nvlink_index;
+> -
+> -	if (WARN_ON(!npdev))
+> -		return;
+> -
+> -	if (!firmware_has_feature(FW_FEATURE_OPAL))
+> -		return;
+> -
+> -	nphb = pci_bus_to_host(npdev->bus)->private_data;
+> -	npu = &nphb->npu;
+> -	nvlink_dn = of_parse_phandle(npdev->dev.of_node, "ibm,nvlink", 0);
+> -	if (WARN_ON(of_property_read_u32(nvlink_dn, "ibm,npu-link-index",
+> -							&nvlink_index)))
+> -		return;
+> -	WRITE_ONCE(npu_context->npdev[npu->index][nvlink_index], NULL);
+> -	opal_npu_destroy_context(nphb->opal_id, npu_context->mm->context.id,
+> -				PCI_DEVID(gpdev->bus->number, gpdev->devfn));
+> -	spin_lock(&npu_context_lock);
+> -	removed = kref_put(&npu_context->kref, pnv_npu2_release_context);
+> -	spin_unlock(&npu_context_lock);
+> -
+> -	/*
+> -	 * We need to do this outside of pnv_npu2_release_context so that it is
+> -	 * outside the spinlock as mmu_notifier_destroy uses SRCU.
+> -	 */
+> -	if (removed) {
+> -		mmu_notifier_unregister(&npu_context->mn,
+> -					npu_context->mm);
+> -
+> -		kfree(npu_context);
+> -	}
+> -
+> -}
+> -EXPORT_SYMBOL(pnv_npu2_destroy_context);
+> -
+> -/*
+> - * Assumes mmap_sem is held for the contexts associated mm.
+> - */
+> -int pnv_npu2_handle_fault(struct npu_context *context, uintptr_t *ea,
+> -			unsigned long *flags, unsigned long *status, int count)
+> -{
+> -	u64 rc = 0, result = 0;
+> -	int i, is_write;
+> -	struct page *page[1];
+> -
+> -	/* mmap_sem should be held so the struct_mm must be present */
+> -	struct mm_struct *mm = context->mm;
+> -
+> -	if (!firmware_has_feature(FW_FEATURE_OPAL))
+> -		return -ENODEV;
+> -
+> -	WARN_ON(!rwsem_is_locked(&mm->mmap_sem));
+> -
+> -	for (i = 0; i < count; i++) {
+> -		is_write = flags[i] & NPU2_WRITE;
+> -		rc = get_user_pages_remote(NULL, mm, ea[i], 1,
+> -					is_write ? FOLL_WRITE : 0,
+> -					page, NULL, NULL);
+> -
+> -		/*
+> -		 * To support virtualised environments we will have to do an
+> -		 * access to the page to ensure it gets faulted into the
+> -		 * hypervisor. For the moment virtualisation is not supported in
+> -		 * other areas so leave the access out.
+> -		 */
+> -		if (rc != 1) {
+> -			status[i] = rc;
+> -			result = -EFAULT;
+> -			continue;
+> -		}
+> -
+> -		status[i] = 0;
+> -		put_page(page[0]);
+> -	}
+> -
+> -	return result;
+> -}
+> -EXPORT_SYMBOL(pnv_npu2_handle_fault);
+> -
+> -int pnv_npu2_init(struct pnv_phb *phb)
+> -{
+> -	unsigned int i;
+> -	u64 mmio_atsd;
+> -	struct device_node *dn;
+> -	struct pci_dev *gpdev;
+> -	static int npu_index;
+> -	uint64_t rc = 0;
+> -
+> -	phb->npu.nmmu_flush =
+> -		of_property_read_bool(phb->hose->dn, "ibm,nmmu-flush");
+> -	for_each_child_of_node(phb->hose->dn, dn) {
+> -		gpdev = pnv_pci_get_gpu_dev(get_pci_dev(dn));
+> -		if (gpdev) {
+> -			rc = opal_npu_map_lpar(phb->opal_id,
+> -				PCI_DEVID(gpdev->bus->number, gpdev->devfn),
+> -				0, 0);
+
+I heavily hacked on these (draft):
+https://patchwork.ozlabs.org/project/kvm-ppc/list/?series=70791
+
+and the result is going to be used for VFIO purposes (draft too):
+https://patchwork.ozlabs.org/project/kvm-ppc/list/?series=70793
+
+Other bits can go away from npu-dma but I still need some to make
+KVM+VFIO work for GPUs, this is without any vendor driver on the host
+side whatsoever.
+
+
+
+> -			if (rc)
+> -				dev_err(&gpdev->dev,
+> -					"Error %lld mapping device to LPAR\n",
+> -					rc);
+> -		}
+> -	}
+> -
+> -	for (i = 0; !of_property_read_u64_index(phb->hose->dn, "ibm,mmio-atsd",
+> -							i, &mmio_atsd); i++)
+> -		phb->npu.mmio_atsd_regs[i] = ioremap(mmio_atsd, 32);
+> -
+> -	pr_info("NPU%lld: Found %d MMIO ATSD registers", phb->opal_id, i);
+> -	phb->npu.mmio_atsd_count = i;
+> -	phb->npu.mmio_atsd_usage = 0;
+> -	npu_index++;
+> -	if (WARN_ON(npu_index >= NV_MAX_NPUS))
+> -		return -ENOSPC;
+> -	max_npu2_index = npu_index;
+> -	phb->npu.index = npu_index;
+> -
+> -	return 0;
+> -}
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index cde710297a4e..f480e3fc9ebb 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -1203,75 +1203,6 @@ static struct pnv_ioda_pe *pnv_ioda_setup_bus_PE(struct pci_bus *bus, bool all)
+>  	return pe;
+>  }
+>  
+> -static struct pnv_ioda_pe *pnv_ioda_setup_npu_PE(struct pci_dev *npu_pdev)
+> -{
+> -	int pe_num, found_pe = false, rc;
+> -	long rid;
+> -	struct pnv_ioda_pe *pe;
+> -	struct pci_dev *gpu_pdev;
+> -	struct pci_dn *npu_pdn;
+> -	struct pci_controller *hose = pci_bus_to_host(npu_pdev->bus);
+> -	struct pnv_phb *phb = hose->private_data;
+> -
+> -	/*
+> -	 * Due to a hardware errata PE#0 on the NPU is reserved for
+> -	 * error handling. This means we only have three PEs remaining
+> -	 * which need to be assigned to four links, implying some
+> -	 * links must share PEs.
+> -	 *
+> -	 * To achieve this we assign PEs such that NPUs linking the
+> -	 * same GPU get assigned the same PE.
+> -	 */
+> -	gpu_pdev = pnv_pci_get_gpu_dev(npu_pdev);
+> -	for (pe_num = 0; pe_num < phb->ioda.total_pe_num; pe_num++) {
+> -		pe = &phb->ioda.pe_array[pe_num];
+> -		if (!pe->pdev)
+> -			continue;
+> -
+> -		if (pnv_pci_get_gpu_dev(pe->pdev) == gpu_pdev) {
+> -			/*
+> -			 * This device has the same peer GPU so should
+> -			 * be assigned the same PE as the existing
+> -			 * peer NPU.
+> -			 */
+> -			dev_info(&npu_pdev->dev,
+> -				"Associating to existing PE %x\n", pe_num);
+> -			pci_dev_get(npu_pdev);
+> -			npu_pdn = pci_get_pdn(npu_pdev);
+> -			rid = npu_pdev->bus->number << 8 | npu_pdn->devfn;
+> -			npu_pdn->pe_number = pe_num;
+> -			phb->ioda.pe_rmap[rid] = pe->pe_number;
+> -
+> -			/* Map the PE to this link */
+> -			rc = opal_pci_set_pe(phb->opal_id, pe_num, rid,
+> -					OpalPciBusAll,
+> -					OPAL_COMPARE_RID_DEVICE_NUMBER,
+> -					OPAL_COMPARE_RID_FUNCTION_NUMBER,
+> -					OPAL_MAP_PE);
+> -			WARN_ON(rc != OPAL_SUCCESS);
+> -			found_pe = true;
+> -			break;
+> -		}
+> -	}
+> -
+> -	if (!found_pe)
+> -		/*
+> -		 * Could not find an existing PE so allocate a new
+> -		 * one.
+> -		 */
+> -		return pnv_ioda_setup_dev_PE(npu_pdev);
+> -	else
+> -		return pe;
+> -}
+> -
+> -static void pnv_ioda_setup_npu_PEs(struct pci_bus *bus)
+> -{
+> -	struct pci_dev *pdev;
+> -
+> -	list_for_each_entry(pdev, &bus->devices, bus_list)
+> -		pnv_ioda_setup_npu_PE(pdev);
+> -}
+> -
+>  static void pnv_pci_ioda_setup_PEs(void)
+>  {
+>  	struct pci_controller *hose, *tmp;
+> @@ -1281,13 +1212,6 @@ static void pnv_pci_ioda_setup_PEs(void)
+>  
+>  	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
+>  		phb = hose->private_data;
+> -		if (phb->type == PNV_PHB_NPU_NVLINK) {
+> -			/* PE#0 is needed for error reporting */
+> -			pnv_ioda_reserve_pe(phb, 0);
+> -			pnv_ioda_setup_npu_PEs(hose->bus);
+> -			if (phb->model == PNV_PHB_MODEL_NPU2)
+> -				pnv_npu2_init(phb);
+> -		}
+>  		if (phb->type == PNV_PHB_NPU_OCAPI) {
+>  			bus = hose->bus;
+>  			list_for_each_entry(pdev, &bus->devices, bus_list)
+> @@ -1895,9 +1819,6 @@ static int pnv_pci_ioda_dma_set_mask(struct pci_dev *pdev, u64 dma_mask)
+>  	}
+>  	*pdev->dev.dma_mask = dma_mask;
+>  
+> -	/* Update peer npu devices */
+> -	pnv_npu_try_dma_set_bypass(pdev, bypass);
+> -
+>  	return 0;
+>  }
+>  
+> @@ -2143,14 +2064,6 @@ static void pnv_pci_ioda2_tce_invalidate(struct iommu_table *tbl,
+>  	}
+>  }
+>  
+> -void pnv_pci_ioda2_tce_invalidate_entire(struct pnv_phb *phb, bool rm)
+> -{
+> -	if (phb->model == PNV_PHB_MODEL_NPU || phb->model == PNV_PHB_MODEL_PHB3)
+> -		pnv_pci_phb3_tce_invalidate_entire(phb, rm);
+> -	else
+> -		opal_pci_tce_kill(phb->opal_id, OPAL_PCI_TCE_KILL, 0, 0, 0, 0);
+> -}
+> -
+>  static int pnv_ioda2_tce_build(struct iommu_table *tbl, long index,
+>  		long npages, unsigned long uaddr,
+>  		enum dma_data_direction direction,
+> @@ -2639,137 +2552,6 @@ static struct iommu_table_group_ops pnv_pci_ioda2_ops = {
+>  	.take_ownership = pnv_ioda2_take_ownership,
+>  	.release_ownership = pnv_ioda2_release_ownership,
+>  };
+> -
+> -static int gpe_table_group_to_npe_cb(struct device *dev, void *opaque)
+> -{
+> -	struct pci_controller *hose;
+> -	struct pnv_phb *phb;
+> -	struct pnv_ioda_pe **ptmppe = opaque;
+> -	struct pci_dev *pdev = container_of(dev, struct pci_dev, dev);
+> -	struct pci_dn *pdn = pci_get_pdn(pdev);
+> -
+> -	if (!pdn || pdn->pe_number == IODA_INVALID_PE)
+> -		return 0;
+> -
+> -	hose = pci_bus_to_host(pdev->bus);
+> -	phb = hose->private_data;
+> -	if (phb->type != PNV_PHB_NPU_NVLINK)
+> -		return 0;
+> -
+> -	*ptmppe = &phb->ioda.pe_array[pdn->pe_number];
+> -
+> -	return 1;
+> -}
+> -
+> -/*
+> - * This returns PE of associated NPU.
+> - * This assumes that NPU is in the same IOMMU group with GPU and there is
+> - * no other PEs.
+> - */
+> -static struct pnv_ioda_pe *gpe_table_group_to_npe(
+> -		struct iommu_table_group *table_group)
+> -{
+> -	struct pnv_ioda_pe *npe = NULL;
+> -	int ret = iommu_group_for_each_dev(table_group->group, &npe,
+> -			gpe_table_group_to_npe_cb);
+> -
+> -	BUG_ON(!ret || !npe);
+> -
+> -	return npe;
+> -}
+> -
+> -static long pnv_pci_ioda2_npu_set_window(struct iommu_table_group *table_group,
+> -		int num, struct iommu_table *tbl)
+> -{
+> -	struct pnv_ioda_pe *npe = gpe_table_group_to_npe(table_group);
+> -	int num2 = (num == 0) ? 1 : 0;
+> -	long ret = pnv_pci_ioda2_set_window(table_group, num, tbl);
+> -
+> -	if (ret)
+> -		return ret;
+> -
+> -	if (table_group->tables[num2])
+> -		pnv_npu_unset_window(npe, num2);
+> -
+> -	ret = pnv_npu_set_window(npe, num, tbl);
+> -	if (ret) {
+> -		pnv_pci_ioda2_unset_window(table_group, num);
+> -		if (table_group->tables[num2])
+> -			pnv_npu_set_window(npe, num2,
+> -					table_group->tables[num2]);
+> -	}
+> -
+> -	return ret;
+> -}
+> -
+> -static long pnv_pci_ioda2_npu_unset_window(
+> -		struct iommu_table_group *table_group,
+> -		int num)
+> -{
+> -	struct pnv_ioda_pe *npe = gpe_table_group_to_npe(table_group);
+> -	int num2 = (num == 0) ? 1 : 0;
+> -	long ret = pnv_pci_ioda2_unset_window(table_group, num);
+> -
+> -	if (ret)
+> -		return ret;
+> -
+> -	if (!npe->table_group.tables[num])
+> -		return 0;
+> -
+> -	ret = pnv_npu_unset_window(npe, num);
+> -	if (ret)
+> -		return ret;
+> -
+> -	if (table_group->tables[num2])
+> -		ret = pnv_npu_set_window(npe, num2, table_group->tables[num2]);
+> -
+> -	return ret;
+> -}
+> -
+> -static void pnv_ioda2_npu_take_ownership(struct iommu_table_group *table_group)
+> -{
+> -	/*
+> -	 * Detach NPU first as pnv_ioda2_take_ownership() will destroy
+> -	 * the iommu_table if 32bit DMA is enabled.
+> -	 */
+> -	pnv_npu_take_ownership(gpe_table_group_to_npe(table_group));
+> -	pnv_ioda2_take_ownership(table_group);
+> -}
+> -
+> -static struct iommu_table_group_ops pnv_pci_ioda2_npu_ops = {
+> -	.get_table_size = pnv_pci_ioda2_get_table_size,
+> -	.create_table = pnv_pci_ioda2_create_table_userspace,
+> -	.set_window = pnv_pci_ioda2_npu_set_window,
+> -	.unset_window = pnv_pci_ioda2_npu_unset_window,
+> -	.take_ownership = pnv_ioda2_npu_take_ownership,
+> -	.release_ownership = pnv_ioda2_release_ownership,
+
+
+These are called from the VFIO SPAPR TCE IOMMU subdriver when certain
+GPUs are passed through with VFIO:
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/vfio/vfio_iommu_spapr_tce.c
+
+
+
+> -};
+> -
+> -static void pnv_pci_ioda_setup_iommu_api(void)
+> -{
+> -	struct pci_controller *hose, *tmp;
+> -	struct pnv_phb *phb;
+> -	struct pnv_ioda_pe *pe, *gpe;
+> -
+> -	/*
+> -	 * Now we have all PHBs discovered, time to add NPU devices to
+> -	 * the corresponding IOMMU groups.
+> -	 */
+> -	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
+> -		phb = hose->private_data;
+> -
+> -		if (phb->type != PNV_PHB_NPU_NVLINK)
+> -			continue;
+> -
+> -		list_for_each_entry(pe, &phb->ioda.pe_list, list) {
+> -			gpe = pnv_pci_npu_setup_iommu(pe);
+> -			if (gpe)
+> -				gpe->table_group.ops = &pnv_pci_ioda2_npu_ops;
+> -		}
+> -	}
+> -}
+> -#else /* !CONFIG_IOMMU_API */
+> -static void pnv_pci_ioda_setup_iommu_api(void) { };
+>  #endif
+>  
+>  static unsigned long pnv_ioda_parse_tce_sizes(struct pnv_phb *phb)
+> @@ -3266,7 +3048,6 @@ static void pnv_pci_enable_bridges(void)
+>  static void pnv_pci_ioda_fixup(void)
+>  {
+>  	pnv_pci_ioda_setup_PEs();
+> -	pnv_pci_ioda_setup_iommu_api();
+>  	pnv_pci_ioda_create_dbgfs();
+>  
+>  	pnv_pci_enable_bridges();
+> @@ -3713,27 +3494,6 @@ static const struct pci_controller_ops pnv_pci_ioda_controller_ops = {
+>  	.shutdown		= pnv_pci_ioda_shutdown,
+>  };
+>  
+> -static int pnv_npu_dma_set_mask(struct pci_dev *npdev, u64 dma_mask)
+> -{
+> -	dev_err_once(&npdev->dev,
+> -			"%s operation unsupported for NVLink devices\n",
+> -			__func__);
+> -	return -EPERM;
+> -}
+> -
+> -static const struct pci_controller_ops pnv_npu_ioda_controller_ops = {
+> -	.dma_dev_setup		= pnv_pci_dma_dev_setup,
+> -#ifdef CONFIG_PCI_MSI
+> -	.setup_msi_irqs		= pnv_setup_msi_irqs,
+> -	.teardown_msi_irqs	= pnv_teardown_msi_irqs,
+> -#endif
+> -	.enable_device_hook	= pnv_pci_enable_device_hook,
+> -	.window_alignment	= pnv_pci_window_alignment,
+> -	.reset_secondary_bus	= pnv_pci_reset_secondary_bus,
+> -	.dma_set_mask		= pnv_npu_dma_set_mask,
+> -	.shutdown		= pnv_pci_ioda_shutdown,
+> -};
+> -
+>  static const struct pci_controller_ops pnv_npu_ocapi_ioda_controller_ops = {
+>  	.enable_device_hook	= pnv_pci_enable_device_hook,
+>  	.window_alignment	= pnv_pci_window_alignment,
+> @@ -3955,9 +3715,6 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+>  	ppc_md.pcibios_fixup = pnv_pci_ioda_fixup;
+>  
+>  	switch (phb->type) {
+> -	case PNV_PHB_NPU_NVLINK:
+> -		hose->controller_ops = pnv_npu_ioda_controller_ops;
+> -		break;
+>  	case PNV_PHB_NPU_OCAPI:
+>  		hose->controller_ops = pnv_npu_ocapi_ioda_controller_ops;
+>  		break;
+> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+> index 8b37b28e3831..54f2935b7ac5 100644
+> --- a/arch/powerpc/platforms/powernv/pci.h
+> +++ b/arch/powerpc/platforms/powernv/pci.h
+> @@ -231,17 +231,6 @@ extern void pe_level_printk(const struct pnv_ioda_pe *pe, const char *level,
+>  #define pe_info(pe, fmt, ...)					\
+>  	pe_level_printk(pe, KERN_INFO, fmt, ##__VA_ARGS__)
+>  
+> -/* Nvlink functions */
+> -extern void pnv_npu_try_dma_set_bypass(struct pci_dev *gpdev, bool bypass);
+> -extern void pnv_pci_ioda2_tce_invalidate_entire(struct pnv_phb *phb, bool rm);
+> -extern struct pnv_ioda_pe *pnv_pci_npu_setup_iommu(struct pnv_ioda_pe *npe);
+> -extern long pnv_npu_set_window(struct pnv_ioda_pe *npe, int num,
+> -		struct iommu_table *tbl);
+> -extern long pnv_npu_unset_window(struct pnv_ioda_pe *npe, int num);
+> -extern void pnv_npu_take_ownership(struct pnv_ioda_pe *npe);
+> -extern void pnv_npu_release_ownership(struct pnv_ioda_pe *npe);
+> -extern int pnv_npu2_init(struct pnv_phb *phb);
+> -
+>  /* pci-ioda-tce.c */
+>  #define POWERNV_IOMMU_DEFAULT_LEVELS	1
+>  #define POWERNV_IOMMU_MAX_LEVELS	5
+> 
+
+
+-- 
+Alexey
