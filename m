@@ -2,83 +2,122 @@ Return-Path: <SRS0=OEx3=NM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,
-	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.8 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,
+	USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E6A16C6786F
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 17:30:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 42A24C0044C
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 17:57:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6B7DA205F4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 17:30:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B192A2064C
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 17:57:31 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="gWLRh4r6"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6B7DA205F4
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	dkim=pass (1024-bit key) header.d=wavesemi.onmicrosoft.com header.i=@wavesemi.onmicrosoft.com header.b="f/a6uHcT"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B192A2064C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=mips.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42mBzq2RS0zF3NM
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Nov 2018 04:30:15 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42mCbF3l5BzF3P0
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Nov 2018 04:57:29 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=mips.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="gWLRh4r6";
+	dkim=pass (1024-bit key; unprotected) header.d=wavesemi.onmicrosoft.com header.i=@wavesemi.onmicrosoft.com header.b="f/a6uHcT";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=infradead.org
- (client-ip=2001:8b0:10b:1231::1; helo=merlin.infradead.org;
- envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
+ spf=permerror (mailfrom) smtp.mailfrom=wavecomp.com
+ (client-ip=40.107.69.128; helo=nam04-co1-obe.outbound.protection.outlook.com;
+ envelope-from=pburton@wavecomp.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="gWLRh4r6"; dkim-atps=neutral
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:8b0:10b:1231::1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=mips.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=wavesemi.onmicrosoft.com
+ header.i=@wavesemi.onmicrosoft.com header.b="f/a6uHcT"; 
+ dkim-atps=neutral
+Received: from NAM04-CO1-obe.outbound.protection.outlook.com
+ (mail-eopbgr690128.outbound.protection.outlook.com [40.107.69.128])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42mBxF1xVQzF3H4
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Nov 2018 04:28:01 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=merlin.20170209; h=In-Reply-To:Content-Type:MIME-Version:
- References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=cqmmiMgCoNcYZQd3PjTzf7yi7hw7o8SwAHEWFTCrXl8=; b=gWLRh4r6aXQzNSHXyEu6rBCZ0
- CXntVUXtJM7/5EOPwODwlXeSL7EmyL0qVWbo1al8RQrIRBjiboIjqi1FRwPHUki+FEub2DgMCN16q
- qQJaNWTsghoRMRDX0mBRay5LsKTKLlz6KH0pNTYOt3kVNhGjD4gcDjSzhQlnVMO7RqvtddOHMAcgX
- F5wImHGmImAKF8mI96vG+8qR0gVOdYlCWxwzkuxlkePVLDG9x+donUW01Scn0HYp5Vwwobmi3G5YW
- 40rP5Rj7NmuIJaVbrW1E0pLR+BS3THdg2CScMj7zCN/sGDRUUBuZ9BCNVRVhHd43UyIqAwZg30xnZ
- NFI5GOftA==;
-Received: from j217100.upc-j.chello.nl ([24.132.217.100]
- helo=hirez.programming.kicks-ass.net)
- by merlin.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
- id 1gIGkx-0005xd-BU; Thu, 01 Nov 2018 17:27:43 +0000
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
- id 6E0512029F9FF; Thu,  1 Nov 2018 18:27:39 +0100 (CET)
-Date: Thu, 1 Nov 2018 18:27:39 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: Eric Dumazet <eric.dumazet@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42mCXG3dt0zF3Nj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Nov 2018 04:54:54 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=wavesemi.onmicrosoft.com; s=selector1-wavecomp-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=hcYtdtReI1luzarTOcV7r9lYj2mt5hItlg686A8e6Ik=;
+ b=f/a6uHcT7hw0LMehsmd9xa7A4EWCO+FSN7TFm3GlIOEA6ijVV3ShbaF/Ke8mfdtOWhCkkQjHoEhy9occ8FAXPI2DOxI5UdpJeWr/bNE9peJEIRI45RBGF79nFPrSPGQKa85gUUiy7SrIl1N8NK5XY4en0zUv3MQ9yoXt56Shq1s=
+Received: from MWHSPR00MB117.namprd22.prod.outlook.com (10.175.52.23) by
+ MWHPR2201MB1325.namprd22.prod.outlook.com (10.174.162.140) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.1273.25; Thu, 1 Nov 2018 17:54:50 +0000
+Received: from MWHSPR00MB117.namprd22.prod.outlook.com
+ ([fe80::b95a:a3f9:be06:b045]) by MWHSPR00MB117.namprd22.prod.outlook.com
+ ([fe80::b95a:a3f9:be06:b045%2]) with mapi id 15.20.1294.024; Thu, 1 Nov 2018
+ 17:54:50 +0000
+From: Paul Burton <paul.burton@mips.com>
+To: Trond Myklebust <trondmy@hammerspace.com>
 Subject: Re: [RFC PATCH] lib: Introduce generic __cmpxchg_u64() and use it
  where needed
-Message-ID: <20181101172739.GA3196@hirez.programming.kicks-ass.net>
-References: <20181031213240.zhh7dfcm47ucuyfl@pburton-laptop>
+Thread-Topic: [RFC PATCH] lib: Introduce generic __cmpxchg_u64() and use it
+ where needed
+Thread-Index: AQHUcVNC5jTXGaDPOkOnkxlkE4DPdqU539kAgAAIcYCAABkQgIAADI6AgAEnZwA=
+Date: Thu, 1 Nov 2018 17:54:50 +0000
+Message-ID: <20181101175448.sld6krwbs5n7ovak@pburton-laptop>
+References: <1541015538-11382-1-git-send-email-linux@roeck-us.net>
+ <20181031213240.zhh7dfcm47ucuyfl@pburton-laptop>
  <20181031220253.GA15505@roeck-us.net>
  <20181031233235.qbedw3pinxcuk7me@pburton-laptop>
  <4e2438a23d2edf03368950a72ec058d1d299c32e.camel@hammerspace.com>
- <20181101131846.biyilr2msonljmij@lakrids.cambridge.arm.com>
- <20181101145926.GE3178@hirez.programming.kicks-ass.net>
- <f38e272f7a96e983549e4281aa9fd02833a4277a.camel@hammerspace.com>
- <20181101163212.GF3159@hirez.programming.kicks-ass.net>
- <b0160f4b-b996-b0ee-405a-3d5f1866272e@gmail.com>
- <20181101171432.GH3178@hirez.programming.kicks-ass.net>
+In-Reply-To: <4e2438a23d2edf03368950a72ec058d1d299c32e.camel@hammerspace.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-clientproxiedby: MWHPR2201CA0004.namprd22.prod.outlook.com
+ (2603:10b6:301:28::17) To MWHSPR00MB117.namprd22.prod.outlook.com
+ (2603:10b6:300:10c::23)
+user-agent: NeoMutt/20180716
+x-ms-exchange-messagesentrepresentingtype: 1
+x-originating-ip: [4.16.204.77]
+x-ms-publictraffictype: Email
+x-microsoft-exchange-diagnostics: 1; MWHPR2201MB1325;
+ 6:sphfPo3E+yvokQfm9L2JT3epAssx6+GoXoQWVmEbJD3eBNrmHRsFlnWHazxO+E5LpdSB95ZSSkS24tR/AYsasqpVMBmIiDBhY+LoeX60WeMWt4YxDxFAWFFRGiRw55tn8SFB4oz6fOsKcmZhxcsFm3hZiANwbZMVulNvrenq3PwTLyFeko7lT83MMQAIWB0BBiG20DY/7Np1HWBi5ILPgPfZbtNEkPx1M7mjCPedEdO959+w1MGBr2PXdYQILrsOVEupbTyTN++q/5DLf6ooIH91G7iohCuH32wxvnwp2qZnXCKoST/dAp1VKlYBPczPKyvWOhpYRmqRuDZuvHIsQrNXudEFbFOEMHBrmia0YuQjxhM9zN2isNERpSl/20fzPuM9ZesSRUYPh9/SCV6KfanFbFAtHp8k0AyZIcIIzjKvc3bgHTIRe4JUYaNeBLJk03Wq/NFsg+JQvho0G5So2g==;
+ 5:pX81+2CTXr0knMg7/GAKVat6rOf7MeiEXAtIUdos7DW2JIEfeiEJqXMimQaKxaU0pLKst25NNNHtqloI5gz/56VrJxnnT5HeRCwsH9wYiMNuRIQG8d/rMyzVFQ1lyPjKRyjS/CP9DBd4WRt1i/osRUdFe9G6h2m9ySPM9yxIN3U=;
+ 7:GwDWVbnHeMnZEl5cUT6d06GDgBeMJFK0t0ANuc7Xc7b2eP4aZN+bOzOhbxqCptfFHJ072IC1prbQ6vBD6Uk1QbNqVbWgX9ZagcbFzY2gHIbNGiA2SyiciBx6XnIUoZnlYyMASFxTnx50PndXiKg+xQ==
+x-ms-office365-filtering-correlation-id: 7a65a882-fdfd-4f18-4240-08d640231e54
+x-microsoft-antispam: BCL:0; PCL:0;
+ RULEID:(7020095)(4652040)(7021145)(8989299)(4534185)(7022145)(4603075)(4627221)(201702281549075)(8990200)(7048125)(7024125)(7027125)(7023125)(5600074)(711020)(2017052603328)(7153060)(7193020);
+ SRVR:MWHPR2201MB1325; 
+x-ms-traffictypediagnostic: MWHPR2201MB1325:
+x-microsoft-antispam-prvs: <MWHPR2201MB132540D6ADEFB43DCA55BA61C1CE0@MWHPR2201MB1325.namprd22.prod.outlook.com>
+x-exchange-antispam-report-test: UriScan:;
+x-ms-exchange-senderadcheck: 1
+x-exchange-antispam-report-cfa-test: BCL:0; PCL:0;
+ RULEID:(6040522)(2401047)(5005006)(8121501046)(93006095)(10201501046)(3002001)(3231382)(944501410)(52105095)(148016)(149066)(150057)(6041310)(20161123560045)(20161123564045)(20161123562045)(20161123558120)(2016111802025)(6043046)(201708071742011)(7699051)(76991095);
+ SRVR:MWHPR2201MB1325; BCL:0; PCL:0; RULEID:; SRVR:MWHPR2201MB1325; 
+x-forefront-prvs: 0843C17679
+x-forefront-antispam-report: SFV:NSPM;
+ SFS:(10019020)(7916004)(136003)(366004)(39840400004)(346002)(376002)(396003)(199004)(189003)(52254002)(66066001)(42882007)(54906003)(256004)(58126008)(53936002)(93886005)(316002)(446003)(14454004)(6246003)(11346002)(14444005)(6306002)(9686003)(2900100001)(6512007)(186003)(6486002)(476003)(6436002)(305945005)(6346003)(7736002)(26005)(4326008)(44832011)(2906002)(71200400001)(71190400001)(5250100002)(76176011)(8676002)(25786009)(102836004)(6916009)(229853002)(4001150100001)(6116002)(508600001)(3846002)(386003)(486006)(33896004)(6506007)(1076002)(33716001)(99286004)(5660300001)(81156014)(68736007)(52116002)(966005)(8936002)(106356001)(81166006)(97736004)(105586002)(7416002)(41533002);
+ DIR:OUT; SFP:1102; SCL:1; SRVR:MWHPR2201MB1325;
+ H:MWHSPR00MB117.namprd22.prod.outlook.com; FPR:; SPF:None; LANG:en;
+ PTR:InfoNoRecords; A:1; MX:1; 
+received-spf: None (protection.outlook.com: wavecomp.com does not designate
+ permitted sender hosts)
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=pburton@wavecomp.com; 
+x-microsoft-antispam-message-info: yrmdLIYXw8fwji91kNi00DoE/ToNlDTRAU1dGF7Vgjvh8mXJ3Cjr+w9mC/zaoFTMnEu8AbVwFmE/C1Xq1gB09qk9ykJVWcFPDmeqpoHwB6vXELqHgh/+kYoBHEAAy2WgVvDGb0m5QT39jwNcTD9DzYOwIqhMOw4vQ79eDmaG6TfbhLOXJQkAq2lFajTXC6M46tqksQ4UzTSvyD/7Yh/GwZxcNJeAHcQFzs8RvIjog1f9z/O93hLVFaoJ+CnbTSKWjlqMN4Cqg8xex30KdWlUTWpI9iurUNdznwxcGlAf7Ro5x9PvZ0f5Paq/dLrBvnIKOF6ZBC98++UUurjzrLMf9uVDaWB/r00sl7sojs/Tyhs=
+spamdiagnosticoutput: 1:99
+spamdiagnosticmetadata: NSPM
+Content-Type: text/plain; charset="us-ascii"
+Content-ID: <CF3B98CF3394B54E933F2B98E3776DB7@namprd22.prod.outlook.com>
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20181101171432.GH3178@hirez.programming.kicks-ass.net>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+X-OriginatorOrg: mips.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 7a65a882-fdfd-4f18-4240-08d640231e54
+X-MS-Exchange-CrossTenant-originalarrivaltime: 01 Nov 2018 17:54:50.0518 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 463607d3-1db3-40a0-8a29-970c56230104
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MWHPR2201MB1325
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,59 +129,67 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
- "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
- "will.deacon@arm.com" <will.deacon@arm.com>,
- "bfields@fieldses.org" <bfields@fieldses.org>,
- "paulus@samba.org" <paulus@samba.org>,
- Trond Myklebust <trondmy@hammerspace.com>,
- "jhogan@kernel.org" <jhogan@kernel.org>, aryabinin@virtuozzo.com,
- Paul McKenney <paulmck@linux.vnet.ibm.com>,
- "linux@roeck-us.net" <linux@roeck-us.net>, "arnd@arndb.de" <arnd@arndb.de>,
- "boqun.feng@gmail.com" <boqun.feng@gmail.com>, dvyukov@google.com,
+Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
  "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "arnd@arndb.de" <arnd@arndb.de>, "jhogan@kernel.org" <jhogan@kernel.org>,
  "jlayton@kernel.org" <jlayton@kernel.org>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
  "ralf@linux-mips.org" <ralf@linux-mips.org>,
- "anna.schumaker@netapp.com" <anna.schumaker@netapp.com>,
- "paul.burton@mips.com" <paul.burton@mips.com>,
+ "davem@davemloft.net" <davem@davemloft.net>,
+ "bfields@fieldses.org" <bfields@fieldses.org>,
+ "paulus@samba.org" <paulus@samba.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
  "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "davem@davemloft.net" <davem@davemloft.net>
+ "anna.schumaker@netapp.com" <anna.schumaker@netapp.com>,
+ "linux@roeck-us.net" <linux@roeck-us.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Nov 01, 2018 at 06:14:32PM +0100, Peter Zijlstra wrote:
-> > This reminds me of this sooooo silly patch :/
-> > 
-> > https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=adb03115f4590baa280ddc440a8eff08a6be0cb7
+Hi Trond,
 
-You'd probably want to write it like so; +- some ordering stuff, that
-code didn't look like it really needs the memory barriers implied by
-these, but I didn't look too hard.
+On Thu, Nov 01, 2018 at 12:17:31AM +0000, Trond Myklebust wrote:
+> On Wed, 2018-10-31 at 23:32 +0000, Paul Burton wrote:
+> > In this particular case I have no idea why
+> > net/sunrpc/auth_gss/gss_krb5_seal.c is using cmpxchg64() at all. It's
+> > essentially reinventing atomic64_fetch_inc() which is already
+> > provided
+> > everywhere via CONFIG_GENERIC_ATOMIC64 & the spinlock approach. At
+> > least
+> > for atomic64_* functions the assumption that all access will be
+> > performed using those same functions seems somewhat reasonable.
+> >=20
+> > So how does the below look? Trond?
+>=20
+> My one question (and the reason why I went with cmpxchg() in the first
+> place) would be about the overflow behaviour for atomic_fetch_inc() and
+> friends. I believe those functions should be OK on x86, so that when we
+> overflow the counter, it behaves like an unsigned value and wraps back
+> around.  Is that the case for all architectures?
+>=20
+> i.e. are atomic_t/atomic64_t always guaranteed to behave like u32/u64
+> on increment?
+>=20
+> I could not find any documentation that explicitly stated that they
+> should.
 
-diff --git a/net/ipv4/route.c b/net/ipv4/route.c
-index c0a9d26c06ce..11deb1d7e96b 100644
---- a/net/ipv4/route.c
-+++ b/net/ipv4/route.c
-@@ -485,16 +485,10 @@ u32 ip_idents_reserve(u32 hash, int segs)
- 	u32 now = (u32)jiffies;
- 	u32 new, delta = 0;
- 
--	if (old != now && cmpxchg(p_tstamp, old, now) == old)
-+	if (old != now && try_cmpxchg(p_tstamp, &old, now))
- 		delta = prandom_u32_max(now - old);
- 
--	/* Do not use atomic_add_return() as it makes UBSAN unhappy */
--	do {
--		old = (u32)atomic_read(p_id);
--		new = old + delta + segs;
--	} while (atomic_cmpxchg(p_id, old, new) != old);
--
--	return new - segs;
-+	return atomic_fetch_add(segs + delta, p_id) + delta;
- }
- EXPORT_SYMBOL(ip_idents_reserve);
- 
+Based on other replies it seems like it's at least implicitly assumed by
+other code, even if not explicitly stated.
+
+From a MIPS perspective where atomics are implemented using load-linked
+& store-conditional instructions the actual addition will be performed
+using the same addu instruction that a plain integer addition would
+generate (regardless of signedness), so there'll be absolutely no
+difference in arithmetic between your gss_seq_send64_fetch_and_inc()
+function and atomic64_fetch_inc(). I'd expect the same to be true for
+other architectures with load-linked & store-conditional style atomics.
+
+In any case, for the benefit of anyone interested who I didn't copy on
+the patch submission, here it is:
+
+    https://lore.kernel.org/lkml/20181101175109.8621-1-paul.burton@mips.com=
+/
+
+Thanks,
+    Paul
