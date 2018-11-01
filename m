@@ -2,78 +2,92 @@ Return-Path: <SRS0=OEx3=NM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.0 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 347DBECDE47
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 10:28:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F37A1C0044C
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 10:48:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 711752081B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 10:28:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 398BB205F4
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 10:48:12 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.b="mcK7rckW"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 711752081B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=armlinux.org.uk
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="opHNDbaW"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 398BB205F4
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42m1dP2xQYzF3NB
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 21:28:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=armlinux.org.uk
+	by lists.ozlabs.org (Postfix) with ESMTP id 42m23s3wDXzF3N2
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 21:48:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.b="mcK7rckW";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="opHNDbaW";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=armlinux.org.uk
- (client-ip=2001:4d48:ad52:3201:214:fdff:fe10:1be6;
- helo=pandora.armlinux.org.uk;
- envelope-from=linux+linuxppc-dev=lists.ozlabs.org@armlinux.org.uk;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
- header.from=armlinux.org.uk
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=armlinux.org.uk header.i=@armlinux.org.uk
- header.b="mcK7rckW"; dkim-atps=neutral
-Received: from pandora.armlinux.org.uk (pandora.armlinux.org.uk
- [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::641; helo=mail-pl1-x641.google.com;
+ envelope-from=bsingharora@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="opHNDbaW"; 
+ dkim-atps=neutral
+Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
+ [IPv6:2607:f8b0:4864:20::641])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42m1Yl5WkNzF3Mq
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Nov 2018 21:25:28 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=armlinux.org.uk; s=pandora-2014; h=Sender:In-Reply-To:Content-Type:
- MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=pfBYPcKEHFmp/09Hz2p1i9SED+F/1DOEjiI7amX/IgY=; b=mcK7rckWm93VnKfbX3LmKsGrV
- YYuXCUZtnmAAVC7MLl/1vn773bBPxQv2RCflQF/J6tDIxIzBQiWD9MlJKPgwwnXaUKHnBLuDjPkKt
- UYTVIT0cbKiCy3FQvSpNuFlpgkcohc222qwEtW+Tq3MWDrCayYfcQ0ffbR6KsSm42BXfg=;
-Received: from n2100.armlinux.org.uk
- ([2001:4d48:ad52:3201:214:fdff:fe10:4f86]:43519)
- by pandora.armlinux.org.uk with esmtpsa
- (TLSv1.2:ECDHE-RSA-AES128-GCM-SHA256:128) (Exim 4.90_1)
- (envelope-from <linux@armlinux.org.uk>)
- id 1gIAA0-0004WL-HU; Thu, 01 Nov 2018 10:25:08 +0000
-Received: from linux by n2100.armlinux.org.uk with local (Exim 4.90_1)
- (envelope-from <linux@n2100.armlinux.org.uk>)
- id 1gIA9s-0006ug-Cy; Thu, 01 Nov 2018 10:25:00 +0000
-Date: Thu, 1 Nov 2018 10:24:58 +0000
-From: Russell King - ARM Linux <linux@armlinux.org.uk>
-To: Masahiro Yamada <yamada.masahiro@socionext.com>
-Subject: Re: [PATCH 6/9] PCI: consolidate PCI config entry in drivers/pci
-Message-ID: <20181101102458.GN30658@n2100.armlinux.org.uk>
-References: <20181019120952.32763-1-hch@lst.de>
- <20181019120952.32763-7-hch@lst.de>
- <20181019122228.GJ30658@n2100.armlinux.org.uk>
- <CAK7LNATZ8LagrTrTae_QCQbSuTW7_y6sDrdTHfTyONPrsYDs4A@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42m21M1dR6zF3N0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Nov 2018 21:45:58 +1100 (AEDT)
+Received: by mail-pl1-x641.google.com with SMTP id o19-v6so8745149pll.12
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Nov 2018 03:45:58 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=ncfXRDAuuV0ZYDfd10356XalKCDeVE5F1APt++m+qT4=;
+ b=opHNDbaW6l+w6u7rQWYTGOcGLM7wEYRMHvCYqsVZR/xsoj1jqJkm3e1iZCBGfTATDP
+ MKoiH4B2fCcvG4Omrg8Z81KZ9vRT7fOuDBiWv4/kyoPedskuQcyb2+erEYw/U9NJR5Oz
+ TAPCmllf9jZJuaVGV92kAeTvenZ0sbv4JO/A53fpJTQaIBKJphyu7b4orgWzb9U+oHOG
+ RihWcHZC2BmQyiWmS4esJzguX5rpWfxdIG75uryXBWpTddFAlaB9hx4mcUP+/EoXsLAB
+ XEAP5G/SXdW0XG0TzdEixKlXy7OdDoJPzcJJio1q+ehiVwuB7ASrxroXcS/hx0aVJCVt
+ 8+Kg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=ncfXRDAuuV0ZYDfd10356XalKCDeVE5F1APt++m+qT4=;
+ b=MTPbGKjjp1qRRssDzPMdeiRLxSo6C9/7BQS7TeX3zxJwVG1S5+4cbttMLNHU2ql+vE
+ UQpM27bCHW+Ja66Zx9t79XA1lYl8N8oJ9hOa8Ln9jzJUSdauNezpzeqqCA8n93o9w6hX
+ WgeSizcy6ZGHGVdCVP3KN7IOyqeuzJRj7zCyG2sEJ/udGqyYOiqcEaN11fNSYoGXybpl
+ dXs1w1aI5yVTIre7tG+NXFPkAzbzZXjZ3VZLOlcCrs8/lORwfUYSiAfWeJ6WZ38uvCyz
+ M6ErBalF3gDKRER20JGjm9GoEDofLSlSnhwe5qtGWi97q9WXY7cdrzG2O0HTLaw59KMX
+ WagQ==
+X-Gm-Message-State: AGRZ1gIJPssx46lyea7aXU6AV1jGj72BLPRoenyQ5F+SCzYT7IrdZ5z4
+ keX+JtgfEUW50iuprADdcQo=
+X-Google-Smtp-Source: AJdET5ebqzhHoVoLMxNAfG/+lku7YXUVBUHMldyJklAKSo+NuBGRj/fSBNPYy9t4kMo/c2wG8lqERQ==
+X-Received: by 2002:a17:902:7484:: with SMTP id
+ h4-v6mr6978255pll.227.1541069156786; 
+ Thu, 01 Nov 2018 03:45:56 -0700 (PDT)
+Received: from localhost (14-202-194-140.static.tpgi.com.au. [14.202.194.140])
+ by smtp.gmail.com with ESMTPSA id
+ h17-v6sm12032352pfj.125.2018.11.01.03.45.55
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Thu, 01 Nov 2018 03:45:55 -0700 (PDT)
+Date: Thu, 1 Nov 2018 21:45:52 +1100
+From: Balbir Singh <bsingharora@gmail.com>
+To: Bharata B Rao <bharata@linux.ibm.com>
+Subject: Re: [RFC PATCH v1 2/4] kvmppc: Add support for shared pages in HMM
+ driver
+Message-ID: <20181101104552.GE16399@350D>
+References: <20181022051837.1165-1-bharata@linux.ibm.com>
+ <20181022051837.1165-3-bharata@linux.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CAK7LNATZ8LagrTrTae_QCQbSuTW7_y6sDrdTHfTyONPrsYDs4A@mail.gmail.com>
-User-Agent: Mutt/1.5.23 (2014-03-12)
+In-Reply-To: <20181022051837.1165-3-bharata@linux.ibm.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,67 +99,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch <linux-arch@vger.kernel.org>,
- linux-scsi <linux-scsi@vger.kernel.org>,
- Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
- linux-pci@vger.kernel.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Dominik Brodowski <linux@dominikbrodowski.net>,
- Alex Bounine <alex.bou9@gmail.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Christoph Hellwig <hch@lst.de>,
- linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Cc: linuxram@us.ibm.com, kvm-ppc@vger.kernel.org, benh@linux.ibm.com,
+ linux-mm@kvack.org, jglisse@redhat.com, aneesh.kumar@linux.vnet.ibm.com,
+ paulus@au1.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Oct 19, 2018 at 09:58:46PM +0900, Masahiro Yamada wrote:
-> On Fri, Oct 19, 2018 at 9:23 PM Russell King - ARM Linux
-> <linux@armlinux.org.uk> wrote:
+On Mon, Oct 22, 2018 at 10:48:35AM +0530, Bharata B Rao wrote:
+> A secure guest will share some of its pages with hypervisor (Eg. virtio
+> bounce buffers etc). Support shared pages in HMM driver.
 > 
-> > > index a68b34183107..b185794549be 100644
-> > > --- a/arch/arm/mach-pxa/Kconfig
-> > > +++ b/arch/arm/mach-pxa/Kconfig
-> > > @@ -125,7 +125,7 @@ config MACH_ARMCORE
-> > >       bool "CompuLab CM-X255/CM-X270 modules"
-> > >       select ARCH_HAS_DMA_SET_COHERENT_MASK if PCI
-> > >       select IWMMXT
-> > > -     select MIGHT_HAVE_PCI
-> > > +     select HAVE_PCI
-> > >       select NEED_MACH_IO_H if PCI
-> > >       select PXA25x
-> > >       select PXA27x
-> >
-> > This is wrong.  "MIGHT_HAVE_PCI" is _not_ the same as "HAVE_PCI" - we
-> > have a bunch of platforms that mandatorily have PCI and these select
-> > PCI directly.  "MIGHT_HAVE_PCI" controls the _visibility_ of the PCI
-> > menu option, but does not prevent it being selected.  Your patch will
-> > cause Kconfig to complain for those which mandatorily have PCI but
-> > do not set HAVE_PCI.
+> Signed-off-by: Bharata B Rao <bharata@linux.ibm.com>
+> ---
+>  arch/powerpc/kvm/book3s_hv_hmm.c | 69 ++++++++++++++++++++++++++++++--
+>  1 file changed, 65 insertions(+), 4 deletions(-)
 > 
-> 
-> Good catch!
-> But, adding a bunch of 'select HAVE_PCI' along with 'select PCI' is ugly.
-> 
-> Do you have any suggestion?
-> 
-> How about letting CONFIG_ARM to select HAVE_PCI ?
+> diff --git a/arch/powerpc/kvm/book3s_hv_hmm.c b/arch/powerpc/kvm/book3s_hv_hmm.c
+> index a2ee3163a312..09b8e19b7605 100644
+> --- a/arch/powerpc/kvm/book3s_hv_hmm.c
+> +++ b/arch/powerpc/kvm/book3s_hv_hmm.c
+> @@ -50,6 +50,7 @@ struct kvmppc_hmm_page_pvt {
+>  	struct hlist_head *hmm_hash;
+>  	unsigned int lpid;
+>  	unsigned long gpa;
+> +	bool skip_page_out;
+>  };
+>  
+>  struct kvmppc_hmm_migrate_args {
+> @@ -278,6 +279,65 @@ static unsigned long kvmppc_gpa_to_hva(struct kvm *kvm, unsigned long gpa,
+>  	return hva;
+>  }
+>  
+> +/*
+> + * Shares the page with HV, thus making it a normal page.
+> + *
+> + * - If the page is already secure, then provision a new page and share
+> + * - If the page is a normal page, share the existing page
+> + *
+> + * In the former case, uses the HMM fault handler to release the HMM page.
+> + */
+> +static unsigned long
+> +kvmppc_share_page(struct kvm *kvm, unsigned long gpa,
+> +		  unsigned long addr, unsigned long page_shift)
+> +{
+> +
 
-Well, the situation we have on ARM is rather optimal - when the
-rest of the configuration supports PCI, PCI is made visible.  When
-there's no hardware support for PCI, PCI is hidden.  When PCI is
-mandatory, PCI is selected and mostly always hidden.
+So this is a special flag passed via the hypercall to say
+this page can be skipped from page_out from secure memory?
+Who has the master copy of the page at this point?
 
-It seems that with this consolidation, we lose that - we end up
-with PCI being visible for every ARM config, not only those where
-PCI is "impossible" but also for those where PCI is forcefully
-selected.
+In which case the question is
 
-That said, offering PCI for platforms that do not have any possibility
-of PCI hardware shouldn't cause any compile issues, and would increase
-build coverage - but I'd say it wouldn't _usefully_ increase build
-coverage.
+Why did we get a fault on the page which resulted in the
+fault migration ops being called?
+What category of pages are considered shared?
 
--- 
-RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
-FTTC broadband for 0.8mile line in suburbia: sync at 12.1Mbps down 622kbps up
-According to speedtest.net: 11.9Mbps down 500kbps up
+Balbir
