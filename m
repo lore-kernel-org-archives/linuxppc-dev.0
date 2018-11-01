@@ -6,24 +6,24 @@ X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 74D6DC0044C
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 21:42:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 270B2C0044C
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 21:48:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AACC220657
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 21:42:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 7283C20657
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 21:48:20 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="eSYq8oli"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AACC220657
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="ls+xdu4o"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7283C20657
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42mJZL0hfCzDr3b
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Nov 2018 08:42:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42mJjZ1VlRzF3P7
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Nov 2018 08:48:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="eSYq8oli";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="ls+xdu4o";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=infradead.org
@@ -33,50 +33,50 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="eSYq8oli"; dkim-atps=neutral
+ header.b="ls+xdu4o"; dkim-atps=neutral
 Received: from merlin.infradead.org (merlin.infradead.org
  [IPv6:2001:8b0:10b:1231::1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42mJWR6c7czF3Nq
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Nov 2018 08:39:31 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42mJfl4XJpzF3P3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Nov 2018 08:45:51 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=merlin.20170209; h=In-Reply-To:Content-Type:MIME-Version:
  References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
  Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
  Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
  List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=fJNe5Xh2vBtwfNg51MvYtBkChDHBfibLaKDhcAYFpnw=; b=eSYq8oliMMglqA58wMET6Qr2k
- 2ywznbVYZX0/FMpfVY7rqbvHdOwKrEbrOBNY+KXXY/Uhk8V2SOE4KXD4eq45Wd8MfIjDm2c5k0etd
- 0h7KUpnjwHu1PG3njA1oSmutQEjm3D+iTJUzUdKZIiqhuJgB0dnqoazOSttG3+xqmZAxJE6wf7Ma8
- y6+FSA6rxxofN1LP2SX8mk895sHvFhuyN54y20OvlfNawkBI1ratjWlgaNbgNR14YFoCV9c4PrWPS
- dvp23cp3f01zFUJ4O7LlLpRthqfOhhVhWfzw+4ZwRd95Crad7YaTNzUoTsmNjBwdoREY+QPNr89bX
- hv0THCWaQ==;
+ bh=MEJyokPYI7oa2A6Ix9ONUmGbnct/Kvmgb/sJnQOStxc=; b=ls+xdu4ozQ7c4yvsm9ovqZ/4f
+ fiFuSHac7Q2elKhmdle5qz3kdC0phtzafFsg4Fo2K2xfxrjjRsDtWE8XnThq8D8sZp3qGvjfpHNYJ
+ KPaE2XjSwPvKGaCuIvf0YpWpc37Hen7TUH95ZQP0r4vzo5jp+Nq2MzUx1YnyYOG061j3OHyzTmnlr
+ s4Jw3VZyfp0csnbleNLXSg2xp268RVktS0DawCGK+9p+MdaTrMQynXvZgyztm7d70YjSIr84TKOug
+ 92DT3I1mDBUZhew+WI6z8TpS90qReNeQaT3Sba2tf1zJwoV+RlbOUgr7lAc/5xwwbeYpK4YRYEmbD
+ 9zqkC8MRw==;
 Received: from j217100.upc-j.chello.nl ([24.132.217.100] helo=worktop)
  by merlin.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
- id 1gIKfl-00074t-Jj; Thu, 01 Nov 2018 21:38:38 +0000
+ id 1gIKmR-00079A-Uh; Thu, 01 Nov 2018 21:45:32 +0000
 Received: by worktop (Postfix, from userid 1000)
- id 2ADB86E07D9; Thu,  1 Nov 2018 22:38:34 +0100 (CET)
-Date: Thu, 1 Nov 2018 22:38:34 +0100
+ id 4A4CE6E07D9; Thu,  1 Nov 2018 22:45:29 +0100 (CET)
+Date: Thu, 1 Nov 2018 22:45:29 +0100
 From: Peter Zijlstra <peterz@infradead.org>
-To: "Paul E. McKenney" <paulmck@linux.ibm.com>
+To: Dmitry Vyukov <dvyukov@google.com>
 Subject: Re: [RFC PATCH] lib: Introduce generic __cmpxchg_u64() and use it
  where needed
-Message-ID: <20181101213834.GA3339@worktop.programming.kicks-ass.net>
-References: <20181031233235.qbedw3pinxcuk7me@pburton-laptop>
+Message-ID: <20181101214529.GB3339@worktop.programming.kicks-ass.net>
+References: <20181031220253.GA15505@roeck-us.net>
+ <20181031233235.qbedw3pinxcuk7me@pburton-laptop>
  <4e2438a23d2edf03368950a72ec058d1d299c32e.camel@hammerspace.com>
  <20181101131846.biyilr2msonljmij@lakrids.cambridge.arm.com>
  <20181101145926.GE3178@hirez.programming.kicks-ass.net>
  <f38e272f7a96e983549e4281aa9fd02833a4277a.camel@hammerspace.com>
  <20181101163212.GF3159@hirez.programming.kicks-ass.net>
- <b0160f4b-b996-b0ee-405a-3d5f1866272e@gmail.com>
- <20181101171432.GH3178@hirez.programming.kicks-ass.net>
- <20181101172739.GA3196@hirez.programming.kicks-ass.net>
- <20181101202910.GB4170@linux.ibm.com>
+ <20181101170146.GQ4170@linux.ibm.com>
+ <20181101171846.GI3178@hirez.programming.kicks-ass.net>
+ <CACT4Y+aC45BtS88DXarn3A+LV2RRRsPQoSs_3_DnKjU4O3AMHQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20181101202910.GB4170@linux.ibm.com>
+In-Reply-To: <CACT4Y+aC45BtS88DXarn3A+LV2RRRsPQoSs_3_DnKjU4O3AMHQ@mail.gmail.com>
 User-Agent: Mutt/1.5.22.1 (2013-10-16)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -94,10 +94,12 @@ Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
  "jhogan@kernel.org" <jhogan@kernel.org>,
  "will.deacon@arm.com" <will.deacon@arm.com>,
  "bfields@fieldses.org" <bfields@fieldses.org>,
- "paulus@samba.org" <paulus@samba.org>, Eric Dumazet <eric.dumazet@gmail.com>,
- Trond Myklebust <trondmy@hammerspace.com>, aryabinin@virtuozzo.com,
+ "paulus@samba.org" <paulus@samba.org>,
+ "Paul E. McKenney" <paulmck@linux.ibm.com>,
+ Trond Myklebust <trondmy@hammerspace.com>,
+ Andrey Ryabinin <aryabinin@virtuozzo.com>,
  "linux@roeck-us.net" <linux@roeck-us.net>, "arnd@arndb.de" <arnd@arndb.de>,
- "boqun.feng@gmail.com" <boqun.feng@gmail.com>, dvyukov@google.com,
+ "boqun.feng@gmail.com" <boqun.feng@gmail.com>,
  "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
  "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
  "jlayton@kernel.org" <jlayton@kernel.org>,
@@ -112,44 +114,26 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Nov 01, 2018 at 01:29:10PM -0700, Paul E. McKenney wrote:
-> On Thu, Nov 01, 2018 at 06:27:39PM +0100, Peter Zijlstra wrote:
-> > On Thu, Nov 01, 2018 at 06:14:32PM +0100, Peter Zijlstra wrote:
-> > > > This reminds me of this sooooo silly patch :/
-> > > > 
-> > > > https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=adb03115f4590baa280ddc440a8eff08a6be0cb7
-> > 
-> > You'd probably want to write it like so; +- some ordering stuff, that
-> > code didn't look like it really needs the memory barriers implied by
-> > these, but I didn't look too hard.
-> 
-> The atomic_fetch_add() API would need to be propagated out to the other
-> architectures, correct?
+On Thu, Nov 01, 2018 at 06:46:50PM +0100, Dmitry Vyukov wrote:
+> If there is a warning that we don't want to see at all, then we can
+> disable it. It supposed to be a useful tool, rather than a thing in
+> itself that lives own life. We already I think removed 1 particularly
+> noisy warning and made another optional via a config.
 
-Like these commits I did like 2 years ago ? :-)
+> But the thing with overflows is that, even if it's defined, it's not
+> necessary the intended behavior. For example, take allocation size
+> calculation done via unsigned size_t. If it overflows it does not help
+> if C defines result or not, it still gives a user controlled write
+> primitive. We've seen similar cases with timeout/deadline calculation
+> in kernel, we really don't want it to just wrap modulo-2, right. Some
+> user-space projects even test with unsigned overflow warnings or
+> implicit truncation warnings, which are formally legal, but frequently
+> bugs.
 
-$ git log --oneline 6dc25876cdb1...1f51dee7ca74
-6dc25876cdb1 locking/atomic, arch/xtensa: Implement atomic_fetch_{add,sub,and,or,xor}()
-a8bcccaba162 locking/atomic, arch/x86: Implement atomic{,64}_fetch_{add,sub,and,or,xor}()
-1af5de9af138 locking/atomic, arch/tile: Implement atomic{,64}_fetch_{add,sub,and,or,xor}()
-3a1adb23a52c locking/atomic, arch/sparc: Implement atomic{,64}_fetch_{add,sub,and,or,xor}()
-7d9794e75237 locking/atomic, arch/sh: Implement atomic_fetch_{add,sub,and,or,xor}()
-56fefbbc3f13 locking/atomic, arch/s390: Implement atomic{,64}_fetch_{add,sub,and,or,xor}()
-a28cc7bbe8e3 locking/atomic, arch/powerpc: Implement atomic{,64}_fetch_{add,sub,and,or,xor}{,_relaxed,_acquire,_release}()
-e5857a6ed600 locking/atomic, arch/parisc: Implement atomic{,64}_fetch_{add,sub,and,or,xor}()
-f8d638e28d7c locking/atomic, arch/mn10300: Implement atomic_fetch_{add,sub,and,or,xor}()
-4edac529eb62 locking/atomic, arch/mips: Implement atomic{,64}_fetch_{add,sub,and,or,xor}()
-e898eb27ffd8 locking/atomic, arch/metag: Implement atomic_fetch_{add,sub,and,or,xor}()
-e39d88ea3ce4 locking/atomic, arch/m68k: Implement atomic_fetch_{add,sub,and,or,xor}()
-f64937052303 locking/atomic, arch/m32r: Implement atomic_fetch_{add,sub,and,or,xor}()
-cc102507fac7 locking/atomic, arch/ia64: Implement atomic{,64}_fetch_{add,sub,and,or,xor}()
-4be7dd393515 locking/atomic, arch/hexagon: Implement atomic_fetch_{add,sub,and,or,xor}()
-0c074cbc3309 locking/atomic, arch/h8300: Implement atomic_fetch_{add,sub,and,or,xor}()
-d9c730281617 locking/atomic, arch/frv: Implement atomic{,64}_fetch_{add,sub,and,or,xor}()
-e87fc0ec0705 locking/atomic, arch/blackfin: Implement atomic_fetch_{add,sub,and,or,xor}()
-1a6eafacd481 locking/atomic, arch/avr32: Implement atomic_fetch_{add,sub,and,or,xor}()
-2efe95fe6952 locking/atomic, arch/arm64: Implement atomic{,64}_fetch_{add,sub,and,andnot,or,xor}{,_relaxed,_acquire,_release}() for LSE instructions
-6822a84dd4e3 locking/atomic, arch/arm64: Generate LSE non-return cases using common macros
-e490f9b1d3b4 locking/atomic, arch/arm64: Implement atomic{,64}_fetch_{add,sub,and,andnot,or,xor}{,_relaxed,_acquire,_release}()
-6da068c1beba locking/atomic, arch/arm: Implement atomic{,64}_fetch_{add,sub,and,andnot,or,xor}{,_relaxed,_acquire,_release}()
-fbffe892e525 locking/atomic, arch/arc: Implement atomic_fetch_{add,sub,and,andnot,or,xor}()
+Sure; but then don't call it UB.
+
+If we want to have an additional integer over/underflow checker (ideally
+with a gcc plugin that has explicit annotations like __wrap to make it
+go away) that is fine; and it can be done on unsigned and signed.
+
+
