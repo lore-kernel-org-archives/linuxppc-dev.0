@@ -2,44 +2,46 @@ Return-Path: <SRS0=OEx3=NM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E33CAC0044C
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 03:58:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A0FCC0044C
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 04:40:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 408C720820
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 03:58:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 408C720820
+	by mail.kernel.org (Postfix) with ESMTPS id E6E1320820
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 04:40:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E6E1320820
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42lrzL1k9czF3L3
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 14:58:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42lsvN5tJnzF3LY
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 15:40:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42lrvs615nzF3L8
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Nov 2018 14:55:37 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42lssR3vZgzF3L1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Nov 2018 15:38:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 42lrvr6qrQz9sPp;
- Thu,  1 Nov 2018 14:55:36 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPSA id 42lssR1f4Rz9sRt;
+ Thu,  1 Nov 2018 15:38:35 +1100 (AEDT)
 Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Florian Weimer <fweimer@redhat.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: PIE binaries are no longer mapped below 4 GiB on ppc64le
-In-Reply-To: <87k1lyf2x3.fsf@oldenburg.str.redhat.com>
-References: <87k1lyf2x3.fsf@oldenburg.str.redhat.com>
-Date: Thu, 01 Nov 2018 14:55:34 +1100
-Message-ID: <87lg6dfo3t.fsf@concordia.ellerman.id.au>
+To: Nick Desaulniers <ndesaulniers@google.com>, joel@jms.id.au
+Subject: Re: [PATCH] raid6/ppc: Fix build for clang
+In-Reply-To: <CAKwvOdm8rFNEG39_6f5voZo3nU1g9eC6M8uxeQPVE8=JUoB3mg@mail.gmail.com>
+References: <20181031032829.18131-1-joel@jms.id.au>
+ <CAKwvOdm8rFNEG39_6f5voZo3nU1g9eC6M8uxeQPVE8=JUoB3mg@mail.gmail.com>
+Date: Thu, 01 Nov 2018 15:38:35 +1100
+Message-ID: <87y3ad76pg.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -53,57 +55,63 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org, keescook@chromium.org, amodra@gmail.com
+Cc: jji@us.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ LKML <linux-kernel@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+ Kees Cook <keescook@chromium.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Florian,
-
-Florian Weimer <fweimer@redhat.com> writes:
-> We tried to use Go to build PIE binaries, and while the Go toolchain is
-> definitely not ready (it produces text relocations and problematic
-> relocations in general), it exposed what could be an accidental
-> userspace ABI change.
+Nick Desaulniers <ndesaulniers@google.com> writes:
+> On Tue, Oct 30, 2018 at 8:28 PM Joel Stanley <joel@jms.id.au> wrote:
+>>
+>> We cannot build these files with clang as it does not allow altivec
+>> instructions in assembly when -msoft-float is passed.
+>>
+>> Jinsong Ji <jji@us.ibm.com> wrote:
+>> > We currently disable Altivec/VSX support when enabling soft-float.  So
+>> > any usage of vector builtins will break.
+>> >
+>> > Enable Altivec/VSX with soft-float may need quite some clean up work, so
+>> > I guess this is currently a limitation.
+>> >
+>> > Removing -msoft-float will make it work (and we are lucky that no
+>> > floating point instructions will be generated as well).
+>>
+>> This is a workaround until the issue is resolved in clang.
+>>
+>> Link: https://bugs.llvm.org/show_bug.cgi?id=31177
+>> Link: https://github.com/ClangBuiltLinux/linux/issues/239
+>> Signed-off-by: Joel Stanley <joel@jms.id.au>
 >
-> With our 4.10-derived kernel, PIE binaries are mapped below 4 GiB, so
-> relocations like R_PPC64_ADDR16_HA work:
+> Hopefully we can have this fixed up soon.  I'll try to see who works
+> on Clang+PPC here and see if they can help move that bug along. Thanks
+> for the patch!
 >
-> 21f00000-220d0000 r-xp 00000000 fd:00 36593493                           /root/extld
-> 220d0000-220e0000 r--p 001c0000 fd:00 36593493                           /root/extld
-> 220e0000-22100000 rw-p 001d0000 fd:00 36593493                           /root/extld
-...
+>> ---
+>>  lib/raid6/Makefile | 15 +++++++++++++++
+>>  1 file changed, 15 insertions(+)
+>>
+>> diff --git a/lib/raid6/Makefile b/lib/raid6/Makefile
+>> index 2f8b61dfd9b0..3a844e6fd01c 100644
+>> --- a/lib/raid6/Makefile
+>> +++ b/lib/raid6/Makefile
+>> @@ -18,6 +18,21 @@ quiet_cmd_unroll = UNROLL  $@
+>>
+>>  ifeq ($(CONFIG_ALTIVEC),y)
+>>  altivec_flags := -maltivec $(call cc-option,-mabi=altivec)
+>> +
+>> +ifdef CONFIG_CC_IS_CLANG
 >
-> With a 4.18-derived kernel (with the hashed mm), we get this instead:
+> Note that the top level makefile detects clang via:
 >
-> 120e60000-121030000 rw-p 00000000 fd:00 102447141                        /root/extld
-> 121030000-121060000 rw-p 001c0000 fd:00 102447141                        /root/extld
-> 121060000-121080000 rw-p 00000000 00:00 0 
+> ifeq ($(cc-name),clang)
+>
+> Does that not work here? I'd prefer to keep compiler detection in
+> Makefiles consistent, if it works?
 
-I assume that's caused by:
+cc-name is being removed in favor of CONFIG_CC_IS_CLANG:
 
-  47ebb09d5485 ("powerpc: move ELF_ET_DYN_BASE to 4GB / 4MB")
-
-Which did roughly:
-
-  -#define ELF_ET_DYN_BASE	0x20000000
-  +#define ELF_ET_DYN_BASE		(is_32bit_task() ? 0x000400000UL : \
-  +					   0x100000000UL)
-
-And went into 4.13.
-
-> ...
-> I'm not entirely sure what to make of this, but I'm worried that this
-> could be a regression that matters to userspace.
-
-It was a deliberate change, and it seemed to not break anything so we
-merged it. But obviously we didn't test widely enough.
-
-So I guess it clearly can matter to userspace, and it used to work, so
-therefore it is a regression.
-
-But at the same time we haven't had any other reports of breakage, so is
-this somehow specific to something Go is doing? Or did we just get lucky
-up until now? Or is no one actually testing on Power? ;)
+https://lore.kernel.org/lkml/1540905994-6073-1-git-send-email-yamada.masahiro@socionext.com/
 
 cheers
