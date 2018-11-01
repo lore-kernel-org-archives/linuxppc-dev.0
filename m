@@ -2,82 +2,91 @@ Return-Path: <SRS0=OEx3=NM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 270B2C0044C
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 21:48:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CBDB1C6786F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 21:56:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7283C20657
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 21:48:20 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="ls+xdu4o"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7283C20657
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id 50D1B205F4
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 21:56:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 50D1B205F4
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=debian.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42mJjZ1VlRzF3P7
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Nov 2018 08:48:18 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42mJtX3LFCzF2Pq
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Nov 2018 08:56:04 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=debian.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="ls+xdu4o";
-	dkim-atps=neutral
+ spf=none (mailfrom) smtp.mailfrom=debian.org
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=leitao@debian.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=infradead.org
- (client-ip=2001:8b0:10b:1231::1; helo=merlin.infradead.org;
- envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="ls+xdu4o"; dkim-atps=neutral
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:8b0:10b:1231::1])
+ dmarc=none (p=none dis=none) header.from=debian.org
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42mJfl4XJpzF3P3
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Nov 2018 08:45:51 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=merlin.20170209; h=In-Reply-To:Content-Type:MIME-Version:
- References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=MEJyokPYI7oa2A6Ix9ONUmGbnct/Kvmgb/sJnQOStxc=; b=ls+xdu4ozQ7c4yvsm9ovqZ/4f
- fiFuSHac7Q2elKhmdle5qz3kdC0phtzafFsg4Fo2K2xfxrjjRsDtWE8XnThq8D8sZp3qGvjfpHNYJ
- KPaE2XjSwPvKGaCuIvf0YpWpc37Hen7TUH95ZQP0r4vzo5jp+Nq2MzUx1YnyYOG061j3OHyzTmnlr
- s4Jw3VZyfp0csnbleNLXSg2xp268RVktS0DawCGK+9p+MdaTrMQynXvZgyztm7d70YjSIr84TKOug
- 92DT3I1mDBUZhew+WI6z8TpS90qReNeQaT3Sba2tf1zJwoV+RlbOUgr7lAc/5xwwbeYpK4YRYEmbD
- 9zqkC8MRw==;
-Received: from j217100.upc-j.chello.nl ([24.132.217.100] helo=worktop)
- by merlin.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
- id 1gIKmR-00079A-Uh; Thu, 01 Nov 2018 21:45:32 +0000
-Received: by worktop (Postfix, from userid 1000)
- id 4A4CE6E07D9; Thu,  1 Nov 2018 22:45:29 +0100 (CET)
-Date: Thu, 1 Nov 2018 22:45:29 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: Dmitry Vyukov <dvyukov@google.com>
-Subject: Re: [RFC PATCH] lib: Introduce generic __cmpxchg_u64() and use it
- where needed
-Message-ID: <20181101214529.GB3339@worktop.programming.kicks-ass.net>
-References: <20181031220253.GA15505@roeck-us.net>
- <20181031233235.qbedw3pinxcuk7me@pburton-laptop>
- <4e2438a23d2edf03368950a72ec058d1d299c32e.camel@hammerspace.com>
- <20181101131846.biyilr2msonljmij@lakrids.cambridge.arm.com>
- <20181101145926.GE3178@hirez.programming.kicks-ass.net>
- <f38e272f7a96e983549e4281aa9fd02833a4277a.camel@hammerspace.com>
- <20181101163212.GF3159@hirez.programming.kicks-ass.net>
- <20181101170146.GQ4170@linux.ibm.com>
- <20181101171846.GI3178@hirez.programming.kicks-ass.net>
- <CACT4Y+aC45BtS88DXarn3A+LV2RRRsPQoSs_3_DnKjU4O3AMHQ@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CACT4Y+aC45BtS88DXarn3A+LV2RRRsPQoSs_3_DnKjU4O3AMHQ@mail.gmail.com>
-User-Agent: Mutt/1.5.22.1 (2013-10-16)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42mJrM6JKmzF3P4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Nov 2018 08:54:11 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wA1Ls9qD036974
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Nov 2018 17:54:09 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ng9f10uhr-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Nov 2018 17:54:08 -0400
+Received: from localhost
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <leitao@debian.org>;
+ Thu, 1 Nov 2018 21:54:07 -0000
+Received: from b03cxnp08027.gho.boulder.ibm.com (9.17.130.19)
+ by e34.co.us.ibm.com (192.168.1.134) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Thu, 1 Nov 2018 21:54:05 -0000
+Received: from b03ledav005.gho.boulder.ibm.com
+ (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wA1Ls4v119660966
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Thu, 1 Nov 2018 21:54:04 GMT
+Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C5797BE053;
+ Thu,  1 Nov 2018 21:54:04 +0000 (GMT)
+Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 5B3E0BE04F;
+ Thu,  1 Nov 2018 21:54:03 +0000 (GMT)
+Received: from indigo.ibm.com (unknown [9.85.161.207])
+ by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Thu,  1 Nov 2018 21:54:02 +0000 (GMT)
+From: Breno Leitao <leitao@debian.org>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/mm: remove unused function prototype
+Date: Thu,  1 Nov 2018 18:54:01 -0300
+X-Mailer: git-send-email 2.7.4
+X-TM-AS-GCONF: 00
+x-cbid: 18110121-0016-0000-0000-0000094D3076
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00009968; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000268; SDB=6.01111275; UDB=6.00575881; IPR=6.00891366; 
+ MB=3.00023997; MTD=3.00000008; XFM=3.00000015; UTC=2018-11-01 21:54:07
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18110121-0017-0000-0000-000040EB2C18
+Message-Id: <1541109241-2227-1-git-send-email-leitao@debian.org>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-11-01_15:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=659 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1807170000 definitions=main-1811010182
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,51 +98,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
- "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
- "jhogan@kernel.org" <jhogan@kernel.org>,
- "will.deacon@arm.com" <will.deacon@arm.com>,
- "bfields@fieldses.org" <bfields@fieldses.org>,
- "paulus@samba.org" <paulus@samba.org>,
- "Paul E. McKenney" <paulmck@linux.ibm.com>,
- Trond Myklebust <trondmy@hammerspace.com>,
- Andrey Ryabinin <aryabinin@virtuozzo.com>,
- "linux@roeck-us.net" <linux@roeck-us.net>, "arnd@arndb.de" <arnd@arndb.de>,
- "boqun.feng@gmail.com" <boqun.feng@gmail.com>,
- "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "jlayton@kernel.org" <jlayton@kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "ralf@linux-mips.org" <ralf@linux-mips.org>,
- "anna.schumaker@netapp.com" <anna.schumaker@netapp.com>,
- "paul.burton@mips.com" <paul.burton@mips.com>,
- "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "davem@davemloft.net" <davem@davemloft.net>
+Cc: Breno Leitao <leitao@debian.org>, aneesh.kumar@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Nov 01, 2018 at 06:46:50PM +0100, Dmitry Vyukov wrote:
-> If there is a warning that we don't want to see at all, then we can
-> disable it. It supposed to be a useful tool, rather than a thing in
-> itself that lives own life. We already I think removed 1 particularly
-> noisy warning and made another optional via a config.
+Commit f384796c40dc ("powerpc/mm: Add support for handling > 512TB address
+in SLB miss") removed function slb_miss_bad_addr(struct pt_regs *regs), but
+kept its declaration in the prototype file. This patch simply removes the
+function definition.
 
-> But the thing with overflows is that, even if it's defined, it's not
-> necessary the intended behavior. For example, take allocation size
-> calculation done via unsigned size_t. If it overflows it does not help
-> if C defines result or not, it still gives a user controlled write
-> primitive. We've seen similar cases with timeout/deadline calculation
-> in kernel, we really don't want it to just wrap modulo-2, right. Some
-> user-space projects even test with unsigned overflow warnings or
-> implicit truncation warnings, which are formally legal, but frequently
-> bugs.
+Signed-off-by: Breno Leitao <leitao@debian.org>
+---
+ arch/powerpc/include/asm/asm-prototypes.h | 1 -
+ 1 file changed, 1 deletion(-)
 
-Sure; but then don't call it UB.
-
-If we want to have an additional integer over/underflow checker (ideally
-with a gcc plugin that has explicit annotations like __wrap to make it
-go away) that is fine; and it can be done on unsigned and signed.
-
+diff --git a/arch/powerpc/include/asm/asm-prototypes.h b/arch/powerpc/include/asm/asm-prototypes.h
+index ec691d489656..6f201b199c02 100644
+--- a/arch/powerpc/include/asm/asm-prototypes.h
++++ b/arch/powerpc/include/asm/asm-prototypes.h
+@@ -61,7 +61,6 @@ void RunModeException(struct pt_regs *regs);
+ void single_step_exception(struct pt_regs *regs);
+ void program_check_exception(struct pt_regs *regs);
+ void alignment_exception(struct pt_regs *regs);
+-void slb_miss_bad_addr(struct pt_regs *regs);
+ void StackOverflow(struct pt_regs *regs);
+ void kernel_fp_unavailable_exception(struct pt_regs *regs);
+ void altivec_unavailable_exception(struct pt_regs *regs);
+-- 
+2.13.2
 
