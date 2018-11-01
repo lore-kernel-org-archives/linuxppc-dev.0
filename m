@@ -2,92 +2,82 @@ Return-Path: <SRS0=OEx3=NM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EC9E3C0044C
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 06:51:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9CC3CC6786F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 10:03:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 186482064C
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 06:51:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 03CC4205F4
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 10:03:16 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="qF3Kypgy"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 186482064C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=pass (2048-bit key) header.d=efficios.com header.i=@efficios.com header.b="LQJsPRvk"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 03CC4205F4
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=efficios.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42lwpy71BQzDqC3
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 17:51:38 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42m1423WYZzF3N0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 21:03:14 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=efficios.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="qF3Kypgy";
+	dkim=pass (2048-bit key; unprotected) header.d=efficios.com header.i=@efficios.com header.b="LQJsPRvk";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::62f; helo=mail-pl1-x62f.google.com;
- envelope-from=amodra@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=efficios.com
+ (client-ip=167.114.142.138; helo=mail.efficios.com;
+ envelope-from=mathieu.desnoyers@efficios.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
+ dmarc=pass (p=none dis=none) header.from=efficios.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="qF3Kypgy"; 
+ unprotected) header.d=efficios.com header.i=@efficios.com header.b="LQJsPRvk";
  dkim-atps=neutral
-Received: from mail-pl1-x62f.google.com (mail-pl1-x62f.google.com
- [IPv6:2607:f8b0:4864:20::62f])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mail.efficios.com (mail.efficios.com [167.114.142.138])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42lwmK51RVzDqT3
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Nov 2018 17:49:18 +1100 (AEDT)
-Received: by mail-pl1-x62f.google.com with SMTP id b5-v6so7860859pla.6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2018 23:49:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=Qhz9qXz2LcZ2ztaI/Cz8A/BpkYdbYPQO8Nm2eJrXEAQ=;
- b=qF3Kypgyh8nvtMXbCt/V7XyXzn/gLHzEs9y+OwH5uhYxTbWdlXim4r7qv+MFkE56bf
- 2zerImU2TXRlF00LAcwY/IKjziDNljDnPrzlokwBktGa7YZaQsEUoqfcwqwCqLQFqliU
- uyIVmbDc5Nf97yeMIzJVymIc+DUqcq3bWQbbgRw9i9xfr7w/hrLvrR6icsr8eHm6dc4n
- ShYon0wv0L+DvywJgmZ2V32B4ogsZYMnHS2PeX34I7jvjvifwEGX2576Tm0F8aHMDON1
- kQvtBcr3QgSnuQeKlXCy+v6pUFasD2UaK6Gka9bhGg0NZ8enX6HO8sO5KlvGpHVyBK7T
- Uzmw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=Qhz9qXz2LcZ2ztaI/Cz8A/BpkYdbYPQO8Nm2eJrXEAQ=;
- b=nAV5cdN/Db1YPGPPoV2mlh6IjyOm9qFGxUt+AbpEvzqutBxHDaQihaMUiOxBqjECig
- c+YKd5OmZ/j+n0hQ6ZFEu9tAr6NPHxVvdLQXwhOB0I9q3Dbp71w0E0g7rWfHlJF8VS+k
- Qneetv6u9Cag+KkhVFPdojVO2kHggTHGCfOcNJkg8H333o+dV1ANAZMSyCErks1DeFJY
- p562AjY8cALc7TGK9Tl8HUL4iVhWtfMkcaN7Vayp+YWvSJ2k2b4SYfa22peD/FWirFTc
- va5sa9iCBWtA5UcezErE73XIzEyxGJds/AWYou6FzNwrGyqasXa9H0jC8SJ4AClj0JjW
- aUfg==
-X-Gm-Message-State: AGRZ1gJw2jiuXTLV0Zau1/5LXz1G8FhLLgZ90MWuNpGAm6PrtOXnIPlu
- ByjAjuPUi5j4sYu6hP4A7BI=
-X-Google-Smtp-Source: AJdET5da/UaFPjsCcuNZI1kXthV/Tq77pYm2HiH1SwWQ6C9nWnqIK8Ij9wxDJVEo5wCAPK8sr1iLiw==
-X-Received: by 2002:a17:902:64c1:: with SMTP id
- y1-v6mr6546371pli.210.1541054956461; 
- Wed, 31 Oct 2018 23:49:16 -0700 (PDT)
-Received: from bubble.grove.modra.org ([58.175.241.133])
- by smtp.gmail.com with ESMTPSA id e2-v6sm31499689pgv.25.2018.10.31.23.49.14
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Wed, 31 Oct 2018 23:49:15 -0700 (PDT)
-Received: by bubble.grove.modra.org (Postfix, from userid 1000)
- id 778768052F; Thu,  1 Nov 2018 17:19:11 +1030 (ACDT)
-Date: Thu, 1 Nov 2018 17:19:11 +1030
-From: Alan Modra <amodra@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: PIE binaries are no longer mapped below 4 GiB on ppc64le
-Message-ID: <20181101064911.GB29482@bubble.grove.modra.org>
-References: <87k1lyf2x3.fsf@oldenburg.str.redhat.com>
- <87lg6dfo3t.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87lg6dfo3t.fsf@concordia.ellerman.id.au>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42m10Y1tNZzF3MC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Nov 2018 21:00:13 +1100 (AEDT)
+Received: from localhost (ip6-localhost [IPv6:::1])
+ by mail.efficios.com (Postfix) with ESMTP id 73B6F22771A;
+ Thu,  1 Nov 2018 06:00:06 -0400 (EDT)
+Received: from mail.efficios.com ([IPv6:::1])
+ by localhost (mail02.efficios.com [IPv6:::1]) (amavisd-new, port 10032)
+ with ESMTP id U7cbJwXUbdjq; Thu,  1 Nov 2018 06:00:05 -0400 (EDT)
+Received: from localhost (ip6-localhost [IPv6:::1])
+ by mail.efficios.com (Postfix) with ESMTP id 14C3F227716;
+ Thu,  1 Nov 2018 06:00:05 -0400 (EDT)
+DKIM-Filter: OpenDKIM Filter v2.10.3 mail.efficios.com 14C3F227716
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=efficios.com;
+ s=default; t=1541066405;
+ bh=gM7Kec0aqOSc74Mk9mz7nq5+r7lpkxUKvOiAtaED5o0=;
+ h=From:To:Date:Message-Id;
+ b=LQJsPRvkx4KNc3y8OvP02BzWos1dzII9+Tkm2bvJX98dTyJtkxN2B1kpUVTGlb4qr
+ Wg0JMrv5XMLSvvK0UN7gDFS3qNRZmNChXSQ6JAfII1FoFGa3r+NyNFcaOO2byNsTii
+ 8Kbxcy5diwscLEAMGtg3Cc7W7zNJh4SaKyGM50rghVJEYL8mXikyWynUx4YPtv8HIL
+ sQzATFuvZ1VMf83anB87YZaMHBjNxTHcDCiBI5dY36yF1kJxXqD5gBAftGmG8Q7aJc
+ Bh4sOIEsf8maFZtD3YJS+w/pfm3wavjkufO32mJic+k3R+HFs1COpXcjV61hP+diSi
+ ekjSAGr3X0RxQ==
+X-Virus-Scanned: amavisd-new at efficios.com
+Received: from mail.efficios.com ([IPv6:::1])
+ by localhost (mail02.efficios.com [IPv6:::1]) (amavisd-new, port 10026)
+ with ESMTP id xJbU_vLP5yGr; Thu,  1 Nov 2018 06:00:04 -0400 (EDT)
+Received: from thinkos.etherlink (sessfw99-sesbfw99-92.ericsson.net
+ [192.176.1.92])
+ by mail.efficios.com (Postfix) with ESMTPSA id DF8B92276B4;
+ Thu,  1 Nov 2018 05:59:53 -0400 (EDT)
+From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+To: Peter Zijlstra <peterz@infradead.org>,
+ "Paul E . McKenney" <paulmck@linux.vnet.ibm.com>,
+ Boqun Feng <boqun.feng@gmail.com>
+Subject: [RFC PATCH for 4.21 09/16] powerpc: Wire up cpu_opv system call
+Date: Thu,  1 Nov 2018 10:58:37 +0100
+Message-Id: <20181101095844.24462-10-mathieu.desnoyers@efficios.com>
+X-Mailer: git-send-email 2.11.0
+In-Reply-To: <20181101095844.24462-1-mathieu.desnoyers@efficios.com>
+References: <20181101095844.24462-1-mathieu.desnoyers@efficios.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,70 +89,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Florian Weimer <fweimer@redhat.com>, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, keescook@chromium.org
+Cc: Joel Fernandes <joelaf@google.com>, Dave Watson <davejwatson@fb.com>,
+ Will Deacon <will.deacon@arm.com>, Andi Kleen <andi@firstfloor.org>,
+ Paul Mackerras <paulus@samba.org>, "H . Peter Anvin" <hpa@zytor.com>,
+ Chris Lameter <cl@linux.com>, Russell King <linux@arm.linux.org.uk>,
+ Ingo Molnar <mingo@redhat.com>, Michael Kerrisk <mtk.manpages@gmail.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, Paul Turner <pjt@google.com>,
+ Josh Triplett <josh@joshtriplett.org>, Steven Rostedt <rostedt@goodmis.org>,
+ Ben Maurer <bmaurer@fb.com>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-api@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Andy Lutomirski <luto@amacapital.net>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Nov 01, 2018 at 02:55:34PM +1100, Michael Ellerman wrote:
-> Hi Florian,
-> 
-> Florian Weimer <fweimer@redhat.com> writes:
-> > We tried to use Go to build PIE binaries, and while the Go toolchain is
-> > definitely not ready (it produces text relocations and problematic
-> > relocations in general), it exposed what could be an accidental
-> > userspace ABI change.
-> >
-> > With our 4.10-derived kernel, PIE binaries are mapped below 4 GiB, so
-> > relocations like R_PPC64_ADDR16_HA work:
-> >
-> > 21f00000-220d0000 r-xp 00000000 fd:00 36593493                           /root/extld
-> > 220d0000-220e0000 r--p 001c0000 fd:00 36593493                           /root/extld
-> > 220e0000-22100000 rw-p 001d0000 fd:00 36593493                           /root/extld
-> ...
-> >
-> > With a 4.18-derived kernel (with the hashed mm), we get this instead:
-> >
-> > 120e60000-121030000 rw-p 00000000 fd:00 102447141                        /root/extld
-> > 121030000-121060000 rw-p 001c0000 fd:00 102447141                        /root/extld
-> > 121060000-121080000 rw-p 00000000 00:00 0 
-> 
-> I assume that's caused by:
-> 
->   47ebb09d5485 ("powerpc: move ELF_ET_DYN_BASE to 4GB / 4MB")
-> 
-> Which did roughly:
-> 
->   -#define ELF_ET_DYN_BASE	0x20000000
->   +#define ELF_ET_DYN_BASE		(is_32bit_task() ? 0x000400000UL : \
->   +					   0x100000000UL)
-> 
-> And went into 4.13.
-> 
-> > ...
-> > I'm not entirely sure what to make of this, but I'm worried that this
-> > could be a regression that matters to userspace.
-> 
-> It was a deliberate change, and it seemed to not break anything so we
-> merged it. But obviously we didn't test widely enough.
-> 
-> So I guess it clearly can matter to userspace, and it used to work, so
-> therefore it is a regression.
-> 
-> But at the same time we haven't had any other reports of breakage, so is
-> this somehow specific to something Go is doing? Or did we just get lucky
-> up until now? Or is no one actually testing on Power? ;)
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: Paul Mackerras <paulus@samba.org>
+CC: Michael Ellerman <mpe@ellerman.id.au>
+CC: Boqun Feng <boqun.feng@gmail.com>
+CC: Peter Zijlstra <peterz@infradead.org>
+CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+CC: linuxppc-dev@lists.ozlabs.org
+---
+ arch/powerpc/include/asm/systbl.h      | 1 +
+ arch/powerpc/include/uapi/asm/unistd.h | 1 +
+ 2 files changed, 2 insertions(+)
 
-Mapping PIEs above 4G should be fine.  It works for gcc C and C++
-after all.  The problem is that ppc64le Go is generating code not
-suitable for a PIE.  Dynamic text relocations are evidence of non-PIC
-object files.
-
-Quoting Lynn Boger <boger@us.ibm.com>:
-"When building a pie binary with golang, they should be using
--buildmode=pie and not just pass -pie to the linker".
-
+diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
+index 01b5171ea189..8f58710f5e8b 100644
+--- a/arch/powerpc/include/asm/systbl.h
++++ b/arch/powerpc/include/asm/systbl.h
+@@ -394,3 +394,4 @@ SYSCALL(pkey_free)
+ SYSCALL(pkey_mprotect)
+ SYSCALL(rseq)
+ COMPAT_SYS(io_pgetevents)
++SYSCALL(cpu_opv)
+diff --git a/arch/powerpc/include/uapi/asm/unistd.h b/arch/powerpc/include/uapi/asm/unistd.h
+index 985534d0b448..112e2c54750a 100644
+--- a/arch/powerpc/include/uapi/asm/unistd.h
++++ b/arch/powerpc/include/uapi/asm/unistd.h
+@@ -400,5 +400,6 @@
+ #define __NR_pkey_mprotect	386
+ #define __NR_rseq		387
+ #define __NR_io_pgetevents	388
++#define __NR_cpu_opv		389
+ 
+ #endif /* _UAPI_ASM_POWERPC_UNISTD_H_ */
 -- 
-Alan Modra
-Australia Development Lab, IBM
+2.11.0
+
