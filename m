@@ -1,109 +1,90 @@
-Return-Path: <SRS0=OEx3=NM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=pcIm=NN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
+X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F52EC0044C
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 22:28:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E89BEC0044C
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Nov 2018 00:47:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DEBA8204FD
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Nov 2018 22:28:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DEBA8204FD
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 0372520666
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Nov 2018 00:47:25 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="WKsCC6US"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0372520666
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=jms.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42mKc83twvzF3PY
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Nov 2018 09:28:40 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42mNhC4fcwzF31t
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Nov 2018 11:47:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=jms.id.au
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=paulmck@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="WKsCC6US";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::441; helo=mail-pf1-x441.google.com;
+ envelope-from=joel.stan@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=jms.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="WKsCC6US"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
+ [IPv6:2607:f8b0:4864:20::441])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42mKZ413TNzF3Nj
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Nov 2018 09:26:51 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wA1MNpVK128204
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Nov 2018 18:26:49 -0400
-Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ng6mxryy8-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Nov 2018 18:26:49 -0400
-Received: from localhost
- by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Thu, 1 Nov 2018 22:26:48 -0000
-Received: from b01cxnp23032.gho.pok.ibm.com (9.57.198.27)
- by e13.ny.us.ibm.com (146.89.104.200) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 1 Nov 2018 22:26:41 -0000
-Received: from b01ledav003.gho.pok.ibm.com (b01ledav003.gho.pok.ibm.com
- [9.57.199.108])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wA1MQf7i25100518
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Thu, 1 Nov 2018 22:26:41 GMT
-Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id EB775B205F;
- Thu,  1 Nov 2018 22:26:40 +0000 (GMT)
-Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B4B29B2064;
- Thu,  1 Nov 2018 22:26:40 +0000 (GMT)
-Received: from paulmck-ThinkPad-W541 (unknown [9.70.82.141])
- by b01ledav003.gho.pok.ibm.com (Postfix) with ESMTP;
- Thu,  1 Nov 2018 22:26:40 +0000 (GMT)
-Received: by paulmck-ThinkPad-W541 (Postfix, from userid 1000)
- id 3AAED16C0598; Thu,  1 Nov 2018 15:26:41 -0700 (PDT)
-Date: Thu, 1 Nov 2018 15:26:41 -0700
-From: "Paul E. McKenney" <paulmck@linux.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC PATCH] lib: Introduce generic __cmpxchg_u64() and use it
- where needed
-References: <4e2438a23d2edf03368950a72ec058d1d299c32e.camel@hammerspace.com>
- <20181101131846.biyilr2msonljmij@lakrids.cambridge.arm.com>
- <20181101145926.GE3178@hirez.programming.kicks-ass.net>
- <f38e272f7a96e983549e4281aa9fd02833a4277a.camel@hammerspace.com>
- <20181101163212.GF3159@hirez.programming.kicks-ass.net>
- <b0160f4b-b996-b0ee-405a-3d5f1866272e@gmail.com>
- <20181101171432.GH3178@hirez.programming.kicks-ass.net>
- <20181101172739.GA3196@hirez.programming.kicks-ass.net>
- <20181101202910.GB4170@linux.ibm.com>
- <20181101213834.GA3339@worktop.programming.kicks-ass.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42mNdf5MJnzDrJs
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Nov 2018 11:45:10 +1100 (AEDT)
+Received: by mail-pf1-x441.google.com with SMTP id b11-v6so167335pfi.5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Nov 2018 17:45:10 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=sender:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=HIonunmopofPGzSNm75ie2dBu2DrhPo42aMJpvxj16s=;
+ b=WKsCC6USfGKBWf7sdRhHN+Ns+u3Qi32TVhckF5ZO7P/46ZbZOBigxEMdQQKLJPL+If
+ RLmfgP2oPrqyib7TPKpSWDcTGx0c2xjbYUQC9p599wXUdy+GhNG67bKZv2bOp+/w6Pyl
+ hNHmJluj5nx0is7boind93FL8tpe7hkyfaoqP2By9AVVoJtA9sUAtsI0VusJVckORxZe
+ KR/VocN/LnSRTni4VQq30Ki6Lavr230lNBIVivTgksMdYullPVBZHEiiWSyeR/1lqJeK
+ yNnCG2SzaTXAQ2vx38V1cTnMUj3DtTsaRrDQ02i5vd6RjlhTa5FSHhbUAT0Rkjvd1Y8J
+ +oyg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
+ :mime-version:content-transfer-encoding;
+ bh=HIonunmopofPGzSNm75ie2dBu2DrhPo42aMJpvxj16s=;
+ b=bqbNoH8OkEu07DkGx93HJxjx4rJBBPog4dvCMUdZyh7WtkILdVC7NndHMW+NFCemb+
+ sqGRQQGnoNveaf2WgylQoUBcozKZkJZg07/W/VclmjJQOIQkEWhGihfn1SwNFETvPsqg
+ EM6Py8c2KOSwLxJD57hcAA/QdzHwPl9QWthMSPP0I6ZFQogYrKwX7UVwIEei7bOUPszt
+ 4xuhj4NtNsrhIxZzpI5raGMoowz//S7DfDzZ8mhCXjlQEUFIuURjd6z2DdkYQ1IEwAzC
+ ix6nfyLET9taNN2aCBtetaqbWY11mrF6ZoZOoJP43NB8ihbCE69MbfpxJ2TWEdF1QIkw
+ UMTQ==
+X-Gm-Message-State: AGRZ1gLNx+iPqzZa+DLshs86/5VP+zLjETD4a0WE5uq9gps0RnWp0M3s
+ FXM7GEDBKJl7SPOHsMfxbPQ=
+X-Google-Smtp-Source: AJdET5cmBd3bR6iAqNr57q7YSwG+um3oWBF7hrdjWIvB8uSJMQ1tF2ARax6rnTkjlWiSdx27TnvnEw==
+X-Received: by 2002:a62:e707:: with SMTP id
+ s7-v6mr9865843pfh.124.1541119507975; 
+ Thu, 01 Nov 2018 17:45:07 -0700 (PDT)
+Received: from aurora.jms.id.au ([45.124.203.15])
+ by smtp.gmail.com with ESMTPSA id q7-v6sm26252401pgv.78.2018.11.01.17.45.03
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Thu, 01 Nov 2018 17:45:07 -0700 (PDT)
+Received: by aurora.jms.id.au (sSMTP sendmail emulation);
+ Fri, 02 Nov 2018 11:15:00 +1030
+From: Joel Stanley <joel@jms.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2] raid6/ppc: Fix build for clang
+Date: Fri,  2 Nov 2018 11:14:55 +1030
+Message-Id: <20181102004455.10157-1-joel@jms.id.au>
+X-Mailer: git-send-email 2.19.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20181101213834.GA3339@worktop.programming.kicks-ass.net>
-User-Agent: Mutt/1.5.21 (2010-09-15)
-X-TM-AS-GCONF: 00
-x-cbid: 18110122-0064-0000-0000-0000036C7196
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00009968; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000268; SDB=6.01111286; UDB=6.00575888; IPR=6.00891378; 
- MB=3.00023997; MTD=3.00000008; XFM=3.00000015; UTC=2018-11-01 22:26:47
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18110122-0065-0000-0000-00003B313D77
-Message-Id: <20181101222641.GI4170@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-11-01_16:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=656 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1807170000 definitions=main-1811010187
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -115,75 +96,62 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: paulmck@linux.ibm.com
-Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
- "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
- "jhogan@kernel.org" <jhogan@kernel.org>,
- "will.deacon@arm.com" <will.deacon@arm.com>,
- "bfields@fieldses.org" <bfields@fieldses.org>,
- "paulus@samba.org" <paulus@samba.org>, Eric Dumazet <eric.dumazet@gmail.com>,
- Trond Myklebust <trondmy@hammerspace.com>, aryabinin@virtuozzo.com,
- "linux@roeck-us.net" <linux@roeck-us.net>, "arnd@arndb.de" <arnd@arndb.de>,
- "boqun.feng@gmail.com" <boqun.feng@gmail.com>, dvyukov@google.com,
- "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "jlayton@kernel.org" <jlayton@kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "ralf@linux-mips.org" <ralf@linux-mips.org>,
- "anna.schumaker@netapp.com" <anna.schumaker@netapp.com>,
- "paul.burton@mips.com" <paul.burton@mips.com>,
- "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "davem@davemloft.net" <davem@davemloft.net>
+Cc: Jinsong Ji <jji@us.ibm.com>, Nick Desaulniers <ndesaulniers@google.com>,
+ Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Nov 01, 2018 at 10:38:34PM +0100, Peter Zijlstra wrote:
-> On Thu, Nov 01, 2018 at 01:29:10PM -0700, Paul E. McKenney wrote:
-> > On Thu, Nov 01, 2018 at 06:27:39PM +0100, Peter Zijlstra wrote:
-> > > On Thu, Nov 01, 2018 at 06:14:32PM +0100, Peter Zijlstra wrote:
-> > > > > This reminds me of this sooooo silly patch :/
-> > > > > 
-> > > > > https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=adb03115f4590baa280ddc440a8eff08a6be0cb7
-> > > 
-> > > You'd probably want to write it like so; +- some ordering stuff, that
-> > > code didn't look like it really needs the memory barriers implied by
-> > > these, but I didn't look too hard.
-> > 
-> > The atomic_fetch_add() API would need to be propagated out to the other
-> > architectures, correct?
-> 
-> Like these commits I did like 2 years ago ? :-)
+We cannot build these files with clang as it does not allow altivec
+instructions in assembly when -msoft-float is passed.
 
-Color me blind and stupid!  ;-)
+Jinsong Ji <jji@us.ibm.com> wrote:
+> We currently disable Altivec/VSX support when enabling soft-float.  So
+> any usage of vector builtins will break.
+>
+> Enable Altivec/VSX with soft-float may need quite some clean up work, so
+> I guess this is currently a limitation.
+>
+> Removing -msoft-float will make it work (and we are lucky that no
+> floating point instructions will be generated as well).
 
-							Thanx, Paul
+This is a workaround until the issue is resolved in clang.
 
-> $ git log --oneline 6dc25876cdb1...1f51dee7ca74
-> 6dc25876cdb1 locking/atomic, arch/xtensa: Implement atomic_fetch_{add,sub,and,or,xor}()
-> a8bcccaba162 locking/atomic, arch/x86: Implement atomic{,64}_fetch_{add,sub,and,or,xor}()
-> 1af5de9af138 locking/atomic, arch/tile: Implement atomic{,64}_fetch_{add,sub,and,or,xor}()
-> 3a1adb23a52c locking/atomic, arch/sparc: Implement atomic{,64}_fetch_{add,sub,and,or,xor}()
-> 7d9794e75237 locking/atomic, arch/sh: Implement atomic_fetch_{add,sub,and,or,xor}()
-> 56fefbbc3f13 locking/atomic, arch/s390: Implement atomic{,64}_fetch_{add,sub,and,or,xor}()
-> a28cc7bbe8e3 locking/atomic, arch/powerpc: Implement atomic{,64}_fetch_{add,sub,and,or,xor}{,_relaxed,_acquire,_release}()
-> e5857a6ed600 locking/atomic, arch/parisc: Implement atomic{,64}_fetch_{add,sub,and,or,xor}()
-> f8d638e28d7c locking/atomic, arch/mn10300: Implement atomic_fetch_{add,sub,and,or,xor}()
-> 4edac529eb62 locking/atomic, arch/mips: Implement atomic{,64}_fetch_{add,sub,and,or,xor}()
-> e898eb27ffd8 locking/atomic, arch/metag: Implement atomic_fetch_{add,sub,and,or,xor}()
-> e39d88ea3ce4 locking/atomic, arch/m68k: Implement atomic_fetch_{add,sub,and,or,xor}()
-> f64937052303 locking/atomic, arch/m32r: Implement atomic_fetch_{add,sub,and,or,xor}()
-> cc102507fac7 locking/atomic, arch/ia64: Implement atomic{,64}_fetch_{add,sub,and,or,xor}()
-> 4be7dd393515 locking/atomic, arch/hexagon: Implement atomic_fetch_{add,sub,and,or,xor}()
-> 0c074cbc3309 locking/atomic, arch/h8300: Implement atomic_fetch_{add,sub,and,or,xor}()
-> d9c730281617 locking/atomic, arch/frv: Implement atomic{,64}_fetch_{add,sub,and,or,xor}()
-> e87fc0ec0705 locking/atomic, arch/blackfin: Implement atomic_fetch_{add,sub,and,or,xor}()
-> 1a6eafacd481 locking/atomic, arch/avr32: Implement atomic_fetch_{add,sub,and,or,xor}()
-> 2efe95fe6952 locking/atomic, arch/arm64: Implement atomic{,64}_fetch_{add,sub,and,andnot,or,xor}{,_relaxed,_acquire,_release}() for LSE instructions
-> 6822a84dd4e3 locking/atomic, arch/arm64: Generate LSE non-return cases using common macros
-> e490f9b1d3b4 locking/atomic, arch/arm64: Implement atomic{,64}_fetch_{add,sub,and,andnot,or,xor}{,_relaxed,_acquire,_release}()
-> 6da068c1beba locking/atomic, arch/arm: Implement atomic{,64}_fetch_{add,sub,and,andnot,or,xor}{,_relaxed,_acquire,_release}()
-> fbffe892e525 locking/atomic, arch/arc: Implement atomic_fetch_{add,sub,and,andnot,or,xor}()
-> 
+Link: https://bugs.llvm.org/show_bug.cgi?id=31177
+Link: https://github.com/ClangBuiltLinux/linux/issues/239
+Signed-off-by: Joel Stanley <joel@jms.id.au>
+---
+v2: fix typo in comment, thanks Jinsong
+
+ lib/raid6/Makefile | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+
+diff --git a/lib/raid6/Makefile b/lib/raid6/Makefile
+index 2f8b61dfd9b0..7ed43eaa02ef 100644
+--- a/lib/raid6/Makefile
++++ b/lib/raid6/Makefile
+@@ -18,6 +18,21 @@ quiet_cmd_unroll = UNROLL  $@
+ 
+ ifeq ($(CONFIG_ALTIVEC),y)
+ altivec_flags := -maltivec $(call cc-option,-mabi=altivec)
++
++ifdef CONFIG_CC_IS_CLANG
++# clang ppc port does not yet support -maltivec when -msoft-float is
++# enabled. A future release of clang will resolve this
++# https://bugs.llvm.org/show_bug.cgi?id=31177
++CFLAGS_REMOVE_altivec1.o  += -msoft-float
++CFLAGS_REMOVE_altivec2.o  += -msoft-float
++CFLAGS_REMOVE_altivec4.o  += -msoft-float
++CFLAGS_REMOVE_altivec8.o  += -msoft-float
++CFLAGS_REMOVE_altivec8.o  += -msoft-float
++CFLAGS_REMOVE_vpermxor1.o += -msoft-float
++CFLAGS_REMOVE_vpermxor2.o += -msoft-float
++CFLAGS_REMOVE_vpermxor4.o += -msoft-float
++CFLAGS_REMOVE_vpermxor8.o += -msoft-float
++endif
+ endif
+ 
+ # The GCC option -ffreestanding is required in order to compile code containing
+-- 
+2.19.1
 
