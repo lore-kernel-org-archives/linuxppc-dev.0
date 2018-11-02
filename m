@@ -2,48 +2,43 @@ Return-Path: <SRS0=pcIm=NN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 870E1C32789
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Nov 2018 10:20:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 00DB3C32789
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Nov 2018 11:40:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D3A872081B
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Nov 2018 10:20:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D3A872081B
+	by mail.kernel.org (Postfix) with ESMTPS id 48A3F2081F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Nov 2018 11:40:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 48A3F2081F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42mdPh3lgHzF369
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Nov 2018 21:20:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42mg9M32GSzF370
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Nov 2018 22:40:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42mdMY4469zF342
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Nov 2018 21:18:49 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42mg6N6kFyzF36n
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Nov 2018 22:37:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 42mdMX5smPzB4VP;
- Fri,  2 Nov 2018 21:18:48 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPSA id 42mg6K27dwz9sjC;
+ Fri,  2 Nov 2018 22:37:29 +1100 (AEDT)
 Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, Christoph Hellwig <hch@lst.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] powerpc/powernv: remove dead npu-dma code
-In-Reply-To: <2c87f9d2-3beb-6c7e-71a4-db8a905f57b1@ozlabs.ru>
-References: <20181030133122.GA31102@lst.de>
- <2c87f9d2-3beb-6c7e-71a4-db8a905f57b1@ozlabs.ru>
-Date: Fri, 02 Nov 2018 21:18:48 +1100
-Message-ID: <877ehveq9j.fsf@concordia.ellerman.id.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.20-2 tag
+Date: Fri, 02 Nov 2018 22:37:26 +1100
+Message-ID: <874lczemmh.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -57,79 +52,141 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: James Bottomley <jejb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, oss@buserror.net, tyreld@linux.vnet.ibm.com,
+ joel@jms.id.au, felipe.rechia@datacom.com.br, leitao@debian.org,
+ aravinda@linux.vnet.ibm.com, naveen.n.rao@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, camelia.groza@nxp.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Alexey Kardashevskiy <aik@ozlabs.ru> writes:
-> On 31/10/2018 00:31, Christoph Hellwig wrote:
->> This code has never been unused in the kernel since it was merged, and
->> there has been no attempt that I could find to even submit users for
->> it.  Besides the general policy of not keep 1000+ lines of dead
->> code, it helps cleaning up the DMA code and making powerpc user common
->> infrastructure.
->> 
->> This effectively reverts commit 5d2aa710 ("powerpc/powernv: Add support
->> for Nvlink NPUs").
->> 
->> Signed-off-by: Christoph Hellwig <hch@lst.de>
->> ---
-...
->> diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
->> deleted file mode 100644
->> index 6f60e0931922..000000000000
->> --- a/arch/powerpc/platforms/powernv/npu-dma.c
->> +++ /dev/null
->> @@ -1,989 +0,0 @@
-...
->> -int pnv_npu2_init(struct pnv_phb *phb)
->> -{
->> -	unsigned int i;
->> -	u64 mmio_atsd;
->> -	struct device_node *dn;
->> -	struct pci_dev *gpdev;
->> -	static int npu_index;
->> -	uint64_t rc = 0;
->> -
->> -	phb->npu.nmmu_flush =
->> -		of_property_read_bool(phb->hose->dn, "ibm,nmmu-flush");
->> -	for_each_child_of_node(phb->hose->dn, dn) {
->> -		gpdev = pnv_pci_get_gpu_dev(get_pci_dev(dn));
->> -		if (gpdev) {
->> -			rc = opal_npu_map_lpar(phb->opal_id,
->> -				PCI_DEVID(gpdev->bus->number, gpdev->devfn),
->> -				0, 0);
->
-> I heavily hacked on these (draft):
-> https://patchwork.ozlabs.org/project/kvm-ppc/list/?series=70791
->
-> and the result is going to be used for VFIO purposes (draft too):
-> https://patchwork.ozlabs.org/project/kvm-ppc/list/?series=70793
->
-> Other bits can go away from npu-dma but I still need some to make
-> KVM+VFIO work for GPUs, this is without any vendor driver on the host
-> side whatsoever.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-OK, so to be clear we will need at least some of this code so that a KVM
-host can pass through a GPU to a guest, and that requires no binary
-driver on the host.
+Hi Linus,
 
-I don't think anyone's arguing that we should prevent passing through
-devices that might need a binary driver in a guest?
+Please pull a few more powerpc updates for 4.20:
 
-Christoph I think that establishes that this is not all dead code, and
-so I'm nacking this patch in its current form. If you have other
-objections to this code please raise them specifically.
+The following changes since commit 58cfbac25b1fd2b76f94566aed28a3662b0ff8c6:
 
-I'll merge Alistair's patch to remove the NPU dma_ops, because they're
-not really necessary and might legitimately be getting in the way of
-dma_ops cleanups.
+  Revert "selftests/powerpc: Fix out-of-tree build errors" (2018-10-26 21:58:58 +1100)
 
-  https://patchwork.ozlabs.org/patch/990721/
+are available in the git repository at:
+
+  https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-4.20-2
+
+for you to fetch changes up to 1936f094e164cc13ebf17aba1d6b34e033e64188:
+
+  selftests/powerpc: Fix compilation issue due to asm label (2018-11-01 10:06:03 +1100)
+
+- ------------------------------------------------------------------
+powerpc fixes for 4.20 #2
+
+Some things that I missed due to travel, or that came in late.
+
+Two fixes also going to stable:
+
+ - A revert of a buggy change to the 8xx TLB miss handlers.
+
+ - Our flushing of SPE (Signal Processing Engine) registers on fork was broken.
+
+Other changes:
+
+ - A change to the KVM decrementer emulation to use proper APIs.
+
+ - Some cleanups to the way we do code patching in the 8xx code.
+
+ - Expose the maximum possible memory for the system in /proc/powerpc/lparcfg.
+
+ - Merge some updates from Scott: "a couple device tree updates, and a fix for a
+   missing prototype warning."
+
+A few other minor fixes and a handful of fixes for our selftests.
+
+Thanks to:
+  Aravinda Prasad, Breno Leitao, Camelia Groza, Christophe Leroy, Felipe Rechia,
+  Joel Stanley, Naveen N. Rao, Paul Mackerras, Scott Wood, Tyrel Datwyler.
+
+- ------------------------------------------------------------------
+Aravinda Prasad (1):
+      powerpc/pseries: Export maximum memory value
+
+Breno Leitao (1):
+      selftests/powerpc: Fix ptrace tm failure
+
+Camelia Groza (1):
+      powerpc/dts/fsl: t2080rdb: reorder the Cortina PHY XFI lanes
+
+Christophe Leroy (6):
+      powerpc/8xx: Add DT node for using the SEC engine of the MPC885
+      powerpc/8xx: add missing header in 8xx_mmu.c
+      Revert "powerpc/8xx: Use L1 entry APG to handle _PAGE_ACCESSED for CONFIG_SWAP"
+      powerpc/code-patching: Add a helper to get the address of a patch_site
+      powerpc/8xx: Use patch_site for memory setup patching
+      powerpc/8xx: Use patch_site for perf counters setup
+
+Felipe Rechia (1):
+      powerpc/process: Fix flush_all_to_thread for SPE
+
+Joel Stanley (5):
+      selftests: powerpc: Fix warning for security subdir
+      powerpc/xmon: Relax frame size for clang
+      selftests/powerpc/ptrace: Fix out-of-tree build
+      selftests/powerpc/signal: Fix out-of-tree build
+      selftests/powerpc/pmu: Link ebb tests with -no-pie
+
+Michael Ellerman (3):
+      Merge branch 'next' of https://git.kernel.org/.../scottwood/linux into next
+      selftests/powerpc/switch_endian: Fix out-of-tree build
+      selftests/powerpc/cache_shape: Fix out-of-tree build
+
+Naveen N. Rao (2):
+      selftests/powerpc: Relax L1d miss targets for rfi_flush test
+      selftests/powerpc: Fix compilation issue due to asm label
+
+Paul Mackerras (1):
+      KVM: PPC: Use exported tb_to_ns() function in decrementer emulation
+
+Tyrel Datwyler (1):
+      powerpc/pseries: add missing cpumask.h include file
 
 
-cheers
+ arch/powerpc/boot/dts/fsl/t2080rdb.dts             |  4 +-
+ arch/powerpc/boot/dts/mpc885ads.dts                | 13 ++-
+ arch/powerpc/include/asm/code-patching.h           |  5 ++
+ arch/powerpc/include/asm/mmu-8xx.h                 | 43 ++++------
+ arch/powerpc/include/asm/rtas.h                    |  1 +
+ arch/powerpc/kernel/head_8xx.S                     | 97 +++++++++++++---------
+ arch/powerpc/kernel/process.c                      |  3 +-
+ arch/powerpc/kvm/book3s_hv.c                       |  3 +-
+ arch/powerpc/kvm/emulate.c                         |  7 +-
+ arch/powerpc/mm/8xx_mmu.c                          | 26 ++----
+ arch/powerpc/perf/8xx-pmu.c                        | 27 +++---
+ arch/powerpc/platforms/pseries/lparcfg.c           | 13 +++
+ arch/powerpc/xmon/Makefile                         |  6 ++
+ .../testing/selftests/powerpc/cache_shape/Makefile |  9 +-
+ tools/testing/selftests/powerpc/pmu/ebb/Makefile   |  3 +
+ tools/testing/selftests/powerpc/ptrace/Makefile    | 13 +--
+ .../selftests/powerpc/ptrace/ptrace-tm-spd-gpr.c   |  4 +-
+ tools/testing/selftests/powerpc/security/Makefile  |  1 +
+ .../testing/selftests/powerpc/security/rfi_flush.c | 18 ++--
+ tools/testing/selftests/powerpc/signal/Makefile    | 11 +--
+ .../selftests/powerpc/switch_endian/Makefile       |  1 +
+ tools/testing/selftests/powerpc/utils.c            |  6 +-
+ 22 files changed, 169 insertions(+), 145 deletions(-)
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAEBAgAGBQJb3DXnAAoJEFHr6jzI4aWAYKYP/i/a94GU2Otsq92OBhi0vi0F
+z465qeQYjxtLfB0+a1Pm8RE6PbiecTHdeNl11VH4Us1m0tn8RwikbfsAuM+C7R/k
+LNXfIrzz77RFXQgNs5kBMeTvQG1yznSpdDfZ2xtx72Oqdcw4JHFfjCf2Dzf8i8Dl
+Dn3NSaO0uppg/P4Eoi7eMZ+CgI9CpPzPQKj0wcIszHatoswKJg1AMglnAHeiERMh
+ne7XkKq/h0nVydTR/+OYXSAj7CBvqSXJ1PQPVzkknvgTuPiHsmzFlffm5NVobIHN
+KYI66HdJ0M0a8tpES+LovrebVGH3HPe4xtjxtxKzpUipbtsGBobroIz9EzRE+XKj
+UMgnEtQziXnUU3aI1E8ctoR+e5NeLT37Q9OH6fDZgOhVo3CaVGCYf2cJP0yfsJHu
+ovksMHfuQuJtZQtdflmYezVsWi1uQo60oMfTKYqvM3FYEqrZZdvjlj8S3LtTUOh6
+Q8EJKSTLGUF2h8rl5CYK1LHpSbv736qc3kodjvQmFAsh+U3y0ooShfoa+O8ORylE
+Q/gf4TvLPHcA/PvowUD0UQIW//SDem+CX3axORICKITjSywgIZoZj+3CSt29SFVd
+Vublxd2s3zflRGseZXURvGd9Ra4U+Al4AO/rvfPYWgp6eiieRbk4fljps0gaVbaF
+OAAyPTb2VPyGG6UCGrP2
+=gwAL
+-----END PGP SIGNATURE-----
