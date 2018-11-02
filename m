@@ -1,86 +1,65 @@
-Return-Path: <SRS0=pcIm=NN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=9U3E=NO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AB514C32789
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Nov 2018 21:19:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9331AC0044C
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Nov 2018 04:23:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DAF982081F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Nov 2018 21:19:46 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="UNpNKE2o"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DAF982081F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=rasmusvillemoes.dk
+	by mail.kernel.org (Postfix) with ESMTPS id A015B2082E
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Nov 2018 04:23:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A015B2082E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=virtuozzo.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42mw284cYfzF386
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Nov 2018 08:19:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=rasmusvillemoes.dk
+	by lists.ozlabs.org (Postfix) with ESMTP id 42n5QX6sK6zF37c
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Nov 2018 15:23:00 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=virtuozzo.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="UNpNKE2o";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=virtuozzo.com
+ (client-ip=185.231.240.75; helo=relay.sw.ru;
+ envelope-from=aryabinin@virtuozzo.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=rasmusvillemoes.dk
- (client-ip=2a00:1450:4864:20::542; helo=mail-ed1-x542.google.com;
- envelope-from=linux@rasmusvillemoes.dk; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=rasmusvillemoes.dk
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk
- header.b="UNpNKE2o"; dkim-atps=neutral
-Received: from mail-ed1-x542.google.com (mail-ed1-x542.google.com
- [IPv6:2a00:1450:4864:20::542])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ dmarc=pass (p=none dis=none) header.from=virtuozzo.com
+X-Greylist: delayed 1694 seconds by postgrey-1.36 at bilbo;
+ Sat, 03 Nov 2018 03:47:41 AEDT
+Received: from relay.sw.ru (relay.sw.ru [185.231.240.75])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42mvzR24cDzF35Q
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Nov 2018 08:17:18 +1100 (AEDT)
-Received: by mail-ed1-x542.google.com with SMTP id z12-v6so2868868edp.7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Nov 2018 14:17:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=rasmusvillemoes.dk; s=google;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=73Yrp2BJa8JllIjkFd7mlwtLDDEyf3BVxMYTOSKf0E0=;
- b=UNpNKE2o354eq6jxDmmf5nBiNgp6Twa8avsFFh21sqqSmNvYMULZGHZMyFwvldylyY
- Ba8naldVgHUFp1Nfri1HqcGFpp9kgl0ly18kUPE7xclMWkpSYN43xQqHNfCmUFl/4wbt
- Lae+7s2SA/sW0pgKUt65unmKieZ4+tNJzgOas=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=73Yrp2BJa8JllIjkFd7mlwtLDDEyf3BVxMYTOSKf0E0=;
- b=SJHg6OL4RAv6DDncmvBJVOBnDYHXuM0aYBZmvOVyplpEyujCwCHHJ+r/x3YoW8jf99
- 4O6yGkYv50dKPfMof9SZenq9BvOavnUlPUYtgKUbmqEYiBc6/U0xKSFqzIKSRsGqyTZq
- dG9RwULPZciNh9upbqUFWkF25KfEO5BwPSzBJ7BMeebJm6YWsln9y9lCKeu8jGRbC3YP
- H+K629Cuvj4GVemrQgsj4JvxKJ1ZBsVZ+R5OkFNBurNrAKccpNC7HBQZir+/8oxUS0py
- H3ZKQHIXerSIiQdfXs6y31itWYSaqgqEFkzi/vhVA1CRb1W1Rj9mlNE5m3R0KyMVejgN
- wkYQ==
-X-Gm-Message-State: AGRZ1gKRpcD5PkVElA2E/tPaNhN6sACRemDVLfJbLQpqpubfL/J/h8H0
- RAZxmWYJLW+XLPBbA3GIpAy5Og==
-X-Google-Smtp-Source: AJdET5eHvjN/pe6hdIfSy56WEexwDFL7vsbEJN0RaJwkw9BgBs5iutn/Hgu6ZWhFqHT5pufL42a79w==
-X-Received: by 2002:a17:906:6c9:: with SMTP id
- v9-v6mr7400577ejb.203.1541193435250; 
- Fri, 02 Nov 2018 14:17:15 -0700 (PDT)
-Received: from prevas-ravi.waoo.dk (dhcp-5-186-114-252.cgn.ip.fibianet.dk.
- [5.186.114.252])
- by smtp.gmail.com with ESMTPSA id h3-v6sm10741825ede.42.2018.11.02.14.17.14
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
- Fri, 02 Nov 2018 14:17:14 -0700 (PDT)
-From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] macintosh: ans-lcd: make anslcd_logo static and __initconst
-Date: Fri,  2 Nov 2018 22:17:06 +0100
-Message-Id: <20181102211707.10229-1-linux@rasmusvillemoes.dk>
-X-Mailer: git-send-email 2.19.1.6.gbde171bbf5
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42mp0F544GzF37B
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Nov 2018 03:47:41 +1100 (AEDT)
+Received: from [172.16.25.12] by relay.sw.ru with esmtp (Exim 4.90_1)
+ (envelope-from <aryabinin@virtuozzo.com>)
+ id 1gIc9V-0006r7-Q8; Fri, 02 Nov 2018 19:18:30 +0300
+Subject: Re: [RFC PATCH] lib: Introduce generic __cmpxchg_u64() and use it
+ where needed
+To: Peter Zijlstra <peterz@infradead.org>,
+ Trond Myklebust <trondmy@hammerspace.com>
+References: <1541015538-11382-1-git-send-email-linux@roeck-us.net>
+ <20181031213240.zhh7dfcm47ucuyfl@pburton-laptop>
+ <20181031220253.GA15505@roeck-us.net>
+ <20181031233235.qbedw3pinxcuk7me@pburton-laptop>
+ <4e2438a23d2edf03368950a72ec058d1d299c32e.camel@hammerspace.com>
+ <20181101131846.biyilr2msonljmij@lakrids.cambridge.arm.com>
+ <20181101145926.GE3178@hirez.programming.kicks-ass.net>
+ <f38e272f7a96e983549e4281aa9fd02833a4277a.camel@hammerspace.com>
+ <20181101163212.GF3159@hirez.programming.kicks-ass.net>
+From: Andrey Ryabinin <aryabinin@virtuozzo.com>
+Message-ID: <5a846924-e642-d9d1-4e0e-810bd4d01c26@virtuozzo.com>
+Date: Fri, 2 Nov 2018 19:19:15 +0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20181101163212.GF3159@hirez.programming.kicks-ass.net>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Mailman-Approved-At: Sat, 03 Nov 2018 15:21:23 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,35 +71,114 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Rasmus Villemoes <linux@rasmusvillemoes.dk>,
- linux-kernel@vger.kernel.org
+Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
+ "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
+ "will.deacon@arm.com" <will.deacon@arm.com>,
+ "bfields@fieldses.org" <bfields@fieldses.org>,
+ "paulus@samba.org" <paulus@samba.org>, "jhogan@kernel.org" <jhogan@kernel.org>,
+ Paul McKenney <paulmck@linux.vnet.ibm.com>,
+ "linux@roeck-us.net" <linux@roeck-us.net>, "arnd@arndb.de" <arnd@arndb.de>,
+ "boqun.feng@gmail.com" <boqun.feng@gmail.com>, dvyukov@google.com,
+ "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "jlayton@kernel.org" <jlayton@kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "ralf@linux-mips.org" <ralf@linux-mips.org>,
+ "anna.schumaker@netapp.com" <anna.schumaker@netapp.com>,
+ "paul.burton@mips.com" <paul.burton@mips.com>,
+ "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "davem@davemloft.net" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This variable has no reason to have external linkage, and since it is
-only used in an __init function, it might as well be made __initconst
-also.
 
-Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
----
- drivers/macintosh/ans-lcd.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/macintosh/ans-lcd.c b/drivers/macintosh/ans-lcd.c
-index c8e078b911c7..a7a79a935f6a 100644
---- a/drivers/macintosh/ans-lcd.c
-+++ b/drivers/macintosh/ans-lcd.c
-@@ -147,7 +147,8 @@ static struct miscdevice anslcd_dev = {
- 	&anslcd_fops
- };
- 
--const char anslcd_logo[] =	"********************"  /* Line #1 */
-+static const char anslcd_logo[] __initconst =
-+				"********************"  /* Line #1 */
- 				"*      LINUX!      *"  /* Line #3 */
- 				"*    Welcome to    *"  /* Line #2 */
- 				"********************"; /* Line #4 */
--- 
-2.19.1.6.gbde171bbf5
+On 11/01/2018 07:32 PM, Peter Zijlstra wrote:
+> On Thu, Nov 01, 2018 at 03:22:15PM +0000, Trond Myklebust wrote:
+>> On Thu, 2018-11-01 at 15:59 +0100, Peter Zijlstra wrote:
+>>> On Thu, Nov 01, 2018 at 01:18:46PM +0000, Mark Rutland wrote:
+> 
+>>>>> My one question (and the reason why I went with cmpxchg() in the
+>>>>> first place) would be about the overflow behaviour for
+>>>>> atomic_fetch_inc() and friends. I believe those functions should
+>>>>> be OK on x86, so that when we overflow the counter, it behaves
+>>>>> like an unsigned value and wraps back around.  Is that the case
+>>>>> for all architectures?
+>>>>>
+>>>>> i.e. are atomic_t/atomic64_t always guaranteed to behave like
+>>>>> u32/u64 on increment?
+>>>>>
+>>>>> I could not find any documentation that explicitly stated that
+>>>>> they should.
+>>>>
+>>>> Peter, Will, I understand that the atomic_t/atomic64_t ops are
+>>>> required to wrap per 2's-complement. IIUC the refcount code relies
+>>>> on this.
+>>>>
+>>>> Can you confirm?
+>>>
+>>> There is quite a bit of core code that hard assumes 2s-complement.
+>>> Not only for atomics but for any signed integer type. Also see the
+>>> kernel using -fno-strict-overflow which implies -fwrapv, which
+>>> defines signed overflow to behave like 2s-complement (and rids us of
+>>> that particular UB).
+>>
+>> Fair enough, but there have also been bugfixes to explicitly fix unsafe
+>> C standards assumptions for signed integers. See, for instance commit
+>> 5a581b367b5d "jiffies: Avoid undefined behavior from signed overflow"
+>> from Paul McKenney.
+> 
+> Yes, I feel Paul has been to too many C/C++ committee meetings and got
+> properly paranoid. Which isn't always a bad thing :-)
+> 
+> But for us using -fno-strict-overflow which actually defines signed
+> overflow, I myself am really not worried. I'm also not sure if KASAN has
+> been taught about this, or if it will still (incorrectly) warn about UB
+> for signed types.
+> 
 
+UBSAN warns about signed overflows despite -fno-strict-overflow if gcc version is < 8.
+I have learned recently that UBSAN in GCC 8 ignores signed overflows if -fno-strict-overflow of fwrapv is used.
+
+$ cat signed_overflow.c 
+#include <stdio.h>
+
+__attribute__((noinline))
+int foo(int a, int b)
+{
+        return a+b;
+}
+
+int main(void)
+{
+        int a = 0x7fffffff;
+        int b = 2;
+        printf("%d\n", foo(a,b));
+        return 0;
+}
+
+$ gcc-8.2.0 -fsanitize=signed-integer-overflow signed_overflow.c && ./a.out 
+signed_overflow.c:6:10: runtime error: signed integer overflow: 2147483647 + 2 cannot be represented in type 'int'
+-2147483647
+$ gcc-8.2.0 -fno-strict-overflow -fsanitize=signed-integer-overflow signed_overflow.c && ./a.out 
+-2147483647
+$ gcc-7.3.0 -fsanitize=signed-integer-overflow signed_overflow.c && ./a.out
+signed_overflow.c:6:10: runtime error: signed integer overflow: 2147483647 + 2 cannot be represented in type 'int'
+-2147483647
+$ gcc-7.3.0 -fno-strict-overflow -fsanitize=signed-integer-overflow signed_overflow.c && ./a.out
+signed_overflow.c:6:10: runtime error: signed integer overflow: 2147483647 + 2 cannot be represented in type 'int'
+-2147483647
+
+
+clang behaves the same way as GCC 8:
+$ clang -fsanitize=signed-integer-overflow signed_overflow.c && ./a.out 
+signed_overflow.c:6:10: runtime error: signed integer overflow: 2147483647 + 2 cannot be represented in type 'int'
+-2147483647
+$ clang -fno-strict-overflow -fsanitize=signed-integer-overflow signed_overflow.c && ./a.out 
+-2147483647
+
+
+We can always just drop -fsanitize=signed-integer-overflow if it considered too noisy.
+Although it did catch some real bugs.
