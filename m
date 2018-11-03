@@ -2,63 +2,85 @@ Return-Path: <SRS0=9U3E=NO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9331AC0044C
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Nov 2018 04:23:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EF45CC0044C
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Nov 2018 04:25:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A015B2082E
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Nov 2018 04:23:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A015B2082E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=virtuozzo.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4F9952082E
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Nov 2018 04:25:09 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=joelfernandes.org header.i=@joelfernandes.org header.b="hQZEI/5I"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4F9952082E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=joelfernandes.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42n5QX6sK6zF37c
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Nov 2018 15:23:00 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=virtuozzo.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42n5Sz2bTKzF37c
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Nov 2018 15:25:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=joelfernandes.org
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=virtuozzo.com
- (client-ip=185.231.240.75; helo=relay.sw.ru;
- envelope-from=aryabinin@virtuozzo.com; receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=joelfernandes.org header.i=@joelfernandes.org header.b="hQZEI/5I";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=virtuozzo.com
-X-Greylist: delayed 1694 seconds by postgrey-1.36 at bilbo;
- Sat, 03 Nov 2018 03:47:41 AEDT
-Received: from relay.sw.ru (relay.sw.ru [185.231.240.75])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=joelfernandes.org
+ (client-ip=2607:f8b0:4864:20::443; helo=mail-pf1-x443.google.com;
+ envelope-from=joel@joelfernandes.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=joelfernandes.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=joelfernandes.org header.i=@joelfernandes.org
+ header.b="hQZEI/5I"; dkim-atps=neutral
+Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
+ [IPv6:2607:f8b0:4864:20::443])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42mp0F544GzF37B
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Nov 2018 03:47:41 +1100 (AEDT)
-Received: from [172.16.25.12] by relay.sw.ru with esmtp (Exim 4.90_1)
- (envelope-from <aryabinin@virtuozzo.com>)
- id 1gIc9V-0006r7-Q8; Fri, 02 Nov 2018 19:18:30 +0300
-Subject: Re: [RFC PATCH] lib: Introduce generic __cmpxchg_u64() and use it
- where needed
-To: Peter Zijlstra <peterz@infradead.org>,
- Trond Myklebust <trondmy@hammerspace.com>
-References: <1541015538-11382-1-git-send-email-linux@roeck-us.net>
- <20181031213240.zhh7dfcm47ucuyfl@pburton-laptop>
- <20181031220253.GA15505@roeck-us.net>
- <20181031233235.qbedw3pinxcuk7me@pburton-laptop>
- <4e2438a23d2edf03368950a72ec058d1d299c32e.camel@hammerspace.com>
- <20181101131846.biyilr2msonljmij@lakrids.cambridge.arm.com>
- <20181101145926.GE3178@hirez.programming.kicks-ass.net>
- <f38e272f7a96e983549e4281aa9fd02833a4277a.camel@hammerspace.com>
- <20181101163212.GF3159@hirez.programming.kicks-ass.net>
-From: Andrey Ryabinin <aryabinin@virtuozzo.com>
-Message-ID: <5a846924-e642-d9d1-4e0e-810bd4d01c26@virtuozzo.com>
-Date: Fri, 2 Nov 2018 19:19:15 +0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42n4wz5cnxzF36s
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Nov 2018 15:00:50 +1100 (AEDT)
+Received: by mail-pf1-x443.google.com with SMTP id b11-v6so1884523pfi.5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Nov 2018 21:00:50 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=joelfernandes.org; s=google;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=wauWrsOYZ4NO7yzxN9r9ffJEchMQCnKRjhBqfvcq730=;
+ b=hQZEI/5IkmDKiwTPcEpeRj5mdJ5f2khCIYUC+tRjECkBSTU7A0nmPfUa+oKun3ZvpC
+ QBKK3UGjzZVXQ1U3TcxSBsjIIEAUExiO5kioNqzsBdpusaZSc1GEsUpTdFXIZs++dzNb
+ Oce3FxvhzDGCV4UEuF2dXGfauQd44vDoSo9M4=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=wauWrsOYZ4NO7yzxN9r9ffJEchMQCnKRjhBqfvcq730=;
+ b=jNrWjwjsKKk4vdmPM75gRnuanJmPr2oy6k7Fy+HgU5g0NNL+D2/zQFxuwZFvbIh0hl
+ /Eu5640QonL1o2Wd3xjhdcCe2sHNy9Wp7g0tHzGtqkEey4A3dzgGZx73uHFuQkKIxEsm
+ KBIrkY/EbLsWLYgkhoBbvjECneVgPmz5dCol2fw+7VLyN+VV4IiR7bTrR19aNJjaa5L+
+ YWX++EQVImRMgepqfaiRoyhQqNEcHZudfs9KAYeKEMOV6srsQHiK/fQu9fiphfrsRUoc
+ LuQDQbWgeWnjmK2H78g23/8GrT57E6/wmaK/0wv+KU5e0Ewv3RvGC4U0SZ1TwD0yZKhs
+ izFw==
+X-Gm-Message-State: AGRZ1gK0471S2pHlRpsKUBoFgP3wZR+77d52LCcPp7ej7p8osySVg+Ex
+ AIGHbYVxbUdyZcayiVw8UL9R+g==
+X-Google-Smtp-Source: AJdET5cSoldQI3hr9VnkPhkTOPGPi4e4hyOBk5/0PfLyEPfalVwQIW1MKjDzIap7cLOClQG72ynqpQ==
+X-Received: by 2002:a63:a441:: with SMTP id
+ c1-v6mr13210874pgp.49.1541217647914; 
+ Fri, 02 Nov 2018 21:00:47 -0700 (PDT)
+Received: from joelaf.mtv.corp.google.com
+ ([2620:0:1000:1601:3aef:314f:b9ea:889f])
+ by smtp.gmail.com with ESMTPSA id x36-v6sm35836232pgl.43.2018.11.02.21.00.45
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Fri, 02 Nov 2018 21:00:46 -0700 (PDT)
+From: Joel Fernandes <joel@joelfernandes.org>
+X-Google-Original-From: Joel Fernandes <joelaf@google.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH -next 0/3] Add support for fast mremap
+Date: Fri,  2 Nov 2018 21:00:38 -0700
+Message-Id: <20181103040041.7085-1-joelaf@google.com>
+X-Mailer: git-send-email 2.19.1.930.g4563a0d9d0-goog
 MIME-Version: 1.0
-In-Reply-To: <20181101163212.GF3159@hirez.programming.kicks-ass.net>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-Mailman-Approved-At: Sat, 03 Nov 2018 15:21:23 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -71,114 +93,124 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
- "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
- "will.deacon@arm.com" <will.deacon@arm.com>,
- "bfields@fieldses.org" <bfields@fieldses.org>,
- "paulus@samba.org" <paulus@samba.org>, "jhogan@kernel.org" <jhogan@kernel.org>,
- Paul McKenney <paulmck@linux.vnet.ibm.com>,
- "linux@roeck-us.net" <linux@roeck-us.net>, "arnd@arndb.de" <arnd@arndb.de>,
- "boqun.feng@gmail.com" <boqun.feng@gmail.com>, dvyukov@google.com,
- "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "jlayton@kernel.org" <jlayton@kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "ralf@linux-mips.org" <ralf@linux-mips.org>,
- "anna.schumaker@netapp.com" <anna.schumaker@netapp.com>,
- "paul.burton@mips.com" <paul.burton@mips.com>,
- "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "davem@davemloft.net" <davem@davemloft.net>
+Cc: Joel Fernandes <joelaf@google.com>, linux-mips@linux-mips.org,
+ Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
+ linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Dave Hansen <dave.hansen@linux.intel.com>, Will Deacon <will.deacon@arm.com>,
+ Michal Hocko <mhocko@kernel.org>, linux-mm@kvack.org, lokeshgidra@google.com,
+ sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org,
+ elfring@users.sourceforge.net, Jonas Bonn <jonas@southpole.se>,
+ kvmarm@lists.cs.columbia.edu, dancol@google.com,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, linux-xtensa@linux-xtensa.org,
+ linux-hexagon@vger.kernel.org, Helge Deller <deller@gmx.de>,
+ "maintainer:X86 ARCHITECTURE 32-BIT AND 64-BIT" <x86@kernel.org>,
+ hughd@google.com, "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ kasan-dev@googlegroups.com, anton.ivanov@kot-begemot.co.uk,
+ Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
+ Andrey Ryabinin <aryabinin@virtuozzo.com>, linux-snps-arc@lists.infradead.org,
+ kernel-team@android.com, Sam Creasey <sammy@sammy.net>,
+ Fenghua Yu <fenghua.yu@intel.com>, linux-s390@vger.kernel.org,
+ Jeff Dike <jdike@addtoit.com>, linux-um@lists.infradead.org,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ Julia Lawall <Julia.Lawall@lip6.fr>, linux-m68k@lists.linux-m68k.org,
+ Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
+ nios2-dev@lists.rocketboards.org, kirill@shutemov.name,
+ Stafford Horne <shorne@gmail.com>, Guan Xuetao <gxt@pku.edu.cn>,
+ Chris Zankel <chris@zankel.net>, Tony Luck <tony.luck@intel.com>,
+ Richard Weinberger <richard@nod.at>, linux-parisc@vger.kernel.org,
+ Max Filippov <jcmvbkbc@gmail.com>, pantin@google.com, minchan@kernel.org,
+ Thomas Gleixner <tglx@linutronix.de>, linux-alpha@vger.kernel.org,
+ Ley Foon Tan <lftan@altera.com>, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Hi,
+Here is the latest "fast mremap" series. This just a repost with Kirill's
+Acked-bys added. I would like this to be considered for linux -next.  I also
+dropped the CONFIG enablement patch for arm64 since I am yet to test it with
+the new TLB flushing code that is in very recent kernel releases. (None of my
+arm64 devices run mainline right now.) so I will post the arm64 enablement once
+I get to that. The performance numbers in the series are for x86.
+
+List of patches in series:
+
+(1) mm: select HAVE_MOVE_PMD in x86 for faster mremap
+
+(2) mm: speed up mremap by 20x on large regions (v4)
+v1->v2: Added support for per-arch enablement (Kirill Shutemov)
+v2->v3: Updated commit message to state the optimization may also
+	run for non-thp type of systems (Daniel Col).
+v3->v4: Remove useless pmd_lock check (Kirill Shutemov)
+	Rebased ontop of Linus's master, updated perf results based
+        on x86 testing. Added Kirill's Acks.
+
+(3) mm: treewide: remove unused address argument from pte_alloc functions (v2)
+v1->v2: fix arch/um/ prototype which was missed in v1 (Anton Ivanov)
+        update changelog with manual fixups for m68k and microblaze.
+
+not included - (4) mm: select HAVE_MOVE_PMD in arm64 for faster mremap
+    This patch is dropped since last posting pending further performance
+    testing on arm64 with new TLB gather updates. See notes in patch
+    titled "mm: speed up mremap by 500x on large regions" for more
+    details.
 
 
-On 11/01/2018 07:32 PM, Peter Zijlstra wrote:
-> On Thu, Nov 01, 2018 at 03:22:15PM +0000, Trond Myklebust wrote:
->> On Thu, 2018-11-01 at 15:59 +0100, Peter Zijlstra wrote:
->>> On Thu, Nov 01, 2018 at 01:18:46PM +0000, Mark Rutland wrote:
-> 
->>>>> My one question (and the reason why I went with cmpxchg() in the
->>>>> first place) would be about the overflow behaviour for
->>>>> atomic_fetch_inc() and friends. I believe those functions should
->>>>> be OK on x86, so that when we overflow the counter, it behaves
->>>>> like an unsigned value and wraps back around.  Is that the case
->>>>> for all architectures?
->>>>>
->>>>> i.e. are atomic_t/atomic64_t always guaranteed to behave like
->>>>> u32/u64 on increment?
->>>>>
->>>>> I could not find any documentation that explicitly stated that
->>>>> they should.
->>>>
->>>> Peter, Will, I understand that the atomic_t/atomic64_t ops are
->>>> required to wrap per 2's-complement. IIUC the refcount code relies
->>>> on this.
->>>>
->>>> Can you confirm?
->>>
->>> There is quite a bit of core code that hard assumes 2s-complement.
->>> Not only for atomics but for any signed integer type. Also see the
->>> kernel using -fno-strict-overflow which implies -fwrapv, which
->>> defines signed overflow to behave like 2s-complement (and rids us of
->>> that particular UB).
->>
->> Fair enough, but there have also been bugfixes to explicitly fix unsafe
->> C standards assumptions for signed integers. See, for instance commit
->> 5a581b367b5d "jiffies: Avoid undefined behavior from signed overflow"
->> from Paul McKenney.
-> 
-> Yes, I feel Paul has been to too many C/C++ committee meetings and got
-> properly paranoid. Which isn't always a bad thing :-)
-> 
-> But for us using -fno-strict-overflow which actually defines signed
-> overflow, I myself am really not worried. I'm also not sure if KASAN has
-> been taught about this, or if it will still (incorrectly) warn about UB
-> for signed types.
-> 
+Joel Fernandes (Google) (3):
+  mm: treewide: remove unused address argument from pte_alloc functions
+    (v2)
+  mm: speed up mremap by 20x on large regions (v4)
+  mm: select HAVE_MOVE_PMD in x86 for faster mremap
 
-UBSAN warns about signed overflows despite -fno-strict-overflow if gcc version is < 8.
-I have learned recently that UBSAN in GCC 8 ignores signed overflows if -fno-strict-overflow of fwrapv is used.
+ arch/Kconfig                                 |  5 ++
+ arch/alpha/include/asm/pgalloc.h             |  6 +-
+ arch/arc/include/asm/pgalloc.h               |  5 +-
+ arch/arm/include/asm/pgalloc.h               |  4 +-
+ arch/arm64/include/asm/pgalloc.h             |  4 +-
+ arch/hexagon/include/asm/pgalloc.h           |  6 +-
+ arch/ia64/include/asm/pgalloc.h              |  5 +-
+ arch/m68k/include/asm/mcf_pgalloc.h          |  8 +--
+ arch/m68k/include/asm/motorola_pgalloc.h     |  4 +-
+ arch/m68k/include/asm/sun3_pgalloc.h         |  6 +-
+ arch/microblaze/include/asm/pgalloc.h        | 19 +-----
+ arch/microblaze/mm/pgtable.c                 |  3 +-
+ arch/mips/include/asm/pgalloc.h              |  6 +-
+ arch/nds32/include/asm/pgalloc.h             |  5 +-
+ arch/nios2/include/asm/pgalloc.h             |  6 +-
+ arch/openrisc/include/asm/pgalloc.h          |  5 +-
+ arch/openrisc/mm/ioremap.c                   |  3 +-
+ arch/parisc/include/asm/pgalloc.h            |  4 +-
+ arch/powerpc/include/asm/book3s/32/pgalloc.h |  4 +-
+ arch/powerpc/include/asm/book3s/64/pgalloc.h | 12 ++--
+ arch/powerpc/include/asm/nohash/32/pgalloc.h |  4 +-
+ arch/powerpc/include/asm/nohash/64/pgalloc.h |  6 +-
+ arch/powerpc/mm/pgtable-book3s64.c           |  2 +-
+ arch/powerpc/mm/pgtable_32.c                 |  4 +-
+ arch/riscv/include/asm/pgalloc.h             |  6 +-
+ arch/s390/include/asm/pgalloc.h              |  4 +-
+ arch/sh/include/asm/pgalloc.h                |  6 +-
+ arch/sparc/include/asm/pgalloc_32.h          |  5 +-
+ arch/sparc/include/asm/pgalloc_64.h          |  6 +-
+ arch/sparc/mm/init_64.c                      |  6 +-
+ arch/sparc/mm/srmmu.c                        |  4 +-
+ arch/um/include/asm/pgalloc.h                |  4 +-
+ arch/um/kernel/mem.c                         |  4 +-
+ arch/unicore32/include/asm/pgalloc.h         |  4 +-
+ arch/x86/Kconfig                             |  1 +
+ arch/x86/include/asm/pgalloc.h               |  4 +-
+ arch/x86/mm/pgtable.c                        |  4 +-
+ arch/xtensa/include/asm/pgalloc.h            |  8 +--
+ include/linux/mm.h                           | 13 ++--
+ mm/huge_memory.c                             |  8 +--
+ mm/kasan/kasan_init.c                        |  2 +-
+ mm/memory.c                                  | 17 +++---
+ mm/migrate.c                                 |  2 +-
+ mm/mremap.c                                  | 62 +++++++++++++++++++-
+ mm/userfaultfd.c                             |  2 +-
+ virt/kvm/arm/mmu.c                           |  2 +-
+ 46 files changed, 163 insertions(+), 147 deletions(-)
 
-$ cat signed_overflow.c 
-#include <stdio.h>
-
-__attribute__((noinline))
-int foo(int a, int b)
-{
-        return a+b;
-}
-
-int main(void)
-{
-        int a = 0x7fffffff;
-        int b = 2;
-        printf("%d\n", foo(a,b));
-        return 0;
-}
-
-$ gcc-8.2.0 -fsanitize=signed-integer-overflow signed_overflow.c && ./a.out 
-signed_overflow.c:6:10: runtime error: signed integer overflow: 2147483647 + 2 cannot be represented in type 'int'
--2147483647
-$ gcc-8.2.0 -fno-strict-overflow -fsanitize=signed-integer-overflow signed_overflow.c && ./a.out 
--2147483647
-$ gcc-7.3.0 -fsanitize=signed-integer-overflow signed_overflow.c && ./a.out
-signed_overflow.c:6:10: runtime error: signed integer overflow: 2147483647 + 2 cannot be represented in type 'int'
--2147483647
-$ gcc-7.3.0 -fno-strict-overflow -fsanitize=signed-integer-overflow signed_overflow.c && ./a.out
-signed_overflow.c:6:10: runtime error: signed integer overflow: 2147483647 + 2 cannot be represented in type 'int'
--2147483647
-
-
-clang behaves the same way as GCC 8:
-$ clang -fsanitize=signed-integer-overflow signed_overflow.c && ./a.out 
-signed_overflow.c:6:10: runtime error: signed integer overflow: 2147483647 + 2 cannot be represented in type 'int'
--2147483647
-$ clang -fno-strict-overflow -fsanitize=signed-integer-overflow signed_overflow.c && ./a.out 
--2147483647
-
-
-We can always just drop -fsanitize=signed-integer-overflow if it considered too noisy.
-Although it did catch some real bugs.
+-- 
+2.19.1.930.g4563a0d9d0-goog
