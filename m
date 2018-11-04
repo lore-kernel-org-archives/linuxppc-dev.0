@@ -2,86 +2,86 @@ Return-Path: <SRS0=KHR7=NP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DE007ECDE44
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  4 Nov 2018 16:02:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B7B6C32789
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  4 Nov 2018 23:14:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6004E2081D
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  4 Nov 2018 16:02:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 68F9F2082D
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  4 Nov 2018 23:14:22 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="vXtNNfbV"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6004E2081D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="n7KmUNoS"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 68F9F2082D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=jms.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42p0tv0kGvzDrDg
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Nov 2018 03:02:15 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42pBTR6mcVzDrNV
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Nov 2018 10:14:19 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=jms.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="vXtNNfbV";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="n7KmUNoS";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2a00:1450:4864:20::344; helo=mail-wm1-x344.google.com;
- envelope-from=chunkeey@gmail.com; receiver=<UNKNOWN>)
+ (client-ip=2607:f8b0:4864:20::643; helo=mail-pl1-x643.google.com;
+ envelope-from=joel.stan@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
+ dmarc=none (p=none dis=none) header.from=jms.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="vXtNNfbV"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="n7KmUNoS"; 
  dkim-atps=neutral
-Received: from mail-wm1-x344.google.com (mail-wm1-x344.google.com
- [IPv6:2a00:1450:4864:20::344])
+Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
+ [IPv6:2607:f8b0:4864:20::643])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42p0pz322FzDrYb
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Nov 2018 02:57:48 +1100 (AEDT)
-Received: by mail-wm1-x344.google.com with SMTP id f1-v6so4594698wmg.1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Nov 2018 07:57:48 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42pBQf1KWGzDr1F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Nov 2018 10:11:54 +1100 (AEDT)
+Received: by mail-pl1-x643.google.com with SMTP id p6-v6so3483235pll.4
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Nov 2018 15:11:53 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:mime-version
+ h=sender:from:to:cc:subject:date:message-id:mime-version
  :content-transfer-encoding;
- bh=A/vc8w9bIzubG/6+g3lUpu+GraSJf1qwC/xuf1KPdsg=;
- b=vXtNNfbVHjEoEWYHpgkgxdFu4/a1kBeQO+8EvhVmVXFeQwKBVRcAi660X/KvRnj0gg
- sTy3q1+9lj1dozdF/j5oYt7OQPLsFjdj0PTDuUpHhBqctmCj+NEB6Jr1SKEcbxP+Wq2H
- TpZWe3Z65uSVSLdwshr9LoZ1R0vfbfaRdq3A1Lg1xnm5Q4hd4kLij1W+0PtGrKx/9kNt
- udTb7TSFYszI0/SwM2XQQzbOKZOam0FBKsW4eg7hU0LFAw76prHte/vgUfTEgUg3aqDe
- lewj7FjsrbnodDZgchkr+cTYBYgNJ7UlZvOnT02xU9YmSMBIWu8JBnSaNTz4o+4TFGti
- ed7w==
+ bh=isUog0aOf/hqVTaDw9wDJKRzU+HRJFqdS884BjUzvdM=;
+ b=n7KmUNoSIB3R+Kzy+fwdZNA0HQAQR9N/M3rMckuxxAs/k7QL+lOhJ4oOWM0UiENzZ+
+ f4VIQOD5OtOC0m7EVEvc7baDVOOuNvZmaINu6LSl4F0XOrhxqD01/TyMl0pjZKVGkIJp
+ gcvS7f2WEsDSje5etPX6Y3yLoDb77xpEKDRxOUJYKX5N4cPKwyt3EK8yDfdHbVqcnBJm
+ HxG0H80zi74YoiCyUvuJMLytcgxoa1NYHcnK3fHmTxvDd5Q9eRXe5RemjONsDHLJnUCy
+ rru8+CVvFCM5JIHDdR1anuKPI39uWCpa1TIjQKOODOt2yrf2w1TNm0QINwFwperzCJ+q
+ Ujbg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=A/vc8w9bIzubG/6+g3lUpu+GraSJf1qwC/xuf1KPdsg=;
- b=KXBZlhccgG1RPS5I+4LO/e2temncK6g42sHjqqoZPXa6cLqnGCjWXIsZRCYBmMveWd
- 2sxOD85UgfRRGh4uFh0L10PyiBc1RRjsUm0Su7SEJ+aAXlEpwABcUE7vtOeCZmaArUay
- IEvX+atljK1ORYyHUdZXVRzIILqKl78x6lztX42kQHQjI9KsKlG1MBRbo0b6xvsQzYvf
- 0xcRaxHq9yMo+dxR8iI0dZIgUDahW+Tw1m9ELq+QbjLVjRso08+x8hBDnjU1H5nLI1WY
- FRIEr6SppaF7nB6IiS8AwdhLAVmB18Ygu3+PDiH2oPlo0jqo6KaTcvhSGJNCEQPH4VtP
- 02gQ==
-X-Gm-Message-State: AGRZ1gK2O2kBHW7a35dyrWvaOcU5xWCYhy9cbBZWHDroMucj+aIlrnKW
- hJcplxzPM+Y7kB9+Foz9jkWdqq+N
-X-Google-Smtp-Source: AJdET5eTlPjz7pNXJ5fX7fpDCQVkWoxrPusIJb/DzZmLNAwT8Tk5fdlhn4noVlIU7nQcCcjW5KTlDg==
-X-Received: by 2002:a1c:d181:: with SMTP id
- i123-v6mr3609684wmg.124.1541347065651; 
- Sun, 04 Nov 2018 07:57:45 -0800 (PST)
-Received: from debian64.daheim (p5B0D79A7.dip0.t-ipconnect.de. [91.13.121.167])
- by smtp.gmail.com with ESMTPSA id v189-v6sm23763635wmd.40.2018.11.04.07.57.44
+ h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
+ :mime-version:content-transfer-encoding;
+ bh=isUog0aOf/hqVTaDw9wDJKRzU+HRJFqdS884BjUzvdM=;
+ b=tRTf3v+FC8gdH/7NmqIEmTVpZG0mR1D2UbQ3OpUSDvP6ei1qj8BAmi4RyG3AQpHKJB
+ NQxA9bpJGgRKPaJ5UCcy0Dewgm1tM4vHh02bhUS5pXKLi1DgJmdY18OHlToYI76ZYEv2
+ UkIDZSZ1EMIwKIh7w/SkB2Id9LFwzi455h2JuO+xEMxtV+Z+gPAGxYq9YSPHhDVeXgvx
+ nPKdo9deui/L0bbbkniJa5s9i90y1EJH9s6aKwUYyEc8m62eIzVmS+00ZoFzIwufdQ+c
+ 3G+594jwOXyzEMUbGb7fQ1ioIdfd8z5OuSdy+G0gBNQwoGRDYVHH9j0eRdaooGfIXd/h
+ 0bXg==
+X-Gm-Message-State: AGRZ1gJ0ARGjApHj6UeelzmicyiW2IQce6LtcnG7zoftRCIv0j4mTKlz
+ nX6I6iClL+cyuLxwLiNv/sQ=
+X-Google-Smtp-Source: AJdET5d04Fmp28MisJT5YH2XKIUUiMBJdW94MejxSqfUWmLvVoIre3gcfwDiVnWCOZfaZphM6mAQRQ==
+X-Received: by 2002:a17:902:7784:: with SMTP id
+ o4-v6mr13667048pll.292.1541373112030; 
+ Sun, 04 Nov 2018 15:11:52 -0800 (PST)
+Received: from aurora.jms.id.au (pa49-178-43-40.pa.nsw.optusnet.com.au.
+ [49.178.43.40])
+ by smtp.gmail.com with ESMTPSA id e131-v6sm16390261pfc.122.2018.11.04.15.11.46
  (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Sun, 04 Nov 2018 07:57:45 -0800 (PST)
-Received: from chuck by debian64.daheim with local (Exim 4.91)
- (envelope-from <chunkeey@gmail.com>)
- id 1gJKmW-0003jY-5t; Sun, 04 Nov 2018 16:57:44 +0100
-From: Christian Lamparter <chunkeey@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2] ppc4xx: ocm: fix errnous "failed to create file" errors
-Date: Sun,  4 Nov 2018 16:57:44 +0100
-Message-Id: <20181104155744.14310-1-chunkeey@gmail.com>
+ Sun, 04 Nov 2018 15:11:51 -0800 (PST)
+Received: by aurora.jms.id.au (sSMTP sendmail emulation);
+ Mon, 05 Nov 2018 09:41:40 +1030
+From: Joel Stanley <joel@jms.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Nick Desaulniers <ndesaulniers@google.com>
+Subject: [PATCH 0/2] poewrpc/Boot: Fix cross compiling with clang
+Date: Mon,  5 Nov 2018 09:41:31 +1030
+Message-Id: <20181104231133.30848-1-joel@jms.id.au>
 X-Mailer: git-send-email 2.19.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -96,64 +96,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Paul Mackerras <paulus@samba.org>,
- Markus Elfring <elfring@users.sourceforge.net>
+Cc: Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Michal Marek <michal.lkml@markovi.net>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Previously, the kernel would complain:
+Hello,
 
-| debugfs ppc4xx ocm: failed to create file
+These patches allow clang to cross-compile the powerpc boot wrapper.
+The boot wrapper constructs it's own compiler flags as it may not be
+built for the same arch as the kernel.
 
-But the "info" file was still created and working. This
-is because debugfs_create_file() returns a pointer to a
-struct *dentry on success or -ENODEV when debugfs isn't
-available. This patch fixes both the debugfs_create_dir()
-and debugfs_create_file() check, so this will work as
-expected.
+The powerpc64le kernel builds natively with clang and with this patch it
+can cross compile too.
 
-Signed-off-by: Christian Lamparter <chunkeey@gmail.com>
----
- arch/powerpc/platforms/4xx/ocm.c | 11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
+Joel Stanley (2):
+  Makefile: Export clang toolchain variables
+  powerpc/boot: Set target when cross-compiling for clang
 
-diff --git a/arch/powerpc/platforms/4xx/ocm.c b/arch/powerpc/platforms/4xx/ocm.c
-index 69d9f60d9fe5..4590b4d82969 100644
---- a/arch/powerpc/platforms/4xx/ocm.c
-+++ b/arch/powerpc/platforms/4xx/ocm.c
-@@ -289,23 +289,28 @@ static const struct file_operations ocm_debugfs_fops = {
- 	.release = single_release,
- };
- 
-+#ifdef CONFIG_DEBUG_FS
- static int ocm_debugfs_init(void)
- {
- 	struct dentry *junk;
- 
--	junk = debugfs_create_dir("ppc4xx_ocm", 0);
--	if (!junk) {
-+	junk = debugfs_create_dir("ppc4xx_ocm", NULL);
-+	if (IS_ERR_OR_NULL(junk)) {
- 		printk(KERN_ALERT "debugfs ppc4xx ocm: failed to create dir\n");
- 		return -1;
- 	}
- 
--	if (debugfs_create_file("info", 0644, junk, NULL, &ocm_debugfs_fops)) {
-+	if (IS_ERR_OR_NULL(debugfs_create_file("info", 0644, junk, NULL,
-+					       &ocm_debugfs_fops))) {
- 		printk(KERN_ALERT "debugfs ppc4xx ocm: failed to create file\n");
- 		return -1;
- 	}
- 
- 	return 0;
- }
-+#else
-+static int ocm_debugfs_init(void) { return 0; }
-+#endif
- 
- void *ppc4xx_ocm_alloc(phys_addr_t *phys, int size, int align,
- 			int flags, const char *owner)
+ Makefile                   | 3 +++
+ arch/powerpc/boot/Makefile | 7 +++++++
+ 2 files changed, 10 insertions(+)
+
 -- 
 2.19.1
 
