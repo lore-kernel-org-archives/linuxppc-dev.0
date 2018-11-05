@@ -2,81 +2,55 @@ Return-Path: <SRS0=pi+/=NQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 33B77C0044C
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Nov 2018 22:40:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DAE8FC0044C
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Nov 2018 23:14:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9744D2084F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Nov 2018 22:40:11 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="loEgC+Mm"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9744D2084F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4E31820825
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Nov 2018 23:14:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4E31820825
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42pngY24PGzF35Q
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Nov 2018 09:40:09 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.b="loEgC+Mm";
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=google.com
- (client-ip=2607:f8b0:4864:20::643; helo=mail-pl1-x643.google.com;
- envelope-from=ndesaulniers@google.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=google.com header.i=@google.com header.b="loEgC+Mm"; 
- dkim-atps=neutral
-Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
- [IPv6:2607:f8b0:4864:20::643])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 42ppQt28zhzF36D
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Nov 2018 10:14:14 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+Authentication-Results: lists.ozlabs.org; spf=permerror (mailfrom)
+ smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57;
+ helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=kernel.crashing.org
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42pnd171V6zDrDT
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Nov 2018 09:37:57 +1100 (AEDT)
-Received: by mail-pl1-x643.google.com with SMTP id b5-v6so5153916pla.6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Nov 2018 14:37:57 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=zZACWSjZ3Q5WmL3kd7vzGZGnEgREaoyhBQDYpK6S+ic=;
- b=loEgC+MmKhvc+amScuS9dM5DJuIjeijXRkGzrHvznv1L1xh8fEOiGHlsA3KUaRSpSn
- nvyUZ1aFvl569emwknlhHLGKX6/yKNVZAkC8Rt780SXDenj8TsPuPS6SP8fjKRxHlN0/
- LYQvrL1/KZ+t1pEjjcVHhpt/jPFKXhPMPGitMczYSed1HZc6zMKGrORz25qb3iIwyZ6o
- AftCaGr7p0zaCVr3pSk94kXOYmaL7Apt70iDc6HfXQopyg8KbvFggkfmeaZ8PsL5YqOQ
- VcM4bq689GYryayC9wihFIwVuE4+S1KUnCwvVQqyt+XMd0W+Z7afkDq2tIvJlKXP64/v
- Gmhg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=zZACWSjZ3Q5WmL3kd7vzGZGnEgREaoyhBQDYpK6S+ic=;
- b=cKzHsfsXAdsn2WbazhUW+lPuvRl2mHAQqRpME0MQ48lUssD06ajGdcmLya8QYJo+zN
- OWL9mB0pzjNqtfeVeDkaXwS2ZdRctulXmWTKxLgl5U7SYs8X8wKI3HPBJuXEad10TZtk
- dwoIHLRyHPofmd65XU1Fm/PUMVaFEibo4uQOsHCGnQMQLPsJFfrnmAQXlhwZ9aBJfzUh
- Nj/WC6fHMEx6itnaKI8HNFGvPLv9EV08ueaynZqsUY0FJzBB6FtUKIePum8qENd757cI
- lrIyM0jpTNmPqLK3dntB0mvLhiVPcZAgpTTnH777NBcr1O7ZW5nK/x2CAq5boJFC6/oJ
- wl+w==
-X-Gm-Message-State: AGRZ1gLy+cS2d2q379/E0CLwpFeAPbbN4LuOZzahxEawEUq+anEOpfZ+
- xXCnYdio52afmIrV0oWgomXHYFQvd8pUsg95EUNHQQ==
-X-Google-Smtp-Source: AJdET5c/9016aIchIGgGORthwYlI6HydHAI0r9WmpRvkHSoVNHhTUQH+OEg6T5jxuTNUaRbfSCfJcUja1WDdx8NskpU=
-X-Received: by 2002:a17:902:9897:: with SMTP id
- s23-v6mr5297812plp.229.1541457475475; 
- Mon, 05 Nov 2018 14:37:55 -0800 (PST)
-MIME-Version: 1.0
-References: <20181104231133.30848-1-joel@jms.id.au>
-In-Reply-To: <20181104231133.30848-1-joel@jms.id.au>
-From: Nick Desaulniers <ndesaulniers@google.com>
-Date: Mon, 5 Nov 2018 14:37:44 -0800
-Message-ID: <CAKwvOdm8WZTeB_wxkO2nN7PW=v=2z7tdVapTq-TiB18nZZfS=A@mail.gmail.com>
-Subject: Re: [PATCH 0/2] poewrpc/Boot: Fix cross compiling with clang
-To: joel@jms.id.au
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42ppNq4ssCzF2D1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Nov 2018 10:12:27 +1100 (AEDT)
+Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id wA5NCAhX010005;
+ Mon, 5 Nov 2018 17:12:10 -0600
+Received: (from segher@localhost)
+ by gate.crashing.org (8.14.1/8.14.1/Submit) id wA5NC8Wn009999;
+ Mon, 5 Nov 2018 17:12:08 -0600
+X-Authentication-Warning: gate.crashing.org: segher set sender to
+ segher@kernel.crashing.org using -f
+Date: Mon, 5 Nov 2018 17:12:08 -0600
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/32: Avoid unsupported flags with clang
+Message-ID: <20181105231207.GB5994@gate.crashing.org>
+References: <20181102043904.2808-1-joel@jms.id.au>
+ <87wopschge.fsf@concordia.ellerman.id.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87wopschge.fsf@concordia.ellerman.id.au>
+User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,42 +62,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michal Marek <michal.lkml@markovi.net>,
- Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
- LKML <linux-kernel@vger.kernel.org>,
- Masahiro Yamada <yamada.masahiro@socionext.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Nick Desaulniers <ndesaulniers@google.com>, linuxppc-dev@lists.ozlabs.org,
+ Joel Stanley <joel@jms.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, Nov 4, 2018 at 3:11 PM Joel Stanley <joel@jms.id.au> wrote:
->
-> Hello,
->
-> These patches allow clang to cross-compile the powerpc boot wrapper.
-> The boot wrapper constructs it's own compiler flags as it may not be
-> built for the same arch as the kernel.
+On Mon, Nov 05, 2018 at 02:48:49PM +1100, Michael Ellerman wrote:
+> Joel Stanley <joel@jms.id.au> writes:
+> > When building for ppc32 with clang these flags are unsupported:
+> >
+> >   -ffixed-r2 and -mmultiple
 
-Hi Joel, thanks for the series!  I'm just curious, how does the boot
-wrapper run on a different arch than the kernel?
+> > -CFLAGS-$(CONFIG_PPC32)	:= -ffixed-r2 $(MULTIPLEWORD)
+> > +ifndef CONFIG_CC_IS_CLANG
+> > +#CFLAGS-$(CONFIG_PPC32)	:= -ffixed-r2 $(MULTIPLEWORD)
+> > +endif
+> 
+> I think using cc-option with a comment would be nicer, you could avoid
+> the ifdef and it would also future-proof it against the option either
+> appearing in a future clang or disappearing in a future gcc.
 
->
-> The powerpc64le kernel builds natively with clang and with this patch it
-> can cross compile too.
->
-> Joel Stanley (2):
->   Makefile: Export clang toolchain variables
->   powerpc/boot: Set target when cross-compiling for clang
->
->  Makefile                   | 3 +++
->  arch/powerpc/boot/Makefile | 7 +++++++
->  2 files changed, 10 insertions(+)
->
-> --
-> 2.19.1
->
+These options will never be removed, lol.  -ffixed-<reg> is ancient and
+generic, and -mmultiple is useful so not in any danger, and besides, we
+would leave the command line option even if the feature is gone.
+
+> eg ~=:
+> 
+> # Clang doesn't need or support -ffixed-r2
+> CFLAGS-$(CONFIG_PPC32)	+= $(cc-option,-ffixed-r2)
+
+This option changes the ABI.  The compiler had better handle it!  If it
+doesn't, the only safe cause of action is to fail loudly.
+
+If LLVM always makes r2 fixed, it is better to special-case it here.
+(Even better would be to fix the compiler, of course).
 
 
--- 
-Thanks,
-~Nick Desaulniers
+Segher
