@@ -2,71 +2,81 @@ Return-Path: <SRS0=pi+/=NQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F1880C0044C
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Nov 2018 22:19:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 33B77C0044C
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Nov 2018 22:40:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 694E12085A
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Nov 2018 22:19:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 694E12085A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 9744D2084F
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Nov 2018 22:40:11 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="loEgC+Mm"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9744D2084F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42pnCV265LzF36V
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Nov 2018 09:19:18 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42pngY24PGzF35Q
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Nov 2018 09:40:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.167.180; helo=mail-oi1-f180.google.com;
- envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.b="loEgC+Mm";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mail-oi1-f180.google.com (mail-oi1-f180.google.com
- [209.85.167.180])
+ spf=pass (mailfrom) smtp.mailfrom=google.com
+ (client-ip=2607:f8b0:4864:20::643; helo=mail-pl1-x643.google.com;
+ envelope-from=ndesaulniers@google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=google.com header.i=@google.com header.b="loEgC+Mm"; 
+ dkim-atps=neutral
+Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
+ [IPv6:2607:f8b0:4864:20::643])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42pn9R3S84zF1gJ
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Nov 2018 09:17:31 +1100 (AEDT)
-Received: by mail-oi1-f180.google.com with SMTP id v198-v6so9013243oif.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Nov 2018 14:17:31 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42pnd171V6zDrDT
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Nov 2018 09:37:57 +1100 (AEDT)
+Received: by mail-pl1-x643.google.com with SMTP id b5-v6so5153916pla.6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Nov 2018 14:37:57 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=zZACWSjZ3Q5WmL3kd7vzGZGnEgREaoyhBQDYpK6S+ic=;
+ b=loEgC+MmKhvc+amScuS9dM5DJuIjeijXRkGzrHvznv1L1xh8fEOiGHlsA3KUaRSpSn
+ nvyUZ1aFvl569emwknlhHLGKX6/yKNVZAkC8Rt780SXDenj8TsPuPS6SP8fjKRxHlN0/
+ LYQvrL1/KZ+t1pEjjcVHhpt/jPFKXhPMPGitMczYSed1HZc6zMKGrORz25qb3iIwyZ6o
+ AftCaGr7p0zaCVr3pSk94kXOYmaL7Apt70iDc6HfXQopyg8KbvFggkfmeaZ8PsL5YqOQ
+ VcM4bq689GYryayC9wihFIwVuE4+S1KUnCwvVQqyt+XMd0W+Z7afkDq2tIvJlKXP64/v
+ Gmhg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=6LoVs/lvXd/sw+h/f73B4xZvJb0JTqol5x8Q4JQgo9A=;
- b=cR7uhF3AeJ7E4691YwKDhskrCZwBRvxQ18qJoAOB6qdP7UwBRMfEwNtON1O/0HZojn
- uHrdqxyZn7NqMhaBqdU0tb1d+bjXcbhtUvVOPuvcEihaJdggNIZ2g92/wPudJsSiOg8e
- ImJ4X5pmf/jHEPitptXczycCNEYpXoffCF5yYNvId0Pp3/GaL4BpG5e286yf7Y0rtu/g
- mACB5RNZ8HNoK4ZVid1ryFpqeA8DXajsNGkQjcQWy17p5AbucN9G+dm1Jk5/88gJooRV
- g1meX5N9EMWESM4yu9VCJVDZdjAcfB+K4fP3O+8C67HE1YYCQSnCi5fcEe1VISqVlb53
- NtlQ==
-X-Gm-Message-State: AGRZ1gJcFSbiYcYasKjiGEHzN8pG+mqicnwWm2m8A8VEAwMmQ6OtfXfM
- klCjzdxCpNihQ4B4vkNW+g==
-X-Google-Smtp-Source: AJdET5db8FgQZa0KQyf96olLWNhAcBxluU4X4EDgVEnvKg9lHa7KT4GmaopMYVws27hM0brwiY64Cg==
-X-Received: by 2002:aca:c41:: with SMTP id i1-v6mr5476786oiy.272.1541456248928; 
- Mon, 05 Nov 2018 14:17:28 -0800 (PST)
-Received: from localhost (24-155-109-49.dyn.grandenetworks.net.
- [24.155.109.49])
- by smtp.gmail.com with ESMTPSA id t38sm4809275otf.29.2018.11.05.14.17.28
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Mon, 05 Nov 2018 14:17:28 -0800 (PST)
-Date: Mon, 5 Nov 2018 16:17:27 -0600
-From: Rob Herring <robh@kernel.org>
-To: Xiaowei Bao <xiaowei.bao@nxp.com>
-Subject: Re: [PATCHv2 3/6] PCI: layerscape: Add the EP mode support
-Message-ID: <20181105221727.GA7729@bogus>
-References: <20181105084653.26597-1-xiaowei.bao@nxp.com>
- <20181105084653.26597-3-xiaowei.bao@nxp.com>
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=zZACWSjZ3Q5WmL3kd7vzGZGnEgREaoyhBQDYpK6S+ic=;
+ b=cKzHsfsXAdsn2WbazhUW+lPuvRl2mHAQqRpME0MQ48lUssD06ajGdcmLya8QYJo+zN
+ OWL9mB0pzjNqtfeVeDkaXwS2ZdRctulXmWTKxLgl5U7SYs8X8wKI3HPBJuXEad10TZtk
+ dwoIHLRyHPofmd65XU1Fm/PUMVaFEibo4uQOsHCGnQMQLPsJFfrnmAQXlhwZ9aBJfzUh
+ Nj/WC6fHMEx6itnaKI8HNFGvPLv9EV08ueaynZqsUY0FJzBB6FtUKIePum8qENd757cI
+ lrIyM0jpTNmPqLK3dntB0mvLhiVPcZAgpTTnH777NBcr1O7ZW5nK/x2CAq5boJFC6/oJ
+ wl+w==
+X-Gm-Message-State: AGRZ1gLy+cS2d2q379/E0CLwpFeAPbbN4LuOZzahxEawEUq+anEOpfZ+
+ xXCnYdio52afmIrV0oWgomXHYFQvd8pUsg95EUNHQQ==
+X-Google-Smtp-Source: AJdET5c/9016aIchIGgGORthwYlI6HydHAI0r9WmpRvkHSoVNHhTUQH+OEg6T5jxuTNUaRbfSCfJcUja1WDdx8NskpU=
+X-Received: by 2002:a17:902:9897:: with SMTP id
+ s23-v6mr5297812plp.229.1541457475475; 
+ Mon, 05 Nov 2018 14:37:55 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20181105084653.26597-3-xiaowei.bao@nxp.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+References: <20181104231133.30848-1-joel@jms.id.au>
+In-Reply-To: <20181104231133.30848-1-joel@jms.id.au>
+From: Nick Desaulniers <ndesaulniers@google.com>
+Date: Mon, 5 Nov 2018 14:37:44 -0800
+Message-ID: <CAKwvOdm8WZTeB_wxkO2nN7PW=v=2z7tdVapTq-TiB18nZZfS=A@mail.gmail.com>
+Subject: Re: [PATCH 0/2] poewrpc/Boot: Fix cross compiling with clang
+To: joel@jms.id.au
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,30 +88,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mark.rutland@arm.com, kstewart@linuxfoundation.org,
- linux-pci@vger.kernel.org, shawn.lin@rock-chips.com, minghuan.Lian@nxp.com,
- lorenzo.pieralisi@arm.com, kishon@ti.com, mingkai.hu@nxp.com,
- niklas.cassel@axis.com, devicetree@vger.kernel.org, arnd@arndb.de,
- linuxppc-dev@lists.ozlabs.org, robh+dt@kernel.org,
- cyrille.pitchen@free-electrons.com, bhelgaas@google.com,
- linux-arm-kernel@lists.infradead.org, roy.zang@nxp.com,
- Xiaowei Bao <xiaowei.bao@nxp.com>, gregkh@linuxfoundation.org,
- linux-kernel@vger.kernel.org, leoyang.li@nxp.com, pombredanne@nexb.com,
- shawnguo@kernel.org
+Cc: Michal Marek <michal.lkml@markovi.net>,
+ Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
+ LKML <linux-kernel@vger.kernel.org>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon,  5 Nov 2018 16:46:50 +0800, Xiaowei Bao wrote:
-> Add the EP mode support.
-> 
-> Signed-off-by: Xiaowei Bao <xiaowei.bao@nxp.com>
-> ---
-> v2:
->  - Add the SoC specific compatibles.
-> 
->  .../devicetree/bindings/pci/layerscape-pci.txt     |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
-> 
+On Sun, Nov 4, 2018 at 3:11 PM Joel Stanley <joel@jms.id.au> wrote:
+>
+> Hello,
+>
+> These patches allow clang to cross-compile the powerpc boot wrapper.
+> The boot wrapper constructs it's own compiler flags as it may not be
+> built for the same arch as the kernel.
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+Hi Joel, thanks for the series!  I'm just curious, how does the boot
+wrapper run on a different arch than the kernel?
+
+>
+> The powerpc64le kernel builds natively with clang and with this patch it
+> can cross compile too.
+>
+> Joel Stanley (2):
+>   Makefile: Export clang toolchain variables
+>   powerpc/boot: Set target when cross-compiling for clang
+>
+>  Makefile                   | 3 +++
+>  arch/powerpc/boot/Makefile | 7 +++++++
+>  2 files changed, 10 insertions(+)
+>
+> --
+> 2.19.1
+>
+
+
+-- 
+Thanks,
+~Nick Desaulniers
