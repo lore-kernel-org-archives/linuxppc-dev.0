@@ -2,80 +2,58 @@ Return-Path: <SRS0=FZqe=NR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 72158C32789
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Nov 2018 16:23:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EA8EFC32789
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Nov 2018 18:34:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E68532085B
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Nov 2018 16:23:12 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="acsDHO/i"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E68532085B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 55EAE20827
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Nov 2018 18:34:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 55EAE20827
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42qFG66Gl7zF3DS
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 03:23:10 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42qJ9M6nvgzF3FL
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 05:34:15 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="acsDHO/i";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=redhat.com
+ (client-ip=209.132.183.28; helo=mx1.redhat.com;
+ envelope-from=fweimer@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=sirena.org.uk
- (client-ip=2a01:7e01::f03c:91ff:fed4:a3b6; helo=heliosphere.sirena.org.uk;
- envelope-from=broonie@sirena.org.uk; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk
- header.b="acsDHO/i"; dkim-atps=neutral
-X-Greylist: delayed 1991 seconds by postgrey-1.36 at bilbo;
- Wed, 07 Nov 2018 03:20:27 AEDT
-Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
- [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42qFBz6HN8zF3Cs
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Nov 2018 03:20:27 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=sirena.org.uk; s=20170815-heliosphere; h=In-Reply-To:Content-Type:
- MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=2Gzg/Mh0FJV9zuoQQNE0vpXPiiaXO+vW2e4XFXcasVk=; b=acsDHO/iSrWrKPtpveAOwCd30
- UFvA+DkTCECbvm4eB9w5piZM477NH7UK7RR/2kUdUmvfGC2gdfiZES7Tm3xfS3GeYqhEx+B9NZlSz
- K03ayXvkgywEvDH9eI2EERWy+umviKurxqe9U8WJLPGvWZRfBuh+bOCNTf3rEXEQoLNP8=;
-Received: from cpc102320-sgyl38-2-0-cust46.18-2.cable.virginm.net
- ([82.37.168.47] helo=debutante.sirena.org.uk)
- by heliosphere.sirena.org.uk with esmtpa (Exim 4.89)
- (envelope-from <broonie@sirena.org.uk>)
- id 1gK3ZE-0002fp-CM; Tue, 06 Nov 2018 15:47:00 +0000
-Received: by debutante.sirena.org.uk (Postfix, from userid 1000)
- id DA670112266B; Tue,  6 Nov 2018 15:46:59 +0000 (GMT)
-Date: Tue, 6 Nov 2018 15:46:59 +0000
-From: Mark Brown <broonie@kernel.org>
-To: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
-Subject: Re: [alsa-devel] Build regressions/improvements in v4.20-rc1
- (sound/pci/hda/patch_ca0132.c)
-Message-ID: <20181106154659.GA31950@sirena.org.uk>
-References: <20181105220559.27458-1-geert@linux-m68k.org>
- <CAMuHMdWGpjvwunNWgFujPO9_j+=QiNsi346s4-xBF1g4DT5xZw@mail.gmail.com>
- <80f2f98b-9ab1-2a1c-0962-63e3be1dd742@infradead.org>
- <CAMuHMdViTrKqQzci3=YJzk2+kQKqbWcr0oaaR1ZQM_VqT33RvA@mail.gmail.com>
- <eccd20fa-5be3-957d-7905-9cc4021ba94e@linux.intel.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42qJ7Q0312zF26K
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Nov 2018 05:32:33 +1100 (AEDT)
+Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.phx2.redhat.com
+ [10.5.11.22])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mx1.redhat.com (Postfix) with ESMTPS id B37BA308FB8C;
+ Tue,  6 Nov 2018 18:32:30 +0000 (UTC)
+Received: from oldenburg.str.redhat.com (ovpn-116-235.ams2.redhat.com
+ [10.36.116.235])
+ by smtp.corp.redhat.com (Postfix) with ESMTPS id 365C71042557;
+ Tue,  6 Nov 2018 18:32:29 +0000 (UTC)
+From: Florian Weimer <fweimer@redhat.com>
+To: Breno Leitao <leitao@debian.org>
+Subject: Re: [RFC PATCH v2 00/14] New TM Model
+References: <1541508028-31865-1-git-send-email-leitao@debian.org>
+Date: Tue, 06 Nov 2018 19:32:25 +0100
+In-Reply-To: <1541508028-31865-1-git-send-email-leitao@debian.org> (Breno
+ Leitao's message of "Tue, 6 Nov 2018 10:40:14 -0200")
+Message-ID: <87zhumkqfa.fsf@oldenburg.str.redhat.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/25.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
- protocol="application/pgp-signature"; boundary="0OAP2g/MAC+5xKAE"
-Content-Disposition: inline
-In-Reply-To: <eccd20fa-5be3-957d-7905-9cc4021ba94e@linux.intel.com>
-X-Cookie: This sentence no verb.
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Type: text/plain
+X-Scanned-By: MIMEDefang 2.84 on 10.5.11.22
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
+ (mx1.redhat.com [10.5.110.43]); Tue, 06 Nov 2018 18:32:30 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,51 +65,56 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390 <linux-s390@vger.kernel.org>,
- ALSA Development Mailing List <alsa-devel@alsa-project.org>,
- Linux-sh list <linux-sh@vger.kernel.org>, Randy Dunlap <rdunlap@infradead.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: mikey@neuling.org, ldufour@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, cyrilbur@gmail.com, gromero@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+* Breno Leitao:
 
---0OAP2g/MAC+5xKAE
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> This  patchset for the hardware transactional memory (TM) subsystem
+> aims to avoid spending a lot of time on TM suspended mode in kernel
+> space.  It basically changes where the reclaim/recheckpoint will be
+> executed.
 
-On Tue, Nov 06, 2018 at 08:56:39AM -0600, Pierre-Louis Bossart wrote:
+I assumed that we want to abort on every system call these days?
 
-> > However, looking at what else can enable SND_HDA, I think it should be
+We have this commit in glibc:
 
-> >      select SND_SOC_HDAC_HDA if SND_PCI || ARCH_TEGRA
+commit f0458cf4f9ff3d870c43b624e6dccaaf657d5e83
+Author: Adhemerval Zanella <adhemerval.zanella@linaro.org>
+Date:   Mon Aug 27 09:42:50 2018 -0300
 
-> This codec can only be used by the Skylake driver (and the upcoming SOF
-> one). For Tegra this module will never be used unless they follow the same
-> path of enabling ASoC to deal with the HDaudio codecs instead of the legacy.
+    powerpc: Only enable TLE with PPC_FEATURE2_HTM_NOSC
+    
+    Linux from 3.9 through 4.2 does not abort HTM transaction on syscalls,
+    instead it suspend and resume it when leaving the kernel.  The
+    side-effects of the syscall will always remain visible, even if the
+    transaction is aborted.  This is an issue when transaction is used along
+    with futex syscall, on pthread_cond_wait for instance, where the futex
+    call might succeed but the transaction is rolled back leading the
+    pthread_cond object in an inconsistent state.
+    
+    Glibc used to prevent it by always aborting a transaction before issuing
+    a syscall.  Linux 4.2 also decided to abort active transaction in
+    syscalls which makes the glibc workaround superfluous.  Worse, glibc
+    transaction abortion leads to a performance issue on recent kernels
+    where the HTM state is saved/restore lazily (v4.9).  By aborting a
+    transaction on every syscalls, regardless whether a transaction has being
+    initiated before, GLIBS makes the kernel always save/restore HTM state
+    (it can not even lazily disable it after a certain number of syscall
+    iterations).
+    
+    Because of this shortcoming, Transactional Lock Elision is just enabled
+    when it has been explicitly set (either by tunables of by a configure
+    switch) and if kernel aborts HTM transactions on syscalls
+    (PPC_FEATURE2_HTM_NOSC).  It is reported that using simple benchmark [1],
+    the context-switch is about 5% faster by not issuing a tabort in every
+    syscall in newer kernels.
 
-> Likewise HDAC_HDMI will only work on Intel platforms for now.
+I wonder how the new TM model interacts with the assumption we currently
+have in glibc.
 
-_ALL_CODECS is a build coverage option, not a useful configuration
-option.  We should be building things in as many different
-configurations as possible so that it's easier for people to get build
-coverage when making subsystem wide changes.
-
---0OAP2g/MAC+5xKAE
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlvht3EACgkQJNaLcl1U
-h9Deagf+OnHg8fBz8mKu9ehkKNp8xTUnAUdpPtoS0edsuI0QuH1I5WbIs6F3Ro58
-cxf6scOiMI7R0/qne0h0ReQbOudbh0mT0aCBL1UP77FGvWhkgpJF8CkJP5Hwl+MB
-eFtQe4CE0IfCXtzbfhg+RZ22OkUmJ4Rgdue5yqS7fPHswqQb/7zMGXZpKYGHuJx5
-T1Dhj5dnKqI7pS8lThDzcA/ZtkBbST4aN+Zv1RvI9ew6pVMrYWq30QSohmx2+qTs
-A9ESsst56DEvX8RSIZcsqMNejmuXFIQ4L7dqyIjS/9FjLoG1fp5SUkSOd4p6NHoo
-BBLuGM/ddEXdoSs7PJGNuK+CihZHtA==
-=wMGV
------END PGP SIGNATURE-----
-
---0OAP2g/MAC+5xKAE--
+Thanks,
+Florian
