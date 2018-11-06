@@ -2,54 +2,80 @@ Return-Path: <SRS0=FZqe=NR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6ED55C32789
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Nov 2018 16:20:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 72158C32789
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Nov 2018 16:23:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CB4392081D
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Nov 2018 16:20:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CB4392081D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
+	by mail.kernel.org (Postfix) with ESMTPS id E68532085B
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Nov 2018 16:23:12 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="acsDHO/i"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E68532085B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42qFCR5NxxzF3F0
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 03:20:51 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.de
+	by lists.ozlabs.org (Postfix) with ESMTP id 42qFG66Gl7zF3DS
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 03:23:10 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=suse.de
- (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=tiwai@suse.de;
- receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="acsDHO/i";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=suse.de
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ spf=none (mailfrom) smtp.mailfrom=sirena.org.uk
+ (client-ip=2a01:7e01::f03c:91ff:fed4:a3b6; helo=heliosphere.sirena.org.uk;
+ envelope-from=broonie@sirena.org.uk; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk
+ header.b="acsDHO/i"; dkim-atps=neutral
+X-Greylist: delayed 1991 seconds by postgrey-1.36 at bilbo;
+ Wed, 07 Nov 2018 03:20:27 AEDT
+Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
+ [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42qF9J3p6VzF3Cp
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Nov 2018 03:18:53 +1100 (AEDT)
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay1.suse.de (unknown [195.135.220.254])
- by mx1.suse.de (Postfix) with ESMTP id DBF80B6DB;
- Tue,  6 Nov 2018 16:18:49 +0000 (UTC)
-Date: Tue, 06 Nov 2018 17:18:49 +0100
-Message-ID: <s5h36seyyae.wl-tiwai@suse.de>
-From: Takashi Iwai <tiwai@suse.de>
-To: Randy Dunlap <rdunlap@infradead.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42qFBz6HN8zF3Cs
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Nov 2018 03:20:27 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=sirena.org.uk; s=20170815-heliosphere; h=In-Reply-To:Content-Type:
+ MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+ Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+ List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=2Gzg/Mh0FJV9zuoQQNE0vpXPiiaXO+vW2e4XFXcasVk=; b=acsDHO/iSrWrKPtpveAOwCd30
+ UFvA+DkTCECbvm4eB9w5piZM477NH7UK7RR/2kUdUmvfGC2gdfiZES7Tm3xfS3GeYqhEx+B9NZlSz
+ K03ayXvkgywEvDH9eI2EERWy+umviKurxqe9U8WJLPGvWZRfBuh+bOCNTf3rEXEQoLNP8=;
+Received: from cpc102320-sgyl38-2-0-cust46.18-2.cable.virginm.net
+ ([82.37.168.47] helo=debutante.sirena.org.uk)
+ by heliosphere.sirena.org.uk with esmtpa (Exim 4.89)
+ (envelope-from <broonie@sirena.org.uk>)
+ id 1gK3ZE-0002fp-CM; Tue, 06 Nov 2018 15:47:00 +0000
+Received: by debutante.sirena.org.uk (Postfix, from userid 1000)
+ id DA670112266B; Tue,  6 Nov 2018 15:46:59 +0000 (GMT)
+Date: Tue, 6 Nov 2018 15:46:59 +0000
+From: Mark Brown <broonie@kernel.org>
+To: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
 Subject: Re: [alsa-devel] Build regressions/improvements in v4.20-rc1
  (sound/pci/hda/patch_ca0132.c)
-In-Reply-To: <80f2f98b-9ab1-2a1c-0962-63e3be1dd742@infradead.org>
+Message-ID: <20181106154659.GA31950@sirena.org.uk>
 References: <20181105220559.27458-1-geert@linux-m68k.org>
  <CAMuHMdWGpjvwunNWgFujPO9_j+=QiNsi346s4-xBF1g4DT5xZw@mail.gmail.com>
  <80f2f98b-9ab1-2a1c-0962-63e3be1dd742@infradead.org>
-User-Agent: Wanderlust/2.15.9 (Almost Unreal) SEMI/1.14.6 (Maruoka)
- FLIM/1.14.9 (=?UTF-8?B?R29qxY0=?=) APEL/10.8 Emacs/26
- (x86_64-suse-linux-gnu) MULE/6.0 (HANACHIRUSATO)
-MIME-Version: 1.0 (generated by SEMI 1.14.6 - "Maruoka")
-Content-Type: text/plain; charset=US-ASCII
+ <CAMuHMdViTrKqQzci3=YJzk2+kQKqbWcr0oaaR1ZQM_VqT33RvA@mail.gmail.com>
+ <eccd20fa-5be3-957d-7905-9cc4021ba94e@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ protocol="application/pgp-signature"; boundary="0OAP2g/MAC+5xKAE"
+Content-Disposition: inline
+In-Reply-To: <eccd20fa-5be3-957d-7905-9cc4021ba94e@linux.intel.com>
+X-Cookie: This sentence no verb.
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,114 +89,49 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: linux-s390 <linux-s390@vger.kernel.org>,
  ALSA Development Mailing List <alsa-devel@alsa-project.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux-sh list <linux-sh@vger.kernel.org>, Randy Dunlap <rdunlap@infradead.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
  Geert Uytterhoeven <geert@linux-m68k.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 06 Nov 2018 02:04:47 +0100,
-Randy Dunlap wrote:
-> 
-> On 11/5/18 2:12 PM, Geert Uytterhoeven wrote:
-> > On Mon, Nov 5, 2018 at 11:07 PM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> >> Below is the list of build error/warning regressions/improvements in
-> >> v4.20-rc1[1] compared to v4.19[2].
-> >>
-> >> Summarized:
-> >>   - build errors: +3/-0
-> >>   - build warnings: +449/-2712
-> >>
-> >> Happy fixing! ;-)
-> >>
-> >> Thanks to the linux-next team for providing the build service.
-> >>
-> >> [1] http://kisskb.ellerman.id.au/kisskb/branch/linus/head/651022382c7f8da46cb4872a545ee1da6d097d2a/ (all 240 configs)
-> >> [2] http://kisskb.ellerman.id.au/kisskb/branch/linus/head/84df9525b0c27f3ebc2ebb1864fa62a97fdedb7d/ (all 240 configs)
-> >>
-> >>
-> >> *** ERRORS ***
-> >>
-> >>   + /kisskb/src/sound/pci/hda/patch_ca0132.c: error: implicit declaration of function 'pci_iomap' [-Werror=implicit-function-declaration]:  => 8799:3
-> > 
-> > sh4-all{mod,yes}config
-> > 
-> > Looks like d9b84a15892c0233 ("ALSA: hda: Fix implicit definition of
-> > pci_iomap() on SH")
-> > is not sufficient?
-> 
-> Different problem.  This is about "select":
-> 
-> config SND_SOC_ALL_CODECS
-> 	tristate "Build all ASoC CODEC drivers"
-> 
-> That enables (sets):
-> 	select SND_SOC_HDAC_HDA
-> which selects SND_HDA even though CONFIG_PCI is not enabled.
 
-Actually it is OK to enable CONFIG_SND_HDA_CODEC_CA0132 without
-CONFIG_PCI.  IIRC, there was a system like that, too.
-The commit above should have covered the build failure on SH, but
-apparently isn't enough for some arch setups, as it seems.
+--0OAP2g/MAC+5xKAE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-The cause is clear now: pci_iomap() is defined in
-asm-generic/pci_iomap.h only when CONFIG_GENERIC_PCI_IOMAP is
-defined.  Including asm/io.h doesn't help unless CONFIG_PCI is set.
+On Tue, Nov 06, 2018 at 08:56:39AM -0600, Pierre-Louis Bossart wrote:
 
-Below is a quick fix for this.
+> > However, looking at what else can enable SND_HDA, I think it should be
 
+> >      select SND_SOC_HDAC_HDA if SND_PCI || ARCH_TEGRA
 
-thanks,
+> This codec can only be used by the Skylake driver (and the upcoming SOF
+> one). For Tegra this module will never be used unless they follow the same
+> path of enabling ASoC to deal with the HDaudio codecs instead of the legacy.
 
-Takashi
+> Likewise HDAC_HDMI will only work on Intel platforms for now.
 
--- 8< --
+_ALL_CODECS is a build coverage option, not a useful configuration
+option.  We should be building things in as many different
+configurations as possible so that it's easier for people to get build
+coverage when making subsystem wide changes.
 
-From: Takashi Iwai <tiwai@suse.de>
-Subject: [PATCH] ALSA: hda/ca0132 - Yet more fix on build breakage without PCI
- support
+--0OAP2g/MAC+5xKAE
+Content-Type: application/pgp-signature; name="signature.asc"
 
-The recent change in CA0132 codec driver for supporting more
-Creative boards includes the pci_iomap() call to get the extra
-register accesses.  This is supposed to work on all archs and setups,
-by the implicit assumption that every arch would provide a dummy
-function returning NULL when no PCI is available.  But the reality
-bites, of course; as Geert's regular build test shows, some configs
-(at least SH4 without CONFIG_PCI) leads to a build error due to the
-implicit function declaration.
+-----BEGIN PGP SIGNATURE-----
 
-So this is another attempt to fix the issue: now we add an ifdef
-CONFIG_PCI line, so that pci_iomap() won't be called unless PCI is
-really usable.  This should fall back to the standard quirk again with
-a warning.
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlvht3EACgkQJNaLcl1U
+h9Deagf+OnHg8fBz8mKu9ehkKNp8xTUnAUdpPtoS0edsuI0QuH1I5WbIs6F3Ro58
+cxf6scOiMI7R0/qne0h0ReQbOudbh0mT0aCBL1UP77FGvWhkgpJF8CkJP5Hwl+MB
+eFtQe4CE0IfCXtzbfhg+RZ22OkUmJ4Rgdue5yqS7fPHswqQb/7zMGXZpKYGHuJx5
+T1Dhj5dnKqI7pS8lThDzcA/ZtkBbST4aN+Zv1RvI9ew6pVMrYWq30QSohmx2+qTs
+A9ESsst56DEvX8RSIZcsqMNejmuXFIQ4L7dqyIjS/9FjLoG1fp5SUkSOd4p6NHoo
+BBLuGM/ddEXdoSs7PJGNuK+CihZHtA==
+=wMGV
+-----END PGP SIGNATURE-----
 
-Fixes: d9b84a15892c0233 ("ALSA: hda: Fix implicit definition of pci_iomap() on SH")
-Reported-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: <stable@vger.kernel.org>
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
----
- sound/pci/hda/patch_ca0132.c | 6 ++++++
- 1 file changed, 6 insertions(+)
-
-diff --git a/sound/pci/hda/patch_ca0132.c b/sound/pci/hda/patch_ca0132.c
-index 0a24037184c3..9ed808b45e75 100644
---- a/sound/pci/hda/patch_ca0132.c
-+++ b/sound/pci/hda/patch_ca0132.c
-@@ -8796,7 +8796,13 @@ static int patch_ca0132(struct hda_codec *codec)
- 	}
- 
- 	if (spec->use_pci_mmio) {
-+		/*
-+		 * ifdef below needed due to lack of pci_iomap() decleration
-+		 * for some archs when no PCI is defined
-+		 */
-+#ifdef CONFIG_PCI
- 		spec->mem_base = pci_iomap(codec->bus->pci, 2, 0xC20);
-+#endif
- 		if (spec->mem_base == NULL) {
- 			codec_warn(codec, "pci_iomap failed! Setting quirk to QUIRK_NONE.");
- 			spec->quirk = QUIRK_NONE;
--- 
-2.19.1
-
+--0OAP2g/MAC+5xKAE--
