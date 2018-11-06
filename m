@@ -2,73 +2,94 @@ Return-Path: <SRS0=FZqe=NR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A74F3C32789
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Nov 2018 19:33:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3CD88C32789
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Nov 2018 20:10:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id ED1EB2085B
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Nov 2018 19:33:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ED1EB2085B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=debian.org
+	by mail.kernel.org (Postfix) with ESMTPS id 7FA7B2085B
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Nov 2018 20:10:56 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="FKyx9nnr";
+	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="UUmOFw+H"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7FA7B2085B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42qKV50cdJzF3Dv
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 06:33:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=debian.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42qLJt3GTHzF3FK
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 07:10:54 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.160.193; helo=mail-qt1-f193.google.com;
- envelope-from=breno.debian@gmail.com; receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=codeaurora.org header.i=@codeaurora.org header.b="FKyx9nnr";
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="UUmOFw+H";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=debian.org
-Received: from mail-qt1-f193.google.com (mail-qt1-f193.google.com
- [209.85.160.193])
+ spf=pass (mailfrom) smtp.mailfrom=codeaurora.org
+ (client-ip=198.145.29.96; helo=smtp.codeaurora.org;
+ envelope-from=vinmenon@codeaurora.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=codeaurora.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=codeaurora.org header.i=@codeaurora.org
+ header.b="FKyx9nnr"; 
+ dkim=pass (1024-bit key) header.d=codeaurora.org header.i=@codeaurora.org
+ header.b="UUmOFw+H"; dkim-atps=neutral
+Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42q9kb2B0lzF2Hd
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Nov 2018 00:44:07 +1100 (AEDT)
+Received: by smtp.codeaurora.org (Postfix, from userid 1000)
+ id 3C890607F7; Tue,  6 Nov 2018 09:28:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=codeaurora.org;
+ s=default; t=1541496538;
+ bh=fhMDKdz2qkpoWmcUijENRWLwS+4ODTCiGk3VV+6kj+U=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=FKyx9nnrJeiymla2bVXSTe9N0dTgqbvARjkwE1C6VW4zxkOKHwK0UbdNQye8PKiGi
+ WFm6nuXIcXX29C4Zmuzj6TrU9P/PEokLyltsgr7hHcgob0yhx0W117Uek5BLl8ajPB
+ r7ZyZkqLRqeY45OpFns68qnA//oi3iPeP/GiwISg=
+Received: from [10.204.82.21]
+ (blr-c-bdr-fw-01_globalnat_allzones-outside.qualcomm.com [103.229.19.19])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42qKS05qBYzF3DL
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Nov 2018 06:32:00 +1100 (AEDT)
-Received: by mail-qt1-f193.google.com with SMTP id l9-v6so4006571qtj.12
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Nov 2018 11:32:00 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=Bol+1sd/y0yWgVrSDHnvUJ4i+sEtZfe/tLozo1tHVVw=;
- b=ngFG+/84FgBDvjhWj151iFjO1Gd9TKlBCiqfIlGtd7c50XI4pRdraARFJPF+0opoVW
- aR8c12qBnfglDyoZNMv/U/Yg8SC4fTATaWHOlvPPbfy3ZGzIiMOL22jhx/fEezoOaWcs
- +O7m4F8TgEbGCgldz8fI3xwsnJ1+bmYmU4cRjeEMhOhKsQ7Y8+biRNjgNF13opUxicyp
- VY+kVsHmqdJnwSYxfv8WtjUbVhX6TD6umOdKLrT0G7QvdtbvUUgflX9Ip48ZVW1aBj4i
- C1aZq0boP7BJH3chhNpIH6mEhlXaGWUR3g++DNCTxR08ZqoQhOdZDsBRpzm7pvrC+mFU
- khyQ==
-X-Gm-Message-State: AGRZ1gJ9dWL8Lq+EDosEF7Jfzpx9+ZevlxARVs7srZyGDJBc4NbG54KK
- 1lWuh2DVAAXyqDw93eMyt5Y=
-X-Google-Smtp-Source: AJdET5cjRLzV9hd4Vd7+XQUDhwG4JKWAk6oghewhHr2zi787LuAPxQee7oJGF+LezWw/fPO01eGz2w==
-X-Received: by 2002:a0c:ade7:: with SMTP id x36mr26161803qvc.66.1541532718346; 
- Tue, 06 Nov 2018 11:31:58 -0800 (PST)
-Received: from [9.18.239.97] ([32.104.18.203])
- by smtp.gmail.com with ESMTPSA id 5sm12078930qkv.93.2018.11.06.11.31.54
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 06 Nov 2018 11:31:57 -0800 (PST)
-Subject: Re: [RFC PATCH v2 00/14] New TM Model
-To: Florian Weimer <fweimer@redhat.com>
-References: <1541508028-31865-1-git-send-email-leitao@debian.org>
- <87zhumkqfa.fsf@oldenburg.str.redhat.com>
-From: Breno Leitao <leitao@debian.org>
-Message-ID: <12883814-0100-91dc-3aac-84b689f82273@debian.org>
-Date: Tue, 6 Nov 2018 17:31:55 -0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ (Authenticated sender: vinmenon@smtp.codeaurora.org)
+ by smtp.codeaurora.org (Postfix) with ESMTPSA id 3B13760247;
+ Tue,  6 Nov 2018 09:28:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=codeaurora.org;
+ s=default; t=1541496536;
+ bh=fhMDKdz2qkpoWmcUijENRWLwS+4ODTCiGk3VV+6kj+U=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=UUmOFw+Hgn7TaSHyImnZx0o/GBxDs6YraaxCayZeruSJLBWu8RsGSMDa3ZLOxt0ED
+ C0cAL6OveiDa7kQ0wJNAhY0RdHx/Pc2TaKoHYuXr1Q2UtTFMa+ExxEAFCJRe9qx9aF
+ 3BR3N1pAfAqOo8TLrjFc6QqtL+f9VGWIH6Sq4pyk=
+DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 3B13760247
+Authentication-Results: pdx-caf-mail.web.codeaurora.org;
+ dmarc=none (p=none dis=none) header.from=codeaurora.org
+Authentication-Results: pdx-caf-mail.web.codeaurora.org;
+ spf=none smtp.mailfrom=vinmenon@codeaurora.org
+Subject: Re: [PATCH v11 10/26] mm: protect VMA modifications using VMA
+ sequence count
+To: Laurent Dufour <ldufour@liunx.vnet.ibm.com>,
+ vinayak menon <vinayakm.list@gmail.com>
+References: <1526555193-7242-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1526555193-7242-11-git-send-email-ldufour@linux.vnet.ibm.com>
+ <CAOaiJ-nJ_=+diXz8ji42Rro3Mj16C1=NpenRuY3-mjs_GhR4mA@mail.gmail.com>
+ <239bab9c-e38c-951d-9114-34227b1dc94c@liunx.vnet.ibm.com>
+From: Vinayak Menon <vinmenon@codeaurora.org>
+Message-ID: <836276ba-5063-4d65-4649-480c8bd31c45@codeaurora.org>
+Date: Tue, 6 Nov 2018 14:58:42 +0530
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:52.0) Gecko/20100101
  Thunderbird/52.9.1
 MIME-Version: 1.0
-In-Reply-To: <87zhumkqfa.fsf@oldenburg.str.redhat.com>
+In-Reply-To: <239bab9c-e38c-951d-9114-34227b1dc94c@liunx.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+X-Mailman-Approved-At: Wed, 07 Nov 2018 07:07:30 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,97 +101,146 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mikey@neuling.org, gromero@linux.vnet.ibm.com,
- Adhemerval Zanella <adhemerval.zanella@linaro.org>, ldufour@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, cyrilbur@gmail.com
+Cc: jack@suse.cz, sergey.senozhatsky.work@gmail.com,
+ Peter Zijlstra <peterz@infradead.org>, Will Deacon <will.deacon@arm.com>,
+ Michal Hocko <mhocko@kernel.org>, linux-mm@kvack.org, paulus@samba.org,
+ punitagrawal@gmail.com, hpa@zytor.com,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>, khandual@linux.vnet.ibm.com,
+ Andrea Arcangeli <aarcange@redhat.com>, ak@linux.intel.com,
+ Minchan Kim <minchan@kernel.org>, x86@kernel.org,
+ Matthew Wilcox <willy@infradead.org>,
+ Daniel Jordan <daniel.m.jordan@oracle.com>, Ingo Molnar <mingo@redhat.com>,
+ David Rientjes <rientjes@google.com>,
+ Paul McKenney <paulmck@linux.vnet.ibm.com>, npiggin@gmail.com,
+ Jerome Glisse <jglisse@redhat.com>, dave@stgolabs.net, kemi.wang@intel.com,
+ kirill@shutemov.name, Thomas Gleixner <tglx@linutronix.de>,
+ Ganesh Mahendran <opensource.ganesh@gmail.com>, yang.shi@linux.alibaba.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ aneesh.kumar@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+ Tim Chen <tim.c.chen@linux.intel.com>, haren@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-hi Florian,
+On 11/5/2018 11:52 PM, Laurent Dufour wrote:
+> Le 05/11/2018 à 08:04, vinayak menon a écrit :
+>> Hi Laurent,
+>>
+>> On Thu, May 17, 2018 at 4:37 PM Laurent Dufour
+>> <ldufour@linux.vnet.ibm.com> wrote:
+>>>
+>>> The VMA sequence count has been introduced to allow fast detection of
+>>> VMA modification when running a page fault handler without holding
+>>> the mmap_sem.
+>>>
+>>> This patch provides protection against the VMA modification done in :
+>>>          - madvise()
+>>>          - mpol_rebind_policy()
+>>>          - vma_replace_policy()
+>>>          - change_prot_numa()
+>>>          - mlock(), munlock()
+>>>          - mprotect()
+>>>          - mmap_region()
+>>>          - collapse_huge_page()
+>>>          - userfaultd registering services
+>>>
+>>> In addition, VMA fields which will be read during the speculative fault
+>>> path needs to be written using WRITE_ONCE to prevent write to be split
+>>> and intermediate values to be pushed to other CPUs.
+>>>
+>>> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+>>> ---
+>>>   fs/proc/task_mmu.c |  5 ++++-
+>>>   fs/userfaultfd.c   | 17 +++++++++++++----
+>>>   mm/khugepaged.c    |  3 +++
+>>>   mm/madvise.c       |  6 +++++-
+>>>   mm/mempolicy.c     | 51 ++++++++++++++++++++++++++++++++++-----------------
+>>>   mm/mlock.c         | 13 ++++++++-----
+>>>   mm/mmap.c          | 22 +++++++++++++---------
+>>>   mm/mprotect.c      |  4 +++-
+>>>   mm/swap_state.c    |  8 ++++++--
+>>>   9 files changed, 89 insertions(+), 40 deletions(-)
+>>>
+>>>   struct page *swap_cluster_readahead(swp_entry_t entry, gfp_t gfp_mask,
+>>>                                  struct vm_fault *vmf)
+>>> @@ -665,9 +669,9 @@ static inline void swap_ra_clamp_pfn(struct vm_area_struct *vma,
+>>>                                       unsigned long *start,
+>>>                                       unsigned long *end)
+>>>   {
+>>> -       *start = max3(lpfn, PFN_DOWN(vma->vm_start),
+>>> +       *start = max3(lpfn, PFN_DOWN(READ_ONCE(vma->vm_start)),
+>>>                        PFN_DOWN(faddr & PMD_MASK));
+>>> -       *end = min3(rpfn, PFN_DOWN(vma->vm_end),
+>>> +       *end = min3(rpfn, PFN_DOWN(READ_ONCE(vma->vm_end)),
+>>>                      PFN_DOWN((faddr & PMD_MASK) + PMD_SIZE));
+>>>   }
+>>>
+>>> -- 
+>>> 2.7.4
+>>>
+>>
+>> I have got a crash on 4.14 kernel with speculative page faults enabled
+>> and here is my analysis of the problem.
+>> The issue was reported only once.
+>
+> Hi Vinayak,
+>
+> Thanks for reporting this.
+>
+>>
+>> [23409.303395]  el1_da+0x24/0x84
+>> [23409.303400]  __radix_tree_lookup+0x8/0x90
+>> [23409.303407]  find_get_entry+0x64/0x14c
+>> [23409.303410]  pagecache_get_page+0x5c/0x27c
+>> [23409.303416]  __read_swap_cache_async+0x80/0x260
+>> [23409.303420]  swap_vma_readahead+0x264/0x37c
+>> [23409.303423]  swapin_readahead+0x5c/0x6c
+>> [23409.303428]  do_swap_page+0x128/0x6e4
+>> [23409.303431]  handle_pte_fault+0x230/0xca4
+>> [23409.303435]  __handle_speculative_fault+0x57c/0x7c8
+>> [23409.303438]  do_page_fault+0x228/0x3e8
+>> [23409.303442]  do_translation_fault+0x50/0x6c
+>> [23409.303445]  do_mem_abort+0x5c/0xe0
+>> [23409.303447]  el0_da+0x20/0x24
+>>
+>> Process A accesses address ADDR (part of VMA A) and that results in a
+>> translation fault.
+>> Kernel enters __handle_speculative_fault to fix the fault.
+>> Process A enters do_swap_page->swapin_readahead->swap_vma_readahead
+>> from speculative path.
+>> During this time, another process B which shares the same mm, does a
+>> mprotect from another CPU which follows
+>> mprotect_fixup->__split_vma, and it splits VMA A into VMAs A and B.
+>> After the split, ADDR falls into VMA B, but process A is still using
+>> VMA A.
+>> Now ADDR is greater than VMA_A->vm_start and VMA_A->vm_end.
+>> swap_vma_readahead->swap_ra_info uses start and end of vma to
+>> calculate ptes and nr_pte, which goes wrong due to this and finally
+>> resulting in wrong "entry" passed to
+>> swap_vma_readahead->__read_swap_cache_async, and in turn causing
+>> invalid swapper_space
+>> being passed to __read_swap_cache_async->find_get_page, causing an abort.
+>>
+>> The fix I have tried is to cache vm_start and vm_end also in vmf and
+>> use it in swap_ra_clamp_pfn. Let me know your thoughts on this. I can
+>> send
+>> the patch I am a using if you feel that is the right thing to do.
+>
+> I think the best would be to don't do swap readahead during the speculatvive page fault. If the page is found in the swap cache, that's fine, but otherwise, we should f    allback to the regular page fault.
+>
+> The attached -untested- patch is doing this, if you want to give it a try. I'll review that for the next series.
+>
 
-On 11/06/2018 04:32 PM, Florian Weimer wrote:
-> * Breno Leitao:
-> 
->> This  patchset for the hardware transactional memory (TM) subsystem
->> aims to avoid spending a lot of time on TM suspended mode in kernel
->> space.  It basically changes where the reclaim/recheckpoint will be
->> executed.
-> 
-> I assumed that we want to abort on every system call these days?
-> 
-> We have this commit in glibc:
-> 
-> commit f0458cf4f9ff3d870c43b624e6dccaaf657d5e83
-> Author: Adhemerval Zanella <adhemerval.zanella@linaro.org>
-> Date:   Mon Aug 27 09:42:50 2018 -0300
-> 
->     powerpc: Only enable TLE with PPC_FEATURE2_HTM_NOSC
->     
->     Linux from 3.9 through 4.2 does not abort HTM transaction on syscalls,
->     instead it suspend and resume it when leaving the kernel.  The
->     side-effects of the syscall will always remain visible, even if the
->     transaction is aborted.  This is an issue when transaction is used along
->     with futex syscall, on pthread_cond_wait for instance, where the futex
->     call might succeed but the transaction is rolled back leading the
->     pthread_cond object in an inconsistent state.
->     
->     Glibc used to prevent it by always aborting a transaction before issuing
->     a syscall.  Linux 4.2 also decided to abort active transaction in
->     syscalls which makes the glibc workaround superfluous.  Worse, glibc
->     transaction abortion leads to a performance issue on recent kernels
->     where the HTM state is saved/restore lazily (v4.9).  By aborting a
->     transaction on every syscalls, regardless whether a transaction has being
->     initiated before, GLIBS makes the kernel always save/restore HTM state
->     (it can not even lazily disable it after a certain number of syscall
->     iterations).
->     
->     Because of this shortcoming, Transactional Lock Elision is just enabled
->     when it has been explicitly set (either by tunables of by a configure
->     switch) and if kernel aborts HTM transactions on syscalls
->     (PPC_FEATURE2_HTM_NOSC).  It is reported that using simple benchmark [1],
->     the context-switch is about 5% faster by not issuing a tabort in every
->     syscall in newer kernels.
-> 
-> I wonder how the new TM model interacts with the assumption we currently
-> have in glibc.
+Thanks Laurent. I and going to try this patch.
 
-This new TM model is almost transparent to userspace. My patchset basically
-affects where recheckpoint and reclaim happens inside kernel space, and
-should not change userspace behavior.
+With this patch, since all non-SWP_SYNCHRONOUS_IO swapins result in non-speculative fault
+and a retry, wouldn't this have an impact on some perf numbers ? If so, would caching start
+and end be a better option ?
 
-I say "almost transparent" because it might cause some very specific
-transactions to have a higher doom rate, see patch 14/14 for a more detailed
-information, and also a reference for GLIBCs "tabort prior system calls"
-behavior.
+Also, would it make sense to move the FAULT_FLAG_SPECULATIVE check inside swapin_readahead,
+in a way that  swap_cluster_readahead can take the speculative path ? swap_cluster_readahead
+doesn't seem to use vma values.
 
-Regarding Adhemerval's patch, it is unaffected to this new model. Prior to
-kernel 4.2, kernel was executing a syscall independently of the TM state,
-which caused undesired side effect, thus GLIBC decision to abort a
-transaction prior to calling a syscall.
-
-Later, kernel system call mechanism was aware of the TM state, and this GLIBC
-workaround was not necessary anymore.
-
-More than that, this workaround started to cause  performance degradation on
-context switches, mainly when TM facility became lazy enabled, i.e, the TM
-facility mechanism would be enabled on demand (a task uses TM explicitly).
-This happens because this "abort prior to every system call" workaround
-started to trigger the TM facility to be enabled for every task that calls
-system calls.
-
-In fact, I was the one that identified this performance degradation issue,
-and reported to Adhemerval who kindly fixed it with
-f0458cf4f9ff3d870c43b624e6dccaaf657d5e83.
-
-Anyway, I think we are safe here.
-
-Thanks for bringing this up.
-Breno
-
-
-
-
-
-
-
+Thanks,
+Vinayak
