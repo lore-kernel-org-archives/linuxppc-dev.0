@@ -2,91 +2,107 @@ Return-Path: <SRS0=FZqe=NR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.0 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F206C32789
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Nov 2018 05:52:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BA9BEC32789
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Nov 2018 06:10:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 824262081D
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Nov 2018 05:52:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2085120827
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Nov 2018 06:10:47 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=joelfernandes.org header.i=@joelfernandes.org header.b="vFP1Hs1w"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 824262081D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=joelfernandes.org
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="n17ZoVV5"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2085120827
+Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=ti.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42pzG22T2NzF35p
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Nov 2018 16:52:10 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=joelfernandes.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42pzgS4z3SzF3BM
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Nov 2018 17:10:44 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=ti.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=joelfernandes.org header.i=@joelfernandes.org header.b="vFP1Hs1w";
+	dkim=pass (1024-bit key; unprotected) header.d=ti.com header.i=@ti.com header.b="n17ZoVV5";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=joelfernandes.org
- (client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
- envelope-from=joel@joelfernandes.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=joelfernandes.org
+ spf=pass (mailfrom) smtp.mailfrom=ti.com
+ (client-ip=198.47.19.141; helo=fllv0015.ext.ti.com;
+ envelope-from=kishon@ti.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=quarantine dis=none) header.from=ti.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=joelfernandes.org header.i=@joelfernandes.org
- header.b="vFP1Hs1w"; dkim-atps=neutral
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
- [IPv6:2607:f8b0:4864:20::541])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ unprotected) header.d=ti.com header.i=@ti.com header.b="n17ZoVV5"; 
+ dkim-atps=neutral
+Received: from fllv0015.ext.ti.com (fllv0015.ext.ti.com [198.47.19.141])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42pxZH2WxYzDrDJ
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Nov 2018 15:36:04 +1100 (AEDT)
-Received: by mail-pg1-x541.google.com with SMTP id f8-v6so5242083pgq.5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Nov 2018 20:36:04 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=joelfernandes.org; s=google;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=2ZO7f7AbR0Q/Tv9r9GFR6EhQOtVlvtqVzi+kHQIwd6Q=;
- b=vFP1Hs1wYQcIlWGzK/RquQm7mPiYOK37zkYc9g7HM5f1UakBrd0LproiSxWxB+J+cw
- LwUgBiOgB/Mof2uCb5M7ypmLMYM7sa/OYV8c2R4EJZNkyEzkll/fFaiA1VN/bVpLQDnv
- N2x7os/SUx/84UCqqI0dyLJ344I+8ENkn6mEU=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=2ZO7f7AbR0Q/Tv9r9GFR6EhQOtVlvtqVzi+kHQIwd6Q=;
- b=jSUkrwNUjZdkWACvG77PVK1A1H2jD3KGG899cGuPDScTV/Abc7YVESn9zY5W2e8JXV
- q2DIcivf3XGUmjre7rA7UaLNfDTmnyuPUbyXSzlm7QApFp4u519y3h3NoeaEyY7BWzfv
- QqdlklT1PU6Y+jmbEUI1/0Q9/j7MwZ69eTsTkjrHwp+tXP4hJlgeyoIkI+k6Q3N0KOAO
- aZxlgRwZkLIyTJ8YFOBWI5bmexe3KRJI6g0JDbNUuefcgXmc2+mPaBcpX+watz4LNj3+
- LOtXTpHM72sIQ3xYuFPPe0wmpDEToCmQGAaz4r5PVynWomq9MDh9RXJG34VbJkDwfvKq
- cvOQ==
-X-Gm-Message-State: AGRZ1gJilufr5XgoNWiCyBZco0PsUTWa7h/HLl3A+ifaaH8T40OSu4R4
- kg01xRZETR4fSkTrjOreEuUKSw==
-X-Google-Smtp-Source: AJdET5ecnHmWHapBSfgQDaRa+d8XuLQo3dJlBpesDCXVYTiF4QhB2rt8xq4tK8y9MBGhfwYqJFpEjQ==
-X-Received: by 2002:a63:5ec6:: with SMTP id
- s189mr21579640pgb.357.1541478962566; 
- Mon, 05 Nov 2018 20:36:02 -0800 (PST)
-Received: from localhost ([2620:0:1000:1601:3aef:314f:b9ea:889f])
- by smtp.gmail.com with ESMTPSA id c87-v6sm43985294pfe.93.2018.11.05.20.36.01
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Mon, 05 Nov 2018 20:36:01 -0800 (PST)
-Date: Mon, 5 Nov 2018 20:36:00 -0800
-From: Joel Fernandes <joel@joelfernandes.org>
-To: William Kucharski <william.kucharski@oracle.com>
-Subject: Re: [PATCH -next 0/3] Add support for fast mremap
-Message-ID: <20181106043600.GB139199@google.com>
-References: <20181103040041.7085-1-joelaf@google.com>
- <6886607.O3ZT5bM3Cy@blindfold>
- <e1d039a5-9c83-b9b9-98b5-d39bc48f04e0@kot-begemot.co.uk>
- <20181103183208.GA56850@google.com>
- <D6FB3C15-A8C1-4694-A434-A7489F590E05@oracle.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42pzcb6dwnzF35p
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Nov 2018 17:08:14 +1100 (AEDT)
+Received: from fllv0034.itg.ti.com ([10.64.40.246])
+ by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id wA667Ghh050877;
+ Tue, 6 Nov 2018 00:07:16 -0600
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
+ s=ti-com-17Q1; t=1541484436;
+ bh=oV2xEQML1iU4xFL/ov6+uu3i0JmRIX7v1/Io36rwBSs=;
+ h=Subject:To:CC:References:From:Date:In-Reply-To;
+ b=n17ZoVV5ZlWRHhwAw5SOcZhlY93M7Lv298AXnS7YCuztswjt2f9dA0EPsYjyCcYm7
+ I1EJFBX8ufizWM12meFygjqwtsC1lJFfcns1YVKfjJsRD0zhkRdGNW6E8nkQllMlDN
+ ndcYdh0OuCwqZp8TkoSlkR/K0Q5ZOMF1T0cY12T4=
+Received: from DFLE110.ent.ti.com (dfle110.ent.ti.com [10.64.6.31])
+ by fllv0034.itg.ti.com (8.15.2/8.15.2) with ESMTPS id wA667Guq003139
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Tue, 6 Nov 2018 00:07:16 -0600
+Received: from DFLE104.ent.ti.com (10.64.6.25) by DFLE110.ent.ti.com
+ (10.64.6.31) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1466.3; Tue, 6 Nov
+ 2018 00:07:16 -0600
+Received: from dflp33.itg.ti.com (10.64.6.16) by DFLE104.ent.ti.com
+ (10.64.6.25) with Microsoft SMTP Server (version=TLS1_0,
+ cipher=TLS_RSA_WITH_AES_256_CBC_SHA) id 15.1.1466.3 via Frontend Transport;
+ Tue, 6 Nov 2018 00:07:16 -0600
+Received: from [172.24.190.233] (ileax41-snat.itg.ti.com [10.172.224.153])
+ by dflp33.itg.ti.com (8.14.3/8.13.8) with ESMTP id wA667A0e013958;
+ Tue, 6 Nov 2018 00:07:11 -0600
+Subject: Re: [PATCH 5/6] pci: layerscape: Add the EP mode support.
+To: Xiaowei Bao <xiaowei.bao@nxp.com>, "bhelgaas@google.com"
+ <bhelgaas@google.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>,
+ "mark.rutland@arm.com" <mark.rutland@arm.com>, "shawnguo@kernel.org"
+ <shawnguo@kernel.org>, Leo Li <leoyang.li@nxp.com>,
+ "lorenzo.pieralisi@arm.com" <lorenzo.pieralisi@arm.com>, "arnd@arndb.de"
+ <arnd@arndb.de>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
+ "M.h. Lian" <minghuan.lian@nxp.com>, Mingkai Hu <mingkai.hu@nxp.com>, Roy
+ Zang <roy.zang@nxp.com>, "kstewart@linuxfoundation.org"
+ <kstewart@linuxfoundation.org>, "cyrille.pitchen@free-electrons.com"
+ <cyrille.pitchen@free-electrons.com>, "pombredanne@nexb.com"
+ <pombredanne@nexb.com>, "shawn.lin@rock-chips.com"
+ <shawn.lin@rock-chips.com>, "linux-pci@vger.kernel.org"
+ <linux-pci@vger.kernel.org>, "devicetree@vger.kernel.org"
+ <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+References: <20181025110901.5680-1-xiaowei.bao@nxp.com>
+ <20181025110901.5680-5-xiaowei.bao@nxp.com>
+ <d9d07e05-556b-a56d-bb7f-eaec9fb739b8@ti.com>
+ <HE1PR04MB1497DF7D9428A5C791CB6A03F5F00@HE1PR04MB1497.eurprd04.prod.outlook.com>
+ <HE1PR04MB14979058170FA16A7465FF9EF5CD0@HE1PR04MB1497.eurprd04.prod.outlook.com>
+ <a85a6900-2478-0750-6f33-2e787cf80d1d@ti.com>
+ <HE1PR04MB1497DF7378927C9BB5DF3E15F5CD0@HE1PR04MB1497.eurprd04.prod.outlook.com>
+ <8ec7f502-e058-2c28-9140-5d125e4af6ff@ti.com>
+ <HE1PR04MB1497DABC689F9A4A97FD4DF0F5CA0@HE1PR04MB1497.eurprd04.prod.outlook.com>
+From: Kishon Vijay Abraham I <kishon@ti.com>
+Message-ID: <dfedeaec-9a3b-632e-af37-cb1963dcae7c@ti.com>
+Date: Tue, 6 Nov 2018 11:36:42 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.2.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <D6FB3C15-A8C1-4694-A434-A7489F590E05@oracle.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
-X-Mailman-Approved-At: Tue, 06 Nov 2018 16:49:54 +1100
+In-Reply-To: <HE1PR04MB1497DABC689F9A4A97FD4DF0F5CA0@HE1PR04MB1497.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,89 +114,176 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mips@linux-mips.org, linux-m68k@vger.kernel.org,
- Rich Felker <dalias@libc.org>, linux-sh@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Dave Hansen <dave.hansen@linux.intel.com>, Will Deacon <will.deacon@arm.com>,
- "maintainer:X86 ARCHITECTURE \(32-BIT AND 64-BIT\)" <x86@kernel.org>,
- Michal Hocko <mhocko@kernel.org>, linux-mm@kvack.org, lokeshgidra@google.com,
- sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org,
- linux-riscv@lists.infradead.org, elfring@users.sourceforge.net,
- Jonas Bonn <jonas@southpole.se>, kvmarm@lists.cs.columbia.edu,
- dancol@google.com, linux-ia64@vge.kvack.org,
- Yoshinori Sato <ysato@users.sourceforge.jp>, linux-xtensa@linux-xtensa.org,
- Richard Weinberger <richard@nod.at>, Helge Deller <deller@gmx.de>,
- r.kernel.org@lithops.sigma-star.at, hughd@google.com,
- "James E.J. Bottomley" <jejb@parisc-linux.org>, kasan-dev@googlegroups.com,
- Anton Ivanov <anton.ivanov@kot-begemot.co.uk>, Ingo Molnar <mingo@redhat.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- Andrey Ryabinin <aryabinin@virtuozzo.com>, linux-snps-arc@lists.infradead.org,
- kernel-team@android.com, Sam Creasey <sammy@sammy.net>,
- Fenghua Yu <fenghua.yu@intel.com>, linux-s390@vger.kernel.org,
- Jeff Dike <jdike@addtoit.com>, linux-um@lists.infradead.org,
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- Julia Lawall <Julia.Lawall@lip6.fr>, Borislav Petkov <bp@alien8.de>,
- Andy Lutomirski <luto@kernel.org>, nios2-dev@lists.rocketboards.org,
- "Kirill A. Shutemov" <kirill@shutemov.name>, Stafford Horne <shorne@gmail.com>,
- Guan Xuetao <gxt@pku.edu.cn>, Chris Zankel <chris@zankel.net>,
- Tony Luck <tony.luck@intel.com>, linux-parisc@vger.kernel.org,
- Max Filippov <jcmvbkbc@gmail.com>, pantin@google.com,
- LKML <linux-kernel@vger.kernel.org>, minchan@kernel.org,
- Thomas Gleixner <tglx@linutronix.de>, linux-alpha@vger.kernel.org,
- Ley Foon Tan <lftan@altera.com>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: Jiafei Pan <jiafei.pan@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, Nov 04, 2018 at 12:56:48AM -0600, William Kucharski wrote:
+(Removed Niklas as mails to him is bouncing)
+
+Hi,
+
+Please fix your email client. Refer Documentation/process/email-clients.rst
+
+On 05/11/18 2:45 PM, Xiaowei Bao wrote:
 > 
 > 
-> > On Nov 3, 2018, at 12:32 PM, Joel Fernandes <joel@joelfernandes.org> wrote:
-> > 
-> > Looks like more architectures don't define set_pmd_at. I am thinking the
-> > easiest way forward is to just do the following, instead of defining
-> > set_pmd_at for every architecture that doesn't care about it. Thoughts?
-> > 
-> > diff --git a/mm/mremap.c b/mm/mremap.c
-> > index 7cf6b0943090..31ad64dcdae6 100644
-> > --- a/mm/mremap.c
-> > +++ b/mm/mremap.c
-> > @@ -281,7 +281,8 @@ unsigned long move_page_tables(struct vm_area_struct *vma,
-> > 			split_huge_pmd(vma, old_pmd, old_addr);
-> > 			if (pmd_trans_unstable(old_pmd))
-> > 				continue;
-> > -		} else if (extent == PMD_SIZE && IS_ENABLED(CONFIG_HAVE_MOVE_PMD)) {
-> > +		} else if (extent == PMD_SIZE) {
-> > +#ifdef CONFIG_HAVE_MOVE_PMD
-> > 			/*
-> > 			 * If the extent is PMD-sized, try to speed the move by
-> > 			 * moving at the PMD level if possible.
-> > @@ -296,6 +297,7 @@ unsigned long move_page_tables(struct vm_area_struct *vma,
-> > 				drop_rmap_locks(vma);
-> > 			if (moved)
-> > 				continue;
-> > +#endif
-> > 		}
-> > 
-> > 		if (pte_alloc(new_vma->vm_mm, new_pmd))
-> > 
+> -----Original Message-----
+> From: Kishon Vijay Abraham I <kishon@ti.com> 
+> Sent: 2018年11月5日 16:57
+> To: Xiaowei Bao <xiaowei.bao@nxp.com>; bhelgaas@google.com; robh+dt@kernel.org; mark.rutland@arm.com; shawnguo@kernel.org; Leo Li <leoyang.li@nxp.com>; lorenzo.pieralisi@arm.com; arnd@arndb.de; gregkh@linuxfoundation.org; M.h. Lian <minghuan.lian@nxp.com>; Mingkai Hu <mingkai.hu@nxp.com>; Roy Zang <roy.zang@nxp.com>; kstewart@linuxfoundation.org; cyrille.pitchen@free-electrons.com; pombredanne@nexb.com; shawn.lin@rock-chips.com; niklas.cassel@axis.com; linux-pci@vger.kernel.org; devicetree@vger.kernel.org; linux-kernel@vger.kernel.org; linux-arm-kernel@lists.infradead.org; linuxppc-dev@lists.ozlabs.org
+> Cc: Jiafei Pan <jiafei.pan@nxp.com>
+> Subject: Re: [PATCH 5/6] pci: layerscape: Add the EP mode support.
 > 
-> That seems reasonable as there are going to be a lot of architectures that never have
-> mappings at the PMD level.
-
-Ok, I will do it like this and resend.
-
-> Have you thought about what might be needed to extend this paradigm to be able to
-> perform remaps at the PUD level, given many architectures already support PUD-mapped
-> pages?
+> Hi,
 > 
+> On 31/10/18 4:08 PM, Xiaowei Bao wrote:
+>>
+>>
+>> -----Original Message-----
+>> From: Kishon Vijay Abraham I <kishon@ti.com>
+>> Sent: 2018年10月31日 12:15
+>> To: Xiaowei Bao <xiaowei.bao@nxp.com>; bhelgaas@google.com; 
+>> robh+dt@kernel.org; mark.rutland@arm.com; shawnguo@kernel.org; Leo Li 
+>> <leoyang.li@nxp.com>; lorenzo.pieralisi@arm.com; arnd@arndb.de; 
+>> gregkh@linuxfoundation.org; M.h. Lian <minghuan.lian@nxp.com>; Mingkai 
+>> Hu <mingkai.hu@nxp.com>; Roy Zang <roy.zang@nxp.com>; 
+>> kstewart@linuxfoundation.org; cyrille.pitchen@free-electrons.com; 
+>> pombredanne@nexb.com; shawn.lin@rock-chips.com; 
+>> niklas.cassel@axis.com; linux-pci@vger.kernel.org; 
+>> devicetree@vger.kernel.org; linux-kernel@vger.kernel.org; 
+>> linux-arm-kernel@lists.infradead.org; linuxppc-dev@lists.ozlabs.org
+>> Cc: Jiafei Pan <jiafei.pan@nxp.com>
+>> Subject: Re: [PATCH 5/6] pci: layerscape: Add the EP mode support.
+>>
+>> Hi,
+>>
+>> On 31/10/18 8:03 AM, Xiaowei Bao wrote:
+>>>
+>>>
+>>> -----Original Message-----
+>>> From: Xiaowei Bao
+>>> Sent: 2018年10月26日 17:19
+>>> To: 'Kishon Vijay Abraham I' <kishon@ti.com>; bhelgaas@google.com;
+>>> robh+dt@kernel.org; mark.rutland@arm.com; shawnguo@kernel.org; Leo Li
+>>> <leoyang.li@nxp.com>; lorenzo.pieralisi@arm.com; arnd@arndb.de; 
+>>> gregkh@linuxfoundation.org; M.h. Lian <minghuan.lian@nxp.com>; 
+>>> Mingkai Hu <mingkai.hu@nxp.com>; Roy Zang <roy.zang@nxp.com>; 
+>>> kstewart@linuxfoundation.org; cyrille.pitchen@free-electrons.com;
+>>> pombredanne@nexb.com; shawn.lin@rock-chips.com; 
+>>> niklas.cassel@axis.com; linux-pci@vger.kernel.org; 
+>>> devicetree@vger.kernel.org; linux-kernel@vger.kernel.org; 
+>>> linux-arm-kernel@lists.infradead.org; linuxppc-dev@lists.ozlabs.org
+>>> Cc: Jiafei Pan <jiafei.pan@nxp.com>
+>>> Subject: RE: [PATCH 5/6] pci: layerscape: Add the EP mode support.
+>>>
+>>>
+>>>
+>>> -----Original Message-----
+>>> From: Kishon Vijay Abraham I <kishon@ti.com>
+>>> Sent: 2018年10月26日 13:29
+>>> To: Xiaowei Bao <xiaowei.bao@nxp.com>; bhelgaas@google.com;
+>>> robh+dt@kernel.org; mark.rutland@arm.com; shawnguo@kernel.org; Leo Li
+>>> <leoyang.li@nxp.com>; lorenzo.pieralisi@arm.com; arnd@arndb.de; 
+>>> gregkh@linuxfoundation.org; M.h. Lian <minghuan.lian@nxp.com>; 
+>>> Mingkai Hu <mingkai.hu@nxp.com>; Roy Zang <roy.zang@nxp.com>; 
+>>> kstewart@linuxfoundation.org; cyrille.pitchen@free-electrons.com;
+>>> pombredanne@nexb.com; shawn.lin@rock-chips.com; 
+>>> niklas.cassel@axis.com; linux-pci@vger.kernel.org; 
+>>> devicetree@vger.kernel.org; linux-kernel@vger.kernel.org; 
+>>> linux-arm-kernel@lists.infradead.org; linuxppc-dev@lists.ozlabs.org
+>>> Subject: Re: [PATCH 5/6] pci: layerscape: Add the EP mode support.
+>>>
+>>> Hi,
+>>>
+>>> On Thursday 25 October 2018 04:39 PM, Xiaowei Bao wrote:
+>>>> Add the PCIe EP mode support for layerscape platform.
+>>>>
+>>>> Signed-off-by: Xiaowei Bao <xiaowei.bao@nxp.com>
+>>>> ---
+>>>>  drivers/pci/controller/dwc/Makefile            |    2 +-
+>>>>  drivers/pci/controller/dwc/pci-layerscape-ep.c |  161
+>>>> ++++++++++++++++++++++++
+>>>>  2 files changed, 162 insertions(+), 1 deletions(-)  create mode
+>>>> 100644 drivers/pci/controller/dwc/pci-layerscape-ep.c
+>>>>
+>>>> diff --git a/drivers/pci/controller/dwc/Makefile
+>>>> b/drivers/pci/controller/dwc/Makefile
+>>>> index 5d2ce72..b26d617 100644
+>>>> --- a/drivers/pci/controller/dwc/Makefile
+>>>> +++ b/drivers/pci/controller/dwc/Makefile
+>>>> @@ -8,7 +8,7 @@ obj-$(CONFIG_PCI_EXYNOS) += pci-exynos.o
+>>>>  obj-$(CONFIG_PCI_IMX6) += pci-imx6.o
+>>>>  obj-$(CONFIG_PCIE_SPEAR13XX) += pcie-spear13xx.o
+>>>>  obj-$(CONFIG_PCI_KEYSTONE) += pci-keystone-dw.o pci-keystone.o
+>>>> -obj-$(CONFIG_PCI_LAYERSCAPE) += pci-layerscape.o
+>>>> +obj-$(CONFIG_PCI_LAYERSCAPE) += pci-layerscape.o 
+>>>> +pci-layerscape-ep.o
+>>>>  obj-$(CONFIG_PCIE_QCOM) += pcie-qcom.o
+>>>>  obj-$(CONFIG_PCIE_ARMADA_8K) += pcie-armada8k.o
+>>>>  obj-$(CONFIG_PCIE_ARTPEC6) += pcie-artpec6.o diff --git 
+>>>> a/drivers/pci/controller/dwc/pci-layerscape-ep.c
+>>>> b/drivers/pci/controller/dwc/pci-layerscape-ep.c
+>>>> new file mode 100644
+>>>> index 0000000..3b33bbc
+>>>> --- /dev/null
+>>>> +++ b/drivers/pci/controller/dwc/pci-layerscape-ep.c
+>>>> @@ -0,0 +1,161 @@
+>>>> +// SPDX-License-Identifier: GPL-2.0
+>>>> +/*
+>>>> + * PCIe controller EP driver for Freescale Layerscape SoCs
+>>>> + *
+>>>> + * Copyright (C) 2018 NXP Semiconductor.
+>>>> + *
+>>>> + * Author: Xiaowei Bao <xiaowei.bao@nxp.com>  */
+>>>> +
+>>>> +#include <linux/kernel.h>
+>>>> +#include <linux/init.h>
+>>>> +#include <linux/of_pci.h>
+>>>> +#include <linux/of_platform.h>
+>>>> +#include <linux/of_address.h>
+>>>> +#include <linux/pci.h>
+>>>> +#include <linux/platform_device.h>
+>>>> +#include <linux/resource.h>
+>>>> +
+>>>> +#include "pcie-designware.h"
+>>>> +
+>>>> +#define PCIE_DBI2_OFFSET		0x1000	/* DBI2 base address*/
+>>>
+>>> The base address should come from dt.
+>>>> +
+>>>> +struct ls_pcie_ep {
+>>>> +	struct dw_pcie		*pci;
+>>>> +};
+>>>> +
+>>>> +#define to_ls_pcie_ep(x)	dev_get_drvdata((x)->dev)
+>>>> +
+>>>> +static bool ls_pcie_is_bridge(struct ls_pcie_ep *pcie) {
+>>>> +	struct dw_pcie *pci = pcie->pci;
+>>>> +	u32 header_type;
+>>>> +
+>>>> +	header_type = ioread8(pci->dbi_base + PCI_HEADER_TYPE);
+>>>> +	header_type &= 0x7f;
+>>>> +
+>>>> +	return header_type == PCI_HEADER_TYPE_BRIDGE; }
+>>>> +
+>>>> +static int ls_pcie_establish_link(struct dw_pcie *pci) {
+>>>> +	return 0;
+>>>> +}
+>>>
+>>> There should be some way by which EP should tell RC that it is not configured yet. Are there no bits to control LTSSM state initialization or Configuration retry status enabling?
+>>> [Xiaowei Bao] There have not bits to control LTSSM state to tell the RC it is configured. The start link is auto completed.
+>>> [Xiaowei Bao] Hi Kishon, is there any advice?
+>>
+>> If there is no HW support, I don't think anything could be done here. This could result in RC reading configuration space even before EP is fully initialized.
+>> [Xiaowei Bao] The bootloader have initialized the EP device and set the config ready bit, and the kernel don't need to do anything.
+> 
+> What does bootloader initalize? The EP driver here will reinitialize everything right?
+> [Xiaowei Bao] The bootloader initialize BAR size, outbound window, inbound window and set the config ready bit.
 
-I have thought about this. I believe it is doable in the future. Off the top
-I don't see an issue doing it, and it will also reduce the number of flushes.
+How will bootloader know the BAR size? The BAR size is based on the function
+driver. How does bootloader configure the OB window? The OB window is
+configured based on the size and address given by the host dynamically at runtime.
 
-thanks,
-
-- Joel
-
+Thanks
+Kishon
