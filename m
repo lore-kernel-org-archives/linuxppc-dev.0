@@ -6,88 +6,88 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C234DC32789
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Nov 2018 12:54:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D5295C32789
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Nov 2018 12:56:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4270C2083D
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Nov 2018 12:54:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4270C2083D
+	by mail.kernel.org (Postfix) with ESMTPS id 5AE032083D
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Nov 2018 12:56:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5AE032083D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=debian.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42q8d22CHzzF3CK
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Nov 2018 23:54:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42q8gh1n12zDrHF
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Nov 2018 23:56:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=debian.org
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=debian.org
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=leitao@debian.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=debian.org
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42q8KN3szHzF39Q
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Nov 2018 23:40:40 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wA6CYTdW050535
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Nov 2018 07:40:37 -0500
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2nk9x3kfc5-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42q8KQ1tbzzF39K
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Nov 2018 23:40:42 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wA6CYYNJ112514
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Nov 2018 07:40:39 -0500
+Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2nk94j5rda-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Nov 2018 07:40:36 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Nov 2018 07:40:39 -0500
 Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <leitao@debian.org>;
- Tue, 6 Nov 2018 12:40:35 -0000
+ Tue, 6 Nov 2018 12:40:38 -0000
 Received: from b01cxnp22033.gho.pok.ibm.com (9.57.198.23)
- by e16.ny.us.ibm.com (146.89.104.203) with IBM ESMTP SMTP Gateway: Authorized
+ by e14.ny.us.ibm.com (146.89.104.201) with IBM ESMTP SMTP Gateway: Authorized
  Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 6 Nov 2018 12:40:32 -0000
+ Tue, 6 Nov 2018 12:40:35 -0000
 Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
  [9.57.199.111])
  by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wA6CeVxF34209920
+ wA6CeYT334209928
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Tue, 6 Nov 2018 12:40:31 GMT
+ Tue, 6 Nov 2018 12:40:34 GMT
 Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 807F7AC05B;
- Tue,  6 Nov 2018 12:40:31 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 125E4AC05E;
+ Tue,  6 Nov 2018 12:40:34 +0000 (GMT)
 Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 3F286AC059;
- Tue,  6 Nov 2018 12:40:30 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id C27E7AC059;
+ Tue,  6 Nov 2018 12:40:32 +0000 (GMT)
 Received: from debra.ibm.com (unknown [9.18.239.97])
  by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
- Tue,  6 Nov 2018 12:40:30 +0000 (GMT)
+ Tue,  6 Nov 2018 12:40:32 +0000 (GMT)
 From: Breno Leitao <leitao@debian.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH 02/14] powerpc/tm: Reclaim on unavailable exception
-Date: Tue,  6 Nov 2018 10:40:16 -0200
+Subject: [RFC PATCH 03/14] powerpc/tm: Recheckpoint when exiting from kernel
+Date: Tue,  6 Nov 2018 10:40:17 -0200
 X-Mailer: git-send-email 1.8.3.1
 In-Reply-To: <1541508028-31865-1-git-send-email-leitao@debian.org>
 References: <1541508028-31865-1-git-send-email-leitao@debian.org>
 X-TM-AS-GCONF: 00
-x-cbid: 18110612-0072-0000-0000-000003C404A3
+x-cbid: 18110612-0052-0000-0000-000003512125
 X-IBM-SpamModules-Scores: 
 X-IBM-SpamModules-Versions: BY=3.00009996; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000268; SDB=6.01113483; UDB=6.00577118; IPR=6.00893582; 
- MB=3.00024045; MTD=3.00000008; XFM=3.00000015; UTC=2018-11-06 12:40:34
+ PH=3.00000004; SC=3.00000268; SDB=6.01113483; UDB=6.00577209; IPR=6.00893582; 
+ MB=3.00024045; MTD=3.00000008; XFM=3.00000015; UTC=2018-11-06 12:40:36
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18110612-0073-0000-0000-00004A04619C
-Message-Id: <1541508028-31865-3-git-send-email-leitao@debian.org>
+x-cbparentid: 18110612-0053-0000-0000-00005EAC23B6
+Message-Id: <1541508028-31865-4-git-send-email-leitao@debian.org>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2018-11-06_06:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=513 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1807170000 definitions=main-1811060112
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -107,125 +107,92 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-If there is a FP/VEC/Altivec touch inside a transaction and the facility is
-disabled, then a facility unavailable exception is raised and ends up
-calling {fp,vec,vsx}_unavailable_tm, which was reclaiming and
-recheckpointing.
+This is the only place we are going to recheckpoint now. Now the task
+needs to have TIF_RESTORE_TM flag set, which will get into
+restore_tm_state() at exception exit path, and execute the recheckpoint
+depending on the MSR.
 
-This is not required anymore, since the checkpointed state was reclaimed in
-the exception entrance, and it will be recheckpointed by restore_tm_state
-later.
+Every time a task is required to recheckpoint, or just have the TM SPRs
+restore, the TIF_RESTORE_TM flag should be set and the task MSR should
+properly be in a transactional state, which will be checked by
+restore_tm_state().
 
-Adding a WARN_ON() warning if we hit the _unavailable_tm() in suspended
-mode, i.e, the reclaim was not executed somehow in the trap entrance, and
-this is a bug.
+After the facility registers are recheckpointed, they are clobbered with
+the values that were recheckpointed (and are now also in the checkpoint
+area).
+
+If facility is enabled at MSR that is being returned to user space, then
+the facility registers need to be restored, otherwise userspace will see
+invalid values.
+
+This patch simplify the restore_tm_state() to just restore the facility
+registers that are enabled when returning to userspace, i.e. the MSR will
+be the same that will be put into SRR1, which will be the MSR after RFID.
 
 Signed-off-by: Breno Leitao <leitao@debian.org>
 ---
- arch/powerpc/include/asm/exception-64s.h |  4 ++++
- arch/powerpc/kernel/exceptions-64s.S     |  3 +++
- arch/powerpc/kernel/traps.c              | 22 ++++------------------
- 3 files changed, 11 insertions(+), 18 deletions(-)
+ arch/powerpc/kernel/process.c | 38 ++++++++++++++++++++++++-----------
+ 1 file changed, 26 insertions(+), 12 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
-index 931a74ba037b..80f01d5683c3 100644
---- a/arch/powerpc/include/asm/exception-64s.h
-+++ b/arch/powerpc/include/asm/exception-64s.h
-@@ -711,6 +711,10 @@ END_FTR_SECTION_IFSET(CPU_FTR_CTRL)
- 	 * Soft disable the IRQs, otherwise it might cause a CPU hang.	\
- 	 */								\
- 	RECONCILE_IRQ_STATE(r10, r11);					\
-+	/*								\
-+	 * Although this cause will be set initially, it might be	\
-+	 * updated later, once the exception is better understood	\
-+	 */								\
- 	li      r3, cause;						\
- 	bl      tm_reclaim_current;					\
- 	li      r3, 1;		/* Reclaim happened */			\
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 5c685a46202d..47e05b09eed6 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -786,6 +786,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_TM)
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
- 2:	/* User process was in a transaction */
- 	bl	save_nvgprs
-+	TM_KERNEL_ENTRY(TM_CAUSE_FAC_UNAV)
- 	RECONCILE_IRQ_STATE(r10, r11)
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	fp_unavailable_tm
-@@ -1128,6 +1129,7 @@ BEGIN_FTR_SECTION
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
- 2:	/* User process was in a transaction */
- 	bl	save_nvgprs
-+	TM_KERNEL_ENTRY(TM_CAUSE_FAC_UNAV)
- 	RECONCILE_IRQ_STATE(r10, r11)
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	altivec_unavailable_tm
-@@ -1164,6 +1166,7 @@ BEGIN_FTR_SECTION
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
- 2:	/* User process was in a transaction */
- 	bl	save_nvgprs
-+	TM_KERNEL_ENTRY(TM_CAUSE_FAC_UNAV)
- 	RECONCILE_IRQ_STATE(r10, r11)
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	vsx_unavailable_tm
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 9a86572db1ef..e74b735e974c 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -1742,23 +1742,10 @@ void fp_unavailable_tm(struct pt_regs *regs)
-          * transaction, and probably retry but now with FP enabled.  So the
-          * checkpointed FP registers need to be loaded.
- 	 */
--	tm_reclaim_current(TM_CAUSE_FAC_UNAV);
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 4d5322cfad25..c7e758a42b8f 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -1049,8 +1049,6 @@ static inline void __switch_to_tm(struct task_struct *prev,
+  */
+ void restore_tm_state(struct pt_regs *regs)
+ {
+-	unsigned long msr_diff;
 -
--	/*
--	 * Reclaim initially saved out bogus (lazy) FPRs to ckfp_state, and
--	 * then it was overwrite by the thr->fp_state by tm_reclaim_thread().
--	 *
--	 * At this point, ck{fp,vr}_state contains the exact values we want to
--	 * recheckpoint.
--	 */
-+	WARN_ON(MSR_TM_SUSPENDED(mfmsr()));
+ 	/*
+ 	 * This is the only moment we should clear TIF_RESTORE_TM as
+ 	 * it is here that ckpt_regs.msr and pt_regs.msr become the same
+@@ -1061,19 +1059,35 @@ void restore_tm_state(struct pt_regs *regs)
+ 	if (!MSR_TM_ACTIVE(regs->msr))
+ 		return;
  
- 	/* Enable FP for the task: */
- 	current->thread.load_fp = 1;
+-	msr_diff = current->thread.ckpt_regs.msr & ~regs->msr;
+-	msr_diff &= MSR_FP | MSR_VEC | MSR_VSX;
++	tm_enable();
++	/* The only place we recheckpoint */
++	tm_recheckpoint(&current->thread);
+ 
+-	/* Ensure that restore_math() will restore */
+-	if (msr_diff & MSR_FP)
+-		current->thread.load_fp = 1;
++	/*
++	 * Restore the facility registers that were clobbered during
++	 * recheckpoint.
++	 */
++	if (regs->msr & MSR_FP) {
++		/*
++		 * Using load_fp_state() instead of restore_fp() because we
++		 * want to force the restore, independent of
++		 * tsk->thread.load_fp. Same for other cases below.
++		 */
++		load_fp_state(&current->thread.fp_state);
++	}
+ #ifdef CONFIG_ALTIVEC
+-	if (cpu_has_feature(CPU_FTR_ALTIVEC) && msr_diff & MSR_VEC)
+-		current->thread.load_vec = 1;
++	if (cpu_has_feature(CPU_FTR_ALTIVEC) && regs->msr & MSR_VEC)
++		load_vr_state(&current->thread.vr_state);
++#endif
++#ifdef CONFIG_VSX
++	if (cpu_has_feature(CPU_FTR_VSX) && regs->msr & MSR_VSX) {
++		/*
++		 * If VSX is enabled, it is expected that VEC and FP are
++		 * also enabled and already restored the full register set.
++		 * Cause a warning if that is not the case.
++		 */
++		WARN_ON(!(regs->msr & MSR_VEC) || !(regs->msr & MSR_FP)); }
+ #endif
+-	restore_math(regs);
 -
--	/*
--	 * Recheckpoint all the checkpointed ckpt, ck{fp, vr}_state registers.
--	 */
--	tm_recheckpoint(&current->thread);
+-	regs->msr |= msr_diff;
  }
  
- void altivec_unavailable_tm(struct pt_regs *regs)
-@@ -1770,10 +1757,10 @@ void altivec_unavailable_tm(struct pt_regs *regs)
- 	TM_DEBUG("Vector Unavailable trap whilst transactional at 0x%lx,"
- 		 "MSR=%lx\n",
- 		 regs->nip, regs->msr);
--	tm_reclaim_current(TM_CAUSE_FAC_UNAV);
-+	WARN_ON(MSR_TM_SUSPENDED(mfmsr()));
- 	current->thread.load_vec = 1;
--	tm_recheckpoint(&current->thread);
- 	current->thread.used_vr = 1;
-+
- }
- 
- void vsx_unavailable_tm(struct pt_regs *regs)
-@@ -1792,12 +1779,11 @@ void vsx_unavailable_tm(struct pt_regs *regs)
- 	current->thread.used_vsr = 1;
- 
- 	/* This reclaims FP and/or VR regs if they're already enabled */
--	tm_reclaim_current(TM_CAUSE_FAC_UNAV);
-+	WARN_ON(MSR_TM_SUSPENDED(mfmsr()));
- 
- 	current->thread.load_vec = 1;
- 	current->thread.load_fp = 1;
- 
--	tm_recheckpoint(&current->thread);
- }
- #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
- 
+ #else
 -- 
 2.19.0
 
