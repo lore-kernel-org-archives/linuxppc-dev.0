@@ -2,90 +2,92 @@ Return-Path: <SRS0=FZqe=NR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D12BC32789
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Nov 2018 12:50:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1BD6EC32789
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Nov 2018 12:52:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 054B420862
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Nov 2018 12:50:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 054B420862
+	by mail.kernel.org (Postfix) with ESMTPS id 9AEDB2083D
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Nov 2018 12:52:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9AEDB2083D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=debian.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42q8XP3D6RzF3C1
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Nov 2018 23:50:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42q8Zp4TWmzF3DW
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Nov 2018 23:52:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=debian.org
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=debian.org
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=leitao@debian.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=debian.org
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42q8KH3zMKzF3BG
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Nov 2018 23:40:35 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wA6CYR9b105848
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Nov 2018 07:40:31 -0500
-Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2nk9xcubk0-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42q8KL0s8yzF39K
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Nov 2018 23:40:37 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wA6CYUZv132321
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Nov 2018 07:40:33 -0500
+Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2nk9v13aq5-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Nov 2018 07:40:31 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Nov 2018 07:40:33 -0500
 Received: from localhost
- by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <leitao@debian.org>;
- Tue, 6 Nov 2018 12:40:30 -0000
-Received: from b01cxnp23032.gho.pok.ibm.com (9.57.198.27)
- by e15.ny.us.ibm.com (146.89.104.202) with IBM ESMTP SMTP Gateway: Authorized
+ Tue, 6 Nov 2018 12:40:32 -0000
+Received: from b01cxnp23033.gho.pok.ibm.com (9.57.198.28)
+ by e14.ny.us.ibm.com (146.89.104.201) with IBM ESMTP SMTP Gateway: Authorized
  Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 6 Nov 2018 12:40:27 -0000
+ Tue, 6 Nov 2018 12:40:30 -0000
 Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
  [9.57.199.111])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wA6CeQai27656430
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wA6CeT7A27131970
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Tue, 6 Nov 2018 12:40:26 GMT
+ Tue, 6 Nov 2018 12:40:29 GMT
 Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6C818AC060;
- Tue,  6 Nov 2018 12:40:26 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id F06C7AC05B;
+ Tue,  6 Nov 2018 12:40:28 +0000 (GMT)
 Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4B98DAC05B;
- Tue,  6 Nov 2018 12:40:25 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id AE891AC059;
+ Tue,  6 Nov 2018 12:40:27 +0000 (GMT)
 Received: from debra.ibm.com (unknown [9.18.239.97])
  by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
- Tue,  6 Nov 2018 12:40:25 +0000 (GMT)
+ Tue,  6 Nov 2018 12:40:27 +0000 (GMT)
 From: Breno Leitao <leitao@debian.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH v2 00/14] New TM Model
-Date: Tue,  6 Nov 2018 10:40:14 -0200
+Subject: [RFC PATCH 01/14] powerpc/tm: Reclaim transaction on kernel entry
+Date: Tue,  6 Nov 2018 10:40:15 -0200
 X-Mailer: git-send-email 1.8.3.1
+In-Reply-To: <1541508028-31865-1-git-send-email-leitao@debian.org>
+References: <1541508028-31865-1-git-send-email-leitao@debian.org>
 X-TM-AS-GCONF: 00
-x-cbid: 18110612-0068-0000-0000-0000035B497F
+x-cbid: 18110612-0052-0000-0000-000003512124
 X-IBM-SpamModules-Scores: 
 X-IBM-SpamModules-Versions: BY=3.00009996; HX=3.00000242; KW=3.00000007;
  PH=3.00000004; SC=3.00000268; SDB=6.01113483; UDB=6.00577209; IPR=6.00893582; 
- MB=3.00024045; MTD=3.00000008; XFM=3.00000015; UTC=2018-11-06 12:40:29
+ MB=3.00024045; MTD=3.00000008; XFM=3.00000015; UTC=2018-11-06 12:40:31
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18110612-0069-0000-0000-000046555941
-Message-Id: <1541508028-31865-1-git-send-email-leitao@debian.org>
+x-cbparentid: 18110612-0053-0000-0000-00005EAC23AC
+Message-Id: <1541508028-31865-2-git-send-email-leitao@debian.org>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2018-11-06_06:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=958 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1807170000 definitions=main-1811060112
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -98,122 +100,185 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mikey@neuling.org, gromero@linux.vnet.ibm.com, ldufour@linux.vnet.ibm.com,
+Cc: mikey@neuling.org, gromero@linux.vnet.ibm.com,
+ Breno Leitao <leitao@debian.org>, ldufour@linux.vnet.ibm.com,
  cyrilbur@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This  patchset for the hardware transactional memory (TM) subsystem
-aims to avoid spending a lot of time on TM suspended mode in kernel
-space.  It basically changes where the reclaim/recheckpoint will be
-executed.
+This patch creates a macro that will be invoked on all entrance to the
+kernel, so, in kernel space the transaction will be completely reclaimed
+and not suspended anymore.
 
-The hardware is designed so once a CPU enters in transactional state it
-uses a footprint area to track down the loads/stores performed in
-transaction so it can be verified later to decide if a conflict happened
-due to some change done in that state by another thread.  If a transaction
-is active in userspace and there is an exception that takes the CPU to the
-kernel space, the CPU moves the transaction state to suspended state but
-does not discard the registers (GPR,VEC,VSX,FP) from footprint area,
-although the memory footprint might be discarded.
+This patchset checks if we are coming from PR, if not, skip. This is useful
+when there is a irq_replay() being called after recheckpoint, when the IRQ
+is re-enable. In this case, we do not want to re-reclaim and
+re-recheckpoint, thus, if not coming from PR, skip it completely.
 
-POWER9 has a known problem [1, 2] and does not have enough room in
-footprint area for several transactions to be suspended at the same time
-on various CPUs leading to CPU stalls.
+This macro does not care about TM SPR also, it will only be saved and
+restore in the context switch code now on.
 
-This new model, together with a future 'fake userspace suspended'
-implementation may workaround POWER9 hardware issue.
+This macro will return 0 or 1 in r3 register, to specify if a reclaim was
+executed or not.
 
-This patchset aims to reclaim the checkpointed registers as soon as the
-kernel is invoked, in the beginning of the exception handlers, thus freeing
-room to other CPUs enter in suspended mode for a short period of time as
-soon as possible, avoiding too many CPUs in suspended state that can cause
-the CPUs to stall. The same mechanism is done on kernel exit, doing a
-recheckpoint as late as possible (which will reload the checkpointed
-registers into CPU's checkpoint area) at the exception return path.
+This patchset is based on initial work done by Cyril:
+https://patchwork.ozlabs.org/cover/875341/
 
-The way to achieve this goal is creating a macro (TM_KERNEL_ENTRY) which
-will check if userspace was in an active transaction just after getting
-into kernel space and reclaim the transaction if that's the case. Thus all
-exception handlers will call this macro as soon as possible.
+Signed-off-by: Breno Leitao <leitao@debian.org>
+---
+ arch/powerpc/include/asm/exception-64s.h | 46 ++++++++++++++++++++++++
+ arch/powerpc/kernel/entry_64.S           | 10 ++++++
+ arch/powerpc/kernel/exceptions-64s.S     | 12 +++++--
+ 3 files changed, 66 insertions(+), 2 deletions(-)
 
-All exceptions should reclaim (if necessary) at this stage and only
-recheckpoint if the task is tagged as TIF_RESTORE_TM (i.e. was in
-transactional state before being interrupted), which will be done at
-restore_tm_state().
-
-Hence, by allowing the CPU to be in suspended state for only a brief period
-it's possible to create the initial infrastructure that copes with the TM
-hardware limitations.
-
-This patchset was tested in different scenarios using different test
-suites, as the kernel selftests, OpenJDK TM tests, and htm-torture [3], in the
-following configuration:
-
- * POWER8/pseries LE and BE
- * POWER8/powernv LE
- * POWER9/pseries LE 
- * POWER8/powernv LE hosting KVM guests running TM tests
-
-This patchset is based on initial work done by Cyril Bur:
-    https://patchwork.ozlabs.org/cover/875341/
-
-V1 patchset URL: https://patchwork.ozlabs.org/cover/969173/
-
-Major Change from v1:
+diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
+index 3b4767ed3ec5..931a74ba037b 100644
+--- a/arch/powerpc/include/asm/exception-64s.h
++++ b/arch/powerpc/include/asm/exception-64s.h
+@@ -36,6 +36,7 @@
+  */
+ #include <asm/head-64.h>
+ #include <asm/feature-fixups.h>
++#include <asm/tm.h>
  
- * restore_tm_state() being called later at the kernel exit path, so, there is
-   no way to replay any IRQ, which will be done with TM in suspended state.
-   This is mostly described in the 'Recheckpoint at exit path' patch.
-
- * No neeed to force TEXASR[FS] bit explicitly. This was required because
-   in a very specific case, TEXASR SPR was not being restored properly but
-   MSR[TM] was set. Fixed in patch 'Do not restore TM without SPRs'.
-
- * All treclaim/trechkpoint have a WARN_ON() if not called on kernel
-   entrance or exit path. tm_reclaim() is only called by TM_KERNEL_ENTRY
-   and tm_recheckpoint is only called by restore_tm_state(). All the rest
-   causes a warning.
+ /* PACA save area offsets (exgen, exmc, etc) */
+ #define EX_R9		0
+@@ -677,10 +678,54 @@ BEGIN_FTR_SECTION				\
+ 	beql	ppc64_runlatch_on_trampoline;	\
+ END_FTR_SECTION_IFSET(CPU_FTR_CTRL)
  
-Regards,
-Breno
-
-[1] Documentation/powerpc/transactional_memory.txt
-[2] commit 4bb3c7a0208fc13ca70598efd109901a7cd45ae7
-[3] https://github.com/leitao/htm_torture/
-
-Breno Leitao (14):
-  powerpc/tm: Reclaim transaction on kernel entry
-  powerpc/tm: Reclaim on unavailable exception
-  powerpc/tm: Recheckpoint when exiting from kernel
-  powerpc/tm: Always set TIF_RESTORE_TM on reclaim
-  powerpc/tm: Refactor the __switch_to_tm code
-  powerpc/tm: Do not recheckpoint at sigreturn
-  powerpc/tm: Do not reclaim on ptrace
-  powerpc/tm: Recheckpoint at exit path
-  powerpc/tm: Warn if state is transactional
-  powerpc/tm: Improve TM debug information
-  powerpc/tm: Save MSR to PACA before RFID
-  powerpc/tm: Restore transactional SPRs
-  powerpc/tm: Do not restore TM without SPRs
-  selftests/powerpc: Adapt tm-syscall test to no suspend
-
- arch/powerpc/include/asm/exception-64s.h      |  50 ++++
- arch/powerpc/include/asm/thread_info.h        |   2 +-
- arch/powerpc/kernel/asm-offsets.c             |   4 +
- arch/powerpc/kernel/entry_64.S                |  37 ++-
- arch/powerpc/kernel/exceptions-64s.S          |  15 +-
- arch/powerpc/kernel/process.c                 | 242 ++++++++++--------
- arch/powerpc/kernel/ptrace.c                  |  16 +-
- arch/powerpc/kernel/signal.c                  |   2 +-
- arch/powerpc/kernel/signal_32.c               |  38 +--
- arch/powerpc/kernel/signal_64.c               |  42 ++-
- arch/powerpc/kernel/tm.S                      |  19 +-
- arch/powerpc/kernel/traps.c                   |  22 +-
- .../testing/selftests/powerpc/tm/tm-syscall.c |   6 -
- 13 files changed, 293 insertions(+), 202 deletions(-)
-
++#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
++
++/*
++ * This macro will reclaim a transaction if called when coming from userspace
++ * (MSR.PR = 1) and if the transaction state is active or suspended.
++ *
++ * Since we don't want to reclaim when coming from kernel, for instance after
++ * a trechkpt. or a IRQ replay, the live MSR is not useful and instead of it the
++ * MSR from thread stack is used to check the MSR.PR bit.
++ * This macro has one argument which is the cause that will be used by treclaim.
++ * and returns in r3 '1' if the reclaim happens or '0' if reclaim didn't
++ * happen, which is useful to know what registers were clobbered.
++ *
++ * NOTE: If addition registers are clobbered here, make sure the callee
++ * function restores them before proceeding.
++ */
++#define TM_KERNEL_ENTRY(cause)						\
++	ld      r3, _MSR(r1);						\
++	andi.   r0, r3, MSR_PR;	/* Coming from userspace? */		\
++	beq     1f;		/* Skip reclaim if MSR.PR != 1 */	\
++	rldicl. r0, r3, (64-MSR_TM_LG), 63; /* Is TM enabled? */	\
++	beq     1f;		/* Skip reclaim if TM is off */		\
++	rldicl. r0, r3, (64-MSR_TS_LG), 62;	/* Is active */		\
++	beq     1f;		/* Skip reclaim if neither */		\
++	/*								\
++	 * If there is a transaction active or suspended, save the	\
++	 * non-volatile GPRs if they are not already saved.		\
++	 */								\
++	bl      save_nvgprs;						\
++	/*								\
++	 * Soft disable the IRQs, otherwise it might cause a CPU hang.	\
++	 */								\
++	RECONCILE_IRQ_STATE(r10, r11);					\
++	li      r3, cause;						\
++	bl      tm_reclaim_current;					\
++	li      r3, 1;		/* Reclaim happened */			\
++	b       2f;							\
++1:	li      r3, 0;		/* Reclaim didn't happen */		\
++2:
++#else
++#define TM_KERNEL_ENTRY(cause)
++#endif
++
+ #define EXCEPTION_COMMON(area, trap, label, hdlr, ret, additions) \
+ 	EXCEPTION_PROLOG_COMMON(trap, area);			\
+ 	/* Volatile regs are potentially clobbered here */	\
+ 	additions;						\
++	TM_KERNEL_ENTRY(TM_CAUSE_MISC);					\
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD;			\
+ 	bl	hdlr;						\
+ 	b	ret
+@@ -695,6 +740,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_CTRL)
+ 	EXCEPTION_PROLOG_COMMON_3(trap);			\
+ 	/* Volatile regs are potentially clobbered here */	\
+ 	additions;						\
++	TM_KERNEL_ENTRY(TM_CAUSE_MISC);				\
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD;			\
+ 	bl	hdlr
+ 
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 7b1693adff2a..17484ebda66c 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -131,6 +131,16 @@ BEGIN_FW_FTR_SECTION
+ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
+ #endif /* CONFIG_VIRT_CPU_ACCOUNTING_NATIVE && CONFIG_PPC_SPLPAR */
+ 
++#if CONFIG_PPC_TRANSACTIONAL_MEM
++	TM_KERNEL_ENTRY(TM_CAUSE_SYSCALL)
++	cmpdi	r3, 0x1
++	bne	44f
++	/* Restore from r4 to r12 */
++	REST_8GPRS(4,r1)
++44:	/* treclaim was not called, just restore r3 and r0 */
++	REST_GPR(3, r1)
++	REST_GPR(0, r1)
++#endif
+ 	/*
+ 	 * A syscall should always be called with interrupts enabled
+ 	 * so we just unconditionally hard-enable here. When some kind
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 89d32bb79d5e..5c685a46202d 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -717,6 +717,7 @@ EXC_COMMON_BEGIN(alignment_common)
+ 	std	r3,_DAR(r1)
+ 	std	r4,_DSISR(r1)
+ 	bl	save_nvgprs
++	TM_KERNEL_ENTRY(TM_CAUSE_ALIGNMENT)
+ 	RECONCILE_IRQ_STATE(r10, r11)
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	bl	alignment_exception
+@@ -751,6 +752,8 @@ EXC_COMMON_BEGIN(program_check_common)
+ 	b 3f				/* Jump into the macro !!	*/
+ 1:	EXCEPTION_PROLOG_COMMON(0x700, PACA_EXGEN)
+ 	bl	save_nvgprs
++	ld      r3, _MSR(r1)
++	TM_KERNEL_ENTRY(TM_CAUSE_FAC_UNAV)
+ 	RECONCILE_IRQ_STATE(r10, r11)
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	bl	program_check_exception
+@@ -1650,7 +1653,9 @@ do_hash_page:
+ 
+ /* Here we have a page fault that hash_page can't handle. */
+ handle_page_fault:
+-11:	andis.  r0,r4,DSISR_DABRMATCH@h
++11:	TM_KERNEL_ENTRY(TM_CAUSE_TLBI)
++	ld      r4,_DSISR(r1)
++	andis.  r0,r4,DSISR_DABRMATCH@h
+ 	bne-    handle_dabr_fault
+ 	ld	r4,_DAR(r1)
+ 	ld	r5,_DSISR(r1)
+@@ -1681,6 +1686,8 @@ handle_dabr_fault:
+  */
+ 13:	bl	save_nvgprs
+ 	mr	r5,r3
++	TM_KERNEL_ENTRY(TM_CAUSE_TLBI)
++	REST_GPR(3,r1)
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	ld	r4,_DAR(r1)
+ 	bl	low_hash_fault
+@@ -1695,7 +1702,8 @@ handle_dabr_fault:
+  * the access, or panic if there isn't a handler.
+  */
+ 77:	bl	save_nvgprs
+-	mr	r4,r3
++	TM_KERNEL_ENTRY(TM_CAUSE_TLBI)
++	ld      r4,_DAR(r1)
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	li	r5,SIGSEGV
+ 	bl	bad_page_fault
 -- 
 2.19.0
 
