@@ -2,68 +2,54 @@ Return-Path: <SRS0=FZqe=NR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4262CC32789
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Nov 2018 15:28:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6ED55C32789
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Nov 2018 16:20:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9CF452081D
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Nov 2018 15:28:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9CF452081D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+	by mail.kernel.org (Postfix) with ESMTPS id CB4392081D
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Nov 2018 16:20:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CB4392081D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42qD2l1zrmzF3DQ
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 02:28:15 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42qFCR5NxxzF3F0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 03:20:51 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.222.65; helo=mail-ua1-f65.google.com;
- envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux-m68k.org
-Received: from mail-ua1-f65.google.com (mail-ua1-f65.google.com
- [209.85.222.65])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ spf=pass (mailfrom) smtp.mailfrom=suse.de
+ (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=tiwai@suse.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=suse.de
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42qCzj1FgVzF3D0
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Nov 2018 02:25:36 +1100 (AEDT)
-Received: by mail-ua1-f65.google.com with SMTP id j3so2164051uap.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Nov 2018 07:25:36 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=5bzwxXLTuZIkYi1+oDy9WcbQ21yhzr5FkooL8IpTbKQ=;
- b=HnUdViXQwyMsX2OeYUejh1Ki8Vm9anvKUIxNm0z//pxn/NEk9yFcc2xtIHhyXCfE3I
- WVAwUeoayIkrjKWsSRUx8ZHAQlPfI7LRdWXDlO8vMW//jdKUBacVfyePN+zfrFaDUBgK
- 1VND4irbUP7o8oHJ/p9BOnZhVQBbFfzNoIBWqeQKcRgQmyDdQRExR/g0ee2ASfqhtVsV
- RuwyI+VIfbbvV1jUpIh2DUGoerVYPc3AdxvuVL1o5lPNclLUS/5OkrExCA0aPnjBk1rb
- 6tQjGr5jEwvEzCr+6sAdtcNQ95GMgFif8dlhCmcHnvAHxNWCMUMyaVlI9jxBhaJPwoES
- BD1w==
-X-Gm-Message-State: AGRZ1gKTLDibCzU2bNsM1uD0XWuyKiyfQZ4npTgdBDo2pGlt395CLtAe
- MSD2k99EaHcZQTcTihlxEa5wqbOcPsFUjEl/zzQ=
-X-Google-Smtp-Source: AJdET5cKZBHkvYCvNrPkAsfD+RUizrsz+u52iWhXmeTx/85JtDrSRJojeBxlixA422MjSXFU48YWS2lhCDCnVMQivdM=
-X-Received: by 2002:ab0:210e:: with SMTP id d14mr489643ual.20.1541517933483;
- Tue, 06 Nov 2018 07:25:33 -0800 (PST)
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42qF9J3p6VzF3Cp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Nov 2018 03:18:53 +1100 (AEDT)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay1.suse.de (unknown [195.135.220.254])
+ by mx1.suse.de (Postfix) with ESMTP id DBF80B6DB;
+ Tue,  6 Nov 2018 16:18:49 +0000 (UTC)
+Date: Tue, 06 Nov 2018 17:18:49 +0100
+Message-ID: <s5h36seyyae.wl-tiwai@suse.de>
+From: Takashi Iwai <tiwai@suse.de>
+To: Randy Dunlap <rdunlap@infradead.org>
+Subject: Re: [alsa-devel] Build regressions/improvements in v4.20-rc1
+ (sound/pci/hda/patch_ca0132.c)
+In-Reply-To: <80f2f98b-9ab1-2a1c-0962-63e3be1dd742@infradead.org>
 References: <20181105220559.27458-1-geert@linux-m68k.org>
  <CAMuHMdWGpjvwunNWgFujPO9_j+=QiNsi346s4-xBF1g4DT5xZw@mail.gmail.com>
  <80f2f98b-9ab1-2a1c-0962-63e3be1dd742@infradead.org>
- <CAMuHMdViTrKqQzci3=YJzk2+kQKqbWcr0oaaR1ZQM_VqT33RvA@mail.gmail.com>
- <eccd20fa-5be3-957d-7905-9cc4021ba94e@linux.intel.com>
-In-Reply-To: <eccd20fa-5be3-957d-7905-9cc4021ba94e@linux.intel.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 6 Nov 2018 16:25:21 +0100
-Message-ID: <CAMuHMdWMO5yE7vjWsyz6dWQ6eswVRcWO8A43vTrJn26D1EsfVQ@mail.gmail.com>
-Subject: Re: [alsa-devel] Build regressions/improvements in v4.20-rc1
- (sound/pci/hda/patch_ca0132.c)
-To: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Wanderlust/2.15.9 (Almost Unreal) SEMI/1.14.6 (Maruoka)
+ FLIM/1.14.9 (=?UTF-8?B?R29qxY0=?=) APEL/10.8 Emacs/26
+ (x86_64-suse-linux-gnu) MULE/6.0 (HANACHIRUSATO)
+MIME-Version: 1.0 (generated by SEMI 1.14.6 - "Maruoka")
+Content-Type: text/plain; charset=US-ASCII
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,87 +63,114 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: linux-s390 <linux-s390@vger.kernel.org>,
  ALSA Development Mailing List <alsa-devel@alsa-project.org>,
- Linux-sh list <linux-sh@vger.kernel.org>, Randy Dunlap <rdunlap@infradead.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Mark Brown <broonie@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Pierre,
-
-On Tue, Nov 6, 2018 at 3:56 PM Pierre-Louis Bossart
-<pierre-louis.bossart@linux.intel.com> wrote:
-> >>>>
-> >>>> *** ERRORS ***
-> >>>>
-> >>>>    + /kisskb/src/sound/pci/hda/patch_ca0132.c: error: implicit declaration of function 'pci_iomap' [-Werror=implicit-function-declaration]:  => 8799:3
-> >>> sh4-all{mod,yes}config
-> >>>
-> >>> Looks like d9b84a15892c0233 ("ALSA: hda: Fix implicit definition of
-> >>> pci_iomap() on SH")
-> >>> is not sufficient?
-> >> Different problem.  This is about "select":
+On Tue, 06 Nov 2018 02:04:47 +0100,
+Randy Dunlap wrote:
+> 
+> On 11/5/18 2:12 PM, Geert Uytterhoeven wrote:
+> > On Mon, Nov 5, 2018 at 11:07 PM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> >> Below is the list of build error/warning regressions/improvements in
+> >> v4.20-rc1[1] compared to v4.19[2].
 > >>
-> >> config SND_SOC_ALL_CODECS
-> >>          tristate "Build all ASoC CODEC drivers"
+> >> Summarized:
+> >>   - build errors: +3/-0
+> >>   - build warnings: +449/-2712
 > >>
-> >> That enables (sets):
-> >>          select SND_SOC_HDAC_HDA
-> >> which selects SND_HDA even though CONFIG_PCI is not enabled.
+> >> Happy fixing! ;-)
 > >>
-> >> After SND_HDA is selected (above), the Kconfig symbols in
-> >> sound/pci/hda/Kconfig are available for enabling, so
-> >> SND_HDA_CODEC_CA0132 is enabled but will not build.
-> > Thanks for looking into this!
-> >
-> >> One simple solution (but possibly too naive) is:
+> >> Thanks to the linux-next team for providing the build service.
 > >>
-> >> ---
-> >>   sound/soc/codecs/Kconfig |    2 +-
-> >>   1 file changed, 1 insertion(+), 1 deletion(-)
+> >> [1] http://kisskb.ellerman.id.au/kisskb/branch/linus/head/651022382c7f8da46cb4872a545ee1da6d097d2a/ (all 240 configs)
+> >> [2] http://kisskb.ellerman.id.au/kisskb/branch/linus/head/84df9525b0c27f3ebc2ebb1864fa62a97fdedb7d/ (all 240 configs)
 > >>
-> >> --- lnx-420-rc1.orig/sound/soc/codecs/Kconfig
-> >> +++ lnx-420-rc1/sound/soc/codecs/Kconfig
-> >> @@ -82,7 +82,7 @@ config SND_SOC_ALL_CODECS
-> >>          select SND_SOC_ES7241
-> >>          select SND_SOC_GTM601
-> >>          select SND_SOC_HDAC_HDMI
-> >> -       select SND_SOC_HDAC_HDA
-> >> +       select SND_SOC_HDAC_HDA if PCI
-> >>          select SND_SOC_ICS43432
-> >>          select SND_SOC_INNO_RK3036
-> >>          select SND_SOC_ISABELLE if I2C
-> > I guess that will work. There are already plenty of "select foo if bar" lines.
-> > However, looking at what else can enable SND_HDA, I think it should be
-> >
-> >      select SND_SOC_HDAC_HDA if SND_PCI || ARCH_TEGRA
->
-> This codec can only be used by the Skylake driver (and the upcoming SOF
-> one). For Tegra this module will never be used unless they follow the
-> same path of enabling ASoC to deal with the HDaudio codecs instead of
-> the legacy.
->
-> Likewise HDAC_HDMI will only work on Intel platforms for now.
->
-> >
-> > That still leaves the issue that pci_iomap() on SH should be an empty stub if
-> > PCI is not available, like on other architectures.
->
-> I thought Mark Brown provided a fix to SH maintainers?
+> >>
+> >> *** ERRORS ***
+> >>
+> >>   + /kisskb/src/sound/pci/hda/patch_ca0132.c: error: implicit declaration of function 'pci_iomap' [-Werror=implicit-function-declaration]:  => 8799:3
+> > 
+> > sh4-all{mod,yes}config
+> > 
+> > Looks like d9b84a15892c0233 ("ALSA: hda: Fix implicit definition of
+> > pci_iomap() on SH")
+> > is not sufficient?
+> 
+> Different problem.  This is about "select":
+> 
+> config SND_SOC_ALL_CODECS
+> 	tristate "Build all ASoC CODEC drivers"
+> 
+> That enables (sets):
+> 	select SND_SOC_HDAC_HDA
+> which selects SND_HDA even though CONFIG_PCI is not enabled.
 
-Indeed, https://patchwork.kernel.org/patch/10597409/
+Actually it is OK to enable CONFIG_SND_HDA_CODEC_CA0132 without
+CONFIG_PCI.  IIRC, there was a system like that, too.
+The commit above should have covered the build failure on SH, but
+apparently isn't enough for some arch setups, as it seems.
 
-As usual, no response from the J^HSH maintainers :-(
+The cause is clear now: pci_iomap() is defined in
+asm-generic/pci_iomap.h only when CONFIG_GENERIC_PCI_IOMAP is
+defined.  Including asm/io.h doesn't help unless CONFIG_PCI is set.
 
-Gr{oetje,eeting}s,
+Below is a quick fix for this.
 
-                        Geert
 
+thanks,
+
+Takashi
+
+-- 8< --
+
+From: Takashi Iwai <tiwai@suse.de>
+Subject: [PATCH] ALSA: hda/ca0132 - Yet more fix on build breakage without PCI
+ support
+
+The recent change in CA0132 codec driver for supporting more
+Creative boards includes the pci_iomap() call to get the extra
+register accesses.  This is supposed to work on all archs and setups,
+by the implicit assumption that every arch would provide a dummy
+function returning NULL when no PCI is available.  But the reality
+bites, of course; as Geert's regular build test shows, some configs
+(at least SH4 without CONFIG_PCI) leads to a build error due to the
+implicit function declaration.
+
+So this is another attempt to fix the issue: now we add an ifdef
+CONFIG_PCI line, so that pci_iomap() won't be called unless PCI is
+really usable.  This should fall back to the standard quirk again with
+a warning.
+
+Fixes: d9b84a15892c0233 ("ALSA: hda: Fix implicit definition of pci_iomap() on SH")
+Reported-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: <stable@vger.kernel.org>
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
+---
+ sound/pci/hda/patch_ca0132.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/sound/pci/hda/patch_ca0132.c b/sound/pci/hda/patch_ca0132.c
+index 0a24037184c3..9ed808b45e75 100644
+--- a/sound/pci/hda/patch_ca0132.c
++++ b/sound/pci/hda/patch_ca0132.c
+@@ -8796,7 +8796,13 @@ static int patch_ca0132(struct hda_codec *codec)
+ 	}
+ 
+ 	if (spec->use_pci_mmio) {
++		/*
++		 * ifdef below needed due to lack of pci_iomap() decleration
++		 * for some archs when no PCI is defined
++		 */
++#ifdef CONFIG_PCI
+ 		spec->mem_base = pci_iomap(codec->bus->pci, 2, 0xC20);
++#endif
+ 		if (spec->mem_base == NULL) {
+ 			codec_warn(codec, "pci_iomap failed! Setting quirk to QUIRK_NONE.");
+ 			spec->quirk = QUIRK_NONE;
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+2.19.1
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
