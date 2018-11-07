@@ -2,41 +2,79 @@ Return-Path: <SRS0=kkFw=NS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A983EC0044C
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 05:40:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F129AC0044C
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 06:49:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0CE9D20827
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 05:40:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0CE9D20827
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 79C7420862
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 06:49:12 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="HnVjVQVe"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 79C7420862
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42qZyV6LKJzF3Gl
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 16:40:50 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 42qcTK6H2qzF3Gq
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 17:49:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="HnVjVQVe";
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (helo) smtp.helo=mo6-p00-ob.smtp.rzone.de
+ (client-ip=2a01:238:20a:202:5300::6; helo=mo6-p00-ob.smtp.rzone.de;
+ envelope-from=chzigotzky@xenosoft.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=xenosoft.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="HnVjVQVe"; 
+ dkim-atps=neutral
+Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5300::6])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42qZwQ2JF7zF3G7
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Nov 2018 16:39:02 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix)
- id 42qZwQ11TGz9s8T; Wed,  7 Nov 2018 16:39:02 +1100 (AEDT)
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 42qZwQ0hlNz9sCX; Wed,  7 Nov 2018 16:39:02 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/io: Fix the IO workarounds code to work with Radix
-Date: Wed,  7 Nov 2018 16:38:53 +1100
-Message-Id: <20181107053853.4190-1-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.17.2
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42qcQc14bczF3G5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Nov 2018 17:46:44 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1541573199;
+ s=strato-dkim-0002; d=xenosoft.de;
+ h=In-Reply-To:Date:Message-ID:From:References:To:Subject:
+ X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
+ bh=9rXucP+VydhFZHYYOVC/L4J86dH74YDElhThYk0ss1Y=;
+ b=HnVjVQVex79MYK5008gl6NVgcL5h6suQ0Gr3B9V2yIyTkyFQom0fQxBEgWjiEIbRJR
+ FhXYOTqMkKA2BmmPSddsaqnEvlxLFFDS49cS7I5jw98hKDlCEbHBNx/9NJEUyIxe9beX
+ D0XL9wWD2AsCF59IjMSXiqXVIRCAKqtmUBYetF090vNvz1yKDIQ7Ele3lK8oL8VEqRew
+ O6Q6rohYRGAN+vj0+c6jvPVfnpb6MtrGyqVYSdxafGI29xtKlDtXq2MVAUZQro1Qa7jC
+ 16yy+Xz9thyyPbf8sK4H++ztM0j4GccB1FDbcKalvXb7Ryo90CEMos9dc7B8xAtjSrVX
+ bf4A==
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5G5MdirQj0WG7CkOj0+/iQYamBVLJFShcRXdnjDmgA=="
+X-RZG-CLASS-ID: mo00
+Received: from [IPv6:2a02:8109:a400:162c:1157:d9dd:1305:fbcc]
+ by smtp.strato.de (RZmta 44.3 AUTH) with ESMTPSA id Z0624cuA76kcohI
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
+ 521 ECDH bits, eq. 15360 bits RSA))
+ (Client did not present a certificate)
+ for <linuxppc-dev@lists.ozlabs.org>;
+ Wed, 7 Nov 2018 07:46:38 +0100 (CET)
+Subject: Re: NXP P50XX/e5500: SMP doesn't work anymore with the latest Git
+ kernel
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+References: <6bcb4b23-bb78-d1a5-7fd0-5f892115d302@xenosoft.de>
+ <6d196807270630668eb91f1448a043bddd43d291.camel@buserror.net>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Message-ID: <31eab5a0-3e24-2e65-8a9d-704dbfcc3319@xenosoft.de>
+Date: Wed, 7 Nov 2018 07:46:34 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
+MIME-Version: 1.0
+In-Reply-To: <6d196807270630668eb91f1448a043bddd43d291.camel@buserror.net>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: de-DE
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,120 +86,86 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: agraf@suse.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Back in 2006 Ben added some workarounds for a misbehaviour in the
-Spider IO bridge used on early Cell machines, see commit
-014da7ff47b5 ("[POWERPC] Cell "Spider" MMIO workarounds"). Later these
-were made to be generic, ie. not tied specifically to Spider.
+On 07 November 2018 at 03:11AM, Scott Wood wrote:
+> On Sun, 2018-10-28 at 17:35 +0100, Christian Zigotzky wrote:
+>> Hello,
+>>
+>> SMP doesn't work anymore with the latest Git kernel (28/10/18 11:12AM
+>> GMT) on my P5020 board and on virtual e5500 QEMU machines.
+>>
+>> Board with P5020 dual core CPU:
+>>
+>> [    0.000000] -----------------------------------------------------
+>> [    0.000000] phys_mem_size     = 0x200000000
+>> [    0.000000] dcache_bsize      = 0x40
+>> [    0.000000] icache_bsize      = 0x40
+>> [    0.000000] cpu_features      = 0x00000003008003b4
+>> [    0.000000]   possible        = 0x00000003009003b4
+>> [    0.000000]   always          = 0x00000003008003b4
+>> [    0.000000] cpu_user_features = 0xcc008000 0x08000000
+>> [    0.000000] mmu_features      = 0x000a0010
+>> [    0.000000] firmware_features = 0x0000000000000000
+>> [    0.000000] -----------------------------------------------------
+>> [    0.000000] CoreNet Generic board
+>>
+>>       ...
+>>
+>> [    0.002161] smp: Bringing up secondary CPUs ...
+>> [    0.002339] No cpu-release-addr for cpu 1
+>> [    0.002347] smp: failed starting cpu 1 (rc -2)
+>> [    0.002401] smp: Brought up 1 node, 1 CPU
+>>
+>> Virtual e5500 quad core QEMU machine:
+>>
+>> [    0.026394] smp: Bringing up secondary CPUs ...
+>> [    0.027831] No cpu-release-addr for cpu 1
+>> [    0.027989] smp: failed starting cpu 1 (rc -2)
+>> [    0.030143] No cpu-release-addr for cpu 2
+>> [    0.030304] smp: failed starting cpu 2 (rc -2)
+>> [    0.032400] No cpu-release-addr for cpu 3
+>> [    0.032533] smp: failed starting cpu 3 (rc -2)
+>> [    0.033117] smp: Brought up 1 node, 1 CPU
+>>
+>> QEMU command: ./qemu-system-ppc64 -M ppce500 -cpu e5500 -m 2048 -kernel
+>> /home/christian/Downloads/vmlinux-4.20-alpha4-
+>> AmigaOne_X1000_X5000/X5000_and_QEMU_e5500/uImage-4.20
+>> -drive
+>> format=raw,file=/home/christian/Downloads/MATE_PowerPC_Remix_2017_0.9.img,in
+>> dex=0,if=virtio
+>> -nic user,model=e1000 -append "rw root=/dev/vda" -device virtio-vga
+>> -device virtio-mouse-pci -device virtio-keyboard-pci -usb -soundhw
+>> es1370 -smp 4
+>>
+>> .config:
+>>
+>> ...
+>> CONFIG_SMP=y
+>> CONFIG_NR_CPUS=4
+>> ...
+>>
+>> Please test the latest Git kernel on your NXP P50XX boards.
+> I wasn't able to reproduce this with top-of-tree (commit 8053e5b93eca9b) with
+> either qemu (e5500 on ppce500) or a hardware t4240.
+>
+> -Scott
+>
+>
+Hi Scott,
 
-The code stashes a token in the high bits (59-48) of virtual addresses
-used for IO (eg. returned from ioremap()). This works fine when using
-the Hash MMU, but when we're using the Radix MMU the bits used for the
-token overlap with some of the bits of the virtual address.
 
-This is because the maximum virtual address is larger with Radix, up
-to c00fffffffffffff, and in fact we use that high part of the address
-range for ioremap(), see RADIX_KERN_IO_START.
+Thanks for testing but your test was too late because Rob Herring fixed 
+this issue last week. [1]
 
-As it happens the bits that are used overlap with the bits that
-differentiate an IO address vs a linear map address. If the resulting
-address lies outside the linear mapping we will crash (see below), if
-not we just corrupt memory.
 
-  virtio-pci 0000:00:00.0: Using 64-bit direct DMA at offset 800000000000000
-  Unable to handle kernel paging request for data at address 0xc000000080000014
-  ...
-  CFAR: c000000000626b98 DAR: c000000080000014 DSISR: 42000000 IRQMASK: 0
-  GPR00: c0000000006c54fc c00000003e523378 c0000000016de600 0000000000000000
-  GPR04: c00c000080000014 0000000000000007 0fffffff000affff 0000000000000030
-         ^^^^
-  ...
-  NIP [c000000000626c5c] .iowrite8+0xec/0x100
-  LR [c0000000006c992c] .vp_reset+0x2c/0x90
-  Call Trace:
-    .pci_bus_read_config_dword+0xc4/0x120 (unreliable)
-    .register_virtio_device+0x13c/0x1c0
-    .virtio_pci_probe+0x148/0x1f0
-    .local_pci_probe+0x68/0x140
-    .pci_device_probe+0x164/0x220
-    .really_probe+0x274/0x3b0
-    .driver_probe_device+0x80/0x170
-    .__driver_attach+0x14c/0x150
-    .bus_for_each_dev+0xb8/0x130
-    .driver_attach+0x34/0x50
-    .bus_add_driver+0x178/0x2f0
-    .driver_register+0x90/0x1a0
-    .__pci_register_driver+0x6c/0x90
-    .virtio_pci_driver_init+0x2c/0x40
-    .do_one_initcall+0x64/0x280
-    .kernel_init_freeable+0x36c/0x474
-    .kernel_init+0x24/0x160
-    .ret_from_kernel_thread+0x58/0x7c
+Cheers,
 
-This hasn't been a problem because CONFIG_PPC_IO_WORKAROUNDS which
-enables this code is usually not enabled. It is only enabled when it's
-selected by PPC_CELL_NATIVE which is only selected by
-PPC_IBM_CELL_BLADE and that in turn depends on BIG_ENDIAN. So in order
-to hit the bug you need to build a big endian kernel, with IBM Cell
-Blade support enabled, as well as Radix MMU support, and then boot
-that on Power9 using Radix MMU.
+Christian
 
-Still we can fix the bug, so let's do that. We simply use fewer bits
-for the token, taking the union of the restrictions on the address
-from both Hash and Radix, we end up with 8 bits we can use for the
-token. The only user of the token is iowa_mem_find_bus() which only
-supports 8 token values, so 8 bits is plenty for that.
 
-Fixes: 566ca99af026 ("powerpc/mm/radix: Add dummy radix_enabled()")
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/include/asm/io.h | 20 +++++++-------------
- 1 file changed, 7 insertions(+), 13 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
-index 3ef40b703c4a..e746becd9d6f 100644
---- a/arch/powerpc/include/asm/io.h
-+++ b/arch/powerpc/include/asm/io.h
-@@ -268,19 +268,13 @@ extern void _memcpy_toio(volatile void __iomem *dest, const void *src,
-  * their hooks, a bitfield is reserved for use by the platform near the
-  * top of MMIO addresses (not PIO, those have to cope the hard way).
-  *
-- * This bit field is 12 bits and is at the top of the IO virtual
-- * addresses PCI_IO_INDIRECT_TOKEN_MASK.
-+ * The highest address in the kernel virtual space are:
-  *
-- * The kernel virtual space is thus:
-+ *  d0003fffffffffff	# with Hash MMU
-+ *  c00fffffffffffff	# with Radix MMU
-  *
-- *  0xD000000000000000		: vmalloc
-- *  0xD000080000000000		: PCI PHB IO space
-- *  0xD000080080000000		: ioremap
-- *  0xD0000fffffffffff		: end of ioremap region
-- *
-- * Since the top 4 bits are reserved as the region ID, we use thus
-- * the next 12 bits and keep 4 bits available for the future if the
-- * virtual address space is ever to be extended.
-+ * The top 4 bits are reserved as the region ID on hash, leaving us 8 bits
-+ * that can be used for the field.
-  *
-  * The direct IO mapping operations will then mask off those bits
-  * before doing the actual access, though that only happen when
-@@ -292,8 +286,8 @@ extern void _memcpy_toio(volatile void __iomem *dest, const void *src,
-  */
- 
- #ifdef CONFIG_PPC_INDIRECT_MMIO
--#define PCI_IO_IND_TOKEN_MASK	0x0fff000000000000ul
--#define PCI_IO_IND_TOKEN_SHIFT	48
-+#define PCI_IO_IND_TOKEN_SHIFT	52
-+#define PCI_IO_IND_TOKEN_MASK	(0xfful << PCI_IO_IND_TOKEN_SHIFT)
- #define PCI_FIX_ADDR(addr)						\
- 	((PCI_IO_ADDR)(((unsigned long)(addr)) & ~PCI_IO_IND_TOKEN_MASK))
- #define PCI_GET_ADDR_TOKEN(addr)					\
--- 
-2.17.2
+[1] 
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=c961cb3be9064d1097ccc019390f8b5739daafc6
 
