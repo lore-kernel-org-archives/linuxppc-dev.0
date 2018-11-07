@@ -2,63 +2,89 @@ Return-Path: <SRS0=kkFw=NS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C2B6CC0044C
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 20:16:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5CFC3C0044C
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 20:29:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 235B22081D
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 20:16:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 235B22081D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id CEDEC2081D
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 20:29:01 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Qxtj3hc2"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CEDEC2081D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=debian.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42qyNz6HGWzF38T
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 07:16:35 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by lists.ozlabs.org (Postfix) with ESMTP id 42qygH61mvzF3F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 07:28:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=debian.org
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="Qxtj3hc2";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2a00:1450:4864:20::441; helo=mail-wr1-x441.google.com;
+ envelope-from=mathieu.malaterre@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=debian.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="Qxtj3hc2"; 
+ dkim-atps=neutral
+Received: from mail-wr1-x441.google.com (mail-wr1-x441.google.com
+ [IPv6:2a00:1450:4864:20::441])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42qyLH33XczF36C
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Nov 2018 07:14:14 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 42qyL81wKVz9ttSR;
- Wed,  7 Nov 2018 21:14:08 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id pQAdwXAlLRnJ; Wed,  7 Nov 2018 21:14:08 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 42qyL81JkKz9ttSH;
- Wed,  7 Nov 2018 21:14:08 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id AD01C8B81F;
- Wed,  7 Nov 2018 21:14:10 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id YZm2Rmr25aWE; Wed,  7 Nov 2018 21:14:10 +0100 (CET)
-Received: from po14163vm.idsi0.si.c-s.fr (unknown [192.168.232.3])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 6BC308B814;
- Wed,  7 Nov 2018 21:14:10 +0100 (CET)
-Received: by po14163vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 3E5EB69970; Wed,  7 Nov 2018 20:14:10 +0000 (UTC)
-Message-Id: <edfe11c6d1f9bb0a7c2cee655895dfeedc1dda5e.1541613057.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] lkdtm: print real addresses
-To: Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Wed,  7 Nov 2018 20:14:10 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42qycn2qdWzF3Dy
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Nov 2018 07:26:49 +1100 (AEDT)
+Received: by mail-wr1-x441.google.com with SMTP id z16-v6so18826148wrv.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Nov 2018 12:26:49 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=sender:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=oqwrTTqvGsUpLX2SWvD7XWIT2tTdoRIiwxsCG3LUJnc=;
+ b=Qxtj3hc2m3rjDLj86DqFS0SG3/MQwRYZHk2fnZavQnjY7kRIgoVdcmHkInbTaYzn62
+ n6tyvBShSyfofdBwcMWxGhCyKAUTzUH9gdMArubI8XsK8afN/hH8gf3hTEs9HmBPDZ1O
+ 14hvQEKJA+ZnP5VRYUQSyXOzYFjbOYyU5CKcbN/JdFt+oGnAIBSZcWxk7ffsmyztu8EX
+ WWUQcfX6okOqya632GNpUA2PSWvGu8w8ZXsCnBnDQypZMEnKiCHwcVvyY6eywwdqdQl8
+ wzD6FxqKl6+6/Zclmj6jgHu02YlsZQ/ycL3iBr482As5ZZfz9m5HdG45GbGfih5P3LIR
+ g5uA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
+ :mime-version:content-transfer-encoding;
+ bh=oqwrTTqvGsUpLX2SWvD7XWIT2tTdoRIiwxsCG3LUJnc=;
+ b=bR+QymJEo9ZDEkf9oqJSDk6v/PNHDlnD0zczpRE8vKplgBRL+qIsTHSWbKh60mhI/V
+ nLV5nW+/6M120CagbECMaminzvauJIbg1yRr+PuRiqGlieZocsMwnEJdkt+hdkT+YGJK
+ 5IzHdY+Z1Q/klYyktcG8REyR6DFpPuTK37N0YSd3Z9J6SxcMg0T7npNOL/wvW569Bo5u
+ PJunIPi+3zOizRM3Qp/5+UvEpMz8Pu/76eF2DxLt/lRl2F5ahtHFy51OWRSttNv6hbjn
+ JWFTLcy6uR6L63Vz38OsHzWavxXqU8ADh0Rk9j9IR4BGc0m4rW4IXrD/bELh29uRuAY3
+ v0GA==
+X-Gm-Message-State: AGRZ1gJvaKLcnHjbh6HvJBR2kOZIwIN9IfZ+Wp7KPauqvmJjRyCYgkZ3
+ l/BGq+Mm/fR4InrNG9HomkM=
+X-Google-Smtp-Source: AJdET5dU6tqQvOaQgYuwZ4gHxlIvyOt476nswY8sgDNg35m/iB4Ohl9+T6NYtQ4UbPz1MRKXhVpAkw==
+X-Received: by 2002:adf:d1c6:: with SMTP id
+ m6-v6mr1575709wri.138.1541622405551; 
+ Wed, 07 Nov 2018 12:26:45 -0800 (PST)
+Received: from macbookpro.malat.net (bru31-1-78-225-224-134.fbx.proxad.net.
+ [78.225.224.134])
+ by smtp.gmail.com with ESMTPSA id f67-v6sm1892405wme.22.2018.11.07.12.26.44
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Wed, 07 Nov 2018 12:26:44 -0800 (PST)
+Received: by macbookpro.malat.net (Postfix, from userid 1000)
+ id 129C61142B69; Wed,  7 Nov 2018 21:26:43 +0100 (CET)
+From: Mathieu Malaterre <malat@debian.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH] powerpc: Mark variable `cpumsr` as unused
+Date: Wed,  7 Nov 2018 21:26:41 +0100
+Message-Id: <20181107202641.7865-1-malat@debian.org>
+X-Mailer: git-send-email 2.11.0
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,114 +96,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Mathieu Malaterre <malat@debian.org>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Today, when doing a lkdtm test before the readiness of the
-random generator, (ptrval) is printed instead of the address
-at which it perform the fault:
+Add gcc attribute unused for `cpumsr` variable.
 
-[ 1597.337030] lkdtm: Performing direct entry EXEC_USERSPACE
-[ 1597.337142] lkdtm: attempting ok execution at (ptrval)
-[ 1597.337398] lkdtm: attempting bad execution at (ptrval)
-[ 1597.337460] kernel tried to execute user page (77858000) -exploit attempt? (uid: 0)
-[ 1597.344769] Unable to handle kernel paging request for instruction fetch
-[ 1597.351392] Faulting instruction address: 0x77858000
-[ 1597.356312] Oops: Kernel access of bad area, sig: 11 [#1]
+Fix warnings treated as errors with W=1:
 
-If the lkdtm test is done later on, it prints an hashed address.
+  arch/powerpc/kernel/process.c:231:16: error: variable ‘cpumsr’ set but not used [-Werror=unused-but-set-variable]
+  arch/powerpc/kernel/process.c:296:16: error: variable ‘cpumsr’ set but not used [-Werror=unused-but-set-variable]
 
-In both cases this is pointless. The purpose of the test is to
-ensure the kernel generates an Oops at the expected address,
-so real addresses needs to be printed. This patch fixes that.
-
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Signed-off-by: Mathieu Malaterre <malat@debian.org>
 ---
- drivers/misc/lkdtm/perms.c | 18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
+ arch/powerpc/kernel/process.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/misc/lkdtm/perms.c b/drivers/misc/lkdtm/perms.c
-index 53b85c9d16b8..fa54add6375a 100644
---- a/drivers/misc/lkdtm/perms.c
-+++ b/drivers/misc/lkdtm/perms.c
-@@ -47,7 +47,7 @@ static noinline void execute_location(void *dst, bool write)
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 96f34730010f..b9f1a2408738 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -228,7 +228,7 @@ EXPORT_SYMBOL_GPL(flush_fp_to_thread);
+ 
+ void enable_kernel_fp(void)
  {
- 	void (*func)(void) = dst;
+-	unsigned long cpumsr;
++	unsigned long cpumsr __maybe_unused;
  
--	pr_info("attempting ok execution at %p\n", do_nothing);
-+	pr_info("attempting ok execution at %px\n", do_nothing);
- 	do_nothing();
+ 	WARN_ON(preemptible());
  
- 	if (write == CODE_WRITE) {
-@@ -55,7 +55,7 @@ static noinline void execute_location(void *dst, bool write)
- 		flush_icache_range((unsigned long)dst,
- 				   (unsigned long)dst + EXEC_SIZE);
- 	}
--	pr_info("attempting bad execution at %p\n", func);
-+	pr_info("attempting bad execution at %px\n", func);
- 	func();
- }
+@@ -293,7 +293,7 @@ EXPORT_SYMBOL(giveup_altivec);
  
-@@ -66,14 +66,14 @@ static void execute_user_location(void *dst)
- 	/* Intentionally crossing kernel/user memory boundary. */
- 	void (*func)(void) = dst;
+ void enable_kernel_altivec(void)
+ {
+-	unsigned long cpumsr;
++	unsigned long cpumsr __maybe_unused;
  
--	pr_info("attempting ok execution at %p\n", do_nothing);
-+	pr_info("attempting ok execution at %px\n", do_nothing);
- 	do_nothing();
+ 	WARN_ON(preemptible());
  
- 	copied = access_process_vm(current, (unsigned long)dst, do_nothing,
- 				   EXEC_SIZE, FOLL_WRITE);
- 	if (copied < EXEC_SIZE)
- 		return;
--	pr_info("attempting bad execution at %p\n", func);
-+	pr_info("attempting bad execution at %px\n", func);
- 	func();
- }
- 
-@@ -82,7 +82,7 @@ void lkdtm_WRITE_RO(void)
- 	/* Explicitly cast away "const" for the test. */
- 	unsigned long *ptr = (unsigned long *)&rodata;
- 
--	pr_info("attempting bad rodata write at %p\n", ptr);
-+	pr_info("attempting bad rodata write at %px\n", ptr);
- 	*ptr ^= 0xabcd1234;
- }
- 
-@@ -100,7 +100,7 @@ void lkdtm_WRITE_RO_AFTER_INIT(void)
- 		return;
- 	}
- 
--	pr_info("attempting bad ro_after_init write at %p\n", ptr);
-+	pr_info("attempting bad ro_after_init write at %px\n", ptr);
- 	*ptr ^= 0xabcd1234;
- }
- 
-@@ -112,7 +112,7 @@ void lkdtm_WRITE_KERN(void)
- 	size = (unsigned long)do_overwritten - (unsigned long)do_nothing;
- 	ptr = (unsigned char *)do_overwritten;
- 
--	pr_info("attempting bad %zu byte write at %p\n", size, ptr);
-+	pr_info("attempting bad %zu byte write at %px\n", size, ptr);
- 	memcpy(ptr, (unsigned char *)do_nothing, size);
- 	flush_icache_range((unsigned long)ptr, (unsigned long)(ptr + size));
- 
-@@ -185,11 +185,11 @@ void lkdtm_ACCESS_USERSPACE(void)
- 
- 	ptr = (unsigned long *)user_addr;
- 
--	pr_info("attempting bad read at %p\n", ptr);
-+	pr_info("attempting bad read at %px\n", ptr);
- 	tmp = *ptr;
- 	tmp += 0xc0dec0de;
- 
--	pr_info("attempting bad write at %p\n", ptr);
-+	pr_info("attempting bad write at %px\n", ptr);
- 	*ptr = tmp;
- 
- 	vm_munmap(user_addr, PAGE_SIZE);
 -- 
-2.13.3
+2.11.0
 
