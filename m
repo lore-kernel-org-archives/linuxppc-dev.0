@@ -1,65 +1,108 @@
-Return-Path: <SRS0=FZqe=NR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=kkFw=NS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 23B0AC32789
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Nov 2018 20:13:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A13CC32789
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 00:23:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9CE272083D
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Nov 2018 20:12:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9CE272083D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 6AA3220827
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 00:23:19 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="RtS8tBJ7"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6AA3220827
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42qLMD60JrzF3FJ
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 07:12:56 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.intel.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42qRw46D2zzF3DW
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 11:23:16 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.intel.com
- (client-ip=192.55.52.88; helo=mga01.intel.com;
- envelope-from=pierre-louis.bossart@linux.intel.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.intel.com
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="RtS8tBJ7";
+	dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42qRsV24zPzF3Cx
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Nov 2018 11:21:02 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="RtS8tBJ7"; 
+ dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 42qRsV0JLKz8svw
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Nov 2018 11:21:02 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 42qRsT6xgvz9sDN; Wed,  7 Nov 2018 11:21:01 +1100 (AEDT)
+Authentication-Results: ozlabs.org; spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::641; helo=mail-pl1-x641.google.com;
+ envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="RtS8tBJ7"; 
+ dkim-atps=neutral
+Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
+ [IPv6:2607:f8b0:4864:20::641])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42qCLR5YytzF3D0
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Nov 2018 01:56:43 +1100 (AEDT)
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from orsmga004.jf.intel.com ([10.7.209.38])
- by fmsmga101.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
- 06 Nov 2018 06:56:40 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.54,472,1534834800"; d="scan'208";a="247425957"
-Received: from dnperich-mobl2.amr.corp.intel.com (HELO [10.251.132.149])
- ([10.251.132.149])
- by orsmga004.jf.intel.com with ESMTP; 06 Nov 2018 06:56:39 -0800
-Subject: Re: [alsa-devel] Build regressions/improvements in v4.20-rc1
- (sound/pci/hda/patch_ca0132.c)
-To: Geert Uytterhoeven <geert@linux-m68k.org>,
- Randy Dunlap <rdunlap@infradead.org>
-References: <20181105220559.27458-1-geert@linux-m68k.org>
- <CAMuHMdWGpjvwunNWgFujPO9_j+=QiNsi346s4-xBF1g4DT5xZw@mail.gmail.com>
- <80f2f98b-9ab1-2a1c-0962-63e3be1dd742@infradead.org>
- <CAMuHMdViTrKqQzci3=YJzk2+kQKqbWcr0oaaR1ZQM_VqT33RvA@mail.gmail.com>
-From: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
-Message-ID: <eccd20fa-5be3-957d-7905-9cc4021ba94e@linux.intel.com>
-Date: Tue, 6 Nov 2018 08:56:39 -0600
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.2.1
+ by ozlabs.org (Postfix) with ESMTPS id 42qRsT2PPnz9sDC
+ for <linuxppc-dev@ozlabs.org>; Wed,  7 Nov 2018 11:21:00 +1100 (AEDT)
+Received: by mail-pl1-x641.google.com with SMTP id t6-v6so7003804plo.9
+ for <linuxppc-dev@ozlabs.org>; Tue, 06 Nov 2018 16:21:00 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:to:cc:subject:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=Ah7xgf7wNxYiBkO/e1AYVzwUkpyP+RdbnFSYQKBy6UQ=;
+ b=RtS8tBJ7k2IsWDTsxuFg5dtGxII9vIf3VbASZ5ydbDN4uBk1uJVtnoVtVZdyKkQKtn
+ E19ERFeoVu3aQufTT4l38D2pxo/rWf5H5Y0ao+BFulaaNt2MTtDaYi0wMSXEXA07JxZr
+ d/OL8gxnWPPkVPlPG9loILz2bVnqOk2FpEdrrnRQuAyfrZB8mrkVsb1PdFqcGIyrEWSR
+ AkuwfOyjM2R0JlFc3IF9Don520xqg0WiKpNEXQzk6mPfs+d2LV76VsW8oxOkeogPJA8r
+ nxo8ZvSlcuhqGrRHzK04UurKi6mjjh25AQwE670NHI22UdiE+bXjHeLLtBPYKwYpq2aB
+ KBlA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=Ah7xgf7wNxYiBkO/e1AYVzwUkpyP+RdbnFSYQKBy6UQ=;
+ b=hFjSAZDl4dSGx3RGqheOs0oTAtcnYiky2cMAobN+lSRnLaQN3tuXPY5SKlUX4rt3+K
+ mWCZbo1ewOEqu4m9pcXt4bST0aT8Z/hyiOfw+dA5OBXcNKktQXYPNHpaTqJLrHkzwg8p
+ VIx9b+2p9/fjM9aZBifsQni3zVXegjqJe+BeGPZlSrN8sHlkbJGqyx7n1oXURyA+auii
+ PXXcSuLxtL90NS+QuYMrSgoYGOgwT9ZP6WoIgdkoevo9t0Txgfb92eUbGNq5wo4J3bmb
+ isPzhMrMNBE1YGJWBs/sTXiJZZIxJci+OgrlKxiuUYDnHS7tKECEn8eDMsr8MuCWKSo8
+ fCPA==
+X-Gm-Message-State: AGRZ1gJO7nNnayKUswgjyvwx9HylFnsynmxtHSOoAO+dfqxQC8N8pOCY
+ zc4eD3KZ1Ctlxcp8pOfg3CeV9E0G
+X-Google-Smtp-Source: AJdET5eRKiT7f9CiGMGVeNmm6FoVy8YEVEgQeu1akxOnIz+VRuDohjPLUwiywZeTaklzP0YIQhcScA==
+X-Received: by 2002:a17:902:16a4:: with SMTP id
+ h33-v6mr28279791plh.141.1541550059390; 
+ Tue, 06 Nov 2018 16:20:59 -0800 (PST)
+Received: from roar.ozlabs.ibm.com
+ (148.36.194.203.dial.dynamic.acc01-tull-pth.comindico.com.au.
+ [203.194.36.148])
+ by smtp.gmail.com with ESMTPSA id i189-v6sm39807858pfg.156.2018.11.06.16.20.56
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Tue, 06 Nov 2018 16:20:58 -0800 (PST)
+Date: Wed, 7 Nov 2018 10:20:46 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH 3/3] powerpc/mm/64s: Only use slbfee on CPUs that
+ support it
+Message-ID: <20181107102046.204dbd8f@roar.ozlabs.ibm.com>
+In-Reply-To: <20181106123709.940-3-mpe@ellerman.id.au>
+References: <20181106123709.940-1-mpe@ellerman.id.au>
+ <20181106123709.940-3-mpe@ellerman.id.au>
+X-Mailer: Claws Mail 3.17.0 (GTK+ 2.24.32; x86_64-pc-linux-gnu)
 MIME-Version: 1.0
-In-Reply-To: <CAMuHMdViTrKqQzci3=YJzk2+kQKqbWcr0oaaR1ZQM_VqT33RvA@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Language: en-US
-X-Mailman-Approved-At: Wed, 07 Nov 2018 07:07:31 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,72 +114,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390 <linux-s390@vger.kernel.org>,
- ALSA Development Mailing List <alsa-devel@alsa-project.org>,
- Linux-sh list <linux-sh@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Mark Brown <broonie@kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Tue,  6 Nov 2018 23:37:09 +1100
+Michael Ellerman <mpe@ellerman.id.au> wrote:
 
->>>>
->>>> *** ERRORS ***
->>>>
->>>>    + /kisskb/src/sound/pci/hda/patch_ca0132.c: error: implicit declaration of function 'pci_iomap' [-Werror=implicit-function-declaration]:  => 8799:3
->>> sh4-all{mod,yes}config
->>>
->>> Looks like d9b84a15892c0233 ("ALSA: hda: Fix implicit definition of
->>> pci_iomap() on SH")
->>> is not sufficient?
->> Different problem.  This is about "select":
->>
->> config SND_SOC_ALL_CODECS
->>          tristate "Build all ASoC CODEC drivers"
->>
->> That enables (sets):
->>          select SND_SOC_HDAC_HDA
->> which selects SND_HDA even though CONFIG_PCI is not enabled.
->>
->> After SND_HDA is selected (above), the Kconfig symbols in
->> sound/pci/hda/Kconfig are available for enabling, so
->> SND_HDA_CODEC_CA0132 is enabled but will not build.
-> Thanks for looking into this!
->
->> One simple solution (but possibly too naive) is:
->>
->> ---
->>   sound/soc/codecs/Kconfig |    2 +-
->>   1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> --- lnx-420-rc1.orig/sound/soc/codecs/Kconfig
->> +++ lnx-420-rc1/sound/soc/codecs/Kconfig
->> @@ -82,7 +82,7 @@ config SND_SOC_ALL_CODECS
->>          select SND_SOC_ES7241
->>          select SND_SOC_GTM601
->>          select SND_SOC_HDAC_HDMI
->> -       select SND_SOC_HDAC_HDA
->> +       select SND_SOC_HDAC_HDA if PCI
->>          select SND_SOC_ICS43432
->>          select SND_SOC_INNO_RK3036
->>          select SND_SOC_ISABELLE if I2C
-> I guess that will work. There are already plenty of "select foo if bar" lines.
-> However, looking at what else can enable SND_HDA, I think it should be
->
->      select SND_SOC_HDAC_HDA if SND_PCI || ARCH_TEGRA
+> The slbfee instruction was only added in ISA 2.05 (Power6), it's not
+> supported on older CPUs. We don't have a CPU feature for that ISA
+> version though, so just use the ISA 2.06 feature flag.
+> 
+> Fixes: e15a4fea4dee ("powerpc/64s/hash: Add some SLB debugging tests")
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-This codec can only be used by the Skylake driver (and the upcoming SOF 
-one). For Tegra this module will never be used unless they follow the 
-same path of enabling ASoC to deal with the HDaudio codecs instead of 
-the legacy.
+Ugh, thank for fixing all that up. Looks good.
 
-Likewise HDAC_HDMI will only work on Intel platforms for now.
+Thanks,
+Nick
 
->
-> That still leaves the issue that pci_iomap() on SH should be an empty stub if
-> PCI is not available, like on other architectures.
-
-I thought Mark Brown provided a fix to SH maintainers?
-
+> ---
+>  arch/powerpc/mm/slb.c | 3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
+> index 457fd29448b1..b663a36f9ada 100644
+> --- a/arch/powerpc/mm/slb.c
+> +++ b/arch/powerpc/mm/slb.c
+> @@ -66,6 +66,9 @@ static void assert_slb_presence(bool present, unsigned long ea)
+>  
+>  	WARN_ON_ONCE(mfmsr() & MSR_EE);
+>  
+> +	if (!cpu_has_feature(CPU_FTR_ARCH_206))
+> +		return;
+> +
+>  	asm volatile(__PPC_SLBFEE_DOT(%0, %1) : "=r"(tmp) : "r"(ea) : "cr0");
+>  
+>  	WARN_ON(present == (tmp == 0));
+> -- 
+> 2.17.2
+> 
 
