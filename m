@@ -2,62 +2,41 @@ Return-Path: <SRS0=kkFw=NS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 03507C0044C
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 05:23:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A983EC0044C
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 05:40:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5482C20862
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 05:23:46 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="ZGs6LEkz"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5482C20862
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 0CE9D20827
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 05:40:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0CE9D20827
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42qZZm1l8JzF3Gv
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 16:23:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="ZGs6LEkz";
-	dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 42qZyV6LKJzF3Gl
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 16:40:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42qZQp18BNzF3Ds
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Nov 2018 16:16:50 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42qZwQ2JF7zF3G7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Nov 2018 16:39:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=gibson.dropbear.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.b="ZGs6LEkz"; dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1007)
- id 42qZQn4tmrz9s7h; Wed,  7 Nov 2018 16:16:49 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1541567809;
- bh=eSFVVKKscRXTDW4C8ndgIyL8G9SCLZR8pnWpoG/fGIk=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=ZGs6LEkzVUGTNsmLhAr28PvZdjyKwvUUfnHEYEdEo7BQTVATkKL9dQbSUFlkIhtq+
- 6A/gpuDmamu8/Yc1tZlL2XXXFTmGVuvZG86c68vQ/EF60CNitGtM4RGiLQkVAj4H1a
- rlWB4w2KTcBW40jGwoChH80Y6ghaubwlIOGPYV7o=
-Date: Wed, 7 Nov 2018 16:14:45 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH kernel 3/5] powerpc/powernv: Detach npu struct from pnv_phb
-Message-ID: <20181107051444.GI5575@umbus.fritz.box>
-References: <20181015093301.1007-1-aik@ozlabs.ru>
- <20181015093301.1007-4-aik@ozlabs.ru>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="cVp8NMj01v+Em8Se"
-Content-Disposition: inline
-In-Reply-To: <20181015093301.1007-4-aik@ozlabs.ru>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+ header.from=ellerman.id.au
+Received: by ozlabs.org (Postfix)
+ id 42qZwQ11TGz9s8T; Wed,  7 Nov 2018 16:39:02 +1100 (AEDT)
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 42qZwQ0hlNz9sCX; Wed,  7 Nov 2018 16:39:02 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/io: Fix the IO workarounds code to work with Radix
+Date: Wed,  7 Nov 2018 16:38:53 +1100
+Message-Id: <20181107053853.4190-1-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.17.2
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,241 +48,120 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alistair Popple <alistair@popple.id.au>,
- Alex Williamson <alex.williamson@redhat.com>, linuxppc-dev@lists.ozlabs.org,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>, kvm-ppc@vger.kernel.org
+Cc: agraf@suse.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Back in 2006 Ben added some workarounds for a misbehaviour in the
+Spider IO bridge used on early Cell machines, see commit
+014da7ff47b5 ("[POWERPC] Cell "Spider" MMIO workarounds"). Later these
+were made to be generic, ie. not tied specifically to Spider.
 
---cVp8NMj01v+Em8Se
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The code stashes a token in the high bits (59-48) of virtual addresses
+used for IO (eg. returned from ioremap()). This works fine when using
+the Hash MMU, but when we're using the Radix MMU the bits used for the
+token overlap with some of the bits of the virtual address.
 
-On Mon, Oct 15, 2018 at 08:32:59PM +1100, Alexey Kardashevskiy wrote:
-> The powernv PCI code stores NPU data in the pnv_phb struct. The latter
-> is referenced by pci_controller::private_data. We are going to have NPU2
-> support in the pseries platform as well but it does not store any
-> private_data in in the pci_controller struct; and even if it did,
-> it would be a different data structure.
->=20
-> This adds a global list of NPUs so each platform can register and use
-> these in the same fashion.
->=20
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
->  arch/powerpc/platforms/powernv/pci.h     | 16 -------
->  arch/powerpc/platforms/powernv/npu-dma.c | 71 +++++++++++++++++++++++++-=
-------
->  2 files changed, 57 insertions(+), 30 deletions(-)
->=20
-> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platform=
-s/powernv/pci.h
-> index 8b37b28..3b7617d 100644
-> --- a/arch/powerpc/platforms/powernv/pci.h
-> +++ b/arch/powerpc/platforms/powernv/pci.h
-> @@ -8,9 +8,6 @@
-> =20
->  struct pci_dn;
-> =20
-> -/* Maximum possible number of ATSD MMIO registers per NPU */
-> -#define NV_NMMU_ATSD_REGS 8
-> -
->  enum pnv_phb_type {
->  	PNV_PHB_IODA1		=3D 0,
->  	PNV_PHB_IODA2		=3D 1,
-> @@ -180,19 +177,6 @@ struct pnv_phb {
->  	unsigned int		diag_data_size;
->  	u8			*diag_data;
-> =20
-> -	/* Nvlink2 data */
-> -	struct npu {
-> -		int index;
-> -		__be64 *mmio_atsd_regs[NV_NMMU_ATSD_REGS];
-> -		unsigned int mmio_atsd_count;
-> -
-> -		/* Bitmask for MMIO register usage */
-> -		unsigned long mmio_atsd_usage;
-> -
-> -		/* Do we need to explicitly flush the nest mmu? */
-> -		bool nmmu_flush;
-> -	} npu;
-> -
->  	int p2p_target_count;
->  };
-> =20
-> diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/plat=
-forms/powernv/npu-dma.c
-> index 01402f9..cb2b4f9 100644
-> --- a/arch/powerpc/platforms/powernv/npu-dma.c
-> +++ b/arch/powerpc/platforms/powernv/npu-dma.c
-> @@ -378,6 +378,25 @@ struct pnv_ioda_pe *pnv_pci_npu_setup_iommu(struct p=
-nv_ioda_pe *npe)
->  /*
->   * NPU2 ATS
->   */
-> +/* Maximum possible number of ATSD MMIO registers per NPU */
-> +#define NV_NMMU_ATSD_REGS 8
-> +
-> +struct npu {
-> +	int index;
-> +	__be64 *mmio_atsd_regs[NV_NMMU_ATSD_REGS];
-> +	unsigned int mmio_atsd_count;
-> +
-> +	/* Bitmask for MMIO register usage */
-> +	unsigned long mmio_atsd_usage;
-> +
-> +	/* Do we need to explicitly flush the nest mmu? */
-> +	bool nmmu_flush;
-> +
-> +	struct list_head next;
-> +
-> +	struct pci_controller *hose;
-> +};
-> +
->  static struct {
->  	/*
->  	 * spinlock to protect initialisation of an npu_context for
-> @@ -396,22 +415,27 @@ static struct {
->  	uint64_t atsd_threshold;
->  	struct dentry *atsd_threshold_dentry;
-> =20
-> +	struct list_head npu_list;
->  } npu2_devices;
-> =20
->  void pnv_npu2_devices_init(void)
->  {
->  	memset(&npu2_devices, 0, sizeof(npu2_devices));
-> +	INIT_LIST_HEAD(&npu2_devices.npu_list);
->  	spin_lock_init(&npu2_devices.context_lock);
->  	npu2_devices.atsd_threshold =3D 2 * 1024 * 1024;
->  }
-> =20
->  static struct npu *npdev_to_npu(struct pci_dev *npdev)
->  {
-> -	struct pnv_phb *nphb;
-> +	struct pci_controller *hose =3D pci_bus_to_host(npdev->bus);
-> +	struct npu *npu;
-> =20
-> -	nphb =3D pci_bus_to_host(npdev->bus)->private_data;
-> +	list_for_each_entry(npu, &npu2_devices.npu_list, next)
-> +		if (hose =3D=3D npu->hose)
-> +			return npu;
-> =20
-> -	return &nphb->npu;
-> +	return NULL;
+This is because the maximum virtual address is larger with Radix, up
+to c00fffffffffffff, and in fact we use that high part of the address
+range for ioremap(), see RADIX_KERN_IO_START.
 
-If you're introducing the possibility this can fail, should you also
-be introducing checks for NULL in the callers?
+As it happens the bits that are used overlap with the bits that
+differentiate an IO address vs a linear map address. If the resulting
+address lies outside the linear mapping we will crash (see below), if
+not we just corrupt memory.
 
->  }
-> =20
->  /* Maximum number of nvlinks per npu */
-> @@ -843,7 +867,7 @@ struct npu_context *pnv_npu2_init_context(struct pci_=
-dev *gpdev,
->  	 */
->  	WRITE_ONCE(npu_context->npdev[npu->index][nvlink_index], npdev);
-> =20
-> -	if (!nphb->npu.nmmu_flush) {
-> +	if (!npu->nmmu_flush) {
+  virtio-pci 0000:00:00.0: Using 64-bit direct DMA at offset 800000000000000
+  Unable to handle kernel paging request for data at address 0xc000000080000014
+  ...
+  CFAR: c000000000626b98 DAR: c000000080000014 DSISR: 42000000 IRQMASK: 0
+  GPR00: c0000000006c54fc c00000003e523378 c0000000016de600 0000000000000000
+  GPR04: c00c000080000014 0000000000000007 0fffffff000affff 0000000000000030
+         ^^^^
+  ...
+  NIP [c000000000626c5c] .iowrite8+0xec/0x100
+  LR [c0000000006c992c] .vp_reset+0x2c/0x90
+  Call Trace:
+    .pci_bus_read_config_dword+0xc4/0x120 (unreliable)
+    .register_virtio_device+0x13c/0x1c0
+    .virtio_pci_probe+0x148/0x1f0
+    .local_pci_probe+0x68/0x140
+    .pci_device_probe+0x164/0x220
+    .really_probe+0x274/0x3b0
+    .driver_probe_device+0x80/0x170
+    .__driver_attach+0x14c/0x150
+    .bus_for_each_dev+0xb8/0x130
+    .driver_attach+0x34/0x50
+    .bus_add_driver+0x178/0x2f0
+    .driver_register+0x90/0x1a0
+    .__pci_register_driver+0x6c/0x90
+    .virtio_pci_driver_init+0x2c/0x40
+    .do_one_initcall+0x64/0x280
+    .kernel_init_freeable+0x36c/0x474
+    .kernel_init+0x24/0x160
+    .ret_from_kernel_thread+0x58/0x7c
 
-Looks like this hunk belongs in the patch which introduced npdev_to_npu().
+This hasn't been a problem because CONFIG_PPC_IO_WORKAROUNDS which
+enables this code is usually not enabled. It is only enabled when it's
+selected by PPC_CELL_NATIVE which is only selected by
+PPC_IBM_CELL_BLADE and that in turn depends on BIG_ENDIAN. So in order
+to hit the bug you need to build a big endian kernel, with IBM Cell
+Blade support enabled, as well as Radix MMU support, and then boot
+that on Power9 using Radix MMU.
 
->  		/*
->  		 * If we're not explicitly flushing ourselves we need to mark
->  		 * the thread for global flushes
-> @@ -967,6 +991,13 @@ int pnv_npu2_init(struct pnv_phb *phb)
->  	struct pci_dev *gpdev;
->  	static int npu_index;
->  	uint64_t rc =3D 0;
-> +	struct pci_controller *hose =3D phb->hose;
-> +	struct npu *npu;
-> +	int ret;
-> +
-> +	npu =3D kzalloc(sizeof(*npu), GFP_KERNEL);
-> +	if (!npu)
-> +		return -ENOMEM;
-> =20
->  	if (!npu2_devices.atsd_threshold_dentry) {
->  		npu2_devices.atsd_threshold_dentry =3D debugfs_create_x64(
-> @@ -974,8 +1005,7 @@ int pnv_npu2_init(struct pnv_phb *phb)
->  				&npu2_devices.atsd_threshold);
->  	}
-> =20
-> -	phb->npu.nmmu_flush =3D
-> -		of_property_read_bool(phb->hose->dn, "ibm,nmmu-flush");
-> +	npu->nmmu_flush =3D of_property_read_bool(hose->dn, "ibm,nmmu-flush");
->  	for_each_child_of_node(phb->hose->dn, dn) {
->  		gpdev =3D pnv_pci_get_gpu_dev(get_pci_dev(dn));
->  		if (gpdev) {
-> @@ -989,18 +1019,31 @@ int pnv_npu2_init(struct pnv_phb *phb)
->  		}
->  	}
-> =20
-> -	for (i =3D 0; !of_property_read_u64_index(phb->hose->dn, "ibm,mmio-atsd=
-",
-> +	for (i =3D 0; !of_property_read_u64_index(hose->dn, "ibm,mmio-atsd",
->  							i, &mmio_atsd); i++)
-> -		phb->npu.mmio_atsd_regs[i] =3D ioremap(mmio_atsd, 32);
-> +		npu->mmio_atsd_regs[i] =3D ioremap(mmio_atsd, 32);
-> =20
-> -	pr_info("NPU%lld: Found %d MMIO ATSD registers", phb->opal_id, i);
-> -	phb->npu.mmio_atsd_count =3D i;
-> -	phb->npu.mmio_atsd_usage =3D 0;
-> +	pr_info("NPU%d: Found %d MMIO ATSD registers", hose->global_number, i);
-> +	npu->mmio_atsd_count =3D i;
-> +	npu->mmio_atsd_usage =3D 0;
->  	npu_index++;
-> -	if (WARN_ON(npu_index >=3D NV_MAX_NPUS))
-> -		return -ENOSPC;
-> +	if (WARN_ON(npu_index >=3D NV_MAX_NPUS)) {
-> +		ret =3D -ENOSPC;
-> +		goto fail_exit;
-> +	}
->  	npu2_devices.max_index =3D npu_index;
-> -	phb->npu.index =3D npu_index;
-> +	npu->index =3D npu_index;
-> +	npu->hose =3D hose;
-> +
-> +	list_add(&npu->next, &npu2_devices.npu_list);
-> =20
->  	return 0;
-> +
-> +fail_exit:
-> +	for (i =3D 0; i < npu->mmio_atsd_count; ++i)
-> +		iounmap(npu->mmio_atsd_regs[i]);
-> +
-> +	kfree(npu);
-> +
-> +	return ret;
->  }
+Still we can fix the bug, so let's do that. We simply use fewer bits
+for the token, taking the union of the restrictions on the address
+from both Hash and Radix, we end up with 8 bits we can use for the
+token. The only user of the token is iowa_mem_find_bus() which only
+supports 8 token values, so 8 bits is plenty for that.
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Fixes: 566ca99af026 ("powerpc/mm/radix: Add dummy radix_enabled()")
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/include/asm/io.h | 20 +++++++-------------
+ 1 file changed, 7 insertions(+), 13 deletions(-)
 
---cVp8NMj01v+Em8Se
-Content-Type: application/pgp-signature; name="signature.asc"
+diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
+index 3ef40b703c4a..e746becd9d6f 100644
+--- a/arch/powerpc/include/asm/io.h
++++ b/arch/powerpc/include/asm/io.h
+@@ -268,19 +268,13 @@ extern void _memcpy_toio(volatile void __iomem *dest, const void *src,
+  * their hooks, a bitfield is reserved for use by the platform near the
+  * top of MMIO addresses (not PIO, those have to cope the hard way).
+  *
+- * This bit field is 12 bits and is at the top of the IO virtual
+- * addresses PCI_IO_INDIRECT_TOKEN_MASK.
++ * The highest address in the kernel virtual space are:
+  *
+- * The kernel virtual space is thus:
++ *  d0003fffffffffff	# with Hash MMU
++ *  c00fffffffffffff	# with Radix MMU
+  *
+- *  0xD000000000000000		: vmalloc
+- *  0xD000080000000000		: PCI PHB IO space
+- *  0xD000080080000000		: ioremap
+- *  0xD0000fffffffffff		: end of ioremap region
+- *
+- * Since the top 4 bits are reserved as the region ID, we use thus
+- * the next 12 bits and keep 4 bits available for the future if the
+- * virtual address space is ever to be extended.
++ * The top 4 bits are reserved as the region ID on hash, leaving us 8 bits
++ * that can be used for the field.
+  *
+  * The direct IO mapping operations will then mask off those bits
+  * before doing the actual access, though that only happen when
+@@ -292,8 +286,8 @@ extern void _memcpy_toio(volatile void __iomem *dest, const void *src,
+  */
+ 
+ #ifdef CONFIG_PPC_INDIRECT_MMIO
+-#define PCI_IO_IND_TOKEN_MASK	0x0fff000000000000ul
+-#define PCI_IO_IND_TOKEN_SHIFT	48
++#define PCI_IO_IND_TOKEN_SHIFT	52
++#define PCI_IO_IND_TOKEN_MASK	(0xfful << PCI_IO_IND_TOKEN_SHIFT)
+ #define PCI_FIX_ADDR(addr)						\
+ 	((PCI_IO_ADDR)(((unsigned long)(addr)) & ~PCI_IO_IND_TOKEN_MASK))
+ #define PCI_GET_ADDR_TOKEN(addr)					\
+-- 
+2.17.2
 
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlvidMQACgkQbDjKyiDZ
-s5IsqxAAzsItPToucQdUMBdtXbzG8eh/5YM853HXzj+6+j+cnYJUO7rHT6TKSo6L
-ItfdUMnGchXUGByfKmue/iEJkDS4QTXKavphoTxOJMY+LYlGS7IBqLAd0+D6Ed3m
-89n5nUsK/vRPof07EYyRIefzy2AaaaaMD8s2g5SCYo/uugvhbKUOVSKtKMKhAKXk
-wPNDf0Fu4BN0EuAOw1uUF/fylpQ0VsnPC3RqCzFRdptV8wAoms3B2SPgof0KT8u4
-ESUs8xrJ+dSkrn/2DvbeSuKnMQFQj5j6zQQ5OFEORa6AaKfjMhFvjEyt8zqo6dKi
-VPG/Q3O3p88k5B0iq6Zm+qfij3TiePEXA18r0sNaFhCQbjS6jueWyTTTlFgQ+ToN
-LoGotu9P5Ibk1vss4TtiaCUGA2RnmMcxYnWLLat5i/qOppslREZnMcQPFGed2C3/
-TFHy7cWWYj/dI/CEpL14Lo2fZYe4eQB2Ec3kKFajsIEeP8XwrxQKxNLcdSzjP4K6
-YcjDiyZ+UJg8kBBZKYsg/m75hL1CbKhx/y+1yXhpvCQipwtIqWwa47bDK8HZi0TO
-1eSQekbvbs89Nhm26WnNBWttoUB8+O7BeELn4cHBqRzVn/t4uahr++kptYg9+9xr
-3DEoe1WCZV1+ZzxYSQYhPdLl5Z+isU6d6yXTYF4kpt5PNJh8xUc=
-=cv+/
------END PGP SIGNATURE-----
-
---cVp8NMj01v+Em8Se--
