@@ -2,51 +2,55 @@ Return-Path: <SRS0=kkFw=NS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=unavailable
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 94A21C0044C
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 22:33:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E941C0044C
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 23:50:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E22F92086C
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 22:33:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E22F92086C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lwn.net
+	by mail.kernel.org (Postfix) with ESMTPS id A728320882
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 23:50:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A728320882
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42r1Qx4PBJzF3K3
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 09:33:29 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lwn.net
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=lwn.net
- (client-ip=45.79.88.28; helo=ms.lwn.net; envelope-from=corbet@lwn.net;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lwn.net
-Received: from ms.lwn.net (ms.lwn.net [45.79.88.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 42r37h2lz8zF3Ks
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 10:50:24 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42r1NL50K0zF38H
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Nov 2018 09:31:07 +1100 (AEDT)
-Received: from lwn.net (localhost [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42r35c0HH1zF3Hf
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Nov 2018 10:48:36 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ms.lwn.net (Postfix) with ESMTPSA id 3D4642ED;
- Wed,  7 Nov 2018 22:31:05 +0000 (UTC)
-Date: Wed, 7 Nov 2018 15:31:04 -0700
-From: Jonathan Corbet <corbet@lwn.net>
-To: Colin King <colin.king@canonical.com>
-Subject: Re: [PATCH] Documentation: fix spelling mistake, EACCESS -> EACCES
-Message-ID: <20181107153104.71eddf4d@lwn.net>
-In-Reply-To: <20181026172549.3628-1-colin.king@canonical.com>
-References: <20181026172549.3628-1-colin.king@canonical.com>
-Organization: LWN.net
+ by ozlabs.org (Postfix) with ESMTPSA id 42r35Y1Ttbz9s9G;
+ Thu,  8 Nov 2018 10:48:33 +1100 (AEDT)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Frank Rowand <frowand.list@gmail.com>, Rob Herring <robh+dt@kernel.org>,
+ Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>,
+ Moritz Fischer <mdf@kernel.org>
+Subject: Re: [PATCH v6 07/18] of: dynamic: change type of of_{at,
+ de}tach_node() to void
+In-Reply-To: <6bc78502-7587-eb9c-237f-d3f031979d42@gmail.com>
+References: <1541431515-25197-1-git-send-email-frowand.list@gmail.com>
+ <1541431515-25197-8-git-send-email-frowand.list@gmail.com>
+ <87tvktqedf.fsf@concordia.ellerman.id.au>
+ <6bc78502-7587-eb9c-237f-d3f031979d42@gmail.com>
+Date: Thu, 08 Nov 2018 10:48:33 +1100
+Message-ID: <87h8gsqwj2.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,30 +62,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel-janitors@vger.kernel.org, linux-doc@vger.kernel.org,
- David Airlie <airlied@linux.ie>, linuxppc-dev@lists.ozlabs.org,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- linux-kernel@vger.kernel.org, Maxime Ripard <maxime.ripard@bootlin.com>,
- Jeremy Kerr <jk@ozlabs.org>, Sean Paul <sean@poorly.run>
+Cc: devicetree@vger.kernel.org, linux-fpga@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ nfont@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 26 Oct 2018 18:25:49 +0100
-Colin King <colin.king@canonical.com> wrote:
+Frank Rowand <frowand.list@gmail.com> writes:
+> On 11/7/18 4:08 AM, Michael Ellerman wrote:
+>> frowand.list@gmail.com writes:
+>> 
+>>> From: Frank Rowand <frank.rowand@sony.com>
+>>>
+>>> of_attach_node() and of_detach_node() always return zero, so
+>>> their return value is meaningless.
+>> 
+>> But should they always return zero?
+>> 
+>> At least __of_attach_node_sysfs() can fail in several ways.
+>
+> Sigh.  And of_reconfig_notify() can fail.  And at one point in the
+> history the return value of of_reconfig_notify() was returned by
+> of_attach_node() if of_reconfig_notify() failed.
+>
+>> And there's also this in __of_detach_node() which should probably be
+>> returning an error:
+>> 
+>> 	if (WARN_ON(of_node_check_flag(np, OF_DETACHED)))
+>>         	return;
+>> 
+>> 
+>> Seems to me we should instead be fixing these to propagate errors,
+>> rather than hiding them?
+>
+> The history of how of_attach_node() stopped propagating errors is
+> a bit more complex than I want to dig into at the moment.  So I'll
+> drop this patch from the series and add investigating this onto
+> my todo list.  I suspect that the result of investigating will be
+> that error return values should not be ignored in of_attach_node()
+> and of_detach_node(), but should instead be propagated to the
+> callers, as you suggest.
 
-> Trivial fix to a spelling mistake of the error access name EACCESS,
-> rename to EACCES
-> 
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
-> ---
->  Documentation/filesystems/spufs.txt | 2 +-
->  Documentation/gpu/drm-uapi.rst      | 4 ++--
->  2 files changed, 3 insertions(+), 3 deletions(-)
+Thanks.
 
-Applied, thanks.  
-
-This is the first patch to spufs.txt since 2006...I wonder if that stuff
-is being used by anybody...
-
-jon
+cheers
