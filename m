@@ -6,32 +6,32 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B0730C0044C
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 12:17:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F01DBC0044C
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 12:27:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1A6FA20896
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 12:17:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1A6FA20896
+	by mail.kernel.org (Postfix) with ESMTPS id 338222081D
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 12:27:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 338222081D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42qllm7566zF3GC
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 23:17:08 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42qlzZ6vCpzF3CC
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 23:27:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42qlhd3LzKzF3J4
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Nov 2018 23:14:25 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42qlv55DTWzF3HY
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Nov 2018 23:23:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 42qlhc3dp4z9sCX;
- Wed,  7 Nov 2018 23:14:24 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPSA id 42qlv50QSPz9sCw;
+ Wed,  7 Nov 2018 23:23:29 +1100 (AEDT)
 Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 From: Michael Ellerman <mpe@ellerman.id.au>
@@ -40,13 +40,13 @@ To: frowand.list@gmail.com, Rob Herring <robh+dt@kernel.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>,
  Moritz Fischer <mdf@kernel.org>
-Subject: Re: [PATCH v6 03/18] of: overlay: add missing of_node_get() in
- __of_attach_node_sysfs
-In-Reply-To: <1541431515-25197-4-git-send-email-frowand.list@gmail.com>
+Subject: Re: [PATCH v6 04/18] powerpc/pseries: add of_node_put() in
+ dlpar_detach_node()
+In-Reply-To: <1541431515-25197-5-git-send-email-frowand.list@gmail.com>
 References: <1541431515-25197-1-git-send-email-frowand.list@gmail.com>
- <1541431515-25197-4-git-send-email-frowand.list@gmail.com>
-Date: Wed, 07 Nov 2018 23:14:23 +1100
-Message-ID: <87pnvhqe3k.fsf@concordia.ellerman.id.au>
+ <1541431515-25197-5-git-send-email-frowand.list@gmail.com>
+Date: Wed, 07 Nov 2018 23:23:27 +1100
+Message-ID: <87muqlqdog.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -70,78 +70,55 @@ frowand.list@gmail.com writes:
 
 > From: Frank Rowand <frank.rowand@sony.com>
 >
-> There is a matching of_node_put() in __of_detach_node_sysfs()
+> "of: overlay: add missing of_node_get() in __of_attach_node_sysfs"
+
+It would be clearer if you said 'The previous commit "of: overlay ..."
+
+> added a missing of_node_get() to __of_attach_node_sysfs().  This
+> results in a refcount imbalance for nodes attached with
+> dlpar_attach_node().  The calling sequence from dlpar_attach_node()
+> to __of_attach_node_sysfs() is:
 >
-> Remove misleading comment from function header comment for
-> of_detach_node().
->
-> This patch may result in memory leaks from code that directly calls
-> the dynamic node add and delete functions directly instead of
-> using changesets.
+>    dlpar_attach_node()
+>       of_attach_node()
+>          __of_attach_node_sysfs()
 >
 > Tested-by: Alan Tull <atull@kernel.org>
 > Signed-off-by: Frank Rowand <frank.rowand@sony.com>
-
-This seems sensible to me. I guess we could argue about whether the
-sysfs code needs its own reference, but it certainly doesn't hurt that
-it does, as long as it's handled symmetrically - which it is now.
-
-Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
-
 > ---
 >
-> This patch should result in powerpc systems that dynamically
-> allocate a node, then later deallocate the node to have a
-> memory leak when the node is deallocated.
->
-> The next patch in the series will fix the leak.
+> ***** UNTESTED.  I need people with the affected PowerPC systems
+> *****            (systems that dynamically allocate and deallocate
+> *****            devicetree nodes) to test this patch.
 
-I think this should go in the changelog, it's useful information that we
-don't want to lose track of once this is applied.
+This looks OK to me in light of the previous patch.
 
-Either that or we actually squash the two patches together when applying
-to avoid the bisection break.
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+
+It also means dlpar_detach_node() is again behaving as described in the
+comment to of_detach_node().
+
+It would be good to make mention of:
+
+  Fixes: 68baf692c435 ("powerpc/pseries: Fix of_node_put() underflow during DLPAR remove")
+
+Which removed an of_node_put() in the exact same place for different
+reasons.
 
 cheers
 
->  drivers/of/dynamic.c | 3 ---
->  drivers/of/kobj.c    | 4 +++-
->  2 files changed, 3 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/of/dynamic.c b/drivers/of/dynamic.c
-> index 12c3f9a15e94..146681540487 100644
-> --- a/drivers/of/dynamic.c
-> +++ b/drivers/of/dynamic.c
-> @@ -272,9 +272,6 @@ void __of_detach_node(struct device_node *np)
->  
->  /**
->   * of_detach_node() - "Unplug" a node from the device tree.
-> - *
-> - * The caller must hold a reference to the node.  The memory associated with
-> - * the node is not freed until its refcount goes to zero.
->   */
->  int of_detach_node(struct device_node *np)
->  {
-> diff --git a/drivers/of/kobj.c b/drivers/of/kobj.c
-> index 7a0a18980b98..c72eef988041 100644
-> --- a/drivers/of/kobj.c
-> +++ b/drivers/of/kobj.c
-> @@ -133,6 +133,9 @@ int __of_attach_node_sysfs(struct device_node *np)
->  	}
->  	if (!name)
->  		return -ENOMEM;
-> +
-> +	of_node_get(np);
-> +
->  	rc = kobject_add(&np->kobj, parent, "%s", name);
->  	kfree(name);
+> diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+> index 7625546caefd..17958043e7f7 100644
+> --- a/arch/powerpc/platforms/pseries/dlpar.c
+> +++ b/arch/powerpc/platforms/pseries/dlpar.c
+> @@ -270,6 +270,8 @@ int dlpar_detach_node(struct device_node *dn)
 >  	if (rc)
-> @@ -159,6 +162,5 @@ void __of_detach_node_sysfs(struct device_node *np)
->  		kobject_del(&np->kobj);
->  	}
+>  		return rc;
 >  
-> -	/* finally remove the kobj_init ref */
->  	of_node_put(np);
+> +	of_node_put(dn);
+> +
+>  	return 0;
 >  }
+>  
 > -- 
 > Frank Rowand <frank.rowand@sony.com>
