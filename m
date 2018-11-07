@@ -2,70 +2,67 @@ Return-Path: <SRS0=kkFw=NS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A5773C0044C
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 08:37:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 13548C0044C
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 08:46:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5EC50204FD
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 08:37:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5EC50204FD
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 9020D2081D
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 08:46:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9020D2081D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42qftp0YYBzF3HT
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 19:37:54 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by lists.ozlabs.org (Postfix) with ESMTP id 42qg4f6w9jzF3HK
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Nov 2018 19:46:26 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=209.85.221.194; helo=mail-vk1-f194.google.com;
+ envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux-m68k.org
+Received: from mail-vk1-f194.google.com (mail-vk1-f194.google.com
+ [209.85.221.194])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42qfrm5Q9DzF3Cb
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Nov 2018 19:36:08 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 42qfrX0FWLz9tvr3;
- Wed,  7 Nov 2018 09:35:56 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id zilwr5LF1iFF; Wed,  7 Nov 2018 09:35:55 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 42qfrW366Fz9tvr2;
- Wed,  7 Nov 2018 09:35:55 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 12C638B7FF;
- Wed,  7 Nov 2018 09:35:52 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id EdwUbUtJJHpT; Wed,  7 Nov 2018 09:35:51 +0100 (CET)
-Received: from PO15451 (unknown [172.25.231.2])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id CC5838B7FE;
- Wed,  7 Nov 2018 09:35:51 +0100 (CET)
-Subject: Re: [PATCH 12/24] powerpc/mm: Fix reporting of kernel execute faults
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org
-References: <20170719044946.22030-1-benh@kernel.crashing.org>
- <20170719044946.22030-12-benh@kernel.crashing.org>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <64d43dc0-60ad-4346-96c9-2ff46867d9c9@c-s.fr>
-Date: Wed, 7 Nov 2018 09:35:51 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42qg2d2GbZzF1x0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Nov 2018 19:44:41 +1100 (AEDT)
+Received: by mail-vk1-f194.google.com with SMTP id t127so3523595vke.8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Nov 2018 00:44:41 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=wMoTerJKeg8lFio2Ljy91Dvj/RDjGUDC3iBhw/TWeqo=;
+ b=CbT3BBtEQxWBfE2Dwnhr6Ky4DcHjLU0+qKhYz5sh+yNEIR5zUKyFJIXpm6iUQBBuBZ
+ ya0XHUmmEcSXRIiw07G6Y7WvLGcbPf4lG837wFB+G6TGa7SOMBt8ZM+iAmEdk3eLomUG
+ sd239+PL75Tdeml0+MfyOX1fjr4nOD4EatOz7Y5u6ePUWe2pt6XVwWFmzj26J2Eptf+G
+ Wjjc7c3L39zOosFa6578I/CfloiKjpKZ6XpVoNDx2sVkkmZpMv+bv/Nsp6Ru7gnrrZvI
+ /MBIVNapNN/j+BAwiorajsFrS4+SJPNY8EtUuH5+sncqgWK/PkFEX+7QAO3VpELzhW75
+ lBUw==
+X-Gm-Message-State: AGRZ1gIjhNRt39HPLxN3AYlL7Hc5nr5gW/v0zIF2xWREjPFfbESwCCyz
+ Iiqt8GA6BGVIT41IjuZ1W7GMTsQ7yFZrv7Cks/c=
+X-Google-Smtp-Source: AJdET5fsRCw7GQN+q0ICx1TvLdKbBYtMxJi9u0kREOAyyThJaPcJdUDP6+JrJr4y8W7ZJvYAsWAM945h/lBtLndcVkU=
+X-Received: by 2002:a1f:2145:: with SMTP id h66mr366907vkh.65.1541580277266;
+ Wed, 07 Nov 2018 00:44:37 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <20170719044946.22030-12-benh@kernel.crashing.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+References: <20181105220559.27458-1-geert@linux-m68k.org>
+ <CAMuHMdWGpjvwunNWgFujPO9_j+=QiNsi346s4-xBF1g4DT5xZw@mail.gmail.com>
+ <80f2f98b-9ab1-2a1c-0962-63e3be1dd742@infradead.org>
+ <s5h36seyyae.wl-tiwai@suse.de>
+In-Reply-To: <s5h36seyyae.wl-tiwai@suse.de>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Wed, 7 Nov 2018 09:44:25 +0100
+Message-ID: <CAMuHMdUc6hcPp+Ca9tnWyHGWw-heKRJ82FTabDed5oqtbm7mjQ@mail.gmail.com>
+Subject: Re: [alsa-devel] Build regressions/improvements in v4.20-rc1
+ (sound/pci/hda/patch_ca0132.c)
+To: Takashi Iwai <tiwai@suse.de>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,99 +74,129 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: aneesh.kumar@linux.vnet.ibm.com, Nicholas Piggin <npiggin@gmail.com>
+Cc: linux-s390 <linux-s390@vger.kernel.org>,
+ ALSA Development Mailing List <alsa-devel@alsa-project.org>,
+ Randy Dunlap <rdunlap@infradead.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Ben,
+Hi Iwai-san,
 
-I have an issue on the 8xx with this change
+On Tue, Nov 6, 2018 at 5:18 PM Takashi Iwai <tiwai@suse.de> wrote:
+> On Tue, 06 Nov 2018 02:04:47 +0100,
+> Randy Dunlap wrote:
+> >
+> > On 11/5/18 2:12 PM, Geert Uytterhoeven wrote:
+> > > On Mon, Nov 5, 2018 at 11:07 PM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> > >> Below is the list of build error/warning regressions/improvements in
+> > >> v4.20-rc1[1] compared to v4.19[2].
+> > >>
+> > >> Summarized:
+> > >>   - build errors: +3/-0
+> > >>   - build warnings: +449/-2712
+> > >>
+> > >> Happy fixing! ;-)
+> > >>
+> > >> Thanks to the linux-next team for providing the build service.
+> > >>
+> > >> [1] http://kisskb.ellerman.id.au/kisskb/branch/linus/head/651022382c7f8da46cb4872a545ee1da6d097d2a/ (all 240 configs)
+> > >> [2] http://kisskb.ellerman.id.au/kisskb/branch/linus/head/84df9525b0c27f3ebc2ebb1864fa62a97fdedb7d/ (all 240 configs)
+> > >>
+> > >>
+> > >> *** ERRORS ***
+> > >>
+> > >>   + /kisskb/src/sound/pci/hda/patch_ca0132.c: error: implicit declaration of function 'pci_iomap' [-Werror=implicit-function-declaration]:  => 8799:3
+> > >
+> > > sh4-all{mod,yes}config
+> > >
+> > > Looks like d9b84a15892c0233 ("ALSA: hda: Fix implicit definition of
+> > > pci_iomap() on SH")
+> > > is not sufficient?
+> >
+> > Different problem.  This is about "select":
+> >
+> > config SND_SOC_ALL_CODECS
+> >       tristate "Build all ASoC CODEC drivers"
+> >
+> > That enables (sets):
+> >       select SND_SOC_HDAC_HDA
+> > which selects SND_HDA even though CONFIG_PCI is not enabled.
+>
+> Actually it is OK to enable CONFIG_SND_HDA_CODEC_CA0132 without
+> CONFIG_PCI.  IIRC, there was a system like that, too.
+> The commit above should have covered the build failure on SH, but
+> apparently isn't enough for some arch setups, as it seems.
+>
+> The cause is clear now: pci_iomap() is defined in
+> asm-generic/pci_iomap.h only when CONFIG_GENERIC_PCI_IOMAP is
+> defined.  Including asm/io.h doesn't help unless CONFIG_PCI is set.
+>
+> Below is a quick fix for this.
+>
+>
+> thanks,
+>
+> Takashi
+>
+> -- 8< --
+>
+> From: Takashi Iwai <tiwai@suse.de>
+> Subject: [PATCH] ALSA: hda/ca0132 - Yet more fix on build breakage without PCI
+>  support
+>
+> The recent change in CA0132 codec driver for supporting more
+> Creative boards includes the pci_iomap() call to get the extra
+> register accesses.  This is supposed to work on all archs and setups,
+> by the implicit assumption that every arch would provide a dummy
+> function returning NULL when no PCI is available.  But the reality
+> bites, of course; as Geert's regular build test shows, some configs
+> (at least SH4 without CONFIG_PCI) leads to a build error due to the
+> implicit function declaration.
+>
+> So this is another attempt to fix the issue: now we add an ifdef
+> CONFIG_PCI line, so that pci_iomap() won't be called unless PCI is
+> really usable.  This should fall back to the standard quirk again with
+> a warning.
+>
+> Fixes: d9b84a15892c0233 ("ALSA: hda: Fix implicit definition of pci_iomap() on SH")
+> Reported-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> Cc: <stable@vger.kernel.org>
+> Signed-off-by: Takashi Iwai <tiwai@suse.de>
 
-Le 19/07/2017 à 06:49, Benjamin Herrenschmidt a écrit :
-> We currently test for is_exec and DSISR_PROTFAULT but that doesn't
-> make sense as this is the wrong error bit to test for an execute
-> permission failure.
+Thanks for your patch!
 
-On the 8xx, on an exec permission failure, this is the correct BIT, see 
-below extract from reference manual:
+> --- a/sound/pci/hda/patch_ca0132.c
+> +++ b/sound/pci/hda/patch_ca0132.c
+> @@ -8796,7 +8796,13 @@ static int patch_ca0132(struct hda_codec *codec)
+>         }
+>
+>         if (spec->use_pci_mmio) {
+> +               /*
+> +                * ifdef below needed due to lack of pci_iomap() decleration
+> +                * for some archs when no PCI is defined
+> +                */
+> +#ifdef CONFIG_PCI
+>                 spec->mem_base = pci_iomap(codec->bus->pci, 2, 0xC20);
+> +#endif
 
-Note that only one of bits 1, 3, and 4 will be set.
-1 1 if the translation of an attempted access is not in the translation 
-tables. Otherwise 0
-3 1 if the fetch access was to guarded memory when MSR[IR] = 1. Otherwise 0
-4 1 if the access is not permitted by the protection mechanism; otherwise 0.
+I'm sorry, but that is not a proper fix.
+This should be fixed in the SH-specific code, to behave like other
+architectures.
 
-So on the 8xx, bit 3 is not DSISR_NOEXEC_OR_G but only DSISR_G.
-When the PPP bits are set to No-Execute, we really get bit 4 that is 
-DSISR_PROTFAULT.
+>                 if (spec->mem_base == NULL) {
+>                         codec_warn(codec, "pci_iomap failed! Setting quirk to QUIRK_NONE.");
+>                         spec->quirk = QUIRK_NONE;
 
-> 
-> In fact, we had code that would return early if we had an exec
-> fault in kernel mode so I think that was just dead code anyway.
-> 
-> Finally the location of that test is awkward and prevents further
-> simplifications.
-> 
-> So instead move that test into a helper along with the existing
-> early test for kernel exec faults and out of range accesses,
-> and put it all in a "bad_kernel_fault()" helper. While at it
-> test the correct error bits.
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
->   arch/powerpc/mm/fault.c | 21 +++++++++++++++------
->   1 file changed, 15 insertions(+), 6 deletions(-)
-> 
-> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-> index e8d6acc888c5..aead07cf8a5b 100644
-> --- a/arch/powerpc/mm/fault.c
-> +++ b/arch/powerpc/mm/fault.c
-> @@ -180,6 +180,20 @@ static int mm_fault_error(struct pt_regs *regs, unsigned long addr, int fault)
->   	return MM_FAULT_CONTINUE;
->   }
->   
-> +/* Is this a bad kernel fault ? */
-> +static bool bad_kernel_fault(bool is_exec, unsigned long error_code,
-> +			     unsigned long address)
-> +{
-> +	if (is_exec && (error_code & (DSISR_NOEXEC_OR_G | DSISR_KEYFAULT))) {
+Gr{oetje,eeting}s,
 
-Do you mind if we had DSISR_PROTFAULT here as well ?
+                        Geert
 
-Christophe
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-> +		printk_ratelimited(KERN_CRIT "kernel tried to execute"
-> +				   " exec-protected page (%lx) -"
-> +				   "exploit attempt? (uid: %d)\n",
-> +				   address, from_kuid(&init_user_ns,
-> +						      current_uid()));
-> +	}
-> +	return is_exec || (address >= TASK_SIZE);
-> +}
-> +
->   /*
->    * Define the correct "is_write" bit in error_code based
->    * on the processor family
-> @@ -252,7 +266,7 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
->   	 * The kernel should never take an execute fault nor should it
->   	 * take a page fault to a kernel address.
->   	 */
-> -	if (!is_user && (is_exec || (address >= TASK_SIZE)))
-> +	if (unlikely(!is_user && bad_kernel_fault(is_exec, error_code, address)))
->   		return SIGSEGV;
->   
->   	/* We restore the interrupt state now */
-> @@ -491,11 +505,6 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
->   		return 0;
->   	}
->   
-> -	if (is_exec && (error_code & DSISR_PROTFAULT))
-> -		printk_ratelimited(KERN_CRIT "kernel tried to execute NX-protected"
-> -				   " page (%lx) - exploit attempt? (uid: %d)\n",
-> -				   address, from_kuid(&init_user_ns, current_uid()));
-> -
->   	return SIGSEGV;
->   }
->   NOKPROBE_SYMBOL(__do_page_fault);
-> 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
