@@ -2,88 +2,55 @@ Return-Path: <SRS0=TQYx=NT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 91B09ECDE47
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 15:04:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D5614ECDE4B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 15:57:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 117FC2081D
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 15:04:47 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pFt6wOYO"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 117FC2081D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 602D52077B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 15:57:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 602D52077B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42rRQj0z5kzF3Rh
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 02:04:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42rSb63GgbzF3Rj
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 02:57:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="pFt6wOYO";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=arm.com
+ (client-ip=217.140.101.70; helo=foss.arm.com;
+ envelope-from=robin.murphy@arm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::641; helo=mail-pl1-x641.google.com;
- envelope-from=lantianyu1986@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="pFt6wOYO"; 
- dkim-atps=neutral
-Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
- [IPv6:2607:f8b0:4864:20::641])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42rR2z5Sz6zF3Pm
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Nov 2018 01:47:39 +1100 (AEDT)
-Received: by mail-pl1-x641.google.com with SMTP id g59-v6so9637278plb.10
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Nov 2018 06:47:39 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=ThaSwZ572Bc+iDx3PSfcxd/KOVRJ23+altm/BHk2CrY=;
- b=pFt6wOYO7hPFAnTLOffrFOlVA0u9uwgSoa4LnO/ypnQrIs5QdLLOJ2EFK5GpqC7ZHr
- oFASJCHnEQFSnDdc//tjFD7o8Z0/yepO8SmJiv5iBVaKGOTVvg68BYziorwIxwHTCy36
- DQNYn5+Gs5hRG4nIK3KVofQS0zLEKWjofhgRvvxH0vxW/WErYdGOuGiz4+b9xC5+Tdcx
- aj/OPsy4Z2buCNE5sdu+7MlJSlibpTvzYi4Fpta1QUWBKKfDO2wg0iUo9PVbaUugxEwG
- EWZnn3+kWzBfOj8Fb7z+yHHVSc8DNr8sgxDXCsvNBoMgQNKLFgnXhiTddR7xkVNAHgj3
- Bh4A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references;
- bh=ThaSwZ572Bc+iDx3PSfcxd/KOVRJ23+altm/BHk2CrY=;
- b=FwgQwxthBxyUb1a8ml3q6x8Nr4JRq/JWidm6vwK7JM4ynGYY/3pSyJ8TV/fIaJ66eQ
- qucPbPGZXEkEAIimNyypclkk22kOLq9Twzo2JmjdN0QOmCecUXeqqIfJRfpKOAA/CzlF
- UTZnvMpL9EKjwwySRJjL0Mkn+mvU3LQOVEpC8HNqP23PUTLGJkFT/MTkgKl7sDBL6mZK
- dOMc/DQa8TK1s2l8p9UOvwo5qxb1Zq8D5wBItOblJiWVYgeIhyjE6KmDnm9S3mmIgJUK
- EYdBRr/2oKwX3Qis14WZjDvKgNvdg02pvOlA5oBvKHq1agarDWa0BeZGBfXPq0IOudw5
- QqJA==
-X-Gm-Message-State: AGRZ1gJKtomrfINXur+C59p7aNqzZTXK+N6O3VCbmRmTX4RjKLGd4bz+
- UjjCo0U67ywHCiarHJ/FHLk=
-X-Google-Smtp-Source: AJdET5fMfdtRcxNIYLHN1+UfpcsHVshw3zXsoT7PDdQhJ1jGUsIwXZt4Pg/dqL1M3iD075Fqf9AMGA==
-X-Received: by 2002:a17:902:b70c:: with SMTP id
- d12-v6mr4900674pls.288.1541688457911; 
- Thu, 08 Nov 2018 06:47:37 -0800 (PST)
-Received: from localhost.corp.microsoft.com
- ([2404:f801:9000:18:d9bf:62c6:740b:9fc4])
- by smtp.googlemail.com with ESMTPSA id
- k75-v6sm11526731pfb.119.2018.11.08.06.47.30
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Thu, 08 Nov 2018 06:47:37 -0800 (PST)
-From: lantianyu1986@gmail.com
-X-Google-Original-From: Tianyu.Lan@microsoft.com
-To: 
-Subject: [Resend PATCH V5 7/10] KVM: Make kvm_set_spte_hva() return int
-Date: Thu,  8 Nov 2018 22:46:36 +0800
-Message-Id: <20181108144639.11206-7-Tianyu.Lan@microsoft.com>
-X-Mailer: git-send-email 2.14.4
-In-Reply-To: <20181108144639.11206-1-Tianyu.Lan@microsoft.com>
-References: <20181108144639.11206-1-Tianyu.Lan@microsoft.com>
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 42rSXQ0VZ8zF3PR
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Nov 2018 02:54:38 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id C37D880D;
+ Thu,  8 Nov 2018 07:54:36 -0800 (PST)
+Received: from [10.1.196.75] (e110467-lin.cambridge.arm.com [10.1.196.75])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 915EA3F5CF;
+ Thu,  8 Nov 2018 07:54:33 -0800 (PST)
+Subject: Re: [PATCH 13/36] dt-bindings: arm: Convert PMU binding to json-schema
+To: Rob Herring <robh@kernel.org>, Will Deacon <will.deacon@arm.com>,
+ Thomas Petazzoni <thomas.petazzoni@bootlin.com>
+References: <20181005165848.3474-1-robh@kernel.org>
+ <20181005165848.3474-14-robh@kernel.org> <20181009115713.GE6248@arm.com>
+ <CAL_JsqJh08wZCyGxg7HMbtKjOJTZKMoQcNOB_hPuSfJKQQK8JA@mail.gmail.com>
+From: Robin Murphy <robin.murphy@arm.com>
+Message-ID: <08738708-1c38-fab7-eb34-694e5f4d4b7e@arm.com>
+Date: Thu, 8 Nov 2018 15:54:31 +0000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.2.1
+MIME-Version: 1.0
+In-Reply-To: <CAL_JsqJh08wZCyGxg7HMbtKjOJTZKMoQcNOB_hPuSfJKQQK8JA@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-GB
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,203 +62,78 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mips@linux-mips.org, kvm@vger.kernel.org, rkrcmar@redhat.com,
- catalin.marinas@arm.com, will.deacon@arm.com, christoffer.dall@arm.com,
- hpa@zytor.com, kys@microsoft.com, kvmarm@lists.cs.columbia.edu, x86@kernel.org,
- linux@armlinux.org.uk, michael.h.kelley@microsoft.com, mingo@redhat.com,
- jhogan@kernel.org, Lan Tianyu <Tianyu.Lan@microsoft.com>, marc.zyngier@arm.com,
- kvm-ppc@vger.kernel.org, bp@alien8.de, tglx@linutronix.de,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- ralf@linux-mips.org, paul.burton@mips.com, pbonzini@redhat.com,
- vkuznets@redhat.com, linuxppc-dev@lists.ozlabs.org
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org,
+ Kumar Gala <kumar.gala@linaro.org>, Grant Likely <glikely@secretlab.ca>,
+ Arnd Bergmann <arnd@arndb.de>, Tom Rini <trini@konsulko.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linus Walleij <linus.walleij@linaro.org>,
+ Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Bjorn Andersson <bjorn.andersson@linaro.org>, Mark Brown <broonie@kernel.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
+ <linux-arm-kernel@lists.infradead.org>, Olof Johansson <olof@lixom.net>,
+ Frank Rowand <frowand.list@gmail.com>, Jonathan Cameron <jic23@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Lan Tianyu <Tianyu.Lan@microsoft.com>
+On 01/11/2018 19:32, Rob Herring wrote:
+> On Tue, Oct 9, 2018 at 6:57 AM Will Deacon <will.deacon@arm.com> wrote:
+>>
+>> Hi Rob,
+>>
+>> On Fri, Oct 05, 2018 at 11:58:25AM -0500, Rob Herring wrote:
+>>> Convert ARM PMU binding to DT schema format using json-schema.
+>>>
+>>> Cc: Will Deacon <will.deacon@arm.com>
+>>> Cc: Mark Rutland <mark.rutland@arm.com>
+>>> Cc: linux-arm-kernel@lists.infradead.org
+>>> Cc: devicetree@vger.kernel.org
+>>> Signed-off-by: Rob Herring <robh@kernel.org>
+>>> ---
+>>>   Documentation/devicetree/bindings/arm/pmu.txt | 70 --------------
+>>>   .../devicetree/bindings/arm/pmu.yaml          | 96 +++++++++++++++++++
+>>>   2 files changed, 96 insertions(+), 70 deletions(-)
+>>>   delete mode 100644 Documentation/devicetree/bindings/arm/pmu.txt
+>>>   create mode 100644 Documentation/devicetree/bindings/arm/pmu.yaml
+>>
+>> [...]
+>>
+>>> -- interrupts : 1 combined interrupt or 1 per core. If the interrupt is a per-cpu
+>>> -               interrupt (PPI) then 1 interrupt should be specified.
+>>
+>> [...]
+>>
+>>> +  interrupts:
+>>> +    oneOf:
+>>> +      - maxItems: 1
+>>> +      - minItems: 2
+>>> +        maxItems: 8
+>>> +        description: 1 interrupt per core.
+>>> +
+>>> +  interrupts-extended:
+>>> +    $ref: '#/properties/interrupts'
+>>
+>> This seems like a semantic different between the two representations, or am
+>> I missing something here? Specifically, both the introduction of
+>> interrupts-extended and also dropping any mention of using a single per-cpu
+>> interrupt (the single combined case is no longer support by Linux; not sure
+>> if you want to keep it in the binding).
+> 
+> In regards to no support for the single combined interrupt, it looks
+> like Marvell Armada SoCs at least (armada-375 is what I'm looking at)
+> have only a single interrupt. Though the interrupt gets routed to MPIC
+> which then has a GIC PPI. So it isn't supported or happens to work
+> still since it is a PPI?
 
-The patch is to make kvm_set_spte_hva() return int and caller can
-check return value to determine flush tlb or not.
+Well, the description of the MPIC in the Armada XP functional spec says:
 
-Signed-off-by: Lan Tianyu <Tianyu.Lan@microsoft.com>
----
- arch/arm/include/asm/kvm_host.h     | 2 +-
- arch/arm64/include/asm/kvm_host.h   | 2 +-
- arch/mips/include/asm/kvm_host.h    | 2 +-
- arch/mips/kvm/mmu.c                 | 3 ++-
- arch/powerpc/include/asm/kvm_host.h | 2 +-
- arch/powerpc/kvm/book3s.c           | 3 ++-
- arch/powerpc/kvm/e500_mmu_host.c    | 3 ++-
- arch/x86/include/asm/kvm_host.h     | 2 +-
- arch/x86/kvm/mmu.c                  | 3 ++-
- virt/kvm/arm/mmu.c                  | 6 ++++--
- 10 files changed, 17 insertions(+), 11 deletions(-)
+"Interrupt sources ID0–ID28 are private events per CPU. Thus, each 
+processor has a different set of events map interrupts ID0–ID28."
 
-diff --git a/arch/arm/include/asm/kvm_host.h b/arch/arm/include/asm/kvm_host.h
-index 5ca5d9af0c26..fb62b500e590 100644
---- a/arch/arm/include/asm/kvm_host.h
-+++ b/arch/arm/include/asm/kvm_host.h
-@@ -225,7 +225,7 @@ int __kvm_arm_vcpu_set_events(struct kvm_vcpu *vcpu,
- #define KVM_ARCH_WANT_MMU_NOTIFIER
- int kvm_unmap_hva_range(struct kvm *kvm,
- 			unsigned long start, unsigned long end);
--void kvm_set_spte_hva(struct kvm *kvm, unsigned long hva, pte_t pte);
-+int kvm_set_spte_hva(struct kvm *kvm, unsigned long hva, pte_t pte);
- 
- unsigned long kvm_arm_num_regs(struct kvm_vcpu *vcpu);
- int kvm_arm_copy_reg_indices(struct kvm_vcpu *vcpu, u64 __user *indices);
-diff --git a/arch/arm64/include/asm/kvm_host.h b/arch/arm64/include/asm/kvm_host.h
-index 52fbc823ff8c..b3df7b38ba7d 100644
---- a/arch/arm64/include/asm/kvm_host.h
-+++ b/arch/arm64/include/asm/kvm_host.h
-@@ -360,7 +360,7 @@ int __kvm_arm_vcpu_set_events(struct kvm_vcpu *vcpu,
- #define KVM_ARCH_WANT_MMU_NOTIFIER
- int kvm_unmap_hva_range(struct kvm *kvm,
- 			unsigned long start, unsigned long end);
--void kvm_set_spte_hva(struct kvm *kvm, unsigned long hva, pte_t pte);
-+int kvm_set_spte_hva(struct kvm *kvm, unsigned long hva, pte_t pte);
- int kvm_age_hva(struct kvm *kvm, unsigned long start, unsigned long end);
- int kvm_test_age_hva(struct kvm *kvm, unsigned long hva);
- 
-diff --git a/arch/mips/include/asm/kvm_host.h b/arch/mips/include/asm/kvm_host.h
-index 2c1c53d12179..71c3f21d80d5 100644
---- a/arch/mips/include/asm/kvm_host.h
-+++ b/arch/mips/include/asm/kvm_host.h
-@@ -933,7 +933,7 @@ enum kvm_mips_fault_result kvm_trap_emul_gva_fault(struct kvm_vcpu *vcpu,
- #define KVM_ARCH_WANT_MMU_NOTIFIER
- int kvm_unmap_hva_range(struct kvm *kvm,
- 			unsigned long start, unsigned long end);
--void kvm_set_spte_hva(struct kvm *kvm, unsigned long hva, pte_t pte);
-+int kvm_set_spte_hva(struct kvm *kvm, unsigned long hva, pte_t pte);
- int kvm_age_hva(struct kvm *kvm, unsigned long start, unsigned long end);
- int kvm_test_age_hva(struct kvm *kvm, unsigned long hva);
- 
-diff --git a/arch/mips/kvm/mmu.c b/arch/mips/kvm/mmu.c
-index d8dcdb350405..97e538a8c1be 100644
---- a/arch/mips/kvm/mmu.c
-+++ b/arch/mips/kvm/mmu.c
-@@ -551,7 +551,7 @@ static int kvm_set_spte_handler(struct kvm *kvm, gfn_t gfn, gfn_t gfn_end,
- 	       (pte_dirty(old_pte) && !pte_dirty(hva_pte));
- }
- 
--void kvm_set_spte_hva(struct kvm *kvm, unsigned long hva, pte_t pte)
-+int kvm_set_spte_hva(struct kvm *kvm, unsigned long hva, pte_t pte)
- {
- 	unsigned long end = hva + PAGE_SIZE;
- 	int ret;
-@@ -559,6 +559,7 @@ void kvm_set_spte_hva(struct kvm *kvm, unsigned long hva, pte_t pte)
- 	ret = handle_hva_to_gpa(kvm, hva, end, &kvm_set_spte_handler, &pte);
- 	if (ret)
- 		kvm_mips_callbacks->flush_shadow_all(kvm);
-+	return 0;
- }
- 
- static int kvm_age_hva_handler(struct kvm *kvm, gfn_t gfn, gfn_t gfn_end,
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index fac6f631ed29..ab23379c53a9 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -72,7 +72,7 @@ extern int kvm_unmap_hva_range(struct kvm *kvm,
- 			       unsigned long start, unsigned long end);
- extern int kvm_age_hva(struct kvm *kvm, unsigned long start, unsigned long end);
- extern int kvm_test_age_hva(struct kvm *kvm, unsigned long hva);
--extern void kvm_set_spte_hva(struct kvm *kvm, unsigned long hva, pte_t pte);
-+extern int kvm_set_spte_hva(struct kvm *kvm, unsigned long hva, pte_t pte);
- 
- #define HPTEG_CACHE_NUM			(1 << 15)
- #define HPTEG_HASH_BITS_PTE		13
-diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-index fd9893bc7aa1..437613bb609a 100644
---- a/arch/powerpc/kvm/book3s.c
-+++ b/arch/powerpc/kvm/book3s.c
-@@ -850,9 +850,10 @@ int kvm_test_age_hva(struct kvm *kvm, unsigned long hva)
- 	return kvm->arch.kvm_ops->test_age_hva(kvm, hva);
- }
- 
--void kvm_set_spte_hva(struct kvm *kvm, unsigned long hva, pte_t pte)
-+int kvm_set_spte_hva(struct kvm *kvm, unsigned long hva, pte_t pte)
- {
- 	kvm->arch.kvm_ops->set_spte_hva(kvm, hva, pte);
-+	return 0;
- }
- 
- void kvmppc_mmu_destroy(struct kvm_vcpu *vcpu)
-diff --git a/arch/powerpc/kvm/e500_mmu_host.c b/arch/powerpc/kvm/e500_mmu_host.c
-index 8f2985e46f6f..c3f312b2bcb3 100644
---- a/arch/powerpc/kvm/e500_mmu_host.c
-+++ b/arch/powerpc/kvm/e500_mmu_host.c
-@@ -757,10 +757,11 @@ int kvm_test_age_hva(struct kvm *kvm, unsigned long hva)
- 	return 0;
- }
- 
--void kvm_set_spte_hva(struct kvm *kvm, unsigned long hva, pte_t pte)
-+int kvm_set_spte_hva(struct kvm *kvm, unsigned long hva, pte_t pte)
- {
- 	/* The page will get remapped properly on its next fault */
- 	kvm_unmap_hva(kvm, hva);
-+	return 0;
- }
- 
- /*****************************************/
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index c8a65f0a7107..1cab3c15944f 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -1509,7 +1509,7 @@ asmlinkage void kvm_spurious_fault(void);
- int kvm_unmap_hva_range(struct kvm *kvm, unsigned long start, unsigned long end);
- int kvm_age_hva(struct kvm *kvm, unsigned long start, unsigned long end);
- int kvm_test_age_hva(struct kvm *kvm, unsigned long hva);
--void kvm_set_spte_hva(struct kvm *kvm, unsigned long hva, pte_t pte);
-+int kvm_set_spte_hva(struct kvm *kvm, unsigned long hva, pte_t pte);
- int kvm_cpu_has_injectable_intr(struct kvm_vcpu *v);
- int kvm_cpu_has_interrupt(struct kvm_vcpu *vcpu);
- int kvm_arch_interrupt_allowed(struct kvm_vcpu *vcpu);
-diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
-index af3e9e466014..06bfcd327ef6 100644
---- a/arch/x86/kvm/mmu.c
-+++ b/arch/x86/kvm/mmu.c
-@@ -1913,9 +1913,10 @@ int kvm_unmap_hva_range(struct kvm *kvm, unsigned long start, unsigned long end)
- 	return kvm_handle_hva_range(kvm, start, end, 0, kvm_unmap_rmapp);
- }
- 
--void kvm_set_spte_hva(struct kvm *kvm, unsigned long hva, pte_t pte)
-+int kvm_set_spte_hva(struct kvm *kvm, unsigned long hva, pte_t pte)
- {
- 	kvm_handle_hva(kvm, hva, (unsigned long)&pte, kvm_set_pte_rmapp);
-+	return 0;
- }
- 
- static int kvm_age_rmapp(struct kvm *kvm, struct kvm_rmap_head *rmap_head,
-diff --git a/virt/kvm/arm/mmu.c b/virt/kvm/arm/mmu.c
-index 5eca48bdb1a6..b8b20c033fcf 100644
---- a/virt/kvm/arm/mmu.c
-+++ b/virt/kvm/arm/mmu.c
-@@ -1849,14 +1849,14 @@ static int kvm_set_spte_handler(struct kvm *kvm, gpa_t gpa, u64 size, void *data
- }
- 
- 
--void kvm_set_spte_hva(struct kvm *kvm, unsigned long hva, pte_t pte)
-+int kvm_set_spte_hva(struct kvm *kvm, unsigned long hva, pte_t pte)
- {
- 	unsigned long end = hva + PAGE_SIZE;
- 	kvm_pfn_t pfn = pte_pfn(pte);
- 	pte_t stage2_pte;
- 
- 	if (!kvm->arch.pgd)
--		return;
-+		return 0;
- 
- 	trace_kvm_set_spte_hva(hva);
- 
-@@ -1867,6 +1867,8 @@ void kvm_set_spte_hva(struct kvm *kvm, unsigned long hva, pte_t pte)
- 	clean_dcache_guest_page(pfn, PAGE_SIZE);
- 	stage2_pte = pfn_pte(pfn, PAGE_S2);
- 	handle_hva_to_gpa(kvm, hva, end, &kvm_set_spte_handler, &stage2_pte);
-+
-+	return 0;
- }
- 
- static int kvm_age_hva_handler(struct kvm *kvm, gpa_t gpa, u64 size, void *data)
--- 
-2.14.4
+Odd grammar aside, that would seem to imply that <&mpic 3> is a per-cpu 
+interrupt itself, thus AFAICS so long as it's cascaded to a GIC PPI and 
+not an SPI then there's no issue there.
 
+Robin.
