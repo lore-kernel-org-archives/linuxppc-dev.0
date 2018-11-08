@@ -2,89 +2,71 @@ Return-Path: <SRS0=TQYx=NT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 23BF0ECDE47
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 18:19:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4ABB0ECDE47
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 18:24:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9475C20825
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 18:19:13 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=joelfernandes.org header.i=@joelfernandes.org header.b="Sd/TmY9u"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9475C20825
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=joelfernandes.org
+	by mail.kernel.org (Postfix) with ESMTPS id C63BB2081C
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 18:24:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C63BB2081C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=debian.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42rWl33YR3zF3QF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 05:19:11 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=joelfernandes.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42rWsd3XdFzF3T5
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 05:24:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=debian.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=joelfernandes.org header.i=@joelfernandes.org header.b="Sd/TmY9u";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=209.85.222.196; helo=mail-qk1-f196.google.com;
+ envelope-from=breno.debian@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=joelfernandes.org
- (client-ip=2607:f8b0:4864:20::641; helo=mail-pl1-x641.google.com;
- envelope-from=joel@joelfernandes.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=joelfernandes.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=joelfernandes.org header.i=@joelfernandes.org
- header.b="Sd/TmY9u"; dkim-atps=neutral
-Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
- [IPv6:2607:f8b0:4864:20::641])
+ dmarc=none (p=none dis=none) header.from=debian.org
+Received: from mail-qk1-f196.google.com (mail-qk1-f196.google.com
+ [209.85.222.196])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42rWb92C05zF3S1
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Nov 2018 05:12:21 +1100 (AEDT)
-Received: by mail-pl1-x641.google.com with SMTP id g59-v6so9901719plb.10
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Nov 2018 10:12:21 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=joelfernandes.org; s=google;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=ba1SMLAqIgmFI6NH+RBLXEYzItBpgF4xQcT0H6ilVn4=;
- b=Sd/TmY9ueaUX+dApcoIPz7eAiunY6S8dWblAnYCegng0zsspcZ/BAyYvXqKHGnfFnr
- jrW93Eh4p6ZETBfFvU23lIxT3wP6dIvp1WSxOZnUAcSq8Wm9nP/e0Wijn/ien3UEVX4p
- QX1eigA/kEAUmS4Qut12n2rTOw/aGSwvEtyjY=
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42rWqf6LyPzF3QB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Nov 2018 05:23:10 +1100 (AEDT)
+Received: by mail-qk1-f196.google.com with SMTP id d135so28138916qkc.12
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Nov 2018 10:23:10 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=ba1SMLAqIgmFI6NH+RBLXEYzItBpgF4xQcT0H6ilVn4=;
- b=MiIBCUYW8+IMwjFug3WbLtor71PP9ueTOZsVALCttaUYR3eed6T4ryoLiF3O5kEghN
- chwsrrledE9oqusrXS7PmihHt5KBeYaHxrV6IqcJrMR9HDL36O6MAdLfxaM1TgAHsOf1
- pNjXWiAkH7zA6PDEPHqkwdIhn9AzzDcy+id3b7wsfqUEvE2bUB0Em2g6q23dy89oEpAf
- EWy+LI11KtSfINkLJEz0iEStX4WLNZ/Vw+Bd2XavkbpO8lH/ZsUU7LCOOZ7rcd4gsf5a
- fzR7BF3zBShchBnG3whS9Qg6vDMR9z9H2pjGkeQ48qdODQaX0AZ6HqI2RjdclwQ2TGh8
- F6xA==
-X-Gm-Message-State: AGRZ1gJUTs7E3Mts1EBclFY5Povadr8+ShG5U5FgBniHQfwx1c314rSk
- DD5HW8w9adhmQHjlIg9Qu63m6Q==
-X-Google-Smtp-Source: AJdET5cPtwjdexdNUSWnBuJxUWSGB/XTgOSIdhsSZPRZi1sLcBzLKRVef9eLSkElUego3TiJVYqalg==
-X-Received: by 2002:a17:902:6686:: with SMTP id
- e6-v6mr5476470plk.173.1541700738810; 
- Thu, 08 Nov 2018 10:12:18 -0800 (PST)
-Received: from joelaf.mtv.corp.google.com
- ([2620:0:1000:1601:3aef:314f:b9ea:889f])
- by smtp.gmail.com with ESMTPSA id 64-v6sm10028533pfa.120.2018.11.08.10.12.16
+ h=x-gm-message-state:subject:to:references:from:cc:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=eXGLS0hoWSb+KngniYV06W8NR0yzmzjFeKNNVbkvHGA=;
+ b=beYEH33hAPYsjQpX8/AyfW0ZLUJlf+stiTHOljhH34hXJ+hJDk1tQE0FVlNiDsxqal
+ CrKJN17bxgjKpySSXA623v6dB2wfSCRDh37BYEJCkA0cd+L+upXHPZ+MG2FCSBnN74JT
+ md4bJgA6JPFJQwaSRPkNlQThSFRk+tyd1cf3WNhrk/Bg9umhLkDwTzznHbfvxDos0XDx
+ 4RbMnw4hnItD+BQDVkkv5EyhlcWZA8BucB7J48TFPlJ0bQn8OvFf6sUUvq3Ufy3yM1cy
+ JqUbvBpC36jVLerzfb3f0qpWEtormiwkN7y4r5WNQmhB/uRrIYP1BVfwzoF4wySQ+d+k
+ IOVA==
+X-Gm-Message-State: AGRZ1gLiZ0g+QfsttFNnoMfn7nqc/EDwo4QrTozw1giqosX2lHrM2RPR
+ RRLHv17uI5ypx+5nkt1FsTiXta3q
+X-Google-Smtp-Source: AJdET5fQx6vVWF1em/DM9Mg7lawAObfifHvck7zLc0rc9APfMIIZ0ZmOoVWRnsCxuicl2SP7C9LH1A==
+X-Received: by 2002:ac8:107:: with SMTP id e7mr5380337qtg.221.1541701388070;
+ Thu, 08 Nov 2018 10:23:08 -0800 (PST)
+Received: from [9.18.239.97] ([32.104.18.243])
+ by smtp.gmail.com with ESMTPSA id v3-v6sm3484424qth.74.2018.11.08.10.23.06
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Thu, 08 Nov 2018 10:12:17 -0800 (PST)
-From: Joel Fernandes <joel@joelfernandes.org>
-X-Google-Original-From: Joel Fernandes <joelaf@google.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH -next-akpm 3/3] mm: select HAVE_MOVE_PMD in x86 for faster
- mremap
-Date: Thu,  8 Nov 2018 10:12:01 -0800
-Message-Id: <20181108181201.88826-4-joelaf@google.com>
-X-Mailer: git-send-email 2.19.1.930.g4563a0d9d0-goog
-In-Reply-To: <20181108181201.88826-1-joelaf@google.com>
-References: <20181108181201.88826-1-joelaf@google.com>
+ Thu, 08 Nov 2018 10:23:07 -0800 (PST)
+Subject: Re: [PATCH] powerpc: Add KVM guest defconfig
+To: sathnaga@linux.vnet.ibm.com
+References: <20181108050826.17796-1-sathnaga@linux.vnet.ibm.com>
+From: Breno Leitao <leitao@debian.org>
+Message-ID: <1bfa6ffb-80a9-017e-241f-bafa05b600f7@debian.org>
+Date: Thu, 8 Nov 2018 16:23:07 -0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20181108050826.17796-1-sathnaga@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,65 +78,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mips@linux-mips.org, Rich Felker <dalias@libc.org>,
- linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Dave Hansen <dave.hansen@linux.intel.com>, Will Deacon <will.deacon@arm.com>,
- Michal Hocko <mhocko@kernel.org>, linux-mm@kvack.org, lokeshgidra@google.com,
- "Joel Fernandes \(Google\)" <joel@joelfernandes.org>,
- linux-riscv@lists.infradead.org, anton.ivanov@kot-begemot.co.uk,
- Jonas Bonn <jonas@southpole.se>, linux-s390@vger.kernel.org, dancol@google.com,
- Yoshinori Sato <ysato@users.sourceforge.jp>, sparclinux@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, linux-hexagon@vger.kernel.org,
- Helge Deller <deller@gmx.de>,
- "maintainer:X86 ARCHITECTURE 32-BIT AND 64-BIT" <x86@kernel.org>,
- hughd@google.com, "James E.J. Bottomley" <jejb@parisc-linux.org>,
- kasan-dev@googlegroups.com, kvmarm@lists.cs.columbia.edu,
- Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
- Andrey Ryabinin <aryabinin@virtuozzo.com>, linux-snps-arc@lists.infradead.org,
- kernel-team@android.com, Sam Creasey <sammy@sammy.net>,
- Fenghua Yu <fenghua.yu@intel.com>, Jeff Dike <jdike@addtoit.com>,
- linux-um@lists.infradead.org,
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- Julia Lawall <Julia.Lawall@lip6.fr>, linux-m68k@lists.linux-m68k.org,
- Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
- nios2-dev@lists.rocketboards.org, "Kirill A . Shutemov" <kirill@shutemov.name>,
- Stafford Horne <shorne@gmail.com>, Guan Xuetao <gxt@pku.edu.cn>,
- Chris Zankel <chris@zankel.net>, Tony Luck <tony.luck@intel.com>,
- Richard Weinberger <richard@nod.at>, linux-parisc@vger.kernel.org,
- Max Filippov <jcmvbkbc@gmail.com>, pantin@google.com, minchan@kernel.org,
- Thomas Gleixner <tglx@linutronix.de>, linux-alpha@vger.kernel.org,
- Ley Foon Tan <lftan@altera.com>, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: "Joel Fernandes (Google)" <joel@joelfernandes.org>
+hi Satheesh,
 
-Moving page-tables at the PMD-level on x86 is known to be safe. Enable
-this option so that we can do fast mremap when possible.
+On 11/08/2018 03:08 AM, sathnaga@linux.vnet.ibm.com wrote:
+> --- /dev/null
+> +++ b/arch/powerpc/configs/guest.config
+> @@ -0,0 +1,14 @@
+> +CONFIG_VIRTIO_BLK=y
+> +CONFIG_VIRTIO_BLK_SCSI=y
+> +CONFIG_SCSI_VIRTIO=y
+> +CONFIG_VIRTIO_NET=y
+> +CONFIG_NET_FAILOVER=y
+> +CONFIG_VIRTIO_CONSOLE=y
+> +CONFIG_VIRTIO=y
+> +CONFIG_VIRTIO_PCI=y
+> +CONFIG_KVM_GUEST=y
+> +CONFIG_EPAPR_PARAVIRT=y
+> +CONFIG_XFS_FS=y
 
-Suggested-by: Kirill A. Shutemov <kirill@shutemov.name>
-Acked-by: Kirill A. Shutemov <kirill@shutemov.name>
-Signed-off-by: Joel Fernandes (Google) <joel@joelfernandes.org>
----
- arch/x86/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
+Why a guest kernel needs to have XFS integrated in the core image? I am
+wondering if it is a requirement from another CONFIG_ option.
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 605bec0c228f..05f3667de0d2 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -173,6 +173,7 @@ config X86
- 	select HAVE_MEMBLOCK_NODE_MAP
- 	select HAVE_MIXED_BREAKPOINTS_REGS
- 	select HAVE_MOD_ARCH_SPECIFIC
-+	select HAVE_MOVE_PMD
- 	select HAVE_NMI
- 	select HAVE_OPROFILE
- 	select HAVE_OPTPROBES
--- 
-2.19.1.930.g4563a0d9d0-goog
+If it is not a strict requirement from another config, I think we can keep it
+as defined at ppc64_defconfig, which defines it as module (CONFIG_XFS_FS=m).
+
+Thanks for this patch, very useful.
+Breno
 
