@@ -2,69 +2,62 @@ Return-Path: <SRS0=TQYx=NT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 950D2C32789
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 06:11:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D1C71C32789
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 06:19:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D2D4A20827
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 06:11:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D2D4A20827
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 539BC20827
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 06:19:59 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="ZGecsgN5"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 539BC20827
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42rCbl4Hs1zF3KV
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 17:11:47 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by lists.ozlabs.org (Postfix) with ESMTP id 42rCn90VKNzF3Ld
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 17:19:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="ZGecsgN5";
+	dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42rCYM0ljlzF3KY
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Nov 2018 17:09:42 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 42rCYC4XP4z9ttSR;
- Thu,  8 Nov 2018 07:09:35 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 7GM9rmS96FhL; Thu,  8 Nov 2018 07:09:35 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 42rCYC41bNz9ttBh;
- Thu,  8 Nov 2018 07:09:35 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id C96928B82A;
- Thu,  8 Nov 2018 07:09:38 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id NHJVGxbchT84; Thu,  8 Nov 2018 07:09:38 +0100 (CET)
-Received: from po14163vm.idsi0.si.c-s.fr (unknown [192.168.232.3])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0F65A8B74C;
- Thu,  8 Nov 2018 07:09:37 +0100 (CET)
-Subject: Re: [PATCH] powerpc: Mark variable `cpumsr` as unused
-To: Mathieu Malaterre <malat@debian.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Breno Leitao <leitao@debian.org>
-References: <20181107202641.7865-1-malat@debian.org>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <d3ba180c-9ab1-d204-7a62-0563ecabad70@c-s.fr>
-Date: Thu, 8 Nov 2018 06:09:35 +0000
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.7.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42rCkT27x1zF3J1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Nov 2018 17:17:37 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=gibson.dropbear.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
+ header.b="ZGecsgN5"; dkim-atps=neutral
+Received: by ozlabs.org (Postfix, from userid 1007)
+ id 42rCkS6SRSz9sBk; Thu,  8 Nov 2018 17:17:36 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=gibson.dropbear.id.au; s=201602; t=1541657856;
+ bh=9aMtEMZOJeWZocuVMX9YvCGvp/AQSrx89Fkb+hrN9gY=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=ZGecsgN56wII3Lp5I+7FlI+VeAFNNGRhUa1eiUibh7XNVdaXSnimfVqe6CjphSeW3
+ NAg1e1AXPUKJf1YSynoJu6f7FBYS6ErVuTQd9ZyYVXxN6f4wPras2u3DE3AVKnBZQc
+ fcNrdVFZKkNXOMzcklHG1A0F5B+4KlUDkU04t6qM=
+Date: Thu, 8 Nov 2018 17:04:22 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: [PATCH kernel 1/3] vfio_pci: Allow mapping extra regions
+Message-ID: <20181108060422.GP5575@umbus.fritz.box>
+References: <20181015094233.1324-1-aik@ozlabs.ru>
+ <20181015094233.1324-2-aik@ozlabs.ru>
 MIME-Version: 1.0
-In-Reply-To: <20181107202641.7865-1-malat@debian.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="AwNVUpjOmSj7UnwZ"
+Content-Disposition: inline
+In-Reply-To: <20181015094233.1324-2-aik@ozlabs.ru>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,56 +69,105 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org
+Cc: kvm@vger.kernel.org, Alistair Popple <alistair@popple.id.au>,
+ linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
+ Alex Williamson <alex.williamson@redhat.com>, Reza Arbab <arbab@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
+--AwNVUpjOmSj7UnwZ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On 11/07/2018 08:26 PM, Mathieu Malaterre wrote:
-> Add gcc attribute unused for `cpumsr` variable.
-> 
-> Fix warnings treated as errors with W=1:
-> 
->    arch/powerpc/kernel/process.c:231:16: error: variable ‘cpumsr’ set but not used [-Werror=unused-but-set-variable]
->    arch/powerpc/kernel/process.c:296:16: error: variable ‘cpumsr’ set but not used [-Werror=unused-but-set-variable]
-> 
-> Signed-off-by: Mathieu Malaterre <malat@debian.org>
+On Mon, Oct 15, 2018 at 08:42:31PM +1100, Alexey Kardashevskiy wrote:
+65;5402;1c> So far we only allowed mapping of MMIO BARs to the userspace. H=
+owever
+> there there are GPUs with on-board coherent RAM accessible via side
+> channels which we also want to map to the userspace. The first client
+> for this is NVIDIA V100 GPU with NVLink2 direct links to a POWER9
+> NPU-enabled CPU; such GPUs have 16GB RAM which is coherently mapped
+> to the system address space, we are going to export these as an extra
+> PCI region.
+>=20
+> We already support extra PCI regions and this adds support for mapping
+> them to the userspace.
+>=20
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
-I don't think this is the good way to fix that. This problem was 
-introduced by commit 5c784c8414fb ("powerpc/tm: Remove 
-msr_tm_active()"). That commit should be reverted and fixed.
-
-That commit should have removed the macro and kept the inline function.
-
-Christophe
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
 > ---
->   arch/powerpc/kernel/process.c | 4 ++--
->   1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-> index 96f34730010f..b9f1a2408738 100644
-> --- a/arch/powerpc/kernel/process.c
-> +++ b/arch/powerpc/kernel/process.c
-> @@ -228,7 +228,7 @@ EXPORT_SYMBOL_GPL(flush_fp_to_thread);
->   
->   void enable_kernel_fp(void)
->   {
-> -	unsigned long cpumsr;
-> +	unsigned long cpumsr __maybe_unused;
->   
->   	WARN_ON(preemptible());
->   
-> @@ -293,7 +293,7 @@ EXPORT_SYMBOL(giveup_altivec);
->   
->   void enable_kernel_altivec(void)
->   {
-> -	unsigned long cpumsr;
-> +	unsigned long cpumsr __maybe_unused;
->   
->   	WARN_ON(preemptible());
->   
-> 
+> Changes:
+> v2:
+> * reverted one of mistakenly removed error checks
+> ---
+>  drivers/vfio/pci/vfio_pci_private.h | 3 +++
+>  drivers/vfio/pci/vfio_pci.c         | 8 ++++++++
+>  2 files changed, 11 insertions(+)
+>=20
+> diff --git a/drivers/vfio/pci/vfio_pci_private.h b/drivers/vfio/pci/vfio_=
+pci_private.h
+> index cde3b5d..86aab05 100644
+> --- a/drivers/vfio/pci/vfio_pci_private.h
+> +++ b/drivers/vfio/pci/vfio_pci_private.h
+> @@ -59,6 +59,9 @@ struct vfio_pci_regops {
+>  		      size_t count, loff_t *ppos, bool iswrite);
+>  	void	(*release)(struct vfio_pci_device *vdev,
+>  			   struct vfio_pci_region *region);
+> +	int	(*mmap)(struct vfio_pci_device *vdev,
+> +			struct vfio_pci_region *region,
+> +			struct vm_area_struct *vma);
+>  };
+> =20
+>  struct vfio_pci_region {
+> diff --git a/drivers/vfio/pci/vfio_pci.c b/drivers/vfio/pci/vfio_pci.c
+> index d9af440..7923314 100644
+> --- a/drivers/vfio/pci/vfio_pci.c
+> +++ b/drivers/vfio/pci/vfio_pci.c
+> @@ -1126,6 +1126,14 @@ static int vfio_pci_mmap(void *device_data, struct=
+ vm_area_struct *vma)
+>  		return -EINVAL;
+>  	if ((vma->vm_flags & VM_SHARED) =3D=3D 0)
+>  		return -EINVAL;
+> +	if (index >=3D VFIO_PCI_NUM_REGIONS) {
+> +		int regnum =3D index - VFIO_PCI_NUM_REGIONS;
+> +		struct vfio_pci_region *region =3D vdev->region + regnum;
+> +
+> +		if (region && region->ops && region->ops->mmap)
+> +			return region->ops->mmap(vdev, region, vma);
+> +		return -EINVAL;
+> +	}
+>  	if (index >=3D VFIO_PCI_ROM_REGION_INDEX)
+>  		return -EINVAL;
+>  	if (!vdev->bar_mmap_supported[index])
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--AwNVUpjOmSj7UnwZ
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlvj0eIACgkQbDjKyiDZ
+s5Kh/Q/9EDTEywNiv2jB25o+GG9jDesXxhv2omzhGl/zfTYBKecgx0yaL5adZqNi
+mVvnWIF+HaQvKzrSoJ2Lc/ebEHNwLF84hpepoHBY4V6jI3O5xmsuwdZNGYmKtrYt
+1Ga7iMFmLHnDggm9NHJIENXCb3aSrGczMNDHrso2Pbf7XbAc4RVdI6AvENG8da4e
+9ub0n/XeyqxAMEVLDKn8hjpSFa+eL2QtqVyIpz1pr/QeEDZ+/IF4c76a+d19Nk3n
+ilcQkVOHvvaGp9BL2JypZ2NiKDHhEQwNZSE6BKP7HtjoSkqDeUcsJgurEPJzgQ1C
+SH1ae9XLahVUwq/V3NIf2uu9hLVG/nfkuLPmM3QIDr6gg151LjA4+5FTHXzSSwDs
+s8xoqzFbA01tl8EFJ1CihfsiaoxC3glZlrHTYgVafBvhj0dH/xgZ228MY4diuiq1
+8S0AzD0TeLraralYTdJL/IgO3orXOsmrroqZVStG6NxAX3YlIlAoA6geAJ3I5U+C
+2h+Xeg3fy2DKHRkD7J/2/vN3yQL8iHRU4Sp1qyS2GQ4/xamALL4u+Z5SA0YVABPB
+oIf5vgRKzvUzQUvbwsCsbumXb7/ehLyFH5lAS3OITz4JtCRPK6J/HFfmDE3rgTjZ
+LZ5b8buJbPOIzKQzuG6tRmmwk4MV4DNO8KF85+Km7nTqB7YyaSA=
+=za5f
+-----END PGP SIGNATURE-----
+
+--AwNVUpjOmSj7UnwZ--
