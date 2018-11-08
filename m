@@ -2,71 +2,93 @@ Return-Path: <SRS0=TQYx=NT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4ABB0ECDE47
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 18:24:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 62DB8ECDE47
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 19:28:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C63BB2081C
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 18:24:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C63BB2081C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=debian.org
+	by mail.kernel.org (Postfix) with ESMTPS id 89F95204FD
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 19:28:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 89F95204FD
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=us.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42rWsd3XdFzF3T5
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 05:24:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=debian.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42rYH71x0MzF3Rv
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 06:28:35 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=us.ibm.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.222.196; helo=mail-qk1-f196.google.com;
- envelope-from=breno.debian@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=us.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=linuxram@us.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=debian.org
-Received: from mail-qk1-f196.google.com (mail-qk1-f196.google.com
- [209.85.222.196])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ dmarc=none (p=none dis=none) header.from=us.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42rWqf6LyPzF3QB
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Nov 2018 05:23:10 +1100 (AEDT)
-Received: by mail-qk1-f196.google.com with SMTP id d135so28138916qkc.12
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Nov 2018 10:23:10 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:references:from:cc:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=eXGLS0hoWSb+KngniYV06W8NR0yzmzjFeKNNVbkvHGA=;
- b=beYEH33hAPYsjQpX8/AyfW0ZLUJlf+stiTHOljhH34hXJ+hJDk1tQE0FVlNiDsxqal
- CrKJN17bxgjKpySSXA623v6dB2wfSCRDh37BYEJCkA0cd+L+upXHPZ+MG2FCSBnN74JT
- md4bJgA6JPFJQwaSRPkNlQThSFRk+tyd1cf3WNhrk/Bg9umhLkDwTzznHbfvxDos0XDx
- 4RbMnw4hnItD+BQDVkkv5EyhlcWZA8BucB7J48TFPlJ0bQn8OvFf6sUUvq3Ufy3yM1cy
- JqUbvBpC36jVLerzfb3f0qpWEtormiwkN7y4r5WNQmhB/uRrIYP1BVfwzoF4wySQ+d+k
- IOVA==
-X-Gm-Message-State: AGRZ1gLiZ0g+QfsttFNnoMfn7nqc/EDwo4QrTozw1giqosX2lHrM2RPR
- RRLHv17uI5ypx+5nkt1FsTiXta3q
-X-Google-Smtp-Source: AJdET5fQx6vVWF1em/DM9Mg7lawAObfifHvck7zLc0rc9APfMIIZ0ZmOoVWRnsCxuicl2SP7C9LH1A==
-X-Received: by 2002:ac8:107:: with SMTP id e7mr5380337qtg.221.1541701388070;
- Thu, 08 Nov 2018 10:23:08 -0800 (PST)
-Received: from [9.18.239.97] ([32.104.18.243])
- by smtp.gmail.com with ESMTPSA id v3-v6sm3484424qth.74.2018.11.08.10.23.06
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Thu, 08 Nov 2018 10:23:07 -0800 (PST)
-Subject: Re: [PATCH] powerpc: Add KVM guest defconfig
-To: sathnaga@linux.vnet.ibm.com
-References: <20181108050826.17796-1-sathnaga@linux.vnet.ibm.com>
-From: Breno Leitao <leitao@debian.org>
-Message-ID: <1bfa6ffb-80a9-017e-241f-bafa05b600f7@debian.org>
-Date: Thu, 8 Nov 2018 16:23:07 -0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42rY8J0PLPzF3SV
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Nov 2018 06:22:39 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wA8JIeZq074672
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Nov 2018 14:22:37 -0500
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2nmrm1y9ka-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Nov 2018 14:22:36 -0500
+Received: from localhost
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
+ Thu, 8 Nov 2018 19:22:34 -0000
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Thu, 8 Nov 2018 19:22:32 -0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wA8JMVjO8978892
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Thu, 8 Nov 2018 19:22:31 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 1C986AE04D;
+ Thu,  8 Nov 2018 19:22:31 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 8AFADAE056;
+ Thu,  8 Nov 2018 19:22:29 +0000 (GMT)
+Received: from ram.oc3035372033.ibm.com (unknown [9.85.230.134])
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Thu,  8 Nov 2018 19:22:29 +0000 (GMT)
+Date: Thu, 8 Nov 2018 11:22:26 -0800
+From: Ram Pai <linuxram@us.ibm.com>
+To: Florian Weimer <fweimer@redhat.com>
+Subject: Re: pkeys: Reserve PKEY_DISABLE_READ
+References: <877ehnbwqy.fsf@oldenburg.str.redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <20181108050826.17796-1-sathnaga@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <877ehnbwqy.fsf@oldenburg.str.redhat.com>
+User-Agent: Mutt/1.5.20 (2009-12-10)
+X-TM-AS-GCONF: 00
+x-cbid: 18110819-0008-0000-0000-0000028F58DA
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18110819-0009-0000-0000-000021F99E82
+Message-Id: <20181108192226.GC5481@ram.oc3035372033.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-11-08_10:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=391 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1807170000 definitions=main-1811080163
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,35 +100,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Reply-To: Ram Pai <linuxram@us.ibm.com>
+Cc: linux-api@vger.kernel.org, dave.hansen@intel.com,
+ linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-hi Satheesh,
+On Thu, Nov 08, 2018 at 01:05:09PM +0100, Florian Weimer wrote:
+> Would it be possible to reserve a bit for PKEY_DISABLE_READ?
+> 
+> I think the POWER implementation can disable read access at the hardware
+> level, but not write access, and that cannot be expressed with the
+> current PKEY_DISABLE_ACCESS and PKEY_DISABLE_WRITE bits.
 
-On 11/08/2018 03:08 AM, sathnaga@linux.vnet.ibm.com wrote:
-> --- /dev/null
-> +++ b/arch/powerpc/configs/guest.config
-> @@ -0,0 +1,14 @@
-> +CONFIG_VIRTIO_BLK=y
-> +CONFIG_VIRTIO_BLK_SCSI=y
-> +CONFIG_SCSI_VIRTIO=y
-> +CONFIG_VIRTIO_NET=y
-> +CONFIG_NET_FAILOVER=y
-> +CONFIG_VIRTIO_CONSOLE=y
-> +CONFIG_VIRTIO=y
-> +CONFIG_VIRTIO_PCI=y
-> +CONFIG_KVM_GUEST=y
-> +CONFIG_EPAPR_PARAVIRT=y
-> +CONFIG_XFS_FS=y
+POWER hardware can disable-read and can **also disable-write**
+at the hardware level. It can disable-execute aswell at the
+hardware level.   For example if the key bits for a given key in the AMR
+register is  
+	0b01  it is read-disable
+	0b10  it is write-disable
 
-Why a guest kernel needs to have XFS integrated in the core image? I am
-wondering if it is a requirement from another CONFIG_ option.
+To support access-disable, we make the key value 0b11.
 
-If it is not a strict requirement from another config, I think we can keep it
-as defined at ppc64_defconfig, which defines it as module (CONFIG_XFS_FS=m).
+So in case if you want to know if the key is read-disable 'bitwise-and' it
+against 0x1.  i.e  (x & 0x1)
 
-Thanks for this patch, very useful.
-Breno
+RP
 
