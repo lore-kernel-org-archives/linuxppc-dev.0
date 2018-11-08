@@ -2,53 +2,97 @@ Return-Path: <SRS0=TQYx=NT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BD57CECDE4B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 20:13:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0AE93ECDE4B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 20:15:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 48A3620817
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 20:13:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 48A3620817
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+	by mail.kernel.org (Postfix) with ESMTPS id 8875820817
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 20:15:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8875820817
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=us.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42rZHN40rMzF3SV
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 07:13:52 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
-Authentication-Results: lists.ozlabs.org; spf=permerror (mailfrom)
- smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57;
- helo=gate.crashing.org; envelope-from=benh@kernel.crashing.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=kernel.crashing.org
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 42rZKS0C8bzF3Sx
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 07:15:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=us.ibm.com
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=us.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=linuxram@us.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=us.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42rZBG6S2jzF3SV
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Nov 2018 07:09:26 +1100 (AEDT)
-Received: from localhost (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id wA8K99Cu029567;
- Thu, 8 Nov 2018 14:09:10 -0600
-Message-ID: <158f2b8a16915bc13d209c1acd38ef5e4e363d3d.camel@kernel.crashing.org>
-Subject: Re: [PATCH 0/5] Guarded Userspace Access Prevention on Radix
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Christophe LEROY <christophe.leroy@c-s.fr>, Russell Currey
- <ruscur@russell.cc>
-Date: Fri, 09 Nov 2018 07:09:09 +1100
-In-Reply-To: <3b8d2b1b-548b-5a07-4358-4e645c06f59e@c-s.fr>
-References: <20181026182916.Horde.8LHYJj4tB_PV5JLEA5Czjw1@messagerie.si.c-s.fr>
- <0e66ee72293811f580bd02ab4ed7967a4b703d70.camel@russell.cc>
- <20181031175845.Horde.o95YpPKYLOaCZUubOS1NRw1@messagerie.si.c-s.fr>
- <cdfb9e078946c63170845d2ec7167a6902514fc1.camel@russell.cc>
- <3b8d2b1b-548b-5a07-4358-4e645c06f59e@c-s.fr>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.30.1 (3.30.1-1.fc29) 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42rZG91S19zF3TK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Nov 2018 07:12:49 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wA8K9EFY022650
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Nov 2018 15:12:47 -0500
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2nmtrqu8bg-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Nov 2018 15:12:46 -0500
+Received: from localhost
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
+ Thu, 8 Nov 2018 20:12:44 -0000
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
+ by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Thu, 8 Nov 2018 20:12:41 -0000
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com
+ (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wA8KCeXG1376614
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Thu, 8 Nov 2018 20:12:41 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id DCD0EA405B;
+ Thu,  8 Nov 2018 20:12:40 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 67B58A4054;
+ Thu,  8 Nov 2018 20:12:39 +0000 (GMT)
+Received: from ram.oc3035372033.ibm.com (unknown [9.85.230.134])
+ by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Thu,  8 Nov 2018 20:12:39 +0000 (GMT)
+Date: Thu, 8 Nov 2018 12:12:31 -0800
+From: Ram Pai <linuxram@us.ibm.com>
+To: Florian Weimer <fweimer@redhat.com>
+Subject: Re: pkeys: Reserve PKEY_DISABLE_READ
+References: <877ehnbwqy.fsf@oldenburg.str.redhat.com>
+ <2d62c9e2-375b-2791-32ce-fdaa7e7664fd@intel.com>
+ <87bm6zaa04.fsf@oldenburg.str.redhat.com>
+ <6f9c65fb-ea7e-8217-a4cc-f93e766ed9bb@intel.com>
+ <87k1ln8o7u.fsf@oldenburg.str.redhat.com>
+MIME-Version: 1.0
+In-Reply-To: <87k1ln8o7u.fsf@oldenburg.str.redhat.com>
+User-Agent: Mutt/1.5.20 (2009-12-10)
+X-TM-AS-GCONF: 00
+x-cbid: 18110820-0012-0000-0000-000002C76815
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18110820-0013-0000-0000-000020FBB8C9
+Message-Id: <20181108201231.GE5481@ram.oc3035372033.ibm.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-11-08_11:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=837 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1807170000 definitions=main-1811080171
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,27 +104,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mikey@neuling.org, linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com
+Reply-To: Ram Pai <linuxram@us.ibm.com>
+Cc: linux-mm@kvack.org, Dave Hansen <dave.hansen@intel.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-api@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2018-11-08 at 18:52 +0100, Christophe LEROY wrote:
-> 
-> In signal_32.c and signal_64.c, save_user_regs() calls __put_user() to 
-> modify code, then calls flush_icache_range() on user addresses.
-> 
-> Shouldn't flush_icache_range() be performed with userspace access 
-> protection unlocked ?
+On Thu, Nov 08, 2018 at 06:37:41PM +0100, Florian Weimer wrote:
+> * Dave Hansen:
+>=20
+> > On 11/8/18 7:01 AM, Florian Weimer wrote:
+> >> Ideally, PKEY_DISABLE_READ | PKEY_DISABLE_WRITE and PKEY_DISABLE_READ |
+> >> PKEY_DISABLE_ACCESS would be treated as PKEY_DISABLE_ACCESS both, and a
+> >> line PKEY_DISABLE_READ would result in an EINVAL failure.
+> >
+> > Sounds reasonable to me.
+> >
+> > I don't see any urgency to do this right now.  It could easily go in
+> > alongside the ppc patches when those get merged.
+>=20
+> POWER support has already been merged, so we need to do something here
+> now, before I can complete the userspace side.
+>=20
+> > The only thing I'd suggest is that we make it something slightly
+> > higher than 0x4.  It'll make the code easier to deal with in the
+> > kernel if we have the ABI and the hardware mirror each other, and if
+> > we pick 0x4 in the ABI for PKEY_DISABLE_READ, it might get messy if
+> > the harware choose 0x4 for PKEY_DISABLE_EXECUTE or something.
+> >=20
+> > So, let's make it 0x80 or something on x86 at least.
+>=20
+> I don't have a problem with that if that's what it takes.
+>=20
+> > Also, I'll be happy to review and ack the patch to do this, but I'd
+> > expect the ppc guys (hi Ram!) to actually put it together.
+>=20
+> Ram, do you want to write a patch?
 
-Thankfully this code is pretty much never used these days...
 
-Russell: To trigger that, you need to disable the VDSO.
+Florian,
 
-This brings back the idea however of having a way to "bulk" open the
-gate during the whole signal sequence...
+	I can. But I am struggling to understand the requirement. Why is
+	this needed?  Are we proposing a enhancement to the sys_pkey_alloc(),
+	to be able to allocate keys that are initialied to disable-read
+	only?
 
-Cheers,
-Ben.
+RP
 
+>=20
+> I'll promise I finish the glibc support for this. 8-)
+>=20
+> Thanks,
+> Florian
+
+--=20
+Ram Pai
 
