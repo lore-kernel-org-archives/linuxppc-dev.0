@@ -2,88 +2,140 @@ Return-Path: <SRS0=TQYx=NT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D8B5DC32789
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 05:19:54 +0000 (UTC)
-Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1DFC2C32789
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 05:47:26 +0000 (UTC)
+Received: from lists.ozlabs.org (unknown [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5773C20817
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 05:19:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5773C20817
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 0F54220857
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 05:47:24 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="mSXFNEWJ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0F54220857
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42rBRr2V4KzF3LM
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 16:19:52 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42rC3Z6Br4zF3CL
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 16:47:22 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=sathnaga@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	dkim=pass (2048-bit key; unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="mSXFNEWJ";
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
+ (client-ip=2607:f8b0:4864:20::641; helo=mail-pl1-x641.google.com;
+ envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=ozlabs.ru
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
+ header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="mSXFNEWJ"; 
+ dkim-atps=neutral
+Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
+ [IPv6:2607:f8b0:4864:20::641])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42rBPs5NLWzF3J9
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Nov 2018 16:18:09 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wA85F3L2044017
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Nov 2018 00:18:07 -0500
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2nmbyqdqjp-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Nov 2018 00:18:06 -0500
-Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sathnaga@linux.vnet.ibm.com>;
- Thu, 8 Nov 2018 05:18:03 -0000
-Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
- by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 8 Nov 2018 05:18:02 -0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wA85I16u60620820
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Thu, 8 Nov 2018 05:18:01 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6F599AE055;
- Thu,  8 Nov 2018 05:18:01 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6410FAE04D;
- Thu,  8 Nov 2018 05:18:00 +0000 (GMT)
-Received: from dhcp-9-193-110-205.in.ibm.com (unknown [9.193.110.205])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu,  8 Nov 2018 05:18:00 +0000 (GMT)
-From: sathnaga@linux.vnet.ibm.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42rC1367F2zF3Ks
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Nov 2018 16:45:10 +1100 (AEDT)
+Received: by mail-pl1-x641.google.com with SMTP id n4-v6so9010114plp.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Nov 2018 21:45:10 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
+ h=subject:to:references:from:openpgp:autocrypt:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=PkQ2ddpKL/pwePy0C9kcD6NF/57DwxEdGVwtHsqsNS4=;
+ b=mSXFNEWJ+cj0vWQJlEvcQKI0PRhAdKaAE1+noZ9tApErYYoc1BtkzHe8XX42fpbv72
+ FIEQKubz6TzZub9+k1KUD4NCftp6ArA0m/na1cWKbY4qKcdT9roDxyj8kukYvrRVjhFP
+ SBLIkLqvpE54lV29D4dSGu/491QoVUhYRAse9LIehBcfO8ubPVQZr/JG8b4WpmcRPm2/
+ mvEngaRGXfvEslQpdh4NycfvDX/qH+iHPbA6hKYXUmLMHLXg5mhFRDjNslSWpjC6C3Gr
+ LmFjd0Jx6J2YXTh/TZTZwdGvDSoRzzyxzwTwsRZ0FJbkrlZG9P5nx6olKTvVyciB9EBn
+ Hm/A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:subject:to:references:from:openpgp:autocrypt
+ :message-id:date:user-agent:mime-version:in-reply-to
+ :content-language:content-transfer-encoding;
+ bh=PkQ2ddpKL/pwePy0C9kcD6NF/57DwxEdGVwtHsqsNS4=;
+ b=jU7iFJ4kPu1FeUsIy5DAdSVNnoRZmbqn3NP37UXovJmsC3OAAX7ToM1Lj3bN5GOIv4
+ 1DFmRyksoFmbY1fGXRarbRLIDHCNT5kOMx1hMG6JnqegWk3JuAhNExmmZTxYfETyIXb8
+ AAR391TxXD3Y37IGqdqoclB+TyZHi7Yy/bG9EPk/fK4UpWNT0ywh/MoZZ2A1B1QxROAW
+ 9SEc7clHJXvAsmv/fFf/qAZDpSwDMY9LdpgLtF0cDap+9qilywxldqKm6kMyqDFea3KG
+ HQEKyMF8yY70+xUO/DwzMli+hnxt5Orol4MeDcGKYmxbWsajNgSAffO/WR99cTapsm1t
+ xQOg==
+X-Gm-Message-State: AGRZ1gK4WrCQkEYtKRwvIACaZ5FHOt0aL8odSMNFzLN7CTa2TNPat3v2
+ rVuiGsIdEQb9B1gR4PTa4Hl/kxBKVaeV1g==
+X-Google-Smtp-Source: AJdET5ePONX1co1fnqy0i3RGsVIIA43xqKJWuNjv8H85HPvRo5OgXJeZETL/uz9NaTPRhnaaK98x8Q==
+X-Received: by 2002:a17:902:2702:: with SMTP id
+ c2-v6mr3258103plb.314.1541655908042; 
+ Wed, 07 Nov 2018 21:45:08 -0800 (PST)
+Received: from [10.61.2.175] ([122.99.82.10])
+ by smtp.gmail.com with ESMTPSA id h62-v6sm4015353pfa.146.2018.11.07.21.45.06
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Wed, 07 Nov 2018 21:45:07 -0800 (PST)
+Subject: Re: [PATCH kernel] powerpc/powernv/ioda1: Remove dead code for a
+ single device PE
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [linuxppc-dev][PATCH] powerpc: mm: numa: Suppress "VPHN is not
- supported. Disabling polling" prints
-Date: Thu,  8 Nov 2018 10:47:56 +0530
-X-Mailer: git-send-email 2.17.2
-X-TM-AS-GCONF: 00
-x-cbid: 18110805-0016-0000-0000-00000222E38B
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18110805-0017-0000-0000-0000327B35BB
-Message-Id: <20181108051756.19309-1-sathnaga@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-11-08_02:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=5 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=807 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1807170000 definitions=main-1811080043
+References: <20181016023003.41327-1-aik@ozlabs.ru>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Openpgp: preference=signencrypt
+Autocrypt: addr=aik@ozlabs.ru; keydata=
+ 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
+Message-ID: <29169ab5-ba2e-3b39-1ef2-04e5c9bf04e1@ozlabs.ru>
+Date: Thu, 8 Nov 2018 16:45:04 +1100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.3.0
+MIME-Version: 1.0
+In-Reply-To: <20181016023003.41327-1-aik@ozlabs.ru>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,37 +147,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
+Ping?
 
-When VPHN function is not supported and during cpu hotplug event, kernel
-prints message 'VPHN function not supported. Disabling polling...'.
-Currently it prints on every hotplug event, it floods dmesg
-when a KVM guest tries to hotplug huge number of vcpus,
-let's just print once and suppress further kernel prints.
 
-Signed-off-by: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
----
- arch/powerpc/mm/numa.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On 16/10/2018 13:30, Alexey Kardashevskiy wrote:
+> At the moment PNV_IODA_PE_DEV is only used for NPU PEs which are not
+> present on IODA1 machines (i.e. POWER7) so let's remove a piece of
+> dead code.
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+> 
+> We might actually want to get rid of the entire IODA1 there.
+> ---
+>  arch/powerpc/platforms/powernv/pci-ioda.c | 10 +---------
+>  1 file changed, 1 insertion(+), 9 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index cde7102..78b61f0 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -2367,15 +2367,7 @@ static void pnv_pci_ioda1_setup_dma_pe(struct pnv_phb *phb,
+>  	pe->table_group.tce32_size = tbl->it_size << tbl->it_page_shift;
+>  	iommu_init_table(tbl, phb->hose->node);
+>  
+> -	if (pe->flags & PNV_IODA_PE_DEV) {
+> -		/*
+> -		 * Setting table base here only for carrying iommu_group
+> -		 * further down to let iommu_add_device() do the job.
+> -		 * pnv_pci_ioda_dma_dev_setup will override it later anyway.
+> -		 */
+> -		set_iommu_table_base(&pe->pdev->dev, tbl);
+> -		iommu_add_device(&pe->pdev->dev);
+> -	} else if (pe->flags & (PNV_IODA_PE_BUS | PNV_IODA_PE_BUS_ALL))
+> +	if (pe->flags & (PNV_IODA_PE_BUS | PNV_IODA_PE_BUS_ALL))
+>  		pnv_ioda_setup_bus_dma(pe, pe->pbus, true);
+>  
+>  	return;
+> 
 
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 0c7e05d89244..844cc7347ebd 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -1180,7 +1180,7 @@ static long vphn_get_associativity(unsigned long cpu,
- 
- 	switch (rc) {
- 	case H_FUNCTION:
--		printk(KERN_INFO
-+		printk_once(KERN_INFO
- 			"VPHN is not supported. Disabling polling...\n");
- 		stop_topology_update();
- 		break;
 -- 
-2.17.0
-
+Alexey
