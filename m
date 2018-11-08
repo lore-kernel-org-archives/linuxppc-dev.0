@@ -2,74 +2,62 @@ Return-Path: <SRS0=TQYx=NT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C5531C43441
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 22:53:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 37706C43441
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 23:09:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4621D20840
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 22:53:52 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="1kPRhi5R"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4621D20840
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
+	by mail.kernel.org (Postfix) with ESMTPS id 665A92081D
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 23:09:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 665A92081D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42rdqy2sFSzF3Rk
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 09:53:50 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42rf9p04hNzF3Qc
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 10:09:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="1kPRhi5R";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=intel.com
+ (client-ip=192.55.52.115; helo=mga14.intel.com;
+ envelope-from=keith.busch@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=srs0=nc3z=nt=linuxfoundation.org=gregkh@kernel.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="1kPRhi5R"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42rdn117N0zDqXr
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Nov 2018 09:51:17 +1100 (AEDT)
-Received: from localhost (unknown [208.72.13.198])
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 32FA720840;
- Thu,  8 Nov 2018 22:51:15 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1541717475;
- bh=+A4Yk9rsTJ5fgMBsXuMp1vbc52NbBU5sjznE6bIOTIQ=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=1kPRhi5R6xhBL936bs2ojfbazsPbs8i7QPLtXSb3qM+1cRjgN5B0ZPW3P/J0QjNJY
- zaa3UxUZDAbKzm/rimMNkJYno/5RBDppg6XzXtVuDAkVexHzyuscVy44jIDRIa0axa
- bq/phPyVh9R88PYRsUn9VaFraKn5vo0z3Glhth8Q=
-Date: Thu, 8 Nov 2018 14:51:09 -0800
-From: Greg KH <gregkh@linuxfoundation.org>
-To: Alex_Gagniuc@dellteam.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42rf7P1kW4zF3Sl
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Nov 2018 10:07:09 +1100 (AEDT)
+X-Amp-Result: UNKNOWN
+X-Amp-Original-Verdict: FILE UNKNOWN
+X-Amp-File-Uploaded: False
+Received: from orsmga006.jf.intel.com ([10.7.209.51])
+ by fmsmga103.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 08 Nov 2018 15:07:07 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.54,481,1534834800"; d="scan'208";a="89702031"
+Received: from unknown (HELO localhost.localdomain) ([10.232.112.69])
+ by orsmga006.jf.intel.com with ESMTP; 08 Nov 2018 15:07:06 -0800
+Date: Thu, 8 Nov 2018 16:03:27 -0700
+From: Keith Busch <keith.busch@intel.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Subject: Re: [PATCH v2] PCI/MSI: Don't touch MSI bits when the PCI device is
  disconnected
-Message-ID: <20181108225109.GA3023@kroah.com>
+Message-ID: <20181108230327.GE2932@localhost.localdomain>
 References: <20180918221501.13112-1-mr.nuke.me@gmail.com>
  <20181107234257.GC41183@google.com>
  <20181108200855.GE41183@google.com>
  <20181108220117.GA11466@kroah.com>
  <20181108223258.GD2932@localhost.localdomain>
  <20181108224255.GA20619@kroah.com>
- <20d68e586fff4dcca5616d5056f6fc21@ausx13mps321.AMER.DELL.COM>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20d68e586fff4dcca5616d5056f6fc21@ausx13mps321.AMER.DELL.COM>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <20181108224255.GA20619@kroah.com>
+User-Agent: Mutt/1.9.1 (2017-09-22)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,60 +69,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Shyam.Iyer@dell.com, sbobroff@linux.ibm.com, linux-pci@vger.kernel.org,
- linux-kernel@vger.kernel.org, keith.busch@intel.com, lukas@wunner.de,
- helgaas@kernel.org, mr.nuke.me@gmail.com, Austin.Bolen@dell.com,
- oohall@gmail.com, linuxppc-dev@lists.ozlabs.org, jonathan.derrick@intel.com
+Cc: alex_gagniuc@dellteam.com, Sam Bobroff <sbobroff@linux.ibm.com>,
+ linux-pci@vger.kernel.org, shyam_iyer@dell.com, linux-kernel@vger.kernel.org,
+ Lukas Wunner <lukas@wunner.de>, Bjorn Helgaas <helgaas@kernel.org>,
+ Alexandru Gagniuc <mr.nuke.me@gmail.com>, Oliver O'Halloran <oohall@gmail.com>,
+ austin_bolen@dell.com, linuxppc-dev@lists.ozlabs.org,
+ Jonathan Derrick <jonathan.derrick@intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Nov 08, 2018 at 10:49:08PM +0000, Alex_Gagniuc@Dellteam.com wrote:
-> On 11/08/2018 04:43 PM, Greg Kroah-Hartman wrote:
+On Thu, Nov 08, 2018 at 02:42:55PM -0800, Greg Kroah-Hartman wrote:
+> On Thu, Nov 08, 2018 at 03:32:58PM -0700, Keith Busch wrote:
+> > On Thu, Nov 08, 2018 at 02:01:17PM -0800, Greg Kroah-Hartman wrote:
+> > > On Thu, Nov 08, 2018 at 02:09:17PM -0600, Bjorn Helgaas wrote:
+> > > > I'm having second thoughts about this.  One thing I'm uncomfortable
+> > > > with is that sprinkling pci_dev_is_disconnected() around feels ad hoc
+> > > > instead of systematic, in the sense that I don't know how we convince
+> > > > ourselves that this (and only this) is the correct place to put it.
+> > > 
+> > > I think my stance always has been that this call is not good at all
+> > > because once you call it you never really know if it is still true as
+> > > the device could have been removed right afterward.
+> > > 
+> > > So almost any code that relies on it is broken, there is no locking and
+> > > it can and will race and you will loose.
 > > 
-> > [EXTERNAL EMAIL]
-> > Please report any suspicious attachments, links, or requests for sensitive information.
-> > 
-> > 
-> > On Thu, Nov 08, 2018 at 03:32:58PM -0700, Keith Busch wrote:
-> >> On Thu, Nov 08, 2018 at 02:01:17PM -0800, Greg Kroah-Hartman wrote:
-> >>> On Thu, Nov 08, 2018 at 02:09:17PM -0600, Bjorn Helgaas wrote:
-> >>>> I'm having second thoughts about this.  One thing I'm uncomfortable
-> >>>> with is that sprinkling pci_dev_is_disconnected() around feels ad hoc
-> >>>> instead of systematic, in the sense that I don't know how we convince
-> >>>> ourselves that this (and only this) is the correct place to put it.
-> >>>
-> >>> I think my stance always has been that this call is not good at all
-> >>> because once you call it you never really know if it is still true as
-> >>> the device could have been removed right afterward.
-> >>>
-> >>> So almost any code that relies on it is broken, there is no locking and
-> >>> it can and will race and you will loose.
-> >>
-> >> AIUI, we're not trying to create code to rely on this. This more about
-> >> reducing reliance on hardware. If the software misses the race once and
-> >> accesses disconnected device memory, that's usually not a big deal to
-> >> let hardware sort it out, but the point is not to push our luck.
-> > 
-> > Then why even care about this call at all?  If you need to really know
-> > if the read worked, you have to check the value.  If the value is FF
-> > then you have a huge hint that the hardware is now gone.  And you can
-> > rely on it being gone, you can never rely on making the call to the
-> > function to check if the hardware is there to be still valid any point
-> > in time after the call returns.
+> > AIUI, we're not trying to create code to rely on this. This more about
+> > reducing reliance on hardware. If the software misses the race once and
+> > accesses disconnected device memory, that's usually not a big deal to
+> > let hardware sort it out, but the point is not to push our luck.
 > 
-> In the case that we're trying to fix, this code executing is a result of 
-> the device being gone, so we can guarantee race-free operation. I agree 
-> that there is a race, in the general case. As far as checking the result 
-> for all F's, that's not an option when firmware crashes the system as a 
-> result of the mmio read/write. It's never pretty when firmware gets 
-> involved.
+> Then why even care about this call at all?  If you need to really know
+> if the read worked, you have to check the value.  If the value is FF
+> then you have a huge hint that the hardware is now gone.  And you can
+> rely on it being gone, you can never rely on making the call to the
+> function to check if the hardware is there to be still valid any point
+> in time after the call returns.
+> 
+> > Surprise hot remove is empirically more reliable the less we interact
+> > with hardware and firmware. That shouldn't be necessary, but is just an
+> > unfortunate reality.
+> 
+> You are not "interacting", you are reading/writing to the hardware, as
+> you have to do so.  So I really don't understand what you are talking
+> about here, sorry.
 
-If you have firmware that crashes the system when you try to read from a
-PCI device that was hot-removed, that is broken firmware and needs to be
-fixed.  The kernel can not work around that as again, you will never win
-that race.
-
-thanks,
-
-greg k-h
+We're reading hardware memory, yes, but the hardware isn't there.
+Something obviously needs to return FF, so we are indirectly interacting
+with whatever mechanism handles that. Sometimes that mechanism doesn't
+handle it gracefully and instead of having FF to consider, you have a
+machine check rebooting your system.
