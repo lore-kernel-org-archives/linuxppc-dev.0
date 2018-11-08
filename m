@@ -2,65 +2,63 @@ Return-Path: <SRS0=TQYx=NT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.2 required=3.0 tests=DATE_IN_PAST_03_06,
+	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 73030C32789
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 11:42:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F548C32789
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 12:07:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E3CA82089F
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 11:42:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E3CA82089F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id A96AA2086C
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 12:07:40 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="Z0O1JeYi"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A96AA2086C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42rLwz5b8LzF3Nk
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 22:42:11 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by lists.ozlabs.org (Postfix) with ESMTP id 42rMVL1wWDzF3HL
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 23:07:38 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="Z0O1JeYi";
+	dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42rLNG5x8tzF3NC
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Nov 2018 22:17:18 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 42rLN81SlXz9ty78;
- Thu,  8 Nov 2018 12:17:12 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id d7hqXwF8XnzI; Thu,  8 Nov 2018 12:17:12 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 42rLN80Vnkz9ty77;
- Thu,  8 Nov 2018 12:17:12 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id AEBB78B840;
- Thu,  8 Nov 2018 12:17:15 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id K2t82Skvd7gr; Thu,  8 Nov 2018 12:17:15 +0100 (CET)
-Received: from po14163vm.idsi0.si.c-s.fr (unknown [192.168.232.3])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 79F568B832;
- Thu,  8 Nov 2018 12:17:15 +0100 (CET)
-Received: by po14163vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 2A6AE6997B; Thu,  8 Nov 2018 11:17:15 +0000 (UTC)
-Message-Id: <4e56bc30122dcb4ab5ffe890d98fca9c47e048bb.1541675278.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1541675278.git.christophe.leroy@c-s.fr>
-References: <cover.1541675278.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v9 9/9] powerpc: clean stack pointers naming
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Thu,  8 Nov 2018 11:17:15 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42rMQV45VnzF1RB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Nov 2018 23:04:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=gibson.dropbear.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
+ header.b="Z0O1JeYi"; dkim-atps=neutral
+Received: by ozlabs.org (Postfix, from userid 1007)
+ id 42rMQT58Dwz9sBZ; Thu,  8 Nov 2018 23:04:16 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=gibson.dropbear.id.au; s=201602; t=1541678657;
+ bh=d8oHpwuvhZOLM4oHoJ46eeJ8JZhHTDitG3HrGWRnBMI=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=Z0O1JeYioq3l9a+ds0lPrnu6cj/3gP4KYzj9iMwXKWxVUw++XeXfG6hk6lR6Y/toG
+ /uQznaFiJyezq0o5r55ga9FZDxX6zmI30s4MqQ93NW9KTjLL5KA8ZIwUGgJPW9W0r/
+ M1qOhWHVu5PkAm3gI7yaDSSMzLC4WOZDDryKH36s=
+Date: Thu, 8 Nov 2018 18:16:23 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: [PATCH kernel 2/3] vfio_pci: Allow regions to add own capabilities
+Message-ID: <20181108071623.GA26872@umbus.fritz.box>
+References: <20181015094233.1324-1-aik@ozlabs.ru>
+ <20181015094233.1324-3-aik@ozlabs.ru>
+ <20181108062139.GQ5575@umbus.fritz.box>
+ <72022e34-6cf0-3946-8049-ba3d998097f3@ozlabs.ru>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="LZvS9be/3tNcYl/X"
+Content-Disposition: inline
+In-Reply-To: <72022e34-6cf0-3946-8049-ba3d998097f3@ozlabs.ru>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,102 +70,75 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: kvm@vger.kernel.org, Alistair Popple <alistair@popple.id.au>,
+ linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
+ Alex Williamson <alex.williamson@redhat.com>, Reza Arbab <arbab@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Some stack pointers used to also be thread_info pointers
-and were called tp. Now that they are only stack pointers,
-rename them sp.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/kernel/irq.c      | 17 +++++++----------
- arch/powerpc/kernel/setup_64.c | 20 ++++++++++----------
- 2 files changed, 17 insertions(+), 20 deletions(-)
+--LZvS9be/3tNcYl/X
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 62cfccf4af89..754f0efc507b 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -659,21 +659,21 @@ void __do_irq(struct pt_regs *regs)
- void do_IRQ(struct pt_regs *regs)
- {
- 	struct pt_regs *old_regs = set_irq_regs(regs);
--	void *curtp, *irqtp, *sirqtp;
-+	void *cursp, *irqsp, *sirqsp;
- 
- 	/* Switch to the irq stack to handle this */
--	curtp = (void *)(current_stack_pointer() & ~(THREAD_SIZE - 1));
--	irqtp = hardirq_ctx[raw_smp_processor_id()];
--	sirqtp = softirq_ctx[raw_smp_processor_id()];
-+	cursp = (void *)(current_stack_pointer() & ~(THREAD_SIZE - 1));
-+	irqsp = hardirq_ctx[raw_smp_processor_id()];
-+	sirqsp = softirq_ctx[raw_smp_processor_id()];
- 
- 	/* Already there ? */
--	if (unlikely(curtp == irqtp || curtp == sirqtp)) {
-+	if (unlikely(cursp == irqsp || cursp == sirqsp)) {
- 		__do_irq(regs);
- 		set_irq_regs(old_regs);
- 		return;
- 	}
- 	/* Switch stack and call */
--	call_do_irq(regs, irqtp);
-+	call_do_irq(regs, irqsp);
- 
- 	set_irq_regs(old_regs);
- }
-@@ -732,10 +732,7 @@ void irq_ctx_init(void)
- 
- void do_softirq_own_stack(void)
- {
--	void *irqtp;
--
--	irqtp = softirq_ctx[smp_processor_id()];
--	call_do_softirq(irqtp);
-+	call_do_softirq(softirq_ctx[smp_processor_id()]);
- }
- 
- irq_hw_number_t virq_to_hw(unsigned int virq)
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index be6a2ea250a0..61d159d845aa 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -716,22 +716,22 @@ void __init emergency_stack_init(void)
- 	limit = min(ppc64_bolted_size(), ppc64_rma_size);
- 
- 	for_each_possible_cpu(i) {
--		void *ti;
-+		void *sp;
- 
--		ti = alloc_stack(limit, i);
--		memset(ti, 0, THREAD_SIZE);
--		paca_ptrs[i]->emergency_sp = ti + THREAD_SIZE;
-+		sp = alloc_stack(limit, i);
-+		memset(sp, 0, THREAD_SIZE);
-+		paca_ptrs[i]->emergency_sp = sp + THREAD_SIZE;
- 
- #ifdef CONFIG_PPC_BOOK3S_64
- 		/* emergency stack for NMI exception handling. */
--		ti = alloc_stack(limit, i);
--		memset(ti, 0, THREAD_SIZE);
--		paca_ptrs[i]->nmi_emergency_sp = ti + THREAD_SIZE;
-+		sp = alloc_stack(limit, i);
-+		memset(sp, 0, THREAD_SIZE);
-+		paca_ptrs[i]->nmi_emergency_sp = sp + THREAD_SIZE;
- 
- 		/* emergency stack for machine check exception handling. */
--		ti = alloc_stack(limit, i);
--		memset(ti, 0, THREAD_SIZE);
--		paca_ptrs[i]->mc_emergency_sp = ti + THREAD_SIZE;
-+		sp = alloc_stack(limit, i);
-+		memset(sp, 0, THREAD_SIZE);
-+		paca_ptrs[i]->mc_emergency_sp = sp + THREAD_SIZE;
- #endif
- 	}
- }
--- 
-2.13.3
+On Thu, Nov 08, 2018 at 05:48:58PM +1100, Alexey Kardashevskiy wrote:
+>=20
+>=20
+> On 08/11/2018 17:21, David Gibson wrote:
+> > On Mon, Oct 15, 2018 at 08:42:32PM +1100, Alexey Kardashevskiy wrote:
+> >> VFIO regions already support region capabilities with a limited set of
+> >> fields. However the subdriver might have to report to the userspace
+> >> additional bits.
+> >>
+> >> This adds an add_capability() hook to vfio_pci_regops.
+> >>
+> >> This is aiming Witherspoon POWER9 machines which have multiple
+> >> interconnected NVIDIA V100 GPUs with coherent RAM; each GPU's RAM
+> >> is mapped to a system bus and to each of GPU internal system bus and
+> >> the GPUs use this for DMA routing as DMA trafic can go via any
+> >> of many NVLink2 (GPU-GPU or GPU-CPU) or even stay local within a
+> >> GPU.
+> >=20
+> > This description doesn't really make clear how per-region capabilities
+> > are relevant to these devices.
+>=20
+>=20
+> I am confused. This patch just adds a hook, and the device specifics are
+> explained in the next patch where they are used...
 
+Well, my point is the last paragraph of the commit message appears to
+be a rationale for this change in terms of what's needed for the GPU
+devices.  But how those described properties of the GPU mean that
+region capabilites are useful / necessary isn't made clear.  If it's
+not meant to be a rationale, I'm not sure what it's doing there at
+all.
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--LZvS9be/3tNcYl/X
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlvj4sQACgkQbDjKyiDZ
+s5Ih1xAA0Lr5Tj0mBKT85tbpp4uub6lvh5gJy2J+/juXrz1c2DLuSgW2ZNGWqSUN
+CxxWHepsSITw3xfAgs7RcBgWetsF372MLQAunAYPVRW0zzXQFBfmANKVfiUCJ9zm
+E7KkfprxMWFU9a4LoNe0q7Nd9U4GMGTskDD3GtnQ3o3W6iGUslyHA3nWg4t0Ggvj
+DCpTn9cBAmNg3dZYr11TeqmPetKeTf4IPjnubAYL7gCk/cEub1vUXxz/ZDyTFgPG
+PnWlELGh/KoU18+q03UYJF9pf62Gv08f8PxTzlA30b+hg8JdAC0xSSl8HOnvR2mo
+FLakDfeblPMk6AEbonk0oE95HQfxDHY7DyWaauGDxr3IJwVv5lQ/g9/JEO4sx1Sc
+mUCpH5SXwOOBPplhyertdRABXcGJYt3G9TfJuMGxdD2eK6qPOSPcninQfcaEwZfF
+1yGot1TxaMvft6LUuyBJhfD7zVymWyVnRSgfSxAdhHSdArQyTFGREckbczRfr82z
+tXKf7DL1wQmtfjbxQb2L7Ijkvp8cWqiBgaxkR7s2qO3JmFSv40S4BpDCUVOy8hKm
+15AL5eqVxa0vsevow2FAeJ3XeprS7fWNpXMhC7N3Z6Ea3GuIedbXdgKGlLogBqlX
+2t8Q9AoAsaoSZtCjtzEQ1XI8PCYvvXQ1mDvo2SAo59glnFSVcU8=
+=Uten
+-----END PGP SIGNATURE-----
+
+--LZvS9be/3tNcYl/X--
