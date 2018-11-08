@@ -2,87 +2,66 @@ Return-Path: <SRS0=TQYx=NT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B5C0EC32789
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 10:27:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D9CE8C32789
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 11:19:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E664920827
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 10:27:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E664920827
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 1E79D208E7
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 11:19:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1E79D208E7
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42rKGd4HYPzF3LS
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 21:27:21 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42rLQy5lqGzF3P2
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Nov 2018 22:19:38 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=sathnaga@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42rKDT0bhVzF3N7
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Nov 2018 21:25:28 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wA8AODFx067310
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Nov 2018 05:25:26 -0500
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2nmjfxakq2-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Nov 2018 05:25:25 -0500
-Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sathnaga@linux.vnet.ibm.com>;
- Thu, 8 Nov 2018 10:25:23 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 8 Nov 2018 10:25:22 -0000
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wA8APLht47448224
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Thu, 8 Nov 2018 10:25:21 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 393204C044;
- Thu,  8 Nov 2018 10:25:21 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2D4114C050;
- Thu,  8 Nov 2018 10:25:20 +0000 (GMT)
-Received: from dhcp-9-193-110-205.in.ibm.com (unknown [9.193.110.205])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu,  8 Nov 2018 10:25:19 +0000 (GMT)
-From: sathnaga@linux.vnet.ibm.com
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: Add CONFIG_NR_CPUS to ppc64_defconfig
-Date: Thu,  8 Nov 2018 15:55:18 +0530
-X-Mailer: git-send-email 2.17.2
-X-TM-AS-GCONF: 00
-x-cbid: 18110810-4275-0000-0000-000002DD2151
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18110810-4276-0000-0000-000037EA465B
-Message-Id: <20181108102518.32612-1-sathnaga@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-11-08_06:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=5 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=653 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1807170000 definitions=main-1811080091
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42rLMz0jT2zF3MW
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Nov 2018 22:17:02 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 42rLMq68Wkz9ty70;
+ Thu,  8 Nov 2018 12:16:55 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id BjBIJ5cR3BvZ; Thu,  8 Nov 2018 12:16:55 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 42rLMq5Wcyz9ty6t;
+ Thu,  8 Nov 2018 12:16:55 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 645A08B832;
+ Thu,  8 Nov 2018 12:16:59 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id x7DDnUpEC500; Thu,  8 Nov 2018 12:16:59 +0100 (CET)
+Received: from po14163vm.idsi0.si.c-s.fr (unknown [192.168.232.3])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 08D7A8B840;
+ Thu,  8 Nov 2018 12:16:59 +0100 (CET)
+Received: by po14163vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id B2C806997B; Thu,  8 Nov 2018 11:16:58 +0000 (UTC)
+Message-Id: <775fdef6c793f42edd530b735d94ac46f64b8325.1541675278.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1541675278.git.christophe.leroy@c-s.fr>
+References: <cover.1541675278.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v9 1/9] book3s/64: avoid circular header inclusion in
+ mmu-hash.h
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Thu,  8 Nov 2018 11:16:58 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,33 +73,148 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
+When activating CONFIG_THREAD_INFO_IN_TASK, linux/sched.h
+includes asm/current.h. This generates a circular dependency.
+To avoid that, asm/processor.h shall not be included in mmu-hash.h
 
-CONFIG_NR_CPUS is not set in ppc64_defconfig, So
-it gets default to 32 which is not likely suitable for
-powerpc systems configuration, hence defaulting it to 2048
-like other powerpc defconfigs.
+In order to do that, this patch moves into a new header called
+asm/task_size_user64.h the information from asm/processor.h required
+by mmu-hash.h
 
-Signed-off-by: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/configs/ppc64_defconfig | 1 +
- 1 file changed, 1 insertion(+)
+ arch/powerpc/include/asm/book3s/64/mmu-hash.h |  2 +-
+ arch/powerpc/include/asm/processor.h          | 34 +---------------------
+ arch/powerpc/include/asm/task_size_user64.h   | 42 +++++++++++++++++++++++++++
+ arch/powerpc/kvm/book3s_hv_hmi.c              |  1 +
+ 4 files changed, 45 insertions(+), 34 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/task_size_user64.h
 
-diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
-index f2515674a1e2..8f89ea12dc8d 100644
---- a/arch/powerpc/configs/ppc64_defconfig
-+++ b/arch/powerpc/configs/ppc64_defconfig
-@@ -1,4 +1,5 @@
- CONFIG_PPC64=y
-+CONFIG_NR_CPUS=2048
- CONFIG_SYSVIPC=y
- CONFIG_POSIX_MQUEUE=y
- CONFIG_NO_HZ=y
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+index 12e522807f9f..b2aba048301e 100644
+--- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
++++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+@@ -23,7 +23,7 @@
+  */
+ #include <asm/book3s/64/pgtable.h>
+ #include <asm/bug.h>
+-#include <asm/processor.h>
++#include <asm/task_size_user64.h>
+ #include <asm/cpu_has_feature.h>
+ 
+ /*
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index ee58526cb6c2..692f7383d461 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -95,40 +95,8 @@ void release_thread(struct task_struct *);
+ #endif
+ 
+ #ifdef CONFIG_PPC64
+-/*
+- * 64-bit user address space can have multiple limits
+- * For now supported values are:
+- */
+-#define TASK_SIZE_64TB  (0x0000400000000000UL)
+-#define TASK_SIZE_128TB (0x0000800000000000UL)
+-#define TASK_SIZE_512TB (0x0002000000000000UL)
+-#define TASK_SIZE_1PB   (0x0004000000000000UL)
+-#define TASK_SIZE_2PB   (0x0008000000000000UL)
+-/*
+- * With 52 bits in the address we can support
+- * upto 4PB of range.
+- */
+-#define TASK_SIZE_4PB   (0x0010000000000000UL)
+ 
+-/*
+- * For now 512TB is only supported with book3s and 64K linux page size.
+- */
+-#if defined(CONFIG_PPC_BOOK3S_64) && defined(CONFIG_PPC_64K_PAGES)
+-/*
+- * Max value currently used:
+- */
+-#define TASK_SIZE_USER64		TASK_SIZE_4PB
+-#define DEFAULT_MAP_WINDOW_USER64	TASK_SIZE_128TB
+-#define TASK_CONTEXT_SIZE		TASK_SIZE_512TB
+-#else
+-#define TASK_SIZE_USER64		TASK_SIZE_64TB
+-#define DEFAULT_MAP_WINDOW_USER64	TASK_SIZE_64TB
+-/*
+- * We don't need to allocate extended context ids for 4K page size, because
+- * we limit the max effective address on this config to 64TB.
+- */
+-#define TASK_CONTEXT_SIZE		TASK_SIZE_64TB
+-#endif
++#include <asm/task_size_user64.h>
+ 
+ /*
+  * 32-bit user address space is 4GB - 1 page
+diff --git a/arch/powerpc/include/asm/task_size_user64.h b/arch/powerpc/include/asm/task_size_user64.h
+new file mode 100644
+index 000000000000..a4043075864b
+--- /dev/null
++++ b/arch/powerpc/include/asm/task_size_user64.h
+@@ -0,0 +1,42 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++#ifndef _ASM_POWERPC_TASK_SIZE_USER64_H
++#define _ASM_POWERPC_TASK_SIZE_USER64_H
++
++#ifdef CONFIG_PPC64
++/*
++ * 64-bit user address space can have multiple limits
++ * For now supported values are:
++ */
++#define TASK_SIZE_64TB  (0x0000400000000000UL)
++#define TASK_SIZE_128TB (0x0000800000000000UL)
++#define TASK_SIZE_512TB (0x0002000000000000UL)
++#define TASK_SIZE_1PB   (0x0004000000000000UL)
++#define TASK_SIZE_2PB   (0x0008000000000000UL)
++/*
++ * With 52 bits in the address we can support
++ * upto 4PB of range.
++ */
++#define TASK_SIZE_4PB   (0x0010000000000000UL)
++
++/*
++ * For now 512TB is only supported with book3s and 64K linux page size.
++ */
++#if defined(CONFIG_PPC_BOOK3S_64) && defined(CONFIG_PPC_64K_PAGES)
++/*
++ * Max value currently used:
++ */
++#define TASK_SIZE_USER64		TASK_SIZE_4PB
++#define DEFAULT_MAP_WINDOW_USER64	TASK_SIZE_128TB
++#define TASK_CONTEXT_SIZE		TASK_SIZE_512TB
++#else
++#define TASK_SIZE_USER64		TASK_SIZE_64TB
++#define DEFAULT_MAP_WINDOW_USER64	TASK_SIZE_64TB
++/*
++ * We don't need to allocate extended context ids for 4K page size, because
++ * we limit the max effective address on this config to 64TB.
++ */
++#define TASK_CONTEXT_SIZE		TASK_SIZE_64TB
++#endif
++
++#endif /* CONFIG_PPC64 */
++#endif /* _ASM_POWERPC_TASK_SIZE_USER64_H */
+diff --git a/arch/powerpc/kvm/book3s_hv_hmi.c b/arch/powerpc/kvm/book3s_hv_hmi.c
+index e3f738eb1cac..64b5011475c7 100644
+--- a/arch/powerpc/kvm/book3s_hv_hmi.c
++++ b/arch/powerpc/kvm/book3s_hv_hmi.c
+@@ -24,6 +24,7 @@
+ #include <linux/compiler.h>
+ #include <asm/paca.h>
+ #include <asm/hmi.h>
++#include <asm/processor.h>
+ 
+ void wait_for_subcore_guest_exit(void)
+ {
 -- 
-2.17.2
+2.13.3
 
