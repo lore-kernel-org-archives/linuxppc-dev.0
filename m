@@ -2,76 +2,83 @@ Return-Path: <SRS0=4MsH=NU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A0E6C43441
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 17:54:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6AB3CC43441
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 18:11:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1CC9520818
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 17:54:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id CD6E520825
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 18:11:36 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=cisco.com header.i=@cisco.com header.b="DitM3wxZ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1CC9520818
-Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=cisco.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="UcSV4n3k"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CD6E520825
+Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42s7821n4mzF3TG
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Nov 2018 04:54:26 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=cisco.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42s7Wp4553zF3dq
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Nov 2018 05:11:34 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=cisco.com header.i=@cisco.com header.b="DitM3wxZ";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.b="UcSV4n3k";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=cisco.com
- (client-ip=173.37.142.89; helo=alln-iport-2.cisco.com;
- envelope-from=danielwa@cisco.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none)
- header.from=cisco.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=cisco.com header.i=@cisco.com header.b="DitM3wxZ"; 
+ spf=pass (mailfrom) smtp.mailfrom=google.com
+ (client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
+ envelope-from=ndesaulniers@google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=google.com header.i=@google.com header.b="UcSV4n3k"; 
  dkim-atps=neutral
-X-Greylist: delayed 666 seconds by postgrey-1.36 at bilbo;
- Sat, 10 Nov 2018 04:45:52 AEDT
-Received: from alln-iport-2.cisco.com (alln-iport-2.cisco.com [173.37.142.89])
- (using TLSv1.2 with cipher DHE-RSA-SEED-SHA (128/128 bits))
+Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
+ [IPv6:2607:f8b0:4864:20::541])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42s6y82Fb9zF3Nc
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Nov 2018 04:45:51 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=cisco.com; i=@cisco.com; l=4647; q=dns/txt; s=iport;
- t=1541785552; x=1542995152;
- h=from:to:cc:subject:date:message-id;
- bh=fPoBuu98B/tcgEZSF+nErcPhvD3620OpliUrapnPENs=;
- b=DitM3wxZmxfcrD/UST9+DuIwm7MMnozSUhNG/6q912I6GYN5aGC0c9xp
- 0UpFYhAQkD22gI/O8EWDniPMwr0sLpLNK79kRsMtXhsw9L11h328IIeDV
- KZ6dDNa+k5x0s/BLmOo17e3LAMo8+M7xmCo9MCiD+xs6RCkCa3/tVsmLd c=;
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: =?us-ascii?q?A0AEAACExOVb/4cNJK1jGgEBAQEBAgE?=
- =?us-ascii?q?BAQEHAgEBAQGBUQUBAQEBCwGCA2aBAieMEIt7mT+Beg0fhE2DJiI0DQ0BAwE?=
- =?us-ascii?q?BAgEBAm0ohjopgRUBEoMhAYIBqRmKJRSHPoQqF4FBP4ERjWsCiRGGZ49UCYI?=
- =?us-ascii?q?chFeKGwsYkG6HQ5AugUM4gVUzGggbFYMnCYIeF449HgMwjREBAQ?=
-X-IronPort-AV: E=Sophos;i="5.54,483,1534809600"; d="scan'208";a="199146080"
-Received: from alln-core-2.cisco.com ([173.36.13.135])
- by alln-iport-2.cisco.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
- 09 Nov 2018 17:34:36 +0000
-Received: from zorba.cisco.com ([10.24.43.135])
- by alln-core-2.cisco.com (8.15.2/8.15.2) with ESMTP id wA9HYXVt010556;
- Fri, 9 Nov 2018 17:34:35 GMT
-From: Daniel Walker <danielwa@cisco.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH 2/3] powerpc: convert to generic builtin command line
-Date: Fri,  9 Nov 2018 09:34:32 -0800
-Message-Id: <20181109173433.1271-2-danielwa@cisco.com>
-X-Mailer: git-send-email 2.14.1
-X-Auto-Response-Suppress: DR, OOF, AutoReply
-X-Outbound-SMTP-Client: 10.24.43.135, [10.24.43.135]
-X-Outbound-Node: alln-core-2.cisco.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42s7Sz3GltzF3fB
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Nov 2018 05:09:07 +1100 (AEDT)
+Received: by mail-pg1-x541.google.com with SMTP id z10so1166256pgp.7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Nov 2018 10:09:07 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=nTDuuew0NsZhhb2bxhxcr153BE8+fnPPLRQbpDhPrd4=;
+ b=UcSV4n3kcdGjr2QJ2lfpleDryWk897/SqMXB+J+CzIh/OoE5iDWlj5xREz6Vk6Zg4G
+ 9z+uKTR8jM7ZHVkP0TLX1oNQJPYCy7hVjdqftFlCJTA1gZtpiF15c6dgDqipzzEhI4V3
+ 2QhV+qzP/OwHFyIZLLNwr8KG8l03xKtq+kN9kH1NMYABYnlyckU7Rfi23IHJvBqiM1/S
+ VbNcG1cLdh+fJrCm9owbcM9nAU0kO1G/+kxMqsqqKuWeWUjraUy81fCvOakNJVQHG3yK
+ s1I8L+1vVFUgtyRwZErYVaXBYxMEwCKP4Qp5dwd0FbTpsHI25Adhmnzz/sfFxqiM/9Yv
+ KjqQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=nTDuuew0NsZhhb2bxhxcr153BE8+fnPPLRQbpDhPrd4=;
+ b=jgyxcu/PykMM2k65IZngAeGRvelJQwdK3KmaHtsD68xDOIBAADpMmQuT/7KbKKn8yD
+ 9nlN2YHCvCy+V2wP7JqVSfYAdOV85c4jRtKqxsFv77KSbVFke1QLfoaO8sgllUKIiwsY
+ d7Mge0CY7hj9UXOKGN4bLgnZzO85tC0wvGuoE7k+w4JfWbzAF188cBcWPcnYl2Kx4Ir4
+ qBEgJdsnA8Mk2H1lThH39IP9RN6C3RFS5BAxvin9IRu9AoXwWGAfy9tOc8+oJi9zOJ8b
+ yM/V2GlYZbX6pFigxLgLiF3oETpBX3Q00ruqAPtTRRCfO7sP+aT2O8BSQB2biygLH1TK
+ hH0Q==
+X-Gm-Message-State: AGRZ1gLXeWqrSYT685vA0DCzfN9euQ2x9yiG4CA36LKni3ttPRbvetqY
+ FTfsU1/UKBzOPsZE2n24V4wov5hin5hG1XyBTRI4mA==
+X-Google-Smtp-Source: AJdET5dldSw9wyZPWg7QhrkDHD/f3FbXQ8IIL4M48Yia0wV6zoP78APvYBX63QOd7GjaUk4kWrvQTbPPZfVcBCdQaZM=
+X-Received: by 2002:a62:1095:: with SMTP id
+ 21-v6mr9868632pfq.227.1541786944730; 
+ Fri, 09 Nov 2018 10:09:04 -0800 (PST)
+MIME-Version: 1.0
+References: <1541473495-25262-1-git-send-email-yamada.masahiro@socionext.com>
+In-Reply-To: <1541473495-25262-1-git-send-email-yamada.masahiro@socionext.com>
+From: Nick Desaulniers <ndesaulniers@google.com>
+Date: Fri, 9 Nov 2018 10:08:53 -0800
+Message-ID: <CAKwvOdkfGZDWr5vjNTvn707+Muna3JNKObwOfjjvS2-tAXK2QA@mail.gmail.com>
+Subject: Re: [PATCH v2 1/2] kbuild: add -no-integrated-as Clang option
+ unconditionally
+To: Masahiro Yamada <yamada.masahiro@socionext.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,133 +90,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Daniel Walker <dwalker@fifo99.com>,
- Maksym Kokhan <maksym.kokhan@globallogic.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, xe-linux-external@cisco.com
+Cc: Michal Marek <michal.lkml@markovi.net>,
+ Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
+ LKML <linux-kernel@vger.kernel.org>, Stefan Agner <stefan@agner.ch>,
+ Matthias Kaehlcke <mka@chromium.org>, joel@jms.id.au,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This updates the powerpc code to use the CONFIG_GENERIC_CMDLINE
-option.
+On Mon, Nov 5, 2018 at 7:05 PM Masahiro Yamada
+<yamada.masahiro@socionext.com> wrote:
+>
+> We are still a way off the Clang's integrated assembler support for
+> the kernel. Hence, -no-integrated-as is mandatory to build the kernel
+> with Clang. If you had an ancient version of Clang that does not
+> recognize this option, you would not be able to compile the kernel
+> anyway.
+>
+> Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+> ---
+>
+> Changes in v2:
+>   - New patch
+>
+>  Makefile | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/Makefile b/Makefile
+> index 93315eb..da11700 100644
+> --- a/Makefile
+> +++ b/Makefile
+> @@ -497,8 +497,8 @@ CLANG_GCC_TC        := --gcc-toolchain=$(GCC_TOOLCHAIN)
+>  endif
+>  KBUILD_CFLAGS += $(CLANG_TARGET) $(CLANG_GCC_TC) $(CLANG_PREFIX)
+>  KBUILD_AFLAGS += $(CLANG_TARGET) $(CLANG_GCC_TC) $(CLANG_PREFIX)
+> -KBUILD_CFLAGS += $(call cc-option, -no-integrated-as)
+> -KBUILD_AFLAGS += $(call cc-option, -no-integrated-as)
+> +KBUILD_CFLAGS += -no-integrated-as
+> +KBUILD_AFLAGS += -no-integrated-as
 
-[maksym.kokhan@globallogic.com: add strlcat to prom_init_check.sh
-whitelist]
-Cc: Daniel Walker <dwalker@fifo99.com>
-Cc: Daniel Walker <danielwa@cisco.com>
-Cc: xe-linux-external@cisco.com
-Signed-off-by: Daniel Walker <danielwa@cisco.com>
-Signed-off-by: Maksym Kokhan <maksym.kokhan@globallogic.com>
----
- arch/powerpc/Kconfig                   | 23 +----------------------
- arch/powerpc/kernel/prom.c             |  4 ++++
- arch/powerpc/kernel/prom_init.c        |  8 ++++----
- arch/powerpc/kernel/prom_init_check.sh |  2 +-
- 4 files changed, 10 insertions(+), 27 deletions(-)
+Sorry for the delay in review.
+Reviewed-by: Nick Desaulniers <ndesaulniers@google.com>
+Tested-by: Nick Desaulniers <ndesaulniers@google.com>
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 8be31261aec8..6321b2a0b87b 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -172,6 +172,7 @@ config PPC
- 	select GENERIC_STRNCPY_FROM_USER
- 	select GENERIC_STRNLEN_USER
- 	select GENERIC_TIME_VSYSCALL
-+	select GENERIC_CMDLINE
- 	select HAVE_ARCH_AUDITSYSCALL
- 	select HAVE_ARCH_JUMP_LABEL
- 	select HAVE_ARCH_KGDB
-@@ -777,28 +778,6 @@ config PPC_DENORMALISATION
- 	  Add support for handling denormalisation of single precision
- 	  values.  Useful for bare metal only.  If unsure say Y here.
- 
--config CMDLINE_BOOL
--	bool "Default bootloader kernel arguments"
--
--config CMDLINE
--	string "Initial kernel command string"
--	depends on CMDLINE_BOOL
--	default "console=ttyS0,9600 console=tty0 root=/dev/sda2"
--	help
--	  On some platforms, there is currently no way for the boot loader to
--	  pass arguments to the kernel. For these platforms, you can supply
--	  some command-line options at build time by entering them here.  In
--	  most cases you will need to specify the root device here.
--
--config CMDLINE_FORCE
--	bool "Always use the default kernel command string"
--	depends on CMDLINE_BOOL
--	help
--	  Always use the default kernel command string, even if the boot
--	  loader passes other arguments to the kernel.
--	  This is useful if you cannot or don't want to change the
--	  command-line options your boot loader passes to the kernel.
--
- config EXTRA_TARGETS
- 	string "Additional default image types"
- 	help
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index fe758cedb93f..d78b1d6fe1c8 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -34,6 +34,7 @@
- #include <linux/of_fdt.h>
- #include <linux/libfdt.h>
- #include <linux/cpu.h>
-+#include <linux/cmdline.h>
- 
- #include <asm/prom.h>
- #include <asm/rtas.h>
-@@ -716,6 +717,9 @@ void __init early_init_devtree(void *params)
- 	 */
- 	of_scan_flat_dt(early_init_dt_scan_chosen_ppc, boot_command_line);
- 
-+	/* append and prepend any arguments built into the kernel. */
-+	cmdline_add_builtin(boot_command_line, NULL, COMMAND_LINE_SIZE);
-+
- 	/* Scan memory nodes and rebuild MEMBLOCKs */
- 	of_scan_flat_dt(early_init_dt_scan_root, NULL);
- 	of_scan_flat_dt(early_init_dt_scan_memory_ppc, NULL);
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index f33ff4163a51..41393da56181 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -30,6 +30,7 @@
- #include <linux/delay.h>
- #include <linux/initrd.h>
- #include <linux/bitops.h>
-+#include <linux/cmdline.h>
- #include <asm/prom.h>
- #include <asm/rtas.h>
- #include <asm/page.h>
-@@ -637,11 +638,10 @@ static void __init early_cmdline_parse(void)
- 	p = prom_cmd_line;
- 	if ((long)prom.chosen > 0)
- 		l = prom_getprop(prom.chosen, "bootargs", p, COMMAND_LINE_SIZE-1);
--#ifdef CONFIG_CMDLINE
-+
- 	if (l <= 0 || p[0] == '\0') /* dbl check */
--		strlcpy(prom_cmd_line,
--			CONFIG_CMDLINE, sizeof(prom_cmd_line));
--#endif /* CONFIG_CMDLINE */
-+		cmdline_add_builtin(prom_cmd_line, NULL, sizeof(prom_cmd_line));
-+
- 	prom_printf("command line: %s\n", prom_cmd_line);
- 
- #ifdef CONFIG_PPC64
-diff --git a/arch/powerpc/kernel/prom_init_check.sh b/arch/powerpc/kernel/prom_init_check.sh
-index 667df97d2595..ab2acc8d8b5a 100644
---- a/arch/powerpc/kernel/prom_init_check.sh
-+++ b/arch/powerpc/kernel/prom_init_check.sh
-@@ -18,7 +18,7 @@
- 
- WHITELIST="add_reloc_offset __bss_start __bss_stop copy_and_flush
- _end enter_prom memcpy memset reloc_offset __secondary_hold
--__secondary_hold_acknowledge __secondary_hold_spinloop __start
-+__secondary_hold_acknowledge __secondary_hold_spinloop __start strlcat
- strcmp strcpy strlcpy strlen strncmp strstr kstrtobool logo_linux_clut224
- reloc_got2 kernstart_addr memstart_addr linux_banner _stext
- __prom_init_toc_start __prom_init_toc_end btext_setup_display TOC."
+>  endif
+>
+>  RETPOLINE_CFLAGS_GCC := -mindirect-branch=thunk-extern -mindirect-branch-register
+> --
+> 2.7.4
+>
+
+
 -- 
-2.14.1
-
+Thanks,
+~Nick Desaulniers
