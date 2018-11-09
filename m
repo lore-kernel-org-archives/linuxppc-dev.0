@@ -2,99 +2,83 @@ Return-Path: <SRS0=4MsH=NU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A5BECC43441
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 18:13:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C567C43441
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 18:32:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2C74A20855
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 18:13:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2C74A20855
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=us.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id C9DD020827
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 18:32:08 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="EHwfvC4p"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C9DD020827
+Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42s7Ym2dt8zF3Mr
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Nov 2018 05:13:16 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=us.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42s7zV5lRbzF3Zg
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Nov 2018 05:32:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=us.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=linuxram@us.ibm.com; receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.b="EHwfvC4p";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=us.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=google.com
+ (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
+ envelope-from=ndesaulniers@google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=google.com header.i=@google.com header.b="EHwfvC4p"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
+ [IPv6:2607:f8b0:4864:20::442])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42s7V719lqzF3dq
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Nov 2018 05:10:06 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wA9I8qbn113646
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Nov 2018 13:10:04 -0500
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2nned9jk36-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Nov 2018 13:10:03 -0500
-Received: from localhost
- by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Fri, 9 Nov 2018 18:09:58 -0000
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
- by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 9 Nov 2018 18:09:56 -0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wA9I9tt89961752
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Fri, 9 Nov 2018 18:09:55 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4ABD0A405B;
- Fri,  9 Nov 2018 18:09:55 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9CE95A4054;
- Fri,  9 Nov 2018 18:09:51 +0000 (GMT)
-Received: from ram.oc3035372033.ibm.com (unknown [9.85.146.154])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Fri,  9 Nov 2018 18:09:50 +0000 (GMT)
-Date: Fri, 9 Nov 2018 10:09:47 -0800
-From: Ram Pai <linuxram@us.ibm.com>
-To: Florian Weimer <fweimer@redhat.com>
-Subject: Re: pkeys: Reserve PKEY_DISABLE_READ
-References: <877ehnbwqy.fsf@oldenburg.str.redhat.com>
- <2d62c9e2-375b-2791-32ce-fdaa7e7664fd@intel.com>
- <87bm6zaa04.fsf@oldenburg.str.redhat.com>
- <6f9c65fb-ea7e-8217-a4cc-f93e766ed9bb@intel.com>
- <87k1ln8o7u.fsf@oldenburg.str.redhat.com>
- <20181108201231.GE5481@ram.oc3035372033.ibm.com>
- <87bm6z71yw.fsf@oldenburg.str.redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42s7ws3zCNzF3YD
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Nov 2018 05:29:49 +1100 (AEDT)
+Received: by mail-pf1-x442.google.com with SMTP id u13-v6so1294771pfm.4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Nov 2018 10:29:49 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=oO+HpkLidr/CeyCYN5af7zvbZoEkI1LAH8/hbiIoRMM=;
+ b=EHwfvC4pP8WkPe68hfbEAlVnco5DhCMjbh+GSZdeTxVtAZow7aqK1QlpCWf+RMiA0r
+ UmwFD9sxQHOA5xxQYZxl4xlAgdH5gMb3Igyg8TlrMuW8GJV/5+BXDMAzWK0cojjDnOGB
+ QnY/OB6V42G+e2b1TfFGdl7XafFOssUJj7rhArVct5Mh9tWqoVdFXuWVTiRus+5ZKa9Q
+ ADyddMBbA2IOqpVTkJhWCMx1RQwEYD2hiLp3SiYyymNj6Sk+bNhhHgpPcclvuMFWil3l
+ QvP0Mm6GgXKaVFZv6JFsZvubzCxB2BYhsIaYsGPue2VmG/OYbWTXN1ynRwpYzYXOPdYn
+ L09w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=oO+HpkLidr/CeyCYN5af7zvbZoEkI1LAH8/hbiIoRMM=;
+ b=JMQ9adEctbr2mG6aZltBLj8wt5xRxc5MevU81oyZ2F/Jbao4eA8pv4cYSm5dzXBxaf
+ 2BkSnpTZik28gVG9nRRoq0oXh3wTJItUW4dL3TTkPkjsaE1wlrBXBpFuXnZ0Fq/dwlGR
+ Hzs4ViT9AnMSSd6eZwk4l5nV4wC6hWtGia5iCo0TQaVjqjx0aEO6/WShkoGe3kXbzwQq
+ XvVQq4lqC6Y4hi1w7vmN53Hw0gB9efswBet02T4XHrCgNec30Vwt7Atk0Ui7c16Yvgeu
+ rYOJ4tEsfNihYBNwx+jiCS9FbIL+6oJV4ypm372jmm08LTGkBv+qKLHdZTVgk2vZDsHA
+ VQDw==
+X-Gm-Message-State: AGRZ1gLAs57iu41p5IDv5jjhadpAlxDjnsmzPjmrK6NJ+nG+ti3+ypRH
+ 8bW+UmvoKS3fbYQdiPuJWGQeLH0+WMoSqV8GkQs1MQ==
+X-Google-Smtp-Source: AJdET5fwVRo+ONH8SN2tKhWFTUuEhLBx/GtTiqw6NU31rCHI1fKcO2geN6e0Lgx5d4PhmdX/qIhsel1HxbvbkC36A1I=
+X-Received: by 2002:a62:1095:: with SMTP id
+ 21-v6mr9933616pfq.227.1541788186599; 
+ Fri, 09 Nov 2018 10:29:46 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <87bm6z71yw.fsf@oldenburg.str.redhat.com>
-User-Agent: Mutt/1.5.20 (2009-12-10)
-X-TM-AS-GCONF: 00
-x-cbid: 18110918-0028-0000-0000-0000031769F7
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18110918-0029-0000-0000-000023D3C2EB
-Message-Id: <20181109180947.GF5481@ram.oc3035372033.ibm.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-11-09_06:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=615 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1807170000 definitions=main-1811090165
+References: <1541473495-25262-1-git-send-email-yamada.masahiro@socionext.com>
+ <1541473495-25262-2-git-send-email-yamada.masahiro@socionext.com>
+In-Reply-To: <1541473495-25262-2-git-send-email-yamada.masahiro@socionext.com>
+From: Nick Desaulniers <ndesaulniers@google.com>
+Date: Fri, 9 Nov 2018 10:29:35 -0800
+Message-ID: <CAKwvOd=JwjVu=uk3egVJxTm9vPcF=Jx2Bexx1Wx=Z-PC38X3Uw@mail.gmail.com>
+Subject: Re: [PATCH v2 2/2] kbuild: consolidate Clang compiler flags
+To: Masahiro Yamada <yamada.masahiro@socionext.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,95 +90,71 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: Ram Pai <linuxram@us.ibm.com>
-Cc: linux-mm@kvack.org, Dave Hansen <dave.hansen@intel.com>,
- linuxppc-dev@lists.ozlabs.org, linux-api@vger.kernel.org
+Cc: Michal Marek <michal.lkml@markovi.net>,
+ Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
+ LKML <linux-kernel@vger.kernel.org>, Stefan Agner <stefan@agner.ch>,
+ Matthias Kaehlcke <mka@chromium.org>, joel@jms.id.au,
+ Greg Hackmann <ghackmann@google.com>,
+ Nathan Chancellor <natechancellor@gmail.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Nov 08, 2018 at 09:23:35PM +0100, Florian Weimer wrote:
-> * Ram Pai:
-> 
-> > Florian,
-> >
-> > 	I can. But I am struggling to understand the requirement. Why is
-> > 	this needed?  Are we proposing a enhancement to the sys_pkey_alloc(),
-> > 	to be able to allocate keys that are initialied to disable-read
-> > 	only?
-> 
-> Yes, I think that would be a natural consequence.
-> 
-> However, my immediate need comes from the fact that the AMR register can
-> contain a flag combination that is not possible to represent with the
-> existing PKEY_DISABLE_WRITE and PKEY_DISABLE_ACCESS flags.  User code
-> could write to AMR directly, so I cannot rule out that certain flag
-> combinations exist there.
-> 
-> So I came up with this:
-> 
-> int
-> pkey_get (int key)
-> {
->   if (key < 0 || key > PKEY_MAX)
->     {
->       __set_errno (EINVAL);
->       return -1;
->     }
->   unsigned int index = pkey_index (key);
->   unsigned long int amr = pkey_read ();
->   unsigned int bits = (amr >> index) & 3;
-> 
->   /* Translate from AMR values.  PKEY_AMR_READ standing alone is not
->      currently representable.  */
->   if (bits & PKEY_AMR_READ)
+On Mon, Nov 5, 2018 at 7:05 PM Masahiro Yamada
+<yamada.masahiro@socionext.com> wrote:
+>
+> Collect basic Clang options such as --target, --prefix, --gcc-toolchain,
+> -no-integrated-as into a single variable CLANG_FLAGS so that it can be
+> easily reused in other parts of Makefile.
+>
+> Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+> ---
+>
+> Changes in v2:
+>  - Use := flavor instead of = because $(CLANG_FLAGS) is expanded soon anyway
+>
+>  Makefile | 13 ++++++-------
+>  1 file changed, 6 insertions(+), 7 deletions(-)
+>
+> diff --git a/Makefile b/Makefile
+> index da11700..e173a73 100644
+> --- a/Makefile
+> +++ b/Makefile
+> @@ -487,18 +487,17 @@ endif
+>
+>  ifneq ($(shell $(CC) --version 2>&1 | head -n 1 | grep clang),)
+>  ifneq ($(CROSS_COMPILE),)
+> -CLANG_TARGET   := --target=$(notdir $(CROSS_COMPILE:%-=%))
+> +CLANG_FLAGS    := --target=$(notdir $(CROSS_COMPILE:%-=%))
+>  GCC_TOOLCHAIN_DIR := $(dir $(shell which $(LD)))
+> -CLANG_PREFIX   := --prefix=$(GCC_TOOLCHAIN_DIR)
+> +CLANG_FLAGS    += --prefix=$(GCC_TOOLCHAIN_DIR)
+>  GCC_TOOLCHAIN  := $(realpath $(GCC_TOOLCHAIN_DIR)/..)
+>  endif
+>  ifneq ($(GCC_TOOLCHAIN),)
+> -CLANG_GCC_TC   := --gcc-toolchain=$(GCC_TOOLCHAIN)
+> +CLANG_FLAGS    += --gcc-toolchain=$(GCC_TOOLCHAIN)
+>  endif
+> -KBUILD_CFLAGS += $(CLANG_TARGET) $(CLANG_GCC_TC) $(CLANG_PREFIX)
+> -KBUILD_AFLAGS += $(CLANG_TARGET) $(CLANG_GCC_TC) $(CLANG_PREFIX)
+> -KBUILD_CFLAGS += -no-integrated-as
+> -KBUILD_AFLAGS += -no-integrated-as
+> +CLANG_FLAGS    += -no-integrated-as
+> +KBUILD_CFLAGS  += $(CLANG_FLAGS)
+> +KBUILD_AFLAGS  += $(CLANG_FLAGS)
+>  endif
+>
+>  RETPOLINE_CFLAGS_GCC := -mindirect-branch=thunk-extern -mindirect-branch-register
+> --
+> 2.7.4
+>
 
-this should be
-   if (bits & (PKEY_AMR_READ|PKEY_AMR_WRITE))
+Thanks for this patch, Masahiro, it's a good simplification.
+Reviewed-by: Nick Desaulniers <ndesaulniers@google.com>
+Tested-by: Nick Desaulniers <ndesaulniers@google.com>
 
-
->     return PKEY_DISABLE_ACCESS;
-
-
->   else if (bits == PKEY_AMR_WRITE)
->     return PKEY_DISABLE_WRITE;
->   return 0;
-> }
-> 
-> And this is not ideal.  I would prefer something like this instead:
-> 
->   switch (bits)
->     {
->       case PKEY_AMR_READ | PKEY_AMR_WRITE:
->         return PKEY_DISABLE_ACCESS;
->       case PKEY_AMR_READ:
->         return PKEY_DISABLE_READ;
->       case PKEY_AMR_WRITE:
->         return PKEY_DISABLE_WRITE;
->       case 0:
->         return 0;
->     }
-
-yes.
- and on x86 it will be something like:
-   switch (bits)
-     {
-       case PKEY_PKRU_ACCESS :
-         return PKEY_DISABLE_ACCESS;
-       case PKEY_AMR_WRITE:
-         return PKEY_DISABLE_WRITE;
-       case 0:
-         return 0;
-     }
-
-But for this to work, why do you need to enhance the sys_pkey_alloc()
-interface?  Not that I am against it. Trying to understand if the
-enhancement is really needed.
-
-> 
-> By the way, is the AMR register 64-bit or 32-bit on 32-bit POWER?
-
-It is 64-bit.
-
-RP
-
+Would you mind waiting for a tested-by from Stefan, and maybe an ack
+from Greg (added to cc)?
+-- 
+Thanks,
+~Nick Desaulniers
