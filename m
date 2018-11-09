@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 43202C43441
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 19:33:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 38D81C43441
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 19:34:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BC9C72086C
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 19:33:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BC9C72086C
+	by mail.kernel.org (Postfix) with ESMTPS id AC5532086C
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 19:34:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AC5532086C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=angband.pl
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42s9Kq6GmCzF3Y3
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Nov 2018 06:33:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42s9Mk5QK1zF3M6
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Nov 2018 06:34:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=angband.pl
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=angband.pl
@@ -30,19 +30,19 @@ Received: from tartarus.angband.pl (tartarus.angband.pl
  [IPv6:2001:41d0:602:dbe::8])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42s9170QKVzF3Zj
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Nov 2018 06:18:34 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42s91B584dzF3Zj
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Nov 2018 06:18:38 +1100 (AEDT)
 Received: from 89-64-163-218.dynamic.chello.pl ([89.64.163.218]
  helo=barad-dur.angband.pl)
  by tartarus.angband.pl with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
  (Exim 4.89) (envelope-from <kilobyte@angband.pl>)
- id 1gLC3w-00053U-HK; Fri, 09 Nov 2018 20:03:26 +0100
+ id 1gLC3o-00051w-DQ; Fri, 09 Nov 2018 20:03:18 +0100
 Received: from kholdan.angband.pl ([2001:470:64f4::5])
  by barad-dur.angband.pl with smtp (Exim 4.89)
  (envelope-from <kilobyte@angband.pl>)
- id 1gLC3v-0005A1-0q; Fri, 09 Nov 2018 20:03:24 +0100
+ id 1gLC3m-00059i-U5; Fri, 09 Nov 2018 20:03:15 +0100
 Received: by kholdan.angband.pl (sSMTP sendmail emulation);
- Fri, 09 Nov 2018 20:03:22 +0100
+ Fri, 09 Nov 2018 20:03:14 +0100
 From: Adam Borowski <kilobyte@angband.pl>
 To: linux-kernel@vger.kernel.org, Nick Terrell <terrelln@fb.com>,
  Russell King <linux@armlinux.org.uk>,
@@ -63,8 +63,8 @@ To: linux-kernel@vger.kernel.org, Nick Terrell <terrelln@fb.com>,
  Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
  x86@kernel.org, Chris Zankel <chris@zankel.net>,
  Max Filippov <jcmvbkbc@gmail.com>, linux-xtensa@linux-xtensa.org
-Date: Fri,  9 Nov 2018 20:02:55 +0100
-Message-Id: <20181109190304.8573-8-kilobyte@angband.pl>
+Date: Fri,  9 Nov 2018 20:02:49 +0100
+Message-Id: <20181109190304.8573-2-kilobyte@angband.pl>
 X-Mailer: git-send-email 2.19.1
 In-Reply-To: <20181109190304.8573-1-kilobyte@angband.pl>
 References: <20181109185953.xwyelyqnygbskkxk@angband.pl>
@@ -73,7 +73,7 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-SA-Exim-Connect-IP: 89.64.163.218
 X-SA-Exim-Mail-From: kilobyte@angband.pl
-Subject: [PATCH 08/17] sh: Remove support for BZIP2 and LZMA compressed kernel
+Subject: [PATCH 02/17] x86: Add support for ZSTD-compressed kernel
 X-SA-Exim-Version: 4.2.1 (built Tue, 02 Aug 2016 21:08:31 +0000)
 X-SA-Exim-Scanned: Yes (on tartarus.angband.pl)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -87,159 +87,146 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Adam Borowski <kilobyte@angband.pl>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Made redundant by newer choices.
+From: Nick Terrell <terrelln@fb.com>
 
-Signed-off-by: Adam Borowski <kilobyte@angband.pl>
+Integrates the ZSTD decompression code to the x86 pre-boot code.
+
+Zstandard requires slightly more memory during the kernel decompression
+on x86 (192 KB vs 64 KB), and the memory usage is independent of the
+window size.
+
+Zstandard requires memory proportional to the window size used during
+compression for decompressing the ramdisk image, since streaming mode is
+used. Newer versions of zstd (1.3.2+) list the window size of a file
+with `zstd -lv <file>'. The absolute maximum amount of memory required
+is just over 8 MB.
+
+Signed-off-by: Nick Terrell <terrelln@fb.com>
 ---
- arch/sh/Kconfig                  |  2 --
- arch/sh/Makefile                 |  4 +---
- arch/sh/boot/Makefile            | 19 ++-----------------
- arch/sh/boot/compressed/Makefile |  5 -----
- arch/sh/boot/compressed/misc.c   | 12 ------------
- 5 files changed, 3 insertions(+), 39 deletions(-)
+ Documentation/x86/boot.txt        | 6 +++---
+ arch/x86/Kconfig                  | 1 +
+ arch/x86/boot/compressed/Makefile | 5 ++++-
+ arch/x86/boot/compressed/misc.c   | 4 ++++
+ arch/x86/boot/header.S            | 8 +++++++-
+ arch/x86/include/asm/boot.h       | 6 ++++--
+ 6 files changed, 23 insertions(+), 7 deletions(-)
 
-diff --git a/arch/sh/Kconfig b/arch/sh/Kconfig
-index f82a4da7adf3..fbb2e17275d1 100644
---- a/arch/sh/Kconfig
-+++ b/arch/sh/Kconfig
-@@ -23,8 +23,6 @@ config SUPERH
- 	select HAVE_DEBUG_KMEMLEAK
- 	select HAVE_KERNEL_GZIP
- 	select CPU_NO_EFFICIENT_FFS
--	select HAVE_KERNEL_BZIP2
--	select HAVE_KERNEL_LZMA
- 	select HAVE_KERNEL_XZ
+diff --git a/Documentation/x86/boot.txt b/Documentation/x86/boot.txt
+index 7727db8f94bc..a47b6bae3356 100644
+--- a/Documentation/x86/boot.txt
++++ b/Documentation/x86/boot.txt
+@@ -685,9 +685,9 @@ Protocol:	2.08+
+   uncompressed data should be determined using the standard magic
+   numbers.  The currently supported compression formats are gzip
+   (magic numbers 1F 8B or 1F 9E), bzip2 (magic number 42 5A), LZMA
+-  (magic number 5D 00), XZ (magic number FD 37), and LZ4 (magic number
+-  02 21).  The uncompressed payload is currently always ELF (magic
+-  number 7F 45 4C 46).
++  (magic number 5D 00), XZ (magic number FD 37), LZ4 (magic number
++  02 21) and ZSTD (magic number 28 B5). The uncompressed payload is
++  currently always ELF (magic number 7F 45 4C 46).
+ 
+ Field name:	payload_length
+ Type:		read
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index ba7e3464ee92..203f7467f5c4 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -164,6 +164,7 @@ config X86
+ 	select HAVE_KERNEL_LZMA
  	select HAVE_KERNEL_LZO
- 	select HAVE_UID16
-diff --git a/arch/sh/Makefile b/arch/sh/Makefile
-index c521ade2557c..70925d0cd2a8 100644
---- a/arch/sh/Makefile
-+++ b/arch/sh/Makefile
-@@ -209,7 +209,7 @@ endif
- libs-$(CONFIG_SUPERH32)		:= arch/sh/lib/	$(libs-y)
- libs-$(CONFIG_SUPERH64)		:= arch/sh/lib64/ $(libs-y)
+ 	select HAVE_KERNEL_XZ
++	select HAVE_KERNEL_ZSTD
+ 	select HAVE_KPROBES
+ 	select HAVE_KPROBES_ON_FTRACE
+ 	select HAVE_FUNCTION_ERROR_INJECTION
+diff --git a/arch/x86/boot/compressed/Makefile b/arch/x86/boot/compressed/Makefile
+index 466f66c8a7f8..6d2a8d2d378d 100644
+--- a/arch/x86/boot/compressed/Makefile
++++ b/arch/x86/boot/compressed/Makefile
+@@ -24,7 +24,7 @@ OBJECT_FILES_NON_STANDARD	:= y
+ KCOV_INSTRUMENT		:= n
  
--BOOT_TARGETS = uImage uImage.bz2 uImage.gz uImage.lzma uImage.xz uImage.lzo \
-+BOOT_TARGETS = uImage uImage.bz2 uImage.gz uImage.xz uImage.lzo \
- 	       uImage.srec uImage.bin zImage vmlinux.bin vmlinux.srec \
- 	       romImage
- PHONY += $(BOOT_TARGETS)
-@@ -237,8 +237,6 @@ define archhelp
- 	@echo '  uImage.srec	           - Create an S-record for U-Boot'
- 	@echo '  uImage.bin	           - Kernel-only image for U-Boot (bin)'
- 	@echo '* uImage.gz	           - Kernel-only image for U-Boot (gzip)'
--	@echo '  uImage.bz2	           - Kernel-only image for U-Boot (bzip2)'
--	@echo '  uImage.lzma	           - Kernel-only image for U-Boot (lzma)'
- 	@echo '  uImage.xz	           - Kernel-only image for U-Boot (xz)'
- 	@echo '  uImage.lzo	           - Kernel-only image for U-Boot (lzo)'
- endef
-diff --git a/arch/sh/boot/Makefile b/arch/sh/boot/Makefile
-index 58592dfa5cb6..bf8cf598a5ab 100644
---- a/arch/sh/boot/Makefile
-+++ b/arch/sh/boot/Makefile
-@@ -21,15 +21,12 @@ CONFIG_PHYSICAL_START	?= $(CONFIG_MEMORY_START)
+ targets := vmlinux vmlinux.bin vmlinux.bin.gz vmlinux.bin.bz2 vmlinux.bin.lzma \
+-	vmlinux.bin.xz vmlinux.bin.lzo vmlinux.bin.lz4
++	vmlinux.bin.xz vmlinux.bin.lzo vmlinux.bin.lz4 vmlinux.bin.zst
  
- suffix-y := bin
- suffix-$(CONFIG_KERNEL_GZIP)	:= gz
--suffix-$(CONFIG_KERNEL_BZIP2)	:= bz2
--suffix-$(CONFIG_KERNEL_LZMA)	:= lzma
- suffix-$(CONFIG_KERNEL_XZ)	:= xz
- suffix-$(CONFIG_KERNEL_LZO)	:= lzo
- 
- targets := zImage vmlinux.srec romImage uImage uImage.srec uImage.gz \
--	   uImage.bz2 uImage.lzma uImage.xz uImage.lzo uImage.bin
--extra-y += vmlinux.bin vmlinux.bin.gz vmlinux.bin.bz2 vmlinux.bin.lzma \
--	   vmlinux.bin.xz vmlinux.bin.lzo
-+	   uImage.xz uImage.lzo uImage.bin
-+extra-y += vmlinux.bin vmlinux.bin.gz vmlinux.bin.xz vmlinux.bin.lzo
- subdir- := compressed romimage
- 
- $(obj)/zImage: $(obj)/compressed/vmlinux FORCE
-@@ -68,27 +65,15 @@ $(obj)/vmlinux.bin: vmlinux FORCE
- $(obj)/vmlinux.bin.gz: $(obj)/vmlinux.bin FORCE
- 	$(call if_changed,gzip)
- 
--$(obj)/vmlinux.bin.bz2: $(obj)/vmlinux.bin FORCE
--	$(call if_changed,bzip2)
--
--$(obj)/vmlinux.bin.lzma: $(obj)/vmlinux.bin FORCE
--	$(call if_changed,lzma)
--
- $(obj)/vmlinux.bin.xz: $(obj)/vmlinux.bin FORCE
- 	$(call if_changed,xzkern)
- 
- $(obj)/vmlinux.bin.lzo: $(obj)/vmlinux.bin FORCE
+ KBUILD_CFLAGS := -m$(BITS) -O2
+ KBUILD_CFLAGS += -fno-strict-aliasing $(call cc-option, -fPIE, -fPIC)
+@@ -142,6 +142,8 @@ $(obj)/vmlinux.bin.lzo: $(vmlinux.bin.all-y) FORCE
  	$(call if_changed,lzo)
+ $(obj)/vmlinux.bin.lz4: $(vmlinux.bin.all-y) FORCE
+ 	$(call if_changed,lz4)
++$(obj)/vmlinux.bin.zst: $(vmlinux.bin.all-y) FORCE
++	$(call if_changed,zstd)
  
--$(obj)/uImage.bz2: $(obj)/vmlinux.bin.bz2
--	$(call if_changed,uimage,bzip2)
--
- $(obj)/uImage.gz: $(obj)/vmlinux.bin.gz
- 	$(call if_changed,uimage,gzip)
+ suffix-$(CONFIG_KERNEL_GZIP)	:= gz
+ suffix-$(CONFIG_KERNEL_BZIP2)	:= bz2
+@@ -149,6 +151,7 @@ suffix-$(CONFIG_KERNEL_LZMA)	:= lzma
+ suffix-$(CONFIG_KERNEL_XZ)	:= xz
+ suffix-$(CONFIG_KERNEL_LZO) 	:= lzo
+ suffix-$(CONFIG_KERNEL_LZ4) 	:= lz4
++suffix-$(CONFIG_KERNEL_ZSTD)	:= zst
  
--$(obj)/uImage.lzma: $(obj)/vmlinux.bin.lzma
--	$(call if_changed,uimage,lzma)
--
- $(obj)/uImage.xz: $(obj)/vmlinux.bin.xz
- 	$(call if_changed,uimage,xz)
- 
-diff --git a/arch/sh/boot/compressed/Makefile b/arch/sh/boot/compressed/Makefile
-index f5e1bd779789..abd33fd0d525 100644
---- a/arch/sh/boot/compressed/Makefile
-+++ b/arch/sh/boot/compressed/Makefile
-@@ -6,7 +6,6 @@
+ quiet_cmd_mkpiggy = MKPIGGY $@
+       cmd_mkpiggy = $(obj)/mkpiggy $< > $@ || ( rm -f $@ ; false )
+diff --git a/arch/x86/boot/compressed/misc.c b/arch/x86/boot/compressed/misc.c
+index 8dd1d5ccae58..b6c8921100fb 100644
+--- a/arch/x86/boot/compressed/misc.c
++++ b/arch/x86/boot/compressed/misc.c
+@@ -76,6 +76,10 @@ static int lines, cols;
+ #ifdef CONFIG_KERNEL_LZ4
+ #include "../../../../lib/decompress_unlz4.c"
+ #endif
++
++#ifdef CONFIG_KERNEL_ZSTD
++#include "../../../../lib/decompress_unzstd.c"
++#endif
+ /*
+  * NOTE: When adding a new decompressor, please update the analysis in
+  * ../header.S.
+diff --git a/arch/x86/boot/header.S b/arch/x86/boot/header.S
+index 4c881c850125..af2efb256527 100644
+--- a/arch/x86/boot/header.S
++++ b/arch/x86/boot/header.S
+@@ -526,8 +526,14 @@ pref_address:		.quad LOAD_PHYSICAL_ADDR	# preferred load addr
+ # the size-dependent part now grows so fast.
  #
+ # extra_bytes = (uncompressed_size >> 8) + 65536
++#
++# ZSTD compressed data grows by at most 3 bytes per 128K, and only has a 22
++# byte fixed overhead but has a maximum block size of 128K, so it needs a
++# larger margin.
++#
++# extra_bytes = (uncompressed_size >> 8) + 131072
  
- targets		:= vmlinux vmlinux.bin vmlinux.bin.gz \
--		   vmlinux.bin.bz2 vmlinux.bin.lzma \
- 		   vmlinux.bin.xz vmlinux.bin.lzo \
- 		   head_$(BITS).o misc.o piggy.o
- 
-@@ -64,10 +63,6 @@ vmlinux.bin.all-y := $(obj)/vmlinux.bin
- 
- $(obj)/vmlinux.bin.gz: $(vmlinux.bin.all-y) FORCE
- 	$(call if_changed,gzip)
--$(obj)/vmlinux.bin.bz2: $(vmlinux.bin.all-y) FORCE
--	$(call if_changed,bzip2)
--$(obj)/vmlinux.bin.lzma: $(vmlinux.bin.all-y) FORCE
--	$(call if_changed,lzma)
- $(obj)/vmlinux.bin.xz: $(vmlinux.bin.all-y) FORCE
- 	$(call if_changed,xzkern)
- $(obj)/vmlinux.bin.lzo: $(vmlinux.bin.all-y) FORCE
-diff --git a/arch/sh/boot/compressed/misc.c b/arch/sh/boot/compressed/misc.c
-index c15cac9251b9..c82402add51e 100644
---- a/arch/sh/boot/compressed/misc.c
-+++ b/arch/sh/boot/compressed/misc.c
-@@ -44,24 +44,12 @@ extern int _end;
- static unsigned long free_mem_ptr;
- static unsigned long free_mem_end_ptr;
- 
--#ifdef CONFIG_HAVE_KERNEL_BZIP2
--#define HEAP_SIZE	0x400000
--#else
- #define HEAP_SIZE	0x10000
--#endif
- 
- #ifdef CONFIG_KERNEL_GZIP
- #include "../../../../lib/decompress_inflate.c"
+-#define ZO_z_extra_bytes	((ZO_z_output_len >> 8) + 65536)
++#define ZO_z_extra_bytes	((ZO_z_output_len >> 8) + 131072)
+ #if ZO_z_output_len > ZO_z_input_len
+ # define ZO_z_extract_offset	(ZO_z_output_len + ZO_z_extra_bytes - \
+ 				 ZO_z_input_len)
+diff --git a/arch/x86/include/asm/boot.h b/arch/x86/include/asm/boot.h
+index 680c320363db..d6dd43d25d9f 100644
+--- a/arch/x86/include/asm/boot.h
++++ b/arch/x86/include/asm/boot.h
+@@ -24,9 +24,11 @@
+ # error "Invalid value for CONFIG_PHYSICAL_ALIGN"
  #endif
  
 -#ifdef CONFIG_KERNEL_BZIP2
--#include "../../../../lib/decompress_bunzip2.c"
--#endif
--
--#ifdef CONFIG_KERNEL_LZMA
--#include "../../../../lib/decompress_unlzma.c"
--#endif
--
- #ifdef CONFIG_KERNEL_XZ
- #include "../../../../lib/decompress_unxz.c"
++#if defined(CONFIG_KERNEL_BZIP2)
+ # define BOOT_HEAP_SIZE		0x400000
+-#else /* !CONFIG_KERNEL_BZIP2 */
++#elif defined(CONFIG_KERNEL_ZSTD)
++# define BOOT_HEAP_SIZE		 0x30000
++#else
+ # define BOOT_HEAP_SIZE		 0x10000
  #endif
+ 
 -- 
 2.19.1
 
