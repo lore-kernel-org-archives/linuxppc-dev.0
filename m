@@ -2,84 +2,87 @@ Return-Path: <SRS0=4MsH=NU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+X-Spam-Status: No, score=-2.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C4F5DC43441
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 03:49:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4383EC43441
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 06:11:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1424D20855
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 03:49:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 7458C2086C
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 06:11:12 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="JeoZMXM3"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1424D20855
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="VajyWENW"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7458C2086C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42rmNx4XC9zF3VT
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 14:49:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42rqXZ3SHKzF3X7
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 17:11:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="JeoZMXM3";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="VajyWENW";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::d41; helo=mail-io1-xd41.google.com;
- envelope-from=oohall@gmail.com; receiver=<UNKNOWN>)
+ (client-ip=2607:f8b0:4864:20::542; helo=mail-pg1-x542.google.com;
+ envelope-from=frowand.list@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="JeoZMXM3"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="VajyWENW"; 
  dkim-atps=neutral
-Received: from mail-io1-xd41.google.com (mail-io1-xd41.google.com
- [IPv6:2607:f8b0:4864:20::d41])
+Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
+ [IPv6:2607:f8b0:4864:20::542])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42rmLQ3dkjzF3WL;
- Fri,  9 Nov 2018 14:47:10 +1100 (AEDT)
-Received: by mail-io1-xd41.google.com with SMTP id k17-v6so364298ioc.4;
- Thu, 08 Nov 2018 19:47:10 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42rqSf4TdnzF3Wd
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Nov 2018 17:07:46 +1100 (AEDT)
+Received: by mail-pg1-x542.google.com with SMTP id w3-v6so395249pgs.11
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Nov 2018 22:07:46 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=//rZIsKjV+wKZ6y0Ln1h5iGAWqFDeFSqFcdGvvx2ylU=;
- b=JeoZMXM36BRbgAKp+lBltAxQhlnTh/ImuSdJ2/DVPiM3VV8UIFPHnP1LmT+1n//93o
- LIfpqwjzTai+Rr8DqQJqXRfOZye8hrzjVVOHpiViMQJ94Xp8mHR9jkuOolXpZzc/+GVe
- g87c+Ydvl2WMVMGXlPkNdQKoAtRWy6gTBQdsf+svFMo0S4asaKx3PcSYQDbVd8RdxNiD
- BZU4IFvpN7Ncd/mP+ihhC9W/qrGJBstB3SWBwynxv1sOw4cjjDAjuglEbVcJnYxIk7c0
- xygynT3UBJ3gblW8FjAeJ0u0W1B4dCMg9BmysAdHmkvXqMhZ7jLuJtiLNucjxOwVamS3
- nIsQ==
+ h=from:to:cc:subject:date:message-id;
+ bh=79i22JUyVLOfuuR8WUkDKY87eLaLzqp9WcRkjfo7ANg=;
+ b=VajyWENWqlTq91fpxUnnqu480vt6YSrJcLN4mm3aJqg4E/mFtMdJvXW0ZvoX54Bt0d
+ YKNYSWHxPDIw6zKt0DB7cBec5ISIS/TSA9onO12KK9mGxjZTY/78KcibZLcz1CkZAYDO
+ ig6r03ScKFtpwczaiIhakiuX8lyF+zbx/BOrwGsUHWTU5ULMG9J3+kX0vL/g2QWh6Eq9
+ 16FypJmxG1YLfdA2j/sek0TN275LJyD2rmJNlgmrV/R3eKWRKXCHQ9TuLaVN+xJj9gqc
+ wYXcHa1qXIrZsfoDlcYIfZyoh7l3IfKhM7a/jVCAW8TmKKWAi3UcbXHtBxQfEdJ0Rklc
+ birQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=//rZIsKjV+wKZ6y0Ln1h5iGAWqFDeFSqFcdGvvx2ylU=;
- b=tcTcNZ13Hk2xFPOr4wPRIi2DOuSZHDT1DzHOWYxLUMcw4GgaTlwMpeQ1eClcEzeoxt
- HViwB4qyJXaISU44u5xPqw4lQrUW7g+Q21dImnUaxOF1JGaBOvLilovvGgK01f/0K9lo
- rP1VOTvLPX8Zjw3TujzlTy8d9a6ncG8nh92DjhUzHr40o8jz4X7hpcerGtA4gxMdpcrq
- xQMiGIzJn5LSQX8eYKJ/hDA1X3UBgJXY8zFzHZ1Tu2caVNg+BCPqxzw7fraMIpYTAbsQ
- gb8JB3PGhgWuRx5bbRDcNm9HEnWUqzf/tG5+X+xpTajEkTSF9Us66gDyDtB++2OGs4UN
- Yzgw==
-X-Gm-Message-State: AGRZ1gKQiHzC2RCR7AOMdC24JXrWgjo6nUr3sFa1LLkyVU/7vwIrt4lv
- 07aMLBO8GAinfDajgT9Uytti55C7UV4EskrL6K8=
-X-Google-Smtp-Source: AJdET5flp7aek8/TtI+v9Tsa7Em/p1OXdhw3q//op6HSjmkNovXxobYD7XMMFa4disRp7R/ggLGKOeTf2+WfDrQVJEg=
-X-Received: by 2002:a6b:3a08:: with SMTP id h8-v6mr6278519ioa.32.1541735227960; 
- Thu, 08 Nov 2018 19:47:07 -0800 (PST)
-MIME-Version: 1.0
-References: <81e9a13c-3f8e-41bb-4aae-c7680817dbd3@yadro.com>
- <CAOSf1CEAqOgekkz3iq53n2mcn0MqFAUp1rbTAHdyDBFgajFpBw@mail.gmail.com>
- <a8bdf661-e7b8-6b8b-ed6b-afb29f8a6249@yadro.com>
-In-Reply-To: <a8bdf661-e7b8-6b8b-ed6b-afb29f8a6249@yadro.com>
-From: Oliver <oohall@gmail.com>
-Date: Fri, 9 Nov 2018 14:46:55 +1100
-Message-ID: <CAOSf1CFmREjv1EP-XaGGahD+ze8G+c+5vu4NRz-+TN2t7nDpHQ@mail.gmail.com>
-Subject: Re: [Skiboot] Important details about race condition in
- EEH/NVMe-issue on ppc64le.
-To: d.koltsov@yadro.com
-Content-Type: text/plain; charset="UTF-8"
+ h=x-gm-message-state:from:to:cc:subject:date:message-id;
+ bh=79i22JUyVLOfuuR8WUkDKY87eLaLzqp9WcRkjfo7ANg=;
+ b=Lt9gbnRyhUHfdVcrnLUkvnG2zoI7Jdn1lJhQAd/YT3bzvqi8YL3aDT7oXNGh2AcfE/
+ n00blD2o8hdjfKhHxo5bj4NeXyXtKyr8d+Jd+kmHkkQWUIiBiXA0tR0xUoFvAUqaeJOl
+ ZtF3bilX8qGRxbPnRlcSBW76sbOOV99PE6zr33oF/ZFEgdTx8LIYDuQDO4i57ZJthec2
+ dB5fRFPPXnbUBO2Fp05Vftt/RIgrTOy4OlJVy4GtQRfOS/HHGDiDKTHntrgb4JtlmOg/
+ j0oSyDJ7K4SQcdnsUF6+miS0MH+Z6YosrGowwj4VGFSvKVN0R1Fs9bEcObITk+5owMy3
+ XXBQ==
+X-Gm-Message-State: AGRZ1gJKwhG4IyvSlSeVKMvcLM1d+CQJI8h6ko4fqr1R4gWJnpUAgnhH
+ 2f/e9SFVXSE4f379aGulCsM=
+X-Google-Smtp-Source: AJdET5fJdYO3GAfQ/Z/wHohJ2vzI4rYpjr5Qko8sGiSy/bxJLZHrq29FZLddGUnk4GpgqtTc9kNKmA==
+X-Received: by 2002:a63:8549:: with SMTP id u70mr6352729pgd.401.1541743664239; 
+ Thu, 08 Nov 2018 22:07:44 -0800 (PST)
+Received: from localhost.localdomain (c-24-6-192-50.hsd1.ca.comcast.net.
+ [24.6.192.50])
+ by smtp.gmail.com with ESMTPSA id c70-v6sm6620722pfg.97.2018.11.08.22.07.42
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
+ Thu, 08 Nov 2018 22:07:43 -0800 (PST)
+From: frowand.list@gmail.com
+To: Rob Herring <robh+dt@kernel.org>,
+ Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Alan Tull <atull@kernel.org>,
+ Moritz Fischer <mdf@kernel.org>
+Subject: [PATCH v7 00/17] of: overlay: validation checks, subsequent fixes
+Date: Thu,  8 Nov 2018 22:05:48 -0800
+Message-Id: <1541743565-23163-1-git-send-email-frowand.list@gmail.com>
+X-Mailer: git-send-email 1.9.1
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,105 +94,130 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: a.senichev@yadro.com, Sergey Miroshnichenko <s.miroshnichenko@yadro.com>,
- s.kachkin@yadro.com, m.polyakov@yadro.com,
- skiboot list <skiboot@lists.ozlabs.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: devicetree@vger.kernel.org, linux-fpga@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Nov 9, 2018 at 2:30 AM Koltsov Dmitriy <d.koltsov@yadro.com> wrote:
->
-> Hi, Oliver.
->
-> Your version of EEH/NVMe-issue looks close to be true.
->
-> I've applied simple patch to ./drivers/nvme/host/pci.c file:
->
-> @@ -29,6 +29,7 @@
->  #include <linux/types.h>
->  #include <linux/io-64-nonatomic-lo-hi.h>
->  #include <linux/sed-opal.h>
-> +#include <linux/delay.h>
->
->  #include "nvme.h"
->
-> @@ -2073,11 +2074,14 @@
->
->  static int nvme_pci_enable(struct nvme_dev *dev)
->  {
-> +    static int num=0;
->      int result = -ENOMEM;
->      struct pci_dev *pdev = to_pci_dev(dev->dev);
-> +    num=num+1;
->
->      if (pci_enable_device_mem(pdev))
->          return result;
-> +    msleep(num);
->
->      pci_set_master(pdev);
->
->
-> and find out approximate minimal estimation of delay which removes the EEH/NVMe-issue.
-> This delay is about 1 millisecond (see in the code above). So, it's a stable phenomena
-> that when all nvme disks have minimum mutual interval of 1(one) millisecond (each) to
-> enable upstream bridge then EEH/NVMe-issue is not reproducible. Hence, I have the
-> hypothesis that due to bar alignment patch (see prev message) the bridge enabling procedure
-> lasts significantly more time than in case of alignment=0.
+From: Frank Rowand <frank.rowand@sony.com>
 
-> So, in correspondence with your
-> hypothesis about several threads "pinging" PHB, it turns out that one of that threads
-> begins to write to PHB, while necessary time is not passed yet (~1 ms).
+Add checks to (1) overlay apply process and (2) memory freeing
+triggered by overlay release.  The checks are intended to detect
+possible memory leaks and invalid overlays.
 
-No, only the first thread ever touches the hardware (PCI config space,
-really). The first thread will set an in-memory flag which is seen by
-the other threads and taken to mean that the bridge is already
-enabled.
+The checks revealed bugs in existing code.  Fixed the bugs.
 
-> HW error follows and readl() of NVME_REG_CSTS returns 0xffffffff in nvme_pci_enable().
-> (And when align=0 the PHB enable procedure duration is significantly less than 1ms so
-> other threads which don't enable PHB themselves - has no conflict, because by the time
-> they tries to write to PHB - PHB is already really enabled).
-> I don't see here contradictions in such version of events sequence leading
-> to EEH/NVMe-issue.
->
-> So, there are two questions:
->
-> Q.1. Does my hypothesis about delay=1ms and about difference of PHB enable procedure
-> duration in two cases (align=0 and align=64K) looks close to be true ?
+While fixing bugs, noted other issues, which are fixed in
+separate patches.
 
-*shrug*
+FPGA folks:
 
-Probably? Even if there is a difference in timing I don't see why that
-is a problem. You might be taking (or not taking) a page fault due to
-the alignment patch, or maybe there's some extra state inside of linux
-that needed to be updated for some reason. It could be anything.
-Fundamentally, the problem here is that Linux has a race condition.
-Debugging the exact set of circumstances required to trigger the race
-is sometimes worth it, but I don't think this is one of those cases.
+  I made the validation checks that should result in an
+  invalid live devicetree report "ERROR" and cause the overlay apply
+  to fail.
 
-If you honestly believe that there is a problem here then can you
-provide us with some actual data rather than speculating about HW
-bugs? The Linux ftrace (function_graph is useful) infrastructure
-should allow you to do accurate measurements of the whole process and
-get a breakdown of what the slow parts are. Once you have a good
-overview of what code paths are being exercised in each case then you
-can do more detailed measurements of specific functions.
+  I made the memory leak validation tests report "WARNING" and allow
+  the overlay apply to complete successfully.  Please let me know
+  if you encounter the warnings.  There are at least two paths
+  forward to deal with the cases that trigger the warning: (1) change
+  the warning to an error and fail the overlay apply, or (2) find a
+  way to detect the potential memory leaks and free the memory
+  appropriately.
 
+ALL people:
 
-> Q.2. If answer is 'yes' to Q.1 - are there some procedures in FW or HW implementation in
-> POWER8 PHB that may "extend" phb enable procedure time execution because of alignment change
-> to 64K ? May be in OPAL or on-chip ? Or the only "suspected area" for EEH/NVMe-issue -
-> is in linux kernel procedures ?
+  The validations do _not_ address another major concern I have with
+  releasing overlays, which is use after free errors.
 
-I don't see any reason to suspect OPAL or the chip here.
+Changes since v6:
+  - 03/18 Add acked-by from Michael Ellerman
+  - 03/18 Move info from post "---" into header comment
+  - 04/18 Add acked-by from Michael Ellerman
+  - 03/18 Move info from post "---" into header comment, add more info
+  - 07/18 Drop.
 
-Oliver
+Changes since v5:
+  - move from 4.19-rc1 to 4.20-rc1
+  - all patches: add tested-by Alan Tull
+  - 05/18: update for context change from commit a613b26a50136 ("of:
+    Convert to using %pOFn instead of device_node.name")
 
->
->
->
-> Regards,
-> Dmitriy.
->
+Changes since v4:
+  - 01/18: make error message format consistent, error first, path last
+  - 09/18: create of_prop_val_eq() and change open code to use it
+  - 09/18: remove extra blank lines
+
+Changes since v3:
+  - 01/18: Add expected value of refcount for destroy cset entry error.  Also
+    explain the cause of the error.
+
+  - 09/18: for errors of an overlay changing the value of #size-cells or
+    #address-cells, return -EINVAL so that overlay apply will fail
+  - 09/18: for errors of an overlay changing the value of #size-cells or
+    #address-cells, make the message more direct.
+    Old message:
+      OF: overlay: ERROR: overlay and/or live tree #size-cells invalid in node /soc/base_fpga_region
+    New message:
+      OF: overlay: ERROR: changing value of /soc/base_fpga_region/#size-cells not allowed
+
+  - 13/18: Update patch comment header to state that this patch modifies the
+    previous patch to not return immediately on fragment error and
+    explain this is not a performance issue.
+  - 13/18: remove redundant "overlay" from two error messages.  "OF: overlay:"
+    is already present in pr_fmt()
+
+Changes since v2:
+
+  - 13/18: Use continue to reduce indentation in find_dup_cset_node_entry()
+    and find_dup_cset_prop()
+
+Changes since v1:
+
+  - move patch 16/16 to 17/18
+  - move patch 15/16 to 18/18
+  - new patch 15/18
+  - new patch 16/18
+
+  - 05/18: add_changeset_node() header comment: incorrect comment for @target
+
+  - 18/18: add same fix for of_parse_phandle_with_args()
+  - 18/18: add same fix for of_parse_phandle_with_args_map()
+
+Frank Rowand (17):
+  of: overlay: add tests to validate kfrees from overlay removal
+  of: overlay: add missing of_node_put() after add new node to changeset
+  of: overlay: add missing of_node_get() in __of_attach_node_sysfs
+  powerpc/pseries: add of_node_put() in dlpar_detach_node()
+  of: overlay: use prop add changeset entry for property in new nodes
+  of: overlay: do not duplicate properties from overlay for new nodes
+  of: overlay: reorder fields in struct fragment
+  of: overlay: validate overlay properties #address-cells and
+    #size-cells
+  of: overlay: make all pr_debug() and pr_err() messages unique
+  of: overlay: test case of two fragments adding same node
+  of: overlay: check prevents multiple fragments add or delete same node
+  of: overlay: check prevents multiple fragments touching same property
+  of: unittest: remove unused of_unittest_apply_overlay() argument
+  of: overlay: set node fields from properties when add new overlay node
+  of: unittest: allow base devicetree to have symbol metadata
+  of: unittest: find overlays[] entry by name instead of index
+  of: unittest: initialize args before calling of_*parse_*()
+
+ arch/powerpc/platforms/pseries/dlpar.c             |   2 +
+ drivers/of/dynamic.c                               |  59 ++++-
+ drivers/of/kobj.c                                  |   4 +-
+ drivers/of/overlay.c                               | 292 ++++++++++++++++-----
+ drivers/of/unittest-data/Makefile                  |   2 +
+ .../of/unittest-data/overlay_bad_add_dup_node.dts  |  28 ++
+ .../of/unittest-data/overlay_bad_add_dup_prop.dts  |  24 ++
+ drivers/of/unittest-data/overlay_base.dts          |   1 +
+ drivers/of/unittest.c                              |  96 +++++--
+ include/linux/of.h                                 |  21 +-
+ 10 files changed, 432 insertions(+), 97 deletions(-)
+ create mode 100644 drivers/of/unittest-data/overlay_bad_add_dup_node.dts
+ create mode 100644 drivers/of/unittest-data/overlay_bad_add_dup_prop.dts
+
+-- 
+Frank Rowand <frank.rowand@sony.com>
+
