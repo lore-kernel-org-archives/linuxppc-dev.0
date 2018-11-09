@@ -2,72 +2,73 @@ Return-Path: <SRS0=4MsH=NU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A6949C43441
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 11:36:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CC5A5C43441
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 12:33:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CDAE620883
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 11:36:05 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Tozr26f2"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CDAE620883
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
+	by mail.kernel.org (Postfix) with ESMTPS id 2F62920825
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 12:33:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2F62920825
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=debian.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42rylR3m5hzF3bh
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 22:36:03 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42s0260PChzF3bR
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 23:33:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=debian.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="Tozr26f2";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=209.85.222.196; helo=mail-qk1-f196.google.com;
+ envelope-from=breno.debian@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=srs0=8jp/=nu=linuxfoundation.org=gregkh@kernel.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="Tozr26f2"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=debian.org
+Received: from mail-qk1-f196.google.com (mail-qk1-f196.google.com
+ [209.85.222.196])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42ryh12wcYzF3Zj
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Nov 2018 22:33:01 +1100 (AEDT)
-Received: from localhost (71-6-98-120.static-ip.telepacific.net [71.6.98.120])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id A84C520825;
- Fri,  9 Nov 2018 11:32:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1541763178;
- bh=0DUF34A95pkCj93K68jf3LRXiQrTfL8ZmLN1ZhB5A30=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=Tozr26f2KCK6bZF3T7jOTCNnJj3hvHyXvM6dbBm2a+JTH/ehrOGD+zkg5kg8nVp7w
- US8MDdsB032ur6avIu0eUoXA73d85ixGax85t3gYlhEEtZP7V8hxbdAk2lugcmLN7q
- SBaoCeqTJbteJ1e4tj9KOAH7jHGwNThWie8o1Yeg=
-Date: Fri, 9 Nov 2018 03:32:57 -0800
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [PATCH v2] PCI/MSI: Don't touch MSI bits when the PCI device is
- disconnected
-Message-ID: <20181109113257.GB29785@kroah.com>
-References: <20180918221501.13112-1-mr.nuke.me@gmail.com>
- <20181107234257.GC41183@google.com>
- <20181108200855.GE41183@google.com>
- <20181108220117.GA11466@kroah.com>
- <20181109072953.ox7qfpnibb7drmf6@wunner.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42rzyQ5h7PzF3b9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Nov 2018 23:30:38 +1100 (AEDT)
+Received: by mail-qk1-f196.google.com with SMTP id d135so1176481qkc.12
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Nov 2018 04:30:38 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=q/nu3oeqAnSKPEOeYOx5RQ4xAlGVKEFnZNC3cgIskd8=;
+ b=cu1b9VW6DxsBcc5kyOuA5jjkxQTNOv/saa3LdHB9m+GrUaG9/Cyl08a9CXi59V9hYx
+ otCja/rDdLwSFdAWdq8ogR9Ng39BxHv9lXhc8mfk8BwwW7YnEjPyiP72i2vK1zPMtlp4
+ 33MbayZSeNLpnHd3WMo0yxhu5A3PAwYzOHPf8CKalahfV6O+5vAdv4hWvUMwv5SIWmvx
+ GabTGQT6GfKBpH/MARm0XNmQvr8w7w5qlFNNfnOvKBOp74H67IS75FPLJ5S9VLJpO8LY
+ IhOjwH/A7uSqOYepcR7uYaGinA/xrnvCwhbReL31aAEBL4k6fRwvm3X3xP1NBs6tNooS
+ EDOQ==
+X-Gm-Message-State: AGRZ1gIjT85wvTSlImg9OzQmuxQNrcTMCk1nIpr/kvkDOvzCm/aD5w8V
+ a60KR+eBs3me42S9Imvy3t5+JQ9Y
+X-Google-Smtp-Source: AJdET5eL7Xrglb8ZlbKb1qTOPQz5/4UqldFz/f7qnvhV7hXTF3RqchFCKF2kkHGqzIK48H8rCFXzcA==
+X-Received: by 2002:a37:18e5:: with SMTP id 98mr8313551qky.333.1541766635631; 
+ Fri, 09 Nov 2018 04:30:35 -0800 (PST)
+Received: from [10.0.0.8] ([177.83.210.7])
+ by smtp.gmail.com with ESMTPSA id u4sm601460qkk.51.2018.11.09.04.30.33
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Fri, 09 Nov 2018 04:30:34 -0800 (PST)
+Subject: Re: [PATCH] powerpc: Add KVM guest defconfig
+To: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
+References: <20181108050826.17796-1-sathnaga@linux.vnet.ibm.com>
+ <1bfa6ffb-80a9-017e-241f-bafa05b600f7@debian.org>
+ <20181109095926.GA15706@dhcp-9-193-110-205.in.ibm.com>
+From: Breno Leitao <leitao@debian.org>
+Message-ID: <6c6b0661-3271-a4ea-1006-3b1dccf53a75@debian.org>
+Date: Fri, 9 Nov 2018 10:30:36 -0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20181109072953.ox7qfpnibb7drmf6@wunner.de>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <20181109095926.GA15706@dhcp-9-193-110-205.in.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,62 +80,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alex_gagniuc@dellteam.com, Sam Bobroff <sbobroff@linux.ibm.com>,
- linux-pci@vger.kernel.org, shyam_iyer@dell.com, linux-kernel@vger.kernel.org,
- keith.busch@intel.com, Bjorn Helgaas <helgaas@kernel.org>,
- Alexandru Gagniuc <mr.nuke.me@gmail.com>, Oliver O'Halloran <oohall@gmail.com>,
- austin_bolen@dell.com, linuxppc-dev@lists.ozlabs.org,
- Jonathan Derrick <jonathan.derrick@intel.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Nov 09, 2018 at 08:29:53AM +0100, Lukas Wunner wrote:
-> On Thu, Nov 08, 2018 at 02:01:17PM -0800, Greg Kroah-Hartman wrote:
-> > On Thu, Nov 08, 2018 at 02:09:17PM -0600, Bjorn Helgaas wrote:
-> > > I'm having second thoughts about this.  One thing I'm uncomfortable
-> > > with is that sprinkling pci_dev_is_disconnected() around feels ad hoc
-> > 
-> > I think my stance always has been that this call is not good at all
-> > because once you call it you never really know if it is still true as
-> > the device could have been removed right afterward.
-> > 
-> > So almost any code that relies on it is broken, there is no locking and
-> > it can and will race and you will loose.
+hi Satheesh,
+
+On 11/09/2018 07:59 AM, Satheesh Rajendran wrote:
+> On Thu, Nov 08, 2018 at 04:23:07PM -0200, Breno Leitao wrote:
+>> hi Satheesh,
+>>
+>> On 11/08/2018 03:08 AM, sathnaga@linux.vnet.ibm.com wrote:
+>>> --- /dev/null
+>>> +++ b/arch/powerpc/configs/guest.config
+>>> @@ -0,0 +1,14 @@
+>>> +CONFIG_VIRTIO_BLK=y
+>>> +CONFIG_VIRTIO_BLK_SCSI=y
+>>> +CONFIG_SCSI_VIRTIO=y
+>>> +CONFIG_VIRTIO_NET=y
+>>> +CONFIG_NET_FAILOVER=y
+>>> +CONFIG_VIRTIO_CONSOLE=y
+>>> +CONFIG_VIRTIO=y
+>>> +CONFIG_VIRTIO_PCI=y
+>>> +CONFIG_KVM_GUEST=y
+>>> +CONFIG_EPAPR_PARAVIRT=y
+>>> +CONFIG_XFS_FS=y
+>>
+>> Why a guest kernel needs to have XFS integrated in the core image? I am
+>> wondering if it is a requirement from another CONFIG_ option.
 > 
-> Hm, to be honest if that's your impression I think you must have missed a
-> large portion of the discussion we've been having over the past 2 years.
-> 
-> Please consider reading this LWN article, particularly the "Surprise
-> removal" section, to get up to speed:
-> 
-> https://lwn.net/Articles/767885/
-> 
-> You seem to be assuming that all we care about is the *return value* of
-> an mmio read.  However a transaction to a surprise removed device has
-> side effects beyond returning all ones, such as a Completion Timeout
-> which, with thousands of transactions in flight, added up to many seconds
-> to handle removal of an NVMe array and occasionally caused MCEs.
+> Idea is to have a working config which would boot guest without initramfs,
+> other FS(like EXT4) is already integrated in the core image, 
+> thought this would be helpful for distributions, which default XFS as root disk.
 
-Again, I still claim this is broken hardware/firmware :)
+Nice! That makes sense and it is a good idea.
 
-> It is not an option to just blindly carry out device accesses even though
-> it is known the device is gone, Completion Timeouts be damned.
-
-I don't disagree with you at all, and your other email is great with
-summarizing the issues here.
-
-What I do object to is somehow relying on that function call as knowing
-that the device really is present or not.  It's a good hint, yes, but
-driver authors still have to be able to handle the bad data coming back
-from when the call races with the device being removed.
-
-> However there is more to it than just Completion Timeouts, this is all
-> detailed in the LWN article.
-
-And that's a great article and your work here is much appreciated.  I
-think we are in violent agreement :)
-
-thanks,
-
-greg k-h
+Thanks!
