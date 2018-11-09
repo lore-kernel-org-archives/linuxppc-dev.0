@@ -2,23 +2,23 @@ Return-Path: <SRS0=4MsH=NU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_NEOMUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EDE94C43441
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 19:36:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D2D6C43441
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 19:38:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4DB132086C
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 19:36:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4DB132086C
+	by mail.kernel.org (Postfix) with ESMTPS id 9CA872089A
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 19:38:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9CA872089A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=angband.pl
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42s9Pr3TJ8zF3YB
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Nov 2018 06:36:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42s9Rq4GpHzF3fp
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Nov 2018 06:38:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=angband.pl
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=angband.pl
@@ -30,19 +30,26 @@ Received: from tartarus.angband.pl (tartarus.angband.pl
  [IPv6:2001:41d0:602:dbe::8])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42s91J32jPzF3dW
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Nov 2018 06:18:44 +1100 (AEDT)
-Received: from kilobyte by tartarus.angband.pl with local (Exim 4.89)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42s91N0hhczF3dc
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Nov 2018 06:18:47 +1100 (AEDT)
+Received: from 89-64-163-218.dynamic.chello.pl ([89.64.163.218]
+ helo=barad-dur.angband.pl)
+ by tartarus.angband.pl with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.89) (envelope-from <kilobyte@angband.pl>)
+ id 1gLC3p-000520-QG; Fri, 09 Nov 2018 20:03:19 +0100
+Received: from kholdan.angband.pl ([2001:470:64f4::5])
+ by barad-dur.angband.pl with smtp (Exim 4.89)
  (envelope-from <kilobyte@angband.pl>)
- id 1gLC0X-000503-84; Fri, 09 Nov 2018 19:59:53 +0100
-Date: Fri, 9 Nov 2018 19:59:53 +0100
+ id 1gLC3o-00059m-8s; Fri, 09 Nov 2018 20:03:17 +0100
+Received: by kholdan.angband.pl (sSMTP sendmail emulation);
+ Fri, 09 Nov 2018 20:03:16 +0100
 From: Adam Borowski <kilobyte@angband.pl>
 To: linux-kernel@vger.kernel.org, Nick Terrell <terrelln@fb.com>,
  Russell King <linux@armlinux.org.uk>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- linux-m68k@lists.linux-m68k.org, Ralf Baechle <ralf@linux-mips.org>,
- Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>,
- linux-mips@linux-mips.org, Jonas Bonn <jonas@southpole.se>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, linux-m68k@lists.linux-m68k.org,
+ Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>,
+ James Hogan <jhogan@kernel.org>, linux-mips@linux-mips.org,
+ Jonas Bonn <jonas@southpole.se>,
  Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
  Stafford Horne <shorne@gmail.com>, openrisc@lists.librecores.org,
  "James E.J. Bottomley" <jejb@parisc-linux.org>,
@@ -51,23 +58,24 @@ To: linux-kernel@vger.kernel.org, Nick Terrell <terrelln@fb.com>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  linuxppc-dev@lists.ozlabs.org, Martin Schwidefsky <schwidefsky@de.ibm.com>,
  Heiko Carstens <heiko.carstens@de.ibm.com>, linux-s390@vger.kernel.org,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- Rich Felker <dalias@libc.org>, linux-sh@vger.kernel.org,
- Thomas Gleixner <tglx@linutronix.de>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
+ linux-sh@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
  Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
  x86@kernel.org, Chris Zankel <chris@zankel.net>,
  Max Filippov <jcmvbkbc@gmail.com>, linux-xtensa@linux-xtensa.org
-Subject: [PATCH 0/17] Kernel compression: add ZSTD, remove LZMA1 and BZIP2
-Message-ID: <20181109185953.xwyelyqnygbskkxk@angband.pl>
+Date: Fri,  9 Nov 2018 20:02:50 +0100
+Message-Id: <20181109190304.8573-3-kilobyte@angband.pl>
+X-Mailer: git-send-email 2.19.1
+In-Reply-To: <20181109190304.8573-1-kilobyte@angband.pl>
+References: <20181109185953.xwyelyqnygbskkxk@angband.pl>
+ <20181109190304.8573-1-kilobyte@angband.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-Junkbait: aaron@angband.pl, zzyx@angband.pl
-User-Agent: NeoMutt/20170113 (1.7.2)
-X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Connect-IP: 89.64.163.218
 X-SA-Exim-Mail-From: kilobyte@angband.pl
-X-SA-Exim-Scanned: No (on tartarus.angband.pl); SAEximRunCond expanded to false
+Subject: [PATCH 03/17] .gitignore: add ZSTD-compressed files
+X-SA-Exim-Version: 4.2.1 (built Tue, 02 Aug 2016 21:08:31 +0000)
+X-SA-Exim-Scanned: Yes (on tartarus.angband.pl)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,56 +87,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Adam Borowski <kilobyte@angband.pl>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi!
-As new compressors get invented, they tend to find their way into the
-kernel, yet we never prune superseded ones.  It's time to do so.
+For now, that's arch/x86/boot/compressed/vmlinux.bin.zst but probably more
+will come, thus let's be consistent with all other compressors.
 
-In particular, BZIP2 is drastically slower than other compressors we
-have, even when they achieve smaller sizes.  It takes more memory, too.
-And, BZIP2 is not used anywhere else in the kernel -- just for booting
-the kernel itself and the initrd.  Thus, we can drop it from the tree
-completely, making Linus happier by around 900 lines.
+Signed-off-by: Adam Borowski <kilobyte@angband.pl>
+---
+ .gitignore | 1 +
+ 1 file changed, 1 insertion(+)
 
-LZMA1 is redundant with XZ (LZMA2), and unlike the latter, it uses its own
-copy of code that's not shared with anything else (some drivers use XZ).
-Let's drop it as well.  Some bootloaders can use it thus let's keep the
-Kconfig option, but I left no piece of code inside the kernel itself.
-
-On the other hand, Nick Terrell has a couple of patches adding ZSTD support
-(using code already in use in multiple pieces around the kernel).  ZSTD is
-strong and fast, obsoleting all mid-range compressors.  As the removal of
-BZIP2 and LZMA1 would be hopelessly entangled with this addition, I'm
-resending Nick's patches here.  I've been booting using them since Oct'17
-on amd64 (kernel+initrd), armhf and arm64 (initrd) without issues, other
-folks tested various other architectures as well.
-
-Thus, I'd recommend people to use:
-* XZ for most machines
-* ZSTD where speed is important
-* maaaaybe LZ4 is some special cases
-(grub and u-boot are ridiculously slow at reading, making fast but weak
-decompressors a net loss.  On the other hand, XZ decompresses pretty fast
-but is very slow at compress time, making ZSTD preferred for rapid devel
-cycles.)
-
-* we can't get rid of GZIP in foreseable future
-* LZO is obsolete but is used elsewhere in the kernel
-
-Total:
- 69 files changed, 518 insertions(+), 1785 deletions(-)
-
-Not sure whose tree this patchset should go through.  I'm also not sure
-how finely split into commits you want the arch bits be; I included
-defconfig bits all together, yet separated code changes per-arch.
-
-
-Meow!
+diff --git a/.gitignore b/.gitignore
+index 97ba6b79834c..0d09cf1c053c 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -42,6 +42,7 @@
+ *.tab.[ch]
+ *.tar
+ *.xz
++*.zst
+ Module.symvers
+ modules.builtin
+ 
 -- 
-⢀⣴⠾⠻⢶⣦⠀ 
-⣾⠁⢠⠒⠀⣿⡁ A dumb species has no way to open a tuna can.
-⢿⡄⠘⠷⠚⠋⠀ A smart species invents a can opener.
-⠈⠳⣄⠀⠀⠀⠀ A master species delegates.
+2.19.1
+
