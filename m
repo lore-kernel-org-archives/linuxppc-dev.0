@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6218DC43441
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 16:52:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C1C5C43441
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 17:13:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E0F7220818
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 16:52:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E0F7220818
+	by mail.kernel.org (Postfix) with ESMTPS id B64C220818
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 17:13:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B64C220818
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42s5ms0gDxzF3Wp
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Nov 2018 03:52:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42s6DM4c34zF3Sp
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Nov 2018 04:13:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
@@ -29,33 +29,33 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42s5kt4ddszF3Zj
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Nov 2018 03:51:02 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42s6BQ6hY2zF3Zb
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Nov 2018 04:11:26 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 42s5kg0w8vz9v0XD;
- Fri,  9 Nov 2018 17:50:51 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 42s6BB6mTlz9v0XK;
+ Fri,  9 Nov 2018 18:11:14 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id nDFsLZi7Zniu; Fri,  9 Nov 2018 17:50:51 +0100 (CET)
+ with ESMTP id 9qqDz3jeip2V; Fri,  9 Nov 2018 18:11:14 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 42s5kg0M0qz9v0XC;
- Fri,  9 Nov 2018 17:50:51 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 42s6BB6BLNz9v0XJ;
+ Fri,  9 Nov 2018 18:11:14 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id C7E568B899;
- Fri,  9 Nov 2018 17:50:56 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id AA23E8B899;
+ Fri,  9 Nov 2018 18:11:20 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id GRvJAVRqjdyO; Fri,  9 Nov 2018 17:50:56 +0100 (CET)
+ with ESMTP id BY4XbDnqDaX1; Fri,  9 Nov 2018 18:11:20 +0100 (CET)
 Received: from PO15451 (po15451.idsi0.si.c-s.fr [172.25.231.2])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 6322B8B887;
- Fri,  9 Nov 2018 17:50:56 +0100 (CET)
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.co>
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 682598B887;
+ Fri,  9 Nov 2018 18:11:20 +0100 (CET)
 From: Christophe LEROY <christophe.leroy@c-s.fr>
 Subject: UBSAN: Undefined behaviour in kernel/rcu/tree_plugin.h in 4.20-rc1
-Message-ID: <84540bcb-c515-fb79-3a37-0a24efd34566@c-s.fr>
-Date: Fri, 9 Nov 2018 17:50:56 +0100
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Message-ID: <dc5e555d-129e-aae8-889d-7b4e82197b3b@c-s.fr>
+Date: Fri, 9 Nov 2018 18:11:20 +0100
 User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:52.0) Gecko/20100101
  Thunderbird/52.9.1
 MIME-Version: 1.0
@@ -79,7 +79,9 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Paul,
+(Resending due to error in Paul's address)
+
+Paul
 
 I get the following UBSAN reports in 4.20-rc1 on an MPC8321E 
 (powerpc/book3s/32)
