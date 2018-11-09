@@ -2,93 +2,72 @@ Return-Path: <SRS0=4MsH=NU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 567F1C43441
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 10:12:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A6949C43441
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 11:36:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 62CC920840
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 10:12:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 62CC920840
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id CDAE620883
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 11:36:05 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Tozr26f2"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CDAE620883
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42rwgl5zqczF3N9
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 21:02:43 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42rylR3m5hzF3bh
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 22:36:03 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=sathnaga@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="Tozr26f2";
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=srs0=8jp/=nu=linuxfoundation.org=gregkh@kernel.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ header.from=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="Tozr26f2"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42rwdg3dmnzF3Z6
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Nov 2018 21:00:53 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wA9A0kVX153697
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Nov 2018 05:00:50 -0500
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2nn4p4q4tk-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Nov 2018 05:00:48 -0500
-Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sathnaga@linux.vnet.ibm.com>;
- Fri, 9 Nov 2018 09:59:33 -0000
-Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
- by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 9 Nov 2018 09:59:31 -0000
-Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
- [9.149.105.60])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wA99xUfS4850034
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Fri, 9 Nov 2018 09:59:31 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D7B5542045;
- Fri,  9 Nov 2018 09:59:30 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9913E4203F;
- Fri,  9 Nov 2018 09:59:29 +0000 (GMT)
-Received: from dhcp-9-193-110-205.in.ibm.com (unknown [9.193.110.205])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Fri,  9 Nov 2018 09:59:29 +0000 (GMT)
-Date: Fri, 9 Nov 2018 15:29:26 +0530
-From: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
-To: Breno Leitao <leitao@debian.org>
-Subject: Re: [PATCH] powerpc: Add KVM guest defconfig
-References: <20181108050826.17796-1-sathnaga@linux.vnet.ibm.com>
- <1bfa6ffb-80a9-017e-241f-bafa05b600f7@debian.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42ryh12wcYzF3Zj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Nov 2018 22:33:01 +1100 (AEDT)
+Received: from localhost (71-6-98-120.static-ip.telepacific.net [71.6.98.120])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id A84C520825;
+ Fri,  9 Nov 2018 11:32:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1541763178;
+ bh=0DUF34A95pkCj93K68jf3LRXiQrTfL8ZmLN1ZhB5A30=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=Tozr26f2KCK6bZF3T7jOTCNnJj3hvHyXvM6dbBm2a+JTH/ehrOGD+zkg5kg8nVp7w
+ US8MDdsB032ur6avIu0eUoXA73d85ixGax85t3gYlhEEtZP7V8hxbdAk2lugcmLN7q
+ SBaoCeqTJbteJ1e4tj9KOAH7jHGwNThWie8o1Yeg=
+Date: Fri, 9 Nov 2018 03:32:57 -0800
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [PATCH v2] PCI/MSI: Don't touch MSI bits when the PCI device is
+ disconnected
+Message-ID: <20181109113257.GB29785@kroah.com>
+References: <20180918221501.13112-1-mr.nuke.me@gmail.com>
+ <20181107234257.GC41183@google.com>
+ <20181108200855.GE41183@google.com>
+ <20181108220117.GA11466@kroah.com>
+ <20181109072953.ox7qfpnibb7drmf6@wunner.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1bfa6ffb-80a9-017e-241f-bafa05b600f7@debian.org>
+In-Reply-To: <20181109072953.ox7qfpnibb7drmf6@wunner.de>
 User-Agent: Mutt/1.10.1 (2018-07-13)
-X-TM-AS-GCONF: 00
-x-cbid: 18110909-0008-0000-0000-00000290192C
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18110909-0009-0000-0000-000021FA19F6
-Message-Id: <20181109095926.GA15706@dhcp-9-193-110-205.in.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-11-09_03:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=3 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=766 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1807170000 definitions=main-1811090094
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,50 +79,62 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, sathnaga@linux.vnet.ibm.com
+Cc: alex_gagniuc@dellteam.com, Sam Bobroff <sbobroff@linux.ibm.com>,
+ linux-pci@vger.kernel.org, shyam_iyer@dell.com, linux-kernel@vger.kernel.org,
+ keith.busch@intel.com, Bjorn Helgaas <helgaas@kernel.org>,
+ Alexandru Gagniuc <mr.nuke.me@gmail.com>, Oliver O'Halloran <oohall@gmail.com>,
+ austin_bolen@dell.com, linuxppc-dev@lists.ozlabs.org,
+ Jonathan Derrick <jonathan.derrick@intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Nov 08, 2018 at 04:23:07PM -0200, Breno Leitao wrote:
-> hi Satheesh,
+On Fri, Nov 09, 2018 at 08:29:53AM +0100, Lukas Wunner wrote:
+> On Thu, Nov 08, 2018 at 02:01:17PM -0800, Greg Kroah-Hartman wrote:
+> > On Thu, Nov 08, 2018 at 02:09:17PM -0600, Bjorn Helgaas wrote:
+> > > I'm having second thoughts about this.  One thing I'm uncomfortable
+> > > with is that sprinkling pci_dev_is_disconnected() around feels ad hoc
+> > 
+> > I think my stance always has been that this call is not good at all
+> > because once you call it you never really know if it is still true as
+> > the device could have been removed right afterward.
+> > 
+> > So almost any code that relies on it is broken, there is no locking and
+> > it can and will race and you will loose.
 > 
-> On 11/08/2018 03:08 AM, sathnaga@linux.vnet.ibm.com wrote:
-> > --- /dev/null
-> > +++ b/arch/powerpc/configs/guest.config
-> > @@ -0,0 +1,14 @@
-> > +CONFIG_VIRTIO_BLK=y
-> > +CONFIG_VIRTIO_BLK_SCSI=y
-> > +CONFIG_SCSI_VIRTIO=y
-> > +CONFIG_VIRTIO_NET=y
-> > +CONFIG_NET_FAILOVER=y
-> > +CONFIG_VIRTIO_CONSOLE=y
-> > +CONFIG_VIRTIO=y
-> > +CONFIG_VIRTIO_PCI=y
-> > +CONFIG_KVM_GUEST=y
-> > +CONFIG_EPAPR_PARAVIRT=y
-> > +CONFIG_XFS_FS=y
+> Hm, to be honest if that's your impression I think you must have missed a
+> large portion of the discussion we've been having over the past 2 years.
 > 
-> Why a guest kernel needs to have XFS integrated in the core image? I am
-> wondering if it is a requirement from another CONFIG_ option.
-
-Idea is to have a working config which would boot guest without initramfs,
-other FS(like EXT4) is already integrated in the core image, 
-thought this would be helpful for distributions, which default XFS as root disk.
-
-Hope this should be fine?
-
+> Please consider reading this LWN article, particularly the "Surprise
+> removal" section, to get up to speed:
 > 
-> If it is not a strict requirement from another config, I think we can keep it
-> as defined at ppc64_defconfig, which defines it as module (CONFIG_XFS_FS=m).
+> https://lwn.net/Articles/767885/
 > 
-> Thanks for this patch, very useful.
+> You seem to be assuming that all we care about is the *return value* of
+> an mmio read.  However a transaction to a surprise removed device has
+> side effects beyond returning all ones, such as a Completion Timeout
+> which, with thousands of transactions in flight, added up to many seconds
+> to handle removal of an NVMe array and occasionally caused MCEs.
 
-Thanks Breno! :-)
+Again, I still claim this is broken hardware/firmware :)
 
--Satheesh.
+> It is not an option to just blindly carry out device accesses even though
+> it is known the device is gone, Completion Timeouts be damned.
 
-> Breno
-> 
+I don't disagree with you at all, and your other email is great with
+summarizing the issues here.
 
+What I do object to is somehow relying on that function call as knowing
+that the device really is present or not.  It's a good hint, yes, but
+driver authors still have to be able to handle the bad data coming back
+from when the call races with the device being removed.
+
+> However there is more to it than just Completion Timeouts, this is all
+> detailed in the LWN article.
+
+And that's a great article and your work here is much appreciated.  I
+think we are in violent agreement :)
+
+thanks,
+
+greg k-h
