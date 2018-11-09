@@ -2,63 +2,93 @@ Return-Path: <SRS0=4MsH=NU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 423CAC43441
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 07:07:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 567F1C43441
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 10:12:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B3DB52080D
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 07:07:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B3DB52080D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 62CC920840
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 10:12:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 62CC920840
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42rrnn1JYpzF3RZ
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 18:07:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by lists.ozlabs.org (Postfix) with ESMTP id 42rwgl5zqczF3N9
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 21:02:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=sathnaga@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42rrlm3q9YzF3ZH
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Nov 2018 18:05:56 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 42rrlb1CN4z9ty8r;
- Fri,  9 Nov 2018 08:05:47 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id SMJXeHEkxyHE; Fri,  9 Nov 2018 08:05:47 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 42rrlb0kTwz9ttBy;
- Fri,  9 Nov 2018 08:05:47 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 2CF5E8B878;
- Fri,  9 Nov 2018 08:05:52 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 2S0QATzhOeK8; Fri,  9 Nov 2018 08:05:52 +0100 (CET)
-Received: from po14163vm.idsi0.si.c-s.fr (unknown [172.25.231.2])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0FA248B756;
- Fri,  9 Nov 2018 08:05:52 +0100 (CET)
-Received: by po14163vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id DE637699D2; Fri,  9 Nov 2018 07:05:51 +0000 (UTC)
-Message-Id: <ca27a073c872e243be1d17a89afb4b4aeb9a298b.1541714054.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] lkdtm: do not depend on CONFIG_BLOCK
-To: Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Fri,  9 Nov 2018 07:05:51 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42rwdg3dmnzF3Z6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Nov 2018 21:00:53 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wA9A0kVX153697
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Nov 2018 05:00:50 -0500
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2nn4p4q4tk-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Nov 2018 05:00:48 -0500
+Received: from localhost
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sathnaga@linux.vnet.ibm.com>;
+ Fri, 9 Nov 2018 09:59:33 -0000
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Fri, 9 Nov 2018 09:59:31 -0000
+Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
+ [9.149.105.60])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wA99xUfS4850034
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Fri, 9 Nov 2018 09:59:31 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D7B5542045;
+ Fri,  9 Nov 2018 09:59:30 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 9913E4203F;
+ Fri,  9 Nov 2018 09:59:29 +0000 (GMT)
+Received: from dhcp-9-193-110-205.in.ibm.com (unknown [9.193.110.205])
+ by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Fri,  9 Nov 2018 09:59:29 +0000 (GMT)
+Date: Fri, 9 Nov 2018 15:29:26 +0530
+From: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
+To: Breno Leitao <leitao@debian.org>
+Subject: Re: [PATCH] powerpc: Add KVM guest defconfig
+References: <20181108050826.17796-1-sathnaga@linux.vnet.ibm.com>
+ <1bfa6ffb-80a9-017e-241f-bafa05b600f7@debian.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1bfa6ffb-80a9-017e-241f-bafa05b600f7@debian.org>
+User-Agent: Mutt/1.10.1 (2018-07-13)
+X-TM-AS-GCONF: 00
+x-cbid: 18110909-0008-0000-0000-00000290192C
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18110909-0009-0000-0000-000021FA19F6
+Message-Id: <20181109095926.GA15706@dhcp-9-193-110-205.in.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-11-09_03:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=3 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=766 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1807170000 definitions=main-1811090094
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,63 +100,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Reply-To: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, sathnaga@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Most parts of lkdtm don't require CONFIG_BLOCK.
+On Thu, Nov 08, 2018 at 04:23:07PM -0200, Breno Leitao wrote:
+> hi Satheesh,
+> 
+> On 11/08/2018 03:08 AM, sathnaga@linux.vnet.ibm.com wrote:
+> > --- /dev/null
+> > +++ b/arch/powerpc/configs/guest.config
+> > @@ -0,0 +1,14 @@
+> > +CONFIG_VIRTIO_BLK=y
+> > +CONFIG_VIRTIO_BLK_SCSI=y
+> > +CONFIG_SCSI_VIRTIO=y
+> > +CONFIG_VIRTIO_NET=y
+> > +CONFIG_NET_FAILOVER=y
+> > +CONFIG_VIRTIO_CONSOLE=y
+> > +CONFIG_VIRTIO=y
+> > +CONFIG_VIRTIO_PCI=y
+> > +CONFIG_KVM_GUEST=y
+> > +CONFIG_EPAPR_PARAVIRT=y
+> > +CONFIG_XFS_FS=y
+> 
+> Why a guest kernel needs to have XFS integrated in the core image? I am
+> wondering if it is a requirement from another CONFIG_ option.
 
-This patch limits dependency to CONFIG_BLOCK in order to give embedded
-platforms which don't select CONFIG_BLOCK the opportunity to use LKDTM.
+Idea is to have a working config which would boot guest without initramfs,
+other FS(like EXT4) is already integrated in the core image, 
+thought this would be helpful for distributions, which default XFS as root disk.
 
-Fixes: fddd9cf82c9f ("make LKDTM depend on BLOCK")
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- drivers/misc/lkdtm/core.c | 7 ++++++-
- lib/Kconfig.debug         | 1 -
- 2 files changed, 6 insertions(+), 2 deletions(-)
+Hope this should be fine?
 
-diff --git a/drivers/misc/lkdtm/core.c b/drivers/misc/lkdtm/core.c
-index 2837dc77478e..bc76756b7eda 100644
---- a/drivers/misc/lkdtm/core.c
-+++ b/drivers/misc/lkdtm/core.c
-@@ -40,9 +40,12 @@
- #include <linux/interrupt.h>
- #include <linux/hrtimer.h>
- #include <linux/slab.h>
--#include <scsi/scsi_cmnd.h>
- #include <linux/debugfs.h>
- 
-+#ifdef CONFIG_BLOCK
-+#include <scsi/scsi_cmnd.h>
-+#endif
-+
- #ifdef CONFIG_IDE
- #include <linux/ide.h>
- #endif
-@@ -101,7 +104,9 @@ static struct crashpoint crashpoints[] = {
- 	CRASHPOINT("FS_DEVRW",		 "ll_rw_block"),
- 	CRASHPOINT("MEM_SWAPOUT",	 "shrink_inactive_list"),
- 	CRASHPOINT("TIMERADD",		 "hrtimer_start"),
-+# ifdef CONFIG_BLOCK
- 	CRASHPOINT("SCSI_DISPATCH_CMD",	 "scsi_dispatch_cmd"),
-+# endif
- # ifdef CONFIG_IDE
- 	CRASHPOINT("IDE_CORE_CP",	 "generic_ide_ioctl"),
- # endif
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index 1af29b8224fd..0dd65b4b2ad2 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -1685,7 +1685,6 @@ if RUNTIME_TESTING_MENU
- config LKDTM
- 	tristate "Linux Kernel Dump Test Tool Module"
- 	depends on DEBUG_FS
--	depends on BLOCK
- 	help
- 	This module enables testing of the different dumping mechanisms by
- 	inducing system failures at predefined crash points.
--- 
-2.13.3
+> 
+> If it is not a strict requirement from another config, I think we can keep it
+> as defined at ppc64_defconfig, which defines it as module (CONFIG_XFS_FS=m).
+> 
+> Thanks for this patch, very useful.
+
+Thanks Breno! :-)
+
+-Satheesh.
+
+> Breno
+> 
 
