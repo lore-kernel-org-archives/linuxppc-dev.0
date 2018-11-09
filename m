@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AC7BBC43441
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 19:44:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 70B4EC43441
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 19:46:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3832E2089A
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 19:44:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3832E2089A
+	by mail.kernel.org (Postfix) with ESMTPS id E7E9F20883
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 19:46:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E7E9F20883
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=angband.pl
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42s9bB4nqQzF3C1
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Nov 2018 06:44:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42s9df0JnlzF3KY
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Nov 2018 06:46:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=angband.pl
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=angband.pl
@@ -30,19 +30,19 @@ Received: from tartarus.angband.pl (tartarus.angband.pl
  [IPv6:2001:41d0:602:dbe::8])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42s91c15TVzF3Zr
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Nov 2018 06:18:59 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42s91h2RcmzF3Z0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Nov 2018 06:19:04 +1100 (AEDT)
 Received: from 89-64-163-218.dynamic.chello.pl ([89.64.163.218]
  helo=barad-dur.angband.pl)
  by tartarus.angband.pl with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
  (Exim 4.89) (envelope-from <kilobyte@angband.pl>)
- id 1gLC3t-00052m-Rv; Fri, 09 Nov 2018 20:03:23 +0100
+ id 1gLC3z-00054E-7m; Fri, 09 Nov 2018 20:03:29 +0100
 Received: from kholdan.angband.pl ([2001:470:64f4::5])
  by barad-dur.angband.pl with smtp (Exim 4.89)
  (envelope-from <kilobyte@angband.pl>)
- id 1gLC3s-00059v-BH; Fri, 09 Nov 2018 20:03:21 +0100
+ id 1gLC3x-0005A7-NG; Fri, 09 Nov 2018 20:03:26 +0100
 Received: by kholdan.angband.pl (sSMTP sendmail emulation);
- Fri, 09 Nov 2018 20:03:20 +0100
+ Fri, 09 Nov 2018 20:03:25 +0100
 From: Adam Borowski <kilobyte@angband.pl>
 To: linux-kernel@vger.kernel.org, Nick Terrell <terrelln@fb.com>,
  Russell King <linux@armlinux.org.uk>,
@@ -63,8 +63,8 @@ To: linux-kernel@vger.kernel.org, Nick Terrell <terrelln@fb.com>,
  Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
  x86@kernel.org, Chris Zankel <chris@zankel.net>,
  Max Filippov <jcmvbkbc@gmail.com>, linux-xtensa@linux-xtensa.org
-Date: Fri,  9 Nov 2018 20:02:53 +0100
-Message-Id: <20181109190304.8573-6-kilobyte@angband.pl>
+Date: Fri,  9 Nov 2018 20:02:57 +0100
+Message-Id: <20181109190304.8573-10-kilobyte@angband.pl>
 X-Mailer: git-send-email 2.19.1
 In-Reply-To: <20181109190304.8573-1-kilobyte@angband.pl>
 References: <20181109185953.xwyelyqnygbskkxk@angband.pl>
@@ -73,8 +73,7 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-SA-Exim-Connect-IP: 89.64.163.218
 X-SA-Exim-Mail-From: kilobyte@angband.pl
-Subject: [PATCH 06/17] parisc: Remove support for BZIP2 and LZMA compressed
- kernel
+Subject: [PATCH 10/17] arm: Remove support for LZMA compressed kernel
 X-SA-Exim-Version: 4.2.1 (built Tue, 02 Aug 2016 21:08:31 +0000)
 X-SA-Exim-Scanned: Yes (on tartarus.angband.pl)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -93,89 +92,56 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Made redundant by newer choices.
+You want XZ instead: newer version of same algorithm, has an optimized
+filter for arm32 executables, uses a library shared with other uses of XZ
+in the kernel.
 
 Signed-off-by: Adam Borowski <kilobyte@angband.pl>
 ---
- arch/parisc/Kconfig                  |  2 --
- arch/parisc/boot/compressed/Makefile | 10 ++--------
- arch/parisc/boot/compressed/misc.c   |  8 --------
- 3 files changed, 2 insertions(+), 18 deletions(-)
+ arch/arm/Kconfig                      | 1 -
+ arch/arm/boot/compressed/Makefile     | 1 -
+ arch/arm/boot/compressed/decompress.c | 4 ----
+ 3 files changed, 6 deletions(-)
 
-diff --git a/arch/parisc/Kconfig b/arch/parisc/Kconfig
-index 92a339ee28b3..a9cca7d1a8d8 100644
---- a/arch/parisc/Kconfig
-+++ b/arch/parisc/Kconfig
-@@ -18,10 +18,8 @@ config PARISC
- 	select BUG
- 	select BUILDTIME_EXTABLE_SORT
- 	select HAVE_PERF_EVENTS
--	select HAVE_KERNEL_BZIP2
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index 91be74d8df65..637e100de6e3 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -77,7 +77,6 @@ config ARM
+ 	select HAVE_IRQ_TIME_ACCOUNTING
  	select HAVE_KERNEL_GZIP
  	select HAVE_KERNEL_LZ4
 -	select HAVE_KERNEL_LZMA
  	select HAVE_KERNEL_LZO
  	select HAVE_KERNEL_XZ
- 	select GENERIC_ATOMIC64 if !64BIT
-diff --git a/arch/parisc/boot/compressed/Makefile b/arch/parisc/boot/compressed/Makefile
-index 777533cdea31..a05f36f9279b 100644
---- a/arch/parisc/boot/compressed/Makefile
-+++ b/arch/parisc/boot/compressed/Makefile
-@@ -8,8 +8,8 @@ KCOV_INSTRUMENT := n
- GCOV_PROFILE := n
- UBSAN_SANITIZE := n
+ 	select HAVE_KPROBES if !XIP_KERNEL && !CPU_ENDIAN_BE32 && !CPU_V7M
+diff --git a/arch/arm/boot/compressed/Makefile b/arch/arm/boot/compressed/Makefile
+index 1f5a5ffe7fcf..37e6097b7506 100644
+--- a/arch/arm/boot/compressed/Makefile
++++ b/arch/arm/boot/compressed/Makefile
+@@ -72,7 +72,6 @@ CPPFLAGS_vmlinux.lds := -DTEXT_START="$(ZTEXTADDR)" -DBSS_START="$(ZBSSADDR)"
  
--targets := vmlinux.lds vmlinux vmlinux.bin vmlinux.bin.gz vmlinux.bin.bz2
--targets += vmlinux.bin.xz vmlinux.bin.lzma vmlinux.bin.lzo vmlinux.bin.lz4
-+targets := vmlinux.lds vmlinux vmlinux.bin vmlinux.bin.gz
-+targets += vmlinux.bin.xz vmlinux.bin.lzo vmlinux.bin.lz4
- targets += misc.o piggy.o sizes.h head.o real2.o firmware.o
+ compress-$(CONFIG_KERNEL_GZIP) = gzip
+ compress-$(CONFIG_KERNEL_LZO)  = lzo
+-compress-$(CONFIG_KERNEL_LZMA) = lzma
+ compress-$(CONFIG_KERNEL_XZ)   = xzkern
+ compress-$(CONFIG_KERNEL_LZ4)  = lz4
  
- KBUILD_CFLAGS := -D__KERNEL__ -O2 -DBOOTLOADER
-@@ -60,20 +60,14 @@ $(obj)/vmlinux.bin: vmlinux
- vmlinux.bin.all-y := $(obj)/vmlinux.bin
- 
- suffix-$(CONFIG_KERNEL_GZIP)  := gz
--suffix-$(CONFIG_KERNEL_BZIP2) := bz2
- suffix-$(CONFIG_KERNEL_LZ4)  := lz4
--suffix-$(CONFIG_KERNEL_LZMA)  := lzma
- suffix-$(CONFIG_KERNEL_LZO)  := lzo
- suffix-$(CONFIG_KERNEL_XZ)  := xz
- 
- $(obj)/vmlinux.bin.gz: $(vmlinux.bin.all-y)
- 	$(call if_changed,gzip)
--$(obj)/vmlinux.bin.bz2: $(vmlinux.bin.all-y)
--	$(call if_changed,bzip2)
- $(obj)/vmlinux.bin.lz4: $(vmlinux.bin.all-y)
- 	$(call if_changed,lz4)
--$(obj)/vmlinux.bin.lzma: $(vmlinux.bin.all-y)
--	$(call if_changed,lzma)
- $(obj)/vmlinux.bin.lzo: $(vmlinux.bin.all-y)
- 	$(call if_changed,lzo)
- $(obj)/vmlinux.bin.xz: $(vmlinux.bin.all-y)
-diff --git a/arch/parisc/boot/compressed/misc.c b/arch/parisc/boot/compressed/misc.c
-index 2556bb181813..1ca59916071e 100644
---- a/arch/parisc/boot/compressed/misc.c
-+++ b/arch/parisc/boot/compressed/misc.c
-@@ -42,18 +42,10 @@ static unsigned long free_mem_end_ptr;
- #include "../../../../lib/decompress_inflate.c"
- #endif
- 
--#ifdef CONFIG_KERNEL_BZIP2
--#include "../../../../lib/decompress_bunzip2.c"
--#endif
--
- #ifdef CONFIG_KERNEL_LZ4
- #include "../../../../lib/decompress_unlz4.c"
+diff --git a/arch/arm/boot/compressed/decompress.c b/arch/arm/boot/compressed/decompress.c
+index c16c1829a5e4..350e7a96f6af 100644
+--- a/arch/arm/boot/compressed/decompress.c
++++ b/arch/arm/boot/compressed/decompress.c
+@@ -41,10 +41,6 @@ extern int memcmp(const void *cs, const void *ct, size_t count);
+ #include "../../../../lib/decompress_unlzo.c"
  #endif
  
 -#ifdef CONFIG_KERNEL_LZMA
 -#include "../../../../lib/decompress_unlzma.c"
 -#endif
 -
- #ifdef CONFIG_KERNEL_LZO
- #include "../../../../lib/decompress_unlzo.c"
- #endif
+ #ifdef CONFIG_KERNEL_XZ
+ #define memmove memmove
+ #define memcpy memcpy
 -- 
 2.19.1
 
