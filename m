@@ -3,22 +3,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 29E58C43441
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 19:07:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B98A6C43441
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 19:23:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6DFC92086C
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 19:07:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6DFC92086C
+	by mail.kernel.org (Postfix) with ESMTPS id 0F5F320825
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Nov 2018 19:23:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0F5F320825
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=angband.pl
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42s8mj2jNdzF3Wc
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Nov 2018 06:07:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42s96K6Bt7zF3dy
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Nov 2018 06:23:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=angband.pl
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=angband.pl
@@ -26,25 +26,23 @@ Authentication-Results: lists.ozlabs.org;
  envelope-from=kilobyte@angband.pl; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=angband.pl
-X-Greylist: delayed 300 seconds by postgrey-1.36 at bilbo;
- Sat, 10 Nov 2018 06:06:09 AEDT
 Received: from tartarus.angband.pl (tartarus.angband.pl
  [IPv6:2001:41d0:602:dbe::8])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42s8kn19zWzF3dT
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Nov 2018 06:06:09 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42s90r1fBxzF3Xg
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Nov 2018 06:18:20 +1100 (AEDT)
 Received: from 89-64-163-218.dynamic.chello.pl ([89.64.163.218]
  helo=barad-dur.angband.pl)
  by tartarus.angband.pl with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
  (Exim 4.89) (envelope-from <kilobyte@angband.pl>)
- id 1gLC44-000579-RU; Fri, 09 Nov 2018 20:03:35 +0100
+ id 1gLC43-00056I-EP; Fri, 09 Nov 2018 20:03:33 +0100
 Received: from kholdan.angband.pl ([2001:470:64f4::5])
  by barad-dur.angband.pl with smtp (Exim 4.89)
  (envelope-from <kilobyte@angband.pl>)
- id 1gLC43-0005AJ-9f; Fri, 09 Nov 2018 20:03:32 +0100
+ id 1gLC41-0005AG-Rq; Fri, 09 Nov 2018 20:03:30 +0100
 Received: by kholdan.angband.pl (sSMTP sendmail emulation);
- Fri, 09 Nov 2018 20:03:31 +0100
+ Fri, 09 Nov 2018 20:03:29 +0100
 From: Adam Borowski <kilobyte@angband.pl>
 To: linux-kernel@vger.kernel.org, Nick Terrell <terrelln@fb.com>,
  Russell King <linux@armlinux.org.uk>,
@@ -65,8 +63,8 @@ To: linux-kernel@vger.kernel.org, Nick Terrell <terrelln@fb.com>,
  Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
  x86@kernel.org, Chris Zankel <chris@zankel.net>,
  Max Filippov <jcmvbkbc@gmail.com>, linux-xtensa@linux-xtensa.org
-Date: Fri,  9 Nov 2018 20:03:01 +0100
-Message-Id: <20181109190304.8573-14-kilobyte@angband.pl>
+Date: Fri,  9 Nov 2018 20:03:00 +0100
+Message-Id: <20181109190304.8573-13-kilobyte@angband.pl>
 X-Mailer: git-send-email 2.19.1
 In-Reply-To: <20181109190304.8573-1-kilobyte@angband.pl>
 References: <20181109185953.xwyelyqnygbskkxk@angband.pl>
@@ -75,8 +73,8 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-SA-Exim-Connect-IP: 89.64.163.218
 X-SA-Exim-Mail-From: kilobyte@angband.pl
-Subject: [PATCH 14/17] lib: Completely purge now-unused bzip2 code from the
- kernel
+Subject: [PATCH 13/17] arch/*: Purge references to CONFIG_RD_BZIP2/LZMA from
+ various defconfigs
 X-SA-Exim-Version: 4.2.1 (built Tue, 02 Aug 2016 21:08:31 +0000)
 X-SA-Exim-Scanned: Yes (on tartarus.angband.pl)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -95,861 +93,325 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-All remaining references are userspace code to build tarballs, packages
-or such.
+They don't exist anymore.
 
 Signed-off-by: Adam Borowski <kilobyte@angband.pl>
 ---
- lib/Kconfig              |   3 -
- lib/Makefile             |   1 -
- lib/decompress.c         |   4 -
- lib/decompress_bunzip2.c | 756 ---------------------------------------
- scripts/Makefile.lib     |  12 +-
- 5 files changed, 2 insertions(+), 774 deletions(-)
- delete mode 100644 lib/decompress_bunzip2.c
+ arch/arm/configs/aspeed_g4_defconfig       | 1 -
+ arch/arm/configs/aspeed_g5_defconfig       | 1 -
+ arch/arm/configs/clps711x_defconfig        | 1 -
+ arch/arm/configs/ezx_defconfig             | 2 --
+ arch/arm/configs/hisi_defconfig            | 1 -
+ arch/arm/configs/imote2_defconfig          | 2 --
+ arch/arm/configs/lpc18xx_defconfig         | 2 --
+ arch/arm/configs/vf610m4_defconfig         | 2 --
+ arch/m68k/configs/stmark2_defconfig        | 2 --
+ arch/mips/configs/ar7_defconfig            | 1 -
+ arch/mips/configs/ath25_defconfig          | 1 -
+ arch/mips/configs/ath79_defconfig          | 1 -
+ arch/mips/configs/lemote2f_defconfig       | 2 --
+ arch/mips/configs/loongson3_defconfig      | 2 --
+ arch/mips/configs/nlm_xlp_defconfig        | 2 --
+ arch/mips/configs/nlm_xlr_defconfig        | 2 --
+ arch/mips/configs/pistachio_defconfig      | 2 --
+ arch/openrisc/configs/simple_smp_defconfig | 2 --
+ arch/powerpc/configs/44x/fsp2_defconfig    | 1 -
+ arch/powerpc/configs/skiroot_defconfig     | 2 --
+ arch/sh/configs/sdk7786_defconfig          | 2 --
+ arch/xtensa/configs/cadence_csp_defconfig  | 2 --
+ arch/xtensa/configs/nommu_kc705_defconfig  | 2 --
+ 23 files changed, 38 deletions(-)
 
-diff --git a/lib/Kconfig b/lib/Kconfig
-index e7ab43fd5461..83a548b8c504 100644
---- a/lib/Kconfig
-+++ b/lib/Kconfig
-@@ -286,9 +286,6 @@ config DECOMPRESS_GZIP
- 	select ZLIB_INFLATE
- 	tristate
- 
--config DECOMPRESS_BZIP2
--	tristate
--
- config DECOMPRESS_LZMA
- 	tristate
- 
-diff --git a/lib/Makefile b/lib/Makefile
-index 58b48993f48a..4c1905e6d3a7 100644
---- a/lib/Makefile
-+++ b/lib/Makefile
-@@ -134,7 +134,6 @@ obj-$(CONFIG_XZ_DEC) += xz/
- obj-$(CONFIG_RAID6_PQ) += raid6/
- 
- lib-$(CONFIG_DECOMPRESS_GZIP) += decompress_inflate.o
--lib-$(CONFIG_DECOMPRESS_BZIP2) += decompress_bunzip2.o
- lib-$(CONFIG_DECOMPRESS_LZMA) += decompress_unlzma.o
- lib-$(CONFIG_DECOMPRESS_XZ) += decompress_unxz.o
- lib-$(CONFIG_DECOMPRESS_LZO) += decompress_unlzo.o
-diff --git a/lib/decompress.c b/lib/decompress.c
-index ab3fc90ffc64..60f05122b9da 100644
---- a/lib/decompress.c
-+++ b/lib/decompress.c
-@@ -23,9 +23,6 @@
- #ifndef CONFIG_DECOMPRESS_GZIP
- # define gunzip NULL
- #endif
--#ifndef CONFIG_DECOMPRESS_BZIP2
--# define bunzip2 NULL
--#endif
- #ifndef CONFIG_DECOMPRESS_LZMA
- # define unlzma NULL
- #endif
-@@ -51,7 +48,6 @@ struct compress_format {
- static const struct compress_format compressed_formats[] __initconst = {
- 	{ {0x1f, 0x8b}, "gzip", gunzip },
- 	{ {0x1f, 0x9e}, "gzip", gunzip },
--	{ {0x42, 0x5a}, "bzip2", bunzip2 },
- 	{ {0x5d, 0x00}, "lzma", unlzma },
- 	{ {0xfd, 0x37}, "xz", unxz },
- 	{ {0x89, 0x4c}, "lzo", unlzo },
-diff --git a/lib/decompress_bunzip2.c b/lib/decompress_bunzip2.c
-deleted file mode 100644
-index 7c4932eed748..000000000000
---- a/lib/decompress_bunzip2.c
-+++ /dev/null
-@@ -1,756 +0,0 @@
--/*	Small bzip2 deflate implementation, by Rob Landley (rob@landley.net).
--
--	Based on bzip2 decompression code by Julian R Seward (jseward@acm.org),
--	which also acknowledges contributions by Mike Burrows, David Wheeler,
--	Peter Fenwick, Alistair Moffat, Radford Neal, Ian H. Witten,
--	Robert Sedgewick, and Jon L. Bentley.
--
--	This code is licensed under the LGPLv2:
--		LGPL (http://www.gnu.org/copyleft/lgpl.html
--*/
--
--/*
--	Size and speed optimizations by Manuel Novoa III  (mjn3@codepoet.org).
--
--	More efficient reading of Huffman codes, a streamlined read_bunzip()
--	function, and various other tweaks.  In (limited) tests, approximately
--	20% faster than bzcat on x86 and about 10% faster on arm.
--
--	Note that about 2/3 of the time is spent in read_unzip() reversing
--	the Burrows-Wheeler transformation.  Much of that time is delay
--	resulting from cache misses.
--
--	I would ask that anyone benefiting from this work, especially those
--	using it in commercial products, consider making a donation to my local
--	non-profit hospice organization in the name of the woman I loved, who
--	passed away Feb. 12, 2003.
--
--		In memory of Toni W. Hagan
--
--		Hospice of Acadiana, Inc.
--		2600 Johnston St., Suite 200
--		Lafayette, LA 70503-3240
--
--		Phone (337) 232-1234 or 1-800-738-2226
--		Fax   (337) 232-1297
--
--		http://www.hospiceacadiana.com/
--
--	Manuel
-- */
--
--/*
--	Made it fit for running in Linux Kernel by Alain Knaff (alain@knaff.lu)
--*/
--
--
--#ifdef STATIC
--#define PREBOOT
--#else
--#include <linux/decompress/bunzip2.h>
--#endif /* STATIC */
--
--#include <linux/decompress/mm.h>
--#include <linux/crc32poly.h>
--
--#ifndef INT_MAX
--#define INT_MAX 0x7fffffff
--#endif
--
--/* Constants for Huffman coding */
--#define MAX_GROUPS		6
--#define GROUP_SIZE   		50	/* 64 would have been more efficient */
--#define MAX_HUFCODE_BITS 	20	/* Longest Huffman code allowed */
--#define MAX_SYMBOLS 		258	/* 256 literals + RUNA + RUNB */
--#define SYMBOL_RUNA		0
--#define SYMBOL_RUNB		1
--
--/* Status return values */
--#define RETVAL_OK			0
--#define RETVAL_LAST_BLOCK		(-1)
--#define RETVAL_NOT_BZIP_DATA		(-2)
--#define RETVAL_UNEXPECTED_INPUT_EOF	(-3)
--#define RETVAL_UNEXPECTED_OUTPUT_EOF	(-4)
--#define RETVAL_DATA_ERROR		(-5)
--#define RETVAL_OUT_OF_MEMORY		(-6)
--#define RETVAL_OBSOLETE_INPUT		(-7)
--
--/* Other housekeeping constants */
--#define BZIP2_IOBUF_SIZE		4096
--
--/* This is what we know about each Huffman coding group */
--struct group_data {
--	/* We have an extra slot at the end of limit[] for a sentinal value. */
--	int limit[MAX_HUFCODE_BITS+1];
--	int base[MAX_HUFCODE_BITS];
--	int permute[MAX_SYMBOLS];
--	int minLen, maxLen;
--};
--
--/* Structure holding all the housekeeping data, including IO buffers and
--   memory that persists between calls to bunzip */
--struct bunzip_data {
--	/* State for interrupting output loop */
--	int writeCopies, writePos, writeRunCountdown, writeCount, writeCurrent;
--	/* I/O tracking data (file handles, buffers, positions, etc.) */
--	long (*fill)(void*, unsigned long);
--	long inbufCount, inbufPos /*, outbufPos*/;
--	unsigned char *inbuf /*,*outbuf*/;
--	unsigned int inbufBitCount, inbufBits;
--	/* The CRC values stored in the block header and calculated from the
--	data */
--	unsigned int crc32Table[256], headerCRC, totalCRC, writeCRC;
--	/* Intermediate buffer and its size (in bytes) */
--	unsigned int *dbuf, dbufSize;
--	/* These things are a bit too big to go on the stack */
--	unsigned char selectors[32768];		/* nSelectors = 15 bits */
--	struct group_data groups[MAX_GROUPS];	/* Huffman coding tables */
--	int io_error;			/* non-zero if we have IO error */
--	int byteCount[256];
--	unsigned char symToByte[256], mtfSymbol[256];
--};
--
--
--/* Return the next nnn bits of input.  All reads from the compressed input
--   are done through this function.  All reads are big endian */
--static unsigned int INIT get_bits(struct bunzip_data *bd, char bits_wanted)
--{
--	unsigned int bits = 0;
--
--	/* If we need to get more data from the byte buffer, do so.
--	   (Loop getting one byte at a time to enforce endianness and avoid
--	   unaligned access.) */
--	while (bd->inbufBitCount < bits_wanted) {
--		/* If we need to read more data from file into byte buffer, do
--		   so */
--		if (bd->inbufPos == bd->inbufCount) {
--			if (bd->io_error)
--				return 0;
--			bd->inbufCount = bd->fill(bd->inbuf, BZIP2_IOBUF_SIZE);
--			if (bd->inbufCount <= 0) {
--				bd->io_error = RETVAL_UNEXPECTED_INPUT_EOF;
--				return 0;
--			}
--			bd->inbufPos = 0;
--		}
--		/* Avoid 32-bit overflow (dump bit buffer to top of output) */
--		if (bd->inbufBitCount >= 24) {
--			bits = bd->inbufBits&((1 << bd->inbufBitCount)-1);
--			bits_wanted -= bd->inbufBitCount;
--			bits <<= bits_wanted;
--			bd->inbufBitCount = 0;
--		}
--		/* Grab next 8 bits of input from buffer. */
--		bd->inbufBits = (bd->inbufBits << 8)|bd->inbuf[bd->inbufPos++];
--		bd->inbufBitCount += 8;
--	}
--	/* Calculate result */
--	bd->inbufBitCount -= bits_wanted;
--	bits |= (bd->inbufBits >> bd->inbufBitCount)&((1 << bits_wanted)-1);
--
--	return bits;
--}
--
--/* Unpacks the next block and sets up for the inverse burrows-wheeler step. */
--
--static int INIT get_next_block(struct bunzip_data *bd)
--{
--	struct group_data *hufGroup = NULL;
--	int *base = NULL;
--	int *limit = NULL;
--	int dbufCount, nextSym, dbufSize, groupCount, selector,
--		i, j, k, t, runPos, symCount, symTotal, nSelectors, *byteCount;
--	unsigned char uc, *symToByte, *mtfSymbol, *selectors;
--	unsigned int *dbuf, origPtr;
--
--	dbuf = bd->dbuf;
--	dbufSize = bd->dbufSize;
--	selectors = bd->selectors;
--	byteCount = bd->byteCount;
--	symToByte = bd->symToByte;
--	mtfSymbol = bd->mtfSymbol;
--
--	/* Read in header signature and CRC, then validate signature.
--	   (last block signature means CRC is for whole file, return now) */
--	i = get_bits(bd, 24);
--	j = get_bits(bd, 24);
--	bd->headerCRC = get_bits(bd, 32);
--	if ((i == 0x177245) && (j == 0x385090))
--		return RETVAL_LAST_BLOCK;
--	if ((i != 0x314159) || (j != 0x265359))
--		return RETVAL_NOT_BZIP_DATA;
--	/* We can add support for blockRandomised if anybody complains.
--	   There was some code for this in busybox 1.0.0-pre3, but nobody ever
--	   noticed that it didn't actually work. */
--	if (get_bits(bd, 1))
--		return RETVAL_OBSOLETE_INPUT;
--	origPtr = get_bits(bd, 24);
--	if (origPtr >= dbufSize)
--		return RETVAL_DATA_ERROR;
--	/* mapping table: if some byte values are never used (encoding things
--	   like ascii text), the compression code removes the gaps to have fewer
--	   symbols to deal with, and writes a sparse bitfield indicating which
--	   values were present.  We make a translation table to convert the
--	   symbols back to the corresponding bytes. */
--	t = get_bits(bd, 16);
--	symTotal = 0;
--	for (i = 0; i < 16; i++) {
--		if (t&(1 << (15-i))) {
--			k = get_bits(bd, 16);
--			for (j = 0; j < 16; j++)
--				if (k&(1 << (15-j)))
--					symToByte[symTotal++] = (16*i)+j;
--		}
--	}
--	/* How many different Huffman coding groups does this block use? */
--	groupCount = get_bits(bd, 3);
--	if (groupCount < 2 || groupCount > MAX_GROUPS)
--		return RETVAL_DATA_ERROR;
--	/* nSelectors: Every GROUP_SIZE many symbols we select a new
--	   Huffman coding group.  Read in the group selector list,
--	   which is stored as MTF encoded bit runs.  (MTF = Move To
--	   Front, as each value is used it's moved to the start of the
--	   list.) */
--	nSelectors = get_bits(bd, 15);
--	if (!nSelectors)
--		return RETVAL_DATA_ERROR;
--	for (i = 0; i < groupCount; i++)
--		mtfSymbol[i] = i;
--	for (i = 0; i < nSelectors; i++) {
--		/* Get next value */
--		for (j = 0; get_bits(bd, 1); j++)
--			if (j >= groupCount)
--				return RETVAL_DATA_ERROR;
--		/* Decode MTF to get the next selector */
--		uc = mtfSymbol[j];
--		for (; j; j--)
--			mtfSymbol[j] = mtfSymbol[j-1];
--		mtfSymbol[0] = selectors[i] = uc;
--	}
--	/* Read the Huffman coding tables for each group, which code
--	   for symTotal literal symbols, plus two run symbols (RUNA,
--	   RUNB) */
--	symCount = symTotal+2;
--	for (j = 0; j < groupCount; j++) {
--		unsigned char length[MAX_SYMBOLS], temp[MAX_HUFCODE_BITS+1];
--		int	minLen,	maxLen, pp;
--		/* Read Huffman code lengths for each symbol.  They're
--		   stored in a way similar to mtf; record a starting
--		   value for the first symbol, and an offset from the
--		   previous value for everys symbol after that.
--		   (Subtracting 1 before the loop and then adding it
--		   back at the end is an optimization that makes the
--		   test inside the loop simpler: symbol length 0
--		   becomes negative, so an unsigned inequality catches
--		   it.) */
--		t = get_bits(bd, 5)-1;
--		for (i = 0; i < symCount; i++) {
--			for (;;) {
--				if (((unsigned)t) > (MAX_HUFCODE_BITS-1))
--					return RETVAL_DATA_ERROR;
--
--				/* If first bit is 0, stop.  Else
--				   second bit indicates whether to
--				   increment or decrement the value.
--				   Optimization: grab 2 bits and unget
--				   the second if the first was 0. */
--
--				k = get_bits(bd, 2);
--				if (k < 2) {
--					bd->inbufBitCount++;
--					break;
--				}
--				/* Add one if second bit 1, else
--				 * subtract 1.  Avoids if/else */
--				t += (((k+1)&2)-1);
--			}
--			/* Correct for the initial -1, to get the
--			 * final symbol length */
--			length[i] = t+1;
--		}
--		/* Find largest and smallest lengths in this group */
--		minLen = maxLen = length[0];
--
--		for (i = 1; i < symCount; i++) {
--			if (length[i] > maxLen)
--				maxLen = length[i];
--			else if (length[i] < minLen)
--				minLen = length[i];
--		}
--
--		/* Calculate permute[], base[], and limit[] tables from
--		 * length[].
--		 *
--		 * permute[] is the lookup table for converting
--		 * Huffman coded symbols into decoded symbols.  base[]
--		 * is the amount to subtract from the value of a
--		 * Huffman symbol of a given length when using
--		 * permute[].
--		 *
--		 * limit[] indicates the largest numerical value a
--		 * symbol with a given number of bits can have.  This
--		 * is how the Huffman codes can vary in length: each
--		 * code with a value > limit[length] needs another
--		 * bit.
--		 */
--		hufGroup = bd->groups+j;
--		hufGroup->minLen = minLen;
--		hufGroup->maxLen = maxLen;
--		/* Note that minLen can't be smaller than 1, so we
--		   adjust the base and limit array pointers so we're
--		   not always wasting the first entry.  We do this
--		   again when using them (during symbol decoding).*/
--		base = hufGroup->base-1;
--		limit = hufGroup->limit-1;
--		/* Calculate permute[].  Concurrently, initialize
--		 * temp[] and limit[]. */
--		pp = 0;
--		for (i = minLen; i <= maxLen; i++) {
--			temp[i] = limit[i] = 0;
--			for (t = 0; t < symCount; t++)
--				if (length[t] == i)
--					hufGroup->permute[pp++] = t;
--		}
--		/* Count symbols coded for at each bit length */
--		for (i = 0; i < symCount; i++)
--			temp[length[i]]++;
--		/* Calculate limit[] (the largest symbol-coding value
--		 *at each bit length, which is (previous limit <<
--		 *1)+symbols at this level), and base[] (number of
--		 *symbols to ignore at each bit length, which is limit
--		 *minus the cumulative count of symbols coded for
--		 *already). */
--		pp = t = 0;
--		for (i = minLen; i < maxLen; i++) {
--			pp += temp[i];
--			/* We read the largest possible symbol size
--			   and then unget bits after determining how
--			   many we need, and those extra bits could be
--			   set to anything.  (They're noise from
--			   future symbols.)  At each level we're
--			   really only interested in the first few
--			   bits, so here we set all the trailing
--			   to-be-ignored bits to 1 so they don't
--			   affect the value > limit[length]
--			   comparison. */
--			limit[i] = (pp << (maxLen - i)) - 1;
--			pp <<= 1;
--			base[i+1] = pp-(t += temp[i]);
--		}
--		limit[maxLen+1] = INT_MAX; /* Sentinal value for
--					    * reading next sym. */
--		limit[maxLen] = pp+temp[maxLen]-1;
--		base[minLen] = 0;
--	}
--	/* We've finished reading and digesting the block header.  Now
--	   read this block's Huffman coded symbols from the file and
--	   undo the Huffman coding and run length encoding, saving the
--	   result into dbuf[dbufCount++] = uc */
--
--	/* Initialize symbol occurrence counters and symbol Move To
--	 * Front table */
--	for (i = 0; i < 256; i++) {
--		byteCount[i] = 0;
--		mtfSymbol[i] = (unsigned char)i;
--	}
--	/* Loop through compressed symbols. */
--	runPos = dbufCount = symCount = selector = 0;
--	for (;;) {
--		/* Determine which Huffman coding group to use. */
--		if (!(symCount--)) {
--			symCount = GROUP_SIZE-1;
--			if (selector >= nSelectors)
--				return RETVAL_DATA_ERROR;
--			hufGroup = bd->groups+selectors[selector++];
--			base = hufGroup->base-1;
--			limit = hufGroup->limit-1;
--		}
--		/* Read next Huffman-coded symbol. */
--		/* Note: It is far cheaper to read maxLen bits and
--		   back up than it is to read minLen bits and then an
--		   additional bit at a time, testing as we go.
--		   Because there is a trailing last block (with file
--		   CRC), there is no danger of the overread causing an
--		   unexpected EOF for a valid compressed file.  As a
--		   further optimization, we do the read inline
--		   (falling back to a call to get_bits if the buffer
--		   runs dry).  The following (up to got_huff_bits:) is
--		   equivalent to j = get_bits(bd, hufGroup->maxLen);
--		 */
--		while (bd->inbufBitCount < hufGroup->maxLen) {
--			if (bd->inbufPos == bd->inbufCount) {
--				j = get_bits(bd, hufGroup->maxLen);
--				goto got_huff_bits;
--			}
--			bd->inbufBits =
--				(bd->inbufBits << 8)|bd->inbuf[bd->inbufPos++];
--			bd->inbufBitCount += 8;
--		};
--		bd->inbufBitCount -= hufGroup->maxLen;
--		j = (bd->inbufBits >> bd->inbufBitCount)&
--			((1 << hufGroup->maxLen)-1);
--got_huff_bits:
--		/* Figure how how many bits are in next symbol and
--		 * unget extras */
--		i = hufGroup->minLen;
--		while (j > limit[i])
--			++i;
--		bd->inbufBitCount += (hufGroup->maxLen - i);
--		/* Huffman decode value to get nextSym (with bounds checking) */
--		if ((i > hufGroup->maxLen)
--			|| (((unsigned)(j = (j>>(hufGroup->maxLen-i))-base[i]))
--				>= MAX_SYMBOLS))
--			return RETVAL_DATA_ERROR;
--		nextSym = hufGroup->permute[j];
--		/* We have now decoded the symbol, which indicates
--		   either a new literal byte, or a repeated run of the
--		   most recent literal byte.  First, check if nextSym
--		   indicates a repeated run, and if so loop collecting
--		   how many times to repeat the last literal. */
--		if (((unsigned)nextSym) <= SYMBOL_RUNB) { /* RUNA or RUNB */
--			/* If this is the start of a new run, zero out
--			 * counter */
--			if (!runPos) {
--				runPos = 1;
--				t = 0;
--			}
--			/* Neat trick that saves 1 symbol: instead of
--			   or-ing 0 or 1 at each bit position, add 1
--			   or 2 instead.  For example, 1011 is 1 << 0
--			   + 1 << 1 + 2 << 2.  1010 is 2 << 0 + 2 << 1
--			   + 1 << 2.  You can make any bit pattern
--			   that way using 1 less symbol than the basic
--			   or 0/1 method (except all bits 0, which
--			   would use no symbols, but a run of length 0
--			   doesn't mean anything in this context).
--			   Thus space is saved. */
--			t += (runPos << nextSym);
--			/* +runPos if RUNA; +2*runPos if RUNB */
--
--			runPos <<= 1;
--			continue;
--		}
--		/* When we hit the first non-run symbol after a run,
--		   we now know how many times to repeat the last
--		   literal, so append that many copies to our buffer
--		   of decoded symbols (dbuf) now.  (The last literal
--		   used is the one at the head of the mtfSymbol
--		   array.) */
--		if (runPos) {
--			runPos = 0;
--			if (dbufCount+t >= dbufSize)
--				return RETVAL_DATA_ERROR;
--
--			uc = symToByte[mtfSymbol[0]];
--			byteCount[uc] += t;
--			while (t--)
--				dbuf[dbufCount++] = uc;
--		}
--		/* Is this the terminating symbol? */
--		if (nextSym > symTotal)
--			break;
--		/* At this point, nextSym indicates a new literal
--		   character.  Subtract one to get the position in the
--		   MTF array at which this literal is currently to be
--		   found.  (Note that the result can't be -1 or 0,
--		   because 0 and 1 are RUNA and RUNB.  But another
--		   instance of the first symbol in the mtf array,
--		   position 0, would have been handled as part of a
--		   run above.  Therefore 1 unused mtf position minus 2
--		   non-literal nextSym values equals -1.) */
--		if (dbufCount >= dbufSize)
--			return RETVAL_DATA_ERROR;
--		i = nextSym - 1;
--		uc = mtfSymbol[i];
--		/* Adjust the MTF array.  Since we typically expect to
--		 *move only a small number of symbols, and are bound
--		 *by 256 in any case, using memmove here would
--		 *typically be bigger and slower due to function call
--		 *overhead and other assorted setup costs. */
--		do {
--			mtfSymbol[i] = mtfSymbol[i-1];
--		} while (--i);
--		mtfSymbol[0] = uc;
--		uc = symToByte[uc];
--		/* We have our literal byte.  Save it into dbuf. */
--		byteCount[uc]++;
--		dbuf[dbufCount++] = (unsigned int)uc;
--	}
--	/* At this point, we've read all the Huffman-coded symbols
--	   (and repeated runs) for this block from the input stream,
--	   and decoded them into the intermediate buffer.  There are
--	   dbufCount many decoded bytes in dbuf[].  Now undo the
--	   Burrows-Wheeler transform on dbuf.  See
--	   http://dogma.net/markn/articles/bwt/bwt.htm
--	 */
--	/* Turn byteCount into cumulative occurrence counts of 0 to n-1. */
--	j = 0;
--	for (i = 0; i < 256; i++) {
--		k = j+byteCount[i];
--		byteCount[i] = j;
--		j = k;
--	}
--	/* Figure out what order dbuf would be in if we sorted it. */
--	for (i = 0; i < dbufCount; i++) {
--		uc = (unsigned char)(dbuf[i] & 0xff);
--		dbuf[byteCount[uc]] |= (i << 8);
--		byteCount[uc]++;
--	}
--	/* Decode first byte by hand to initialize "previous" byte.
--	   Note that it doesn't get output, and if the first three
--	   characters are identical it doesn't qualify as a run (hence
--	   writeRunCountdown = 5). */
--	if (dbufCount) {
--		if (origPtr >= dbufCount)
--			return RETVAL_DATA_ERROR;
--		bd->writePos = dbuf[origPtr];
--		bd->writeCurrent = (unsigned char)(bd->writePos&0xff);
--		bd->writePos >>= 8;
--		bd->writeRunCountdown = 5;
--	}
--	bd->writeCount = dbufCount;
--
--	return RETVAL_OK;
--}
--
--/* Undo burrows-wheeler transform on intermediate buffer to produce output.
--   If start_bunzip was initialized with out_fd =-1, then up to len bytes of
--   data are written to outbuf.  Return value is number of bytes written or
--   error (all errors are negative numbers).  If out_fd!=-1, outbuf and len
--   are ignored, data is written to out_fd and return is RETVAL_OK or error.
--*/
--
--static int INIT read_bunzip(struct bunzip_data *bd, char *outbuf, int len)
--{
--	const unsigned int *dbuf;
--	int pos, xcurrent, previous, gotcount;
--
--	/* If last read was short due to end of file, return last block now */
--	if (bd->writeCount < 0)
--		return bd->writeCount;
--
--	gotcount = 0;
--	dbuf = bd->dbuf;
--	pos = bd->writePos;
--	xcurrent = bd->writeCurrent;
--
--	/* We will always have pending decoded data to write into the output
--	   buffer unless this is the very first call (in which case we haven't
--	   Huffman-decoded a block into the intermediate buffer yet). */
--
--	if (bd->writeCopies) {
--		/* Inside the loop, writeCopies means extra copies (beyond 1) */
--		--bd->writeCopies;
--		/* Loop outputting bytes */
--		for (;;) {
--			/* If the output buffer is full, snapshot
--			 * state and return */
--			if (gotcount >= len) {
--				bd->writePos = pos;
--				bd->writeCurrent = xcurrent;
--				bd->writeCopies++;
--				return len;
--			}
--			/* Write next byte into output buffer, updating CRC */
--			outbuf[gotcount++] = xcurrent;
--			bd->writeCRC = (((bd->writeCRC) << 8)
--				^bd->crc32Table[((bd->writeCRC) >> 24)
--				^xcurrent]);
--			/* Loop now if we're outputting multiple
--			 * copies of this byte */
--			if (bd->writeCopies) {
--				--bd->writeCopies;
--				continue;
--			}
--decode_next_byte:
--			if (!bd->writeCount--)
--				break;
--			/* Follow sequence vector to undo
--			 * Burrows-Wheeler transform */
--			previous = xcurrent;
--			pos = dbuf[pos];
--			xcurrent = pos&0xff;
--			pos >>= 8;
--			/* After 3 consecutive copies of the same
--			   byte, the 4th is a repeat count.  We count
--			   down from 4 instead *of counting up because
--			   testing for non-zero is faster */
--			if (--bd->writeRunCountdown) {
--				if (xcurrent != previous)
--					bd->writeRunCountdown = 4;
--			} else {
--				/* We have a repeated run, this byte
--				 * indicates the count */
--				bd->writeCopies = xcurrent;
--				xcurrent = previous;
--				bd->writeRunCountdown = 5;
--				/* Sometimes there are just 3 bytes
--				 * (run length 0) */
--				if (!bd->writeCopies)
--					goto decode_next_byte;
--				/* Subtract the 1 copy we'd output
--				 * anyway to get extras */
--				--bd->writeCopies;
--			}
--		}
--		/* Decompression of this block completed successfully */
--		bd->writeCRC = ~bd->writeCRC;
--		bd->totalCRC = ((bd->totalCRC << 1) |
--				(bd->totalCRC >> 31)) ^ bd->writeCRC;
--		/* If this block had a CRC error, force file level CRC error. */
--		if (bd->writeCRC != bd->headerCRC) {
--			bd->totalCRC = bd->headerCRC+1;
--			return RETVAL_LAST_BLOCK;
--		}
--	}
--
--	/* Refill the intermediate buffer by Huffman-decoding next
--	 * block of input */
--	/* (previous is just a convenient unused temp variable here) */
--	previous = get_next_block(bd);
--	if (previous) {
--		bd->writeCount = previous;
--		return (previous != RETVAL_LAST_BLOCK) ? previous : gotcount;
--	}
--	bd->writeCRC = 0xffffffffUL;
--	pos = bd->writePos;
--	xcurrent = bd->writeCurrent;
--	goto decode_next_byte;
--}
--
--static long INIT nofill(void *buf, unsigned long len)
--{
--	return -1;
--}
--
--/* Allocate the structure, read file header.  If in_fd ==-1, inbuf must contain
--   a complete bunzip file (len bytes long).  If in_fd!=-1, inbuf and len are
--   ignored, and data is read from file handle into temporary buffer. */
--static int INIT start_bunzip(struct bunzip_data **bdp, void *inbuf, long len,
--			     long (*fill)(void*, unsigned long))
--{
--	struct bunzip_data *bd;
--	unsigned int i, j, c;
--	const unsigned int BZh0 =
--		(((unsigned int)'B') << 24)+(((unsigned int)'Z') << 16)
--		+(((unsigned int)'h') << 8)+(unsigned int)'0';
--
--	/* Figure out how much data to allocate */
--	i = sizeof(struct bunzip_data);
--
--	/* Allocate bunzip_data.  Most fields initialize to zero. */
--	bd = *bdp = malloc(i);
--	if (!bd)
--		return RETVAL_OUT_OF_MEMORY;
--	memset(bd, 0, sizeof(struct bunzip_data));
--	/* Setup input buffer */
--	bd->inbuf = inbuf;
--	bd->inbufCount = len;
--	if (fill != NULL)
--		bd->fill = fill;
--	else
--		bd->fill = nofill;
--
--	/* Init the CRC32 table (big endian) */
--	for (i = 0; i < 256; i++) {
--		c = i << 24;
--		for (j = 8; j; j--)
--			c = c&0x80000000 ? (c << 1)^(CRC32_POLY_BE) : (c << 1);
--		bd->crc32Table[i] = c;
--	}
--
--	/* Ensure that file starts with "BZh['1'-'9']." */
--	i = get_bits(bd, 32);
--	if (((unsigned int)(i-BZh0-1)) >= 9)
--		return RETVAL_NOT_BZIP_DATA;
--
--	/* Fourth byte (ascii '1'-'9'), indicates block size in units of 100k of
--	   uncompressed data.  Allocate intermediate buffer for block. */
--	bd->dbufSize = 100000*(i-BZh0);
--
--	bd->dbuf = large_malloc(bd->dbufSize * sizeof(int));
--	if (!bd->dbuf)
--		return RETVAL_OUT_OF_MEMORY;
--	return RETVAL_OK;
--}
--
--/* Example usage: decompress src_fd to dst_fd.  (Stops at end of bzip2 data,
--   not end of file.) */
--STATIC int INIT bunzip2(unsigned char *buf, long len,
--			long (*fill)(void*, unsigned long),
--			long (*flush)(void*, unsigned long),
--			unsigned char *outbuf,
--			long *pos,
--			void(*error)(char *x))
--{
--	struct bunzip_data *bd;
--	int i = -1;
--	unsigned char *inbuf;
--
--	if (flush)
--		outbuf = malloc(BZIP2_IOBUF_SIZE);
--
--	if (!outbuf) {
--		error("Could not allocate output buffer");
--		return RETVAL_OUT_OF_MEMORY;
--	}
--	if (buf)
--		inbuf = buf;
--	else
--		inbuf = malloc(BZIP2_IOBUF_SIZE);
--	if (!inbuf) {
--		error("Could not allocate input buffer");
--		i = RETVAL_OUT_OF_MEMORY;
--		goto exit_0;
--	}
--	i = start_bunzip(&bd, inbuf, len, fill);
--	if (!i) {
--		for (;;) {
--			i = read_bunzip(bd, outbuf, BZIP2_IOBUF_SIZE);
--			if (i <= 0)
--				break;
--			if (!flush)
--				outbuf += i;
--			else
--				if (i != flush(outbuf, i)) {
--					i = RETVAL_UNEXPECTED_OUTPUT_EOF;
--					break;
--				}
--		}
--	}
--	/* Check CRC and release memory */
--	if (i == RETVAL_LAST_BLOCK) {
--		if (bd->headerCRC != bd->totalCRC)
--			error("Data integrity error when decompressing.");
--		else
--			i = RETVAL_OK;
--	} else if (i == RETVAL_UNEXPECTED_OUTPUT_EOF) {
--		error("Compressed file ends unexpectedly");
--	}
--	if (!bd)
--		goto exit_1;
--	if (bd->dbuf)
--		large_free(bd->dbuf);
--	if (pos)
--		*pos = bd->inbufPos;
--	free(bd);
--exit_1:
--	if (!buf)
--		free(inbuf);
--exit_0:
--	if (flush)
--		free(outbuf);
--	return i;
--}
--
--#ifdef PREBOOT
--STATIC int INIT __decompress(unsigned char *buf, long len,
--			long (*fill)(void*, unsigned long),
--			long (*flush)(void*, unsigned long),
--			unsigned char *outbuf, long olen,
--			long *pos,
--			void (*error)(char *x))
--{
--	return bunzip2(buf, len - 4, fill, flush, outbuf, pos, error);
--}
--#endif
-diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
-index e79bb1444b29..b7b55cc4d743 100644
---- a/scripts/Makefile.lib
-+++ b/scripts/Makefile.lib
-@@ -294,10 +294,10 @@ $(obj)/%.dtb: $(src)/%.dts $(DTC) FORCE
- 
- dtc-tmp = $(subst $(comma),_,$(dot-target).dts.tmp)
- 
--# Bzip2
-+# Lzma
- # ---------------------------------------------------------------------------
- 
--# Bzip2 and LZMA do not include size in file... so we have to fake that;
-+# LZMA does not include size in file... so we have to fake that;
- # append the size as a 32-bit littleendian number as gzip does.
- size_append = printf $(shell						\
- dec_size=0;								\
-@@ -314,14 +314,6 @@ printf "%08x\n" $$dec_size |						\
- 	}								\
- )
- 
--quiet_cmd_bzip2 = BZIP2   $@
--cmd_bzip2 = (cat $(filter-out FORCE,$^) | \
--	bzip2 -9 && $(call size_append, $(filter-out FORCE,$^))) > $@ || \
--	(rm -f $@ ; false)
--
--# Lzma
--# ---------------------------------------------------------------------------
--
- quiet_cmd_lzma = LZMA    $@
- cmd_lzma = (cat $(filter-out FORCE,$^) | \
- 	lzma -9 && $(call size_append, $(filter-out FORCE,$^))) > $@ || \
+diff --git a/arch/arm/configs/aspeed_g4_defconfig b/arch/arm/configs/aspeed_g4_defconfig
+index 1446262921b4..2e978ba5fab3 100644
+--- a/arch/arm/configs/aspeed_g4_defconfig
++++ b/arch/arm/configs/aspeed_g4_defconfig
+@@ -8,7 +8,6 @@ CONFIG_IKCONFIG_PROC=y
+ CONFIG_LOG_BUF_SHIFT=16
+ CONFIG_CGROUPS=y
+ CONFIG_BLK_DEV_INITRD=y
+-# CONFIG_RD_BZIP2 is not set
+ # CONFIG_RD_LZO is not set
+ # CONFIG_RD_LZ4 is not set
+ # CONFIG_UID16 is not set
+diff --git a/arch/arm/configs/aspeed_g5_defconfig b/arch/arm/configs/aspeed_g5_defconfig
+index 02fa3a41add5..4fef8a5d208a 100644
+--- a/arch/arm/configs/aspeed_g5_defconfig
++++ b/arch/arm/configs/aspeed_g5_defconfig
+@@ -8,7 +8,6 @@ CONFIG_IKCONFIG_PROC=y
+ CONFIG_LOG_BUF_SHIFT=16
+ CONFIG_CGROUPS=y
+ CONFIG_BLK_DEV_INITRD=y
+-# CONFIG_RD_BZIP2 is not set
+ # CONFIG_RD_LZO is not set
+ # CONFIG_RD_LZ4 is not set
+ # CONFIG_UID16 is not set
+diff --git a/arch/arm/configs/clps711x_defconfig b/arch/arm/configs/clps711x_defconfig
+index fc105c9178cc..63e029d9c5a6 100644
+--- a/arch/arm/configs/clps711x_defconfig
++++ b/arch/arm/configs/clps711x_defconfig
+@@ -2,7 +2,6 @@ CONFIG_KERNEL_LZMA=y
+ CONFIG_SYSVIPC=y
+ CONFIG_LOG_BUF_SHIFT=14
+ CONFIG_BLK_DEV_INITRD=y
+-CONFIG_RD_LZMA=y
+ CONFIG_EMBEDDED=y
+ CONFIG_SLOB=y
+ CONFIG_JUMP_LABEL=y
+diff --git a/arch/arm/configs/ezx_defconfig b/arch/arm/configs/ezx_defconfig
+index 484e51fbd4a6..47bbd7b20f07 100644
+--- a/arch/arm/configs/ezx_defconfig
++++ b/arch/arm/configs/ezx_defconfig
+@@ -4,8 +4,6 @@ CONFIG_SYSVIPC=y
+ CONFIG_LOG_BUF_SHIFT=14
+ CONFIG_SYSFS_DEPRECATED_V2=y
+ CONFIG_BLK_DEV_INITRD=y
+-CONFIG_RD_BZIP2=y
+-CONFIG_RD_LZMA=y
+ CONFIG_EXPERT=y
+ # CONFIG_COMPAT_BRK is not set
+ CONFIG_SLAB=y
+diff --git a/arch/arm/configs/hisi_defconfig b/arch/arm/configs/hisi_defconfig
+index 74d611e41e02..c8660e175f15 100644
+--- a/arch/arm/configs/hisi_defconfig
++++ b/arch/arm/configs/hisi_defconfig
+@@ -1,7 +1,6 @@
+ CONFIG_NO_HZ=y
+ CONFIG_HIGH_RES_TIMERS=y
+ CONFIG_BLK_DEV_INITRD=y
+-CONFIG_RD_LZMA=y
+ CONFIG_ARCH_HISI=y
+ CONFIG_ARCH_HI3xxx=y
+ CONFIG_PARTITION_ADVANCED=y
+diff --git a/arch/arm/configs/imote2_defconfig b/arch/arm/configs/imote2_defconfig
+index f204017c26b9..5cd017270f1e 100644
+--- a/arch/arm/configs/imote2_defconfig
++++ b/arch/arm/configs/imote2_defconfig
+@@ -3,8 +3,6 @@ CONFIG_SYSVIPC=y
+ CONFIG_LOG_BUF_SHIFT=14
+ CONFIG_SYSFS_DEPRECATED_V2=y
+ CONFIG_BLK_DEV_INITRD=y
+-CONFIG_RD_BZIP2=y
+-CONFIG_RD_LZMA=y
+ CONFIG_EXPERT=y
+ # CONFIG_COMPAT_BRK is not set
+ CONFIG_SLAB=y
+diff --git a/arch/arm/configs/lpc18xx_defconfig b/arch/arm/configs/lpc18xx_defconfig
+index 23df2518203d..f0d36814111a 100644
+--- a/arch/arm/configs/lpc18xx_defconfig
++++ b/arch/arm/configs/lpc18xx_defconfig
+@@ -1,8 +1,6 @@
+ CONFIG_CROSS_COMPILE="arm-linux-gnueabihf-"
+ CONFIG_HIGH_RES_TIMERS=y
+ CONFIG_BLK_DEV_INITRD=y
+-# CONFIG_RD_BZIP2 is not set
+-# CONFIG_RD_LZMA is not set
+ # CONFIG_RD_XZ is not set
+ # CONFIG_RD_LZO is not set
+ # CONFIG_RD_LZ4 is not set
+diff --git a/arch/arm/configs/vf610m4_defconfig b/arch/arm/configs/vf610m4_defconfig
+index a89f035c3b01..6b34e135035b 100644
+--- a/arch/arm/configs/vf610m4_defconfig
++++ b/arch/arm/configs/vf610m4_defconfig
+@@ -1,7 +1,5 @@
+ CONFIG_NAMESPACES=y
+ CONFIG_BLK_DEV_INITRD=y
+-# CONFIG_RD_BZIP2 is not set
+-# CONFIG_RD_LZMA is not set
+ # CONFIG_RD_XZ is not set
+ # CONFIG_RD_LZ4 is not set
+ CONFIG_KALLSYMS_ALL=y
+diff --git a/arch/m68k/configs/stmark2_defconfig b/arch/m68k/configs/stmark2_defconfig
+index 3d07b1de7eb0..fe82d37ba81d 100644
+--- a/arch/m68k/configs/stmark2_defconfig
++++ b/arch/m68k/configs/stmark2_defconfig
+@@ -5,8 +5,6 @@ CONFIG_SYSVIPC=y
+ CONFIG_LOG_BUF_SHIFT=14
+ CONFIG_NAMESPACES=y
+ CONFIG_BLK_DEV_INITRD=y
+-# CONFIG_RD_BZIP2 is not set
+-# CONFIG_RD_LZMA is not set
+ # CONFIG_RD_XZ is not set
+ # CONFIG_RD_LZO is not set
+ # CONFIG_RD_LZ4 is not set
+diff --git a/arch/mips/configs/ar7_defconfig b/arch/mips/configs/ar7_defconfig
+index 5651f4d8f45c..a0ce69fb4fcb 100644
+--- a/arch/mips/configs/ar7_defconfig
++++ b/arch/mips/configs/ar7_defconfig
+@@ -12,7 +12,6 @@ CONFIG_LOG_BUF_SHIFT=14
+ CONFIG_SYSFS_DEPRECATED_V2=y
+ CONFIG_RELAY=y
+ CONFIG_BLK_DEV_INITRD=y
+-CONFIG_RD_LZMA=y
+ CONFIG_EXPERT=y
+ # CONFIG_KALLSYMS is not set
+ # CONFIG_ELF_CORE is not set
+diff --git a/arch/mips/configs/ath25_defconfig b/arch/mips/configs/ath25_defconfig
+index b8d48038e74f..1a83f91dad42 100644
+--- a/arch/mips/configs/ath25_defconfig
++++ b/arch/mips/configs/ath25_defconfig
+@@ -9,7 +9,6 @@ CONFIG_SYSVIPC=y
+ CONFIG_HIGH_RES_TIMERS=y
+ CONFIG_BLK_DEV_INITRD=y
+ # CONFIG_RD_GZIP is not set
+-# CONFIG_RD_BZIP2 is not set
+ # CONFIG_RD_XZ is not set
+ # CONFIG_RD_LZO is not set
+ # CONFIG_RD_LZ4 is not set
+diff --git a/arch/mips/configs/ath79_defconfig b/arch/mips/configs/ath79_defconfig
+index 951c4231bdb8..c11f1870ed6f 100644
+--- a/arch/mips/configs/ath79_defconfig
++++ b/arch/mips/configs/ath79_defconfig
+@@ -12,7 +12,6 @@ CONFIG_SYSVIPC=y
+ CONFIG_HIGH_RES_TIMERS=y
+ CONFIG_BLK_DEV_INITRD=y
+ # CONFIG_RD_GZIP is not set
+-CONFIG_RD_LZMA=y
+ # CONFIG_KALLSYMS is not set
+ # CONFIG_AIO is not set
+ CONFIG_EMBEDDED=y
+diff --git a/arch/mips/configs/lemote2f_defconfig b/arch/mips/configs/lemote2f_defconfig
+index 02be95c1b712..2e2561f1aec3 100644
+--- a/arch/mips/configs/lemote2f_defconfig
++++ b/arch/mips/configs/lemote2f_defconfig
+@@ -17,8 +17,6 @@ CONFIG_IKCONFIG_PROC=y
+ CONFIG_LOG_BUF_SHIFT=15
+ CONFIG_SYSFS_DEPRECATED_V2=y
+ CONFIG_BLK_DEV_INITRD=y
+-CONFIG_RD_BZIP2=y
+-CONFIG_RD_LZMA=y
+ # CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
+ CONFIG_EXPERT=y
+ CONFIG_PROFILING=y
+diff --git a/arch/mips/configs/loongson3_defconfig b/arch/mips/configs/loongson3_defconfig
+index 324dfee23dfb..42eae3436bb4 100644
+--- a/arch/mips/configs/loongson3_defconfig
++++ b/arch/mips/configs/loongson3_defconfig
+@@ -32,8 +32,6 @@ CONFIG_SCHED_AUTOGROUP=y
+ CONFIG_SYSFS_DEPRECATED=y
+ CONFIG_RELAY=y
+ CONFIG_BLK_DEV_INITRD=y
+-CONFIG_RD_BZIP2=y
+-CONFIG_RD_LZMA=y
+ CONFIG_SYSCTL_SYSCALL=y
+ CONFIG_EMBEDDED=y
+ CONFIG_MODULES=y
+diff --git a/arch/mips/configs/nlm_xlp_defconfig b/arch/mips/configs/nlm_xlp_defconfig
+index e8e1dd8e0e99..16e44d0f1d29 100644
+--- a/arch/mips/configs/nlm_xlp_defconfig
++++ b/arch/mips/configs/nlm_xlp_defconfig
+@@ -21,8 +21,6 @@ CONFIG_HIGH_RES_TIMERS=y
+ CONFIG_CGROUPS=y
+ CONFIG_NAMESPACES=y
+ CONFIG_BLK_DEV_INITRD=y
+-CONFIG_RD_BZIP2=y
+-CONFIG_RD_LZMA=y
+ CONFIG_KALLSYMS_ALL=y
+ CONFIG_EMBEDDED=y
+ # CONFIG_COMPAT_BRK is not set
+diff --git a/arch/mips/configs/nlm_xlr_defconfig b/arch/mips/configs/nlm_xlr_defconfig
+index c4477a4d40c1..9340f42184f7 100644
+--- a/arch/mips/configs/nlm_xlr_defconfig
++++ b/arch/mips/configs/nlm_xlr_defconfig
+@@ -22,8 +22,6 @@ CONFIG_NAMESPACES=y
+ CONFIG_SCHED_AUTOGROUP=y
+ CONFIG_BLK_DEV_INITRD=y
+ CONFIG_INITRAMFS_SOURCE=""
+-CONFIG_RD_BZIP2=y
+-CONFIG_RD_LZMA=y
+ CONFIG_INITRAMFS_COMPRESSION_GZIP=y
+ CONFIG_EXPERT=y
+ CONFIG_KALLSYMS_ALL=y
+diff --git a/arch/mips/configs/pistachio_defconfig b/arch/mips/configs/pistachio_defconfig
+index b22a3cf149b6..4257f90d1272 100644
+--- a/arch/mips/configs/pistachio_defconfig
++++ b/arch/mips/configs/pistachio_defconfig
+@@ -21,8 +21,6 @@ CONFIG_CFS_BANDWIDTH=y
+ CONFIG_NAMESPACES=y
+ CONFIG_USER_NS=y
+ CONFIG_BLK_DEV_INITRD=y
+-# CONFIG_RD_BZIP2 is not set
+-# CONFIG_RD_LZMA is not set
+ # CONFIG_RD_LZO is not set
+ # CONFIG_RD_LZ4 is not set
+ CONFIG_CC_OPTIMIZE_FOR_SIZE=y
+diff --git a/arch/openrisc/configs/simple_smp_defconfig b/arch/openrisc/configs/simple_smp_defconfig
+index b6e3c7e158e7..03b7633a9a2b 100644
+--- a/arch/openrisc/configs/simple_smp_defconfig
++++ b/arch/openrisc/configs/simple_smp_defconfig
+@@ -4,8 +4,6 @@ CONFIG_NO_HZ=y
+ CONFIG_LOG_BUF_SHIFT=14
+ CONFIG_BLK_DEV_INITRD=y
+ # CONFIG_RD_GZIP is not set
+-# CONFIG_RD_BZIP2 is not set
+-# CONFIG_RD_LZMA is not set
+ # CONFIG_RD_XZ is not set
+ # CONFIG_RD_LZO is not set
+ # CONFIG_RD_LZ4 is not set
+diff --git a/arch/powerpc/configs/44x/fsp2_defconfig b/arch/powerpc/configs/44x/fsp2_defconfig
+index bae6b26bcfba..8ccae1052efb 100644
+--- a/arch/powerpc/configs/44x/fsp2_defconfig
++++ b/arch/powerpc/configs/44x/fsp2_defconfig
+@@ -9,7 +9,6 @@ CONFIG_IKCONFIG=y
+ CONFIG_IKCONFIG_PROC=y
+ CONFIG_LOG_BUF_SHIFT=16
+ CONFIG_BLK_DEV_INITRD=y
+-# CONFIG_RD_LZMA is not set
+ # CONFIG_RD_XZ is not set
+ # CONFIG_RD_LZO is not set
+ # CONFIG_RD_LZ4 is not set
+diff --git a/arch/powerpc/configs/skiroot_defconfig b/arch/powerpc/configs/skiroot_defconfig
+index cfdd08897a06..5d790a65e733 100644
+--- a/arch/powerpc/configs/skiroot_defconfig
++++ b/arch/powerpc/configs/skiroot_defconfig
+@@ -16,8 +16,6 @@ CONFIG_IKCONFIG_PROC=y
+ CONFIG_LOG_BUF_SHIFT=20
+ CONFIG_BLK_DEV_INITRD=y
+ # CONFIG_RD_GZIP is not set
+-# CONFIG_RD_BZIP2 is not set
+-# CONFIG_RD_LZMA is not set
+ # CONFIG_RD_LZO is not set
+ # CONFIG_RD_LZ4 is not set
+ CONFIG_CC_OPTIMIZE_FOR_SIZE=y
+diff --git a/arch/sh/configs/sdk7786_defconfig b/arch/sh/configs/sdk7786_defconfig
+index e9ee0c878ead..4e71a98bc814 100644
+--- a/arch/sh/configs/sdk7786_defconfig
++++ b/arch/sh/configs/sdk7786_defconfig
+@@ -29,8 +29,6 @@ CONFIG_USER_NS=y
+ CONFIG_PID_NS=y
+ CONFIG_NET_NS=y
+ CONFIG_BLK_DEV_INITRD=y
+-CONFIG_RD_BZIP2=y
+-CONFIG_RD_LZMA=y
+ CONFIG_RD_LZO=y
+ # CONFIG_COMPAT_BRK is not set
+ CONFIG_SLAB=y
+diff --git a/arch/xtensa/configs/cadence_csp_defconfig b/arch/xtensa/configs/cadence_csp_defconfig
+index 3221b7053fa3..e7b295ec6acd 100644
+--- a/arch/xtensa/configs/cadence_csp_defconfig
++++ b/arch/xtensa/configs/cadence_csp_defconfig
+@@ -15,8 +15,6 @@ CONFIG_SCHED_AUTOGROUP=y
+ CONFIG_RELAY=y
+ CONFIG_BLK_DEV_INITRD=y
+ CONFIG_INITRAMFS_SOURCE="$$KERNEL_INITRAMFS_SOURCE"
+-# CONFIG_RD_BZIP2 is not set
+-# CONFIG_RD_LZMA is not set
+ # CONFIG_RD_XZ is not set
+ # CONFIG_RD_LZO is not set
+ # CONFIG_RD_LZ4 is not set
+diff --git a/arch/xtensa/configs/nommu_kc705_defconfig b/arch/xtensa/configs/nommu_kc705_defconfig
+index f3fc4f970ca8..9a449d13eb1e 100644
+--- a/arch/xtensa/configs/nommu_kc705_defconfig
++++ b/arch/xtensa/configs/nommu_kc705_defconfig
+@@ -15,8 +15,6 @@ CONFIG_NAMESPACES=y
+ CONFIG_SCHED_AUTOGROUP=y
+ CONFIG_RELAY=y
+ CONFIG_BLK_DEV_INITRD=y
+-# CONFIG_RD_BZIP2 is not set
+-# CONFIG_RD_LZMA is not set
+ # CONFIG_RD_XZ is not set
+ # CONFIG_RD_LZO is not set
+ # CONFIG_RD_LZ4 is not set
 -- 
 2.19.1
 
