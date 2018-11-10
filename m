@@ -2,96 +2,86 @@ Return-Path: <SRS0=qQPY=NV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 965A5C43441
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Nov 2018 00:14:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D6A0C43441
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Nov 2018 00:37:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C7B7B20840
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Nov 2018 00:14:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B8D1C206BA
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Nov 2018 00:37:40 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="t8F0IN0R"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C7B7B20840
-Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="Z4dx80CN"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B8D1C206BA
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=rasmusvillemoes.dk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42sHZm28X6zF3dx
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Nov 2018 11:14:40 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42sJ5G564FzF3gS
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Nov 2018 11:37:38 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=rasmusvillemoes.dk
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.b="t8F0IN0R";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk header.b="Z4dx80CN";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=google.com
- (client-ip=2607:f8b0:4864:20::544; helo=mail-pg1-x544.google.com;
- envelope-from=ghackmann@google.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=google.com header.i=@google.com header.b="t8F0IN0R"; 
- dkim-atps=neutral
-Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
- [IPv6:2607:f8b0:4864:20::544])
+ spf=pass (mailfrom) smtp.mailfrom=rasmusvillemoes.dk
+ (client-ip=2a00:1450:4864:20::144; helo=mail-lf1-x144.google.com;
+ envelope-from=linux@rasmusvillemoes.dk; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=rasmusvillemoes.dk
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=rasmusvillemoes.dk header.i=@rasmusvillemoes.dk
+ header.b="Z4dx80CN"; dkim-atps=neutral
+Received: from mail-lf1-x144.google.com (mail-lf1-x144.google.com
+ [IPv6:2a00:1450:4864:20::144])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42s82K0GPQzF3LT
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Nov 2018 05:34:26 +1100 (AEDT)
-Received: by mail-pg1-x544.google.com with SMTP id 17so941273pgg.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Nov 2018 10:34:26 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
- h=subject:to:cc:references:from:message-id:date:user-agent
- :mime-version:in-reply-to:content-language:content-transfer-encoding;
- bh=JxD7kSkr4geOJC7eAPZ5I5uWHT9Cuv2yw07CVEu3ka0=;
- b=t8F0IN0RccyPgUJchAX8wq6xyLMo1oGUhuAWW8CFx9XB7F6FLFKtKQS4w1SwCo/iuA
- F0Udee4DAVY/JujMk1ocjUq7iqh7S9Pk8MnVUWzDcoTrzYNkAQVblRxZXgcIYAmg7Sfs
- GQ2jnE2tCx1FCS+wuv9lZwmEIOMckDEvdvHgNaUedoEZJaToFTNH4tZEj53IeMtQLOYx
- 0SRJcgJcN+Iqr4mmxtLf3+ZkxmdjGqDiatqM1lXkEJ/S3fzbsv/iSqNRjAzFguIgKA9Z
- 7ai1qlLAPUtq4nuzgl6GExwgVb30hlGiAb/8KF6tynCFaBCMwqldV/LTRoajgG5fKQu4
- zkVQ==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42sJ2T1bJRzF3ZX
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Nov 2018 11:35:12 +1100 (AEDT)
+Received: by mail-lf1-x144.google.com with SMTP id i26so2599968lfc.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Nov 2018 16:35:12 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=rasmusvillemoes.dk; s=google;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=XMRV2yGipuBF9ApADA+TXAr8hu/aCqxWcuczhrEuTnk=;
+ b=Z4dx80CNV7E4GV/lLdbydT/nIWvd9Zc+mmVKg0sMlYVMm0FffmwURbPkGRHkSDGJUr
+ 1BTkdAeG7rxl4j98rnEOmHHTyXgH2xMP9WgT/n8tZZQ+j/Aq5FWakt+IYXQio1ZceBlV
+ Y5V46rf3LmLN/a6jW3glIBRAPyJj/FjnhvAEI=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
  :content-transfer-encoding;
- bh=JxD7kSkr4geOJC7eAPZ5I5uWHT9Cuv2yw07CVEu3ka0=;
- b=dZ4ST3p5ge5EXOFF/tP5XCUrPLTXYOzVUyenoZry/XCq/9bMlSx5eQXzZxzb3qZnMt
- zvQptctELjC2hQ/aEJZrhIRYivvag8zyevaqPIvp81N/Kd39srGEoPmUrUTvzDRKIR6b
- Uh/SoA5EPrZvYnMQ8dpc2D04ioxraI9Hh3CwKzFA0srJYnuirjAJBLb8I50TVsSDNdkC
- E1SDdDeDXqKeO+3oX16vGvhBaQl1pSSiofsWRcNrtbNT7piCZVg/EaLzRNaf6hjBMG4x
- Fr0HHFtoASobSm9fIygoZySJCN4M4oTG6tklaa/l300dC3uc53q/gx2oDjW2JZqH/9eJ
- 9/qA==
-X-Gm-Message-State: AGRZ1gJmF/R6YbbTv5Ho8zuGUPWXzAsdzs1Wy3VlNZybv2Zy4CNwdo++
- MEfXmFDpncMk1GcpjkNpIuztzw==
-X-Google-Smtp-Source: AJdET5dAhFEyxJohMBANUoZ5fGj+1zU8rhgCO6S/pRCu+vziPH2AOjgU88aNdZKjlS3uP/jglQ+8HQ==
-X-Received: by 2002:a63:d40a:: with SMTP id a10mr8236693pgh.394.1541788464604; 
- Fri, 09 Nov 2018 10:34:24 -0800 (PST)
-Received: from hackmann.mtv.corp.google.com
- ([2620:0:1000:1601:82f7:8f1:8c08:a97a])
- by smtp.gmail.com with ESMTPSA id q195sm7870491pgq.7.2018.11.09.10.34.23
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Fri, 09 Nov 2018 10:34:23 -0800 (PST)
-Subject: Re: [PATCH v2 2/2] kbuild: consolidate Clang compiler flags
-To: Nick Desaulniers <ndesaulniers@google.com>,
- Masahiro Yamada <yamada.masahiro@socionext.com>
-References: <1541473495-25262-1-git-send-email-yamada.masahiro@socionext.com>
- <1541473495-25262-2-git-send-email-yamada.masahiro@socionext.com>
- <CAKwvOd=JwjVu=uk3egVJxTm9vPcF=Jx2Bexx1Wx=Z-PC38X3Uw@mail.gmail.com>
-From: Greg Hackmann <ghackmann@google.com>
-Message-ID: <9c4868dd-82fa-aa5c-843e-e1f78ffbc7e2@google.com>
-Date: Fri, 9 Nov 2018 10:34:22 -0800
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ bh=XMRV2yGipuBF9ApADA+TXAr8hu/aCqxWcuczhrEuTnk=;
+ b=tRS20O4cL9YNny1NFhSdrVdvCjydXB41GXM9ywgHJtYTRPffJL++p8cE82QefaqBw7
+ hk8fX+9UKiHfOqiDm7iPNMPXi8hLDqmHtNCzt5g9TRB0lqCSt791XAJpH6ltWd6YHeG/
+ WemvYqsyoKFLuam3hLa+ywFKGfXxuZ2TXO9vxsRGCgwYFmb4K3xr4XBvEaRASWW3pGyt
+ ao6O6jRaoKsMBmufvlOduBuaZQz0yepU9Ym8YAutsjV7LuQks2mm4yN+ZZiRv+Q6BKwZ
+ LhBQzCeBmKQ5mXuGDnfeAuYgyIbnc7WC/P0sI3x6fPhiNqAFtHpxzTR7MnCS1/LHRadY
+ 6xLA==
+X-Gm-Message-State: AGRZ1gKFOjI/0FDPVNj5JzcR5JvYp6hQo1IMEz6DVw0hokYhmfQIAWao
+ /WCAbf38aG0s8CxwLF1VbNQjPA==
+X-Google-Smtp-Source: AJdET5ctlZnHmch8b2GPiHgQc38ggSn+KTAYLMCVUZVmwe+XIhzO8FIS4QxGr4lSjRfOwREtm5Tdpg==
+X-Received: by 2002:a19:1365:: with SMTP id j98mr6313453lfi.55.1541810108937; 
+ Fri, 09 Nov 2018 16:35:08 -0800 (PST)
+Received: from prevas-ravi.prevas.se (dhcp-5-186-114-252.cgn.ip.fibianet.dk.
+ [5.186.114.252])
+ by smtp.gmail.com with ESMTPSA id 26-v6sm2006603lje.18.2018.11.09.16.35.07
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
+ Fri, 09 Nov 2018 16:35:08 -0800 (PST)
+From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+To: Arnd Bergmann <arnd@arndb.de>,
+	Alexander Viro <viro@zeniv.linux.org.uk>
+Subject: [PATCH] libfs: make all users of simple_attr_open have the format
+ checked
+Date: Sat, 10 Nov 2018 01:35:04 +0100
+Message-Id: <20181110003504.629-1-linux@rasmusvillemoes.dk>
+X-Mailer: git-send-email 2.19.1.6.gbde171bbf5
 MIME-Version: 1.0
-In-Reply-To: <CAKwvOd=JwjVu=uk3egVJxTm9vPcF=Jx2Bexx1Wx=Z-PC38X3Uw@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-GB
-Content-Transfer-Encoding: 7bit
-X-Mailman-Approved-At: Sat, 10 Nov 2018 11:12:25 +1100
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,71 +93,88 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michal Marek <michal.lkml@markovi.net>,
- Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
- LKML <linux-kernel@vger.kernel.org>, Stefan Agner <stefan@agner.ch>,
- Matthias Kaehlcke <mka@chromium.org>, joel@jms.id.au,
- Nathan Chancellor <natechancellor@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-fsdevel@vger.kernel.org, Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 11/09/2018 10:29 AM, Nick Desaulniers wrote:
-> On Mon, Nov 5, 2018 at 7:05 PM Masahiro Yamada
-> <yamada.masahiro@socionext.com> wrote:
->>
->> Collect basic Clang options such as --target, --prefix, --gcc-toolchain,
->> -no-integrated-as into a single variable CLANG_FLAGS so that it can be
->> easily reused in other parts of Makefile.
->>
->> Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
->> ---
->>
->> Changes in v2:
->>   - Use := flavor instead of = because $(CLANG_FLAGS) is expanded soon anyway
->>
->>   Makefile | 13 ++++++-------
->>   1 file changed, 6 insertions(+), 7 deletions(-)
->>
->> diff --git a/Makefile b/Makefile
->> index da11700..e173a73 100644
->> --- a/Makefile
->> +++ b/Makefile
->> @@ -487,18 +487,17 @@ endif
->>
->>   ifneq ($(shell $(CC) --version 2>&1 | head -n 1 | grep clang),)
->>   ifneq ($(CROSS_COMPILE),)
->> -CLANG_TARGET   := --target=$(notdir $(CROSS_COMPILE:%-=%))
->> +CLANG_FLAGS    := --target=$(notdir $(CROSS_COMPILE:%-=%))
->>   GCC_TOOLCHAIN_DIR := $(dir $(shell which $(LD)))
->> -CLANG_PREFIX   := --prefix=$(GCC_TOOLCHAIN_DIR)
->> +CLANG_FLAGS    += --prefix=$(GCC_TOOLCHAIN_DIR)
->>   GCC_TOOLCHAIN  := $(realpath $(GCC_TOOLCHAIN_DIR)/..)
->>   endif
->>   ifneq ($(GCC_TOOLCHAIN),)
->> -CLANG_GCC_TC   := --gcc-toolchain=$(GCC_TOOLCHAIN)
->> +CLANG_FLAGS    += --gcc-toolchain=$(GCC_TOOLCHAIN)
->>   endif
->> -KBUILD_CFLAGS += $(CLANG_TARGET) $(CLANG_GCC_TC) $(CLANG_PREFIX)
->> -KBUILD_AFLAGS += $(CLANG_TARGET) $(CLANG_GCC_TC) $(CLANG_PREFIX)
->> -KBUILD_CFLAGS += -no-integrated-as
->> -KBUILD_AFLAGS += -no-integrated-as
->> +CLANG_FLAGS    += -no-integrated-as
->> +KBUILD_CFLAGS  += $(CLANG_FLAGS)
->> +KBUILD_AFLAGS  += $(CLANG_FLAGS)
->>   endif
->>
->>   RETPOLINE_CFLAGS_GCC := -mindirect-branch=thunk-extern -mindirect-branch-register
->> --
->> 2.7.4
->>
-> 
-> Thanks for this patch, Masahiro, it's a good simplification.
-> Reviewed-by: Nick Desaulniers <ndesaulniers@google.com>
-> Tested-by: Nick Desaulniers <ndesaulniers@google.com>
-> 
-> Would you mind waiting for a tested-by from Stefan, and maybe an ack
-> from Greg (added to cc)?
-> 
+Almost all uses of simple_attr_open() happen via macros that do a
+__simple_attr_check_format(__fmt, 0ull). One of the few exceptions
+actually does not pass a fmt matching an unsigned long long.
 
-Acked-by: Greg Hackmann <ghackmann@google.com>
+So move the check into the call of simple_attr_open() by wrapping it in
+a macro of the same name, and fix the powerpc case while at it.
+
+Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+---
+ arch/powerpc/platforms/cell/spufs/file.c | 2 +-
+ fs/libfs.c                               | 1 +
+ include/linux/debugfs.h                  | 1 -
+ include/linux/fs.h                       | 6 +++++-
+ 4 files changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/platforms/cell/spufs/file.c b/arch/powerpc/platforms/cell/spufs/file.c
+index 43e7b93f27c7..b75d70f54f12 100644
+--- a/arch/powerpc/platforms/cell/spufs/file.c
++++ b/arch/powerpc/platforms/cell/spufs/file.c
+@@ -436,7 +436,7 @@ static int spufs_cntl_open(struct inode *inode, struct file *file)
+ 		ctx->cntl = inode->i_mapping;
+ 	mutex_unlock(&ctx->mapping_lock);
+ 	return simple_attr_open(inode, file, spufs_cntl_get,
+-					spufs_cntl_set, "0x%08lx");
++					spufs_cntl_set, "0x%08llx");
+ }
+ 
+ static int
+diff --git a/fs/libfs.c b/fs/libfs.c
+index 0fb590d79f30..327ab701d176 100644
+--- a/fs/libfs.c
++++ b/fs/libfs.c
+@@ -792,6 +792,7 @@ struct simple_attr {
+ 
+ /* simple_attr_open is called by an actual attribute open file operation
+  * to set the attribute specific access operations. */
++#undef simple_attr_open
+ int simple_attr_open(struct inode *inode, struct file *file,
+ 		     int (*get)(void *, u64 *), int (*set)(void *, u64),
+ 		     const char *fmt)
+diff --git a/include/linux/debugfs.h b/include/linux/debugfs.h
+index 3b0ba54cc4d5..2ddec401343a 100644
+--- a/include/linux/debugfs.h
++++ b/include/linux/debugfs.h
+@@ -42,7 +42,6 @@ extern struct dentry *arch_debugfs_dir;
+ #define DEFINE_DEBUGFS_ATTRIBUTE(__fops, __get, __set, __fmt)		\
+ static int __fops ## _open(struct inode *inode, struct file *file)	\
+ {									\
+-	__simple_attr_check_format(__fmt, 0ull);			\
+ 	return simple_attr_open(inode, file, __get, __set, __fmt);	\
+ }									\
+ static const struct file_operations __fops = {				\
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index c95c0807471f..cb79b79d2175 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -3387,7 +3387,6 @@ void simple_transaction_set(struct file *file, size_t n);
+ #define DEFINE_SIMPLE_ATTRIBUTE(__fops, __get, __set, __fmt)		\
+ static int __fops ## _open(struct inode *inode, struct file *file)	\
+ {									\
+-	__simple_attr_check_format(__fmt, 0ull);			\
+ 	return simple_attr_open(inode, file, __get, __set, __fmt);	\
+ }									\
+ static const struct file_operations __fops = {				\
+@@ -3408,6 +3407,11 @@ void __simple_attr_check_format(const char *fmt, ...)
+ int simple_attr_open(struct inode *inode, struct file *file,
+ 		     int (*get)(void *, u64 *), int (*set)(void *, u64),
+ 		     const char *fmt);
++#define simple_attr_open(inode, file, get, set, fmt) ({	\
++	if (0)						\
++		__simple_attr_check_format(fmt, 0ull);	\
++	simple_attr_open(inode, file, get, set, fmt);	\
++	})
+ int simple_attr_release(struct inode *inode, struct file *file);
+ ssize_t simple_attr_read(struct file *file, char __user *buf,
+ 			 size_t len, loff_t *ppos);
+-- 
+2.19.1.6.gbde171bbf5
+
