@@ -2,147 +2,87 @@ Return-Path: <SRS0=Ph+o=NX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
+X-Spam-Status: No, score=-13.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0EB5FC0044B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Nov 2018 04:58:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 36797C43441
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Nov 2018 05:31:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 54268216FD
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Nov 2018 04:58:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B02D4216FD
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Nov 2018 05:31:41 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="PpnmMCS3"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 54268216FD
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="f7kt/Y4Y"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B02D4216FD
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=jms.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42tdnr0MT1zF3GS
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Nov 2018 15:58:56 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	by lists.ozlabs.org (Postfix) with ESMTP id 42tfWZ2sXdzF3TS
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Nov 2018 16:31:38 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=jms.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="PpnmMCS3";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="f7kt/Y4Y";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
- (client-ip=2607:f8b0:4864:20::641; helo=mail-pl1-x641.google.com;
- envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::542; helo=mail-pg1-x542.google.com;
+ envelope-from=joel.stan@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.ru
+ dmarc=none (p=none dis=none) header.from=jms.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
- header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="PpnmMCS3"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="f7kt/Y4Y"; 
  dkim-atps=neutral
-Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
- [IPv6:2607:f8b0:4864:20::641])
+Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
+ [IPv6:2607:f8b0:4864:20::542])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42tdlC3lxMzF3KD
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Nov 2018 15:56:39 +1100 (AEDT)
-Received: by mail-pl1-x641.google.com with SMTP id s5-v6so3689380plq.11
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Nov 2018 20:56:39 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
- h=subject:to:cc:references:from:openpgp:autocrypt:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42tfRh5ClnzF3TS
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Nov 2018 16:28:16 +1100 (AEDT)
+Received: by mail-pg1-x542.google.com with SMTP id z17-v6so3516889pgv.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Nov 2018 21:28:16 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=sender:from:to:cc:subject:date:message-id:mime-version
  :content-transfer-encoding;
- bh=B5a1b7g/lp6RHFuq4YES3T0uVs2SfquOSqaVJv3R3LU=;
- b=PpnmMCS3aFqYti5UFsYPOSXBlia2WisVSPhAofFT2s8BXj1g7PbvilY7z4ew4n1Cev
- nuCI07etL/AUKTvoAWEDRQW9FS+7lSkOfs6eKbF32uSOWEtd/XclwcRrJ2C/w6XhGZ1m
- /anvMSmhIcOFz2GD6x4RqJzXk/QMYyAseFfL9m+Oa357tQ8eIweQFJNRV8j5TK/pdGpA
- /sZ/V1MCyEbLbu+BvHCubYB4IpKRe0dRsc3/LoP2yAdDUKgktfiSTqOtt5XQyOVIAP8V
- 05jdacWtA/n17O4P3Ojw6us1WEcQFNNACAVY+KPFhgTJG81JnsADASe5aFLsUyUL6hQW
- qr4w==
+ bh=nqXjPzV+uhAhxTvNRXtXr7D9tjoD6z2Sa1Qvrclhhnw=;
+ b=f7kt/Y4Y+y+U2wfnOFiorw8EuSwEl3p8vGJFhlJZBRCke+lBn1Ni3wjWpzaOUF0ao5
+ 8VdxIAt2BFPBiUoiWvF8OvbEk04erJUVs2wcXfE6rDNHm39io0NZIpgYJQRhQfKtSeRO
+ FGgce/hVkvRZN8gPJqUiD3ZC5qO9W9dyFe0OAwSmVAREBFlKE+56PL1Hu0IWpwIQY1Cx
+ 9BA/vC5EsPJ68LVBSzEe/haE8YTjRt23zjNec6AlbISqXucML3/yd/IUPh7dqq+ohj51
+ HBuK7ICjZQj+oChiDEVt0MrBpoLzrn9zztyV4w+4LgI96nO37jlISmSd6UIwKmdNgfsQ
+ Sauw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:openpgp:autocrypt
- :message-id:date:user-agent:mime-version:in-reply-to
- :content-language:content-transfer-encoding;
- bh=B5a1b7g/lp6RHFuq4YES3T0uVs2SfquOSqaVJv3R3LU=;
- b=AuXIhew2XLIDgXAX1DWMl7LLeB7WNEs+KOci2WPIZD6f4nSDmRT8bzsZlTX1RIs+jY
- 0cjUi3OV7E8lmlJ63dgsCnMs5e1q1R9tM3r9upQt6kXGvmIrrUxZ+Ly65cLVPxVaWCxF
- Pt1e+X1jQditezqi483IB8+u5r1aIycAIMtlXcL2BLmpMM+dj9USNSBjpHW15TnD4GXm
- QakQWOi4vn9O2MXDfaJfTaG74r1Ga6wZrzUwG9k6phIdnWNXT/9gAjDgCdw7NyGFGj1c
- rzgninx8SSkApteAXvmCCGImUMMj1QpL9w300/qaIJsfGxymMSMTLXICSQfC3ILnlXJS
- GGiw==
-X-Gm-Message-State: AGRZ1gIeYwbYgcs7lMVLEW8sWFb6TsxGIa0DVqn6ipI8PfCp9V80hv44
- y+PusrDU5d2JHLtr/ZtE051bBI6ihJ4A4w==
-X-Google-Smtp-Source: AJdET5eB+dWoEMfrlH21irK4LEpzJJqQzF15JAy67w+fzPVoGd5ePej3uYtmh5eXRbiahUPsT0HYnQ==
-X-Received: by 2002:a17:902:4643:: with SMTP id
- o61-v6mr18143980pld.43.1541998597365; 
- Sun, 11 Nov 2018 20:56:37 -0800 (PST)
-Received: from [10.61.2.175] ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id o86-v6sm10602437pfk.8.2018.11.11.20.56.33
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Sun, 11 Nov 2018 20:56:36 -0800 (PST)
-Subject: Re: [PATCH kernel 3/3] vfio_pci: Add NVIDIA GV100GL [Tesla V100 SXM2]
- [10de:1db1] subdriver
-To: David Gibson <david@gibson.dropbear.id.au>
-References: <20181016130824.20be215b@w520.home>
- <71c11c53-c83d-b0b6-5036-574df45009e4@ozlabs.ru>
- <20181017155252.2f15d0f0@w520.home>
- <2175dbbd-21d9-df26-67f5-4b41f90ab1bc@ozlabs.ru>
- <20181018105503.088a343f@w520.home>
- <0e0db29d-a1e8-af85-b715-c1ba1a2f3875@nvidia.com>
- <20181018120502.057feb7a@w520.home>
- <918290dc-59c3-f269-38d4-a07d323173f9@ozlabs.ru>
- <20181112010819.GA21020@umbus.fritz.box>
- <87de990e-7ea5-d544-ab2a-15d69e57703c@ozlabs.ru>
- <20181112042343.GB21020@umbus.fritz.box>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Openpgp: preference=signencrypt
-Autocrypt: addr=aik@ozlabs.ru; keydata=
- xsFNBE+rT0sBEADFEI2UtPRsLLvnRf+tI9nA8T91+jDK3NLkqV+2DKHkTGPP5qzDZpRSH6mD
- EePO1JqpVuIow/wGud9xaPA5uvuVgRS1q7RU8otD+7VLDFzPRiRE4Jfr2CW89Ox6BF+q5ZPV
- /pS4v4G9eOrw1v09lEKHB9WtiBVhhxKK1LnUjPEH3ifkOkgW7jFfoYgTdtB3XaXVgYnNPDFo
- PTBYsJy+wr89XfyHr2Ev7BB3Xaf7qICXdBF8MEVY8t/UFsesg4wFWOuzCfqxFmKEaPDZlTuR
- tfLAeVpslNfWCi5ybPlowLx6KJqOsI9R2a9o4qRXWGP7IwiMRAC3iiPyk9cknt8ee6EUIxI6
- t847eFaVKI/6WcxhszI0R6Cj+N4y+1rHfkGWYWupCiHwj9DjILW9iEAncVgQmkNPpUsZECLT
- WQzMuVSxjuXW4nJ6f4OFHqL2dU//qR+BM/eJ0TT3OnfLcPqfucGxubhT7n/CXUxEy+mvWwnm
- s9p4uqVpTfEuzQ0/bE6t7dZdPBua7eYox1AQnk8JQDwC3Rn9kZq2O7u5KuJP5MfludMmQevm
- pHYEMF4vZuIpWcOrrSctJfIIEyhDoDmR34bCXAZfNJ4p4H6TPqPh671uMQV82CfTxTrMhGFq
- 8WYU2AH86FrVQfWoH09z1WqhlOm/KZhAV5FndwVjQJs1MRXD8QARAQABzSRBbGV4ZXkgS2Fy
- ZGFzaGV2c2tpeSA8YWlrQG96bGFicy5ydT7CwXgEEwECACIFAk+rT0sCGwMGCwkIBwMCBhUI
- AgkKCwQWAgMBAh4BAheAAAoJEIYTPdgrwSC5fAIP/0wf/oSYaCq9PhO0UP9zLSEz66SSZUf7
- AM9O1rau1lJpT8RoNa0hXFXIVbqPPKPZgorQV8SVmYRLr0oSmPnTiZC82x2dJGOR8x4E01gK
- TanY53J/Z6+CpYykqcIpOlGsytUTBA+AFOpdaFxnJ9a8p2wA586fhCZHVpV7W6EtUPH1SFTQ
- q5xvBmr3KkWGjz1FSLH4FeB70zP6uyuf/B2KPmdlPkyuoafl2UrU8LBADi/efc53PZUAREih
- sm3ch4AxaL4QIWOmlE93S+9nHZSRo9jgGXB1LzAiMRII3/2Leg7O4hBHZ9Nki8/fbDo5///+
- kD4L7UNbSUM/ACWHhd4m1zkzTbyRzvL8NAVQ3rckLOmju7Eu9whiPueGMi5sihy9VQKHmEOx
- OMEhxLRQbzj4ypRLS9a+oxk1BMMu9cd/TccNy0uwx2UUjDQw/cXw2rRWTRCxoKmUsQ+eNWEd
- iYLW6TCfl9CfHlT6A7Zmeqx2DCeFafqEd69DqR9A8W5rx6LQcl0iOlkNqJxxbbW3ddDsLU/Y
- r4cY20++WwOhSNghhtrroP+gouTOIrNE/tvG16jHs8nrYBZuc02nfX1/gd8eguNfVX/ZTHiR
- gHBWe40xBKwBEK2UeqSpeVTohYWGBkcd64naGtK9qHdo1zY1P55lHEc5Uhlk743PgAnOi27Q
- ns5zzsFNBE+rT0sBEACnV6GBSm+25ACT+XAE0t6HHAwDy+UKfPNaQBNTTt31GIk5aXb2Kl/p
- AgwZhQFEjZwDbl9D/f2GtmUHWKcCmWsYd5M/6Ljnbp0Ti5/xi6FyfqnO+G/wD2VhGcKBId1X
- Em/B5y1kZVbzcGVjgD3HiRTqE63UPld45bgK2XVbi2+x8lFvzuFq56E3ZsJZ+WrXpArQXib2
- hzNFwQleq/KLBDOqTT7H+NpjPFR09Qzfa7wIU6pMNF2uFg5ihb+KatxgRDHg70+BzQfa6PPA
- o1xioKXW1eHeRGMmULM0Eweuvpc7/STD3K7EJ5bBq8svoXKuRxoWRkAp9Ll65KTUXgfS+c0x
- gkzJAn8aTG0z/oEJCKPJ08CtYQ5j7AgWJBIqG+PpYrEkhjzSn+DZ5Yl8r+JnZ2cJlYsUHAB9
- jwBnWmLCR3gfop65q84zLXRQKWkASRhBp4JK3IS2Zz7Nd/Sqsowwh8x+3/IUxVEIMaVoUaxk
- Wt8kx40h3VrnLTFRQwQChm/TBtXqVFIuv7/Mhvvcq11xnzKjm2FCnTvCh6T2wJw3de6kYjCO
- 7wsaQ2y3i1Gkad45S0hzag/AuhQJbieowKecuI7WSeV8AOFVHmgfhKti8t4Ff758Z0tw5Fpc
- BFDngh6Lty9yR/fKrbkkp6ux1gJ2QncwK1v5kFks82Cgj+DSXK6GUQARAQABwsFfBBgBAgAJ
- BQJPq09LAhsMAAoJEIYTPdgrwSC5NYEP/2DmcEa7K9A+BT2+G5GXaaiFa098DeDrnjmRvumJ
- BhA1UdZRdfqICBADmKHlJjj2xYo387sZpS6ABbhrFxM6s37g/pGPvFUFn49C47SqkoGcbeDz
- Ha7JHyYUC+Tz1dpB8EQDh5xHMXj7t59mRDgsZ2uVBKtXj2ZkbizSHlyoeCfs1gZKQgQE8Ffc
- F8eWKoqAQtn3j4nE3RXbxzTJJfExjFB53vy2wV48fUBdyoXKwE85fiPglQ8bU++0XdOr9oyy
- j1llZlB9t3tKVv401JAdX8EN0++ETiOovQdzE1m+6ioDCtKEx84ObZJM0yGSEGEanrWjiwsa
- nzeK0pJQM9EwoEYi8TBGhHC9ksaAAQipSH7F2OHSYIlYtd91QoiemgclZcSgrxKSJhyFhmLr
- QEiEILTKn/pqJfhHU/7R7UtlDAmFMUp7ByywB4JLcyD10lTmrEJ0iyRRTVfDrfVP82aMBXgF
- tKQaCxcmLCaEtrSrYGzd1sSPwJne9ssfq0SE/LM1J7VdCjm6OWV33SwKrfd6rOtvOzgadrG6
- 3bgUVBw+bsXhWDd8tvuCXmdY4bnUblxF2B6GOwSY43v6suugBttIyW5Bl2tXSTwP+zQisOJo
- +dpVG2pRr39h+buHB3NY83NEPXm1kUOhduJUA17XUY6QQCAaN4sdwPqHq938S3EmtVhs
-Message-ID: <4e1ba125-63a6-7d3e-c271-0a86eacfa9d2@ozlabs.ru>
-Date: Mon, 12 Nov 2018 15:56:32 +1100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.3.0
+ h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
+ :mime-version:content-transfer-encoding;
+ bh=nqXjPzV+uhAhxTvNRXtXr7D9tjoD6z2Sa1Qvrclhhnw=;
+ b=YDFcunx2NmByNaoRyYUS634Bx26Hn/7N0DcAdrnS45h+CVGLhb8P9zrvN0Mg58N8YO
+ jFwP3B2MrrVrFTei5/kIpqE1FkMualmAOWiJUAMfs/r6h4pYTuWwRZXdpZUDmBvCAlLm
+ 6C18CQ7NbehSwonqyN1dqLMogfstgoGKH5Arffhmes9uE6YbfKIAjfneucZnyUWAPg7Q
+ ui4FpMyxI53UYbFZieeTQHgoO/H//a3k/+RaA3/zpzLa3tmVyRQCMt/iETpPxO9DCkbi
+ cGHXuYQRpBOv/dcwIG1MN4wYJubOJwSvKhh3gbq5wZeV/GnD+siqL7EZQUpPNQdWLIEY
+ xf0A==
+X-Gm-Message-State: AGRZ1gLY/q8CHZDqomXrQOg77umZ4uE1j35RQ8NTcmBvjitrKPVuvBqE
+ Fz1AbWvL3ee8qGu7vuYbgrCsno2f
+X-Google-Smtp-Source: AJdET5fHwDZVwjfcmwY3rKXuc6fJ7gis6nVk5dQazre/UrTQNT3JnpUi9aDr/jwt+OCR3sqip4z7Bw==
+X-Received: by 2002:a62:5e83:: with SMTP id
+ s125-v6mr18541999pfb.232.1542000494124; 
+ Sun, 11 Nov 2018 21:28:14 -0800 (PST)
+Received: from aurora.jms.id.au ([45.124.203.15])
+ by smtp.gmail.com with ESMTPSA id m10-v6sm27025557pfg.180.2018.11.11.21.28.11
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Sun, 11 Nov 2018 21:28:13 -0800 (PST)
+Received: by aurora.jms.id.au (sSMTP sendmail emulation);
+ Mon, 12 Nov 2018 15:58:07 +1030
+From: Joel Stanley <joel@jms.id.au>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2] powerpc/32: Avoid unsupported flags with clang
+Date: Mon, 12 Nov 2018 15:58:06 +1030
+Message-Id: <20181112052806.18939-1-joel@jms.id.au>
+X-Mailer: git-send-email 2.19.1
 MIME-Version: 1.0
-In-Reply-To: <20181112042343.GB21020@umbus.fritz.box>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -155,160 +95,81 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Reza Arbab <arbab@linux.ibm.com>, kvm@vger.kernel.org,
- Alistair Popple <alistair@popple.id.au>,
- Piotr Jaroszynski <pjaroszynski@nvidia.com>, kvm-ppc@vger.kernel.org,
- Alex Williamson <alex.williamson@redhat.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Nick Desaulniers <ndesaulniers@google.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+When building for ppc32 with clang these flags are unsupported:
 
+  -ffixed-r2 and -mmultiple
 
-On 12/11/2018 15:23, David Gibson wrote:
-> On Mon, Nov 12, 2018 at 01:36:45PM +1100, Alexey Kardashevskiy wrote:
->>
->>
->> On 12/11/2018 12:08, David Gibson wrote:
->>> On Fri, Oct 19, 2018 at 11:53:53AM +1100, Alexey Kardashevskiy wrote:
->>>>
->>>>
->>>> On 19/10/2018 05:05, Alex Williamson wrote:
->>>>> On Thu, 18 Oct 2018 10:37:46 -0700
->>>>> Piotr Jaroszynski <pjaroszynski@nvidia.com> wrote:
->>>>>
->>>>>> On 10/18/18 9:55 AM, Alex Williamson wrote:
->>>>>>> On Thu, 18 Oct 2018 11:31:33 +1100
->>>>>>> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
->>>>>>>   
->>>>>>>> On 18/10/2018 08:52, Alex Williamson wrote:  
->>>>>>>>> On Wed, 17 Oct 2018 12:19:20 +1100
->>>>>>>>> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
->>>>>>>>>      
->>>>>>>>>> On 17/10/2018 06:08, Alex Williamson wrote:  
->>>>>>>>>>> On Mon, 15 Oct 2018 20:42:33 +1100
->>>>>>>>>>> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:    
->>>>>>>>>>>> +
->>>>>>>>>>>> +	if (pdev->vendor == PCI_VENDOR_ID_IBM &&
->>>>>>>>>>>> +			pdev->device == 0x04ea) {
->>>>>>>>>>>> +		ret = vfio_pci_ibm_npu2_init(vdev);
->>>>>>>>>>>> +		if (ret) {
->>>>>>>>>>>> +			dev_warn(&vdev->pdev->dev,
->>>>>>>>>>>> +					"Failed to setup NVIDIA NV2 ATSD region\n");
->>>>>>>>>>>> +			goto disable_exit;
->>>>>>>>>>>>   		}  
->>>>>>>>>>>
->>>>>>>>>>> So the NPU is also actually owned by vfio-pci and assigned to the VM?  
->>>>>>>>>>
->>>>>>>>>> Yes. On a running system it looks like:
->>>>>>>>>>
->>>>>>>>>> 0007:00:00.0 Bridge: IBM Device 04ea (rev 01)
->>>>>>>>>> 0007:00:00.1 Bridge: IBM Device 04ea (rev 01)
->>>>>>>>>> 0007:00:01.0 Bridge: IBM Device 04ea (rev 01)
->>>>>>>>>> 0007:00:01.1 Bridge: IBM Device 04ea (rev 01)
->>>>>>>>>> 0007:00:02.0 Bridge: IBM Device 04ea (rev 01)
->>>>>>>>>> 0007:00:02.1 Bridge: IBM Device 04ea (rev 01)
->>>>>>>>>> 0035:00:00.0 PCI bridge: IBM Device 04c1
->>>>>>>>>> 0035:01:00.0 PCI bridge: PLX Technology, Inc. Device 8725 (rev ca)
->>>>>>>>>> 0035:02:04.0 PCI bridge: PLX Technology, Inc. Device 8725 (rev ca)
->>>>>>>>>> 0035:02:05.0 PCI bridge: PLX Technology, Inc. Device 8725 (rev ca)
->>>>>>>>>> 0035:02:0d.0 PCI bridge: PLX Technology, Inc. Device 8725 (rev ca)
->>>>>>>>>> 0035:03:00.0 3D controller: NVIDIA Corporation GV100GL [Tesla V100 SXM2]
->>>>>>>>>> (rev a1
->>>>>>>>>> 0035:04:00.0 3D controller: NVIDIA Corporation GV100GL [Tesla V100 SXM2]
->>>>>>>>>> (rev a1)
->>>>>>>>>> 0035:05:00.0 3D controller: NVIDIA Corporation GV100GL [Tesla V100 SXM2]
->>>>>>>>>> (rev a1)
->>>>>>>>>>
->>>>>>>>>> One "IBM Device" bridge represents one NVLink2, i.e. a piece of NPU.
->>>>>>>>>> They all and 3 GPUs go to the same IOMMU group and get passed through to
->>>>>>>>>> a guest.
->>>>>>>>>>
->>>>>>>>>> The entire NPU does not have representation via sysfs as a whole though.  
->>>>>>>>>
->>>>>>>>> So the NPU is a bridge, but it uses a normal header type so vfio-pci
->>>>>>>>> will bind to it?  
->>>>>>>>
->>>>>>>> An NPU is a NVLink bridge, it is not PCI in any sense. We (the host
->>>>>>>> powerpc firmware known as "skiboot" or "opal") have chosen to emulate a
->>>>>>>> virtual bridge per 1 NVLink on the firmware level. So for each physical
->>>>>>>> NPU there are 6 virtual bridges. So the NVIDIA driver does not need to
->>>>>>>> know much about NPUs.
->>>>>>>>  
->>>>>>>>> And the ATSD register that we need on it is not
->>>>>>>>> accessible through these PCI representations of the sub-pieces of the
->>>>>>>>> NPU?  Thanks,  
->>>>>>>>
->>>>>>>> No, only via the device tree. The skiboot puts the ATSD register address
->>>>>>>> to the PHB's DT property called 'ibm,mmio-atsd' of these virtual bridges.  
->>>>>>>
->>>>>>> Ok, so the NPU is essential a virtual device already, mostly just a
->>>>>>> stub.  But it seems that each NPU is associated to a specific GPU, how
->>>>>>> is that association done?  In the use case here it seems like it's just
->>>>>>> a vehicle to provide this ibm,mmio-atsd property to guest DT and the tgt
->>>>>>> routing information to the GPU.  So if both of those were attached to
->>>>>>> the GPU, there'd be no purpose in assigning the NPU other than it's in
->>>>>>> the same IOMMU group with a type 0 header, so something needs to be
->>>>>>> done with it.  If it's a virtual device, perhaps it could have a type 1
->>>>>>> header so vfio wouldn't care about it, then we would only assign the
->>>>>>> GPU with these extra properties, which seems easier for management
->>>>>>> tools and users.  If the guest driver needs a visible NPU device, QEMU
->>>>>>> could possibly emulate one to make the GPU association work
->>>>>>> automatically.  Maybe this isn't really a problem, but I wonder if
->>>>>>> you've looked up the management stack to see what tools need to know to
->>>>>>> assign these NPU devices and whether specific configurations are
->>>>>>> required to make the NPU to GPU association work.  Thanks,  
->>>>>>
->>>>>> I'm not that familiar with how this was originally set up, but note that 
->>>>>> Alexey is just making it work exactly like baremetal does. The baremetal 
->>>>>> GPU driver works as-is in the VM and expects the same properties in the 
->>>>>> device-tree. Obviously it doesn't have to be that way, but there is 
->>>>>> value in keeping it identical.
->>>>>>
->>>>>> Another probably bigger point is that the NPU device also implements the 
->>>>>> nvlink HW interface and is required for actually training and 
->>>>>> maintaining the link up. The driver in the guest trains the links by 
->>>>>> programming both the GPU end and the NPU end of each link so the NPU 
->>>>>> device needs to be exposed to the guest.
->>>>>
->>>>> Ok, so there is functionality in assigning the NPU device itself, it's
->>>>> not just an attachment point for meta data.  But it still seems there
->>>>> must be some association of NPU to GPU, the tgt address seems to pair
->>>>> the NPU with a specific GPU, they're not simply a fungible set of NPUs
->>>>> and GPUs.  Is that association explicit anywhere or is it related to
->>>>> the topology or device numbering that needs to match between the host
->>>>> and guest?  Thanks,
->>>>
->>>> It is in the device tree (phandle is a node ID).
->>>
->>> Hrm.  But the device tree just publishes information about the
->>> hardware.  What's the device tree value actually exposing here?
->>>
->>> Is there an inherent hardware connection between one NPU and one GPU?
->>> Or is there just an arbitrary assignment performed by the firmware
->>> which it then exposed to the device tree?
->>
->> I am not sure I understood the question...
->>
->> The ibm,gpu and ibm,npu values  (which are phandles) of NPUs and GPUs
->> represent physical wiring.
-> 
-> So you're saying there is specific physical wiring between one
-> particular NPU and one particular GPU?  And the device tree properties
-> describe that wiring?
+llvm's lib/Target/PowerPC/PPCRegisterInfo.cpp marks r2 as reserved on
+when building for SVR4ABI and !ppc64:
 
-Yes.
+  // The SVR4 ABI reserves r2 and r13
+  if (Subtarget.isSVR4ABI()) {
+    // We only reserve r2 if we need to use the TOC pointer. If we have no
+    // explicit uses of the TOC pointer (meaning we're a leaf function with
+    // no constant-pool loads, etc.) and we have no potential uses inside an
+    // inline asm block, then we can treat r2 has an ordinary callee-saved
+    // register.
+    const PPCFunctionInfo *FuncInfo = MF.getInfo<PPCFunctionInfo>();
+    if (!TM.isPPC64() || FuncInfo->usesTOCBasePtr() || MF.hasInlineAsm())
+      markSuperRegs(Reserved, PPC::R2);  // System-reserved register
+    markSuperRegs(Reserved, PPC::R13); // Small Data Area pointer register
+  }
 
-> I think what Alex and I are both trying to determine is if the binding
-> of NPUs to GPUs is as a result of physical wiring constraints, or just
-> a firmware imposed convention.
+This means we can safely omit -ffixed-r2 when building for 32-bit
+targets.
 
+The -mmultiple/-mno-multiple flags are not supported by clang, so
+platforms that might support multiple miss out on using multiple word
+instructions.
 
-It is physical wiring which cannot change with a firmware update - there
-are NVLink wires between CPU socket and GPU socket without bridges in
-between.
+We wrap these flags in cc-option so that when Clang gains support the
+kernel will be able use these flags.
 
+Clang 8 can then build a ppc44x_defconfig which boots in Qemu:
 
+  make CC=clang-8 ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu-  ppc44x_defconfig
+  ./scripts/config -e CONFIG_DEVTMPFS -d DEVTMPFS_MOUNT
+  make CC=clang-8 ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu-
 
+  qemu-system-ppc -M bamboo \
+   -kernel arch/powerpc/boot/zImage \
+   -dtb arch/powerpc/boot/dts/bamboo.dtb \
+   -initrd ~/ppc32-440-rootfs.cpio \
+   -nographic -serial stdio -monitor pty -append "console=ttyS0"
+
+Link: https://github.com/ClangBuiltLinux/linux/issues/261
+Link: https://bugs.llvm.org/show_bug.cgi?id=39556
+Link: https://bugs.llvm.org/show_bug.cgi?id=39555
+Signed-off-by: Joel Stanley <joel@jms.id.au>
+---
+ arch/powerpc/Makefile | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index 8a2ce14d68d0..4685671dfb4f 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -152,7 +152,14 @@ endif
+ CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mcmodel=medium,$(call cc-option,-mminimal-toc))
+ CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mno-pointers-to-nested-functions)
+ 
+-CFLAGS-$(CONFIG_PPC32)	:= -ffixed-r2 $(MULTIPLEWORD)
++# Clang unconditionally reserves r2 on ppc32 and does not support the flag
++# https://bugs.llvm.org/show_bug.cgi?id=39555
++CFLAGS-$(CONFIG_PPC32)	:= $(call cc-option, -ffixed-r2)
++
++# Clang doesn't support -mmultiple / -mno-multiple
++# https://bugs.llvm.org/show_bug.cgi?id=39556
++CFLAGS-$(CONFIG_PPC32)	+= $(call cc-option, $(MULTIPLEWORD))
++
+ CFLAGS-$(CONFIG_PPC32)	+= $(call cc-option,-mno-readonly-in-sdata)
+ 
+ ifdef CONFIG_PPC_BOOK3S_64
 -- 
-Alexey
+2.19.1
+
