@@ -2,80 +2,80 @@ Return-Path: <SRS0=Ph+o=NX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-21.1 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,
+	USER_IN_DEF_DKIM_WL autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5871FC43610
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Nov 2018 18:58:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 637E1C43441
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Nov 2018 19:01:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F365822504
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Nov 2018 18:58:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9FAA122419
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Nov 2018 19:01:52 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="dPH7BNza"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F365822504
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="u/0F16JT"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9FAA122419
 Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42v0QK0VHxzDr4h
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 05:58:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42v0VR0C46zF3Nw
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 06:01:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.b="dPH7BNza";
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.b="u/0F16JT";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=google.com
- (client-ip=2607:f8b0:4864:20::543; helo=mail-pg1-x543.google.com;
+ (client-ip=2607:f8b0:4864:20::642; helo=mail-pl1-x642.google.com;
  envelope-from=ndesaulniers@google.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=google.com header.i=@google.com header.b="dPH7BNza"; 
+ unprotected) header.d=google.com header.i=@google.com header.b="u/0F16JT"; 
  dkim-atps=neutral
-Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
- [IPv6:2607:f8b0:4864:20::543])
+Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com
+ [IPv6:2607:f8b0:4864:20::642])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42v0Mq1MqPzF3Ft
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 05:56:07 +1100 (AEDT)
-Received: by mail-pg1-x543.google.com with SMTP id w3-v6so4446188pgs.11
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Nov 2018 10:56:06 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42v0Rv1ZmVzDr4h
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 05:59:39 +1100 (AEDT)
+Received: by mail-pl1-x642.google.com with SMTP id x21-v6so2039823pln.9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Nov 2018 10:59:39 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
  h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=D7zJOfAchvRNktzeAWQkae2R/fEUK7VwwkzZ8LQ4i/E=;
- b=dPH7BNzaoiRjfH6sTPW5q8GWsRlrsp4wuWUspJF3mphlpQ5Qk4GApMJM3HthT7iRld
- qJWWhjqxPkC6uG9FQF3My1wxYSUU/l+WvlJUI5CncULx1aEIx4vhCs62XnhUrDj8aFMW
- IVtPfpQXe0bSrxT6/4crKHJJOAlq8oYS4pTOfHcgE+FWMd+vzyESiNQrCLttKTd4elaO
- pRqa0ILAAp7BISlhydp50AVOHhp552eXAlGIVWWoTvS5G5Oj8rw2Cmkc0WIepPEGgkkw
- 7QUEFdvFoerVXN3eBIfNf6RQCrpwPv9meYDVWQKUCi/kW3Mduebuh1LI2Ukqnczmk0G/
- Apkg==
+ :cc; bh=Jiqkdevj6tSCiyA5Zkqswa8F3NiP16NLgpTuGPtWRB0=;
+ b=u/0F16JTgHeTPnb+xLAz1SeLpXE2RIqY9XyuHwhSv0cr6b6jBlj+w0zMZ1cyshkZeJ
+ I/uyia3qr8hQ3z3CeNWfzEM0PhELo8sEyd/Y6h8h9kJBxkEl78K466I0ixm3kIUAn2lW
+ T87DXo5hZQUt920lTGPXlVk1B01p5aTOd8CglLxEZwxQnnQhZVebGnZLk+9rB50tbvY0
+ u4RyKpV/lhr/bpIkWU6Cb6gVi8wYCAnlXjwudxmME6HcDmg9gaVoARzpgDCFGj2PCj/5
+ u4tFbpUpWvU2kZShsNYEudM04upSur3f6s/X4odw0aK8vw5jh9ruZn4R9oET+nsGd2hV
+ upSQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
  :message-id:subject:to:cc;
- bh=D7zJOfAchvRNktzeAWQkae2R/fEUK7VwwkzZ8LQ4i/E=;
- b=R99Vi9Xog9TlPMMAH8swBjQ9bu8jNwemnp1jcEdJXfXF8pyX4PgKnTzc4HEPQkQWPk
- tHjWWdRlxeFhmOUZ7Be65ZNZdSaYT3dQEZE49ZmQTslkvP5FBwRnq0p/0WuL/9ZwZ1Uc
- N+0NmxGY09vZqLonSBYEzzgaMeANau03Vc4c5SStq5h9MZCsgmk4i8oi3/G8P34/pIou
- tF6KT3941t12Azy1yBcdqUCX3GeWQK7c/ZaVx2FvzHQag/NkjCxeMrjl/IXiZi7SuD5x
- 0+NzaeFLrKPEj5fSmOZFp+u+wMmxbWXSpF9QOUp5JF3q+Vhprellk2tsesljrDmcDMyj
- Su5w==
-X-Gm-Message-State: AGRZ1gIG3O33W488romZqZrHPsxbdRlqA+M5if/1EKzGISl8A+nyEhMK
- YyplEm44TiNSZIFv+fT/yFr2qDQlmed/ZjNgo2HvRw==
-X-Google-Smtp-Source: AJdET5dlj72dkILax3Mhs9zY8pCeVi8qBTCkLko0bMkImG68ygOgCEWX7t0ijeuZ3n/XDrVC395qAdiE5xFknc6TkKc=
-X-Received: by 2002:a63:42c1:: with SMTP id p184mr1809818pga.202.1542048964587; 
- Mon, 12 Nov 2018 10:56:04 -0800 (PST)
+ bh=Jiqkdevj6tSCiyA5Zkqswa8F3NiP16NLgpTuGPtWRB0=;
+ b=LHO9vCHzlvjMVTN51gPyiP34+vvBHshEeNFj+D44DY2WHVVcZDTJ9CDhSsEZjp2qde
+ 1OLfTuJozGoEiKZoUXgaFbtS0z/Vx2QQb++KOlJL2EpngIjyywInd/oPt7INW4B0dfcw
+ ZLT2gk4+IkiixG+YX4TO27+Mk09JN/CbMJ9W673QaJHhWH4bQjIe0GCATN1uG4hRVhrZ
+ MjkotPsOPGc8+E36cwVpeEXV9J2tJK0vq3sssz+9R04oN5DdMoNSGvnncqFsAnznkW6a
+ fWqSrNNFjN/773WIuxgegzvViv2YJefKQlDfVGdS8n4FnfVW37qNXBiRd7XuXc4qRCMF
+ 0sMw==
+X-Gm-Message-State: AGRZ1gInYcprQlTSCdaR09pP56Yf8NW9B4Xfd/CDMcpt65GFyDBUbeeY
+ 8j/rV3PSyXKxM4nv5fueztjV20k8hNCQ9XWlx4HRVBVnJ7Y=
+X-Google-Smtp-Source: AJdET5etS2najVe06I+cTTSUte19dbczGgGjjNhwHaJ9dcekgj0QO0o9EfE3q9uvywK01uZZPVRJFHGkyqcaviyYhRQ=
+X-Received: by 2002:a17:902:5a2:: with SMTP id
+ f31-v6mr1992840plf.320.1542049177128; 
+ Mon, 12 Nov 2018 10:59:37 -0800 (PST)
 MIME-Version: 1.0
-References: <20181112042116.5271-1-joel@jms.id.au>
- <20181112042116.5271-2-joel@jms.id.au>
-In-Reply-To: <20181112042116.5271-2-joel@jms.id.au>
+References: <20181112052806.18939-1-joel@jms.id.au>
+In-Reply-To: <20181112052806.18939-1-joel@jms.id.au>
 From: Nick Desaulniers <ndesaulniers@google.com>
-Date: Mon, 12 Nov 2018 10:55:53 -0800
-Message-ID: <CAKwvOdnBMFYXvS+GH0cUiczgkpLWtBinPRjkTJBQGrKjxktUUg@mail.gmail.com>
-Subject: Re: [PATCH v2 1/2] Makefile: Export clang toolchain variables
+Date: Mon, 12 Nov 2018 10:59:26 -0800
+Message-ID: <CAKwvOdn5o8HQJpu8f8sV6P7Wq95ptotwcV7mFFMKbek4X12cHA@mail.gmail.com>
+Subject: Re: [PATCH v2] powerpc/32: Avoid unsupported flags with clang
 To: joel@jms.id.au
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -89,41 +89,87 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michal Marek <michal.lkml@markovi.net>,
- Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
- LKML <linux-kernel@vger.kernel.org>,
- Masahiro Yamada <yamada.masahiro@socionext.com>, linuxppc-dev@lists.ozlabs.org,
- dja@axtens.net
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, Nov 11, 2018 at 8:21 PM Joel Stanley <joel@jms.id.au> wrote:
+On Sun, Nov 11, 2018 at 9:28 PM Joel Stanley <joel@jms.id.au> wrote:
 >
-> The powerpc makefile will use these in it's boot wrapper.
+> When building for ppc32 with clang these flags are unsupported:
 >
+>   -ffixed-r2 and -mmultiple
+>
+> llvm's lib/Target/PowerPC/PPCRegisterInfo.cpp marks r2 as reserved on
+> when building for SVR4ABI and !ppc64:
+>
+>   // The SVR4 ABI reserves r2 and r13
+>   if (Subtarget.isSVR4ABI()) {
+>     // We only reserve r2 if we need to use the TOC pointer. If we have no
+>     // explicit uses of the TOC pointer (meaning we're a leaf function with
+>     // no constant-pool loads, etc.) and we have no potential uses inside an
+>     // inline asm block, then we can treat r2 has an ordinary callee-saved
+>     // register.
+>     const PPCFunctionInfo *FuncInfo = MF.getInfo<PPCFunctionInfo>();
+>     if (!TM.isPPC64() || FuncInfo->usesTOCBasePtr() || MF.hasInlineAsm())
+>       markSuperRegs(Reserved, PPC::R2);  // System-reserved register
+>     markSuperRegs(Reserved, PPC::R13); // Small Data Area pointer register
+>   }
+>
+> This means we can safely omit -ffixed-r2 when building for 32-bit
+> targets.
+>
+> The -mmultiple/-mno-multiple flags are not supported by clang, so
+> platforms that might support multiple miss out on using multiple word
+> instructions.
+>
+> We wrap these flags in cc-option so that when Clang gains support the
+> kernel will be able use these flags.
+>
+> Clang 8 can then build a ppc44x_defconfig which boots in Qemu:
+>
+>   make CC=clang-8 ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu-  ppc44x_defconfig
+>   ./scripts/config -e CONFIG_DEVTMPFS -d DEVTMPFS_MOUNT
+>   make CC=clang-8 ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu-
+>
+>   qemu-system-ppc -M bamboo \
+>    -kernel arch/powerpc/boot/zImage \
+>    -dtb arch/powerpc/boot/dts/bamboo.dtb \
+>    -initrd ~/ppc32-440-rootfs.cpio \
+>    -nographic -serial stdio -monitor pty -append "console=ttyS0"
+>
+> Link: https://github.com/ClangBuiltLinux/linux/issues/261
+> Link: https://bugs.llvm.org/show_bug.cgi?id=39556
+> Link: https://bugs.llvm.org/show_bug.cgi?id=39555
 > Signed-off-by: Joel Stanley <joel@jms.id.au>
+
+Hopefully we can get these fixed up soon for you, thanks Joel!
+Reviewed-by: Nick Desaulniers <ndesaulniers@google.com>
+
 > ---
->  Makefile | 1 +
->  1 file changed, 1 insertion(+)
+>  arch/powerpc/Makefile | 9 ++++++++-
+>  1 file changed, 8 insertions(+), 1 deletion(-)
 >
-> diff --git a/Makefile b/Makefile
-> index 09278330282d..840efe6eb54c 100644
-> --- a/Makefile
-> +++ b/Makefile
-> @@ -495,6 +495,7 @@ endif
->  ifneq ($(GCC_TOOLCHAIN),)
->  CLANG_FLAGS    += --gcc-toolchain=$(GCC_TOOLCHAIN)
->  endif
-> +export CLANG_FLAGS
->  CLANG_FLAGS    += -no-integrated-as
-
-Does this export CLANG_FLAGS before `-no-integrated-as` is set?
-Either way, I think it would be clearer to export this after all the
-relevant flags are set.
-
->  KBUILD_CFLAGS  += $(CLANG_FLAGS)
->  KBUILD_AFLAGS  += $(CLANG_FLAGS)
+> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+> index 8a2ce14d68d0..4685671dfb4f 100644
+> --- a/arch/powerpc/Makefile
+> +++ b/arch/powerpc/Makefile
+> @@ -152,7 +152,14 @@ endif
+>  CFLAGS-$(CONFIG_PPC64) += $(call cc-option,-mcmodel=medium,$(call cc-option,-mminimal-toc))
+>  CFLAGS-$(CONFIG_PPC64) += $(call cc-option,-mno-pointers-to-nested-functions)
+>
+> -CFLAGS-$(CONFIG_PPC32) := -ffixed-r2 $(MULTIPLEWORD)
+> +# Clang unconditionally reserves r2 on ppc32 and does not support the flag
+> +# https://bugs.llvm.org/show_bug.cgi?id=39555
+> +CFLAGS-$(CONFIG_PPC32) := $(call cc-option, -ffixed-r2)
+> +
+> +# Clang doesn't support -mmultiple / -mno-multiple
+> +# https://bugs.llvm.org/show_bug.cgi?id=39556
+> +CFLAGS-$(CONFIG_PPC32) += $(call cc-option, $(MULTIPLEWORD))
+> +
+>  CFLAGS-$(CONFIG_PPC32) += $(call cc-option,-mno-readonly-in-sdata)
+>
+>  ifdef CONFIG_PPC_BOOK3S_64
 > --
 > 2.19.1
 >
