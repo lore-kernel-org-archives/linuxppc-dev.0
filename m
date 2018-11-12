@@ -2,95 +2,96 @@ Return-Path: <SRS0=Ph+o=NX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 108AFC43441
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Nov 2018 09:42:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2CC30C43441
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Nov 2018 10:02:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8C5A0223CB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Nov 2018 09:42:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8C5A0223CB
+	by mail.kernel.org (Postfix) with ESMTPS id 6FDCF2082A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Nov 2018 10:02:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6FDCF2082A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42tm5M02tLzF3Sd
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Nov 2018 20:42:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42tmWs1SBNzF3WZ
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Nov 2018 21:02:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=bharata@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42tm1s2rSYzF3VQ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Nov 2018 20:39:45 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wAC9dOiU137294
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Nov 2018 04:39:43 -0500
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2nq5kwbv26-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42tmTM17NvzF3NM
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Nov 2018 21:00:06 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wAC9xc73145504
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Nov 2018 05:00:04 -0500
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2nq4j4f949-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Nov 2018 04:39:43 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Nov 2018 05:00:03 -0500
 Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <bharata@linux.ibm.com>;
- Mon, 12 Nov 2018 09:39:41 -0000
-Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
- by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
+ Mon, 12 Nov 2018 10:00:01 -0000
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
+ by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 12 Nov 2018 09:39:38 -0000
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
- [9.149.105.61])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wAC9dasa2490694
+ Mon, 12 Nov 2018 09:59:59 -0000
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com
+ (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wAC9xvYq3408208
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Mon, 12 Nov 2018 09:39:36 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C4AA011C04A;
- Mon, 12 Nov 2018 09:39:36 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2F77611C050;
- Mon, 12 Nov 2018 09:39:35 +0000 (GMT)
+ Mon, 12 Nov 2018 09:59:57 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 7916FA4054;
+ Mon, 12 Nov 2018 09:59:57 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 9D731A405B;
+ Mon, 12 Nov 2018 09:59:55 +0000 (GMT)
 Received: from in.ibm.com (unknown [9.199.50.113])
- by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Mon, 12 Nov 2018 09:39:35 +0000 (GMT)
-Date: Mon, 12 Nov 2018 15:09:32 +0530
+ by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Mon, 12 Nov 2018 09:59:55 +0000 (GMT)
+Date: Mon, 12 Nov 2018 15:29:49 +0530
 From: Bharata B Rao <bharata@linux.ibm.com>
-To: Paul Mackerras <paulus@ozlabs.org>
-Subject: Re: [RFC PATCH v1 3/4] kvmppc: H_SVM_INIT_START and H_SVM_INIT_DONE
- hcalls
+To: Balbir Singh <bsingharora@gmail.com>
+Subject: Re: [RFC PATCH v1 1/4] kvmppc: HMM backend driver to manage pages of
+ secure guest
 References: <20181022051837.1165-1-bharata@linux.ibm.com>
- <20181022051837.1165-4-bharata@linux.ibm.com>
- <20181030052957.GC11072@blackberry>
+ <20181022051837.1165-2-bharata@linux.ibm.com>
+ <20181101064339.GD16399@350D>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20181030052957.GC11072@blackberry>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20181101064339.GD16399@350D>
 User-Agent: Mutt/1.10.1 (2018-07-13)
 X-TM-AS-GCONF: 00
-x-cbid: 18111209-0008-0000-0000-0000029166C8
+x-cbid: 18111210-0012-0000-0000-000002C916EB
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18111209-0009-0000-0000-000021FB719E
-Message-Id: <20181112093932.GD17399@in.ibm.com>
+x-cbparentid: 18111209-0013-0000-0000-000020FE1ECD
+Message-Id: <20181112095949.GE17399@in.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-11-12_07:, , signatures=0
+ definitions=2018-11-12_08:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=857 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1807170000 definitions=main-1811120088
+ malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1807170000 definitions=main-1811120092
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,19 +111,841 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Oct 30, 2018 at 04:29:57PM +1100, Paul Mackerras wrote:
-> On Mon, Oct 22, 2018 at 10:48:36AM +0530, Bharata B Rao wrote:
-> > H_SVM_INIT_START: Initiate securing a VM
-> > H_SVM_INIT_DONE: Conclude securing a VM
+On Thu, Nov 01, 2018 at 05:43:39PM +1100, Balbir Singh wrote:
+> On Mon, Oct 22, 2018 at 10:48:34AM +0530, Bharata B Rao wrote:
+> > HMM driver for KVM PPC to manage page transitions of
+> > secure guest via H_SVM_PAGE_IN and H_SVM_PAGE_OUT hcalls.
 > > 
-> > During early guest init, these hcalls will be issued by UV.
-> > As part of these hcalls, [un]register memslots with UV.
+> > H_SVM_PAGE_IN: Move the content of a normal page to secure page
+> > H_SVM_PAGE_OUT: Move the content of a secure page to normal page
 > > 
 > > Signed-off-by: Bharata B Rao <bharata@linux.ibm.com>
+> > ---
+> >  arch/powerpc/include/asm/hvcall.h    |   7 +-
+> >  arch/powerpc/include/asm/kvm_host.h  |  15 +
+> >  arch/powerpc/include/asm/kvm_ppc.h   |  28 ++
+> >  arch/powerpc/include/asm/ucall-api.h |  20 ++
+> >  arch/powerpc/kvm/Makefile            |   3 +
+> >  arch/powerpc/kvm/book3s_hv.c         |  38 ++
+> >  arch/powerpc/kvm/book3s_hv_hmm.c     | 514 +++++++++++++++++++++++++++
+> >  7 files changed, 624 insertions(+), 1 deletion(-)
+> >  create mode 100644 arch/powerpc/include/asm/ucall-api.h
+> >  create mode 100644 arch/powerpc/kvm/book3s_hv_hmm.c
+> > 
+> > diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
+> > index a0b17f9f1ea4..89e6b70c1857 100644
+> > --- a/arch/powerpc/include/asm/hvcall.h
+> > +++ b/arch/powerpc/include/asm/hvcall.h
+> > @@ -158,6 +158,9 @@
+> >  /* Each control block has to be on a 4K boundary */
+> >  #define H_CB_ALIGNMENT          4096
+> >  
+> > +/* Flags for H_SVM_PAGE_IN */
+> > +#define H_PAGE_IN_SHARED	0x1
+> > +
+> >  /* pSeries hypervisor opcodes */
+> >  #define H_REMOVE		0x04
+> >  #define H_ENTER			0x08
+> > @@ -295,7 +298,9 @@
+> >  #define H_INT_ESB               0x3C8
+> >  #define H_INT_SYNC              0x3CC
+> >  #define H_INT_RESET             0x3D0
+> > -#define MAX_HCALL_OPCODE	H_INT_RESET
+> > +#define H_SVM_PAGE_IN		0x3D4
+> > +#define H_SVM_PAGE_OUT		0x3D8
+> > +#define MAX_HCALL_OPCODE	H_SVM_PAGE_OUT
+> >  
+> >  /* H_VIOCTL functions */
+> >  #define H_GET_VIOA_DUMP_SIZE	0x01
+> > diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+> > index 906bcbdfd2a1..194e6e0ff239 100644
+> > --- a/arch/powerpc/include/asm/kvm_host.h
+> > +++ b/arch/powerpc/include/asm/kvm_host.h
+> > @@ -310,6 +310,9 @@ struct kvm_arch {
+> >  	struct kvmppc_passthru_irqmap *pimap;
+> >  #endif
+> >  	struct kvmppc_ops *kvm_ops;
+> > +#ifdef CONFIG_PPC_SVM
+> > +	struct hlist_head *hmm_hash;
+> > +#endif
+> >  #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+> >  	/* This array can grow quite large, keep it at the end */
+> >  	struct kvmppc_vcore *vcores[KVM_MAX_VCORES];
+> > @@ -830,4 +833,16 @@ static inline void kvm_arch_vcpu_blocking(struct kvm_vcpu *vcpu) {}
+> >  static inline void kvm_arch_vcpu_unblocking(struct kvm_vcpu *vcpu) {}
+> >  static inline void kvm_arch_vcpu_block_finish(struct kvm_vcpu *vcpu) {}
+> >  
+> > +#ifdef CONFIG_PPC_SVM
+> > +struct kvmppc_hmm_device {
+> > +	struct hmm_device *device;
+> > +	struct hmm_devmem *devmem;
+> > +	unsigned long *pfn_bitmap;
+> > +};
+> > +
+> > +extern int kvmppc_hmm_init(void);
+> > +extern void kvmppc_hmm_free(void);
+> > +extern int kvmppc_hmm_hash_create(struct kvm *kvm);
+> > +extern void kvmppc_hmm_hash_destroy(struct kvm *kvm);
+> > +#endif
+> >  #endif /* __POWERPC_KVM_HOST_H__ */
+> > diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+> > index e991821dd7fa..ba81a07e2bdf 100644
+> > --- a/arch/powerpc/include/asm/kvm_ppc.h
+> > +++ b/arch/powerpc/include/asm/kvm_ppc.h
+> > @@ -906,4 +906,32 @@ static inline ulong kvmppc_get_ea_indexed(struct kvm_vcpu *vcpu, int ra, int rb)
+> >  
+> >  extern void xics_wake_cpu(int cpu);
+> >  
+> > +#ifdef CONFIG_PPC_SVM
+> > +extern unsigned long kvmppc_h_svm_page_in(struct kvm *kvm,
+> > +					  unsigned int lpid,
+> > +					  unsigned long gra,
+> > +					  unsigned long flags,
+> > +					  unsigned long page_shift);
+> > +extern unsigned long kvmppc_h_svm_page_out(struct kvm *kvm,
+> > +					  unsigned int lpid,
+> > +					  unsigned long gra,
+> > +					  unsigned long flags,
+> > +					  unsigned long page_shift);
+> > +#else
+> > +static inline unsigned long
+> > +kvmppc_h_svm_page_in(struct kvm *kvm, unsigned int lpid,
+> > +		     unsigned long gra, unsigned long flags,
+> > +		     unsigned long page_shift)
+> > +{
+> > +	return H_UNSUPPORTED;
+> > +}
+> > +
+> > +static inline unsigned long
+> > +kvmppc_h_svm_page_out(struct kvm *kvm, unsigned int lpid,
+> > +		      unsigned long gra, unsigned long flags,
+> > +		      unsigned long page_shift)
+> > +{
+> > +	return H_UNSUPPORTED;
+> > +}
+> > +#endif
+> >  #endif /* __POWERPC_KVM_PPC_H__ */
+> > diff --git a/arch/powerpc/include/asm/ucall-api.h b/arch/powerpc/include/asm/ucall-api.h
+> > new file mode 100644
+> > index 000000000000..2c12f514f8ab
+> > --- /dev/null
+> > +++ b/arch/powerpc/include/asm/ucall-api.h
+> > @@ -0,0 +1,20 @@
+> > +/* SPDX-License-Identifier: GPL-2.0 */
+> > +#ifndef _ASM_POWERPC_UCALL_API_H
+> > +#define _ASM_POWERPC_UCALL_API_H
+> > +
+> > +#define U_SUCCESS 0
+> > +
+> > +/*
+> > + * TODO: Dummy uvcalls, will be replaced by real calls
+> > + */
+> > +static inline int uv_page_in(u64 lpid, u64 dw0, u64 dw1, u64 dw2, u64 dw3)
+> > +{
+> > +	return U_SUCCESS;
+> > +}
+> > +
+> > +static inline int uv_page_out(u64 lpid, u64 dw0, u64 dw1, u64 dw2, u64 dw3)
+> > +{
+> > +	return U_SUCCESS;
+> > +}
+> > +
+> > +#endif	/* _ASM_POWERPC_UCALL_API_H */
+> > diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
+> > index f872c04bb5b1..6945ffc18679 100644
+> > --- a/arch/powerpc/kvm/Makefile
+> > +++ b/arch/powerpc/kvm/Makefile
+> > @@ -77,6 +77,9 @@ kvm-hv-y += \
+> >  	book3s_64_mmu_hv.o \
+> >  	book3s_64_mmu_radix.o
+> >  
+> > +kvm-hv-$(CONFIG_PPC_SVM) += \
+> > +	book3s_hv_hmm.o
+> > +
+> >  kvm-hv-$(CONFIG_PPC_TRANSACTIONAL_MEM) += \
+> >  	book3s_hv_tm.o
+> >  
+> > diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> > index 3e3a71594e63..05084eb8aadd 100644
+> > --- a/arch/powerpc/kvm/book3s_hv.c
+> > +++ b/arch/powerpc/kvm/book3s_hv.c
+> > @@ -73,6 +73,7 @@
+> >  #include <asm/opal.h>
+> >  #include <asm/xics.h>
+> >  #include <asm/xive.h>
+> > +#include <asm/kvm_host.h>
+> >  
+> >  #include "book3s.h"
+> >  
+> > @@ -935,6 +936,20 @@ int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
+> >  		if (ret == H_TOO_HARD)
+> >  			return RESUME_HOST;
+> >  		break;
+> > +	case H_SVM_PAGE_IN:
+> > +		ret = kvmppc_h_svm_page_in(vcpu->kvm,
+> > +					   kvmppc_get_gpr(vcpu, 4),
+> > +					   kvmppc_get_gpr(vcpu, 5),
+> > +					   kvmppc_get_gpr(vcpu, 6),
+> > +					   kvmppc_get_gpr(vcpu, 7));
+> > +		break;
+> > +	case H_SVM_PAGE_OUT:
+> > +		ret = kvmppc_h_svm_page_out(vcpu->kvm,
+> > +					    kvmppc_get_gpr(vcpu, 4),
+> > +					    kvmppc_get_gpr(vcpu, 5),
+> > +					    kvmppc_get_gpr(vcpu, 6),
+> > +					    kvmppc_get_gpr(vcpu, 7));
 > 
-> Comments below...
+> Won't just touching the page cause page_out? I wonder if you could
+> avoid code duplication by touch addr. So under mmap_sem if you
+> did get_user_pages() and put_page(), it might simplify all the
+> additional code you've got.
 
-Will address all your comments in my next post.
+Yes touching the page from HV will case the page out, but this is to
+support the hcall which UV can use to cause page out. And this in fact
+shares migrate_vma() callbacks with fault handler callbacks.
+
+> 
+> > +		break;
+> >  	default:
+> >  		return RESUME_HOST;
+> >  	}
+> > @@ -961,6 +976,8 @@ static int kvmppc_hcall_impl_hv(unsigned long cmd)
+> >  	case H_IPOLL:
+> >  	case H_XIRR_X:
+> >  #endif
+> > +	case H_SVM_PAGE_IN:
+> > +	case H_SVM_PAGE_OUT:
+> >  		return 1;
+> >  	}
+> >  
+> > @@ -3938,6 +3955,13 @@ static int kvmppc_core_init_vm_hv(struct kvm *kvm)
+> >  		return -ENOMEM;
+> >  	kvm->arch.lpid = lpid;
+> >  
+> > +#ifdef CONFIG_PPC_SVM
+> > +	ret = kvmppc_hmm_hash_create(kvm);
+> > +	if (ret) {
+> > +		kvmppc_free_lpid(kvm->arch.lpid);
+> > +		return ret;
+> > +	}
+> > +#endif
+> >  	kvmppc_alloc_host_rm_ops();
+> >  
+> >  	/*
+> > @@ -4073,6 +4097,9 @@ static void kvmppc_core_destroy_vm_hv(struct kvm *kvm)
+> >  
+> >  	kvmppc_free_vcores(kvm);
+> >  
+> > +#ifdef CONFIG_PPC_SVM
+> > +	kvmppc_hmm_hash_destroy(kvm);
+> > +#endif
+> >  	kvmppc_free_lpid(kvm->arch.lpid);
+> >  
+> >  	if (kvm_is_radix(kvm))
+> > @@ -4384,6 +4411,8 @@ static unsigned int default_hcall_list[] = {
+> >  	H_XIRR,
+> >  	H_XIRR_X,
+> >  #endif
+> > +	H_SVM_PAGE_IN,
+> > +	H_SVM_PAGE_OUT,
+> >  	0
+> >  };
+> >  
+> > @@ -4596,11 +4625,20 @@ static int kvmppc_book3s_init_hv(void)
+> >  			no_mixing_hpt_and_radix = true;
+> >  	}
+> >  
+> > +#ifdef CONFIG_PPC_SVM
+> > +	r = kvmppc_hmm_init();
+> > +	if (r < 0)
+> > +		pr_err("KVM-HV: kvmppc_hmm_init failed %d\n", r);
+> > +#endif
+> > +
+> >  	return r;
+> >  }
+> >  
+> >  static void kvmppc_book3s_exit_hv(void)
+> >  {
+> > +#ifdef CONFIG_PPC_SVM
+> > +	kvmppc_hmm_free();
+> > +#endif
+> >  	kvmppc_free_host_rm_ops();
+> >  	if (kvmppc_radix_possible())
+> >  		kvmppc_radix_exit();
+> > diff --git a/arch/powerpc/kvm/book3s_hv_hmm.c b/arch/powerpc/kvm/book3s_hv_hmm.c
+> > new file mode 100644
+> > index 000000000000..a2ee3163a312
+> > --- /dev/null
+> > +++ b/arch/powerpc/kvm/book3s_hv_hmm.c
+> > @@ -0,0 +1,514 @@
+> > +// SPDX-License-Identifier: GPL-2.0
+> > +/*
+> > + * HMM driver to manage page migration between normal and secure
+> > + * memory.
+> > + *
+> > + * Based on Jérôme Glisse's HMM dummy driver.
+> > + *
+> > + * Copyright 2018 Bharata B Rao, IBM Corp. <bharata@linux.ibm.com>
+> > + */
+> > +
+> > +/*
+> > + * A pseries guest can be run as a secure guest on Ultravisor-enabled
+> > + * POWER platforms. On such platforms, this driver will be used to manage
+> > + * the movement of guest pages between the normal memory managed by
+> > + * hypervisor (HV) and secure memory managed by Ultravisor (UV).
+> > + *
+> > + * Private ZONE_DEVICE memory equal to the amount of secure memory
+> > + * available in the platform for running secure guests is created
+> > + * via a HMM device. The movement of pages between normal and secure
+> > + * memory is done by ->alloc_and_copy() callback routine of migrate_vma().
+> > + *
+> > + * The page-in or page-out requests from UV will come to HV as hcalls and
+> > + * HV will call back into UV via uvcalls to satisfy these page requests.
+> > + *
+> > + * For each page that gets moved into secure memory, a HMM PFN is used
+> > + * on the HV side and HMM migration PTE corresponding to that PFN would be
+> > + * populated in the QEMU page tables. A per-guest hash table is created to
+> > + * manage the pool of HMM PFNs. Guest real address is used as key to index
+> > + * into the hash table and choose a free HMM PFN.
+> > + */
+> > +
+> > +#include <linux/hmm.h>
+> > +#include <linux/kvm_host.h>
+> > +#include <linux/sched/mm.h>
+> > +#include <asm/ucall-api.h>
+> > +
+> > +static struct kvmppc_hmm_device *kvmppc_hmm;
+> > +spinlock_t kvmppc_hmm_lock;
+> > +
+> > +#define KVMPPC_HMM_HASH_BITS    10
+> > +#define KVMPPC_HMM_HASH_SIZE   (1 << KVMPPC_HMM_HASH_BITS)
+> > +
+> > +struct kvmppc_hmm_pfn_entry {
+> > +	struct hlist_node hlist;
+> > +	unsigned long addr;
+> > +	unsigned long hmm_pfn;
+> > +};
+> > +
+> > +struct kvmppc_hmm_page_pvt {
+> > +	struct hlist_head *hmm_hash;
+> > +	unsigned int lpid;
+> > +	unsigned long gpa;
+> > +};
+> > +
+> > +struct kvmppc_hmm_migrate_args {
+> > +	struct hlist_head *hmm_hash;
+> > +	unsigned int lpid;
+> > +	unsigned long gpa;
+> > +	unsigned long page_shift;
+> > +};
+> > +
+> > +int kvmppc_hmm_hash_create(struct kvm *kvm)
+> > +{
+> > +	int i;
+> > +
+> > +	kvm->arch.hmm_hash = kzalloc(KVMPPC_HMM_HASH_SIZE *
+> > +				     sizeof(struct hlist_head), GFP_KERNEL);
+> > +	if (!kvm->arch.hmm_hash)
+> > +		return -ENOMEM;
+> > +
+> > +	for (i = 0; i < KVMPPC_HMM_HASH_SIZE; i++)
+> > +		INIT_HLIST_HEAD(&kvm->arch.hmm_hash[i]);
+> > +	return 0;
+> > +}
+> > +
+> > +/*
+> > + * Cleanup the HMM pages hash table when guest terminates
+> > + *
+> > + * Iterate over all the HMM pages hash list entries and release
+> > + * reference on them. The actual freeing of the entry happens
+> > + * via hmm_devmem_ops.free path.
+> > + */
+> > +void kvmppc_hmm_hash_destroy(struct kvm *kvm)
+> > +{
+> > +	int i;
+> > +	struct kvmppc_hmm_pfn_entry *p;
+> > +	struct page *hmm_page;
+> > +
+> > +	for (i = 0; i < KVMPPC_HMM_HASH_SIZE; i++) {
+> > +		while (!hlist_empty(&kvm->arch.hmm_hash[i])) {
+> > +			p = hlist_entry(kvm->arch.hmm_hash[i].first,
+> > +					struct kvmppc_hmm_pfn_entry,
+> > +					hlist);
+> > +			hmm_page = pfn_to_page(p->hmm_pfn);
+> > +			put_page(hmm_page);
+> > +		}
+> > +	}
+> > +	kfree(kvm->arch.hmm_hash);
+> > +}
+> > +
+> > +static u64 kvmppc_hmm_pfn_hash_fn(u64 addr)
+> > +{
+> > +	return hash_64(addr, KVMPPC_HMM_HASH_BITS);
+> > +}
+> > +
+> > +static void
+> > +kvmppc_hmm_hash_free_pfn(struct hlist_head *hmm_hash, unsigned long gpa)
+> > +{
+> > +	struct kvmppc_hmm_pfn_entry *p;
+> > +	struct hlist_head *list;
+> > +
+> > +	list = &hmm_hash[kvmppc_hmm_pfn_hash_fn(gpa)];
+> > +	hlist_for_each_entry(p, list, hlist) {
+> > +		if (p->addr == gpa) {
+> > +			hlist_del(&p->hlist);
+> > +			kfree(p);
+> > +			return;
+> > +		}
+> > +	}
+> > +}
+> > +
+> > +/*
+> > + * Get a free HMM PFN from the pool
+> > + *
+> > + * Called when a normal page is moved to secure memory (UV_PAGE_IN). HMM
+> > + * PFN will be used to keep track of the secure page on HV side.
+> > + */
+> > +static struct page *kvmppc_hmm_get_page(struct hlist_head *hmm_hash,
+> > +					unsigned long gpa, unsigned int lpid)
+> > +{
+> > +	struct page *dpage = NULL;
+> > +	unsigned long bit;
+> > +	unsigned long nr_pfns = kvmppc_hmm->devmem->pfn_last -
+> > +				kvmppc_hmm->devmem->pfn_first;
+> > +	struct hlist_head *list;
+> > +	struct kvmppc_hmm_pfn_entry *p;
+> > +	bool found = false;
+> > +	unsigned long flags;
+> > +	struct kvmppc_hmm_page_pvt *pvt;
+> > +
+> > +	spin_lock_irqsave(&kvmppc_hmm_lock, flags);
+> > +	list = &hmm_hash[kvmppc_hmm_pfn_hash_fn(gpa)];
+> > +	hlist_for_each_entry(p, list, hlist) {
+> > +		if (p->addr == gpa) {
+> > +			found = true;
+> > +			break;
+> > +		}
+> > +	}
+> > +	if (!found) {
+> > +		p = kzalloc(sizeof(struct kvmppc_hmm_pfn_entry), GFP_ATOMIC);
+> > +		if (!p) {
+> > +			spin_unlock_irqrestore(&kvmppc_hmm_lock, flags);
+> > +			return NULL;
+> > +		}
+> > +		p->addr = gpa;
+> > +		bit = find_first_zero_bit(kvmppc_hmm->pfn_bitmap, nr_pfns);
+> > +		if (bit >= nr_pfns) {
+> > +			kfree(p);
+> 
+> Why not consider resizing the bitmap, from the code below, it looks
+> like this should never happen - BUG_ON()?
+
+Yes this should never happen. This means UV is asking for a page-in
+and HV doesn't have any HMM PFNs left to use. We refuse to migrate
+anything and UV can take a call based on that.
+
+> 
+> > +			spin_unlock_irqrestore(&kvmppc_hmm_lock, flags);
+> > +			return NULL;
+> > +		}
+> > +		bitmap_set(kvmppc_hmm->pfn_bitmap, bit, 1);
+> > +		p->hmm_pfn = bit + kvmppc_hmm->devmem->pfn_first;
+> > +		INIT_HLIST_NODE(&p->hlist);
+> > +		hlist_add_head(&p->hlist, list);
+> > +	} else {
+> > +		spin_unlock_irqrestore(&kvmppc_hmm_lock, flags);
+> > +		return NULL;
+> 
+> For found=true, why do we return NULL?
+> 
+> > +	}
+> > +	dpage = pfn_to_page(p->hmm_pfn);
+> > +
+> > +	if (!trylock_page(dpage)) {
+> > +		bitmap_clear(kvmppc_hmm->pfn_bitmap,
+> > +			     p->hmm_pfn - kvmppc_hmm->devmem->pfn_first, 1);
+> > +		hlist_del(&p->hlist);
+> > +		kfree(p);
+> > +		spin_unlock_irqrestore(&kvmppc_hmm_lock, flags);
+> > +		return NULL;
+> 
+> What race are you avoiding here?
+
+Based on Jerome's dummy driver, should check with him.
+
+> 
+> > +	}
+> > +	spin_unlock_irqrestore(&kvmppc_hmm_lock, flags);
+> > +
+> > +	pvt = kzalloc(sizeof(*pvt), GFP_ATOMIC);
+> > +	pvt->hmm_hash = hmm_hash;
+> > +	pvt->gpa = gpa;
+> > +	pvt->lpid = lpid;
+> > +	hmm_devmem_page_set_drvdata(dpage, (unsigned long)pvt);
+> 
+> Do we care about when this store is seen?
+
+Can you explain what is the potential problem here ? Essentially we
+use this pvt data later if the page participates in page-out or when
+the page is being released.
+
+> 
+> > +
+> > +	get_page(dpage);
+> > +	return dpage;
+> > +}
+> > +
+> > +/*
+> > + * Release the HMM PFN back to the pool
+> > + *
+> > + * Called when secure page becomes a normal page during UV_PAGE_OUT.
+> > + */
+> > +static void kvmppc_hmm_put_page(struct page *page)
+> > +{
+> > +	unsigned long pfn = page_to_pfn(page);
+> > +	unsigned long flags;
+> > +	struct kvmppc_hmm_page_pvt *pvt;
+> > +
+> > +	pvt = (struct kvmppc_hmm_page_pvt *)hmm_devmem_page_get_drvdata(page);
+> > +	hmm_devmem_page_set_drvdata(page, 0);
+> > +
+> > +	spin_lock_irqsave(&kvmppc_hmm_lock, flags);
+> > +	bitmap_clear(kvmppc_hmm->pfn_bitmap,
+> > +		     pfn - kvmppc_hmm->devmem->pfn_first, 1);
+> > +	kvmppc_hmm_hash_free_pfn(pvt->hmm_hash, pvt->gpa);
+> 
+> Don't we need a put_page here?
+
+In fact, we come here during last put_page().
+
+> 
+> > +	spin_unlock_irqrestore(&kvmppc_hmm_lock, flags);
+> > +	kfree(pvt);
+> > +}
+> > +
+> > +static void
+> > +kvmppc_hmm_migrate_alloc_and_copy(struct vm_area_struct *vma,
+> > +				  const unsigned long *src_pfns,
+> > +				  unsigned long *dst_pfns,
+> > +				  unsigned long start,
+> > +				  unsigned long end,
+> > +				  void *private)
+> > +{
+> > +	unsigned long addr;
+> > +	struct kvmppc_hmm_migrate_args *args = private;
+> > +	unsigned long page_size = 1UL << args->page_shift;
+> > +
+> > +	for (addr = start; addr < end;
+> > +		addr += page_size, src_pfns++, dst_pfns++) {
+> > +		struct page *spage = migrate_pfn_to_page(*src_pfns);
+> > +		struct page *dpage;
+> > +		unsigned long pfn = *src_pfns >> MIGRATE_PFN_SHIFT;
+> > +
+> > +		*dst_pfns = 0;
+> > +		if (!spage && !(*src_pfns & MIGRATE_PFN_MIGRATE))
+> > +			continue;
+> > +
+> > +		if (spage && !(*src_pfns & MIGRATE_PFN_MIGRATE))
+> > +			continue;
+> > +
+> 
+> Isn't this the same as !(*src_pfns & MIGRATE_PFN_MIGRATE) continue?
+> That probably indicates the page is backed by a file. Do such pages
+> ever get migrated?
+
+Will address.
+
+> 
+> > +		dpage = kvmppc_hmm_get_page(args->hmm_hash, args->gpa,
+> > +					    args->lpid);
+> > +		if (!dpage)
+> > +			continue;
+> 
+> Aaah.. I see if the page is already in secure memory - kvmppc_hmm_get_page()
+> returns NULL and no migration is done! dpage is the struct page for the
+> secure memory.
+> 
+> > +
+> > +		if (spage)
+> > +			uv_page_in(args->lpid, pfn << args->page_shift,
+> > +				   args->gpa, 0, args->page_shift);
+> > +
+> > +		*dst_pfns = migrate_pfn(page_to_pfn(dpage)) |
+> > +			    MIGRATE_PFN_DEVICE | MIGRATE_PFN_LOCKED;
+> > +	}
+> > +}
+> > +
+> > +static void
+> > +kvmppc_hmm_migrate_finalize_and_map(struct vm_area_struct *vma,
+> > +				    const unsigned long *src_pfns,
+> > +				    const unsigned long *dst_pfns,
+> > +				    unsigned long start,
+> > +				    unsigned long end,
+> > +				    void *private)
+> > +{
+> > +}
+> > +
+> > +static const struct migrate_vma_ops kvmppc_hmm_migrate_ops = {
+> > +	.alloc_and_copy = kvmppc_hmm_migrate_alloc_and_copy,
+> > +	.finalize_and_map = kvmppc_hmm_migrate_finalize_and_map,
+> > +};
+> > +
+> > +static unsigned long kvmppc_gpa_to_hva(struct kvm *kvm, unsigned long gpa,
+> > +				       unsigned long page_shift)
+> > +{
+> > +	unsigned long gfn, hva;
+> > +	struct kvm_memory_slot *memslot;
+> > +
+> > +	gfn = gpa >> page_shift;
+> > +	memslot = gfn_to_memslot(kvm, gfn);
+> > +	hva = gfn_to_hva_memslot(memslot, gfn);
+> > +
+> > +	return hva;
+> > +}
+> 
+> This doesn't sound like the rightplace to have this function
+
+Paul also pointed to the same, next version will have this replaced.
+
+> 
+> > +
+> > +/*
+> > + * Move page from normal memory to secure memory.
+> > + */
+> > +unsigned long
+> > +kvmppc_h_svm_page_in(struct kvm *kvm, unsigned long gpa,
+> > +		     unsigned long flags, unsigned long page_shift)
+> > +{
+> > +	unsigned long addr, end;
+> > +	unsigned long src_pfn, dst_pfn;
+> > +	struct kvmppc_hmm_migrate_args args;
+> > +	struct mm_struct *mm = get_task_mm(current);
+> > +	struct vm_area_struct *vma;
+> > +	int ret = H_SUCCESS;
+> > +
+> > +	if (page_shift != PAGE_SHIFT)
+> > +		return H_P3;
+> 
+> So no large page support?
+
+No yet.
+
+> 
+> > +
+> > +	addr = kvmppc_gpa_to_hva(kvm, gpa, page_shift);
+> > +	if (!addr)
+> > +		return H_PARAMETER;
+> 
+> So addr == 0 is invalid?
+
+Switched to gfn_to_hva() and kvm_is_error_hva() which should cover all
+the valid cases.
+
+> 
+> > +	end = addr + (1UL << page_shift);
+> > +
+> > +	if (flags)
+> > +		return H_P2;
+> > +
+> > +	args.hmm_hash = kvm->arch.hmm_hash;
+> > +	args.lpid = kvm->arch.lpid;
+> > +	args.gpa = gpa;
+> > +	args.page_shift = page_shift;
+> > +
+> > +	down_read(&mm->mmap_sem);
+> > +	vma = find_vma_intersection(mm, addr, end);
+> > +	if (!vma || vma->vm_start > addr || vma->vm_end < end) {
+> > +		ret = H_PARAMETER;
+> > +		goto out;
+> > +	}
+> > +	ret = migrate_vma(&kvmppc_hmm_migrate_ops, vma, addr, end,
+> > +			  &src_pfn, &dst_pfn, &args);
+> > +	if (ret < 0)
+> > +		ret = H_PARAMETER;
+> > +out:
+> > +	up_read(&mm->mmap_sem);
+> > +	return ret;
+> > +}
+> > +
+> > +static void
+> > +kvmppc_hmm_fault_migrate_alloc_and_copy(struct vm_area_struct *vma,
+> > +					const unsigned long *src_pfn,
+> > +					unsigned long *dst_pfn,
+> > +					unsigned long start,
+> > +					unsigned long end,
+> > +					void *private)
+> > +{
+> > +	struct page *dpage, *spage;
+> > +	struct kvmppc_hmm_page_pvt *pvt;
+> > +	unsigned long pfn;
+> > +	int ret = U_SUCCESS;
+> > +
+> > +	*dst_pfn = MIGRATE_PFN_ERROR;
+> > +	spage = migrate_pfn_to_page(*src_pfn);
+> > +	if (!spage || !(*src_pfn & MIGRATE_PFN_MIGRATE))
+> > +		return;
+> > +	if (!is_zone_device_page(spage))
+> > +		return;
+> > +	dpage = hmm_vma_alloc_locked_page(vma, start);
+> > +	if (!dpage)
+> 
+> We've probably already OOM'd here :)
+> 
+> > +		return;
+> > +	pvt = (struct kvmppc_hmm_page_pvt *)
+> > +	       hmm_devmem_page_get_drvdata(spage);
+> > +
+> > +	pfn = page_to_pfn(dpage);
+> > +	ret = uv_page_out(pvt->lpid, pfn << PAGE_SHIFT,
+> 
+> Do we need pfn << PAGE_SHIFT?
+
+Yes, uv_page_out() needs physical address as argument.
+
+> 
+> > +			  pvt->gpa, 0, PAGE_SHIFT);
+> > +	if (ret == U_SUCCESS)
+> > +		*dst_pfn = migrate_pfn(pfn) | MIGRATE_PFN_LOCKED;
+> > +}
+> > +
+> > +static void
+> > +kvmppc_hmm_fault_migrate_finalize_and_map(struct vm_area_struct *vma,
+> > +					  const unsigned long *src_pfns,
+> > +					  const unsigned long *dst_pfns,
+> > +					  unsigned long start,
+> > +					  unsigned long end,
+> > +					  void *private)
+> > +{
+> > +}
+> > +
+> > +static const struct migrate_vma_ops kvmppc_hmm_fault_migrate_ops = {
+> > +	.alloc_and_copy = kvmppc_hmm_fault_migrate_alloc_and_copy,
+> > +	.finalize_and_map = kvmppc_hmm_fault_migrate_finalize_and_map,
+> > +};
+> > +
+> > +/*
+> > + * Fault handler callback when HV touches any page that has been
+> > + * moved to secure memory, we ask UV to give back the page by
+> > + * issuing a UV_PAGE_OUT uvcall.
+> > + */
+> > +static int kvmppc_hmm_devmem_fault(struct hmm_devmem *devmem,
+> > +				   struct vm_area_struct *vma,
+> > +				   unsigned long addr,
+> > +				   const struct page *page,
+> > +				   unsigned int flags,
+> > +				   pmd_t *pmdp)
+> > +{
+> > +	unsigned long end = addr + PAGE_SIZE;
+> > +	unsigned long src_pfn, dst_pfn = 0;
+> > +
+> > +	if (migrate_vma(&kvmppc_hmm_fault_migrate_ops, vma, addr, end,
+> > +			&src_pfn, &dst_pfn, NULL))
+> > +		return VM_FAULT_SIGBUS;
+> > +	if (dst_pfn == MIGRATE_PFN_ERROR)
+> > +		return VM_FAULT_SIGBUS;
+> > +	return 0;
+> > +}
+> > +
+> > +static void kvmppc_hmm_devmem_free(struct hmm_devmem *devmem,
+> > +				   struct page *page)
+> > +{
+> > +	kvmppc_hmm_put_page(page);
+> > +}
+> > +
+> > +static const struct hmm_devmem_ops kvmppc_hmm_devmem_ops = {
+> > +	.free = kvmppc_hmm_devmem_free,
+> > +	.fault = kvmppc_hmm_devmem_fault,
+> > +};
+> > +
+> > +/*
+> > + * Move page from secure memory to normal memory.
+> > + */
+> > +unsigned long
+> > +kvmppc_h_svm_page_out(struct kvm *kvm, unsigned long gpa,
+> > +		      unsigned long flags, unsigned long page_shift)
+> > +{
+> > +	unsigned long addr, end;
+> > +	struct mm_struct *mm = get_task_mm(current);
+> > +	struct vm_area_struct *vma;
+> > +	unsigned long src_pfn, dst_pfn = 0;
+> > +	int ret = H_SUCCESS;
+> > +
+> > +	if (page_shift != PAGE_SHIFT)
+> > +		return H_P4;
+> > +
+> > +	addr = kvmppc_gpa_to_hva(kvm, gpa, page_shift);
+> > +	if (!addr)
+> > +		return H_P2;
+> > +	end = addr + (1UL << page_shift);
+> > +
+> > +	down_read(&mm->mmap_sem);
+> > +	vma = find_vma_intersection(mm, addr, end);
+> > +	if (!vma || vma->vm_start > addr || vma->vm_end < end) {
+> > +		ret = H_PARAMETER;
+> > +		goto out;
+> > +	}
+> > +	ret = migrate_vma(&kvmppc_hmm_fault_migrate_ops, vma, addr, end,
+> > +			  &src_pfn, &dst_pfn, NULL);
+> > +	if (ret < 0)
+> > +		ret = H_PARAMETER;
+> > +out:
+> > +	up_read(&mm->mmap_sem);
+> > +	return ret;
+> > +}
+> > +
+> > +/*
+> > + * TODO: Number of secure pages and the page size order would probably come
+> > + * via DT or via some uvcall. Return 8G for now.
+> > + */
+> > +static unsigned long kvmppc_get_secmem_size(void)
+> > +{
+> > +	return (1UL << 33);
+> > +}
+> > +
+> > +static int kvmppc_hmm_pages_init(void)
+> > +{
+> > +	unsigned long nr_pfns = kvmppc_hmm->devmem->pfn_last -
+> > +				kvmppc_hmm->devmem->pfn_first;
+> > +
+> > +	kvmppc_hmm->pfn_bitmap = kcalloc(BITS_TO_LONGS(nr_pfns),
+> > +					 sizeof(unsigned long), GFP_KERNEL);
+> > +	if (!kvmppc_hmm->pfn_bitmap)
+> > +		return -ENOMEM;
+> > +
+> > +	spin_lock_init(&kvmppc_hmm_lock);
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +int kvmppc_hmm_init(void)
+> > +{
+> > +	int ret = 0;
+> > +	unsigned long size = kvmppc_get_secmem_size();
+> 
+> Can you split secmem to secure_mem?
+> 
+> > +
+> > +	kvmppc_hmm = kzalloc(sizeof(*kvmppc_hmm), GFP_KERNEL);
+> > +	if (!kvmppc_hmm) {
+> > +		ret = -ENOMEM;
+> > +		goto out;
+> > +	}
+> > +
+> > +	kvmppc_hmm->device = hmm_device_new(NULL);
+> > +	if (IS_ERR(kvmppc_hmm->device)) {
+> > +		ret = PTR_ERR(kvmppc_hmm->device);
+> > +		goto out_free;
+> > +	}
+> > +
+> > +	kvmppc_hmm->devmem = hmm_devmem_add(&kvmppc_hmm_devmem_ops,
+> > +					    &kvmppc_hmm->device->device, size);
+> 
+> IIUC, there is just one HMM device for all the secure memory in the
+> system?
+
+Yes.
+
+Thanks for your review.
 
 Regards,
 Bharata.
