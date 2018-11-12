@@ -2,88 +2,124 @@ Return-Path: <SRS0=Ph+o=NX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 50EDEC43441
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Nov 2018 18:34:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7959DC43441
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Nov 2018 18:54:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C5B622245E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Nov 2018 18:34:22 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="UxM6u6L9"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C5B622245E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
+	by mail.kernel.org (Postfix) with ESMTPS id 0470622419
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Nov 2018 18:54:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0470622419
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42tzth6TkwzF3NN
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 05:34:20 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=chromium.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42v0LT17jzzF3R0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 05:54:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.b="UxM6u6L9";
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=chromium.org
- (client-ip=2607:f8b0:4864:20::642; helo=mail-pl1-x642.google.com;
- envelope-from=dianders@chromium.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=chromium.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=chromium.org header.i=@chromium.org header.b="UxM6u6L9";
- dkim-atps=neutral
-Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com
- [IPv6:2607:f8b0:4864:20::642])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=mwb@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42tzkd4HJhzF3Lf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 05:27:21 +1100 (AEDT)
-Received: by mail-pl1-x642.google.com with SMTP id p4-v6so4724763plo.5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Nov 2018 10:27:21 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=q2K/1TwlbZyO0PPAhMoEG2kIaIWJJdfVU+qh2gMRico=;
- b=UxM6u6L9NLQ4P77JYl3vY83uhD88vgNxW/kEmKg9FumsDy5Zh+xpJxJKTVLYpqHfjg
- bI/cClSPAu0f1Mx0Dm6QFxfhUSYVaRYvjrCR9iLa7kC7Ak0IvedKo09nx1sGpMcHrP5c
- BBq8JWs1a4nBXZ8/FnLgE8JyyQv7rNqRUQtsI=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=q2K/1TwlbZyO0PPAhMoEG2kIaIWJJdfVU+qh2gMRico=;
- b=W/gbrn1hZ2izlH0zDwEl0exhFELLAGHLlyT0Hx5zxJKQiwOFfck/3fkoiqIL2tg+kk
- iGMw4fXxrLYVnozaTK16k15nudO6wjxeMEir6fpf+Lt/Ve67zBUSBPIofJZGqJOMkLtD
- GLWwFuRqE6HSDUrQ1zkKm+y+GHLWbwmXtIUdVR2sGHy+cU1QfD0NEHJlDvJDepcpxYR3
- UwARn88yruOiHBdrTdAhd5E+zeClznCKOLMMUWigfiDDt+1BLUKuzytmaBNrKDXpWuZ8
- jpFlu9AcmHQshO+JuaYJuLoEVH4LNM2eWckUIYrvCg6jhuW2WXp9bz9pK53rN2X6zqV8
- 8cjg==
-X-Gm-Message-State: AGRZ1gLZER6qQtZpF+3KVOrQObA44OtalJ6CT6OwnfWXJEZ0fNRgtSll
- GykmEvrfGLpvdUeelNoavXeS1g==
-X-Google-Smtp-Source: AJdET5fnXgNdvPvZ2RPyGqBp/MI2l8DBxz2E2gyCAAIiKAtf11rofGcawtqU7mB5prclCo3M4b0BYg==
-X-Received: by 2002:a17:902:7088:: with SMTP id
- z8-v6mr1820173plk.329.1542047239576; 
- Mon, 12 Nov 2018 10:27:19 -0800 (PST)
-Received: from tictac2.mtv.corp.google.com
- ([2620:15c:202:1:c8e0:70d7:4be7:a36])
- by smtp.gmail.com with ESMTPSA id o86-v6sm18813100pfk.8.2018.11.12.10.27.17
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Mon, 12 Nov 2018 10:27:18 -0800 (PST)
-From: Douglas Anderson <dianders@chromium.org>
-To: Jason Wessel <jason.wessel@windriver.com>,
- Daniel Thompson <daniel.thompson@linaro.org>
-Subject: [PATCH v4 2/4] kgdb: Fix kgdb_roundup_cpus() for arches who used
- smp_call_function()
-Date: Mon, 12 Nov 2018 10:26:56 -0800
-Message-Id: <20181112182659.245726-3-dianders@chromium.org>
-X-Mailer: git-send-email 2.19.1.930.g4563a0d9d0-goog
-In-Reply-To: <20181112182659.245726-1-dianders@chromium.org>
-References: <20181112182659.245726-1-dianders@chromium.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42v0JT1PqqzF3Ft
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 05:53:12 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wACIhc7Z034148
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Nov 2018 13:53:11 -0500
+Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2nqf0f8g1h-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Nov 2018 13:53:10 -0500
+Received: from localhost
+ by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
+ Mon, 12 Nov 2018 18:53:09 -0000
+Received: from b01cxnp22036.gho.pok.ibm.com (9.57.198.26)
+ by e13.ny.us.ibm.com (146.89.104.200) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Mon, 12 Nov 2018 18:53:05 -0000
+Received: from b01ledav004.gho.pok.ibm.com (b01ledav004.gho.pok.ibm.com
+ [9.57.199.109])
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wACIr4fb33161234
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Mon, 12 Nov 2018 18:53:04 GMT
+Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 78304112062;
+ Mon, 12 Nov 2018 18:53:04 +0000 (GMT)
+Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 249DD112065;
+ Mon, 12 Nov 2018 18:53:03 +0000 (GMT)
+Received: from oc5000245537.ibm.com (unknown [9.53.179.211])
+ by b01ledav004.gho.pok.ibm.com (Postfix) with ESMTP;
+ Mon, 12 Nov 2018 18:53:03 +0000 (GMT)
+To: "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>
+From: Michael Bringmann <mwb@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc/numa: Perform full re-add of CPU for PRRN/VPHN
+ topology update
+Openpgp: preference=signencrypt
+Autocrypt: addr=mwb@linux.vnet.ibm.com; prefer-encrypt=mutual; keydata=
+ xsBNBFcY7GcBCADzw3en+yzo9ASFGCfldVkIg95SAMPK0myXp2XJYET3zT45uBsX/uj9/2nA
+ lBmXXeOSXnPfJ9V3vtiwcfATnWIsVt3tL6n1kqikzH9nXNxZT7MU/7gqzWZngMAWh/GJ9qyg
+ DTOZdjsvdUNUWxtiLvBo7y+reA4HjlQhwhYxxvCpXBeRoF0qDWfQ8DkneemqINzDZPwSQ7zY
+ t4F5iyN1I9GC5RNK8Y6jiKmm6bDkrrbtXPOtzXKs0J0FqWEIab/u3BDrRP3STDVPdXqViHua
+ AjEzthQbGZm0VCxI4a7XjMi99g614/qDcXZCs00GLZ/VYIE8hB9C5Q+l66S60PLjRrxnABEB
+ AAHNLU1pY2hhZWwgVy4gQnJpbmdtYW5uIDxtd2JAbGludXgudm5ldC5pYm0uY29tPsLAeAQT
+ AQIAIgUCVxjsZwIbAwYLCQgHAwIGFQgCCQoLBBYCAwECHgECF4AACgkQSEdag3dpuTI0NAf8
+ CKYTDKQLgOSjVrU2L5rM4lXaJRmQV6oidD3vIhKSnWRvPq9C29ifRG6ri20prTHAlc0vycgm
+ 41HHg0y2vsGgNXGTWC2ObemoZBI7mySXe/7Tq5mD/semGzOp0YWZ7teqrkiSR8Bw0p+LdE7K
+ QmT7tpjjvuhrtQ3RRojUYcuy1nWUsc4D+2cxsnZslsx84FUKxPbLagDgZmgBhUw/sUi40s6S
+ AkdViVCVS0WANddLIpG0cfdsV0kCae/XdjK3mRK6drFKv1z+QFjvOhc8QIkkxFD0da9w3tJj
+ oqnqHFV5gLcHO6/wizPx/NV90y6RngeBORkQiRFWxTXS4Oj9GVI/Us7ATQRXGOxnAQgAmJ5Y
+ ikTWrMWPfiveUacETyEhWVl7u8UhZcx3yy2te8O0ay7t9fYcZgIEfQPPVVus89acIXlG3wYL
+ DDPvb21OprLxi+ZJ2a0S5we+LcSWN1jByxJlbWBq+/LcMtGAOhNLpysY1gD0Y4UW/eKS+TFZ
+ 562qKC3k1dBvnV9JXCgeS1taYFxRdVAn+2DwK3nuyG/DDq/XgJ5BtmyC3MMx8CiW3POj+O+l
+ 6SedIeAfZlZ7/xhijx82g93h07VavUQRwMZgZFsqmuxBxVGiav2HB+dNvs3PFB087Pvc9OHe
+ qhajPWOP/gNLMmvBvknn1NToM9a8/E8rzcIZXoYs4RggRRYh6wARAQABwsBfBBgBAgAJBQJX
+ GOxnAhsMAAoJEEhHWoN3abky+RUH/jE08/r5QzaNKYeVhu0uVbgXu5fsxqr2cAxhf+KuwT3T
+ efhEP2alarxzUZdEh4MsG6c+X2NYLbD3cryiXxVx/7kSAJEFQJfA5P06g8NLR25Qpq9BLsN7
+ ++dxQ+CLKzSEb1X24hYAJZpOhS8ev3ii+M/XIo+olDBKuTaTgB6elrg3CaxUsVgLBJ+jbRkW
+ yQe2S5f/Ja1ThDpSSLLWLiLK/z7+gaqwhnwjQ8Z8Y9D2itJQcj4itHilwImsqwLG7SxzC0NX
+ IQ5KaAFYdRcOgwR8VhhkOIVd70ObSZU+E4pTET1WDz4o65xZ89yfose1No0+r5ht/xWOOrh8
+ 53/hcWvxHVs=
+Organization: IBM Linux Technology Center
+Date: Mon, 12 Nov 2018 12:53:02 -0600
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 18111218-0064-0000-0000-00000372C4AF
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00010036; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000270; SDB=6.01116474; UDB=6.00577118; IPR=6.00896582; 
+ MB=3.00024130; MTD=3.00000008; XFM=3.00000015; UTC=2018-11-12 18:53:08
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18111218-0065-0000-0000-00003B4FDEDE
+Message-Id: <7c3c840a-8a79-b639-185c-ce6d2e378850@linux.vnet.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-11-12_12:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1807170000 definitions=main-1811120163
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,377 +131,326 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mips@linux-mips.org, Rich Felker <dalias@libc.org>,
- Catalin Marinas <catalin.marinas@arm.com>, linux-sh@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>, Will Deacon <will.deacon@arm.com>,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- Russell King <linux@armlinux.org.uk>, kgdb-bugreport@lists.sourceforge.net,
- James Hogan <jhogan@kernel.org>, linux-snps-arc@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org, Vineet Gupta <vgupta@synopsys.com>,
- Douglas Anderson <dianders@chromium.org>, Ralf Baechle <ralf@linux-mips.org>,
- Richard Kuo <rkuo@codeaurora.org>, Paul Burton <paul.burton@mips.com>,
- linux-hexagon@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Rob Herring <robh@kernel.org>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ Kees Cook <keescook@chromium.org>, Nicholas Piggin <npiggin@gmail.com>,
+ Al Viro <viro@zeniv.linux.org.uk>, Michael Bringmann <mwb@linux.vnet.ibm.com>,
+ Juliet Kim <minkim@us.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ Corentin Labbe <clabbe@baylibre.com>, Oliver O'Halloran <oohall@gmail.com>,
+ Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
+ Guenter Roeck <linux@roeck-us.net>, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When I had lockdep turned on and dropped into kgdb I got a nice splat
-on my system.  Specifically it hit:
-  DEBUG_LOCKS_WARN_ON(current->hardirq_context)
+On pseries systems, performing changes to a partition's affinity
+can result in altering the nodes a CPU is assigned to the
+current system.  For example, some systems are subject to resource
+balancing operations by the operator or control software.  In such
+environments, system CPUs may be in node 1 and 3 at boot, and be
+moved to nodes 2, 3, and 5, for better performance.
 
-Specifically it looked like this:
-  sysrq: SysRq : DEBUG
-  ------------[ cut here ]------------
-  DEBUG_LOCKS_WARN_ON(current->hardirq_context)
-  WARNING: CPU: 0 PID: 0 at .../kernel/locking/lockdep.c:2875 lockdep_hardirqs_on+0xf0/0x160
-  CPU: 0 PID: 0 Comm: swapper/0 Not tainted 4.19.0 #27
-  pstate: 604003c9 (nZCv DAIF +PAN -UAO)
-  pc : lockdep_hardirqs_on+0xf0/0x160
-  ...
-  Call trace:
-   lockdep_hardirqs_on+0xf0/0x160
-   trace_hardirqs_on+0x188/0x1ac
-   kgdb_roundup_cpus+0x14/0x3c
-   kgdb_cpu_enter+0x53c/0x5cc
-   kgdb_handle_exception+0x180/0x1d4
-   kgdb_compiled_brk_fn+0x30/0x3c
-   brk_handler+0x134/0x178
-   do_debug_exception+0xfc/0x178
-   el1_dbg+0x18/0x78
-   kgdb_breakpoint+0x34/0x58
-   sysrq_handle_dbg+0x54/0x5c
-   __handle_sysrq+0x114/0x21c
-   handle_sysrq+0x30/0x3c
-   qcom_geni_serial_isr+0x2dc/0x30c
-  ...
-  ...
-  irq event stamp: ...45
-  hardirqs last  enabled at (...44): [...] __do_softirq+0xd8/0x4e4
-  hardirqs last disabled at (...45): [...] el1_irq+0x74/0x130
-  softirqs last  enabled at (...42): [...] _local_bh_enable+0x2c/0x34
-  softirqs last disabled at (...43): [...] irq_exit+0xa8/0x100
-  ---[ end trace adf21f830c46e638 ]---
+The current implementation attempts to recognize such changes within
+the powerpc-specific version of arch_update_cpu_topology to modify a
+range of system data structures directly.  However, some scheduler
+data structures may be inaccessible, or the timing of a node change
+may still lead to corruption or error in other modules (e.g. user
+space) which do not receive notification of these changes.
 
-Looking closely at it, it seems like a really bad idea to be calling
-local_irq_enable() in kgdb_roundup_cpus().  If nothing else that seems
-like it could violate spinlock semantics and cause a deadlock.
+This patch modifies the PRRN/VPHN topology update worker function to
+recognize an affinity change for a CPU, and to perform a full DLPAR
+remove and add of the CPU instead of dynamically changing its node
+to resolve this issue.
 
-Instead, let's use a private csd alongside
-smp_call_function_single_async() to round up the other CPUs.  Using
-smp_call_function_single_async() doesn't require interrupts to be
-enabled so we can remove the offending bit of code.
+[Based upon patch submission:
+Subject: [PATCH] powerpc/pseries: Perform full re-add of CPU for topology update post-migration
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Date: Tue Oct 30 05:43:36 AEDT 2018
+]
 
-In order to avoid duplicating this across all the architectures that
-use the default kgdb_roundup_cpus(), we'll add a "weak" implementation
-to debug_core.c.
+[Replace patch submission:
+Subject: [PATCH] powerpc/topology: Update numa mask when cpu node mapping changes
+From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+DAte: Wed Oct 10 15:24:46 AEDT 2018
+]
 
-Looking at all the people who previously had copies of this code,
-there were a few variants.  I've attempted to keep the variants
-working like they used to.  Specifically:
-* For arch/arc we passed NULL to kgdb_nmicallback() instead of
-  get_irq_regs().
-* For arch/mips there was a bit of extra code around
-  kgdb_nmicallback()
-
-NOTE: In this patch we will still get into trouble if we try to round
-up a CPU that failed to round up before.  We'll try to round it up
-again and potentially hang when we try to grab the csd lock.  That's
-not new behavior but we'll still try to do better in a future patch.
-
-Suggested-by: Daniel Thompson <daniel.thompson@linaro.org>
-Signed-off-by: Douglas Anderson <dianders@chromium.org>
+Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 ---
+ arch/powerpc/include/asm/topology.h |    6 -
+ arch/powerpc/kernel/rtasd.c         |    1 
+ arch/powerpc/mm/numa.c              |  184 +++++------------------------------
+ 3 files changed, 27 insertions(+), 164 deletions(-)
 
-Changes in v4: None
-Changes in v3:
-- No separate init call.
-- Don't round up the CPU that is doing the rounding up.
-- Add "#ifdef CONFIG_SMP" to match the rest of the file.
-- Updated desc saying we don't solve the "failed to roundup" case.
-- Document the ignored parameter.
-
-Changes in v2:
-- Removing irq flags separated from fixing lockdep splat.
-- Don't use smp_call_function (Daniel).
-
- arch/arc/kernel/kgdb.c     | 10 ++--------
- arch/arm/kernel/kgdb.c     | 12 ------------
- arch/arm64/kernel/kgdb.c   | 12 ------------
- arch/hexagon/kernel/kgdb.c | 27 ---------------------------
- arch/mips/kernel/kgdb.c    |  9 +--------
- arch/powerpc/kernel/kgdb.c |  4 ++--
- arch/sh/kernel/kgdb.c      | 12 ------------
- include/linux/kgdb.h       | 15 +++++++++++++--
- kernel/debug/debug_core.c  | 35 +++++++++++++++++++++++++++++++++++
- 9 files changed, 53 insertions(+), 83 deletions(-)
-
-diff --git a/arch/arc/kernel/kgdb.c b/arch/arc/kernel/kgdb.c
-index 0932851028e0..68d9fe4b5aa7 100644
---- a/arch/arc/kernel/kgdb.c
-+++ b/arch/arc/kernel/kgdb.c
-@@ -192,18 +192,12 @@ void kgdb_arch_set_pc(struct pt_regs *regs, unsigned long ip)
- 	instruction_pointer(regs) = ip;
+diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
+index f85e2b0..9f85246 100644
+--- a/arch/powerpc/include/asm/topology.h
++++ b/arch/powerpc/include/asm/topology.h
+@@ -42,7 +42,6 @@ static inline int pcibus_to_node(struct pci_bus *bus)
+ 
+ extern int sysfs_add_device_to_node(struct device *dev, int nid);
+ extern void sysfs_remove_device_from_node(struct device *dev, int nid);
+-extern int numa_update_cpu_topology(bool cpus_locked);
+ 
+ static inline void update_numa_cpu_lookup_table(unsigned int cpu, int node)
+ {
+@@ -77,11 +76,6 @@ static inline void sysfs_remove_device_from_node(struct device *dev,
+ {
  }
  
--static void kgdb_call_nmi_hook(void *ignored)
-+void kgdb_call_nmi_hook(void *ignored)
- {
-+	/* Default implementation passes get_irq_regs() but we don't */
- 	kgdb_nmicallback(raw_smp_processor_id(), NULL);
+-static inline int numa_update_cpu_topology(bool cpus_locked)
+-{
+-	return 0;
+-}
+-
+ static inline void update_numa_cpu_lookup_table(unsigned int cpu, int node) {}
+ 
+ #endif /* CONFIG_NUMA */
+diff --git a/arch/powerpc/kernel/rtasd.c b/arch/powerpc/kernel/rtasd.c
+index 38cadae..c161d74 100644
+--- a/arch/powerpc/kernel/rtasd.c
++++ b/arch/powerpc/kernel/rtasd.c
+@@ -285,7 +285,6 @@ static void handle_prrn_event(s32 scope)
+ 	 * the RTAS event.
+ 	 */
+ 	pseries_devicetree_update(-scope);
+-	numa_update_cpu_topology(false);
  }
  
--void kgdb_roundup_cpus(void)
--{
--	local_irq_enable();
--	smp_call_function(kgdb_call_nmi_hook, NULL, 0);
--	local_irq_disable();
--}
--
- struct kgdb_arch arch_kgdb_ops = {
- 	/* breakpoint instruction: TRAP_S 0x3 */
- #ifdef CONFIG_CPU_BIG_ENDIAN
-diff --git a/arch/arm/kernel/kgdb.c b/arch/arm/kernel/kgdb.c
-index f21077b077be..d9a69e941463 100644
---- a/arch/arm/kernel/kgdb.c
-+++ b/arch/arm/kernel/kgdb.c
-@@ -170,18 +170,6 @@ static struct undef_hook kgdb_compiled_brkpt_hook = {
- 	.fn			= kgdb_compiled_brk_fn
- };
- 
--static void kgdb_call_nmi_hook(void *ignored)
--{
--       kgdb_nmicallback(raw_smp_processor_id(), get_irq_regs());
--}
--
--void kgdb_roundup_cpus(void)
--{
--       local_irq_enable();
--       smp_call_function(kgdb_call_nmi_hook, NULL, 0);
--       local_irq_disable();
--}
--
- static int __kgdb_notify(struct die_args *args, unsigned long cmd)
- {
- 	struct pt_regs *regs = args->regs;
-diff --git a/arch/arm64/kernel/kgdb.c b/arch/arm64/kernel/kgdb.c
-index 12c339ff6e75..da880247c734 100644
---- a/arch/arm64/kernel/kgdb.c
-+++ b/arch/arm64/kernel/kgdb.c
-@@ -284,18 +284,6 @@ static struct step_hook kgdb_step_hook = {
- 	.fn		= kgdb_step_brk_fn
- };
- 
--static void kgdb_call_nmi_hook(void *ignored)
--{
--	kgdb_nmicallback(raw_smp_processor_id(), get_irq_regs());
--}
--
--void kgdb_roundup_cpus(void)
--{
--	local_irq_enable();
--	smp_call_function(kgdb_call_nmi_hook, NULL, 0);
--	local_irq_disable();
--}
--
- static int __kgdb_notify(struct die_args *args, unsigned long cmd)
- {
- 	struct pt_regs *regs = args->regs;
-diff --git a/arch/hexagon/kernel/kgdb.c b/arch/hexagon/kernel/kgdb.c
-index 012e0e230ac2..b95d12038a4e 100644
---- a/arch/hexagon/kernel/kgdb.c
-+++ b/arch/hexagon/kernel/kgdb.c
-@@ -115,33 +115,6 @@ void kgdb_arch_set_pc(struct pt_regs *regs, unsigned long pc)
- 	instruction_pointer(regs) = pc;
+ static void handle_rtas_event(const struct rtas_error_log *log)
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index be6216e..f79b65f 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -1236,96 +1236,25 @@ int find_and_online_cpu_nid(int cpu)
+ 	return new_nid;
  }
  
--#ifdef CONFIG_SMP
--
--/**
-- * kgdb_roundup_cpus - Get other CPUs into a holding pattern
-- *
-- * On SMP systems, we need to get the attention of the other CPUs
-- * and get them be in a known state.  This should do what is needed
-- * to get the other CPUs to call kgdb_wait(). Note that on some arches,
-- * the NMI approach is not used for rounding up all the CPUs. For example,
-- * in case of MIPS, smp_call_function() is used to roundup CPUs.
-- *
-- * On non-SMP systems, this is not called.
+-/*
+- * Update the CPU maps and sysfs entries for a single CPU when its NUMA
+- * characteristics change. This function doesn't perform any locking and is
+- * only safe to call from stop_machine().
 - */
--
--static void hexagon_kgdb_nmi_hook(void *ignored)
+-static int update_cpu_topology(void *data)
 -{
--	kgdb_nmicallback(raw_smp_processor_id(), get_irq_regs());
+-	struct topology_update_data *update;
+-	unsigned long cpu;
+-
+-	if (!data)
+-		return -EINVAL;
+-
+-	cpu = smp_processor_id();
+-
+-	for (update = data; update; update = update->next) {
+-		int new_nid = update->new_nid;
+-		if (cpu != update->cpu)
+-			continue;
+-
+-		unmap_cpu_from_node(cpu);
+-		map_cpu_to_node(cpu, new_nid);
+-		set_cpu_numa_node(cpu, new_nid);
+-		set_cpu_numa_mem(cpu, local_memory_node(new_nid));
+-		vdso_getcpu_init();
+-	}
+-
+-	return 0;
 -}
 -
--void kgdb_roundup_cpus(void)
+-static int update_lookup_table(void *data)
 -{
--	local_irq_enable();
--	smp_call_function(hexagon_kgdb_nmi_hook, NULL, 0);
--	local_irq_disable();
--}
--#endif
+-	struct topology_update_data *update;
 -
- 
- /*  Not yet working  */
- void sleeping_thread_to_gdb_regs(unsigned long *gdb_regs,
-diff --git a/arch/mips/kernel/kgdb.c b/arch/mips/kernel/kgdb.c
-index 2b05effc17b4..42f057a6c215 100644
---- a/arch/mips/kernel/kgdb.c
-+++ b/arch/mips/kernel/kgdb.c
-@@ -207,7 +207,7 @@ void arch_kgdb_breakpoint(void)
- 		".set\treorder");
- }
- 
--static void kgdb_call_nmi_hook(void *ignored)
-+void kgdb_call_nmi_hook(void *ignored)
+-	if (!data)
+-		return -EINVAL;
+-
+-	/*
+-	 * Upon topology update, the numa-cpu lookup table needs to be updated
+-	 * for all threads in the core, including offline CPUs, to ensure that
+-	 * future hotplug operations respect the cpu-to-node associativity
+-	 * properly.
+-	 */
+-	for (update = data; update; update = update->next) {
+-		int nid, base, j;
+-
+-		nid = update->new_nid;
+-		base = cpu_first_thread_sibling(update->cpu);
+-
+-		for (j = 0; j < threads_per_core; j++) {
+-			update_numa_cpu_lookup_table(base + j, nid);
+-		}
+-	}
+-
+-	return 0;
+-}
+-
+-/*
+- * Update the node maps and sysfs entries for each cpu whose home node
+- * has changed. Returns 1 when the topology has changed, and 0 otherwise.
+- *
+- * cpus_locked says whether we already hold cpu_hotplug_lock.
+- */
+-int numa_update_cpu_topology(bool cpus_locked)
++static void topology_work_fn(struct work_struct *work)
  {
- 	mm_segment_t old_fs;
+ 	unsigned int cpu, sibling, changed = 0;
+-	struct topology_update_data *updates, *ud;
+-	cpumask_t updated_cpus;
+-	struct device *dev;
+-	int weight, new_nid, i = 0;
++	int weight;
  
-@@ -219,13 +219,6 @@ static void kgdb_call_nmi_hook(void *ignored)
- 	set_fs(old_fs);
- }
+ 	if (!prrn_enabled && !vphn_enabled && topology_inited)
+-		return 0;
++		return;
  
--void kgdb_roundup_cpus(void)
--{
--	local_irq_enable();
--	smp_call_function(kgdb_call_nmi_hook, NULL, 0);
--	local_irq_disable();
--}
+ 	weight = cpumask_weight(&cpu_associativity_changes_mask);
+ 	if (!weight)
+-		return 0;
++		return;
+ 
+-	updates = kcalloc(weight, sizeof(*updates), GFP_KERNEL);
+-	if (!updates)
+-		return 0;
++	pr_debug("Topology update CPUs beginning\n");
+ 
+-	cpumask_clear(&updated_cpus);
++	lock_device_hotplug();
+ 
+ 	for_each_cpu(cpu, &cpu_associativity_changes_mask) {
+-		/*
+-		 * If siblings aren't flagged for changes, updates list
+-		 * will be too short. Skip on this update and set for next
+-		 * update.
+-		 */
++		int new_nid;
++
+ 		if (!cpumask_subset(cpu_sibling_mask(cpu),
+ 					&cpu_associativity_changes_mask)) {
+ 			pr_info("Sibling bits not set for associativity "
+@@ -1337,9 +1266,11 @@ int numa_update_cpu_topology(bool cpus_locked)
+ 			continue;
+ 		}
+ 
++		/* Use associativity from first thread for all siblings */
+ 		new_nid = find_and_online_cpu_nid(cpu);
+ 
+-		if (new_nid == numa_cpu_lookup_table[cpu]) {
++		if ((new_nid == numa_cpu_lookup_table[cpu]) ||
++			!cpu_present(cpu)) {
+ 			cpumask_andnot(&cpu_associativity_changes_mask,
+ 					&cpu_associativity_changes_mask,
+ 					cpu_sibling_mask(cpu));
+@@ -1349,89 +1280,29 @@ int numa_update_cpu_topology(bool cpus_locked)
+ 			continue;
+ 		}
+ 
+-		for_each_cpu(sibling, cpu_sibling_mask(cpu)) {
+-			ud = &updates[i++];
+-			ud->next = &updates[i];
+-			ud->cpu = sibling;
+-			ud->new_nid = new_nid;
+-			ud->old_nid = numa_cpu_lookup_table[sibling];
+-			cpumask_set_cpu(sibling, &updated_cpus);
+-		}
+-		cpu = cpu_last_thread_sibling(cpu);
+-	}
++		pr_debug("Topology update for cpu %d\n", cpu);
++		dlpar_cpu_readd(cpu);
++		changed++;
+ 
+-	/*
+-	 * Prevent processing of 'updates' from overflowing array
+-	 * where last entry filled in a 'next' pointer.
+-	 */
+-	if (i)
+-		updates[i-1].next = NULL;
 -
- static int compute_signal(int tt)
- {
- 	struct hard_trap_info *ht;
-diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
-index b0e804844be0..b4ce54d73337 100644
---- a/arch/powerpc/kernel/kgdb.c
-+++ b/arch/powerpc/kernel/kgdb.c
-@@ -117,7 +117,7 @@ int kgdb_skipexception(int exception, struct pt_regs *regs)
- 	return kgdb_isremovedbreak(regs->nip);
- }
- 
--static int kgdb_call_nmi_hook(struct pt_regs *regs)
-+static int kgdb_debugger_ipi(struct pt_regs *regs)
- {
- 	kgdb_nmicallback(raw_smp_processor_id(), regs);
- 	return 0;
-@@ -502,7 +502,7 @@ int kgdb_arch_init(void)
- 	old__debugger_break_match = __debugger_break_match;
- 	old__debugger_fault_handler = __debugger_fault_handler;
- 
--	__debugger_ipi = kgdb_call_nmi_hook;
-+	__debugger_ipi = kgdb_debugger_ipi;
- 	__debugger = kgdb_debugger;
- 	__debugger_bpt = kgdb_handle_breakpoint;
- 	__debugger_sstep = kgdb_singlestep;
-diff --git a/arch/sh/kernel/kgdb.c b/arch/sh/kernel/kgdb.c
-index cc57630f6bf2..14e012ad7c57 100644
---- a/arch/sh/kernel/kgdb.c
-+++ b/arch/sh/kernel/kgdb.c
-@@ -314,18 +314,6 @@ BUILD_TRAP_HANDLER(singlestep)
- 	local_irq_restore(flags);
- }
- 
--static void kgdb_call_nmi_hook(void *ignored)
--{
--	kgdb_nmicallback(raw_smp_processor_id(), get_irq_regs());
--}
+-	pr_debug("Topology update for the following CPUs:\n");
+-	if (cpumask_weight(&updated_cpus)) {
+-		for (ud = &updates[0]; ud; ud = ud->next) {
+-			pr_debug("cpu %d moving from node %d "
+-					  "to %d\n", ud->cpu,
+-					  ud->old_nid, ud->new_nid);
++		for_each_cpu(sibling, cpu_sibling_mask(cpu)) {
++			unmap_cpu_from_node(sibling);
++			map_cpu_to_node(sibling, new_nid);
++			set_cpu_numa_node(sibling, new_nid);
++			set_cpu_numa_mem(sibling,
++				local_memory_node(new_nid));
++			cpumask_clear_cpu(sibling,
++				&cpu_associativity_changes_mask);
+ 		}
+-	}
 -
--void kgdb_roundup_cpus(void)
--{
--	local_irq_enable();
--	smp_call_function(kgdb_call_nmi_hook, NULL, 0);
--	local_irq_disable();
--}
+-	/*
+-	 * In cases where we have nothing to update (because the updates list
+-	 * is too short or because the new topology is same as the old one),
+-	 * skip invoking update_cpu_topology() via stop-machine(). This is
+-	 * necessary (and not just a fast-path optimization) since stop-machine
+-	 * can end up electing a random CPU to run update_cpu_topology(), and
+-	 * thus trick us into setting up incorrect cpu-node mappings (since
+-	 * 'updates' is kzalloc()'ed).
+-	 *
+-	 * And for the similar reason, we will skip all the following updating.
+-	 */
+-	if (!cpumask_weight(&updated_cpus))
+-		goto out;
+ 
+-	if (cpus_locked)
+-		stop_machine_cpuslocked(update_cpu_topology, &updates[0],
+-					&updated_cpus);
+-	else
+-		stop_machine(update_cpu_topology, &updates[0], &updated_cpus);
 -
- static int __kgdb_notify(struct die_args *args, unsigned long cmd)
- {
- 	int ret;
-diff --git a/include/linux/kgdb.h b/include/linux/kgdb.h
-index 05e5b2eb0d32..24422865cd18 100644
---- a/include/linux/kgdb.h
-+++ b/include/linux/kgdb.h
-@@ -176,14 +176,25 @@ kgdb_arch_handle_exception(int vector, int signo, int err_code,
- 			   char *remcom_out_buffer,
- 			   struct pt_regs *regs);
+-	/*
+-	 * Update the numa-cpu lookup table with the new mappings, even for
+-	 * offline CPUs. It is best to perform this update from the stop-
+-	 * machine context.
+-	 */
+-	if (cpus_locked)
+-		stop_machine_cpuslocked(update_lookup_table, &updates[0],
+-					cpumask_of(raw_smp_processor_id()));
+-	else
+-		stop_machine(update_lookup_table, &updates[0],
+-			     cpumask_of(raw_smp_processor_id()));
+-
+-	for (ud = &updates[0]; ud; ud = ud->next) {
+-		unregister_cpu_under_node(ud->cpu, ud->old_nid);
+-		register_cpu_under_node(ud->cpu, ud->new_nid);
+-
+-		dev = get_cpu_device(ud->cpu);
+-		if (dev)
+-			kobject_uevent(&dev->kobj, KOBJ_CHANGE);
+-		cpumask_clear_cpu(ud->cpu, &cpu_associativity_changes_mask);
+-		changed = 1;
++		cpu = cpu_last_thread_sibling(cpu);
+ 	}
  
-+/**
-+ *	kgdb_call_nmi_hook - Call kgdb_nmicallback() on the current CPU
-+ *	@ignored: This parameter is only here to match the prototype.
-+ *
-+ *	If you're using the default implementation of kgdb_roundup_cpus()
-+ *	this function will be called per CPU.  If you don't implement
-+ *	kgdb_call_nmi_hook() a default will be used.
-+ */
-+
-+extern void kgdb_call_nmi_hook(void *ignored);
-+
- /**
-  *	kgdb_roundup_cpus - Get other CPUs into a holding pattern
-  *
-  *	On SMP systems, we need to get the attention of the other CPUs
-  *	and get them into a known state.  This should do what is needed
-  *	to get the other CPUs to call kgdb_wait(). Note that on some arches,
-- *	the NMI approach is not used for rounding up all the CPUs. For example,
-- *	in case of MIPS, smp_call_function() is used to roundup CPUs.
-+ *	the NMI approach is not used for rounding up all the CPUs.  Normally
-+ *	those architectures can just not implement this and get the default.
-  *
-  *	On non-SMP systems, this is not called.
-  */
-diff --git a/kernel/debug/debug_core.c b/kernel/debug/debug_core.c
-index f3cadda45f07..23f2b5613afa 100644
---- a/kernel/debug/debug_core.c
-+++ b/kernel/debug/debug_core.c
-@@ -55,6 +55,7 @@
- #include <linux/mm.h>
- #include <linux/vmacache.h>
- #include <linux/rcupdate.h>
-+#include <linux/irq.h>
+-out:
+-	kfree(updates);
+-	return changed;
+-}
++	unlock_device_hotplug();
  
- #include <asm/cacheflush.h>
- #include <asm/byteorder.h>
-@@ -220,6 +221,40 @@ int __weak kgdb_skipexception(int exception, struct pt_regs *regs)
- 	return 0;
+-int arch_update_cpu_topology(void)
+-{
+-	return numa_update_cpu_topology(true);
+-}
++	pr_debug("Topology update CPUs ending\n");
+ 
+-static void topology_work_fn(struct work_struct *work)
+-{
+-	rebuild_sched_domains();
++	if (changed)
++		rebuild_sched_domains();
+ }
+ static DECLARE_WORK(topology_work, topology_work_fn);
+ 
+@@ -1553,7 +1424,6 @@ void __init shared_proc_topology_init(void)
+ 	if (lppaca_shared_proc(get_lppaca())) {
+ 		bitmap_fill(cpumask_bits(&cpu_associativity_changes_mask),
+ 			    nr_cpumask_bits);
+-		numa_update_cpu_topology(false);
+ 	}
  }
  
-+#ifdef CONFIG_SMP
-+
-+/*
-+ * Default (weak) implementation for kgdb_roundup_cpus
-+ */
-+
-+static DEFINE_PER_CPU(call_single_data_t, kgdb_roundup_csd);
-+
-+void __weak kgdb_call_nmi_hook(void *ignored)
-+{
-+	kgdb_nmicallback(raw_smp_processor_id(), get_irq_regs());
-+}
-+
-+void __weak kgdb_roundup_cpus(void)
-+{
-+	call_single_data_t *csd;
-+	int this_cpu = get_cpu();
-+	int cpu;
-+
-+	for_each_cpu(cpu, cpu_online_mask) {
-+		/* No need to roundup ourselves */
-+		if (cpu == this_cpu)
-+			continue;
-+
-+		csd = &per_cpu(kgdb_roundup_csd, cpu);
-+		csd->func = kgdb_call_nmi_hook;
-+		smp_call_function_single_async(cpu, csd);
-+	}
-+
-+	put_cpu();
-+}
-+
-+#endif
-+
- /*
-  * Some architectures need cache flushes when we set/clear a
-  * breakpoint:
--- 
-2.19.1.930.g4563a0d9d0-goog
 
