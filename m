@@ -2,88 +2,93 @@ Return-Path: <SRS0=Ph+o=NX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 36797C43441
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Nov 2018 05:31:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BB6AFC43441
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Nov 2018 05:50:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B02D4216FD
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Nov 2018 05:31:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 143DE21527
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Nov 2018 05:50:56 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="f7kt/Y4Y"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B02D4216FD
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=jms.id.au
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="lRPo9aZ8"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 143DE21527
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42tfWZ2sXdzF3TS
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Nov 2018 16:31:38 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=jms.id.au
+	by lists.ozlabs.org (Postfix) with ESMTP id 42tfxn6fSQzF3Tc
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Nov 2018 16:50:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="f7kt/Y4Y";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="lRPo9aZ8";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::542; helo=mail-pg1-x542.google.com;
- envelope-from=joel.stan@gmail.com; receiver=<UNKNOWN>)
+ (client-ip=2607:f8b0:4864:20::443; helo=mail-pf1-x443.google.com;
+ envelope-from=oohall@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=jms.id.au
+ dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="f7kt/Y4Y"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="lRPo9aZ8"; 
  dkim-atps=neutral
-Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
- [IPv6:2607:f8b0:4864:20::542])
+Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
+ [IPv6:2607:f8b0:4864:20::443])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42tfRh5ClnzF3TS
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Nov 2018 16:28:16 +1100 (AEDT)
-Received: by mail-pg1-x542.google.com with SMTP id z17-v6so3516889pgv.3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Nov 2018 21:28:16 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42tftp4fHKzF3N6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Nov 2018 16:48:18 +1100 (AEDT)
+Received: by mail-pf1-x443.google.com with SMTP id u3-v6so1078181pfm.4
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Nov 2018 21:48:17 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=sender:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=nqXjPzV+uhAhxTvNRXtXr7D9tjoD6z2Sa1Qvrclhhnw=;
- b=f7kt/Y4Y+y+U2wfnOFiorw8EuSwEl3p8vGJFhlJZBRCke+lBn1Ni3wjWpzaOUF0ao5
- 8VdxIAt2BFPBiUoiWvF8OvbEk04erJUVs2wcXfE6rDNHm39io0NZIpgYJQRhQfKtSeRO
- FGgce/hVkvRZN8gPJqUiD3ZC5qO9W9dyFe0OAwSmVAREBFlKE+56PL1Hu0IWpwIQY1Cx
- 9BA/vC5EsPJ68LVBSzEe/haE8YTjRt23zjNec6AlbISqXucML3/yd/IUPh7dqq+ohj51
- HBuK7ICjZQj+oChiDEVt0MrBpoLzrn9zztyV4w+4LgI96nO37jlISmSd6UIwKmdNgfsQ
- Sauw==
+ h=message-id:subject:from:to:cc:date:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=0rI7aHn7uedZuF8H8kWsTC16RnFu7xe9LB9UVgPSR1k=;
+ b=lRPo9aZ8otfc5qTuW8+H5mke4Zi9KAEINGuHkp5GtZ6EY/dIZjkdeHhHbvzb9M3+k2
+ 4RkoDvl/84lIhlAQT/Z/urzvcDaiJ4jJ1ioeeVuNiGgMredXi2xgBuB6gG/ma2zIAJD2
+ v++zIGWuP7oIJknFZrS8+9LbM3H/6Qf44nrPNtMWJK5PAOc7D0HL5zYyAwqmWrk0Lrjp
+ eS66sWkXq95njjOOO6W3UlQmqjIdNfWjbGn7GBPDpgwmvW9cDRy4SGH6u5+Y1VAYO4NG
+ azkpYy7xEuX3PoSCfJ5qBGq+GIoD9IyIXxu6k0/zYuTO1zxz2L/7iR3fPX0SPr7hiUb1
+ U4+w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
- :mime-version:content-transfer-encoding;
- bh=nqXjPzV+uhAhxTvNRXtXr7D9tjoD6z2Sa1Qvrclhhnw=;
- b=YDFcunx2NmByNaoRyYUS634Bx26Hn/7N0DcAdrnS45h+CVGLhb8P9zrvN0Mg58N8YO
- jFwP3B2MrrVrFTei5/kIpqE1FkMualmAOWiJUAMfs/r6h4pYTuWwRZXdpZUDmBvCAlLm
- 6C18CQ7NbehSwonqyN1dqLMogfstgoGKH5Arffhmes9uE6YbfKIAjfneucZnyUWAPg7Q
- ui4FpMyxI53UYbFZieeTQHgoO/H//a3k/+RaA3/zpzLa3tmVyRQCMt/iETpPxO9DCkbi
- cGHXuYQRpBOv/dcwIG1MN4wYJubOJwSvKhh3gbq5wZeV/GnD+siqL7EZQUpPNQdWLIEY
- xf0A==
-X-Gm-Message-State: AGRZ1gLY/q8CHZDqomXrQOg77umZ4uE1j35RQ8NTcmBvjitrKPVuvBqE
- Fz1AbWvL3ee8qGu7vuYbgrCsno2f
-X-Google-Smtp-Source: AJdET5fHwDZVwjfcmwY3rKXuc6fJ7gis6nVk5dQazre/UrTQNT3JnpUi9aDr/jwt+OCR3sqip4z7Bw==
-X-Received: by 2002:a62:5e83:: with SMTP id
- s125-v6mr18541999pfb.232.1542000494124; 
- Sun, 11 Nov 2018 21:28:14 -0800 (PST)
-Received: from aurora.jms.id.au ([45.124.203.15])
- by smtp.gmail.com with ESMTPSA id m10-v6sm27025557pfg.180.2018.11.11.21.28.11
+ h=x-gm-message-state:message-id:subject:from:to:cc:date:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=0rI7aHn7uedZuF8H8kWsTC16RnFu7xe9LB9UVgPSR1k=;
+ b=eL4FPebr4G1DC950sNmMqLOsQ3v8HYqsGaKfYYg2xpQB3+yAyVY899yQpeb/D2HcEo
+ gIkn/DmspwlEnUimn5yQCPePoqnkl5SNZkd4sqXxuhmavsYUx9OAEflABFdUiJgJh2T9
+ OiW/YXW+vXJFA/GS8Zmn2k88C/hoS1LZ2ek2qnzyahLj5wsyAag7JZPPFEhplQ33ToFZ
+ tzqCm4u2NKVX5Og+kkqdsAYgvGPwNeN3gZV5klRM3cWjGjzAh4txt67qMCwn7eQuAdAx
+ vKevvLNSfnDeKCFeliSaxRUjC8O9+Z/qL2AJx59hpk1IJRi0OD9FZZc/WpYM32Nqo3mJ
+ dLLA==
+X-Gm-Message-State: AGRZ1gKP8byzmyFE8GhLi9S3q4aO3IPM3tlutXg8JzGUNphpvlTIk5r/
+ SRLk3nViIO9jioebOdCCIIU=
+X-Google-Smtp-Source: AJdET5dzvZW+fyvnXsJUmaPprMToZT7cSO4vKRFaN8chdCSNiK9+4NvzNX1OjaqsEcCYjofxVsHElQ==
+X-Received: by 2002:a62:1e42:: with SMTP id
+ e63-v6mr18775808pfe.149.1542001695705; 
+ Sun, 11 Nov 2018 21:48:15 -0800 (PST)
+Received: from wafer.ozlabs.ibm.com ([122.99.82.10])
+ by smtp.googlemail.com with ESMTPSA id
+ g27-v6sm33542299pfj.162.2018.11.11.21.48.10
  (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Sun, 11 Nov 2018 21:28:13 -0800 (PST)
-Received: by aurora.jms.id.au (sSMTP sendmail emulation);
- Mon, 12 Nov 2018 15:58:07 +1030
-From: Joel Stanley <joel@jms.id.au>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2] powerpc/32: Avoid unsupported flags with clang
-Date: Mon, 12 Nov 2018 15:58:06 +1030
-Message-Id: <20181112052806.18939-1-joel@jms.id.au>
-X-Mailer: git-send-email 2.19.1
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+ Sun, 11 Nov 2018 21:48:14 -0800 (PST)
+Message-ID: <9da5bbe3a76c6adf09804d88d0a9edc3ddedff4d.camel@gmail.com>
+Subject: Re: [PATCH v2] PCI/MSI: Don't touch MSI bits when the PCI device is
+ disconnected
+From: Oliver O'Halloran <oohall@gmail.com>
+To: Lukas Wunner <lukas@wunner.de>, Bjorn Helgaas <helgaas@kernel.org>
+Date: Mon, 12 Nov 2018 16:48:08 +1100
+In-Reply-To: <20181109071139.uxa6gu7jwsvr7ve6@wunner.de>
+References: <20180918221501.13112-1-mr.nuke.me@gmail.com>
+ <20181107234257.GC41183@google.com> <20181108200855.GE41183@google.com>
+ <20181109071139.uxa6gu7jwsvr7ve6@wunner.de>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5 (3.28.5-1.fc28) 
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,81 +100,101 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nick Desaulniers <ndesaulniers@google.com>
+Cc: alex_gagniuc@dellteam.com, Sam Bobroff <sbobroff@linux.ibm.com>,
+ linux-pci@vger.kernel.org, shyam_iyer@dell.com, linux-kernel@vger.kernel.org,
+ keith.busch@intel.com, Alexandru Gagniuc <mr.nuke.me@gmail.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, austin_bolen@dell.com,
+ linuxppc-dev@lists.ozlabs.org, Jonathan Derrick <jonathan.derrick@intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When building for ppc32 with clang these flags are unsupported:
+On Fri, 2018-11-09 at 08:11 +0100, Lukas Wunner wrote:
+> On Thu, Nov 08, 2018 at 02:09:17PM -0600, Bjorn Helgaas wrote:
+> > +	/*
+> > +	 * If an MMIO read from the device returns ~0 data, that data may
+> > +	 * be valid, or it may indicate a bus error.  If config space is
+> > +	 * readable, assume it's valid data; otherwise, assume a bus error.
+> > +	 */
+> > +	if (val == ~0) {
+> > +		pci_read_config_dword(dev, PCI_VENDOR_ID, &id);
+> > +		if (id == ~0)
+> > +			pci_dev_set_disconnected(dev, NULL);
+> > +	}
+> 
+> This isn't safe unfortunately because "all ones" may occur for other
+> reasons besides disconnectedness.  E.g. on an Uncorrectable Error,
+> the device may likewise respond with all ones, but revert to valid
+> responses if the error can be recovered through a Secondary Bus Reset.
+> In such a case, marking the device disconnected would be inappropriate.
 
-  -ffixed-r2 and -mmultiple
+I don't really see why we're trying to make a distinction between
+recoverable errors and disconnected devices at this stage. In either
+case we should assume the device is broken and shouldn't be accessed
+until we perform some kind of recovery action.
 
-llvm's lib/Target/PowerPC/PPCRegisterInfo.cpp marks r2 as reserved on
-when building for SVR4ABI and !ppc64:
+Bjorn's MMIO wrappers are more-or-less an opt-in software emulation of
+the freeze-MMIO-on-error behaviour that the EEH mechanism provides on 
+IBM hardware so I think it makes sense. It also has the nice side
+effect of giving driver writers an error injection mechanism so they
+might actually test how their drivers deal with errors.
 
-  // The SVR4 ABI reserves r2 and r13
-  if (Subtarget.isSVR4ABI()) {
-    // We only reserve r2 if we need to use the TOC pointer. If we have no
-    // explicit uses of the TOC pointer (meaning we're a leaf function with
-    // no constant-pool loads, etc.) and we have no potential uses inside an
-    // inline asm block, then we can treat r2 has an ordinary callee-saved
-    // register.
-    const PPCFunctionInfo *FuncInfo = MF.getInfo<PPCFunctionInfo>();
-    if (!TM.isPPC64() || FuncInfo->usesTOCBasePtr() || MF.hasInlineAsm())
-      markSuperRegs(Reserved, PPC::R2);  // System-reserved register
-    markSuperRegs(Reserved, PPC::R13); // Small Data Area pointer register
-  }
+> Accessing a device in D3cold would be another example where all ones
+> is returned both from mmio and config space despite the device still
+> being present and future accesses having a chance to succeed.
 
-This means we can safely omit -ffixed-r2 when building for 32-bit
-targets.
+Is doing a MMIO to a device in D3cold (or hot) ever a valid thing to
+do?
 
-The -mmultiple/-mno-multiple flags are not supported by clang, so
-platforms that might support multiple miss out on using multiple word
-instructions.
+> In fact, in v2 of Keith's patches adding pci_dev_set_disconnected()
+> he attempted the same as what you're doing here and caused issues
+> for me with devices in D3cold:
+> 
+> https://spinics.net/lists/linux-pci/msg54337.html
+> 
+> 
+> > One thing I'm uncomfortable with is that [...].  Another is that the
+> > only place we call pci_dev_set_disconnected() is in pciehp and acpiphp,
+> > so the only "disconnected" case we catch is if hotplug happens to be
+> > involved.
+> 
+> Yes, that's because the hotplug drivers are the only ones who can
+> identify removal authoritatively and unambiguously.  They *know*
+> when the device is gone and don't have to resort to heuristics
+> such as all ones.  (ISTR that dpc also marks devices disconnected.)
 
-We wrap these flags in cc-option so that when Clang gains support the
-kernel will be able use these flags.
+The herustics shouldn't be used to work out when the device is gone,
+rather they should be used to work out when we need to check on the
+device.
 
-Clang 8 can then build a ppc44x_defconfig which boots in Qemu:
+One of the grosser bits of EEH support is a hook in readl() and friends
+that checks for a 0xFF response. If it finds one, it looks at the EEH
+state and will start the recovery process if the device is marked as
+frozen.
 
-  make CC=clang-8 ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu-  ppc44x_defconfig
-  ./scripts/config -e CONFIG_DEVTMPFS -d DEVTMPFS_MOUNT
-  make CC=clang-8 ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu-
+(don't look at the code. you won't like what you find)
 
-  qemu-system-ppc -M bamboo \
-   -kernel arch/powerpc/boot/zImage \
-   -dtb arch/powerpc/boot/dts/bamboo.dtb \
-   -initrd ~/ppc32-440-rootfs.cpio \
-   -nographic -serial stdio -monitor pty -append "console=ttyS0"
+> > sprinkling pci_dev_is_disconnected() around feels ad hoc
+> > instead of systematic, in the sense that I don't know how we convince
+> > ourselves that this (and only this) is the correct place to put it.
+> 
+> We need to add documentation for driver authors how to deal with
+> surprise removal.  Briefly:
+> 
+> * If (pdev->error_state == pci_channel_io_perm_failure), the device
+>   is definitely gone and any further device access can be skipped.
+>   Otherwise presence of the device is likely, but not guaranteed.
+>
+> * If a device access can significantly delay device removal due to
+>   Completion Timeouts, or can cause an infinite loop, MCE or crash,
+>   do check pdev->error_state before carrying out the device access.
+> 
+> * Always be prepared that a device access may fail due to surprise
+>   removal, do not blindly trust mmio or config space reads or
+>   assume success of writes.
 
-Link: https://github.com/ClangBuiltLinux/linux/issues/261
-Link: https://bugs.llvm.org/show_bug.cgi?id=39556
-Link: https://bugs.llvm.org/show_bug.cgi?id=39555
-Signed-off-by: Joel Stanley <joel@jms.id.au>
----
- arch/powerpc/Makefile | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+Completely agree. We really need better documentation of what drivers
+should be doing.
 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 8a2ce14d68d0..4685671dfb4f 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -152,7 +152,14 @@ endif
- CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mcmodel=medium,$(call cc-option,-mminimal-toc))
- CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mno-pointers-to-nested-functions)
- 
--CFLAGS-$(CONFIG_PPC32)	:= -ffixed-r2 $(MULTIPLEWORD)
-+# Clang unconditionally reserves r2 on ppc32 and does not support the flag
-+# https://bugs.llvm.org/show_bug.cgi?id=39555
-+CFLAGS-$(CONFIG_PPC32)	:= $(call cc-option, -ffixed-r2)
-+
-+# Clang doesn't support -mmultiple / -mno-multiple
-+# https://bugs.llvm.org/show_bug.cgi?id=39556
-+CFLAGS-$(CONFIG_PPC32)	+= $(call cc-option, $(MULTIPLEWORD))
-+
- CFLAGS-$(CONFIG_PPC32)	+= $(call cc-option,-mno-readonly-in-sdata)
- 
- ifdef CONFIG_PPC_BOOK3S_64
--- 
-2.19.1
+Oliver
 
