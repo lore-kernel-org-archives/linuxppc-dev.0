@@ -2,50 +2,83 @@ Return-Path: <SRS0=Ph+o=NX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 39FF0C43441
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Nov 2018 12:59:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A3B3C43441
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Nov 2018 18:29:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B4DD52243E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Nov 2018 12:59:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B4DD52243E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 884EA2245E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Nov 2018 18:29:49 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="eXr6js0m"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 884EA2245E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42trSp3ZSrzF3bV
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Nov 2018 23:59:54 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 42tznR3424zF2QG
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 05:29:47 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=chromium.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.b="eXr6js0m";
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=chromium.org
+ (client-ip=2607:f8b0:4864:20::543; helo=mail-pg1-x543.google.com;
+ envelope-from=dianders@chromium.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=chromium.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=chromium.org header.i=@chromium.org header.b="eXr6js0m";
+ dkim-atps=neutral
+Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
+ [IPv6:2607:f8b0:4864:20::543])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42trQ45XNVzF3C4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Nov 2018 23:57:32 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 42trPz5YtKz9s4s;
- Mon, 12 Nov 2018 23:57:27 +1100 (AEDT)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Jeremy Kerr <jk@ozlabs.org>, Jonathan Corbet <corbet@lwn.net>,
- Colin King <colin.king@canonical.com>, Geoff Levand <geoff@infradead.org>
-Subject: Re: [PATCH] Documentation: fix spelling mistake, EACCESS -> EACCES
-In-Reply-To: <d1048515-239a-2686-e897-fb2a2b8d180f@ozlabs.org>
-References: <20181026172549.3628-1-colin.king@canonical.com>
- <20181107153104.71eddf4d@lwn.net>
- <d1048515-239a-2686-e897-fb2a2b8d180f@ozlabs.org>
-Date: Mon, 12 Nov 2018 23:57:22 +1100
-Message-ID: <87bm6ua1xp.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42tzkb67wJzF3Ld
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 05:27:17 +1100 (AEDT)
+Received: by mail-pg1-x543.google.com with SMTP id z17-v6so4434274pgv.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Nov 2018 10:27:17 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=Z+fNEzOvGtu7UZFhCEIQ8uoVjOxFwpPILN5pzazqNYk=;
+ b=eXr6js0mdxBQXDsYoP+dpGM05tDLjEqyHTGRhiOIULp8cnhmCXXktIgW8uezqg9ePK
+ wVabda9zlcNHOXnd4xrUL7y/qGPvD3LORin0hioaX/oYI39lrop8fAjEQALwFCK9UNaM
+ Enw29nwR5bw1mTGJXMldXQvFe9C5yvoDao0KM=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=Z+fNEzOvGtu7UZFhCEIQ8uoVjOxFwpPILN5pzazqNYk=;
+ b=oM8B70Zy2RittCVhNpGGp3NUMrhFlPSGMx4Xt+/bP3MbuPsD20gjFv1hbz1PED/YEn
+ 5FdNieqRgGOmEYCr7vGT47cIf7g8aVQJql39kWnZB2NFiGD/YQkc5HPJ15UC4uskLIeE
+ FLNs+PFDUavLseacCFaoF0PyRSMBQ6NI3PPo04T9uVu1HalUl76b9+cw4i2gQaS/OsIY
+ avx9ro8+scnX7aKEGGVWP1dxQ6DNj0aieg0ZAk98eNKTkD8Wc3602QBw6sIk3CJhwuSy
+ shFGfUYCKZ6/RRlGxyZK0Kukfq8XpmIHaSQ2VNKGGGQ8XswMchk5tNw9e7X8hVbgB03N
+ ZjUA==
+X-Gm-Message-State: AGRZ1gLOCzkep7JM23KLnUaoBkbHDktHS/oT9q/17NO3MazZLbPxveEE
+ C+PnpB3E6dCeUtUmrI37f6xPBg==
+X-Google-Smtp-Source: AJdET5e5/WkAuI8mTOdhvf1T6zEObtJHy7y0EHk3Q6guTcO9BgOxiHnQib5SZuhWLZjVMV7KN5Oidg==
+X-Received: by 2002:a63:24c2:: with SMTP id k185mr1679288pgk.406.1542047236123; 
+ Mon, 12 Nov 2018 10:27:16 -0800 (PST)
+Received: from tictac2.mtv.corp.google.com
+ ([2620:15c:202:1:c8e0:70d7:4be7:a36])
+ by smtp.gmail.com with ESMTPSA id o86-v6sm18813100pfk.8.2018.11.12.10.27.14
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Mon, 12 Nov 2018 10:27:15 -0800 (PST)
+From: Douglas Anderson <dianders@chromium.org>
+To: Jason Wessel <jason.wessel@windriver.com>,
+ Daniel Thompson <daniel.thompson@linaro.org>
+Subject: [PATCH v4 0/4] kgdb: Fix kgdb_roundup_cpus()
+Date: Mon, 12 Nov 2018 10:26:54 -0800
+Message-Id: <20181112182659.245726-1-dianders@chromium.org>
+X-Mailer: git-send-email 2.19.1.930.g4563a0d9d0-goog
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,56 +90,74 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel-janitors@vger.kernel.org, linux-doc@vger.kernel.org,
- David Airlie <airlied@linux.ie>, linuxppc-dev@lists.ozlabs.org,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- linux-kernel@vger.kernel.org, Maxime Ripard <maxime.ripard@bootlin.com>,
- Sean Paul <sean@poorly.run>
+Cc: linux-mips@linux-mips.org, Michal Hocko <mhocko@suse.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, linux-sh@vger.kernel.org,
+ Peter Zijlstra <peterz@infradead.org>, kgdb-bugreport@lists.sourceforge.net,
+ Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org,
+ Rich Felker <dalias@libc.org>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, linux-hexagon@vger.kernel.org,
+ x86@kernel.org, Russell King <linux@armlinux.org.uk>,
+ Ingo Molnar <mingo@redhat.com>, James Hogan <jhogan@kernel.org>,
+ linux-snps-arc@lists.infradead.org, Huang Ying <ying.huang@intel.com>,
+ Mike Rapoport <rppt@linux.vnet.ibm.com>, Borislav Petkov <bp@alien8.de>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Vineet Gupta <vgupta@synopsys.com>, Douglas Anderson <dianders@chromium.org>,
+ Ralf Baechle <ralf@linux-mips.org>, Richard Kuo <rkuo@codeaurora.org>,
+ Paul Burton <paul.burton@mips.com>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Jeremy Kerr <jk@ozlabs.org> writes:
-> Hi Jon,
->
->>> Signed-off-by: Colin Ian King <colin.king@canonical.com>
->>> ---
->>>   Documentation/filesystems/spufs.txt | 2 +-
->>>   Documentation/gpu/drm-uapi.rst      | 4 ++--
->>>   2 files changed, 3 insertions(+), 3 deletions(-)
->> 
->> Applied, thanks.
->> 
->> This is the first patch to spufs.txt since 2006...I wonder if that stuff
->> is being used by anybody...
->
-> Anyone who is using the vector processors on the Cell BE processors will
-> be using it. However, that hardware is becoming pretty rare now.
->
-> We'll want to remove the spufs bits if/when we drop support for the cell
-> platforms (IBM QSxx, PS3, celleb). mpe: any ides on that? Do you have a 
-> policy for dropping platform support?
+This series was originally part of the series ("serial: Finish kgdb on
+qcom_geni; fix many lockdep splats w/ kgdb") but it made sense to
+split it up.
 
-I don't have a policy. We discussed it a bit at maintainer summit, that
-basically boiled down to stuff should get removed when it is not used
-much and/or is causing undue maintenance burden - both of which are
-fairly arbitrary criteria.
+It's believed that dropping into kgdb should be more robust once these
+patches are applied.
 
-My feeling is spufs is not causing anyone much work, it does get hit by
-some VFS updates but it's just one of many many filesystems, so the
-incremental overhead is pretty small I think - though VFS people may
-disagree :)
+Changes in v4:
+- Removed smp_mb() calls.
+- Also clear out .debuggerinfo.
+- Also clear out .debuggerinfo and .task for the master.
+- Remove clearing out in kdb_stub for offline CPUs; it's now redundant.
 
-I still have a working IBM QS22, and Geoff is still maintaining PS3,
-celleb is gone.
+Changes in v3:
+- No separate init call.
+- Don't round up the CPU that is doing the rounding up.
+- Add "#ifdef CONFIG_SMP" to match the rest of the file.
+- Updated desc saying we don't solve the "failed to roundup" case.
+- Document the ignored parameter.
+- Don't round up a CPU that failed rounding up before new for v3.
+- Don't back trace on a cpu that didn't round up new for v3.
 
-Basically we're keeping it around in case people are still using it on
-their PS3s. I don't know how we gauge how many people that is without
-removing support and seeing who is annoyed. But even if we did that a
-lot of folks will probably not notice for months to years, and when they
-do notice they'll just bin their PS3s rather than telling us.
+Changes in v2:
+- Removing irq flags separated from fixing lockdep splat.
+- Don't use smp_call_function (Daniel).
 
-But maybe Geoff has a better feel for how many people (other than him)
-are still running upstream on PS3s.
+Douglas Anderson (4):
+  kgdb: Remove irq flags from roundup
+  kgdb: Fix kgdb_roundup_cpus() for arches who used smp_call_function()
+  kgdb: Don't round up a CPU that failed rounding up before
+  kdb: Don't back trace on a cpu that didn't round up
 
-cheers
+ arch/arc/kernel/kgdb.c          | 10 ++----
+ arch/arm/kernel/kgdb.c          | 12 -------
+ arch/arm64/kernel/kgdb.c        | 12 -------
+ arch/hexagon/kernel/kgdb.c      | 32 -------------------
+ arch/mips/kernel/kgdb.c         |  9 +-----
+ arch/powerpc/kernel/kgdb.c      |  6 ++--
+ arch/sh/kernel/kgdb.c           | 12 -------
+ arch/sparc/kernel/smp_64.c      |  2 +-
+ arch/x86/kernel/kgdb.c          |  9 ++----
+ include/linux/kgdb.h            | 22 ++++++++-----
+ kernel/debug/debug_core.c       | 56 ++++++++++++++++++++++++++++++++-
+ kernel/debug/debug_core.h       |  1 +
+ kernel/debug/kdb/kdb_bt.c       | 11 ++++++-
+ kernel/debug/kdb/kdb_debugger.c |  7 -----
+ 14 files changed, 89 insertions(+), 112 deletions(-)
+
+-- 
+2.19.1.930.g4563a0d9d0-goog
+
