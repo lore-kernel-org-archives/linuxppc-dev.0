@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 93790C43441
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 08:39:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C68A9C43441
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 08:40:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E0070206BA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 08:39:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E0070206BA
+	by mail.kernel.org (Postfix) with ESMTPS id 4DAC9206BA
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 08:40:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4DAC9206BA
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42vLdH5Tr7zF2HT
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 19:38:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42vLgY24ZwzF3Cb
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 19:40:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
@@ -27,17 +27,17 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Received: from ozlabs.ru (unknown [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 42vLPs2hPwzF3Gq
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 19:29:05 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 42vLPw5QmzzF3Hs
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 19:29:08 +1100 (AEDT)
 Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 77867AE80215;
- Tue, 13 Nov 2018 03:29:01 -0500 (EST)
+ by ozlabs.ru (Postfix) with ESMTP id 530C7AE80048;
+ Tue, 13 Nov 2018 03:28:34 -0500 (EST)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v3 10/22] powerpc/pseries/iommu: Use memory@ nodes in
- max RAM address calculation
-Date: Tue, 13 Nov 2018 19:28:11 +1100
-Message-Id: <20181113082823.2440-11-aik@ozlabs.ru>
+Subject: [PATCH kernel v3 02/22] powerpc/mm/iommu/vfio_spapr_tce: Change
+ mm_iommu_get to reference a region
+Date: Tue, 13 Nov 2018 19:28:03 +1100
+Message-Id: <20181113082823.2440-3-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20181113082823.2440-1-aik@ozlabs.ru>
 References: <20181113082823.2440-1-aik@ozlabs.ru>
@@ -65,82 +65,188 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We might have memory@ nodes with "linux,usable-memory" set to zero
-(for example, to replicate powernv's behaviour for GPU coherent memory)
-which means that the memory needs an extra initialization but since
-it can be used afterwards, the pseries platform will try mapping it
-for DMA so the DMA window needs to cover those memory regions too.
+Normally mm_iommu_get() is supposed to add a reference and
+mm_iommu_put() to remove it. However historically mm_iommu_find() does
+the referencing and mm_iommu_get() is doing allocation and referencing.
 
-This walks through the memory nodes to find the highest RAM address to
-let a huge DMA window cover that too in case this memory gets onlined
-later.
+We are going to add another helper to preregister device memory so
+instead of having mm_iommu_new() which pre-registers the normal memory
+and references the region, we need separate helpers for pre-registering
+and referencing.
+
+This renames:
+- mm_iommu_get to mm_iommu_new;
+- mm_iommu_find to mm_iommu_get.
+
+To make the mm_iommu_get name reflect what it is supposed to do, this
+changes mm_iommu_get() to reference the region so from now on for every
+mm_iommu_get() we need a matching mm_iommu_put().
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- arch/powerpc/platforms/pseries/iommu.c | 43 +++++++++++++++++++++++++-
- 1 file changed, 42 insertions(+), 1 deletion(-)
+Changes:
+v2:
+* merged 2 patches into one
+---
+ arch/powerpc/include/asm/mmu_context.h |  4 +--
+ arch/powerpc/mm/mmu_context_iommu.c    | 13 ++++++---
+ drivers/vfio/vfio_iommu_spapr_tce.c    | 37 +++++++++++++++++---------
+ 3 files changed, 35 insertions(+), 19 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index 78473ac..f818737 100644
---- a/arch/powerpc/platforms/pseries/iommu.c
-+++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -967,6 +967,47 @@ struct failed_ddw_pdn {
+diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
+index 0381394..2d6b00d 100644
+--- a/arch/powerpc/include/asm/mmu_context.h
++++ b/arch/powerpc/include/asm/mmu_context.h
+@@ -21,7 +21,7 @@ struct mm_iommu_table_group_mem_t;
  
- static LIST_HEAD(failed_ddw_pdn_list);
+ extern int isolate_lru_page(struct page *page);	/* from internal.h */
+ extern bool mm_iommu_preregistered(struct mm_struct *mm);
+-extern long mm_iommu_get(struct mm_struct *mm,
++extern long mm_iommu_new(struct mm_struct *mm,
+ 		unsigned long ua, unsigned long entries,
+ 		struct mm_iommu_table_group_mem_t **pmem);
+ extern long mm_iommu_put(struct mm_struct *mm,
+@@ -32,7 +32,7 @@ extern struct mm_iommu_table_group_mem_t *mm_iommu_lookup(struct mm_struct *mm,
+ 		unsigned long ua, unsigned long size);
+ extern struct mm_iommu_table_group_mem_t *mm_iommu_lookup_rm(
+ 		struct mm_struct *mm, unsigned long ua, unsigned long size);
+-extern struct mm_iommu_table_group_mem_t *mm_iommu_find(struct mm_struct *mm,
++extern struct mm_iommu_table_group_mem_t *mm_iommu_get(struct mm_struct *mm,
+ 		unsigned long ua, unsigned long entries);
+ extern long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
+ 		unsigned long ua, unsigned int pageshift, unsigned long *hpa);
+diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_context_iommu.c
+index 1d5161f..babc6ad 100644
+--- a/arch/powerpc/mm/mmu_context_iommu.c
++++ b/arch/powerpc/mm/mmu_context_iommu.c
+@@ -89,7 +89,7 @@ bool mm_iommu_preregistered(struct mm_struct *mm)
+ }
+ EXPORT_SYMBOL_GPL(mm_iommu_preregistered);
  
-+static unsigned long read_n_cells(int n, const __be32 **buf)
-+{
-+	unsigned long result = 0;
+-long mm_iommu_get(struct mm_struct *mm, unsigned long ua, unsigned long entries,
++long mm_iommu_new(struct mm_struct *mm, unsigned long ua, unsigned long entries,
+ 		struct mm_iommu_table_group_mem_t **pmem)
+ {
+ 	struct mm_iommu_table_group_mem_t *mem;
+@@ -202,7 +202,7 @@ long mm_iommu_get(struct mm_struct *mm, unsigned long ua, unsigned long entries,
+ 
+ 	return ret;
+ }
+-EXPORT_SYMBOL_GPL(mm_iommu_get);
++EXPORT_SYMBOL_GPL(mm_iommu_new);
+ 
+ static void mm_iommu_unpin(struct mm_iommu_table_group_mem_t *mem)
+ {
+@@ -318,21 +318,26 @@ struct mm_iommu_table_group_mem_t *mm_iommu_lookup_rm(struct mm_struct *mm,
+ 	return ret;
+ }
+ 
+-struct mm_iommu_table_group_mem_t *mm_iommu_find(struct mm_struct *mm,
++struct mm_iommu_table_group_mem_t *mm_iommu_get(struct mm_struct *mm,
+ 		unsigned long ua, unsigned long entries)
+ {
+ 	struct mm_iommu_table_group_mem_t *mem, *ret = NULL;
+ 
++	mutex_lock(&mem_list_mutex);
 +
-+	while (n--) {
-+		result = (result << 32) | of_read_number(*buf, 1);
-+		(*buf)++;
-+	}
-+	return result;
-+}
-+
-+static phys_addr_t ddw_memory_hotplug_max(void)
-+{
-+	phys_addr_t max_addr = memory_hotplug_max();
-+	struct device_node *memory;
-+
-+	for_each_node_by_type(memory, "memory") {
-+		unsigned long start, size;
-+		int ranges, n_mem_addr_cells, n_mem_size_cells, len;
-+		const __be32 *memcell_buf;
-+
-+		memcell_buf = of_get_property(memory, "reg", &len);
-+		if (!memcell_buf || len <= 0)
-+			continue;
-+
-+		n_mem_addr_cells = of_n_addr_cells(memory);
-+		n_mem_size_cells = of_n_size_cells(memory);
-+
-+		/* ranges in cell */
-+		ranges = (len >> 2) / (n_mem_addr_cells + n_mem_size_cells);
-+
-+		/* these are order-sensitive, and modify the buffer pointer */
-+		start = read_n_cells(n_mem_addr_cells, &memcell_buf);
-+		size = read_n_cells(n_mem_size_cells, &memcell_buf);
-+
-+		max_addr = max_t(phys_addr_t, max_addr, start + size);
-+	}
-+
-+	return max_addr;
-+}
-+
- /*
-  * If the PE supports dynamic dma windows, and there is space for a table
-  * that can map all pages in a linear offset, then setup such a table,
-@@ -1067,7 +1108,7 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn,
+ 	list_for_each_entry_rcu(mem, &mm->context.iommu_group_mem_list, next) {
+ 		if ((mem->ua == ua) && (mem->entries == entries)) {
+ 			ret = mem;
++			++mem->used;
+ 			break;
+ 		}
  	}
- 	/* verify the window * number of ptes will map the partition */
- 	/* check largest block * page size > max memory hotplug addr */
--	max_addr = memory_hotplug_max();
-+	max_addr = ddw_memory_hotplug_max();
- 	if (query.largest_available_block < (max_addr >> page_shift)) {
- 		dev_dbg(&dev->dev, "can't map partition max 0x%llx with %u "
- 			  "%llu-sized pages\n", max_addr,  query.largest_available_block,
+ 
++	mutex_unlock(&mem_list_mutex);
++
+ 	return ret;
+ }
+-EXPORT_SYMBOL_GPL(mm_iommu_find);
++EXPORT_SYMBOL_GPL(mm_iommu_get);
+ 
+ long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
+ 		unsigned long ua, unsigned int pageshift, unsigned long *hpa)
+diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+index ad63725..56db071 100644
+--- a/drivers/vfio/vfio_iommu_spapr_tce.c
++++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+@@ -151,12 +151,13 @@ static long tce_iommu_unregister_pages(struct tce_container *container,
+ {
+ 	struct mm_iommu_table_group_mem_t *mem;
+ 	struct tce_iommu_prereg *tcemem;
+-	bool found = false;
++	bool found;
++	long ret;
+ 
+ 	if ((vaddr & ~PAGE_MASK) || (size & ~PAGE_MASK))
+ 		return -EINVAL;
+ 
+-	mem = mm_iommu_find(container->mm, vaddr, size >> PAGE_SHIFT);
++	mem = mm_iommu_get(container->mm, vaddr, size >> PAGE_SHIFT);
+ 	if (!mem)
+ 		return -ENOENT;
+ 
+@@ -168,9 +169,13 @@ static long tce_iommu_unregister_pages(struct tce_container *container,
+ 	}
+ 
+ 	if (!found)
+-		return -ENOENT;
++		ret = -ENOENT;
++	else
++		ret = tce_iommu_prereg_free(container, tcemem);
+ 
+-	return tce_iommu_prereg_free(container, tcemem);
++	mm_iommu_put(container->mm, mem);
++
++	return ret;
+ }
+ 
+ static long tce_iommu_register_pages(struct tce_container *container,
+@@ -185,22 +190,24 @@ static long tce_iommu_register_pages(struct tce_container *container,
+ 			((vaddr + size) < vaddr))
+ 		return -EINVAL;
+ 
+-	mem = mm_iommu_find(container->mm, vaddr, entries);
++	mem = mm_iommu_get(container->mm, vaddr, entries);
+ 	if (mem) {
+ 		list_for_each_entry(tcemem, &container->prereg_list, next) {
+-			if (tcemem->mem == mem)
+-				return -EBUSY;
++			if (tcemem->mem == mem) {
++				ret = -EBUSY;
++				goto put_exit;
++			}
+ 		}
++	} else {
++		ret = mm_iommu_new(container->mm, vaddr, entries, &mem);
++		if (ret)
++			return ret;
+ 	}
+ 
+-	ret = mm_iommu_get(container->mm, vaddr, entries, &mem);
+-	if (ret)
+-		return ret;
+-
+ 	tcemem = kzalloc(sizeof(*tcemem), GFP_KERNEL);
+ 	if (!tcemem) {
+-		mm_iommu_put(container->mm, mem);
+-		return -ENOMEM;
++		ret = -ENOMEM;
++		goto put_exit;
+ 	}
+ 
+ 	tcemem->mem = mem;
+@@ -209,6 +216,10 @@ static long tce_iommu_register_pages(struct tce_container *container,
+ 	container->enabled = true;
+ 
+ 	return 0;
++
++put_exit:
++	mm_iommu_put(container->mm, mem);
++	return ret;
+ }
+ 
+ static bool tce_page_is_contained(struct page *page, unsigned page_shift)
 -- 
 2.17.1
 
