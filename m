@@ -2,24 +2,23 @@ Return-Path: <SRS0=INWp=NY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.0 required=3.0
-	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E8A9C43441
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 08:33:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CE6B2C43441
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 08:35:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B7CDE2245E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 08:33:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B7CDE2245E
+	by mail.kernel.org (Postfix) with ESMTPS id 5A93E22507
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 08:35:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5A93E22507
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42vLVv5l39zF3Cb
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 19:33:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42vLXt5x3pzF3Fk
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 19:35:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
@@ -28,17 +27,17 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Received: from ozlabs.ru (unknown [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 42vLPH0StqzF3Df
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 19:28:35 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 42vLPY1ksQzF37r
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 19:28:48 +1100 (AEDT)
 Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id C7030AE80046;
- Tue, 13 Nov 2018 03:28:30 -0500 (EST)
+ by ozlabs.ru (Postfix) with ESMTP id A03FCAE800ED;
+ Tue, 13 Nov 2018 03:28:44 -0500 (EST)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v3 01/22] powerpc/ioda/npu: Call skiboot's hot reset
- hook when disabling NPU2
-Date: Tue, 13 Nov 2018 19:28:02 +1100
-Message-Id: <20181113082823.2440-2-aik@ozlabs.ru>
+Subject: [PATCH kernel v3 05/22] powerpc/powernv/npu: Add helper to access
+ struct npu for NPU device
+Date: Tue, 13 Nov 2018 19:28:06 +1100
+Message-Id: <20181113082823.2440-6-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20181113082823.2440-1-aik@ozlabs.ru>
 References: <20181113082823.2440-1-aik@ozlabs.ru>
@@ -66,58 +65,83 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The skiboot firmware has a hot reset handler which fences the NVIDIA V100
-GPU RAM on Witherspoons and makes accesses no-op instead of throwing HMIs:
-https://github.com/open-power/skiboot/commit/fca2b2b839a67
-
-Now we are going to pass V100 via VFIO which most certainly involves
-KVM guests which are often terminated without getting a chance to offline
-GPU RAM so we end up with a running machine with misconfigured memory.
-Accessing this memory produces hardware management interrupts (HMI)
-which bring the host down.
-
-To suppress HMIs, this wires up this hot reset hook to vfio_pci_disable()
-via pci_disable_device() which switches NPU2 to a safe mode and prevents
-HMIs.
+This step is to help removing the npu struct from pnv_phb so it
+can be used by pseries as well.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-Acked-by: Alistair Popple <alistair@popple.id.au>
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 ---
-Changes:
-v2:
-* updated the commit log
----
- arch/powerpc/platforms/powernv/pci-ioda.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ arch/powerpc/platforms/powernv/npu-dma.c | 22 ++++++++++++++++------
+ 1 file changed, 16 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 3d2d8fa..c78c204 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -3676,6 +3676,15 @@ static void pnv_pci_release_device(struct pci_dev *pdev)
- 		pnv_ioda_release_pe(pe);
+diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
+index 91d488f..9f48831 100644
+--- a/arch/powerpc/platforms/powernv/npu-dma.c
++++ b/arch/powerpc/platforms/powernv/npu-dma.c
+@@ -327,6 +327,18 @@ struct pnv_ioda_pe *pnv_pci_npu_setup_iommu(struct pnv_ioda_pe *npe)
+ 	return gpe;
  }
  
-+static void pnv_npu_disable_device(struct pci_dev *pdev)
++/*
++ * NPU2 ATS
++ */
++static struct npu *npdev_to_npu(struct pci_dev *npdev)
 +{
-+	struct eeh_dev *edev = pci_dev_to_eeh_dev(pdev);
-+	struct eeh_pe *eehpe = edev ? edev->pe : NULL;
++	struct pnv_phb *nphb;
 +
-+	if (eehpe && eeh_ops && eeh_ops->reset)
-+		eeh_ops->reset(eehpe, EEH_RESET_HOT);
++	nphb = pci_bus_to_host(npdev->bus)->private_data;
++
++	return &nphb->npu;
 +}
 +
- static void pnv_pci_ioda_shutdown(struct pci_controller *hose)
- {
- 	struct pnv_phb *phb = hose->private_data;
-@@ -3720,6 +3729,7 @@ static const struct pci_controller_ops pnv_npu_ioda_controller_ops = {
- 	.reset_secondary_bus	= pnv_pci_reset_secondary_bus,
- 	.dma_set_mask		= pnv_npu_dma_set_mask,
- 	.shutdown		= pnv_pci_ioda_shutdown,
-+	.disable_device		= pnv_npu_disable_device,
- };
+ /* Maximum number of nvlinks per npu */
+ #define NV_MAX_LINKS 6
  
- static const struct pci_controller_ops pnv_npu_ocapi_ioda_controller_ops = {
+@@ -478,7 +490,6 @@ static void acquire_atsd_reg(struct npu_context *npu_context,
+ 	int i, j;
+ 	struct npu *npu;
+ 	struct pci_dev *npdev;
+-	struct pnv_phb *nphb;
+ 
+ 	for (i = 0; i <= max_npu2_index; i++) {
+ 		mmio_atsd_reg[i].reg = -1;
+@@ -493,8 +504,7 @@ static void acquire_atsd_reg(struct npu_context *npu_context,
+ 			if (!npdev)
+ 				continue;
+ 
+-			nphb = pci_bus_to_host(npdev->bus)->private_data;
+-			npu = &nphb->npu;
++			npu = npdev_to_npu(npdev);
+ 			mmio_atsd_reg[i].npu = npu;
+ 			mmio_atsd_reg[i].reg = get_mmio_atsd_reg(npu);
+ 			while (mmio_atsd_reg[i].reg < 0) {
+@@ -690,7 +700,7 @@ struct npu_context *pnv_npu2_init_context(struct pci_dev *gpdev,
+ 	}
+ 
+ 	nphb = pci_bus_to_host(npdev->bus)->private_data;
+-	npu = &nphb->npu;
++	npu = npdev_to_npu(npdev);
+ 
+ 	/*
+ 	 * Setup the NPU context table for a particular GPU. These need to be
+@@ -764,7 +774,7 @@ struct npu_context *pnv_npu2_init_context(struct pci_dev *gpdev,
+ 	 */
+ 	WRITE_ONCE(npu_context->npdev[npu->index][nvlink_index], npdev);
+ 
+-	if (!nphb->npu.nmmu_flush) {
++	if (!npu->nmmu_flush) {
+ 		/*
+ 		 * If we're not explicitly flushing ourselves we need to mark
+ 		 * the thread for global flushes
+@@ -810,7 +820,7 @@ void pnv_npu2_destroy_context(struct npu_context *npu_context,
+ 		return;
+ 
+ 	nphb = pci_bus_to_host(npdev->bus)->private_data;
+-	npu = &nphb->npu;
++	npu = npdev_to_npu(npdev);
+ 	nvlink_dn = of_parse_phandle(npdev->dev.of_node, "ibm,nvlink", 0);
+ 	if (WARN_ON(of_property_read_u32(nvlink_dn, "ibm,npu-link-index",
+ 							&nvlink_index)))
 -- 
 2.17.1
 
