@@ -4,26 +4,26 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 72157C43441
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 05:54:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8BE93C43441
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 05:58:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id ABDF0223CB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 05:54:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 0741F223CB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 05:58:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="VOBf9Km/"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ABDF0223CB
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="IX/o61lK"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0741F223CB
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42vGzY5KdTzF3Nk
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 16:54:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42vH473fwZzF3DQ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 16:58:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="VOBf9Km/";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="IX/o61lK";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
@@ -32,35 +32,35 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="VOBf9Km/"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="IX/o61lK"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42vGtj1DltzF3Jv
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 16:50:17 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42vGvn0hyZzF3KK
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 16:51:16 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (unknown [64.114.255.114])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 9F34021780;
- Tue, 13 Nov 2018 05:50:15 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id D514F2250F;
+ Tue, 13 Nov 2018 05:51:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1542088216;
- bh=k5BRm/Plv9zqwGKn0L7kbpaXnw5mHYf/07ZW27tGo/Q=;
+ s=default; t=1542088275;
+ bh=t4xw4zlEwLYczh+tpwXn3PSD2ZBiO8xxxSHzfaUXxr0=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=VOBf9Km/wwoCEGOSy5rl6BSFaRd/vgEpFBUNsTt3WvBcVk/dPf9LLKCISdeGy5hmk
- S+m7quNTffwluFsxMK4LVO6PodGnAFB29uizE4LFlR9svztj9s2Rt4tsKHMA9tlLPp
- DAzciu2JGIAtc5KptmpotCGFyOEx95YkiUXjj8c0=
+ b=IX/o61lKrqvJ8V8Tk6JSOz8D43+xJ/W0f9sixpW2PuHmLPdJj66wmrMJ70xHj8tBK
+ QKJyR01GRHXRo2jri4C5V3jv4RCjy0XwiYPhmNq4RWlRnVERb+rSKXVxA1KZdKrbaE
+ xg63cHY4MmXFW4NfxI41Hwn55gOQOo1ANq0yHdao=
 From: Sasha Levin <sashal@kernel.org>
 To: stable@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.19 14/44] mm/memory_hotplug: make add_memory() take
+Subject: [PATCH AUTOSEL 4.18 12/39] mm/memory_hotplug: make add_memory() take
  the device_hotplug_lock
-Date: Tue, 13 Nov 2018 00:49:20 -0500
-Message-Id: <20181113054950.77898-14-sashal@kernel.org>
+Date: Tue, 13 Nov 2018 00:50:26 -0500
+Message-Id: <20181113055053.78352-12-sashal@kernel.org>
 X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20181113054950.77898-1-sashal@kernel.org>
-References: <20181113054950.77898-1-sashal@kernel.org>
+In-Reply-To: <20181113055053.78352-1-sashal@kernel.org>
+References: <20181113055053.78352-1-sashal@kernel.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -203,7 +203,7 @@ index 6b0d3ef7309c..2ccfbb61ca89 100644
  		/*
  		 * If the memory block has been used by the kernel, add_memory()
 diff --git a/drivers/base/memory.c b/drivers/base/memory.c
-index 817320c7c4c1..40cac122ec73 100644
+index 622ab8edc035..7307a173dca8 100644
 --- a/drivers/base/memory.c
 +++ b/drivers/base/memory.c
 @@ -519,15 +519,20 @@ memory_probe_store(struct device *dev, struct device_attribute *attr,
@@ -230,10 +230,10 @@ index 817320c7c4c1..40cac122ec73 100644
  }
  
 diff --git a/drivers/xen/balloon.c b/drivers/xen/balloon.c
-index e12bb256036f..6bab019a82b1 100644
+index 065f0b607373..6e39a0c10f93 100644
 --- a/drivers/xen/balloon.c
 +++ b/drivers/xen/balloon.c
-@@ -395,7 +395,10 @@ static enum bp_state reserve_additional_memory(void)
+@@ -401,7 +401,10 @@ static enum bp_state reserve_additional_memory(void)
  	 * callers drop the mutex before trying again.
  	 */
  	mutex_unlock(&balloon_mutex);
@@ -245,11 +245,11 @@ index e12bb256036f..6bab019a82b1 100644
  
  	if (rc) {
 diff --git a/include/linux/memory_hotplug.h b/include/linux/memory_hotplug.h
-index 34a28227068d..16487052017d 100644
+index 4e9828cda7a2..5310945b50bb 100644
 --- a/include/linux/memory_hotplug.h
 +++ b/include/linux/memory_hotplug.h
-@@ -322,6 +322,7 @@ static inline void remove_memory(int nid, u64 start, u64 size) {}
- extern void __ref free_area_init_core_hotplug(int nid);
+@@ -321,6 +321,7 @@ static inline void remove_memory(int nid, u64 start, u64 size) {}
+ 
  extern int walk_memory_range(unsigned long start_pfn, unsigned long end_pfn,
  		void *arg, int (*func)(struct memory_block *, void *));
 +extern int __add_memory(int nid, u64 start, u64 size);
@@ -257,10 +257,10 @@ index 34a28227068d..16487052017d 100644
  extern int add_memory_resource(int nid, struct resource *resource, bool online);
  extern int arch_add_memory(int nid, u64 start, u64 size,
 diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-index 38d94b703e9d..3e42226407c7 100644
+index 785252397e35..bdaaa450d83f 100644
 --- a/mm/memory_hotplug.c
 +++ b/mm/memory_hotplug.c
-@@ -1111,7 +1111,12 @@ static int online_memory_block(struct memory_block *mem, void *arg)
+@@ -1095,7 +1095,12 @@ static int online_memory_block(struct memory_block *mem, void *arg)
  	return device_online(&mem->dev);
  }
  
@@ -274,7 +274,7 @@ index 38d94b703e9d..3e42226407c7 100644
  int __ref add_memory_resource(int nid, struct resource *res, bool online)
  {
  	u64 start, size;
-@@ -1180,9 +1185,9 @@ int __ref add_memory_resource(int nid, struct resource *res, bool online)
+@@ -1188,9 +1193,9 @@ int __ref add_memory_resource(int nid, struct resource *res, bool online)
  	mem_hotplug_done();
  	return ret;
  }
@@ -286,7 +286,7 @@ index 38d94b703e9d..3e42226407c7 100644
  {
  	struct resource *res;
  	int ret;
-@@ -1196,6 +1201,17 @@ int __ref add_memory(int nid, u64 start, u64 size)
+@@ -1204,6 +1209,17 @@ int __ref add_memory(int nid, u64 start, u64 size)
  		release_memory_resource(res);
  	return ret;
  }
