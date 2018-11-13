@@ -2,119 +2,121 @@ Return-Path: <SRS0=INWp=NY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.5 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D80C4C43441
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 22:41:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A06BC43441
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 22:48:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1F00A22360
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 22:41:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C8BC222360
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 22:48:24 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=dellteam.com header.i=@dellteam.com header.b="1SD83xhZ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1F00A22360
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=Dellteam.com
+	dkim=pass (1024-bit key) header.d=wavesemi.onmicrosoft.com header.i=@wavesemi.onmicrosoft.com header.b="mGHnIzJe"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C8BC222360
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=mips.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42vjKl085PzF3Hn
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 09:41:47 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=Dellteam.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42vjTL42TFzF3Bg
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 09:48:22 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=mips.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=dellteam.com header.i=@dellteam.com header.b="1SD83xhZ";
+	dkim=pass (1024-bit key; unprotected) header.d=wavesemi.onmicrosoft.com header.i=@wavesemi.onmicrosoft.com header.b="mGHnIzJe";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=dellteam.com
- (client-ip=68.232.149.214; helo=esa4.dell-outbound.iphmx.com;
- envelope-from=alex_gagniuc@dellteam.com; receiver=<UNKNOWN>)
+ spf=permerror (mailfrom) smtp.mailfrom=wavecomp.com
+ (client-ip=40.107.69.110; helo=nam04-co1-obe.outbound.protection.outlook.com;
+ envelope-from=pburton@wavecomp.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=Dellteam.com
+ dmarc=none (p=none dis=none) header.from=mips.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=dellteam.com header.i=@dellteam.com header.b="1SD83xhZ";
+ unprotected) header.d=wavesemi.onmicrosoft.com
+ header.i=@wavesemi.onmicrosoft.com header.b="mGHnIzJe"; 
  dkim-atps=neutral
-Received: from esa4.dell-outbound.iphmx.com (esa4.dell-outbound.iphmx.com
- [68.232.149.214])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from NAM04-CO1-obe.outbound.protection.outlook.com
+ (mail-eopbgr690110.outbound.protection.outlook.com [40.107.69.110])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42vjH00HnZzF3GY
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2018 09:39:22 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
- d=dellteam.com; i=@dellteam.com; q=dns/txt; s=smtpout;
- t=1542148764; x=1573684764;
- h=cc:from:to:subject:date:message-id:references:
- content-transfer-encoding:mime-version;
- bh=W2DbNLLksvmskUQ/VWUeRlO6OW8oqCIt+M5GxO18dMs=;
- b=1SD83xhZlKqjmN2MmqyCjCP8vWj/382xx+etXf7t9ZQnuVDrPqE+PZUJ
- +UZGq3M2SA27d/IFmYo8xo2w+4HphQptsubixDXAxrZxRWrY6xtBCfWbB
- OH4w9F31wDLBIxlOMF4rBFtpbqnpjETD3eFQZYc2QcGinIoIEmmP74kPb 0=;
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: =?us-ascii?q?A2EbAACcUetbhyeV50NjHAEBAQQBAQc?=
- =?us-ascii?q?EAQGBUgYBAQsBgmmBAicKjGWNK5c1FIFmCwEBJQmEPoM/IjUMDQEDAQECAQE?=
- =?us-ascii?q?CAQECEAEBAQoLCQgpIwyCNiISS2sBAQEBAQEjAg1jAQEBAQIBEig/BQsCAQg?=
- =?us-ascii?q?YHhBXAgQTCBqCfwGBeQgPnTECgRCJWAEBAYIdhC0BhXYFjAKCFoERgxKESwE?=
- =?us-ascii?q?SAQ0SLCGFDgKLAJRWCQWGcoojIIFYhQSKF4J1ih4Vii4CBAIEBQIUgUUBajB?=
- =?us-ascii?q?xcIM8E4IiG4hMhT5AATEBAQEBizeBH4EfAQE?=
-X-IPAS-Result: =?us-ascii?q?A2EbAACcUetbhyeV50NjHAEBAQQBAQcEAQGBUgYBAQsBg?=
- =?us-ascii?q?mmBAicKjGWNK5c1FIFmCwEBJQmEPoM/IjUMDQEDAQECAQECAQECEAEBAQoLC?=
- =?us-ascii?q?QgpIwyCNiISS2sBAQEBAQEjAg1jAQEBAQIBEig/BQsCAQgYHhBXAgQTCBqCf?=
- =?us-ascii?q?wGBeQgPnTECgRCJWAEBAYIdhC0BhXYFjAKCFoERgxKESwESAQ0SLCGFDgKLA?=
- =?us-ascii?q?JRWCQWGcoojIIFYhQSKF4J1ih4Vii4CBAIEBQIUgUUBajBxcIM8E4IiG4hMh?=
- =?us-ascii?q?T5AATEBAQEBizeBH4EfAQE?=
-Received: from mx0a-00154901.pphosted.com ([67.231.149.39])
- by esa4.dell-outbound.iphmx.com with ESMTP/TLS/AES256-SHA256;
- 13 Nov 2018 16:39:18 -0600
-Received: from pps.filterd (m0142699.ppops.net [127.0.0.1])
- by mx0a-00154901.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wADNFRbE033627
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 18:21:30 -0500
-Received: from esa1.dell-outbound2.iphmx.com (esa1.dell-outbound2.iphmx.com
- [68.232.153.201])
- by mx0a-00154901.pphosted.com with ESMTP id 2nr80701t3-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 18:21:30 -0500
-Received: from ausxippc106.us.dell.com ([143.166.85.156])
- by esa1.dell-outbound2.iphmx.com with ESMTP/TLS/DHE-RSA-AES256-SHA256;
- 14 Nov 2018 04:39:08 +0600
-X-LoopCount0: from 10.166.134.87
-X-IronPort-AV: E=Sophos;i="5.56,230,1539666000"; d="scan'208";a="318258073"
-From: <Alex_Gagniuc@Dellteam.com>
-To: <helgaas@kernel.org>
-Subject: Re: [PATCH v2] PCI/MSI: Don't touch MSI bits when the PCI device is
- disconnected
-Thread-Topic: [PATCH v2] PCI/MSI: Don't touch MSI bits when the PCI device is
- disconnected
-Thread-Index: AQHUT50UQ290XPGvJEGnaSTTjbCF+g==
-Date: Tue, 13 Nov 2018 22:39:15 +0000
-Message-ID: <19136f44cd5c45e79bbef7e78a6bf332@ausx13mps321.AMER.DELL.COM>
-References: <20181107234257.GC41183@google.com>
- <20181108200855.GE41183@google.com> <20181108220117.GA11466@kroah.com>
- <20181108223258.GD2932@localhost.localdomain>
- <20181108224255.GA20619@kroah.com>
- <20d68e586fff4dcca5616d5056f6fc21@ausx13mps321.AMER.DELL.COM>
- <20181108225109.GA3023@kroah.com>
- <16bf9d14bc5f4a90b2b88dd2eb165186@ausx13mps321.AMER.DELL.COM>
- <5da8d8aa9f3818af649b1ac547bc4e6062626ddf.camel@gmail.com>
- <df85813c9860463d85f6c302dfe07b12@ausx13mps321.AMER.DELL.COM>
- <20181113050240.GA182139@google.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42vjQc4pYrzF3JH
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2018 09:46:00 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=wavesemi.onmicrosoft.com; s=selector1-wavecomp-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=fVcPiwqOz4u9BuQ67POvi3mkxRXF2TJM3x1PcwoJ3l8=;
+ b=mGHnIzJe84mTIGS4XKxI6gP5i7iUU62005i9lZw6ut1ptCzTmy/++zzz+oRwS4dkKbGojI13/ptOPTsaALYD7EdLdw3hO8GWopuP4RcNS9q8g9WuO+O1EitaZgoH3IilhbFNRr34TGL+6ejMIIgU5RUDuTOJJOQpB3NnCW1WGf8=
+Received: from BN6PR2201MB1266.namprd22.prod.outlook.com (10.174.81.142) by
+ BN6PR2201MB1059.namprd22.prod.outlook.com (10.174.90.150) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.1294.31; Tue, 13 Nov 2018 22:45:54 +0000
+Received: from BN6PR2201MB1266.namprd22.prod.outlook.com
+ ([fe80::2590:763f:1a88:c9ec]) by BN6PR2201MB1266.namprd22.prod.outlook.com
+ ([fe80::2590:763f:1a88:c9ec%9]) with mapi id 15.20.1294.045; Tue, 13 Nov 2018
+ 22:45:54 +0000
+From: Paul Burton <paul.burton@mips.com>
+To: Adam Borowski <kilobyte@angband.pl>
+Subject: Re: [PATCH 05/17] mips: Remove support for BZIP2 and LZMA compressed
+ kernel
+Thread-Topic: [PATCH 05/17] mips: Remove support for BZIP2 and LZMA compressed
+ kernel
+Thread-Index: AQHUeF7mOa3hFP+NiE6vOtJJlRFe06VOVHyA
+Date: Tue, 13 Nov 2018 22:45:54 +0000
+Message-ID: <20181113224545.pamrezqxy2ay62k7@pburton-laptop>
+References: <20181109185953.xwyelyqnygbskkxk@angband.pl>
+ <20181109190304.8573-1-kilobyte@angband.pl>
+ <20181109190304.8573-5-kilobyte@angband.pl>
+In-Reply-To: <20181109190304.8573-5-kilobyte@angband.pl>
 Accept-Language: en-US
 Content-Language: en-US
 X-MS-Has-Attach: 
 X-MS-TNEF-Correlator: 
-x-ms-exchange-transport-fromentityheader: Hosted
-x-originating-ip: [10.177.49.166]
+x-clientproxiedby: MWHPR19CA0066.namprd19.prod.outlook.com
+ (2603:10b6:300:94::28) To BN6PR2201MB1266.namprd22.prod.outlook.com
+ (2603:10b6:405:23::14)
+user-agent: NeoMutt/20180716
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=pburton@wavecomp.com; 
+x-ms-exchange-messagesentrepresentingtype: 1
+x-originating-ip: [4.16.204.77]
+x-ms-publictraffictype: Email
+x-microsoft-exchange-diagnostics: 1; BN6PR2201MB1059;
+ 6:Pr08n6iPZrN8zN+5JkHT+MtgAuc5lxe+UUjOlU9frsI1OdMKJIhx3hsQDiD4lwRI5eXgLeXJuiWUCu566qJR+3xC6aGuSzozRN+GImlweE3beQSppzyfhLnupSzT8B4y1be9KoByB5t65XtczQLrB2frmuCef5Adxcv/5xzEDCpAd636bUqiiol4VHEehf+uGAfIrolkg7RWtxv4nFvtG3TuLC82yehA7hmXgx7nQLpFHZ4UawAYdt3jgJuLrPK71aKny8BZtOAROyiVRRz9aMmYzTlpNa1+kI+nmVQ1JutIF+aBN7CsRm+v5bypsyqBNy4Nghe9egP7dCZzy3YnwcVEy5mWn7Xdw6E9AqrGz0p2cudt0aG7stEhBT7zoOCTsEQbOlA809cRN1yWAqSUXG+9yJpgojvsvocECidUtp9yr//iyZOMBbOttVIFmByaWUicvGH+pkrsy60M7ff5lw==;
+ 5:sWk+b10D/0G9wFFIyhKHT0CEVf73J7vTU1LywSukcw9ZlnDQKXWr6BvXHV1CYeX5Fj9Fr7FOQ3QOeDy+FNgI7Zyr5Ws4wlzDvTIgTPJoQ1u5HVgnVDou4b/fzR9Ay2T5nHz37ZByjGK/UCm8n0ajFezZdqwJzLeF7+B3vjQ0X8U=;
+ 7:o7/9uWPjVleRXz7svySoxfGqs22cE8981qLoaEBZGzzQg5FzkU+FR8DUnQtLKthG6NyrID5DzsQvtHvHSwlGdZAXIgk66UaWlo9oWHyp7/TgYJp0x+QQ8qSsEXTi3yDWW/SeQW+mmg5ujGLoc5PJag==
+x-ms-office365-filtering-correlation-id: bdf20cfc-0c0c-47ff-2d5c-08d649b9c0eb
+x-microsoft-antispam: BCL:0; PCL:0;
+ RULEID:(2390060)(7020095)(4652040)(7021145)(8989299)(5600074)(711020)(4534185)(7022145)(4603075)(4627221)(201702281549075)(8990200)(7048125)(7024125)(7027125)(7023125)(2017052603328)(7153060)(7193020);
+ SRVR:BN6PR2201MB1059; 
+x-ms-traffictypediagnostic: BN6PR2201MB1059:
+x-microsoft-antispam-prvs: <BN6PR2201MB1059B02B2E409812E19ED6C1C1C20@BN6PR2201MB1059.namprd22.prod.outlook.com>
+x-exchange-antispam-report-test: UriScan:;
+x-ms-exchange-senderadcheck: 1
+x-exchange-antispam-report-cfa-test: BCL:0; PCL:0;
+ RULEID:(6040522)(2401047)(8121501046)(5005006)(3231382)(944501410)(52105112)(3002001)(10201501046)(93006095)(148016)(149066)(150057)(6041310)(20161123562045)(20161123564045)(20161123560045)(20161123558120)(2016111802025)(6043046)(201708071742011)(7699051)(76991095);
+ SRVR:BN6PR2201MB1059; BCL:0; PCL:0; RULEID:; SRVR:BN6PR2201MB1059; 
+x-forefront-prvs: 085551F5A8
+x-forefront-antispam-report: SFV:NSPM;
+ SFS:(10019020)(7916004)(39840400004)(376002)(396003)(366004)(346002)(136003)(199004)(189003)(52116002)(9686003)(6512007)(7406005)(7416002)(2900100001)(229853002)(99286004)(105586002)(53936002)(6506007)(305945005)(106356001)(186003)(26005)(508600001)(386003)(39060400002)(76176011)(7736002)(102836004)(8936002)(33896004)(6436002)(5660300001)(6486002)(14454004)(97736004)(68736007)(33716001)(8676002)(1076002)(3846002)(25786009)(6116002)(71190400001)(71200400001)(81166006)(81156014)(4326008)(66066001)(2906002)(6246003)(6916009)(11346002)(54906003)(44832011)(256004)(316002)(42882007)(58126008)(476003)(446003)(486006);
+ DIR:OUT; SFP:1102; SCL:1; SRVR:BN6PR2201MB1059;
+ H:BN6PR2201MB1266.namprd22.prod.outlook.com; FPR:; SPF:None; LANG:en;
+ PTR:InfoNoRecords; A:1; MX:1; 
+received-spf: None (protection.outlook.com: wavecomp.com does not designate
+ permitted sender hosts)
+x-microsoft-antispam-message-info: 08ia23I/mbtO69ty+PPs/t/kjD83rwvhawv5Coze7mm1+YdVUYVt+ptB+YjPBf2rLJ/DFJAgnzaezz/DaWoZmVzduV8N1Hnqv6y2dYQ4QCMuWBvLMZZdtuiF26q7Ji37xaSKPJSBcX0TJ8Taq3s7/Xq3+H4Bt8QYlMRj++ioRTun8gLvZiZSXZajlZ0MjaEhtb7wizIVTNtvT1//uPS5/BrVYo8OGMsiAmQDUJb08qpXp0V4Oi/ga7LbiP4SBH2vIS7UabcRICkEv37jAqyi8S7giqlslg1YwwuvA1IlPXZASc0Dg6lQliie57cCPfUSYwvYYqqFo8aDjQkJPdsSVLWN2iSnDwBylCgBFSZUAqA=
+spamdiagnosticoutput: 1:99
+spamdiagnosticmetadata: NSPM
 Content-Type: text/plain; charset="us-ascii"
+Content-ID: <BFC22DE242750042A617941EFADC35F1@namprd22.prod.outlook.com>
 Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-11-13_16:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1811130201
+X-OriginatorOrg: mips.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: bdf20cfc-0c0c-47ff-2d5c-08d649b9c0eb
+X-MS-Exchange-CrossTenant-originalarrivaltime: 13 Nov 2018 22:45:54.2013 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 463607d3-1db3-40a0-8a29-970c56230104
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BN6PR2201MB1059
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -126,77 +128,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Shyam.Iyer@dell.com, sbobroff@linux.ibm.com, gregkh@linuxfoundation.org,
- linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, keith.busch@intel.com,
- lukas@wunner.de, oohall@gmail.com, mr.nuke.me@gmail.com, Austin.Bolen@dell.com,
- linuxppc-dev@lists.ozlabs.org, jonathan.derrick@intel.com
+Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
+ Rich Felker <dalias@libc.org>,
+ "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
+ James Hogan <jhogan@kernel.org>, Heiko Carstens <heiko.carstens@de.ibm.com>,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ Max Filippov <jcmvbkbc@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Jonas Bonn <jonas@southpole.se>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Helge Deller <deller@gmx.de>,
+ "x86@kernel.org" <x86@kernel.org>, Russell King <linux@armlinux.org.uk>,
+ Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
+ "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ Nick Terrell <terrelln@fb.com>,
+ "openrisc@lists.librecores.org" <openrisc@lists.librecores.org>,
+ Borislav Petkov <bp@alien8.de>, Stafford Horne <shorne@gmail.com>,
+ Chris Zankel <chris@zankel.net>,
+ "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>,
+ "linux-m68k@lists.linux-m68k.org" <linux-m68k@lists.linux-m68k.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Ralf Baechle <ralf@linux-mips.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 11/12/2018 11:02 PM, Bjorn Helgaas wrote:=0A=
-> =0A=
-> [EXTERNAL EMAIL]=0A=
-> Please report any suspicious attachments, links, or requests for sensitiv=
-e information.=0A=
-> =0A=
-> =0A=
-> [+cc Jon, for related VMD firmware-first error enable issue]=0A=
-> =0A=
-> On Mon, Nov 12, 2018 at 08:05:41PM +0000, Alex_Gagniuc@Dellteam.com wrote=
-:=0A=
->> On 11/11/2018 11:50 PM, Oliver O'Halloran wrote:=0A=
->>> On Thu, 2018-11-08 at 23:06 +0000, Alex_Gagniuc@Dellteam.com wrote:=0A=
-> =0A=
->>>> But it's not the firmware that crashes. It's linux as a result of a=0A=
->>>> fatal error message from the firmware. And we can't fix that because F=
-FS=0A=
->>>> handling requires that the system reboots [1].=0A=
->>>=0A=
->>> Do we know the exact circumsances that result in firmware requesting a=
-=0A=
->>> reboot? If it happen on any PCIe error I don't see what we can do to=0A=
->>> prevent that beyond masking UEs entirely (are we even allowed to do=0A=
->>> that on FFS systems?).=0A=
->>=0A=
->> Pull a drive out at an angle, push two drives in at the same time, pull=
-=0A=
->> out a drive really slow. If an error is even reported to the OS depends=
-=0A=
->> on PD state, and proprietary mechanisms and logic in the HW and FW. OS=
-=0A=
->> is not supposed to mask errors (touch AER bits) on FFS.=0A=
-> =0A=
-> PD?=0A=
-=0A=
-Presence Detect=0A=
-=0A=
-> Do you think Linux observes the rule about not touching AER bits on=0A=
-> FFS?  I'm not sure it does.  I'm not even sure what section of the=0A=
-> spec is relevant.=0A=
-=0A=
-I haven't found any place where linux breaks this rule. I'm very =0A=
-confident that, unless otherwise instructed, we follow this rule.=0A=
-=0A=
-> The whole issue of firmware-first, the mechanism by which firmware=0A=
-> gets control, the System Error enables in Root Port Root Control=0A=
-> registers, etc., is very murky to me.  Jon has a sort of similar issue=0A=
-> with VMD where he needs to leave System Errors enabled instead of=0A=
-> disabling them as we currently do.=0A=
-=0A=
-Well, OS gets control via _OSC method, and based on that it should =0A=
-touch/not touch the AER bits. The bits that get set/cleared come from =0A=
-_HPX method, and there's a more about the FFS described in ACPI spec. It =
-=0A=
-seems that if platform, wants to enable VMD, it should pass the correct =0A=
-bits via _HPX. I'm curious to know in what new twisted way FFS doesn't =0A=
-work as intended.=0A=
-=0A=
-Alex=0A=
-=0A=
-> Bjorn=0A=
-> =0A=
-> [1] https://lore.kernel.org/linux-pci/20181029210651.GB13681@bhelgaas-gla=
-ptop.roam.corp.google.com=0A=
-> =0A=
-=0A=
+Hi Adam,
+
+On Fri, Nov 09, 2018 at 08:02:52PM +0100, Adam Borowski wrote:
+> @@ -122,7 +104,6 @@ $(obj)/vmlinux.its.S: $(addprefix $(srctree)/arch/mip=
+s/$(PLATFORM)/,$(ITS_INPUTS
+> =20
+>  targets +=3D vmlinux.its
+>  targets +=3D vmlinux.gz.its
+> -targets +=3D vmlinux.bz2.its
+>  targets +=3D vmlinux.lzmo.its
+>  targets +=3D vmlinux.lzo.its
+
+It looks to me like this "vmlinux.lzmo.its" was a typo & ought to have
+been vmlinux.lzma.its, and thus ought to be removed.
+
+Apart from that I'm fine with this in general:
+
+    Acked-by: Paul Burton <paul.burton@mips.com>
+
+Thanks,
+    Paul
