@@ -2,93 +2,62 @@ Return-Path: <SRS0=INWp=NY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C12BC43441
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 09:19:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BDF4DC43441
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 09:49:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 05CCE22507
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 09:19:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 05CCE22507
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 16340224E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 09:49:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 16340224E0
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=nod.at
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42vMXF37PFzF3GV
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 20:19:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42vNBR4NdDzF3dK
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 20:49:19 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=nod.at
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=srikar@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=permerror (mailfrom) smtp.mailfrom=nod.at
+ (client-ip=195.201.40.130; helo=lithops.sigma-star.at;
+ envelope-from=richard@nod.at; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=nod.at
+Received: from lithops.sigma-star.at (lithops.sigma-star.at [195.201.40.130])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42vLvs06xMzF232
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 19:51:36 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wAD8cbrg107374
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 03:39:12 -0500
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2nqtmbhwex-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 03:39:12 -0500
-Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srikar@linux.vnet.ibm.com>;
- Tue, 13 Nov 2018 08:39:10 -0000
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
- by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 13 Nov 2018 08:39:06 -0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wAD8d5x461735138
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Tue, 13 Nov 2018 08:39:05 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 603E1A4053;
- Tue, 13 Nov 2018 08:39:05 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A8D17A4059;
- Tue, 13 Nov 2018 08:39:02 +0000 (GMT)
-Received: from linux.vnet.ibm.com (unknown [9.126.150.29])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with SMTP;
- Tue, 13 Nov 2018 08:39:02 +0000 (GMT)
-Date: Tue, 13 Nov 2018 14:09:02 +0530
-From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-To: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/numa: Perform full re-add of CPU for PRRN/VPHN
- topology update
-References: <7c3c840a-8a79-b639-185c-ce6d2e378850@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42vN8T55ZtzF3M9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 20:47:34 +1100 (AEDT)
+Received: from localhost (localhost [127.0.0.1])
+ by lithops.sigma-star.at (Postfix) with ESMTP id 4F00F606C474;
+ Tue, 13 Nov 2018 10:47:29 +0100 (CET)
+Received: from lithops.sigma-star.at ([127.0.0.1])
+ by localhost (lithops.sigma-star.at [127.0.0.1]) (amavisd-new, port 10032)
+ with ESMTP id BR7WZ334hGnj; Tue, 13 Nov 2018 10:47:28 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by lithops.sigma-star.at (Postfix) with ESMTP id 666ED606D487;
+ Tue, 13 Nov 2018 10:47:28 +0100 (CET)
+Received: from lithops.sigma-star.at ([127.0.0.1])
+ by localhost (lithops.sigma-star.at [127.0.0.1]) (amavisd-new, port 10026)
+ with ESMTP id rlrJzKEpNQCi; Tue, 13 Nov 2018 10:47:28 +0100 (CET)
+Received: from blindfold.localnet (unknown [82.150.214.1])
+ by lithops.sigma-star.at (Postfix) with ESMTPSA id 86CC2606D481;
+ Tue, 13 Nov 2018 10:47:27 +0100 (CET)
+From: Richard Weinberger <richard@nod.at>
+To: Masahiro Yamada <yamada.masahiro@socionext.com>
+Subject: Re: [PATCH 1/2] um: remove -fno-unit-at-a-time workaround for pre-4.0
+ GCC
+Date: Tue, 13 Nov 2018 10:47:27 +0100
+Message-ID: <2624257.jg98z2FPBI@blindfold>
+In-Reply-To: <1541990120-9643-2-git-send-email-yamada.masahiro@socionext.com>
+References: <1541990120-9643-1-git-send-email-yamada.masahiro@socionext.com>
+ <1541990120-9643-2-git-send-email-yamada.masahiro@socionext.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <7c3c840a-8a79-b639-185c-ce6d2e378850@linux.vnet.ibm.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
-X-TM-AS-GCONF: 00
-x-cbid: 18111308-0012-0000-0000-000002C9AE78
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18111308-0013-0000-0000-000020FEBA9E
-Message-Id: <20181113083902.GA24474@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-11-13_06:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1807170000 definitions=main-1811130082
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,42 +69,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Cc: Rob Herring <robh@kernel.org>, Kees Cook <keescook@chromium.org>,
- Nicholas Piggin <npiggin@gmail.com>, Al Viro <viro@zeniv.linux.org.uk>,
- Juliet Kim <minkim@us.ibm.com>, Paul Mackerras <paulus@samba.org>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
- Oliver O'Halloran <oohall@gmail.com>,
- "open list:LINUX FOR POWERPC \(32-BIT AND 64-BIT\)"
- <linuxppc-dev@lists.ozlabs.org>, Guenter Roeck <linux@roeck-us.net>,
- Corentin Labbe <clabbe@baylibre.com>
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org,
+ Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+ "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-> -static void topology_work_fn(struct work_struct *work)
-> -{
-> -	rebuild_sched_domains();
-> +	if (changed)
-> +		rebuild_sched_domains();
->  }
->  static DECLARE_WORK(topology_work, topology_work_fn);
+Am Montag, 12. November 2018, 03:35:19 CET schrieb Masahiro Yamada:
+> Commit cafa0010cd51 ("Raise the minimum required gcc version to 4.6")
+> bumped the minimum GCC version to 4.6 for all architectures.
 > 
-> @@ -1553,7 +1424,6 @@ void __init shared_proc_topology_init(void)
->  	if (lppaca_shared_proc(get_lppaca())) {
->  		bitmap_fill(cpumask_bits(&cpu_associativity_changes_mask),
->  			    nr_cpumask_bits);
-> -		numa_update_cpu_topology(false);
-
-Shouldn't we be calling topology_schedule_update() here?
-
->  	}
->  }
+> '$(call cc-option,-fno-unit-at-a-time)' is now dead code since
+> '$(cc-version) -lt 0400' is always false.
 > 
+> Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+> ---
+> 
+>  arch/x86/Makefile.um | 8 ++------
+>  1 file changed, 2 insertions(+), 6 deletions(-)
+> 
+> diff --git a/arch/x86/Makefile.um b/arch/x86/Makefile.um
+> index 91085a0..577976b 100644
+> --- a/arch/x86/Makefile.um
+> +++ b/arch/x86/Makefile.um
+> @@ -26,12 +26,8 @@ cflags-y += $(call cc-option,-mpreferred-stack-boundary=2)
+>  # an unresolved reference.
+>  cflags-y += -ffreestanding
+>  
+> -# Disable unit-at-a-time mode on pre-gcc-4.0 compilers, it makes gcc use
+> -# a lot more stack due to the lack of sharing of stacklots.  Also, gcc
+> -# 4.3.0 needs -funit-at-a-time for extern inline functions.
+> -KBUILD_CFLAGS += $(shell if [ $(cc-version) -lt 0400 ] ; then \
+> -			echo $(call cc-option,-fno-unit-at-a-time); \
+> -			else echo $(call cc-option,-funit-at-a-time); fi ;)
+> +# gcc 4.3.0 needs -funit-at-a-time for extern inline functions.
+> +KBUILD_CFLAGS += $(call cc-option,-funit-at-a-time)
+
+Acked-by: Richard Weinberger <richard@nod.at>
+
+Thanks,
+//richard
 
 
--- 
-Thanks and Regards
-Srikar Dronamraju
 
