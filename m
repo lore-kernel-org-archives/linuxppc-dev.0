@@ -2,23 +2,24 @@ Return-Path: <SRS0=INWp=NY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.0 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E9C1C43441
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 08:31:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E8A9C43441
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 08:33:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 180982245E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 08:31:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 180982245E
+	by mail.kernel.org (Postfix) with ESMTPS id B7CDE2245E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 08:33:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B7CDE2245E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42vLSs0rl6zF3L9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 19:31:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42vLVv5l39zF3Cb
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 19:33:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
@@ -27,18 +28,20 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Received: from ozlabs.ru (unknown [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 42vLPC6g8nzF37r
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 19:28:31 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 42vLPH0StqzF3Df
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 19:28:35 +1100 (AEDT)
 Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 480EEAE80024;
- Tue, 13 Nov 2018 03:28:27 -0500 (EST)
+ by ozlabs.ru (Postfix) with ESMTP id C7030AE80046;
+ Tue, 13 Nov 2018 03:28:30 -0500 (EST)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v3 00/22] powerpc/powernv/npu,
- vfio: NVIDIA V100 + P9 passthrough
-Date: Tue, 13 Nov 2018 19:28:01 +1100
-Message-Id: <20181113082823.2440-1-aik@ozlabs.ru>
+Subject: [PATCH kernel v3 01/22] powerpc/ioda/npu: Call skiboot's hot reset
+ hook when disabling NPU2
+Date: Tue, 13 Nov 2018 19:28:02 +1100
+Message-Id: <20181113082823.2440-2-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20181113082823.2440-1-aik@ozlabs.ru>
+References: <20181113082823.2440-1-aik@ozlabs.ru>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,84 +66,58 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+The skiboot firmware has a hot reset handler which fences the NVIDIA V100
+GPU RAM on Witherspoons and makes accesses no-op instead of throwing HMIs:
+https://github.com/open-power/skiboot/commit/fca2b2b839a67
 
-This is for passing through NVIDIA V100 GPUs on POWER9 systems.
-7/7 and https://github.com/aik/linux/commit/f41f5666d27b31c1
-have the details of hardware setup.
+Now we are going to pass V100 via VFIO which most certainly involves
+KVM guests which are often terminated without getting a chance to offline
+GPU RAM so we end up with a running machine with misconfigured memory.
+Accessing this memory produces hardware management interrupts (HMI)
+which bring the host down.
 
-This implements support for NVIDIA V100 GPU with coherent memory and
-NPU/ATS support available in the POWER9 CPU. The aim is to support
-unmodified vendor driver in the guest.
+To suppress HMIs, this wires up this hot reset hook to vfio_pci_disable()
+via pci_disable_device() which switches NPU2 to a safe mode and prevents
+HMIs.
 
-This is pushed to github:
-https://github.com/aik/qemu/tree/nv2-stage4
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Acked-by: Alistair Popple <alistair@popple.id.au>
+---
+Changes:
+v2:
+* updated the commit log
+---
+ arch/powerpc/platforms/powernv/pci-ioda.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-The host and guest kernel tree is pushed on github as well:
-https://github.com/aik/linux/tree/nv2-stage4
-
-Skiboot bits are here:
-https://github.com/aik/skiboot/tree/nv2-stage4
-
-Please comment. Thanks.
-
-
-
-Alexey Kardashevskiy (22):
-  powerpc/ioda/npu: Call skiboot's hot reset hook when disabling NPU2
-  powerpc/mm/iommu/vfio_spapr_tce: Change mm_iommu_get to reference a
-    region
-  powerpc/mm/iommu: Make mm_iommu_new() fail on existing regions
-  powerpc/vfio/iommu/kvm: Do not pin device memory
-  powerpc/powernv/npu: Add helper to access struct npu for NPU device
-  powerpc/powernv: Detach npu struct from pnv_phb
-  powerpc/powernv/npu: Move OPAL calls away from context manipulation
-  powerpc/pseries/iommu: Allow dynamic window to start from zero
-  powerpc/pseries/iommu: Force default DMA window removal
-  powerpc/pseries/iommu: Use memory@ nodes in max RAM address
-    calculation
-  powerpc/pseries/npu: Enable platform support
-  powerpc/pseries: Remove IOMMU API support for non-LPAR systems
-  powerpc/powernv/pseries: Rework device adding to IOMMU groups
-  powerpc/iommu_api: Move IOMMU groups setup to a single place
-  powerpc/powernv: Reference iommu_table while it is linked to a group
-  powerpc/powernv: Add purge cache OPAL call
-  powerpc/powernv/npu: Convert NPU IOMMU helpers to
-    iommu_table_group_ops
-  powerpc/powernv/npu: Add compound IOMMU groups
-  powerpc/powernv/npu: Add release_ownership hook
-  vfio_pci: Allow mapping extra regions
-  vfio_pci: Allow regions to add own capabilities
-  vfio_pci: Add NVIDIA GV100GL [Tesla V100 SXM2] [10de:1db1] subdriver
-
- drivers/vfio/pci/Makefile                     |   1 +
- arch/powerpc/include/asm/iommu.h              |  17 +-
- arch/powerpc/include/asm/mmu_context.h        |   9 +-
- arch/powerpc/include/asm/opal-api.h           |   3 +-
- arch/powerpc/include/asm/opal.h               |   1 +
- arch/powerpc/include/asm/pci.h                |   4 +
- arch/powerpc/platforms/powernv/pci.h          |  30 +-
- drivers/vfio/pci/trace.h                      | 102 ++++
- drivers/vfio/pci/vfio_pci_private.h           |   8 +
- include/uapi/linux/vfio.h                     |  26 +
- arch/powerpc/kernel/iommu.c                   |  67 +--
- arch/powerpc/kvm/book3s_64_vio.c              |  18 +-
- arch/powerpc/mm/mmu_context_iommu.c           | 100 +++-
- arch/powerpc/platforms/powernv/npu-dma.c      | 531 +++++++++++++++---
- arch/powerpc/platforms/powernv/opal.c         |   1 +
- arch/powerpc/platforms/powernv/pci-ioda-tce.c |   3 +-
- arch/powerpc/platforms/powernv/pci-ioda.c     | 229 ++++----
- arch/powerpc/platforms/powernv/pci.c          |  43 +-
- arch/powerpc/platforms/pseries/iommu.c        | 134 +++--
- arch/powerpc/platforms/pseries/pci.c          |   6 +
- drivers/vfio/pci/vfio_pci.c                   |  54 +-
- drivers/vfio/pci/vfio_pci_nvlink2.c           | 433 ++++++++++++++
- drivers/vfio/vfio_iommu_spapr_tce.c           |  65 ++-
- .../powerpc/platforms/powernv/opal-wrappers.S |   1 +
- drivers/vfio/pci/Kconfig                      |   6 +
- 25 files changed, 1497 insertions(+), 395 deletions(-)
- create mode 100644 drivers/vfio/pci/trace.h
- create mode 100644 drivers/vfio/pci/vfio_pci_nvlink2.c
-
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 3d2d8fa..c78c204 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -3676,6 +3676,15 @@ static void pnv_pci_release_device(struct pci_dev *pdev)
+ 		pnv_ioda_release_pe(pe);
+ }
+ 
++static void pnv_npu_disable_device(struct pci_dev *pdev)
++{
++	struct eeh_dev *edev = pci_dev_to_eeh_dev(pdev);
++	struct eeh_pe *eehpe = edev ? edev->pe : NULL;
++
++	if (eehpe && eeh_ops && eeh_ops->reset)
++		eeh_ops->reset(eehpe, EEH_RESET_HOT);
++}
++
+ static void pnv_pci_ioda_shutdown(struct pci_controller *hose)
+ {
+ 	struct pnv_phb *phb = hose->private_data;
+@@ -3720,6 +3729,7 @@ static const struct pci_controller_ops pnv_npu_ioda_controller_ops = {
+ 	.reset_secondary_bus	= pnv_pci_reset_secondary_bus,
+ 	.dma_set_mask		= pnv_npu_dma_set_mask,
+ 	.shutdown		= pnv_pci_ioda_shutdown,
++	.disable_device		= pnv_npu_disable_device,
+ };
+ 
+ static const struct pci_controller_ops pnv_npu_ocapi_ioda_controller_ops = {
 -- 
 2.17.1
 
