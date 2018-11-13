@@ -3,22 +3,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C68A9C43441
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 08:40:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F04D4C43441
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 08:42:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4DAC9206BA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 08:40:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4DAC9206BA
+	by mail.kernel.org (Postfix) with ESMTPS id 708CE20854
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 08:42:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 708CE20854
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42vLgY24ZwzF3Cb
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 19:40:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42vLjb2WdlzF3Cx
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 19:42:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
@@ -27,17 +27,16 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Received: from ozlabs.ru (unknown [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 42vLPw5QmzzF3Hs
+ by lists.ozlabs.org (Postfix) with ESMTP id 42vLPw6kmyzF3Km
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 19:29:08 +1100 (AEDT)
 Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 530C7AE80048;
- Tue, 13 Nov 2018 03:28:34 -0500 (EST)
+ by ozlabs.ru (Postfix) with ESMTP id C70EAAE80217;
+ Tue, 13 Nov 2018 03:29:04 -0500 (EST)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v3 02/22] powerpc/mm/iommu/vfio_spapr_tce: Change
- mm_iommu_get to reference a region
-Date: Tue, 13 Nov 2018 19:28:03 +1100
-Message-Id: <20181113082823.2440-3-aik@ozlabs.ru>
+Subject: [PATCH kernel v3 11/22] powerpc/pseries/npu: Enable platform support
+Date: Tue, 13 Nov 2018 19:28:12 +1100
+Message-Id: <20181113082823.2440-12-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20181113082823.2440-1-aik@ozlabs.ru>
 References: <20181113082823.2440-1-aik@ozlabs.ru>
@@ -65,188 +64,48 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Normally mm_iommu_get() is supposed to add a reference and
-mm_iommu_put() to remove it. However historically mm_iommu_find() does
-the referencing and mm_iommu_get() is doing allocation and referencing.
+We already changed NPU API for GPUs to not to call OPAL and the remaining
+bit is initializing NPU structures.
 
-We are going to add another helper to preregister device memory so
-instead of having mm_iommu_new() which pre-registers the normal memory
-and references the region, we need separate helpers for pre-registering
-and referencing.
-
-This renames:
-- mm_iommu_get to mm_iommu_new;
-- mm_iommu_find to mm_iommu_get.
-
-To make the mm_iommu_get name reflect what it is supposed to do, this
-changes mm_iommu_get() to reference the region so from now on for every
-mm_iommu_get() we need a matching mm_iommu_put().
+This uses a new QEMU capability which marks NPU-enabled vPHBs as
+"IBM,npu-vphb" and initializes an NPU structure per vPHB.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
-Changes:
-v2:
-* merged 2 patches into one
----
- arch/powerpc/include/asm/mmu_context.h |  4 +--
- arch/powerpc/mm/mmu_context_iommu.c    | 13 ++++++---
- drivers/vfio/vfio_iommu_spapr_tce.c    | 37 +++++++++++++++++---------
- 3 files changed, 35 insertions(+), 19 deletions(-)
+ arch/powerpc/platforms/pseries/pci.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-index 0381394..2d6b00d 100644
---- a/arch/powerpc/include/asm/mmu_context.h
-+++ b/arch/powerpc/include/asm/mmu_context.h
-@@ -21,7 +21,7 @@ struct mm_iommu_table_group_mem_t;
+diff --git a/arch/powerpc/platforms/pseries/pci.c b/arch/powerpc/platforms/pseries/pci.c
+index 41d8a4d..a50d5e4 100644
+--- a/arch/powerpc/platforms/pseries/pci.c
++++ b/arch/powerpc/platforms/pseries/pci.c
+@@ -29,6 +29,7 @@
+ #include <asm/pci-bridge.h>
+ #include <asm/prom.h>
+ #include <asm/ppc-pci.h>
++#include <asm/pci.h>
+ #include "pseries.h"
  
- extern int isolate_lru_page(struct page *page);	/* from internal.h */
- extern bool mm_iommu_preregistered(struct mm_struct *mm);
--extern long mm_iommu_get(struct mm_struct *mm,
-+extern long mm_iommu_new(struct mm_struct *mm,
- 		unsigned long ua, unsigned long entries,
- 		struct mm_iommu_table_group_mem_t **pmem);
- extern long mm_iommu_put(struct mm_struct *mm,
-@@ -32,7 +32,7 @@ extern struct mm_iommu_table_group_mem_t *mm_iommu_lookup(struct mm_struct *mm,
- 		unsigned long ua, unsigned long size);
- extern struct mm_iommu_table_group_mem_t *mm_iommu_lookup_rm(
- 		struct mm_struct *mm, unsigned long ua, unsigned long size);
--extern struct mm_iommu_table_group_mem_t *mm_iommu_find(struct mm_struct *mm,
-+extern struct mm_iommu_table_group_mem_t *mm_iommu_get(struct mm_struct *mm,
- 		unsigned long ua, unsigned long entries);
- extern long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
- 		unsigned long ua, unsigned int pageshift, unsigned long *hpa);
-diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_context_iommu.c
-index 1d5161f..babc6ad 100644
---- a/arch/powerpc/mm/mmu_context_iommu.c
-+++ b/arch/powerpc/mm/mmu_context_iommu.c
-@@ -89,7 +89,7 @@ bool mm_iommu_preregistered(struct mm_struct *mm)
- }
- EXPORT_SYMBOL_GPL(mm_iommu_preregistered);
+ #if 0
+@@ -237,6 +238,8 @@ static void __init pSeries_request_regions(void)
  
--long mm_iommu_get(struct mm_struct *mm, unsigned long ua, unsigned long entries,
-+long mm_iommu_new(struct mm_struct *mm, unsigned long ua, unsigned long entries,
- 		struct mm_iommu_table_group_mem_t **pmem)
+ void __init pSeries_final_fixup(void)
  {
- 	struct mm_iommu_table_group_mem_t *mem;
-@@ -202,7 +202,7 @@ long mm_iommu_get(struct mm_struct *mm, unsigned long ua, unsigned long entries,
- 
- 	return ret;
- }
--EXPORT_SYMBOL_GPL(mm_iommu_get);
-+EXPORT_SYMBOL_GPL(mm_iommu_new);
- 
- static void mm_iommu_unpin(struct mm_iommu_table_group_mem_t *mem)
- {
-@@ -318,21 +318,26 @@ struct mm_iommu_table_group_mem_t *mm_iommu_lookup_rm(struct mm_struct *mm,
- 	return ret;
- }
- 
--struct mm_iommu_table_group_mem_t *mm_iommu_find(struct mm_struct *mm,
-+struct mm_iommu_table_group_mem_t *mm_iommu_get(struct mm_struct *mm,
- 		unsigned long ua, unsigned long entries)
- {
- 	struct mm_iommu_table_group_mem_t *mem, *ret = NULL;
- 
-+	mutex_lock(&mem_list_mutex);
++	struct pci_controller *hose;
 +
- 	list_for_each_entry_rcu(mem, &mm->context.iommu_group_mem_list, next) {
- 		if ((mem->ua == ua) && (mem->entries == entries)) {
- 			ret = mem;
-+			++mem->used;
- 			break;
- 		}
- 	}
+ 	pSeries_request_regions();
  
-+	mutex_unlock(&mem_list_mutex);
-+
- 	return ret;
- }
--EXPORT_SYMBOL_GPL(mm_iommu_find);
-+EXPORT_SYMBOL_GPL(mm_iommu_get);
- 
- long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
- 		unsigned long ua, unsigned int pageshift, unsigned long *hpa)
-diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-index ad63725..56db071 100644
---- a/drivers/vfio/vfio_iommu_spapr_tce.c
-+++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-@@ -151,12 +151,13 @@ static long tce_iommu_unregister_pages(struct tce_container *container,
- {
- 	struct mm_iommu_table_group_mem_t *mem;
- 	struct tce_iommu_prereg *tcemem;
--	bool found = false;
-+	bool found;
-+	long ret;
- 
- 	if ((vaddr & ~PAGE_MASK) || (size & ~PAGE_MASK))
- 		return -EINVAL;
- 
--	mem = mm_iommu_find(container->mm, vaddr, size >> PAGE_SHIFT);
-+	mem = mm_iommu_get(container->mm, vaddr, size >> PAGE_SHIFT);
- 	if (!mem)
- 		return -ENOENT;
- 
-@@ -168,9 +169,13 @@ static long tce_iommu_unregister_pages(struct tce_container *container,
- 	}
- 
- 	if (!found)
--		return -ENOENT;
-+		ret = -ENOENT;
-+	else
-+		ret = tce_iommu_prereg_free(container, tcemem);
- 
--	return tce_iommu_prereg_free(container, tcemem);
-+	mm_iommu_put(container->mm, mem);
-+
-+	return ret;
+ 	eeh_probe_devices();
+@@ -246,6 +249,9 @@ void __init pSeries_final_fixup(void)
+ 	ppc_md.pcibios_sriov_enable = pseries_pcibios_sriov_enable;
+ 	ppc_md.pcibios_sriov_disable = pseries_pcibios_sriov_disable;
+ #endif
++	list_for_each_entry(hose, &hose_list, list_node)
++		if (of_device_is_compatible(hose->dn, "IBM,npu-vphb"))
++			pnv_npu2_init(hose);
  }
  
- static long tce_iommu_register_pages(struct tce_container *container,
-@@ -185,22 +190,24 @@ static long tce_iommu_register_pages(struct tce_container *container,
- 			((vaddr + size) < vaddr))
- 		return -EINVAL;
- 
--	mem = mm_iommu_find(container->mm, vaddr, entries);
-+	mem = mm_iommu_get(container->mm, vaddr, entries);
- 	if (mem) {
- 		list_for_each_entry(tcemem, &container->prereg_list, next) {
--			if (tcemem->mem == mem)
--				return -EBUSY;
-+			if (tcemem->mem == mem) {
-+				ret = -EBUSY;
-+				goto put_exit;
-+			}
- 		}
-+	} else {
-+		ret = mm_iommu_new(container->mm, vaddr, entries, &mem);
-+		if (ret)
-+			return ret;
- 	}
- 
--	ret = mm_iommu_get(container->mm, vaddr, entries, &mem);
--	if (ret)
--		return ret;
--
- 	tcemem = kzalloc(sizeof(*tcemem), GFP_KERNEL);
- 	if (!tcemem) {
--		mm_iommu_put(container->mm, mem);
--		return -ENOMEM;
-+		ret = -ENOMEM;
-+		goto put_exit;
- 	}
- 
- 	tcemem->mem = mem;
-@@ -209,6 +216,10 @@ static long tce_iommu_register_pages(struct tce_container *container,
- 	container->enabled = true;
- 
- 	return 0;
-+
-+put_exit:
-+	mm_iommu_put(container->mm, mem);
-+	return ret;
- }
- 
- static bool tce_page_is_contained(struct page *page, unsigned page_shift)
+ /*
 -- 
 2.17.1
 
