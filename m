@@ -2,76 +2,79 @@ Return-Path: <SRS0=INWp=NY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 23324C43441
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 05:05:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2624FC43441
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 05:20:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6C9F12245E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 05:05:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5BDD92245E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 05:20:21 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="uCbCeWPr"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6C9F12245E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="VRzB+YME"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5BDD92245E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42vFtP3PTKzF3LV
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 16:05:01 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42vGD3230hzF3Lk
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 16:20:19 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="uCbCeWPr";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nifty.com header.i=@nifty.com header.b="VRzB+YME";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=helgaas@kernel.org; receiver=<UNKNOWN>)
+ spf=softfail (mailfrom) smtp.mailfrom=socionext.com
+ (client-ip=210.131.2.82; helo=conssluserg-03.nifty.com;
+ envelope-from=yamada.masahiro@socionext.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="uCbCeWPr"; 
+ dmarc=none (p=none dis=none) header.from=socionext.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=nifty.com header.i=@nifty.com header.b="VRzB+YME"; 
  dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42vFql6n9gzF1yn
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 16:02:43 +1100 (AEDT)
-Received: from localhost (unknown [64.114.255.114])
+Received: from conssluserg-03.nifty.com (conssluserg-03.nifty.com
+ [210.131.2.82])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id F224920817;
- Tue, 13 Nov 2018 05:02:40 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1542085361;
- bh=kfgSEg80hSw6L+6zKKxwF+SG2m0X6DrimMnxrBJP9K8=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=uCbCeWPrUbMg2INXAk36+TLO0/VxfMj8lv9cwwnV1gIdVGuv/gRDeL9NwaVoctlI3
- mBmqZyTyBlh3jRxkSYWKlkPGhR4ofrEDekQKLN/iBVIbwbpfXXzMu257pGB6nxkJYq
- H+QGRvlSsb0yRISggPyOg9tGi3g2ZHRkLUsIE1O0=
-Date: Mon, 12 Nov 2018 23:02:40 -0600
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Alex_Gagniuc@Dellteam.com
-Subject: Re: [PATCH v2] PCI/MSI: Don't touch MSI bits when the PCI device is
- disconnected
-Message-ID: <20181113050240.GA182139@google.com>
-References: <20181107234257.GC41183@google.com>
- <20181108200855.GE41183@google.com>
- <20181108220117.GA11466@kroah.com>
- <20181108223258.GD2932@localhost.localdomain>
- <20181108224255.GA20619@kroah.com>
- <20d68e586fff4dcca5616d5056f6fc21@ausx13mps321.AMER.DELL.COM>
- <20181108225109.GA3023@kroah.com>
- <16bf9d14bc5f4a90b2b88dd2eb165186@ausx13mps321.AMER.DELL.COM>
- <5da8d8aa9f3818af649b1ac547bc4e6062626ddf.camel@gmail.com>
- <df85813c9860463d85f6c302dfe07b12@ausx13mps321.AMER.DELL.COM>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42vG9N5l82zF3L3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 16:17:58 +1100 (AEDT)
+Received: from mail-ua1-f48.google.com (mail-ua1-f48.google.com
+ [209.85.222.48]) (authenticated)
+ by conssluserg-03.nifty.com with ESMTP id wAD5HH8W007228
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 14:17:17 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conssluserg-03.nifty.com wAD5HH8W007228
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
+ s=dec2015msa; t=1542086238;
+ bh=eIepQQZqGhbrF7uUL6KRHAz7aUR5FXmFTRzaAQhPa8E=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=VRzB+YMEqY0Fj2p6s4F32pXrZvW5LKr90C/SF8Yik0+644VsmQJtivWyGYCOeOqWY
+ IqFQhE7Laii82Pd7TYuOisZxWUwrTWC+2TQhnozOYWYoKvNc/u/LI0M3XhyJ04Z0pY
+ /t8tSyYINyj0MDWdtK6FINmAL40B59RjCC86+THvajMs2VPLOhmppoFBdXSIErZSXk
+ CXTPV2GDYKd+BUQHzwH97kCNHKB/cPqUzpuO4etQvpOkMw3sc/Y+Is6NtODBjEt6bw
+ KvSHQ/uwiaTI0oV8tdmR1NCeFYpX1hXFBE0IZeJ3qlVnT+jllFB7q6DTi3Km4rwMqD
+ lIoZA3aQN+Fsg==
+X-Nifty-SrcIP: [209.85.222.48]
+Received: by mail-ua1-f48.google.com with SMTP id s26so3895892uao.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Nov 2018 21:17:17 -0800 (PST)
+X-Gm-Message-State: AGRZ1gLA5/8aYly3KiCtEUnC92Y2mWTRlfe7qinDAqxJ0ESN3BMnEMsd
+ u/cNllIKf4IHkIQf0+BWhy65Yt4vFBlJnIkK7ek=
+X-Google-Smtp-Source: AJdET5dj5QGaE7Ecx7U/WJGwqMdrASdN7yj/X8TFiar4CCe07FyYChwKdkxv8dTEcporgtJvQ2g8T+Fc5HfGZrWQtM0=
+X-Received: by 2002:ab0:3402:: with SMTP id z2mr1741892uap.6.1542086236514;
+ Mon, 12 Nov 2018 21:17:16 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <df85813c9860463d85f6c302dfe07b12@ausx13mps321.AMER.DELL.COM>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+References: <20181112042116.5271-1-joel@jms.id.au>
+ <20181112042116.5271-2-joel@jms.id.au>
+ <CAKwvOdnBMFYXvS+GH0cUiczgkpLWtBinPRjkTJBQGrKjxktUUg@mail.gmail.com>
+In-Reply-To: <CAKwvOdnBMFYXvS+GH0cUiczgkpLWtBinPRjkTJBQGrKjxktUUg@mail.gmail.com>
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+Date: Tue, 13 Nov 2018 14:16:40 +0900
+X-Gmail-Original-Message-ID: <CAK7LNASE=xCaE-q_Jke5aDd9aF=dJ+ThUjORLa0i_m3e6UzUig@mail.gmail.com>
+Message-ID: <CAK7LNASE=xCaE-q_Jke5aDd9aF=dJ+ThUjORLa0i_m3e6UzUig@mail.gmail.com>
+Subject: Re: [PATCH v2 1/2] Makefile: Export clang toolchain variables
+To: Nick Desaulniers <ndesaulniers@google.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,46 +86,68 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Shyam.Iyer@dell.com, sbobroff@linux.ibm.com, gregkh@linuxfoundation.org,
- linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, keith.busch@intel.com,
- lukas@wunner.de, oohall@gmail.com, mr.nuke.me@gmail.com, Austin.Bolen@dell.com,
- linuxppc-dev@lists.ozlabs.org, jonathan.derrick@intel.com
+Cc: Michal Marek <michal.lkml@markovi.net>,
+ Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Joel Stanley <joel@jms.id.au>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ dja@axtens.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-[+cc Jon, for related VMD firmware-first error enable issue]
+On Tue, Nov 13, 2018 at 3:56 AM Nick Desaulniers
+<ndesaulniers@google.com> wrote:
+>
+> On Sun, Nov 11, 2018 at 8:21 PM Joel Stanley <joel@jms.id.au> wrote:
+> >
+> > The powerpc makefile will use these in it's boot wrapper.
+> >
+> > Signed-off-by: Joel Stanley <joel@jms.id.au>
+> > ---
+> >  Makefile | 1 +
+> >  1 file changed, 1 insertion(+)
+> >
+> > diff --git a/Makefile b/Makefile
+> > index 09278330282d..840efe6eb54c 100644
+> > --- a/Makefile
+> > +++ b/Makefile
+> > @@ -495,6 +495,7 @@ endif
+> >  ifneq ($(GCC_TOOLCHAIN),)
+> >  CLANG_FLAGS    += --gcc-toolchain=$(GCC_TOOLCHAIN)
+> >  endif
+> > +export CLANG_FLAGS
+> >  CLANG_FLAGS    += -no-integrated-as
+>
+> Does this export CLANG_FLAGS before `-no-integrated-as` is set?
 
-On Mon, Nov 12, 2018 at 08:05:41PM +0000, Alex_Gagniuc@Dellteam.com wrote:
-> On 11/11/2018 11:50 PM, Oliver O'Halloran wrote:
-> > On Thu, 2018-11-08 at 23:06 +0000, Alex_Gagniuc@Dellteam.com wrote:
+This does not matter.
 
-> >> But it's not the firmware that crashes. It's linux as a result of a
-> >> fatal error message from the firmware. And we can't fix that because FFS
-> >> handling requires that the system reboots [1].
-> > 
-> > Do we know the exact circumsances that result in firmware requesting a
-> > reboot? If it happen on any PCIe error I don't see what we can do to
-> > prevent that beyond masking UEs entirely (are we even allowed to do
-> > that on FFS systems?).
-> 
-> Pull a drive out at an angle, push two drives in at the same time, pull 
-> out a drive really slow. If an error is even reported to the OS depends 
-> on PD state, and proprietary mechanisms and logic in the HW and FW. OS 
-> is not supposed to mask errors (touch AER bits) on FFS.
+For example, KBUILD_CFLAGS accumulates several compiler flags
+after it is marked as 'export'.
 
-PD?
 
-Do you think Linux observes the rule about not touching AER bits on
-FFS?  I'm not sure it does.  I'm not even sure what section of the
-spec is relevant.
+> Either way, I think it would be clearer to export this after all the
+> relevant flags are set.
 
-The whole issue of firmware-first, the mechanism by which firmware
-gets control, the System Error enables in Root Port Root Control
-registers, etc., is very murky to me.  Jon has a sort of similar issue
-with VMD where he needs to leave System Errors enabled instead of
-disabling them as we currently do.
+OK. It is just a matter of preference,
+but I will move the export line below
+when I pick up this patch set.
 
-Bjorn
 
-[1] https://lore.kernel.org/linux-pci/20181029210651.GB13681@bhelgaas-glaptop.roam.corp.google.com
+
+> >  KBUILD_CFLAGS  += $(CLANG_FLAGS)
+> >  KBUILD_AFLAGS  += $(CLANG_FLAGS)
+> > --
+> > 2.19.1
+> >
+>
+>
+> --
+> Thanks,
+> ~Nick Desaulniers
+
+
+
+-- 
+Best Regards
+Masahiro Yamada
