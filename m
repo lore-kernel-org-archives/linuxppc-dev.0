@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BD227C43441
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 09:14:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C0CBC43441
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 09:17:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 471E720868
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 09:14:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 471E720868
+	by mail.kernel.org (Postfix) with ESMTPS id D970E20868
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 09:17:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D970E20868
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42vMPh12qbzF3DW
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 20:14:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42vMT85cDJzF3DW
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 20:17:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
@@ -27,16 +27,17 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Received: from ozlabs.ru (unknown [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 42vLQy4FKLzF3FW
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 19:30:02 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 42vLRC6tCjzF3Km
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 19:30:15 +1100 (AEDT)
 Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 76722AE80337;
- Tue, 13 Nov 2018 03:29:28 -0500 (EST)
+ by ozlabs.ru (Postfix) with ESMTP id C151BAE80490;
+ Tue, 13 Nov 2018 03:29:41 -0500 (EST)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v3 18/22] powerpc/powernv/npu: Add compound IOMMU groups
-Date: Tue, 13 Nov 2018 19:28:19 +1100
-Message-Id: <20181113082823.2440-19-aik@ozlabs.ru>
+Subject: [PATCH kernel v3 22/22] vfio_pci: Add NVIDIA GV100GL [Tesla V100
+ SXM2] [10de:1db1] subdriver
+Date: Tue, 13 Nov 2018 19:28:23 +1100
+Message-Id: <20181113082823.2440-23-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20181113082823.2440-1-aik@ozlabs.ru>
 References: <20181113082823.2440-1-aik@ozlabs.ru>
@@ -64,649 +65,767 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-At the moment powernv registers an IOMMU group for each PE. There is
-an exception though - NPU (an emulated PCI bridge representing an NVLink);
-powernv attaches these bridges to the GPU IOMMU group which becomes
-a master.
+POWER9 Witherspoon machines come with 4 or 6 V100 GPUs which are not
+pluggable PCIe devices but implement PCIe links for config space and MMIO.
+In addition to that the GPUs are interconnected to each other and also
+have direct links to the P9 CPU. The links are NVLink2 and provide direct
+access to the system RAM for GPUs via NPU (an NVLink2 "proxy" on P9 chip).
+These systems also support ATS (address translation services) which is
+a part of the NVLink2 protocol. Such GPUs also share on-board RAM
+(16GB in tested config) to the system via the same NVLink2 so a CPU has
+cache-coherent access to a GPU RAM.
 
-Now we have POWER9 systems with GPUs connected to each other directly,
-bypassing PCI. At the moment powernv does not control these links so
-it has to put such interconnected GPUs to the same IOMMU group which
-means that the old scheme with a GPU as a master won't work - there will
-be up to 3 GPUs in such group.
+This exports GPU RAM to the userspace as a new PCI region. This
+preregisters the new memory as device memory as it might be used for DMA.
+This inserts pfns from the fault handler as the GPU memory is not onlined
+until the NVIDIA driver is loaded and trained the links so doing this
+earlier produces low level errors which we fence in the firmware so
+it does not hurt the host system but still better to avoid.
 
-This introduces a npu_comp struct which represents a compound IOMMU
-group made of multiple PEs. This converts the existing NVLink1 code to
-use the new scheme. From now on, each PE must have a valid
-iommu_table_group_ops which will either be called directly (a single PE
-group) or indirectly from a compound group.
+This exports ATSD (Address Translation Shootdown) register of NPU which
+allows the guest to invalidate TLB. The register conveniently occupies
+a single 64k page. Since NPU maps the GPU memory, it has a "tgt" property
+(which is an abbreviated host system bus address) and tells the GPU its
+own system address. This exports the "tgt" as a capability to let
+the guest driver conglomerate the routing information so each GPU knows
+how to get directly to the other GPUs. This also adds the "tgt" capability
+to a GPU to allow the userspace to find out the NVLinks corresponding
+to a specific GPU.
 
-This moves IOMMU group registration for NPU-connected GPUs to npu-dma.c.
-For POWER8, this stores a new compound group pointer in a PE (so a GPU
-is still a master); for POWER9 the new group pointer is stored in an NPU.
+For ATS to work, the nest MMU (an NVIDIA block in a P9 CPU) needs to
+know LPID (a logical partition ID or a KVM guest hardware ID in other
+words) and PID (a memory context ID of a userspace process, not to be
+confused with a linux pid). This assigns a GPU to LPID in the NPU and
+this is why this adds a listener for KVM on an IOMMU group. A PID comes
+via NVLink from a GPU and NPU uses a PID wildcard to pass it through.
+
+This requires coherent memory and ATSD to be available on the host as
+the GPU vendor only supports configurations with both features enabled
+and other configurations are known not to work. Because of this and
+because of the ways the features are advertised to the host system
+(which is a device tree with very platform specific properties),
+this requires enabled POWERNV platform.
+
+This hardcodes the NVLink2 support for specific vendor and device IDs
+as there is no reliable way of knowing about coherent memory and ATS
+support. The GPU has an unique vendor PCIe capability 0x23 but it was
+confirmed that it does not provide required information (and it is still
+undisclosed what it actually does).
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- arch/powerpc/include/asm/pci.h            |   1 +
- arch/powerpc/platforms/powernv/pci.h      |   7 +
- arch/powerpc/platforms/powernv/npu-dma.c  | 286 ++++++++++++++++++++--
- arch/powerpc/platforms/powernv/pci-ioda.c | 173 +++----------
- 4 files changed, 308 insertions(+), 159 deletions(-)
+Changes:
+v3:
+* reworded the commit log about tgt
+* added tracepoints (do we want them enabled for entire vfio-pci?)
+* added code comments
+* added write|mmap flags to the new regions
+* auto enabled VFIO_PCI_NVLINK2 config option
+* added 'tgt' capability to a GPU so QEMU can recreate ibm,npu and ibm,gpu
+references; there are required by the NVIDIA driver
+* keep notifier registered only for short time
+---
+ drivers/vfio/pci/Makefile           |   1 +
+ drivers/vfio/pci/trace.h            | 102 +++++++
+ drivers/vfio/pci/vfio_pci_private.h |   2 +
+ include/uapi/linux/vfio.h           |  26 ++
+ drivers/vfio/pci/vfio_pci.c         |  39 ++-
+ drivers/vfio/pci/vfio_pci_nvlink2.c | 433 ++++++++++++++++++++++++++++
+ drivers/vfio/pci/Kconfig            |   6 +
+ 7 files changed, 607 insertions(+), 2 deletions(-)
+ create mode 100644 drivers/vfio/pci/trace.h
+ create mode 100644 drivers/vfio/pci/vfio_pci_nvlink2.c
 
-diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
-index baf2886..0c72f18 100644
---- a/arch/powerpc/include/asm/pci.h
-+++ b/arch/powerpc/include/asm/pci.h
-@@ -132,5 +132,6 @@ extern struct pci_dev *pnv_pci_get_npu_dev(struct pci_dev *gpdev, int index);
- extern int pnv_npu2_init(struct pci_controller *hose);
- extern int pnv_npu2_map_lpar_dev(struct pci_dev *gpdev, unsigned int lparid,
- 		unsigned long msr);
-+extern int pnv_npu2_unmap_lpar_dev(struct pci_dev *gpdev);
+diff --git a/drivers/vfio/pci/Makefile b/drivers/vfio/pci/Makefile
+index 76d8ec0..9662c06 100644
+--- a/drivers/vfio/pci/Makefile
++++ b/drivers/vfio/pci/Makefile
+@@ -1,5 +1,6 @@
  
- #endif /* __ASM_POWERPC_PCI_H */
-diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index cf9f748..aef4bb5 100644
---- a/arch/powerpc/platforms/powernv/pci.h
-+++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -62,6 +62,7 @@ struct pnv_ioda_pe {
+ vfio-pci-y := vfio_pci.o vfio_pci_intrs.o vfio_pci_rdwr.o vfio_pci_config.o
+ vfio-pci-$(CONFIG_VFIO_PCI_IGD) += vfio_pci_igd.o
++vfio-pci-$(CONFIG_VFIO_PCI_NVLINK2) += vfio_pci_nvlink2.o
  
- 	/* "Base" iommu table, ie, 4K TCEs, 32-bit DMA */
- 	struct iommu_table_group table_group;
-+	struct npu_comp		*npucomp;
- 
- 	/* 64-bit TCE bypass region */
- 	bool			tce_bypass_enabled;
-@@ -201,6 +202,8 @@ extern void pnv_teardown_msi_irqs(struct pci_dev *pdev);
- extern struct pnv_ioda_pe *pnv_ioda_get_pe(struct pci_dev *dev);
- extern void pnv_set_msi_irq_chip(struct pnv_phb *phb, unsigned int virq);
- extern void pnv_pci_ioda2_set_bypass(struct pnv_ioda_pe *pe, bool enable);
-+extern unsigned long pnv_pci_ioda2_get_table_size(__u32 page_shift,
-+		__u64 window_size, __u32 levels);
- extern int pnv_eeh_post_init(void);
- 
- extern void pe_level_printk(const struct pnv_ioda_pe *pe, const char *level,
-@@ -216,6 +219,10 @@ extern void pe_level_printk(const struct pnv_ioda_pe *pe, const char *level,
- extern void pnv_npu_try_dma_set_bypass(struct pci_dev *gpdev, bool bypass);
- extern void pnv_pci_ioda2_tce_invalidate_entire(struct pnv_phb *phb, bool rm);
- extern struct pnv_ioda_pe *pnv_pci_npu_setup_iommu(struct pnv_ioda_pe *npe);
-+extern struct iommu_table_group *pnv_try_setup_npu_table_group(
-+		struct pnv_ioda_pe *pe);
-+extern struct iommu_table_group *pnv_npu_compound_attach(
-+		struct pnv_ioda_pe *pe);
- 
- /* pci-ioda-tce.c */
- #define POWERNV_IOMMU_DEFAULT_LEVELS	1
-diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
-index 1792c7e..2231f4c 100644
---- a/arch/powerpc/platforms/powernv/npu-dma.c
-+++ b/arch/powerpc/platforms/powernv/npu-dma.c
-@@ -317,31 +317,6 @@ static struct iommu_table_group_ops pnv_pci_npu_ops = {
- 	.unset_window = pnv_npu_unset_window,
- 	.take_ownership = pnv_npu_take_ownership,
+ obj-$(CONFIG_VFIO_PCI) += vfio-pci.o
+diff --git a/drivers/vfio/pci/trace.h b/drivers/vfio/pci/trace.h
+new file mode 100644
+index 0000000..b80d2d3
+--- /dev/null
++++ b/drivers/vfio/pci/trace.h
+@@ -0,0 +1,102 @@
++/* SPDX-License-Identifier: GPL-2.0+ */
++/*
++ * VFIO PCI mmap/mmap_fault tracepoints
++ *
++ * Copyright (C) 2018 IBM Corp.  All rights reserved.
++ *     Author: Alexey Kardashevskiy <aik@ozlabs.ru>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#undef TRACE_SYSTEM
++#define TRACE_SYSTEM vfio_pci
++
++#if !defined(_TRACE_VFIO_PCI_H) || defined(TRACE_HEADER_MULTI_READ)
++#define _TRACE_VFIO_PCI_H
++
++#include <linux/tracepoint.h>
++
++TRACE_EVENT(vfio_pci_nvgpu_mmap_fault,
++	TP_PROTO(struct pci_dev *pdev, unsigned long hpa, unsigned long ua,
++			vm_fault_t ret),
++	TP_ARGS(pdev, hpa, ua, ret),
++
++	TP_STRUCT__entry(
++		__field(const char *, name)
++		__field(unsigned long, hpa)
++		__field(unsigned long, ua)
++		__field(int, ret)
++	),
++
++	TP_fast_assign(
++		__entry->name = dev_name(&pdev->dev),
++		__entry->hpa = hpa;
++		__entry->ua = ua;
++		__entry->ret = ret;
++	),
++
++	TP_printk("%s: %lx -> %lx ret=%d", __entry->name, __entry->hpa,
++			__entry->ua, __entry->ret)
++);
++
++TRACE_EVENT(vfio_pci_nvgpu_mmap,
++	TP_PROTO(struct pci_dev *pdev, unsigned long hpa, unsigned long ua,
++			unsigned long size, int ret),
++	TP_ARGS(pdev, hpa, ua, size, ret),
++
++	TP_STRUCT__entry(
++		__field(const char *, name)
++		__field(unsigned long, hpa)
++		__field(unsigned long, ua)
++		__field(unsigned long, size)
++		__field(int, ret)
++	),
++
++	TP_fast_assign(
++		__entry->name = dev_name(&pdev->dev),
++		__entry->hpa = hpa;
++		__entry->ua = ua;
++		__entry->size = size;
++		__entry->ret = ret;
++	),
++
++	TP_printk("%s: %lx -> %lx size=%lx ret=%d", __entry->name, __entry->hpa,
++			__entry->ua, __entry->size, __entry->ret)
++);
++
++TRACE_EVENT(vfio_pci_npu2_mmap,
++	TP_PROTO(struct pci_dev *pdev, unsigned long hpa, unsigned long ua,
++			unsigned long size, int ret),
++	TP_ARGS(pdev, hpa, ua, size, ret),
++
++	TP_STRUCT__entry(
++		__field(const char *, name)
++		__field(unsigned long, hpa)
++		__field(unsigned long, ua)
++		__field(unsigned long, size)
++		__field(int, ret)
++	),
++
++	TP_fast_assign(
++		__entry->name = dev_name(&pdev->dev),
++		__entry->hpa = hpa;
++		__entry->ua = ua;
++		__entry->size = size;
++		__entry->ret = ret;
++	),
++
++	TP_printk("%s: %lx -> %lx size=%lx ret=%d", __entry->name, __entry->hpa,
++			__entry->ua, __entry->size, __entry->ret)
++);
++
++#endif /* _TRACE_SUBSYS_H */
++
++#undef TRACE_INCLUDE_PATH
++#define TRACE_INCLUDE_PATH .
++#undef TRACE_INCLUDE_FILE
++#define TRACE_INCLUDE_FILE trace
++
++/* This part must be outside protection */
++#include <trace/define_trace.h>
+diff --git a/drivers/vfio/pci/vfio_pci_private.h b/drivers/vfio/pci/vfio_pci_private.h
+index 93c1738..7639241 100644
+--- a/drivers/vfio/pci/vfio_pci_private.h
++++ b/drivers/vfio/pci/vfio_pci_private.h
+@@ -163,4 +163,6 @@ static inline int vfio_pci_igd_init(struct vfio_pci_device *vdev)
+ 	return -ENODEV;
+ }
+ #endif
++extern int vfio_pci_nvdia_v100_nvlink2_init(struct vfio_pci_device *vdev);
++extern int vfio_pci_ibm_npu2_init(struct vfio_pci_device *vdev);
+ #endif /* VFIO_PCI_PRIVATE_H */
+diff --git a/include/uapi/linux/vfio.h b/include/uapi/linux/vfio.h
+index 8131028..53a4061 100644
+--- a/include/uapi/linux/vfio.h
++++ b/include/uapi/linux/vfio.h
+@@ -353,6 +353,20 @@ struct vfio_region_gfx_edid {
+ #define VFIO_DEVICE_GFX_LINK_STATE_DOWN  2
  };
--
--struct pnv_ioda_pe *pnv_pci_npu_setup_iommu(struct pnv_ioda_pe *npe)
--{
--	struct pnv_phb *phb = npe->phb;
--	struct pci_bus *pbus = phb->hose->bus;
--	struct pci_dev *npdev, *gpdev = NULL, *gptmp;
--	struct pnv_ioda_pe *gpe = get_gpu_pci_dev_and_pe(npe, &gpdev);
--
--	if (!gpe || !gpdev)
--		return NULL;
--
--	npe->table_group.ops = &pnv_pci_npu_ops;
--
--	list_for_each_entry(npdev, &pbus->devices, bus_list) {
--		gptmp = pnv_pci_get_gpu_dev(npdev);
--
--		if (gptmp != gpdev)
--			continue;
--
--		pe_info(gpe, "Attached NPU %s\n", dev_name(&npdev->dev));
--		iommu_group_add_device(gpe->table_group.group, &npdev->dev);
--	}
--
--	return gpe;
--}
- #endif /* !CONFIG_IOMMU_API */
  
- /*
-@@ -349,6 +324,17 @@ struct pnv_ioda_pe *pnv_pci_npu_setup_iommu(struct pnv_ioda_pe *npe)
-  */
- /* Maximum possible number of ATSD MMIO registers per NPU */
- #define NV_NMMU_ATSD_REGS 8
-+#define NV_NPU_MAX_PE_NUM	16
++/* 10de vendor sub-type
++ *
++ * NVIDIA GPU NVlink2 RAM is coherent RAM mapped onto the host address space.
++ */
++#define VFIO_REGION_SUBTYPE_NVIDIA_NVLINK2_RAM	(1)
 +
 +/*
-+ * A compound NPU IOMMU group which might consist of 1 GPU + 2xNPUs (POWER8) or
-+ * up to 3 x (GPU + 2xNPUs) (POWER9).
++ * 1014 vendor sub-type
++ *
++ * IBM NPU NVlink2 ATSD (Address Translation Shootdown) register of NPU
++ * to do TLB invalidation on a GPU.
 + */
-+struct npu_comp {
-+	struct iommu_table_group table_group;
-+	int pe_num;
-+	struct pnv_ioda_pe *pe[NV_NPU_MAX_PE_NUM];
-+};
- 
- /* An NPU descriptor, valid for POWER9 only */
- struct npu {
-@@ -365,6 +351,8 @@ struct npu {
- 	struct list_head next;
- 
- 	struct pci_controller *hose;
++#define VFIO_REGION_SUBTYPE_IBM_NVLINK2_ATSD	(1)
 +
-+	struct npu_comp npucomp;
- };
+ /*
+  * The MSIX mappable capability informs that MSIX data of a BAR can be mmapped
+  * which allows direct access to non-MSIX registers which happened to be within
+@@ -363,6 +377,18 @@ struct vfio_region_gfx_edid {
+  */
+ #define VFIO_REGION_INFO_CAP_MSIX_MAPPABLE	3
  
- static LIST_HEAD(npu2_devices);
-@@ -382,6 +370,254 @@ static struct npu *npdev_to_npu(struct pci_dev *npdev)
- 	return NULL;
++/*
++ * Capability with compressed real address (aka SSA - small system address)
++ * where GPU RAM is mapped on a system bus. Used by a GPU for DMA routing.
++ */
++#define VFIO_REGION_INFO_CAP_NPU2		4
++
++struct vfio_region_info_cap_npu2 {
++	struct vfio_info_cap_header header;
++	__u64 tgt;
++	/* size is defined in VFIO_REGION_SUBTYPE_NVIDIA_NVLINK2_RAM */
++};
++
+ /**
+  * VFIO_DEVICE_GET_IRQ_INFO - _IOWR(VFIO_TYPE, VFIO_BASE + 9,
+  *				    struct vfio_irq_info)
+diff --git a/drivers/vfio/pci/vfio_pci.c b/drivers/vfio/pci/vfio_pci.c
+index 6cb70cf..f072d8e 100644
+--- a/drivers/vfio/pci/vfio_pci.c
++++ b/drivers/vfio/pci/vfio_pci.c
+@@ -224,6 +224,16 @@ static bool vfio_pci_nointx(struct pci_dev *pdev)
+ 	return false;
  }
  
-+#ifdef CONFIG_IOMMU_API
-+static long pnv_npu_peers_create_table_userspace(
-+		struct iommu_table_group *table_group,
-+		int num, __u32 page_shift, __u64 window_size, __u32 levels,
-+		struct iommu_table **ptbl)
++int __weak vfio_pci_nvdia_v100_nvlink2_init(struct vfio_pci_device *vdev)
 +{
-+	struct npu_comp *npucomp = container_of(table_group, struct npu_comp,
-+			table_group);
-+
-+	if (!npucomp->pe_num || !npucomp->pe[0] ||
-+			!npucomp->pe[0]->table_group.ops ||
-+			!npucomp->pe[0]->table_group.ops->create_table)
-+		return -EFAULT;
-+
-+	return npucomp->pe[0]->table_group.ops->create_table(
-+			&npucomp->pe[0]->table_group, num, page_shift,
-+			window_size, levels, ptbl);
++	return -ENODEV;
 +}
 +
-+static long pnv_npu_peers_set_window(struct iommu_table_group *table_group,
-+		int num, struct iommu_table *tbl)
++int __weak vfio_pci_ibm_npu2_init(struct vfio_pci_device *vdev)
 +{
-+	int i, j;
-+	long ret = 0;
-+	struct npu_comp *npucomp = container_of(table_group, struct npu_comp,
-+			table_group);
++	return -ENODEV;
++}
 +
-+	for (i = 0; i < npucomp->pe_num; ++i) {
-+		struct pnv_ioda_pe *pe = npucomp->pe[i];
-+
-+		if (!pe->table_group.ops->set_window)
-+			continue;
-+
-+		ret = pe->table_group.ops->set_window(&pe->table_group,
-+				num, tbl);
-+		if (ret)
-+			break;
-+	}
-+
-+	if (ret) {
-+		for (j = 0; j < i; ++j) {
-+			struct pnv_ioda_pe *pe = npucomp->pe[j];
-+
-+			if (!pe->table_group.ops->unset_window)
-+				continue;
-+
-+			ret = pe->table_group.ops->unset_window(
-+					&pe->table_group, num);
-+			if (ret)
-+				break;
+ static int vfio_pci_enable(struct vfio_pci_device *vdev)
+ {
+ 	struct pci_dev *pdev = vdev->pdev;
+@@ -302,14 +312,39 @@ static int vfio_pci_enable(struct vfio_pci_device *vdev)
+ 		if (ret) {
+ 			dev_warn(&vdev->pdev->dev,
+ 				 "Failed to setup Intel IGD regions\n");
+-			vfio_pci_disable(vdev);
+-			return ret;
++			goto disable_exit;
 +		}
-+	} else {
-+		table_group->tables[num] = iommu_tce_table_get(tbl);
 +	}
 +
-+	return ret;
-+}
-+
-+static long pnv_npu_peers_unset_window(struct iommu_table_group *table_group,
-+		int num)
-+{
-+	int i, j;
-+	long ret = 0;
-+	struct npu_comp *npucomp = container_of(table_group, struct npu_comp,
-+			table_group);
-+
-+	for (i = 0; i < npucomp->pe_num; ++i) {
-+		struct pnv_ioda_pe *pe = npucomp->pe[i];
-+
-+		WARN_ON(npucomp->table_group.tables[num] !=
-+				table_group->tables[num]);
-+		if (!npucomp->table_group.tables[num])
-+			continue;
-+
-+		if (!pe->table_group.ops->unset_window)
-+			continue;
-+
-+		ret = pe->table_group.ops->unset_window(&pe->table_group, num);
-+		if (ret)
-+			break;
-+	}
-+
-+	if (ret) {
-+		for (j = 0; j < i; ++j) {
-+			struct pnv_ioda_pe *pe = npucomp->pe[j];
-+
-+			if (!npucomp->table_group.tables[num])
-+				continue;
-+
-+			if (!pe->table_group.ops->set_window)
-+				continue;
-+
-+			ret = pe->table_group.ops->set_window(&pe->table_group,
-+					num, table_group->tables[num]);
-+			if (ret)
-+				break;
++	if (pdev->vendor == PCI_VENDOR_ID_NVIDIA &&
++	    pdev->device == 0x1db1 &&
++	    IS_ENABLED(CONFIG_VFIO_PCI_NVLINK2)) {
++		ret = vfio_pci_nvdia_v100_nvlink2_init(vdev);
++		if (ret) {
++			dev_warn(&vdev->pdev->dev,
++				 "Failed to setup NVIDIA NV2 RAM region\n");
++			goto disable_exit;
 +		}
-+	} else if (table_group->tables[num]) {
-+		iommu_tce_table_put(table_group->tables[num]);
-+		table_group->tables[num] = NULL;
 +	}
 +
++	if (pdev->vendor == PCI_VENDOR_ID_IBM &&
++	    pdev->device == 0x04ea &&
++	    IS_ENABLED(CONFIG_VFIO_PCI_NVLINK2)) {
++		ret = vfio_pci_ibm_npu2_init(vdev);
++		if (ret) {
++			dev_warn(&vdev->pdev->dev,
++					"Failed to setup NVIDIA NV2 ATSD region\n");
++			goto disable_exit;
+ 		}
+ 	}
+ 
+ 	vfio_pci_probe_mmaps(vdev);
+ 
+ 	return 0;
++
++disable_exit:
++	vfio_pci_disable(vdev);
 +	return ret;
-+}
+ }
+ 
+ static void vfio_pci_disable(struct vfio_pci_device *vdev)
+diff --git a/drivers/vfio/pci/vfio_pci_nvlink2.c b/drivers/vfio/pci/vfio_pci_nvlink2.c
+new file mode 100644
+index 0000000..300159b
+--- /dev/null
++++ b/drivers/vfio/pci/vfio_pci_nvlink2.c
+@@ -0,0 +1,433 @@
++// SPDX-License-Identifier: GPL-2.0+
++/*
++ * VFIO PCI NVIDIA Whitherspoon GPU support a.k.a. NVLink2.
++ *
++ * Copyright (C) 2018 IBM Corp.  All rights reserved.
++ *     Author: Alexey Kardashevskiy <aik@ozlabs.ru>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * Register an on-GPU RAM region for cacheable access.
++ *
++ * Derived from original vfio_pci_igd.c:
++ * Copyright (C) 2016 Red Hat, Inc.  All rights reserved.
++ *	Author: Alex Williamson <alex.williamson@redhat.com>
++ */
 +
-+static void pnv_npu_peers_take_ownership(struct iommu_table_group *table_group)
-+{
-+	int i;
-+	struct npu_comp *npucomp = container_of(table_group, struct npu_comp,
-+			table_group);
++#include <linux/io.h>
++#include <linux/pci.h>
++#include <linux/uaccess.h>
++#include <linux/vfio.h>
++#include <linux/sched/mm.h>
++#include <linux/mmu_context.h>
++#include <asm/kvm_ppc.h>
++#include "vfio_pci_private.h"
 +
-+	for (i = 0; i < npucomp->pe_num; ++i) {
-+		struct pnv_ioda_pe *pe = npucomp->pe[i];
++#define CREATE_TRACE_POINTS
++#include "trace.h"
 +
-+		if (!pe->table_group.ops->take_ownership)
-+			continue;
-+		pe->table_group.ops->take_ownership(&pe->table_group);
-+	}
-+}
++EXPORT_TRACEPOINT_SYMBOL_GPL(vfio_pci_nvgpu_mmap_fault);
++EXPORT_TRACEPOINT_SYMBOL_GPL(vfio_pci_nvgpu_mmap);
++EXPORT_TRACEPOINT_SYMBOL_GPL(vfio_pci_npu2_mmap);
 +
-+static void pnv_npu_peers_release_ownership(
-+		struct iommu_table_group *table_group)
-+{
-+	int i;
-+	struct npu_comp *npucomp = container_of(table_group, struct npu_comp,
-+			table_group);
-+
-+	for (i = 0; i < npucomp->pe_num; ++i) {
-+		struct pnv_ioda_pe *pe = npucomp->pe[i];
-+
-+		if (!pe->table_group.ops->release_ownership)
-+			continue;
-+		pe->table_group.ops->release_ownership(&pe->table_group);
-+	}
-+}
-+
-+static struct iommu_table_group_ops pnv_npu_peers_ops = {
-+	.get_table_size = pnv_pci_ioda2_get_table_size,
-+	.create_table = pnv_npu_peers_create_table_userspace,
-+	.set_window = pnv_npu_peers_set_window,
-+	.unset_window = pnv_npu_peers_unset_window,
-+	.take_ownership = pnv_npu_peers_take_ownership,
-+	.release_ownership = pnv_npu_peers_release_ownership,
++struct vfio_pci_nvgpu_data {
++	unsigned long gpu_hpa; /* GPU RAM physical address */
++	unsigned long gpu_tgt; /* TGT address of corresponding GPU RAM */
++	unsigned long useraddr; /* GPU RAM userspace address */
++	unsigned long size; /* Size of the GPU RAM window (usually 128GB) */
++	void *base; /* GPU RAM virtual address, for emulated access */
++	struct mm_struct *mm;
++	struct mm_iommu_table_group_mem_t *mem; /* Pre-registered RAM descr. */
++	struct pci_dev *gpdev;
++	struct notifier_block group_notifier;
 +};
 +
-+static void pnv_comp_attach_table_group(struct npu_comp *npucomp,
-+		struct pnv_ioda_pe *pe)
++static size_t vfio_pci_nvgpu_rw(struct vfio_pci_device *vdev,
++		char __user *buf, size_t count, loff_t *ppos, bool iswrite)
 +{
-+	if (WARN_ON(npucomp->pe_num == NV_NPU_MAX_PE_NUM))
-+		return;
++	unsigned int i = VFIO_PCI_OFFSET_TO_INDEX(*ppos) - VFIO_PCI_NUM_REGIONS;
++	struct vfio_pci_nvgpu_data *data = vdev->region[i].data;
++	loff_t pos = *ppos & VFIO_PCI_OFFSET_MASK;
 +
-+	npucomp->pe[npucomp->pe_num] = pe;
-+	++npucomp->pe_num;
++	if (pos >= vdev->region[i].size)
++		return -EINVAL;
++
++	count = min(count, (size_t)(vdev->region[i].size - pos));
++
++	if (iswrite) {
++		if (copy_from_user(data->base + pos, buf, count))
++			return -EFAULT;
++	} else {
++		if (copy_to_user(buf, data->base + pos, count))
++			return -EFAULT;
++	}
++	*ppos += count;
++
++	return count;
 +}
 +
-+struct iommu_table_group *pnv_try_setup_npu_table_group(struct pnv_ioda_pe *pe)
++static void vfio_pci_nvgpu_release(struct vfio_pci_device *vdev,
++		struct vfio_pci_region *region)
 +{
-+	struct iommu_table_group *table_group;
-+	struct npu *npu;
-+	struct npu_comp *npucomp;
-+	struct pci_dev *gpdev = NULL;
++	struct vfio_pci_nvgpu_data *data = region->data;
++	long ret;
 +	struct pci_controller *hose;
 +	struct pci_dev *npdev;
 +
-+	list_for_each_entry(gpdev, &pe->pbus->devices, bus_list) {
-+		npdev = pnv_pci_get_npu_dev(gpdev, 0);
-+		if (npdev)
-+			break;
++	/* If there were any mappings at all... */
++	if (data->mm) {
++		ret = mm_iommu_put(data->mm, data->mem);
++		WARN_ON(ret);
++
++		mmdrop(data->mm);
 +	}
 +
-+	if (!npdev)
-+		/* It is not an NPU attached device, skip */
-+		return NULL;
++	vfio_unregister_notifier(&data->gpdev->dev, VFIO_GROUP_NOTIFY,
++			&data->group_notifier);
 +
-+	hose = pci_bus_to_host(gpdev->bus);
-+	npu = npdev_to_npu(npdev);
-+	if (npu) {
-+		table_group = &npu->npucomp.table_group;
++	npdev = pnv_pci_get_npu_dev(data->gpdev, 0);
++	hose = pci_bus_to_host(npdev->bus);
 +
-+		if (!table_group->group) {
-+			table_group->ops = &pnv_npu_peers_ops;
-+			iommu_register_group(table_group,
-+					hose->global_number,
-+					pe->pe_number);
-+		}
-+	} else {
-+		/* Create a group for 1 GPU and attached NPUs */
-+		pe->npucomp = kzalloc(sizeof(pe->npucomp), GFP_KERNEL);
-+		table_group = &pe->npucomp->table_group;
-+		table_group->ops = &pnv_npu_peers_ops;
-+		iommu_register_group(table_group, hose->global_number,
-+				pe->pe_number);
-+	}
++	pnv_npu2_unmap_lpar_dev(data->gpdev);
 +
-+	/* Steal capabilities from a GPU PE */
-+	table_group->max_dynamic_windows_supported =
-+		pe->table_group.max_dynamic_windows_supported;
-+	table_group->tce32_start = pe->table_group.tce32_start;
-+	table_group->tce32_size = pe->table_group.tce32_size;
-+	table_group->max_levels = pe->table_group.max_levels;
-+	table_group->pgsizes = pe->table_group.pgsizes;
-+
-+	npucomp = container_of(table_group, struct npu_comp, table_group);
-+	pnv_comp_attach_table_group(npucomp, pe);
-+
-+	return table_group;
++	memunmap(data->base);
++	kfree(data);
 +}
 +
-+struct iommu_table_group *pnv_npu_compound_attach(struct pnv_ioda_pe *pe)
++static vm_fault_t vfio_pci_nvgpu_mmap_fault(struct vm_fault *vmf)
 +{
-+	struct iommu_table_group *table_group;
-+	struct npu_comp *npucomp;
-+	struct pci_dev *gpdev = NULL;
-+	struct pci_dev *npdev;
-+	struct pnv_ioda_pe *gpe = get_gpu_pci_dev_and_pe(pe, &gpdev);
++	vm_fault_t ret;
++	struct vm_area_struct *vma = vmf->vma;
++	struct vfio_pci_region *region = vma->vm_private_data;
++	struct vfio_pci_nvgpu_data *data = region->data;
++	unsigned long vmf_off = (vmf->address - vma->vm_start) >> PAGE_SHIFT;
++	unsigned long nv2pg = data->gpu_hpa >> PAGE_SHIFT;
++	unsigned long vm_pgoff = vma->vm_pgoff &
++		((1U << (VFIO_PCI_OFFSET_SHIFT - PAGE_SHIFT)) - 1);
++	unsigned long pfn = nv2pg + vm_pgoff + vmf_off;
 +
-+	WARN_ON(!(pe->flags & PNV_IODA_PE_DEV));
-+	if (!gpe)
-+		return NULL;
++	ret = vmf_insert_pfn(vma, vmf->address, pfn);
++	trace_vfio_pci_nvgpu_mmap_fault(data->gpdev, pfn << PAGE_SHIFT,
++			vmf->address, ret);
++
++	return ret;
++}
++
++static const struct vm_operations_struct vfio_pci_nvgpu_mmap_vmops = {
++	.fault = vfio_pci_nvgpu_mmap_fault,
++};
++
++static int vfio_pci_nvgpu_mmap(struct vfio_pci_device *vdev,
++		struct vfio_pci_region *region, struct vm_area_struct *vma)
++{
++	long ret;
++	struct vfio_pci_nvgpu_data *data = region->data;
++
++	if (data->useraddr)
++		return -EPERM;
++
++	if (vma->vm_end - vma->vm_start > data->size)
++		return -EINVAL;
++
++	vma->vm_private_data = region;
++	vma->vm_flags |= VM_PFNMAP;
++	vma->vm_ops = &vfio_pci_nvgpu_mmap_vmops;
 +
 +	/*
-+	 * IODA2 bridges get this set up from
-+	 * pci_controller_ops::setup_bridge but NPU bridges do not
-+	 * have this hook defined so we do it here.
++	 * Calling mm_iommu_newdev() here once as the region is not
++	 * registered yet and therefore right initialization will happen now.
++	 * Other places will use mm_iommu_find() which returns
++	 * registered @mem and does not go gup().
 +	 */
-+	pe->table_group.max_dynamic_windows_supported =
-+		IOMMU_TABLE_GROUP_MAX_TABLES;
-+	pe->table_group.ops = &pnv_pci_npu_ops;
++	data->useraddr = vma->vm_start;
++	data->mm = current->mm;
 +
-+	table_group = iommu_group_get_iommudata(
-+			iommu_group_get(&gpdev->dev));
++	atomic_inc(&data->mm->mm_count);
++	ret = mm_iommu_newdev(data->mm, data->useraddr,
++			(vma->vm_end - vma->vm_start) >> PAGE_SHIFT,
++			data->gpu_hpa, &data->mem);
 +
-+	npucomp = container_of(table_group, struct npu_comp, table_group);
-+	pnv_comp_attach_table_group(npucomp, pe);
++	trace_vfio_pci_nvgpu_mmap(vdev->pdev, data->gpu_hpa, data->useraddr,
++			vma->vm_end - vma->vm_start, ret);
 +
-+	list_for_each_entry(npdev, &pe->phb->hose->bus->devices, bus_list) {
-+		struct pci_dev *gpdevtmp = pnv_pci_get_gpu_dev(npdev);
++	return ret;
++}
 +
-+		if (gpdevtmp != gpdev)
-+			continue;
++static int vfio_pci_nvgpu_add_capability(struct vfio_pci_device *vdev,
++		struct vfio_pci_region *region, struct vfio_info_cap *caps)
++{
++	struct vfio_pci_nvgpu_data *data = region->data;
++	struct vfio_region_info_cap_npu2 cap;
 +
-+		iommu_add_device(table_group, &npdev->dev);
++	cap.header.id = VFIO_REGION_INFO_CAP_NPU2;
++	cap.header.version = 1;
++	cap.tgt = data->gpu_tgt;
++
++	return vfio_info_add_capability(caps, &cap.header, sizeof(cap));
++}
++
++static const struct vfio_pci_regops vfio_pci_nvgpu_regops = {
++	.rw = vfio_pci_nvgpu_rw,
++	.release = vfio_pci_nvgpu_release,
++	.mmap = vfio_pci_nvgpu_mmap,
++	.add_capability = vfio_pci_nvgpu_add_capability,
++};
++
++static int vfio_pci_nvgpu_group_notifier(struct notifier_block *nb,
++		unsigned long action, void *opaque)
++{
++	struct kvm *kvm = opaque;
++	struct vfio_pci_nvgpu_data *data = container_of(nb,
++			struct vfio_pci_nvgpu_data,
++			group_notifier);
++
++	if (action == VFIO_GROUP_NOTIFY_SET_KVM && kvm &&
++			pnv_npu2_map_lpar_dev(data->gpdev,
++				kvm->arch.lpid, MSR_DR | MSR_PR))
++		return NOTIFY_BAD;
++
++	return NOTIFY_OK;
++}
++
++int vfio_pci_nvdia_v100_nvlink2_init(struct vfio_pci_device *vdev)
++{
++	int ret;
++	u64 reg[2];
++	u64 tgt = 0;
++	struct device_node *npu_node, *mem_node;
++	struct pci_dev *npu_dev;
++	struct vfio_pci_nvgpu_data *data;
++	uint32_t mem_phandle = 0;
++	unsigned long events = VFIO_GROUP_NOTIFY_SET_KVM;
++
++	npu_dev = pnv_pci_get_npu_dev(vdev->pdev, 0);
++	if (!npu_dev)
++		return -EINVAL;
++
++	npu_node = pci_device_to_OF_node(npu_dev);
++	if (!npu_node)
++		return -EINVAL;
++
++	if (of_property_read_u32(npu_node, "memory-region", &mem_phandle))
++		return -EINVAL;
++
++	mem_node = of_find_node_by_phandle(mem_phandle);
++	if (!mem_node)
++		return -EINVAL;
++
++	if (of_property_read_variable_u64_array(mem_node, "reg", reg,
++				ARRAY_SIZE(reg), ARRAY_SIZE(reg)) !=
++			ARRAY_SIZE(reg))
++		return -EINVAL;
++
++	if (of_property_read_u64(npu_node, "ibm,device-tgt-addr", &tgt)) {
++		dev_warn(&vdev->pdev->dev, "No ibm,device-tgt-addr found\n");
++		return -EFAULT;
 +	}
 +
-+	return table_group;
++	data = kzalloc(sizeof(*data), GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
++
++	data->gpu_hpa = reg[0];
++	data->gpu_tgt = tgt;
++	data->size = reg[1];
++	data->base = memremap(data->gpu_hpa, data->size, MEMREMAP_WB);
++	if (!data->base) {
++		ret = -ENOMEM;
++		goto free_exit;
++	}
++
++	dev_dbg(&vdev->pdev->dev, "%lx..%lx\n", data->gpu_hpa,
++			data->gpu_hpa + data->size - 1);
++
++	data->gpdev = vdev->pdev;
++	data->group_notifier.notifier_call = vfio_pci_nvgpu_group_notifier;
++
++	ret = vfio_register_notifier(&data->gpdev->dev, VFIO_GROUP_NOTIFY,
++			&events, &data->group_notifier);
++	if (ret)
++		goto free_exit;
++
++	/*
++	 * We have just set KVM, we do not need the listener anymore.
++	 * Also, keeping it registered means that if more than one GPU is
++	 * assigned, we will get several similar notifiers notifying about
++	 * the same device again which does not help with anything.
++	 */
++	vfio_unregister_notifier(&data->gpdev->dev, VFIO_GROUP_NOTIFY,
++			&data->group_notifier);
++
++	ret = vfio_pci_register_dev_region(vdev,
++			PCI_VENDOR_ID_NVIDIA | VFIO_REGION_TYPE_PCI_VENDOR_TYPE,
++			VFIO_REGION_SUBTYPE_NVIDIA_NVLINK2_RAM,
++			&vfio_pci_nvgpu_regops,
++			data->size,
++			VFIO_REGION_INFO_FLAG_READ |
++			VFIO_REGION_INFO_FLAG_WRITE |
++			VFIO_REGION_INFO_FLAG_MMAP,
++			data);
++	if (ret)
++		goto free_exit;
++
++	return 0;
++free_exit:
++	kfree(data);
++
++	return ret;
 +}
-+#endif /* CONFIG_IOMMU_API */
 +
- /* Maximum number of nvlinks per npu */
- #define NV_MAX_LINKS 6
- 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 04639ae..0e8ada5 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -190,7 +190,8 @@ static void pnv_ioda_free_pe(struct pnv_ioda_pe *pe)
- 	unsigned int pe_num = pe->pe_number;
- 
- 	WARN_ON(pe->pdev);
--
-+	WARN_ON(pe->npucomp);
-+	kfree(pe->npucomp);
- 	memset(pe, 0, sizeof(struct pnv_ioda_pe));
- 	clear_bit(pe_num, phb->ioda.pe_alloc);
- }
-@@ -1269,7 +1270,8 @@ static void pnv_ioda_setup_npu_PEs(struct pci_bus *bus)
- 		pnv_ioda_setup_npu_PE(pdev);
- }
- 
--static void pnv_ioda_setup_bus_iommu_group(struct pnv_ioda_pe *pe);
-+static void pnv_ioda_setup_bus_iommu_group(struct pnv_ioda_pe *pe,
-+		struct iommu_table_group *table_group, struct pci_bus *bus);
- 
- static void pnv_pci_ioda_setup_PEs(void)
- {
-@@ -1593,7 +1595,7 @@ static void pnv_ioda_setup_vf_PE(struct pci_dev *pdev, u16 num_vfs)
- 		mutex_unlock(&phb->ioda.pe_list_mutex);
- 
- 		pnv_pci_ioda2_setup_dma_pe(phb, pe);
--		pnv_ioda_setup_bus_iommu_group(pe);
-+		pnv_ioda_setup_bus_iommu_group(pe, &pe->table_group, NULL);
- 	}
- }
- 
-@@ -2554,7 +2556,7 @@ static long pnv_pci_ioda2_unset_window(struct iommu_table_group *table_group,
- #endif
- 
- #ifdef CONFIG_IOMMU_API
--static unsigned long pnv_pci_ioda2_get_table_size(__u32 page_shift,
-+unsigned long pnv_pci_ioda2_get_table_size(__u32 page_shift,
- 		__u64 window_size, __u32 levels)
- {
- 	unsigned long bytes = 0;
-@@ -2628,147 +2630,38 @@ static struct iommu_table_group_ops pnv_pci_ioda2_ops = {
- 	.release_ownership = pnv_ioda2_release_ownership,
- };
- 
--static int gpe_table_group_to_npe_cb(struct device *dev, void *opaque)
--{
--	struct pci_controller *hose;
--	struct pnv_phb *phb;
--	struct pnv_ioda_pe **ptmppe = opaque;
--	struct pci_dev *pdev = container_of(dev, struct pci_dev, dev);
--	struct pci_dn *pdn = pci_get_pdn(pdev);
--
--	if (!pdn || pdn->pe_number == IODA_INVALID_PE)
--		return 0;
--
--	hose = pci_bus_to_host(pdev->bus);
--	phb = hose->private_data;
--	if (phb->type != PNV_PHB_NPU_NVLINK)
--		return 0;
--
--	*ptmppe = &phb->ioda.pe_array[pdn->pe_number];
--
--	return 1;
--}
--
--/*
-- * This returns PE of associated NPU.
-- * This assumes that NPU is in the same IOMMU group with GPU and there is
-- * no other PEs.
-- */
--static struct pnv_ioda_pe *gpe_table_group_to_npe(
--		struct iommu_table_group *table_group)
--{
--	struct pnv_ioda_pe *npe = NULL;
--	int ret = iommu_group_for_each_dev(table_group->group, &npe,
--			gpe_table_group_to_npe_cb);
--
--	BUG_ON(!ret || !npe);
--
--	return npe;
--}
--
--static long pnv_pci_ioda2_npu_set_window(struct iommu_table_group *table_group,
--		int num, struct iommu_table *tbl)
--{
--	struct pnv_ioda_pe *npe = gpe_table_group_to_npe(table_group);
--	int num2 = (num == 0) ? 1 : 0;
--	long ret = pnv_pci_ioda2_set_window(table_group, num, tbl);
--
--	if (ret)
--		return ret;
--
--	if (table_group->tables[num2])
--		npe->table_group.ops->unset_window(&npe->table_group, num2);
--
--	ret = npe->table_group.ops->set_window(&npe->table_group, num, tbl);
--	if (ret) {
--		pnv_pci_ioda2_unset_window(table_group, num);
--		if (table_group->tables[num2])
--			npe->table_group.ops->set_window(&npe->table_group,
--					num2, table_group->tables[num2]);
--	}
--
--	return ret;
--}
--
--static long pnv_pci_ioda2_npu_unset_window(
--		struct iommu_table_group *table_group,
--		int num)
--{
--	struct pnv_ioda_pe *npe = gpe_table_group_to_npe(table_group);
--	int num2 = (num == 0) ? 1 : 0;
--	long ret = pnv_pci_ioda2_unset_window(table_group, num);
--
--	if (ret)
--		return ret;
--
--	if (!npe->table_group.tables[num])
--		return 0;
--
--	ret = npe->table_group.ops->unset_window(&npe->table_group, num);
--	if (ret)
--		return ret;
--
--	if (table_group->tables[num2])
--		ret = npe->table_group.ops->set_window(&npe->table_group, num2,
--				table_group->tables[num2]);
--
--	return ret;
--}
--
--static void pnv_ioda2_npu_take_ownership(struct iommu_table_group *table_group)
--{
--	struct pnv_ioda_pe *npe = gpe_table_group_to_npe(table_group);
--
--	npe->table_group.ops->take_ownership(&npe->table_group);
--	pnv_ioda2_take_ownership(table_group);
--}
--
--static struct iommu_table_group_ops pnv_pci_ioda2_npu_ops = {
--	.get_table_size = pnv_pci_ioda2_get_table_size,
--	.create_table = pnv_pci_ioda2_create_table_userspace,
--	.set_window = pnv_pci_ioda2_npu_set_window,
--	.unset_window = pnv_pci_ioda2_npu_unset_window,
--	.take_ownership = pnv_ioda2_npu_take_ownership,
--	.release_ownership = pnv_ioda2_release_ownership,
--};
--
- static void pnv_ioda_setup_bus_iommu_group_add_devices(struct pnv_ioda_pe *pe,
-+		struct iommu_table_group *table_group,
- 		struct pci_bus *bus)
- {
- 	struct pci_dev *dev;
- 
- 	list_for_each_entry(dev, &bus->devices, bus_list) {
--		iommu_add_device(&pe->table_group, &dev->dev);
-+		iommu_add_device(table_group, &dev->dev);
- 
- 		if ((pe->flags & PNV_IODA_PE_BUS_ALL) && dev->subordinate)
- 			pnv_ioda_setup_bus_iommu_group_add_devices(pe,
--					dev->subordinate);
-+					table_group, dev->subordinate);
- 	}
- }
- 
--static void pnv_ioda_setup_bus_iommu_group(struct pnv_ioda_pe *pe)
-+static void pnv_ioda_setup_bus_iommu_group(struct pnv_ioda_pe *pe,
-+		struct iommu_table_group *table_group, struct pci_bus *bus)
- {
--	if (!pnv_pci_ioda_pe_dma_weight(pe))
--		return;
- 
--	iommu_register_group(&pe->table_group, pe->phb->hose->global_number,
--			pe->pe_number);
--
--	/*
--	 * set_iommu_table_base(&pe->pdev->dev, tbl) should have been called
--	 * by now
--	 */
- 	if (pe->flags & PNV_IODA_PE_DEV)
--		iommu_add_device(&pe->table_group, &pe->pdev->dev);
--	else if (pe->flags & (PNV_IODA_PE_BUS | PNV_IODA_PE_BUS_ALL))
--		pnv_ioda_setup_bus_iommu_group_add_devices(pe, pe->pbus);
-+		iommu_add_device(table_group, &pe->pdev->dev);
++/*
++ * IBM NPU2 bridge
++ */
++struct vfio_pci_npu2_data {
++	void *base; /* ATSD register virtual address, for emulated access */
++	unsigned long mmio_atsd; /* ATSD physical address */
++	unsigned long gpu_tgt; /* TGT address of corresponding GPU RAM */
++};
 +
-+	if ((pe->flags & (PNV_IODA_PE_BUS | PNV_IODA_PE_BUS_ALL)) || bus)
-+		pnv_ioda_setup_bus_iommu_group_add_devices(pe, table_group,
-+				bus);
- }
- 
- static void pnv_pci_ioda_setup_iommu_api(void)
- {
--	struct pci_controller *hose, *tmp;
-+	struct pci_controller *hose;
- 	struct pnv_phb *phb;
--	struct pnv_ioda_pe *pe, *gpe;
-+	struct pnv_ioda_pe *pe;
- 
- 	/*
- 	 * There are 4 types of PEs:
-@@ -2790,29 +2683,41 @@ static void pnv_pci_ioda_setup_iommu_api(void)
- 		if (phb->type == PNV_PHB_NPU_NVLINK)
- 			continue;
- 
--		list_for_each_entry(pe, &phb->ioda.pe_list, list)
--			pnv_ioda_setup_bus_iommu_group(pe);
-+		list_for_each_entry(pe, &phb->ioda.pe_list, list) {
-+			struct iommu_table_group *table_group;
++static size_t vfio_pci_npu2_rw(struct vfio_pci_device *vdev,
++		char __user *buf, size_t count, loff_t *ppos, bool iswrite)
++{
++	unsigned int i = VFIO_PCI_OFFSET_TO_INDEX(*ppos) - VFIO_PCI_NUM_REGIONS;
++	struct vfio_pci_npu2_data *data = vdev->region[i].data;
++	loff_t pos = *ppos & VFIO_PCI_OFFSET_MASK;
 +
-+			table_group = pnv_try_setup_npu_table_group(pe);
-+			if (!table_group) {
-+				if (!pnv_pci_ioda_pe_dma_weight(pe))
-+					continue;
++	if (pos >= vdev->region[i].size)
++		return -EINVAL;
 +
-+				table_group = &pe->table_group;
-+				iommu_register_group(&pe->table_group,
-+						pe->phb->hose->global_number,
-+						pe->pe_number);
-+			}
-+			pnv_ioda_setup_bus_iommu_group(pe, table_group,
-+					pe->pbus);
++	count = min(count, (size_t)(vdev->region[i].size - pos));
++
++	if (iswrite) {
++		if (copy_from_user(data->base + pos, buf, count))
++			return -EFAULT;
++	} else {
++		if (copy_to_user(buf, data->base + pos, count))
++			return -EFAULT;
++	}
++	*ppos += count;
++
++	return count;
++}
++
++static int vfio_pci_npu2_mmap(struct vfio_pci_device *vdev,
++		struct vfio_pci_region *region, struct vm_area_struct *vma)
++{
++	int ret;
++	struct vfio_pci_npu2_data *data = region->data;
++	unsigned long req_len = vma->vm_end - vma->vm_start;
++
++	if (req_len != PAGE_SIZE)
++		return -EINVAL;
++
++	vma->vm_flags |= VM_PFNMAP;
++	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
++
++	ret = remap_pfn_range(vma, vma->vm_start, data->mmio_atsd >> PAGE_SHIFT,
++			req_len, vma->vm_page_prot);
++	trace_vfio_pci_npu2_mmap(vdev->pdev, data->mmio_atsd, vma->vm_start,
++			vma->vm_end - vma->vm_start, ret);
++
++	return ret;
++}
++
++static void vfio_pci_npu2_release(struct vfio_pci_device *vdev,
++		struct vfio_pci_region *region)
++{
++	struct vfio_pci_npu2_data *data = region->data;
++
++	memunmap(data->base);
++	kfree(data);
++}
++
++static int vfio_pci_npu2_add_capability(struct vfio_pci_device *vdev,
++		struct vfio_pci_region *region, struct vfio_info_cap *caps)
++{
++	struct vfio_pci_npu2_data *data = region->data;
++	struct vfio_region_info_cap_npu2 cap;
++
++	cap.header.id = VFIO_REGION_INFO_CAP_NPU2;
++	cap.header.version = 1;
++	cap.tgt = data->gpu_tgt;
++
++	return vfio_info_add_capability(caps, &cap.header, sizeof(cap));
++}
++
++static const struct vfio_pci_regops vfio_pci_npu2_regops = {
++	.rw = vfio_pci_npu2_rw,
++	.mmap = vfio_pci_npu2_mmap,
++	.release = vfio_pci_npu2_release,
++	.add_capability = vfio_pci_npu2_add_capability,
++};
++
++int vfio_pci_ibm_npu2_init(struct vfio_pci_device *vdev)
++{
++	int ret;
++	struct vfio_pci_npu2_data *data;
++	struct device_node *nvlink_dn;
++	u32 nvlink_index = 0;
++	struct pci_dev *npdev = vdev->pdev;
++	struct device_node *npu_node = pci_device_to_OF_node(npdev);
++	struct pci_controller *hose = pci_bus_to_host(npdev->bus);
++	u64 mmio_atsd = 0;
++	u64 tgt = 0;
++
++	/*
++	 * NPU2 normally has 8 ATSD registers (for concurrency) and 6 links
++	 * so we can allocate one register per link.
++	 * Since skiboot only exposes one (a bug), use this as a fallback
++	 * which is safe as we do not split GPUs attached to the same NPU.
++	 */
++	nvlink_dn = of_parse_phandle(npdev->dev.of_node, "ibm,nvlink", 0);
++	if (WARN_ON(of_property_read_u32(nvlink_dn, "ibm,npu-link-index",
++			&nvlink_index)))
++		return -ENODEV;
++
++	if (of_property_read_u64_index(hose->dn, "ibm,mmio-atsd", nvlink_index,
++			&mmio_atsd)) {
++		if (of_property_read_u64_index(hose->dn, "ibm,mmio-atsd", 0,
++					&mmio_atsd)) {
++			dev_warn(&vdev->pdev->dev, "No ATSD found\n");
++			return -EFAULT;
 +		}
- 	}
++		dev_warn(&vdev->pdev->dev, "Fallback to ATSD#0\n");
++	}
++
++	if (of_property_read_u64(npu_node, "ibm,device-tgt-addr", &tgt)) {
++		dev_warn(&vdev->pdev->dev, "No ibm,device-tgt-addr found\n");
++		return -EFAULT;
++	}
++
++	data = kzalloc(sizeof(*data), GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
++
++	data->mmio_atsd = mmio_atsd;
++	data->gpu_tgt = tgt;
++	data->base = memremap(data->mmio_atsd, SZ_64K, MEMREMAP_WT);
++	if (!data->base) {
++		ret = -ENOMEM;
++		goto free_exit;
++	}
++
++	ret = vfio_pci_register_dev_region(vdev,
++			PCI_VENDOR_ID_IBM | VFIO_REGION_TYPE_PCI_VENDOR_TYPE,
++			VFIO_REGION_SUBTYPE_IBM_NVLINK2_ATSD,
++			&vfio_pci_npu2_regops,
++			PAGE_SIZE,
++			VFIO_REGION_INFO_FLAG_READ |
++			VFIO_REGION_INFO_FLAG_WRITE |
++			VFIO_REGION_INFO_FLAG_MMAP,
++			data);
++	if (ret)
++		goto free_exit;
++
++	return 0;
++
++free_exit:
++	kfree(data);
++
++	return ret;
++}
+diff --git a/drivers/vfio/pci/Kconfig b/drivers/vfio/pci/Kconfig
+index 42dc1d3..d0f8e4f 100644
+--- a/drivers/vfio/pci/Kconfig
++++ b/drivers/vfio/pci/Kconfig
+@@ -38,3 +38,9 @@ config VFIO_PCI_IGD
+ 	  and LPC bridge config space.
  
- 	/*
- 	 * Now we have all PHBs discovered, time to add NPU devices to
- 	 * the corresponding IOMMU groups.
- 	 */
--	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
-+	list_for_each_entry(hose, &hose_list, list_node) {
- 		phb = hose->private_data;
- 
- 		if (phb->type != PNV_PHB_NPU_NVLINK)
- 			continue;
- 
--		list_for_each_entry(pe, &phb->ioda.pe_list, list) {
--			gpe = pnv_pci_npu_setup_iommu(pe);
--			if (gpe)
--				gpe->table_group.ops = &pnv_pci_ioda2_npu_ops;
--		}
-+		list_for_each_entry(pe, &phb->ioda.pe_list, list)
-+			pnv_npu_compound_attach(pe);
- 	}
- }
- #else /* !CONFIG_IOMMU_API */
--static void pnv_ioda_setup_bus_iommu_group(struct pnv_ioda_pe *pe) { }
-+static void pnv_ioda_setup_bus_iommu_group(struct pnv_ioda_pe *pe,
-+		struct iommu_table_group *table_group, struct pci_bus *bus){}
- static void pnv_pci_ioda_setup_iommu_api(void) { };
- #endif
- 
+ 	  To enable Intel IGD assignment through vfio-pci, say Y.
++
++config VFIO_PCI_NVLINK2
++	def_bool y
++	depends on VFIO_PCI && PPC_POWERNV
++	help
++	  VFIO PCI support for P9 Witherspoon machine with NVIDIA V100 GPUs
 -- 
 2.17.1
 
