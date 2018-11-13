@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CF618C43441
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 09:01:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 616E7C43441
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 09:03:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5488F22360
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 09:01:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5488F22360
+	by mail.kernel.org (Postfix) with ESMTPS id D538522360
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 09:03:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D538522360
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42vM7d1SD5zF3Tl
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 20:01:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42vM9t2PSwzF3DV
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 20:03:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
@@ -27,17 +27,16 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Received: from ozlabs.ru (unknown [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 42vLQS2CQJzF3FW
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 19:29:35 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 42vLQW0rMrzF3K3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 19:29:39 +1100 (AEDT)
 Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id C9583AE8035E;
- Tue, 13 Nov 2018 03:29:31 -0500 (EST)
+ by ozlabs.ru (Postfix) with ESMTP id 26B2AAE80381;
+ Tue, 13 Nov 2018 03:29:34 -0500 (EST)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v3 19/22] powerpc/powernv/npu: Add release_ownership
- hook
-Date: Tue, 13 Nov 2018 19:28:20 +1100
-Message-Id: <20181113082823.2440-20-aik@ozlabs.ru>
+Subject: [PATCH kernel v3 20/22] vfio_pci: Allow mapping extra regions
+Date: Tue, 13 Nov 2018 19:28:21 +1100
+Message-Id: <20181113082823.2440-21-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20181113082823.2440-1-aik@ozlabs.ru>
 References: <20181113082823.2440-1-aik@ozlabs.ru>
@@ -65,98 +64,62 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In order to make ATS work and translate addresses for arbitrary
-LPID and PID, we need to program an NPU with LPID and allow PID wildcard
-matching with a specific MSR mask.
+So far we only allowed mapping of MMIO BARs to the userspace. However
+there there are GPUs with on-board coherent RAM accessible via side
+channels which we also want to map to the userspace. The first client
+for this is NVIDIA V100 GPU with NVLink2 direct links to a POWER9
+NPU-enabled CPU; such GPUs have 16GB RAM which is coherently mapped
+to the system address space, we are going to export these as an extra
+PCI region.
 
-This implements a helper to assign a GPU to LPAR and program the NPU
-with a wildcard for PID and a helper to do clean-up. The helper takes
-MSR (only DR/HV/PR/SF bits are allowed) to program them into NPU2 for
-ATS checkout requests support.
-
-This exports pnv_npu2_unmap_lpar_dev() as following patches will use it
-from the VFIO driver.
+We already support extra PCI regions and this adds support for mapping
+them to the userspace.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 ---
- arch/powerpc/platforms/powernv/npu-dma.c | 47 ++++++++++++++++++++++++
- 1 file changed, 47 insertions(+)
+Changes:
+v2:
+* reverted one of mistakenly removed error checks
+---
+ drivers/vfio/pci/vfio_pci_private.h | 3 +++
+ drivers/vfio/pci/vfio_pci.c         | 9 +++++++++
+ 2 files changed, 12 insertions(+)
 
-diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
-index 2231f4c..48adaa5 100644
---- a/arch/powerpc/platforms/powernv/npu-dma.c
-+++ b/arch/powerpc/platforms/powernv/npu-dma.c
-@@ -289,6 +289,7 @@ static void pnv_npu_take_ownership(struct iommu_table_group *table_group)
- 			table_group);
- 	struct pnv_phb *phb = npe->phb;
- 	int64_t rc;
-+	struct pci_dev *gpdev = NULL;
- 
- 	/*
- 	 * Note: NPU has just a single TVE in the hardware which means that
-@@ -310,12 +311,28 @@ static void pnv_npu_take_ownership(struct iommu_table_group *table_group)
- 		return;
- 	}
- 	pnv_pci_ioda2_tce_invalidate_entire(npe->phb, false);
-+
-+	get_gpu_pci_dev_and_pe(npe, &gpdev);
-+	if (gpdev)
-+		pnv_npu2_unmap_lpar_dev(gpdev);
-+}
-+
-+static void pnv_npu_release_ownership(struct iommu_table_group *table_group)
-+{
-+	struct pnv_ioda_pe *npe = container_of(table_group, struct pnv_ioda_pe,
-+			table_group);
-+	struct pci_dev *gpdev = NULL;
-+
-+	get_gpu_pci_dev_and_pe(npe, &gpdev);
-+	if (gpdev)
-+		pnv_npu2_map_lpar_dev(gpdev, 0, MSR_DR | MSR_PR | MSR_HV);
- }
- 
- static struct iommu_table_group_ops pnv_pci_npu_ops = {
- 	.set_window = pnv_npu_set_window,
- 	.unset_window = pnv_npu_unset_window,
- 	.take_ownership = pnv_npu_take_ownership,
-+	.release_ownership = pnv_npu_release_ownership,
+diff --git a/drivers/vfio/pci/vfio_pci_private.h b/drivers/vfio/pci/vfio_pci_private.h
+index cde3b5d..86aab05 100644
+--- a/drivers/vfio/pci/vfio_pci_private.h
++++ b/drivers/vfio/pci/vfio_pci_private.h
+@@ -59,6 +59,9 @@ struct vfio_pci_regops {
+ 		      size_t count, loff_t *ppos, bool iswrite);
+ 	void	(*release)(struct vfio_pci_device *vdev,
+ 			   struct vfio_pci_region *region);
++	int	(*mmap)(struct vfio_pci_device *vdev,
++			struct vfio_pci_region *region,
++			struct vm_area_struct *vma);
  };
- #endif /* !CONFIG_IOMMU_API */
  
-@@ -1239,3 +1256,33 @@ void pnv_npu2_map_lpar(struct pnv_ioda_pe *gpe, unsigned long msr)
- 					ret);
- 	}
- }
+ struct vfio_pci_region {
+diff --git a/drivers/vfio/pci/vfio_pci.c b/drivers/vfio/pci/vfio_pci.c
+index fef5002..4a6f7c0 100644
+--- a/drivers/vfio/pci/vfio_pci.c
++++ b/drivers/vfio/pci/vfio_pci.c
+@@ -1130,6 +1130,15 @@ static int vfio_pci_mmap(void *device_data, struct vm_area_struct *vma)
+ 		return -EINVAL;
+ 	if ((vma->vm_flags & VM_SHARED) == 0)
+ 		return -EINVAL;
++	if (index >= VFIO_PCI_NUM_REGIONS) {
++		int regnum = index - VFIO_PCI_NUM_REGIONS;
++		struct vfio_pci_region *region = vdev->region + regnum;
 +
-+int pnv_npu2_unmap_lpar_dev(struct pci_dev *gpdev)
-+{
-+	int ret;
-+	struct pci_dev *npdev = pnv_pci_get_npu_dev(gpdev, 0);
-+	struct pci_controller *hose = pci_bus_to_host(npdev->bus);
-+	struct pnv_phb *nphb = hose->private_data;
-+
-+	dev_dbg(&gpdev->dev, "destroy context opalid=%llu\n",
-+			nphb->opal_id);
-+	ret = opal_npu_destroy_context(nphb->opal_id, 0/*__unused*/,
-+			PCI_DEVID(gpdev->bus->number, gpdev->devfn));
-+	if (ret < 0) {
-+		dev_err(&gpdev->dev, "Failed to destroy context: %d\n", ret);
-+		return ret;
++		if (region && region->ops && region->ops->mmap &&
++		    (region->flags & VFIO_REGION_INFO_FLAG_MMAP))
++			return region->ops->mmap(vdev, region, vma);
++		return -EINVAL;
 +	}
-+
-+	/* Set LPID to 0 anyway, just to be safe */
-+	dev_dbg(&gpdev->dev, "Map LPAR opalid=%llu lparid=0\n", nphb->opal_id);
-+	ret = opal_npu_map_lpar(nphb->opal_id,
-+			PCI_DEVID(gpdev->bus->number, gpdev->devfn), 0 /*LPID*/,
-+			0 /* LPCR bits */);
-+	if (ret)
-+		dev_err(&gpdev->dev, "Error %d mapping device to LPAR\n", ret);
-+
-+	opal_purge_cache();
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(pnv_npu2_unmap_lpar_dev);
+ 	if (index >= VFIO_PCI_ROM_REGION_INDEX)
+ 		return -EINVAL;
+ 	if (!vdev->bar_mmap_supported[index])
 -- 
 2.17.1
 
