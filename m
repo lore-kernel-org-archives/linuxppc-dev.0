@@ -3,22 +3,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EEE0CC43441
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 08:55:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CBBEC43441
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 08:58:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7344222360
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 08:55:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7344222360
+	by mail.kernel.org (Postfix) with ESMTPS id 1129122360
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 08:58:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1129122360
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42vM0s09cNzF24k
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 19:55:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42vM3L5V8czF38H
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 19:58:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
@@ -27,17 +27,17 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Received: from ozlabs.ru (unknown [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 42vLQJ6QlSzF3DT
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 19:29:28 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 42vLQK0crtzF3Fk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 19:29:29 +1100 (AEDT)
 Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id CC6FEAE80120;
- Tue, 13 Nov 2018 03:28:54 -0500 (EST)
+ by ozlabs.ru (Postfix) with ESMTP id 26364AE8032F;
+ Tue, 13 Nov 2018 03:29:24 -0500 (EST)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v3 08/22] powerpc/pseries/iommu: Allow dynamic window
- to start from zero
-Date: Tue, 13 Nov 2018 19:28:09 +1100
-Message-Id: <20181113082823.2440-9-aik@ozlabs.ru>
+Subject: [PATCH kernel v3 17/22] powerpc/powernv/npu: Convert NPU IOMMU
+ helpers to iommu_table_group_ops
+Date: Tue, 13 Nov 2018 19:28:18 +1100
+Message-Id: <20181113082823.2440-18-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20181113082823.2440-1-aik@ozlabs.ru>
 References: <20181113082823.2440-1-aik@ozlabs.ru>
@@ -65,68 +65,190 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-At the moment the kernel does not expect dynamic windows to ever start
-at zero on a PCI bus as PAPR requires the hypervisor to create a 32bit
-default window which starts from zero and the pseries kernel only
-creates additional windows.
+At the moment NPU IOMMU is manipulated directly from the IODA2 PCI
+PE code; PCI PE acts as a master to NPU PE. Soon we will have compound
+IOMMU groups with several PEs from several different PHB (such as
+interconnected GPUs and NPUs) so there will be no single master but
+a one big IOMMU group.
 
-However PAPR permits removing the default window and creating another
-one instead, starting from zero as well. In fact, the kernel used to
-remove the default window after sha1 25ebc45b934 but this has been
-reverted later.
+This makes a first step and converts an NPU PE to a table group.
 
-Since there are devices capable of more than 32 bits for DMA but less than
-50, and currently available hardware allows the second window only
-at 1<<59, we will need to be able to create bigger windows starting from
-zero. This does the initial preparation and should not cause any
-behavioral changes.
+This should cause no behavioral change. Note that
+pnv_npu_release_ownership() has never been implemented.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 ---
- arch/powerpc/platforms/pseries/iommu.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ arch/powerpc/platforms/powernv/pci.h      |  5 ----
+ arch/powerpc/platforms/powernv/npu-dma.c  | 29 ++++++++++++++++++-----
+ arch/powerpc/platforms/powernv/pci-ioda.c | 17 +++++++------
+ 3 files changed, 33 insertions(+), 18 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index 06f0296..9ece42f 100644
---- a/arch/powerpc/platforms/pseries/iommu.c
-+++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -53,6 +53,8 @@
+diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+index ddb4f02..cf9f748 100644
+--- a/arch/powerpc/platforms/powernv/pci.h
++++ b/arch/powerpc/platforms/powernv/pci.h
+@@ -216,11 +216,6 @@ extern void pe_level_printk(const struct pnv_ioda_pe *pe, const char *level,
+ extern void pnv_npu_try_dma_set_bypass(struct pci_dev *gpdev, bool bypass);
+ extern void pnv_pci_ioda2_tce_invalidate_entire(struct pnv_phb *phb, bool rm);
+ extern struct pnv_ioda_pe *pnv_pci_npu_setup_iommu(struct pnv_ioda_pe *npe);
+-extern long pnv_npu_set_window(struct pnv_ioda_pe *npe, int num,
+-		struct iommu_table *tbl);
+-extern long pnv_npu_unset_window(struct pnv_ioda_pe *npe, int num);
+-extern void pnv_npu_take_ownership(struct pnv_ioda_pe *npe);
+-extern void pnv_npu_release_ownership(struct pnv_ioda_pe *npe);
  
- #include "pseries.h"
+ /* pci-ioda-tce.c */
+ #define POWERNV_IOMMU_DEFAULT_LEVELS	1
+diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
+index 4b60f43..1792c7e 100644
+--- a/arch/powerpc/platforms/powernv/npu-dma.c
++++ b/arch/powerpc/platforms/powernv/npu-dma.c
+@@ -121,9 +121,11 @@ static struct pnv_ioda_pe *get_gpu_pci_dev_and_pe(struct pnv_ioda_pe *npe,
+ 	return pe;
+ }
  
-+#define DDW_INVALID_OFFSET	((uint64_t)-1)
-+
- static struct iommu_table_group *iommu_pseries_alloc_group(int node)
+-long pnv_npu_set_window(struct pnv_ioda_pe *npe, int num,
++static long pnv_npu_set_window(struct iommu_table_group *table_group, int num,
+ 		struct iommu_table *tbl)
  {
- 	struct iommu_table_group *table_group;
-@@ -844,7 +846,7 @@ static u64 find_existing_ddw(struct device_node *pdn)
++	struct pnv_ioda_pe *npe = container_of(table_group, struct pnv_ioda_pe,
++			table_group);
+ 	struct pnv_phb *phb = npe->phb;
+ 	int64_t rc;
+ 	const unsigned long size = tbl->it_indirect_levels ?
+@@ -155,8 +157,10 @@ long pnv_npu_set_window(struct pnv_ioda_pe *npe, int num,
+ 	return 0;
+ }
+ 
+-long pnv_npu_unset_window(struct pnv_ioda_pe *npe, int num)
++static long pnv_npu_unset_window(struct iommu_table_group *table_group, int num)
  {
- 	struct direct_window *window;
- 	const struct dynamic_dma_window_prop *direct64;
--	u64 dma_addr = 0;
-+	u64 dma_addr = DDW_INVALID_OFFSET;
++	struct pnv_ioda_pe *npe = container_of(table_group, struct pnv_ioda_pe,
++			table_group);
+ 	struct pnv_phb *phb = npe->phb;
+ 	int64_t rc;
  
- 	spin_lock(&direct_window_list_lock);
- 	/* check if we already created a window and dupe that config if so */
-@@ -992,7 +994,7 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
- 	mutex_lock(&direct_window_init_mutex);
+@@ -198,7 +202,8 @@ static void pnv_npu_dma_set_32(struct pnv_ioda_pe *npe)
+ 	if (!gpe)
+ 		return;
  
- 	dma_addr = find_existing_ddw(pdn);
--	if (dma_addr != 0)
-+	if (dma_addr != DDW_INVALID_OFFSET)
- 		goto out_unlock;
+-	rc = pnv_npu_set_window(npe, 0, gpe->table_group.tables[0]);
++	rc = pnv_npu_set_window(&npe->table_group, 0,
++			gpe->table_group.tables[0]);
  
  	/*
-@@ -1228,7 +1230,7 @@ static int dma_set_mask_pSeriesLP(struct device *dev, u64 dma_mask)
- 		}
- 		if (pdn && PCI_DN(pdn)) {
- 			dma_offset = enable_ddw(pdev, pdn);
--			if (dma_offset != 0) {
-+			if (dma_offset != DDW_INVALID_OFFSET) {
- 				dev_info(dev, "Using 64-bit direct DMA at offset %llx\n", dma_offset);
- 				set_dma_offset(dev, dma_offset);
- 				set_dma_ops(dev, &dma_nommu_ops);
+ 	 * NVLink devices use the same TCE table configuration as
+@@ -223,7 +228,7 @@ static int pnv_npu_dma_set_bypass(struct pnv_ioda_pe *npe)
+ 	if (phb->type != PNV_PHB_NPU_NVLINK || !npe->pdev)
+ 		return -EINVAL;
+ 
+-	rc = pnv_npu_unset_window(npe, 0);
++	rc = pnv_npu_unset_window(&npe->table_group, 0);
+ 	if (rc != OPAL_SUCCESS)
+ 		return rc;
+ 
+@@ -276,9 +281,12 @@ void pnv_npu_try_dma_set_bypass(struct pci_dev *gpdev, bool bypass)
+ 	}
+ }
+ 
++#ifdef CONFIG_IOMMU_API
+ /* Switch ownership from platform code to external user (e.g. VFIO) */
+-void pnv_npu_take_ownership(struct pnv_ioda_pe *npe)
++static void pnv_npu_take_ownership(struct iommu_table_group *table_group)
+ {
++	struct pnv_ioda_pe *npe = container_of(table_group, struct pnv_ioda_pe,
++			table_group);
+ 	struct pnv_phb *phb = npe->phb;
+ 	int64_t rc;
+ 
+@@ -289,7 +297,7 @@ void pnv_npu_take_ownership(struct pnv_ioda_pe *npe)
+ 	 * if it was enabled at the moment of ownership change.
+ 	 */
+ 	if (npe->table_group.tables[0]) {
+-		pnv_npu_unset_window(npe, 0);
++		pnv_npu_unset_window(&npe->table_group, 0);
+ 		return;
+ 	}
+ 
+@@ -304,6 +312,12 @@ void pnv_npu_take_ownership(struct pnv_ioda_pe *npe)
+ 	pnv_pci_ioda2_tce_invalidate_entire(npe->phb, false);
+ }
+ 
++static struct iommu_table_group_ops pnv_pci_npu_ops = {
++	.set_window = pnv_npu_set_window,
++	.unset_window = pnv_npu_unset_window,
++	.take_ownership = pnv_npu_take_ownership,
++};
++
+ struct pnv_ioda_pe *pnv_pci_npu_setup_iommu(struct pnv_ioda_pe *npe)
+ {
+ 	struct pnv_phb *phb = npe->phb;
+@@ -314,6 +328,8 @@ struct pnv_ioda_pe *pnv_pci_npu_setup_iommu(struct pnv_ioda_pe *npe)
+ 	if (!gpe || !gpdev)
+ 		return NULL;
+ 
++	npe->table_group.ops = &pnv_pci_npu_ops;
++
+ 	list_for_each_entry(npdev, &pbus->devices, bus_list) {
+ 		gptmp = pnv_pci_get_gpu_dev(npdev);
+ 
+@@ -326,6 +342,7 @@ struct pnv_ioda_pe *pnv_pci_npu_setup_iommu(struct pnv_ioda_pe *npe)
+ 
+ 	return gpe;
+ }
++#endif /* !CONFIG_IOMMU_API */
+ 
+ /*
+  * NPU2 ATS
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 7caf373..04639ae 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -2677,14 +2677,14 @@ static long pnv_pci_ioda2_npu_set_window(struct iommu_table_group *table_group,
+ 		return ret;
+ 
+ 	if (table_group->tables[num2])
+-		pnv_npu_unset_window(npe, num2);
++		npe->table_group.ops->unset_window(&npe->table_group, num2);
+ 
+-	ret = pnv_npu_set_window(npe, num, tbl);
++	ret = npe->table_group.ops->set_window(&npe->table_group, num, tbl);
+ 	if (ret) {
+ 		pnv_pci_ioda2_unset_window(table_group, num);
+ 		if (table_group->tables[num2])
+-			pnv_npu_set_window(npe, num2,
+-					table_group->tables[num2]);
++			npe->table_group.ops->set_window(&npe->table_group,
++					num2, table_group->tables[num2]);
+ 	}
+ 
+ 	return ret;
+@@ -2704,19 +2704,22 @@ static long pnv_pci_ioda2_npu_unset_window(
+ 	if (!npe->table_group.tables[num])
+ 		return 0;
+ 
+-	ret = pnv_npu_unset_window(npe, num);
++	ret = npe->table_group.ops->unset_window(&npe->table_group, num);
+ 	if (ret)
+ 		return ret;
+ 
+ 	if (table_group->tables[num2])
+-		ret = pnv_npu_set_window(npe, num2, table_group->tables[num2]);
++		ret = npe->table_group.ops->set_window(&npe->table_group, num2,
++				table_group->tables[num2]);
+ 
+ 	return ret;
+ }
+ 
+ static void pnv_ioda2_npu_take_ownership(struct iommu_table_group *table_group)
+ {
+-	pnv_npu_take_ownership(gpe_table_group_to_npe(table_group));
++	struct pnv_ioda_pe *npe = gpe_table_group_to_npe(table_group);
++
++	npe->table_group.ops->take_ownership(&npe->table_group);
+ 	pnv_ioda2_take_ownership(table_group);
+ }
+ 
 -- 
 2.17.1
 
