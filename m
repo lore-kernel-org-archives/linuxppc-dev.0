@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F1AE4C43441
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 09:00:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CF618C43441
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 09:01:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7A00E22360
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 09:00:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7A00E22360
+	by mail.kernel.org (Postfix) with ESMTPS id 5488F22360
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 09:01:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5488F22360
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42vM5V6l92zF3HX
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 19:59:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42vM7d1SD5zF3Tl
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 20:01:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
@@ -27,17 +27,17 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Received: from ozlabs.ru (unknown [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 42vLQM53JFzF3Fk
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 19:29:31 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 42vLQS2CQJzF3FW
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 19:29:35 +1100 (AEDT)
 Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 2920BAE801F7;
- Tue, 13 Nov 2018 03:28:57 -0500 (EST)
+ by ozlabs.ru (Postfix) with ESMTP id C9583AE8035E;
+ Tue, 13 Nov 2018 03:29:31 -0500 (EST)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v3 09/22] powerpc/pseries/iommu: Force default DMA
- window removal
-Date: Tue, 13 Nov 2018 19:28:10 +1100
-Message-Id: <20181113082823.2440-10-aik@ozlabs.ru>
+Subject: [PATCH kernel v3 19/22] powerpc/powernv/npu: Add release_ownership
+ hook
+Date: Tue, 13 Nov 2018 19:28:20 +1100
+Message-Id: <20181113082823.2440-20-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20181113082823.2440-1-aik@ozlabs.ru>
 References: <20181113082823.2440-1-aik@ozlabs.ru>
@@ -65,120 +65,98 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-It is quite common for a device to support more than 32bit but less than
-64bit for DMA, for example, GPUs often support 42..50bits. However
-the pseries platform only allows huge DMA window (the one which allows
-the use of more than 2GB of DMA space) for 64bit-capable devices mostly
-because:
+In order to make ATS work and translate addresses for arbitrary
+LPID and PID, we need to program an NPU with LPID and allow PID wildcard
+matching with a specific MSR mask.
 
-1. we may have 32bit and >32bit devices on the same IOMMU domain and
-we cannot place the new big window where the 32bit one is located;
+This implements a helper to assign a GPU to LPAR and program the NPU
+with a wildcard for PID and a helper to do clean-up. The helper takes
+MSR (only DR/HV/PR/SF bits are allowed) to program them into NPU2 for
+ATS checkout requests support.
 
-2. the existing hardware only supports the second window at very high
-offset of 1<<59 == 0x0800.0000.0000.0000.
-
-So in order to allow 33..59bit DMA, we have to remove the default DMA
-window and place a huge one there instead.
-
-The PAPR spec says that the platform may decide not to use the default
-window and remove it using DDW RTAS calls. There are few possible ways
-for the platform to decide:
-
-1. look at the device IDs and decide in advance that such and such
-devices are capable of more than 32bit DMA (powernv's sketchy bypass
-does something like this - it drops the default window if all devices
-on the PE are from the same vendor) - this is not great as involves
-guessing because, unlike sketchy bypass, the GPU case involves 2 vendor
-ids and does not scale;
-
-2. advertise 1 available DMA window in the hypervisor via
-ibm,query-pe-dma-window so the pseries platform could take it as a clue
-that if more bits for DMA are needed, it has to remove the default
-window - this is not great as it is implicit clue rather than direct
-instruction;
-
-3. removing the default DMA window at all it not really an option as
-PAPR mandates its presense at the guest boot time;
-
-4. make the hypervisor explicitly tell the guest that the default window
-is better be removed so the guest does not have to think hard and can
-simply do what requested and this is what this patch does.
-
-This makes use of the latter approach and exploits a new
-"qemu,dma-force-remove-default" flag in a vPHB.
+This exports pnv_npu2_unmap_lpar_dev() as following patches will use it
+from the VFIO driver.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- arch/powerpc/platforms/pseries/iommu.c | 28 +++++++++++++++++++++++---
- 1 file changed, 25 insertions(+), 3 deletions(-)
+ arch/powerpc/platforms/powernv/npu-dma.c | 47 ++++++++++++++++++++++++
+ 1 file changed, 47 insertions(+)
 
-diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index 9ece42f..78473ac 100644
---- a/arch/powerpc/platforms/pseries/iommu.c
-+++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -54,6 +54,7 @@
- #include "pseries.h"
+diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
+index 2231f4c..48adaa5 100644
+--- a/arch/powerpc/platforms/powernv/npu-dma.c
++++ b/arch/powerpc/platforms/powernv/npu-dma.c
+@@ -289,6 +289,7 @@ static void pnv_npu_take_ownership(struct iommu_table_group *table_group)
+ 			table_group);
+ 	struct pnv_phb *phb = npe->phb;
+ 	int64_t rc;
++	struct pci_dev *gpdev = NULL;
  
- #define DDW_INVALID_OFFSET	((uint64_t)-1)
-+#define DDW_INVALID_LIOBN	((uint32_t)-1)
+ 	/*
+ 	 * Note: NPU has just a single TVE in the hardware which means that
+@@ -310,12 +311,28 @@ static void pnv_npu_take_ownership(struct iommu_table_group *table_group)
+ 		return;
+ 	}
+ 	pnv_pci_ioda2_tce_invalidate_entire(npe->phb, false);
++
++	get_gpu_pci_dev_and_pe(npe, &gpdev);
++	if (gpdev)
++		pnv_npu2_unmap_lpar_dev(gpdev);
++}
++
++static void pnv_npu_release_ownership(struct iommu_table_group *table_group)
++{
++	struct pnv_ioda_pe *npe = container_of(table_group, struct pnv_ioda_pe,
++			table_group);
++	struct pci_dev *gpdev = NULL;
++
++	get_gpu_pci_dev_and_pe(npe, &gpdev);
++	if (gpdev)
++		pnv_npu2_map_lpar_dev(gpdev, 0, MSR_DR | MSR_PR | MSR_HV);
+ }
  
- static struct iommu_table_group *iommu_pseries_alloc_group(int node)
- {
-@@ -977,7 +978,8 @@ static LIST_HEAD(failed_ddw_pdn_list);
-  *
-  * returns the dma offset for use by dma_set_mask
-  */
--static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
-+static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn,
-+		u32 default_liobn)
- {
- 	int len, ret;
- 	struct ddw_query_response query;
-@@ -1022,6 +1024,16 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
- 	if (ret)
- 		goto out_failed;
+ static struct iommu_table_group_ops pnv_pci_npu_ops = {
+ 	.set_window = pnv_npu_set_window,
+ 	.unset_window = pnv_npu_unset_window,
+ 	.take_ownership = pnv_npu_take_ownership,
++	.release_ownership = pnv_npu_release_ownership,
+ };
+ #endif /* !CONFIG_IOMMU_API */
  
-+	/*
-+	 * The device tree has a request to force remove the default window,
-+	 * do this.
-+	 */
-+	if (default_liobn != DDW_INVALID_LIOBN && (!ddw_avail[2] ||
-+			rtas_call(ddw_avail[2], 1, 1, NULL, default_liobn))) {
-+		dev_dbg(&dev->dev, "Could not remove window");
-+		goto out_failed;
+@@ -1239,3 +1256,33 @@ void pnv_npu2_map_lpar(struct pnv_ioda_pe *gpe, unsigned long msr)
+ 					ret);
+ 	}
+ }
++
++int pnv_npu2_unmap_lpar_dev(struct pci_dev *gpdev)
++{
++	int ret;
++	struct pci_dev *npdev = pnv_pci_get_npu_dev(gpdev, 0);
++	struct pci_controller *hose = pci_bus_to_host(npdev->bus);
++	struct pnv_phb *nphb = hose->private_data;
++
++	dev_dbg(&gpdev->dev, "destroy context opalid=%llu\n",
++			nphb->opal_id);
++	ret = opal_npu_destroy_context(nphb->opal_id, 0/*__unused*/,
++			PCI_DEVID(gpdev->bus->number, gpdev->devfn));
++	if (ret < 0) {
++		dev_err(&gpdev->dev, "Failed to destroy context: %d\n", ret);
++		return ret;
 +	}
 +
-        /*
- 	 * Query if there is a second window of size to map the
- 	 * whole partition.  Query returns number of windows, largest
-@@ -1212,7 +1224,7 @@ static int dma_set_mask_pSeriesLP(struct device *dev, u64 dma_mask)
- 	pdev = to_pci_dev(dev);
- 
- 	/* only attempt to use a new window if 64-bit DMA is requested */
--	if (!disable_ddw && dma_mask == DMA_BIT_MASK(64)) {
-+	if (!disable_ddw && dma_mask > DMA_BIT_MASK(32)) {
- 		dn = pci_device_to_OF_node(pdev);
- 		dev_dbg(dev, "node is %pOF\n", dn);
- 
-@@ -1229,7 +1241,17 @@ static int dma_set_mask_pSeriesLP(struct device *dev, u64 dma_mask)
- 				break;
- 		}
- 		if (pdn && PCI_DN(pdn)) {
--			dma_offset = enable_ddw(pdev, pdn);
-+			u32 liobn = DDW_INVALID_LIOBN;
-+			int ret = of_device_is_compatible(pdn, "IBM,npu-vphb");
++	/* Set LPID to 0 anyway, just to be safe */
++	dev_dbg(&gpdev->dev, "Map LPAR opalid=%llu lparid=0\n", nphb->opal_id);
++	ret = opal_npu_map_lpar(nphb->opal_id,
++			PCI_DEVID(gpdev->bus->number, gpdev->devfn), 0 /*LPID*/,
++			0 /* LPCR bits */);
++	if (ret)
++		dev_err(&gpdev->dev, "Error %d mapping device to LPAR\n", ret);
 +
-+			if (ret) {
-+				dma_window = of_get_property(pdn,
-+						"ibm,dma-window", NULL);
-+				if (dma_window)
-+					liobn = be32_to_cpu(dma_window[0]);
-+			}
++	opal_purge_cache();
 +
-+			dma_offset = enable_ddw(pdev, pdn, liobn);
- 			if (dma_offset != DDW_INVALID_OFFSET) {
- 				dev_info(dev, "Using 64-bit direct DMA at offset %llx\n", dma_offset);
- 				set_dma_offset(dev, dma_offset);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(pnv_npu2_unmap_lpar_dev);
 -- 
 2.17.1
 
