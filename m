@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D1A4DC43441
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 08:44:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B8941C43441
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 08:46:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7EC9420854
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 08:44:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7EC9420854
+	by mail.kernel.org (Postfix) with ESMTPS id 43E6320854
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 08:46:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 43E6320854
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42vLlz2ksFzF31s
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 19:44:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42vLp31XpnzF3Gq
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 19:46:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
@@ -27,17 +27,17 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Received: from ozlabs.ru (unknown [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 42vLQ00y8LzF3DT
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 19:29:11 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 42vLQ01mYnzF3Kf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 19:29:12 +1100 (AEDT)
 Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id CC39AAE8004A;
- Tue, 13 Nov 2018 03:28:37 -0500 (EST)
+ by ozlabs.ru (Postfix) with ESMTP id 5ACC0AE80219;
+ Tue, 13 Nov 2018 03:29:08 -0500 (EST)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v3 03/22] powerpc/mm/iommu: Make mm_iommu_new() fail on
- existing regions
-Date: Tue, 13 Nov 2018 19:28:04 +1100
-Message-Id: <20181113082823.2440-4-aik@ozlabs.ru>
+Subject: [PATCH kernel v3 12/22] powerpc/pseries: Remove IOMMU API support for
+ non-LPAR systems
+Date: Tue, 13 Nov 2018 19:28:13 +1100
+Message-Id: <20181113082823.2440-13-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20181113082823.2440-1-aik@ozlabs.ru>
 References: <20181113082823.2440-1-aik@ozlabs.ru>
@@ -65,40 +65,57 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Since we are going to have 2 different preregistering helpers, let's
-make it clear that mm_iommu_new() is only for the normal memory
-(i.e.not device memory) and for existing areas mm_iommu_get() should be
-used instead.
-
-This removes the check for exact match as the check for overlap is
-enough now.
+The pci_dma_bus_setup_pSeries and pci_dma_dev_setup_pSeries hooks are
+registered for the pseries platform which does not have FW_FEATURE_LPAR;
+these would be pre-powernv platforms which we never supported PCI pass
+through for anyway so remove it.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 ---
-Changes:
-v2:
-* remove the exact match check
----
- arch/powerpc/mm/mmu_context_iommu.c | 6 ------
- 1 file changed, 6 deletions(-)
 
-diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_context_iommu.c
-index babc6ad..580d89e 100644
---- a/arch/powerpc/mm/mmu_context_iommu.c
-+++ b/arch/powerpc/mm/mmu_context_iommu.c
-@@ -102,12 +102,6 @@ long mm_iommu_new(struct mm_struct *mm, unsigned long ua, unsigned long entries,
+Propably should remove all pseries-but-not-lpar code.
+---
+ arch/powerpc/platforms/pseries/iommu.c | 9 ++-------
+ 1 file changed, 2 insertions(+), 7 deletions(-)
+
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index f818737..b045f28 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -648,7 +648,6 @@ static void pci_dma_bus_setup_pSeries(struct pci_bus *bus)
+ 	iommu_table_setparms(pci->phb, dn, tbl);
+ 	tbl->it_ops = &iommu_table_pseries_ops;
+ 	iommu_init_table(tbl, pci->phb->node);
+-	iommu_register_group(pci->table_group, pci_domain_nr(bus), 0);
  
- 	list_for_each_entry_rcu(mem, &mm->context.iommu_group_mem_list,
- 			next) {
--		if ((mem->ua == ua) && (mem->entries == entries)) {
--			++mem->used;
--			*pmem = mem;
--			goto unlock_exit;
--		}
--
- 		/* Overlap? */
- 		if ((mem->ua < (ua + (entries << PAGE_SHIFT))) &&
- 				(ua < (mem->ua +
+ 	/* Divide the rest (1.75GB) among the children */
+ 	pci->phb->dma_window_size = 0x80000000ul;
+@@ -759,10 +758,7 @@ static void pci_dma_dev_setup_pSeries(struct pci_dev *dev)
+ 		iommu_table_setparms(phb, dn, tbl);
+ 		tbl->it_ops = &iommu_table_pseries_ops;
+ 		iommu_init_table(tbl, phb->node);
+-		iommu_register_group(PCI_DN(dn)->table_group,
+-				pci_domain_nr(phb->bus), 0);
+ 		set_iommu_table_base(&dev->dev, tbl);
+-		iommu_add_device(&dev->dev);
+ 		return;
+ 	}
+ 
+@@ -773,11 +769,10 @@ static void pci_dma_dev_setup_pSeries(struct pci_dev *dev)
+ 	while (dn && PCI_DN(dn) && PCI_DN(dn)->table_group == NULL)
+ 		dn = dn->parent;
+ 
+-	if (dn && PCI_DN(dn)) {
++	if (dn && PCI_DN(dn))
+ 		set_iommu_table_base(&dev->dev,
+ 				PCI_DN(dn)->table_group->tables[0]);
+-		iommu_add_device(&dev->dev);
+-	} else
++	else
+ 		printk(KERN_WARNING "iommu: Device %s has no iommu table\n",
+ 		       pci_name(dev));
+ }
 -- 
 2.17.1
 
