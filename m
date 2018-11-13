@@ -2,96 +2,119 @@ Return-Path: <SRS0=INWp=NY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 56427C43441
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 21:58:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D80C4C43441
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 22:41:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C3EAC223D0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 21:58:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C3EAC223D0
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 1F00A22360
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Nov 2018 22:41:49 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=dellteam.com header.i=@dellteam.com header.b="1SD83xhZ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1F00A22360
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=Dellteam.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42vhMS2jBtzF3NS
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 08:58:12 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42vjKl085PzF3Hn
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 09:41:47 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=Dellteam.com
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=gromero@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=dellteam.com header.i=@dellteam.com header.b="1SD83xhZ";
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=dellteam.com
+ (client-ip=68.232.149.214; helo=esa4.dell-outbound.iphmx.com;
+ envelope-from=alex_gagniuc@dellteam.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=Dellteam.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=dellteam.com header.i=@dellteam.com header.b="1SD83xhZ";
+ dkim-atps=neutral
+Received: from esa4.dell-outbound.iphmx.com (esa4.dell-outbound.iphmx.com
+ [68.232.149.214])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42vhKJ2h8czF3Jw
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2018 08:56:17 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wADLs7AE025576
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 16:56:15 -0500
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2nr6uer8ra-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 16:56:14 -0500
-Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gromero@linux.vnet.ibm.com>;
- Tue, 13 Nov 2018 21:56:14 -0000
-Received: from b03cxnp08027.gho.boulder.ibm.com (9.17.130.19)
- by e34.co.us.ibm.com (192.168.1.134) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 13 Nov 2018 21:56:12 -0000
-Received: from b03ledav006.gho.boulder.ibm.com
- (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wADLuBKA29949998
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Tue, 13 Nov 2018 21:56:11 GMT
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 44B65C605F;
- Tue, 13 Nov 2018 21:56:11 +0000 (GMT)
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2A29CC6055;
- Tue, 13 Nov 2018 21:56:10 +0000 (GMT)
-Received: from oc6336877782.ibm.com (unknown [9.80.225.70])
- by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
- Tue, 13 Nov 2018 21:56:09 +0000 (GMT)
-To: Michael Ellerman <mpe@ellerman.id.au>
-From: Gustavo Romero <gromero@linux.vnet.ibm.com>
-Subject: It looks like that wild_bctr on powerpc/fixes is still not compiling
-Date: Tue, 13 Nov 2018 19:56:08 -0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42vjH00HnZzF3GY
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2018 09:39:22 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
+ d=dellteam.com; i=@dellteam.com; q=dns/txt; s=smtpout;
+ t=1542148764; x=1573684764;
+ h=cc:from:to:subject:date:message-id:references:
+ content-transfer-encoding:mime-version;
+ bh=W2DbNLLksvmskUQ/VWUeRlO6OW8oqCIt+M5GxO18dMs=;
+ b=1SD83xhZlKqjmN2MmqyCjCP8vWj/382xx+etXf7t9ZQnuVDrPqE+PZUJ
+ +UZGq3M2SA27d/IFmYo8xo2w+4HphQptsubixDXAxrZxRWrY6xtBCfWbB
+ OH4w9F31wDLBIxlOMF4rBFtpbqnpjETD3eFQZYc2QcGinIoIEmmP74kPb 0=;
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: =?us-ascii?q?A2EbAACcUetbhyeV50NjHAEBAQQBAQc?=
+ =?us-ascii?q?EAQGBUgYBAQsBgmmBAicKjGWNK5c1FIFmCwEBJQmEPoM/IjUMDQEDAQECAQE?=
+ =?us-ascii?q?CAQECEAEBAQoLCQgpIwyCNiISS2sBAQEBAQEjAg1jAQEBAQIBEig/BQsCAQg?=
+ =?us-ascii?q?YHhBXAgQTCBqCfwGBeQgPnTECgRCJWAEBAYIdhC0BhXYFjAKCFoERgxKESwE?=
+ =?us-ascii?q?SAQ0SLCGFDgKLAJRWCQWGcoojIIFYhQSKF4J1ih4Vii4CBAIEBQIUgUUBajB?=
+ =?us-ascii?q?xcIM8E4IiG4hMhT5AATEBAQEBizeBH4EfAQE?=
+X-IPAS-Result: =?us-ascii?q?A2EbAACcUetbhyeV50NjHAEBAQQBAQcEAQGBUgYBAQsBg?=
+ =?us-ascii?q?mmBAicKjGWNK5c1FIFmCwEBJQmEPoM/IjUMDQEDAQECAQECAQECEAEBAQoLC?=
+ =?us-ascii?q?QgpIwyCNiISS2sBAQEBAQEjAg1jAQEBAQIBEig/BQsCAQgYHhBXAgQTCBqCf?=
+ =?us-ascii?q?wGBeQgPnTECgRCJWAEBAYIdhC0BhXYFjAKCFoERgxKESwESAQ0SLCGFDgKLA?=
+ =?us-ascii?q?JRWCQWGcoojIIFYhQSKF4J1ih4Vii4CBAIEBQIUgUUBajBxcIM8E4IiG4hMh?=
+ =?us-ascii?q?T5AATEBAQEBizeBH4EfAQE?=
+Received: from mx0a-00154901.pphosted.com ([67.231.149.39])
+ by esa4.dell-outbound.iphmx.com with ESMTP/TLS/AES256-SHA256;
+ 13 Nov 2018 16:39:18 -0600
+Received: from pps.filterd (m0142699.ppops.net [127.0.0.1])
+ by mx0a-00154901.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wADNFRbE033627
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 18:21:30 -0500
+Received: from esa1.dell-outbound2.iphmx.com (esa1.dell-outbound2.iphmx.com
+ [68.232.153.201])
+ by mx0a-00154901.pphosted.com with ESMTP id 2nr80701t3-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 18:21:30 -0500
+Received: from ausxippc106.us.dell.com ([143.166.85.156])
+ by esa1.dell-outbound2.iphmx.com with ESMTP/TLS/DHE-RSA-AES256-SHA256;
+ 14 Nov 2018 04:39:08 +0600
+X-LoopCount0: from 10.166.134.87
+X-IronPort-AV: E=Sophos;i="5.56,230,1539666000"; d="scan'208";a="318258073"
+From: <Alex_Gagniuc@Dellteam.com>
+To: <helgaas@kernel.org>
+Subject: Re: [PATCH v2] PCI/MSI: Don't touch MSI bits when the PCI device is
+ disconnected
+Thread-Topic: [PATCH v2] PCI/MSI: Don't touch MSI bits when the PCI device is
+ disconnected
+Thread-Index: AQHUT50UQ290XPGvJEGnaSTTjbCF+g==
+Date: Tue, 13 Nov 2018 22:39:15 +0000
+Message-ID: <19136f44cd5c45e79bbef7e78a6bf332@ausx13mps321.AMER.DELL.COM>
+References: <20181107234257.GC41183@google.com>
+ <20181108200855.GE41183@google.com> <20181108220117.GA11466@kroah.com>
+ <20181108223258.GD2932@localhost.localdomain>
+ <20181108224255.GA20619@kroah.com>
+ <20d68e586fff4dcca5616d5056f6fc21@ausx13mps321.AMER.DELL.COM>
+ <20181108225109.GA3023@kroah.com>
+ <16bf9d14bc5f4a90b2b88dd2eb165186@ausx13mps321.AMER.DELL.COM>
+ <5da8d8aa9f3818af649b1ac547bc4e6062626ddf.camel@gmail.com>
+ <df85813c9860463d85f6c302dfe07b12@ausx13mps321.AMER.DELL.COM>
+ <20181113050240.GA182139@google.com>
+Accept-Language: en-US
 Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-x-cbid: 18111321-0016-0000-0000-00000952D4AE
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010044; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000270; SDB=6.01117015; UDB=6.00577116; IPR=6.00897123; 
- MB=3.00024147; MTD=3.00000008; XFM=3.00000015; UTC=2018-11-13 21:56:13
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18111321-0017-0000-0000-0000410C825B
-Message-Id: <4dddbc2a-fc3f-5ea5-54be-8e2a5375db76@linux.vnet.ibm.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-exchange-transport-fromentityheader: Hosted
+x-originating-ip: [10.177.49.166]
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-11-13_15:, , signatures=0
+ definitions=2018-11-13_16:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
  mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1807170000 definitions=main-1811130196
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1811130201
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,126 +126,77 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Shyam.Iyer@dell.com, sbobroff@linux.ibm.com, gregkh@linuxfoundation.org,
+ linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, keith.busch@intel.com,
+ lukas@wunner.de, oohall@gmail.com, mr.nuke.me@gmail.com, Austin.Bolen@dell.com,
+ linuxppc-dev@lists.ozlabs.org, jonathan.derrick@intel.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi mpe,
-
-Even after the latest fix for the wild_bctr selftest I'm still getting the
-following compilation (actually, an assembling error) because UL is not
-understood by the assembler:
-
-BUILD_TARGET=/home/gromero/git/linux/tools/testing/selftests/powerpc/mm; mkdir -p $BUILD_TARGET; make OUTPUT=$BUILD_TARGET -k -C mm all
-make[1]: Entering directory '/home/gromero/git/linux/tools/testing/selftests/powerpc/mm'
-gcc -std=gnu99 -O2 -Wall -Werror -DGIT_VERSION='"v4.20-rc1-8-g2c7645b"' -I/home/gromero/git/linux/tools/testing/selftests/powerpc/include  -m64    wild_bctr.c ../harness.c  -o /home/gromero/git/linux/tools/testing/selftests/powerpc/mm/wild_bctr
-/tmp/cctUajlx.s: Assembler messages:
-/tmp/cctUajlx.s:270: Error: syntax error; found `U', expected `,'
-/tmp/cctUajlx.s:270: Error: junk at end of line: `UL'
-/tmp/cctUajlx.s:270: Error: syntax error; found `U', expected `,'
-/tmp/cctUajlx.s:270: Error: junk at end of line: `UL'
-/tmp/cctUajlx.s:270: Error: syntax error; found `U', expected `,'
-/tmp/cctUajlx.s:270: Error: junk at end of line: `UL'
-/tmp/cctUajlx.s:270: Error: syntax error; found `U', expected `,'
-/tmp/cctUajlx.s:270: Error: junk at end of line: `UL'
-/tmp/cctUajlx.s:270: Error: syntax error; found `U', expected `,'
-/tmp/cctUajlx.s:270: Error: junk at end of line: `UL'
-/tmp/cctUajlx.s:270: Error: syntax error; found `U', expected `,'
-/tmp/cctUajlx.s:270: Error: junk at end of line: `UL'
-/tmp/cctUajlx.s:270: Error: syntax error; found `U', expected `,'
-/tmp/cctUajlx.s:270: Error: junk at end of line: `UL'
-/tmp/cctUajlx.s:270: Error: syntax error; found `U', expected `,'
-/tmp/cctUajlx.s:270: Error: junk at end of line: `UL'
-/tmp/cctUajlx.s:270: Error: syntax error; found `U', expected `,'
-/tmp/cctUajlx.s:270: Error: junk at end of line: `UL'
-/tmp/cctUajlx.s:270: Error: syntax error; found `U', expected `,'
-/tmp/cctUajlx.s:270: Error: junk at end of line: `UL'
-/tmp/cctUajlx.s:270: Error: syntax error; found `U', expected `,'
-/tmp/cctUajlx.s:270: Error: junk at end of line: `UL'
-/tmp/cctUajlx.s:270: Error: syntax error; found `U', expected `,'
-/tmp/cctUajlx.s:270: Error: junk at end of line: `UL'
-/tmp/cctUajlx.s:270: Error: syntax error; found `U', expected `,'
-/tmp/cctUajlx.s:270: Error: junk at end of line: `UL'
-/tmp/cctUajlx.s:270: Error: syntax error; found `U', expected `,'
-/tmp/cctUajlx.s:270: Error: junk at end of line: `UL'
-/tmp/cctUajlx.s:270: Error: syntax error; found `U', expected `,'
-/tmp/cctUajlx.s:270: Error: junk at end of line: `UL'
-/tmp/cctUajlx.s:270: Error: syntax error; found `U', expected `,'
-/tmp/cctUajlx.s:270: Error: junk at end of line: `UL'
-/tmp/cctUajlx.s:270: Error: syntax error; found `U', expected `,'
-/tmp/cctUajlx.s:270: Error: junk at end of line: `UL'
-/tmp/cctUajlx.s:270: Error: syntax error; found `U', expected `,'
-/tmp/cctUajlx.s:270: Error: junk at end of line: `UL'
-/tmp/cctUajlx.s:270: Error: syntax error; found `U', expected `,'
-/tmp/cctUajlx.s:270: Error: junk at end of line: `UL'
-/tmp/cctUajlx.s:270: Error: syntax error; found `U', expected `,'
-/tmp/cctUajlx.s:270: Error: junk at end of line: `UL'
-/tmp/cctUajlx.s:270: Error: syntax error; found `U', expected `,'
-/tmp/cctUajlx.s:270: Error: junk at end of line: `UL'
-/tmp/cctUajlx.s:270: Error: syntax error; found `U', expected `,'
-/tmp/cctUajlx.s:270: Error: junk at end of line: `UL'
-/tmp/cctUajlx.s:270: Error: syntax error; found `U', expected `,'
-/tmp/cctUajlx.s:270: Error: junk at end of line: `UL'
-/tmp/cctUajlx.s:270: Error: syntax error; found `U', expected `,'
-/tmp/cctUajlx.s:270: Error: junk at end of line: `UL'
-/tmp/cctUajlx.s:270: Error: syntax error; found `U', expected `,'
-/tmp/cctUajlx.s:270: Error: junk at end of line: `UL'
-/tmp/cctUajlx.s:270: Error: syntax error; found `U', expected `,'
-/tmp/cctUajlx.s:270: Error: junk at end of line: `UL'
-/tmp/cctUajlx.s:270: Error: syntax error; found `U', expected `,'
-/tmp/cctUajlx.s:270: Error: junk at end of line: `UL'
-/tmp/cctUajlx.s:270: Error: syntax error; found `U', expected `,'
-/tmp/cctUajlx.s:270: Error: junk at end of line: `UL'
-/tmp/cctUajlx.s:270: Error: syntax error; found `U', expected `,'
-/tmp/cctUajlx.s:270: Error: junk at end of line: `UL'
-/tmp/cctUajlx.s:270: Error: syntax error; found `U', expected `,'
-/tmp/cctUajlx.s:270: Error: junk at end of line: `UL'
-../../lib.mk:152: recipe for target '/home/gromero/git/linux/tools/testing/selftests/powerpc/mm/wild_bctr' failed
-make[1]: *** [/home/gromero/git/linux/tools/testing/selftests/powerpc/mm/wild_bctr] Error 1
-make[1]: Target 'all' not remade because of errors.
-make[1]: Leaving directory '/home/gromero/git/linux/tools/testing/selftests/powerpc/mm'
-Makefile:39: recipe for target 'mm' failed
-make: *** [mm] Error 2
-
-For:
-git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git (powerpc/fixes)
-$ git describe
-v4.20-rc1-8-g2c7645b
-
-This is gcc:
-$ gcc --version
-gcc (Ubuntu/IBM 5.4.0-6ubuntu1~16.04.10) 5.4.0 20160609
-
-but it should not make a difference, so  I'm wondering if anybody else is
-getting the same error too...
-
-The following trivial workaround can solve it by forcing a type promotion on
-the compiler side whilst leaving the macro taken into the asm code without
-the UL string:
-
-diff --git a/tools/testing/selftests/powerpc/mm/wild_bctr.c b/tools/testing/selftests/powerpc/mm/wild_bctr.c
-index 90469a9..d2772f4 100644
---- a/tools/testing/selftests/powerpc/mm/wild_bctr.c
-+++ b/tools/testing/selftests/powerpc/mm/wild_bctr.c
-@@ -47,8 +47,9 @@ static int ok(void)
-         return 0;
-  }
-  
--#define REG_POISON     0x5a5aUL
--#define POISONED_REG(n)        ((REG_POISON << 48) | ((n) << 32) | (REG_POISON << 16) | (n))
-+#define REG_POISON     0x5a5a
-+#define POISONED_REG(n)        (((REG_POISON+0UL) << 48) | ((n) << 32) | ((REG_POISON+0UL) << 16) | (n))
-  
-  static inline void poison_regs(void)
-  {
-
-
-Should I contribute such a fix?
-
-Thank you.
-
-
-Best regards,
-Gustavo
-
+On 11/12/2018 11:02 PM, Bjorn Helgaas wrote:=0A=
+> =0A=
+> [EXTERNAL EMAIL]=0A=
+> Please report any suspicious attachments, links, or requests for sensitiv=
+e information.=0A=
+> =0A=
+> =0A=
+> [+cc Jon, for related VMD firmware-first error enable issue]=0A=
+> =0A=
+> On Mon, Nov 12, 2018 at 08:05:41PM +0000, Alex_Gagniuc@Dellteam.com wrote=
+:=0A=
+>> On 11/11/2018 11:50 PM, Oliver O'Halloran wrote:=0A=
+>>> On Thu, 2018-11-08 at 23:06 +0000, Alex_Gagniuc@Dellteam.com wrote:=0A=
+> =0A=
+>>>> But it's not the firmware that crashes. It's linux as a result of a=0A=
+>>>> fatal error message from the firmware. And we can't fix that because F=
+FS=0A=
+>>>> handling requires that the system reboots [1].=0A=
+>>>=0A=
+>>> Do we know the exact circumsances that result in firmware requesting a=
+=0A=
+>>> reboot? If it happen on any PCIe error I don't see what we can do to=0A=
+>>> prevent that beyond masking UEs entirely (are we even allowed to do=0A=
+>>> that on FFS systems?).=0A=
+>>=0A=
+>> Pull a drive out at an angle, push two drives in at the same time, pull=
+=0A=
+>> out a drive really slow. If an error is even reported to the OS depends=
+=0A=
+>> on PD state, and proprietary mechanisms and logic in the HW and FW. OS=
+=0A=
+>> is not supposed to mask errors (touch AER bits) on FFS.=0A=
+> =0A=
+> PD?=0A=
+=0A=
+Presence Detect=0A=
+=0A=
+> Do you think Linux observes the rule about not touching AER bits on=0A=
+> FFS?  I'm not sure it does.  I'm not even sure what section of the=0A=
+> spec is relevant.=0A=
+=0A=
+I haven't found any place where linux breaks this rule. I'm very =0A=
+confident that, unless otherwise instructed, we follow this rule.=0A=
+=0A=
+> The whole issue of firmware-first, the mechanism by which firmware=0A=
+> gets control, the System Error enables in Root Port Root Control=0A=
+> registers, etc., is very murky to me.  Jon has a sort of similar issue=0A=
+> with VMD where he needs to leave System Errors enabled instead of=0A=
+> disabling them as we currently do.=0A=
+=0A=
+Well, OS gets control via _OSC method, and based on that it should =0A=
+touch/not touch the AER bits. The bits that get set/cleared come from =0A=
+_HPX method, and there's a more about the FFS described in ACPI spec. It =
+=0A=
+seems that if platform, wants to enable VMD, it should pass the correct =0A=
+bits via _HPX. I'm curious to know in what new twisted way FFS doesn't =0A=
+work as intended.=0A=
+=0A=
+Alex=0A=
+=0A=
+> Bjorn=0A=
+> =0A=
+> [1] https://lore.kernel.org/linux-pci/20181029210651.GB13681@bhelgaas-gla=
+ptop.roam.corp.google.com=0A=
+> =0A=
+=0A=
