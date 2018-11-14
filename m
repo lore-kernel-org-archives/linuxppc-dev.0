@@ -7,24 +7,24 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6956EC43441
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 09:11:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D41FC43441
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 09:13:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DB1BC22360
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 09:11:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 7F1ED22419
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 09:13:43 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="pOLfihGi"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DB1BC22360
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="a9p5CATE"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7F1ED22419
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42vzJH0BcZzF37J
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 20:11:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42vzLs3KJSzF3CX
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 20:13:41 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="pOLfihGi";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="a9p5CATE";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
@@ -35,35 +35,35 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="pOLfihGi"; dkim-atps=neutral
+ header.b="a9p5CATE"; dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42vyG71JblzF3K7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2018 19:24:31 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42vyG91DjnzF3K2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2018 19:24:33 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
  :Reply-To:Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From
  :Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
  List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=k2PN9Oa8YSIvjJVRt3mNzWxL4HQYVzsgYlk0h0MWqTE=; b=pOLfihGiHCs6K+Lok6Fb6Er5Vq
- ZGkVaVy4A23W0HzSF+rfRnDt3vNd+f8arpEEN5rKsUm1xPugb/ju1c/nE/XmoVi2P/tdeOFSV/e40
- Xc5n/3R0c1ozaCtVqWS+ZEgKQFB8yZfuwO+A1t5jBslTD/94pkbNh7BuoHNi6aiZFSaeEzcObxGBl
- +ezwjHJ1zGQCPGX1cx/UJ6eJpDUSaKZZwdXP3f/h6HpcKwQV8fMg/lSbLLMi+hIXF5HQsNgwGbpPU
- JCGAmPHk66BWsgAlj++QBK/KcugEmX8ZTfxCkewt7Dwjru2mXCMDpmVzeYt3To7sje3VKuZFGhAT1
- Jj2zJBzw==;
+ bh=DX9cMG1u8d0vd6WPvXO0Apsoz04fpG8sch9Xg4PpRUk=; b=a9p5CATEfjbNCYg4gN/oz1Innm
+ 0JbOLjPOGZIswPlPuiM/WeHKbo/5QBzli76XFZB0AT8oSU7ouFdEF9uc9+FZwdxXdvonAfgP2iUZ5
+ 3zYSHUf8+0z5m/CYd1CyhRinhJvoFiw4XAL6ixTHCAJNqo9axNSHFc9dQ7rBNLzNvGdhvsXkBPyFD
+ azhTB/Qz8Z88trurty002NXRZr/oqdjIfvlZKVg9/KudfQHT7UCpmgOIsg5difJ7n5OUc7i4/ohiZ
+ peH30Zu6Uvsb0Pj2OYMNDsxJ7o0M7JnwL3gviIdDAKuWoCuAwGcH5icGuaqVc0MS6DoqdxnwWFC05
+ tOywm6UA==;
 Received: from 089144211136.atnat0020.highway.a1.net ([89.144.211.136]
  helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
- id 1gMqT2-0004yA-Jz; Wed, 14 Nov 2018 08:24:09 +0000
+ id 1gMqTJ-000533-10; Wed, 14 Nov 2018 08:24:25 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH 19/34] cxl: drop the dma_set_mask callback from vphb
-Date: Wed, 14 Nov 2018 09:22:59 +0100
-Message-Id: <20181114082314.8965-20-hch@lst.de>
+Subject: [PATCH 25/34] powerpc/dma: remove max_direct_dma_addr
+Date: Wed, 14 Nov 2018 09:23:05 +0100
+Message-Id: <20181114082314.8965-26-hch@lst.de>
 X-Mailer: git-send-email 2.19.1
 In-Reply-To: <20181114082314.8965-1-hch@lst.de>
 References: <20181114082314.8965-1-hch@lst.de>
@@ -89,45 +89,129 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The CXL code never even looks at the dma mask, so there is no good
-reason for this sanity check.  Remove it because it gets in the way
-of the dma ops refactoring.
+The max_direct_dma_addr duplicates the bus_dma_mask field in struct
+device.  Use the generic field instead.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- drivers/misc/cxl/vphb.c | 12 ------------
- 1 file changed, 12 deletions(-)
+ arch/powerpc/include/asm/device.h     |  3 ---
+ arch/powerpc/include/asm/dma-direct.h |  4 +---
+ arch/powerpc/kernel/dma-swiotlb.c     | 20 --------------------
+ arch/powerpc/kernel/dma.c             |  5 ++---
+ arch/powerpc/sysdev/fsl_pci.c         |  3 +--
+ 5 files changed, 4 insertions(+), 31 deletions(-)
 
-diff --git a/drivers/misc/cxl/vphb.c b/drivers/misc/cxl/vphb.c
-index 7908633d9204..49da2f744bbf 100644
---- a/drivers/misc/cxl/vphb.c
-+++ b/drivers/misc/cxl/vphb.c
-@@ -11,17 +11,6 @@
- #include <misc/cxl.h>
- #include "cxl.h"
- 
--static int cxl_dma_set_mask(struct pci_dev *pdev, u64 dma_mask)
--{
--	if (dma_mask < DMA_BIT_MASK(64)) {
--		pr_info("%s only 64bit DMA supported on CXL", __func__);
--		return -EIO;
--	}
+diff --git a/arch/powerpc/include/asm/device.h b/arch/powerpc/include/asm/device.h
+index 3814e1c2d4bc..a130be13ee83 100644
+--- a/arch/powerpc/include/asm/device.h
++++ b/arch/powerpc/include/asm/device.h
+@@ -38,9 +38,6 @@ struct dev_archdata {
+ #ifdef CONFIG_IOMMU_API
+ 	void			*iommu_domain;
+ #endif
+-#ifdef CONFIG_SWIOTLB
+-	dma_addr_t		max_direct_dma_addr;
+-#endif
+ #ifdef CONFIG_PPC64
+ 	struct pci_dn		*pci_data;
+ #endif
+diff --git a/arch/powerpc/include/asm/dma-direct.h b/arch/powerpc/include/asm/dma-direct.h
+index 7702875aabb7..e00ab5d0612d 100644
+--- a/arch/powerpc/include/asm/dma-direct.h
++++ b/arch/powerpc/include/asm/dma-direct.h
+@@ -5,9 +5,7 @@
+ static inline bool dma_capable(struct device *dev, dma_addr_t addr, size_t size)
+ {
+ #ifdef CONFIG_SWIOTLB
+-	struct dev_archdata *sd = &dev->archdata;
 -
--	*(pdev->dev.dma_mask) = dma_mask;
--	return 0;
+-	if (sd->max_direct_dma_addr && addr + size > sd->max_direct_dma_addr)
++	if (dev->bus_dma_mask && addr + size > dev->bus_dma_mask)
+ 		return false;
+ #endif
+ 
+diff --git a/arch/powerpc/kernel/dma-swiotlb.c b/arch/powerpc/kernel/dma-swiotlb.c
+index 38a2c9f5ab54..62caa16b91a9 100644
+--- a/arch/powerpc/kernel/dma-swiotlb.c
++++ b/arch/powerpc/kernel/dma-swiotlb.c
+@@ -24,21 +24,6 @@
+ 
+ unsigned int ppc_swiotlb_enable;
+ 
+-static u64 swiotlb_powerpc_get_required(struct device *dev)
+-{
+-	u64 end, mask, max_direct_dma_addr = dev->archdata.max_direct_dma_addr;
+-
+-	end = memblock_end_of_DRAM();
+-	if (max_direct_dma_addr && end > max_direct_dma_addr)
+-		end = max_direct_dma_addr;
+-	end += get_dma_offset(dev);
+-
+-	mask = 1ULL << (fls64(end) - 1);
+-	mask += mask - 1;
+-
+-	return mask;
 -}
 -
- static int cxl_pci_probe_mode(struct pci_bus *bus)
- {
- 	return PCI_PROBE_NORMAL;
-@@ -220,7 +209,6 @@ static struct pci_controller_ops cxl_pci_controller_ops =
- 	.reset_secondary_bus = cxl_pci_reset_secondary_bus,
- 	.setup_msi_irqs = cxl_setup_msi_irqs,
- 	.teardown_msi_irqs = cxl_teardown_msi_irqs,
--	.dma_set_mask = cxl_dma_set_mask,
+ /*
+  * At the moment, all platforms that use this code only require
+  * swiotlb to be used if we're operating on HIGHMEM.  Since
+@@ -60,22 +45,17 @@ const struct dma_map_ops powerpc_swiotlb_dma_ops = {
+ 	.sync_sg_for_cpu = swiotlb_sync_sg_for_cpu,
+ 	.sync_sg_for_device = swiotlb_sync_sg_for_device,
+ 	.mapping_error = dma_direct_mapping_error,
+-	.get_required_mask = swiotlb_powerpc_get_required,
  };
  
- int cxl_pci_vphb_add(struct cxl_afu *afu)
+ static int ppc_swiotlb_bus_notify(struct notifier_block *nb,
+ 				  unsigned long action, void *data)
+ {
+ 	struct device *dev = data;
+-	struct dev_archdata *sd;
+ 
+ 	/* We are only intereted in device addition */
+ 	if (action != BUS_NOTIFY_ADD_DEVICE)
+ 		return 0;
+ 
+-	sd = &dev->archdata;
+-	sd->max_direct_dma_addr = 0;
+-
+ 	/* May need to bounce if the device can't address all of DRAM */
+ 	if ((dma_get_mask(dev) + 1) < memblock_end_of_DRAM())
+ 		set_dma_ops(dev, &powerpc_swiotlb_dma_ops);
+diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
+index f9f51fc505a1..59f38ca3975c 100644
+--- a/arch/powerpc/kernel/dma.c
++++ b/arch/powerpc/kernel/dma.c
+@@ -30,11 +30,10 @@
+ static u64 __maybe_unused get_pfn_limit(struct device *dev)
+ {
+ 	u64 pfn = (dev->coherent_dma_mask >> PAGE_SHIFT) + 1;
+-	struct dev_archdata __maybe_unused *sd = &dev->archdata;
+ 
+ #ifdef CONFIG_SWIOTLB
+-	if (sd->max_direct_dma_addr && dev->dma_ops == &powerpc_swiotlb_dma_ops)
+-		pfn = min_t(u64, pfn, sd->max_direct_dma_addr >> PAGE_SHIFT);
++	if (dev->bus_dma_mask && dev->dma_ops == &powerpc_swiotlb_dma_ops)
++		pfn = min_t(u64, pfn, dev->bus_dma_mask >> PAGE_SHIFT);
+ #endif
+ 
+ 	return pfn;
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 561f97d698cc..f136567a5ed5 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -117,9 +117,8 @@ static u64 pci64_dma_offset;
+ static void pci_dma_dev_setup_swiotlb(struct pci_dev *pdev)
+ {
+ 	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
+-	struct dev_archdata *sd = &pdev->dev.archdata;
+ 
+-	sd->max_direct_dma_addr =
++	pdev->dev.bus_dma_mask =
+ 		hose->dma_window_base_cur + hose->dma_window_size;
+ }
+ 
 -- 
 2.19.1
 
