@@ -7,24 +7,24 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CA504C43441
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 08:51:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 922A5C43441
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 08:53:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4BE28223DD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 08:51:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 12D12214F1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 08:53:48 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="MwpL7dN3"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4BE28223DD
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="cmVqT7Tw"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 12D12214F1
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42vysM5sdwzF3M5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 19:51:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42vyvv0ztdzF326
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 19:53:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="MwpL7dN3";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="cmVqT7Tw";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
@@ -35,35 +35,35 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="MwpL7dN3"; dkim-atps=neutral
+ header.b="cmVqT7Tw"; dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42vyFq19RzzF3KD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2018 19:24:15 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42vyFs4RB2zF3KD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2018 19:24:17 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
  :Reply-To:Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From
  :Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
  List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=LmcEuOt36sJfxPpEKyK2M/2qabz1N7iUjVBjEzaEmSI=; b=MwpL7dN3qvQXM36pI3RXQf3QiO
- Ydfewp/eX/Ll7gEuhYDNrUReJCBgOsgAJVH2v7dCGCdFN4dXoQ0aHviA5FHguWXmIBi07FwH3MPsT
- h6erexfUAYDUzfnbvZ7w5M2sv35J4/qo2wgrHlNQNbmFwzjW8WVibVeNc8NGbRlG5cBAt6AuYYt7O
- XsijBn+wi+gIBKiybhgA4QPSiKngVS+iYDAe4LsR+fI8ADJ9eBhWhZt9h+m1ciJlkj2vmjAlJPEb+
- YP1YrKvuaENVtRM6vhN75eiq12x5lx+K+C1aehIjT6ipTicPIqys/INZKm9NNSiliI343t6IldcxD
- VNK5xsVA==;
+ bh=oSrle2FH9A0wa4Fv0z1ytORBIOuBSBwJhWG7qdJQBtw=; b=cmVqT7Twps0mDQ49Ca2498i8r8
+ KbMC7P/cn8Gvrwg71YjF+bNk3QfxQKnBhDd1c5K9WEby+PmHz0v1iCqLMi0ydfdun7BZ6BW+xqjOj
+ P7ljLozUob9+RqtzFq5Y8gSoQBXtBYrRkidMRSi3vMRiVikHoXnvaiZh2BG+HG5Pgf58eIbYSQz+n
+ mztj6NQ4B9mpxt5IZxvNsxCURohdr01+M+qDQ4D1JXufckGLb9E6rFYtqHvJCbRGR0+M8+3pvBuVd
+ QWZ6mco3mAh7yCEoU5vfFaImxjeOat8lhkzkDVx/LTwtHXnies5B3YGlubE8Xhoc8JjEzZAI/KkWV
+ yKfA2udg==;
 Received: from 089144211136.atnat0020.highway.a1.net ([89.144.211.136]
  helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
- id 1gMqSm-0004sS-8T; Wed, 14 Nov 2018 08:23:52 +0000
+ id 1gMqSx-0004xG-5Q; Wed, 14 Nov 2018 08:24:03 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH 13/34] powerpc/cell: use the generic iommu bypass code
-Date: Wed, 14 Nov 2018 09:22:53 +0100
-Message-Id: <20181114082314.8965-14-hch@lst.de>
+Subject: [PATCH 17/34] powerpc/powernv: remove pnv_npu_dma_set_mask
+Date: Wed, 14 Nov 2018 09:22:57 +0100
+Message-Id: <20181114082314.8965-18-hch@lst.de>
 X-Mailer: git-send-email 2.19.1
 In-Reply-To: <20181114082314.8965-1-hch@lst.de>
 References: <20181114082314.8965-1-hch@lst.de>
@@ -89,284 +89,41 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This gets rid of a lot of clumsy code and finally allows us to mark
-dma_iommu_ops const.
+These devices are not PCIe devices and do not have associated dma map
+ops, so this is just dead code.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/powerpc/include/asm/dma-mapping.h |   2 +-
- arch/powerpc/include/asm/iommu.h       |   6 ++
- arch/powerpc/kernel/dma-iommu.c        |   7 +-
- arch/powerpc/platforms/cell/iommu.c    | 143 ++-----------------------
- 4 files changed, 22 insertions(+), 136 deletions(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c | 9 ---------
+ 1 file changed, 9 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
-index 824f55995a18..140ce5ad3120 100644
---- a/arch/powerpc/include/asm/dma-mapping.h
-+++ b/arch/powerpc/include/asm/dma-mapping.h
-@@ -74,7 +74,7 @@ static inline unsigned long device_to_mask(struct device *dev)
-  * Available generic sets of operations
-  */
- #ifdef CONFIG_PPC64
--extern struct dma_map_ops dma_iommu_ops;
-+extern const struct dma_map_ops dma_iommu_ops;
- #endif
- extern const struct dma_map_ops dma_nommu_ops;
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index afbb73cd3c5b..1d9f446f3eff 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -3688,14 +3688,6 @@ static const struct pci_controller_ops pnv_pci_ioda_controller_ops = {
+ 	.shutdown		= pnv_pci_ioda_shutdown,
+ };
  
-diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
-index 75daa10f31a4..5128aac8e165 100644
---- a/arch/powerpc/include/asm/iommu.h
-+++ b/arch/powerpc/include/asm/iommu.h
-@@ -326,5 +326,11 @@ extern void iommu_release_ownership(struct iommu_table *tbl);
- extern enum dma_data_direction iommu_tce_direction(unsigned long tce);
- extern unsigned long iommu_direction_to_tce_perm(enum dma_data_direction dir);
- 
-+#ifdef CONFIG_PPC_CELL_NATIVE
-+extern bool iommu_fixed_is_weak;
-+#else
-+#define iommu_fixed_is_weak false
-+#endif
-+
- #endif /* __KERNEL__ */
- #endif /* _ASM_IOMMU_H */
-diff --git a/arch/powerpc/kernel/dma-iommu.c b/arch/powerpc/kernel/dma-iommu.c
-index 459be16f8334..4937b39e246b 100644
---- a/arch/powerpc/kernel/dma-iommu.c
-+++ b/arch/powerpc/kernel/dma-iommu.c
-@@ -20,14 +20,15 @@
-  */
- static inline bool dma_iommu_alloc_bypass(struct device *dev)
- {
--	return dev->archdata.iommu_bypass &&
-+	return dev->archdata.iommu_bypass && !iommu_fixed_is_weak &&
- 		dma_nommu_dma_supported(dev, dev->coherent_dma_mask);
- }
- 
- static inline bool dma_iommu_map_bypass(struct device *dev,
- 		unsigned long attrs)
- {
--	return dev->archdata.iommu_bypass;
-+	return dev->archdata.iommu_bypass &&
-+		(!iommu_fixed_is_weak || (attrs & DMA_ATTR_WEAK_ORDERING));
- }
- 
- /* Allocates a contiguous real buffer and creates mappings over it.
-@@ -168,7 +169,7 @@ int dma_iommu_mapping_error(struct device *dev, dma_addr_t dma_addr)
- 	return dma_addr == IOMMU_MAPPING_ERROR;
- }
- 
--struct dma_map_ops dma_iommu_ops = {
-+const struct dma_map_ops dma_iommu_ops = {
- 	.alloc			= dma_iommu_alloc_coherent,
- 	.free			= dma_iommu_free_coherent,
- 	.mmap			= dma_nommu_mmap_coherent,
-diff --git a/arch/powerpc/platforms/cell/iommu.c b/arch/powerpc/platforms/cell/iommu.c
-index cce5bf9515e5..fb51f78035ce 100644
---- a/arch/powerpc/platforms/cell/iommu.c
-+++ b/arch/powerpc/platforms/cell/iommu.c
-@@ -546,7 +546,7 @@ static unsigned long cell_dma_nommu_offset;
- static unsigned long dma_iommu_fixed_base;
- 
- /* iommu_fixed_is_weak is set if booted with iommu_fixed=weak */
--static int iommu_fixed_is_weak;
-+bool iommu_fixed_is_weak;
- 
- static struct iommu_table *cell_get_iommu_table(struct device *dev)
- {
-@@ -568,95 +568,6 @@ static struct iommu_table *cell_get_iommu_table(struct device *dev)
- 	return &window->table;
- }
- 
--/* A coherent allocation implies strong ordering */
--
--static void *dma_fixed_alloc_coherent(struct device *dev, size_t size,
--				      dma_addr_t *dma_handle, gfp_t flag,
--				      unsigned long attrs)
+-static int pnv_npu_dma_set_mask(struct pci_dev *npdev, u64 dma_mask)
 -{
--	if (iommu_fixed_is_weak)
--		return iommu_alloc_coherent(dev, cell_get_iommu_table(dev),
--					    size, dma_handle,
--					    device_to_mask(dev), flag,
--					    dev_to_node(dev));
--	else
--		return dma_nommu_ops.alloc(dev, size, dma_handle, flag,
--					    attrs);
+-	dev_err_once(&npdev->dev,
+-			"%s operation unsupported for NVLink devices\n",
+-			__func__);
+-	return -EPERM;
 -}
 -
--static void dma_fixed_free_coherent(struct device *dev, size_t size,
--				    void *vaddr, dma_addr_t dma_handle,
--				    unsigned long attrs)
--{
--	if (iommu_fixed_is_weak)
--		iommu_free_coherent(cell_get_iommu_table(dev), size, vaddr,
--				    dma_handle);
--	else
--		dma_nommu_ops.free(dev, size, vaddr, dma_handle, attrs);
--}
--
--static dma_addr_t dma_fixed_map_page(struct device *dev, struct page *page,
--				     unsigned long offset, size_t size,
--				     enum dma_data_direction direction,
--				     unsigned long attrs)
--{
--	if (iommu_fixed_is_weak == (attrs & DMA_ATTR_WEAK_ORDERING))
--		return dma_nommu_ops.map_page(dev, page, offset, size,
--					       direction, attrs);
--	else
--		return iommu_map_page(dev, cell_get_iommu_table(dev), page,
--				      offset, size, device_to_mask(dev),
--				      direction, attrs);
--}
--
--static void dma_fixed_unmap_page(struct device *dev, dma_addr_t dma_addr,
--				 size_t size, enum dma_data_direction direction,
--				 unsigned long attrs)
--{
--	if (iommu_fixed_is_weak == (attrs & DMA_ATTR_WEAK_ORDERING))
--		dma_nommu_ops.unmap_page(dev, dma_addr, size, direction,
--					  attrs);
--	else
--		iommu_unmap_page(cell_get_iommu_table(dev), dma_addr, size,
--				 direction, attrs);
--}
--
--static int dma_fixed_map_sg(struct device *dev, struct scatterlist *sg,
--			   int nents, enum dma_data_direction direction,
--			   unsigned long attrs)
--{
--	if (iommu_fixed_is_weak == (attrs & DMA_ATTR_WEAK_ORDERING))
--		return dma_nommu_ops.map_sg(dev, sg, nents, direction, attrs);
--	else
--		return ppc_iommu_map_sg(dev, cell_get_iommu_table(dev), sg,
--					nents, device_to_mask(dev),
--					direction, attrs);
--}
--
--static void dma_fixed_unmap_sg(struct device *dev, struct scatterlist *sg,
--			       int nents, enum dma_data_direction direction,
--			       unsigned long attrs)
--{
--	if (iommu_fixed_is_weak == (attrs & DMA_ATTR_WEAK_ORDERING))
--		dma_nommu_ops.unmap_sg(dev, sg, nents, direction, attrs);
--	else
--		ppc_iommu_unmap_sg(cell_get_iommu_table(dev), sg, nents,
--				   direction, attrs);
--}
--
--static int dma_suported_and_switch(struct device *dev, u64 dma_mask);
--
--static const struct dma_map_ops dma_iommu_fixed_ops = {
--	.alloc          = dma_fixed_alloc_coherent,
--	.free           = dma_fixed_free_coherent,
--	.map_sg         = dma_fixed_map_sg,
--	.unmap_sg       = dma_fixed_unmap_sg,
--	.dma_supported  = dma_suported_and_switch,
--	.map_page       = dma_fixed_map_page,
--	.unmap_page     = dma_fixed_unmap_page,
--	.mapping_error	= dma_iommu_mapping_error,
--};
--
- static u64 cell_iommu_get_fixed_address(struct device *dev);
+ static const struct pci_controller_ops pnv_npu_ioda_controller_ops = {
+ 	.dma_dev_setup		= pnv_pci_dma_dev_setup,
+ #ifdef CONFIG_PCI_MSI
+@@ -3705,7 +3697,6 @@ static const struct pci_controller_ops pnv_npu_ioda_controller_ops = {
+ 	.enable_device_hook	= pnv_pci_enable_device_hook,
+ 	.window_alignment	= pnv_pci_window_alignment,
+ 	.reset_secondary_bus	= pnv_pci_reset_secondary_bus,
+-	.dma_set_mask		= pnv_npu_dma_set_mask,
+ 	.shutdown		= pnv_pci_ioda_shutdown,
+ };
  
- static void cell_dma_dev_setup(struct device *dev)
-@@ -953,22 +864,10 @@ static u64 cell_iommu_get_fixed_address(struct device *dev)
- 	return dev_addr;
- }
- 
--static int dma_suported_and_switch(struct device *dev, u64 dma_mask)
-+static bool cell_pci_iommu_bypass_supported(struct pci_dev *pdev, u64 mask)
- {
--	if (dma_mask == DMA_BIT_MASK(64) &&
--	    cell_iommu_get_fixed_address(dev) != OF_BAD_ADDR) {
--		dev_dbg(dev, "iommu: 64-bit OK, using fixed ops\n");
--		set_dma_ops(dev, &dma_iommu_fixed_ops);
--		return 1;
--	}
--
--	if (dma_iommu_dma_supported(dev, dma_mask)) {
--		dev_dbg(dev, "iommu: not 64-bit, using default ops\n");
--		set_dma_ops(dev, &dma_iommu_ops);
--		return 1;
--	}
--
--	return 0;
-+	return mask == DMA_BIT_MASK(64) &&
-+		cell_iommu_get_fixed_address(&pdev->dev) != OF_BAD_ADDR;
- }
- 
- static void insert_16M_pte(unsigned long addr, unsigned long *ptab,
-@@ -1122,9 +1021,6 @@ static int __init cell_iommu_fixed_mapping_init(void)
- 		cell_iommu_setup_window(iommu, np, dbase, dsize, 0);
- 	}
- 
--	dma_iommu_ops.dma_supported = dma_suported_and_switch;
--	set_pci_dma_ops(&dma_iommu_ops);
--
- 	return 0;
- }
- 
-@@ -1145,7 +1041,7 @@ static int __init setup_iommu_fixed(char *str)
- 	pciep = of_find_node_by_type(NULL, "pcie-endpoint");
- 
- 	if (strcmp(str, "weak") == 0 || (pciep && strcmp(str, "strong") != 0))
--		iommu_fixed_is_weak = DMA_ATTR_WEAK_ORDERING;
-+		iommu_fixed_is_weak = true;
- 
- 	of_node_put(pciep);
- 
-@@ -1153,26 +1049,6 @@ static int __init setup_iommu_fixed(char *str)
- }
- __setup("iommu_fixed=", setup_iommu_fixed);
- 
--static u64 cell_dma_get_required_mask(struct device *dev)
--{
--	const struct dma_map_ops *dma_ops;
--
--	if (!dev->dma_mask)
--		return 0;
--
--	if (!iommu_fixed_disabled &&
--			cell_iommu_get_fixed_address(dev) != OF_BAD_ADDR)
--		return DMA_BIT_MASK(64);
--
--	dma_ops = get_dma_ops(dev);
--	if (dma_ops->get_required_mask)
--		return dma_ops->get_required_mask(dev);
--
--	WARN_ONCE(1, "no get_required_mask in %p ops", dma_ops);
--
--	return DMA_BIT_MASK(64);
--}
--
- static int __init cell_iommu_init(void)
- {
- 	struct device_node *np;
-@@ -1189,10 +1065,9 @@ static int __init cell_iommu_init(void)
- 
- 	/* Setup various callbacks */
- 	cell_pci_controller_ops.dma_dev_setup = cell_pci_dma_dev_setup;
--	ppc_md.dma_get_required_mask = cell_dma_get_required_mask;
- 
- 	if (!iommu_fixed_disabled && cell_iommu_fixed_mapping_init() == 0)
--		goto bail;
-+		goto done;
- 
- 	/* Create an iommu for each /axon node.  */
- 	for_each_node_by_name(np, "axon") {
-@@ -1209,8 +1084,12 @@ static int __init cell_iommu_init(void)
- 			continue;
- 		cell_iommu_init_one(np, SPIDER_DMA_OFFSET);
- 	}
--
-+ done:
- 	/* Setup default PCI iommu ops */
-+	if (!iommu_fixed_disabled) {
-+		cell_pci_controller_ops.iommu_bypass_supported =
-+				cell_pci_iommu_bypass_supported;
-+	}
- 	set_pci_dma_ops(&dma_iommu_ops);
- 
-  bail:
 -- 
 2.19.1
 
