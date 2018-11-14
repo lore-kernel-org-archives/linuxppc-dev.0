@@ -7,24 +7,24 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F40BFC43441
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 09:30:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BD2A4C43441
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 09:32:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 08783223DD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 09:30:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 3FE55223DD
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 09:32:48 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="OiPTBduN"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 08783223DD
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="cQ9GYtD3"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3FE55223DD
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42vzkC2XWZzF39R
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 20:30:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42vzmt1QWyzF3BS
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 20:32:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="OiPTBduN";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="cQ9GYtD3";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
@@ -35,35 +35,36 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="OiPTBduN"; dkim-atps=neutral
+ header.b="cQ9GYtD3"; dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42vyGb6SVZzF3Kc
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2018 19:24:55 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42vyGc0dm0zF3Kl
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2018 19:24:56 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
  :Reply-To:Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From
  :Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
  List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=KLqZg4dtngL6q/FMbnPRqhjnZIsFBfANNQo/vzV5wEA=; b=OiPTBduNDTz/kZCqsL25VIC/ap
- qyNlrGawJoslJMNjreHpTa7eGBBs4YxTXctpIiNfNCS12lmonTPdmdnBTXKyFR3GIeTDRtZY6kqnY
- i8nNnNRXITAM+VJ/HO2Cvw1gBeWaI7jhfNSlCbNKgfXiO1sP/YvBnbNIfB3AjhIFKvR5N7rago9Cw
- RtBG93TFnlxoNG8T9kIRT8gHFqNMa17SCXzU0LS70cCQ927LrGzrjoPsDo14kP9InJlwBA9Ta+3x/
- JOJ2vP9mSBIijUuGeexT4JzDE0sZdQCw6Fe1k14MxrJSqKLlVfw502p61Y5fY0eof3mK7QJS3dN2j
- qaRqfVjg==;
+ bh=viEKh4BP6N6rz2lADj2u/mOfweh0bRNAdHsJIfS2hmY=; b=cQ9GYtD3RVVBHD8f/Wxz4OhAT5
+ rVGlSKVVdgFMJJulJOvhqgBawoY541vvTthVTpDDgeYkDPlZAf2O3HydL9jtIz0RtQjyIClMG/s8I
+ 3BajA/KnfPZXPZ5sQTY7SCYvCur+NFCoDGN4gSfUVvD0ZCcfRa091LGJaGHPQmu65X4fcez5ilDxv
+ 78n9XAnOUJGjlsCieOJz8nRSdKvSuCE+ucQ2MjC+SDlH36nmbKhRrCLjkr+yO5Eq3US9u+5KFIAR2
+ 2plIBS6g4Zf0vcZ4pL2WmnLEEHWgwWBB2oFIQlWmfhCkuJa2WaQcyzDjEu4zc/58TPwdhIGkO6MYk
+ QpBDb/Xw==;
 Received: from 089144211136.atnat0020.highway.a1.net ([89.144.211.136]
  helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
- id 1gMqTf-0005AX-02; Wed, 14 Nov 2018 08:24:47 +0000
+ id 1gMqTR-00055a-Db; Wed, 14 Nov 2018 08:24:33 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH 33/34] powerpc/dma: remove set_dma_offset
-Date: Wed, 14 Nov 2018 09:23:13 +0100
-Message-Id: <20181114082314.8965-34-hch@lst.de>
+Subject: [PATCH 28/34] dma-mapping,
+ powerpc: simplify the arch dma_set_mask override
+Date: Wed, 14 Nov 2018 09:23:08 +0100
+Message-Id: <20181114082314.8965-29-hch@lst.de>
 X-Mailer: git-send-email 2.19.1
 In-Reply-To: <20181114082314.8965-1-hch@lst.de>
 References: <20181114082314.8965-1-hch@lst.de>
@@ -89,162 +90,154 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There is no good reason for this helper, just opencode it.
+Instead of letting the architecture supply all of dma_set_mask just
+give it an additional hook selected by Kconfig.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/powerpc/include/asm/dma-mapping.h    | 6 ------
- arch/powerpc/kernel/pci-common.c          | 2 +-
- arch/powerpc/platforms/cell/iommu.c       | 4 ++--
- arch/powerpc/platforms/powernv/pci-ioda.c | 6 +++---
- arch/powerpc/platforms/pseries/iommu.c    | 7 ++-----
- arch/powerpc/sysdev/dart_iommu.c          | 2 +-
- arch/powerpc/sysdev/fsl_pci.c             | 2 +-
- drivers/misc/cxl/vphb.c                   | 2 +-
- 8 files changed, 11 insertions(+), 20 deletions(-)
+ arch/powerpc/Kconfig                   |  1 +
+ arch/powerpc/include/asm/dma-mapping.h |  3 ---
+ arch/powerpc/kernel/dma-swiotlb.c      |  8 ++++++++
+ arch/powerpc/kernel/dma.c              | 12 ------------
+ arch/powerpc/sysdev/fsl_pci.c          |  4 ----
+ include/linux/dma-mapping.h            | 11 ++++++++---
+ kernel/dma/Kconfig                     |  3 +++
+ 7 files changed, 20 insertions(+), 22 deletions(-)
 
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 2d4a19bc8023..4f03997ad54a 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -126,6 +126,7 @@ config PPC
+ 	# Please keep this list sorted alphabetically.
+ 	#
+ 	select ARCH_HAS_DEVMEM_IS_ALLOWED
++	select ARCH_HAS_DMA_SET_MASK		if SWIOTLB
+ 	select ARCH_HAS_ELF_RANDOMIZE
+ 	select ARCH_HAS_FORTIFY_SOURCE
+ 	select ARCH_HAS_GCOV_PROFILE_ALL
 diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
-index c70f55d2f5e0..a59c42879194 100644
+index e5ee4ac97c14..16d45518d9bb 100644
 --- a/arch/powerpc/include/asm/dma-mapping.h
 +++ b/arch/powerpc/include/asm/dma-mapping.h
-@@ -43,11 +43,5 @@ static inline const struct dma_map_ops *get_arch_dma_ops(struct bus_type *bus)
- 	return NULL;
+@@ -110,8 +110,5 @@ static inline void set_dma_offset(struct device *dev, dma_addr_t off)
+ 		dev->archdata.dma_offset = off;
  }
  
--static inline void set_dma_offset(struct device *dev, dma_addr_t off)
--{
--	if (dev)
--		dev->archdata.dma_offset = off;
--}
+-#define HAVE_ARCH_DMA_SET_MASK 1
+-extern int dma_set_mask(struct device *dev, u64 dma_mask);
 -
  #endif /* __KERNEL__ */
  #endif	/* _ASM_DMA_MAPPING_H */
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index 661b937f31ed..b645b3882815 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -966,7 +966,7 @@ static void pcibios_setup_device(struct pci_dev *dev)
+diff --git a/arch/powerpc/kernel/dma-swiotlb.c b/arch/powerpc/kernel/dma-swiotlb.c
+index 62caa16b91a9..b3266f7a6915 100644
+--- a/arch/powerpc/kernel/dma-swiotlb.c
++++ b/arch/powerpc/kernel/dma-swiotlb.c
+@@ -22,6 +22,14 @@
+ #include <asm/swiotlb.h>
+ #include <asm/dma.h>
  
- 	/* Hook up default DMA ops */
- 	set_dma_ops(&dev->dev, pci_dma_ops);
--	set_dma_offset(&dev->dev, PCI_DRAM_OFFSET);
-+	dev->dev.archdata.dma_offset = PCI_DRAM_OFFSET;
++bool arch_dma_set_mask(struct device *dev, u64 dma_mask)
++{
++	if (!ppc_md.dma_set_mask)
++		return 0;
++	return ppc_md.dma_set_mask(dev, dma_mask);
++}
++EXPORT_SYMBOL(arch_dma_set_mask);
++
+ unsigned int ppc_swiotlb_enable;
  
- 	/* Additional platform DMA/iommu setup */
- 	phb = pci_bus_to_host(dev->bus);
-diff --git a/arch/powerpc/platforms/cell/iommu.c b/arch/powerpc/platforms/cell/iommu.c
-index 75fd2ee57e26..348a815779c1 100644
---- a/arch/powerpc/platforms/cell/iommu.c
-+++ b/arch/powerpc/platforms/cell/iommu.c
-@@ -577,10 +577,10 @@ static void cell_dma_dev_setup(struct device *dev)
- 		u64 addr = cell_iommu_get_fixed_address(dev);
+ /*
+diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
+index 59f38ca3975c..cf0ae0b3fb24 100644
+--- a/arch/powerpc/kernel/dma.c
++++ b/arch/powerpc/kernel/dma.c
+@@ -209,18 +209,6 @@ const struct dma_map_ops dma_nommu_ops = {
+ };
+ EXPORT_SYMBOL(dma_nommu_ops);
  
- 		if (addr != OF_BAD_ADDR)
--			set_dma_offset(dev, addr + dma_iommu_fixed_base);
-+			dev->archdata.dma_offset = addr + dma_iommu_fixed_base;
- 		set_iommu_table_base(dev, cell_get_iommu_table(dev));
- 	} else {
--		set_dma_offset(dev, cell_dma_nommu_offset);
-+		dev->archdata.dma_offset = cell_dma_nommu_offset;
- 	}
- }
- 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 23fd46cd2ab3..e516d99bb2ed 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1735,7 +1735,7 @@ static void pnv_pci_ioda_dma_dev_setup(struct pnv_phb *phb, struct pci_dev *pdev
- 
- 	pe = &phb->ioda.pe_array[pdn->pe_number];
- 	WARN_ON(get_dma_ops(&pdev->dev) != &dma_iommu_ops);
--	set_dma_offset(&pdev->dev, pe->tce_bypass_base);
-+	pdev->dev.archdata.dma_offset = pe->tce_bypass_base;
- 	set_iommu_table_base(&pdev->dev, pe->table_group.tables[0]);
- 	/*
- 	 * Note: iommu_add_device() will fail here as
-@@ -1848,7 +1848,7 @@ static bool pnv_pci_ioda_iommu_bypass_supported(struct pci_dev *pdev,
- 		if (rc)
- 			return rc;
- 		/* 4GB offset bypasses 32-bit space */
--		set_dma_offset(&pdev->dev, (1ULL << 32));
-+		pdev->dev.archdata.dma_offset = (1ULL << 32);
- 		return true;
- 	}
- 
-@@ -1863,7 +1863,7 @@ static void pnv_ioda_setup_bus_dma(struct pnv_ioda_pe *pe,
- 
- 	list_for_each_entry(dev, &bus->devices, bus_list) {
- 		set_iommu_table_base(&dev->dev, pe->table_group.tables[0]);
--		set_dma_offset(&dev->dev, pe->tce_bypass_base);
-+		dev->dev.archdata.dma_offset = pe->tce_bypass_base;
- 		if (add_to_group)
- 			iommu_add_device(&dev->dev);
- 
-diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index 8965d174c53b..a2ff20d154fe 100644
---- a/arch/powerpc/platforms/pseries/iommu.c
-+++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -1197,7 +1197,6 @@ static bool iommu_bypass_supported_pSeriesLP(struct pci_dev *pdev, u64 dma_mask)
+-int dma_set_mask(struct device *dev, u64 dma_mask)
+-{
+-	if (ppc_md.dma_set_mask)
+-		return ppc_md.dma_set_mask(dev, dma_mask);
+-
+-	if (!dev->dma_mask || !dma_supported(dev, dma_mask))
+-		return -EIO;
+-	*dev->dma_mask = dma_mask;
+-	return 0;
+-}
+-EXPORT_SYMBOL(dma_set_mask);
+-
+ static int __init dma_init(void)
  {
- 	struct device_node *dn = pci_device_to_OF_node(pdev), *pdn;
- 	const __be32 *dma_window = NULL;
--	u64 dma_offset;
- 
- 	/* only attempt to use a new window if 64-bit DMA is requested */
- 	if (dma_mask < DMA_BIT_MASK(64))
-@@ -1219,11 +1218,9 @@ static bool iommu_bypass_supported_pSeriesLP(struct pci_dev *pdev, u64 dma_mask)
- 	}
- 
- 	if (pdn && PCI_DN(pdn)) {
--		dma_offset = enable_ddw(pdev, pdn);
--		if (dma_offset != 0) {
--			set_dma_offset(&pdev->dev, dma_offset);
-+		pdev->dev.archdata.dma_offset = enable_ddw(pdev, pdn);
-+		if (pdev->dev.archdata.dma_offset)
- 			return true;
--		}
- 	}
- 
- 	return false;
-diff --git a/arch/powerpc/sysdev/dart_iommu.c b/arch/powerpc/sysdev/dart_iommu.c
-index 2681a19347ba..2e24fc87ed84 100644
---- a/arch/powerpc/sysdev/dart_iommu.c
-+++ b/arch/powerpc/sysdev/dart_iommu.c
-@@ -386,7 +386,7 @@ static bool dart_device_on_pcie(struct device *dev)
- static void pci_dma_dev_setup_dart(struct pci_dev *dev)
- {
- 	if (dart_is_u4 && dart_device_on_pcie(&dev->dev))
--		set_dma_offset(&dev->dev, DART_U4_BYPASS_BASE);
-+		dev->dev.archdata.dma_offset = DART_U4_BYPASS_BASE;
- 	set_iommu_table_base(&dev->dev, &iommu_table_dart);
- }
- 
+ #ifdef CONFIG_IBMVIO
 diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index 081ed84c3f4c..964a4aede6b1 100644
+index 296ffabc9386..cb91a3d113d1 100644
 --- a/arch/powerpc/sysdev/fsl_pci.c
 +++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -141,7 +141,7 @@ static int fsl_pci_dma_set_mask(struct device *dev, u64 dma_mask)
- 	 */
- 	if (dev_is_pci(dev) && dma_mask >= pci64_dma_offset * 2 - 1) {
- 		dev->bus_dma_mask = 0;
--		set_dma_offset(dev, pci64_dma_offset);
-+		dev->archdata.dma_offset = pci64_dma_offset;
- 	}
+@@ -135,9 +135,6 @@ static inline void setup_swiotlb_ops(struct pci_controller *hose) {}
  
- 	return 0;
-diff --git a/drivers/misc/cxl/vphb.c b/drivers/misc/cxl/vphb.c
-index f4c0e9d2affe..f4ca1a4ada66 100644
---- a/drivers/misc/cxl/vphb.c
-+++ b/drivers/misc/cxl/vphb.c
-@@ -44,7 +44,7 @@ static bool cxl_pci_enable_device_hook(struct pci_dev *dev)
- 	}
- 
- 	set_dma_ops(&dev->dev, &dma_direct_ops);
--	set_dma_offset(&dev->dev, PAGE_OFFSET);
-+	dev->dev.archdata.dma_offset = PAGE_OFFSET;
- 
+ static int fsl_pci_dma_set_mask(struct device *dev, u64 dma_mask)
+ {
+-	if (!dev->dma_mask || !dma_supported(dev, dma_mask))
+-		return -EIO;
+-
  	/*
- 	 * Allocate a context to do cxl things too.  If we eventually do real
+ 	 * Fix up PCI devices that are able to DMA to the large inbound
+ 	 * mapping that allows addressing any RAM address from across PCI.
+@@ -147,7 +144,6 @@ static int fsl_pci_dma_set_mask(struct device *dev, u64 dma_mask)
+ 		set_dma_offset(dev, pci64_dma_offset);
+ 	}
+ 
+-	*dev->dma_mask = dma_mask;
+ 	return 0;
+ }
+ 
+diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
+index 15bd41447025..8dd19e66c0e5 100644
+--- a/include/linux/dma-mapping.h
++++ b/include/linux/dma-mapping.h
+@@ -598,18 +598,23 @@ static inline int dma_supported(struct device *dev, u64 mask)
+ 	return ops->dma_supported(dev, mask);
+ }
+ 
+-#ifndef HAVE_ARCH_DMA_SET_MASK
++#ifdef CONFIG_ARCH_HAS_DMA_SET_MASK
++bool arch_dma_set_mask(struct device *dev, u64 mask);
++#else
++#define arch_dma_set_mask(dev, mask)		true
++#endif
++
+ static inline int dma_set_mask(struct device *dev, u64 mask)
+ {
+ 	if (!dev->dma_mask || !dma_supported(dev, mask))
+ 		return -EIO;
+-
++	if (!arch_dma_set_mask(dev, mask))
++		return -EIO;
+ 	dma_check_mask(dev, mask);
+ 
+ 	*dev->dma_mask = mask;
+ 	return 0;
+ }
+-#endif
+ 
+ static inline u64 dma_get_mask(struct device *dev)
+ {
+diff --git a/kernel/dma/Kconfig b/kernel/dma/Kconfig
+index 645c7a2ecde8..951045c90c2c 100644
+--- a/kernel/dma/Kconfig
++++ b/kernel/dma/Kconfig
+@@ -16,6 +16,9 @@ config ARCH_DMA_ADDR_T_64BIT
+ config ARCH_HAS_DMA_COHERENCE_H
+ 	bool
+ 
++config ARCH_HAS_DMA_SET_MASK
++	bool
++
+ config HAVE_GENERIC_DMA_COHERENT
+ 	bool
+ 
 -- 
 2.19.1
 
