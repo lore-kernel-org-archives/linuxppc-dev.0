@@ -6,24 +6,24 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EDF65C43441
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 09:06:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B639DC43441
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 09:09:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 62B2F214F1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 09:06:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 372B422360
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 09:09:07 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="lm9iXcDN"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 62B2F214F1
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="VhtqkC1O"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 372B422360
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42vzBq2xl3zF3Sn
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 20:06:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42vzFY0W3vzF36j
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 20:09:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="lm9iXcDN";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="VhtqkC1O";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
@@ -34,35 +34,35 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="lm9iXcDN"; dkim-atps=neutral
+ header.b="VhtqkC1O"; dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42vyG44CgbzF3KT
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2018 19:24:28 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42vyG66WcLzF3Hc
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2018 19:24:30 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
  :Reply-To:Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From
  :Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
  List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=ZLssyz632Q1S2EzyPOIZ0eiYy+YjJ8wqzArs4yEftA8=; b=lm9iXcDNSwMUJvq/E3dcTxtVPA
- 810HkJ6kSlR/Rq2BG27rNqGxRAEAW2Pv6kzATzQLQtBcwZBFKqe6iVkI20czX246M9QfxoqsIEoKg
- gB3gdsWIGq7uXIJcc2bbPIef22z47peGHoGgdSw6Tj0LGv3YTSxagdylnsm24bpUhDixui1di1SIs
- /eb2cKkNWSNPygHAGp221lxlX5kSw+TWo3Z1lfgt929mN5UJFgKUQRpVVN+NiCglHO0Czznd7Limo
- 7OqunrwB9ptc5fIAi/pbKNu2ryUtKjZWuZqC8lRN0hzMFgU9YCxwD3QDsH34OOlxLwBxQagXN9mgv
- VNTvZw8w==;
+ bh=ojn3hRaifuiWPVnO+cN83IVjVfWmL3wmTfXzmmsF6EI=; b=VhtqkC1OiXLcx+lQyQiJ/IVIry
+ TWPJ6ZrQmqmN7ksFo8aGFKWuiUosXXhsbRbrbLnfbpJa3hKLvLoyc8CjCkrkdWHOwww6RatpYrwT3
+ wz/SqNb/QArO1gcLQzU9Oxd70PegNiwuyZvqav1hQ89XBxLD23r1EvIzb9mC9f5cuvftF2Iv/3bh1
+ DVQkjsVD5N6LrHantJGheNQQP7ueiQmFgvSZuk+6rVD5cX162hmehiGgfpNrgLiN8zAJDsmajz/52
+ /yk0r/u6JCE6U2qiGzi2g5DvuZlCQIrsdIW0RmdUF2zpcTS//lzHOVpzl1r8TwPDhoH/reBvaTkPN
+ LNxatDaA==;
 Received: from 089144211136.atnat0020.highway.a1.net ([89.144.211.136]
  helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
- id 1gMqSz-0004xx-RB; Wed, 14 Nov 2018 08:24:06 +0000
+ id 1gMqTG-000524-79; Wed, 14 Nov 2018 08:24:22 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH 18/34] powerpc/powernv: use the generic iommu bypass code
-Date: Wed, 14 Nov 2018 09:22:58 +0100
-Message-Id: <20181114082314.8965-19-hch@lst.de>
+Subject: [PATCH 24/34] powerpc/dma: move pci_dma_dev_setup_swiotlb to fsl_pci.c
+Date: Wed, 14 Nov 2018 09:23:04 +0100
+Message-Id: <20181114082314.8965-25-hch@lst.de>
 X-Mailer: git-send-email 2.19.1
 In-Reply-To: <20181114082314.8965-1-hch@lst.de>
 References: <20181114082314.8965-1-hch@lst.de>
@@ -88,148 +88,71 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Use the generic iommu bypass code instead of overriding set_dma_mask.
+pci_dma_dev_setup_swiotlb is only used by the fsl_pci code, and closely
+related to it, so fsl_pci.c seems like a better place for it.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c | 95 ++++++-----------------
- 1 file changed, 25 insertions(+), 70 deletions(-)
+ arch/powerpc/include/asm/swiotlb.h |  2 --
+ arch/powerpc/kernel/dma-swiotlb.c  | 11 -----------
+ arch/powerpc/sysdev/fsl_pci.c      |  9 +++++++++
+ 3 files changed, 9 insertions(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 1d9f446f3eff..23fd46cd2ab3 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1814,89 +1814,45 @@ static int pnv_pci_ioda_dma_64bit_bypass(struct pnv_ioda_pe *pe)
- 	return -EIO;
- }
+diff --git a/arch/powerpc/include/asm/swiotlb.h b/arch/powerpc/include/asm/swiotlb.h
+index f65ecf57b66c..26a0f12b835b 100644
+--- a/arch/powerpc/include/asm/swiotlb.h
++++ b/arch/powerpc/include/asm/swiotlb.h
+@@ -18,8 +18,6 @@ extern const struct dma_map_ops powerpc_swiotlb_dma_ops;
+ extern unsigned int ppc_swiotlb_enable;
+ int __init swiotlb_setup_bus_notifier(void);
  
--static int pnv_pci_ioda_dma_set_mask(struct pci_dev *pdev, u64 dma_mask)
-+static bool pnv_pci_ioda_iommu_bypass_supported(struct pci_dev *pdev,
-+		u64 dma_mask)
- {
- 	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
- 	struct pnv_phb *phb = hose->private_data;
- 	struct pci_dn *pdn = pci_get_pdn(pdev);
- 	struct pnv_ioda_pe *pe;
--	uint64_t top;
--	bool bypass = false;
--	s64 rc;
- 
- 	if (WARN_ON(!pdn || pdn->pe_number == IODA_INVALID_PE))
- 		return -ENODEV;
- 
- 	pe = &phb->ioda.pe_array[pdn->pe_number];
- 	if (pe->tce_bypass_enabled) {
--		top = pe->tce_bypass_base + memblock_end_of_DRAM() - 1;
--		bypass = (dma_mask >= top);
-+		u64 top = pe->tce_bypass_base + memblock_end_of_DRAM() - 1;
-+		if (dma_mask >= top)
-+			return true;
- 	}
- 
--	if (bypass) {
--		dev_info(&pdev->dev, "Using 64-bit DMA iommu bypass\n");
--		set_dma_ops(&pdev->dev, &dma_nommu_ops);
--	} else {
--		/*
--		 * If the device can't set the TCE bypass bit but still wants
--		 * to access 4GB or more, on PHB3 we can reconfigure TVE#0 to
--		 * bypass the 32-bit region and be usable for 64-bit DMAs.
--		 * The device needs to be able to address all of this space.
--		 */
--		if (dma_mask >> 32 &&
--		    dma_mask > (memory_hotplug_max() + (1ULL << 32)) &&
--		    /* pe->pdev should be set if it's a single device, pe->pbus if not */
--		    (pe->device_count == 1 || !pe->pbus) &&
--		    phb->model == PNV_PHB_MODEL_PHB3) {
--			/* Configure the bypass mode */
--			rc = pnv_pci_ioda_dma_64bit_bypass(pe);
--			if (rc)
--				return rc;
--			/* 4GB offset bypasses 32-bit space */
--			set_dma_offset(&pdev->dev, (1ULL << 32));
--			set_dma_ops(&pdev->dev, &dma_nommu_ops);
--		} else if (dma_mask >> 32 && dma_mask != DMA_BIT_MASK(64)) {
--			/*
--			 * Fail the request if a DMA mask between 32 and 64 bits
--			 * was requested but couldn't be fulfilled. Ideally we
--			 * would do this for 64-bits but historically we have
--			 * always fallen back to 32-bits.
--			 */
--			return -ENOMEM;
--		} else {
--			dev_info(&pdev->dev, "Using 32-bit DMA via iommu\n");
--			set_dma_ops(&pdev->dev, &dma_iommu_ops);
--		}
-+	/*
-+	 * If the device can't set the TCE bypass bit but still wants
-+	 * to access 4GB or more, on PHB3 we can reconfigure TVE#0 to
-+	 * bypass the 32-bit region and be usable for 64-bit DMAs.
-+	 * The device needs to be able to address all of this space.
-+	 */
-+	if (dma_mask >> 32 &&
-+	    dma_mask > (memory_hotplug_max() + (1ULL << 32)) &&
-+	    /* pe->pdev should be set if it's a single device, pe->pbus if not */
-+	    (pe->device_count == 1 || !pe->pbus) &&
-+	    phb->model == PNV_PHB_MODEL_PHB3) {
-+		/* Configure the bypass mode */
-+		s64 rc = pnv_pci_ioda_dma_64bit_bypass(pe);
-+		if (rc)
-+			return rc;
-+		/* 4GB offset bypasses 32-bit space */
-+		set_dma_offset(&pdev->dev, (1ULL << 32));
-+		return true;
- 	}
--	*pdev->dev.dma_mask = dma_mask;
+-extern void pci_dma_dev_setup_swiotlb(struct pci_dev *pdev);
 -
--	/* Update peer npu devices */
--	pnv_npu_try_dma_set_bypass(pdev, bypass);
--
--	return 0;
--}
--
--static u64 pnv_pci_ioda_dma_get_required_mask(struct pci_dev *pdev)
--{
--	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
--	struct pnv_phb *phb = hose->private_data;
--	struct pci_dn *pdn = pci_get_pdn(pdev);
--	struct pnv_ioda_pe *pe;
--	u64 end, mask;
- 
--	if (WARN_ON(!pdn || pdn->pe_number == IODA_INVALID_PE))
--		return 0;
--
--	pe = &phb->ioda.pe_array[pdn->pe_number];
--	if (!pe->tce_bypass_enabled)
--		return __dma_get_required_mask(&pdev->dev);
--
--
--	end = pe->tce_bypass_base + memblock_end_of_DRAM();
--	mask = 1ULL << (fls64(end) - 1);
--	mask += mask - 1;
--
--	return mask;
-+	return false;
- }
- 
- static void pnv_ioda_setup_bus_dma(struct pnv_ioda_pe *pe,
-@@ -3674,6 +3630,7 @@ static void pnv_pci_ioda_shutdown(struct pci_controller *hose)
- static const struct pci_controller_ops pnv_pci_ioda_controller_ops = {
- 	.dma_dev_setup		= pnv_pci_dma_dev_setup,
- 	.dma_bus_setup		= pnv_pci_dma_bus_setup,
-+	.iommu_bypass_supported	= pnv_pci_ioda_iommu_bypass_supported,
- #ifdef CONFIG_PCI_MSI
- 	.setup_msi_irqs		= pnv_setup_msi_irqs,
- 	.teardown_msi_irqs	= pnv_teardown_msi_irqs,
-@@ -3683,8 +3640,6 @@ static const struct pci_controller_ops pnv_pci_ioda_controller_ops = {
- 	.window_alignment	= pnv_pci_window_alignment,
- 	.setup_bridge		= pnv_pci_setup_bridge,
- 	.reset_secondary_bus	= pnv_pci_reset_secondary_bus,
--	.dma_set_mask		= pnv_pci_ioda_dma_set_mask,
--	.dma_get_required_mask	= pnv_pci_ioda_dma_get_required_mask,
- 	.shutdown		= pnv_pci_ioda_shutdown,
+ #ifdef CONFIG_SWIOTLB
+ void swiotlb_detect_4g(void);
+ #else
+diff --git a/arch/powerpc/kernel/dma-swiotlb.c b/arch/powerpc/kernel/dma-swiotlb.c
+index 678811abccfc..38a2c9f5ab54 100644
+--- a/arch/powerpc/kernel/dma-swiotlb.c
++++ b/arch/powerpc/kernel/dma-swiotlb.c
+@@ -63,17 +63,6 @@ const struct dma_map_ops powerpc_swiotlb_dma_ops = {
+ 	.get_required_mask = swiotlb_powerpc_get_required,
  };
  
+-void pci_dma_dev_setup_swiotlb(struct pci_dev *pdev)
+-{
+-	struct pci_controller *hose;
+-	struct dev_archdata *sd;
+-
+-	hose = pci_bus_to_host(pdev->bus);
+-	sd = &pdev->dev.archdata;
+-	sd->max_direct_dma_addr =
+-		hose->dma_window_base_cur + hose->dma_window_size;
+-}
+-
+ static int ppc_swiotlb_bus_notify(struct notifier_block *nb,
+ 				  unsigned long action, void *data)
+ {
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 918be816b097..561f97d698cc 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -114,6 +114,15 @@ static struct pci_ops fsl_indirect_pcie_ops =
+ static u64 pci64_dma_offset;
+ 
+ #ifdef CONFIG_SWIOTLB
++static void pci_dma_dev_setup_swiotlb(struct pci_dev *pdev)
++{
++	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
++	struct dev_archdata *sd = &pdev->dev.archdata;
++
++	sd->max_direct_dma_addr =
++		hose->dma_window_base_cur + hose->dma_window_size;
++}
++
+ static void setup_swiotlb_ops(struct pci_controller *hose)
+ {
+ 	if (ppc_swiotlb_enable) {
 -- 
 2.19.1
 
