@@ -2,96 +2,92 @@ Return-Path: <SRS0=Q8z7=NZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 698CBC43441
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 03:44:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BCFB7C43441
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 04:03:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 35D0C2145D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 03:44:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 35D0C2145D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=popple.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 9F6AE21780
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 04:03:11 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="QDaf5uxP"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9F6AE21780
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42vr2c2XkfzF3Qf
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 14:44:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=popple.id.au
+	by lists.ozlabs.org (Postfix) with ESMTP id 42vrSX2vkhzF3Gq
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 15:03:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=popple.id.au
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=alistair@popple.id.au; receiver=<UNKNOWN>)
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="QDaf5uxP";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=popple.id.au
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::644; helo=mail-pl1-x644.google.com;
+ envelope-from=amodra@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="QDaf5uxP"; 
+ dkim-atps=neutral
+Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
+ [IPv6:2607:f8b0:4864:20::644])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42vr0T4rSczF3LH
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2018 14:42:17 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wAE3dCAf062798
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 22:42:15 -0500
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2nr7drt349-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 22:42:14 -0500
-Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <alistair@popple.id.au>;
- Wed, 14 Nov 2018 03:42:12 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 14 Nov 2018 03:42:09 -0000
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wAE3g7nM60686518
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Wed, 14 Nov 2018 03:42:07 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id BA6565204E;
- Wed, 14 Nov 2018 03:42:07 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 13A8352050;
- Wed, 14 Nov 2018 03:42:07 +0000 (GMT)
-Received: from townsend.localnet (unknown [9.81.197.93])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id EC9B1A01D0;
- Wed, 14 Nov 2018 14:42:05 +1100 (AEDT)
-From: Alistair Popple <alistair@popple.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH kernel v3 05/22] powerpc/powernv/npu: Add helper to access
- struct npu for NPU device
-Date: Wed, 14 Nov 2018 14:42:05 +1100
-User-Agent: KMail/5.2.3 (Linux/4.18.0-0.bpo.1-amd64; KDE/5.28.0; x86_64; ; )
-In-Reply-To: <20181113082823.2440-6-aik@ozlabs.ru>
-References: <20181113082823.2440-1-aik@ozlabs.ru>
- <20181113082823.2440-6-aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42vrPx2GcjzF3HS
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2018 15:00:52 +1100 (AEDT)
+Received: by mail-pl1-x644.google.com with SMTP id x21-v6so4378252pln.9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 20:00:52 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=hbCj58wDGJYVgLcMa3ZJ2tA031059oP2ukMWxYoZNWg=;
+ b=QDaf5uxPPtuSiyA7UQcUgO7S8kXrjkpPkUp9Jl1ZeDPQkwCOU550XB8J6/JCCMMknA
+ 8EWRxMlalxiv6Yktx83clp/3/aBviP72J439Z++wLjhpXjFBHZLQMS0Hoy6g6M5t6RBf
+ Fm4sMUZYyaoHk0vPokdJM3EIGxulm74PDxNq6AnxYH/z3P6Cl9kBundR9QJV6BzECKu1
+ araJGLsPIDoYstadvCz56zZ7k91xypBteEWMunLPneJm01MspgFT8o7BJH2PpvnxoGUD
+ iLD/dcaxfkvynHepdxU59BQ0rpzB5+BaSyUje64kEf4NzejBcSSagr90XBH/uSINEBxc
+ aajw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=hbCj58wDGJYVgLcMa3ZJ2tA031059oP2ukMWxYoZNWg=;
+ b=j1PCuf1YmBG2munZOEu2AW4O5bKsNRRyspEhJoKaWOFF8FnKTSk5dp3yG/EyaV+EUt
+ 03UHtVnehTAJDYssCvaMvERtKOVVce1+lqaEktk/DRHhi2PbAk1MSHsslCLYX+9Tdy9D
+ ezRv7K0+Do6RvT2hBLVacHjSQSkqXEYz3pc9LhLkgvvotQclxDnYbaTWaUVidjOgtbwg
+ 8YnfQQfIEl1hh+gQNawEc+hx9CLS2CrI3FrCu0Q7svnde11UHym7mXsHXSjKUoY3sc6f
+ /iRzmI2PLjcTs6vefGaS1wUujmCjyqQKnt5xXLm/K6tLWNKl/sOXuyFT7YyncqIFKrq1
+ HXYA==
+X-Gm-Message-State: AGRZ1gJANucRfm/shYBrzpYT7OG97L+0mGIxIrDbNwOwA+ezSLvMA5fE
+ 7ZVhRbfZ3/y1LVFdzUznhnA=
+X-Google-Smtp-Source: AJdET5fpQzMxaoglFU0YbCyresK6eTM6o+iM2q9pxb+Hezl8Vo9yOJg/K9FH03UDpyS2Bg4lgUvJgA==
+X-Received: by 2002:a17:902:5e4:: with SMTP id
+ f91-v6mr312076plf.75.1542168050324; 
+ Tue, 13 Nov 2018 20:00:50 -0800 (PST)
+Received: from bubble.grove.modra.org ([58.175.241.133])
+ by smtp.gmail.com with ESMTPSA id s186-v6sm50444343pfs.164.2018.11.13.20.00.49
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Tue, 13 Nov 2018 20:00:49 -0800 (PST)
+Received: by bubble.grove.modra.org (Postfix, from userid 1000)
+ id 1E0EC80869; Wed, 14 Nov 2018 14:30:46 +1030 (ACDT)
+Date: Wed, 14 Nov 2018 14:30:46 +1030
+From: Alan Modra <amodra@gmail.com>
+To: Joel Stanley <joel@jms.id.au>
+Subject: Re: [PATCH] powerpc/32: Include .branch_lt in data section
+Message-ID: <20181114040045.GX29784@bubble.grove.modra.org>
+References: <20181114030218.25508-1-joel@jms.id.au>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-X-TM-AS-GCONF: 00
-x-cbid: 18111403-4275-0000-0000-000002E0A2DA
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18111403-4276-0000-0000-000037EDB45E
-Message-Id: <5327772.Kf1u9AHZax@townsend>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-11-14_03:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=18 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1034 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1811140031
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20181114030218.25508-1-joel@jms.id.au>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,97 +99,56 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jose Ricardo Ziviani <joserz@linux.ibm.com>,
- Sam Bobroff <sbobroff@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Alex Williamson <alex.williamson@redhat.com>, kvm-ppc@vger.kernel.org,
- Piotr Jaroszynski <pjaroszynski@nvidia.com>,
- Oliver O'Halloran <oohall@gmail.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Leonardo Augusto =?ISO-8859-1?Q?Guimar=E3es?= Garcia <lagarcia@br.ibm.com>,
- Reza Arbab <arbab@linux.ibm.com>, David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Reviewed-by: Alistair Popple <alistair@popple.id.au>
-
-On Tuesday, 13 November 2018 7:28:06 PM AEDT Alexey Kardashevskiy wrote:
-> This step is to help removing the npu struct from pnv_phb so it
-> can be used by pseries as well.
+On Wed, Nov 14, 2018 at 01:32:18PM +1030, Joel Stanley wrote:
+> When building a 32 bit powerpc kernel with Binutils 2.31.1 this warning
+> is emitted:
 > 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+>  powerpc-linux-gnu-ld: warning: orphan section `.branch_lt' from
+>  `arch/powerpc/kernel/head_44x.o' being placed in section `.branch_lt'
+> 
+> As of binutils commit 2d7ad24e8726 ("Support PLT16 relocs against local
+> symbols")[1], 32 bit targets can produce .branch_lt sections in their
+> output.
+> 
+> Include these symbols in the .data section as the ppc64 kernel does.
+> 
+> [1] https://sourceware.org/git/gitweb.cgi?p=binutils-gdb.git;a=commitdiff;h=2d7ad24e8726ba4c45c9e67be08223a146a837ce
+> Signed-off-by: Joel Stanley <joel@jms.id.au>
+Reviewed-by: Alan Modra <amodra@gmail.com>
+
+Looks fine to me.
+
 > ---
->  arch/powerpc/platforms/powernv/npu-dma.c | 22 ++++++++++++++++------
->  1 file changed, 16 insertions(+), 6 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/powernv/npu-dma.c
-> b/arch/powerpc/platforms/powernv/npu-dma.c index 91d488f..9f48831 100644
-> --- a/arch/powerpc/platforms/powernv/npu-dma.c
-> +++ b/arch/powerpc/platforms/powernv/npu-dma.c
-> @@ -327,6 +327,18 @@ struct pnv_ioda_pe *pnv_pci_npu_setup_iommu(struct
-> pnv_ioda_pe *npe) return gpe;
->  }
-> 
-> +/*
-> + * NPU2 ATS
-> + */
-> +static struct npu *npdev_to_npu(struct pci_dev *npdev)
-> +{
-> +	struct pnv_phb *nphb;
-> +
-> +	nphb = pci_bus_to_host(npdev->bus)->private_data;
-> +
-> +	return &nphb->npu;
-> +}
-> +
->  /* Maximum number of nvlinks per npu */
->  #define NV_MAX_LINKS 6
-> 
-> @@ -478,7 +490,6 @@ static void acquire_atsd_reg(struct npu_context
-> *npu_context, int i, j;
->  	struct npu *npu;
->  	struct pci_dev *npdev;
-> -	struct pnv_phb *nphb;
-> 
->  	for (i = 0; i <= max_npu2_index; i++) {
->  		mmio_atsd_reg[i].reg = -1;
-> @@ -493,8 +504,7 @@ static void acquire_atsd_reg(struct npu_context
-> *npu_context, if (!npdev)
->  				continue;
-> 
-> -			nphb = pci_bus_to_host(npdev->bus)->private_data;
-> -			npu = &nphb->npu;
-> +			npu = npdev_to_npu(npdev);
->  			mmio_atsd_reg[i].npu = npu;
->  			mmio_atsd_reg[i].reg = get_mmio_atsd_reg(npu);
->  			while (mmio_atsd_reg[i].reg < 0) {
-> @@ -690,7 +700,7 @@ struct npu_context *pnv_npu2_init_context(struct pci_dev
-> *gpdev, }
-> 
->  	nphb = pci_bus_to_host(npdev->bus)->private_data;
-> -	npu = &nphb->npu;
-> +	npu = npdev_to_npu(npdev);
-> 
->  	/*
->  	 * Setup the NPU context table for a particular GPU. These need to be
-> @@ -764,7 +774,7 @@ struct npu_context *pnv_npu2_init_context(struct pci_dev
-> *gpdev, */
->  	WRITE_ONCE(npu_context->npdev[npu->index][nvlink_index], npdev);
-> 
-> -	if (!nphb->npu.nmmu_flush) {
-> +	if (!npu->nmmu_flush) {
->  		/*
->  		 * If we're not explicitly flushing ourselves we need to mark
->  		 * the thread for global flushes
-> @@ -810,7 +820,7 @@ void pnv_npu2_destroy_context(struct npu_context
-> *npu_context, return;
-> 
->  	nphb = pci_bus_to_host(npdev->bus)->private_data;
-> -	npu = &nphb->npu;
-> +	npu = npdev_to_npu(npdev);
->  	nvlink_dn = of_parse_phandle(npdev->dev.of_node, "ibm,nvlink", 0);
->  	if (WARN_ON(of_property_read_u32(nvlink_dn, "ibm,npu-link-index",
->  							&nvlink_index)))
+> I wasn't sure where this should go or if the ordering matters.
 
+The usual answer is: "Look at where the section goes in the standard
+linker scripts."   But that doesn't apply here.  The section will be
+empty for a kernel build so it doesn't matter where it goes.
 
+> ---
+>  arch/powerpc/kernel/vmlinux.lds.S | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+> index 434581bcd5b4..6d5fd1b95311 100644
+> --- a/arch/powerpc/kernel/vmlinux.lds.S
+> +++ b/arch/powerpc/kernel/vmlinux.lds.S
+> @@ -313,6 +313,7 @@ SECTIONS
+>  		*(.sdata2)
+>  		*(.got.plt) *(.got)
+>  		*(.plt)
+> +		*(.branch_lt)
+>  	}
+>  #else
+>  	.data : AT(ADDR(.data) - LOAD_OFFSET) {
+> -- 
+> 2.19.1
+
+-- 
+Alan Modra
+Australia Development Lab, IBM
