@@ -2,76 +2,81 @@ Return-Path: <SRS0=Q8z7=NZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 20516C43441
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 06:02:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C8921C43441
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 06:22:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 58E5D208E7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 06:02:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 0CD3221780
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 06:22:39 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="TVCQ0lvk"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 58E5D208E7
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="JPC7vf2A"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0CD3221780
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42vv6H1L1dzF3Nv
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 17:02:31 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42vvYV0PTdzF35b
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 17:22:38 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="TVCQ0lvk";
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="JPC7vf2A";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=helgaas@kernel.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
+ envelope-from=oohall@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="TVCQ0lvk"; 
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="JPC7vf2A"; 
  dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
+ [IPv6:2607:f8b0:4864:20::442])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42vv3P6WVWzF3Nj
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2018 17:00:01 +1100 (AEDT)
-Received: from localhost (unknown [64.114.255.114])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id E29F02146D;
- Wed, 14 Nov 2018 05:59:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1542175199;
- bh=H2FkeEHLjL414bPVZegIRuuO4If/uRSi8gkmWujMtmo=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=TVCQ0lvkqVaQX7IzQ6sB1YTaDnpSqWGCgogaM4MdLzoWX9Gk7M72yAaO/rDTLiqty
- HwEaeulvV1AD+VaUuFWxUre0Ja1LTpdMutmsU8VKhoVSyI+ZI4qDyfNAx/ydBVvOPQ
- xI+nvbkp4AUY1UBt+SwL2Afq3yiFvHIeYipeBfjc=
-Date: Tue, 13 Nov 2018 23:59:56 -0600
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Alex_Gagniuc@Dellteam.com
-Subject: Re: [PATCH v2] PCI/MSI: Don't touch MSI bits when the PCI device is
- disconnected
-Message-ID: <20181114055956.GA144931@google.com>
-References: <20181108220117.GA11466@kroah.com>
- <20181108223258.GD2932@localhost.localdomain>
- <20181108224255.GA20619@kroah.com>
- <20d68e586fff4dcca5616d5056f6fc21@ausx13mps321.AMER.DELL.COM>
- <20181108225109.GA3023@kroah.com>
- <16bf9d14bc5f4a90b2b88dd2eb165186@ausx13mps321.AMER.DELL.COM>
- <5da8d8aa9f3818af649b1ac547bc4e6062626ddf.camel@gmail.com>
- <df85813c9860463d85f6c302dfe07b12@ausx13mps321.AMER.DELL.COM>
- <20181113050240.GA182139@google.com>
- <19136f44cd5c45e79bbef7e78a6bf332@ausx13mps321.AMER.DELL.COM>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <19136f44cd5c45e79bbef7e78a6bf332@ausx13mps321.AMER.DELL.COM>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42vvVp6p34zF3Ph
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2018 17:20:18 +1100 (AEDT)
+Received: by mail-pf1-x442.google.com with SMTP id e22-v6so7361845pfn.8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 22:20:18 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id;
+ bh=gk2ODjPPsCuuKvnvYZIQSStDHzlRIg856CysXETbwFU=;
+ b=JPC7vf2Aip/bsUZOga29RpwgZupNCPZjNKzMw9ZNi+EGDQGL0HQBpOcZniNnZiRVNH
+ H/ZkHSl94aOZcV0pOonH7jlhd79a2poQEeFAl4vxDDwk8CDPZo6HOVr7rTNyTbspQn7u
+ /gwuQJRgSISPvxcPlDWzVwNQhSz5g+mM9tD7CBzMgLMbh3BtMj7wipt7Bxk/LrxuZ7BO
+ Z11DVFNu7OB8huuXJaNKzgPac69blPhbdCmW+QBVPj4hdzolJRcDK+GBkGBZ04ogV1DA
+ C+ER+hbfpifToRVbWoiur0Tmovukce85Rd2OTzoefjgedm06RMk9Ks9pTu9r24AkD3/p
+ HThg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id;
+ bh=gk2ODjPPsCuuKvnvYZIQSStDHzlRIg856CysXETbwFU=;
+ b=o82i8qw0a98QTttAP1/f1Nehlqbhh49a69UvkTUe//mnaNdFqxmg7GPZgtD6BQ68zX
+ H0uIPRnKkgX11syKpFjBruExB6LD6gpq+OcxUaCrFcQfx1+6o1aPs/d3WYl5dpucmDHx
+ 7UO+/pjWFBlW55can3Fgwube1VXZv3oGzUhtlz3pc8SCaHaeV8BjZHZhvzk0vIoBct41
+ FchqvU+KaQ08B7lLgXze9qqvkIiGX6wYS3Nz7JTkmJ1vs9Gh2frpOcsV7nM0qX8g85rR
+ 43nJQgUPKESzz3LBRVc5RiTpUGJMa7j3AlUqLZNYoAIDNt/fQMmTAMtex19Z/sPhaRgc
+ XwZw==
+X-Gm-Message-State: AGRZ1gJaFQ+ndEk0IEQBDmCaL8HY0R2J9QxUJNvleb6LuL0HmSvUU8iJ
+ RMsFVa2TqAjUmOLntnv3hqDf0n2z
+X-Google-Smtp-Source: AJdET5efbrrT5+A0Mgq3ITia6KT5b/MhTwbrQ8RDuFXINNPIHsf31L/dr9SO0nXtQRfuhQyucA18dQ==
+X-Received: by 2002:a63:8ac4:: with SMTP id y187mr594080pgd.446.1542176416402; 
+ Tue, 13 Nov 2018 22:20:16 -0800 (PST)
+Received: from wafer.ozlabs.ibm.com ([122.99.82.10])
+ by smtp.gmail.com with ESMTPSA id h8sm3795671pgv.27.2018.11.13.22.20.14
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Tue, 13 Nov 2018 22:20:15 -0800 (PST)
+From: Oliver O'Halloran <oohall@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/powernv: Remove PCI_MSI ifdef checks
+Date: Wed, 14 Nov 2018 17:19:58 +1100
+Message-Id: <20181114061958.3462-1-oohall@gmail.com>
+X-Mailer: git-send-email 2.17.2
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,84 +88,121 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Shyam.Iyer@dell.com, sbobroff@linux.ibm.com, gregkh@linuxfoundation.org,
- linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, keith.busch@intel.com,
- lukas@wunner.de, oohall@gmail.com, mr.nuke.me@gmail.com, Austin.Bolen@dell.com,
- linuxppc-dev@lists.ozlabs.org, jonathan.derrick@intel.com
+Cc: Oliver O'Halloran <oohall@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Nov 13, 2018 at 10:39:15PM +0000, Alex_Gagniuc@Dellteam.com wrote:
-> On 11/12/2018 11:02 PM, Bjorn Helgaas wrote:
-> > 
-> > [EXTERNAL EMAIL]
-> > Please report any suspicious attachments, links, or requests for sensitive information.
+CONFIG_PCI_MSI was made mandatory by commit a311e738b6d8
+("powerpc/powernv: Make PCI non-optional") so the #ifdef
+checks around CONFIG_PCI_MSI here can be removed entirely.
 
-It looks like Dell's email system adds the above in such a way that the
-email quoting convention suggests that *I* wrote it, when I did not.
+Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+---
+ arch/powerpc/platforms/powernv/pci-ioda.c | 13 -------------
+ arch/powerpc/platforms/powernv/pci.c      |  2 --
+ arch/powerpc/platforms/powernv/pci.h      |  2 --
+ 3 files changed, 17 deletions(-)
 
-> ...
-> > Do you think Linux observes the rule about not touching AER bits on
-> > FFS?  I'm not sure it does.  I'm not even sure what section of the
-> > spec is relevant.
-> 
-> I haven't found any place where linux breaks this rule. I'm very 
-> confident that, unless otherwise instructed, we follow this rule.
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index cde710297a4e..90c5ea1e16f3 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -664,10 +664,6 @@ static int pnv_ioda_get_pe_state(struct pnv_phb *phb, int pe_no)
+ 	return state;
+ }
+ 
+-/* Currently those 2 are only used when MSIs are enabled, this will change
+- * but in the meantime, we need to protect them to avoid warnings
+- */
+-#ifdef CONFIG_PCI_MSI
+ struct pnv_ioda_pe *pnv_ioda_get_pe(struct pci_dev *dev)
+ {
+ 	struct pci_controller *hose = pci_bus_to_host(dev->bus);
+@@ -680,7 +676,6 @@ struct pnv_ioda_pe *pnv_ioda_get_pe(struct pci_dev *dev)
+ 		return NULL;
+ 	return &phb->ioda.pe_array[pdn->pe_number];
+ }
+-#endif /* CONFIG_PCI_MSI */
+ 
+ static int pnv_ioda_set_one_peltv(struct pnv_phb *phb,
+ 				  struct pnv_ioda_pe *parent,
+@@ -2837,7 +2832,6 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+ 		pnv_ioda_setup_bus_dma(pe, pe->pbus, true);
+ }
+ 
+-#ifdef CONFIG_PCI_MSI
+ int64_t pnv_opal_pci_msi_eoi(struct irq_chip *chip, unsigned int hw_irq)
+ {
+ 	struct pnv_phb *phb = container_of(chip, struct pnv_phb,
+@@ -2983,9 +2977,6 @@ static void pnv_pci_init_ioda_msis(struct pnv_phb *phb)
+ 	pr_info("  Allocated bitmap for %d MSIs (base IRQ 0x%x)\n",
+ 		count, phb->msi_base);
+ }
+-#else
+-static void pnv_pci_init_ioda_msis(struct pnv_phb *phb) { }
+-#endif /* CONFIG_PCI_MSI */
+ 
+ #ifdef CONFIG_PCI_IOV
+ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
+@@ -3699,10 +3690,8 @@ static void pnv_pci_ioda_shutdown(struct pci_controller *hose)
+ static const struct pci_controller_ops pnv_pci_ioda_controller_ops = {
+ 	.dma_dev_setup		= pnv_pci_dma_dev_setup,
+ 	.dma_bus_setup		= pnv_pci_dma_bus_setup,
+-#ifdef CONFIG_PCI_MSI
+ 	.setup_msi_irqs		= pnv_setup_msi_irqs,
+ 	.teardown_msi_irqs	= pnv_teardown_msi_irqs,
+-#endif
+ 	.enable_device_hook	= pnv_pci_enable_device_hook,
+ 	.release_device		= pnv_pci_release_device,
+ 	.window_alignment	= pnv_pci_window_alignment,
+@@ -3723,10 +3712,8 @@ static int pnv_npu_dma_set_mask(struct pci_dev *npdev, u64 dma_mask)
+ 
+ static const struct pci_controller_ops pnv_npu_ioda_controller_ops = {
+ 	.dma_dev_setup		= pnv_pci_dma_dev_setup,
+-#ifdef CONFIG_PCI_MSI
+ 	.setup_msi_irqs		= pnv_setup_msi_irqs,
+ 	.teardown_msi_irqs	= pnv_teardown_msi_irqs,
+-#endif
+ 	.enable_device_hook	= pnv_pci_enable_device_hook,
+ 	.window_alignment	= pnv_pci_window_alignment,
+ 	.reset_secondary_bus	= pnv_pci_reset_secondary_bus,
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index 13aef2323bbc..583fb2e64893 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -160,7 +160,6 @@ int pnv_pci_set_power_state(uint64_t id, uint8_t state, struct opal_msg *msg)
+ }
+ EXPORT_SYMBOL_GPL(pnv_pci_set_power_state);
+ 
+-#ifdef CONFIG_PCI_MSI
+ int pnv_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+ {
+ 	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
+@@ -229,7 +228,6 @@ void pnv_teardown_msi_irqs(struct pci_dev *pdev)
+ 		msi_bitmap_free_hwirqs(&phb->msi_bmp, hwirq - phb->msi_base, 1);
+ 	}
+ }
+-#endif /* CONFIG_PCI_MSI */
+ 
+ /* Nicely print the contents of the PE State Tables (PEST). */
+ static void pnv_pci_dump_pest(__be64 pestA[], __be64 pestB[], int pest_size)
+diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+index 8b37b28e3831..99ac2bd0cf51 100644
+--- a/arch/powerpc/platforms/powernv/pci.h
++++ b/arch/powerpc/platforms/powernv/pci.h
+@@ -106,11 +106,9 @@ struct pnv_phb {
+ 	struct dentry		*dbgfs;
+ #endif
+ 
+-#ifdef CONFIG_PCI_MSI
+ 	unsigned int		msi_base;
+ 	unsigned int		msi32_support;
+ 	struct msi_bitmap	msi_bmp;
+-#endif
+ 	int (*msi_setup)(struct pnv_phb *phb, struct pci_dev *dev,
+ 			 unsigned int hwirq, unsigned int virq,
+ 			 unsigned int is_64, struct msi_msg *msg);
+-- 
+2.17.2
 
-Just to make sure we're on the same page, can you point me to this
-rule?  I do see that OSPM must request control of AER using _OSC
-before it touches the AER registers.  What I don't see is the
-connection between firmware-first and the AER registers.
-
-The closest I can find is the "Enabled" field in the HEST PCIe
-AER structures (ACPI v6.2, sec 18.3.2.4, .5, .6), where it says:
-
-  If the field value is 1, indicates this error source is
-  to be enabled.
-
-  If the field value is 0, indicates that the error source
-  is not to be enabled.
-
-  If FIRMWARE_FIRST is set in the flags field, the Enabled
-  field is ignored by the OSPM.
-
-AFAICT, Linux completely ignores the Enabled field in these
-structures.
-
-These structures also contain values the OS is apparently supposed to
-write to Device Control and several AER registers (in struct
-acpi_hest_aer_common).  Linux ignores these as well.
-
-These seem like fairly serious omissions in Linux.
-
-> > The whole issue of firmware-first, the mechanism by which firmware
-> > gets control, the System Error enables in Root Port Root Control
-> > registers, etc., is very murky to me.  Jon has a sort of similar issue
-> > with VMD where he needs to leave System Errors enabled instead of
-> > disabling them as we currently do.
-> 
-> Well, OS gets control via _OSC method, and based on that it should 
-> touch/not touch the AER bits. 
-
-I agree so far.
-
-> The bits that get set/cleared come from _HPX method,
-
-_HPX tells us about some AER registers, Device Control, Link Control,
-and some bridge registers.  It doesn't say anything about the Root
-Control register that Jon is concerned with.
-
-For firmware-first to work, firmware has to get control.  How does it
-get control?  How does OSPM know to either set up that mechanism or
-keep its mitts off something firmware set up before handoff?  In Jon's
-VMD case, I think firmware-first relies on the System Error controlled
-by the Root Control register.  Linux thinks it owns that, and I don't
-know how to learn otherwise.
-
-> and there's a more about the FFS described in ACPI spec. It 
-> seems that if platform, wants to enable VMD, it should pass the correct 
-> bits via _HPX. I'm curious to know in what new twisted way FFS doesn't 
-> work as intended.
-
-Bjorn
