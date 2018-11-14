@@ -2,96 +2,76 @@ Return-Path: <SRS0=Q8z7=NZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 657BCC43441
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 04:59:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 20516C43441
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 06:02:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C14BB21780
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 04:59:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C14BB21780
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=popple.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 58E5D208E7
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 06:02:33 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="TVCQ0lvk"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 58E5D208E7
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42vsjf0rrDzF3Pv
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 15:59:34 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=popple.id.au
+	by lists.ozlabs.org (Postfix) with ESMTP id 42vv6H1L1dzF3Nv
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 17:02:31 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=popple.id.au
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=alistair@popple.id.au; receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="TVCQ0lvk";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=popple.id.au
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=helgaas@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="TVCQ0lvk"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42vv3P6WVWzF3Nj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2018 17:00:01 +1100 (AEDT)
+Received: from localhost (unknown [64.114.255.114])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42vsgf0W84zF3Pb
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2018 15:57:49 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wAE4rarC004861
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 23:57:47 -0500
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2nrcg1hss4-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2018 23:57:47 -0500
-Received: from localhost
- by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <alistair@popple.id.au>;
- Wed, 14 Nov 2018 04:57:45 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 14 Nov 2018 04:57:41 -0000
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wAE4vdcm59047952
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Wed, 14 Nov 2018 04:57:39 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id AA8065204F;
- Wed, 14 Nov 2018 04:57:39 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 0D0B85204E;
- Wed, 14 Nov 2018 04:57:39 +0000 (GMT)
-Received: from townsend.localnet (unknown [9.81.197.93])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id C07C1A01D5;
- Wed, 14 Nov 2018 15:57:37 +1100 (AEDT)
-From: Alistair Popple <alistair@popple.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH kernel v3 07/22] powerpc/powernv/npu: Move OPAL calls away
- from context manipulation
-Date: Wed, 14 Nov 2018 15:57:37 +1100
-User-Agent: KMail/5.2.3 (Linux/4.18.0-0.bpo.1-amd64; KDE/5.28.0; x86_64; ; )
-In-Reply-To: <20181113082823.2440-8-aik@ozlabs.ru>
-References: <20181113082823.2440-1-aik@ozlabs.ru>
- <20181113082823.2440-8-aik@ozlabs.ru>
+ by mail.kernel.org (Postfix) with ESMTPSA id E29F02146D;
+ Wed, 14 Nov 2018 05:59:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1542175199;
+ bh=H2FkeEHLjL414bPVZegIRuuO4If/uRSi8gkmWujMtmo=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=TVCQ0lvkqVaQX7IzQ6sB1YTaDnpSqWGCgogaM4MdLzoWX9Gk7M72yAaO/rDTLiqty
+ HwEaeulvV1AD+VaUuFWxUre0Ja1LTpdMutmsU8VKhoVSyI+ZI4qDyfNAx/ydBVvOPQ
+ xI+nvbkp4AUY1UBt+SwL2Afq3yiFvHIeYipeBfjc=
+Date: Tue, 13 Nov 2018 23:59:56 -0600
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Alex_Gagniuc@Dellteam.com
+Subject: Re: [PATCH v2] PCI/MSI: Don't touch MSI bits when the PCI device is
+ disconnected
+Message-ID: <20181114055956.GA144931@google.com>
+References: <20181108220117.GA11466@kroah.com>
+ <20181108223258.GD2932@localhost.localdomain>
+ <20181108224255.GA20619@kroah.com>
+ <20d68e586fff4dcca5616d5056f6fc21@ausx13mps321.AMER.DELL.COM>
+ <20181108225109.GA3023@kroah.com>
+ <16bf9d14bc5f4a90b2b88dd2eb165186@ausx13mps321.AMER.DELL.COM>
+ <5da8d8aa9f3818af649b1ac547bc4e6062626ddf.camel@gmail.com>
+ <df85813c9860463d85f6c302dfe07b12@ausx13mps321.AMER.DELL.COM>
+ <20181113050240.GA182139@google.com>
+ <19136f44cd5c45e79bbef7e78a6bf332@ausx13mps321.AMER.DELL.COM>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-X-TM-AS-GCONF: 00
-x-cbid: 18111404-0028-0000-0000-000003199A44
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18111404-0029-0000-0000-000023D60320
-Message-Id: <2793658.kiX7AcRqs3@townsend>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-11-14_04:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=21 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1034 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1811140043
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <19136f44cd5c45e79bbef7e78a6bf332@ausx13mps321.AMER.DELL.COM>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,238 +83,84 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jose Ricardo Ziviani <joserz@linux.ibm.com>,
- Sam Bobroff <sbobroff@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Alex Williamson <alex.williamson@redhat.com>, kvm-ppc@vger.kernel.org,
- Piotr Jaroszynski <pjaroszynski@nvidia.com>,
- Oliver O'Halloran <oohall@gmail.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Leonardo Augusto =?ISO-8859-1?Q?Guimar=E3es?= Garcia <lagarcia@br.ibm.com>,
- Reza Arbab <arbab@linux.ibm.com>, David Gibson <david@gibson.dropbear.id.au>
+Cc: Shyam.Iyer@dell.com, sbobroff@linux.ibm.com, gregkh@linuxfoundation.org,
+ linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, keith.busch@intel.com,
+ lukas@wunner.de, oohall@gmail.com, mr.nuke.me@gmail.com, Austin.Bolen@dell.com,
+ linuxppc-dev@lists.ozlabs.org, jonathan.derrick@intel.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-> -	/*
-> -	 * Setup the NPU context table for a particular GPU. These need to be
-> -	 * per-GPU as we need the tables to filter ATSDs when there are no
-> -	 * active contexts on a particular GPU. It is safe for these to be
-> -	 * called concurrently with destroy as the OPAL call takes appropriate
-> -	 * locks and refcounts on init/destroy.
-> -	 */
-> -	rc = opal_npu_init_context(nphb->opal_id, mm->context.id, flags,
-> -				PCI_DEVID(gpdev->bus->number, gpdev->devfn));
-> -	if (rc < 0)
-> -		return ERR_PTR(-ENOSPC);
-> -
+On Tue, Nov 13, 2018 at 10:39:15PM +0000, Alex_Gagniuc@Dellteam.com wrote:
+> On 11/12/2018 11:02 PM, Bjorn Helgaas wrote:
+> > 
+> > [EXTERNAL EMAIL]
+> > Please report any suspicious attachments, links, or requests for sensitive information.
 
-This will prevent any drivers from setting up contexts with different MSR 
-values (which is what the flags argument is for) than a standard userspace 
-context (MSR_DR | MSR_PR | MSR_HV). In practice this currently never happens 
-and I'm unsure if that's ever likely to change.
+It looks like Dell's email system adds the above in such a way that the
+email quoting convention suggests that *I* wrote it, when I did not.
 
-We should at least return an error if flags != (MSR_DR | MSR_PR | MSR_HV).
+> ...
+> > Do you think Linux observes the rule about not touching AER bits on
+> > FFS?  I'm not sure it does.  I'm not even sure what section of the
+> > spec is relevant.
+> 
+> I haven't found any place where linux breaks this rule. I'm very 
+> confident that, unless otherwise instructed, we follow this rule.
 
->  	/*
->  	 * We store the npu pci device so we can more easily get at the
->  	 * associated npus.
-> @@ -755,9 +738,6 @@ struct npu_context *pnv_npu2_init_context(struct pci_dev
-> *gpdev, if (npu_context->release_cb != cb ||
->  			npu_context->priv != priv) {
->  			spin_unlock(&npu_context_lock);
-> -			opal_npu_destroy_context(nphb->opal_id, mm->context.id,
-> -						PCI_DEVID(gpdev->bus->number,
-> -							gpdev->devfn));
->  			return ERR_PTR(-EINVAL);
->  		}
-> 
-> @@ -783,9 +763,6 @@ struct npu_context *pnv_npu2_init_context(struct pci_dev
-> *gpdev,
-> 
->  		if (rc) {
->  			kfree(npu_context);
-> -			opal_npu_destroy_context(nphb->opal_id, mm->context.id,
-> -					PCI_DEVID(gpdev->bus->number,
-> -						gpdev->devfn));
->  			return ERR_PTR(rc);
->  		}
-> 
-> @@ -838,7 +815,6 @@ void pnv_npu2_destroy_context(struct npu_context
-> *npu_context, struct pci_dev *gpdev)
->  {
->  	int removed;
-> -	struct pnv_phb *nphb;
->  	struct npu *npu;
->  	struct pci_dev *npdev = pnv_pci_get_npu_dev(gpdev, 0);
->  	struct device_node *nvlink_dn;
-> @@ -847,10 +823,6 @@ void pnv_npu2_destroy_context(struct npu_context
-> *npu_context, if (WARN_ON(!npdev))
->  		return;
-> 
-> -	if (!firmware_has_feature(FW_FEATURE_OPAL))
-> -		return;
-> -
-> -	nphb = pci_bus_to_host(npdev->bus)->private_data;
->  	npu = npdev_to_npu(npdev);
->  	if (!npu)
->  		return;
-> @@ -859,8 +831,6 @@ void pnv_npu2_destroy_context(struct npu_context
-> *npu_context, &nvlink_index)))
->  		return;
->  	WRITE_ONCE(npu_context->npdev[npu->index][nvlink_index], NULL);
-> -	opal_npu_destroy_context(nphb->opal_id, npu_context->mm->context.id,
-> -				PCI_DEVID(gpdev->bus->number, gpdev->devfn));
->  	spin_lock(&npu_context_lock);
->  	removed = kref_put(&npu_context->kref, pnv_npu2_release_context);
->  	spin_unlock(&npu_context_lock);
-> @@ -892,9 +862,6 @@ int pnv_npu2_handle_fault(struct npu_context *context,
-> uintptr_t *ea, /* mmap_sem should be held so the struct_mm must be present
-> */
->  	struct mm_struct *mm = context->mm;
-> 
-> -	if (!firmware_has_feature(FW_FEATURE_OPAL))
-> -		return -ENODEV;
-> -
->  	WARN_ON(!rwsem_is_locked(&mm->mmap_sem));
-> 
->  	for (i = 0; i < count; i++) {
-> @@ -923,15 +890,11 @@ int pnv_npu2_handle_fault(struct npu_context *context,
-> uintptr_t *ea, }
->  EXPORT_SYMBOL(pnv_npu2_handle_fault);
-> 
-> -int pnv_npu2_init(struct pnv_phb *phb)
-> +int pnv_npu2_init(struct pci_controller *hose)
->  {
->  	unsigned int i;
->  	u64 mmio_atsd;
-> -	struct device_node *dn;
-> -	struct pci_dev *gpdev;
->  	static int npu_index;
-> -	uint64_t rc = 0;
-> -	struct pci_controller *hose = phb->hose;
->  	struct npu *npu;
->  	int ret;
-> 
-> @@ -940,18 +903,6 @@ int pnv_npu2_init(struct pnv_phb *phb)
->  		return -ENOMEM;
-> 
->  	npu->nmmu_flush = of_property_read_bool(hose->dn, "ibm,nmmu-flush");
-> -	for_each_child_of_node(phb->hose->dn, dn) {
-> -		gpdev = pnv_pci_get_gpu_dev(get_pci_dev(dn));
-> -		if (gpdev) {
-> -			rc = opal_npu_map_lpar(phb->opal_id,
-> -				PCI_DEVID(gpdev->bus->number, gpdev->devfn),
-> -				0, 0);
-> -			if (rc)
-> -				dev_err(&gpdev->dev,
-> -					"Error %lld mapping device to LPAR\n",
-> -					rc);
-> -		}
-> -	}
-> 
->  	for (i = 0; !of_property_read_u64_index(hose->dn, "ibm,mmio-atsd",
->  							i, &mmio_atsd); i++)
-> @@ -981,3 +932,57 @@ int pnv_npu2_init(struct pnv_phb *phb)
-> 
->  	return ret;
->  }
-> +
-> +int pnv_npu2_map_lpar_dev(struct pci_dev *gpdev, unsigned int lparid,
-> +		unsigned long msr)
-> +{
-> +	int ret;
-> +	struct pci_dev *npdev = pnv_pci_get_npu_dev(gpdev, 0);
-> +	struct pci_controller *hose;
-> +	struct pnv_phb *nphb;
-> +
-> +	if (!npdev)
-> +		return -ENODEV;
-> +
-> +	hose = pci_bus_to_host(npdev->bus);
-> +	nphb = hose->private_data;
-> +
-> +	dev_dbg(&gpdev->dev, "Map LPAR opalid=%llu lparid=%u\n",
-> +			nphb->opal_id, lparid);
-> +	/*
-> +	 * Currently we only support radix and non-zero LPCR only makes sense
-> +	 * for hash tables so skiboot expects the LPCR parameter to be a zero.
-> +	 */
-> +	ret = opal_npu_map_lpar(nphb->opal_id,
-> +			PCI_DEVID(gpdev->bus->number, gpdev->devfn), lparid,
-> +			0 /* LPCR bits */);
-> +	if (ret) {
-> +		dev_err(&gpdev->dev, "Error %d mapping device to LPAR\n", ret);
-> +		return ret;
-> +	}
-> +
-> +	dev_dbg(&gpdev->dev, "init context opalid=%llu msr=%lx\n",
-> +			nphb->opal_id, msr);
-> +	ret = opal_npu_init_context(nphb->opal_id, 0/*__unused*/, msr,
-> +			PCI_DEVID(gpdev->bus->number, gpdev->devfn));
-> +	if (ret < 0)
-> +		dev_err(&gpdev->dev, "Failed to init context: %d\n", ret);
-> +	else
-> +		ret = 0;
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(pnv_npu2_map_lpar_dev);
-> +
-> +void pnv_npu2_map_lpar(struct pnv_ioda_pe *gpe, unsigned long msr)
-> +{
-> +	int ret;
-> +	struct pci_dev *gpdev;
-> +
-> +	list_for_each_entry(gpdev, &gpe->pbus->devices, bus_list) {
-> +		ret = pnv_npu2_map_lpar_dev(gpdev, 0, msr);
-> +		if (ret < 0)
-> +			dev_err(&gpdev->dev, "Failed to init context: %d\n",
-> +					ret);
-> +	}
-> +}
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c
-> b/arch/powerpc/platforms/powernv/pci-ioda.c index c78c204..ec235ca 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -1271,19 +1271,20 @@ static void pnv_ioda_setup_npu_PEs(struct pci_bus
-> *bus)
-> 
->  static void pnv_pci_ioda_setup_PEs(void)
->  {
-> -	struct pci_controller *hose, *tmp;
-> +	struct pci_controller *hose;
->  	struct pnv_phb *phb;
->  	struct pci_bus *bus;
->  	struct pci_dev *pdev;
-> +	struct pnv_ioda_pe *pe;
-> 
-> -	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
-> +	list_for_each_entry(hose, &hose_list, list_node) {
->  		phb = hose->private_data;
->  		if (phb->type == PNV_PHB_NPU_NVLINK) {
->  			/* PE#0 is needed for error reporting */
->  			pnv_ioda_reserve_pe(phb, 0);
->  			pnv_ioda_setup_npu_PEs(hose->bus);
->  			if (phb->model == PNV_PHB_MODEL_NPU2)
-> -				pnv_npu2_init(phb);
-> +				pnv_npu2_init(hose);
->  		}
->  		if (phb->type == PNV_PHB_NPU_OCAPI) {
->  			bus = hose->bus;
-> @@ -1291,6 +1292,14 @@ static void pnv_pci_ioda_setup_PEs(void)
->  				pnv_ioda_setup_dev_PE(pdev);
->  		}
->  	}
-> +	list_for_each_entry(hose, &hose_list, list_node) {
-> +		phb = hose->private_data;
-> +		if (phb->type != PNV_PHB_IODA2)
-> +			continue;
-> +
-> +		list_for_each_entry(pe, &phb->ioda.pe_list, list)
-> +			pnv_npu2_map_lpar(pe, MSR_DR | MSR_PR | MSR_HV);
-> +	}
->  }
-> 
->  #ifdef CONFIG_PCI_IOV
+Just to make sure we're on the same page, can you point me to this
+rule?  I do see that OSPM must request control of AER using _OSC
+before it touches the AER registers.  What I don't see is the
+connection between firmware-first and the AER registers.
 
+The closest I can find is the "Enabled" field in the HEST PCIe
+AER structures (ACPI v6.2, sec 18.3.2.4, .5, .6), where it says:
 
+  If the field value is 1, indicates this error source is
+  to be enabled.
+
+  If the field value is 0, indicates that the error source
+  is not to be enabled.
+
+  If FIRMWARE_FIRST is set in the flags field, the Enabled
+  field is ignored by the OSPM.
+
+AFAICT, Linux completely ignores the Enabled field in these
+structures.
+
+These structures also contain values the OS is apparently supposed to
+write to Device Control and several AER registers (in struct
+acpi_hest_aer_common).  Linux ignores these as well.
+
+These seem like fairly serious omissions in Linux.
+
+> > The whole issue of firmware-first, the mechanism by which firmware
+> > gets control, the System Error enables in Root Port Root Control
+> > registers, etc., is very murky to me.  Jon has a sort of similar issue
+> > with VMD where he needs to leave System Errors enabled instead of
+> > disabling them as we currently do.
+> 
+> Well, OS gets control via _OSC method, and based on that it should 
+> touch/not touch the AER bits. 
+
+I agree so far.
+
+> The bits that get set/cleared come from _HPX method,
+
+_HPX tells us about some AER registers, Device Control, Link Control,
+and some bridge registers.  It doesn't say anything about the Root
+Control register that Jon is concerned with.
+
+For firmware-first to work, firmware has to get control.  How does it
+get control?  How does OSPM know to either set up that mechanism or
+keep its mitts off something firmware set up before handoff?  In Jon's
+VMD case, I think firmware-first relies on the System Error controlled
+by the Root Control register.  Linux thinks it owns that, and I don't
+know how to learn otherwise.
+
+> and there's a more about the FFS described in ACPI spec. It 
+> seems that if platform, wants to enable VMD, it should pass the correct 
+> bits via _HPX. I'm curious to know in what new twisted way FFS doesn't 
+> work as intended.
+
+Bjorn
