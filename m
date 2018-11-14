@@ -4,26 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B639DC43441
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 09:09:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6956EC43441
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 09:11:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 372B422360
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 09:09:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id DB1BC22360
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 09:11:28 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="VhtqkC1O"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 372B422360
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="pOLfihGi"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DB1BC22360
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42vzFY0W3vzF36j
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 20:09:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42vzJH0BcZzF37J
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 20:11:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="VhtqkC1O";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="pOLfihGi";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
@@ -34,35 +35,35 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="VhtqkC1O"; dkim-atps=neutral
+ header.b="pOLfihGi"; dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42vyG66WcLzF3Hc
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2018 19:24:30 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42vyG71JblzF3K7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2018 19:24:31 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
  :Reply-To:Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From
  :Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
  List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=ojn3hRaifuiWPVnO+cN83IVjVfWmL3wmTfXzmmsF6EI=; b=VhtqkC1OiXLcx+lQyQiJ/IVIry
- TWPJ6ZrQmqmN7ksFo8aGFKWuiUosXXhsbRbrbLnfbpJa3hKLvLoyc8CjCkrkdWHOwww6RatpYrwT3
- wz/SqNb/QArO1gcLQzU9Oxd70PegNiwuyZvqav1hQ89XBxLD23r1EvIzb9mC9f5cuvftF2Iv/3bh1
- DVQkjsVD5N6LrHantJGheNQQP7ueiQmFgvSZuk+6rVD5cX162hmehiGgfpNrgLiN8zAJDsmajz/52
- /yk0r/u6JCE6U2qiGzi2g5DvuZlCQIrsdIW0RmdUF2zpcTS//lzHOVpzl1r8TwPDhoH/reBvaTkPN
- LNxatDaA==;
+ bh=k2PN9Oa8YSIvjJVRt3mNzWxL4HQYVzsgYlk0h0MWqTE=; b=pOLfihGiHCs6K+Lok6Fb6Er5Vq
+ ZGkVaVy4A23W0HzSF+rfRnDt3vNd+f8arpEEN5rKsUm1xPugb/ju1c/nE/XmoVi2P/tdeOFSV/e40
+ Xc5n/3R0c1ozaCtVqWS+ZEgKQFB8yZfuwO+A1t5jBslTD/94pkbNh7BuoHNi6aiZFSaeEzcObxGBl
+ +ezwjHJ1zGQCPGX1cx/UJ6eJpDUSaKZZwdXP3f/h6HpcKwQV8fMg/lSbLLMi+hIXF5HQsNgwGbpPU
+ JCGAmPHk66BWsgAlj++QBK/KcugEmX8ZTfxCkewt7Dwjru2mXCMDpmVzeYt3To7sje3VKuZFGhAT1
+ Jj2zJBzw==;
 Received: from 089144211136.atnat0020.highway.a1.net ([89.144.211.136]
  helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
- id 1gMqTG-000524-79; Wed, 14 Nov 2018 08:24:22 +0000
+ id 1gMqT2-0004yA-Jz; Wed, 14 Nov 2018 08:24:09 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH 24/34] powerpc/dma: move pci_dma_dev_setup_swiotlb to fsl_pci.c
-Date: Wed, 14 Nov 2018 09:23:04 +0100
-Message-Id: <20181114082314.8965-25-hch@lst.de>
+Subject: [PATCH 19/34] cxl: drop the dma_set_mask callback from vphb
+Date: Wed, 14 Nov 2018 09:22:59 +0100
+Message-Id: <20181114082314.8965-20-hch@lst.de>
 X-Mailer: git-send-email 2.19.1
 In-Reply-To: <20181114082314.8965-1-hch@lst.de>
 References: <20181114082314.8965-1-hch@lst.de>
@@ -88,71 +89,45 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-pci_dma_dev_setup_swiotlb is only used by the fsl_pci code, and closely
-related to it, so fsl_pci.c seems like a better place for it.
+The CXL code never even looks at the dma mask, so there is no good
+reason for this sanity check.  Remove it because it gets in the way
+of the dma ops refactoring.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/powerpc/include/asm/swiotlb.h |  2 --
- arch/powerpc/kernel/dma-swiotlb.c  | 11 -----------
- arch/powerpc/sysdev/fsl_pci.c      |  9 +++++++++
- 3 files changed, 9 insertions(+), 13 deletions(-)
+ drivers/misc/cxl/vphb.c | 12 ------------
+ 1 file changed, 12 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/swiotlb.h b/arch/powerpc/include/asm/swiotlb.h
-index f65ecf57b66c..26a0f12b835b 100644
---- a/arch/powerpc/include/asm/swiotlb.h
-+++ b/arch/powerpc/include/asm/swiotlb.h
-@@ -18,8 +18,6 @@ extern const struct dma_map_ops powerpc_swiotlb_dma_ops;
- extern unsigned int ppc_swiotlb_enable;
- int __init swiotlb_setup_bus_notifier(void);
+diff --git a/drivers/misc/cxl/vphb.c b/drivers/misc/cxl/vphb.c
+index 7908633d9204..49da2f744bbf 100644
+--- a/drivers/misc/cxl/vphb.c
++++ b/drivers/misc/cxl/vphb.c
+@@ -11,17 +11,6 @@
+ #include <misc/cxl.h>
+ #include "cxl.h"
  
--extern void pci_dma_dev_setup_swiotlb(struct pci_dev *pdev);
--
- #ifdef CONFIG_SWIOTLB
- void swiotlb_detect_4g(void);
- #else
-diff --git a/arch/powerpc/kernel/dma-swiotlb.c b/arch/powerpc/kernel/dma-swiotlb.c
-index 678811abccfc..38a2c9f5ab54 100644
---- a/arch/powerpc/kernel/dma-swiotlb.c
-+++ b/arch/powerpc/kernel/dma-swiotlb.c
-@@ -63,17 +63,6 @@ const struct dma_map_ops powerpc_swiotlb_dma_ops = {
- 	.get_required_mask = swiotlb_powerpc_get_required,
- };
- 
--void pci_dma_dev_setup_swiotlb(struct pci_dev *pdev)
+-static int cxl_dma_set_mask(struct pci_dev *pdev, u64 dma_mask)
 -{
--	struct pci_controller *hose;
--	struct dev_archdata *sd;
+-	if (dma_mask < DMA_BIT_MASK(64)) {
+-		pr_info("%s only 64bit DMA supported on CXL", __func__);
+-		return -EIO;
+-	}
 -
--	hose = pci_bus_to_host(pdev->bus);
--	sd = &pdev->dev.archdata;
--	sd->max_direct_dma_addr =
--		hose->dma_window_base_cur + hose->dma_window_size;
+-	*(pdev->dev.dma_mask) = dma_mask;
+-	return 0;
 -}
 -
- static int ppc_swiotlb_bus_notify(struct notifier_block *nb,
- 				  unsigned long action, void *data)
+ static int cxl_pci_probe_mode(struct pci_bus *bus)
  {
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index 918be816b097..561f97d698cc 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -114,6 +114,15 @@ static struct pci_ops fsl_indirect_pcie_ops =
- static u64 pci64_dma_offset;
+ 	return PCI_PROBE_NORMAL;
+@@ -220,7 +209,6 @@ static struct pci_controller_ops cxl_pci_controller_ops =
+ 	.reset_secondary_bus = cxl_pci_reset_secondary_bus,
+ 	.setup_msi_irqs = cxl_setup_msi_irqs,
+ 	.teardown_msi_irqs = cxl_teardown_msi_irqs,
+-	.dma_set_mask = cxl_dma_set_mask,
+ };
  
- #ifdef CONFIG_SWIOTLB
-+static void pci_dma_dev_setup_swiotlb(struct pci_dev *pdev)
-+{
-+	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
-+	struct dev_archdata *sd = &pdev->dev.archdata;
-+
-+	sd->max_direct_dma_addr =
-+		hose->dma_window_base_cur + hose->dma_window_size;
-+}
-+
- static void setup_swiotlb_ops(struct pci_controller *hose)
- {
- 	if (ppc_swiotlb_enable) {
+ int cxl_pci_vphb_add(struct cxl_afu *afu)
 -- 
 2.19.1
 
