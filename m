@@ -7,24 +7,24 @@ X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	URIBL_SBL,URIBL_SBL_A,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B0FC8C43441
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 22:41:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B3EBDC43441
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 22:44:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 53466223DD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 22:41:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 0D8E42145D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 22:44:37 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="bPEFRZ0N"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 53466223DD
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="ShPeDINH"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0D8E42145D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42wKH04QSWzF3WN
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 09:41:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42wKLX0pw1zF2Dy
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 09:44:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="bPEFRZ0N";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="ShPeDINH";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
@@ -33,35 +33,35 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="bPEFRZ0N"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="ShPeDINH"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42wJxF5P5fzF3VM
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2018 09:26:09 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42wJxd0gpNzF3VH
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2018 09:26:29 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (unknown [64.114.255.114])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id C5D6022549;
- Wed, 14 Nov 2018 22:26:07 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 24CCF22549;
+ Wed, 14 Nov 2018 22:26:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1542234367;
- bh=pOJ6v1Jpb5Ogf92zWSLQgVySSUobRbIk6ifQ929J1Ug=;
+ s=default; t=1542234387;
+ bh=s6tvwcwpFTRyG2uOHmSa6x7C0SfwYv9CufPrY3MU5MM=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=bPEFRZ0NLxSOcIhfYleOmvqABrXzIVHtc2zeUOY9asXR9koxlXLwghhMQshM79pKQ
- uh4qRsY6A976/PZRs21oM7JJnc5yKr2Pz5x9VQf5H55rEKZFongd/n840NmEu2p7T9
- XEwHWS9riyDcysDskDmf4gYylW7slSodlmTMjbw8=
+ b=ShPeDINHLaI/mS71LXbQh65mCuRDCcI35i8ba/6dw2rKeN2GJ0zIVG1JOC+jtQeBW
+ DBvZzoH9zWngKN65oKHJQJs9JTWvjLI9nLPkrcX2ahe7scsjJ1F8NA4ZQW0Y1raTw0
+ WuFtWdwOtaOvMT1FL5pR0YNw47GH3VboWcf+zx0M=
 From: Sasha Levin <sashal@kernel.org>
 To: stable@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.9 08/13] hwmon: (ibmpowernv) Remove bogus __init
+Subject: [PATCH AUTOSEL 4.4 6/8] hwmon: (ibmpowernv) Remove bogus __init
  annotations
-Date: Wed, 14 Nov 2018 17:25:49 -0500
-Message-Id: <20181114222558.100213-8-sashal@kernel.org>
+Date: Wed, 14 Nov 2018 17:26:12 -0500
+Message-Id: <20181114222618.100378-6-sashal@kernel.org>
 X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20181114222558.100213-1-sashal@kernel.org>
-References: <20181114222558.100213-1-sashal@kernel.org>
+In-Reply-To: <20181114222618.100378-1-sashal@kernel.org>
+References: <20181114222618.100378-1-sashal@kernel.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,7 +103,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 3 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/hwmon/ibmpowernv.c b/drivers/hwmon/ibmpowernv.c
-index 6d2e6605751c..18b3c8f258bf 100644
+index 55b5a8ff1cfe..ca3aa28977bc 100644
 --- a/drivers/hwmon/ibmpowernv.c
 +++ b/drivers/hwmon/ibmpowernv.c
 @@ -114,7 +114,7 @@ static ssize_t show_label(struct device *dev, struct device_attribute *devattr,
