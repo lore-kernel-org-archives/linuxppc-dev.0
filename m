@@ -2,96 +2,49 @@ Return-Path: <SRS0=Q8z7=NZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,T_FUZZY_SPRM,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DA576C43441
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 10:16:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0CFE9C43441
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 10:22:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 50DB92145D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 10:16:01 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linaro.org header.i=@linaro.org header.b="iPsoGP40"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 50DB92145D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
+	by mail.kernel.org (Postfix) with ESMTPS id 5E7762080F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 10:22:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5E7762080F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42w0kl2BDNzF3QB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 21:15:59 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.b="iPsoGP40";
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linaro.org
- (client-ip=2607:f8b0:4864:20::441; helo=mail-pf1-x441.google.com;
- envelope-from=firoz.khan@linaro.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linaro.org header.i=@linaro.org header.b="iPsoGP40"; 
- dkim-atps=neutral
-Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
- [IPv6:2607:f8b0:4864:20::441])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 42w0t40zz2zF3c9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Nov 2018 21:22:20 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42w0TD6MnBzF3Xk
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2018 21:04:16 +1100 (AEDT)
-Received: by mail-pf1-x441.google.com with SMTP id e22-v6so7655489pfn.8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2018 02:04:16 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=O2Q9r52IS/kcdo/Ja7yjolCLH7xWDaZ9Tjr2zgMSV1A=;
- b=iPsoGP40kw+tqD3haOSs+mqy2fH33NfXK+nND+8I9v95NHW51CoBCytgtmSfnVaDve
- 0do3v6owIXzDzmbCJucmRZcJsuB4ZMon6CbRQs6K0w07Ni6jdJM1aHMbE+lfy8mvqHsn
- Vovnhl906EndN5KyzqxKC22o3hYRyKa3P01Vc=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=O2Q9r52IS/kcdo/Ja7yjolCLH7xWDaZ9Tjr2zgMSV1A=;
- b=M1+GhDqFwqQ5yEhLPfYnQ/IKwK2VWJB1letmm1ndtU7mY8HKIteXihsyIu7mtoD/5F
- VV0G+uzEgtcG3/sv4xIYsxBYc5QZwn8nLPQCLz0nYFBjYN6rf/ZG4yMSkLiwcZ9AKeyA
- 5/eiOm7oqIxZZ1odwyUn+elhw+VeG6JbXAxtj75jYwIatUSqPSEe0J7gNvv7OaaF2Nrw
- gGZOOdfXoV3SZwXVxF8SRKIfRgpE9Pwz2WRhCbzbSOrXR94geb9+NhNT+5oGbL0aJueb
- VZoBiJTXjQBgz/m1GG+1ORfSwau4BgZmEoU7IGv5ij3YGTjO3fpMAsw7EzHlAaCd1Ro+
- gkTw==
-X-Gm-Message-State: AGRZ1gLMo1aUBhVkWmnlcP2Tdw5KAlXMLYZvIeJ8XdZzXdsiAqFQX+GT
- 2Nbjp9hoUgxoW6LbXR71pJEXPQ==
-X-Google-Smtp-Source: AJdET5cGIiyu2H3I9ScOWe7O3yUrDRMTe1xe96CoAv0G05RjT2pahgctL4gAdfI1XCRpecy9lRlUPg==
-X-Received: by 2002:a62:a218:: with SMTP id
- m24-v6mr1239921pff.99.1542189854745; 
- Wed, 14 Nov 2018 02:04:14 -0800 (PST)
-Received: from qualcomm-HP-ZBook-14-G2.qualcomm.com
- (blr-bdr-fw-01_globalnat_allzones-outside.qualcomm.com. [103.229.18.19])
- by smtp.gmail.com with ESMTPSA id g15sm21633873pfj.131.2018.11.14.02.04.07
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
- Wed, 14 Nov 2018 02:04:13 -0800 (PST)
-From: Firoz Khan <firoz.khan@linaro.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Arnd Bergmann <arnd@arndb.de>, Ram Pai <linuxram@us.ibm.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- Breno Leitao <leitao@debian.org>, Boqun Feng <boqun.feng@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Philippe Ombredanne <pombredanne@nexb.com>,
- Kate Stewart <kstewart@linuxfoundation.org>
-Subject: [PATCH v2 4/4] powerpc: generate uapi header and system call table
- files
-Date: Wed, 14 Nov 2018 15:33:18 +0530
-Message-Id: <1542189798-27713-5-git-send-email-firoz.khan@linaro.org>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1542189798-27713-1-git-send-email-firoz.khan@linaro.org>
-References: <1542189798-27713-1-git-send-email-firoz.khan@linaro.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42w0qs5KKgzF3QB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2018 21:20:25 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPSA id 42w0qr3yQXz9s7W;
+ Wed, 14 Nov 2018 21:20:24 +1100 (AEDT)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Joel Stanley <joel@jms.id.au>, Stephen Rothwell <sfr@canb.auug.org.au>,
+ Alan Modra <amodra@gmail.com>
+Subject: Re: linux-next: build warnings from Linus' tree
+In-Reply-To: <CACPK8XeDHt46rUJWQ1n=4fRWioogs9K0Z8dkxUa=E2ShfQ1Vdg@mail.gmail.com>
+References: <20180612081413.323d85b8@canb.auug.org.au>
+ <CACPK8XeDHt46rUJWQ1n=4fRWioogs9K0Z8dkxUa=E2ShfQ1Vdg@mail.gmail.com>
+Date: Wed, 14 Nov 2018 21:20:23 +1100
+Message-ID: <87k1lgufiw.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,1055 +56,96 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, y2038@lists.linaro.org,
- linux-kernel@vger.kernel.org, marcin.juszkiewicz@linaro.org,
- firoz.khan@linaro.org, deepa.kernel@gmail.com
+Cc: Linux-Next Mailing List <linux-next@vger.kernel.org>,
+ linuxppc-dev@lists.ozlabs.org,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-System call table generation script must be run to gener-
-ate unistd_32/64.h and syscall_table_32/64/c32/spu.h files.
-This patch will have changes which will invokes the script.
+Joel Stanley <joel@jms.id.au> writes:
+> Hello Alan,
+>
+> On Tue, 12 Jun 2018 at 07:44, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+>
+>> Building Linus' tree, today's linux-next build (powerpc ppc64_defconfig)
+>> produced these warning:
+>>
+>> ld: warning: orphan section `.gnu.hash' from `linker stubs' being placed in section `.gnu.hash'.
+>> ld: warning: orphan section `.gnu.hash' from `linker stubs' being placed in section `.gnu.hash'.
+>> ld: warning: orphan section `.gnu.hash' from `linker stubs' being placed in section `.gnu.hash'.
+>>
+>> This may just be because I have started building using the native Debian
+>> gcc for the powerpc builds ...
+>
+> Do you know why we started creating these?
 
-This patch will generate unistd_32/64.h and syscall_table-
-_32/64/c32/spu.h files by the syscall table generation
-script invoked by parisc/Makefile and the generated files
-against the removed files must be identical.
+It's controlled by the ld option --hash-style, which AFAICS still
+defaults to sysv (generating .hash).
 
-The generated uapi header file will be included in uapi/-
-asm/unistd.h and generated system call table header file
-will be included by kernel/systbl.S file.
+But it seems gcc can be configured to have a different default, and at
+least my native ppc64le toolchains are passing gnu, eg:
 
-Signed-off-by: Firoz Khan <firoz.khan@linaro.org>
----
- arch/powerpc/Makefile                       |   3 +
- arch/powerpc/include/asm/Kbuild             |   4 +
- arch/powerpc/include/asm/systbl.h           | 395 ----------------------------
- arch/powerpc/include/uapi/asm/Kbuild        |   2 +
- arch/powerpc/include/uapi/asm/unistd.h      | 392 +--------------------------
- arch/powerpc/kernel/Makefile                |  10 -
- arch/powerpc/kernel/systbl.S                |  36 +--
- arch/powerpc/kernel/systbl_chk.c            |  61 -----
- arch/powerpc/platforms/cell/spu_callbacks.c |  18 +-
- 9 files changed, 27 insertions(+), 894 deletions(-)
- delete mode 100644 arch/powerpc/include/asm/systbl.h
- delete mode 100644 arch/powerpc/kernel/systbl_chk.c
+ /usr/lib/gcc/powerpc64le-linux-gnu/6/collect2 -plugin
+ /usr/lib/gcc/powerpc64le-linux-gnu/6/liblto_plugin.so
+ -plugin-opt=/usr/lib/gcc/powerpc64le-linux-gnu/6/lto-wrapper
+ -plugin-opt=-fresolution=/tmp/ccw1U2fF.res
+ -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s
+ -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc
+ -plugin-opt=-pass-through=-lgcc_s --sysroot=/ --build-id --eh-frame-hdr
+ -V -shared -m elf64lppc
+ --hash-style=gnu
+ ^^^^^^^^^^^^^^^^
 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 8a2ce14..34897191 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -402,6 +402,9 @@ archclean:
- 
- archprepare: checkbin
- 
-+archheaders:
-+	$(Q)$(MAKE) $(build)=arch/powerpc/kernel/syscalls all
-+
- ifdef CONFIG_STACKPROTECTOR
- prepare: stack_protector_prepare
- 
-diff --git a/arch/powerpc/include/asm/Kbuild b/arch/powerpc/include/asm/Kbuild
-index 3196d22..77ff7fb 100644
---- a/arch/powerpc/include/asm/Kbuild
-+++ b/arch/powerpc/include/asm/Kbuild
-@@ -1,3 +1,7 @@
-+generated-y += syscall_table_32.h
-+generated-y += syscall_table_64.h
-+generated-y += syscall_table_c32.h
-+generated-y += syscall_table_spu.h
- generic-y += div64.h
- generic-y += export.h
- generic-y += irq_regs.h
-diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
-deleted file mode 100644
-index c4321b9..0000000
---- a/arch/powerpc/include/asm/systbl.h
-+++ /dev/null
-@@ -1,395 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0 */
--/*
-- * List of powerpc syscalls. For the meaning of the _SPU suffix see
-- * arch/powerpc/platforms/cell/spu_callbacks.c
-- */
--
--SYSCALL(restart_syscall)
--SYSCALL(exit)
--PPC_SYS(fork)
--SYSCALL_SPU(read)
--SYSCALL_SPU(write)
--COMPAT_SYS_SPU(open)
--SYSCALL_SPU(close)
--SYSCALL_SPU(waitpid)
--SYSCALL_SPU(creat)
--SYSCALL_SPU(link)
--SYSCALL_SPU(unlink)
--COMPAT_SYS(execve)
--SYSCALL_SPU(chdir)
--COMPAT_SYS_SPU(time)
--SYSCALL_SPU(mknod)
--SYSCALL_SPU(chmod)
--SYSCALL_SPU(lchown)
--SYSCALL(ni_syscall)
--OLDSYS(stat)
--COMPAT_SYS_SPU(lseek)
--SYSCALL_SPU(getpid)
--COMPAT_SYS(mount)
--SYSX(sys_ni_syscall,sys_oldumount,sys_oldumount)
--SYSCALL_SPU(setuid)
--SYSCALL_SPU(getuid)
--COMPAT_SYS_SPU(stime)
--COMPAT_SYS(ptrace)
--SYSCALL_SPU(alarm)
--OLDSYS(fstat)
--SYSCALL(pause)
--COMPAT_SYS(utime)
--SYSCALL(ni_syscall)
--SYSCALL(ni_syscall)
--SYSCALL_SPU(access)
--SYSCALL_SPU(nice)
--SYSCALL(ni_syscall)
--SYSCALL_SPU(sync)
--SYSCALL_SPU(kill)
--SYSCALL_SPU(rename)
--SYSCALL_SPU(mkdir)
--SYSCALL_SPU(rmdir)
--SYSCALL_SPU(dup)
--SYSCALL_SPU(pipe)
--COMPAT_SYS_SPU(times)
--SYSCALL(ni_syscall)
--SYSCALL_SPU(brk)
--SYSCALL_SPU(setgid)
--SYSCALL_SPU(getgid)
--SYSCALL(signal)
--SYSCALL_SPU(geteuid)
--SYSCALL_SPU(getegid)
--SYSCALL(acct)
--SYSCALL(umount)
--SYSCALL(ni_syscall)
--COMPAT_SYS_SPU(ioctl)
--COMPAT_SYS_SPU(fcntl)
--SYSCALL(ni_syscall)
--SYSCALL_SPU(setpgid)
--SYSCALL(ni_syscall)
--SYSX(sys_ni_syscall,sys_olduname,sys_olduname)
--SYSCALL_SPU(umask)
--SYSCALL_SPU(chroot)
--COMPAT_SYS(ustat)
--SYSCALL_SPU(dup2)
--SYSCALL_SPU(getppid)
--SYSCALL_SPU(getpgrp)
--SYSCALL_SPU(setsid)
--SYS32ONLY(sigaction)
--SYSCALL_SPU(sgetmask)
--SYSCALL_SPU(ssetmask)
--SYSCALL_SPU(setreuid)
--SYSCALL_SPU(setregid)
--SYS32ONLY(sigsuspend)
--SYSX(sys_ni_syscall,compat_sys_sigpending,sys_sigpending)
--SYSCALL_SPU(sethostname)
--COMPAT_SYS_SPU(setrlimit)
--SYSX(sys_ni_syscall,compat_sys_old_getrlimit,sys_old_getrlimit)
--COMPAT_SYS_SPU(getrusage)
--COMPAT_SYS_SPU(gettimeofday)
--COMPAT_SYS_SPU(settimeofday)
--SYSCALL_SPU(getgroups)
--SYSCALL_SPU(setgroups)
--SYSX(sys_ni_syscall,sys_ni_syscall,ppc_select)
--SYSCALL_SPU(symlink)
--OLDSYS(lstat)
--SYSCALL_SPU(readlink)
--SYSCALL(uselib)
--SYSCALL(swapon)
--SYSCALL(reboot)
--SYSX(sys_ni_syscall,compat_sys_old_readdir,sys_old_readdir)
--SYSCALL_SPU(mmap)
--SYSCALL_SPU(munmap)
--COMPAT_SYS_SPU(truncate)
--COMPAT_SYS_SPU(ftruncate)
--SYSCALL_SPU(fchmod)
--SYSCALL_SPU(fchown)
--SYSCALL_SPU(getpriority)
--SYSCALL_SPU(setpriority)
--SYSCALL(ni_syscall)
--COMPAT_SYS(statfs)
--COMPAT_SYS(fstatfs)
--SYSCALL(ni_syscall)
--COMPAT_SYS_SPU(socketcall)
--SYSCALL_SPU(syslog)
--COMPAT_SYS_SPU(setitimer)
--COMPAT_SYS_SPU(getitimer)
--COMPAT_SYS_SPU(newstat)
--COMPAT_SYS_SPU(newlstat)
--COMPAT_SYS_SPU(newfstat)
--SYSX(sys_ni_syscall,sys_uname,sys_uname)
--SYSCALL(ni_syscall)
--SYSCALL_SPU(vhangup)
--SYSCALL(ni_syscall)
--SYSCALL(ni_syscall)
--COMPAT_SYS_SPU(wait4)
--SYSCALL(swapoff)
--COMPAT_SYS_SPU(sysinfo)
--COMPAT_SYS(ipc)
--SYSCALL_SPU(fsync)
--SYS32ONLY(sigreturn)
--PPC_SYS(clone)
--SYSCALL_SPU(setdomainname)
--SYSCALL_SPU(newuname)
--SYSCALL(ni_syscall)
--COMPAT_SYS_SPU(adjtimex)
--SYSCALL_SPU(mprotect)
--SYSX(sys_ni_syscall,compat_sys_sigprocmask,sys_sigprocmask)
--SYSCALL(ni_syscall)
--SYSCALL(init_module)
--SYSCALL(delete_module)
--SYSCALL(ni_syscall)
--SYSCALL(quotactl)
--SYSCALL_SPU(getpgid)
--SYSCALL_SPU(fchdir)
--SYSCALL_SPU(bdflush)
--SYSCALL_SPU(sysfs)
--SYSX_SPU(ppc64_personality,ppc64_personality,sys_personality)
--SYSCALL(ni_syscall)
--SYSCALL_SPU(setfsuid)
--SYSCALL_SPU(setfsgid)
--SYSCALL_SPU(llseek)
--COMPAT_SYS_SPU(getdents)
--COMPAT_SPU_NEW(select)
--SYSCALL_SPU(flock)
--SYSCALL_SPU(msync)
--COMPAT_SYS_SPU(readv)
--COMPAT_SYS_SPU(writev)
--SYSCALL_SPU(getsid)
--SYSCALL_SPU(fdatasync)
--COMPAT_SYS(sysctl)
--SYSCALL_SPU(mlock)
--SYSCALL_SPU(munlock)
--SYSCALL_SPU(mlockall)
--SYSCALL_SPU(munlockall)
--SYSCALL_SPU(sched_setparam)
--SYSCALL_SPU(sched_getparam)
--SYSCALL_SPU(sched_setscheduler)
--SYSCALL_SPU(sched_getscheduler)
--SYSCALL_SPU(sched_yield)
--SYSCALL_SPU(sched_get_priority_max)
--SYSCALL_SPU(sched_get_priority_min)
--COMPAT_SYS_SPU(sched_rr_get_interval)
--COMPAT_SYS_SPU(nanosleep)
--SYSCALL_SPU(mremap)
--SYSCALL_SPU(setresuid)
--SYSCALL_SPU(getresuid)
--SYSCALL(ni_syscall)
--SYSCALL_SPU(poll)
--SYSCALL(ni_syscall)
--SYSCALL_SPU(setresgid)
--SYSCALL_SPU(getresgid)
--SYSCALL_SPU(prctl)
--COMPAT_SYS(rt_sigreturn)
--COMPAT_SYS(rt_sigaction)
--COMPAT_SYS(rt_sigprocmask)
--COMPAT_SYS(rt_sigpending)
--COMPAT_SYS(rt_sigtimedwait)
--COMPAT_SYS(rt_sigqueueinfo)
--COMPAT_SYS(rt_sigsuspend)
--COMPAT_SYS_SPU(pread64)
--COMPAT_SYS_SPU(pwrite64)
--SYSCALL_SPU(chown)
--SYSCALL_SPU(getcwd)
--SYSCALL_SPU(capget)
--SYSCALL_SPU(capset)
--COMPAT_SYS(sigaltstack)
--SYSX_SPU(sys_sendfile64,compat_sys_sendfile,sys_sendfile)
--SYSCALL(ni_syscall)
--SYSCALL(ni_syscall)
--PPC_SYS(vfork)
--COMPAT_SYS_SPU(getrlimit)
--COMPAT_SYS_SPU(readahead)
--SYS32ONLY(mmap2)
--SYS32ONLY(truncate64)
--SYS32ONLY(ftruncate64)
--SYSX(sys_ni_syscall,sys_stat64,sys_stat64)
--SYSX(sys_ni_syscall,sys_lstat64,sys_lstat64)
--SYSX(sys_ni_syscall,sys_fstat64,sys_fstat64)
--SYSCALL(pciconfig_read)
--SYSCALL(pciconfig_write)
--SYSCALL(pciconfig_iobase)
--SYSCALL(ni_syscall)
--SYSCALL_SPU(getdents64)
--SYSCALL_SPU(pivot_root)
--SYSX(sys_ni_syscall,compat_sys_fcntl64,sys_fcntl64)
--SYSCALL_SPU(madvise)
--SYSCALL_SPU(mincore)
--SYSCALL_SPU(gettid)
--SYSCALL_SPU(tkill)
--SYSCALL_SPU(setxattr)
--SYSCALL_SPU(lsetxattr)
--SYSCALL_SPU(fsetxattr)
--SYSCALL_SPU(getxattr)
--SYSCALL_SPU(lgetxattr)
--SYSCALL_SPU(fgetxattr)
--SYSCALL_SPU(listxattr)
--SYSCALL_SPU(llistxattr)
--SYSCALL_SPU(flistxattr)
--SYSCALL_SPU(removexattr)
--SYSCALL_SPU(lremovexattr)
--SYSCALL_SPU(fremovexattr)
--COMPAT_SYS_SPU(futex)
--COMPAT_SYS_SPU(sched_setaffinity)
--COMPAT_SYS_SPU(sched_getaffinity)
--SYSCALL(ni_syscall)
--SYSCALL(ni_syscall)
--SYS32ONLY(sendfile64)
--COMPAT_SYS_SPU(io_setup)
--SYSCALL_SPU(io_destroy)
--COMPAT_SYS_SPU(io_getevents)
--COMPAT_SYS_SPU(io_submit)
--SYSCALL_SPU(io_cancel)
--SYSCALL(set_tid_address)
--SYSX_SPU(sys_fadvise64,ppc32_fadvise64,sys_fadvise64)
--SYSCALL(exit_group)
--COMPAT_SYS(lookup_dcookie)
--SYSCALL_SPU(epoll_create)
--SYSCALL_SPU(epoll_ctl)
--SYSCALL_SPU(epoll_wait)
--SYSCALL_SPU(remap_file_pages)
--COMPAT_SYS_SPU(timer_create)
--COMPAT_SYS_SPU(timer_settime)
--COMPAT_SYS_SPU(timer_gettime)
--SYSCALL_SPU(timer_getoverrun)
--SYSCALL_SPU(timer_delete)
--COMPAT_SYS_SPU(clock_settime)
--COMPAT_SYS_SPU(clock_gettime)
--COMPAT_SYS_SPU(clock_getres)
--COMPAT_SYS_SPU(clock_nanosleep)
--SYSX(ppc64_swapcontext,ppc32_swapcontext,ppc_swapcontext)
--SYSCALL_SPU(tgkill)
--COMPAT_SYS_SPU(utimes)
--COMPAT_SYS_SPU(statfs64)
--COMPAT_SYS_SPU(fstatfs64)
--SYSX(sys_ni_syscall,ppc_fadvise64_64,ppc_fadvise64_64)
--SYSCALL_SPU(rtas)
--OLDSYS(debug_setcontext)
--SYSCALL(ni_syscall)
--COMPAT_SYS(migrate_pages)
--COMPAT_SYS(mbind)
--COMPAT_SYS(get_mempolicy)
--COMPAT_SYS(set_mempolicy)
--COMPAT_SYS(mq_open)
--SYSCALL(mq_unlink)
--COMPAT_SYS(mq_timedsend)
--COMPAT_SYS(mq_timedreceive)
--COMPAT_SYS(mq_notify)
--COMPAT_SYS(mq_getsetattr)
--COMPAT_SYS(kexec_load)
--SYSCALL(add_key)
--SYSCALL(request_key)
--COMPAT_SYS(keyctl)
--COMPAT_SYS(waitid)
--SYSCALL(ioprio_set)
--SYSCALL(ioprio_get)
--SYSCALL(inotify_init)
--SYSCALL(inotify_add_watch)
--SYSCALL(inotify_rm_watch)
--SYSCALL(spu_run)
--SYSCALL(spu_create)
--COMPAT_SYS(pselect6)
--COMPAT_SYS(ppoll)
--SYSCALL_SPU(unshare)
--SYSCALL_SPU(splice)
--SYSCALL_SPU(tee)
--COMPAT_SYS_SPU(vmsplice)
--COMPAT_SYS_SPU(openat)
--SYSCALL_SPU(mkdirat)
--SYSCALL_SPU(mknodat)
--SYSCALL_SPU(fchownat)
--COMPAT_SYS_SPU(futimesat)
--SYSX_SPU(sys_newfstatat,sys_fstatat64,sys_fstatat64)
--SYSCALL_SPU(unlinkat)
--SYSCALL_SPU(renameat)
--SYSCALL_SPU(linkat)
--SYSCALL_SPU(symlinkat)
--SYSCALL_SPU(readlinkat)
--SYSCALL_SPU(fchmodat)
--SYSCALL_SPU(faccessat)
--COMPAT_SYS_SPU(get_robust_list)
--COMPAT_SYS_SPU(set_robust_list)
--COMPAT_SYS_SPU(move_pages)
--SYSCALL_SPU(getcpu)
--COMPAT_SYS(epoll_pwait)
--COMPAT_SYS_SPU(utimensat)
--COMPAT_SYS_SPU(signalfd)
--SYSCALL_SPU(timerfd_create)
--SYSCALL_SPU(eventfd)
--COMPAT_SYS_SPU(sync_file_range2)
--COMPAT_SYS(fallocate)
--SYSCALL(subpage_prot)
--COMPAT_SYS_SPU(timerfd_settime)
--COMPAT_SYS_SPU(timerfd_gettime)
--COMPAT_SYS_SPU(signalfd4)
--SYSCALL_SPU(eventfd2)
--SYSCALL_SPU(epoll_create1)
--SYSCALL_SPU(dup3)
--SYSCALL_SPU(pipe2)
--SYSCALL(inotify_init1)
--SYSCALL_SPU(perf_event_open)
--COMPAT_SYS_SPU(preadv)
--COMPAT_SYS_SPU(pwritev)
--COMPAT_SYS(rt_tgsigqueueinfo)
--SYSCALL(fanotify_init)
--COMPAT_SYS(fanotify_mark)
--SYSCALL_SPU(prlimit64)
--SYSCALL_SPU(socket)
--SYSCALL_SPU(bind)
--SYSCALL_SPU(connect)
--SYSCALL_SPU(listen)
--SYSCALL_SPU(accept)
--SYSCALL_SPU(getsockname)
--SYSCALL_SPU(getpeername)
--SYSCALL_SPU(socketpair)
--SYSCALL_SPU(send)
--SYSCALL_SPU(sendto)
--COMPAT_SYS_SPU(recv)
--COMPAT_SYS_SPU(recvfrom)
--SYSCALL_SPU(shutdown)
--COMPAT_SYS_SPU(setsockopt)
--COMPAT_SYS_SPU(getsockopt)
--COMPAT_SYS_SPU(sendmsg)
--COMPAT_SYS_SPU(recvmsg)
--COMPAT_SYS_SPU(recvmmsg)
--SYSCALL_SPU(accept4)
--SYSCALL_SPU(name_to_handle_at)
--COMPAT_SYS_SPU(open_by_handle_at)
--COMPAT_SYS_SPU(clock_adjtime)
--SYSCALL_SPU(syncfs)
--COMPAT_SYS_SPU(sendmmsg)
--SYSCALL_SPU(setns)
--COMPAT_SYS(process_vm_readv)
--COMPAT_SYS(process_vm_writev)
--SYSCALL(finit_module)
--SYSCALL(kcmp) /* sys_kcmp */
--SYSCALL_SPU(sched_setattr)
--SYSCALL_SPU(sched_getattr)
--SYSCALL_SPU(renameat2)
--SYSCALL_SPU(seccomp)
--SYSCALL_SPU(getrandom)
--SYSCALL_SPU(memfd_create)
--SYSCALL_SPU(bpf)
--COMPAT_SYS(execveat)
--PPC64ONLY(switch_endian)
--SYSCALL_SPU(userfaultfd)
--SYSCALL_SPU(membarrier)
--SYSCALL(ni_syscall)
--SYSCALL(ni_syscall)
--SYSCALL(ni_syscall)
--SYSCALL(ni_syscall)
--SYSCALL(ni_syscall)
--SYSCALL(ni_syscall)
--SYSCALL(ni_syscall)
--SYSCALL(ni_syscall)
--SYSCALL(ni_syscall)
--SYSCALL(ni_syscall)
--SYSCALL(ni_syscall)
--SYSCALL(ni_syscall)
--SYSCALL(mlock2)
--SYSCALL(copy_file_range)
--COMPAT_SYS_SPU(preadv2)
--COMPAT_SYS_SPU(pwritev2)
--SYSCALL(kexec_file_load)
--SYSCALL(statx)
--SYSCALL(pkey_alloc)
--SYSCALL(pkey_free)
--SYSCALL(pkey_mprotect)
--SYSCALL(rseq)
--COMPAT_SYS(io_pgetevents)
-diff --git a/arch/powerpc/include/uapi/asm/Kbuild b/arch/powerpc/include/uapi/asm/Kbuild
-index a658091..61398cc 100644
---- a/arch/powerpc/include/uapi/asm/Kbuild
-+++ b/arch/powerpc/include/uapi/asm/Kbuild
-@@ -1,6 +1,8 @@
- # UAPI Header export list
- include include/uapi/asm-generic/Kbuild.asm
- 
-+generated-y += unistd_32.h
-+generated-y += unistd_64.h
- generic-y += bpf_perf_event.h
- generic-y += param.h
- generic-y += poll.h
-diff --git a/arch/powerpc/include/uapi/asm/unistd.h b/arch/powerpc/include/uapi/asm/unistd.h
-index 7195868..5f84e3d 100644
---- a/arch/powerpc/include/uapi/asm/unistd.h
-+++ b/arch/powerpc/include/uapi/asm/unistd.h
-@@ -10,398 +10,10 @@
- #ifndef _UAPI_ASM_POWERPC_UNISTD_H_
- #define _UAPI_ASM_POWERPC_UNISTD_H_
- 
--#define __NR_restart_syscall	  0
--#define __NR_exit		  1
--#define __NR_fork		  2
--#define __NR_read		  3
--#define __NR_write		  4
--#define __NR_open		  5
--#define __NR_close		  6
--#define __NR_waitpid		  7
--#define __NR_creat		  8
--#define __NR_link		  9
--#define __NR_unlink		 10
--#define __NR_execve		 11
--#define __NR_chdir		 12
--#define __NR_time		 13
--#define __NR_mknod		 14
--#define __NR_chmod		 15
--#define __NR_lchown		 16
--#define __NR_break		 17
--#define __NR_oldstat		 18
--#define __NR_lseek		 19
--#define __NR_getpid		 20
--#define __NR_mount		 21
--#define __NR_umount		 22
--#define __NR_setuid		 23
--#define __NR_getuid		 24
--#define __NR_stime		 25
--#define __NR_ptrace		 26
--#define __NR_alarm		 27
--#define __NR_oldfstat		 28
--#define __NR_pause		 29
--#define __NR_utime		 30
--#define __NR_stty		 31
--#define __NR_gtty		 32
--#define __NR_access		 33
--#define __NR_nice		 34
--#define __NR_ftime		 35
--#define __NR_sync		 36
--#define __NR_kill		 37
--#define __NR_rename		 38
--#define __NR_mkdir		 39
--#define __NR_rmdir		 40
--#define __NR_dup		 41
--#define __NR_pipe		 42
--#define __NR_times		 43
--#define __NR_prof		 44
--#define __NR_brk		 45
--#define __NR_setgid		 46
--#define __NR_getgid		 47
--#define __NR_signal		 48
--#define __NR_geteuid		 49
--#define __NR_getegid		 50
--#define __NR_acct		 51
--#define __NR_umount2		 52
--#define __NR_lock		 53
--#define __NR_ioctl		 54
--#define __NR_fcntl		 55
--#define __NR_mpx		 56
--#define __NR_setpgid		 57
--#define __NR_ulimit		 58
--#define __NR_oldolduname	 59
--#define __NR_umask		 60
--#define __NR_chroot		 61
--#define __NR_ustat		 62
--#define __NR_dup2		 63
--#define __NR_getppid		 64
--#define __NR_getpgrp		 65
--#define __NR_setsid		 66
--#define __NR_sigaction		 67
--#define __NR_sgetmask		 68
--#define __NR_ssetmask		 69
--#define __NR_setreuid		 70
--#define __NR_setregid		 71
--#define __NR_sigsuspend		 72
--#define __NR_sigpending		 73
--#define __NR_sethostname	 74
--#define __NR_setrlimit		 75
--#define __NR_getrlimit		 76
--#define __NR_getrusage		 77
--#define __NR_gettimeofday	 78
--#define __NR_settimeofday	 79
--#define __NR_getgroups		 80
--#define __NR_setgroups		 81
--#define __NR_select		 82
--#define __NR_symlink		 83
--#define __NR_oldlstat		 84
--#define __NR_readlink		 85
--#define __NR_uselib		 86
--#define __NR_swapon		 87
--#define __NR_reboot		 88
--#define __NR_readdir		 89
--#define __NR_mmap		 90
--#define __NR_munmap		 91
--#define __NR_truncate		 92
--#define __NR_ftruncate		 93
--#define __NR_fchmod		 94
--#define __NR_fchown		 95
--#define __NR_getpriority	 96
--#define __NR_setpriority	 97
--#define __NR_profil		 98
--#define __NR_statfs		 99
--#define __NR_fstatfs		100
--#define __NR_ioperm		101
--#define __NR_socketcall		102
--#define __NR_syslog		103
--#define __NR_setitimer		104
--#define __NR_getitimer		105
--#define __NR_stat		106
--#define __NR_lstat		107
--#define __NR_fstat		108
--#define __NR_olduname		109
--#define __NR_iopl		110
--#define __NR_vhangup		111
--#define __NR_idle		112
--#define __NR_vm86		113
--#define __NR_wait4		114
--#define __NR_swapoff		115
--#define __NR_sysinfo		116
--#define __NR_ipc		117
--#define __NR_fsync		118
--#define __NR_sigreturn		119
--#define __NR_clone		120
--#define __NR_setdomainname	121
--#define __NR_uname		122
--#define __NR_modify_ldt		123
--#define __NR_adjtimex		124
--#define __NR_mprotect		125
--#define __NR_sigprocmask	126
--#define __NR_create_module	127
--#define __NR_init_module	128
--#define __NR_delete_module	129
--#define __NR_get_kernel_syms	130
--#define __NR_quotactl		131
--#define __NR_getpgid		132
--#define __NR_fchdir		133
--#define __NR_bdflush		134
--#define __NR_sysfs		135
--#define __NR_personality	136
--#define __NR_afs_syscall	137 /* Syscall for Andrew File System */
--#define __NR_setfsuid		138
--#define __NR_setfsgid		139
--#define __NR__llseek		140
--#define __NR_getdents		141
--#define __NR__newselect		142
--#define __NR_flock		143
--#define __NR_msync		144
--#define __NR_readv		145
--#define __NR_writev		146
--#define __NR_getsid		147
--#define __NR_fdatasync		148
--#define __NR__sysctl		149
--#define __NR_mlock		150
--#define __NR_munlock		151
--#define __NR_mlockall		152
--#define __NR_munlockall		153
--#define __NR_sched_setparam		154
--#define __NR_sched_getparam		155
--#define __NR_sched_setscheduler		156
--#define __NR_sched_getscheduler		157
--#define __NR_sched_yield		158
--#define __NR_sched_get_priority_max	159
--#define __NR_sched_get_priority_min	160
--#define __NR_sched_rr_get_interval	161
--#define __NR_nanosleep		162
--#define __NR_mremap		163
--#define __NR_setresuid		164
--#define __NR_getresuid		165
--#define __NR_query_module	166
--#define __NR_poll		167
--#define __NR_nfsservctl		168
--#define __NR_setresgid		169
--#define __NR_getresgid		170
--#define __NR_prctl		171
--#define __NR_rt_sigreturn	172
--#define __NR_rt_sigaction	173
--#define __NR_rt_sigprocmask	174
--#define __NR_rt_sigpending	175
--#define __NR_rt_sigtimedwait	176
--#define __NR_rt_sigqueueinfo	177
--#define __NR_rt_sigsuspend	178
--#define __NR_pread64		179
--#define __NR_pwrite64		180
--#define __NR_chown		181
--#define __NR_getcwd		182
--#define __NR_capget		183
--#define __NR_capset		184
--#define __NR_sigaltstack	185
--#define __NR_sendfile		186
--#define __NR_getpmsg		187	/* some people actually want streams */
--#define __NR_putpmsg		188	/* some people actually want streams */
--#define __NR_vfork		189
--#define __NR_ugetrlimit		190	/* SuS compliant getrlimit */
--#define __NR_readahead		191
--#ifndef __powerpc64__			/* these are 32-bit only */
--#define __NR_mmap2		192
--#define __NR_truncate64		193
--#define __NR_ftruncate64	194
--#define __NR_stat64		195
--#define __NR_lstat64		196
--#define __NR_fstat64		197
--#endif
--#define __NR_pciconfig_read	198
--#define __NR_pciconfig_write	199
--#define __NR_pciconfig_iobase	200
--#define __NR_multiplexer	201
--#define __NR_getdents64		202
--#define __NR_pivot_root		203
--#ifndef __powerpc64__
--#define __NR_fcntl64		204
--#endif
--#define __NR_madvise		205
--#define __NR_mincore		206
--#define __NR_gettid		207
--#define __NR_tkill		208
--#define __NR_setxattr		209
--#define __NR_lsetxattr		210
--#define __NR_fsetxattr		211
--#define __NR_getxattr		212
--#define __NR_lgetxattr		213
--#define __NR_fgetxattr		214
--#define __NR_listxattr		215
--#define __NR_llistxattr		216
--#define __NR_flistxattr		217
--#define __NR_removexattr	218
--#define __NR_lremovexattr	219
--#define __NR_fremovexattr	220
--#define __NR_futex		221
--#define __NR_sched_setaffinity	222
--#define __NR_sched_getaffinity	223
--/* 224 currently unused */
--#define __NR_tuxcall		225
--#ifndef __powerpc64__
--#define __NR_sendfile64		226
--#endif
--#define __NR_io_setup		227
--#define __NR_io_destroy		228
--#define __NR_io_getevents	229
--#define __NR_io_submit		230
--#define __NR_io_cancel		231
--#define __NR_set_tid_address	232
--#define __NR_fadvise64		233
--#define __NR_exit_group		234
--#define __NR_lookup_dcookie	235
--#define __NR_epoll_create	236
--#define __NR_epoll_ctl		237
--#define __NR_epoll_wait		238
--#define __NR_remap_file_pages	239
--#define __NR_timer_create	240
--#define __NR_timer_settime	241
--#define __NR_timer_gettime	242
--#define __NR_timer_getoverrun	243
--#define __NR_timer_delete	244
--#define __NR_clock_settime	245
--#define __NR_clock_gettime	246
--#define __NR_clock_getres	247
--#define __NR_clock_nanosleep	248
--#define __NR_swapcontext	249
--#define __NR_tgkill		250
--#define __NR_utimes		251
--#define __NR_statfs64		252
--#define __NR_fstatfs64		253
- #ifndef __powerpc64__
--#define __NR_fadvise64_64	254
--#endif
--#define __NR_rtas		255
--#define __NR_sys_debug_setcontext 256
--/* Number 257 is reserved for vserver */
--#define __NR_migrate_pages	258
--#define __NR_mbind		259
--#define __NR_get_mempolicy	260
--#define __NR_set_mempolicy	261
--#define __NR_mq_open		262
--#define __NR_mq_unlink		263
--#define __NR_mq_timedsend	264
--#define __NR_mq_timedreceive	265
--#define __NR_mq_notify		266
--#define __NR_mq_getsetattr	267
--#define __NR_kexec_load		268
--#define __NR_add_key		269
--#define __NR_request_key	270
--#define __NR_keyctl		271
--#define __NR_waitid		272
--#define __NR_ioprio_set		273
--#define __NR_ioprio_get		274
--#define __NR_inotify_init	275
--#define __NR_inotify_add_watch	276
--#define __NR_inotify_rm_watch	277
--#define __NR_spu_run		278
--#define __NR_spu_create		279
--#define __NR_pselect6		280
--#define __NR_ppoll		281
--#define __NR_unshare		282
--#define __NR_splice		283
--#define __NR_tee		284
--#define __NR_vmsplice		285
--#define __NR_openat		286
--#define __NR_mkdirat		287
--#define __NR_mknodat		288
--#define __NR_fchownat		289
--#define __NR_futimesat		290
--#ifdef __powerpc64__
--#define __NR_newfstatat		291
-+#include <asm/unistd_32.h>
- #else
--#define __NR_fstatat64		291
--#endif
--#define __NR_unlinkat		292
--#define __NR_renameat		293
--#define __NR_linkat		294
--#define __NR_symlinkat		295
--#define __NR_readlinkat		296
--#define __NR_fchmodat		297
--#define __NR_faccessat		298
--#define __NR_get_robust_list	299
--#define __NR_set_robust_list	300
--#define __NR_move_pages		301
--#define __NR_getcpu		302
--#define __NR_epoll_pwait	303
--#define __NR_utimensat		304
--#define __NR_signalfd		305
--#define __NR_timerfd_create	306
--#define __NR_eventfd		307
--#define __NR_sync_file_range2	308
--#define __NR_fallocate		309
--#define __NR_subpage_prot	310
--#define __NR_timerfd_settime	311
--#define __NR_timerfd_gettime	312
--#define __NR_signalfd4		313
--#define __NR_eventfd2		314
--#define __NR_epoll_create1	315
--#define __NR_dup3		316
--#define __NR_pipe2		317
--#define __NR_inotify_init1	318
--#define __NR_perf_event_open	319
--#define __NR_preadv		320
--#define __NR_pwritev		321
--#define __NR_rt_tgsigqueueinfo	322
--#define __NR_fanotify_init	323
--#define __NR_fanotify_mark	324
--#define __NR_prlimit64		325
--#define __NR_socket		326
--#define __NR_bind		327
--#define __NR_connect		328
--#define __NR_listen		329
--#define __NR_accept		330
--#define __NR_getsockname	331
--#define __NR_getpeername	332
--#define __NR_socketpair		333
--#define __NR_send		334
--#define __NR_sendto		335
--#define __NR_recv		336
--#define __NR_recvfrom		337
--#define __NR_shutdown		338
--#define __NR_setsockopt		339
--#define __NR_getsockopt		340
--#define __NR_sendmsg		341
--#define __NR_recvmsg		342
--#define __NR_recvmmsg		343
--#define __NR_accept4		344
--#define __NR_name_to_handle_at	345
--#define __NR_open_by_handle_at	346
--#define __NR_clock_adjtime	347
--#define __NR_syncfs		348
--#define __NR_sendmmsg		349
--#define __NR_setns		350
--#define __NR_process_vm_readv	351
--#define __NR_process_vm_writev	352
--#define __NR_finit_module	353
--#define __NR_kcmp		354
--#define __NR_sched_setattr	355
--#define __NR_sched_getattr	356
--#define __NR_renameat2		357
--#define __NR_seccomp		358
--#define __NR_getrandom		359
--#define __NR_memfd_create	360
--#define __NR_bpf		361
--#define __NR_execveat		362
--#define __NR_switch_endian	363
--#define __NR_userfaultfd	364
--#define __NR_membarrier		365
--#define __NR_mlock2		378
--#define __NR_copy_file_range	379
--#define __NR_preadv2		380
--#define __NR_pwritev2		381
--#define __NR_kexec_file_load	382
--#define __NR_statx		383
--#define __NR_pkey_alloc		384
--#define __NR_pkey_free		385
--#define __NR_pkey_mprotect	386
--#define __NR_rseq		387
--#define __NR_io_pgetevents	388
--
--#ifdef __KERNEL__
--#define __NR_syscalls		389
-+#include <asm/unistd_64.h>
- #endif
- 
- #endif /* _UAPI_ASM_POWERPC_UNISTD_H_ */
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 53d4b8d..dffdfd6 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -160,16 +160,6 @@ extra-$(CONFIG_ALTIVEC)		+= vector.o
- extra-$(CONFIG_PPC64)		+= entry_64.o
- extra-$(CONFIG_PPC_OF_BOOT_TRAMPOLINE)	+= prom_init.o
- 
--extra-y				+= systbl_chk.i
--$(obj)/systbl.o:		systbl_chk
--
--quiet_cmd_systbl_chk = CALL    $<
--      cmd_systbl_chk = $(CONFIG_SHELL) $< $(obj)/systbl_chk.i
--
--PHONY += systbl_chk
--systbl_chk: $(src)/systbl_chk.sh $(obj)/systbl_chk.i
--	$(call cmd,systbl_chk)
--
- ifdef CONFIG_PPC_OF_BOOT_TRAMPOLINE
- $(obj)/built-in.a:		prom_init_check
- 
-diff --git a/arch/powerpc/kernel/systbl.S b/arch/powerpc/kernel/systbl.S
-index 9ff1913..d756348 100644
---- a/arch/powerpc/kernel/systbl.S
-+++ b/arch/powerpc/kernel/systbl.S
-@@ -16,28 +16,6 @@
- 
- #include <asm/ppc_asm.h>
- 
--#ifdef CONFIG_PPC64
--#define SYSCALL(func)		.8byte	DOTSYM(sys_##func),DOTSYM(sys_##func)
--#define COMPAT_SYS(func)	.8byte	DOTSYM(sys_##func),DOTSYM(compat_sys_##func)
--#define PPC_SYS(func)		.8byte	DOTSYM(ppc_##func),DOTSYM(ppc_##func)
--#define OLDSYS(func)		.8byte	DOTSYM(sys_ni_syscall),DOTSYM(sys_ni_syscall)
--#define SYS32ONLY(func)		.8byte	DOTSYM(sys_ni_syscall),DOTSYM(compat_sys_##func)
--#define PPC64ONLY(func)		.8byte	DOTSYM(ppc_##func),DOTSYM(sys_ni_syscall)
--#define SYSX(f, f3264, f32)	.8byte	DOTSYM(f),DOTSYM(f3264)
--#else
--#define SYSCALL(func)		.long	sys_##func
--#define COMPAT_SYS(func)	.long	sys_##func
--#define PPC_SYS(func)		.long	ppc_##func
--#define OLDSYS(func)		.long	sys_##func
--#define SYS32ONLY(func)		.long	sys_##func
--#define PPC64ONLY(func)		.long	sys_ni_syscall
--#define SYSX(f, f3264, f32)	.long	f32
--#endif
--#define SYSCALL_SPU(func)	SYSCALL(func)
--#define COMPAT_SYS_SPU(func)	COMPAT_SYS(func)
--#define COMPAT_SPU_NEW(func)	COMPAT_SYS(func)
--#define SYSX_SPU(f, f3264, f32)	SYSX(f, f3264, f32)
--
- .section .rodata,"a"
- 
- #ifdef CONFIG_PPC64
-@@ -47,5 +25,17 @@
- .globl sys_call_table
- sys_call_table:
- 
-+#if defined CONFIG_PPC64 && defined(CONFIG_COMPAT)
-+#define __SYSCALL(nr, entry, nargs) .8byte entry
- #define compat_sys_sigsuspend	sys_sigsuspend
--#include <asm/systbl.h>
-+#include <asm/syscall_table_c32.h>
-+#undef __SYSCALL
-+#elif defined CONFIG_PPC64 && !defined(CONFIG_COMPAT)
-+#define __SYSCALL(nr, entry, nargs) .8byte entry
-+#include <asm/syscall_table_64.h>
-+#undef __SYSCALL
-+#else
-+#define __SYSCALL(nr, entry, nargs) .long entry
-+#include <asm/syscall_table_32.h>
-+#undef __SYSCALL
-+#endif
-diff --git a/arch/powerpc/kernel/systbl_chk.c b/arch/powerpc/kernel/systbl_chk.c
-deleted file mode 100644
-index db97da7..0000000
---- a/arch/powerpc/kernel/systbl_chk.c
-+++ /dev/null
-@@ -1,61 +0,0 @@
--/*
-- * This file, when run through CPP produces a list of syscall numbers
-- * in the order of systbl.h.  That way we can check for gaps and syscalls
-- * that are out of order.
-- *
-- * Unfortunately, we cannot check for the correct ordering of entries
-- * using SYSX().
-- *
-- * Copyright © IBM Corporation
-- *
-- * This program is free software; you can redistribute it and/or
-- * modify it under the terms of the GNU General Public License
-- * as published by the Free Software Foundation; either version
-- * 2 of the License, or (at your option) any later version.
-- */
--#include <asm/unistd.h>
--
--#define SYSCALL(func)		__NR_##func
--#define COMPAT_SYS(func)	__NR_##func
--#define PPC_SYS(func)		__NR_##func
--#ifdef CONFIG_PPC64
--#define OLDSYS(func)		-1
--#define SYS32ONLY(func)		-1
--#define PPC64ONLY(func)		__NR_##func
--#else
--#define OLDSYS(func)		__NR_old##func
--#define SYS32ONLY(func)		__NR_##func
--#define PPC64ONLY(func)		-1
--#endif
--#define SYSX(f, f3264, f32)	-1
--
--#define SYSCALL_SPU(func)	SYSCALL(func)
--#define COMPAT_SYS_SPU(func)	COMPAT_SYS(func)
--#define COMPAT_SPU_NEW(func)	COMPAT_SYS(_new##func)
--#define SYSX_SPU(f, f3264, f32)	SYSX(f, f3264, f32)
--
--/* Just insert a marker for ni_syscalls */
--#define	__NR_ni_syscall		-1
--
--/*
-- * These are the known exceptions.
-- * Hopefully, there will be no more.
-- */
--#define	__NR_llseek		__NR__llseek
--#undef	__NR_umount
--#define	__NR_umount		__NR_umount2
--#define	__NR_old_getrlimit	__NR_getrlimit
--#define	__NR_newstat		__NR_stat
--#define	__NR_newlstat		__NR_lstat
--#define	__NR_newfstat		__NR_fstat
--#define	__NR_newuname		__NR_uname
--#define	__NR_sysctl		__NR__sysctl
--#define __NR_olddebug_setcontext	__NR_sys_debug_setcontext
--
--/* We call sys_ugetrlimit for syscall number __NR_getrlimit */
--#define getrlimit		ugetrlimit
--
--START_TABLE
--#define compat_sys_sigsuspend	sys_sigsuspend
--#include <asm/systbl.h>
--END_TABLE NR_syscalls
-diff --git a/arch/powerpc/platforms/cell/spu_callbacks.c b/arch/powerpc/platforms/cell/spu_callbacks.c
-index 7517a43..125f2a5 100644
---- a/arch/powerpc/platforms/cell/spu_callbacks.c
-+++ b/arch/powerpc/platforms/cell/spu_callbacks.c
-@@ -34,21 +34,9 @@
-  */
- 
- static void *spu_syscall_table[] = {
--#define SYSCALL(func)		sys_ni_syscall,
--#define COMPAT_SYS(func)	sys_ni_syscall,
--#define PPC_SYS(func)		sys_ni_syscall,
--#define OLDSYS(func)		sys_ni_syscall,
--#define SYS32ONLY(func)		sys_ni_syscall,
--#define PPC64ONLY(func)		sys_ni_syscall,
--#define SYSX(f, f3264, f32)	sys_ni_syscall,
--
--#define SYSCALL_SPU(func)	sys_##func,
--#define COMPAT_SYS_SPU(func)	sys_##func,
--#define COMPAT_SPU_NEW(func)	sys_##func,
--#define SYSX_SPU(f, f3264, f32)	f,
--
--#define compat_sys_sigsuspend	sys_sigsuspend
--#include <asm/systbl.h>
-+#define __SYSCALL(nr, entry, nargs) entry,
-+#include <asm/syscall_table_spu.h>
-+#undef __SYSCALL
- };
- 
- long spu_sys_callback(struct spu_syscall_block *s)
--- 
-1.9.1
+So that's presumably why we're seeing it, some GCCs are configured to
+use it.
 
+> If it's intentional, should we be putting including them in the same
+> way as .hash sections?
+>
+> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/powerpc/kernel/vmlinux.lds.S#n282
+>
+>   .hash : AT(ADDR(.hash) - LOAD_OFFSET) { *(.hash) }
+
+That would presumably work.
+
+My question though is do we even need it?
+
+From what I can see for it to be useful you need the section as well as
+an entry in the dynamic section pointing at it, and we don't have a
+dynamic section at all:
+
+  $ readelf -S vmlinux | grep gnu.hash
+    [ 4] .gnu.hash         GNU_HASH         c000000000dbbdb0  00dcbdb0
+  $ readelf -d vmlinux
+  
+  There is no dynamic section in this file.
+
+Compare to the vdso:
+
+$ readelf -d arch/powerpc/kernel/vdso64/vdso64.so
+
+Dynamic section at offset 0x868 contains 12 entries:
+  Tag        Type                         Name/Value
+ 0x000000000000000e (SONAME)             Library soname: [linux-vdso64.so.1]
+ 0x0000000000000004 (HASH)               0x120
+ 0x000000006ffffef5 (GNU_HASH)           0x170
+ 0x0000000000000005 (STRTAB)             0x320
+ 0x0000000000000006 (SYMTAB)             0x1d0
+ 0x000000000000000a (STRSZ)              269 (bytes)
+ 0x000000000000000b (SYMENT)             24 (bytes)
+ 0x0000000070000003 (PPC64_OPT)          0x0
+ 0x000000006ffffffc (VERDEF)             0x450
+ 0x000000006ffffffd (VERDEFNUM)          2
+ 0x000000006ffffff0 (VERSYM)             0x42e
+ 0x0000000000000000 (NULL)               0x0
+
+
+So can't we just discard .gnu.hash? And in fact do we need .hash either?
+
+Actually arm64 discards the latter, and parisc discards both.
+
+Would still be good to hear from Alan or someone else who knows anything
+about toolchain stuff, ie. not me :)
+
+cheers
