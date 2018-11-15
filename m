@@ -2,104 +2,81 @@ Return-Path: <SRS0=6gsd=N2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ED44CC43441
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 15:06:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 579E8C43441
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 17:58:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 15698208A3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 15:06:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 15698208A3
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9AF1A208E7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 17:58:44 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="N25TH/eM"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9AF1A208E7
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42wl7z1N9szF3f0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Nov 2018 02:06:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42wpyB3Y8gzF3My
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Nov 2018 04:58:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com;
- envelope-from=lvivier@redhat.com; receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="N25TH/eM";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::443; helo=mail-pf1-x443.google.com;
+ envelope-from=sabyasachi.linux@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="N25TH/eM"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
+ [IPv6:2607:f8b0:4864:20::443])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42wl5g6ydJzF3f0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Nov 2018 02:04:55 +1100 (AEDT)
-Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.phx2.redhat.com
- [10.5.11.14])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id E2532308FB94;
- Thu, 15 Nov 2018 15:04:52 +0000 (UTC)
-Received: from [10.40.204.52] (ovpn-204-52.brq.redhat.com [10.40.204.52])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 2F3905DD78;
- Thu, 15 Nov 2018 15:04:49 +0000 (UTC)
-Subject: Re: [PATCH] powerpc/numa: fix hot-added CPU on memory-less node
-To: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
-References: <20181114170319.24828-1-lvivier@redhat.com>
- <20181115091948.GA14462@dhcp-9-193-110-205.in.ibm.com>
-From: Laurent Vivier <lvivier@redhat.com>
-Openpgp: preference=signencrypt
-Autocrypt: addr=lvivier@redhat.com; prefer-encrypt=mutual; keydata=
- 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
-Message-ID: <56649a0c-ea14-62fa-d81e-0d9b9da1d10f@redhat.com>
-Date: Thu, 15 Nov 2018 16:04:48 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.7.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42wpvP3zj2zF3fn
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Nov 2018 04:56:17 +1100 (AEDT)
+Received: by mail-pf1-x443.google.com with SMTP id g62so6787473pfd.12
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2018 09:56:17 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=6G2KpmpfCtmqQlw0KlLFcSMUcNS3EWFTLTfjH5tvPWA=;
+ b=N25TH/eMZ1eCRPoRQyH7sADMQ3XHsVyGl2bp2bJISV5mhZVqNr03ivatjocEmFIEt1
+ gdH9/oeuBBJzCv+EdtZBPdhxHFxW9aM7c0Vu3GmGX57ZThpxrwGsCujJ6S+xmX1YJNnH
+ 8BJetUAtSL3ksa7GBY7T7l06bf5of9FOSRz0zYKGwAEw5SYhcPN2DktovulmYB0lF9Yx
+ CI2QpSNkl1+ECtmWYyGuKUBM33VXeOJkoyA6aLdl1deZIeJaenQFy7djxwTNCZ4JMzgs
+ sDmPnuIzHEXdjfEbZ3eoIS3uVESJ8DLhI98nR8CeUxXBXPOwfiPVw8H87eAIXw5eO/3I
+ FdZQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=6G2KpmpfCtmqQlw0KlLFcSMUcNS3EWFTLTfjH5tvPWA=;
+ b=p8D+SVrmANDVmiQCLBfkHVw5iyOiks/8sqpZWuuYVxSQA5+P3VqV36lproVADloZtX
+ AD8IqIh1iSZTbSFIBD+xRidmf+GgidW8KvwIE56PhgeLR75fq8EPzyddTel6pTxi/cVA
+ OGVMpZgeum+JdJotgZJ8GEVRqSxoVgfZiqUl+wmVtH4to6iqleGLgdPsJLrCXhENUvxd
+ 8H6qnbkPdLzVNMDEUECEObMxmdLfWNikl4/Aowwo+GrgEjQ7m45BUWcQrkHeO/lDO1jk
+ 1OSznAG017nZnDBl5CQIdA053Cj1ibod+/g+DAMD7+pmIVp+xIq82BtD6FGU04RqxZsn
+ TcTQ==
+X-Gm-Message-State: AGRZ1gLkTC4itvGbvacaYhYpPkwKCCIjmpmOMOIKmZvvwxMwaCvKQ4/F
+ X5uZFn7c+7xGvxo1mg45Qxs9KPswA+cbImxfRwk=
+X-Google-Smtp-Source: AJdET5c3T/+W2EqPp6pC7PirZgkFA+xZ0xnD5veblIlBPyIzSFRxFTqCtAOqKJmdIzIk4ulEc0p27ZQFQah63F3SMVM=
+X-Received: by 2002:a63:bf0b:: with SMTP id v11mr6874893pgf.302.1542304574924; 
+ Thu, 15 Nov 2018 09:56:14 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <20181115091948.GA14462@dhcp-9-193-110-205.in.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.14
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.43]); Thu, 15 Nov 2018 15:04:53 +0000 (UTC)
+References: <5bdfa97d.1c69fb81.4aef7.c9f7@mx.google.com>
+In-Reply-To: <5bdfa97d.1c69fb81.4aef7.c9f7@mx.google.com>
+From: Sabyasachi Gupta <sabyasachi.linux@gmail.com>
+Date: Thu, 15 Nov 2018 23:26:03 +0530
+Message-ID: <CAJr6mf0HfJNdsHG2H6VnRMYW1WGqBr1gvwMQoWk3mSdDhO3EmQ@mail.gmail.com>
+Subject: Re: [PATCH] arch/powerpc: Use dma_zalloc_coherent
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -111,77 +88,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Satheesh Rajendran <satheera@in.ibm.com>, linux-kernel@vger.kernel.org,
- Michael Bringmann <mwb@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Brajeswar Ghosh <brajeswar.linux@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ Souptick Joarder <jrdr.linux@gmail.com>, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 15/11/2018 10:19, Satheesh Rajendran wrote:
-> On Wed, Nov 14, 2018 at 06:03:19PM +0100, Laurent Vivier wrote:
->> Trying to hotplug a CPU on an empty NUMA node (without
->> memory or CPU) crashes the kernel when the CPU is onlined.
->>
->> During the onlining process, the kernel calls start_secondary()
->> that ends by calling
->> set_numa_mem(local_memory_node(numa_cpu_lookup_table[cpu]))
->> that relies on NODE_DATA(nid)->node_zonelists and in our case
->> NODE_DATA(nid) is NULL.
->>
->> To fix that, add the same checking as we already have in
->> find_and_online_cpu_nid(): if NODE_DATA() is NULL, use
->> the first online node.
->>
->> Bug: https://github.com/linuxppc/linux/issues/184
->> Fixes: ea05ba7c559c8e5a5946c3a94a2a266e9a6680a6
->>        (powerpc/numa: Ensure nodes initialized for hotplug)
->> Signed-off-by: Laurent Vivier <lvivier@redhat.com>
->> ---
->>  arch/powerpc/mm/numa.c | 9 +++++++++
->>  1 file changed, 9 insertions(+)
-> 
-> This patch causes regression for cold plug numa case(Case 1) and 
-> hotplug case + reboot(Case 2) with adding all vcpus into node 0.
-> 
-> 
-> Env: HW: Power8 Host.
-> Kernel: 4.20-rc2 + this patch
-> 
-> Case 1:
-> 1. boot a guest with 8 vcpus(all available), spreadout in 4 numa nodes.
-> <vcpu placement='static'>8</vcpu>
-> ...
->    <numa>
->       <cell id='0' cpus='0-1' memory='4194304' unit='KiB'/>
->       <cell id='1' cpus='2-3' memory='4194304' unit='KiB'/>
->       <cell id='2' cpus='4-5' memory='0' unit='KiB'/>
->       <cell id='3' cpus='6-7' memory='0' unit='KiB'/>
->     </numa>
-> 
-> 2. Check lscpu --- all vcpus are added to node0 --> NOK
-> 
-> # lscpu
-...
-> NUMA node0 CPU(s):   0-7
-> NUMA node1 CPU(s):   
-> NUMA node2 CPU(s):   
-> NUMA node3 CPU(s): 
-> 
-> without this patch it was working fine.
-> # lscpu
-...
-> NUMA node0 CPU(s):   0,1
-> NUMA node1 CPU(s):   2,3
-> NUMA node2 CPU(s):   4,5
-> NUMA node3 CPU(s):   6,7
-> 
+On Mon, Nov 5, 2018 at 7:52 AM Sabyasachi Gupta
+<sabyasachi.linux@gmail.com> wrote:
+>
+> Replaced dma_alloc_coherent + memset with dma_zalloc_coherent
+>
+> Signed-off-by: Sabyasachi Gupta <sabyasachi.linux@gmail.com>
 
-Good point. Thank you.
+Any comment on this patch?
 
-I'm going to see what happens and how the cold case allows to online
-CPUs on nodes with NODE_DATA() set to NULL (because it's what the patch
-changes).
-
-Thanks,
-Laurent
+> ---
+>  arch/powerpc/sysdev/fsl_rmu.c | 4 +---
+>  1 file changed, 1 insertion(+), 3 deletions(-)
+>
+> diff --git a/arch/powerpc/sysdev/fsl_rmu.c b/arch/powerpc/sysdev/fsl_rmu.c
+> index 88b35a3d..8b0ebf3 100644
+> --- a/arch/powerpc/sysdev/fsl_rmu.c
+> +++ b/arch/powerpc/sysdev/fsl_rmu.c
+> @@ -756,15 +756,13 @@ fsl_open_outb_mbox(struct rio_mport *mport, void *dev_id, int mbox, int entries)
+>         }
+>
+>         /* Initialize outbound message descriptor ring */
+> -       rmu->msg_tx_ring.virt = dma_alloc_coherent(priv->dev,
+> +       rmu->msg_tx_ring.virt = dma_zalloc_coherent(priv->dev,
+>                                 rmu->msg_tx_ring.size * RIO_MSG_DESC_SIZE,
+>                                 &rmu->msg_tx_ring.phys, GFP_KERNEL);
+>         if (!rmu->msg_tx_ring.virt) {
+>                 rc = -ENOMEM;
+>                 goto out_dma;
+>         }
+> -       memset(rmu->msg_tx_ring.virt, 0,
+> -                       rmu->msg_tx_ring.size * RIO_MSG_DESC_SIZE);
+>         rmu->msg_tx_ring.tx_slot = 0;
+>
+>         /* Point dequeue/enqueue pointers at first entry in ring */
+> --
+> 2.7.4
+>
