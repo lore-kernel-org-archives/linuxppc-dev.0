@@ -6,37 +6,37 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 65F40C43441
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 13:29:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 86E08C43441
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 13:30:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 13BAD223DD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 13:29:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 13BAD223DD
+	by mail.kernel.org (Postfix) with ESMTPS id 3A2CC208E7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 13:30:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3A2CC208E7
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42whyz1YdBzF3ff
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Nov 2018 00:28:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42wj1307QPzF3b4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Nov 2018 00:30:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42whtQ1t88zF3MY
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42whtQ6HT9zF3MY
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Nov 2018 00:25:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 42whtQ0BTNz9sBN; Fri, 16 Nov 2018 00:25:01 +1100 (AEDT)
+ id 42whtQ5c0pz9sBk; Fri, 16 Nov 2018 00:25:02 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: b2fed34a628df6118b5d4e13f49a33e15f704fa9
-In-Reply-To: <1542249210-6396-1-git-send-email-gromero@linux.vnet.ibm.com>
-To: Gustavo Romero <gromero@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+X-powerpc-patch-commit: 66f93c5a02d5ba6ef17fef459143961382593212
+In-Reply-To: <20181115023427.31033-1-npiggin@gmail.com>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [v2] selftests/powerpc: Adjust wild_bctr to build with old gcc
-Message-Id: <42whtQ0BTNz9sBN@ozlabs.org>
-Date: Fri, 16 Nov 2018 00:25:01 +1100 (AEDT)
+Subject: Re: powerpc/64: Fix kernel stack 16-byte alignment
+Message-Id: <42whtQ5c0pz9sBk@ozlabs.org>
+Date: Fri, 16 Nov 2018 00:25:02 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,25 +48,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: gromero@linux.vnet.ibm.com
+Cc: Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2018-11-15 at 02:33:30 UTC, Gustavo Romero wrote:
-> Currently the selftest wild_bctr can fail to build when an old gcc is used,
-> notably on gcc using a binutils version <= 2.27, because the assembler does
-> not support the integer suffix UL.
+On Thu, 2018-11-15 at 02:34:27 UTC, Nicholas Piggin wrote:
+> Commit 4c2de74cc869 ("powerpc/64: Interrupts save PPR on stack rather
+> than thread_struct") changed sizeof(struct pt_regs) % 16 from 0 to 8,
+> which causes the interrupt frame allocation on kernel entry to put the
+> kernel stack out of alignment.
 > 
-> This patch adjusts the wild_bctr test so the REG_POISON value is still
-> treated as an unsigned long for the shifts on compilation but the UL
-> suffix is absent on the stringification, so the inline asm code generated
-> has no UL suffixes.
+> Add a pad field to fix alignment, and add a BUILD_BUG_ON to catch this
+> in future.
 > 
-> Signed-off-by: Gustavo Romero <gromero@linux.vnet.ibm.com>
+> Fixes: 4c2de74cc869 ("powerpc/64: Interrupts save PPR on stack rather
+> than thread_struct")
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/b2fed34a628df6118b5d4e13f49a33
+https://git.kernel.org/powerpc/c/66f93c5a02d5ba6ef17fef45914396
 
 cheers
