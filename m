@@ -2,83 +2,100 @@ Return-Path: <SRS0=6gsd=N2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E201AC43441
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 02:38:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DB504C43441
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 02:46:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 59DAC2086A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 02:38:46 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="YY9xtfZt"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 59DAC2086A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 56D652086A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 02:46:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 56D652086A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42wQXh2kMvzF3Y8
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 13:38:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42wQjK1MrbzF3Xl
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 13:46:13 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="YY9xtfZt";
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::542; helo=mail-pg1-x542.google.com;
- envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="YY9xtfZt"; 
- dkim-atps=neutral
-Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
- [IPv6:2607:f8b0:4864:20::542])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=gromero@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42wQS01TlzzF3Xk
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2018 13:34:39 +1100 (AEDT)
-Received: by mail-pg1-x542.google.com with SMTP id 80so8281750pge.4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2018 18:34:39 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id;
- bh=eYAobIEm3gQtibGKZFELCbqE7wV05FwwLjtyho5JmGI=;
- b=YY9xtfZtYzOhb2S2HKO2ntI7kQjI7rQeW358iNQXulPn9x8YegrVDWdqaRA7Sj1ohi
- Spmzz5ApraNqyuOIsexahdBoG7o1gKbEHKUGPkoHAFDbhtNn1S1kbz74iiZnptPLV4n6
- CcaslUftI4s3jsGLb2AG6dq0pFj3VqJAH3AuAI3v1rmZ9ptXa0xWXP7+WntgRpnFYq4K
- 81NE9/Lh5BkAxPDmC8fRQ/PG82FdO36UbGJBYfEfBkA7LV8xNf7PcGUQx4rPhao24wva
- ZebXRhTEX27qdyBbbXg7+7znyeXIYoFVySPG6zGYE8f9dr3WZj9fdcVj7VFkIlJApwgt
- xvdw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id;
- bh=eYAobIEm3gQtibGKZFELCbqE7wV05FwwLjtyho5JmGI=;
- b=Or2xTjEhA6D2P5NiCVfgTH7n3kANME30VpgXxegBtB89QU+sMZk+cPJjh1jlGH3sLT
- +BwxrtG5N2eZhRtecwHsLMmt5c7c0Lc9REYX8fM5+MIPUfBE/WCtFVnlnTVFsp19RJON
- OKbG+8xVjxHhOq1lR7XzXtCjmAbTVS7n7a4CEc1zi0S6Y2nUyLLRQo/sDSQdk/HJWAL1
- Kt2gXar5YP2TyegbcumvwHr8vBgyHfzMLxdUdIPuiKlKOvNdAxZdXdMZFiZ6ymvgZMnj
- 2W6XKHg8r2m1SBgN3I3hJYfx8dr1BQcyPHzO88yO5NuJdP34q27AlCnv4fn0K/T7W9Fg
- RIWg==
-X-Gm-Message-State: AGRZ1gJjY4qe1VwysAIG3wH41d9d84FYdGuMcPZ9jAtpqlGyuxYdB7CY
- ZdQUoirN2XopGJkZYvSJVjTVrP0R
-X-Google-Smtp-Source: AJdET5fZhXhrRdzEHVhESJ1H2+V96cN4Ek2GR/hAIyyML/LTnNQMxXBkSJaOWOMVWj2LyWSoR0CDhg==
-X-Received: by 2002:a63:1560:: with SMTP id 32mr4002368pgv.383.1542249277145; 
- Wed, 14 Nov 2018 18:34:37 -0800 (PST)
-Received: from roar.ibm.com
- (148.36.194.203.dial.dynamic.acc01-tull-pth.comindico.com.au.
- [203.194.36.148])
- by smtp.gmail.com with ESMTPSA id o86-v6sm31143061pfk.8.2018.11.14.18.34.34
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Wed, 14 Nov 2018 18:34:36 -0800 (PST)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/64: Fix kernel stack 16-byte alignment
-Date: Thu, 15 Nov 2018 12:34:27 +1000
-Message-Id: <20181115023427.31033-1-npiggin@gmail.com>
-X-Mailer: git-send-email 2.18.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42wQg1225PzF3MY
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2018 13:44:13 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wAF2d6LW061708
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2018 21:44:11 -0500
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2nrw9q63uw-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2018 21:44:11 -0500
+Received: from localhost
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gromero@linux.vnet.ibm.com>;
+ Thu, 15 Nov 2018 02:44:10 -0000
+Received: from b03cxnp08025.gho.boulder.ibm.com (9.17.130.17)
+ by e31.co.us.ibm.com (192.168.1.131) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Thu, 15 Nov 2018 02:44:07 -0000
+Received: from b03ledav006.gho.boulder.ibm.com
+ (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wAF2i6YY19988482
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Thu, 15 Nov 2018 02:44:06 GMT
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 83F03C605B;
+ Thu, 15 Nov 2018 02:44:06 +0000 (GMT)
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 8DBCBC6059;
+ Thu, 15 Nov 2018 02:44:05 +0000 (GMT)
+Received: from oc6336877782.ibm.com (unknown [9.80.225.70])
+ by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Thu, 15 Nov 2018 02:44:05 +0000 (GMT)
+Subject: Re: It looks like that wild_bctr on powerpc/fixes is still not
+ compiling
+To: Michael Ellerman <mpe@ellerman.id.au>
+References: <4dddbc2a-fc3f-5ea5-54be-8e2a5375db76@linux.vnet.ibm.com>
+ <87o9asv5iq.fsf@concordia.ellerman.id.au>
+From: Gustavo Romero <gromero@linux.vnet.ibm.com>
+Date: Thu, 15 Nov 2018 00:44:04 -0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
+MIME-Version: 1.0
+In-Reply-To: <87o9asv5iq.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 18111502-8235-0000-0000-00000E28205A
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00010051; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000270; SDB=6.01117590; UDB=6.00579681; IPR=6.00897699; 
+ MB=3.00024167; MTD=3.00000008; XFM=3.00000015; UTC=2018-11-15 02:44:09
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18111502-8236-0000-0000-0000435CC994
+Message-Id: <91c54115-706f-c614-6776-4b374b0e9e82@linux.vnet.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-11-14_20:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1811150022
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,52 +107,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Commit 4c2de74cc869 ("powerpc/64: Interrupts save PPR on stack rather
-than thread_struct") changed sizeof(struct pt_regs) % 16 from 0 to 8,
-which causes the interrupt frame allocation on kernel entry to put the
-kernel stack out of alignment.
+Hi Michael,
 
-Add a pad field to fix alignment, and add a BUILD_BUG_ON to catch this
-in future.
+On 11/13/2018 10:58 PM, Michael Ellerman wrote:
+> It looks like binutils 2.27 doesn't accept ULL but binutils 2.28 does.
+> 
+> Ah yep, here:
+> 
+>    https://sourceware.org/git/gitweb.cgi?p=binutils-gdb.git;a=commit;h=86b80085c889cd388fa677a5ae9053fd4be3776c
+> 
+>> The following trivial workaround can solve it by forcing a type promotion on
+>> the compiler side whilst leaving the macro taken into the asm code without
+>> the UL string:
+>>
+>> diff --git a/tools/testing/selftests/powerpc/mm/wild_bctr.c b/tools/testing/selftests/powerpc/mm/wild_bctr.c
+>> index 90469a9..d2772f4 100644
+>> --- a/tools/testing/selftests/powerpc/mm/wild_bctr.c
+>> +++ b/tools/testing/selftests/powerpc/mm/wild_bctr.c
+>> @@ -47,8 +47,9 @@ static int ok(void)
+>>           return 0;
+>>    }
+>>    
+>> -#define REG_POISON     0x5a5aUL
+>> -#define POISONED_REG(n)        ((REG_POISON << 48) | ((n) << 32) | (REG_POISON << 16) | (n))
+>> +#define REG_POISON     0x5a5a
+>> +#define POISONED_REG(n)        (((REG_POISON+0UL) << 48) | ((n) << 32) | ((REG_POISON+0UL) << 16) | (n))
+>>    
+>>    static inline void poison_regs(void)
+>>    {
+>>
+>>
+>> Should I contribute such a fix?
+> 
+> Yes thanks.
 
-Fixes: 4c2de74cc869 ("powerpc/64: Interrupts save PPR on stack rather
-than thread_struct")
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/include/asm/ptrace.h | 1 +
- arch/powerpc/kernel/setup_64.c    | 2 ++
- 2 files changed, 3 insertions(+)
+Segher kindly suggested to use explicitly "unsigned long" (thanks!), so I sent
+a v2 to:
 
-diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
-index f73886a1a7f5..1513292bf046 100644
---- a/arch/powerpc/include/asm/ptrace.h
-+++ b/arch/powerpc/include/asm/ptrace.h
-@@ -54,6 +54,7 @@ struct pt_regs
- 
- #ifdef CONFIG_PPC64
- 	unsigned long ppr;
-+	unsigned long pad;	/* Maintain 16 byte interrupt stack alignment */
- #endif
- };
- #endif
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 2a51e4cc8246..236c1151a3a7 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -636,6 +636,8 @@ static void *__init alloc_stack(unsigned long limit, int cpu)
- {
- 	unsigned long pa;
- 
-+	BUILD_BUG_ON(STACK_INT_FRAME_SIZE % 16);
-+
- 	pa = memblock_alloc_base_nid(THREAD_SIZE, THREAD_SIZE, limit,
- 					early_cpu_to_node(cpu), MEMBLOCK_NONE);
- 	if (!pa) {
--- 
-2.18.0
+https://lists.ozlabs.org/pipermail/linuxppc-dev/2018-November/181434.html
+
+
+Best regards,
+Gustavo
 
