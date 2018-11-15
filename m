@@ -2,100 +2,104 @@ Return-Path: <SRS0=6gsd=N2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B10E5C43441
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 14:19:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ED44CC43441
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 15:06:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 38B4F2145D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 14:19:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 38B4F2145D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 15698208A3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 15:06:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 15698208A3
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42wk4m6cS6zF3fr
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Nov 2018 01:19:04 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42wl7z1N9szF3f0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Nov 2018 02:06:55 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=abdhalee@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=redhat.com
+ (client-ip=209.132.183.28; helo=mx1.redhat.com;
+ envelope-from=lvivier@redhat.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42wk2b0xpSzF3bs
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Nov 2018 01:17:10 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wAFEEc1h187925
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2018 09:17:07 -0500
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2ns8puwaq7-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2018 09:17:06 -0500
-Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <abdhalee@linux.vnet.ibm.com>;
- Thu, 15 Nov 2018 14:17:06 -0000
-Received: from b03cxnp08026.gho.boulder.ibm.com (9.17.130.18)
- by e31.co.us.ibm.com (192.168.1.131) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 15 Nov 2018 14:17:05 -0000
-Received: from b03ledav006.gho.boulder.ibm.com
- (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wAFEH4ss25624668
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Thu, 15 Nov 2018 14:17:04 GMT
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4BD4CC6057;
- Thu, 15 Nov 2018 14:17:04 +0000 (GMT)
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 56597C6059;
- Thu, 15 Nov 2018 14:17:00 +0000 (GMT)
-Received: from [9.77.208.181] (unknown [9.77.208.181])
- by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
- Thu, 15 Nov 2018 14:17:00 +0000 (GMT)
-Subject: Re: [mainline][ppc][bnx2x] watchdog: CPU 80 self-detected hard
- LOCKUP @ opal_interrupt+0x28/0x70 when module load/unload
-From: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
-To: Oliver <oohall@gmail.com>
-Date: Thu, 15 Nov 2018 19:46:58 +0530
-In-Reply-To: <1542280243.15177.2.camel@abdul>
-References: <1537779408.26347.9.camel@abdul.in.ibm.com>
- <CAOSf1CHX0PnVQSrW+t=4vA2ZyVDpU_5B_OUg_arwsuDbcDTzOw@mail.gmail.com>
- <1537784366.26347.15.camel@abdul.in.ibm.com>
- <1542280243.15177.2.camel@abdul>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.10.4-0ubuntu1 
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42wl5g6ydJzF3f0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Nov 2018 02:04:55 +1100 (AEDT)
+Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.phx2.redhat.com
+ [10.5.11.14])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mx1.redhat.com (Postfix) with ESMTPS id E2532308FB94;
+ Thu, 15 Nov 2018 15:04:52 +0000 (UTC)
+Received: from [10.40.204.52] (ovpn-204-52.brq.redhat.com [10.40.204.52])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 2F3905DD78;
+ Thu, 15 Nov 2018 15:04:49 +0000 (UTC)
+Subject: Re: [PATCH] powerpc/numa: fix hot-added CPU on memory-less node
+To: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
+References: <20181114170319.24828-1-lvivier@redhat.com>
+ <20181115091948.GA14462@dhcp-9-193-110-205.in.ibm.com>
+From: Laurent Vivier <lvivier@redhat.com>
+Openpgp: preference=signencrypt
+Autocrypt: addr=lvivier@redhat.com; prefer-encrypt=mutual; keydata=
+ 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
+Message-ID: <56649a0c-ea14-62fa-d81e-0d9b9da1d10f@redhat.com>
+Date: Thu, 15 Nov 2018 16:04:48 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.7.0
+MIME-Version: 1.0
+In-Reply-To: <20181115091948.GA14462@dhcp-9-193-110-205.in.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
 Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-x-cbid: 18111514-8235-0000-0000-00000E285FB8
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010055; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000270; SDB=6.01117821; UDB=6.00579819; IPR=6.00897928; 
- MB=3.00024178; MTD=3.00000008; XFM=3.00000015; UTC=2018-11-15 14:17:05
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18111514-8236-0000-0000-0000435E1D63
-Message-Id: <1542291418.15177.3.camel@abdul>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-11-15_09:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1811150127
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.14
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
+ (mx1.redhat.com [10.5.110.43]); Thu, 15 Nov 2018 15:04:53 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,89 +111,77 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, sim <sim@linux.vnet.ibm.com>,
- manvanth <manvanth@linux.vnet.ibm.com>, maurosr <maurosr@linux.vnet.ibm.com>
+Cc: Satheesh Rajendran <satheera@in.ibm.com>, linux-kernel@vger.kernel.org,
+ Michael Bringmann <mwb@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2018-11-15 at 16:40 +0530, Abdul Haleem wrote:
-> On Mon, 2018-09-24 at 15:49 +0530, Abdul Haleem wrote:
-> > On Mon, 2018-09-24 at 19:35 +1000, Oliver wrote:
-> > > On Mon, Sep 24, 2018 at 6:56 PM, Abdul Haleem
-> > > <abdhalee@linux.vnet.ibm.com> wrote:
-> > > > Greeting's
-> > > >
-> > > > bnx2x module load/unload test results in continuous hard LOCKUP trace on
-> > > > my powerpc bare-metal running mainline 4.19.0-rc4 kernel
-> > > >
-> > > > the instruction address points to:
-> > > >
-> > > > 0xc00000000009d048 is in opal_interrupt
-> > > > (arch/powerpc/platforms/powernv/opal-irqchip.c:133).
-> > > > 128
-> > > > 129     static irqreturn_t opal_interrupt(int irq, void *data)
-> > > > 130     {
-> > > > 131             __be64 events;
-> > > > 132
-> > > > 133             opal_handle_interrupt(virq_to_hw(irq), &events);
-> > > > 134             last_outstanding_events = be64_to_cpu(events);
-> > > > 135             if (opal_have_pending_events())
-> > > > 136                     opal_wake_poller();
-> > > > 137
-> > > >
-> > > > trace:
-> > > > bnx2x 0008:01:00.3 enP8p1s0f3: renamed from eth0
-> > > > bnx2x 0008:01:00.3 enP8p1s0f3: using MSI-X  IRQs: sp 297  fp[0] 299 ... fp[7] 306
-> > > > bnx2x 0008:01:00.2 enP8p1s0f2: NIC Link is Up, 1000 Mbps full duplex, Flow control: none
-> > > > bnx2x 0008:01:00.3 enP8p1s0f3: NIC Link is Up, 1000 Mbps full duplex, Flow control: none
-> > > > bnx2x: QLogic 5771x/578xx 10/20-Gigabit Ethernet Driver bnx2x 1.712.30-0 (2014/02/10)
-> > > > bnx2x 0008:01:00.0: msix capability found
-> > > > bnx2x 0008:01:00.0: Using 64-bit DMA iommu bypass
-> > > > bnx2x 0008:01:00.0: part number 0-0-0-0
-> > > > bnx2x 0008:01:00.0: 32.000 Gb/s available PCIe bandwidth (5 GT/s x8 link)
-> > > > bnx2x 0008:01:00.0 enP8p1s0f0: renamed from eth0
-> > > > bnx2x 0008:01:00.1: msix capability found
-> > > > bnx2x 0008:01:00.1: Using 64-bit DMA iommu bypass
-> > > > bnx2x 0008:01:00.1: part number 0-0-0-0
-> > > > bnx2x 0008:01:00.0 enP8p1s0f0: using MSI-X  IRQs: sp 267  fp[0] 269 ... fp[7] 276
-> > > > bnx2x 0008:01:00.0 enP8p1s0f0: NIC Link is Up, 10000 Mbps full duplex, Flow control: ON - receive & transmit
-> > > > bnx2x 0008:01:00.1: 32.000 Gb/s available PCIe bandwidth (5 GT/s x8 link)
-> > > > bnx2x 0008:01:00.1 enP8p1s0f1: renamed from eth0
-> > > > bnx2x 0008:01:00.2: msix capability found
-> > > > bnx2x 0008:01:00.2: Using 64-bit DMA iommu bypass
-> > > > bnx2x 0008:01:00.2: part number 0-0-0-0
-> > > > bnx2x 0008:01:00.1 enP8p1s0f1: using MSI-X  IRQs: sp 277  fp[0] 279 ... fp[7] 286
-> > > > bnx2x 0008:01:00.1 enP8p1s0f1: NIC Link is Up, 10000 Mbps full duplex, Flow control: ON - receive & transmit
-> > > 
-> > > 
-> > > > watchdog: CPU 80 self-detected hard LOCKUP @ opal_interrupt+0x28/0x70
-> > > > watchdog: CPU 80 TB:980794111093, last heartbeat TB:973959617200 (13348ms ago)
-> > > 
-> > > Ouch, 13 seconds in OPAL. Looks like we trip the hard lockup detector
-> > > once the thread comes back into the kernel so we're not completely
-> > > stuck. At a guess there's some contention on a lock in OPAL due to the
-> > > bind/unbind loop, but i'm not sure why that would be happening.
-> > > 
-> > > Can you give us a copy of the OPAL log? /sys/firmware/opal/msglog)
-> > 
-> > Oliver, thanks for looking into this, I have sent a private mail (file
-> > was 1MB) with logs attached.
-> > 
+On 15/11/2018 10:19, Satheesh Rajendran wrote:
+> On Wed, Nov 14, 2018 at 06:03:19PM +0100, Laurent Vivier wrote:
+>> Trying to hotplug a CPU on an empty NUMA node (without
+>> memory or CPU) crashes the kernel when the CPU is onlined.
+>>
+>> During the onlining process, the kernel calls start_secondary()
+>> that ends by calling
+>> set_numa_mem(local_memory_node(numa_cpu_lookup_table[cpu]))
+>> that relies on NODE_DATA(nid)->node_zonelists and in our case
+>> NODE_DATA(nid) is NULL.
+>>
+>> To fix that, add the same checking as we already have in
+>> find_and_online_cpu_nid(): if NODE_DATA() is NULL, use
+>> the first online node.
+>>
+>> Bug: https://github.com/linuxppc/linux/issues/184
+>> Fixes: ea05ba7c559c8e5a5946c3a94a2a266e9a6680a6
+>>        (powerpc/numa: Ensure nodes initialized for hotplug)
+>> Signed-off-by: Laurent Vivier <lvivier@redhat.com>
+>> ---
+>>  arch/powerpc/mm/numa.c | 9 +++++++++
+>>  1 file changed, 9 insertions(+)
 > 
-> Oliver, any luck on the logs given.
+> This patch causes regression for cold plug numa case(Case 1) and 
+> hotplug case + reboot(Case 2) with adding all vcpus into node 0.
 > 
-> Warnings also show up on 4.20.0-rc2-next-20181114
+> 
+> Env: HW: Power8 Host.
+> Kernel: 4.20-rc2 + this patch
+> 
+> Case 1:
+> 1. boot a guest with 8 vcpus(all available), spreadout in 4 numa nodes.
+> <vcpu placement='static'>8</vcpu>
+> ...
+>    <numa>
+>       <cell id='0' cpus='0-1' memory='4194304' unit='KiB'/>
+>       <cell id='1' cpus='2-3' memory='4194304' unit='KiB'/>
+>       <cell id='2' cpus='4-5' memory='0' unit='KiB'/>
+>       <cell id='3' cpus='6-7' memory='0' unit='KiB'/>
+>     </numa>
+> 
+> 2. Check lscpu --- all vcpus are added to node0 --> NOK
+> 
+> # lscpu
+...
+> NUMA node0 CPU(s):   0-7
+> NUMA node1 CPU(s):   
+> NUMA node2 CPU(s):   
+> NUMA node3 CPU(s): 
+> 
+> without this patch it was working fine.
+> # lscpu
+...
+> NUMA node0 CPU(s):   0,1
+> NUMA node1 CPU(s):   2,3
+> NUMA node2 CPU(s):   4,5
+> NUMA node3 CPU(s):   6,7
+> 
 
-We have a patch fix available https://patchwork.ozlabs.org/patch/998054/
+Good point. Thank you.
 
-It fixed the problem.
+I'm going to see what happens and how the cold case allows to online
+CPUs on nodes with NODE_DATA() set to NULL (because it's what the patch
+changes).
 
--- 
-Regard's
-
-Abdul Haleem
-IBM Linux Technology Centre
-
-
-
+Thanks,
+Laurent
