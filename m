@@ -2,100 +2,67 @@ Return-Path: <SRS0=6gsd=N2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DB504C43441
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 02:46:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3272AC43441
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 02:48:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 56D652086A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 02:46:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 56D652086A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 8E9352086A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 02:48:26 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=neuling.org header.i=@neuling.org header.b="n2Fp4/bj"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8E9352086A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=neuling.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42wQjK1MrbzF3Xl
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 13:46:13 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42wQlr4GfWzF3Xl
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 13:48:24 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=neuling.org
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=gromero@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=neuling.org header.i=@neuling.org header.b="n2Fp4/bj";
+	dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42wQg1225PzF3MY
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2018 13:44:13 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wAF2d6LW061708
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2018 21:44:11 -0500
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2nrw9q63uw-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2018 21:44:11 -0500
-Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gromero@linux.vnet.ibm.com>;
- Thu, 15 Nov 2018 02:44:10 -0000
-Received: from b03cxnp08025.gho.boulder.ibm.com (9.17.130.17)
- by e31.co.us.ibm.com (192.168.1.131) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 15 Nov 2018 02:44:07 -0000
-Received: from b03ledav006.gho.boulder.ibm.com
- (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wAF2i6YY19988482
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Thu, 15 Nov 2018 02:44:06 GMT
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 83F03C605B;
- Thu, 15 Nov 2018 02:44:06 +0000 (GMT)
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8DBCBC6059;
- Thu, 15 Nov 2018 02:44:05 +0000 (GMT)
-Received: from oc6336877782.ibm.com (unknown [9.80.225.70])
- by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
- Thu, 15 Nov 2018 02:44:05 +0000 (GMT)
-Subject: Re: It looks like that wild_bctr on powerpc/fixes is still not
- compiling
-To: Michael Ellerman <mpe@ellerman.id.au>
-References: <4dddbc2a-fc3f-5ea5-54be-8e2a5375db76@linux.vnet.ibm.com>
- <87o9asv5iq.fsf@concordia.ellerman.id.au>
-From: Gustavo Romero <gromero@linux.vnet.ibm.com>
-Date: Thu, 15 Nov 2018 00:44:04 -0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
-MIME-Version: 1.0
-In-Reply-To: <87o9asv5iq.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-x-cbid: 18111502-8235-0000-0000-00000E28205A
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010051; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000270; SDB=6.01117590; UDB=6.00579681; IPR=6.00897699; 
- MB=3.00024167; MTD=3.00000008; XFM=3.00000015; UTC=2018-11-15 02:44:09
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18111502-8236-0000-0000-0000435CC994
-Message-Id: <91c54115-706f-c614-6776-4b374b0e9e82@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-11-14_20:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1811150022
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42wQhM1Dc5zF3Zm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2018 13:45:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=neuling.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=neuling.org header.i=@neuling.org header.b="n2Fp4/bj"; 
+ dkim-atps=neutral
+Received: from spoke.localdomain (localhost [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTP id 42wQhL2gbSz9s5c;
+ Thu, 15 Nov 2018 13:45:22 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=neuling.org;
+ s=201811; t=1542249922;
+ bh=DmfFXKkZyBaLqkQHYiUFwV8ZSxZV6Ge8uTPX5i/QNdM=;
+ h=Subject:From:To:Cc:Date:In-Reply-To:References:From;
+ b=n2Fp4/bjT2Usny4xeF5+iiDl0MMRKLYEhrRYlXx7lbKdFPaMMEwB7l4rzAIJqnvmg
+ rsgqgJfXiADJHpQyJCEDgfB6hHy28EXsggBJ89jx5R7Vypp1dUyC0iGZ9d52uBTHhB
+ 7m2bIJjq03nU1UoP6Ut34yN7IOz5RKXuaznqdRkfCA8m4Tm8cZd0rZwOnKDrqSuHoH
+ Ym8hcHL26p+mYKoqTnD6+0IYyMbhqtLOdJ1cbp3uBYY9FYBnXc+xBhfTFNNycIrEFV
+ R/Y8TmGl/qEiwcpJX71itIH54366wH5Ceo1B1jmLpyGsln8SKp3oKPqFh27vtQxpPb
+ 3GEnba/Gg41DQ==
+Received: by spoke.localdomain (Postfix, from userid 1000)
+ id 532782A164C; Thu, 15 Nov 2018 13:45:22 +1100 (AEDT)
+Message-ID: <4147cbf0c8edf0888ca99397f61640eeece57be2.camel@neuling.org>
+Subject: Re: [RFC PATCH 08/14] powerpc/tm: Recheckpoint at exit path
+From: Michael Neuling <mikey@neuling.org>
+To: Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org, 
+ Nicholas Piggin <npiggin@gmail.com>
+Date: Thu, 15 Nov 2018 13:45:22 +1100
+In-Reply-To: <1541508028-31865-9-git-send-email-leitao@debian.org>
+References: <1541508028-31865-1-git-send-email-leitao@debian.org>
+ <1541508028-31865-9-git-send-email-leitao@debian.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Mailer: Evolution 3.28.5 (3.28.5-1.fc28) 
+Mime-Version: 1.0
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,51 +74,120 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: ldufour@linux.vnet.ibm.com, cyrilbur@gmail.com, gromero@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Michael,
+On Tue, 2018-11-06 at 10:40 -0200, Breno Leitao wrote:
+> In the past, TIF_RESTORE_TM was being handled with the rest of the TIF
+> workers,
+> but, that was too early, and can cause some IRQ to be replayed in suspend=
+ed
+> state (after recheckpoint).
+>=20
+> This patch moves TIF_RESTORE_TM handler to as late as possible, it also
+> forces the IRQ to be disabled, and it will continue to be until RFID, so,
+> no IRQ will be replayed at all. I.e, if trecheckpoint happens, it will RF=
+ID
+> to userspace.
+>=20
+> This makes TIF_RESTORE_TM a special case that should not be handled
+> similarly to the _TIF_USER_WORK_MASK.
+>=20
+> Since _TIF_RESTORE_TM is not part of _TIF_USER_WORK_MASK anymore, we
+> need to force system_call_exit to continue to leaves through
+> fast_exception_return, so, we add the flags together with
+> _TIF_USER_WORK_MASK at system_call_exist path.
+>=20
+> If this flag is set at system_call_exit, it means that recheckpoint
+> will be called, and doing it through fast_exception_return is the only
+> way to do so.
+>=20
+> Signed-off-by: Breno Leitao <leitao@debian.org>
+> ---
+>  arch/powerpc/include/asm/thread_info.h |  2 +-
+>  arch/powerpc/kernel/entry_64.S         | 23 ++++++++++++++---------
+>  2 files changed, 15 insertions(+), 10 deletions(-)
+>=20
+> diff --git a/arch/powerpc/include/asm/thread_info.h
+> b/arch/powerpc/include/asm/thread_info.h
+> index 544cac0474cb..2835d60bc9ef 100644
+> --- a/arch/powerpc/include/asm/thread_info.h
+> +++ b/arch/powerpc/include/asm/thread_info.h
+> @@ -139,7 +139,7 @@ void arch_setup_new_exec(void);
+> =20
+>  #define _TIF_USER_WORK_MASK	(_TIF_SIGPENDING | _TIF_NEED_RESCHED | \
+>  				 _TIF_NOTIFY_RESUME | _TIF_UPROBE | \
+> -				 _TIF_RESTORE_TM | _TIF_PATCH_PENDING | \
+> +				 _TIF_PATCH_PENDING | \
+>  				 _TIF_FSCHECK)
+>  #define _TIF_PERSYSCALL_MASK	(_TIF_RESTOREALL|_TIF_NOERROR)
+> =20
+> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_6=
+4.S
+> index 17484ebda66c..a86619edf29d 100644
+> --- a/arch/powerpc/kernel/entry_64.S
+> +++ b/arch/powerpc/kernel/entry_64.S
+> @@ -255,7 +255,7 @@ system_call_exit:
+> =20
+>  	ld	r9,TI_FLAGS(r12)
+>  	li	r11,-MAX_ERRNO
+> -	andi.	r0,r9,(_TIF_SYSCALL_DOTRACE|_TIF_SINGLESTEP|_TIF_USER_WORK_MAS
+> K|_TIF_PERSYSCALL_MASK)
+> +	andi.   r0,r9,(_TIF_SYSCALL_DOTRACE|_TIF_SINGLESTEP|_TIF_USER_WORK_MASK=
+|
+> _TIF_PERSYSCALL_MASK |_TIF_RESTORE_TM)
+>  	bne-	.Lsyscall_exit_work
+> =20
+>  	andi.	r0,r8,MSR_FP
+> @@ -784,14 +784,6 @@ _GLOBAL(ret_from_except_lite)
+>  	SCHEDULE_USER
+>  	b	ret_from_except_lite
+>  2:
+> -#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> -	andi.	r0,r4,_TIF_USER_WORK_MASK & ~_TIF_RESTORE_TM
+> -	bne	3f		/* only restore TM if nothing else to do */
+> -	addi	r3,r1,STACK_FRAME_OVERHEAD
+> -	bl	restore_tm_state
+> -	b	restore
+> -3:
+> -#endif
+>  	bl	save_nvgprs
+>  	/*
+>  	 * Use a non volatile GPR to save and restore our thread_info flags
+> @@ -938,6 +930,19 @@ ALT_FTR_SECTION_END_IFCLR(CPU_FTR_STCX_CHECKS_ADDRES=
+S)
+>  	 */
+>  	.globl	fast_exception_return
+>  fast_exception_return:
+> +
+> +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> +	CURRENT_THREAD_INFO(r4, r1)
+> +	ld	r4,TI_FLAGS(r4)
+> +	andi.   r0,r4,_TIF_RESTORE_TM
+> +	beq	22f
+> +	ld	r4,_MSR(r1) 	/* TODO: MSR[!PR] shouldn't be here */
+> +	andi.	r0,r4,MSR_PR
+> +	beq	22f  /* Skip if Kernel thread */
+> +	addi	r3,r1,STACK_FRAME_OVERHEAD
+> +	bl	restore_tm_state
 
-On 11/13/2018 10:58 PM, Michael Ellerman wrote:
-> It looks like binutils 2.27 doesn't accept ULL but binutils 2.28 does.
-> 
-> Ah yep, here:
-> 
->    https://sourceware.org/git/gitweb.cgi?p=binutils-gdb.git;a=commit;h=86b80085c889cd388fa677a5ae9053fd4be3776c
-> 
->> The following trivial workaround can solve it by forcing a type promotion on
->> the compiler side whilst leaving the macro taken into the asm code without
->> the UL string:
->>
->> diff --git a/tools/testing/selftests/powerpc/mm/wild_bctr.c b/tools/testing/selftests/powerpc/mm/wild_bctr.c
->> index 90469a9..d2772f4 100644
->> --- a/tools/testing/selftests/powerpc/mm/wild_bctr.c
->> +++ b/tools/testing/selftests/powerpc/mm/wild_bctr.c
->> @@ -47,8 +47,9 @@ static int ok(void)
->>           return 0;
->>    }
->>    
->> -#define REG_POISON     0x5a5aUL
->> -#define POISONED_REG(n)        ((REG_POISON << 48) | ((n) << 32) | (REG_POISON << 16) | (n))
->> +#define REG_POISON     0x5a5a
->> +#define POISONED_REG(n)        (((REG_POISON+0UL) << 48) | ((n) << 32) | ((REG_POISON+0UL) << 16) | (n))
->>    
->>    static inline void poison_regs(void)
->>    {
->>
->>
->> Should I contribute such a fix?
-> 
-> Yes thanks.
+Calling out to C here is a bit concerning this late.
 
-Segher kindly suggested to use explicitly "unsigned long" (thanks!), so I sent
-a v2 to:
+The main thing you are calling out to is asm anyway (with a small C wrapper=
+).=20
+We might want to adapt the asm this case, rather than the old model of gett=
+ing
+it called from __switch_to(). We shouldn't need to call
+tm_reclaim/tm_recheckpoint from C anymore (especially if we use BUG_ON() ra=
+ther
+than WARN_ON() in the cases already mentioned.).
 
-https://lists.ozlabs.org/pipermail/linuxppc-dev/2018-November/181434.html
+Same for patch 1.
 
-
-Best regards,
-Gustavo
-
+> +22:
+> +#endif
+>  	ld	r3,_MSR(r1)
+>  	ld	r4,_CTR(r1)
+>  	ld	r0,_LINK(r1)
