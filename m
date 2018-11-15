@@ -2,98 +2,49 @@ Return-Path: <SRS0=6gsd=N2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9388DC43441
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 11:12:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A4975C43441
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 11:48:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 10AFE21780
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 11:12:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 10AFE21780
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 01358214F1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 11:48:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 01358214F1
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42wdxs0FtmzF3bJ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 22:12:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
-Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=abdhalee@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42wfkr6fNmzDqVH
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 22:48:20 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42wfhR3dgfzF3bB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2018 22:46:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42wdvg6CpVzF3dD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2018 22:10:55 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wAFB9Z7L092983
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2018 06:10:52 -0500
-Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ns59xxnuf-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2018 06:10:52 -0500
-Received: from localhost
- by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <abdhalee@linux.vnet.ibm.com>;
- Thu, 15 Nov 2018 11:10:51 -0000
-Received: from b01cxnp22036.gho.pok.ibm.com (9.57.198.26)
- by e11.ny.us.ibm.com (146.89.104.198) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 15 Nov 2018 11:10:48 -0000
-Received: from b01ledav002.gho.pok.ibm.com (b01ledav002.gho.pok.ibm.com
- [9.57.199.107])
- by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wAFBAlGP38141998
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Thu, 15 Nov 2018 11:10:48 GMT
-Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D627012405E;
- Thu, 15 Nov 2018 11:10:47 +0000 (GMT)
-Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A1B77124054;
- Thu, 15 Nov 2018 11:10:45 +0000 (GMT)
-Received: from [9.77.208.181] (unknown [9.77.208.181])
- by b01ledav002.gho.pok.ibm.com (Postfix) with ESMTP;
- Thu, 15 Nov 2018 11:10:45 +0000 (GMT)
-Subject: Re: [mainline][ppc][bnx2x] watchdog: CPU 80 self-detected hard
- LOCKUP @ opal_interrupt+0x28/0x70 when module load/unload
-From: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
-To: Oliver <oohall@gmail.com>
-Date: Thu, 15 Nov 2018 16:40:43 +0530
-In-Reply-To: <1537784366.26347.15.camel@abdul.in.ibm.com>
-References: <1537779408.26347.9.camel@abdul.in.ibm.com>
- <CAOSf1CHX0PnVQSrW+t=4vA2ZyVDpU_5B_OUg_arwsuDbcDTzOw@mail.gmail.com>
- <1537784366.26347.15.camel@abdul.in.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.10.4-0ubuntu1 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-x-cbid: 18111511-2213-0000-0000-000003180B10
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010054; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000270; SDB=6.01117759; UDB=6.00579781; IPR=6.00897866; 
- MB=3.00024175; MTD=3.00000008; XFM=3.00000015; UTC=2018-11-15 11:10:49
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18111511-2214-0000-0000-00005C42D783
-Message-Id: <1542280243.15177.2.camel@abdul>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-11-15_07:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1811150102
+ by ozlabs.org (Postfix) with ESMTPSA id 42wfhQ1Dg8z9s1c;
+ Thu, 15 Nov 2018 22:46:14 +1100 (AEDT)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, npiggin@gmail.com, rashmicy@gmail.com
+Subject: Re: [PATCH] powerpc/mm: dump block address translation on book3s/32
+In-Reply-To: <26cc609706833f78e3195e3d35c0372b2f40cae3.1542181167.git.christophe.leroy@c-s.fr>
+References: <26cc609706833f78e3195e3d35c0372b2f40cae3.1542181167.git.christophe.leroy@c-s.fr>
+Date: Thu, 15 Nov 2018 22:46:13 +1100
+Message-ID: <878t1uva0q.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,85 +56,250 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: manvanth <manvanth@linux.vnet.ibm.com>, sim <sim@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- maurosr <maurosr@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 2018-09-24 at 15:49 +0530, Abdul Haleem wrote:
-> On Mon, 2018-09-24 at 19:35 +1000, Oliver wrote:
-> > On Mon, Sep 24, 2018 at 6:56 PM, Abdul Haleem
-> > <abdhalee@linux.vnet.ibm.com> wrote:
-> > > Greeting's
-> > >
-> > > bnx2x module load/unload test results in continuous hard LOCKUP trace on
-> > > my powerpc bare-metal running mainline 4.19.0-rc4 kernel
-> > >
-> > > the instruction address points to:
-> > >
-> > > 0xc00000000009d048 is in opal_interrupt
-> > > (arch/powerpc/platforms/powernv/opal-irqchip.c:133).
-> > > 128
-> > > 129     static irqreturn_t opal_interrupt(int irq, void *data)
-> > > 130     {
-> > > 131             __be64 events;
-> > > 132
-> > > 133             opal_handle_interrupt(virq_to_hw(irq), &events);
-> > > 134             last_outstanding_events = be64_to_cpu(events);
-> > > 135             if (opal_have_pending_events())
-> > > 136                     opal_wake_poller();
-> > > 137
-> > >
-> > > trace:
-> > > bnx2x 0008:01:00.3 enP8p1s0f3: renamed from eth0
-> > > bnx2x 0008:01:00.3 enP8p1s0f3: using MSI-X  IRQs: sp 297  fp[0] 299 ... fp[7] 306
-> > > bnx2x 0008:01:00.2 enP8p1s0f2: NIC Link is Up, 1000 Mbps full duplex, Flow control: none
-> > > bnx2x 0008:01:00.3 enP8p1s0f3: NIC Link is Up, 1000 Mbps full duplex, Flow control: none
-> > > bnx2x: QLogic 5771x/578xx 10/20-Gigabit Ethernet Driver bnx2x 1.712.30-0 (2014/02/10)
-> > > bnx2x 0008:01:00.0: msix capability found
-> > > bnx2x 0008:01:00.0: Using 64-bit DMA iommu bypass
-> > > bnx2x 0008:01:00.0: part number 0-0-0-0
-> > > bnx2x 0008:01:00.0: 32.000 Gb/s available PCIe bandwidth (5 GT/s x8 link)
-> > > bnx2x 0008:01:00.0 enP8p1s0f0: renamed from eth0
-> > > bnx2x 0008:01:00.1: msix capability found
-> > > bnx2x 0008:01:00.1: Using 64-bit DMA iommu bypass
-> > > bnx2x 0008:01:00.1: part number 0-0-0-0
-> > > bnx2x 0008:01:00.0 enP8p1s0f0: using MSI-X  IRQs: sp 267  fp[0] 269 ... fp[7] 276
-> > > bnx2x 0008:01:00.0 enP8p1s0f0: NIC Link is Up, 10000 Mbps full duplex, Flow control: ON - receive & transmit
-> > > bnx2x 0008:01:00.1: 32.000 Gb/s available PCIe bandwidth (5 GT/s x8 link)
-> > > bnx2x 0008:01:00.1 enP8p1s0f1: renamed from eth0
-> > > bnx2x 0008:01:00.2: msix capability found
-> > > bnx2x 0008:01:00.2: Using 64-bit DMA iommu bypass
-> > > bnx2x 0008:01:00.2: part number 0-0-0-0
-> > > bnx2x 0008:01:00.1 enP8p1s0f1: using MSI-X  IRQs: sp 277  fp[0] 279 ... fp[7] 286
-> > > bnx2x 0008:01:00.1 enP8p1s0f1: NIC Link is Up, 10000 Mbps full duplex, Flow control: ON - receive & transmit
-> > 
-> > 
-> > > watchdog: CPU 80 self-detected hard LOCKUP @ opal_interrupt+0x28/0x70
-> > > watchdog: CPU 80 TB:980794111093, last heartbeat TB:973959617200 (13348ms ago)
-> > 
-> > Ouch, 13 seconds in OPAL. Looks like we trip the hard lockup detector
-> > once the thread comes back into the kernel so we're not completely
-> > stuck. At a guess there's some contention on a lock in OPAL due to the
-> > bind/unbind loop, but i'm not sure why that would be happening.
-> > 
-> > Can you give us a copy of the OPAL log? /sys/firmware/opal/msglog)
-> 
-> Oliver, thanks for looking into this, I have sent a private mail (file
-> was 1MB) with logs attached.
-> 
+Christophe Leroy <christophe.leroy@c-s.fr> writes:
 
-Oliver, any luck on the logs given.
+> This patch adds a debugfs file to dump block address translation:
+>
+> ~# cat /sys/kernel/debug/block_address_translation
 
-Warnings also show up on 4.20.0-rc2-next-20181114
+My instinct is it should be in /sys/kernel/debug/powerpc. But I guess
+the other page table dump files are not.
 
--- 
-Regard's
+> Instruction Block Address Translations:
+> 0:         -
+> 1:         -
+> 2: 0xc0000000-0xcfffffff 0x00000000 Kernel EXEC coherent
+> 3: 0xd0000000-0xdfffffff 0x10000000 Kernel EXEC coherent
+> 4:         -
+> 5:         -
+> 6:         -
+> 7:         -
+>
+> Data Block Address Translations:
+> 0:         -
+> 1:         -
+> 2: 0xc0000000-0xcfffffff 0x00000000 Kernel RW coherent
+> 3: 0xd0000000-0xdfffffff 0x10000000 Kernel RW coherent
+> 4:         -
+> 5:         -
+> 6:         -
+> 7:         -
+>
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> ---
+>  Tested on mpc8321 aka 603
+>  Please review/test the 601 part
+>
+>  arch/powerpc/mm/Makefile    |   2 +-
+>  arch/powerpc/mm/dump_bats.c | 176 ++++++++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 177 insertions(+), 1 deletion(-)
+>  create mode 100644 arch/powerpc/mm/dump_bats.c
+>
+> diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
+> index ca96e7be4d0e..2adad10b5856 100644
+> --- a/arch/powerpc/mm/Makefile
+> +++ b/arch/powerpc/mm/Makefile
+> @@ -47,7 +47,7 @@ ifdef CONFIG_PPC_PTDUMP
+>  obj-$(CONFIG_4xx)		+= dump_linuxpagetables-generic.o
+>  obj-$(CONFIG_PPC_8xx)		+= dump_linuxpagetables-8xx.o
+>  obj-$(CONFIG_PPC_BOOK3E_MMU)	+= dump_linuxpagetables-generic.o
+> -obj-$(CONFIG_PPC_BOOK3S_32)	+= dump_linuxpagetables-generic.o
+> +obj-$(CONFIG_PPC_BOOK3S_32)	+= dump_linuxpagetables-generic.o dump_bats.o
 
-Abdul Haleem
-IBM Linux Technology Centre
+BOOK3S_32 covers quite a lot of CPUs.
 
+But below the only check is that you're on 601 or 603.
 
+So is the 603 code going to work on all other BOOK3S_32 CPUs?
 
+cheers
+
+> diff --git a/arch/powerpc/mm/dump_bats.c b/arch/powerpc/mm/dump_bats.c
+> new file mode 100644
+> index 000000000000..824a94ee9051
+> --- /dev/null
+> +++ b/arch/powerpc/mm/dump_bats.c
+> @@ -0,0 +1,176 @@
+> +// SPDX-License-Identifier: GPL-2.0+
+> +/*
+> + * Copyright 2018, Christophe Leroy CS S.I.
+> + * <christophe.leroy@c-s.fr>
+> + *
+> + * This dumps the content of BATS
+> + */
+> +
+> +#include <linux/debugfs.h>
+> +#include <linux/fs.h>
+> +#include <linux/hugetlb.h>
+> +#include <linux/io.h>
+> +#include <linux/mm.h>
+> +#include <linux/sched.h>
+> +#include <linux/seq_file.h>
+> +#include <asm/fixmap.h>
+> +#include <asm/pgtable.h>
+> +#include <linux/const.h>
+> +#include <asm/page.h>
+> +#include <asm/pgalloc.h>
+> +
+> +#include <asm/book3s/32/mmu-hash.h>
+> +
+> +static char *pp_601(int k, int pp)
+> +{
+> +	if (pp == 0)
+> +		return k ? "NA" : "RWX";
+> +	if (pp == 1)
+> +		return k ? "ROX" : "RWX";
+> +	if (pp == 2)
+> +		return k ? "RWX" : "RWX";
+> +	return k ? "ROX" : "ROX";
+> +}
+> +
+> +static void bat_show_601(struct seq_file *m, int idx, u32 lower, u32 upper)
+> +{
+> +	u32 blpi = upper & 0xfffe0000;
+> +	u32 k = (upper >> 2) & 3;
+> +	u32 pp = upper & 3;
+> +	u32 pbn = lower & 0xfffe0000;
+> +	u32 bsm = lower & 0x3ff;
+> +	u32 size = (bsm + 1) << 17;
+> +
+> +	seq_printf(m, "%d: ", idx);
+> +	if (!(lower & 0x40)) {
+> +		seq_puts(m, "        -\n");
+> +		return;
+> +	}
+> +
+> +	seq_printf(m, "0x%08x-0x%08x ", blpi, blpi + size - 1);
+> +	seq_printf(m, "0x%08x ", pbn);
+> +
+> +	seq_printf(m, "Kernel %s User %s", pp_601(k & 2, pp), pp_601(k & 1, pp));
+> +
+> +	if (lower & _PAGE_WRITETHRU)
+> +		seq_puts(m, "write through ");
+> +	if (lower & _PAGE_NO_CACHE)
+> +		seq_puts(m, "no cache ");
+> +	if (lower & _PAGE_COHERENT)
+> +		seq_puts(m, "coherent ");
+> +	seq_puts(m, "\n");
+> +}
+> +
+> +#define BAT_SHOW_601(_m, _n, _l, _u) bat_show_601(_m, _n, mfspr(_l), mfspr(_u))
+> +
+> +static int bats_show_601(struct seq_file *m, void *v)
+> +{
+> +	seq_puts(m, "Block Address Translation:\n");
+> +
+> +	BAT_SHOW_601(m, 0, SPRN_IBAT0L, SPRN_IBAT0U);
+> +	BAT_SHOW_601(m, 1, SPRN_IBAT1L, SPRN_IBAT1U);
+> +	BAT_SHOW_601(m, 2, SPRN_IBAT2L, SPRN_IBAT2U);
+> +	BAT_SHOW_601(m, 3, SPRN_IBAT3L, SPRN_IBAT3U);
+> +
+> +	return 0;
+> +}
+> +
+> +static void bat_show_603(struct seq_file *m, int idx, u32 lower, u32 upper, bool is_d)
+> +{
+> +	u32 bepi = upper & 0xfffe0000;
+> +	u32 bl = (upper >> 2) & 0x7ff;
+> +	u32 k = upper & 3;
+> +	u32 brpn = lower & 0xfffe0000;
+> +	u32 size = (bl + 1) << 17;
+> +
+> +	seq_printf(m, "%d: ", idx);
+> +	if (k == 0) {
+> +		seq_puts(m, "        -\n");
+> +		return;
+> +	}
+> +
+> +	seq_printf(m, "0x%08x-0x%08x ", bepi, bepi + size - 1);
+> +	seq_printf(m, "0x%08x ", brpn);
+> +
+> +	if (k == 1)
+> +		seq_puts(m, "User ");
+> +	else if (k == 2)
+> +		seq_puts(m, "Kernel ");
+> +	else
+> +		seq_puts(m, "Kernel/User ");
+> +
+> +	if (lower & BPP_RX)
+> +		seq_puts(m, is_d ? "RO " : "EXEC ");
+> +	else if (lower & BPP_RW)
+> +		seq_puts(m, is_d ? "RW " : "EXEC ");
+> +	else
+> +		seq_puts(m, is_d ? "NA " : "NX   ");
+> +
+> +	if (lower & _PAGE_WRITETHRU)
+> +		seq_puts(m, "write through ");
+> +	if (lower & _PAGE_NO_CACHE)
+> +		seq_puts(m, "no cache ");
+> +	if (lower & _PAGE_COHERENT)
+> +		seq_puts(m, "coherent ");
+> +	if (lower & _PAGE_GUARDED)
+> +		seq_puts(m, "guarded ");
+> +	seq_puts(m, "\n");
+> +}
+> +
+> +#define BAT_SHOW_603(_m, _n, _l, _u, _d) bat_show_603(_m, _n, mfspr(_l), mfspr(_u), _d)
+> +
+> +static int bats_show_603(struct seq_file *m, void *v)
+> +{
+> +	seq_puts(m, "Instruction Block Address Translation:\n");
+> +
+> +	BAT_SHOW_603(m, 0, SPRN_IBAT0L, SPRN_IBAT0U, false);
+> +	BAT_SHOW_603(m, 1, SPRN_IBAT1L, SPRN_IBAT1U, false);
+> +	BAT_SHOW_603(m, 2, SPRN_IBAT2L, SPRN_IBAT2U, false);
+> +	BAT_SHOW_603(m, 3, SPRN_IBAT3L, SPRN_IBAT3U, false);
+> +	if (mmu_has_feature(MMU_FTR_USE_HIGH_BATS)) {
+> +		BAT_SHOW_603(m, 4, SPRN_IBAT4L, SPRN_IBAT4U, false);
+> +		BAT_SHOW_603(m, 5, SPRN_IBAT5L, SPRN_IBAT5U, false);
+> +		BAT_SHOW_603(m, 6, SPRN_IBAT6L, SPRN_IBAT6U, false);
+> +		BAT_SHOW_603(m, 7, SPRN_IBAT7L, SPRN_IBAT7U, false);
+> +	}
+> +
+> +	seq_puts(m, "\nData Block Address Translation:\n");
+> +
+> +	BAT_SHOW_603(m, 0, SPRN_DBAT0L, SPRN_DBAT0U, true);
+> +	BAT_SHOW_603(m, 1, SPRN_DBAT1L, SPRN_DBAT1U, true);
+> +	BAT_SHOW_603(m, 2, SPRN_DBAT2L, SPRN_DBAT2U, true);
+> +	BAT_SHOW_603(m, 3, SPRN_DBAT3L, SPRN_DBAT3U, true);
+> +	if (mmu_has_feature(MMU_FTR_USE_HIGH_BATS)) {
+> +		BAT_SHOW_603(m, 4, SPRN_DBAT4L, SPRN_DBAT4U, true);
+> +		BAT_SHOW_603(m, 5, SPRN_DBAT5L, SPRN_DBAT5U, true);
+> +		BAT_SHOW_603(m, 6, SPRN_DBAT6L, SPRN_DBAT6U, true);
+> +		BAT_SHOW_603(m, 7, SPRN_DBAT7L, SPRN_DBAT7U, true);
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int bats_open(struct inode *inode, struct file *file)
+> +{
+> +	if (PVR_VER(mfspr(SPRN_PVR)) == 1)
+> +		return single_open(file, bats_show_601, NULL);
+> +
+> +	return single_open(file, bats_show_603, NULL);
+> +}
+> +
+> +static const struct file_operations bats_fops = {
+> +	.open		= bats_open,
+> +	.read		= seq_read,
+> +	.llseek		= seq_lseek,
+> +	.release	= single_release,
+> +};
+> +
+> +static int bats_init(void)
+> +{
+> +	struct dentry *debugfs_file;
+> +
+> +	debugfs_file = debugfs_create_file("block_address_translation", 0400,
+> +					   NULL, NULL, &bats_fops);
+> +	return debugfs_file ? 0 : -ENOMEM;
+> +}
+> +device_initcall(bats_init);
+> -- 
+> 2.13.3
