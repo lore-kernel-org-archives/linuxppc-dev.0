@@ -2,71 +2,61 @@ Return-Path: <SRS0=6gsd=N2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C365C43441
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 19:39:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AAC62C43441
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 19:41:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 168212133D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 19:39:11 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="ry0XhBp6"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 168212133D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id 014EB2133D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 19:41:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 014EB2133D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=perches.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42wsB56kD2zF3bF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Nov 2018 06:39:09 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by lists.ozlabs.org (Postfix) with ESMTP id 42wsDR5DKhzF3hJ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Nov 2018 06:41:11 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=perches.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="ry0XhBp6";
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
- smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
- helo=bombadil.infradead.org;
- envelope-from=batv+27e6d985fe6cd73880c0+5562+infradead.org+hch@bombadil.srs.infradead.org;
- receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=perches.com
+ (client-ip=216.40.44.103; helo=smtprelay.hostedemail.com;
+ envelope-from=joe@perches.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lst.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="ry0XhBp6"; dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=perches.com
+Received: from smtprelay.hostedemail.com (smtprelay0103.hostedemail.com
+ [216.40.44.103])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42wrn162MLzF3fp
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Nov 2018 06:20:53 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
- MIME-Version:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
- Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
- Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=sZicvAmlKgdc03OsCN7gz6yMVDfvncSORhgFSsVwRek=; b=ry0XhBp6Y0sljg1jFwl4loEN1
- Qe9fWz4F/QICLajeJMfz/HhQh+w8ukZUcYzJ8HqmOXKOSHju0wFi2i+8ALZ1Vuj1SaX8Q5VKnz8yx
- SPnZkddVWbtolP1dM7A6KTpgGPHUy9/GJVVMlAsZGFbHbqM7sWIGO/1x0XHjMVW7Cipk2kkxyr1hJ
- Vd5bIejxSwTsmmDB95R2rpDhoyUr9w4yCKdF7xuBBEdPTTeTFSW6xJfMh/KBdohbKyhY3AkBxqQGC
- H5IvcJwh8NTU+1ghQp/1H5RtHhOf3FxF6CLFYRwyDvyXAhVAw0U4zIq+8VbLyRgksWINKSUQdJQvZ
- e+hZo7xmw==;
-Received: from 089144211136.atnat0020.highway.a1.net ([89.144.211.136]
- helo=localhost)
- by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
- id 1gNMxR-0005sZ-Lf; Thu, 15 Nov 2018 19:05:46 +0000
-From: Christoph Hellwig <hch@lst.de>
-To: Masahiro Yamada <yamada.masahiro@socionext.com>
-Subject: move bus (PCI, PCMCIA, EISA, rapdio) config to drivers/ v4
-Date: Thu, 15 Nov 2018 20:05:28 +0100
-Message-Id: <20181115190538.17016-1-hch@lst.de>
-X-Mailer: git-send-email 2.19.1
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
- bombadil.infradead.org. See http://www.infradead.org/rpr.html
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42wrt35K6KzF3hl
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Nov 2018 06:25:14 +1100 (AEDT)
+Received: from filter.hostedemail.com (clb03-v110.bra.tucows.net
+ [216.40.38.60])
+ by smtprelay06.hostedemail.com (Postfix) with ESMTP id CD391180790B5;
+ Thu, 15 Nov 2018 19:25:10 +0000 (UTC)
+X-Session-Marker: 6A6F6540706572636865732E636F6D
+X-HE-Tag: train79_844655162681d
+X-Filterd-Recvd-Size: 3595
+Received: from XPS-9350.home (unknown [47.151.153.53])
+ (Authenticated sender: joe@perches.com)
+ by omf14.hostedemail.com (Postfix) with ESMTPA;
+ Thu, 15 Nov 2018 19:25:08 +0000 (UTC)
+Message-ID: <7a3922bc5089dfe0978e07a809606360c74c940c.camel@perches.com>
+Subject: Re: [PATCH] arch/powerpc: Use dma_zalloc_coherent
+From: Joe Perches <joe@perches.com>
+To: Sabyasachi Gupta <sabyasachi.linux@gmail.com>, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au, darren@stevens-zone.net, 
+ christophe.leroy@c-s.fr, geoff@infradead.org
+Date: Thu, 15 Nov 2018 11:25:07 -0800
+In-Reply-To: <CAJr6mf1nOouU31WF_xb_46wDebPQ-7+NTCiSKBjLyQta2mny6w@mail.gmail.com>
+References: <5bdfb8db.1c69fb81.c8f62.9586@mx.google.com>
+ <CAJr6mf1nOouU31WF_xb_46wDebPQ-7+NTCiSKBjLyQta2mny6w@mail.gmail.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+User-Agent: Evolution 3.30.1-1build1 
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,44 +68,90 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
- linux-kbuild@vger.kernel.org, linux-pci@vger.kernel.org,
- linux-kernel@vger.kernel.org, Dominik Brodowski <linux@dominikbrodowski.net>,
- Alexandre Bounine <alex.bou9@gmail.com>, linux-alpha@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: linuxppc-dev@lists.ozlabs.org, Souptick Joarder <jrdr.linux@gmail.com>,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi all,
+On Thu, 2018-11-15 at 23:29 +0530, Sabyasachi Gupta wrote:
+> On Mon, Nov 5, 2018 at 8:58 AM Sabyasachi Gupta
+> <sabyasachi.linux@gmail.com> wrote:
+> > Replaced dma_alloc_coherent + memset with dma_zalloc_coherent
+> > 
+> > Signed-off-by: Sabyasachi Gupta <sabyasachi.linux@gmail.com>
+> 
+> Any comment on this patch?
 
-currently every architecture that wants to provide on of the common
-periphal busses needs to add some boilerplate code and include the
-right Kconfig files.   This series instead just selects the presence
-(when needed) and then handles everything in the bus-specific
-Kconfig file under drivers/.
+It's obviously correct.
 
-Changes since v3:
- - drop the patches already merged
- - fix a typo in the PCI help text
- - split the always enable PCI on alpha change into a separate patch
- - remove the mips HT_PCI symbol
- - add a new FORCE_PCI symbol to easily allow selecting PCI support
- - new patch to consolidate PCI_DOMAINS
- - new patch to consolidate PCI_SYSCALL
+You might realign the arguments on the next lines
+to the open parenthesis.
 
-Changes since v2:
- - depend on HAVE_PCI for PCIe endpoint code
- - fix some commit message typos
- - remove CONFIG_PCI from xtensa iss defconfig
- - drop EISA support from arm
- - clean up EISA selection for alpha
+Perhaps there should be new function calls
+added for symmetry to the other alloc functions
+for multiplication overflow protection.
 
-Changes since v1:
- - rename all HAS_* Kconfig symbols to HAVE_*
- - drop the CONFIG_PCI_QSPAN option entirely
- - drop duplicate select from powerpc
- - restore missing selection of PCI_MSI for riscv
- - update x86 and riscv defconfigs to include PCI
- - actually inclue drivers/eisa/Kconfig
- - adjust some captilizations
+Perhaps:
+
+void *dma_alloc_array_coherent()
+void *dma_calloc_coherent()
+
+Something like
+---
+ include/linux/dma-mapping.h | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
+
+diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
+index 15bd41447025..95bebf8883b1 100644
+--- a/include/linux/dma-mapping.h
++++ b/include/linux/dma-mapping.h
+@@ -565,6 +565,25 @@ static inline void *dma_alloc_coherent(struct device *dev, size_t size,
+ 			(gfp & __GFP_NOWARN) ? DMA_ATTR_NO_WARN : 0);
+ }
+ 
++static inline void *dma_alloc_array_coherent(struct device *dev,
++					     size_t n, size_t size,
++					     dma_addr_t *dma_handle, gfp_t gfp)
++{
++	size_t bytes;
++
++	if (unlikely(check_mul_overflow(n, size, &bytes)))
++		return NULL;
++	return dma_alloc_coherent(dev, bytes, dma_handle, gfp);
++}
++
++static inline void *dma_calloc_coherent(struct device *dev,
++					size_t n, size_t size,
++					dma_addr_t *dma_handle, gfp_t gfp)
++{
++	return dma_alloc_array_coherent(dev, n, size, dma_handle,
++					gfp | __GFP_ZERO);
++}
++
+ static inline void dma_free_coherent(struct device *dev, size_t size,
+ 		void *cpu_addr, dma_addr_t dma_handle)
+ {
+
+---
+> > diff --git a/arch/powerpc/platforms/pasemi/dma_lib.c b/arch/powerpc/platforms/pasemi/dma_lib.c
+[]
+> > @@ -255,15 +255,13 @@ int pasemi_dma_alloc_ring(struct pasemi_dmachan *chan, int ring_size)
+> > 
+> >         chan->ring_size = ring_size;
+> > 
+> > -       chan->ring_virt = dma_alloc_coherent(&dma_pdev->dev,
+> > +       chan->ring_virt = dma_zalloc_coherent(&dma_pdev->dev,
+> >                                              ring_size * sizeof(u64),
+> >                                              &chan->ring_dma, GFP_KERNEL);
+> >  en
+> >         if (!chan->ring_virt)
+> >                 return -ENOMEM;
+> > 
+> > -       memset(chan->ring_virt, 0, ring_size * sizeof(u64));
+> > -
+> >         return 0;
+> >  }
+> >  EXPORT_SYMBOL(pasemi_dma_alloc_ring);
+
+
