@@ -2,98 +2,87 @@ Return-Path: <SRS0=6gsd=N2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 754F7C43441
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 22:25:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E7ECC43441
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 23:28:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F3E452084C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 22:25:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F3E452084C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 17E5620869
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 23:28:36 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="RJd4WjRr"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 17E5620869
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42wwsV58HyzF3gt
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Nov 2018 09:25:02 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42wyGn6BWgzF3Nn
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Nov 2018 10:28:33 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=julietk@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="RJd4WjRr";
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::343; helo=mail-ot1-x343.google.com;
+ envelope-from=mr.nuke.me@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="RJd4WjRr"; 
+ dkim-atps=neutral
+Received: from mail-ot1-x343.google.com (mail-ot1-x343.google.com
+ [IPv6:2607:f8b0:4864:20::343])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42wvzH11mmzF3gk
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Nov 2018 08:44:55 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wAFLiQMB092752
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2018 16:44:52 -0500
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2nsexj6s65-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2018 16:44:52 -0500
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <julietk@linux.vnet.ibm.com>;
- Thu, 15 Nov 2018 21:44:52 -0000
-Received: from b03cxnp08028.gho.boulder.ibm.com (9.17.130.20)
- by e32.co.us.ibm.com (192.168.1.132) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 15 Nov 2018 21:44:47 -0000
-Received: from b03ledav001.gho.boulder.ibm.com
- (b03ledav001.gho.boulder.ibm.com [9.17.130.232])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wAFLikwj19202070
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Thu, 15 Nov 2018 21:44:46 GMT
-Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 89E7C6E052;
- Thu, 15 Nov 2018 21:44:46 +0000 (GMT)
-Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A71236E04C;
- Thu, 15 Nov 2018 21:44:45 +0000 (GMT)
-Received: from juliets-mbp.austin.ibm.com (unknown [9.41.179.214])
- by b03ledav001.gho.boulder.ibm.com (Postfix) with ESMTPS;
- Thu, 15 Nov 2018 21:44:45 +0000 (GMT)
-To: linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org
-From: Juliet Kim <julietk@linux.vnet.ibm.com>
-Subject: [PATCH] net/ibmnvic: Fix deadlock problem in reset
-Date: Thu, 15 Nov 2018 15:44:44 -0600
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:60.0)
- Gecko/20100101 Thunderbird/60.3.0
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
-Content-Language: en-US
-X-TM-AS-GCONF: 00
-x-cbid: 18111521-0004-0000-0000-000014B33762
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010057; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000270; SDB=6.01117969; UDB=6.00579908; IPR=6.00898078; 
- MB=3.00024183; MTD=3.00000008; XFM=3.00000015; UTC=2018-11-15 21:44:50
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18111521-0005-0000-0000-000089861661
-Message-Id: <25faa351-51d3-3aeb-a1c9-e8d3259604dd@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-11-15_16:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1811150189
-X-Mailman-Approved-At: Fri, 16 Nov 2018 09:23:15 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42wy0j52cDzF3gY
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Nov 2018 10:16:21 +1100 (AEDT)
+Received: by mail-ot1-x343.google.com with SMTP id g27so19655002oth.6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2018 15:16:21 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references;
+ bh=0/zlQteT7Eb+WVjd5aUv8zmL6TUh4WrZMBcM1VmM60w=;
+ b=RJd4WjRrMh+I3fogDnQnkEar5Mze93Z9Lnb32BCllXD4QjvTA0UEeAiidrUwivLnkn
+ Zy/jNIr4E7xK4+d5YunPO0SLw5nz1ms8tF1F4vtVwUjUdFpX+mZwzbr69vM6g5Irx9fF
+ oEcYj2+jBiQDx1nqXa+N0Ub37260OCLxo/2uV61XakP5nD4ffB4PHW0EaB4uhSNDvDOE
+ Nd5qcppdMBDhjG9Fwr+Lhp9IWUadb5LCndSrYruFqZwq+K9cioIutFKELf1ycYZdMGdI
+ O3uN65WmZ9rKbWXm41TjcLij/8yTtzOf1h++geWO6jvOru1cSUHB3rWEMogRsXIAl94e
+ ck3g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references;
+ bh=0/zlQteT7Eb+WVjd5aUv8zmL6TUh4WrZMBcM1VmM60w=;
+ b=r3u9LtJ8DG47nhDlx6cjzzA5BsXCSn3SFrf8KpHiHozgUx1hg/RxQdu4hGlseLlBD2
+ NyQ42FPcH67xaG9c+KEriNWV4pC6N6R8U6vvgooCtgSkR6Oh+dZE4OCtK0wAdEh65Uby
+ NPNPvk4oi/txuaYM0rkkW2Cyq91xry2YNWh+nxkZO9Sz60OjyyKPE+NbpXCCEHyxCoyx
+ 6JWcz2qhxnJk8aIobcED13FfZqU01hRLwiIbxtxF8vjvK6qPMBnZqLHBVJHhvsVQHn5b
+ A3qqU2Gb+hLjDydjkcPdiGQS5yvlqwpDuxbO1+ObIDJfTt9sk14yUM9qWFxVf25Ae4No
+ QucQ==
+X-Gm-Message-State: AGRZ1gKMsjXA2nD9VNnux3dFYWPaD7ZZUu6dpEQliX3WhpcwiURYAhH3
+ PxerXik15fWGjX1YYuiDpyA=
+X-Google-Smtp-Source: AJdET5cXWr6Qmr40kj0P21sABhxXuWQiugOA6lCkMgOojEvFft0MixSoyluh6J5y5WMoO5U1IIzehQ==
+X-Received: by 2002:a9d:41ca:: with SMTP id v10mr5271965oti.101.1542323779488; 
+ Thu, 15 Nov 2018 15:16:19 -0800 (PST)
+Received: from nuclearis2-1.lan (c-98-195-139-126.hsd1.tx.comcast.net.
+ [98.195.139.126])
+ by smtp.gmail.com with ESMTPSA id o81-v6sm8680267oif.1.2018.11.15.15.16.18
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Thu, 15 Nov 2018 15:16:19 -0800 (PST)
+From: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+To: helgaas@google.com
+Subject: [PATCH 1/2] PCI/AER: Do not use APEI/HEST to disable AER services
+ globally
+Date: Thu, 15 Nov 2018 17:16:02 -0600
+Message-Id: <20181115231605.24352-2-mr.nuke.me@gmail.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20181115231605.24352-1-mr.nuke.me@gmail.com>
+References: <20181115231605.24352-1-mr.nuke.me@gmail.com>
+X-Mailman-Approved-At: Fri, 16 Nov 2018 10:26:13 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,210 +94,115 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
- Michael Bringmann <mwb@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- "David S. Miller" <davem@davemloft.net>
+Cc: alex_gagniuc@dellteam.com, Sam Bobroff <sbobroff@linux.ibm.com>,
+ linux-pci@vger.kernel.org, Shyam_Iyer@Dell.com,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
+ keith.busch@intel.com, linux-acpi@vger.kernel.org, lukas@wunner.de,
+ Oliver O'Halloran <oohall@gmail.com>, Alexandru Gagniuc <mr.nuke.me@gmail.com>,
+ Bjorn Helgaas <bhelgaas@google.com>, austin_bolen@dell.com,
+ linuxppc-dev@lists.ozlabs.org, Len Brown <lenb@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Subject: [PATCH] net/ibmnvic: Fix deadlock problem in reset
+HEST is used to describe the meaning of errors received as part of ACPI
+Platform Error Interfaces (APEI). HEST is tightly coupled to ownership
+of AER, however the correct way to determine AER ownership is the _OSC
+method.
 
-From: Juliet Kim <julietk@linux.vnet.ibm.com>
+_OSC is negotiated per root bus. It's possible to have one HEST
+descriptor for all root busses where AER is owned by firmware, and
+still have root busses that are not firmware-first. In that case we
+would incorrectly disable AER services globally.
 
-This patch changes to use rtnl_lock only during a reset to avoid
-deadlock that could occur when a thread operating close is holding
-rtnl_lock and waiting for reset_lock acquired by another thread,
-which is waiting for rtnl_lock in order to set the number of tx/rx
-queues during a reset.
+Instead of using HEST in making the determination, always request AER
+control via _OSC, and only disable AER when firmware denies control.
 
-Also, we now setting the number of tx/rx queues during a soft reset
-for failover or LPM events.
-
-Signed-off-by: Juliet Kim <julietk@linux.vnet.ibm.com>
+Signed-off-by: Alexandru Gagniuc <mr.nuke.me@gmail.com>
 ---
-  drivers/net/ethernet/ibm/ibmvnic.c |   59 
-+++++++++++++-----------------------
-  drivers/net/ethernet/ibm/ibmvnic.h |    2 +
-  2 files changed, 22 insertions(+), 39 deletions(-)
+ drivers/acpi/pci_root.c  |  9 ++-------
+ drivers/pci/pcie/aer.c   | 25 +------------------------
+ include/linux/pci-acpi.h |  6 ------
+ 3 files changed, 3 insertions(+), 37 deletions(-)
 
-diff --git a/drivers/net/ethernet/ibm/ibmvnic.c 
-b/drivers/net/ethernet/ibm/ibmvnic.c
-index 7893bef..4a5de59 100644
---- a/drivers/net/ethernet/ibm/ibmvnic.c
-+++ b/drivers/net/ethernet/ibm/ibmvnic.c
-@@ -1103,20 +1103,15 @@ static int ibmvnic_open(struct net_device *netdev)
-         return 0;
-     }
-
--   mutex_lock(&adapter->reset_lock);
+diff --git a/drivers/acpi/pci_root.c b/drivers/acpi/pci_root.c
+index 707aafc7c2aa..32b2053bb0fa 100644
+--- a/drivers/acpi/pci_root.c
++++ b/drivers/acpi/pci_root.c
+@@ -491,13 +491,8 @@ static void negotiate_os_control(struct acpi_pci_root *root, int *no_aspm,
+ 	if (IS_ENABLED(CONFIG_HOTPLUG_PCI_SHPC))
+ 		control |= OSC_PCI_SHPC_NATIVE_HP_CONTROL;
+ 
+-	if (pci_aer_available()) {
+-		if (aer_acpi_firmware_first())
+-			dev_info(&device->dev,
+-				 "PCIe AER handled by firmware\n");
+-		else
+-			control |= OSC_PCI_EXPRESS_AER_CONTROL;
+-	}
++	if (pci_aer_available())
++		control |= OSC_PCI_EXPRESS_AER_CONTROL;
+ 
+ 	requested = control;
+ 	status = acpi_pci_osc_control_set(handle, &control,
+diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
+index a90a9194ac4a..ac014151b7a6 100644
+--- a/drivers/pci/pcie/aer.c
++++ b/drivers/pci/pcie/aer.c
+@@ -316,29 +316,6 @@ int pcie_aer_get_firmware_first(struct pci_dev *dev)
+ 	return dev->__aer_firmware_first;
+ }
+ 
+-static bool aer_firmware_first;
 -
-     if (adapter->state != VNIC_CLOSED) {
-         rc = ibmvnic_login(netdev);
--       if (rc) {
--           mutex_unlock(&adapter->reset_lock);
-+       if (rc)
-             return rc;
--       }
-
-         rc = init_resources(adapter);
-         if (rc) {
-             netdev_err(netdev, "failed to initialize resources\n");
-             release_resources(adapter);
--           mutex_unlock(&adapter->reset_lock);
-             return rc;
-         }
-     }
-@@ -1124,8 +1119,6 @@ static int ibmvnic_open(struct net_device *netdev)
-     rc = __ibmvnic_open(netdev);
-     netif_carrier_on(netdev);
-
--   mutex_unlock(&adapter->reset_lock);
+-/**
+- * aer_acpi_firmware_first - Check if APEI should control AER.
+- */
+-bool aer_acpi_firmware_first(void)
+-{
+-	static bool parsed = false;
+-	struct aer_hest_parse_info info = {
+-		.pci_dev	= NULL,	/* Check all PCIe devices */
+-		.firmware_first	= 0,
+-	};
 -
-     return rc;
-  }
-
-@@ -1269,10 +1262,8 @@ static int ibmvnic_close(struct net_device *netdev)
-         return 0;
-     }
-
--   mutex_lock(&adapter->reset_lock);
-     rc = __ibmvnic_close(netdev);
-     ibmvnic_cleanup(netdev);
--   mutex_unlock(&adapter->reset_lock);
-
-     return rc;
-  }
-@@ -1820,20 +1811,15 @@ static int do_reset(struct ibmvnic_adapter *adapter,
-                 return rc;
-         } else if (adapter->req_rx_queues != old_num_rx_queues ||
-                adapter->req_tx_queues != old_num_tx_queues) {
--           adapter->map_id = 1;
-             release_rx_pools(adapter);
-             release_tx_pools(adapter);
--           rc = init_rx_pools(netdev);
--           if (rc)
--               return rc;
--           rc = init_tx_pools(netdev);
--           if (rc)
--               return rc;
+-	if (pcie_ports_native)
+-		return false;
 -
-             release_napi(adapter);
--           rc = init_napi(adapter);
-+           release_vpd_data(adapter);
-+
-+           rc = init_resources(adapter);
-             if (rc)
-                 return rc;
-+
-         } else {
-             rc = reset_tx_pools(adapter);
-             if (rc)
-@@ -1917,17 +1903,8 @@ static int do_hard_reset(struct ibmvnic_adapter 
-*adapter,
-         adapter->state = VNIC_PROBED;
-         return 0;
-     }
--   /* netif_set_real_num_xx_queues needs to take rtnl lock here
--    * unless wait_for_reset is set, in which case the rtnl lock
--    * has already been taken before initializing the reset
--    */
--   if (!adapter->wait_for_reset) {
--       rtnl_lock();
--       rc = init_resources(adapter);
--       rtnl_unlock();
--   } else {
--       rc = init_resources(adapter);
--   }
-+
-+   rc = init_resources(adapter);
-     if (rc)
-         return rc;
-
-@@ -1986,13 +1963,21 @@ static void __ibmvnic_reset(struct work_struct 
-*work)
-     struct ibmvnic_rwi *rwi;
-     struct ibmvnic_adapter *adapter;
-     struct net_device *netdev;
-+   bool we_lock_rtnl = false;
-     u32 reset_state;
-     int rc = 0;
-
-     adapter = container_of(work, struct ibmvnic_adapter, ibmvnic_reset);
-     netdev = adapter->netdev;
-
--   mutex_lock(&adapter->reset_lock);
-+   /* netif_set_real_num_xx_queues needs to take rtnl lock here
-+    * unless wait_for_reset is set, in which case the rtnl lock
-+    * has already been taken before initializing the reset
-+    */
-+   if (!adapter->wait_for_reset) {
-+       rtnl_lock();
-+       we_lock_rtnl = true;
-+   }
-
-     reset_state = adapter->state;
-
-
-     rwi = get_next_rwi(adapter);
-@@ -2020,12 +2005,11 @@ static void __ibmvnic_reset(struct work_struct 
-*work)
-     if (rc) {
-         netdev_dbg(adapter->netdev, "Reset failed\n");
-         free_all_rwi(adapter);
--       mutex_unlock(&adapter->reset_lock);
--       return;
-     }
-
-     adapter->resetting = false;
--   mutex_unlock(&adapter->reset_lock);
-+   if (we_lock_rtnl)
-+       rtnl_unlock();
-  }
-
-  static int ibmvnic_reset(struct ibmvnic_adapter *adapter,
-@@ -4768,7 +4752,6 @@ static int ibmvnic_probe(struct vio_dev *dev, 
-const struct vio_device_id *id)
-
-     INIT_WORK(&adapter->ibmvnic_reset, __ibmvnic_reset);
-     INIT_LIST_HEAD(&adapter->rwi_list);
--   mutex_init(&adapter->reset_lock);
-     mutex_init(&adapter->rwi_lock);
-     adapter->resetting = false;
-
-@@ -4840,8 +4823,8 @@ static int ibmvnic_remove(struct vio_dev *dev)
-     struct ibmvnic_adapter *adapter = netdev_priv(netdev);
-
-     adapter->state = VNIC_REMOVING;
--   unregister_netdev(netdev);
--   mutex_lock(&adapter->reset_lock);
-+   rtnl_lock();
-+   unregister_netdevice(netdev);
-
-     release_resources(adapter);
-     release_sub_crqs(adapter, 1);
-@@ -4852,7 +4835,7 @@ static int ibmvnic_remove(struct vio_dev *dev)
-
-     adapter->state = VNIC_REMOVED;
-
--   mutex_unlock(&adapter->reset_lock);
-+   rtnl_unlock();
-     device_remove_file(&dev->dev, &dev_attr_failover);
-     free_netdev(netdev);
-     dev_set_drvdata(&dev->dev, NULL);
-diff --git a/drivers/net/ethernet/ibm/ibmvnic.h 
-b/drivers/net/ethernet/ibm/ibmvnic.h
-index 18103b8..99c4f8d 100644
---- a/drivers/net/ethernet/ibm/ibmvnic.h
-+++ b/drivers/net/ethernet/ibm/ibmvnic.h
-@@ -1075,7 +1075,7 @@ struct ibmvnic_adapter {
-     struct tasklet_struct tasklet;
-     enum vnic_state state;
-     enum ibmvnic_reset_reason reset_reason;
--   struct mutex reset_lock, rwi_lock;
-+   struct mutex rwi_lock;
-     struct list_head rwi_list;
-     struct work_struct ibmvnic_reset;
-     bool resetting;
+-	if (!parsed) {
+-		apei_hest_parse(aer_hest_parse, &info);
+-		aer_firmware_first = info.firmware_first;
+-		parsed = true;
+-	}
+-	return aer_firmware_first;
+-}
+ #endif
+ 
+ #define	PCI_EXP_AER_FLAGS	(PCI_EXP_DEVCTL_CERE | PCI_EXP_DEVCTL_NFERE | \
+@@ -1453,7 +1430,7 @@ static struct pcie_port_service_driver aerdriver = {
+  */
+ int __init pcie_aer_init(void)
+ {
+-	if (!pci_aer_available() || aer_acpi_firmware_first())
++	if (!pci_aer_available())
+ 		return -ENXIO;
+ 	return pcie_port_service_register(&aerdriver);
+ }
+diff --git a/include/linux/pci-acpi.h b/include/linux/pci-acpi.h
+index 8082b612f561..2e9c0b973eba 100644
+--- a/include/linux/pci-acpi.h
++++ b/include/linux/pci-acpi.h
+@@ -116,10 +116,4 @@ static inline void acpi_pci_add_bus(struct pci_bus *bus) { }
+ static inline void acpi_pci_remove_bus(struct pci_bus *bus) { }
+ #endif	/* CONFIG_ACPI */
+ 
+-#ifdef CONFIG_ACPI_APEI
+-extern bool aer_acpi_firmware_first(void);
+-#else
+-static inline bool aer_acpi_firmware_first(void) { return false; }
+-#endif
+-
+ #endif	/* _PCI_ACPI_H_ */
+-- 
+2.17.1
 
