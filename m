@@ -4,26 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E3600C43441
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 19:20:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 033C5C43441
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 19:23:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 60CBC208E7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 19:20:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 792D421582
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 19:23:18 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="HOHK68Ul"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 60CBC208E7
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="Fg71+vyi"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 792D421582
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42wrmt35xSzF3ft
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Nov 2018 06:20:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42wrqm4DbnzDqNm
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Nov 2018 06:23:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="HOHK68Ul";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="Fg71+vyi";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
@@ -34,35 +35,34 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="HOHK68Ul"; dkim-atps=neutral
+ header.b="Fg71+vyi"; dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42wrSB0VbPzF3g7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Nov 2018 06:06:18 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42wrSH68kRzF3g8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Nov 2018 06:06:23 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
  :Reply-To:Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From
  :Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
  List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=v7wXLeFtkaAp7mc6Jbsv0ZZ51efz+b8f/3q39LoAxBk=; b=HOHK68UlsgOaULnSRfyxEZ8yD6
- S8bZkOXbf7SiYvFMngPlwTNtFdzjGrLgPPDFpvcILIAZH5VIKh7HgRZqqra9/2YdSc6VO/JlYtdJH
- 5CuAY45cqy1/cSqPBVeEGfa1P6MSCNqGO1LOgeXdpXkKwh/JR69r90+iYc0AASp8RQ0LdURDF9Bb7
- XlkvYyWkMiGFaxKAVwTE7PbUG+BOgG6UpaxlK/FxjOrvicsAZgFK2Zx9ZUHhXDzX4COx/5CbMuW1R
- GBZxzlsviCkRx79xdYlWoyIslbed742FMiBZb0hgeBxQLohCXa9AgYMW7YHYt8DcTS5mKKBB6Azej
- WLV1DQNg==;
+ bh=eXOQ+dvudBbzM5dl4WVVovz+qKPOlBqh8OVH/LPXs+U=; b=Fg71+vyi5c7/QX+KWk3UdtCGz7
+ eGID6AVUI/tU62X1Kj9ydrIGfieFHbasDux8tWYA2eDbKt803u/AMEj77MYHm5ed/gI0WbQ3xBb+B
+ 3aOq6FozvUQqWw5Q4mSdxf9Y5Oj+7D/z9wtibMXmGpu8EeMnbkQIme3Cq4+w0jVmQgGsWstT4wZ6g
+ oU+Yu+jK83HpvzPas4+e1J62JbOcLAAT7zVn+Pypeh0qPLTZ/vd1M++nSO6z/kfCisGpETXoGlIZy
+ yP9Yu6kZ0ZsIeLYfajkz/tWZibV5W6v0KDzLDDTs/NDzZDoztDyIG4iZdPUGvHaVSLPcAHHx4ILMY
+ GvY93XLw==;
 Received: from 089144211136.atnat0020.highway.a1.net ([89.144.211.136]
  helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
- id 1gNMxu-0006Gx-Da; Thu, 15 Nov 2018 19:06:11 +0000
+ id 1gNMxy-0006MX-04; Thu, 15 Nov 2018 19:06:14 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Masahiro Yamada <yamada.masahiro@socionext.com>
-Subject: [PATCH 8/9] rapidio: consolidate RAPIDIO config entry in
- drivers/rapidio
-Date: Thu, 15 Nov 2018 20:05:36 +0100
-Message-Id: <20181115190538.17016-9-hch@lst.de>
+Subject: [PATCH 9/9] eisa: consolidate EISA Kconfig entry in drivers/eisa
+Date: Thu, 15 Nov 2018 20:05:37 +0100
+Message-Id: <20181115190538.17016-10-hch@lst.de>
 X-Mailer: git-send-email 2.19.1
 In-Reply-To: <20181115190538.17016-1-hch@lst.de>
 References: <20181115190538.17016-1-hch@lst.de>
@@ -90,206 +90,321 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There is no good reason to duplicate the RAPIDIO menu in various
-architectures.  Instead provide a selectable HAVE_RAPIDIO symbol
-that indicates native availability of RAPIDIO support and the handle
-the rest in drivers/pci.  This also means we now provide support
-for PCI(e) to Rapidio bridges for every architecture instead of a
-limited subset.
+Let architectures opt into EISA support by selecting HAS_EISA and
+handle everything else in drivers/eisa.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 Acked-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- arch/mips/Kconfig                   | 15 +--------------
- arch/powerpc/Kconfig                | 14 +-------------
- arch/powerpc/platforms/85xx/Kconfig |  8 ++++----
- arch/powerpc/platforms/86xx/Kconfig |  4 ++--
- arch/x86/Kconfig                    |  9 ---------
- drivers/Kconfig                     |  1 +
- drivers/rapidio/Kconfig             | 11 +++++++++++
- 7 files changed, 20 insertions(+), 42 deletions(-)
+ arch/alpha/Kconfig     | 15 ++++++++-------
+ arch/mips/Kconfig      | 31 +++++--------------------------
+ arch/powerpc/Kconfig   |  3 ---
+ arch/x86/Kconfig       | 19 +------------------
+ drivers/Kconfig        |  1 +
+ drivers/eisa/Kconfig   | 21 ++++++++++++++++++++-
+ drivers/parisc/Kconfig | 11 +----------
+ 7 files changed, 36 insertions(+), 65 deletions(-)
 
+diff --git a/arch/alpha/Kconfig b/arch/alpha/Kconfig
+index 0ff180ab2a42..5e7a44e6110f 100644
+--- a/arch/alpha/Kconfig
++++ b/arch/alpha/Kconfig
+@@ -129,11 +129,13 @@ choice
+ config ALPHA_GENERIC
+ 	bool "Generic"
+ 	depends on TTY
++	select HAVE_EISA
+ 	help
+ 	  A generic kernel will run on all supported Alpha hardware.
+ 
+ config ALPHA_ALCOR
+ 	bool "Alcor/Alpha-XLT"
++	select HAVE_EISA
+ 	help
+ 	  For systems using the Digital ALCOR chipset: 5 chips (4, 64-bit data
+ 	  slices (Data Switch, DSW) - 208-pin PQFP and 1 control (Control, I/O
+@@ -207,6 +209,7 @@ config ALPHA_JENSEN
+ 	bool "Jensen"
+ 	depends on BROKEN
+ 	select DMA_DIRECT_OPS
++	select HAVE_EISA
+ 	help
+ 	  DEC PC 150 AXP (aka Jensen): This is a very old Digital system - one
+ 	  of the first-generation Alpha systems. A number of these systems
+@@ -223,6 +226,7 @@ config ALPHA_LX164
+ 
+ config ALPHA_LYNX
+ 	bool "Lynx"
++	select HAVE_EISA
+ 	help
+ 	  AlphaServer 2100A-based systems.
+ 
+@@ -233,6 +237,7 @@ config ALPHA_MARVEL
+ 
+ config ALPHA_MIATA
+ 	bool "Miata"
++	select HAVE_EISA
+ 	help
+ 	  The Digital PersonalWorkStation (PWS 433a, 433au, 500a, 500au, 600a,
+ 	  or 600au).
+@@ -252,6 +257,7 @@ config ALPHA_NONAME_CH
+ 
+ config ALPHA_NORITAKE
+ 	bool "Noritake"
++	select HAVE_EISA
+ 	help
+ 	  AlphaServer 1000A, AlphaServer 600A, and AlphaServer 800-based
+ 	  systems.
+@@ -264,6 +270,7 @@ config ALPHA_P2K
+ 
+ config ALPHA_RAWHIDE
+ 	bool "Rawhide"
++	select HAVE_EISA
+ 	help
+ 	  AlphaServer 1200, AlphaServer 4000 and AlphaServer 4100 machines.
+ 	  See HOWTO at
+@@ -283,6 +290,7 @@ config ALPHA_SX164
+ 
+ config ALPHA_SABLE
+ 	bool "Sable"
++	select HAVE_EISA
+ 	help
+ 	  Digital AlphaServer 2000 and 2100-based systems.
+ 
+@@ -512,11 +520,6 @@ config ALPHA_SRM
+ 
+ 	  If unsure, say N.
+ 
+-config EISA
+-	bool
+-	depends on ALPHA_GENERIC || ALPHA_JENSEN || ALPHA_ALCOR || ALPHA_MIKASA || ALPHA_SABLE || ALPHA_LYNX || ALPHA_NORITAKE || ALPHA_RAWHIDE
+-	default y
+-
+ config ARCH_MAY_HAVE_PC_FDC
+ 	def_bool y
+ 
+@@ -667,8 +670,6 @@ config HZ
+ 	default 1200 if HZ_1200
+ 	default 1024
+ 
+-source "drivers/eisa/Kconfig"
+-
+ config SRM_ENV
+ 	tristate "SRM environment through procfs"
+ 	depends on PROC_FS
 diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
-index 3912250ff813..67fbd4952ff4 100644
+index 67fbd4952ff4..f4df8007fddb 100644
 --- a/arch/mips/Kconfig
 +++ b/arch/mips/Kconfig
-@@ -892,7 +892,7 @@ config CAVIUM_OCTEON_SOC
- 	bool "Cavium Networks Octeon SoC based boards"
- 	select CEVT_R4K
- 	select ARCH_HAS_PHYS_TO_DMA
--	select HAS_RAPIDIO
-+	select HAVE_RAPIDIO
- 	select PHYS_ADDR_T_64BIT
- 	select SYS_SUPPORTS_64BIT_KERNEL
- 	select SYS_SUPPORTS_BIG_ENDIAN
-@@ -3107,19 +3107,6 @@ config ZONE_DMA
- config ZONE_DMA32
+@@ -24,6 +24,7 @@ config MIPS
+ 	select GENERIC_IOMAP
+ 	select GENERIC_IRQ_PROBE
+ 	select GENERIC_IRQ_SHOW
++	select GENERIC_ISA_DMA if EISA
+ 	select GENERIC_LIB_ASHLDI3
+ 	select GENERIC_LIB_ASHRDI3
+ 	select GENERIC_LIB_CMPDI2
+@@ -71,6 +72,7 @@ config MIPS
+ 	select HAVE_SYSCALL_TRACEPOINTS
+ 	select HAVE_VIRT_CPU_ACCOUNTING_GEN if 64BIT || !SMP
+ 	select IRQ_FORCED_THREADING
++	select ISA if EISA
+ 	select MODULES_USE_ELF_RELA if MODULES && 64BIT
+ 	select MODULES_USE_ELF_REL if MODULES
+ 	select PERF_USE_VMALLOC
+@@ -632,7 +634,7 @@ config SGI_IP22
+ 	select CSRC_R4K
+ 	select DEFAULT_SGI_PARTITION
+ 	select DMA_NONCOHERENT
+-	select HW_HAS_EISA
++	select HAVE_EISA
+ 	select I8253
+ 	select I8259
+ 	select IP22_CPU_SCACHE
+@@ -697,7 +699,7 @@ config SGI_IP28
+ 	select DMA_NONCOHERENT
+ 	select GENERIC_ISA_DMA_SUPPORT_BROKEN
+ 	select IRQ_MIPS_CPU
+-	select HW_HAS_EISA
++	select HAVE_EISA
+ 	select I8253
+ 	select I8259
+ 	select SGI_HAS_I8042
+@@ -840,8 +842,8 @@ config SNI_RM
+ 	select DEFAULT_SGI_PARTITION if CPU_BIG_ENDIAN
+ 	select DMA_NONCOHERENT
+ 	select GENERIC_ISA_DMA
++	select HAVE_EISA
+ 	select HAVE_PCSPKR_PLATFORM
+-	select HW_HAS_EISA
+ 	select HAVE_PCI
+ 	select IRQ_MIPS_CPU
+ 	select I8253
+@@ -3024,9 +3026,6 @@ config MIPS_AUTO_PFN_OFFSET
+ 
+ menu "Bus options (PCI, PCMCIA, EISA, ISA, TC)"
+ 
+-config HW_HAS_EISA
+-	bool
+-
+ config PCI_DRIVERS_GENERIC
+ 	select PCI_DOMAINS_GENERIC if PCI
+ 	bool
+@@ -3044,26 +3043,6 @@ config PCI_DRIVERS_LEGACY
+ config ISA
  	bool
  
--config HAS_RAPIDIO
--	bool
--	default n
+-config EISA
+-	bool "EISA support"
+-	depends on HW_HAS_EISA
+-	select ISA
+-	select GENERIC_ISA_DMA
+-	---help---
+-	  The Extended Industry Standard Architecture (EISA) bus was
+-	  developed as an open alternative to the IBM MicroChannel bus.
 -
--config RAPIDIO
--	tristate "RapidIO support"
--	depends on HAS_RAPIDIO || PCI
--	help
--	  If you say Y here, the kernel will include drivers and
--	  infrastructure code to support RapidIO interconnect devices.
+-	  The EISA bus provided some of the features of the IBM MicroChannel
+-	  bus while maintaining backward compatibility with cards made for
+-	  the older ISA bus.  The EISA bus saw limited use between 1988 and
+-	  1995 when it was made obsolete by the PCI bus.
 -
--source "drivers/rapidio/Kconfig"
+-	  Say Y here if you are building a kernel for an EISA-based machine.
 -
- endmenu
- 
- config TRAD_SIGNALS
+-	  Otherwise, say N.
+-
+-source "drivers/eisa/Kconfig"
+-
+ config TC
+ 	bool "TURBOchannel support"
+ 	depends on MACH_DECSTATION
 diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index cc8435d87949..f2f70cc2bd44 100644
+index f2f70cc2bd44..4dadf83d9d5c 100644
 --- a/arch/powerpc/Kconfig
 +++ b/arch/powerpc/Kconfig
-@@ -939,26 +939,14 @@ config PCI_8260
- 	select PPC_INDIRECT_PCI
- 	default y
+@@ -886,9 +886,6 @@ config PPC_INDIRECT_PCI
+ 	depends on PCI
+ 	default y if 40x || 44x
  
--config HAS_RAPIDIO
+-config EISA
 -	bool
 -
--config RAPIDIO
--	tristate "RapidIO support"
--	depends on HAS_RAPIDIO || PCI
--	help
--	  If you say Y here, the kernel will include drivers and
--	  infrastructure code to support RapidIO interconnect devices.
--
- config FSL_RIO
- 	bool "Freescale Embedded SRIO Controller support"
--	depends on RAPIDIO = y && HAS_RAPIDIO
-+	depends on RAPIDIO = y && HAVE_RAPIDIO
- 	default "n"
- 	---help---
- 	  Include support for RapidIO controller on Freescale embedded
- 	  processors (MPC8548, MPC8641, etc).
- 
--source "drivers/rapidio/Kconfig"
--
- endmenu
- 
- config NONSTATIC_KERNEL
-diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-index ba0ea84ce578..d1af0ee2f8c8 100644
---- a/arch/powerpc/platforms/85xx/Kconfig
-+++ b/arch/powerpc/platforms/85xx/Kconfig
-@@ -66,7 +66,7 @@ config MPC85xx_CDS
- 	bool "Freescale MPC85xx CDS"
- 	select DEFAULT_UIMAGE
- 	select PPC_I8259
--	select HAS_RAPIDIO
-+	select HAVE_RAPIDIO
- 	help
- 	  This option enables support for the MPC85xx CDS board
- 
-@@ -74,7 +74,7 @@ config MPC85xx_MDS
- 	bool "Freescale MPC85xx MDS"
- 	select DEFAULT_UIMAGE
- 	select PHYLIB if NETDEVICES
--	select HAS_RAPIDIO
-+	select HAVE_RAPIDIO
- 	select SWIOTLB
- 	help
- 	  This option enables support for the MPC85xx MDS board
-@@ -219,7 +219,7 @@ config PPA8548
- 	help
- 	  This option enables support for the Prodrive PPA8548 board.
- 	select DEFAULT_UIMAGE
--	select HAS_RAPIDIO
-+	select HAVE_RAPIDIO
- 
- config GE_IMP3A
- 	bool "GE Intelligent Platforms IMP3A"
-@@ -277,7 +277,7 @@ config CORENET_GENERIC
- 	select SWIOTLB
- 	select GPIOLIB
- 	select GPIO_MPC8XXX
--	select HAS_RAPIDIO
-+	select HAVE_RAPIDIO
- 	select PPC_EPAPR_HV_PIC
- 	help
- 	  This option enables support for the FSL CoreNet based boards.
-diff --git a/arch/powerpc/platforms/86xx/Kconfig b/arch/powerpc/platforms/86xx/Kconfig
-index a4fa31a40502..413837a63242 100644
---- a/arch/powerpc/platforms/86xx/Kconfig
-+++ b/arch/powerpc/platforms/86xx/Kconfig
-@@ -15,7 +15,7 @@ config MPC8641_HPCN
- 	select PPC_I8259
- 	select DEFAULT_UIMAGE
- 	select FSL_ULI1575 if PCI
--	select HAS_RAPIDIO
-+	select HAVE_RAPIDIO
- 	select SWIOTLB
- 	help
- 	  This option enables support for the MPC8641 HPCN board.
-@@ -57,7 +57,7 @@ config GEF_SBC610
- 	select MMIO_NVRAM
- 	select GPIOLIB
- 	select GE_FPGA
--	select HAS_RAPIDIO
-+	select HAVE_RAPIDIO
- 	help
- 	  This option enables support for the GE SBC610.
+ config SBUS
+ 	bool
  
 diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 659d59d7f033..4c8052a7c3f9 100644
+index 4c8052a7c3f9..305dcb6498cc 100644
 --- a/arch/x86/Kconfig
 +++ b/arch/x86/Kconfig
-@@ -2811,15 +2811,6 @@ config AMD_NB
- 	def_bool y
- 	depends on CPU_SUP_AMD && PCI
+@@ -147,6 +147,7 @@ config X86
+ 	select HAVE_DYNAMIC_FTRACE_WITH_REGS
+ 	select HAVE_EBPF_JIT
+ 	select HAVE_EFFICIENT_UNALIGNED_ACCESS
++	select HAVE_EISA
+ 	select HAVE_EXIT_THREAD
+ 	select HAVE_FENTRY			if X86_64 || DYNAMIC_FTRACE
+ 	select HAVE_FTRACE_MCOUNT_RECORD
+@@ -2682,24 +2683,6 @@ config ISA
+ 	  (MCA) or VESA.  ISA is an older system, now being displaced by PCI;
+ 	  newer boards don't support it.  If you have ISA, say Y, otherwise N.
  
--config RAPIDIO
--	tristate "RapidIO support"
--	depends on PCI
--	help
--	  If enabled this option will include drivers and the core
--	  infrastructure code to support RapidIO interconnect devices.
+-config EISA
+-	bool "EISA support"
+-	depends on ISA
+-	---help---
+-	  The Extended Industry Standard Architecture (EISA) bus was
+-	  developed as an open alternative to the IBM MicroChannel bus.
 -
--source "drivers/rapidio/Kconfig"
+-	  The EISA bus provided some of the features of the IBM MicroChannel
+-	  bus while maintaining backward compatibility with cards made for
+-	  the older ISA bus.  The EISA bus saw limited use between 1988 and
+-	  1995 when it was made obsolete by the PCI bus.
 -
- config X86_SYSFB
- 	bool "Mark VGA/VBE/EFI FB as generic system framebuffer"
- 	help
+-	  Say Y here if you are building a kernel for an EISA-based machine.
+-
+-	  Otherwise, say N.
+-
+-source "drivers/eisa/Kconfig"
+-
+ config SCx200
+ 	tristate "NatSemi SCx200 support"
+ 	---help---
 diff --git a/drivers/Kconfig b/drivers/Kconfig
-index 58ee88c36cf5..065d308fcb00 100644
+index 065d308fcb00..ea58a6b99288 100644
 --- a/drivers/Kconfig
 +++ b/drivers/Kconfig
-@@ -6,6 +6,7 @@ menu "Device Drivers"
+@@ -4,6 +4,7 @@ menu "Device Drivers"
+ # Keep I/O buses first
+ 
  source "drivers/amba/Kconfig"
++source "drivers/eisa/Kconfig"
  source "drivers/pci/Kconfig"
  source "drivers/pcmcia/Kconfig"
-+source "drivers/rapidio/Kconfig"
- 
- 
- source "drivers/base/Kconfig"
-diff --git a/drivers/rapidio/Kconfig b/drivers/rapidio/Kconfig
-index d6d2f20c4597..e3d8fe41b50c 100644
---- a/drivers/rapidio/Kconfig
-+++ b/drivers/rapidio/Kconfig
-@@ -1,6 +1,17 @@
+ source "drivers/rapidio/Kconfig"
+diff --git a/drivers/eisa/Kconfig b/drivers/eisa/Kconfig
+index 2705284f6223..4570e3bca42c 100644
+--- a/drivers/eisa/Kconfig
++++ b/drivers/eisa/Kconfig
+@@ -1,6 +1,26 @@
  #
- # RapidIO configuration
+ # EISA configuration
  #
 +
-+config HAVE_RAPIDIO
++config HAVE_EISA
 +	bool
 +
-+menuconfig RAPIDIO
-+	tristate "RapidIO support"
-+	depends on HAVE_RAPIDIO || PCI
-+	help
-+	  If you say Y here, the kernel will include drivers and
-+	  infrastructure code to support RapidIO interconnect devices.
++menuconfig EISA
++	bool "EISA support"
++	depends on HAVE_EISA
++	---help---
++	  The Extended Industry Standard Architecture (EISA) bus was
++	  developed as an open alternative to the IBM MicroChannel bus.
 +
- source "drivers/rapidio/devices/Kconfig"
++	  The EISA bus provided some of the features of the IBM MicroChannel
++	  bus while maintaining backward compatibility with cards made for
++	  the older ISA bus.  The EISA bus saw limited use between 1988 and
++	  1995 when it was made obsolete by the PCI bus.
++
++	  Say Y here if you are building a kernel for an EISA-based machine.
++
++	  Otherwise, say N.
++
+ config EISA_VLB_PRIMING
+ 	bool "Vesa Local Bus priming"
+ 	depends on X86 && EISA
+@@ -53,4 +73,3 @@ config EISA_NAMES
+ 	  names.
  
- config RAPIDIO_DISC_TIMEOUT
+ 	  When in doubt, say Y.
+-
+diff --git a/drivers/parisc/Kconfig b/drivers/parisc/Kconfig
+index 1a55763d1245..74e119adca01 100644
+--- a/drivers/parisc/Kconfig
++++ b/drivers/parisc/Kconfig
+@@ -2,6 +2,7 @@ menu "Bus options (PCI, PCMCIA, EISA, GSC, ISA)"
+ 
+ config GSC
+ 	bool "VSC/GSC/HSC bus support"
++	select HAVE_EISA
+ 	default y
+ 	help
+ 	  The VSC, GSC and HSC busses were used from the earliest 700-series
+@@ -46,16 +47,6 @@ config GSC_WAX
+ 	  used), a HIL interface chip and is also known to be used as the
+ 	  GSC bridge for an X.25 GSC card.
+ 
+-config EISA
+-	bool "EISA support"
+-	depends on GSC
+-	help
+-	  Say Y here if you have an EISA bus in your machine.  This code
+-	  supports both the Mongoose & Wax EISA adapters.  It is sadly
+-	  incomplete and lacks support for card-to-host DMA.
+-
+-source "drivers/eisa/Kconfig"
+-
+ config ISA
+ 	bool "ISA support"
+ 	depends on EISA
 -- 
 2.19.1
 
