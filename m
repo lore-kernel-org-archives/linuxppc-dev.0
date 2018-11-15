@@ -6,57 +6,94 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AAC62C43441
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 19:41:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 754F7C43441
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 22:25:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 014EB2133D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 19:41:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 014EB2133D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=perches.com
+	by mail.kernel.org (Postfix) with ESMTPS id F3E452084C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 22:25:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F3E452084C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42wsDR5DKhzF3hJ
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Nov 2018 06:41:11 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=perches.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42wwsV58HyzF3gt
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Nov 2018 09:25:02 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=perches.com
- (client-ip=216.40.44.103; helo=smtprelay.hostedemail.com;
- envelope-from=joe@perches.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=perches.com
-Received: from smtprelay.hostedemail.com (smtprelay0103.hostedemail.com
- [216.40.44.103])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=julietk@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42wrt35K6KzF3hl
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Nov 2018 06:25:14 +1100 (AEDT)
-Received: from filter.hostedemail.com (clb03-v110.bra.tucows.net
- [216.40.38.60])
- by smtprelay06.hostedemail.com (Postfix) with ESMTP id CD391180790B5;
- Thu, 15 Nov 2018 19:25:10 +0000 (UTC)
-X-Session-Marker: 6A6F6540706572636865732E636F6D
-X-HE-Tag: train79_844655162681d
-X-Filterd-Recvd-Size: 3595
-Received: from XPS-9350.home (unknown [47.151.153.53])
- (Authenticated sender: joe@perches.com)
- by omf14.hostedemail.com (Postfix) with ESMTPA;
- Thu, 15 Nov 2018 19:25:08 +0000 (UTC)
-Message-ID: <7a3922bc5089dfe0978e07a809606360c74c940c.camel@perches.com>
-Subject: Re: [PATCH] arch/powerpc: Use dma_zalloc_coherent
-From: Joe Perches <joe@perches.com>
-To: Sabyasachi Gupta <sabyasachi.linux@gmail.com>, benh@kernel.crashing.org,
- paulus@samba.org, mpe@ellerman.id.au, darren@stevens-zone.net, 
- christophe.leroy@c-s.fr, geoff@infradead.org
-Date: Thu, 15 Nov 2018 11:25:07 -0800
-In-Reply-To: <CAJr6mf1nOouU31WF_xb_46wDebPQ-7+NTCiSKBjLyQta2mny6w@mail.gmail.com>
-References: <5bdfb8db.1c69fb81.c8f62.9586@mx.google.com>
- <CAJr6mf1nOouU31WF_xb_46wDebPQ-7+NTCiSKBjLyQta2mny6w@mail.gmail.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-User-Agent: Evolution 3.30.1-1build1 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42wvzH11mmzF3gk
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Nov 2018 08:44:55 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wAFLiQMB092752
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2018 16:44:52 -0500
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2nsexj6s65-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2018 16:44:52 -0500
+Received: from localhost
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <julietk@linux.vnet.ibm.com>;
+ Thu, 15 Nov 2018 21:44:52 -0000
+Received: from b03cxnp08028.gho.boulder.ibm.com (9.17.130.20)
+ by e32.co.us.ibm.com (192.168.1.132) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Thu, 15 Nov 2018 21:44:47 -0000
+Received: from b03ledav001.gho.boulder.ibm.com
+ (b03ledav001.gho.boulder.ibm.com [9.17.130.232])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wAFLikwj19202070
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Thu, 15 Nov 2018 21:44:46 GMT
+Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 89E7C6E052;
+ Thu, 15 Nov 2018 21:44:46 +0000 (GMT)
+Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id A71236E04C;
+ Thu, 15 Nov 2018 21:44:45 +0000 (GMT)
+Received: from juliets-mbp.austin.ibm.com (unknown [9.41.179.214])
+ by b03ledav001.gho.boulder.ibm.com (Postfix) with ESMTPS;
+ Thu, 15 Nov 2018 21:44:45 +0000 (GMT)
+To: linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+From: Juliet Kim <julietk@linux.vnet.ibm.com>
+Subject: [PATCH] net/ibmnvic: Fix deadlock problem in reset
+Date: Thu, 15 Nov 2018 15:44:44 -0600
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:60.0)
+ Gecko/20100101 Thunderbird/60.3.0
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
+Content-Language: en-US
+X-TM-AS-GCONF: 00
+x-cbid: 18111521-0004-0000-0000-000014B33762
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00010057; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000270; SDB=6.01117969; UDB=6.00579908; IPR=6.00898078; 
+ MB=3.00024183; MTD=3.00000008; XFM=3.00000015; UTC=2018-11-15 21:44:50
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18111521-0005-0000-0000-000089861661
+Message-Id: <25faa351-51d3-3aeb-a1c9-e8d3259604dd@linux.vnet.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-11-15_16:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1811150189
+X-Mailman-Approved-At: Fri, 16 Nov 2018 09:23:15 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,90 +105,210 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Souptick Joarder <jrdr.linux@gmail.com>,
- linux-kernel@vger.kernel.org
+Cc: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
+ Michael Bringmann <mwb@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2018-11-15 at 23:29 +0530, Sabyasachi Gupta wrote:
-> On Mon, Nov 5, 2018 at 8:58 AM Sabyasachi Gupta
-> <sabyasachi.linux@gmail.com> wrote:
-> > Replaced dma_alloc_coherent + memset with dma_zalloc_coherent
-> > 
-> > Signed-off-by: Sabyasachi Gupta <sabyasachi.linux@gmail.com>
-> 
-> Any comment on this patch?
+Subject: [PATCH] net/ibmnvic: Fix deadlock problem in reset
 
-It's obviously correct.
+From: Juliet Kim <julietk@linux.vnet.ibm.com>
 
-You might realign the arguments on the next lines
-to the open parenthesis.
+This patch changes to use rtnl_lock only during a reset to avoid
+deadlock that could occur when a thread operating close is holding
+rtnl_lock and waiting for reset_lock acquired by another thread,
+which is waiting for rtnl_lock in order to set the number of tx/rx
+queues during a reset.
 
-Perhaps there should be new function calls
-added for symmetry to the other alloc functions
-for multiplication overflow protection.
+Also, we now setting the number of tx/rx queues during a soft reset
+for failover or LPM events.
 
-Perhaps:
-
-void *dma_alloc_array_coherent()
-void *dma_calloc_coherent()
-
-Something like
+Signed-off-by: Juliet Kim <julietk@linux.vnet.ibm.com>
 ---
- include/linux/dma-mapping.h | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+  drivers/net/ethernet/ibm/ibmvnic.c |   59 
++++++++++++++-----------------------
+  drivers/net/ethernet/ibm/ibmvnic.h |    2 +
+  2 files changed, 22 insertions(+), 39 deletions(-)
 
-diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
-index 15bd41447025..95bebf8883b1 100644
---- a/include/linux/dma-mapping.h
-+++ b/include/linux/dma-mapping.h
-@@ -565,6 +565,25 @@ static inline void *dma_alloc_coherent(struct device *dev, size_t size,
- 			(gfp & __GFP_NOWARN) ? DMA_ATTR_NO_WARN : 0);
- }
- 
-+static inline void *dma_alloc_array_coherent(struct device *dev,
-+					     size_t n, size_t size,
-+					     dma_addr_t *dma_handle, gfp_t gfp)
-+{
-+	size_t bytes;
-+
-+	if (unlikely(check_mul_overflow(n, size, &bytes)))
-+		return NULL;
-+	return dma_alloc_coherent(dev, bytes, dma_handle, gfp);
-+}
-+
-+static inline void *dma_calloc_coherent(struct device *dev,
-+					size_t n, size_t size,
-+					dma_addr_t *dma_handle, gfp_t gfp)
-+{
-+	return dma_alloc_array_coherent(dev, n, size, dma_handle,
-+					gfp | __GFP_ZERO);
-+}
-+
- static inline void dma_free_coherent(struct device *dev, size_t size,
- 		void *cpu_addr, dma_addr_t dma_handle)
- {
+diff --git a/drivers/net/ethernet/ibm/ibmvnic.c 
+b/drivers/net/ethernet/ibm/ibmvnic.c
+index 7893bef..4a5de59 100644
+--- a/drivers/net/ethernet/ibm/ibmvnic.c
++++ b/drivers/net/ethernet/ibm/ibmvnic.c
+@@ -1103,20 +1103,15 @@ static int ibmvnic_open(struct net_device *netdev)
+         return 0;
+     }
 
----
-> > diff --git a/arch/powerpc/platforms/pasemi/dma_lib.c b/arch/powerpc/platforms/pasemi/dma_lib.c
-[]
-> > @@ -255,15 +255,13 @@ int pasemi_dma_alloc_ring(struct pasemi_dmachan *chan, int ring_size)
-> > 
-> >         chan->ring_size = ring_size;
-> > 
-> > -       chan->ring_virt = dma_alloc_coherent(&dma_pdev->dev,
-> > +       chan->ring_virt = dma_zalloc_coherent(&dma_pdev->dev,
-> >                                              ring_size * sizeof(u64),
-> >                                              &chan->ring_dma, GFP_KERNEL);
-> >  en
-> >         if (!chan->ring_virt)
-> >                 return -ENOMEM;
-> > 
-> > -       memset(chan->ring_virt, 0, ring_size * sizeof(u64));
-> > -
-> >         return 0;
-> >  }
-> >  EXPORT_SYMBOL(pasemi_dma_alloc_ring);
+-   mutex_lock(&adapter->reset_lock);
+-
+     if (adapter->state != VNIC_CLOSED) {
+         rc = ibmvnic_login(netdev);
+-       if (rc) {
+-           mutex_unlock(&adapter->reset_lock);
++       if (rc)
+             return rc;
+-       }
 
+         rc = init_resources(adapter);
+         if (rc) {
+             netdev_err(netdev, "failed to initialize resources\n");
+             release_resources(adapter);
+-           mutex_unlock(&adapter->reset_lock);
+             return rc;
+         }
+     }
+@@ -1124,8 +1119,6 @@ static int ibmvnic_open(struct net_device *netdev)
+     rc = __ibmvnic_open(netdev);
+     netif_carrier_on(netdev);
+
+-   mutex_unlock(&adapter->reset_lock);
+-
+     return rc;
+  }
+
+@@ -1269,10 +1262,8 @@ static int ibmvnic_close(struct net_device *netdev)
+         return 0;
+     }
+
+-   mutex_lock(&adapter->reset_lock);
+     rc = __ibmvnic_close(netdev);
+     ibmvnic_cleanup(netdev);
+-   mutex_unlock(&adapter->reset_lock);
+
+     return rc;
+  }
+@@ -1820,20 +1811,15 @@ static int do_reset(struct ibmvnic_adapter *adapter,
+                 return rc;
+         } else if (adapter->req_rx_queues != old_num_rx_queues ||
+                adapter->req_tx_queues != old_num_tx_queues) {
+-           adapter->map_id = 1;
+             release_rx_pools(adapter);
+             release_tx_pools(adapter);
+-           rc = init_rx_pools(netdev);
+-           if (rc)
+-               return rc;
+-           rc = init_tx_pools(netdev);
+-           if (rc)
+-               return rc;
+-
+             release_napi(adapter);
+-           rc = init_napi(adapter);
++           release_vpd_data(adapter);
++
++           rc = init_resources(adapter);
+             if (rc)
+                 return rc;
++
+         } else {
+             rc = reset_tx_pools(adapter);
+             if (rc)
+@@ -1917,17 +1903,8 @@ static int do_hard_reset(struct ibmvnic_adapter 
+*adapter,
+         adapter->state = VNIC_PROBED;
+         return 0;
+     }
+-   /* netif_set_real_num_xx_queues needs to take rtnl lock here
+-    * unless wait_for_reset is set, in which case the rtnl lock
+-    * has already been taken before initializing the reset
+-    */
+-   if (!adapter->wait_for_reset) {
+-       rtnl_lock();
+-       rc = init_resources(adapter);
+-       rtnl_unlock();
+-   } else {
+-       rc = init_resources(adapter);
+-   }
++
++   rc = init_resources(adapter);
+     if (rc)
+         return rc;
+
+@@ -1986,13 +1963,21 @@ static void __ibmvnic_reset(struct work_struct 
+*work)
+     struct ibmvnic_rwi *rwi;
+     struct ibmvnic_adapter *adapter;
+     struct net_device *netdev;
++   bool we_lock_rtnl = false;
+     u32 reset_state;
+     int rc = 0;
+
+     adapter = container_of(work, struct ibmvnic_adapter, ibmvnic_reset);
+     netdev = adapter->netdev;
+
+-   mutex_lock(&adapter->reset_lock);
++   /* netif_set_real_num_xx_queues needs to take rtnl lock here
++    * unless wait_for_reset is set, in which case the rtnl lock
++    * has already been taken before initializing the reset
++    */
++   if (!adapter->wait_for_reset) {
++       rtnl_lock();
++       we_lock_rtnl = true;
++   }
+
+     reset_state = adapter->state;
+
+
+     rwi = get_next_rwi(adapter);
+@@ -2020,12 +2005,11 @@ static void __ibmvnic_reset(struct work_struct 
+*work)
+     if (rc) {
+         netdev_dbg(adapter->netdev, "Reset failed\n");
+         free_all_rwi(adapter);
+-       mutex_unlock(&adapter->reset_lock);
+-       return;
+     }
+
+     adapter->resetting = false;
+-   mutex_unlock(&adapter->reset_lock);
++   if (we_lock_rtnl)
++       rtnl_unlock();
+  }
+
+  static int ibmvnic_reset(struct ibmvnic_adapter *adapter,
+@@ -4768,7 +4752,6 @@ static int ibmvnic_probe(struct vio_dev *dev, 
+const struct vio_device_id *id)
+
+     INIT_WORK(&adapter->ibmvnic_reset, __ibmvnic_reset);
+     INIT_LIST_HEAD(&adapter->rwi_list);
+-   mutex_init(&adapter->reset_lock);
+     mutex_init(&adapter->rwi_lock);
+     adapter->resetting = false;
+
+@@ -4840,8 +4823,8 @@ static int ibmvnic_remove(struct vio_dev *dev)
+     struct ibmvnic_adapter *adapter = netdev_priv(netdev);
+
+     adapter->state = VNIC_REMOVING;
+-   unregister_netdev(netdev);
+-   mutex_lock(&adapter->reset_lock);
++   rtnl_lock();
++   unregister_netdevice(netdev);
+
+     release_resources(adapter);
+     release_sub_crqs(adapter, 1);
+@@ -4852,7 +4835,7 @@ static int ibmvnic_remove(struct vio_dev *dev)
+
+     adapter->state = VNIC_REMOVED;
+
+-   mutex_unlock(&adapter->reset_lock);
++   rtnl_unlock();
+     device_remove_file(&dev->dev, &dev_attr_failover);
+     free_netdev(netdev);
+     dev_set_drvdata(&dev->dev, NULL);
+diff --git a/drivers/net/ethernet/ibm/ibmvnic.h 
+b/drivers/net/ethernet/ibm/ibmvnic.h
+index 18103b8..99c4f8d 100644
+--- a/drivers/net/ethernet/ibm/ibmvnic.h
++++ b/drivers/net/ethernet/ibm/ibmvnic.h
+@@ -1075,7 +1075,7 @@ struct ibmvnic_adapter {
+     struct tasklet_struct tasklet;
+     enum vnic_state state;
+     enum ibmvnic_reset_reason reset_reason;
+-   struct mutex reset_lock, rwi_lock;
++   struct mutex rwi_lock;
+     struct list_head rwi_list;
+     struct work_struct ibmvnic_reset;
+     bool resetting;
 
