@@ -2,64 +2,87 @@ Return-Path: <SRS0=6gsd=N2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DB1A9C43441
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 06:29:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D5CE8C43441
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 06:32:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 62DF721582
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 06:29:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 62DF721582
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 502F021582
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 06:32:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 502F021582
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42wWfP2P04zF3Xv
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 17:29:01 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by lists.ozlabs.org (Postfix) with ESMTP id 42wWjs17xJzF3Y8
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Nov 2018 17:32:01 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=sathnaga@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42wWYD0zhwzF3bX
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2018 17:24:31 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 42wWY16jnYz9vF79;
- Thu, 15 Nov 2018 07:24:21 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 4iB5LfV47AyN; Thu, 15 Nov 2018 07:24:21 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 42wWY164wTz9vF76;
- Thu, 15 Nov 2018 07:24:21 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id B001C8B82C;
- Thu, 15 Nov 2018 07:24:27 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id yoFPfczg5PXm; Thu, 15 Nov 2018 07:24:27 +0100 (CET)
-Received: from po14163vm.idsi0.si.c-s.fr (unknown [192.168.232.3])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 5F5818B77F;
- Thu, 15 Nov 2018 07:24:27 +0100 (CET)
-Received: by po14163vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id E503A69A54; Thu, 15 Nov 2018 06:24:26 +0000 (UTC)
-Message-Id: <26cc609706833f78e3195e3d35c0372b2f40cae3.1542181167.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc/mm: dump block address translation on book3s/32
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
- npiggin@gmail.com, rashmicy@gmail.com
-Date: Thu, 15 Nov 2018 06:24:26 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42wWd73pb4zF3bs
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2018 17:27:55 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wAF6OKWi105943
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2018 01:27:53 -0500
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2ns35a10e6-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2018 01:27:52 -0500
+Received: from localhost
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sathnaga@linux.vnet.ibm.com>;
+ Thu, 15 Nov 2018 06:27:51 -0000
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
+ by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Thu, 15 Nov 2018 06:27:49 -0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wAF6Rm4210355004
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Thu, 15 Nov 2018 06:27:48 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 19B944C058;
+ Thu, 15 Nov 2018 06:27:48 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2C7684C04A;
+ Thu, 15 Nov 2018 06:27:47 +0000 (GMT)
+Received: from dhcp-9-193-110-205.in.ibm.com (unknown [9.122.211.233])
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Thu, 15 Nov 2018 06:27:46 +0000 (GMT)
+From: sathnaga@linux.vnet.ibm.com
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: Add missing config symbols for ppc64_defconfig
+Date: Thu, 15 Nov 2018 11:57:11 +0530
+X-Mailer: git-send-email 2.17.2
+X-TM-AS-GCONF: 00
+x-cbid: 18111506-0020-0000-0000-000002E847C6
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18111506-0021-0000-0000-0000213760A8
+Message-Id: <20181115062711.14649-1-sathnaga@linux.vnet.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-11-15_03:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=5 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=516 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1811150058
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,239 +94,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: leitao@debian.org, Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch adds a debugfs file to dump block address translation:
+From: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
 
-~# cat /sys/kernel/debug/block_address_translation
-Instruction Block Address Translations:
-0:         -
-1:         -
-2: 0xc0000000-0xcfffffff 0x00000000 Kernel EXEC coherent
-3: 0xd0000000-0xdfffffff 0x10000000 Kernel EXEC coherent
-4:         -
-5:         -
-6:         -
-7:         -
+This patch adds missing config symbols for ppc64_defconfig
+to enable cgroups, memhotplug, numa balancing and XFS
+in core kernel image.
 
-Data Block Address Translations:
-0:         -
-1:         -
-2: 0xc0000000-0xcfffffff 0x00000000 Kernel RW coherent
-3: 0xd0000000-0xdfffffff 0x10000000 Kernel RW coherent
-4:         -
-5:         -
-6:         -
-7:         -
-
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Signed-off-by: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
 ---
- Tested on mpc8321 aka 603
- Please review/test the 601 part
+ arch/powerpc/configs/ppc64_defconfig | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
 
- arch/powerpc/mm/Makefile    |   2 +-
- arch/powerpc/mm/dump_bats.c | 176 ++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 177 insertions(+), 1 deletion(-)
- create mode 100644 arch/powerpc/mm/dump_bats.c
-
-diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
-index ca96e7be4d0e..2adad10b5856 100644
---- a/arch/powerpc/mm/Makefile
-+++ b/arch/powerpc/mm/Makefile
-@@ -47,7 +47,7 @@ ifdef CONFIG_PPC_PTDUMP
- obj-$(CONFIG_4xx)		+= dump_linuxpagetables-generic.o
- obj-$(CONFIG_PPC_8xx)		+= dump_linuxpagetables-8xx.o
- obj-$(CONFIG_PPC_BOOK3E_MMU)	+= dump_linuxpagetables-generic.o
--obj-$(CONFIG_PPC_BOOK3S_32)	+= dump_linuxpagetables-generic.o
-+obj-$(CONFIG_PPC_BOOK3S_32)	+= dump_linuxpagetables-generic.o dump_bats.o
- obj-$(CONFIG_PPC_BOOK3S_64)	+= dump_linuxpagetables-book3s64.o
- endif
- obj-$(CONFIG_PPC_HTDUMP)	+= dump_hashpagetable.o
-diff --git a/arch/powerpc/mm/dump_bats.c b/arch/powerpc/mm/dump_bats.c
-new file mode 100644
-index 000000000000..824a94ee9051
---- /dev/null
-+++ b/arch/powerpc/mm/dump_bats.c
-@@ -0,0 +1,176 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+/*
-+ * Copyright 2018, Christophe Leroy CS S.I.
-+ * <christophe.leroy@c-s.fr>
-+ *
-+ * This dumps the content of BATS
-+ */
-+
-+#include <linux/debugfs.h>
-+#include <linux/fs.h>
-+#include <linux/hugetlb.h>
-+#include <linux/io.h>
-+#include <linux/mm.h>
-+#include <linux/sched.h>
-+#include <linux/seq_file.h>
-+#include <asm/fixmap.h>
-+#include <asm/pgtable.h>
-+#include <linux/const.h>
-+#include <asm/page.h>
-+#include <asm/pgalloc.h>
-+
-+#include <asm/book3s/32/mmu-hash.h>
-+
-+static char *pp_601(int k, int pp)
-+{
-+	if (pp == 0)
-+		return k ? "NA" : "RWX";
-+	if (pp == 1)
-+		return k ? "ROX" : "RWX";
-+	if (pp == 2)
-+		return k ? "RWX" : "RWX";
-+	return k ? "ROX" : "ROX";
-+}
-+
-+static void bat_show_601(struct seq_file *m, int idx, u32 lower, u32 upper)
-+{
-+	u32 blpi = upper & 0xfffe0000;
-+	u32 k = (upper >> 2) & 3;
-+	u32 pp = upper & 3;
-+	u32 pbn = lower & 0xfffe0000;
-+	u32 bsm = lower & 0x3ff;
-+	u32 size = (bsm + 1) << 17;
-+
-+	seq_printf(m, "%d: ", idx);
-+	if (!(lower & 0x40)) {
-+		seq_puts(m, "        -\n");
-+		return;
-+	}
-+
-+	seq_printf(m, "0x%08x-0x%08x ", blpi, blpi + size - 1);
-+	seq_printf(m, "0x%08x ", pbn);
-+
-+	seq_printf(m, "Kernel %s User %s", pp_601(k & 2, pp), pp_601(k & 1, pp));
-+
-+	if (lower & _PAGE_WRITETHRU)
-+		seq_puts(m, "write through ");
-+	if (lower & _PAGE_NO_CACHE)
-+		seq_puts(m, "no cache ");
-+	if (lower & _PAGE_COHERENT)
-+		seq_puts(m, "coherent ");
-+	seq_puts(m, "\n");
-+}
-+
-+#define BAT_SHOW_601(_m, _n, _l, _u) bat_show_601(_m, _n, mfspr(_l), mfspr(_u))
-+
-+static int bats_show_601(struct seq_file *m, void *v)
-+{
-+	seq_puts(m, "Block Address Translation:\n");
-+
-+	BAT_SHOW_601(m, 0, SPRN_IBAT0L, SPRN_IBAT0U);
-+	BAT_SHOW_601(m, 1, SPRN_IBAT1L, SPRN_IBAT1U);
-+	BAT_SHOW_601(m, 2, SPRN_IBAT2L, SPRN_IBAT2U);
-+	BAT_SHOW_601(m, 3, SPRN_IBAT3L, SPRN_IBAT3U);
-+
-+	return 0;
-+}
-+
-+static void bat_show_603(struct seq_file *m, int idx, u32 lower, u32 upper, bool is_d)
-+{
-+	u32 bepi = upper & 0xfffe0000;
-+	u32 bl = (upper >> 2) & 0x7ff;
-+	u32 k = upper & 3;
-+	u32 brpn = lower & 0xfffe0000;
-+	u32 size = (bl + 1) << 17;
-+
-+	seq_printf(m, "%d: ", idx);
-+	if (k == 0) {
-+		seq_puts(m, "        -\n");
-+		return;
-+	}
-+
-+	seq_printf(m, "0x%08x-0x%08x ", bepi, bepi + size - 1);
-+	seq_printf(m, "0x%08x ", brpn);
-+
-+	if (k == 1)
-+		seq_puts(m, "User ");
-+	else if (k == 2)
-+		seq_puts(m, "Kernel ");
-+	else
-+		seq_puts(m, "Kernel/User ");
-+
-+	if (lower & BPP_RX)
-+		seq_puts(m, is_d ? "RO " : "EXEC ");
-+	else if (lower & BPP_RW)
-+		seq_puts(m, is_d ? "RW " : "EXEC ");
-+	else
-+		seq_puts(m, is_d ? "NA " : "NX   ");
-+
-+	if (lower & _PAGE_WRITETHRU)
-+		seq_puts(m, "write through ");
-+	if (lower & _PAGE_NO_CACHE)
-+		seq_puts(m, "no cache ");
-+	if (lower & _PAGE_COHERENT)
-+		seq_puts(m, "coherent ");
-+	if (lower & _PAGE_GUARDED)
-+		seq_puts(m, "guarded ");
-+	seq_puts(m, "\n");
-+}
-+
-+#define BAT_SHOW_603(_m, _n, _l, _u, _d) bat_show_603(_m, _n, mfspr(_l), mfspr(_u), _d)
-+
-+static int bats_show_603(struct seq_file *m, void *v)
-+{
-+	seq_puts(m, "Instruction Block Address Translation:\n");
-+
-+	BAT_SHOW_603(m, 0, SPRN_IBAT0L, SPRN_IBAT0U, false);
-+	BAT_SHOW_603(m, 1, SPRN_IBAT1L, SPRN_IBAT1U, false);
-+	BAT_SHOW_603(m, 2, SPRN_IBAT2L, SPRN_IBAT2U, false);
-+	BAT_SHOW_603(m, 3, SPRN_IBAT3L, SPRN_IBAT3U, false);
-+	if (mmu_has_feature(MMU_FTR_USE_HIGH_BATS)) {
-+		BAT_SHOW_603(m, 4, SPRN_IBAT4L, SPRN_IBAT4U, false);
-+		BAT_SHOW_603(m, 5, SPRN_IBAT5L, SPRN_IBAT5U, false);
-+		BAT_SHOW_603(m, 6, SPRN_IBAT6L, SPRN_IBAT6U, false);
-+		BAT_SHOW_603(m, 7, SPRN_IBAT7L, SPRN_IBAT7U, false);
-+	}
-+
-+	seq_puts(m, "\nData Block Address Translation:\n");
-+
-+	BAT_SHOW_603(m, 0, SPRN_DBAT0L, SPRN_DBAT0U, true);
-+	BAT_SHOW_603(m, 1, SPRN_DBAT1L, SPRN_DBAT1U, true);
-+	BAT_SHOW_603(m, 2, SPRN_DBAT2L, SPRN_DBAT2U, true);
-+	BAT_SHOW_603(m, 3, SPRN_DBAT3L, SPRN_DBAT3U, true);
-+	if (mmu_has_feature(MMU_FTR_USE_HIGH_BATS)) {
-+		BAT_SHOW_603(m, 4, SPRN_DBAT4L, SPRN_DBAT4U, true);
-+		BAT_SHOW_603(m, 5, SPRN_DBAT5L, SPRN_DBAT5U, true);
-+		BAT_SHOW_603(m, 6, SPRN_DBAT6L, SPRN_DBAT6U, true);
-+		BAT_SHOW_603(m, 7, SPRN_DBAT7L, SPRN_DBAT7U, true);
-+	}
-+
-+	return 0;
-+}
-+
-+static int bats_open(struct inode *inode, struct file *file)
-+{
-+	if (PVR_VER(mfspr(SPRN_PVR)) == 1)
-+		return single_open(file, bats_show_601, NULL);
-+
-+	return single_open(file, bats_show_603, NULL);
-+}
-+
-+static const struct file_operations bats_fops = {
-+	.open		= bats_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+};
-+
-+static int bats_init(void)
-+{
-+	struct dentry *debugfs_file;
-+
-+	debugfs_file = debugfs_create_file("block_address_translation", 0400,
-+					   NULL, NULL, &bats_fops);
-+	return debugfs_file ? 0 : -ENOMEM;
-+}
-+device_initcall(bats_init);
+diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
+index f2515674a1e2..dc3ffefbc070 100644
+--- a/arch/powerpc/configs/ppc64_defconfig
++++ b/arch/powerpc/configs/ppc64_defconfig
+@@ -284,7 +284,7 @@ CONFIG_REISERFS_FS_SECURITY=y
+ CONFIG_JFS_FS=m
+ CONFIG_JFS_POSIX_ACL=y
+ CONFIG_JFS_SECURITY=y
+-CONFIG_XFS_FS=m
++CONFIG_XFS_FS=y
+ CONFIG_XFS_POSIX_ACL=y
+ CONFIG_BTRFS_FS=m
+ CONFIG_BTRFS_FS_POSIX_ACL=y
+@@ -369,3 +369,13 @@ CONFIG_KVM_BOOK3S_64=m
+ CONFIG_KVM_BOOK3S_64_HV=m
+ CONFIG_VHOST_NET=m
+ CONFIG_PRINTK_TIME=y
++CONFIG_CGROUP_SCHED=y
++CONFIG_MEMCG=y
++CONFIG_CGROUP_SCHED=y
++CONFIG_CGROUP_FREEZER=y
++CONFIG_CGROUP_DEVICE=y
++CONFIG_CGROUP_CPUACCT=y
++CONFIG_CGROUP_PERF=y
++CONFIG_MEMORY_HOTPLUG=y
++CONFIG_MEMORY_HOTREMOVE=y
++CONFIG_NUMA_BALANCING=y
 -- 
-2.13.3
+2.17.2
 
