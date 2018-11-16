@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 68A54C43441
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Nov 2018 16:56:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A9B8C43441
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Nov 2018 17:08:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BC2D62086B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Nov 2018 16:56:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BC2D62086B
+	by mail.kernel.org (Postfix) with ESMTPS id 79B5720811
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Nov 2018 17:08:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 79B5720811
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42xPXJ3BRpzF3nw
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Nov 2018 03:56:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42xPny3DrbzF3mT
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Nov 2018 04:08:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
@@ -29,38 +29,37 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42xPV7423YzF3nL
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Nov 2018 03:54:54 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42xPlq5QgkzF3nR
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Nov 2018 04:06:47 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 42xPTz1DSWz9vBKQ;
- Fri, 16 Nov 2018 17:54:47 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 42xPlk1sfgz9vBmn;
+ Fri, 16 Nov 2018 18:06:42 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id Px3HUtjvAEGn; Fri, 16 Nov 2018 17:54:47 +0100 (CET)
+ with ESMTP id GPpubZAbHbOS; Fri, 16 Nov 2018 18:06:42 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 42xPTz0cmYz9vBJl;
- Fri, 16 Nov 2018 17:54:47 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 42xPlk1Jgqz9vBLK;
+ Fri, 16 Nov 2018 18:06:42 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id E4DAF8B91D;
- Fri, 16 Nov 2018 17:54:48 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 0A0308B91D;
+ Fri, 16 Nov 2018 18:06:44 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id eAYHiv2AzpZG; Fri, 16 Nov 2018 17:54:48 +0100 (CET)
+ with ESMTP id E4rQYU0K49P3; Fri, 16 Nov 2018 18:06:43 +0100 (CET)
 Received: from po14163vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
  [172.25.231.2])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id BB2978B8C0;
- Fri, 16 Nov 2018 17:54:48 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id C9E508B8C0;
+ Fri, 16 Nov 2018 18:06:43 +0100 (CET)
 Received: by po14163vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 9020969A5C; Fri, 16 Nov 2018 16:54:48 +0000 (UTC)
-Message-Id: <86ecfb83881b514cb1f6ec17f8edb84596939e09.1542348352.git.christophe.leroy@c-s.fr>
+ id B897969A5C; Fri, 16 Nov 2018 17:06:43 +0000 (UTC)
+Message-Id: <535d3d1838d3599d4f7535a92e3b7872102f9ff4.1542387964.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2] powerpc/mm: dump block address translation on book3s/32
+Subject: [PATCH] powerpc/mm: dump segment registers on book3s/32
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
- npiggin@gmail.com, rashmicy@gmail.com
-Date: Fri, 16 Nov 2018 16:54:48 +0000 (UTC)
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Fri, 16 Nov 2018 17:06:43 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,259 +76,120 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch adds a debugfs file to dump block address translation:
+This patch creates a debugfs file to see content of
+segment registers
 
-~# cat /sys/kernel/debug/block_address_translation
-Instruction Block Address Translations:
-0:         -
-1:         -
-2: 0xc0000000-0xcfffffff 0x00000000 Kernel EXEC coherent
-3: 0xd0000000-0xdfffffff 0x10000000 Kernel EXEC coherent
-4:         -
-5:         -
-6:         -
-7:         -
+~# cat /sys/kernel/debug/segment_registers
+---[ User Segments ]---
+0x00000000-0x0fffffff Kern key 1 User key 1 VSID 0xade2b0
+0x10000000-0x1fffffff Kern key 1 User key 1 VSID 0xade3c1
+0x20000000-0x2fffffff Kern key 1 User key 1 VSID 0xade4d2
+0x30000000-0x3fffffff Kern key 1 User key 1 VSID 0xade5e3
+0x40000000-0x4fffffff Kern key 1 User key 1 VSID 0xade6f4
+0x50000000-0x5fffffff Kern key 1 User key 1 VSID 0xade805
+0x60000000-0x6fffffff Kern key 1 User key 1 VSID 0xade916
+0x70000000-0x7fffffff Kern key 1 User key 1 VSID 0xadea27
+0x80000000-0x8fffffff Kern key 1 User key 1 VSID 0xadeb38
+0x90000000-0x9fffffff Kern key 1 User key 1 VSID 0xadec49
+0xa0000000-0xafffffff Kern key 1 User key 1 VSID 0xaded5a
+0xb0000000-0xbfffffff Kern key 1 User key 1 VSID 0xadee6b
 
-Data Block Address Translations:
-0:         -
-1:         -
-2: 0xc0000000-0xcfffffff 0x00000000 Kernel RW coherent
-3: 0xd0000000-0xdfffffff 0x10000000 Kernel RW coherent
-4:         -
-5:         -
-6:         -
-7:         -
+---[ Kernel Segments ]---
+0xc0000000-0xcfffffff Kern key 0 User key 1 VSID 0x000ccc
+0xd0000000-0xdfffffff Kern key 0 User key 1 VSID 0x000ddd
+0xe0000000-0xefffffff Kern key 0 User key 1 VSID 0x000eee
+0xf0000000-0xffffffff Kern key 0 User key 1 VSID 0x000fff
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- Fixed phys address display for CONFIG_PHYS_64BIT
+ arch/powerpc/mm/Makefile  |  2 +-
+ arch/powerpc/mm/dump_sr.c | 64 +++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 65 insertions(+), 1 deletion(-)
+ create mode 100644 arch/powerpc/mm/dump_sr.c
 
- arch/powerpc/include/asm/book3s/32/mmu-hash.h |   4 +
- arch/powerpc/mm/Makefile                      |   2 +-
- arch/powerpc/mm/dump_bats.c                   | 184 ++++++++++++++++++++++++++
- 3 files changed, 189 insertions(+), 1 deletion(-)
- create mode 100644 arch/powerpc/mm/dump_bats.c
-
-diff --git a/arch/powerpc/include/asm/book3s/32/mmu-hash.h b/arch/powerpc/include/asm/book3s/32/mmu-hash.h
-index e38c91388c40..f32fd1b14cf0 100644
---- a/arch/powerpc/include/asm/book3s/32/mmu-hash.h
-+++ b/arch/powerpc/include/asm/book3s/32/mmu-hash.h
-@@ -34,8 +34,12 @@
- #define BAT_PHYS_ADDR(x) ((u32)((x & 0x00000000fffe0000ULL) | \
- 				((x & 0x0000000e00000000ULL) >> 24) | \
- 				((x & 0x0000000100000000ULL) >> 30)))
-+#define PHYS_BAT_ADDR(x) (((u64)(x) & 0x00000000fffe0000ULL) | \
-+			  (((u64)(x) << 24) & 0x0000000e00000000ULL) | \
-+			  (((u64)(x) << 30) & 0x0000000100000000ULL))
- #else
- #define BAT_PHYS_ADDR(x) (x)
-+#define PHYS_BAT_ADDR(x) (x)
- #endif
- 
- struct ppc_bat {
 diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
-index ca96e7be4d0e..2adad10b5856 100644
+index 2adad10b5856..cf3e99ceb420 100644
 --- a/arch/powerpc/mm/Makefile
 +++ b/arch/powerpc/mm/Makefile
 @@ -47,7 +47,7 @@ ifdef CONFIG_PPC_PTDUMP
  obj-$(CONFIG_4xx)		+= dump_linuxpagetables-generic.o
  obj-$(CONFIG_PPC_8xx)		+= dump_linuxpagetables-8xx.o
  obj-$(CONFIG_PPC_BOOK3E_MMU)	+= dump_linuxpagetables-generic.o
--obj-$(CONFIG_PPC_BOOK3S_32)	+= dump_linuxpagetables-generic.o
-+obj-$(CONFIG_PPC_BOOK3S_32)	+= dump_linuxpagetables-generic.o dump_bats.o
+-obj-$(CONFIG_PPC_BOOK3S_32)	+= dump_linuxpagetables-generic.o dump_bats.o
++obj-$(CONFIG_PPC_BOOK3S_32)	+= dump_linuxpagetables-generic.o dump_bats.o dump_sr.o
  obj-$(CONFIG_PPC_BOOK3S_64)	+= dump_linuxpagetables-book3s64.o
  endif
  obj-$(CONFIG_PPC_HTDUMP)	+= dump_hashpagetable.o
-diff --git a/arch/powerpc/mm/dump_bats.c b/arch/powerpc/mm/dump_bats.c
+diff --git a/arch/powerpc/mm/dump_sr.c b/arch/powerpc/mm/dump_sr.c
 new file mode 100644
-index 000000000000..4687414e39fc
+index 000000000000..057b60bcb6fc
 --- /dev/null
-+++ b/arch/powerpc/mm/dump_bats.c
-@@ -0,0 +1,184 @@
++++ b/arch/powerpc/mm/dump_sr.c
+@@ -0,0 +1,64 @@
 +// SPDX-License-Identifier: GPL-2.0+
 +/*
 + * Copyright 2018, Christophe Leroy CS S.I.
 + * <christophe.leroy@c-s.fr>
 + *
-+ * This dumps the content of BATS
++ * This dumps the content of Segment Registers
 + */
 +
 +#include <linux/debugfs.h>
-+#include <linux/fs.h>
-+#include <linux/hugetlb.h>
-+#include <linux/io.h>
-+#include <linux/mm.h>
-+#include <linux/sched.h>
-+#include <linux/seq_file.h>
-+#include <asm/fixmap.h>
-+#include <asm/pgtable.h>
-+#include <linux/const.h>
-+#include <asm/page.h>
-+#include <asm/pgalloc.h>
 +
-+#include <asm/book3s/32/mmu-hash.h>
-+
-+static char *pp_601(int k, int pp)
++static void seg_show(struct seq_file *m, int i)
 +{
-+	if (pp == 0)
-+		return k ? "NA" : "RWX";
-+	if (pp == 1)
-+		return k ? "ROX" : "RWX";
-+	if (pp == 2)
-+		return k ? "RWX" : "RWX";
-+	return k ? "ROX" : "ROX";
-+}
++	u32 val = mfsrin(i << 28);
 +
-+static void bat_show_601(struct seq_file *m, int idx, u32 lower, u32 upper)
-+{
-+	u32 blpi = upper & 0xfffe0000;
-+	u32 k = (upper >> 2) & 3;
-+	u32 pp = upper & 3;
-+	phys_addr_t pbn = PHYS_BAT_ADDR(lower);
-+	u32 bsm = lower & 0x3ff;
-+	u32 size = (bsm + 1) << 17;
-+
-+	seq_printf(m, "%d: ", idx);
-+	if (!(lower & 0x40)) {
-+		seq_puts(m, "        -\n");
-+		return;
++	seq_printf(m, "0x%01x0000000-0x%01xfffffff ", i, i);
++	seq_printf(m, "Kern key %d ", (val >> 30) & 1);
++	seq_printf(m, "User key %d ", (val >> 29) & 1);
++	if (val & 0x80000000) {
++		seq_printf(m, "Device 0x%03x", (val >> 20) & 0x1ff);
++		seq_printf(m, "-0x%05x", val & 0xfffff);
++	} else {
++		if (val & 0x10000000)
++			seq_puts(m, "No Exec ");
++		seq_printf(m, "VSID 0x%06x", val & 0xffffff);
 +	}
-+
-+	seq_printf(m, "0x%08x-0x%08x ", blpi, blpi + size - 1);
-+#ifdef CONFIG_PHYS_64BIT
-+	seq_printf(m, "0x%016llx ", pbn);
-+#else
-+	seq_printf(m, "0x%08x ", pbn);
-+#endif
-+
-+	seq_printf(m, "Kernel %s User %s", pp_601(k & 2, pp), pp_601(k & 1, pp));
-+
-+	if (lower & _PAGE_WRITETHRU)
-+		seq_puts(m, "write through ");
-+	if (lower & _PAGE_NO_CACHE)
-+		seq_puts(m, "no cache ");
-+	if (lower & _PAGE_COHERENT)
-+		seq_puts(m, "coherent ");
 +	seq_puts(m, "\n");
 +}
 +
-+#define BAT_SHOW_601(_m, _n, _l, _u) bat_show_601(_m, _n, mfspr(_l), mfspr(_u))
-+
-+static int bats_show_601(struct seq_file *m, void *v)
++static int sr_show(struct seq_file *m, void *v)
 +{
-+	seq_puts(m, "Block Address Translation:\n");
++	int i;
 +
-+	BAT_SHOW_601(m, 0, SPRN_IBAT0L, SPRN_IBAT0U);
-+	BAT_SHOW_601(m, 1, SPRN_IBAT1L, SPRN_IBAT1U);
-+	BAT_SHOW_601(m, 2, SPRN_IBAT2L, SPRN_IBAT2U);
-+	BAT_SHOW_601(m, 3, SPRN_IBAT3L, SPRN_IBAT3U);
++	seq_puts(m, "---[ User Segments ]---\n");
++	for (i = 0; i < TASK_SIZE >> 28; i++)
++		seg_show(m, i);
++
++	seq_puts(m, "\n---[ Kernel Segments ]---\n");
++	for (; i < 16; i++)
++		seg_show(m, i);
 +
 +	return 0;
 +}
 +
-+static void bat_show_603(struct seq_file *m, int idx, u32 lower, u32 upper, bool is_d)
++static int sr_open(struct inode *inode, struct file *file)
 +{
-+	u32 bepi = upper & 0xfffe0000;
-+	u32 bl = (upper >> 2) & 0x7ff;
-+	u32 k = upper & 3;
-+	phys_addr_t brpn = PHYS_BAT_ADDR(lower);
-+	u32 size = (bl + 1) << 17;
-+
-+	seq_printf(m, "%d: ", idx);
-+	if (k == 0) {
-+		seq_puts(m, "        -\n");
-+		return;
-+	}
-+
-+	seq_printf(m, "0x%08x-0x%08x ", bepi, bepi + size - 1);
-+#ifdef CONFIG_PHYS_64BIT
-+	seq_printf(m, "0x%016llx ", brpn);
-+#else
-+	seq_printf(m, "0x%08x ", brpn);
-+#endif
-+
-+	if (k == 1)
-+		seq_puts(m, "User ");
-+	else if (k == 2)
-+		seq_puts(m, "Kernel ");
-+	else
-+		seq_puts(m, "Kernel/User ");
-+
-+	if (lower & BPP_RX)
-+		seq_puts(m, is_d ? "RO " : "EXEC ");
-+	else if (lower & BPP_RW)
-+		seq_puts(m, is_d ? "RW " : "EXEC ");
-+	else
-+		seq_puts(m, is_d ? "NA " : "NX   ");
-+
-+	if (lower & _PAGE_WRITETHRU)
-+		seq_puts(m, "write through ");
-+	if (lower & _PAGE_NO_CACHE)
-+		seq_puts(m, "no cache ");
-+	if (lower & _PAGE_COHERENT)
-+		seq_puts(m, "coherent ");
-+	if (lower & _PAGE_GUARDED)
-+		seq_puts(m, "guarded ");
-+	seq_puts(m, "\n");
++	return single_open(file, sr_show, NULL);
 +}
 +
-+#define BAT_SHOW_603(_m, _n, _l, _u, _d) bat_show_603(_m, _n, mfspr(_l), mfspr(_u), _d)
-+
-+static int bats_show_603(struct seq_file *m, void *v)
-+{
-+	seq_puts(m, "Instruction Block Address Translation:\n");
-+
-+	BAT_SHOW_603(m, 0, SPRN_IBAT0L, SPRN_IBAT0U, false);
-+	BAT_SHOW_603(m, 1, SPRN_IBAT1L, SPRN_IBAT1U, false);
-+	BAT_SHOW_603(m, 2, SPRN_IBAT2L, SPRN_IBAT2U, false);
-+	BAT_SHOW_603(m, 3, SPRN_IBAT3L, SPRN_IBAT3U, false);
-+	if (mmu_has_feature(MMU_FTR_USE_HIGH_BATS)) {
-+		BAT_SHOW_603(m, 4, SPRN_IBAT4L, SPRN_IBAT4U, false);
-+		BAT_SHOW_603(m, 5, SPRN_IBAT5L, SPRN_IBAT5U, false);
-+		BAT_SHOW_603(m, 6, SPRN_IBAT6L, SPRN_IBAT6U, false);
-+		BAT_SHOW_603(m, 7, SPRN_IBAT7L, SPRN_IBAT7U, false);
-+	}
-+
-+	seq_puts(m, "\nData Block Address Translation:\n");
-+
-+	BAT_SHOW_603(m, 0, SPRN_DBAT0L, SPRN_DBAT0U, true);
-+	BAT_SHOW_603(m, 1, SPRN_DBAT1L, SPRN_DBAT1U, true);
-+	BAT_SHOW_603(m, 2, SPRN_DBAT2L, SPRN_DBAT2U, true);
-+	BAT_SHOW_603(m, 3, SPRN_DBAT3L, SPRN_DBAT3U, true);
-+	if (mmu_has_feature(MMU_FTR_USE_HIGH_BATS)) {
-+		BAT_SHOW_603(m, 4, SPRN_DBAT4L, SPRN_DBAT4U, true);
-+		BAT_SHOW_603(m, 5, SPRN_DBAT5L, SPRN_DBAT5U, true);
-+		BAT_SHOW_603(m, 6, SPRN_DBAT6L, SPRN_DBAT6U, true);
-+		BAT_SHOW_603(m, 7, SPRN_DBAT7L, SPRN_DBAT7U, true);
-+	}
-+
-+	return 0;
-+}
-+
-+static int bats_open(struct inode *inode, struct file *file)
-+{
-+	if (PVR_VER(mfspr(SPRN_PVR)) == 1)
-+		return single_open(file, bats_show_601, NULL);
-+
-+	return single_open(file, bats_show_603, NULL);
-+}
-+
-+static const struct file_operations bats_fops = {
-+	.open		= bats_open,
++static const struct file_operations sr_fops = {
++	.open		= sr_open,
 +	.read		= seq_read,
 +	.llseek		= seq_lseek,
 +	.release	= single_release,
 +};
 +
-+static int bats_init(void)
++static int sr_init(void)
 +{
 +	struct dentry *debugfs_file;
 +
-+	debugfs_file = debugfs_create_file("block_address_translation", 0400,
-+					   NULL, NULL, &bats_fops);
++	debugfs_file = debugfs_create_file("segment_registers", 0400,
++					   NULL, NULL, &sr_fops);
 +	return debugfs_file ? 0 : -ENOMEM;
 +}
-+device_initcall(bats_init);
++device_initcall(sr_init);
 -- 
 2.13.3
 
