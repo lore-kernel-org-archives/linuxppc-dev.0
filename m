@@ -3,22 +3,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DDFF3C43441
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Nov 2018 17:29:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6CA39C43441
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Nov 2018 17:33:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 62B0F2086A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Nov 2018 17:29:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 62B0F2086A
+	by mail.kernel.org (Postfix) with ESMTPS id 18ED72086A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Nov 2018 17:33:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 18ED72086A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42xQG21D1XzF3n8
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Nov 2018 04:29:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42xQLx1lxYzF3cQ
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Nov 2018 04:33:45 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
@@ -29,37 +29,37 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42xQD257lpzF3mw
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Nov 2018 04:27:46 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42xQJ00XHGzF3n3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Nov 2018 04:31:12 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 42xQCw6BStz9vGlC;
- Fri, 16 Nov 2018 18:27:40 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 42xQHt5FC9z9vGlC;
+ Fri, 16 Nov 2018 18:31:06 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id WFsSHN8fQYTG; Fri, 16 Nov 2018 18:27:40 +0100 (CET)
+ with ESMTP id YR8AwZ7gqPNH; Fri, 16 Nov 2018 18:31:06 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 42xQCw5dGpz9vGl5;
- Fri, 16 Nov 2018 18:27:40 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 42xQHt4dk8z9vGl5;
+ Fri, 16 Nov 2018 18:31:06 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A8D2C8B91D;
- Fri, 16 Nov 2018 18:27:42 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 873998B91D;
+ Fri, 16 Nov 2018 18:31:08 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id J5wza_g4Fw2Y; Fri, 16 Nov 2018 18:27:42 +0100 (CET)
+ with ESMTP id 0VYfJiC49_Kx; Fri, 16 Nov 2018 18:31:08 +0100 (CET)
 Received: from po14163vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
  [172.25.231.2])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 8BEA58B8C0;
- Fri, 16 Nov 2018 18:27:42 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 62B0C8B8C0;
+ Fri, 16 Nov 2018 18:31:08 +0100 (CET)
 Received: by po14163vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 7F8F069A60; Fri, 16 Nov 2018 17:27:42 +0000 (UTC)
-Message-Id: <6d1eb005328a8a4608fbed8628e04f493b1c6ce2.1542389250.git.christophe.leroy@c-s.fr>
+ id 5437B69A60; Fri, 16 Nov 2018 17:31:08 +0000 (UTC)
+Message-Id: <f43ca1b7b458d78efc798bf50c335bcab2de4c22.1542389457.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc/book3s/32: fix number of bats in p/v_block_mapped()
+Subject: [PATCH] powerpc/xmon: fix dump_segments()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Fri, 16 Nov 2018 17:27:42 +0000 (UTC)
+Date: Fri, 16 Nov 2018 17:31:08 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,36 +76,26 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch fixes the loop in p_block_mapped() and v_block_mapped()
-to scan the entire bat_addrs[] array.
+mfsrin() takes segment num from bits 0-3
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/mm/ppc_mmu_32.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/xmon/xmon.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/mm/ppc_mmu_32.c b/arch/powerpc/mm/ppc_mmu_32.c
-index cacc43ee5f15..8e1fdea640cd 100644
---- a/arch/powerpc/mm/ppc_mmu_32.c
-+++ b/arch/powerpc/mm/ppc_mmu_32.c
-@@ -52,7 +52,7 @@ struct batrange {		/* stores address ranges mapped by BATs */
- phys_addr_t v_block_mapped(unsigned long va)
- {
- 	int b;
--	for (b = 0; b < 4; ++b)
-+	for (b = 0; b < ARRAY_SIZE(bat_addrs); ++b)
- 		if (va >= bat_addrs[b].start && va < bat_addrs[b].limit)
- 			return bat_addrs[b].phys + (va - bat_addrs[b].start);
- 	return 0;
-@@ -64,7 +64,7 @@ phys_addr_t v_block_mapped(unsigned long va)
- unsigned long p_block_mapped(phys_addr_t pa)
- {
- 	int b;
--	for (b = 0; b < 4; ++b)
-+	for (b = 0; b < ARRAY_SIZE(bat_addrs); ++b)
- 		if (pa >= bat_addrs[b].phys
- 	    	    && pa < (bat_addrs[b].limit-bat_addrs[b].start)
- 		              +bat_addrs[b].phys)
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index 36b8dc47a3c3..b2fe422ffffc 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -3502,7 +3502,7 @@ void dump_segments(void)
+ 
+ 	printf("sr0-15 =");
+ 	for (i = 0; i < 16; ++i)
+-		printf(" %x", mfsrin(i));
++		printf(" %x", mfsrin(i << 28));
+ 	printf("\n");
+ }
+ #endif
 -- 
 2.13.3
 
