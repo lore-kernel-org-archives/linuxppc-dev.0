@@ -2,46 +2,66 @@ Return-Path: <SRS0=5aIK=N3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.0 required=3.0
-	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PULL_REQUEST,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 798B3C43441
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Nov 2018 12:04:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 279D6C43441
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Nov 2018 12:40:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BF1502087C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Nov 2018 12:04:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BF1502087C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 7CA3C2087C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Nov 2018 12:40:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7CA3C2087C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ACULAB.COM
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42xH2m1gTMzDr8p
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Nov 2018 23:04:16 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 42xHrC2HrXzF3hQ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Nov 2018 23:40:11 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ACULAB.COM
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=aculab.com
+ (client-ip=207.82.80.151; helo=eu-smtp-delivery-151.mimecast.com;
+ envelope-from=david.laight@aculab.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=ACULAB.COM
+Received: from eu-smtp-delivery-151.mimecast.com
+ (eu-smtp-delivery-151.mimecast.com [207.82.80.151])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42xGz8716vzF3mR
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Nov 2018 23:01:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 42xGz70vT8z9sBn;
- Fri, 16 Nov 2018 23:01:07 +1100 (AEDT)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.20-3 tag
-Date: Fri, 16 Nov 2018 23:01:02 +1100
-Message-ID: <87in0x2pvl.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42xHmY3DS8zF3mq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Nov 2018 23:36:59 +1100 (AEDT)
+Received: from AcuMS.aculab.com (156.67.243.126 [156.67.243.126]) (Using
+ TLS) by relay.mimecast.com with ESMTP id
+ uk-mta-110-sHBmeO1DNEmY3fg_B1RTqw-1; Fri, 16 Nov 2018 12:36:54 +0000
+Received: from AcuMS.Aculab.com (fd9f:af1c:a25b::d117) by AcuMS.aculab.com
+ (fd9f:af1c:a25b::d117) with Microsoft SMTP Server (TLS) id 15.0.1347.2; Fri,
+ 16 Nov 2018 12:37:00 +0000
+Received: from AcuMS.Aculab.com ([fe80::43c:695e:880f:8750]) by
+ AcuMS.aculab.com ([fe80::43c:695e:880f:8750%12]) with mapi id 15.00.1347.000; 
+ Fri, 16 Nov 2018 12:37:00 +0000
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Alexandru Gagniuc' <mr.nuke.me@gmail.com>, "helgaas@google.com"
+ <helgaas@google.com>
+Subject: RE: [PATCH 0/2] PCI/AER: Consistently use _OSC to determine who owns
+ AER
+Thread-Topic: [PATCH 0/2] PCI/AER: Consistently use _OSC to determine who owns
+ AER
+Thread-Index: AQHUfTk7lFmreXBXOEO6S+wDoXDgXaVSVjAw
+Date: Fri, 16 Nov 2018 12:37:00 +0000
+Message-ID: <ab363e80d45e4c3d91770c1b1010d1ce@AcuMS.aculab.com>
+References: <20181115231605.24352-1-mr.nuke.me@gmail.com>
+In-Reply-To: <20181115231605.24352-1-mr.nuke.me@gmail.com>
+Accept-Language: en-GB, en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-exchange-transport-fromentityheader: Hosted
+x-originating-ip: [10.202.205.107]
 MIME-Version: 1.0
-Content-Type: text/plain
+X-MC-Unique: sHBmeO1DNEmY3fg_B1RTqw-1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -53,110 +73,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alistair@popple.id.au, linux-kernel@vger.kernel.org, npiggin@gmail.com,
- gromero@linux.vnet.ibm.com, oss@buserror.net, sathnaga@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: "alex_gagniuc@dellteam.com" <alex_gagniuc@dellteam.com>,
+ Sam Bobroff <sbobroff@linux.ibm.com>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "Shyam_Iyer@Dell.com" <Shyam_Iyer@Dell.com>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "keith.busch@intel.com" <keith.busch@intel.com>,
+ "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+ "lukas@wunner.de" <lukas@wunner.de>, Oliver O'Halloran <oohall@gmail.com>,
+ Bjorn Helgaas <bhelgaas@google.com>,
+ "austin_bolen@dell.com" <austin_bolen@dell.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Len Brown <lenb@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+From: Alexandru Gagniuc
+> Sent: 15 November 2018 23:16
+...
+> I've asked around a few people at Dell and they unanimously agree that
+> _OSC is the correct way to determine ownership of AER.
 
-Hi Linus,
+This is all very well, but we have systems (they might be Dell ones)
+where failure of a PCIe link (even when all the drivers are removed)
+causes an NMI - and crashes the kernel.
 
-Please pull some more powerpc fixes for 4.20:
+There are other systems which have AER registers available for
+some of the PCIe devices, but the BIOS ignores them and _OSC
+doesn't let the kernel take control.
+In this case the AER registers can contain useful information
+after a read returns ~0u.
+It would be useful to be able to get this information without
+having to grovel through all the PCIe config space.
 
-The following changes since commit 651022382c7f8da46cb4872a545ee1da6d097d2a:
+=09David
 
-  Linux 4.20-rc1 (2018-11-04 15:37:52 -0800)
+-
+Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1=
+PT, UK
+Registration No: 1397386 (Wales)
 
-are available in the git repository at:
-
-  https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-4.20-3
-
-for you to fetch changes up to b2fed34a628df6118b5d4e13f49a33e15f704fa9:
-
-  selftests/powerpc: Adjust wild_bctr to build with old binutils (2018-11-15 23:05:17 +1100)
-
-- ------------------------------------------------------------------
-powerpc fixes for 4.20 #3
-
-Two weeks worth of fixes since rc1.
-
- - I broke 16-byte alignment of the stack when we moved PPR into pt_regs.
-   Despite being required by the ABI this broke almost nothing, we eventually
-   hit it in code where GCC does arithmetic on the stack pointer assuming the
-   bottom 4 bits are clear. Fix it by padding the in-kernel pt_regs by 8 bytes.
-
- - A couple of commits fixing minor bugs in the recent SLB rewrite.
-
- - A build fix related to tracepoints in KVM in some configurations.
-
- - Our old "IO workarounds" code written for Cell couldn't coexist in a kernel
-   that runs on Power9 with the Radix MMU, fix that.
-
- - Remove the NPU DMA ops, these just printed a warning and should never have
-   been called.
-
- - Suppress an overly chatty message triggered by CPU hotplug in some configs.
-
- - Two small selftest fixes.
-
-Thanks to:
-  Alistair Popple, Gustavo Romero, Nicholas Piggin, Satheesh Rajendran, Scott Wood.
-
-- ------------------------------------------------------------------
-Alistair Popple (1):
-      powerpc/powernv/npu: Remove NPU DMA ops
-
-Gustavo Romero (1):
-      selftests/powerpc: Adjust wild_bctr to build with old binutils
-
-Michael Ellerman (6):
-      powerpc/mm/64s: Consolidate SLB assertions
-      powerpc/mm/64s: Use PPC_SLBFEE macro
-      powerpc/mm/64s: Only use slbfee on CPUs that support it
-      powerpc/mm/64s: Fix preempt warning in slb_allocate_kernel()
-      powerpc/io: Fix the IO workarounds code to work with Radix
-      selftests/powerpc: Fix wild_bctr test to work on ppc64
-
-Nicholas Piggin (1):
-      powerpc/64: Fix kernel stack 16-byte alignment
-
-Satheesh Rajendran (1):
-      powerpc/numa: Suppress "VPHN is not supported" messages
-
-Scott Wood (1):
-      KVM: PPC: Move and undef TRACE_INCLUDE_PATH/FILE
-
-
- arch/powerpc/include/asm/io.h                  | 20 +++-----
- arch/powerpc/include/asm/ppc-opcode.h          |  2 +
- arch/powerpc/include/asm/ptrace.h              |  1 +
- arch/powerpc/kernel/setup_64.c                 |  2 +
- arch/powerpc/kvm/trace.h                       |  8 +++-
- arch/powerpc/kvm/trace_booke.h                 |  9 +++-
- arch/powerpc/kvm/trace_hv.h                    |  9 +++-
- arch/powerpc/kvm/trace_pr.h                    |  9 +++-
- arch/powerpc/mm/numa.c                         |  2 +-
- arch/powerpc/mm/slb.c                          | 35 ++++++--------
- arch/powerpc/platforms/powernv/npu-dma.c       | 64 ++------------------------
- tools/testing/selftests/powerpc/mm/wild_bctr.c | 21 +++++++--
- 12 files changed, 76 insertions(+), 106 deletions(-)
------BEGIN PGP SIGNATURE-----
-
-iQIcBAEBAgAGBQJb7rB9AAoJEFHr6jzI4aWA7uYP/2bbEUaIpGw2OP5AxedSWtIh
-7RBX5rtzC8sA+ifpI7utcz8woOH+8HmzXf3f0BsjLlDZO61dCBzPM8yEkgiHmEMH
-t1ApMKCUkwTI1R+1somVhyV2fYct+Eb9Qa929IIKqgC5r8nElYqaE7jr56U7jFQE
-TZwMoeThTGxfXMa+IuSWLGtvbUeC6LtKoWjoynnZQC4RMQqKRc8xaRpN5W//ZQyq
-dtQ8kc9UWrSl5xj5ah/evn/0oWl1cSX95juO00rGsTL5iuUQNcUVZcJAmwoiPAN/
-GCNYDLqEX8SwzKidnAmTR6AUBSLP48kGKrUwjMZVfvT0SMNyIL9lq9u6N5ucyq+u
-b0HLMrlqZiYasL3fsKHo+dbJ1emzZdjMIYNe/x+6GAgfBTvRePkqVwLgB1uSOjdr
-k41aDRaoagOUbIs6y6tXHyp/mFbP3VswBA9n1ZGjr/KsgrlBQftCTOeSuPKSdAf+
-WKrzakoj4SIvOZdUGbttb0HJHFHE5xCGIzGH7NaO/AyfFzkIZjq86TU4skqN0nQw
-lgHNA9QgXlpBMwRvEBM28FW058bsVw7Dgez/vJijlEQNC7fi6TDJTzYiroBEdmF4
-82FEUU9ZECw+zb6OI7E3VntTqWdM8E3qCGI9tLoCrFpoagERHfayTTsW7iQJ/Scj
-dTL6b40yqw88T+myURIZ
-=lNgM
------END PGP SIGNATURE-----
