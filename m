@@ -2,48 +2,65 @@ Return-Path: <SRS0=5aIK=N3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 11C02C43441
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Nov 2018 12:50:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 68A54C43441
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Nov 2018 16:56:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8FAC92087C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Nov 2018 12:50:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8FAC92087C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id BC2D62086B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Nov 2018 16:56:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BC2D62086B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42xJ4b6zPKzF3nd
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Nov 2018 23:50:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 42xPXJ3BRpzF3nw
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Nov 2018 03:56:48 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42xJ013XKjzF3nC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Nov 2018 23:46:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 42xHzz4Bftz9sBn;
- Fri, 16 Nov 2018 23:46:55 +1100 (AEDT)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Sandipan Das <sandipan@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH] powerpc/64: Fix kernel stack 16-byte alignment
-In-Reply-To: <6627fcee-17c9-4e04-35c8-898663aac85c@linux.ibm.com>
-References: <20181115023427.31033-1-npiggin@gmail.com>
- <6627fcee-17c9-4e04-35c8-898663aac85c@linux.ibm.com>
-Date: Fri, 16 Nov 2018 23:46:55 +1100
-Message-ID: <87a7m92nr4.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42xPV7423YzF3nL
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Nov 2018 03:54:54 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 42xPTz1DSWz9vBKQ;
+ Fri, 16 Nov 2018 17:54:47 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id Px3HUtjvAEGn; Fri, 16 Nov 2018 17:54:47 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 42xPTz0cmYz9vBJl;
+ Fri, 16 Nov 2018 17:54:47 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E4DAF8B91D;
+ Fri, 16 Nov 2018 17:54:48 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id eAYHiv2AzpZG; Fri, 16 Nov 2018 17:54:48 +0100 (CET)
+Received: from po14163vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
+ [172.25.231.2])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id BB2978B8C0;
+ Fri, 16 Nov 2018 17:54:48 +0100 (CET)
+Received: by po14163vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 9020969A5C; Fri, 16 Nov 2018 16:54:48 +0000 (UTC)
+Message-Id: <86ecfb83881b514cb1f6ec17f8edb84596939e09.1542348352.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v2] powerpc/mm: dump block address translation on book3s/32
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
+ npiggin@gmail.com, rashmicy@gmail.com
+Date: Fri, 16 Nov 2018 16:54:48 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,59 +72,264 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Ravi Bangoria <ravi.bangoria@linux.ibm.com>,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Sandipan Das <sandipan@linux.ibm.com> writes:
+This patch adds a debugfs file to dump block address translation:
 
-> On 15/11/18 8:04 AM, Nicholas Piggin wrote:
->> Commit 4c2de74cc869 ("powerpc/64: Interrupts save PPR on stack rather
->> than thread_struct") changed sizeof(struct pt_regs) % 16 from 0 to 8,
->> which causes the interrupt frame allocation on kernel entry to put the
->> kernel stack out of alignment.
->> 
->> Add a pad field to fix alignment, and add a BUILD_BUG_ON to catch this
->> in future.
->> 
->> Fixes: 4c2de74cc869 ("powerpc/64: Interrupts save PPR on stack rather
->> than thread_struct")
->> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
->> [...]
->
-> Thanks for fixing this. Commit 4c2de74cc869 ("powerpc/64: Interrupts save
-> PPR on stack rather than thread_struct") was also leading to incorrect
-> kernel stack traces.
+~# cat /sys/kernel/debug/block_address_translation
+Instruction Block Address Translations:
+0:         -
+1:         -
+2: 0xc0000000-0xcfffffff 0x00000000 Kernel EXEC coherent
+3: 0xd0000000-0xdfffffff 0x10000000 Kernel EXEC coherent
+4:         -
+5:         -
+6:         -
+7:         -
 
-OK thanks.
+Data Block Address Translations:
+0:         -
+1:         -
+2: 0xc0000000-0xcfffffff 0x00000000 Kernel RW coherent
+3: 0xd0000000-0xdfffffff 0x10000000 Kernel RW coherent
+4:         -
+5:         -
+6:         -
+7:         -
 
-In future if you see something weird like that please report it to the
-list.
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ Fixed phys address display for CONFIG_PHYS_64BIT
 
-cheers
+ arch/powerpc/include/asm/book3s/32/mmu-hash.h |   4 +
+ arch/powerpc/mm/Makefile                      |   2 +-
+ arch/powerpc/mm/dump_bats.c                   | 184 ++++++++++++++++++++++++++
+ 3 files changed, 189 insertions(+), 1 deletion(-)
+ create mode 100644 arch/powerpc/mm/dump_bats.c
 
-> E.g.
-> If you are using `perf record -g` and expect to see a stack trace like this:
->
->         c0000000002b19a0 bpf_check+0x1910 (/usr/lib/debug/lib/modules/4.18.17-200.fc28.ppc64le/vmlinux)
->         c0000000002a5554 bpf_prog_load+0x684 (/usr/lib/debug/lib/modules/4.18.17-200.fc28.ppc64le/vmlinux)
->         c0000000002a6938 sys_bpf+0xaf8 (/usr/lib/debug/lib/modules/4.18.17-200.fc28.ppc64le/vmlinux)
->         c00000000000b9e4 system_call+0x5c (/usr/lib/debug/lib/modules/4.18.17-200.fc28.ppc64le/vmlinux)
->             7fff815bca90 syscall+0x50 (/usr/lib64/libc-2.27.so)
->             7fff7d96ee0c bpf_prog_load+0x16c (/usr/lib64/libbcc.so.0.7.0)
-> [...]
->
-> you would instead see something like this:
->
->         c0000000002bdb88 bpf_check+0xb88 (/lib/modules/4.20.0-rc1+/build/vmlinux)
->         c0000000002bdb60 bpf_check+0xb60 (/lib/modules/4.20.0-rc1+/build/vmlinux)
->             3fff8f350a90 syscall+0x50 (/usr/lib64/libc-2.27.so)
->             3fff8b788e0c bpf_prog_load+0x16c (/usr/lib64/libbcc.so.0.7.0)
-> [...]
->
-> --
-> With Regards,
-> Sandipan
+diff --git a/arch/powerpc/include/asm/book3s/32/mmu-hash.h b/arch/powerpc/include/asm/book3s/32/mmu-hash.h
+index e38c91388c40..f32fd1b14cf0 100644
+--- a/arch/powerpc/include/asm/book3s/32/mmu-hash.h
++++ b/arch/powerpc/include/asm/book3s/32/mmu-hash.h
+@@ -34,8 +34,12 @@
+ #define BAT_PHYS_ADDR(x) ((u32)((x & 0x00000000fffe0000ULL) | \
+ 				((x & 0x0000000e00000000ULL) >> 24) | \
+ 				((x & 0x0000000100000000ULL) >> 30)))
++#define PHYS_BAT_ADDR(x) (((u64)(x) & 0x00000000fffe0000ULL) | \
++			  (((u64)(x) << 24) & 0x0000000e00000000ULL) | \
++			  (((u64)(x) << 30) & 0x0000000100000000ULL))
+ #else
+ #define BAT_PHYS_ADDR(x) (x)
++#define PHYS_BAT_ADDR(x) (x)
+ #endif
+ 
+ struct ppc_bat {
+diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
+index ca96e7be4d0e..2adad10b5856 100644
+--- a/arch/powerpc/mm/Makefile
++++ b/arch/powerpc/mm/Makefile
+@@ -47,7 +47,7 @@ ifdef CONFIG_PPC_PTDUMP
+ obj-$(CONFIG_4xx)		+= dump_linuxpagetables-generic.o
+ obj-$(CONFIG_PPC_8xx)		+= dump_linuxpagetables-8xx.o
+ obj-$(CONFIG_PPC_BOOK3E_MMU)	+= dump_linuxpagetables-generic.o
+-obj-$(CONFIG_PPC_BOOK3S_32)	+= dump_linuxpagetables-generic.o
++obj-$(CONFIG_PPC_BOOK3S_32)	+= dump_linuxpagetables-generic.o dump_bats.o
+ obj-$(CONFIG_PPC_BOOK3S_64)	+= dump_linuxpagetables-book3s64.o
+ endif
+ obj-$(CONFIG_PPC_HTDUMP)	+= dump_hashpagetable.o
+diff --git a/arch/powerpc/mm/dump_bats.c b/arch/powerpc/mm/dump_bats.c
+new file mode 100644
+index 000000000000..4687414e39fc
+--- /dev/null
++++ b/arch/powerpc/mm/dump_bats.c
+@@ -0,0 +1,184 @@
++// SPDX-License-Identifier: GPL-2.0+
++/*
++ * Copyright 2018, Christophe Leroy CS S.I.
++ * <christophe.leroy@c-s.fr>
++ *
++ * This dumps the content of BATS
++ */
++
++#include <linux/debugfs.h>
++#include <linux/fs.h>
++#include <linux/hugetlb.h>
++#include <linux/io.h>
++#include <linux/mm.h>
++#include <linux/sched.h>
++#include <linux/seq_file.h>
++#include <asm/fixmap.h>
++#include <asm/pgtable.h>
++#include <linux/const.h>
++#include <asm/page.h>
++#include <asm/pgalloc.h>
++
++#include <asm/book3s/32/mmu-hash.h>
++
++static char *pp_601(int k, int pp)
++{
++	if (pp == 0)
++		return k ? "NA" : "RWX";
++	if (pp == 1)
++		return k ? "ROX" : "RWX";
++	if (pp == 2)
++		return k ? "RWX" : "RWX";
++	return k ? "ROX" : "ROX";
++}
++
++static void bat_show_601(struct seq_file *m, int idx, u32 lower, u32 upper)
++{
++	u32 blpi = upper & 0xfffe0000;
++	u32 k = (upper >> 2) & 3;
++	u32 pp = upper & 3;
++	phys_addr_t pbn = PHYS_BAT_ADDR(lower);
++	u32 bsm = lower & 0x3ff;
++	u32 size = (bsm + 1) << 17;
++
++	seq_printf(m, "%d: ", idx);
++	if (!(lower & 0x40)) {
++		seq_puts(m, "        -\n");
++		return;
++	}
++
++	seq_printf(m, "0x%08x-0x%08x ", blpi, blpi + size - 1);
++#ifdef CONFIG_PHYS_64BIT
++	seq_printf(m, "0x%016llx ", pbn);
++#else
++	seq_printf(m, "0x%08x ", pbn);
++#endif
++
++	seq_printf(m, "Kernel %s User %s", pp_601(k & 2, pp), pp_601(k & 1, pp));
++
++	if (lower & _PAGE_WRITETHRU)
++		seq_puts(m, "write through ");
++	if (lower & _PAGE_NO_CACHE)
++		seq_puts(m, "no cache ");
++	if (lower & _PAGE_COHERENT)
++		seq_puts(m, "coherent ");
++	seq_puts(m, "\n");
++}
++
++#define BAT_SHOW_601(_m, _n, _l, _u) bat_show_601(_m, _n, mfspr(_l), mfspr(_u))
++
++static int bats_show_601(struct seq_file *m, void *v)
++{
++	seq_puts(m, "Block Address Translation:\n");
++
++	BAT_SHOW_601(m, 0, SPRN_IBAT0L, SPRN_IBAT0U);
++	BAT_SHOW_601(m, 1, SPRN_IBAT1L, SPRN_IBAT1U);
++	BAT_SHOW_601(m, 2, SPRN_IBAT2L, SPRN_IBAT2U);
++	BAT_SHOW_601(m, 3, SPRN_IBAT3L, SPRN_IBAT3U);
++
++	return 0;
++}
++
++static void bat_show_603(struct seq_file *m, int idx, u32 lower, u32 upper, bool is_d)
++{
++	u32 bepi = upper & 0xfffe0000;
++	u32 bl = (upper >> 2) & 0x7ff;
++	u32 k = upper & 3;
++	phys_addr_t brpn = PHYS_BAT_ADDR(lower);
++	u32 size = (bl + 1) << 17;
++
++	seq_printf(m, "%d: ", idx);
++	if (k == 0) {
++		seq_puts(m, "        -\n");
++		return;
++	}
++
++	seq_printf(m, "0x%08x-0x%08x ", bepi, bepi + size - 1);
++#ifdef CONFIG_PHYS_64BIT
++	seq_printf(m, "0x%016llx ", brpn);
++#else
++	seq_printf(m, "0x%08x ", brpn);
++#endif
++
++	if (k == 1)
++		seq_puts(m, "User ");
++	else if (k == 2)
++		seq_puts(m, "Kernel ");
++	else
++		seq_puts(m, "Kernel/User ");
++
++	if (lower & BPP_RX)
++		seq_puts(m, is_d ? "RO " : "EXEC ");
++	else if (lower & BPP_RW)
++		seq_puts(m, is_d ? "RW " : "EXEC ");
++	else
++		seq_puts(m, is_d ? "NA " : "NX   ");
++
++	if (lower & _PAGE_WRITETHRU)
++		seq_puts(m, "write through ");
++	if (lower & _PAGE_NO_CACHE)
++		seq_puts(m, "no cache ");
++	if (lower & _PAGE_COHERENT)
++		seq_puts(m, "coherent ");
++	if (lower & _PAGE_GUARDED)
++		seq_puts(m, "guarded ");
++	seq_puts(m, "\n");
++}
++
++#define BAT_SHOW_603(_m, _n, _l, _u, _d) bat_show_603(_m, _n, mfspr(_l), mfspr(_u), _d)
++
++static int bats_show_603(struct seq_file *m, void *v)
++{
++	seq_puts(m, "Instruction Block Address Translation:\n");
++
++	BAT_SHOW_603(m, 0, SPRN_IBAT0L, SPRN_IBAT0U, false);
++	BAT_SHOW_603(m, 1, SPRN_IBAT1L, SPRN_IBAT1U, false);
++	BAT_SHOW_603(m, 2, SPRN_IBAT2L, SPRN_IBAT2U, false);
++	BAT_SHOW_603(m, 3, SPRN_IBAT3L, SPRN_IBAT3U, false);
++	if (mmu_has_feature(MMU_FTR_USE_HIGH_BATS)) {
++		BAT_SHOW_603(m, 4, SPRN_IBAT4L, SPRN_IBAT4U, false);
++		BAT_SHOW_603(m, 5, SPRN_IBAT5L, SPRN_IBAT5U, false);
++		BAT_SHOW_603(m, 6, SPRN_IBAT6L, SPRN_IBAT6U, false);
++		BAT_SHOW_603(m, 7, SPRN_IBAT7L, SPRN_IBAT7U, false);
++	}
++
++	seq_puts(m, "\nData Block Address Translation:\n");
++
++	BAT_SHOW_603(m, 0, SPRN_DBAT0L, SPRN_DBAT0U, true);
++	BAT_SHOW_603(m, 1, SPRN_DBAT1L, SPRN_DBAT1U, true);
++	BAT_SHOW_603(m, 2, SPRN_DBAT2L, SPRN_DBAT2U, true);
++	BAT_SHOW_603(m, 3, SPRN_DBAT3L, SPRN_DBAT3U, true);
++	if (mmu_has_feature(MMU_FTR_USE_HIGH_BATS)) {
++		BAT_SHOW_603(m, 4, SPRN_DBAT4L, SPRN_DBAT4U, true);
++		BAT_SHOW_603(m, 5, SPRN_DBAT5L, SPRN_DBAT5U, true);
++		BAT_SHOW_603(m, 6, SPRN_DBAT6L, SPRN_DBAT6U, true);
++		BAT_SHOW_603(m, 7, SPRN_DBAT7L, SPRN_DBAT7U, true);
++	}
++
++	return 0;
++}
++
++static int bats_open(struct inode *inode, struct file *file)
++{
++	if (PVR_VER(mfspr(SPRN_PVR)) == 1)
++		return single_open(file, bats_show_601, NULL);
++
++	return single_open(file, bats_show_603, NULL);
++}
++
++static const struct file_operations bats_fops = {
++	.open		= bats_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++};
++
++static int bats_init(void)
++{
++	struct dentry *debugfs_file;
++
++	debugfs_file = debugfs_create_file("block_address_translation", 0400,
++					   NULL, NULL, &bats_fops);
++	return debugfs_file ? 0 : -ENOMEM;
++}
++device_initcall(bats_init);
+-- 
+2.13.3
+
