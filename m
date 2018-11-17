@@ -6,57 +6,60 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D173CC43441
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Nov 2018 08:26:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 33559C43441
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Nov 2018 10:27:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1B19D2084C
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Nov 2018 08:26:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1B19D2084C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=perches.com
+	by mail.kernel.org (Postfix) with ESMTPS id 7A4C820817
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Nov 2018 10:27:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7A4C820817
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42xp9D33DKzF3mq
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Nov 2018 19:26:40 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=perches.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42xrrD23rFzF3mm
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Nov 2018 21:27:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=perches.com
- (client-ip=216.40.44.236; helo=smtprelay.hostedemail.com;
- envelope-from=joe@perches.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=perches.com
-Received: from smtprelay.hostedemail.com (smtprelay0236.hostedemail.com
- [216.40.44.236])
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42xp744MMHzF3mc
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Nov 2018 19:24:47 +1100 (AEDT)
-Received: from filter.hostedemail.com (clb03-v110.bra.tucows.net
- [216.40.38.60])
- by smtprelay06.hostedemail.com (Postfix) with ESMTP id 614441800B891;
- Sat, 17 Nov 2018 08:24:42 +0000 (UTC)
-X-Session-Marker: 6A6F6540706572636865732E636F6D
-X-HE-Tag: songs71_bbd521b5d657
-X-Filterd-Recvd-Size: 3762
-Received: from XPS-9350.home (unknown [47.151.153.53])
- (Authenticated sender: joe@perches.com)
- by omf17.hostedemail.com (Postfix) with ESMTPA;
- Sat, 17 Nov 2018 08:24:40 +0000 (UTC)
-Message-ID: <ced26fae338bb4bd28a16d44980bbd0517aaec10.camel@perches.com>
-Subject: Re: [PATCH] arch/powerpc: Use dma_zalloc_coherent
-From: Joe Perches <joe@perches.com>
-To: Souptick Joarder <jrdr.linux@gmail.com>
-Date: Sat, 17 Nov 2018 00:24:39 -0800
-In-Reply-To: <CAFqt6zY2bv=G1N13E4-SA2DE6ey3kw378fFzgEHV7wdpJ5hp5g@mail.gmail.com>
-References: <5bdfb8db.1c69fb81.c8f62.9586@mx.google.com>
- <CAJr6mf1nOouU31WF_xb_46wDebPQ-7+NTCiSKBjLyQta2mny6w@mail.gmail.com>
- <7a3922bc5089dfe0978e07a809606360c74c940c.camel@perches.com>
- <CAFqt6zY2bv=G1N13E4-SA2DE6ey3kw378fFzgEHV7wdpJ5hp5g@mail.gmail.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-User-Agent: Evolution 3.30.1-1build1 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42xrnl5PMGzF3jL
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Nov 2018 21:24:58 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 42xrnc2zBpz9ty08;
+ Sat, 17 Nov 2018 11:24:52 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id k_NCHo43yAJl; Sat, 17 Nov 2018 11:24:52 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 42xrnc28Qmz9ty07;
+ Sat, 17 Nov 2018 11:24:52 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 6581B8B78A;
+ Sat, 17 Nov 2018 11:24:55 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id cqeJB1XcqMbk; Sat, 17 Nov 2018 11:24:55 +0100 (CET)
+Received: from po14163vm.idsi0.si.c-s.fr (unknown [192.168.232.3])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 38E318B74B;
+ Sat, 17 Nov 2018 11:24:55 +0100 (CET)
+Received: by po14163vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id E6D9369A6C; Sat, 17 Nov 2018 10:24:54 +0000 (UTC)
+Message-Id: <aeeaafbdf0357f8bdb8ffd86822a0ddfd5521fd6.1542395798.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH 1/7] drivers/cpufreq: change CONFIG_6xx to CONFIG_PPC_BOOK3S_32
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
+ rjw@rjwysocki.net, viresh.kumar@linaro.org
+Date: Sat, 17 Nov 2018 10:24:54 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,82 +71,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: darren@stevens-zone.net, Sabyasachi Gupta <sabyasachi.linux@gmail.com>,
- geoff@infradead.org, linux-kernel@vger.kernel.org, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 2018-11-17 at 12:40 +0530, Souptick Joarder wrote:
-> Hi Joe,
+Today, powerpc has three CONFIG labels which means exactly the same:
+- CONFIG_6xx
+- CONFIG_PPC_BOOK3S_32
+- CONFIG_PPC_STD_MMU_32
 
-Hi back.
+By consistency with PPC64, CONFIG_PPC_BOOK3S_32 is the preferred one.
+Using a label with includes _PPC_ also makes it clearer that it is
+linked to powerpc.
 
-> On Fri, Nov 16, 2018 at 12:55 AM Joe Perches <joe@perches.com> wrote:
-> > On Thu, 2018-11-15 at 23:29 +0530, Sabyasachi Gupta wrote:
-> > > On Mon, Nov 5, 2018 at 8:58 AM Sabyasachi Gupta
-> > > <sabyasachi.linux@gmail.com> wrote:
-> > > > Replaced dma_alloc_coherent + memset with dma_zalloc_coherent
-> > > > 
-> > > > Signed-off-by: Sabyasachi Gupta <sabyasachi.linux@gmail.com>
-> > > 
-> > > Any comment on this patch?
-> > 
-> > It's obviously correct.
-> > 
-> > You might realign the arguments on the next lines
-> > to the open parenthesis.
-> > 
-> > Perhaps there should be new function calls
-> > added for symmetry to the other alloc functions
-> > for multiplication overflow protection.
-> > 
-> > Perhaps:
-> > 
-> > void *dma_alloc_array_coherent()
-> > void *dma_calloc_coherent()
-> > 
-> > Something like
-> > ---
-> >  include/linux/dma-mapping.h | 19 +++++++++++++++++++
-> >  1 file changed, 19 insertions(+)
-> > 
-> > diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
-> > index 15bd41447025..95bebf8883b1 100644
-> > --- a/include/linux/dma-mapping.h
-> > +++ b/include/linux/dma-mapping.h
-> > @@ -565,6 +565,25 @@ static inline void *dma_alloc_coherent(struct device *dev, size_t size,
-> >                         (gfp & __GFP_NOWARN) ? DMA_ATTR_NO_WARN : 0);
-> >  }
-> > 
-> > +static inline void *dma_alloc_array_coherent(struct device *dev,
-> > +                                            size_t n, size_t size,
-> > +                                            dma_addr_t *dma_handle, gfp_t gfp)
-> > +{
-> > +       size_t bytes;
-> > +
-> > +       if (unlikely(check_mul_overflow(n, size, &bytes)))
-> > +               return NULL;
-> > +       return dma_alloc_coherent(dev, bytes, dma_handle, gfp);
-> > +}
-> > +
-> > +static inline void *dma_calloc_coherent(struct device *dev,
-> > +                                       size_t n, size_t size,
-> > +                                       dma_addr_t *dma_handle, gfp_t gfp)
-> > +{
-> > +       return dma_alloc_array_coherent(dev, n, size, dma_handle,
-> > +                                       gfp | __GFP_ZERO);
-> > +}
-> > +
-> 
-> If I understood correctly, you are talking about adding these 2 new inline
-> functions. We can do that.
-> 
-> Can you please help to understand the consumers of these 2 new inline ?
+In preparation of the removal of CONFIG_6xx, this patch replaces it
+by CONFIG_PPC_BOOK3S_32
 
-Any call to dma_alloc_coherent with a multiply
-_might_overflow the multiplication.  The
-check_mul_overflow simply avoids the overflow.
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ drivers/cpufreq/pmac32-cpufreq.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/cpufreq/pmac32-cpufreq.c b/drivers/cpufreq/pmac32-cpufreq.c
+index 61ae06ca008e..52f0d91d30c1 100644
+--- a/drivers/cpufreq/pmac32-cpufreq.c
++++ b/drivers/cpufreq/pmac32-cpufreq.c
+@@ -128,7 +128,7 @@ static int cpu_750fx_cpu_speed(int low_speed)
+ 			mtspr(SPRN_HID2, hid2);
+ 		}
+ 	}
+-#ifdef CONFIG_6xx
++#ifdef CONFIG_PPC_BOOK3S_32
+ 	low_choose_750fx_pll(low_speed);
+ #endif
+ 	if (low_speed == 1) {
+@@ -166,7 +166,7 @@ static int dfs_set_cpu_speed(int low_speed)
+ 	}
+ 
+ 	/* set frequency */
+-#ifdef CONFIG_6xx
++#ifdef CONFIG_PPC_BOOK3S_32
+ 	low_choose_7447a_dfs(low_speed);
+ #endif
+ 	udelay(100);
+-- 
+2.13.3
 
