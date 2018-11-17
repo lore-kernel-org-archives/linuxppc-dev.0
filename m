@@ -2,29 +2,28 @@ Return-Path: <SRS0=8VeL=N4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 91E77C43441
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Nov 2018 18:59:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 592C5C43441
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Nov 2018 19:02:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C64F520815
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Nov 2018 18:59:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C16E820815
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Nov 2018 19:02:10 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linaro.org header.i=@linaro.org header.b="XYLhyO5m"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C64F520815
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linaro.org header.i=@linaro.org header.b="UORXOUKY"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C16E820815
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42y4Cq1NVszF3J6
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 18 Nov 2018 05:59:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42y4GS69CvzF3lW
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 18 Nov 2018 06:02:08 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.b="XYLhyO5m";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.b="UORXOUKY";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linaro.org
@@ -33,50 +32,48 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linaro.org header.i=@linaro.org header.b="XYLhyO5m"; 
+ unprotected) header.d=linaro.org header.i=@linaro.org header.b="UORXOUKY"; 
  dkim-atps=neutral
 Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
  [IPv6:2607:f8b0:4864:20::542])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42y4911VSFzF3kk
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Nov 2018 05:57:25 +1100 (AEDT)
-Received: by mail-pg1-x542.google.com with SMTP id v28so1526179pgk.10
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Nov 2018 10:57:24 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42y4912xvKzF3kp
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Nov 2018 05:57:21 +1100 (AEDT)
+Received: by mail-pg1-x542.google.com with SMTP id 32-v6so12035925pgu.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Nov 2018 10:57:21 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
- h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=26kHMy6e9ZHNMFq26DfYcP5qT10rPVni7XnqYDLJuPI=;
- b=XYLhyO5mN3FVA4ReKitsYfMKGuHNDNlOhuo5CX3m1WdOPZeKdKBplc4oZZ6V6yFg5A
- hQ83SmcdvQq6M0spjr5rwWJUh9QdiW39oPX0Z2kNZVWF+j0XU6sZnr/m82angEa1AG65
- GQ2t7WMlRjYOWyc5If1zGyUDez/kBmIctb+b4=
+ h=from:to:cc:subject:date:message-id;
+ bh=KK24Xtf0yZxdzxm9LC+famSI28x00YC11YF96N0BM3E=;
+ b=UORXOUKYewxZBY9q60veahrHkEtPpR9GSai6HV7K7LIRYSUmveL4hgphwWKykjezr5
+ 5aJslRjRd5lwcVzGm/diuVIZt/WHst6O5IT8qVuNmMEHGGC3uCNjKCW4U/6UPunf//Ri
+ Yog90RJJIsfBEnEswOgbukRNoDii/RYXBxk8s=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references;
- bh=26kHMy6e9ZHNMFq26DfYcP5qT10rPVni7XnqYDLJuPI=;
- b=Cl23jmhKEZQP2IDWODPoj7HOf5Z+YSGKE6b1v9Lk9NLFTpLeyytVxDs9QRqmFUVsRl
- tVduzfcZr5MxnmIAN9OMvZeHyJEVG0bfFYOm69GbIQNhfo24HN8q3uIYcqNluXlALjvJ
- oE3XFhgX4uOlb5taQrbGg8eTas0ugzsP86iKutPpEgP/YcwAX/91eBMby/P4is1LzcxY
- tMTkmsW+5cMJ2VcfZNIjtUbYmWP+kApPwcayLWP1UgQh5D0ZC2boKFtjziP0byXDrBuC
- v3qOOaGF1QMgvy96C161VP92mYUE0JADCuLBNlDX4OJDFL9b8BttwitOiTxp1Z4tg8Oy
- 7JeA==
-X-Gm-Message-State: AGRZ1gJKNYNJk3/bzQAqykNIumLbaGN/aIgV0QFk/O5UILmx3nUp3uoj
- Od+DJwVrM/fbP3IRw3TWEEEZ0g==
-X-Google-Smtp-Source: AJdET5dbJskaau0oeh2D+j2r5+z2XCOLI6qC1Gpj92MrCzlhVrhcUg2kk12XFX1xpT0h9FiUT1nBcw==
-X-Received: by 2002:a63:f241:: with SMTP id d1mr14569834pgk.2.1542481043353;
- Sat, 17 Nov 2018 10:57:23 -0800 (PST)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id;
+ bh=KK24Xtf0yZxdzxm9LC+famSI28x00YC11YF96N0BM3E=;
+ b=Bh1vtkfUXfbKen0BYbof/0RL3m7Hxk/MXHCiUw06smPhKJdWxx7XPH5SySbm6QFTLH
+ GKosrNa4Uw977uA9UDsMARemqaGkQOC9srjqrF+dkbgk9nvsCASl08fOwyvJ+oNzzE3z
+ B15AORrUpu+txwhs8ejnoYN51UuzIGpzPpRXm9EYqFAvHdgeLmWpM7+pxWFByUfBWTo3
+ 4EOGf99Jjxac0QcLhCALnDLtoZaV7QDKOY/ALvjO8sBg7l9EKFlEfWYqSDLwMblMPpmg
+ NpZMAl4eWBPvVpFL73VP7Y0cIh7VlwsLCOuZcZboAKs879UFw8alayIQYf4o9iqhHFEU
+ DLKg==
+X-Gm-Message-State: AGRZ1gIPMvOfIWIjEqXhEy16T6IlI4ZQ648G99ZPaRby/oVuUM9txnG9
+ prPY65ZIRnSzNHctyKjCn9Cjyg==
+X-Google-Smtp-Source: AJdET5dcu85Awa0hWemuaG/qBca5+pUPD7vYP+djiZMTtvFzptSWkQPdpArsamMNJVlWr5986121ww==
+X-Received: by 2002:a63:3c44:: with SMTP id i4mr14292473pgn.286.1542481039552; 
+ Sat, 17 Nov 2018 10:57:19 -0800 (PST)
 Received: from mba13.psav.com ([64.114.255.114])
- by smtp.gmail.com with ESMTPSA id u76-v6sm49550745pfa.176.2018.11.17.10.57.22
+ by smtp.gmail.com with ESMTPSA id u76-v6sm49550745pfa.176.2018.11.17.10.57.17
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Sat, 17 Nov 2018 10:57:22 -0800 (PST)
+ Sat, 17 Nov 2018 10:57:18 -0800 (PST)
 From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 3/4] bpf: add __weak hook for allocating executable memory
-Date: Sat, 17 Nov 2018 10:57:14 -0800
-Message-Id: <20181117185715.25198-4-ard.biesheuvel@linaro.org>
+Subject: [PATCH 0/4] bpf: permit JIT allocations to be served outside the
+ module region
+Date: Sat, 17 Nov 2018 10:57:11 -0800
+Message-Id: <20181117185715.25198-1-ard.biesheuvel@linaro.org>
 X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20181117185715.25198-1-ard.biesheuvel@linaro.org>
-References: <20181117185715.25198-1-ard.biesheuvel@linaro.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,43 +101,68 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-By default, BPF uses module_alloc() to allocate executable memory,
-but this is not necessary on all arches and potentially undesirable
-on some of them.
+On arm64, modules are allocated from a 128 MB window which is close to
+the core kernel, so that relative direct branches are guaranteed to be
+in range (except in some KASLR configurations). Also, module_alloc()
+is in charge of allocating KASAN shadow memory when running with KASAN
+enabled.
 
-So break out the module_alloc() call into a __weak function to allow
-it to be overridden in arch code.
+This means that the way BPF reuses module_alloc()/module_memfree() is
+undesirable on arm64 (and potentially other architectures as well),
+and so this series refactors BPF's use of those functions to permit
+architectures to change this behavior.
 
-Signed-off-by: Ard Biesheuvel <ard.biesheuvel@linaro.org>
----
- kernel/bpf/core.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+Patch #1 fixes a bug introduced during the merge window, where the new
+alloc/free tracking does not account for memory that is freed by some
+arch code.
 
-diff --git a/kernel/bpf/core.c b/kernel/bpf/core.c
-index 29f766dac203..156d6b96ac6c 100644
---- a/kernel/bpf/core.c
-+++ b/kernel/bpf/core.c
-@@ -609,6 +609,11 @@ static void bpf_jit_uncharge_modmem(u32 pages)
- 	atomic_long_sub(pages, &bpf_jit_current);
- }
- 
-+void *__weak bpf_jit_alloc_exec(unsigned long size)
-+{
-+	return module_alloc(size);
-+}
-+
- struct bpf_binary_header *
- bpf_jit_binary_alloc(unsigned int proglen, u8 **image_ptr,
- 		     unsigned int alignment,
-@@ -626,7 +631,7 @@ bpf_jit_binary_alloc(unsigned int proglen, u8 **image_ptr,
- 
- 	if (bpf_jit_charge_modmem(pages))
- 		return NULL;
--	hdr = module_alloc(size);
-+	hdr = bpf_jit_alloc_exec(size);
- 	if (!hdr) {
- 		bpf_jit_uncharge_modmem(pages);
- 		return NULL;
+Patch #2 refactors the freeing path so that architectures can switch to
+something other than module_memfree().
+
+Patch #3 does the same for module_alloc().
+
+Patch #4 implements the new alloc/free overrides for arm64
+
+Cc: Daniel Borkmann <daniel@iogearbox.net>
+Cc: Alexei Starovoitov <ast@kernel.org>
+Cc: Rick Edgecombe <rick.p.edgecombe@intel.com>
+Cc: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: Jann Horn <jannh@google.com>
+Cc: Kees Cook <keescook@chromium.org>
+
+Cc: Jessica Yu <jeyu@kernel.org>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Will Deacon <will.deacon@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Ralf Baechle <ralf@linux-mips.org>
+Cc: Paul Burton <paul.burton@mips.com>
+Cc: James Hogan <jhogan@kernel.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-mips@linux-mips.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: sparclinux@vger.kernel.org
+Cc: netdev@vger.kernel.org
+
+Ard Biesheuvel (4):
+  bpf: account for freed JIT allocations in arch code
+  net/bpf: refactor freeing of executable allocations
+  bpf: add __weak hook for allocating executable memory
+  arm64/bpf: don't allocate BPF JIT programs in module memory
+
+ arch/arm64/net/bpf_jit_comp.c     | 11 ++++++++++
+ arch/mips/net/bpf_jit.c           |  7 ++-----
+ arch/powerpc/net/bpf_jit_comp.c   |  7 ++-----
+ arch/powerpc/net/bpf_jit_comp64.c | 12 +++--------
+ arch/sparc/net/bpf_jit_comp_32.c  |  7 ++-----
+ kernel/bpf/core.c                 | 22 ++++++++++----------
+ 6 files changed, 31 insertions(+), 35 deletions(-)
+
 -- 
 2.17.1
 
