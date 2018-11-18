@@ -2,92 +2,83 @@ Return-Path: <SRS0=mwa9=N5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
-	autolearn=ham autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F84AC43441
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 18 Nov 2018 08:29:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 76968C43441
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 18 Nov 2018 10:31:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 670162075B
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 18 Nov 2018 08:29:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 806CB20815
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 18 Nov 2018 10:31:02 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="OXcjdWvf"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 670162075B
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="jAN2iaJe"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 806CB20815
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42yQ9d69hVzF3Rp
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 18 Nov 2018 19:29:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42yStC4kvtzF3L0
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 18 Nov 2018 21:30:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="OXcjdWvf";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="jAN2iaJe";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
- envelope-from=amodra@gmail.com; receiver=<UNKNOWN>)
+ (client-ip=2607:f8b0:4864:20::743; helo=mail-qk1-x743.google.com;
+ envelope-from=ys114321@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="OXcjdWvf"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="jAN2iaJe"; 
  dkim-atps=neutral
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
- [IPv6:2607:f8b0:4864:20::541])
+Received: from mail-qk1-x743.google.com (mail-qk1-x743.google.com
+ [IPv6:2607:f8b0:4864:20::743])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42yQ79101nzF3gX
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Nov 2018 19:27:00 +1100 (AEDT)
-Received: by mail-pg1-x541.google.com with SMTP id z11so9825125pgu.0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Nov 2018 00:27:00 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42yPGB5p3yzF3dh
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Nov 2018 18:47:59 +1100 (AEDT)
+Received: by mail-qk1-x743.google.com with SMTP id d135so44105773qkc.12
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Nov 2018 23:47:59 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=E59FCu3OIJpiBud/83uRBkaJHOiO/JShj9PTZGvSjaY=;
- b=OXcjdWvfHDLUHS34qF34Qj7UsTJTrLqMuMQ+8pmFIcr2tdr9WdCcv/M3AQ59OfsYYF
- aZ8UunlwFJiX+mBW4RDPeinv4ci8dey61vU0+UhKI5fU999MQkk8RtWpw+8III2/AbZJ
- cwhshcNYKqehK6Q4u5pLAWO/oEia5RcocY+A/REv9LgE9suItUrFJBv7kG6WYd3SAE5u
- luC7Zavz7ooZu3dxMg/O1M/KmUwnGZpEBcmT2awqAgI1Ub2TWI56SYVgT5ivJW9qu+qU
- DaovBaz/u8dPAwvu9L39GI8+/NDMhovU5819L3VyF7AolF1Fo7peKZnYsPbs2lnUP4Vg
- 2+WQ==
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=e9jUmSTLaGX0A7LyE7aM7FouS47os25e/5PoGajRO0w=;
+ b=jAN2iaJegYuO7y2ZKWZRRtWbl2StGyxw+Y3Ox6vHmmX1u2mpwTX33rfiW8Rnh0yT8U
+ VVfx/9FWFpzETBNWLWvFFlz9/UMtPz62DIHQFevJZPuOsK3mGmkfS/8yBtfOWU6MLJQr
+ ZPiSKBIMvUpuXc09hQBvCHHuNS5su52O3gDhV+N6L343+bjvYGBZlmwMcXyd4MqquJot
+ xZAcShyQkOZyMJx1uPOyYChnnnG7qrY88Zhd8tL4i8+2aXc5SQJFLGJBAceou0Je/K7z
+ vm3sHwjFX7SPavSdCrnjDcpaKyNhgIjiD+TnJJ7ri9uZ6eObpw/b+q63HlCLrWBxLcye
+ Y7yg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=E59FCu3OIJpiBud/83uRBkaJHOiO/JShj9PTZGvSjaY=;
- b=Z0PJP8B7PcETC3B+8gZ4Q+6oMTT6WklG5HKRFGEbTU+IQdojl/kLwkp+jF1TZE8zEN
- hZVlMBG4uLBEJp53ks34Yl8lbcb5VlcV/6Pp4yvqcwrph35NiCBflB+dPC43gpR/w1Ez
- 5J0ROb5gUgV1YJLSQU8BzNi4AmmVf4YfK3ayL32EpFsLia/YgbnZJhOhOKDtKXRW7jN3
- s4ZERtS6s8jyqR4fHxKyNgsjFdqLZJYJ04lUxuap0kOOTYwT7d+1P2Lzgt+XwfO9pNH6
- Lam0u7yGhbs7ctjB2xV63UlYRgtZXz/draQZEgB0JIk7vFO8B5DWm9klLPzJqoHW1R9G
- GWRA==
-X-Gm-Message-State: AGRZ1gIFrT1r91uuH6kOdONVuDr7opxTEKWlkxyHlaOz9FPr0VvduKW+
- fO4hsd3+vN0S2A8qvlNqqP8=
-X-Google-Smtp-Source: AJdET5ec7gju8O6Hgn6K5fhMOsO0qw8iGsDymnNTNebmIaakhrMS6/6hVTggSxNyME0ECqa8AbBYOg==
-X-Received: by 2002:a63:d513:: with SMTP id c19mr16006439pgg.287.1542529618207; 
- Sun, 18 Nov 2018 00:26:58 -0800 (PST)
-Received: from bubble.grove.modra.org ([58.175.241.133])
- by smtp.gmail.com with ESMTPSA id m1sm17142619pgn.9.2018.11.18.00.26.56
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Sun, 18 Nov 2018 00:26:56 -0800 (PST)
-Received: by bubble.grove.modra.org (Postfix, from userid 1000)
- id 9DCA9805FD; Sun, 18 Nov 2018 18:56:52 +1030 (ACDT)
-Date: Sun, 18 Nov 2018 18:56:52 +1030
-From: Alan Modra <amodra@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/32: Include .branch_lt in data section
-Message-ID: <20181118082652.GA21617@bubble.grove.modra.org>
-References: <20181114030218.25508-1-joel@jms.id.au>
- <20181114040045.GX29784@bubble.grove.modra.org>
- <87wopetslj.fsf@concordia.ellerman.id.au>
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=e9jUmSTLaGX0A7LyE7aM7FouS47os25e/5PoGajRO0w=;
+ b=oxOfrPsdKwtP58d61d7sfOr7aCQfOpGYC/bOhGrL97T36NqaYrs1VxNZ2ktzGVYhdM
+ XEXxhJO7zJyovELFiRQiXeZ3GcCcQNfmFH98iNKw4yk8HBy2pZQqpjfEum4HJmJPGALA
+ xtCtnO1h5uMNSgSxUiay3MwzrAhq+vBf8wM/Elcpi92Bpu267AY8j2fTHnFWkxrqMi2H
+ ZpWn8xc7DLW3W907I2MedY7aC7+SK1IIo9/juXRkoUCx4/AMFYqhrTnSergu9Xq7LCOW
+ joZWiGzzXwJATEP01lJ9hX7zLdkNq++M6PAui6Iwx9IaFkU/6RLO3m1fbnqe9koTbnHB
+ +ZOA==
+X-Gm-Message-State: AGRZ1gLzI84zuk2OxHiCgizKALO4EHPYG/RfFc3Zbr5O6QLj1DS0KMeN
+ MCm1CjtWT3GcD0lByMmr39bw3GtH6pQiADxQ1jE=
+X-Google-Smtp-Source: AJdET5d0B2HeX5Nvr+wGZPdX7m6Rl24zd7KaVOpOiDtE/8uwUkfLAjvZ94pD068kW1H4Q3oUAYfLsNkd4p788UzoOuk=
+X-Received: by 2002:a0c:bf0d:: with SMTP id m13mr16906324qvi.139.1542527276900; 
+ Sat, 17 Nov 2018 23:47:56 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87wopetslj.fsf@concordia.ellerman.id.au>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+References: <20181117185715.25198-1-ard.biesheuvel@linaro.org>
+ <20181117185715.25198-3-ard.biesheuvel@linaro.org>
+In-Reply-To: <20181117185715.25198-3-ard.biesheuvel@linaro.org>
+From: Y Song <ys114321@gmail.com>
+Date: Sun, 18 Nov 2018 07:47:27 +0000
+Message-ID: <CAH3MdRV85imzia+=irgbjL48wqFdorB-F1=BkwBgJgi3Z-XAKA@mail.gmail.com>
+Subject: Re: [PATCH 2/4] net/bpf: refactor freeing of executable allocations
+To: ard.biesheuvel@linaro.org
+Content-Type: text/plain; charset="UTF-8"
+X-Mailman-Approved-At: Sun, 18 Nov 2018 21:28:50 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,26 +90,149 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Joel Stanley <joel@jms.id.au>
+Cc: mark.rutland@arm.com, linux-mips@linux-mips.org, will.deacon@arm.com,
+ Alexei Starovoitov <ast@kernel.org>, paulus@samba.org,
+ sparclinux@vger.kernel.org, Daniel Borkmann <daniel@iogearbox.net>,
+ catalin.marinas@arm.com, jhogan@kernel.org, Kees Cook <keescook@chromium.org>,
+ arnd@arndb.de, jannh@google.com, linux-arm-kernel@lists.infradead.org,
+ eric.dumazet@gmail.com, netdev <netdev@vger.kernel.org>,
+ LKML <linux-kernel@vger.kernel.org>, ralf@linux-mips.org, paul.burton@mips.com,
+ jeyu@kernel.org, rick.p.edgecombe@intel.com, linuxppc-dev@lists.ozlabs.org,
+ David Miller <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Nov 15, 2018 at 11:47:52PM +1100, Michael Ellerman wrote:
-> Alan Modra <amodra@gmail.com> writes:
-> 
-> > On Wed, Nov 14, 2018 at 01:32:18PM +1030, Joel Stanley wrote:
-> >> I wasn't sure where this should go or if the ordering matters.
-> >
-> > The usual answer is: "Look at where the section goes in the standard
-> > linker scripts."   But that doesn't apply here.  The section will be
-> > empty for a kernel build so it doesn't matter where it goes.
-> 
-> If it's empty why don't we just discard it?
+On Sat, Nov 17, 2018 at 6:58 PM Ard Biesheuvel
+<ard.biesheuvel@linaro.org> wrote:
+>
+> All arch overrides of the __weak bpf_jit_free() amount to the same
+> thing: the allocated memory was never mapped read-only, and so
+> it does not have to be remapped to read-write before being freed.
+>
+> So in preparation of permitting arches to serve allocations for BPF
+> JIT programs from other regions than the module region, refactor
+> the existing bpf_jit_free() implementations to use the shared code
+> where possible, and only specialize the remap and free operations.
+>
+> Signed-off-by: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+> ---
+>  arch/mips/net/bpf_jit.c           |  7 ++-----
+>  arch/powerpc/net/bpf_jit_comp.c   |  7 ++-----
+>  arch/powerpc/net/bpf_jit_comp64.c |  9 +++------
+>  arch/sparc/net/bpf_jit_comp_32.c  |  7 ++-----
+>  kernel/bpf/core.c                 | 15 +++++----------
+>  5 files changed, 14 insertions(+), 31 deletions(-)
+>
+> diff --git a/arch/mips/net/bpf_jit.c b/arch/mips/net/bpf_jit.c
+> index 1b69897274a1..5696bd7dccc7 100644
+> --- a/arch/mips/net/bpf_jit.c
+> +++ b/arch/mips/net/bpf_jit.c
+> @@ -1261,10 +1261,7 @@ void bpf_jit_compile(struct bpf_prog *fp)
+>         kfree(ctx.offsets);
+>  }
+>
+> -void bpf_jit_free(struct bpf_prog *fp)
+> +void bpf_jit_binary_free(struct bpf_binary_header *hdr)
+>  {
+> -       if (fp->jited)
+> -               bpf_jit_binary_free(bpf_jit_binary_hdr(fp));
+> -
+> -       bpf_prog_unlock_free(fp);
+> +       module_memfree(hdr);
+>  }
+> diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
+> index a1ea1ea6b40d..5b5ce4a1b44b 100644
+> --- a/arch/powerpc/net/bpf_jit_comp.c
+> +++ b/arch/powerpc/net/bpf_jit_comp.c
+> @@ -680,10 +680,7 @@ void bpf_jit_compile(struct bpf_prog *fp)
+>         return;
+>  }
+>
+> -void bpf_jit_free(struct bpf_prog *fp)
+> +void bpf_jit_binary_free(struct bpf_binary_header *hdr)
+>  {
+> -       if (fp->jited)
+> -               bpf_jit_binary_free(bpf_jit_binary_hdr(fp));
+> -
+> -       bpf_prog_unlock_free(fp);
+> +       module_memfree(hdr);
+>  }
+> diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
+> index 84c8f013a6c6..f64f1294bd62 100644
+> --- a/arch/powerpc/net/bpf_jit_comp64.c
+> +++ b/arch/powerpc/net/bpf_jit_comp64.c
+> @@ -1021,11 +1021,8 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
+>         return fp;
+>  }
+>
+> -/* Overriding bpf_jit_free() as we don't set images read-only. */
+> -void bpf_jit_free(struct bpf_prog *fp)
+> +/* Overriding bpf_jit_binary_free() as we don't set images read-only. */
+> +void bpf_jit_binary_free(struct bpf_binary_header *hdr)
+>  {
+> -       if (fp->jited)
+> -               bpf_jit_binary_free(bpf_jit_binary_hdr(fp));
+> -
+> -       bpf_prog_unlock_free(fp);
+> +       module_memfree(hdr);
+>  }
+> diff --git a/arch/sparc/net/bpf_jit_comp_32.c b/arch/sparc/net/bpf_jit_comp_32.c
+> index 01bda6bc9e7f..589950d152cc 100644
+> --- a/arch/sparc/net/bpf_jit_comp_32.c
+> +++ b/arch/sparc/net/bpf_jit_comp_32.c
+> @@ -756,10 +756,7 @@ cond_branch:                       f_offset = addrs[i + filter[i].jf];
+>         return;
+>  }
+>
+> -void bpf_jit_free(struct bpf_prog *fp)
+> +void bpf_jit_binary_free(struct bpf_binary_header *hdr)
+>  {
+> -       if (fp->jited)
+> -               bpf_jit_binary_free(bpf_jit_binary_hdr(fp));
+> -
+> -       bpf_prog_unlock_free(fp);
+> +       module_memfree(hdr);
+>  }
+> diff --git a/kernel/bpf/core.c b/kernel/bpf/core.c
+> index 1a796e0799ec..29f766dac203 100644
+> --- a/kernel/bpf/core.c
+> +++ b/kernel/bpf/core.c
+> @@ -646,25 +646,20 @@ bpf_jit_binary_alloc(unsigned int proglen, u8 **image_ptr,
+>         return hdr;
+>  }
+>
+> -void bpf_jit_binary_free(struct bpf_binary_header *hdr)
+> +void __weak bpf_jit_binary_free(struct bpf_binary_header *hdr)
+>  {
+> -       u32 pages = hdr->pages;
+> -
+> +       bpf_jit_binary_unlock_ro(hdr);
+>         module_memfree(hdr);
+> -       bpf_jit_uncharge_modmem(pages);
+>  }
+>
+> -/* This symbol is only overridden by archs that have different
+> - * requirements than the usual eBPF JITs, f.e. when they only
+> - * implement cBPF JIT, do not set images read-only, etc.
+> - */
 
-That can be a recipe for finding linker bugs.  Not that I'm against
-you finding linker bugs.  ;-)
+Do you want to move the above comments to
+new weak function bpf_jit_binary_free?
 
--- 
-Alan Modra
-Australia Development Lab, IBM
+> -void __weak bpf_jit_free(struct bpf_prog *fp)
+> +void bpf_jit_free(struct bpf_prog *fp)
+>  {
+>         if (fp->jited) {
+>                 struct bpf_binary_header *hdr = bpf_jit_binary_hdr(fp);
+> +               u32 pages = hdr->pages;
+>
+> -               bpf_jit_binary_unlock_ro(hdr);
+>                 bpf_jit_binary_free(hdr);
+> +               bpf_jit_uncharge_modmem(pages);
+>
+>                 WARN_ON_ONCE(!bpf_prog_kallsyms_verify_off(fp));
+>         }
+> --
+> 2.17.1
+>
