@@ -2,53 +2,65 @@ Return-Path: <SRS0=K8Qv=N6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C3C3EC43441
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Nov 2018 16:06:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AD1E8C43441
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Nov 2018 16:14:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 489D3206BA
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Nov 2018 16:06:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 489D3206BA
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 3764520851
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Nov 2018 16:14:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3764520851
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42zDGf2wLrzDrPl
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Nov 2018 03:06:18 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42zDRf6mXFzF37J
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Nov 2018 03:14:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=arm.com
- (client-ip=217.140.101.70; helo=foss.arm.com;
- envelope-from=mark.rutland@arm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=209.85.222.195; helo=mail-qk1-f195.google.com;
+ envelope-from=arndbergmann@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 42zDCy6tS8zF3J8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Nov 2018 03:03:58 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id A970680D;
- Mon, 19 Nov 2018 08:03:57 -0800 (PST)
-Received: from lakrids.cambridge.arm.com (usa-sjc-imap-foss1.foss.arm.com
- [10.72.51.249])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 2CC013F575;
- Mon, 19 Nov 2018 08:03:55 -0800 (PST)
-Date: Mon, 19 Nov 2018 16:03:52 +0000
-From: Mark Rutland <mark.rutland@arm.com>
-To: Andrew Murray <andrew.murray@arm.com>
-Subject: Re: [PATCH 09/10] drivers/perf: perf/core: generalise event
- exclusion checking with perf macro
-Message-ID: <20181119160352.ua2lx72l754imiek@lakrids.cambridge.arm.com>
-References: <1542363853-13849-1-git-send-email-andrew.murray@arm.com>
- <1542363853-13849-10-git-send-email-andrew.murray@arm.com>
+ dmarc=none (p=none dis=none) header.from=arndb.de
+Received: from mail-qk1-f195.google.com (mail-qk1-f195.google.com
+ [209.85.222.195])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42zDPZ0gXYzF39Q
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Nov 2018 03:12:17 +1100 (AEDT)
+Received: by mail-qk1-f195.google.com with SMTP id d135so49412628qkc.12
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Nov 2018 08:12:17 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=v/CljHlhtduQLF35Irouy1QmlECeaT79XOoHMWeQgcA=;
+ b=BCieHZChCRPS6Erz8/dbU1z3RJwzcPkdqFXsHhqlKykPsrTeKNAY9ibGhJ4iQuY08L
+ mMedCJ5oYGi4pbTURQwDAmzNMB3QWRZ1U5nAh4gBJO33yOZkvU2mUji910ueUsly6eT7
+ cPmUyoXJHphDZ0z2xhTPDb/O17AW3oRLlZbJw3u0r2BNHK8gRav/uzlJDEpwR0imx1Ez
+ P2WfqmoE6Ym98j3Aiz97TC65CMZ7bGdhNBJFtxQ8f/CDGOAs8G5L7Niqqm2v7NgZvIOM
+ KlRAE91bZMa7VPOjCF1Il7S+8UC2z4OsOOZ1t0zQvpBH71kpz1nr9AHDJ5uJiVHelP5L
+ uQ4A==
+X-Gm-Message-State: AGRZ1gIKjP9QqlSJGOOTWhmkrUlelMaSiq45SBvO6Q7AI5XhdHQUxPFZ
+ heMqdz34C7IlsYeHT36pOFSNRWP+sZCIsON5+uY=
+X-Google-Smtp-Source: AJdET5dPIGsiE6RUf3i4cx4BCE5CZGvyj34krT9bAqeMDTqC1zdXy6tixqW2CNM/QRGHQTM99Pv5+MW2YDUPY+gahUQ=
+X-Received: by 2002:a37:a3c6:: with SMTP id
+ m189mr21184819qke.173.1542643934914; 
+ Mon, 19 Nov 2018 08:12:14 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1542363853-13849-10-git-send-email-andrew.murray@arm.com>
-User-Agent: NeoMutt/20170113 (1.7.2)
+References: <1542189798-27713-1-git-send-email-firoz.khan@linaro.org>
+ <1542189798-27713-3-git-send-email-firoz.khan@linaro.org>
+In-Reply-To: <1542189798-27713-3-git-send-email-firoz.khan@linaro.org>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Mon, 19 Nov 2018 17:11:58 +0100
+Message-ID: <CAK8P3a2AsQKPpFRKpNiEo2TVjfanuTSUjhO1wxgvLYyiqeaMNQ@mail.gmail.com>
+Subject: Re: [PATCH v2 2/4] powerpc: move macro definition from asm/systbl.h
+To: Firoz Khan <firoz.khan@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,193 +72,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Peter Zijlstra <peterz@infradead.org>,
- Sascha Hauer <s.hauer@pengutronix.de>, x86@kernel.org,
- Will Deacon <will.deacon@arm.com>, linuxppc-dev@lists.ozlabs.org,
- Arnaldo Carvalho de Melo <acme@kernel.org>, linux-kernel@vger.kernel.org,
- Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
- linux-alpha@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
- Shawn Guo <shawnguo@kernel.org>, linux-arm-kernel@lists.infradead.org
+Cc: Kate Stewart <kstewart@linuxfoundation.org>,
+ linux-arch <linux-arch@vger.kernel.org>, gregkh <gregkh@linuxfoundation.org>,
+ y2038 Mailman List <y2038@lists.linaro.org>, Boqun Feng <boqun.feng@gmail.com>,
+ Philippe Ombredanne <pombredanne@nexb.com>, linuxram@us.ibm.com,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Marcin Juszkiewicz <marcin.juszkiewicz@linaro.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Deepa Dinamani <deepa.kernel@gmail.com>, leitao@debian.org,
+ Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Nov 16, 2018 at 10:24:12AM +0000, Andrew Murray wrote:
-> Replace checking of perf event exclusion flags with perf macro.
-> 
-> This is a functional change as exclude_host and exclude_guest are added
-> in the following files:
-> 
->  - drivers/perf/qcom_l2_pmu.c
->  - drivers/perf/qcom_l3_pmu.c
->  - drivers/perf/arm_pmu.c
-> 
-> And exclude_idle and exclude_hv are added in these files:
-> 
->  - drivers/perf/xgene_pmu.c
+On Wed, Nov 14, 2018 at 11:04 AM Firoz Khan <firoz.khan@linaro.org> wrote:
 
-FWIW, that all sounds fine to me.
+> diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
+> index 01b5171..c4321b9 100644
+> --- a/arch/powerpc/include/asm/systbl.h
+> +++ b/arch/powerpc/include/asm/systbl.h
+> @@ -76,7 +76,6 @@
+>  SYSCALL_SPU(ssetmask)
+>  SYSCALL_SPU(setreuid)
+>  SYSCALL_SPU(setregid)
+> -#define compat_sys_sigsuspend sys_sigsuspend
+>  SYS32ONLY(sigsuspend)
 
-Assuming you fix up the 'macro' nit:
+I think the macro here is just a workaround for the fact that SYS32ONLY()
+always prepends the name with 'compat_' for the compat version, and there
+is no other macro to do this. After the conversion, this can easily be
+done using the regular table, as you need separate names for the
+32-bit entries anyway.
 
-Acked-by: Mark Rutland <mark.rutland@arm.com>
+>  SYSX(sys_ni_syscall,compat_sys_s
+> diff --git a/arch/powerpc/platforms/cell/spu_callbacks.c b/arch/powerpc/platforms/cell/spu_callbacks.c
+> index 8ae8620..7517a43 100644
+> --- a/arch/powerpc/platforms/cell/spu_callbacks.c
+> +++ b/arch/powerpc/platforms/cell/spu_callbacks.c
+> @@ -47,6 +47,7 @@
+>  #define COMPAT_SPU_NEW(func)   sys_##func,
+>  #define SYSX_SPU(f, f3264, f32)        f,
+>
+> +#define compat_sys_sigsuspend  sys_sigsuspend
+>  #include <asm/systbl.h>
+>  };
 
-... unless we go for Peter's core cap for this.
+The spu_callbacks.c and systbl_chk.c files don't need this macro,
+but that doesn't matter once you drop this patch.
 
-Thanks,
-Mark.
-
-> Signed-off-by: Andrew Murray <andrew.murray@arm.com>
-> ---
->  drivers/perf/arm-cci.c                   | 7 +------
->  drivers/perf/arm-ccn.c                   | 5 +----
->  drivers/perf/arm_dsu_pmu.c               | 7 +------
->  drivers/perf/arm_pmu.c                   | 9 +--------
->  drivers/perf/hisilicon/hisi_uncore_pmu.c | 7 +------
->  drivers/perf/qcom_l2_pmu.c               | 3 +--
->  drivers/perf/qcom_l3_pmu.c               | 3 +--
->  drivers/perf/xgene_pmu.c                 | 3 +--
->  8 files changed, 8 insertions(+), 36 deletions(-)
-> 
-> diff --git a/drivers/perf/arm-cci.c b/drivers/perf/arm-cci.c
-> index 1bfeb16..d749f19 100644
-> --- a/drivers/perf/arm-cci.c
-> +++ b/drivers/perf/arm-cci.c
-> @@ -1328,12 +1328,7 @@ static int cci_pmu_event_init(struct perf_event *event)
->  		return -EOPNOTSUPP;
->  
->  	/* We have no filtering of any kind */
-> -	if (event->attr.exclude_user	||
-> -	    event->attr.exclude_kernel	||
-> -	    event->attr.exclude_hv	||
-> -	    event->attr.exclude_idle	||
-> -	    event->attr.exclude_host	||
-> -	    event->attr.exclude_guest)
-> +	if (event_has_exclude_flags(event))
->  		return -EINVAL;
->  
->  	/*
-> diff --git a/drivers/perf/arm-ccn.c b/drivers/perf/arm-ccn.c
-> index 7dd850e..9a22a95 100644
-> --- a/drivers/perf/arm-ccn.c
-> +++ b/drivers/perf/arm-ccn.c
-> @@ -741,10 +741,7 @@ static int arm_ccn_pmu_event_init(struct perf_event *event)
->  		return -EOPNOTSUPP;
->  	}
->  
-> -	if (has_branch_stack(event) || event->attr.exclude_user ||
-> -			event->attr.exclude_kernel || event->attr.exclude_hv ||
-> -			event->attr.exclude_idle || event->attr.exclude_host ||
-> -			event->attr.exclude_guest) {
-> +	if (has_branch_stack(event) || event_has_exclude_flags(event)) {
->  		dev_dbg(ccn->dev, "Can't exclude execution levels!\n");
->  		return -EINVAL;
->  	}
-> diff --git a/drivers/perf/arm_dsu_pmu.c b/drivers/perf/arm_dsu_pmu.c
-> index 660cb8a..300ff3d 100644
-> --- a/drivers/perf/arm_dsu_pmu.c
-> +++ b/drivers/perf/arm_dsu_pmu.c
-> @@ -563,12 +563,7 @@ static int dsu_pmu_event_init(struct perf_event *event)
->  	}
->  
->  	if (has_branch_stack(event) ||
-> -	    event->attr.exclude_user ||
-> -	    event->attr.exclude_kernel ||
-> -	    event->attr.exclude_hv ||
-> -	    event->attr.exclude_idle ||
-> -	    event->attr.exclude_host ||
-> -	    event->attr.exclude_guest) {
-> +	    event_has_exclude_flags(event)) {
->  		dev_dbg(dsu_pmu->pmu.dev, "Can't support filtering\n");
->  		return -EINVAL;
->  	}
-> diff --git a/drivers/perf/arm_pmu.c b/drivers/perf/arm_pmu.c
-> index 7f01f6f..a03634f 100644
-> --- a/drivers/perf/arm_pmu.c
-> +++ b/drivers/perf/arm_pmu.c
-> @@ -357,13 +357,6 @@ static irqreturn_t armpmu_dispatch_irq(int irq, void *dev)
->  }
->  
->  static int
-> -event_requires_mode_exclusion(struct perf_event_attr *attr)
-> -{
-> -	return attr->exclude_idle || attr->exclude_user ||
-> -	       attr->exclude_kernel || attr->exclude_hv;
-> -}
-> -
-> -static int
->  __hw_perf_event_init(struct perf_event *event)
->  {
->  	struct arm_pmu *armpmu = to_arm_pmu(event->pmu);
-> @@ -395,7 +388,7 @@ __hw_perf_event_init(struct perf_event *event)
->  	 */
->  	if ((!armpmu->set_event_filter ||
->  	     armpmu->set_event_filter(hwc, &event->attr)) &&
-> -	     event_requires_mode_exclusion(&event->attr)) {
-> +	     event_has_exclude_flags(event)) {
->  		pr_debug("ARM performance counters do not support "
->  			 "mode exclusion\n");
->  		return -EOPNOTSUPP;
-> diff --git a/drivers/perf/hisilicon/hisi_uncore_pmu.c b/drivers/perf/hisilicon/hisi_uncore_pmu.c
-> index 9efd241..d3edff9 100644
-> --- a/drivers/perf/hisilicon/hisi_uncore_pmu.c
-> +++ b/drivers/perf/hisilicon/hisi_uncore_pmu.c
-> @@ -143,12 +143,7 @@ int hisi_uncore_pmu_event_init(struct perf_event *event)
->  		return -EOPNOTSUPP;
->  
->  	/* counters do not have these bits */
-> -	if (event->attr.exclude_user	||
-> -	    event->attr.exclude_kernel	||
-> -	    event->attr.exclude_host	||
-> -	    event->attr.exclude_guest	||
-> -	    event->attr.exclude_hv	||
-> -	    event->attr.exclude_idle)
-> +	if (event_has_exclude_flags(event))
->  		return -EINVAL;
->  
->  	/*
-> diff --git a/drivers/perf/qcom_l2_pmu.c b/drivers/perf/qcom_l2_pmu.c
-> index 842135c..d7d85a2 100644
-> --- a/drivers/perf/qcom_l2_pmu.c
-> +++ b/drivers/perf/qcom_l2_pmu.c
-> @@ -510,8 +510,7 @@ static int l2_cache_event_init(struct perf_event *event)
->  	}
->  
->  	/* We cannot filter accurately so we just don't allow it. */
-> -	if (event->attr.exclude_user || event->attr.exclude_kernel ||
-> -	    event->attr.exclude_hv || event->attr.exclude_idle) {
-> +	if (event_has_exclude_flags(event)) {
->  		dev_dbg_ratelimited(&l2cache_pmu->pdev->dev,
->  				    "Can't exclude execution levels\n");
->  		return -EOPNOTSUPP;
-> diff --git a/drivers/perf/qcom_l3_pmu.c b/drivers/perf/qcom_l3_pmu.c
-> index 2dc63d6..f27af67 100644
-> --- a/drivers/perf/qcom_l3_pmu.c
-> +++ b/drivers/perf/qcom_l3_pmu.c
-> @@ -497,8 +497,7 @@ static int qcom_l3_cache__event_init(struct perf_event *event)
->  	/*
->  	 * There are no per-counter mode filters in the PMU.
->  	 */
-> -	if (event->attr.exclude_user || event->attr.exclude_kernel ||
-> -	    event->attr.exclude_hv || event->attr.exclude_idle)
-> +	if (event_has_exclude_flags(event))
->  		return -EINVAL;
->  
->  	/*
-> diff --git a/drivers/perf/xgene_pmu.c b/drivers/perf/xgene_pmu.c
-> index 0e31f13..1fcd5a0 100644
-> --- a/drivers/perf/xgene_pmu.c
-> +++ b/drivers/perf/xgene_pmu.c
-> @@ -915,8 +915,7 @@ static int xgene_perf_event_init(struct perf_event *event)
->  		return -EINVAL;
->  
->  	/* SOC counters do not have usr/os/guest/host bits */
-> -	if (event->attr.exclude_user || event->attr.exclude_kernel ||
-> -	    event->attr.exclude_host || event->attr.exclude_guest)
-> +	if (event_has_exclude_flags(event))
->  		return -EINVAL;
->  
->  	if (event->cpu < 0)
-> -- 
-> 2.7.4
-> 
+      Arnd
