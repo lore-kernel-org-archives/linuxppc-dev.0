@@ -2,43 +2,112 @@ Return-Path: <SRS0=K8Qv=N6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A9B8C43441
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Nov 2018 04:27:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 80C30C43441
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Nov 2018 07:13:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CCD0420817
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Nov 2018 04:27:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CCD0420817
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	by mail.kernel.org (Postfix) with ESMTPS id B8DC32086A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Nov 2018 07:13:32 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="WvG07yuQ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B8DC32086A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42ywm45z1DzF3Ws
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Nov 2018 15:27:16 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	by lists.ozlabs.org (Postfix) with ESMTP id 42z0Rt4XRnzF3RK
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Nov 2018 18:13:30 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
- (client-ip=107.173.13.209; helo=ozlabs.ru; envelope-from=aik@ozlabs.ru;
- receiver=<UNKNOWN>)
+	dkim=pass (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.b="WvG07yuQ";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.ru
-Received: from ozlabs.ru (unknown [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 42ywjz5CkfzF3GX
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Nov 2018 15:25:27 +1100 (AEDT)
-Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id DAEF2AE8010F;
- Sun, 18 Nov 2018 23:25:21 -0500 (EST)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel] powerpc/powernv/eeh/npu: Fix uninitialized variables
- in opal_pci_eeh_freeze_status
-Date: Mon, 19 Nov 2018 15:25:17 +1100
-Message-Id: <20181119042517.45075-1-aik@ozlabs.ru>
-X-Mailer: git-send-email 2.17.1
+ spf=pass (mailfrom) smtp.mailfrom=nxp.com
+ (client-ip=40.107.2.70; helo=eur02-ve1-obe.outbound.protection.outlook.com;
+ envelope-from=madalin.bucur@nxp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=nxp.com header.i=@nxp.com header.b="WvG07yuQ"; 
+ dkim-atps=neutral
+Received: from EUR02-VE1-obe.outbound.protection.outlook.com
+ (mail-eopbgr20070.outbound.protection.outlook.com [40.107.2.70])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42z0P92lbDzF3R7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Nov 2018 18:11:06 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1; 
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=4pqJmDXhKcfcw5q3BcuWv6cxkyhnHnb2X+/J1Mnk/kY=;
+ b=WvG07yuQfJPtepwRQ2SX1NvwhpHhgKv36OcZL4qHk+vK0cwBRtHl/E8BmoGXSeIvwwC3ENNV0YP5c7SvOlqtQ3BU0hRw2U9emCfsWoRCT4h2MlhkR18pLmpoz9fjOpywuwe0gtum6C5J52Jdj3VU1/X4ahAq84tBsvrm4+MyObA=
+Received: from DB7PR04MB4009.eurprd04.prod.outlook.com (52.134.107.22) by
+ DB7PR04MB6011.eurprd04.prod.outlook.com (20.178.107.140) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.1294.30; Mon, 19 Nov 2018 07:11:00 +0000
+Received: from DB7PR04MB4009.eurprd04.prod.outlook.com
+ ([fe80::6c2f:c491:5101:7e8a]) by DB7PR04MB4009.eurprd04.prod.outlook.com
+ ([fe80::6c2f:c491:5101:7e8a%3]) with mapi id 15.20.1339.026; Mon, 19 Nov 2018
+ 07:11:00 +0000
+From: Madalin-cristian Bucur <madalin.bucur@nxp.com>
+To: David Miller <davem@davemloft.net>
+Subject: RE: [PATCH v2 2/2] dpaa_eth: add ethtool coalesce control
+Thread-Topic: [PATCH v2 2/2] dpaa_eth: add ethtool coalesce control
+Thread-Index: AQHUe24lC3EXIiTmj0ac6v9A0T9Uk6VTWDiAgANewAA=
+Date: Mon, 19 Nov 2018 07:11:00 +0000
+Message-ID: <DB7PR04MB400914664928CDCD6797F151ECD80@DB7PR04MB4009.eurprd04.prod.outlook.com>
+References: <1542126591-5114-1-git-send-email-madalin.bucur@nxp.com>
+ <1542126591-5114-3-git-send-email-madalin.bucur@nxp.com>
+ <20181116.194219.2027125174407236599.davem@davemloft.net>
+In-Reply-To: <20181116.194219.2027125174407236599.davem@davemloft.net>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=madalin.bucur@nxp.com; 
+x-originating-ip: [86.34.165.90]
+x-ms-publictraffictype: Email
+x-microsoft-exchange-diagnostics: 1; DB7PR04MB6011;
+ 6:ChYv2pI7RusXJAvIRIQBKRhVcVQQ0m4Nvqj4+25j3cKefY7JjoQ+T6K0v9G+7WsWvnlodGEd0A0ehzd9wtFKEqNBQd6xxYqffcy2+s9ywsDzUTWPhSlJcWwJR4xqZkJ6jv+QMndo7UOh2wvmbwkzrk9WzvjJ5Yq9Emtio/DEzsg49CTGwOdegZAqZQp4NKVc7MZPXKo6s5sBjp3BfMiOAejyiJK4nLuhCCKFpiebznu6+JKVy+3JcKRn2/namV6rFNmrvF/JKGtF/dSe7hqFpGZseIqD3MXQj3GRxFmDkKIogIoaP6Dzuzbqhh+9FGAYVf5PpBCbqfjvy+uc8R90VnADtcu27fVg3pQxDHYmwIOXhDPvOsFKYVLsqKDQxNRqBOxOCnk60wv8b2iXec6ozsftVrUVJAwRd3FUgjhbk2Ipwoyc4lGxa865iA2G0fodbwPjen1AA/6coxGfU7z5MA==;
+ 5:BLpz7j5FpWp2M6kHr2jHjHgTy21dQwqMwqBiR1AdIJkLRenQiKVcyeKY9ZJ4wlTYE3DWx3HYdSD8I62FAEywutzYUVX3AGcJ81E+sE/doO/zqjWETTVIY3W3xtjjdoMcjIdf7eAXZX+6ZFJkZt+oB1+AwTu/gVxjPJqJwH1AtiE=;
+ 7:xd2vNJkxOesM9lGS7dcrTSpFr9ajUwxqwvS5aQe4zpVvwbX6XeQ65aRd2MPuZZNJ4JTSzIYBp5VkWWBdqy95JmX7ypnnFYm8rxbxgST/rjdmnGSmVDrqnRGHwBhXBL7KoqO9cMAPJIRQehFERE0a7Q==
+x-ms-exchange-antispam-srfa-diagnostics: SOS;
+x-ms-office365-filtering-correlation-id: 2b7994f5-101c-49c9-f2a1-08d64dee2903
+x-ms-office365-filtering-ht: Tenant
+x-microsoft-antispam: BCL:0; PCL:0;
+ RULEID:(2390098)(7020095)(4652040)(8989299)(5600074)(711020)(4618075)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(2017052603328)(7153060)(7193020);
+ SRVR:DB7PR04MB6011; 
+x-ms-traffictypediagnostic: DB7PR04MB6011:
+x-microsoft-antispam-prvs: <DB7PR04MB6011F7AA46C834DD8E974791ECD80@DB7PR04MB6011.eurprd04.prod.outlook.com>
+x-exchange-antispam-report-test: UriScan:(185117386973197);
+x-ms-exchange-senderadcheck: 1
+x-exchange-antispam-report-cfa-test: BCL:0; PCL:0;
+ RULEID:(8211001083)(6040522)(2401047)(5005006)(8121501046)(93006095)(93001095)(3231415)(944501410)(52105112)(10201501046)(3002001)(6055026)(148016)(149066)(150057)(6041310)(20161123558120)(20161123562045)(20161123564045)(20161123560045)(201703131423095)(201702281528075)(20161123555045)(201703061421075)(201703061406153)(201708071742011)(7699051)(76991095);
+ SRVR:DB7PR04MB6011; BCL:0; PCL:0; RULEID:; SRVR:DB7PR04MB6011; 
+x-forefront-prvs: 08617F610C
+x-forefront-antispam-report: SFV:NSPM;
+ SFS:(10009020)(346002)(136003)(396003)(366004)(39860400002)(376002)(13464003)(189003)(199004)(71200400001)(71190400001)(478600001)(54906003)(316002)(102836004)(14454004)(97736004)(2906002)(26005)(33656002)(25786009)(256004)(4326008)(6246003)(53936002)(9686003)(105586002)(68736007)(55016002)(106356001)(8676002)(74316002)(186003)(2900100001)(446003)(6116002)(3846002)(6436002)(7736002)(6916009)(486006)(76176011)(7696005)(66066001)(6506007)(99286004)(305945005)(476003)(11346002)(81156014)(5660300001)(8936002)(81166006)(53546011)(86362001)(229853002);
+ DIR:OUT; SFP:1101; SCL:1; SRVR:DB7PR04MB6011;
+ H:DB7PR04MB4009.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
+ PTR:InfoNoRecords; MX:1; A:1; 
+received-spf: None (protection.outlook.com: nxp.com does not designate
+ permitted sender hosts)
+x-microsoft-antispam-message-info: f3HKMFov5VAws8bJLxXBfMo8yXIRtgYZRGl8n9yq9slZVFDlgydPKNnvKEDluydGv2g4NudKzqkDxyG1ssybgd9XDjadIBWv+YOLYtndjuYoTNouLKQoIXZPJWCbCMW2q20vaFoIm/EEABEUeJLDnWyCxCVZZhrtnrbsx7b/iaivztMFBBcWAn/k3EW8OKGI/+yHcdlU4PZ71sYJq0niF6qd8ulrpYBfVyCjpt6p2MXXY5csqvRfzVEInmNvumr3fSIcneiNE0Me3RahWeqhfV4dZOvXe1IkOd1kFubutxE1gjpiEd/j1gDjqeZlSGxllD0Pocb1/mppG+FBWtSrJFTNY9Qs5e6+11t6q8bfdEc=
+spamdiagnosticoutput: 1:99
+spamdiagnosticmetadata: NSPM
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 2b7994f5-101c-49c9-f2a1-08d64dee2903
+X-MS-Exchange-CrossTenant-originalarrivaltime: 19 Nov 2018 07:11:00.4558 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DB7PR04MB6011
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -50,157 +119,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- Alistair Popple <alistair@popple.id.au>, Sam Bobroff <sbobroff@linux.ibm.com>,
- Piotr Jaroszynski <pjaroszynski@nvidia.com>,
- Oliver O'Halloran <oohall@gmail.com>, Reza Arbab <arbab@linux.ibm.com>
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ Roy Pledge <roy.pledge@nxp.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Leo Li <leoyang.li@nxp.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The current implementation of the OPAL_PCI_EEH_FREEZE_STATUS call in
-skiboot's NPU driver does not touch the pci_error_type parameter so
-it might have garbage but the powernv code analyzes it nevertheless.
+> -----Original Message-----
+> From: David Miller <davem@davemloft.net>
+> Sent: Saturday, November 17, 2018 5:42 AM
+> To: Madalin-cristian Bucur <madalin.bucur@nxp.com>
+> Subject: Re: [PATCH v2 2/2] dpaa_eth: add ethtool coalesce control
+>=20
+> From: Madalin Bucur <madalin.bucur@nxp.com>
+> Date: Tue, 13 Nov 2018 18:29:51 +0200
+>=20
+> > +	for_each_cpu(cpu, cpus) {
+> > +		portal =3D qman_get_affine_portal(cpu);
+> > +		res =3D qman_portal_set_iperiod(portal, period);
+> > +		if (res)
+> > +			return res;
+> > +		res =3D qman_dqrr_set_ithresh(portal, thresh);
+> > +		if (res)
+> > +			return res;
+>=20
+> Nope, you can't do it like this.
+>=20
+> If any intermediate change fails, you have to unwind all of the
+> changes made up until that point.
+>=20
+> Which means you'll have to store the previous setting somewhere
+> and reinstall those saved values in the error path.
 
-This initializes pcierr and fstate to zero in all call sites.
+Thank you, I'll come back with a v3.
 
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
-
-Without this, this happens:
-
-pnv_eeh_get_phb_diag: Failure -7 getting PHB#6 diag-data
-EEH: PHB#6 failure detected, location: N/A
-CPU: 23 PID: 5939 Comm: qemu-system-ppc Not tainted 4.19.0-le_f5a7bb7_aikATfstn1-p1 torvalds#106
-Call Trace:
-[c000003fea9df9c0] [c000000000a990ec] dump_stack+0xb0/0xf4 (unreliable)
-[c000003fea9dfa00] [c000000000038480] eeh_dev_check_failure+0x1f0/0x5f0
-[c000003fea9dfaa0] [c0000000000a2768] pnv_pci_read_config+0x128/0x160
-[c000003fea9dfae0] [c0000000005d2b0c] pci_bus_read_config_dword+0x9c/0xf0
-[c000003fea9dfb40] [c0000000005df3d4] pci_save_state+0x64/0x250
-[c000003fea9dfbc0] [c0000000005e0730] pci_dev_save_and_disable+0x70/0xa0
-[c000003fea9dfbf0] [c0000000005e4078] pci_try_reset_function+0x48/0xc0
-[c000003fea9dfc20] [c00800001cbc1b1c] vfio_pci_ioctl+0x334/0xea0 [vfio_pci]
-[c000003fea9dfcf0] [c00800001ca9046c] vfio_device_fops_unl_ioctl+0x44/0x70 [vfio]
-[c000003fea9dfd10] [c00000000039fd84] do_vfs_ioctl+0xd4/0xa00
-[c000003fea9dfdb0] [c0000000003a07b4] ksys_ioctl+0x104/0x120
-[c000003fea9dfe00] [c0000000003a07f8] sys_ioctl+0x28/0x80
-[c000003fea9dfe20] [c00000000000b3a4] system_call+0x5c/0x70
-EEH: Detected error on PHB#6
-EEH: This PCI device has failed 1 times in the last hour and will be permanently disabled after 5 fail
-ures.
-EEH: Notify device drivers to shutdown
-EEH: Beginning: 'error_detected(IO frozen)'
-EEH: PE#d (PCI 0006:00:00.0): not actionable (1,1,0)
-EEH: PE#d (PCI 0006:00:00.1): not actionable (1,1,0)
-EEH: PE#c (PCI 0006:00:01.0): Invoking vfio-pci->error_detected(IO frozen)
-EEH: PE#c (PCI 0006:00:01.0): vfio-pci driver reports: 'can recover'
-EEH: PE#c (PCI 0006:00:01.1): Invoking vfio-pci->error_detected(IO frozen)
-EEH: PE#c (PCI 0006:00:01.1): vfio-pci driver reports: 'can recover'
-EEH: PE#b (PCI 0006:00:02.0): Invoking vfio-pci->error_detected(IO frozen)
-EEH: PE#b (PCI 0006:00:02.0): vfio-pci driver reports: 'can recover'
-EEH: PE#b (PCI 0006:00:02.1): Invoking vfio-pci->error_detected(IO frozen)
-EEH: PE#b (PCI 0006:00:02.1): vfio-pci driver reports: 'can recover'
-EEH: Finished:'error_detected(IO frozen)' with aggregate recovery state:'can recover'
-EEH: Collect temporary log
-pnv_pci_dump_phb_diag_data: Unrecognized ioType 0
-EEH: Reset without hotplug activity
-iommu: Removing device 0006:00:01.0 from group 4
-iommu: Removing device 0006:00:01.1 from group 4
-iommu: Removing device 0006:00:02.0 from group 4
-iommu: Removing device 0006:00:02.1 from group 4
-pnv_ioda_freeze_pe: Failure -7 freezing PHB#6-PE#0
-pnv_eeh_restore_config: Can't reinit PCI dev 0x0 (-7)
-pnv_eeh_restore_config: Can't reinit PCI dev 0x1 (-7)
-pnv_eeh_restore_config: Can't reinit PCI dev 0x8 (-7)
-pnv_eeh_restore_config: Can't reinit PCI dev 0x9 (-7)
-pnv_eeh_restore_config: Can't reinit PCI dev 0x10 (-7)
-pnv_eeh_restore_config: Can't reinit PCI dev 0x11 (-7)
-pnv_eeh_restore_config: Can't reinit PCI dev 0x0 (-7)
-pnv_eeh_restore_config: Can't reinit PCI dev 0x1 (-7)
-pnv_eeh_restore_config: Can't reinit PCI dev 0x8 (-7)
-pnv_eeh_restore_config: Can't reinit PCI dev 0x9 (-7)
-pnv_eeh_restore_config: Can't reinit PCI dev 0x10 (-7)
-pnv_eeh_restore_config: Can't reinit PCI dev 0x11 (-7)
-EEH: Sleep 5s ahead of partial hotplug
-pci 0004:04     : [PE# 00] Setting up window#0 0..3fffffff pg=1000
-pci 0004:05     : [PE# 18] Setting up window#0 0..3fffffff pg=1000
-pci 0004:06     : [PE# 30] Setting up window#0 0..3fffffff pg=1000
-pci 0006:00:00.0: [PE# 0d] Setting up window 0..3fffffff pg=1000
-pci 0006:00:01.0: [PE# 0c] Setting up window 0..3fffffff pg=1000
-pci 0006:00:02.0: [PE# 0b] Setting up window 0..3fffffff pg=1000
-EEH: Beginning: 'slot_reset'
-EEH: PE#d (PCI 0006:00:00.0): not actionable (1,1,0)
-EEH: PE#d (PCI 0006:00:00.1): not actionable (1,1,0)
-EEH: Finished:'slot_reset' with aggregate recovery state:'none'
-EEH: Notify device driver to resume
-EEH: Beginning: 'resume'
-EEH: PE#d (PCI 0006:00:00.0): not actionable (1,1,0)
-EEH: PE#d (PCI 0006:00:00.1): not actionable (1,1,0)
-EEH: Finished:'resume'
-EEH: Recovery successful.
----
- arch/powerpc/platforms/powernv/eeh-powernv.c | 8 ++++----
- arch/powerpc/platforms/powernv/pci-ioda.c    | 4 ++--
- arch/powerpc/platforms/powernv/pci.c         | 4 ++--
- 3 files changed, 8 insertions(+), 8 deletions(-)
-
-diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index abc0be7..f380789 100644
---- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -564,8 +564,8 @@ static void pnv_eeh_get_phb_diag(struct eeh_pe *pe)
- static int pnv_eeh_get_phb_state(struct eeh_pe *pe)
- {
- 	struct pnv_phb *phb = pe->phb->private_data;
--	u8 fstate;
--	__be16 pcierr;
-+	u8 fstate = 0;
-+	__be16 pcierr = 0;
- 	s64 rc;
- 	int result = 0;
- 
-@@ -603,8 +603,8 @@ static int pnv_eeh_get_phb_state(struct eeh_pe *pe)
- static int pnv_eeh_get_pe_state(struct eeh_pe *pe)
- {
- 	struct pnv_phb *phb = pe->phb->private_data;
--	u8 fstate;
--	__be16 pcierr;
-+	u8 fstate = 0;
-+	__be16 pcierr = 0;
- 	s64 rc;
- 	int result;
- 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index dd80744..72b5cc0 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -604,8 +604,8 @@ static int pnv_ioda_unfreeze_pe(struct pnv_phb *phb, int pe_no, int opt)
- static int pnv_ioda_get_pe_state(struct pnv_phb *phb, int pe_no)
- {
- 	struct pnv_ioda_pe *slave, *pe;
--	u8 fstate, state;
--	__be16 pcierr;
-+	u8 fstate = 0, state;
-+	__be16 pcierr = 0;
- 	s64 rc;
- 
- 	/* Sanity check on PE number */
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index 13aef23..db230a35 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -602,8 +602,8 @@ static void pnv_pci_handle_eeh_config(struct pnv_phb *phb, u32 pe_no)
- static void pnv_pci_config_check_eeh(struct pci_dn *pdn)
- {
- 	struct pnv_phb *phb = pdn->phb->private_data;
--	u8	fstate;
--	__be16	pcierr;
-+	u8	fstate = 0;
-+	__be16	pcierr = 0;
- 	unsigned int pe_no;
- 	s64	rc;
- 
--- 
-2.17.1
-
+Madalin
