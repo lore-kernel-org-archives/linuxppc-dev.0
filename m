@@ -2,86 +2,43 @@ Return-Path: <SRS0=K8Qv=N6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_NEOMUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 247E2C43441
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Nov 2018 04:06:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A9B8C43441
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Nov 2018 04:27:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 47E7720823
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Nov 2018 04:06:55 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linaro.org header.i=@linaro.org header.b="kRq4gKhA"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 47E7720823
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
+	by mail.kernel.org (Postfix) with ESMTPS id CCD0420817
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Nov 2018 04:27:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CCD0420817
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42ywJX6FY2zF3T4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Nov 2018 15:06:52 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42ywm45z1DzF3Ws
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Nov 2018 15:27:16 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.b="kRq4gKhA";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
+ (client-ip=107.173.13.209; helo=ozlabs.ru; envelope-from=aik@ozlabs.ru;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linaro.org
- (client-ip=2607:f8b0:4864:20::444; helo=mail-pf1-x444.google.com;
- envelope-from=viresh.kumar@linaro.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linaro.org header.i=@linaro.org header.b="kRq4gKhA"; 
- dkim-atps=neutral
-Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
- [IPv6:2607:f8b0:4864:20::444])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42ywFt01rszF3HS
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Nov 2018 15:04:30 +1100 (AEDT)
-Received: by mail-pf1-x444.google.com with SMTP id b85so7343277pfc.3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Nov 2018 20:04:30 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=W6VB1c2dyfcWsF/AQxV4nxQYdWWfLaBDDIg/sraD0iQ=;
- b=kRq4gKhAYjBd3PG5oXb4Lvtfa4+kO5XhwHoa5tCnlzmHs7SO1bPpz1cUOdoMPZYcVD
- 3K1EGYfFPhY3dhvabuoz2g9QVQlgK5LEsX2beWtONGDVdiJ2+ltXe0lqCleF/T1QWMd9
- S743dFXjM1222czClXNd+berTVapGKhNxPdV8=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=W6VB1c2dyfcWsF/AQxV4nxQYdWWfLaBDDIg/sraD0iQ=;
- b=rcNXFXyLrZR01PkaDH0GZVjIyP4KoWvJPCl42NfRR/Qg43VIegrIcsanW6cBj4JF1O
- uoxqLBcmwnEcyX0VW935XQBqtgzrmdg9IQOfNhwXiNft0nsOcTojE05QOdhYHJO5Kpek
- fer4JAlkUXypQuowFMjW3x49DSpfjEKI3jh9PlUX+BxN9NaTtHmGcD8ZF0EDbk+F7OFs
- 9ZVWbAy4adHS/HfcKa9XhcudUEM8AUgitrK8Bhhq3LRs+aFdACJNkziG4PaxKO2zq0fk
- 1wKs+hTgeQVMYDAS9m5Y9w5DWpVvXb84BTnpt6HgOs80UnCMcRQAEvybNUBQAZG9939N
- 32wg==
-X-Gm-Message-State: AGRZ1gJdpPgtP0WIvcUioukMCwSlxHKCfq+9PkXX0zjUTfCXSXxMX9gc
- SBuz7QByODEK+5vO6FsWGEk5sw==
-X-Google-Smtp-Source: AJdET5dKkzAKLP8w5l6U/HD09LowaMHm49xfninmrk9lHCfNzYFLPxk+Ze6xWyyLE+vBXUfXg00ekw==
-X-Received: by 2002:a63:a064:: with SMTP id u36mr18825475pgn.145.1542600267940; 
- Sun, 18 Nov 2018 20:04:27 -0800 (PST)
-Received: from localhost ([122.172.88.116])
- by smtp.gmail.com with ESMTPSA id o13sm6510701pfk.57.2018.11.18.20.04.25
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Sun, 18 Nov 2018 20:04:26 -0800 (PST)
-Date: Mon, 19 Nov 2018 09:34:23 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: Re: [PATCH 1/7] drivers/cpufreq: change CONFIG_6xx to
- CONFIG_PPC_BOOK3S_32
-Message-ID: <20181119040423.pbfuszycad66e2qr@vireshk-i7>
-References: <aeeaafbdf0357f8bdb8ffd86822a0ddfd5521fd6.1542395798.git.christophe.leroy@c-s.fr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <aeeaafbdf0357f8bdb8ffd86822a0ddfd5521fd6.1542395798.git.christophe.leroy@c-s.fr>
-User-Agent: NeoMutt/20180323-120-3dd1ac
+ dmarc=none (p=none dis=none) header.from=ozlabs.ru
+Received: from ozlabs.ru (unknown [107.173.13.209])
+ by lists.ozlabs.org (Postfix) with ESMTP id 42ywjz5CkfzF3GX
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Nov 2018 15:25:27 +1100 (AEDT)
+Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
+ by ozlabs.ru (Postfix) with ESMTP id DAEF2AE8010F;
+ Sun, 18 Nov 2018 23:25:21 -0500 (EST)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH kernel] powerpc/powernv/eeh/npu: Fix uninitialized variables
+ in opal_pci_eeh_freeze_status
+Date: Mon, 19 Nov 2018 15:25:17 +1100
+Message-Id: <20181119042517.45075-1-aik@ozlabs.ru>
+X-Mailer: git-send-email 2.17.1
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,54 +50,157 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Alistair Popple <alistair@popple.id.au>, Sam Bobroff <sbobroff@linux.ibm.com>,
+ Piotr Jaroszynski <pjaroszynski@nvidia.com>,
+ Oliver O'Halloran <oohall@gmail.com>, Reza Arbab <arbab@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 17-11-18, 10:24, Christophe Leroy wrote:
-> Today, powerpc has three CONFIG labels which means exactly the same:
-> - CONFIG_6xx
-> - CONFIG_PPC_BOOK3S_32
-> - CONFIG_PPC_STD_MMU_32
-> 
-> By consistency with PPC64, CONFIG_PPC_BOOK3S_32 is the preferred one.
-> Using a label with includes _PPC_ also makes it clearer that it is
-> linked to powerpc.
-> 
-> In preparation of the removal of CONFIG_6xx, this patch replaces it
-> by CONFIG_PPC_BOOK3S_32
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> ---
->  drivers/cpufreq/pmac32-cpufreq.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/pmac32-cpufreq.c b/drivers/cpufreq/pmac32-cpufreq.c
-> index 61ae06ca008e..52f0d91d30c1 100644
-> --- a/drivers/cpufreq/pmac32-cpufreq.c
-> +++ b/drivers/cpufreq/pmac32-cpufreq.c
-> @@ -128,7 +128,7 @@ static int cpu_750fx_cpu_speed(int low_speed)
->  			mtspr(SPRN_HID2, hid2);
->  		}
->  	}
-> -#ifdef CONFIG_6xx
-> +#ifdef CONFIG_PPC_BOOK3S_32
->  	low_choose_750fx_pll(low_speed);
->  #endif
->  	if (low_speed == 1) {
-> @@ -166,7 +166,7 @@ static int dfs_set_cpu_speed(int low_speed)
->  	}
->  
->  	/* set frequency */
-> -#ifdef CONFIG_6xx
-> +#ifdef CONFIG_PPC_BOOK3S_32
->  	low_choose_7447a_dfs(low_speed);
->  #endif
->  	udelay(100);
+The current implementation of the OPAL_PCI_EEH_FREEZE_STATUS call in
+skiboot's NPU driver does not touch the pci_error_type parameter so
+it might have garbage but the powernv code analyzes it nevertheless.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+This initializes pcierr and fstate to zero in all call sites.
 
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+
+Without this, this happens:
+
+pnv_eeh_get_phb_diag: Failure -7 getting PHB#6 diag-data
+EEH: PHB#6 failure detected, location: N/A
+CPU: 23 PID: 5939 Comm: qemu-system-ppc Not tainted 4.19.0-le_f5a7bb7_aikATfstn1-p1 torvalds#106
+Call Trace:
+[c000003fea9df9c0] [c000000000a990ec] dump_stack+0xb0/0xf4 (unreliable)
+[c000003fea9dfa00] [c000000000038480] eeh_dev_check_failure+0x1f0/0x5f0
+[c000003fea9dfaa0] [c0000000000a2768] pnv_pci_read_config+0x128/0x160
+[c000003fea9dfae0] [c0000000005d2b0c] pci_bus_read_config_dword+0x9c/0xf0
+[c000003fea9dfb40] [c0000000005df3d4] pci_save_state+0x64/0x250
+[c000003fea9dfbc0] [c0000000005e0730] pci_dev_save_and_disable+0x70/0xa0
+[c000003fea9dfbf0] [c0000000005e4078] pci_try_reset_function+0x48/0xc0
+[c000003fea9dfc20] [c00800001cbc1b1c] vfio_pci_ioctl+0x334/0xea0 [vfio_pci]
+[c000003fea9dfcf0] [c00800001ca9046c] vfio_device_fops_unl_ioctl+0x44/0x70 [vfio]
+[c000003fea9dfd10] [c00000000039fd84] do_vfs_ioctl+0xd4/0xa00
+[c000003fea9dfdb0] [c0000000003a07b4] ksys_ioctl+0x104/0x120
+[c000003fea9dfe00] [c0000000003a07f8] sys_ioctl+0x28/0x80
+[c000003fea9dfe20] [c00000000000b3a4] system_call+0x5c/0x70
+EEH: Detected error on PHB#6
+EEH: This PCI device has failed 1 times in the last hour and will be permanently disabled after 5 fail
+ures.
+EEH: Notify device drivers to shutdown
+EEH: Beginning: 'error_detected(IO frozen)'
+EEH: PE#d (PCI 0006:00:00.0): not actionable (1,1,0)
+EEH: PE#d (PCI 0006:00:00.1): not actionable (1,1,0)
+EEH: PE#c (PCI 0006:00:01.0): Invoking vfio-pci->error_detected(IO frozen)
+EEH: PE#c (PCI 0006:00:01.0): vfio-pci driver reports: 'can recover'
+EEH: PE#c (PCI 0006:00:01.1): Invoking vfio-pci->error_detected(IO frozen)
+EEH: PE#c (PCI 0006:00:01.1): vfio-pci driver reports: 'can recover'
+EEH: PE#b (PCI 0006:00:02.0): Invoking vfio-pci->error_detected(IO frozen)
+EEH: PE#b (PCI 0006:00:02.0): vfio-pci driver reports: 'can recover'
+EEH: PE#b (PCI 0006:00:02.1): Invoking vfio-pci->error_detected(IO frozen)
+EEH: PE#b (PCI 0006:00:02.1): vfio-pci driver reports: 'can recover'
+EEH: Finished:'error_detected(IO frozen)' with aggregate recovery state:'can recover'
+EEH: Collect temporary log
+pnv_pci_dump_phb_diag_data: Unrecognized ioType 0
+EEH: Reset without hotplug activity
+iommu: Removing device 0006:00:01.0 from group 4
+iommu: Removing device 0006:00:01.1 from group 4
+iommu: Removing device 0006:00:02.0 from group 4
+iommu: Removing device 0006:00:02.1 from group 4
+pnv_ioda_freeze_pe: Failure -7 freezing PHB#6-PE#0
+pnv_eeh_restore_config: Can't reinit PCI dev 0x0 (-7)
+pnv_eeh_restore_config: Can't reinit PCI dev 0x1 (-7)
+pnv_eeh_restore_config: Can't reinit PCI dev 0x8 (-7)
+pnv_eeh_restore_config: Can't reinit PCI dev 0x9 (-7)
+pnv_eeh_restore_config: Can't reinit PCI dev 0x10 (-7)
+pnv_eeh_restore_config: Can't reinit PCI dev 0x11 (-7)
+pnv_eeh_restore_config: Can't reinit PCI dev 0x0 (-7)
+pnv_eeh_restore_config: Can't reinit PCI dev 0x1 (-7)
+pnv_eeh_restore_config: Can't reinit PCI dev 0x8 (-7)
+pnv_eeh_restore_config: Can't reinit PCI dev 0x9 (-7)
+pnv_eeh_restore_config: Can't reinit PCI dev 0x10 (-7)
+pnv_eeh_restore_config: Can't reinit PCI dev 0x11 (-7)
+EEH: Sleep 5s ahead of partial hotplug
+pci 0004:04     : [PE# 00] Setting up window#0 0..3fffffff pg=1000
+pci 0004:05     : [PE# 18] Setting up window#0 0..3fffffff pg=1000
+pci 0004:06     : [PE# 30] Setting up window#0 0..3fffffff pg=1000
+pci 0006:00:00.0: [PE# 0d] Setting up window 0..3fffffff pg=1000
+pci 0006:00:01.0: [PE# 0c] Setting up window 0..3fffffff pg=1000
+pci 0006:00:02.0: [PE# 0b] Setting up window 0..3fffffff pg=1000
+EEH: Beginning: 'slot_reset'
+EEH: PE#d (PCI 0006:00:00.0): not actionable (1,1,0)
+EEH: PE#d (PCI 0006:00:00.1): not actionable (1,1,0)
+EEH: Finished:'slot_reset' with aggregate recovery state:'none'
+EEH: Notify device driver to resume
+EEH: Beginning: 'resume'
+EEH: PE#d (PCI 0006:00:00.0): not actionable (1,1,0)
+EEH: PE#d (PCI 0006:00:00.1): not actionable (1,1,0)
+EEH: Finished:'resume'
+EEH: Recovery successful.
+---
+ arch/powerpc/platforms/powernv/eeh-powernv.c | 8 ++++----
+ arch/powerpc/platforms/powernv/pci-ioda.c    | 4 ++--
+ arch/powerpc/platforms/powernv/pci.c         | 4 ++--
+ 3 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
+index abc0be7..f380789 100644
+--- a/arch/powerpc/platforms/powernv/eeh-powernv.c
++++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
+@@ -564,8 +564,8 @@ static void pnv_eeh_get_phb_diag(struct eeh_pe *pe)
+ static int pnv_eeh_get_phb_state(struct eeh_pe *pe)
+ {
+ 	struct pnv_phb *phb = pe->phb->private_data;
+-	u8 fstate;
+-	__be16 pcierr;
++	u8 fstate = 0;
++	__be16 pcierr = 0;
+ 	s64 rc;
+ 	int result = 0;
+ 
+@@ -603,8 +603,8 @@ static int pnv_eeh_get_phb_state(struct eeh_pe *pe)
+ static int pnv_eeh_get_pe_state(struct eeh_pe *pe)
+ {
+ 	struct pnv_phb *phb = pe->phb->private_data;
+-	u8 fstate;
+-	__be16 pcierr;
++	u8 fstate = 0;
++	__be16 pcierr = 0;
+ 	s64 rc;
+ 	int result;
+ 
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index dd80744..72b5cc0 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -604,8 +604,8 @@ static int pnv_ioda_unfreeze_pe(struct pnv_phb *phb, int pe_no, int opt)
+ static int pnv_ioda_get_pe_state(struct pnv_phb *phb, int pe_no)
+ {
+ 	struct pnv_ioda_pe *slave, *pe;
+-	u8 fstate, state;
+-	__be16 pcierr;
++	u8 fstate = 0, state;
++	__be16 pcierr = 0;
+ 	s64 rc;
+ 
+ 	/* Sanity check on PE number */
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index 13aef23..db230a35 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -602,8 +602,8 @@ static void pnv_pci_handle_eeh_config(struct pnv_phb *phb, u32 pe_no)
+ static void pnv_pci_config_check_eeh(struct pci_dn *pdn)
+ {
+ 	struct pnv_phb *phb = pdn->phb->private_data;
+-	u8	fstate;
+-	__be16	pcierr;
++	u8	fstate = 0;
++	__be16	pcierr = 0;
+ 	unsigned int pe_no;
+ 	s64	rc;
+ 
 -- 
-viresh
+2.17.1
+
