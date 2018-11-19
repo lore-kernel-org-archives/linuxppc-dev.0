@@ -2,51 +2,58 @@ Return-Path: <SRS0=K8Qv=N6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BF177C43441
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Nov 2018 18:16:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5026EC43441
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Nov 2018 18:26:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 073FB206BA
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Nov 2018 18:16:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 073FB206BA
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id C2E53206BA
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Nov 2018 18:26:43 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="wm5rkxyt"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C2E53206BA
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42zH8W5tynzF3Gx
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Nov 2018 05:16:11 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42zHNd4qnWzF3JC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Nov 2018 05:26:41 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=intel.com
- (client-ip=192.55.52.151; helo=mga17.intel.com;
- envelope-from=keith.busch@intel.com; receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="wm5rkxyt";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=okaya@kernel.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="wm5rkxyt"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42zH6H27MrzF35w
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Nov 2018 05:14:11 +1100 (AEDT)
-X-Amp-Result: UNKNOWN
-X-Amp-Original-Verdict: FILE UNKNOWN
-X-Amp-File-Uploaded: False
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
- by fmsmga107.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
- 19 Nov 2018 10:14:07 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.56,253,1539673200"; d="scan'208";a="87643713"
-Received: from unknown (HELO localhost.localdomain) ([10.232.112.69])
- by fmsmga008.fm.intel.com with ESMTP; 19 Nov 2018 10:14:06 -0800
-Date: Mon, 19 Nov 2018 11:10:51 -0700
-From: Keith Busch <keith.busch@intel.com>
-To: Sinan Kaya <okaya@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42zHKr07T8zF3CR
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Nov 2018 05:24:15 +1100 (AEDT)
+Received: from [10.80.45.159] (unknown [71.69.156.42])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 2E660206BA;
+ Mon, 19 Nov 2018 18:24:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1542651853;
+ bh=yV1rVaw923ctrstMXbWZZ47ohaFBqDXftmwGiCTdyAs=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=wm5rkxytxQVbBIHJa7Hu/UEjjET/nRxEbTBWTA39BWYCCvCO6ejODh5CaQX5T6GrQ
+ 2ic5zZvoxLMYdHOtCFsE+HXbvb2L7bALfYbFB4++z8+1Zfl3zDbCIYKcjD8GurGM6Y
+ UEVD4rxgq9KuJl055h532kSsM/W+FOWy3DY0gQGI=
 Subject: Re: [PATCH 0/2] PCI/AER: Consistently use _OSC to determine who owns
  AER
-Message-ID: <20181119181051.GA26707@localhost.localdomain>
+To: Keith Busch <keith.busch@intel.com>
 References: <20181115231605.24352-1-mr.nuke.me@gmail.com>
  <b9a739c8-80bd-e04c-ac19-97bc54f20eff@kernel.org>
  <CABo9ajD5GJY7MrMjQc3hE=4tpPKpeceMtVEHwCwgjrvJUYjLvg@mail.gmail.com>
@@ -55,11 +62,17 @@ References: <20181115231605.24352-1-mr.nuke.me@gmail.com>
  <ab2427f1-c1f0-68fe-5335-1494caafdcbb@kernel.org>
  <20181119174127.GE26595@localhost.localdomain>
  <ef0a24e4-906e-f6df-c646-1fe47ea0dcc0@kernel.org>
+ <20181119181051.GA26707@localhost.localdomain>
+From: Sinan Kaya <okaya@kernel.org>
+Message-ID: <c0d6535f-324b-557a-3d0e-ccec070459a7@kernel.org>
+Date: Mon, 19 Nov 2018 13:24:11 -0500
+User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.3.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ef0a24e4-906e-f6df-c646-1fe47ea0dcc0@kernel.org>
-User-Agent: Mutt/1.9.1 (2017-09-22)
+In-Reply-To: <20181119181051.GA26707@localhost.localdomain>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,28 +94,25 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Nov 19, 2018 at 12:56:56PM -0500, Sinan Kaya wrote:
-> On 11/19/2018 12:41 PM, Keith Busch wrote:
-> > > Still, breaking existing systems that rely on HEST table is not cool.
-> > > I'd rather have users specify "pcie_ports=native" to skip FF rather than
-> > > having broken systems by default to be honest.
-> > The pcie_ports=native work-around ignores FF to potentially unknown
-> > results, though.
-> > 
+On 11/19/2018 1:10 PM, Keith Busch wrote:
+>> We can't really turn off firmware first in the kernel without asking help
+>> from the firmware.
+> The _OSC method this patch utilizes is the ACPI spec defined way for
+> the kernel to wrest control from firmware. BIOS specific menu settings
+> shouldn't be our only recourse when we have a spec authority defining
+> generic OS interfaces to accomplish the same thing.
 > 
-> How about being able to enable/disable FF in BIOS?
->
-> We can't really turn off firmware first in the kernel without asking help
-> from the firmware.
+> Unless there is a disagreement on the _OSC interpreation, we'd have to
+> accept that platforms breaking from this patch are non-compliant.
+> 
 
-The _OSC method this patch utilizes is the ACPI spec defined way for
-the kernel to wrest control from firmware. BIOS specific menu settings
-shouldn't be our only recourse when we have a spec authority defining
-generic OS interfaces to accomplish the same thing.
+It depends on which spec you look :)
 
-Unless there is a disagreement on the _OSC interpreation, we'd have to
-accept that platforms breaking from this patch are non-compliant.
+UEFI HEST table specification also claims that it should be the ultimate
+table for when PCI firmware-first should be disabled/enabled.
 
-> Like you said, it causes unpredictable results.
->
-> There will be two competing software trying to touch the same registers.
+I think somebody needs to fix these. I saw an email from Harb Abdulhamid
+sent to aswg this morning.
+
+That's why I suggested circulating this idea in UEFI forums first.
+Let's see what everybody thinks. We can go from there.
