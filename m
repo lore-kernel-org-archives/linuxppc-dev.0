@@ -2,62 +2,97 @@ Return-Path: <SRS0=K8Qv=N6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 02914C43441
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Nov 2018 00:35:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BA15CC43441
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Nov 2018 00:37:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6E4A72080C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Nov 2018 00:35:10 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="aSEJ+216"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6E4A72080C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 336182086A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Nov 2018 00:37:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 336182086A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42yqcD2b5RzF3T3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Nov 2018 11:35:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+	by lists.ozlabs.org (Postfix) with ESMTP id 42yqfm1LGwzF3WY
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Nov 2018 11:37:20 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=au1.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="aSEJ+216";
-	dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=au1.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=andrew.donnellan@au1.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=au1.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42yqPK6nnyzF3Rp
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Nov 2018 11:25:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=gibson.dropbear.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.b="aSEJ+216"; dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1007)
- id 42yqPK2DLmz9sCV; Mon, 19 Nov 2018 11:25:41 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1542587141;
- bh=97jYdCPpKarifkA3lZpBdLyMQeJM3hq/No/1JXghZM8=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=aSEJ+216C4EJkdNFgJI+EDPC1JNnp6g65HvLeWHOEyDXOL4Njfg/Srm3/gfp9230u
- ZUWDdOk+WLE0+a0mwF6Dg6mH+hjmURsIHA2xdnTPTD6xzqIdTZlX5OZtRo688z6wbs
- fDeshgSwuxFVV5+kNH282v+Zxi9TU7hLdD09oD54=
-Date: Mon, 19 Nov 2018 11:21:13 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH kernel v3 16/22] powerpc/powernv: Add purge cache OPAL call
-Message-ID: <20181119002113.GC4878@umbus>
-References: <20181113082823.2440-1-aik@ozlabs.ru>
- <20181113082823.2440-17-aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42yqRC2WzBzF3TR
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Nov 2018 11:27:19 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wAJ0L7Ze100173
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Nov 2018 19:27:16 -0500
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2nujcageau-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Nov 2018 19:27:16 -0500
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Mon, 19 Nov 2018 00:27:14 -0000
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Mon, 19 Nov 2018 00:27:11 -0000
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wAJ0RAwo59768948
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Mon, 19 Nov 2018 00:27:10 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 7B5B152051;
+ Mon, 19 Nov 2018 00:27:10 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 26BFF52052;
+ Mon, 19 Nov 2018 00:27:10 +0000 (GMT)
+Received: from [9.102.56.191] (unknown [9.102.56.191])
+ (using TLSv1.2 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 56000A01E6;
+ Mon, 19 Nov 2018 11:27:08 +1100 (AEDT)
+Subject: Re: [PATCH] misc: cxl: Use device_type helpers to access the node type
+To: Rob Herring <robh@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+References: <20181116221104.23024-6-robh@kernel.org>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Mon, 19 Nov 2018 11:27:07 +1100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.2.1
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="ABTtc+pdwF7KHXCz"
-Content-Disposition: inline
-In-Reply-To: <20181113082823.2440-17-aik@ozlabs.ru>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <20181116221104.23024-6-robh@kernel.org>
+Content-Language: en-AU
+X-TM-AS-GCONF: 00
+x-cbid: 18111900-0016-0000-0000-00000228E128
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18111900-0017-0000-0000-0000328110F2
+Message-Id: <4946be8a-887b-470e-0771-313bf222e777@au1.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-11-18_07:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1811190001
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,120 +104,62 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alex Williamson <alex.williamson@redhat.com>,
- Jose Ricardo Ziviani <joserz@linux.ibm.com>,
- Sam Bobroff <sbobroff@linux.ibm.com>, Alistair Popple <alistair@popple.id.au>,
- linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
- Piotr Jaroszynski <pjaroszynski@nvidia.com>,
- Oliver O'Halloran <oohall@gmail.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Leonardo Augusto =?iso-8859-1?Q?Guimar=E3es?= Garcia <lagarcia@br.ibm.com>,
- Reza Arbab <arbab@linux.ibm.com>
+Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On 17/11/18 9:11 am, Rob Herring wrote:
+> Remove directly accessing device_node.type pointer and use the accessors
+> instead. This will eventually allow removing the type pointer.
+> 
 
---ABTtc+pdwF7KHXCz
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This description doesn't quite match what's being fixed - we're not 
+accessing the .type pointer, we're getting the device_type property 
+directly.
 
-On Tue, Nov 13, 2018 at 07:28:17PM +1100, Alexey Kardashevskiy wrote:
-> Flushing caches using the dcbf instruction takes quite some time if we
-> need to flush gigabytes (16GB takes more than 15s); OPAL just added
-> a big hammer to flush all caches.
->=20
-> This adds opal_purge_cache() which will be used later to flush caches
-> for coherent GPU memory which might suddenly become unavailable if a GPU
-> is reset and NVLink is not (re)trained.
->=20
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Cc: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+> Cc: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> Cc: Arnd Bergmann <arnd@arndb.de>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Signed-off-by: Rob Herring <robh@kernel.org>
 
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+Apart from that:
+
+Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
 > ---
->  arch/powerpc/include/asm/opal-api.h            | 3 ++-
->  arch/powerpc/include/asm/opal.h                | 1 +
->  arch/powerpc/platforms/powernv/opal.c          | 1 +
->  arch/powerpc/platforms/powernv/opal-wrappers.S | 1 +
->  4 files changed, 5 insertions(+), 1 deletion(-)
->=20
-> diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/a=
-sm/opal-api.h
-> index 870fb7b..55bc640 100644
-> --- a/arch/powerpc/include/asm/opal-api.h
-> +++ b/arch/powerpc/include/asm/opal-api.h
-> @@ -210,7 +210,8 @@
->  #define OPAL_PCI_GET_PBCQ_TUNNEL_BAR		164
->  #define OPAL_PCI_SET_PBCQ_TUNNEL_BAR		165
->  #define	OPAL_NX_COPROC_INIT			167
-> -#define OPAL_LAST				167
-> +#define OPAL_CLEAR_CACHE			170
-> +#define OPAL_LAST				170
-> =20
->  #define QUIESCE_HOLD			1 /* Spin all calls at entry */
->  #define QUIESCE_REJECT			2 /* Fail all calls with OPAL_BUSY */
-> diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/o=
-pal.h
-> index ff38664..7db576e 100644
-> --- a/arch/powerpc/include/asm/opal.h
-> +++ b/arch/powerpc/include/asm/opal.h
-> @@ -294,6 +294,7 @@ int opal_set_power_shift_ratio(u32 handle, int token,=
- u32 psr);
->  int opal_sensor_group_clear(u32 group_hndl, int token);
->  int opal_sensor_group_enable(u32 group_hndl, int token, bool enable);
->  int opal_nx_coproc_init(uint32_t chip_id, uint32_t ct);
-> +int opal_purge_cache(void);
-> =20
->  s64 opal_signal_system_reset(s32 cpu);
->  s64 opal_quiesce(u64 shutdown_type, s32 cpu);
-> diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platfor=
-ms/powernv/opal.c
-> index beed86f..44ce824 100644
-> --- a/arch/powerpc/platforms/powernv/opal.c
-> +++ b/arch/powerpc/platforms/powernv/opal.c
-> @@ -1113,3 +1113,4 @@ EXPORT_SYMBOL_GPL(opal_int_eoi);
->  EXPORT_SYMBOL_GPL(opal_error_code);
->  /* Export the below symbol for NX compression */
->  EXPORT_SYMBOL(opal_nx_coproc_init);
-> +EXPORT_SYMBOL(opal_purge_cache);
-> diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerp=
-c/platforms/powernv/opal-wrappers.S
-> index 2515282..5b886a6 100644
-> --- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-> +++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-> @@ -331,3 +331,4 @@ OPAL_CALL(opal_pci_set_pbcq_tunnel_bar,		OPAL_PCI_SET=
-_PBCQ_TUNNEL_BAR);
->  OPAL_CALL(opal_sensor_read_u64,			OPAL_SENSOR_READ_U64);
->  OPAL_CALL(opal_sensor_group_enable,		OPAL_SENSOR_GROUP_ENABLE);
->  OPAL_CALL(opal_nx_coproc_init,			OPAL_NX_COPROC_INIT);
-> +OPAL_CALL(opal_purge_cache,			OPAL_CLEAR_CACHE);
+>   drivers/misc/cxl/pci.c | 4 +---
+>   1 file changed, 1 insertion(+), 3 deletions(-)
+> 
+> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+> index b66d832d3233..c79ba1c699ad 100644
+> --- a/drivers/misc/cxl/pci.c
+> +++ b/drivers/misc/cxl/pci.c
+> @@ -1718,7 +1718,6 @@ int cxl_slot_is_switched(struct pci_dev *dev)
+>   {
+>   	struct device_node *np;
+>   	int depth = 0;
+> -	const __be32 *prop;
+>   
+>   	if (!(np = pci_device_to_OF_node(dev))) {
+>   		pr_err("cxl: np = NULL\n");
+> @@ -1727,8 +1726,7 @@ int cxl_slot_is_switched(struct pci_dev *dev)
+>   	of_node_get(np);
+>   	while (np) {
+>   		np = of_get_next_parent(np);
+> -		prop = of_get_property(np, "device_type", NULL);
+> -		if (!prop || strcmp((char *)prop, "pciex"))
+> +		if (!of_node_is_type(np, "pciex"))
+>   			break;
+>   		depth++;
+>   	}
+> 
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
 
---ABTtc+pdwF7KHXCz
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlvyAfgACgkQbDjKyiDZ
-s5JGZg/+I2F64TgVda71Evd2ZDPZMaBxxffWDhZXN1pV3n4kmMlFHT65nqGB3RME
-cl1MLskbSOi2OcitHbXtJjkUfNj/Mc65SVWCNMd71IIWI7kON5kTkIAWdLfxdpag
-Sen1ZV5RUUx9y04hX4hP9kIANQKBMG98PCeAnMXMIm8Y2plOE5uPgCGzewx37SfM
-mXFV7c+fy3IogNR26M/D58D6o4AKIL1K6DGM+gkwBSNDyaJgSmofqbDLRfoyHc7v
-+PO1w1Af0S/Yi1sqDZ6iYQwm710rOA60/jZMeD8nIbrG3Sgz40bKmrsrXJpcTmI4
-74phoOASayUEBivbExqakTfXJRMc2vvajtSCPrmccqGnyQ2kC6H6suQovkfUbxCA
-boPiXyW3gKwlBAjG5PNn138IIvfAmZaX5HV2D28J954kZtuI9CfoFbBzviWsfSMt
-sxZ8dqM2ObFx375nAsN61HpptWFhuKDcR+3ehptFArqAkX3KJ9dEcCz+qQiSci5E
-hzV7SLY51lJIGOAxBv2Zqp2QDa19rXkOv/ikHIJ2J8Fm7S7QZ/vmkYZuvP/PhdCB
-ELfNOowWmeGDljNbIbGg6ry+rLS5IGzK2gLHKdySLMVBRm4EXce35BHsNiCFiYK6
-6zX1JA8jVff8C1hFgW1B/Lacshns0YarDizt5xtirQqjLD8GSeg=
-=/o+n
------END PGP SIGNATURE-----
-
---ABTtc+pdwF7KHXCz--
