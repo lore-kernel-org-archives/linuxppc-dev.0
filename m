@@ -2,117 +2,94 @@ Return-Path: <SRS0=K8Qv=N6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.5 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_NEOMUTT autolearn=unavailable
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 234C8C43441
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Nov 2018 21:16:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E4C5AC43441
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Nov 2018 22:01:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6A82320851
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Nov 2018 21:16:03 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=wavesemi.onmicrosoft.com header.i=@wavesemi.onmicrosoft.com header.b="YCv1CWHl"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6A82320851
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=mips.com
+	by mail.kernel.org (Postfix) with ESMTPS id 1F9852086A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Nov 2018 22:01:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1F9852086A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42zM805jxGzF3Ws
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Nov 2018 08:16:00 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=mips.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 42zN8V00pGzF3Wc
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Nov 2018 09:01:30 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=wavesemi.onmicrosoft.com header.i=@wavesemi.onmicrosoft.com header.b="YCv1CWHl";
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=permerror (mailfrom) smtp.mailfrom=wavecomp.com
- (client-ip=40.107.81.129; helo=nam01-by2-obe.outbound.protection.outlook.com;
- envelope-from=pburton@wavecomp.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=mips.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=wavesemi.onmicrosoft.com
- header.i=@wavesemi.onmicrosoft.com header.b="YCv1CWHl"; 
- dkim-atps=neutral
-Received: from NAM01-BY2-obe.outbound.protection.outlook.com
- (mail-eopbgr810129.outbound.protection.outlook.com [40.107.81.129])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=julietk@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42zM5G1nvQzF3Jy
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Nov 2018 08:13:37 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=wavesemi.onmicrosoft.com; s=selector1-wavecomp-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=AFrZnnSCW0M69MoOPURhPUKtM4maqeOX5Dq5QPqadVs=;
- b=YCv1CWHlUYbkV6QLleQsonGR5+YfEiKJ+Lh7LOJ3fcioOYIY6jJyVrNErcIRTdvThqDDaEIDSLeZBg2271SgMYkYXlvtJyxI1Z8LHtNDKkfih6kdsnLV0SL8cP6l3OIk+FUERTS2Rez9gSTUgM93tCm3wT7ePmMzOh8cmbJFjKU=
-Received: from MWHPR2201MB1277.namprd22.prod.outlook.com (10.174.162.17) by
- MWHPR2201MB1184.namprd22.prod.outlook.com (10.174.171.39) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.1339.21; Mon, 19 Nov 2018 21:13:29 +0000
-Received: from MWHPR2201MB1277.namprd22.prod.outlook.com
- ([fe80::690f:b86d:7c2:e105]) by MWHPR2201MB1277.namprd22.prod.outlook.com
- ([fe80::690f:b86d:7c2:e105%6]) with mapi id 15.20.1339.027; Mon, 19 Nov 2018
- 21:13:29 +0000
-From: Paul Burton <paul.burton@mips.com>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH 4/9] PCI: consolidate PCI config entry in drivers/pci
-Thread-Topic: [PATCH 4/9] PCI: consolidate PCI config entry in drivers/pci
-Thread-Index: AQHUgEy2/aQpdqgEI0evkqFV+gobGg==
-Date: Mon, 19 Nov 2018 21:13:29 +0000
-Message-ID: <20181119211327.h2lugf2ttuiz3fp6@pburton-laptop>
-References: <20181115190538.17016-1-hch@lst.de>
- <20181115190538.17016-5-hch@lst.de>
-In-Reply-To: <20181115190538.17016-5-hch@lst.de>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-clientproxiedby: MWHPR0201CA0008.namprd02.prod.outlook.com
- (2603:10b6:301:74::21) To MWHPR2201MB1277.namprd22.prod.outlook.com
- (2603:10b6:301:24::17)
-user-agent: NeoMutt/20180716
-authentication-results: spf=none (sender IP is )
- smtp.mailfrom=pburton@wavecomp.com; 
-x-ms-exchange-messagesentrepresentingtype: 1
-x-originating-ip: [4.16.204.77]
-x-ms-publictraffictype: Email
-x-microsoft-exchange-diagnostics: 1; MWHPR2201MB1184;
- 6:F0I/vVZmXUO2jLYA70f2nMKLrTWNJfe0XLGKFqU1MdV6U4+L++bhuXBq+ezPp+A2fUpnY7J/8FAOYks/UNpK29ThPh3WnVUyZpX5i6G4VyAnN0ojTz47H9FX5LYbbmn/LX3j2/gy7a+5onw1z90NutEy/HT5sCBi4dsr4+TWls+kMjFBtyd0JsRIRGVC69Y6KdDyO6na9UezcVkNGMIAmKyLXPbaf/RasHTP27VzkRg1kd/U8xXDvGvVMQGgrPtzQrO01sYmcPe51kBJh4E3+sXzbVAeSuMvyX0cpzxR6dtML/FeFHLQ9iZbI8+XmY2S2CKdzWz/veo8jaYEK3Y8Bp1YVQ83wW9SAoU4fiJtFNrrafc3H2mRKSR860pIklFo5e6ADkvutp++PmMx0MXCMSqTyPP/iuNp0kHBqMXZ5dvMLzl9cduUtE1FLDX0/qU+b+/ivH4POvzVz8kT6xz1yw==;
- 5:8lNGrQ8Gv17qIYhlASRvFyj3y6q0Ls/fw04iIfdKiHU0N8OxwIvOPExhtVfDDu9bMtDkG9x6iAs5l5d7XfJp38VfQysZ/pRzjAXQ+Ztsy3QwQDjdlYXUqVkRpr628n5/IMwicnzP93b7yYYTQoSbsvYxdL2CrAsel7uuC/rp+o0=;
- 7:WVu2yNo3oExUBkZvoc8f6Mioe/3JIlkkTYJNvbe8GNJLD98efT/UPR9cfYprX0Qc93wIdzG2tjnicIfKZtBMtqUvSwIh8aEWmvxhYQNEudhWIjyGNftx03K9GskRHup/+ab+ZZv3VoIjBVWMtdDtNQ==
-x-ms-office365-filtering-correlation-id: 9d389792-daf5-4377-6faa-08d64e63da3c
-x-microsoft-antispam: BCL:0; PCL:0;
- RULEID:(2390098)(7020095)(4652040)(7021145)(8989299)(5600074)(711020)(4534185)(7022145)(4603075)(4627221)(201702281549075)(8990200)(7048125)(7024125)(7027125)(7023125)(2017052603328)(7153060)(7193020);
- SRVR:MWHPR2201MB1184; 
-x-ms-traffictypediagnostic: MWHPR2201MB1184:
-x-microsoft-antispam-prvs: <MWHPR2201MB1184CDAB3282B5DCB11A3650C1D80@MWHPR2201MB1184.namprd22.prod.outlook.com>
-x-ms-exchange-senderadcheck: 1
-x-exchange-antispam-report-cfa-test: BCL:0; PCL:0;
- RULEID:(6040522)(2401047)(8121501046)(5005006)(93006095)(10201501046)(3002001)(3231415)(944501410)(52105112)(148016)(149066)(150057)(6041310)(2016111802025)(20161123562045)(20161123560045)(20161123558120)(20161123564045)(6043046)(201708071742011)(7699051)(76991095);
- SRVR:MWHPR2201MB1184; BCL:0; PCL:0; RULEID:; SRVR:MWHPR2201MB1184; 
-x-forefront-prvs: 08617F610C
-x-forefront-antispam-report: SFV:NSPM;
- SFS:(10019020)(7916004)(136003)(376002)(346002)(39840400004)(396003)(366004)(189003)(199004)(111086002)(102836004)(25786009)(44832011)(71200400001)(71190400001)(6486002)(2906002)(486006)(386003)(6506007)(53936002)(476003)(4326008)(6246003)(305945005)(7736002)(3846002)(14454004)(446003)(39060400002)(1076002)(33896004)(6116002)(76176011)(11346002)(5660300001)(7416002)(2900100001)(6436002)(316002)(186003)(99286004)(256004)(42882007)(66066001)(68736007)(52116002)(26005)(97736004)(33716001)(229853002)(106356001)(105586002)(8936002)(9686003)(6512007)(81166006)(54906003)(58126008)(6916009)(81156014)(8676002)(508600001);
- DIR:OUT; SFP:1102; SCL:1; SRVR:MWHPR2201MB1184;
- H:MWHPR2201MB1277.namprd22.prod.outlook.com; FPR:; SPF:None; LANG:en;
- PTR:InfoNoRecords; MX:1; A:1; 
-received-spf: None (protection.outlook.com: wavecomp.com does not designate
- permitted sender hosts)
-x-microsoft-antispam-message-info: +z+lBhWGG+vFUwdSiGNfTHA4WZ1SQin4ksbAixyLT4N/wM/zZPJ3l/k+N8rk+aNt+2lN/h8XHbIxI4AOYDeU3Ftc98qWFjpasycr2EDPKw+ErzSaHXrB0e+74CrFToePLeIxs8bYXV9Ajj7Ns1uETV/MpcJwcY8Mx96dVncMAaCwUbLpO84XoA3AAVD0LTNfEW6e92nQWOlNvCKTJ3zq469RmkNbWrIiq8sq++emlTVcNGVIgTpH+2SW7Yfhm2TRi1Ycs4Kt1WMQdmRmKcpHCdHDmxq9KVOwNNs6e4G/pdvlEgBWcSXIjHw5mhuZOsugmlyH4o4payANUPE9Qe6CNC9lQPqMx9+vhPlcgXoOBsc=
-spamdiagnosticoutput: 1:99
-spamdiagnosticmetadata: NSPM
-Content-Type: text/plain; charset="us-ascii"
-Content-ID: <3555B391B5C5094C84F54A5D1FC10A55@namprd22.prod.outlook.com>
-Content-Transfer-Encoding: quoted-printable
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42zN6B75pRzF3St
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Nov 2018 08:59:30 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wAJLwvQK062316
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Nov 2018 16:59:28 -0500
+Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2nv4e0jjr6-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Nov 2018 16:59:28 -0500
+Received: from localhost
+ by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <julietk@linux.vnet.ibm.com>;
+ Mon, 19 Nov 2018 21:59:26 -0000
+Received: from b01cxnp22034.gho.pok.ibm.com (9.57.198.24)
+ by e15.ny.us.ibm.com (146.89.104.202) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Mon, 19 Nov 2018 21:59:24 -0000
+Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
+ [9.57.199.106])
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wAJLxNFN1704380
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Mon, 19 Nov 2018 21:59:23 GMT
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 017B32805E;
+ Mon, 19 Nov 2018 21:59:23 +0000 (GMT)
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 77F7228058;
+ Mon, 19 Nov 2018 21:59:22 +0000 (GMT)
+Received: from ltcalpine2-lp22.aus.stglabs.ibm.com (unknown [9.40.195.231])
+ by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP;
+ Mon, 19 Nov 2018 21:59:22 +0000 (GMT)
+Subject: [PATCH net] net/ibmnvic: Fix deadlock problem in reset
+From: Juliet Kim <julietk@linux.vnet.ibm.com>
+To: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Mon, 19 Nov 2018 15:59:22 -0600
+User-Agent: StGit/0.18-105-g416a-dirty
 MIME-Version: 1.0
-X-OriginatorOrg: mips.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 9d389792-daf5-4377-6faa-08d64e63da3c
-X-MS-Exchange-CrossTenant-originalarrivaltime: 19 Nov 2018 21:13:29.3850 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 463607d3-1db3-40a0-8a29-970c56230104
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: MWHPR2201MB1184
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 18111921-0068-0000-0000-00000362D5A3
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00010083; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000270; SDB=6.01119880; UDB=6.00581062; IPR=6.00900002; 
+ MB=3.00024237; MTD=3.00000008; XFM=3.00000015; UTC=2018-11-19 21:59:25
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18111921-0069-0000-0000-0000467A7CBB
+Message-Id: <20181119215727.22197.97260.stgit@ltcalpine2-lp22.aus.stglabs.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-11-19_08:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1811190194
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -124,39 +101,195 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
- "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
- "linux-kbuild@vger.kernel.org" <linux-kbuild@vger.kernel.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Dominik Brodowski <linux@dominikbrodowski.net>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Alexandre Bounine <alex.bou9@gmail.com>,
- "linux-alpha@vger.kernel.org" <linux-alpha@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: julietk@linux.vnet.ibm.com, mwb@linux.vnet.ibm.com,
+ tlfalcon@linux.vnet.ibm.com, tyreld@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Christoph,
+This patch changes to use rtnl_lock only during a reset to avoid
+deadlock that could occur when a thread operating close is holding
+rtnl_lock and waiting for reset_lock acquired by another thread,
+which is waiting for rtnl_lock in order to set the number of tx/rx
+queues during a reset.
 
-On Thu, Nov 15, 2018 at 08:05:32PM +0100, Christoph Hellwig wrote:
-> There is no good reason to duplicate the PCI menu in every architecture.
-> Instead provide a selectable HAVE_PCI symbol that indicates availability
-> of PCI support, and a FORCE_PCI symbol to for PCI on and the handle the
-> rest in drivers/pci.
->=20
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
-> Reviewed-by: Palmer Dabbelt <palmer@sifive.com>
-> Acked-by: Max Filippov <jcmvbkbc@gmail.com>
-> Acked-by: Thomas Gleixner <tglx@linutronix.de>
-> Acked-by: Bjorn Helgaas <bhelgaas@google.com>
-> Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Also, we now setting the number of tx/rx queues during a soft reset
+for failover or LPM events.
 
-For patches 4, 5, 7, 8 & 9:
+Signed-off-by: Juliet Kim <julietk@linux.vnet.ibm.com>
+---
+ drivers/net/ethernet/ibm/ibmvnic.c |   59 +++++++++++++-----------------------
+ drivers/net/ethernet/ibm/ibmvnic.h |    2 +
+ 2 files changed, 22 insertions(+), 39 deletions(-)
 
-    Acked-by: Paul Burton <paul.burton@mips.com> # MIPS parts
+diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
+index 7893bef..4a5de59 100644
+--- a/drivers/net/ethernet/ibm/ibmvnic.c
++++ b/drivers/net/ethernet/ibm/ibmvnic.c
+@@ -1103,20 +1103,15 @@ static int ibmvnic_open(struct net_device *netdev)
+ 		return 0;
+ 	}
+ 
+-	mutex_lock(&adapter->reset_lock);
+-
+ 	if (adapter->state != VNIC_CLOSED) {
+ 		rc = ibmvnic_login(netdev);
+-		if (rc) {
+-			mutex_unlock(&adapter->reset_lock);
++		if (rc)
+ 			return rc;
+-		}
+ 
+ 		rc = init_resources(adapter);
+ 		if (rc) {
+ 			netdev_err(netdev, "failed to initialize resources\n");
+ 			release_resources(adapter);
+-			mutex_unlock(&adapter->reset_lock);
+ 			return rc;
+ 		}
+ 	}
+@@ -1124,8 +1119,6 @@ static int ibmvnic_open(struct net_device *netdev)
+ 	rc = __ibmvnic_open(netdev);
+ 	netif_carrier_on(netdev);
+ 
+-	mutex_unlock(&adapter->reset_lock);
+-
+ 	return rc;
+ }
+ 
+@@ -1269,10 +1262,8 @@ static int ibmvnic_close(struct net_device *netdev)
+ 		return 0;
+ 	}
+ 
+-	mutex_lock(&adapter->reset_lock);
+ 	rc = __ibmvnic_close(netdev);
+ 	ibmvnic_cleanup(netdev);
+-	mutex_unlock(&adapter->reset_lock);
+ 
+ 	return rc;
+ }
+@@ -1820,20 +1811,15 @@ static int do_reset(struct ibmvnic_adapter *adapter,
+ 				return rc;
+ 		} else if (adapter->req_rx_queues != old_num_rx_queues ||
+ 			   adapter->req_tx_queues != old_num_tx_queues) {
+-			adapter->map_id = 1;
+ 			release_rx_pools(adapter);
+ 			release_tx_pools(adapter);
+-			rc = init_rx_pools(netdev);
+-			if (rc)
+-				return rc;
+-			rc = init_tx_pools(netdev);
+-			if (rc)
+-				return rc;
+-
+ 			release_napi(adapter);
+-			rc = init_napi(adapter);
++			release_vpd_data(adapter);
++
++			rc = init_resources(adapter);
+ 			if (rc)
+ 				return rc;
++
+ 		} else {
+ 			rc = reset_tx_pools(adapter);
+ 			if (rc)
+@@ -1917,17 +1903,8 @@ static int do_hard_reset(struct ibmvnic_adapter *adapter,
+ 		adapter->state = VNIC_PROBED;
+ 		return 0;
+ 	}
+-	/* netif_set_real_num_xx_queues needs to take rtnl lock here
+-	 * unless wait_for_reset is set, in which case the rtnl lock
+-	 * has already been taken before initializing the reset
+-	 */
+-	if (!adapter->wait_for_reset) {
+-		rtnl_lock();
+-		rc = init_resources(adapter);
+-		rtnl_unlock();
+-	} else {
+-		rc = init_resources(adapter);
+-	}
++
++	rc = init_resources(adapter);
+ 	if (rc)
+ 		return rc;
+ 
+@@ -1986,13 +1963,21 @@ static void __ibmvnic_reset(struct work_struct *work)
+ 	struct ibmvnic_rwi *rwi;
+ 	struct ibmvnic_adapter *adapter;
+ 	struct net_device *netdev;
++	bool we_lock_rtnl = false;
+ 	u32 reset_state;
+ 	int rc = 0;
+ 
+ 	adapter = container_of(work, struct ibmvnic_adapter, ibmvnic_reset);
+ 	netdev = adapter->netdev;
+ 
+-	mutex_lock(&adapter->reset_lock);
++	/* netif_set_real_num_xx_queues needs to take rtnl lock here
++	 * unless wait_for_reset is set, in which case the rtnl lock
++	 * has already been taken before initializing the reset
++	 */
++	if (!adapter->wait_for_reset) {
++		rtnl_lock();
++		we_lock_rtnl = true;
++	}
+ 	reset_state = adapter->state;
+ 
+ 	rwi = get_next_rwi(adapter);
+@@ -2020,12 +2005,11 @@ static void __ibmvnic_reset(struct work_struct *work)
+ 	if (rc) {
+ 		netdev_dbg(adapter->netdev, "Reset failed\n");
+ 		free_all_rwi(adapter);
+-		mutex_unlock(&adapter->reset_lock);
+-		return;
+ 	}
+ 
+ 	adapter->resetting = false;
+-	mutex_unlock(&adapter->reset_lock);
++	if (we_lock_rtnl)
++		rtnl_unlock();
+ }
+ 
+ static int ibmvnic_reset(struct ibmvnic_adapter *adapter,
+@@ -4768,7 +4752,6 @@ static int ibmvnic_probe(struct vio_dev *dev, const struct vio_device_id *id)
+ 
+ 	INIT_WORK(&adapter->ibmvnic_reset, __ibmvnic_reset);
+ 	INIT_LIST_HEAD(&adapter->rwi_list);
+-	mutex_init(&adapter->reset_lock);
+ 	mutex_init(&adapter->rwi_lock);
+ 	adapter->resetting = false;
+ 
+@@ -4840,8 +4823,8 @@ static int ibmvnic_remove(struct vio_dev *dev)
+ 	struct ibmvnic_adapter *adapter = netdev_priv(netdev);
+ 
+ 	adapter->state = VNIC_REMOVING;
+-	unregister_netdev(netdev);
+-	mutex_lock(&adapter->reset_lock);
++	rtnl_lock();
++	unregister_netdevice(netdev);
+ 
+ 	release_resources(adapter);
+ 	release_sub_crqs(adapter, 1);
+@@ -4852,7 +4835,7 @@ static int ibmvnic_remove(struct vio_dev *dev)
+ 
+ 	adapter->state = VNIC_REMOVED;
+ 
+-	mutex_unlock(&adapter->reset_lock);
++	rtnl_unlock();
+ 	device_remove_file(&dev->dev, &dev_attr_failover);
+ 	free_netdev(netdev);
+ 	dev_set_drvdata(&dev->dev, NULL);
+diff --git a/drivers/net/ethernet/ibm/ibmvnic.h b/drivers/net/ethernet/ibm/ibmvnic.h
+index 18103b8..99c4f8d 100644
+--- a/drivers/net/ethernet/ibm/ibmvnic.h
++++ b/drivers/net/ethernet/ibm/ibmvnic.h
+@@ -1075,7 +1075,7 @@ struct ibmvnic_adapter {
+ 	struct tasklet_struct tasklet;
+ 	enum vnic_state state;
+ 	enum ibmvnic_reset_reason reset_reason;
+-	struct mutex reset_lock, rwi_lock;
++	struct mutex rwi_lock;
+ 	struct list_head rwi_list;
+ 	struct work_struct ibmvnic_reset;
+ 	bool resetting;
 
-Thanks,
-    Paul
