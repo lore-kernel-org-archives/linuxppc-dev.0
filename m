@@ -2,86 +2,87 @@ Return-Path: <SRS0=K8Qv=N6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS autolearn=ham
+X-Spam-Status: No, score=-11.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 506C4C43441
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Nov 2018 07:20:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D5AFEC43441
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Nov 2018 07:31:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C27DE2087A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Nov 2018 07:20:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2893F2086A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Nov 2018 07:31:32 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="CW6miuhG"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C27DE2087A
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="EduDg8dl"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2893F2086A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42z0cG5wzPzF3DT
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Nov 2018 18:20:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42z0rd5tQHzDqCK
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Nov 2018 18:31:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="CW6miuhG";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="EduDg8dl";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
- (client-ip=2607:f8b0:4864:20::642; helo=mail-pl1-x642.google.com;
+ (client-ip=2607:f8b0:4864:20::444; helo=mail-pf1-x444.google.com;
  envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
- header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="CW6miuhG"; 
+ header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="EduDg8dl"; 
  dkim-atps=neutral
-Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com
- [IPv6:2607:f8b0:4864:20::642])
+Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
+ [IPv6:2607:f8b0:4864:20::444])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42z0YS4Gr1zF3Nt
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Nov 2018 18:18:20 +1100 (AEDT)
-Received: by mail-pl1-x642.google.com with SMTP id x21-v6so11412700pln.9
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Nov 2018 23:18:20 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42z0nm0SGHzF3Ql
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Nov 2018 18:28:59 +1100 (AEDT)
+Received: by mail-pf1-x444.google.com with SMTP id s9-v6so14389820pfm.13
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Nov 2018 23:28:59 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
  h=subject:to:cc:references:from:openpgp:autocrypt:message-id:date
  :user-agent:mime-version:in-reply-to:content-language
  :content-transfer-encoding;
- bh=PKAZ5FSo0Ad+wUPDYKJsruFfNT40+AQ7m5Wn5Ng+izw=;
- b=CW6miuhGKa8PlHLYbVG79EC2c8JHnCABWurMCzJ00oujQ836tE1BkezYHm+AfIYksa
- 48gVNyEmgKpavpc/93pc4exTTRjrpVJRfWo0FQvgIfBGuxCBpITGvuSF80CXXVEyXwHG
- PbWwCFVHlMYZPjrbKgQCOrjWgYq0O4wtvE8Ed9/sc5LWs92LiRKjj32+61FN7ZZGZ5Eg
- fqWq6JpzmUhqqQ51vo/aMjm2+0a9UIrOQlNd4vgqy89+qISmhAYU9SznVqjDMFLmOJGr
- Iozw320Req0t28GbA7QjMzRqwajeGexUBYqnQEcSNjaJqF88LYNKRO1rVFV+7w1WVF8O
- xoiw==
+ bh=LPvsv3bABWlFW4r7YRPi9M1kK1fSzLABvYR+4jacz+k=;
+ b=EduDg8dl45tVTCsqbN/Iol98u0o2k8u1IaZBHflTibH3ocU7kVIAQX3l3KAINdHyz0
+ pfmKyPglRaQKO9KGTMnMWk/usG34yizeTbSgdhJCLvwS7QKnQ0B4VUc/mU2PSJAn4/WG
+ wFOl1LTlvTMz5w3X9v8Wwx28TnaTVQACpI0Y+JrBM/rmFuC1fAetvjeTJhVVlcY9pAsK
+ AgRx5E8kSjI63eeueFSK0hITYg7o/Lx/s2Vu8XbvwssVwvFXnHP5J9x3yyswBmvAaY/N
+ yS2ojVCJMWdFaW1EFCp/tj0+vgNK1M1rapWKKi7i5Oa49mW2PoOZM5KpT9raesigx7ve
+ k7Ig==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:subject:to:cc:references:from:openpgp:autocrypt
  :message-id:date:user-agent:mime-version:in-reply-to
  :content-language:content-transfer-encoding;
- bh=PKAZ5FSo0Ad+wUPDYKJsruFfNT40+AQ7m5Wn5Ng+izw=;
- b=WCscVaKnZCSrnuupIAnVzx9/XS+jVkpijiPSPEgPfdJQcr9RF7Vq0FV3xUUrFhC74K
- Otn4CTYR69qihGVIpv5pZk6ujh8gAWkah/Zom+nWIsjcK97AaYm6juLWlgh78HAdVuwy
- tR5RSEcszooXQBvUJHi8/bd1a4mVLo+CShSenKhcpLOuGMlcy/yR8b26uob/QuTLlx96
- l60ipeFyxAvZqnlDsxF20B3aq+JCA6Zy6ih8QLdYcdA1kecDk6Ncxv1OOpor19bl+e6Q
- 7AdMD8eYURGViZsw3a677uUCT9b+1cdPdaiQMcTlNYyZvdNE8PQpTmTNlSOkXA3vmVYj
- llCA==
-X-Gm-Message-State: AGRZ1gI007o6PuMA/9vWNLx0/BlFIlWxTftUWRYibg3NijO2ryrjTmKy
- 3Fl9lVELdWHIhLwMCOf0wH3Duw==
-X-Google-Smtp-Source: AJdET5e/fQYjbRabBTSMTsUDRES5v7wEwcrkA6uBjgqjG1pGLuI6LhBY+b+1/BPJEMHP+bfphjhg1g==
-X-Received: by 2002:a17:902:b28b:: with SMTP id
- u11mr21315081plr.57.1542611898267; 
- Sun, 18 Nov 2018 23:18:18 -0800 (PST)
+ bh=LPvsv3bABWlFW4r7YRPi9M1kK1fSzLABvYR+4jacz+k=;
+ b=KfK06BD0wZepIgRpjkVeQY2Aql29TvM29jU7lQ7IUW5MBdBRujwjWwblBbtK/1y/8j
+ nxF1o0OXbnp2jVcrQOKRtTeW/knHvCxGzGl38MPwOpgUBbQWc6v/vlFHa8cQhlDRRoof
+ JaPfswvSnF8YnC3NIutTklv7GK/b0FWWr70z6neLAO3wfvVgylIoTWfY97kVzZn5FHa8
+ uhYeTeSQnfaP/0YpzGCFAExYb9cg+Gb1aoRfw0mcpJoqMhUchih1jBNrLfAxIV4veRRp
+ FWN8z6t+lGKEmj+SI3VFmbgLhVExpRJrn4lmhju9hE+culS9OEacodVP6P5hv0WYHcg7
+ NaJA==
+X-Gm-Message-State: AGRZ1gJimmtOHqu5cKkG2+O9wgei1OX8muN+1YY8JGRVHRRB/sbgostE
+ +Dj2JgyS3sBYPsKk1hKZXo0X9g==
+X-Google-Smtp-Source: AJdET5eW91I/BP0+QGeTa0mGLpWWpfSU72MQIgfKNOYd1LhT5sDJVp3r/K3NS7CdzebWAO95HzvIFg==
+X-Received: by 2002:a62:2c16:: with SMTP id
+ s22-v6mr21668985pfs.6.1542612537792; 
+ Sun, 18 Nov 2018 23:28:57 -0800 (PST)
 Received: from [10.61.2.175] ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id f6sm10567078pfg.188.2018.11.18.23.18.13
+ by smtp.gmail.com with ESMTPSA id l62-v6sm48316266pfl.28.2018.11.18.23.28.52
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Sun, 18 Nov 2018 23:18:17 -0800 (PST)
-Subject: Re: [PATCH kernel v3 06/22] powerpc/powernv: Detach npu struct from
- pnv_phb
-To: Alistair Popple <alistair@popple.id.au>
+ Sun, 18 Nov 2018 23:28:56 -0800 (PST)
+Subject: Re: [PATCH kernel v3 09/22] powerpc/pseries/iommu: Force default DMA
+ window removal
+To: David Gibson <david@gibson.dropbear.id.au>
 References: <20181113082823.2440-1-aik@ozlabs.ru>
- <20181113082823.2440-7-aik@ozlabs.ru> <1686227.ptHs0ZEO6U@townsend>
+ <20181113082823.2440-10-aik@ozlabs.ru> <20181116045405.GB23632@umbus>
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 Openpgp: preference=signencrypt
 Autocrypt: addr=aik@ozlabs.ru; keydata=
@@ -126,12 +127,12 @@ Autocrypt: addr=aik@ozlabs.ru; keydata=
  tKQaCxcmLCaEtrSrYGzd1sSPwJne9ssfq0SE/LM1J7VdCjm6OWV33SwKrfd6rOtvOzgadrG6
  3bgUVBw+bsXhWDd8tvuCXmdY4bnUblxF2B6GOwSY43v6suugBttIyW5Bl2tXSTwP+zQisOJo
  +dpVG2pRr39h+buHB3NY83NEPXm1kUOhduJUA17XUY6QQCAaN4sdwPqHq938S3EmtVhs
-Message-ID: <3b234b11-f8b7-9225-e2ae-aae4ddbb8dfd@ozlabs.ru>
-Date: Mon, 19 Nov 2018 18:18:11 +1100
+Message-ID: <eb939cdf-aef0-5556-9f83-a330f7d3fd95@ozlabs.ru>
+Date: Mon, 19 Nov 2018 18:28:50 +1100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.3.0
 MIME-Version: 1.0
-In-Reply-To: <1686227.ptHs0ZEO6U@townsend>
+In-Reply-To: <20181116045405.GB23632@umbus>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
@@ -146,155 +147,162 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jose Ricardo Ziviani <joserz@linux.ibm.com>,
- Sam Bobroff <sbobroff@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Alex Williamson <alex.williamson@redhat.com>, kvm-ppc@vger.kernel.org,
+Cc: Alex Williamson <alex.williamson@redhat.com>,
+ Jose Ricardo Ziviani <joserz@linux.ibm.com>,
+ Sam Bobroff <sbobroff@linux.ibm.com>, Alistair Popple <alistair@popple.id.au>,
+ linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
  Piotr Jaroszynski <pjaroszynski@nvidia.com>,
  Oliver O'Halloran <oohall@gmail.com>,
  Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
  =?UTF-8?Q?Leonardo_Augusto_Guimar=c3=a3es_Garcia?= <lagarcia@br.ibm.com>,
- Reza Arbab <arbab@linux.ibm.com>, David Gibson <david@gibson.dropbear.id.au>
+ Reza Arbab <arbab@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
 
-On 14/11/2018 15:28, Alistair Popple wrote:
-> Hi Alexey,
+On 16/11/2018 15:54, David Gibson wrote:
+> On Tue, Nov 13, 2018 at 07:28:10PM +1100, Alexey Kardashevskiy wrote:
+>> It is quite common for a device to support more than 32bit but less than
+>> 64bit for DMA, for example, GPUs often support 42..50bits. However
+>> the pseries platform only allows huge DMA window (the one which allows
+>> the use of more than 2GB of DMA space) for 64bit-capable devices mostly
+>> because:
+>>
+>> 1. we may have 32bit and >32bit devices on the same IOMMU domain and
+>> we cannot place the new big window where the 32bit one is located;
+>>
+>> 2. the existing hardware only supports the second window at very high
+>> offset of 1<<59 == 0x0800.0000.0000.0000.
+>>
+>> So in order to allow 33..59bit DMA, we have to remove the default DMA
+>> window and place a huge one there instead.
+>>
+>> The PAPR spec says that the platform may decide not to use the default
+>> window and remove it using DDW RTAS calls. There are few possible ways
+>> for the platform to decide:
+>>
+>> 1. look at the device IDs and decide in advance that such and such
+>> devices are capable of more than 32bit DMA (powernv's sketchy bypass
+>> does something like this - it drops the default window if all devices
+>> on the PE are from the same vendor) - this is not great as involves
+>> guessing because, unlike sketchy bypass, the GPU case involves 2 vendor
+>> ids and does not scale;
+>>
+>> 2. advertise 1 available DMA window in the hypervisor via
+>> ibm,query-pe-dma-window so the pseries platform could take it as a clue
+>> that if more bits for DMA are needed, it has to remove the default
+>> window - this is not great as it is implicit clue rather than direct
+>> instruction;
+>>
+>> 3. removing the default DMA window at all it not really an option as
+>> PAPR mandates its presense at the guest boot time;
+>>
+>> 4. make the hypervisor explicitly tell the guest that the default window
+>> is better be removed so the guest does not have to think hard and can
+>> simply do what requested and this is what this patch does.
 > 
-> On Tuesday, 13 November 2018 7:28:07 PM AEDT Alexey Kardashevskiy wrote:
->>  static struct npu *npdev_to_npu(struct pci_dev *npdev)
+> This approach only makes sense if the hypervisor has better
+> information as to what to do that the guest does.  It's not clear to
+> me why that would be the case.  Isn't the DMA capabilities of the
+> device something the driver should know, in which case it can decide
+> based on that?
+
+The device knows it can do 42bits so it will request DMA mask for 42bits
+and then the platform has to deal with it, the device has no control
+over DMA windows.
+
+Then the platform tries to make everything work, which sadly includes
+32bit-DMA devices so the default DMA window stays there and for 42bit
+devices there is no other way than to go via the smaller window as the
+only other window we can create is beyond the reach of the GPU.
+
+We have so called "sketchy bypass" hack for some other GPUs (which
+Christoph is trying to get rid of) at
+https://github.com/aik/linux/blob/nv2/arch/powerpc/platforms/powernv/pci-ioda.c#L1885
+
+which is powernv and which seemed a solution there and which I am trying
+to reimplement here.
+
+
+> 
+>>
+>> This makes use of the latter approach and exploits a new
+>> "qemu,dma-force-remove-default" flag in a vPHB.
+>>
+>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>> ---
+>>  arch/powerpc/platforms/pseries/iommu.c | 28 +++++++++++++++++++++++---
+>>  1 file changed, 25 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+>> index 9ece42f..78473ac 100644
+>> --- a/arch/powerpc/platforms/pseries/iommu.c
+>> +++ b/arch/powerpc/platforms/pseries/iommu.c
+>> @@ -54,6 +54,7 @@
+>>  #include "pseries.h"
+>>  
+>>  #define DDW_INVALID_OFFSET	((uint64_t)-1)
+>> +#define DDW_INVALID_LIOBN	((uint32_t)-1)
+>>  
+>>  static struct iommu_table_group *iommu_pseries_alloc_group(int node)
 >>  {
->> -	struct pnv_phb *nphb;
->> +	struct pci_controller *hose = pci_bus_to_host(npdev->bus);
->> +	struct npu *npu;
->>
->> -	nphb = pci_bus_to_host(npdev->bus)->private_data;
->> +	list_for_each_entry(npu, &npu2_devices, next)
-> 
-> This is called from the ATSD path which is (or at least has been) quite a 
-> performance critical path so searching through all the NPUs in a list may be 
-> problematic.
-> 
-> I guess currently it wont make any practical difference as we only ever have 2 
-> NPUs, but in future they may get divided into more logical NPUs. Would it be 
-> possible to store a back-pointer somewhere so we can avoid the lookup?
-
-
-It is quite possible even now with iommu_group_get() + container_of() +
-iommu_group_put(), I'll try that in respin.
-
-
-> 
->> +		if (hose == npu->hose)
->> +			return npu;
->>
->> -	return &nphb->npu;
->> +	WARN_ON_ONCE(1);
->> +	return NULL;
->>  }
->>
->>  /* Maximum number of nvlinks per npu */
->> @@ -505,6 +531,9 @@ static void acquire_atsd_reg(struct npu_context
->> *npu_context, continue;
->>
->>  			npu = npdev_to_npu(npdev);
->> +			if (!npu)
->> +				continue;
->> +
->>  			mmio_atsd_reg[i].npu = npu;
->>  			mmio_atsd_reg[i].reg = get_mmio_atsd_reg(npu);
->>  			while (mmio_atsd_reg[i].reg < 0) {
->> @@ -701,6 +730,8 @@ struct npu_context *pnv_npu2_init_context(struct pci_dev
->> *gpdev,
->>
->>  	nphb = pci_bus_to_host(npdev->bus)->private_data;
->>  	npu = npdev_to_npu(npdev);
->> +	if (!npu)
->> +		return ERR_PTR(-ENODEV);
->>
->>  	/*
->>  	 * Setup the NPU context table for a particular GPU. These need to be
->> @@ -821,6 +852,8 @@ void pnv_npu2_destroy_context(struct npu_context
->> *npu_context,
->>
->>  	nphb = pci_bus_to_host(npdev->bus)->private_data;
->>  	npu = npdev_to_npu(npdev);
->> +	if (!npu)
->> +		return;
->>  	nvlink_dn = of_parse_phandle(npdev->dev.of_node, "ibm,nvlink", 0);
->>  	if (WARN_ON(of_property_read_u32(nvlink_dn, "ibm,npu-link-index",
->>  							&nvlink_index)))
->> @@ -898,9 +931,15 @@ int pnv_npu2_init(struct pnv_phb *phb)
->>  	struct pci_dev *gpdev;
->>  	static int npu_index;
->>  	uint64_t rc = 0;
->> +	struct pci_controller *hose = phb->hose;
->> +	struct npu *npu;
->> +	int ret;
->>
->> -	phb->npu.nmmu_flush =
->> -		of_property_read_bool(phb->hose->dn, "ibm,nmmu-flush");
->> +	npu = kzalloc(sizeof(*npu), GFP_KERNEL);
->> +	if (!npu)
->> +		return -ENOMEM;
->> +
->> +	npu->nmmu_flush = of_property_read_bool(hose->dn, "ibm,nmmu-flush");
->>  	for_each_child_of_node(phb->hose->dn, dn) {
->>  		gpdev = pnv_pci_get_gpu_dev(get_pci_dev(dn));
->>  		if (gpdev) {
->> @@ -914,18 +953,31 @@ int pnv_npu2_init(struct pnv_phb *phb)
->>  		}
->>  	}
->>
->> -	for (i = 0; !of_property_read_u64_index(phb->hose->dn, "ibm,mmio-atsd",
->> +	for (i = 0; !of_property_read_u64_index(hose->dn, "ibm,mmio-atsd",
->>  							i, &mmio_atsd); i++)
->> -		phb->npu.mmio_atsd_regs[i] = ioremap(mmio_atsd, 32);
->> +		npu->mmio_atsd_regs[i] = ioremap(mmio_atsd, 32);
->>
->> -	pr_info("NPU%lld: Found %d MMIO ATSD registers", phb->opal_id, i);
->> -	phb->npu.mmio_atsd_count = i;
->> -	phb->npu.mmio_atsd_usage = 0;
->> +	pr_info("NPU%d: Found %d MMIO ATSD registers", hose->global_number, i);
->> +	npu->mmio_atsd_count = i;
->> +	npu->mmio_atsd_usage = 0;
->>  	npu_index++;
->> -	if (WARN_ON(npu_index >= NV_MAX_NPUS))
->> -		return -ENOSPC;
->> +	if (WARN_ON(npu_index >= NV_MAX_NPUS)) {
->> +		ret = -ENOSPC;
->> +		goto fail_exit;
+>> @@ -977,7 +978,8 @@ static LIST_HEAD(failed_ddw_pdn_list);
+>>   *
+>>   * returns the dma offset for use by dma_set_mask
+>>   */
+>> -static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
+>> +static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn,
+>> +		u32 default_liobn)
+>>  {
+>>  	int len, ret;
+>>  	struct ddw_query_response query;
+>> @@ -1022,6 +1024,16 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
+>>  	if (ret)
+>>  		goto out_failed;
+>>  
+>> +	/*
+>> +	 * The device tree has a request to force remove the default window,
+>> +	 * do this.
+>> +	 */
+>> +	if (default_liobn != DDW_INVALID_LIOBN && (!ddw_avail[2] ||
+>> +			rtas_call(ddw_avail[2], 1, 1, NULL, default_liobn))) {
+>> +		dev_dbg(&dev->dev, "Could not remove window");
+>> +		goto out_failed;
 >> +	}
->>  	max_npu2_index = npu_index;
->> -	phb->npu.index = npu_index;
->> +	npu->index = npu_index;
->> +	npu->hose = hose;
 >> +
->> +	list_add(&npu->next, &npu2_devices);
-> 
-> Guess we don't need any locking here as the list gets setup once during boot 
-> long before loading the driver and is never modified right?
-
-
-Correct.
-
-
-> 
-> - Alistair
-> 
->>  	return 0;
+>>         /*
+>>  	 * Query if there is a second window of size to map the
+>>  	 * whole partition.  Query returns number of windows, largest
+>> @@ -1212,7 +1224,7 @@ static int dma_set_mask_pSeriesLP(struct device *dev, u64 dma_mask)
+>>  	pdev = to_pci_dev(dev);
+>>  
+>>  	/* only attempt to use a new window if 64-bit DMA is requested */
+>> -	if (!disable_ddw && dma_mask == DMA_BIT_MASK(64)) {
+>> +	if (!disable_ddw && dma_mask > DMA_BIT_MASK(32)) {
+>>  		dn = pci_device_to_OF_node(pdev);
+>>  		dev_dbg(dev, "node is %pOF\n", dn);
+>>  
+>> @@ -1229,7 +1241,17 @@ static int dma_set_mask_pSeriesLP(struct device *dev, u64 dma_mask)
+>>  				break;
+>>  		}
+>>  		if (pdn && PCI_DN(pdn)) {
+>> -			dma_offset = enable_ddw(pdev, pdn);
+>> +			u32 liobn = DDW_INVALID_LIOBN;
+>> +			int ret = of_device_is_compatible(pdn, "IBM,npu-vphb");
 >> +
->> +fail_exit:
->> +	for (i = 0; i < npu->mmio_atsd_count; ++i)
->> +		iounmap(npu->mmio_atsd_regs[i]);
+>> +			if (ret) {
+>> +				dma_window = of_get_property(pdn,
+>> +						"ibm,dma-window", NULL);
+>> +				if (dma_window)
+>> +					liobn = be32_to_cpu(dma_window[0]);
+>> +			}
 >> +
->> +	kfree(npu);
->> +
->> +	return ret;
->>  }
-> 
+>> +			dma_offset = enable_ddw(pdev, pdn, liobn);
+>>  			if (dma_offset != DDW_INVALID_OFFSET) {
+>>  				dev_info(dev, "Using 64-bit direct DMA at offset %llx\n", dma_offset);
+>>  				set_dma_offset(dev, dma_offset);
 > 
 
 -- 
