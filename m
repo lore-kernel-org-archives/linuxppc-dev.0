@@ -2,51 +2,54 @@ Return-Path: <SRS0=vwdz=N7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AF9D7C43441
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Nov 2018 11:00:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 860DAC4161B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Nov 2018 11:24:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E199120685
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Nov 2018 11:00:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E199120685
+	by mail.kernel.org (Postfix) with ESMTPS id DDAE72075B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Nov 2018 11:24:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DDAE72075B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42zjQw5Q86zF3BW
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Nov 2018 22:00:08 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42zjzR5R3kzF378
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Nov 2018 22:24:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42zjNs3qXRzF3Bv
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Nov 2018 21:58:21 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42zjvm52HmzF3M7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Nov 2018 22:21:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 42zjNr5pRHz9s3l;
- Tue, 20 Nov 2018 21:58:20 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPSA id 42zjvj4Kl5z9s3l;
+ Tue, 20 Nov 2018 22:21:37 +1100 (AEDT)
 Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Russell Currey <ruscur@russell.cc>, Alexey Kardashevskiy <aik@ozlabs.ru>,
- Sam Bobroff <sbobroff@linux.ibm.com>
-Subject: Re: [PATCH kernel] powerpc/powernv/eeh/npu: Fix uninitialized
- variables in opal_pci_eeh_freeze_status
-In-Reply-To: <54e863e23af0fbc5f83b663fe7d6c95f86024c3c.camel@russell.cc>
-References: <20181119042517.45075-1-aik@ozlabs.ru>
- <877eh831id.fsf@concordia.ellerman.id.au>
- <20181120035123.GB9175@tungsten.ozlabs.ibm.com>
- <1c7660de-68fd-60b7-087d-b013479154e0@ozlabs.ru>
- <54e863e23af0fbc5f83b663fe7d6c95f86024c3c.camel@russell.cc>
-Date: Tue, 20 Nov 2018 21:58:20 +1100
-Message-ID: <87zhu410dv.fsf@concordia.ellerman.id.au>
+To: Andrew Murray <andrew.murray@arm.com>,
+ Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>, Shawn Guo <shawnguo@kernel.org>,
+ Sascha Hauer <s.hauer@pengutronix.de>, Will Deacon <will.deacon@arm.com>,
+ Mark Rutland <mark.rutland@arm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Borislav Petkov <bp@alien8.de>,
+ x86@kernel.org
+Subject: Re: [PATCH 04/10] powerpc: perf/core: generalise event exclusion
+ checking with perf macro
+In-Reply-To: <1542363853-13849-5-git-send-email-andrew.murray@arm.com>
+References: <1542363853-13849-1-git-send-email-andrew.murray@arm.com>
+ <1542363853-13849-5-git-send-email-andrew.murray@arm.com>
+Date: Tue, 20 Nov 2018 22:21:37 +1100
+Message-ID: <87va4s0zb2.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -60,79 +63,96 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alistair Popple <alistair@popple.id.au>, linuxppc-dev@lists.ozlabs.org,
- Piotr Jaroszynski <pjaroszynski@nvidia.com>,
- Oliver O'Halloran <oohall@gmail.com>, Reza Arbab <arbab@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-alpha@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Russell Currey <ruscur@russell.cc> writes:
-> On Tue, 2018-11-20 at 17:55 +1100, Alexey Kardashevskiy wrote:
->> 
->> On 20/11/2018 14:51, Sam Bobroff wrote:
->> > On Tue, Nov 20, 2018 at 01:51:06PM +1100, Michael Ellerman wrote:
->> > > Alexey Kardashevskiy <aik@ozlabs.ru> writes:
->> > > 
->> > > > The current implementation of the OPAL_PCI_EEH_FREEZE_STATUS
->> > > > call in
->> > > > skiboot's NPU driver does not touch the pci_error_type
->> > > > parameter so
->> > > > it might have garbage but the powernv code analyzes it
->> > > > nevertheless.
->> > > > 
->> > > > This initializes pcierr and fstate to zero in all call sites.
->> > > > 
->> > > > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->> > > > ---
->> > > 
->> > > Can we tag this with a Fixes? And seems like it should probably
->> > > go to
->> > > stable, or can we not trigger this path on older kernels?
->> > > 
->> > > cheers
->> > 
->> > Hmm, it's triggered by use on an NPU PE so that would be any kernel
->> > that
->> > can run on P8 or later (AFAIK).
->> > 
->> > It looks like the issue was present earlier, but the code was last
->> > touched when it was moved, in...
->> > 
->> > 40ae5f693f6a ("powerpc/powernv: Drop PHB operation get_state()")
->> > 
->> > ... which was back in v4.1.
->> 
->> The original commit is
->> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=8c41a7f3f7593fe57
->> 
->> 2013-06-20 13:21:09 +0800
->> ===
->> powerpc/eeh: I/O chip EEH state retrieval
->> 
->> The patch adds I/O chip backend to retrieve the state for the
->> indicated PE. While the PE state is temperarily unavailable,
->> the upper layer (powernv platform) should return default delay
->> (1 second).
->> ===
->> 
->> This was 3.10-rc5 (this is what that sha1's Makefile has).
->> 
->> But this was not the issue till skiboot decided not to zero these
->> parameters so "Fixes:" should point to what?
+Andrew Murray <andrew.murray@arm.com> writes:
+
+> Replace checking of perf event exclusion flags with perf macro.
 >
-> It should still be that commit, it's perfectly reasonable (however
-> unlikely) that someone could be running a 3.10 kernel with a modern
-> skiboot.
+> Signed-off-by: Andrew Murray <andrew.murray@arm.com>
+> ---
+>  arch/powerpc/perf/hv-24x7.c |  7 +------
+>  arch/powerpc/perf/hv-gpci.c |  7 +------
+>  arch/powerpc/perf/imc-pmu.c | 14 ++------------
+>  3 files changed, 4 insertions(+), 24 deletions(-)
 
-Yeah that kernel commit is the earliest point where we could hit the
-bug, so that's where Fixes should point.
+These conversions look fine, thanks.
 
-If the bug's not actually in that commit, as it sounds here, then you
-can explain that in the change log.
-
-The other way to think about is if someone has back ported
-8c41a7f3f7593fe57 then they would also want this fix, so pointing the
-Fixes tag at 8c41a7f3f7593fe57 expresses that.
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 
 cheers
+
+> diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
+> index 72238ee..60db22d 100644
+> --- a/arch/powerpc/perf/hv-24x7.c
+> +++ b/arch/powerpc/perf/hv-24x7.c
+> @@ -1307,12 +1307,7 @@ static int h_24x7_event_init(struct perf_event *event)
+>  	}
+>  
+>  	/* unsupported modes and filters */
+> -	if (event->attr.exclude_user   ||
+> -	    event->attr.exclude_kernel ||
+> -	    event->attr.exclude_hv     ||
+> -	    event->attr.exclude_idle   ||
+> -	    event->attr.exclude_host   ||
+> -	    event->attr.exclude_guest)
+> +	if (event_has_exclude_flags(event))
+>  		return -EINVAL;
+>  
+>  	/* no branch sampling */
+> diff --git a/arch/powerpc/perf/hv-gpci.c b/arch/powerpc/perf/hv-gpci.c
+> index 43fabb3..2d2b5c0 100644
+> --- a/arch/powerpc/perf/hv-gpci.c
+> +++ b/arch/powerpc/perf/hv-gpci.c
+> @@ -233,12 +233,7 @@ static int h_gpci_event_init(struct perf_event *event)
+>  	}
+>  
+>  	/* unsupported modes and filters */
+> -	if (event->attr.exclude_user   ||
+> -	    event->attr.exclude_kernel ||
+> -	    event->attr.exclude_hv     ||
+> -	    event->attr.exclude_idle   ||
+> -	    event->attr.exclude_host   ||
+> -	    event->attr.exclude_guest)
+> +	if (event_has_exclude_flags(event))
+>  		return -EINVAL;
+>  
+>  	/* no branch sampling */
+> diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
+> index 1fafc32b..1ae1d3f 100644
+> --- a/arch/powerpc/perf/imc-pmu.c
+> +++ b/arch/powerpc/perf/imc-pmu.c
+> @@ -474,12 +474,7 @@ static int nest_imc_event_init(struct perf_event *event)
+>  		return -EINVAL;
+>  
+>  	/* unsupported modes and filters */
+> -	if (event->attr.exclude_user   ||
+> -	    event->attr.exclude_kernel ||
+> -	    event->attr.exclude_hv     ||
+> -	    event->attr.exclude_idle   ||
+> -	    event->attr.exclude_host   ||
+> -	    event->attr.exclude_guest)
+> +	if (event_has_exclude_flags(event))
+>  		return -EINVAL;
+>  
+>  	if (event->cpu < 0)
+> @@ -749,12 +744,7 @@ static int core_imc_event_init(struct perf_event *event)
+>  		return -EINVAL;
+>  
+>  	/* unsupported modes and filters */
+> -	if (event->attr.exclude_user   ||
+> -	    event->attr.exclude_kernel ||
+> -	    event->attr.exclude_hv     ||
+> -	    event->attr.exclude_idle   ||
+> -	    event->attr.exclude_host   ||
+> -	    event->attr.exclude_guest)
+> +	if (event_has_exclude_flags(event))
+>  		return -EINVAL;
+>  
+>  	if (event->cpu < 0)
+> -- 
+> 2.7.4
