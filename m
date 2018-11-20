@@ -6,32 +6,32 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 860DAC4161B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Nov 2018 11:24:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B0B1C4161B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Nov 2018 11:32:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DDAE72075B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Nov 2018 11:24:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DDAE72075B
+	by mail.kernel.org (Postfix) with ESMTPS id 5387E2075B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Nov 2018 11:31:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5387E2075B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42zjzR5R3kzF378
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Nov 2018 22:24:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 42zk6Z1LtXzF3Ng
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Nov 2018 22:31:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42zjvm52HmzF3M7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Nov 2018 22:21:40 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42zk3n53tQzDqCH
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Nov 2018 22:28:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 42zjvj4Kl5z9s3l;
- Tue, 20 Nov 2018 22:21:37 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPSA id 42zk3n22Mpz9s3l;
+ Tue, 20 Nov 2018 22:28:37 +1100 (AEDT)
 Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 From: Michael Ellerman <mpe@ellerman.id.au>
@@ -43,13 +43,13 @@ To: Andrew Murray <andrew.murray@arm.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Thomas Gleixner <tglx@linutronix.de>, Borislav Petkov <bp@alien8.de>,
  x86@kernel.org
-Subject: Re: [PATCH 04/10] powerpc: perf/core: generalise event exclusion
- checking with perf macro
-In-Reply-To: <1542363853-13849-5-git-send-email-andrew.murray@arm.com>
+Subject: Re: [PATCH 01/10] perf/core: Add macro to test for event exclusion
+ flags
+In-Reply-To: <1542363853-13849-2-git-send-email-andrew.murray@arm.com>
 References: <1542363853-13849-1-git-send-email-andrew.murray@arm.com>
- <1542363853-13849-5-git-send-email-andrew.murray@arm.com>
-Date: Tue, 20 Nov 2018 22:21:37 +1100
-Message-ID: <87va4s0zb2.fsf@concordia.ellerman.id.au>
+ <1542363853-13849-2-git-send-email-andrew.murray@arm.com>
+Date: Tue, 20 Nov 2018 22:28:34 +1100
+Message-ID: <87sgzw0yzh.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -71,88 +71,38 @@ Sender: "Linuxppc-dev"
 
 Andrew Murray <andrew.murray@arm.com> writes:
 
-> Replace checking of perf event exclusion flags with perf macro.
+> Add a macro that tests if any of the perf event exclusion flags
+> are set on a given event.
 >
 > Signed-off-by: Andrew Murray <andrew.murray@arm.com>
 > ---
->  arch/powerpc/perf/hv-24x7.c |  7 +------
->  arch/powerpc/perf/hv-gpci.c |  7 +------
->  arch/powerpc/perf/imc-pmu.c | 14 ++------------
->  3 files changed, 4 insertions(+), 24 deletions(-)
+>  include/linux/perf_event.h | 9 +++++++++
+>  1 file changed, 9 insertions(+)
+>
+> diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
+> index 53c500f..89ee7fa 100644
+> --- a/include/linux/perf_event.h
+> +++ b/include/linux/perf_event.h
+> @@ -1004,6 +1004,15 @@ perf_event__output_id_sample(struct perf_event *event,
+>  extern void
+>  perf_log_lost_samples(struct perf_event *event, u64 lost);
+>  
+> +static inline bool event_has_exclude_flags(struct perf_event *event)
+> +{
+> +	struct perf_event_attr *attr = &event->attr;
+> +
+> +	return attr->exclude_idle || attr->exclude_user ||
+> +	       attr->exclude_kernel || attr->exclude_hv ||
+> +	       attr->exclude_guest || attr->exclude_host;
+> +}
 
-These conversions look fine, thanks.
+Sorry to be a total PITA, but using "flags" plural suggests that it only
+returns true if there is more than one exclude flag set.
 
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+A better name would be event_has_exclude_flag() or maybe
+event_has_any_exclude_flag().
+
+If you're doing a respin anyway it'd be nice to fix the name, but
+obviously it's not high priority.
 
 cheers
-
-> diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
-> index 72238ee..60db22d 100644
-> --- a/arch/powerpc/perf/hv-24x7.c
-> +++ b/arch/powerpc/perf/hv-24x7.c
-> @@ -1307,12 +1307,7 @@ static int h_24x7_event_init(struct perf_event *event)
->  	}
->  
->  	/* unsupported modes and filters */
-> -	if (event->attr.exclude_user   ||
-> -	    event->attr.exclude_kernel ||
-> -	    event->attr.exclude_hv     ||
-> -	    event->attr.exclude_idle   ||
-> -	    event->attr.exclude_host   ||
-> -	    event->attr.exclude_guest)
-> +	if (event_has_exclude_flags(event))
->  		return -EINVAL;
->  
->  	/* no branch sampling */
-> diff --git a/arch/powerpc/perf/hv-gpci.c b/arch/powerpc/perf/hv-gpci.c
-> index 43fabb3..2d2b5c0 100644
-> --- a/arch/powerpc/perf/hv-gpci.c
-> +++ b/arch/powerpc/perf/hv-gpci.c
-> @@ -233,12 +233,7 @@ static int h_gpci_event_init(struct perf_event *event)
->  	}
->  
->  	/* unsupported modes and filters */
-> -	if (event->attr.exclude_user   ||
-> -	    event->attr.exclude_kernel ||
-> -	    event->attr.exclude_hv     ||
-> -	    event->attr.exclude_idle   ||
-> -	    event->attr.exclude_host   ||
-> -	    event->attr.exclude_guest)
-> +	if (event_has_exclude_flags(event))
->  		return -EINVAL;
->  
->  	/* no branch sampling */
-> diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
-> index 1fafc32b..1ae1d3f 100644
-> --- a/arch/powerpc/perf/imc-pmu.c
-> +++ b/arch/powerpc/perf/imc-pmu.c
-> @@ -474,12 +474,7 @@ static int nest_imc_event_init(struct perf_event *event)
->  		return -EINVAL;
->  
->  	/* unsupported modes and filters */
-> -	if (event->attr.exclude_user   ||
-> -	    event->attr.exclude_kernel ||
-> -	    event->attr.exclude_hv     ||
-> -	    event->attr.exclude_idle   ||
-> -	    event->attr.exclude_host   ||
-> -	    event->attr.exclude_guest)
-> +	if (event_has_exclude_flags(event))
->  		return -EINVAL;
->  
->  	if (event->cpu < 0)
-> @@ -749,12 +744,7 @@ static int core_imc_event_init(struct perf_event *event)
->  		return -EINVAL;
->  
->  	/* unsupported modes and filters */
-> -	if (event->attr.exclude_user   ||
-> -	    event->attr.exclude_kernel ||
-> -	    event->attr.exclude_hv     ||
-> -	    event->attr.exclude_idle   ||
-> -	    event->attr.exclude_host   ||
-> -	    event->attr.exclude_guest)
-> +	if (event_has_exclude_flags(event))
->  		return -EINVAL;
->  
->  	if (event->cpu < 0)
-> -- 
-> 2.7.4
