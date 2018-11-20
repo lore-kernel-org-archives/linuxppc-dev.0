@@ -2,62 +2,82 @@ Return-Path: <SRS0=vwdz=N7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C542C28CF8
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Nov 2018 15:28:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EDDE9C32789
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Nov 2018 16:08:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2A37F206BB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Nov 2018 15:28:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2A37F206BB
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 78A2B20684
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Nov 2018 16:07:54 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="jLNNeswc"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 78A2B20684
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 42zqNG0xkwzF3Q3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Nov 2018 02:28:14 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 42zrG02wrCzF3WB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Nov 2018 03:07:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="jLNNeswc";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.167.180; helo=mail-oi1-f180.google.com;
- envelope-from=rjwysocki@gmail.com; receiver=<UNKNOWN>)
+ (client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
+ envelope-from=tiny.windzz@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mail-oi1-f180.google.com (mail-oi1-f180.google.com
- [209.85.167.180])
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="jLNNeswc"; 
+ dkim-atps=neutral
+Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
+ [IPv6:2607:f8b0:4864:20::541])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42zqLC2h2DzF3Pc
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Nov 2018 02:26:24 +1100 (AEDT)
-Received: by mail-oi1-f180.google.com with SMTP id c206so1816889oib.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Nov 2018 07:26:24 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42zrCL6PmrzF3W7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Nov 2018 03:05:34 +1100 (AEDT)
+Received: by mail-pg1-x541.google.com with SMTP id w6so1094729pgl.6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Nov 2018 08:05:34 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id;
+ bh=v7hJLl0nspNEvb5LwkAvDpIYRT2ClkaKvvqCVQdKmBE=;
+ b=jLNNeswcf3FOJ5G9jP4ic5x1MQ49CRXg7PKspUXRRdKJUYjSMXRKktrVm0xfUPSWWt
+ Nn1dx1poJP7Y6x16+OscSuhwpLAMDbPWYH9pZoEdNSeOozcL79KAja4XbNfYpPRrH/Gu
+ KLoPN1Le6IXlfBIjXpuctvAqNUMnOFLzyczaAqSBb/ixxt3J+awRiA3fGbgyq1Nz+J/S
+ 9Jb+UfiZ1SD4f3IXrWax/47fq8Qok6nZrVmbanf232Te9TVu5FHZHOrzbxXe6d/Gh1Qj
+ ZTnLh89jOpCL/nyBcQVStfXo2yt9yWInLVEfKSYQ4JcLQEi+R2NqsIWBIuqkIREXjMC0
+ TlpA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=7RV4jpejzcCqpczwJOehT7Z4PvwgjLeWGEDEIYNZuxs=;
- b=fWKtTBgpA/tD7Nk/5bH8XmOqPSfEyqfhKKmeL2TsiaH+C/ccwHY809vNjD4ETUB4j3
- /asphUm+XIFF5TeaM3/1sSL2KZGYA4gZUqeKvXuIQOzG0J1ozbN7ShG+Ijov2xZQCO32
- HgBPpLX5vFkVzLxl9EIWiCVT8Diq/uOt5KP5O/cNHxOlHoxaYKMBi7/sRvIUxCKTrIad
- kvp7pAHgKNlkmQODKCvwE+bBkOOPyFcELWduBT/dvwxI+Vhs9HSABf64rzMW5Pn6HiIe
- 3FXT4YzHGMrrAMEIeHqVNcZuXvxcAcSq3iYxAbV2jPOqLyYgHLoVoKEl/b0SmJuE79cI
- Yhrw==
-X-Gm-Message-State: AGRZ1gKn5c51DtVZMG/1C/iRB7mXU9dUQTRNpQDr3EtXn5tpt0y/Cj8/
- Mx1zEi7C0Xacf3WOsPmVp8iLrh2dRKqWkIE9bBo=
-X-Google-Smtp-Source: AJdET5ejeza/oNT/McC597SElVwDwwxHaPJoDmw05WLgs6PCmjZd5FPWe3O4k3z4zX2SxAawmseejBAx/CPK8dQdUo0=
-X-Received: by 2002:aca:3d42:: with SMTP id k63mr1360967oia.95.1542727582020; 
- Tue, 20 Nov 2018 07:26:22 -0800 (PST)
-MIME-Version: 1.0
-References: <20181120125731.19368-1-tiny.windzz@gmail.com>
-In-Reply-To: <20181120125731.19368-1-tiny.windzz@gmail.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Tue, 20 Nov 2018 16:26:09 +0100
-Message-ID: <CAJZ5v0gY7kO-iZBLFSYHi57hsRUbsetJa0evjfmh2KCgkHLSRA@mail.gmail.com>
-Subject: Re: [PATCH] cpufreq: powernv: add of_node_put()
-To: tiny.windzz@gmail.com
-Content-Type: text/plain; charset="UTF-8"
+ h=x-gm-message-state:from:to:cc:subject:date:message-id;
+ bh=v7hJLl0nspNEvb5LwkAvDpIYRT2ClkaKvvqCVQdKmBE=;
+ b=p1JkwZxmrLdi4ymnd2Ztq7CtVDkvWPkPtTvwqV1a/nwGJeGX6AFhwYvL5TXRXLq0cL
+ atNgPOMYwB/uRMG9CVSVbIK5Q1cbvwE4/1a/vFE6AJMfs9usWKhFPOLDIGO7UFg+2DDS
+ os5fTWkLgHg+aAkwYtUxSaL6gjO4zySK84yxhx/l87MUyC0sU4d56JDbto5ebLZaRvzM
+ UUDRc4xDz4YQA1IhIGnkWUHA3xneNrCIficykkner30oDUP43Q808lDSFRkTQSvTJkfr
+ wuKBrOEe3aUgVpwcBjo05tQdkGtPdm+wBrJC3XvdP6Qwf/pcwU9njYguBRX/jRUWgnxs
+ uhvA==
+X-Gm-Message-State: AA+aEWa527eaSqP9m89PSZzH/w92bQM2vKBAajLczlC+2shttOM8WonG
+ D1hEvJo2Zg3VOp4ns4BevTU=
+X-Google-Smtp-Source: AJdET5f9hOLNARt5YmCnrd1st/tsZu05GUlkalcnzc0Pg4UW1WxNW0kADQMEVgT4jAPWiAVs3R2GGg==
+X-Received: by 2002:a63:2d82:: with SMTP id t124mr2422551pgt.260.1542729932942; 
+ Tue, 20 Nov 2018 08:05:32 -0800 (PST)
+Received: from localhost (68.168.130.77.16clouds.com. [68.168.130.77])
+ by smtp.gmail.com with ESMTPSA id i63-v6sm10019749pfi.66.2018.11.20.08.05.31
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Tue, 20 Nov 2018 08:05:32 -0800 (PST)
+From: Yangtao Li <tiny.windzz@gmail.com>
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au
+Subject: [PATCH v2] cpufreq: powernv: add of_node_put()
+Date: Tue, 20 Nov 2018 11:05:30 -0500
+Message-Id: <20181120160530.21015-1-tiny.windzz@gmail.com>
+X-Mailer: git-send-email 2.17.0
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,23 +89,89 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Yangtao Li <tiny.windzz@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Nov 20, 2018 at 1:57 PM Yangtao Li <tiny.windzz@gmail.com> wrote:
->
-> use of_node_put() to release the refcount.
+The of_find_node_by_path() returns a node pointer with refcount
+incremented,but there is the lack of use of the of_node_put() when
+done.Add the missing of_node_put() to release the refcount.
 
-Again, this changelog is as good as no changelog at all.
+Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+---
+Changes in v2
+-update changelog
+---
+ drivers/cpufreq/powernv-cpufreq.c | 17 +++++++++++------
+ 1 file changed, 11 insertions(+), 6 deletions(-)
 
-If you are adding a missing of_node_put(), please say that and explain
-why it is necessary.
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index bf6519cf64bc..7e7ad3879c4e 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -253,18 +253,18 @@ static int init_powernv_pstates(void)
+ 
+ 	if (of_property_read_u32(power_mgt, "ibm,pstate-min", &pstate_min)) {
+ 		pr_warn("ibm,pstate-min node not found\n");
+-		return -ENODEV;
++		goto out;
+ 	}
+ 
+ 	if (of_property_read_u32(power_mgt, "ibm,pstate-max", &pstate_max)) {
+ 		pr_warn("ibm,pstate-max node not found\n");
+-		return -ENODEV;
++		goto out;
+ 	}
+ 
+ 	if (of_property_read_u32(power_mgt, "ibm,pstate-nominal",
+ 				 &pstate_nominal)) {
+ 		pr_warn("ibm,pstate-nominal not found\n");
+-		return -ENODEV;
++		goto out;
+ 	}
+ 
+ 	if (of_property_read_u32(power_mgt, "ibm,pstate-ultra-turbo",
+@@ -293,14 +293,14 @@ static int init_powernv_pstates(void)
+ 	pstate_ids = of_get_property(power_mgt, "ibm,pstate-ids", &len_ids);
+ 	if (!pstate_ids) {
+ 		pr_warn("ibm,pstate-ids not found\n");
+-		return -ENODEV;
++		goto out;
+ 	}
+ 
+ 	pstate_freqs = of_get_property(power_mgt, "ibm,pstate-frequencies-mhz",
+ 				      &len_freqs);
+ 	if (!pstate_freqs) {
+ 		pr_warn("ibm,pstate-frequencies-mhz not found\n");
+-		return -ENODEV;
++		goto out;
+ 	}
+ 
+ 	if (len_ids != len_freqs) {
+@@ -311,7 +311,7 @@ static int init_powernv_pstates(void)
+ 	nr_pstates = min(len_ids, len_freqs) / sizeof(u32);
+ 	if (!nr_pstates) {
+ 		pr_warn("No PStates found\n");
+-		return -ENODEV;
++		goto out;
+ 	}
+ 
+ 	powernv_pstate_info.nr_pstates = nr_pstates;
+@@ -352,7 +352,12 @@ static int init_powernv_pstates(void)
+ 
+ 	/* End of list marker entry */
+ 	powernv_freqs[i].frequency = CPUFREQ_TABLE_END;
++
++	of_node_put(power_mgt);
+ 	return 0;
++out:
++	of_node_put(power_mgt);
++	return -ENODEV;
+ }
+ 
+ /* Returns the CPU frequency corresponding to the pstate_id. */
+-- 
+2.17.0
 
-Thanks,
-Rafael
