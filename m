@@ -2,87 +2,72 @@ Return-Path: <SRS0=wfsy=OA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 682F1C43441
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Nov 2018 15:49:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 66255C43441
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Nov 2018 18:29:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B470521479
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Nov 2018 15:49:32 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=sifive.com header.i=@sifive.com header.b="OwVpQ43C"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B470521479
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=sifive.com
+	by mail.kernel.org (Postfix) with ESMTPS id A7333214C4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Nov 2018 18:29:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A7333214C4
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=debian.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 430RpL5XLPzF3Nh
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Nov 2018 02:49:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=sifive.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 430WM64v1szF3gt
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Nov 2018 05:29:38 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=debian.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=sifive.com header.i=@sifive.com header.b="OwVpQ43C";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=209.85.160.194; helo=mail-qt1-f194.google.com;
+ envelope-from=breno.debian@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=sifive.com
- (client-ip=2607:f8b0:4864:20::642; helo=mail-pl1-x642.google.com;
- envelope-from=palmer@sifive.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=sifive.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=sifive.com header.i=@sifive.com header.b="OwVpQ43C"; 
- dkim-atps=neutral
-Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com
- [IPv6:2607:f8b0:4864:20::642])
+ dmarc=none (p=none dis=none) header.from=debian.org
+Received: from mail-qt1-f194.google.com (mail-qt1-f194.google.com
+ [209.85.160.194])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 430Rlk2mvZzF3f6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Nov 2018 02:47:10 +1100 (AEDT)
-Received: by mail-pl1-x642.google.com with SMTP id u6so6069277plm.8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Nov 2018 07:47:10 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=sifive.com; s=google;
- h=date:subject:in-reply-to:cc:from:to:message-id:mime-version
- :content-transfer-encoding;
- bh=U/lY5CfdHLl3xwIXaQIRba/GPl3Jxhihr4NwbiVFjPo=;
- b=OwVpQ43CSWic4u6uy8EiX4jKWC+6GbIh1hQ2uLHBOxn55J2QmK/J9y7M7VBuV57UnY
- K/Y6wWyqTxEs/+0mJvSl8oBTR6DdKAncImadulVokxekAe/3eCZLhsPDMsVBkEGmRTim
- VhMmMIQ9LawdPvEMc+/jfP0vfTT5sGMvpwgW7YjNSR91NsdRxsY5l6VfXtoiH6n1bQhs
- 4YWv+W4y84c8A81ySRAZ1JpUgGb+HJc+cxmhCe3H5swS7n4mRu0Do2Lv9ndTy+WsWV05
- aZWRazf5kGQCMZ2XjKUVV87al9jhGC6U6i14pP/eWICsOqELVHsriFVZmXp6TenE+Gp4
- c6Lg==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 430WK42sx3zF3c7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Nov 2018 05:27:52 +1100 (AEDT)
+Received: by mail-qt1-f194.google.com with SMTP id y20so4883726qtm.13
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Nov 2018 10:27:51 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:date:subject:in-reply-to:cc:from:to:message-id
- :mime-version:content-transfer-encoding;
- bh=U/lY5CfdHLl3xwIXaQIRba/GPl3Jxhihr4NwbiVFjPo=;
- b=Ce0IZzBlm1Uun/LWmjV+VDy3fIRycWYkUv/sCcj4pZrd/ZumqwPe4IIxgi8+TFFq3L
- pHWUMOpDQhmf7hJWlpKzTxg1XkibXpXp8JP2KLPWc1ZK6fLyLYYeiDqcR2kULJsfSRh+
- 7DsWte44eE1vuse/cVTvXu5dNoyrAoXCCLDe7+fDNnYCI+5EUfg24ZEtL0bnOPF1LMk6
- PS4YwyFMP91GkTjWMKZ91Erzjg0WjdUGc69nV/0zZCr6IHdrUOS7rqtRIHGmcPMdPFIJ
- 5aIH0rfetNJtHzigOU27RF9wzleCGcCddDWZPx7OK6lZDQG29FwjCGY837rB/wW+hoCx
- fDWQ==
-X-Gm-Message-State: AA+aEWZ7lQirrlqVGEwFzoOZdTL6kCiCHSEd9thLKRZvGyc3S/cdaszR
- Hlcba56FAfKMgp9WRPxBbLSF5g==
-X-Google-Smtp-Source: AFSGD/UAi/NJ3PgiFeWjX4A041/WQ8nt8aNRCdGUah1xwxILNe5t4KPPa+Rg/oymu/oVkz81KUiVUQ==
-X-Received: by 2002:a63:7f4f:: with SMTP id p15mr6498437pgn.296.1542815228599; 
- Wed, 21 Nov 2018 07:47:08 -0800 (PST)
-Received: from localhost ([12.206.222.5])
- by smtp.gmail.com with ESMTPSA id r6sm65610040pgk.91.2018.11.21.07.47.07
+ h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=cSIdAUKetZPHejOsr247eNRYyKvUgZQJUiwuZW0hXlU=;
+ b=W4S0kNulvboo7HtHxJc+67fZu5xf/Aw6NJialLyxbbMyY61u1gwva+7yBTyTLiIKOM
+ SsVaoYax46f7PcRr8Ql/as1HC5nQztDtSm0bLX1UZ+7C43WeUH4Tf9oBERdA7kwCEzCc
+ EHgLSlMvOXyx7jsl930aqfu4cBT1DF3RYRsA+s4bnTaS1ryrYwX8uFBxlxgQEjeCyfKE
+ RrxlxVIsENCzLhPLpwnkp46CmUIg/DikqHNPW8HhcKxNwv6FU4DUVgJ9Ko2/deKSSym8
+ KEwHtv2xyn28yETuhZJ9AoI3DMEu1nYi4bFISKELpY0WfXA76n/6zKeggtPt6OgALjEq
+ tc0w==
+X-Gm-Message-State: AA+aEWYNY2FvdOLKa42PJZu2tdkviamFmP2I8+vw5y2lNNnBFusqtP41
+ 1z29iDbXhCKYndzrWT4mmZA=
+X-Google-Smtp-Source: AFSGD/XTIgaZ7sSCx+Z/7+IQko/3RzO4biZLai/nd/vHcBzKCtAuODn3MWszVKfHvk2Mm//6vgtKiA==
+X-Received: by 2002:a0c:d065:: with SMTP id d34mr6981338qvh.209.1542824869805; 
+ Wed, 21 Nov 2018 10:27:49 -0800 (PST)
+Received: from [9.18.239.97] ([32.104.18.243])
+ by smtp.gmail.com with ESMTPSA id p48sm31223824qtp.62.2018.11.21.10.27.46
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Wed, 21 Nov 2018 07:47:07 -0800 (PST)
-Date: Wed, 21 Nov 2018 07:47:07 -0800 (PST)
-X-Google-Original-Date: Wed, 21 Nov 2018 07:44:37 PST (-0800)
-Subject: Re: [PATCH v2 16/15] syscall_get_arch: add "struct task_struct *"
- argument
-In-Reply-To: <20181121004422.GA29053@altlinux.org>
-From: Palmer Dabbelt <palmer@sifive.com>
-To: ldv@altlinux.org
-Message-ID: <mhng-c75e14b8-b36c-46c2-8ffc-914312ed0cef@palmer-si-x1c4>
-Mime-Version: 1.0 (MHng)
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
+ Wed, 21 Nov 2018 10:27:48 -0800 (PST)
+Subject: Re: [PATCH] powerpc/tm: Set MSR[TS] just prior to recheckpoint
+To: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org
+References: <1542631494-10344-1-git-send-email-leitao@debian.org>
+ <9cdf12d1eaa5350e130d3cfb15ecb060323b6788.camel@neuling.org>
+From: Breno Leitao <leitao@debian.org>
+Message-ID: <5ead16d3-2ada-d5b2-5481-0326a3c920af@debian.org>
+Date: Wed, 21 Nov 2018 16:27:51 -0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.3.0
+MIME-Version: 1.0
+In-Reply-To: <9cdf12d1eaa5350e130d3cfb15ecb060323b6788.camel@neuling.org>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,53 +79,86 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-riscv@lists.infradead.org, linux-arch@vger.kernel.org,
- linux-s390@vger.kernel.org, paul@paul-moore.com, linux-hexagon@vger.kernel.org,
- x86@kernel.org, esyr@redhat.com, lineprinter@altlinux.org,
- linux-snps-arc@lists.infradead.org, uclinux-h8-devel@lists.sourceforge.jp,
- linux-xtensa@linux-xtensa.org, linux-um@lists.infradead.org,
- linux-m68k@lists.linux-m68k.org, openrisc@lists.librecores.org,
- luto@kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-c6x-dev@linux-c6x.org, linux-parisc@vger.kernel.org, oleg@redhat.com,
- eparis@redhat.com, linux-audit@redhat.com, linux-alpha@vger.kernel.org,
- nios2-dev@lists.rocketboards.org, linuxppc-dev@lists.ozlabs.org
+Cc: Gustavo Romero <gromero@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 20 Nov 2018 16:44:22 PST (-0800), ldv@altlinux.org wrote:
-> This argument is required to extend the generic ptrace API
-> with PTRACE_GET_SYSCALL_INFO request: syscall_get_arch() is going to be
-> called from ptrace_request() along with other syscall_get_* functions
-> with a tracee as their argument.
->
-> This change partially reverts commit 5e937a9ae913 ("syscall_get_arch:
-> remove useless function arguments").
->
-> Cc: linux-alpha@vger.kernel.org
-> Cc: linux-arch@vger.kernel.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: linux-audit@redhat.com
-> Cc: linux-c6x-dev@linux-c6x.org
-> Cc: linux-hexagon@vger.kernel.org
-> Cc: linux-ia64@vger.kernel.org
-> Cc: linux-m68k@lists.linux-m68k.org
-> Cc: linux-mips@linux-mips.org
-> Cc: linux-parisc@vger.kernel.org
-> Cc: linux-riscv@lists.infradead.org
-> Cc: linux-s390@vger.kernel.org
-> Cc: linux-sh@vger.kernel.org
-> Cc: linux-snps-arc@lists.infradead.org
-> Cc: linux-um@lists.infradead.org
-> Cc: linux-xtensa@linux-xtensa.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: nios2-dev@lists.rocketboards.org
-> Cc: openrisc@lists.librecores.org
-> Cc: sparclinux@vger.kernel.org
-> Cc: uclinux-h8-devel@lists.sourceforge.jp
-> Cc: x86@kernel.org
-> Signed-off-by: Dmitry V. Levin <ldv@altlinux.org>
+hi Mikey,
 
-Reviewed-by: Palmer Dabbelt <palmer@sifive.com>
+On 11/19/18 9:30 PM, Michael Neuling wrote:
+> On Mon, 2018-11-19 at 10:44 -0200, Breno Leitao wrote:
+>> On a signal handler return, the user could set a context with MSR[TS] bits
+>> set, and these bits would be copied to task regs->msr.
+>>
+>> At restore_tm_sigcontexts(), after current task regs->msr[TS] bits are set,
+>> several __get_user() are called and then a recheckpoint is executed.
+> 
+> Do we have the same problem on the entry side?  There are a bunch of
+> copy_from_user() before we do a tm_reclaim() (ie when still transactional). Is
+> there some chance of the same problem there?
+
+Do you mean in this part of code?
+
+  SYSCALL_DEFINE0(rt_sigreturn)
+  {
+	....
+        if (__copy_from_user(&set, &uc->uc_sigmask, sizeof(set)))
+                goto badframe;
+
+	...
+        if (MSR_TM_SUSPENDED(mfmsr()))
+                tm_reclaim_current(0);
+
+I suspect it is not a problem, since a page fault here will cause the process
+to be reschedule, and tm-reclaim and tm_recheckpoint will happen, and save
+and restore the checkpointed/live registers before this tm_reclaim_current(0).
+
+I also forced a process reschedule (calling schedule()) just after
+copy_from_user() and I didn't see it breaking anything. I might spent more
+timing thinking about this whole get_user() at signal handlers and I will
+double check it.
+
+>> This is a problem since a page fault (in kernel space) could happen when
+>> calling __get_user(). If it happens, the process MSR[TS] bits were
+>> already set, but recheckpoint was not executed, and SPRs are still invalid.
+>>
+>> The page fault can cause the current process to be de-scheduled, with
+>> MSR[TS] active and without tm_recheckpoint() being called.  More
+>> importantly, without TEXAR[FS] bit set also.
+> 
+> This patch is great and should go in ASAP 
+> 
+>> Since TEXASR might not have the FS bit set, and when the process is
+>> scheduled back, it will try to reclaim, which will be aborted because of
+>> the CPU is not in the suspended state, and, then, recheckpoint. This
+>> recheckpoint will restore thread->texasr into TEXASR SPR, which might be
+>> zero, hitting a BUG_ON().
+>>
+>> 	[ 2181.457997] kernel BUG at arch/powerpc/kernel/tm.S:446!
+> 
+> Can you put more of the backtrace here?  Can be useful for people searching for
+> a similar problem.
+
+Ack!
+
+> 
+>> This patch simply delays the MSR[TS] set, so, if there is any page fault in
+>> the __get_user() section, it does not have regs->msr[TS] set, since the TM
+>> structures are still invalid, thus avoiding doing TM operations for
+>> in-kernel exceptions and possible process reschedule.
+> 
+> Can you put a comment in the code what says after the MSR[TS] setting, there can
+> be no get/put_user before the recheckpoint?
+
+Sure. I will circle this code with a preempt_disable/enable() and put a
+comment there as well.
+
+> Also, it looks like the 32bit signals case is safe, but please add a comment in
+> there too.
+
+Yes, 32-bits seems to be safe, but, I will do the same as above, adding
+preempt disable/enable and warn about possible interrupts in-between.
+
+Thank you!
+Breno
