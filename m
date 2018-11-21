@@ -2,69 +2,56 @@ Return-Path: <SRS0=wfsy=OA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 34380C43441
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Nov 2018 10:47:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F814C43441
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Nov 2018 11:44:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B03D92146F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Nov 2018 10:47:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B03D92146F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id EB60520831
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Nov 2018 11:44:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EB60520831
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 430K5d4lzSzF3G8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Nov 2018 21:47:17 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by lists.ozlabs.org (Postfix) with ESMTP id 430LM564nQzF3Mn
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Nov 2018 22:44:01 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=nxp.com
+ (client-ip=92.121.34.21; helo=inva021.nxp.com;
+ envelope-from=madalin.bucur@nxp.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 430K3Z3FdYzF3Fh
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Nov 2018 21:45:30 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 430K3P5wcTz9vF7K;
- Wed, 21 Nov 2018 11:45:21 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id anB1K_LhuOkF; Wed, 21 Nov 2018 11:45:21 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 430K3P5Pw8z9vF7R;
- Wed, 21 Nov 2018 11:45:21 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 67FAC8B808;
- Wed, 21 Nov 2018 11:45:26 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id lC8aQVMCjNZT; Wed, 21 Nov 2018 11:45:26 +0100 (CET)
-Received: from PO15451 (po15451.idsi0.si.c-s.fr [172.25.231.2])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 2F26F8B809;
- Wed, 21 Nov 2018 11:45:26 +0100 (CET)
-Subject: Re: [PATCH 2/4] soc/fsl/qe: fix potential NULL pointer dereference in
- ucc_of_parse_tdm
-To: Wen Yang <wen.yang99@zte.com.cn>, qiang.zhao@nxp.com
-References: <1542786111-18648-1-git-send-email-wen.yang99@zte.com.cn>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <d69e7c77-e9fa-470a-db9f-ff9cd0476334@c-s.fr>
-Date: Wed, 21 Nov 2018 11:45:26 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.3.1
-MIME-Version: 1.0
-In-Reply-To: <1542786111-18648-1-git-send-email-wen.yang99@zte.com.cn>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 430LJ02G9TzF3NB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Nov 2018 22:41:19 +1100 (AEDT)
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 93C6B200299;
+ Wed, 21 Nov 2018 12:41:16 +0100 (CET)
+Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com
+ [134.27.226.22])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 9122420007A;
+ Wed, 21 Nov 2018 12:41:16 +0100 (CET)
+Received: from fsr-fed2164-101.ea.freescale.net
+ (fsr-fed2164-101.ea.freescale.net [10.171.82.91])
+ by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id C00A120621;
+ Wed, 21 Nov 2018 12:41:15 +0100 (CET)
+From: Madalin Bucur <madalin.bucur@nxp.com>
+To: davem@davemloft.net,
+	netdev@vger.kernel.org
+Subject: [PATCH v3 1/3] soc: fsl: qbman: read ithresh from HW
+Date: Wed, 21 Nov 2018 13:41:07 +0200
+Message-Id: <1542800469-6802-2-git-send-email-madalin.bucur@nxp.com>
+X-Mailer: git-send-email 2.1.0
+In-Reply-To: <1542800469-6802-1-git-send-email-madalin.bucur@nxp.com>
+References: <1542800469-6802-1-git-send-email-madalin.bucur@nxp.com>
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,65 +63,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: wang.yi59@zte.com.cn, zhong.weidong@zte.com.cn,
+Reply-To: madalin.bucur@nxp.com
+Cc: Madalin Bucur <madalin.bucur@nxp.com>, roy.pledge@nxp.com,
  linux-kernel@vger.kernel.org, leoyang.li@nxp.com,
- Julia Lawall <julia.lawall@lip6.fr>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Read the DQRR interrupt threshold directly from the hardware.
 
+Signed-off-by: Madalin Bucur <madalin.bucur@nxp.com>
+Signed-off-by: Roy Pledge <roy.pledge@nxp.com>
+---
+ drivers/soc/fsl/qbman/qman.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Le 21/11/2018 à 08:41, Wen Yang a écrit :
-> This patch fixes a possible null pointer dereference in
-> ucc_of_parse_tdm, detected by the semantic patch
-> deref_null.cocci, with the following warning:
-> 
-> ./drivers/soc/fsl/qe/qe_tdm.c:177:21-24: ERROR: pdev is NULL but dereferenced.
-> 
-> The following code has potential null pointer references:
->          pdev = of_find_device_by_node(np2);
->          if (!pdev) {
->                  ret = -EINVAL;
->                  pr_err("%pOFn: failed to lookup pdev\n", np2);
->                  of_node_put(np2);
->                  goto err_miss_siram_property;
->          }
-> ...
-> err_miss_siram_property:
->          devm_iounmap(&pdev->dev, utdm->si_regs);
-> 
-> Signed-off-by: Wen Yang <wen.yang99@zte.com.cn>
-> Reviewed-by: Tan Hu <tan.hu@zte.com.cn>
-> CC: Julia Lawall <julia.lawall@lip6.fr>
-> ---
->   drivers/soc/fsl/qe/qe_tdm.c | 3 ++-
->   1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/soc/fsl/qe/qe_tdm.c b/drivers/soc/fsl/qe/qe_tdm.c
-> index f78c346..166378b 100644
-> --- a/drivers/soc/fsl/qe/qe_tdm.c
-> +++ b/drivers/soc/fsl/qe/qe_tdm.c
-> @@ -174,7 +174,8 @@ int ucc_of_parse_tdm(struct device_node *np, struct ucc_tdm *utdm,
->   	return ret;
->   
->   err_miss_siram_property:
-> -	devm_iounmap(&pdev->dev, utdm->si_regs);
-> +	if (pdev)
-> +		devm_iounmap(&pdev->dev, utdm->si_regs);
+diff --git a/drivers/soc/fsl/qbman/qman.c b/drivers/soc/fsl/qbman/qman.c
+index 5ce24718c2fd..ce7c03052e33 100644
+--- a/drivers/soc/fsl/qbman/qman.c
++++ b/drivers/soc/fsl/qbman/qman.c
+@@ -1025,7 +1025,7 @@ EXPORT_SYMBOL(qman_dqrr_set_ithresh);
+ void qman_dqrr_get_ithresh(struct qman_portal *portal, u8 *ithresh)
+ {
+ 	if (portal && ithresh)
+-		*ithresh = portal->p.dqrr.ithresh;
++		*ithresh = qm_in(&portal->p, QM_REG_DQRR_ITR);
+ }
+ EXPORT_SYMBOL(qman_dqrr_get_ithresh);
+ 
+-- 
+2.1.0
 
-You are just hiding the issue, not fixing it.
-
-The problem is that pdev gets modified, so in any case that 
-devm_iounmap() will fail even when the new pdev is valid, because the 
-iomap was done with a different pdev.
-
-Christophe
-
-
-
->   	return ret;
->   }
->   EXPORT_SYMBOL(ucc_of_parse_tdm);
-> 
