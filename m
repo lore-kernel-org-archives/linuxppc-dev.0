@@ -2,73 +2,120 @@ Return-Path: <SRS0=wfsy=OA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.5 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_PASS,USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 18D9FC43441
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Nov 2018 18:34:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EE792C43441
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Nov 2018 18:42:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 94E91206BB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Nov 2018 18:34:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 94E91206BB
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=debian.org
+	by mail.kernel.org (Postfix) with ESMTPS id 6344C214DA
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Nov 2018 18:42:40 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=wavesemi.onmicrosoft.com header.i=@wavesemi.onmicrosoft.com header.b="p9UO919Z"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6344C214DA
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=mips.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 430WSj57DkzF368
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Nov 2018 05:34:29 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=debian.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 430Wf62wFLzF3L5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Nov 2018 05:42:38 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=mips.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.160.195; helo=mail-qt1-f195.google.com;
- envelope-from=breno.debian@gmail.com; receiver=<UNKNOWN>)
+	dkim=pass (1024-bit key; unprotected) header.d=wavesemi.onmicrosoft.com header.i=@wavesemi.onmicrosoft.com header.b="p9UO919Z";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=debian.org
-Received: from mail-qt1-f195.google.com (mail-qt1-f195.google.com
- [209.85.160.195])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ spf=permerror (mailfrom) smtp.mailfrom=wavecomp.com
+ (client-ip=40.107.82.97; helo=nam01-sn1-obe.outbound.protection.outlook.com;
+ envelope-from=pburton@wavecomp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=mips.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=wavesemi.onmicrosoft.com
+ header.i=@wavesemi.onmicrosoft.com header.b="p9UO919Z"; 
+ dkim-atps=neutral
+Received: from NAM01-SN1-obe.outbound.protection.outlook.com
+ (mail-eopbgr820097.outbound.protection.outlook.com [40.107.82.97])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 430WQQ5jhtzF1yF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Nov 2018 05:32:30 +1100 (AEDT)
-Received: by mail-qt1-f195.google.com with SMTP id r14so4897467qtp.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Nov 2018 10:32:30 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=fACaq/NlDAWY1jKTFv4yBuUuN44FB7grmLgS0QFE2ME=;
- b=blHICqY6elyK6pJWFKs1ZNFOyPkud3op/rKvehN6aDt78Qw7iiYuQZzeyZ4qzWN2Bk
- iIz6jG0/ZLN3zMmrv6gwrJFdXvkXFH2EJcLo9mLYEEnIfFnHcLBafnkY2gWCLO5o+/RF
- 3jUZgtIQGHByYqd0sLlZmNmIz6yt1vRVewv9GMj9A8yG10blTmEzZ4IDdWf079UinrZg
- OFfRIEkcyJLUbGwVAWCSea/Gkco6Jgg+Ld2AhTdOJAeW7HtyK/odfmbyqIT+ZndUM71L
- IeR2WVgeuri9uKxnwnbjmjDcF6t1MHkYEFlWOLJ/X+s5ctkuem8CVolMsHawGdloM43P
- 0Rnw==
-X-Gm-Message-State: AGRZ1gIxVDneaO1sAivU046IwOWdYbgvquoLkNPBdJxb1prWzqhnwCra
- pl2LR33x3mZtqSntGHh2Io4=
-X-Google-Smtp-Source: AJdET5fmBwhVSOGdpfUyW4vhZP3Qhy0zB7ofhZayDZcVlFKCQ7airvDVLP7Juu/vrMZPjru1/d1cgw==
-X-Received: by 2002:ac8:5314:: with SMTP id t20mr6869197qtn.328.1542825148864; 
- Wed, 21 Nov 2018 10:32:28 -0800 (PST)
-Received: from [9.18.239.97] ([32.104.18.243])
- by smtp.gmail.com with ESMTPSA id 20sm27835042qtp.54.2018.11.21.10.32.25
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Wed, 21 Nov 2018 10:32:28 -0800 (PST)
-Subject: Re: [PATCH] powerpc/tm: Set MSR[TS] just prior to recheckpoint
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-References: <1542631494-10344-1-git-send-email-leitao@debian.org>
- <8736rw2g18.fsf@concordia.ellerman.id.au>
-From: Breno Leitao <leitao@debian.org>
-Message-ID: <bbd2ef02-e1f3-6b86-0d13-3c78ee2cc78d@debian.org>
-Date: Wed, 21 Nov 2018 16:32:31 -0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.3.0
-MIME-Version: 1.0
-In-Reply-To: <8736rw2g18.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 430WbL31xYzF3Dt
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Nov 2018 05:40:12 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=wavesemi.onmicrosoft.com; s=selector1-wavecomp-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=Lj6NIwOwDYiM8EmGFNjdseiFCv3nZaiMd/nWclCQeQU=;
+ b=p9UO919Zy24E888qHWVGpN64uG89VePsQae2CZE7CVE269a5fMLRGmnfDe0xIRXOTrOm/byfhQCziyucnSI7u8q1nH0K+w6ZG2RQh9TXu3q22/3HNgHyKTtEY6A9JC0Iw8mSltTkJOP2F697E5K05Nkl16xyDuDrfoW1UMb492o=
+Received: from MWHPR2201MB1277.namprd22.prod.outlook.com (10.174.162.17) by
+ MWHPR2201MB1037.namprd22.prod.outlook.com (10.174.167.26) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.1339.25; Wed, 21 Nov 2018 18:40:06 +0000
+Received: from MWHPR2201MB1277.namprd22.prod.outlook.com
+ ([fe80::690f:b86d:7c2:e105]) by MWHPR2201MB1277.namprd22.prod.outlook.com
+ ([fe80::690f:b86d:7c2:e105%6]) with mapi id 15.20.1339.027; Wed, 21 Nov 2018
+ 18:40:06 +0000
+From: Paul Burton <paul.burton@mips.com>
+To: "Dmitry V. Levin" <ldv@altlinux.org>
+Subject: Re: [PATCH v2 16/15] syscall_get_arch: add "struct task_struct *"
+ argument
+Thread-Topic: [PATCH v2 16/15] syscall_get_arch: add "struct task_struct *"
+ argument
+Thread-Index: AQHUgTPej1Tu6sDbakGRWZwZX+XXZ6VakNQA
+Date: Wed, 21 Nov 2018 18:40:06 +0000
+Message-ID: <20181121184004.jro532jopnbmru2m@pburton-laptop>
+References: <20181107042751.3b519062@akathisia>
+ <CALCETrV1v-DPRfDRwiH=xn29bxWxiHdZtAH1nw=dsmDtnT0YGQ@mail.gmail.com>
+ <20181120001128.GA11300@altlinux.org> <20181121004422.GA29053@altlinux.org>
+In-Reply-To: <20181121004422.GA29053@altlinux.org>
+Accept-Language: en-US
 Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-clientproxiedby: MWHPR21CA0043.namprd21.prod.outlook.com
+ (2603:10b6:300:129::29) To MWHPR2201MB1277.namprd22.prod.outlook.com
+ (2603:10b6:301:24::17)
+user-agent: NeoMutt/20180716
+x-ms-exchange-messagesentrepresentingtype: 1
+x-originating-ip: [4.16.204.77]
+x-ms-publictraffictype: Email
+x-microsoft-exchange-diagnostics: 1; MWHPR2201MB1037;
+ 6:ifOXk1KgjdvPxfOglNMokjnimTpY++iZm9wnYEmaysabdKLUTN8hzWjg3iIM80eU9pieBT78PpCyIfwUuZGt3MmMmBRFzISJ+tU20TVdmxtDhcV64CagwpVPhLVbJdmgD1ePedA5HPDIY9Osjo5FMSX+gqwXkYEkHE4U6ALpR1yTNsdouc2KkhI722iAMNrbvzCMomwTzhkU0o8O+RAVy9POOOTCicx6KG2BMmStZYLU6CFDWJNCw1uw+aDH4L02hleNuzEl8QQYRI8oao866ckaWXwJkHtB/sGPlocbYK2Zve6VrzC3hiHQW65ZowejEcoysNYt0oCE4Zlu9U4IIxxv5cLs5QCrJ3WvDObLABp/X6iJh5UIpfYQBJSd0AVCOJQZ4yGdNRB+TRkJtmfhuzTb3L7pNwoaHoOoPGWi9IDFXj8cme38UQKyOOF3bMiBhlzSwPP2mBIqTnLeS58IGA==;
+ 5:H5+Ojo+jjM2KVTUHjThJ51t7hS8ThqHlQzcxRH8VnfpNcx0e550lBap+2OOGt4k1eThD8FLhlVRUDg7wSan9BrvLauifc8z857Bf963Cr1V2UHHePFL4eusxbFoVLRw58P9Exhnby2o8i1vwB0rIje+Ppbs+vMX+FA2LoCnDRk4=;
+ 7:NUHfDgar8+RSiZDXuUgVr6g6FD56K5hdVtMQQNWDO9YNUJOct0tBJ5UKf4gKJbxyixa6OMzWOa4WfDlVj1B5tRWAKHDI+m8E24jgT/a6IJ5lRH+nG6+Kis2LmmWHCiZK9gwzf7v3aZe8gkY/S9ypsA==
+x-ms-office365-filtering-correlation-id: cd7e7d8b-b793-4428-c375-08d64fe0c160
+x-microsoft-antispam: BCL:0; PCL:0;
+ RULEID:(2390098)(7020095)(4652040)(7021145)(8989299)(5600074)(711020)(4534185)(7022145)(4603075)(4627221)(201702281549075)(8990200)(7048125)(7024125)(7027125)(7023125)(2017052603328)(7153060)(7193020);
+ SRVR:MWHPR2201MB1037; 
+x-ms-traffictypediagnostic: MWHPR2201MB1037:
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=pburton@wavecomp.com; 
+x-microsoft-antispam-prvs: <MWHPR2201MB10374E87FA65950BA576AF1FC1DA0@MWHPR2201MB1037.namprd22.prod.outlook.com>
+x-ms-exchange-senderadcheck: 1
+x-exchange-antispam-report-cfa-test: BCL:0; PCL:0;
+ RULEID:(6040522)(2401047)(8121501046)(5005006)(3231442)(944501410)(52105112)(10201501046)(93006095)(3002001)(148016)(149066)(150057)(6041310)(20161123562045)(20161123564045)(20161123558120)(2016111802025)(20161123560045)(6043046)(201708071742011)(7699051)(76991095);
+ SRVR:MWHPR2201MB1037; BCL:0; PCL:0; RULEID:; SRVR:MWHPR2201MB1037; 
+x-forefront-prvs: 08635C03D4
+x-forefront-antispam-report: SFV:NSPM;
+ SFS:(10019020)(7916004)(136003)(346002)(376002)(39840400004)(366004)(396003)(199004)(189003)(6436002)(42882007)(97736004)(508600001)(7736002)(14454004)(58126008)(33716001)(93886005)(305945005)(111086002)(1076002)(316002)(6512007)(486006)(9686003)(8936002)(5660300001)(4326008)(476003)(44832011)(8676002)(81166006)(81156014)(7416002)(66066001)(2900100001)(71190400001)(71200400001)(11346002)(6916009)(6116002)(3846002)(2906002)(446003)(14444005)(53936002)(25786009)(6486002)(229853002)(256004)(99286004)(106356001)(68736007)(6506007)(386003)(102836004)(52116002)(105586002)(76176011)(33896004)(26005)(54906003)(6246003)(186003);
+ DIR:OUT; SFP:1102; SCL:1; SRVR:MWHPR2201MB1037;
+ H:MWHPR2201MB1277.namprd22.prod.outlook.com; FPR:; SPF:None; LANG:en;
+ PTR:InfoNoRecords; A:1; MX:1; 
+received-spf: None (protection.outlook.com: wavecomp.com does not designate
+ permitted sender hosts)
+x-microsoft-antispam-message-info: GXgddRJjvbjVPkkuuEr64xHVYrr8c6ZDU6HlJiGDproEHfLtnoROHshJFehSmKyfmHF/ZnrL430sMYgPW2/TWGEqtODfHApBN67a0zJa8VXVlpMpeGW7LnWpsTi6T9BBCC1uPl2++G++cZWwBf572p0YcjHlBc5gOaPE30aD/dKH9Ir8r9hrpx+1yXdgTkr96QGGU/QkPqNYDRgFwj4xkLQnCTUgYDqjYdlNoL8kKa4qwBo+1GSiuxlOAokj4cs7z0qbGVWfs5H6buTaYRR9pzS9I2EMUOeGRbB+gs4vBXShwkz3lEMj+6XPkEPzZvEOZeaTAzxjXIWqtTj+0mBo4H7MAfR2FkY3xXyCoB8grzY=
+spamdiagnosticoutput: 1:99
+spamdiagnosticmetadata: NSPM
+Content-Type: text/plain; charset="us-ascii"
+Content-ID: <F706FB6922E03E429949DE755647EBBE@namprd22.prod.outlook.com>
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+X-OriginatorOrg: mips.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: cd7e7d8b-b793-4428-c375-08d64fe0c160
+X-MS-Exchange-CrossTenant-originalarrivaltime: 21 Nov 2018 18:40:06.1081 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 463607d3-1db3-40a0-8a29-970c56230104
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MWHPR2201MB1037
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,200 +127,100 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mikey@neuling.org, "v3.9+" <stable@vger.kernel.org>,
- gromero@linux.vnet.ibm.com
+Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
+ "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
+ "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>,
+ "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ Paul Moore <paul@paul-moore.com>,
+ "linux-hexagon@vger.kernel.org" <linux-hexagon@vger.kernel.org>,
+ "x86@kernel.org" <x86@kernel.org>, Eugene Syromyatnikov <esyr@redhat.com>,
+ Elvira Khabirova <lineprinter@altlinux.org>,
+ "linux-snps-arc@lists.infradead.org" <linux-snps-arc@lists.infradead.org>,
+ "uclinux-h8-devel@lists.sourceforge.jp"
+ <uclinux-h8-devel@lists.sourceforge.jp>,
+ "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>,
+ "linux-um@lists.infradead.org" <linux-um@lists.infradead.org>,
+ "linux-m68k@lists.linux-m68k.org" <linux-m68k@lists.linux-m68k.org>,
+ "openrisc@lists.librecores.org" <openrisc@lists.librecores.org>,
+ Andy Lutomirski <luto@kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "linux-c6x-dev@linux-c6x.org" <linux-c6x-dev@linux-c6x.org>,
+ "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>,
+ Oleg Nesterov <oleg@redhat.com>, Eric Paris <eparis@redhat.com>,
+ "linux-audit@redhat.com" <linux-audit@redhat.com>,
+ "linux-alpha@vger.kernel.org" <linux-alpha@vger.kernel.org>,
+ "nios2-dev@lists.rocketboards.org" <nios2-dev@lists.rocketboards.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-hi Michael,
+Hi Dmitry,
 
-On 11/20/18 8:34 AM, Michael Ellerman wrote:
-> Hi Breno,
-> 
-> Thanks for chasing this one down.
-> 
-> Breno Leitao <leitao@debian.org> writes:
-> 
->> On a signal handler return, the user could set a context with MSR[TS] bits
->> set, and these bits would be copied to task regs->msr.
->>
->> At restore_tm_sigcontexts(), after current task regs->msr[TS] bits are set,
->> several __get_user() are called and then a recheckpoint is executed.
->>
->> This is a problem since a page fault (in kernel space) could happen when
->> calling __get_user(). If it happens, the process MSR[TS] bits were
->> already set, but recheckpoint was not executed, and SPRs are still invalid.
->>
->> The page fault can cause the current process to be de-scheduled, with
->> MSR[TS] active and without tm_recheckpoint() being called.  More
->> importantly, without TEXAR[FS] bit set also.
->>
->> Since TEXASR might not have the FS bit set, and when the process is
->> scheduled back, it will try to reclaim, which will be aborted because of
->> the CPU is not in the suspended state, and, then, recheckpoint. This
->> recheckpoint will restore thread->texasr into TEXASR SPR, which might be
->> zero, hitting a BUG_ON().
->>
->> 	[ 2181.457997] kernel BUG at arch/powerpc/kernel/tm.S:446!
-> 
-> As Mikey said, would be good to have at least the stack trace & NIP
-> here, if not the full oops.
+On Wed, Nov 21, 2018 at 03:44:22AM +0300, Dmitry V. Levin wrote:
+> This argument is required to extend the generic ptrace API
+> with PTRACE_GET_SYSCALL_INFO request: syscall_get_arch() is going to be
+> called from ptrace_request() along with other syscall_get_* functions
+> with a tracee as their argument.
+>=20
+> This change partially reverts commit 5e937a9ae913 ("syscall_get_arch:
+> remove useless function arguments").
+>=20
+>%
+>=20
+> diff --git a/arch/mips/include/asm/syscall.h b/arch/mips/include/asm/sysc=
+all.h
+> index 0170602a1e4e..52b633f20abd 100644
+> --- a/arch/mips/include/asm/syscall.h
+> +++ b/arch/mips/include/asm/syscall.h
+> @@ -73,7 +73,7 @@ static inline unsigned long mips_get_syscall_arg(unsign=
+ed long *arg,
+>  #ifdef CONFIG_64BIT
+>  	case 4: case 5: case 6: case 7:
+>  #ifdef CONFIG_MIPS32_O32
+> -		if (test_thread_flag(TIF_32BIT_REGS))
+> +		if (test_ti_thread_flag(task_thread_info(task), TIF_32BIT_REGS))
+>  			return get_user(*arg, (int *)usp + n);
+>  		else
+>  #endif
 
-Ack!
+This ought to be test_tsk_thread_flag(task, TIF_32BIT_REGS) instead of
+open-coding test_tsk_thread_flag.
 
->> This patch simply delays the MSR[TS] set, so, if there is any page fault in
->> the __get_user() section, it does not have regs->msr[TS] set, since the TM
->> structures are still invalid, thus avoiding doing TM operations for
->> in-kernel exceptions and possible process reschedule.
->>
->> With this patch, the MSR[TS] will only be set just before recheckpointing
->> and setting TEXASR[FS] = 1, thus avoiding an interrupt with TM registers in
->> invalid state.
-> 
-> To make this safe when PREEMPT is enabled we need to preempt_disable() /
-> enable() around the setting of regs->msr and the recheckpoint.
-> 
-> That could also serve as nice documentation.
-> 
-> I guess the other question is whether it should be the job of
-> tm_recheckpoint() to set regs->msr, given that it already hard disables
-> interrupts.
-> 
-> eg. we'd set the TM flags in a local msr variable and pass the to
-> tm_recheckpoint(), it would then assign that to regs->msr in the IRQ
-> disabled section. Though there's many callers of tm_recheckpoint() that
-> don't need that behaviour, so it would probably need to be factored out.
+More fundamentally though, this change doesn't seem to be (directly)
+related to the change you describe in the commit message - it's not
+syscall_get_arch being modified here. I suspect this should be a
+separate commit, or if not please explain in the commit message why this
+change is included.
 
-Right, that might be doable, but I am wondering if it isn't better to create
-a new function that does it as below:
+Compounding the lack of clarity is the fact that I only received this
+patch, not the whole series, so I can't view the change in the context
+of the rest of the series.
 
-void tm_set_msr_and_recheckpoint(struct pt_regs *regs, u64 msr)
-{
-       preempt_disable();
-       regs->msr = msr;
-       tm_recheckpoint();
-       preempt_enable();
-}
+> @@ -140,14 +140,14 @@ extern const unsigned long sys_call_table[];
+>  extern const unsigned long sys32_call_table[];
+>  extern const unsigned long sysn32_call_table[];
+> =20
+> -static inline int syscall_get_arch(void)
+> +static inline int syscall_get_arch(struct task_struct *task)
+>  {
+>  	int arch =3D AUDIT_ARCH_MIPS;
+>  #ifdef CONFIG_64BIT
+> -	if (!test_thread_flag(TIF_32BIT_REGS)) {
+> +	if (!test_ti_thread_flag(task_thread_info(task), TIF_32BIT_REGS)) {
+>  		arch |=3D __AUDIT_ARCH_64BIT;
+>  		/* N32 sets only TIF_32BIT_ADDR */
+> -		if (test_thread_flag(TIF_32BIT_ADDR))
+> +		if (test_ti_thread_flag(task_thread_info(task), TIF_32BIT_ADDR))
+>  			arch |=3D __AUDIT_ARCH_CONVENTION_MIPS64_N32;
+>  	}
+>  #endif
 
-I understand that preempt_disable() does a better work disabling preemption
-compared to disabling IRQ. Also, it does not change the API just for this
-very specific signal case.
+This does seem like the described change, but there are 2 more instances
+of open-coding test_tsk_thread_flag which ought to be cleaned up.
 
->> It is not possible to move tm_recheckpoint to happen earlier, because it is
->> required to get the checkpointed registers from userspace, with
->> __get_user(), thus, the only way to avoid this undesired behavior is
->> delaying the MSR[TS] set, as done in this patch.
-> 
-> I think the root cause here is that we're copying into the live regs of
-> current. That has obviously worked in the past, because the register
-> state wasn't used until we returned back to userspace. But that's no
-> longer true with TM. And even so it's quite subtle. I also suspect some
-> of our FP/VEC handling may not work correctly if we're scheduled part
-> way through restoring the regs.
-
-I got your point and I think we have a risk of corrupting the regs if MSR[TS]
-is set and we do page_fault->recheckpoint/recheclaim in the middle of
-__get_user() chunks.
-
-> What might work better is if we copy all the regs into temporary space
-> and then with interrupts disabled we copy them into the task. That way
-> we should never be scheduled with a half-populated set of regs.
-
-Yes, that seems to be the best strategy, and I might be interested in working
-on it.
-
-> That's obviously a much bigger patch though and something we'll have to
-> do later.
-> 
->> Fixes: 87b4e5393af7 ("powerpc/tm: Fix return of active 64bit signals")
->> Cc: stable@vger.kernel.org (v3.9+)
->> Signed-off-by: Breno Leitao <leitao@debian.org>
->> ---
->>  arch/powerpc/kernel/signal_64.c | 29 +++++++++++++++--------------
->>  1 file changed, 15 insertions(+), 14 deletions(-)
->>
->> diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
->> index 83d51bf586c7..15b153bdd826 100644
->> --- a/arch/powerpc/kernel/signal_64.c
->> +++ b/arch/powerpc/kernel/signal_64.c
->> @@ -467,20 +467,6 @@ static long restore_tm_sigcontexts(struct task_struct *tsk,
->>  	if (MSR_TM_RESV(msr))
->>  		return -EINVAL;
->>  
->> -	/* pull in MSR TS bits from user context */
->> -	regs->msr = (regs->msr & ~MSR_TS_MASK) | (msr & MSR_TS_MASK);
->> -
->> -	/*
->> -	 * Ensure that TM is enabled in regs->msr before we leave the signal
->> -	 * handler. It could be the case that (a) user disabled the TM bit
->> -	 * through the manipulation of the MSR bits in uc_mcontext or (b) the
->> -	 * TM bit was disabled because a sufficient number of context switches
->> -	 * happened whilst in the signal handler and load_tm overflowed,
->> -	 * disabling the TM bit. In either case we can end up with an illegal
->> -	 * TM state leading to a TM Bad Thing when we return to userspace.
->> -	 */
->> -	regs->msr |= MSR_TM;
->> -
->>  	/* pull in MSR LE from user context */
->>  	regs->msr = (regs->msr & ~MSR_LE) | (msr & MSR_LE);
->>  
->> @@ -572,6 +558,21 @@ static long restore_tm_sigcontexts(struct task_struct *tsk,
->>  	tm_enable();
->>  	/* Make sure the transaction is marked as failed */
->>  	tsk->thread.tm_texasr |= TEXASR_FS;
->> +
-> 
-> 	preempt_disable();
-> 
->> +	/* pull in MSR TS bits from user context */
->> +	regs->msr = (regs->msr & ~MSR_TS_MASK) | (msr & MSR_TS_MASK);
->> +
->> +	/*
->> +	 * Ensure that TM is enabled in regs->msr before we leave the signal
->> +	 * handler. It could be the case that (a) user disabled the TM bit
->> +	 * through the manipulation of the MSR bits in uc_mcontext or (b) the
->> +	 * TM bit was disabled because a sufficient number of context switches
->> +	 * happened whilst in the signal handler and load_tm overflowed,
->> +	 * disabling the TM bit. In either case we can end up with an illegal
->> +	 * TM state leading to a TM Bad Thing when we return to userspace.
->> +	 */
->> +	regs->msr |= MSR_TM;
->> +
->>  	/* This loads the checkpointed FP/VEC state, if used */
->>  	tm_recheckpoint(&tsk->thread);
->>
-> 	preempt_enable();
-> 
-> Although looking at the code that follows, it probably won't cope with
-> being preempted either. So the preempt_enable() should probably go at
-> the end of the function.
-
-Why? I confess I do not understand the preempt mechanism a lot. Does a
-preemption save/restore FP and vector states when it is preempted?
-
-What is the code/IRQ that is executed when there is a preemption? I am
-wondering if a preempt happens because the  Decrementer (0x900) IRQ  happens
-and a syscall is being executed, thus, saving the whole context and then
-restoring it. If my guess is correct, the IRQ might not save the FP/VEC
-states, thus, your concern about ahving load_fp_state() after a preemption.
-
-Let me paste the "patched" code here to help with the discussion:
-
-        regs->msr |= MSR_TM;
-
-        /* This loads the checkpointed FP/VEC state, if used */
-        tm_recheckpoint(&tsk->thread);
-
-        msr_check_and_set(msr & (MSR_FP | MSR_VEC));
-        if (msr & MSR_FP) {
-                load_fp_state(&tsk->thread.fp_state);
-                regs->msr |= (MSR_FP | tsk->thread.fpexc_mode);
-        }
-        if (msr & MSR_VEC) {
-                load_vr_state(&tsk->thread.vr_state);
-                regs->msr |= MSR_VEC;
-        }
-
-Thanks
-Breno
+Thanks,
+    Paul
