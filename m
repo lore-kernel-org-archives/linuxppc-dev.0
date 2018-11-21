@@ -2,85 +2,89 @@ Return-Path: <SRS0=wfsy=OA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
-	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E87DC43441
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Nov 2018 02:28:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BB067C43441
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Nov 2018 03:58:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5291F2145D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Nov 2018 02:28:23 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="Oc7DcWOs"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5291F2145D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
+	by mail.kernel.org (Postfix) with ESMTPS id 142722145D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Nov 2018 03:58:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 142722145D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43061w5XLlzF3ct
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Nov 2018 13:28:20 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=russell.cc
+	by lists.ozlabs.org (Postfix) with ESMTP id 43081p5W35zF3cY
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Nov 2018 14:58:22 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.b="Oc7DcWOs";
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (helo)
- smtp.helo=out4-smtp.messagingengine.com (client-ip=66.111.4.28;
- helo=out4-smtp.messagingengine.com; envelope-from=ruscur@russell.cc;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=ravi.bangoria@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=russell.cc
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.b="Oc7DcWOs"; dkim-atps=neutral
-Received: from out4-smtp.messagingengine.com (out4-smtp.messagingengine.com
- [66.111.4.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4305zP4fpGzF3cM
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Nov 2018 13:26:08 +1100 (AEDT)
-Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
- by mailout.nyi.internal (Postfix) with ESMTP id E073223B84;
- Tue, 20 Nov 2018 21:26:05 -0500 (EST)
-Received: from mailfrontend1 ([10.202.2.162])
- by compute6.internal (MEProxy); Tue, 20 Nov 2018 21:26:05 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
- messagingengine.com; h=cc:content-transfer-encoding:content-type
- :date:from:in-reply-to:message-id:mime-version:references
- :subject:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
- :x-sasl-enc; s=fm1; bh=eRmxTPvL3p8bGpZXnEkS6ElrKPbc7irnS7FF8SRQ+
- zo=; b=Oc7DcWOszmtW4tv/EXK3tWBgUiViKx36y91DZm6zVNMP/u4CFAkz4cHWt
- AFjbH7OBmFBxqT92JL3+7tQyljcrIjh1YlqF1WK+YKE+N0s9Ma9zuLnhn/6qVA9F
- JhPopZjYbmjKsars7xRL1k59U6SOEsnLQ48rCxmMfwNdyCpe0vlMXDBNYJjvBb8k
- AmzIx8mu9wGau4pLokz3tboOfS7I1PKBphUEWVOEM2OGtt1ER5iGZB2Ay+mjM7EG
- 8TrNtSKWF6nEsggnrwvkNlZ58+e/WzZkF5tp048Ou79Y0/udpVa7dAGSn2s0mpkc
- b2s7nv+RXfJ9MP8rA42TaWfKD5jZg==
-X-ME-Sender: <xms:O8L0W-ioQD5idJX3RLsV0ADoS1KZjjPj_M-YPEdmnxV_E68evrjjgQ>
-X-ME-Proxy: <xmx:PML0W367hx2aJYs814hntLg0jdLLZRTaeZjzj-DDk5KDxtshKBqqog>
- <xmx:PML0W8JAHMbl9d3Lc5GBYACXG73_PD1vhLNvWCt_BBWq3qDoAvCY8w>
- <xmx:PML0WxTTbMUs-2jcvdqYLSaSlsSJEKSVJ5di3rhUqMmSkenCc2-PWA>
- <xmx:PML0W_quO0ClX4ktTNAxzAZPnmvCNkDyq_nOyMBdl1URkBnEQiDZ7Q>
- <xmx:PML0W_ZkYkaGTaRV4imEQKQMUW3Hu7TR44AUOjJSb0neEv3EOyYT5g>
- <xmx:PcL0W8e9yn1AiHGZ0b939_IZffIpiwfmW-EHKyBotc36CKVqvZeriQ>
-Received: from crackle.ozlabs.ibm.com (unknown [122.99.82.10])
- by mail.messagingengine.com (Postfix) with ESMTPA id C7DD0E451A;
- Tue, 20 Nov 2018 21:26:01 -0500 (EST)
-Message-ID: <d5aa6ff391c0438371cae507e0b82a96eec4e979.camel@russell.cc>
-Subject: Re: [RFC PATCH v1 5/6] powerpc/mm: Add a framework for Kernel
- Userspace Access Protection
-From: Russell Currey <ruscur@russell.cc>
-To: Christophe Leroy <christophe.leroy@c-s.fr>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael
- Ellerman <mpe@ellerman.id.au>
-Date: Wed, 21 Nov 2018 13:26:30 +1100
-In-Reply-To: <a8df3cd2be841ff5dd7b8d3fd357f40f9935f5a4.1541568128.git.christophe.leroy@c-s.fr>
-References: <ab8fcb458e1a6ad86382767b3ce7f7cc0d5b7121.1541568127.git.christophe.leroy@c-s.fr>
- <a8df3cd2be841ff5dd7b8d3fd357f40f9935f5a4.1541568128.git.christophe.leroy@c-s.fr>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.30.2 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4307zl1nvzzF3L7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Nov 2018 14:56:35 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wAL3s0P8063013
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Nov 2018 22:56:32 -0500
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2nvrrmpe97-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Nov 2018 22:56:32 -0500
+Received: from localhost
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.ibm.com>;
+ Wed, 21 Nov 2018 03:56:30 -0000
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 21 Nov 2018 03:56:27 -0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wAL3uQL655509052
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Wed, 21 Nov 2018 03:56:26 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3D9C74C04A;
+ Wed, 21 Nov 2018 03:56:26 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 54D724C04E;
+ Wed, 21 Nov 2018 03:56:20 +0000 (GMT)
+Received: from bangoria.ibmuc.com (unknown [9.102.2.77])
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed, 21 Nov 2018 03:56:19 +0000 (GMT)
+From: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2] Powerpc/perf: Wire up PMI throttling
+Date: Wed, 21 Nov 2018 09:26:37 +0530
+X-Mailer: git-send-email 2.19.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 18112103-0028-0000-0000-0000031E00ED
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18112103-0029-0000-0000-000023DA075B
+Message-Id: <20181121035637.17446-1-ravi.bangoria@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-11-21_01:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=931 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1811210034
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,47 +96,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Ravi Bangoria <ravi.bangoria@linux.ibm.com>, maddy@linux.vnet.ibm.com,
+ linux-kernel@vger.kernel.org, npiggin@gmail.com, paulus@samba.org,
+ ebiederm@xmission.com, muriloo@linux.ibm.com, leitao@debian.org,
+ naveen.n.rao@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 2018-11-07 at 16:56 +0000, Christophe Leroy wrote:
-> This patch implements a framework for Kernel Userspace Access
-> Protection.
-> 
-> Then subarches will have to possibility to provide their own
-> implementation
-> by providing setup_kuap(), and lock/unlock_user_rd/wr_access
-> 
-> We separate read and write accesses because some subarches like
-> book3s32 might only support write access protection.
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Commit 14c63f17b1fde ("perf: Drop sample rate when sampling is too
+slow") introduced a way to throttle PMU interrupts if we're spending
+too much time just processing those. Wire up powerpc PMI handler to
+use this infrastructure.
 
-Separating read and writes does have a performance impact, I'm doing
-some benchmarking to find out exactly how much - but at least for radix
-it means we have to do a RMW instead of just a write.  It does add some
-amount of security, though.
+We have throttling of the *rate* of interrupts, but this adds
+throttling based on the *time taken* to process the interrupts.
 
-The other issue I have is that you're just locking everything here
-(like I was), and not doing anything different for just reads or
-writes.  In theory, wouldn't someone assume that they could (for
-example) unlock reads, lock writes, then attempt to read?  At which
-point the read would fail, because the lock actually locks both.
+Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+---
+v1: https://lkml.org/lkml/2018/11/14/627
 
-I would think we either need to bundle read/write locking/unlocking
-together, or only implement this on platforms that can do one at a
-time, unless there's a cleaner way to handle this.  Glancing at the
-values you use for 8xx, this doesn't seem possible there, and it's a
-definite performance hit for radix.
+ arch/powerpc/perf/core-book3s.c | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
 
-At the same time, as you say, it would suck for book3s32 that can only
-do writes, but maybe just doing both at the same time and if
-implemented for that platform it could just have a warning that it only
-applies to writes on init?
-
-Curious for people's thoughts on this.
-
-- Russell 
+diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+index 81f8a0c838ae..3cd2ec9c9732 100644
+--- a/arch/powerpc/perf/core-book3s.c
++++ b/arch/powerpc/perf/core-book3s.c
+@@ -10,6 +10,7 @@
+  */
+ #include <linux/kernel.h>
+ #include <linux/sched.h>
++#include <linux/sched/clock.h>
+ #include <linux/perf_event.h>
+ #include <linux/percpu.h>
+ #include <linux/hardirq.h>
+@@ -2148,7 +2149,7 @@ static bool pmc_overflow(unsigned long val)
+ /*
+  * Performance monitor interrupt stuff
+  */
+-static void perf_event_interrupt(struct pt_regs *regs)
++static void __perf_event_interrupt(struct pt_regs *regs)
+ {
+ 	int i, j;
+ 	struct cpu_hw_events *cpuhw = this_cpu_ptr(&cpu_hw_events);
+@@ -2232,6 +2233,14 @@ static void perf_event_interrupt(struct pt_regs *regs)
+ 		irq_exit();
+ }
+ 
++static void perf_event_interrupt(struct pt_regs *regs)
++{
++	u64 start_clock = sched_clock();
++
++	__perf_event_interrupt(regs);
++	perf_sample_event_took(sched_clock() - start_clock);
++}
++
+ static int power_pmu_prepare_cpu(unsigned int cpu)
+ {
+ 	struct cpu_hw_events *cpuhw = &per_cpu(cpu_hw_events, cpu);
+-- 
+2.17.1
 
