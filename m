@@ -3,22 +3,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AD8CDC43441
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Nov 2018 09:33:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B0A69C43441
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Nov 2018 09:41:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3A68F20989
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Nov 2018 09:33:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3A68F20989
+	by mail.kernel.org (Postfix) with ESMTPS id 01B082146F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Nov 2018 09:41:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 01B082146F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 430HSF3RfKzF3gs
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Nov 2018 20:33:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 430HdW3MvvzF3hH
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Nov 2018 20:41:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
@@ -29,38 +29,37 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 430HLY2kykzF3gS
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Nov 2018 20:28:21 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 430Hb416BwzF3Dc
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Nov 2018 20:39:12 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 430HLN6N5Qz9txvl;
- Wed, 21 Nov 2018 10:28:12 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 430HZt1hbPz9txvp;
+ Wed, 21 Nov 2018 10:39:02 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id qpg2gNAIMR4i; Wed, 21 Nov 2018 10:28:12 +0100 (CET)
+ with ESMTP id amgJ7DFzMjin; Wed, 21 Nov 2018 10:39:02 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 430HLN5t72z9txvc;
- Wed, 21 Nov 2018 10:28:12 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 430HZt18htz9txvm;
+ Wed, 21 Nov 2018 10:39:02 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 60AFE8B803;
- Wed, 21 Nov 2018 10:28:17 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id B79318B806;
+ Wed, 21 Nov 2018 10:39:06 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id ICIEIg7HxU8u; Wed, 21 Nov 2018 10:28:17 +0100 (CET)
+ with ESMTP id uvaXN3-5uBzb; Wed, 21 Nov 2018 10:39:06 +0100 (CET)
 Received: from po14163vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
  [172.25.231.2])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 389658B75F;
- Wed, 21 Nov 2018 10:28:17 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 920E18B75F;
+ Wed, 21 Nov 2018 10:39:06 +0100 (CET)
 Received: by po14163vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 1A01969AA7; Wed, 21 Nov 2018 09:28:17 +0000 (UTC)
-Message-Id: <4387eaa96452287da089dc9eb4997cc4e23ff0a8.1542791980.git.christophe.leroy@c-s.fr>
+ id 7E91269AA9; Wed, 21 Nov 2018 09:39:06 +0000 (UTC)
+Message-Id: <50e3ae6c9b5e532f4103e3dc9a59e6b3ebc698a6.1542793018.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3] powerpc/mm: dump block address translation on book3s/32
+Subject: [PATCH v2] powerpc/mm: add exec protection on powerpc 603
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
- npiggin@gmail.com, rashmicy@gmail.com
-Date: Wed, 21 Nov 2018 09:28:17 +0000 (UTC)
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Wed, 21 Nov 2018 09:39:06 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,253 +76,232 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch adds a debugfs file to dump block address translation:
+The 603 doesn't have a HASH table, TLB misses are handled by
+software. It is then possible to generate page fault when
+_PAGE_EXEC is not set like in nohash/32.
 
-~# cat /sys/kernel/debug/block_address_translation
----[ Instruction Block Address Translations ]---
-0:         -
-1:         -
-2: 0xc0000000-0xcfffffff 0x00000000 Kernel EXEC coherent
-3: 0xd0000000-0xdfffffff 0x10000000 Kernel EXEC coherent
-4:         -
-5:         -
-6:         -
-7:         -
+There is one "reserved" PTE bit available, this patch uses
+it for _PAGE_EXEC.
 
----[ Data Block Address Translations ]---
-0:         -
-1:         -
-2: 0xc0000000-0xcfffffff 0x00000000 Kernel RW coherent
-3: 0xd0000000-0xdfffffff 0x10000000 Kernel RW coherent
-4:         -
-5:         -
-6:         -
-7:         -
+In order to support it, set_pte_filter() and
+set_access_flags_filter() are made common, and the handling
+is made dependent on MMU_FTR_HPTE_TABLE
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- v3: Fixed PHYS_BAT_ADDR() when !CONFIG_PHYS_64BIT
-     Cosmetic changes to have it look more like kernel_page_table with ---[ xxx ]---
-     Removed unnecessary includes
-     Using CPU feature to know if it is a 601 instead of SPRN_PVR
+ v2: Amended commit log and removed #ifdef in pagetable dump
 
- v2: Fixed phys address display for CONFIG_PHYS_64BIT
+ arch/powerpc/include/asm/book3s/32/hash.h      |  1 +
+ arch/powerpc/include/asm/book3s/32/pgtable.h   | 18 +++++++++---------
+ arch/powerpc/include/asm/cputable.h            |  8 ++++----
+ arch/powerpc/kernel/head_32.S                  |  2 ++
+ arch/powerpc/mm/dump_linuxpagetables-generic.c |  2 --
+ arch/powerpc/mm/pgtable.c                      | 20 +++++++++++---------
+ 6 files changed, 27 insertions(+), 24 deletions(-)
 
- arch/powerpc/include/asm/book3s/32/mmu-hash.h |   4 +
- arch/powerpc/mm/Makefile                      |   2 +-
- arch/powerpc/mm/dump_bats.c                   | 173 ++++++++++++++++++++++++++
- 3 files changed, 178 insertions(+), 1 deletion(-)
- create mode 100644 arch/powerpc/mm/dump_bats.c
-
-diff --git a/arch/powerpc/include/asm/book3s/32/mmu-hash.h b/arch/powerpc/include/asm/book3s/32/mmu-hash.h
-index e38c91388c40..1a380cc5cfc3 100644
---- a/arch/powerpc/include/asm/book3s/32/mmu-hash.h
-+++ b/arch/powerpc/include/asm/book3s/32/mmu-hash.h
-@@ -34,8 +34,12 @@
- #define BAT_PHYS_ADDR(x) ((u32)((x & 0x00000000fffe0000ULL) | \
- 				((x & 0x0000000e00000000ULL) >> 24) | \
- 				((x & 0x0000000100000000ULL) >> 30)))
-+#define PHYS_BAT_ADDR(x) (((u64)(x) & 0x00000000fffe0000ULL) | \
-+			  (((u64)(x) << 24) & 0x0000000e00000000ULL) | \
-+			  (((u64)(x) << 30) & 0x0000000100000000ULL))
- #else
- #define BAT_PHYS_ADDR(x) (x)
-+#define PHYS_BAT_ADDR(x) ((x) & 0xfffe0000)
- #endif
+diff --git a/arch/powerpc/include/asm/book3s/32/hash.h b/arch/powerpc/include/asm/book3s/32/hash.h
+index f2892c7ab73e..2a0a467d2985 100644
+--- a/arch/powerpc/include/asm/book3s/32/hash.h
++++ b/arch/powerpc/include/asm/book3s/32/hash.h
+@@ -26,6 +26,7 @@
+ #define _PAGE_WRITETHRU	0x040	/* W: cache write-through */
+ #define _PAGE_DIRTY	0x080	/* C: page changed */
+ #define _PAGE_ACCESSED	0x100	/* R: page referenced */
++#define _PAGE_EXEC	0x200	/* software: exec allowed */
+ #define _PAGE_RW	0x400	/* software: user write access allowed */
+ #define _PAGE_SPECIAL	0x800	/* software: Special page */
  
- struct ppc_bat {
-diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
-index 1adc3d8a89cc..20c537a5c436 100644
---- a/arch/powerpc/mm/Makefile
-+++ b/arch/powerpc/mm/Makefile
-@@ -47,7 +47,7 @@ ifdef CONFIG_PPC_PTDUMP
- obj-$(CONFIG_4xx)		+= dump_linuxpagetables-generic.o
- obj-$(CONFIG_PPC_8xx)		+= dump_linuxpagetables-8xx.o
- obj-$(CONFIG_PPC_BOOK3E_MMU)	+= dump_linuxpagetables-generic.o
--obj-$(CONFIG_PPC_BOOK3S_32)	+= dump_linuxpagetables-generic.o
-+obj-$(CONFIG_PPC_BOOK3S_32)	+= dump_linuxpagetables-generic.o dump_bats.o
- obj-$(CONFIG_PPC_BOOK3S_64)	+= dump_linuxpagetables-book3s64.o
- endif
- obj-$(CONFIG_PPC_HTDUMP)	+= dump_hashpagetable.o
-diff --git a/arch/powerpc/mm/dump_bats.c b/arch/powerpc/mm/dump_bats.c
-new file mode 100644
-index 000000000000..b7f13f95e908
---- /dev/null
-+++ b/arch/powerpc/mm/dump_bats.c
-@@ -0,0 +1,173 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+/*
-+ * Copyright 2018, Christophe Leroy CS S.I.
-+ * <christophe.leroy@c-s.fr>
-+ *
-+ * This dumps the content of BATS
-+ */
+diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
+index b849b45429d5..6accf3e686af 100644
+--- a/arch/powerpc/include/asm/book3s/32/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
+@@ -10,9 +10,9 @@
+ /* And here we include common definitions */
+ 
+ #define _PAGE_KERNEL_RO		0
+-#define _PAGE_KERNEL_ROX	0
++#define _PAGE_KERNEL_ROX	(_PAGE_EXEC)
+ #define _PAGE_KERNEL_RW		(_PAGE_DIRTY | _PAGE_RW)
+-#define _PAGE_KERNEL_RWX	(_PAGE_DIRTY | _PAGE_RW)
++#define _PAGE_KERNEL_RWX	(_PAGE_DIRTY | _PAGE_RW | _PAGE_EXEC)
+ 
+ #define _PAGE_HPTEFLAGS _PAGE_HASHPTE
+ 
+@@ -66,11 +66,11 @@ static inline bool pte_user(pte_t pte)
+  */
+ #define PAGE_NONE	__pgprot(_PAGE_BASE)
+ #define PAGE_SHARED	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW)
+-#define PAGE_SHARED_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW)
++#define PAGE_SHARED_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW | _PAGE_EXEC)
+ #define PAGE_COPY	__pgprot(_PAGE_BASE | _PAGE_USER)
+-#define PAGE_COPY_X	__pgprot(_PAGE_BASE | _PAGE_USER)
++#define PAGE_COPY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_EXEC)
+ #define PAGE_READONLY	__pgprot(_PAGE_BASE | _PAGE_USER)
+-#define PAGE_READONLY_X	__pgprot(_PAGE_BASE | _PAGE_USER)
++#define PAGE_READONLY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_EXEC)
+ 
+ /* Permission masks used for kernel mappings */
+ #define PAGE_KERNEL	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RW)
+@@ -318,7 +318,7 @@ static inline void __ptep_set_access_flags(struct vm_area_struct *vma,
+ 					   int psize)
+ {
+ 	unsigned long set = pte_val(entry) &
+-		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW);
++		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC);
+ 
+ 	pte_update(ptep, 0, set);
+ 
+@@ -384,7 +384,7 @@ static inline int pte_dirty(pte_t pte)		{ return !!(pte_val(pte) & _PAGE_DIRTY);
+ static inline int pte_young(pte_t pte)		{ return !!(pte_val(pte) & _PAGE_ACCESSED); }
+ static inline int pte_special(pte_t pte)	{ return !!(pte_val(pte) & _PAGE_SPECIAL); }
+ static inline int pte_none(pte_t pte)		{ return (pte_val(pte) & ~_PTE_NONE_MASK) == 0; }
+-static inline bool pte_exec(pte_t pte)		{ return true; }
++static inline bool pte_exec(pte_t pte)		{ return pte_val(pte) & _PAGE_EXEC; }
+ 
+ static inline int pte_present(pte_t pte)
+ {
+@@ -451,7 +451,7 @@ static inline pte_t pte_wrprotect(pte_t pte)
+ 
+ static inline pte_t pte_exprotect(pte_t pte)
+ {
+-	return pte;
++	return __pte(pte_val(pte) & ~_PAGE_EXEC);
+ }
+ 
+ static inline pte_t pte_mkclean(pte_t pte)
+@@ -466,7 +466,7 @@ static inline pte_t pte_mkold(pte_t pte)
+ 
+ static inline pte_t pte_mkexec(pte_t pte)
+ {
+-	return pte;
++	return __pte(pte_val(pte) | _PAGE_EXEC);
+ }
+ 
+ static inline pte_t pte_mkpte(pte_t pte)
+diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+index 29f49a35d6ee..a0395ccbbe9e 100644
+--- a/arch/powerpc/include/asm/cputable.h
++++ b/arch/powerpc/include/asm/cputable.h
+@@ -296,7 +296,7 @@ static inline void cpu_feature_keys_init(void) { }
+ #define CPU_FTRS_PPC601	(CPU_FTR_COMMON | CPU_FTR_601 | \
+ 	CPU_FTR_COHERENT_ICACHE | CPU_FTR_UNIFIED_ID_CACHE | CPU_FTR_USE_RTC)
+ #define CPU_FTRS_603	(CPU_FTR_COMMON | CPU_FTR_MAYBE_CAN_DOZE | \
+-	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_PPC_LE)
++	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_PPC_LE | CPU_FTR_NOEXECUTE)
+ #define CPU_FTRS_604	(CPU_FTR_COMMON | CPU_FTR_PPC_LE)
+ #define CPU_FTRS_740_NOTAU	(CPU_FTR_COMMON | \
+ 	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_L2CR | \
+@@ -367,15 +367,15 @@ static inline void cpu_feature_keys_init(void) { }
+ 	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | \
+ 	    CPU_FTR_SPEC7450 | CPU_FTR_NAP_DISABLE_L2_PR | \
+ 	    CPU_FTR_PPC_LE | CPU_FTR_NEED_PAIRED_STWCX)
+-#define CPU_FTRS_82XX	(CPU_FTR_COMMON | CPU_FTR_MAYBE_CAN_DOZE)
++#define CPU_FTRS_82XX	(CPU_FTR_COMMON | CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_NOEXECUTE)
+ #define CPU_FTRS_G2_LE	(CPU_FTR_COMMON | CPU_FTR_MAYBE_CAN_DOZE | \
+ 	    CPU_FTR_MAYBE_CAN_NAP)
+ #define CPU_FTRS_E300	(CPU_FTR_MAYBE_CAN_DOZE | \
+ 	    CPU_FTR_MAYBE_CAN_NAP | \
+-	    CPU_FTR_COMMON)
++	    CPU_FTR_COMMON  | CPU_FTR_NOEXECUTE)
+ #define CPU_FTRS_E300C2	(CPU_FTR_MAYBE_CAN_DOZE | \
+ 	    CPU_FTR_MAYBE_CAN_NAP | \
+-	    CPU_FTR_COMMON | CPU_FTR_FPU_UNAVAILABLE)
++	    CPU_FTR_COMMON | CPU_FTR_FPU_UNAVAILABLE  | CPU_FTR_NOEXECUTE)
+ #define CPU_FTRS_CLASSIC32	(CPU_FTR_COMMON)
+ #define CPU_FTRS_8XX	(CPU_FTR_NOEXECUTE)
+ #define CPU_FTRS_40X	(CPU_FTR_NODSISRALIGN | CPU_FTR_NOEXECUTE)
+diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
+index 118c3b216e60..f88436abfc01 100644
+--- a/arch/powerpc/kernel/head_32.S
++++ b/arch/powerpc/kernel/head_32.S
+@@ -515,6 +515,8 @@ InstructionTLBMiss:
+ 	lwz	r0,0(r2)		/* get linux-style pte */
+ 	andc.	r1,r1,r0		/* check access & ~permission */
+ 	bne-	InstructionAddressInvalid /* return if access not permitted */
++	andi.	r1,r0,_PAGE_EXEC
++	beq-	InstructionAddressInvalid /* return if not _PAGE_EXEC */
+ 	ori	r0,r0,_PAGE_ACCESSED	/* set _PAGE_ACCESSED in pte */
+ 	/*
+ 	 * NOTE! We are assuming this is not an SMP system, otherwise
+diff --git a/arch/powerpc/mm/dump_linuxpagetables-generic.c b/arch/powerpc/mm/dump_linuxpagetables-generic.c
+index 1e3829ec1348..3fe98a0974c6 100644
+--- a/arch/powerpc/mm/dump_linuxpagetables-generic.c
++++ b/arch/powerpc/mm/dump_linuxpagetables-generic.c
+@@ -21,13 +21,11 @@ static const struct flag_info flag_array[] = {
+ 		.set	= "rw",
+ 		.clear	= "r ",
+ 	}, {
+-#ifndef CONFIG_PPC_BOOK3S_32
+ 		.mask	= _PAGE_EXEC,
+ 		.val	= _PAGE_EXEC,
+ 		.set	= " X ",
+ 		.clear	= "   ",
+ 	}, {
+-#endif
+ 		.mask	= _PAGE_PRESENT,
+ 		.val	= _PAGE_PRESENT,
+ 		.set	= "present",
+diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
+index 010e1c616cb2..3d86fe9d2ff4 100644
+--- a/arch/powerpc/mm/pgtable.c
++++ b/arch/powerpc/mm/pgtable.c
+@@ -74,7 +74,7 @@ static struct page *maybe_pte_to_page(pte_t pte)
+  * support falls into the same category.
+  */
+ 
+-static pte_t set_pte_filter(pte_t pte)
++static pte_t set_pte_filter_hash(pte_t pte)
+ {
+ 	if (radix_enabled())
+ 		return pte;
+@@ -93,14 +93,12 @@ static pte_t set_pte_filter(pte_t pte)
+ 	return pte;
+ }
+ 
+-static pte_t set_access_flags_filter(pte_t pte, struct vm_area_struct *vma,
+-				     int dirty)
+-{
+-	return pte;
+-}
+-
+ #else /* CONFIG_PPC_BOOK3S */
+ 
++static pte_t set_pte_filter_hash(pte_t pte) { return pte; }
 +
-+#include <linux/debugfs.h>
-+#include <asm/pgtable.h>
-+#include <asm/cpu_has_feature.h>
++#endif /* CONFIG_PPC_BOOK3S */
 +
-+static char *pp_601(int k, int pp)
-+{
-+	if (pp == 0)
-+		return k ? "NA" : "RWX";
-+	if (pp == 1)
-+		return k ? "ROX" : "RWX";
-+	if (pp == 2)
-+		return k ? "RWX" : "RWX";
-+	return k ? "ROX" : "ROX";
-+}
+ /* Embedded type MMU with HW exec support. This is a bit more complicated
+  * as we don't have two bits to spare for _PAGE_EXEC and _PAGE_HWEXEC so
+  * instead we "filter out" the exec permission for non clean pages.
+@@ -109,6 +107,9 @@ static pte_t set_pte_filter(pte_t pte)
+ {
+ 	struct page *pg;
+ 
++	if (mmu_has_feature(MMU_FTR_HPTE_TABLE))
++		return set_pte_filter_hash(pte);
 +
-+static void bat_show_601(struct seq_file *m, int idx, u32 lower, u32 upper)
-+{
-+	u32 blpi = upper & 0xfffe0000;
-+	u32 k = (upper >> 2) & 3;
-+	u32 pp = upper & 3;
-+	phys_addr_t pbn = PHYS_BAT_ADDR(lower);
-+	u32 bsm = lower & 0x3ff;
-+	u32 size = (bsm + 1) << 17;
+ 	/* No exec permission in the first place, move on */
+ 	if (!pte_exec(pte) || !pte_looks_normal(pte))
+ 		return pte;
+@@ -138,6 +139,9 @@ static pte_t set_access_flags_filter(pte_t pte, struct vm_area_struct *vma,
+ {
+ 	struct page *pg;
+ 
++	if (mmu_has_feature(MMU_FTR_HPTE_TABLE))
++		return pte;
 +
-+	seq_printf(m, "%d: ", idx);
-+	if (!(lower & 0x40)) {
-+		seq_puts(m, "        -\n");
-+		return;
-+	}
-+
-+	seq_printf(m, "0x%08x-0x%08x ", blpi, blpi + size - 1);
-+#ifdef CONFIG_PHYS_64BIT
-+	seq_printf(m, "0x%016llx ", pbn);
-+#else
-+	seq_printf(m, "0x%08x ", pbn);
-+#endif
-+
-+	seq_printf(m, "Kernel %s User %s", pp_601(k & 2, pp), pp_601(k & 1, pp));
-+
-+	if (lower & _PAGE_WRITETHRU)
-+		seq_puts(m, "write through ");
-+	if (lower & _PAGE_NO_CACHE)
-+		seq_puts(m, "no cache ");
-+	if (lower & _PAGE_COHERENT)
-+		seq_puts(m, "coherent ");
-+	seq_puts(m, "\n");
-+}
-+
-+#define BAT_SHOW_601(_m, _n, _l, _u) bat_show_601(_m, _n, mfspr(_l), mfspr(_u))
-+
-+static int bats_show_601(struct seq_file *m, void *v)
-+{
-+	seq_puts(m, "---[ Block Address Translation ]---\n");
-+
-+	BAT_SHOW_601(m, 0, SPRN_IBAT0L, SPRN_IBAT0U);
-+	BAT_SHOW_601(m, 1, SPRN_IBAT1L, SPRN_IBAT1U);
-+	BAT_SHOW_601(m, 2, SPRN_IBAT2L, SPRN_IBAT2U);
-+	BAT_SHOW_601(m, 3, SPRN_IBAT3L, SPRN_IBAT3U);
-+
-+	return 0;
-+}
-+
-+static void bat_show_603(struct seq_file *m, int idx, u32 lower, u32 upper, bool is_d)
-+{
-+	u32 bepi = upper & 0xfffe0000;
-+	u32 bl = (upper >> 2) & 0x7ff;
-+	u32 k = upper & 3;
-+	phys_addr_t brpn = PHYS_BAT_ADDR(lower);
-+	u32 size = (bl + 1) << 17;
-+
-+	seq_printf(m, "%d: ", idx);
-+	if (k == 0) {
-+		seq_puts(m, "        -\n");
-+		return;
-+	}
-+
-+	seq_printf(m, "0x%08x-0x%08x ", bepi, bepi + size - 1);
-+#ifdef CONFIG_PHYS_64BIT
-+	seq_printf(m, "0x%016llx ", brpn);
-+#else
-+	seq_printf(m, "0x%08x ", brpn);
-+#endif
-+
-+	if (k == 1)
-+		seq_puts(m, "User ");
-+	else if (k == 2)
-+		seq_puts(m, "Kernel ");
-+	else
-+		seq_puts(m, "Kernel/User ");
-+
-+	if (lower & BPP_RX)
-+		seq_puts(m, is_d ? "RO " : "EXEC ");
-+	else if (lower & BPP_RW)
-+		seq_puts(m, is_d ? "RW " : "EXEC ");
-+	else
-+		seq_puts(m, is_d ? "NA " : "NX   ");
-+
-+	if (lower & _PAGE_WRITETHRU)
-+		seq_puts(m, "write through ");
-+	if (lower & _PAGE_NO_CACHE)
-+		seq_puts(m, "no cache ");
-+	if (lower & _PAGE_COHERENT)
-+		seq_puts(m, "coherent ");
-+	if (lower & _PAGE_GUARDED)
-+		seq_puts(m, "guarded ");
-+	seq_puts(m, "\n");
-+}
-+
-+#define BAT_SHOW_603(_m, _n, _l, _u, _d) bat_show_603(_m, _n, mfspr(_l), mfspr(_u), _d)
-+
-+static int bats_show_603(struct seq_file *m, void *v)
-+{
-+	seq_puts(m, "---[ Instruction Block Address Translation ]---\n");
-+
-+	BAT_SHOW_603(m, 0, SPRN_IBAT0L, SPRN_IBAT0U, false);
-+	BAT_SHOW_603(m, 1, SPRN_IBAT1L, SPRN_IBAT1U, false);
-+	BAT_SHOW_603(m, 2, SPRN_IBAT2L, SPRN_IBAT2U, false);
-+	BAT_SHOW_603(m, 3, SPRN_IBAT3L, SPRN_IBAT3U, false);
-+	if (mmu_has_feature(MMU_FTR_USE_HIGH_BATS)) {
-+		BAT_SHOW_603(m, 4, SPRN_IBAT4L, SPRN_IBAT4U, false);
-+		BAT_SHOW_603(m, 5, SPRN_IBAT5L, SPRN_IBAT5U, false);
-+		BAT_SHOW_603(m, 6, SPRN_IBAT6L, SPRN_IBAT6U, false);
-+		BAT_SHOW_603(m, 7, SPRN_IBAT7L, SPRN_IBAT7U, false);
-+	}
-+
-+	seq_puts(m, "\n---[ Data Block Address Translation ]---\n");
-+
-+	BAT_SHOW_603(m, 0, SPRN_DBAT0L, SPRN_DBAT0U, true);
-+	BAT_SHOW_603(m, 1, SPRN_DBAT1L, SPRN_DBAT1U, true);
-+	BAT_SHOW_603(m, 2, SPRN_DBAT2L, SPRN_DBAT2U, true);
-+	BAT_SHOW_603(m, 3, SPRN_DBAT3L, SPRN_DBAT3U, true);
-+	if (mmu_has_feature(MMU_FTR_USE_HIGH_BATS)) {
-+		BAT_SHOW_603(m, 4, SPRN_DBAT4L, SPRN_DBAT4U, true);
-+		BAT_SHOW_603(m, 5, SPRN_DBAT5L, SPRN_DBAT5U, true);
-+		BAT_SHOW_603(m, 6, SPRN_DBAT6L, SPRN_DBAT6U, true);
-+		BAT_SHOW_603(m, 7, SPRN_DBAT7L, SPRN_DBAT7U, true);
-+	}
-+
-+	return 0;
-+}
-+
-+static int bats_open(struct inode *inode, struct file *file)
-+{
-+	if (cpu_has_feature(CPU_FTR_601))
-+		return single_open(file, bats_show_601, NULL);
-+
-+	return single_open(file, bats_show_603, NULL);
-+}
-+
-+static const struct file_operations bats_fops = {
-+	.open		= bats_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+};
-+
-+static int bats_init(void)
-+{
-+	struct dentry *debugfs_file;
-+
-+	debugfs_file = debugfs_create_file("block_address_translation", 0400,
-+					   NULL, NULL, &bats_fops);
-+	return debugfs_file ? 0 : -ENOMEM;
-+}
-+device_initcall(bats_init);
+ 	/* So here, we only care about exec faults, as we use them
+ 	 * to recover lost _PAGE_EXEC and perform I$/D$ coherency
+ 	 * if necessary. Also if _PAGE_EXEC is already set, same deal,
+@@ -172,8 +176,6 @@ static pte_t set_access_flags_filter(pte_t pte, struct vm_area_struct *vma,
+ 	return pte_mkexec(pte);
+ }
+ 
+-#endif /* CONFIG_PPC_BOOK3S */
+-
+ /*
+  * set_pte stores a linux PTE into the linux page table.
+  */
 -- 
 2.13.3
 
