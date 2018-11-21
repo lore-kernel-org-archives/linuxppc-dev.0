@@ -2,106 +2,91 @@ Return-Path: <SRS0=wfsy=OA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.0 required=3.0
-	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D7BD1C04EBA
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Nov 2018 19:10:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4BF90C43441
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Nov 2018 19:23:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 62743206BB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Nov 2018 19:10:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 62743206BB
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9D039214DA
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Nov 2018 19:23:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9D039214DA
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=debian.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 430XGL1w82zF3cH
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Nov 2018 06:10:34 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 430XXh4xjkzF3dV
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Nov 2018 06:23:00 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=debian.org
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com;
- envelope-from=lvivier@redhat.com; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=debian.org
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=leitao@debian.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=debian.org
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 430XB62xBbzF3bs
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Nov 2018 06:06:53 +1100 (AEDT)
-Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com
- [10.5.11.23])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 85C4630DDBA1;
- Wed, 21 Nov 2018 19:06:51 +0000 (UTC)
-Received: from [10.40.204.241] (ovpn-204-241.brq.redhat.com [10.40.204.241])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 185794530;
- Wed, 21 Nov 2018 19:06:48 +0000 (UTC)
-Subject: Re: [PATCH] powerpc/numa: fix hot-added CPU on memory-less node
-To: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>,
- Michael Bringmann <mwb@linux.vnet.ibm.com>
-References: <20181114170319.24828-1-lvivier@redhat.com>
- <20181115091948.GA14462@dhcp-9-193-110-205.in.ibm.com>
-From: Laurent Vivier <lvivier@redhat.com>
-Openpgp: preference=signencrypt
-Autocrypt: addr=lvivier@redhat.com; prefer-encrypt=mutual; keydata=
- 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
-Message-ID: <a0ceaa0f-2a05-0db6-2a94-45d150758c34@redhat.com>
-Date: Wed, 21 Nov 2018 20:06:47 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.3.0
-MIME-Version: 1.0
-In-Reply-To: <20181115091948.GA14462@dhcp-9-193-110-205.in.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.49]); Wed, 21 Nov 2018 19:06:51 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 430XVY6Km7zF3cP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Nov 2018 06:21:09 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wALJEkEp098273
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Nov 2018 14:21:07 -0500
+Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2nwc09kj03-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Nov 2018 14:21:06 -0500
+Received: from localhost
+ by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <leitao@debian.org>;
+ Wed, 21 Nov 2018 19:21:06 -0000
+Received: from b01cxnp22036.gho.pok.ibm.com (9.57.198.26)
+ by e16.ny.us.ibm.com (146.89.104.203) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 21 Nov 2018 19:21:04 -0000
+Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
+ [9.57.199.110])
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wALJL3P434603192
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Wed, 21 Nov 2018 19:21:03 GMT
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 103CBAE063;
+ Wed, 21 Nov 2018 19:21:03 +0000 (GMT)
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 15EDCAE05C;
+ Wed, 21 Nov 2018 19:21:02 +0000 (GMT)
+Received: from debra.ibm.com (unknown [9.18.239.97])
+ by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP;
+ Wed, 21 Nov 2018 19:21:01 +0000 (GMT)
+From: Breno Leitao <leitao@debian.org>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2] powerpc/tm: Set MSR[TS] just prior to recheckpoint
+Date: Wed, 21 Nov 2018 17:21:09 -0200
+X-Mailer: git-send-email 1.8.3.1
+X-TM-AS-GCONF: 00
+x-cbid: 18112119-0072-0000-0000-000003CC9C96
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00010095; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000270; SDB=6.01120787; UDB=6.00577118; IPR=6.00900909; 
+ MB=3.00024267; MTD=3.00000008; XFM=3.00000015; UTC=2018-11-21 19:21:06
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18112119-0073-0000-0000-00004A2EEE74
+Message-Id: <1542828069-29100-1-git-send-email-leitao@debian.org>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-11-21_09:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1811210167
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,190 +98,189 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Satheesh Rajendran <satheera@in.ibm.com>,
- linux-kernel@vger.kernel.org, Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Cc: Breno Leitao <leitao@debian.org>, mikey@neuling.org,
+ "v3.9+" <stable@vger.kernel.org>, gromero@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 15/11/2018 10:19, Satheesh Rajendran wrote:
-> On Wed, Nov 14, 2018 at 06:03:19PM +0100, Laurent Vivier wrote:
->> Trying to hotplug a CPU on an empty NUMA node (without
->> memory or CPU) crashes the kernel when the CPU is onlined.
->>
->> During the onlining process, the kernel calls start_secondary()
->> that ends by calling
->> set_numa_mem(local_memory_node(numa_cpu_lookup_table[cpu]))
->> that relies on NODE_DATA(nid)->node_zonelists and in our case
->> NODE_DATA(nid) is NULL.
->>
->> To fix that, add the same checking as we already have in
->> find_and_online_cpu_nid(): if NODE_DATA() is NULL, use
->> the first online node.
->>
->> Bug: https://github.com/linuxppc/linux/issues/184
->> Fixes: ea05ba7c559c8e5a5946c3a94a2a266e9a6680a6
->>        (powerpc/numa: Ensure nodes initialized for hotplug)
->> Signed-off-by: Laurent Vivier <lvivier@redhat.com>
->> ---
->>  arch/powerpc/mm/numa.c | 9 +++++++++
->>  1 file changed, 9 insertions(+)
-> 
-> This patch causes regression for cold plug numa case(Case 1) and 
-> hotplug case + reboot(Case 2) with adding all vcpus into node 0.
-> 
-> 
-> Env: HW: Power8 Host.
-> Kernel: 4.20-rc2 + this patch
-> 
-> Case 1:
-> 1. boot a guest with 8 vcpus(all available), spreadout in 4 numa nodes.
-> <vcpu placement='static'>8</vcpu>
-> ...
->    <numa>
->       <cell id='0' cpus='0-1' memory='4194304' unit='KiB'/>
->       <cell id='1' cpus='2-3' memory='4194304' unit='KiB'/>
->       <cell id='2' cpus='4-5' memory='0' unit='KiB'/>
->       <cell id='3' cpus='6-7' memory='0' unit='KiB'/>
->     </numa>
-> 
-> 2. Check lscpu --- all vcpus are added to node0 --> NOK
-> 
-> # lscpu
-> Architecture:        ppc64le
-> Byte Order:          Little Endian
-> CPU(s):              8
-> On-line CPU(s) list: 0-7
-> Thread(s) per core:  1
-> Core(s) per socket:  8
-> Socket(s):           1
-> NUMA node(s):        4
-> Model:               2.1 (pvr 004b 0201)
-> Model name:          POWER8 (architected), altivec supported
-> Hypervisor vendor:   KVM
-> Virtualization type: para
-> L1d cache:           64K
-> L1i cache:           32K
-> NUMA node0 CPU(s):   0-7
-> NUMA node1 CPU(s):   
-> NUMA node2 CPU(s):   
-> NUMA node3 CPU(s): 
-> 
-> without this patch it was working fine.
-> # lscpu
-> Architecture:        ppc64le
-> Byte Order:          Little Endian
-> CPU(s):              8
-> On-line CPU(s) list: 0-7
-> Thread(s) per core:  1
-> Core(s) per socket:  8
-> Socket(s):           1
-> NUMA node(s):        4
-> Model:               2.1 (pvr 004b 0201)
-> Model name:          POWER8 (architected), altivec supported
-> Hypervisor vendor:   KVM
-> Virtualization type: para
-> L1d cache:           64K
-> L1i cache:           32K
-> NUMA node0 CPU(s):   0,1
-> NUMA node1 CPU(s):   2,3
-> NUMA node2 CPU(s):   4,5
-> NUMA node3 CPU(s):   6,7
-> 
-> 
-> Case 2:
-> 1. boot a guest with 8 vcpus(2 available, 6 possible), spreadout in 4 numa nodes.
-> <vcpu placement='static' current='2'>8</vcpu>
-> ...
->    <numa>
->       <cell id='0' cpus='0-1' memory='0' unit='KiB'/>
->       <cell id='1' cpus='2-3' memory='4194304' unit='KiB'/>
->       <cell id='2' cpus='4-5' memory='0' unit='KiB'/>
->       <cell id='3' cpus='6-7' memory='0' unit='KiB'/>
->     </numa>
-> 
-> 2. Hotplug all vcpus
-> # lscpu
-> Architecture:        ppc64le
-> Byte Order:          Little Endian
-> CPU(s):              8
-> On-line CPU(s) list: 0-7
-> Thread(s) per core:  1
-> Core(s) per socket:  8
-> Socket(s):           1
-> NUMA node(s):        2
-> Model:               2.1 (pvr 004b 0201)
-> Model name:          POWER8 (architected), altivec supported
-> Hypervisor vendor:   KVM
-> Virtualization type: para
-> L1d cache:           64K
-> L1i cache:           32K
-> NUMA node0 CPU(s):   0,1,4-7
-> NUMA node1 CPU(s):   2,3
-> 
-> 
-> 3. reboot the guest
-> # lscpu
-> Architecture:        ppc64le
-> Byte Order:          Little Endian
-> CPU(s):              8
-> On-line CPU(s) list: 0-7
-> Thread(s) per core:  1
-> Core(s) per socket:  8
-> Socket(s):           1
-> NUMA node(s):        4
-> Model:               2.1 (pvr 004b 0201)
-> Model name:          POWER8 (architected), altivec supported
-> Hypervisor vendor:   KVM
-> Virtualization type: para
-> L1d cache:           64K
-> L1i cache:           32K
-> NUMA node0 CPU(s):   0-7
-> NUMA node1 CPU(s):
-> NUMA node2 CPU(s):
-> NUMA node3 CPU(s):
-> 
-> 
-> Without this patch, Case 2 crashes the guest during hotplug, i.e
-> issue reported in https://github.com/linuxppc/linux/issues/184
-> 
-> Regards,
-> -Satheesh.
-> 
->>
->> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
->> index 3a048e98a132..1b2d25a3c984 100644
->> --- a/arch/powerpc/mm/numa.c
->> +++ b/arch/powerpc/mm/numa.c
->> @@ -483,6 +483,15 @@ static int numa_setup_cpu(unsigned long lcpu)
->>  	if (nid < 0 || !node_possible(nid))
->>  		nid = first_online_node;
->>
->> +	if (NODE_DATA(nid) == NULL) {
->> +		/*
->> +		 * Default to using the nearest node that has memory installed.
->> +		 * Otherwise, it would be necessary to patch the kernel MM code
->> +		 * to deal with more memoryless-node error conditions.
->> +		 */
->> +		nid = first_online_node;
->> +	}
->> +
->>  	map_cpu_to_node(lcpu, nid);
->>  	of_node_put(cpu);
->>  out:
->> -- 
->> 2.17.2
->>
-> 
+On a signal handler return, the user could set a context with MSR[TS] bits
+set, and these bits would be copied to task regs->msr.
 
-I have worked a while on this problem, and I don't see any easy fix for
-that. It seems kernel is not ready to online a memory-less/cpu-less node
-when someone hotplug a CPU in it. I think we have to fix several areas
-to be able to do that.
+At restore_tm_sigcontexts(), after current task regs->msr[TS] bits are set,
+several __get_user() are called and then a recheckpoint is executed.
 
-Perhaps someone from IBM could have a better view on what we need?
+This is a problem since a page fault (in kernel space) could happen when
+calling __get_user(). If it happens, the process MSR[TS] bits were
+already set, but recheckpoint was not executed, and SPRs are still invalid.
 
-Michael? Nathan?
+The page fault can cause the current process to be de-scheduled, with
+MSR[TS] active and without tm_recheckpoint() being called.  More
+importantly, without TEXASR[FS] bit set also.
 
-Thanks,
-Laurent
+Since TEXASR might not have the FS bit set, and when the process is
+scheduled back, it will try to reclaim, which will be aborted because of
+the CPU is not in the suspended state, and, then, recheckpoint. This
+recheckpoint will restore thread->texasr into TEXASR SPR, which might be
+zero, hitting a BUG_ON().
+
+	kernel BUG at /build/linux-sf3Co9/linux-4.9.30/arch/powerpc/kernel/tm.S:434!
+	cpu 0xb: Vector: 700 (Program Check) at [c00000041f1576d0]
+	    pc: c000000000054550: restore_gprs+0xb0/0x180
+	    lr: 0000000000000000
+	    sp: c00000041f157950
+	   msr: 8000000100021033
+	  current = 0xc00000041f143000
+	  paca    = 0xc00000000fb86300	 softe: 0	 irq_happened: 0x01
+	    pid   = 1021, comm = kworker/11:1
+	kernel BUG at /build/linux-sf3Co9/linux-4.9.30/arch/powerpc/kernel/tm.S:434!
+	Linux version 4.9.0-3-powerpc64le (debian-kernel@lists.debian.org) (gcc version 6.3.0 20170516 (Debian 6.3.0-18) ) #1 SMP Debian 4.9.30-2+deb9u2 (2017-06-26)
+	enter ? for help
+	[c00000041f157b30] c00000000001bc3c tm_recheckpoint.part.11+0x6c/0xa0
+	[c00000041f157b70] c00000000001d184 __switch_to+0x1e4/0x4c0
+	[c00000041f157bd0] c00000000082eeb8 __schedule+0x2f8/0x990
+	[c00000041f157cb0] c00000000082f598 schedule+0x48/0xc0
+	[c00000041f157ce0] c0000000000f0d28 worker_thread+0x148/0x610
+	[c00000041f157d80] c0000000000f96b0 kthread+0x120/0x140
+	[c00000041f157e30] c00000000000c0e0 ret_from_kernel_thread+0x5c/0x7c
+
+This patch simply delays the MSR[TS] set, so, if there is any page fault in
+the __get_user() section, it does not have regs->msr[TS] set, since the TM
+structures are still invalid, thus avoiding doing TM operations for
+in-kernel exceptions and possible process reschedule.
+
+With this patch, the MSR[TS] will only be set just before recheckpointing
+and setting TEXASR[FS] = 1, thus avoiding an interrupt with TM registers in
+invalid state.
+
+Other than that, if CONFIG_PREEMPT is set, there might be a preemption just
+after setting MSR[TS] and before tm_recheckpoint(), thus, this block must
+be atomic from a preemption perspective, thus, calling
+preempt_disable/enable() on this code.
+
+It is not possible to move tm_recheckpoint to happen earlier, because it is
+required to get the checkpointed registers from userspace, with
+__get_user(), thus, the only way to avoid this undesired behavior is
+delaying the MSR[TS] set.
+
+The 32-bits signal handler seems to be safe this current issue, but, it
+might be exposed to the preemption issue, thus, disabling preemption in
+this chunk of code.
+
+Changes from v2:
+ * Run the critical section with preempt_disable.
+
+Fixes: 87b4e5393af7 ("powerpc/tm: Fix return of active 64bit signals")
+Cc: stable@vger.kernel.org (v3.9+)
+Signed-off-by: Breno Leitao <leitao@debian.org>
+
+diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
+index e6474a45cef5..fd59fef9931b 100644
+--- a/arch/powerpc/kernel/signal_32.c
++++ b/arch/powerpc/kernel/signal_32.c
+@@ -848,7 +848,23 @@ static long restore_tm_user_regs(struct pt_regs *regs,
+ 	/* If TM bits are set to the reserved value, it's an invalid context */
+ 	if (MSR_TM_RESV(msr_hi))
+ 		return 1;
+-	/* Pull in the MSR TM bits from the user context */
++
++	/*
++	 * Disabling preemption, since it is unsafe to be preempted
++	 * with MSR[TS] set without recheckpointing.
++	 */
++	preempt_disable();
++
++	/*
++	 * CAUTION:
++	 * After regs->MSR[TS] being updated, make sure that get_user(),
++	 * put_user() or similar functions are *not* called. These
++	 * functions can generate page faults which will cause the process
++	 * to be de-scheduled with MSR[TS] set but without calling
++	 * tm_recheckpoint(). This can cause a bug.
++	 *
++	 * Pull in the MSR TM bits from the user context
++	 */
+ 	regs->msr = (regs->msr & ~MSR_TS_MASK) | (msr_hi & MSR_TS_MASK);
+ 	/* Now, recheckpoint.  This loads up all of the checkpointed (older)
+ 	 * registers, including FP and V[S]Rs.  After recheckpointing, the
+@@ -873,6 +889,8 @@ static long restore_tm_user_regs(struct pt_regs *regs,
+ 	}
+ #endif
+ 
++	preempt_enable();
++
+ 	return 0;
+ }
+ #endif
+diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
+index 83d51bf586c7..bbd1c73243d7 100644
+--- a/arch/powerpc/kernel/signal_64.c
++++ b/arch/powerpc/kernel/signal_64.c
+@@ -467,20 +467,6 @@ static long restore_tm_sigcontexts(struct task_struct *tsk,
+ 	if (MSR_TM_RESV(msr))
+ 		return -EINVAL;
+ 
+-	/* pull in MSR TS bits from user context */
+-	regs->msr = (regs->msr & ~MSR_TS_MASK) | (msr & MSR_TS_MASK);
+-
+-	/*
+-	 * Ensure that TM is enabled in regs->msr before we leave the signal
+-	 * handler. It could be the case that (a) user disabled the TM bit
+-	 * through the manipulation of the MSR bits in uc_mcontext or (b) the
+-	 * TM bit was disabled because a sufficient number of context switches
+-	 * happened whilst in the signal handler and load_tm overflowed,
+-	 * disabling the TM bit. In either case we can end up with an illegal
+-	 * TM state leading to a TM Bad Thing when we return to userspace.
+-	 */
+-	regs->msr |= MSR_TM;
+-
+ 	/* pull in MSR LE from user context */
+ 	regs->msr = (regs->msr & ~MSR_LE) | (msr & MSR_LE);
+ 
+@@ -572,6 +558,34 @@ static long restore_tm_sigcontexts(struct task_struct *tsk,
+ 	tm_enable();
+ 	/* Make sure the transaction is marked as failed */
+ 	tsk->thread.tm_texasr |= TEXASR_FS;
++
++	/*
++	 * Disabling preemption, since it is unsafe to be preempted
++	 * with MSR[TS] set without recheckpointing.
++	 */
++	preempt_disable();
++
++	/* pull in MSR TS bits from user context */
++	regs->msr = (regs->msr & ~MSR_TS_MASK) | (msr & MSR_TS_MASK);
++
++	/*
++	 * Ensure that TM is enabled in regs->msr before we leave the signal
++	 * handler. It could be the case that (a) user disabled the TM bit
++	 * through the manipulation of the MSR bits in uc_mcontext or (b) the
++	 * TM bit was disabled because a sufficient number of context switches
++	 * happened whilst in the signal handler and load_tm overflowed,
++	 * disabling the TM bit. In either case we can end up with an illegal
++	 * TM state leading to a TM Bad Thing when we return to userspace.
++	 *
++	 * CAUTION:
++	 * After regs->MSR[TS] being updated, make sure that get_user(),
++	 * put_user() or similar functions are *not* called. These
++	 * functions can generate page faults which will cause the process
++	 * to be de-scheduled with MSR[TS] set but without calling
++	 * tm_recheckpoint(). This can cause a bug.
++	 */
++	regs->msr |= MSR_TM;
++
+ 	/* This loads the checkpointed FP/VEC state, if used */
+ 	tm_recheckpoint(&tsk->thread);
+ 
+@@ -585,6 +599,8 @@ static long restore_tm_sigcontexts(struct task_struct *tsk,
+ 		regs->msr |= MSR_VEC;
+ 	}
+ 
++	preempt_enable();
++
+ 	return err;
+ }
+ #endif
+-- 
+2.19.0
+
