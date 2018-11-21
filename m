@@ -2,86 +2,88 @@ Return-Path: <SRS0=wfsy=OA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A8EDC43441
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Nov 2018 04:04:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 24DFBC43441
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Nov 2018 05:30:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0FFE32145D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Nov 2018 04:04:29 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linaro.org header.i=@linaro.org header.b="VFzpM/rj"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0FFE32145D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
+	by mail.kernel.org (Postfix) with ESMTPS id 7BAA02087E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Nov 2018 05:30:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7BAA02087E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43088r0MpfzF3ZL
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Nov 2018 15:04:28 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 430B4M2CSCzF3cY
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Nov 2018 16:30:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.b="VFzpM/rj";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=bharata@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linaro.org
- (client-ip=2607:f8b0:4864:20::641; helo=mail-pl1-x641.google.com;
- envelope-from=viresh.kumar@linaro.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linaro.org header.i=@linaro.org header.b="VFzpM/rj"; 
- dkim-atps=neutral
-Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
- [IPv6:2607:f8b0:4864:20::641])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43086C5MY4zF3cr
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Nov 2018 15:02:11 +1100 (AEDT)
-Received: by mail-pl1-x641.google.com with SMTP id e5so3458887plb.5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Nov 2018 20:02:11 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=jD4EvHrCedZPR1eexDzPL2ORdf7F23ZT49Cve3Do4Jk=;
- b=VFzpM/rj99cZDp3qxZIIexfY6MTuhoR1JaSE5kx7ieQNUZRAhWc9EBtlpfK12IN8Lw
- 7V8mvks/IQdAw+FBdU6iaLfSsFIu4W5nJ+856AvK6OdGEWtCru/JE79pKqI/7/CG1YHA
- AV4YQ2peacZ5dmHOxHOjbKpp56Ow6O84Tl734=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=jD4EvHrCedZPR1eexDzPL2ORdf7F23ZT49Cve3Do4Jk=;
- b=pD1Y5w5Jg1pCjyi79EA/UR33JNFsLgQqvTvoZAuKeDAeT+nyJUeX1wHvMDc6Mt7Lab
- /PI/8nLAWzc3SCzLl5qFi0OmJ5e1LzDPaUG1+bvKWkckq0z1fIWA3nSrVnOQg/un/PYk
- 3PlUUsda9oR6T2WyYpQHHj0w+kXnXhOpuXhLTLNUcw1RYDxLoh1eCzlCJGX8cXq9vWEJ
- dE7yfXwueK9mxp0kLZd29EIBjNCEiebowDg+aCPdY/B4tEtHdOnNSwefNyqiTxe/xv66
- E3OpGK+xOm6DKdcI/ocSf7q7H4zu9AX1sODstXljIvmMYwGfDGVVb3Mv2UlRPTSCo2ZY
- z4ZA==
-X-Gm-Message-State: AGRZ1gJ87WGkSs1hT5SSjRGXhmmMAXmiCio/8mEnzlZYetrFHofYzp8B
- p1ReqVpfkMhvPi57T3Zu9fHquw==
-X-Google-Smtp-Source: AJdET5dSYVv/OYuLZcPm682fOnYbEGXb48aLJ5I+vClFCRu/muv+BzGEIYtFozKmakVA82Owt2SSyQ==
-X-Received: by 2002:a62:d449:: with SMTP id
- u9-v6mr5181318pfl.116.1542772929966; 
- Tue, 20 Nov 2018 20:02:09 -0800 (PST)
-Received: from localhost ([122.172.88.116])
- by smtp.gmail.com with ESMTPSA id t78-v6sm80135659pfk.59.2018.11.20.20.02.08
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 20 Nov 2018 20:02:09 -0800 (PST)
-Date: Wed, 21 Nov 2018 09:32:04 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Yangtao Li <tiny.windzz@gmail.com>
-Subject: Re: [PATCH v2] cpufreq: powernv: add of_node_put()
-Message-ID: <20181121040204.yjlnxaulet3o5u3r@vireshk-i7>
-References: <20181120160530.21015-1-tiny.windzz@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20181120160530.21015-1-tiny.windzz@gmail.com>
-User-Agent: NeoMutt/20180323-120-3dd1ac
+ by lists.ozlabs.org (Postfix) with ESMTPS id 430B1m5MmyzF3Lx
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Nov 2018 16:28:28 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wAL5SOMg144873
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Nov 2018 00:28:26 -0500
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2nw0s991ck-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Nov 2018 00:28:26 -0500
+Received: from localhost
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bharata@linux.ibm.com>;
+ Wed, 21 Nov 2018 05:28:19 -0000
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 21 Nov 2018 05:28:17 -0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wAL5SFCq62783602
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Wed, 21 Nov 2018 05:28:15 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 9E6E34C058;
+ Wed, 21 Nov 2018 05:28:15 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 254DE4C044;
+ Wed, 21 Nov 2018 05:28:14 +0000 (GMT)
+Received: from bharata.in.ibm.com (unknown [9.124.35.234])
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed, 21 Nov 2018 05:28:13 +0000 (GMT)
+From: Bharata B Rao <bharata@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [RFC PATCH v2 0/4] kvmppc: HMM backend driver to manage pages of
+ secure guest
+Date: Wed, 21 Nov 2018 10:58:07 +0530
+X-Mailer: git-send-email 2.17.1
+X-TM-AS-GCONF: 00
+x-cbid: 18112105-0012-0000-0000-000002CDBF88
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18112105-0013-0000-0000-00002102EAC9
+Message-Id: <20181121052811.4819-1-bharata@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-11-21_03:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=761 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1811210050
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,26 +95,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org,
- paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Cc: linuxram@us.ibm.com, kvm-ppc@vger.kernel.org,
+ Bharata B Rao <bharata@linux.ibm.com>, benh@linux.ibm.com, linux-mm@kvack.org,
+ jglisse@redhat.com, aneesh.kumar@linux.vnet.ibm.com, paulus@au1.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 20-11-18, 11:05, Yangtao Li wrote:
-> The of_find_node_by_path() returns a node pointer with refcount
-> incremented,but there is the lack of use of the of_node_put() when
-> done.Add the missing of_node_put() to release the refcount.
-> 
-> Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
-> ---
-> Changes in v2
-> -update changelog
-> ---
->  drivers/cpufreq/powernv-cpufreq.c | 17 +++++++++++------
->  1 file changed, 11 insertions(+), 6 deletions(-)
+Hi,
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+A pseries guest can be run as a secure guest on Ultravisor-enabled
+POWER platforms. On such platforms, this driver will be used to manage
+the movement of guest pages between the normal memory managed by
+hypervisor (HV) and secure memory managed by Ultravisor (UV).
+
+This is an early post of HMM driver patches that manage page migration
+between normal and secure memory.
+
+Private ZONE_DEVICE memory equal to the amount of secure memory
+available in the platform for running secure guests is created
+via a HMM device. The movement of pages between normal and secure
+memory is done by ->alloc_and_copy() callback routine of migrate_vma().
+
+The page-in or page-out requests from UV will come to HV as hcalls and
+HV will call back into UV via uvcalls to satisfy these page requests.
+
+The implementation of uvcall themselves are not present in this post
+and will be posted separately.
+
+Changes in v2
+=============
+- Removed the HMM PFN hash table as the same information is now being
+  stored in kvm_memory_slot->arch.rmap[] array as suggested by
+  Paul Mackerras.
+- Addressed the review comments from v1.
+
+Bharata B Rao (4):
+  kvmppc: HMM backend driver to manage pages of secure guest
+  kvmppc: Add support for shared pages in HMM driver
+  kvmppc: H_SVM_INIT_START and H_SVM_INIT_DONE hcalls
+  kvmppc: Handle memory plug/unplug to secure VM
+
+ arch/powerpc/include/asm/hvcall.h    |   9 +
+ arch/powerpc/include/asm/kvm_host.h  |  15 +
+ arch/powerpc/include/asm/kvm_ppc.h   |  46 ++-
+ arch/powerpc/include/asm/ucall-api.h |  33 ++
+ arch/powerpc/kvm/Makefile            |   3 +
+ arch/powerpc/kvm/book3s.c            |   5 +-
+ arch/powerpc/kvm/book3s_hv.c         |  49 ++-
+ arch/powerpc/kvm/book3s_hv_hmm.c     | 542 +++++++++++++++++++++++++++
+ arch/powerpc/kvm/book3s_pr.c         |   3 +-
+ arch/powerpc/kvm/powerpc.c           |   2 +-
+ 10 files changed, 700 insertions(+), 7 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/ucall-api.h
+ create mode 100644 arch/powerpc/kvm/book3s_hv_hmm.c
 
 -- 
-viresh
+2.17.1
+
