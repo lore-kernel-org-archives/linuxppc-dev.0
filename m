@@ -1,68 +1,55 @@
-Return-Path: <SRS0=wfsy=OA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=R24o=OB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 27C16C43441
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Nov 2018 22:46:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 643D6C43610
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Nov 2018 00:37:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 40AB62075B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Nov 2018 22:46:18 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=neuling.org header.i=@neuling.org header.b="nb8YCr2Z"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 40AB62075B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=neuling.org
+	by mail.kernel.org (Postfix) with ESMTPS id 9B32120663
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Nov 2018 00:37:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9B32120663
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=goodmis.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 430d3C4W4hzF3H8
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Nov 2018 09:46:15 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=neuling.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 430gW03x4nzF3F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Nov 2018 11:37:00 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=goodmis.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=neuling.org header.i=@neuling.org header.b="nb8YCr2Z";
-	dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=srs0=awnw=ob=goodmis.org=rostedt@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=goodmis.org
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 430czQ0ynRzF3Rf
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Nov 2018 09:42:58 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=neuling.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=neuling.org header.i=@neuling.org header.b="nb8YCr2Z"; 
- dkim-atps=neutral
-Received: from spoke.localdomain (localhost [127.0.0.1])
- by ozlabs.org (Postfix) with ESMTP id 430czP5HMJz9s3C;
- Thu, 22 Nov 2018 09:42:57 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=neuling.org;
- s=201811; t=1542840177;
- bh=H2ga5LxpwSX6nioeABfIQZlMugcQK3pVGX89DlDyrLU=;
- h=Subject:From:To:Cc:Date:In-Reply-To:References:From;
- b=nb8YCr2ZYu1nLvS23YiJ1iUyf+G38iz4os7fSPG5tcULberJpif/pm9MJRdiSVW3/
- SZVcD61K3AoqNaIzz/P8SCv2v1xl6GaAMwS+jOb1eCrThZxQU67T/An5wQVn7CUl1o
- h4ZGkw0z4QDPd+oS78XWHEad457Rtf1OiaUaWJPTGO6+e6Icgrk2Nei9qtNJ3GrwGz
- LaYgyPK9T7OMClUZQbIp2UmC7Dy5pjGBivXQlW6g6M4pijd9PEjBrrIStsiA9NrCce
- FM8lT5JmTGcr3h097CXAQheR1pUHd33pD7Y4WhEZGT5+uDMdmwPEDleBcP4AdgW8P+
- 6kVkJiCegrPoQ==
-Received: by spoke.localdomain (Postfix, from userid 1000)
- id 78FD52A0C19; Thu, 22 Nov 2018 09:42:57 +1100 (AEDT)
-Message-ID: <c4edf2ad99edb1c932f7367819e11d19e3a3bb75.camel@neuling.org>
-Subject: Re: [PATCH] powerpc/tm: Set MSR[TS] just prior to recheckpoint
-From: Michael Neuling <mikey@neuling.org>
-To: Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org
-Date: Thu, 22 Nov 2018 09:42:57 +1100
-In-Reply-To: <5ead16d3-2ada-d5b2-5481-0326a3c920af@debian.org>
-References: <1542631494-10344-1-git-send-email-leitao@debian.org>
- <9cdf12d1eaa5350e130d3cfb15ecb060323b6788.camel@neuling.org>
- <5ead16d3-2ada-d5b2-5481-0326a3c920af@debian.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.30.2 (3.30.2-2.fc29) 
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 430gR817fMzF3f0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Nov 2018 11:33:36 +1100 (AEDT)
+Received: from gandalf.local.home (cpe-66-24-56-78.stny.res.rr.com
+ [66.24.56.78])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id AD5B320878;
+ Thu, 22 Nov 2018 00:33:33 +0000 (UTC)
+Received: from rostedt by gandalf.local.home with local (Exim 4.91)
+ (envelope-from <rostedt@goodmis.org>)
+ id 1gPcw0-0004Tp-O4; Wed, 21 Nov 2018 19:33:32 -0500
+Message-Id: <20181122003332.643482042@goodmis.org>
+User-Agent: quilt/0.65
+Date: Wed, 21 Nov 2018 19:28:10 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Subject: [for-next][PATCH 09/18] powerpc/function_graph: Simplify with
+ function_graph_entry()
+References: <20181122002801.501220343@goodmis.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-15
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,34 +61,74 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Gustavo Romero <gromero@linux.vnet.ibm.com>
+Cc: linux-arch@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+ Frederic Weisbecker <frederic@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ stable@kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+ Masami Hiramatsu <mhiramat@kernel.org>, Andy Lutomirski <luto@kernel.org>,
+ Josh Poimboeuf <jpoimboe@redhat.com>, Joel Fernandes <joel@joelfernandes.org>,
+ Paul Mackerras <paulus@samba.org>, Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-> Do you mean in this part of code?
->=20
->   SYSCALL_DEFINE0(rt_sigreturn)
->   {
-> 	....
->         if (__copy_from_user(&set, &uc->uc_sigmask, sizeof(set)))
->                 goto badframe;
->=20
-> 	...
->         if (MSR_TM_SUSPENDED(mfmsr()))
->                 tm_reclaim_current(0);
+From: "Steven Rostedt (VMware)" <rostedt@goodmis.org>
 
-I'm actually thinking after the reclaim, not before.
+The function_graph_entry() function does the work of calling the function
+graph hook function and the management of the shadow stack, simplifying the
+work done in the architecture dependent prepare_ftrace_return().
 
-If I follow your original email properly, you have a problem because you en=
-d up
-in this senario:
-1) Current MSR is not TM suspended
-2) regs->msr[TS] set
-3) get_user() (which may fault)
+Have powerpc use the new code, and remove the shadow stack management as well as
+having to set up the trace structure.
 
-After the tm_reclaim there are cases in restore_tm_sigcontexts() where the =
-above
-is also the case. Hence why I think we have a problem there too.
+This is needed to prepare for a fix of a design bug on how the curr_ret_stack
+is used.
 
-Mikey
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: stable@kernel.org
+Fixes: 03274a3ffb449 ("tracing/fgraph: Adjust fgraph depth before calling trace return callback")
+Signed-off-by: Steven Rostedt (VMware) <rostedt@goodmis.org>
+---
+ arch/powerpc/kernel/trace/ftrace.c | 15 ++-------------
+ 1 file changed, 2 insertions(+), 13 deletions(-)
+
+diff --git a/arch/powerpc/kernel/trace/ftrace.c b/arch/powerpc/kernel/trace/ftrace.c
+index 4bf051d3e21e..b65c8a34ad6e 100644
+--- a/arch/powerpc/kernel/trace/ftrace.c
++++ b/arch/powerpc/kernel/trace/ftrace.c
+@@ -950,7 +950,6 @@ int ftrace_disable_ftrace_graph_caller(void)
+  */
+ unsigned long prepare_ftrace_return(unsigned long parent, unsigned long ip)
+ {
+-	struct ftrace_graph_ent trace;
+ 	unsigned long return_hooker;
+ 
+ 	if (unlikely(ftrace_graph_is_dead()))
+@@ -961,18 +960,8 @@ unsigned long prepare_ftrace_return(unsigned long parent, unsigned long ip)
+ 
+ 	return_hooker = ppc_function_entry(return_to_handler);
+ 
+-	trace.func = ip;
+-	trace.depth = current->curr_ret_stack + 1;
+-
+-	/* Only trace if the calling function expects to */
+-	if (!ftrace_graph_entry(&trace))
+-		goto out;
+-
+-	if (ftrace_push_return_trace(parent, ip, &trace.depth, 0,
+-				     NULL) == -EBUSY)
+-		goto out;
+-
+-	parent = return_hooker;
++	if (!function_graph_enter(parent, ip, 0, NULL))
++		parent = return_hooker;
+ out:
+ 	return parent;
+ }
+-- 
+2.19.1
+
+
