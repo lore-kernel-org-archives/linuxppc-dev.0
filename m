@@ -6,24 +6,24 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A2C0C43441
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Nov 2018 20:17:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A4D6C43441
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Nov 2018 20:19:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 703F82087E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Nov 2018 20:17:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C24702087E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Nov 2018 20:19:47 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZqLCFzbb"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 703F82087E
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="BAp7/d1e"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C24702087E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4319ht2kyfzDqG6
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 07:17:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4319lj66QvzDqHl
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 07:19:45 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="ZqLCFzbb";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="BAp7/d1e";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
@@ -32,32 +32,32 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="ZqLCFzbb"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="BAp7/d1e"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4319Dx5TRBzDqQD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Nov 2018 06:56:33 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4319F82GfZzDqFL
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Nov 2018 06:56:44 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (unknown [37.142.5.207])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id B9F5320870;
- Thu, 22 Nov 2018 19:56:29 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 07F0920864;
+ Thu, 22 Nov 2018 19:56:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1542916591;
- bh=eh0IqfTnORS6ipmug+36iH0hgzIahuaX9U3a+NwKMws=;
+ s=default; t=1542916602;
+ bh=l484zn/e9H0LAUWt6xxdKgVRR7pKTYBMeDt4bXOm1eY=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=ZqLCFzbbPOvxDXBxi2qcFtYM9UTgAWmq9WgCFBauXKuLIrHDvX8VV96jXZ5oU3CUW
- 44h1LrVfpb6ffBxGr/mHdTjd/y+mPjfeyZhRVfeHHcI2IEJoBHjLILR5Vy0RogXnaX
- uZRSPQuPNbUIP52U9y6WinGzFH6UEJm6Vun8SZ3Y=
+ b=BAp7/d1eMuu64EsGj7P01hldExvVKoo+tb/wIAgisnZ1zUtlHapJaFgx6A8+9tOCF
+ qA63apAVvyswfEd0R8vpQk4JxylUcBLZdBivYMsoia3EgiGdn3uhrqxpF8kMCUzRts
+ n50CuxS/jl5KgqGmn53HagMCPjQXgeuDnK/JIrRA=
 From: Sasha Levin <sashal@kernel.org>
 To: stable@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.9 03/15] KVM: PPC: Move and undef
- TRACE_INCLUDE_PATH/FILE
-Date: Thu, 22 Nov 2018 14:56:09 -0500
-Message-Id: <20181122195621.13776-3-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.9 07/15] powerpc/io: Fix the IO workarounds code to
+ work with Radix
+Date: Thu, 22 Nov 2018 14:56:13 -0500
+Message-Id: <20181122195621.13776-7-sashal@kernel.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20181122195621.13776-1-sashal@kernel.org>
 References: <20181122195621.13776-1-sashal@kernel.org>
@@ -72,149 +72,125 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Scott Wood <oss@buserror.net>, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc@vger.kernel.org, Sasha Levin <sashal@kernel.org>
+Cc: Sasha Levin <sashal@kernel.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Scott Wood <oss@buserror.net>
+From: Michael Ellerman <mpe@ellerman.id.au>
 
-[ Upstream commit 28c5bcf74fa07c25d5bd118d1271920f51ce2a98 ]
+[ Upstream commit 43c6494fa1499912c8177e71450c0279041152a6 ]
 
-TRACE_INCLUDE_PATH and TRACE_INCLUDE_FILE are used by
-<trace/define_trace.h>, so like that #include, they should
-be outside #ifdef protection.
+Back in 2006 Ben added some workarounds for a misbehaviour in the
+Spider IO bridge used on early Cell machines, see commit
+014da7ff47b5 ("[POWERPC] Cell "Spider" MMIO workarounds"). Later these
+were made to be generic, ie. not tied specifically to Spider.
 
-They also need to be #undefed before defining, in case multiple trace
-headers are included by the same C file.  This became the case on
-book3e after commit cf4a6085151a ("powerpc/mm: Add missing tracepoint for
-tlbie"), leading to the following build error:
+The code stashes a token in the high bits (59-48) of virtual addresses
+used for IO (eg. returned from ioremap()). This works fine when using
+the Hash MMU, but when we're using the Radix MMU the bits used for the
+token overlap with some of the bits of the virtual address.
 
-   CC      arch/powerpc/kvm/powerpc.o
-In file included from arch/powerpc/kvm/powerpc.c:51:0:
-arch/powerpc/kvm/trace.h:9:0: error: "TRACE_INCLUDE_PATH" redefined
-[-Werror]
-  #define TRACE_INCLUDE_PATH .
-  ^
-In file included from arch/powerpc/kvm/../mm/mmu_decl.h:25:0,
-                  from arch/powerpc/kvm/powerpc.c:48:
-./arch/powerpc/include/asm/trace.h:224:0: note: this is the location of
-the previous definition
-  #define TRACE_INCLUDE_PATH asm
-  ^
-cc1: all warnings being treated as errors
+This is because the maximum virtual address is larger with Radix, up
+to c00fffffffffffff, and in fact we use that high part of the address
+range for ioremap(), see RADIX_KERN_IO_START.
 
-Reported-by: Christian Zigotzky <chzigotzky@xenosoft.de>
-Signed-off-by: Scott Wood <oss@buserror.net>
+As it happens the bits that are used overlap with the bits that
+differentiate an IO address vs a linear map address. If the resulting
+address lies outside the linear mapping we will crash (see below), if
+not we just corrupt memory.
+
+  virtio-pci 0000:00:00.0: Using 64-bit direct DMA at offset 800000000000000
+  Unable to handle kernel paging request for data at address 0xc000000080000014
+  ...
+  CFAR: c000000000626b98 DAR: c000000080000014 DSISR: 42000000 IRQMASK: 0
+  GPR00: c0000000006c54fc c00000003e523378 c0000000016de600 0000000000000000
+  GPR04: c00c000080000014 0000000000000007 0fffffff000affff 0000000000000030
+         ^^^^
+  ...
+  NIP [c000000000626c5c] .iowrite8+0xec/0x100
+  LR [c0000000006c992c] .vp_reset+0x2c/0x90
+  Call Trace:
+    .pci_bus_read_config_dword+0xc4/0x120 (unreliable)
+    .register_virtio_device+0x13c/0x1c0
+    .virtio_pci_probe+0x148/0x1f0
+    .local_pci_probe+0x68/0x140
+    .pci_device_probe+0x164/0x220
+    .really_probe+0x274/0x3b0
+    .driver_probe_device+0x80/0x170
+    .__driver_attach+0x14c/0x150
+    .bus_for_each_dev+0xb8/0x130
+    .driver_attach+0x34/0x50
+    .bus_add_driver+0x178/0x2f0
+    .driver_register+0x90/0x1a0
+    .__pci_register_driver+0x6c/0x90
+    .virtio_pci_driver_init+0x2c/0x40
+    .do_one_initcall+0x64/0x280
+    .kernel_init_freeable+0x36c/0x474
+    .kernel_init+0x24/0x160
+    .ret_from_kernel_thread+0x58/0x7c
+
+This hasn't been a problem because CONFIG_PPC_IO_WORKAROUNDS which
+enables this code is usually not enabled. It is only enabled when it's
+selected by PPC_CELL_NATIVE which is only selected by
+PPC_IBM_CELL_BLADE and that in turn depends on BIG_ENDIAN. So in order
+to hit the bug you need to build a big endian kernel, with IBM Cell
+Blade support enabled, as well as Radix MMU support, and then boot
+that on Power9 using Radix MMU.
+
+Still we can fix the bug, so let's do that. We simply use fewer bits
+for the token, taking the union of the restrictions on the address
+from both Hash and Radix, we end up with 8 bits we can use for the
+token. The only user of the token is iowa_mem_find_bus() which only
+supports 8 token values, so 8 bits is plenty for that.
+
+Fixes: 566ca99af026 ("powerpc/mm/radix: Add dummy radix_enabled()")
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/kvm/trace.h       | 8 ++++++--
- arch/powerpc/kvm/trace_booke.h | 9 +++++++--
- arch/powerpc/kvm/trace_hv.h    | 9 +++++++--
- arch/powerpc/kvm/trace_pr.h    | 9 +++++++--
- 4 files changed, 27 insertions(+), 8 deletions(-)
+ arch/powerpc/include/asm/io.h | 20 +++++++-------------
+ 1 file changed, 7 insertions(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/kvm/trace.h b/arch/powerpc/kvm/trace.h
-index 2e0e67ef3544..e8cedf32345a 100644
---- a/arch/powerpc/kvm/trace.h
-+++ b/arch/powerpc/kvm/trace.h
-@@ -5,8 +5,6 @@
+diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
+index f6fda8482f60..3b10f532c28e 100644
+--- a/arch/powerpc/include/asm/io.h
++++ b/arch/powerpc/include/asm/io.h
+@@ -333,19 +333,13 @@ extern void _memcpy_toio(volatile void __iomem *dest, const void *src,
+  * their hooks, a bitfield is reserved for use by the platform near the
+  * top of MMIO addresses (not PIO, those have to cope the hard way).
+  *
+- * This bit field is 12 bits and is at the top of the IO virtual
+- * addresses PCI_IO_INDIRECT_TOKEN_MASK.
++ * The highest address in the kernel virtual space are:
+  *
+- * The kernel virtual space is thus:
++ *  d0003fffffffffff	# with Hash MMU
++ *  c00fffffffffffff	# with Radix MMU
+  *
+- *  0xD000000000000000		: vmalloc
+- *  0xD000080000000000		: PCI PHB IO space
+- *  0xD000080080000000		: ioremap
+- *  0xD0000fffffffffff		: end of ioremap region
+- *
+- * Since the top 4 bits are reserved as the region ID, we use thus
+- * the next 12 bits and keep 4 bits available for the future if the
+- * virtual address space is ever to be extended.
++ * The top 4 bits are reserved as the region ID on hash, leaving us 8 bits
++ * that can be used for the field.
+  *
+  * The direct IO mapping operations will then mask off those bits
+  * before doing the actual access, though that only happen when
+@@ -357,8 +351,8 @@ extern void _memcpy_toio(volatile void __iomem *dest, const void *src,
+  */
  
- #undef TRACE_SYSTEM
- #define TRACE_SYSTEM kvm
--#define TRACE_INCLUDE_PATH .
--#define TRACE_INCLUDE_FILE trace
- 
- /*
-  * Tracepoint for guest mode entry.
-@@ -119,4 +117,10 @@ TRACE_EVENT(kvm_check_requests,
- #endif /* _TRACE_KVM_H */
- 
- /* This part must be outside protection */
-+#undef TRACE_INCLUDE_PATH
-+#undef TRACE_INCLUDE_FILE
-+
-+#define TRACE_INCLUDE_PATH .
-+#define TRACE_INCLUDE_FILE trace
-+
- #include <trace/define_trace.h>
-diff --git a/arch/powerpc/kvm/trace_booke.h b/arch/powerpc/kvm/trace_booke.h
-index 7ec534d1db9f..7eadbf449a1f 100644
---- a/arch/powerpc/kvm/trace_booke.h
-+++ b/arch/powerpc/kvm/trace_booke.h
-@@ -5,8 +5,6 @@
- 
- #undef TRACE_SYSTEM
- #define TRACE_SYSTEM kvm_booke
--#define TRACE_INCLUDE_PATH .
--#define TRACE_INCLUDE_FILE trace_booke
- 
- #define kvm_trace_symbol_exit \
- 	{0, "CRITICAL"}, \
-@@ -217,4 +215,11 @@ TRACE_EVENT(kvm_booke_queue_irqprio,
- #endif
- 
- /* This part must be outside protection */
-+
-+#undef TRACE_INCLUDE_PATH
-+#undef TRACE_INCLUDE_FILE
-+
-+#define TRACE_INCLUDE_PATH .
-+#define TRACE_INCLUDE_FILE trace_booke
-+
- #include <trace/define_trace.h>
-diff --git a/arch/powerpc/kvm/trace_hv.h b/arch/powerpc/kvm/trace_hv.h
-index fb21990c0fb4..d9a21a7bd5c9 100644
---- a/arch/powerpc/kvm/trace_hv.h
-+++ b/arch/powerpc/kvm/trace_hv.h
-@@ -8,8 +8,6 @@
- 
- #undef TRACE_SYSTEM
- #define TRACE_SYSTEM kvm_hv
--#define TRACE_INCLUDE_PATH .
--#define TRACE_INCLUDE_FILE trace_hv
- 
- #define kvm_trace_symbol_hcall \
- 	{H_REMOVE,			"H_REMOVE"}, \
-@@ -496,4 +494,11 @@ TRACE_EVENT(kvmppc_run_vcpu_exit,
- #endif /* _TRACE_KVM_HV_H */
- 
- /* This part must be outside protection */
-+
-+#undef TRACE_INCLUDE_PATH
-+#undef TRACE_INCLUDE_FILE
-+
-+#define TRACE_INCLUDE_PATH .
-+#define TRACE_INCLUDE_FILE trace_hv
-+
- #include <trace/define_trace.h>
-diff --git a/arch/powerpc/kvm/trace_pr.h b/arch/powerpc/kvm/trace_pr.h
-index d44f324184fb..e8e2b9ad4ac6 100644
---- a/arch/powerpc/kvm/trace_pr.h
-+++ b/arch/powerpc/kvm/trace_pr.h
-@@ -7,8 +7,6 @@
- 
- #undef TRACE_SYSTEM
- #define TRACE_SYSTEM kvm_pr
--#define TRACE_INCLUDE_PATH .
--#define TRACE_INCLUDE_FILE trace_pr
- 
- TRACE_EVENT(kvm_book3s_reenter,
- 	TP_PROTO(int r, struct kvm_vcpu *vcpu),
-@@ -271,4 +269,11 @@ TRACE_EVENT(kvm_unmap_hva,
- #endif /* _TRACE_KVM_H */
- 
- /* This part must be outside protection */
-+
-+#undef TRACE_INCLUDE_PATH
-+#undef TRACE_INCLUDE_FILE
-+
-+#define TRACE_INCLUDE_PATH .
-+#define TRACE_INCLUDE_FILE trace_pr
-+
- #include <trace/define_trace.h>
+ #ifdef CONFIG_PPC_INDIRECT_MMIO
+-#define PCI_IO_IND_TOKEN_MASK	0x0fff000000000000ul
+-#define PCI_IO_IND_TOKEN_SHIFT	48
++#define PCI_IO_IND_TOKEN_SHIFT	52
++#define PCI_IO_IND_TOKEN_MASK	(0xfful << PCI_IO_IND_TOKEN_SHIFT)
+ #define PCI_FIX_ADDR(addr)						\
+ 	((PCI_IO_ADDR)(((unsigned long)(addr)) & ~PCI_IO_IND_TOKEN_MASK))
+ #define PCI_GET_ADDR_TOKEN(addr)					\
 -- 
 2.17.1
 
