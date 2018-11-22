@@ -3,27 +3,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F080FC43441
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Nov 2018 20:24:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D1DC7C43441
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Nov 2018 20:27:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5C61320870
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Nov 2018 20:24:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 3D8B421473
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Nov 2018 20:27:20 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="CjBjEEsq"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5C61320870
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="x4SSq3J+"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3D8B421473
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4319sX4ZdMzDqNN
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 07:24:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4319wQ0dRLzDqNW
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 07:27:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="CjBjEEsq";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="x4SSq3J+";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
@@ -32,33 +32,35 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="CjBjEEsq"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="x4SSq3J+"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4319Ft4pm8zDqFt
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Nov 2018 06:57:22 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4319GM2Z5YzDqGg
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Nov 2018 06:57:47 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (unknown [37.142.5.207])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id D808220870;
- Thu, 22 Nov 2018 19:57:18 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id E60E120870;
+ Thu, 22 Nov 2018 19:57:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1542916641;
- bh=OonO64WfOU5SqjLmZbKaR4VlNdtJPgdY4tT5yvf2xV0=;
- h=From:To:Cc:Subject:Date:From;
- b=CjBjEEsqxLFVfS8kNlwq80+dK3V29LNesOlRY/gdxsJhNJDXsPkvUHXJr8J5/1K/Y
- DkdKdlpnqDYllCp9cTEjeOt+QZFyVt1w5JN5pNR41HB46dZcuCNcR/dHdBGPAfX00a
- vzKaVquO2o5QDWMSxhRYA8nkYqfrIrUJMjHCyQtw=
+ s=default; t=1542916665;
+ bh=OaGvMOuFWrzD9x3+XaEjkkICGz/i1v+qcchw5RSG9gw=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=x4SSq3J+haaMU2AirnMoa6vXu9L2GATUEy/kBoej8yVbLJww0xnmdpumcFz3MCki0
+ BCvzL/LxlzYPI9O6KijK7BBNkp32nO5bH65Lt6V3cGxiGrkEQq5At7KWd0Q7ZM1be8
+ LF838me34+Y4o9glh0T9JzDEQcLDzKkK/Hwv/h5U=
 From: Sasha Levin <sashal@kernel.org>
 To: stable@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.4 1/8] KVM: PPC: Move and undef
- TRACE_INCLUDE_PATH/FILE
-Date: Thu, 22 Nov 2018 14:57:08 -0500
-Message-Id: <20181122195716.13961-1-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.4 7/8] powerpc/numa: Suppress "VPHN is not
+ supported" messages
+Date: Thu, 22 Nov 2018 14:57:14 -0500
+Message-Id: <20181122195716.13961-7-sashal@kernel.org>
 X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20181122195716.13961-1-sashal@kernel.org>
+References: <20181122195716.13961-1-sashal@kernel.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,149 +72,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Scott Wood <oss@buserror.net>, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc@vger.kernel.org, Sasha Levin <sashal@kernel.org>
+Cc: Sasha Levin <sashal@kernel.org>,
+ Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Scott Wood <oss@buserror.net>
+From: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
 
-[ Upstream commit 28c5bcf74fa07c25d5bd118d1271920f51ce2a98 ]
+[ Upstream commit 437ccdc8ce629470babdda1a7086e2f477048cbd ]
 
-TRACE_INCLUDE_PATH and TRACE_INCLUDE_FILE are used by
-<trace/define_trace.h>, so like that #include, they should
-be outside #ifdef protection.
+When VPHN function is not supported and during cpu hotplug event,
+kernel prints message 'VPHN function not supported. Disabling
+polling...'. Currently it prints on every hotplug event, it floods
+dmesg when a KVM guest tries to hotplug huge number of vcpus, let's
+just print once and suppress further kernel prints.
 
-They also need to be #undefed before defining, in case multiple trace
-headers are included by the same C file.  This became the case on
-book3e after commit cf4a6085151a ("powerpc/mm: Add missing tracepoint for
-tlbie"), leading to the following build error:
-
-   CC      arch/powerpc/kvm/powerpc.o
-In file included from arch/powerpc/kvm/powerpc.c:51:0:
-arch/powerpc/kvm/trace.h:9:0: error: "TRACE_INCLUDE_PATH" redefined
-[-Werror]
-  #define TRACE_INCLUDE_PATH .
-  ^
-In file included from arch/powerpc/kvm/../mm/mmu_decl.h:25:0,
-                  from arch/powerpc/kvm/powerpc.c:48:
-./arch/powerpc/include/asm/trace.h:224:0: note: this is the location of
-the previous definition
-  #define TRACE_INCLUDE_PATH asm
-  ^
-cc1: all warnings being treated as errors
-
-Reported-by: Christian Zigotzky <chzigotzky@xenosoft.de>
-Signed-off-by: Scott Wood <oss@buserror.net>
+Signed-off-by: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/kvm/trace.h       | 8 ++++++--
- arch/powerpc/kvm/trace_booke.h | 9 +++++++--
- arch/powerpc/kvm/trace_hv.h    | 9 +++++++--
- arch/powerpc/kvm/trace_pr.h    | 9 +++++++--
- 4 files changed, 27 insertions(+), 8 deletions(-)
+ arch/powerpc/mm/numa.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kvm/trace.h b/arch/powerpc/kvm/trace.h
-index 2e0e67ef3544..e8cedf32345a 100644
---- a/arch/powerpc/kvm/trace.h
-+++ b/arch/powerpc/kvm/trace.h
-@@ -5,8 +5,6 @@
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index 3c4faa4c2742..bb3df222ae71 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -1319,7 +1319,7 @@ static long vphn_get_associativity(unsigned long cpu,
  
- #undef TRACE_SYSTEM
- #define TRACE_SYSTEM kvm
--#define TRACE_INCLUDE_PATH .
--#define TRACE_INCLUDE_FILE trace
- 
- /*
-  * Tracepoint for guest mode entry.
-@@ -119,4 +117,10 @@ TRACE_EVENT(kvm_check_requests,
- #endif /* _TRACE_KVM_H */
- 
- /* This part must be outside protection */
-+#undef TRACE_INCLUDE_PATH
-+#undef TRACE_INCLUDE_FILE
-+
-+#define TRACE_INCLUDE_PATH .
-+#define TRACE_INCLUDE_FILE trace
-+
- #include <trace/define_trace.h>
-diff --git a/arch/powerpc/kvm/trace_booke.h b/arch/powerpc/kvm/trace_booke.h
-index 7ec534d1db9f..7eadbf449a1f 100644
---- a/arch/powerpc/kvm/trace_booke.h
-+++ b/arch/powerpc/kvm/trace_booke.h
-@@ -5,8 +5,6 @@
- 
- #undef TRACE_SYSTEM
- #define TRACE_SYSTEM kvm_booke
--#define TRACE_INCLUDE_PATH .
--#define TRACE_INCLUDE_FILE trace_booke
- 
- #define kvm_trace_symbol_exit \
- 	{0, "CRITICAL"}, \
-@@ -217,4 +215,11 @@ TRACE_EVENT(kvm_booke_queue_irqprio,
- #endif
- 
- /* This part must be outside protection */
-+
-+#undef TRACE_INCLUDE_PATH
-+#undef TRACE_INCLUDE_FILE
-+
-+#define TRACE_INCLUDE_PATH .
-+#define TRACE_INCLUDE_FILE trace_booke
-+
- #include <trace/define_trace.h>
-diff --git a/arch/powerpc/kvm/trace_hv.h b/arch/powerpc/kvm/trace_hv.h
-index 33d9daff5783..d1bfe017d751 100644
---- a/arch/powerpc/kvm/trace_hv.h
-+++ b/arch/powerpc/kvm/trace_hv.h
-@@ -8,8 +8,6 @@
- 
- #undef TRACE_SYSTEM
- #define TRACE_SYSTEM kvm_hv
--#define TRACE_INCLUDE_PATH .
--#define TRACE_INCLUDE_FILE trace_hv
- 
- #define kvm_trace_symbol_hcall \
- 	{H_REMOVE,			"H_REMOVE"}, \
-@@ -474,4 +472,11 @@ TRACE_EVENT(kvmppc_run_vcpu_exit,
- #endif /* _TRACE_KVM_HV_H */
- 
- /* This part must be outside protection */
-+
-+#undef TRACE_INCLUDE_PATH
-+#undef TRACE_INCLUDE_FILE
-+
-+#define TRACE_INCLUDE_PATH .
-+#define TRACE_INCLUDE_FILE trace_hv
-+
- #include <trace/define_trace.h>
-diff --git a/arch/powerpc/kvm/trace_pr.h b/arch/powerpc/kvm/trace_pr.h
-index 810507cb688a..1e40aa2aa5af 100644
---- a/arch/powerpc/kvm/trace_pr.h
-+++ b/arch/powerpc/kvm/trace_pr.h
-@@ -7,8 +7,6 @@
- 
- #undef TRACE_SYSTEM
- #define TRACE_SYSTEM kvm_pr
--#define TRACE_INCLUDE_PATH .
--#define TRACE_INCLUDE_FILE trace_pr
- 
- TRACE_EVENT(kvm_book3s_reenter,
- 	TP_PROTO(int r, struct kvm_vcpu *vcpu),
-@@ -271,4 +269,11 @@ TRACE_EVENT(kvm_unmap_hva,
- #endif /* _TRACE_KVM_H */
- 
- /* This part must be outside protection */
-+
-+#undef TRACE_INCLUDE_PATH
-+#undef TRACE_INCLUDE_FILE
-+
-+#define TRACE_INCLUDE_PATH .
-+#define TRACE_INCLUDE_FILE trace_pr
-+
- #include <trace/define_trace.h>
+ 	switch (rc) {
+ 	case H_FUNCTION:
+-		printk(KERN_INFO
++		printk_once(KERN_INFO
+ 			"VPHN is not supported. Disabling polling...\n");
+ 		stop_topology_update();
+ 		break;
 -- 
 2.17.1
 
