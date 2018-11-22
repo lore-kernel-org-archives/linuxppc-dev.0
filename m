@@ -2,55 +2,65 @@ Return-Path: <SRS0=R24o=OB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 05AD0C43441
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Nov 2018 20:04:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 82B55C43441
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Nov 2018 20:06:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A42B020892
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Nov 2018 20:04:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A42B020892
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=davemloft.net
+	by mail.kernel.org (Postfix) with ESMTPS id E48DC20892
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Nov 2018 20:06:53 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="qdWIPf99"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E48DC20892
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4319Pc3d8XzDqQm
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 07:04:04 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=davemloft.net
+	by lists.ozlabs.org (Postfix) with ESMTP id 4319Sr1l99zDqCg
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 07:06:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=davemloft.net
- (client-ip=2620:137:e000::1:9; helo=shards.monkeyblade.net;
- envelope-from=davem@davemloft.net; receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="qdWIPf99";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=davemloft.net
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [IPv6:2620:137:e000::1:9])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="qdWIPf99"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43199v6ghtzDqGC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Nov 2018 06:53:54 +1100 (AEDT)
-Received: from localhost (unknown [IPv6:2601:601:9f80:35cd::bf5])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- (Authenticated sender: davem-davemloft)
- by shards.monkeyblade.net (Postfix) with ESMTPSA id 6F88E14DA9D10;
- Thu, 22 Nov 2018 11:53:50 -0800 (PST)
-Date: Thu, 22 Nov 2018 11:53:49 -0800 (PST)
-Message-Id: <20181122.115349.541916581269680906.davem@davemloft.net>
-To: tlfalcon@linux.ibm.com
-Subject: Re: [PATCH net 0/2] ibmvnic: Fix queue and buffer accounting errors
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1542820679-30184-1-git-send-email-tlfalcon@linux.ibm.com>
-References: <1542820679-30184-1-git-send-email-tlfalcon@linux.ibm.com>
-X-Mailer: Mew version 6.8 on Emacs 26.1
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.5.12
- (shards.monkeyblade.net [149.20.54.216]);
- Thu, 22 Nov 2018 11:53:50 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4319Bd0VPGzDqFH
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Nov 2018 06:54:33 +1100 (AEDT)
+Received: from sasha-vm.mshome.net (unknown [37.142.5.207])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 42BB420864;
+ Thu, 22 Nov 2018 19:54:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1542916470;
+ bh=aiQIz2CiEBdBmtmOksYaIgCsnX1eNlG6OwJvB+W/jO8=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=qdWIPf99ofZ4SWHedPRZ4ty7hKxMUbV+d4IhRbvnCaO5BAnRN5cMQVi/a7bcm34Es
+ NAqstbiiOTyGyP+mLQzwQRAZcf4Qz/mkN4d77JV2zKU3fPnpMMFmI9b/P3cfc8na5K
+ b5AxXO6SUPNfqhAhhVo6UZaACy+8uBVJyBWxJFfc=
+From: Sasha Levin <sashal@kernel.org>
+To: stable@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH AUTOSEL 4.19 31/36] powerpc/numa: Suppress "VPHN is not
+ supported" messages
+Date: Thu, 22 Nov 2018 14:52:35 -0500
+Message-Id: <20181122195240.13123-31-sashal@kernel.org>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20181122195240.13123-1-sashal@kernel.org>
+References: <20181122195240.13123-1-sashal@kernel.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,18 +72,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, mwb@linux.ibm.com,
- julietk@linux.ibm.com, tyreld@linux.ibm.com
+Cc: Sasha Levin <sashal@kernel.org>,
+ Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Thomas Falcon <tlfalcon@linux.ibm.com>
-Date: Wed, 21 Nov 2018 11:17:57 -0600
+From: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
 
-> This series includes two small fixes. The first resolves a typo bug
-> in the code to clean up unused RX buffers during device queue removal.
-> The second ensures that device queue memory is updated to reflect new
-> supported queue ring sizes after migration to other backing hardware.
+[ Upstream commit 437ccdc8ce629470babdda1a7086e2f477048cbd ]
 
-Series applied.
+When VPHN function is not supported and during cpu hotplug event,
+kernel prints message 'VPHN function not supported. Disabling
+polling...'. Currently it prints on every hotplug event, it floods
+dmesg when a KVM guest tries to hotplug huge number of vcpus, let's
+just print once and suppress further kernel prints.
+
+Signed-off-by: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ arch/powerpc/mm/numa.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index 055b211b7126..5500e4edabc6 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -1179,7 +1179,7 @@ static long vphn_get_associativity(unsigned long cpu,
+ 
+ 	switch (rc) {
+ 	case H_FUNCTION:
+-		printk(KERN_INFO
++		printk_once(KERN_INFO
+ 			"VPHN is not supported. Disabling polling...\n");
+ 		stop_topology_update();
+ 		break;
+-- 
+2.17.1
+
