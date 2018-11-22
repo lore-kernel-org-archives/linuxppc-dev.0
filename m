@@ -2,53 +2,78 @@ Return-Path: <SRS0=R24o=OB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A6A8BC43441
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Nov 2018 13:02:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D9DFCC43441
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Nov 2018 14:08:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 053DD20672
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Nov 2018 13:02:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 053DD20672
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 0AB93206B2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Nov 2018 14:08:07 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="Fkcia3qB"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0AB93206B2
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43103h4RC9zDqPZ
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 00:02:56 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4311Vs6h2kzDqPk
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 01:08:05 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=arm.com
- (client-ip=217.140.101.70; helo=foss.arm.com;
- envelope-from=andrew.murray@arm.com; receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.b="Fkcia3qB";
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (helo)
+ smtp.helo=wout2-smtp.messagingengine.com (client-ip=64.147.123.25;
+ helo=wout2-smtp.messagingengine.com; envelope-from=ruscur@russell.cc;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 430zzG2yjXzDqP7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Nov 2018 23:59:04 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id C31753622;
- Thu, 22 Nov 2018 04:59:02 -0800 (PST)
-Received: from localhost (unknown [10.37.6.11])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 58EE93F5A0;
- Thu, 22 Nov 2018 04:59:02 -0800 (PST)
-Date: Thu, 22 Nov 2018 12:59:00 +0000
-From: Andrew Murray <andrew.murray@arm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 00/10] perf/core: Generalise event exclusion checking
-Message-ID: <20181122125859.GJ42987@e119886-lin.cambridge.arm.com>
-References: <1542363853-13849-1-git-send-email-andrew.murray@arm.com>
- <20181119130800.GE9761@hirez.programming.kicks-ass.net>
- <20181122122142.GI42987@e119886-lin.cambridge.arm.com>
- <20181122122637.GS2131@hirez.programming.kicks-ass.net>
+ dmarc=none (p=none dis=none) header.from=russell.cc
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=messagingengine.com header.i=@messagingengine.com
+ header.b="Fkcia3qB"; dkim-atps=neutral
+Received: from wout2-smtp.messagingengine.com (wout2-smtp.messagingengine.com
+ [64.147.123.25])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4311QW1pQqzDqP1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Nov 2018 01:04:16 +1100 (AEDT)
+Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
+ by mailout.west.internal (Postfix) with ESMTP id 47D0BD66;
+ Thu, 22 Nov 2018 09:04:11 -0500 (EST)
+Received: from mailfrontend2 ([10.202.2.163])
+ by compute6.internal (MEProxy); Thu, 22 Nov 2018 09:04:11 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+ messagingengine.com; h=cc:content-transfer-encoding:date:from
+ :message-id:mime-version:subject:to:x-me-proxy:x-me-proxy
+ :x-me-sender:x-me-sender:x-sasl-enc; s=fm1; bh=8/xbp95vXWh23ncgO
+ ZtcIvJ4G5GVZ1X1kYieM09w09g=; b=Fkcia3qB2DW/yt3dHEPoBw2APjLqM9peZ
+ 8brIt10aS81/5tEFbXF6Z1BUSobO1sGX5VsGVhx9lNhw1WRNDz5tv1LQTW4+Hfhp
+ t9/vOrYRttIAiNfxrqwJAnM+p62ZWTB174DPJq5RuaII3YaSlCYyJ2Ydzztk6Usu
+ gKkJnsaxn+UldWJQLZSayZeyA3OhqyIPhPwwnYj8XNbM9kvPXGBHBLNSdLUvWVBS
+ YoF22TfziZuF7vayxRdjqeOZ/RQEcI8Yuis4jZZAZzHtMJfZSwwlfpOYcuOd0UgM
+ RPEg/T6wH9PZNOX1m96Y0sJxS4Evs+QKB8OG0TyvtTTSbNHOu/SMA==
+X-ME-Sender: <xms:WLf2Ww8a6L6nK2EGLlUuX_9nWTpakUk1_tug3tCkty8cp6PTzKE2VQ>
+X-ME-Proxy: <xmx:WLf2W0mE5kIk-3kQ6HKHiUFrVT-EKPDE2cX8-IJDz_GQ_7lftFUczg>
+ <xmx:WLf2W5BBVD-RAHmkAXjP4XTHMjIAa7hSmpPtf6qAgulpwmFZV0pF_A>
+ <xmx:WLf2WzMh1JW6XQgWDhQlmzkKyFa217sDuINOlX7v87JDUe_fDnb8wA>
+ <xmx:WLf2W7fsmwJKbU-CywGWUOjVfv-ibCUubWpo-fO-98Ayc_jmmFKHOw>
+ <xmx:WLf2W4n0sGvi98-2XXnogBwKHmIbEqDudG8eq1V737FurFHeMFaVow>
+ <xmx:Wrf2W7TqO3iQM5aWIVyGyl_u6rDfnY9_5c4iJKgBksGqOFpVx64T-w>
+Received: from crackle.ozlabs.ibm.com.com (124-171-154-44.dyn.iinet.net.au
+ [124.171.154.44])
+ by mail.messagingengine.com (Postfix) with ESMTPA id 51A1A102E4;
+ Thu, 22 Nov 2018 09:04:05 -0500 (EST)
+From: Russell Currey <ruscur@russell.cc>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 0/4] Kernel Userspace Protection for Radix MMU
+Date: Fri, 23 Nov 2018 01:04:12 +1100
+Message-Id: <20181122140416.3447-1-ruscur@russell.cc>
+X-Mailer: git-send-email 2.19.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20181122122637.GS2131@hirez.programming.kicks-ass.net>
-User-Agent: Mutt/1.10.1+81 (426a6c1) (2018-08-26)
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,59 +85,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Sascha Hauer <s.hauer@pengutronix.de>,
- x86@kernel.org, Will Deacon <will.deacon@arm.com>,
- linuxppc-dev@lists.ozlabs.org, Arnaldo Carvalho de Melo <acme@kernel.org>,
- linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
- Borislav Petkov <bp@alien8.de>, linux-alpha@vger.kernel.org,
- Thomas Gleixner <tglx@linutronix.de>, Shawn Guo <shawnguo@kernel.org>,
- linux-arm-kernel@lists.infradead.org
+Cc: kernel-hardening@lists.openwall.com, Russell Currey <ruscur@russell.cc>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Nov 22, 2018 at 01:26:37PM +0100, Peter Zijlstra wrote:
-> On Thu, Nov 22, 2018 at 12:21:43PM +0000, Andrew Murray wrote:
-> > On Mon, Nov 19, 2018 at 02:08:00PM +0100, Peter Zijlstra wrote:
-> 
-> > > diff --git a/kernel/events/core.c b/kernel/events/core.c
-> > > index 84530ab358c3..d76b724177b9 100644
-> > > --- a/kernel/events/core.c
-> > > +++ b/kernel/events/core.c
-> > > @@ -9772,6 +9772,14 @@ static int perf_try_init_event(struct pmu *pmu, struct perf_event *event)
-> > >  	if (ctx)
-> > >  		perf_event_ctx_unlock(event->group_leader, ctx);
-> > >  
-> > > +	if (!ret) {
-> > > +		if ((pmu->capabilities & PERF_PMU_CAP_EXCLUDE) ||
-> > > +		    event_has_exclude_flags(event)) {
-> > > +			event->destroy(event);
-> > > +			ret = -EINVAL;
-> > > +		}
-> > > +	}
-> > > +
-> > 
-> > I don't quite follow this logic. Should that not have been:
-> > 
-> > if (!(pmu->capabilities & PERF_PMU_CAP_EXCLUDE) &&
-> >      event_has_exclude_flags(event)) {
-> > 
-> > Meaning that if an event has any exclude flags but the pmu doesn't
-> > have the capability to handle them then error.
-> 
-> Uhm, yes. Brainfart on my side that.
-> 
-> > If you're happy with my proposed logic, then would it also make
-> > sense to move this before the call to the pmu->event_init ?
-> 
-> I'm not sure that can work; I think we need ->event_init() first such
-> that it can -ENOENT. Only after ->event_init() returns success can we be
-> certain of @pmu.
+Back again, this time based on top of Christophe Leroy's series:
+http://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=74541
 
-Ah yes I see now. Until event_init doesn't return -ENOENT we can't be sure
-that this will be the PMU we use (as per the other calls to
-perf_try_init_event in perf_init_event).
+With the magic perk of being the snowpatch maintainer I will try and get
+the snowpatch results for this series to be applied on top of that series
+so all the tests aren't failures.
 
-Thanks,
+There aren't really any major functional changes, just working what I
+already did into Christophe's framework.  The biggest change is that
+execution prevention is now optional, and all the radix-specific code
+is now in the radix-specific place where it should be.
 
-Andrew Murray
+Russell Currey (4):
+  powerpc: Track KUAP state in the PACA
+  powerpc/64: Setup KUP before feature fixups
+  powerpc/mm/radix: Use KUEP API for Radix MMU
+  powerpc/64s: Implement KUAP for Radix MMU
+
+ arch/powerpc/include/asm/book3s/64/radix.h   | 43 ++++++++++++++++++++
+ arch/powerpc/include/asm/exception-64e.h     |  3 ++
+ arch/powerpc/include/asm/exception-64s.h     | 19 ++++++++-
+ arch/powerpc/include/asm/mmu.h               |  9 +++-
+ arch/powerpc/include/asm/nohash/32/pte-8xx.h |  8 ++--
+ arch/powerpc/include/asm/paca.h              |  3 ++
+ arch/powerpc/include/asm/reg.h               |  1 +
+ arch/powerpc/include/asm/uaccess.h           | 23 ++++++++++-
+ arch/powerpc/kernel/asm-offsets.c            |  1 +
+ arch/powerpc/kernel/entry_64.S               | 16 +++++++-
+ arch/powerpc/kernel/setup_64.c               |  7 +++-
+ arch/powerpc/mm/pgtable-radix.c              | 21 ++++++++--
+ arch/powerpc/mm/pkeys.c                      |  7 +++-
+ arch/powerpc/platforms/Kconfig.cputype       |  2 +
+ 14 files changed, 148 insertions(+), 15 deletions(-)
+
+-- 
+2.19.1
+
