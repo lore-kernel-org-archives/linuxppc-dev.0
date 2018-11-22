@@ -7,24 +7,24 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 04393C43441
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Nov 2018 14:11:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C0B47C43441
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Nov 2018 14:13:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 71C5A206B2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Nov 2018 14:10:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 184D3206B2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Nov 2018 14:13:55 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="Ymtgguo0"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 71C5A206B2
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="NFxDIoDl"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 184D3206B2
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4311Z95rZ1zDqPc
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 01:10:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4311dY0jZczDqP5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 01:13:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.b="Ymtgguo0";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.b="NFxDIoDl";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (helo)
  smtp.helo=wout2-smtp.messagingengine.com (client-ip=64.147.123.25;
@@ -34,45 +34,45 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.b="Ymtgguo0"; dkim-atps=neutral
+ header.b="NFxDIoDl"; dkim-atps=neutral
 Received: from wout2-smtp.messagingengine.com (wout2-smtp.messagingengine.com
  [64.147.123.25])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4311QW1rwtzDqP5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Nov 2018 01:04:16 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4311QW1v65zDqP8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Nov 2018 01:04:18 +1100 (AEDT)
 Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
- by mailout.west.internal (Postfix) with ESMTP id 34965802;
- Thu, 22 Nov 2018 09:04:12 -0500 (EST)
+ by mailout.west.internal (Postfix) with ESMTP id B3A389B0;
+ Thu, 22 Nov 2018 09:04:15 -0500 (EST)
 Received: from mailfrontend2 ([10.202.2.163])
- by compute6.internal (MEProxy); Thu, 22 Nov 2018 09:04:12 -0500
+ by compute6.internal (MEProxy); Thu, 22 Nov 2018 09:04:16 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
  messagingengine.com; h=cc:content-transfer-encoding:date:from
  :in-reply-to:message-id:mime-version:references:subject:to
  :x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
- fm1; bh=MXrzjh44bxWUE/c6WLXOS7ozsDiz4pdVGW2F0pHHyT0=; b=Ymtgguo0
- nA5dfa7+y+xAFq1ZX5PyOEBkrzfkBJTvno7cayJQ9rp37RMLXBLYitaqH8rnjPDJ
- ETuHHevf5qwOpElhcSFtS9P8rqBuvNU6ed2uS6yIdw1y0wUBq50OsgDRjpcotfhT
- pk0Chs7RX/2S2WztRrlT6I/aghsv9zdqYJCPse+vtWNyBnK/tTW0wPmdZci7DVj+
- ylDdwA5HfQmEp/WhHBqvJmNT3UzU6PWyRR//ndZyXc77wa5tFEHGgsxoTeWG+zOc
- ii9QDuLYeeBeW1932RkZ+jlBW3sBdrI/ZTzmciTBQYHEQ9p3gBCFGDjNrycIWDdy
- 38aK+YT3WUVqgA==
-X-ME-Sender: <xms:W7f2W8fpctZ54YfOgUvOgdx0rjuaKjV-CiLDFNBj5u0Fdak72FMExQ>
-X-ME-Proxy: <xmx:W7f2WyLJZ5NagZav5MK3IPK0dPh22oqOyeiAT4CbSoDVO-8j4Kc46Q>
- <xmx:W7f2W7_9CGuAlqM_XoG2T1ss2xwLWfSCs19aVg44IBKINkAeIS_nxw>
- <xmx:W7f2Wx3C5ktCZstS2syS3fn8hCGf8tHQDbhKgJ6Oocr4ISSQ1hjI6w>
- <xmx:W7f2W6s9PJAURD8NyIb7xysNHpVncYOAIn2SYmP1LnCvdFlGxd7nyw>
- <xmx:W7f2W2K17S4A3wSZ6fNzvt8qMy9FJtcV39l5JAicXK9jktA1Qm8uTw>
- <xmx:W7f2Wxm1TRUDpJmsR5st8Ux2TRpUq6gfx6i8S9kJuQcQC0LNRFx9sw>
+ fm1; bh=qdi+0bS4linqvTXoN6BDMEcE4Kx/v77WVn28gx/bGHU=; b=NFxDIoDl
+ +37anZXVD3bR/BfYxL9I4Ii73CxWvUro2WQ6RIZjHVX40Oj8S8vyvKQWuOH+y4n0
+ wk1NdHcTB3Ybhg+hyRcAQJUa5EXpK+oP0jJDO6cdue4G6TQiYAhsX9RY8AqDfp/L
+ lAcDDPBSq8GUjGHrRj+CLC3OX/hgQ2XVryn71zYVWqqxRnAL6k9OdPDh05c6KhzL
+ eCzFh5T3/2TJafgXV/rWctkubU5r0PtVZN3aOM+JFI09curX9daintauhz/DRC9P
+ t7QwbE1OKaHXLmqTmOlpHEk8zJS1iIn4oWDROHAn1Tz65pb/PLRYbUCuD8S+QZae
+ deovfkzroXRnBA==
+X-ME-Sender: <xms:X7f2W6qW99N1xT6gEUlfw9K7RnDJQdPkuGLjd9pBtSWIAxO-VmoOAg>
+X-ME-Proxy: <xmx:X7f2W8rdZM6lid6T8GcRqn3UwDuRdYZwRAoIeuKcGGamyV2CCpaQGA>
+ <xmx:X7f2Wwk0SEr6T7-9ORKXMBHNYmg7jXAKkHyizqF_9aFihTldc7k00g>
+ <xmx:X7f2W4y7kC85Y39VfFTq3v6AX4lFucgK4f5pwOylUI3QkN9FEQ7Qdg>
+ <xmx:X7f2WwmOxzNTSk8Olw42Q4-gLG_RyApaRaJ06iUEAQW_PMcKv-EogA>
+ <xmx:X7f2W5dCdO-iFa5hRLYBV017GSt854WUbdpgahPLpq7KctTElW_9Pg>
+ <xmx:X7f2W6rApl2XgdZNXLWUg939P5CUODgxmYM4tP0pOpjM-F4Q2rfSmw>
 Received: from crackle.ozlabs.ibm.com.com (124-171-154-44.dyn.iinet.net.au
  [124.171.154.44])
- by mail.messagingengine.com (Postfix) with ESMTPA id C6B7710304;
- Thu, 22 Nov 2018 09:04:08 -0500 (EST)
+ by mail.messagingengine.com (Postfix) with ESMTPA id 2F0F9102E4;
+ Thu, 22 Nov 2018 09:04:11 -0500 (EST)
 From: Russell Currey <ruscur@russell.cc>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/4] powerpc: Track KUAP state in the PACA
-Date: Fri, 23 Nov 2018 01:04:13 +1100
-Message-Id: <20181122140416.3447-2-ruscur@russell.cc>
+Subject: [PATCH 2/4] powerpc/64: Setup KUP before feature fixups
+Date: Fri, 23 Nov 2018 01:04:14 +1100
+Message-Id: <20181122140416.3447-3-ruscur@russell.cc>
 X-Mailer: git-send-email 2.19.1
 In-Reply-To: <20181122140416.3447-1-ruscur@russell.cc>
 References: <20181122140416.3447-1-ruscur@russell.cc>
@@ -94,118 +94,42 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Necessary for subsequent patches that enable KUAP support for radix.
-Could plausibly be useful for other platforms too, if similar to the
-radix case, reading the register that manages these accesses is
-costly.
-
-Has the unfortunate downside of another layer of abstraction for
-platforms that implement the locks and unlocks, but this could be
-useful in future for other things too, like counters for benchmarking
-or smartly handling lots of small accesses at once.
+The subsequent implementation of KUAP for radix makes use of a MMU
+feature in order to patch out assembly when KUAP is disabled or
+unsupported.  This won't work unless there's an entry point for
+KUP support before the feature magic happens, so relocate
+setup_kup() earlier in setup.
 
 Signed-off-by: Russell Currey <ruscur@russell.cc>
 ---
-this is all because I can't do PACA things from radix.h and I spent
-an hour figuring this out at midnight
----
- arch/powerpc/include/asm/nohash/32/pte-8xx.h |  8 +++----
- arch/powerpc/include/asm/paca.h              |  3 +++
- arch/powerpc/include/asm/uaccess.h           | 23 +++++++++++++++++++-
- arch/powerpc/kernel/asm-offsets.c            |  1 +
- 4 files changed, 30 insertions(+), 5 deletions(-)
+ arch/powerpc/kernel/setup_64.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/nohash/32/pte-8xx.h b/arch/powerpc/include/asm/nohash/32/pte-8xx.h
-index f1ec7cf949d5..7bc0955a56e9 100644
---- a/arch/powerpc/include/asm/nohash/32/pte-8xx.h
-+++ b/arch/powerpc/include/asm/nohash/32/pte-8xx.h
-@@ -137,22 +137,22 @@ static inline pte_t pte_mkhuge(pte_t pte)
- #define pte_mkhuge pte_mkhuge
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 0f4e06ab70a5..cc20dc3e7b69 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -331,6 +331,12 @@ void __init early_setup(unsigned long dt_ptr)
+ 	 */
+ 	configure_exceptions();
  
- #ifdef CONFIG_PPC_KUAP
--static inline void lock_user_wr_access(void)
-+static inline void __lock_user_wr_access(void)
- {
- 	mtspr(SPRN_MD_AP, MD_APG_KUAP);
++	/*
++	 * Configure Kernel Userspace Protection. This needs to happen before
++	 * feature fixups for platforms that implement this using features.
++	 */
++	setup_kup();
++
+ 	/* Apply all the dynamic patching */
+ 	apply_feature_fixups();
+ 	setup_feature_keys();
+@@ -372,7 +378,6 @@ void __init early_setup(unsigned long dt_ptr)
+ 	 */
+ 	btext_map();
+ #endif /* CONFIG_PPC_EARLY_DEBUG_BOOTX */
+-	setup_kup();
  }
  
--static inline void unlock_user_wr_access(void)
-+static inline void __unlock_user_wr_access(void)
- {
- 	mtspr(SPRN_MD_AP, MD_APG_INIT);
- }
- 
--static inline void lock_user_rd_access(void)
-+static inline void __lock_user_rd_access(void)
- {
- 	mtspr(SPRN_MD_AP, MD_APG_KUAP);
- }
- 
--static inline void unlock_user_rd_access(void)
-+static inline void __unlock_user_rd_access(void)
- {
- 	mtspr(SPRN_MD_AP, MD_APG_INIT);
- }
-diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-index e843bc5d1a0f..56236f6d8c89 100644
---- a/arch/powerpc/include/asm/paca.h
-+++ b/arch/powerpc/include/asm/paca.h
-@@ -169,6 +169,9 @@ struct paca_struct {
- 	u64 saved_r1;			/* r1 save for RTAS calls or PM or EE=0 */
- 	u64 saved_msr;			/* MSR saved here by enter_rtas */
- 	u16 trap_save;			/* Used when bad stack is encountered */
-+#ifdef CONFIG_PPC_KUAP
-+	u8 user_access_allowed;		/* can the kernel access user memory? */
-+#endif
- 	u8 irq_soft_mask;		/* mask for irq soft masking */
- 	u8 irq_happened;		/* irq happened while soft-disabled */
- 	u8 io_sync;			/* writel() needs spin_unlock sync */
-diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
-index 2f3625cbfcee..76dae1095f7e 100644
---- a/arch/powerpc/include/asm/uaccess.h
-+++ b/arch/powerpc/include/asm/uaccess.h
-@@ -63,7 +63,28 @@ static inline int __access_ok(unsigned long addr, unsigned long size,
- 
- #endif
- 
--#ifndef CONFIG_PPC_KUAP
-+#ifdef CONFIG_PPC_KUAP
-+static inline void unlock_user_rd_access(void)
-+{
-+	__unlock_user_rd_access();
-+	get_paca()->user_access_allowed = 1;
-+}
-+static inline void lock_user_rd_access(void)
-+{
-+	__lock_user_rd_access();
-+	get_paca()->user_access_allowed = 0;
-+}
-+static inline void unlock_user_wr_access(void)
-+{
-+	__unlock_user_wr_access();
-+	get_paca()->user_access_allowed = 1;
-+}
-+static inline void lock_user_wr_access(void)
-+{
-+	__lock_user_wr_access();
-+	get_paca()->user_access_allowed = 0;
-+}
-+#else
- static inline void unlock_user_rd_access(void) { }
- static inline void lock_user_rd_access(void) { }
- static inline void unlock_user_wr_access(void) { }
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index da2f5d011ddb..899e9835b45f 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -260,6 +260,7 @@ int main(void)
- 	OFFSET(ACCOUNT_STARTTIME_USER, paca_struct, accounting.starttime_user);
- 	OFFSET(ACCOUNT_USER_TIME, paca_struct, accounting.utime);
- 	OFFSET(ACCOUNT_SYSTEM_TIME, paca_struct, accounting.stime);
-+	OFFSET(PACA_USER_ACCESS_ALLOWED, paca_struct, user_access_allowed);
- 	OFFSET(PACA_TRAP_SAVE, paca_struct, trap_save);
- 	OFFSET(PACA_NAPSTATELOST, paca_struct, nap_state_lost);
- 	OFFSET(PACA_SPRG_VDSO, paca_struct, sprg_vdso);
+ #ifdef CONFIG_SMP
 -- 
 2.19.1
 
