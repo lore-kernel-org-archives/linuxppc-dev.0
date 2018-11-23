@@ -2,83 +2,53 @@ Return-Path: <SRS0=n2Bs=OC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 024B2C43441
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 13:36:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E85CC43441
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 14:33:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3A8C820672
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 13:36:25 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="dM+rAQl2"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3A8C820672
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id B4E77206B2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 14:33:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B4E77206B2
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 431clq0Kk5zDqWg
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Nov 2018 00:36:23 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 431f2D48V3zDqKT
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Nov 2018 01:33:56 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="dM+rAQl2";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=arm.com
+ (client-ip=217.140.101.70; helo=foss.arm.com;
+ envelope-from=andrew.murray@arm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::441; helo=mail-pf1-x441.google.com;
- envelope-from=tiny.windzz@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="dM+rAQl2"; 
- dkim-atps=neutral
-Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
- [IPv6:2607:f8b0:4864:20::441])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 431chw4TdzzDqWB
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Nov 2018 00:33:52 +1100 (AEDT)
-Received: by mail-pf1-x441.google.com with SMTP id c123so2693600pfb.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Nov 2018 05:33:52 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id;
- bh=lDsJKS1oNLz/0T0+4NfjSFsaxXGbh8mIOnrI7P5Es+4=;
- b=dM+rAQl2gUgSHgd1sdclsZ02HlyaCXQw3qQkN1u47coDUadS2NRwejkIGbLeiZu13f
- gD3amtdF0tQB5QepcdmwFQpH0INGPyDAIEVqo+XIe1HxG+nawsPt2SUq2bsmHQMKMcWd
- 4KmcoK8YuQxD5miVw9cfqBPAgIJR/X6Hb/1fXPdFAVNVqrzuS1kziyFt3/oCxHtE0cGd
- QKkEwnql2mGQ9bhGE7OQqYt37ZEgYsG6hQvtYjhCisK29uTteo64znTH5vdBQFpbynhO
- Z+JBhDW5qkINjjWzdzyypERxiYYNitpZG+2RopXM/B9H7/wqxFRboxrRAP3aSLBkjv8m
- T3sw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id;
- bh=lDsJKS1oNLz/0T0+4NfjSFsaxXGbh8mIOnrI7P5Es+4=;
- b=F8ZuBW652GerLJBjSy6nHB3mHCeLF1O2vgvtuY2/bJ+ifFHE1xyKa5MpO9UZ4tkOtV
- LXkU/iD/tvceRMX8G24A2az/FT9fiaTcU24PD0TeNm3L60Qf8u74/iJMQElFpzI9jeVQ
- SCrSvGoPQrhiFxpmySe+u90IYMLytt+62Fa92c+W5PMq3V62uV7BDaxfdtvsbcN1HkBY
- NILUlzKw6YA/GcNfHiNgHMBgGrYy/T/Y3YWYpBW+WzY1j6A5ZasfsScsBM1uQzRUehwQ
- /SK1z1UfGXLFiG4hPO26IZUDut7/nmLnfqtCVtHY4vvqNgBSkC6vbrxoZQ24RMi+kP4u
- Mn5w==
-X-Gm-Message-State: AA+aEWZto3ZDF9byk/hIKKIHJO1pCzHBKv3HERW5Nvz+mG08s4Q3abqU
- baW7TQx0ADHDYQte4vb5a7g=
-X-Google-Smtp-Source: AJdET5c9TngiJYlm6VKowHdlqL+8rwEppVXR4g+0oDVtg43zOtNU4dhbaD8NBLXnIdJ/Mm6UtP9/Kw==
-X-Received: by 2002:a63:1b1f:: with SMTP id b31mr14108993pgb.66.1542980030167; 
- Fri, 23 Nov 2018 05:33:50 -0800 (PST)
-Received: from localhost (68.168.130.77.16clouds.com. [68.168.130.77])
- by smtp.gmail.com with ESMTPSA id d68-v6sm61764630pfa.80.2018.11.23.05.33.47
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Fri, 23 Nov 2018 05:33:48 -0800 (PST)
-From: Yangtao Li <tiny.windzz@gmail.com>
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org, benh@kernel.crashing.org,
- paulus@samba.org, mpe@ellerman.id.au
-Subject: [PATCH v2] cpufreq: pmac64: add of_node_put()
-Date: Fri, 23 Nov 2018 08:33:40 -0500
-Message-Id: <20181123133340.26849-1-tiny.windzz@gmail.com>
-X-Mailer: git-send-email 2.17.0
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 431dzG152ZzDqWb
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Nov 2018 01:31:19 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 35EB4362E;
+ Fri, 23 Nov 2018 06:31:16 -0800 (PST)
+Received: from localhost (unknown [10.37.6.11])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 93E7C3F575;
+ Fri, 23 Nov 2018 06:31:15 -0800 (PST)
+Date: Fri, 23 Nov 2018 14:31:13 +0000
+From: Andrew Murray <andrew.murray@arm.com>
+To: Mark Rutland <mark.rutland@arm.com>
+Subject: Re: [PATCH 09/10] drivers/perf: perf/core: generalise event
+ exclusion checking with perf macro
+Message-ID: <20181123143113.GA1617@e119886-lin.cambridge.arm.com>
+References: <1542363853-13849-1-git-send-email-andrew.murray@arm.com>
+ <1542363853-13849-10-git-send-email-andrew.murray@arm.com>
+ <20181119160352.ua2lx72l754imiek@lakrids.cambridge.arm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20181119160352.ua2lx72l754imiek@lakrids.cambridge.arm.com>
+User-Agent: Mutt/1.10.1+81 (426a6c1) (2018-08-26)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,37 +60,201 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Yangtao Li <tiny.windzz@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Peter Zijlstra <peterz@infradead.org>,
+ Sascha Hauer <s.hauer@pengutronix.de>, x86@kernel.org,
+ Will Deacon <will.deacon@arm.com>, linuxppc-dev@lists.ozlabs.org,
+ Arnaldo Carvalho de Melo <acme@kernel.org>, linux-kernel@vger.kernel.org,
+ Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+ linux-alpha@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+ Shawn Guo <shawnguo@kernel.org>, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-of_find_node_by_path() acquires a reference to the node
-returned by it and that reference needs to be dropped by its caller.
-g5_neo2_cpufreq_init() doesn't do that, so fix it.
+On Mon, Nov 19, 2018 at 04:03:52PM +0000, Mark Rutland wrote:
+> On Fri, Nov 16, 2018 at 10:24:12AM +0000, Andrew Murray wrote:
+> > Replace checking of perf event exclusion flags with perf macro.
+> > 
+> > This is a functional change as exclude_host and exclude_guest are added
+> > in the following files:
+> > 
+> >  - drivers/perf/qcom_l2_pmu.c
+> >  - drivers/perf/qcom_l3_pmu.c
+> >  - drivers/perf/arm_pmu.c
+> > 
+> > And exclude_idle and exclude_hv are added in these files:
+> > 
+> >  - drivers/perf/xgene_pmu.c
+> 
+> FWIW, that all sounds fine to me.
+> 
+> Assuming you fix up the 'macro' nit:
+> 
+> Acked-by: Mark Rutland <mark.rutland@arm.com>
+> 
+> ... unless we go for Peter's core cap for this.
 
-Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-Changes in v2:
--update changelog
----
- drivers/cpufreq/pmac64-cpufreq.c | 1 +
- 1 file changed, 1 insertion(+)
+Yeah I'm going to re-spin with the core cap approach - but thanks anyway.
 
-diff --git a/drivers/cpufreq/pmac64-cpufreq.c b/drivers/cpufreq/pmac64-cpufreq.c
-index be623dd7b9f2..1d32a863332d 100644
---- a/drivers/cpufreq/pmac64-cpufreq.c
-+++ b/drivers/cpufreq/pmac64-cpufreq.c
-@@ -411,6 +411,7 @@ static int __init g5_neo2_cpufreq_init(struct device_node *cpunode)
- 		pfunc_set_vdnap0 = pmf_find_function(root, "set-vdnap0");
- 		pfunc_vdnap0_complete =
- 			pmf_find_function(root, "slewing-done");
-+		of_node_put(root);
- 		if (pfunc_set_vdnap0 == NULL ||
- 		    pfunc_vdnap0_complete == NULL) {
- 			pr_err("Can't find required platform function\n");
--- 
-2.17.0
+Thanks,
 
+Andrew Murray
+
+> 
+> Thanks,
+> Mark.
+> 
+> > Signed-off-by: Andrew Murray <andrew.murray@arm.com>
+> > ---
+> >  drivers/perf/arm-cci.c                   | 7 +------
+> >  drivers/perf/arm-ccn.c                   | 5 +----
+> >  drivers/perf/arm_dsu_pmu.c               | 7 +------
+> >  drivers/perf/arm_pmu.c                   | 9 +--------
+> >  drivers/perf/hisilicon/hisi_uncore_pmu.c | 7 +------
+> >  drivers/perf/qcom_l2_pmu.c               | 3 +--
+> >  drivers/perf/qcom_l3_pmu.c               | 3 +--
+> >  drivers/perf/xgene_pmu.c                 | 3 +--
+> >  8 files changed, 8 insertions(+), 36 deletions(-)
+> > 
+> > diff --git a/drivers/perf/arm-cci.c b/drivers/perf/arm-cci.c
+> > index 1bfeb16..d749f19 100644
+> > --- a/drivers/perf/arm-cci.c
+> > +++ b/drivers/perf/arm-cci.c
+> > @@ -1328,12 +1328,7 @@ static int cci_pmu_event_init(struct perf_event *event)
+> >  		return -EOPNOTSUPP;
+> >  
+> >  	/* We have no filtering of any kind */
+> > -	if (event->attr.exclude_user	||
+> > -	    event->attr.exclude_kernel	||
+> > -	    event->attr.exclude_hv	||
+> > -	    event->attr.exclude_idle	||
+> > -	    event->attr.exclude_host	||
+> > -	    event->attr.exclude_guest)
+> > +	if (event_has_exclude_flags(event))
+> >  		return -EINVAL;
+> >  
+> >  	/*
+> > diff --git a/drivers/perf/arm-ccn.c b/drivers/perf/arm-ccn.c
+> > index 7dd850e..9a22a95 100644
+> > --- a/drivers/perf/arm-ccn.c
+> > +++ b/drivers/perf/arm-ccn.c
+> > @@ -741,10 +741,7 @@ static int arm_ccn_pmu_event_init(struct perf_event *event)
+> >  		return -EOPNOTSUPP;
+> >  	}
+> >  
+> > -	if (has_branch_stack(event) || event->attr.exclude_user ||
+> > -			event->attr.exclude_kernel || event->attr.exclude_hv ||
+> > -			event->attr.exclude_idle || event->attr.exclude_host ||
+> > -			event->attr.exclude_guest) {
+> > +	if (has_branch_stack(event) || event_has_exclude_flags(event)) {
+> >  		dev_dbg(ccn->dev, "Can't exclude execution levels!\n");
+> >  		return -EINVAL;
+> >  	}
+> > diff --git a/drivers/perf/arm_dsu_pmu.c b/drivers/perf/arm_dsu_pmu.c
+> > index 660cb8a..300ff3d 100644
+> > --- a/drivers/perf/arm_dsu_pmu.c
+> > +++ b/drivers/perf/arm_dsu_pmu.c
+> > @@ -563,12 +563,7 @@ static int dsu_pmu_event_init(struct perf_event *event)
+> >  	}
+> >  
+> >  	if (has_branch_stack(event) ||
+> > -	    event->attr.exclude_user ||
+> > -	    event->attr.exclude_kernel ||
+> > -	    event->attr.exclude_hv ||
+> > -	    event->attr.exclude_idle ||
+> > -	    event->attr.exclude_host ||
+> > -	    event->attr.exclude_guest) {
+> > +	    event_has_exclude_flags(event)) {
+> >  		dev_dbg(dsu_pmu->pmu.dev, "Can't support filtering\n");
+> >  		return -EINVAL;
+> >  	}
+> > diff --git a/drivers/perf/arm_pmu.c b/drivers/perf/arm_pmu.c
+> > index 7f01f6f..a03634f 100644
+> > --- a/drivers/perf/arm_pmu.c
+> > +++ b/drivers/perf/arm_pmu.c
+> > @@ -357,13 +357,6 @@ static irqreturn_t armpmu_dispatch_irq(int irq, void *dev)
+> >  }
+> >  
+> >  static int
+> > -event_requires_mode_exclusion(struct perf_event_attr *attr)
+> > -{
+> > -	return attr->exclude_idle || attr->exclude_user ||
+> > -	       attr->exclude_kernel || attr->exclude_hv;
+> > -}
+> > -
+> > -static int
+> >  __hw_perf_event_init(struct perf_event *event)
+> >  {
+> >  	struct arm_pmu *armpmu = to_arm_pmu(event->pmu);
+> > @@ -395,7 +388,7 @@ __hw_perf_event_init(struct perf_event *event)
+> >  	 */
+> >  	if ((!armpmu->set_event_filter ||
+> >  	     armpmu->set_event_filter(hwc, &event->attr)) &&
+> > -	     event_requires_mode_exclusion(&event->attr)) {
+> > +	     event_has_exclude_flags(event)) {
+> >  		pr_debug("ARM performance counters do not support "
+> >  			 "mode exclusion\n");
+> >  		return -EOPNOTSUPP;
+> > diff --git a/drivers/perf/hisilicon/hisi_uncore_pmu.c b/drivers/perf/hisilicon/hisi_uncore_pmu.c
+> > index 9efd241..d3edff9 100644
+> > --- a/drivers/perf/hisilicon/hisi_uncore_pmu.c
+> > +++ b/drivers/perf/hisilicon/hisi_uncore_pmu.c
+> > @@ -143,12 +143,7 @@ int hisi_uncore_pmu_event_init(struct perf_event *event)
+> >  		return -EOPNOTSUPP;
+> >  
+> >  	/* counters do not have these bits */
+> > -	if (event->attr.exclude_user	||
+> > -	    event->attr.exclude_kernel	||
+> > -	    event->attr.exclude_host	||
+> > -	    event->attr.exclude_guest	||
+> > -	    event->attr.exclude_hv	||
+> > -	    event->attr.exclude_idle)
+> > +	if (event_has_exclude_flags(event))
+> >  		return -EINVAL;
+> >  
+> >  	/*
+> > diff --git a/drivers/perf/qcom_l2_pmu.c b/drivers/perf/qcom_l2_pmu.c
+> > index 842135c..d7d85a2 100644
+> > --- a/drivers/perf/qcom_l2_pmu.c
+> > +++ b/drivers/perf/qcom_l2_pmu.c
+> > @@ -510,8 +510,7 @@ static int l2_cache_event_init(struct perf_event *event)
+> >  	}
+> >  
+> >  	/* We cannot filter accurately so we just don't allow it. */
+> > -	if (event->attr.exclude_user || event->attr.exclude_kernel ||
+> > -	    event->attr.exclude_hv || event->attr.exclude_idle) {
+> > +	if (event_has_exclude_flags(event)) {
+> >  		dev_dbg_ratelimited(&l2cache_pmu->pdev->dev,
+> >  				    "Can't exclude execution levels\n");
+> >  		return -EOPNOTSUPP;
+> > diff --git a/drivers/perf/qcom_l3_pmu.c b/drivers/perf/qcom_l3_pmu.c
+> > index 2dc63d6..f27af67 100644
+> > --- a/drivers/perf/qcom_l3_pmu.c
+> > +++ b/drivers/perf/qcom_l3_pmu.c
+> > @@ -497,8 +497,7 @@ static int qcom_l3_cache__event_init(struct perf_event *event)
+> >  	/*
+> >  	 * There are no per-counter mode filters in the PMU.
+> >  	 */
+> > -	if (event->attr.exclude_user || event->attr.exclude_kernel ||
+> > -	    event->attr.exclude_hv || event->attr.exclude_idle)
+> > +	if (event_has_exclude_flags(event))
+> >  		return -EINVAL;
+> >  
+> >  	/*
+> > diff --git a/drivers/perf/xgene_pmu.c b/drivers/perf/xgene_pmu.c
+> > index 0e31f13..1fcd5a0 100644
+> > --- a/drivers/perf/xgene_pmu.c
+> > +++ b/drivers/perf/xgene_pmu.c
+> > @@ -915,8 +915,7 @@ static int xgene_perf_event_init(struct perf_event *event)
+> >  		return -EINVAL;
+> >  
+> >  	/* SOC counters do not have usr/os/guest/host bits */
+> > -	if (event->attr.exclude_user || event->attr.exclude_kernel ||
+> > -	    event->attr.exclude_host || event->attr.exclude_guest)
+> > +	if (event_has_exclude_flags(event))
+> >  		return -EINVAL;
+> >  
+> >  	if (event->cpu < 0)
+> > -- 
+> > 2.7.4
+> > 
