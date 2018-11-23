@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E7FDC43441
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 06:00:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 28501C43441
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 06:02:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 91EA920672
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 06:00:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 91EA920672
+	by mail.kernel.org (Postfix) with ESMTPS id A778920672
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 06:02:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A778920672
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 431QfJ3RdszDqWp
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 17:00:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 431QhY5RHJzDqYV
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 17:02:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
@@ -27,17 +27,17 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Received: from ozlabs.ru (unknown [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 431QTm694qzDqSv
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Nov 2018 16:53:32 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 431QTz0s0NzDqQW
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Nov 2018 16:53:43 +1100 (AEDT)
 Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 5E0FDAE8023C;
- Fri, 23 Nov 2018 00:53:28 -0500 (EST)
+ by ozlabs.ru (Postfix) with ESMTP id 0F863AE8030E;
+ Fri, 23 Nov 2018 00:53:38 -0500 (EST)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v4 05/19] powerpc/powernv/npu: Move OPAL calls away
- from context manipulation
-Date: Fri, 23 Nov 2018 16:52:50 +1100
-Message-Id: <20181123055304.25116-6-aik@ozlabs.ru>
+Subject: [PATCH kernel v4 08/19] powerpc/pseries: Remove IOMMU API support for
+ non-LPAR systems
+Date: Fri, 23 Nov 2018 16:52:53 +1100
+Message-Id: <20181123055304.25116-9-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20181123055304.25116-1-aik@ozlabs.ru>
 References: <20181123055304.25116-1-aik@ozlabs.ru>
@@ -66,319 +66,54 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When introduced, the NPU context init/destroy helpers called OPAL which
-enabled/disabled PID (a userspace memory context ID) filtering in an NPU
-per a GPU; this was a requirement for P9 DD1.0. However newer chip
-revision added a PID wildcard support so there is no more need to
-call OPAL every time a new context is initialized. Also, since the PID
-wildcard support was added, skiboot does not clear wildcard entries
-in the NPU so these remain in the hardware till the system reboot.
-
-This moves LPID and wildcard programming to the PE setup code which
-executes once during the booting process so NPU2 context init/destroy
-won't need to do additional configuration.
-
-This removes the check for FW_FEATURE_OPAL as pnv_npu2_init_context/
-pnv_npu2_release_context/pnv_npu2_init do not call OPAL anymore.
-
-This moves pnv_npu2_init() declaration as pseries should be able to use it.
-This keeps pnv_npu2_map_lpar() in powernv as pseries is not allowed to
-call that. This exports pnv_npu2_map_lpar_dev() as following patches
-will use it from the VFIO driver.
-
-While at it, replace redundant list_for_each_entry_safe() with
-a simpler list_for_each_entry().
+The pci_dma_bus_setup_pSeries and pci_dma_dev_setup_pSeries hooks are
+registered for the pseries platform which does not have FW_FEATURE_LPAR;
+these would be pre-powernv platforms which we never supported PCI pass
+through for anyway so remove it.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 ---
-Changes:
-v4:
-* add flags check in pnv_npu2_init_context()
----
- arch/powerpc/include/asm/pci.h            |   3 +
- arch/powerpc/platforms/powernv/pci.h      |   2 +-
- arch/powerpc/platforms/powernv/npu-dma.c  | 104 +++++++++++-----------
- arch/powerpc/platforms/powernv/pci-ioda.c |  15 +++-
- 4 files changed, 70 insertions(+), 54 deletions(-)
+ arch/powerpc/platforms/pseries/iommu.c | 9 ++-------
+ 1 file changed, 2 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
-index 2af9ded..baf2886 100644
---- a/arch/powerpc/include/asm/pci.h
-+++ b/arch/powerpc/include/asm/pci.h
-@@ -129,5 +129,8 @@ extern void pcibios_scan_phb(struct pci_controller *hose);
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index 7da74b5..8f9d3be 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -645,7 +645,6 @@ static void pci_dma_bus_setup_pSeries(struct pci_bus *bus)
+ 	iommu_table_setparms(pci->phb, dn, tbl);
+ 	tbl->it_ops = &iommu_table_pseries_ops;
+ 	iommu_init_table(tbl, pci->phb->node);
+-	iommu_register_group(pci->table_group, pci_domain_nr(bus), 0);
  
- extern struct pci_dev *pnv_pci_get_gpu_dev(struct pci_dev *npdev);
- extern struct pci_dev *pnv_pci_get_npu_dev(struct pci_dev *gpdev, int index);
-+extern int pnv_npu2_init(struct pci_controller *hose);
-+extern int pnv_npu2_map_lpar_dev(struct pci_dev *gpdev, unsigned int lparid,
-+		unsigned long msr);
- 
- #endif /* __ASM_POWERPC_PCI_H */
-diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index f2d50974..ddb4f02 100644
---- a/arch/powerpc/platforms/powernv/pci.h
-+++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -190,6 +190,7 @@ extern void pnv_pci_init_ioda_hub(struct device_node *np);
- extern void pnv_pci_init_ioda2_phb(struct device_node *np);
- extern void pnv_pci_init_npu_phb(struct device_node *np);
- extern void pnv_pci_init_npu2_opencapi_phb(struct device_node *np);
-+extern void pnv_npu2_map_lpar(struct pnv_ioda_pe *gpe, unsigned long msr);
- extern void pnv_pci_reset_secondary_bus(struct pci_dev *dev);
- extern int pnv_eeh_phb_reset(struct pci_controller *hose, int option);
- 
-@@ -220,7 +221,6 @@ extern long pnv_npu_set_window(struct pnv_ioda_pe *npe, int num,
- extern long pnv_npu_unset_window(struct pnv_ioda_pe *npe, int num);
- extern void pnv_npu_take_ownership(struct pnv_ioda_pe *npe);
- extern void pnv_npu_release_ownership(struct pnv_ioda_pe *npe);
--extern int pnv_npu2_init(struct pnv_phb *phb);
- 
- /* pci-ioda-tce.c */
- #define POWERNV_IOMMU_DEFAULT_LEVELS	1
-diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
-index 7dd5c0e5..ef1457f 100644
---- a/arch/powerpc/platforms/powernv/npu-dma.c
-+++ b/arch/powerpc/platforms/powernv/npu-dma.c
-@@ -679,7 +679,6 @@ struct npu_context *pnv_npu2_init_context(struct pci_dev *gpdev,
- 	u32 nvlink_index;
- 	struct device_node *nvlink_dn;
- 	struct mm_struct *mm = current->mm;
--	struct pnv_phb *nphb;
- 	struct npu *npu;
- 	struct npu_context *npu_context;
- 	struct pci_controller *hose;
-@@ -690,13 +689,14 @@ struct npu_context *pnv_npu2_init_context(struct pci_dev *gpdev,
- 	 */
- 	struct pci_dev *npdev = pnv_pci_get_npu_dev(gpdev, 0);
- 
--	if (!firmware_has_feature(FW_FEATURE_OPAL))
--		return ERR_PTR(-ENODEV);
--
- 	if (!npdev)
- 		/* No nvlink associated with this GPU device */
- 		return ERR_PTR(-ENODEV);
- 
-+	/* We only support DR/PR/HV in pnv_npu2_map_lpar_dev() */
-+	if (flags & ~(MSR_DR | MSR_PR | MSR_HV))
-+		return ERR_PTR(-EINVAL);
-+
- 	nvlink_dn = of_parse_phandle(npdev->dev.of_node, "ibm,nvlink", 0);
- 	if (WARN_ON(of_property_read_u32(nvlink_dn, "ibm,npu-link-index",
- 							&nvlink_index)))
-@@ -711,23 +711,10 @@ struct npu_context *pnv_npu2_init_context(struct pci_dev *gpdev,
+ 	/* Divide the rest (1.75GB) among the children */
+ 	pci->phb->dma_window_size = 0x80000000ul;
+@@ -756,10 +755,7 @@ static void pci_dma_dev_setup_pSeries(struct pci_dev *dev)
+ 		iommu_table_setparms(phb, dn, tbl);
+ 		tbl->it_ops = &iommu_table_pseries_ops;
+ 		iommu_init_table(tbl, phb->node);
+-		iommu_register_group(PCI_DN(dn)->table_group,
+-				pci_domain_nr(phb->bus), 0);
+ 		set_iommu_table_base(&dev->dev, tbl);
+-		iommu_add_device(&dev->dev);
+ 		return;
  	}
  
- 	hose = pci_bus_to_host(npdev->bus);
--	nphb = hose->private_data;
- 	npu = hose->npu;
- 	if (!npu)
- 		return ERR_PTR(-ENODEV);
+@@ -770,11 +766,10 @@ static void pci_dma_dev_setup_pSeries(struct pci_dev *dev)
+ 	while (dn && PCI_DN(dn) && PCI_DN(dn)->table_group == NULL)
+ 		dn = dn->parent;
  
--	/*
--	 * Setup the NPU context table for a particular GPU. These need to be
--	 * per-GPU as we need the tables to filter ATSDs when there are no
--	 * active contexts on a particular GPU. It is safe for these to be
--	 * called concurrently with destroy as the OPAL call takes appropriate
--	 * locks and refcounts on init/destroy.
--	 */
--	rc = opal_npu_init_context(nphb->opal_id, mm->context.id, flags,
--				PCI_DEVID(gpdev->bus->number, gpdev->devfn));
--	if (rc < 0)
--		return ERR_PTR(-ENOSPC);
--
- 	/*
- 	 * We store the npu pci device so we can more easily get at the
- 	 * associated npus.
-@@ -738,9 +725,6 @@ struct npu_context *pnv_npu2_init_context(struct pci_dev *gpdev,
- 		if (npu_context->release_cb != cb ||
- 			npu_context->priv != priv) {
- 			spin_unlock(&npu_context_lock);
--			opal_npu_destroy_context(nphb->opal_id, mm->context.id,
--						PCI_DEVID(gpdev->bus->number,
--							gpdev->devfn));
- 			return ERR_PTR(-EINVAL);
- 		}
- 
-@@ -766,9 +750,6 @@ struct npu_context *pnv_npu2_init_context(struct pci_dev *gpdev,
- 
- 		if (rc) {
- 			kfree(npu_context);
--			opal_npu_destroy_context(nphb->opal_id, mm->context.id,
--					PCI_DEVID(gpdev->bus->number,
--						gpdev->devfn));
- 			return ERR_PTR(rc);
- 		}
- 
-@@ -821,7 +802,6 @@ void pnv_npu2_destroy_context(struct npu_context *npu_context,
- 			struct pci_dev *gpdev)
- {
- 	int removed;
--	struct pnv_phb *nphb;
- 	struct npu *npu;
- 	struct pci_dev *npdev = pnv_pci_get_npu_dev(gpdev, 0);
- 	struct device_node *nvlink_dn;
-@@ -831,11 +811,7 @@ void pnv_npu2_destroy_context(struct npu_context *npu_context,
- 	if (WARN_ON(!npdev))
- 		return;
- 
--	if (!firmware_has_feature(FW_FEATURE_OPAL))
--		return;
--
- 	hose = pci_bus_to_host(npdev->bus);
--	nphb = hose->private_data;
- 	npu = hose->npu;
- 	if (!npu)
- 		return;
-@@ -844,8 +820,6 @@ void pnv_npu2_destroy_context(struct npu_context *npu_context,
- 							&nvlink_index)))
- 		return;
- 	WRITE_ONCE(npu_context->npdev[npu->index][nvlink_index], NULL);
--	opal_npu_destroy_context(nphb->opal_id, npu_context->mm->context.id,
--				PCI_DEVID(gpdev->bus->number, gpdev->devfn));
- 	spin_lock(&npu_context_lock);
- 	removed = kref_put(&npu_context->kref, pnv_npu2_release_context);
- 	spin_unlock(&npu_context_lock);
-@@ -877,9 +851,6 @@ int pnv_npu2_handle_fault(struct npu_context *context, uintptr_t *ea,
- 	/* mmap_sem should be held so the struct_mm must be present */
- 	struct mm_struct *mm = context->mm;
- 
--	if (!firmware_has_feature(FW_FEATURE_OPAL))
--		return -ENODEV;
--
- 	WARN_ON(!rwsem_is_locked(&mm->mmap_sem));
- 
- 	for (i = 0; i < count; i++) {
-@@ -908,15 +879,11 @@ int pnv_npu2_handle_fault(struct npu_context *context, uintptr_t *ea,
- }
- EXPORT_SYMBOL(pnv_npu2_handle_fault);
- 
--int pnv_npu2_init(struct pnv_phb *phb)
-+int pnv_npu2_init(struct pci_controller *hose)
- {
- 	unsigned int i;
- 	u64 mmio_atsd;
--	struct device_node *dn;
--	struct pci_dev *gpdev;
- 	static int npu_index;
--	uint64_t rc = 0;
--	struct pci_controller *hose = phb->hose;
- 	struct npu *npu;
- 	int ret;
- 
-@@ -925,18 +892,6 @@ int pnv_npu2_init(struct pnv_phb *phb)
- 		return -ENOMEM;
- 
- 	npu->nmmu_flush = of_property_read_bool(hose->dn, "ibm,nmmu-flush");
--	for_each_child_of_node(phb->hose->dn, dn) {
--		gpdev = pnv_pci_get_gpu_dev(get_pci_dev(dn));
--		if (gpdev) {
--			rc = opal_npu_map_lpar(phb->opal_id,
--				PCI_DEVID(gpdev->bus->number, gpdev->devfn),
--				0, 0);
--			if (rc)
--				dev_err(&gpdev->dev,
--					"Error %lld mapping device to LPAR\n",
--					rc);
--		}
--	}
- 
- 	for (i = 0; !of_property_read_u64_index(hose->dn, "ibm,mmio-atsd",
- 							i, &mmio_atsd); i++)
-@@ -964,3 +919,52 @@ int pnv_npu2_init(struct pnv_phb *phb)
- 
- 	return ret;
- }
-+
-+int pnv_npu2_map_lpar_dev(struct pci_dev *gpdev, unsigned int lparid,
-+		unsigned long msr)
-+{
-+	int ret;
-+	struct pci_dev *npdev = pnv_pci_get_npu_dev(gpdev, 0);
-+	struct pci_controller *hose;
-+	struct pnv_phb *nphb;
-+
-+	if (!npdev)
-+		return -ENODEV;
-+
-+	hose = pci_bus_to_host(npdev->bus);
-+	nphb = hose->private_data;
-+
-+	dev_dbg(&gpdev->dev, "Map LPAR opalid=%llu lparid=%u\n",
-+			nphb->opal_id, lparid);
-+	/*
-+	 * Currently we only support radix and non-zero LPCR only makes sense
-+	 * for hash tables so skiboot expects the LPCR parameter to be a zero.
-+	 */
-+	ret = opal_npu_map_lpar(nphb->opal_id,
-+			PCI_DEVID(gpdev->bus->number, gpdev->devfn), lparid,
-+			0 /* LPCR bits */);
-+	if (ret) {
-+		dev_err(&gpdev->dev, "Error %d mapping device to LPAR\n", ret);
-+		return ret;
-+	}
-+
-+	dev_dbg(&gpdev->dev, "init context opalid=%llu msr=%lx\n",
-+			nphb->opal_id, msr);
-+	ret = opal_npu_init_context(nphb->opal_id, 0/*__unused*/, msr,
-+			PCI_DEVID(gpdev->bus->number, gpdev->devfn));
-+	if (ret < 0)
-+		dev_err(&gpdev->dev, "Failed to init context: %d\n", ret);
+-	if (dn && PCI_DN(dn)) {
++	if (dn && PCI_DN(dn))
+ 		set_iommu_table_base(&dev->dev,
+ 				PCI_DN(dn)->table_group->tables[0]);
+-		iommu_add_device(&dev->dev);
+-	} else
 +	else
-+		ret = 0;
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(pnv_npu2_map_lpar_dev);
-+
-+void pnv_npu2_map_lpar(struct pnv_ioda_pe *gpe, unsigned long msr)
-+{
-+	struct pci_dev *gpdev;
-+
-+	list_for_each_entry(gpdev, &gpe->pbus->devices, bus_list)
-+		pnv_npu2_map_lpar_dev(gpdev, 0, msr);
-+}
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 29c6837..2f9eb43 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1271,19 +1271,20 @@ static void pnv_ioda_setup_npu_PEs(struct pci_bus *bus)
- 
- static void pnv_pci_ioda_setup_PEs(void)
- {
--	struct pci_controller *hose, *tmp;
-+	struct pci_controller *hose;
- 	struct pnv_phb *phb;
- 	struct pci_bus *bus;
- 	struct pci_dev *pdev;
-+	struct pnv_ioda_pe *pe;
- 
--	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
-+	list_for_each_entry(hose, &hose_list, list_node) {
- 		phb = hose->private_data;
- 		if (phb->type == PNV_PHB_NPU_NVLINK) {
- 			/* PE#0 is needed for error reporting */
- 			pnv_ioda_reserve_pe(phb, 0);
- 			pnv_ioda_setup_npu_PEs(hose->bus);
- 			if (phb->model == PNV_PHB_MODEL_NPU2)
--				pnv_npu2_init(phb);
-+				pnv_npu2_init(hose);
- 		}
- 		if (phb->type == PNV_PHB_NPU_OCAPI) {
- 			bus = hose->bus;
-@@ -1291,6 +1292,14 @@ static void pnv_pci_ioda_setup_PEs(void)
- 				pnv_ioda_setup_dev_PE(pdev);
- 		}
- 	}
-+	list_for_each_entry(hose, &hose_list, list_node) {
-+		phb = hose->private_data;
-+		if (phb->type != PNV_PHB_IODA2)
-+			continue;
-+
-+		list_for_each_entry(pe, &phb->ioda.pe_list, list)
-+			pnv_npu2_map_lpar(pe, MSR_DR | MSR_PR | MSR_HV);
-+	}
+ 		printk(KERN_WARNING "iommu: Device %s has no iommu table\n",
+ 		       pci_name(dev));
  }
- 
- #ifdef CONFIG_PCI_IOV
 -- 
 2.17.1
 
