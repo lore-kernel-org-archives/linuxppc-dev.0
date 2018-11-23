@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D0ADC43441
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 06:25:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3259BC43441
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 06:27:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 85C94206B2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 06:25:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 85C94206B2
+	by mail.kernel.org (Postfix) with ESMTPS id AE95720820
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 06:27:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AE95720820
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 431RB56FMJzDqsl
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 17:25:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 431RDQ59LXzDqt3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 17:27:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
@@ -27,17 +27,17 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Received: from ozlabs.ru (unknown [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 431QVg5RzFzDqQW
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Nov 2018 16:54:19 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 431QVm1V2gzDqT9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Nov 2018 16:54:24 +1100 (AEDT)
 Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id B2CF7AE80497;
- Fri, 23 Nov 2018 00:54:15 -0500 (EST)
+ by ozlabs.ru (Postfix) with ESMTP id ECDFFAE8035D;
+ Fri, 23 Nov 2018 00:53:49 -0500 (EST)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v4 18/19] vfio_pci: Allow regions to add own
- capabilities
-Date: Fri, 23 Nov 2018 16:53:03 +1100
-Message-Id: <20181123055304.25116-19-aik@ozlabs.ru>
+Subject: [PATCH kernel v4 11/19] powerpc/powernv: Reference iommu_table while
+ it is linked to a group
+Date: Fri, 23 Nov 2018 16:52:56 +1100
+Message-Id: <20181123055304.25116-12-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20181123055304.25116-1-aik@ozlabs.ru>
 References: <20181123055304.25116-1-aik@ozlabs.ru>
@@ -66,54 +66,53 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-VFIO regions already support region capabilities with a limited set of
-fields. However the subdriver might have to report to the userspace
-additional bits.
-
-This adds an add_capability() hook to vfio_pci_regops.
+The iommu_table pointer stored in iommu_table_group may get stale
+by accident, this adds referencing and removes a redundant comment
+about this.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 ---
-Changes:
-v3:
-* removed confusing rationale for the patch, the next patch makes
-use of it anyway
----
- drivers/vfio/pci/vfio_pci_private.h | 3 +++
- drivers/vfio/pci/vfio_pci.c         | 6 ++++++
- 2 files changed, 9 insertions(+)
+ arch/powerpc/platforms/powernv/pci-ioda-tce.c | 3 ++-
+ arch/powerpc/platforms/powernv/pci-ioda.c     | 4 ----
+ 2 files changed, 2 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/vfio/pci/vfio_pci_private.h b/drivers/vfio/pci/vfio_pci_private.h
-index 86aab05..93c1738 100644
---- a/drivers/vfio/pci/vfio_pci_private.h
-+++ b/drivers/vfio/pci/vfio_pci_private.h
-@@ -62,6 +62,9 @@ struct vfio_pci_regops {
- 	int	(*mmap)(struct vfio_pci_device *vdev,
- 			struct vfio_pci_region *region,
- 			struct vm_area_struct *vma);
-+	int	(*add_capability)(struct vfio_pci_device *vdev,
-+				  struct vfio_pci_region *region,
-+				  struct vfio_info_cap *caps);
- };
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda-tce.c b/arch/powerpc/platforms/powernv/pci-ioda-tce.c
+index 7639b21..697449a 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda-tce.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda-tce.c
+@@ -368,6 +368,7 @@ void pnv_pci_unlink_table_and_group(struct iommu_table *tbl,
+ 	found = false;
+ 	for (i = 0; i < IOMMU_TABLE_GROUP_MAX_TABLES; ++i) {
+ 		if (table_group->tables[i] == tbl) {
++			iommu_tce_table_put(tbl);
+ 			table_group->tables[i] = NULL;
+ 			found = true;
+ 			break;
+@@ -393,7 +394,7 @@ long pnv_pci_link_table_and_group(int node, int num,
+ 	tgl->table_group = table_group;
+ 	list_add_rcu(&tgl->next, &tbl->it_group_list);
  
- struct vfio_pci_region {
-diff --git a/drivers/vfio/pci/vfio_pci.c b/drivers/vfio/pci/vfio_pci.c
-index 4a6f7c0..6cb70cf 100644
---- a/drivers/vfio/pci/vfio_pci.c
-+++ b/drivers/vfio/pci/vfio_pci.c
-@@ -763,6 +763,12 @@ static long vfio_pci_ioctl(void *device_data,
- 			if (ret)
- 				return ret;
+-	table_group->tables[num] = tbl;
++	table_group->tables[num] = iommu_tce_table_get(tbl);
  
-+			if (vdev->region[i].ops->add_capability) {
-+				ret = vdev->region[i].ops->add_capability(vdev,
-+						&vdev->region[i], &caps);
-+				if (ret)
-+					return ret;
-+			}
- 		}
- 		}
+ 	return 0;
+ }
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index c894c38..6193f1d 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -2716,10 +2716,6 @@ static long pnv_pci_ioda2_npu_unset_window(
  
+ static void pnv_ioda2_npu_take_ownership(struct iommu_table_group *table_group)
+ {
+-	/*
+-	 * Detach NPU first as pnv_ioda2_take_ownership() will destroy
+-	 * the iommu_table if 32bit DMA is enabled.
+-	 */
+ 	pnv_npu_take_ownership(gpe_table_group_to_npe(table_group));
+ 	pnv_ioda2_take_ownership(table_group);
+ }
 -- 
 2.17.1
 
