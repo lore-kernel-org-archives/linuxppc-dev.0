@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 68C49C43441
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 06:16:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5BACBC43441
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 06:18:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E1679206B2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 06:16:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E1679206B2
+	by mail.kernel.org (Postfix) with ESMTPS id C77A5206B2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 06:18:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C77A5206B2
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 431R0h561XzDqZq
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 17:16:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 431R2w1cPrzDqcP
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 17:18:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
@@ -27,17 +27,16 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Received: from ozlabs.ru (unknown [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 431QVR40V4zDqT5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Nov 2018 16:54:06 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 431QVT4JD4zDqQW
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Nov 2018 16:54:09 +1100 (AEDT)
 Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 0EB3AAE8023E;
- Fri, 23 Nov 2018 00:53:31 -0500 (EST)
+ by ozlabs.ru (Postfix) with ESMTP id 8924FAE802FA;
+ Fri, 23 Nov 2018 00:53:35 -0500 (EST)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v4 06/19] powerpc/pseries/iommu: Use memory@ nodes in
- max RAM address calculation
-Date: Fri, 23 Nov 2018 16:52:51 +1100
-Message-Id: <20181123055304.25116-7-aik@ozlabs.ru>
+Subject: [PATCH kernel v4 07/19] powerpc/pseries/npu: Enable platform support
+Date: Fri, 23 Nov 2018 16:52:52 +1100
+Message-Id: <20181123055304.25116-8-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20181123055304.25116-1-aik@ozlabs.ru>
 References: <20181123055304.25116-1-aik@ozlabs.ru>
@@ -66,78 +65,68 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We might have memory@ nodes with "linux,usable-memory" set to zero
-(for example, to replicate powernv's behaviour for GPU coherent memory)
-which means that the memory needs an extra initialization but since
-it can be used afterwards, the pseries platform will try mapping it
-for DMA so the DMA window needs to cover those memory regions too;
-if the window cannot cover new memory regions, the memory onlining fails.
+We already changed NPU API for GPUs to not to call OPAL and the remaining
+bit is initializing NPU structures.
 
-This walks through the memory nodes to find the highest RAM address to
-let a huge DMA window cover that too in case this memory gets onlined
-later.
+This searches for POWER9 NVLinks attached to any device on a PHB and
+initializes an NPU structure if any found.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
 Changes:
 v4:
-* uses of_read_number directly instead of cut-n-pasted read_n_cells
+* dropped "IBM,npu-vphb" compatible type on PHB and use the type of NVLink
 ---
- arch/powerpc/platforms/pseries/iommu.c | 34 +++++++++++++++++++++++++-
- 1 file changed, 33 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/pseries/pci.c | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
 
-diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index 06f0296..7da74b5 100644
---- a/arch/powerpc/platforms/pseries/iommu.c
-+++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -964,6 +964,38 @@ struct failed_ddw_pdn {
+diff --git a/arch/powerpc/platforms/pseries/pci.c b/arch/powerpc/platforms/pseries/pci.c
+index 41d8a4d..e1b9b45 100644
+--- a/arch/powerpc/platforms/pseries/pci.c
++++ b/arch/powerpc/platforms/pseries/pci.c
+@@ -29,6 +29,7 @@
+ #include <asm/pci-bridge.h>
+ #include <asm/prom.h>
+ #include <asm/ppc-pci.h>
++#include <asm/pci.h>
+ #include "pseries.h"
  
- static LIST_HEAD(failed_ddw_pdn_list);
+ #if 0
+@@ -237,6 +238,8 @@ static void __init pSeries_request_regions(void)
  
-+static phys_addr_t ddw_memory_hotplug_max(void)
-+{
-+	phys_addr_t max_addr = memory_hotplug_max();
-+	struct device_node *memory;
+ void __init pSeries_final_fixup(void)
+ {
++	struct pci_controller *hose;
 +
-+	for_each_node_by_type(memory, "memory") {
-+		unsigned long start, size;
-+		int ranges, n_mem_addr_cells, n_mem_size_cells, len;
-+		const __be32 *memcell_buf;
+ 	pSeries_request_regions();
+ 
+ 	eeh_probe_devices();
+@@ -246,6 +249,25 @@ void __init pSeries_final_fixup(void)
+ 	ppc_md.pcibios_sriov_enable = pseries_pcibios_sriov_enable;
+ 	ppc_md.pcibios_sriov_disable = pseries_pcibios_sriov_disable;
+ #endif
++	list_for_each_entry(hose, &hose_list, list_node) {
++		struct device_node *dn = hose->dn, *nvdn;
 +
-+		memcell_buf = of_get_property(memory, "reg", &len);
-+		if (!memcell_buf || len <= 0)
-+			continue;
-+
-+		n_mem_addr_cells = of_n_addr_cells(memory);
-+		n_mem_size_cells = of_n_size_cells(memory);
-+
-+		/* ranges in cell */
-+		ranges = (len >> 2) / (n_mem_addr_cells + n_mem_size_cells);
-+
-+		/* these are order-sensitive, and modify the buffer pointer */
-+		start = of_read_number(memcell_buf, n_mem_addr_cells);
-+		memcell_buf += n_mem_addr_cells;
-+		size = of_read_number(memcell_buf, n_mem_size_cells);
-+		memcell_buf += n_mem_size_cells;
-+
-+		max_addr = max_t(phys_addr_t, max_addr, start + size);
++		while (1) {
++			dn = of_find_all_nodes(dn);
++			if (!dn)
++				break;
++			nvdn = of_parse_phandle(dn, "ibm,nvlink", 0);
++			if (!nvdn)
++				continue;
++			if (!of_device_is_compatible(nvdn, "ibm,npu-link"))
++				continue;
++			if (!of_device_is_compatible(nvdn->parent,
++						"ibm,power9-npu"))
++				continue;
++			pnv_npu2_init(hose);
++			break;
++		}
 +	}
-+
-+	return max_addr;
-+}
-+
+ }
+ 
  /*
-  * If the PE supports dynamic dma windows, and there is space for a table
-  * that can map all pages in a linear offset, then setup such a table,
-@@ -1053,7 +1085,7 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
- 	}
- 	/* verify the window * number of ptes will map the partition */
- 	/* check largest block * page size > max memory hotplug addr */
--	max_addr = memory_hotplug_max();
-+	max_addr = ddw_memory_hotplug_max();
- 	if (query.largest_available_block < (max_addr >> page_shift)) {
- 		dev_dbg(&dev->dev, "can't map partition max 0x%llx with %u "
- 			  "%llu-sized pages\n", max_addr,  query.largest_available_block,
 -- 
 2.17.1
 
