@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E3958C43441
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 06:14:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 68C49C43441
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 06:16:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 440E7206B2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 06:14:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 440E7206B2
+	by mail.kernel.org (Postfix) with ESMTPS id E1679206B2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 06:16:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E1679206B2
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 431QyK2QMlzDqgj
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 17:14:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 431R0h561XzDqZq
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 17:16:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
@@ -27,17 +27,17 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Received: from ozlabs.ru (unknown [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 431QVJ4trmzDqSs
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Nov 2018 16:54:00 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 431QVR40V4zDqT5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Nov 2018 16:54:06 +1100 (AEDT)
 Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id F0784AE80382;
- Fri, 23 Nov 2018 00:53:56 -0500 (EST)
+ by ozlabs.ru (Postfix) with ESMTP id 0EB3AAE8023E;
+ Fri, 23 Nov 2018 00:53:31 -0500 (EST)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v4 13/19] powerpc/powernv/npu: Move single TVE handling
- to NPU PE
-Date: Fri, 23 Nov 2018 16:52:58 +1100
-Message-Id: <20181123055304.25116-14-aik@ozlabs.ru>
+Subject: [PATCH kernel v4 06/19] powerpc/pseries/iommu: Use memory@ nodes in
+ max RAM address calculation
+Date: Fri, 23 Nov 2018 16:52:51 +1100
+Message-Id: <20181123055304.25116-7-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20181123055304.25116-1-aik@ozlabs.ru>
 References: <20181123055304.25116-1-aik@ozlabs.ru>
@@ -66,109 +66,78 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Normal PCI PEs have 2 TVEs, one per a DMA window; however NPU PE has only
-one which points to one of two tables of the corresponding PCI PE.
+We might have memory@ nodes with "linux,usable-memory" set to zero
+(for example, to replicate powernv's behaviour for GPU coherent memory)
+which means that the memory needs an extra initialization but since
+it can be used afterwards, the pseries platform will try mapping it
+for DMA so the DMA window needs to cover those memory regions too;
+if the window cannot cover new memory regions, the memory onlining fails.
 
-So whenever a new DMA window is programmed to PEs, the NPU PE needs to
-release old table in order to use the new one.
-
-Commit d41ce7b1bcc3e ("powerpc/powernv/npu: Do not try invalidating 32bit
-table when 64bit table is enabled") did just that but in pci-ioda.c
-while it actually belongs to npu-dma.c.
-
-This moves the single TVE handling to npu-dma.c. This does not implement
-restoring though as it is highly unlikely that we can set the table to
-PCI PE and cannot to NPU PE and if that fails, we could only set 32bit
-table to NPU PE and this configuration is not really supported or wanted.
+This walks through the memory nodes to find the highest RAM address to
+let a huge DMA window cover that too in case this memory gets onlined
+later.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- arch/powerpc/platforms/powernv/npu-dma.c  |  8 +++++++
- arch/powerpc/platforms/powernv/pci-ioda.c | 27 +++--------------------
- 2 files changed, 11 insertions(+), 24 deletions(-)
+Changes:
+v4:
+* uses of_read_number directly instead of cut-n-pasted read_n_cells
+---
+ arch/powerpc/platforms/pseries/iommu.c | 34 +++++++++++++++++++++++++-
+ 1 file changed, 33 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
-index ef1457f..26063fb 100644
---- a/arch/powerpc/platforms/powernv/npu-dma.c
-+++ b/arch/powerpc/platforms/powernv/npu-dma.c
-@@ -130,6 +130,11 @@ long pnv_npu_set_window(struct pnv_ioda_pe *npe, int num,
- 		tbl->it_level_size : tbl->it_size;
- 	const __u64 start_addr = tbl->it_offset << tbl->it_page_shift;
- 	const __u64 win_size = tbl->it_size << tbl->it_page_shift;
-+	int num2 = (num == 0) ? 1 : 0;
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index 06f0296..7da74b5 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -964,6 +964,38 @@ struct failed_ddw_pdn {
+ 
+ static LIST_HEAD(failed_ddw_pdn_list);
+ 
++static phys_addr_t ddw_memory_hotplug_max(void)
++{
++	phys_addr_t max_addr = memory_hotplug_max();
++	struct device_node *memory;
 +
-+	/* NPU has just one TVE so if there is another table, remove it first */
-+	if (npe->table_group.tables[num2])
-+		pnv_npu_unset_window(npe, num2);
- 
- 	pe_info(npe, "Setting up window %llx..%llx pg=%lx\n",
- 			start_addr, start_addr + win_size - 1,
-@@ -160,6 +165,9 @@ long pnv_npu_unset_window(struct pnv_ioda_pe *npe, int num)
- 	struct pnv_phb *phb = npe->phb;
- 	int64_t rc;
- 
-+	if (!npe->table_group.tables[num])
-+		return 0;
++	for_each_node_by_type(memory, "memory") {
++		unsigned long start, size;
++		int ranges, n_mem_addr_cells, n_mem_size_cells, len;
++		const __be32 *memcell_buf;
 +
- 	pe_info(npe, "Removing DMA window\n");
- 
- 	rc = opal_pci_map_pe_dma_window(phb->opal_id, npe->pe_number,
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 6193f1d..07f0751 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -2669,23 +2669,14 @@ static struct pnv_ioda_pe *gpe_table_group_to_npe(
- static long pnv_pci_ioda2_npu_set_window(struct iommu_table_group *table_group,
- 		int num, struct iommu_table *tbl)
- {
--	struct pnv_ioda_pe *npe = gpe_table_group_to_npe(table_group);
--	int num2 = (num == 0) ? 1 : 0;
- 	long ret = pnv_pci_ioda2_set_window(table_group, num, tbl);
- 
- 	if (ret)
- 		return ret;
- 
--	if (table_group->tables[num2])
--		pnv_npu_unset_window(npe, num2);
--
--	ret = pnv_npu_set_window(npe, num, tbl);
--	if (ret) {
-+	ret = pnv_npu_set_window(gpe_table_group_to_npe(table_group), num, tbl);
-+	if (ret)
- 		pnv_pci_ioda2_unset_window(table_group, num);
--		if (table_group->tables[num2])
--			pnv_npu_set_window(npe, num2,
--					table_group->tables[num2]);
--	}
- 
- 	return ret;
- }
-@@ -2694,24 +2685,12 @@ static long pnv_pci_ioda2_npu_unset_window(
- 		struct iommu_table_group *table_group,
- 		int num)
- {
--	struct pnv_ioda_pe *npe = gpe_table_group_to_npe(table_group);
--	int num2 = (num == 0) ? 1 : 0;
- 	long ret = pnv_pci_ioda2_unset_window(table_group, num);
- 
- 	if (ret)
- 		return ret;
- 
--	if (!npe->table_group.tables[num])
--		return 0;
--
--	ret = pnv_npu_unset_window(npe, num);
--	if (ret)
--		return ret;
--
--	if (table_group->tables[num2])
--		ret = pnv_npu_set_window(npe, num2, table_group->tables[num2]);
--
--	return ret;
-+	return pnv_npu_unset_window(gpe_table_group_to_npe(table_group), num);
- }
- 
- static void pnv_ioda2_npu_take_ownership(struct iommu_table_group *table_group)
++		memcell_buf = of_get_property(memory, "reg", &len);
++		if (!memcell_buf || len <= 0)
++			continue;
++
++		n_mem_addr_cells = of_n_addr_cells(memory);
++		n_mem_size_cells = of_n_size_cells(memory);
++
++		/* ranges in cell */
++		ranges = (len >> 2) / (n_mem_addr_cells + n_mem_size_cells);
++
++		/* these are order-sensitive, and modify the buffer pointer */
++		start = of_read_number(memcell_buf, n_mem_addr_cells);
++		memcell_buf += n_mem_addr_cells;
++		size = of_read_number(memcell_buf, n_mem_size_cells);
++		memcell_buf += n_mem_size_cells;
++
++		max_addr = max_t(phys_addr_t, max_addr, start + size);
++	}
++
++	return max_addr;
++}
++
+ /*
+  * If the PE supports dynamic dma windows, and there is space for a table
+  * that can map all pages in a linear offset, then setup such a table,
+@@ -1053,7 +1085,7 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
+ 	}
+ 	/* verify the window * number of ptes will map the partition */
+ 	/* check largest block * page size > max memory hotplug addr */
+-	max_addr = memory_hotplug_max();
++	max_addr = ddw_memory_hotplug_max();
+ 	if (query.largest_available_block < (max_addr >> page_shift)) {
+ 		dev_dbg(&dev->dev, "can't map partition max 0x%llx with %u "
+ 			  "%llu-sized pages\n", max_addr,  query.largest_available_block,
 -- 
 2.17.1
 
