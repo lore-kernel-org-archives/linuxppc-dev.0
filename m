@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DE372C43441
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 06:31:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 87661C43441
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 06:33:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 654FA20820
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 06:31:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 654FA20820
+	by mail.kernel.org (Postfix) with ESMTPS id 0DCFC20820
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 06:33:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0DCFC20820
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 431RKN3R6jzDqyH
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 17:31:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 431RMg1PsJzDr8V
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Nov 2018 17:33:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
@@ -27,16 +27,17 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Received: from ozlabs.ru (unknown [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 431QVq1t9nzDqT5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Nov 2018 16:54:27 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 431QVz0GBxzDqSv
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Nov 2018 16:54:35 +1100 (AEDT)
 Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 73785AE8035F;
- Fri, 23 Nov 2018 00:53:53 -0500 (EST)
+ by ozlabs.ru (Postfix) with ESMTP id 77260AE8048F;
+ Fri, 23 Nov 2018 00:54:00 -0500 (EST)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v4 12/19] powerpc/powernv: Add purge cache OPAL call
-Date: Fri, 23 Nov 2018 16:52:57 +1100
-Message-Id: <20181123055304.25116-13-aik@ozlabs.ru>
+Subject: [PATCH kernel v4 14/19] powerpc/powernv/npu: Convert NPU IOMMU
+ helpers to iommu_table_group_ops
+Date: Fri, 23 Nov 2018 16:52:59 +1100
+Message-Id: <20181123055304.25116-15-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20181123055304.25116-1-aik@ozlabs.ru>
 References: <20181123055304.25116-1-aik@ozlabs.ru>
@@ -65,67 +66,197 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Flushing caches using the dcbf instruction takes quite some time if we
-need to flush gigabytes (16GB takes more than 15s); OPAL just added
-a big hammer to flush all caches.
+At the moment NPU IOMMU is manipulated directly from the IODA2 PCI
+PE code; PCI PE acts as a master to NPU PE. Soon we will have compound
+IOMMU groups with several PEs from several different PHB (such as
+interconnected GPUs and NPUs) so there will be no single master but
+a one big IOMMU group.
 
-This adds opal_purge_cache() which will be used later to flush caches
-for coherent GPU memory which might suddenly become unavailable if a GPU
-is reset and NVLink is not (re)trained.
+This makes a first step and converts an NPU PE with a set of extern
+function to a table group.
+
+This should cause no behavioral change. Note that
+pnv_npu_release_ownership() has never been implemented.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 ---
- arch/powerpc/include/asm/opal-api.h            | 3 ++-
- arch/powerpc/include/asm/opal.h                | 1 +
- arch/powerpc/platforms/powernv/opal.c          | 1 +
- arch/powerpc/platforms/powernv/opal-wrappers.S | 1 +
- 4 files changed, 5 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/powernv/pci.h      |  5 ----
+ arch/powerpc/platforms/powernv/npu-dma.c  | 34 ++++++++++++++++++-----
+ arch/powerpc/platforms/powernv/pci-ioda.c | 10 +++++--
+ 3 files changed, 34 insertions(+), 15 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index 870fb7b..55bc640 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -210,7 +210,8 @@
- #define OPAL_PCI_GET_PBCQ_TUNNEL_BAR		164
- #define OPAL_PCI_SET_PBCQ_TUNNEL_BAR		165
- #define	OPAL_NX_COPROC_INIT			167
--#define OPAL_LAST				167
-+#define OPAL_CLEAR_CACHE			170
-+#define OPAL_LAST				170
+diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+index ddb4f02..cf9f748 100644
+--- a/arch/powerpc/platforms/powernv/pci.h
++++ b/arch/powerpc/platforms/powernv/pci.h
+@@ -216,11 +216,6 @@ extern void pe_level_printk(const struct pnv_ioda_pe *pe, const char *level,
+ extern void pnv_npu_try_dma_set_bypass(struct pci_dev *gpdev, bool bypass);
+ extern void pnv_pci_ioda2_tce_invalidate_entire(struct pnv_phb *phb, bool rm);
+ extern struct pnv_ioda_pe *pnv_pci_npu_setup_iommu(struct pnv_ioda_pe *npe);
+-extern long pnv_npu_set_window(struct pnv_ioda_pe *npe, int num,
+-		struct iommu_table *tbl);
+-extern long pnv_npu_unset_window(struct pnv_ioda_pe *npe, int num);
+-extern void pnv_npu_take_ownership(struct pnv_ioda_pe *npe);
+-extern void pnv_npu_release_ownership(struct pnv_ioda_pe *npe);
  
- #define QUIESCE_HOLD			1 /* Spin all calls at entry */
- #define QUIESCE_REJECT			2 /* Fail all calls with OPAL_BUSY */
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index ff38664..7db576e 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -294,6 +294,7 @@ int opal_set_power_shift_ratio(u32 handle, int token, u32 psr);
- int opal_sensor_group_clear(u32 group_hndl, int token);
- int opal_sensor_group_enable(u32 group_hndl, int token, bool enable);
- int opal_nx_coproc_init(uint32_t chip_id, uint32_t ct);
-+int opal_purge_cache(void);
+ /* pci-ioda-tce.c */
+ #define POWERNV_IOMMU_DEFAULT_LEVELS	1
+diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
+index 26063fb..dc629ee 100644
+--- a/arch/powerpc/platforms/powernv/npu-dma.c
++++ b/arch/powerpc/platforms/powernv/npu-dma.c
+@@ -121,9 +121,14 @@ static struct pnv_ioda_pe *get_gpu_pci_dev_and_pe(struct pnv_ioda_pe *npe,
+ 	return pe;
+ }
  
- s64 opal_signal_system_reset(s32 cpu);
- s64 opal_quiesce(u64 shutdown_type, s32 cpu);
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index beed86f..44ce824 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -1113,3 +1113,4 @@ EXPORT_SYMBOL_GPL(opal_int_eoi);
- EXPORT_SYMBOL_GPL(opal_error_code);
- /* Export the below symbol for NX compression */
- EXPORT_SYMBOL(opal_nx_coproc_init);
-+EXPORT_SYMBOL(opal_purge_cache);
-diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index 2515282..5b886a6 100644
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -331,3 +331,4 @@ OPAL_CALL(opal_pci_set_pbcq_tunnel_bar,		OPAL_PCI_SET_PBCQ_TUNNEL_BAR);
- OPAL_CALL(opal_sensor_read_u64,			OPAL_SENSOR_READ_U64);
- OPAL_CALL(opal_sensor_group_enable,		OPAL_SENSOR_GROUP_ENABLE);
- OPAL_CALL(opal_nx_coproc_init,			OPAL_NX_COPROC_INIT);
-+OPAL_CALL(opal_purge_cache,			OPAL_CLEAR_CACHE);
+-long pnv_npu_set_window(struct pnv_ioda_pe *npe, int num,
++static long pnv_npu_unset_window(struct iommu_table_group *table_group,
++		int num);
++
++static long pnv_npu_set_window(struct iommu_table_group *table_group, int num,
+ 		struct iommu_table *tbl)
+ {
++	struct pnv_ioda_pe *npe = container_of(table_group, struct pnv_ioda_pe,
++			table_group);
+ 	struct pnv_phb *phb = npe->phb;
+ 	int64_t rc;
+ 	const unsigned long size = tbl->it_indirect_levels ?
+@@ -134,7 +139,7 @@ long pnv_npu_set_window(struct pnv_ioda_pe *npe, int num,
+ 
+ 	/* NPU has just one TVE so if there is another table, remove it first */
+ 	if (npe->table_group.tables[num2])
+-		pnv_npu_unset_window(npe, num2);
++		pnv_npu_unset_window(&npe->table_group, num2);
+ 
+ 	pe_info(npe, "Setting up window %llx..%llx pg=%lx\n",
+ 			start_addr, start_addr + win_size - 1,
+@@ -160,8 +165,10 @@ long pnv_npu_set_window(struct pnv_ioda_pe *npe, int num,
+ 	return 0;
+ }
+ 
+-long pnv_npu_unset_window(struct pnv_ioda_pe *npe, int num)
++static long pnv_npu_unset_window(struct iommu_table_group *table_group, int num)
+ {
++	struct pnv_ioda_pe *npe = container_of(table_group, struct pnv_ioda_pe,
++			table_group);
+ 	struct pnv_phb *phb = npe->phb;
+ 	int64_t rc;
+ 
+@@ -206,7 +213,8 @@ static void pnv_npu_dma_set_32(struct pnv_ioda_pe *npe)
+ 	if (!gpe)
+ 		return;
+ 
+-	rc = pnv_npu_set_window(npe, 0, gpe->table_group.tables[0]);
++	rc = pnv_npu_set_window(&npe->table_group, 0,
++			gpe->table_group.tables[0]);
+ 
+ 	/*
+ 	 * NVLink devices use the same TCE table configuration as
+@@ -231,7 +239,7 @@ static int pnv_npu_dma_set_bypass(struct pnv_ioda_pe *npe)
+ 	if (phb->type != PNV_PHB_NPU_NVLINK || !npe->pdev)
+ 		return -EINVAL;
+ 
+-	rc = pnv_npu_unset_window(npe, 0);
++	rc = pnv_npu_unset_window(&npe->table_group, 0);
+ 	if (rc != OPAL_SUCCESS)
+ 		return rc;
+ 
+@@ -284,9 +292,12 @@ void pnv_npu_try_dma_set_bypass(struct pci_dev *gpdev, bool bypass)
+ 	}
+ }
+ 
++#ifdef CONFIG_IOMMU_API
+ /* Switch ownership from platform code to external user (e.g. VFIO) */
+-void pnv_npu_take_ownership(struct pnv_ioda_pe *npe)
++static void pnv_npu_take_ownership(struct iommu_table_group *table_group)
+ {
++	struct pnv_ioda_pe *npe = container_of(table_group, struct pnv_ioda_pe,
++			table_group);
+ 	struct pnv_phb *phb = npe->phb;
+ 	int64_t rc;
+ 
+@@ -297,7 +308,7 @@ void pnv_npu_take_ownership(struct pnv_ioda_pe *npe)
+ 	 * if it was enabled at the moment of ownership change.
+ 	 */
+ 	if (npe->table_group.tables[0]) {
+-		pnv_npu_unset_window(npe, 0);
++		pnv_npu_unset_window(&npe->table_group, 0);
+ 		return;
+ 	}
+ 
+@@ -312,6 +323,12 @@ void pnv_npu_take_ownership(struct pnv_ioda_pe *npe)
+ 	pnv_pci_ioda2_tce_invalidate_entire(npe->phb, false);
+ }
+ 
++static struct iommu_table_group_ops pnv_pci_npu_ops = {
++	.set_window = pnv_npu_set_window,
++	.unset_window = pnv_npu_unset_window,
++	.take_ownership = pnv_npu_take_ownership,
++};
++
+ struct pnv_ioda_pe *pnv_pci_npu_setup_iommu(struct pnv_ioda_pe *npe)
+ {
+ 	struct pnv_phb *phb = npe->phb;
+@@ -322,6 +339,8 @@ struct pnv_ioda_pe *pnv_pci_npu_setup_iommu(struct pnv_ioda_pe *npe)
+ 	if (!gpe || !gpdev)
+ 		return NULL;
+ 
++	npe->table_group.ops = &pnv_pci_npu_ops;
++
+ 	list_for_each_entry(npdev, &pbus->devices, bus_list) {
+ 		gptmp = pnv_pci_get_gpu_dev(npdev);
+ 
+@@ -334,6 +353,7 @@ struct pnv_ioda_pe *pnv_pci_npu_setup_iommu(struct pnv_ioda_pe *npe)
+ 
+ 	return gpe;
+ }
++#endif /* !CONFIG_IOMMU_API */
+ 
+ /*
+  * NPU2 ATS
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 07f0751..c9e7bcb 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -2669,12 +2669,13 @@ static struct pnv_ioda_pe *gpe_table_group_to_npe(
+ static long pnv_pci_ioda2_npu_set_window(struct iommu_table_group *table_group,
+ 		int num, struct iommu_table *tbl)
+ {
++	struct pnv_ioda_pe *npe = gpe_table_group_to_npe(table_group);
+ 	long ret = pnv_pci_ioda2_set_window(table_group, num, tbl);
+ 
+ 	if (ret)
+ 		return ret;
+ 
+-	ret = pnv_npu_set_window(gpe_table_group_to_npe(table_group), num, tbl);
++	ret = npe->table_group.ops->set_window(&npe->table_group, num, tbl);
+ 	if (ret)
+ 		pnv_pci_ioda2_unset_window(table_group, num);
+ 
+@@ -2685,17 +2686,20 @@ static long pnv_pci_ioda2_npu_unset_window(
+ 		struct iommu_table_group *table_group,
+ 		int num)
+ {
++	struct pnv_ioda_pe *npe = gpe_table_group_to_npe(table_group);
+ 	long ret = pnv_pci_ioda2_unset_window(table_group, num);
+ 
+ 	if (ret)
+ 		return ret;
+ 
+-	return pnv_npu_unset_window(gpe_table_group_to_npe(table_group), num);
++	return npe->table_group.ops->unset_window(&npe->table_group, num);
+ }
+ 
+ static void pnv_ioda2_npu_take_ownership(struct iommu_table_group *table_group)
+ {
+-	pnv_npu_take_ownership(gpe_table_group_to_npe(table_group));
++	struct pnv_ioda_pe *npe = gpe_table_group_to_npe(table_group);
++
++	npe->table_group.ops->take_ownership(&npe->table_group);
+ 	pnv_ioda2_take_ownership(table_group);
+ }
+ 
 -- 
 2.17.1
 
