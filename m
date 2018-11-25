@@ -6,86 +6,83 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4BBA8C43441
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 25 Nov 2018 21:51:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 16A64C43441
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 25 Nov 2018 21:53:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BD06F2084E
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 25 Nov 2018 21:51:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BD06F2084E
+	by mail.kernel.org (Postfix) with ESMTPS id 85C1D20855
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 25 Nov 2018 21:53:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 85C1D20855
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4333f14m3CzDqpR
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 08:51:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4333hF4WVyzDqn1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 08:53:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=rppt@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4333Vm48zSzDqml
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Nov 2018 08:45:04 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wAPLi8MB007668
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Nov 2018 16:45:02 -0500
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2nymppq7h0-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4333Vs0WhczDqmd
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Nov 2018 08:45:08 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wAPLi7WI035863
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Nov 2018 16:45:06 -0500
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2nyn6k6r1y-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Nov 2018 16:45:01 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Nov 2018 16:45:06 -0500
 Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.ibm.com>;
- Sun, 25 Nov 2018 21:44:59 -0000
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
- by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+ Sun, 25 Nov 2018 21:45:04 -0000
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
+ by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Sun, 25 Nov 2018 21:44:52 -0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wAPLipEn48365636
+ Sun, 25 Nov 2018 21:44:56 -0000
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wAPLitAN66519042
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Sun, 25 Nov 2018 21:44:51 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0E20CA405C;
- Sun, 25 Nov 2018 21:44:51 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C9FD4A4054;
- Sun, 25 Nov 2018 21:44:47 +0000 (GMT)
+ Sun, 25 Nov 2018 21:44:55 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 1936852052;
+ Sun, 25 Nov 2018 21:44:55 +0000 (GMT)
 Received: from rapoport-lnx (unknown [9.148.207.68])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Sun, 25 Nov 2018 21:44:47 +0000 (GMT)
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTPS id D2A7852051;
+ Sun, 25 Nov 2018 21:44:51 +0000 (GMT)
 Received: by rapoport-lnx (sSMTP sendmail emulation);
- Sun, 25 Nov 2018 23:44:47 +0200
+ Sun, 25 Nov 2018 23:44:51 +0200
 From: Mike Rapoport <rppt@linux.ibm.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/5] microblaze: prefer memblock API returning virtual address
-Date: Sun, 25 Nov 2018 23:44:34 +0200
+Subject: [PATCH 3/5] sh: prefer memblock APIs returning virtual address
+Date: Sun, 25 Nov 2018 23:44:35 +0200
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1543182277-8819-1-git-send-email-rppt@linux.ibm.com>
 References: <1543182277-8819-1-git-send-email-rppt@linux.ibm.com>
 X-TM-AS-GCONF: 00
-x-cbid: 18112521-4275-0000-0000-000002E681AF
+x-cbid: 18112521-0012-0000-0000-000002CFFEFF
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18112521-4276-0000-0000-000037F3B868
-Message-Id: <1543182277-8819-3-git-send-email-rppt@linux.ibm.com>
+x-cbparentid: 18112521-0013-0000-0000-0000210538CA
+Message-Id: <1543182277-8819-4-git-send-email-rppt@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2018-11-25_15:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=702 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=900 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1811250133
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -119,27 +116,66 @@ Rather than use the memblock_alloc_base that returns a physical address and
 then convert this address to the virtual one, use appropriate memblock
 function that returns a virtual address.
 
+There is a small functional change in the allocation of then NODE_DATA().
+Instead of panicing if the local allocation failed, the non-local
+allocation attempt will be made.
+
 Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
 ---
- arch/microblaze/mm/init.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ arch/sh/mm/init.c | 18 +++++-------------
+ arch/sh/mm/numa.c |  5 ++---
+ 2 files changed, 7 insertions(+), 16 deletions(-)
 
-diff --git a/arch/microblaze/mm/init.c b/arch/microblaze/mm/init.c
-index b17fd8a..44f4b89 100644
---- a/arch/microblaze/mm/init.c
-+++ b/arch/microblaze/mm/init.c
-@@ -363,8 +363,9 @@ void __init *early_get_page(void)
- 	 * Mem start + kernel_tlb -> here is limit
- 	 * because of mem mapping from head.S
- 	 */
--	return __va(memblock_alloc_base(PAGE_SIZE, PAGE_SIZE,
--				memory_start + kernel_tlb));
-+	return memblock_alloc_try_nid_raw(PAGE_SIZE, PAGE_SIZE,
-+				MEMBLOCK_LOW_LIMIT, memory_start + kernel_tlb,
-+				NUMA_NO_NODE);
- }
+diff --git a/arch/sh/mm/init.c b/arch/sh/mm/init.c
+index c8c13c77..3576b5f 100644
+--- a/arch/sh/mm/init.c
++++ b/arch/sh/mm/init.c
+@@ -192,24 +192,16 @@ void __init page_table_range_init(unsigned long start, unsigned long end,
+ void __init allocate_pgdat(unsigned int nid)
+ {
+ 	unsigned long start_pfn, end_pfn;
+-#ifdef CONFIG_NEED_MULTIPLE_NODES
+-	unsigned long phys;
+-#endif
  
- #endif /* CONFIG_MMU */
+ 	get_pfn_range_for_nid(nid, &start_pfn, &end_pfn);
+ 
+ #ifdef CONFIG_NEED_MULTIPLE_NODES
+-	phys = __memblock_alloc_base(sizeof(struct pglist_data),
+-				SMP_CACHE_BYTES, end_pfn << PAGE_SHIFT);
+-	/* Retry with all of system memory */
+-	if (!phys)
+-		phys = __memblock_alloc_base(sizeof(struct pglist_data),
+-					SMP_CACHE_BYTES, memblock_end_of_DRAM());
+-	if (!phys)
++	NODE_DATA(nid) = memblock_alloc_try_nid_nopanic(
++				sizeof(struct pglist_data),
++				SMP_CACHE_BYTES, MEMBLOCK_LOW_LIMIT,
++				MEMBLOCK_ALLOC_ACCESSIBLE, nid);
++	if (!NODE_DATA(nid))
+ 		panic("Can't allocate pgdat for node %d\n", nid);
+-
+-	NODE_DATA(nid) = __va(phys);
+-	memset(NODE_DATA(nid), 0, sizeof(struct pglist_data));
+ #endif
+ 
+ 	NODE_DATA(nid)->node_start_pfn = start_pfn;
+diff --git a/arch/sh/mm/numa.c b/arch/sh/mm/numa.c
+index 830e8b3..c4bde61 100644
+--- a/arch/sh/mm/numa.c
++++ b/arch/sh/mm/numa.c
+@@ -41,9 +41,8 @@ void __init setup_bootmem_node(int nid, unsigned long start, unsigned long end)
+ 	__add_active_range(nid, start_pfn, end_pfn);
+ 
+ 	/* Node-local pgdat */
+-	NODE_DATA(nid) = __va(memblock_alloc_base(sizeof(struct pglist_data),
+-					     SMP_CACHE_BYTES, end));
+-	memset(NODE_DATA(nid), 0, sizeof(struct pglist_data));
++	NODE_DATA(nid) = memblock_alloc_node(sizeof(struct pglist_data),
++					     SMP_CACHE_BYTES, nid);
+ 
+ 	NODE_DATA(nid)->node_start_pfn = start_pfn;
+ 	NODE_DATA(nid)->node_spanned_pages = end_pfn - start_pfn;
 -- 
 2.7.4
 
