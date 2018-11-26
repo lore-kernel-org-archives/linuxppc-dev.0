@@ -2,54 +2,94 @@ Return-Path: <SRS0=3VWP=OF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.9 required=3.0 tests=FROM_EXCESS_BASE64,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CC17DC43441
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 14:22:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7883AC43441
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 14:37:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2F6E920855
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 14:22:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2F6E920855
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
+	by mail.kernel.org (Postfix) with ESMTPS id BC3C820817
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 14:37:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BC3C820817
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 433Tdt1VpmzDqHH
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 01:22:42 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.de
+	by lists.ozlabs.org (Postfix) with ESMTP id 433TzF5KYTzDqVn
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 01:37:45 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=suse.de
- (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=msuchanek@suse.de;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=suse.de
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 433TbH3mj5zDqNS
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2018 01:20:26 +1100 (AEDT)
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay1.suse.de (unknown [195.135.220.254])
- by mx1.suse.de (Postfix) with ESMTP id C7B4FB02B;
- Mon, 26 Nov 2018 14:20:22 +0000 (UTC)
-Date: Mon, 26 Nov 2018 15:20:15 +0100
-From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
-To: David Hildenbrand <david@redhat.com>
-Subject: Re: [PATCH RFC] mm/memory_hotplug: Introduce memory block types
-Message-ID: <20181126152015.7464c786@naga>
-In-Reply-To: <b64a0e1e-6aaa-66a9-2fb7-12daa6383ce1@redhat.com>
-References: <20180928150357.12942-1-david@redhat.com>
- <b01a956b-080c-c643-6473-eb132b9f7200@redhat.com>
- <20181123190653.6da91461@kitsune.suse.cz>
- <fad04d80-4e72-1bd8-3e67-a3f7dd0bc2fa@redhat.com>
- <b64a0e1e-6aaa-66a9-2fb7-12daa6383ce1@redhat.com>
-X-Mailer: Claws Mail 3.17.1 (GTK+ 2.24.32; x86_64-suse-linux-gnu)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 433TwN5P1czDqTw
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2018 01:35:16 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wAQESt1l018275
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Nov 2018 09:35:14 -0500
+Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2p0jh58n0k-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Nov 2018 09:35:14 -0500
+Received: from localhost
+ by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Mon, 26 Nov 2018 14:35:13 -0000
+Received: from b01cxnp22036.gho.pok.ibm.com (9.57.198.26)
+ by e12.ny.us.ibm.com (146.89.104.199) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Mon, 26 Nov 2018 14:35:10 -0000
+Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
+ [9.57.199.110])
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wAQEZAe236962370
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Mon, 26 Nov 2018 14:35:10 GMT
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D850DAE05F;
+ Mon, 26 Nov 2018 14:35:09 +0000 (GMT)
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 59A1FAE060;
+ Mon, 26 Nov 2018 14:35:07 +0000 (GMT)
+Received: from skywalker.ibmuc.com (unknown [9.85.72.64])
+ by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP;
+ Mon, 26 Nov 2018 14:35:06 +0000 (GMT)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: npiggin@gmail.com, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, Michael Neuling <mikey@neuling.org>
+Subject: [PATCH] powerpc/mm/hash: Hand user access of kernel address gracefully
+Date: Mon, 26 Nov 2018 20:05:04 +0530
+X-Mailer: git-send-email 2.19.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 18112614-0060-0000-0000-000002D8E63C
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00010124; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000270; SDB=6.01123048; UDB=6.00582970; IPR=6.00903177; 
+ MB=3.00024337; MTD=3.00000008; XFM=3.00000015; UTC=2018-11-26 14:35:12
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18112614-0061-0000-0000-00004752D0DF
+Message-Id: <20181126143504.30996-1-aneesh.kumar@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-11-26_08:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=732 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1811260131
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,90 +101,95 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kate Stewart <kstewart@linuxfoundation.org>, Rich Felker <dalias@libc.org>,
- linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>,
- Dave Hansen <dave.hansen@linux.intel.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, linux-mm@kvack.org,
- Michal Hocko <mhocko@suse.com>, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>, Rashmica Gupta <rashmica.g@gmail.com>,
- "K. Y.
- Srinivasan" <kys@microsoft.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- Stephen Rothwell <sfr@canb.auug.org.au>, Michael Neuling <mikey@neuling.org>,
- Stephen Hemminger <sthemmin@microsoft.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, linux-acpi@vger.kernel.org,
- Ingo Molnar <mingo@redhat.com>, xen-devel@lists.xenproject.org,
- Rob Herring <robh@kernel.org>, Len Brown <lenb@kernel.org>,
- Pavel Tatashin <pavel.tatashin@microsoft.com>, linux-s390@vger.kernel.org,
- "mike.travis@hpe.com" <mike.travis@hpe.com>,
- Haiyang Zhang <haiyangz@microsoft.com>,
- Jonathan =?UTF-8?B?TmV1c2Now6Rm?= =?UTF-8?B?ZXI=?= <j.neuschaefer@gmx.net>,
- Nicholas Piggin <npiggin@gmail.com>, Joe Perches <joe@perches.com>,
- =?UTF-8?B?SsOpcsO0bWU=?= Glisse <jglisse@redhat.com>,
- Mike Rapoport <rppt@linux.vnet.ibm.com>, Borislav Petkov <bp@alien8.de>,
- Andy Lutomirski <luto@kernel.org>, Dan Williams <dan.j.williams@intel.com>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>, Oscar Salvador <osalvador@suse.de>,
- Juergen Gross <jgross@suse.com>, Tony Luck <tony.luck@intel.com>,
- Mathieu Malaterre <malat@debian.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
- Fenghua Yu <fenghua.yu@intel.com>,
- Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- Philippe Ombredanne <pombredanne@nexb.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, devel@linuxdriverproject.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 26 Nov 2018 14:33:29 +0100
-David Hildenbrand <david@redhat.com> wrote:
+With commit 2865d08dd9ea ("powerpc/mm: Move the DSISR_PROTFAULT sanity check")
+we moved the protection fault access check before vma lookup. That means we
+hit that WARN_ON when user space access a kernel address.  Before the commit
+this was handled by find_vma() not finding vma for the kernel address and
+considering that access as bad area access.
 
-> On 26.11.18 13:30, David Hildenbrand wrote:
-> > On 23.11.18 19:06, Michal Such=C3=A1nek wrote: =20
+Avoid the confusing WARN_ON and convert that to a ratelimited printk.
+With the patch we now get
 
-> >>
-> >> If we are going to fake the driver information we may as well add the
-> >> type attribute and be done with it.
-> >>
-> >> I think the problem with the patch was more with the semantic than the
-> >> attribute itself.
-> >>
-> >> What is normal, paravirtualized, and standby memory?
-> >>
-> >> I can understand DIMM device, baloon device, or whatever mechanism for
-> >> adding memory you might have.
-> >>
-> >> I can understand "memory designated as standby by the cluster
-> >> administrator".
-> >>
-> >> However, DIMM vs baloon is orthogonal to standby and should not be
-> >> conflated into one property.
-> >>
-> >> paravirtualized means nothing at all in relationship to memory type and
-> >> the desired online policy to me. =20
-> >=20
-> > Right, so with whatever we come up, it should allow to make a decision
-> > in user space about
-> > - if memory is to be onlined automatically =20
->=20
-> And I will think about if we really should model standby memory. Maybe
-> it is really better to have in user space something like (as Dan noted)
+for load:
+[  187.700294] a.out[5997]: User access of kernel address (c00000000000dea0) - exploit attempt? (uid: 1000)
+[  187.700344] a.out[5997]: segfault (11) at c00000000000dea0 nip 1317c0798 lr 7fff80d6441c code 1 in a.out[1317c0000+10000]
+[  187.700429] a.out[5997]: code: 60000000 60420000 3c4c0002 38427790 4bffff20 3c4c0002 38427784 fbe1fff8
+[  187.700435] a.out[5997]: code: f821ffc1 7c3f0b78 60000000 e9228030 <89290000> 993f002f 60000000 383f0040
 
-If it is possible to designate the memory as standby or online in the
-s390 admin interface and the kernel does have access to this
-information it makes sense to forward it to userspace (as separate
-s390-specific property). If not then you need to make some kind of
-assumption like below and the user can tune the script according to
-their usecase.
+for exec:
+[  225.100903] a.out[6067]: User access of kernel address (c00000000000dea0) - exploit attempt? (uid: 1000)
+[  225.100938] a.out[6067]: segfault (11) at c00000000000dea0 nip c00000000000dea0 lr 129d507b0 code 1
+[  225.100943] a.out[6067]: Bad NIP, not dumping instructions.
 
->=20
-> if (isS390x() && type =3D=3D "dimm") {
-> 	/* don't online, on s390x system DIMMs are standby memory */
-> }
+Fixes: 2865d08dd9ea ("powerpc/mm: Move the DSISR_PROTFAULT sanity check")
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+---
+ arch/powerpc/mm/fault.c | 29 ++++++++++++++++++++++++-----
+ 1 file changed, 24 insertions(+), 5 deletions(-)
 
-Thanks
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index 1697e903bbf2..46f280068c45 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -342,8 +342,21 @@ static inline void cmo_account_page_fault(void) { }
+ #endif /* CONFIG_PPC_SMLPAR */
+ 
+ #ifdef CONFIG_PPC_STD_MMU
+-static void sanity_check_fault(bool is_write, unsigned long error_code)
++static void sanity_check_fault(bool is_write, bool is_user,
++			       unsigned long error_code, unsigned long address)
+ {
++	/*
++	 * userspace trying to access kernel address, we get PROTFAULT for that.
++	 */
++	if (is_user && address >= TASK_SIZE) {
++		printk_ratelimited(KERN_CRIT "%s[%d]: "
++				   "User access of kernel address (%lx) - "
++				   "exploit attempt? (uid: %d)\n",
++				   current->comm, current->pid, address,
++				   from_kuid(&init_user_ns, current_uid()));
++		return;
++	}
++
+ 	/*
+ 	 * For hash translation mode, we should never get a
+ 	 * PROTFAULT. Any update to pte to reduce access will result in us
+@@ -373,11 +386,17 @@ static void sanity_check_fault(bool is_write, unsigned long error_code)
+ 	 * For radix, we can get prot fault for autonuma case, because radix
+ 	 * page table will have them marked noaccess for user.
+ 	 */
+-	if (!radix_enabled() && !is_write)
+-		WARN_ON_ONCE(error_code & DSISR_PROTFAULT);
++	if (radix_enabled() || is_write)
++		return;
++
++	WARN_ON_ONCE(error_code & DSISR_PROTFAULT);
+ }
+ #else
+-static void sanity_check_fault(bool is_write, unsigned long error_code) { }
++static void sanity_check_fault(bool is_write, bool is_user,
++			       unsigned long error_code, unsigned long address)
++{
++
++}
+ #endif /* CONFIG_PPC_STD_MMU */
+ 
+ /*
+@@ -435,7 +454,7 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
+ 	}
+ 
+ 	/* Additional sanity check(s) */
+-	sanity_check_fault(is_write, error_code);
++	sanity_check_fault(is_write, is_user, error_code, address);
+ 
+ 	/*
+ 	 * The kernel should never take an execute fault nor should it
+-- 
+2.19.1
 
-Michal
