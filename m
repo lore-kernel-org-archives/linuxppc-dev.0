@@ -2,83 +2,85 @@ Return-Path: <SRS0=3VWP=OF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+X-Spam-Status: No, score=-8.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4309EC43441
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 02:04:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 78FC9C43441
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 02:06:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9B45B2084E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 02:04:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id DF16220865
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 02:06:36 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="uGdnJZ1a"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9B45B2084E
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ihlXv5uD"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DF16220865
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4339Fj3Tk2zDqP1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 13:04:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4339JW0XPFzDqLh
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 13:06:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="uGdnJZ1a";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="ihlXv5uD";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::42f; helo=mail-pf1-x42f.google.com;
+ (client-ip=2607:f8b0:4864:20::444; helo=mail-pf1-x444.google.com;
  envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="uGdnJZ1a"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="ihlXv5uD"; 
  dkim-atps=neutral
-Received: from mail-pf1-x42f.google.com (mail-pf1-x42f.google.com
- [IPv6:2607:f8b0:4864:20::42f])
+Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
+ [IPv6:2607:f8b0:4864:20::444])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4339BX1h0kzDqLS
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Nov 2018 13:01:24 +1100 (AEDT)
-Received: by mail-pf1-x42f.google.com with SMTP id i12so5765883pfo.7
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Nov 2018 18:01:23 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4339BZ3HBhzDqP2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Nov 2018 13:01:26 +1100 (AEDT)
+Received: by mail-pf1-x444.google.com with SMTP id h3so5775697pfg.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Nov 2018 18:01:26 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=3mcHGeUjzPT6A3eGA/6hj3m5fliJC5MSPuTQ0JbvFRk=;
- b=uGdnJZ1aDlS5+ihhOJDg2zxgng3sG6TshwbBqSeArPCF70/U91cHhHdfF7QO0X8bPU
- 5ahIekq+IrwGIN/36NvV4F5CbK1jcTm3sCn2BUZH3HvaorPaoy6XGlPtvnxIDGbeA3G5
- 0K63Y3746jvQyCJjXl1qGIqgEYuxXvm4ZDMyDwsoIZj7Ims95xMOIPvQjk40uTz4vAuf
- SMOf9TyLVBf3P3j0kXfZJlEtRKBQfrP+ugWX9qvXbP+NUGTXIk+qUUMsGT6JOf0+s0ZC
- EgDSS11ZeNPblSoSY5FfN9fbTIULHg0dwtz3jsGvWFX9YO+Z68SeKvd2ZE9DiPkDFdNJ
- af+A==
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=MwVyjHp/fiWyn0O0W9Rih+wjIXZmpTnAagHUb6jvH1Q=;
+ b=ihlXv5uDuokNaGTSiWI2p1uhQjtoM/t4C6UGuy1B4BO8z5NIwI+/lQXOyyhMmvXTiU
+ K5EiiOjb04N0u3u9wrA7QrpnechssIwnnQzv9rVykt5sgQYMSZlL0ywfZvzceWx9vdKL
+ cf/NvUPy8sn+JJKwfu2Gubx1qDkVE1q0pg9ET3pvZ60colM3ltxS0+Z+snOKI1BqJVXc
+ 5FNziZ347ErSkK+bggBQhjCOzU6Tz5x3WWo5lK6ethNEGO7t8i/B5EolN344Uk0Kel1v
+ EUxMOJ2q2CFu0Fz29WriOzqX4lUJ0spfUqwlE6zBFdAHhrxoUCwY2eATS/mdFQVePTib
+ 3fHg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=3mcHGeUjzPT6A3eGA/6hj3m5fliJC5MSPuTQ0JbvFRk=;
- b=iivq6lwQEJSltudFyCLx/QsiVA9oiF5zOHiVFrYM55Bq8+o52KaojsrWRxmuiJkKuJ
- m0TXTP3TdaiUxYwObuvBSNUEAOKs0SWLsjoDCb+epW73p/tK+gyJ46OHVAJryHfRVTNE
- tO7BAQUfhYsEtfMuHs9Zl02eswdFYAfPFTK1i+Xl75ZmREDSHU8u90XwMbG8mElplipw
- 7yplx4o/dBq5DxAvctyf8MEqPOb6D+b4TNavi94+/EuwSzLOYAS9bpp8GEvyV71DsGR4
- GRScWCFPco7dhHVoE76NGqF7e3VUZBK5efQoqhhRM2xhm1V6sE81zzEDJp55vKcwqyMo
- w6pA==
-X-Gm-Message-State: AGRZ1gK1pWjqCeW4QiUr489CwlyqrpDBJIaaMaMUH12l8G4fmAD8yTjZ
- GJ4GXj8KT2ZNF1ySiZNrnMJ/8rq6jwc=
-X-Google-Smtp-Source: AJdET5fR6GOVAgTLQ8WHPKyFmI1NTgXfTL0oej0ialNrPKni3cRhiN84uK4NAJ1F8OywQVOEmANtwg==
-X-Received: by 2002:aa7:8608:: with SMTP id p8mr26202765pfn.125.1543197681908; 
- Sun, 25 Nov 2018 18:01:21 -0800 (PST)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=MwVyjHp/fiWyn0O0W9Rih+wjIXZmpTnAagHUb6jvH1Q=;
+ b=N743dpDsCVrqOr+Q58z83ft99hMki4b87wJIrEI86TLGjxe3vtEvj/ewolhTx4xId8
+ a5sux959FegQL70s2zfOegvIDA0Ktbsa5CryaikqbfqcGL8sM1S9HiA5BJn2193e0fyJ
+ G+U8p1hSWfPSzwls0e10Ohh/XQa0BusjMZ1ifTqgUDzTPCwAX/hGrtSAmhc83v32oXBZ
+ vE5YcN6w1DG0fSqDqXRvzif7wPAzGjpgQ6aroPbcYZU7zBhvY82aHzxpNgK2me49fL/J
+ EnbkivoIG494d483mMV/2LJ4WCaBNr21t2YmnB56OV/G1Sj8mqxUsbfjYF+Xsd7Bicov
+ uibw==
+X-Gm-Message-State: AA+aEWYPgZaYHCqt3ltgeYHOT47L/oVuPnMqZsw0H2TnnBxbbfyeOHKB
+ 199Vhgf6e+di9DLy9u5DY+nNUXBpi78=
+X-Google-Smtp-Source: AFSGD/XmpbPmXeLyv0bMDzUmH2dsyhNzTxQ8hyhIBohmlKxS0ihN+tbvFoOUAUX93yTEiwp2iV7QyQ==
+X-Received: by 2002:a62:6f49:: with SMTP id k70mr3324485pfc.7.1543197684391;
+ Sun, 25 Nov 2018 18:01:24 -0800 (PST)
 Received: from bobo.local0.net (203-221-165-244.tpgi.com.au. [203.221.165.244])
- by smtp.gmail.com with ESMTPSA id b5sm76675525pfc.150.2018.11.25.18.01.19
+ by smtp.gmail.com with ESMTPSA id b5sm76675525pfc.150.2018.11.25.18.01.22
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Sun, 25 Nov 2018 18:01:21 -0800 (PST)
+ Sun, 25 Nov 2018 18:01:23 -0800 (PST)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 0/3] Fix NMI IPI timeouts
-Date: Mon, 26 Nov 2018 12:01:04 +1000
-Message-Id: <20181126020107.17250-1-npiggin@gmail.com>
+Subject: [PATCH 1/3] powerpc/smp: Fix NMI IPI timeout
+Date: Mon, 26 Nov 2018 12:01:05 +1000
+Message-Id: <20181126020107.17250-2-npiggin@gmail.com>
 X-Mailer: git-send-email 2.19.2
+In-Reply-To: <20181126020107.17250-1-npiggin@gmail.com>
+References: <20181126020107.17250-1-npiggin@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -97,27 +99,42 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The first two patches fix timeouts and deadlocks using NMI IPIs.
-The xmon deadlock fails with a timeout so it wasn't really noticed.
-The infinite timeout only hits when the system is in really bad shape
-or the sreset handler is broken somehow (e.g., running a guest and no
-KVM test in the handler).
+The NMI IPI timeout logic is broken, if __smp_send_nmi_ipi times out
+on the first condition, delay_us will be zero which will send it into
+the second spin loop with no timeout so it will spin forever.
 
-Patch 1 is a necessary fix. Patch 2 is a bigger change, we could live
-without it because the sender will eventually time out and break the
-deadlock.
+Fixes: 5b73151fff63 ("powerpc: NMI IPI make NMI IPIs fully sychronous")
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/kernel/smp.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-Thanks,
-Nick
-
-Nicholas Piggin (3):
-  powerpc/smp: Fix NMI IPI timeout
-  powerpc/smp: Fix NMI IPI xmon timeout
-  powerpc/smp: __smp_send_nmi_ipi static
-
- arch/powerpc/kernel/smp.c | 93 +++++++++++++--------------------------
- 1 file changed, 30 insertions(+), 63 deletions(-)
-
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 3f15edf25a0d..137196a4248b 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -519,7 +519,7 @@ int __smp_send_nmi_ipi(int cpu, void (*fn)(struct pt_regs *), u64 delay_us, bool
+ 		if (delay_us) {
+ 			delay_us--;
+ 			if (!delay_us)
+-				break;
++				goto timeout;
+ 		}
+ 	}
+ 
+@@ -530,10 +530,11 @@ int __smp_send_nmi_ipi(int cpu, void (*fn)(struct pt_regs *), u64 delay_us, bool
+ 		if (delay_us) {
+ 			delay_us--;
+ 			if (!delay_us)
+-				break;
++				goto timeout;
+ 		}
+ 	}
+ 
++timeout:
+ 	if (!cpumask_empty(&nmi_ipi_pending_mask)) {
+ 		/* Timeout waiting for CPUs to call smp_handle_nmi_ipi */
+ 		ret = 0;
 -- 
 2.19.2
 
