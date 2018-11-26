@@ -2,109 +2,59 @@ Return-Path: <SRS0=3VWP=OF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6046CC43441
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 16:01:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 83A52C43441
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 17:58:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A8AA720645
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 16:01:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A8AA720645
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id B3F1220663
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 17:58:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B3F1220663
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 433WrB3gsFzDqYh
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 03:01:46 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 433ZQn3YC8zDqbY
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 04:58:25 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com; envelope-from=david@redhat.com;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=intel.com
+ (client-ip=134.134.136.100; helo=mga07.intel.com;
+ envelope-from=jeffrey.t.kirsher@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 433WnY6ssczDqYd
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2018 02:59:29 +1100 (AEDT)
-Received: from smtp.corp.redhat.com (int-mx01.intmail.prod.int.phx2.redhat.com
- [10.5.11.11])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id D3838C01F621;
- Mon, 26 Nov 2018 15:59:25 +0000 (UTC)
-Received: from [10.36.116.75] (ovpn-116-75.ams2.redhat.com [10.36.116.75])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 9B41138181;
- Mon, 26 Nov 2018 15:59:15 +0000 (UTC)
-Subject: Re: [PATCH RFC] mm/memory_hotplug: Introduce memory block types
-To: =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>
-References: <20180928150357.12942-1-david@redhat.com>
- <b01a956b-080c-c643-6473-eb132b9f7200@redhat.com>
- <20181123190653.6da91461@kitsune.suse.cz>
- <fad04d80-4e72-1bd8-3e67-a3f7dd0bc2fa@redhat.com>
- <b64a0e1e-6aaa-66a9-2fb7-12daa6383ce1@redhat.com>
- <20181126152015.7464c786@naga>
-From: David Hildenbrand <david@redhat.com>
-Openpgp: preference=signencrypt
-Autocrypt: addr=david@redhat.com; prefer-encrypt=mutual; keydata=
- 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
- SE+xAvmumFBY
-Organization: Red Hat GmbH
-Message-ID: <2d05e5d1-c5b5-8884-e642-89421685052f@redhat.com>
-Date: Mon, 26 Nov 2018 16:59:14 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.3.0
-MIME-Version: 1.0
-In-Reply-To: <20181126152015.7464c786@naga>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.11
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.32]); Mon, 26 Nov 2018 15:59:26 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 433ZNQ4lWBzDqSs
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2018 04:56:15 +1100 (AEDT)
+X-Amp-Result: UNSCANNABLE
+X-Amp-File-Uploaded: False
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+ by orsmga105.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 26 Nov 2018 09:56:12 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.56,283,1539673200"; 
+ d="asc'?scan'208";a="95176535"
+Received: from jtkirshe-desk1.jf.intel.com ([134.134.177.96])
+ by orsmga008.jf.intel.com with ESMTP; 26 Nov 2018 09:56:11 -0800
+Message-ID: <c1b8de1a8e9d4d215b56498e2d5b83a02083483a.camel@intel.com>
+Subject: Re: [Intel-wired-lan] [PATCH V2] mm: Replace all open encodings for
+ NUMA_NO_NODE
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+To: Anshuman Khandual <anshuman.khandual@arm.com>, linux-mm@kvack.org, 
+ linux-kernel@vger.kernel.org
+Date: Mon, 26 Nov 2018 09:56:28 -0800
+In-Reply-To: <1543235202-9075-1-git-send-email-anshuman.khandual@arm.com>
+References: <1543235202-9075-1-git-send-email-anshuman.khandual@arm.com>
+Organization: Intel
+Content-Type: multipart/signed; micalg="pgp-sha256";
+ protocol="application/pgp-signature"; boundary="=-w/yFab8vycJu1U8x0saQ"
+User-Agent: Evolution 3.30.2 (3.30.2-2.fc29) 
+Mime-Version: 1.0
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -116,143 +66,150 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kate Stewart <kstewart@linuxfoundation.org>, Rich Felker <dalias@libc.org>,
- linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>,
- Dave Hansen <dave.hansen@linux.intel.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, linux-mm@kvack.org,
- Michal Hocko <mhocko@suse.com>, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>, Rashmica Gupta <rashmica.g@gmail.com>,
- "K. Y. Srinivasan" <kys@microsoft.com>,
- Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- Stephen Rothwell <sfr@canb.auug.org.au>, Michael Neuling <mikey@neuling.org>,
- Stephen Hemminger <sthemmin@microsoft.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, linux-acpi@vger.kernel.org,
- Ingo Molnar <mingo@redhat.com>, xen-devel@lists.xenproject.org,
- Rob Herring <robh@kernel.org>, Len Brown <lenb@kernel.org>,
- Pavel Tatashin <pavel.tatashin@microsoft.com>, linux-s390@vger.kernel.org,
- "mike.travis@hpe.com" <mike.travis@hpe.com>,
- Haiyang Zhang <haiyangz@microsoft.com>,
- =?UTF-8?Q?Jonathan_Neusch=c3=a4fer?= <j.neuschaefer@gmx.net>,
- Nicholas Piggin <npiggin@gmail.com>, Joe Perches <joe@perches.com>,
- =?UTF-8?B?SsOpcsO0bWUgR2xpc3Nl?= <jglisse@redhat.com>,
- Mike Rapoport <rppt@linux.vnet.ibm.com>, Borislav Petkov <bp@alien8.de>,
- Andy Lutomirski <luto@kernel.org>, Dan Williams <dan.j.williams@intel.com>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>, Oscar Salvador <osalvador@suse.de>,
- Juergen Gross <jgross@suse.com>, Tony Luck <tony.luck@intel.com>,
- Mathieu Malaterre <malat@debian.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
- Fenghua Yu <fenghua.yu@intel.com>,
- Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- Philippe Ombredanne <pombredanne@nexb.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, devel@linuxdriverproject.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+Reply-To: jeffrey.t.kirsher@intel.com
+Cc: linux-block@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ linux-ia64@vger.kernel.org, linux-rdma@vger.kernel.org, netdev@vger.kernel.org,
+ iommu@lists.linux-foundation.org, dri-devel@lists.freedesktop.org,
+ hverkuil@xs4all.nl, dmaengine@vger.kernel.org, vkoul@kernel.org,
+ intel-wired-lan@lists.osuosl.org, linux-alpha@vger.kernel.org,
+ sparclinux@vger.kernel.org, jiangqi903@gmail.com, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, ocfs2-devel@oss.oracle.com,
+ linux-media@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 26.11.18 15:20, Michal Suchánek wrote:
-> On Mon, 26 Nov 2018 14:33:29 +0100
-> David Hildenbrand <david@redhat.com> wrote:
-> 
->> On 26.11.18 13:30, David Hildenbrand wrote:
->>> On 23.11.18 19:06, Michal Suchánek wrote:  
-> 
->>>>
->>>> If we are going to fake the driver information we may as well add the
->>>> type attribute and be done with it.
->>>>
->>>> I think the problem with the patch was more with the semantic than the
->>>> attribute itself.
->>>>
->>>> What is normal, paravirtualized, and standby memory?
->>>>
->>>> I can understand DIMM device, baloon device, or whatever mechanism for
->>>> adding memory you might have.
->>>>
->>>> I can understand "memory designated as standby by the cluster
->>>> administrator".
->>>>
->>>> However, DIMM vs baloon is orthogonal to standby and should not be
->>>> conflated into one property.
->>>>
->>>> paravirtualized means nothing at all in relationship to memory type and
->>>> the desired online policy to me.  
->>>
->>> Right, so with whatever we come up, it should allow to make a decision
->>> in user space about
->>> - if memory is to be onlined automatically  
->>
->> And I will think about if we really should model standby memory. Maybe
->> it is really better to have in user space something like (as Dan noted)
-> 
-> If it is possible to designate the memory as standby or online in the
-> s390 admin interface and the kernel does have access to this
-> information it makes sense to forward it to userspace (as separate
-> s390-specific property). If not then you need to make some kind of
-> assumption like below and the user can tune the script according to
-> their usecase.
 
-Also true, standby memory really represents a distinct type of memory
-block (memory seems to be there but really isn't). Right now I am
-thinking about something like this (tried to formulate it on a very
-generic level because we can't predict which mechanism might want to
-make use of these types in the future).
+--=-w/yFab8vycJu1U8x0saQ
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, 2018-11-26 at 17:56 +0530, Anshuman Khandual wrote:
+> At present there are multiple places where invalid node number is
+> encoded
+> as -1. Even though implicitly understood it is always better to have
+> macros
+> in there. Replace these open encodings for an invalid node number
+> with the
+> global macro NUMA_NO_NODE. This helps remove NUMA related assumptions
+> like
+> 'invalid node' from various places redirecting them to a common
+> definition.
+>=20
+> Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
+
+For the 'ixgbe' driver changes.
+
+Acked-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 
 
-/*
- * Memory block types allow user space to formulate rules if and how to
- * online memory blocks. The types are exposed to user space as text
- * strings in sysfs. While the typical online strategies are described
- * along with the types, there are use cases where that can differ (e.g.
- * use MOVABLE zone for more reliable huge page usage, use NORMAL zone
- * due to zone imbalance or because memory unplug is not intended).
- *
- * MEMORY_BLOCK_NONE:
- *  No memory block is to be created (e.g. device memory). Used internally
- *  only.
- *
- * MEMORY_BLOCK_REMOVABLE:
- *  This memory block type should be treated as if it can be
- *  removed/unplugged from the system again. E.g. there is a hardware
- *  interface to unplug such memory. This memory block type is usually
- *  onlined to the MOVABLE zone, to e.g. make offlining of it more
- *  reliable. Examples include ACPI and PPC DIMMs.
- *
- * MEMORY_BLOCK_UNREMOVABLE:
- *  This memory block type should be treated as if it can not be
- *  removed/unplugged again. E.g. there is no hardware interface to
- *  unplug such memory. This memory block type is usually onlined to
- *  the NORMAL zone, as offlining is not beneficial. Examples include boot
- *  memory on most architectures and memory added via balloon devices.
- *
- * MEMORY_BLOCK_STANDBY:
- *  The memory block type should be treated as if it can be
- *  removed/unplugged again, however the actual memory hot(un)plug is
- *  performed by onlining/offlining. In virtual environments, such memory
- *  is usually added during boot and never removed. Onlining memory will
- *  result in memory getting allocated to a VM. This memory type is usually
- *  not onlined automatically but explicitly by the administrator. One
- *  example is standby memory on s390x.
- */
+> ---
+> Changes in V2:
+>=20
+> - Added inclusion of 'numa.h' header at various places per Andrew
+> - Updated 'dev_to_node' to use NUMA_NO_NODE instead per Vinod
+>=20
+> Changes in V1: (https://lkml.org/lkml/2018/11/23/485)
+>=20
+> - Dropped OCFS2 changes per Joseph
+> - Dropped media/video drivers changes per Hans
+>=20
+> RFC - https://patchwork.kernel.org/patch/10678035/
+>=20
+> Build tested this with multiple cross compiler options like alpha,
+> sparc,
+> arm64, x86, powerpc, powerpc64le etc with their default config which
+> might
+> not have compiled tested all driver related changes. I will
+> appreciate
+> folks giving this a test in their respective build environment.
+>=20
+> All these places for replacement were found by running the following
+> grep
+> patterns on the entire kernel code. Please let me know if this might
+> have
+> missed some instances. This might also have replaced some false
+> positives.
+> I will appreciate suggestions, inputs and review.
+>=20
+> 1. git grep "nid =3D=3D -1"
+> 2. git grep "node =3D=3D -1"
+> 3. git grep "nid =3D -1"
+> 4. git grep "node =3D -1"
+>=20
+>  arch/alpha/include/asm/topology.h             |  3 ++-
+>  arch/ia64/kernel/numa.c                       |  2 +-
+>  arch/ia64/mm/discontig.c                      |  6 +++---
+>  arch/ia64/sn/kernel/io_common.c               |  3 ++-
+>  arch/powerpc/include/asm/pci-bridge.h         |  3 ++-
+>  arch/powerpc/kernel/paca.c                    |  3 ++-
+>  arch/powerpc/kernel/pci-common.c              |  3 ++-
+>  arch/powerpc/mm/numa.c                        | 14 +++++++-------
+>  arch/powerpc/platforms/powernv/memtrace.c     |  5 +++--
+>  arch/sparc/kernel/auxio_32.c                  |  3 ++-
+>  arch/sparc/kernel/pci_fire.c                  |  3 ++-
+>  arch/sparc/kernel/pci_schizo.c                |  3 ++-
+>  arch/sparc/kernel/pcic.c                      |  7 ++++---
+>  arch/sparc/kernel/psycho_common.c             |  3 ++-
+>  arch/sparc/kernel/sbus.c                      |  3 ++-
+>  arch/sparc/mm/init_64.c                       |  6 +++---
+>  arch/sparc/prom/init_32.c                     |  3 ++-
+>  arch/sparc/prom/init_64.c                     |  5 +++--
+>  arch/sparc/prom/tree_32.c                     | 13 +++++++------
+>  arch/sparc/prom/tree_64.c                     | 19 ++++++++++-------
+> --
+>  arch/x86/include/asm/pci.h                    |  3 ++-
+>  arch/x86/kernel/apic/x2apic_uv_x.c            |  7 ++++---
+>  arch/x86/kernel/smpboot.c                     |  3 ++-
+>  arch/x86/platform/olpc/olpc_dt.c              | 17 +++++++++--------
+>  drivers/block/mtip32xx/mtip32xx.c             |  5 +++--
+>  drivers/dma/dmaengine.c                       |  4 +++-
+>  drivers/infiniband/hw/hfi1/affinity.c         |  3 ++-
+>  drivers/infiniband/hw/hfi1/init.c             |  3 ++-
+>  drivers/iommu/dmar.c                          |  5 +++--
+>  drivers/iommu/intel-iommu.c                   |  3 ++-
+>  drivers/misc/sgi-xp/xpc_uv.c                  |  3 ++-
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  5 +++--
+>  include/linux/device.h                        |  2 +-
+>  init/init_task.c                              |  3 ++-
+>  kernel/kthread.c                              |  3 ++-
+>  kernel/sched/fair.c                           | 15 ++++++++-------
+>  lib/cpumask.c                                 |  3 ++-
+>  mm/huge_memory.c                              | 13 +++++++------
+>  mm/hugetlb.c                                  |  3 ++-
+>  mm/ksm.c                                      |  2 +-
+>  mm/memory.c                                   |  7 ++++---
+>  mm/memory_hotplug.c                           | 12 ++++++------
+>  mm/mempolicy.c                                |  2 +-
+>  mm/page_alloc.c                               |  4 ++--
+>  mm/page_ext.c                                 |  2 +-
+>  net/core/pktgen.c                             |  3 ++-
+>  net/qrtr/qrtr.c                               |  3 ++-
+>  tools/perf/bench/numa.c                       |  6 +++---
+>  48 files changed, 146 insertions(+), 108 deletions(-)
 
-> 
->>
->> if (isS390x() && type == "dimm") {
->> 	/* don't online, on s390x system DIMMs are standby memory */
->> }
-> 
-> Thanks
-> 
-> Michal
-> 
 
+--=-w/yFab8vycJu1U8x0saQ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
 
--- 
+-----BEGIN PGP SIGNATURE-----
 
-Thanks,
+iQIzBAABCAAdFiEEiTyZWz+nnTrOJ1LZ5W/vlVpL7c4FAlv8M8wACgkQ5W/vlVpL
+7c7QNQ/+NU3ikW7p6wkGj8G70RbkJORkKztnANrZvZMGTngn9AOr2IYiWm5l1FX0
+J1AyprX0m4BmLXBgW1BrOiReEiunq9RWtCT+2d7jQD6HxydLdRIbnQhLreHfcFv7
+6pUvyapG9B8a4X/6OzQXJVkRV+iXi/NzVxJ2WvZ6PhifiPMJo9oWab/OJDu/+8Fn
+w9BrPNqJhTdrSQ1E7aeMWUs/GbfQsQ+cm51Yb12KAemw5ocp45GNNeN2Y14g+YFZ
+Yhf7+/ihwBaph/zDYqFRsI+uSLnKIh7vLC/weBglkzU5mNZU9ugRj6M76jDE+OI3
+yqOTMp6DquBqH7qYuGA+yJfWvnsXa/KphTKzISpKXzkcGI4uyhjfWjoUN2CPbLWj
+55+k1mCY0glzACh1K+SFV1EDJ157U0sEx+vGaKDfpEcUFi/SUU7xE/u+4lI12Kec
+fMhcStiYmF5wvVMO8ID6+aPl9F7uNdrAJjPV6psDtLRhi6D+EkFRPG/2sxGNWNBC
+2FfNwyEy9of0UsptOWI3IOt80Oz2usDEwcnC4gAQhykPe/6lNI6Yb1OjsMtUdzw1
+BqoYXFKLnC2JQWxluwLMjJ/ng/Af94RzzYw901pIhtJjlTOx6nYUxO38hLp6JU6B
+qKDxnSxdVo6/2QOJpMCJ2o0tX/Q1MdMWbySfxnCX9il8o/TgOck=
+=I+vR
+-----END PGP SIGNATURE-----
 
-David / dhildenb
+--=-w/yFab8vycJu1U8x0saQ--
+
