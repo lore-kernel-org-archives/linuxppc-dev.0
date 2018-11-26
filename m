@@ -2,95 +2,91 @@ Return-Path: <SRS0=3VWP=OF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EB34AC43441
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 18:09:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 46108C43441
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 20:14:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6C2A120817
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 18:09:02 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=kernel-dk.20150623.gappssmtp.com header.i=@kernel-dk.20150623.gappssmtp.com header.b="Lw9f4pae"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6C2A120817
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.dk
+	by mail.kernel.org (Postfix) with ESMTPS id B9F4A205C9
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 20:14:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B9F4A205C9
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=debian.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 433Zg03FmJzDqb1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 05:09:00 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.dk
+	by lists.ozlabs.org (Postfix) with ESMTP id 433dRD65vNzDqbf
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 07:14:00 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=debian.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel-dk.20150623.gappssmtp.com header.i=@kernel-dk.20150623.gappssmtp.com header.b="Lw9f4pae";
-	dkim-atps=neutral
+ spf=none (mailfrom) smtp.mailfrom=debian.org
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=leitao@debian.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.dk
- (client-ip=2607:f8b0:4864:20::143; helo=mail-it1-x143.google.com;
- envelope-from=axboe@kernel.dk; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kernel.dk
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel-dk.20150623.gappssmtp.com
- header.i=@kernel-dk.20150623.gappssmtp.com header.b="Lw9f4pae"; 
- dkim-atps=neutral
-Received: from mail-it1-x143.google.com (mail-it1-x143.google.com
- [IPv6:2607:f8b0:4864:20::143])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ dmarc=none (p=none dis=none) header.from=debian.org
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 433ZYp0wMyzDqM6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2018 05:04:29 +1100 (AEDT)
-Received: by mail-it1-x143.google.com with SMTP id z7so12185981iti.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Nov 2018 10:04:29 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=kernel-dk.20150623.gappssmtp.com; s=20150623;
- h=subject:to:cc:references:from:message-id:date:user-agent
- :mime-version:in-reply-to:content-language:content-transfer-encoding;
- bh=PqTq+H8+rhmPLG6tqGEachvR9RLFaxATqoCV/phnZGQ=;
- b=Lw9f4paennw2Q7ERYGYf13QL1FEe8xX+NxItWg7dT86uTIxE6CA6xqC2DagjtU3aqu
- JtoCrXTbTEym46o184VZvjfSsi0wU0CNg3iX3/UYitIcAo2af000amHmxeLr5hE0rxkT
- qnJ/CBQfVqFuzNNBlde+2rvGFo64GKbOGA9W0HyceNRKniIaXvsKe9u1X4ESusWJantf
- M4qMcRJ95em052Z4P8pghjv/XJgQ0afoEqPrfgwKzIIUXnoidlUf9mgZCKFEzoZPlgOc
- oJ2orvxxl6Qn33jVhfR4FlRRXQUW7fn3pvtRUOInThi1VSI3eBD+7/ublnTh3Ka3fOc2
- 2S/w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=PqTq+H8+rhmPLG6tqGEachvR9RLFaxATqoCV/phnZGQ=;
- b=CsUAkTO8/sOA1u5HUPGBu4xQZFM316QmAwsqaaKI+s0encVlqW2UqFuvoVrA+lu6+z
- Er8/LcT7bwfS9H/9VJhEH955KUXiRs7Z8DnrMahwjjGyU17VbZrY08LgCw/ET7dqzNbg
- o3t6SDAXWUamIJNf4KUfE+JzxQ4taKrmedniPk6G5xUeQ/UJ1pn6KKGGdHdUykr8ymS7
- tfNyn25pUVs7yEQXwLujvV7lRY9W4C4PQjob1qET09hVz4HV/Vr1n4CbzoteuEVwVyp9
- dRP7SHLoU4zLAib1Z9KvTwXuWoA62ToIeBqty6998Bw2d8dPfpOXGz+NOffd4wVjJYOW
- xQEQ==
-X-Gm-Message-State: AA+aEWaEj7lLUYmQMVLQX/zSf+bNEoqIs2fEJhJH+scf32SmbgZ/g7sh
- L8qJUNUXgXEEOl/beLJfn5xFLg==
-X-Google-Smtp-Source: AFSGD/VMh/JR2/LSxaV6pJqJ8CN1srsI4trGfHLzd6kdp2ASaAmV/OX8sKXihw4FfTLaqvPSOOMEcg==
-X-Received: by 2002:a02:8cce:: with SMTP id n14mr26118375jal.125.1543255467182; 
- Mon, 26 Nov 2018 10:04:27 -0800 (PST)
-Received: from [192.168.1.56] ([216.160.245.98])
- by smtp.gmail.com with ESMTPSA id r133-v6sm566263itb.17.2018.11.26.10.04.24
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Mon, 26 Nov 2018 10:04:26 -0800 (PST)
-Subject: Re: [Intel-wired-lan] [PATCH V2] mm: Replace all open encodings for
- NUMA_NO_NODE
-To: jeffrey.t.kirsher@intel.com, Anshuman Khandual
- <anshuman.khandual@arm.com>, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-References: <1543235202-9075-1-git-send-email-anshuman.khandual@arm.com>
- <c1b8de1a8e9d4d215b56498e2d5b83a02083483a.camel@intel.com>
-From: Jens Axboe <axboe@kernel.dk>
-Message-ID: <4d0840f2-bd96-e671-8120-56ef33a37816@kernel.dk>
-Date: Mon, 26 Nov 2018 11:04:24 -0700
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.2.1
-MIME-Version: 1.0
-In-Reply-To: <c1b8de1a8e9d4d215b56498e2d5b83a02083483a.camel@intel.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 433dNw5bNYzDqWR
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2018 07:12:00 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wAQK8sqK103615
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Nov 2018 15:11:58 -0500
+Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2p0q729bbd-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Nov 2018 15:11:58 -0500
+Received: from localhost
+ by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <leitao@debian.org>;
+ Mon, 26 Nov 2018 20:11:56 -0000
+Received: from b01cxnp22033.gho.pok.ibm.com (9.57.198.23)
+ by e15.ny.us.ibm.com (146.89.104.202) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Mon, 26 Nov 2018 20:11:54 -0000
+Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
+ [9.57.199.110])
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wAQKBr8Q19071040
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Mon, 26 Nov 2018 20:11:54 GMT
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D450CAE05C;
+ Mon, 26 Nov 2018 20:11:53 +0000 (GMT)
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id A2A64AE05F;
+ Mon, 26 Nov 2018 20:11:52 +0000 (GMT)
+Received: from debra.ibm.com (unknown [9.85.190.168])
+ by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP;
+ Mon, 26 Nov 2018 20:11:52 +0000 (GMT)
+From: Breno Leitao <leitao@debian.org>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/4] powerpc/tm: Save MSR to PACA before RFID
+Date: Mon, 26 Nov 2018 18:11:58 -0200
+X-Mailer: git-send-email 1.8.3.1
+X-TM-AS-GCONF: 00
+x-cbid: 18112620-0068-0000-0000-000003673582
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00010125; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000270; SDB=6.01123160; UDB=6.00583037; IPR=6.00903290; 
+ MB=3.00024341; MTD=3.00000008; XFM=3.00000015; UTC=2018-11-26 20:11:56
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18112620-0069-0000-0000-0000468E7206
+Message-Id: <1543263121-9590-1-git-send-email-leitao@debian.org>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-11-26_15:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=395 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1811260172
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,41 +98,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-block@vger.kernel.org, linux-fbdev@vger.kernel.org,
- linux-ia64@vger.kernel.org, linux-rdma@vger.kernel.org, netdev@vger.kernel.org,
- iommu@lists.linux-foundation.org, dri-devel@lists.freedesktop.org,
- hverkuil@xs4all.nl, dmaengine@vger.kernel.org, vkoul@kernel.org,
- intel-wired-lan@lists.osuosl.org, linux-alpha@vger.kernel.org,
- sparclinux@vger.kernel.org, jiangqi903@gmail.com, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, ocfs2-devel@oss.oracle.com,
- linux-media@vger.kernel.org
+Cc: Breno Leitao <leitao@debian.org>, mikey@neuling.org,
+ gromero@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 11/26/18 10:56 AM, Jeff Kirsher wrote:
-> On Mon, 2018-11-26 at 17:56 +0530, Anshuman Khandual wrote:
->> At present there are multiple places where invalid node number is
->> encoded
->> as -1. Even though implicitly understood it is always better to have
->> macros
->> in there. Replace these open encodings for an invalid node number
->> with the
->> global macro NUMA_NO_NODE. This helps remove NUMA related assumptions
->> like
->> 'invalid node' from various places redirecting them to a common
->> definition.
->>
->> Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
-> 
-> For the 'ixgbe' driver changes.
-> 
-> Acked-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+As other exit points, move SRR1 (MSR) into paca->tm_scratch, so, if
+there is a TM Bad Thing in RFID, it is easy to understand what was the
+SRR1 value being used.
 
-Lost the original, but for mtip32xx:
+Signed-off-by: Breno Leitao <leitao@debian.org>
+---
+ arch/powerpc/kernel/entry_64.S | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-Acked-by: Jens Axboe <axboe@kernel.dk>
-
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 7b1693adff2a..ada1879a4e26 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -286,6 +286,10 @@ BEGIN_FTR_SECTION
+ 	HMT_MEDIUM_LOW
+ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
+ 
++#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
++	std	r8, PACATMSCRATCH(r13)
++#endif
++
+ 	ld	r13,GPR13(r1)	/* only restore r13 if returning to usermode */
+ 	ld	r2,GPR2(r1)
+ 	ld	r1,GPR1(r1)
 -- 
-Jens Axboe
+2.19.0
 
