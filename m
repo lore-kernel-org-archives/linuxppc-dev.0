@@ -2,69 +2,69 @@ Return-Path: <SRS0=3VWP=OF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AC15BC43441
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 07:00:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 895CDC43441
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 07:06:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F01EB20672
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 07:00:02 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="sBrQLM3i"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F01EB20672
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
+	by mail.kernel.org (Postfix) with ESMTPS id CEC7220664
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 07:06:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CEC7220664
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 433Hq474b0zDqLy
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 18:00:00 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
+	by lists.ozlabs.org (Postfix) with ESMTP id 433Hy25qRNzDqLx
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 18:06:02 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="sBrQLM3i";
-	dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 433Hl96dv6zDqBH
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Nov 2018 17:56:37 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=canb.auug.org.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au
- header.b="sBrQLM3i"; dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 433Hl93Sxmz9rxp;
- Mon, 26 Nov 2018 17:56:37 +1100 (AEDT)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=canb.auug.org.au
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=canb.auug.org.au;
- s=201702; t=1543215397;
- bh=JrNdPOF6cTscv0FIjSIk72febkJ73qcP1E9vzgLEw0o=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=sBrQLM3i18GOM8Ac2sRUW6sgcJB0B+QMsQ1w1a0oBGw1RbEt62YFasrXne5J4p8dZ
- wh1xPLle4kif2GGa4lLS23SVNaKYvTbLb0cihCYlYRaVgYISOnngSQaiuPAh2QWYlO
- +QHnOu/l75nRLTQA7IzWMx+9zzgArF47LD08wr6pSJBiDluW8EhUl3E8mLvqr2id/r
- CqP1xMlte+HcJ9dy7Q2m4TaybZUKUwQHmgnaxtTv+PaxZLZD4hHM03fN47bZY0eHsu
- Oz5Snybb659ckygrFDFybJE9RJBjDwiuQjeqe9gotodnmMyDXVTG/3vEGBPr1NnNNI
- Yxm+98HeFwplQ==
-Date: Mon, 26 Nov 2018 17:56:37 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Kees Cook <keescook@google.com>
-Subject: Re: New linux-next KCFLAGS
-Message-ID: <20181126175637.283b3137@canb.auug.org.au>
-In-Reply-To: <20181126174926.65889a69@canb.auug.org.au>
-References: <CAGXu5jL9WDRVCzPP0V2cvFHWfwAfd74kBNX9O+0frFkD26ti1Q@mail.gmail.com>
- <20181126084841.13679afd@canb.auug.org.au>
- <CAGXu5jL38a1Tx_LW9_j0sEHwLFGpuX-r2Y7dJq32eoED8BFrhw@mail.gmail.com>
- <20181126174926.65889a69@canb.auug.org.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 433Hvr0ZyqzDqBN
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Nov 2018 18:04:08 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 433Hvl3vJ8z9vF7M;
+ Mon, 26 Nov 2018 08:04:03 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id pZ8NDTZPOyfG; Mon, 26 Nov 2018 08:04:03 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 433Hvl36lqz9vF7K;
+ Mon, 26 Nov 2018 08:04:03 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 03DA48B77B;
+ Mon, 26 Nov 2018 08:04:04 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id gcSdqzHHraiK; Mon, 26 Nov 2018 08:04:03 +0100 (CET)
+Received: from PO15451 (po15451.idsi0.si.c-s.fr [172.25.231.2])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 863318B74B;
+ Mon, 26 Nov 2018 08:04:03 +0100 (CET)
+Subject: Re: [PATCH 5/5] arch: simplify several early memory allocations
+To: Mike Rapoport <rppt@linux.ibm.com>, linux-kernel@vger.kernel.org
+References: <1543182277-8819-1-git-send-email-rppt@linux.ibm.com>
+ <1543182277-8819-6-git-send-email-rppt@linux.ibm.com>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <7a92357c-6251-fe84-d724-16fdc49d03a3@c-s.fr>
+Date: Mon, 26 Nov 2018 08:03:55 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.3.1
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/_RjSVHK+yOma+ez7ssPU+ir"; protocol="application/pgp-signature"
+In-Reply-To: <1543182277-8819-6-git-send-email-rppt@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,52 +76,71 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Gustavo A. R. Silva" <gustavo@embeddedor.com>,
- PowerPC <linuxppc-dev@lists.ozlabs.org>
+Cc: Michal Hocko <mhocko@suse.com>, linux-sh@vger.kernel.org,
+ linux-mm@kvack.org, Rich Felker <dalias@libc.org>,
+ Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
+ Vincent Chen <deanbo422@gmail.com>, Jonas Bonn <jonas@southpole.se>,
+ linux-c6x-dev@linux-c6x.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Russell King <linux@armlinux.org.uk>, Mark Salter <msalter@redhat.com>,
+ Arnd Bergmann <arnd@arndb.de>,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ openrisc@lists.librecores.org, Greentime Hu <green.hu@gmail.com>,
+ Stafford Horne <shorne@gmail.com>, Guan Xuetao <gxt@pku.edu.cn>,
+ linux-arm-kernel@lists.infradead.org, Michal Simek <monstr@monstr.eu>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---Sig_/_RjSVHK+yOma+ez7ssPU+ir
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
 
-Hi Kees,
 
-On Mon, 26 Nov 2018 17:49:26 +1100 Stephen Rothwell <sfr@canb.auug.org.au> =
-wrote:
->
-> On Sun, 25 Nov 2018 21:46:20 -0800 Kees Cook <keescook@google.com> wrote:
-> >
-> > Excellent! (Though, wait, does this mean everyone _else_ will see this
-> > too? I'm worried that will be way too noisy...) =20
->=20
-> Ah, yes, you may be right.  everyone will see them :-(
->=20
-> I may have to figure out another way to do this for tomorrow.
+Le 25/11/2018 à 22:44, Mike Rapoport a écrit :
+> There are several early memory allocations in arch/ code that use
+> memblock_phys_alloc() to allocate memory, convert the returned physical
+> address to the virtual address and then set the allocated memory to zero.
+> 
+> Exactly the same behaviour can be achieved simply by calling
+> memblock_alloc(): it allocates the memory in the same way as
+> memblock_phys_alloc(), then it performs the phys_to_virt() conversion and
+> clears the allocated memory.
+> 
+> Replace the longer sequence with a simpler call to memblock_alloc().
+> 
+> Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
+> ---
+>   arch/arm/mm/mmu.c                     |  4 +---
+>   arch/c6x/mm/dma-coherent.c            |  9 ++-------
+>   arch/nds32/mm/init.c                  | 12 ++++--------
+>   arch/powerpc/kernel/setup-common.c    |  4 ++--
+>   arch/powerpc/mm/pgtable_32.c          |  4 +---
+>   arch/powerpc/mm/ppc_mmu_32.c          |  3 +--
+>   arch/powerpc/platforms/powernv/opal.c |  3 +--
+>   arch/sparc/kernel/prom_64.c           |  7 ++-----
+>   arch/sparc/mm/init_64.c               |  9 +++------
+>   arch/unicore32/mm/mmu.c               |  4 +---
+>   10 files changed, 18 insertions(+), 41 deletions(-)
+> 
+[...]
 
-For today, I will just revert the commit that adds the flag at the
-end or my merging run.  People will only see the warnings if they are
-bisecting.
+> diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+> index bda3c6f..9931e68 100644
+> --- a/arch/powerpc/mm/pgtable_32.c
+> +++ b/arch/powerpc/mm/pgtable_32.c
+> @@ -50,9 +50,7 @@ __ref pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long address)
+>   	if (slab_is_available()) {
+>   		pte = (pte_t *)__get_free_page(GFP_KERNEL|__GFP_ZERO);
+>   	} else {
+> -		pte = __va(memblock_phys_alloc(PAGE_SIZE, PAGE_SIZE));
+> -		if (pte)
+> -			clear_page(pte);
+> +		pte = memblock_alloc(PAGE_SIZE, PAGE_SIZE);
 
---=20
-Cheers,
-Stephen Rothwell
+memblock_alloc() uses memset to zeroize the block.
 
---Sig_/_RjSVHK+yOma+ez7ssPU+ir
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
+clear_page() is more performant than memset().
 
------BEGIN PGP SIGNATURE-----
 
-iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAlv7mSUACgkQAVBC80lX
-0GwsZwf+Jk/YUvKYuEv9Mn+hc4YCN2gz1xijPlFF/GwmtR7Yz0NDxK9LKVlOJnbP
-MSJqzeWRxmrIhWy+bVJd5LB/Wo20Etl8br41nJdjfT9itexS4rbJiYfnzAZ+kWr2
-lhG8MeOnyXX1S4q4TkWftYjhVq/5xogcq+AjJmeggFY/PvbJ3/+JdCTtuwY2TgmA
-FNzSJUdTBYWiIRM4WPYJeV2sDBzpg+im08km84RpPA7gAcyjw9JIJzJ/VbXtw48A
-1k6HAV758uW6Tj2g4f2Ld57LR4xV4F4G40Hk+LFKx4/cmL6u2+YMerlXbq1qJw0N
-HOYyW+yFdMg1RAi+v0JDzrr9ymDT+A==
-=dnX7
------END PGP SIGNATURE-----
+Christophe
 
---Sig_/_RjSVHK+yOma+ez7ssPU+ir--
+[...]
