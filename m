@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8166BC43441
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 12:11:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D0E38C43441
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 12:14:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D2AF420672
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 12:11:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D2AF420672
+	by mail.kernel.org (Postfix) with ESMTPS id 4F77820817
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 12:14:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4F77820817
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 433QkV6M1ZzDqJw
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 23:11:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 433QnZ0D6gzDqVT
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 23:14:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=arm.com
@@ -26,15 +26,15 @@ Authentication-Results: lists.ozlabs.org;
  envelope-from=andrew.murray@arm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 433PTD3h3GzDqQM
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Nov 2018 22:14:55 +1100 (AEDT)
+Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 433PTK661BzDqQT
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Nov 2018 22:15:00 +1100 (AEDT)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 16D3F391A;
- Mon, 26 Nov 2018 03:14:55 -0800 (PST)
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 19806356D;
+ Mon, 26 Nov 2018 03:15:00 -0800 (PST)
 Received: from e119886-lin.cambridge.arm.com (unknown [10.37.6.11])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 5F7C33F5AF;
- Mon, 26 Nov 2018 03:14:50 -0800 (PST)
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 629F53F5AF;
+ Mon, 26 Nov 2018 03:14:55 -0800 (PST)
 From: Andrew Murray <andrew.murray@arm.com>
 To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
  Arnaldo Carvalho de Melo <acme@kernel.org>,
@@ -48,10 +48,9 @@ To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
  Heiko Carstens <heiko.carstens@de.ibm.com>,
  "David S . Miller" <davem@davemloft.net>, sparclinux@vger.kernel.org,
  Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v2 18/20] x86: perf/core remove unnecessary checks for
- exclusion
-Date: Mon, 26 Nov 2018 11:12:34 +0000
-Message-Id: <1543230756-15319-19-git-send-email-andrew.murray@arm.com>
+Subject: [PATCH v2 19/20] x86: perf/core: advertise PMU exclusion capability
+Date: Mon, 26 Nov 2018 11:12:35 +0000
+Message-Id: <1543230756-15319-20-git-send-email-andrew.murray@arm.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1543230756-15319-1-git-send-email-andrew.murray@arm.com>
 References: <1543230756-15319-1-git-send-email-andrew.murray@arm.com>
@@ -73,74 +72,60 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-For x86 PMUs that do not support context exclusion we do not
-advertise the PERF_PMU_CAP_EXCLUDE capability. This ensures
-that perf will prevent us from handling events where any
-exclusion flags are set. Let's remove the now unnecessary
-check for exclusion flags.
-
-This change means that amd/iommu and amd/uncore will now
-also indicate that they do not support exclude_{hv|idle} and
-intel/uncore that it does not support exclude_{guest|host}.
+For PMUs that have the capability to exclude events based
+on context. Let's advertise that we support the
+PERF_PMU_CAP_EXCLUDE capability to ensure that perf doesn't
+prevent us from handling events where any exclusion flags
+are set.
 
 Signed-off-by: Andrew Murray <andrew.murray@arm.com>
 ---
- arch/x86/events/amd/iommu.c    | 5 -----
- arch/x86/events/amd/uncore.c   | 5 -----
- arch/x86/events/intel/uncore.c | 8 --------
- 3 files changed, 18 deletions(-)
+ arch/x86/events/core.c      | 2 ++
+ arch/x86/events/intel/bts.c | 2 +-
+ arch/x86/events/intel/pt.c  | 4 +++-
+ 3 files changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/events/amd/iommu.c b/arch/x86/events/amd/iommu.c
-index 3210fee..eb35fe4 100644
---- a/arch/x86/events/amd/iommu.c
-+++ b/arch/x86/events/amd/iommu.c
-@@ -223,11 +223,6 @@ static int perf_iommu_event_init(struct perf_event *event)
- 	if (is_sampling_event(event) || event->attach_state & PERF_ATTACH_TASK)
- 		return -EINVAL;
+diff --git a/arch/x86/events/core.c b/arch/x86/events/core.c
+index dfb2f7c..3f51916 100644
+--- a/arch/x86/events/core.c
++++ b/arch/x86/events/core.c
+@@ -2297,6 +2297,8 @@ static struct pmu pmu = {
+ 	.event_idx		= x86_pmu_event_idx,
+ 	.sched_task		= x86_pmu_sched_task,
+ 	.task_ctx_size          = sizeof(struct x86_perf_task_context),
++
++	.capabilities		= PERF_PMU_CAP_EXCLUDE,
+ };
  
--	/* IOMMU counters do not have usr/os/guest/host bits */
--	if (event->attr.exclude_user || event->attr.exclude_kernel ||
--	    event->attr.exclude_host || event->attr.exclude_guest)
--		return -EINVAL;
--
- 	if (event->cpu < 0)
- 		return -EINVAL;
+ void arch_perf_update_userpage(struct perf_event *event,
+diff --git a/arch/x86/events/intel/bts.c b/arch/x86/events/intel/bts.c
+index 24ffa1e..4976695 100644
+--- a/arch/x86/events/intel/bts.c
++++ b/arch/x86/events/intel/bts.c
+@@ -601,7 +601,7 @@ static __init int bts_init(void)
+ 	}
  
-diff --git a/arch/x86/events/amd/uncore.c b/arch/x86/events/amd/uncore.c
-index 8671de1..d6ade30 100644
---- a/arch/x86/events/amd/uncore.c
-+++ b/arch/x86/events/amd/uncore.c
-@@ -201,11 +201,6 @@ static int amd_uncore_event_init(struct perf_event *event)
- 	if (is_sampling_event(event) || event->attach_state & PERF_ATTACH_TASK)
- 		return -EINVAL;
+ 	bts_pmu.capabilities	= PERF_PMU_CAP_AUX_NO_SG | PERF_PMU_CAP_ITRACE |
+-				  PERF_PMU_CAP_EXCLUSIVE;
++				  PERF_PMU_CAP_EXCLUSIVE | PERF_PMU_CAP_EXCLUDE;
+ 	bts_pmu.task_ctx_nr	= perf_sw_context;
+ 	bts_pmu.event_init	= bts_event_init;
+ 	bts_pmu.add		= bts_event_add;
+diff --git a/arch/x86/events/intel/pt.c b/arch/x86/events/intel/pt.c
+index 8d016ce..2d811f8 100644
+--- a/arch/x86/events/intel/pt.c
++++ b/arch/x86/events/intel/pt.c
+@@ -1516,7 +1516,9 @@ static __init int pt_init(void)
+ 		pt_pmu.pmu.capabilities =
+ 			PERF_PMU_CAP_AUX_NO_SG | PERF_PMU_CAP_AUX_SW_DOUBLEBUF;
  
--	/* NB and Last level cache counters do not have usr/os/guest/host bits */
--	if (event->attr.exclude_user || event->attr.exclude_kernel ||
--	    event->attr.exclude_host || event->attr.exclude_guest)
--		return -EINVAL;
--
- 	/* and we do not enable counter overflow interrupts */
- 	hwc->config = event->attr.config & AMD64_RAW_EVENT_MASK_NB;
- 	hwc->idx = -1;
-diff --git a/arch/x86/events/intel/uncore.c b/arch/x86/events/intel/uncore.c
-index 27a4614..f1d78d9 100644
---- a/arch/x86/events/intel/uncore.c
-+++ b/arch/x86/events/intel/uncore.c
-@@ -695,14 +695,6 @@ static int uncore_pmu_event_init(struct perf_event *event)
- 	if (pmu->func_id < 0)
- 		return -ENOENT;
- 
--	/*
--	 * Uncore PMU does measure at all privilege level all the time.
--	 * So it doesn't make sense to specify any exclude bits.
--	 */
--	if (event->attr.exclude_user || event->attr.exclude_kernel ||
--			event->attr.exclude_hv || event->attr.exclude_idle)
--		return -EINVAL;
--
- 	/* Sampling not supported yet */
- 	if (hwc->sample_period)
- 		return -EINVAL;
+-	pt_pmu.pmu.capabilities	|= PERF_PMU_CAP_EXCLUSIVE | PERF_PMU_CAP_ITRACE;
++	pt_pmu.pmu.capabilities		 = PERF_PMU_CAP_EXCLUSIVE |
++					   PERF_PMU_CAP_ITRACE |
++					   PERF_PMU_CAP_EXCLUDE;
+ 	pt_pmu.pmu.attr_groups		 = pt_attr_groups;
+ 	pt_pmu.pmu.task_ctx_nr		 = perf_sw_context;
+ 	pt_pmu.pmu.event_init		 = pt_event_init;
 -- 
 2.7.4
 
