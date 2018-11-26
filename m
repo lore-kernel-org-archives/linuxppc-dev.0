@@ -2,62 +2,67 @@ Return-Path: <SRS0=3VWP=OF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D338CC43441
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 22:04:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D3CBC43441
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 22:12:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 33B9620873
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 22:04:27 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="nwJmCDkZ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 33B9620873
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
+	by mail.kernel.org (Postfix) with ESMTPS id 3D9692082F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 22:12:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3D9692082F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 433gtc5KxszDqc8
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 09:04:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 433h3v06rLzDqPS
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 09:12:27 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="nwJmCDkZ";
-	dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 433gqp3cMzzDqbk
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2018 09:01:58 +1100 (AEDT)
+ spf=pass (mailfrom) smtp.mailfrom=arm.com
+ (client-ip=217.140.101.70; helo=foss.arm.com;
+ envelope-from=suzuki.poulose@arm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="nwJmCDkZ"; 
- dkim-atps=neutral
-Received: by ozlabs.org (Postfix)
- id 433gqp29dpz9s3C; Tue, 27 Nov 2018 09:01:58 +1100 (AEDT)
-Received: by ozlabs.org (Postfix, from userid 1003)
- id 433gqp1Cznz9s3l; Tue, 27 Nov 2018 09:01:58 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1543269718; bh=+L3eMjyB4UIEb4sysLWKuotwJnuF7j+4eZRcjem15w0=;
- h=Date:From:To:Subject:From;
- b=nwJmCDkZ+1FCv7oJ42hLU/fOtO4DAYD5X0KrzH0KGu2FS4uLSTE7En+Iu7yFPHSNt
- lXcVl1i4wRlGwc2zLsHpiR1KM1LuOMX9YOGyiBZa0Dcj+VMI/U176iIVJCnDxqXgkg
- fZ2ysnGvYyqI997eDevwBXNId7+N5XWnbSoWngm8UYuR9gw0BII7exZJnEuXcVwTsG
- ltHuFK4sOguWQBPpdURcv03D022QfVVCGm41+9NnH/Xqo5/qi6Ojuza11DD3qt9MgG
- h2hBFzIHat67txzw1HDpWEqLU0/+AeR8d4IK9QoOYSZeHbhHapbBXcp2LPndgR2u90
- BXmlBdPf99SiQ==
-Date: Tue, 27 Nov 2018 09:01:54 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Fix COFF zImage booting on old powermacs
-Message-ID: <20181126220154.GA17244@blackberry>
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 433Zz91bX5zDqZk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2018 05:22:54 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id A55731A25;
+ Mon, 26 Nov 2018 10:22:52 -0800 (PST)
+Received: from [10.1.196.93] (en101.cambridge.arm.com [10.1.196.93])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id AA3FD3F5AF;
+ Mon, 26 Nov 2018 10:22:48 -0800 (PST)
+Subject: Re: [PATCH v2 01/20] perf/doc: update design.txt for
+ exclude_{host|guest} flags
+To: Andrew Murray <andrew.murray@arm.com>,
+ Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>, Shawn Guo <shawnguo@kernel.org>,
+ Sascha Hauer <s.hauer@pengutronix.de>, Will Deacon <will.deacon@arm.com>,
+ Mark Rutland <mark.rutland@arm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Borislav Petkov <bp@alien8.de>,
+ x86@kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+ Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ "David S . Miller" <davem@davemloft.net>, sparclinux@vger.kernel.org,
+ Michael Ellerman <mpe@ellerman.id.au>
+References: <1543230756-15319-1-git-send-email-andrew.murray@arm.com>
+ <1543230756-15319-2-git-send-email-andrew.murray@arm.com>
+From: Suzuki K Poulose <suzuki.poulose@arm.com>
+Message-ID: <b5ba3edb-bc2a-225b-5a87-dd144104cabb@arm.com>
+Date: Mon, 26 Nov 2018 18:22:47 +0000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.2.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.24 (2015-08-30)
+In-Reply-To: <1543230756-15319-2-git-send-email-andrew.murray@arm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Mailman-Approved-At: Tue, 27 Nov 2018 09:10:00 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,54 +74,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linux-s390@vger.kernel.org, linux-mips@linux-mips.org,
+ linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Commit 6975a783d7b4 ("powerpc/boot: Allow building the zImage wrapper
-as a relocatable ET_DYN", 2011-04-12) changed the procedure descriptor
-at the start of crt0.S to have a hard-coded start address of 0x500000
-rather than a reference to _zimage_start, presumably because having
-a reference to a symbol introduced a relocation which is awkward to
-handle in a position-independent executable.  Unfortunately, what is
-at 0x500000 in the COFF image is not the first instruction, but the
-procedure descriptor itself, that is, a word containing 0x500000,
-which is not a valid instruction.  Hence, booting a COFF zImage
-results in a "DEFAULT CATCH!, code=FFF00700" message from Open
-Firmware.
+Hi Andrew,
 
-This fixes the problem by (a) putting the procedure descriptor in the
-data section and (b) adding a branch to _zimage_start as the first
-instruction in the program.
+On 26/11/2018 11:12, Andrew Murray wrote:
+> Update design.txt to reflect the presence of the exclude_host
+> and exclude_guest perf flags.
+> 
+> Signed-off-by: Andrew Murray <andrew.murray@arm.com>
 
-Fixes: 6975a783d7b4 ("powerpc/boot: Allow building the zImage wrapper as a relocatable ET_DYN")
-Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
----
- arch/powerpc/boot/crt0.S | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+Thanks a lot for adding this !
 
-diff --git a/arch/powerpc/boot/crt0.S b/arch/powerpc/boot/crt0.S
-index 32dfe6d..9b9d174 100644
---- a/arch/powerpc/boot/crt0.S
-+++ b/arch/powerpc/boot/crt0.S
-@@ -15,7 +15,7 @@
- RELA = 7
- RELACOUNT = 0x6ffffff9
- 
--	.text
-+	.data
- 	/* A procedure descriptor used when booting this as a COFF file.
- 	 * When making COFF, this comes first in the link and we're
- 	 * linked at 0x500000.
-@@ -23,6 +23,8 @@ RELACOUNT = 0x6ffffff9
- 	.globl	_zimage_start_opd
- _zimage_start_opd:
- 	.long	0x500000, 0, 0, 0
-+	.text
-+	b	_zimage_start
- 
- #ifdef __powerpc64__
- .balign 8
--- 
-2.7.4
+> ---
+>   tools/perf/design.txt | 4 ++++
+>   1 file changed, 4 insertions(+)
+> 
+> diff --git a/tools/perf/design.txt b/tools/perf/design.txt
+> index a28dca2..5b2b23b 100644
+> --- a/tools/perf/design.txt
+> +++ b/tools/perf/design.txt
+> @@ -222,6 +222,10 @@ The 'exclude_user', 'exclude_kernel' and 'exclude_hv' bits provide a
+>   way to request that counting of events be restricted to times when the
+>   CPU is in user, kernel and/or hypervisor mode.
+>   
+> +Furthermore the 'exclude_host' and 'exclude_guest' bits provide a way
+> +to request counting of events restricted to guest and host contexts when
+> +using KVM virtualisation.
 
+minor nit: could we generalise this to :
+
+"using Linux as the hypervisor".
+
+Otherwise, looks good to me.
+
+Cheers
+Suzuki
