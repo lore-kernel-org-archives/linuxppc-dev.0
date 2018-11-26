@@ -2,66 +2,54 @@ Return-Path: <SRS0=3VWP=OF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.9 required=3.0 tests=FROM_EXCESS_BASE64,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FDE4C43441
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 14:13:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CC17DC43441
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 14:22:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EB50E20663
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 14:13:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EB50E20663
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 2F6E920855
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 14:22:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2F6E920855
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 433TQj5VhYzDqTh
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 01:13:01 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 433Tdt1VpmzDqHH
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 01:22:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=arm.com
- (client-ip=217.140.101.70; helo=foss.arm.com;
- envelope-from=robin.murphy@arm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=suse.de
+ (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=msuchanek@suse.de;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 433TMq6KcQzDqRs
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2018 01:10:31 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 08D4222C7;
- Mon, 26 Nov 2018 06:10:30 -0800 (PST)
-Received: from [10.1.196.75] (e110467-lin.cambridge.arm.com [10.1.196.75])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id F24DD3F5A0;
- Mon, 26 Nov 2018 06:10:25 -0800 (PST)
-Subject: Re: [PATCH v2 03/20] perf/core: add PERF_PMU_CAP_EXCLUDE for
- exclusion capable PMUs
-To: Andrew Murray <andrew.murray@arm.com>,
- Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
- Arnaldo Carvalho de Melo <acme@kernel.org>, Shawn Guo <shawnguo@kernel.org>,
- Sascha Hauer <s.hauer@pengutronix.de>, Will Deacon <will.deacon@arm.com>,
- Mark Rutland <mark.rutland@arm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Thomas Gleixner <tglx@linutronix.de>, Borislav Petkov <bp@alien8.de>,
- x86@kernel.org, Ralf Baechle <ralf@linux-mips.org>,
- Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- "David S . Miller" <davem@davemloft.net>, sparclinux@vger.kernel.org,
- Michael Ellerman <mpe@ellerman.id.au>
-References: <1543230756-15319-1-git-send-email-andrew.murray@arm.com>
- <1543230756-15319-4-git-send-email-andrew.murray@arm.com>
-From: Robin Murphy <robin.murphy@arm.com>
-Message-ID: <8c9003c3-ccbf-c342-024f-772d697a911b@arm.com>
-Date: Mon, 26 Nov 2018 14:10:24 +0000
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.2.1
+ dmarc=none (p=none dis=none) header.from=suse.de
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 433TbH3mj5zDqNS
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2018 01:20:26 +1100 (AEDT)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay1.suse.de (unknown [195.135.220.254])
+ by mx1.suse.de (Postfix) with ESMTP id C7B4FB02B;
+ Mon, 26 Nov 2018 14:20:22 +0000 (UTC)
+Date: Mon, 26 Nov 2018 15:20:15 +0100
+From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
+To: David Hildenbrand <david@redhat.com>
+Subject: Re: [PATCH RFC] mm/memory_hotplug: Introduce memory block types
+Message-ID: <20181126152015.7464c786@naga>
+In-Reply-To: <b64a0e1e-6aaa-66a9-2fb7-12daa6383ce1@redhat.com>
+References: <20180928150357.12942-1-david@redhat.com>
+ <b01a956b-080c-c643-6473-eb132b9f7200@redhat.com>
+ <20181123190653.6da91461@kitsune.suse.cz>
+ <fad04d80-4e72-1bd8-3e67-a3f7dd0bc2fa@redhat.com>
+ <b64a0e1e-6aaa-66a9-2fb7-12daa6383ce1@redhat.com>
+X-Mailer: Claws Mail 3.17.1 (GTK+ 2.24.32; x86_64-suse-linux-gnu)
 MIME-Version: 1.0
-In-Reply-To: <1543230756-15319-4-git-send-email-andrew.murray@arm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-GB
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,78 +61,90 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390@vger.kernel.org, linux-mips@linux-mips.org,
- linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: Kate Stewart <kstewart@linuxfoundation.org>, Rich Felker <dalias@libc.org>,
+ linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+ Peter Zijlstra <peterz@infradead.org>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-mm@kvack.org,
+ Michal Hocko <mhocko@suse.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, Rashmica Gupta <rashmica.g@gmail.com>,
+ "K. Y.
+ Srinivasan" <kys@microsoft.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ Stephen Rothwell <sfr@canb.auug.org.au>, Michael Neuling <mikey@neuling.org>,
+ Stephen Hemminger <sthemmin@microsoft.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, linux-acpi@vger.kernel.org,
+ Ingo Molnar <mingo@redhat.com>, xen-devel@lists.xenproject.org,
+ Rob Herring <robh@kernel.org>, Len Brown <lenb@kernel.org>,
+ Pavel Tatashin <pavel.tatashin@microsoft.com>, linux-s390@vger.kernel.org,
+ "mike.travis@hpe.com" <mike.travis@hpe.com>,
+ Haiyang Zhang <haiyangz@microsoft.com>,
+ Jonathan =?UTF-8?B?TmV1c2Now6Rm?= =?UTF-8?B?ZXI=?= <j.neuschaefer@gmx.net>,
+ Nicholas Piggin <npiggin@gmail.com>, Joe Perches <joe@perches.com>,
+ =?UTF-8?B?SsOpcsO0bWU=?= Glisse <jglisse@redhat.com>,
+ Mike Rapoport <rppt@linux.vnet.ibm.com>, Borislav Petkov <bp@alien8.de>,
+ Andy Lutomirski <luto@kernel.org>, Dan Williams <dan.j.williams@intel.com>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>, Oscar Salvador <osalvador@suse.de>,
+ Juergen Gross <jgross@suse.com>, Tony Luck <tony.luck@intel.com>,
+ Mathieu Malaterre <malat@debian.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
+ Fenghua Yu <fenghua.yu@intel.com>,
+ Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Philippe Ombredanne <pombredanne@nexb.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, devel@linuxdriverproject.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Andrew,
+On Mon, 26 Nov 2018 14:33:29 +0100
+David Hildenbrand <david@redhat.com> wrote:
 
-On 26/11/2018 11:12, Andrew Murray wrote:
-> Many PMU drivers do not have the capability to exclude counting events
-> that occur in specific contexts such as idle, kernel, guest, etc. These
-> drivers indicate this by returning an error in their event_init upon
-> testing the events attribute flags. This approach is error prone and
-> often inconsistent.
-> 
-> Let's instead allow PMU drivers to advertise their ability to exclude
-> based on context via a new capability: PERF_PMU_CAP_EXCLUDE. This
-> allows the perf core to reject requests for exclusion events where
-> there is no support in the PMU.
-> 
-> Signed-off-by: Andrew Murray <andrew.murray@arm.com>
-> ---
->   include/linux/perf_event.h | 1 +
->   kernel/events/core.c       | 9 +++++++++
->   2 files changed, 10 insertions(+)
-> 
-> diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
-> index b2e806f..69b3d65 100644
-> --- a/include/linux/perf_event.h
-> +++ b/include/linux/perf_event.h
-> @@ -244,6 +244,7 @@ struct perf_event;
->   #define PERF_PMU_CAP_EXCLUSIVE			0x10
->   #define PERF_PMU_CAP_ITRACE			0x20
->   #define PERF_PMU_CAP_HETEROGENEOUS_CPUS		0x40
-> +#define PERF_PMU_CAP_EXCLUDE			0x80
->   
->   /**
->    * struct pmu - generic performance monitoring unit
-> diff --git a/kernel/events/core.c b/kernel/events/core.c
-> index 5a97f34..9afb33c 100644
-> --- a/kernel/events/core.c
-> +++ b/kernel/events/core.c
-> @@ -9743,6 +9743,15 @@ static int perf_try_init_event(struct pmu *pmu, struct perf_event *event)
->   	if (ctx)
->   		perf_event_ctx_unlock(event->group_leader, ctx);
->   
-> +	if (!ret) {
-> +		if (!(pmu->capabilities & PERF_PMU_CAP_EXCLUDE) &&
-> +				event_has_any_exclude_flag(event)) {
+> On 26.11.18 13:30, David Hildenbrand wrote:
+> > On 23.11.18 19:06, Michal Such=C3=A1nek wrote: =20
 
-Technically this is a bisection-breaker, since no driver has this 
-capability yet - ideally, this patch should come after all the ones 
-introducing it to the relevant drivers (with the removal of the 
-now-redundant code from the other drivers at the end).
+> >>
+> >> If we are going to fake the driver information we may as well add the
+> >> type attribute and be done with it.
+> >>
+> >> I think the problem with the patch was more with the semantic than the
+> >> attribute itself.
+> >>
+> >> What is normal, paravirtualized, and standby memory?
+> >>
+> >> I can understand DIMM device, baloon device, or whatever mechanism for
+> >> adding memory you might have.
+> >>
+> >> I can understand "memory designated as standby by the cluster
+> >> administrator".
+> >>
+> >> However, DIMM vs baloon is orthogonal to standby and should not be
+> >> conflated into one property.
+> >>
+> >> paravirtualized means nothing at all in relationship to memory type and
+> >> the desired online policy to me. =20
+> >=20
+> > Right, so with whatever we come up, it should allow to make a decision
+> > in user space about
+> > - if memory is to be onlined automatically =20
+>=20
+> And I will think about if we really should model standby memory. Maybe
+> it is really better to have in user space something like (as Dan noted)
 
-Alternatively, since we already have several other negative 
-capabilities, unless there's a strong feeling against adding any more 
-then it might work out simpler to flip it to PERF_PMU_CAP_NO_EXCLUDE, 
-such that we only need to introduce the core check then directly replace 
-the open-coded event checks with the capability in the appropriate 
-drivers, and need not touch the exclusion-supporting ones at all.
+If it is possible to designate the memory as standby or online in the
+s390 admin interface and the kernel does have access to this
+information it makes sense to forward it to userspace (as separate
+s390-specific property). If not then you need to make some kind of
+assumption like below and the user can tune the script according to
+their usecase.
 
-Robin.
+>=20
+> if (isS390x() && type =3D=3D "dimm") {
+> 	/* don't online, on s390x system DIMMs are standby memory */
+> }
 
-> +			if (event->destroy)
-> +				event->destroy(event);
-> +			ret = -EINVAL;
-> +		}
-> +	}
-> +
->   	if (ret)
->   		module_put(pmu->module);
->   
-> 
+Thanks
+
+Michal
