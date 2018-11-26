@@ -3,58 +3,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 83A52C43441
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 17:58:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 18FCBC43441
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 18:03:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B3F1220663
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 17:58:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B3F1220663
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id B753B20663
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 18:03:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B753B20663
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=davemloft.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 433ZQn3YC8zDqbY
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 04:58:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 433ZX254lJzDqbX
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 05:02:58 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=davemloft.net
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=intel.com
- (client-ip=134.134.136.100; helo=mga07.intel.com;
- envelope-from=jeffrey.t.kirsher@intel.com; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=davemloft.net
+ (client-ip=2620:137:e000::1:9; helo=shards.monkeyblade.net;
+ envelope-from=davem@davemloft.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
+ dmarc=none (p=none dis=none) header.from=davemloft.net
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [IPv6:2620:137:e000::1:9])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 433ZNQ4lWBzDqSs
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2018 04:56:15 +1100 (AEDT)
-X-Amp-Result: UNSCANNABLE
-X-Amp-File-Uploaded: False
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
- by orsmga105.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
- 26 Nov 2018 09:56:12 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.56,283,1539673200"; 
- d="asc'?scan'208";a="95176535"
-Received: from jtkirshe-desk1.jf.intel.com ([134.134.177.96])
- by orsmga008.jf.intel.com with ESMTP; 26 Nov 2018 09:56:11 -0800
-Message-ID: <c1b8de1a8e9d4d215b56498e2d5b83a02083483a.camel@intel.com>
-Subject: Re: [Intel-wired-lan] [PATCH V2] mm: Replace all open encodings for
- NUMA_NO_NODE
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-To: Anshuman Khandual <anshuman.khandual@arm.com>, linux-mm@kvack.org, 
- linux-kernel@vger.kernel.org
-Date: Mon, 26 Nov 2018 09:56:28 -0800
-In-Reply-To: <1543235202-9075-1-git-send-email-anshuman.khandual@arm.com>
-References: <1543235202-9075-1-git-send-email-anshuman.khandual@arm.com>
-Organization: Intel
-Content-Type: multipart/signed; micalg="pgp-sha256";
- protocol="application/pgp-signature"; boundary="=-w/yFab8vycJu1U8x0saQ"
-User-Agent: Evolution 3.30.2 (3.30.2-2.fc29) 
+ by lists.ozlabs.org (Postfix) with ESMTPS id 433ZTg08klzDqT2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2018 05:00:53 +1100 (AEDT)
+Received: from localhost (unknown [IPv6:2601:601:9f80:35cd::bf5])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ (Authenticated sender: davem-davemloft)
+ by shards.monkeyblade.net (Postfix) with ESMTPSA id D8CC814E908FE;
+ Mon, 26 Nov 2018 10:00:49 -0800 (PST)
+Date: Mon, 26 Nov 2018 10:00:46 -0800 (PST)
+Message-Id: <20181126.100046.860156356512347227.davem@davemloft.net>
+To: andrew.murray@arm.com
+Subject: Re: [PATCH v2 16/20] sparc: perf/core: advertise PMU exclusion
+ capability
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1543230756-15319-17-git-send-email-andrew.murray@arm.com>
+References: <1543230756-15319-1-git-send-email-andrew.murray@arm.com>
+ <1543230756-15319-17-git-send-email-andrew.murray@arm.com>
+X-Mailer: Mew version 6.8 on Emacs 26.1
 Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.5.12
+ (shards.monkeyblade.net [149.20.54.216]);
+ Mon, 26 Nov 2018 10:00:50 -0800 (PST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,150 +65,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: jeffrey.t.kirsher@intel.com
-Cc: linux-block@vger.kernel.org, linux-fbdev@vger.kernel.org,
- linux-ia64@vger.kernel.org, linux-rdma@vger.kernel.org, netdev@vger.kernel.org,
- iommu@lists.linux-foundation.org, dri-devel@lists.freedesktop.org,
- hverkuil@xs4all.nl, dmaengine@vger.kernel.org, vkoul@kernel.org,
- intel-wired-lan@lists.osuosl.org, linux-alpha@vger.kernel.org,
- sparclinux@vger.kernel.org, jiangqi903@gmail.com, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, ocfs2-devel@oss.oracle.com,
- linux-media@vger.kernel.org
+Cc: mark.rutland@arm.com, linux-mips@linux-mips.org, peterz@infradead.org,
+ heiko.carstens@de.ibm.com, sparclinux@vger.kernel.org,
+ linux-s390@vger.kernel.org, x86@kernel.org, mingo@redhat.com,
+ jhogan@kernel.org, will.deacon@arm.com, s.hauer@pengutronix.de,
+ acme@kernel.org, bp@alien8.de, tglx@linutronix.de,
+ linux-arm-kernel@lists.infradead.org, shawnguo@kernel.org,
+ linux-kernel@vger.kernel.org, ralf@linux-mips.org, paul.burton@mips.com,
+ linux-alpha@vger.kernel.org, schwidefsky@de.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+From: Andrew Murray <andrew.murray@arm.com>
+Date: Mon, 26 Nov 2018 11:12:32 +0000
 
---=-w/yFab8vycJu1U8x0saQ
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+> The SPARC PMU has the capability to exclude events based on context
+>  - let's advertise that we support the PERF_PMU_CAP_EXCLUDE
+> capability to ensure that perf doesn't prevent us from handling
+> events where any exclusion flags are set.
+> 
+> Signed-off-by: Andrew Murray <andrew.murray@arm.com>
 
-On Mon, 2018-11-26 at 17:56 +0530, Anshuman Khandual wrote:
-> At present there are multiple places where invalid node number is
-> encoded
-> as -1. Even though implicitly understood it is always better to have
-> macros
-> in there. Replace these open encodings for an invalid node number
-> with the
-> global macro NUMA_NO_NODE. This helps remove NUMA related assumptions
-> like
-> 'invalid node' from various places redirecting them to a common
-> definition.
->=20
-> Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
-
-For the 'ixgbe' driver changes.
-
-Acked-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-
-
-> ---
-> Changes in V2:
->=20
-> - Added inclusion of 'numa.h' header at various places per Andrew
-> - Updated 'dev_to_node' to use NUMA_NO_NODE instead per Vinod
->=20
-> Changes in V1: (https://lkml.org/lkml/2018/11/23/485)
->=20
-> - Dropped OCFS2 changes per Joseph
-> - Dropped media/video drivers changes per Hans
->=20
-> RFC - https://patchwork.kernel.org/patch/10678035/
->=20
-> Build tested this with multiple cross compiler options like alpha,
-> sparc,
-> arm64, x86, powerpc, powerpc64le etc with their default config which
-> might
-> not have compiled tested all driver related changes. I will
-> appreciate
-> folks giving this a test in their respective build environment.
->=20
-> All these places for replacement were found by running the following
-> grep
-> patterns on the entire kernel code. Please let me know if this might
-> have
-> missed some instances. This might also have replaced some false
-> positives.
-> I will appreciate suggestions, inputs and review.
->=20
-> 1. git grep "nid =3D=3D -1"
-> 2. git grep "node =3D=3D -1"
-> 3. git grep "nid =3D -1"
-> 4. git grep "node =3D -1"
->=20
->  arch/alpha/include/asm/topology.h             |  3 ++-
->  arch/ia64/kernel/numa.c                       |  2 +-
->  arch/ia64/mm/discontig.c                      |  6 +++---
->  arch/ia64/sn/kernel/io_common.c               |  3 ++-
->  arch/powerpc/include/asm/pci-bridge.h         |  3 ++-
->  arch/powerpc/kernel/paca.c                    |  3 ++-
->  arch/powerpc/kernel/pci-common.c              |  3 ++-
->  arch/powerpc/mm/numa.c                        | 14 +++++++-------
->  arch/powerpc/platforms/powernv/memtrace.c     |  5 +++--
->  arch/sparc/kernel/auxio_32.c                  |  3 ++-
->  arch/sparc/kernel/pci_fire.c                  |  3 ++-
->  arch/sparc/kernel/pci_schizo.c                |  3 ++-
->  arch/sparc/kernel/pcic.c                      |  7 ++++---
->  arch/sparc/kernel/psycho_common.c             |  3 ++-
->  arch/sparc/kernel/sbus.c                      |  3 ++-
->  arch/sparc/mm/init_64.c                       |  6 +++---
->  arch/sparc/prom/init_32.c                     |  3 ++-
->  arch/sparc/prom/init_64.c                     |  5 +++--
->  arch/sparc/prom/tree_32.c                     | 13 +++++++------
->  arch/sparc/prom/tree_64.c                     | 19 ++++++++++-------
-> --
->  arch/x86/include/asm/pci.h                    |  3 ++-
->  arch/x86/kernel/apic/x2apic_uv_x.c            |  7 ++++---
->  arch/x86/kernel/smpboot.c                     |  3 ++-
->  arch/x86/platform/olpc/olpc_dt.c              | 17 +++++++++--------
->  drivers/block/mtip32xx/mtip32xx.c             |  5 +++--
->  drivers/dma/dmaengine.c                       |  4 +++-
->  drivers/infiniband/hw/hfi1/affinity.c         |  3 ++-
->  drivers/infiniband/hw/hfi1/init.c             |  3 ++-
->  drivers/iommu/dmar.c                          |  5 +++--
->  drivers/iommu/intel-iommu.c                   |  3 ++-
->  drivers/misc/sgi-xp/xpc_uv.c                  |  3 ++-
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  5 +++--
->  include/linux/device.h                        |  2 +-
->  init/init_task.c                              |  3 ++-
->  kernel/kthread.c                              |  3 ++-
->  kernel/sched/fair.c                           | 15 ++++++++-------
->  lib/cpumask.c                                 |  3 ++-
->  mm/huge_memory.c                              | 13 +++++++------
->  mm/hugetlb.c                                  |  3 ++-
->  mm/ksm.c                                      |  2 +-
->  mm/memory.c                                   |  7 ++++---
->  mm/memory_hotplug.c                           | 12 ++++++------
->  mm/mempolicy.c                                |  2 +-
->  mm/page_alloc.c                               |  4 ++--
->  mm/page_ext.c                                 |  2 +-
->  net/core/pktgen.c                             |  3 ++-
->  net/qrtr/qrtr.c                               |  3 ++-
->  tools/perf/bench/numa.c                       |  6 +++---
->  48 files changed, 146 insertions(+), 108 deletions(-)
-
-
---=-w/yFab8vycJu1U8x0saQ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCAAdFiEEiTyZWz+nnTrOJ1LZ5W/vlVpL7c4FAlv8M8wACgkQ5W/vlVpL
-7c7QNQ/+NU3ikW7p6wkGj8G70RbkJORkKztnANrZvZMGTngn9AOr2IYiWm5l1FX0
-J1AyprX0m4BmLXBgW1BrOiReEiunq9RWtCT+2d7jQD6HxydLdRIbnQhLreHfcFv7
-6pUvyapG9B8a4X/6OzQXJVkRV+iXi/NzVxJ2WvZ6PhifiPMJo9oWab/OJDu/+8Fn
-w9BrPNqJhTdrSQ1E7aeMWUs/GbfQsQ+cm51Yb12KAemw5ocp45GNNeN2Y14g+YFZ
-Yhf7+/ihwBaph/zDYqFRsI+uSLnKIh7vLC/weBglkzU5mNZU9ugRj6M76jDE+OI3
-yqOTMp6DquBqH7qYuGA+yJfWvnsXa/KphTKzISpKXzkcGI4uyhjfWjoUN2CPbLWj
-55+k1mCY0glzACh1K+SFV1EDJ157U0sEx+vGaKDfpEcUFi/SUU7xE/u+4lI12Kec
-fMhcStiYmF5wvVMO8ID6+aPl9F7uNdrAJjPV6psDtLRhi6D+EkFRPG/2sxGNWNBC
-2FfNwyEy9of0UsptOWI3IOt80Oz2usDEwcnC4gAQhykPe/6lNI6Yb1OjsMtUdzw1
-BqoYXFKLnC2JQWxluwLMjJ/ng/Af94RzzYw901pIhtJjlTOx6nYUxO38hLp6JU6B
-qKDxnSxdVo6/2QOJpMCJ2o0tX/Q1MdMWbySfxnCX9il8o/TgOck=
-=I+vR
------END PGP SIGNATURE-----
-
---=-w/yFab8vycJu1U8x0saQ--
-
+Acked-by: David S. Miller <davem@davemloft.net>
