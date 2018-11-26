@@ -2,53 +2,68 @@ Return-Path: <SRS0=3VWP=OF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4210EC43441
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 06:47:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 68479C43441
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 06:52:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BA4BC2082F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 06:47:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BA4BC2082F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id CFC0920672
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 06:51:59 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="rl0kJpn/"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CFC0920672
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 433HXl30x9zDqNk
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 17:47:35 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 433Hdn3xcbzDq5m
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Nov 2018 17:51:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=arm.com
- (client-ip=217.140.101.70; helo=foss.arm.com;
- envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 433HTy4CYmzDqNb
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Nov 2018 17:45:09 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 251CB351D;
- Sun, 25 Nov 2018 22:45:07 -0800 (PST)
-Received: from [192.168.0.102] (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id C4AB53F5A0;
- Sun, 25 Nov 2018 22:45:02 -0800 (PST)
-Subject: Re: [PATCH] mm: Replace all open encodings for NUMA_NO_NODE
-To: Vinod Koul <vkoul@kernel.org>
-References: <1542966856-12619-1-git-send-email-anshuman.khandual@arm.com>
- <20181124140554.GG3175@vkoul-mobl.Dlink>
-From: Anshuman Khandual <anshuman.khandual@arm.com>
-Message-ID: <5228bcdb-b140-a86a-6c9c-488f1a723353@arm.com>
-Date: Mon, 26 Nov 2018 12:15:04 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="rl0kJpn/";
+	dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 433HZv3XhWzDqLp
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Nov 2018 17:49:27 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=canb.auug.org.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au
+ header.b="rl0kJpn/"; dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPSA id 433HZt5RhQz9s29;
+ Mon, 26 Nov 2018 17:49:26 +1100 (AEDT)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=canb.auug.org.au
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=canb.auug.org.au;
+ s=201702; t=1543214967;
+ bh=QyAHgJclR3Od9eZAxmJdB6Grt792p9FemdPL75EHgdU=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+ b=rl0kJpn/X97eEC/WErj6z2AeGxLRhz7m/HRQgfHT3KQ9vyymjLGmDBEFyeyYQ7VYt
+ hsYSLBNIvgzgrfJNIbyPjZM7U55qMq0ICKxDbkNSxstsGfeUvWb3ejXVZNlRL5H7c/
+ c2iYMHpftuZPLG3cODQp75Yg7TGwv/94mXE7Z1FoQlwO1Xy6WCz2BhKDHGIqzSCq65
+ 22RJob5c5jaEqveQ4A8Svx/P4cKhOVnpD2LI+ygseCQnsuV6YJNDRyVh9II9lVkzpL
+ ImTiYlsrA9YwocRjpAb5o3ZSURrFWqyAwcMuL7bSggwEr0qNYrMwfGjRoxr6gdYOyh
+ 16JzmWZakiFEg==
+Date: Mon, 26 Nov 2018 17:49:26 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Kees Cook <keescook@google.com>
+Subject: Re: New linux-next KCFLAGS
+Message-ID: <20181126174926.65889a69@canb.auug.org.au>
+In-Reply-To: <CAGXu5jL38a1Tx_LW9_j0sEHwLFGpuX-r2Y7dJq32eoED8BFrhw@mail.gmail.com>
+References: <CAGXu5jL9WDRVCzPP0V2cvFHWfwAfd74kBNX9O+0frFkD26ti1Q@mail.gmail.com>
+ <20181126084841.13679afd@canb.auug.org.au>
+ <CAGXu5jL38a1Tx_LW9_j0sEHwLFGpuX-r2Y7dJq32eoED8BFrhw@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20181124140554.GG3175@vkoul-mobl.Dlink>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/d/66+aAjXxMl/m6lPFIyzJH"; protocol="application/pgp-signature"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,36 +75,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: hverkuil@xs4all.nl, linux-fbdev@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-rdma@vger.kernel.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-block@vger.kernel.org, linux-mm@kvack.org,
- iommu@lists.linux-foundation.org, intel-wired-lan@lists.osuosl.org,
- linux-alpha@vger.kernel.org, dmaengine@vger.kernel.org,
- sparclinux@vger.kernel.org, akpm@linux-foundation.org, jiangqi903@gmail.com,
- linuxppc-dev@lists.ozlabs.org, ocfs2-devel@oss.oracle.com,
- linux-media@vger.kernel.org
+Cc: "Gustavo A. R. Silva" <gustavo@embeddedor.com>,
+ PowerPC <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+--Sig_/d/66+aAjXxMl/m6lPFIyzJH
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
+Hi Kees,
 
-On 11/24/2018 07:35 PM, Vinod Koul wrote:
-> On 23-11-18, 15:24, Anshuman Khandual wrote:
-> 
->> --- a/drivers/dma/dmaengine.c
->> +++ b/drivers/dma/dmaengine.c
->> @@ -386,7 +386,8 @@ EXPORT_SYMBOL(dma_issue_pending_all);
->>  static bool dma_chan_is_local(struct dma_chan *chan, int cpu)
->>  {
->>  	int node = dev_to_node(chan->device->dev);
->> -	return node == -1 || cpumask_test_cpu(cpu, cpumask_of_node(node));
->> +	return node == NUMA_NO_NODE ||
->> +		cpumask_test_cpu(cpu, cpumask_of_node(node));
->>  }
-> 
-> I do not see dev_to_node being updated first, that returns -1 so I would
-> prefer to check for -1 unless it return NUMA_NO_NODE
+On Sun, 25 Nov 2018 21:46:20 -0800 Kees Cook <keescook@google.com> wrote:
+>
+> Excellent! (Though, wait, does this mean everyone _else_ will see this
+> too? I'm worried that will be way too noisy...)
 
-Sure will update dev_to_node() to return NUMA_NO_NODE as well.
+Ah, yes, you may be right.  everyone will see them :-(
+
+I may have to figure out another way to do this for tomorrow.
+
+--=20
+Cheers,
+Stephen Rothwell
+
+--Sig_/d/66+aAjXxMl/m6lPFIyzJH
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAlv7l3YACgkQAVBC80lX
+0GyBmQf/VaEIN5ETWV7cV2cYamRSO737SvNHD7FuJh6BAW8HTXTwE5G7CTm+udDE
+4ZS3Hhuy50qPAy06irV1Whik6SI8TIETNiSvkyA6v5Kkseo84KiTxNKcyMl/qAy1
+hw0iheRleVjoJ4Xfo/LUkMHc8pMeZvoNQW0KpKRtEmvL83w1B+WEMPlqSQ699lAT
+Rb2Gw05aJVJdO+MXyhxuk2Pj8vY+xdpwYJtOLKSQhlfxRTd3vAJPwpxv4DACAgQH
+M6ftIQ7+4NjdcWATQ7fvJELD1zZcRBtTsT1cIDOUG4DIL/2ig56PjCr01whk1kxO
+BEcUzBa8ukgy83gi7S4lKiPHwpgLbw==
+=+atM
+-----END PGP SIGNATURE-----
+
+--Sig_/d/66+aAjXxMl/m6lPFIyzJH--
