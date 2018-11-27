@@ -2,67 +2,48 @@ Return-Path: <SRS0=Iv+L=OG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BD4D4C43441
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 07:50:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F79CC43441
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 07:59:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 407EA20873
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 07:50:11 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="viMfo1K1"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 407EA20873
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
+	by mail.kernel.org (Postfix) with ESMTPS id F00432086B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 07:59:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F00432086B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 433wtT2S8dzDqf4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 18:50:09 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="viMfo1K1";
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=srs0=zkqh=og=linuxfoundation.org=gregkh@kernel.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="viMfo1K1"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 433x4n6DlTzDqfb
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 18:59:05 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 433wkq6jSFzDqdm
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2018 18:43:31 +1100 (AEDT)
-Received: from localhost (5356596B.cm-6-7b.dynamic.ziggo.nl [83.86.89.107])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 433x2h1cPBzDqcQ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2018 18:57:16 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id AE5EC20873;
- Tue, 27 Nov 2018 07:43:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1543304610;
- bh=KMUuDeFxIIAT6StFc5ffKRNYDVzzYQhrih4Pz/zc3P0=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=viMfo1K1Ji6Q196am/85M0PmwdMK6SHnqU+eHY6U5cdxIOcZvwOHifzfuO1hvqMIE
- xHCK4VOOAuevJWwUHme+KukzuOkF/tUgpWQqfBEm+P9zgQcsEfo758z630/INYb15u
- 9F8oxVgKlKfRywZR+qdEDiJ1C3I4uNmJnKrW3viM=
-Date: Tue, 27 Nov 2018 08:43:27 +0100
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: Re: [PATCH] lkdtm: print real addresses
-Message-ID: <20181127074327.GD13965@kroah.com>
-References: <edfe11c6d1f9bb0a7c2cee655895dfeedc1dda5e.1541613057.git.christophe.leroy@c-s.fr>
+ by ozlabs.org (Postfix) with ESMTPSA id 433x2f3tQHz9s3C;
+ Tue, 27 Nov 2018 18:57:14 +1100 (AEDT)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Anshuman Khandual <anshuman.khandual@arm.com>, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH V2] mm: Replace all open encodings for NUMA_NO_NODE
+In-Reply-To: <1543235202-9075-1-git-send-email-anshuman.khandual@arm.com>
+References: <1543235202-9075-1-git-send-email-anshuman.khandual@arm.com>
+Date: Tue, 27 Nov 2018 18:57:11 +1100
+Message-ID: <87mupvgdgo.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <edfe11c6d1f9bb0a7c2cee655895dfeedc1dda5e.1541613057.git.christophe.leroy@c-s.fr>
-User-Agent: Mutt/1.11.0 (2018-11-25)
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,30 +55,67 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Kees Cook <keescook@chromium.org>,
- Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org
+Cc: hverkuil@xs4all.nl, linux-fbdev@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-rdma@vger.kernel.org, netdev@vger.kernel.org, vkoul@kernel.org,
+ dri-devel@lists.freedesktop.org, linux-block@vger.kernel.org,
+ sparclinux@vger.kernel.org, iommu@lists.linux-foundation.org,
+ intel-wired-lan@lists.osuosl.org, linux-alpha@vger.kernel.org,
+ dmaengine@vger.kernel.org, jiangqi903@gmail.com, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, ocfs2-devel@oss.oracle.com,
+ linux-media@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Nov 07, 2018 at 08:14:10PM +0000, Christophe Leroy wrote:
-> Today, when doing a lkdtm test before the readiness of the
-> random generator, (ptrval) is printed instead of the address
-> at which it perform the fault:
-> 
-> [ 1597.337030] lkdtm: Performing direct entry EXEC_USERSPACE
-> [ 1597.337142] lkdtm: attempting ok execution at (ptrval)
-> [ 1597.337398] lkdtm: attempting bad execution at (ptrval)
-> [ 1597.337460] kernel tried to execute user page (77858000) -exploit attempt? (uid: 0)
-> [ 1597.344769] Unable to handle kernel paging request for instruction fetch
-> [ 1597.351392] Faulting instruction address: 0x77858000
-> [ 1597.356312] Oops: Kernel access of bad area, sig: 11 [#1]
-> 
-> If the lkdtm test is done later on, it prints an hashed address.
-> 
-> In both cases this is pointless. The purpose of the test is to
-> ensure the kernel generates an Oops at the expected address,
-> so real addresses needs to be printed. This patch fixes that.
+Anshuman Khandual <anshuman.khandual@arm.com> writes:
+> At present there are multiple places where invalid node number is encoded
+> as -1. Even though implicitly understood it is always better to have macros
+> in there. Replace these open encodings for an invalid node number with the
+> global macro NUMA_NO_NODE. This helps remove NUMA related assumptions like
+> 'invalid node' from various places redirecting them to a common definition.
+>
+> Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
+> ---
+> Changes in V2:
+>
+> - Added inclusion of 'numa.h' header at various places per Andrew
+> - Updated 'dev_to_node' to use NUMA_NO_NODE instead per Vinod
+>
+> Changes in V1: (https://lkml.org/lkml/2018/11/23/485)
+>
+> - Dropped OCFS2 changes per Joseph
+> - Dropped media/video drivers changes per Hans
+>
+> RFC - https://patchwork.kernel.org/patch/10678035/
+>
+> Build tested this with multiple cross compiler options like alpha, sparc,
+> arm64, x86, powerpc, powerpc64le etc with their default config which might
+> not have compiled tested all driver related changes. I will appreciate
+> folks giving this a test in their respective build environment.
+>
+> All these places for replacement were found by running the following grep
+> patterns on the entire kernel code. Please let me know if this might have
+> missed some instances. This might also have replaced some false positives.
+> I will appreciate suggestions, inputs and review.
+>
+> 1. git grep "nid == -1"
+> 2. git grep "node == -1"
+> 3. git grep "nid = -1"
+> 4. git grep "node = -1"
+>
+>  arch/alpha/include/asm/topology.h             |  3 ++-
+>  arch/ia64/kernel/numa.c                       |  2 +-
+>  arch/ia64/mm/discontig.c                      |  6 +++---
+>  arch/ia64/sn/kernel/io_common.c               |  3 ++-
+>  arch/powerpc/include/asm/pci-bridge.h         |  3 ++-
+>  arch/powerpc/kernel/paca.c                    |  3 ++-
+>  arch/powerpc/kernel/pci-common.c              |  3 ++-
+>  arch/powerpc/mm/numa.c                        | 14 +++++++-------
+>  arch/powerpc/platforms/powernv/memtrace.c     |  5 +++--
 
-I am pretty sure this is intentional.  Kees?
+These powerpc changes all look fine.
 
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+
+
+cheers
