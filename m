@@ -6,38 +6,38 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8EC9FC43441
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 09:29:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3AFE4C43441
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 09:31:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 473602086B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 09:29:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 473602086B
+	by mail.kernel.org (Postfix) with ESMTPS id E7258208E7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 09:31:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E7258208E7
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 433z4V2ZZCzDqVC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 20:28:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 433z7427hjzDqWQ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 20:31:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 433ywq2BGbzDqbs
+ by lists.ozlabs.org (Postfix) with ESMTPS id 433ywq5sDrzDqd2
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2018 20:22:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 433ywp4SMFz9s55; Tue, 27 Nov 2018 20:22:18 +1100 (AEDT)
+ id 433ywq3bcFz9s6w; Tue, 27 Nov 2018 20:22:19 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: c516886f8437b85489d06115c54761880c7d67ac
-In-Reply-To: <20181031110308.8194-1-malat@debian.org>
+X-powerpc-patch-commit: beba24ac59133cb36ecd03f9af9ccb11971ee20e
+In-Reply-To: <20181031123157.24947-1-malat@debian.org>
 To: Mathieu Malaterre <malat@debian.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: =?utf-8?q?powerpc/mm=3A_remove_const_type_qualifier_from_function_?=
- =?utf-8?b?4oCYcHVkX3BmbuKAmQ==?=
-Message-Id: <433ywp4SMFz9s55@ozlabs.org>
-Date: Tue, 27 Nov 2018 20:22:18 +1100 (AEDT)
+Subject: Re: powerpc/32: Add .data..Lubsan_data*/.data..Lubsan_type* sections
+ explicitly
+Message-Id: <433ywq3bcFz9s6w@ozlabs.org>
+Date: Tue, 27 Nov 2018 20:22:19 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,15 +55,28 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 2018-10-31 at 11:03:07 UTC, Mathieu Malaterre wrote:
-> Type qualifier on return type is ignored. Remove warning in W=1:
+On Wed, 2018-10-31 at 12:31:56 UTC, Mathieu Malaterre wrote:
+> When both `CONFIG_LD_DEAD_CODE_DATA_ELIMINATION=y` and `CONFIG_UBSAN=y`
+> are set, link step typically produce numberous warnings about orphan
+> section:
 > 
->   arch/powerpc/include/asm/book3s/64/pgtable.h:1268:25: error: type qualifiers ignored on function return type [-Werror=ignored-qualifiers]
+>   + powerpc-linux-gnu-ld -EB -m elf32ppc -Bstatic --orphan-handling=warn --build-id --gc-sections -X -o .tmp_vmlinux1 -T ./arch/powerpc/kernel/vmlinux.lds --who
+>   le-archive built-in.a --no-whole-archive --start-group lib/lib.a --end-group
+>   powerpc-linux-gnu-ld: warning: orphan section `.data..Lubsan_data393' from `init/main.o' being placed in section `.data..Lubsan_data393'.
+>   powerpc-linux-gnu-ld: warning: orphan section `.data..Lubsan_data394' from `init/main.o' being placed in section `.data..Lubsan_data394'.
+>   ...
+>   powerpc-linux-gnu-ld: warning: orphan section `.data..Lubsan_type11' from `init/main.o' being placed in section `.data..Lubsan_type11'.
+>   powerpc-linux-gnu-ld: warning: orphan section `.data..Lubsan_type12' from `init/main.o' being placed in section `.data..Lubsan_type12'.
+>   ...
 > 
+> This commit remove those warnings produced at W=1.
+> 
+> Link: https://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg135407.html
+> Suggested-by: Nicholas Piggin <npiggin@gmail.com>
 > Signed-off-by: Mathieu Malaterre <malat@debian.org>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/c516886f8437b85489d06115c54761
+https://git.kernel.org/powerpc/c/beba24ac59133cb36ecd03f9af9ccb
 
 cheers
