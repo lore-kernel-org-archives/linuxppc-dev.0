@@ -3,85 +3,42 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 90F4FC43441
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 08:28:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F0188C43441
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 09:24:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E0A4320873
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 08:28:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E0A4320873
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 6F5252086B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 09:24:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6F5252086B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 433xl66s6JzDqh2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 19:28:50 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
-Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=anju@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 433yzh2j80zDqdq
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 20:24:48 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 433xfr5Dn9zDqcl
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2018 19:25:08 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wAR8Ox3K031736
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2018 03:25:06 -0500
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2p10js4r0x-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2018 03:25:05 -0500
-Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
- Tue, 27 Nov 2018 08:24:59 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 27 Nov 2018 08:24:57 -0000
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wAR8Oukk59244566
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Tue, 27 Nov 2018 08:24:56 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9CDAB5204E;
- Tue, 27 Nov 2018 08:24:56 +0000 (GMT)
-Received: from localhost.in.ibm.com (unknown [9.124.35.168])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 89CD552050;
- Tue, 27 Nov 2018 08:24:55 +0000 (GMT)
-From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Subject: [PATCH] powerpc/perf: Return accordingly on invalid chip-id in
-Date: Tue, 27 Nov 2018 13:54:52 +0530
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20181127082452.8307-1-anju@linux.vnet.ibm.com>
-References: <20181127082452.8307-1-anju@linux.vnet.ibm.com>
-X-TM-AS-GCONF: 00
-x-cbid: 18112708-0012-0000-0000-000002D0C4B0
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18112708-0013-0000-0000-00002106049A
-Message-Id: <20181127082452.8307-2-anju@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-11-27_08:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1811270076
+ by lists.ozlabs.org (Postfix) with ESMTPS id 433ywn2Bs4zDqbs
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2018 20:22:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: by ozlabs.org (Postfix)
+ id 433ywm6BWRz9s3C; Tue, 27 Nov 2018 20:22:16 +1100 (AEDT)
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 433ywm5d3Jz9s3Z; Tue, 27 Nov 2018 20:22:16 +1100 (AEDT)
+X-powerpc-patch-notification: thanks
+X-powerpc-patch-commit: b1cfa0391a0bcb91e7e3f49fb4490f9d48cc4913
+In-Reply-To: <20181126091944.21893-1-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Subject: Re: [1/2] powerpc/configs: Remove unnecessary ftrace symbols
+Message-Id: <433ywm5d3Jz9s3Z@ozlabs.org>
+Date: Tue, 27 Nov 2018 20:22:16 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,41 +50,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: maddy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- anju@linux.vnet.ibm.com, dan.carpenter@oracle.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Nest hardware counter memory resides in a per-chip reserve-memory.
-During nest_imc_event_init(), chip-id of the event-cpu is considered to
-calculate the base memory addresss for that cpu. Return, proper error
-condition if the chip_id calculated is invalid.
+On Mon, 2018-11-26 at 09:19:43 UTC, Michael Ellerman wrote:
+> In commit 539df7fcb303 ("powerpc/configs: Enable function trace by
+> default") we added:
+> 
+>   CONFIG_FTRACE=y
+>   CONFIG_FUNCTION_TRACER=y
+>   CONFIG_FUNCTION_GRAPH_TRACER=y
+> 
+> To ppc64_defconfig, powernv_defconfig and pseries_defconfig.
+> 
+> But only CONFIG_FUNCTION_TRACER=y is required, CONFIG_FTRACE is
+> default y if DEBUG_KERNEL is enabled, which we have. And then
+> CONFIG_FUNCTION_GRAPH_TRACER is default y when CONFIG_FUNCTION_TRACER
+> is enabled.
+> 
+> The extra symbols were already removed from powernv_defconfig in
+> commit 9a018fb1e147 ("powerpc/config: powernv_defconfig updates").
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
-Fixes: 885dcd709ba91 ("powerpc/perf: Add nest IMC PMU support")
-Reviewed-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
----
- arch/powerpc/perf/imc-pmu.c | 5 +++++
- 1 file changed, 5 insertions(+)
+Series applied to powerpc next.
 
-diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
-index 6954636b16d1..78514170cf71 100644
---- a/arch/powerpc/perf/imc-pmu.c
-+++ b/arch/powerpc/perf/imc-pmu.c
-@@ -496,6 +496,11 @@ static int nest_imc_event_init(struct perf_event *event)
- 	 * Get the base memory addresss for this cpu.
- 	 */
- 	chip_id = cpu_to_chip_id(event->cpu);
-+
-+	/* Return, if chip_id is not valid */
-+	if (chip_id < 0)
-+		return -ENODEV;
-+
- 	pcni = pmu->mem_info;
- 	do {
- 		if (pcni->id == chip_id) {
--- 
-2.17.1
+https://git.kernel.org/powerpc/c/b1cfa0391a0bcb91e7e3f49fb4490f
 
+cheers
