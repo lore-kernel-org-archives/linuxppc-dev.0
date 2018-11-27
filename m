@@ -2,69 +2,57 @@ Return-Path: <SRS0=Iv+L=OG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.9 required=3.0 tests=FROM_EXCESS_BASE64,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 77BA8C43441
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 16:01:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E2E61C43441
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 16:34:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CAA41208E4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 16:01:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CAA41208E4
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 2F7A42086B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 16:34:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2F7A42086B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4347nX4vQ4zDqkc
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 03:01:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by lists.ozlabs.org (Postfix) with ESMTP id 4348Wq3n2NzDqkJ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 03:34:47 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=suse.de
+ (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=msuchanek@suse.de;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ dmarc=none (p=none dis=none) header.from=suse.de
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4347kw1R4pzDqk5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2018 02:59:19 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4347kp25Ptz9v0bq;
- Tue, 27 Nov 2018 16:59:14 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id HZqsiMQnoPpC; Tue, 27 Nov 2018 16:59:14 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4347kp1Pytz9v0bb;
- Tue, 27 Nov 2018 16:59:14 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 9483C8B832;
- Tue, 27 Nov 2018 16:59:15 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id aJ5j15rPczHl; Tue, 27 Nov 2018 16:59:15 +0100 (CET)
-Received: from po14163vm.idsi0.si.c-s.fr (unknown [192.168.232.3])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id F3CDE8B827;
- Tue, 27 Nov 2018 16:59:14 +0100 (CET)
-Subject: Re: [PATCH] lkdtm: do not depend on CONFIG_BLOCK
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-References: <ca27a073c872e243be1d17a89afb4b4aeb9a298b.1541714054.git.christophe.leroy@c-s.fr>
- <20181127074316.GC13965@kroah.com>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <8daf27d0-0f58-2dd6-c1bb-7b634494212a@c-s.fr>
-Date: Tue, 27 Nov 2018 15:59:11 +0000
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.7.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4348TZ5pR3zDqhS
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2018 03:32:49 +1100 (AEDT)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay1.suse.de (unknown [195.135.220.254])
+ by mx1.suse.de (Postfix) with ESMTP id 87C61AF3C;
+ Tue, 27 Nov 2018 16:32:45 +0000 (UTC)
+Date: Tue, 27 Nov 2018 17:32:41 +0100
+From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
+To: David Hildenbrand <david@redhat.com>
+Subject: Re: [PATCH RFC] mm/memory_hotplug: Introduce memory block types
+Message-ID: <20181127173241.6dde763e@kitsune.suse.cz>
+In-Reply-To: <2d05e5d1-c5b5-8884-e642-89421685052f@redhat.com>
+References: <20180928150357.12942-1-david@redhat.com>
+ <b01a956b-080c-c643-6473-eb132b9f7200@redhat.com>
+ <20181123190653.6da91461@kitsune.suse.cz>
+ <fad04d80-4e72-1bd8-3e67-a3f7dd0bc2fa@redhat.com>
+ <b64a0e1e-6aaa-66a9-2fb7-12daa6383ce1@redhat.com>
+ <20181126152015.7464c786@naga>
+ <2d05e5d1-c5b5-8884-e642-89421685052f@redhat.com>
+Organization: SUSE Linux
+X-Mailer: Claws Mail 3.17.1 (GTK+ 2.24.31; x86_64-suse-linux-gnu)
 MIME-Version: 1.0
-In-Reply-To: <20181127074316.GC13965@kroah.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,205 +64,155 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Kees Cook <keescook@chromium.org>,
- Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org
+Cc: Kate Stewart <kstewart@linuxfoundation.org>, Rich Felker <dalias@libc.org>,
+ linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+ Peter Zijlstra <peterz@infradead.org>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-mm@kvack.org,
+ Michal Hocko <mhocko@suse.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, Rashmica Gupta <rashmica.g@gmail.com>,
+ "K. Y. Srinivasan" <kys@microsoft.com>,
+ Dan Williams <dan.j.williams@intel.com>,
+ Stephen Rothwell <sfr@canb.auug.org.au>, Michael Neuling <mikey@neuling.org>,
+ Stephen Hemminger <sthemmin@microsoft.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, linux-acpi@vger.kernel.org,
+ Ingo Molnar <mingo@redhat.com>, xen-devel@lists.xenproject.org,
+ Len Brown <lenb@kernel.org>, Pavel Tatashin <pavel.tatashin@microsoft.com>,
+ Rob Herring <robh@kernel.org>, "mike.travis@hpe.com" <mike.travis@hpe.com>,
+ Haiyang Zhang <haiyangz@microsoft.com>,
+ Philippe Ombredanne <pombredanne@nexb.com>,
+ Jonathan =?UTF-8?B?TmV1c2Now6RmZXI=?= <j.neuschaefer@gmx.net>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ =?UTF-8?B?SsOpcsO0bWU=?= Glisse <jglisse@redhat.com>,
+ Mike Rapoport <rppt@linux.vnet.ibm.com>, Borislav Petkov <bp@alien8.de>,
+ Andy Lutomirski <luto@kernel.org>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Oscar Salvador <osalvador@suse.de>,
+ Juergen Gross <jgross@suse.com>, Tony Luck <tony.luck@intel.com>,
+ Mathieu Malaterre <malat@debian.org>, linux-s390@vger.kernel.org,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
+ Fenghua Yu <fenghua.yu@intel.com>,
+ Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Joe Perches <joe@perches.com>,
+ devel@linuxdriverproject.org, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ linuxppc-dev@lists.ozlabs.org, "Kirill
+ A. Shutemov" <kirill.shutemov@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Mon, 26 Nov 2018 16:59:14 +0100
+David Hildenbrand <david@redhat.com> wrote:
 
+> On 26.11.18 15:20, Michal Such=C3=A1nek wrote:
+> > On Mon, 26 Nov 2018 14:33:29 +0100
+> > David Hildenbrand <david@redhat.com> wrote:
+> >  =20
+> >> On 26.11.18 13:30, David Hildenbrand wrote: =20
+> >>> On 23.11.18 19:06, Michal Such=C3=A1nek wrote:   =20
+> >  =20
+> >>>>
+> >>>> If we are going to fake the driver information we may as well add the
+> >>>> type attribute and be done with it.
+> >>>>
+> >>>> I think the problem with the patch was more with the semantic than t=
+he
+> >>>> attribute itself.
+> >>>>
+> >>>> What is normal, paravirtualized, and standby memory?
+> >>>>
+> >>>> I can understand DIMM device, baloon device, or whatever mechanism f=
+or
+> >>>> adding memory you might have.
+> >>>>
+> >>>> I can understand "memory designated as standby by the cluster
+> >>>> administrator".
+> >>>>
+> >>>> However, DIMM vs baloon is orthogonal to standby and should not be
+> >>>> conflated into one property.
+> >>>>
+> >>>> paravirtualized means nothing at all in relationship to memory type =
+and
+> >>>> the desired online policy to me.   =20
+> >>>
+> >>> Right, so with whatever we come up, it should allow to make a decision
+> >>> in user space about
+> >>> - if memory is to be onlined automatically   =20
+> >>
+> >> And I will think about if we really should model standby memory. Maybe
+> >> it is really better to have in user space something like (as Dan noted=
+) =20
+> >=20
+> > If it is possible to designate the memory as standby or online in the
+> > s390 admin interface and the kernel does have access to this
+> > information it makes sense to forward it to userspace (as separate
+> > s390-specific property). If not then you need to make some kind of
+> > assumption like below and the user can tune the script according to
+> > their usecase. =20
+>=20
+> Also true, standby memory really represents a distinct type of memory
+> block (memory seems to be there but really isn't). Right now I am
+> thinking about something like this (tried to formulate it on a very
+> generic level because we can't predict which mechanism might want to
+> make use of these types in the future).
+>=20
+>=20
+> /*
+>  * Memory block types allow user space to formulate rules if and how to
+>  * online memory blocks. The types are exposed to user space as text
+>  * strings in sysfs. While the typical online strategies are described
+>  * along with the types, there are use cases where that can differ (e.g.
+>  * use MOVABLE zone for more reliable huge page usage, use NORMAL zone
+>  * due to zone imbalance or because memory unplug is not intended).
+>  *
+>  * MEMORY_BLOCK_NONE:
+>  *  No memory block is to be created (e.g. device memory). Used internally
+>  *  only.
+>  *
+>  * MEMORY_BLOCK_REMOVABLE:
+>  *  This memory block type should be treated as if it can be
+>  *  removed/unplugged from the system again. E.g. there is a hardware
+>  *  interface to unplug such memory. This memory block type is usually
+>  *  onlined to the MOVABLE zone, to e.g. make offlining of it more
+>  *  reliable. Examples include ACPI and PPC DIMMs.
+>  *
+>  * MEMORY_BLOCK_UNREMOVABLE:
+>  *  This memory block type should be treated as if it can not be
+>  *  removed/unplugged again. E.g. there is no hardware interface to
+>  *  unplug such memory. This memory block type is usually onlined to
+>  *  the NORMAL zone, as offlining is not beneficial. Examples include boot
+>  *  memory on most architectures and memory added via balloon devices.
 
-On 11/27/2018 07:43 AM, Greg Kroah-Hartman wrote:
-> On Fri, Nov 09, 2018 at 07:05:51AM +0000, Christophe Leroy wrote:
->> Most parts of lkdtm don't require CONFIG_BLOCK.
->>
->> This patch limits dependency to CONFIG_BLOCK in order to give embedded
->> platforms which don't select CONFIG_BLOCK the opportunity to use LKDTM.
->>
->> Fixes: fddd9cf82c9f ("make LKDTM depend on BLOCK")
->> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->> ---
->>   drivers/misc/lkdtm/core.c | 7 ++++++-
->>   lib/Kconfig.debug         | 1 -
->>   2 files changed, 6 insertions(+), 2 deletions(-)
->>
->> diff --git a/drivers/misc/lkdtm/core.c b/drivers/misc/lkdtm/core.c
->> index 2837dc77478e..bc76756b7eda 100644
->> --- a/drivers/misc/lkdtm/core.c
->> +++ b/drivers/misc/lkdtm/core.c
->> @@ -40,9 +40,12 @@
->>   #include <linux/interrupt.h>
->>   #include <linux/hrtimer.h>
->>   #include <linux/slab.h>
->> -#include <scsi/scsi_cmnd.h>
->>   #include <linux/debugfs.h>
->>   
->> +#ifdef CONFIG_BLOCK
->> +#include <scsi/scsi_cmnd.h>
->> +#endif
-> 
-> Why would this config option be needed to be checked just to be able to
-> include a .h file?
+AFAIK baloon device can be inflated as well so this does not really
+describe how this memory type works in any meaningful way. Also it
+should not be possible to see this kind of memory from userspace. The
+baloon driver just takes existing memory that is properly backed,
+allocates it for itself, and allows the hypervisor to use it. Thus it
+creates the equivalent to s390 standby memory which is not backed in
+the VM. When memory is reclaimed from hypervisor the baloon driver
+frees it making it available to the VM kernel again. However, the whole
+time the memory appears present in the machine and no hotplug events
+should be visible unless the docs I am looking at are really outdated.
 
-Because if including that file regardless of the config option, you get:
+>  *
+>  * MEMORY_BLOCK_STANDBY:
+>  *  The memory block type should be treated as if it can be
+>  *  removed/unplugged again, however the actual memory hot(un)plug is
+>  *  performed by onlining/offlining. In virtual environments, such memory
+>  *  is usually added during boot and never removed. Onlining memory will
+>  *  result in memory getting allocated to a VM. This memory type is usual=
+ly
+>  *  not onlined automatically but explicitly by the administrator. One
+>  *  example is standby memory on s390x.
 
-   CALL    scripts/checksyscalls.sh
-   CC      drivers/misc/lkdtm/core.o
-In file included from ./include/scsi/scsi_cmnd.h:7:0,
-                  from drivers/misc/lkdtm/core.c:45:
-./include/linux/t10-pi.h:40:41: warning: 'struct request' declared 
-inside parameter list
-  static inline u32 t10_pi_ref_tag(struct request *rq)
-                                          ^
-./include/linux/t10-pi.h:40:41: warning: its scope is only this 
-definition or declaration, which is probably not what you want
-./include/linux/t10-pi.h:61:8: warning: 'struct request' declared inside 
-parameter list
-         unsigned int intervals)
-         ^
-./include/linux/t10-pi.h:64:42: warning: 'struct request' declared 
-inside parameter list
-  static inline void t10_pi_prepare(struct request *rq, u8 protection_type)
-                                           ^
-In file included from ./include/scsi/scsi_cmnd.h:12:0,
-                  from drivers/misc/lkdtm/core.c:45:
-./include/scsi/scsi_device.h:435:4: error: unknown type name 'req_flags_t'
-     req_flags_t rq_flags, int *resid);
-     ^
-./include/scsi/scsi_device.h: In function 'scsi_execute_req':
-./include/scsi/scsi_device.h:442:2: error: implicit declaration of 
-function '__scsi_execute' [-Werror=implicit-function-declaration]
-   __scsi_execute(sdev, cmd, data_direction, buffer, bufflen, \
-   ^
-./include/scsi/scsi_device.h:451:9: note: in expansion of macro 
-'scsi_execute'
-   return scsi_execute(sdev, cmd, data_direction, buffer,
-          ^
-In file included from ./include/scsi/scsi_request.h:5:0,
-                  from ./include/scsi/scsi_cmnd.h:13,
-                  from drivers/misc/lkdtm/core.c:45:
-./include/linux/blk-mq.h: At top level:
-./include/linux/blk-mq.h:100:9: error: type defaults to 'int' in 
-declaration of 'blk_status_t' [-Werror=implicit-int]
-  typedef blk_status_t (queue_rq_fn)(struct blk_mq_hw_ctx *,
-          ^
-./include/linux/blk-mq.h:100:9: error: 'blk_status_t' declared as 
-function returning a function
-./include/linux/blk-mq.h:101:16: warning: parameter names (without 
-types) in function declaration
-    const struct blk_mq_queue_data *);
-                 ^
-./include/linux/blk-mq.h:123:2: error: unknown type name 'queue_rq_fn'
-   queue_rq_fn  *queue_rq;
-   ^
-./include/linux/blk-mq.h:144:2: error: unknown type name 'softirq_done_fn'
-   softirq_done_fn  *complete;
-   ^
-./include/linux/blk-mq.h:223:31: error: 'blk_mq_req_flags_t' undeclared 
-here (not in a function)
-   BLK_MQ_REQ_NOWAIT = (__force blk_mq_req_flags_t)(1 << 0),
-                                ^
-./include/linux/blk-mq.h:233:3: error: expected declaration specifiers 
-or '...' before 'blk_mq_req_flags_t'
-    blk_mq_req_flags_t flags);
-    ^
-./include/linux/blk-mq.h:235:20: error: expected declaration specifiers 
-or '...' before 'blk_mq_req_flags_t'
-    unsigned int op, blk_mq_req_flags_t flags,
-                     ^
-In file included from ./arch/powerpc/include/asm/atomic.h:11:0,
-                  from ./include/linux/atomic.h:7,
-                  from ./include/linux/spinlock.h:436,
-                  from ./include/linux/wait.h:9,
-                  from ./include/linux/wait_bit.h:8,
-                  from ./include/linux/fs.h:6,
-                  from drivers/misc/lkdtm/core.c:34:
-./include/linux/blk-mq.h: In function 'blk_mq_mark_complete':
-./include/linux/blk-mq.h:306:20: error: dereferencing pointer to 
-incomplete type 'struct request'
-   return cmpxchg(&rq->state, MQ_RQ_IN_FLIGHT, MQ_RQ_COMPLETE) ==
-                     ^
-./arch/powerpc/include/asm/cmpxchg.h:483:19: note: in definition of 
-macro 'cmpxchg'
-       __typeof__(*(ptr)) _o_ = (o);      \
-                    ^
-./include/linux/blk-mq.h:306:29: error: 'MQ_RQ_IN_FLIGHT' undeclared 
-(first use in this function)
-   return cmpxchg(&rq->state, MQ_RQ_IN_FLIGHT, MQ_RQ_COMPLETE) ==
-                              ^
-./arch/powerpc/include/asm/cmpxchg.h:483:32: note: in definition of 
-macro 'cmpxchg'
-       __typeof__(*(ptr)) _o_ = (o);      \
-                                 ^
-./include/linux/blk-mq.h:306:29: note: each undeclared identifier is 
-reported only once for each function it appears in
-   return cmpxchg(&rq->state, MQ_RQ_IN_FLIGHT, MQ_RQ_COMPLETE) ==
-                              ^
-./arch/powerpc/include/asm/cmpxchg.h:483:32: note: in definition of 
-macro 'cmpxchg'
-       __typeof__(*(ptr)) _o_ = (o);      \
-                                 ^
-./include/linux/blk-mq.h:306:46: error: 'MQ_RQ_COMPLETE' undeclared 
-(first use in this function)
-   return cmpxchg(&rq->state, MQ_RQ_IN_FLIGHT, MQ_RQ_COMPLETE) ==
-                                               ^
-./arch/powerpc/include/asm/cmpxchg.h:484:32: note: in definition of 
-macro 'cmpxchg'
-       __typeof__(*(ptr)) _n_ = (n);      \
-                                 ^
-In file included from ./include/scsi/scsi_request.h:5:0,
-                  from ./include/scsi/scsi_cmnd.h:13,
-                  from drivers/misc/lkdtm/core.c:45:
-./include/linux/blk-mq.h: In function 'blk_mq_rq_from_pdu':
-./include/linux/blk-mq.h:316:22: error: invalid application of 'sizeof' 
-to incomplete type 'struct request'
-   return pdu - sizeof(struct request);
-                       ^
-./include/linux/blk-mq.h: In function 'blk_mq_rq_to_pdu':
-./include/linux/blk-mq.h:320:2: error: invalid use of undefined type 
-'struct request'
-   return rq + 1;
-   ^
-In file included from drivers/misc/lkdtm/core.c:45:0:
-./include/scsi/scsi_cmnd.h: In function 'scsi_bidi_cmnd':
-./include/scsi/scsi_cmnd.h:214:9: error: implicit declaration of 
-function 'blk_bidi_rq' [-Werror=implicit-function-declaration]
-   return blk_bidi_rq(cmd->request) &&
-          ^
-./include/scsi/scsi_cmnd.h: In function 'scsi_get_lba':
-./include/scsi/scsi_cmnd.h:307:9: error: implicit declaration of 
-function 'blk_rq_pos' [-Werror=implicit-function-declaration]
-   return blk_rq_pos(scmd->request);
-          ^
-cc1: some warnings being treated as errors
-make[1]: *** [drivers/misc/lkdtm/core.o] Error 1
-make: *** [drivers/misc/lkdtm/core.o] Error 2
+Again, this does not meaningfully describe the memory type. There is
+no memory on standby. There is in fact no backing at all unless you
+online it. So this probably is some kind of shared memory. However, the
+(de)allocation is controlled differently compared to the baloon device.
+The concept is very similar, though.
 
+Thanks
 
-> 
-> And shouldn't you be depending on SCSI instead?
-
-Yes maybe. I did make it depend on CONFIG_BLOCK because it was what it 
-was depending on in the Kconfig. I'll send a v2
-
-Christophe
-
-> 
->> +
->>   #ifdef CONFIG_IDE
->>   #include <linux/ide.h>
->>   #endif
->> @@ -101,7 +104,9 @@ static struct crashpoint crashpoints[] = {
->>   	CRASHPOINT("FS_DEVRW",		 "ll_rw_block"),
->>   	CRASHPOINT("MEM_SWAPOUT",	 "shrink_inactive_list"),
->>   	CRASHPOINT("TIMERADD",		 "hrtimer_start"),
->> +# ifdef CONFIG_BLOCK
->>   	CRASHPOINT("SCSI_DISPATCH_CMD",	 "scsi_dispatch_cmd"),
->> +# endif
-> 
-> Again, scsi?
-> 
-> thanks,
-> 
-> greg k-h
-> 
+Michal
