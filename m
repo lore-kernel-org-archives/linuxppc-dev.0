@@ -2,109 +2,67 @@ Return-Path: <SRS0=Iv+L=OG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F358C43441
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 15:33:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 77BA8C43441
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 16:01:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D33AC20817
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 15:33:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D33AC20817
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id CAA41208E4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 16:01:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CAA41208E4
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43479J3QQdzDqkL
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 02:33:40 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4347nX4vQ4zDqkc
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 03:01:36 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=intel.com
- (client-ip=192.55.52.120; helo=mga04.intel.com;
- envelope-from=dave.hansen@intel.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4347755Pn9zDqjp
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2018 02:31:41 +1100 (AEDT)
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from fmsmga003.fm.intel.com ([10.253.24.29])
- by fmsmga104.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
- 27 Nov 2018 07:31:39 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.56,287,1539673200"; d="scan'208";a="101271385"
-Received: from jpmellod-mobl.amr.corp.intel.com (HELO [10.254.99.42])
- ([10.254.99.42])
- by FMSMGA003.fm.intel.com with ESMTP; 27 Nov 2018 07:31:38 -0800
-Subject: Re: pkeys: Reserve PKEY_DISABLE_READ
-To: Florian Weimer <fweimer@redhat.com>, Ram Pai <linuxram@us.ibm.com>
-References: <877ehnbwqy.fsf@oldenburg.str.redhat.com>
- <2d62c9e2-375b-2791-32ce-fdaa7e7664fd@intel.com>
- <87bm6zaa04.fsf@oldenburg.str.redhat.com>
- <6f9c65fb-ea7e-8217-a4cc-f93e766ed9bb@intel.com>
- <87k1ln8o7u.fsf@oldenburg.str.redhat.com>
- <20181108201231.GE5481@ram.oc3035372033.ibm.com>
- <87bm6z71yw.fsf@oldenburg.str.redhat.com>
- <20181109180947.GF5481@ram.oc3035372033.ibm.com>
- <87efbqqze4.fsf@oldenburg.str.redhat.com>
- <20181127102350.GA5795@ram.oc3035372033.ibm.com>
- <87zhtuhgx0.fsf@oldenburg.str.redhat.com>
-From: Dave Hansen <dave.hansen@intel.com>
-Openpgp: preference=signencrypt
-Autocrypt: addr=dave.hansen@intel.com; keydata=
- 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
- z5cecg==
-Message-ID: <58e263a6-9a93-46d6-c5f9-59973064d55e@intel.com>
-Date: Tue, 27 Nov 2018 07:31:38 -0800
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.2.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4347kw1R4pzDqk5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2018 02:59:19 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4347kp25Ptz9v0bq;
+ Tue, 27 Nov 2018 16:59:14 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id HZqsiMQnoPpC; Tue, 27 Nov 2018 16:59:14 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4347kp1Pytz9v0bb;
+ Tue, 27 Nov 2018 16:59:14 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 9483C8B832;
+ Tue, 27 Nov 2018 16:59:15 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id aJ5j15rPczHl; Tue, 27 Nov 2018 16:59:15 +0100 (CET)
+Received: from po14163vm.idsi0.si.c-s.fr (unknown [192.168.232.3])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id F3CDE8B827;
+ Tue, 27 Nov 2018 16:59:14 +0100 (CET)
+Subject: Re: [PATCH] lkdtm: do not depend on CONFIG_BLOCK
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+References: <ca27a073c872e243be1d17a89afb4b4aeb9a298b.1541714054.git.christophe.leroy@c-s.fr>
+ <20181127074316.GC13965@kroah.com>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <8daf27d0-0f58-2dd6-c1bb-7b634494212a@c-s.fr>
+Date: Tue, 27 Nov 2018 15:59:11 +0000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.7.0
 MIME-Version: 1.0
-In-Reply-To: <87zhtuhgx0.fsf@oldenburg.str.redhat.com>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20181127074316.GC13965@kroah.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -118,19 +76,205 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-api@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, Kees Cook <keescook@chromium.org>,
+ Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 11/27/18 3:57 AM, Florian Weimer wrote:
-> I would have expected something that translates PKEY_DISABLE_WRITE |
-> PKEY_DISABLE_READ into PKEY_DISABLE_ACCESS, and also accepts
-> PKEY_DISABLE_ACCESS | PKEY_DISABLE_READ, for consistency with POWER.
+
+
+On 11/27/2018 07:43 AM, Greg Kroah-Hartman wrote:
+> On Fri, Nov 09, 2018 at 07:05:51AM +0000, Christophe Leroy wrote:
+>> Most parts of lkdtm don't require CONFIG_BLOCK.
+>>
+>> This patch limits dependency to CONFIG_BLOCK in order to give embedded
+>> platforms which don't select CONFIG_BLOCK the opportunity to use LKDTM.
+>>
+>> Fixes: fddd9cf82c9f ("make LKDTM depend on BLOCK")
+>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>> ---
+>>   drivers/misc/lkdtm/core.c | 7 ++++++-
+>>   lib/Kconfig.debug         | 1 -
+>>   2 files changed, 6 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/misc/lkdtm/core.c b/drivers/misc/lkdtm/core.c
+>> index 2837dc77478e..bc76756b7eda 100644
+>> --- a/drivers/misc/lkdtm/core.c
+>> +++ b/drivers/misc/lkdtm/core.c
+>> @@ -40,9 +40,12 @@
+>>   #include <linux/interrupt.h>
+>>   #include <linux/hrtimer.h>
+>>   #include <linux/slab.h>
+>> -#include <scsi/scsi_cmnd.h>
+>>   #include <linux/debugfs.h>
+>>   
+>> +#ifdef CONFIG_BLOCK
+>> +#include <scsi/scsi_cmnd.h>
+>> +#endif
 > 
-> (My understanding is that PKEY_DISABLE_ACCESS does not disable all
-> access, but produces execute-only memory.)
+> Why would this config option be needed to be checked just to be able to
+> include a .h file?
 
-Correct, it disables all data access, but not execution.
+Because if including that file regardless of the config option, you get:
 
+   CALL    scripts/checksyscalls.sh
+   CC      drivers/misc/lkdtm/core.o
+In file included from ./include/scsi/scsi_cmnd.h:7:0,
+                  from drivers/misc/lkdtm/core.c:45:
+./include/linux/t10-pi.h:40:41: warning: 'struct request' declared 
+inside parameter list
+  static inline u32 t10_pi_ref_tag(struct request *rq)
+                                          ^
+./include/linux/t10-pi.h:40:41: warning: its scope is only this 
+definition or declaration, which is probably not what you want
+./include/linux/t10-pi.h:61:8: warning: 'struct request' declared inside 
+parameter list
+         unsigned int intervals)
+         ^
+./include/linux/t10-pi.h:64:42: warning: 'struct request' declared 
+inside parameter list
+  static inline void t10_pi_prepare(struct request *rq, u8 protection_type)
+                                           ^
+In file included from ./include/scsi/scsi_cmnd.h:12:0,
+                  from drivers/misc/lkdtm/core.c:45:
+./include/scsi/scsi_device.h:435:4: error: unknown type name 'req_flags_t'
+     req_flags_t rq_flags, int *resid);
+     ^
+./include/scsi/scsi_device.h: In function 'scsi_execute_req':
+./include/scsi/scsi_device.h:442:2: error: implicit declaration of 
+function '__scsi_execute' [-Werror=implicit-function-declaration]
+   __scsi_execute(sdev, cmd, data_direction, buffer, bufflen, \
+   ^
+./include/scsi/scsi_device.h:451:9: note: in expansion of macro 
+'scsi_execute'
+   return scsi_execute(sdev, cmd, data_direction, buffer,
+          ^
+In file included from ./include/scsi/scsi_request.h:5:0,
+                  from ./include/scsi/scsi_cmnd.h:13,
+                  from drivers/misc/lkdtm/core.c:45:
+./include/linux/blk-mq.h: At top level:
+./include/linux/blk-mq.h:100:9: error: type defaults to 'int' in 
+declaration of 'blk_status_t' [-Werror=implicit-int]
+  typedef blk_status_t (queue_rq_fn)(struct blk_mq_hw_ctx *,
+          ^
+./include/linux/blk-mq.h:100:9: error: 'blk_status_t' declared as 
+function returning a function
+./include/linux/blk-mq.h:101:16: warning: parameter names (without 
+types) in function declaration
+    const struct blk_mq_queue_data *);
+                 ^
+./include/linux/blk-mq.h:123:2: error: unknown type name 'queue_rq_fn'
+   queue_rq_fn  *queue_rq;
+   ^
+./include/linux/blk-mq.h:144:2: error: unknown type name 'softirq_done_fn'
+   softirq_done_fn  *complete;
+   ^
+./include/linux/blk-mq.h:223:31: error: 'blk_mq_req_flags_t' undeclared 
+here (not in a function)
+   BLK_MQ_REQ_NOWAIT = (__force blk_mq_req_flags_t)(1 << 0),
+                                ^
+./include/linux/blk-mq.h:233:3: error: expected declaration specifiers 
+or '...' before 'blk_mq_req_flags_t'
+    blk_mq_req_flags_t flags);
+    ^
+./include/linux/blk-mq.h:235:20: error: expected declaration specifiers 
+or '...' before 'blk_mq_req_flags_t'
+    unsigned int op, blk_mq_req_flags_t flags,
+                     ^
+In file included from ./arch/powerpc/include/asm/atomic.h:11:0,
+                  from ./include/linux/atomic.h:7,
+                  from ./include/linux/spinlock.h:436,
+                  from ./include/linux/wait.h:9,
+                  from ./include/linux/wait_bit.h:8,
+                  from ./include/linux/fs.h:6,
+                  from drivers/misc/lkdtm/core.c:34:
+./include/linux/blk-mq.h: In function 'blk_mq_mark_complete':
+./include/linux/blk-mq.h:306:20: error: dereferencing pointer to 
+incomplete type 'struct request'
+   return cmpxchg(&rq->state, MQ_RQ_IN_FLIGHT, MQ_RQ_COMPLETE) ==
+                     ^
+./arch/powerpc/include/asm/cmpxchg.h:483:19: note: in definition of 
+macro 'cmpxchg'
+       __typeof__(*(ptr)) _o_ = (o);      \
+                    ^
+./include/linux/blk-mq.h:306:29: error: 'MQ_RQ_IN_FLIGHT' undeclared 
+(first use in this function)
+   return cmpxchg(&rq->state, MQ_RQ_IN_FLIGHT, MQ_RQ_COMPLETE) ==
+                              ^
+./arch/powerpc/include/asm/cmpxchg.h:483:32: note: in definition of 
+macro 'cmpxchg'
+       __typeof__(*(ptr)) _o_ = (o);      \
+                                 ^
+./include/linux/blk-mq.h:306:29: note: each undeclared identifier is 
+reported only once for each function it appears in
+   return cmpxchg(&rq->state, MQ_RQ_IN_FLIGHT, MQ_RQ_COMPLETE) ==
+                              ^
+./arch/powerpc/include/asm/cmpxchg.h:483:32: note: in definition of 
+macro 'cmpxchg'
+       __typeof__(*(ptr)) _o_ = (o);      \
+                                 ^
+./include/linux/blk-mq.h:306:46: error: 'MQ_RQ_COMPLETE' undeclared 
+(first use in this function)
+   return cmpxchg(&rq->state, MQ_RQ_IN_FLIGHT, MQ_RQ_COMPLETE) ==
+                                               ^
+./arch/powerpc/include/asm/cmpxchg.h:484:32: note: in definition of 
+macro 'cmpxchg'
+       __typeof__(*(ptr)) _n_ = (n);      \
+                                 ^
+In file included from ./include/scsi/scsi_request.h:5:0,
+                  from ./include/scsi/scsi_cmnd.h:13,
+                  from drivers/misc/lkdtm/core.c:45:
+./include/linux/blk-mq.h: In function 'blk_mq_rq_from_pdu':
+./include/linux/blk-mq.h:316:22: error: invalid application of 'sizeof' 
+to incomplete type 'struct request'
+   return pdu - sizeof(struct request);
+                       ^
+./include/linux/blk-mq.h: In function 'blk_mq_rq_to_pdu':
+./include/linux/blk-mq.h:320:2: error: invalid use of undefined type 
+'struct request'
+   return rq + 1;
+   ^
+In file included from drivers/misc/lkdtm/core.c:45:0:
+./include/scsi/scsi_cmnd.h: In function 'scsi_bidi_cmnd':
+./include/scsi/scsi_cmnd.h:214:9: error: implicit declaration of 
+function 'blk_bidi_rq' [-Werror=implicit-function-declaration]
+   return blk_bidi_rq(cmd->request) &&
+          ^
+./include/scsi/scsi_cmnd.h: In function 'scsi_get_lba':
+./include/scsi/scsi_cmnd.h:307:9: error: implicit declaration of 
+function 'blk_rq_pos' [-Werror=implicit-function-declaration]
+   return blk_rq_pos(scmd->request);
+          ^
+cc1: some warnings being treated as errors
+make[1]: *** [drivers/misc/lkdtm/core.o] Error 1
+make: *** [drivers/misc/lkdtm/core.o] Error 2
+
+
+> 
+> And shouldn't you be depending on SCSI instead?
+
+Yes maybe. I did make it depend on CONFIG_BLOCK because it was what it 
+was depending on in the Kconfig. I'll send a v2
+
+Christophe
+
+> 
+>> +
+>>   #ifdef CONFIG_IDE
+>>   #include <linux/ide.h>
+>>   #endif
+>> @@ -101,7 +104,9 @@ static struct crashpoint crashpoints[] = {
+>>   	CRASHPOINT("FS_DEVRW",		 "ll_rw_block"),
+>>   	CRASHPOINT("MEM_SWAPOUT",	 "shrink_inactive_list"),
+>>   	CRASHPOINT("TIMERADD",		 "hrtimer_start"),
+>> +# ifdef CONFIG_BLOCK
+>>   	CRASHPOINT("SCSI_DISPATCH_CMD",	 "scsi_dispatch_cmd"),
+>> +# endif
+> 
+> Again, scsi?
+> 
+> thanks,
+> 
+> greg k-h
+> 
