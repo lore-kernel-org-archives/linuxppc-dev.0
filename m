@@ -3,42 +3,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F0188C43441
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 09:24:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ADE75C43441
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 09:26:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6F5252086B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 09:24:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6F5252086B
+	by mail.kernel.org (Postfix) with ESMTPS id 5EE512086B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 09:26:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5EE512086B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 433yzh2j80zDqdq
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 20:24:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 433z223Wq3zDqRt
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 20:26:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 433ywn2Bs4zDqbs
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2018 20:22:17 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 433ywp09M3zDqd2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2018 20:22:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix)
- id 433ywm6BWRz9s3C; Tue, 27 Nov 2018 20:22:16 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 433ywm5d3Jz9s3Z; Tue, 27 Nov 2018 20:22:16 +1100 (AEDT)
+ id 433ywn5DdVz9s4s; Tue, 27 Nov 2018 20:22:17 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: b1cfa0391a0bcb91e7e3f49fb4490f9d48cc4913
-In-Reply-To: <20181126091944.21893-1-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+X-powerpc-patch-commit: 42e2acde1237878462b028f5a27d9cc5bea7502c
+In-Reply-To: <1540220060-30162-1-git-send-email-leitao@debian.org>
+To: Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [1/2] powerpc/configs: Remove unnecessary ftrace symbols
-Message-Id: <433ywm5d3Jz9s3Z@ozlabs.org>
-Date: Tue, 27 Nov 2018 20:22:16 +1100 (AEDT)
+Subject: Re: [1/9] powerpc/64s: Include cpu header
+Message-Id: <433ywn5DdVz9s4s@ozlabs.org>
+Date: Tue, 27 Nov 2018 20:22:17 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -50,32 +48,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Breno Leitao <leitao@debian.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 2018-11-26 at 09:19:43 UTC, Michael Ellerman wrote:
-> In commit 539df7fcb303 ("powerpc/configs: Enable function trace by
-> default") we added:
+On Mon, 2018-10-22 at 14:54:12 UTC, Breno Leitao wrote:
+> Current powerpc security.c file is defining functions, as
+> cpu_show_meltdown(), cpu_show_spectre_v{1,2} and others, that are being
+> declared at linux/cpu.h header without including the header file that
+> contains these declarations.
 > 
->   CONFIG_FTRACE=y
->   CONFIG_FUNCTION_TRACER=y
->   CONFIG_FUNCTION_GRAPH_TRACER=y
+> This is being reported by sparse, which thinks that these functions are
+> static, due to the lack of declaration:
 > 
-> To ppc64_defconfig, powernv_defconfig and pseries_defconfig.
+> 	arch/powerpc/kernel/security.c:105:9: warning: symbol 'cpu_show_meltdown' was not declared. Should it be static?
+> 	arch/powerpc/kernel/security.c:139:9: warning: symbol 'cpu_show_spectre_v1' was not declared. Should it be static?
+> 	arch/powerpc/kernel/security.c:161:9: warning: symbol 'cpu_show_spectre_v2' was not declared. Should it be static?
+> 	arch/powerpc/kernel/security.c:209:6: warning: symbol 'stf_barrier' was not declared. Should it be static?
+> 	arch/powerpc/kernel/security.c:289:9: warning: symbol 'cpu_show_spec_store_bypass' was not declared. Should it be static?
 > 
-> But only CONFIG_FUNCTION_TRACER=y is required, CONFIG_FTRACE is
-> default y if DEBUG_KERNEL is enabled, which we have. And then
-> CONFIG_FUNCTION_GRAPH_TRACER is default y when CONFIG_FUNCTION_TRACER
-> is enabled.
+> This patch simply includes the proper header (linux/cpu.h) to match
+> function definition and declaration.
 > 
-> The extra symbols were already removed from powernv_defconfig in
-> commit 9a018fb1e147 ("powerpc/config: powernv_defconfig updates").
-> 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Signed-off-by: Breno Leitao <leitao@debian.org>
 
-Series applied to powerpc next.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/b1cfa0391a0bcb91e7e3f49fb4490f
+https://git.kernel.org/powerpc/c/42e2acde1237878462b028f5a27d9c
 
 cheers
