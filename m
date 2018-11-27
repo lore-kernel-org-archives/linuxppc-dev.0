@@ -3,42 +3,41 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9EAC9C43441
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 09:39:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5DEF0C43441
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 09:42:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1A23120817
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 09:39:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1A23120817
+	by mail.kernel.org (Postfix) with ESMTPS id 17B2520817
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 09:42:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 17B2520817
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 433zK13KLqzDqdb
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 20:39:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 433zMh2LNPzDqSC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 20:42:08 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 433ywv3lddzDqdl
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2018 20:22:23 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 433ywy16y1zDqd2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2018 20:22:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 433ywv1tHvz9sB7; Tue, 27 Nov 2018 20:22:22 +1100 (AEDT)
+ id 433ywx58C4z9s3Z; Tue, 27 Nov 2018 20:22:24 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: f6cee260309807acb12ff84524ffc84720c2904b
-In-Reply-To: <20181105150119.6452-1-tiny.windzz@gmail.com>
+X-powerpc-patch-commit: 267acedffc614b78ec09bc279f921a6b9a38585e
+In-Reply-To: <20181106143930.8604-1-tiny.windzz@gmail.com>
 To: Yangtao Li <tiny.windzz@gmail.com>, benh@kernel.crashing.org,
- paulus@samba.org, hbathini@linux.ibm.com, mahesh@linux.vnet.ibm.com,
- david@gibson.dropbear.id.au, msuchanek@suse.de
+ paulus@samba.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc/fadump: Change to use DEFINE_SHOW_ATTRIBUTE macro
-Message-Id: <433ywv1tHvz9sB7@ozlabs.org>
-Date: Tue, 27 Nov 2018 20:22:22 +1100 (AEDT)
+Subject: Re: powerpc/vas: Change to use DEFINE_SHOW_ATTRIBUTE macro
+Message-Id: <433ywx58C4z9s3Z@ozlabs.org>
+Date: Tue, 27 Nov 2018 20:22:23 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,14 +55,13 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 2018-11-05 at 15:01:19 UTC, Yangtao Li wrote:
+On Tue, 2018-11-06 at 14:39:30 UTC, Yangtao Li wrote:
 > Use DEFINE_SHOW_ATTRIBUTE macro to simplify the code.
 > 
 > Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
-> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/f6cee260309807acb12ff84524ffc8
+https://git.kernel.org/powerpc/c/267acedffc614b78ec09bc279f921a
 
 cheers
