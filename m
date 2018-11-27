@@ -2,91 +2,126 @@ Return-Path: <SRS0=Iv+L=OG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A255C43441
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 17:50:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F113C43441
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 18:24:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1494D205C9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 17:50:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id D16D020851
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 18:24:58 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="n8Ig5tAb"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1494D205C9
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=dellteam.com header.i=@dellteam.com header.b="eWmy52yN"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D16D020851
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=Dellteam.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 434BCP23m4zDqVC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 04:50:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=chromium.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 434Byw5sbTzDqq5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 05:24:56 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=Dellteam.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.b="n8Ig5tAb";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=dellteam.com header.i=@dellteam.com header.b="eWmy52yN";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=chromium.org
- (client-ip=2607:f8b0:4864:20::e44; helo=mail-vs1-xe44.google.com;
- envelope-from=dianders@chromium.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=dellteam.com
+ (client-ip=68.232.153.96; helo=esa7.dell-outbound.iphmx.com;
+ envelope-from=alex_gagniuc@dellteam.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=chromium.org
+ dmarc=none (p=none dis=none) header.from=Dellteam.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=chromium.org header.i=@chromium.org header.b="n8Ig5tAb";
+ unprotected) header.d=dellteam.com header.i=@dellteam.com header.b="eWmy52yN";
  dkim-atps=neutral
-Received: from mail-vs1-xe44.google.com (mail-vs1-xe44.google.com
- [IPv6:2607:f8b0:4864:20::e44])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from esa7.dell-outbound.iphmx.com (esa7.dell-outbound.iphmx.com
+ [68.232.153.96])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4349yV6hq9zDqnT
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2018 04:39:30 +1100 (AEDT)
-Received: by mail-vs1-xe44.google.com with SMTP id h18so14277580vsj.4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2018 09:39:30 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=SxG22gKp3uE4WIbzN+Oih1tHSp7o6ihhKSzDyg1OL+k=;
- b=n8Ig5tAbA7o3/Ez/WMYwOM6FQ8Y7htlXMticvVSwbTd68NwdFgyL/WgOnsMP1ni1pW
- +STDRZ2AFIiJAy+B5Z9uUEyF+oxnMtVjLcHdm9Hmx/v9AvHS61VlBIbAUOani6h8lpAJ
- yz3zvL8AcXhbiLN04crZSzLzeHZC9ti8UKCIw=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=SxG22gKp3uE4WIbzN+Oih1tHSp7o6ihhKSzDyg1OL+k=;
- b=CCKO8tREzOLy+PanBbEYCN3H9UDlPPcBFlTUB9XbA4C79jpO2ApHjqlEPIew+wpFyU
- uqvCdTBnmaHGt35UmfDknBlOk4IsB7/4SstxIIIQVG7DmSYfIlaV0ilLvkiQI8L7T2sh
- eXycHhFJ47TTnXba15+FZhRHNBo7LDogUcWFUqGKMH2lwn41sHa2AyFc3LoNiH6oCCtr
- beUWOFVxmDfp8A6j1NYnfmX8R8uGcywfQPTXlSRur8KLK4jUZTNTXgTTKr2F/p1GDLgK
- yTsmtEffJJdXSE9fL3Y6oMBIK5Uv91pfwr9PWEuSxDt9QqrsiqUOAMSiOnvVzj59GKhv
- KvoQ==
-X-Gm-Message-State: AA+aEWYhMZAm/WR1fggBrtVd2AR1herLpmdgqcD/LG3caXJ1TQ++rh3l
- HIxcIAdF/XN3fVcGDtCKSohNnJXiGsE=
-X-Google-Smtp-Source: AJdET5cQTPJSHZnX6Q308NYn6B9ja83tPFDFnjM0URkcQPy7ok3Jc3AJhk9pDdozzGV6SVJe0JTMlQ==
-X-Received: by 2002:a67:2388:: with SMTP id j8mr14566540vsj.126.1543340368104; 
- Tue, 27 Nov 2018 09:39:28 -0800 (PST)
-Received: from mail-vs1-f43.google.com (mail-vs1-f43.google.com.
- [209.85.217.43])
- by smtp.gmail.com with ESMTPSA id a137sm2783183vsd.24.2018.11.27.09.39.25
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 27 Nov 2018 09:39:26 -0800 (PST)
-Received: by mail-vs1-f43.google.com with SMTP id e7so14279476vsc.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2018 09:39:25 -0800 (PST)
-X-Received: by 2002:a67:6cc1:: with SMTP id
- h184mr14355429vsc.149.1543340364044; 
- Tue, 27 Nov 2018 09:39:24 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 434Bw00zBMzDqml
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2018 05:22:22 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
+ d=dellteam.com; i=@dellteam.com; q=dns/txt; s=smtpout;
+ t=1543342916; x=1574878916;
+ h=cc:from:to:subject:date:message-id:references:
+ content-transfer-encoding:mime-version;
+ bh=hurL8EwyUQszf5IY19+ZGB7He+ZXs+g2ggV8DqcOpV8=;
+ b=eWmy52yNpnYoIlMpY0EuGPdB9eGACC0d5XTeLM5krQxUEAtDzZ0ahsJp
+ ab2Q2eOSbXIlemoouclyibI0FQT6JMBfCmS56akpiU+OR+wT0QuBDVFZv
+ iuka/S4RXWdp14L62NB7yXPc6MEbwsFmGDhB5lVTCtuJNe+0xmraOylUr I=;
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: =?us-ascii?q?A2E1AQD3if1bhiWd50NkHAEBAQQBAQc?=
+ =?us-ascii?q?EAQGBZYNaEjGMZo02gX2XPQsBAYRsgz04EgEDAQECAQECAQECEAEBAQoJCwg?=
+ =?us-ascii?q?pL4I2IoJmAQEBAxIoPxACAQgYHhBXAgQBGhqCf4ICmhYCgRCJWAEBAYIdiiy?=
+ =?us-ascii?q?OI4ERgxKFAYVbAosVlHcJBZEjIIFKAY9ALJdkAgQCBAUCFIFdgXdwgz2CNI4?=
+ =?us-ascii?q?mQAGNKIEfAQE?=
+X-IPAS-Result: =?us-ascii?q?A2E1AQD3if1bhiWd50NkHAEBAQQBAQcEAQGBZYNaEjGMZ?=
+ =?us-ascii?q?o02gX2XPQsBAYRsgz04EgEDAQECAQECAQECEAEBAQoJCwgpL4I2IoJmAQEBA?=
+ =?us-ascii?q?xIoPxACAQgYHhBXAgQBGhqCf4ICmhYCgRCJWAEBAYIdiiyOI4ERgxKFAYVbA?=
+ =?us-ascii?q?osVlHcJBZEjIIFKAY9ALJdkAgQCBAUCFIFdgXdwgz2CNI4mQAGNKIEfAQE?=
+Received: from mx0b-00154901.pphosted.com (HELO mx0a-00154901.pphosted.com)
+ ([67.231.157.37])
+ by esa7.dell-outbound.iphmx.com with ESMTP/TLS/AES256-SHA256;
+ 27 Nov 2018 12:21:52 -0600
+Received: from pps.filterd (m0089484.ppops.net [127.0.0.1])
+ by mx0b-00154901.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wARIDdKL122603
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2018 13:22:19 -0500
+Received: from esa1.dell-outbound2.iphmx.com (esa1.dell-outbound2.iphmx.com
+ [68.232.153.201])
+ by mx0b-00154901.pphosted.com with ESMTP id 2p178rhmmw-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2018 13:22:18 -0500
+Received: from ausxippc110.us.dell.com ([143.166.85.200])
+ by esa1.dell-outbound2.iphmx.com with ESMTP/TLS/DHE-RSA-AES256-SHA256;
+ 28 Nov 2018 00:22:04 +0600
+X-LoopCount0: from 10.166.134.89
+X-IronPort-AV: E=Sophos;i="5.56,287,1539666000"; d="scan'208";a="734245329"
+From: <Alex_Gagniuc@Dellteam.com>
+To: <okaya@kernel.org>, <mr.nuke.me@gmail.com>, <keith.busch@intel.com>
+Subject: Re: [PATCH 0/2] PCI/AER: Consistently use _OSC to determine who owns
+ AER
+Thread-Topic: [PATCH 0/2] PCI/AER: Consistently use _OSC to determine who owns
+ AER
+Thread-Index: AQHUfTk2X+FUHiVWnkuZssuLn5DqDg==
+Date: Tue, 27 Nov 2018 18:22:15 +0000
+Message-ID: <336e233b1ad642dcac9638d5fb275810@ausx13mps321.AMER.DELL.COM>
+References: <20181115231605.24352-1-mr.nuke.me@gmail.com>
+ <CABo9ajD5GJY7MrMjQc3hE=4tpPKpeceMtVEHwCwgjrvJUYjLvg@mail.gmail.com>
+ <20181119165318.GB26595@localhost.localdomain>
+ <74f2c527-0890-5e14-5e2d-48934a42dae6@kernel.org>
+ <ab2427f1-c1f0-68fe-5335-1494caafdcbb@kernel.org>
+ <20181119174127.GE26595@localhost.localdomain>
+ <ef0a24e4-906e-f6df-c646-1fe47ea0dcc0@kernel.org>
+ <20181119181051.GA26707@localhost.localdomain>
+ <c0d6535f-324b-557a-3d0e-ccec070459a7@kernel.org>
+ <3f923367-2cc1-c0d6-bca6-bf9a03d1b9ca@gmail.com>
+ <ef6b19de-dd18-850f-4db9-8ab71b975e94@kernel.org>
+ <bb575cfdcd0a4c50b489fb16eccfbff2@ausx13mps321.AMER.DELL.COM>
+ <84013a8a-287d-d700-6710-91cc35f507c8@kernel.org>
+ <9c9531c7efb846438f03f744b9afc466@ausx13mps321.AMER.DELL.COM>
+ <3b18a9fa-7bdd-0fb4-285d-4efb454be50a@kernel.org>
+ <e86f04ef8c054d61969862a6e7b72d0d@ausx13mps321.AMER.DELL.COM>
+ <314e59da-48e1-545b-3ee9-6e5056b90fd9@kernel.org>
+ <4728316eb84446358e0a07bbf1e42b57@ausx13mps321.AMER.DELL.COM>
+ <bac2c78a-cd56-7287-e4fd-6042e9b3432c@kernel.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-exchange-transport-fromentityheader: Hosted
+x-originating-ip: [10.178.128.193]
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-References: <20181127035133.225592-3-dianders@chromium.org>
- <201811271333.8ZTVxYUT%fengguang.wu@intel.com>
-In-Reply-To: <201811271333.8ZTVxYUT%fengguang.wu@intel.com>
-From: Doug Anderson <dianders@chromium.org>
-Date: Tue, 27 Nov 2018 09:39:09 -0800
-X-Gmail-Original-Message-ID: <CAD=FV=V087x+56aWFtJxg31O09cFUm00grH7bq1rLSwoq68WdA@mail.gmail.com>
-Message-ID: <CAD=FV=V087x+56aWFtJxg31O09cFUm00grH7bq1rLSwoq68WdA@mail.gmail.com>
-Subject: Re: [PATCH v5 2/4] kgdb: Fix kgdb_roundup_cpus() for arches who used
- smp_call_function()
-To: kbuild test robot <lkp@intel.com>
-Content-Type: text/plain; charset="UTF-8"
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-11-27_14:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=709 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1811270155
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,54 +133,19 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mips@linux-mips.org, dalias@libc.org, linux-sh@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- paulus@samba.org, Daniel Thompson <daniel.thompson@linaro.org>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, linux-hexagon@vger.kernel.org,
- Russell King - ARM Linux <linux@armlinux.org.uk>,
- kgdb-bugreport@lists.sourceforge.net, jhogan@kernel.org,
- linux-snps-arc@lists.infradead.org,
- Linux ARM <linux-arm-kernel@lists.infradead.org>,
- Vineet Gupta <vgupta@synopsys.com>, LKML <linux-kernel@vger.kernel.org>,
- Ralf Baechle <ralf@linux-mips.org>, rkuo@codeaurora.org, paul.burton@mips.com,
- kbuild-all@01.org, Jason Wessel <jason.wessel@windriver.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: baicar.tyler@gmail.com, sbobroff@linux.ibm.com, linux-pci@vger.kernel.org,
+ rjw@rjwysocki.net, linux-kernel@vger.kernel.org, Shyam.Iyer@dell.com,
+ linux-acpi@vger.kernel.org, lukas@wunner.de, oohall@gmail.com,
+ Austin.Bolen@dell.com, bhelgaas@google.com, linuxppc-dev@lists.ozlabs.org,
+ lenb@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
-
-On Mon, Nov 26, 2018 at 9:39 PM kbuild test robot <lkp@intel.com> wrote:
->
-> Hi Douglas,
->
-> Thank you for the patch! Yet something to improve:
->
-> [auto build test ERROR on kgdb/kgdb-next]
-> [also build test ERROR on v4.20-rc4 next-20181126]
-> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
->
-> url:    https://github.com/0day-ci/linux/commits/Douglas-Anderson/kgdb-Fix-kgdb_roundup_cpus/20181127-115425
-> base:   https://git.kernel.org/pub/scm/linux/kernel/git/jwessel/kgdb.git kgdb-next
-> config: sparc64-allyesconfig (attached as .config)
-> compiler: sparc64-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
-> reproduce:
->         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
->         chmod +x ~/bin/make.cross
->         # save the attached .config to linux build tree
->         GCC_VERSION=7.2.0 make.cross ARCH=sparc64
->
-> Note: the linux-review/Douglas-Anderson/kgdb-Fix-kgdb_roundup_cpus/20181127-115425 HEAD b8d0502e65f2d7a2187baa69870146a6fbf18c9f builds fine.
->       It only hurts bisectibility.
->
-> All errors (new ones prefixed by >>):
->
->    kernel/debug/debug_core.c: In function 'kgdb_roundup_cpus':
-> >> kernel/debug/debug_core.c:261:18: error: 'struct debuggerinfo_struct' has no member named 'rounding_up'
->        kgdb_info[cpu].rounding_up = false;
->                      ^
-
-Oops, I squashed this into the wrong patch.  It should have been in
-patch #3.  Sorry about that.  I'll send out a quick v6.
+On 11/20/2018 04:08 PM, Sinan Kaya wrote:=0A=
+> I followed the ASWG thread yesterday. There will be a meeting next week t=
+o=0A=
+> discuss this.=0A=
+=0A=
+Any updates on the meeting?=0A=
+=0A=
