@@ -2,49 +2,68 @@ Return-Path: <SRS0=Iv+L=OG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A4F8FC43441
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 07:45:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1BC33C43441
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 07:47:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3305D20873
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 07:45:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3305D20873
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id 917CA21104
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 07:47:43 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="SL+0lGw3"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 917CA21104
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 433wmm1BGSzDqf2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 18:45:12 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by lists.ozlabs.org (Postfix) with ESMTP id 433wqd3PMRzDqbs
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Nov 2018 18:47:41 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=lst.de
- (client-ip=213.95.11.211; helo=newverein.lst.de; envelope-from=hch@lst.de;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="SL+0lGw3";
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=srs0=zkqh=og=linuxfoundation.org=gregkh@kernel.org;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lst.de
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="SL+0lGw3"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 433wkB4H6xzDqbD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2018 18:42:57 +1100 (AEDT)
-Received: by newverein.lst.de (Postfix, from userid 2407)
- id 74ADD68BDB; Tue, 27 Nov 2018 08:42:53 +0100 (CET)
-Date: Tue, 27 Nov 2018 08:42:53 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: use generic DMA mapping code in powerpc V4
-Message-ID: <20181127074253.GB30186@lst.de>
-References: <20181114082314.8965-1-hch@lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 433wkc4v4xzDqbX
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2018 18:43:20 +1100 (AEDT)
+Received: from localhost (5356596B.cm-6-7b.dynamic.ziggo.nl [83.86.89.107])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id B1B1D20873;
+ Tue, 27 Nov 2018 07:43:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1543304598;
+ bh=4tNTvtlXoc6ceRPUPI1lsKzKP69M+Yqx/pm4mlaT608=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=SL+0lGw3vyPOms/UE5f5PQ6hlaGhg9kdpKGYx/0+vDiUd8WHOzkFhnqSvF89BhWFw
+ bKEtDxdIyH2QgAJyowMMU4ORL28FCmI7x46U8Xomi7mcp83QfcfDETgfhf16dmqjm5
+ kFylzGlX7lfC3NkZyrh6oJip6kraHyUKPqGD1EcQ=
+Date: Tue, 27 Nov 2018 08:43:16 +0100
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: Re: [PATCH] lkdtm: do not depend on CONFIG_BLOCK
+Message-ID: <20181127074316.GC13965@kroah.com>
+References: <ca27a073c872e243be1d17a89afb4b4aeb9a298b.1541714054.git.christophe.leroy@c-s.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20181114082314.8965-1-hch@lst.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <ca27a073c872e243be1d17a89afb4b4aeb9a298b.1541714054.git.christophe.leroy@c-s.fr>
+User-Agent: Mutt/1.11.0 (2018-11-25)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,46 +75,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-mm@kvack.org,
- iommu@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, Kees Cook <keescook@chromium.org>,
+ Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Any comments?  I'd like to at least get the ball moving on the easy
-bits.
+On Fri, Nov 09, 2018 at 07:05:51AM +0000, Christophe Leroy wrote:
+> Most parts of lkdtm don't require CONFIG_BLOCK.
+> 
+> This patch limits dependency to CONFIG_BLOCK in order to give embedded
+> platforms which don't select CONFIG_BLOCK the opportunity to use LKDTM.
+> 
+> Fixes: fddd9cf82c9f ("make LKDTM depend on BLOCK")
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> ---
+>  drivers/misc/lkdtm/core.c | 7 ++++++-
+>  lib/Kconfig.debug         | 1 -
+>  2 files changed, 6 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/misc/lkdtm/core.c b/drivers/misc/lkdtm/core.c
+> index 2837dc77478e..bc76756b7eda 100644
+> --- a/drivers/misc/lkdtm/core.c
+> +++ b/drivers/misc/lkdtm/core.c
+> @@ -40,9 +40,12 @@
+>  #include <linux/interrupt.h>
+>  #include <linux/hrtimer.h>
+>  #include <linux/slab.h>
+> -#include <scsi/scsi_cmnd.h>
+>  #include <linux/debugfs.h>
+>  
+> +#ifdef CONFIG_BLOCK
+> +#include <scsi/scsi_cmnd.h>
+> +#endif
 
-On Wed, Nov 14, 2018 at 09:22:40AM +0100, Christoph Hellwig wrote:
-> Hi all,
-> 
-> this series switches the powerpc port to use the generic swiotlb and
-> noncoherent dma ops, and to use more generic code for the coherent
-> direct mapping, as well as removing a lot of dead code.
-> 
-> As this series is very large and depends on the dma-mapping tree I've
-> also published a git tree:
-> 
->     git://git.infradead.org/users/hch/misc.git powerpc-dma.4
-> 
-> Gitweb:
-> 
->     http://git.infradead.org/users/hch/misc.git/shortlog/refs/heads/powerpc-dma.4
-> 
-> Changes since v3:
->  - rebase on the powerpc fixes tree
->  - add a new patch to actually make the baseline amigaone config
->    configure without warnings
->  - only use ZONE_DMA for 64-bit embedded CPUs, on pseries an IOMMU is
->    always present
->  - fix compile in mem.c for one configuration
->  - drop the full npu removal for now, will be resent separately
->  - a few git bisection fixes
-> 
-> The changes since v1 are to big to list and v2 was not posted in public.
-> 
-> _______________________________________________
-> iommu mailing list
-> iommu@lists.linux-foundation.org
-> https://lists.linuxfoundation.org/mailman/listinfo/iommu
----end quoted text---
+Why would this config option be needed to be checked just to be able to
+include a .h file?
+
+And shouldn't you be depending on SCSI instead?
+
+> +
+>  #ifdef CONFIG_IDE
+>  #include <linux/ide.h>
+>  #endif
+> @@ -101,7 +104,9 @@ static struct crashpoint crashpoints[] = {
+>  	CRASHPOINT("FS_DEVRW",		 "ll_rw_block"),
+>  	CRASHPOINT("MEM_SWAPOUT",	 "shrink_inactive_list"),
+>  	CRASHPOINT("TIMERADD",		 "hrtimer_start"),
+> +# ifdef CONFIG_BLOCK
+>  	CRASHPOINT("SCSI_DISPATCH_CMD",	 "scsi_dispatch_cmd"),
+> +# endif
+
+Again, scsi?
+
+thanks,
+
+greg k-h
