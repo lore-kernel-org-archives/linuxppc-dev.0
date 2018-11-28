@@ -2,79 +2,89 @@ Return-Path: <SRS0=VBhC=OH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7EC41C43441
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 15:58:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B914AC43441
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 16:40:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4B4792081B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 15:58:42 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="Eaysd+3m"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4B4792081B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
+	by mail.kernel.org (Postfix) with ESMTPS id E9153206B6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 16:40:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E9153206B6
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 434lgg4BdnzDqjv
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 02:58:39 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
+	by lists.ozlabs.org (Postfix) with ESMTP id 434mbS3ppBzDqvw
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 03:40:04 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="Eaysd+3m";
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=pass (helo) smtp.helo=mo6-p01-ob.smtp.rzone.de
- (client-ip=2a01:238:20a:202:5301::2; helo=mo6-p01-ob.smtp.rzone.de;
- envelope-from=chzigotzky@xenosoft.de; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=xenosoft.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="Eaysd+3m"; 
- dkim-atps=neutral
-Received: from mo6-p01-ob.smtp.rzone.de (mo6-p01-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5301::2])
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=anju@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 434lcb2xHnzDqxf
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Nov 2018 02:55:58 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1543420555;
- s=strato-dkim-0002; d=xenosoft.de;
- h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:
- X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
- bh=7xS2QcB97L9QI4n5R/5DRuYEud3Vh5VKc9tcNvItCtM=;
- b=Eaysd+3mvkeElBj9Qq1Wg83sqYPco7KoN0nyg/bX/yNl/PPGjDuOmrDsI5HWZ/AE+3
- 4in0cTumdMc8NIPEiMPW3j7nqvBGX5dCN0fm7quPmqVLUouY5ISZcdwLALPFjR305cXm
- gV/+gTrzRXT8c8Efq93mHfdRBAnzqpR3EPyGx6HWEmikwST9RaiDWpBv8idLm+Kd7oPU
- 0IskozewQOrPphKIyz5OgWdmqE2S1KySacxWYfBG6lq8LQG/4CuAvpUf3arUd3kGrddd
- 1Cc4zh4inHhLTKs+Dz09udl6YERuOCju7V0ThhFAtQio8ZgayJOm74pWiSp8/+T/ZnxV
- E4+Q==
-X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5G5MdirQj0WG7CkIise/x75IsWntOVj9qPtpgydF"
-X-RZG-CLASS-ID: mo00
-Received: from [IPv6:2a02:8109:a400:162c:74d7:2770:613:8ba4]
- by smtp.strato.de (RZmta 44.6 AUTH) with ESMTPSA id 404b20uASFtU7KR
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
- 521 ECDH bits, eq. 15360 bits RSA))
- (Client did not present a certificate);
- Wed, 28 Nov 2018 16:55:30 +0100 (CET)
-Subject: Re: use generic DMA mapping code in powerpc V4
-To: Michael Ellerman <mpe@ellerman.id.au>, Christoph Hellwig <hch@lst.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-References: <20181114082314.8965-1-hch@lst.de> <20181127074253.GB30186@lst.de>
- <87zhttfonk.fsf@concordia.ellerman.id.au>
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-Message-ID: <535776df-dea3-eb26-6bf3-83f225e977df@xenosoft.de>
-Date: Wed, 28 Nov 2018 16:55:30 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.3.1
-MIME-Version: 1.0
-In-Reply-To: <87zhttfonk.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Language: de-DE
+ by lists.ozlabs.org (Postfix) with ESMTPS id 434mXy5FhSzDqvv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Nov 2018 03:37:54 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wASGapUa123310
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2018 11:37:52 -0500
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2p1wyk2jgv-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2018 11:37:51 -0500
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
+ Wed, 28 Nov 2018 16:37:48 -0000
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 28 Nov 2018 16:37:47 -0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wASGbk8E15925432
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Wed, 28 Nov 2018 16:37:46 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 0A791AE056;
+ Wed, 28 Nov 2018 16:37:46 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id EC536AE053;
+ Wed, 28 Nov 2018 16:37:44 +0000 (GMT)
+Received: from localhost.localdomain.com (unknown [9.145.3.14])
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed, 28 Nov 2018 16:37:44 +0000 (GMT)
+From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au, linux-kernel@vger.kernel.org
+Subject: [PATCH 2/4] powerpc/perf: Rearrange setting of ldbar for thread-imc
+Date: Wed, 28 Nov 2018 22:07:33 +0530
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20181128163735.29607-1-anju@linux.vnet.ibm.com>
+References: <20181128163735.29607-1-anju@linux.vnet.ibm.com>
+X-TM-AS-GCONF: 00
+x-cbid: 18112816-0016-0000-0000-0000022E12ED
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18112816-0017-0000-0000-0000328671A6
+Message-Id: <20181128163735.29607-3-anju@linux.vnet.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-11-28_09:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1811280144
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,26 +96,107 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-mm@kvack.org,
- iommu@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: maddy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ anju@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 28 November 2018 at 12:05PM, Michael Ellerman wrote:
-> Nothing specific yet.
->
-> I'm a bit worried it might break one of the many old obscure platforms
-> we have that aren't well tested.
->
-Please don't apply the new DMA mapping code if you don't be sure if it 
-works on all supported PowerPC machines. Is the new DMA mapping code 
-really necessary? It's not really nice, to rewrote code if the old code 
-works perfect. We must not forget, that we work for the end users. Does 
-the end user have advantages with this new code? Is it faster? The old 
-code works without any problems. I am also worried about this code. How 
-can I test this new DMA mapping code?
+LDBAR holds the memory address allocated for each cpu. For thread-imc
+the mode bit (i.e bit 1) of LDBAR is set to accumulation.
+Currently, ldbar is loaded with per cpu memory address and mode set to
+accumulation at boot time.
 
-Thanks
+To enable trace-imc, the mode bit of ldbar should be set to 'trace'. So to
+accommodate trace-mode of IMC, reposition setting of ldbar for thread-imc
+to thread_imc_event_add(). Also reset ldbar at thread_imc_event_del().
+
+Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+---
+ arch/powerpc/perf/imc-pmu.c | 28 +++++++++++++++++-----------
+ 1 file changed, 17 insertions(+), 11 deletions(-)
+
+diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
+index f292a3f284f1..3bef46f8417d 100644
+--- a/arch/powerpc/perf/imc-pmu.c
++++ b/arch/powerpc/perf/imc-pmu.c
+@@ -806,8 +806,11 @@ static int core_imc_event_init(struct perf_event *event)
+ }
+ 
+ /*
+- * Allocates a page of memory for each of the online cpus, and write the
+- * physical base address of that page to the LDBAR for that cpu.
++ * Allocates a page of memory for each of the online cpus, and load
++ * LDBAR with 0.
++ * The physical base address of the page allocated for a cpu will be
++ * written to the LDBAR for that cpu, when the thread-imc event
++ * is added.
+  *
+  * LDBAR Register Layout:
+  *
+@@ -825,7 +828,7 @@ static int core_imc_event_init(struct perf_event *event)
+  */
+ static int thread_imc_mem_alloc(int cpu_id, int size)
+ {
+-	u64 ldbar_value, *local_mem = per_cpu(thread_imc_mem, cpu_id);
++	u64 *local_mem = per_cpu(thread_imc_mem, cpu_id);
+ 	int nid = cpu_to_node(cpu_id);
+ 
+ 	if (!local_mem) {
+@@ -842,9 +845,7 @@ static int thread_imc_mem_alloc(int cpu_id, int size)
+ 		per_cpu(thread_imc_mem, cpu_id) = local_mem;
+ 	}
+ 
+-	ldbar_value = ((u64)local_mem & THREAD_IMC_LDBAR_MASK) | THREAD_IMC_ENABLE;
+-
+-	mtspr(SPRN_LDBAR, ldbar_value);
++	mtspr(SPRN_LDBAR, 0);
+ 	return 0;
+ }
+ 
+@@ -995,6 +996,7 @@ static int thread_imc_event_add(struct perf_event *event, int flags)
+ {
+ 	int core_id;
+ 	struct imc_pmu_ref *ref;
++	u64 ldbar_value, *local_mem = per_cpu(thread_imc_mem, smp_processor_id());
+ 
+ 	if (flags & PERF_EF_START)
+ 		imc_event_start(event, flags);
+@@ -1003,6 +1005,9 @@ static int thread_imc_event_add(struct perf_event *event, int flags)
+ 		return -EINVAL;
+ 
+ 	core_id = smp_processor_id() / threads_per_core;
++	ldbar_value = ((u64)local_mem & THREAD_IMC_LDBAR_MASK) | THREAD_IMC_ENABLE;
++	mtspr(SPRN_LDBAR, ldbar_value);
++
+ 	/*
+ 	 * imc pmus are enabled only when it is used.
+ 	 * See if this is triggered for the first time.
+@@ -1034,11 +1039,7 @@ static void thread_imc_event_del(struct perf_event *event, int flags)
+ 	int core_id;
+ 	struct imc_pmu_ref *ref;
+ 
+-	/*
+-	 * Take a snapshot and calculate the delta and update
+-	 * the event counter values.
+-	 */
+-	imc_event_update(event);
++	mtspr(SPRN_LDBAR, 0);
+ 
+ 	core_id = smp_processor_id() / threads_per_core;
+ 	ref = &core_imc_refc[core_id];
+@@ -1057,6 +1058,11 @@ static void thread_imc_event_del(struct perf_event *event, int flags)
+ 		ref->refc = 0;
+ 	}
+ 	mutex_unlock(&ref->lock);
++	/*
++	 * Take a snapshot and calculate the delta and update
++	 * the event counter values.
++	 */
++	imc_event_update(event);
+ }
+ 
+ /* update_pmu_ops : Populate the appropriate operations for "pmu" */
+-- 
+2.17.1
 
