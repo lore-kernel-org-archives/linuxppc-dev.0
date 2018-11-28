@@ -2,87 +2,64 @@ Return-Path: <SRS0=VBhC=OH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 53316C43441
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 16:48:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 46121C43441
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 17:23:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CDE6F2081B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 16:48:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CDE6F2081B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 84FD92081B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 17:23:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 84FD92081B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 434mnX67g4zDqCD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 03:48:48 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 434nYK3f4WzDqJR
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 04:23:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=anju@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 434mYB3BLtzDqyv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Nov 2018 03:38:06 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wASGOxoL142380
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2018 11:38:01 -0500
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2p1vrnefp9-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2018 11:37:53 -0500
-Received: from localhost
- by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
- Wed, 28 Nov 2018 16:37:44 -0000
-Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
- by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 28 Nov 2018 16:37:41 -0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wASGbfKX19005642
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Wed, 28 Nov 2018 16:37:41 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D7D5FAE053;
- Wed, 28 Nov 2018 16:37:40 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D4740AE051;
- Wed, 28 Nov 2018 16:37:39 +0000 (GMT)
-Received: from localhost.localdomain.com (unknown [9.145.3.14])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 28 Nov 2018 16:37:39 +0000 (GMT)
-From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au, linux-kernel@vger.kernel.org
-Subject: [PATCH 0/4] powerpc/perf: IMC trace-mode support
-Date: Wed, 28 Nov 2018 22:07:31 +0530
-X-Mailer: git-send-email 2.17.1
-X-TM-AS-GCONF: 00
-x-cbid: 18112816-0028-0000-0000-00000322DF27
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18112816-0029-0000-0000-000023DEEC2D
-Message-Id: <20181128163735.29607-1-anju@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-11-28_08:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=900 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1811280144
+ by lists.ozlabs.org (Postfix) with ESMTPS id 434nVy6ljwzDqyj
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Nov 2018 04:21:14 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 434nVs6Hpjz9vBmM;
+ Wed, 28 Nov 2018 18:21:09 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id Lwq5dJxyfUWc; Wed, 28 Nov 2018 18:21:09 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 434nVs5dMWz9vBmL;
+ Wed, 28 Nov 2018 18:21:09 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 4605C8B889;
+ Wed, 28 Nov 2018 18:21:11 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id KmMk8aU_hg08; Wed, 28 Nov 2018 18:21:11 +0100 (CET)
+Received: from po14163vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
+ [172.25.231.2])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 130038B888;
+ Wed, 28 Nov 2018 18:21:11 +0100 (CET)
+Received: by po14163vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id DDF4769B1A; Wed, 28 Nov 2018 17:21:10 +0000 (UTC)
+Message-Id: <62fcfb8435c2f801d820eff469fd01e68c1b107d.1543425412.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v3] powerpc/mm: add exec protection on powerpc 603
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Wed, 28 Nov 2018 17:21:10 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,166 +71,239 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: maddy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- anju@linux.vnet.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-IMC (In-Memory collection counters) is a hardware monitoring facility      
-that collects large number of hardware performance events.                 
-POWER9 support two modes for IMC which are the Accumulation mode and       
-Trace mode. In Accumulation mode, event counts are accumulated in system   
-Memory. Hypervisor then reads the posted counts periodically or when       
-requested. In IMC Trace mode, event counted is fixed for cycles and on     
-each overflow, hardware snapshots the program counter along with other     
-details and writes into memory pointed by LDBAR(ring buffer memory,        
-hardware wraps around). LDBAR has bit which indicates the IMC trace-mode.               
-								    
-Trace-IMC Implementation:                                                  
---------------------------                                                 
-To enable trace-imc, we need to                                            
-								    
-* Add trace node in the DTS file for power9, so that the new trace node can
-be discovered by the kernel.                                               
-								    
-Information included in the DTS file are as follows, (a snippet from      
-the ima-catalog)                                                           
-								    
-TRACE_IMC: trace-events {                                                  
-     #address-cells = <0x1>;                                        
-     #size-cells = <0x1>;                                           
-     event@10200000 {                                               
-	 event-name = "cycles" ;                                    
-	 reg = <0x10200000 0x8>;                                    
-	 desc = "Reference cycles" ;                                
-     };                                                             
- };                                                                 
- trace@0 {                                                          
-	 compatible = "ibm,imc-counters";                           
-	 events-prefix = "trace_";                                  
-	 reg = <0x0 0x8>;                                           
-	 events = < &TRACE_IMC >;                                   
-	 type = <0x2>;                                              
-	 size = <0x40000>;                                          
- };                                                                 
-								    
-OP-BUILD changes needed to include the "trace node" is already pulled in   
-to the ima-catalog repo.                                                   
-								    
-ps://github.com/open-power/op-build/commit/d3e75dc26d1283d7d5eb444bff1ec9e40d5dfc07
-								    
-* Enchance the opal_imc_counters_* calls to support this new trace mode    
-in imc. Add support to initialize the trace-mode scom.                     
-								    
-TRACE_IMC_SCOM bit representation:                                         
-								    
-0:1     : SAMPSEL                                                          
-2:33    : CPMC_LOAD                                                        
-34:40   : CPMC1SEL                                                         
-41:47   : CPMC2SEL                                                         
-48:50   : BUFFERSIZE                                                       
-51:63   : RESERVED                                                         
-								    
-CPMC_LOAD contains the sampling duration. SAMPSEL and CPMC*SEL determines  
-the event to count. BUFFRSIZE indicates the memory range. On each overflow,
-hardware snapshots program counter along with other details and update the 
-memory and reloads the CMPC_LOAD value for the next sampling duration.     
-IMC hardware does not support exceptions, so it quietly wraps around if    
-memory buffer reaches the end.                                             
+The 603 doesn't have a HASH table, TLB misses are handled by
+software. It is then possible to generate page fault when
+_PAGE_EXEC is not set like in nohash/32.
 
-Link to the skiboot patches to enhance the opal_imc_counters_* calls:
-https://lists.ozlabs.org/pipermail/skiboot/2018-October/012442.html
-https://lists.ozlabs.org/pipermail/skiboot/2018-October/012441.html
-https://lists.ozlabs.org/pipermail/skiboot/2018-October/012439.html
-https://lists.ozlabs.org/pipermail/skiboot/2018-October/012440.html
+There is one "reserved" PTE bit available, this patch uses
+it for _PAGE_EXEC.
 
-* Set LDBAR spr to enable imc-trace mode.
+In order to support it, set_pte_filter() and
+set_access_flags_filter() are made common, and the handling
+is made dependent on MMU_FTR_HPTE_TABLE
 
-LDBAR Layout:
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ v3: Included the _PAGE_EXEC flag in the existing test in TLB handler, no additional insns.
 
-0     : Enable/Disable
-1     : 0 -> Accumulation Mode
-      	1 -> Trace Mode
-2:3   : Reserved
-4-6   : PB scope
-7     : Reserved
-8:50  : Counter Address
-51:63 : Reserved
+ v2: Amended commit log and removed #ifdef in pagetable dump
 
-----------------                                                           
-								    
-Key benefit of imc trace-mode is, each sample record contains the address
-pointer along with other information. So that, we can profile the IP
-without interrupting the application.
-								    
-Performance data using 'perf top' with and without trace-imc event:        
-								    
-When the application is monitored with trace-imc event, we dont take any   
-PMI interrupts.                                                            
-								    
-PMI interrupts count when `perf top` command is executed without trac-imc event.
-								    
-# perf top                                      
-12.53%  [kernel]       [k] arch_cpu_idle                               
-11.32%  [kernel]       [k] rcu_idle_enter                              
-10.76%  [kernel]       [k] __next_timer_interrupt                      
- 9.49%  [kernel]       [k] find_next_bit                               
- 8.06%  [kernel]       [k] rcu_dynticks_eqs_exit                       
- 7.82%  [kernel]       [k] do_idle                                     
- 5.71%  [kernel]       [k] tick_nohz_idle_stop_tic                     
-     [-----------------------]                                      
-# cat /proc/interrupts  (a snippet from the output)                        
-9944      1072        804        804       1644        804       1306      
-804        804        804        804        804        804        804      
-804        804       1961       1602        804        804       1258      
-[-----------------------------------------------------------------]        
-803        803        803        803        803        803        803      
-803        803        803        803        804        804        804     
-804        804        804        804        804        804        803     
-803        803        803        803        803       1306        803     
-803   Performance monitoring interrupts                                   
-								    
-								    
-`perf top` with trace-imc (right after 'perf top' without trace-imc event):
-								    
-# perf top -e trace_imc/trace_cycles/                                      
-12.50%  [kernel]          [k] arch_cpu_idle                            
-11.81%  [kernel]          [k] __next_timer_interrupt                   
-11.22%  [kernel]          [k] rcu_idle_enter                           
-10.25%  [kernel]          [k] find_next_bit                            
- 7.91%  [kernel]          [k] do_idle                                  
- 7.69%  [kernel]          [k] rcu_dynticks_eqs_exit                    
- 5.20%  [kernel]          [k] tick_nohz_idle_stop_tick                 
-     [-----------------------]                                      
-								    
-# cat /proc/interrupts (a snippet from the output)                         
-								    
-9944      1072        804        804       1644        804       1306      
-804        804        804        804        804        804        804      
-804        804       1961       1602        804        804       1258      
-[-----------------------------------------------------------------]        
-803        803        803        803        803        803        803      
-803        803        803        804        804        804        804
-804        804        804        804        804        804        803     
-803        803        803        803        803       1306        803     
-803   Performance monitoring interrupts                                   
-								    
-The PMI interrupts count remains the same.    
+ arch/powerpc/include/asm/book3s/32/hash.h      |  1 +
+ arch/powerpc/include/asm/book3s/32/pgtable.h   | 18 +++++++++---------
+ arch/powerpc/include/asm/cputable.h            |  8 ++++----
+ arch/powerpc/kernel/head_32.S                  |  2 +-
+ arch/powerpc/mm/dump_linuxpagetables-generic.c |  2 --
+ arch/powerpc/mm/pgtable.c                      | 20 +++++++++++---------
+ 6 files changed, 26 insertions(+), 25 deletions(-)
 
-Anju T Sudhakar (4):
-  powerpc/include: Add data structures and macros for IMC trace mode
-  powerpc/perf: Rearrange setting of ldbar for thread-imc
-  powerpc/perf: Trace imc events detectionand cpuhotplug
-  powerpc/perf: Trace imc PMU functions
-
- arch/powerpc/include/asm/imc-pmu.h        |  39 +++
- arch/powerpc/include/asm/opal-api.h       |   1 +
- arch/powerpc/perf/imc-pmu.c               | 291 +++++++++++++++++++++-
- arch/powerpc/platforms/powernv/opal-imc.c |   3 +
- include/linux/cpuhotplug.h                |   1 +
- 5 files changed, 324 insertions(+), 11 deletions(-)
-
+diff --git a/arch/powerpc/include/asm/book3s/32/hash.h b/arch/powerpc/include/asm/book3s/32/hash.h
+index f2892c7ab73e..2a0a467d2985 100644
+--- a/arch/powerpc/include/asm/book3s/32/hash.h
++++ b/arch/powerpc/include/asm/book3s/32/hash.h
+@@ -26,6 +26,7 @@
+ #define _PAGE_WRITETHRU	0x040	/* W: cache write-through */
+ #define _PAGE_DIRTY	0x080	/* C: page changed */
+ #define _PAGE_ACCESSED	0x100	/* R: page referenced */
++#define _PAGE_EXEC	0x200	/* software: exec allowed */
+ #define _PAGE_RW	0x400	/* software: user write access allowed */
+ #define _PAGE_SPECIAL	0x800	/* software: Special page */
+ 
+diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
+index b849b45429d5..6accf3e686af 100644
+--- a/arch/powerpc/include/asm/book3s/32/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
+@@ -10,9 +10,9 @@
+ /* And here we include common definitions */
+ 
+ #define _PAGE_KERNEL_RO		0
+-#define _PAGE_KERNEL_ROX	0
++#define _PAGE_KERNEL_ROX	(_PAGE_EXEC)
+ #define _PAGE_KERNEL_RW		(_PAGE_DIRTY | _PAGE_RW)
+-#define _PAGE_KERNEL_RWX	(_PAGE_DIRTY | _PAGE_RW)
++#define _PAGE_KERNEL_RWX	(_PAGE_DIRTY | _PAGE_RW | _PAGE_EXEC)
+ 
+ #define _PAGE_HPTEFLAGS _PAGE_HASHPTE
+ 
+@@ -66,11 +66,11 @@ static inline bool pte_user(pte_t pte)
+  */
+ #define PAGE_NONE	__pgprot(_PAGE_BASE)
+ #define PAGE_SHARED	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW)
+-#define PAGE_SHARED_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW)
++#define PAGE_SHARED_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW | _PAGE_EXEC)
+ #define PAGE_COPY	__pgprot(_PAGE_BASE | _PAGE_USER)
+-#define PAGE_COPY_X	__pgprot(_PAGE_BASE | _PAGE_USER)
++#define PAGE_COPY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_EXEC)
+ #define PAGE_READONLY	__pgprot(_PAGE_BASE | _PAGE_USER)
+-#define PAGE_READONLY_X	__pgprot(_PAGE_BASE | _PAGE_USER)
++#define PAGE_READONLY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_EXEC)
+ 
+ /* Permission masks used for kernel mappings */
+ #define PAGE_KERNEL	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RW)
+@@ -318,7 +318,7 @@ static inline void __ptep_set_access_flags(struct vm_area_struct *vma,
+ 					   int psize)
+ {
+ 	unsigned long set = pte_val(entry) &
+-		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW);
++		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC);
+ 
+ 	pte_update(ptep, 0, set);
+ 
+@@ -384,7 +384,7 @@ static inline int pte_dirty(pte_t pte)		{ return !!(pte_val(pte) & _PAGE_DIRTY);
+ static inline int pte_young(pte_t pte)		{ return !!(pte_val(pte) & _PAGE_ACCESSED); }
+ static inline int pte_special(pte_t pte)	{ return !!(pte_val(pte) & _PAGE_SPECIAL); }
+ static inline int pte_none(pte_t pte)		{ return (pte_val(pte) & ~_PTE_NONE_MASK) == 0; }
+-static inline bool pte_exec(pte_t pte)		{ return true; }
++static inline bool pte_exec(pte_t pte)		{ return pte_val(pte) & _PAGE_EXEC; }
+ 
+ static inline int pte_present(pte_t pte)
+ {
+@@ -451,7 +451,7 @@ static inline pte_t pte_wrprotect(pte_t pte)
+ 
+ static inline pte_t pte_exprotect(pte_t pte)
+ {
+-	return pte;
++	return __pte(pte_val(pte) & ~_PAGE_EXEC);
+ }
+ 
+ static inline pte_t pte_mkclean(pte_t pte)
+@@ -466,7 +466,7 @@ static inline pte_t pte_mkold(pte_t pte)
+ 
+ static inline pte_t pte_mkexec(pte_t pte)
+ {
+-	return pte;
++	return __pte(pte_val(pte) | _PAGE_EXEC);
+ }
+ 
+ static inline pte_t pte_mkpte(pte_t pte)
+diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+index 29f49a35d6ee..a0395ccbbe9e 100644
+--- a/arch/powerpc/include/asm/cputable.h
++++ b/arch/powerpc/include/asm/cputable.h
+@@ -296,7 +296,7 @@ static inline void cpu_feature_keys_init(void) { }
+ #define CPU_FTRS_PPC601	(CPU_FTR_COMMON | CPU_FTR_601 | \
+ 	CPU_FTR_COHERENT_ICACHE | CPU_FTR_UNIFIED_ID_CACHE | CPU_FTR_USE_RTC)
+ #define CPU_FTRS_603	(CPU_FTR_COMMON | CPU_FTR_MAYBE_CAN_DOZE | \
+-	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_PPC_LE)
++	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_PPC_LE | CPU_FTR_NOEXECUTE)
+ #define CPU_FTRS_604	(CPU_FTR_COMMON | CPU_FTR_PPC_LE)
+ #define CPU_FTRS_740_NOTAU	(CPU_FTR_COMMON | \
+ 	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_L2CR | \
+@@ -367,15 +367,15 @@ static inline void cpu_feature_keys_init(void) { }
+ 	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | \
+ 	    CPU_FTR_SPEC7450 | CPU_FTR_NAP_DISABLE_L2_PR | \
+ 	    CPU_FTR_PPC_LE | CPU_FTR_NEED_PAIRED_STWCX)
+-#define CPU_FTRS_82XX	(CPU_FTR_COMMON | CPU_FTR_MAYBE_CAN_DOZE)
++#define CPU_FTRS_82XX	(CPU_FTR_COMMON | CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_NOEXECUTE)
+ #define CPU_FTRS_G2_LE	(CPU_FTR_COMMON | CPU_FTR_MAYBE_CAN_DOZE | \
+ 	    CPU_FTR_MAYBE_CAN_NAP)
+ #define CPU_FTRS_E300	(CPU_FTR_MAYBE_CAN_DOZE | \
+ 	    CPU_FTR_MAYBE_CAN_NAP | \
+-	    CPU_FTR_COMMON)
++	    CPU_FTR_COMMON  | CPU_FTR_NOEXECUTE)
+ #define CPU_FTRS_E300C2	(CPU_FTR_MAYBE_CAN_DOZE | \
+ 	    CPU_FTR_MAYBE_CAN_NAP | \
+-	    CPU_FTR_COMMON | CPU_FTR_FPU_UNAVAILABLE)
++	    CPU_FTR_COMMON | CPU_FTR_FPU_UNAVAILABLE  | CPU_FTR_NOEXECUTE)
+ #define CPU_FTRS_CLASSIC32	(CPU_FTR_COMMON)
+ #define CPU_FTRS_8XX	(CPU_FTR_NOEXECUTE)
+ #define CPU_FTRS_40X	(CPU_FTR_NODSISRALIGN | CPU_FTR_NOEXECUTE)
+diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
+index 118c3b216e60..479017f6a992 100644
+--- a/arch/powerpc/kernel/head_32.S
++++ b/arch/powerpc/kernel/head_32.S
+@@ -499,7 +499,7 @@ InstructionTLBMiss:
+ 	lis	r1,PAGE_OFFSET@h		/* check if kernel address */
+ 	cmplw	0,r1,r3
+ 	mfspr	r2,SPRN_SPRG_THREAD
+-	li	r1,_PAGE_USER|_PAGE_PRESENT /* low addresses tested as user */
++	li	r1,_PAGE_USER|_PAGE_PRESENT|_PAGE_EXEC /* low addresses tested as user */
+ 	lwz	r2,PGDIR(r2)
+ 	bge-	112f
+ 	mfspr	r2,SPRN_SRR1		/* and MSR_PR bit from SRR1 */
+diff --git a/arch/powerpc/mm/dump_linuxpagetables-generic.c b/arch/powerpc/mm/dump_linuxpagetables-generic.c
+index 1e3829ec1348..3fe98a0974c6 100644
+--- a/arch/powerpc/mm/dump_linuxpagetables-generic.c
++++ b/arch/powerpc/mm/dump_linuxpagetables-generic.c
+@@ -21,13 +21,11 @@ static const struct flag_info flag_array[] = {
+ 		.set	= "rw",
+ 		.clear	= "r ",
+ 	}, {
+-#ifndef CONFIG_PPC_BOOK3S_32
+ 		.mask	= _PAGE_EXEC,
+ 		.val	= _PAGE_EXEC,
+ 		.set	= " X ",
+ 		.clear	= "   ",
+ 	}, {
+-#endif
+ 		.mask	= _PAGE_PRESENT,
+ 		.val	= _PAGE_PRESENT,
+ 		.set	= "present",
+diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
+index 1e33dccbd176..d3d61d29b4f1 100644
+--- a/arch/powerpc/mm/pgtable.c
++++ b/arch/powerpc/mm/pgtable.c
+@@ -74,7 +74,7 @@ static struct page *maybe_pte_to_page(pte_t pte)
+  * support falls into the same category.
+  */
+ 
+-static pte_t set_pte_filter(pte_t pte)
++static pte_t set_pte_filter_hash(pte_t pte)
+ {
+ 	if (radix_enabled())
+ 		return pte;
+@@ -93,14 +93,12 @@ static pte_t set_pte_filter(pte_t pte)
+ 	return pte;
+ }
+ 
+-static pte_t set_access_flags_filter(pte_t pte, struct vm_area_struct *vma,
+-				     int dirty)
+-{
+-	return pte;
+-}
+-
+ #else /* CONFIG_PPC_BOOK3S */
+ 
++static pte_t set_pte_filter_hash(pte_t pte) { return pte; }
++
++#endif /* CONFIG_PPC_BOOK3S */
++
+ /* Embedded type MMU with HW exec support. This is a bit more complicated
+  * as we don't have two bits to spare for _PAGE_EXEC and _PAGE_HWEXEC so
+  * instead we "filter out" the exec permission for non clean pages.
+@@ -109,6 +107,9 @@ static pte_t set_pte_filter(pte_t pte)
+ {
+ 	struct page *pg;
+ 
++	if (mmu_has_feature(MMU_FTR_HPTE_TABLE))
++		return set_pte_filter_hash(pte);
++
+ 	/* No exec permission in the first place, move on */
+ 	if (!pte_exec(pte) || !pte_looks_normal(pte))
+ 		return pte;
+@@ -138,6 +139,9 @@ static pte_t set_access_flags_filter(pte_t pte, struct vm_area_struct *vma,
+ {
+ 	struct page *pg;
+ 
++	if (mmu_has_feature(MMU_FTR_HPTE_TABLE))
++		return pte;
++
+ 	/* So here, we only care about exec faults, as we use them
+ 	 * to recover lost _PAGE_EXEC and perform I$/D$ coherency
+ 	 * if necessary. Also if _PAGE_EXEC is already set, same deal,
+@@ -172,8 +176,6 @@ static pte_t set_access_flags_filter(pte_t pte, struct vm_area_struct *vma,
+ 	return pte_mkexec(pte);
+ }
+ 
+-#endif /* CONFIG_PPC_BOOK3S */
+-
+ /*
+  * set_pte stores a linux PTE into the linux page table.
+  */
 -- 
-2.17.1
+2.13.3
 
