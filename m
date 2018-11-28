@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D7C13C43441
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 12:15:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E86A6C43441
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 12:17:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5E9902086B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 12:15:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5E9902086B
+	by mail.kernel.org (Postfix) with ESMTPS id 71FF52086B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 12:17:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 71FF52086B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 434fjb39PmzDqsm
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 23:14:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 434fml5yqfzDqfd
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 23:17:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
@@ -29,40 +29,40 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 434f523kTJzDqWP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2018 22:46:46 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 434f555KlrzDqX9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2018 22:46:49 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 434f4x4Kggz9v09x;
- Wed, 28 Nov 2018 12:46:41 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 434f511yCnz9v09t;
+ Wed, 28 Nov 2018 12:46:45 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id JvKZI7GWd_6e; Wed, 28 Nov 2018 12:46:41 +0100 (CET)
+ with ESMTP id PpBFvOGbriNk; Wed, 28 Nov 2018 12:46:45 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 434f4x3hrFz9v09s;
- Wed, 28 Nov 2018 12:46:41 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 434f511VTdz9v09s;
+ Wed, 28 Nov 2018 12:46:45 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 9364A8B867;
- Wed, 28 Nov 2018 12:46:42 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 427B98B869;
+ Wed, 28 Nov 2018 12:46:46 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id IiQOpGvK5Tke; Wed, 28 Nov 2018 12:46:42 +0100 (CET)
+ with ESMTP id tefxGju5SB4r; Wed, 28 Nov 2018 12:46:46 +0100 (CET)
 Received: from po14163vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
  [172.25.231.2])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 1CAA78B853;
- Wed, 28 Nov 2018 12:46:42 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 2875A8B853;
+ Wed, 28 Nov 2018 12:46:46 +0100 (CET)
 Received: by po14163vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id E4D9869B1B; Wed, 28 Nov 2018 11:46:41 +0000 (UTC)
-Message-Id: <3df3b7710a4c8aa7b0cd78f6b478cb98f9c73f64.1543405086.git.christophe.leroy@c-s.fr>
+ id F0D9569B1B; Wed, 28 Nov 2018 11:46:45 +0000 (UTC)
+Message-Id: <da43960839b577896cb62990ab51c7c47b3a5b95.1543405086.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1543405086.git.christophe.leroy@c-s.fr>
 References: <cover.1543405086.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v7 10/16] powerpc/8xx: Temporarily disable 16k pages and
- hugepages
+Subject: [PATCH v7 12/16] powerpc/mm: Enable 8M hugepage support with HW
+ assistance on the 8xx
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Wed, 28 Nov 2018 11:46:41 +0000 (UTC)
+Date: Wed, 28 Nov 2018 11:46:45 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,199 +79,25 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In preparation of making use of hardware assistance in TLB handlers,
-this patch temporarily disables 16K pages and hugepages. The reason
-is that when using HW assistance in 4K pages mode, the linux model
-fit with the HW model for 4K pages and 8M pages.
-
-However for 16K pages and 512K mode some additional work is needed
-to get linux model fit with HW model.
-For the 8M pages, they will naturaly come back when we switch to
-HW assistance, without any additional handling.
-In order to keep the following patch smaller, the removal of the
-current special handling for 8M pages gets removed here as well.
-
-Therefore the 4K pages mode will be implemented first and without
-support for 512k hugepages. Then the 512k hugepages will be brought
-back. And the 16K pages will be implemented in the following step.
+HW assistance naturally supports 8M huge pages without
+further modifications.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/Kconfig           |  2 +-
- arch/powerpc/kernel/head_8xx.S | 74 +++---------------------------------------
- arch/powerpc/mm/tlb_nohash.c   |  6 ----
- 3 files changed, 6 insertions(+), 76 deletions(-)
+ arch/powerpc/mm/tlb_nohash.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 8be31261aec8..ddfccdf004fe 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -689,7 +689,7 @@ config PPC_4K_PAGES
- 
- config PPC_16K_PAGES
- 	bool "16k page size"
--	depends on 44x || PPC_8xx
-+	depends on 44x
- 
- config PPC_64K_PAGES
- 	bool "64k page size"
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index c203defe49a4..01f58b1d9ae7 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -314,7 +314,7 @@ SystemCall:
- InstructionTLBMiss:
- 	mtspr	SPRN_SPRG_SCRATCH0, r10
- 	mtspr	SPRN_SPRG_SCRATCH1, r11
--#if defined(ITLB_MISS_KERNEL) || defined(CONFIG_HUGETLB_PAGE)
-+#ifdef ITLB_MISS_KERNEL
- 	mtspr	SPRN_SPRG_SCRATCH2, r12
- #endif
- 
-@@ -325,10 +325,8 @@ InstructionTLBMiss:
- 	INVALIDATE_ADJACENT_PAGES_CPU15(r11, r10)
- 	/* Only modules will cause ITLB Misses as we always
- 	 * pin the first 8MB of kernel memory */
--#if defined(ITLB_MISS_KERNEL) || defined(CONFIG_HUGETLB_PAGE)
--	mfcr	r12
--#endif
- #ifdef ITLB_MISS_KERNEL
-+	mfcr	r12
- #if defined(SIMPLE_KERNEL_ADDRESS) && defined(CONFIG_PIN_TLB_TEXT)
- 	andis.	r11, r10, 0x8000	/* Address >= 0x80000000 */
- #else
-@@ -360,15 +358,9 @@ InstructionTLBMiss:
- 
- 	/* Extract level 2 index */
- 	rlwinm	r10, r10, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
--#ifdef CONFIG_HUGETLB_PAGE
--	mtcr	r11
--	bt-	28, 10f		/* bit 28 = Large page (8M) */
--	bt-	29, 20f		/* bit 29 = Large page (8M or 512k) */
--#endif
- 	rlwimi	r10, r11, 0, 0, 32 - PAGE_SHIFT - 1	/* Add level 2 base */
- 	lwz	r10, 0(r10)	/* Get the pte */
--4:
--#if defined(ITLB_MISS_KERNEL) || defined(CONFIG_HUGETLB_PAGE)
-+#ifdef ITLB_MISS_KERNEL
- 	mtcr	r12
- #endif
- 	/* Load the MI_TWC with the attributes for this "segment." */
-@@ -393,7 +385,7 @@ InstructionTLBMiss:
- 	/* Restore registers */
- 0:	mfspr	r10, SPRN_SPRG_SCRATCH0
- 	mfspr	r11, SPRN_SPRG_SCRATCH1
--#if defined(ITLB_MISS_KERNEL) || defined(CONFIG_HUGETLB_PAGE)
-+#ifdef ITLB_MISS_KERNEL
- 	mfspr	r12, SPRN_SPRG_SCRATCH2
- #endif
- 	rfi
-@@ -406,35 +398,12 @@ InstructionTLBMiss:
- 	stw	r10, (itlb_miss_counter - PAGE_OFFSET)@l(0)
- 	mfspr	r10, SPRN_SPRG_SCRATCH0
- 	mfspr	r11, SPRN_SPRG_SCRATCH1
--#if defined(ITLB_MISS_KERNEL) || defined(CONFIG_HUGETLB_PAGE)
-+#ifdef ITLB_MISS_KERNEL
- 	mfspr	r12, SPRN_SPRG_SCRATCH2
- #endif
- 	rfi
- #endif
- 
--#ifdef CONFIG_HUGETLB_PAGE
--10:	/* 8M pages */
--#ifdef CONFIG_PPC_16K_PAGES
--	/* Extract level 2 index */
--	rlwinm	r10, r10, 32 - (PAGE_SHIFT_8M - PAGE_SHIFT), 32 + PAGE_SHIFT_8M - (PAGE_SHIFT << 1), 29
--	/* Add level 2 base */
--	rlwimi	r10, r11, 0, 0, 32 + PAGE_SHIFT_8M - (PAGE_SHIFT << 1) - 1
--#else
--	/* Level 2 base */
--	rlwinm	r10, r11, 0, ~HUGEPD_SHIFT_MASK
--#endif
--	lwz	r10, 0(r10)	/* Get the pte */
--	b	4b
--
--20:	/* 512k pages */
--	/* Extract level 2 index */
--	rlwinm	r10, r10, 32 - (PAGE_SHIFT_512K - PAGE_SHIFT), 32 + PAGE_SHIFT_512K - (PAGE_SHIFT << 1), 29
--	/* Add level 2 base */
--	rlwimi	r10, r11, 0, 0, 32 + PAGE_SHIFT_512K - (PAGE_SHIFT << 1) - 1
--	lwz	r10, 0(r10)	/* Get the pte */
--	b	4b
--#endif
--
- 	. = 0x1200
- DataStoreTLBMiss:
- 	mtspr	SPRN_SPRG_SCRATCH0, r10
-@@ -472,11 +441,6 @@ DataStoreTLBMiss:
- 	 */
- 	/* Extract level 2 index */
- 	rlwinm	r10, r10, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
--#ifdef CONFIG_HUGETLB_PAGE
--	mtcr	r11
--	bt-	28, 10f		/* bit 28 = Large page (8M) */
--	bt-	29, 20f		/* bit 29 = Large page (8M or 512k) */
--#endif
- 	rlwimi	r10, r11, 0, 0, 32 - PAGE_SHIFT - 1	/* Add level 2 base */
- 	lwz	r10, 0(r10)	/* Get the pte */
- 4:
-@@ -534,29 +498,6 @@ DataStoreTLBMiss:
- 	rfi
- #endif
- 
--#ifdef CONFIG_HUGETLB_PAGE
--10:	/* 8M pages */
--	/* Extract level 2 index */
--#ifdef CONFIG_PPC_16K_PAGES
--	rlwinm	r10, r10, 32 - (PAGE_SHIFT_8M - PAGE_SHIFT), 32 + PAGE_SHIFT_8M - (PAGE_SHIFT << 1), 29
--	/* Add level 2 base */
--	rlwimi	r10, r11, 0, 0, 32 + PAGE_SHIFT_8M - (PAGE_SHIFT << 1) - 1
--#else
--	/* Level 2 base */
--	rlwinm	r10, r11, 0, ~HUGEPD_SHIFT_MASK
--#endif
--	lwz	r10, 0(r10)	/* Get the pte */
--	b	4b
--
--20:	/* 512k pages */
--	/* Extract level 2 index */
--	rlwinm	r10, r10, 32 - (PAGE_SHIFT_512K - PAGE_SHIFT), 32 + PAGE_SHIFT_512K - (PAGE_SHIFT << 1), 29
--	/* Add level 2 base */
--	rlwimi	r10, r11, 0, 0, 32 + PAGE_SHIFT_512K - (PAGE_SHIFT << 1) - 1
--	lwz	r10, 0(r10)	/* Get the pte */
--	b	4b
--#endif
--
- /* This is an instruction TLB error on the MPC8xx.  This could be due
-  * to many reasons, such as executing guarded memory or illegal instruction
-  * addresses.  There is nothing to do but handle a big time error fault.
-@@ -773,12 +714,7 @@ FixupDAR:/* Entry point for dcbx workaround. */
- 
- 	/* concat physical page address(r11) and page offset(r10) */
- 200:
--#ifdef CONFIG_PPC_16K_PAGES
--	rlwinm	r11, r11, 0, 0, 32 + PAGE_SHIFT_8M - (PAGE_SHIFT << 1) - 1
--	rlwimi	r11, r10, 32 - (PAGE_SHIFT_8M - 2), 32 + PAGE_SHIFT_8M - (PAGE_SHIFT << 1), 29
--#else
- 	rlwinm	r11, r10, 0, ~HUGEPD_SHIFT_MASK
--#endif
- 	lwz	r11, 0(r11)	/* Get the pte */
- 	/* concat physical page address(r11) and page offset(r10) */
- 	rlwimi	r11, r10, 0, 32 - PAGE_SHIFT_8M, 31
 diff --git a/arch/powerpc/mm/tlb_nohash.c b/arch/powerpc/mm/tlb_nohash.c
-index ae5d568e267f..4f79639e432f 100644
+index 4f79639e432f..8ad7aab150b7 100644
 --- a/arch/powerpc/mm/tlb_nohash.c
 +++ b/arch/powerpc/mm/tlb_nohash.c
-@@ -97,12 +97,6 @@ struct mmu_psize_def mmu_psize_defs[MMU_PAGE_COUNT] = {
+@@ -97,6 +97,9 @@ struct mmu_psize_def mmu_psize_defs[MMU_PAGE_COUNT] = {
  		.shift	= 14,
  	},
  #endif
--	[MMU_PAGE_512K] = {
--		.shift	= 19,
--	},
--	[MMU_PAGE_8M] = {
--		.shift	= 23,
--	},
++	[MMU_PAGE_8M] = {
++		.shift	= 23,
++	},
  };
  #else
  struct mmu_psize_def mmu_psize_defs[MMU_PAGE_COUNT] = {
