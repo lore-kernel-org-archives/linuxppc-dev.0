@@ -2,23 +2,23 @@ Return-Path: <SRS0=VBhC=OH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7117BC43441
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 12:30:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EF5B5C43441
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 12:35:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EA3B62081B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 12:30:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EA3B62081B
+	by mail.kernel.org (Postfix) with ESMTPS id 72ADA2081B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 12:35:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 72ADA2081B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 434g3n0ZhHzDqtG
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 23:30:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 434g9N0pZJzDqvH
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 23:35:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
@@ -29,39 +29,37 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 434f5F5XzCzDqWp
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2018 22:46:57 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 434ffg2SLnzDqV3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2018 23:12:27 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 434f593HyCz9v09x;
- Wed, 28 Nov 2018 12:46:53 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 434ffZ32PBz9vF7T;
+ Wed, 28 Nov 2018 13:12:22 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id dpNYv-18yooo; Wed, 28 Nov 2018 12:46:53 +0100 (CET)
+ with ESMTP id 4TVtPPf_DEQz; Wed, 28 Nov 2018 13:12:22 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 434f592qwgz9v09s;
- Wed, 28 Nov 2018 12:46:53 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 434ffZ2NZrz9vF7S;
+ Wed, 28 Nov 2018 13:12:22 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 6ED0F8B867;
- Wed, 28 Nov 2018 12:46:54 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 627308B869;
+ Wed, 28 Nov 2018 13:12:23 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id GXcj3SkY1Rz7; Wed, 28 Nov 2018 12:46:54 +0100 (CET)
+ with ESMTP id SAhDT2u0HwfB; Wed, 28 Nov 2018 13:12:23 +0100 (CET)
 Received: from po14163vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
  [172.25.231.2])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 4EBFE8B853;
- Wed, 28 Nov 2018 12:46:54 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 299C38B853;
+ Wed, 28 Nov 2018 13:12:23 +0100 (CET)
 Received: by po14163vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 1610769B1B; Wed, 28 Nov 2018 11:46:54 +0000 (UTC)
-Message-Id: <953162125e65b9d50a66fccb07b9594e4a162681.1543405086.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1543405086.git.christophe.leroy@c-s.fr>
-References: <cover.1543405086.git.christophe.leroy@c-s.fr>
+ id 1C14469B13; Wed, 28 Nov 2018 12:12:23 +0000 (UTC)
+Message-Id: <cover.1543407004.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v7 16/16] powerpc/8xx: regroup TLB handler routines
+Subject: [PATCH v10 0/9] powerpc: Switch to CONFIG_THREAD_INFO_IN_TASK
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Wed, 28 Nov 2018 11:46:54 +0000 (UTC)
+Date: Wed, 28 Nov 2018 12:12:23 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,155 +76,119 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-As this is running with MMU off, the CPU only does speculative
-fetch for code in the same page.
+The purpose of this serie is to activate CONFIG_THREAD_INFO_IN_TASK which
+moves the thread_info into task_struct.
 
-Following the significant size reduction of TLB handler routines,
-the side handlers can be brought back close to the main part,
-ie in the same page.
+Moving thread_info into task_struct has the following advantages:
+- It protects thread_info from corruption in the case of stack
+overflows.
+- Its address is harder to determine if stack addresses are
+leaked, making a number of attacks more difficult.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/kernel/head_8xx.S | 112 ++++++++++++++++++++---------------------
- 1 file changed, 54 insertions(+), 58 deletions(-)
+Changes since v9:
+ - Rebased on 183cbf93be88 ("Automatic merge of branches 'master', 'next' and 'fixes' into merge")
+  ==> Fixed conflict on xmon
 
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 0a4f8a9c85ff..b171b7c0a0e7 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -399,6 +399,23 @@ InstructionTLBMiss:
- 	rfi
- #endif
- 
-+#ifndef CONFIG_PIN_TLB_TEXT
-+ITLBMissLinear:
-+	mtcr	r11
-+	/* Set 8M byte page and mark it valid */
-+	li	r11, MI_PS8MEG | MI_SVALID
-+	mtspr	SPRN_MI_TWC, r11
-+	rlwinm	r10, r10, 20, 0x0f800000	/* 8xx supports max 256Mb RAM */
-+	ori	r10, r10, 0xf0 | MI_SPS16K | _PAGE_SH | _PAGE_DIRTY | \
-+			  _PAGE_PRESENT
-+	mtspr	SPRN_MI_RPN, r10	/* Update TLB entry */
-+
-+0:	mfspr	r10, SPRN_SPRG_SCRATCH0
-+	mfspr	r11, SPRN_SPRG_SCRATCH1
-+	rfi
-+	patch_site	0b, patch__itlbmiss_exit_2
-+#endif
-+
- 	. = 0x1200
- DataStoreTLBMiss:
- 	mtspr	SPRN_SPRG_SCRATCH0, r10
-@@ -484,6 +501,43 @@ DataStoreTLBMiss:
- 	rfi
- #endif
- 
-+DTLBMissIMMR:
-+	mtcr	r11
-+	/* Set 512k byte guarded page and mark it valid */
-+	li	r10, MD_PS512K | MD_GUARDED | MD_SVALID
-+	mtspr	SPRN_MD_TWC, r10
-+	mfspr	r10, SPRN_IMMR			/* Get current IMMR */
-+	rlwinm	r10, r10, 0, 0xfff80000		/* Get 512 kbytes boundary */
-+	ori	r10, r10, 0xf0 | MD_SPS16K | _PAGE_SH | _PAGE_DIRTY | \
-+			  _PAGE_PRESENT | _PAGE_NO_CACHE
-+	mtspr	SPRN_MD_RPN, r10	/* Update TLB entry */
-+
-+	li	r11, RPN_PATTERN
-+	mtspr	SPRN_DAR, r11	/* Tag DAR */
-+
-+0:	mfspr	r10, SPRN_SPRG_SCRATCH0
-+	mfspr	r11, SPRN_SPRG_SCRATCH1
-+	rfi
-+	patch_site	0b, patch__dtlbmiss_exit_2
-+
-+DTLBMissLinear:
-+	mtcr	r11
-+	/* Set 8M byte page and mark it valid */
-+	li	r11, MD_PS8MEG | MD_SVALID
-+	mtspr	SPRN_MD_TWC, r11
-+	rlwinm	r10, r10, 20, 0x0f800000	/* 8xx supports max 256Mb RAM */
-+	ori	r10, r10, 0xf0 | MD_SPS16K | _PAGE_SH | _PAGE_DIRTY | \
-+			  _PAGE_PRESENT
-+	mtspr	SPRN_MD_RPN, r10	/* Update TLB entry */
-+
-+	li	r11, RPN_PATTERN
-+	mtspr	SPRN_DAR, r11	/* Tag DAR */
-+
-+0:	mfspr	r10, SPRN_SPRG_SCRATCH0
-+	mfspr	r11, SPRN_SPRG_SCRATCH1
-+	rfi
-+	patch_site	0b, patch__dtlbmiss_exit_3
-+
- /* This is an instruction TLB error on the MPC8xx.  This could be due
-  * to many reasons, such as executing guarded memory or illegal instruction
-  * addresses.  There is nothing to do but handle a big time error fault.
-@@ -583,64 +637,6 @@ InstructionBreakpoint:
- 
- 	. = 0x2000
- 
--/*
-- * Bottom part of DataStoreTLBMiss handlers for IMMR area and linear RAM.
-- * not enough space in the DataStoreTLBMiss area.
-- */
--DTLBMissIMMR:
--	mtcr	r11
--	/* Set 512k byte guarded page and mark it valid */
--	li	r10, MD_PS512K | MD_GUARDED | MD_SVALID
--	mtspr	SPRN_MD_TWC, r10
--	mfspr	r10, SPRN_IMMR			/* Get current IMMR */
--	rlwinm	r10, r10, 0, 0xfff80000		/* Get 512 kbytes boundary */
--	ori	r10, r10, 0xf0 | MD_SPS16K | _PAGE_SH | _PAGE_DIRTY | \
--			  _PAGE_PRESENT | _PAGE_NO_CACHE
--	mtspr	SPRN_MD_RPN, r10	/* Update TLB entry */
--
--	li	r11, RPN_PATTERN
--	mtspr	SPRN_DAR, r11	/* Tag DAR */
--
--0:	mfspr	r10, SPRN_SPRG_SCRATCH0
--	mfspr	r11, SPRN_SPRG_SCRATCH1
--	rfi
--	patch_site	0b, patch__dtlbmiss_exit_2
--
--DTLBMissLinear:
--	mtcr	r11
--	/* Set 8M byte page and mark it valid */
--	li	r11, MD_PS8MEG | MD_SVALID
--	mtspr	SPRN_MD_TWC, r11
--	rlwinm	r10, r10, 20, 0x0f800000	/* 8xx supports max 256Mb RAM */
--	ori	r10, r10, 0xf0 | MD_SPS16K | _PAGE_SH | _PAGE_DIRTY | \
--			  _PAGE_PRESENT
--	mtspr	SPRN_MD_RPN, r10	/* Update TLB entry */
--
--	li	r11, RPN_PATTERN
--	mtspr	SPRN_DAR, r11	/* Tag DAR */
--
--0:	mfspr	r10, SPRN_SPRG_SCRATCH0
--	mfspr	r11, SPRN_SPRG_SCRATCH1
--	rfi
--	patch_site	0b, patch__dtlbmiss_exit_3
--
--#ifndef CONFIG_PIN_TLB_TEXT
--ITLBMissLinear:
--	mtcr	r11
--	/* Set 8M byte page and mark it valid */
--	li	r11, MI_PS8MEG | MI_SVALID
--	mtspr	SPRN_MI_TWC, r11
--	rlwinm	r10, r10, 20, 0x0f800000	/* 8xx supports max 256Mb RAM */
--	ori	r10, r10, 0xf0 | MI_SPS16K | _PAGE_SH | _PAGE_DIRTY | \
--			  _PAGE_PRESENT
--	mtspr	SPRN_MI_RPN, r10	/* Update TLB entry */
--
--0:	mfspr	r10, SPRN_SPRG_SCRATCH0
--	mfspr	r11, SPRN_SPRG_SCRATCH1
--	rfi
--	patch_site	0b, patch__itlbmiss_exit_2
--#endif
--
- /* This is the procedure to calculate the data EA for buggy dcbx,dcbi instructions
-  * by decoding the registers used by the dcbx instruction and adding them.
-  * DAR is set to the calculated address.
+Changes since v8:
+ - Rebased on e589b79e40d9 ("Automatic merge of branches 'master', 'next' and 'fixes' into merge")
+  ==> Main impact was conflicts due to commit 9a8dd708d547 ("memblock: rename memblock_alloc{_nid,_try_nid} to memblock_phys_alloc*")
+
+Changes since v7:
+ - Rebased on fb6c6ce7907d ("Automatic merge of branches 'master', 'next' and 'fixes' into merge")
+
+Changes since v6:
+ - Fixed validate_sp() to exclude NULL sp in 'regain entire stack space' patch (early crash with CONFIG_KMEMLEAK)
+
+Changes since v5:
+ - Fixed livepatch_sp setup by using end_of_stack() instead of hardcoding
+ - Fixed PPC_BPF_LOAD_CPU() macro
+
+Changes since v4:
+ - Fixed a build failure on 32bits SMP when include/generated/asm-offsets.h is not
+ already existing, was due to spaces instead of a tab in the Makefile
+
+Changes since RFC v3: (based on Nick's review)
+ - Renamed task_size.h to task_size_user64.h to better relate to what it contains.
+ - Handling of the isolation of thread_info cpu field inside CONFIG_SMP #ifdefs moved to a separate patch.
+ - Removed CURRENT_THREAD_INFO macro completely.
+ - Added a guard in asm/smp.h to avoid build failure before _TASK_CPU is defined.
+ - Added a patch at the end to rename 'tp' pointers to 'sp' pointers
+ - Renamed 'tp' into 'sp' pointers in preparation patch when relevant
+ - Fixed a few commit logs
+ - Fixed checkpatch report.
+
+Changes since RFC v2:
+ - Removed the modification of names in asm-offsets
+ - Created a rule in arch/powerpc/Makefile to append the offset of current->cpu in CFLAGS
+ - Modified asm/smp.h to use the offset set in CFLAGS
+ - Squashed the renaming of THREAD_INFO to TASK_STACK in the preparation patch
+ - Moved the modification of current_pt_regs in the patch activating CONFIG_THREAD_INFO_IN_TASK
+
+Changes since RFC v1:
+ - Removed the first patch which was modifying header inclusion order in timer
+ - Modified some names in asm-offsets to avoid conflicts when including asm-offsets in C files
+ - Modified asm/smp.h to avoid having to include linux/sched.h (using asm-offsets instead)
+ - Moved some changes from the activation patch to the preparation patch.
+
+Christophe Leroy (9):
+  book3s/64: avoid circular header inclusion in mmu-hash.h
+  powerpc: Only use task_struct 'cpu' field on SMP
+  powerpc: Prepare for moving thread_info into task_struct
+  powerpc: Activate CONFIG_THREAD_INFO_IN_TASK
+  powerpc: regain entire stack space
+  powerpc: 'current_set' is now a table of task_struct pointers
+  powerpc/32: Remove CURRENT_THREAD_INFO and rename TI_CPU
+  powerpc/64: Remove CURRENT_THREAD_INFO
+  powerpc: clean stack pointers naming
+
+ arch/powerpc/Kconfig                           |  1 +
+ arch/powerpc/Makefile                          |  7 +++
+ arch/powerpc/include/asm/asm-prototypes.h      |  4 +-
+ arch/powerpc/include/asm/book3s/64/mmu-hash.h  |  2 +-
+ arch/powerpc/include/asm/exception-64s.h       |  4 +-
+ arch/powerpc/include/asm/irq.h                 | 14 ++---
+ arch/powerpc/include/asm/livepatch.h           |  7 ++-
+ arch/powerpc/include/asm/processor.h           | 39 +------------
+ arch/powerpc/include/asm/ptrace.h              |  2 +-
+ arch/powerpc/include/asm/reg.h                 |  2 +-
+ arch/powerpc/include/asm/smp.h                 | 17 +++++-
+ arch/powerpc/include/asm/task_size_user64.h    | 42 ++++++++++++++
+ arch/powerpc/include/asm/thread_info.h         | 19 -------
+ arch/powerpc/kernel/asm-offsets.c              | 10 ++--
+ arch/powerpc/kernel/entry_32.S                 | 66 ++++++++--------------
+ arch/powerpc/kernel/entry_64.S                 | 12 ++--
+ arch/powerpc/kernel/epapr_hcalls.S             |  5 +-
+ arch/powerpc/kernel/exceptions-64e.S           | 13 +----
+ arch/powerpc/kernel/exceptions-64s.S           |  2 +-
+ arch/powerpc/kernel/head_32.S                  | 14 ++---
+ arch/powerpc/kernel/head_40x.S                 |  4 +-
+ arch/powerpc/kernel/head_44x.S                 |  8 +--
+ arch/powerpc/kernel/head_64.S                  |  1 +
+ arch/powerpc/kernel/head_8xx.S                 |  2 +-
+ arch/powerpc/kernel/head_booke.h               | 12 +---
+ arch/powerpc/kernel/head_fsl_booke.S           | 16 +++---
+ arch/powerpc/kernel/idle_6xx.S                 |  8 +--
+ arch/powerpc/kernel/idle_book3e.S              |  2 +-
+ arch/powerpc/kernel/idle_e500.S                |  8 +--
+ arch/powerpc/kernel/idle_power4.S              |  2 +-
+ arch/powerpc/kernel/irq.c                      | 77 +++++---------------------
+ arch/powerpc/kernel/kgdb.c                     | 28 ----------
+ arch/powerpc/kernel/machine_kexec_64.c         |  6 +-
+ arch/powerpc/kernel/misc_32.S                  | 17 +++---
+ arch/powerpc/kernel/process.c                  | 40 ++++++-------
+ arch/powerpc/kernel/setup-common.c             |  2 +-
+ arch/powerpc/kernel/setup_32.c                 | 15 ++---
+ arch/powerpc/kernel/setup_64.c                 | 41 ++++----------
+ arch/powerpc/kernel/smp.c                      | 16 +++---
+ arch/powerpc/kernel/trace/ftrace_64_mprofile.S |  6 +-
+ arch/powerpc/kvm/book3s_hv_hmi.c               |  1 +
+ arch/powerpc/mm/hash_low_32.S                  | 14 ++---
+ arch/powerpc/net/bpf_jit32.h                   |  5 +-
+ arch/powerpc/sysdev/6xx-suspend.S              |  5 +-
+ arch/powerpc/xmon/xmon.c                       |  2 +-
+ 45 files changed, 240 insertions(+), 380 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/task_size_user64.h
+
 -- 
 2.13.3
 
