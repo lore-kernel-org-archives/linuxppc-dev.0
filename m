@@ -2,82 +2,85 @@ Return-Path: <SRS0=VBhC=OH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+X-Spam-Status: No, score=-8.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3ECF3C43441
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 03:24:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 31A7CC43441
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 03:26:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7A3E82081B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 03:23:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9C3EE20817
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 03:26:25 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="swKk85D/"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7A3E82081B
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="NVVman/J"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9C3EE20817
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 434Qws1JyGzDqnn
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 14:23:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 434Qzg3lZVzDqrF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 14:26:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="swKk85D/";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="NVVman/J";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::d41; helo=mail-io1-xd41.google.com;
+ (client-ip=2607:f8b0:4864:20::141; helo=mail-it1-x141.google.com;
  envelope-from=radu.rendec@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="swKk85D/"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="NVVman/J"; 
  dkim-atps=neutral
-Received: from mail-io1-xd41.google.com (mail-io1-xd41.google.com
- [IPv6:2607:f8b0:4864:20::d41])
+Received: from mail-it1-x141.google.com (mail-it1-x141.google.com
+ [IPv6:2607:f8b0:4864:20::141])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 434Qt2655czDqkP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2018 14:21:27 +1100 (AEDT)
-Received: by mail-io1-xd41.google.com with SMTP id f6so18831332iob.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2018 19:21:27 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 434Qt50bD5zDqkP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2018 14:21:32 +1100 (AEDT)
+Received: by mail-it1-x141.google.com with SMTP id o19so2125030itg.5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2018 19:21:32 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id;
- bh=yuiuzUQZJJzdQCN81LL4oR1IBglKaKSKJBR+JpDtjH0=;
- b=swKk85D/vuT2waND0dNxTnO7c3vqwH7M0ziCPicH+msjBmyuRLtfONeIy7ISFbb3d+
- 8EwCd1AgzQCL6rneocS3XHnqF9A7AUDB1i0COi1mZ5C8X2aLT7JNqLmLTjK2wrOhkJc3
- 0adWyHEZ63P/2ONdvra5U2lnt1FXDZGAfsGONIz0aYgwDt1xOUDaCOC/pcFw/fmpQ/Pj
- dlfeQV/ANGVI9AeNdXDQudoc46qDBi0AD2OJfrHPIPQMZfmsdszSkum/m8ECy75tjTFX
- 7TcXaGCji1e2Rrw/8XUSiFZqCKZdVYU1CWjjIy5rcRQOlM8pFS9a4AaHaGVg5kyGNsos
- hHAw==
+ h=from:to:cc:subject:date:message-id:in-reply-to:references;
+ bh=bT2cISMrMiBpdxOWHrZEfN4Sk9Tfn2LCVE5Ik81cBQ4=;
+ b=NVVman/JJO9Qf78myAlszXBoQ3kC+h5zoceeKE1pzCfsmOIH2q6PwtnXCzJHjO+7aw
+ nz2/b7dkDsJq9+UG760NRCAbIcy87984J+uNcdpYPTJXyElU2TmkydFoR/U2TD/Hnksj
+ ICFHvda63YucZfdrbNngrRH93u3F9UDcMlPN57ze2aub0kweXCiQlGY+OYu9pCaeA3Ip
+ 5zQalpshYAyVW/1pyrzRk4CJ9XkjZQT8211B9LKUYCjkEId/ycxtm0fPs5oMudQEXeLE
+ VvWSmI1i4ZmlZgASIDLAVdMZyzxFRstErhLFMs8zppM0ejuUwEfc4TD3RK9n7/6OVNFL
+ BIDw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id;
- bh=yuiuzUQZJJzdQCN81LL4oR1IBglKaKSKJBR+JpDtjH0=;
- b=HjAWEuHJGGQqlvJT4A4UTK6IjHlA78FsAfJHK49N0L2BH/ryml53jwhLwr359cpVKL
- q8/PZhbGm9bF1GKseSPGgFBj5j4OgQbyj8NXtn00eFERoslPt+GInAexYXB1sjboB+5D
- 2hfAGRTXZpFaLmJF/sjlVDCFr6RfF3A/YCa+S8Gh9a47xY3ZjMof1e95b1Pb/igB+gst
- VpO2GBdlDAcBZ0Rq42UnfPAqpWVfhFFOsnSUfHk9gOb/PHsUip04chPhQzbloj0JS4Wl
- k/CU/y1Sqm12DKLKIt0fIYDZFhoKNepXJ1i+2zpg3W+cd1WeFWXTG9SOB8eGZ3amlAZg
- eKxg==
-X-Gm-Message-State: AA+aEWYc0aHAsAc1+W3jOOe5xnlSxKlL50Xr7L0lm8D2iuTahD+Oa3Fj
- b3UGKmBOTtuinXVx4Yk3A4fWd0VHdoA=
-X-Google-Smtp-Source: AFSGD/U29g65WhwpKwbxFyuZ9xx6oQtBReGICkXH9/OZEF3nQB6D02xbMh/3bQKYvd6fjmAIw3IgGQ==
-X-Received: by 2002:a5d:8b8d:: with SMTP id p13mr19483585iol.223.1543375285205; 
- Tue, 27 Nov 2018 19:21:25 -0800 (PST)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references;
+ bh=bT2cISMrMiBpdxOWHrZEfN4Sk9Tfn2LCVE5Ik81cBQ4=;
+ b=FDpAZyo0lTSPYXwr3hoHFh8T9D0JLe1XTOU5RX3MsREoyI23Oefl8Fi2s3rpc77vIe
+ 33in2TZdut/GtJHoRdw5F/WJ446u9MweBgQ/EuZWDFHGnZ/hYaDCm0yYWubbUQwv1mBd
+ SfdX3+ZO2DSj4Pi0umh0grJ+h2lQyadbG5I+dK6V35vyV5ZaNeAW2kXl5Zi/ZVo55iHR
+ dM0NxqHYnHhwmg+Noa/Mkg4TEmcv/IDnkEMMI8hIHyVz0pDDI9VPLgGeKEJgHn+Vo8k1
+ iFOadjcWQXr+SIzpdDPXDnVGS6JLwK/cGh72327tipSDrBsi+HfO+2kM6MVUPbSBtXIm
+ /boA==
+X-Gm-Message-State: AA+aEWYg5s+UwHixPSYFhJQszEF0RulvPpJ2kzITh/xggCB5DAv5Caxr
+ +ossTEYvJmTMB46WAINWTzVbL91N+TqUaQ==
+X-Google-Smtp-Source: AFSGD/VFlxp5TjOXUypZXp+cfGtjH8+PZ1xvy5fkbDKfAeLRbqHRXd5sk3MI2hs3zopKIpcJKB29ng==
+X-Received: by 2002:a24:1d1:: with SMTP id 200mr1514758itk.146.1543375290595; 
+ Tue, 27 Nov 2018 19:21:30 -0800 (PST)
 Received: from bat.mindbit.ro (CPE00fc8d79db03-CM00fc8d79db00.cpe.net.fido.ca.
  [72.140.67.131])
- by smtp.gmail.com with ESMTPSA id n129sm563927itb.20.2018.11.27.19.21.23
+ by smtp.gmail.com with ESMTPSA id n129sm563927itb.20.2018.11.27.19.21.29
  (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Tue, 27 Nov 2018 19:21:24 -0800 (PST)
+ Tue, 27 Nov 2018 19:21:30 -0800 (PST)
 From: Radu Rendec <radu.rendec@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 0/1] Fix NULL pointer access in PowerPC MSI teardown code
-Date: Tue, 27 Nov 2018 22:20:47 -0500
-Message-Id: <20181128032048.11665-1-radu.rendec@gmail.com>
+Subject: [PATCH 1/1] Fix NULL pointer access in PowerPC MSI teardown code
+Date: Tue, 27 Nov 2018 22:20:48 -0500
+Message-Id: <20181128032048.11665-2-radu.rendec@gmail.com>
 X-Mailer: git-send-email 2.17.2
+In-Reply-To: <20181128032048.11665-1-radu.rendec@gmail.com>
+References: <20181128032048.11665-1-radu.rendec@gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,46 +97,51 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi everyone,
+The arch_teardown_msi_irqs() function assumes that controller ops
+pointers were already checked in arch_setup_msi_irqs(), but this
+assumption is wrong: arch_teardown_msi_irqs() can be called even when
+arch_setup_msi_irqs() returns an error (-ENOSYS).
 
-It seems there's an unchecked access to a NULL pointer (to a function)
-in the PowerPC MSI teardown code. I found this on kernel 4.9, but the
-code looks identical in the latest 4.20-rc. I don't see any reason why
-this wouldn't happen on recent kernels too.
+This can happen in the following scenario:
 
-The PowerPC architecture specific MSI setup and teardown functions are
-in arch/powerpc/kernel/msi.c:
+  * msi_capability_init() calls pci_msi_setup_msi_irqs()
+  * pci_msi_setup_msi_irqs() returns -ENOSYS
+  * msi_capability_init() notices the error and calls free_msi_irqs()
+  * free_msi_irqs() calls pci_msi_teardown_msi_irqs()
 
-  * arch_setup_msi_irqs() checks pointers for both the setup_msi_irqs
-    and teardown_msi_irqs ops and returns -ENOSYS if either one is NULL.
+This is easier to see when CONFIG_PCI_MSI_IRQ_DOMAIN is not set and
+pci_msi_setup_msi_irqs() and pci_msi_teardown_msi_irqs() are just
+aliases to arch_setup_msi_irqs() and arch_teardown_msi_irqs().
 
-  * arch_teardown_msi_irqs() calls on the teardown_msi_irqs op pointer
-    without checking it and assumes the function is never called unless
-    arch_setup_msi_irqs() returns successfully.
+The call to free_msi_irqs() upon pci_msi_setup_msi_irqs() failure seems
+legit, as it does additional cleanup; e.g. list_del(&entry->list) and
+kfree(entry) inside free_msi_irqs() do happen (MSI descriptors are
+allocated before pci_msi_setup_msi_irqs() is called and need to be
+cleaned up if that fails).
 
-The assumption in arch_teardown_msi_irqs() is wrong and results in a
-function call on a NULL pointer. An example of how this can happen is
-included in the actual patch header. In my case, it happens when the PCI
-hardware is configured during kernel start-up, because my controller
-doesn't support MSI and the ops are NULL.
-
-I'm proposing the attached patch to fix the problem. It basically just
-checks the pointer before the function call.
-
-The patch is against v4.20-rc4, but I only actually tested it on
-v4.9.115. On the other hand, the patch is trivial and I did check that
-the NULL pointer dereference scenario is still valid on v4.20-rc4.
-
-Best regards,
-Radu Rendec
-
-
-Radu Rendec (1):
-  Fix NULL pointer access in PowerPC MSI teardown code
-
+Signed-off-by: Radu Rendec <radu.rendec@gmail.com>
+---
  arch/powerpc/kernel/msi.c | 9 ++++++++-
  1 file changed, 8 insertions(+), 1 deletion(-)
 
+diff --git a/arch/powerpc/kernel/msi.c b/arch/powerpc/kernel/msi.c
+index dab616a33b8d..83c2043cc685 100644
+--- a/arch/powerpc/kernel/msi.c
++++ b/arch/powerpc/kernel/msi.c
+@@ -34,5 +34,12 @@ void arch_teardown_msi_irqs(struct pci_dev *dev)
+ {
+ 	struct pci_controller *phb = pci_bus_to_host(dev->bus);
+ 
+-	phb->controller_ops.teardown_msi_irqs(dev);
++	/*
++	 * We can be called even when arch_setup_msi_irqs() returns -ENOSYS,
++	 * so check the pointer again. Example: msi_capability_init() calls
++	 * pci_msi_setup_msi_irqs(), then free_msi_irqs(), which in turn calls
++	 * pci_msi_teardown_msi_irqs().
++	 */
++	if (phb->controller_ops.teardown_msi_irqs)
++		phb->controller_ops.teardown_msi_irqs(dev);
+ }
 -- 
 2.17.2
 
