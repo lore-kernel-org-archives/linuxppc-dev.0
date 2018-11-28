@@ -2,44 +2,47 @@ Return-Path: <SRS0=VBhC=OH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F635C43441
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 11:02:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 419E4C43441
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 11:13:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 747A220660
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 11:02:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 747A220660
+	by mail.kernel.org (Postfix) with ESMTPS id B5DD22086B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 11:13:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B5DD22086B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 434d664FX4zDqfP
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 22:02:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 434dL85PMkzDqhT
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 22:13:04 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 434d3h3R5wzDqfB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2018 22:00:32 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 434d9F2l2HzDqjG
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2018 22:05:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 434d3g38sgz9ryk;
- Wed, 28 Nov 2018 22:00:31 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPSA id 434d9D1Dk5z9ryk;
+ Wed, 28 Nov 2018 22:05:20 +1100 (AEDT)
 Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Radu Rendec <radu.rendec@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 0/1] Fix NULL pointer access in PowerPC MSI teardown code
-In-Reply-To: <20181128032048.11665-1-radu.rendec@gmail.com>
-References: <20181128032048.11665-1-radu.rendec@gmail.com>
-Date: Wed, 28 Nov 2018 22:00:30 +1100
-Message-ID: <8736rlh3g1.fsf@concordia.ellerman.id.au>
+To: Christoph Hellwig <hch@lst.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+Subject: Re: use generic DMA mapping code in powerpc V4
+In-Reply-To: <20181127074253.GB30186@lst.de>
+References: <20181114082314.8965-1-hch@lst.de> <20181127074253.GB30186@lst.de>
+Date: Wed, 28 Nov 2018 22:05:19 +1100
+Message-ID: <87zhttfonk.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -53,55 +56,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexander Gordeev <agordeev@redhat.com>,
- Radu Rendec <radu.rendec@gmail.com>, Paul Mackerras <paulus@samba.org>,
- Bjorn Helgaas <bhelgaas@google.com>
+Cc: linux-arch@vger.kernel.org, linux-mm@kvack.org,
+ iommu@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Radu,
+Christoph Hellwig <hch@lst.de> writes:
 
-Radu Rendec <radu.rendec@gmail.com> writes:
-> Hi everyone,
->
-> It seems there's an unchecked access to a NULL pointer (to a function)
-> in the PowerPC MSI teardown code. I found this on kernel 4.9, but the
-> code looks identical in the latest 4.20-rc. I don't see any reason why
-> this wouldn't happen on recent kernels too.
->
-> The PowerPC architecture specific MSI setup and teardown functions are
-> in arch/powerpc/kernel/msi.c:
->
->   * arch_setup_msi_irqs() checks pointers for both the setup_msi_irqs
->     and teardown_msi_irqs ops and returns -ENOSYS if either one is NULL.
->
->   * arch_teardown_msi_irqs() calls on the teardown_msi_irqs op pointer
->     without checking it and assumes the function is never called unless
->     arch_setup_msi_irqs() returns successfully.
->
-> The assumption in arch_teardown_msi_irqs() is wrong and results in a
-> function call on a NULL pointer. An example of how this can happen is
-> included in the actual patch header. In my case, it happens when the PCI
-> hardware is configured during kernel start-up, because my controller
-> doesn't support MSI and the ops are NULL.
+> Any comments?  I'd like to at least get the ball moving on the easy
+> bits.
 
-What hardware are you on?
+Nothing specific yet.
 
-> I'm proposing the attached patch to fix the problem. It basically just
-> checks the pointer before the function call.
+I'm a bit worried it might break one of the many old obscure platforms
+we have that aren't well tested.
 
-Yeah that patch looks good to me.
+There's not much we can do about that, but I'll just try and test it on
+everything I can find.
 
-I suspect this bug was introduced in:
-
-  6b2fd7efeb88 ("PCI/MSI/PPC: Remove arch_msi_check_device()")
-
-Previously we had that check routine which would run before any of the
-MSI setup had been done, and so if there were no MSI ops then we bailed
-out early and didn't call teardown.
-
-I guess since then (2014) we haven't tested an MSI capable device on a
-system that isn't MSI capable?
+Is the plan that you take these via the dma-mapping tree or that they go
+via powerpc?
 
 cheers
+
+> On Wed, Nov 14, 2018 at 09:22:40AM +0100, Christoph Hellwig wrote:
+>> Hi all,
+>> 
+>> this series switches the powerpc port to use the generic swiotlb and
+>> noncoherent dma ops, and to use more generic code for the coherent
+>> direct mapping, as well as removing a lot of dead code.
+>> 
+>> As this series is very large and depends on the dma-mapping tree I've
+>> also published a git tree:
+>> 
+>>     git://git.infradead.org/users/hch/misc.git powerpc-dma.4
+>> 
+>> Gitweb:
+>> 
+>>     http://git.infradead.org/users/hch/misc.git/shortlog/refs/heads/powerpc-dma.4
+>> 
+>> Changes since v3:
+>>  - rebase on the powerpc fixes tree
+>>  - add a new patch to actually make the baseline amigaone config
+>>    configure without warnings
+>>  - only use ZONE_DMA for 64-bit embedded CPUs, on pseries an IOMMU is
+>>    always present
+>>  - fix compile in mem.c for one configuration
+>>  - drop the full npu removal for now, will be resent separately
+>>  - a few git bisection fixes
+>> 
+>> The changes since v1 are to big to list and v2 was not posted in public.
+>> 
+>> _______________________________________________
+>> iommu mailing list
+>> iommu@lists.linux-foundation.org
+>> https://lists.linuxfoundation.org/mailman/listinfo/iommu
+> ---end quoted text---
