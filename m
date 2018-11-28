@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B914AC43441
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 16:40:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 149A4C43441
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 16:42:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E9153206B6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 16:40:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E9153206B6
+	by mail.kernel.org (Postfix) with ESMTPS id 8E8B22081B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 16:42:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8E8B22081B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 434mbS3ppBzDqvw
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 03:40:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 434mdv52FPzDqxt
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 03:42:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
@@ -30,53 +30,54 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 434mXy5FhSzDqvv
+ by lists.ozlabs.org (Postfix) with ESMTPS id 434mXy5FjhzDqvw
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Nov 2018 03:37:54 +1100 (AEDT)
 Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wASGapUa123310
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2018 11:37:52 -0500
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2p1wyk2jgv-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ wASGaqdQ123397
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2018 11:37:51 -0500
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2p1wyk2jgq-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2018 11:37:50 -0500
 Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
  Wed, 28 Nov 2018 16:37:48 -0000
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
- by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 28 Nov 2018 16:37:47 -0000
+ Wed, 28 Nov 2018 16:37:44 -0000
 Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
  [9.149.105.62])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wASGbk8E15925432
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wASGbh2x46596180
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Wed, 28 Nov 2018 16:37:46 GMT
+ Wed, 28 Nov 2018 16:37:43 GMT
 Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0A791AE056;
- Wed, 28 Nov 2018 16:37:46 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 85B87AE051;
+ Wed, 28 Nov 2018 16:37:43 +0000 (GMT)
 Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id EC536AE053;
- Wed, 28 Nov 2018 16:37:44 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 3364EAE045;
+ Wed, 28 Nov 2018 16:37:42 +0000 (GMT)
 Received: from localhost.localdomain.com (unknown [9.145.3.14])
  by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 28 Nov 2018 16:37:44 +0000 (GMT)
+ Wed, 28 Nov 2018 16:37:42 +0000 (GMT)
 From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/4] powerpc/perf: Rearrange setting of ldbar for thread-imc
-Date: Wed, 28 Nov 2018 22:07:33 +0530
+Subject: [PATCH 1/4] powerpc/include: Add data structures and macros for IMC
+ trace mode
+Date: Wed, 28 Nov 2018 22:07:32 +0530
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20181128163735.29607-1-anju@linux.vnet.ibm.com>
 References: <20181128163735.29607-1-anju@linux.vnet.ibm.com>
 X-TM-AS-GCONF: 00
-x-cbid: 18112816-0016-0000-0000-0000022E12ED
+x-cbid: 18112816-0020-0000-0000-000002EF1D22
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18112816-0017-0000-0000-0000328671A6
-Message-Id: <20181128163735.29607-3-anju@linux.vnet.ibm.com>
+x-cbparentid: 18112816-0021-0000-0000-0000213E7821
+Message-Id: <20181128163735.29607-2-anju@linux.vnet.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2018-11-28_09:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
@@ -102,101 +103,107 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-LDBAR holds the memory address allocated for each cpu. For thread-imc
-the mode bit (i.e bit 1) of LDBAR is set to accumulation.
-Currently, ldbar is loaded with per cpu memory address and mode set to
-accumulation at boot time.
-
-To enable trace-imc, the mode bit of ldbar should be set to 'trace'. So to
-accommodate trace-mode of IMC, reposition setting of ldbar for thread-imc
-to thread_imc_event_add(). Also reset ldbar at thread_imc_event_del().
+Add the macros needed for IMC (In-Memory Collection Counters) trace-mode
+and data structure to hold the trace-imc record data.
+Also, add the new type "OPAL_IMC_COUNTERS_TRACE" in 'opal-api.h', since
+there is a new switch case added in the opal-calls for IMC.
 
 Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
 ---
- arch/powerpc/perf/imc-pmu.c | 28 +++++++++++++++++-----------
- 1 file changed, 17 insertions(+), 11 deletions(-)
+ arch/powerpc/include/asm/imc-pmu.h  | 39 +++++++++++++++++++++++++++++
+ arch/powerpc/include/asm/opal-api.h |  1 +
+ 2 files changed, 40 insertions(+)
 
-diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
-index f292a3f284f1..3bef46f8417d 100644
---- a/arch/powerpc/perf/imc-pmu.c
-+++ b/arch/powerpc/perf/imc-pmu.c
-@@ -806,8 +806,11 @@ static int core_imc_event_init(struct perf_event *event)
- }
+diff --git a/arch/powerpc/include/asm/imc-pmu.h b/arch/powerpc/include/asm/imc-pmu.h
+index 69f516ecb2fd..7c2ef0e42661 100644
+--- a/arch/powerpc/include/asm/imc-pmu.h
++++ b/arch/powerpc/include/asm/imc-pmu.h
+@@ -33,6 +33,7 @@
+  */
+ #define THREAD_IMC_LDBAR_MASK           0x0003ffffffffe000ULL
+ #define THREAD_IMC_ENABLE               0x8000000000000000ULL
++#define TRACE_IMC_ENABLE		0x4000000000000000ULL
  
  /*
-- * Allocates a page of memory for each of the online cpus, and write the
-- * physical base address of that page to the LDBAR for that cpu.
-+ * Allocates a page of memory for each of the online cpus, and load
-+ * LDBAR with 0.
-+ * The physical base address of the page allocated for a cpu will be
-+ * written to the LDBAR for that cpu, when the thread-imc event
-+ * is added.
-  *
-  * LDBAR Register Layout:
-  *
-@@ -825,7 +828,7 @@ static int core_imc_event_init(struct perf_event *event)
-  */
- static int thread_imc_mem_alloc(int cpu_id, int size)
- {
--	u64 ldbar_value, *local_mem = per_cpu(thread_imc_mem, cpu_id);
-+	u64 *local_mem = per_cpu(thread_imc_mem, cpu_id);
- 	int nid = cpu_to_node(cpu_id);
+  * For debugfs interface for imc-mode and imc-command
+@@ -59,6 +60,34 @@ struct imc_events {
+ 	char *scale;
+ };
  
- 	if (!local_mem) {
-@@ -842,9 +845,7 @@ static int thread_imc_mem_alloc(int cpu_id, int size)
- 		per_cpu(thread_imc_mem, cpu_id) = local_mem;
- 	}
- 
--	ldbar_value = ((u64)local_mem & THREAD_IMC_LDBAR_MASK) | THREAD_IMC_ENABLE;
--
--	mtspr(SPRN_LDBAR, ldbar_value);
-+	mtspr(SPRN_LDBAR, 0);
- 	return 0;
- }
- 
-@@ -995,6 +996,7 @@ static int thread_imc_event_add(struct perf_event *event, int flags)
- {
- 	int core_id;
- 	struct imc_pmu_ref *ref;
-+	u64 ldbar_value, *local_mem = per_cpu(thread_imc_mem, smp_processor_id());
- 
- 	if (flags & PERF_EF_START)
- 		imc_event_start(event, flags);
-@@ -1003,6 +1005,9 @@ static int thread_imc_event_add(struct perf_event *event, int flags)
- 		return -EINVAL;
- 
- 	core_id = smp_processor_id() / threads_per_core;
-+	ldbar_value = ((u64)local_mem & THREAD_IMC_LDBAR_MASK) | THREAD_IMC_ENABLE;
-+	mtspr(SPRN_LDBAR, ldbar_value);
++/*
++ * Trace IMC hardware updates a 64bytes record on
++ * Core Performance Monitoring Counter (CPMC)
++ * overflow. Here is the layout for the trace imc record
++ *
++ * DW 0 : Timebase
++ * DW 1 : Program Counter
++ * DW 2 : PIDR information
++ * DW 3 : CPMC1
++ * DW 4 : CPMC2
++ * DW 5 : CPMC3
++ * Dw 6 : CPMC4
++ * DW 7 : Timebase
++ * .....
++ *
++ * The following is the data structure to hold trace imc data.
++ */
++struct trace_imc_data {
++	u64 tb1;
++	u64 ip;
++	u64 val;
++	u64 cpmc1;
++	u64 cpmc2;
++	u64 cpmc3;
++	u64 cpmc4;
++	u64 tb2;
++};
 +
- 	/*
- 	 * imc pmus are enabled only when it is used.
- 	 * See if this is triggered for the first time.
-@@ -1034,11 +1039,7 @@ static void thread_imc_event_del(struct perf_event *event, int flags)
- 	int core_id;
- 	struct imc_pmu_ref *ref;
+ /* Event attribute array index */
+ #define IMC_FORMAT_ATTR		0
+ #define IMC_EVENT_ATTR		1
+@@ -68,6 +97,13 @@ struct imc_events {
+ /* PMU Format attribute macros */
+ #define IMC_EVENT_OFFSET_MASK	0xffffffffULL
  
--	/*
--	 * Take a snapshot and calculate the delta and update
--	 * the event counter values.
--	 */
--	imc_event_update(event);
-+	mtspr(SPRN_LDBAR, 0);
++/*
++ * Macro to mask bits 0:21 of first double word(which is the timebase) to
++ * compare with 8th double word (timebase) of trace imc record data.
++ */
++#define IMC_TRACE_RECORD_TB1_MASK      0x3ffffffffffULL
++
++
+ /*
+  * Device tree parser code detects IMC pmu support and
+  * registers new IMC pmus. This structure will hold the
+@@ -113,6 +149,7 @@ struct imc_pmu_ref {
  
- 	core_id = smp_processor_id() / threads_per_core;
- 	ref = &core_imc_refc[core_id];
-@@ -1057,6 +1058,11 @@ static void thread_imc_event_del(struct perf_event *event, int flags)
- 		ref->refc = 0;
- 	}
- 	mutex_unlock(&ref->lock);
-+	/*
-+	 * Take a snapshot and calculate the delta and update
-+	 * the event counter values.
-+	 */
-+	imc_event_update(event);
- }
+ enum {
+ 	IMC_TYPE_THREAD		= 0x1,
++	IMC_TYPE_TRACE		= 0x2,
+ 	IMC_TYPE_CORE		= 0x4,
+ 	IMC_TYPE_CHIP           = 0x10,
+ };
+@@ -123,6 +160,8 @@ enum {
+ #define IMC_DOMAIN_NEST		1
+ #define IMC_DOMAIN_CORE		2
+ #define IMC_DOMAIN_THREAD	3
++/* For trace-imc the domain is still thread but it operates in trace-mode */
++#define IMC_DOMAIN_TRACE	4
  
- /* update_pmu_ops : Populate the appropriate operations for "pmu" */
+ extern int init_imc_pmu(struct device_node *parent,
+ 				struct imc_pmu *pmu_ptr, int pmu_id);
+diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+index 870fb7b239ea..a4130b21b159 100644
+--- a/arch/powerpc/include/asm/opal-api.h
++++ b/arch/powerpc/include/asm/opal-api.h
+@@ -1118,6 +1118,7 @@ enum {
+ enum {
+ 	OPAL_IMC_COUNTERS_NEST = 1,
+ 	OPAL_IMC_COUNTERS_CORE = 2,
++	OPAL_IMC_COUNTERS_TRACE = 3,
+ };
+ 
+ 
 -- 
 2.17.1
 
