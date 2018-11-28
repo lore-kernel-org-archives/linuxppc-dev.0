@@ -6,92 +6,92 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DB4F9C43441
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 14:44:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B87EC43441
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 14:46:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 608C7206B6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 14:44:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 608C7206B6
+	by mail.kernel.org (Postfix) with ESMTPS id C29922086B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 14:46:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C29922086B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 434k223QrFzDqQ6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 01:44:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 434k4L6dqjzDqrW
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 01:46:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 434jqS2x92zDqxs
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Nov 2018 01:35:16 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wASEYMug001169
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2018 09:35:13 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 434jqW4v4CzDqxm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Nov 2018 01:35:19 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wASEYGDQ088894
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2018 09:35:17 -0500
 Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2p1v1qard2-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2p1vmj0w7u-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2018 09:35:13 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2018 09:35:17 -0500
 Received: from localhost
  by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Wed, 28 Nov 2018 14:35:12 -0000
-Received: from b03cxnp08028.gho.boulder.ibm.com (9.17.130.20)
+ Wed, 28 Nov 2018 14:35:16 -0000
+Received: from b03cxnp08027.gho.boulder.ibm.com (9.17.130.19)
  by e34.co.us.ibm.com (192.168.1.134) with IBM ESMTP SMTP Gateway: Authorized
  Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 28 Nov 2018 14:35:09 -0000
+ Wed, 28 Nov 2018 14:35:13 -0000
 Received: from b03ledav001.gho.boulder.ibm.com
  (b03ledav001.gho.boulder.ibm.com [9.17.130.232])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wASEZ8jH9699448
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wASEZCEA23462128
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Wed, 28 Nov 2018 14:35:08 GMT
+ Wed, 28 Nov 2018 14:35:12 GMT
 Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id F41366E06B;
- Wed, 28 Nov 2018 14:35:07 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id AD7376E056;
+ Wed, 28 Nov 2018 14:35:12 +0000 (GMT)
 Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E0E746E053;
- Wed, 28 Nov 2018 14:35:04 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 9D0EE6E054;
+ Wed, 28 Nov 2018 14:35:09 +0000 (GMT)
 Received: from skywalker.ibmuc.com (unknown [9.85.87.253])
  by b03ledav001.gho.boulder.ibm.com (Postfix) with ESMTP;
- Wed, 28 Nov 2018 14:35:04 +0000 (GMT)
+ Wed, 28 Nov 2018 14:35:09 +0000 (GMT)
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: akpm@linux-foundation.org, mpe@ellerman.id.au, benh@kernel.crashing.org,
  paulus@samba.org
-Subject: [PATCH V2 3/5] arch/powerpc/mm: Nest MMU workaround for mprotect RW
- upgrade.
-Date: Wed, 28 Nov 2018 20:04:36 +0530
+Subject: [PATCH V2 4/5] mm/hugetlb: Add prot_modify_start/commit sequence for
+ hugetlb update
+Date: Wed, 28 Nov 2018 20:04:37 +0530
 X-Mailer: git-send-email 2.19.1
 In-Reply-To: <20181128143438.29458-1-aneesh.kumar@linux.ibm.com>
 References: <20181128143438.29458-1-aneesh.kumar@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 18112814-0016-0000-0000-0000095C37AC
+x-cbid: 18112814-0016-0000-0000-0000095C37AF
 X-IBM-SpamModules-Scores: 
 X-IBM-SpamModules-Versions: BY=3.00010137; HX=3.00000242; KW=3.00000007;
  PH=3.00000004; SC=3.00000270; SDB=6.01124008; UDB=6.00583546; IPR=6.00904137; 
- MB=3.00024366; MTD=3.00000008; XFM=3.00000015; UTC=2018-11-28 14:35:10
+ MB=3.00024366; MTD=3.00000008; XFM=3.00000015; UTC=2018-11-28 14:35:15
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18112814-0017-0000-0000-000041381589
-Message-Id: <20181128143438.29458-4-aneesh.kumar@linux.ibm.com>
+x-cbparentid: 18112814-0017-0000-0000-000041381595
+Message-Id: <20181128143438.29458-5-aneesh.kumar@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2018-11-28_07:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=849 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=991 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1811280129
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -110,127 +110,61 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-NestMMU requires us to mark the pte invalid and flush the tlb when we do a
-RW upgrade of pte. We fixed a variant of this in the fault path in commit
-Fixes: bd5050e38aec ("powerpc/mm/radix: Change pte relax sequence to handle nest MMU hang")
-
-Do the same for mprotect upgrades.
-
-Hugetlb is handled in the next patch.
-
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/64/pgtable.h | 18 +++++++++++++
- arch/powerpc/include/asm/book3s/64/radix.h   |  4 +++
- arch/powerpc/mm/pgtable-book3s64.c           | 27 ++++++++++++++++++++
- arch/powerpc/mm/pgtable-radix.c              | 18 +++++++++++++
- 4 files changed, 67 insertions(+)
+ include/linux/hugetlb.h | 18 ++++++++++++++++++
+ mm/hugetlb.c            |  8 +++++---
+ 2 files changed, 23 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index 2e6ada28da64..92eaea164700 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -1314,6 +1314,24 @@ static inline int pud_pfn(pud_t pud)
- 	BUILD_BUG();
- 	return 0;
+diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
+index 087fd5f48c91..e2a3b0c854eb 100644
+--- a/include/linux/hugetlb.h
++++ b/include/linux/hugetlb.h
+@@ -543,6 +543,24 @@ static inline void set_huge_swap_pte_at(struct mm_struct *mm, unsigned long addr
+ 	set_huge_pte_at(mm, addr, ptep, pte);
  }
-+#define __HAVE_ARCH_PTEP_MODIFY_PROT_TRANSACTION
-+pte_t ptep_modify_prot_start(struct vm_area_struct *, unsigned long, pte_t *);
-+void ptep_modify_prot_commit(struct vm_area_struct *, unsigned long,
-+			     pte_t *, pte_t, pte_t);
+ #endif
 +
-+/*
-+ * Returns true for a R -> RW upgrade of pte
-+ */
-+static inline bool is_pte_rw_upgrade(unsigned long old_val, unsigned long new_val)
++#ifndef huge_ptep_modify_prot_start
++static inline pte_t huge_ptep_modify_prot_start(struct vm_area_struct *vma,
++						unsigned long addr, pte_t *ptep)
 +{
-+	if (!(old_val & _PAGE_READ))
-+		return false;
-+
-+	if ((!(old_val & _PAGE_WRITE)) && (new_val & _PAGE_WRITE))
-+		return true;
-+
-+	return false;
++	return huge_ptep_get_and_clear(vma->vm_mm, addr, ptep);
 +}
- 
- #endif /* __ASSEMBLY__ */
- #endif /* _ASM_POWERPC_BOOK3S_64_PGTABLE_H_ */
-diff --git a/arch/powerpc/include/asm/book3s/64/radix.h b/arch/powerpc/include/asm/book3s/64/radix.h
-index 7d1a3d1543fc..5ab134eeed20 100644
---- a/arch/powerpc/include/asm/book3s/64/radix.h
-+++ b/arch/powerpc/include/asm/book3s/64/radix.h
-@@ -127,6 +127,10 @@ extern void radix__ptep_set_access_flags(struct vm_area_struct *vma, pte_t *ptep
- 					 pte_t entry, unsigned long address,
- 					 int psize);
- 
-+extern void radix__ptep_modify_prot_commit(struct vm_area_struct *vma,
-+					   unsigned long addr, pte_t *ptep,
-+					   pte_t old_pte, pte_t pte);
++#endif
 +
- static inline unsigned long __radix_pte_update(pte_t *ptep, unsigned long clr,
- 					       unsigned long set)
- {
-diff --git a/arch/powerpc/mm/pgtable-book3s64.c b/arch/powerpc/mm/pgtable-book3s64.c
-index 9f93c9f985c5..3d126353b11e 100644
---- a/arch/powerpc/mm/pgtable-book3s64.c
-+++ b/arch/powerpc/mm/pgtable-book3s64.c
-@@ -482,3 +482,30 @@ void arch_report_meminfo(struct seq_file *m)
- 		   atomic_long_read(&direct_pages_count[MMU_PAGE_1G]) << 20);
- }
- #endif /* CONFIG_PROC_FS */
-+
-+pte_t ptep_modify_prot_start(struct vm_area_struct *vma, unsigned long addr,
-+			     pte_t *ptep)
++#ifndef huge_ptep_modify_prot_commit
++static inline void huge_ptep_modify_prot_commit(struct vm_area_struct *vma,
++						unsigned long addr, pte_t *ptep,
++						pte_t old_pte, pte_t pte)
 +{
-+	unsigned long pte_val;
-+
-+	/*
-+	 * Clear the _PAGE_PRESENT so that no hardware parallel update is
-+	 * possible. Also keep the pte_present true so that we don't take
-+	 * wrong fault.
-+	 */
-+	pte_val = pte_update(vma->vm_mm, addr, ptep, _PAGE_PRESENT, _PAGE_INVALID, 0);
-+
-+	return __pte(pte_val);
-+
++	set_huge_pte_at(vma->vm_mm, addr, ptep, pte);
 +}
-+EXPORT_SYMBOL(ptep_modify_prot_start);
++#endif
 +
-+void ptep_modify_prot_commit(struct vm_area_struct *vma, unsigned long addr,
-+			     pte_t *ptep, pte_t old_pte, pte_t pte)
-+{
-+	if (radix_enabled())
-+		return radix__ptep_modify_prot_commit(vma, addr,
-+						      ptep, old_pte, pte);
-+	set_pte_at(vma->vm_mm, addr, ptep, pte);
-+}
-+EXPORT_SYMBOL(ptep_modify_prot_commit);
-diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
-index 931156069a81..14938186df5b 100644
---- a/arch/powerpc/mm/pgtable-radix.c
-+++ b/arch/powerpc/mm/pgtable-radix.c
-@@ -1063,3 +1063,21 @@ void radix__ptep_set_access_flags(struct vm_area_struct *vma, pte_t *ptep,
- 	}
- 	/* See ptesync comment in radix__set_pte_at */
- }
+ #else	/* CONFIG_HUGETLB_PAGE */
+ struct hstate {};
+ #define alloc_huge_page(v, a, r) NULL
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index 7f2a28ab46d5..e5f5cda14f28 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -4388,10 +4388,12 @@ unsigned long hugetlb_change_protection(struct vm_area_struct *vma,
+ 			continue;
+ 		}
+ 		if (!huge_pte_none(pte)) {
+-			pte = huge_ptep_get_and_clear(mm, address, ptep);
+-			pte = pte_mkhuge(huge_pte_modify(pte, newprot));
++			pte_t old_pte;
 +
-+void radix__ptep_modify_prot_commit(struct vm_area_struct *vma,
-+				    unsigned long addr, pte_t *ptep,
-+				    pte_t old_pte, pte_t pte)
-+{
-+	struct mm_struct *mm = vma->vm_mm;
-+
-+	/*
-+	 * To avoid NMMU hang while relaxing access we need to flush the tlb before
-+	 * we set the new value. We need to do this only for radix, because hash
-+	 * translation does flush when updating the linux pte.
-+	 */
-+	if (is_pte_rw_upgrade(pte_val(old_pte), pte_val(pte)) &&
-+	    (atomic_read(&mm->context.copros) > 0))
-+		flush_tlb_page(vma, addr);
-+
-+	set_pte_at(mm, addr, ptep, pte);
-+}
++			old_pte = huge_ptep_modify_prot_start(vma, address, ptep);
++			pte = pte_mkhuge(huge_pte_modify(old_pte, newprot));
+ 			pte = arch_make_huge_pte(pte, vma, NULL, 0);
+-			set_huge_pte_at(mm, address, ptep, pte);
++			huge_ptep_modify_prot_commit(vma, address, ptep, old_pte, pte);
+ 			pages++;
+ 		}
+ 		spin_unlock(ptl);
 -- 
 2.19.1
 
