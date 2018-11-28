@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CD8B8C43441
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 11:57:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F11AC43441
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 11:59:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 49CF620832
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 11:57:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 49CF620832
+	by mail.kernel.org (Postfix) with ESMTPS id B081220832
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 11:59:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B081220832
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 434fJp01TLzDqR6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 22:56:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 434fMH4T6YzDqKM
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 22:59:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
@@ -29,40 +29,39 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 434f4n2hnBzDqWQ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2018 22:46:33 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 434f4p0yjKzDqWP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2018 22:46:34 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 434f4j0M3Jz9v0B1;
+ by localhost (Postfix) with ESMTP id 434f4j6zC1z9v09t;
  Wed, 28 Nov 2018 12:46:29 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id xPySS3n3vr0B; Wed, 28 Nov 2018 12:46:28 +0100 (CET)
+ with ESMTP id hhnOQS7TcJ3v; Wed, 28 Nov 2018 12:46:29 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 434f4h6zHmz9v09s;
- Wed, 28 Nov 2018 12:46:28 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id EDD378B86A;
+ by pegase1.c-s.fr (Postfix) with ESMTP id 434f4j6X7fz9v09s;
  Wed, 28 Nov 2018 12:46:29 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id F2FE58B867;
+ Wed, 28 Nov 2018 12:46:25 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id OtQuWOU_GTNQ; Wed, 28 Nov 2018 12:46:29 +0100 (CET)
+ with ESMTP id kBGIKJGmNZxQ; Wed, 28 Nov 2018 12:46:25 +0100 (CET)
 Received: from po14163vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
  [172.25.231.2])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id CD9068B853;
- Wed, 28 Nov 2018 12:46:29 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id BCA068B853;
+ Wed, 28 Nov 2018 12:46:25 +0100 (CET)
 Received: by po14163vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id BB44769B1B; Wed, 28 Nov 2018 11:46:29 +0000 (UTC)
-Message-Id: <3b06c670786936f1fa184dffb815824b10c6e761.1543405086.git.christophe.leroy@c-s.fr>
+ id AEEB969B1B; Wed, 28 Nov 2018 11:46:25 +0000 (UTC)
+Message-Id: <66ac546242226a4cecaf910876bea0377520c6ae.1543405086.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1543405086.git.christophe.leroy@c-s.fr>
 References: <cover.1543405086.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v7 04/16] powerpc/mm: Avoid useless lock with single page
- fragments
+Subject: [PATCH v7 02/16] powerpc/8xx: Remove PTE_ATOMIC_UPDATES
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Wed, 28 Nov 2018 11:46:29 +0000 (UTC)
+Date: Wed, 28 Nov 2018 11:46:25 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,44 +78,36 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There is no point in taking the page table lock as pte_frag or
-pmd_frag are always NULL when we have only one fragment.
+commit 1bc54c03117b9 ("powerpc: rework 4xx PTE access and TLB miss")
+introduced non atomic PTE updates and started the work of removing
+PTE updates in TLB miss handlers, but kept PTE_ATOMIC_UPDATES for the
+8xx with the following comment:
+/* Until my rework is finished, 8xx still needs atomic PTE updates */
 
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+commit fe11dc3f9628e ("powerpc/8xx: Update TLB asm so it behaves as
+linux mm expects") removed all PTE updates done in TLB miss handlers
+
+Therefore, atomic PTE updates are not needed anymore for the 8xx
+
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/mm/pgtable-book3s64.c | 3 +++
- arch/powerpc/mm/pgtable-frag.c     | 3 +++
- 2 files changed, 6 insertions(+)
+ arch/powerpc/include/asm/nohash/32/pte-8xx.h | 3 ---
+ 1 file changed, 3 deletions(-)
 
-diff --git a/arch/powerpc/mm/pgtable-book3s64.c b/arch/powerpc/mm/pgtable-book3s64.c
-index 0c0fd173208a..f3c31f5e1026 100644
---- a/arch/powerpc/mm/pgtable-book3s64.c
-+++ b/arch/powerpc/mm/pgtable-book3s64.c
-@@ -244,6 +244,9 @@ static pmd_t *get_pmd_from_cache(struct mm_struct *mm)
- {
- 	void *pmd_frag, *ret;
+diff --git a/arch/powerpc/include/asm/nohash/32/pte-8xx.h b/arch/powerpc/include/asm/nohash/32/pte-8xx.h
+index 6bfe041ef59d..c9e4b2d90f65 100644
+--- a/arch/powerpc/include/asm/nohash/32/pte-8xx.h
++++ b/arch/powerpc/include/asm/nohash/32/pte-8xx.h
+@@ -65,9 +65,6 @@
  
-+	if (PMD_FRAG_NR == 1)
-+		return NULL;
-+
- 	spin_lock(&mm->page_table_lock);
- 	ret = mm->context.pmd_frag;
- 	if (ret) {
-diff --git a/arch/powerpc/mm/pgtable-frag.c b/arch/powerpc/mm/pgtable-frag.c
-index d61e7c2a9a79..7544d0d7177d 100644
---- a/arch/powerpc/mm/pgtable-frag.c
-+++ b/arch/powerpc/mm/pgtable-frag.c
-@@ -34,6 +34,9 @@ static pte_t *get_pte_from_cache(struct mm_struct *mm)
- {
- 	void *pte_frag, *ret;
+ #define _PTE_NONE_MASK	0
  
-+	if (PTE_FRAG_NR == 1)
-+		return NULL;
-+
- 	spin_lock(&mm->page_table_lock);
- 	ret = mm->context.pte_frag;
- 	if (ret) {
+-/* Until my rework is finished, 8xx still needs atomic PTE updates */
+-#define PTE_ATOMIC_UPDATES	1
+-
+ #ifdef CONFIG_PPC_16K_PAGES
+ #define _PAGE_PSIZE	_PAGE_SPS
+ #else
 -- 
 2.13.3
 
