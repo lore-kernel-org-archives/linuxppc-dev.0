@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 85266C43441
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 09:36:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 66C1DC43441
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 09:39:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C654F208E7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 09:36:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C654F208E7
+	by mail.kernel.org (Postfix) with ESMTPS id DED2520660
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 09:39:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DED2520660
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 434bC169ztzDqdg
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 20:36:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 434bFz5Bb5zDqW2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 20:39:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
@@ -29,41 +29,41 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 434b020Z1YzDqZN
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2018 20:27:13 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 434b035nJGzDqZN
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2018 20:27:15 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 434Zzx6qxwz9vBKJ;
- Wed, 28 Nov 2018 10:27:09 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 434Zzz6jcpz9vBKF;
+ Wed, 28 Nov 2018 10:27:11 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id m2abANZhKNWO; Wed, 28 Nov 2018 10:27:09 +0100 (CET)
+ with ESMTP id 0TzUtfh15KXA; Wed, 28 Nov 2018 10:27:11 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 434Zzx6G67z9vBK9;
- Wed, 28 Nov 2018 10:27:09 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 434Zzz6CCmz9vBK9;
+ Wed, 28 Nov 2018 10:27:11 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id C160F8B85D;
- Wed, 28 Nov 2018 10:27:10 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id C1FFB8B85D;
+ Wed, 28 Nov 2018 10:27:12 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id islDMa5BjfRz; Wed, 28 Nov 2018 10:27:10 +0100 (CET)
+ with ESMTP id VbHt3Dw9gysn; Wed, 28 Nov 2018 10:27:12 +0100 (CET)
 Received: from po14163vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
  [172.25.231.2])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A2DE28B853;
- Wed, 28 Nov 2018 10:27:10 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id AB9318B853;
+ Wed, 28 Nov 2018 10:27:12 +0100 (CET)
 Received: by po14163vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 93E6469AFA; Wed, 28 Nov 2018 09:27:10 +0000 (UTC)
-Message-Id: <df38a42e7c3cce892d7f6bbd88b5388774c8bef0.1543356926.git.christophe.leroy@c-s.fr>
+ id 992DE69AFA; Wed, 28 Nov 2018 09:27:12 +0000 (UTC)
+Message-Id: <de304421c38858ddbf3162433e0a6ca326719a52.1543356926.git.christophe.leroy@c-s.fr>
 In-Reply-To: <76d777b36e54e7b8d4c196405decc712fc5eaf45.1543356926.git.christophe.leroy@c-s.fr>
 References: <76d777b36e54e7b8d4c196405decc712fc5eaf45.1543356926.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [RFC PATCH v2 04/11] powerpc/mm: Add a framework for Kernel Userspace
- Access Protection
+Subject: [RFC PATCH v2 05/11] powerpc/8xx: Add Kernel Userspace Execution
+ Prevention
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  ruscur@russell.cc
-Date: Wed, 28 Nov 2018 09:27:10 +0000 (UTC)
+Date: Wed, 28 Nov 2018 09:27:12 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,587 +80,73 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch implements a framework for Kernel Userspace Access
-Protection.
+This patch adds Kernel Userspace Execution Prevention on the 8xx.
 
-Then subarches will have to possibility to provide their own
-implementation by providing setup_kuap() and lock/unlock_user_access()
+When a page is Executable, it is set Executable for Key 0 and NX
+for Key 1.
 
-Some platform will need to know the area accessed and whether it is
-accessed from read, write or both. Therefore source, destination and
-size and handed over to the two functions.
+Up to now, the User group is defined with Key 0 for both User and
+Supervisor.
+
+By changing the group to Key 0 for User and Key 1 for Supervisor,
+this patch prevents the Kernel from being able to execute user code.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- Documentation/admin-guide/kernel-parameters.txt |  2 +-
- arch/powerpc/include/asm/exception-64e.h        |  3 ++
- arch/powerpc/include/asm/exception-64s.h        |  9 +++++-
- arch/powerpc/include/asm/futex.h                |  4 +++
- arch/powerpc/include/asm/kup.h                  | 21 ++++++++++++++
- arch/powerpc/include/asm/paca.h                 |  3 ++
- arch/powerpc/include/asm/processor.h            |  3 ++
- arch/powerpc/include/asm/ptrace.h               |  3 ++
- arch/powerpc/include/asm/uaccess.h              | 38 +++++++++++++++++++------
- arch/powerpc/kernel/asm-offsets.c               |  7 +++++
- arch/powerpc/kernel/entry_32.S                  |  8 +++++-
- arch/powerpc/kernel/entry_64.S                  | 16 +++++++++--
- arch/powerpc/kernel/process.c                   |  3 ++
- arch/powerpc/lib/checksum_wrappers.c            |  4 +++
- arch/powerpc/mm/fault.c                         | 17 ++++++++---
- arch/powerpc/mm/init-common.c                   | 10 +++++++
- arch/powerpc/platforms/Kconfig.cputype          | 12 ++++++++
- 17 files changed, 146 insertions(+), 17 deletions(-)
+ arch/powerpc/include/asm/mmu-8xx.h     |  6 ++++++
+ arch/powerpc/mm/8xx_mmu.c              | 12 ++++++++++++
+ arch/powerpc/platforms/Kconfig.cputype |  1 +
+ 3 files changed, 19 insertions(+)
 
-diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index 1103549363bb..0d059b141ff8 100644
---- a/Documentation/admin-guide/kernel-parameters.txt
-+++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -2792,7 +2792,7 @@
- 			noexec=on: enable non-executable mappings (default)
- 			noexec=off: disable non-executable mappings
+diff --git a/arch/powerpc/include/asm/mmu-8xx.h b/arch/powerpc/include/asm/mmu-8xx.h
+index fa05aa566ece..53dbf0788fce 100644
+--- a/arch/powerpc/include/asm/mmu-8xx.h
++++ b/arch/powerpc/include/asm/mmu-8xx.h
+@@ -41,6 +41,12 @@
+  */
+ #define MI_APG_INIT	0x44444444
  
--	nosmap		[X86]
-+	nosmap		[X86,PPC]
- 			Disable SMAP (Supervisor Mode Access Prevention)
- 			even if it is supported by processor.
- 
-diff --git a/arch/powerpc/include/asm/exception-64e.h b/arch/powerpc/include/asm/exception-64e.h
-index 555e22d5e07f..bf25015834ee 100644
---- a/arch/powerpc/include/asm/exception-64e.h
-+++ b/arch/powerpc/include/asm/exception-64e.h
-@@ -215,5 +215,8 @@ exc_##label##_book3e:
- #define RFI_TO_USER							\
- 	rfi
- 
-+#define UNLOCK_USER_ACCESS(reg)
-+#define LOCK_USER_ACCESS(reg)
++/*
++ * 0 => No user => 01 (all accesses performed according to page definition)
++ * 1 => User => 10 (all accesses performed according to swaped page definition)
++ */
++#define MI_APG_KUEP	0x66666666
 +
- #endif /* _ASM_POWERPC_EXCEPTION_64E_H */
- 
-diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
-index 3b4767ed3ec5..4d971ca1e69b 100644
---- a/arch/powerpc/include/asm/exception-64s.h
-+++ b/arch/powerpc/include/asm/exception-64s.h
-@@ -264,6 +264,9 @@ BEGIN_FTR_SECTION_NESTED(943)						\
- 	std	ra,offset(r13);						\
- END_FTR_SECTION_NESTED(ftr,ftr,943)
- 
-+#define LOCK_USER_ACCESS(reg)
-+#define UNLOCK_USER_ACCESS(reg)
+ /* The effective page number register.  When read, contains the information
+  * about the last instruction TLB miss.  When MI_RPN is written, bits in
+  * this register are used to create the TLB entry.
+diff --git a/arch/powerpc/mm/8xx_mmu.c b/arch/powerpc/mm/8xx_mmu.c
+index 01b7f5107c3a..f14ceb507d98 100644
+--- a/arch/powerpc/mm/8xx_mmu.c
++++ b/arch/powerpc/mm/8xx_mmu.c
+@@ -194,3 +194,15 @@ void flush_instruction_cache(void)
+ 	mtspr(SPRN_IC_CST, IDC_INVALL);
+ 	isync();
+ }
 +
- #define EXCEPTION_PROLOG_0(area)					\
- 	GET_PACA(r13);							\
- 	std	r9,area+EX_R9(r13);	/* save r9 */			\
-@@ -500,7 +503,11 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
- 	beq	4f;			/* if from kernel mode		*/ \
- 	ACCOUNT_CPU_USER_ENTRY(r13, r9, r10);				   \
- 	SAVE_PPR(area, r9);						   \
--4:	EXCEPTION_PROLOG_COMMON_2(area)					   \
-+4:	lbz	r9,PACA_USER_ACCESS_ALLOWED(r13);			   \
-+	cmpwi	cr1,r9,0;						   \
-+	beq	5f;							   \
-+	LOCK_USER_ACCESS(r9);						   \
-+5:	EXCEPTION_PROLOG_COMMON_2(area)					\
- 	EXCEPTION_PROLOG_COMMON_3(n)					   \
- 	ACCOUNT_STOLEN_TIME
- 
-diff --git a/arch/powerpc/include/asm/futex.h b/arch/powerpc/include/asm/futex.h
-index 94542776a62d..32230f9a1c32 100644
---- a/arch/powerpc/include/asm/futex.h
-+++ b/arch/powerpc/include/asm/futex.h
-@@ -35,6 +35,7 @@ static inline int arch_futex_atomic_op_inuser(int op, int oparg, int *oval,
- {
- 	int oldval = 0, ret;
- 
-+	unlock_user_access(uaddr, NULL, sizeof(*uaddr));
- 	pagefault_disable();
- 
- 	switch (op) {
-@@ -62,6 +63,7 @@ static inline int arch_futex_atomic_op_inuser(int op, int oparg, int *oval,
- 	if (!ret)
- 		*oval = oldval;
- 
-+	lock_user_access(uaddr, NULL, sizeof(*uaddr));
- 	return ret;
- }
- 
-@@ -75,6 +77,7 @@ futex_atomic_cmpxchg_inatomic(u32 *uval, u32 __user *uaddr,
- 	if (!access_ok(VERIFY_WRITE, uaddr, sizeof(u32)))
- 		return -EFAULT;
- 
-+	unlock_user_access(uaddr, NULL, sizeof(*uaddr));
-         __asm__ __volatile__ (
-         PPC_ATOMIC_ENTRY_BARRIER
- "1:     lwarx   %1,0,%3         # futex_atomic_cmpxchg_inatomic\n\
-@@ -95,6 +98,7 @@ futex_atomic_cmpxchg_inatomic(u32 *uval, u32 __user *uaddr,
-         : "cc", "memory");
- 
- 	*uval = prev;
-+	lock_user_access(uaddr, NULL, sizeof(*uaddr));
-         return ret;
- }
- 
-diff --git a/arch/powerpc/include/asm/kup.h b/arch/powerpc/include/asm/kup.h
-index af4b5f854ca4..2ac540fb488f 100644
---- a/arch/powerpc/include/asm/kup.h
-+++ b/arch/powerpc/include/asm/kup.h
-@@ -4,6 +4,8 @@
- 
- #ifndef __ASSEMBLY__
- 
-+#include <asm/pgtable.h>
-+
- void setup_kup(void);
- 
- #ifdef CONFIG_PPC_KUEP
-@@ -12,6 +14,25 @@ void setup_kuep(bool disabled);
- static inline void setup_kuep(bool disabled) { }
- #endif
- 
-+#ifdef CONFIG_PPC_KUAP
-+void setup_kuap(bool disabled);
-+#else
-+static inline void setup_kuap(bool disabled) { }
-+static inline void unlock_user_access(void __user *to, const void __user *from,
-+				      unsigned long size) { }
-+static inline void lock_user_access(void __user *to, const void __user *from,
-+				    unsigned long size) { }
-+#endif
-+
- #endif /* !__ASSEMBLY__ */
- 
-+#ifndef CONFIG_PPC_KUAP
-+
-+#ifdef CONFIG_PPC32
-+#define LOCK_USER_ACCESS(val, sp, sr, srmax, curr)
-+#define REST_USER_ACCESS(val, sp, sr, srmax, curr)
-+#endif
-+
-+#endif
-+
- #endif /* _ASM_POWERPC_KUP_H_ */
-diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-index e843bc5d1a0f..56236f6d8c89 100644
---- a/arch/powerpc/include/asm/paca.h
-+++ b/arch/powerpc/include/asm/paca.h
-@@ -169,6 +169,9 @@ struct paca_struct {
- 	u64 saved_r1;			/* r1 save for RTAS calls or PM or EE=0 */
- 	u64 saved_msr;			/* MSR saved here by enter_rtas */
- 	u16 trap_save;			/* Used when bad stack is encountered */
-+#ifdef CONFIG_PPC_KUAP
-+	u8 user_access_allowed;		/* can the kernel access user memory? */
-+#endif
- 	u8 irq_soft_mask;		/* mask for irq soft masking */
- 	u8 irq_happened;		/* irq happened while soft-disabled */
- 	u8 io_sync;			/* writel() needs spin_unlock sync */
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index ee58526cb6c2..4a9a10e86828 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -250,6 +250,9 @@ struct thread_struct {
- #ifdef CONFIG_PPC32
- 	void		*pgdir;		/* root of page-table tree */
- 	unsigned long	ksp_limit;	/* if ksp <= ksp_limit stack overflow */
-+#ifdef CONFIG_PPC_KUAP
-+	unsigned long	kuap;		/* state of user access protection */
-+#endif
- #endif
- 	/* Debug Registers */
- 	struct debug_reg debug;
-diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
-index 0b8a735b6d85..0321ba5b3d12 100644
---- a/arch/powerpc/include/asm/ptrace.h
-+++ b/arch/powerpc/include/asm/ptrace.h
-@@ -55,6 +55,9 @@ struct pt_regs
- #ifdef CONFIG_PPC64
- 	unsigned long ppr;
- 	unsigned long __pad;	/* Maintain 16 byte interrupt stack alignment */
-+#elif defined(CONFIG_PPC_KUAP)
-+	unsigned long kuap;
-+	unsigned long __pad[3];	/* Maintain 16 byte interrupt stack alignment */
- #endif
- };
- #endif
-diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
-index 15bea9a0f260..b8f7f023fcbd 100644
---- a/arch/powerpc/include/asm/uaccess.h
-+++ b/arch/powerpc/include/asm/uaccess.h
-@@ -6,6 +6,7 @@
- #include <asm/processor.h>
- #include <asm/page.h>
- #include <asm/extable.h>
-+#include <asm/kup.h>
- 
- /*
-  * The fs value determines whether argument validity checking should be
-@@ -141,6 +142,7 @@ extern long __put_user_bad(void);
- #define __put_user_size(x, ptr, size, retval)			\
- do {								\
- 	retval = 0;						\
-+	unlock_user_access(ptr, NULL, size);			\
- 	switch (size) {						\
- 	  case 1: __put_user_asm(x, ptr, retval, "stb"); break;	\
- 	  case 2: __put_user_asm(x, ptr, retval, "sth"); break;	\
-@@ -148,6 +150,7 @@ do {								\
- 	  case 8: __put_user_asm2(x, ptr, retval); break;	\
- 	  default: __put_user_bad();				\
- 	}							\
-+	lock_user_access(ptr, NULL, size);			\
- } while (0)
- 
- #define __put_user_nocheck(x, ptr, size)			\
-@@ -240,6 +243,7 @@ do {								\
- 	__chk_user_ptr(ptr);					\
- 	if (size > sizeof(x))					\
- 		(x) = __get_user_bad();				\
-+	unlock_user_access(NULL, ptr, size);			\
- 	switch (size) {						\
- 	case 1: __get_user_asm(x, ptr, retval, "lbz"); break;	\
- 	case 2: __get_user_asm(x, ptr, retval, "lhz"); break;	\
-@@ -247,6 +251,7 @@ do {								\
- 	case 8: __get_user_asm2(x, ptr, retval);  break;	\
- 	default: (x) = __get_user_bad();			\
- 	}							\
-+	lock_user_access(NULL, ptr, size);			\
- } while (0)
- 
- /*
-@@ -306,15 +311,21 @@ extern unsigned long __copy_tofrom_user(void __user *to,
- static inline unsigned long
- raw_copy_in_user(void __user *to, const void __user *from, unsigned long n)
- {
--	return __copy_tofrom_user(to, from, n);
-+	unsigned long ret;
-+
-+	unlock_user_access(to, from, n);
-+	ret = __copy_tofrom_user(to, from, n);
-+	lock_user_access(to, from, n);
-+	return ret;
- }
- #endif /* __powerpc64__ */
- 
- static inline unsigned long raw_copy_from_user(void *to,
- 		const void __user *from, unsigned long n)
- {
-+	unsigned long ret;
- 	if (__builtin_constant_p(n) && (n <= 8)) {
--		unsigned long ret = 1;
-+		ret = 1;
- 
- 		switch (n) {
- 		case 1:
-@@ -339,14 +350,18 @@ static inline unsigned long raw_copy_from_user(void *to,
- 	}
- 
- 	barrier_nospec();
--	return __copy_tofrom_user((__force void __user *)to, from, n);
-+	unlock_user_access(NULL, from, n);
-+	ret = __copy_tofrom_user((__force void __user *)to, from, n);
-+	lock_user_access(NULL, from, n);
-+	return ret;
- }
- 
- static inline unsigned long raw_copy_to_user(void __user *to,
- 		const void *from, unsigned long n)
- {
-+	unsigned long ret;
- 	if (__builtin_constant_p(n) && (n <= 8)) {
--		unsigned long ret = 1;
-+		ret = 1;
- 
- 		switch (n) {
- 		case 1:
-@@ -366,17 +381,24 @@ static inline unsigned long raw_copy_to_user(void __user *to,
- 			return 0;
- 	}
- 
--	return __copy_tofrom_user(to, (__force const void __user *)from, n);
-+	unlock_user_access(to, NULL, n);
-+	ret = __copy_tofrom_user(to, (__force const void __user *)from, n);
-+	lock_user_access(to, NULL, n);
-+	return ret;
- }
- 
- extern unsigned long __clear_user(void __user *addr, unsigned long size);
- 
- static inline unsigned long clear_user(void __user *addr, unsigned long size)
- {
-+	unsigned long ret = size;
- 	might_fault();
--	if (likely(access_ok(VERIFY_WRITE, addr, size)))
--		return __clear_user(addr, size);
--	return size;
-+	if (likely(access_ok(VERIFY_WRITE, addr, size))) {
-+		unlock_user_access(addr, NULL, size);
-+		ret = __clear_user(addr, size);
-+		lock_user_access(addr, NULL, size);
-+	}
-+	return ret;
- }
- 
- extern long strncpy_from_user(char *dst, const char __user *src, long count);
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index 9ffc72ded73a..98e94299e728 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -93,6 +93,9 @@ int main(void)
- 	OFFSET(THREAD_INFO, task_struct, stack);
- 	DEFINE(THREAD_INFO_GAP, _ALIGN_UP(sizeof(struct thread_info), 16));
- 	OFFSET(KSP_LIMIT, thread_struct, ksp_limit);
-+#ifdef CONFIG_PPC_KUAP
-+	OFFSET(KUAP, thread_struct, kuap);
-+#endif
- #endif /* CONFIG_PPC64 */
- 
- #ifdef CONFIG_LIVEPATCH
-@@ -260,6 +263,7 @@ int main(void)
- 	OFFSET(ACCOUNT_STARTTIME_USER, paca_struct, accounting.starttime_user);
- 	OFFSET(ACCOUNT_USER_TIME, paca_struct, accounting.utime);
- 	OFFSET(ACCOUNT_SYSTEM_TIME, paca_struct, accounting.stime);
-+	OFFSET(PACA_USER_ACCESS_ALLOWED, paca_struct, user_access_allowed);
- 	OFFSET(PACA_TRAP_SAVE, paca_struct, trap_save);
- 	OFFSET(PACA_NAPSTATELOST, paca_struct, nap_state_lost);
- 	OFFSET(PACA_SPRG_VDSO, paca_struct, sprg_vdso);
-@@ -320,6 +324,9 @@ int main(void)
- 	 */
- 	STACK_PT_REGS_OFFSET(_DEAR, dar);
- 	STACK_PT_REGS_OFFSET(_ESR, dsisr);
-+#ifdef CONFIG_PPC_KUAP
-+	STACK_PT_REGS_OFFSET(_KUAP, kuap);
-+#endif
- #else /* CONFIG_PPC64 */
- 	STACK_PT_REGS_OFFSET(SOFTE, softe);
- 	STACK_PT_REGS_OFFSET(_PPR, ppr);
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index 77decded1175..64cb6f65ab53 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -36,6 +36,7 @@
- #include <asm/asm-405.h>
- #include <asm/feature-fixups.h>
- #include <asm/barrier.h>
-+#include <asm/kup.h>
- 
- /*
-  * MSR_KERNEL is > 0x10000 on 4xx/Book-E since it include MSR_CE.
-@@ -156,6 +157,7 @@ transfer_to_handler:
- 	stw	r12,_CTR(r11)
- 	stw	r2,_XER(r11)
- 	mfspr	r12,SPRN_SPRG_THREAD
-+	LOCK_USER_ACCESS(r2, r11, r9, r0, r12)
- 	addi	r2,r12,-THREAD
- 	tovirt(r2,r2)			/* set r2 to current */
- 	beq	2f			/* if from user, fix up THREAD.regs */
-@@ -442,6 +444,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_NEED_PAIRED_STWCX)
- 	ACCOUNT_CPU_USER_EXIT(r4, r5, r7)
- 3:
- #endif
-+	REST_USER_ACCESS(r7, r1, r4, r5, r2)
- 	lwz	r4,_LINK(r1)
- 	lwz	r5,_CCR(r1)
- 	mtlr	r4
-@@ -739,7 +742,8 @@ fast_exception_return:
- 	beq	1f			/* if not, we've got problems */
- #endif
- 
--2:	REST_4GPRS(3, r11)
-+2:	REST_USER_ACCESS(r3, r11, r4, r5, r2)
-+	REST_4GPRS(3, r11)
- 	lwz	r10,_CCR(r11)
- 	REST_GPR(1, r11)
- 	mtcr	r10
-@@ -957,6 +961,8 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_TYPE_47x)
- 1:
- #endif /* CONFIG_TRACE_IRQFLAGS */
- 
-+	REST_USER_ACCESS(r3, r1, r4, r5, r2)
-+
- 	lwz	r0,GPR0(r1)
- 	lwz	r2,GPR2(r1)
- 	REST_4GPRS(3, r1)
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 7b1693adff2a..d5879f32bd34 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -297,7 +297,12 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
- 	b	.	/* prevent speculative execution */
- 
- 	/* exit to kernel */
--1:	ld	r2,GPR2(r1)
-+1:	/* if the AMR was unlocked before, unlock it again */
-+	lbz	r2,PACA_USER_ACCESS_ALLOWED(r13)
-+	cmpwi	cr1,0
-+	bne	2f
-+	UNLOCK_USER_ACCESS(r2)
-+2:	ld	r2,GPR2(r1)
- 	ld	r1,GPR1(r1)
- 	mtlr	r4
- 	mtcr	r5
-@@ -983,7 +988,14 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
- 	RFI_TO_USER
- 	b	.	/* prevent speculative execution */
- 
--1:	mtspr	SPRN_SRR1,r3
-+1:	/* exit to kernel */
-+	/* if the AMR was unlocked before, unlock it again */
-+	lbz	r2,PACA_USER_ACCESS_ALLOWED(r13)
-+	cmpwi	cr1,0
-+	bne	2f
-+	UNLOCK_USER_ACCESS(r2)
-+
-+2:	mtspr	SPRN_SRR1,r3
- 
- 	ld	r2,_CCR(r1)
- 	mtcrf	0xFF,r2
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 96f34730010f..d57bc0d90e18 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1771,6 +1771,9 @@ void start_thread(struct pt_regs *regs, unsigned long start, unsigned long sp)
- 	regs->mq = 0;
- 	regs->nip = start;
- 	regs->msr = MSR_USER;
-+#ifdef CONFIG_PPC_KUAP
-+	regs->kuap = KUAP_START;
-+#endif
- #else
- 	if (!is_32bit_task()) {
- 		unsigned long entry;
-diff --git a/arch/powerpc/lib/checksum_wrappers.c b/arch/powerpc/lib/checksum_wrappers.c
-index a0cb63fb76a1..6d84d5e14ef5 100644
---- a/arch/powerpc/lib/checksum_wrappers.c
-+++ b/arch/powerpc/lib/checksum_wrappers.c
-@@ -28,6 +28,7 @@ __wsum csum_and_copy_from_user(const void __user *src, void *dst,
- {
- 	unsigned int csum;
- 
-+	unlock_user_access(NULL, src, len);
- 	might_sleep();
- 
- 	*err_ptr = 0;
-@@ -60,6 +61,7 @@ __wsum csum_and_copy_from_user(const void __user *src, void *dst,
- 	}
- 
- out:
-+	lock_user_access(NULL, src, len);
- 	return (__force __wsum)csum;
- }
- EXPORT_SYMBOL(csum_and_copy_from_user);
-@@ -69,6 +71,7 @@ __wsum csum_and_copy_to_user(const void *src, void __user *dst, int len,
- {
- 	unsigned int csum;
- 
-+	unlock_user_access(dst, NULL, len);
- 	might_sleep();
- 
- 	*err_ptr = 0;
-@@ -97,6 +100,7 @@ __wsum csum_and_copy_to_user(const void *src, void __user *dst, int len,
- 	}
- 
- out:
-+	lock_user_access(dst, NULL, len);
- 	return (__force __wsum)csum;
- }
- EXPORT_SYMBOL(csum_and_copy_to_user);
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index e57bd46cf25b..7cea9d7fc5e8 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -223,9 +223,11 @@ static int mm_fault_error(struct pt_regs *regs, unsigned long addr,
- }
- 
- /* Is this a bad kernel fault ? */
--static bool bad_kernel_fault(bool is_exec, unsigned long error_code,
-+static bool bad_kernel_fault(struct pt_regs *regs, unsigned long error_code,
- 			     unsigned long address)
- {
-+	int is_exec = TRAP(regs) == 0x400;
-+
- 	/* NX faults set DSISR_PROTFAULT on the 8xx, DSISR_NOEXEC_OR_G on others */
- 	if (is_exec && (error_code & (DSISR_NOEXEC_OR_G | DSISR_KEYFAULT |
- 				      DSISR_PROTFAULT))) {
-@@ -236,7 +238,13 @@ static bool bad_kernel_fault(bool is_exec, unsigned long error_code,
- 				   address, from_kuid(&init_user_ns,
- 						      current_uid()));
- 	}
--	return is_exec || (address >= TASK_SIZE);
-+	if (!is_exec && address < TASK_SIZE && (error_code & DSISR_PROTFAULT) &&
-+	    !search_exception_tables(regs->nip))
-+		printk_ratelimited(KERN_CRIT "Kernel attempted to access user"
-+				   " page (%lx) - exploit attempt? (uid: %d)\n",
-+				   address, from_kuid(&init_user_ns,
-+						      current_uid()));
-+	return is_exec || (address >= TASK_SIZE) || !search_exception_tables(regs->nip);
- }
- 
- static bool bad_stack_expansion(struct pt_regs *regs, unsigned long address,
-@@ -442,9 +450,10 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
- 
- 	/*
- 	 * The kernel should never take an execute fault nor should it
--	 * take a page fault to a kernel address.
-+	 * take a page fault to a kernel address or a page fault to a user
-+	 * address outside of dedicated places
- 	 */
--	if (unlikely(!is_user && bad_kernel_fault(is_exec, error_code, address)))
-+	if (unlikely(!is_user && bad_kernel_fault(regs, error_code, address)))
- 		return SIGSEGV;
- 
- 	/*
-diff --git a/arch/powerpc/mm/init-common.c b/arch/powerpc/mm/init-common.c
-index 37f84a43b822..0fe98f62c58a 100644
---- a/arch/powerpc/mm/init-common.c
-+++ b/arch/powerpc/mm/init-common.c
-@@ -27,6 +27,7 @@
- #include <asm/kup.h>
- 
- static bool disable_kuep = !IS_ENABLED(CONFIG_PPC_KUEP);
-+static bool disable_kuap = !IS_ENABLED(CONFIG_PPC_KUAP);
- 
- static int __init parse_nosmep(char *p)
- {
-@@ -36,9 +37,18 @@ static int __init parse_nosmep(char *p)
- }
- early_param("nosmep", parse_nosmep);
- 
-+static int __init parse_nosmap(char *p)
++#ifdef CONFIG_PPC_KUEP
++void __init setup_kuep(bool disabled)
 +{
-+	disable_kuap = true;
-+	pr_warn("Disabling Kernel Userspace Access Protection\n");
-+	return 0;
-+}
-+early_param("nosmap", parse_nosmap);
++	if (disabled)
++		return;
 +
- void __init setup_kup(void)
- {
- 	setup_kuep(disable_kuep);
-+	setup_kuap(disable_kuap);
- }
- 
- static void pgd_ctor(void *addr)
++	pr_info("Activating Kernel Userspace Execution Prevention\n");
++
++	mtspr(SPRN_MI_AP, MI_APG_KUEP);
++}
++#endif
 diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index 70830cb3c18a..68eaafd54aca 100644
+index 68eaafd54aca..d1757cedf60b 100644
 --- a/arch/powerpc/platforms/Kconfig.cputype
 +++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -363,6 +363,18 @@ config PPC_KUEP
+@@ -33,6 +33,7 @@ config PPC_8xx
+ 	bool "Freescale 8xx"
+ 	select FSL_SOC
+ 	select SYS_SUPPORTS_HUGETLBFS
++	select PPC_HAVE_KUEP
  
- 	  If you're unsure, say Y.
- 
-+config PPC_HAVE_KUAP
-+	bool
-+
-+config PPC_KUAP
-+	bool "Kernel Userspace Access Protection"
-+	depends on PPC_HAVE_KUAP
-+	default y
-+	help
-+	  Enable support for Kernel Userspace Access Protection (KUAP)
-+
-+	  If you're unsure, say Y.
-+
- config ARCH_ENABLE_HUGEPAGE_MIGRATION
- 	def_bool y
- 	depends on PPC_BOOK3S_64 && HUGETLB_PAGE && MIGRATION
+ config 40x
+ 	bool "AMCC 40x"
 -- 
 2.13.3
 
