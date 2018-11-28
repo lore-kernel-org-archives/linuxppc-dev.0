@@ -2,79 +2,53 @@ Return-Path: <SRS0=VBhC=OH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.9 required=3.0 tests=FROM_EXCESS_BASE64,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A97A3C43441
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 20:05:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 209ADC43441
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 20:37:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E3E112081C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 20:05:38 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="UaMkYPJC"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E3E112081C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
+	by mail.kernel.org (Postfix) with ESMTPS id 99AF720832
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 20:37:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 99AF720832
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 434s8c5yxDzDr0k
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 07:05:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
+	by lists.ozlabs.org (Postfix) with ESMTP id 434ss943Z6zDr0f
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 07:37:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="UaMkYPJC";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=suse.de
+ (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=msuchanek@suse.de;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (helo) smtp.helo=mo6-p01-ob.smtp.rzone.de
- (client-ip=2a01:238:20a:202:5301::5; helo=mo6-p01-ob.smtp.rzone.de;
- envelope-from=chzigotzky@xenosoft.de; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=xenosoft.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="UaMkYPJC"; 
- dkim-atps=neutral
-Received: from mo6-p01-ob.smtp.rzone.de (mo6-p01-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5301::5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=suse.de
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 434s5g5DykzDr09
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Nov 2018 07:03:00 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1543435374;
- s=strato-dkim-0002; d=xenosoft.de;
- h=To:References:Message-Id:Cc:Date:In-Reply-To:From:Subject:
- X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
- bh=IAnc86Mm74e3jfu9BA5jYDElkumimEEMJY+DeZ1NOtY=;
- b=UaMkYPJCIDIjIU5hTuVu93SxJrfc1/ft9RdS4FXSbRztcrbFkiq7SggoEEnRhzw2L8
- bXrKwgJC197Qswq4OW7Bmw3A1uUwTmGk3h6FqMZFhzKKiAceZY3MM48SAVRc7rmoSjQd
- lRWGnLMthg9KQxp+gl1Woxg1zmrc22LIVCrx9ysfRG8k7qowvgH6u7eWzA7KfM9YZ4pV
- 9W8qDoFDn12TqZOok12yyp+ZwCvAOmImpxXV4fWunbH7BsUWepiKj+otJK9lBqvCkhgJ
- /8opPUfCWmGSlp4Knea9d7wzmr37Nu0ivl8XkxcIvoDJk/aifYSrL3/tJxm0HquB9OEo
- ceUQ==
-X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGN0rBVhd9dFr6Kxrf+5Dj7x4Ql+BpvNtdS8exnpixq1SAU6WYzmze+IMPjvAQ8O/7g=="
-X-RZG-CLASS-ID: mo00
-Received: from [IPv6:2a02:8109:a400:162c:bce9:f264:6445:f38f]
- by smtp.strato.de (RZmta 44.6 AUTH) with ESMTPSA id 404b20uASK2q8Eg
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
- 521 ECDH bits, eq. 15360 bits RSA))
- (Client did not present a certificate);
- Wed, 28 Nov 2018 21:02:52 +0100 (CET)
-Content-Type: text/plain;
-	charset=us-ascii
-Mime-Version: 1.0 (1.0)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 434spq2SGbzDr0L
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Nov 2018 07:35:14 +1100 (AEDT)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay1.suse.de (unknown [195.135.220.254])
+ by mx1.suse.de (Postfix) with ESMTP id 44BE6AC24;
+ Wed, 28 Nov 2018 20:35:11 +0000 (UTC)
+Date: Wed, 28 Nov 2018 21:35:10 +0100
+From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
+To: Christian Zigotzky <chzigotzky@xenosoft.de>
 Subject: Re: use generic DMA mapping code in powerpc V4
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-X-Mailer: iPhone Mail (15G77)
+Message-ID: <20181128213510.543259e3@kitsune.suse.cz>
 In-Reply-To: <535776df-dea3-eb26-6bf3-83f225e977df@xenosoft.de>
-Date: Wed, 28 Nov 2018 21:02:51 +0100
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <7B91760F-AFC3-4C8C-9B9F-FA0E9AD76B0C@xenosoft.de>
 References: <20181114082314.8965-1-hch@lst.de> <20181127074253.GB30186@lst.de>
  <87zhttfonk.fsf@concordia.ellerman.id.au>
  <535776df-dea3-eb26-6bf3-83f225e977df@xenosoft.de>
-To: Michael Ellerman <mpe@ellerman.id.au>, Christoph Hellwig <hch@lst.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
+Organization: SUSE Linux
+X-Mailer: Claws Mail 3.17.1 (GTK+ 2.24.31; x86_64-suse-linux-gnu)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,21 +60,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-mm@kvack.org,
- iommu@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, iommu@lists.linux-foundation.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ Christoph Hellwig <hch@lst.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-I will compile and test the kernel from the following Git on my PowerPC mach=
-ines.
+On Wed, 28 Nov 2018 16:55:30 +0100
+Christian Zigotzky <chzigotzky@xenosoft.de> wrote:
 
-http://git.infradead.org/users/hch/misc.git
+> On 28 November 2018 at 12:05PM, Michael Ellerman wrote:
+> > Nothing specific yet.
+> >
+> > I'm a bit worried it might break one of the many old obscure platforms
+> > we have that aren't well tested.
+> >  
+> Please don't apply the new DMA mapping code if you don't be sure if it 
+> works on all supported PowerPC machines. Is the new DMA mapping code 
+> really necessary? It's not really nice, to rewrote code if the old code 
+> works perfect. We must not forget, that we work for the end users. Does 
+> the end user have advantages with this new code? Is it faster? The old 
+> code works without any problems. 
 
-On 28 November 2018 at 12:05PM, Michael Ellerman wrote:
-Nothing specific yet.
+There is another service provided to the users as well: new code that is
+cleaner and simpler which allows easier bug fixes and new features.
+Without being familiar with the DMA mapping code I cannot really say if
+that's the case here.
 
-I'm a bit worried it might break one of the many old obscure platforms
-we have that aren't well tested.
+> I am also worried about this code. How 
+> can I test this new DMA mapping code?
 
+I suppose if your machine works it works for you.
+
+Thanks
+
+Michal
