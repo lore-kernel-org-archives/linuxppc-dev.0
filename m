@@ -3,22 +3,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A1E5CC43441
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 12:23:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B2B83C43441
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 12:25:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F313320832
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 12:22:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F313320832
+	by mail.kernel.org (Postfix) with ESMTPS id 36E002081B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 12:25:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 36E002081B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 434ftn3RnVzDqSC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 23:22:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 434fxM1NLRzDqdP
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 23:25:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
@@ -29,40 +29,40 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 434f582WqSzDqWc
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2018 22:46:52 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 434f594k2YzDqWR
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2018 22:46:53 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 434f541ndmz9v0B1;
- Wed, 28 Nov 2018 12:46:48 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 434f552bXRz9v0B3;
+ Wed, 28 Nov 2018 12:46:49 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id UnAz2OoLituh; Wed, 28 Nov 2018 12:46:48 +0100 (CET)
+ with ESMTP id 3DaJ1avcoaWO; Wed, 28 Nov 2018 12:46:49 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 434f541DNsz9v09s;
- Wed, 28 Nov 2018 12:46:48 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 434f5523qQz9v09s;
+ Wed, 28 Nov 2018 12:46:49 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 413E48B867;
- Wed, 28 Nov 2018 12:46:44 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 5CFE08B867;
+ Wed, 28 Nov 2018 12:46:50 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id BL-tXsF6WmRL; Wed, 28 Nov 2018 12:46:44 +0100 (CET)
+ with ESMTP id skykv4biskUe; Wed, 28 Nov 2018 12:46:50 +0100 (CET)
 Received: from po14163vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
  [172.25.231.2])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 1F9408B853;
- Wed, 28 Nov 2018 12:46:44 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 3A12D8B853;
+ Wed, 28 Nov 2018 12:46:50 +0100 (CET)
 Received: by po14163vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id EAAC469B1B; Wed, 28 Nov 2018 11:46:43 +0000 (UTC)
-Message-Id: <8aa245cf18b0b4cad771baee737b37f8aafc769c.1543405086.git.christophe.leroy@c-s.fr>
+ id 07FB269B1B; Wed, 28 Nov 2018 11:46:50 +0000 (UTC)
+Message-Id: <b782d3ab02a8c900011548f348cd0b806b02db05.1543405086.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1543405086.git.christophe.leroy@c-s.fr>
 References: <cover.1543405086.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v7 11/16] powerpc/mm: Use hardware assistance in TLB handlers
- on the 8xx
+Subject: [PATCH v7 14/16] powerpc/mm: reintroduce 16K pages with HW assistance
+ on 8xx
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Wed, 28 Nov 2018 11:46:43 +0000 (UTC)
+Date: Wed, 28 Nov 2018 11:46:50 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,15 +79,7 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Today, on the 8xx the TLB handlers do SW tablewalk by doing all
-the calculation in ASM, in order to match with the Linux page
-table structure.
-
-The 8xx offers hardware assistance which allows significant size
-reduction of the TLB handlers, hence also reduces the time spent
-in the handlers.
-
-However, using this HW assistance implies some constraints on the
+Using this HW assistance implies some constraints on the
 page table structure:
 - Regardless of the main page size used (4k or 16k), the
 level 1 table (PGD) contains 1024 entries and each PGD entry covers
@@ -98,193 +90,126 @@ also 1024 entries each describing a 4k page.
 - 8M pages PTE are at the address pointed by the L1 entry and each
 8M page require 2 identical entries in the PGD.
 
-This patch modifies the TLB handlers to use HW assistance for 4K PAGES.
-
-Before that patch, the mean time spent in TLB miss handlers is:
-- ITLB miss: 80 ticks
-- DTLB miss: 62 ticks
-After that patch, the mean time spent in TLB miss handlers is:
-- ITLB miss: 72 ticks
-- DTLB miss: 54 ticks
-So the improvement is 10% for ITLB and 13% for DTLB misses
+In order to use hardware assistance with 16K pages, this patch does
+the following modifications:
+- Make PGD size independent of the main page size
+- In 16k pages mode, redefine pte_t as a struct with 4 elements,
+and populate those 4 elements in __set_pte_at() and pte_update()
+- Adapt the size of the hugepage tables.
+- Define a PTE_FRAGMENT_NB so that a 16k page contains 4 page tables.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/kernel/head_8xx.S | 58 +++++++++++++++++-------------------------
- arch/powerpc/mm/8xx_mmu.c      |  4 +--
- 2 files changed, 26 insertions(+), 36 deletions(-)
+ arch/powerpc/Kconfig                         |  2 +-
+ arch/powerpc/include/asm/nohash/32/mmu-8xx.h |  1 +
+ arch/powerpc/include/asm/nohash/32/pgtable.h | 19 ++++++++++++++++++-
+ arch/powerpc/include/asm/nohash/pgtable.h    |  4 ++++
+ arch/powerpc/include/asm/pgtable-types.h     |  4 ++++
+ 5 files changed, 28 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 01f58b1d9ae7..85fb4b8bf6c7 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -292,7 +292,7 @@ SystemCall:
- 	. = 0x1100
- /*
-  * For the MPC8xx, this is a software tablewalk to load the instruction
-- * TLB.  The task switch loads the M_TW register with the pointer to the first
-+ * TLB.  The task switch loads the M_TWB register with the pointer to the first
-  * level table.
-  * If we discover there is no second level table (value is zero) or if there
-  * is an invalid pte, we load that into the TLB, which causes another fault
-@@ -323,6 +323,7 @@ InstructionTLBMiss:
- 	 */
- 	mfspr	r10, SPRN_SRR0	/* Get effective address of fault */
- 	INVALIDATE_ADJACENT_PAGES_CPU15(r11, r10)
-+	mtspr	SPRN_MD_EPN, r10
- 	/* Only modules will cause ITLB Misses as we always
- 	 * pin the first 8MB of kernel memory */
- #ifdef ITLB_MISS_KERNEL
-@@ -339,7 +340,7 @@ InstructionTLBMiss:
- #endif
- #endif
- #endif
--	mfspr	r11, SPRN_M_TW	/* Get level 1 table */
-+	mfspr	r11, SPRN_M_TWB	/* Get level 1 table */
- #ifdef ITLB_MISS_KERNEL
- #if defined(SIMPLE_KERNEL_ADDRESS) && defined(CONFIG_PIN_TLB_TEXT)
- 	beq+	3f
-@@ -349,16 +350,14 @@ InstructionTLBMiss:
- #ifndef CONFIG_PIN_TLB_TEXT
- 	blt	cr7, ITLBMissLinear
- #endif
--	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
-+	rlwinm	r11, r11, 0, 20, 31
-+	oris	r11, r11, (swapper_pg_dir - PAGE_OFFSET)@ha
- 3:
- #endif
--	/* Insert level 1 index */
--	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
- 	lwz	r11, (swapper_pg_dir-PAGE_OFFSET)@l(r11)	/* Get the level 1 entry */
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index ddfccdf004fe..8be31261aec8 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -689,7 +689,7 @@ config PPC_4K_PAGES
  
--	/* Extract level 2 index */
--	rlwinm	r10, r10, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
--	rlwimi	r10, r11, 0, 0, 32 - PAGE_SHIFT - 1	/* Add level 2 base */
-+	mtspr	SPRN_MD_TWC, r11
-+	mfspr	r10, SPRN_MD_TWC
- 	lwz	r10, 0(r10)	/* Get the pte */
- #ifdef ITLB_MISS_KERNEL
- 	mtcr	r12
-@@ -417,7 +416,7 @@ DataStoreTLBMiss:
- 	mfspr	r10, SPRN_MD_EPN
- 	rlwinm	r11, r10, 16, 0xfff8
- 	cmpli	cr0, r11, PAGE_OFFSET@h
--	mfspr	r11, SPRN_M_TW	/* Get level 1 table */
-+	mfspr	r11, SPRN_M_TWB	/* Get level 1 table */
- 	blt+	3f
- 	rlwinm	r11, r10, 16, 0xfff8
- #ifndef CONFIG_PIN_TLB_IMMR
-@@ -430,20 +429,16 @@ DataStoreTLBMiss:
- 	patch_site	0b, patch__dtlbmiss_immr_jmp
- #endif
- 	blt	cr7, DTLBMissLinear
--	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
-+	mfspr	r11, SPRN_M_TWB	/* Get level 1 table */
-+	rlwinm	r11, r11, 0, 20, 31
-+	oris	r11, r11, (swapper_pg_dir - PAGE_OFFSET)@ha
- 3:
--
--	/* Insert level 1 index */
--	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
- 	lwz	r11, (swapper_pg_dir-PAGE_OFFSET)@l(r11)	/* Get the level 1 entry */
+ config PPC_16K_PAGES
+ 	bool "16k page size"
+-	depends on 44x
++	depends on 44x || PPC_8xx
  
--	/* We have a pte table, so load fetch the pte from the table.
--	 */
--	/* Extract level 2 index */
--	rlwinm	r10, r10, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
--	rlwimi	r10, r11, 0, 0, 32 - PAGE_SHIFT - 1	/* Add level 2 base */
-+	mtspr	SPRN_MD_TWC, r11
-+	mfspr	r10, SPRN_MD_TWC
- 	lwz	r10, 0(r10)	/* Get the pte */
--4:
+ config PPC_64K_PAGES
+ 	bool "64k page size"
+diff --git a/arch/powerpc/include/asm/nohash/32/mmu-8xx.h b/arch/powerpc/include/asm/nohash/32/mmu-8xx.h
+index fa05aa566ece..25f05131afd5 100644
+--- a/arch/powerpc/include/asm/nohash/32/mmu-8xx.h
++++ b/arch/powerpc/include/asm/nohash/32/mmu-8xx.h
+@@ -190,6 +190,7 @@ typedef struct {
+ 	struct slice_mask mask_8m;
+ # endif
+ #endif
++	void *pte_frag;
+ } mm_context_t;
+ 
+ #define PHYS_IMMR_BASE (mfspr(SPRN_IMMR) & 0xfff80000)
+diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
+index 31a03e9a42c4..e3e81b078432 100644
+--- a/arch/powerpc/include/asm/nohash/32/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
+@@ -19,7 +19,14 @@ extern int icache_44x_need_flush;
+ 
+ #endif /* __ASSEMBLY__ */
+ 
++#if defined(CONFIG_PPC_8xx) && defined(CONFIG_PPC_16K_PAGES)
++#define PTE_INDEX_SIZE  (PTE_SHIFT - 2)
++#define PTE_FRAG_NR		4
++#define PTE_FRAG_SIZE_SHIFT	12
++#define PTE_FRAG_SIZE (1UL << PTE_FRAG_SIZE_SHIFT)
++#else
+ #define PTE_INDEX_SIZE	PTE_SHIFT
++#endif
+ 
+ #define PMD_INDEX_SIZE	0
+ #define PUD_INDEX_SIZE	0
+@@ -49,7 +56,11 @@ extern int icache_44x_need_flush;
+  * -Matt
+  */
+ /* PGDIR_SHIFT determines what a top-level page table entry can map */
++#ifdef CONFIG_PPC_8xx
++#define PGDIR_SHIFT	22
++#else
+ #define PGDIR_SHIFT	(PAGE_SHIFT + PTE_INDEX_SIZE)
++#endif
+ #define PGDIR_SIZE	(1UL << PGDIR_SHIFT)
+ #define PGDIR_MASK	(~(PGDIR_SIZE-1))
+ 
+@@ -233,7 +244,13 @@ static inline unsigned long pte_update(pte_t *p,
+ 	: "cc" );
+ #else /* PTE_ATOMIC_UPDATES */
+ 	unsigned long old = pte_val(*p);
+-	*p = __pte((old & ~clr) | set);
++	unsigned long new = (old & ~clr) | set;
 +
- 	mtcr	r12
++#if defined(CONFIG_PPC_8xx) && defined(CONFIG_PPC_16K_PAGES)
++	p->pte = p->pte1 = p->pte2 = p->pte3 = new;
++#else
++	*p = __pte(new);
++#endif
+ #endif /* !PTE_ATOMIC_UPDATES */
  
- 	/* Insert the Guarded flag into the TWC from the Linux PTE.
-@@ -668,9 +663,10 @@ FixupDAR:/* Entry point for dcbx workaround. */
- 	mtspr	SPRN_SPRG_SCRATCH2, r10
- 	/* fetch instruction from memory. */
- 	mfspr	r10, SPRN_SRR0
-+	mtspr	SPRN_MD_EPN, r10
- 	rlwinm	r11, r10, 16, 0xfff8
- 	cmpli	cr0, r11, PAGE_OFFSET@h
--	mfspr	r11, SPRN_M_TW	/* Get level 1 table */
-+	mfspr	r11, SPRN_M_TWB	/* Get level 1 table */
- 	blt+	3f
- 	rlwinm	r11, r10, 16, 0xfff8
- 
-@@ -680,17 +676,17 @@ FixupDAR:/* Entry point for dcbx workaround. */
- 	/* create physical page address from effective address */
- 	tophys(r11, r10)
- 	blt-	cr7, 201f
--	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
--	/* Insert level 1 index */
--3:	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
-+	mfspr	r11, SPRN_M_TWB	/* Get level 1 table */
-+	rlwinm	r11, r11, 0, 20, 31
-+	oris	r11, r11, (swapper_pg_dir - PAGE_OFFSET)@ha
-+3:
- 	lwz	r11, (swapper_pg_dir-PAGE_OFFSET)@l(r11)	/* Get the level 1 entry */
-+	mtspr	SPRN_MD_TWC, r11
- 	mtcr	r11
-+	mfspr	r11, SPRN_MD_TWC
-+	lwz	r11, 0(r11)	/* Get the pte */
- 	bt	28,200f		/* bit 28 = Large page (8M) */
- 	bt	29,202f		/* bit 29 = Large page (8M or 512K) */
--	rlwinm	r11, r11,0,0,19	/* Extract page descriptor page address */
--	/* Insert level 2 index */
--	rlwimi	r11, r10, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
--	lwz	r11, 0(r11)	/* Get the pte */
- 	/* concat physical page address(r11) and page offset(r10) */
- 	rlwimi	r11, r10, 0, 32 - PAGE_SHIFT, 31
- 201:	lwz	r11,0(r11)
-@@ -712,18 +708,12 @@ FixupDAR:/* Entry point for dcbx workaround. */
- 141:	mfspr	r10,SPRN_SPRG_SCRATCH2
- 	b	DARFixed	/* Nope, go back to normal TLB processing */
- 
--	/* concat physical page address(r11) and page offset(r10) */
- 200:
--	rlwinm	r11, r10, 0, ~HUGEPD_SHIFT_MASK
--	lwz	r11, 0(r11)	/* Get the pte */
- 	/* concat physical page address(r11) and page offset(r10) */
- 	rlwimi	r11, r10, 0, 32 - PAGE_SHIFT_8M, 31
- 	b	201b
- 
- 202:
--	rlwinm	r11, r11, 0, 0, 32 + PAGE_SHIFT_512K - (PAGE_SHIFT << 1) - 1
--	rlwimi	r11, r10, 32 - (PAGE_SHIFT_512K - 2), 32 + PAGE_SHIFT_512K - (PAGE_SHIFT << 1), 29
--	lwz	r11, 0(r11)	/* Get the pte */
- 	/* concat physical page address(r11) and page offset(r10) */
- 	rlwimi	r11, r10, 0, 32 - PAGE_SHIFT_512K, 31
- 	b	201b
-@@ -839,7 +829,7 @@ start_here:
- 
- 	lis	r6, swapper_pg_dir@ha
- 	tophys(r6,r6)
--	mtspr	SPRN_M_TW, r6
-+	mtspr	SPRN_M_TWB, r6
- 
- 	bl	early_init	/* We have to do this with MMU on */
- 
-diff --git a/arch/powerpc/mm/8xx_mmu.c b/arch/powerpc/mm/8xx_mmu.c
-index 01b7f5107c3a..e2b6687ebb50 100644
---- a/arch/powerpc/mm/8xx_mmu.c
-+++ b/arch/powerpc/mm/8xx_mmu.c
-@@ -175,12 +175,12 @@ void set_context(unsigned long id, pgd_t *pgd)
- 	*(ptr + 1) = pgd;
- #endif
- 
--	/* Register M_TW will contain base address of level 1 table minus the
-+	/* Register M_TWB will contain base address of level 1 table minus the
- 	 * lower part of the kernel PGDIR base address, so that all accesses to
- 	 * level 1 table are done relative to lower part of kernel PGDIR base
- 	 * address.
+ #ifdef CONFIG_44x
+diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
+index 70ff23974b59..1ca1c1864b32 100644
+--- a/arch/powerpc/include/asm/nohash/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/pgtable.h
+@@ -209,7 +209,11 @@ static inline void __set_pte_at(struct mm_struct *mm, unsigned long addr,
+ 	/* Anything else just stores the PTE normally. That covers all 64-bit
+ 	 * cases, and 32-bit non-hash with 32-bit PTEs.
  	 */
--	mtspr(SPRN_M_TW, __pa(pgd) - offset);
-+	mtspr(SPRN_M_TWB, __pa(pgd) - offset);
++#if defined(CONFIG_PPC_8xx) && defined(CONFIG_PPC_16K_PAGES)
++	ptep->pte = ptep->pte1 = ptep->pte2 = ptep->pte3 = pte_val(pte);
++#else
+ 	*ptep = pte;
++#endif
  
- 	/* Update context */
- 	mtspr(SPRN_M_CASID, id - 1);
+ 	/*
+ 	 * With hardware tablewalk, a sync is needed to ensure that
+diff --git a/arch/powerpc/include/asm/pgtable-types.h b/arch/powerpc/include/asm/pgtable-types.h
+index eccb30b38b47..3b0edf041b2e 100644
+--- a/arch/powerpc/include/asm/pgtable-types.h
++++ b/arch/powerpc/include/asm/pgtable-types.h
+@@ -3,7 +3,11 @@
+ #define _ASM_POWERPC_PGTABLE_TYPES_H
+ 
+ /* PTE level */
++#if defined(CONFIG_PPC_8xx) && defined(CONFIG_PPC_16K_PAGES)
++typedef struct { pte_basic_t pte, pte1, pte2, pte3; } pte_t;
++#else
+ typedef struct { pte_basic_t pte; } pte_t;
++#endif
+ #define __pte(x)	((pte_t) { (x) })
+ static inline pte_basic_t pte_val(pte_t x)
+ {
 -- 
 2.13.3
 
