@@ -2,23 +2,23 @@ Return-Path: <SRS0=BLVf=OI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 23B36C43441
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 14:10:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 73169C43441
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 14:12:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 66925208E7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 14:10:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 66925208E7
+	by mail.kernel.org (Postfix) with ESMTPS id EC4A3208E7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 14:12:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EC4A3208E7
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 435KCs6Q2BzDr32
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Nov 2018 01:10:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 435KGV6GZSzDrFP
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Nov 2018 01:12:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
@@ -29,37 +29,38 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 435K8C6RVJzDrDD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Nov 2018 01:06:50 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 435K8C6VCqzDrDN
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Nov 2018 01:06:51 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 435K850YPPz9vFvc;
- Thu, 29 Nov 2018 15:06:45 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 435K866Ttrz9vFvd;
+ Thu, 29 Nov 2018 15:06:46 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 6AbyetTxvm_V; Thu, 29 Nov 2018 15:06:45 +0100 (CET)
+ with ESMTP id X5fU4fmwXE9T; Thu, 29 Nov 2018 15:06:46 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 435K847312z9vFvb;
- Thu, 29 Nov 2018 15:06:44 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 24CEE8B899;
+ by pegase1.c-s.fr (Postfix) with ESMTP id 435K865qKhz9vFvb;
  Thu, 29 Nov 2018 15:06:46 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 026158B89E;
+ Thu, 29 Nov 2018 15:06:48 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id gc5thUhgu4JD; Thu, 29 Nov 2018 15:06:46 +0100 (CET)
+ with ESMTP id bGzqGbaKTZLt; Thu, 29 Nov 2018 15:06:47 +0100 (CET)
 Received: from po14163vm.idsi0.si.c-s.fr (unknown [192.168.232.3])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id CB2418B89E;
- Thu, 29 Nov 2018 15:06:45 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id A96858B899;
+ Thu, 29 Nov 2018 15:06:47 +0100 (CET)
 Received: by po14163vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 8E1E869AE8; Thu, 29 Nov 2018 14:06:45 +0000 (UTC)
-Message-Id: <cover.1543499860.git.christophe.leroy@c-s.fr>
+ id 8667569AE8; Thu, 29 Nov 2018 14:06:47 +0000 (UTC)
+Message-Id: <92106c1e558d4ecbdea315669cb4a4407f5dce5e.1543499861.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1543499860.git.christophe.leroy@c-s.fr>
+References: <cover.1543499860.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v9 00/20] Implement use of HW assistance on TLB table walk on
- 8xx
+Subject: [PATCH v9 01/20] powerpc/book3s32: Remove CONFIG_BOOKE dependent code
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Thu, 29 Nov 2018 14:06:45 +0000 (UTC)
+Date: Thu, 29 Nov 2018 14:06:47 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,159 +77,79 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The purpose of this serie is to implement hardware assistance for TLB table walk
-on the 8xx.
+BOOK3S/32 cannot be BOOKE, so remove useless code
 
-First part prepares for using HW assistance in TLB routines:
-- Trivial fixes:
-	- Remove CONFIG_BOOKE stuff from book3S headers.
-	- Removal of unneeded atomic PTE update requirement for 8xx.
-- move book3s64 page fragment code in a common part for reusing it by the
-8xx as 16k page size mode still uses 4k page tables.
-- Fixing a bug in memcache handling when standard pages and hugepages share
-caches of the same size (see original discussion in https://patchwork.ozlabs.org/patch/957565/)
-- Optimise access to 8xx perf counters (hence reducing number of registers used)
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/include/asm/book3s/32/pgalloc.h | 18 ------------------
+ arch/powerpc/include/asm/book3s/32/pgtable.h | 14 --------------
+ 2 files changed, 32 deletions(-)
 
-Second part implements HW assistance in TLB routines in the following steps:
-- Disable 16k page size mode and 512k hugepages
-- Switch 4k to HW assistance
-- Bring back 512k hugepages
-- Bring back 16k page size mode.
-
-Last part cleans up:
-- Take benefit of Miss handler size reduction to regroup related parts
-- Reduce number of registers used in miss handlers, freeing them for future use.
-
-Tested successfully on 8xx and 83xx (book3s/32)
-
-Changes in v9:
- - Fixed PTE_INDEX_SIZE and PTE_SHIFT so that we always have PTE_SHIFT == PTE_INDEX_SIZE
- - Using PTE_INDEX_SIZE instead of PTE_SHIFT to avoid build failure on PPC64
- - Moved PTE_FRAG_NR from pgtable.h to mmu-8xx.h to reduce ifdefs
-
-Changes in v8:
- - Moved definitions in pgalloc.h to avoid conflicting with memcache patches.
- - Included the memcache bugfix serie in this serie to avoid conflicts between the two series when coming to the 512k pages patch.
- - In the 512k HW assistance patch, reduced the #ifdef mess by using IS_ENABLED(CONFIG_PPC_8xx) instead.
-
-Changes in v7:
- - Reordered to get trivial and already reviewed patches in front.
- - Reordered to regroup all HW assistance related patches together.
- - Rebased on today merge branch (28 Nov)
- - Added a helper for access to mm_context_t.frag
- - Reduced the amount of changes in PPC32 to support pte_fragment
- - Applied pte_fragment to both nohash/32 and book3s/32
-
-Changes in v6:
- - Droped the part related to handling GUARD attribute at PGD/PMD level.
- - Moved the commonalisation of page_fragment in the begining (this part has been reviewed by Aneesh)
- - Rebased on today merge branch (19 Oct)
-
-Changes in v5:
- - Also avoid useless lock in get_pmd_from_cache()
- - A new patch to relocate mmu headers in platform specific directories
- - A new patch to distribute pgtable_t typedefs in platform specific
-   mmu headers instead of the uggly #ifdef
- - Moved early_pte_alloc_kernel() in platform specific pgalloc
- - Restricted definition of PTE_FRAG_SIZE and PTE_FRAG_NR to platforms
-   using the pte fragmentation.
- - arch_exit_mmap() and destroy_pagetable_cache() are now platform specific.
-
-Changes in v4:
- - Reordered the serie to put at the end the modifications which makes
-   L1 and L2 entries independant.
- - No modifications to ppc64 ioremap (we still have an opportunity to
-   merge them, for a future patch serie)
- - 8xx code modified to use patch_site instead of patch_instruction
-   to get a clearer code and avoid object pollution with global symbols
- - Moved perf counters in first 32kb of memory to optimise access
- - Split the big bang to HW assistance in several steps:
-   1. Temporarily removes support of 16k pages and 512k hugepages
-   2. Change TLB routines to use HW assistance for 4k pages and 8M hugepages
-   3. Add back support for 512k hugepages
-   4. Add back support for 16k pages (using pte_fragment as page tables are still 4k)
-
-Changes in v3:
- - Fixed an issue in the 09/14 when CONFIG_PIN_TLB_TEXT was not enabled
- - Added performance measurement in the 09/14 commit log
- - Rebased on latest 'powerpc/merge' tree, which conflicted with 13/14
-
-Changes in v2:
- - Removed the 3 first patchs which have been applied already
- - Fixed compilation errors reported by Michael
- - Squashed the commonalisation of ioremap functions into a single patch
- - Fixed the use of pte_fragment
- - Added a patch optimising perf counting of TLB misses and instructions
-
-Christophe Leroy (20):
-  powerpc/book3s32: Remove CONFIG_BOOKE dependent code
-  powerpc/8xx: Remove PTE_ATOMIC_UPDATES
-  powerpc/mm: Move pte_fragment_alloc() to a common location
-  powerpc/mm: Avoid useless lock with single page fragments
-  powerpc/mm: move platform specific mmu-xxx.h in platform directories
-  powerpc/mm: Move pgtable_t into platform headers
-  powerpc/mm: add helpers to get/set mm.context->pte_frag
-  powerpc/mm: Extend pte_fragment functionality to PPC32
-  powerpc/mm: enable the use of page table cache of order 0
-  powerpc/mm: replace hugetlb_cache by PGT_CACHE(PTE_T_ORDER)
-  powerpc/mm: fix a warning when a cache is common to PGD and hugepages
-  powerpc/mm: remove unnecessary test in pgtable_cache_init()
-  powerpc/8xx: Move SW perf counters in first 32kb of memory
-  powerpc/8xx: Temporarily disable 16k pages and hugepages
-  powerpc/8xx: Use hardware assistance in TLB handlers
-  powerpc/8xx: Enable 8M hugepage support with HW assistance
-  powerpc/8xx: Enable 512k hugepage support with HW assistance
-  powerpc/8xx: reintroduce 16K pages with HW assistance
-  powerpc/8xx: don't use r12/SPRN_SPRG_SCRATCH2 in TLB Miss handlers
-  powerpc/8xx: regroup TLB handler routines
-
- arch/powerpc/include/asm/book3s/32/mmu-hash.h      |   5 +
- arch/powerpc/include/asm/book3s/32/pgalloc.h       |  40 +--
- arch/powerpc/include/asm/book3s/32/pgtable.h       |  19 +-
- arch/powerpc/include/asm/book3s/64/mmu.h           |   9 +
- arch/powerpc/include/asm/book3s/64/pgalloc.h       |   6 +-
- arch/powerpc/include/asm/hugetlb.h                 |   6 +-
- arch/powerpc/include/asm/mmu.h                     |  14 +-
- arch/powerpc/include/asm/mmu_context.h             |   2 +-
- arch/powerpc/include/asm/{ => nohash/32}/mmu-40x.h |   0
- arch/powerpc/include/asm/{ => nohash/32}/mmu-44x.h |   0
- arch/powerpc/include/asm/{ => nohash/32}/mmu-8xx.h |   4 +
- arch/powerpc/include/asm/nohash/32/mmu.h           |  25 ++
- arch/powerpc/include/asm/nohash/32/pgalloc.h       |  27 +-
- arch/powerpc/include/asm/nohash/32/pgtable.h       |  15 +-
- arch/powerpc/include/asm/nohash/32/pte-8xx.h       |   3 -
- arch/powerpc/include/asm/nohash/64/mmu.h           |  12 +
- arch/powerpc/include/asm/nohash/64/pgalloc.h       |   5 +-
- arch/powerpc/include/asm/{ => nohash}/mmu-book3e.h |   0
- arch/powerpc/include/asm/nohash/mmu.h              |  11 +
- arch/powerpc/include/asm/nohash/pgtable.h          |   4 +
- arch/powerpc/include/asm/page.h                    |  14 -
- arch/powerpc/include/asm/page_32.h                 |   3 +-
- arch/powerpc/include/asm/pgtable-types.h           |   4 +
- arch/powerpc/include/asm/pgtable.h                 |  31 +-
- arch/powerpc/kernel/cpu_setup_fsl_booke.S          |   2 +-
- arch/powerpc/kernel/head_8xx.S                     | 366 ++++++++-------------
- arch/powerpc/kvm/e500.h                            |   2 +-
- arch/powerpc/mm/8xx_mmu.c                          |   4 +-
- arch/powerpc/mm/Makefile                           |   5 +-
- arch/powerpc/mm/hugetlbpage.c                      |  40 +--
- arch/powerpc/mm/init-common.c                      |  56 ++--
- arch/powerpc/mm/mmu_context.c                      |  10 +
- arch/powerpc/mm/mmu_context_book3s64.c             |  15 -
- arch/powerpc/mm/mmu_context_nohash.c               |   2 +-
- arch/powerpc/mm/pgtable-book3s64.c                 |  88 +----
- arch/powerpc/mm/pgtable-frag.c                     | 119 +++++++
- arch/powerpc/mm/pgtable_32.c                       |  25 +-
- 37 files changed, 488 insertions(+), 505 deletions(-)
- rename arch/powerpc/include/asm/{ => nohash/32}/mmu-40x.h (100%)
- rename arch/powerpc/include/asm/{ => nohash/32}/mmu-44x.h (100%)
- rename arch/powerpc/include/asm/{ => nohash/32}/mmu-8xx.h (98%)
- create mode 100644 arch/powerpc/include/asm/nohash/32/mmu.h
- create mode 100644 arch/powerpc/include/asm/nohash/64/mmu.h
- rename arch/powerpc/include/asm/{ => nohash}/mmu-book3e.h (100%)
- create mode 100644 arch/powerpc/include/asm/nohash/mmu.h
- create mode 100644 arch/powerpc/mm/pgtable-frag.c
-
+diff --git a/arch/powerpc/include/asm/book3s/32/pgalloc.h b/arch/powerpc/include/asm/book3s/32/pgalloc.h
+index 82e44b1a00ae..eb8882c6dbb0 100644
+--- a/arch/powerpc/include/asm/book3s/32/pgalloc.h
++++ b/arch/powerpc/include/asm/book3s/32/pgalloc.h
+@@ -50,8 +50,6 @@ static inline void pgd_free(struct mm_struct *mm, pgd_t *pgd)
+ #define __pmd_free_tlb(tlb,x,a)		do { } while (0)
+ /* #define pgd_populate(mm, pmd, pte)      BUG() */
+ 
+-#ifndef CONFIG_BOOKE
+-
+ static inline void pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmdp,
+ 				       pte_t *pte)
+ {
+@@ -65,22 +63,6 @@ static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmdp,
+ }
+ 
+ #define pmd_pgtable(pmd) pmd_page(pmd)
+-#else
+-
+-static inline void pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmdp,
+-				       pte_t *pte)
+-{
+-	*pmdp = __pmd((unsigned long)pte | _PMD_PRESENT);
+-}
+-
+-static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmdp,
+-				pgtable_t pte_page)
+-{
+-	*pmdp = __pmd((unsigned long)lowmem_page_address(pte_page) | _PMD_PRESENT);
+-}
+-
+-#define pmd_pgtable(pmd) pmd_page(pmd)
+-#endif
+ 
+ extern pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long addr);
+ extern pgtable_t pte_alloc_one(struct mm_struct *mm, unsigned long addr);
+diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
+index c21d33704633..32c33eccc0e2 100644
+--- a/arch/powerpc/include/asm/book3s/32/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
+@@ -328,24 +328,10 @@ static inline void __ptep_set_access_flags(struct vm_area_struct *vma,
+ #define __HAVE_ARCH_PTE_SAME
+ #define pte_same(A,B)	(((pte_val(A) ^ pte_val(B)) & ~_PAGE_HASHPTE) == 0)
+ 
+-/*
+- * Note that on Book E processors, the pmd contains the kernel virtual
+- * (lowmem) address of the pte page.  The physical address is less useful
+- * because everything runs with translation enabled (even the TLB miss
+- * handler).  On everything else the pmd contains the physical address
+- * of the pte page.  -- paulus
+- */
+-#ifndef CONFIG_BOOKE
+ #define pmd_page_vaddr(pmd)	\
+ 	((unsigned long) __va(pmd_val(pmd) & PAGE_MASK))
+ #define pmd_page(pmd)		\
+ 	pfn_to_page(pmd_val(pmd) >> PAGE_SHIFT)
+-#else
+-#define pmd_page_vaddr(pmd)	\
+-	((unsigned long) (pmd_val(pmd) & PAGE_MASK))
+-#define pmd_page(pmd)		\
+-	pfn_to_page((__pa(pmd_val(pmd)) >> PAGE_SHIFT))
+-#endif
+ 
+ /* to find an entry in a kernel page-table-directory */
+ #define pgd_offset_k(address) pgd_offset(&init_mm, address)
 -- 
 2.13.3
 
