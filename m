@@ -2,83 +2,79 @@ Return-Path: <SRS0=BLVf=OI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 81903C43441
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 11:44:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D7A2C43441
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 12:08:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BD0F5205C9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 11:44:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 09BE6206B6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 12:08:54 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=axtens.net header.i=@axtens.net header.b="h0qggWdR"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BD0F5205C9
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="R9Sh6aiQ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 09BE6206B6
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 435G0B3r8wzDqTX
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 22:44:42 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=axtens.net
+	by lists.ozlabs.org (Postfix) with ESMTP id 435GX45LZYzDr45
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 23:08:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=axtens.net header.i=@axtens.net header.b="h0qggWdR";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="R9Sh6aiQ";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=axtens.net
- (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
- envelope-from=dja@axtens.net; receiver=<UNKNOWN>)
+ spf=pass (helo) smtp.helo=mo6-p02-ob.smtp.rzone.de
+ (client-ip=2a01:238:20a:202:5302::11; helo=mo6-p02-ob.smtp.rzone.de;
+ envelope-from=chzigotzky@xenosoft.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=axtens.net
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=axtens.net header.i=@axtens.net header.b="h0qggWdR"; 
+ dmarc=none (p=none dis=none) header.from=xenosoft.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="R9Sh6aiQ"; 
  dkim-atps=neutral
-Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
- [IPv6:2607:f8b0:4864:20::442])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mo6-p02-ob.smtp.rzone.de (mo6-p02-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5302::11])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 435FxD1kX7zDqfM
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Nov 2018 22:42:07 +1100 (AEDT)
-Received: by mail-pf1-x442.google.com with SMTP id b85so894019pfc.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Nov 2018 03:42:07 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
- h=from:to:cc:subject:in-reply-to:references:date:message-id
- :mime-version; bh=QYGC0gxURL36EZCtHXEr09RP/iRqbuit9claNuHz69g=;
- b=h0qggWdRnRl0CHUq2HMuRGfRT2csXCQFrw1/BzKORvPLGAGkw24CLE9BeXZBIM3zZx
- cQ4ak/s8+WI0rYJ4y62MgtEwFgeHmNd/ae3FKnH9aZhFxn7JhJFFE5glIU2WrmOnUOCH
- Jjy6XPMwqRilSykdJmnrZS+unvsAO3envgqaY=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
- :message-id:mime-version;
- bh=QYGC0gxURL36EZCtHXEr09RP/iRqbuit9claNuHz69g=;
- b=sE49uxot9lEOVL0UAfcSTGzBVJLX56ekaM1lMFAqvnv+GhYtDW8pCcsmg+lrw5wEOz
- Nflz4KttW7dY/Y6pglMjy6OghCXxqnx/ui2vMNMyDhxicxic3FCYs7aihjIrV+aMZaLb
- M1/wMZOYnoq/Jr6jKQAViucTu95Ri5hLAzLOWarP/J1tJx14/y6sVwVsoWyExUn74xEj
- QA+H/xKX1YawPID8FvdpB3JSPOStzkFazGYzXZSwU2i+0xmYk+JKT5tCqA7aTWgPuMuZ
- Z30y3xIl6UzAfmn83AhPZcpAcmmC/u/e5mDANUDSwI0KN7Bh9Ns0HCiUvSzBZwHhos5x
- JNYA==
-X-Gm-Message-State: AA+aEWZcoO3scIn5nlUqmWBSiBi3N8Onmb570otyNPmmPDmA/JNBMykg
- SvSDx2+T3S5l63Aru32sCAaHetfIWMg=
-X-Google-Smtp-Source: AFSGD/V/JW1ue2LtX3J3tEgchMjvAEOyffX2JmPBe2ldad8sgG+FDWtg7cI9p81dPMOqG27ckhJN9Q==
-X-Received: by 2002:a63:2b01:: with SMTP id r1mr935694pgr.432.1543491725802;
- Thu, 29 Nov 2018 03:42:05 -0800 (PST)
-Received: from localhost (114-198-118-47.dyn.iinet.net.au. [114.198.118.47])
- by smtp.gmail.com with ESMTPSA id o1sm3936760pgn.63.2018.11.29.03.42.04
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Thu, 29 Nov 2018 03:42:04 -0800 (PST)
-From: Daniel Axtens <dja@axtens.net>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/boot: Copy serial.c in Makefile
-In-Reply-To: <87zhts2lgy.fsf@concordia.ellerman.id.au>
-References: <20181128043417.24784-1-dja@axtens.net>
- <87woow7apx.fsf@linkitivity.dja.id.au>
- <87zhts2lgy.fsf@concordia.ellerman.id.au>
-Date: Thu, 29 Nov 2018 22:42:01 +1100
-Message-ID: <87tvk06rg6.fsf@linkitivity.dja.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 435GSf05r9zDr7k
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Nov 2018 23:05:53 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1543493150;
+ s=strato-dkim-0002; d=xenosoft.de;
+ h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:
+ X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
+ bh=1d8dDcOXQakLxZx9h0WPUGsP4J980v3eg/KbaQPeYXs=;
+ b=R9Sh6aiQUqwQfSQApWJoPqLjqIKX+bKt/tFJZCIJaZannHY8TVIb941LgI4M9JuQSO
+ JW4Gzh1beBx16NP9QM1KRHkQdr7fwi8BUPGKE4yDenb6Bw2b9R3Pdf0rIodin3Say6UN
+ XGSE64vrG1YzP3eGGznHWcxbyYvyJ69yPzsR0ITiQseaq8zxjGAiMC45LnXwdXvP48rO
+ QpHfu9aY5zGCSrepDZNw4UtD4B6NS/BHjiwiFLNr1zgEpC0dfCi0qF2SfwLx2LQPx0Tq
+ Pabkh43iq/YI5S+WDR+G7yo/6h+QyyXj2afVm/iX+EOXVpmOGouLsN+NP7Z/EayNCfZX
+ 0aYw==
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5G5MdirQj0WG7CkIi451DZe29TrPMHVmP0k4v8Fd"
+X-RZG-CLASS-ID: mo00
+Received: from [IPv6:2a02:8109:a400:162c:750c:580c:e34a:e81]
+ by smtp.strato.de (RZmta 44.6 AUTH) with ESMTPSA id 404b20uATC5NBiB
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
+ 521 ECDH bits, eq. 15360 bits RSA))
+ (Client did not present a certificate);
+ Thu, 29 Nov 2018 13:05:23 +0100 (CET)
+Subject: Re: use generic DMA mapping code in powerpc V4
+To: Michael Ellerman <mpe@ellerman.id.au>, Christoph Hellwig <hch@lst.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+References: <20181114082314.8965-1-hch@lst.de> <20181127074253.GB30186@lst.de>
+ <87zhttfonk.fsf@concordia.ellerman.id.au>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Message-ID: <4d4e3cdd-d1a9-affe-0f63-45b8c342bbd6@xenosoft.de>
+Date: Thu, 29 Nov 2018 13:05:23 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.3.1
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <87zhttfonk.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
+Content-Language: de-DE
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,56 +86,74 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Joel Stanley <joel@jms.id.au>
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, iommu@lists.linux-foundation.org,
+ Olof Johansson <olof@lixom.net>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi mpe,
-
->> Further analysis suggests that making with -j1 triggers the issue, but
->> everything works with -j2 and above. That would make sense with the
->> timeline of when I discovered the issue because I changed my build
->> script to not build in parallel.
+On 28 November 2018 at 12:05PM, Michael Ellerman wrote:
+> Christoph Hellwig <hch@lst.de> writes:
 >
-> I don't get why -j makes a difference, but that does explain why we
-> haven't seen it, none of my tests use -j 1 :)
-
-I don't understand either - only that with -j1 V=1 I get
-
-  powerpc64le-linux-gnu-gcc ... -c -o arch/powerpc/boot/serial.o arch/powerpc/boot/serial.c
-
-and with -j2 I get:
-
-  powerpc64le-linux-gnu-gcc ... -c -o arch/powerpc/boot/serial.o /home/dja/dev/linux/linux/arch/powerpc/boot/serial.c
-
-So for some reason j2 is getting the absolute path and j1 is getting a
-relative path. I have absolutely no idea why this would be.
-
-> I don't think we actually want to copy serial.c, we just want to specify
-> a dependency, does this work for you?
-
-Yeah I think you're right, I misunderstood the boot wrapper.
-
-That patch works for me - it causes the full path to be used.
-
-Thanks heaps!
-
-Regards,
-Daniel
-
+>> Any comments?  I'd like to at least get the ball moving on the easy
+>> bits.
+> Nothing specific yet.
+>
+> I'm a bit worried it might break one of the many old obscure platforms
+> we have that aren't well tested.
+>
+> There's not much we can do about that, but I'll just try and test it on
+> everything I can find.
+>
+> Is the plan that you take these via the dma-mapping tree or that they go
+> via powerpc?
+>
 > cheers
 >
-> diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-> index 39354365f54a..ed9883169190 100644
-> --- a/arch/powerpc/boot/Makefile
-> +++ b/arch/powerpc/boot/Makefile
-> @@ -197,7 +197,7 @@ $(addprefix $(obj)/,$(libfdt) $(libfdtheader)): $(obj)/%: $(srctree)/scripts/dtc
->  $(obj)/zImage.coff.lds $(obj)/zImage.ps3.lds : $(obj)/%: $(srctree)/$(src)/%.S
->  	$(Q)cp $< $@
->  
-> -$(obj)/serial.c: $(obj)/autoconf.h
-> +$(srctree)/$(src)/serial.c: $(obj)/autoconf.h
->  
->  $(obj)/autoconf.h: $(obj)/%: $(objtree)/include/generated/%
->  	$(Q)cp $< $@
+Hi All,
+
+I compiled a test kernel from the following Git today.
+
+http://git.infradead.org/users/hch/misc.git/shortlog/refs/heads/powerpc-dma.4
+
+Command: git clone git://git.infradead.org/users/hch/misc.git -b 
+powerpc-dma.4 a
+
+Unfortunately I get some DMA error messages and the PASEMI ethernet 
+doesn't work anymore.
+
+[  367.627623] pci 0000:00:1a.0: dma_direct_map_page: overflow 
+0x000000026bcb5002+110 of device mask ffffffff bus mask 0
+[  367.627631] pci 0000:00:1a.0: dma_direct_map_page: overflow 
+0x000000026bcb5002+110 of device mask ffffffff bus mask 0
+[  367.627639] pci 0000:00:1a.0: dma_direct_map_page: overflow 
+0x000000026bcb5002+110 of device mask ffffffff bus mask 0
+[  367.627647] pci 0000:00:1a.0: dma_direct_map_page: overflow 
+0x000000026bcb5002+110 of device mask ffffffff bus mask 0
+[  367.627655] pci 0000:00:1a.0: dma_direct_map_page: overflow 
+0x000000026bcb5002+110 of device mask ffffffff bus mask 0
+[  367.627686] pci 0000:00:1a.0: dma_direct_map_page: overflow 
+0x000000026bcb5002+110 of device mask ffffffff bus mask 0
+[  367.628418] pci 0000:00:1a.0: dma_direct_map_page: overflow 
+0x000000026bcb5002+110 of device mask ffffffff bus mask 0
+[  367.628505] pci 0000:00:1a.0: dma_direct_map_page: overflow 
+0x000000026bcb5002+110 of device mask ffffffff bus mask 0
+[  367.628592] pci 0000:00:1a.0: dma_direct_map_page: overflow 
+0x000000026bcb5002+110 of device mask ffffffff bus mask 0
+[  367.629324] pci 0000:00:1a.0: dma_direct_map_page: overflow 
+0x000000026bcb5002+110 of device mask ffffffff bus mask 0
+[  367.629417] pci 0000:00:1a.0: dma_direct_map_page: overflow 
+0x000000026bcb5002+110 of device mask ffffffff bus mask 0
+[  367.629495] pci 0000:00:1a.0: dma_direct_map_page: overflow 
+0x000000026bcb5002+110 of device mask ffffffff bus mask 0
+[  367.629589] pci 0000:00:1a.0: dma_direct_map_page: overflow 
+0x000000026bcb5002+110 of device mask ffffffff bus mask 0
+
+[  430.424732]pasemi_mac: rcmdsta error: 0x04ef3001
+
+I tested this kernel with the Nemo board (CPU: PWRficient PA6T-1682M). 
+The PASEMI ethernet works with the RC4 of kernel 4.20.
+
+Cheers,
+Christian
