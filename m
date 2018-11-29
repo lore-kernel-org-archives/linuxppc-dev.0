@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 03EEAC43441
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 19:14:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B404AC43441
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 19:17:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4FC6721104
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 19:14:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4FC6721104
+	by mail.kernel.org (Postfix) with ESMTPS id 44D9B213A2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 19:17:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 44D9B213A2
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 435Rzf2h93zDqfB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Nov 2018 06:14:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 435S2J1GfszDqvV
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Nov 2018 06:17:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
@@ -29,39 +29,40 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 435Rg72Jg0zDrFJ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Nov 2018 06:00:35 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 435RgG1LTpzDrHs
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Nov 2018 06:00:42 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 435Rg42Rhqz9v0PJ;
- Thu, 29 Nov 2018 20:00:32 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 435RgC1rF7z9v11m;
+ Thu, 29 Nov 2018 20:00:39 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id ltWX6nawdJ_q; Thu, 29 Nov 2018 20:00:32 +0100 (CET)
+ with ESMTP id IxNMLLZsAfh0; Thu, 29 Nov 2018 20:00:39 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 435Rg41whsz9v0P2;
- Thu, 29 Nov 2018 20:00:32 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 435RgC1LmDz9v11Q;
+ Thu, 29 Nov 2018 20:00:39 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 9AA748B904;
- Thu, 29 Nov 2018 20:00:30 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 010168B923;
+ Thu, 29 Nov 2018 20:00:37 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id DBej8uk7M8BC; Thu, 29 Nov 2018 20:00:30 +0100 (CET)
+ with ESMTP id 4GMgb7B1flwE; Thu, 29 Nov 2018 20:00:36 +0100 (CET)
 Received: from po14163vm.idsi0.si.c-s.fr (unknown [192.168.232.3])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D37518B8C9;
- Thu, 29 Nov 2018 20:00:22 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id C32D48B8F6;
+ Thu, 29 Nov 2018 20:00:26 +0100 (CET)
 Received: by po14163vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 701E369B59; Thu, 29 Nov 2018 19:00:22 +0000 (UTC)
-Message-Id: <4f49328bc6c1dd35b1af638aa8ffb17c668d026e.1543517818.git.christophe.leroy@c-s.fr>
+ id 79C2269B5F; Thu, 29 Nov 2018 19:00:26 +0000 (UTC)
+Message-Id: <df66f6ea0919350a5d1b583717b877ffe62fde5c.1543517818.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1543517818.git.christophe.leroy@c-s.fr>
 References: <cover.1543517818.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v1 06/13] powerpc/mm/32s: use _PAGE_EXEC in setbat()
+Subject: [PATCH v1 08/13] powerpc/32: add helper to write into segment
+ registers
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  j.neuschaefer@gmx.net
-Date: Thu, 29 Nov 2018 19:00:22 +0000 (UTC)
+Date: Thu, 29 Nov 2018 19:00:26 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,42 +79,30 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Do not set IBAT when setbat() is called without _PAGE_EXEC
+This patch add an helper which wraps 'mtsrin' instruction
+to write into segment registers.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/mm/ppc_mmu_32.c | 10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+ arch/powerpc/include/asm/reg.h | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/arch/powerpc/mm/ppc_mmu_32.c b/arch/powerpc/mm/ppc_mmu_32.c
-index 61c10ee00ba2..1078095d9407 100644
---- a/arch/powerpc/mm/ppc_mmu_32.c
-+++ b/arch/powerpc/mm/ppc_mmu_32.c
-@@ -130,6 +130,7 @@ unsigned long __init mmu_mapin_ram(unsigned long base, unsigned long top)
-  * Set up one of the I/D BAT (block address translation) register pairs.
-  * The parameters are not checked; in particular size must be a power
-  * of 2 between 128k and 256M.
-+ * On 603+, only set IBAT when _PAGE_EXEC is set
-  */
- void __init setbat(int index, unsigned long virt, phys_addr_t phys,
- 		   unsigned int size, pgprot_t prot)
-@@ -156,11 +157,12 @@ void __init setbat(int index, unsigned long virt, phys_addr_t phys,
- 			bat[1].batu |= 1; 	/* Vp = 1 */
- 		if (flags & _PAGE_GUARDED) {
- 			/* G bit must be zero in IBATs */
--			bat[0].batu = bat[0].batl = 0;
--		} else {
--			/* make IBAT same as DBAT */
--			bat[0] = bat[1];
-+			flags &= ~_PAGE_EXEC;
- 		}
-+		if (flags & _PAGE_EXEC)
-+			bat[0] = bat[1];
-+		else
-+			bat[0].batu = bat[0].batl = 0;
- 	} else {
- 		/* 601 cpu */
- 		if (bl > BL_8M)
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index de52c3166ba4..c9c382e57017 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -1423,6 +1423,11 @@ static inline void msr_check_and_clear(unsigned long bits)
+ #define mfsrin(v)	({unsigned int rval; \
+ 			asm volatile("mfsrin %0,%1" : "=r" (rval) : "r" (v)); \
+ 					rval;})
++
++static inline void mtsrin(u32 val, u32 idx)
++{
++	asm volatile("mtsrin %0, %1" : : "r" (val), "r" (idx));
++}
+ #endif
+ 
+ #define proc_trap()	asm volatile("trap")
 -- 
 2.13.3
 
