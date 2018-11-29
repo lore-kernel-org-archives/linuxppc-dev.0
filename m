@@ -6,73 +6,82 @@ X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DA39C04EBA
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 08:57:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D574C43441
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 09:01:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F28BB2082F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 08:57:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id CE2C0205C9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 09:01:16 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linaro.org header.i=@linaro.org header.b="LROs5gtC"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F28BB2082F
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linaro.org header.i=@linaro.org header.b="PsEkL5eM"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CE2C0205C9
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 435BGq2h1FzDqSC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 19:57:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 435BMZ0jfVzDqfP
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 20:01:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.b="LROs5gtC";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.b="PsEkL5eM";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linaro.org
- (client-ip=2607:f8b0:4864:20::143; helo=mail-it1-x143.google.com;
+ (client-ip=2607:f8b0:4864:20::d42; helo=mail-io1-xd42.google.com;
  envelope-from=firoz.khan@linaro.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linaro.org header.i=@linaro.org header.b="LROs5gtC"; 
+ unprotected) header.d=linaro.org header.i=@linaro.org header.b="PsEkL5eM"; 
  dkim-atps=neutral
-Received: from mail-it1-x143.google.com (mail-it1-x143.google.com
- [IPv6:2607:f8b0:4864:20::143])
+Received: from mail-io1-xd42.google.com (mail-io1-xd42.google.com
+ [IPv6:2607:f8b0:4864:20::d42])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4359QG34w6zDr13
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Nov 2018 19:18:30 +1100 (AEDT)
-Received: by mail-it1-x143.google.com with SMTP id h65so2314356ith.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Nov 2018 00:18:29 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 435BHt1grrzDqhT
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Nov 2018 19:58:02 +1100 (AEDT)
+Received: by mail-io1-xd42.google.com with SMTP id x6so940210ioa.9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Nov 2018 00:58:01 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
  h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=WAaRKx2MMXHiolcj55tgoVMw2u3zinrHXYHKJEL2TMw=;
- b=LROs5gtC4wPGc8vGXCkevxM66FsNIgQw5NecSPzcPvtrvnaJriOtopM4hOB8VsSvbr
- QFys84+WE+j3MmtNCfORlsHVkG4klUeoVV+rsTccyYkRBcW53F1ksVTtPWPcLeUUAgu4
- je3ejVCFtP+V2HgUGLYCEt7EgOCili5oXojpQ=
+ :cc; bh=oAy6oYWLLsvR/uh2rWMxT22Wr2gvtTAfEiRU4+Hmd9M=;
+ b=PsEkL5eM+KaTcysGFBKsjShY4Uy4IyqJaJfJqJ2IRDQZ6UqnGDGQ/zk4G6Q+gvWukb
+ //bGxuK02ZRQDsYRhLcFT3v3XN6YNIa4sIUGh9aRt8tfiiF/j6XTF8p9129kCG4G7cvv
+ KZuddgloQTFXErxieOtTNTNVKA9g5Mfz+ywPQ=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
  :message-id:subject:to:cc;
- bh=WAaRKx2MMXHiolcj55tgoVMw2u3zinrHXYHKJEL2TMw=;
- b=dLdcxgMt5HEVobhwQK0FvSxMYEhtlbOQDIzXistSp/NLbtt1P25HC4v70iugLVHi+x
- 4nPy2MXCH4fw0WY4iy+TuSgh5aorBmzSi8sWMBDgA6E5/3CruMytypwKL3jlYqCH/ZoF
- aFrOjSW/PzviqPrgbEB9T+8tT1n9FbzKaXK9nPTx9zwDRIyWIUnV8JypuInFk+FyWyIR
- 27i8einnxSK8hdC34t+cFBGkgeKLu9U2JtzSsTmAx2GD/d/9OTFdg0GmHcQ0u03lWjD0
- 9JTGZqkjNrYexcTMiI/UPw2lWKDMibNJ7Z7MHfzKuzSoFHm5Lq5L4SvtPh2fY9yOwFwT
- Jdyw==
-X-Gm-Message-State: AA+aEWYOdqp4cgZMDgQLurJuff95EX6LVtnyZzF0HwEIrGSDXWGjgW5T
- igaTwCCBnILz0qtpM289FMvPbhM0tzr3PbtkZ2UodQ==
-X-Google-Smtp-Source: AFSGD/UZOTc9isZ6fURnIkaI9bA/w1wiD2pXD5uogYoH8g2z51LpV4V7l1iOneS72+WU4SUBN422l/HxSm+JvkV6nJs=
-X-Received: by 2002:a02:4d99:: with SMTP id t25mr423365jad.58.1543479507962;
- Thu, 29 Nov 2018 00:18:27 -0800 (PST)
+ bh=oAy6oYWLLsvR/uh2rWMxT22Wr2gvtTAfEiRU4+Hmd9M=;
+ b=ixwBvhvDD1fsJkbg3LkPOb9MISP7qMyX+caEPl7X4hLbUFDfZ58fBs9LowbJQHv0zD
+ crsPIQStfnw7nq76MshnjlOV8uZJrXRe88u6qXqdoRCAXL7bIVKKknH7TvX00N6TmodX
+ jFznBlEmhYCeFbJZSQzb/c4eiu9CKuOkQqIPdOE7i7Cve9yeo8u7A4Zkh5Q8ABi9jQSL
+ pDfqXx4AZZrVQSMLgtAYkG7MPlE/EBec/vlbMvMYLC1MsLL8rr7cM4mfbERk5uMumQpD
+ j/ZjB1ccL67aJZdSwXMXiM+jZqOW1sJ/fi2CoR1BUMage3PIpncEPDAZAINeMEc1OQVm
+ DrjQ==
+X-Gm-Message-State: AA+aEWaJ0Bjud9cdyCT5UMKnQRcburgfG3QnACHtjzz8P4byfAlqSeId
+ g86yiPBVfrBq1fmohK+ZWB/b6FfjNmMG+Rb43UQX4o7oMJM=
+X-Google-Smtp-Source: AFSGD/VfppFULoNEayvOLkNI947XdpeIu5dyf4q9EDSgwSA+dp1DLLXIzfWov6QNGmWZjIcL88mFGRDPAMDFNoH99v8=
+X-Received: by 2002:a6b:6919:: with SMTP id e25mr436564ioc.119.1543481880086; 
+ Thu, 29 Nov 2018 00:58:00 -0800 (PST)
 MIME-Version: 1.0
-References: <1536913980-4811-1-git-send-email-firoz.khan@linaro.org>
- <20181129063453.GA29271@sathnaga86.in.ibm.com>
-In-Reply-To: <20181129063453.GA29271@sathnaga86.in.ibm.com>
+References: <1543465611-17122-1-git-send-email-firoz.khan@linaro.org>
+In-Reply-To: <1543465611-17122-1-git-send-email-firoz.khan@linaro.org>
 From: Firoz Khan <firoz.khan@linaro.org>
-Date: Thu, 29 Nov 2018 13:48:16 +0530
-Message-ID: <CALxhOnho7Ad5mzTV-G12inKZbsteN-b706aFQiM9Di6j=6UgYQ@mail.gmail.com>
-Subject: Re: [PATCH 0/3] System call table generation support
-To: sathnaga@linux.vnet.ibm.com
+Date: Thu, 29 Nov 2018 14:27:48 +0530
+Message-ID: <CALxhOniXc5ePTXkGjiUZxrDQPqu3FyOGH=SR=2eP947JHLBk9Q@mail.gmail.com>
+Subject: Re: [PATCH v3 0/4] powerpc: system call table generation support
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, 
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, 
+ Michael Ellerman <mpe@ellerman.id.au>, Arnd Bergmann <arnd@arndb.de>, 
+ Geert Uytterhoeven <geert@linux-m68k.org>, Ram Pai <linuxram@us.ibm.com>, 
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Breno Leitao <leitao@debian.org>, Boqun Feng <boqun.feng@gmail.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ Philippe Ombredanne <pombredanne@nexb.com>,
+ Thomas Gleixner <tglx@linutronix.de>, 
+ Kate Stewart <kstewart@linuxfoundation.org>, sathnaga@linux.vnet.ibm.com
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -85,156 +94,104 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kate Stewart <kstewart@linuxfoundation.org>,
- Linux-Arch <linux-arch@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- y2038 Mailman List <y2038@lists.linaro.org>, Boqun Feng <boqun.feng@gmail.com>,
- Philippe Ombredanne <pombredanne@nexb.com>, Ram Pai <linuxram@us.ibm.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+Cc: y2038 Mailman List <y2038@lists.linaro.org>,
+ Linux-Arch <linux-arch@vger.kernel.org>,
  Marcin Juszkiewicz <marcin.juszkiewicz@linaro.org>,
- Paul Mackerras <paulus@samba.org>, Deepa Dinamani <deepa.kernel@gmail.com>,
- Breno Leitao <leitao@debian.org>, Thomas Gleixner <tglx@linutronix.de>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Deepa Dinamani <deepa.kernel@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Sathish,
+++ sathnaga@linux.vnet.ibm.com
 
-Thanks for your email.
-
-On Thu, 29 Nov 2018 at 12:05, Satheesh Rajendran
-<sathnaga@linux.vnet.ibm.com> wrote:
+On Thu, 29 Nov 2018 at 09:57, Firoz Khan <firoz.khan@linaro.org> wrote:
 >
-> On Fri, Sep 14, 2018 at 02:02:57PM +0530, Firoz Khan wrote:
-> > The purpose of this patch series is:
-> > 1. We can easily add/modify/delete system call by changing entry
-> > in syscall.tbl file. No need to manually edit many files.
-> >
-> > 2. It is easy to unify the system call implementation across all
-> > the architectures.
-> >
-> > The system call tables are in different format in all architecture
-> > and it will be difficult to manually add or modify the system calls
-> > in the respective files manually. To make it easy by keeping a script
-> > and which'll generate the header file and syscall table file so this
-> > change will unify them across all architectures.
-> >
-> > syscall.tbl contains the list of available system calls along with
-> > system call number and corresponding entry point. Add a new system
-> > call in this architecture will be possible by adding new entry in
-> > the syscall.tbl file.
-> >
-> > Adding a new table entry consisting of:
-> >         - System call number.
-> >         - ABI.
-> >         - System call name.
-> >         - Entry point name.
-> >         - Compat entry name, if required.
-> >
-> > ARM, s390 and x86 architecuture does exist the similar support. I
-> > leverage their implementation to come up with a generic solution.
-> >
-> > I have done the same support for work for alpha, m68k, microblaze,
-> > ia64, mips, parisc, sh, sparc, and xtensa. But I started sending
-> > the patch for one architecuture for review. Below mentioned git
-> > repository contains more details.
-> > Git repo:- https://github.com/frzkhn/system_call_table_generator/
-> >
-> > Finally, this is the ground work for solving the Y2038 issue. We
-> > need to add/change two dozen of system calls to solve Y2038 issue.
-> > So this patch series will help to easily modify from existing
-> > system call to Y2038 compatible system calls.
-> >
-> > I started working system call table generation on 4.17-rc1. I used
-> > marcin's script - https://github.com/hrw/syscalls-table to generate
-> > the syscall.tbl file. And this will be the input to the system call
-> > table generation script. But there are couple system call got add
-> > in the latest rc release. If run Marcin's script on latest release,
-> > It will generate a new syscall.tbl. But I still use the old file -
-> > syscall.tbl and once all review got over I'll update syscall.tbl
-> > alone w.r.to the tip of the kernel. The impact of this thing, few
-> > of the system call won't work.
-> >
-> > Firoz Khan (3):
-> >   powerpc: Replace NR_syscalls macro from asm/unistd.h
-> >   powerpc: Add system call table generation support
-> >   powerpc: uapi header and system call table file generation
-> >
-> >  arch/powerpc/Makefile                       |   3 +
-> >  arch/powerpc/include/asm/Kbuild             |   3 +
-> >  arch/powerpc/include/asm/unistd.h           |   3 +-
-> >  arch/powerpc/include/uapi/asm/Kbuild        |   2 +
-> >  arch/powerpc/include/uapi/asm/unistd.h      | 391 +---------------------------
-> >  arch/powerpc/kernel/Makefile                |   3 +-
-> >  arch/powerpc/kernel/syscall_table_32.S      |   9 +
-> >  arch/powerpc/kernel/syscall_table_64.S      |  17 ++
-> >  arch/powerpc/kernel/syscalls/Makefile       |  51 ++++
-> >  arch/powerpc/kernel/syscalls/syscall_32.tbl | 378 +++++++++++++++++++++++++++
-> >  arch/powerpc/kernel/syscalls/syscall_64.tbl | 372 ++++++++++++++++++++++++++
-> >  arch/powerpc/kernel/syscalls/syscallhdr.sh  |  37 +++
-> >  arch/powerpc/kernel/syscalls/syscalltbl.sh  |  38 +++
-> >  arch/powerpc/kernel/systbl.S                |  50 ----
-> >  14 files changed, 916 insertions(+), 441 deletions(-)
-> >  create mode 100644 arch/powerpc/kernel/syscall_table_32.S
-> >  create mode 100644 arch/powerpc/kernel/syscall_table_64.S
-> >  create mode 100644 arch/powerpc/kernel/syscalls/Makefile
-> >  create mode 100644 arch/powerpc/kernel/syscalls/syscall_32.tbl
-> >  create mode 100644 arch/powerpc/kernel/syscalls/syscall_64.tbl
-> >  create mode 100644 arch/powerpc/kernel/syscalls/syscallhdr.sh
-> >  create mode 100644 arch/powerpc/kernel/syscalls/syscalltbl.sh
-> >  delete mode 100644 arch/powerpc/kernel/systbl.S
+> The purpose of this patch series is, we can easily
+> add/modify/delete system call table support by cha-
+> nging entry in syscall.tbl file instead of manually
+> changing many files. The other goal is to unify the
+> system call table generation support implementation
+> across all the architectures.
 >
-> Hi,
+> The system call tables are in different format in
+> all architecture. It will be difficult to manually
+> add, modify or delete the system calls in the resp-
+> ective files manually. To make it easy by keeping a
+> script and which'll generate uapi header file and
+> syscall table file.
 >
-> This patch series failed to boot in IBM Power8 box with below base commit and built with ppc64le_defconfig,
-> https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git/commit/?h=merge&id=183cbf93be88d1a4fb572e27b1e08aa0ad85
-
-I think you are applied some old patch series. Could you please
-perform the boot test on powerpc v3 which I have sent few hour before.
-
-Thanks
-Firoz
-
+> syscall.tbl contains the list of available system
+> calls along with system call number and correspond-
+> ing entry point. Add a new system call in this arch-
+> itecture will be possible by adding new entry in
+> the syscall.tbl file.
 >
-> Complete boot log attached.
+> Adding a new table entry consisting of:
+>         - System call number.
+>         - ABI.
+>         - System call name.
+>         - Entry point name.
+>         - Compat entry name, if required.
+>         - spu entry name, if required.
 >
+> ARM, s390 and x86 architecuture does exist the sim-
+> ilar support. I leverage their implementation to
+> come up with a generic solution.
 >
-> [    1.577383] SGI XFS with ACLs, security attributes, no debug enabled
-> [    1.581550] Bad kernel stack pointer 6e690000 at c000000000e2ceec
-> [    1.581558] Oops: Bad kernel stack pointer, sig: 6 [#1]
-> [    1.581562] LE SMP NR_CPUS=2048 NUMA PowerNV
-> [    1.581567] Modules linked in:
-> [    1.581572] CPU: 3 PID: 1937 Comm: modprobe Not tainted 4.20.0-rc4-gd35c78239 #1
-> [    1.581577] NIP:  c000000000e2ceec LR: c00000000000b9e4 CTR: c000000000e2cee0
-> [    1.581582] REGS: c0000007ffe77d30 TRAP: 0e40   Not tainted  (4.20.0-rc4-gd35c78239)
-> [    1.581586] MSR:  9000000000009033 <SF,HV,EE,ME,IR,DR,RI,LE>  CR: 48024488  XER: 00000000
-> [    1.5815
-> 94] CFAR: c00000000000b9e0 IRQMASK: c0000000014d1bd8
-> [    1.581594] GPR00: 00000000000011e0 000000006e690000 c000000001498900 ffffffffffffff9c
-> [    1.581594] GPR04: c00000006ecb0ff8 0000000000080000 0000000000000000 7f7f7f7f7f7f7f7f
-> [    1.581594] GPR08: 0000000000000000 c000001e5104fe90 0000000000000000 c000000000c30ff8
-> [    1.581594] GPR12: c000000000e2cee0 c0000007ffffd800 4f4c5f4543415254 00007fffb55927d0
-> [    1.581594] GPR16: 00007fffb55bfbf0 00007fffc087b160 c000000065b70ff8 00007fffc087b5c8
-> [    1.581594] GPR20: 000000000000000d 0000000000000000 0000000000000000 000000000000
-> 0000
-> [    1.581594] GPR24: 000000012b660d79 0000000000000000 00007fffb55c0000 0000000000000000
-> [    1.581594] GPR28: 00007fffb55c1110 0000000000000001 00007fffb55c1050 00007fffc087a880
-> [    1.58
-> 1637] NIP [c000000000e2ceec] str_spec.65753+0x147da0/0x1f1c5c
-> [    1.581643] LR [c00000000000b9e4] system_call+0x5c/0x70
-> [    1.581646] Call Trace:
-> [    1.581648] Instruction dump:
-> [    1.581652]
-> XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
-> [    1.581657] XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
-> [    1.581664] ---[ end trace 37e56b4
-> 4979b6992 ]---
-> [    1.582355]
+> I have done the same support for work for alpha,
+> ia64, m68k, microblaze, mips, parisc, sh, sparc,
+> and xtensa. Below mentioned git repository contains
+> more details about the workflow.
 >
-> Regards,
-> -Satheesh.
-> >
-> > --
-> > 1.9.1
-> >
+> https://github.com/frzkhn/system_call_table_generator/
+>
+> Finally, this is the ground work to solve the Y2038
+> issue. We need to add two dozen of system calls to
+> solve Y2038 issue. So this patch series will help to
+> add new system calls easily by adding new entry in the
+> syscall.tbl.
+>
+> changes since v2:
+>  - modified/optimized the syscall.tbl to avoid duplicate
+>    for the spu entries.
+>  - updated the syscalltbl.sh to meet the above point.
+>
+> changes since v1:
+>  - optimized/updated the syscall table generation
+>    scripts.
+>  - fixed all mixed indentation issues in syscall.tbl.
+>  - added "comments" in syscall_*.tbl.
+>  - changed from generic-y to generated-y in Kbuild.
+>
+> Firoz Khan (4):
+>   powerpc: add __NR_syscalls along with NR_syscalls
+>   powerpc: move macro definition from asm/systbl.h
+>   powerpc: add system call table generation support
+>   powerpc: generate uapi header and system call table files
+>
+>  arch/powerpc/Makefile                       |   3 +
+>  arch/powerpc/include/asm/Kbuild             |   4 +
+>  arch/powerpc/include/asm/systbl.h           | 396 --------------------------
+>  arch/powerpc/include/asm/unistd.h           |   3 +-
+>  arch/powerpc/include/uapi/asm/Kbuild        |   2 +
+>  arch/powerpc/include/uapi/asm/unistd.h      | 389 +------------------------
+>  arch/powerpc/kernel/Makefile                |  10 -
+>  arch/powerpc/kernel/syscalls/Makefile       |  63 ++++
+>  arch/powerpc/kernel/syscalls/syscall.tbl    | 427 ++++++++++++++++++++++++++++
+>  arch/powerpc/kernel/syscalls/syscallhdr.sh  |  36 +++
+>  arch/powerpc/kernel/syscalls/syscalltbl.sh  |  36 +++
+>  arch/powerpc/kernel/systbl.S                |  37 +--
+>  arch/powerpc/kernel/systbl_chk.c            |  60 ----
+>  arch/powerpc/platforms/cell/spu_callbacks.c |  17 +-
+>  14 files changed, 591 insertions(+), 892 deletions(-)
+>  delete mode 100644 arch/powerpc/include/asm/systbl.h
+>  create mode 100644 arch/powerpc/kernel/syscalls/Makefile
+>  create mode 100644 arch/powerpc/kernel/syscalls/syscall.tbl
+>  create mode 100644 arch/powerpc/kernel/syscalls/syscallhdr.sh
+>  create mode 100644 arch/powerpc/kernel/syscalls/syscalltbl.sh
+>  delete mode 100644 arch/powerpc/kernel/systbl_chk.c
+>
+> --
+> 1.9.1
+>
