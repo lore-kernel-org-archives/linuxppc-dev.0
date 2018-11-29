@@ -2,79 +2,71 @@ Return-Path: <SRS0=BLVf=OI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D7A2C43441
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 12:08:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 571C0C43441
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 12:16:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 09BE6206B6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 12:08:54 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="R9Sh6aiQ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 09BE6206B6
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
+	by mail.kernel.org (Postfix) with ESMTPS id B9012206B6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 12:16:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B9012206B6
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 435GX45LZYzDr45
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 23:08:52 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
+	by lists.ozlabs.org (Postfix) with ESMTP id 435GhH3DS9zDr7x
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 23:15:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="R9Sh6aiQ";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (helo) smtp.helo=mo6-p02-ob.smtp.rzone.de
- (client-ip=2a01:238:20a:202:5302::11; helo=mo6-p02-ob.smtp.rzone.de;
- envelope-from=chzigotzky@xenosoft.de; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=xenosoft.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="R9Sh6aiQ"; 
- dkim-atps=neutral
-Received: from mo6-p02-ob.smtp.rzone.de (mo6-p02-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5302::11])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 435GSf05r9zDr7k
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Nov 2018 23:05:53 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1543493150;
- s=strato-dkim-0002; d=xenosoft.de;
- h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:
- X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
- bh=1d8dDcOXQakLxZx9h0WPUGsP4J980v3eg/KbaQPeYXs=;
- b=R9Sh6aiQUqwQfSQApWJoPqLjqIKX+bKt/tFJZCIJaZannHY8TVIb941LgI4M9JuQSO
- JW4Gzh1beBx16NP9QM1KRHkQdr7fwi8BUPGKE4yDenb6Bw2b9R3Pdf0rIodin3Say6UN
- XGSE64vrG1YzP3eGGznHWcxbyYvyJ69yPzsR0ITiQseaq8zxjGAiMC45LnXwdXvP48rO
- QpHfu9aY5zGCSrepDZNw4UtD4B6NS/BHjiwiFLNr1zgEpC0dfCi0qF2SfwLx2LQPx0Tq
- Pabkh43iq/YI5S+WDR+G7yo/6h+QyyXj2afVm/iX+EOXVpmOGouLsN+NP7Z/EayNCfZX
- 0aYw==
-X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5G5MdirQj0WG7CkIi451DZe29TrPMHVmP0k4v8Fd"
-X-RZG-CLASS-ID: mo00
-Received: from [IPv6:2a02:8109:a400:162c:750c:580c:e34a:e81]
- by smtp.strato.de (RZmta 44.6 AUTH) with ESMTPSA id 404b20uATC5NBiB
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
- 521 ECDH bits, eq. 15360 bits RSA))
- (Client did not present a certificate);
- Thu, 29 Nov 2018 13:05:23 +0100 (CET)
-Subject: Re: use generic DMA mapping code in powerpc V4
-To: Michael Ellerman <mpe@ellerman.id.au>, Christoph Hellwig <hch@lst.de>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 435GcT2R5gzDqVm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Nov 2018 23:12:40 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 435GcL4KTpz9vGxw;
+ Thu, 29 Nov 2018 13:12:34 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id B2j74Y-Puwei; Thu, 29 Nov 2018 13:12:34 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 435GcL3ggMz9vGxv;
+ Thu, 29 Nov 2018 13:12:34 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 9E6DB8B89A;
+ Thu, 29 Nov 2018 13:12:35 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id SkVQhbmlSxdj; Thu, 29 Nov 2018 13:12:35 +0100 (CET)
+Received: from PO15451 (unknown [192.168.232.3])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E65EA8B899;
+ Thu, 29 Nov 2018 13:12:34 +0100 (CET)
+Subject: Re: [PATCH] powerpc/mm: add exec protection on powerpc 603
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-References: <20181114082314.8965-1-hch@lst.de> <20181127074253.GB30186@lst.de>
- <87zhttfonk.fsf@concordia.ellerman.id.au>
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-Message-ID: <4d4e3cdd-d1a9-affe-0f63-45b8c342bbd6@xenosoft.de>
-Date: Thu, 29 Nov 2018 13:05:23 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+References: <c8231561dfd73a18cc0fe7db94405ee71a886136.1542388741.git.christophe.leroy@c-s.fr>
+ <a1e73a85-f5f0-769e-ba17-5b4560ecd9b7@linux.ibm.com>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <b6e5d20f-0a9a-9348-3229-eb4631300378@c-s.fr>
+Date: Thu, 29 Nov 2018 13:12:34 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
  Thunderbird/60.3.1
 MIME-Version: 1.0
-In-Reply-To: <87zhttfonk.fsf@concordia.ellerman.id.au>
+In-Reply-To: <a1e73a85-f5f0-769e-ba17-5b4560ecd9b7@linux.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
 Content-Transfer-Encoding: 8bit
-Content-Language: de-DE
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,74 +78,248 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, iommu@lists.linux-foundation.org,
- Olof Johansson <olof@lixom.net>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 28 November 2018 at 12:05PM, Michael Ellerman wrote:
-> Christoph Hellwig <hch@lst.de> writes:
->
->> Any comments?  I'd like to at least get the ball moving on the easy
->> bits.
-> Nothing specific yet.
->
-> I'm a bit worried it might break one of the many old obscure platforms
-> we have that aren't well tested.
->
-> There's not much we can do about that, but I'll just try and test it on
-> everything I can find.
->
-> Is the plan that you take these via the dma-mapping tree or that they go
-> via powerpc?
->
-> cheers
->
-Hi All,
 
-I compiled a test kernel from the following Git today.
 
-http://git.infradead.org/users/hch/misc.git/shortlog/refs/heads/powerpc-dma.4
+Le 29/11/2018 à 12:25, Aneesh Kumar K.V a écrit :
+> On 11/16/18 10:50 PM, Christophe Leroy wrote:
+>> The 603 doesn't have a HASH table, TLB misses are handled by
+>> software. It is then possible to generate page fault when
+>> _PAGE_EXEC is not set like in nohash/32.
+>>
+>> In order to support it, set_pte_filter() and
+>> set_access_flags_filter() are made common, and the handling
+>> is made dependent on MMU_FTR_HPTE_TABLE
+>>
+>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>> ---
+>>   arch/powerpc/include/asm/book3s/32/hash.h    |  1 +
+>>   arch/powerpc/include/asm/book3s/32/pgtable.h | 18 +++++++++---------
+>>   arch/powerpc/include/asm/cputable.h          |  8 ++++----
+>>   arch/powerpc/kernel/head_32.S                |  2 ++
+>>   arch/powerpc/mm/pgtable.c                    | 20 +++++++++++---------
+>>   5 files changed, 27 insertions(+), 22 deletions(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/book3s/32/hash.h 
+>> b/arch/powerpc/include/asm/book3s/32/hash.h
+>> index f2892c7ab73e..2a0a467d2985 100644
+>> --- a/arch/powerpc/include/asm/book3s/32/hash.h
+>> +++ b/arch/powerpc/include/asm/book3s/32/hash.h
+>> @@ -26,6 +26,7 @@
+>>   #define _PAGE_WRITETHRU    0x040    /* W: cache write-through */
+>>   #define _PAGE_DIRTY    0x080    /* C: page changed */
+>>   #define _PAGE_ACCESSED    0x100    /* R: page referenced */
+>> +#define _PAGE_EXEC    0x200    /* software: exec allowed */
+>>   #define _PAGE_RW    0x400    /* software: user write access allowed */
+>>   #define _PAGE_SPECIAL    0x800    /* software: Special page */
+>> diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h 
+>> b/arch/powerpc/include/asm/book3s/32/pgtable.h
+>> index c21d33704633..cf844fed4527 100644
+>> --- a/arch/powerpc/include/asm/book3s/32/pgtable.h
+>> +++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
+>> @@ -10,9 +10,9 @@
+>>   /* And here we include common definitions */
+>>   #define _PAGE_KERNEL_RO        0
+>> -#define _PAGE_KERNEL_ROX    0
+>> +#define _PAGE_KERNEL_ROX    (_PAGE_EXEC)
+>>   #define _PAGE_KERNEL_RW        (_PAGE_DIRTY | _PAGE_RW)
+>> -#define _PAGE_KERNEL_RWX    (_PAGE_DIRTY | _PAGE_RW)
+>> +#define _PAGE_KERNEL_RWX    (_PAGE_DIRTY | _PAGE_RW | _PAGE_EXEC)
+>>   #define _PAGE_HPTEFLAGS _PAGE_HASHPTE
+>> @@ -66,11 +66,11 @@ static inline bool pte_user(pte_t pte)
+>>    */
+>>   #define PAGE_NONE    __pgprot(_PAGE_BASE)
+>>   #define PAGE_SHARED    __pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW)
+>> -#define PAGE_SHARED_X    __pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW)
+>> +#define PAGE_SHARED_X    __pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW 
+>> | _PAGE_EXEC)
+>>   #define PAGE_COPY    __pgprot(_PAGE_BASE | _PAGE_USER)
+>> -#define PAGE_COPY_X    __pgprot(_PAGE_BASE | _PAGE_USER)
+>> +#define PAGE_COPY_X    __pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_EXEC)
+>>   #define PAGE_READONLY    __pgprot(_PAGE_BASE | _PAGE_USER)
+>> -#define PAGE_READONLY_X    __pgprot(_PAGE_BASE | _PAGE_USER)
+>> +#define PAGE_READONLY_X    __pgprot(_PAGE_BASE | _PAGE_USER | 
+>> _PAGE_EXEC)
+>>   /* Permission masks used for kernel mappings */
+>>   #define PAGE_KERNEL    __pgprot(_PAGE_BASE | _PAGE_KERNEL_RW)
+>> @@ -318,7 +318,7 @@ static inline void __ptep_set_access_flags(struct 
+>> vm_area_struct *vma,
+>>                          int psize)
+>>   {
+>>       unsigned long set = pte_val(entry) &
+>> -        (_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW);
+>> +        (_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC);
+>>       pte_update(ptep, 0, set);
+>> @@ -384,7 +384,7 @@ static inline int pte_dirty(pte_t pte)        { 
+>> return !!(pte_val(pte) & _PAGE_DIRTY);
+>>   static inline int pte_young(pte_t pte)        { return 
+>> !!(pte_val(pte) & _PAGE_ACCESSED); }
+>>   static inline int pte_special(pte_t pte)    { return !!(pte_val(pte) 
+>> & _PAGE_SPECIAL); }
+>>   static inline int pte_none(pte_t pte)        { return (pte_val(pte) 
+>> & ~_PTE_NONE_MASK) == 0; }
+>> -static inline bool pte_exec(pte_t pte)        { return true; }
+>> +static inline bool pte_exec(pte_t pte)        { return pte_val(pte) & 
+>> _PAGE_EXEC; }
+>>   static inline int pte_present(pte_t pte)
+>>   {
+>> @@ -451,7 +451,7 @@ static inline pte_t pte_wrprotect(pte_t pte)
+>>   static inline pte_t pte_exprotect(pte_t pte)
+>>   {
+>> -    return pte;
+>> +    return __pte(pte_val(pte) & ~_PAGE_EXEC);
+>>   }
+>>   static inline pte_t pte_mkclean(pte_t pte)
+>> @@ -466,7 +466,7 @@ static inline pte_t pte_mkold(pte_t pte)
+>>   static inline pte_t pte_mkexec(pte_t pte)
+>>   {
+>> -    return pte;
+>> +    return __pte(pte_val(pte) | _PAGE_EXEC);
+>>   }
+>>   static inline pte_t pte_mkpte(pte_t pte)
+>> diff --git a/arch/powerpc/include/asm/cputable.h 
+>> b/arch/powerpc/include/asm/cputable.h
+>> index 29f49a35d6ee..a0395ccbbe9e 100644
+>> --- a/arch/powerpc/include/asm/cputable.h
+>> +++ b/arch/powerpc/include/asm/cputable.h
+>> @@ -296,7 +296,7 @@ static inline void cpu_feature_keys_init(void) { }
+>>   #define CPU_FTRS_PPC601    (CPU_FTR_COMMON | CPU_FTR_601 | \
+>>       CPU_FTR_COHERENT_ICACHE | CPU_FTR_UNIFIED_ID_CACHE | 
+>> CPU_FTR_USE_RTC)
+>>   #define CPU_FTRS_603    (CPU_FTR_COMMON | CPU_FTR_MAYBE_CAN_DOZE | \
+>> -        CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_PPC_LE)
+>> +        CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_PPC_LE | CPU_FTR_NOEXECUTE)
+>>   #define CPU_FTRS_604    (CPU_FTR_COMMON | CPU_FTR_PPC_LE)
+>>   #define CPU_FTRS_740_NOTAU    (CPU_FTR_COMMON | \
+>>           CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_L2CR | \
+>> @@ -367,15 +367,15 @@ static inline void cpu_feature_keys_init(void) { }
+>>           CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | \
+>>           CPU_FTR_SPEC7450 | CPU_FTR_NAP_DISABLE_L2_PR | \
+>>           CPU_FTR_PPC_LE | CPU_FTR_NEED_PAIRED_STWCX)
+>> -#define CPU_FTRS_82XX    (CPU_FTR_COMMON | CPU_FTR_MAYBE_CAN_DOZE)
+>> +#define CPU_FTRS_82XX    (CPU_FTR_COMMON | CPU_FTR_MAYBE_CAN_DOZE | 
+>> CPU_FTR_NOEXECUTE)
+>>   #define CPU_FTRS_G2_LE    (CPU_FTR_COMMON | CPU_FTR_MAYBE_CAN_DOZE | \
+>>           CPU_FTR_MAYBE_CAN_NAP)
+>>   #define CPU_FTRS_E300    (CPU_FTR_MAYBE_CAN_DOZE | \
+>>           CPU_FTR_MAYBE_CAN_NAP | \
+>> -        CPU_FTR_COMMON)
+>> +        CPU_FTR_COMMON  | CPU_FTR_NOEXECUTE)
+>>   #define CPU_FTRS_E300C2    (CPU_FTR_MAYBE_CAN_DOZE | \
+>>           CPU_FTR_MAYBE_CAN_NAP | \
+>> -        CPU_FTR_COMMON | CPU_FTR_FPU_UNAVAILABLE)
+>> +        CPU_FTR_COMMON | CPU_FTR_FPU_UNAVAILABLE  | CPU_FTR_NOEXECUTE)
+>>   #define CPU_FTRS_CLASSIC32    (CPU_FTR_COMMON)
+>>   #define CPU_FTRS_8XX    (CPU_FTR_NOEXECUTE)
+>>   #define CPU_FTRS_40X    (CPU_FTR_NODSISRALIGN | CPU_FTR_NOEXECUTE)
+>> diff --git a/arch/powerpc/kernel/head_32.S 
+>> b/arch/powerpc/kernel/head_32.S
+>> index 61ca27929355..50e892763dbb 100644
+>> --- a/arch/powerpc/kernel/head_32.S
+>> +++ b/arch/powerpc/kernel/head_32.S
+>> @@ -515,6 +515,8 @@ InstructionTLBMiss:
+>>       lwz    r0,0(r2)        /* get linux-style pte */
+>>       andc.    r1,r1,r0        /* check access & ~permission */
+>>       bne-    InstructionAddressInvalid /* return if access not 
+>> permitted */
+>> +    andi.    r1,r0,_PAGE_EXEC
+>> +    beq-    InstructionAddressInvalid /* return if not _PAGE_EXEC */
+>>       ori    r0,r0,_PAGE_ACCESSED    /* set _PAGE_ACCESSED in pte */
+> 
+> Can we get a DataTLB miss and expect to map that in TLB with Exec 
+> permission?
 
-Command: git clone git://git.infradead.org/users/hch/misc.git -b 
-powerpc-dma.4 a
+There are two independant sets for TLBs, one set for data accesses and 
+one set for instruction fetches.
 
-Unfortunately I get some DMA error messages and the PASEMI ethernet 
-doesn't work anymore.
+On a data TLB miss, a data TLB is loaded with tlbld instruction.
+On an instruction TLB miss, a insn TLB is loaded with tlbli instruction.
 
-[  367.627623] pci 0000:00:1a.0: dma_direct_map_page: overflow 
-0x000000026bcb5002+110 of device mask ffffffff bus mask 0
-[  367.627631] pci 0000:00:1a.0: dma_direct_map_page: overflow 
-0x000000026bcb5002+110 of device mask ffffffff bus mask 0
-[  367.627639] pci 0000:00:1a.0: dma_direct_map_page: overflow 
-0x000000026bcb5002+110 of device mask ffffffff bus mask 0
-[  367.627647] pci 0000:00:1a.0: dma_direct_map_page: overflow 
-0x000000026bcb5002+110 of device mask ffffffff bus mask 0
-[  367.627655] pci 0000:00:1a.0: dma_direct_map_page: overflow 
-0x000000026bcb5002+110 of device mask ffffffff bus mask 0
-[  367.627686] pci 0000:00:1a.0: dma_direct_map_page: overflow 
-0x000000026bcb5002+110 of device mask ffffffff bus mask 0
-[  367.628418] pci 0000:00:1a.0: dma_direct_map_page: overflow 
-0x000000026bcb5002+110 of device mask ffffffff bus mask 0
-[  367.628505] pci 0000:00:1a.0: dma_direct_map_page: overflow 
-0x000000026bcb5002+110 of device mask ffffffff bus mask 0
-[  367.628592] pci 0000:00:1a.0: dma_direct_map_page: overflow 
-0x000000026bcb5002+110 of device mask ffffffff bus mask 0
-[  367.629324] pci 0000:00:1a.0: dma_direct_map_page: overflow 
-0x000000026bcb5002+110 of device mask ffffffff bus mask 0
-[  367.629417] pci 0000:00:1a.0: dma_direct_map_page: overflow 
-0x000000026bcb5002+110 of device mask ffffffff bus mask 0
-[  367.629495] pci 0000:00:1a.0: dma_direct_map_page: overflow 
-0x000000026bcb5002+110 of device mask ffffffff bus mask 0
-[  367.629589] pci 0000:00:1a.0: dma_direct_map_page: overflow 
-0x000000026bcb5002+110 of device mask ffffffff bus mask 0
+So if I understand your question correctly, the answer is 'no'.
 
-[  430.424732]pasemi_mac: rcmdsta error: 0x04ef3001
 
-I tested this kernel with the Nemo board (CPU: PWRficient PA6T-1682M). 
-The PASEMI ethernet works with the RC4 of kernel 4.20.
+> 
+>>       /*
+>>        * NOTE! We are assuming this is not an SMP system, otherwise
+>> diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
+>> index 010e1c616cb2..3d86fe9d2ff4 100644
+>> --- a/arch/powerpc/mm/pgtable.c
+>> +++ b/arch/powerpc/mm/pgtable.c
+>> @@ -74,7 +74,7 @@ static struct page *maybe_pte_to_page(pte_t pte)
+>>    * support falls into the same category.
+>>    */
+>> -static pte_t set_pte_filter(pte_t pte)
+>> +static pte_t set_pte_filter_hash(pte_t pte)
+>>   {
+>>       if (radix_enabled())
+>>           return pte;
+>> @@ -93,14 +93,12 @@ static pte_t set_pte_filter(pte_t pte)
+>>       return pte;
+>>   }
+>> -static pte_t set_access_flags_filter(pte_t pte, struct vm_area_struct 
+>> *vma,
+>> -                     int dirty)
+>> -{
+>> -    return pte;
+>> -}
+>> -
+>>   #else /* CONFIG_PPC_BOOK3S */
+>> +static pte_t set_pte_filter_hash(pte_t pte) { return pte; }
+>> +
+>> +#endif /* CONFIG_PPC_BOOK3S */
+>> +
+>>   /* Embedded type MMU with HW exec support. This is a bit more 
+>> complicated
+>>    * as we don't have two bits to spare for _PAGE_EXEC and 
+>> _PAGE_HWEXEC so
+>>    * instead we "filter out" the exec permission for non clean pages.
+>> @@ -109,6 +107,9 @@ static pte_t set_pte_filter(pte_t pte)
+>>   {
+>>       struct page *pg;
+>> +    if (mmu_has_feature(MMU_FTR_HPTE_TABLE))
+>> +        return set_pte_filter_hash(pte);
+> 
+> so 603 doesn't have a coherent icache?
 
-Cheers,
-Christian
+That's right, see asm/cputable.h
+
+> 
+>> +
+>>       /* No exec permission in the first place, move on */
+>>       if (!pte_exec(pte) || !pte_looks_normal(pte))
+>>           return pte;
+>> @@ -138,6 +139,9 @@ static pte_t set_access_flags_filter(pte_t pte, 
+>> struct vm_area_struct *vma,
+>>   {
+>>       struct page *pg;
+>> +    if (mmu_has_feature(MMU_FTR_HPTE_TABLE))
+>> +        return pte;
+>> +
+>>       /* So here, we only care about exec faults, as we use them
+>>        * to recover lost _PAGE_EXEC and perform I$/D$ coherency
+>>        * if necessary. Also if _PAGE_EXEC is already set, same deal,
+>> @@ -172,8 +176,6 @@ static pte_t set_access_flags_filter(pte_t pte, 
+>> struct vm_area_struct *vma,
+>>       return pte_mkexec(pte);
+>>   }
+>> -#endif /* CONFIG_PPC_BOOK3S */
+>> -
+>>   /*
+>>    * set_pte stores a linux PTE into the linux page table.
+>>    */
+>>
+> 
+> The code looks good from book3s 64 point. I am not familiar with 603 
+> hardware.
+> 
+> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+
+Thanks
+Christophe
+
+> 
+> -aneesh
