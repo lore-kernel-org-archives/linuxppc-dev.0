@@ -2,23 +2,23 @@ Return-Path: <SRS0=BLVf=OI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C085C43441
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 03:20:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D3AE9C43441
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 03:22:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E90C9206B6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 03:20:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E90C9206B6
+	by mail.kernel.org (Postfix) with ESMTPS id 5000E206B6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 03:22:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5000E206B6
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4352pq0SRyzDqxj
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 14:20:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4352s31gtNzDqvN
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 14:22:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
@@ -30,68 +30,65 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4352kC5dC5zDqxW
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4352kC5gKYzDqxb
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Nov 2018 14:16:51 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wAT3DXEX051929
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wAT3DZEL058873
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2018 22:16:48 -0500
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2p26mdu55v-1
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2p26q8u0t1-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2018 22:16:48 -0500
 Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sbobroff@linux.ibm.com>;
  Thu, 29 Nov 2018 03:16:47 -0000
-Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
- by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
  Thu, 29 Nov 2018 03:16:45 -0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wAT3GiYe8978728
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wAT3GiaX10027454
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL)
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Nov 2018 03:16:44 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9E5A1A4064
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id A0E904C05A
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Nov 2018 03:16:44 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4BFDBA405C
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 4AFCF4C04E
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Nov 2018 03:16:44 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Nov 2018 03:16:44 +0000 (GMT)
 Received: from tungsten.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
  (using TLSv1.2 with cipher DHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 29527A0351
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Nov 2018 14:16:43 +1100 (AEDT)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id EDD2FA0209
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Nov 2018 14:16:42 +1100 (AEDT)
 From: Sam Bobroff <sbobroff@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 4/6] powerpc/eeh: Add include_passed to
- eeh_clear_pe_frozen_state()
-Date: Thu, 29 Nov 2018 14:16:40 +1100
+Subject: [PATCH 0/6] powerpc/eeh: Improve recovery of passed-through devices
+Date: Thu, 29 Nov 2018 14:16:36 +1100
 X-Mailer: git-send-email 2.19.0.2.gcad72f5712
-In-Reply-To: <cover.1543460917.git.sbobroff@linux.ibm.com>
-References: <cover.1543460917.git.sbobroff@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 18112903-0016-0000-0000-0000022E4AB5
+x-cbid: 18112903-0008-0000-0000-0000029A1F02
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18112903-0017-0000-0000-00003286AB69
-Message-Id: <c30039d95d9f672fef7c90e120b1104afcd1cedd.1543460917.git.sbobroff@linux.ibm.com>
+x-cbparentid: 18112903-0009-0000-0000-0000220468BA
+Message-Id: <cover.1543460917.git.sbobroff@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2018-11-29_02:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=35
  priorityscore=1501
- malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=932 adultscore=0 classifier=spam adjust=0 reason=mlx
+ malwarescore=0 suspectscore=1 phishscore=0 bulkscore=99 spamscore=35
+ clxscore=1015 lowpriorityscore=99 mlxscore=35 impostorscore=0
+ mlxlogscore=26 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1811290024
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -108,68 +105,61 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add a parameter to eeh_clear_pe_frozen_state() that allows
-passed-through PEs to be excluded. Update callers to always pass true
-so that there is no change in behaviour.
+Hello,
 
-This is to prepare for follow-up work for passed-through devices.
+Here are changes that allow EEH to successfully recover after a failure that
+affects of both host and guest devices. This happens, for example, when a PHB
+containing passed-through devices is fenced. (Failures that include only
+passed-through devices are ignored by the host.)
 
-Signed-off-by: Sam Bobroff <sbobroff@linux.ibm.com>
----
- arch/powerpc/kernel/eeh_driver.c | 20 +++++++++++---------
- 1 file changed, 11 insertions(+), 9 deletions(-)
+Currently, when an error affects both passed-through and un-passed-through
+devices, the passed-through devices are treated as if their driver was not EEH
+aware. This causes them to be hot-unplugged as part of recovery.
 
-diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-index b2687c14dc40..61c177ebb230 100644
---- a/arch/powerpc/kernel/eeh_driver.c
-+++ b/arch/powerpc/kernel/eeh_driver.c
-@@ -591,19 +591,21 @@ static void *eeh_pe_detach_dev(struct eeh_pe *pe, void *userdata)
-  * PE reset (for 3 times), we try to clear the frozen state
-  * for 3 times as well.
-  */
--static int eeh_clear_pe_frozen_state(struct eeh_pe *root)
-+static int eeh_clear_pe_frozen_state(struct eeh_pe *root, bool include_passed)
- {
- 	struct eeh_pe *pe;
- 	int i;
- 
- 	eeh_for_each_pe(root, pe) {
--		for (i = 0; i < 3; i++)
--			if (!eeh_unfreeze_pe(pe))
--				break;
--		if (i >= 3)
--			return -EIO;
-+		if (include_passed || !eeh_pe_passed(pe)) {
-+			for (i = 0; i < 3; i++)
-+				if (!eeh_unfreeze_pe(pe))
-+					break;
-+			if (i >= 3)
-+				return -EIO;
-+		}
- 	}
--	eeh_pe_state_clear(root, EEH_PE_ISOLATED, true);
-+	eeh_pe_state_clear(root, EEH_PE_ISOLATED, include_passed);
- 	return 0;
- }
- 
-@@ -629,7 +631,7 @@ int eeh_pe_reset_and_recover(struct eeh_pe *pe)
- 	}
- 
- 	/* Unfreeze the PE */
--	ret = eeh_clear_pe_frozen_state(pe);
-+	ret = eeh_clear_pe_frozen_state(pe, true);
- 	if (ret) {
- 		eeh_pe_state_clear(pe, EEH_PE_RECOVERING, true);
- 		return ret;
-@@ -702,7 +704,7 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus,
- 	eeh_pe_restore_bars(pe);
- 
- 	/* Clear frozen state */
--	rc = eeh_clear_pe_frozen_state(pe);
-+	rc = eeh_clear_pe_frozen_state(pe, true);
- 	if (rc) {
- 		pci_unlock_rescan_remove();
- 		return rc;
+The hot unplug request is forwarded to the guest which checks the device status
+before releasing the device. Because the host is recovering the device, it
+reports the device status as EEH_STATE_UNAVAILABLE which causes the guest to
+wait for the device to become available. This deadlocks the recovery process.
+
+This change causes the host to recover it's own devices but leave
+passed-through devices frozen until the guest performs it's own recovery. (They
+are not removed.) If the guest detects the error and begins recovery itself,
+waiting for the device state to change away from EEH_STATE_UNAVAILABLE causes
+it to wait until the host has finished it's recovery and the guest's subsequent
+recovery can then succeed.
+
+Note that resetting a PE may implicitly thaw both it and child PEs, and to
+prevent the device from being accidentally used by the guest (which may be
+unaware of the failure and reset) when in this state, we re-freeze those
+devices. This does leave a small window of opportunity but that will need to be
+addressed with a firmware change.
+
+I've also included a fix to the reset function (the last patch), because
+without it some scenarios still fail. An example is injecting an error into
+a PHB and then exiting a guest that contains passed-through devices from that
+PHB so that an EEH event is raised during the process of passing the device
+back to the host.
+
+Cheers,
+Sam.
+
+Sam Bobroff (6):
+  powerpc/eeh: Cleanup eeh_pe_clear_frozen_state()
+  powerpc/eeh: remove sw_state from eeh_unfreeze_pe()
+  powerpc/eeh: Add include_passed to eeh_pe_state_clear()
+  powerpc/eeh: Add include_passed to eeh_clear_pe_frozen_state()
+  powerpc/eeh: Improve recovery of passed-through devices
+  powerpc/eeh: Correct retries in eeh_pe_reset_full()
+
+ arch/powerpc/include/asm/eeh.h     |   4 +-
+ arch/powerpc/include/asm/ppc-pci.h |   4 +-
+ arch/powerpc/kernel/eeh.c          | 103 +++++++++++++++++++----------
+ arch/powerpc/kernel/eeh_driver.c   |  86 ++++++++++--------------
+ arch/powerpc/kernel/eeh_pe.c       |  68 ++++++++-----------
+ arch/powerpc/kernel/eeh_sysfs.c    |   3 +-
+ drivers/vfio/vfio_spapr_eeh.c      |   6 +-
+ 7 files changed, 140 insertions(+), 134 deletions(-)
+
 -- 
 2.19.0.2.gcad72f5712
 
