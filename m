@@ -2,70 +2,83 @@ Return-Path: <SRS0=BLVf=OI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 90187C43441
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 11:40:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 81903C43441
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 11:44:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1385F20673
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 11:40:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1385F20673
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id BD0F5205C9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 11:44:44 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=axtens.net header.i=@axtens.net header.b="h0qggWdR"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BD0F5205C9
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 435Ftk4bwhzDqx5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 22:39:58 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 435G0B3r8wzDqTX
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 22:44:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=axtens.net
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com;
- envelope-from=fweimer@redhat.com; receiver=<UNKNOWN>)
+	dkim=pass (1024-bit key; unprotected) header.d=axtens.net header.i=@axtens.net header.b="h0qggWdR";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=axtens.net
+ (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
+ envelope-from=dja@axtens.net; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=axtens.net
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=axtens.net header.i=@axtens.net header.b="h0qggWdR"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
+ [IPv6:2607:f8b0:4864:20::442])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 435Fqs2HlVzDqW7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Nov 2018 22:37:28 +1100 (AEDT)
-Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.phx2.redhat.com
- [10.5.11.13])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 74BB7A405C;
- Thu, 29 Nov 2018 11:37:26 +0000 (UTC)
-Received: from oldenburg.str.redhat.com (ovpn-117-253.ams2.redhat.com
- [10.36.117.253])
- by smtp.corp.redhat.com (Postfix) with ESMTPS id 084ED608DA;
- Thu, 29 Nov 2018 11:37:24 +0000 (UTC)
-From: Florian Weimer <fweimer@redhat.com>
-To: Dave Hansen <dave.hansen@intel.com>
-Subject: Re: pkeys: Reserve PKEY_DISABLE_READ
-References: <877ehnbwqy.fsf@oldenburg.str.redhat.com>
- <2d62c9e2-375b-2791-32ce-fdaa7e7664fd@intel.com>
- <87bm6zaa04.fsf@oldenburg.str.redhat.com>
- <6f9c65fb-ea7e-8217-a4cc-f93e766ed9bb@intel.com>
- <87k1ln8o7u.fsf@oldenburg.str.redhat.com>
- <20181108201231.GE5481@ram.oc3035372033.ibm.com>
- <87bm6z71yw.fsf@oldenburg.str.redhat.com>
- <20181109180947.GF5481@ram.oc3035372033.ibm.com>
- <87efbqqze4.fsf@oldenburg.str.redhat.com>
- <20181127102350.GA5795@ram.oc3035372033.ibm.com>
- <87zhtuhgx0.fsf@oldenburg.str.redhat.com>
- <58e263a6-9a93-46d6-c5f9-59973064d55e@intel.com>
-Date: Thu, 29 Nov 2018 12:37:15 +0100
-In-Reply-To: <58e263a6-9a93-46d6-c5f9-59973064d55e@intel.com> (Dave Hansen's
- message of "Tue, 27 Nov 2018 07:31:38 -0800")
-Message-ID: <87va4g5d3o.fsf@oldenburg.str.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/25.3 (gnu/linux)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 435FxD1kX7zDqfM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Nov 2018 22:42:07 +1100 (AEDT)
+Received: by mail-pf1-x442.google.com with SMTP id b85so894019pfc.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Nov 2018 03:42:07 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
+ h=from:to:cc:subject:in-reply-to:references:date:message-id
+ :mime-version; bh=QYGC0gxURL36EZCtHXEr09RP/iRqbuit9claNuHz69g=;
+ b=h0qggWdRnRl0CHUq2HMuRGfRT2csXCQFrw1/BzKORvPLGAGkw24CLE9BeXZBIM3zZx
+ cQ4ak/s8+WI0rYJ4y62MgtEwFgeHmNd/ae3FKnH9aZhFxn7JhJFFE5glIU2WrmOnUOCH
+ Jjy6XPMwqRilSykdJmnrZS+unvsAO3envgqaY=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
+ :message-id:mime-version;
+ bh=QYGC0gxURL36EZCtHXEr09RP/iRqbuit9claNuHz69g=;
+ b=sE49uxot9lEOVL0UAfcSTGzBVJLX56ekaM1lMFAqvnv+GhYtDW8pCcsmg+lrw5wEOz
+ Nflz4KttW7dY/Y6pglMjy6OghCXxqnx/ui2vMNMyDhxicxic3FCYs7aihjIrV+aMZaLb
+ M1/wMZOYnoq/Jr6jKQAViucTu95Ri5hLAzLOWarP/J1tJx14/y6sVwVsoWyExUn74xEj
+ QA+H/xKX1YawPID8FvdpB3JSPOStzkFazGYzXZSwU2i+0xmYk+JKT5tCqA7aTWgPuMuZ
+ Z30y3xIl6UzAfmn83AhPZcpAcmmC/u/e5mDANUDSwI0KN7Bh9Ns0HCiUvSzBZwHhos5x
+ JNYA==
+X-Gm-Message-State: AA+aEWZcoO3scIn5nlUqmWBSiBi3N8Onmb570otyNPmmPDmA/JNBMykg
+ SvSDx2+T3S5l63Aru32sCAaHetfIWMg=
+X-Google-Smtp-Source: AFSGD/V/JW1ue2LtX3J3tEgchMjvAEOyffX2JmPBe2ldad8sgG+FDWtg7cI9p81dPMOqG27ckhJN9Q==
+X-Received: by 2002:a63:2b01:: with SMTP id r1mr935694pgr.432.1543491725802;
+ Thu, 29 Nov 2018 03:42:05 -0800 (PST)
+Received: from localhost (114-198-118-47.dyn.iinet.net.au. [114.198.118.47])
+ by smtp.gmail.com with ESMTPSA id o1sm3936760pgn.63.2018.11.29.03.42.04
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Thu, 29 Nov 2018 03:42:04 -0800 (PST)
+From: Daniel Axtens <dja@axtens.net>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/boot: Copy serial.c in Makefile
+In-Reply-To: <87zhts2lgy.fsf@concordia.ellerman.id.au>
+References: <20181128043417.24784-1-dja@axtens.net>
+ <87woow7apx.fsf@linkitivity.dja.id.au>
+ <87zhts2lgy.fsf@concordia.ellerman.id.au>
+Date: Thu, 29 Nov 2018 22:42:01 +1100
+Message-ID: <87tvk06rg6.fsf@linkitivity.dja.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.13
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.38]); Thu, 29 Nov 2018 11:37:26 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,113 +90,56 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org, Ram Pai <linuxram@us.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-api@vger.kernel.org
+Cc: Joel Stanley <joel@jms.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-* Dave Hansen:
+Hi mpe,
 
-> On 11/27/18 3:57 AM, Florian Weimer wrote:
->> I would have expected something that translates PKEY_DISABLE_WRITE |
->> PKEY_DISABLE_READ into PKEY_DISABLE_ACCESS, and also accepts
->> PKEY_DISABLE_ACCESS | PKEY_DISABLE_READ, for consistency with POWER.
->> 
->> (My understanding is that PKEY_DISABLE_ACCESS does not disable all
->> access, but produces execute-only memory.)
+>> Further analysis suggests that making with -j1 triggers the issue, but
+>> everything works with -j2 and above. That would make sense with the
+>> timeline of when I discovered the issue because I changed my build
+>> script to not build in parallel.
 >
-> Correct, it disables all data access, but not execution.
+> I don't get why -j makes a difference, but that does explain why we
+> haven't seen it, none of my tests use -j 1 :)
 
-So I would expect something like this (completely untested, I did not
-even compile this):
+I don't understand either - only that with -j1 V=1 I get
 
-diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
-index 20ebf153c871..bed23f9e8336 100644
---- a/arch/powerpc/include/asm/pkeys.h
-+++ b/arch/powerpc/include/asm/pkeys.h
-@@ -199,6 +199,11 @@ static inline bool arch_pkeys_enabled(void)
- 	return !static_branch_likely(&pkey_disabled);
- }
- 
-+static inline bool arch_pkey_access_rights_valid(unsigned long rights)
-+{
-+	return (rights & ~(unsigned long)PKEY_ACCESS_MASK) == 0;
-+}
-+
- extern void pkey_mm_init(struct mm_struct *mm);
- extern bool arch_supports_pkeys(int cap);
- extern unsigned int arch_usable_pkeys(void);
-diff --git a/arch/x86/include/asm/pkeys.h b/arch/x86/include/asm/pkeys.h
-index 19b137f1b3be..e3e1d5a316e8 100644
---- a/arch/x86/include/asm/pkeys.h
-+++ b/arch/x86/include/asm/pkeys.h
-@@ -14,6 +14,17 @@ static inline bool arch_pkeys_enabled(void)
- 	return boot_cpu_has(X86_FEATURE_OSPKE);
- }
- 
-+static inline bool arch_pkey_access_rights_valid(unsigned long rights)
-+{
-+	if (rights & ~(unsigned long)PKEY_ACCESS_MASK)
-+		return false;
-+	if (rights & PKEY_DISABLE_READ) {
-+		/* x86 can only disable read access along with write access. */
-+		return rights & (PKEY_DISABLE_WRITE | PKEY_DISABLE_ACCESS);
-+	}
-+	return true;
-+}
-+
- /*
-  * Try to dedicate one of the protection keys to be used as an
-  * execute-only protection key.
-diff --git a/arch/x86/kernel/fpu/xstate.c b/arch/x86/kernel/fpu/xstate.c
-index 87a57b7642d3..b9b78145017f 100644
---- a/arch/x86/kernel/fpu/xstate.c
-+++ b/arch/x86/kernel/fpu/xstate.c
-@@ -928,7 +928,13 @@ int arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
- 		return -EINVAL;
- 
- 	/* Set the bits we need in PKRU:  */
--	if (init_val & PKEY_DISABLE_ACCESS)
-+	if (init_val & (PKEY_DISABLE_ACCESS | PKEY_DISABLE_READ))
-+		/*
-+		 * arch_pkey_access_rights_valid checked that
-+		 * PKEY_DISABLE_READ is actually representable on x86
-+		 * (that is, it comes with PKEY_DISABLE_ACCESS or
-+		 * PKEY_DISABLE_WRITE).
-+		 */
- 		new_pkru_bits |= PKRU_AD_BIT;
- 	if (init_val & PKEY_DISABLE_WRITE)
- 		new_pkru_bits |= PKRU_WD_BIT;
-diff --git a/include/linux/pkeys.h b/include/linux/pkeys.h
-index 2955ba976048..2c330fabbe55 100644
---- a/include/linux/pkeys.h
-+++ b/include/linux/pkeys.h
-@@ -48,6 +48,11 @@ static inline void copy_init_pkru_to_fpregs(void)
- {
- }
- 
-+static inline bool arch_pkey_access_rights_valid(unsigned long rights)
-+{
-+	return false;
-+}
-+
- #endif /* ! CONFIG_ARCH_HAS_PKEYS */
- 
- #endif /* _LINUX_PKEYS_H */
-diff --git a/mm/mprotect.c b/mm/mprotect.c
-index 6d331620b9e5..f4cefc3540df 100644
---- a/mm/mprotect.c
-+++ b/mm/mprotect.c
-@@ -597,7 +597,7 @@ SYSCALL_DEFINE2(pkey_alloc, unsigned long, flags, unsigned long, init_val)
- 	if (flags)
- 		return -EINVAL;
- 	/* check for unsupported init values */
--	if (init_val & ~PKEY_ACCESS_MASK)
-+	if (!arch_pkey_access_rights_valid(init_val))
- 		return -EINVAL;
- 
- 	down_write(&current->mm->mmap_sem);
+  powerpc64le-linux-gnu-gcc ... -c -o arch/powerpc/boot/serial.o arch/powerpc/boot/serial.c
 
-Thanks,
-Florian
+and with -j2 I get:
+
+  powerpc64le-linux-gnu-gcc ... -c -o arch/powerpc/boot/serial.o /home/dja/dev/linux/linux/arch/powerpc/boot/serial.c
+
+So for some reason j2 is getting the absolute path and j1 is getting a
+relative path. I have absolutely no idea why this would be.
+
+> I don't think we actually want to copy serial.c, we just want to specify
+> a dependency, does this work for you?
+
+Yeah I think you're right, I misunderstood the boot wrapper.
+
+That patch works for me - it causes the full path to be used.
+
+Thanks heaps!
+
+Regards,
+Daniel
+
+> cheers
+>
+> diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+> index 39354365f54a..ed9883169190 100644
+> --- a/arch/powerpc/boot/Makefile
+> +++ b/arch/powerpc/boot/Makefile
+> @@ -197,7 +197,7 @@ $(addprefix $(obj)/,$(libfdt) $(libfdtheader)): $(obj)/%: $(srctree)/scripts/dtc
+>  $(obj)/zImage.coff.lds $(obj)/zImage.ps3.lds : $(obj)/%: $(srctree)/$(src)/%.S
+>  	$(Q)cp $< $@
+>  
+> -$(obj)/serial.c: $(obj)/autoconf.h
+> +$(srctree)/$(src)/serial.c: $(obj)/autoconf.h
+>  
+>  $(obj)/autoconf.h: $(obj)/%: $(objtree)/include/generated/%
+>  	$(Q)cp $< $@
