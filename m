@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 73169C43441
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 14:12:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B40A9C43441
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 14:14:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EC4A3208E7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 14:12:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EC4A3208E7
+	by mail.kernel.org (Postfix) with ESMTPS id 38B922133F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 14:14:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 38B922133F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 435KGV6GZSzDrFP
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Nov 2018 01:12:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 435KK6447XzDqVT
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Nov 2018 01:14:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
@@ -29,38 +29,38 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 435K8C6VCqzDrDN
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Nov 2018 01:06:51 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 435K8F1qDVzDrDT
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Nov 2018 01:06:53 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 435K866Ttrz9vFvd;
- Thu, 29 Nov 2018 15:06:46 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 435K884wC9z9vFvg;
+ Thu, 29 Nov 2018 15:06:48 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id X5fU4fmwXE9T; Thu, 29 Nov 2018 15:06:46 +0100 (CET)
+ with ESMTP id miDpdrOEHbRC; Thu, 29 Nov 2018 15:06:48 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 435K865qKhz9vFvb;
- Thu, 29 Nov 2018 15:06:46 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 026158B89E;
+ by pegase1.c-s.fr (Postfix) with ESMTP id 435K884Q7Tz9vFvb;
  Thu, 29 Nov 2018 15:06:48 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D8F2C8B89E;
+ Thu, 29 Nov 2018 15:06:49 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id bGzqGbaKTZLt; Thu, 29 Nov 2018 15:06:47 +0100 (CET)
+ with ESMTP id lYpGbTnbVPzu; Thu, 29 Nov 2018 15:06:49 +0100 (CET)
 Received: from po14163vm.idsi0.si.c-s.fr (unknown [192.168.232.3])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A96858B899;
- Thu, 29 Nov 2018 15:06:47 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id B20188B899;
+ Thu, 29 Nov 2018 15:06:49 +0100 (CET)
 Received: by po14163vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 8667569AE8; Thu, 29 Nov 2018 14:06:47 +0000 (UTC)
-Message-Id: <92106c1e558d4ecbdea315669cb4a4407f5dce5e.1543499861.git.christophe.leroy@c-s.fr>
+ id 8F56A69AE8; Thu, 29 Nov 2018 14:06:49 +0000 (UTC)
+Message-Id: <9a6ee14e9ab57d1141f55db6593b349f761eef2d.1543499861.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1543499860.git.christophe.leroy@c-s.fr>
 References: <cover.1543499860.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v9 01/20] powerpc/book3s32: Remove CONFIG_BOOKE dependent code
+Subject: [PATCH v9 02/20] powerpc/8xx: Remove PTE_ATOMIC_UPDATES
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Thu, 29 Nov 2018 14:06:47 +0000 (UTC)
+Date: Thu, 29 Nov 2018 14:06:49 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,79 +77,36 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-BOOK3S/32 cannot be BOOKE, so remove useless code
+commit 1bc54c03117b9 ("powerpc: rework 4xx PTE access and TLB miss")
+introduced non atomic PTE updates and started the work of removing
+PTE updates in TLB miss handlers, but kept PTE_ATOMIC_UPDATES for the
+8xx with the following comment:
+/* Until my rework is finished, 8xx still needs atomic PTE updates */
+
+commit fe11dc3f9628e ("powerpc/8xx: Update TLB asm so it behaves as
+linux mm expects") removed all PTE updates done in TLB miss handlers
+
+Therefore, atomic PTE updates are not needed anymore for the 8xx
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/book3s/32/pgalloc.h | 18 ------------------
- arch/powerpc/include/asm/book3s/32/pgtable.h | 14 --------------
- 2 files changed, 32 deletions(-)
+ arch/powerpc/include/asm/nohash/32/pte-8xx.h | 3 ---
+ 1 file changed, 3 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/32/pgalloc.h b/arch/powerpc/include/asm/book3s/32/pgalloc.h
-index 82e44b1a00ae..eb8882c6dbb0 100644
---- a/arch/powerpc/include/asm/book3s/32/pgalloc.h
-+++ b/arch/powerpc/include/asm/book3s/32/pgalloc.h
-@@ -50,8 +50,6 @@ static inline void pgd_free(struct mm_struct *mm, pgd_t *pgd)
- #define __pmd_free_tlb(tlb,x,a)		do { } while (0)
- /* #define pgd_populate(mm, pmd, pte)      BUG() */
+diff --git a/arch/powerpc/include/asm/nohash/32/pte-8xx.h b/arch/powerpc/include/asm/nohash/32/pte-8xx.h
+index 6bfe041ef59d..c9e4b2d90f65 100644
+--- a/arch/powerpc/include/asm/nohash/32/pte-8xx.h
++++ b/arch/powerpc/include/asm/nohash/32/pte-8xx.h
+@@ -65,9 +65,6 @@
  
--#ifndef CONFIG_BOOKE
+ #define _PTE_NONE_MASK	0
+ 
+-/* Until my rework is finished, 8xx still needs atomic PTE updates */
+-#define PTE_ATOMIC_UPDATES	1
 -
- static inline void pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmdp,
- 				       pte_t *pte)
- {
-@@ -65,22 +63,6 @@ static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmdp,
- }
- 
- #define pmd_pgtable(pmd) pmd_page(pmd)
--#else
--
--static inline void pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmdp,
--				       pte_t *pte)
--{
--	*pmdp = __pmd((unsigned long)pte | _PMD_PRESENT);
--}
--
--static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmdp,
--				pgtable_t pte_page)
--{
--	*pmdp = __pmd((unsigned long)lowmem_page_address(pte_page) | _PMD_PRESENT);
--}
--
--#define pmd_pgtable(pmd) pmd_page(pmd)
--#endif
- 
- extern pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long addr);
- extern pgtable_t pte_alloc_one(struct mm_struct *mm, unsigned long addr);
-diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
-index c21d33704633..32c33eccc0e2 100644
---- a/arch/powerpc/include/asm/book3s/32/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
-@@ -328,24 +328,10 @@ static inline void __ptep_set_access_flags(struct vm_area_struct *vma,
- #define __HAVE_ARCH_PTE_SAME
- #define pte_same(A,B)	(((pte_val(A) ^ pte_val(B)) & ~_PAGE_HASHPTE) == 0)
- 
--/*
-- * Note that on Book E processors, the pmd contains the kernel virtual
-- * (lowmem) address of the pte page.  The physical address is less useful
-- * because everything runs with translation enabled (even the TLB miss
-- * handler).  On everything else the pmd contains the physical address
-- * of the pte page.  -- paulus
-- */
--#ifndef CONFIG_BOOKE
- #define pmd_page_vaddr(pmd)	\
- 	((unsigned long) __va(pmd_val(pmd) & PAGE_MASK))
- #define pmd_page(pmd)		\
- 	pfn_to_page(pmd_val(pmd) >> PAGE_SHIFT)
--#else
--#define pmd_page_vaddr(pmd)	\
--	((unsigned long) (pmd_val(pmd) & PAGE_MASK))
--#define pmd_page(pmd)		\
--	pfn_to_page((__pa(pmd_val(pmd)) >> PAGE_SHIFT))
--#endif
- 
- /* to find an entry in a kernel page-table-directory */
- #define pgd_offset_k(address) pgd_offset(&init_mm, address)
+ #ifdef CONFIG_PPC_16K_PAGES
+ #define _PAGE_PSIZE	_PAGE_SPS
+ #else
 -- 
 2.13.3
 
