@@ -1,4 +1,4 @@
-Return-Path: <SRS0=VBhC=OH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=BLVf=OI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
@@ -6,60 +6,133 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44C0DC43441
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 22:31:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F7E2C43441
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 02:14:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5C7B820989
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Nov 2018 22:31:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9DCEC2081C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 02:14:12 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="rdCBbt51"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5C7B820989
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="Jd8OngLP"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9DCEC2081C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 434wNv6qqHzDqtR
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 09:31:27 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
+	by lists.ozlabs.org (Postfix) with ESMTP id 4351Ks6h2JzDqXZ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Nov 2018 13:14:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="rdCBbt51";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="Jd8OngLP";
 	dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 434wKs4c9MzDqtG
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Nov 2018 09:28:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=canb.auug.org.au
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
+ (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
+ envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au
- header.b="rdCBbt51"; dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
+ header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="Jd8OngLP"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
+ [IPv6:2607:f8b0:4864:20::442])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 434wKr4K4Kz9s3l;
- Thu, 29 Nov 2018 09:28:48 +1100 (AEDT)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=canb.auug.org.au
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=canb.auug.org.au;
- s=201702; t=1543444129;
- bh=oR8eni+t8uxEAANePe1Yj39/+FuhhNrMD6z+mY+KB6o=;
- h=Date:From:To:Cc:Subject:From;
- b=rdCBbt51EdQgRHJMsWCWm2YtzTgZMjdDfd1guAyHmGjPHQ2GrutsJWlKJ4s5et91V
- OgI0OyE1u5OPMWEfQ2wRQ6hXowczFUFWpJcsW/UKpHlLekVR+Pqm9PJadxKJJ0PzMV
- 16Au36RwSc2GjWLZZRmnXodcitCX3sayzsQWmB8n7C+VhqdhIK0b3PM96hWNh/1sza
- 3TkWAdw0xU2Ca/gZj4ioeuIUlnTr2XMdt5AaEkzZm1cOPMYK/hhmeIRlxA8iCL/A+v
- 8/uOief3Od+rFUGiQuTxfbNaxH476E2k5p4qJVbT9QRrjATlgnwVsMyH67PIc9fag3
- X4/yni3CFsw6g==
-Date: Thu, 29 Nov 2018 09:28:30 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH] powerpc: annotate implicit fall throughs
-Message-ID: <20181129092830.40680c49@canb.auug.org.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4351H22pnszDqyl
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Nov 2018 13:11:40 +1100 (AEDT)
+Received: by mail-pf1-x442.google.com with SMTP id 64so203177pfr.9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2018 18:11:40 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
+ h=subject:to:cc:references:from:openpgp:autocrypt:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=WLg+ivURdAJyYx+fSulK980AFlOGMcX5/0CbyugSWDE=;
+ b=Jd8OngLPsr3jvDVRZ+JtxTlNPVMb/QlvGi2R9sxLLo0B3g5iMXCcOx/jmZEq0Y5HGA
+ nNbALHh0bCEBEYPFpa6SrtPiPhYwQNLLu1zrTZHkdB27bUxyg7neQnTOCHdFlaIHi1Sx
+ mUD5w58CYyBLR5q1AeptoGmPj15dBVdqFR9YxZr7YYIT08jNFrHttzqh+RPCESIBpFYP
+ S3nEx0SqNytZELnSB4AGO0RV5qek/ohaN+gsvuI9putSBHHM34mHwnNpHo87Q1tOWyT0
+ sGHvK/O6nNKZA1pc5ieI7Kh6l5QIqxCtJi9XLDgLLm9r0B2xlh4eD10w91iRu50PFUjq
+ Q2Aw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:subject:to:cc:references:from:openpgp:autocrypt
+ :message-id:date:user-agent:mime-version:in-reply-to
+ :content-language:content-transfer-encoding;
+ bh=WLg+ivURdAJyYx+fSulK980AFlOGMcX5/0CbyugSWDE=;
+ b=lu3TfKzYJiFzXqFVQtTCCkRqqEj6YYQfgQmh+9wBvFJh+Bsp9j8MEzLMOa8gfTMVYv
+ wEABo2CC6fWAryby02X8QBCTUABzVJ8OTEfPOTlbznS9ONPXATFJcZlwCSsEI4YINXXV
+ 6j+MKnWkYb9EdG4UgAfgfKvIzbSW35ugv7LjcK+u5qFwMLoBdJGgL80J43wDhBZYyOYQ
+ bIssFzXXYvGQqCSTz9XdbwVnryFdVCTW4XuPTPvGBq1nVovgpJnkZlrJwK2xvrZrxaQR
+ c84PErq4py1JWey0xfw4MxtaqNxHcQpbQmxCMSIQFM9DsspwEAUfP2VOXFwjhvdFg4pd
+ KmIQ==
+X-Gm-Message-State: AGRZ1gIXZsdUkzr3xFExBHeJ5f3oSgzFwFz3SNiByy4MIB/Clni8ajbF
+ fZ2lDdGwJuTRsTdZrZwsFMwPAg==
+X-Google-Smtp-Source: AJdET5fdlGr3skcsGgKImIVUD5FUiqfHx8aI0l30o3PUfAq+ZkCcSabcSy27zjg3XsOV/tEWilVVjg==
+X-Received: by 2002:a62:2606:: with SMTP id m6mr39082905pfm.133.1543457498621; 
+ Wed, 28 Nov 2018 18:11:38 -0800 (PST)
+Received: from [10.61.2.175] ([122.99.82.10])
+ by smtp.gmail.com with ESMTPSA id 7sm519602pfm.8.2018.11.28.18.11.36
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Wed, 28 Nov 2018 18:11:37 -0800 (PST)
+Subject: Re: [PATCH kernel] powerpc/powernv/npu: Remove unused headers and a
+ macro.
+To: linuxppc-dev@lists.ozlabs.org
+References: <20180928064825.39667-1-aik@ozlabs.ru>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Openpgp: preference=signencrypt
+Autocrypt: addr=aik@ozlabs.ru; keydata=
+ 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
+Message-ID: <f3bdbac9-b36f-afca-614a-0ff6fe199e7c@ozlabs.ru>
+Date: Thu, 29 Nov 2018 13:11:34 +1100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.3.1
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/Kxe7=.lMnwH7jx3OEI0sfDK"; protocol="application/pgp-signature"
+In-Reply-To: <20180928064825.39667-1-aik@ozlabs.ru>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,100 +144,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Gustavo
- A. R. Silva" <gustavo@embeddedor.com>, Nicholas Piggin <npiggin@gmail.com>,
- Paul Mackerras <paulus@samba.org>, Kees Cook <keescook@google.com>,
- PowerPC <linuxppc-dev@lists.ozlabs.org>
+Cc: Alistair Popple <alistair@popple.id.au>, Reza Arbab <arbab@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---Sig_/Kxe7=.lMnwH7jx3OEI0sfDK
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Ping?
 
-There is a plan to build the kernel with -Wimplicit-fallthrough and these
-places in the code produced warnings, but because we build arch/powerpc
-with -Werror, they became errors.  Fix them up.
 
-This patch produces no change in behaviour, but should be reviewed in
-case these are actually bugs not intentional fallthoughs.
+On 28/09/2018 16:48, Alexey Kardashevskiy wrote:
+> The macro and few headers are not used so remove them.
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+>  arch/powerpc/platforms/powernv/npu-dma.c | 14 --------------
+>  1 file changed, 14 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
+> index 8006c54..3a5c4ed 100644
+> --- a/arch/powerpc/platforms/powernv/npu-dma.c
+> +++ b/arch/powerpc/platforms/powernv/npu-dma.c
+> @@ -9,32 +9,18 @@
+>   * License as published by the Free Software Foundation.
+>   */
+>  
+> -#include <linux/slab.h>
+>  #include <linux/mmu_notifier.h>
+>  #include <linux/mmu_context.h>
+>  #include <linux/of.h>
+> -#include <linux/export.h>
+>  #include <linux/pci.h>
+>  #include <linux/memblock.h>
+> -#include <linux/iommu.h>
+> -#include <linux/debugfs.h>
+>  
+>  #include <asm/debugfs.h>
+> -#include <asm/tlb.h>
+>  #include <asm/powernv.h>
+> -#include <asm/reg.h>
+> -#include <asm/opal.h>
+> -#include <asm/io.h>
+> -#include <asm/iommu.h>
+> -#include <asm/pnv-pci.h>
+> -#include <asm/msi_bitmap.h>
+>  #include <asm/opal.h>
+>  
+> -#include "powernv.h"
+>  #include "pci.h"
+>  
+> -#define npu_to_phb(x) container_of(x, struct pnv_phb, npu)
+> -
+>  /*
+>   * spinlock to protect initialisation of an npu_context for a particular
+>   * mm_struct.
+> 
 
-Cc: Kees Cook <keescook@google.com>
-Cc: Gustavo A. R. Silva <gustavo@embeddedor.com>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Cc: Balbir Singh <bsingharora@gmail.com>
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/kernel/nvram_64.c            | 1 +
- arch/powerpc/platforms/powermac/feature.c | 1 +
- arch/powerpc/xmon/xmon.c                  | 1 +
- 3 files changed, 3 insertions(+)
-
-The patch is relative to v4.20-rc4 and has been in linux-next for a
-few days.
-
-diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_64.c
-index 22e9d281324d..06e2eda2430e 100644
---- a/arch/powerpc/kernel/nvram_64.c
-+++ b/arch/powerpc/kernel/nvram_64.c
-@@ -809,6 +809,7 @@ static long dev_nvram_ioctl(struct file *file, unsigned=
- int cmd,
- #ifdef CONFIG_PPC_PMAC
- 	case OBSOLETE_PMAC_NVRAM_GET_OFFSET:
- 		printk(KERN_WARNING "nvram: Using obsolete PMAC_NVRAM_GET_OFFSET ioctl\n=
-");
-+		/* fall through */
- 	case IOC_NVRAM_GET_OFFSET: {
- 		int part, offset;
-=20
-diff --git a/arch/powerpc/platforms/powermac/feature.c b/arch/powerpc/platf=
-orms/powermac/feature.c
-index ed2f54b3f173..a7ec06876b53 100644
---- a/arch/powerpc/platforms/powermac/feature.c
-+++ b/arch/powerpc/platforms/powermac/feature.c
-@@ -1471,6 +1471,7 @@ static long g5_i2s_enable(struct device_node *node, l=
-ong param, long value)
- 	case 2:
- 		if (macio->type =3D=3D macio_shasta)
- 			break;
-+		/* fall through */
- 	default:
- 		return -ENODEV;
- 	}
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index 36b8dc47a3c3..308326f8b7ed 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -4033,6 +4033,7 @@ static int do_spu_cmd(void)
- 		subcmd =3D inchar();
- 		if (isxdigit(subcmd) || subcmd =3D=3D '\n')
- 			termch =3D subcmd;
-+		/* fall through */
- 	case 'f':
- 		scanhex(&num);
- 		if (num >=3D XMON_NUM_SPUS || !spu_info[num].spu) {
---=20
-2.20.0.rc1
-
---=20
-Cheers,
-Stephen Rothwell
-
---Sig_/Kxe7=.lMnwH7jx3OEI0sfDK
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAlv/Fo8ACgkQAVBC80lX
-0GxceAgAm4e0+XBmPvq933rdtUP79jfjqxRCjD43Qj9LA4fenCWuISamjRiMaP0K
-K59wip2ieHqzciDsnlW8E5pMGveqAMAxiwOqoXewZlriTx5mgodrpNr1lCFpBz14
-kW7akiPvRpvKm4dFmJ5VyH1hqyEN0RfFa7fdi6AXNUVWo7/CSz9klnzG30lsmpX6
-P12w7gL8qT8GhxLrqAeQXJI81zRpDQqxu0FEYPIMZP5oBmQYmvZtxDn02BtHtmlg
-6Mbgfw1HzODqQNkIdKyf12nUh+XpeLWtfKbwy5wK3CGOcmBiO29DqyDAIkWfG691
-hIkAc/RqTEP2Cxht7PIKH3qNHpVjPQ==
-=fT4E
------END PGP SIGNATURE-----
-
---Sig_/Kxe7=.lMnwH7jx3OEI0sfDK--
+-- 
+Alexey
