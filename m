@@ -2,58 +2,76 @@ Return-Path: <SRS0=Kv2y=OJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4DD25C64EB4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Nov 2018 18:05:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E05B9C64EB4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Nov 2018 18:08:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CFD0F20867
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Nov 2018 18:05:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CFD0F20867
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 6196220867
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Nov 2018 18:08:05 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="fR6nWM3w"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6196220867
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4362P06vK9zDrTk
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Dec 2018 05:05:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4362S33g8QzDqL2
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Dec 2018 05:08:03 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com; envelope-from=david@redhat.com;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="fR6nWM3w";
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=robh@kernel.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="fR6nWM3w"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4362H43RJPzDrVP
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Dec 2018 05:00:16 +1100 (AEDT)
-Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.phx2.redhat.com
- [10.5.11.14])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4362H84B82zDrVT
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Dec 2018 05:00:20 +1100 (AEDT)
+Received: from mail-qt1-f179.google.com (mail-qt1-f179.google.com
+ [209.85.160.179])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 643938E3EA;
- Fri, 30 Nov 2018 18:00:13 +0000 (UTC)
-Received: from t460s.redhat.com (ovpn-126-156.rdu2.redhat.com [10.10.126.156])
- by smtp.corp.redhat.com (Postfix) with ESMTP id B844C5D9C9;
- Fri, 30 Nov 2018 17:59:57 +0000 (UTC)
-From: David Hildenbrand <david@redhat.com>
-To: linux-mm@kvack.org
-Subject: [PATCH RFCv2 2/4] mm/memory_hotplug: Replace "bool want_memblock" by
- "int type"
-Date: Fri, 30 Nov 2018 18:59:20 +0100
-Message-Id: <20181130175922.10425-3-david@redhat.com>
-In-Reply-To: <20181130175922.10425-1-david@redhat.com>
-References: <20181130175922.10425-1-david@redhat.com>
+ by mail.kernel.org (Postfix) with ESMTPSA id B42F02147D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Nov 2018 18:00:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1543600817;
+ bh=/QpuGKJw2ddCeYOK3BoT6q8Eh45edi10/QgSRj8sg4I=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=fR6nWM3wBm1dMxNyAUPSbwdj1Q+K/XNmHKVIxb+tfplFWTz5Hf9UQePJG9BlCS+qO
+ Bf+tw27Vw48FA0mSJiQ4QVwrMDXC1EEGZj3XbJh6TVqZe+eC0hdOB2ibCvO4cXY5VB
+ hS0wpOT5xwQYG6bMvsnZX/wBPyPmQm8uSOExBHd4=
+Received: by mail-qt1-f179.google.com with SMTP id z16so6875659qtq.4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Nov 2018 10:00:17 -0800 (PST)
+X-Gm-Message-State: AA+aEWY/08SOf3j9ocr2Z3KsKQs1/tOuanF2ryOaSRnLWYCSIFjLf/ao
+ 4zVMutxlfTw5fIqHAWxcwjkL2EOAq9ENga0lkA==
+X-Google-Smtp-Source: AFSGD/UiLGFEHfl3xFMRQ6BqqrGeqaokngd70FI9UTO2I8nWvpdwvFH4mj26CvCmZOH7gYUq10ZoErtWi8ZQJGhpW+0=
+X-Received: by 2002:ac8:6b18:: with SMTP id w24mr6546459qts.144.1543600816930; 
+ Fri, 30 Nov 2018 10:00:16 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.14
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.25]); Fri, 30 Nov 2018 18:00:14 +0000 (UTC)
+References: <20181005165848.3474-1-robh@kernel.org>
+ <20181005165848.3474-13-robh@kernel.org>
+ <035ae23f-3c92-ffd9-0753-abbd604c5c02@xilinx.com>
+In-Reply-To: <035ae23f-3c92-ffd9-0753-abbd604c5c02@xilinx.com>
+From: Rob Herring <robh@kernel.org>
+Date: Fri, 30 Nov 2018 12:00:05 -0600
+X-Gmail-Original-Message-ID: <CAL_JsqJJkcbxvfbVVOTPb5gavPgypO-Cd05C6qpvbvPMd1G81g@mail.gmail.com>
+Message-ID: <CAL_JsqJJkcbxvfbVVOTPb5gavPgypO-Cd05C6qpvbvPMd1G81g@mail.gmail.com>
+Subject: Re: [PATCH 12/36] dt-bindings: arm: Convert cpu binding to json-schema
+To: Michal Simek <michal.simek@xilinx.com>, Mark Rutland <mark.rutland@arm.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,411 +83,66 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Oscar Salvador <osalvador@suse.com>, Rich Felker <dalias@libc.org>,
- linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>,
- Dave Hansen <dave.hansen@linux.intel.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Wei Yang <richard.weiyang@gmail.com>, Michal Hocko <mhocko@suse.com>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rafael@kernel.org>,
- linux-s390@vger.kernel.org, Dave Jiang <dave.jiang@intel.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, x86@kernel.org,
- Matthew Wilcox <willy@infradead.org>, linux-acpi@vger.kernel.org,
- Ingo Molnar <mingo@redhat.com>, xen-devel@lists.xenproject.org,
- Rob Herring <robh@kernel.org>, Fenghua Yu <fenghua.yu@intel.com>,
- =?UTF-8?q?Jan=20H=2E=20Sch=C3=B6nherr?= <jschoenh@amazon.de>,
- Pavel Tatashin <pasha.tatashin@soleen.com>, Vasily Gorbik <gor@linux.ibm.com>,
- Stephen Rothwell <sfr@canb.auug.org.au>,
- "mike.travis@hpe.com" <mike.travis@hpe.com>,
- Dan Williams <dan.j.williams@intel.com>,
- =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
- Nicholas Piggin <npiggin@gmail.com>,
- =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>,
- Mike Rapoport <rppt@linux.vnet.ibm.com>, Borislav Petkov <bp@alien8.de>,
- Andy Lutomirski <luto@kernel.org>, David Hildenbrand <david@redhat.com>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>, Arun KS <arunks@codeaurora.org>,
- Tony Luck <tony.luck@intel.com>, Mathieu Malaterre <malat@debian.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
- Logan Gunthorpe <logang@deltatee.com>,
- Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, devel@linuxdriverproject.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+Cc: devicetree@vger.kernel.org, Kumar Gala <kumar.gala@linaro.org>,
+ Grant Likely <glikely@secretlab.ca>, Arnd Bergmann <arnd@arndb.de>,
+ Tom Rini <trini@konsulko.com>, Frank Rowand <frowand.list@gmail.com>,
+ Linus Walleij <linus.walleij@linaro.org>,
+ Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Bjorn Andersson <bjorn.andersson@linaro.org>,
+ Matthias Brugger <matthias.bgg@gmail.com>, Mark Brown <broonie@kernel.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, Jonathan Cameron <jic23@kernel.org>,
+ Olof Johansson <olof@lixom.net>, linux-mediatek@lists.infradead.org,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
+ <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Let's pass a memory block type instead. Pass "MEMORY_BLOCK_NONE" for device
-memory and for now "MEMORY_BLOCK_UNSPECIFIED" for anything else. No
-functional change.
+On Thu, Nov 8, 2018 at 2:49 AM Michal Simek <michal.simek@xilinx.com> wrote:
+>
+> Hi Rob,
+>
+> On 05. 10. 18 18:58, Rob Herring wrote:
+> > Convert ARM CPU binding to DT schema format using json-schema.
+> >
+> > Cc: Mark Rutland <mark.rutland@arm.com>
+> > Cc: Matthias Brugger <matthias.bgg@gmail.com>
+> > Cc: devicetree@vger.kernel.org
+> > Cc: linux-arm-kernel@lists.infradead.org
+> > Cc: linux-mediatek@lists.infradead.org
+> > Signed-off-by: Rob Herring <robh@kernel.org>
+> > ---
+> >  .../devicetree/bindings/arm/cpus.txt          | 490 -----------------
+> >  .../devicetree/bindings/arm/cpus.yaml         | 503 ++++++++++++++++++
+> >  2 files changed, 503 insertions(+), 490 deletions(-)
+> >  delete mode 100644 Documentation/devicetree/bindings/arm/cpus.txt
+> >  create mode 100644 Documentation/devicetree/bindings/arm/cpus.yaml
 
-Cc: Tony Luck <tony.luck@intel.com>
-Cc: Fenghua Yu <fenghua.yu@intel.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
-Cc: Rich Felker <dalias@libc.org>
-Cc: Dave Hansen <dave.hansen@linux.intel.com>
-Cc: Andy Lutomirski <luto@kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Borislav Petkov <bp@alien8.de>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Cc: x86@kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Mike Rapoport <rppt@linux.vnet.ibm.com>
-Cc: Michal Hocko <mhocko@suse.com>
-Cc: Dan Williams <dan.j.williams@intel.com>
-Cc: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
-Cc: Oscar Salvador <osalvador@suse.com>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: "Jonathan Neuschäfer" <j.neuschaefer@gmx.net>
-Cc: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
-Cc: Vasily Gorbik <gor@linux.ibm.com>
-Cc: Arun KS <arunks@codeaurora.org>
-Cc: Rob Herring <robh@kernel.org>
-Cc: Pavel Tatashin <pasha.tatashin@soleen.com>
-Cc: "mike.travis@hpe.com" <mike.travis@hpe.com>
-Cc: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-Cc: Wei Yang <richard.weiyang@gmail.com>
-Cc: Logan Gunthorpe <logang@deltatee.com>
-Cc: "Jérôme Glisse" <jglisse@redhat.com>
-Cc: "Jan H. Schönherr" <jschoenh@amazon.de>
-Cc: Dave Jiang <dave.jiang@intel.com>
-Cc: Matthew Wilcox <willy@infradead.org>
-Cc: Mathieu Malaterre <malat@debian.org>
-Signed-off-by: David Hildenbrand <david@redhat.com>
----
- arch/ia64/mm/init.c            |  4 ++--
- arch/powerpc/mm/mem.c          |  4 ++--
- arch/s390/mm/init.c            |  4 ++--
- arch/sh/mm/init.c              |  4 ++--
- arch/x86/mm/init_32.c          |  4 ++--
- arch/x86/mm/init_64.c          |  8 ++++----
- drivers/base/memory.c          | 11 +++++++----
- include/linux/memory.h         |  2 +-
- include/linux/memory_hotplug.h | 12 ++++++------
- kernel/memremap.c              |  6 ++++--
- mm/memory_hotplug.c            | 16 ++++++++--------
- 11 files changed, 40 insertions(+), 35 deletions(-)
+[...]
 
-diff --git a/arch/ia64/mm/init.c b/arch/ia64/mm/init.c
-index 904fe55e10fc..408635d2902f 100644
---- a/arch/ia64/mm/init.c
-+++ b/arch/ia64/mm/init.c
-@@ -646,13 +646,13 @@ mem_init (void)
- 
- #ifdef CONFIG_MEMORY_HOTPLUG
- int arch_add_memory(int nid, u64 start, u64 size, struct vmem_altmap *altmap,
--		bool want_memblock)
-+		    int type)
- {
- 	unsigned long start_pfn = start >> PAGE_SHIFT;
- 	unsigned long nr_pages = size >> PAGE_SHIFT;
- 	int ret;
- 
--	ret = __add_pages(nid, start_pfn, nr_pages, altmap, want_memblock);
-+	ret = __add_pages(nid, start_pfn, nr_pages, altmap, type);
- 	if (ret)
- 		printk("%s: Problem encountered in __add_pages() as ret=%d\n",
- 		       __func__,  ret);
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index b3c9ee5c4f78..e394637da270 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -118,7 +118,7 @@ int __weak remove_section_mapping(unsigned long start, unsigned long end)
- }
- 
- int __meminit arch_add_memory(int nid, u64 start, u64 size, struct vmem_altmap *altmap,
--		bool want_memblock)
-+			      int type)
- {
- 	unsigned long start_pfn = start >> PAGE_SHIFT;
- 	unsigned long nr_pages = size >> PAGE_SHIFT;
-@@ -135,7 +135,7 @@ int __meminit arch_add_memory(int nid, u64 start, u64 size, struct vmem_altmap *
- 	}
- 	flush_inval_dcache_range(start, start + size);
- 
--	return __add_pages(nid, start_pfn, nr_pages, altmap, want_memblock);
-+	return __add_pages(nid, start_pfn, nr_pages, altmap, type);
- }
- 
- #ifdef CONFIG_MEMORY_HOTREMOVE
-diff --git a/arch/s390/mm/init.c b/arch/s390/mm/init.c
-index 3e82f66d5c61..ba2c56328e6d 100644
---- a/arch/s390/mm/init.c
-+++ b/arch/s390/mm/init.c
-@@ -225,7 +225,7 @@ device_initcall(s390_cma_mem_init);
- #endif /* CONFIG_CMA */
- 
- int arch_add_memory(int nid, u64 start, u64 size, struct vmem_altmap *altmap,
--		bool want_memblock)
-+		    int type)
- {
- 	unsigned long start_pfn = PFN_DOWN(start);
- 	unsigned long size_pages = PFN_DOWN(size);
-@@ -235,7 +235,7 @@ int arch_add_memory(int nid, u64 start, u64 size, struct vmem_altmap *altmap,
- 	if (rc)
- 		return rc;
- 
--	rc = __add_pages(nid, start_pfn, size_pages, altmap, want_memblock);
-+	rc = __add_pages(nid, start_pfn, size_pages, altmap, type);
- 	if (rc)
- 		vmem_remove_mapping(start, size);
- 	return rc;
-diff --git a/arch/sh/mm/init.c b/arch/sh/mm/init.c
-index 1a483a008872..5fbb8724e0f2 100644
---- a/arch/sh/mm/init.c
-+++ b/arch/sh/mm/init.c
-@@ -419,14 +419,14 @@ void free_initrd_mem(unsigned long start, unsigned long end)
- 
- #ifdef CONFIG_MEMORY_HOTPLUG
- int arch_add_memory(int nid, u64 start, u64 size, struct vmem_altmap *altmap,
--		bool want_memblock)
-+		    int type)
- {
- 	unsigned long start_pfn = PFN_DOWN(start);
- 	unsigned long nr_pages = size >> PAGE_SHIFT;
- 	int ret;
- 
- 	/* We only have ZONE_NORMAL, so this is easy.. */
--	ret = __add_pages(nid, start_pfn, nr_pages, altmap, want_memblock);
-+	ret = __add_pages(nid, start_pfn, nr_pages, altmap, type);
- 	if (unlikely(ret))
- 		printk("%s: Failed, __add_pages() == %d\n", __func__, ret);
- 
-diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
-index 0b8c7b0033d2..41e409b29d2b 100644
---- a/arch/x86/mm/init_32.c
-+++ b/arch/x86/mm/init_32.c
-@@ -851,12 +851,12 @@ void __init mem_init(void)
- 
- #ifdef CONFIG_MEMORY_HOTPLUG
- int arch_add_memory(int nid, u64 start, u64 size, struct vmem_altmap *altmap,
--		bool want_memblock)
-+		    int type)
- {
- 	unsigned long start_pfn = start >> PAGE_SHIFT;
- 	unsigned long nr_pages = size >> PAGE_SHIFT;
- 
--	return __add_pages(nid, start_pfn, nr_pages, altmap, want_memblock);
-+	return __add_pages(nid, start_pfn, nr_pages, altmap, type);
- }
- 
- #ifdef CONFIG_MEMORY_HOTREMOVE
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index f80d98381a97..5b4f3dcd44cf 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -783,11 +783,11 @@ static void update_end_of_memory_vars(u64 start, u64 size)
- }
- 
- int add_pages(int nid, unsigned long start_pfn, unsigned long nr_pages,
--		struct vmem_altmap *altmap, bool want_memblock)
-+	      struct vmem_altmap *altmap, int type)
- {
- 	int ret;
- 
--	ret = __add_pages(nid, start_pfn, nr_pages, altmap, want_memblock);
-+	ret = __add_pages(nid, start_pfn, nr_pages, altmap, type);
- 	WARN_ON_ONCE(ret);
- 
- 	/* update max_pfn, max_low_pfn and high_memory */
-@@ -798,14 +798,14 @@ int add_pages(int nid, unsigned long start_pfn, unsigned long nr_pages,
- }
- 
- int arch_add_memory(int nid, u64 start, u64 size, struct vmem_altmap *altmap,
--		bool want_memblock)
-+		    int type)
- {
- 	unsigned long start_pfn = start >> PAGE_SHIFT;
- 	unsigned long nr_pages = size >> PAGE_SHIFT;
- 
- 	init_memory_mapping(start, start + size);
- 
--	return add_pages(nid, start_pfn, nr_pages, altmap, want_memblock);
-+	return add_pages(nid, start_pfn, nr_pages, altmap, type);
- }
- 
- #define PAGE_INUSE 0xFD
-diff --git a/drivers/base/memory.c b/drivers/base/memory.c
-index 17f2985c07c5..c42300082c88 100644
---- a/drivers/base/memory.c
-+++ b/drivers/base/memory.c
-@@ -741,7 +741,7 @@ static int add_memory_block(int base_section_nr)
-  * need an interface for the VM to add new memory regions,
-  * but without onlining it.
-  */
--int hotplug_memory_register(int nid, struct mem_section *section)
-+int hotplug_memory_register(int nid, struct mem_section *section, int type)
- {
- 	int ret = 0;
- 	struct memory_block *mem;
-@@ -750,11 +750,14 @@ int hotplug_memory_register(int nid, struct mem_section *section)
- 
- 	mem = find_memory_block(section);
- 	if (mem) {
--		mem->section_count++;
-+		/* make sure the type matches */
-+		if (mem->type == type)
-+			mem->section_count++;
-+		else
-+			ret = -EINVAL;
- 		put_device(&mem->dev);
- 	} else {
--		ret = init_memory_block(&mem, section, MEM_OFFLINE,
--					MEMORY_BLOCK_UNSPECIFIED);
-+		ret = init_memory_block(&mem, section, MEM_OFFLINE, type);
- 		if (ret)
- 			goto out;
- 		mem->section_count++;
-diff --git a/include/linux/memory.h b/include/linux/memory.h
-index 06268e96e0da..9f39ef41e6d2 100644
---- a/include/linux/memory.h
-+++ b/include/linux/memory.h
-@@ -138,7 +138,7 @@ extern int register_memory_notifier(struct notifier_block *nb);
- extern void unregister_memory_notifier(struct notifier_block *nb);
- extern int register_memory_isolate_notifier(struct notifier_block *nb);
- extern void unregister_memory_isolate_notifier(struct notifier_block *nb);
--int hotplug_memory_register(int nid, struct mem_section *section);
-+int hotplug_memory_register(int nid, struct mem_section *section, int type);
- #ifdef CONFIG_MEMORY_HOTREMOVE
- extern int unregister_memory_section(int nid, struct mem_section *);
- #endif
-diff --git a/include/linux/memory_hotplug.h b/include/linux/memory_hotplug.h
-index 5493d3fa0c7f..667a37aa9a3c 100644
---- a/include/linux/memory_hotplug.h
-+++ b/include/linux/memory_hotplug.h
-@@ -117,18 +117,18 @@ extern void shrink_zone(struct zone *zone, unsigned long start_pfn,
- 
- /* reasonably generic interface to expand the physical pages */
- extern int __add_pages(int nid, unsigned long start_pfn, unsigned long nr_pages,
--		struct vmem_altmap *altmap, bool want_memblock);
-+		       struct vmem_altmap *altmap, int type);
- 
- #ifndef CONFIG_ARCH_HAS_ADD_PAGES
- static inline int add_pages(int nid, unsigned long start_pfn,
--		unsigned long nr_pages, struct vmem_altmap *altmap,
--		bool want_memblock)
-+			    unsigned long nr_pages, struct vmem_altmap *altmap,
-+			    int type)
- {
--	return __add_pages(nid, start_pfn, nr_pages, altmap, want_memblock);
-+	return __add_pages(nid, start_pfn, nr_pages, altmap, type);
- }
- #else /* ARCH_HAS_ADD_PAGES */
- int add_pages(int nid, unsigned long start_pfn, unsigned long nr_pages,
--		struct vmem_altmap *altmap, bool want_memblock);
-+	      struct vmem_altmap *altmap, int type);
- #endif /* ARCH_HAS_ADD_PAGES */
- 
- #ifdef CONFIG_NUMA
-@@ -330,7 +330,7 @@ extern int __add_memory(int nid, u64 start, u64 size);
- extern int add_memory(int nid, u64 start, u64 size);
- extern int add_memory_resource(int nid, struct resource *resource);
- extern int arch_add_memory(int nid, u64 start, u64 size,
--		struct vmem_altmap *altmap, bool want_memblock);
-+			   struct vmem_altmap *altmap, int type);
- extern void move_pfn_range_to_zone(struct zone *zone, unsigned long start_pfn,
- 		unsigned long nr_pages, struct vmem_altmap *altmap);
- extern int offline_pages(unsigned long start_pfn, unsigned long nr_pages);
-diff --git a/kernel/memremap.c b/kernel/memremap.c
-index 66cbf334203b..422e4e779208 100644
---- a/kernel/memremap.c
-+++ b/kernel/memremap.c
-@@ -4,6 +4,7 @@
- #include <linux/io.h>
- #include <linux/kasan.h>
- #include <linux/memory_hotplug.h>
-+#include <linux/memory.h>
- #include <linux/mm.h>
- #include <linux/pfn_t.h>
- #include <linux/swap.h>
-@@ -215,7 +216,8 @@ void *devm_memremap_pages(struct device *dev, struct dev_pagemap *pgmap)
- 	 */
- 	if (pgmap->type == MEMORY_DEVICE_PRIVATE) {
- 		error = add_pages(nid, align_start >> PAGE_SHIFT,
--				align_size >> PAGE_SHIFT, NULL, false);
-+				  align_size >> PAGE_SHIFT, NULL,
-+				  MEMORY_BLOCK_NONE);
- 	} else {
- 		error = kasan_add_zero_shadow(__va(align_start), align_size);
- 		if (error) {
-@@ -224,7 +226,7 @@ void *devm_memremap_pages(struct device *dev, struct dev_pagemap *pgmap)
- 		}
- 
- 		error = arch_add_memory(nid, align_start, align_size, altmap,
--				false);
-+					MEMORY_BLOCK_NONE);
- 	}
- 
- 	if (!error) {
-diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-index 16c600771298..7246faa44488 100644
---- a/mm/memory_hotplug.c
-+++ b/mm/memory_hotplug.c
-@@ -246,7 +246,7 @@ void __init register_page_bootmem_info_node(struct pglist_data *pgdat)
- #endif /* CONFIG_HAVE_BOOTMEM_INFO_NODE */
- 
- static int __meminit __add_section(int nid, unsigned long phys_start_pfn,
--		struct vmem_altmap *altmap, bool want_memblock)
-+				   struct vmem_altmap *altmap, int type)
- {
- 	int ret;
- 
-@@ -257,10 +257,11 @@ static int __meminit __add_section(int nid, unsigned long phys_start_pfn,
- 	if (ret < 0)
- 		return ret;
- 
--	if (!want_memblock)
-+	if (type == MEMORY_BLOCK_NONE)
- 		return 0;
- 
--	return hotplug_memory_register(nid, __pfn_to_section(phys_start_pfn));
-+	return hotplug_memory_register(nid, __pfn_to_section(phys_start_pfn),
-+				       type);
- }
- 
- /*
-@@ -270,8 +271,8 @@ static int __meminit __add_section(int nid, unsigned long phys_start_pfn,
-  * add the new pages.
-  */
- int __ref __add_pages(int nid, unsigned long phys_start_pfn,
--		unsigned long nr_pages, struct vmem_altmap *altmap,
--		bool want_memblock)
-+		      unsigned long nr_pages, struct vmem_altmap *altmap,
-+		      int type)
- {
- 	unsigned long i;
- 	int err = 0;
-@@ -295,8 +296,7 @@ int __ref __add_pages(int nid, unsigned long phys_start_pfn,
- 	}
- 
- 	for (i = start_sec; i <= end_sec; i++) {
--		err = __add_section(nid, section_nr_to_pfn(i), altmap,
--				want_memblock);
-+		err = __add_section(nid, section_nr_to_pfn(i), altmap, type);
- 
- 		/*
- 		 * EEXIST is finally dealt with by ioresource collision
-@@ -1100,7 +1100,7 @@ int __ref add_memory_resource(int nid, struct resource *res)
- 	new_node = ret;
- 
- 	/* call arch's memory hotadd */
--	ret = arch_add_memory(nid, start, size, NULL, true);
-+	ret = arch_add_memory(nid, start, size, NULL, MEMORY_TYPE_UNSPECIFIED);
- 	if (ret < 0)
- 		goto error;
- 
--- 
-2.17.2
+> I have take a look at xilinx part of this and try to build it for arm64
+> platforms and I see errors coming from this cpu description.
+> /root/linux/arch/arm64/boot/dts/xilinx/zynqmp-zcu100-revC.dt.yaml:
+> cpu@0:compatible: ['arm,cortex-a53', 'arm,armv8'] is too long
+> /root/linux/arch/arm64/boot/dts/xilinx/zynqmp-zcu100-revC.dt.yaml:
+> cpu@0:compatible: Additional items are not allowed ('arm,armv8' was
+> unexpected)
 
+Thanks for actually giving this a spin!
+
+> Based on grep this is used in a lot of places
+> compatible = "arm,cortex-a53", "arm,armv8";
+>
+> Should this be moved to just simple?
+> compatible = "arm,cortex-a53";
+
+I'd normally go with the majority which would be to keep it. However,
+'arm,armv8' is of questionable value, isn't actually documented, and
+doesn't exist for any other version of the architecture. So we should
+kill it IMO.
+
+Paging Mark Rutland and other arm folks...
+
+Rob
