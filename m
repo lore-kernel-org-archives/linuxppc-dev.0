@@ -2,74 +2,83 @@ Return-Path: <SRS0=Kv2y=OJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
-	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 80B57C04EB8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Nov 2018 13:15:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8EC0FC04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Nov 2018 15:33:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D406420867
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Nov 2018 13:15:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 1F63620868
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Nov 2018 15:33:18 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="y6knBWlH"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D406420867
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="dmZU4VOu"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1F63620868
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 435vyK057jzDrdS
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Dec 2018 00:15:21 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 435z1S4B9pzDr9C
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Dec 2018 02:33:16 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="y6knBWlH";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="dmZU4VOu";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=robh@kernel.org;
- receiver=<UNKNOWN>)
+ spf=pass (helo) smtp.helo=mo6-p01-ob.smtp.rzone.de
+ (client-ip=2a01:238:20a:202:5301::4; helo=mo6-p01-ob.smtp.rzone.de;
+ envelope-from=chzigotzky@xenosoft.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="y6knBWlH"; 
+ dmarc=none (p=none dis=none) header.from=xenosoft.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="dmZU4VOu"; 
  dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Received: from mo6-p01-ob.smtp.rzone.de (mo6-p01-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5301::4])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 435vvX3Rd5zDrGp
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Dec 2018 00:12:56 +1100 (AEDT)
-Received: from mail-qt1-f171.google.com (mail-qt1-f171.google.com
- [209.85.160.171])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id DC8FF20867
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Nov 2018 13:12:53 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1543583574;
- bh=LXwXqLekSeNAZZYD2UxBeDpBGkbH4NpD6saLxwjH27s=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=y6knBWlHelfxJxrpmYMHuzx4w8Ug/Hvfjd/o69wct6dWsN6kZZ2h3xydmXVrQaXI+
- N5uYdApXRmeP8MMWHVIqkLn781OTJsAvAs9BZM+bBtPh7Ah5t2hw80JywSmpH6o7CU
- UftSg4veCArRhN8yrAmrkCBUeIH9yroV6SyHyMog=
-Received: by mail-qt1-f171.google.com with SMTP id n32so5778944qte.11
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Nov 2018 05:12:53 -0800 (PST)
-X-Gm-Message-State: AA+aEWYertoxjgBNT8nfcpBDSdFcs7EKCKInNPdPpzovubU4EYcv4Vs2
- V5fwEedSsGQmo2p3gGB7qFYKOof/QU4U2fbzyw==
-X-Google-Smtp-Source: AFSGD/XSZ7yhkV2R10ZCm7C929Bp1RbmeObJRY3I/JQCKC7Vksebx2luJxMwEXyU8xV/++fYeyY0gA3C4RKrP8ZfB0I=
-X-Received: by 2002:ac8:1712:: with SMTP id w18mr4550459qtj.76.1543583573152; 
- Fri, 30 Nov 2018 05:12:53 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 435yxs1Q9XzDrQx
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Dec 2018 02:30:08 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1543591805;
+ s=strato-dkim-0002; d=xenosoft.de;
+ h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:
+ X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
+ bh=vx/O4RzewWVBbqwppz8CMgGXMMYyYUTfLOLIKfSFWz4=;
+ b=dmZU4VOuM67kvcrDJ9UEIpT7P87k8HgoJrowAP6XC774o7vUt+0BmH7ftepsObrUou
+ UDA6L7yKA9Xtke8Ou8C82OuEBdO/hRbINXR6BeSKpYz2Pb7O21LwFALNMA7K5XIte/s0
+ XVQJtyp0WEsQwuIH36LKoWooAop22A6y2j8D7vLdFO0caQkR4uNn47zZ7lABpWBSWVKb
+ 91IoEp4M+gdFd5FG7IdVU171yA95xXUBvVsDHGhY9XYYZt3yuAbJRgR9Nz+YVamBe/DB
+ nqisTHvaWXq0Fn80GYN4StY9YNJJAlNuo2o+OvOpC76ayvLW8oizeNkMfjFktV5kEju/
+ ApuQ==
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5G5MdirQj0WG7CkOhtXRWqPjJ5MV2zvh/ExgOBPpsw=="
+X-RZG-CLASS-ID: mo00
+Received: from [IPv6:2a02:8109:a400:162c:1876:2ea1:f7b3:289d]
+ by smtp.strato.de (RZmta 44.6 AUTH) with ESMTPSA id 404b20uAUFTeIEo
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
+ 521 ECDH bits, eq. 15360 bits RSA))
+ (Client did not present a certificate);
+ Fri, 30 Nov 2018 16:29:40 +0100 (CET)
+Subject: Re: use generic DMA mapping code in powerpc V4
+To: Christoph Hellwig <hch@lst.de>
+References: <20181114082314.8965-1-hch@lst.de> <20181127074253.GB30186@lst.de>
+ <87zhttfonk.fsf@concordia.ellerman.id.au>
+ <4d4e3cdd-d1a9-affe-0f63-45b8c342bbd6@xenosoft.de>
+ <20181129170351.GC27951@lst.de>
+ <d0e04a85-f17d-414e-6fea-971414417430@xenosoft.de>
+ <20181130105346.GB26765@lst.de>
+ <8694431d-c669-b7b9-99fa-e99db5d45a7d@xenosoft.de>
+ <20181130131056.GA5211@lst.de>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Message-ID: <25999587-2d91-a63c-ed38-c3fb0075d9f1@xenosoft.de>
+Date: Fri, 30 Nov 2018 16:29:40 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.3.1
 MIME-Version: 1.0
-References: <d3aa7c5adee1e3cedeb65661545c82d30faafc8f.camel@kernel.crashing.org>
-In-Reply-To: <d3aa7c5adee1e3cedeb65661545c82d30faafc8f.camel@kernel.crashing.org>
-From: Rob Herring <robh@kernel.org>
-Date: Fri, 30 Nov 2018 07:12:41 -0600
-X-Gmail-Original-Message-ID: <CAL_JsqJ1A+mscejj9T00isK4O0U9b2jbf56PYFPegezd9uJadQ@mail.gmail.com>
-Message-ID: <CAL_JsqJ1A+mscejj9T00isK4O0U9b2jbf56PYFPegezd9uJadQ@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: Look for "stdout-path" when setting up legacy
- consoles
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20181130131056.GA5211@lst.de>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: de-DE
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,22 +90,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-arch@vger.kernel.org, Darren Stevens <darren@stevens-zone.net>,
+ linux-kernel@vger.kernel.org, Julian Margetson <runaway@candw.ms>,
+ linux-mm@kvack.org, iommu@lists.linux-foundation.org,
+ Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Nov 29, 2018 at 9:54 PM Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
->
-> Commit 78e5dfea8 "powerpc: dts: replace 'linux,stdout-path' with 'stdout-path'"
-> broke the default console on a number of embedded PowerPC systems, because it
-> failed to also update the code in arch/powerpc/kernel/legacy_serial.c to
-> look for that property in addition to the old one.
->
-> This fixes it.
->
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Fixes: 78e5dfea8 powerpc: dts: replace 'linux,stdout-path' with 'stdout-path'
+Hello Christoph,
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+Thanks for your reply.
+
+On 30 November 2018 at 2:10PM, Christoph Hellwig wrote:
+> On Fri, Nov 30, 2018 at 01:23:20PM +0100, Christian Zigotzky wrote:
+>> Yes, of course. I patched your Git kernel and after that I compiled it
+>> again. U-Boot loads the kernel and the dtb file. Then the kernel starts but
+>> it doesn't find any hard disks (partitions).
+> Interesting.  Does it find the storage controller (what kind of
+> storage does it use?).
+It seems not. I don't see any infos about hard disks in the kernel ring 
+buffer. The two serial ATA (SATA 2.0) controllers are integrated in the 
+P5020 SoC and the hard disks are connected via SerDes lanes (PCIe) to 
+the SoC. LANE 16 = SATA 0 and LANE 17 = SATA 1.
+> For the PASEMI board can you test the attached patch?  Also are you
+> using Compact Flash cards on that system?
+Yes, we are using Compact Flash cards. The slot is wired to the CPU 
+local bus. It works with your kernel. :-)
+
+Where is the attached patch?
+
+I downloaded the version 5 of your Git kernel and compiled it today. 
+Unfortunately the PASEMI ethernet doesn't work.
+
+Error message: pci 0000:00:1a.0: dma_direct_map_page: overflow 
+0x000000026bcb5002+110 of device mask ffffffff bus mask 0
+
+@All
+Could you please also test Christoph's kernel on your PASEMI and NXP boards? Download:
+
+'git clone git://git.infradead.org/users/hch/misc.git -b powerpc-dma.5 a'
+
+Thanks,
+Christian
+
