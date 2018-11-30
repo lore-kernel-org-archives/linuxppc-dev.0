@@ -2,54 +2,74 @@ Return-Path: <SRS0=Kv2y=OJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 23E18C64EB4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Nov 2018 13:13:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 80B57C04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Nov 2018 13:15:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9383F20867
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Nov 2018 13:13:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9383F20867
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id D406420867
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Nov 2018 13:15:22 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="y6knBWlH"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D406420867
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 435vvd41l4zDrTY
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Dec 2018 00:13:01 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by lists.ozlabs.org (Postfix) with ESMTP id 435vyK057jzDrdS
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Dec 2018 00:15:21 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=lst.de
- (client-ip=213.95.11.211; helo=newverein.lst.de; envelope-from=hch@lst.de;
+	dkim=pass (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="y6knBWlH";
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=robh@kernel.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lst.de
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="y6knBWlH"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 435vsJ3mKpzDrSC
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Dec 2018 00:11:00 +1100 (AEDT)
-Received: by newverein.lst.de (Postfix, from userid 2407)
- id B48A967357; Fri, 30 Nov 2018 14:10:56 +0100 (CET)
-Date: Fri, 30 Nov 2018 14:10:56 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Christian Zigotzky <chzigotzky@xenosoft.de>
-Subject: Re: use generic DMA mapping code in powerpc V4
-Message-ID: <20181130131056.GA5211@lst.de>
-References: <20181114082314.8965-1-hch@lst.de> <20181127074253.GB30186@lst.de>
- <87zhttfonk.fsf@concordia.ellerman.id.au>
- <4d4e3cdd-d1a9-affe-0f63-45b8c342bbd6@xenosoft.de>
- <20181129170351.GC27951@lst.de>
- <d0e04a85-f17d-414e-6fea-971414417430@xenosoft.de>
- <20181130105346.GB26765@lst.de>
- <8694431d-c669-b7b9-99fa-e99db5d45a7d@xenosoft.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 435vvX3Rd5zDrGp
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Dec 2018 00:12:56 +1100 (AEDT)
+Received: from mail-qt1-f171.google.com (mail-qt1-f171.google.com
+ [209.85.160.171])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id DC8FF20867
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Nov 2018 13:12:53 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1543583574;
+ bh=LXwXqLekSeNAZZYD2UxBeDpBGkbH4NpD6saLxwjH27s=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=y6knBWlHelfxJxrpmYMHuzx4w8Ug/Hvfjd/o69wct6dWsN6kZZ2h3xydmXVrQaXI+
+ N5uYdApXRmeP8MMWHVIqkLn781OTJsAvAs9BZM+bBtPh7Ah5t2hw80JywSmpH6o7CU
+ UftSg4veCArRhN8yrAmrkCBUeIH9yroV6SyHyMog=
+Received: by mail-qt1-f171.google.com with SMTP id n32so5778944qte.11
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Nov 2018 05:12:53 -0800 (PST)
+X-Gm-Message-State: AA+aEWYertoxjgBNT8nfcpBDSdFcs7EKCKInNPdPpzovubU4EYcv4Vs2
+ V5fwEedSsGQmo2p3gGB7qFYKOof/QU4U2fbzyw==
+X-Google-Smtp-Source: AFSGD/XSZ7yhkV2R10ZCm7C929Bp1RbmeObJRY3I/JQCKC7Vksebx2luJxMwEXyU8xV/++fYeyY0gA3C4RKrP8ZfB0I=
+X-Received: by 2002:ac8:1712:: with SMTP id w18mr4550459qtj.76.1543583573152; 
+ Fri, 30 Nov 2018 05:12:53 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8694431d-c669-b7b9-99fa-e99db5d45a7d@xenosoft.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <d3aa7c5adee1e3cedeb65661545c82d30faafc8f.camel@kernel.crashing.org>
+In-Reply-To: <d3aa7c5adee1e3cedeb65661545c82d30faafc8f.camel@kernel.crashing.org>
+From: Rob Herring <robh@kernel.org>
+Date: Fri, 30 Nov 2018 07:12:41 -0600
+X-Gmail-Original-Message-ID: <CAL_JsqJ1A+mscejj9T00isK4O0U9b2jbf56PYFPegezd9uJadQ@mail.gmail.com>
+Message-ID: <CAL_JsqJ1A+mscejj9T00isK4O0U9b2jbf56PYFPegezd9uJadQ@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: Look for "stdout-path" when setting up legacy
+ consoles
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,42 +81,22 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, iommu@lists.linux-foundation.org,
- Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>,
- linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Nov 30, 2018 at 01:23:20PM +0100, Christian Zigotzky wrote:
-> Hi Christoph,
+On Thu, Nov 29, 2018 at 9:54 PM Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
 >
-> Thanks a lot for your fast reply.
+> Commit 78e5dfea8 "powerpc: dts: replace 'linux,stdout-path' with 'stdout-path'"
+> broke the default console on a number of embedded PowerPC systems, because it
+> failed to also update the code in arch/powerpc/kernel/legacy_serial.c to
+> look for that property in addition to the old one.
 >
-> On 30 November 2018 at 11:53AM, Christoph Hellwig wrote:
->> Hi Christian,
->>
->> for such a diverse architecture like powerpc we'll have to rely on
->> users / non core developers like you to help with testing.
-> I see. I will help as good as I can.
->>
->> Can you try the patch below for he cyrus config?
-> Yes, of course. I patched your Git kernel and after that I compiled it 
-> again. U-Boot loads the kernel and the dtb file. Then the kernel starts but 
-> it doesn't find any hard disks (partitions).
+> This fixes it.
+>
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Fixes: 78e5dfea8 powerpc: dts: replace 'linux,stdout-path' with 'stdout-path'
 
-Interesting.  Does it find the storage controller (what kind of
-storage does it use?).
-
-For the PASEMI board can you test the attached patch?  Also are you
-using Compact Flash cards on that system?
-
-> @All
-> Could you please also test Christoph's kernel on your PASEMI and NXP 
-> boards? Download: 'git clone git://git.infradead.org/users/hch/misc.git -b 
-> powerpc-dma.4 a'
-
-FYI, I've pushed a new powerpc-dma.5 with the various fixes discussed
-in this thread.
-
+Reviewed-by: Rob Herring <robh@kernel.org>
