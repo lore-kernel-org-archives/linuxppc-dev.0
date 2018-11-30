@@ -2,52 +2,52 @@ Return-Path: <SRS0=Kv2y=OJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 13164C04EB8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Nov 2018 10:55:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 169B9C04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Nov 2018 10:58:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5563D20863
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Nov 2018 10:55:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5563D20863
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id 9031E20834
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Nov 2018 10:58:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9031E20834
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 435rsL2y50zDrS2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Nov 2018 21:55:50 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by lists.ozlabs.org (Postfix) with ESMTP id 435rwK4d0czDrCN
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Nov 2018 21:58:25 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=lst.de
- (client-ip=213.95.11.211; helo=newverein.lst.de; envelope-from=hch@lst.de;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=arm.com
+ (client-ip=217.140.101.70; helo=foss.arm.com;
+ envelope-from=lorenzo.pieralisi@arm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lst.de
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 435rq30TSZzDrPn
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Nov 2018 21:53:50 +1100 (AEDT)
-Received: by newverein.lst.de (Postfix, from userid 2407)
- id 7081F68BE5; Fri, 30 Nov 2018 11:53:46 +0100 (CET)
-Date: Fri, 30 Nov 2018 11:53:46 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Christian Zigotzky <chzigotzky@xenosoft.de>
-Subject: Re: use generic DMA mapping code in powerpc V4
-Message-ID: <20181130105346.GB26765@lst.de>
-References: <20181114082314.8965-1-hch@lst.de> <20181127074253.GB30186@lst.de>
- <87zhttfonk.fsf@concordia.ellerman.id.au>
- <4d4e3cdd-d1a9-affe-0f63-45b8c342bbd6@xenosoft.de>
- <20181129170351.GC27951@lst.de>
- <d0e04a85-f17d-414e-6fea-971414417430@xenosoft.de>
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 435rrn1SvCzDrRV
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Nov 2018 21:55:20 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id BCE8780D;
+ Fri, 30 Nov 2018 02:55:18 -0800 (PST)
+Received: from e107981-ln.cambridge.arm.com (e107981-ln.cambridge.arm.com
+ [10.1.197.40])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 3AD953F59C;
+ Fri, 30 Nov 2018 02:55:15 -0800 (PST)
+Date: Fri, 30 Nov 2018 10:55:12 +0000
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+To: Xiaowei Bao <xiaowei.bao@nxp.com>
+Subject: Re: [PATCHv2 3/6] PCI: layerscape: Add the EP mode support
+Message-ID: <20181130105512.GB17598@e107981-ln.cambridge.arm.com>
+References: <20181105084653.26597-1-xiaowei.bao@nxp.com>
+ <20181105084653.26597-3-xiaowei.bao@nxp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <d0e04a85-f17d-414e-6fea-971414417430@xenosoft.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20181105084653.26597-3-xiaowei.bao@nxp.com>
+User-Agent: Mutt/1.5.24 (2015-08-30)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,102 +59,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, iommu@lists.linux-foundation.org,
- Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>,
- linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>
+Cc: mark.rutland@arm.com, roy.zang@nxp.com, linuxppc-dev@lists.ozlabs.org,
+ arnd@arndb.de, devicetree@vger.kernel.org, gregkh@linuxfoundation.org,
+ kstewart@linuxfoundation.org, niklas.cassel@axis.com,
+ linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, kishon@ti.com,
+ minghuan.Lian@nxp.com, robh+dt@kernel.org, cyrille.pitchen@free-electrons.com,
+ linux-arm-kernel@lists.infradead.org, pombredanne@nexb.com,
+ bhelgaas@google.com, leoyang.li@nxp.com, shawnguo@kernel.org,
+ shawn.lin@rock-chips.com, mingkai.hu@nxp.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Christian,
+On Mon, Nov 05, 2018 at 04:46:50PM +0800, Xiaowei Bao wrote:
+> Add the EP mode support.
+> 
+> Signed-off-by: Xiaowei Bao <xiaowei.bao@nxp.com>
+> ---
+> v2:
+>  - Add the SoC specific compatibles.
+> 
+>  .../devicetree/bindings/pci/layerscape-pci.txt     |    3 +++
+>  1 files changed, 3 insertions(+), 0 deletions(-)
 
-for such a diverse architecture like powerpc we'll have to rely on
-users / non core developers like you to help with testing.
+Wrong commit $SUBJECT, this is not PCI code, it is a DT binding
+update, I will have a look at the rest of the series to see if I
+can update this patch or you will do it with the next respin.
 
-Can you try the patch below for he cyrus config?
+Lorenzo
 
-For the nemo one I have no idea yet, there is no chance I could trick
-you into a git bisect to see which patch caused the problem, is there?
-
-
-diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-index 7b70dcbce1b9..2f0ca6560e47 100644
---- a/arch/powerpc/include/asm/machdep.h
-+++ b/arch/powerpc/include/asm/machdep.h
-@@ -47,7 +47,7 @@ struct machdep_calls {
- #endif
- #endif /* CONFIG_PPC64 */
- 
--	int		(*dma_set_mask)(struct device *dev, u64 dma_mask);
-+	void		(*dma_set_mask)(struct device *dev, u64 dma_mask);
- 
- 	int		(*probe)(void);
- 	void		(*setup_arch)(void); /* Optional, may be NULL */
-diff --git a/arch/powerpc/kernel/dma-swiotlb.c b/arch/powerpc/kernel/dma-swiotlb.c
-index bded4127791a..2587eb0f3fde 100644
---- a/arch/powerpc/kernel/dma-swiotlb.c
-+++ b/arch/powerpc/kernel/dma-swiotlb.c
-@@ -22,11 +22,10 @@
- #include <asm/swiotlb.h>
- #include <asm/dma.h>
- 
--bool arch_dma_set_mask(struct device *dev, u64 dma_mask)
-+void arch_dma_set_mask(struct device *dev, u64 dma_mask)
- {
--	if (!ppc_md.dma_set_mask)
--		return 0;
--	return ppc_md.dma_set_mask(dev, dma_mask);
-+	if (ppc_md.dma_set_mask)
-+		ppc_md.dma_set_mask(dev, dma_mask);
- }
- EXPORT_SYMBOL(arch_dma_set_mask);
- 
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index 9584765dbe3b..8582a418516b 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -134,7 +134,7 @@ static void setup_swiotlb_ops(struct pci_controller *hose)
- static inline void setup_swiotlb_ops(struct pci_controller *hose) {}
- #endif
- 
--static int fsl_pci_dma_set_mask(struct device *dev, u64 dma_mask)
-+static void fsl_pci_dma_set_mask(struct device *dev, u64 dma_mask)
- {
- 	/*
- 	 * Fix up PCI devices that are able to DMA to the large inbound
-@@ -144,8 +144,6 @@ static int fsl_pci_dma_set_mask(struct device *dev, u64 dma_mask)
- 		dev->bus_dma_mask = 0;
- 		dev->archdata.dma_offset = pci64_dma_offset;
- 	}
--
--	return 0;
- }
- 
- static int setup_one_atmu(struct ccsr_pci __iomem *pci,
-diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
-index 8dd19e66c0e5..94a4db5f7ec3 100644
---- a/include/linux/dma-mapping.h
-+++ b/include/linux/dma-mapping.h
-@@ -599,17 +599,16 @@ static inline int dma_supported(struct device *dev, u64 mask)
- }
- 
- #ifdef CONFIG_ARCH_HAS_DMA_SET_MASK
--bool arch_dma_set_mask(struct device *dev, u64 mask);
-+void arch_dma_set_mask(struct device *dev, u64 mask);
- #else
--#define arch_dma_set_mask(dev, mask)		true
-+#define arch_dma_set_mask(dev, mask)	do { } while (0)
- #endif
- 
- static inline int dma_set_mask(struct device *dev, u64 mask)
- {
- 	if (!dev->dma_mask || !dma_supported(dev, mask))
- 		return -EIO;
--	if (!arch_dma_set_mask(dev, mask))
--		return -EIO;
-+	arch_dma_set_mask(dev, mask);
- 	dma_check_mask(dev, mask);
- 
- 	*dev->dma_mask = mask;
-
+> diff --git a/Documentation/devicetree/bindings/pci/layerscape-pci.txt b/Documentation/devicetree/bindings/pci/layerscape-pci.txt
+> index 66df1e8..9c090c7 100644
+> --- a/Documentation/devicetree/bindings/pci/layerscape-pci.txt
+> +++ b/Documentation/devicetree/bindings/pci/layerscape-pci.txt
+> @@ -13,12 +13,15 @@ information.
+>  
+>  Required properties:
+>  - compatible: should contain the platform identifier such as:
+> +  RC mode:
+>          "fsl,ls1021a-pcie", "snps,dw-pcie"
+>          "fsl,ls2080a-pcie", "fsl,ls2085a-pcie", "snps,dw-pcie"
+>          "fsl,ls2088a-pcie"
+>          "fsl,ls1088a-pcie"
+>          "fsl,ls1046a-pcie"
+>          "fsl,ls1012a-pcie"
+> +  EP mode:
+> +        "fsl,ls1046a-pcie-ep", "fsl,ls-pcie-ep"
+>  - reg: base addresses and lengths of the PCIe controller register blocks.
+>  - interrupts: A list of interrupt outputs of the controller. Must contain an
+>    entry for each entry in the interrupt-names property.
+> -- 
+> 1.7.1
+> 
