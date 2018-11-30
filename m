@@ -6,44 +6,66 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1822EC65BAE
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Nov 2018 03:56:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C01A1C04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Nov 2018 06:10:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 849FA2145D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Nov 2018 03:56:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 849FA2145D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+	by mail.kernel.org (Postfix) with ESMTPS id C5BDB2145D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Nov 2018 06:10:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C5BDB2145D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 435gYN31s0zDrR7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Nov 2018 14:56:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
-Authentication-Results: lists.ozlabs.org; spf=permerror (mailfrom)
- smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57;
- helo=gate.crashing.org; envelope-from=benh@kernel.crashing.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=kernel.crashing.org
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 435kXb2xgczDrRC
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Nov 2018 17:10:55 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 435gW12ntWzDrQc
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Nov 2018 14:54:21 +1100 (AEDT)
-Received: from localhost (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id wAU3s9R3010506;
- Thu, 29 Nov 2018 21:54:10 -0600
-Message-ID: <d3aa7c5adee1e3cedeb65661545c82d30faafc8f.camel@kernel.crashing.org>
-Subject: [PATCH] powerpc: Look for "stdout-path" when setting up legacy
- consoles
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev@lists.ozlabs.org
-Date: Fri, 30 Nov 2018 14:54:09 +1100
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.30.2 (3.30.2-2.fc29) 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 435kVC6ZDpzDrQt
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Nov 2018 17:08:50 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 435kV62DXlz9vGFV;
+ Fri, 30 Nov 2018 07:08:46 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id SDskCSGK2X0C; Fri, 30 Nov 2018 07:08:46 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 435kV61PrPz9vGFT;
+ Fri, 30 Nov 2018 07:08:46 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D69ED8B8CA;
+ Fri, 30 Nov 2018 07:08:46 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id TRQvZaZh23dX; Fri, 30 Nov 2018 07:08:46 +0100 (CET)
+Received: from PO15451 (po15451.idsi0.si.c-s.fr [172.25.231.2])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 6A1A88B755;
+ Fri, 30 Nov 2018 07:08:46 +0100 (CET)
+Subject: Re: [PATCH 12/24] powerpc/mm: Fix reporting of kernel execute faults
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+References: <20170719044946.22030-1-benh@kernel.crashing.org>
+ <20170719044946.22030-12-benh@kernel.crashing.org>
+ <64d43dc0-60ad-4346-96c9-2ff46867d9c9@c-s.fr> <87zhtr5d1v.fsf@linux.ibm.com>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <802b01de-aaf0-75b3-f337-99279afab05d@c-s.fr>
+Date: Fri, 30 Nov 2018 07:08:46 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.3.1
+MIME-Version: 1.0
+In-Reply-To: <87zhtr5d1v.fsf@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,44 +77,114 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rob Herring <robh@kernel.org>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Commit 78e5dfea8 "powerpc: dts: replace 'linux,stdout-path' with 'stdout-path'"
-broke the default console on a number of embedded PowerPC systems, because it
-failed to also update the code in arch/powerpc/kernel/legacy_serial.c to
-look for that property in addition to the old one.
 
-This fixes it.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Fixes: 78e5dfea8 powerpc: dts: replace 'linux,stdout-path' with 'stdout-path'
----
-diff --git a/arch/powerpc/kernel/legacy_serial.c b/arch/powerpc/kernel/legacy_serial.c
-index 33b34a5..5b9dce1 100644
---- a/arch/powerpc/kernel/legacy_serial.c
-+++ b/arch/powerpc/kernel/legacy_serial.c
-@@ -372,6 +372,8 @@ void __init find_legacy_serial_ports(void)
- 
- 	/* Now find out if one of these is out firmware console */
- 	path = of_get_property(of_chosen, "linux,stdout-path", NULL);
-+	if (path == NULL)
-+		path = of_get_property(of_chosen, "stdout-path", NULL);
- 	if (path != NULL) {
- 		stdout = of_find_node_by_path(path);
- 		if (stdout)
-@@ -595,8 +597,10 @@ static int __init check_legacy_serial_console(void)
- 	/* We are getting a weird phandle from OF ... */
- 	/* ... So use the full path instead */
- 	name = of_get_property(of_chosen, "linux,stdout-path", NULL);
-+	if (name == NULL)
-+		name = of_get_property(of_chosen, "stdout-path", NULL);
- 	if (name == NULL) {
--		DBG(" no linux,stdout-path !\n");
-+		DBG(" no stdout-path !\n");
- 		return -ENODEV;
- 	}
- 	prom_stdout = of_find_node_by_path(name);
+Le 30/11/2018 à 06:50, Aneesh Kumar K.V a écrit :
+> Christophe LEROY <christophe.leroy@c-s.fr> writes:
+> 
+>> Hi Ben,
+>>
+>> I have an issue on the 8xx with this change
+>>
+>> Le 19/07/2017 à 06:49, Benjamin Herrenschmidt a écrit :
+>>> We currently test for is_exec and DSISR_PROTFAULT but that doesn't
+>>> make sense as this is the wrong error bit to test for an execute
+>>> permission failure.
+>>
+>> On the 8xx, on an exec permission failure, this is the correct BIT, see
+>> below extract from reference manual:
+>>
+>> Note that only one of bits 1, 3, and 4 will be set.
+>> 1 1 if the translation of an attempted access is not in the translation
+>> tables. Otherwise 0
+>> 3 1 if the fetch access was to guarded memory when MSR[IR] = 1. Otherwise 0
+>> 4 1 if the access is not permitted by the protection mechanism; otherwise 0.
+>>
+>> So on the 8xx, bit 3 is not DSISR_NOEXEC_OR_G but only DSISR_G.
+>> When the PPP bits are set to No-Execute, we really get bit 4 that is
+>> DSISR_PROTFAULT.
+> 
+> 
+> Do you have an url for the document? I am wondering whether we can get
+> Documentation/powerpc/cpu_families.txt updated with these urls?
 
+https://www.nxp.com/docs/en/reference-manual/MPC885RM.pdf
+
+Christophe
+
+> 
+>>
+>>>
+>>> In fact, we had code that would return early if we had an exec
+>>> fault in kernel mode so I think that was just dead code anyway.
+>>>
+>>> Finally the location of that test is awkward and prevents further
+>>> simplifications.
+>>>
+>>> So instead move that test into a helper along with the existing
+>>> early test for kernel exec faults and out of range accesses,
+>>> and put it all in a "bad_kernel_fault()" helper. While at it
+>>> test the correct error bits.
+>>>
+>>> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>>> ---
+>>>    arch/powerpc/mm/fault.c | 21 +++++++++++++++------
+>>>    1 file changed, 15 insertions(+), 6 deletions(-)
+>>>
+>>> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+>>> index e8d6acc888c5..aead07cf8a5b 100644
+>>> --- a/arch/powerpc/mm/fault.c
+>>> +++ b/arch/powerpc/mm/fault.c
+>>> @@ -180,6 +180,20 @@ static int mm_fault_error(struct pt_regs *regs, unsigned long addr, int fault)
+>>>    	return MM_FAULT_CONTINUE;
+>>>    }
+>>>    
+>>> +/* Is this a bad kernel fault ? */
+>>> +static bool bad_kernel_fault(bool is_exec, unsigned long error_code,
+>>> +			     unsigned long address)
+>>> +{
+>>> +	if (is_exec && (error_code & (DSISR_NOEXEC_OR_G | DSISR_KEYFAULT))) {
+>>
+>> Do you mind if we had DSISR_PROTFAULT here as well ?
+>>
+>> Christophe
+>>
+>>> +		printk_ratelimited(KERN_CRIT "kernel tried to execute"
+>>> +				   " exec-protected page (%lx) -"
+>>> +				   "exploit attempt? (uid: %d)\n",
+>>> +				   address, from_kuid(&init_user_ns,
+>>> +						      current_uid()));
+>>> +	}
+>>> +	return is_exec || (address >= TASK_SIZE);
+>>> +}
+>>> +
+>>>    /*
+>>>     * Define the correct "is_write" bit in error_code based
+>>>     * on the processor family
+>>> @@ -252,7 +266,7 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
+>>>    	 * The kernel should never take an execute fault nor should it
+>>>    	 * take a page fault to a kernel address.
+>>>    	 */
+>>> -	if (!is_user && (is_exec || (address >= TASK_SIZE)))
+>>> +	if (unlikely(!is_user && bad_kernel_fault(is_exec, error_code, address)))
+>>>    		return SIGSEGV;
+>>>    
+>>>    	/* We restore the interrupt state now */
+>>> @@ -491,11 +505,6 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
+>>>    		return 0;
+>>>    	}
+>>>    
+>>> -	if (is_exec && (error_code & DSISR_PROTFAULT))
+>>> -		printk_ratelimited(KERN_CRIT "kernel tried to execute NX-protected"
+>>> -				   " page (%lx) - exploit attempt? (uid: %d)\n",
+>>> -				   address, from_kuid(&init_user_ns, current_uid()));
+>>> -
+>>>    	return SIGSEGV;
+>>>    }
+>>>    NOKPROBE_SYMBOL(__do_page_fault);
+>>>
