@@ -2,93 +2,52 @@ Return-Path: <SRS0=3K4h=OM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 05B2BC04EB8
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 00:09:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1887EC04EB9
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 03:20:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3A42A2054F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 00:09:20 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="F+EDOSqU"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3A42A2054F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 53F79206B7
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 03:20:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 53F79206B7
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=altlinux.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 437QMy1DnlzDqY5
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 11:09:18 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 437Vcd5QPnzDqY6
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 14:20:33 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=altlinux.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="F+EDOSqU";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=altlinux.org
+ (client-ip=194.107.17.57; helo=vmicros1.altlinux.org;
+ envelope-from=ldv@altlinux.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::643; helo=mail-pl1-x643.google.com;
- envelope-from=sjitindarsingh@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="F+EDOSqU"; 
- dkim-atps=neutral
-Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
- [IPv6:2607:f8b0:4864:20::643])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 437QKJ4fH2zDqXJ
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Dec 2018 11:06:57 +1100 (AEDT)
-Received: by mail-pl1-x643.google.com with SMTP id g9so5507557plo.3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 02 Dec 2018 16:06:57 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=message-id:subject:from:to:date:in-reply-to:references:mime-version
- :content-transfer-encoding;
- bh=VxXYlWNT8earf+JTvsyBbF6w33dswccpFK1H0CBc/tE=;
- b=F+EDOSqU6HG0sHLqaz003mjjDHj2tW90cynHhljxnB1BOEb0a6h5ZB0ZI2jmBunfMr
- x8yEBrtAG2h/AhDUbKdApZz6FsoTsekJE8zYch3DxwGYD4l6puNS+kx4NB9NP/k4oVdJ
- SZngTFmJCKxKR3QyCqA1kxpOiPsffrYxHRAiFfE+55dLms96Kl6wwXNfANBZ6GI4cSFO
- FTAnGzZ0fCjXWbFv21FoC4sn0o+KKXAKiUgbpaUhqcO3lepfh86gOwX8VKN/rm3Z/oC5
- i3mMLdNstStZm/fTKzG3MuJTIboqWnAILqDOzxHsGJJ7hvKzxEaKdrSWAKB7Xr4AxS9G
- sfHw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:message-id:subject:from:to:date:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=VxXYlWNT8earf+JTvsyBbF6w33dswccpFK1H0CBc/tE=;
- b=qYqKY8MWGAUAQm9YSSznHy5pitU+tesPCghDKJ9ce3Z12ucnDQI+4SBiLm9dGQMDVu
- H3vNEVMOA3yJVc22sGVj6v4vSXPfF1NAlCvrxFKN1idNK0X5sHD5Aia1eP0VnJ5uuXEd
- SprRNgqz9egOiWpxusWtJVjol/XLd5INMx7V3nofmLHdDJwBte7cw64qC2huMSFwH0Tx
- hpQPJ/63xAy34oKJEJbzDv1PriKspvInfZuOCiBQp8t3XTl8ZuelJ+Zi7O9S4iBea23S
- AGtKg9iLFjzJSDnbBuWHuYyKM1SsIXAwLo2770pSvkY9OVcp7ck9oFrCLnm5vqnyV6CE
- nZPg==
-X-Gm-Message-State: AA+aEWb4mwdEVVBRdIRoUll/LXgJ7khNefp90gokUh4GNy6259stuDQZ
- Vw6ict4qYmKGK3ViSw6pniI=
-X-Google-Smtp-Source: AFSGD/VIwhzJADVbXXeG1rhQP+GicVlfw7aLqW9PttImvpxgHk2Rv7xFdbd6b6syRuntaS4HjneR+w==
-X-Received: by 2002:a17:902:ba89:: with SMTP id
- k9mr14055351pls.189.1543795615698; 
- Sun, 02 Dec 2018 16:06:55 -0800 (PST)
-Received: from surajjs2.ozlabs.ibm.com ([122.99.82.10])
- by smtp.googlemail.com with ESMTPSA id 12sm11113999pgd.35.2018.12.02.16.06.52
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Sun, 02 Dec 2018 16:06:54 -0800 (PST)
-Message-ID: <1543795610.7535.2.camel@gmail.com>
-Subject: Re: [PATCH] KVM: PPC: Book3S HV: NULL check before some freeing
- functions is not needed.
-From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-To: Thomas Meyer <thomas@m3y3r.de>, paulus@ozlabs.org,
- benh@kernel.crashing.org,  mpe@ellerman.id.au, kvm-ppc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org,  linux-kernel@vger.kernel.org
-Date: Mon, 03 Dec 2018 11:06:50 +1100
-In-Reply-To: <1543760930051-2094322096-1-diffsplit-thomas@m3y3r.de>
-References: <1543760930050-1499171309-0-diffsplit-thomas@m3y3r.de>
- <1543760930051-2094322096-1-diffsplit-thomas@m3y3r.de>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.24.6 (3.24.6-1.fc26) 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+ dmarc=none (p=none dis=none) header.from=altlinux.org
+Received: from vmicros1.altlinux.org (vmicros1.altlinux.org [194.107.17.57])
+ by lists.ozlabs.org (Postfix) with ESMTP id 437VZC2FpFzDqXq
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Dec 2018 14:18:26 +1100 (AEDT)
+Received: from mua.local.altlinux.org (mua.local.altlinux.org [192.168.1.14])
+ by vmicros1.altlinux.org (Postfix) with ESMTP id 1509972CA65;
+ Mon,  3 Dec 2018 06:18:24 +0300 (MSK)
+Received: by mua.local.altlinux.org (Postfix, from userid 508)
+ id 0C7467CCEA3; Mon,  3 Dec 2018 06:18:23 +0300 (MSK)
+Date: Mon, 3 Dec 2018 06:18:23 +0300
+From: "Dmitry V. Levin" <ldv@altlinux.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH v4] powerpc/ptrace: replace ptrace_report_syscall() with a
+ tracehook call
+Message-ID: <20181203031823.GE11573@altlinux.org>
+References: <20181116121701.14359da0@akathisia>
+ <87ftw12nyn.fsf@concordia.ellerman.id.au>
+ <20181119210139.GA8360@altlinux.org>
+ <87efbe166y.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87efbe166y.fsf@concordia.ellerman.id.au>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,42 +59,106 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Oleg Nesterov <oleg@redhat.com>, Eugene Syromyatnikov <esyr@redhat.com>,
+ Elvira Khabirova <lineprinter@altlinux.org>, Paul Mackerras <paulus@samba.org>,
+ Andy Lutomirski <luto@kernel.org>, Breno Leitao <leitao@debian.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, 2018-12-02 at 21:52 +0100, Thomas Meyer wrote:
-> NULL check before some freeing functions is not needed.
+From: Elvira Khabirova <lineprinter@altlinux.org>
 
-Technically true, however I think a comment should be added then to
-make it clearer to someone reading the code why this is ok.
+Arch code should use tracehook_*() helpers, as documented
+in include/linux/tracehook.h,
+ptrace_report_syscall() is not expected to be used outside that file.
 
-See below.
+Co-authored-by: Dmitry V. Levin <ldv@altlinux.org>
+Fixes: 5521eb4bca2d ("powerpc/ptrace: Add support for PTRACE_SYSEMU")
+Signed-off-by: Elvira Khabirova <lineprinter@altlinux.org>
+Signed-off-by: Dmitry V. Levin <ldv@altlinux.org>
+---
+v4: rewritten to call tracehook_report_syscall_entry() once, compile-tested
+v3: add a descriptive comment
+v2: explicitly ignore tracehook_report_syscall_entry() return code
 
-Suraj.
+ arch/powerpc/kernel/ptrace.c | 54 +++++++++++++++++++++++-------------
+ 1 file changed, 35 insertions(+), 19 deletions(-)
 
-> 
-> Signed-off-by: Thomas Meyer <thomas@m3y3r.de>
-> ---
-> 
-> diff -u -p a/arch/powerpc/kvm/book3s_hv_nested.c
-> b/arch/powerpc/kvm/book3s_hv_nested.c
-> --- a/arch/powerpc/kvm/book3s_hv_nested.c
-> +++ b/arch/powerpc/kvm/book3s_hv_nested.c
-> @@ -1252,8 +1252,7 @@ static long int __kvmhv_nested_page_faul
->  	rmapp = &memslot->arch.rmap[gfn - memslot->base_gfn];
->  	ret = kvmppc_create_pte(kvm, gp->shadow_pgtable, pte, n_gpa,
-> level,
->  				mmu_seq, gp->shadow_lpid, rmapp,
-> &n_rmap);
-> -	if (n_rmap)
-> -		kfree(n_rmap);
-> +	kfree(n_rmap);
-
-e.g.
-/* n_rmap set to NULL in kvmppc_create_pte if reference preserved */
-
->  	if (ret == -EAGAIN)
->  		ret = RESUME_GUEST;	/* Let the guest try
-> again */
->  
+diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+index afb819f4ca68..59c8c9a3d7ea 100644
+--- a/arch/powerpc/kernel/ptrace.c
++++ b/arch/powerpc/kernel/ptrace.c
+@@ -3263,27 +3263,43 @@ static inline int do_seccomp(struct pt_regs *regs) { return 0; }
+  */
+ long do_syscall_trace_enter(struct pt_regs *regs)
+ {
++	struct thread_info *ti;
++	u32 cached_flags;
++
+ 	user_exit();
+ 
+-	if (test_thread_flag(TIF_SYSCALL_EMU)) {
+-		ptrace_report_syscall(regs);
+-		/*
+-		 * Returning -1 will skip the syscall execution. We want to
+-		 * avoid clobbering any register also, thus, not 'gotoing'
+-		 * skip label.
+-		 */
+-		return -1;
+-	}
++	ti = current_thread_info();
++	cached_flags =
++		READ_ONCE(ti->flags) &
++		(TIF_SYSCALL_EMU | TIF_SYSCALL_TRACE | TIF_SYSCALL_TRACEPOINT);
+ 
+-	/*
+-	 * The tracer may decide to abort the syscall, if so tracehook
+-	 * will return !0. Note that the tracer may also just change
+-	 * regs->gpr[0] to an invalid syscall number, that is handled
+-	 * below on the exit path.
+-	 */
+-	if (test_thread_flag(TIF_SYSCALL_TRACE) &&
+-	    tracehook_report_syscall_entry(regs))
+-		goto skip;
++	if (cached_flags & (TIF_SYSCALL_EMU | TIF_SYSCALL_TRACE)) {
++		int rc = tracehook_report_syscall_entry(regs);
++
++		if (unlikely(cached_flags & _TIF_SYSCALL_EMU)) {
++			/*
++			 * A nonzero return code from
++			 * tracehook_report_syscall_entry() tells us
++			 * to prevent the syscall execution, but
++			 * we are not going to execute it anyway.
++			 *
++			 * Returning -1 will skip the syscall execution.
++			 * We want to avoid clobbering any register also,
++			 * thus, not 'gotoing' skip label.
++			 */
++			return -1;
++		}
++
++		if (rc) {
++			/*
++			 * The tracer decided to abort the syscall.
++			 * Note that the tracer may also just change
++			 * regs->gpr[0] to an invalid syscall number,
++			 * that is handled below on the exit path.
++			 */
++			goto skip;
++		}
++	}
+ 
+ 	/* Run seccomp after ptrace; allow it to set gpr[3]. */
+ 	if (do_seccomp(regs))
+@@ -3293,7 +3309,7 @@ long do_syscall_trace_enter(struct pt_regs *regs)
+ 	if (regs->gpr[0] >= NR_syscalls)
+ 		goto skip;
+ 
+-	if (unlikely(test_thread_flag(TIF_SYSCALL_TRACEPOINT)))
++	if (unlikely(cached_flags & TIF_SYSCALL_TRACEPOINT))
+ 		trace_sys_enter(regs, regs->gpr[0]);
+ 
+ #ifdef CONFIG_PPC64
+-- 
+ldv
