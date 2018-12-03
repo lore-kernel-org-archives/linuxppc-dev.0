@@ -2,68 +2,70 @@ Return-Path: <SRS0=3K4h=OM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.0 required=3.0 tests=MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+X-Spam-Status: No, score=-9.0 required=3.0 tests=INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D7E35C04EB9
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 21:36:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B4A09C04EB9
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 21:38:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9908120851
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 21:36:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9908120851
+	by mail.kernel.org (Postfix) with ESMTPS id 317BA20851
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 21:38:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 317BA20851
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 437ywl2NzpzDqNC
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 08:36:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 437yz71nGNzDqNC
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 08:38:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.167.196; helo=mail-oi1-f196.google.com;
+ (client-ip=209.85.167.195; helo=mail-oi1-f195.google.com;
  envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mail-oi1-f196.google.com (mail-oi1-f196.google.com
- [209.85.167.196])
+Received: from mail-oi1-f195.google.com (mail-oi1-f195.google.com
+ [209.85.167.195])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 437yrX2DGYzDqWS
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Dec 2018 08:32:28 +1100 (AEDT)
-Received: by mail-oi1-f196.google.com with SMTP id w13so12345572oiw.9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Dec 2018 13:32:28 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 437yrY22pKzDqWS
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Dec 2018 08:32:29 +1100 (AEDT)
+Received: by mail-oi1-f195.google.com with SMTP id t204so12342416oie.7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Dec 2018 13:32:29 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=kPJl8Pm7ZcOKwW846HHdQooRTxxkgNCV5FyHgwbALNM=;
- b=OtnPVsjRrAyX3gYu7xT1Zs2Eomw/4p4emusPYBigkyRB4lmapES0sJScNMXil9Ow1r
- 026GhpzuPMFd45izw8L4g14tDpgXVC+jZHGvyK52eWwK7rAl3d1uW0r8bILnNxZpQpMa
- gSuGcilMYBldQv36Oxgk9qWcutzdKVlxUfOcbY+ASS9YvTO90+xymjYawhoButh/IT0e
- y5mqEzDsqQ+ATHu25XJCjws2bWbsqD7aOsqxBJxZXSP1n0ZAehYx2M1VW6t6fvIKQMtP
- rE4J4TXIbY1LkNTjQCq0mC/teq7RCjzD+xMltW/wYsPUpxkc9rbYgtNppLdvcAyPd+oD
- 27yQ==
-X-Gm-Message-State: AA+aEWbu+uDe29y9dwePiT0zzBeuycgt+JjXduCD8MtMaVeq8hLzIJSR
- qbCfxOAPMTQdV8+VpdNSzA==
-X-Google-Smtp-Source: AFSGD/WVj0pF9gZSFmJhEvEDv85aXRYTL9y7ZOW11KnyGcPAe1VwL6yGo7ypFqLTfUpB40kDZzQkbA==
-X-Received: by 2002:aca:db41:: with SMTP id s62mr10385288oig.349.1543872745950; 
- Mon, 03 Dec 2018 13:32:25 -0800 (PST)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=7EpOZvqiCsR+9JpM0lO49UA9keAvCjxXYgZJ9W+uvqQ=;
+ b=d4ArROV+XTW4ey9nSH6q2xBxbeyLWGw31qyaM8SuyEtLWNnpMDYsjNMXPeVJUg+6OJ
+ IlX/ayNHelTsnV0rxyV8Sv7wkdH/8L2lakJFhOl9T0OJLm/RBpoWuAMMQcQIIjwM7czM
+ MhHSXj+sm0bOe7UeCOqKOj4OFytbqfM1Rp6hnWdXt2sPJLXyuQZgkTn2+iNywHYQl6qg
+ kASuMFH8Mh3oXRzMjHnUm3aq66BSpcGWYQP/IMQrCjJBrDLVkVdXQ6lKq44NCNBPs5en
+ J5VRgm+TksuYkq/70M6DMsiI260Zr8aUIxEmz2z7he5VquiWW4ArFv7cvxdKzgfCqW+v
+ e/qQ==
+X-Gm-Message-State: AA+aEWYlGyHq1BDR57hYsqBQFiq4gIjVccrCAfhOFALJ+eEDP71Hjo22
+ tBYoXtxGPdrYcprGyg29SA==
+X-Google-Smtp-Source: AFSGD/Xa3bqIgHi7emij+183Fy1u3j4lDkl11nzvHDis/8up1RGFIVphqGtJWv9uAgwQIR0YChi9JA==
+X-Received: by 2002:a05:6808:159:: with SMTP id
+ h25mr7801309oie.285.1543872747087; 
+ Mon, 03 Dec 2018 13:32:27 -0800 (PST)
 Received: from xps15.herring.priv (24-155-109-49.dyn.grandenetworks.net.
  [24.155.109.49])
- by smtp.googlemail.com with ESMTPSA id c78sm8545501oig.30.2018.12.03.13.32.23
+ by smtp.googlemail.com with ESMTPSA id c78sm8545501oig.30.2018.12.03.13.32.26
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Mon, 03 Dec 2018 13:32:25 -0800 (PST)
+ Mon, 03 Dec 2018 13:32:26 -0800 (PST)
 From: Rob Herring <robh@kernel.org>
 To: devicetree@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH v2 00/34] Devicetree schema
-Date: Mon,  3 Dec 2018 15:31:49 -0600
-Message-Id: <20181203213223.16986-1-robh@kernel.org>
+Subject: [PATCH v2 01/34] kbuild: Add support for DT binding schema checks
+Date: Mon,  3 Dec 2018 15:31:50 -0600
+Message-Id: <20181203213223.16986-2-robh@kernel.org>
 X-Mailer: git-send-email 2.19.1
+In-Reply-To: <20181203213223.16986-1-robh@kernel.org>
+References: <20181203213223.16986-1-robh@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -76,296 +78,210 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>,
- Alexandre Belloni <alexandre.belloni@bootlin.com>,
- Heiko Stuebner <heiko@sntech.de>, Sean Hudson <darknighte@darknighte.com>,
- Neil Armstrong <narmstrong@baylibre.com>, Sekhar Nori <nsekhar@ti.com>,
- Patrice Chotard <patrice.chotard@st.com>, David Brown <david.brown@linaro.org>,
- Grant Likely <grant.likely@arm.com>,
- Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
- Frank Rowand <frowand.list@gmail.com>, linux-renesas-soc@vger.kernel.org,
- Kumar Gala <kumar.gala@linaro.org>, Kevin Hilman <khilman@kernel.org>,
- Viresh Kumar <vireshk@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>,
- Michal Simek <michal.simek@xilinx.com>, Jonathan Hunter <jonathanh@nvidia.com>,
- linux-rockchip@lists.infradead.org, arm@kernel.org,
- Andy Gross <andy.gross@linaro.org>,
- Tsahee Zidenberg <tsahee@annapurnalabs.com>, linux-tegra@vger.kernel.org,
- linux-kbuild@vger.kernel.org, Will Deacon <will.deacon@arm.com>,
- Simon Horman <horms@verge.net.au>, linux-mediatek@lists.infradead.org,
- Matthias Brugger <matthias.bgg@gmail.com>, linux-amlogic@lists.infradead.org,
- Thomas Gleixner <tglx@linutronix.de>,
- Shiraz Hashim <shiraz.linux.kernel@gmail.com>,
- linux-arm-kernel@lists.infradead.org, Barry Song <baohua@kernel.org>,
- Michal Marek <michal.lkml@markovi.net>,
+Cc: Mark Rutland <mark.rutland@arm.com>, Kumar Gala <kumar.gala@linaro.org>,
+ arm@kernel.org, Sean Hudson <darknighte@darknighte.com>,
+ Jonathan Corbet <corbet@lwn.net>, Frank Rowand <frowand.list@gmail.com>,
+ linux-doc@vger.kernel.org, linux-kbuild@vger.kernel.org,
  Masahiro Yamada <yamada.masahiro@socionext.com>,
- Shawn Guo <shawnguo@kernel.org>,
- Antoine Tenart <antoine.tenart@free-electrons.com>,
- Nicolas Ferre <nicolas.ferre@microchip.com>,
- Tony Prisk <linux@prisktech.co.nz>, Dinh Nguyen <dinguyen@kernel.org>,
- Thierry Reding <thierry.reding@gmail.com>, Carlo Caione <carlo@caione.org>,
- Jun Nie <jun.nie@linaro.org>, linux-oxnas@groups.io,
- linuxppc-dev@lists.ozlabs.org,
- =?UTF-8?q?Andreas=20F=C3=A4rber?= <afaerber@suse.de>
+ Grant Likely <grant.likely@arm.com>, Michal Marek <michal.lkml@markovi.net>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+This adds the build infrastructure for checking DT binding schema
+documents and validating dts files using the binding schema.
 
-The current DT binding documentation is not ideal as it is just free form
-text with at most only a loose structure. This makes reviewing bindings a
-manual process. The bindings are often duplicating information that's
-already defined elsewhere and missing information one would need to
-validate a DTS file. The examples in binding documents are not built and
-a source of lots of typos sometimes found in review and sometimes not.
-Secondly, there's no verification that DTS files match what the
-documentation says. While dtc does do some checking (and has gained more
-recently), it can't do per binding checks as it would have to understand
-thousands of compatible strings to match on.
+Check DT binding schema documents:
+make dt_binding_check
 
-There's been a number of proposals over the years to address validation.
-They've all suffered from inventing their own validation language and the
-effort it would take to fully define and flush out a validation language.
-Enter json-schema. The language has a defined specification, maps well to
-DT data, and there are numerous existing tools which can be leveraged.
-The actual DT schema doc files are stored as YAML using only a JSON
-compatible subset. YAML is considered more human readable allowing
-comments for example.
+Build dts files and check using DT binding schema:
+make dtbs_check
 
-This series adds the build support, some documentation, and converts
-some bindings (mostly ARM board/soc bindings). The tools, core schema,
-and meta-schema are in a separate repository[1]. This might eventually
-be integrated with dtc or added to the kernel, but for now I plan to
-keep it separate.
+Optionally, DT_SCHEMA_FILES can passed in with a schema file(s) to use
+for validation. This makes it easier to find and fix errors generated by
+a specific schema.
 
-This series is available here[2]. The branch also has a doc2yaml script
-which can help convert binding files. It's not perfect, but works pretty
-well considering the input is free form text.
+Currently, the validation targets are separate from a normal build to
+avoid a hard dependency on the external DT schema project and because
+there are lots of warnings generated.
 
-My plan is to merge this initial support for v4.21. There's not yet any
-requirement that new bindings be submitted using the schema. I think that
-should wait a bit until after this gets a bit more exposure. I do have
-some tooling in place to test submitted patches and update DT patchwork
-with the result.
-
-
-SoC maintainers,
-The board/soc bindings can go thru your trees if there are conflicts (if
-any SoC or board is added). It shouldn't matter if they go in separately
-from the build support. shmobile, rockchip, fsl and amlogic already have
-conflicts with next. Otherwise, I can take them via the DT tree.
-
-Rob
-
-
-v2:
- - Rebase to v4.20-rc2
- - Add some missing Xilinx boards (from Michal Simek)
- - Add ability to validate with a single specified schema using
-   the DT_SCHEMA_FILES variable.
- - Add back some dropped comments for board names
- - Various maintainer fixes
- - Rework ARM PMU interrupts schema.
- - Updates to ARM CPU vendor specific properties.
- - Add i2c-gpio conversion to json-schema. Serves as example of including
-   another schema (i2c-controller.yaml)
- - Set license on schema files to GPL-2.0
- - Improvements to writing-schema.md and annotated example.
-
-
-[1] https://github.com/robherring/yaml-bindings
-[2] git://git.kernel.org/pub/scm/linux/kernel/git/robh/linux.git yaml-bindings-v2
-
-Michal Simek (1):
-  dt-bindings: arm: Add missing Xilinx boards
-
-Rob Herring (33):
-  kbuild: Add support for DT binding schema checks
-  dt-bindings: Add a writing DT schemas how-to and annotated example
-  dt-bindings: Convert trivial-devices.txt to json-schema
-  dt-bindings: altera: Convert clkmgr binding to json-schema
-  dt-bindings: i2c: Convert i2c-gpio binding to json-schema
-  dt-bindings: timer: Convert ARM timer bindings to json-schema
-  dt-bindings: arm: Convert cpu binding to json-schema
-  dt-bindings: arm: Convert PMU binding to json-schema
-  dt-bindings: arm: Convert primecell binding to json-schema
-  dt-bindings: arm: Convert Actions Semi bindings to jsonschema
-  dt-bindings: arm: Convert Alpine board/soc bindings to json-schema
-  dt-bindings: arm: Convert Altera board/soc bindings to json-schema
-  dt-bindings: arm: amlogic: Move 'amlogic,meson-gx-ao-secure' binding
-    to its own file
-  dt-bindings: arm: Convert Amlogic board/soc bindings to json-schema
-  dt-bindings: arm: Convert Atmel board/soc bindings to json-schema
-  dt-bindings: arm: Convert Calxeda board/soc bindings to json-schema
-  dt-bindings: arm: Convert TI davinci board/soc bindings to json-schema
-  dt-bindings: arm: Convert FSL board/soc bindings to json-schema
-  dt-bindings: arm: Convert MediaTek board/soc bindings to json-schema
-  dt-bindings: arm: Convert TI nspire board/soc bindings to json-schema
-  dt-bindings: arm: Convert Oxford Semi board/soc bindings to
-    json-schema
-  dt-bindings: arm: Convert QCom board/soc bindings to json-schema
-  dt-bindings: arm: Convert Realtek board/soc bindings to json-schema
-  dt-bindings: arm: Convert Rockchip board/soc bindings to json-schema
-  dt-bindings: arm: renesas: Move 'renesas,prr' binding to its own doc
-  dt-bindings: arm: Convert Renesas board/soc bindings to json-schema
-  dt-bindings: arm: Convert CSR SiRF board/soc bindings to json-schema
-  dt-bindings: arm: Convert SPEAr board/soc bindings to json-schema
-  dt-bindings: arm: Convert ST STi board/soc bindings to json-schema
-  dt-bindings: arm: Convert Tegra board/soc bindings to json-schema
-  dt-bindings: arm: Convert VIA board/soc bindings to json-schema
-  dt-bindings: arm: Convert Xilinx board/soc bindings to json-schema
-  dt-bindings: arm: Convert ZTE board/soc bindings to json-schema
-
- .gitignore                                    |   1 +
- Documentation/Makefile                        |   2 +-
- Documentation/devicetree/bindings/.gitignore  |   1 +
- Documentation/devicetree/bindings/Makefile    |  33 ++
- .../devicetree/bindings/arm/actions.txt       |  56 --
- .../devicetree/bindings/arm/actions.yaml      |  38 ++
- .../devicetree/bindings/arm/al,alpine.txt     |  16 -
- .../devicetree/bindings/arm/al,alpine.yaml    |  21 +
- .../devicetree/bindings/arm/altera.txt        |  14 -
- .../devicetree/bindings/arm/altera.yaml       |  20 +
- .../arm/altera/socfpga-clk-manager.txt        |  11 -
- .../arm/altera/socfpga-clk-manager.yaml       |  31 ++
- .../devicetree/bindings/arm/amlogic.txt       | 138 -----
- .../devicetree/bindings/arm/amlogic.yaml      | 109 ++++
- .../amlogic/amlogic,meson-gx-ao-secure.txt    |  28 +
- .../devicetree/bindings/arm/armadeus.txt      |   6 -
- .../devicetree/bindings/arm/atmel-at91.txt    |  72 ---
- .../devicetree/bindings/arm/atmel-at91.yaml   | 133 +++++
- Documentation/devicetree/bindings/arm/bhf.txt |   6 -
- .../devicetree/bindings/arm/calxeda.txt       |  15 -
- .../devicetree/bindings/arm/calxeda.yaml      |  22 +
- .../bindings/arm/compulab-boards.txt          |  25 -
- .../devicetree/bindings/arm/cpus.txt          | 490 -----------------
- .../devicetree/bindings/arm/cpus.yaml         | 507 ++++++++++++++++++
- .../devicetree/bindings/arm/davinci.txt       |  25 -
- Documentation/devicetree/bindings/arm/fsl.txt | 229 --------
- .../devicetree/bindings/arm/fsl.yaml          | 214 ++++++++
- .../devicetree/bindings/arm/i2se.txt          |  22 -
- .../devicetree/bindings/arm/mediatek.txt      |  79 ---
- .../devicetree/bindings/arm/mediatek.yaml     |  85 +++
- .../devicetree/bindings/arm/nspire.txt        |  14 -
- .../devicetree/bindings/arm/olimex.txt        |  10 -
- .../devicetree/bindings/arm/oxnas.txt         |  14 -
- .../devicetree/bindings/arm/oxnas.yaml        |  25 +
- Documentation/devicetree/bindings/arm/pmu.txt |  70 ---
- .../devicetree/bindings/arm/pmu.yaml          |  91 ++++
- .../devicetree/bindings/arm/primecell.txt     |  46 --
- .../devicetree/bindings/arm/primecell.yaml    |  36 ++
- .../devicetree/bindings/arm/qcom.txt          |  57 --
- .../devicetree/bindings/arm/qcom.yaml         | 125 +++++
- .../devicetree/bindings/arm/realtek.txt       |  22 -
- .../devicetree/bindings/arm/realtek.yaml      |  23 +
- .../devicetree/bindings/arm/renesas,prr.txt   |  20 +
- .../devicetree/bindings/arm/rockchip.txt      | 240 ---------
- .../devicetree/bindings/arm/rockchip.yaml     | 251 +++++++++
- .../devicetree/bindings/arm/shmobile.txt      | 169 ------
- .../devicetree/bindings/arm/shmobile.yaml     | 218 ++++++++
- .../devicetree/bindings/arm/sirf.txt          |  11 -
- .../devicetree/bindings/arm/sirf.yaml         |  27 +
- .../devicetree/bindings/arm/spear.txt         |  26 -
- .../devicetree/bindings/arm/spear.yaml        |  25 +
- Documentation/devicetree/bindings/arm/sti.txt |  23 -
- .../devicetree/bindings/arm/sti.yaml          |  23 +
- .../devicetree/bindings/arm/technologic.txt   |  23 -
- .../devicetree/bindings/arm/tegra.txt         |  65 ---
- .../devicetree/bindings/arm/tegra.yaml        | 101 ++++
- .../devicetree/bindings/arm/ti/nspire.yaml    |  24 +
- .../bindings/arm/ti/ti,davinci.yaml           |  26 +
- .../devicetree/bindings/arm/vt8500.txt        |  22 -
- .../devicetree/bindings/arm/vt8500.yaml       |  23 +
- .../devicetree/bindings/arm/xilinx.txt        |  83 ---
- .../devicetree/bindings/arm/xilinx.yaml       | 114 ++++
- Documentation/devicetree/bindings/arm/zte.txt |  14 -
- .../devicetree/bindings/arm/zte.yaml          |  26 +
- .../devicetree/bindings/example-schema.yaml   | 170 ++++++
- .../devicetree/bindings/i2c/i2c-gpio.txt      |  46 --
- .../devicetree/bindings/i2c/i2c-gpio.yaml     |  73 +++
- .../bindings/timer/arm,arch_timer.txt         | 112 ----
- .../bindings/timer/arm,arch_timer.yaml        | 103 ++++
- .../bindings/timer/arm,arch_timer_mmio.yaml   | 120 +++++
- .../bindings/timer/arm,global_timer.txt       |  27 -
- .../bindings/timer/arm,global_timer.yaml      |  46 ++
- .../devicetree/bindings/trivial-devices.txt   | 190 -------
- .../devicetree/bindings/trivial-devices.yaml  | 392 ++++++++++++++
- Documentation/devicetree/writing-schema.md    | 130 +++++
- Makefile                                      |  11 +-
- scripts/Makefile.lib                          |  24 +-
- 77 files changed, 3487 insertions(+), 2493 deletions(-)
+Cc: Jonathan Corbet <corbet@lwn.net>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Masahiro Yamada <yamada.masahiro@socionext.com>
+Cc: Michal Marek <michal.lkml@markovi.net>
+Cc: linux-doc@vger.kernel.org
+Cc: devicetree@vger.kernel.org
+Cc: linux-kbuild@vger.kernel.org
+Signed-off-by: Rob Herring <robh@kernel.org>
+---
+ .gitignore                                   |  1 +
+ Documentation/Makefile                       |  2 +-
+ Documentation/devicetree/bindings/.gitignore |  1 +
+ Documentation/devicetree/bindings/Makefile   | 33 ++++++++++++++++++++
+ Makefile                                     | 11 +++++--
+ scripts/Makefile.lib                         | 24 ++++++++++++--
+ 6 files changed, 67 insertions(+), 5 deletions(-)
  create mode 100644 Documentation/devicetree/bindings/.gitignore
  create mode 100644 Documentation/devicetree/bindings/Makefile
- delete mode 100644 Documentation/devicetree/bindings/arm/actions.txt
- create mode 100644 Documentation/devicetree/bindings/arm/actions.yaml
- delete mode 100644 Documentation/devicetree/bindings/arm/al,alpine.txt
- create mode 100644 Documentation/devicetree/bindings/arm/al,alpine.yaml
- delete mode 100644 Documentation/devicetree/bindings/arm/altera.txt
- create mode 100644 Documentation/devicetree/bindings/arm/altera.yaml
- delete mode 100644 Documentation/devicetree/bindings/arm/altera/socfpga-clk-manager.txt
- create mode 100644 Documentation/devicetree/bindings/arm/altera/socfpga-clk-manager.yaml
- delete mode 100644 Documentation/devicetree/bindings/arm/amlogic.txt
- create mode 100644 Documentation/devicetree/bindings/arm/amlogic.yaml
- create mode 100644 Documentation/devicetree/bindings/arm/amlogic/amlogic,meson-gx-ao-secure.txt
- delete mode 100644 Documentation/devicetree/bindings/arm/armadeus.txt
- delete mode 100644 Documentation/devicetree/bindings/arm/atmel-at91.txt
- create mode 100644 Documentation/devicetree/bindings/arm/atmel-at91.yaml
- delete mode 100644 Documentation/devicetree/bindings/arm/bhf.txt
- delete mode 100644 Documentation/devicetree/bindings/arm/calxeda.txt
- create mode 100644 Documentation/devicetree/bindings/arm/calxeda.yaml
- delete mode 100644 Documentation/devicetree/bindings/arm/compulab-boards.txt
- delete mode 100644 Documentation/devicetree/bindings/arm/cpus.txt
- create mode 100644 Documentation/devicetree/bindings/arm/cpus.yaml
- delete mode 100644 Documentation/devicetree/bindings/arm/davinci.txt
- delete mode 100644 Documentation/devicetree/bindings/arm/fsl.txt
- create mode 100644 Documentation/devicetree/bindings/arm/fsl.yaml
- delete mode 100644 Documentation/devicetree/bindings/arm/i2se.txt
- delete mode 100644 Documentation/devicetree/bindings/arm/mediatek.txt
- create mode 100644 Documentation/devicetree/bindings/arm/mediatek.yaml
- delete mode 100644 Documentation/devicetree/bindings/arm/nspire.txt
- delete mode 100644 Documentation/devicetree/bindings/arm/olimex.txt
- delete mode 100644 Documentation/devicetree/bindings/arm/oxnas.txt
- create mode 100644 Documentation/devicetree/bindings/arm/oxnas.yaml
- delete mode 100644 Documentation/devicetree/bindings/arm/pmu.txt
- create mode 100644 Documentation/devicetree/bindings/arm/pmu.yaml
- delete mode 100644 Documentation/devicetree/bindings/arm/primecell.txt
- create mode 100644 Documentation/devicetree/bindings/arm/primecell.yaml
- delete mode 100644 Documentation/devicetree/bindings/arm/qcom.txt
- create mode 100644 Documentation/devicetree/bindings/arm/qcom.yaml
- delete mode 100644 Documentation/devicetree/bindings/arm/realtek.txt
- create mode 100644 Documentation/devicetree/bindings/arm/realtek.yaml
- create mode 100644 Documentation/devicetree/bindings/arm/renesas,prr.txt
- delete mode 100644 Documentation/devicetree/bindings/arm/rockchip.txt
- create mode 100644 Documentation/devicetree/bindings/arm/rockchip.yaml
- delete mode 100644 Documentation/devicetree/bindings/arm/shmobile.txt
- create mode 100644 Documentation/devicetree/bindings/arm/shmobile.yaml
- delete mode 100644 Documentation/devicetree/bindings/arm/sirf.txt
- create mode 100644 Documentation/devicetree/bindings/arm/sirf.yaml
- delete mode 100644 Documentation/devicetree/bindings/arm/spear.txt
- create mode 100644 Documentation/devicetree/bindings/arm/spear.yaml
- delete mode 100644 Documentation/devicetree/bindings/arm/sti.txt
- create mode 100644 Documentation/devicetree/bindings/arm/sti.yaml
- delete mode 100644 Documentation/devicetree/bindings/arm/technologic.txt
- delete mode 100644 Documentation/devicetree/bindings/arm/tegra.txt
- create mode 100644 Documentation/devicetree/bindings/arm/tegra.yaml
- create mode 100644 Documentation/devicetree/bindings/arm/ti/nspire.yaml
- create mode 100644 Documentation/devicetree/bindings/arm/ti/ti,davinci.yaml
- delete mode 100644 Documentation/devicetree/bindings/arm/vt8500.txt
- create mode 100644 Documentation/devicetree/bindings/arm/vt8500.yaml
- delete mode 100644 Documentation/devicetree/bindings/arm/xilinx.txt
- create mode 100644 Documentation/devicetree/bindings/arm/xilinx.yaml
- delete mode 100644 Documentation/devicetree/bindings/arm/zte.txt
- create mode 100644 Documentation/devicetree/bindings/arm/zte.yaml
- create mode 100644 Documentation/devicetree/bindings/example-schema.yaml
- delete mode 100644 Documentation/devicetree/bindings/i2c/i2c-gpio.txt
- create mode 100644 Documentation/devicetree/bindings/i2c/i2c-gpio.yaml
- delete mode 100644 Documentation/devicetree/bindings/timer/arm,arch_timer.txt
- create mode 100644 Documentation/devicetree/bindings/timer/arm,arch_timer.yaml
- create mode 100644 Documentation/devicetree/bindings/timer/arm,arch_timer_mmio.yaml
- delete mode 100644 Documentation/devicetree/bindings/timer/arm,global_timer.txt
- create mode 100644 Documentation/devicetree/bindings/timer/arm,global_timer.yaml
- delete mode 100644 Documentation/devicetree/bindings/trivial-devices.txt
- create mode 100644 Documentation/devicetree/bindings/trivial-devices.yaml
- create mode 100644 Documentation/devicetree/writing-schema.md
 
---
+diff --git a/.gitignore b/.gitignore
+index 97ba6b79834c..a20ac26aa2f5 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -15,6 +15,7 @@
+ *.bin
+ *.bz2
+ *.c.[012]*.*
++*.dt.yaml
+ *.dtb
+ *.dtb.S
+ *.dwo
+diff --git a/Documentation/Makefile b/Documentation/Makefile
+index 2ca77ad0f238..9786957c6a35 100644
+--- a/Documentation/Makefile
++++ b/Documentation/Makefile
+@@ -2,7 +2,7 @@
+ # Makefile for Sphinx documentation
+ #
+ 
+-subdir-y :=
++subdir-y := devicetree/bindings/
+ 
+ # You can set these variables from the command line.
+ SPHINXBUILD   = sphinx-build
+diff --git a/Documentation/devicetree/bindings/.gitignore b/Documentation/devicetree/bindings/.gitignore
+new file mode 100644
+index 000000000000..d9194c02dd08
+--- /dev/null
++++ b/Documentation/devicetree/bindings/.gitignore
+@@ -0,0 +1 @@
++*.example.dts
+diff --git a/Documentation/devicetree/bindings/Makefile b/Documentation/devicetree/bindings/Makefile
+new file mode 100644
+index 000000000000..ee0110dd8131
+--- /dev/null
++++ b/Documentation/devicetree/bindings/Makefile
+@@ -0,0 +1,33 @@
++# SPDX-License-Identifier: GPL-2.0
++DT_DOC_CHECKER ?= dt-doc-validate
++DT_EXTRACT_EX ?= dt-extract-example
++DT_MK_SCHEMA ?= dt-mk-schema
++DT_MK_SCHEMA_FLAGS := $(if $(DT_SCHEMA_FILES), -u)
++
++quiet_cmd_chk_binding = CHKDT   $<
++      cmd_chk_binding = (set -e; \
++                         $(DT_DOC_CHECKER) $< ; \
++                         mkdir -p $(dir $@) ; \
++                         $(DT_EXTRACT_EX) $< > $@ )
++
++$(obj)/%.example.dts: $(src)/%.yaml FORCE
++	$(call if_changed,chk_binding)
++
++DT_TMP_SCHEMA := .schema.yaml.tmp
++extra-y += $(DT_TMP_SCHEMA)
++
++quiet_cmd_mk_schema = SCHEMA  $@
++      cmd_mk_schema = mkdir -p $(obj); \
++                      rm -f $@; \
++                      $(DT_MK_SCHEMA) $(DT_MK_SCHEMA_FLAGS) -o $@ $<
++
++DT_DOCS = $(shell cd $(srctree)/$(src) && find * -name '*.yaml')
++DT_SCHEMA_FILES ?= $(addprefix $(src)/,$(DT_DOCS))
++
++extra-y += $(patsubst $(src)/%.yaml,%.example.dts, $(DT_SCHEMA_FILES))
++extra-y += $(patsubst $(src)/%.yaml,%.example.dtb, $(DT_SCHEMA_FILES))
++
++$(obj)/$(DT_TMP_SCHEMA): $(addprefix $(obj)/,$(patsubst $(src)/%.yaml,%.example.dtb, $(DT_SCHEMA_FILES)))
++
++$(obj)/$(DT_TMP_SCHEMA): $(addprefix $(srctree)/, $(DT_SCHEMA_FILES)) FORCE
++	$(call if_changed,mk_schema)
+diff --git a/Makefile b/Makefile
+index 2f36db897895..ff59adf43300 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1232,10 +1232,13 @@ ifneq ($(dtstree),)
+ %.dtb: prepare3 scripts_dtc
+ 	$(Q)$(MAKE) $(build)=$(dtstree) $(dtstree)/$@
+ 
+-PHONY += dtbs dtbs_install
++PHONY += dtbs dtbs_install dt_binding_check
+ dtbs: prepare3 scripts_dtc
+ 	$(Q)$(MAKE) $(build)=$(dtstree)
+ 
++dtbs_check: prepare3 dt_binding_check
++	$(Q)$(MAKE) $(build)=$(dtstree) CHECK_DTBS=1
++
+ dtbs_install:
+ 	$(Q)$(MAKE) $(dtbinst)=$(dtstree)
+ 
+@@ -1249,6 +1252,9 @@ PHONY += scripts_dtc
+ scripts_dtc: scripts_basic
+ 	$(Q)$(MAKE) $(build)=scripts/dtc
+ 
++dt_binding_check: scripts_dtc
++	$(Q)$(MAKE) $(build)=Documentation/devicetree/bindings
++
+ # ---------------------------------------------------------------------------
+ # Modules
+ 
+@@ -1611,7 +1617,8 @@ clean: $(clean-dirs)
+ 	$(call cmd,rmfiles)
+ 	@find $(if $(KBUILD_EXTMOD), $(KBUILD_EXTMOD), .) $(RCS_FIND_IGNORE) \
+ 		\( -name '*.[aios]' -o -name '*.ko' -o -name '.*.cmd' \
+-		-o -name '*.ko.*' -o -name '*.dtb' -o -name '*.dtb.S' \
++		-o -name '*.ko.*' \
++		-o -name '*.dtb' -o -name '*.dtb.S' -o -name '*.dt.yaml' \
+ 		-o -name '*.dwo' -o -name '*.lst' \
+ 		-o -name '*.su'  \
+ 		-o -name '.*.d' -o -name '.*.tmp' -o -name '*.mod.c' \
+diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
+index 8fe4468f9bda..d1c5630ba24c 100644
+--- a/scripts/Makefile.lib
++++ b/scripts/Makefile.lib
+@@ -61,6 +61,11 @@ real-obj-m := $(foreach m, $(obj-m), $(if $(strip $($(m:.o=-objs)) $($(m:.o=-y))
+ extra-y				+= $(dtb-y)
+ extra-$(CONFIG_OF_ALL_DTBS)	+= $(dtb-)
+ 
++ifneq ($(CHECK_DTBS),)
++extra-y += $(patsubst %.dtb,%.dt.yaml, $(dtb-y))
++extra-$(CONFIG_OF_ALL_DTBS) += $(patsubst %.dtb,%.dt.yaml, $(dtb-))
++endif
++
+ # Add subdir path
+ 
+ extra-y		:= $(addprefix $(obj)/,$(extra-y))
+@@ -284,13 +289,28 @@ $(obj)/%.dtb.S: $(obj)/%.dtb FORCE
+ quiet_cmd_dtc = DTC     $@
+ cmd_dtc = mkdir -p $(dir ${dtc-tmp}) ; \
+ 	$(HOSTCC) -E $(dtc_cpp_flags) -x assembler-with-cpp -o $(dtc-tmp) $< ; \
+-	$(DTC) -O dtb -o $@ -b 0 \
++	$(DTC) -O $(2) -o $@ -b 0 \
+ 		$(addprefix -i,$(dir $<) $(DTC_INCLUDE)) $(DTC_FLAGS) \
+ 		-d $(depfile).dtc.tmp $(dtc-tmp) ; \
+ 	cat $(depfile).pre.tmp $(depfile).dtc.tmp > $(depfile)
+ 
+ $(obj)/%.dtb: $(src)/%.dts $(DTC) FORCE
+-	$(call if_changed_dep,dtc)
++	$(call if_changed_dep,dtc,dtb)
++
++DT_CHECKER ?= dt-validate
++DT_BINDING_DIR := Documentation/devicetree/bindings
++DT_TMP_SCHEMA := $(objtree)/$(DT_BINDING_DIR)/.schema.yaml.tmp
++
++quiet_cmd_dtb_check =	CHECK  $@
++      cmd_dtb_check =	$(DT_CHECKER) -p $(DT_TMP_SCHEMA) $@ ;
++
++define rule_dtc_dt_yaml
++	$(call cmd_and_fixdep,dtc,yaml)		\
++	$(call echo-cmd,dtb_check) $(cmd_dtb_check)
++endef
++
++$(obj)/%.dt.yaml: $(src)/%.dts $(DTC) $(DT_TMP_SCHEMA) FORCE
++	$(call if_changed_rule,dtc_dt_yaml)
+ 
+ dtc-tmp = $(subst $(comma),_,$(dot-target).dts.tmp)
+ 
+-- 
 2.19.1
+
