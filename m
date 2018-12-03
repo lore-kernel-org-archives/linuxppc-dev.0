@@ -2,23 +2,22 @@ Return-Path: <SRS0=3K4h=OM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 54412C04EB9
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 10:34:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 60792C04EBF
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 10:36:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CF02A2082F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 10:34:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CF02A2082F
+	by mail.kernel.org (Postfix) with ESMTPS id D16452082F
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 10:36:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D16452082F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 437hFH6R9lzDqWC
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 21:34:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 437hHX1G4ZzDqWW
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 21:36:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=redhat.com
@@ -29,22 +28,23 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 437hBy2JHtzDqKW
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Dec 2018 21:32:26 +1100 (AEDT)
-Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.phx2.redhat.com
- [10.5.11.12])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 437hD8704CzDqVB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Dec 2018 21:33:28 +1100 (AEDT)
+Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.phx2.redhat.com
+ [10.5.11.13])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 4E9FE2D2BFE;
- Mon,  3 Dec 2018 10:32:23 +0000 (UTC)
+ by mx1.redhat.com (Postfix) with ESMTPS id 65FCF3001E4E;
+ Mon,  3 Dec 2018 10:33:25 +0000 (UTC)
 Received: from [10.36.118.125] (unknown [10.36.118.125])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 164D6662D2;
- Mon,  3 Dec 2018 10:32:17 +0000 (UTC)
-Subject: Re: [PATCH RFCv2 1/4] mm/memory_hotplug: Introduce memory block types
+ by smtp.corp.redhat.com (Postfix) with ESMTP id DCB9D60923;
+ Mon,  3 Dec 2018 10:33:12 +0000 (UTC)
+Subject: Re: [PATCH RFCv2 2/4] mm/memory_hotplug: Replace "bool want_memblock"
+ by "int type"
 To: Wei Yang <richard.weiyang@gmail.com>
 References: <20181130175922.10425-1-david@redhat.com>
- <20181130175922.10425-2-david@redhat.com>
- <20181201012507.lxfscl6ho3gc6gnn@master>
+ <20181130175922.10425-3-david@redhat.com>
+ <20181201015024.3o334nk2fe5mlasj@master>
 From: David Hildenbrand <david@redhat.com>
 Openpgp: preference=signencrypt
 Autocrypt: addr=david@redhat.com; prefer-encrypt=mutual; keydata=
@@ -91,18 +91,18 @@ Autocrypt: addr=david@redhat.com; prefer-encrypt=mutual; keydata=
  +8Umfre0Xt4713VxMygW0PnQt5aSQdMD58jHFxTk092mU+yIHj5LeYgvwSgZN4airXk5yRXl
  SE+xAvmumFBY
 Organization: Red Hat GmbH
-Message-ID: <af797dbb-0537-19ec-ef31-d72a3f979791@redhat.com>
-Date: Mon, 3 Dec 2018 11:32:17 +0100
+Message-ID: <5ecbff41-fc41-79fc-696e-4ca1f066f9aa@redhat.com>
+Date: Mon, 3 Dec 2018 11:33:12 +0100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.3.1
 MIME-Version: 1.0
-In-Reply-To: <20181201012507.lxfscl6ho3gc6gnn@master>
+In-Reply-To: <20181201015024.3o334nk2fe5mlasj@master>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.12
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.13
 X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.39]); Mon, 03 Dec 2018 10:32:23 +0000 (UTC)
+ (mx1.redhat.com [10.5.110.47]); Mon, 03 Dec 2018 10:33:26 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -114,161 +114,71 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Oscar Salvador <osalvador@suse.com>, linux-ia64@vger.kernel.org,
- linux-sh@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Michal Hocko <mhocko@kernel.org>,
- linux-mm@kvack.org, Ingo Molnar <mingo@kernel.org>, linux-s390@vger.kernel.org,
- x86@kernel.org, Pavel Tatashin <pasha.tatashin@oracle.com>,
- linux-acpi@vger.kernel.org, xen-devel@lists.xenproject.org,
- Michal Such??nek <msuchanek@suse.de>,
- Pavel Tatashin <pavel.tatashin@microsoft.com>,
+Cc: Oscar Salvador <osalvador@suse.com>, Rich Felker <dalias@libc.org>,
+ linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+ Peter Zijlstra <peterz@infradead.org>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-mm@kvack.org,
+ Michal Hocko <mhocko@suse.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, Dan Williams <dan.j.williams@intel.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>, linux-s390@vger.kernel.org,
+ Dave Jiang <dave.jiang@intel.com>, Yoshinori Sato <ysato@users.sourceforge.jp>,
+ x86@kernel.org, Matthew Wilcox <willy@infradead.org>,
+ linux-acpi@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+ xen-devel@lists.xenproject.org, Rob Herring <robh@kernel.org>,
+ Fenghua Yu <fenghua.yu@intel.com>, "Jan H. Sch??nherr" <jschoenh@amazon.de>,
+ Pavel Tatashin <pasha.tatashin@soleen.com>, Vasily Gorbik <gor@linux.ibm.com>,
  Stephen Rothwell <sfr@canb.auug.org.au>,
  "mike.travis@hpe.com" <mike.travis@hpe.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Dan Williams <dan.j.williams@intel.com>,
- Vitaly Kuznetsov <vkuznets@redhat.com>, Andrew Banman <andrew.banman@hpe.com>,
+ Jonathan Neusch??fer <j.neuschaefer@gmx.net>,
+ Nicholas Piggin <npiggin@gmail.com>, J??r??me Glisse <jglisse@redhat.com>,
+ Mike Rapoport <rppt@linux.vnet.ibm.com>, Borislav Petkov <bp@alien8.de>,
+ Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>, Arun KS <arunks@codeaurora.org>,
+ Tony Luck <tony.luck@intel.com>, Mathieu Malaterre <malat@debian.org>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
- "Rafael J. Wysocki" <rafael@kernel.org>, devel@linuxdriverproject.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+ Logan Gunthorpe <logang@deltatee.com>,
+ Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, devel@linuxdriverproject.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 01.12.18 02:25, Wei Yang wrote:
-> On Fri, Nov 30, 2018 at 06:59:19PM +0100, David Hildenbrand wrote:
->> Memory onlining should always be handled by user space, because only user
->> space knows which use cases it wants to satisfy. E.g. memory might be
->> onlined to the MOVABLE zone even if it can never be removed from the
->> system, e.g. to make usage of huge pages more reliable.
->>
->> However to implement such rules (especially default rules in distributions)
->> we need more information about the memory that was added in user space.
->>
->> E.g. on x86 we want to online memory provided by balloon devices (e.g.
->> XEN, Hyper-V) differently (-> will not be unplugged by offlining the whole
->> block) than ordinary DIMMs (-> might eventually be unplugged by offlining
->> the whole block). This might also become relevat for other architectures.
->>
->> Also, udev rules right now check if running on s390x and treat all added
->> memory blocks as standby memory (-> don't online automatically). As soon as
->> we support other memory hotplug mechanism (e.g. virtio-mem) checks would
->> have to get more involved (e.g. also check if under KVM) but eventually
->> also wrong (e.g. if KVM ever supports standby memory we are doomed).
->>
->> I decided to allow to specify the type of memory that is getting added
->> to the system. Let's start with two types, BOOT and UNSPECIFIED to get the
->> basic infrastructure running. We'll introduce and use further types in
->> follow-up patches. For now we classify any hotplugged memory temporarily
->> as as UNSPECIFIED (which will eventually be dropped later on).
->>
->> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
->> Cc: "Rafael J. Wysocki" <rafael@kernel.org>
->> Cc: Andrew Morton <akpm@linux-foundation.org>
->> Cc: Ingo Molnar <mingo@kernel.org>
->> Cc: Pavel Tatashin <pasha.tatashin@oracle.com>
->> Cc: Stephen Rothwell <sfr@canb.auug.org.au>
->> Cc: Andrew Banman <andrew.banman@hpe.com>
->> Cc: "mike.travis@hpe.com" <mike.travis@hpe.com>
->> Cc: Oscar Salvador <osalvador@suse.com>
->> Cc: Dave Hansen <dave.hansen@linux.intel.com>
->> Cc: Michal Hocko <mhocko@kernel.org>
->> Cc: Michal Such??nek <msuchanek@suse.de>
->> Cc: Vitaly Kuznetsov <vkuznets@redhat.com>
->> Cc: Dan Williams <dan.j.williams@intel.com>
->> Cc: Pavel Tatashin <pavel.tatashin@microsoft.com>
->> Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
->> Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
->> Signed-off-by: David Hildenbrand <david@redhat.com>
->> ---
->> drivers/base/memory.c  | 38 +++++++++++++++++++++++++++++++++++---
->> include/linux/memory.h | 27 +++++++++++++++++++++++++++
->> 2 files changed, 62 insertions(+), 3 deletions(-)
->>
->> diff --git a/drivers/base/memory.c b/drivers/base/memory.c
->> index 0c290f86ab20..17f2985c07c5 100644
->> --- a/drivers/base/memory.c
->> +++ b/drivers/base/memory.c
->> @@ -381,6 +381,29 @@ static ssize_t show_phys_device(struct device *dev,
->> 	return sprintf(buf, "%d\n", mem->phys_device);
->> }
->>
->> +static ssize_t type_show(struct device *dev, struct device_attribute *attr,
->> +			 char *buf)
->> +{
->> +	struct memory_block *mem = to_memory_block(dev);
->> +	ssize_t len = 0;
->> +
->> +	switch (mem->type) {
->> +	case MEMORY_BLOCK_UNSPECIFIED:
->> +		len = sprintf(buf, "unspecified\n");
->> +		break;
->> +	case MEMORY_BLOCK_BOOT:
->> +		len = sprintf(buf, "boot\n");
->> +		break;
->> +	default:
->> +		len = sprintf(buf, "ERROR-UNKNOWN-%ld\n",
->> +				mem->state);
->> +		WARN_ON(1);
->> +		break;
->> +	}
->> +
->> +	return len;
->> +}
->> +
->> #ifdef CONFIG_MEMORY_HOTREMOVE
->> static void print_allowed_zone(char *buf, int nid, unsigned long start_pfn,
->> 		unsigned long nr_pages, int online_type,
->> @@ -442,6 +465,7 @@ static DEVICE_ATTR(phys_index, 0444, show_mem_start_phys_index, NULL);
->> static DEVICE_ATTR(state, 0644, show_mem_state, store_mem_state);
->> static DEVICE_ATTR(phys_device, 0444, show_phys_device, NULL);
->> static DEVICE_ATTR(removable, 0444, show_mem_removable, NULL);
->> +static DEVICE_ATTR_RO(type);
+On 01.12.18 02:50, Wei Yang wrote:
+> On Fri, Nov 30, 2018 at 06:59:20PM +0100, David Hildenbrand wrote:
+>> Let's pass a memory block type instead. Pass "MEMORY_BLOCK_NONE" for device
+>> memory and for now "MEMORY_BLOCK_UNSPECIFIED" for anything else. No
+>> functional change.
 > 
-> This is correct, while looks not consistent with other attributes.
-> 
-> Not that beautiful :-)
+> I would suggest to put more words to this.
 
-I might change the other ones first, too (or keep this one consistent to
-the existing ones). Thanks!
+Sure, makes sense, I'll add more details. Thanks!
 
 > 
->>
->> /*
->>  * Block size attribute stuff
->> @@ -620,6 +644,7 @@ static struct attribute *memory_memblk_attrs[] = {
->> 	&dev_attr_state.attr,
->> 	&dev_attr_phys_device.attr,
->> 	&dev_attr_removable.attr,
->> +	&dev_attr_type.attr,
->> #ifdef CONFIG_MEMORY_HOTREMOVE
->> 	&dev_attr_valid_zones.attr,
->> #endif
->> @@ -657,13 +682,17 @@ int register_memory(struct memory_block *memory)
->> }
->>
->> static int init_memory_block(struct memory_block **memory,
->> -			     struct mem_section *section, unsigned long state)
->> +			     struct mem_section *section, unsigned long state,
->> +			     int type)
->> {
->> 	struct memory_block *mem;
->> 	unsigned long start_pfn;
->> 	int scn_nr;
->> 	int ret = 0;
->>
->> +	if (type == MEMORY_BLOCK_NONE)
->> +		return -EINVAL;
+> "
+> Function arch_add_memory()'s last parameter *want_memblock* is used to
+> determin whether it is necessary to create a corresponding memory block
+> device. After introducing the memory block type, this patch replaces the
+> bool type *want_memblock* with memory block type with following rules
+> for now:
 > 
-> No one will pass in this value. Can we omit this check for now?
+>   * Pass "MEMORY_BLOCK_NONE" for device memory
+>   * Pass "MEMORY_BLOCK_UNSPECIFIED" for anything else 
+> 
+> Since this parameter is passed deep to __add_section(), all its
+> descendents are effected. Below lists those descendents.
+> 
+>   arch_add_memory()
+>     add_pages()
+>       __add_pages()
+>         __add_section()
+> 
+> "
 
-I could move it to patch nr 2 I guess, but as I introduce
-MEMORY_BLOCK_NONE here it made sense to keep it in here.
+[...]
 
-(and I think at least for now it makes sense to not squash patch 1 and
-2, to easier discuss the new user interface/concept introduced in this
-patch).
-
-Thanks!
 
 -- 
 
