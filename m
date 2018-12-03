@@ -2,73 +2,92 @@ Return-Path: <SRS0=3K4h=OM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C0DC3C04EB9
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 17:46:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 253CEC04EB9
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 17:56:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2F83F2145D
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 17:46:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2F83F2145D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id A8E8020848
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 17:56:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A8E8020848
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 437sqD1Vb2zDqWS
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 04:46:00 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by lists.ozlabs.org (Postfix) with ESMTP id 437t314M6ZzDqXX
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 04:56:13 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=rppt@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 437smx5tN9zDqNW
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Dec 2018 04:44:01 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 437smq0SDrz9v0l5;
- Mon,  3 Dec 2018 18:43:55 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id q1YpAMOjcO7b; Mon,  3 Dec 2018 18:43:55 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 437smp5m9qz9v0l4;
- Mon,  3 Dec 2018 18:43:54 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 4A55D8B7B8;
- Mon,  3 Dec 2018 18:43:58 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id keSRY77Pu0Do; Mon,  3 Dec 2018 18:43:58 +0100 (CET)
-Received: from [192.168.232.3] (unknown [192.168.232.3])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 8BB4C8B79E;
- Mon,  3 Dec 2018 18:43:57 +0100 (CET)
-Subject: Re: [PATCH] powerpc/mm: dump block address translation on book3s/32
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, npiggin@gmail.com, rashmicy@gmail.com
-References: <26cc609706833f78e3195e3d35c0372b2f40cae3.1542181167.git.christophe.leroy@c-s.fr>
- <878t1uva0q.fsf@concordia.ellerman.id.au>
- <9cb14c1f-02ce-a2a5-94e6-95afb4d3e168@c-s.fr>
- <87o9ap2uif.fsf@concordia.ellerman.id.au>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <bab9eb25-a6f4-966c-ceaa-00147b50726d@c-s.fr>
-Date: Mon, 3 Dec 2018 18:43:57 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.3.2
+ by lists.ozlabs.org (Postfix) with ESMTPS id 437t0d0qKwzDqV6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Dec 2018 04:54:08 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wB3HihNv007103
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Dec 2018 12:54:06 -0500
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2p58m22b1n-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Dec 2018 12:54:06 -0500
+Received: from localhost
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.ibm.com>;
+ Mon, 3 Dec 2018 17:54:04 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Mon, 3 Dec 2018 17:53:59 -0000
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wB3Hrwto49545460
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Mon, 3 Dec 2018 17:53:58 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 4BF5DA4051;
+ Mon,  3 Dec 2018 17:53:58 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 5E0E2A4040;
+ Mon,  3 Dec 2018 17:53:57 +0000 (GMT)
+Received: from rapoport-lnx (unknown [9.148.206.196])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Mon,  3 Dec 2018 17:53:57 +0000 (GMT)
+Date: Mon, 3 Dec 2018 19:53:55 +0200
+From: Mike Rapoport <rppt@linux.ibm.com>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: Re: [PATCH 1/2] mm: add probe_user_read() and probe_user_address()
+References: <dd9ef91add7fcf5a9e369dde322b1822e90eb218.1543811917.git.christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-In-Reply-To: <87o9ap2uif.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <dd9ef91add7fcf5a9e369dde322b1822e90eb218.1543811917.git.christophe.leroy@c-s.fr>
+User-Agent: Mutt/1.5.24 (2015-08-30)
+X-TM-AS-GCONF: 00
+x-cbid: 18120317-4275-0000-0000-000002EB6E06
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18120317-4276-0000-0000-000037F8729D
+Message-Id: <20181203175354.GE26700@rapoport-lnx>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-12-03_09:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1812030164
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,71 +99,108 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Kees Cook <keescook@chromium.org>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-Le 16/11/2018 à 11:20, Michael Ellerman a écrit :
-> Christophe LEROY <christophe.leroy@c-s.fr> writes:
+On Mon, Dec 03, 2018 at 05:06:42PM +0000, Christophe Leroy wrote:
+> In the powerpc, there are several places implementing safe
+> access to user data. This is sometimes implemented using
+> probe_kernel_address() with additional access_ok() verification,
+> sometimes with get_user() enclosed in a pagefault_disable()/enable()
+> pair, etc... :
+>     show_user_instructions()
+>     bad_stack_expansion()
+>     p9_hmi_special_emu()
+>     fsl_pci_mcheck_exception()
+>     read_user_stack_64()
+>     read_user_stack_32() on PPC64
+>     read_user_stack_32() on PPC32
+>     power_pmu_bhrb_to()
 > 
->> Le 15/11/2018 à 12:46, Michael Ellerman a écrit :
->>> Christophe Leroy <christophe.leroy@c-s.fr> writes:
->>>
->>>> This patch adds a debugfs file to dump block address translation:
->>>>
->>>> ~# cat /sys/kernel/debug/block_address_translation
->>>
->>> My instinct is it should be in /sys/kernel/debug/powerpc. But I guess
->>> the other page table dump files are not.
->>
->> Lol.
->>
->> Looks like we have the same instinct ...
->>
->> But you rejected my patch https://patchwork.ozlabs.org/patch/750426/ :)
+> In the same spirit as probe_kernel_read() and probe_kernel_address(),
+> this patch adds probe_user_read() and probe_user_address().
 > 
-> Haha. My argument was that the kernel page table dump is not powerpc
-> specific, but this file *is* powerpc specific. Though I guess it's in
-> the same are as the page table / hash table dump, so it may as well live
-> next to them.
+> probe_user_read() does the same as probe_kernel_read() but
+> first checks that it is really a user address.
+> 
+> probe_user_address() is a shortcut to probe_user_read()
+> 
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> ---
+>  Changes since RFC: Made a static inline function instead of weak function as recommended by Kees.
+> 
+>  include/linux/uaccess.h | 42 ++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 42 insertions(+)
+> 
+> diff --git a/include/linux/uaccess.h b/include/linux/uaccess.h
+> index efe79c1cdd47..83ea8aefca75 100644
+> --- a/include/linux/uaccess.h
+> +++ b/include/linux/uaccess.h
+> @@ -266,6 +266,48 @@ extern long strncpy_from_unsafe(char *dst, const void *unsafe_addr, long count);
+>  #define probe_kernel_address(addr, retval)		\
+>  	probe_kernel_read(&retval, addr, sizeof(retval))
+> 
+> +/**
+> + * probe_user_read(): safely attempt to read from a user location
+> + * @dst: pointer to the buffer that shall take the data
+> + * @src: address to read from
+> + * @size: size of the data chunk
+> + *
+> + * Safely read from address @src to the buffer at @dst.  If a kernel fault
+> + * happens, handle that and return -EFAULT.
+> + *
+> + * We ensure that the copy_from_user is executed in atomic context so that
+> + * do_page_fault() doesn't attempt to take mmap_sem.  This makes
+> + * probe_user_read() suitable for use within regions where the caller
+> + * already holds mmap_sem, or other locks which nest inside mmap_sem.
 
-I see you took the first version in next-test. It doesn't handle the 
-case of 64bits phys addresses. v3 does.
+Please add 'Returns:' description.
 
-I just sent v4 which does to v3 the changes you did (__init and powerpc/ 
-subdir)
+> + */
+> +
+> +#ifndef probe_user_read
+> +static __always_inline long probe_user_read(void *dst, const void __user *src,
+> +					    size_t size)
+> +{
+> +	long ret;
+> +
+> +	if (!access_ok(VERIFY_READ, src, size))
+> +		return -EFAULT;
+> +
+> +	pagefault_disable();
+> +	ret = __copy_from_user_inatomic(dst, src, size);
+> +	pagefault_enable();
+> +
+> +	return ret ? -EFAULT : 0;
+> +}
+> +#endif
+> +
+> +/**
+> + * probe_user_address(): safely attempt to read from a user location
+> + * @addr: address to read from
+> + * @retval: read into this variable
+> + *
+> + * Returns 0 on success, or -EFAULT.
 
-Christophe
+This should be 'Return:' for kernel-doc to recognise it as return value
+description.
 
+> + */
+> +#define probe_user_address(addr, retval)		\
+> +	probe_user_read(&(retval), addr, sizeof(retval))
+> +
+>  #ifndef user_access_begin
+>  #define user_access_begin() do { } while (0)
+>  #define user_access_end() do { } while (0)
+> -- 
+> 2.13.3
 > 
->>>> diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
->>>> index ca96e7be4d0e..2adad10b5856 100644
->>>> --- a/arch/powerpc/mm/Makefile
->>>> +++ b/arch/powerpc/mm/Makefile
->>>> @@ -47,7 +47,7 @@ ifdef CONFIG_PPC_PTDUMP
->>>>    obj-$(CONFIG_4xx)		+= dump_linuxpagetables-generic.o
->>>>    obj-$(CONFIG_PPC_8xx)		+= dump_linuxpagetables-8xx.o
->>>>    obj-$(CONFIG_PPC_BOOK3E_MMU)	+= dump_linuxpagetables-generic.o
->>>> -obj-$(CONFIG_PPC_BOOK3S_32)	+= dump_linuxpagetables-generic.o
->>>> +obj-$(CONFIG_PPC_BOOK3S_32)	+= dump_linuxpagetables-generic.o dump_bats.o
->>>
->>> BOOK3S_32 covers quite a lot of CPUs.
->>>
->>> But below the only check is that you're on 601 or 603.
->>>
->>> So is the 603 code going to work on all other BOOK3S_32 CPUs?
->>
->> If I understand function setbat() correctly, it should.
->>
->> See
->> https://elixir.bootlin.com/linux/v4.20-rc1/source/arch/powerpc/mm/ppc_mmu_32.c#L115
->> Tell me if you see something I missed.
-> 
-> I don't know those 32-bit CPUs at all, so as long as you've thought
-> about it that's good enough for me. We can catch bugs in testing anyway.
-> 
-> cheers
-> 
+
+-- 
+Sincerely yours,
+Mike.
+
