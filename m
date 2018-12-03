@@ -2,91 +2,68 @@ Return-Path: <SRS0=3K4h=OM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ED404C04EB9
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 16:03:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 05998C04EB9
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 16:05:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 75E7720672
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 16:03:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 75E7720672
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 40F2420834
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 16:05:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 40F2420834
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 437qYD324tzDqhT
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 03:03:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 437qbQ2bTGzDqbc
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 03:05:38 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=rppt@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=redhat.com
+ (client-ip=209.132.183.28; helo=mx1.redhat.com;
+ envelope-from=fweimer@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 437qCH0fXVzDqSP
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Dec 2018 02:48:10 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wB3Fiu4L044878
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Dec 2018 10:48:08 -0500
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2p56rfaudr-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Dec 2018 10:48:06 -0500
-Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.ibm.com>;
- Mon, 3 Dec 2018 15:47:44 -0000
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
- by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 3 Dec 2018 15:47:36 -0000
-Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
- [9.149.105.60])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wB3FlZJg49676318
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Mon, 3 Dec 2018 15:47:35 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 3522342047;
- Mon,  3 Dec 2018 15:47:35 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E966142045;
- Mon,  3 Dec 2018 15:47:31 +0000 (GMT)
-Received: from rapoport-lnx (unknown [9.148.206.196])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Mon,  3 Dec 2018 15:47:31 +0000 (GMT)
-Received: by rapoport-lnx (sSMTP sendmail emulation);
- Mon, 03 Dec 2018 17:47:31 +0200
-From: Mike Rapoport <rppt@linux.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v2 3/6] sh: prefer memblock APIs returning virtual address
-Date: Mon,  3 Dec 2018 17:47:12 +0200
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1543852035-26634-1-git-send-email-rppt@linux.ibm.com>
-References: <1543852035-26634-1-git-send-email-rppt@linux.ibm.com>
-X-TM-AS-GCONF: 00
-x-cbid: 18120315-0008-0000-0000-0000029C39CF
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18120315-0009-0000-0000-000022069463
-Message-Id: <1543852035-26634-4-git-send-email-rppt@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-12-03_09:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=944 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1812030148
+ by lists.ozlabs.org (Postfix) with ESMTPS id 437qHz0pBBzDqTy
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Dec 2018 02:52:15 +1100 (AEDT)
+Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com
+ [10.5.11.23])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mx1.redhat.com (Postfix) with ESMTPS id 0B6D413AA4;
+ Mon,  3 Dec 2018 15:52:13 +0000 (UTC)
+Received: from oldenburg.str.redhat.com (ovpn-116-35.ams2.redhat.com
+ [10.36.116.35])
+ by smtp.corp.redhat.com (Postfix) with ESMTPS id C44BE2655B;
+ Mon,  3 Dec 2018 15:52:11 +0000 (UTC)
+From: Florian Weimer <fweimer@redhat.com>
+To: Ram Pai <linuxram@us.ibm.com>
+Subject: Re: pkeys: Reserve PKEY_DISABLE_READ
+References: <6f9c65fb-ea7e-8217-a4cc-f93e766ed9bb@intel.com>
+ <87k1ln8o7u.fsf@oldenburg.str.redhat.com>
+ <20181108201231.GE5481@ram.oc3035372033.ibm.com>
+ <87bm6z71yw.fsf@oldenburg.str.redhat.com>
+ <20181109180947.GF5481@ram.oc3035372033.ibm.com>
+ <87efbqqze4.fsf@oldenburg.str.redhat.com>
+ <20181127102350.GA5795@ram.oc3035372033.ibm.com>
+ <87zhtuhgx0.fsf@oldenburg.str.redhat.com>
+ <58e263a6-9a93-46d6-c5f9-59973064d55e@intel.com>
+ <87va4g5d3o.fsf@oldenburg.str.redhat.com>
+ <20181203040249.GA11930@ram.oc3035372033.ibm.com>
+Date: Mon, 03 Dec 2018 16:52:02 +0100
+In-Reply-To: <20181203040249.GA11930@ram.oc3035372033.ibm.com> (Ram Pai's
+ message of "Sun, 2 Dec 2018 20:02:49 -0800")
+Message-ID: <87pnuibobh.fsf@oldenburg.str.redhat.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/25.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain
+X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
+ (mx1.redhat.com [10.5.110.29]); Mon, 03 Dec 2018 15:52:13 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,87 +75,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michal Hocko <mhocko@suse.com>, linux-sh@vger.kernel.org,
- linux-mm@kvack.org, Rich Felker <dalias@libc.org>,
- Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
- Vincent Chen <deanbo422@gmail.com>, Jonas Bonn <jonas@southpole.se>,
- linux-c6x-dev@linux-c6x.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
- Russell King <linux@armlinux.org.uk>, Mike Rapoport <rppt@linux.ibm.com>,
- Mark Salter <msalter@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- openrisc@lists.librecores.org, Greentime Hu <green.hu@gmail.com>,
- Stafford Horne <shorne@gmail.com>, Guan Xuetao <gxt@pku.edu.cn>,
- linux-arm-kernel@lists.infradead.org, Michal Simek <monstr@monstr.eu>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+Cc: Dave Hansen <dave.hansen@intel.com>, linux-api@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Rather than use the memblock_alloc_base that returns a physical address and
-then convert this address to the virtual one, use appropriate memblock
-function that returns a virtual address.
+* Ram Pai:
 
-There is a small functional change in the allocation of then NODE_DATA().
-Instead of panicing if the local allocation failed, the non-local
-allocation attempt will be made.
+> So the problem is as follows:
+>
+> Currently the kernel supports  'disable-write'  and 'disable-access'.
+>
+> On x86, cpu supports 'disable-write' and 'disable-access'. This
+> matches with what the kernel supports. All good.
+>
+> However on power, cpu supports 'disable-read' too. Since userspace can
+> program the cpu directly, userspace has the ability to set
+> 'disable-read' too.  This can lead to inconsistency between the kernel
+> and the userspace.
+>
+> We want the kernel to match userspace on all architectures.
 
-Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
----
- arch/sh/mm/init.c | 18 +++++-------------
- arch/sh/mm/numa.c |  5 ++---
- 2 files changed, 7 insertions(+), 16 deletions(-)
+Correct.
 
-diff --git a/arch/sh/mm/init.c b/arch/sh/mm/init.c
-index c8c13c77..3576b5f 100644
---- a/arch/sh/mm/init.c
-+++ b/arch/sh/mm/init.c
-@@ -192,24 +192,16 @@ void __init page_table_range_init(unsigned long start, unsigned long end,
- void __init allocate_pgdat(unsigned int nid)
- {
- 	unsigned long start_pfn, end_pfn;
--#ifdef CONFIG_NEED_MULTIPLE_NODES
--	unsigned long phys;
--#endif
- 
- 	get_pfn_range_for_nid(nid, &start_pfn, &end_pfn);
- 
- #ifdef CONFIG_NEED_MULTIPLE_NODES
--	phys = __memblock_alloc_base(sizeof(struct pglist_data),
--				SMP_CACHE_BYTES, end_pfn << PAGE_SHIFT);
--	/* Retry with all of system memory */
--	if (!phys)
--		phys = __memblock_alloc_base(sizeof(struct pglist_data),
--					SMP_CACHE_BYTES, memblock_end_of_DRAM());
--	if (!phys)
-+	NODE_DATA(nid) = memblock_alloc_try_nid_nopanic(
-+				sizeof(struct pglist_data),
-+				SMP_CACHE_BYTES, MEMBLOCK_LOW_LIMIT,
-+				MEMBLOCK_ALLOC_ACCESSIBLE, nid);
-+	if (!NODE_DATA(nid))
- 		panic("Can't allocate pgdat for node %d\n", nid);
--
--	NODE_DATA(nid) = __va(phys);
--	memset(NODE_DATA(nid), 0, sizeof(struct pglist_data));
- #endif
- 
- 	NODE_DATA(nid)->node_start_pfn = start_pfn;
-diff --git a/arch/sh/mm/numa.c b/arch/sh/mm/numa.c
-index 830e8b3..c4bde61 100644
---- a/arch/sh/mm/numa.c
-+++ b/arch/sh/mm/numa.c
-@@ -41,9 +41,8 @@ void __init setup_bootmem_node(int nid, unsigned long start, unsigned long end)
- 	__add_active_range(nid, start_pfn, end_pfn);
- 
- 	/* Node-local pgdat */
--	NODE_DATA(nid) = __va(memblock_alloc_base(sizeof(struct pglist_data),
--					     SMP_CACHE_BYTES, end));
--	memset(NODE_DATA(nid), 0, sizeof(struct pglist_data));
-+	NODE_DATA(nid) = memblock_alloc_node(sizeof(struct pglist_data),
-+					     SMP_CACHE_BYTES, nid);
- 
- 	NODE_DATA(nid)->node_start_pfn = start_pfn;
- 	NODE_DATA(nid)->node_spanned_pages = end_pfn - start_pfn;
--- 
-2.7.4
+> Proposed Solution:
+>
+> Enhance the kernel to understand 'disable-read', and facilitate architectures
+> that understand 'disable-read' to allow it.
+>
+> Also explicitly define the semantics of disable-access  as 
+> 'disable-read and disable-write'
+>
+> Did I get this right?  Assuming I did, the implementation has to do
+> the following --
+>   
+> 	On power, sys_pkey_alloc() should succeed if the init_val
+> 	is PKEY_DISABLE_READ, PKEY_DISABLE_WRITE, PKEY_DISABLE_ACCESS
+> 	or any combination of the three.
 
+Agreed.
+
+> 	On x86, sys_pkey_alloc() should succeed if the init_val is
+> 	PKEY_DISABLE_WRITE or PKEY_DISABLE_ACCESS or PKEY_DISABLE_READ
+> 	or any combination of the three, except  PKEY_DISABLE_READ
+>       	specified all by itself.
+
+Again agreed.  That's a clever way of phrasing it actually.
+
+> 	On all other arches, none of the flags are supported.
+>
+>
+> Are we on the same plate?
+
+I think so, thanks.
+
+Florian
