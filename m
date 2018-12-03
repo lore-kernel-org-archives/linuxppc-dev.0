@@ -2,92 +2,84 @@ Return-Path: <SRS0=3K4h=OM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 253CEC04EB9
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 17:56:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B4DB4C04EB9
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 18:47:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A8E8020848
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 17:56:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A8E8020848
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id CECE42146D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 18:47:48 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="MpvNoSUA"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CECE42146D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 437t314M6ZzDqXX
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 04:56:13 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 437vBV52W9zDqWp
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 05:47:46 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=rppt@linux.ibm.com; receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.b="MpvNoSUA";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=google.com
+ (client-ip=2607:f8b0:4864:20::644; helo=mail-pl1-x644.google.com;
+ envelope-from=ndesaulniers@google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=google.com header.i=@google.com header.b="MpvNoSUA"; 
+ dkim-atps=neutral
+Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
+ [IPv6:2607:f8b0:4864:20::644])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 437t0d0qKwzDqV6
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Dec 2018 04:54:08 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wB3HihNv007103
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Dec 2018 12:54:06 -0500
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2p58m22b1n-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Dec 2018 12:54:06 -0500
-Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.ibm.com>;
- Mon, 3 Dec 2018 17:54:04 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 3 Dec 2018 17:53:59 -0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wB3Hrwto49545460
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Mon, 3 Dec 2018 17:53:58 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4BF5DA4051;
- Mon,  3 Dec 2018 17:53:58 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5E0E2A4040;
- Mon,  3 Dec 2018 17:53:57 +0000 (GMT)
-Received: from rapoport-lnx (unknown [9.148.206.196])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Mon,  3 Dec 2018 17:53:57 +0000 (GMT)
-Date: Mon, 3 Dec 2018 19:53:55 +0200
-From: Mike Rapoport <rppt@linux.ibm.com>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: Re: [PATCH 1/2] mm: add probe_user_read() and probe_user_address()
-References: <dd9ef91add7fcf5a9e369dde322b1822e90eb218.1543811917.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 437v7b1TcmzDqWS
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Dec 2018 05:45:14 +1100 (AEDT)
+Received: by mail-pl1-x644.google.com with SMTP id 101so6909608pld.6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Dec 2018 10:45:14 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=Vz4RpNkAFts865UAXW8DwCyoEd+dqjleopIGrH/AuTc=;
+ b=MpvNoSUAkZNzT9UDKsFED7+PSWmlGIKGTyin/3c6lY09+HFuDaQiWQZlGcbjXfjrKM
+ d3tveLhB+nGuR45U8IoYFsgJfykUgiwxWmXc5D1UzwwviIw1QKD4HPyWI8aJZnP7pin9
+ QN6Gwoim2yL0kCFeAO71NeL4r5SSUkypfyUyYf5+ZTuzCNnBUOj1RhgGYnpGU8w30r6P
+ FVFtLNtynLG253MLslHNvI9r1gHvQnX1h3dTzE8VlS8wtjmYhHhi0IK31sVW1H2AmMmo
+ uhUO5gJW9c4XLYzMi8xWDD7TSi9RyIbeux5xTzu8j6CbawpKsLAfqYpjA4bn7LJr9uvM
+ SFaA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=Vz4RpNkAFts865UAXW8DwCyoEd+dqjleopIGrH/AuTc=;
+ b=KFO/tZxwlaY4kVJZXmKNH0W6jgxwGBsH2GerT9vcMCKgTf3Yo9qkVVOe0IKh5mP8BS
+ FTssrS5YSipD6HP/WODbHYOvRMhX2kZktn3IBln207mARmLDLWGqd6iOpUkfUP7V3Uj8
+ IjEOkwEAMSFb+zCcjlTgTvkhDWa6Oo+w5jlhHfqzOC3fwFBV2U701oKxI7+wBZWh+OGs
+ aCGXCF5k5H0+XM5fCzXO8yhG5hjzEQxNU8NPRNdodm1QUdzoIzApKB1aEmcS6RG8SlTL
+ kLGqcGHpasiDRSyRxg/BAD5Gq6kIYcjXH7tSN/rz/0YQeTi7NPsxWpqaGYzbMwDF9q+x
+ Jz6A==
+X-Gm-Message-State: AA+aEWbnmY2or+80QpbBZzc42DAM34JvCAzDftuXNGgftZqxTOVNtMjA
+ 6s+jwV9U9LNJJRac0XXjFsWFzH4580/DEB6fqNzUFg==
+X-Google-Smtp-Source: AFSGD/UyFqTohNcPZfT+W/QTh6VZmuq/cE0JrDEfs+Q4pUtX4iT0u0B6XCvx2oumEIfzz5lmOmcv2l8nb5iIVvCnpzk=
+X-Received: by 2002:a17:902:29ab:: with SMTP id
+ h40mr16898432plb.238.1543862712734; 
+ Mon, 03 Dec 2018 10:45:12 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <dd9ef91add7fcf5a9e369dde322b1822e90eb218.1543811917.git.christophe.leroy@c-s.fr>
-User-Agent: Mutt/1.5.24 (2015-08-30)
-X-TM-AS-GCONF: 00
-x-cbid: 18120317-4275-0000-0000-000002EB6E06
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18120317-4276-0000-0000-000037F8729D
-Message-Id: <20181203175354.GE26700@rapoport-lnx>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-12-03_09:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1812030164
+References: <20181102004455.10157-1-joel@jms.id.au>
+ <CAKwvOdni_iJ4beAWYkUUpZss_PYZezMGR7hN9k1rm9J0iB0gHQ@mail.gmail.com>
+ <CACPK8XdbWzb=52iFV_fj0Y5KMWPgsRv_A8PZgfKn9vm96y3LOw@mail.gmail.com>
+In-Reply-To: <CACPK8XdbWzb=52iFV_fj0Y5KMWPgsRv_A8PZgfKn9vm96y3LOw@mail.gmail.com>
+From: Nick Desaulniers <ndesaulniers@google.com>
+Date: Mon, 3 Dec 2018 10:45:01 -0800
+Message-ID: <CAKwvOdndyeRZApOqbp-6evEpYgzHyGo4qqaMKd_DQ4U9x8_5wA@mail.gmail.com>
+Subject: Re: [PATCH v2] raid6/ppc: Fix build for clang
+To: joel@jms.id.au
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,108 +91,89 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kees Cook <keescook@chromium.org>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>,
+ jji@us.ibm.com, LKML <linux-kernel@vger.kernel.org>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Dec 03, 2018 at 05:06:42PM +0000, Christophe Leroy wrote:
-> In the powerpc, there are several places implementing safe
-> access to user data. This is sometimes implemented using
-> probe_kernel_address() with additional access_ok() verification,
-> sometimes with get_user() enclosed in a pagefault_disable()/enable()
-> pair, etc... :
->     show_user_instructions()
->     bad_stack_expansion()
->     p9_hmi_special_emu()
->     fsl_pci_mcheck_exception()
->     read_user_stack_64()
->     read_user_stack_32() on PPC64
->     read_user_stack_32() on PPC32
->     power_pmu_bhrb_to()
-> 
-> In the same spirit as probe_kernel_read() and probe_kernel_address(),
-> this patch adds probe_user_read() and probe_user_address().
-> 
-> probe_user_read() does the same as probe_kernel_read() but
-> first checks that it is really a user address.
-> 
-> probe_user_address() is a shortcut to probe_user_read()
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> ---
->  Changes since RFC: Made a static inline function instead of weak function as recommended by Kees.
-> 
->  include/linux/uaccess.h | 42 ++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 42 insertions(+)
-> 
-> diff --git a/include/linux/uaccess.h b/include/linux/uaccess.h
-> index efe79c1cdd47..83ea8aefca75 100644
-> --- a/include/linux/uaccess.h
-> +++ b/include/linux/uaccess.h
-> @@ -266,6 +266,48 @@ extern long strncpy_from_unsafe(char *dst, const void *unsafe_addr, long count);
->  #define probe_kernel_address(addr, retval)		\
->  	probe_kernel_read(&retval, addr, sizeof(retval))
-> 
-> +/**
-> + * probe_user_read(): safely attempt to read from a user location
-> + * @dst: pointer to the buffer that shall take the data
-> + * @src: address to read from
-> + * @size: size of the data chunk
-> + *
-> + * Safely read from address @src to the buffer at @dst.  If a kernel fault
-> + * happens, handle that and return -EFAULT.
-> + *
-> + * We ensure that the copy_from_user is executed in atomic context so that
-> + * do_page_fault() doesn't attempt to take mmap_sem.  This makes
-> + * probe_user_read() suitable for use within regions where the caller
-> + * already holds mmap_sem, or other locks which nest inside mmap_sem.
+On Mon, Dec 3, 2018 at 2:24 AM Joel Stanley <joel@jms.id.au> wrote:
+>
+> On Sat, 3 Nov 2018 at 04:04, Nick Desaulniers <ndesaulniers@google.com> wrote:
+> >
+> > On Thu, Nov 1, 2018 at 5:45 PM Joel Stanley <joel@jms.id.au> wrote:
+> > >
+> > > We cannot build these files with clang as it does not allow altivec
+> > > instructions in assembly when -msoft-float is passed.
+> > >
+> > > Jinsong Ji <jji@us.ibm.com> wrote:
+> > > > We currently disable Altivec/VSX support when enabling soft-float.  So
+> > > > any usage of vector builtins will break.
+> > > >
+> > > > Enable Altivec/VSX with soft-float may need quite some clean up work, so
+> > > > I guess this is currently a limitation.
+> > > >
+> > > > Removing -msoft-float will make it work (and we are lucky that no
+> > > > floating point instructions will be generated as well).
+> > >
+> > > This is a workaround until the issue is resolved in clang.
+> > >
+> > > Link: https://bugs.llvm.org/show_bug.cgi?id=31177
+> > > Link: https://github.com/ClangBuiltLinux/linux/issues/239
+> > > Signed-off-by: Joel Stanley <joel@jms.id.au>
+> > > ---
+> > > v2: fix typo in comment, thanks Jinsong
+> > >
+> > >  lib/raid6/Makefile | 15 +++++++++++++++
+> > >  1 file changed, 15 insertions(+)
+> > >
+> > > diff --git a/lib/raid6/Makefile b/lib/raid6/Makefile
+> > > index 2f8b61dfd9b0..7ed43eaa02ef 100644
+> > > --- a/lib/raid6/Makefile
+> > > +++ b/lib/raid6/Makefile
+> > > @@ -18,6 +18,21 @@ quiet_cmd_unroll = UNROLL  $@
+> > >
+> > >  ifeq ($(CONFIG_ALTIVEC),y)
+> > >  altivec_flags := -maltivec $(call cc-option,-mabi=altivec)
+> > > +
+> > > +ifdef CONFIG_CC_IS_CLANG
+> > > +# clang ppc port does not yet support -maltivec when -msoft-float is
+> > > +# enabled. A future release of clang will resolve this
+> > > +# https://bugs.llvm.org/show_bug.cgi?id=31177
+> > > +CFLAGS_REMOVE_altivec1.o  += -msoft-float
+> > > +CFLAGS_REMOVE_altivec2.o  += -msoft-float
+> > > +CFLAGS_REMOVE_altivec4.o  += -msoft-float
+> > > +CFLAGS_REMOVE_altivec8.o  += -msoft-float
+> > > +CFLAGS_REMOVE_altivec8.o  += -msoft-float
+> > > +CFLAGS_REMOVE_vpermxor1.o += -msoft-float
+> > > +CFLAGS_REMOVE_vpermxor2.o += -msoft-float
+> > > +CFLAGS_REMOVE_vpermxor4.o += -msoft-float
+> > > +CFLAGS_REMOVE_vpermxor8.o += -msoft-float
+> > > +endif
+> >
+> > Hi Joel, thanks for this patch!  My same thoughts about
+> > CONFIG_CC_IS_CLANG vs cc-option from
+> > https://lists.ozlabs.org/pipermail/linuxppc-dev/2018-November/180939.html
+> > apply here as well.  I don't feel strongly about either though.  What
+> > are your thoughts?
+>
+> I'm not sure that we can test for this one with cc-option. The result
+> of having -maltivec with -msoft-float is a error about the internals
+> of clang, which isn't something that kbuild is set up to test for.
 
-Please add 'Returns:' description.
+As in clang itself crashes, and cc-option/kbuild can't handle that gracefully?
 
-> + */
-> +
-> +#ifndef probe_user_read
-> +static __always_inline long probe_user_read(void *dst, const void __user *src,
-> +					    size_t size)
-> +{
-> +	long ret;
-> +
-> +	if (!access_ok(VERIFY_READ, src, size))
-> +		return -EFAULT;
-> +
-> +	pagefault_disable();
-> +	ret = __copy_from_user_inatomic(dst, src, size);
-> +	pagefault_enable();
-> +
-> +	return ret ? -EFAULT : 0;
-> +}
-> +#endif
-> +
-> +/**
-> + * probe_user_address(): safely attempt to read from a user location
-> + * @addr: address to read from
-> + * @retval: read into this variable
-> + *
-> + * Returns 0 on success, or -EFAULT.
+>
+> When clang is fixed to allow this combination we will still build this
+> code in the same way, so in that sense it fails "open".
+>
+> Cheers,
+>
+> Joel
 
-This should be 'Return:' for kernel-doc to recognise it as return value
-description.
 
-> + */
-> +#define probe_user_address(addr, retval)		\
-> +	probe_user_read(&(retval), addr, sizeof(retval))
-> +
->  #ifndef user_access_begin
->  #define user_access_begin() do { } while (0)
->  #define user_access_end() do { } while (0)
-> -- 
-> 2.13.3
-> 
 
 -- 
-Sincerely yours,
-Mike.
-
+Thanks,
+~Nick Desaulniers
