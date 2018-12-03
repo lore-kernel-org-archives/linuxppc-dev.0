@@ -2,69 +2,87 @@ Return-Path: <SRS0=3K4h=OM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
-	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 36347C04EBF
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 11:06:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 39F85C04EB9
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 12:24:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A99C620851
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 11:06:21 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Y/JtbTWx"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A99C620851
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
+	by mail.kernel.org (Postfix) with ESMTPS id BA72A20878
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 12:24:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BA72A20878
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 437hy35P8LzDqMt
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 22:06:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 437kh22nByzDqQf
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 23:24:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="Y/JtbTWx";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=sandipan@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=srs0=wgff=om=linuxfoundation.org=gregkh@kernel.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="Y/JtbTWx"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 437htp1q6hzDqNx
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Dec 2018 22:03:30 +1100 (AEDT)
-Received: from localhost (unknown [62.119.166.9])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id B7DD320834;
- Mon,  3 Dec 2018 11:03:27 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1543835008;
- bh=3tHfjbk9Sl9xQCUJsxsM0PKW6xYkhbuwANLvCRDqEKU=;
- h=Subject:To:Cc:From:Date:From;
- b=Y/JtbTWxrepv5XFqH63RbZlF019uiZv22GzMSv1u7bC+WV7sDIbNseA+dztGvui8z
- /IH0HyJrKh+pRd+xYwSHnukpbRd52aKoO+gAectaFeDF7yty1fiwDdebZtlZerQEdC
- Ht24C+vkSSoqGeQwvD4XYHVZsr73nNYDyQISW/gc=
-Subject: Patch "powerpc/function_graph: Simplify with function_graph_enter()"
- has been added to the 4.19-stable tree
-To: benh@kernel.crashing.org, gregkh@linuxfoundation.org,
- linuxppc-dev@lists.ozlabs.org, mhiramat@kernel.org, mpe@ellerman.id.au,
- paulus@samba.org, rostedt@goodmis.org, stable@kernel.org
-From: <gregkh@linuxfoundation.org>
-Date: Mon, 03 Dec 2018 12:00:12 +0100
-Message-ID: <154383481221611@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ANSI_X3.4-1968
-Content-Transfer-Encoding: 8bit
-X-stable: commit
-X-Patchwork-Hint: ignore 
+ by lists.ozlabs.org (Postfix) with ESMTPS id 437kcc5pB5zDqN8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Dec 2018 23:21:20 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wB3CEhGA124342
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Dec 2018 07:21:15 -0500
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2p535k4773-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Dec 2018 07:21:15 -0500
+Received: from localhost
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sandipan@linux.ibm.com>;
+ Mon, 3 Dec 2018 12:21:09 -0000
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Mon, 3 Dec 2018 12:21:07 -0000
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com
+ (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wB3CL6Wx35455176
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Mon, 3 Dec 2018 12:21:06 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 51161A405B;
+ Mon,  3 Dec 2018 12:21:06 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 23202A405F;
+ Mon,  3 Dec 2018 12:21:05 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.195.22.129])
+ by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Mon,  3 Dec 2018 12:21:04 +0000 (GMT)
+From: Sandipan Das <sandipan@linux.ibm.com>
+To: daniel@iogearbox.net, ast@kernel.org
+Subject: [PATCH bpf] bpf: powerpc64: optimize JIT passes for bpf function calls
+Date: Mon,  3 Dec 2018 17:51:04 +0530
+X-Mailer: git-send-email 2.17.2
+X-TM-AS-GCONF: 00
+x-cbid: 18120312-0008-0000-0000-0000029C21C7
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18120312-0009-0000-0000-000022067A4A
+Message-Id: <20181203122104.6746-1-sandipan@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-12-03_06:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1812030117
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,110 +94,127 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: stable-commits@vger.kernel.org
+Cc: naveen.n.rao@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ netdev@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Once the JITed images for each function in a multi-function program
+are generated after the first three JIT passes, we only need to fix
+the target address for the branch instruction corresponding to each
+bpf-to-bpf function call.
 
-This is a note to let you know that I've just added the patch titled
+This introduces the following optimizations for reducing the work
+done by the JIT compiler when handling multi-function programs:
 
-    powerpc/function_graph: Simplify with function_graph_enter()
+  [1] Instead of doing two extra passes to fix the bpf function calls,
+      do just one as that would be sufficient.
 
-to the 4.19-stable tree which can be found at:
-    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
+  [2] During the extra pass, only overwrite the instruction sequences
+      for the bpf-to-bpf function calls as everything else would still
+      remain exactly the same. This also reduces the number of writes
+      to the JITed image.
 
-The filename of the patch is:
-     powerpc-function_graph-simplify-with-function_graph_enter.patch
-and it can be found in the queue-4.19 subdirectory.
+  [3] Do not regenerate the prologue and the epilogue during the extra
+      pass as that would be redundant.
 
-If you, or anyone else, feels it should not be added to the stable tree,
-please let <stable@vger.kernel.org> know about it.
-
-
-From fe60522ec60082a1dd735691b82c64f65d4ad15e Mon Sep 17 00:00:00 2001
-From: "Steven Rostedt (VMware)" <rostedt@goodmis.org>
-Date: Sun, 18 Nov 2018 17:28:53 -0500
-Subject: powerpc/function_graph: Simplify with function_graph_enter()
-
-From: Steven Rostedt (VMware) <rostedt@goodmis.org>
-
-commit fe60522ec60082a1dd735691b82c64f65d4ad15e upstream.
-
-The function_graph_enter() function does the work of calling the function
-graph hook function and the management of the shadow stack, simplifying the
-work done in the architecture dependent prepare_ftrace_return().
-
-Have powerpc use the new code, and remove the shadow stack management as well as
-having to set up the trace structure.
-
-This is needed to prepare for a fix of a design bug on how the curr_ret_stack
-is used.
-
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: stable@kernel.org
-Fixes: 03274a3ffb449 ("tracing/fgraph: Adjust fgraph depth before calling trace return callback")
-Reviewed-by: Masami Hiramatsu <mhiramat@kernel.org>
-Signed-off-by: Steven Rostedt (VMware) <rostedt@goodmis.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-
+Signed-off-by: Sandipan Das <sandipan@linux.ibm.com>
 ---
- arch/powerpc/kernel/trace/ftrace.c |   15 ++-------------
- 1 file changed, 2 insertions(+), 13 deletions(-)
+ arch/powerpc/net/bpf_jit_comp64.c | 66 +++++++++++++++++++++++++++++++
+ 1 file changed, 66 insertions(+)
 
---- a/arch/powerpc/kernel/trace/ftrace.c
-+++ b/arch/powerpc/kernel/trace/ftrace.c
-@@ -697,7 +697,6 @@ int ftrace_disable_ftrace_graph_caller(v
-  */
- unsigned long prepare_ftrace_return(unsigned long parent, unsigned long ip)
- {
--	struct ftrace_graph_ent trace;
- 	unsigned long return_hooker;
- 
- 	if (unlikely(ftrace_graph_is_dead()))
-@@ -708,18 +707,8 @@ unsigned long prepare_ftrace_return(unsi
- 
- 	return_hooker = ppc_function_entry(return_to_handler);
- 
--	trace.func = ip;
--	trace.depth = current->curr_ret_stack + 1;
--
--	/* Only trace if the calling function expects to */
--	if (!ftrace_graph_entry(&trace))
--		goto out;
--
--	if (ftrace_push_return_trace(parent, ip, &trace.depth, 0,
--				     NULL) == -EBUSY)
--		goto out;
--
--	parent = return_hooker;
-+	if (!function_graph_enter(parent, ip, 0, NULL))
-+		parent = return_hooker;
- out:
- 	return parent;
+diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
+index 17482f5de3e2..9393e231cbc2 100644
+--- a/arch/powerpc/net/bpf_jit_comp64.c
++++ b/arch/powerpc/net/bpf_jit_comp64.c
+@@ -891,6 +891,55 @@ static int bpf_jit_build_body(struct bpf_prog *fp, u32 *image,
+ 	return 0;
  }
+ 
++/* Fix the branch target addresses for subprog calls */
++static int bpf_jit_fixup_subprog_calls(struct bpf_prog *fp, u32 *image,
++				       struct codegen_context *ctx, u32 *addrs)
++{
++	const struct bpf_insn *insn = fp->insnsi;
++	bool func_addr_fixed;
++	u64 func_addr;
++	u32 tmp_idx;
++	int i, ret;
++
++	for (i = 0; i < fp->len; i++) {
++		/*
++		 * During the extra pass, only the branch target addresses for
++		 * the subprog calls need to be fixed. All other instructions
++		 * can left untouched.
++		 *
++		 * The JITed image length does not change because we already
++		 * ensure that the JITed instruction sequence for these calls
++		 * are of fixed length by padding them with NOPs.
++		 */
++		if (insn[i].code == (BPF_JMP | BPF_CALL) &&
++		    insn[i].src_reg == BPF_PSEUDO_CALL) {
++			ret = bpf_jit_get_func_addr(fp, &insn[i], true,
++						    &func_addr,
++						    &func_addr_fixed);
++			if (ret < 0)
++				return ret;
++
++			/*
++			 * Save ctx->idx as this would currently point to the
++			 * end of the JITed image and set it to the offset of
++			 * the instruction sequence corresponding to the
++			 * subprog call temporarily.
++			 */
++			tmp_idx = ctx->idx;
++			ctx->idx = addrs[i] / 4;
++			bpf_jit_emit_func_call_rel(image, ctx, func_addr);
++
++			/*
++			 * Restore ctx->idx here. This is safe as the length
++			 * of the JITed sequence remains unchanged.
++			 */
++			ctx->idx = tmp_idx;
++		}
++	}
++
++	return 0;
++}
++
+ struct powerpc64_jit_data {
+ 	struct bpf_binary_header *header;
+ 	u32 *addrs;
+@@ -989,6 +1038,22 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
+ skip_init_ctx:
+ 	code_base = (u32 *)(image + FUNCTION_DESCR_SIZE);
+ 
++	if (extra_pass) {
++		/*
++		 * Do not touch the prologue and epilogue as they will remain
++		 * unchanged. Only fix the branch target address for subprog
++		 * calls in the body.
++		 *
++		 * This does not change the offsets and lengths of the subprog
++		 * call instruction sequences and hence, the size of the JITed
++		 * image as well.
++		 */
++		bpf_jit_fixup_subprog_calls(fp, code_base, &cgctx, addrs);
++
++		/* There is no need to perform the usual passes. */
++		goto skip_codegen_passes;
++	}
++
+ 	/* Code generation passes 1-2 */
+ 	for (pass = 1; pass < 3; pass++) {
+ 		/* Now build the prologue, body code & epilogue for real. */
+@@ -1002,6 +1067,7 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
+ 				proglen - (cgctx.idx * 4), cgctx.seen);
+ 	}
+ 
++skip_codegen_passes:
+ 	if (bpf_jit_enable > 1)
+ 		/*
+ 		 * Note that we output the base address of the code_base
+-- 
+2.17.2
 
-
-Patches currently in stable-queue which might be from rostedt@goodmis.org are
-
-queue-4.19/function_graph-create-function_graph_enter-to-consolidate-architecture-code.patch
-queue-4.19/sh-function_graph-simplify-with-function_graph_enter.patch
-queue-4.19/function_graph-move-return-callback-before-update-of-curr_ret_stack.patch
-queue-4.19/nds32-function_graph-simplify-with-function_graph_enter.patch
-queue-4.19/function_graph-use-new-curr_ret_depth-to-manage-depth-instead-of-curr_ret_stack.patch
-queue-4.19/sparc-function_graph-simplify-with-function_graph_enter.patch
-queue-4.19/parisc-function_graph-simplify-with-function_graph_enter.patch
-queue-4.19/x86-function_graph-simplify-with-function_graph_enter.patch
-queue-4.19/powerpc-function_graph-simplify-with-function_graph_enter.patch
-queue-4.19/function_graph-reverse-the-order-of-pushing-the-ret_stack-and-the-callback.patch
-queue-4.19/arm-function_graph-simplify-with-function_graph_enter.patch
-queue-4.19/mips-function_graph-simplify-with-function_graph_enter.patch
-queue-4.19/function_graph-make-ftrace_push_return_trace-static.patch
-queue-4.19/arm64-function_graph-simplify-with-function_graph_enter.patch
-queue-4.19/riscv-function_graph-simplify-with-function_graph_enter.patch
-queue-4.19/s390-function_graph-simplify-with-function_graph_enter.patch
-queue-4.19/microblaze-function_graph-simplify-with-function_graph_enter.patch
-queue-4.19/function_graph-have-profiler-use-curr_ret_stack-and-not-depth.patch
