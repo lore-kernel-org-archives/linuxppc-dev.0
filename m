@@ -3,22 +3,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 94413C04EB9
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 17:13:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 29E5EC04EB9
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 17:42:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 215BC20661
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 17:13:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 215BC20661
+	by mail.kernel.org (Postfix) with ESMTPS id 79185208A3
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 17:42:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 79185208A3
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 437s5X0qhZzDqSR
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 04:13:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 437slJ2XyxzDqQM
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 04:42:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
@@ -29,42 +29,36 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 437s385KwszDq78
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Dec 2018 04:11:16 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 437shs4ndVzDqRX
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Dec 2018 04:40:29 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 437s315cCKz9v01m;
- Mon,  3 Dec 2018 18:11:09 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 437shk3TSSz9v0l4;
+ Mon,  3 Dec 2018 18:40:22 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id GJySx5LmMJoZ; Mon,  3 Dec 2018 18:11:09 +0100 (CET)
+ with ESMTP id L75VhFPAK2Al; Mon,  3 Dec 2018 18:40:22 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 437s315587z9tyys;
- Mon,  3 Dec 2018 18:11:09 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 437shk2sqFz9v0kx;
+ Mon,  3 Dec 2018 18:40:22 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0617D8B7B8;
- Mon,  3 Dec 2018 18:11:13 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D2DB08B7B8;
+ Mon,  3 Dec 2018 18:40:25 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id cswXRt5T2eYE; Mon,  3 Dec 2018 18:11:12 +0100 (CET)
-Received: from [192.168.232.3] (unknown [192.168.232.3])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 59B088B79E;
- Mon,  3 Dec 2018 18:11:12 +0100 (CET)
-Subject: Re: [RFC PATCH] mm: add probe_user_read() and probe_user_address()
-To: Kees Cook <keescook@chromium.org>
-References: <336eb81e62d6c683a69d312f533899dcb6bcf770.1539959864.git.christophe.leroy@c-s.fr>
- <CAGXu5jJzp0v_Ox4gJcSdMVT7Rzuoy4mH-J3tPfrpeyCTi4o5YQ@mail.gmail.com>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <a6d785e7-c01d-eb3c-89da-e960abc40c6d@c-s.fr>
-Date: Mon, 3 Dec 2018 18:11:11 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.3.2
-MIME-Version: 1.0
-In-Reply-To: <CAGXu5jJzp0v_Ox4gJcSdMVT7Rzuoy4mH-J3tPfrpeyCTi4o5YQ@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+ with ESMTP id 6eMBg-UmBpx2; Mon,  3 Dec 2018 18:40:25 +0100 (CET)
+Received: from po14163vm.idsi0.si.c-s.fr (unknown [192.168.232.3])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 87E778B79E;
+ Mon,  3 Dec 2018 18:40:25 +0100 (CET)
+Received: by po14163vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 35E836BF21; Mon,  3 Dec 2018 17:40:25 +0000 (UTC)
+Message-Id: <c8395ae44e636a36443283f438c9572dc8c26a09.1543858630.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v4] powerpc/mm: dump block address translation on book3s/32
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Mon,  3 Dec 2018 17:40:25 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,109 +70,261 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- PowerPC <linuxppc-dev@lists.ozlabs.org>, LKML <linux-kernel@vger.kernel.org>,
- Linux-MM <linux-mm@kvack.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+This patch adds a debugfs file to dump block address translation:
 
+~# cat /sys/kernel/debug/powerpc/block_address_translation
+---[ Instruction Block Address Translations ]---
+0:         -
+1:         -
+2: 0xc0000000-0xcfffffff 0x00000000 Kernel EXEC coherent
+3: 0xd0000000-0xdfffffff 0x10000000 Kernel EXEC coherent
+4:         -
+5:         -
+6:         -
+7:         -
 
-Le 19/10/2018 à 17:42, Kees Cook a écrit :
-> On Fri, Oct 19, 2018 at 8:14 AM, Christophe Leroy
-> <christophe.leroy@c-s.fr> wrote:
->> In the powerpc, there are several places implementing safe
->> access to user data. This is sometimes implemented using
->> probe_kerne_address() with additional access_ok() verification,
->> sometimes with get_user() enclosed in a pagefault_disable()/enable()
->> pair, etc... :
->>      show_user_instructions()
->>      bad_stack_expansion()
->>      p9_hmi_special_emu()
->>      fsl_pci_mcheck_exception()
->>      read_user_stack_64()
->>      read_user_stack_32() on PPC64
->>      read_user_stack_32() on PPC32
->>      power_pmu_bhrb_to()
->>
->> In the same spirit as probe_kernel_read() and probe_kernel_address(),
->> this patch adds probe_user_read() and probe_user_address().
->>
->> probe_user_read() does the same as probe_kernel_read() but
->> first checks that it is really a user address.
->>
->> probe_user_address() is a shortcut to probe_user_read()
->>
->> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->> ---
->>   include/linux/uaccess.h | 10 ++++++++++
->>   mm/maccess.c            | 33 +++++++++++++++++++++++++++++++++
->>   2 files changed, 43 insertions(+)
->>
->> diff --git a/include/linux/uaccess.h b/include/linux/uaccess.h
->> index efe79c1cdd47..fb00e3f847d7 100644
->> --- a/include/linux/uaccess.h
->> +++ b/include/linux/uaccess.h
->> @@ -266,6 +266,16 @@ extern long strncpy_from_unsafe(char *dst, const void *unsafe_addr, long count);
->>   #define probe_kernel_address(addr, retval)             \
->>          probe_kernel_read(&retval, addr, sizeof(retval))
->>
->> +/**
->> + * probe_user_address(): safely attempt to read from a user location
->> + * @addr: address to read from
->> + * @retval: read into this variable
->> + *
->> + * Returns 0 on success, or -EFAULT.
->> + */
->> +#define probe_user_address(addr, retval)               \
->> +       probe_user_read(&(retval), addr, sizeof(retval))
->> +
->>   #ifndef user_access_begin
->>   #define user_access_begin() do { } while (0)
->>   #define user_access_end() do { } while (0)
->> diff --git a/mm/maccess.c b/mm/maccess.c
->> index ec00be51a24f..85d4a88a6917 100644
->> --- a/mm/maccess.c
->> +++ b/mm/maccess.c
->> @@ -67,6 +67,39 @@ long __probe_kernel_write(void *dst, const void *src, size_t size)
->>   EXPORT_SYMBOL_GPL(probe_kernel_write);
->>
->>   /**
->> + * probe_user_read(): safely attempt to read from a user location
->> + * @dst: pointer to the buffer that shall take the data
->> + * @src: address to read from
->> + * @size: size of the data chunk
->> + *
->> + * Safely read from address @src to the buffer at @dst.  If a kernel fault
->> + * happens, handle that and return -EFAULT.
->> + *
->> + * We ensure that the copy_from_user is executed in atomic context so that
->> + * do_page_fault() doesn't attempt to take mmap_sem.  This makes
->> + * probe_user_read() suitable for use within regions where the caller
->> + * already holds mmap_sem, or other locks which nest inside mmap_sem.
->> + */
->> +
->> +long __weak probe_user_read(void *dst, const void *src, size_t size)
->> +       __attribute__((alias("__probe_user_read")));
-> 
-> Let's use #defines to deal with per-arch aliases so we can keep the
-> inline I'm suggesting below...
-> 
->> +
->> +long __probe_user_read(void *dst, const void __user *src, size_t size)
-> 
-> Please make this __always_inline so the "size" variable can be
-> examined for const-ness by the check_object_size() in
-> __copy_from_user_inatomic().
+---[ Data Block Address Translations ]---
+0:         -
+1:         -
+2: 0xc0000000-0xcfffffff 0x00000000 Kernel RW coherent
+3: 0xd0000000-0xdfffffff 0x10000000 Kernel RW coherent
+4:         -
+5:         -
+6:         -
+7:         -
 
-Ok, I did as suggested in the patch I just sent.
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ v4: Moved it in debugfs/powerpc
+     Added __init to bats_init()
 
-Would it be worth doing the same with the existing probe_kernel_read() 
-and probe_kernel_write() ?
+ v3: Fixed PHYS_BAT_ADDR() when !CONFIG_PHYS_64BIT
+     Cosmetic changes to have it look more like kernel_page_table with ---[ xxx ]---
+     Removed unnecessary includes
+     Using CPU feature to know if it is a 601 instead of SPRN_PVR
 
-Christophe
+ v2: Fixed phys address display for CONFIG_PHYS_64BIT
 
-> 
-> -Kees
-> 
+ arch/powerpc/include/asm/book3s/32/mmu-hash.h |   4 +
+ arch/powerpc/mm/Makefile                      |   2 +-
+ arch/powerpc/mm/dump_bats.c                   | 173 ++++++++++++++++++++++++++
+ 3 files changed, 178 insertions(+), 1 deletion(-)
+ create mode 100644 arch/powerpc/mm/dump_bats.c
+
+diff --git a/arch/powerpc/include/asm/book3s/32/mmu-hash.h b/arch/powerpc/include/asm/book3s/32/mmu-hash.h
+index e38c91388c40..35a990ca7173 100644
+--- a/arch/powerpc/include/asm/book3s/32/mmu-hash.h
++++ b/arch/powerpc/include/asm/book3s/32/mmu-hash.h
+@@ -34,8 +34,12 @@
+ #define BAT_PHYS_ADDR(x) ((u32)((x & 0x00000000fffe0000ULL) | \
+ 				((x & 0x0000000e00000000ULL) >> 24) | \
+ 				((x & 0x0000000100000000ULL) >> 30)))
++#define PHYS_BAT_ADDR(x) (((u64)(x) & 0x00000000fffe0000ULL) | \
++			  (((u64)(x) << 24) & 0x0000000e00000000ULL) | \
++			  (((u64)(x) << 30) & 0x0000000100000000ULL))
+ #else
+ #define BAT_PHYS_ADDR(x) (x)
++#define PHYS_BAT_ADDR(x) ((x) & 0xfffe0000)
+ #endif
+ 
+ struct ppc_bat {
+diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
+index 1adc3d8a89cc..20c537a5c436 100644
+--- a/arch/powerpc/mm/Makefile
++++ b/arch/powerpc/mm/Makefile
+@@ -47,7 +47,7 @@ ifdef CONFIG_PPC_PTDUMP
+ obj-$(CONFIG_4xx)		+= dump_linuxpagetables-generic.o
+ obj-$(CONFIG_PPC_8xx)		+= dump_linuxpagetables-8xx.o
+ obj-$(CONFIG_PPC_BOOK3E_MMU)	+= dump_linuxpagetables-generic.o
+-obj-$(CONFIG_PPC_BOOK3S_32)	+= dump_linuxpagetables-generic.o
++obj-$(CONFIG_PPC_BOOK3S_32)	+= dump_linuxpagetables-generic.o dump_bats.o
+ obj-$(CONFIG_PPC_BOOK3S_64)	+= dump_linuxpagetables-book3s64.o
+ endif
+ obj-$(CONFIG_PPC_HTDUMP)	+= dump_hashpagetable.o
+diff --git a/arch/powerpc/mm/dump_bats.c b/arch/powerpc/mm/dump_bats.c
+new file mode 100644
+index 000000000000..a0d23e96e841
+--- /dev/null
++++ b/arch/powerpc/mm/dump_bats.c
+@@ -0,0 +1,173 @@
++// SPDX-License-Identifier: GPL-2.0+
++/*
++ * Copyright 2018, Christophe Leroy CS S.I.
++ * <christophe.leroy@c-s.fr>
++ *
++ * This dumps the content of BATS
++ */
++
++#include <asm/debugfs.h>
++#include <asm/pgtable.h>
++#include <asm/cpu_has_feature.h>
++
++static char *pp_601(int k, int pp)
++{
++	if (pp == 0)
++		return k ? "NA" : "RWX";
++	if (pp == 1)
++		return k ? "ROX" : "RWX";
++	if (pp == 2)
++		return k ? "RWX" : "RWX";
++	return k ? "ROX" : "ROX";
++}
++
++static void bat_show_601(struct seq_file *m, int idx, u32 lower, u32 upper)
++{
++	u32 blpi = upper & 0xfffe0000;
++	u32 k = (upper >> 2) & 3;
++	u32 pp = upper & 3;
++	phys_addr_t pbn = PHYS_BAT_ADDR(lower);
++	u32 bsm = lower & 0x3ff;
++	u32 size = (bsm + 1) << 17;
++
++	seq_printf(m, "%d: ", idx);
++	if (!(lower & 0x40)) {
++		seq_puts(m, "        -\n");
++		return;
++	}
++
++	seq_printf(m, "0x%08x-0x%08x ", blpi, blpi + size - 1);
++#ifdef CONFIG_PHYS_64BIT
++	seq_printf(m, "0x%016llx ", pbn);
++#else
++	seq_printf(m, "0x%08x ", pbn);
++#endif
++
++	seq_printf(m, "Kernel %s User %s", pp_601(k & 2, pp), pp_601(k & 1, pp));
++
++	if (lower & _PAGE_WRITETHRU)
++		seq_puts(m, "write through ");
++	if (lower & _PAGE_NO_CACHE)
++		seq_puts(m, "no cache ");
++	if (lower & _PAGE_COHERENT)
++		seq_puts(m, "coherent ");
++	seq_puts(m, "\n");
++}
++
++#define BAT_SHOW_601(_m, _n, _l, _u) bat_show_601(_m, _n, mfspr(_l), mfspr(_u))
++
++static int bats_show_601(struct seq_file *m, void *v)
++{
++	seq_puts(m, "---[ Block Address Translation ]---\n");
++
++	BAT_SHOW_601(m, 0, SPRN_IBAT0L, SPRN_IBAT0U);
++	BAT_SHOW_601(m, 1, SPRN_IBAT1L, SPRN_IBAT1U);
++	BAT_SHOW_601(m, 2, SPRN_IBAT2L, SPRN_IBAT2U);
++	BAT_SHOW_601(m, 3, SPRN_IBAT3L, SPRN_IBAT3U);
++
++	return 0;
++}
++
++static void bat_show_603(struct seq_file *m, int idx, u32 lower, u32 upper, bool is_d)
++{
++	u32 bepi = upper & 0xfffe0000;
++	u32 bl = (upper >> 2) & 0x7ff;
++	u32 k = upper & 3;
++	phys_addr_t brpn = PHYS_BAT_ADDR(lower);
++	u32 size = (bl + 1) << 17;
++
++	seq_printf(m, "%d: ", idx);
++	if (k == 0) {
++		seq_puts(m, "        -\n");
++		return;
++	}
++
++	seq_printf(m, "0x%08x-0x%08x ", bepi, bepi + size - 1);
++#ifdef CONFIG_PHYS_64BIT
++	seq_printf(m, "0x%016llx ", brpn);
++#else
++	seq_printf(m, "0x%08x ", brpn);
++#endif
++
++	if (k == 1)
++		seq_puts(m, "User ");
++	else if (k == 2)
++		seq_puts(m, "Kernel ");
++	else
++		seq_puts(m, "Kernel/User ");
++
++	if (lower & BPP_RX)
++		seq_puts(m, is_d ? "RO " : "EXEC ");
++	else if (lower & BPP_RW)
++		seq_puts(m, is_d ? "RW " : "EXEC ");
++	else
++		seq_puts(m, is_d ? "NA " : "NX   ");
++
++	if (lower & _PAGE_WRITETHRU)
++		seq_puts(m, "write through ");
++	if (lower & _PAGE_NO_CACHE)
++		seq_puts(m, "no cache ");
++	if (lower & _PAGE_COHERENT)
++		seq_puts(m, "coherent ");
++	if (lower & _PAGE_GUARDED)
++		seq_puts(m, "guarded ");
++	seq_puts(m, "\n");
++}
++
++#define BAT_SHOW_603(_m, _n, _l, _u, _d) bat_show_603(_m, _n, mfspr(_l), mfspr(_u), _d)
++
++static int bats_show_603(struct seq_file *m, void *v)
++{
++	seq_puts(m, "---[ Instruction Block Address Translation ]---\n");
++
++	BAT_SHOW_603(m, 0, SPRN_IBAT0L, SPRN_IBAT0U, false);
++	BAT_SHOW_603(m, 1, SPRN_IBAT1L, SPRN_IBAT1U, false);
++	BAT_SHOW_603(m, 2, SPRN_IBAT2L, SPRN_IBAT2U, false);
++	BAT_SHOW_603(m, 3, SPRN_IBAT3L, SPRN_IBAT3U, false);
++	if (mmu_has_feature(MMU_FTR_USE_HIGH_BATS)) {
++		BAT_SHOW_603(m, 4, SPRN_IBAT4L, SPRN_IBAT4U, false);
++		BAT_SHOW_603(m, 5, SPRN_IBAT5L, SPRN_IBAT5U, false);
++		BAT_SHOW_603(m, 6, SPRN_IBAT6L, SPRN_IBAT6U, false);
++		BAT_SHOW_603(m, 7, SPRN_IBAT7L, SPRN_IBAT7U, false);
++	}
++
++	seq_puts(m, "\n---[ Data Block Address Translation ]---\n");
++
++	BAT_SHOW_603(m, 0, SPRN_DBAT0L, SPRN_DBAT0U, true);
++	BAT_SHOW_603(m, 1, SPRN_DBAT1L, SPRN_DBAT1U, true);
++	BAT_SHOW_603(m, 2, SPRN_DBAT2L, SPRN_DBAT2U, true);
++	BAT_SHOW_603(m, 3, SPRN_DBAT3L, SPRN_DBAT3U, true);
++	if (mmu_has_feature(MMU_FTR_USE_HIGH_BATS)) {
++		BAT_SHOW_603(m, 4, SPRN_DBAT4L, SPRN_DBAT4U, true);
++		BAT_SHOW_603(m, 5, SPRN_DBAT5L, SPRN_DBAT5U, true);
++		BAT_SHOW_603(m, 6, SPRN_DBAT6L, SPRN_DBAT6U, true);
++		BAT_SHOW_603(m, 7, SPRN_DBAT7L, SPRN_DBAT7U, true);
++	}
++
++	return 0;
++}
++
++static int bats_open(struct inode *inode, struct file *file)
++{
++	if (cpu_has_feature(CPU_FTR_601))
++		return single_open(file, bats_show_601, NULL);
++
++	return single_open(file, bats_show_603, NULL);
++}
++
++static const struct file_operations bats_fops = {
++	.open		= bats_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++};
++
++static int __init bats_init(void)
++{
++	struct dentry *debugfs_file;
++
++	debugfs_file = debugfs_create_file("block_address_translation", 0400,
++					   powerpc_debugfs_root, NULL, &bats_fops);
++	return debugfs_file ? 0 : -ENOMEM;
++}
++device_initcall(bats_init);
+-- 
+2.13.3
+
