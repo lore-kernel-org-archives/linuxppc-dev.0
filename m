@@ -2,63 +2,69 @@ Return-Path: <SRS0=3K4h=OM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B5B28C04EB9
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 10:48:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C051BC07E85
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 11:03:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4114D20660
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 10:48:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4114D20660
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id 13A412147C
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 11:03:43 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="QWjMkpkl"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 13A412147C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 437hYM15TSzDqJ7
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 21:48:23 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 437hv10Mq8zDqLK
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Dec 2018 22:03:41 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.21; helo=inva021.nxp.com;
- envelope-from=xiaowei.bao@nxp.com; receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="QWjMkpkl";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=srs0=wgff=om=linuxfoundation.org=gregkh@kernel.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="QWjMkpkl"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 437hrF3zn9zDqPy
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Dec 2018 22:01:17 +1100 (AEDT)
+Received: from localhost (unknown [62.119.166.9])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 437hMv1z8yzDqW1
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Dec 2018 21:40:10 +1100 (AEDT)
-Received: from inva021.nxp.com (localhost [127.0.0.1])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 5A337200366;
- Mon,  3 Dec 2018 11:40:06 +0100 (CET)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
- [165.114.16.14])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id C35DA20034C;
- Mon,  3 Dec 2018 11:39:56 +0100 (CET)
-Received: from titan.ap.freescale.net (TITAN.ap.freescale.net [10.192.208.233])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id C41D0402F2;
- Mon,  3 Dec 2018 18:39:44 +0800 (SGT)
-From: Xiaowei Bao <xiaowei.bao@nxp.com>
-To: bhelgaas@google.com, robh+dt@kernel.org, mark.rutland@arm.com,
- shawnguo@kernel.org, leoyang.li@nxp.com, kishon@ti.com,
- lorenzo.pieralisi@arm.com, arnd@arndb.de, gregkh@linuxfoundation.org,
- minghuan.Lian@nxp.com, mingkai.hu@nxp.com, roy.zang@nxp.com,
- kstewart@linuxfoundation.org, cyrille.pitchen@free-electrons.com,
- pombredanne@nexb.com, shawn.lin@rock-chips.com, niklas.cassel@axis.com,
- linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCHv3 4/4] misc: pci_endpoint_test: Add the layerscape EP device
- support
-Date: Mon,  3 Dec 2018 18:35:05 +0800
-Message-Id: <20181203103505.46885-4-xiaowei.bao@nxp.com>
-X-Mailer: git-send-email 2.14.1
-In-Reply-To: <20181203103505.46885-1-xiaowei.bao@nxp.com>
-References: <20181203103505.46885-1-xiaowei.bao@nxp.com>
-X-Virus-Scanned: ClamAV using ClamSMTP
+ by mail.kernel.org (Postfix) with ESMTPSA id 5985720848;
+ Mon,  3 Dec 2018 11:01:14 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1543834875;
+ bh=TBMABVzZNujpvI3+dyRZb96G/uX6FjEex5faH1OPjDY=;
+ h=Subject:To:Cc:From:Date:From;
+ b=QWjMkpklraNMZCYr4ijwIApczTmCW8zgsv9IQdgpLEWnQtLh1i7+G69SNbQ3Xp+86
+ PUxvqFKTwDKTuVX6dTe0EVVwgPsB3iHFP9K1guMdiyB0dhykHNPzc6krD0MRe8fnJH
+ fDfY9A+yVAVJYTd0P1zLILx1+jUXCrl0gKR4B214=
+Subject: Patch "powerpc/function_graph: Simplify with function_graph_enter()"
+ has been added to the 4.14-stable tree
+To: benh@kernel.crashing.org, gregkh@linuxfoundation.org,
+ linuxppc-dev@lists.ozlabs.org, mhiramat@kernel.org, mpe@ellerman.id.au,
+ paulus@samba.org, rostedt@goodmis.org, stable@kernel.org
+From: <gregkh@linuxfoundation.org>
+Date: Mon, 03 Dec 2018 11:58:32 +0100
+Message-ID: <1543834712115192@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ANSI_X3.4-1968
+Content-Transfer-Encoding: 8bit
+X-stable: commit
+X-Patchwork-Hint: ignore 
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,36 +76,108 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Xiaowei Bao <xiaowei.bao@nxp.com>
+Cc: stable-commits@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add the layerscape EP device support in pci_endpoint_test driver.
 
-Signed-off-by: Xiaowei Bao <xiaowei.bao@nxp.com>
+This is a note to let you know that I've just added the patch titled
+
+    powerpc/function_graph: Simplify with function_graph_enter()
+
+to the 4.14-stable tree which can be found at:
+    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
+
+The filename of the patch is:
+     powerpc-function_graph-simplify-with-function_graph_enter.patch
+and it can be found in the queue-4.14 subdirectory.
+
+If you, or anyone else, feels it should not be added to the stable tree,
+please let <stable@vger.kernel.org> know about it.
+
+
+From fe60522ec60082a1dd735691b82c64f65d4ad15e Mon Sep 17 00:00:00 2001
+From: "Steven Rostedt (VMware)" <rostedt@goodmis.org>
+Date: Sun, 18 Nov 2018 17:28:53 -0500
+Subject: powerpc/function_graph: Simplify with function_graph_enter()
+
+From: Steven Rostedt (VMware) <rostedt@goodmis.org>
+
+commit fe60522ec60082a1dd735691b82c64f65d4ad15e upstream.
+
+The function_graph_enter() function does the work of calling the function
+graph hook function and the management of the shadow stack, simplifying the
+work done in the architecture dependent prepare_ftrace_return().
+
+Have powerpc use the new code, and remove the shadow stack management as well as
+having to set up the trace structure.
+
+This is needed to prepare for a fix of a design bug on how the curr_ret_stack
+is used.
+
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: stable@kernel.org
+Fixes: 03274a3ffb449 ("tracing/fgraph: Adjust fgraph depth before calling trace return callback")
+Reviewed-by: Masami Hiramatsu <mhiramat@kernel.org>
+Signed-off-by: Steven Rostedt (VMware) <rostedt@goodmis.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+
 ---
-v2:
- - no change
-v3:
- - no change
+ arch/powerpc/kernel/trace/ftrace.c |   15 ++-------------
+ 1 file changed, 2 insertions(+), 13 deletions(-)
 
- drivers/misc/pci_endpoint_test.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+--- a/arch/powerpc/kernel/trace/ftrace.c
++++ b/arch/powerpc/kernel/trace/ftrace.c
+@@ -575,7 +575,6 @@ int ftrace_disable_ftrace_graph_caller(v
+  */
+ unsigned long prepare_ftrace_return(unsigned long parent, unsigned long ip)
+ {
+-	struct ftrace_graph_ent trace;
+ 	unsigned long return_hooker;
+ 
+ 	if (unlikely(ftrace_graph_is_dead()))
+@@ -586,18 +585,8 @@ unsigned long prepare_ftrace_return(unsi
+ 
+ 	return_hooker = ppc_function_entry(return_to_handler);
+ 
+-	trace.func = ip;
+-	trace.depth = current->curr_ret_stack + 1;
+-
+-	/* Only trace if the calling function expects to */
+-	if (!ftrace_graph_entry(&trace))
+-		goto out;
+-
+-	if (ftrace_push_return_trace(parent, ip, &trace.depth, 0,
+-				     NULL) == -EBUSY)
+-		goto out;
+-
+-	parent = return_hooker;
++	if (!function_graph_enter(parent, ip, 0, NULL))
++		parent = return_hooker;
+ out:
+ 	return parent;
+ }
 
-diff --git a/drivers/misc/pci_endpoint_test.c b/drivers/misc/pci_endpoint_test.c
-index 896e2df..744d10c 100644
---- a/drivers/misc/pci_endpoint_test.c
-+++ b/drivers/misc/pci_endpoint_test.c
-@@ -788,6 +788,8 @@ static void pci_endpoint_test_remove(struct pci_dev *pdev)
- static const struct pci_device_id pci_endpoint_test_tbl[] = {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_TI, PCI_DEVICE_ID_TI_DRA74x) },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_TI, PCI_DEVICE_ID_TI_DRA72x) },
-+	/* 0x81c0: The device id of ls1046a in NXP. */
-+	{ PCI_DEVICE(PCI_VENDOR_ID_FREESCALE, 0x81c0) },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_SYNOPSYS, 0xedda) },
- 	{ }
- };
--- 
-1.7.1
 
+Patches currently in stable-queue which might be from rostedt@goodmis.org are
+
+queue-4.14/function_graph-create-function_graph_enter-to-consolidate-architecture-code.patch
+queue-4.14/sh-function_graph-simplify-with-function_graph_enter.patch
+queue-4.14/function_graph-move-return-callback-before-update-of-curr_ret_stack.patch
+queue-4.14/function_graph-use-new-curr_ret_depth-to-manage-depth-instead-of-curr_ret_stack.patch
+queue-4.14/sparc-function_graph-simplify-with-function_graph_enter.patch
+queue-4.14/parisc-function_graph-simplify-with-function_graph_enter.patch
+queue-4.14/x86-function_graph-simplify-with-function_graph_enter.patch
+queue-4.14/powerpc-function_graph-simplify-with-function_graph_enter.patch
+queue-4.14/function_graph-reverse-the-order-of-pushing-the-ret_stack-and-the-callback.patch
+queue-4.14/arm-function_graph-simplify-with-function_graph_enter.patch
+queue-4.14/mips-function_graph-simplify-with-function_graph_enter.patch
+queue-4.14/function_graph-make-ftrace_push_return_trace-static.patch
+queue-4.14/arm64-function_graph-simplify-with-function_graph_enter.patch
+queue-4.14/s390-function_graph-simplify-with-function_graph_enter.patch
+queue-4.14/microblaze-function_graph-simplify-with-function_graph_enter.patch
+queue-4.14/function_graph-have-profiler-use-curr_ret_stack-and-not-depth.patch
