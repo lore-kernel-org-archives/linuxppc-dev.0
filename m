@@ -2,53 +2,52 @@ Return-Path: <SRS0=NWA6=ON=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.9 required=3.0 tests=FROM_EXCESS_BASE64,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C2DD4C04EB8
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 08:57:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 97647C04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 09:47:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E18BF208A3
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 08:57:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E18BF208A3
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id C50B12082D
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 09:47:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C50B12082D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 438G384Rw1zDqFs
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 19:57:40 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 438H8T4390zDqZj
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 20:47:21 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.de
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=suse.de
+ (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=msuchanek@suse.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=suse.de
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 438G0l5HfczDq7X
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Dec 2018 19:55:35 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 438G0l354Mz9s55;
- Tue,  4 Dec 2018 19:55:35 +1100 (AEDT)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe LEROY <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, npiggin@gmail.com, rashmicy@gmail.com
-Subject: Re: [PATCH] powerpc/mm: dump block address translation on book3s/32
-In-Reply-To: <bab9eb25-a6f4-966c-ceaa-00147b50726d@c-s.fr>
-References: <26cc609706833f78e3195e3d35c0372b2f40cae3.1542181167.git.christophe.leroy@c-s.fr>
- <878t1uva0q.fsf@concordia.ellerman.id.au>
- <9cb14c1f-02ce-a2a5-94e6-95afb4d3e168@c-s.fr>
- <87o9ap2uif.fsf@concordia.ellerman.id.au>
- <bab9eb25-a6f4-966c-ceaa-00147b50726d@c-s.fr>
-Date: Tue, 04 Dec 2018 19:55:34 +1100
-Message-ID: <87zhtlhdrt.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 438H5r3T9yzDqXm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Dec 2018 20:45:04 +1100 (AEDT)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+ by mx1.suse.de (Postfix) with ESMTP id 834AEAD2C;
+ Tue,  4 Dec 2018 09:44:58 +0000 (UTC)
+Date: Tue, 4 Dec 2018 10:44:54 +0100
+From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
+To: David Hildenbrand <david@redhat.com>
+Subject: Re: [PATCH RFCv2 3/4] mm/memory_hotplug: Introduce and use more
+ memory types
+Message-ID: <20181204104454.522a3ba2@naga.suse.cz>
+In-Reply-To: <20181130175922.10425-4-david@redhat.com>
+References: <20181130175922.10425-1-david@redhat.com>
+ <20181130175922.10425-4-david@redhat.com>
+X-Mailer: Claws Mail 3.17.1 (GTK+ 2.24.32; x86_64-suse-linux-gnu)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,44 +59,70 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Michal Hocko <mhocko@suse.com>, linux-ia64@vger.kernel.org,
+ linux-sh@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-mm@kvack.org,
+ Paul Mackerras <paulus@samba.org>, Rashmica Gupta <rashmica.g@gmail.com>,
+ "K. Y. Srinivasan" <kys@microsoft.com>, Ingo Molnar <mingo@kernel.org>,
+ linux-s390@vger.kernel.org, Michael Neuling <mikey@neuling.org>,
+ Stefano Stabellini <sstabellini@kernel.org>,
+ Stephen Hemminger <sthemmin@microsoft.com>, x86@kernel.org,
+ YueHaibing <yuehaibing@huawei.com>, Vitaly Kuznetsov <vkuznets@redhat.com>,
+ linux-acpi@vger.kernel.org, xen-devel@lists.xenproject.org,
+ Len Brown <lenb@kernel.org>, Pavel Tatashin <pavel.tatashin@microsoft.com>,
+ Vasily Gorbik <gor@linux.ibm.com>, Stephen Rothwell <sfr@canb.auug.org.au>,
+ "mike.travis@hpe.com" <mike.travis@hpe.com>,
+ Haiyang Zhang <haiyangz@microsoft.com>,
+ Dan Williams <dan.j.williams@intel.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>, Arun KS <arunks@codeaurora.org>,
+ Oscar Salvador <osalvador@suse.de>, Juergen Gross <jgross@suse.com>,
+ Andrew Banman <andrew.banman@hpe.com>, Mathieu Malaterre <malat@debian.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, devel@linuxdriverproject.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe LEROY <christophe.leroy@c-s.fr> writes:
+On Fri, 30 Nov 2018 18:59:21 +0100
+David Hildenbrand <david@redhat.com> wrote:
 
-> Le 16/11/2018 =C3=A0 11:20, Michael Ellerman a =C3=A9crit=C2=A0:
->> Christophe LEROY <christophe.leroy@c-s.fr> writes:
->>=20
->>> Le 15/11/2018 =C3=A0 12:46, Michael Ellerman a =C3=A9crit=C2=A0:
->>>> Christophe Leroy <christophe.leroy@c-s.fr> writes:
->>>>
->>>>> This patch adds a debugfs file to dump block address translation:
->>>>>
->>>>> ~# cat /sys/kernel/debug/block_address_translation
->>>>
->>>> My instinct is it should be in /sys/kernel/debug/powerpc. But I guess
->>>> the other page table dump files are not.
->>>
->>> Lol.
->>>
->>> Looks like we have the same instinct ...
->>>
->>> But you rejected my patch https://patchwork.ozlabs.org/patch/750426/ :)
->>=20
->> Haha. My argument was that the kernel page table dump is not powerpc
->> specific, but this file *is* powerpc specific. Though I guess it's in
->> the same are as the page table / hash table dump, so it may as well live
->> next to them.
->
-> I see you took the first version in next-test. It doesn't handle the=20
-> case of 64bits phys addresses. v3 does.
->
-> I just sent v4 which does to v3 the changes you did (__init and powerpc/=
-=20
-> subdir)
+> Let's introduce new types for different kinds of memory blocks and use
+> them in existing code. As I don't see an easy way to split this up,
+> do it in one hunk for now.
+> 
+> acpi:
+>  Use DIMM or DIMM_UNREMOVABLE depending on hotremove support in the kernel.
+>  Properly change the type when trying to add memory that was already
+>  detected and used during boot (so this memory will correctly end up as
+>  "acpi" in user space).
+> 
+> pseries:
+>  Use DIMM or DIMM_UNREMOVABLE depending on hotremove support in the kernel.
+>  As far as I see, handling like in the acpi case for existing blocks is
+>  not required.
+> 
+> probed memory from user space:
+>  Use DIMM_UNREMOVABLE as there is no interface to get rid of this code
+>  again.
+> 
+> hv_balloon,xen/balloon:
+>  Use BALLOON. As simple as that :)
+> 
+> s390x/sclp:
+>  Use a dedicated type S390X_STANDBY as this type of memory and it's
+>  semantics are very s390x specific.
+> 
+> powernv/memtrace:
+>  Only allow to use BOOT memory for memtrace. I consider this code in
+>  general dangerous, but we have to keep it working ... most probably just
+>  a debug feature.
 
-Thanks, have picked up v4.
+I don't think it should be arbitrarily restricted like that.
 
-cheers
+Thanks
+
+Michal
