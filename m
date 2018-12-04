@@ -2,90 +2,65 @@ Return-Path: <SRS0=NWA6=ON=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 93DDDC04EB8
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 20:56:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C15C7C04EBF
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 21:19:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0BD632081B
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 20:56:36 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Srg0HPF9"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0BD632081B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=debian.org
+	by mail.kernel.org (Postfix) with ESMTPS id 1D0032082B
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 21:19:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1D0032082B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 438Z0f5nJrzDqGv
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 07:56:34 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=debian.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="Srg0HPF9";
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 438ZW72gGlzDqWs
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 08:19:31 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2a00:1450:4864:20::341; helo=mail-wm1-x341.google.com;
- envelope-from=mathieu.malaterre@gmail.com; receiver=<UNKNOWN>)
+ (client-ip=209.85.222.194; helo=mail-qk1-f194.google.com;
+ envelope-from=arndbergmann@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=debian.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="Srg0HPF9"; 
- dkim-atps=neutral
-Received: from mail-wm1-x341.google.com (mail-wm1-x341.google.com
- [IPv6:2a00:1450:4864:20::341])
+ dmarc=none (p=none dis=none) header.from=arndb.de
+Received: from mail-qk1-f194.google.com (mail-qk1-f194.google.com
+ [209.85.222.194])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 438Yxl64RnzDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Dec 2018 07:54:03 +1100 (AEDT)
-Received: by mail-wm1-x341.google.com with SMTP id a18so10793763wmj.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Dec 2018 12:54:03 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=sender:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=TIdz95ThPzutAt/0Gs1laVAbtjq4MULqHeE84zRq5M4=;
- b=Srg0HPF9yl1uMhsYa3XeqGIcyp4t8/Ltzhk2DGkBzpl0snuECUbhBQ6JAfiiz5BUFv
- kqGWRIk3WPlKkw5Ce547rtijE5yJFxbXZRqupm+43w4I8oOxIlbSgYW7opCfExjIYVWS
- Abt5Mlduh8EDmc9I7p2w6LGTH5Y1lrBqUNtdQgfyXi/sjPY39XI0hrybb5XnEO3zlzfE
- rUizDTQ10bC0CC+35MV2ZiMpyrxs0AXwe7S2Fc8NfsjdIRL5Y9NhNHV7GgHuZGxim5ds
- SEPEsYXstsXNWnhbz/l9CaAYspzHWqj7uGYWC7/7MGBsSN69KI6aXUO2ZANNeJWQVNs2
- cGaQ==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 438ZSw6J6tzDqFh
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Dec 2018 08:17:36 +1100 (AEDT)
+Received: by mail-qk1-f194.google.com with SMTP id y78so10575658qka.12
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Dec 2018 13:17:36 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
- :mime-version:content-transfer-encoding;
- bh=TIdz95ThPzutAt/0Gs1laVAbtjq4MULqHeE84zRq5M4=;
- b=iZpjExHSUM2EDLIJU59VijtDafJ2KObNuA/32mtLannUQe3UYV4ge3dlZgKyoaICFo
- 1UAQZNuag45i+EJZhyVs4JdnxPhpFq7CKvy9ujQp5XIKlYUthW0GlE4QbauJ91ANgCAE
- XQ19OhJ84/ajLNaj2o3lipA11/HAar3vEuBXAghb0pvV/5GW9zBcls3KQjcC2gHnOCTf
- JvMpaFvLi8memzvTa6Pss0osnUswWapOmMtJattIozPDI0LznfMn7A0TAC1JWq0dps45
- hL0JfFdDambA40zn8FkUeEQ7XOdpQ9eq4OhkFJtwAEuCJzsHCWcsRRwIXmqjAeSwzx93
- mWFQ==
-X-Gm-Message-State: AA+aEWZxSra0if3GvSUyTfSKLb6xYgQbDQTLFG7CDXYL7Uh4hb74DD8b
- M0q9QAy2owy+zuCeHlqzi18=
-X-Google-Smtp-Source: AFSGD/UJkTIVQrq1HBP75IjCNFDKZmFdowtVuPrMDZmjrLIUNiXoZZDLOe9zF8k3wV8mEaamECMN+A==
-X-Received: by 2002:a1c:35ca:: with SMTP id
- c193mr13421476wma.146.1543956840524; 
- Tue, 04 Dec 2018 12:54:00 -0800 (PST)
-Received: from macbookpro.malat.net (bru31-1-78-225-224-134.fbx.proxad.net.
- [78.225.224.134])
- by smtp.gmail.com with ESMTPSA id n127sm4074949wmd.20.2018.12.04.12.53.58
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Tue, 04 Dec 2018 12:53:58 -0800 (PST)
-Received: by macbookpro.malat.net (Postfix, from userid 1000)
- id A71D21141016; Tue,  4 Dec 2018 21:53:51 +0100 (CET)
-From: Mathieu Malaterre <malat@debian.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH] powerpc/32: Move the old 6xx -mcpu logic before the
- TARGET_CPU logic
-Date: Tue,  4 Dec 2018 21:53:45 +0100
-Message-Id: <20181204205345.9514-1-malat@debian.org>
-X-Mailer: git-send-email 2.19.2
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=oNLZdxPA/1JMTOenX3BXjqrafMgfKLzwoze6zSjaYjs=;
+ b=SfOW6TFXf0gXeWG2ILl6xPltpwFIli7Mjk1doUL2MTD7pCGxzUwodfXb1xpjRwborP
+ FykFbmtcBHausFpeoPKscNxkqz4VyGh1Lv8K4BCOnWG/hQ7p3F/9X1NbFa03tGymKvoV
+ VS5OHiJJ2+/BVjnSr8mYy9OsV1s2hAhfNkaJP10DWMenZze9ROv2QeHTmYSI7bTyfdGE
+ OuEcIJwoje28E7+f3qQeZu2g7LKc8GbAnTn70NEaJePe/+/DKUbuP8N/hiUM/bScY252
+ o6QZlOcNQ5zlIkkY13Yz38W/3atE3WyFAwsoIPbSWfw/fU4cNjDWbb89k/alpt0iseCl
+ Am+w==
+X-Gm-Message-State: AA+aEWYZTiNUZ2s0cuR/R6MxYK5xorlbPXgz+0AHBI+y4jVCnXNYL5e4
+ X3u8EOIOxAvrxw3tIgrafEzC81KuBZVwFVFL8Z8=
+X-Google-Smtp-Source: AFSGD/WLqefm4/JZ8Oq0jJRXrV707I2FqcC+iotSpp9LY7+wMEyltpzSAqKwkIOad/jvr90tsqLqlJgfrLETvle9J5g=
+X-Received: by 2002:ae9:e102:: with SMTP id g2mr19045176qkm.343.1543958254395; 
+ Tue, 04 Dec 2018 13:17:34 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <1543465611-17122-1-git-send-email-firoz.khan@linaro.org>
+ <1543465611-17122-5-git-send-email-firoz.khan@linaro.org>
+In-Reply-To: <1543465611-17122-5-git-send-email-firoz.khan@linaro.org>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Tue, 4 Dec 2018 22:17:18 +0100
+Message-ID: <CAK8P3a2SP0eX50NoFKaM2N85mgSejToQkD9ZOE_7V_RT__BCvg@mail.gmail.com>
+Subject: Re: [PATCH v3 4/4] powerpc: generate uapi header and system call
+ table files
+To: Firoz Khan <firoz.khan@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,68 +72,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mathieu Malaterre <malat@debian.org>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Kate Stewart <kstewart@linuxfoundation.org>,
+ linux-arch <linux-arch@vger.kernel.org>, gregkh <gregkh@linuxfoundation.org>,
+ y2038 Mailman List <y2038@lists.linaro.org>, Boqun Feng <boqun.feng@gmail.com>,
+ Philippe Ombredanne <pombredanne@nexb.com>, linuxram@us.ibm.com,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Marcin Juszkiewicz <marcin.juszkiewicz@linaro.org>, leitao@debian.org,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Deepa Dinamani <deepa.kernel@gmail.com>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The code:
+> diff --git a/arch/powerpc/kernel/systbl.S b/arch/powerpc/kernel/systbl.S
+> index 9ff1913..d756348 100644
+> --- a/arch/powerpc/kernel/systbl.S
+> +++ b/arch/powerpc/kernel/systbl.S
 
-  ifdef CONFIG_6xx
-  KBUILD_CFLAGS          += -mcpu=powerpc
-  endif
+>  #ifdef CONFIG_PPC64
+> @@ -47,5 +25,17 @@
+>  .globl sys_call_table
+>  sys_call_table:
+>
+> +#if defined CONFIG_PPC64 && defined(CONFIG_COMPAT)
+> +#define __SYSCALL(nr, entry, nargs) .8byte entry
+>  #define compat_sys_sigsuspend  sys_sigsuspend
+> -#include <asm/systbl.h>
+> +#include <asm/syscall_table_c32.h>
+> +#undef __SYSCALL
+> +#elif defined CONFIG_PPC64 && !defined(CONFIG_COMPAT)
+> +#define __SYSCALL(nr, entry, nargs) .8byte entry
+> +#include <asm/syscall_table_64.h>
+> +#undef __SYSCALL
 
-was added in 2006 in commit f48b8296b315 ("[PATCH] powerpc32: Set cpu
-explicitly in kernel compiles"). This change was acceptable since the
-TARGET_CPU logic was 64-bit only.
+This part looks wrong: where the old sys_call_table contained
+both the native and compat calls side by side, the new table
+contains only the compat versions (note that CONFIG_COMPAT is
+always set on PPC64). I think you copy-pasted this incorrectly from
+one of the other architectures that uses a different layout for the
+compat calls.
 
-Since commit 0e00a8c9fd92 ("powerpc: Allow CPU selection
-also on PPC32") this logic is no longer acceptable after the TARGET_CPU
-specific. It currently appends -mcpu=powerpc at the end of the command
-line, after any TARGET_CPU specific:
+The way I think this could work best is if you add a preparation
+patch that splits out the 64-bit table into two separate ones
+(and make sure that works). After that, you can add your
+existing patch, rebased to use the two generated tables
+instead of the old-style tables. I'll follow up with an untested
+patch for illustration.
 
-  gcc -Wp,-MD,init/.do_mounts.o.d ...
-    -mcpu=powerpc -mbig-endian -m32 ...
-    -mcpu=e300c2 ...
-    -mcpu=powerpc ...
-    ../init/do_mounts.c
-
-Cc: Christophe Leroy <christophe.leroy@c-s.fr>
-Fixes: 0e00a8c9fd92 ("powerpc: Allow CPU selection also on PPC32")
-Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
-Link: https://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg142315.html
-Signed-off-by: Mathieu Malaterre <malat@debian.org>
----
- arch/powerpc/Makefile | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 8a2ce14d68d0..544b30667ea5 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -30,6 +30,10 @@ endif
- endif
- endif
- 
-+ifdef CONFIG_6xx
-+KBUILD_CFLAGS		+= -mcpu=powerpc
-+endif
-+
- ifeq ($(CROSS_COMPILE),)
- KBUILD_DEFCONFIG := $(shell uname -m)_defconfig
- else
-@@ -241,10 +245,6 @@ KBUILD_CFLAGS	+= $(call cc-option,-fno-dwarf2-cfi-asm)
- # often slow when they are implemented at all
- KBUILD_CFLAGS		+= $(call cc-option,-mno-string)
- 
--ifdef CONFIG_6xx
--KBUILD_CFLAGS		+= -mcpu=powerpc
--endif
--
- cpu-as-$(CONFIG_4xx)		+= -Wa,-m405
- cpu-as-$(CONFIG_ALTIVEC)	+= $(call as-option,-Wa$(comma)-maltivec)
- cpu-as-$(CONFIG_E200)		+= -Wa,-me200
--- 
-2.19.2
-
+       Arnd
