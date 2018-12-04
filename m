@@ -7,79 +7,79 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 45646C04EB9
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 01:02:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DAC93C04EB9
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 01:05:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9E30920851
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 01:02:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 559AB20850
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 01:05:16 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="GY2n2qvd"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9E30920851
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Vdph9WmZ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 559AB20850
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=jms.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4383WC34cFzDqgC
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 12:02:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4383Z21qRBzDqRc
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 12:05:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=jms.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="GY2n2qvd";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="Vdph9WmZ";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::531; helo=mail-pg1-x531.google.com;
+ (client-ip=2607:f8b0:4864:20::543; helo=mail-pg1-x543.google.com;
  envelope-from=joel.stan@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=jms.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="GY2n2qvd"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="Vdph9WmZ"; 
  dkim-atps=neutral
-Received: from mail-pg1-x531.google.com (mail-pg1-x531.google.com
- [IPv6:2607:f8b0:4864:20::531])
+Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
+ [IPv6:2607:f8b0:4864:20::543])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4383L82mh9zDqg5
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Dec 2018 11:54:56 +1100 (AEDT)
-Received: by mail-pg1-x531.google.com with SMTP id 70so6524022pgh.8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Dec 2018 16:54:56 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4383LG68KCzDqgF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Dec 2018 11:55:02 +1100 (AEDT)
+Received: by mail-pg1-x543.google.com with SMTP id s198so6540920pgs.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Dec 2018 16:55:02 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=sender:from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=peG3XXL+nSraTU4SyZNXqTpiPMjYWqXusdo6G96O6xA=;
- b=GY2n2qvdOiOl/6LdMTAv3tipPfpol5QuURAjFxF4XFpyvGxby84rcp02A9tpbNEun6
- 3bex+Zer/lP5mj4O0AUYyVJTGchqqymNukE9a+oNBgQSNMNKH7xh28ZESF+0ABvE+QdI
- vj5WqaFGhxTGFVvvZeQCojVf91NiELB4hS6Z+LLQoPBT8O360LDQqSkL9HYA7LIjrme5
- ND/eO9cm3a1gk8VNaGlUBWBw+rkFUPJoe0+NIiaaGnLbD+50vqmJu9RTRKIx4Tud6vpe
- ZSdJQ56Qqh0xSeCU30Ad52+5mRatAytgRNcbRMvc91lwV21njSkjEw4o4YZo538sKp8A
- ti3Q==
+ bh=c4gBFcajzgpVz3mIuYigk+ePJNILjxunDs0Xqtmk9l8=;
+ b=Vdph9WmZg2bvuGyNsk8w+z0KJCLgC0KxeBFMN939kAjuoLqIXSFh8sAHnQLimLiVw4
+ gbWDp/HuSwKbBjpgqb6OjpcRxzTKBaX0Bj4Rg+sjrluP41QzhjAPjJX1Ysf7o2gCV4rT
+ wXhAIsQptKJockt1QvViw63UAYC+IrtF6Se7cT2M8tfgBV3S0rFcuc6VCdld6GYJ0Qh3
+ MWdsTdclJGl/r/SjVIC69y3jao5ZwkkeueT1tneqsig+S8FybDUhg33Bj54yKaDIPuBP
+ YDmga5sSySXvXAVF9323ZDlzpu4Ql9IVzrpSezHGHJ7jAxaNl6u15a6zxDZNsVFc4M9W
+ 1vLQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
  :in-reply-to:references:mime-version:content-transfer-encoding;
- bh=peG3XXL+nSraTU4SyZNXqTpiPMjYWqXusdo6G96O6xA=;
- b=T2tovTSJY532FklxT6eS0+cB0cB1vqRjaRg4w/wfT5ozDreAfibA9xqBnHg3tK8SbQ
- HR//IW6vd9zMd8arLzM6Ki0rrjqs6jkE8Wk9bZwVA2UjxxJWtu1f4uF9vNy/pus8T3su
- KQUMBvDWTQ6lF33zqh5oMbLtQwpdwRY12jlU99Vs5SwpLi7RpkKrmvJtCVRTp1+uCjW9
- 9jfqGEVCon4NpLxiin5LfxzKkeFHV5jt6Zsp/1NLuyAe9nhWj3aR/kelkiVbh9RHO8xZ
- EpugRHhtxlVqSr5gZea+Fqh7oF4PgqOay05dIpn3pRe0VaZ1xzrBz2SdDTPZ0yOPVh5X
- PbkA==
-X-Gm-Message-State: AA+aEWbWetIWDBOQnY6BJUiYNWzg5Zy35Nz1hJav57fWf9nFXHxS8cc/
- Xh0t6rLuo3nG6wRoj+vOnyQG/nRP
-X-Google-Smtp-Source: AFSGD/U9zBWk3QMC8HFLbzUvXmfnNTjaSxOzmbCNCc5+0lYEOhUYgrBni/TswMxxtNy1Rtyq39dnxg==
-X-Received: by 2002:a62:4bcf:: with SMTP id d76mr18944294pfj.170.1543884894068; 
- Mon, 03 Dec 2018 16:54:54 -0800 (PST)
+ bh=c4gBFcajzgpVz3mIuYigk+ePJNILjxunDs0Xqtmk9l8=;
+ b=Syg8cQb2QptLc3XZEIUTkyxh0CMSJsbtxrbpioWxVpX7PPOhmIWSzTSBwzV8nT6g7m
+ j/67xSspsqx0i9/2grIUCrcyftKRIAJcdrsJ+zCwIECsJvy7mE+1jK3ee946dAP4e7X4
+ XP0nTApYvaYYatSLzlgSjIPczk/pBnhE8W38mWzq/WeKcXCSZeTbIp0WrQiAkhJvU0yY
+ d6HRGNaYWU+FM8T+OWck4zZ96Crf0j2BuE4OZhmXDGp/cH+hGn1hix2w3yM88kX6ZjaU
+ 0sTjFByOTdlVyyMcEEmCF1c9SzXQw598Q/Jrh98qgJWCNC806yLX376V+nsgJBswQGfV
+ QiZQ==
+X-Gm-Message-State: AA+aEWZc1PUMs8ze5uu0+73zMQqYhBufJK7ZUXhsfVvlm8fiCiLnCHhH
+ B+CcZJDBFbxFP6VL9wXmSMFuEtHE
+X-Google-Smtp-Source: AFSGD/VmMb5IwfBQ7a5NDJmarjE7UKb1zAEfQtxVc2pCADCv2HeY0ek9oPurt564ebewvNaRBNCkAQ==
+X-Received: by 2002:a65:530c:: with SMTP id m12mr14621947pgq.224.1543884900769; 
+ Mon, 03 Dec 2018 16:55:00 -0800 (PST)
 Received: from aurora.jms.id.au ([45.124.203.19])
- by smtp.gmail.com with ESMTPSA id w184sm17126468pgd.34.2018.12.03.16.54.51
+ by smtp.gmail.com with ESMTPSA id y1sm20413436pfe.9.2018.12.03.16.54.57
  (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Mon, 03 Dec 2018 16:54:53 -0800 (PST)
+ Mon, 03 Dec 2018 16:55:00 -0800 (PST)
 Received: by aurora.jms.id.au (sSMTP sendmail emulation);
- Tue, 04 Dec 2018 11:24:47 +1030
+ Tue, 04 Dec 2018 11:24:54 +1030
 From: Joel Stanley <joel@jms.id.au>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 2/3] powerpc: Discard dynsym section for !PPC32
-Date: Tue,  4 Dec 2018 11:24:28 +1030
-Message-Id: <20181204005429.32681-3-joel@jms.id.au>
+Subject: [PATCH v2 3/3] powerpc: Discard .branch_lt section
+Date: Tue,  4 Dec 2018 11:24:29 +1030
+Message-Id: <20181204005429.32681-4-joel@jms.id.au>
 X-Mailer: git-send-email 2.19.1
 In-Reply-To: <20181204005429.32681-1-joel@jms.id.au>
 References: <20181204005429.32681-1-joel@jms.id.au>
@@ -101,51 +101,48 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Alan Modra <amodra@gmail.com> explains:
+When building a 32 bit powerpc kernel with Binutils 2.31.1 this warning
+is emitted:
 
- > Likely you could discard .interp > and .dynstr too, and .dynsym when
- > !CONFIG_PPC32.
+ powerpc-linux-gnu-ld: warning: orphan section `.branch_lt' from
+ `arch/powerpc/kernel/head_44x.o' being placed in section `.branch_lt'
 
-Discarding of interp and dynstr happened in a previous patch. The dynsym
-cleanup was a bit less straightforward, so it gets it's own patch.
+As of binutils commit 2d7ad24e8726 ("Support PLT16 relocs against local
+symbols")[1], 32 bit targets can produce .branch_lt sections in their
+output.
 
+These sections should be empty for the kernel build so discard them for
+both PPC64 and PPC32.
+
+[1] https://sourceware.org/git/gitweb.cgi?p=binutils-gdb.git;a=commitdiff;h=2d7ad24e8726ba4c45c9e67be08223a146a837ce
 Signed-off-by: Joel Stanley <joel@jms.id.au>
 ---
-See https://lore.kernel.org/lkml/CACPK8Xft3n5KkpTjN3=7_VUCXHFcK7mxvZm2Rrqu7tppcBoyOg@mail.gmail.com/T/#m58532c86cf0c7b4fb01cc1fe724e48d4c7d8e4a7
+v2: Discard instead of keep. Alan said "[discarding] can be a recipe for
+finding linker bugs", so lets go with that.
 ---
- arch/powerpc/kernel/vmlinux.lds.S | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/vmlinux.lds.S | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index 6570209b0671..2c93a420f456 100644
+index 2c93a420f456..af0f81df8bb9 100644
 --- a/arch/powerpc/kernel/vmlinux.lds.S
 +++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -266,14 +266,13 @@ SECTIONS
+@@ -316,7 +316,6 @@ SECTIONS
+ 		DATA_DATA
+ 		*(.data.rel*)
+ 		*(.toc1)
+-		*(.branch_lt)
  	}
- #ifdef CONFIG_RELOCATABLE
- 	. = ALIGN(8);
-+#ifdef CONFIG_PPC32
- 	.dynsym : AT(ADDR(.dynsym) - LOAD_OFFSET)
- 	{
--#ifdef CONFIG_PPC32
- 		__dynamic_symtab = .;
--#endif
- 		*(.dynsym)
- 	}
--	.dynstr : AT(ADDR(.dynstr) - LOAD_OFFSET) { *(.dynstr) }
-+#endif
- 	.dynamic : AT(ADDR(.dynamic) - LOAD_OFFSET)
- 	{
- 		__dynamic_start = .;
-@@ -389,5 +388,8 @@ SECTIONS
+ 
+ 	.opd : AT(ADDR(.opd) - LOAD_OFFSET) {
+@@ -388,6 +387,7 @@ SECTIONS
  		*(.hash .gnu.hash)
  		*(.interp)
  		*(.dynstr)
-+#ifndef CONFIG_PPC32
-+		*(.dynsym)
-+#endif
- 	}
- }
++		*(.branch_lt)
+ #ifndef CONFIG_PPC32
+ 		*(.dynsym)
+ #endif
 -- 
 2.19.1
 
