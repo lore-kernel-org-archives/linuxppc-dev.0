@@ -2,90 +2,96 @@ Return-Path: <SRS0=NWA6=ON=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
+X-Spam-Status: No, score=-12.0 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 83A4CC04EB9
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 00:03:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AFDAAC04EB9
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 00:40:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EB4752081C
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 00:03:46 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="MDGyE3wh"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EB4752081C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=jms.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id F21802081C
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 00:40:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F21802081C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4382C46qdczDqQ3
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 11:03:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=jms.id.au
+	by lists.ozlabs.org (Postfix) with ESMTP id 4383183jxnzDqZQ
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 11:40:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="MDGyE3wh";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=bauerman@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::441; helo=mail-pf1-x441.google.com;
- envelope-from=joel.stan@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=jms.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="MDGyE3wh"; 
- dkim-atps=neutral
-Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
- [IPv6:2607:f8b0:4864:20::441])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43821d3hCwzDqlX
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Dec 2018 10:55:33 +1100 (AEDT)
-Received: by mail-pf1-x441.google.com with SMTP id u6so7193112pfh.11
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Dec 2018 15:55:33 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=sender:from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=cDeC9G5ZNTJyUkazJx9lWLmaAK56fapbrvcrVw8dLyM=;
- b=MDGyE3whzZue5/IIjkWpDn/PHcS+NXT7rJoO/pe5cwcSrYDoeqJ2eHvGbY8tCbBwih
- C60dK7iW0bMUjIACctLOpFT7i+ZQ9h83BhvQN8l370Yk71B7ZaCFTmrREjD66zkNH69T
- pas7SEB/kbVsXiXuOn7ArEX7i0Isuiy0QfV1FX5qyQPB4yvzVElKpGbn4zPKCk7SPuaW
- cZKXFHIcCiKZTncBF8fCHP7NZ+CFH4qJg3Mu1vsy7qPn3/1YQxRljs9dD1FMwM68US+d
- FY9zl2KB9wZHF6J5sbwTsppCJgyBYc8IQ2giFZJQUzm5JaoJlGq+3kdFM9RWnJ83GrgD
- AAUA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
- :in-reply-to:references:mime-version:content-transfer-encoding;
- bh=cDeC9G5ZNTJyUkazJx9lWLmaAK56fapbrvcrVw8dLyM=;
- b=sETXarju1prtmivbLo5BxjnNNNsBapOwhjVBRKET9i+9Ckb1HoaIVrwR6OejpjqnRn
- ZgladI6BTMaM8XPbeZgYLJCxYnyItHYx8WSFzxKyWM3kXD4AXLJirTutPPpNNwhIJhks
- Ab9UqKp6LjfWE0se0b4s64wIXsKtStyyD3+NgZ5Iq4HdkofmNcSvlpSlzHstatOtsAU1
- i7erb0l5XfHEahHfk+4aY90HGPYM0elP57CO+r2/+t022/s+x4G7inarRRnuUn4ZW9ok
- wosh/bGetSM9kaJhJ1ji2SFgEGEzZle3jABQmtPVQvuSGUOQH3Ks1R1IAE5Q/ajNFKMy
- hyhA==
-X-Gm-Message-State: AA+aEWYO/tq5J3oCFToIs/bGArVMURSIBjuIAK/cqk74SRmXeVktqyZU
- z7wyTe2qxDyJXjsUIfB64k3N/1HG
-X-Google-Smtp-Source: AFSGD/V9cuPKO9KhZZHqhm4hWErcVwrfzl2dcIBev1Z8KZgFWClWcNsf7L3Y7coFSNd84BYO3Jc7uw==
-X-Received: by 2002:a62:7892:: with SMTP id
- t140mr17765735pfc.237.1543881331126; 
- Mon, 03 Dec 2018 15:55:31 -0800 (PST)
-Received: from aurora.jms.id.au ([45.124.203.19])
- by smtp.gmail.com with ESMTPSA id y89sm20000557pfa.136.2018.12.03.15.55.28
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Mon, 03 Dec 2018 15:55:30 -0800 (PST)
-Received: by aurora.jms.id.au (sSMTP sendmail emulation);
- Tue, 04 Dec 2018 10:25:25 +1030
-From: Joel Stanley <joel@jms.id.au>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/2] powerpc: Discard dynsym section for !PPC32
-Date: Tue,  4 Dec 2018 10:25:02 +1030
-Message-Id: <20181203235502.6366-3-joel@jms.id.au>
-X-Mailer: git-send-email 2.19.1
-In-Reply-To: <20181203235502.6366-1-joel@jms.id.au>
-References: <20181203235502.6366-1-joel@jms.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4382yv6pr5zDqX0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Dec 2018 11:38:15 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wB40YYqj135073
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Dec 2018 19:38:13 -0500
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2p5c13eyd7-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Dec 2018 19:38:13 -0500
+Received: from localhost
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.ibm.com>;
+ Tue, 4 Dec 2018 00:38:12 -0000
+Received: from b03cxnp08028.gho.boulder.ibm.com (9.17.130.20)
+ by e31.co.us.ibm.com (192.168.1.131) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Tue, 4 Dec 2018 00:38:08 -0000
+Received: from b03ledav006.gho.boulder.ibm.com
+ (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wB40c6SA24641778
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Tue, 4 Dec 2018 00:38:06 GMT
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 45D51C6059;
+ Tue,  4 Dec 2018 00:38:06 +0000 (GMT)
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id ADDCCC6055;
+ Tue,  4 Dec 2018 00:38:03 +0000 (GMT)
+Received: from morokweng.localdomain (unknown [9.80.195.151])
+ by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTPS;
+ Tue,  4 Dec 2018 00:38:03 +0000 (GMT)
+References: <1543869802-15372-1-git-send-email-linuxram@us.ibm.com>
+User-agent: mu4e 1.0; emacs 26.1
+From: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+To: Ram Pai <linuxram@us.ibm.com>
+Subject: Re: [PATCH] powerpc/pkeys: copy pkey-tracking-information at fork()
+In-reply-to: <1543869802-15372-1-git-send-email-linuxram@us.ibm.com>
+Date: Mon, 03 Dec 2018 22:37:57 -0200
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+x-cbid: 18120400-8235-0000-0000-00000E327159
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00010166; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000270; SDB=6.01126602; UDB=6.00585106; IPR=6.00906736; 
+ MB=3.00024432; MTD=3.00000008; XFM=3.00000015; UTC=2018-12-04 00:38:10
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18120400-8236-0000-0000-000043947526
+Message-Id: <87r2eyunx6.fsf@morokweng.localdomain>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-12-03_12:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1812040002
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,56 +103,108 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alan Modra <amodra@gmail.com>
+Cc: fweimer@redhat.com, dave.hansen@linux.intel.com, mhocko@kernel.org,
+ Ulrich.Weigand@de.ibm.com, bauerman@linux.vnet.ibm.com, msuchanek@suse.de,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Alan Modra <amodra@gmail.com> explains:
 
- > Likely you could discard .interp > and .dynstr too, and .dynsym when
- > !CONFIG_PPC32.
+Ram Pai <linuxram@us.ibm.com> writes:
 
-Discarding of interp and dynstr happened in a previous patch. The dynsym
-cleanup was a bit less straightforward, so it gets it's own patch.
+> At fork(), the pkey tracking information is not copied over
+> to the mm_struct of the child. This can cause the child to erroneously
+> allocate keys that were already allocated. Any allocated execute-only
+> key is lost aswell.
+>
+> Add code; called by dup_mmap(), to copy the pkey state from
+> parent to child explicitly.
+>
+> This problem was originally found by Dave Hansen on x86, which turns
+> out to be a problem on powerpc aswell.
+>
+> Testing:
+> 	Passes the new selftest added by Dave Hansen. I have temporarily
+> 	captured that selftest at
+> 	https://github.com/rampai/memorykeys/ -b memkey.v15-rc6
+>
+> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+> ---
+>  arch/powerpc/include/asm/mmu_context.h |   15 +++++++++------
+>  arch/powerpc/mm/pkeys.c                |    7 +++++++
+>  2 files changed, 16 insertions(+), 6 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
+> index 0381394..cb16146 100644
+> --- a/arch/powerpc/include/asm/mmu_context.h
+> +++ b/arch/powerpc/include/asm/mmu_context.h
+> @@ -217,12 +217,6 @@ static inline void enter_lazy_tlb(struct mm_struct *mm,
+>  #endif
+>  }
+>
+> -static inline int arch_dup_mmap(struct mm_struct *oldmm,
+> -				struct mm_struct *mm)
+> -{
+> -	return 0;
+> -}
+> -
+>  #ifndef CONFIG_PPC_BOOK3S_64
+>  static inline void arch_exit_mmap(struct mm_struct *mm)
+>  {
+> @@ -247,6 +241,7 @@ static inline void arch_bprm_mm_init(struct mm_struct *mm,
+>  #ifdef CONFIG_PPC_MEM_KEYS
+>  bool arch_vma_access_permitted(struct vm_area_struct *vma, bool write,
+>  			       bool execute, bool foreign);
+> +void arch_dup_pkeys(struct mm_struct *oldmm, struct mm_struct *mm);
+>  #else /* CONFIG_PPC_MEM_KEYS */
+>  static inline bool arch_vma_access_permitted(struct vm_area_struct *vma,
+>  		bool write, bool execute, bool foreign)
+> @@ -259,6 +254,7 @@ static inline bool arch_vma_access_permitted(struct vm_area_struct *vma,
+>  #define thread_pkey_regs_save(thread)
+>  #define thread_pkey_regs_restore(new_thread, old_thread)
+>  #define thread_pkey_regs_init(thread)
+> +#define arch_dup_pkeys(oldmm, mm)
+>
+>  static inline u64 pte_to_hpte_pkey_bits(u64 pteflags)
+>  {
+> @@ -267,5 +263,12 @@ static inline u64 pte_to_hpte_pkey_bits(u64 pteflags)
+>
+>  #endif /* CONFIG_PPC_MEM_KEYS */
+>
+> +static inline int arch_dup_mmap(struct mm_struct *oldmm,
+> +				struct mm_struct *mm)
+> +{
+> +	arch_dup_pkeys(oldmm, mm);
+> +	return 0;
+> +}
+> +
+>  #endif /* __KERNEL__ */
+>  #endif /* __ASM_POWERPC_MMU_CONTEXT_H */
+> diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
+> index b271b28..5d65c47 100644
+> --- a/arch/powerpc/mm/pkeys.c
+> +++ b/arch/powerpc/mm/pkeys.c
+> @@ -414,3 +414,10 @@ bool arch_vma_access_permitted(struct vm_area_struct *vma, bool write,
+>
+>  	return pkey_access_permitted(vma_pkey(vma), write, execute);
+>  }
+> +
+> +void arch_dup_pkeys(struct mm_struct *oldmm, struct mm_struct *mm)
+> +{
+> +	/* Duplicate the oldmm pkey state in mm: */
+> +	mm_pkey_allocation_map(mm) = mm_pkey_allocation_map(oldmm);
+> +	mm->context.execute_only_pkey = oldmm->context.execute_only_pkey;
+> +}
 
-Signed-off-by: Joel Stanley <joel@jms.id.au>
----
-See https://lore.kernel.org/lkml/CACPK8Xft3n5KkpTjN3=7_VUCXHFcK7mxvZm2Rrqu7tppcBoyOg@mail.gmail.com/T/#m58532c86cf0c7b4fb01cc1fe724e48d4c7d8e4a7
+This function is small and perhaps could have been a static inline in
+<asm/mmu_context.h>, but arch_dup_mmap() doesn't seem to be in a hot
+path so the segregation of implementation details to pkeys.c is nice
+from an organization point of view.
 
- arch/powerpc/kernel/vmlinux.lds.S | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+Reviewed-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
 
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index e14cde32b003..49dd678a2de4 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -266,14 +266,13 @@ SECTIONS
- 	}
- #ifdef CONFIG_RELOCATABLE
- 	. = ALIGN(8);
-+#ifdef CONFIG_PPC32
- 	.dynsym : AT(ADDR(.dynsym) - LOAD_OFFSET)
- 	{
--#ifdef CONFIG_PPC32
- 		__dynamic_symtab = .;
--#endif
- 		*(.dynsym)
- 	}
--	.dynstr : AT(ADDR(.dynstr) - LOAD_OFFSET) { *(.dynstr) }
-+#endif
- 	.dynamic : AT(ADDR(.dynamic) - LOAD_OFFSET)
- 	{
- 		__dynamic_start = .;
-@@ -390,5 +389,8 @@ SECTIONS
- 		*(.hash .gnu.hash)
- 		*(.interp)
- 		*(.dynstr)
-+#ifndef CONFIG_PPC32
-+		*(.dynsym)
-+#endif
- 	}
- }
--- 
-2.19.1
+--
+Thiago Jung Bauermann
+IBM Linux Technology Center
 
