@@ -2,54 +2,76 @@ Return-Path: <SRS0=NWA6=ON=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44197C04EB8
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 14:43:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 27C23C04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 14:47:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 955B72082D
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 14:43:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 955B72082D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=sntech.de
+	by mail.kernel.org (Postfix) with ESMTPS id 9B5AE2081C
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 14:47:51 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="I9Kj3r0o"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9B5AE2081C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 438PkF3FgczDqQQ
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 01:43:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=sntech.de
+	by lists.ozlabs.org (Postfix) with ESMTP id 438Pq94tR3zDqCc
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 01:47:49 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=sntech.de
- (client-ip=185.11.138.130; helo=gloria.sntech.de;
- envelope-from=heiko@sntech.de; receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="I9Kj3r0o";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=sntech.de
-X-Greylist: delayed 1499 seconds by postgrey-1.36 at bilbo;
- Wed, 05 Dec 2018 01:41:35 AEDT
-Received: from gloria.sntech.de (gloria.sntech.de [185.11.138.130])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=robh@kernel.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="I9Kj3r0o"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 438Pgz17sWzDqWQ
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Dec 2018 01:41:35 +1100 (AEDT)
-Received: from we0660.dip.tu-dresden.de ([141.76.178.148] helo=phil.localnet)
- by gloria.sntech.de with esmtpsa
- (TLS1.0:ECDHE_RSA_AES_256_CBC_SHA1:256) (Exim 4.89)
- (envelope-from <heiko@sntech.de>)
- id 1gUBUx-0001AO-R7; Tue, 04 Dec 2018 15:16:27 +0100
-From: Heiko Stuebner <heiko@sntech.de>
-To: Rob Herring <robh@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>
-Subject: Re: [PATCH v2 24/34] dt-bindings: arm: Convert Rockchip board/soc
- bindings to json-schema
-Date: Tue, 04 Dec 2018 15:16:27 +0100
-Message-ID: <3170130.k0DT9deCHj@phil>
-In-Reply-To: <20181203213223.16986-25-robh@kernel.org>
-References: <20181203213223.16986-1-robh@kernel.org>
- <20181203213223.16986-25-robh@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 438Pm33R0szDq5y
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Dec 2018 01:45:07 +1100 (AEDT)
+Received: from mail-qt1-f177.google.com (mail-qt1-f177.google.com
+ [209.85.160.177])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 61DB12087F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Dec 2018 14:45:05 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1543934705;
+ bh=hVb8TID6cd1Olg3jtzdBexIhOrCiR/d52f5IOpnmACI=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=I9Kj3r0o3/KmrFHvG5GA+pHQ+dy7Ck2z0nBok1uWJCjEzruGA59yQo0y1FUoCsswk
+ o1aUEqebWNFZ+Ip6QC3hVzUmt5fPdbbp1IG8/nQbMgOSbjkGWOSY/gCtPmTyidtwMS
+ Yy/BeYZ28OHA5lgEi9DmgXTRG0r6SrbtOljEJnKM=
+Received: by mail-qt1-f177.google.com with SMTP id t13so18275220qtn.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Dec 2018 06:45:05 -0800 (PST)
+X-Gm-Message-State: AA+aEWaTxLDpBKH8eJnj19cus5Mx0ALNpytmQcl/WTLFUj8VKDHApMNJ
+ zfZ+XMxJw89mEdPWz7+xOu1ZXHgO0SpHhOBlZA==
+X-Google-Smtp-Source: AFSGD/WGVWJioClsa0lvQGJtAOGi8FkeeWgHBEl1fwnzno8/vkh5RpuvYCjALLTG0ebaUzuRMqN9CWkjmLCc7SNclL4=
+X-Received: by 2002:aed:3ecf:: with SMTP id o15mr19931119qtf.26.1543934704526; 
+ Tue, 04 Dec 2018 06:45:04 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+References: <20181203213223.16986-1-robh@kernel.org>
+ <20181203213223.16986-15-robh@kernel.org>
+ <dfb921ca-63c5-a4c2-f3e2-c2eebdf688f6@baylibre.com>
+In-Reply-To: <dfb921ca-63c5-a4c2-f3e2-c2eebdf688f6@baylibre.com>
+From: Rob Herring <robh@kernel.org>
+Date: Tue, 4 Dec 2018 08:44:52 -0600
+X-Gmail-Original-Message-ID: <CAL_Jsq+e2m5VaibpvuTYURZ+E=MCSUGH8cokdWYWEjn_jy9iwA@mail.gmail.com>
+Message-ID: <CAL_Jsq+e2m5VaibpvuTYURZ+E=MCSUGH8cokdWYWEjn_jy9iwA@mail.gmail.com>
+Subject: Re: [PATCH v2 14/34] dt-bindings: arm: Convert Amlogic board/soc
+ bindings to json-schema
+To: Neil Armstrong <narmstrong@baylibre.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,136 +84,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org,
- Kumar Gala <kumar.gala@linaro.org>, arm@kernel.org,
- Sean Hudson <darknighte@darknighte.com>, Frank Rowand <frowand.list@gmail.com>,
- linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org,
- Grant Likely <grant.likely@arm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+ Kumar Gala <kumar.gala@linaro.org>, Grant Likely <grant.likely@arm.com>,
+ Sean Hudson <darknighte@darknighte.com>, Kevin Hilman <khilman@baylibre.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ ARM-SoC Maintainers <arm@kernel.org>, Carlo Caione <carlo@caione.org>,
+ linux-amlogic@lists.infradead.org, Frank Rowand <frowand.list@gmail.com>,
+ "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
+ <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Am Montag, 3. Dezember 2018, 22:32:13 CET schrieb Rob Herring:
-> Convert Rockchip SoC bindings to DT schema format using json-schema.
-> 
-> Cc: Mark Rutland <mark.rutland@arm.com>
-> Cc: Heiko Stuebner <heiko@sntech.de>
-> Cc: devicetree@vger.kernel.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: linux-rockchip@lists.infradead.org
-> Signed-off-by: Rob Herring <robh@kernel.org>
-
-> diff --git a/Documentation/devicetree/bindings/arm/rockchip.yaml b/Documentation/devicetree/bindings/arm/rockchip.yaml
-> new file mode 100644
-> index 000000000000..3d30ec9adcd3
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/arm/rockchip.yaml
-> @@ -0,0 +1,251 @@
-> +# SPDX-License-Identifier: GPL-2.0
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/arm/rockchip.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: Rockchip platforms device tree bindings
-> +
-> +maintainers:
-> +  - Beniamino Galvani <b.galvani@gmail.com>
-
-# scripts/get_maintainer.pl -f Documentation/devicetree/bindings/arm/rockchip.txt
-
-doesn't list Beniamino at all and he hasn't been active on Rockchip stuff
-for a number of years, so I'm not really sure where this mention as
-maintainer comes from.
-
-
-> +  - Heiko Stuebner <heiko@sntech.de>
-> +
-> +properties:
-> +  $nodename:
-> +    const: '/'
-> +  compatible:
-> +    oneOf:
-> +      - items:
-> +          - enum:
-> +              - amarula,vyasa-rk3288
-> +              - asus,rk3288-tinker
-> +              - asus,rk3288-tinker-s
-> +              - radxa,rock2-square
-> +              - chipspark,popmetal-rk3288
-> +              - netxeon,r89
-> +              - firefly,firefly-rk3288
-> +              - firefly,firefly-rk3288-beta
-> +              - firefly,firefly-rk3288-reload
-> +              - mqmaker,miqi
-> +              - rockchip,rk3288-fennec
-> +          - const: rockchip,rk3288
+On Tue, Dec 4, 2018 at 2:39 AM Neil Armstrong <narmstrong@baylibre.com> wrote:
+>
+> Hi Rob,
+>
+> You forgot linux-amlogic in CC...
+>
+> On 03/12/2018 22:32, Rob Herring wrote:
+> > Convert Amlogic SoC bindings to DT schema format using json-schema.
+> >
+> > Cc: Carlo Caione <carlo@caione.org>
+> > Cc: Kevin Hilman <khilman@baylibre.com>
+> > Cc: Mark Rutland <mark.rutland@arm.com>
+> > Cc: devicetree@vger.kernel.org
+> > Signed-off-by: Rob Herring <robh@kernel.org>
+> > ---
 
 [...]
 
-> +      - items:
-> +          - enum:
-> +              - firefly,firefly-rk3399
-> +              - firefly,roc-rk3399-pc
-> +              - pine64,rockpro64
-> +              - rockchip,rk3399-evb
-> +              - rockchip,rk3399-sapphire
-> +              - rockchip,rk3399-sapphire-excavator
-> +              - tsd,rk3399-q7-haikou
-> +              - vamrs,ficus
-> +              - vamrs,rock960 # 96boards RK3399 Rock960 (ROCK960 Consumer Edition)
-> +          - const: rockchip,rk3399
+> > +      - items:
+> > +          - enum:
+> > +              - amlogic,s400
+> > +          - const: amlogic,a113d
+> > +          - const: amlogic,meson-axg
+> > +      - items:
+> > +          - enum:
+> > +              - amlogic,u200
+> > +          - const: amlogic,g12a
+>
+> but all this feels wrong for me.
+>
+> First of all, this yaml description is not human friendly and not intuitive at all,
+> and secondly with this conversion we loose all the comments about the SoC family relationship
+> with the compatible strings !
+>
+> I really understand the point to have automated verification, but really it's a pain to read
+> (I can't imagine newcomers... the actual DT bindings are already hard to read...) and
+> I feel it will be a real pain to write !
 
+What do you suggest that would be easier? Is it the YAML itself or the
+json-schema vocabulary? For the former, we could use {} and [] to make
+things more json style. But I imagine it is the latter.
 
-as said before, loosing the description of the boards that get thrown 
-into one listing really decreases the usability a lot.
+There is some learning curve for json-schema and is certainly a
+concern I have, but there would be a learning curve for anything. Our
+choices are use some existing schema language or invent one. All the
+previous efforts (there's been about 5 since 2013) have been inventing
+one, and they've not gone far. There will be far few resources
+available to train people with if we do something custom.
 
-Best example is maybe the rk3399 rock960, where the consumer-edition
-board is actually named "ficus" and the description actually brings the
-connection to the product-name.
+> Can't we mix an "humam text" with a "yaml" part on a same document ? we are in 2018 (nearly 2019),
+> and it should be easy to extract a yaml description from a text document without pain and
+> keep all the human description, no ?
 
-So here it may increase the machine-readability but definitly descreases
-the human readability of the file itself.
+Yes. Please go look at the annotated example in patch 2.
 
-I guess just using the format that all the Google-boards got for all boards
-would just be easiest, so for example the rock960 also would just become:
+> What will be the case for all the bindings with ASCII art to describe the architecture of the
+> HW ? will you simply drop it to replace it with cold yaml description ?
 
-      - description: 96boards RK3399 Ficus (ROCK960 Enterprise Edition)
-        items:
-          - const: vamrs,ficus
-          - const: rockchip,rk3399
+No, you can have literal blocks and/or comments with however much
+description you like. In fact, there's some notion to write the
+descriptions in sphinx and extract them to generate documentation, but
+that's a ways off. That's just the extent of what is possible.
 
-      - description: 96boards RK3399 Ficus (ROCK960 Consumer Edition)
-        items:
-          - const: vamrs,rock960
-          - const: rockchip,rk3399
-
-
-Looking at other socs, this is likely similar there. Like on Mediatek
-all the MT67xx eval boards loose the mapping to the
-socs marketing name "Helio Foobar" when the description is gone,
-which could've been helpful for people reading the binding.
-
-
-Heiko
-
-
-> +      - description: Google Bob (Asus Chromebook Flip C101PA)
-> +        items:
-> +          - const: google,bob-rev13
-> +          - const: google,bob-rev12
-> +          - const: google,bob-rev11
-> +          - const: google,bob-rev10
-> +          - const: google,bob-rev9
-> +          - const: google,bob-rev8
-> +          - const: google,bob-rev7
-> +          - const: google,bob-rev6
-> +          - const: google,bob-rev5
-> +          - const: google,bob-rev4
-> +          - const: google,bob
-> +          - const: google,gru
-> +          - const: rockchip,rk3399
-
-
-
-
+Rob
