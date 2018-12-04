@@ -2,50 +2,87 @@ Return-Path: <SRS0=NWA6=ON=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A220C04EB8
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 03:57:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6ED8AC04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 04:52:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D98F220850
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 03:57:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D98F220850
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id A19DF208A3
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 04:52:46 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linaro.org header.i=@linaro.org header.b="eX3Z2FAP"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A19DF208A3
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4387PD502czDqj4
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 14:57:52 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4388cX0Rp5zDqRL
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 15:52:44 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.b="eX3Z2FAP";
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=linaro.org
+ (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
+ envelope-from=viresh.kumar@linaro.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=linaro.org header.i=@linaro.org header.b="eX3Z2FAP"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
+ [IPv6:2607:f8b0:4864:20::442])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4387Lg6WMgzDqc3
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Dec 2018 14:55:39 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 4387Lf5JD9z9s55;
- Tue,  4 Dec 2018 14:55:38 +1100 (AEDT)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Mathieu Malaterre <malat@debian.org>,
- Christophe LEROY <christophe.leroy@c-s.fr>
-Subject: Re: [PATCH 2/7] powerpc: change CONFIG_6xx to CONFIG_PPC_BOOK3S_32
-In-Reply-To: <CA+7wUsx3iZhPH0uwukRNXaT_ZygaqKNXaNf=kcwoJ9nGqTb2Mw@mail.gmail.com>
-References: <aeeaafbdf0357f8bdb8ffd86822a0ddfd5521fd6.1542395798.git.christophe.leroy@c-s.fr>
- <73b5e7a43bb5979ac534d1c236adb2e04f9d6307.1542395798.git.christophe.leroy@c-s.fr>
- <CA+7wUsx3iZhPH0uwukRNXaT_ZygaqKNXaNf=kcwoJ9nGqTb2Mw@mail.gmail.com>
-Date: Tue, 04 Dec 2018 14:55:36 +1100
-Message-ID: <877egqhrnr.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4388Yn4dsbzDqRL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Dec 2018 15:50:19 +1100 (AEDT)
+Received: by mail-pf1-x442.google.com with SMTP id c73so7554498pfe.13
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Dec 2018 20:50:19 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=aYO/z386VNta4UctSXviaV0eojIktFtruslaGj5T1jA=;
+ b=eX3Z2FAPyiFwfJg39MtL+iaSaMbHj5OFaKHUeBBI8VONTld5bQeEl+26bNkGxuU51S
+ XgvuDbL7HxBHD4gIz7si8AJ1OMQaQrIlKubdmm3qn0v/MscqixrDa2z8djLd5QBXT61F
+ ApycqKdmLQDS/PHpC7Epk0rLYyUaBd9M++tcA=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=aYO/z386VNta4UctSXviaV0eojIktFtruslaGj5T1jA=;
+ b=Unzo/QmWz3mcpon977AoyaR6J/xhzbV9OYu4HJLu2P6j06WC/P1Xv+5G9meEzIYxFk
+ O7KptV0/PJQF0sVdB7lF7q2+ckkoVuWHY/cCy0vSpWizeC+f9x3R4f5UThSQth7NzUdA
+ nd8VVWwkxYxfwT5i5VuGv7nuoNLhjUECcoEGBTpub0n121gE2EIJJY3Q2li70LADpXqu
+ 4FRppL7ehxenejKdeksSYf/K4ypIzUrgfdIRUnRBoyVzAqOZx32TRobU+3nzI6XafSRN
+ 3Vv3+Ev/+Pflf1fi/76vrrjaI+R4OqDBBFK5s8bLLFculnIGLcKysAn/Va+3UlhvThWp
+ 8eug==
+X-Gm-Message-State: AA+aEWaPEIk7rBnwgblOkyMKDuFjDn88NZF/iJXFmxcemKXh3oTg7ONF
+ OVEBy6wjrNoUOZAjd9GXSpSUjw==
+X-Google-Smtp-Source: AFSGD/UAX0MAs8RNeAxBsaKCfBK/eDrOFZA8RfH7eX2u6cmuW/MmsP/VKckyuTCgd4W1+CBAkzYiDA==
+X-Received: by 2002:a63:df50:: with SMTP id h16mr15715043pgj.421.1543899016897; 
+ Mon, 03 Dec 2018 20:50:16 -0800 (PST)
+Received: from localhost ([122.172.23.29])
+ by smtp.gmail.com with ESMTPSA id v184sm19346547pfb.182.2018.12.03.20.50.14
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Mon, 03 Dec 2018 20:50:15 -0800 (PST)
+Date: Tue, 4 Dec 2018 10:20:12 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v2 28/34] dt-bindings: arm: Convert SPEAr board/soc
+ bindings to json-schema
+Message-ID: <20181204045012.gy6xs7nggtcurdu5@vireshk-i7>
+References: <20181203213223.16986-1-robh@kernel.org>
+ <20181203213223.16986-29-robh@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20181203213223.16986-29-robh@kernel.org>
+User-Agent: NeoMutt/20180323-120-3dd1ac
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,102 +94,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net,
- LKML <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
- viresh.kumar@linaro.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org,
+ Kumar Gala <kumar.gala@linaro.org>, arm@kernel.org,
+ Sean Hudson <darknighte@darknighte.com>, Frank Rowand <frowand.list@gmail.com>,
+ linux-kernel@vger.kernel.org, Grant Likely <grant.likely@arm.com>,
+ Viresh Kumar <vireshk@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ Shiraz Hashim <shiraz.linux.kernel@gmail.com>,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Mathieu Malaterre <malat@debian.org> writes:
-> On Sat, Nov 17, 2018 at 11:29 AM Christophe Leroy
-> <christophe.leroy@c-s.fr> wrote:
->>
->> Today we have:
->>
->> config PPC_BOOK3S_32
->>         bool "512x/52xx/6xx/7xx/74xx/82xx/83xx/86xx"
->>         [depends on PPC32 within a choice]
->>
->> config PPC_BOOK3S
->>         def_bool y
->>         depends on PPC_BOOK3S_32 || PPC_BOOK3S_64
->>
->> config 6xx
->>         def_bool y
->>         depends on PPC32 && PPC_BOOK3S
->>
->> 6xx is therefore redundant with PPC_BOOK3S_32.
->>
->> In order to make the code clearer, lets use preferably PPC_BOOK3S_32.
->> This will allow to remove CONFIG_6xx in a later patch.
->>
->> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->> ---
->>  arch/powerpc/Makefile                     |  2 +-
->>  arch/powerpc/include/asm/cache.h          |  2 +-
->>  arch/powerpc/include/asm/mmu.h            |  2 +-
->>  arch/powerpc/include/asm/reg.h            |  2 +-
->>  arch/powerpc/include/asm/time.h           |  2 +-
->>  arch/powerpc/kernel/Makefile              |  2 +-
->>  arch/powerpc/kernel/cpu_setup_6xx.S       |  2 +-
->>  arch/powerpc/kernel/entry_32.S            | 10 +++++-----
->>  arch/powerpc/kernel/head_32.S             | 14 +++++++-------
->>  arch/powerpc/kernel/misc_32.S             |  4 ++--
->>  arch/powerpc/kernel/pmc.c                 |  2 +-
->>  arch/powerpc/kernel/setup_32.c            |  2 +-
->>  arch/powerpc/kernel/sysfs.c               |  2 +-
->>  arch/powerpc/mm/mmu_decl.h                |  2 +-
->>  arch/powerpc/oprofile/Makefile            |  2 +-
->>  arch/powerpc/oprofile/common.c            |  2 +-
->>  arch/powerpc/platforms/powermac/cache.S   |  4 ++--
->>  arch/powerpc/platforms/powermac/feature.c |  2 +-
->>  arch/powerpc/platforms/powermac/sleep.S   |  4 ++--
->>  arch/powerpc/sysdev/Makefile              |  2 +-
->>  20 files changed, 33 insertions(+), 33 deletions(-)
->>
->> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
->> index 8a2ce14d68d0..e259b8a2dd44 100644
->> --- a/arch/powerpc/Makefile
->> +++ b/arch/powerpc/Makefile
->> @@ -241,7 +241,7 @@ KBUILD_CFLAGS       += $(call cc-option,-fno-dwarf2-cfi-asm)
->>  # often slow when they are implemented at all
->>  KBUILD_CFLAGS          += $(call cc-option,-mno-string)
->>
->> -ifdef CONFIG_6xx
->> +ifdef CONFIG_PPC_BOOK3S_32
->>  KBUILD_CFLAGS          += -mcpu=powerpc
->>  endif
->
-> I never quite understood this part. Let say I want to specify 'power4'
-> in arch/powerpc/platforms/Kconfig.cputype as new TARGET_CPU. The line
-> above will always append -mcpu=powerpc *after* a TARGET_CPU=power4
-> which defeat the whole purpose, right ?
+On 03-12-18, 15:32, Rob Herring wrote:
+> Convert SPEAr SoC bindings to DT schema format using json-schema.
+> 
+> Cc: Viresh Kumar <vireshk@kernel.org>
+> Cc: Shiraz Hashim <shiraz.linux.kernel@gmail.com>
+> Cc: Mark Rutland <mark.rutland@arm.com>
+> Cc: devicetree@vger.kernel.org
+> Signed-off-by: Rob Herring <robh@kernel.org>
+> ---
+>  .../devicetree/bindings/arm/spear.txt         | 26 -------------------
+>  .../devicetree/bindings/arm/spear.yaml        | 25 ++++++++++++++++++
+>  2 files changed, 25 insertions(+), 26 deletions(-)
+>  delete mode 100644 Documentation/devicetree/bindings/arm/spear.txt
+>  create mode 100644 Documentation/devicetree/bindings/arm/spear.yaml
 
-Yes, I think you're right.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-The code above was added in 2006 in f48b8296b315 ("[PATCH] powerpc32:
-Set cpu explicitly in kernel compiles").
-
-Back then the target CPU selection was 64-bit only, so setting it to
-powerpc always for 6xx was fine.
-
-It was only recently that Christophe made the target CPU selection
-available on 32-bit, see 0e00a8c9fd92 ("powerpc: Allow CPU selection
-also on PPC32").
-
-So since that commit the above has been overriding any specific CPU
-selection it seems, eg:
-  gcc -Wp,-MD,init/.do_mounts.o.d ...
-  -mcpu=powerpc -mbig-endian -m32 ...
-  -mcpu=e300c2 ...
-  -mcpu=powerpc ...
-  ../init/do_mounts.c
-
-That seems like a bug.
-
-It would be good to clean up the CPU selection logic, it's a bit of a
-mess. But for now it's probably best to just move the above snippet
-prior to the TARGET_CPU logic.
-
-cheers
+-- 
+viresh
