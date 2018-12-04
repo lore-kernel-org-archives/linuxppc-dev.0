@@ -2,65 +2,69 @@ Return-Path: <SRS0=NWA6=ON=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C15C7C04EBF
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 21:19:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A9B60C04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 21:30:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1D0032082B
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 21:19:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1D0032082B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
+	by mail.kernel.org (Postfix) with ESMTPS id 26F8820850
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 21:30:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 26F8820850
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 438ZW72gGlzDqWs
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 08:19:31 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=arndb.de
+	by lists.ozlabs.org (Postfix) with ESMTP id 438ZlP1nXpzDqSg
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 08:30:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.222.194; helo=mail-qk1-f194.google.com;
- envelope-from=arndbergmann@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arndb.de
-Received: from mail-qk1-f194.google.com (mail-qk1-f194.google.com
- [209.85.222.194])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 438ZSw6J6tzDqFh
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Dec 2018 08:17:36 +1100 (AEDT)
-Received: by mail-qk1-f194.google.com with SMTP id y78so10575658qka.12
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Dec 2018 13:17:36 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=oNLZdxPA/1JMTOenX3BXjqrafMgfKLzwoze6zSjaYjs=;
- b=SfOW6TFXf0gXeWG2ILl6xPltpwFIli7Mjk1doUL2MTD7pCGxzUwodfXb1xpjRwborP
- FykFbmtcBHausFpeoPKscNxkqz4VyGh1Lv8K4BCOnWG/hQ7p3F/9X1NbFa03tGymKvoV
- VS5OHiJJ2+/BVjnSr8mYy9OsV1s2hAhfNkaJP10DWMenZze9ROv2QeHTmYSI7bTyfdGE
- OuEcIJwoje28E7+f3qQeZu2g7LKc8GbAnTn70NEaJePe/+/DKUbuP8N/hiUM/bScY252
- o6QZlOcNQ5zlIkkY13Yz38W/3atE3WyFAwsoIPbSWfw/fU4cNjDWbb89k/alpt0iseCl
- Am+w==
-X-Gm-Message-State: AA+aEWYZTiNUZ2s0cuR/R6MxYK5xorlbPXgz+0AHBI+y4jVCnXNYL5e4
- X3u8EOIOxAvrxw3tIgrafEzC81KuBZVwFVFL8Z8=
-X-Google-Smtp-Source: AFSGD/WLqefm4/JZ8Oq0jJRXrV707I2FqcC+iotSpp9LY7+wMEyltpzSAqKwkIOad/jvr90tsqLqlJgfrLETvle9J5g=
-X-Received: by 2002:ae9:e102:: with SMTP id g2mr19045176qkm.343.1543958254395; 
- Tue, 04 Dec 2018 13:17:34 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 438ZjF07RTzDqPn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Dec 2018 08:28:17 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 438Zj91vr9z9v0TP;
+ Tue,  4 Dec 2018 22:28:13 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id EtCcqisf8DU8; Tue,  4 Dec 2018 22:28:13 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 438Zj916d5z9v0TN;
+ Tue,  4 Dec 2018 22:28:13 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 4F57C8B825;
+ Tue,  4 Dec 2018 22:28:13 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id bLVWMpAgvj2x; Tue,  4 Dec 2018 22:28:13 +0100 (CET)
+Received: from [192.168.232.3] (unknown [192.168.232.3])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id C144A8B800;
+ Tue,  4 Dec 2018 22:28:11 +0100 (CET)
+Subject: Re: [PATCH] powerpc/32: Move the old 6xx -mcpu logic before the
+ TARGET_CPU logic
+To: Mathieu Malaterre <malat@debian.org>, Michael Ellerman <mpe@ellerman.id.au>
+References: <20181204205345.9514-1-malat@debian.org>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <ba978bc1-e137-8abf-01a0-e1c68341a95f@c-s.fr>
+Date: Tue, 4 Dec 2018 22:28:11 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.3.2
 MIME-Version: 1.0
-References: <1543465611-17122-1-git-send-email-firoz.khan@linaro.org>
- <1543465611-17122-5-git-send-email-firoz.khan@linaro.org>
-In-Reply-To: <1543465611-17122-5-git-send-email-firoz.khan@linaro.org>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Tue, 4 Dec 2018 22:17:18 +0100
-Message-ID: <CAK8P3a2SP0eX50NoFKaM2N85mgSejToQkD9ZOE_7V_RT__BCvg@mail.gmail.com>
-Subject: Re: [PATCH v3 4/4] powerpc: generate uapi header and system call
- table files
-To: Firoz Khan <firoz.khan@linaro.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20181204205345.9514-1-malat@debian.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,54 +76,78 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kate Stewart <kstewart@linuxfoundation.org>,
- linux-arch <linux-arch@vger.kernel.org>, gregkh <gregkh@linuxfoundation.org>,
- y2038 Mailman List <y2038@lists.linaro.org>, Boqun Feng <boqun.feng@gmail.com>,
- Philippe Ombredanne <pombredanne@nexb.com>, linuxram@us.ibm.com,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Marcin Juszkiewicz <marcin.juszkiewicz@linaro.org>, leitao@debian.org,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- Deepa Dinamani <deepa.kernel@gmail.com>,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-> diff --git a/arch/powerpc/kernel/systbl.S b/arch/powerpc/kernel/systbl.S
-> index 9ff1913..d756348 100644
-> --- a/arch/powerpc/kernel/systbl.S
-> +++ b/arch/powerpc/kernel/systbl.S
 
->  #ifdef CONFIG_PPC64
-> @@ -47,5 +25,17 @@
->  .globl sys_call_table
->  sys_call_table:
->
-> +#if defined CONFIG_PPC64 && defined(CONFIG_COMPAT)
-> +#define __SYSCALL(nr, entry, nargs) .8byte entry
->  #define compat_sys_sigsuspend  sys_sigsuspend
-> -#include <asm/systbl.h>
-> +#include <asm/syscall_table_c32.h>
-> +#undef __SYSCALL
-> +#elif defined CONFIG_PPC64 && !defined(CONFIG_COMPAT)
-> +#define __SYSCALL(nr, entry, nargs) .8byte entry
-> +#include <asm/syscall_table_64.h>
-> +#undef __SYSCALL
 
-This part looks wrong: where the old sys_call_table contained
-both the native and compat calls side by side, the new table
-contains only the compat versions (note that CONFIG_COMPAT is
-always set on PPC64). I think you copy-pasted this incorrectly from
-one of the other architectures that uses a different layout for the
-compat calls.
+Le 04/12/2018 à 21:53, Mathieu Malaterre a écrit :
+> The code:
+> 
+>    ifdef CONFIG_6xx
+>    KBUILD_CFLAGS          += -mcpu=powerpc
+>    endif
+> 
+> was added in 2006 in commit f48b8296b315 ("[PATCH] powerpc32: Set cpu
+> explicitly in kernel compiles"). This change was acceptable since the
+> TARGET_CPU logic was 64-bit only.
+> 
+> Since commit 0e00a8c9fd92 ("powerpc: Allow CPU selection
+> also on PPC32") this logic is no longer acceptable after the TARGET_CPU
+> specific. It currently appends -mcpu=powerpc at the end of the command
+> line, after any TARGET_CPU specific:
+> 
+>    gcc -Wp,-MD,init/.do_mounts.o.d ...
+>      -mcpu=powerpc -mbig-endian -m32 ...
+>      -mcpu=e300c2 ...
+>      -mcpu=powerpc ...
+>      ../init/do_mounts.c
+> 
+> Cc: Christophe Leroy <christophe.leroy@c-s.fr>
+> Fixes: 0e00a8c9fd92 ("powerpc: Allow CPU selection also on PPC32")
+> Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+> Link: https://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg142315.html
+> Signed-off-by: Mathieu Malaterre <malat@debian.org>
+> ---
+>   arch/powerpc/Makefile | 8 ++++----
+>   1 file changed, 4 insertions(+), 4 deletions(-)
+> 
+> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+> index 8a2ce14d68d0..544b30667ea5 100644
+> --- a/arch/powerpc/Makefile
+> +++ b/arch/powerpc/Makefile
+> @@ -30,6 +30,10 @@ endif
+>   endif
+>   endif
+>   
+> +ifdef CONFIG_6xx
+> +KBUILD_CFLAGS		+= -mcpu=powerpc
+> +endif
+> +
 
-The way I think this could work best is if you add a preparation
-patch that splits out the 64-bit table into two separate ones
-(and make sure that works). After that, you can add your
-existing patch, rebased to use the two generated tables
-instead of the old-style tables. I'll follow up with an untested
-patch for illustration.
+Could you make the patch on top of my serie (ie after the change of 
+CONFIG_6xx to CONFIG_BOOK3S_32 ?
 
-       Arnd
+The serie is in origin/next-test
+
+Thanks,
+Christophe
+
+>   ifeq ($(CROSS_COMPILE),)
+>   KBUILD_DEFCONFIG := $(shell uname -m)_defconfig
+>   else
+> @@ -241,10 +245,6 @@ KBUILD_CFLAGS	+= $(call cc-option,-fno-dwarf2-cfi-asm)
+>   # often slow when they are implemented at all
+>   KBUILD_CFLAGS		+= $(call cc-option,-mno-string)
+>   
+> -ifdef CONFIG_6xx
+> -KBUILD_CFLAGS		+= -mcpu=powerpc
+> -endif
+> -
+>   cpu-as-$(CONFIG_4xx)		+= -Wa,-m405
+>   cpu-as-$(CONFIG_ALTIVEC)	+= $(call as-option,-Wa$(comma)-maltivec)
+>   cpu-as-$(CONFIG_E200)		+= -Wa,-me200
+> 
