@@ -2,50 +2,71 @@ Return-Path: <SRS0=NWA6=ON=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E6D05C04EB8
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 10:01:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 47A4FC07E85
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 11:03:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 477122082B
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 10:01:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 477122082B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 732A1214DE
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 11:03:25 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="A2byaxJl"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 732A1214DE
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 438HTF2LvRzDqdM
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 21:01:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 438HQv56lFzDqbB
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Dec 2018 20:59:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 438JrC1Z9yzDqd0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 22:03:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="A2byaxJl";
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=srs0=egbn=on=linuxfoundation.org=gregkh@kernel.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ header.from=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="A2byaxJl"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 438Jlb0KYfzDqYV
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Dec 2018 21:59:23 +1100 (AEDT)
+Received: from localhost (5356596B.cm-6-7b.dynamic.ziggo.nl [83.86.89.107])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 438HQk43DGz9s7W;
- Tue,  4 Dec 2018 20:59:42 +1100 (AEDT)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Mike Rapoport <rppt@linux.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH v2 1/6] powerpc: prefer memblock APIs returning virtual
- address
-In-Reply-To: <1543852035-26634-2-git-send-email-rppt@linux.ibm.com>
-References: <1543852035-26634-1-git-send-email-rppt@linux.ibm.com>
- <1543852035-26634-2-git-send-email-rppt@linux.ibm.com>
-Date: Tue, 04 Dec 2018 20:59:41 +1100
-Message-ID: <87woophasy.fsf@concordia.ellerman.id.au>
+ by mail.kernel.org (Postfix) with ESMTPSA id 91E5E20878;
+ Tue,  4 Dec 2018 10:59:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1543921161;
+ bh=LKHyEwEQnJR8GIddD7ZTZ+J/beh5QGq6NVLuV1fB/ng=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=A2byaxJlxNn7OXEx6Bm3XGJRiyEZoDB/R0IFmi6Fxijha14yNPYZXy01RSL6FVKBy
+ oEqbTXGDtLRpeJFowXBBEUQbWwSkckqY86jJG6MapjmAbeT4K2u+Wzu9qcXswIzDaY
+ VkTSOWUpn9pcouJARaupbdDLnSlxPTcbBH6g3qyw=
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 4.19 103/139] powerpc/function_graph: Simplify with
+ function_graph_enter()
+Date: Tue,  4 Dec 2018 11:49:44 +0100
+Message-Id: <20181204103654.772207063@linuxfoundation.org>
+X-Mailer: git-send-email 2.19.2
+In-Reply-To: <20181204103649.950154335@linuxfoundation.org>
+References: <20181204103649.950154335@linuxfoundation.org>
+User-Agent: quilt/0.65
+X-stable: review
+X-Patchwork-Hint: ignore
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,145 +78,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michal Hocko <mhocko@suse.com>, linux-sh@vger.kernel.org,
- linux-mm@kvack.org, Rich Felker <dalias@libc.org>,
- Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
- Vincent Chen <deanbo422@gmail.com>, Jonas Bonn <jonas@southpole.se>,
- linux-c6x-dev@linux-c6x.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
- Russell King <linux@armlinux.org.uk>, Mike Rapoport <rppt@linux.ibm.com>,
- Mark Salter <msalter@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- openrisc@lists.librecores.org, Greentime Hu <green.hu@gmail.com>,
- Stafford Horne <shorne@gmail.com>, Guan Xuetao <gxt@pku.edu.cn>,
- linux-arm-kernel@lists.infradead.org, Michal Simek <monstr@monstr.eu>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Masami Hiramatsu <mhiramat@kernel.org>,
+ "Steven Rostedt \(VMware\)" <rostedt@goodmis.org>,
+ linuxppc-dev@lists.ozlabs.org, stable@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Mike,
+4.19-stable review patch.  If anyone has any objections, please let me know.
 
-Thanks for trying to clean these up.
+------------------
 
-I think a few could be improved though ...
+From: Steven Rostedt (VMware) <rostedt@goodmis.org>
 
-Mike Rapoport <rppt@linux.ibm.com> writes:
-> diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
-> index 913bfca..fa884ad 100644
-> --- a/arch/powerpc/kernel/paca.c
-> +++ b/arch/powerpc/kernel/paca.c
-> @@ -42,17 +42,15 @@ static void *__init alloc_paca_data(unsigned long size, unsigned long align,
->  		nid = early_cpu_to_node(cpu);
->  	}
->  
-> -	pa = memblock_alloc_base_nid(size, align, limit, nid, MEMBLOCK_NONE);
-> -	if (!pa) {
-> -		pa = memblock_alloc_base(size, align, limit);
-> -		if (!pa)
-> -			panic("cannot allocate paca data");
-> -	}
-> +	ptr = memblock_alloc_try_nid_raw(size, align, MEMBLOCK_LOW_LIMIT,
-> +					 limit, nid);
-> +	if (!ptr)
-> +		panic("cannot allocate paca data");
-  
-The old code doesn't zero, but two of the three callers of
-alloc_paca_data() *do* zero the whole allocation, so I'd be happy if we
-did it in here instead.
+commit fe60522ec60082a1dd735691b82c64f65d4ad15e upstream.
 
-That would mean we could use memblock_alloc_try_nid() avoiding the need
-to panic() manually.
+The function_graph_enter() function does the work of calling the function
+graph hook function and the management of the shadow stack, simplifying the
+work done in the architecture dependent prepare_ftrace_return().
 
-> diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-> index 236c115..d11ee7f 100644
-> --- a/arch/powerpc/kernel/setup_64.c
-> +++ b/arch/powerpc/kernel/setup_64.c
-> @@ -634,19 +634,17 @@ __init u64 ppc64_bolted_size(void)
->  
->  static void *__init alloc_stack(unsigned long limit, int cpu)
->  {
-> -	unsigned long pa;
-> +	void *ptr;
->  
->  	BUILD_BUG_ON(STACK_INT_FRAME_SIZE % 16);
->  
-> -	pa = memblock_alloc_base_nid(THREAD_SIZE, THREAD_SIZE, limit,
-> -					early_cpu_to_node(cpu), MEMBLOCK_NONE);
-> -	if (!pa) {
-> -		pa = memblock_alloc_base(THREAD_SIZE, THREAD_SIZE, limit);
-> -		if (!pa)
-> -			panic("cannot allocate stacks");
-> -	}
-> +	ptr = memblock_alloc_try_nid_raw(THREAD_SIZE, THREAD_SIZE,
-> +					 MEMBLOCK_LOW_LIMIT, limit,
-> +					 early_cpu_to_node(cpu));
-> +	if (!ptr)
-> +		panic("cannot allocate stacks");
+Have powerpc use the new code, and remove the shadow stack management as well as
+having to set up the trace structure.
+
+This is needed to prepare for a fix of a design bug on how the curr_ret_stack
+is used.
+
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: stable@kernel.org
+Fixes: 03274a3ffb449 ("tracing/fgraph: Adjust fgraph depth before calling trace return callback")
+Reviewed-by: Masami Hiramatsu <mhiramat@kernel.org>
+Signed-off-by: Steven Rostedt (VMware) <rostedt@goodmis.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+
+---
+ arch/powerpc/kernel/trace/ftrace.c |   15 ++-------------
+ 1 file changed, 2 insertions(+), 13 deletions(-)
+
+--- a/arch/powerpc/kernel/trace/ftrace.c
++++ b/arch/powerpc/kernel/trace/ftrace.c
+@@ -697,7 +697,6 @@ int ftrace_disable_ftrace_graph_caller(v
+  */
+ unsigned long prepare_ftrace_return(unsigned long parent, unsigned long ip)
+ {
+-	struct ftrace_graph_ent trace;
+ 	unsigned long return_hooker;
  
-Similarly here, several of the callers zero the stack, and I'd rather
-all of them did.
+ 	if (unlikely(ftrace_graph_is_dead()))
+@@ -708,18 +707,8 @@ unsigned long prepare_ftrace_return(unsi
+ 
+ 	return_hooker = ppc_function_entry(return_to_handler);
+ 
+-	trace.func = ip;
+-	trace.depth = current->curr_ret_stack + 1;
+-
+-	/* Only trace if the calling function expects to */
+-	if (!ftrace_graph_entry(&trace))
+-		goto out;
+-
+-	if (ftrace_push_return_trace(parent, ip, &trace.depth, 0,
+-				     NULL) == -EBUSY)
+-		goto out;
+-
+-	parent = return_hooker;
++	if (!function_graph_enter(parent, ip, 0, NULL))
++		parent = return_hooker;
+ out:
+ 	return parent;
+ }
 
-So again we could use memblock_alloc_try_nid() here and remove the
-memset()s from emergency_stack_init().
 
-> diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
-> index 9311560..415a1eb0 100644
-> --- a/arch/powerpc/mm/pgtable-radix.c
-> +++ b/arch/powerpc/mm/pgtable-radix.c
-> @@ -51,24 +51,18 @@ static int native_register_process_table(unsigned long base, unsigned long pg_sz
->  static __ref void *early_alloc_pgtable(unsigned long size, int nid,
->  			unsigned long region_start, unsigned long region_end)
->  {
-> -	unsigned long pa = 0;
-> +	phys_addr_t min_addr = MEMBLOCK_LOW_LIMIT;
-> +	phys_addr_t max_addr = MEMBLOCK_ALLOC_ANYWHERE;
->  	void *pt;
->  
-> -	if (region_start || region_end) /* has region hint */
-> -		pa = memblock_alloc_range(size, size, region_start, region_end,
-> -						MEMBLOCK_NONE);
-> -	else if (nid != -1) /* has node hint */
-> -		pa = memblock_alloc_base_nid(size, size,
-> -						MEMBLOCK_ALLOC_ANYWHERE,
-> -						nid, MEMBLOCK_NONE);
-> +	if (region_start)
-> +		min_addr = region_start;
-> +	if (region_end)
-> +		max_addr = region_end;
->  
-> -	if (!pa)
-> -		pa = memblock_alloc_base(size, size, MEMBLOCK_ALLOC_ANYWHERE);
-> -
-> -	BUG_ON(!pa);
-> -
-> -	pt = __va(pa);
-> -	memset(pt, 0, size);
-> +	pt = memblock_alloc_try_nid_nopanic(size, size, min_addr, max_addr,
-> +					    nid);
-> +	BUG_ON(!pt);
-
-I don't think there's any reason to BUG_ON() here rather than letting
-memblock() call panic() for us. So this could also be memblock_alloc_try_nid().
-
-> diff --git a/arch/powerpc/platforms/pasemi/iommu.c b/arch/powerpc/platforms/pasemi/iommu.c
-> index f297152..f62930f 100644
-> --- a/arch/powerpc/platforms/pasemi/iommu.c
-> +++ b/arch/powerpc/platforms/pasemi/iommu.c
-> @@ -208,7 +208,9 @@ static int __init iob_init(struct device_node *dn)
->  	pr_debug(" -> %s\n", __func__);
->  
->  	/* For 2G space, 8x64 pages (2^21 bytes) is max total l2 size */
-> -	iob_l2_base = (u32 *)__va(memblock_alloc_base(1UL<<21, 1UL<<21, 0x80000000));
-> +	iob_l2_base = memblock_alloc_try_nid_raw(1UL << 21, 1UL << 21,
-> +					MEMBLOCK_LOW_LIMIT, 0x80000000,
-> +					NUMA_NO_NODE);
-
-This isn't equivalent is it?
-
-memblock_alloc_base() panics on failure but memblock_alloc_try_nid_raw()
-doesn't?
-
-Same comment for the other locations that do that conversion.
-
-cheers
