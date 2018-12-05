@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 591EEC04EB9
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 12:54:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6152BC04EB9
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 12:59:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D599E2081B
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 12:54:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D599E2081B
+	by mail.kernel.org (Postfix) with ESMTPS id AE7A32081B
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 12:59:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AE7A32081B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 438zGR5741zDqM1
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 23:54:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 438zMW19mYzDqjW
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 23:59:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=redhat.com
@@ -29,27 +29,27 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 438yk22gDgzDqBy
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Dec 2018 23:30:18 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 438yk63709zDqnV
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Dec 2018 23:30:22 +1100 (AEDT)
 Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.phx2.redhat.com
  [10.5.11.12])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id EE2E430001EF;
- Wed,  5 Dec 2018 12:30:15 +0000 (UTC)
+ by mx1.redhat.com (Postfix) with ESMTPS id B69453078A25;
+ Wed,  5 Dec 2018 12:30:19 +0000 (UTC)
 Received: from t460s.redhat.com (ovpn-117-65.ams2.redhat.com [10.36.117.65])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 658DB60E3F;
- Wed,  5 Dec 2018 12:30:12 +0000 (UTC)
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 3C16E183D2;
+ Wed,  5 Dec 2018 12:30:16 +0000 (UTC)
 From: David Hildenbrand <david@redhat.com>
 To: linux-mm@kvack.org
-Subject: [PATCH RFC 6/7] arm64: kexec: no need to ClearPageReserved()
-Date: Wed,  5 Dec 2018 13:28:50 +0100
-Message-Id: <20181205122851.5891-7-david@redhat.com>
+Subject: [PATCH RFC 7/7] mm: better document PG_reserved
+Date: Wed,  5 Dec 2018 13:28:51 +0100
+Message-Id: <20181205122851.5891-8-david@redhat.com>
 In-Reply-To: <20181205122851.5891-1-david@redhat.com>
 References: <20181205122851.5891-1-david@redhat.com>
 X-Scanned-By: MIMEDefang 2.79 on 10.5.11.12
 X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.46]); Wed, 05 Dec 2018 12:30:16 +0000 (UTC)
+ (mx1.redhat.com [10.5.110.43]); Wed, 05 Dec 2018 12:30:20 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,49 +61,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, linux-s390@vger.kernel.org,
- David Hildenbrand <david@redhat.com>, Marc Zyngier <marc.zyngier@arm.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Bhupesh Sharma <bhsharma@redhat.com>, Will Deacon <will.deacon@arm.com>,
- linux-kernel@vger.kernel.org, Matthew Wilcox <willy@infradead.org>,
- Michal Hocko <mhocko@kernel.org>, linux-m68k@lists.linux-m68k.org,
- Dave Kleikamp <dave.kleikamp@oracle.com>, linux-mediatek@lists.infradead.org,
- James Morse <james.morse@arm.com>, linux-riscv@lists.infradead.org,
+Cc: linux-s390@vger.kernel.org, Michal Hocko <mhocko@suse.com>,
+ Miles Chen <miles.chen@mediatek.com>, David Hildenbrand <david@redhat.com>,
+ Alexander Duyck <alexander.h.duyck@linux.intel.com>,
+ Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org,
+ Matthew Wilcox <willy@infradead.org>,
+ Pavel Tatashin <pasha.tatashin@oracle.com>, yi.z.zhang@linux.intel.com,
+ linux-m68k@lists.linux-m68k.org, linux-mediatek@lists.infradead.org,
+ Anthony Yznaga <anthony.yznaga@oracle.com>,
+ Stephen Rothwell <sfr@canb.auug.org.au>, linux-riscv@lists.infradead.org,
  linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
  linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This will already be done by free_reserved_page().
+The usage of PG_reserved and how PG_reserved pages are to be treated is
+burried deep down in different parts of the kernel. Let's shine some light
+onto these details by documenting (most?) current users and expected
+behavior.
 
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Will Deacon <will.deacon@arm.com>
-Cc: Bhupesh Sharma <bhsharma@redhat.com>
-Cc: James Morse <james.morse@arm.com>
-Cc: Marc Zyngier <marc.zyngier@arm.com>
-Cc: Dave Kleikamp <dave.kleikamp@oracle.com>
-Cc: Mark Rutland <mark.rutland@arm.com>
+I don't see a reason why we have to document "Some of them might not even
+exist". If there is a user, we should document it. E.g. for balloon
+drivers we now use PG_offline to indicate that a page might currently
+not be backed by memory in the hypervisor. And that is independent from
+PG_reserved.
+
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Michal Hocko <mhocko@kernel.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Pavel Tatashin <pasha.tatashin@oracle.com>
+Cc: Michal Hocko <mhocko@suse.com>
+Cc: Alexander Duyck <alexander.h.duyck@linux.intel.com>
 Cc: Matthew Wilcox <willy@infradead.org>
+Cc: Anthony Yznaga <anthony.yznaga@oracle.com>
+Cc: Miles Chen <miles.chen@mediatek.com>
+Cc: yi.z.zhang@linux.intel.com
+Cc: Dan Williams <dan.j.williams@intel.com>
 Signed-off-by: David Hildenbrand <david@redhat.com>
 ---
- arch/arm64/kernel/machine_kexec.c | 1 -
- 1 file changed, 1 deletion(-)
+ include/linux/page-flags.h | 18 ++++++++++++++++--
+ 1 file changed, 16 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm64/kernel/machine_kexec.c b/arch/arm64/kernel/machine_kexec.c
-index 922add8adb74..0ef4ea73aa54 100644
---- a/arch/arm64/kernel/machine_kexec.c
-+++ b/arch/arm64/kernel/machine_kexec.c
-@@ -353,7 +353,6 @@ void crash_free_reserved_phys_range(unsigned long begin, unsigned long end)
- 
- 	for (addr = begin; addr < end; addr += PAGE_SIZE) {
- 		page = phys_to_page(addr);
--		ClearPageReserved(page);
- 		free_reserved_page(page);
- 	}
- }
+diff --git a/include/linux/page-flags.h b/include/linux/page-flags.h
+index 68b8495e2fbc..112526f5ba61 100644
+--- a/include/linux/page-flags.h
++++ b/include/linux/page-flags.h
+@@ -17,8 +17,22 @@
+ /*
+  * Various page->flags bits:
+  *
+- * PG_reserved is set for special pages, which can never be swapped out. Some
+- * of them might not even exist...
++ * PG_reserved is set for special pages. The "struct page" of such a page
++ * should in general not be touched (e.g. set dirty) except by their owner.
++ * Pages marked as PG_reserved include:
++ * - Kernel image (including vDSO) and similar (e.g. BIOS, initrd)
++ * - Pages allocated early during boot (bootmem, memblock)
++ * - Zero pages
++ * - Pages that have been associated with a zone but are not available for
++ *   the page allocator (e.g. excluded via online_page_callback())
++ * - Pages to exclude from the hibernation image (e.g. loaded kexec images)
++ * - MMIO pages (communicate with a device, special caching strategy needed)
++ * - MCA pages on ia64 (pages with memory errors)
++ * - Device memory (e.g. PMEM, DAX, HMM)
++ * Some architectures don't allow to ioremap pages that are not marked
++ * PG_reserved (as they might be in use by somebody else who does not respect
++ * the caching strategy). Consequently, PG_reserved for a page mapped into
++ * user space can indicate the zero page, the vDSO, MMIO pages or device memory.
+  *
+  * The PG_private bitflag is set on pagecache pages if they contain filesystem
+  * specific data (which is normally at page->private). It can be used by
 -- 
 2.17.2
 
