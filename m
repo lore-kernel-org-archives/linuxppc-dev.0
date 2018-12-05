@@ -6,62 +6,62 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E9E3C04EB9
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 20:19:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CAEE2C04EB9
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 20:21:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8C484208E7
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 20:19:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8C484208E7
+	by mail.kernel.org (Postfix) with ESMTPS id 50A8920989
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 20:21:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 50A8920989
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43996t5JLtzDqWB
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 07:19:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43999G2g9PzDqJg
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 07:21:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.167.194; helo=mail-oi1-f194.google.com;
+ (client-ip=209.85.210.65; helo=mail-ot1-f65.google.com;
  envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mail-oi1-f194.google.com (mail-oi1-f194.google.com
- [209.85.167.194])
+Received: from mail-ot1-f65.google.com (mail-ot1-f65.google.com
+ [209.85.210.65])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4398W51R5YzDqyG
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Dec 2018 06:51:29 +1100 (AEDT)
-Received: by mail-oi1-f194.google.com with SMTP id t204so18617009oie.7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Dec 2018 11:51:29 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4398W63DZSzDqRt
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Dec 2018 06:51:30 +1100 (AEDT)
+Received: by mail-ot1-f65.google.com with SMTP id a11so19778838otr.10
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Dec 2018 11:51:30 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
  :content-transfer-encoding;
- bh=QICrhOBU8T2PisormMUNd01epFjj+h80GHQhRmRoAOU=;
- b=TkTWEBnW2rky4bEbtVOMT/5ssIOS/HRTeFVJ6pofoqDN2CQRJTyBv0o5gvY7oJc5GE
- 7/W7KsXrVgZ3cz1367oiXXMRuy6JskLvL8pEvOqor2gRgwaWCcTDImJ0m2V+Vmjg+hLN
- t4iFoAPNEGBGof8+rks7LHB8T74FTZsiMSG4l/xXVLCKTdTuc/zk4gKYGuQ31kkiafmJ
- I570mQd2MkOc/ZjJktBXOYZbaPalMGngn3kt3OZA0k+ntXb15fy7ttr4Fg9VU5/CAhEH
- bFkx8w5B9TV+72FLvrlXrbGj7sr5ISzv0MuHAy+Kr43nJMjNp6NxaHt4mdMLnRLK+zc9
- MYIw==
-X-Gm-Message-State: AA+aEWbmEp3XKajekw8sq7u9YmpqI0mUQZz5fCku0laa+U/L4CuR3zIe
- p1xao8NALgfyGfEuHB1dvg==
-X-Google-Smtp-Source: AFSGD/VvPbw6yCp5lGcRidYRNt3VMLROhi3MK5kDSyoSQ5nVB1au0UQ5ntp9WmNVOn4bqxa2AnqauQ==
-X-Received: by 2002:aca:4282:: with SMTP id
- p124mr15080611oia.327.1544039487106; 
- Wed, 05 Dec 2018 11:51:27 -0800 (PST)
+ bh=ThQ7RT0snc2eXhKBllFE/yVobWH1ZvOxkwfOj6s8tE8=;
+ b=o4tCqymkhD7YMjwIFiPfWYVwCcIjM8VGmF0ck6SGtdO0VhxskWqffVAXg9UPKGduwO
+ OM5ioXtGl2PvTCkAlODTic9/LE+aDoMLGFsYNw8+AxYg3Ispf8JVSGTnlcthfRa7PrV+
+ b87UnQGZvn2VbrmZHk9UC8C6R3WMmYnm6LEH0A31DY4Ph0VxHAbxGt3Juk9DlrItyb3C
+ n6AlkN8Jk/22cUmE1bWOHxjk2bZ6mxI3Gk97Nu2rxsL+Ma3F52UUwDVQ3Np4e2KMgO/U
+ Lqbs0SgxOIdReD+15gmhwNHx7dAyKST88z5IVJdF6x8ED2ibU5q34KSbN5YeMXXZTW+v
+ 1KYw==
+X-Gm-Message-State: AA+aEWYNiUpXQgMUM/3FNFwvXvEPl8knBvdflVkXcVZsl69wVDhhDVca
+ 5TWV8ugy6tbaNou1IIcGTQ==
+X-Google-Smtp-Source: AFSGD/WpzdhTG/04KfFGOZWhkfcbxlLfUQArESSierVbdwONFtNtAjGMAkfqvVdxhqqgqIJsIfGAnQ==
+X-Received: by 2002:a05:6830:13c2:: with SMTP id
+ e2mr15266877otq.15.1544039488275; 
+ Wed, 05 Dec 2018 11:51:28 -0800 (PST)
 Received: from xps15.herring.priv (24-155-109-49.dyn.grandenetworks.net.
  [24.155.109.49])
- by smtp.googlemail.com with ESMTPSA id k13sm25759879otj.19.2018.12.05.11.51.26
+ by smtp.googlemail.com with ESMTPSA id k13sm25759879otj.19.2018.12.05.11.51.27
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Wed, 05 Dec 2018 11:51:26 -0800 (PST)
+ Wed, 05 Dec 2018 11:51:27 -0800 (PST)
 From: Rob Herring <robh@kernel.org>
 To: devicetree@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH] ALSA: soundbus: Remove direct OF name and type accesses
-Date: Wed,  5 Dec 2018 13:50:48 -0600
-Message-Id: <20181205195050.4759-32-robh@kernel.org>
+Subject: [PATCH] ASoC: Use of_node_name_eq for node name comparisons
+Date: Wed,  5 Dec 2018 13:50:49 -0600
+Message-Id: <20181205195050.4759-33-robh@kernel.org>
 X-Mailer: git-send-email 2.19.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -76,104 +76,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Johannes Berg <johannes@sipsolutions.net>, linuxppc-dev@lists.ozlabs.org,
- Takashi Iwai <tiwai@suse.com>, alsa-devel@alsa-project.org,
- Jaroslav Kysela <perex@perex.cz>
+Cc: alsa-devel@alsa-project.org, Timur Tabi <timur@kernel.org>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Takashi Iwai <tiwai@suse.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>,
+ Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>,
+ Fabio Estevam <fabio.estevam@nxp.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Convert soundbus uevent and sysfs OF node name and device type usage to
-use printf specifier and helper functions instead of directly accessing
-the name and type pointers. This will allow the eventual removal of the
-pointers.
+Convert string compares of DT node names to use of_node_name_eq helper
+instead. This removes direct access to the node name pointer.
 
-Cc: Johannes Berg <johannes@sipsolutions.net>
+For the FSL ASoC card, the full node names appear to be "ssi", "esai",
+and "sai", so there's not any reason to use strstr and of_node_name_eq
+can be used instead.
+
+Cc: Timur Tabi <timur@kernel.org>
+Cc: Nicolin Chen <nicoleotsuka@gmail.com>
+Cc: Xiubo Li <Xiubo.Lee@gmail.com>
+Cc: Fabio Estevam <fabio.estevam@nxp.com>
+Cc: Liam Girdwood <lgirdwood@gmail.com>
+Cc: Mark Brown <broonie@kernel.org>
 Cc: Jaroslav Kysela <perex@perex.cz>
 Cc: Takashi Iwai <tiwai@suse.com>
-Cc: linuxppc-dev@lists.ozlabs.org
 Cc: alsa-devel@alsa-project.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Signed-off-by: Rob Herring <robh@kernel.org>
 ---
- sound/aoa/soundbus/core.c  |  2 +-
- sound/aoa/soundbus/sysfs.c | 34 +++++++++++++++++++++-------------
- 2 files changed, 22 insertions(+), 14 deletions(-)
+ sound/soc/fsl/fsl-asoc-card.c       | 6 +++---
+ sound/soc/generic/simple-scu-card.c | 2 +-
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/sound/aoa/soundbus/core.c b/sound/aoa/soundbus/core.c
-index f3076a3f7f2f..065d3a55725e 100644
---- a/sound/aoa/soundbus/core.c
-+++ b/sound/aoa/soundbus/core.c
-@@ -74,7 +74,7 @@ static int soundbus_uevent(struct device *dev, struct kobj_uevent_env *env)
- 	of = &soundbus_dev->ofdev;
- 
- 	/* stuff we want to pass to /sbin/hotplug */
--	retval = add_uevent_var(env, "OF_NAME=%s", of->dev.of_node->name);
-+	retval = add_uevent_var(env, "OF_NAME=%pOFn", of->dev.of_node);
- 	if (retval)
- 		return retval;
- 
-diff --git a/sound/aoa/soundbus/sysfs.c b/sound/aoa/soundbus/sysfs.c
-index 81da020bddef..a2d55e15afbb 100644
---- a/sound/aoa/soundbus/sysfs.c
-+++ b/sound/aoa/soundbus/sysfs.c
-@@ -1,18 +1,10 @@
- // SPDX-License-Identifier: GPL-2.0
- #include <linux/kernel.h>
-+#include <linux/of.h>
- #include <linux/stat.h>
- /* FIX UP */
- #include "soundbus.h"
- 
--#define soundbus_config_of_attr(field, format_string)			\
--static ssize_t								\
--field##_show (struct device *dev, struct device_attribute *attr,	\
--              char *buf)						\
--{									\
--	struct soundbus_dev *mdev = to_soundbus_device (dev);		\
--	return sprintf (buf, format_string, mdev->ofdev.dev.of_node->field); \
--}
--
- static ssize_t modalias_show(struct device *dev, struct device_attribute *attr,
- 			     char *buf)
- {
-@@ -25,17 +17,33 @@ static ssize_t modalias_show(struct device *dev, struct device_attribute *attr,
- 		strcat(buf, "\n");
- 		length = strlen(buf);
- 	} else {
--		length = sprintf(buf, "of:N%sT%s\n",
--				 of->dev.of_node->name, of->dev.of_node->type);
-+		length = sprintf(buf, "of:N%pOFn%c%s\n",
-+				 of->dev.of_node, 'T',
-+                                 of_node_get_device_type(of->dev.of_node));
+diff --git a/sound/soc/fsl/fsl-asoc-card.c b/sound/soc/fsl/fsl-asoc-card.c
+index 44433b20435c..81f2fe2c6d23 100644
+--- a/sound/soc/fsl/fsl-asoc-card.c
++++ b/sound/soc/fsl/fsl-asoc-card.c
+@@ -571,17 +571,17 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
  	}
  
- 	return length;
- }
- static DEVICE_ATTR_RO(modalias);
+ 	/* Common settings for corresponding Freescale CPU DAI driver */
+-	if (strstr(cpu_np->name, "ssi")) {
++	if (of_node_name_eq(cpu_np, "ssi")) {
+ 		/* Only SSI needs to configure AUDMUX */
+ 		ret = fsl_asoc_card_audmux_init(np, priv);
+ 		if (ret) {
+ 			dev_err(&pdev->dev, "failed to init audmux\n");
+ 			goto asrc_fail;
+ 		}
+-	} else if (strstr(cpu_np->name, "esai")) {
++	} else if (of_node_name_eq(cpu_np, "esai")) {
+ 		priv->cpu_priv.sysclk_id[1] = ESAI_HCKT_EXTAL;
+ 		priv->cpu_priv.sysclk_id[0] = ESAI_HCKR_EXTAL;
+-	} else if (strstr(cpu_np->name, "sai")) {
++	} else if (of_node_name_eq(cpu_np, "sai")) {
+ 		priv->cpu_priv.sysclk_id[1] = FSL_SAI_CLK_MAST1;
+ 		priv->cpu_priv.sysclk_id[0] = FSL_SAI_CLK_MAST1;
+ 	}
+diff --git a/sound/soc/generic/simple-scu-card.c b/sound/soc/generic/simple-scu-card.c
+index 85b46f0eae0f..e9a1acffcf5b 100644
+--- a/sound/soc/generic/simple-scu-card.c
++++ b/sound/soc/generic/simple-scu-card.c
+@@ -216,7 +216,7 @@ static int asoc_simple_card_parse_of(struct simple_card_data *priv)
+ 	i = 0;
+ 	for_each_child_of_node(node, np) {
+ 		is_fe = false;
+-		if (strcmp(np->name, PREFIX "cpu") == 0)
++		if (of_node_name_eq(np, PREFIX "cpu"))
+ 			is_fe = true;
  
--soundbus_config_of_attr (name, "%s\n");
-+static ssize_t name_show(struct device *dev,
-+			 struct device_attribute *attr, char *buf)
-+{
-+	struct soundbus_dev *sdev = to_soundbus_device(dev);
-+	struct platform_device *of = &sdev->ofdev;
-+
-+	return sprintf(buf, "%pOFn\n", of->dev.of_node);
-+}
- static DEVICE_ATTR_RO(name);
--soundbus_config_of_attr (type, "%s\n");
-+
-+static ssize_t type_show(struct device *dev,
-+			 struct device_attribute *attr, char *buf)
-+{
-+	struct soundbus_dev *sdev = to_soundbus_device(dev);
-+	struct platform_device *of = &sdev->ofdev;
-+
-+	return sprintf(buf, "%s\n", of_node_get_device_type(of->dev.of_node));
-+}
- static DEVICE_ATTR_RO(type);
- 
- struct attribute *soundbus_dev_attrs[] = {
+ 		ret = asoc_simple_card_dai_link_of(np, priv, daifmt, i, is_fe);
 -- 
 2.19.1
 
