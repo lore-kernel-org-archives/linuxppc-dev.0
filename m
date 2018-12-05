@@ -2,54 +2,51 @@ Return-Path: <SRS0=GwW7=OO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6152BC04EB9
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 12:59:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B1E1C04EB9
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 13:03:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AE7A32081B
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 12:59:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AE7A32081B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 147F62081B
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 13:03:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 147F62081B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 438zMW19mYzDqjW
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 23:59:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com; envelope-from=david@redhat.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 438zSL0t1PzDqM6
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 00:03:30 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 438yk63709zDqnV
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Dec 2018 23:30:22 +1100 (AEDT)
-Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.phx2.redhat.com
- [10.5.11.12])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 438ytp3rvvzDqQn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Dec 2018 23:37:54 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id B69453078A25;
- Wed,  5 Dec 2018 12:30:19 +0000 (UTC)
-Received: from t460s.redhat.com (ovpn-117-65.ams2.redhat.com [10.36.117.65])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 3C16E183D2;
- Wed,  5 Dec 2018 12:30:16 +0000 (UTC)
-From: David Hildenbrand <david@redhat.com>
-To: linux-mm@kvack.org
-Subject: [PATCH RFC 7/7] mm: better document PG_reserved
-Date: Wed,  5 Dec 2018 13:28:51 +0100
-Message-Id: <20181205122851.5891-8-david@redhat.com>
-In-Reply-To: <20181205122851.5891-1-david@redhat.com>
-References: <20181205122851.5891-1-david@redhat.com>
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.12
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.43]); Wed, 05 Dec 2018 12:30:20 +0000 (UTC)
+ by ozlabs.org (Postfix) with ESMTPSA id 438ytd6ssyz9s3C;
+ Wed,  5 Dec 2018 23:37:45 +1100 (AEDT)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Mike Rapoport <rppt@linux.ibm.com>
+Subject: Re: [PATCH v2 1/6] powerpc: prefer memblock APIs returning virtual
+ address
+In-Reply-To: <20181204171327.GL26700@rapoport-lnx>
+References: <1543852035-26634-1-git-send-email-rppt@linux.ibm.com>
+ <1543852035-26634-2-git-send-email-rppt@linux.ibm.com>
+ <87woophasy.fsf@concordia.ellerman.id.au>
+ <20181204171327.GL26700@rapoport-lnx>
+Date: Wed, 05 Dec 2018 23:37:44 +1100
+Message-ID: <87mupkkv3b.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,76 +58,88 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390@vger.kernel.org, Michal Hocko <mhocko@suse.com>,
- Miles Chen <miles.chen@mediatek.com>, David Hildenbrand <david@redhat.com>,
- Alexander Duyck <alexander.h.duyck@linux.intel.com>,
- Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org,
- Matthew Wilcox <willy@infradead.org>,
- Pavel Tatashin <pasha.tatashin@oracle.com>, yi.z.zhang@linux.intel.com,
- linux-m68k@lists.linux-m68k.org, linux-mediatek@lists.infradead.org,
- Anthony Yznaga <anthony.yznaga@oracle.com>,
- Stephen Rothwell <sfr@canb.auug.org.au>, linux-riscv@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
- linux-arm-kernel@lists.infradead.org
+Cc: Michal Hocko <mhocko@suse.com>, linux-sh@vger.kernel.org,
+ linux-mm@kvack.org, Rich Felker <dalias@libc.org>,
+ Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
+ Vincent Chen <deanbo422@gmail.com>, Jonas Bonn <jonas@southpole.se>,
+ linux-c6x-dev@linux-c6x.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Russell King <linux@armlinux.org.uk>, Mark Salter <msalter@redhat.com>,
+ Arnd Bergmann <arnd@arndb.de>,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ openrisc@lists.librecores.org, Greentime Hu <green.hu@gmail.com>,
+ Stafford Horne <shorne@gmail.com>, Guan Xuetao <gxt@pku.edu.cn>,
+ linux-arm-kernel@lists.infradead.org, Michal Simek <monstr@monstr.eu>,
+ linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The usage of PG_reserved and how PG_reserved pages are to be treated is
-burried deep down in different parts of the kernel. Let's shine some light
-onto these details by documenting (most?) current users and expected
-behavior.
+Mike Rapoport <rppt@linux.ibm.com> writes:
+> On Tue, Dec 04, 2018 at 08:59:41PM +1100, Michael Ellerman wrote:
+>> Hi Mike,
+>> 
+>> Thanks for trying to clean these up.
+>> 
+>> I think a few could be improved though ...
+>> 
+>> Mike Rapoport <rppt@linux.ibm.com> writes:
+>> > diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
+>> > index 913bfca..fa884ad 100644
+>> > --- a/arch/powerpc/kernel/paca.c
+>> > +++ b/arch/powerpc/kernel/paca.c
+>> > @@ -42,17 +42,15 @@ static void *__init alloc_paca_data(unsigned long size, unsigned long align,
+>> >  		nid = early_cpu_to_node(cpu);
+>> >  	}
+>> >  
+>> > -	pa = memblock_alloc_base_nid(size, align, limit, nid, MEMBLOCK_NONE);
+>> > -	if (!pa) {
+>> > -		pa = memblock_alloc_base(size, align, limit);
+>> > -		if (!pa)
+>> > -			panic("cannot allocate paca data");
+>> > -	}
+>> > +	ptr = memblock_alloc_try_nid_raw(size, align, MEMBLOCK_LOW_LIMIT,
+>> > +					 limit, nid);
+>> > +	if (!ptr)
+>> > +		panic("cannot allocate paca data");
+>>   
+>> The old code doesn't zero, but two of the three callers of
+>> alloc_paca_data() *do* zero the whole allocation, so I'd be happy if we
+>> did it in here instead.
+>
+> I looked at the callers and couldn't tell if zeroing memory in
+> init_lppaca() would be ok.
+> I'll remove the _raw here.
+  
+Thanks.
 
-I don't see a reason why we have to document "Some of them might not even
-exist". If there is a user, we should document it. E.g. for balloon
-drivers we now use PG_offline to indicate that a page might currently
-not be backed by memory in the hypervisor. And that is independent from
-PG_reserved.
+>> That would mean we could use memblock_alloc_try_nid() avoiding the need
+>> to panic() manually.
+>
+> Actual, my plan was to remove panic() from all memblock_alloc* and make all
+> callers to check the returned value.
+> I believe it's cleaner and also allows more meaningful panic messages. Not
+> mentioning the reduction of memblock code.
 
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Pavel Tatashin <pasha.tatashin@oracle.com>
-Cc: Michal Hocko <mhocko@suse.com>
-Cc: Alexander Duyck <alexander.h.duyck@linux.intel.com>
-Cc: Matthew Wilcox <willy@infradead.org>
-Cc: Anthony Yznaga <anthony.yznaga@oracle.com>
-Cc: Miles Chen <miles.chen@mediatek.com>
-Cc: yi.z.zhang@linux.intel.com
-Cc: Dan Williams <dan.j.williams@intel.com>
-Signed-off-by: David Hildenbrand <david@redhat.com>
----
- include/linux/page-flags.h | 18 ++++++++++++++++--
- 1 file changed, 16 insertions(+), 2 deletions(-)
+Hmm, not sure.
 
-diff --git a/include/linux/page-flags.h b/include/linux/page-flags.h
-index 68b8495e2fbc..112526f5ba61 100644
---- a/include/linux/page-flags.h
-+++ b/include/linux/page-flags.h
-@@ -17,8 +17,22 @@
- /*
-  * Various page->flags bits:
-  *
-- * PG_reserved is set for special pages, which can never be swapped out. Some
-- * of them might not even exist...
-+ * PG_reserved is set for special pages. The "struct page" of such a page
-+ * should in general not be touched (e.g. set dirty) except by their owner.
-+ * Pages marked as PG_reserved include:
-+ * - Kernel image (including vDSO) and similar (e.g. BIOS, initrd)
-+ * - Pages allocated early during boot (bootmem, memblock)
-+ * - Zero pages
-+ * - Pages that have been associated with a zone but are not available for
-+ *   the page allocator (e.g. excluded via online_page_callback())
-+ * - Pages to exclude from the hibernation image (e.g. loaded kexec images)
-+ * - MMIO pages (communicate with a device, special caching strategy needed)
-+ * - MCA pages on ia64 (pages with memory errors)
-+ * - Device memory (e.g. PMEM, DAX, HMM)
-+ * Some architectures don't allow to ioremap pages that are not marked
-+ * PG_reserved (as they might be in use by somebody else who does not respect
-+ * the caching strategy). Consequently, PG_reserved for a page mapped into
-+ * user space can indicate the zero page, the vDSO, MMIO pages or device memory.
-  *
-  * The PG_private bitflag is set on pagecache pages if they contain filesystem
-  * specific data (which is normally at page->private). It can be used by
--- 
-2.17.2
+I see ~200 calls to the panicking functions, that seems like a lot of
+work to change all those.
 
+And I think I disagree on the "more meaningful panic message". This is a
+perfect example, compare:
+
+	panic("cannot allocate paca data");
+to:
+	panic("%s: Failed to allocate %llu bytes align=0x%llx nid=%d from=%pa max_addr=%pa\n",
+	      __func__, (u64)size, (u64)align, nid, &min_addr, &max_addr);
+
+The former is basically useless, whereas the second might at least give
+you a hint as to *why* the allocation failed.
+
+I know it's kind of odd for a function to panic() rather than return an
+error, but memblock is kind of special because it's so early in boot.
+Most of these allocations have to succeed to get the system up and
+running.
+
+cheers
