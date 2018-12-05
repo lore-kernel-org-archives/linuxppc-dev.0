@@ -2,63 +2,138 @@ Return-Path: <SRS0=GwW7=OO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B1C7C04EB9
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 05:17:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A900DC04EBF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 05:49:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6F91220672
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 05:17:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9279B206B7
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 05:49:55 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="HGm5bbMd"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6F91220672
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="YRhblQs3"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9279B206B7
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 438n6S2z7fzDqjQ
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 16:17:20 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+	by lists.ozlabs.org (Postfix) with ESMTP id 438nr11dGrzDqmQ
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 16:49:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="HGm5bbMd";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="YRhblQs3";
 	dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
+ (client-ip=2607:f8b0:4864:20::441; helo=mail-pf1-x441.google.com;
+ envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=ozlabs.ru
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
+ header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="YRhblQs3"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
+ [IPv6:2607:f8b0:4864:20::441])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 438n395tjczDqVV
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Dec 2018 16:14:29 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=gibson.dropbear.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.b="HGm5bbMd"; dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1007)
- id 438n394RbFz9s9G; Wed,  5 Dec 2018 16:14:29 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1543986869;
- bh=LOwMoJqmyAM79yRNIhoyDmbuQjbhyVfakijCXC6/rEA=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=HGm5bbMdi5GrEt7HoghTX+YP5n1iMRJYqCGldeXWkoVsqskmCjhx7F9/HqkG+7OKG
- 35yM+g7yr7aiLG0HI6ldPy1pgkbop5aZ0H8AxMAJYrzl8kRjmpOwqfLnRb2PmbhxSy
- Spxb3QjD56Q2AnSCndgfsTgqTJq14Id0VwiYSMbw=
-Date: Wed, 5 Dec 2018 16:14:25 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 438nn26K8mzDqQT
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Dec 2018 16:47:16 +1100 (AEDT)
+Received: by mail-pf1-x441.google.com with SMTP id 64so9438224pfr.9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Dec 2018 21:47:16 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
+ h=subject:to:cc:references:from:openpgp:autocrypt:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=3HltufgIVAQOI0fDYSDOHS/2hTFJk2swoIRo6B+DMpI=;
+ b=YRhblQs3XuXIJT9OxCmy8G6sJ9TNBmWHSL0EkaYGv0U6qq14OSRRIjY2Cq+y4L0GWg
+ piP2BuAa4s6EUv/7kRCoeGBTNUOFDLQrgEznkXrDDFuIST4lUdH5kALpWk2xyL+E5SpC
+ bhShvpT0Mkyzmuu3q6ABAHcIFeq8edI4+8R4uAJHUK5ftm55rOBL3NiF9Gw7hArruB/w
+ YXtYAsiM+AQXUcg5Tb+u+Zu93cpOYnM8ai2sGyOGvKGRZvnaUiFKlsh/aLawof61tvu2
+ 7n6LZkqAMz81x5a82bvKGPMIKctaK6escJ6CMfK1odfe2eZNjN25WAJqfvV3e7MwzgAv
+ M9jA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:subject:to:cc:references:from:openpgp:autocrypt
+ :message-id:date:user-agent:mime-version:in-reply-to
+ :content-language:content-transfer-encoding;
+ bh=3HltufgIVAQOI0fDYSDOHS/2hTFJk2swoIRo6B+DMpI=;
+ b=LxGrR46cBlv+y6WU7Q+AUng+OiOvvNbiRaVs68OoiNxO8favwdUbJ0SB5Fp2JTAv+p
+ +ikGkagSCxThqD7+VXYPgBgZtVFGy1jaM+QHoFWRhCh1ka4x8QKc7E4D63HZPnHQapmR
+ ltM9YTFDAjEr8lTuk9KFJIf8JAzKDGfenftpFIVD0nl4gF1g6hyI0bKZSLoJ4f89iwFV
+ bELi8jZ10M7EfXoJWgkdpI12cRK2R9L9AbMDWNAxD1XX9MW4GFdWRY7IoE1wW+x2rHi7
+ UXA2SaIIdM6H9aBQqTx/RvP2Kz9qmtadiO8YgvzW9O3vuCFoVWYNuzmqNxAFZcMfIjHx
+ P+tQ==
+X-Gm-Message-State: AA+aEWar7J1YEljooLDvc4+Z1h9eyoJnC2bEOn6psSeuLlmnWwH1bdHO
+ 8zhYuLa2LUKvxYvgb39LoBjbXQ==
+X-Google-Smtp-Source: AFSGD/WfSy5t7aWADHiCpDRkX2rT33mcC7Ry+cwlkW23pK4cXsb+fB1Qa0veAu7ExVkuD/ZMakLtkQ==
+X-Received: by 2002:a63:5a57:: with SMTP id k23mr19184374pgm.5.1543988834331; 
+ Tue, 04 Dec 2018 21:47:14 -0800 (PST)
+Received: from [10.61.2.175] ([122.99.82.10])
+ by smtp.gmail.com with ESMTPSA id a90sm34613167pfj.109.2018.12.04.21.47.08
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Tue, 04 Dec 2018 21:47:13 -0800 (PST)
 Subject: Re: [PATCH kernel v4 04/19] powerpc/powernv: Move npu struct from
  pnv_phb to pci_controller
-Message-ID: <20181205051424.GB768@umbus.fritz.box>
+To: David Gibson <david@gibson.dropbear.id.au>
 References: <20181123055304.25116-1-aik@ozlabs.ru>
- <20181123055304.25116-5-aik@ozlabs.ru>
+ <20181123055304.25116-5-aik@ozlabs.ru> <20181205051424.GB768@umbus.fritz.box>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Openpgp: preference=signencrypt
+Autocrypt: addr=aik@ozlabs.ru; keydata=
+ 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
+Message-ID: <e10bc868-154e-285c-05e9-906b7027dfaf@ozlabs.ru>
+Date: Wed, 5 Dec 2018 16:47:07 +1100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.3.2
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="pvezYHf7grwyp3Bc"
-Content-Disposition: inline
-In-Reply-To: <20181123055304.25116-5-aik@ozlabs.ru>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <20181205051424.GB768@umbus.fritz.box>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,291 +152,149 @@ Cc: Alex Williamson <alex.williamson@redhat.com>,
  kvm-ppc@vger.kernel.org, Piotr Jaroszynski <pjaroszynski@nvidia.com>,
  Oliver O'Halloran <oohall@gmail.com>,
  Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Leonardo Augusto =?iso-8859-1?Q?Guimar=E3es?= Garcia <lagarcia@br.ibm.com>,
+ =?UTF-8?Q?Leonardo_Augusto_Guimar=c3=a3es_Garcia?= <lagarcia@br.ibm.com>,
  Reza Arbab <arbab@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---pvezYHf7grwyp3Bc
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Fri, Nov 23, 2018 at 04:52:49PM +1100, Alexey Kardashevskiy wrote:
-> The powernv PCI code stores NPU data in the pnv_phb struct. The latter
-> is referenced by pci_controller::private_data. We are going to have NPU2
-> support in the pseries platform as well but it does not store any
-> private_data in in the pci_controller struct; and even if it did,
-> it would be a different data structure.
->=20
-> This makes npu a pointer and stores it one level higher in
-> the pci_controller struct.
->=20
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
-> Changes:
-> v4:
-> * changed subj from "powerpc/powernv: Detach npu struct from pnv_phb"
-> * got rid of global list of npus - store them now in pci_controller
-> * got rid of npdev_to_npu() helper
-> ---
->  arch/powerpc/include/asm/pci-bridge.h    |  1 +
->  arch/powerpc/platforms/powernv/pci.h     | 16 -----
->  arch/powerpc/platforms/powernv/npu-dma.c | 81 ++++++++++++++++++------
->  3 files changed, 64 insertions(+), 34 deletions(-)
->=20
-> diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include=
-/asm/pci-bridge.h
-> index 94d4490..aee4fcc 100644
-> --- a/arch/powerpc/include/asm/pci-bridge.h
-> +++ b/arch/powerpc/include/asm/pci-bridge.h
-> @@ -129,6 +129,7 @@ struct pci_controller {
->  #endif	/* CONFIG_PPC64 */
-> =20
->  	void *private_data;
-> +	struct npu *npu;
->  };
-> =20
->  /* These are used for config access before all the PCI probing
-> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platform=
-s/powernv/pci.h
-> index 2131373..f2d50974 100644
-> --- a/arch/powerpc/platforms/powernv/pci.h
-> +++ b/arch/powerpc/platforms/powernv/pci.h
-> @@ -8,9 +8,6 @@
-> =20
->  struct pci_dn;
-> =20
-> -/* Maximum possible number of ATSD MMIO registers per NPU */
-> -#define NV_NMMU_ATSD_REGS 8
-> -
->  enum pnv_phb_type {
->  	PNV_PHB_IODA1		=3D 0,
->  	PNV_PHB_IODA2		=3D 1,
-> @@ -176,19 +173,6 @@ struct pnv_phb {
->  	unsigned int		diag_data_size;
->  	u8			*diag_data;
-> =20
-> -	/* Nvlink2 data */
-> -	struct npu {
-> -		int index;
-> -		__be64 *mmio_atsd_regs[NV_NMMU_ATSD_REGS];
-> -		unsigned int mmio_atsd_count;
-> -
-> -		/* Bitmask for MMIO register usage */
-> -		unsigned long mmio_atsd_usage;
-> -
-> -		/* Do we need to explicitly flush the nest mmu? */
-> -		bool nmmu_flush;
-> -	} npu;
-> -
->  	int p2p_target_count;
->  };
-> =20
-> diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/plat=
-forms/powernv/npu-dma.c
-> index 91d488f..7dd5c0e5 100644
-> --- a/arch/powerpc/platforms/powernv/npu-dma.c
-> +++ b/arch/powerpc/platforms/powernv/npu-dma.c
-> @@ -327,6 +327,25 @@ struct pnv_ioda_pe *pnv_pci_npu_setup_iommu(struct p=
-nv_ioda_pe *npe)
->  	return gpe;
->  }
-> =20
-> +/*
-> + * NPU2 ATS
-> + */
-> +/* Maximum possible number of ATSD MMIO registers per NPU */
-> +#define NV_NMMU_ATSD_REGS 8
-> +
-> +/* An NPU descriptor, valid for POWER9 only */
-> +struct npu {
-> +	int index;
-> +	__be64 *mmio_atsd_regs[NV_NMMU_ATSD_REGS];
-> +	unsigned int mmio_atsd_count;
-> +
-> +	/* Bitmask for MMIO register usage */
-> +	unsigned long mmio_atsd_usage;
-> +
-> +	/* Do we need to explicitly flush the nest mmu? */
-> +	bool nmmu_flush;
-> +};
-> +
->  /* Maximum number of nvlinks per npu */
->  #define NV_MAX_LINKS 6
-> =20
-> @@ -478,7 +497,6 @@ static void acquire_atsd_reg(struct npu_context *npu_=
-context,
->  	int i, j;
->  	struct npu *npu;
->  	struct pci_dev *npdev;
-> -	struct pnv_phb *nphb;
-> =20
->  	for (i =3D 0; i <=3D max_npu2_index; i++) {
->  		mmio_atsd_reg[i].reg =3D -1;
-> @@ -493,8 +511,10 @@ static void acquire_atsd_reg(struct npu_context *npu=
-_context,
->  			if (!npdev)
->  				continue;
-> =20
-> -			nphb =3D pci_bus_to_host(npdev->bus)->private_data;
-> -			npu =3D &nphb->npu;
-> +			npu =3D pci_bus_to_host(npdev->bus)->npu;
-> +			if (!npu)
-> +				continue;
+On 05/12/2018 16:14, David Gibson wrote:
+> On Fri, Nov 23, 2018 at 04:52:49PM +1100, Alexey Kardashevskiy wrote:
+>> The powernv PCI code stores NPU data in the pnv_phb struct. The latter
+>> is referenced by pci_controller::private_data. We are going to have NPU2
+>> support in the pseries platform as well but it does not store any
+>> private_data in in the pci_controller struct; and even if it did,
+>> it would be a different data structure.
+>>
+>> This makes npu a pointer and stores it one level higher in
+>> the pci_controller struct.
+>>
+>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>> ---
+>> Changes:
+>> v4:
+>> * changed subj from "powerpc/powernv: Detach npu struct from pnv_phb"
+>> * got rid of global list of npus - store them now in pci_controller
+>> * got rid of npdev_to_npu() helper
+>> ---
+>>  arch/powerpc/include/asm/pci-bridge.h    |  1 +
+>>  arch/powerpc/platforms/powernv/pci.h     | 16 -----
+>>  arch/powerpc/platforms/powernv/npu-dma.c | 81 ++++++++++++++++++------
+>>  3 files changed, 64 insertions(+), 34 deletions(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+>> index 94d4490..aee4fcc 100644
+>> --- a/arch/powerpc/include/asm/pci-bridge.h
+>> +++ b/arch/powerpc/include/asm/pci-bridge.h
+>> @@ -129,6 +129,7 @@ struct pci_controller {
+>>  #endif	/* CONFIG_PPC64 */
+>>  
+>>  	void *private_data;
+>> +	struct npu *npu;
+>>  };
+>>  
+>>  /* These are used for config access before all the PCI probing
+>> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+>> index 2131373..f2d50974 100644
+>> --- a/arch/powerpc/platforms/powernv/pci.h
+>> +++ b/arch/powerpc/platforms/powernv/pci.h
+>> @@ -8,9 +8,6 @@
+>>  
+>>  struct pci_dn;
+>>  
+>> -/* Maximum possible number of ATSD MMIO registers per NPU */
+>> -#define NV_NMMU_ATSD_REGS 8
+>> -
+>>  enum pnv_phb_type {
+>>  	PNV_PHB_IODA1		= 0,
+>>  	PNV_PHB_IODA2		= 1,
+>> @@ -176,19 +173,6 @@ struct pnv_phb {
+>>  	unsigned int		diag_data_size;
+>>  	u8			*diag_data;
+>>  
+>> -	/* Nvlink2 data */
+>> -	struct npu {
+>> -		int index;
+>> -		__be64 *mmio_atsd_regs[NV_NMMU_ATSD_REGS];
+>> -		unsigned int mmio_atsd_count;
+>> -
+>> -		/* Bitmask for MMIO register usage */
+>> -		unsigned long mmio_atsd_usage;
+>> -
+>> -		/* Do we need to explicitly flush the nest mmu? */
+>> -		bool nmmu_flush;
+>> -	} npu;
+>> -
+>>  	int p2p_target_count;
+>>  };
+>>  
+>> diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
+>> index 91d488f..7dd5c0e5 100644
+>> --- a/arch/powerpc/platforms/powernv/npu-dma.c
+>> +++ b/arch/powerpc/platforms/powernv/npu-dma.c
+>> @@ -327,6 +327,25 @@ struct pnv_ioda_pe *pnv_pci_npu_setup_iommu(struct pnv_ioda_pe *npe)
+>>  	return gpe;
+>>  }
+>>  
+>> +/*
+>> + * NPU2 ATS
+>> + */
+>> +/* Maximum possible number of ATSD MMIO registers per NPU */
+>> +#define NV_NMMU_ATSD_REGS 8
+>> +
+>> +/* An NPU descriptor, valid for POWER9 only */
+>> +struct npu {
+>> +	int index;
+>> +	__be64 *mmio_atsd_regs[NV_NMMU_ATSD_REGS];
+>> +	unsigned int mmio_atsd_count;
+>> +
+>> +	/* Bitmask for MMIO register usage */
+>> +	unsigned long mmio_atsd_usage;
+>> +
+>> +	/* Do we need to explicitly flush the nest mmu? */
+>> +	bool nmmu_flush;
+>> +};
+>> +
+>>  /* Maximum number of nvlinks per npu */
+>>  #define NV_MAX_LINKS 6
+>>  
+>> @@ -478,7 +497,6 @@ static void acquire_atsd_reg(struct npu_context *npu_context,
+>>  	int i, j;
+>>  	struct npu *npu;
+>>  	struct pci_dev *npdev;
+>> -	struct pnv_phb *nphb;
+>>  
+>>  	for (i = 0; i <= max_npu2_index; i++) {
+>>  		mmio_atsd_reg[i].reg = -1;
+>> @@ -493,8 +511,10 @@ static void acquire_atsd_reg(struct npu_context *npu_context,
+>>  			if (!npdev)
+>>  				continue;
+>>  
+>> -			nphb = pci_bus_to_host(npdev->bus)->private_data;
+>> -			npu = &nphb->npu;
+>> +			npu = pci_bus_to_host(npdev->bus)->npu;
+>> +			if (!npu)
+>> +				continue;
+> 
+> This patch changes a bunch of places that used to unconditionally
+> locate an NPU now have a failure path.
+> 
+> Given that this used to always have an NPU, doesn't that mean that if
+> the NPU is not present something has already gone wrong, and we should
+> WARN_ON() or something?
 
-This patch changes a bunch of places that used to unconditionally
-locate an NPU now have a failure path.
 
-Given that this used to always have an NPU, doesn't that mean that if
-the NPU is not present something has already gone wrong, and we should
-WARN_ON() or something?
 
->  			mmio_atsd_reg[i].npu =3D npu;
->  			mmio_atsd_reg[i].reg =3D get_mmio_atsd_reg(npu);
->  			while (mmio_atsd_reg[i].reg < 0) {
-> @@ -662,6 +682,7 @@ struct npu_context *pnv_npu2_init_context(struct pci_=
-dev *gpdev,
->  	struct pnv_phb *nphb;
->  	struct npu *npu;
->  	struct npu_context *npu_context;
-> +	struct pci_controller *hose;
-> =20
->  	/*
->  	 * At present we don't support GPUs connected to multiple NPUs and I'm
-> @@ -689,8 +710,11 @@ struct npu_context *pnv_npu2_init_context(struct pci=
-_dev *gpdev,
->  		return ERR_PTR(-EINVAL);
->  	}
-> =20
-> -	nphb =3D pci_bus_to_host(npdev->bus)->private_data;
-> -	npu =3D &nphb->npu;
-> +	hose =3D pci_bus_to_host(npdev->bus);
-> +	nphb =3D hose->private_data;
-> +	npu =3D hose->npu;
-> +	if (!npu)
-> +		return ERR_PTR(-ENODEV);
-> =20
->  	/*
->  	 * Setup the NPU context table for a particular GPU. These need to be
-> @@ -764,7 +788,7 @@ struct npu_context *pnv_npu2_init_context(struct pci_=
-dev *gpdev,
->  	 */
->  	WRITE_ONCE(npu_context->npdev[npu->index][nvlink_index], npdev);
-> =20
-> -	if (!nphb->npu.nmmu_flush) {
-> +	if (!npu->nmmu_flush) {
->  		/*
->  		 * If we're not explicitly flushing ourselves we need to mark
->  		 * the thread for global flushes
-> @@ -802,6 +826,7 @@ void pnv_npu2_destroy_context(struct npu_context *npu=
-_context,
->  	struct pci_dev *npdev =3D pnv_pci_get_npu_dev(gpdev, 0);
->  	struct device_node *nvlink_dn;
->  	u32 nvlink_index;
-> +	struct pci_controller *hose;
-> =20
->  	if (WARN_ON(!npdev))
->  		return;
-> @@ -809,8 +834,11 @@ void pnv_npu2_destroy_context(struct npu_context *np=
-u_context,
->  	if (!firmware_has_feature(FW_FEATURE_OPAL))
->  		return;
-> =20
-> -	nphb =3D pci_bus_to_host(npdev->bus)->private_data;
-> -	npu =3D &nphb->npu;
-> +	hose =3D pci_bus_to_host(npdev->bus);
-> +	nphb =3D hose->private_data;
-> +	npu =3D hose->npu;
-> +	if (!npu)
-> +		return;
->  	nvlink_dn =3D of_parse_phandle(npdev->dev.of_node, "ibm,nvlink", 0);
->  	if (WARN_ON(of_property_read_u32(nvlink_dn, "ibm,npu-link-index",
->  							&nvlink_index)))
-> @@ -888,9 +916,15 @@ int pnv_npu2_init(struct pnv_phb *phb)
->  	struct pci_dev *gpdev;
->  	static int npu_index;
->  	uint64_t rc =3D 0;
-> +	struct pci_controller *hose =3D phb->hose;
-> +	struct npu *npu;
-> +	int ret;
-> =20
-> -	phb->npu.nmmu_flush =3D
-> -		of_property_read_bool(phb->hose->dn, "ibm,nmmu-flush");
-> +	npu =3D kzalloc(sizeof(*npu), GFP_KERNEL);
-> +	if (!npu)
-> +		return -ENOMEM;
-> +
-> +	npu->nmmu_flush =3D of_property_read_bool(hose->dn, "ibm,nmmu-flush");
->  	for_each_child_of_node(phb->hose->dn, dn) {
->  		gpdev =3D pnv_pci_get_gpu_dev(get_pci_dev(dn));
->  		if (gpdev) {
-> @@ -904,18 +938,29 @@ int pnv_npu2_init(struct pnv_phb *phb)
->  		}
->  	}
-> =20
-> -	for (i =3D 0; !of_property_read_u64_index(phb->hose->dn, "ibm,mmio-atsd=
-",
-> +	for (i =3D 0; !of_property_read_u64_index(hose->dn, "ibm,mmio-atsd",
->  							i, &mmio_atsd); i++)
-> -		phb->npu.mmio_atsd_regs[i] =3D ioremap(mmio_atsd, 32);
-> +		npu->mmio_atsd_regs[i] =3D ioremap(mmio_atsd, 32);
-> =20
-> -	pr_info("NPU%lld: Found %d MMIO ATSD registers", phb->opal_id, i);
-> -	phb->npu.mmio_atsd_count =3D i;
-> -	phb->npu.mmio_atsd_usage =3D 0;
-> +	pr_info("NPU%d: Found %d MMIO ATSD registers", hose->global_number, i);
-> +	npu->mmio_atsd_count =3D i;
-> +	npu->mmio_atsd_usage =3D 0;
->  	npu_index++;
-> -	if (WARN_ON(npu_index >=3D NV_MAX_NPUS))
-> -		return -ENOSPC;
-> +	if (WARN_ON(npu_index >=3D NV_MAX_NPUS)) {
-> +		ret =3D -ENOSPC;
-> +		goto fail_exit;
-> +	}
->  	max_npu2_index =3D npu_index;
-> -	phb->npu.index =3D npu_index;
-> +	npu->index =3D npu_index;
-> +	hose->npu =3D npu;
-> =20
->  	return 0;
-> +
-> +fail_exit:
-> +	for (i =3D 0; i < npu->mmio_atsd_count; ++i)
-> +		iounmap(npu->mmio_atsd_regs[i]);
-> +
-> +	kfree(npu);
-> +
-> +	return ret;
->  }
+That means this is a leftover since I dropped that npdev_to_npu helper
+which could help but there was no real value in it. I'll remove the
+check here in the next respin.
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+I'll probably add checks for npu!=NULL where we used to have
+firmware_has_feature(FW_FEATURE_OPAL) in 05/19.
 
---pvezYHf7grwyp3Bc
-Content-Type: application/pgp-signature; name="signature.asc"
 
------BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlwHXrAACgkQbDjKyiDZ
-s5L/lBAAkZqpyPllPwyCWKU3f73W3qfAI0bLi3m5qqvJS5LwQu1zZ/3W7l87GAxi
-wEx5/JjWpEllBansHSvPGGNXzljM3KOqVCJ+V47lEti2FppNIbR+9+xS3NG/mmJ5
-JYqDNXBFb6nDhJVstJyk9SoaHplc5BWfy8vfl5kZTLh8pQ6Knmw1Neiac7t45BZ7
-UkgbmBVQageN/D+YcnlnVc1pY4BXOW7sX6zMYguek9Jlpt6E9wlG2UrlDKX1FQbx
-MOOW9AVRgc2hoWuVfaXR+EvgXKp8QNIWQJ0v/wj69xAm04Ms5XQbpZ6bgIqfmata
-oRdme5DSPA7QmCPCAHsQlYVfR+bMdmtD3FUaW8bRQkketRotPkl0GkLyh+GkoTDv
-4ogLRk0k3LSvLWvzYvXDLGZRVVAyWWSdBkRCtncqIQKAvjmFFGq6pqE3FmevFHU2
-hi9EyuNt4PhO2XY/8sSGunK80QSLzxDkOfeCjli897EIxML5AsTH1eKhCXkbIFzV
-dRqg6JMRYsyZlzrmpZngqwsrru4c0Pgg1o2K50lpg8AjUGJmnWCAS8YN3FPbwkq6
-EmbhlEK/5ikkRyYPBxrFji8WidoeSE9lg3AxCMng82wvQAsD0KbZO5UL9+IxKbu1
-6AsMpSmmmuHIwNG/lStPvFKWWAjhOgPlFW/FLLX9A4skf5j38Zo=
-=avgm
------END PGP SIGNATURE-----
-
---pvezYHf7grwyp3Bc--
+-- 
+Alexey
