@@ -3,48 +3,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D2A6C04EB9
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 12:07:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 74969C04EBF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 12:10:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2204320659
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 12:07:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2204320659
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id D96D120659
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 12:10:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D96D120659
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lip6.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 438yCX49qGzDqmY
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 23:07:20 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 438y8m2LHBzDqkw
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Dec 2018 23:04:56 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 438yGc6dZbzDqnr
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 23:10:00 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lip6.fr
+Authentication-Results: lists.ozlabs.org;
+ spf=neutral (mailfrom) smtp.mailfrom=lip6.fr
+ (client-ip=192.134.164.83; helo=mail2-relais-roc.national.inria.fr;
+ envelope-from=julia.lawall@lip6.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=lip6.fr
+Received: from mail2-relais-roc.national.inria.fr
+ (mail2-relais-roc.national.inria.fr [192.134.164.83])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 438y8l2zV2z9s9h;
- Wed,  5 Dec 2018 23:04:55 +1100 (AEDT)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Julia Lawall <julia.lawall@lip6.fr>
-Subject: Re: [PATCH] powerpc/ipic: Fix a bounds check in ipic_set_priority()
-In-Reply-To: <alpine.DEB.2.21.1812050910030.2670@hadrien>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 438yCN2VW6zDqmh
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Dec 2018 23:07:11 +1100 (AEDT)
+X-IronPort-AV: E=Sophos;i="5.56,317,1539640800"; d="scan'208";a="358904275"
+Received: from vaio-julia.rsr.lip6.fr ([132.227.76.33])
+ by mail2-relais-roc.national.inria.fr with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 05 Dec 2018 13:06:42 +0100
+Date: Wed, 5 Dec 2018 13:06:37 +0100 (CET)
+From: Julia Lawall <julia.lawall@lip6.fr>
+X-X-Sender: jll@hadrien
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/ipic: Fix a bounds check in
+ ipic_set_priority()
+In-Reply-To: <87sgzckwm3.fsf@concordia.ellerman.id.au>
+Message-ID: <alpine.DEB.2.20.1812051305420.3726@hadrien>
 References: <20181203144834.ocxntjflfz2idxrb@kili.mountain>
  <87sgzchcw8.fsf@concordia.ellerman.id.au>
  <alpine.DEB.2.21.1812050910030.2670@hadrien>
-Date: Wed, 05 Dec 2018 23:04:52 +1100
-Message-ID: <87sgzckwm3.fsf@concordia.ellerman.id.au>
+ <87sgzckwm3.fsf@concordia.ellerman.id.au>
+User-Agent: Alpine 2.20 (DEB 67 2015-01-07)
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,48 +69,60 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Julia Lawall <julia.lawall@lip6.fr> writes:
-> On Wed, 5 Dec 2018, Michael Ellerman wrote:
+
+
+On Wed, 5 Dec 2018, Michael Ellerman wrote:
+
+> Julia Lawall <julia.lawall@lip6.fr> writes:
+> > On Wed, 5 Dec 2018, Michael Ellerman wrote:
+> >
+> >> Hi Dan,
+> >>
+> >> Thanks for the patch.
+> >>
+> >> Dan Carpenter <dan.carpenter@oracle.com> writes:
+> >> > The ipic_info[] array only has 95 elements so I have made the bounds
+> >> > check smaller to prevent a read overflow.  It was Smatch that found
+> >> > this issue:
+> >> >
+> >> >     arch/powerpc/sysdev/ipic.c:784 ipic_set_priority()
+> >> >     error: buffer overflow 'ipic_info' 95 <= 127
+> >> >
+> >> > Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+> >> > ---
+> >> > I wasn't able to find any callers of this code.  Maybe we removed the
+> >> > last one in commit b9f0f1bb2bca ("[POWERPC] Adapt ipic driver to new
+> >> > host_ops interface, add set_irq_type to set IRQ sense").  So perhaps we
+> >> > should just remove it.  I'm not really comfortable doing that myself,
+> >> > because I don't know the code well enough and can't build test
+> >> > it properly.
+> >>
+> >> Hah wow, last usage removed in 2006!
+> >>
+> >> I don't see any mention of it since then, so I'll remove it. If it
+> >> breaks something we can put it back.
+> >>
+> >> Can smatch help us find things like this that are defined non-static but
+> >> never used?
+> >
+> > I wrote a Coccinelle script for this, that just uses grep.  Of course the
+> > results need checking because uses can be constructed within macros using
+> > #.
 >
->> Hi Dan,
->>
->> Thanks for the patch.
->>
->> Dan Carpenter <dan.carpenter@oracle.com> writes:
->> > The ipic_info[] array only has 95 elements so I have made the bounds
->> > check smaller to prevent a read overflow.  It was Smatch that found
->> > this issue:
->> >
->> >     arch/powerpc/sysdev/ipic.c:784 ipic_set_priority()
->> >     error: buffer overflow 'ipic_info' 95 <= 127
->> >
->> > Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
->> > ---
->> > I wasn't able to find any callers of this code.  Maybe we removed the
->> > last one in commit b9f0f1bb2bca ("[POWERPC] Adapt ipic driver to new
->> > host_ops interface, add set_irq_type to set IRQ sense").  So perhaps we
->> > should just remove it.  I'm not really comfortable doing that myself,
->> > because I don't know the code well enough and can't build test
->> > it properly.
->>
->> Hah wow, last usage removed in 2006!
->>
->> I don't see any mention of it since then, so I'll remove it. If it
->> breaks something we can put it back.
->>
->> Can smatch help us find things like this that are defined non-static but
->> never used?
+> That would be cool. I can't immediately see it in scripts/coccinelle, is
+> it somewhere else?
+
+No, it needs improvement...  I'll try to do something with it soon.  I
+don't think it  is well suited to scrips/coccinelle, because it needs to
+know where the kernel tree is to do the grep.
+
+julia
+
 >
-> I wrote a Coccinelle script for this, that just uses grep.  Of course the
-> results need checking because uses can be constructed within macros using
-> #.
-
-That would be cool. I can't immediately see it in scripts/coccinelle, is
-it somewhere else?
-
-> Are things that are defined static but are never used useful to keep
-> around?
-
-No, but the compiler will usually tell us about them via -Wunused-function.
-
-cheers
+> > Are things that are defined static but are never used useful to keep
+> > around?
+>
+> No, but the compiler will usually tell us about them via -Wunused-function.
+>
+> cheers
+>
