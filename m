@@ -2,91 +2,94 @@ Return-Path: <SRS0=GwW7=OO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 81707C04EB8
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 02:09:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D182C04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 03:11:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3F8F22081C
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 02:09:21 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=baylibre-com.20150623.gappssmtp.com header.i=@baylibre-com.20150623.gappssmtp.com header.b="RzfK8pdF"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3F8F22081C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+	by mail.kernel.org (Postfix) with ESMTPS id A531620661
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 03:11:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A531620661
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 438hxV3yjTzDqYJ
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 13:09:18 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 438kKj28zBzDqY2
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 14:11:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=baylibre-com.20150623.gappssmtp.com header.i=@baylibre-com.20150623.gappssmtp.com header.b="RzfK8pdF";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=baylibre.com
- (client-ip=2607:f8b0:4864:20::443; helo=mail-pf1-x443.google.com;
- envelope-from=khilman@baylibre.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=baylibre.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=baylibre-com.20150623.gappssmtp.com
- header.i=@baylibre-com.20150623.gappssmtp.com header.b="RzfK8pdF"; 
- dkim-atps=neutral
-Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
- [IPv6:2607:f8b0:4864:20::443])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 438gR26WgjzDqYJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Dec 2018 12:01:15 +1100 (AEDT)
-Received: by mail-pf1-x443.google.com with SMTP id 64so9092702pfr.9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Dec 2018 17:01:15 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=baylibre-com.20150623.gappssmtp.com; s=20150623;
- h=from:to:cc:subject:in-reply-to:references:date:message-id
- :mime-version; bh=VJ4Xggx/M5TuF1a8xLngAs7VDg7Kg/bcesHAhVDONtY=;
- b=RzfK8pdFyLksbusmB8e3SXki8e8zPkdYAZia4U+Tfeln+wY1bkAbPX4QFzku5ofR0Z
- LRAeQft8ftzAr+g0BBTfKC2aWvMEk9rXQU/AYN9hwdmvi9R7rkggzbslm5r7fJzn5WKM
- 4T/iz9GtYAkwZY3iFlD3lgTgmkv+4RbZzRPfugFpSXAmsvtp5DW8t04rYfE5SECxCua6
- z3DldOYh4Y3mZgcUQDboEHQu7sXT0BwfCjk8M4frTt/A4/8Gjiy5j9SwA7A/VsnfVZSH
- Yzu5eMgUlqXbYXPc/jy6Er3rBV1nBNTE+AyuqJFRsOeDpwKNPOedbeVKxpoeAdoYcwyb
- 5zUw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
- :message-id:mime-version;
- bh=VJ4Xggx/M5TuF1a8xLngAs7VDg7Kg/bcesHAhVDONtY=;
- b=tFns1Se8nOqUz+0eyzB65TEl7eN3LGoOv6kTBZYob009wCkjcOex5v90b3/IgjdYFE
- F4plcMvN+FTu8Koc8o0TRwy1sBQ8OmjiwCe7pgR1x5ANnM/hXYj4+DAgL3J4Drp9rcvg
- ezC3dr85XLuzA/qMmKQ/2d91eB8s0457fz2s2o51Z5ZN1xxugramZgizvhW/moPnV7wj
- avy9Xiq4KTsQUj03WmnRm73GWFC2EfzarlENe1mp98rmCNoysIGUcSp+aT3wDiXv78gF
- ZqG4AFlTm9h/22K4uejeYMZ/UUYRnTdnjHD/CEt/SaHcWBLncWGVyfB99X+kgytjbD4+
- dcaA==
-X-Gm-Message-State: AA+aEWZVackkm6sqR9aP3SQi6LUNp/9UjoMFjDMxLxC6im4n89zrC7DQ
- U5gfLPruX6XfFSuxN1w872aGLw==
-X-Google-Smtp-Source: AFSGD/XucL5NZBkNTnqI9hosWyuzrKRTkweZcEuw0ajmO8GnUu/pgA/O0jxAl3OIKVAVP93NXQy9/w==
-X-Received: by 2002:a63:f658:: with SMTP id u24mr18745008pgj.267.1543971672921; 
- Tue, 04 Dec 2018 17:01:12 -0800 (PST)
-Received: from localhost (c-71-197-186-152.hsd1.wa.comcast.net.
- [71.197.186.152]) by smtp.googlemail.com with ESMTPSA id
- e128sm25594123pfe.67.2018.12.04.17.01.11
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Tue, 04 Dec 2018 17:01:12 -0800 (PST)
-From: Kevin Hilman <khilman@baylibre.com>
-To: Rob Herring <robh@kernel.org>, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 13/34] dt-bindings: arm: amlogic: Move 'amlogic,
- meson-gx-ao-secure' binding to its own file
-In-Reply-To: <20181203213223.16986-14-robh@kernel.org>
-References: <20181203213223.16986-1-robh@kernel.org>
- <20181203213223.16986-14-robh@kernel.org>
-Date: Tue, 04 Dec 2018 17:01:11 -0800
-Message-ID: <7hr2ewbxd4.fsf@baylibre.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 438kHG0XlDzDqWs
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Dec 2018 14:09:45 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wB534n2G040420
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Dec 2018 22:09:43 -0500
+Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2p65p1hxd1-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Dec 2018 22:09:43 -0500
+Received: from localhost
+ by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Wed, 5 Dec 2018 03:09:42 -0000
+Received: from b01cxnp23033.gho.pok.ibm.com (9.57.198.28)
+ by e11.ny.us.ibm.com (146.89.104.198) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 5 Dec 2018 03:09:38 -0000
+Received: from b01ledav004.gho.pok.ibm.com (b01ledav004.gho.pok.ibm.com
+ [9.57.199.109])
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wB539b9617760366
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Wed, 5 Dec 2018 03:09:37 GMT
+Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 23BF4112061;
+ Wed,  5 Dec 2018 03:09:37 +0000 (GMT)
+Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2F281112063;
+ Wed,  5 Dec 2018 03:09:34 +0000 (GMT)
+Received: from skywalker.ibmuc.com (unknown [9.85.73.253])
+ by b01ledav004.gho.pok.ibm.com (Postfix) with ESMTP;
+ Wed,  5 Dec 2018 03:09:33 +0000 (GMT)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: npiggin@gmail.com, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, akpm@linux-foundation.org
+Subject: [PATCH V3 0/5] NestMMU pte upgrade workaround for mprotect
+Date: Wed,  5 Dec 2018 08:39:26 +0530
+X-Mailer: git-send-email 2.19.2
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Mailman-Approved-At: Wed, 05 Dec 2018 13:06:59 +1100
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 18120503-2213-0000-0000-00000324B7F1
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00010173; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000270; SDB=6.01127133; UDB=6.00585424; IPR=6.00907266; 
+ MB=3.00024450; MTD=3.00000008; XFM=3.00000015; UTC=2018-12-05 03:09:40
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18120503-2214-0000-0000-00005C7D7B0F
+Message-Id: <20181205030931.12037-1-aneesh.kumar@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-12-04_10:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=364 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1812050027
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,36 +101,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Kumar Gala <kumar.gala@linaro.org>,
- arm@kernel.org, Sean Hudson <darknighte@darknighte.com>,
- Frank Rowand <frowand.list@gmail.com>, Grant Likely <grant.likely@arm.com>,
- Carlo Caione <carlo@caione.org>, linux-amlogic@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Rob Herring <robh@kernel.org> writes:
 
-> It is best practice to have 1 binding per file, so board level bindings
-> should be separate for various misc SoC bindings.
->
-> Cc: Mark Rutland <mark.rutland@arm.com>
-> Cc: Carlo Caione <carlo@caione.org>
-> Cc: Kevin Hilman <khilman@baylibre.com>
-> Cc: devicetree@vger.kernel.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: linux-amlogic@lists.infradead.org
-> Signed-off-by: Rob Herring <robh@kernel.org>
-> ---
->  .../devicetree/bindings/arm/amlogic.txt       | 29 -------------------
->  .../amlogic/amlogic,meson-gx-ao-secure.txt    | 28 ++++++++++++++++++
->  2 files changed, 28 insertions(+), 29 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/arm/amlogic/amlogic,meson-gx-ao-secure.txt
+We can upgrade pte access (R -> RW transition) via mprotect. We need
+to make sure we follow the recommended pte update sequence as outlined in
+commit bd5050e38aec ("powerpc/mm/radix: Change pte relax sequence to handle nest MMU hang")
+for such updates. This patch series do that.
 
-Acked-by: Kevin Hilman <khilman@baylibre.com>
+Changes from V2:
+* Update commit message for patch 4
+* use radix tlb flush routines directly.
 
-But this isn't really related to the schema series is it?  If you
-prefer, I can just queue this one separately via my tree.
+Changes from V1:
+* Restrict ths only for R->RW upgrade. We don't need to do this for Autonuma
+* Restrict this only for radix translation mode.
 
-Kevin
+
+Aneesh Kumar K.V (5):
+  mm: Update ptep_modify_prot_start/commit to take vm_area_struct as arg
+  mm: update ptep_modify_prot_commit to take old pte value as arg
+  arch/powerpc/mm: Nest MMU workaround for mprotect RW upgrade.
+  mm/hugetlb: Add prot_modify_start/commit sequence for hugetlb update
+  arch/powerpc/mm/hugetlb: NestMMU workaround for hugetlb mprotect RW
+    upgrade
+
+ arch/powerpc/include/asm/book3s/64/hugetlb.h | 12 ++++++++
+ arch/powerpc/include/asm/book3s/64/pgtable.h | 18 ++++++++++++
+ arch/powerpc/include/asm/book3s/64/radix.h   |  4 +++
+ arch/powerpc/mm/hugetlbpage-radix.c          | 17 ++++++++++++
+ arch/powerpc/mm/hugetlbpage.c                | 29 ++++++++++++++++++++
+ arch/powerpc/mm/pgtable-book3s64.c           | 27 ++++++++++++++++++
+ arch/powerpc/mm/pgtable-radix.c              | 18 ++++++++++++
+ arch/s390/include/asm/pgtable.h              |  5 ++--
+ arch/s390/mm/pgtable.c                       |  8 ++++--
+ arch/x86/include/asm/paravirt.h              |  9 ++++--
+ fs/proc/task_mmu.c                           |  8 ++++--
+ include/asm-generic/pgtable.h                | 10 +++----
+ include/linux/hugetlb.h                      | 20 ++++++++++++++
+ mm/hugetlb.c                                 |  8 ++++--
+ mm/memory.c                                  |  8 +++---
+ mm/mprotect.c                                |  6 ++--
+ 16 files changed, 181 insertions(+), 26 deletions(-)
+
+-- 
+2.19.2
+
