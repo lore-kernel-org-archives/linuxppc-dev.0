@@ -6,61 +6,61 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C663C04EB9
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 20:11:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F04DCC04EB9
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 20:16:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A5C91208E7
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 20:11:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A5C91208E7
+	by mail.kernel.org (Postfix) with ESMTPS id 779AF208E7
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 20:16:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 779AF208E7
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4398yZ3ZP1zDqLw
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 07:11:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43994H0mk4zDqdS
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 07:16:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.210.68; helo=mail-ot1-f68.google.com;
+ (client-ip=209.85.167.196; helo=mail-oi1-f196.google.com;
  envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mail-ot1-f68.google.com (mail-ot1-f68.google.com
- [209.85.210.68])
+Received: from mail-oi1-f196.google.com (mail-oi1-f196.google.com
+ [209.85.167.196])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4398Vz3XWfzDqRt
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Dec 2018 06:51:23 +1100 (AEDT)
-Received: by mail-ot1-f68.google.com with SMTP id s5so19788564oth.7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Dec 2018 11:51:23 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4398W26ZtdzDqyh
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Dec 2018 06:51:26 +1100 (AEDT)
+Received: by mail-oi1-f196.google.com with SMTP id v6so18645608oif.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Dec 2018 11:51:26 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
  :content-transfer-encoding;
- bh=sl5w3TVJ+wE3vPiBwLh392ShItBJGNo7vWury6PkKf8=;
- b=gMCgK0YWp9KJ68xJ2qQLvexnFL4aYzGztt3XnrG9WUYo9X3+dzSfhT4IZqcXu3fo1R
- H21lkqy6VU+m/K1HGcq/jk2XgwCnyY/4OsdAL5YyLNlSfM9x5W+f7hvRw96nB9S5mpee
- HvgrKHVbLgZwWY5q/655rox9uvZL85FRdCi46V2SrNpBXjnBxnDOWTrPlUtr6wTmdU9J
- 0pQL3dSkf7sQTwxWw2l/fZvjc0VYKUxBp1B63fVkcO/ocOxckyTU14IbIxi9hQJUIGnW
- 3Wxq5Ttiv1fFNT80lG27Z16iyMaSggWWRlYUirgD7zN4bFDytP9jSfIQCKnKvMVYCpfx
- 5Fbw==
-X-Gm-Message-State: AA+aEWZ4CXy+0OA7R8/hsSHlXchGw8zegmPH7dsDMLqbqtmEJ/hYO5iZ
- d6v2+jaz5V1gFnXEmecidw==
-X-Google-Smtp-Source: AFSGD/XJEhm0daE9rARarhesB/fYxVEV3Dg1SVhUur15fRBEWdS9UsL72dAXg1SJBm6p51u3D3E/NA==
-X-Received: by 2002:a9d:4201:: with SMTP id q1mr14968194ote.126.1544039481659; 
- Wed, 05 Dec 2018 11:51:21 -0800 (PST)
+ bh=qMVKbQQ2IkPQlwBHD7jq1zN5axWgXmiq34kQVyq7TYw=;
+ b=ceiAtuPq/U0QvyJpYaIKxorGzS6lSnbHsskmupF4T7+1ROU2cNXT07NwGeCkgop/kj
+ /HlDCLMSmtpBW+GWJuOCqR3ys9AQP9xvNefN5NpubjQCu88rI1Iukuk/sX5szcPc1oWF
+ 9l20RndF2hX7gQWINV1Ewe7l2mAY2RjZNdKrL11RfgzBc8KKkPLleEbSGJJEW5SuzsUi
+ ixVfqtz96lYxADUhTqw/hFPzDWiCJK7R+Q9WTxFHghjjRG+rJVWGVfDnul1l2KQMsJ5Z
+ gL2B3T2phXE7FVSlNi3qEiJXaBMm0hr/6O9eTNqXvPieKqNqV/5TKDh5K2a6wxwmmB4l
+ 9gnA==
+X-Gm-Message-State: AA+aEWato7M1ynIRYjy120jrvr8jWwMCgoQjE8KBYlhyu6JVQ8ZsWbA5
+ Mvb6z1fkeWiZWZ7vI5h5Wg==
+X-Google-Smtp-Source: AFSGD/WdroYapRHGtB0zgN2RHLmwEfNnpn29lkyPbXz+aqb5/YoJqwR5izMRaf1JxojWo4ircDNR9g==
+X-Received: by 2002:aca:b642:: with SMTP id g63mr14811654oif.195.1544039485103; 
+ Wed, 05 Dec 2018 11:51:25 -0800 (PST)
 Received: from xps15.herring.priv (24-155-109-49.dyn.grandenetworks.net.
  [24.155.109.49])
- by smtp.googlemail.com with ESMTPSA id k13sm25759879otj.19.2018.12.05.11.51.20
+ by smtp.googlemail.com with ESMTPSA id k13sm25759879otj.19.2018.12.05.11.51.24
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Wed, 05 Dec 2018 11:51:21 -0800 (PST)
+ Wed, 05 Dec 2018 11:51:24 -0800 (PST)
 From: Rob Herring <robh@kernel.org>
 To: devicetree@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH] tty: Use of_node_name_{eq,prefix} for node name comparisons
-Date: Wed,  5 Dec 2018 13:50:43 -0600
-Message-Id: <20181205195050.4759-27-robh@kernel.org>
+Subject: [PATCH] ALSA: Use of_node_name_eq for node name comparisons
+Date: Wed,  5 Dec 2018 13:50:46 -0600
+Message-Id: <20181205195050.4759-30-robh@kernel.org>
 X-Mailer: git-send-email 2.19.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -75,10 +75,9 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Paul Mackerras <paulus@samba.org>, linux-serial@vger.kernel.org,
- Jiri Slaby <jslaby@suse.com>, sparclinux@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: alsa-devel@alsa-project.org, Takashi Iwai <tiwai@suse.com>,
+ Jaroslav Kysela <perex@perex.cz>, Paul Mackerras <paulus@samba.org>,
+ Johannes Berg <johannes@sipsolutions.net>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
@@ -86,120 +85,99 @@ Sender: "Linuxppc-dev"
 Convert string compares of DT node names to use of_node_name_eq helper
 instead. This removes direct access to the node name pointer.
 
-For hvc, the code can also be simplified by using of_stdout pointer
-instead of searching again for the stdout node.
+A couple of open coded iterating thru the child node names are converted
+to use for_each_child_of_node() instead.
 
+Cc: Johannes Berg <johannes@sipsolutions.net>
+Cc: Jaroslav Kysela <perex@perex.cz>
+Cc: Takashi Iwai <tiwai@suse.com>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Jiri Slaby <jslaby@suse.com>
-Cc: "David S. Miller" <davem@davemloft.net>
 Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-serial@vger.kernel.org
-Cc: sparclinux@vger.kernel.org
+Cc: alsa-devel@alsa-project.org
 Signed-off-by: Rob Herring <robh@kernel.org>
 ---
- drivers/tty/hvc/hvc_opal.c      |  2 +-
- drivers/tty/hvc/hvc_vio.c       | 11 +----------
- drivers/tty/serial/pmac_zilog.c |  4 ++--
- drivers/tty/serial/suncore.c    |  8 ++++----
- drivers/tty/serial/sunsu.c      |  4 ++--
- 5 files changed, 10 insertions(+), 19 deletions(-)
+ sound/aoa/fabrics/layout.c       | 2 +-
+ sound/aoa/soundbus/i2sbus/core.c | 6 +++---
+ sound/ppc/pmac.c                 | 4 ++--
+ sound/ppc/tumbler.c              | 4 ++--
+ 4 files changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/tty/hvc/hvc_opal.c b/drivers/tty/hvc/hvc_opal.c
-index 77baf895108f..c66412566efc 100644
---- a/drivers/tty/hvc/hvc_opal.c
-+++ b/drivers/tty/hvc/hvc_opal.c
-@@ -353,7 +353,7 @@ void __init hvc_opal_init_early(void)
- 		if (!opal)
- 			return;
- 		for_each_child_of_node(opal, np) {
--			if (!strcmp(np->name, "serial")) {
-+			if (of_node_name_eq(np, "serial")) {
- 				stdout_node = np;
- 				break;
- 			}
-diff --git a/drivers/tty/hvc/hvc_vio.c b/drivers/tty/hvc/hvc_vio.c
-index 59eaa620bf13..6de6d4a1a221 100644
---- a/drivers/tty/hvc/hvc_vio.c
-+++ b/drivers/tty/hvc/hvc_vio.c
-@@ -371,20 +371,11 @@ device_initcall(hvc_vio_init); /* after drivers/tty/hvc/hvc_console.c */
- void __init hvc_vio_init_early(void)
+diff --git a/sound/aoa/fabrics/layout.c b/sound/aoa/fabrics/layout.c
+index 3a23fd032611..8797d42e2b76 100644
+--- a/sound/aoa/fabrics/layout.c
++++ b/sound/aoa/fabrics/layout.c
+@@ -776,7 +776,7 @@ static int check_codec(struct aoa_codec *codec,
+ 	struct codec_connection *cc;
+ 
+ 	/* if the codec has a 'codec' node, we require a reference */
+-	if (codec->node && (strcmp(codec->node->name, "codec") == 0)) {
++	if (of_node_name_eq(codec->node, "codec")) {
+ 		snprintf(propname, sizeof(propname),
+ 			 "platform-%s-codec-ref", codec->name);
+ 		ref = of_get_property(ldev->sound, propname, NULL);
+diff --git a/sound/aoa/soundbus/i2sbus/core.c b/sound/aoa/soundbus/i2sbus/core.c
+index bd7c5029fc59..c3f57a3fb1a5 100644
+--- a/sound/aoa/soundbus/i2sbus/core.c
++++ b/sound/aoa/soundbus/i2sbus/core.c
+@@ -154,7 +154,7 @@ static int i2sbus_add_dev(struct macio_dev *macio,
+ 			  struct device_node *np)
  {
- 	const __be32 *termno;
--	const char *name;
- 	const struct hv_ops *ops;
+ 	struct i2sbus_dev *dev;
+-	struct device_node *child = NULL, *sound = NULL;
++	struct device_node *child, *sound = NULL;
+ 	struct resource *r;
+ 	int i, layout = 0, rlen, ok = force;
+ 	char node_name[6];
+@@ -177,8 +177,8 @@ static int i2sbus_add_dev(struct macio_dev *macio,
+ 		return 0;
  
- 	/* find the boot console from /chosen/stdout */
--	if (!of_stdout)
--		return;
--	name = of_get_property(of_stdout, "name", NULL);
--	if (!name) {
--		printk(KERN_WARNING "stdout node missing 'name' property!\n");
--		return;
--	}
--
- 	/* Check if it's a virtual terminal */
--	if (strncmp(name, "vty", 3) != 0)
-+	if (!of_node_name_prefix(of_stdout, "vty"))
- 		return;
- 	termno = of_get_property(of_stdout, "reg", NULL);
- 	if (termno == NULL)
-diff --git a/drivers/tty/serial/pmac_zilog.c b/drivers/tty/serial/pmac_zilog.c
-index a9d40988e1c8..bcb5bf70534e 100644
---- a/drivers/tty/serial/pmac_zilog.c
-+++ b/drivers/tty/serial/pmac_zilog.c
-@@ -1648,9 +1648,9 @@ static int __init pmz_probe(void)
- 		 */
- 		node_a = node_b = NULL;
- 		for (np = NULL; (np = of_get_next_child(node_p, np)) != NULL;) {
--			if (strncmp(np->name, "ch-a", 4) == 0)
-+			if (of_node_name_prefix(np, "ch-a"))
- 				node_a = of_node_get(np);
--			else if (strncmp(np->name, "ch-b", 4) == 0)
-+			else if (of_node_name_prefix(np, "ch-b"))
- 				node_b = of_node_get(np);
+ 	i = 0;
+-	while ((child = of_get_next_child(np, child))) {
+-		if (strcmp(child->name, "sound") == 0) {
++	for_each_child_of_node(np, child) {
++		if (of_node_name_eq(child, "sound")) {
+ 			i++;
+ 			sound = child;
  		}
- 		if (!node_a && !node_b) {
-diff --git a/drivers/tty/serial/suncore.c b/drivers/tty/serial/suncore.c
-index 70a4ea4eaa6e..661e8b151366 100644
---- a/drivers/tty/serial/suncore.c
-+++ b/drivers/tty/serial/suncore.c
-@@ -89,14 +89,14 @@ void sunserial_console_termios(struct console *con, struct device_node *uart_dp)
- 	int baud, bits, stop, cflag;
- 	char parity;
+diff --git a/sound/ppc/pmac.c b/sound/ppc/pmac.c
+index 48dd44f8e914..d692e4070167 100644
+--- a/sound/ppc/pmac.c
++++ b/sound/ppc/pmac.c
+@@ -908,7 +908,7 @@ static void detect_byte_swap(struct snd_pmac *chip)
  
--	if (!strcmp(uart_dp->name, "rsc") ||
--	    !strcmp(uart_dp->name, "rsc-console") ||
--	    !strcmp(uart_dp->name, "rsc-control")) {
-+	if (of_node_name_eq(uart_dp, "rsc") ||
-+	    of_node_name_eq(uart_dp, "rsc-console") ||
-+	    of_node_name_eq(uart_dp, "rsc-control")) {
- 		mode = of_get_property(uart_dp,
- 				       "ssp-console-modes", NULL);
- 		if (!mode)
- 			mode = "115200,8,n,1,-";
--	} else if (!strcmp(uart_dp->name, "lom-console")) {
-+	} else if (of_node_name_eq(uart_dp, "lom-console")) {
- 		mode = "9600,8,n,1,-";
- 	} else {
- 		struct device_node *dp;
-diff --git a/drivers/tty/serial/sunsu.c b/drivers/tty/serial/sunsu.c
-index 6cf3e9b0728f..8ed60ccd45fb 100644
---- a/drivers/tty/serial/sunsu.c
-+++ b/drivers/tty/serial/sunsu.c
-@@ -1482,8 +1482,8 @@ static int su_probe(struct platform_device *op)
- 	up->port.ops = &sunsu_pops;
+ 	/* if seems that Keylargo can't byte-swap  */
+ 	for (mio = chip->node->parent; mio; mio = mio->parent) {
+-		if (strcmp(mio->name, "mac-io") == 0) {
++		if (of_node_name_eq(mio, "mac-io")) {
+ 			if (of_device_is_compatible(mio, "Keylargo"))
+ 				chip->can_byte_swap = 0;
+ 			break;
+@@ -1313,7 +1313,7 @@ int snd_pmac_new(struct snd_card *card, struct snd_pmac **chip_return)
+ 	} else if (chip->is_pbook_G3) {
+ 		struct device_node* mio;
+ 		for (mio = chip->node->parent; mio; mio = mio->parent) {
+-			if (strcmp(mio->name, "mac-io") == 0) {
++			if (of_node_name_eq(mio, "mac-io")) {
+ 				struct resource r;
+ 				if (of_address_to_resource(mio, 0, &r) == 0)
+ 					chip->macio_base =
+diff --git a/sound/ppc/tumbler.c b/sound/ppc/tumbler.c
+index 0779a2912237..6d7ffffcce95 100644
+--- a/sound/ppc/tumbler.c
++++ b/sound/ppc/tumbler.c
+@@ -1365,8 +1365,8 @@ int snd_pmac_tumbler_init(struct snd_pmac *chip)
+ 	mix->anded_reset = 0;
+ 	mix->reset_on_sleep = 1;
  
- 	ignore_line = false;
--	if (!strcmp(dp->name, "rsc-console") ||
--	    !strcmp(dp->name, "lom-console"))
-+	if (of_node_name_eq(dp, "rsc-console") ||
-+	    of_node_name_eq(dp, "lom-console"))
- 		ignore_line = true;
- 
- 	sunserial_console_match(SUNSU_CONSOLE(), dp,
+-	for (np = chip->node->child; np; np = np->sibling) {
+-		if (!strcmp(np->name, "sound")) {
++	for_each_child_of_node(chip->node, np) {
++		if (of_node_name_eq(np, "sound")) {
+ 			if (of_get_property(np, "has-anded-reset", NULL))
+ 				mix->anded_reset = 1;
+ 			if (of_get_property(np, "layout-id", NULL))
 -- 
 2.19.1
 
