@@ -2,138 +2,56 @@ Return-Path: <SRS0=GwW7=OO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A900DC04EBF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 05:49:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A3D4C04EB9
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 05:52:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9279B206B7
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 05:49:55 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="YRhblQs3"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9279B206B7
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	by mail.kernel.org (Postfix) with ESMTPS id AA32520672
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 05:52:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AA32520672
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 438nr11dGrzDqmQ
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 16:49:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="YRhblQs3";
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
- (client-ip=2607:f8b0:4864:20::441; helo=mail-pf1-x441.google.com;
- envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.ru
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
- header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="YRhblQs3"; 
- dkim-atps=neutral
-Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
- [IPv6:2607:f8b0:4864:20::441])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 438ntR3mQ0zDqn5
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 16:51:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 438nn26K8mzDqQT
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Dec 2018 16:47:16 +1100 (AEDT)
-Received: by mail-pf1-x441.google.com with SMTP id 64so9438224pfr.9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Dec 2018 21:47:16 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
- h=subject:to:cc:references:from:openpgp:autocrypt:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=3HltufgIVAQOI0fDYSDOHS/2hTFJk2swoIRo6B+DMpI=;
- b=YRhblQs3XuXIJT9OxCmy8G6sJ9TNBmWHSL0EkaYGv0U6qq14OSRRIjY2Cq+y4L0GWg
- piP2BuAa4s6EUv/7kRCoeGBTNUOFDLQrgEznkXrDDFuIST4lUdH5kALpWk2xyL+E5SpC
- bhShvpT0Mkyzmuu3q6ABAHcIFeq8edI4+8R4uAJHUK5ftm55rOBL3NiF9Gw7hArruB/w
- YXtYAsiM+AQXUcg5Tb+u+Zu93cpOYnM8ai2sGyOGvKGRZvnaUiFKlsh/aLawof61tvu2
- 7n6LZkqAMz81x5a82bvKGPMIKctaK6escJ6CMfK1odfe2eZNjN25WAJqfvV3e7MwzgAv
- M9jA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:openpgp:autocrypt
- :message-id:date:user-agent:mime-version:in-reply-to
- :content-language:content-transfer-encoding;
- bh=3HltufgIVAQOI0fDYSDOHS/2hTFJk2swoIRo6B+DMpI=;
- b=LxGrR46cBlv+y6WU7Q+AUng+OiOvvNbiRaVs68OoiNxO8favwdUbJ0SB5Fp2JTAv+p
- +ikGkagSCxThqD7+VXYPgBgZtVFGy1jaM+QHoFWRhCh1ka4x8QKc7E4D63HZPnHQapmR
- ltM9YTFDAjEr8lTuk9KFJIf8JAzKDGfenftpFIVD0nl4gF1g6hyI0bKZSLoJ4f89iwFV
- bELi8jZ10M7EfXoJWgkdpI12cRK2R9L9AbMDWNAxD1XX9MW4GFdWRY7IoE1wW+x2rHi7
- UXA2SaIIdM6H9aBQqTx/RvP2Kz9qmtadiO8YgvzW9O3vuCFoVWYNuzmqNxAFZcMfIjHx
- P+tQ==
-X-Gm-Message-State: AA+aEWar7J1YEljooLDvc4+Z1h9eyoJnC2bEOn6psSeuLlmnWwH1bdHO
- 8zhYuLa2LUKvxYvgb39LoBjbXQ==
-X-Google-Smtp-Source: AFSGD/WfSy5t7aWADHiCpDRkX2rT33mcC7Ry+cwlkW23pK4cXsb+fB1Qa0veAu7ExVkuD/ZMakLtkQ==
-X-Received: by 2002:a63:5a57:: with SMTP id k23mr19184374pgm.5.1543988834331; 
- Tue, 04 Dec 2018 21:47:14 -0800 (PST)
-Received: from [10.61.2.175] ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id a90sm34613167pfj.109.2018.12.04.21.47.08
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 04 Dec 2018 21:47:13 -0800 (PST)
-Subject: Re: [PATCH kernel v4 04/19] powerpc/powernv: Move npu struct from
- pnv_phb to pci_controller
-To: David Gibson <david@gibson.dropbear.id.au>
-References: <20181123055304.25116-1-aik@ozlabs.ru>
- <20181123055304.25116-5-aik@ozlabs.ru> <20181205051424.GB768@umbus.fritz.box>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Openpgp: preference=signencrypt
-Autocrypt: addr=aik@ozlabs.ru; keydata=
- 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
-Message-ID: <e10bc868-154e-285c-05e9-906b7027dfaf@ozlabs.ru>
-Date: Wed, 5 Dec 2018 16:47:07 +1100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.3.2
+ by lists.ozlabs.org (Postfix) with ESMTPS id 438nn547VVzDqQT
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Dec 2018 16:47:21 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPSA id 438nn40s4lz9sBh;
+ Wed,  5 Dec 2018 16:47:20 +1100 (AEDT)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Florian Fainelli <f.fainelli@gmail.com>, Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH] serial: 8250: Default SERIAL_OF_PLATFORM to SERIAL_8250
+In-Reply-To: <5a13dfac-adcb-b0b2-0114-90f9d1eabe8b@gmail.com>
+References: <20181115011125.GA32556@roeck-us.net>
+ <29E7A6C0-7829-4650-93C6-7220FECAA6EF@gmail.com>
+ <20181115053836.GA7606@roeck-us.net>
+ <27ed27d3-220e-963f-7d2c-64df10421580@gmail.com>
+ <20181115172535.GA26922@roeck-us.net>
+ <5937b814-ca5f-5786-93a1-3334df8c92dc@gmail.com>
+ <20181116011656.GA21813@roeck-us.net>
+ <ffff966c-d6ae-1487-5269-b86df0824d1c@gmail.com>
+ <20181119205050.GA1933@roeck-us.net> <20181123182023.GA10080@roeck-us.net>
+ <5a13dfac-adcb-b0b2-0114-90f9d1eabe8b@gmail.com>
+Date: Wed, 05 Dec 2018 16:47:17 +1100
+Message-ID: <87pnugh6e2.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20181205051424.GB768@umbus.fritz.box>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -145,156 +63,186 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alex Williamson <alex.williamson@redhat.com>,
- Jose Ricardo Ziviani <joserz@linux.ibm.com>,
- Sam Bobroff <sbobroff@linux.ibm.com>, Alistair Popple <alistair@popple.id.au>,
- Daniel Henrique Barboza <danielhb413@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc@vger.kernel.org, Piotr Jaroszynski <pjaroszynski@nvidia.com>,
- Oliver O'Halloran <oohall@gmail.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- =?UTF-8?Q?Leonardo_Augusto_Guimar=c3=a3es_Garcia?= <lagarcia@br.ibm.com>,
- Reza Arbab <arbab@linux.ibm.com>
+Cc: arnd@arndb.de, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linux-kernel@vger.kernel.org, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Hi Florian,
+
+Florian Fainelli <f.fainelli@gmail.com> writes:
+> +PPC folks
+>
+> On 11/23/18 10:20 AM, Guenter Roeck wrote:
+>> On Mon, Nov 19, 2018 at 12:50:50PM -0800, Guenter Roeck wrote:
+>>> On Mon, Nov 19, 2018 at 10:44:30AM -0800, Florian Fainelli wrote:
+>>>> On 11/15/18 5:16 PM, Guenter Roeck wrote:
+>>>>> On Thu, Nov 15, 2018 at 11:48:20AM -0800, Florian Fainelli wrote:
+>>>>>>
+>>>>>> OK, would you mind testing this below? It seems to me that 8250_of.c is
+>>>>>> incompatible with arch/powerpc/kernel/legacy_serial.c and that is what
+>>>>>> is causing the issue here.
+>>>>>>
+>>>>>> diff --git a/drivers/tty/serial/8250/Kconfig
+>>>>>> b/drivers/tty/serial/8250/Kconfig
+>>>>>> index d7737dca0e48..21cb14cbd34a 100644
+>>>>>> --- a/drivers/tty/serial/8250/Kconfig
+>>>>>> +++ b/drivers/tty/serial/8250/Kconfig
+>>>>>> @@ -483,7 +483,7 @@ config SERIAL_8250_PXA
+>>>>>>
+>>>>>>  config SERIAL_OF_PLATFORM
+>>>>>>         tristate "Devicetree based probing for 8250 ports"
+>>>>>> -       depends on SERIAL_8250 && OF
+>>>>>> +       depends on SERIAL_8250 && OF && !(PPC && PPC_UDBG_16550)
+>>>>>>         default SERIAL_8250
+>>>>>>         help
+>>>>>>           This option is used for all 8250 compatible serial ports that
+>>>>>
+>>>>> 44x/virtex5_defconfig has both PPC_UDBG_16550 and SERIAL_OF_PLATFORM enabled
+>>>>> and fails to boot (or display anything on the console) with this patch applied.
+>>>>
+>>>> Thanks for trying, can you either share or provide a link to the mpc85xx
+>>>> and ml507 qemu command lines that you use? I spent a good chunk of my
+>>>> time trying to get a kernel to boot but has failed so far.
+>>>>
+>>>
+>> 
+>> Any update ? I still see the boot failures in next-20181123.
+>
+> Yes, took most of last week's off sorry for the delay. I have finally
+> been able to boot a kernel using your instructions, thanks. The problem
+> is the following call chain:
+>
+> of_platform_serial_probe()
+>  -> serial8250_register_8250_port()
+>     -> up->port.uartclk == 0, return -EINVAL
+> 	-> irq_dispose_mapping()
+>
+> and then we basically unwind what we just did with
+> of_platform_serial_probe() including disabling the UART's IRQ, comment
+> out the irq_dispose_mapping() and you will have a functional console
+> again. 8250_of.c is clearly not a full replacement for legacy_serial.c
+> (that was a first attempt), so we need to keep that code around. Making
+> the depends even more conditional also does not sound too appealing,
+> because while we have identified mpc85xx as being problematic, who knows
+> about other platforms. So the best I have that does not involve a revert
+> is this below.
+>
+> Ben, Michael, would that sound reasonable to you? It seems to me that
+> there is a million ways to shoot the legacy_serial 8250 registration in
+> the foot in any cases, and having CONFIG_SERIAL_OF_PLATFORM just made it
+> painfully obvious.
+
+We generally try to avoid changing the device tree from inside Linux,
+it's meant to describe the hardware as we're given it, not the state of
+Linux drivers etc. Perhaps this is an exceptional case but it still
+seems fishy.
+
+I also worry that marking the device node disabled might break something
+else, but that's maybe me being paranoid.
+
+I guess I don't really understand how things are supposed to work
+though. We have the 8250 driver and also the OF platform driver, the
+former has already setup the device and then the OF driver just comes
+along and takes over?
+
+eg. in the boot log from the mpc8544ds you see:
+
+  serial8250.0: ttyS0 at MMIO 0xe0004500 (irq = 42, base_baud = 115200) is a 16550A
+  printk: console [ttyS0] enabled
+  printk: console [ttyS0] enabled
+  printk: bootconsole [udbg0] disabled
+  printk: bootconsole [udbg0] disabled
+  of_serial: probe of e0004500.serial failed with error -22
+
+ie. the 8250 core has already setup the device, so there should really
+be nothing to do?
+
+If the 8250 code could detect that it already has this port registered
+then maybe things would work.
+
+The patch below works for me with mpc8544ds. Whether it's worth changing
+the 8250 code this much to accomodate legacy_serial I'm not sure.
+
+cheers
 
 
-On 05/12/2018 16:14, David Gibson wrote:
-> On Fri, Nov 23, 2018 at 04:52:49PM +1100, Alexey Kardashevskiy wrote:
->> The powernv PCI code stores NPU data in the pnv_phb struct. The latter
->> is referenced by pci_controller::private_data. We are going to have NPU2
->> support in the pseries platform as well but it does not store any
->> private_data in in the pci_controller struct; and even if it did,
->> it would be a different data structure.
->>
->> This makes npu a pointer and stores it one level higher in
->> the pci_controller struct.
->>
->> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->> ---
->> Changes:
->> v4:
->> * changed subj from "powerpc/powernv: Detach npu struct from pnv_phb"
->> * got rid of global list of npus - store them now in pci_controller
->> * got rid of npdev_to_npu() helper
->> ---
->>  arch/powerpc/include/asm/pci-bridge.h    |  1 +
->>  arch/powerpc/platforms/powernv/pci.h     | 16 -----
->>  arch/powerpc/platforms/powernv/npu-dma.c | 81 ++++++++++++++++++------
->>  3 files changed, 64 insertions(+), 34 deletions(-)
->>
->> diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
->> index 94d4490..aee4fcc 100644
->> --- a/arch/powerpc/include/asm/pci-bridge.h
->> +++ b/arch/powerpc/include/asm/pci-bridge.h
->> @@ -129,6 +129,7 @@ struct pci_controller {
->>  #endif	/* CONFIG_PPC64 */
->>  
->>  	void *private_data;
->> +	struct npu *npu;
->>  };
->>  
->>  /* These are used for config access before all the PCI probing
->> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
->> index 2131373..f2d50974 100644
->> --- a/arch/powerpc/platforms/powernv/pci.h
->> +++ b/arch/powerpc/platforms/powernv/pci.h
->> @@ -8,9 +8,6 @@
->>  
->>  struct pci_dn;
->>  
->> -/* Maximum possible number of ATSD MMIO registers per NPU */
->> -#define NV_NMMU_ATSD_REGS 8
->> -
->>  enum pnv_phb_type {
->>  	PNV_PHB_IODA1		= 0,
->>  	PNV_PHB_IODA2		= 1,
->> @@ -176,19 +173,6 @@ struct pnv_phb {
->>  	unsigned int		diag_data_size;
->>  	u8			*diag_data;
->>  
->> -	/* Nvlink2 data */
->> -	struct npu {
->> -		int index;
->> -		__be64 *mmio_atsd_regs[NV_NMMU_ATSD_REGS];
->> -		unsigned int mmio_atsd_count;
->> -
->> -		/* Bitmask for MMIO register usage */
->> -		unsigned long mmio_atsd_usage;
->> -
->> -		/* Do we need to explicitly flush the nest mmu? */
->> -		bool nmmu_flush;
->> -	} npu;
->> -
->>  	int p2p_target_count;
->>  };
->>  
->> diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
->> index 91d488f..7dd5c0e5 100644
->> --- a/arch/powerpc/platforms/powernv/npu-dma.c
->> +++ b/arch/powerpc/platforms/powernv/npu-dma.c
->> @@ -327,6 +327,25 @@ struct pnv_ioda_pe *pnv_pci_npu_setup_iommu(struct pnv_ioda_pe *npe)
->>  	return gpe;
->>  }
->>  
->> +/*
->> + * NPU2 ATS
->> + */
->> +/* Maximum possible number of ATSD MMIO registers per NPU */
->> +#define NV_NMMU_ATSD_REGS 8
->> +
->> +/* An NPU descriptor, valid for POWER9 only */
->> +struct npu {
->> +	int index;
->> +	__be64 *mmio_atsd_regs[NV_NMMU_ATSD_REGS];
->> +	unsigned int mmio_atsd_count;
->> +
->> +	/* Bitmask for MMIO register usage */
->> +	unsigned long mmio_atsd_usage;
->> +
->> +	/* Do we need to explicitly flush the nest mmu? */
->> +	bool nmmu_flush;
->> +};
->> +
->>  /* Maximum number of nvlinks per npu */
->>  #define NV_MAX_LINKS 6
->>  
->> @@ -478,7 +497,6 @@ static void acquire_atsd_reg(struct npu_context *npu_context,
->>  	int i, j;
->>  	struct npu *npu;
->>  	struct pci_dev *npdev;
->> -	struct pnv_phb *nphb;
->>  
->>  	for (i = 0; i <= max_npu2_index; i++) {
->>  		mmio_atsd_reg[i].reg = -1;
->> @@ -493,8 +511,10 @@ static void acquire_atsd_reg(struct npu_context *npu_context,
->>  			if (!npdev)
->>  				continue;
->>  
->> -			nphb = pci_bus_to_host(npdev->bus)->private_data;
->> -			npu = &nphb->npu;
->> +			npu = pci_bus_to_host(npdev->bus)->npu;
->> +			if (!npu)
->> +				continue;
-> 
-> This patch changes a bunch of places that used to unconditionally
-> locate an NPU now have a failure path.
-> 
-> Given that this used to always have an NPU, doesn't that mean that if
-> the NPU is not present something has already gone wrong, and we should
-> WARN_ON() or something?
+diff --git a/drivers/tty/serial/8250/8250_core.c b/drivers/tty/serial/8250/8250_core.c
+index 94f3e1c64490..c7d7858fdb3d 100644
+--- a/drivers/tty/serial/8250/8250_core.c
++++ b/drivers/tty/serial/8250/8250_core.c
+@@ -905,7 +905,7 @@ static struct platform_device *serial8250_isa_devs;
+  */
+ static DEFINE_MUTEX(serial_mutex);
+ 
+-static struct uart_8250_port *serial8250_find_match_or_unused(struct uart_port *port)
++static struct uart_8250_port *serial8250_find_existing(struct uart_port *port)
+ {
+ 	int i;
+ 
+@@ -921,10 +921,17 @@ static struct uart_8250_port *serial8250_find_match_or_unused(struct uart_port *
+ 	if (i < nr_uarts && serial8250_ports[i].port.type == PORT_UNKNOWN &&
+ 			serial8250_ports[i].port.iobase == 0)
+ 		return &serial8250_ports[i];
++
++	return NULL;
++}
++
++static struct uart_8250_port *serial8250_find_unused(struct uart_port *port)
++{
++	int i;
++
+ 	/*
+-	 * We didn't find a matching entry, so look for the first
+-	 * free entry.  We look for one which hasn't been previously
+-	 * used (indicated by zero iobase).
++	 * Look for the first free entry. We look for one which hasn't been
++	 * previously used (indicated by zero iobase).
+ 	 */
+ 	for (i = 0; i < nr_uarts; i++)
+ 		if (serial8250_ports[i].port.type == PORT_UNKNOWN &&
+@@ -960,12 +967,18 @@ int serial8250_register_8250_port(struct uart_8250_port *up)
+ 	struct uart_8250_port *uart;
+ 	int ret = -ENOSPC;
+ 
+-	if (up->port.uartclk == 0)
+-		return -EINVAL;
+-
+ 	mutex_lock(&serial_mutex);
+ 
+-	uart = serial8250_find_match_or_unused(&up->port);
++	uart = serial8250_find_existing(&up->port);
++	if (!uart) {
++		if (up->port.uartclk == 0) {
++			ret = -EINVAL;
++			goto out;
++		}
++
++		uart = serial8250_find_unused(&up->port);
++	}
++
+ 	if (uart && uart->port.type != PORT_8250_CIR) {
+ 		if (uart->port.dev)
+ 			uart_remove_one_port(&serial8250_reg, &uart->port);
+@@ -974,7 +987,10 @@ int serial8250_register_8250_port(struct uart_8250_port *up)
+ 		uart->port.membase      = up->port.membase;
+ 		uart->port.irq          = up->port.irq;
+ 		uart->port.irqflags     = up->port.irqflags;
+-		uart->port.uartclk      = up->port.uartclk;
++
++		if (up->port.uartclk != 0)
++			uart->port.uartclk      = up->port.uartclk;
++
+ 		uart->port.fifosize     = up->port.fifosize;
+ 		uart->port.regshift     = up->port.regshift;
+ 		uart->port.iotype       = up->port.iotype;
+@@ -1056,6 +1072,7 @@ int serial8250_register_8250_port(struct uart_8250_port *up)
+ 			ret = 0;
+ 		}
+ 	}
++out:
+ 	mutex_unlock(&serial_mutex);
+ 
+ 	return ret;
 
-
-
-That means this is a leftover since I dropped that npdev_to_npu helper
-which could help but there was no real value in it. I'll remove the
-check here in the next respin.
-
-I'll probably add checks for npu!=NULL where we used to have
-firmware_has_feature(FW_FEATURE_OPAL) in 05/19.
-
-
-
--- 
-Alexey
