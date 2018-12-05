@@ -2,81 +2,74 @@ Return-Path: <SRS0=GwW7=OO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.7 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F019C04EB9
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 04:55:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 61105C04EB9
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 04:57:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 882AF2081C
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 04:55:14 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="EiJexr60"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 882AF2081C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id DD1982081C
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 04:57:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DD1982081C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 438mcw2wKFzDqV2
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 15:55:12 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 438mgC6MLgzDqng
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 15:57:11 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="EiJexr60";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
- envelope-from=sabyasachi.linux@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="EiJexr60"; 
- dkim-atps=neutral
-Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
- [IPv6:2607:f8b0:4864:20::442])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 438mKt3vgZzDqlS
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Dec 2018 15:42:10 +1100 (AEDT)
-Received: by mail-pf1-x442.google.com with SMTP id q1so9367256pfi.5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Dec 2018 20:42:10 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=6G2KpmpfCtmqQlw0KlLFcSMUcNS3EWFTLTfjH5tvPWA=;
- b=EiJexr604usee2Xz36cu7qmvYq262sxHpdFxW1/kmiqcvFpbUhbS+sEs4uFrQU1wq5
- wkxR2E2vB8PWm/vaHtZHraB0HKG/1v8JbcOOMdc1cgpQdHrEYGerkflrTqD+xDbqWQEz
- LExpdikPc7hWY4zOC94400OA4AQr2U06LbUb40PaQN9MbdRQfmwRKTRA7032QPRw6v6j
- JjWeNWMROwBW2L4DgS5gPeGPB6sQ1V60wDuiKlyijNcWch3uPK7B2d71T/jtxHvoIXkV
- bIprobZBLZ1KtxFl6uFPpxmCN8yg3G7HzhDmtw4GQuBg6LbK+CYACGhQO3qgs4t5Qrzq
- +Mcg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=6G2KpmpfCtmqQlw0KlLFcSMUcNS3EWFTLTfjH5tvPWA=;
- b=NfmnNxzwW3o6zLzRBMKKaRON5zxXtGosNuFKQ5U2xuYF4jGuiXGu0AHytkqiYrBkw9
- K89C6PL5WSakRcscSoZJGrgQT+B9C6//WwU2g0NvRldg7VBorefbHG21FKF2HIaRGZ/R
- 2IhzqaF4muQ4sSO8g0zYFW0ziIBPfoBsI7lmPYUMsXAQ7Fx5L1e94yNI6g8z617EQnnw
- UW93/Zk+1GK2rP3rFJwzD42vN+aYJzXDmjm0brs9dfcCNEyU3iAKCT+X1aNqdudTZtso
- AjvMDi+mb1SygQ5cPGCQpZKjjAGDnoRH+ABHB0mFGOmozwc58yz0+X7UEwQfCWvxG2gn
- Z95A==
-X-Gm-Message-State: AA+aEWa7ipu0j9XnK/75hpAFtGK7vwQMQa66CSGx4X5j7OcWTPW7sHEE
- 4OK9vhu4Ew96D/jVzJGi5Fo1VSu8puq90Eo3JuI=
-X-Google-Smtp-Source: AFSGD/XdtvLuByabpQA527LtOlvwusHUuKSPq3xzOtaVji+cQ4qW1THHtVQnqm1/Jh1IUcI2fmF4Tg8976oUsLA2qr0=
-X-Received: by 2002:a63:4d66:: with SMTP id n38mr19256346pgl.270.1543984928422; 
- Tue, 04 Dec 2018 20:42:08 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 438mLb6mNdzDqlr
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Dec 2018 15:42:47 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 438mLX1PRbz9v08l;
+ Wed,  5 Dec 2018 05:42:44 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id YXa3vaUCdKE7; Wed,  5 Dec 2018 05:42:44 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 438mLX08HYz9v08k;
+ Wed,  5 Dec 2018 05:42:44 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id B68E58B829;
+ Wed,  5 Dec 2018 05:42:44 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id LNHFL8eh-QhB; Wed,  5 Dec 2018 05:42:44 +0100 (CET)
+Received: from [192.168.232.3] (unknown [192.168.232.3])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 063558B755;
+ Wed,  5 Dec 2018 05:42:43 +0100 (CET)
+Subject: Re: [PATCH V3 2/5] mm: update ptep_modify_prot_commit to take old pte
+ value as arg
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, npiggin@gmail.com,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ akpm@linux-foundation.org
+References: <20181205030931.12037-1-aneesh.kumar@linux.ibm.com>
+ <20181205030931.12037-3-aneesh.kumar@linux.ibm.com>
+ <f446afd3-a77d-cc5a-1ac8-3992090bcd7d@c-s.fr>
+ <48f13462-1695-a759-9df8-1ef60fd88196@linux.ibm.com>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <3c1395e0-8a06-e407-80ba-2d634a9e01e9@c-s.fr>
+Date: Wed, 5 Dec 2018 05:42:43 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.3.2
 MIME-Version: 1.0
-References: <5bdfa97d.1c69fb81.4aef7.c9f7@mx.google.com>
-In-Reply-To: <5bdfa97d.1c69fb81.4aef7.c9f7@mx.google.com>
-From: Sabyasachi Gupta <sabyasachi.linux@gmail.com>
-Date: Wed, 5 Dec 2018 10:11:56 +0530
-Message-ID: <CAJr6mf3d4vEQBk2HEsxnoX4HKisoBV1ywRhekq_homot_DJemw@mail.gmail.com>
-Subject: Re: [PATCH] arch/powerpc: Use dma_zalloc_coherent
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <48f13462-1695-a759-9df8-1ef60fd88196@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,46 +81,101 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Brajeswar Ghosh <brajeswar.linux@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- Souptick Joarder <jrdr.linux@gmail.com>, linux-kernel@vger.kernel.org
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Nov 5, 2018 at 7:52 AM Sabyasachi Gupta
-<sabyasachi.linux@gmail.com> wrote:
->
-> Replaced dma_alloc_coherent + memset with dma_zalloc_coherent
->
-> Signed-off-by: Sabyasachi Gupta <sabyasachi.linux@gmail.com>
 
-Any comment on this patch?
 
-> ---
->  arch/powerpc/sysdev/fsl_rmu.c | 4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
->
-> diff --git a/arch/powerpc/sysdev/fsl_rmu.c b/arch/powerpc/sysdev/fsl_rmu.c
-> index 88b35a3d..8b0ebf3 100644
-> --- a/arch/powerpc/sysdev/fsl_rmu.c
-> +++ b/arch/powerpc/sysdev/fsl_rmu.c
-> @@ -756,15 +756,13 @@ fsl_open_outb_mbox(struct rio_mport *mport, void *dev_id, int mbox, int entries)
->         }
->
->         /* Initialize outbound message descriptor ring */
-> -       rmu->msg_tx_ring.virt = dma_alloc_coherent(priv->dev,
-> +       rmu->msg_tx_ring.virt = dma_zalloc_coherent(priv->dev,
->                                 rmu->msg_tx_ring.size * RIO_MSG_DESC_SIZE,
->                                 &rmu->msg_tx_ring.phys, GFP_KERNEL);
->         if (!rmu->msg_tx_ring.virt) {
->                 rc = -ENOMEM;
->                 goto out_dma;
->         }
-> -       memset(rmu->msg_tx_ring.virt, 0,
-> -                       rmu->msg_tx_ring.size * RIO_MSG_DESC_SIZE);
->         rmu->msg_tx_ring.tx_slot = 0;
->
->         /* Point dequeue/enqueue pointers at first entry in ring */
-> --
-> 2.7.4
->
+Le 05/12/2018 à 05:06, Aneesh Kumar K.V a écrit :
+> On 12/5/18 9:32 AM, Christophe LEROY wrote:
+>>
+>>
+>> Le 05/12/2018 à 04:09, Aneesh Kumar K.V a écrit :
+>>> Architectures like ppc64 requires to do a conditional tlb flush based 
+>>> on the old
+>>> and new value of pte. Enable that by passing old pte value as the arg.
+>>>
+>>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+>>> ---
+>>>   arch/s390/include/asm/pgtable.h | 3 ++-
+>>>   arch/s390/mm/pgtable.c          | 2 +-
+>>>   arch/x86/include/asm/paravirt.h | 2 +-
+>>>   fs/proc/task_mmu.c              | 8 +++++---
+>>>   include/asm-generic/pgtable.h   | 2 +-
+>>>   mm/memory.c                     | 8 ++++----
+>>>   mm/mprotect.c                   | 6 +++---
+>>>   7 files changed, 17 insertions(+), 14 deletions(-)
+>>>
+>>> diff --git a/arch/s390/include/asm/pgtable.h 
+>>> b/arch/s390/include/asm/pgtable.h
+>>> index 5d730199e37b..76dc344edb8c 100644
+>>> --- a/arch/s390/include/asm/pgtable.h
+>>> +++ b/arch/s390/include/asm/pgtable.h
+>>> @@ -1070,7 +1070,8 @@ static inline pte_t ptep_get_and_clear(struct 
+>>> mm_struct *mm,
+>>>   #define __HAVE_ARCH_PTEP_MODIFY_PROT_TRANSACTION
+>>>   pte_t ptep_modify_prot_start(struct vm_area_struct *, unsigned 
+>>> long, pte_t *);
+>>> -void ptep_modify_prot_commit(struct vm_area_struct *, unsigned long, 
+>>> pte_t *, pte_t);
+>>> +void ptep_modify_prot_commit(struct vm_area_struct *, unsigned long,
+>>> +                 pte_t *, pte_t, pte_t);
+>>>   #define __HAVE_ARCH_PTEP_CLEAR_FLUSH
+>>>   static inline pte_t ptep_clear_flush(struct vm_area_struct *vma,
+>>> diff --git a/arch/s390/mm/pgtable.c b/arch/s390/mm/pgtable.c
+>>> index 29c0a21cd34a..b283b92722cc 100644
+>>> --- a/arch/s390/mm/pgtable.c
+>>> +++ b/arch/s390/mm/pgtable.c
+>>> @@ -322,7 +322,7 @@ pte_t ptep_modify_prot_start(struct 
+>>> vm_area_struct *vma, unsigned long addr,
+>>>   EXPORT_SYMBOL(ptep_modify_prot_start);
+>>>   void ptep_modify_prot_commit(struct vm_area_struct *vma, unsigned 
+>>> long addr,
+>>> -                 pte_t *ptep, pte_t pte)
+>>> +                 pte_t *ptep, pte_t old_pte, pte_t pte)
+>>>   {
+>>>       pgste_t pgste;
+>>>       struct mm_struct *mm = vma->vm_mm;
+>>> diff --git a/arch/x86/include/asm/paravirt.h 
+>>> b/arch/x86/include/asm/paravirt.h
+>>> index 1154f154025d..0d75a4f60500 100644
+>>> --- a/arch/x86/include/asm/paravirt.h
+>>> +++ b/arch/x86/include/asm/paravirt.h
+>>> @@ -429,7 +429,7 @@ static inline pte_t ptep_modify_prot_start(struct 
+>>> vm_area_struct *vma, unsigned
+>>>   }
+>>>   static inline void ptep_modify_prot_commit(struct vm_area_struct 
+>>> *vma, unsigned long addr,
+>>> -                       pte_t *ptep, pte_t pte)
+>>> +                       pte_t *ptep, pte_t old_pte, pte_t pte)
+>>>   {
+>>>       struct mm_struct *mm = vma->vm_mm;
+>>> diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
+>>> index 9952d7185170..8d62891d38a8 100644
+>>> --- a/fs/proc/task_mmu.c
+>>> +++ b/fs/proc/task_mmu.c
+>>> @@ -940,10 +940,12 @@ static inline void clear_soft_dirty(struct 
+>>> vm_area_struct *vma,
+>>>       pte_t ptent = *pte;
+>>>       if (pte_present(ptent)) {
+>>> -        ptent = ptep_modify_prot_start(vma, addr, pte);
+>>> -        ptent = pte_wrprotect(ptent);
+>>> +        pte_t old_pte;
+>>> +
+>>> +        old_pte = ptep_modify_prot_start(vma, addr, pte);
+>>> +        ptent = pte_wrprotect(old_pte);
+>>
+>> This change doesn't seem to fit with the commit description. Why write 
+>> protecting in addition to clearing dirty ?
+>>
+>>
+> 
+> The hunk above use a new variable old_pte. There is no functional change 
+> in that hunk.
+> 
+
+Oops, sorry, I misread the patch, don't know why.
+
+Christophe
