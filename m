@@ -1,97 +1,92 @@
-Return-Path: <SRS0=NWA6=ON=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=GwW7=OO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EBBCDC04EB8
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 23:37:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 81707C04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 02:09:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1E3A4206B6
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Dec 2018 23:37:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1E3A4206B6
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 3F8F22081C
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 02:09:21 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=baylibre-com.20150623.gappssmtp.com header.i=@baylibre-com.20150623.gappssmtp.com header.b="RzfK8pdF"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3F8F22081C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 438dZJ2HYGzDqZy
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 10:37:28 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 438hxV3yjTzDqYJ
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 13:09:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=baylibre.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=bauerman@linux.ibm.com; receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=baylibre-com.20150623.gappssmtp.com header.i=@baylibre-com.20150623.gappssmtp.com header.b="RzfK8pdF";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=baylibre.com
+ (client-ip=2607:f8b0:4864:20::443; helo=mail-pf1-x443.google.com;
+ envelope-from=khilman@baylibre.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=baylibre.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=baylibre-com.20150623.gappssmtp.com
+ header.i=@baylibre-com.20150623.gappssmtp.com header.b="RzfK8pdF"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
+ [IPv6:2607:f8b0:4864:20::443])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 438dWy4CDJzDqXY
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Dec 2018 10:35:25 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wB4NUI5V108695
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Dec 2018 18:35:22 -0500
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2p62hp9udj-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Dec 2018 18:35:22 -0500
-Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.ibm.com>;
- Tue, 4 Dec 2018 23:35:22 -0000
-Received: from b03cxnp08025.gho.boulder.ibm.com (9.17.130.17)
- by e34.co.us.ibm.com (192.168.1.134) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 4 Dec 2018 23:35:17 -0000
-Received: from b03ledav006.gho.boulder.ibm.com
- (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wB4NZGdl24314094
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Tue, 4 Dec 2018 23:35:16 GMT
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id BD520C6055;
- Tue,  4 Dec 2018 23:35:16 +0000 (GMT)
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8BF6CC605A;
- Tue,  4 Dec 2018 23:35:12 +0000 (GMT)
-Received: from morokweng.localdomain (unknown [9.85.142.32])
- by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTPS;
- Tue,  4 Dec 2018 23:35:12 +0000 (GMT)
-References: <20181116200712.14154-1-bauerman@linux.ibm.com>
- <alpine.LRH.2.21.1812050855270.22148@namei.org>
-User-agent: mu4e 1.0; emacs 26.1
-From: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-To: James Morris <jmorris@namei.org>
-Subject: Re: [PATCH v8 00/14] Appended signatures support for IMA appraisal
-In-reply-to: <alpine.LRH.2.21.1812050855270.22148@namei.org>
-Date: Tue, 04 Dec 2018 21:35:07 -0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 438gR26WgjzDqYJ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Dec 2018 12:01:15 +1100 (AEDT)
+Received: by mail-pf1-x443.google.com with SMTP id 64so9092702pfr.9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Dec 2018 17:01:15 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=baylibre-com.20150623.gappssmtp.com; s=20150623;
+ h=from:to:cc:subject:in-reply-to:references:date:message-id
+ :mime-version; bh=VJ4Xggx/M5TuF1a8xLngAs7VDg7Kg/bcesHAhVDONtY=;
+ b=RzfK8pdFyLksbusmB8e3SXki8e8zPkdYAZia4U+Tfeln+wY1bkAbPX4QFzku5ofR0Z
+ LRAeQft8ftzAr+g0BBTfKC2aWvMEk9rXQU/AYN9hwdmvi9R7rkggzbslm5r7fJzn5WKM
+ 4T/iz9GtYAkwZY3iFlD3lgTgmkv+4RbZzRPfugFpSXAmsvtp5DW8t04rYfE5SECxCua6
+ z3DldOYh4Y3mZgcUQDboEHQu7sXT0BwfCjk8M4frTt/A4/8Gjiy5j9SwA7A/VsnfVZSH
+ Yzu5eMgUlqXbYXPc/jy6Er3rBV1nBNTE+AyuqJFRsOeDpwKNPOedbeVKxpoeAdoYcwyb
+ 5zUw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
+ :message-id:mime-version;
+ bh=VJ4Xggx/M5TuF1a8xLngAs7VDg7Kg/bcesHAhVDONtY=;
+ b=tFns1Se8nOqUz+0eyzB65TEl7eN3LGoOv6kTBZYob009wCkjcOex5v90b3/IgjdYFE
+ F4plcMvN+FTu8Koc8o0TRwy1sBQ8OmjiwCe7pgR1x5ANnM/hXYj4+DAgL3J4Drp9rcvg
+ ezC3dr85XLuzA/qMmKQ/2d91eB8s0457fz2s2o51Z5ZN1xxugramZgizvhW/moPnV7wj
+ avy9Xiq4KTsQUj03WmnRm73GWFC2EfzarlENe1mp98rmCNoysIGUcSp+aT3wDiXv78gF
+ ZqG4AFlTm9h/22K4uejeYMZ/UUYRnTdnjHD/CEt/SaHcWBLncWGVyfB99X+kgytjbD4+
+ dcaA==
+X-Gm-Message-State: AA+aEWZVackkm6sqR9aP3SQi6LUNp/9UjoMFjDMxLxC6im4n89zrC7DQ
+ U5gfLPruX6XfFSuxN1w872aGLw==
+X-Google-Smtp-Source: AFSGD/XucL5NZBkNTnqI9hosWyuzrKRTkweZcEuw0ajmO8GnUu/pgA/O0jxAl3OIKVAVP93NXQy9/w==
+X-Received: by 2002:a63:f658:: with SMTP id u24mr18745008pgj.267.1543971672921; 
+ Tue, 04 Dec 2018 17:01:12 -0800 (PST)
+Received: from localhost (c-71-197-186-152.hsd1.wa.comcast.net.
+ [71.197.186.152]) by smtp.googlemail.com with ESMTPSA id
+ e128sm25594123pfe.67.2018.12.04.17.01.11
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Tue, 04 Dec 2018 17:01:12 -0800 (PST)
+From: Kevin Hilman <khilman@baylibre.com>
+To: Rob Herring <robh@kernel.org>, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 13/34] dt-bindings: arm: amlogic: Move 'amlogic,
+ meson-gx-ao-secure' binding to its own file
+In-Reply-To: <20181203213223.16986-14-robh@kernel.org>
+References: <20181203213223.16986-1-robh@kernel.org>
+ <20181203213223.16986-14-robh@kernel.org>
+Date: Tue, 04 Dec 2018 17:01:11 -0800
+Message-ID: <7hr2ewbxd4.fsf@baylibre.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-X-TM-AS-GCONF: 00
-x-cbid: 18120423-0016-0000-0000-0000095F714E
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010172; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000270; SDB=6.01127061; UDB=6.00585382; IPR=6.00907195; 
- MB=3.00024448; MTD=3.00000008; XFM=3.00000015; UTC=2018-12-04 23:35:22
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18120423-0017-0000-0000-0000414B0F40
-Message-Id: <87k1ko50ic.fsf@morokweng.localdomain>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-12-04_10:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1812040202
+X-Mailman-Approved-At: Wed, 05 Dec 2018 13:06:59 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,68 +98,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, linux-doc@vger.kernel.org,
- Dmitry Kasatkin <dmitry.kasatkin@gmail.com>, Jonathan Corbet <corbet@lwn.net>,
- linux-kernel@vger.kernel.org, Mimi Zohar <zohar@linux.ibm.com>,
- "David S. Miller" <davem@davemloft.net>, David Howells <dhowells@redhat.com>,
- "AKASHI, Takahiro" <takahiro.akashi@linaro.org>,
- linux-security-module@vger.kernel.org, keyrings@vger.kernel.org,
- linux-crypto@vger.kernel.org, Jessica Yu <jeyu@kernel.org>,
- linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- David Woodhouse <dwmw2@infradead.org>, "Serge E. Hallyn" <serge@hallyn.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, Kumar Gala <kumar.gala@linaro.org>,
+ arm@kernel.org, Sean Hudson <darknighte@darknighte.com>,
+ Frank Rowand <frowand.list@gmail.com>, Grant Likely <grant.likely@arm.com>,
+ Carlo Caione <carlo@caione.org>, linux-amlogic@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Rob Herring <robh@kernel.org> writes:
 
-Hello James,
-
-Thanks for you interest in these patches.
-
-James Morris <jmorris@namei.org> writes:
-
-> On Fri, 16 Nov 2018, Thiago Jung Bauermann wrote:
+> It is best practice to have 1 binding per file, so board level bindings
+> should be separate for various misc SoC bindings.
 >
->> On the OpenPOWER platform, secure boot and trusted boot are being
->> implemented using IMA for taking measurements and verifying signatures.
->> Since the kernel image on Power servers is an ELF binary, kernels are
->> signed using the scripts/sign-file tool and thus use the same signature
->> format as signed kernel modules.
->>
->> This patch series adds support in IMA for verifying those signatures.
->
-> Are you saying you use IMA to verify kernels during boot?  From a Linux
-> bootloader?
+> Cc: Mark Rutland <mark.rutland@arm.com>
+> Cc: Carlo Caione <carlo@caione.org>
+> Cc: Kevin Hilman <khilman@baylibre.com>
+> Cc: devicetree@vger.kernel.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: linux-amlogic@lists.infradead.org
+> Signed-off-by: Rob Herring <robh@kernel.org>
+> ---
+>  .../devicetree/bindings/arm/amlogic.txt       | 29 -------------------
+>  .../amlogic/amlogic,meson-gx-ao-secure.txt    | 28 ++++++++++++++++++
+>  2 files changed, 28 insertions(+), 29 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/arm/amlogic/amlogic,meson-gx-ao-secure.txt
 
-Yes to both. OpenPOWER machines have embedded in their firmware a Linux
-kernel and initramfs to use as bootloader, using Petitboot. kexec is
-used to load the OS and boot it.
+Acked-by: Kevin Hilman <khilman@baylibre.com>
 
->> It adds flexibility to OpenPOWER secure boot, because it allows it to boot
->> kernels with the signature appended to them as well as kernels where the
->> signature is stored in the IMA extended attribute.
->
-> Just to clarify, with these patches, IMA will be able to verify the
-> native form of signed kernel modules?
+But this isn't really related to the schema series is it?  If you
+prefer, I can just queue this one separately via my tree.
 
-That wasn't my use case to develop the patches, but I just tested and it
-works.
-
-I just had to make a slight modification: there's a whitelist of IMA
-hooks that are allowed to use the module signature format (in the
-ima_hook_supports_modsig function), and I had to add MODULE_CHECK to it.
-The next version of the patches will have this change.
-
-The only difference is that IMA looks for a valid key in the IMA
-keyring, while the CONFIG_MODULE_SIG code looks for the module signing
-key in the builtin and secondary trusted keyrings.
-
-> i.e. without xattrs at all, and
-> this will work with existing signed modules?
-
-No xattrs at all, and yes.
-
---
-Thiago Jung Bauermann
-IBM Linux Technology Center
-
+Kevin
