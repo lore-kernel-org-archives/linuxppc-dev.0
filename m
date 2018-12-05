@@ -2,75 +2,102 @@ Return-Path: <SRS0=GwW7=OO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5728AC04EB9
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 20:25:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3390BC04EB9
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 20:28:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CEFA920989
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 20:25:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CEFA920989
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id AE58620989
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 20:28:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AE58620989
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=us.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4399G95ggczDqMs
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 07:25:21 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4399Kv62rLzDqYj
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 07:28:35 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=us.ibm.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.167.196; helo=mail-oi1-f196.google.com;
- envelope-from=pku.leo@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=us.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=linuxram@us.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=nxp.com
-Received: from mail-oi1-f196.google.com (mail-oi1-f196.google.com
- [209.85.167.196])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ dmarc=none (p=none dis=none) header.from=us.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4398wM6VyMzDqQW
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Dec 2018 07:09:52 +1100 (AEDT)
-Received: by mail-oi1-f196.google.com with SMTP id a77so18671551oii.5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Dec 2018 12:09:51 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=S8ZhQTd5ZYFVNr+fp/33hqBP5kxJlkpMr3IgxwjyEBI=;
- b=QVaYSEYZohvQMslOY448BPFnHtA9QwXFKyHJfy/aFAXr8D4jElITY20HggjYYtQUkv
- pO32CEy8KlxtHRWfSxasYsGvbCd+WxEvyplemWNK0bu7li/yBvoe1zZk7Asg5IjVOlKt
- oMAD6fmJ3q6Sws/YWBjJrOiM/J38SpsKlJvy23I4tk+NbxDfxof1t7+g42kkm/n2l2eL
- NqjY7IwvjZGcqEgdR/G7i2rYIAik+KfJ4ka6n3z0AyYueBC22irE8rnqTwkIdRTdVhlC
- zken4Wj0FNpKV3Uh5sDwJOuu1HpXEgz+m87enIx4VaHOWsHjvJ2nPxstf4Of+46zjaFY
- jbQg==
-X-Gm-Message-State: AA+aEWaM8xho6qusJcY1RU4p0wIAw2vHcNzCOSVXY4gUzw00BsykImHf
- NeIZ1VwpxppDEj4ZeiiCt/r7vYhcVdg=
-X-Google-Smtp-Source: AFSGD/XSUvNcHryEmez9q897j4rDQAHefnDi7kNnuLnlo5TsEX8v3YP7vgGOSkNJCyQp0kA6KWXatg==
-X-Received: by 2002:aca:a805:: with SMTP id r5mr16385978oie.5.1544040589997;
- Wed, 05 Dec 2018 12:09:49 -0800 (PST)
-Received: from mail-oi1-f175.google.com (mail-oi1-f175.google.com.
- [209.85.167.175])
- by smtp.gmail.com with ESMTPSA id m207sm9232419oig.2.2018.12.05.12.09.47
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Wed, 05 Dec 2018 12:09:49 -0800 (PST)
-Received: by mail-oi1-f175.google.com with SMTP id h25so18721624oig.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Dec 2018 12:09:47 -0800 (PST)
-X-Received: by 2002:aca:31cb:: with SMTP id
- x194mr15145275oix.213.1544040587072; 
- Wed, 05 Dec 2018 12:09:47 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4399DK6pfSzDqVl
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Dec 2018 07:23:45 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wB5KJIdP031436
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Dec 2018 15:23:43 -0500
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2p6mr2jcg9-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Dec 2018 15:23:43 -0500
+Received: from localhost
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
+ Wed, 5 Dec 2018 20:23:40 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 5 Dec 2018 20:23:39 -0000
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wB5KNcMT57999424
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Wed, 5 Dec 2018 20:23:38 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 312E1A4051;
+ Wed,  5 Dec 2018 20:23:38 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id A95A7A404D;
+ Wed,  5 Dec 2018 20:23:36 +0000 (GMT)
+Received: from ram.oc3035372033.ibm.com (unknown [9.85.161.222])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Wed,  5 Dec 2018 20:23:36 +0000 (GMT)
+Date: Wed, 5 Dec 2018 12:23:32 -0800
+From: Ram Pai <linuxram@us.ibm.com>
+To: Florian Weimer <fweimer@redhat.com>
+Subject: Re: pkeys: Reserve PKEY_DISABLE_READ
+References: <20181109180947.GF5481@ram.oc3035372033.ibm.com>
+ <87efbqqze4.fsf@oldenburg.str.redhat.com>
+ <20181127102350.GA5795@ram.oc3035372033.ibm.com>
+ <87zhtuhgx0.fsf@oldenburg.str.redhat.com>
+ <58e263a6-9a93-46d6-c5f9-59973064d55e@intel.com>
+ <87va4g5d3o.fsf@oldenburg.str.redhat.com>
+ <20181203040249.GA11930@ram.oc3035372033.ibm.com>
+ <87pnuibobh.fsf@oldenburg.str.redhat.com>
+ <20181204062318.GC11930@ram.oc3035372033.ibm.com>
+ <87zhtki0vo.fsf@oldenburg2.str.redhat.com>
 MIME-Version: 1.0
-References: <1542869385-48337-1-git-send-email-wang.yi59@zte.com.cn>
-In-Reply-To: <1542869385-48337-1-git-send-email-wang.yi59@zte.com.cn>
-From: Li Yang <leoyang.li@nxp.com>
-Date: Wed, 5 Dec 2018 14:09:35 -0600
-X-Gmail-Original-Message-ID: <CADRPPNQ97rNJPPL8f0yqhEqTRJw9FnR0U4YCCLxrx5nDB4Ydkg@mail.gmail.com>
-Message-ID: <CADRPPNQ97rNJPPL8f0yqhEqTRJw9FnR0U4YCCLxrx5nDB4Ydkg@mail.gmail.com>
-Subject: Re: [PATCH] soc/fsl/qe: fix err handling of ucc_of_parse_tdm
-To: wang.yi59@zte.com.cn
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <87zhtki0vo.fsf@oldenburg2.str.redhat.com>
+User-Agent: Mutt/1.5.20 (2009-12-10)
+X-TM-AS-GCONF: 00
+x-cbid: 18120520-0028-0000-0000-000003269695
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18120520-0029-0000-0000-000023E2A4F2
+Message-Id: <20181205202332.GE11930@ram.oc3035372033.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-12-05_08:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=700 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1812050178
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,110 +109,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: zhong.weidong@zte.com.cn, lkml <linux-kernel@vger.kernel.org>,
- julia.lawall@lip6.fr, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- wen.yang99@zte.com.cn,
- "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>, Zhao Qiang <qiang.zhao@nxp.com>
+Reply-To: Ram Pai <linuxram@us.ibm.com>
+Cc: Dave Hansen <dave.hansen@intel.com>, linux-api@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Nov 22, 2018 at 2:42 PM Yi Wang <wang.yi59@zte.com.cn> wrote:
->
-> From: Wen Yang <wen.yang99@zte.com.cn>
->
-> Currently there are 2 problems with the ucc_of_parse_tdm function:
-> 1,a possible null pointer dereference in ucc_of_parse_tdm,
-> detected by the semantic patch deref_null.cocci,
-> with the following warning:
-> drivers/soc/fsl/qe/qe_tdm.c:177:21-24: ERROR: pdev is NULL but dereferenced.
-> 2,dev gets modified, so in any case that devm_iounmap() will fail even when
-> the new pdev is valid, because the iomap was done with a different pdev.
-> This patch fixes them.
+On Wed, Dec 05, 2018 at 02:00:59PM +0100, Florian Weimer wrote:
+> * Ram Pai:
+> 
+> > Ok. here is a patch, compiled but not tested. See if this meets the
+> > specifications.
+> >
+> > -----------------------------------------------------------------------------------
+> >
+> > commit 3dc06e73f3795921265d5d1d935e428deab01616
+> > Author: Ram Pai <linuxram@us.ibm.com>
+> > Date:   Tue Dec 4 00:04:11 2018 -0500
+> >
+> >     pkeys: add support of PKEY_DISABLE_READ
+> 
+> Thanks.  In the x86 code, the translation of PKEY_DISABLE_READ |
+> PKEY_DISABLE_WRITE to PKEY_DISABLE_ACCESS appears to be missing.  I
+> believe the existing code produces PKEY_DISABLE_WRITE, which is wrong.
 
-While we are at this, I think this logic need more serious fixing.  I
-see there is no driver bind with the "fsl,t1040-qe-si" or
-"fsl,t1040-qe-siram" device.  So allocating resources using devm_*()
-with these devices won't provide a cleanup path for these resources
-when the caller fails.  I think we should probably allocate resource
-under device of caller (e.g. ucc-hdlc), so that when caller probe
-fails or is removed it will trigger the cleanup.
+ah. yes. good point.
 
->
-> Suggested-by: Christophe LEROY <christophe.leroy@c-s.fr>
-> Signed-off-by: Wen Yang <wen.yang99@zte.com.cn>
-> CC: Julia Lawall <julia.lawall@lip6.fr>
-> CC: Zhao Qiang <qiang.zhao@nxp.com>
-> ---
->  drivers/soc/fsl/qe/qe_tdm.c | 20 ++++++++++----------
->  1 file changed, 10 insertions(+), 10 deletions(-)
->
-> diff --git a/drivers/soc/fsl/qe/qe_tdm.c b/drivers/soc/fsl/qe/qe_tdm.c
-> index f78c346..9a29f0b 100644
-> --- a/drivers/soc/fsl/qe/qe_tdm.c
-> +++ b/drivers/soc/fsl/qe/qe_tdm.c
-> @@ -47,7 +47,7 @@ int ucc_of_parse_tdm(struct device_node *np, struct ucc_tdm *utdm,
->         struct resource *res;
->         struct device_node *np2;
->         static int siram_init_flag;
-> -       struct platform_device *pdev;
-> +       struct platform_device *pdev_si, *pdev_siram;
->
->         sprop = of_get_property(np, "fsl,rx-sync-clock", NULL);
->         if (sprop) {
-> @@ -129,16 +129,16 @@ int ucc_of_parse_tdm(struct device_node *np, struct ucc_tdm *utdm,
->         if (!np2)
->                 return -EINVAL;
->
-> -       pdev = of_find_device_by_node(np2);
-> -       if (!pdev) {
-> +       pdev_si = of_find_device_by_node(np2);
-> +       if (!pdev_si) {
->                 pr_err("%pOFn: failed to lookup pdev\n", np2);
->                 of_node_put(np2);
->                 return -EINVAL;
->         }
->
->         of_node_put(np2);
-> -       res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> -       utdm->si_regs = devm_ioremap_resource(&pdev->dev, res);
-> +       res = platform_get_resource(pdev_si, IORESOURCE_MEM, 0);
-> +       utdm->si_regs = devm_ioremap_resource(&pdev_si->dev, res);
->         if (IS_ERR(utdm->si_regs)) {
->                 ret = PTR_ERR(utdm->si_regs);
->                 goto err_miss_siram_property;
-> @@ -150,8 +150,8 @@ int ucc_of_parse_tdm(struct device_node *np, struct ucc_tdm *utdm,
->                 goto err_miss_siram_property;
->         }
->
-> -       pdev = of_find_device_by_node(np2);
-> -       if (!pdev) {
-> +       pdev_siram = of_find_device_by_node(np2);
-> +       if (!pdev_siram) {
->                 ret = -EINVAL;
->                 pr_err("%pOFn: failed to lookup pdev\n", np2);
->                 of_node_put(np2);
-> @@ -159,8 +159,8 @@ int ucc_of_parse_tdm(struct device_node *np, struct ucc_tdm *utdm,
->         }
->
->         of_node_put(np2);
-> -       res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> -       utdm->siram = devm_ioremap_resource(&pdev->dev, res);
-> +       res = platform_get_resource(pdev_siram, IORESOURCE_MEM, 0);
-> +       utdm->siram = devm_ioremap_resource(&pdev_siram->dev, res);
->         if (IS_ERR(utdm->siram)) {
->                 ret = PTR_ERR(utdm->siram);
->                 goto err_miss_siram_property;
-> @@ -174,7 +174,7 @@ int ucc_of_parse_tdm(struct device_node *np, struct ucc_tdm *utdm,
->         return ret;
->
->  err_miss_siram_property:
-> -       devm_iounmap(&pdev->dev, utdm->si_regs);
-> +       devm_iounmap(&pdev_si->dev, utdm->si_regs);
->         return ret;
->  }
->  EXPORT_SYMBOL(ucc_of_parse_tdm);
-> --
-> 2.9.5
->
+> 
+> Rest looks okay to me (again not tested).
+
+thanks,
+RP
+
