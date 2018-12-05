@@ -6,24 +6,24 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 662CDC04EBF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 21:04:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 230FAC04EB9
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 21:06:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D795020850
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 21:04:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 88F8720892
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 21:06:37 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="ldsb29x2"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D795020850
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="DhdDiXbu"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 88F8720892
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 439B6p68JLzDqlJ
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 08:04:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 439B9l2HgXzDqcw
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 08:06:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="ldsb29x2";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="DhdDiXbu";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
@@ -32,32 +32,32 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="ldsb29x2"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="DhdDiXbu"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4392LH4vdtzDqv8
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Dec 2018 02:13:26 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4392Lq2FqvzDqv8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Dec 2018 02:13:55 +1100 (AEDT)
 Received: from [192.168.1.11] (cpe-70-114-128-244.austin.res.rr.com
  [70.114.128.244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id DCE7C2082D;
- Wed,  5 Dec 2018 15:13:23 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 74C402082D;
+ Wed,  5 Dec 2018 15:13:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1544022804;
- bh=hJ8Xk+1HZY51QDB36C17v9HNLCsqZh8G9rBuAA19ZBg=;
+ s=default; t=1544022833;
+ bh=oR5Pfua5dYWJOSGq0vESqjFWQfpksPPdvgTyTvmyAFY=;
  h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=ldsb29x2Kf6sB7L5jeY6D5XWpXO1YlgvxwGgCStjoY1rFklNWS77gx9YR1CNujC5U
- 3nYut+rkwesnjzFmPI+/7rZWfjJgKOu4WHOEiGluXm3cISWrol8bCeJfFYTatvczUi
- 4OVMCPFTfKTtzWoyRvLMx4JlaY4spxKA5PKOFEa4=
-Subject: Re: [PATCH v2 04/34] dt-bindings: altera: Convert clkmgr binding to
- json-schema
+ b=DhdDiXbuUoqL4THLGkmNqoyNk/uyN5ecaMKQP0vhH1sOAVZ5Dr0xmtZ4UGrmkQNR9
+ CPZf0nxNxrW7Whbl6E2LiWzSWA+4Lr3rXw1ex9P/0vyr4YNaWkp3lDfO2KzK+kiUZJ
+ GZviXmOxDQUupxSzPF4Q1i8UpAEje/+SNcqAqUkI=
+Subject: Re: [PATCH v2 12/34] dt-bindings: arm: Convert Altera board/soc
+ bindings to json-schema
 To: Rob Herring <robh@kernel.org>, devicetree@vger.kernel.org,
  linux-kernel@vger.kernel.org
 References: <20181203213223.16986-1-robh@kernel.org>
- <20181203213223.16986-5-robh@kernel.org>
+ <20181203213223.16986-13-robh@kernel.org>
 From: Dinh Nguyen <dinguyen@kernel.org>
 Openpgp: preference=signencrypt
 Autocrypt: addr=dinguyen@kernel.org; prefer-encrypt=mutual; keydata=
@@ -102,12 +102,12 @@ Autocrypt: addr=dinguyen@kernel.org; prefer-encrypt=mutual; keydata=
  cJEJNezizexE0dVclt9OS2U9Xwb3VOjs1ITMEYUf8T1j83iiCCFuXqH4U3Eji0nDEiEN5Ac0
  Jn/EGOBG2qGyKZ4uOec9j5ABF7J6hyO7H6LJaX5bLtp0Z7wUbyVaR4UIGdIOchNgNQk4stfm
  JiyuXyoFl/1ihREfvUG/e7+VAAoOBnMjitE5/qUERDoEkkuQkMcAHyEyd+XZMyXY
-Message-ID: <b00ee14b-1495-c1b6-ccd0-8c28a04b37d0@kernel.org>
-Date: Wed, 5 Dec 2018 09:13:22 -0600
+Message-ID: <0dd69104-4370-61c3-d7ca-e09121a16366@kernel.org>
+Date: Wed, 5 Dec 2018 09:13:51 -0600
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.2.1
 MIME-Version: 1.0
-In-Reply-To: <20181203213223.16986-5-robh@kernel.org>
+In-Reply-To: <20181203213223.16986-13-robh@kernel.org>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
@@ -133,73 +133,65 @@ Sender: "Linuxppc-dev"
 
 
 
-On 12/3/18 3:31 PM, Rob Herring wrote:
-> Convert Altera clkmgr to DT schema format using json-schema.
+On 12/3/18 3:32 PM, Rob Herring wrote:
+> Convert Altera SoC bindings to DT schema format using json-schema.
 > 
 > Cc: Mark Rutland <mark.rutland@arm.com>
 > Cc: Dinh Nguyen <dinguyen@kernel.org>
 > Cc: devicetree@vger.kernel.org
 > Signed-off-by: Rob Herring <robh@kernel.org>
 > ---
->  .../arm/altera/socfpga-clk-manager.txt        | 11 -------
->  .../arm/altera/socfpga-clk-manager.yaml       | 31 +++++++++++++++++++
->  2 files changed, 31 insertions(+), 11 deletions(-)
->  delete mode 100644 Documentation/devicetree/bindings/arm/altera/socfpga-clk-manager.txt
->  create mode 100644 Documentation/devicetree/bindings/arm/altera/socfpga-clk-manager.yaml
+>  .../devicetree/bindings/arm/altera.txt        | 14 -------------
+>  .../devicetree/bindings/arm/altera.yaml       | 20 +++++++++++++++++++
+>  2 files changed, 20 insertions(+), 14 deletions(-)
+>  delete mode 100644 Documentation/devicetree/bindings/arm/altera.txt
+>  create mode 100644 Documentation/devicetree/bindings/arm/altera.yaml
 > 
-> diff --git a/Documentation/devicetree/bindings/arm/altera/socfpga-clk-manager.txt b/Documentation/devicetree/bindings/arm/altera/socfpga-clk-manager.txt
+> diff --git a/Documentation/devicetree/bindings/arm/altera.txt b/Documentation/devicetree/bindings/arm/altera.txt
 > deleted file mode 100644
-> index 2c28f1d12f45..000000000000
-> --- a/Documentation/devicetree/bindings/arm/altera/socfpga-clk-manager.txt
+> index 558735aacca8..000000000000
+> --- a/Documentation/devicetree/bindings/arm/altera.txt
 > +++ /dev/null
-> @@ -1,11 +0,0 @@
-> -Altera SOCFPGA Clock Manager
+> @@ -1,14 +0,0 @@
+> -Altera's SoCFPGA platform device tree bindings
+> ----------------------------------------------
 > -
-> -Required properties:
-> -- compatible : "altr,clk-mgr"
-> -- reg : Should contain base address and length for Clock Manager
+> -Boards with Cyclone 5 SoC:
+> -Required root node properties:
+> -compatible = "altr,socfpga-cyclone5", "altr,socfpga";
 > -
-> -Example:
-> -	 clkmgr@ffd04000 {
-> -		compatible = "altr,clk-mgr";
-> -		reg = <0xffd04000 0x1000>;
-> -	};
-> diff --git a/Documentation/devicetree/bindings/arm/altera/socfpga-clk-manager.yaml b/Documentation/devicetree/bindings/arm/altera/socfpga-clk-manager.yaml
+> -Boards with Arria 5 SoC:
+> -Required root node properties:
+> -compatible = "altr,socfpga-arria5", "altr,socfpga";
+> -
+> -Boards with Arria 10 SoC:
+> -Required root node properties:
+> -compatible = "altr,socfpga-arria10", "altr,socfpga";
+> diff --git a/Documentation/devicetree/bindings/arm/altera.yaml b/Documentation/devicetree/bindings/arm/altera.yaml
 > new file mode 100644
-> index 000000000000..e4131fa42b26
+> index 000000000000..49e0362ddc11
 > --- /dev/null
-> +++ b/Documentation/devicetree/bindings/arm/altera/socfpga-clk-manager.yaml
-> @@ -0,0 +1,31 @@
+> +++ b/Documentation/devicetree/bindings/arm/altera.yaml
+> @@ -0,0 +1,20 @@
 > +# SPDX-License-Identifier: GPL-2.0
 > +%YAML 1.2
 > +---
-> +$id: http://devicetree.org/schemas/arm/altera/socfpga-clk-manager.yaml#
+> +$id: http://devicetree.org/schemas/arm/altera.yaml#
 > +$schema: http://devicetree.org/meta-schemas/core.yaml#
 > +
-> +title: Altera SOCFPGA Clock Manager
+> +title: Altera's SoCFPGA platform device tree bindings
 > +
 > +maintainers:
 > +  - Dinh Nguyen <dinguyen@kernel.org>
 > +
-> +description: test
-> +
 > +properties:
 > +  compatible:
 > +    items:
-> +      - const: altr,clk-mgr
-> +  reg:
-> +    maxItems: 1
-> +
-> +required:
-> +  - compatible
-> +
-> +examples:
-> +  - |
-> +    clkmgr@ffd04000 {
-> +      compatible = "altr,clk-mgr";
-> +      reg = <0xffd04000 0x1000>;
-> +    };
-> +
+> +      - enum:
+> +        - altr,socfpga-cyclone5
+> +        - altr,socfpga-arria5
+> +        - altr,socfpga-arria10
+> +      - const: altr,socfpga
 > +...
 > 
 
