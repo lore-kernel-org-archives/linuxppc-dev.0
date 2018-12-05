@@ -7,57 +7,57 @@ X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 61D92C04EB9
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 04:43:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 14CDDC04EB9
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 04:46:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E21C72084C
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 04:43:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 475BA2084C
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 04:46:18 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="Vfc3ZD3W"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E21C72084C
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="DiHXDXRA"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 475BA2084C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 438mMp6RQrzDqMg
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 15:43:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 438mQb2lKTzDqRw
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 15:46:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="Vfc3ZD3W";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="DiHXDXRA";
 	dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 438mJj0T6DzDqjb
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Dec 2018 15:41:09 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 438mJh5xtwzDqjT
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Dec 2018 15:41:08 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=gibson.dropbear.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.b="Vfc3ZD3W"; dkim-atps=neutral
+ header.b="DiHXDXRA"; dkim-atps=neutral
 Received: by ozlabs.org (Postfix, from userid 1007)
- id 438mJh2drLz9sBh; Wed,  5 Dec 2018 15:41:08 +1100 (AEDT)
+ id 438mJh1Cbnz9s8J; Wed,  5 Dec 2018 15:41:08 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=gibson.dropbear.id.au; s=201602; t=1543984868;
- bh=ku6eXxDDgNrOYIprZkuzc7Hogt42P1coCjlqIzAKII8=;
+ bh=A9ahPHHHE66SZrXSHRR92OHaVNs9as+cBeQSUHLBNYk=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=Vfc3ZD3WwiTunjJJZ8ilQvRrHqr2DKb431JhaVjS3XALytfwfiC6fV4roW3AuW8gW
- NRoXHoXz3Mi8UoY+B2miwq85zG/IjtJ13FCQoIhD6CpJzXiRTnZb81xcOpXvEMlTHm
- dBsJv3NCH5a3X9J/AxVQMRaTBljonctQwHUJgnQ8=
-Date: Wed, 5 Dec 2018 15:25:48 +1100
+ b=DiHXDXRA4M9Rt1T08//Rmz94aGfF2ijFZWipf1mqrn4RQxoPC2EoOtaGAomQytNSq
+ rrJYnpBXuM78pr+/TUbfoDqHwPX9SMpNUUQn0DvH5X7NepfnhhTuAW2uWuni3D90nL
+ 7DKL9UlmZR0IZQ8CZmR83hLSMTIQ9MIx6BT7xwQ0=
+Date: Wed, 5 Dec 2018 15:35:21 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH kernel v4 02/19] powerpc/mm/iommu/vfio_spapr_tce: Change
- mm_iommu_get to reference a region
-Message-ID: <20181205042548.GC6757@umbus.fritz.box>
+Subject: Re: [PATCH kernel v4 03/19] powerpc/vfio/iommu/kvm: Do not pin
+ device memory
+Message-ID: <20181205043521.GD6757@umbus.fritz.box>
 References: <20181123055304.25116-1-aik@ozlabs.ru>
- <20181123055304.25116-3-aik@ozlabs.ru>
+ <20181123055304.25116-4-aik@ozlabs.ru>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="TYecfFk8j8mZq+dy"
+ protocol="application/pgp-signature"; boundary="zbGR4y+acU1DwHSi"
 Content-Disposition: inline
-In-Reply-To: <20181123055304.25116-3-aik@ozlabs.ru>
+In-Reply-To: <20181123055304.25116-4-aik@ozlabs.ru>
 User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -84,232 +84,516 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---TYecfFk8j8mZq+dy
+--zbGR4y+acU1DwHSi
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Nov 23, 2018 at 04:52:47PM +1100, Alexey Kardashevskiy wrote:
-> Normally mm_iommu_get() is supposed to add a reference and
-> mm_iommu_put() to remove it. However historically mm_iommu_find() does
-> the referencing and mm_iommu_get() is doing allocation and referencing.
+On Fri, Nov 23, 2018 at 04:52:48PM +1100, Alexey Kardashevskiy wrote:
+> This new memory does not have page structs as it is not plugged to
+> the host so gup() will fail anyway.
 >=20
-> We are going to add another helper to preregister device memory so
-> instead of having mm_iommu_new() which pre-registers the normal memory
-> and references the region, we need separate helpers for pre-registering
-> and referencing.
+> This adds 2 helpers:
+> - mm_iommu_newdev() to preregister the "memory device" memory so
+> the rest of API can still be used;
+> - mm_iommu_is_devmem() to know if the physical address is one of thise
+> new regions which we must avoid unpinning of.
 >=20
-> This renames:
-> - mm_iommu_get to mm_iommu_new;
-> - mm_iommu_find to mm_iommu_get.
+> This adds @mm to tce_page_is_contained() and iommu_tce_xchg() to test
+> if the memory is device memory to avoid pfn_to_page().
 >=20
-> To make the mm_iommu_get name reflect what it is supposed to do, this
-> changes mm_iommu_get() to reference the region so from now on for every
-> mm_iommu_get() we need a matching mm_iommu_put().
->=20
-> This removes the check for exact match as the check for overlap is
-> enough now.
+> This adds a check for device memory in mm_iommu_ua_mark_dirty_rm() which
+> does delayed pages dirtying.
 >=20
 > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
-Reviewed-by: David Gibson <david@gibson.drobpear.id.au>
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
 > ---
 > Changes:
 > v4:
-> * squashed "powerpc/mm/iommu: Make mm_iommu_new() fail on existing region=
-s" into this
->=20
-> v2:
-> * merged 2 patches into one
+> * added device memory check in the real mode path
 > ---
->  arch/powerpc/include/asm/mmu_context.h |  4 +--
->  arch/powerpc/mm/mmu_context_iommu.c    | 19 +++++++------
->  drivers/vfio/vfio_iommu_spapr_tce.c    | 37 +++++++++++++++++---------
->  3 files changed, 35 insertions(+), 25 deletions(-)
+>  arch/powerpc/include/asm/iommu.h       |  5 +-
+>  arch/powerpc/include/asm/mmu_context.h |  5 ++
+>  arch/powerpc/kernel/iommu.c            |  9 ++-
+>  arch/powerpc/kvm/book3s_64_vio.c       | 18 +++---
+>  arch/powerpc/mm/mmu_context_iommu.c    | 86 +++++++++++++++++++++++---
+>  drivers/vfio/vfio_iommu_spapr_tce.c    | 28 ++++++---
+>  6 files changed, 119 insertions(+), 32 deletions(-)
 >=20
+> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/=
+iommu.h
+> index 35db0cb..a8aeac0 100644
+> --- a/arch/powerpc/include/asm/iommu.h
+> +++ b/arch/powerpc/include/asm/iommu.h
+> @@ -218,8 +218,9 @@ extern void iommu_register_group(struct iommu_table_g=
+roup *table_group,
+>  extern int iommu_add_device(struct device *dev);
+>  extern void iommu_del_device(struct device *dev);
+>  extern int __init tce_iommu_bus_notifier_init(void);
+> -extern long iommu_tce_xchg(struct iommu_table *tbl, unsigned long entry,
+> -		unsigned long *hpa, enum dma_data_direction *direction);
+> +extern long iommu_tce_xchg(struct mm_struct *mm, struct iommu_table *tbl,
+> +		unsigned long entry, unsigned long *hpa,
+> +		enum dma_data_direction *direction);
+>  #else
+>  static inline void iommu_register_group(struct iommu_table_group *table_=
+group,
+>  					int pci_domain_number,
 > diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/includ=
 e/asm/mmu_context.h
-> index 0381394..2d6b00d 100644
+> index 2d6b00d..f0f9f3d 100644
 > --- a/arch/powerpc/include/asm/mmu_context.h
 > +++ b/arch/powerpc/include/asm/mmu_context.h
-> @@ -21,7 +21,7 @@ struct mm_iommu_table_group_mem_t;
-> =20
->  extern int isolate_lru_page(struct page *page);	/* from internal.h */
->  extern bool mm_iommu_preregistered(struct mm_struct *mm);
-> -extern long mm_iommu_get(struct mm_struct *mm,
-> +extern long mm_iommu_new(struct mm_struct *mm,
+> @@ -24,6 +24,9 @@ extern bool mm_iommu_preregistered(struct mm_struct *mm=
+);
+>  extern long mm_iommu_new(struct mm_struct *mm,
 >  		unsigned long ua, unsigned long entries,
 >  		struct mm_iommu_table_group_mem_t **pmem);
+> +extern long mm_iommu_newdev(struct mm_struct *mm, unsigned long ua,
+> +		unsigned long entries, unsigned long dev_hpa,
+> +		struct mm_iommu_table_group_mem_t **pmem);
 >  extern long mm_iommu_put(struct mm_struct *mm,
-> @@ -32,7 +32,7 @@ extern struct mm_iommu_table_group_mem_t *mm_iommu_look=
-up(struct mm_struct *mm,
->  		unsigned long ua, unsigned long size);
->  extern struct mm_iommu_table_group_mem_t *mm_iommu_lookup_rm(
->  		struct mm_struct *mm, unsigned long ua, unsigned long size);
-> -extern struct mm_iommu_table_group_mem_t *mm_iommu_find(struct mm_struct=
- *mm,
-> +extern struct mm_iommu_table_group_mem_t *mm_iommu_get(struct mm_struct =
-*mm,
->  		unsigned long ua, unsigned long entries);
->  extern long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
+>  		struct mm_iommu_table_group_mem_t *mem);
+>  extern void mm_iommu_init(struct mm_struct *mm);
+> @@ -39,6 +42,8 @@ extern long mm_iommu_ua_to_hpa(struct mm_iommu_table_gr=
+oup_mem_t *mem,
+>  extern long mm_iommu_ua_to_hpa_rm(struct mm_iommu_table_group_mem_t *mem,
 >  		unsigned long ua, unsigned int pageshift, unsigned long *hpa);
+>  extern void mm_iommu_ua_mark_dirty_rm(struct mm_struct *mm, unsigned lon=
+g ua);
+> +extern bool mm_iommu_is_devmem(struct mm_struct *mm, unsigned long hpa,
+> +		unsigned int pageshift);
+>  extern long mm_iommu_mapped_inc(struct mm_iommu_table_group_mem_t *mem);
+>  extern void mm_iommu_mapped_dec(struct mm_iommu_table_group_mem_t *mem);
+>  #endif
+> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+> index f0dc680..8ccfdd9 100644
+> --- a/arch/powerpc/kernel/iommu.c
+> +++ b/arch/powerpc/kernel/iommu.c
+> @@ -47,6 +47,7 @@
+>  #include <asm/fadump.h>
+>  #include <asm/vio.h>
+>  #include <asm/tce.h>
+> +#include <asm/mmu_context.h>
+> =20
+>  #define DBG(...)
+> =20
+> @@ -993,15 +994,17 @@ int iommu_tce_check_gpa(unsigned long page_shift, u=
+nsigned long gpa)
+>  }
+>  EXPORT_SYMBOL_GPL(iommu_tce_check_gpa);
+> =20
+> -long iommu_tce_xchg(struct iommu_table *tbl, unsigned long entry,
+> -		unsigned long *hpa, enum dma_data_direction *direction)
+> +long iommu_tce_xchg(struct mm_struct *mm, struct iommu_table *tbl,
+> +		unsigned long entry, unsigned long *hpa,
+> +		enum dma_data_direction *direction)
+>  {
+>  	long ret;
+> =20
+>  	ret =3D tbl->it_ops->exchange(tbl, entry, hpa, direction);
+> =20
+>  	if (!ret && ((*direction =3D=3D DMA_FROM_DEVICE) ||
+> -			(*direction =3D=3D DMA_BIDIRECTIONAL)))
+> +			(*direction =3D=3D DMA_BIDIRECTIONAL)) &&
+> +			!mm_iommu_is_devmem(mm, *hpa, tbl->it_page_shift))
+>  		SetPageDirty(pfn_to_page(*hpa >> PAGE_SHIFT));
+> =20
+>  	/* if (unlikely(ret))
+> diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_6=
+4_vio.c
+> index 62a8d03..532ab797 100644
+> --- a/arch/powerpc/kvm/book3s_64_vio.c
+> +++ b/arch/powerpc/kvm/book3s_64_vio.c
+> @@ -397,12 +397,13 @@ static long kvmppc_tce_validate(struct kvmppc_spapr=
+_tce_table *stt,
+>  	return H_SUCCESS;
+>  }
+> =20
+> -static void kvmppc_clear_tce(struct iommu_table *tbl, unsigned long entr=
+y)
+> +static void kvmppc_clear_tce(struct mm_struct *mm, struct iommu_table *t=
+bl,
+> +		unsigned long entry)
+>  {
+>  	unsigned long hpa =3D 0;
+>  	enum dma_data_direction dir =3D DMA_NONE;
+> =20
+> -	iommu_tce_xchg(tbl, entry, &hpa, &dir);
+> +	iommu_tce_xchg(mm, tbl, entry, &hpa, &dir);
+>  }
+> =20
+>  static long kvmppc_tce_iommu_mapped_dec(struct kvm *kvm,
+> @@ -433,7 +434,7 @@ static long kvmppc_tce_iommu_do_unmap(struct kvm *kvm,
+>  	unsigned long hpa =3D 0;
+>  	long ret;
+> =20
+> -	if (WARN_ON_ONCE(iommu_tce_xchg(tbl, entry, &hpa, &dir)))
+> +	if (WARN_ON_ONCE(iommu_tce_xchg(kvm->mm, tbl, entry, &hpa, &dir)))
+>  		return H_TOO_HARD;
+> =20
+>  	if (dir =3D=3D DMA_NONE)
+> @@ -441,7 +442,7 @@ static long kvmppc_tce_iommu_do_unmap(struct kvm *kvm,
+> =20
+>  	ret =3D kvmppc_tce_iommu_mapped_dec(kvm, tbl, entry);
+>  	if (ret !=3D H_SUCCESS)
+> -		iommu_tce_xchg(tbl, entry, &hpa, &dir);
+> +		iommu_tce_xchg(kvm->mm, tbl, entry, &hpa, &dir);
+> =20
+>  	return ret;
+>  }
+> @@ -487,7 +488,7 @@ long kvmppc_tce_iommu_do_map(struct kvm *kvm, struct =
+iommu_table *tbl,
+>  	if (mm_iommu_mapped_inc(mem))
+>  		return H_TOO_HARD;
+> =20
+> -	ret =3D iommu_tce_xchg(tbl, entry, &hpa, &dir);
+> +	ret =3D iommu_tce_xchg(kvm->mm, tbl, entry, &hpa, &dir);
+>  	if (WARN_ON_ONCE(ret)) {
+>  		mm_iommu_mapped_dec(mem);
+>  		return H_TOO_HARD;
+> @@ -566,7 +567,7 @@ long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned=
+ long liobn,
+>  					entry, ua, dir);
+> =20
+>  		if (ret !=3D H_SUCCESS) {
+> -			kvmppc_clear_tce(stit->tbl, entry);
+> +			kvmppc_clear_tce(vcpu->kvm->mm, stit->tbl, entry);
+>  			goto unlock_exit;
+>  		}
+>  	}
+> @@ -655,7 +656,8 @@ long kvmppc_h_put_tce_indirect(struct kvm_vcpu *vcpu,
+>  					iommu_tce_direction(tce));
+> =20
+>  			if (ret !=3D H_SUCCESS) {
+> -				kvmppc_clear_tce(stit->tbl, entry);
+> +				kvmppc_clear_tce(vcpu->kvm->mm, stit->tbl,
+> +						entry);
+>  				goto unlock_exit;
+>  			}
+>  		}
+> @@ -704,7 +706,7 @@ long kvmppc_h_stuff_tce(struct kvm_vcpu *vcpu,
+>  				return ret;
+> =20
+>  			WARN_ON_ONCE(1);
+> -			kvmppc_clear_tce(stit->tbl, entry);
+> +			kvmppc_clear_tce(vcpu->kvm->mm, stit->tbl, entry);
+>  		}
+>  	}
+> =20
 > diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_co=
 ntext_iommu.c
-> index 1d5161f..580d89e 100644
+> index 580d89e..663feb0 100644
 > --- a/arch/powerpc/mm/mmu_context_iommu.c
 > +++ b/arch/powerpc/mm/mmu_context_iommu.c
-> @@ -89,7 +89,7 @@ bool mm_iommu_preregistered(struct mm_struct *mm)
+> @@ -47,6 +47,8 @@ struct mm_iommu_table_group_mem_t {
+>  		struct page **hpages;	/* vmalloc'ed */
+>  		phys_addr_t *hpas;
+>  	};
+> +#define MM_IOMMU_TABLE_INVALID_HPA	((uint64_t)-1)
+> +	u64 dev_hpa;		/* Device memory base address */
+>  };
+> =20
+>  static long mm_iommu_adjust_locked_vm(struct mm_struct *mm,
+> @@ -89,7 +91,8 @@ bool mm_iommu_preregistered(struct mm_struct *mm)
 >  }
 >  EXPORT_SYMBOL_GPL(mm_iommu_preregistered);
 > =20
-> -long mm_iommu_get(struct mm_struct *mm, unsigned long ua, unsigned long =
+> -long mm_iommu_new(struct mm_struct *mm, unsigned long ua, unsigned long =
 entries,
-> +long mm_iommu_new(struct mm_struct *mm, unsigned long ua, unsigned long =
-entries,
+> +static long mm_iommu_do_alloc(struct mm_struct *mm, unsigned long ua,
+> +		unsigned long entries, unsigned long dev_hpa,
 >  		struct mm_iommu_table_group_mem_t **pmem)
 >  {
 >  	struct mm_iommu_table_group_mem_t *mem;
-> @@ -102,12 +102,6 @@ long mm_iommu_get(struct mm_struct *mm, unsigned lon=
-g ua, unsigned long entries,
+> @@ -112,11 +115,13 @@ long mm_iommu_new(struct mm_struct *mm, unsigned lo=
+ng ua, unsigned long entries,
 > =20
->  	list_for_each_entry_rcu(mem, &mm->context.iommu_group_mem_list,
->  			next) {
-> -		if ((mem->ua =3D=3D ua) && (mem->entries =3D=3D entries)) {
-> -			++mem->used;
-> -			*pmem =3D mem;
-> -			goto unlock_exit;
-> -		}
-> -
->  		/* Overlap? */
->  		if ((mem->ua < (ua + (entries << PAGE_SHIFT))) &&
->  				(ua < (mem->ua +
-> @@ -202,7 +196,7 @@ long mm_iommu_get(struct mm_struct *mm, unsigned long=
+>  	}
+> =20
+> -	ret =3D mm_iommu_adjust_locked_vm(mm, entries, true);
+> -	if (ret)
+> -		goto unlock_exit;
+> +	if (dev_hpa =3D=3D MM_IOMMU_TABLE_INVALID_HPA) {
+> +		ret =3D mm_iommu_adjust_locked_vm(mm, entries, true);
+> +		if (ret)
+> +			goto unlock_exit;
+> =20
+> -	locked_entries =3D entries;
+> +		locked_entries =3D entries;
+> +	}
+> =20
+>  	mem =3D kzalloc(sizeof(*mem), GFP_KERNEL);
+>  	if (!mem) {
+> @@ -124,6 +129,13 @@ long mm_iommu_new(struct mm_struct *mm, unsigned lon=
+g ua, unsigned long entries,
+>  		goto unlock_exit;
+>  	}
+> =20
+> +	if (dev_hpa !=3D MM_IOMMU_TABLE_INVALID_HPA) {
+> +		mem->pageshift =3D __ffs(dev_hpa | (entries << PAGE_SHIFT));
+> +		mem->dev_hpa =3D dev_hpa;
+> +		goto good_exit;
+> +	}
+> +	mem->dev_hpa =3D MM_IOMMU_TABLE_INVALID_HPA;
+> +
+>  	/*
+>  	 * For a starting point for a maximum page size calculation
+>  	 * we use @ua and @entries natural alignment to allow IOMMU pages
+> @@ -180,6 +192,7 @@ long mm_iommu_new(struct mm_struct *mm, unsigned long=
  ua, unsigned long entries,
 > =20
+>  	}
+> =20
+> +good_exit:
+>  	atomic64_set(&mem->mapped, 1);
+>  	mem->used =3D 1;
+>  	mem->ua =3D ua;
+> @@ -196,13 +209,31 @@ long mm_iommu_new(struct mm_struct *mm, unsigned lo=
+ng ua, unsigned long entries,
+> =20
 >  	return ret;
 >  }
-> -EXPORT_SYMBOL_GPL(mm_iommu_get);
-> +EXPORT_SYMBOL_GPL(mm_iommu_new);
+> +
+> +long mm_iommu_new(struct mm_struct *mm, unsigned long ua, unsigned long =
+entries,
+> +		struct mm_iommu_table_group_mem_t **pmem)
+> +{
+> +	return mm_iommu_do_alloc(mm, ua, entries, MM_IOMMU_TABLE_INVALID_HPA,
+> +			pmem);
+> +}
+>  EXPORT_SYMBOL_GPL(mm_iommu_new);
 > =20
+> +long mm_iommu_newdev(struct mm_struct *mm, unsigned long ua,
+> +		unsigned long entries, unsigned long dev_hpa,
+> +		struct mm_iommu_table_group_mem_t **pmem)
+> +{
+> +	return mm_iommu_do_alloc(mm, ua, entries, dev_hpa, pmem);
+> +}
+> +EXPORT_SYMBOL_GPL(mm_iommu_newdev);
+> +
 >  static void mm_iommu_unpin(struct mm_iommu_table_group_mem_t *mem)
 >  {
-> @@ -318,21 +312,26 @@ struct mm_iommu_table_group_mem_t *mm_iommu_lookup_=
-rm(struct mm_struct *mm,
->  	return ret;
->  }
+>  	long i;
+>  	struct page *page =3D NULL;
 > =20
-> -struct mm_iommu_table_group_mem_t *mm_iommu_find(struct mm_struct *mm,
-> +struct mm_iommu_table_group_mem_t *mm_iommu_get(struct mm_struct *mm,
->  		unsigned long ua, unsigned long entries)
->  {
->  	struct mm_iommu_table_group_mem_t *mem, *ret =3D NULL;
-> =20
-> +	mutex_lock(&mem_list_mutex);
+> +	if (!mem->hpas)
+> +		return;
 > +
->  	list_for_each_entry_rcu(mem, &mm->context.iommu_group_mem_list, next) {
->  		if ((mem->ua =3D=3D ua) && (mem->entries =3D=3D entries)) {
->  			ret =3D mem;
-> +			++mem->used;
->  			break;
->  		}
+>  	for (i =3D 0; i < mem->entries; ++i) {
+>  		if (!mem->hpas[i])
+>  			continue;
+> @@ -244,6 +275,7 @@ static void mm_iommu_release(struct mm_iommu_table_gr=
+oup_mem_t *mem)
+>  long mm_iommu_put(struct mm_struct *mm, struct mm_iommu_table_group_mem_=
+t *mem)
+>  {
+>  	long ret =3D 0;
+> +	unsigned long entries, dev_hpa;
+> =20
+>  	mutex_lock(&mem_list_mutex);
+> =20
+> @@ -265,9 +297,12 @@ long mm_iommu_put(struct mm_struct *mm, struct mm_io=
+mmu_table_group_mem_t *mem)
 >  	}
 > =20
-> +	mutex_unlock(&mem_list_mutex);
-> +
->  	return ret;
->  }
-> -EXPORT_SYMBOL_GPL(mm_iommu_find);
-> +EXPORT_SYMBOL_GPL(mm_iommu_get);
+>  	/* @mapped became 0 so now mappings are disabled, release the region */
+> +	entries =3D mem->entries;
+> +	dev_hpa =3D mem->dev_hpa;
+>  	mm_iommu_release(mem);
 > =20
->  long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
+> -	mm_iommu_adjust_locked_vm(mm, mem->entries, false);
+> +	if (dev_hpa =3D=3D MM_IOMMU_TABLE_INVALID_HPA)
+> +		mm_iommu_adjust_locked_vm(mm, entries, false);
+> =20
+>  unlock_exit:
+>  	mutex_unlock(&mem_list_mutex);
+> @@ -337,7 +372,7 @@ long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_m=
+em_t *mem,
 >  		unsigned long ua, unsigned int pageshift, unsigned long *hpa)
-> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iomm=
-u_spapr_tce.c
-> index ad63725..56db071 100644
-> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
-> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> @@ -151,12 +151,13 @@ static long tce_iommu_unregister_pages(struct tce_c=
-ontainer *container,
 >  {
->  	struct mm_iommu_table_group_mem_t *mem;
->  	struct tce_iommu_prereg *tcemem;
-> -	bool found =3D false;
-> +	bool found;
-> +	long ret;
+>  	const long entry =3D (ua - mem->ua) >> PAGE_SHIFT;
+> -	u64 *va =3D &mem->hpas[entry];
+> +	u64 *va;
 > =20
->  	if ((vaddr & ~PAGE_MASK) || (size & ~PAGE_MASK))
->  		return -EINVAL;
+>  	if (entry >=3D mem->entries)
+>  		return -EFAULT;
+> @@ -345,6 +380,12 @@ long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_=
+mem_t *mem,
+>  	if (pageshift > mem->pageshift)
+>  		return -EFAULT;
 > =20
-> -	mem =3D mm_iommu_find(container->mm, vaddr, size >> PAGE_SHIFT);
-> +	mem =3D mm_iommu_get(container->mm, vaddr, size >> PAGE_SHIFT);
->  	if (!mem)
->  		return -ENOENT;
-> =20
-> @@ -168,9 +169,13 @@ static long tce_iommu_unregister_pages(struct tce_co=
-ntainer *container,
->  	}
-> =20
->  	if (!found)
-> -		return -ENOENT;
-> +		ret =3D -ENOENT;
-> +	else
-> +		ret =3D tce_iommu_prereg_free(container, tcemem);
-> =20
-> -	return tce_iommu_prereg_free(container, tcemem);
-> +	mm_iommu_put(container->mm, mem);
+> +	if (!mem->hpas) {
+> +		*hpa =3D mem->dev_hpa + (ua - mem->ua);
+> +		return 0;
+> +	}
 > +
-> +	return ret;
->  }
-> =20
->  static long tce_iommu_register_pages(struct tce_container *container,
-> @@ -185,22 +190,24 @@ static long tce_iommu_register_pages(struct tce_con=
-tainer *container,
->  			((vaddr + size) < vaddr))
->  		return -EINVAL;
-> =20
-> -	mem =3D mm_iommu_find(container->mm, vaddr, entries);
-> +	mem =3D mm_iommu_get(container->mm, vaddr, entries);
->  	if (mem) {
->  		list_for_each_entry(tcemem, &container->prereg_list, next) {
-> -			if (tcemem->mem =3D=3D mem)
-> -				return -EBUSY;
-> +			if (tcemem->mem =3D=3D mem) {
-> +				ret =3D -EBUSY;
-> +				goto put_exit;
-> +			}
->  		}
-> +	} else {
-> +		ret =3D mm_iommu_new(container->mm, vaddr, entries, &mem);
-> +		if (ret)
-> +			return ret;
->  	}
-> =20
-> -	ret =3D mm_iommu_get(container->mm, vaddr, entries, &mem);
-> -	if (ret)
-> -		return ret;
-> -
->  	tcemem =3D kzalloc(sizeof(*tcemem), GFP_KERNEL);
->  	if (!tcemem) {
-> -		mm_iommu_put(container->mm, mem);
-> -		return -ENOMEM;
-> +		ret =3D -ENOMEM;
-> +		goto put_exit;
->  	}
-> =20
->  	tcemem->mem =3D mem;
-> @@ -209,6 +216,10 @@ static long tce_iommu_register_pages(struct tce_cont=
-ainer *container,
->  	container->enabled =3D true;
+> +	va =3D &mem->hpas[entry];
+>  	*hpa =3D (*va & MM_IOMMU_TABLE_GROUP_PAGE_MASK) | (ua & ~PAGE_MASK);
 > =20
 >  	return 0;
+> @@ -355,7 +396,6 @@ long mm_iommu_ua_to_hpa_rm(struct mm_iommu_table_grou=
+p_mem_t *mem,
+>  		unsigned long ua, unsigned int pageshift, unsigned long *hpa)
+>  {
+>  	const long entry =3D (ua - mem->ua) >> PAGE_SHIFT;
+> -	void *va =3D &mem->hpas[entry];
+>  	unsigned long *pa;
+> =20
+>  	if (entry >=3D mem->entries)
+> @@ -364,7 +404,12 @@ long mm_iommu_ua_to_hpa_rm(struct mm_iommu_table_gro=
+up_mem_t *mem,
+>  	if (pageshift > mem->pageshift)
+>  		return -EFAULT;
+> =20
+> -	pa =3D (void *) vmalloc_to_phys(va);
+> +	if (!mem->hpas) {
+> +		*hpa =3D mem->dev_hpa + (ua - mem->ua);
+> +		return 0;
+> +	}
 > +
-> +put_exit:
-> +	mm_iommu_put(container->mm, mem);
-> +	return ret;
+> +	pa =3D (void *) vmalloc_to_phys(&mem->hpas[entry]);
+>  	if (!pa)
+>  		return -EFAULT;
+> =20
+> @@ -384,6 +429,9 @@ extern void mm_iommu_ua_mark_dirty_rm(struct mm_struc=
+t *mm, unsigned long ua)
+>  	if (!mem)
+>  		return;
+> =20
+> +	if (mem->dev_hpa !=3D MM_IOMMU_TABLE_INVALID_HPA)
+> +		return;
+> +
+>  	entry =3D (ua - mem->ua) >> PAGE_SHIFT;
+>  	va =3D &mem->hpas[entry];
+> =20
+> @@ -394,6 +442,26 @@ extern void mm_iommu_ua_mark_dirty_rm(struct mm_stru=
+ct *mm, unsigned long ua)
+>  	*pa |=3D MM_IOMMU_TABLE_GROUP_PAGE_DIRTY;
 >  }
 > =20
->  static bool tce_page_is_contained(struct page *page, unsigned page_shift)
+> +extern bool mm_iommu_is_devmem(struct mm_struct *mm, unsigned long hpa,
+> +		unsigned int pageshift)
+> +{
+> +	struct mm_iommu_table_group_mem_t *mem;
+> +	const unsigned long pagesize =3D 1UL << pageshift;
+> +
+> +	list_for_each_entry_rcu(mem, &mm->context.iommu_group_mem_list, next) {
+> +		if (mem->dev_hpa =3D=3D MM_IOMMU_TABLE_INVALID_HPA)
+> +			continue;
+> +
+> +		if ((mem->dev_hpa <=3D hpa) &&
+> +				(hpa + pagesize <=3D mem->dev_hpa +
+> +				 (mem->entries << PAGE_SHIFT)))
+> +			return true;
+> +	}
+> +
+> +	return false;
+> +}
+> +EXPORT_SYMBOL_GPL(mm_iommu_is_devmem);
+> +
+>  long mm_iommu_mapped_inc(struct mm_iommu_table_group_mem_t *mem)
+>  {
+>  	if (atomic64_inc_not_zero(&mem->mapped))
+> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iomm=
+u_spapr_tce.c
+> index 56db071..ed89137 100644
+> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
+> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+> @@ -222,8 +222,15 @@ static long tce_iommu_register_pages(struct tce_cont=
+ainer *container,
+>  	return ret;
+>  }
+> =20
+> -static bool tce_page_is_contained(struct page *page, unsigned page_shift)
+> +static bool tce_page_is_contained(struct mm_struct *mm, unsigned long hp=
+a,
+> +		unsigned int page_shift)
+>  {
+> +	struct page *page;
+> +
+> +	if (mm_iommu_is_devmem(mm, hpa, page_shift))
+> +		return true;
+> +
+> +	page =3D pfn_to_page(hpa >> PAGE_SHIFT);
+>  	/*
+>  	 * Check that the TCE table granularity is not bigger than the size of
+>  	 * a page we just found. Otherwise the hardware can get access to
+> @@ -499,7 +506,8 @@ static int tce_iommu_clear(struct tce_container *cont=
+ainer,
+> =20
+>  		direction =3D DMA_NONE;
+>  		oldhpa =3D 0;
+> -		ret =3D iommu_tce_xchg(tbl, entry, &oldhpa, &direction);
+> +		ret =3D iommu_tce_xchg(container->mm, tbl, entry, &oldhpa,
+> +				&direction);
+>  		if (ret)
+>  			continue;
+> =20
+> @@ -537,7 +545,6 @@ static long tce_iommu_build(struct tce_container *con=
+tainer,
+>  		enum dma_data_direction direction)
+>  {
+>  	long i, ret =3D 0;
+> -	struct page *page;
+>  	unsigned long hpa;
+>  	enum dma_data_direction dirtmp;
+> =20
+> @@ -548,15 +555,16 @@ static long tce_iommu_build(struct tce_container *c=
+ontainer,
+>  		if (ret)
+>  			break;
+> =20
+> -		page =3D pfn_to_page(hpa >> PAGE_SHIFT);
+> -		if (!tce_page_is_contained(page, tbl->it_page_shift)) {
+> +		if (!tce_page_is_contained(container->mm, hpa,
+> +				tbl->it_page_shift)) {
+>  			ret =3D -EPERM;
+>  			break;
+>  		}
+> =20
+>  		hpa |=3D offset;
+>  		dirtmp =3D direction;
+> -		ret =3D iommu_tce_xchg(tbl, entry + i, &hpa, &dirtmp);
+> +		ret =3D iommu_tce_xchg(container->mm, tbl, entry + i, &hpa,
+> +				&dirtmp);
+>  		if (ret) {
+>  			tce_iommu_unuse_page(container, hpa);
+>  			pr_err("iommu_tce: %s failed ioba=3D%lx, tce=3D%lx, ret=3D%ld\n",
+> @@ -583,7 +591,6 @@ static long tce_iommu_build_v2(struct tce_container *=
+container,
+>  		enum dma_data_direction direction)
+>  {
+>  	long i, ret =3D 0;
+> -	struct page *page;
+>  	unsigned long hpa;
+>  	enum dma_data_direction dirtmp;
+> =20
+> @@ -596,8 +603,8 @@ static long tce_iommu_build_v2(struct tce_container *=
+container,
+>  		if (ret)
+>  			break;
+> =20
+> -		page =3D pfn_to_page(hpa >> PAGE_SHIFT);
+> -		if (!tce_page_is_contained(page, tbl->it_page_shift)) {
+> +		if (!tce_page_is_contained(container->mm, hpa,
+> +				tbl->it_page_shift)) {
+>  			ret =3D -EPERM;
+>  			break;
+>  		}
+> @@ -610,7 +617,8 @@ static long tce_iommu_build_v2(struct tce_container *=
+container,
+>  		if (mm_iommu_mapped_inc(mem))
+>  			break;
+> =20
+> -		ret =3D iommu_tce_xchg(tbl, entry + i, &hpa, &dirtmp);
+> +		ret =3D iommu_tce_xchg(container->mm, tbl, entry + i, &hpa,
+> +				&dirtmp);
+>  		if (ret) {
+>  			/* dirtmp cannot be DMA_NONE here */
+>  			tce_iommu_unuse_page_v2(container, tbl, entry + i);
 
 --=20
 David Gibson			| I'll have my music baroque, and my code
@@ -317,24 +601,24 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---TYecfFk8j8mZq+dy
+--zbGR4y+acU1DwHSi
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlwHU0wACgkQbDjKyiDZ
-s5KnhRAAs3Q+zg6x2O5U0F0+pji0tZ6iNB5d7pDR8TUjvQkSe9aYwqoX9N8IZOWY
-H6ESdgQZo0muLDKqbVGpB4kRphrtgyskCyVh+ItmKl8tL8HxzvB6sGe2BKksu0IG
-kpwFaAguK4RmLIPHfjh+yAj6oeG5wjSNv2ik4WZUUjbvJ8JL4lkkSDmsUALbAMdh
-mrxENkd1+KmY4n77ptrMmID8f3o14l3XHuZqELDAi2j1xvipO5+Y9+nitvx0VTTz
-IXN2/Pf2bP6ZcZb87d6n3gxgU4E4H7N1mMHqDwF4FLWaEB2wDdg/qET5ZFWErGUN
-HGJRRIquFhBBV/Ba6ZY4KhjAMCIrkOiobL25gdYbki2yZ0BCxhR7/M8uwFMFoSLk
-02gMRS/TquLcSSBms2Sg9fyTtDKLRs018VtQEgW9vbBwO7UqeZb8KS2tqDGr5AkO
-RdnAG0u3tNfUmVoDOPtOSh3lIKn6jnB5+Ezn9yTspViIucxIGtmPeajBnfYdbqJE
-99jIoq1X/WI9pLE0c7MduiVxZ7kEktPSmZWza/yILtg1dYIaaZaSku1c12rVanHV
-SCeoRs/mZodM5GvU3GQM1xeMm8q4TzChuZ1snK6g8sMY6K+b8ASjq2bX0xwUYXSF
-P4ZmC5we14elw46auuMCsnnXTC6nWt9qi/ZLfngK/viCbNDC1ao=
-=dmMg
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlwHVYkACgkQbDjKyiDZ
+s5KcGA//T7JRymNizgiguCIAcjZ9u8VGlIAGxkijTA9DLwEH3vQUWZm+C1fn3+Tv
+QJybkx3yd9L6w+G7hhnvQrWMSiDK5PI2gwbfC9wEw9eBr8/W6PMwhnJ9Xs1VfZEo
+j2ZJhqnq0a/wLBgAN1AYTDQNpwvGOrs2fQtNXQZaIsxoQmQgaUWKRhSKBpg4IpeQ
+VtTbowQLWvBPbvgXllDMFQQE/LB0+bJdIUUp1wTUOerkzzxKG1MUhHrFoIjm4A2N
+IP/0ZVulqKCRXEPDK6CSu0g9ifl5kezf2Q3xd8oGZYBsCdiogYaTlF2DG2D8TFYX
+H612Z03hLftbPKZevIUbvbfhfKNSdwOEbG6PbSHvmaueJOIPVKNT2ArFFtRk6N0e
+L5VYJEkD3XyWP0oJX/HLJ20poaZuGkiZ8ZnFrHQNTDsgZCe5m+pWCtwXGwq1NDE7
+ZvrkSIsKQ38/MLRmfkfj7IxzJ/oBgU7ZpbfENxag/5UTYLAigz6mWlA8W1Ygafza
+mp8ajS4gGnJPm83VV9tGcdH8IJf3vGt3RRqTtyBwKBbDIFlEBc8bB0cZkZQjN4Ap
+PF49ba0rk9kRfM7+jNWu1TKsOxHzPsdxOREJEPneeSlJyUUOO8xNn+mH5Ckog+lQ
+XwTvXMuNT5XbSk5pCri27CSHFX16YN72DjvmOb/d6DsXLv9WxHQ=
+=JJlb
 -----END PGP SIGNATURE-----
 
---TYecfFk8j8mZq+dy--
+--zbGR4y+acU1DwHSi--
