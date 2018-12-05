@@ -2,83 +2,72 @@ Return-Path: <SRS0=GwW7=OO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 95E3AC04EB9
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 16:23:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 44BDCC04EB9
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 17:34:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CC0FE2064D
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 16:23:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 6D79A206B7
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 17:34:41 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Ixe8NX7X"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CC0FE2064D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="SDVRmLJo"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6D79A206B7
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4393vN5D6NzDqq7
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 03:23:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4395TC1y6MzDqX8
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 04:34:39 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="Ixe8NX7X";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="SDVRmLJo";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=luto@kernel.org;
- receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=infradead.org
+ (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
+ envelope-from=willy@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="Ixe8NX7X"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.b="SDVRmLJo"; dkim-atps=neutral
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4393rY6VTLzDqwV
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Dec 2018 03:21:17 +1100 (AEDT)
-Received: from mail-wm1-f43.google.com (mail-wm1-f43.google.com
- [209.85.128.43])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 7AFF72146D
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Dec 2018 16:21:15 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1544026875;
- bh=ylkGGNQc2t4F8OSLDLnE0b+lc3fR5N1m4Py05stsJmc=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=Ixe8NX7XiIQfJ+xzI9p+nyvbG6df4xV3YrmB8cWIIuAD+du0dgFQj646Opm2LGUIw
- uQK1um3VtJc1YtpXOlINhwI24+sD+p7xUYXxbW05qzljOEZTXIh2WgCoLYm63loiQ+
- eg8wfEXu0B4C874z7MMRPyleHzLL0j80yp0AKsDs=
-Received: by mail-wm1-f43.google.com with SMTP id q26so13465091wmf.5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Dec 2018 08:21:15 -0800 (PST)
-X-Gm-Message-State: AA+aEWaRKX0p4VALIQ+U5mQtqdNfoY1vIHOyW5D8rgWYwvM9VcRGnaBu
- smuH9LpPI6+Kyua3YDQmcfeAFwIenGRNn7HqvQSawQ==
-X-Google-Smtp-Source: AFSGD/W2E9v5fcmwdohvHVqwPc8eF1cGEsMldY/9/6+P4SJvzZYTacIpvtukcN9oJcjrI6JNiCno0SZ1oFN8/39jjwg=
-X-Received: by 2002:a1c:864f:: with SMTP id i76mr12566747wmd.83.1544026873916; 
- Wed, 05 Dec 2018 08:21:13 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4395QG1GgVzDqvp
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Dec 2018 04:32:06 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
+ :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+ Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+ List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=RdrY3P1cNmaV9ItIQ4yjB9qAqpkVJ/dzzD9kY8jmt5c=; b=SDVRmLJotdymrXNnDKMsNc3TZ
+ aILEa+7Dn/LsKJz2L8u+TeGH3qaM9XHE85ijGedcmvmC4UvYmkNs+aGM91FbEpfWmVonSkLeWZxHD
+ 5DhlHwsLLJ2FnzM/jbr/LIS/4uuxvrlKsWQaBf/sojsW9vphIyoCS/DUBuNIMDg1z0N0gZnp9fG/J
+ zcAR/q3jM+D3P6PzFTGgB6wNf6VgkFs1mhRKPbiCbytkMQSB0DoN85a2BPUUrbuVTc8pFtKPVFH72
+ +nQ409q6abyprryoQ4m8DqmcDS1WhrYIsQhGk10/0j/El7cHOKapqQvmJxu8eCNSx8vdJ1BPBrCS3
+ ybCbzuULw==;
+Received: from willy by bombadil.infradead.org with local (Exim 4.90_1 #2 (Red
+ Hat Linux)) id 1gUb1l-00088G-HT; Wed, 05 Dec 2018 17:32:01 +0000
+Date: Wed, 5 Dec 2018 09:32:01 -0800
+From: Matthew Wilcox <willy@infradead.org>
+To: David Hildenbrand <david@redhat.com>
+Subject: Re: [PATCH RFC 7/7] mm: better document PG_reserved
+Message-ID: <20181205173201.GA11646@bombadil.infradead.org>
+References: <20181205122851.5891-1-david@redhat.com>
+ <20181205122851.5891-8-david@redhat.com>
+ <20181205143510.GA17232@bombadil.infradead.org>
+ <46d0e90f-f0bb-815e-7a5b-4429de1c502a@redhat.com>
 MIME-Version: 1.0
-References: <6f9c65fb-ea7e-8217-a4cc-f93e766ed9bb@intel.com>
- <87k1ln8o7u.fsf@oldenburg.str.redhat.com>
- <20181108201231.GE5481@ram.oc3035372033.ibm.com>
- <87bm6z71yw.fsf@oldenburg.str.redhat.com>
- <20181109180947.GF5481@ram.oc3035372033.ibm.com>
- <87efbqqze4.fsf@oldenburg.str.redhat.com>
- <20181127102350.GA5795@ram.oc3035372033.ibm.com>
- <87zhtuhgx0.fsf@oldenburg.str.redhat.com>
- <58e263a6-9a93-46d6-c5f9-59973064d55e@intel.com>
- <87va4g5d3o.fsf@oldenburg.str.redhat.com>
- <20181203040249.GA11930@ram.oc3035372033.ibm.com>
-In-Reply-To: <20181203040249.GA11930@ram.oc3035372033.ibm.com>
-From: Andy Lutomirski <luto@kernel.org>
-Date: Wed, 5 Dec 2018 08:21:02 -0800
-X-Gmail-Original-Message-ID: <CALCETrXeSQ8T9nvK7WpgPpkraLfg70FoDWvPZeLS3KiDaqXwtw@mail.gmail.com>
-Message-ID: <CALCETrXeSQ8T9nvK7WpgPpkraLfg70FoDWvPZeLS3KiDaqXwtw@mail.gmail.com>
-Subject: Re: pkeys: Reserve PKEY_DISABLE_READ
-To: linuxram@us.ibm.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46d0e90f-f0bb-815e-7a5b-4429de1c502a@redhat.com>
+User-Agent: Mutt/1.9.2 (2017-12-15)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,76 +79,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Florian Weimer <fweimer@redhat.com>, Dave Hansen <dave.hansen@intel.com>,
- Linux API <linux-api@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Linux-MM <linux-mm@kvack.org>
+Cc: linux-s390@vger.kernel.org, Michal Hocko <mhocko@suse.com>,
+ yi.z.zhang@linux.intel.com, Stephen Rothwell <sfr@canb.auug.org.au>,
+ Alexander Duyck <alexander.h.duyck@linux.intel.com>,
+ Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org,
+ Pavel Tatashin <pasha.tatashin@oracle.com>, linux-mm@kvack.org,
+ linux-m68k@lists.linux-m68k.org, linux-mediatek@lists.infradead.org,
+ Miles Chen <miles.chen@mediatek.com>,
+ Anthony Yznaga <anthony.yznaga@oracle.com>, linux-riscv@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-> On Dec 2, 2018, at 8:02 PM, Ram Pai <linuxram@us.ibm.com> wrote:
->
->> On Thu, Nov 29, 2018 at 12:37:15PM +0100, Florian Weimer wrote:
->> * Dave Hansen:
->>
->>>> On 11/27/18 3:57 AM, Florian Weimer wrote:
->>>> I would have expected something that translates PKEY_DISABLE_WRITE |
->>>> PKEY_DISABLE_READ into PKEY_DISABLE_ACCESS, and also accepts
->>>> PKEY_DISABLE_ACCESS | PKEY_DISABLE_READ, for consistency with POWER.
->>>>
->>>> (My understanding is that PKEY_DISABLE_ACCESS does not disable all
->>>> access, but produces execute-only memory.)
->>>
->>> Correct, it disables all data access, but not execution.
->>
->> So I would expect something like this (completely untested, I did not
->> even compile this):
->
->
-> Ok. I re-read through the entire email thread to understand the problem a=
-nd
-> the proposed solution. Let me summarize it below. Lets see if we are on t=
-he same
-> plate.
->
-> So the problem is as follows:
->
-> Currently the kernel supports  'disable-write'  and 'disable-access'.
->
-> On x86, cpu supports 'disable-write' and 'disable-access'. This
-> matches with what the kernel supports. All good.
->
-> However on power, cpu supports 'disable-read' too. Since userspace can
-> program the cpu directly, userspace has the ability to set
-> 'disable-read' too.  This can lead to inconsistency between the kernel
-> and the userspace.
->
-> We want the kernel to match userspace on all architectures.
->
-> Proposed Solution:
->
-> Enhance the kernel to understand 'disable-read', and facilitate architect=
-ures
-> that understand 'disable-read' to allow it.
->
-> Also explicitly define the semantics of disable-access  as
-> 'disable-read and disable-write'
->
-> Did I get this right?  Assuming I did, the implementation has to do
-> the following --
->
->    On power, sys_pkey_alloc() should succeed if the init_val
->    is PKEY_DISABLE_READ, PKEY_DISABLE_WRITE, PKEY_DISABLE_ACCESS
->    or any combination of the three.
->
->    On x86, sys_pkey_alloc() should succeed if the init_val is
->    PKEY_DISABLE_WRITE or PKEY_DISABLE_ACCESS or PKEY_DISABLE_READ
->    or any combination of the three, except  PKEY_DISABLE_READ
->          specified all by itself.
->
->    On all other arches, none of the flags are supported.
+On Wed, Dec 05, 2018 at 04:05:12PM +0100, David Hildenbrand wrote:
+> On 05.12.18 15:35, Matthew Wilcox wrote:
+> > On Wed, Dec 05, 2018 at 01:28:51PM +0100, David Hildenbrand wrote:
+> >> I don't see a reason why we have to document "Some of them might not even
+> >> exist". If there is a user, we should document it. E.g. for balloon
+> >> drivers we now use PG_offline to indicate that a page might currently
+> >> not be backed by memory in the hypervisor. And that is independent from
+> >> PG_reserved.
+> > 
+> > I think you're confused by the meaning of "some of them might not even
+> > exist".  What this means is that there might not be memory there; maybe
+> > writes to that memory will be discarded, or maybe they'll cause a machine
+> > check.  Maybe reads will return ~0, or 0, or cause a machine check.
+> > We just don't know what's there, and we shouldn't try touching the memory.
+> 
+> If there are users, let's document it. And I need more details for that :)
+> 
+> 1. machine check: if there is a HW error, we set PG_hwpoison (except
+> ia64 MCA, see the list)
+> 
+> 2. Writes to that memory will be discarded
+> 
+> Who is the user of that? When will we have such pages right now?
+> 
+> 3. Reads will return ~0, / 0?
+> 
+> I think this is a special case of e.g. x86? But where do we have that,
+> are there any user?
 
-I don=E2=80=99t really love having a situation where you can use different
-flag combinations to refer to the same mode.
+When there are gaps in the physical memory.  As in, if you put that
+physical address on the bus (or in a packet), no device will respond
+to it.  Look:
 
-Also, we should document the effect these flags have on execute permission.
+00000000-00000fff : Reserved
+00001000-00057fff : System RAM
+00058000-00058fff : Reserved
+00059000-0009dfff : System RAM
+0009e000-000fffff : Reserved
+
+Those examples I gave are examples of how various different architectures
+respond to "no device responded to this memory access".
+
