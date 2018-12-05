@@ -2,57 +2,70 @@ Return-Path: <SRS0=GwW7=OO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C0C93C04EB9
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 14:07:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 92182C04EB9
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 14:37:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 744AC2082B
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 14:07:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 744AC2082B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id C6A3320850
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 14:37:55 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="DJsAb1tT"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C6A3320850
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4390tj2XwnzDqlV
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 01:07:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by lists.ozlabs.org (Postfix) with ESMTP id 4391YF4XqhzDqWR
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 01:37:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=lst.de
- (client-ip=213.95.11.211; helo=newverein.lst.de; envelope-from=hch@lst.de;
- receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="DJsAb1tT";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lst.de
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ spf=none (mailfrom) smtp.mailfrom=infradead.org
+ (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
+ envelope-from=willy@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.b="DJsAb1tT"; dkim-atps=neutral
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4390rM1T2dzDqLM
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Dec 2018 01:05:54 +1100 (AEDT)
-Received: by newverein.lst.de (Postfix, from userid 2407)
- id B87B168B03; Wed,  5 Dec 2018 15:05:50 +0100 (CET)
-Date: Wed, 5 Dec 2018 15:05:50 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Christian Zigotzky <chzigotzky@xenosoft.de>
-Subject: Re: use generic DMA mapping code in powerpc V4
-Message-ID: <20181205140550.GA27549@lst.de>
-References: <20181129170351.GC27951@lst.de>
- <d0e04a85-f17d-414e-6fea-971414417430@xenosoft.de>
- <20181130105346.GB26765@lst.de>
- <8694431d-c669-b7b9-99fa-e99db5d45a7d@xenosoft.de>
- <20181130131056.GA5211@lst.de>
- <25999587-2d91-a63c-ed38-c3fb0075d9f1@xenosoft.de>
- <c5202d29-863d-1377-0e2d-762203b317e2@xenosoft.de>
- <58c61afb-290f-6196-c72c-ac7b61b84718@xenosoft.de>
- <20181204142426.GA2743@lst.de>
- <ef56d279-f75d-008e-71ba-7068c1b37c48@xenosoft.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4391VF1FFWzDqvr
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Dec 2018 01:35:15 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
+ :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+ Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+ List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=SUQMdlnKRthCQ62qwHJk8Au9gymYOBsjGwwtw0vjVRU=; b=DJsAb1tT+GGnSKi4lr4stzTll
+ YMfX5dARm9m9yhE99EbWBifMg0ZC5K639PtD3ZFdNP8J9/iTONHMcuTHHyTzF9gwjki30w51j+LQ0
+ je6Bl6Vd+BMgxzenDq4ku2e1UumyLw5pCOjXmKb3EUYOFKidEpkW4htHkdYodq+n5kLb0FDgcDzyZ
+ yrcOmaUlu0Mae3UBRiihJQCsd9Fo3YrOuth/bR+jZweoSDgc8kCBIObBuQ54Qeyiu0TpWN5Yr0Ktf
+ YjyB2HDAYvg3pp+NHYydCwPQi7KZ1GhpiTTpklp0AQkI/YGFSFooqN07BRXTlHt/8VfClcnzaJwuj
+ Ihjp8NmCw==;
+Received: from willy by bombadil.infradead.org with local (Exim 4.90_1 #2 (Red
+ Hat Linux)) id 1gUYGc-0003YG-8t; Wed, 05 Dec 2018 14:35:10 +0000
+Date: Wed, 5 Dec 2018 06:35:10 -0800
+From: Matthew Wilcox <willy@infradead.org>
+To: David Hildenbrand <david@redhat.com>
+Subject: Re: [PATCH RFC 7/7] mm: better document PG_reserved
+Message-ID: <20181205143510.GA17232@bombadil.infradead.org>
+References: <20181205122851.5891-1-david@redhat.com>
+ <20181205122851.5891-8-david@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <ef56d279-f75d-008e-71ba-7068c1b37c48@xenosoft.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20181205122851.5891-8-david@redhat.com>
+User-Agent: Mutt/1.9.2 (2017-12-15)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,34 +77,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Darren Stevens <darren@stevens-zone.net>,
- linux-kernel@vger.kernel.org, Julian Margetson <runaway@candw.ms>,
- linux-mm@kvack.org, iommu@lists.linux-foundation.org,
- Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>,
- linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>
+Cc: linux-s390@vger.kernel.org, Michal Hocko <mhocko@suse.com>,
+ yi.z.zhang@linux.intel.com, Stephen Rothwell <sfr@canb.auug.org.au>,
+ Alexander Duyck <alexander.h.duyck@linux.intel.com>,
+ Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org,
+ Pavel Tatashin <pasha.tatashin@oracle.com>, linux-mm@kvack.org,
+ linux-m68k@lists.linux-m68k.org, linux-mediatek@lists.infradead.org,
+ Miles Chen <miles.chen@mediatek.com>,
+ Anthony Yznaga <anthony.yznaga@oracle.com>, linux-riscv@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Dec 05, 2018 at 10:44:05AM +0100, Christian Zigotzky wrote:
-> Thanks for your reply. I undid all dma mapping commits with the following 
-> command:
->
-> git checkout 721c01ba8b46ddb5355bd6e6b3bbfdabfdf01e97
->
-> After that I compiled the kernels with this code for my P5020 board (Cyrus) 
-> and for my PASEMI board (Nemo) today.
->
-> Result: PASEMI onboard ethernet works again and the P5020 board boots.
->
-> It seems the dma mapping commits are the problem.
+On Wed, Dec 05, 2018 at 01:28:51PM +0100, David Hildenbrand wrote:
+> I don't see a reason why we have to document "Some of them might not even
+> exist". If there is a user, we should document it. E.g. for balloon
+> drivers we now use PG_offline to indicate that a page might currently
+> not be backed by memory in the hypervisor. And that is independent from
+> PG_reserved.
 
-Thanks.  Can you try a few stepping points in the tree?
+I think you're confused by the meaning of "some of them might not even
+exist".  What this means is that there might not be memory there; maybe
+writes to that memory will be discarded, or maybe they'll cause a machine
+check.  Maybe reads will return ~0, or 0, or cause a machine check.
+We just don't know what's there, and we shouldn't try touching the memory.
 
-First just with commit 7fd3bb05b73beea1f9840b505aa09beb9c75a8c6
-(the first one) applied?
+> +++ b/include/linux/page-flags.h
+> @@ -17,8 +17,22 @@
+>  /*
+>   * Various page->flags bits:
+>   *
+> - * PG_reserved is set for special pages, which can never be swapped out. Some
+> - * of them might not even exist...
+> + * PG_reserved is set for special pages. The "struct page" of such a page
+> + * should in general not be touched (e.g. set dirty) except by their owner.
+> + * Pages marked as PG_reserved include:
+> + * - Kernel image (including vDSO) and similar (e.g. BIOS, initrd)
+> + * - Pages allocated early during boot (bootmem, memblock)
+> + * - Zero pages
+> + * - Pages that have been associated with a zone but are not available for
+> + *   the page allocator (e.g. excluded via online_page_callback())
+> + * - Pages to exclude from the hibernation image (e.g. loaded kexec images)
+> + * - MMIO pages (communicate with a device, special caching strategy needed)
+> + * - MCA pages on ia64 (pages with memory errors)
+> + * - Device memory (e.g. PMEM, DAX, HMM)
+> + * Some architectures don't allow to ioremap pages that are not marked
+> + * PG_reserved (as they might be in use by somebody else who does not respect
+> + * the caching strategy). Consequently, PG_reserved for a page mapped into
+> + * user space can indicate the zero page, the vDSO, MMIO pages or device memory.
 
-Second with all commits up to 5da11e49df21f21dac25a2491aa788307bdacb6b
-
-And if that still works with commits up to
-c1bfcad4b0cf38ce5b00f7ad880d3a13484c123a
+So maybe just add one more option to the list.
