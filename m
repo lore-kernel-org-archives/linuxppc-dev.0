@@ -3,71 +3,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44BDCC04EB9
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 17:34:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E051AC04EB9
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 17:52:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6D79A206B7
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 17:34:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5018C213A2
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Dec 2018 17:52:09 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="SDVRmLJo"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6D79A206B7
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="c6GXKa9O"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5018C213A2
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4395TC1y6MzDqX8
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 04:34:39 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4395sM1QsjzDqwb
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 04:52:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="SDVRmLJo";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="c6GXKa9O";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=infradead.org
- (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
- envelope-from=willy@infradead.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=vkoul@kernel.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="SDVRmLJo"; dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="c6GXKa9O"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4395pQ1GTyzDqv2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Dec 2018 04:49:33 +1100 (AEDT)
+Received: from localhost (unknown [106.201.124.178])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4395QG1GgVzDqvp
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Dec 2018 04:32:06 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
- :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=RdrY3P1cNmaV9ItIQ4yjB9qAqpkVJ/dzzD9kY8jmt5c=; b=SDVRmLJotdymrXNnDKMsNc3TZ
- aILEa+7Dn/LsKJz2L8u+TeGH3qaM9XHE85ijGedcmvmC4UvYmkNs+aGM91FbEpfWmVonSkLeWZxHD
- 5DhlHwsLLJ2FnzM/jbr/LIS/4uuxvrlKsWQaBf/sojsW9vphIyoCS/DUBuNIMDg1z0N0gZnp9fG/J
- zcAR/q3jM+D3P6PzFTGgB6wNf6VgkFs1mhRKPbiCbytkMQSB0DoN85a2BPUUrbuVTc8pFtKPVFH72
- +nQ409q6abyprryoQ4m8DqmcDS1WhrYIsQhGk10/0j/El7cHOKapqQvmJxu8eCNSx8vdJ1BPBrCS3
- ybCbzuULw==;
-Received: from willy by bombadil.infradead.org with local (Exim 4.90_1 #2 (Red
- Hat Linux)) id 1gUb1l-00088G-HT; Wed, 05 Dec 2018 17:32:01 +0000
-Date: Wed, 5 Dec 2018 09:32:01 -0800
-From: Matthew Wilcox <willy@infradead.org>
-To: David Hildenbrand <david@redhat.com>
-Subject: Re: [PATCH RFC 7/7] mm: better document PG_reserved
-Message-ID: <20181205173201.GA11646@bombadil.infradead.org>
-References: <20181205122851.5891-1-david@redhat.com>
- <20181205122851.5891-8-david@redhat.com>
- <20181205143510.GA17232@bombadil.infradead.org>
- <46d0e90f-f0bb-815e-7a5b-4429de1c502a@redhat.com>
+ by mail.kernel.org (Postfix) with ESMTPSA id F244E2084C;
+ Wed,  5 Dec 2018 17:49:30 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1544032171;
+ bh=MePwmX+i9XEEu4ESz9qr//H9dp5rCVBzexST1kjLkMU=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=c6GXKa9OxlEaOASE2gnOLGv+fX2M6vkY2VnJhIlctwRaAlncLrG1MKVOKoo+Fgr5O
+ /kT74gTjNQigb1xten6xmcrRTaq3h/2KQoN48l4q6bEadwX1uBjnsG6KbDMLni8Oe7
+ yvepgPSvFYdjG9tsGvzBVRLT3wVvfXsJfaCh0bJg=
+Date: Wed, 5 Dec 2018 23:19:23 +0530
+From: Vinod Koul <vkoul@kernel.org>
+To: Peng Ma <peng.ma@nxp.com>
+Subject: Re: [v11 1/7] dmaengine: fsldma: Replace DMA_IN/OUT by FSL_DMA_IN/OUT
+Message-ID: <20181205174923.GU2847@vkoul-mobl>
+References: <20181030023604.34027-1-peng.ma@nxp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46d0e90f-f0bb-815e-7a5b-4429de1c502a@redhat.com>
-User-Agent: Mutt/1.9.2 (2017-12-15)
+In-Reply-To: <20181030023604.34027-1-peng.ma@nxp.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,59 +73,21 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390@vger.kernel.org, Michal Hocko <mhocko@suse.com>,
- yi.z.zhang@linux.intel.com, Stephen Rothwell <sfr@canb.auug.org.au>,
- Alexander Duyck <alexander.h.duyck@linux.intel.com>,
- Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org,
- Pavel Tatashin <pasha.tatashin@oracle.com>, linux-mm@kvack.org,
- linux-m68k@lists.linux-m68k.org, linux-mediatek@lists.infradead.org,
- Miles Chen <miles.chen@mediatek.com>,
- Anthony Yznaga <anthony.yznaga@oracle.com>, linux-riscv@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, Wen He <wen.he_1@nxp.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ leoyang.li@nxp.com, zw@zh-kernel.org, robh+dt@kernel.org,
+ dmaengine@vger.kernel.org, dan.j.williams@intel.com, shawnguo@kernel.org,
  linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Dec 05, 2018 at 04:05:12PM +0100, David Hildenbrand wrote:
-> On 05.12.18 15:35, Matthew Wilcox wrote:
-> > On Wed, Dec 05, 2018 at 01:28:51PM +0100, David Hildenbrand wrote:
-> >> I don't see a reason why we have to document "Some of them might not even
-> >> exist". If there is a user, we should document it. E.g. for balloon
-> >> drivers we now use PG_offline to indicate that a page might currently
-> >> not be backed by memory in the hypervisor. And that is independent from
-> >> PG_reserved.
-> > 
-> > I think you're confused by the meaning of "some of them might not even
-> > exist".  What this means is that there might not be memory there; maybe
-> > writes to that memory will be discarded, or maybe they'll cause a machine
-> > check.  Maybe reads will return ~0, or 0, or cause a machine check.
-> > We just don't know what's there, and we shouldn't try touching the memory.
+On 30-10-18, 10:35, Peng Ma wrote:
+> From: Wen He <wen.he_1@nxp.com>
 > 
-> If there are users, let's document it. And I need more details for that :)
-> 
-> 1. machine check: if there is a HW error, we set PG_hwpoison (except
-> ia64 MCA, see the list)
-> 
-> 2. Writes to that memory will be discarded
-> 
-> Who is the user of that? When will we have such pages right now?
-> 
-> 3. Reads will return ~0, / 0?
-> 
-> I think this is a special case of e.g. x86? But where do we have that,
-> are there any user?
+> This patch implement a standard macro call functions is
+> used to NXP dma drivers.
 
-When there are gaps in the physical memory.  As in, if you put that
-physical address on the bus (or in a packet), no device will respond
-to it.  Look:
-
-00000000-00000fff : Reserved
-00001000-00057fff : System RAM
-00058000-00058fff : Reserved
-00059000-0009dfff : System RAM
-0009e000-000fffff : Reserved
-
-Those examples I gave are examples of how various different architectures
-respond to "no device responded to this memory access".
-
+Applied all except DTS patches, thanks
+-- 
+~Vinod
