@@ -2,96 +2,117 @@ Return-Path: <SRS0=TW6C=OP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.0 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 15063C64EB1
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 17:32:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0ABA3C04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 18:08:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9493C20850
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 17:32:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9493C20850
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4685B20850
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 18:08:23 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=wavesemi.onmicrosoft.com header.i=@wavesemi.onmicrosoft.com header.b="ChCPscR8"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4685B20850
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=mips.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 439jMl5LP9zDr1c
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 04:32:03 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 439k9d18cxzDr4m
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 05:08:21 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=mips.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=bauerman@linux.ibm.com; receiver=<UNKNOWN>)
+	dkim=pass (1024-bit key; unprotected) header.d=wavesemi.onmicrosoft.com header.i=@wavesemi.onmicrosoft.com header.b="ChCPscR8";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ spf=permerror (mailfrom) smtp.mailfrom=wavecomp.com
+ (client-ip=40.107.68.109; helo=nam04-bn3-obe.outbound.protection.outlook.com;
+ envelope-from=pburton@wavecomp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=mips.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=wavesemi.onmicrosoft.com
+ header.i=@wavesemi.onmicrosoft.com header.b="ChCPscR8"; 
+ dkim-atps=neutral
+Received: from NAM04-BN3-obe.outbound.protection.outlook.com
+ (mail-eopbgr680109.outbound.protection.outlook.com [40.107.68.109])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 439jHj0sXnzDqtk
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 04:28:32 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wB6HOcCh006345
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Dec 2018 12:28:31 -0500
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2p77antsa9-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Dec 2018 12:28:30 -0500
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.ibm.com>;
- Thu, 6 Dec 2018 17:28:30 -0000
-Received: from b03cxnp08027.gho.boulder.ibm.com (9.17.130.19)
- by e32.co.us.ibm.com (192.168.1.132) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 6 Dec 2018 17:28:26 -0000
-Received: from b03ledav005.gho.boulder.ibm.com
- (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wB6HSPWw28639384
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Thu, 6 Dec 2018 17:28:25 GMT
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8F1AEBE054;
- Thu,  6 Dec 2018 17:28:25 +0000 (GMT)
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0804BBE051;
- Thu,  6 Dec 2018 17:28:22 +0000 (GMT)
-Received: from morokweng.localdomain (unknown [9.85.137.244])
- by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTPS;
- Thu,  6 Dec 2018 17:28:22 +0000 (GMT)
-References: <1544095908-2414-1-git-send-email-ego@linux.vnet.ibm.com>
-User-agent: mu4e 1.0; emacs 26.1
-From: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH] pseries/hotplug: Add more delay in pseries_cpu_die while
- waiting for rtas-stop
-In-reply-to: <1544095908-2414-1-git-send-email-ego@linux.vnet.ibm.com>
-Date: Thu, 06 Dec 2018 15:28:17 -0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 439k6h20BVzDrNd
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 05:05:48 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=wavesemi.onmicrosoft.com; s=selector1-wavecomp-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=C7Ym/28FbfYFjo8Kau28UHz6Ma0/EBHpbuB4MA9ZmNI=;
+ b=ChCPscR8Uxg6RfyDn0myrIV5KblnRMkUTNTTOz+L5BxblnB0gj4q09RvthSo1nfv8tE4T8W6yRsU6Aekf5vh6njYZrmlg2vhqz/XGVfu5s4jYXsxPuQaEWG5gQ71mIMSm0mfUdGMZAiZ/E1DsZ33DePsHZClPmEkRxaYd2gzuHE=
+Received: from MWHPR2201MB1277.namprd22.prod.outlook.com (10.174.162.17) by
+ MWHPR2201MB1261.namprd22.prod.outlook.com (10.174.162.13) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.1404.17; Thu, 6 Dec 2018 18:05:42 +0000
+Received: from MWHPR2201MB1277.namprd22.prod.outlook.com
+ ([fe80::2d92:328e:af42:2985]) by MWHPR2201MB1277.namprd22.prod.outlook.com
+ ([fe80::2d92:328e:af42:2985%4]) with mapi id 15.20.1404.021; Thu, 6 Dec 2018
+ 18:05:42 +0000
+From: Paul Burton <paul.burton@mips.com>
+To: Daniel Thompson <daniel.thompson@linaro.org>
+Subject: Re: [PATCH 1/2] mips/kgdb: prepare arch_kgdb_ops for constness
+Thread-Topic: [PATCH 1/2] mips/kgdb: prepare arch_kgdb_ops for constness
+Thread-Index: AQHUjFTCvBEAjV0a3kG9cBZbfyErZqVxwdEAgABCHIA=
+Date: Thu, 6 Dec 2018 18:05:41 +0000
+Message-ID: <20181206180539.fezd6bqce36tgmie@pburton-laptop>
+References: <75bbcdd1e9277d66ebb06e349dda304bd01ce761.1543957194.git.christophe.leroy@c-s.fr>
+ <20181206140902.ea6jlwqrbcwyxp5r@holly.lan>
+In-Reply-To: <20181206140902.ea6jlwqrbcwyxp5r@holly.lan>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-clientproxiedby: MWHPR14CA0021.namprd14.prod.outlook.com
+ (2603:10b6:300:ae::31) To MWHPR2201MB1277.namprd22.prod.outlook.com
+ (2603:10b6:301:24::17)
+user-agent: NeoMutt/20180716
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=pburton@wavecomp.com; 
+x-ms-exchange-messagesentrepresentingtype: 1
+x-originating-ip: [4.16.204.77]
+x-ms-publictraffictype: Email
+x-microsoft-exchange-diagnostics: 1; MWHPR2201MB1261;
+ 6:Kqbme/8dGXWDFEDuuT4QXLURsuOs5QbQ5Xq+jYG4BwjoQPSZnhV3jRlhRdQfuctJXIXPe3a9VsI23WnOlExtXpkwvnNq7wQhjuI3TkzXBOUa/JVLaLoSpI9v5Ii6wKPFDN6BOs1qD7cXXM8pwuOkn9jLbXltvvpZK8LJTWriTok5Rt3inDJCQhTitxWipEpiyvLWTyUkVpWukEwpCMk2ZvUD1P1AMB766mV3YinUAJ9MfxDJ6EbproA3FqyYVIpLriGqbUBZt1VtlrnXN8eUsoWY+t7MqRZVqWXNRuGrFuvprgjGTYznk4u0a4Dxc+EumglvPRgrVjIi48xKdw7neI8AQnG3N7I2NBIFA8HYgNXbH/BBET7kPBjz2fsLrwlT/xotXTpZyA1v3rrRmlQV7rnrKV3JIMreLgayu8/uZHFtAwhBgeAN9JZNdtCBVZ42JVsLYvzwgV26Ne5e/jNRrA==;
+ 5:NSOUjRz/gGVHSxNMh3SdoQ1iiEUm7fkrXVSK7S/kEUJLHBRev0JOa3E4iRLKo53Lxepw0dJZA+EuXHNOeSfDipsRCuzLW3mXnUP64AgAH/0qb573VJ63idjHf0Pp1Edg3e3gTzqo9SC6Mn3yY3eCQ6VJN/KPELUmgEbaexkKBTc=;
+ 7:i1Jr10EGoyYrJhAUUD5mSSXByVqCW64AouzJ+51Scb4b512wCU5iWtIbI+iQQHSCKmBkF6QoM9EkoktMkOVCkxQ3jlbHzmbF0+lsmRGR+P7u/36vwBNquNYZKxPXNPlNAKp6uc4VNi8pfvw8tdhRAA==
+x-ms-office365-filtering-correlation-id: 457d6553-5b22-4360-7723-08d65ba56ee3
+x-microsoft-antispam: BCL:0; PCL:0;
+ RULEID:(2390098)(7020095)(4652040)(7021145)(8989299)(4534185)(7022145)(4603075)(4627221)(201702281549075)(8990200)(7048125)(7024125)(7027125)(7023125)(5600074)(711020)(2017052603328)(7153060)(7193020);
+ SRVR:MWHPR2201MB1261; 
+x-ms-traffictypediagnostic: MWHPR2201MB1261:
+x-microsoft-antispam-prvs: <MWHPR2201MB1261BE283313A550AF3B7908C1A90@MWHPR2201MB1261.namprd22.prod.outlook.com>
+x-ms-exchange-senderadcheck: 1
+x-exchange-antispam-report-cfa-test: BCL:0; PCL:0;
+ RULEID:(6040522)(2401047)(8121501046)(5005006)(3231455)(999002)(944501520)(52105112)(3002001)(93006095)(10201501046)(148016)(149066)(150057)(6041310)(20161123560045)(20161123564045)(20161123558120)(20161123562045)(2016111802025)(6043046)(201708071742011)(7699051)(76991095);
+ SRVR:MWHPR2201MB1261; BCL:0; PCL:0; RULEID:; SRVR:MWHPR2201MB1261; 
+x-forefront-prvs: 087894CD3C
+x-forefront-antispam-report: SFV:NSPM;
+ SFS:(10019020)(7916004)(136003)(39840400004)(366004)(346002)(376002)(396003)(189003)(199004)(8936002)(105586002)(1076002)(2906002)(6116002)(6916009)(316002)(58126008)(25786009)(66066001)(4326008)(26005)(3846002)(186003)(305945005)(81156014)(386003)(6246003)(6506007)(42882007)(102836004)(97736004)(33896004)(81166006)(7736002)(5660300001)(7406005)(76176011)(14454004)(476003)(52116002)(53936002)(486006)(229853002)(44832011)(7416002)(68736007)(71200400001)(11346002)(446003)(6436002)(8676002)(71190400001)(99286004)(33716001)(6512007)(256004)(6486002)(106356001)(508600001)(54906003)(9686003);
+ DIR:OUT; SFP:1102; SCL:1; SRVR:MWHPR2201MB1261;
+ H:MWHPR2201MB1277.namprd22.prod.outlook.com; FPR:; SPF:None; LANG:en;
+ PTR:InfoNoRecords; MX:1; A:1; 
+received-spf: None (protection.outlook.com: wavecomp.com does not designate
+ permitted sender hosts)
+x-microsoft-antispam-message-info: RBODwkcEs7rhB+DcAO1i/msJXgIAGxA7LhCkciKDHchazPyulsxRChueCtbEa2P1WfPn+T+L6it5OcP9Pw7TyhburN49/FE9lrL6++iMpb6avG1ebwmmvLvqJUsvb92qXLWXxJ70na/PQ7dmAANPsRE+BvaUez6hM43mM3gHagVuwF6tqvogBMZfO0UTFjLI7zlaUWBmf6s2oiAZmN4gjD7MsQqSe2S7J+gEH2Yjw2aC39MugmQLJlLWpgNr0TM2DKcTfq2PqottulWd4cZnAjKuLMOcJV1iRhfUkHcDsBuMu0CBLW+pZeTGtTwyIzzGuEM3/XRyLrQ1QqTWmg+R2t43Y4ZKofXG2jZETd1BJCU=
+spamdiagnosticoutput: 1:99
+spamdiagnosticmetadata: NSPM
+Content-Type: text/plain; charset="us-ascii"
+Content-ID: <502BAAE9FE2E6E45B9CE975E9FA539FF@namprd22.prod.outlook.com>
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-x-cbid: 18120617-0004-0000-0000-000014BE463A
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010182; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000270; SDB=6.01127899; UDB=6.00585885; IPR=6.00908030; 
- MB=3.00024502; MTD=3.00000008; XFM=3.00000015; UTC=2018-12-06 17:28:28
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18120617-0005-0000-0000-000089C2E0BD
-Message-Id: <87a7li5zv2.fsf@morokweng.localdomain>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-12-06_06:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1812060148
+X-OriginatorOrg: mips.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 457d6553-5b22-4360-7723-08d65ba56ee3
+X-MS-Exchange-CrossTenant-originalarrivaltime: 06 Dec 2018 18:05:41.5853 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 463607d3-1db3-40a0-8a29-970c56230104
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MWHPR2201MB1261
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,286 +124,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
- Michael Bringmann <mwb@linux.vnet.ibm.com>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Rich Felker <dalias@libc.org>, "Gustavo A. R.
+ Silva" <gustavo@embeddedor.com>, Will Deacon <will.deacon@arm.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>,
+ "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
+ "linux-hexagon@vger.kernel.org" <linux-hexagon@vger.kernel.org>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
+ "x86@kernel.org" <x86@kernel.org>, Russell King <linux@armlinux.org.uk>,
+ Ingo Molnar <mingo@redhat.com>, Catalin Marinas <catalin.marinas@arm.com>,
+ James Hogan <jhogan@kernel.org>,
+ "linux-snps-arc@lists.infradead.org" <linux-snps-arc@lists.infradead.org>,
+ "uclinux-h8-devel@lists.sourceforge.jp"
+ <uclinux-h8-devel@lists.sourceforge.jp>,
+ "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>,
+ Borislav Petkov <bp@alien8.de>,
+ "nios2-dev@lists.rocketboards.org" <nios2-dev@lists.rocketboards.org>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Michal Simek <monstr@monstr.eu>, Vineet Gupta <vgupta@synopsys.com>,
+ Randy Dunlap <rdunlap@infradead.org>, Douglas Anderson <dianders@chromium.org>,
+ Ralf Baechle <ralf@linux-mips.org>, Richard Kuo <rkuo@codeaurora.org>,
+ Jason Wessel <jason.wessel@windriver.com>,
+ "kgdb-bugreport@lists.sourceforge.net" <kgdb-bugreport@lists.sourceforge.net>,
+ Ley Foon Tan <lftan@altera.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "David S.
+ Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Hi Christophe & Daniel,
 
-Hello Gautham,
+On Thu, Dec 06, 2018 at 02:09:02PM +0000, Daniel Thompson wrote:
+> On Wed, Dec 05, 2018 at 04:41:09AM +0000, Christophe Leroy wrote:
+> > MIPS is the only architecture modifying arch_kgdb_ops during init.
+> > This patch makes the init static, so that it can be changed to
+> > const in following patch, as recommended by checkpatch.pl
+> >=20
+> > Suggested-by: Paul Burton <paul.burton@mips.com>
+> > Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>=20
+> From my side this is
+> Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
+>=20
+> Since this is a dependency for the next patch I'd be happy to take via
+> my tree... but would need an ack from the MIPS guys to do that.
 
-Gautham R. Shenoy <ego@linux.vnet.ibm.com> writes:
+For both patches in this series:
 
-> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
->
-> Currently running DLPAR offline/online operations in a loop on a
-> POWER9 system with SMT=off results in the following crash:
->
-> [  223.321032] cpu 112 (hwid 112) Ready to die...
-> [  223.355963] Querying DEAD? cpu 113 (113) shows 2
-> [  223.356233] cpu 114 (hwid 114) Ready to die...
-> [  223.356236] cpu 113 (hwid 113) Ready to die...
-> [  223.356241] Bad kernel stack pointer 1faf6ca0 at 1faf6d50
-> [  223.356243] Oops: Bad kernel stack pointer, sig: 6 [#1]
-> [  223.356244] LE SMP NR_CPUS=2048 NUMA pSeries
-> [  223.356247] Modules linked in:
-> [  223.356255] CPU: 114 PID: 0 Comm: swapper/114 Not tainted 4.20.0-rc3 #39
-> [  223.356258] NIP:  000000001faf6d50 LR: 000000001faf6d50 CTR: 000000001ec6d06c
-> [  223.356259] REGS: c00000001e5cbd30 TRAP: 0700   Not tainted  (4.20.0-rc3)
-> [  223.356260] MSR:  8000000000081000 <SF,ME>  CR: 28000004  XER: 00000020
-> [  223.356263] CFAR: 000000001ec98590 IRQMASK: 8000000000009033
->                GPR00: 000000001faf6d50 000000001faf6ca0 000000001ed1c448 00000267e6a273c3
->                GPR04: 0000000000000000 00000000000000e0 000000000000dfe8 000000001faf6d30
->                GPR08: 000000001faf6d28 00000267e6a273c3 000000001ec1b108 0000000000000000
->                GPR12: 0000000001b6d998 c00000001eb55080 c0000003a1b8bf90 000000001eea3f40
->                GPR16: 0000000000000000 c0000006fda85100 c00000000004c8b0 c0000000013d5300
->                GPR20: c0000006fda85300 0000000000000008 c0000000019d2cf8 c0000000013d6888
->                GPR24: 0000000000000072 c0000000013d688c 0000000000000002 c0000000013d688c
->                GPR28: c0000000019cecf0 0000000000000390 0000000000000000 000000001faf6ca0
-> [  223.356281] NIP [000000001faf6d50] 0x1faf6d50
-> [  223.356281] LR [000000001faf6d50] 0x1faf6d50
-> [  223.356282] Call Trace:
-> [  223.356283] Instruction dump:
-> [  223.356285] XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
-> [  223.356286] XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
-> [  223.356290] ---[ end trace f46a4e046b564d1f ]---
->
-> This is due to multiple offlined CPUs (CPU 113 and CPU 114 above)
-> concurrently (within 3us) trying to make the rtas-call with the
-> "stop-self" token, something that is prohibited by the PAPR.
->
-> The concurrent calls can happen as follows.
->
->   o In dlpar_offline_cpu() we prod an offline CPU X (offline due to
->     SMT=off) and loop for 25 tries in pseries_cpu_die() querying if
->     the target CPU X has been stopped in RTAS. After 25 tries, we
->     prints the message "Querying DEAD? cpu X (X) shows 2" and return
->     to dlpar_offline_cpu(). Note that at this point CPU X has not yet
->     called rtas with the "stop-self" token, but can do so anytime now.
->
->   o Back in dlpar_offline_cpu(), we prod the next offline CPU Y. CPU Y
->     promptly wakes up and calls RTAS with the "stop-self" token.
->
->   o Before RTAS can stop CPU Y, CPU X also calls RTAS with the
->     "stop-self" token.
->
-> The problem occurs due to the short number of tries (25) in
-> pseries_cpu_die() which covers 90% of the cases. For the remaining 10%
-> of the cases, it was observed that we would need to loop for a few
-> hundred iterations before the target CPU calls rtas with "stop-self"
-> token.Experiments show that each try takes roughly ~25us.
->
-> In this patch we fix the problem by increasing the number of tries
-> from 25 to 4000 (which roughly corresponds to 100ms) before bailing
-> out and declaring that we have failed to observe the target CPU call
-> rtas-stop-self. This provides sufficient serialization to ensure that
-> there no concurrent rtas calls with "stop-self" token.
->
->
->
-> Reported-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
-> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/platforms/pseries/hotplug-cpu.c | 13 ++++++++++++-
->  1 file changed, 12 insertions(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> index 2f8e621..c913c44 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> @@ -214,14 +214,25 @@ static void pseries_cpu_die(unsigned int cpu)
->  			msleep(1);
->  		}
->  	} else if (get_preferred_offline_state(cpu) == CPU_STATE_OFFLINE) {
-> +		int max_tries = 4000; /* Roughly corresponds to 100ms */
-> +		u64 tb_before = mftb();
->
-> -		for (tries = 0; tries < 25; tries++) {
-> +		for (tries = 0; tries < max_tries; tries++) {
->  			cpu_status = smp_query_cpu_stopped(pcpu);
->  			if (cpu_status == QCSS_STOPPED ||
->  			    cpu_status == QCSS_HARDWARE_ERROR)
->  				break;
->  			cpu_relax();
->  		}
-> +
-> +		if (tries == max_tries) {
-> +			u64 time_elapsed_us = div_u64(mftb() - tb_before,
-> +						      tb_ticks_per_usec);
-> +
-> +			pr_warn("Offlined CPU %d isn't stopped by RTAS after %llu us\n",
-> +				cpu, time_elapsed_us);
-> +			WARN_ON(1);
-> +		}
->  	}
->
->  	if (cpu_status != 0) {
+    Acked-by: Paul Burton <paul.burton@mips.com>
 
-I posted a similar patch last year, but I wasn't able to arrive at a
-root cause analysis like you did:
-
-https://lists.ozlabs.org/pipermail/linuxppc-dev/2017-February/153734.html
-
-One thing I realized after I posted the patch was that in my case, the
-CPU was crashing inside RTAS. From the NIP and LR in the trace above it
-looks like it's crashing in RTAS in your case as well.
-
-Michael Ellerman had two comments on my patch:
-
-1. Regardless of the underlying bug, the kernel shouldn't crash so we
-need a patch making it more resilient to this failure.
-
-2. The wait loop should use udelay() so that the loop will actually take
-a set amount of wall time, rather than just cycles.
-
-Regarding 1. if the problem is that the kernel is causing RTAS to crash
-because it calls it in a way that's unsupported, then I don't see how we
-can make the kernel more resilient. We have to make the kernel respect
-RTAS' restrictions (or alternatively, poke RTAS devs to make RTAS fail
-gracefuly in these conditions).
-
-Regarding 2. I implemented a new version of my patch (posted below) but
-I was never able to test it because I couldn't access a system where the
-problem was reproducible anymore.
-
-There's also a race between the CPU driving the unplug and the CPU being
-unplugged which I think is not easy for the CPU being unplugged to win,
-which makes the busy loop in pseries_cpu_die() a bit fragile. I describe
-the race in the patch description.
-
-My solution to make the race less tight is to make the CPU driving the
-unplug to only start the busy loop only after the CPU being unplugged is
-in the CPU_STATE_OFFLINE state. At that point, we know that it either is
-about to call RTAS or it already has.
-
-Do you think this makes sense? If you do, would you mind testing my
-patch? You can change the timeouts and delays if you want. To be honest
-they're just guesses on my part...
-
-
-
-From 4174cd0939fadeda93e49ed2e94ba84131c922d0 Mon Sep 17 00:00:00 2001
-From: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-Date: Thu, 6 Dec 2018 15:16:34 -0200
-Subject: [PATCH] powerpc/pseries: Only wait for dying CPU after call to
- rtas_stop_self()
-
-When testing DLPAR CPU add/remove on a system under stress,
-pseries_cpu_die() doesn't wait long enough for a CPU to die and the kernel
-ends up crashing:
-
-[  446.143648] cpu 152 (hwid 152) Ready to die...
-[  446.464057] cpu 153 (hwid 153) Ready to die...
-[  446.473525] cpu 154 (hwid 154) Ready to die...
-[  446.474077] cpu 155 (hwid 155) Ready to die...
-[  446.483529] cpu 156 (hwid 156) Ready to die...
-[  446.493532] cpu 157 (hwid 157) Ready to die...
-[  446.494078] cpu 158 (hwid 158) Ready to die...
-[  446.503527] cpu 159 (hwid 159) Ready to die...
-[  446.664534] cpu 144 (hwid 144) Ready to die...
-[  446.964113] cpu 145 (hwid 145) Ready to die...
-[  446.973525] cpu 146 (hwid 146) Ready to die...
-[  446.974094] cpu 147 (hwid 147) Ready to die...
-[  446.983944] cpu 148 (hwid 148) Ready to die...
-[  446.984062] cpu 149 (hwid 149) Ready to die...
-[  446.993518] cpu 150 (hwid 150) Ready to die...
-[  446.993543] Querying DEAD? cpu 150 (150) shows 2
-[  446.994098] cpu 151 (hwid 151) Ready to die...
-[  447.133726] cpu 136 (hwid 136) Ready to die...
-[  447.403532] cpu 137 (hwid 137) Ready to die...
-[  447.403772] cpu 138 (hwid 138) Ready to die...
-[  447.403839] cpu 139 (hwid 139) Ready to die...
-[  447.403887] cpu 140 (hwid 140) Ready to die...
-[  447.403937] cpu 141 (hwid 141) Ready to die...
-[  447.403979] cpu 142 (hwid 142) Ready to die...
-[  447.404038] cpu 143 (hwid 143) Ready to die...
-[  447.513546] cpu 128 (hwid 128) Ready to die...
-[  447.693533] cpu 129 (hwid 129) Ready to die...
-[  447.693999] cpu 130 (hwid 130) Ready to die...
-[  447.703530] cpu 131 (hwid 131) Ready to die...
-[  447.704087] Querying DEAD? cpu 132 (132) shows 2
-[  447.704102] cpu 132 (hwid 132) Ready to die...
-[  447.713534] cpu 133 (hwid 133) Ready to die...
-[  447.714064] Querying DEAD? cpu 134 (134) shows 2
-cpu 0x86: Vector: 300 (Data Access) at [c000000007b0fd40]
-    pc: 000000001ec3072c
-    lr: 000000001ec2fee0
-    sp: 1faf6bd0
-   msr: 8000000102801000
-   dar: 212d6c1a2a20c
- dsisr: 42000000
-  current = 0xc000000474c6d600
-  paca    = 0xc000000007b6b600   softe: 0        irq_happened: 0x01
-    pid   = 0, comm = swapper/134
-Linux version 4.8.0-34-generic (buildd@bos01-ppc64el-026) (gcc version 5.4.0 20160609 (Ubuntu/IBM 5.4.0-6ubuntu1~16.04.4) ) #36~16.04.1-Ubuntu SMP Wed Dec 21 18:53:20 UTC 2016 (Ubuntu 4.8.0-34.36~16.04.1-generic 4.8.11)
-WARNING: exception is not recoverable, can't continue
-
-This was reproduced in v4.12-rc3 as well, but I don't have a crash log
-handy for that version right now. Sorry.
-
-This is a race between one CPU stopping and another one calling
-pseries_cpu_die() to wait for it to stop. That function does a short busy
-loop calling RTAS query-cpu-stopped-state on the stopping CPU to verify
-that it is stopped.
-
-As can be seen in the dmesg right before or after the "Querying DEAD?"
-messages, if pseries_cpu_die() waited a little longer it would have seen
-the CPU in the stopped state.
-
-I see two cases that can be causing this race:
-
-1. It's possible that CPU 134 was inactive at the time it was unplugged. In
-   that case, dlpar_offline_cpu() calls H_PROD on the CPU and immediately
-   calls pseries_cpu_die(). Meanwhile, the prodded CPU activates and start
-   the process of stopping itself. It's possible that the busy loop is not
-   long enough to allow for the CPU to wake up and complete the stopping
-   process.
-
-2. If CPU 134 was online at the time it was unplugged, it would have gone
-   through the new CPU hotplug state machine in kernel/cpu.c that was
-   introduced in v4.6 to get itself stopped. It's possible that the busy
-   loop in pseries_cpu_die() was long enough for the older hotplug code but
-   not for the new hotplug state machine.
-
-Either way, the solution is to only start querying if the CPU is stopped
-after it had a chance to call rtas_stop_self(). Since
-pseries_mach_cpu_die() sets the CPU current state to offline almost
-immediately before the RTAS call, we use that as a signal that it is either
-already stopped or very close to that point, and we can start the busy
-loop.
-
-Signed-off-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
----
- arch/powerpc/platforms/pseries/hotplug-cpu.c | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-index 2f8e62163602..fad3ceb74623 100644
---- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-@@ -214,13 +214,21 @@ static void pseries_cpu_die(unsigned int cpu)
- 			msleep(1);
- 		}
- 	} else if (get_preferred_offline_state(cpu) == CPU_STATE_OFFLINE) {
-+		/*
-+		 * If the current state is not offline yet, it means that the
-+		 * dying CPU (which is in pseries_mach_cpu_die) didn't have a
-+		 * chance to call rtas_stop_self yet and therefore it's too
-+		 * early to query if the CPU is stopped.
-+		 */
-+		spin_event_timeout(get_cpu_current_state(cpu) == CPU_STATE_OFFLINE,
-+				   100000, 100);
- 
- 		for (tries = 0; tries < 25; tries++) {
- 			cpu_status = smp_query_cpu_stopped(pcpu);
- 			if (cpu_status == QCSS_STOPPED ||
- 			    cpu_status == QCSS_HARDWARE_ERROR)
- 				break;
--			cpu_relax();
-+			udelay(100);
- 		}
- 	}
- 
-
+Thanks,
+    Paul
