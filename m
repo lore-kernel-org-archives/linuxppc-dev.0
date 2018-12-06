@@ -2,96 +2,56 @@ Return-Path: <SRS0=TW6C=OP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BFB1CC04EB8
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 15:41:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 86FC0C64EB1
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 16:50:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 493DB214C1
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 15:41:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 493DB214C1
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id CAFB920700
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 16:50:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CAFB920700
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 439fvh3g7wzDrNr
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 02:41:04 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 439hS857CszDrNp
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 03:50:48 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=fbarrat@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=arm.com
+ (client-ip=217.140.101.70; helo=foss.arm.com;
+ envelope-from=andrew.murray@arm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 439fq75hGWzDrNd
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 02:37:07 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wB6FY8lu072246
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Dec 2018 10:37:04 -0500
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2p75g1m2fw-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Dec 2018 10:37:04 -0500
-Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.ibm.com>;
- Thu, 6 Dec 2018 15:37:03 -0000
-Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
- by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 6 Dec 2018 15:37:00 -0000
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
- [9.149.105.61])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wB6Faxn541025542
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Thu, 6 Dec 2018 15:36:59 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2817911C058;
- Thu,  6 Dec 2018 15:36:59 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 898F211C050;
- Thu,  6 Dec 2018 15:36:57 +0000 (GMT)
-Received: from [9.101.4.34] (unknown [9.101.4.34])
- by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu,  6 Dec 2018 15:36:57 +0000 (GMT)
-Subject: Re: [PATCH v2] misc: cxl: Use device_type helpers to access the node
- type
-To: Rob Herring <robh@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-References: <20181205191655.14612-1-robh@kernel.org>
-From: Frederic Barrat <fbarrat@linux.ibm.com>
-Date: Thu, 6 Dec 2018 16:36:56 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.2.1
-MIME-Version: 1.0
-In-Reply-To: <20181205191655.14612-1-robh@kernel.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 18120615-0008-0000-0000-0000029DE0EC
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18120615-0009-0000-0000-00002208491A
-Message-Id: <dcc44aac-8ee4-4f9c-4016-f29f6a4f8c23@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-12-06_05:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1812060132
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 439hNY57b3zDr7C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 03:47:40 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 6F04780D;
+ Thu,  6 Dec 2018 08:47:39 -0800 (PST)
+Received: from e119886-lin.cambridge.arm.com (unknown [10.37.6.11])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 0456E3F5AF;
+ Thu,  6 Dec 2018 08:47:34 -0800 (PST)
+From: Andrew Murray <andrew.murray@arm.com>
+To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Richard Henderson <rth@twiddle.net>,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+ Matt Turner <mattst88@gmail.com>, Will Deacon <will.deacon@arm.com>,
+ Mark Rutland <mark.rutland@arm.com>, Shawn Guo <shawnguo@kernel.org>,
+ Sascha Hauer <s.hauer@pengutronix.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Borislav Petkov <bp@alien8.de>, Russell King <linux@armlinux.org.uk>,
+ suzuki.poulose@arm.com, robin.murphy@arm.com,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH v3 00/12] perf/core: Generalise event exclusion checking
+Date: Thu,  6 Dec 2018 16:47:17 +0000
+Message-Id: <1544114849-47266-1-git-send-email-andrew.murray@arm.com>
+X-Mailer: git-send-email 2.7.4
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,58 +63,108 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
- linux-kernel@vger.kernel.org, Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: x86@kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-alpha@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Many PMU drivers do not have the capability to exclude counting events
+that occur in specific contexts such as idle, kernel, guest, etc. These
+drivers indicate this by returning an error in their event_init upon
+testing the events attribute flags.
 
+However this approach requires that each time a new event modifier is
+added to perf, all the perf drivers need to be modified to indicate that
+they don't support the attribute. This results in additional boiler-plate
+code common to many drivers that needs to be maintained. Furthermore the
+drivers are not consistent with regards to the error value they return
+when reporting unsupported attributes.
 
-Le 05/12/2018 à 20:16, Rob Herring a écrit :
-> Remove directly accessing device_type property and use the
-> of_node_is_type accessor instead. While not using it here, this is
-> part of eventually removing the struct device_node.type pointer.
-> 
-> Cc: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-> Cc: Arnd Bergmann <arnd@arndb.de>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-> Signed-off-by: Rob Herring <robh@kernel.org>
-> ---
-> v2:
-> - Reword commit message as this change was using the .type ptr.
+This patchset allow PMU drivers to advertise their inability to exclude
+based on context via a new capability: PERF_PMU_CAP_NO_EXCLUDE. This
+allows the perf core to reject requests for exclusion events where there
+is no support in the PMU.
 
-Acked-by: Frederic Barrat <fbarrat@linux.ibm.com>
+This is a functional change, in particular:
 
+ - Some drivers will now additionally (but correctly) report unsupported
+   exclusion flags. It's typical for existing userspace tools such as
+   perf to handle such errors by retrying the system call without the
+   unsupported flags.
 
-> 
->   drivers/misc/cxl/pci.c | 4 +---
->   1 file changed, 1 insertion(+), 3 deletions(-)
-> 
-> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-> index b66d832d3233..c79ba1c699ad 100644
-> --- a/drivers/misc/cxl/pci.c
-> +++ b/drivers/misc/cxl/pci.c
-> @@ -1718,7 +1718,6 @@ int cxl_slot_is_switched(struct pci_dev *dev)
->   {
->   	struct device_node *np;
->   	int depth = 0;
-> -	const __be32 *prop;
-> 
->   	if (!(np = pci_device_to_OF_node(dev))) {
->   		pr_err("cxl: np = NULL\n");
-> @@ -1727,8 +1726,7 @@ int cxl_slot_is_switched(struct pci_dev *dev)
->   	of_node_get(np);
->   	while (np) {
->   		np = of_get_next_parent(np);
-> -		prop = of_get_property(np, "device_type", NULL);
-> -		if (!prop || strcmp((char *)prop, "pciex"))
-> +		if (!of_node_is_type(np, "pciex"))
->   			break;
->   		depth++;
->   	}
-> 
+ - Drivers that do not support any exclusion that previously reported
+   -EPERM or -EOPNOTSUPP will now report -EINVAL - this is consistent
+   with the majority and results in userspace perf retrying without
+   exclusion.
+
+All drivers touched by this patchset have been compile tested.
+
+Changes from v2:
+
+ - Invert logic from CAP_EXCLUDE to CAP_NO_EXCLUDE
+
+Changes from v1:
+
+ - Changed approach from explicitly rejecting events in unsupporting PMU
+   drivers to explicitly advertising a capability in PMU drivers that
+   do support exclusion events
+
+ - Added additional information to tools/perf/design.txt
+
+ - Rename event_has_exclude_flags to event_has_any_exclude_flag and
+   update commit log to reflect it's a function
+
+Andrew Murray (12):
+  perf/doc: update design.txt for exclude_{host|guest} flags
+  perf/core: add function to test for event exclusion flags
+  perf/core: add PERF_PMU_CAP_NO_EXCLUDE for exclusion incapable PMUs
+  alpha: perf/core: use PERF_PMU_CAP_NO_EXCLUDE
+  arm: perf: conditionally use PERF_PMU_CAP_NO_EXCLUDE
+  arm: perf/core: use PERF_PMU_CAP_NO_EXCLUDE for exclude incapable PMUs
+  drivers/perf: perf/core: use PERF_PMU_CAP_NO_EXCLUDE for exclude
+    incapable PMUs
+  drivers/perf: perf/core: use PERF_PMU_CAP_NO_EXCLUDE for exclude
+    incapable PMUs
+  powerpc: perf/core: use PERF_PMU_CAP_NO_EXCLUDE for exclude incapable
+    PMUs
+  x86: perf/core: use PERF_PMU_CAP_NO_EXCLUDE for exclude incapable PMUs
+  x86: perf/core: use PERF_PMU_CAP_NO_EXCLUDE for exclude incapable PMUs
+  perf/core: remove unused perf_flags
+
+ arch/alpha/kernel/perf_event.c                |  7 +------
+ arch/arm/mach-imx/mmdc.c                      |  9 ++-------
+ arch/arm/mm/cache-l2x0-pmu.c                  |  9 +--------
+ arch/powerpc/perf/hv-24x7.c                   | 10 +---------
+ arch/powerpc/perf/hv-gpci.c                   | 10 +---------
+ arch/powerpc/perf/imc-pmu.c                   | 19 +------------------
+ arch/x86/events/amd/ibs.c                     | 13 +------------
+ arch/x86/events/amd/iommu.c                   |  6 +-----
+ arch/x86/events/amd/power.c                   | 10 ++--------
+ arch/x86/events/amd/uncore.c                  |  7 ++-----
+ arch/x86/events/intel/cstate.c                | 12 +++---------
+ arch/x86/events/intel/rapl.c                  |  9 ++-------
+ arch/x86/events/intel/uncore.c                |  9 +--------
+ arch/x86/events/intel/uncore_snb.c            |  9 ++-------
+ arch/x86/events/msr.c                         | 10 ++--------
+ drivers/perf/arm-cci.c                        | 10 +---------
+ drivers/perf/arm-ccn.c                        |  6 ++----
+ drivers/perf/arm_dsu_pmu.c                    |  9 ++-------
+ drivers/perf/arm_pmu.c                        | 15 +++++----------
+ drivers/perf/hisilicon/hisi_uncore_ddrc_pmu.c |  1 +
+ drivers/perf/hisilicon/hisi_uncore_hha_pmu.c  |  1 +
+ drivers/perf/hisilicon/hisi_uncore_l3c_pmu.c  |  1 +
+ drivers/perf/hisilicon/hisi_uncore_pmu.c      |  9 ---------
+ drivers/perf/qcom_l2_pmu.c                    |  9 +--------
+ drivers/perf/qcom_l3_pmu.c                    |  8 +-------
+ drivers/perf/xgene_pmu.c                      |  6 +-----
+ include/linux/perf_event.h                    | 10 ++++++++++
+ include/uapi/linux/perf_event.h               |  2 --
+ kernel/events/core.c                          |  9 +++++++++
+ tools/include/uapi/linux/perf_event.h         |  2 --
+ tools/perf/design.txt                         |  4 ++++
+ 31 files changed, 62 insertions(+), 189 deletions(-)
+
+-- 
+2.7.4
 
