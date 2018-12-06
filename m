@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BAFFDC04EB9
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 09:58:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 92A7BC04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 10:00:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3831F20989
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 09:58:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3831F20989
+	by mail.kernel.org (Postfix) with ESMTPS id 454AD20850
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 10:00:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 454AD20850
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 439WJ052QCzDr63
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 20:58:08 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 439WLX101kzDqkj
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 21:00:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=suse.de
@@ -29,19 +29,19 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 439WFF3dXczDr63
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Dec 2018 20:55:44 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 439WGC4rZ3zDrBB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Dec 2018 20:56:35 +1100 (AEDT)
 X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay1.suse.de (unknown [195.135.220.254])
- by mx1.suse.de (Postfix) with ESMTP id 37C25AEB7;
- Thu,  6 Dec 2018 09:55:39 +0000 (UTC)
-Date: Thu, 06 Dec 2018 10:55:37 +0100
-Message-ID: <s5hmupj6kti.wl-tiwai@suse.de>
+Received: from relay2.suse.de (unknown [195.135.220.254])
+ by mx1.suse.de (Postfix) with ESMTP id 94E51AE77;
+ Thu,  6 Dec 2018 09:56:32 +0000 (UTC)
+Date: Thu, 06 Dec 2018 10:56:30 +0100
+Message-ID: <s5hlg536ks1.wl-tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
 To: "Rob Herring" <robh@kernel.org>
-Subject: Re: [PATCH] ALSA: soundbus: Remove direct OF name and type accesses
-In-Reply-To: <20181205195050.4759-32-robh@kernel.org>
-References: <20181205195050.4759-32-robh@kernel.org>
+Subject: Re: [PATCH] ALSA: Use of_node_name_eq for node name comparisons
+In-Reply-To: <20181205195050.4759-30-robh@kernel.org>
+References: <20181205195050.4759-30-robh@kernel.org>
 User-Agent: Wanderlust/2.15.9 (Almost Unreal) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.9 (=?UTF-8?B?R29qxY0=?=) APEL/10.8 Emacs/26
  (x86_64-suse-linux-gnu) MULE/6.0 (HANACHIRUSATO)
@@ -60,22 +60,27 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: devicetree@vger.kernel.org, alsa-devel@alsa-project.org,
  linux-kernel@vger.kernel.org, Jaroslav Kysela <perex@perex.cz>,
- Johannes Berg <johannes@sipsolutions.net>, linuxppc-dev@lists.ozlabs.org
+ Paul Mackerras <paulus@samba.org>, Johannes Berg <johannes@sipsolutions.net>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 05 Dec 2018 20:50:48 +0100,
+On Wed, 05 Dec 2018 20:50:46 +0100,
 Rob Herring wrote:
 > 
-> Convert soundbus uevent and sysfs OF node name and device type usage to
-> use printf specifier and helper functions instead of directly accessing
-> the name and type pointers. This will allow the eventual removal of the
-> pointers.
+> Convert string compares of DT node names to use of_node_name_eq helper
+> instead. This removes direct access to the node name pointer.
+> 
+> A couple of open coded iterating thru the child node names are converted
+> to use for_each_child_of_node() instead.
 > 
 > Cc: Johannes Berg <johannes@sipsolutions.net>
 > Cc: Jaroslav Kysela <perex@perex.cz>
 > Cc: Takashi Iwai <tiwai@suse.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
 > Cc: linuxppc-dev@lists.ozlabs.org
 > Cc: alsa-devel@alsa-project.org
 > Signed-off-by: Rob Herring <robh@kernel.org>
