@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B25B2C04EB8
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 16:53:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 051CBC04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 16:55:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 280DE20868
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 16:53:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 280DE20868
+	by mail.kernel.org (Postfix) with ESMTPS id 7814020838
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 16:55:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7814020838
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 439hW901R3zDr40
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 03:53:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 439hZ43PP2zDqsD
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 03:55:56 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=arm.com
@@ -27,14 +27,14 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=arm.com
 Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 439hNd5wpNzDrG3
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 03:47:45 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 439hNk3MW7zDr3j
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 03:47:50 +1100 (AEDT)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 31C93EBD;
- Thu,  6 Dec 2018 08:47:44 -0800 (PST)
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id EA2411596;
+ Thu,  6 Dec 2018 08:47:48 -0800 (PST)
 Received: from e119886-lin.cambridge.arm.com (unknown [10.37.6.11])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id BC0293F5AF;
- Thu,  6 Dec 2018 08:47:39 -0800 (PST)
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 7F8633F5AF;
+ Thu,  6 Dec 2018 08:47:44 -0800 (PST)
 From: Andrew Murray <andrew.murray@arm.com>
 To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
  Arnaldo Carvalho de Melo <acme@kernel.org>,
@@ -48,10 +48,10 @@ To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
  Borislav Petkov <bp@alien8.de>, Russell King <linux@armlinux.org.uk>,
  suzuki.poulose@arm.com, robin.murphy@arm.com,
  Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v3 01/12] perf/doc: update design.txt for exclude_{host|guest}
+Subject: [PATCH v3 02/12] perf/core: add function to test for event exclusion
  flags
-Date: Thu,  6 Dec 2018 16:47:18 +0000
-Message-Id: <1544114849-47266-2-git-send-email-andrew.murray@arm.com>
+Date: Thu,  6 Dec 2018 16:47:19 +0000
+Message-Id: <1544114849-47266-3-git-send-email-andrew.murray@arm.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1544114849-47266-1-git-send-email-andrew.murray@arm.com>
 References: <1544114849-47266-1-git-send-email-andrew.murray@arm.com>
@@ -72,29 +72,34 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Update design.txt to reflect the presence of the exclude_host
-and exclude_guest perf flags.
+Add a function that tests if any of the perf event exclusion flags
+are set on a given event.
 
 Signed-off-by: Andrew Murray <andrew.murray@arm.com>
 ---
- tools/perf/design.txt | 4 ++++
- 1 file changed, 4 insertions(+)
+ include/linux/perf_event.h | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/tools/perf/design.txt b/tools/perf/design.txt
-index a28dca2..0453ba2 100644
---- a/tools/perf/design.txt
-+++ b/tools/perf/design.txt
-@@ -222,6 +222,10 @@ The 'exclude_user', 'exclude_kernel' and 'exclude_hv' bits provide a
- way to request that counting of events be restricted to times when the
- CPU is in user, kernel and/or hypervisor mode.
+diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
+index 53c500f..b2e806f 100644
+--- a/include/linux/perf_event.h
++++ b/include/linux/perf_event.h
+@@ -1004,6 +1004,15 @@ perf_event__output_id_sample(struct perf_event *event,
+ extern void
+ perf_log_lost_samples(struct perf_event *event, u64 lost);
  
-+Furthermore the 'exclude_host' and 'exclude_guest' bits provide a way
-+to request counting of events restricted to guest and host contexts when
-+using Linux as the hypervisor.
++static inline bool event_has_any_exclude_flag(struct perf_event *event)
++{
++	struct perf_event_attr *attr = &event->attr;
 +
- The 'mmap' and 'munmap' bits allow recording of PROT_EXEC mmap/munmap
- operations, these can be used to relate userspace IP addresses to actual
- code, even after the mapping (or even the whole process) is gone,
++	return attr->exclude_idle || attr->exclude_user ||
++	       attr->exclude_kernel || attr->exclude_hv ||
++	       attr->exclude_guest || attr->exclude_host;
++}
++
+ static inline bool is_sampling_event(struct perf_event *event)
+ {
+ 	return event->attr.sample_period != 0;
 -- 
 2.7.4
 
