@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E3814C64EB1
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 17:01:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CE6E4C04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 17:04:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6F80F20878
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 17:01:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6F80F20878
+	by mail.kernel.org (Postfix) with ESMTPS id 546EB20878
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 17:04:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 546EB20878
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 439hhg4CRqzDrNr
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 04:01:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 439hlh0KySzDqnZ
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 04:04:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=arm.com
@@ -27,14 +27,14 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=arm.com
 Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 439hNv5NFbzDrHg
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 03:47:59 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 439hP03nGwzDrNc
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 03:48:04 +1100 (AEDT)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 754D180D;
- Thu,  6 Dec 2018 08:47:58 -0800 (PST)
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 3D7341596;
+ Thu,  6 Dec 2018 08:48:03 -0800 (PST)
 Received: from e119886-lin.cambridge.arm.com (unknown [10.37.6.11])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 0830C3F5AF;
- Thu,  6 Dec 2018 08:47:53 -0800 (PST)
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id C2B3A3F5AF;
+ Thu,  6 Dec 2018 08:47:58 -0800 (PST)
 From: Andrew Murray <andrew.murray@arm.com>
 To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
  Arnaldo Carvalho de Melo <acme@kernel.org>,
@@ -48,9 +48,9 @@ To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
  Borislav Petkov <bp@alien8.de>, Russell King <linux@armlinux.org.uk>,
  suzuki.poulose@arm.com, robin.murphy@arm.com,
  Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v3 04/12] alpha: perf/core: use PERF_PMU_CAP_NO_EXCLUDE
-Date: Thu,  6 Dec 2018 16:47:21 +0000
-Message-Id: <1544114849-47266-5-git-send-email-andrew.murray@arm.com>
+Subject: [PATCH v3 05/12] arm: perf: conditionally use PERF_PMU_CAP_NO_EXCLUDE
+Date: Thu,  6 Dec 2018 16:47:22 +0000
+Message-Id: <1544114849-47266-6-git-send-email-andrew.murray@arm.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1544114849-47266-1-git-send-email-andrew.murray@arm.com>
 References: <1544114849-47266-1-git-send-email-andrew.murray@arm.com>
@@ -71,47 +71,57 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-As the Alpha PMU doesn't support context exclusion let's advertise
-the PERF_PMU_CAP_NO_EXCLUDE capability. This ensures that perf will
-prevent us from handling events where any exclusion flags are set.
-Let's also remove the now unnecessary check for exclusion flags.
-
-This change means that __hw_perf_event_init will now also
-indicate that it doesn't support exclude_host and exclude_guest and
-will now implicitly return -EINVAL instead of -EPERM. This is likely
-more desirable as -EPERM will result in a kernel.perf_event_paranoid
-related warning from the perf userspace utility.
+The ARM PMU driver can be used to represent a variety of ARM based
+PMUs. Some of these PMUs do not provide support for context
+exclusion, where this is the case we advertise the
+PERF_PMU_CAP_NO_EXCLUDE capability to ensure that perf prevents us
+from handling events where any exclusion flags are set.
 
 Signed-off-by: Andrew Murray <andrew.murray@arm.com>
 ---
- arch/alpha/kernel/perf_event.c | 7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
+ drivers/perf/arm_pmu.c | 15 +++++----------
+ 1 file changed, 5 insertions(+), 10 deletions(-)
 
-diff --git a/arch/alpha/kernel/perf_event.c b/arch/alpha/kernel/perf_event.c
-index 5613aa37..4341ccf 100644
---- a/arch/alpha/kernel/perf_event.c
-+++ b/arch/alpha/kernel/perf_event.c
-@@ -630,12 +630,6 @@ static int __hw_perf_event_init(struct perf_event *event)
- 		return ev;
- 	}
+diff --git a/drivers/perf/arm_pmu.c b/drivers/perf/arm_pmu.c
+index 7f01f6f..ea69067 100644
+--- a/drivers/perf/arm_pmu.c
++++ b/drivers/perf/arm_pmu.c
+@@ -357,13 +357,6 @@ static irqreturn_t armpmu_dispatch_irq(int irq, void *dev)
+ }
  
--	/* The EV67 does not support mode exclusion */
--	if (attr->exclude_kernel || attr->exclude_user
--			|| attr->exclude_hv || attr->exclude_idle) {
--		return -EPERM;
--	}
+ static int
+-event_requires_mode_exclusion(struct perf_event_attr *attr)
+-{
+-	return attr->exclude_idle || attr->exclude_user ||
+-	       attr->exclude_kernel || attr->exclude_hv;
+-}
 -
+-static int
+ __hw_perf_event_init(struct perf_event *event)
+ {
+ 	struct arm_pmu *armpmu = to_arm_pmu(event->pmu);
+@@ -393,9 +386,8 @@ __hw_perf_event_init(struct perf_event *event)
  	/*
- 	 * We place the event type in event_base here and leave calculation
- 	 * of the codes to programme the PMU for alpha_pmu_enable() because
-@@ -771,6 +765,7 @@ static struct pmu pmu = {
- 	.start		= alpha_pmu_start,
- 	.stop		= alpha_pmu_stop,
- 	.read		= alpha_pmu_read,
-+	.capabilities	= PERF_PMU_CAP_NO_EXCLUDE,
- };
+ 	 * Check whether we need to exclude the counter from certain modes.
+ 	 */
+-	if ((!armpmu->set_event_filter ||
+-	     armpmu->set_event_filter(hwc, &event->attr)) &&
+-	     event_requires_mode_exclusion(&event->attr)) {
++	if (armpmu->set_event_filter &&
++	    armpmu->set_event_filter(hwc, &event->attr)) {
+ 		pr_debug("ARM performance counters do not support "
+ 			 "mode exclusion\n");
+ 		return -EOPNOTSUPP;
+@@ -861,6 +853,9 @@ int armpmu_register(struct arm_pmu *pmu)
+ 	if (ret)
+ 		return ret;
  
- 
++	if (!pmu->set_event_filter)
++		pmu->pmu.capabilities |= PERF_PMU_CAP_NO_EXCLUDE;
++
+ 	ret = perf_pmu_register(&pmu->pmu, pmu->name, -1);
+ 	if (ret)
+ 		goto out_destroy;
 -- 
 2.7.4
 
