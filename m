@@ -7,77 +7,77 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C0182C04EB8
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 15:30:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AE3CCC04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 15:33:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3DAB420989
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 15:30:32 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2E11220989
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 15:33:06 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Qz2AyUcD"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3DAB420989
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pU0KqAQd"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2E11220989
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 439fgV2gZkzDrBr
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 02:30:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 439fkS30GBzDqlV
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 02:33:04 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="Qz2AyUcD";
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="pU0KqAQd";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
+ (client-ip=2607:f8b0:4864:20::444; helo=mail-pf1-x444.google.com;
  envelope-from=oohall@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="Qz2AyUcD"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="pU0KqAQd"; 
  dkim-atps=neutral
-Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
- [IPv6:2607:f8b0:4864:20::442])
+Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
+ [IPv6:2607:f8b0:4864:20::444])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 439fNk07ZFzDrK0
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 02:17:41 +1100 (AEDT)
-Received: by mail-pf1-x442.google.com with SMTP id i12so322257pfo.7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Dec 2018 07:17:41 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 439fNm0scbzDrL4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 02:17:44 +1100 (AEDT)
+Received: by mail-pf1-x444.google.com with SMTP id c72so322178pfc.6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Dec 2018 07:17:43 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=Zi1qaO4sdSOQaH21fGYxR+uCkoajV+MPOXlymf28wFY=;
- b=Qz2AyUcDH1BfgiZOLCAcDJ/48kweVj9hRCOojoBahzObCi/9ceLJ+gRQjVYtTyQfMD
- U1heHEpP0hRkfiAI+TdxgTz93JbKan9n0vQxdGylaer4SRqWwZdfHuFj8r/nbLvuzBdC
- /xvwrSasNOYs8iqw3OBUcxFJYjph+EW68zS8/iD9m/vpXJrSnvRkBmIL0oLwoZL+pPZC
- YVQd2ZUjUI4s2t579iDzHniSDbxC5VAM87zr6kQNYdQWykzuGzqRpaeIU+tSffo/qZ3E
- b7hgRrT7bPTlJYmn7nuAsambciN9Q4I88bqJqTNafcJ60VQ/gRkMjXBgJvo8xGy+4GSa
- R2nA==
+ bh=lzBd5ZYbLcRIJ/+mPtoYo7L9hb+UwndyxJFAHZSiy9U=;
+ b=pU0KqAQdCppImSzuo/m3e90cf+kPGnD2pYWOHWCaZzYtriQyorfDhBnRxR/V40BJSt
+ XbGoRJRi0fFLSrrY/dZYn7cJi/9v9gyRGBu6vICsevsqEW25jHfnOEfyAtLBxem5uFqH
+ 6ixOdOy/BJlj4c+ejaC3MBNs+pt8vzPtiL3COeEZdIHMnso6Y4B1jo/tW8xJF6/KzxaW
+ vmXzF6bUfai/gtPxnVM3yx1v9MGtQJOEX0jQB/heH5MbEtAX+MDsubYMR8UGzvhx/Trs
+ S6u9vKHZy2jC+cEOxGGTuDUeLHt/X5bAM5U+UHv+hr9V8ssYAkUDYWvLi+lgtNrS/1GD
+ VwvQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references;
- bh=Zi1qaO4sdSOQaH21fGYxR+uCkoajV+MPOXlymf28wFY=;
- b=YnMfRS7OZaYJ71t8wqac+grLhJRKS1W/4L9ZXM5e+JaOS4P1Yle1FIdKfpqeRuZ9EP
- lOMFjRYjahiyai+g0DgsIziITkP79ia7qBITw4R1SUqxXMGk8SqAIthkWBSRGScDqKzk
- ldLWYw/5YKP/iNFX4B0wKa0dvS9Bvq/G0va5aM6nXanZJ611i1f+VJb+9pdJnwaQ5TWH
- A2ue6q+461qZb5eEujFONNOCYwmAg4diFqSiTg4b3Y+5cF46fcAJLKxf9+Qc0tdGfYae
- a5W7uHA91+iNDEIn/AAIjcGtF9MQXtfy7Pd74KGHJDzYItlIWwikY07/+GXMYcqpRlbE
- +VAQ==
-X-Gm-Message-State: AA+aEWYKWLK9FohtXnMP8cgz61ROADzMUj93mlnJ35zGsYH3S8KEvN3/
- SG/Zt4qZDUZ23pv+CLJ0WciMnJ50
-X-Google-Smtp-Source: AFSGD/W7pZOwcgWGYFFQ4vJeXE05EImLDDhMK4BDdHBNYghyuLLpeh2aXLgPocpqyMSp48gxHFYeVA==
-X-Received: by 2002:a63:507:: with SMTP id 7mr22789432pgf.411.1544109460092;
- Thu, 06 Dec 2018 07:17:40 -0800 (PST)
+ bh=lzBd5ZYbLcRIJ/+mPtoYo7L9hb+UwndyxJFAHZSiy9U=;
+ b=a//2dbGg/l4IGtMktg0GNhSW0ISgZu20/oHm46171Wkr59hx2BcXwFvzKPePmHfZLx
+ WIBklEF5DH/KSr6zPTGDOHFDZNecw85iFI8gbQ+ieJRdh7IThkyWTo626NOoIPi4YGFo
+ wdT1HC/shBpXhlZAYKvMBAa4UkVDZcsstTPARfa+QVNb596q8hEct0wNd0WlMDaPAMrZ
+ D1Z4KszrDcun5NDqOVHWwpwlct6YLlpGikuanTE6La1Hzfvlf9wfQ4PniXkqhKLYJD+c
+ fskBF0h3VGCXFdjS/+4rBjf/AkMBd2PfddV1/7t9k1yhlaFY0UOIEjH0UJ+x3PnBFFP0
+ GF8g==
+X-Gm-Message-State: AA+aEWbJ2nez+39x0p9a9RAm62XxcbWy7EZGOvjfRVldp6aA2l71PAwz
+ JxwsrvG/+/POFW6Q2Xy8gbDRJfv7
+X-Google-Smtp-Source: AFSGD/Uk+RQLxjLXJyFhpKpC94nmpOYzRJwdMt6JyLVjchM7hDsv3cmyCKuX5SfiuDpipkpMx/KCOg==
+X-Received: by 2002:a62:2044:: with SMTP id g65mr28694534pfg.127.1544109462183; 
+ Thu, 06 Dec 2018 07:17:42 -0800 (PST)
 Received: from 192-168-1-15.tpgi.com.au (60-240-78-224.static.tpgi.com.au.
  [60.240.78.224])
- by smtp.gmail.com with ESMTPSA id v12sm821546pgg.41.2018.12.06.07.17.38
+ by smtp.gmail.com with ESMTPSA id v12sm821546pgg.41.2018.12.06.07.17.40
  (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Thu, 06 Dec 2018 07:17:39 -0800 (PST)
+ Thu, 06 Dec 2018 07:17:41 -0800 (PST)
 From: Oliver O'Halloran <oohall@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 4/7] powerpc/papr_scm: Remove endian conversions
-Date: Fri,  7 Dec 2018 02:17:11 +1100
-Message-Id: <20181206151714.28494-5-oohall@gmail.com>
+Subject: [PATCH 5/7] powerpc/papr_scm: Fix DIMM device registration race
+Date: Fri,  7 Dec 2018 02:17:12 +1100
+Message-Id: <20181206151714.28494-6-oohall@gmail.com>
 X-Mailer: git-send-email 2.17.2
 In-Reply-To: <20181206151714.28494-1-oohall@gmail.com>
 References: <20181206151714.28494-1-oohall@gmail.com>
@@ -97,53 +97,42 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The return values of a h-call are returned in the CPU registers and
-written to the provided buffer by the plpar_hcall() wrapper. As a result
-the values written to memory are always in the native endian and should
-not be byte swapped.
+When a new nvdimm device is registered with libnvdimm via
+nvdimm_create() it is added as a device on the nvdimm bus. The probe
+function for the DIMM driver is potentially quite slow so actually
+registering and probing the device is done in an async domain rather
+than immediately after device creation. This can result in a race where
+the region device (created 2nd) is probed first and fails to activate at
+boot.
 
-The inital implementation of the H-Call interface was done in qemu and
-the returned values were byte swapped unnecessarily in both the
-hypervisor and in the driver so this was only noticed when bringing up
-the PowerVM implementation.
+To fix this we use the same approach as the ACPI/NFIT driver which is to
+check that all the DIMM devices registered successfully. LibNVDIMM
+provides the nvdimm_bus_count_dimms() function which synchronises with
+the async domain and verifies that the dimm was successfully registered
+with the bus.
+
+If either of these does not occur then we bail.
 
 Fixes: b5beae5e224f ("powerpc/pseries: Add driver for PAPR SCM regions")
 Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
 ---
- arch/powerpc/platforms/pseries/papr_scm.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ arch/powerpc/platforms/pseries/papr_scm.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
 diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/platforms/pseries/papr_scm.c
-index ed1082cc1d27..90203039dee8 100644
+index 90203039dee8..871b386dd4b2 100644
 --- a/arch/powerpc/platforms/pseries/papr_scm.c
 +++ b/arch/powerpc/platforms/pseries/papr_scm.c
-@@ -55,7 +55,7 @@ static int drc_pmem_bind(struct papr_scm_priv *p)
- 	do {
- 		rc = plpar_hcall(H_SCM_BIND_MEM, ret, p->drc_index, 0,
- 				p->blocks, BIND_ANY_ADDR, token);
--		token = be64_to_cpu(ret[0]);
-+		token = ret[0];
- 		cond_resched();
- 	} while (rc == H_BUSY);
- 
-@@ -64,7 +64,7 @@ static int drc_pmem_bind(struct papr_scm_priv *p)
- 		return -ENXIO;
+@@ -223,6 +223,9 @@ static int papr_scm_nvdimm_init(struct papr_scm_priv *p)
+ 		goto err;
  	}
  
--	p->bound_addr = be64_to_cpu(ret[1]);
-+	p->bound_addr = ret[1];
++	if (nvdimm_bus_check_dimm_count(p->bus, 1))
++		goto err;
++
+ 	/* now add the region */
  
- 	dev_dbg(&p->pdev->dev, "bound drc %x to %pR\n", p->drc_index, &p->res);
- 
-@@ -82,7 +82,7 @@ static int drc_pmem_unbind(struct papr_scm_priv *p)
- 	do {
- 		rc = plpar_hcall(H_SCM_UNBIND_MEM, ret, p->drc_index,
- 				p->bound_addr, p->blocks, token);
--		token = be64_to_cpu(ret);
-+		token = ret[0];
- 		cond_resched();
- 	} while (rc == H_BUSY);
- 
+ 	memset(&mapping, 0, sizeof(mapping));
 -- 
 2.17.2
 
