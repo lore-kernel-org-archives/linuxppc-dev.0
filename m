@@ -2,72 +2,95 @@ Return-Path: <SRS0=TW6C=OP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5433FC04EB8
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 07:20:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 98235C04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 07:34:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7438720989
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 07:20:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7438720989
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 0A82E2146D
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 07:34:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0A82E2146D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 439Rnv0G6CzDr5s
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 18:20:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by lists.ozlabs.org (Postfix) with ESMTP id 439S5l6894zDqtY
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 18:34:03 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=rppt@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 439RlY5xfvzDr4C
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Dec 2018 18:18:17 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 439RlR1Wczz9vGy0;
- Thu,  6 Dec 2018 08:18:11 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 6HAAqbnUVXwV; Thu,  6 Dec 2018 08:18:11 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 439RlR0sVSz9vGxx;
- Thu,  6 Dec 2018 08:18:11 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0B5BB8B75F;
- Thu,  6 Dec 2018 08:18:12 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id STZPDPwlG50x; Thu,  6 Dec 2018 08:18:11 +0100 (CET)
-Received: from [192.168.232.3] (unknown [192.168.232.3])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 73AF28B77E;
- Thu,  6 Dec 2018 08:18:11 +0100 (CET)
-Subject: Re: [PATCH] powerpc/ipic: Fix a bounds check in ipic_set_priority()
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Dan Carpenter <dan.carpenter@oracle.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Kim Phillips <kim.phillips@freescale.com>
-References: <20181203144834.ocxntjflfz2idxrb@kili.mountain>
- <87sgzchcw8.fsf@concordia.ellerman.id.au>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <f570563c-1cc7-fecf-2ed2-58164047ec9d@c-s.fr>
-Date: Thu, 6 Dec 2018 08:18:10 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.3.2
+ by lists.ozlabs.org (Postfix) with ESMTPS id 439S2m6pDxzDr5V
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Dec 2018 18:31:28 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wB67OVRu053336
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Dec 2018 02:31:26 -0500
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2p6vyxp7uv-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Dec 2018 02:31:25 -0500
+Received: from localhost
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.ibm.com>;
+ Thu, 6 Dec 2018 07:31:23 -0000
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
+ by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Thu, 6 Dec 2018 07:31:17 -0000
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com
+ (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wB67VGI28192444
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Thu, 6 Dec 2018 07:31:16 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 45CBBA406B;
+ Thu,  6 Dec 2018 07:31:16 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id ACE95A405B;
+ Thu,  6 Dec 2018 07:31:13 +0000 (GMT)
+Received: from rapoport-lnx (unknown [9.148.206.89])
+ by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Thu,  6 Dec 2018 07:31:13 +0000 (GMT)
+Date: Thu, 6 Dec 2018 09:31:11 +0200
+From: Mike Rapoport <rppt@linux.ibm.com>
+To: Michal Simek <monstr@monstr.eu>
+Subject: Re: [PATCH v2 2/6] microblaze: prefer memblock API returning virtual
+ address
+References: <1543852035-26634-1-git-send-email-rppt@linux.ibm.com>
+ <1543852035-26634-3-git-send-email-rppt@linux.ibm.com>
+ <0a5e0aef-15fd-2d0c-765c-e7ba60219b00@monstr.eu>
 MIME-Version: 1.0
-In-Reply-To: <87sgzchcw8.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <0a5e0aef-15fd-2d0c-765c-e7ba60219b00@monstr.eu>
+User-Agent: Mutt/1.5.24 (2015-08-30)
+X-TM-AS-GCONF: 00
+x-cbid: 18120607-0020-0000-0000-000002F35181
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18120607-0021-0000-0000-000021435F4D
+Message-Id: <20181206073111.GH19181@rapoport-lnx>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-12-06_01:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=749 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1812060068
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,50 +102,81 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, kernel-janitors@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>
+Cc: Michal Hocko <mhocko@suse.com>, linux-sh@vger.kernel.org,
+ Michal Simek <michal.simek@xilinx.com>, linux-mm@kvack.org,
+ Rich Felker <dalias@libc.org>, Paul Mackerras <paulus@samba.org>,
+ sparclinux@vger.kernel.org, Vincent Chen <deanbo422@gmail.com>,
+ Jonas Bonn <jonas@southpole.se>, linux-c6x-dev@linux-c6x.org,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Russell King <linux@armlinux.org.uk>, Mark Salter <msalter@redhat.com>,
+ Arnd Bergmann <arnd@arndb.de>,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ openrisc@lists.librecores.org, Greentime Hu <green.hu@gmail.com>,
+ Stafford Horne <shorne@gmail.com>, Guan Xuetao <gxt@pku.edu.cn>,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Wed, Dec 05, 2018 at 04:29:40PM +0100, Michal Simek wrote:
+> On 03. 12. 18 16:47, Mike Rapoport wrote:
+> > Rather than use the memblock_alloc_base that returns a physical address and
+> > then convert this address to the virtual one, use appropriate memblock
+> > function that returns a virtual address.
+> > 
+> > Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
+> > ---
+> >  arch/microblaze/mm/init.c | 5 +++--
+> >  1 file changed, 3 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/arch/microblaze/mm/init.c b/arch/microblaze/mm/init.c
+> > index b17fd8a..44f4b89 100644
+> > --- a/arch/microblaze/mm/init.c
+> > +++ b/arch/microblaze/mm/init.c
+> > @@ -363,8 +363,9 @@ void __init *early_get_page(void)
+> >  	 * Mem start + kernel_tlb -> here is limit
+> >  	 * because of mem mapping from head.S
+> >  	 */
+> > -	return __va(memblock_alloc_base(PAGE_SIZE, PAGE_SIZE,
+> > -				memory_start + kernel_tlb));
+> > +	return memblock_alloc_try_nid_raw(PAGE_SIZE, PAGE_SIZE,
+> > +				MEMBLOCK_LOW_LIMIT, memory_start + kernel_tlb,
+> > +				NUMA_NO_NODE);
+> >  }
+> >  
+> >  #endif /* CONFIG_MMU */
+> > 
+> 
+> I can't see any issue with functionality when this patch is applied.
+> If you want me to take this via my tree please let me know.
+
+I thought to route this via mmotm tree.
+
+> Otherwise:
+> 
+> Tested-by: Michal Simek <michal.simek@xilinx.com>
+
+Thanks!
+
+ 
+> Thanks,
+> Michal
+> 
+> -- 
+> Michal Simek, Ing. (M.Eng), OpenPGP -> KeyID: FE3D1F91
+> w: www.monstr.eu p: +42-0-721842854
+> Maintainer of Linux kernel - Xilinx Microblaze
+> Maintainer of Linux kernel - Xilinx Zynq ARM and ZynqMP ARM64 SoCs
+> U-Boot custodian - Xilinx Microblaze/Zynq/ZynqMP/Versal SoCs
+> 
+> 
 
 
-Le 05/12/2018 à 04:26, Michael Ellerman a écrit :
-> Hi Dan,
-> 
-> Thanks for the patch.
-> 
-> Dan Carpenter <dan.carpenter@oracle.com> writes:
->> The ipic_info[] array only has 95 elements so I have made the bounds
->> check smaller to prevent a read overflow.  It was Smatch that found
->> this issue:
->>
->>      arch/powerpc/sysdev/ipic.c:784 ipic_set_priority()
->>      error: buffer overflow 'ipic_info' 95 <= 127
->>
->> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
->> ---
->> I wasn't able to find any callers of this code.  Maybe we removed the
->> last one in commit b9f0f1bb2bca ("[POWERPC] Adapt ipic driver to new
->> host_ops interface, add set_irq_type to set IRQ sense").  So perhaps we
->> should just remove it.  I'm not really comfortable doing that myself,
->> because I don't know the code well enough and can't build test
->> it properly.
-> 
-> Hah wow, last usage removed in 2006!
-> 
-> I don't see any mention of it since then, so I'll remove it. If it
-> breaks something we can put it back.
-> 
-> Can smatch help us find things like this that are defined non-static but
-> never used?
-> 
 
-I think we have to do that carrefully. Some of those functions might be 
-used by out-of-tree boards.
 
-I'm thinking especially at ipic_get_mcp_status() and 
-ipic_set_mcp_status(). They are used in my 832x boards's machine check 
-handler to know when a machine check is a timeout from the 832x watchdog.
+-- 
+Sincerely yours,
+Mike.
 
-Christophe
