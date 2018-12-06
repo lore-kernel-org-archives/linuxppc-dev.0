@@ -6,54 +6,54 @@ X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C488BC64EB1
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 18:10:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 06BCCC04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 19:38:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4EB9120868
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 18:10:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4EB9120868
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ravnborg.org
+	by mail.kernel.org (Postfix) with ESMTPS id 262CD20850
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 19:38:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 262CD20850
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 439kDc04gNzDrBh
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 05:10:56 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ravnborg.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 439m9D557pzDrRR
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 06:38:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=ravnborg.org
- (client-ip=109.247.116.14; helo=asavdk3.altibox.net;
- envelope-from=sam@ravnborg.org; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=lst.de
+ (client-ip=213.95.11.211; helo=newverein.lst.de; envelope-from=hch@lst.de;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ravnborg.org
-Received: from asavdk3.altibox.net (asavdk3.altibox.net [109.247.116.14])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=lst.de
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 439kB86qpyzDqB4
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 05:08:48 +1100 (AEDT)
-Received: from ravnborg.org (unknown [158.248.194.18])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by asavdk3.altibox.net (Postfix) with ESMTPS id 3A8DD2007D;
- Thu,  6 Dec 2018 19:08:28 +0100 (CET)
-Date: Thu, 6 Dec 2018 19:08:26 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Mike Rapoport <rppt@linux.ibm.com>
-Subject: Re: [PATCH v2 5/6] arch: simplify several early memory allocations
-Message-ID: <20181206180826.GB19166@ravnborg.org>
-References: <1543852035-26634-1-git-send-email-rppt@linux.ibm.com>
- <1543852035-26634-6-git-send-email-rppt@linux.ibm.com>
- <20181203162908.GB4244@ravnborg.org>
- <20181203164920.GB26700@rapoport-lnx>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 439m6y5WC8zDrPH
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 06:36:09 +1100 (AEDT)
+Received: by newverein.lst.de (Postfix, from userid 2407)
+ id 89CF968AA6; Thu,  6 Dec 2018 20:36:05 +0100 (CET)
+Date: Thu, 6 Dec 2018 20:36:05 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Christian Zigotzky <chzigotzky@xenosoft.de>
+Subject: Re: use generic DMA mapping code in powerpc V4
+Message-ID: <20181206193605.GA31255@lst.de>
+References: <8694431d-c669-b7b9-99fa-e99db5d45a7d@xenosoft.de>
+ <20181130131056.GA5211@lst.de>
+ <25999587-2d91-a63c-ed38-c3fb0075d9f1@xenosoft.de>
+ <c5202d29-863d-1377-0e2d-762203b317e2@xenosoft.de>
+ <58c61afb-290f-6196-c72c-ac7b61b84718@xenosoft.de>
+ <20181204142426.GA2743@lst.de>
+ <ef56d279-f75d-008e-71ba-7068c1b37c48@xenosoft.de>
+ <20181205140550.GA27549@lst.de>
+ <1948cf84-49ab-543c-472c-d18e27751903@xenosoft.de>
+ <9ECD27D6-B039-4253-9FB9-749B41DE4CC6@xenosoft.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20181203164920.GB26700@rapoport-lnx>
-User-Agent: Mutt/1.5.21 (2010-09-15)
-X-CMAE-Score: 0
-X-CMAE-Analysis: v=2.3 cv=dqr19Wo4 c=1 sm=1 tr=0
- a=UWs3HLbX/2nnQ3s7vZ42gw==:117 a=UWs3HLbX/2nnQ3s7vZ42gw==:17
- a=kj9zAlcOel0A:10 a=5FtgESxhPiTmXxFRN-kA:9 a=CjuIK1q_8ugA:10
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <9ECD27D6-B039-4253-9FB9-749B41DE4CC6@xenosoft.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,60 +65,17 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michal Hocko <mhocko@suse.com>, linux-sh@vger.kernel.org,
- linux-mm@kvack.org, Rich Felker <dalias@libc.org>,
- Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
- Vincent Chen <deanbo422@gmail.com>, Jonas Bonn <jonas@southpole.se>,
- linux-c6x-dev@linux-c6x.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
- Russell King <linux@armlinux.org.uk>, Mark Salter <msalter@redhat.com>,
- Arnd Bergmann <arnd@arndb.de>,
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- openrisc@lists.librecores.org, Greentime Hu <green.hu@gmail.com>,
- Stafford Horne <shorne@gmail.com>, Guan Xuetao <gxt@pku.edu.cn>,
- linux-arm-kernel@lists.infradead.org, Michal Simek <monstr@monstr.eu>,
- linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: linux-arch@vger.kernel.org, Darren Stevens <darren@stevens-zone.net>,
+ linux-kernel@vger.kernel.org, Julian Margetson <runaway@candw.ms>,
+ linux-mm@kvack.org, iommu@lists.linux-foundation.org,
+ Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>,
+ linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Dec 03, 2018 at 06:49:21PM +0200, Mike Rapoport wrote:
-> On Mon, Dec 03, 2018 at 05:29:08PM +0100, Sam Ravnborg wrote:
-> > Hi Mike.
-> > 
-> > > index c37955d..2a17665 100644
-> > > --- a/arch/sparc/kernel/prom_64.c
-> > > +++ b/arch/sparc/kernel/prom_64.c
-> > > @@ -34,16 +34,13 @@
-> > >  
-> > >  void * __init prom_early_alloc(unsigned long size)
-> > >  {
-> > > -	unsigned long paddr = memblock_phys_alloc(size, SMP_CACHE_BYTES);
-> > > -	void *ret;
-> > > +	void *ret = memblock_alloc(size, SMP_CACHE_BYTES);
-> > >  
-> > > -	if (!paddr) {
-> > > +	if (!ret) {
-> > >  		prom_printf("prom_early_alloc(%lu) failed\n", size);
-> > >  		prom_halt();
-> > >  	}
-> > >  
-> > > -	ret = __va(paddr);
-> > > -	memset(ret, 0, size);
-> > >  	prom_early_allocated += size;
-> > >  
-> > >  	return ret;
-> > 
-> > memblock_alloc() calls memblock_alloc_try_nid().
-> > And if allocation fails then memblock_alloc_try_nid() calls panic().
-> > So will we ever hit the prom_halt() code?
-> 
-> memblock_phys_alloc_try_nid() also calls panic if an allocation fails. So
-> in either case we never reach prom_halt() code.
+On Thu, Dec 06, 2018 at 06:10:54PM +0100, Christian Zigotzky wrote:
+> Please don’t merge this code. We are still testing and trying to figure out where the problems are in the code.
 
-So we have code here we never reach - not nice.
-If the idea is to avoid relying on the panic inside memblock_alloc() then
-maybe replace it with a variant that do not call panic?
-To make it clear what happens.
-
-	Sam
+The ones I sent pings for were either tested successfully by you
+(the zone change) or are trivial cleanups that don't affect your setup.
