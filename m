@@ -2,77 +2,96 @@ Return-Path: <SRS0=TW6C=OP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7CDD0C04EB8
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 21:32:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 629D3C04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 21:36:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EE2362082B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 21:32:00 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Mtw80NaM"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EE2362082B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id D7CEA2082B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 21:36:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D7CEA2082B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 439phZ5C2wzDrVY
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 08:31:58 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 439pnM5l6GzDrVW
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 08:36:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="Mtw80NaM";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=rppt@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=robh@kernel.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="Mtw80NaM"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 439pbm1Lw4zDrQR
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 08:27:47 +1100 (AEDT)
-Received: from mail-qt1-f175.google.com (mail-qt1-f175.google.com
- [209.85.160.175])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 3D72E21536
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Dec 2018 21:27:45 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1544131665;
- bh=YUKdoUTdVOsh4ePDuGZ5IkFg5OFwW2rDLrMYKWOZJig=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=Mtw80NaMfMVffOW74aj/EI26GoQDEzan0jzuEAo+MAJ6brIQBDlkWQKmd9IWDFEXk
- Tn9/bMPwQS6xTmEYNE5bM/Mg9ql9Q8lAcUMZMtdl1Qw6kzdzwTf4DXTlz+llH2FShD
- 9neyDhJX+Xl3B1H4Kz94GaksN4CqAIAXVOkIJlR4=
-Received: by mail-qt1-f175.google.com with SMTP id p17so2261146qtl.5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Dec 2018 13:27:45 -0800 (PST)
-X-Gm-Message-State: AA+aEWbfn2aiyKm5U6FHDbRlcW/6JzjvKUhsUgRVOQXu238TpkEAL1UC
- lyvUNVFJMJjiLst8hDOGJb1URnnMoyViJhXEsA==
-X-Google-Smtp-Source: AFSGD/Xq7Y31Py8rddAX76hKx/Dgp6RhHrT1700dFVf7MBtjRNWpyx/brxsFhnAarR60gHdRV/sSlbWPfoSSMDfS4m0=
-X-Received: by 2002:a0c:e2ca:: with SMTP id t10mr29894028qvl.77.1544131664335; 
- Thu, 06 Dec 2018 13:27:44 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 439pkv2425zDrDJ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 08:33:58 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wB6LXrwi041317
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Dec 2018 16:33:56 -0500
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2p79gdeff8-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Dec 2018 16:33:55 -0500
+Received: from localhost
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.ibm.com>;
+ Thu, 6 Dec 2018 21:30:40 -0000
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Thu, 6 Dec 2018 21:30:33 -0000
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wB6LUW1u31391866
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Thu, 6 Dec 2018 21:30:32 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 1BB16A4059;
+ Thu,  6 Dec 2018 21:30:32 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id AE2AEA4057;
+ Thu,  6 Dec 2018 21:30:29 +0000 (GMT)
+Received: from rapoport-lnx (unknown [9.148.206.110])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Thu,  6 Dec 2018 21:30:29 +0000 (GMT)
+Date: Thu, 6 Dec 2018 23:30:27 +0200
+From: Mike Rapoport <rppt@linux.ibm.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH v2 5/6] arch: simplify several early memory allocations
+References: <1543852035-26634-1-git-send-email-rppt@linux.ibm.com>
+ <1543852035-26634-6-git-send-email-rppt@linux.ibm.com>
+ <20181203162908.GB4244@ravnborg.org>
+ <20181203164920.GB26700@rapoport-lnx>
+ <20181206180826.GB19166@ravnborg.org>
 MIME-Version: 1.0
-References: <20181203213223.16986-1-robh@kernel.org>
- <20181203213223.16986-15-robh@kernel.org>
- <dfb921ca-63c5-a4c2-f3e2-c2eebdf688f6@baylibre.com>
- <CAL_Jsq+e2m5VaibpvuTYURZ+E=MCSUGH8cokdWYWEjn_jy9iwA@mail.gmail.com>
-In-Reply-To: <CAL_Jsq+e2m5VaibpvuTYURZ+E=MCSUGH8cokdWYWEjn_jy9iwA@mail.gmail.com>
-From: Rob Herring <robh@kernel.org>
-Date: Thu, 6 Dec 2018 15:27:31 -0600
-X-Gmail-Original-Message-ID: <CAL_JsqLCtY=jpaA=Pxq6ncFX2rSg8Kjc3iZXKM3HvaqCi16N6Q@mail.gmail.com>
-Message-ID: <CAL_JsqLCtY=jpaA=Pxq6ncFX2rSg8Kjc3iZXKM3HvaqCi16N6Q@mail.gmail.com>
-Subject: Re: [PATCH v2 14/34] dt-bindings: arm: Convert Amlogic board/soc
- bindings to json-schema
-To: Neil Armstrong <narmstrong@baylibre.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20181206180826.GB19166@ravnborg.org>
+User-Agent: Mutt/1.5.24 (2015-08-30)
+X-TM-AS-GCONF: 00
+x-cbid: 18120621-0028-0000-0000-0000032726E3
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18120621-0029-0000-0000-000023E33A7C
+Message-Id: <20181206213026.GA7479@rapoport-lnx>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-12-06_08:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=903 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1812060180
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,94 +103,77 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org,
- Kumar Gala <kumar.gala@linaro.org>, Grant Likely <grant.likely@arm.com>,
- Sean Hudson <darknighte@darknighte.com>, Kevin Hilman <khilman@baylibre.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- ARM-SoC Maintainers <arm@kernel.org>, Carlo Caione <carlo@caione.org>,
- linux-amlogic@lists.infradead.org, Frank Rowand <frowand.list@gmail.com>,
- "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>
+Cc: Michal Hocko <mhocko@suse.com>, linux-sh@vger.kernel.org,
+ linux-mm@kvack.org, Rich Felker <dalias@libc.org>,
+ Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
+ Vincent Chen <deanbo422@gmail.com>, Jonas Bonn <jonas@southpole.se>,
+ linux-c6x-dev@linux-c6x.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Russell King <linux@armlinux.org.uk>, Mark Salter <msalter@redhat.com>,
+ Arnd Bergmann <arnd@arndb.de>,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ openrisc@lists.librecores.org, Greentime Hu <green.hu@gmail.com>,
+ Stafford Horne <shorne@gmail.com>, Guan Xuetao <gxt@pku.edu.cn>,
+ linux-arm-kernel@lists.infradead.org, Michal Simek <monstr@monstr.eu>,
+ linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Dec 4, 2018 at 8:44 AM Rob Herring <robh@kernel.org> wrote:
->
-> On Tue, Dec 4, 2018 at 2:39 AM Neil Armstrong <narmstrong@baylibre.com> wrote:
-> >
-> > Hi Rob,
-> >
-> > You forgot linux-amlogic in CC...
-> >
-> > On 03/12/2018 22:32, Rob Herring wrote:
-> > > Convert Amlogic SoC bindings to DT schema format using json-schema.
-> > >
-> > > Cc: Carlo Caione <carlo@caione.org>
-> > > Cc: Kevin Hilman <khilman@baylibre.com>
-> > > Cc: Mark Rutland <mark.rutland@arm.com>
-> > > Cc: devicetree@vger.kernel.org
-> > > Signed-off-by: Rob Herring <robh@kernel.org>
-> > > ---
->
-> [...]
->
-> > > +      - items:
-> > > +          - enum:
-> > > +              - amlogic,s400
-> > > +          - const: amlogic,a113d
-> > > +          - const: amlogic,meson-axg
-> > > +      - items:
-> > > +          - enum:
-> > > +              - amlogic,u200
-> > > +          - const: amlogic,g12a
-> >
-> > but all this feels wrong for me.
-> >
-> > First of all, this yaml description is not human friendly and not intuitive at all,
-> > and secondly with this conversion we loose all the comments about the SoC family relationship
-> > with the compatible strings !
-> >
-> > I really understand the point to have automated verification, but really it's a pain to read
-> > (I can't imagine newcomers... the actual DT bindings are already hard to read...) and
-> > I feel it will be a real pain to write !
->
-> What do you suggest that would be easier? Is it the YAML itself or the
-> json-schema vocabulary? For the former, we could use {} and [] to make
-> things more json style. But I imagine it is the latter.
->
-> There is some learning curve for json-schema and is certainly a
-> concern I have, but there would be a learning curve for anything. Our
-> choices are use some existing schema language or invent one. All the
-> previous efforts (there's been about 5 since 2013) have been inventing
-> one, and they've not gone far. There will be far few resources
-> available to train people with if we do something custom.
->
-> > Can't we mix an "humam text" with a "yaml" part on a same document ? we are in 2018 (nearly 2019),
-> > and it should be easy to extract a yaml description from a text document without pain and
-> > keep all the human description, no ?
->
-> Yes. Please go look at the annotated example in patch 2.
+On Thu, Dec 06, 2018 at 07:08:26PM +0100, Sam Ravnborg wrote:
+> On Mon, Dec 03, 2018 at 06:49:21PM +0200, Mike Rapoport wrote:
+> > On Mon, Dec 03, 2018 at 05:29:08PM +0100, Sam Ravnborg wrote:
+> > > Hi Mike.
+> > > 
+> > > > index c37955d..2a17665 100644
+> > > > --- a/arch/sparc/kernel/prom_64.c
+> > > > +++ b/arch/sparc/kernel/prom_64.c
+> > > > @@ -34,16 +34,13 @@
+> > > >  
+> > > >  void * __init prom_early_alloc(unsigned long size)
+> > > >  {
+> > > > -	unsigned long paddr = memblock_phys_alloc(size, SMP_CACHE_BYTES);
+> > > > -	void *ret;
+> > > > +	void *ret = memblock_alloc(size, SMP_CACHE_BYTES);
+> > > >  
+> > > > -	if (!paddr) {
+> > > > +	if (!ret) {
+> > > >  		prom_printf("prom_early_alloc(%lu) failed\n", size);
+> > > >  		prom_halt();
+> > > >  	}
+> > > >  
+> > > > -	ret = __va(paddr);
+> > > > -	memset(ret, 0, size);
+> > > >  	prom_early_allocated += size;
+> > > >  
+> > > >  	return ret;
+> > > 
+> > > memblock_alloc() calls memblock_alloc_try_nid().
+> > > And if allocation fails then memblock_alloc_try_nid() calls panic().
+> > > So will we ever hit the prom_halt() code?
+> > 
+> > memblock_phys_alloc_try_nid() also calls panic if an allocation fails. So
+> > in either case we never reach prom_halt() code.
+> 
+> So we have code here we never reach - not nice.
+> If the idea is to avoid relying on the panic inside memblock_alloc() then
+> maybe replace it with a variant that do not call panic?
+> To make it clear what happens.
 
-How's this?:
+My plan is to completely remove memblock variants that call panic() and
+make the callers check the return value.
 
-  compatible:
-    oneOf:
-      - description: Boards with the Amlogic Meson6 SoC
-        items:
-          - enum:
-              - geniatech,atv1200
-          - const: amlogic,meson6
+I've started to work on it, but with the holidays it progresses slower than
+I'd like to.
 
-      - description: Boards with the Amlogic Meson8 SoC
-        items:
-          - enum:
-              - minix,neo-x8
-          - const: amlogic,meson8
+Since the code here was unreachable for several year, a few more weeks
+won't make real difference so I'd prefer to keep the variant with panic()
+for now. 
+ 
+> 	Sam
+> 
 
-      - description: Boards with the Amlogic Meson8m2 SoC
-        items:
-          - enum:
-              - tronsmart,mxiii-plus
-          - const: amlogic,meson8m2
+-- 
+Sincerely yours,
+Mike.
+
