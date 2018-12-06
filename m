@@ -2,57 +2,83 @@ Return-Path: <SRS0=TW6C=OP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6166EC04EB8
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 14:42:35 +0000 (UTC)
-Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DBC3FC04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 15:20:08 +0000 (UTC)
+Received: from lists.ozlabs.org (unknown [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5C4552146D
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 14:42:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5C4552146D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 0255820700
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 15:20:03 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="oE2k0gDe"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0255820700
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 439dc832XczDqZR
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 01:42:32 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 439fRP6H7bzDrCN
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 02:20:01 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=arm.com
- (client-ip=217.140.101.70; helo=foss.arm.com;
- envelope-from=will.deacon@arm.com; receiver=<UNKNOWN>)
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="oE2k0gDe";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 439dTs3Lt4zDqjT
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 01:37:04 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 3ACBFA78;
- Thu,  6 Dec 2018 06:37:02 -0800 (PST)
-Received: from edgewater-inn.cambridge.arm.com
- (usa-sjc-imap-foss1.foss.arm.com [10.72.51.249])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 0AE883F575;
- Thu,  6 Dec 2018 06:37:02 -0800 (PST)
-Received: by edgewater-inn.cambridge.arm.com (Postfix, from userid 1000)
- id 249F41AE0BCF; Thu,  6 Dec 2018 14:37:23 +0000 (GMT)
-Date: Thu, 6 Dec 2018 14:37:23 +0000
-From: Will Deacon <will.deacon@arm.com>
-To: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v2 08/34] dt-bindings: arm: Convert PMU binding to
- json-schema
-Message-ID: <20181206143722.GA14887@arm.com>
-References: <20181203213223.16986-1-robh@kernel.org>
- <20181203213223.16986-9-robh@kernel.org>
- <20181205100858.GA14619@arm.com>
- <CAL_Jsq+YsVB8Ew=cb5W54eirMpAAOR7ApahCbHOtp2m3wpJYSg@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAL_Jsq+YsVB8Ew=cb5W54eirMpAAOR7ApahCbHOtp2m3wpJYSg@mail.gmail.com>
-User-Agent: Mutt/1.5.23 (2014-03-12)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::42c; helo=mail-pf1-x42c.google.com;
+ envelope-from=oohall@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="oE2k0gDe"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x42c.google.com (mail-pf1-x42c.google.com
+ [IPv6:2607:f8b0:4864:20::42c])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 439fNW526VzDrJf
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 02:17:31 +1100 (AEDT)
+Received: by mail-pf1-x42c.google.com with SMTP id 64so317465pfr.9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Dec 2018 07:17:31 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:subject:date:message-id;
+ bh=F0SESDeMNBYao8TxEZlN/P6iHy95PRqQb9Y/KUCQvHw=;
+ b=oE2k0gDesW39grT+m9srW0cnkSdYzPZOIrMmUTpEqNbhhutnzF9XS1uZ7OfpRQPujc
+ fkjeP7AHwI3XDyzPr4y8Ie4ahJ9NQ97twNcY2rVRPShmKMNZg4Ru1OS2pSWBWRq1oN/H
+ BF6LMEM+Hv79AJhwRZ8uepGpb+JvoK9iAVp8z4ltcx3HjX8iB41VB/PtzGCoThL5QbnX
+ OksW07R3T0TBRZy2O8VPEWVzkR4HJ7fqaauFU+HScc7hLM2bDsCmQbSDdZhJ+pkIyiYu
+ LvUEK2nkSn0/0L4G+7Sf3xaav+/+3Bmog2FhKNubJ4ZtL5R9jd1nelbS0BqN29Xir9pe
+ hIbQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:subject:date:message-id;
+ bh=F0SESDeMNBYao8TxEZlN/P6iHy95PRqQb9Y/KUCQvHw=;
+ b=P5OPCq/PUuD4rBovw59u3LlWI0l+ULG42zpWy3b/lz5uVjPW5MjbFb1PtU+Rl1vU0q
+ osNMcMzZOtqcl6l+xM7H//VASTqNJYk9TAvUyzSw5RacRu11f8bIl1deTUPbWOBfQdzC
+ ArTn8y/n1Krl+Xqil+6y/iavPGC4e8e2kGAokNTa3SxdQ+AGJHNf8lx0iQz2rO+ZFcV1
+ mfj1emLd2wQzsBUcb22+qoDytHu+goAxj6q0/faibAQm2Prn3zgKIFGZFDDs6GrKa3wA
+ xD1buud3UU341aAHw6OYPI/Cyq1Pnv+C1ZhciYoxF+BeT5f7BI6OTOWxAKMa8Db/gcQu
+ gQyw==
+X-Gm-Message-State: AA+aEWZpBya8zmdX61l/nXC10gSObznj3LgJaoM6hcX4r2uE+payRdyV
+ 7R7aPy7OuHTZH0j5cNNxSbL6fWMJ
+X-Google-Smtp-Source: AFSGD/XNiKwxZhQMgojlHAU5WoJCKVB4CpXYtfCh30VHdtip1E7sMXQ+vXOujY2spd9NA78GTqCXdw==
+X-Received: by 2002:a63:5b48:: with SMTP id l8mr24632242pgm.80.1544109449119; 
+ Thu, 06 Dec 2018 07:17:29 -0800 (PST)
+Received: from 192-168-1-15.tpgi.com.au (60-240-78-224.static.tpgi.com.au.
+ [60.240.78.224])
+ by smtp.gmail.com with ESMTPSA id v12sm821546pgg.41.2018.12.06.07.17.27
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Thu, 06 Dec 2018 07:17:28 -0800 (PST)
+From: Oliver O'Halloran <oohall@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: papr SCM driver fixes 
+Date: Fri,  7 Dec 2018 02:17:07 +1100
+Message-Id: <20181206151714.28494-1-oohall@gmail.com>
+X-Mailer: git-send-email 2.17.2
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,82 +90,17 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org,
- Kumar Gala <kumar.gala@linaro.org>, ARM-SoC Maintainers <arm@kernel.org>,
- Sean Hudson <darknighte@darknighte.com>, Frank Rowand <frowand.list@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Grant Likely <grant.likely@arm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Dec 05, 2018 at 09:42:04AM -0600, Rob Herring wrote:
-> On Wed, Dec 5, 2018 at 4:08 AM Will Deacon <will.deacon@arm.com> wrote:
-> > On Mon, Dec 03, 2018 at 03:31:57PM -0600, Rob Herring wrote:
-> > > +properties:
-> > > +  compatible:
-> > > +    oneOf:
-> > > +      - items:
-> > > +          - enum:
-> > > +              - apm,potenza-pmu
-> > > +              - arm,armv8-pmuv3
-> > > +              - arm,cortex-a73-pmu
-> > > +              - arm,cortex-a72-pmu
-> > > +              - arm,cortex-a57-pmu
-> > > +              - arm,cortex-a53-pmu
-> > > +              - arm,cortex-a35-pmu
-> > > +              - arm,cortex-a17-pmu
-> > > +              - arm,cortex-a15-pmu
-> > > +              - arm,cortex-a12-pmu
-> > > +              - arm,cortex-a9-pmu
-> > > +              - arm,cortex-a8-pmu
-> > > +              - arm,cortex-a7-pmu
-> > > +              - arm,cortex-a5-pmu
-> > > +              - arm,arm11mpcore-pmu
-> > > +              - arm,arm1176-pmu
-> > > +              - arm,arm1136-pmu
-> > > +              - brcm,vulcan-pmu
-> > > +              - cavium,thunder-pmu
-> > > +              - qcom,scorpion-pmu
-> > > +              - qcom,scorpion-mp-pmu
-> > > +              - qcom,krait-pmu
-> > > +      - items:
-> > > +          - const: arm,cortex-a7-pmu
-> > > +          - const: arm,cortex-a15-pmu
-> >
-> > What do these last two mean?
-> 
-> The first list only allows a single compatible string. This list says
-> there are 2 and that the compatible property should be:
-> compatible = "arm,cortex-a7-pmu", "arm,cortex-a15-pmu";
-> 
-> Which shows up here:
-> arch/arm/boot/dts/sun6i-a31.dtsi:               compatible =
-> "arm,cortex-a7-pmu", "arm,cortex-a15-pmu";
-> arch/arm/boot/dts/sun7i-a20.dtsi:               compatible =
-> "arm,cortex-a7-pmu", "arm,cortex-a15-pmu";
-> 
-> Maybe the dts is wrong and should be fixed?
+Various bug fixes for the papr_scm driver that were found while bringing
+up the PowerVM implementation of the interface. There's a few minor bugs
+there were a result of bugs in the original QEMU implementation, a few
+due to the memory layouts being different and one due to a change to the
+DT bindings.
 
-Yes, that's wrong and you could end up with the kernel exposing the wrong
-events to userspace. So I think we can fix the .dts and leave the binding
-without this.
+Mostly self-contained to the driver with the exception of the last patch
+which touches the powerpc specific parts of the vmemmap handling.
 
-> > > +required:
-> > > +  - compatible
-> >
-> > I probably said this before, but I do think that it's a shame to lose the
-> > example binding, especially for something like the PMU where you can
-> > pretty much take an example and bang in your own IRQ numbers to get it
-> > up and running.
-> 
-> I just thought it is so trivial that it didn't add much. I think most
-> folks would copy-n-paste from an actual dts file which has all the
-> other nodes you just need to update addresses and irq nums.
 
-True... even more of a reason to fix thise sun* .dts files then!
-
-Will
