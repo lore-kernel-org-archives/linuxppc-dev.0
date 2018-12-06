@@ -7,77 +7,77 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7039FC64EB1
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 15:28:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C0182C04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 15:30:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DE1BC20878
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 15:28:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 3DAB420989
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 15:30:32 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ULqRfeme"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DE1BC20878
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Qz2AyUcD"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3DAB420989
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 439fcZ4sNDzDrDJ
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 02:27:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 439fgV2gZkzDrBr
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 02:30:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="ULqRfeme";
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="Qz2AyUcD";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
+ (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
  envelope-from=oohall@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="ULqRfeme"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="Qz2AyUcD"; 
  dkim-atps=neutral
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
- [IPv6:2607:f8b0:4864:20::541])
+Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
+ [IPv6:2607:f8b0:4864:20::442])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 439fNg6V8ZzDrFS
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 02:17:39 +1100 (AEDT)
-Received: by mail-pg1-x541.google.com with SMTP id w6so285391pgl.6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Dec 2018 07:17:39 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 439fNk07ZFzDrK0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 02:17:41 +1100 (AEDT)
+Received: by mail-pf1-x442.google.com with SMTP id i12so322257pfo.7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Dec 2018 07:17:41 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=5x3nG9Lyyiui4XLI2PxBjk8qDJKvAVzC8LAqq0+ohpk=;
- b=ULqRfemezDUP3JKJv/3Smbqdes0+V2IjKYiER1WaR2EFDSE+uNzhuwkPJ2k2Je9iyr
- +u1lGUVJJoxV377UCpQiF2NTTPzYoFsEhezHSGOEAmfnS3pwHZJ9GXe8uPuD+uUccyxt
- MqLnFBxHUtKSRs38CV3v1eaxdXAx8nGDVN1EuPZCtMhOTmLx98+hQ/dtm0s+sDtmgdj+
- H53RWnlcawS4zVRCFHwC62yJsbgjlwceIrX2NPeqne5cy52FJULUDRVmu+cC6gxmoIcQ
- OT1IHbo4bsZh7hQ1y2BqkTeEDjtCgBZu4r/QuMUJal1GD2aYQm5zPp/maz2OQgEkXmWU
- tbtQ==
+ bh=Zi1qaO4sdSOQaH21fGYxR+uCkoajV+MPOXlymf28wFY=;
+ b=Qz2AyUcDH1BfgiZOLCAcDJ/48kweVj9hRCOojoBahzObCi/9ceLJ+gRQjVYtTyQfMD
+ U1heHEpP0hRkfiAI+TdxgTz93JbKan9n0vQxdGylaer4SRqWwZdfHuFj8r/nbLvuzBdC
+ /xvwrSasNOYs8iqw3OBUcxFJYjph+EW68zS8/iD9m/vpXJrSnvRkBmIL0oLwoZL+pPZC
+ YVQd2ZUjUI4s2t579iDzHniSDbxC5VAM87zr6kQNYdQWykzuGzqRpaeIU+tSffo/qZ3E
+ b7hgRrT7bPTlJYmn7nuAsambciN9Q4I88bqJqTNafcJ60VQ/gRkMjXBgJvo8xGy+4GSa
+ R2nA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references;
- bh=5x3nG9Lyyiui4XLI2PxBjk8qDJKvAVzC8LAqq0+ohpk=;
- b=iiBZY/yJOxbl0k3FPshMs4z4vZp3s3zUGrpx0d2MgG1tcKZvPzfiJSuMFjuM4dNYW6
- UnHr5SvmuTgu84hM+VoWNxFnSRWce4SPm8Sxr6K1/jDiwfDtcoDLyrjt6gkiCI6xkFYv
- W2RxiNxizNVcQYOjea0w7sgW7N0LFC/oy8LOSfE/GatkafBTt0A1dZ0wDWh+nwQj8RVo
- oRxMqxdkR4Ly6lqdblj26kcCSFCDwCTR1WUVLjk9xKAQBPtbQQo3Ai8m4D0O1bkIIvYe
- s0OJhwISlGO+zTod1DdvsdOD+yr+T1Jm0Ro9LR2w9nA/JSypSl0RciavO+5ecc+h2grK
- s4hw==
-X-Gm-Message-State: AA+aEWYsComCsJ8uqNWSHa/fTT4pmq5UxVw92dAvd/pn1p+XKZx+2eeC
- skWfl8QJj/nKvi7K+NEwuh8FP8uN
-X-Google-Smtp-Source: AFSGD/WFOK03scXVlggiGhcVqio4FuLaiVqcmS2JvLAnzA3xZLoxURjnV/CiJQzv7JuuY2pjvSAexA==
-X-Received: by 2002:a63:1a0c:: with SMTP id a12mr23962984pga.157.1544109457737; 
- Thu, 06 Dec 2018 07:17:37 -0800 (PST)
+ bh=Zi1qaO4sdSOQaH21fGYxR+uCkoajV+MPOXlymf28wFY=;
+ b=YnMfRS7OZaYJ71t8wqac+grLhJRKS1W/4L9ZXM5e+JaOS4P1Yle1FIdKfpqeRuZ9EP
+ lOMFjRYjahiyai+g0DgsIziITkP79ia7qBITw4R1SUqxXMGk8SqAIthkWBSRGScDqKzk
+ ldLWYw/5YKP/iNFX4B0wKa0dvS9Bvq/G0va5aM6nXanZJ611i1f+VJb+9pdJnwaQ5TWH
+ A2ue6q+461qZb5eEujFONNOCYwmAg4diFqSiTg4b3Y+5cF46fcAJLKxf9+Qc0tdGfYae
+ a5W7uHA91+iNDEIn/AAIjcGtF9MQXtfy7Pd74KGHJDzYItlIWwikY07/+GXMYcqpRlbE
+ +VAQ==
+X-Gm-Message-State: AA+aEWYKWLK9FohtXnMP8cgz61ROADzMUj93mlnJ35zGsYH3S8KEvN3/
+ SG/Zt4qZDUZ23pv+CLJ0WciMnJ50
+X-Google-Smtp-Source: AFSGD/W7pZOwcgWGYFFQ4vJeXE05EImLDDhMK4BDdHBNYghyuLLpeh2aXLgPocpqyMSp48gxHFYeVA==
+X-Received: by 2002:a63:507:: with SMTP id 7mr22789432pgf.411.1544109460092;
+ Thu, 06 Dec 2018 07:17:40 -0800 (PST)
 Received: from 192-168-1-15.tpgi.com.au (60-240-78-224.static.tpgi.com.au.
  [60.240.78.224])
- by smtp.gmail.com with ESMTPSA id v12sm821546pgg.41.2018.12.06.07.17.35
+ by smtp.gmail.com with ESMTPSA id v12sm821546pgg.41.2018.12.06.07.17.38
  (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Thu, 06 Dec 2018 07:17:36 -0800 (PST)
+ Thu, 06 Dec 2018 07:17:39 -0800 (PST)
 From: Oliver O'Halloran <oohall@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 3/7] powerpc/papr_scm: Update DT properties
-Date: Fri,  7 Dec 2018 02:17:10 +1100
-Message-Id: <20181206151714.28494-4-oohall@gmail.com>
+Subject: [PATCH 4/7] powerpc/papr_scm: Remove endian conversions
+Date: Fri,  7 Dec 2018 02:17:11 +1100
+Message-Id: <20181206151714.28494-5-oohall@gmail.com>
 X-Mailer: git-send-email 2.17.2
 In-Reply-To: <20181206151714.28494-1-oohall@gmail.com>
 References: <20181206151714.28494-1-oohall@gmail.com>
@@ -97,62 +97,53 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The ibm,unit-sizes property was originally specified as an array of two
-u32s corresponding to the memory block size, and the number of blocks
-available in that region. A fairly last-minute change to the SCM DT
-specification was splitting that into two seperate u64 properties:
-ibm,block-sizes and ibm,number-of-blocks that convey the same
-information. No firmware / hypervisor that emitted the ibm,unit-size
-property ever appeared in the wild.
+The return values of a h-call are returned in the CPU registers and
+written to the provided buffer by the plpar_hcall() wrapper. As a result
+the values written to memory are always in the native endian and should
+not be byte swapped.
+
+The inital implementation of the H-Call interface was done in qemu and
+the returned values were byte swapped unnecessarily in both the
+hypervisor and in the driver so this was only noticed when bringing up
+the PowerVM implementation.
 
 Fixes: b5beae5e224f ("powerpc/pseries: Add driver for PAPR SCM regions")
 Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
 ---
- arch/powerpc/platforms/pseries/papr_scm.c | 16 +++++++++++-----
- 1 file changed, 11 insertions(+), 5 deletions(-)
+ arch/powerpc/platforms/pseries/papr_scm.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/platforms/pseries/papr_scm.c
-index 390badd33547..ed1082cc1d27 100644
+index ed1082cc1d27..90203039dee8 100644
 --- a/arch/powerpc/platforms/pseries/papr_scm.c
 +++ b/arch/powerpc/platforms/pseries/papr_scm.c
-@@ -257,8 +257,9 @@ err:	nvdimm_bus_unregister(p->bus);
+@@ -55,7 +55,7 @@ static int drc_pmem_bind(struct papr_scm_priv *p)
+ 	do {
+ 		rc = plpar_hcall(H_SCM_BIND_MEM, ret, p->drc_index, 0,
+ 				p->blocks, BIND_ANY_ADDR, token);
+-		token = be64_to_cpu(ret[0]);
++		token = ret[0];
+ 		cond_resched();
+ 	} while (rc == H_BUSY);
  
- static int papr_scm_probe(struct platform_device *pdev)
- {
--	uint32_t drc_index, metadata_size, unit_cap[2];
- 	struct device_node *dn = pdev->dev.of_node;
-+	uint32_t drc_index, metadata_size;
-+	uint64_t blocks, block_size;
- 	struct papr_scm_priv *p;
- 	int rc;
- 
-@@ -268,8 +269,13 @@ static int papr_scm_probe(struct platform_device *pdev)
- 		return -ENODEV;
+@@ -64,7 +64,7 @@ static int drc_pmem_bind(struct papr_scm_priv *p)
+ 		return -ENXIO;
  	}
  
--	if (of_property_read_u32_array(dn, "ibm,unit-capacity", unit_cap, 2)) {
--		dev_err(&pdev->dev, "%pOF: missing unit-capacity!\n", dn);
-+	if (of_property_read_u64(dn, "ibm,block-size", &block_size)) {
-+		dev_err(&pdev->dev, "%pOF: missing block-size!\n", dn);
-+		return -ENODEV;
-+	}
-+
-+	if (of_property_read_u64(dn, "ibm,number-of-blocks", &blocks)) {
-+		dev_err(&pdev->dev, "%pOF: missing number-of-blocks!\n", dn);
- 		return -ENODEV;
- 	}
+-	p->bound_addr = be64_to_cpu(ret[1]);
++	p->bound_addr = ret[1];
  
-@@ -282,8 +288,8 @@ static int papr_scm_probe(struct platform_device *pdev)
+ 	dev_dbg(&p->pdev->dev, "bound drc %x to %pR\n", p->drc_index, &p->res);
  
- 	p->dn = dn;
- 	p->drc_index = drc_index;
--	p->block_size = unit_cap[0];
--	p->blocks     = unit_cap[1];
-+	p->block_size = block_size;
-+	p->blocks = blocks;
+@@ -82,7 +82,7 @@ static int drc_pmem_unbind(struct papr_scm_priv *p)
+ 	do {
+ 		rc = plpar_hcall(H_SCM_UNBIND_MEM, ret, p->drc_index,
+ 				p->bound_addr, p->blocks, token);
+-		token = be64_to_cpu(ret);
++		token = ret[0];
+ 		cond_resched();
+ 	} while (rc == H_BUSY);
  
- 	/* might be zero */
- 	p->metadata_size = metadata_size;
 -- 
 2.17.2
 
