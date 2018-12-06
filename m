@@ -2,83 +2,87 @@ Return-Path: <SRS0=TW6C=OP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-9.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DBC3FC04EB8
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 15:20:08 +0000 (UTC)
-Received: from lists.ozlabs.org (unknown [203.11.71.2])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 92310C04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 15:22:34 +0000 (UTC)
+Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0255820700
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 15:20:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 093B620868
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 15:22:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="oE2k0gDe"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0255820700
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="DxMCU5Zj"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 093B620868
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 439fRP6H7bzDrCN
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 02:20:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 439fVH66gpzDrPB
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 02:22:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="oE2k0gDe";
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="DxMCU5Zj";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::42c; helo=mail-pf1-x42c.google.com;
+ (client-ip=2607:f8b0:4864:20::644; helo=mail-pl1-x644.google.com;
  envelope-from=oohall@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="oE2k0gDe"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="DxMCU5Zj"; 
  dkim-atps=neutral
-Received: from mail-pf1-x42c.google.com (mail-pf1-x42c.google.com
- [IPv6:2607:f8b0:4864:20::42c])
+Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
+ [IPv6:2607:f8b0:4864:20::644])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 439fNW526VzDrJf
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 02:17:31 +1100 (AEDT)
-Received: by mail-pf1-x42c.google.com with SMTP id 64so317465pfr.9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Dec 2018 07:17:31 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 439fNY680WzDrJf
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 02:17:33 +1100 (AEDT)
+Received: by mail-pl1-x644.google.com with SMTP id g9so312376plo.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Dec 2018 07:17:33 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:subject:date:message-id;
- bh=F0SESDeMNBYao8TxEZlN/P6iHy95PRqQb9Y/KUCQvHw=;
- b=oE2k0gDesW39grT+m9srW0cnkSdYzPZOIrMmUTpEqNbhhutnzF9XS1uZ7OfpRQPujc
- fkjeP7AHwI3XDyzPr4y8Ie4ahJ9NQ97twNcY2rVRPShmKMNZg4Ru1OS2pSWBWRq1oN/H
- BF6LMEM+Hv79AJhwRZ8uepGpb+JvoK9iAVp8z4ltcx3HjX8iB41VB/PtzGCoThL5QbnX
- OksW07R3T0TBRZy2O8VPEWVzkR4HJ7fqaauFU+HScc7hLM2bDsCmQbSDdZhJ+pkIyiYu
- LvUEK2nkSn0/0L4G+7Sf3xaav+/+3Bmog2FhKNubJ4ZtL5R9jd1nelbS0BqN29Xir9pe
- hIbQ==
+ h=from:to:cc:subject:date:message-id:in-reply-to:references;
+ bh=1Tqps1caDm6LnBcfACof6EXbBukiLDkZzP348o6r5kY=;
+ b=DxMCU5ZjtKIdCjAzA96jsOcbmOP4vjL5w4Qq6bb8dg5HDOrNrb52VLcNE0CnmMdi5Z
+ pgmVcRBtaJpkKOclXhZ6rg2C2gWjvwLz/NhXZN2xLAgMzX68bRlUOPAPQTD1ScOXihzY
+ 4Rh5uv/1ScQaeJL0onm8vhVmieBgri/G8cM8ZAFe6CEGSRA+Lwjw7gR970a3JZ4P0/Lb
+ GYr3Q1Gk0H4HHw9ow5k0zWTMQE8NSoqIEINDQvrFRjOYxYINOoVW5Qk3DzpKmvjE4aJ0
+ sQGRNKoBMwksXta0uH2DtoM70rpQF1ehOqpvJfIrvR+f0RL87P66y2SVmRNa3Af0nXud
+ yP3A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:subject:date:message-id;
- bh=F0SESDeMNBYao8TxEZlN/P6iHy95PRqQb9Y/KUCQvHw=;
- b=P5OPCq/PUuD4rBovw59u3LlWI0l+ULG42zpWy3b/lz5uVjPW5MjbFb1PtU+Rl1vU0q
- osNMcMzZOtqcl6l+xM7H//VASTqNJYk9TAvUyzSw5RacRu11f8bIl1deTUPbWOBfQdzC
- ArTn8y/n1Krl+Xqil+6y/iavPGC4e8e2kGAokNTa3SxdQ+AGJHNf8lx0iQz2rO+ZFcV1
- mfj1emLd2wQzsBUcb22+qoDytHu+goAxj6q0/faibAQm2Prn3zgKIFGZFDDs6GrKa3wA
- xD1buud3UU341aAHw6OYPI/Cyq1Pnv+C1ZhciYoxF+BeT5f7BI6OTOWxAKMa8Db/gcQu
- gQyw==
-X-Gm-Message-State: AA+aEWZpBya8zmdX61l/nXC10gSObznj3LgJaoM6hcX4r2uE+payRdyV
- 7R7aPy7OuHTZH0j5cNNxSbL6fWMJ
-X-Google-Smtp-Source: AFSGD/XNiKwxZhQMgojlHAU5WoJCKVB4CpXYtfCh30VHdtip1E7sMXQ+vXOujY2spd9NA78GTqCXdw==
-X-Received: by 2002:a63:5b48:: with SMTP id l8mr24632242pgm.80.1544109449119; 
- Thu, 06 Dec 2018 07:17:29 -0800 (PST)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references;
+ bh=1Tqps1caDm6LnBcfACof6EXbBukiLDkZzP348o6r5kY=;
+ b=sa7DwzoZtBtNh9ESvdy5t1wBPNTnYUOwKcPH+qWd3HEHa7CbFNBEwRXAT+1+HFJ4BR
+ rG/CtgGnHMZNy3HMpZiOjxeyfl2rGNhVybeb3KksiIB088V9hGJxPe101LFEh5spVWYz
+ SB0tM5bx73aS+QOn+gLdX8FP1kghHGlGnIhcNOH6ujI2MUSWQZZP5borykzTbyNlCfHW
+ tVw9tzOEi54RPLYNjvWsTC6fmhX6LzRS3l8kWWqRfyYZq77fply1W7fRbnS6FPSMGqVK
+ vmTKfKqdCYh4cusukJJcyofO/0dR1/qzu/B+FPOJxP6cG8G/yrNze3G35isJ/ZvhrO3i
+ pQBQ==
+X-Gm-Message-State: AA+aEWYpcbk+RoCuLYnVamgkZN5Yde0BbZDWSslNmGczf0Uw+KbD9VU7
+ EUZ5gt8Lch6ODBBf/toLKa43eTvA
+X-Google-Smtp-Source: AFSGD/X3quP8QL6hmQbG1NztRkTAglCf0+0eDy8hkRPiOn9mmvfrBXkE7Uese96erCTLN0HWznxlRw==
+X-Received: by 2002:a17:902:b112:: with SMTP id
+ q18mr28616271plr.255.1544109451741; 
+ Thu, 06 Dec 2018 07:17:31 -0800 (PST)
 Received: from 192-168-1-15.tpgi.com.au (60-240-78-224.static.tpgi.com.au.
  [60.240.78.224])
- by smtp.gmail.com with ESMTPSA id v12sm821546pgg.41.2018.12.06.07.17.27
- for <linuxppc-dev@lists.ozlabs.org>
+ by smtp.gmail.com with ESMTPSA id v12sm821546pgg.41.2018.12.06.07.17.29
  (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Thu, 06 Dec 2018 07:17:28 -0800 (PST)
+ Thu, 06 Dec 2018 07:17:31 -0800 (PST)
 From: Oliver O'Halloran <oohall@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: papr SCM driver fixes 
-Date: Fri,  7 Dec 2018 02:17:07 +1100
-Message-Id: <20181206151714.28494-1-oohall@gmail.com>
+Subject: [PATCH 1/7] powerpc/papr_scm: Use depend instead of select
+Date: Fri,  7 Dec 2018 02:17:08 +1100
+Message-Id: <20181206151714.28494-2-oohall@gmail.com>
 X-Mailer: git-send-email 2.17.2
+In-Reply-To: <20181206151714.28494-1-oohall@gmail.com>
+References: <20181206151714.28494-1-oohall@gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,17 +94,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Oliver O'Halloran <oohall@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Various bug fixes for the papr_scm driver that were found while bringing
-up the PowerVM implementation of the interface. There's a few minor bugs
-there were a result of bugs in the original QEMU implementation, a few
-due to the memory layouts being different and one due to a change to the
-DT bindings.
+Making PAPR_SCM select LIBNVDIMM results in circular dependencies in
+Kconfig when another symbol depends on it. Fix this by replacing the
+select with a depends.
 
-Mostly self-contained to the driver with the exception of the last patch
-which touches the powerpc specific parts of the vmemmap handling.
+Fixes: b5beae5e224f ("powerpc/pseries: Add driver for PAPR SCM regions")
+Reported-by: Alastair D'Silva <alastair@d-silva.org>
+Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+---
+ arch/powerpc/platforms/pseries/Kconfig | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
+diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
+index ed91c9aea78e..e31e397003b3 100644
+--- a/arch/powerpc/platforms/pseries/Kconfig
++++ b/arch/powerpc/platforms/pseries/Kconfig
+@@ -141,8 +141,7 @@ config IBMEBUS
+ 	  Bus device driver for GX bus based adapters.
+ 
+ config PAPR_SCM
+-	depends on PPC_PSERIES && MEMORY_HOTPLUG
+-	select LIBNVDIMM
++	depends on PPC_PSERIES && MEMORY_HOTPLUG && LIBNVDIMM
+ 	tristate "Support for the PAPR Storage Class Memory interface"
+ 	help
+ 	  Enable access to hypervisor provided storage class memory.
+-- 
+2.17.2
 
