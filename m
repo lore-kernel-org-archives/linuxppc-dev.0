@@ -2,49 +2,58 @@ Return-Path: <SRS0=TW6C=OP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=unavailable
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1CA7DC04EB8
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 03:37:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C03C0C04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 04:22:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B8A28213A2
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 03:37:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B8A28213A2
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id D079D20838
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 04:22:46 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="TZ96w9Mt"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D079D20838
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 439LrG5YPgzDr8N
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 14:37:02 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 439Mrz1nzWzDqRs
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 15:22:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="TZ96w9Mt";
+	dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 439Lny3Sy2zDr0C
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Dec 2018 14:35:02 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 439Mnn6jjxzDr2l
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Dec 2018 15:19:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 439Lnv6lPZz9s1c;
- Thu,  6 Dec 2018 14:34:59 +1100 (AEDT)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Rob Herring <robh@kernel.org>, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] tty: Use of_node_name_{eq,
- prefix} for node name comparisons
-In-Reply-To: <20181205195050.4759-27-robh@kernel.org>
-References: <20181205195050.4759-27-robh@kernel.org>
-Date: Thu, 06 Dec 2018 14:34:56 +1100
-Message-ID: <87ftvbl44f.fsf@concordia.ellerman.id.au>
+ header.from=gibson.dropbear.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
+ header.b="TZ96w9Mt"; dkim-atps=neutral
+Received: by ozlabs.org (Postfix, from userid 1007)
+ id 439Mnn2xg6z9s7h; Thu,  6 Dec 2018 15:19:57 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=gibson.dropbear.id.au; s=201602; t=1544069997;
+ bh=QfCDKFem+tJn9rNn8MYnoPCP4PC1UJhmRYJ4KBb7coM=;
+ h=From:To:Cc:Subject:Date:From;
+ b=TZ96w9MtVoS99ghXZApZhoWNx8WuX/FMIGjPUAoBNaRVseslpSluwbzk0ZeaEaLvM
+ WM8SteRDD3oiMugu2haF5ucU+AtLrO3SZfuYHiwBmz2rRhsIe6nE70EiJZaGj0gG9+
+ zqjCZhQHXJlYkEXivu/LhE4VuTrQ1+ckaXa0SfS0=
+From: David Gibson <david@gibson.dropbear.id.au>
+To: davem@davemloft.net, saeedm@mellanox.com, ogerlitz@mellanox.com,
+ tariqt@mellanox.com, bhelgaas@google.com, leon@kernel.org
+Subject: [PATCH] PCI: Add no-D3 quirk for Mellanox ConnectX-[45]
+Date: Thu,  6 Dec 2018 15:19:51 +1100
+Message-Id: <20181206041951.22413-1-david@gibson.dropbear.id.au>
+X-Mailer: git-send-email 2.19.2
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,39 +65,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Paul Mackerras <paulus@samba.org>, linux-serial@vger.kernel.org,
- Jiri Slaby <jslaby@suse.com>, sparclinux@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: linux-rdma@vger.kernel.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, sbest@redhat.com, alex.williamson@redhat.com,
+ paulus@samba.org, linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Rob Herring <robh@kernel.org> writes:
+Mellanox ConnectX-5 IB cards (MT27800) seem to cause a call trace when
+unbound from their regular driver and attached to vfio-pci in order to pass
+them through to a guest.
 
-> Convert string compares of DT node names to use of_node_name_eq helper
-> instead. This removes direct access to the node name pointer.
->
-> For hvc, the code can also be simplified by using of_stdout pointer
-> instead of searching again for the stdout node.
->
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: Jiri Slaby <jslaby@suse.com>
-> Cc: "David S. Miller" <davem@davemloft.net>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-serial@vger.kernel.org
-> Cc: sparclinux@vger.kernel.org
-> Signed-off-by: Rob Herring <robh@kernel.org>
-> ---
->  drivers/tty/hvc/hvc_opal.c      |  2 +-
->  drivers/tty/hvc/hvc_vio.c       | 11 +----------
->  drivers/tty/serial/pmac_zilog.c |  4 ++--
+This goes away if the disable_idle_d3 option is used, so it looks like a
+problem with the hardware handling D3 state.  To fix that more permanently,
+use a device quirk to disable D3 state for these devices.
 
-LGTM.
+We do this by renaming the existing quirk_no_ata_d3() more generally and
+attaching it to the ConnectX-[45] devices (0x15b3:0x1013).
 
-Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+---
+ drivers/pci/quirks.c | 17 +++++++++++------
+ 1 file changed, 11 insertions(+), 6 deletions(-)
 
-cheers
+diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
+index 4700d24e5d55..add3f516ca12 100644
+--- a/drivers/pci/quirks.c
++++ b/drivers/pci/quirks.c
+@@ -1315,23 +1315,24 @@ static void quirk_ide_samemode(struct pci_dev *pdev)
+ }
+ DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82801CA_10, quirk_ide_samemode);
+ 
+-/* Some ATA devices break if put into D3 */
+-static void quirk_no_ata_d3(struct pci_dev *pdev)
++/* Some devices (including a number of ATA cards) break if put into D3 */
++static void quirk_no_d3(struct pci_dev *pdev)
+ {
+ 	pdev->dev_flags |= PCI_DEV_FLAGS_NO_D3;
+ }
++
+ /* Quirk the legacy ATA devices only. The AHCI ones are ok */
+ DECLARE_PCI_FIXUP_CLASS_EARLY(PCI_VENDOR_ID_SERVERWORKS, PCI_ANY_ID,
+-				PCI_CLASS_STORAGE_IDE, 8, quirk_no_ata_d3);
++				PCI_CLASS_STORAGE_IDE, 8, quirk_no_d3);
+ DECLARE_PCI_FIXUP_CLASS_EARLY(PCI_VENDOR_ID_ATI, PCI_ANY_ID,
+-				PCI_CLASS_STORAGE_IDE, 8, quirk_no_ata_d3);
++				PCI_CLASS_STORAGE_IDE, 8, quirk_no_d3);
+ /* ALi loses some register settings that we cannot then restore */
+ DECLARE_PCI_FIXUP_CLASS_EARLY(PCI_VENDOR_ID_AL, PCI_ANY_ID,
+-				PCI_CLASS_STORAGE_IDE, 8, quirk_no_ata_d3);
++				PCI_CLASS_STORAGE_IDE, 8, quirk_no_d3);
+ /* VIA comes back fine but we need to keep it alive or ACPI GTM failures
+    occur when mode detecting */
+ DECLARE_PCI_FIXUP_CLASS_EARLY(PCI_VENDOR_ID_VIA, PCI_ANY_ID,
+-				PCI_CLASS_STORAGE_IDE, 8, quirk_no_ata_d3);
++				PCI_CLASS_STORAGE_IDE, 8, quirk_no_d3);
+ 
+ /*
+  * This was originally an Alpha-specific thing, but it really fits here.
+@@ -3367,6 +3368,10 @@ static void mellanox_check_broken_intx_masking(struct pci_dev *pdev)
+ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_MELLANOX, PCI_ANY_ID,
+ 			mellanox_check_broken_intx_masking);
+ 
++/* Mellanox MT27800 (ConnectX-5) IB card seems to break with D3
++ * In particular this shows up when the device is bound to the vfio-pci driver */
++DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_MELLANOX, PCI_DEVICE_ID_MELLANOX_CONNECTX4, quirk_no_d3)
++
+ static void quirk_no_bus_reset(struct pci_dev *dev)
+ {
+ 	dev->dev_flags |= PCI_DEV_FLAGS_NO_BUS_RESET;
+-- 
+2.19.2
+
