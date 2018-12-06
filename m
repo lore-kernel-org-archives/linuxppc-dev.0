@@ -2,69 +2,74 @@ Return-Path: <SRS0=TW6C=OP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 57941C04EB8
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 20:29:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 158E2C04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 21:24:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9CBE820850
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 20:29:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 4AE282082B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 21:24:46 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="GibbHfDf"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9CBE820850
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=alien8.de header.i=@alien8.de header.b="dsxztm+A"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4AE282082B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=alien8.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 439nHw4qzTzDqGk
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 07:29:00 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 439pXC60pKzDrMG
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 08:24:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=alien8.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="GibbHfDf";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=alien8.de header.i=@alien8.de header.b="dsxztm+A";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=sirena.org.uk
- (client-ip=2a01:7e01::f03c:91ff:fed4:a3b6; helo=heliosphere.sirena.org.uk;
- envelope-from=broonie@sirena.org.uk; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=alien8.de
+ (client-ip=2a01:4f8:190:11c2::b:1457; helo=mail.skyhub.de;
+ envelope-from=bp@alien8.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
+ dmarc=pass (p=reject dis=none) header.from=alien8.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk
- header.b="GibbHfDf"; dkim-atps=neutral
-Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
- [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
+ unprotected) header.d=alien8.de header.i=@alien8.de header.b="dsxztm+A"; 
+ dkim-atps=neutral
+X-Greylist: delayed 515 seconds by postgrey-1.36 at bilbo;
+ Fri, 07 Dec 2018 08:21:47 AEDT
+Received: from mail.skyhub.de (mail.skyhub.de [IPv6:2a01:4f8:190:11c2::b:1457])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 439pSq0kQlzDrQg
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 08:21:47 +1100 (AEDT)
+Received: from zn.tnic (p200300EC2BCE8F00A9C379089DD692CF.dip0.t-ipconnect.de
+ [IPv6:2003:ec:2bce:8f00:a9c3:7908:9dd6:92cf])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 439nDf1WdbzDrN2
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 07:26:09 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=sirena.org.uk; s=20170815-heliosphere; h=Date:Message-Id:In-Reply-To:
- Subject:Cc:To:From:Sender:Reply-To:MIME-Version:Content-Type:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:References:
- List-Id:List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:
- List-Archive; bh=YJq0/6au+7vtfyafCu5Lnbhz+mjZcCIHqpELiBIKpJA=; b=GibbHfDfUzIc
- EGpc+u5XPOixl0wEmqDcFzQia29bWUaHbt/0ryURLqLSUKs+Bu79BxaZSx5SppcNdPte1QGwPtwpX
- knKUbH1NVGXwTuoiK7wtnQeHUwY+lCiU2//ej1EfyoC3Ol0PbIOXPLFQf77eYlAZ6nZnmiqrPBPpi
- VskGU=;
-Received: from cpc102320-sgyl38-2-0-cust46.18-2.cable.virginm.net
- ([82.37.168.47] helo=debutante.sirena.org.uk)
- by heliosphere.sirena.org.uk with esmtpa (Exim 4.89)
- (envelope-from <broonie@sirena.org.uk>)
- id 1gV0Di-0001hO-Ps; Thu, 06 Dec 2018 20:26:02 +0000
-Received: by debutante.sirena.org.uk (Postfix, from userid 1000)
- id 639D711252F7; Thu,  6 Dec 2018 20:26:02 +0000 (GMT)
-From: Mark Brown <broonie@kernel.org>
-To: Rob Herring <robh@kernel.org>
-Subject: Applied "ASoC: Use of_node_name_eq for node name comparisons" to the
- asoc tree
-In-Reply-To: <20181205195050.4759-33-robh@kernel.org>
-X-Patchwork-Hint: ignore
-Message-Id: <20181206202602.639D711252F7@debutante.sirena.org.uk>
-Date: Thu,  6 Dec 2018 20:26:02 +0000 (GMT)
+ by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id 3C9A91EC04DF;
+ Thu,  6 Dec 2018 22:13:06 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=dkim;
+ t=1544130786;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:in-reply-to:in-reply-to:  references:references;
+ bh=kf/Pqa4+4o0O/tTGX0ewSkjvR0cGR6THt99q0WvHb9o=;
+ b=dsxztm+A6X/3odCOjkdYcBaHYJlLoE+T5BtDfbq35fx799Lerj7XjTDBNllOGXOcl7G2DT
+ tFucDl63WE9ZwxzKOEXLEzisRMxiv3qUiz7Dg3irZro9Pac8lmpuyLpWhpSR+PEp+ICIFF
+ ovIHpEt+EbRiG4KifiRAz3hlv6LIQhc=
+Date: Thu, 6 Dec 2018 22:12:52 +0100
+From: Borislav Petkov <bp@alien8.de>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: Re: [PATCH v2 2/2] kgdb/treewide: constify struct kgdb_arch
+ arch_kgdb_ops
+Message-ID: <20181206211252.GJ3986@zn.tnic>
+References: <030d63848e4b0ef4d76ca24597ab8302a393d692.1544083483.git.christophe.leroy@c-s.fr>
+ <5e130b11680be09537913aae9649c84ede763ec8.1544083483.git.christophe.leroy@c-s.fr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <5e130b11680be09537913aae9649c84ede763ec8.1544083483.git.christophe.leroy@c-s.fr>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,110 +81,102 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, alsa-devel@alsa-project.org,
- Timur Tabi <timur@kernel.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
- linux-kernel@vger.kernel.org, Takashi Iwai <tiwai@suse.com>,
- Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>,
- Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>,
- Fabio Estevam <fabio.estevam@nxp.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Rich Felker <dalias@libc.org>,
+ "Gustavo A. R. Silva" <gustavo@embeddedor.com>,
+ Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
+ linux-hexagon@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, linux-sh@vger.kernel.org,
+ x86@kernel.org, Russell King <linux@armlinux.org.uk>,
+ Ingo Molnar <mingo@redhat.com>, Catalin Marinas <catalin.marinas@arm.com>,
+ James Hogan <jhogan@kernel.org>, linux-snps-arc@lists.infradead.org,
+ uclinux-h8-devel@lists.sourceforge.jp, linux-mips@vger.kernel.org,
+ nios2-dev@lists.rocketboards.org, Thomas Gleixner <tglx@linutronix.de>,
+ linux-arm-kernel@lists.infradead.org, Michal Simek <monstr@monstr.eu>,
+ Vineet Gupta <vgupta@synopsys.com>, Randy Dunlap <rdunlap@infradead.org>,
+ Douglas Anderson <dianders@chromium.org>, Ralf Baechle <ralf@linux-mips.org>,
+ Richard Kuo <rkuo@codeaurora.org>, Paul Burton <paul.burton@mips.com>,
+ Jason Wessel <jason.wessel@windriver.com>,
+ kgdb-bugreport@lists.sourceforge.net, Ley Foon Tan <lftan@altera.com>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The patch
+On Thu, Dec 06, 2018 at 08:07:40PM +0000, Christophe Leroy wrote:
+> checkpatch.pl reports the following:
+> 
+>   WARNING: struct kgdb_arch should normally be const
+>   #28: FILE: arch/mips/kernel/kgdb.c:397:
+>   +struct kgdb_arch arch_kgdb_ops = {
+> 
+> This report makes sense, as all other ops struct, this
+> one should also be const. This patch does the change.
+> 
+> Cc: Vineet Gupta <vgupta@synopsys.com>
+> Cc: Russell King <linux@armlinux.org.uk>
+> Cc: Catalin Marinas <catalin.marinas@arm.com>
+> Cc: Will Deacon <will.deacon@arm.com>
+> Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
+> Cc: Richard Kuo <rkuo@codeaurora.org>
+> Cc: Michal Simek <monstr@monstr.eu>
+> Cc: Ralf Baechle <ralf@linux-mips.org>
+> Cc: Paul Burton <paul.burton@mips.com>
+> Cc: James Hogan <jhogan@kernel.org>
+> Cc: Ley Foon Tan <lftan@altera.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Rich Felker <dalias@libc.org>
+> Cc: "David S. Miller" <davem@davemloft.net>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: Borislav Petkov <bp@alien8.de>
+> Cc: x86@kernel.org
+> Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
+> Acked-by: Paul Burton <paul.burton@mips.com>
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> ---
+>  v2: Added CCs to all maintainers/supporters identified by get_maintainer.pl and Acks from Daniel and Paul.
+> 
+>  arch/arc/kernel/kgdb.c        | 2 +-
+>  arch/arm/kernel/kgdb.c        | 2 +-
+>  arch/arm64/kernel/kgdb.c      | 2 +-
+>  arch/h8300/kernel/kgdb.c      | 2 +-
+>  arch/hexagon/kernel/kgdb.c    | 2 +-
+>  arch/microblaze/kernel/kgdb.c | 2 +-
+>  arch/mips/kernel/kgdb.c       | 2 +-
+>  arch/nios2/kernel/kgdb.c      | 2 +-
+>  arch/powerpc/kernel/kgdb.c    | 2 +-
+>  arch/sh/kernel/kgdb.c         | 2 +-
+>  arch/sparc/kernel/kgdb_32.c   | 2 +-
+>  arch/sparc/kernel/kgdb_64.c   | 2 +-
+>  arch/x86/kernel/kgdb.c        | 2 +-
+>  include/linux/kgdb.h          | 2 +-
+>  14 files changed, 14 insertions(+), 14 deletions(-)
 
-   ASoC: Use of_node_name_eq for node name comparisons
+...
 
-has been applied to the asoc tree at
+> diff --git a/arch/x86/kernel/kgdb.c b/arch/x86/kernel/kgdb.c
+> index 8e36f249646e..e7effc02f13c 100644
+> --- a/arch/x86/kernel/kgdb.c
+> +++ b/arch/x86/kernel/kgdb.c
+> @@ -804,7 +804,7 @@ int kgdb_arch_remove_breakpoint(struct kgdb_bkpt *bpt)
+>  				  (char *)bpt->saved_instr, BREAK_INSTR_SIZE);
+>  }
+>  
+> -struct kgdb_arch arch_kgdb_ops = {
+> +const struct kgdb_arch arch_kgdb_ops = {
+>  	/* Breakpoint instruction: */
+>  	.gdb_bpt_instr		= { 0xcc },
+>  	.flags			= KGDB_HW_BREAKPOINT,
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git 
+For the x86 bits:
 
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.  
+Acked-by: Borislav Petkov <bp@suse.de>
 
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
-
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark
-
-From 1d52a74ea2300158f87196fa381cde52d98cf4e4 Mon Sep 17 00:00:00 2001
-From: Rob Herring <robh@kernel.org>
-Date: Wed, 5 Dec 2018 13:50:49 -0600
-Subject: [PATCH] ASoC: Use of_node_name_eq for node name comparisons
-
-Convert string compares of DT node names to use of_node_name_eq helper
-instead. This removes direct access to the node name pointer.
-
-For the FSL ASoC card, the full node names appear to be "ssi", "esai",
-and "sai", so there's not any reason to use strstr and of_node_name_eq
-can be used instead.
-
-Cc: Timur Tabi <timur@kernel.org>
-Cc: Nicolin Chen <nicoleotsuka@gmail.com>
-Cc: Xiubo Li <Xiubo.Lee@gmail.com>
-Cc: Fabio Estevam <fabio.estevam@nxp.com>
-Cc: Liam Girdwood <lgirdwood@gmail.com>
-Cc: Mark Brown <broonie@kernel.org>
-Cc: Jaroslav Kysela <perex@perex.cz>
-Cc: Takashi Iwai <tiwai@suse.com>
-Cc: alsa-devel@alsa-project.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Rob Herring <robh@kernel.org>
-Signed-off-by: Mark Brown <broonie@kernel.org>
----
- sound/soc/fsl/fsl-asoc-card.c       | 6 +++---
- sound/soc/generic/simple-scu-card.c | 2 +-
- 2 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/sound/soc/fsl/fsl-asoc-card.c b/sound/soc/fsl/fsl-asoc-card.c
-index 44433b20435c..81f2fe2c6d23 100644
---- a/sound/soc/fsl/fsl-asoc-card.c
-+++ b/sound/soc/fsl/fsl-asoc-card.c
-@@ -571,17 +571,17 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
- 	}
- 
- 	/* Common settings for corresponding Freescale CPU DAI driver */
--	if (strstr(cpu_np->name, "ssi")) {
-+	if (of_node_name_eq(cpu_np, "ssi")) {
- 		/* Only SSI needs to configure AUDMUX */
- 		ret = fsl_asoc_card_audmux_init(np, priv);
- 		if (ret) {
- 			dev_err(&pdev->dev, "failed to init audmux\n");
- 			goto asrc_fail;
- 		}
--	} else if (strstr(cpu_np->name, "esai")) {
-+	} else if (of_node_name_eq(cpu_np, "esai")) {
- 		priv->cpu_priv.sysclk_id[1] = ESAI_HCKT_EXTAL;
- 		priv->cpu_priv.sysclk_id[0] = ESAI_HCKR_EXTAL;
--	} else if (strstr(cpu_np->name, "sai")) {
-+	} else if (of_node_name_eq(cpu_np, "sai")) {
- 		priv->cpu_priv.sysclk_id[1] = FSL_SAI_CLK_MAST1;
- 		priv->cpu_priv.sysclk_id[0] = FSL_SAI_CLK_MAST1;
- 	}
-diff --git a/sound/soc/generic/simple-scu-card.c b/sound/soc/generic/simple-scu-card.c
-index 7ae1901b2f85..656abe2015e1 100644
---- a/sound/soc/generic/simple-scu-card.c
-+++ b/sound/soc/generic/simple-scu-card.c
-@@ -223,7 +223,7 @@ static int asoc_simple_card_parse_of(struct simple_card_data *priv)
- 	i = 0;
- 	for_each_child_of_node(node, np) {
- 		is_fe = false;
--		if (strcmp(np->name, PREFIX "cpu") == 0)
-+		if (of_node_name_eq(np, PREFIX "cpu"))
- 			is_fe = true;
- 
- 		ret = asoc_simple_card_dai_link_of(np, priv, daifmt, i, is_fe);
 -- 
-2.19.0.rc2
+Regards/Gruss,
+    Boris.
 
+Good mailing practices for 400: avoid top-posting and trim the reply.
