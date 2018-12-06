@@ -2,95 +2,68 @@ Return-Path: <SRS0=TW6C=OP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 98235C04EB8
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 07:34:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9FD75C04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 08:02:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0A82E2146D
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 07:34:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0A82E2146D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id A8B502146D
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 08:01:59 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="OJLScHgL"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A8B502146D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 439S5l6894zDqtY
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 18:34:03 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 439Sjw3qCKzDr6v
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 19:01:56 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=rppt@linux.ibm.com; receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="OJLScHgL";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=leon@kernel.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="OJLScHgL"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 439R1T1VXtzDr2s
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Dec 2018 17:45:16 +1100 (AEDT)
+Received: from localhost (unknown [77.138.135.184])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 439S2m6pDxzDr5V
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Dec 2018 18:31:28 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wB67OVRu053336
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Dec 2018 02:31:26 -0500
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2p6vyxp7uv-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Dec 2018 02:31:25 -0500
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.ibm.com>;
- Thu, 6 Dec 2018 07:31:23 -0000
-Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
- by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 6 Dec 2018 07:31:17 -0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wB67VGI28192444
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Thu, 6 Dec 2018 07:31:16 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 45CBBA406B;
- Thu,  6 Dec 2018 07:31:16 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id ACE95A405B;
- Thu,  6 Dec 2018 07:31:13 +0000 (GMT)
-Received: from rapoport-lnx (unknown [9.148.206.89])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Thu,  6 Dec 2018 07:31:13 +0000 (GMT)
-Date: Thu, 6 Dec 2018 09:31:11 +0200
-From: Mike Rapoport <rppt@linux.ibm.com>
-To: Michal Simek <monstr@monstr.eu>
-Subject: Re: [PATCH v2 2/6] microblaze: prefer memblock API returning virtual
- address
-References: <1543852035-26634-1-git-send-email-rppt@linux.ibm.com>
- <1543852035-26634-3-git-send-email-rppt@linux.ibm.com>
- <0a5e0aef-15fd-2d0c-765c-e7ba60219b00@monstr.eu>
+ by mail.kernel.org (Postfix) with ESMTPSA id 3EB3220989;
+ Thu,  6 Dec 2018 06:45:14 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1544078714;
+ bh=g6Czx7nLEy93+bDguAtYiatB9x3PPOqHGI/j5b57/Ak=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=OJLScHgLgDQ1JZdxw2PmXeliVG9qLciE4iGyalPGKT+MNhI93eh5pXXbcuP2axMx2
+ ccmKIP3uIzsXH0/L7Q5FdKTNj8uMco4eTGSAqj5/S+b7z7HeKBOTvLQae1yJ13vM4w
+ Jv1XIReSKLcBBTG4dxsiL7CsUOxuhY/+G4wjWdyw=
+Date: Thu, 6 Dec 2018 08:45:09 +0200
+From: Leon Romanovsky <leon@kernel.org>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH] PCI: Add no-D3 quirk for Mellanox ConnectX-[45]
+Message-ID: <20181206064509.GM15544@mtr-leonro.mtl.com>
+References: <20181206041951.22413-1-david@gibson.dropbear.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="Re2uCLPLNzqOLVJA"
 Content-Disposition: inline
-In-Reply-To: <0a5e0aef-15fd-2d0c-765c-e7ba60219b00@monstr.eu>
-User-Agent: Mutt/1.5.24 (2015-08-30)
-X-TM-AS-GCONF: 00
-x-cbid: 18120607-0020-0000-0000-000002F35181
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18120607-0021-0000-0000-000021435F4D
-Message-Id: <20181206073111.GH19181@rapoport-lnx>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-12-06_01:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=749 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1812060068
+In-Reply-To: <20181206041951.22413-1-david@gibson.dropbear.id.au>
+User-Agent: Mutt/1.10.1 (2018-07-13)
+X-Mailman-Approved-At: Thu, 06 Dec 2018 18:59:34 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,81 +75,71 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michal Hocko <mhocko@suse.com>, linux-sh@vger.kernel.org,
- Michal Simek <michal.simek@xilinx.com>, linux-mm@kvack.org,
- Rich Felker <dalias@libc.org>, Paul Mackerras <paulus@samba.org>,
- sparclinux@vger.kernel.org, Vincent Chen <deanbo422@gmail.com>,
- Jonas Bonn <jonas@southpole.se>, linux-c6x-dev@linux-c6x.org,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- Russell King <linux@armlinux.org.uk>, Mark Salter <msalter@redhat.com>,
- Arnd Bergmann <arnd@arndb.de>,
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- openrisc@lists.librecores.org, Greentime Hu <green.hu@gmail.com>,
- Stafford Horne <shorne@gmail.com>, Guan Xuetao <gxt@pku.edu.cn>,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+Cc: linux-rdma@vger.kernel.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, sbest@redhat.com, saeedm@mellanox.com,
+ alex.williamson@redhat.com, paulus@samba.org, linux-pci@vger.kernel.org,
+ bhelgaas@google.com, ogerlitz@mellanox.com, linuxppc-dev@lists.ozlabs.org,
+ davem@davemloft.net, tariqt@mellanox.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Dec 05, 2018 at 04:29:40PM +0100, Michal Simek wrote:
-> On 03. 12. 18 16:47, Mike Rapoport wrote:
-> > Rather than use the memblock_alloc_base that returns a physical address and
-> > then convert this address to the virtual one, use appropriate memblock
-> > function that returns a virtual address.
-> > 
-> > Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
-> > ---
-> >  arch/microblaze/mm/init.c | 5 +++--
-> >  1 file changed, 3 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/arch/microblaze/mm/init.c b/arch/microblaze/mm/init.c
-> > index b17fd8a..44f4b89 100644
-> > --- a/arch/microblaze/mm/init.c
-> > +++ b/arch/microblaze/mm/init.c
-> > @@ -363,8 +363,9 @@ void __init *early_get_page(void)
-> >  	 * Mem start + kernel_tlb -> here is limit
-> >  	 * because of mem mapping from head.S
-> >  	 */
-> > -	return __va(memblock_alloc_base(PAGE_SIZE, PAGE_SIZE,
-> > -				memory_start + kernel_tlb));
-> > +	return memblock_alloc_try_nid_raw(PAGE_SIZE, PAGE_SIZE,
-> > +				MEMBLOCK_LOW_LIMIT, memory_start + kernel_tlb,
-> > +				NUMA_NO_NODE);
-> >  }
-> >  
-> >  #endif /* CONFIG_MMU */
-> > 
-> 
-> I can't see any issue with functionality when this patch is applied.
-> If you want me to take this via my tree please let me know.
 
-I thought to route this via mmotm tree.
+--Re2uCLPLNzqOLVJA
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> Otherwise:
-> 
-> Tested-by: Michal Simek <michal.simek@xilinx.com>
+On Thu, Dec 06, 2018 at 03:19:51PM +1100, David Gibson wrote:
+> Mellanox ConnectX-5 IB cards (MT27800) seem to cause a call trace when
+> unbound from their regular driver and attached to vfio-pci in order to pass
+> them through to a guest.
+>
+> This goes away if the disable_idle_d3 option is used, so it looks like a
+> problem with the hardware handling D3 state.  To fix that more permanently,
+> use a device quirk to disable D3 state for these devices.
+>
+> We do this by renaming the existing quirk_no_ata_d3() more generally and
+> attaching it to the ConnectX-[45] devices (0x15b3:0x1013).
+>
+> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+> ---
+>  drivers/pci/quirks.c | 17 +++++++++++------
+>  1 file changed, 11 insertions(+), 6 deletions(-)
+>
 
-Thanks!
+Hi David,
 
- 
-> Thanks,
-> Michal
-> 
-> -- 
-> Michal Simek, Ing. (M.Eng), OpenPGP -> KeyID: FE3D1F91
-> w: www.monstr.eu p: +42-0-721842854
-> Maintainer of Linux kernel - Xilinx Microblaze
-> Maintainer of Linux kernel - Xilinx Zynq ARM and ZynqMP ARM64 SoCs
-> U-Boot custodian - Xilinx Microblaze/Zynq/ZynqMP/Versal SoCs
-> 
-> 
+Thank for your patch,
 
+I would like to reproduce the calltrace before moving forward,
+but have trouble to reproduce the original issue.
 
+I'm working with vfio-pci and CX-4/5 cards on daily basis,
+tried manually enter into D3 state now, and it worked for me.
 
+Can you please post your full calltrace, and "lspci -s PCI_ID -vv"
+output?
 
--- 
-Sincerely yours,
-Mike.
+Thanks
 
+--Re2uCLPLNzqOLVJA
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAEBAgAGBQJcCMV1AAoJEORje4g2clinjAQP/1QohDmpz3Nx1/0h9KEad/Gv
+xb/XKSpynLFHroGdEEAHUaDgLOfsp5WoJxVs5sj8/EI7ZB7+jT89DAByeXkFQI5J
+8LBm+eEZboNTLa2lOcl5yBSVNWb3POGFmsuTAf2q4F+fijds+lyATk3kKYpDc7wC
+4zJ22LiEr4rryTOuxZyFi5YTaNso3WhHs0XB8bAFoJar9ypY+aSPq48C+wU+08da
+AbD3yThzPT++z61FgK5tmyaG2xN8uZmHzeRpSaX7vEDMgPznJk4qnIaA0FtCnjRu
+SYOg8XLPksqmrdU/N/vV5FM2uk77s8yoNtOEkdCg19rkG04c2pzqdX/aZtW4epKX
+h1mKWK2x21U2+l/gd5atRuFuJfP3k7P6LEsfzWprmFsyC6fwrt2H8ojN+10fuEiP
+1KURSsGdMYCrKrDklpsAeu5JHRc5UEOKyQsWPQZ+wmZtpI4zJTW9Av9YfYd/RZ6d
+PefEN2j6gmDpC7ffZqV0oenEuEgGAPGFiBRRTeOqgggfLMT1Rn9FZHX4zAGLZMpR
+jciOwJNwN9rPTkLyEyCQItjhqQjty3gvDMlYpuMpNsYIXcyl/gkjMWuke4TaHHZP
+M6g+P6qfUvDEDTlMO+wU6hcKRmqLFr+LsjQhtfHza9j1gGIcYO6FFTvPN0o0tGcq
+mItAd9DzgosnlmUT2DHQ
+=Hvye
+-----END PGP SIGNATURE-----
+
+--Re2uCLPLNzqOLVJA--
