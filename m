@@ -2,79 +2,77 @@ Return-Path: <SRS0=TW6C=OP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DF859C04EB8
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 19:41:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F057C04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 20:09:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5739020868
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 19:41:29 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="qn9iTtt0"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5739020868
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 5E36220850
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 20:09:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5E36220850
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 439mF32JhCzDqxb
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 06:41:27 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 439msc2mkxzDrQS
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 07:09:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="qn9iTtt0";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=robh@kernel.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="qn9iTtt0"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 439mBB1L8VzDqtt
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 06:38:58 +1100 (AEDT)
-Received: from mail-qt1-f171.google.com (mail-qt1-f171.google.com
- [209.85.160.171])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id D8FC0214DA
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Dec 2018 19:38:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1544125136;
- bh=R15F2uQ3pXQCp7bVIOuAth3P/jfGbhBVk+KMwmpfWB0=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=qn9iTtt0raOx10iGEVlD4bAKxMmC6tRyMD3t2TPHW8unn7KLrLjaoSuyLMEWXWRmK
- RUjogClJhhm6zEzmLhigVgq1F63l1ZywAXJRxk96Dbkr7MvfaYerzZBpm33AyDx+ZA
- 2VsBi8JCU3mZYoS5P4GVIYZb9r1j9yyhJKSunoec=
-Received: by mail-qt1-f171.google.com with SMTP id z16so1906001qtq.4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Dec 2018 11:38:55 -0800 (PST)
-X-Gm-Message-State: AA+aEWbEZzpjYtE6C/QO3tYqaT25kPGoLuhegBzvSP7pNNs6hh3UYoYK
- S5ZsYvNct7XmIbguAbEkaFhg6fJGy/Uy/ogPtQ==
-X-Google-Smtp-Source: AFSGD/XfapvVxtgRCg5w8FKOyzy07I+hnLoDVXwvjcbTigNHC8acVEaq0cWkWQbnEk++xrOO7b1rywtLrTjH7jfXDwc=
-X-Received: by 2002:a0c:f212:: with SMTP id h18mr29147928qvk.106.1544125135017; 
- Thu, 06 Dec 2018 11:38:55 -0800 (PST)
-MIME-Version: 1.0
-References: <20181203213223.16986-1-robh@kernel.org>
- <20181203213223.16986-27-robh@kernel.org>
- <20181204144822.uqonsto45u7ysdu5@verge.net.au>
- <CAMuHMdV5brJyAmP0Bj7Bp7wruLNM1tSWkj_AyN5HCx4vdg-nrg@mail.gmail.com>
- <CAL_JsqJX9eb58piavQayXM5j5GXxsGxmy93m5oRKtghMFvkhuA@mail.gmail.com>
- <20181205194419.p6u56h57yk63xshj@verge.net.au>
-In-Reply-To: <20181205194419.p6u56h57yk63xshj@verge.net.au>
-From: Rob Herring <robh@kernel.org>
-Date: Thu, 6 Dec 2018 13:38:42 -0600
-X-Gmail-Original-Message-ID: <CAL_JsqKHwYhHSb7GNFgOtBCqEeMshbRnU+0ONe_yW8OOiRC=SA@mail.gmail.com>
-Message-ID: <CAL_JsqKHwYhHSb7GNFgOtBCqEeMshbRnU+0ONe_yW8OOiRC=SA@mail.gmail.com>
-Subject: Re: [PATCH v2 26/34] dt-bindings: arm: Convert Renesas board/soc
- bindings to json-schema
-To: Simon Horman <horms@verge.net.au>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 439mqM5qw2zDrCp
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 07:07:42 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 439mqH2V3Dz9tyZ3;
+ Thu,  6 Dec 2018 21:07:39 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id bJmEBnzU14EM; Thu,  6 Dec 2018 21:07:39 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 439mqH1n4tz9tyZ2;
+ Thu,  6 Dec 2018 21:07:39 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 4ED7A8B89D;
+ Thu,  6 Dec 2018 21:07:39 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id Fzr8_DVtFhMf; Thu,  6 Dec 2018 21:07:39 +0100 (CET)
+Received: from po14163vm.idsi0.si.c-s.fr (unknown [192.168.232.3])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E6F6A8B88E;
+ Thu,  6 Dec 2018 21:07:38 +0100 (CET)
+Received: by po14163vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 7EC736C0F1; Thu,  6 Dec 2018 20:07:38 +0000 (UTC)
+Message-Id: <030d63848e4b0ef4d76ca24597ab8302a393d692.1544083483.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v2 1/2] mips/kgdb: prepare arch_kgdb_ops for constness
+To: Vineet Gupta <vgupta@synopsys.com>, Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Richard Kuo <rkuo@codeaurora.org>,
+ Michal Simek <monstr@monstr.eu>, Ralf Baechle <ralf@linux-mips.org>,
+ Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>,
+ Ley Foon Tan <lftan@altera.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Rich Felker <dalias@libc.org>, "David S. Miller" <davem@davemloft.net>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, x86@kernel.org,
+ Jason Wessel <jason.wessel@windriver.com>,
+ Daniel Thompson <daniel.thompson@linaro.org>,
+ "GitAuthor: Christophe Leroy" <christophe.leroy@c-s.fr>,
+ Douglas Anderson <dianders@chromium.org>, Randy Dunlap <rdunlap@infradead.org>,
+ "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Date: Thu,  6 Dec 2018 20:07:38 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,85 +84,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org,
- Kumar Gala <kumar.gala@linaro.org>, Grant Likely <grant.likely@arm.com>,
- Sean Hudson <darknighte@darknighte.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "open list:MEDIA DRIVERS FOR RENESAS - FCP"
- <linux-renesas-soc@vger.kernel.org>, ARM-SoC Maintainers <arm@kernel.org>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- Frank Rowand <frowand.list@gmail.com>,
- "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>
+Cc: uclinux-h8-devel@lists.sourceforge.jp, linux-sh@vger.kernel.org,
+ linux-hexagon@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-mips@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
+ sparclinux@vger.kernel.org, nios2-dev@lists.rocketboards.org,
+ linux-snps-arc@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Dec 5, 2018 at 1:44 PM Simon Horman <horms@verge.net.au> wrote:
->
-> On Tue, Dec 04, 2018 at 09:08:57AM -0600, Rob Herring wrote:
-> > On Tue, Dec 4, 2018 at 8:57 AM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> > >
-> > > Hi Simon,
-> > >
-> > > On Tue, Dec 4, 2018 at 3:48 PM Simon Horman <horms@verge.net.au> wrote:
-> > > > On Mon, Dec 03, 2018 at 03:32:15PM -0600, Rob Herring wrote:
-> > > > > Convert Renesas SoC bindings to DT schema format using json-schema.
-> > > > >
-> > > > > Cc: Simon Horman <horms@verge.net.au>
-> > > > > Cc: Magnus Damm <magnus.damm@gmail.com>
-> > > > > Cc: Mark Rutland <mark.rutland@arm.com>
-> > > > > Cc: linux-renesas-soc@vger.kernel.org
-> > > > > Cc: devicetree@vger.kernel.org
-> > > > > Signed-off-by: Rob Herring <robh@kernel.org>
-> > > > > ---
-> > > > >  .../devicetree/bindings/arm/shmobile.txt      | 151 ------------
-> > > > >  .../devicetree/bindings/arm/shmobile.yaml     | 218 ++++++++++++++++++
-> > > > >  2 files changed, 218 insertions(+), 151 deletions(-)
-> > > > >  delete mode 100644 Documentation/devicetree/bindings/arm/shmobile.txt
-> > > > >  create mode 100644 Documentation/devicetree/bindings/arm/shmobile.yaml
-> > > >
-> > > > Hi Rob,
-> > > >
-> > > > what is this based on? I get a conflict when applying the .txt change
-> > > > and if I knew the base for this patch it would be rather easy to work
-> > > > out what has changed.
-> >
-> > 4.20-rc2
-> >
-> > > >
-> > > > Also, should we do an s/shmobile.txt/shmobile.yaml/ in MAINTAINERS?
-> >
-> > Yes. Though it was pointed out that get_maintainers.pl can pull emails
-> > out of this file. We'd need to get that to work by default though.
-> >
-> > > Probably even s/shmobile.yaml/renesas.yaml/, while at it?
-> >
-> > Sure, if that's what you all want.
->
-> How about this?
+MIPS is the only architecture modifying arch_kgdb_ops during init.
+This patch makes the init static, so that it can be changed to
+const in following patch, as recommended by checkpatch.pl
 
-LGTM
+Suggested-by: Paul Burton <paul.burton@mips.com>
+Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
+Acked-by: Paul Burton <paul.burton@mips.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ v2: Added acks from Daniel and Paul.
 
-> From: Rob Herring <robh@kernel.org>
-> Subject: [PATCH v2.1] dt-bindings: arm: Convert Renesas board/soc bindings to
->  json-schema
->
-> Convert Renesas SoC bindings to DT schema format using json-schema.
->
-> v2.1 [Simon Horman]
-> - rebased on renesas-devel-20181204-v4.20-rc5
->   + Added r8a7744 development platform and SoM
->   + Correct RZ/G2E part number
-> - Update MAINTAINERS
->
-> Signed-off-by: Rob Herring <robh@kernel.org>
-> Signed-off-by: Simon Horman <horms+renesas@verge.net.au>
-> ---
->  Documentation/devicetree/bindings/arm/renesas.yaml | 228 +++++++++++++++++++++
->  Documentation/devicetree/bindings/arm/shmobile.txt | 155 --------------
->  MAINTAINERS                                        |   4 +-
->  3 files changed, 230 insertions(+), 157 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/arm/renesas.yaml
->  delete mode 100644 Documentation/devicetree/bindings/arm/shmobile.txt
+ arch/mips/kernel/kgdb.c | 16 +++++++---------
+ 1 file changed, 7 insertions(+), 9 deletions(-)
+
+diff --git a/arch/mips/kernel/kgdb.c b/arch/mips/kernel/kgdb.c
+index eb6c0d582626..31eff1bec577 100644
+--- a/arch/mips/kernel/kgdb.c
++++ b/arch/mips/kernel/kgdb.c
+@@ -394,18 +394,16 @@ int kgdb_arch_handle_exception(int vector, int signo, int err_code,
+ 	return -1;
+ }
+ 
+-struct kgdb_arch arch_kgdb_ops;
++struct kgdb_arch arch_kgdb_ops = {
++#ifdef CONFIG_CPU_BIG_ENDIAN
++	.gdb_bpt_instr = { spec_op << 2, 0x00, 0x00, break_op },
++#else
++	.gdb_bpt_instr = { break_op, 0x00, 0x00, spec_op << 2 },
++#endif
++};
+ 
+ int kgdb_arch_init(void)
+ {
+-	union mips_instruction insn = {
+-		.r_format = {
+-			.opcode = spec_op,
+-			.func	= break_op,
+-		}
+-	};
+-	memcpy(arch_kgdb_ops.gdb_bpt_instr, insn.byte, BREAK_INSTR_SIZE);
+-
+ 	register_die_notifier(&kgdb_notifier);
+ 
+ 	return 0;
+-- 
+2.13.3
+
