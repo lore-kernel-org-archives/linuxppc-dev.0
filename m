@@ -2,85 +2,96 @@ Return-Path: <SRS0=TW6C=OP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 59804C04EB8
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 15:38:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BFB1CC04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 15:41:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BDD77214C1
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 15:38:26 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="kHqrx8We"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BDD77214C1
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 493DB214C1
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 15:41:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 493DB214C1
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 439frc6sbYzDr1g
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 02:38:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 439fvh3g7wzDrNr
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 02:41:04 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="kHqrx8We";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=fbarrat@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::544; helo=mail-pg1-x544.google.com;
- envelope-from=oohall@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="kHqrx8We"; 
- dkim-atps=neutral
-Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
- [IPv6:2607:f8b0:4864:20::544])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 439fNr0yC7zDrMc
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 02:17:47 +1100 (AEDT)
-Received: by mail-pg1-x544.google.com with SMTP id y4so274078pgc.12
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Dec 2018 07:17:47 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=MmZLMYHzDBi6DX3d5Y6WCAGlPGFs0F2Tp7nIc90Y7E4=;
- b=kHqrx8Weluru4rL0F6yjtRQYvh0amwpgIHmpQmLJJSX66CQhJkORQjZq3LjCpTHffE
- FSuvYy2m32xQcLnxTWFCXAjVluhO8EInmP+SjEVFmihgnXzjcNhewkEWgOVCO+ndRUCa
- qF/8R+F7K+LHwNGtjIz610OjH8yhPK9s8M9r0DFOc/Lz9ffsVllTOCql3HqO6A5wo7SO
- YGdFHl1XEgqPDkzLxg0TKtIchqluwmlSM/8xD9tP+edmOuyGwUr0beZtuaHSM6O/MCdS
- JxfZobEwjMn9arSfYRc5EWvDw2xMkzR0Tt6kfX/V63ZzBBNfWYRROA8Ha3d0lWyNCl8W
- rMUQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references;
- bh=MmZLMYHzDBi6DX3d5Y6WCAGlPGFs0F2Tp7nIc90Y7E4=;
- b=DYRvIoWjf9kPhD4z+BzfcOFnV8AZ1jb/Jc0x9+bwo+r/y9REM27s2WGO/PJrMioOu1
- ge+v3+rz9xAtNZeazviOcqfgogu/08qd5gteGVfAQDjzy+WLthfjgpS7jkAxBf4kNZ+w
- 4PdWOZ1dol0qU3H/cmqxzmQME/3t6L0db3oFzuCCSY6VZSebScBwkMmoMJqyZPMdws3z
- pAHRBmf+VYAIi2AdbML9i+NeC5mlzXas8mqZuk43L03yt6LycyaC1XnBYu9BZNVnegWF
- 6iO6+Os+HjP8T9pr6VB+RQLMjDzRqjlP3gs4sHddfIXJudUnGZA1JTUQ1dFTxUDEWQTV
- fs7A==
-X-Gm-Message-State: AA+aEWZt3O6mLoLg7OjQETs1RBje/eUKVbCfOtD+crseLqSKC9RxhFWV
- qLxeBXBTttHi9ltCU7E9n0oO4D4e
-X-Google-Smtp-Source: AFSGD/Va0PcC1e17JyQ22YLDWsBZK/oL2ehsxEliESIhfSxfZ5V9g031C6Oh+X3Pse3UoeLnVygQZA==
-X-Received: by 2002:a63:2406:: with SMTP id k6mr23598684pgk.229.1544109465955; 
- Thu, 06 Dec 2018 07:17:45 -0800 (PST)
-Received: from 192-168-1-15.tpgi.com.au (60-240-78-224.static.tpgi.com.au.
- [60.240.78.224])
- by smtp.gmail.com with ESMTPSA id v12sm821546pgg.41.2018.12.06.07.17.44
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Thu, 06 Dec 2018 07:17:45 -0800 (PST)
-From: Oliver O'Halloran <oohall@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 7/7] powerpc/mm: Fallback to RAM if the altmap is unusable
-Date: Fri,  7 Dec 2018 02:17:14 +1100
-Message-Id: <20181206151714.28494-8-oohall@gmail.com>
-X-Mailer: git-send-email 2.17.2
-In-Reply-To: <20181206151714.28494-1-oohall@gmail.com>
-References: <20181206151714.28494-1-oohall@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 439fq75hGWzDrNd
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 02:37:07 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wB6FY8lu072246
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Dec 2018 10:37:04 -0500
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2p75g1m2fw-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Dec 2018 10:37:04 -0500
+Received: from localhost
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.ibm.com>;
+ Thu, 6 Dec 2018 15:37:03 -0000
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Thu, 6 Dec 2018 15:37:00 -0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wB6Faxn541025542
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Thu, 6 Dec 2018 15:36:59 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2817911C058;
+ Thu,  6 Dec 2018 15:36:59 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 898F211C050;
+ Thu,  6 Dec 2018 15:36:57 +0000 (GMT)
+Received: from [9.101.4.34] (unknown [9.101.4.34])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Thu,  6 Dec 2018 15:36:57 +0000 (GMT)
+Subject: Re: [PATCH v2] misc: cxl: Use device_type helpers to access the node
+ type
+To: Rob Herring <robh@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+References: <20181205191655.14612-1-robh@kernel.org>
+From: Frederic Barrat <fbarrat@linux.ibm.com>
+Date: Thu, 6 Dec 2018 16:36:56 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.2.1
+MIME-Version: 1.0
+In-Reply-To: <20181205191655.14612-1-robh@kernel.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 18120615-0008-0000-0000-0000029DE0EC
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18120615-0009-0000-0000-00002208491A
+Message-Id: <dcc44aac-8ee4-4f9c-4016-f29f6a4f8c23@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-12-06_05:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1812060132
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,97 +103,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Oliver O'Halloran <oohall@gmail.com>
+Cc: devicetree@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+ linux-kernel@vger.kernel.org, Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The "altmap" is used to provide a pool of memory that is reserved for
-the vmemmap backing of hot-plugged memory. This is useful when adding
-large amount of ZONE_DEVICE memory to a system with a limited amount of
-normal memory.
 
-On ppc64 we use huge pages to map the vmemmap which requires the backing
-storage to be contigious and aligned to the hugepage size. The altmap
-implementation allows for the altmap provider to reserve a few PFNs at
-the start of the range for it's own uses and when this occurs the
-first chunk of the altmap is not usage for hugepage mappings. On hash
-there is no sane way to fall back to a normal sized page mapping so we
-fail the allocation. This results in memory hotplug failing with
-ENOMEM when the new range doesn't fall into an existing vmemmap block.
 
-This patch handles this case by falling back to using system memory
-rather than failing if we cannot allocate from the altmap. This
-fallback should only ever be used for the first vmemmap block so it
-should not cause excess memory consumption.
+Le 05/12/2018 à 20:16, Rob Herring a écrit :
+> Remove directly accessing device_type property and use the
+> of_node_is_type accessor instead. While not using it here, this is
+> part of eventually removing the struct device_node.type pointer.
+> 
+> Cc: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+> Cc: Arnd Bergmann <arnd@arndb.de>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> Signed-off-by: Rob Herring <robh@kernel.org>
+> ---
+> v2:
+> - Reword commit message as this change was using the .type ptr.
 
-Fixes: 7b73d978a5d0 ("mm: pass the vmem_altmap to vmemmap_populate")
-Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
----
-The Fixes here is a little dubious since the bug was present when altmap
-support for powerpc was first added in b584c2544041 ("powerpc/vmemmap:
-Add altmap support"). However, the rework in 7b73d978a5d0 ("mm: pass the
-vmem_altmap to vmemmap_populate") moved the altmap allocation out of
-generic code and into arch code so a fix for b584c2544041 would
-be a completely different patch.
----
- arch/powerpc/mm/init_64.c | 19 ++++++++++++++++---
- 1 file changed, 16 insertions(+), 3 deletions(-)
+Acked-by: Frederic Barrat <fbarrat@linux.ibm.com>
 
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index be6e964625da..960f2a44c525 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -173,15 +173,20 @@ int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node,
- 	pr_debug("vmemmap_populate %lx..%lx, node %d\n", start, end, node);
- 
- 	for (; start < end; start += page_size) {
--		void *p;
-+		void *p = NULL;
- 		int rc;
- 
- 		if (vmemmap_populated(start, page_size))
- 			continue;
- 
-+		/*
-+		 * Allocate from the altmap first if we have one. This may
-+		 * fail due to alignment issues when using 16MB hugepages, so
-+		 * fall back to system memory if the altmap allocation fail.
-+		 */
- 		if (altmap)
- 			p = altmap_alloc_block_buf(page_size, altmap);
--		else
-+		if (!p)
- 			p = vmemmap_alloc_block_buf(page_size, node);
- 		if (!p)
- 			return -ENOMEM;
-@@ -241,8 +246,15 @@ void __ref vmemmap_free(unsigned long start, unsigned long end,
- {
- 	unsigned long page_size = 1 << mmu_psize_defs[mmu_vmemmap_psize].shift;
- 	unsigned long page_order = get_order(page_size);
-+	unsigned long alt_start = ~0, alt_end = ~0;
-+	unsigned long base_pfn;
- 
- 	start = _ALIGN_DOWN(start, page_size);
-+	if (altmap) {
-+		alt_start = altmap->base_pfn;
-+		alt_end = altmap->base_pfn + altmap->reserve +
-+			  altmap->free + altmap->alloc + altmap->align;
-+	}
- 
- 	pr_debug("vmemmap_free %lx...%lx\n", start, end);
- 
-@@ -266,8 +278,9 @@ void __ref vmemmap_free(unsigned long start, unsigned long end,
- 		page = pfn_to_page(addr >> PAGE_SHIFT);
- 		section_base = pfn_to_page(vmemmap_section_start(start));
- 		nr_pages = 1 << page_order;
-+		base_pfn = PHYS_PFN(addr);
- 
--		if (altmap) {
-+		if (base_pfn >= alt_start && base_pfn < alt_end) {
- 			vmem_altmap_free(altmap, nr_pages);
- 		} else if (PageReserved(page)) {
- 			/* allocated from bootmem */
--- 
-2.17.2
+
+> 
+>   drivers/misc/cxl/pci.c | 4 +---
+>   1 file changed, 1 insertion(+), 3 deletions(-)
+> 
+> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+> index b66d832d3233..c79ba1c699ad 100644
+> --- a/drivers/misc/cxl/pci.c
+> +++ b/drivers/misc/cxl/pci.c
+> @@ -1718,7 +1718,6 @@ int cxl_slot_is_switched(struct pci_dev *dev)
+>   {
+>   	struct device_node *np;
+>   	int depth = 0;
+> -	const __be32 *prop;
+> 
+>   	if (!(np = pci_device_to_OF_node(dev))) {
+>   		pr_err("cxl: np = NULL\n");
+> @@ -1727,8 +1726,7 @@ int cxl_slot_is_switched(struct pci_dev *dev)
+>   	of_node_get(np);
+>   	while (np) {
+>   		np = of_get_next_parent(np);
+> -		prop = of_get_property(np, "device_type", NULL);
+> -		if (!prop || strcmp((char *)prop, "pciex"))
+> +		if (!of_node_is_type(np, "pciex"))
+>   			break;
+>   		depth++;
+>   	}
+> 
 
