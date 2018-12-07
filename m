@@ -2,58 +2,86 @@ Return-Path: <SRS0=Xegb=OQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E4B55C64EB1
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 18:45:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 083C6C07E85
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 18:47:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 535B52082D
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 18:45:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 535B52082D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=altlinux.org
+	by mail.kernel.org (Postfix) with ESMTPS id 69CD72082D
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 18:47:58 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=sifive.com header.i=@sifive.com header.b="ZZVrDpHf"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 69CD72082D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=sifive.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43BLy5201jzF0RC
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Dec 2018 05:45:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=altlinux.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 43BM0r3YYWzDrDN
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Dec 2018 05:47:56 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=sifive.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=altlinux.org
- (client-ip=194.107.17.57; helo=vmicros1.altlinux.org;
- envelope-from=ldv@altlinux.org; receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=sifive.com header.i=@sifive.com header.b="ZZVrDpHf";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=altlinux.org
-Received: from vmicros1.altlinux.org (vmicros1.altlinux.org [194.107.17.57])
- by lists.ozlabs.org (Postfix) with ESMTP id 43BLtw4DvbzF0Pv
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Dec 2018 05:42:48 +1100 (AEDT)
-Received: from mua.local.altlinux.org (mua.local.altlinux.org [192.168.1.14])
- by vmicros1.altlinux.org (Postfix) with ESMTP id 6190872CC59;
- Fri,  7 Dec 2018 21:42:46 +0300 (MSK)
-Received: by mua.local.altlinux.org (Postfix, from userid 508)
- id 549507CEAAE; Fri,  7 Dec 2018 21:42:46 +0300 (MSK)
-Date: Fri, 7 Dec 2018 21:42:46 +0300
-From: "Dmitry V. Levin" <ldv@altlinux.org>
-To: Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [PATCH v4] powerpc/ptrace: replace ptrace_report_syscall() with
- a tracehook call
-Message-ID: <20181207184246.GA31278@altlinux.org>
-References: <20181116121701.14359da0@akathisia>
- <87ftw12nyn.fsf@concordia.ellerman.id.au>
- <20181119210139.GA8360@altlinux.org>
- <87efbe166y.fsf@concordia.ellerman.id.au>
- <20181203031823.GE11573@altlinux.org>
- <20181207011946.GA18558@altlinux.org>
- <87y391k2tq.fsf@concordia.ellerman.id.au>
- <20181207154255.GA28964@altlinux.org>
- <20181207163410.GA19110@redhat.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="OgqxwSJOaUobr8KG"
-Content-Disposition: inline
-In-Reply-To: <20181207163410.GA19110@redhat.com>
+ spf=pass (mailfrom) smtp.mailfrom=sifive.com
+ (client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
+ envelope-from=palmer@sifive.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=sifive.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=sifive.com header.i=@sifive.com header.b="ZZVrDpHf"; 
+ dkim-atps=neutral
+Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
+ [IPv6:2607:f8b0:4864:20::541])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43BLxm575vzF0PS
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Dec 2018 05:45:15 +1100 (AEDT)
+Received: by mail-pg1-x541.google.com with SMTP id y4so2074628pgc.12
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Dec 2018 10:45:15 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=sifive.com; s=google;
+ h=date:subject:in-reply-to:cc:from:to:message-id:mime-version
+ :content-transfer-encoding;
+ bh=klopY/IsuJEDowTc4qrt4dyez0fGpBDt1xs5/j2mVbY=;
+ b=ZZVrDpHfZs52iuETgv3m44IeOtThlIBsuU8+93Vxx7aBcyIR3CfRT2lS31h8wJewmV
+ Tki/oz/jT6A7N4MGx481OP3Ps6TfITealhGoP+JTLC5p3O6m82JGXuTjm4MWJPiDDJCd
+ 9EM9eqL6VYHHdGU1Bbtl+2lYmINTz3fkchPJj6pBGjTeh2ZntnCGYTTqejWBvjffftmA
+ toRKjgdsx+CHfywJWPgM5ghK05Brr0Nyal9TZfyhadDDwN7cBZzDrkwfdK203vs0gGwr
+ AjaKi368ZuHFSEclC49QQ0orgjY0eyXcBcs8mUkDr49hFKBs8OxYP3kz6S111fXbWDUC
+ Z4zQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:subject:in-reply-to:cc:from:to:message-id
+ :mime-version:content-transfer-encoding;
+ bh=klopY/IsuJEDowTc4qrt4dyez0fGpBDt1xs5/j2mVbY=;
+ b=f3n5usjS763pGcCiRhWp7Pr906aaheykktbXXMs7yTZUSf5kcr3l9WtiylANDUdOzX
+ UdikF8iTqz7E251iG0wxdReMDSBrGgJr5ph53oUZ4K9urbgBtJldxC2y5AyoEM/a5FGe
+ ZvCw4qQqxcJFYRA63ddPeaKVBiN7uc2KCUhOWEtxQ+ImaNQXZnaxZRkC/E+csNqGDONL
+ 1jI92MUrsx5hC/ZFXpvF5dJ49Kc7Nmiq9PWpeKhLHuQgaLKugQKOANu0PQ3Ez7gr34jy
+ 1vc9rAjWOQM3TUzIc2aK0HTIDCPGMY3iPrbbZMzz7VtBcWIiFiYIu2TWBQsB5Vm2EUq3
+ w3ug==
+X-Gm-Message-State: AA+aEWaV134/FehHCDeJSrEWrzeocYepEtMmGG0GbN6HQBNTpNvn6aW0
+ AUORNwPeMdCNFdrnZ1d5+5IC5g==
+X-Google-Smtp-Source: AFSGD/XwDgPF73po7jcMK0WLUnbQk9jaegnMO7Qp7EVNMCgsiulHRkkPkb3v6ey4N4xdmNlmrKTYkg==
+X-Received: by 2002:a63:f515:: with SMTP id w21mr2938694pgh.220.1544208313756; 
+ Fri, 07 Dec 2018 10:45:13 -0800 (PST)
+Received: from localhost ([216.3.10.7])
+ by smtp.gmail.com with ESMTPSA id y89sm6257168pfa.136.2018.12.07.10.45.12
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Fri, 07 Dec 2018 10:45:13 -0800 (PST)
+Date: Fri, 07 Dec 2018 10:45:13 -0800 (PST)
+X-Google-Original-Date: Fri, 07 Dec 2018 10:44:39 PST (-0800)
+Subject: Re: [PATCH RFC 4/7] riscv/vdso: don't clear PG_reserved
+In-Reply-To: <20181205122851.5891-5-david@redhat.com>
+From: Palmer Dabbelt <palmer@sifive.com>
+To: david@redhat.com
+Message-ID: <mhng-3e6b4869-d5d7-42f4-a9d8-789a6772f52a@palmer-si-x1c4>
+Mime-Version: 1.0 (MHng)
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,70 +93,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Eugene Syromyatnikov <esyr@redhat.com>, linux-kernel@vger.kernel.org,
- Elvira Khabirova <lineprinter@altlinux.org>, Paul Mackerras <paulus@samba.org>,
- Andy Lutomirski <luto@kernel.org>, Breno Leitao <leitao@debian.org>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linux-s390@vger.kernel.org, aou@eecs.berkeley.edu,
+ akpm@linux-foundation.org, david@redhat.com, linux-kernel@vger.kernel.org,
+ willy@infradead.org, mhocko@kernel.org, linux-mm@kvack.org,
+ linux-m68k@lists.linux-m68k.org, linux-mediatek@lists.infradead.org,
+ linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ tklauser@distanz.ch, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Wed, 05 Dec 2018 04:28:48 PST (-0800), david@redhat.com wrote:
+> The VDSO is part of the kernel image and therefore the struct pages are
+> marked as reserved during boot.
+>
+> As we install a special mapping, the actual struct pages will never be
+> exposed to MM via the page tables. We can therefore leave the pages
+> marked as reserved.
+>
+> Cc: Palmer Dabbelt <palmer@sifive.com>
+> Cc: Albert Ou <aou@eecs.berkeley.edu>
+> Cc: Tobias Klauser <tklauser@distanz.ch>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Michal Hocko <mhocko@kernel.org>
+> Cc: Matthew Wilcox <willy@infradead.org>
+> Signed-off-by: David Hildenbrand <david@redhat.com>
+> ---
+>  arch/riscv/kernel/vdso.c | 1 -
+>  1 file changed, 1 deletion(-)
+>
+> diff --git a/arch/riscv/kernel/vdso.c b/arch/riscv/kernel/vdso.c
+> index 582cb153eb24..0cd044122234 100644
+> --- a/arch/riscv/kernel/vdso.c
+> +++ b/arch/riscv/kernel/vdso.c
+> @@ -54,7 +54,6 @@ static int __init vdso_init(void)
+>  		struct page *pg;
+>
+>  		pg = virt_to_page(vdso_start + (i << PAGE_SHIFT));
+> -		ClearPageReserved(pg);
+>  		vdso_pagelist[i] = pg;
+>  	}
+>  	vdso_pagelist[i] = virt_to_page(vdso_data);
 
---OgqxwSJOaUobr8KG
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I'm going to assume this will go in through another tree along with the rest of 
+the set assuming everyone else is happy with it.
 
-On Fri, Dec 07, 2018 at 05:34:10PM +0100, Oleg Nesterov wrote:
-> On 12/07, Dmitry V. Levin wrote:
-> > On Fri, Dec 07, 2018 at 10:12:49PM +1100, Michael Ellerman wrote:
-> >
-> > > > Sorry, this patch does not work, please ignore it.
-> > >
-> > > Hmm OK. Why exactly?
-> >
-> > Unfortunately, I have no idea why it doesn't work.
-> > All I can say is it breaks strace because the kernel no longer sends
-> > syscall entry stops.
->=20
-> May be because TIF_SYSCALL_EMU/etc is a bit number, not a mask? IOW, rath=
-er
-> than
->=20
-> 	whatever & TIF_XXX
->=20
-> you should do
->=20
-> 	whatever & _TIF_XXX
->=20
-> intstead?
+Acked-by: Palmer Dabbelt <palmer@sifive.com>
 
-Thanks Oleg, this was exactly the reason why it didn't work.
-That kind of things happens when you let userspace people hack you kernel. =
-:)
-
-
---=20
-ldv
-
---OgqxwSJOaUobr8KG
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAEBCAAGBQJcCr8mAAoJEAVFT+BVnCUIStwP/RCWLHfccYIYOaOZbt2c+XfP
-o4z6JNFxh37RDbYe+7Omdn+UNJKHc+QHkaRK3fO/2aceuGIshUkqi6IvV6pXy4au
-jYxFyD75dgYTV33iDvFOFrATkCXHy3jRxZpKaQOxWdMRBIdgPHTqhgFh2fL0T9i4
-Ld/eoaUiUd1KwdpzuJod5S5IxEFkjQdnAollvroo0tAFvC6PRO1MqxvDGZ1SAyA1
-umN9tG5GMFXKVlKRnuX1wp54EBB//idStq0CVCdLdEWi3MlcMPPGFXOZYndIS5SN
-0XXD5CD3FFMt+Gl+1kP4Z1V+cOTYCajKWN7NLzVq79gPwqP3Fy7BWmVSzXyh2qFD
-npF/qcGX4zh3OilqY/8MM2T9MHH5I7Hi9WCWag2HmRVDc9nkvXpgPB5572XFF038
-wEDV4ZBH/+uPzm53pushoFL7za/WKS+y0QIEIxy0aS12fXCsvUx1xIniPk2PfgXK
-aIjQje0UeVC5MQ0Qabmkavg849KsyoBR+kZA57bsv+PydyWR2MJPIWpmvB2OVwBc
-yuudwLTrkIZm30qE7w1cEROzWgTUnC/DcUDVu7zjtlLV41mITDxwcTTdWP0/OvCv
-UvyW5K3VPGviyvfNMT6bCH86Cjb5W2DqCxcdeW2ZvBXUnjS+KxnKQh9ulrSJqCm9
-+mFvkgjOZJ324Ure7AZh
-=3hv8
------END PGP SIGNATURE-----
-
---OgqxwSJOaUobr8KG--
+Thanks!
