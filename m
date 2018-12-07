@@ -1,77 +1,55 @@
-Return-Path: <SRS0=TW6C=OP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=Xegb=OQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,UNWANTED_LANGUAGE_BODY,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A2A32C04EB8
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 23:36:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 69FD3C04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 01:22:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E9C4520878
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Dec 2018 23:36:03 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Z8R+GUK8"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E9C4520878
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id E881720850
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 01:21:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E881720850
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=altlinux.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 439sRj5ZdFzDrTQ
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 10:36:01 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 439vny0NjKzDrSC
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 12:21:58 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=altlinux.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="Z8R+GUK8";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=altlinux.org
+ (client-ip=194.107.17.57; helo=vmicros1.altlinux.org;
+ envelope-from=ldv@altlinux.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=robh@kernel.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="Z8R+GUK8"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 439sNm1gHnzDrSK
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 10:33:28 +1100 (AEDT)
-Received: from mail-qk1-f169.google.com (mail-qk1-f169.google.com
- [209.85.222.169])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 083BD214DE
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Dec 2018 23:33:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1544139206;
- bh=gZxZKWzS/CFBRJ5cx9gU4j7NTuSbfpHO6a+5reMvM/I=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=Z8R+GUK8HmCWPi80PyCnBiS2XVMwSALm+ygpr1Sb4NJTdT+RF6UcKTs2v8neW/MRT
- GVKK0yHT+VR4xT+Jnj9WY5GIJiNonv+56yeq2kJU6+i3PzYey5XM21Dg97lqWG/sfS
- vcqs/Q1VjdEmcMUYKwSYmLNeoqjLcLvuAey0TbrA=
-Received: by mail-qk1-f169.google.com with SMTP id a132so1467449qkg.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Dec 2018 15:33:25 -0800 (PST)
-X-Gm-Message-State: AA+aEWZ5c3xu3tt8U5TgRgRb8y63aGLQmW1D5mrZqLvZ2QqfF+P6KG4o
- mn6EpaWCGEKxWZMu0h/FXma1Jy3lsG3S0nIFHg==
-X-Google-Smtp-Source: AFSGD/VAAUM4UeHiln1FkoZdLxs4GVSy23jQgIG4UQhXKT7qgvB21vJxN+mpR+mykRFVaL2JgzlKp+pHBoQKxo1/gxg=
-X-Received: by 2002:ae9:ef14:: with SMTP id d20mr28723113qkg.147.1544139205175; 
- Thu, 06 Dec 2018 15:33:25 -0800 (PST)
+ dmarc=none (p=none dis=none) header.from=altlinux.org
+Received: from vmicros1.altlinux.org (vmicros1.altlinux.org [194.107.17.57])
+ by lists.ozlabs.org (Postfix) with ESMTP id 439vlV3gCQzDqyZ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 12:19:49 +1100 (AEDT)
+Received: from mua.local.altlinux.org (mua.local.altlinux.org [192.168.1.14])
+ by vmicros1.altlinux.org (Postfix) with ESMTP id 193CF72CC59;
+ Fri,  7 Dec 2018 04:19:47 +0300 (MSK)
+Received: by mua.local.altlinux.org (Postfix, from userid 508)
+ id 0F8B57CE6D8; Fri,  7 Dec 2018 04:19:47 +0300 (MSK)
+Date: Fri, 7 Dec 2018 04:19:47 +0300
+From: "Dmitry V. Levin" <ldv@altlinux.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v4] powerpc/ptrace: replace ptrace_report_syscall() with
+ a tracehook call
+Message-ID: <20181207011946.GA18558@altlinux.org>
+References: <20181116121701.14359da0@akathisia>
+ <87ftw12nyn.fsf@concordia.ellerman.id.au>
+ <20181119210139.GA8360@altlinux.org>
+ <87efbe166y.fsf@concordia.ellerman.id.au>
+ <20181203031823.GE11573@altlinux.org>
 MIME-Version: 1.0
-References: <20181203213223.16986-1-robh@kernel.org>
- <20181203213223.16986-19-robh@kernel.org>
- <20181206023140.GZ3987@dragon>
-In-Reply-To: <20181206023140.GZ3987@dragon>
-From: Rob Herring <robh@kernel.org>
-Date: Thu, 6 Dec 2018 17:33:13 -0600
-X-Gmail-Original-Message-ID: <CAL_JsqK5nBdk-MiuTPMxr9oXqXnLqeMU3vtZi6AnT9V35_W55A@mail.gmail.com>
-Message-ID: <CAL_JsqK5nBdk-MiuTPMxr9oXqXnLqeMU3vtZi6AnT9V35_W55A@mail.gmail.com>
-Subject: Re: [PATCH v2 18/34] dt-bindings: arm: Convert FSL board/soc bindings
- to json-schema
-To: Shawn Guo <shawnguo@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="oyUTqETQ0mS9luUI"
+Content-Disposition: inline
+In-Reply-To: <20181203031823.GE11573@altlinux.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,43 +61,71 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org,
- Kumar Gala <kumar.gala@linaro.org>, ARM-SoC Maintainers <arm@kernel.org>,
- Sean Hudson <darknighte@darknighte.com>, Frank Rowand <frowand.list@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Grant Likely <grant.likely@arm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>
+Cc: Oleg Nesterov <oleg@redhat.com>, Eugene Syromyatnikov <esyr@redhat.com>,
+ Elvira Khabirova <lineprinter@altlinux.org>, Paul Mackerras <paulus@samba.org>,
+ Andy Lutomirski <luto@kernel.org>, Breno Leitao <leitao@debian.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Dec 5, 2018 at 8:32 PM Shawn Guo <shawnguo@kernel.org> wrote:
->
-> On Mon, Dec 03, 2018 at 03:32:07PM -0600, Rob Herring wrote:
-> > Convert Freescale SoC bindings to DT schema format using json-schema.
-> >
-> > Cc: Shawn Guo <shawnguo@kernel.org>
-> > Cc: Mark Rutland <mark.rutland@arm.com>
-> > Cc: devicetree@vger.kernel.org
-> > Signed-off-by: Rob Herring <robh@kernel.org>
-> > ---
-> >  .../devicetree/bindings/arm/armadeus.txt      |   6 -
-> >  Documentation/devicetree/bindings/arm/bhf.txt |   6 -
-> >  .../bindings/arm/compulab-boards.txt          |  25 --
-> >  Documentation/devicetree/bindings/arm/fsl.txt | 229 ------------------
-> >  .../devicetree/bindings/arm/fsl.yaml          | 214 ++++++++++++++++
->
-> Rob,
->
-> I do have any changes on bindings/arm/fsl.txt queued for 4.21 on my
-> tree, so please send it via your tree.
 
-What about:
+--oyUTqETQ0mS9luUI
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-c386f362957b dt-bindings: Add compatible string for LS1028A-QDS
-3671cd57de06 dt-bindings: ls1012a: Add FRWY-LS1012A device tree binding
+On Mon, Dec 03, 2018 at 06:18:23AM +0300, Dmitry V. Levin wrote:
+> From: Elvira Khabirova <lineprinter@altlinux.org>
+>=20
+> Arch code should use tracehook_*() helpers, as documented
+> in include/linux/tracehook.h,
+> ptrace_report_syscall() is not expected to be used outside that file.
+>=20
+> Co-authored-by: Dmitry V. Levin <ldv@altlinux.org>
+> Fixes: 5521eb4bca2d ("powerpc/ptrace: Add support for PTRACE_SYSEMU")
+> Signed-off-by: Elvira Khabirova <lineprinter@altlinux.org>
+> Signed-off-by: Dmitry V. Levin <ldv@altlinux.org>
+> ---
+> v4: rewritten to call tracehook_report_syscall_entry() once, compile-test=
+ed
+> v3: add a descriptive comment
+> v2: explicitly ignore tracehook_report_syscall_entry() return code
+>=20
+>  arch/powerpc/kernel/ptrace.c | 54 +++++++++++++++++++++++-------------
+>  1 file changed, 35 insertions(+), 19 deletions(-)
 
->
-> Acked-by: Shawn Guo <shawnguo@kernel.org>
+Sorry, this patch does not work, please ignore it.
+However, the bug blocks PTRACE_GET_SYSCALL_INFO, so please fix it.
+
+I'm going to use
+	if (tracehook_report_syscall_entry(regs))
+		return -1;
+	return -1;
+in the series until you have a better fix.
+
+
+--=20
+ldv
+
+--oyUTqETQ0mS9luUI
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAEBCAAGBQJcCcqyAAoJEAVFT+BVnCUIv3YQANKh5JInm3LUcCg1Lr4QIFuF
+tnxoWgCsIctGlXXKzCwFCjeG3M7z8pNZmEkTYYQv1qcj3QVIXl5QT3KHtPx5QL/b
+wKlgAHXE2NOHetBRmnz6Stj4lBk2LBWHWIO6RxwXvICCTQGF8HBYFjBtXoZALC4x
+jL6BtMtdoysNm57rOPhagujznHz4qtQ9Q/JsaFO/Y2h0JrnbJ7CE9xi9cOAJuuPM
+mYx0mN2eIdxQEQRL2UJJUbm0JjVJudC79HosgJ+E9s8uz3L6pb9K4fVkceglqHNe
+yb51RFDoCSh2ZoJkoCYyDlLfIAUJ8Yca7kxA6on8471AHnyfap69sYsgOPBV05PW
+5T+6vFjlrt4DTh1wj+cHgVcV6tH8QnVlIZkeziorizSGueNsgz+aBxrs2kguK454
+DHCOcG1RTc4F9tnl+zHeSrh030qxB/ErjQPhmKCKV6YvbQmKheaVd9GvGjMLvdil
+TQx+2MVHg0CWIv9lhEOYGIpYJsMbhjaJ+Ig/Q8kcc2qeIPi2OAmpuNYxgLKJ0CUE
+RorHrwwqkRRHlJfo01uoQ++pz54xBT6dNvOlqTWDBoQz8yfkyTS6NDwVh1K5foEe
+YCIbE0l+tsxIfE/BiMd9J3YYNWbQa8F1gBUj91w6/8qLroFpzpTCsS6iw9MXZH53
+iZgyI2xUitmYWWsLTZFs
+=+OO3
+-----END PGP SIGNATURE-----
+
+--oyUTqETQ0mS9luUI--
