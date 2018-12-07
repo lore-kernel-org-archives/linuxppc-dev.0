@@ -2,63 +2,50 @@ Return-Path: <SRS0=Xegb=OQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E9EE2C64EB1
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 17:35:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1AFF1C07E85
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 17:45:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 69DA92083D
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 17:35:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 69DA92083D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 5D56B20838
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 17:45:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5D56B20838
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43BKP02fk8zDvrG
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Dec 2018 04:35:16 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by lists.ozlabs.org (Postfix) with ESMTP id 43BKcQ2Wp5zF06H
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Dec 2018 04:45:10 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=arm.com
+ (client-ip=217.140.101.70; helo=foss.arm.com;
+ envelope-from=catalin.marinas@arm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43BKLd4cHPzDrhl
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Dec 2018 04:33:13 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 43BKLX3RTtzB09bM;
- Fri,  7 Dec 2018 18:33:08 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 6aGgL4PlpPYa; Fri,  7 Dec 2018 18:33:08 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 43BKLX2jQ3zB09bL;
- Fri,  7 Dec 2018 18:33:08 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0B01A8B90D;
- Fri,  7 Dec 2018 18:33:10 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id K0i5pyzanwUD; Fri,  7 Dec 2018 18:33:09 +0100 (CET)
-Received: from po14163vm.idsi0.si.c-s.fr (unknown [192.168.232.3])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id BF7238B8F6;
- Fri,  7 Dec 2018 18:33:09 +0100 (CET)
-Received: by po14163vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 82A0E6D165; Fri,  7 Dec 2018 17:33:09 +0000 (UTC)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] crypto/testmgr: fix skcipher test with CONFIG_VMAP_STACK
-To: Herbert Xu <herbert@gondor.apana.org.au>,
- "David S. Miller" <davem@davemloft.net>
-Message-Id: <20181207173309.82A0E6D165@po14163vm.idsi0.si.c-s.fr>
-Date: Fri,  7 Dec 2018 17:33:09 +0000 (UTC)
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 43BKYk18LSzDrGq
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Dec 2018 04:42:42 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 51E77EBD;
+ Fri,  7 Dec 2018 09:42:40 -0800 (PST)
+Received: from arrakis.emea.arm.com (arrakis.cambridge.arm.com [10.1.196.113])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id
+ BCE943F5AF; Fri,  7 Dec 2018 09:42:34 -0800 (PST)
+Date: Fri, 7 Dec 2018 17:42:32 +0000
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Douglas Anderson <dianders@chromium.org>
+Subject: Re: [REPOST PATCH v6 0/4] kgdb: Fix kgdb_roundup_cpus()
+Message-ID: <20181207174231.GD11961@arrakis.emea.arm.com>
+References: <20181205033828.6156-1-dianders@chromium.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20181205033828.6156-1-dianders@chromium.org>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,86 +57,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org,
- linux-kernel@vger.kernel.org
+Cc: Michal Hocko <mhocko@suse.com>, linux-sh@vger.kernel.org,
+ Peter Zijlstra <peterz@infradead.org>, kgdb-bugreport@lists.sourceforge.net,
+ Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org,
+ Rich Felker <dalias@libc.org>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ Daniel Thompson <daniel.thompson@linaro.org>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, linux-hexagon@vger.kernel.org,
+ x86@kernel.org, Russell King <linux@armlinux.org.uk>,
+ Ingo Molnar <mingo@redhat.com>, Huang Ying <ying.huang@intel.com>,
+ James Hogan <jhogan@kernel.org>, linux-snps-arc@lists.infradead.org,
+ Mike Rapoport <rppt@linux.vnet.ibm.com>, Borislav Petkov <bp@alien8.de>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Vineet Gupta <vgupta@synopsys.com>, linux-mips@vger.kernel.org,
+ Ralf Baechle <ralf@linux-mips.org>, Richard Kuo <rkuo@codeaurora.org>,
+ Paul Burton <paul.burton@mips.com>, Jason Wessel <jason.wessel@windriver.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-[    2.364486] WARNING: CPU: 0 PID: 60 at ./arch/powerpc/include/asm/io.h:837 dma_nommu_map_page+0x44/0xd4
-[    2.373579] CPU: 0 PID: 60 Comm: cryptomgr_test Tainted: G        W         4.20.0-rc5-00560-g6bfb52e23a00-dirty #531
-[    2.384740] NIP:  c000c540 LR: c000c584 CTR: 00000000
-[    2.389743] REGS: c95abab0 TRAP: 0700   Tainted: G        W          (4.20.0-rc5-00560-g6bfb52e23a00-dirty)
-[    2.400042] MSR:  00029032 <EE,ME,IR,DR,RI>  CR: 24042204  XER: 00000000
-[    2.406669]
-[    2.406669] GPR00: c02f2244 c95abb60 c6262990 c95abd80 0000256a 00000001 00000001 00000001
-[    2.406669] GPR08: 00000000 00002000 00000010 00000010 24042202 00000000 00000100 c95abd88
-[    2.406669] GPR16: 00000000 c05569d4 00000001 00000010 c95abc88 c0615664 00000004 00000000
-[    2.406669] GPR24: 00000010 c95abc88 c95abc88 00000000 c61ae210 c7ff6d40 c61ae210 00003d68
-[    2.441559] NIP [c000c540] dma_nommu_map_page+0x44/0xd4
-[    2.446720] LR [c000c584] dma_nommu_map_page+0x88/0xd4
-[    2.451762] Call Trace:
-[    2.454195] [c95abb60] [82000808] 0x82000808 (unreliable)
-[    2.459572] [c95abb80] [c02f2244] talitos_edesc_alloc+0xbc/0x3c8
-[    2.465493] [c95abbb0] [c02f2600] ablkcipher_edesc_alloc+0x4c/0x5c
-[    2.471606] [c95abbd0] [c02f4ed0] ablkcipher_encrypt+0x20/0x64
-[    2.477389] [c95abbe0] [c02023b0] __test_skcipher+0x4bc/0xa08
-[    2.483049] [c95abe00] [c0204b60] test_skcipher+0x2c/0xcc
-[    2.488385] [c95abe20] [c0204c48] alg_test_skcipher+0x48/0xbc
-[    2.494064] [c95abe40] [c0205cec] alg_test+0x164/0x2e8
-[    2.499142] [c95abf00] [c0200dec] cryptomgr_test+0x48/0x50
-[    2.504558] [c95abf10] [c0039ff4] kthread+0xe4/0x110
-[    2.509471] [c95abf40] [c000e1d0] ret_from_kernel_thread+0x14/0x1c
-[    2.515532] Instruction dump:
-[    2.518468] 7c7e1b78 7c9d2378 7cbf2b78 41820054 3d20c076 8089c200 3d20c076 7c84e850
-[    2.526127] 8129c204 7c842e70 7f844840 419c0008 <0fe00000> 2f9e0000 54847022 7c84fa14
-[    2.533960] ---[ end trace bf78d94af73fe3b8 ]---
-[    2.539123] talitos ff020000.crypto: master data transfer error
-[    2.544775] talitos ff020000.crypto: TEA error: ISR 0x20000000_00000040
-[    2.551625] alg: skcipher: encryption failed on test 1 for ecb-aes-talitos: ret=22
+On Tue, Dec 04, 2018 at 07:38:24PM -0800, Douglas Anderson wrote:
+> Douglas Anderson (4):
+>   kgdb: Remove irq flags from roundup
+>   kgdb: Fix kgdb_roundup_cpus() for arches who used smp_call_function()
+>   kgdb: Don't round up a CPU that failed rounding up before
+>   kdb: Don't back trace on a cpu that didn't round up
 
-IV cannot be on stack when CONFIG_VMAP_STACK is selected because the stack
-cannot be DMA mapped anymore.
+FWIW, trying these on arm64 (ThunderX2) with CONFIG_KGDB_TESTS_ON_BOOT=y
+on top of 4.20-rc5 doesn't boot. It looks like they leave interrupts
+disabled when they shouldn't and it trips over the BUG at
+mm/vmalloc.c:1380 (called via do_fork -> copy_process).
 
-This patch allocates it with kmalloc()
+Now, I don't think these patches make things worse on arm64 since prior
+to them the kgdb boot tests on arm64 were stuck in a loop (RUN
+singlestep).
 
-Fixes: da7f033ddc9f ("crypto: cryptomgr - Add test infrastructure")
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- crypto/testmgr.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
-
-diff --git a/crypto/testmgr.c b/crypto/testmgr.c
-index b1f79c6bf409..eea498f9030d 100644
---- a/crypto/testmgr.c
-+++ b/crypto/testmgr.c
-@@ -1112,12 +1112,16 @@ static int __test_skcipher(struct crypto_skcipher *tfm, int enc,
- 	struct crypto_wait wait;
- 	const char *input, *result;
- 	void *data;
--	char iv[MAX_IVLEN];
-+	char *iv;
- 	char *xbuf[XBUFSIZE];
- 	char *xoutbuf[XBUFSIZE];
- 	int ret = -ENOMEM;
- 	unsigned int ivsize = crypto_skcipher_ivsize(tfm);
- 
-+	iv = kmalloc(MAX_IVLEN, GFP_KERNEL | GFP_DMA);
-+	if (!iv)
-+		goto out_noiv;
-+
- 	if (testmgr_alloc_buf(xbuf))
- 		goto out_nobuf;
- 
-@@ -1339,6 +1343,8 @@ static int __test_skcipher(struct crypto_skcipher *tfm, int enc,
- out_nooutbuf:
- 	testmgr_free_buf(xbuf);
- out_nobuf:
-+	kfree(iv);
-+out_noiv:
- 	return ret;
- }
- 
 -- 
-2.13.3
-
+Catalin
