@@ -7,24 +7,24 @@ X-Spam-Status: No, score=-8.7 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A517C07E85
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 04:04:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A1FEBC64EB1
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 04:07:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B60112064D
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 04:04:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E21A92064D
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 04:07:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="P9ssLjiI"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B60112064D
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="NHeaKxjv"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E21A92064D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 439zPg3tCLzDr2j
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 15:04:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 439zSy30wvzDqrs
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 15:07:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="P9ssLjiI";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="NHeaKxjv";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
@@ -33,51 +33,51 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="P9ssLjiI"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="NHeaKxjv"; 
  dkim-atps=neutral
 Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
  [IPv6:2607:f8b0:4864:20::541])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 439yy05sl5zDrX4
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 14:44:08 +1100 (AEDT)
-Received: by mail-pg1-x541.google.com with SMTP id g189so1095359pgc.5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Dec 2018 19:44:08 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 439yy45sfszDrVX
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 14:44:12 +1100 (AEDT)
+Received: by mail-pg1-x541.google.com with SMTP id z11so1102737pgu.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Dec 2018 19:44:12 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=neA6L1GivAbcYv4OovfE82MXl4tAG0cPox3pKUy95s8=;
- b=P9ssLjiIxjMOKkDwD0EveLOT0YhjWkGVY3JVZytSNZ4gzMp96X+sNsMHROLttHkSDA
- S4KpvqFouxHIopjbRE2eApT8jv4FPUH90Zzg4SeB0EN00djLPLO1IJ2+ijagVHxcWYt6
- dh4W8QMVpUeATiOUP+Fsg8EsQ902NYZMaanrVWb3OREEuadxMAWjHD5ShnUPJOZ9ausX
- Ao0Gt4xNQ+GMxxM13xsx7ZqKUIlWyW4Al8dEVgfkUQ86JywLf8EF4lHqwbVfBNqR4YPQ
- N7kJDESQPWQa6lr6jgEjJyK9OoB23tOZXgTB8NFaSeMpyczF7L3m4MJWH5b+zAHSje2K
- PylA==
+ bh=CezgqalrTOHRTK0fULdeenAeuTLVJUaSiiP6duhLIak=;
+ b=NHeaKxjvtBIPKU/xfGrr7mNtGGoQ3Rsc3xEPy1YdQYUxOS/0jdc50Z1x8C54I+Sh7Q
+ Cg2PPfrwqW51osLYWoGA/5x/q3uPWNXhG4Vm5pnoXDU+O05mV15gzvolwthHnr0ogmXL
+ T9X9rq7H2ThQ5wtfL3DA3FSVTpNIo9WyyY0KGGrHn/4WGSawp234OhQVmtDnaG3oMpLG
+ HK7SSIdDEwyISLiDerkZ8S/Ea+Dvt/qgtlIfr16TsODdWck3PP0pNMREcOJ1BJ3E9TF+
+ mgV0OuHUbXDKqzn9T3LrwEyq3m7ZLEKrGsVYH27TLb6kbaeU7ANCyT0OMLanc23PIitF
+ VR9w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references;
- bh=neA6L1GivAbcYv4OovfE82MXl4tAG0cPox3pKUy95s8=;
- b=hmtlAv5pDvmOZg5pdRuR9y/YrRKu0zeLX4pLSXZG3E9mU5X3ijYyxWqlibwNO0Dtwt
- MH6dlm0Mbbn0zlIVTKi5jbRVdNhGjsgy9OgOiiwi6Dq/600E1w+/XuVS8q6IiT4i2rom
- k9fHestv53S1YnbFx8sp2u5dQlYVShyz6dIghr6OTwuQI4xFtgsohiRUvbtLkkpKOo1h
- jaTBZlD9aMnwjYNH/Mwyo+Wnquqafjz/1qVYnGMWG+nWpNLBpaFBk5EN5e0h+yoOA6I4
- C24PUWrUJjl1xxynJ+DoNr2AZFjq98Cip21UhN7TQCmRroiDFiEz9fTM+QJhc6mz/6Hi
- a2ag==
-X-Gm-Message-State: AA+aEWZeRwJU1Vy2lacWcxJ5f+NKmlTDml0dXtfuHlPoeKPPSGwqEOVb
- Wg1EEAKEMMNk0u2/Gvedh6w=
-X-Google-Smtp-Source: AFSGD/V5IbAkkNB5BmguIvv65Dngk1XaLOGQSqzEUpMS5ssBLF95Q7mFhBA0yZOEHf/BrYmCsVzdgw==
-X-Received: by 2002:a63:504d:: with SMTP id q13mr559612pgl.319.1544154247054; 
- Thu, 06 Dec 2018 19:44:07 -0800 (PST)
+ bh=CezgqalrTOHRTK0fULdeenAeuTLVJUaSiiP6duhLIak=;
+ b=Qcb7nNHW4hbKGyhme0OQVuPsaRlPVTbaTEryej4YlLNCcKkJT8s75bhiVAqrydCCWu
+ 84r1UHtibVnfEC9oN/PLpW0X6WbbmSPMY/clpFMhhDl4jL3BCIj4cpW3rOShEzL0MHJG
+ I+4fMarkmxHcqK6g/K4ykPKWKh1UIYRJeAz771uRpGFHMddmSDxHjtj8k2nsP+xoFd3d
+ lz0ZE1pUevNglNt5Uj6mVijotzAHR63RuQsG0IUjZjjkcwDojTZzq3W5FIO/lFMT70E6
+ vngYTwPEckMWoeWn/SJOlnp+/B34OMi3u/zD4n8bMlcdt0kffIYvm3jpdx+LyVdw27Mo
+ rMrQ==
+X-Gm-Message-State: AA+aEWYq9CkVj/VaEn/30oDD8dMptQ40aWW7+qWgDD+ZY7wIIF3skT6M
+ QzJ/7CE6YK5tg6ZvglhBVFY=
+X-Google-Smtp-Source: AFSGD/W5d78KlJ4mw4nG1Xs/4iVlxaNaGRHqO4XHYqtyc+7Udh/5dVxGkVi6N9ks7hvQaUemodpP2w==
+X-Received: by 2002:a63:151f:: with SMTP id v31mr581946pgl.34.1544154251164;
+ Thu, 06 Dec 2018 19:44:11 -0800 (PST)
 Received: from localhost.localdomain ([1.129.152.198])
- by smtp.gmail.com with ESMTPSA id e23sm2262646pfh.68.2018.12.06.19.44.02
+ by smtp.gmail.com with ESMTPSA id e23sm2262646pfh.68.2018.12.06.19.44.07
  (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Thu, 06 Dec 2018 19:44:06 -0800 (PST)
+ Thu, 06 Dec 2018 19:44:10 -0800 (PST)
 From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 6/8] KVM: PPC: Book3S HV: Allow passthrough of an emulated
- device to an L2 guest
-Date: Fri,  7 Dec 2018 14:43:24 +1100
-Message-Id: <20181207034326.3564-8-sjitindarsingh@gmail.com>
+Subject: [PATCH 7/8] KVM: PPC: Introduce new hcall H_COPY_TOFROM_GUEST to
+ access quadrants 1 & 2
+Date: Fri,  7 Dec 2018 14:43:25 +1100
+Message-Id: <20181207034326.3564-9-sjitindarsingh@gmail.com>
 X-Mailer: git-send-email 2.13.6
 In-Reply-To: <20181207034326.3564-1-sjitindarsingh@gmail.com>
 References: <20181207034326.3564-1-sjitindarsingh@gmail.com>
@@ -98,221 +98,184 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Allow for a device which is being emulated at L0 (the host) for an L1
-guest to be passed through to a nested (L2) guest.
+A guest cannot access quadrants 1 or 2 as this would result in an
+exception. Thus introduce the hcall H_COPY_TOFROM_GUEST to be used by a
+guest when it wants to perform an access to quadrants 1 or 2, for
+example when it wants to access memory for one of its nested guests.
 
-The existing kvmppc_hv_emulate_mmio function can be used here. The main
-challenge is that for a load the result must be stored into the L2 gpr,
-not an L1 gpr as would normally be the case after going out to qemu to
-complete the operation. This presents a challenge as at this point the
-L2 gpr state has been written back into L1 memory.
-
-To work around this we store the address in L1 memory of the L2 gpr
-where the result of the load is to be stored and use the new io_gpr
-value KVM_MMIO_REG_NESTED_GPR to indicate that this is a nested load for
-which completion must be done when returning back into the kernel. Then
-in kvmppc_complete_mmio_load() the resultant value is written into L1
-memory at the location of the indicated L2 gpr.
-
-Note that we don't currently let an L1 guest emulate a device for an L2
-guest which is then passed through to an L3 guest.
+Also provide an implementation for the kvm-hv module.
 
 Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
 ---
- arch/powerpc/include/asm/kvm_book3s.h |  2 +-
- arch/powerpc/include/asm/kvm_host.h   |  3 +++
- arch/powerpc/kvm/book3s_hv.c          | 12 ++++++----
- arch/powerpc/kvm/book3s_hv_nested.c   | 43 ++++++++++++++++++++++++++++++-----
- arch/powerpc/kvm/powerpc.c            |  4 ++++
- 5 files changed, 53 insertions(+), 11 deletions(-)
+ arch/powerpc/include/asm/hvcall.h      |  1 +
+ arch/powerpc/include/asm/kvm_book3s.h  |  4 ++
+ arch/powerpc/kvm/book3s_64_mmu_radix.c |  7 ++--
+ arch/powerpc/kvm/book3s_hv.c           |  6 ++-
+ arch/powerpc/kvm/book3s_hv_nested.c    | 75 ++++++++++++++++++++++++++++++++++
+ 5 files changed, 89 insertions(+), 4 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
+index 33a4fc891947..463c63a9fcf1 100644
+--- a/arch/powerpc/include/asm/hvcall.h
++++ b/arch/powerpc/include/asm/hvcall.h
+@@ -335,6 +335,7 @@
+ #define H_SET_PARTITION_TABLE	0xF800
+ #define H_ENTER_NESTED		0xF804
+ #define H_TLB_INVALIDATE	0xF808
++#define H_COPY_TOFROM_GUEST	0xF80C
+ 
+ /* Values for 2nd argument to H_SET_MODE */
+ #define H_SET_MODE_RESOURCE_SET_CIABR		1
 diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
-index 5883fcce7009..ea94110bfde4 100644
+index ea94110bfde4..720483733bb2 100644
 --- a/arch/powerpc/include/asm/kvm_book3s.h
 +++ b/arch/powerpc/include/asm/kvm_book3s.h
-@@ -311,7 +311,7 @@ int kvmhv_run_single_vcpu(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu,
- void kvmhv_save_hv_regs(struct kvm_vcpu *vcpu, struct hv_guest_state *hr);
- void kvmhv_restore_hv_return_state(struct kvm_vcpu *vcpu,
- 				   struct hv_guest_state *hr);
--long int kvmhv_nested_page_fault(struct kvm_vcpu *vcpu);
-+long int kvmhv_nested_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu);
+@@ -188,6 +188,9 @@ extern int kvmppc_book3s_hcall_implemented(struct kvm *kvm, unsigned long hc);
+ extern int kvmppc_book3s_radix_page_fault(struct kvm_run *run,
+ 			struct kvm_vcpu *vcpu,
+ 			unsigned long ea, unsigned long dsisr);
++extern unsigned long __kvmhv_copy_tofrom_guest_radix(int lpid, int pid,
++					gva_t eaddr, void *to, void *from,
++					unsigned long n);
+ extern long kvmhv_copy_from_guest_radix(struct kvm_vcpu *vcpu, gva_t eaddr,
+ 					void *to, unsigned long n);
+ extern long kvmhv_copy_to_guest_radix(struct kvm_vcpu *vcpu, gva_t eaddr,
+@@ -302,6 +305,7 @@ long kvmhv_nested_init(void);
+ void kvmhv_nested_exit(void);
+ void kvmhv_vm_nested_init(struct kvm *kvm);
+ long kvmhv_set_partition_table(struct kvm_vcpu *vcpu);
++long kvmhv_copy_tofrom_guest_nested(struct kvm_vcpu *vcpu);
+ void kvmhv_set_ptbl_entry(unsigned int lpid, u64 dw0, u64 dw1);
+ void kvmhv_release_all_nested(struct kvm *kvm);
+ long kvmhv_enter_nested_guest(struct kvm_vcpu *vcpu);
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/book3s_64_mmu_radix.c
+index e1e3ef710bd0..da89d10e5886 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
+@@ -29,9 +29,9 @@
+  */
+ static int p9_supported_radix_bits[4] = { 5, 9, 9, 13 };
  
- void kvmppc_giveup_fac(struct kvm_vcpu *vcpu, ulong fac);
- 
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index fac6f631ed29..7a2483a139cf 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -793,6 +793,7 @@ struct kvm_vcpu_arch {
- 	/* For support of nested guests */
- 	struct kvm_nested_guest *nested;
- 	u32 nested_vcpu_id;
-+	gpa_t nested_io_gpr;
- #endif
- 
- #ifdef CONFIG_KVM_BOOK3S_HV_EXIT_TIMING
-@@ -827,6 +828,8 @@ struct kvm_vcpu_arch {
- #define KVM_MMIO_REG_FQPR	0x00c0
- #define KVM_MMIO_REG_VSX	0x0100
- #define KVM_MMIO_REG_VMX	0x0180
-+#define KVM_MMIO_REG_NESTED_GPR	0xffc0
-+
- 
- #define __KVM_HAVE_ARCH_WQP
- #define __KVM_HAVE_CREATE_DEVICE
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 6c8b4f632168..e7233499e063 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -984,6 +984,10 @@ int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
- 		if (ret == H_INTERRUPT) {
- 			kvmppc_set_gpr(vcpu, 3, 0);
- 			return -EINTR;
-+		} else if (ret == H_TOO_HARD) {
-+			kvmppc_set_gpr(vcpu, 3, 0);
-+			vcpu->arch.hcall_needed = 0;
-+			return RESUME_HOST;
- 		}
- 		break;
- 	case H_TLB_INVALIDATE:
-@@ -1335,7 +1339,7 @@ static int kvmppc_handle_exit_hv(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 	return r;
- }
- 
--static int kvmppc_handle_nested_exit(struct kvm_vcpu *vcpu)
-+static int kvmppc_handle_nested_exit(struct kvm_run *run, struct kvm_vcpu *vcpu)
+-static unsigned long __kvmhv_copy_tofrom_guest_radix(int lpid, int pid,
+-					gva_t eaddr, void *to, void *from,
+-					unsigned long n)
++unsigned long __kvmhv_copy_tofrom_guest_radix(int lpid, int pid,
++					      gva_t eaddr, void *to, void *from,
++					      unsigned long n)
  {
- 	int r;
- 	int srcu_idx;
-@@ -1393,7 +1397,7 @@ static int kvmppc_handle_nested_exit(struct kvm_vcpu *vcpu)
- 	 */
- 	case BOOK3S_INTERRUPT_H_DATA_STORAGE:
- 		srcu_idx = srcu_read_lock(&vcpu->kvm->srcu);
--		r = kvmhv_nested_page_fault(vcpu);
-+		r = kvmhv_nested_page_fault(run, vcpu);
- 		srcu_read_unlock(&vcpu->kvm->srcu, srcu_idx);
- 		break;
- 	case BOOK3S_INTERRUPT_H_INST_STORAGE:
-@@ -1403,7 +1407,7 @@ static int kvmppc_handle_nested_exit(struct kvm_vcpu *vcpu)
- 		if (vcpu->arch.shregs.msr & HSRR1_HISI_WRITE)
- 			vcpu->arch.fault_dsisr |= DSISR_ISSTORE;
- 		srcu_idx = srcu_read_lock(&vcpu->kvm->srcu);
--		r = kvmhv_nested_page_fault(vcpu);
-+		r = kvmhv_nested_page_fault(run, vcpu);
- 		srcu_read_unlock(&vcpu->kvm->srcu, srcu_idx);
- 		break;
+ 	unsigned long quadrant, ret = n;
+ 	int old_pid, old_lpid;
+@@ -82,6 +82,7 @@ static unsigned long __kvmhv_copy_tofrom_guest_radix(int lpid, int pid,
  
-@@ -4058,7 +4062,7 @@ int kvmhv_run_single_vcpu(struct kvm_run *kvm_run,
- 		if (!nested)
- 			r = kvmppc_handle_exit_hv(kvm_run, vcpu, current);
- 		else
--			r = kvmppc_handle_nested_exit(vcpu);
-+			r = kvmppc_handle_nested_exit(kvm_run, vcpu);
- 	}
- 	vcpu->arch.ret = r;
- 
-diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm/book3s_hv_nested.c
-index 4fca462e54c4..991f40ce4eea 100644
---- a/arch/powerpc/kvm/book3s_hv_nested.c
-+++ b/arch/powerpc/kvm/book3s_hv_nested.c
-@@ -195,6 +195,26 @@ void kvmhv_restore_hv_return_state(struct kvm_vcpu *vcpu,
- 	vcpu->arch.ppr = hr->ppr;
- }
- 
-+static void kvmhv_nested_mmio_needed(struct kvm_vcpu *vcpu, u64 regs_ptr)
-+{
-+	/* No need to reflect the page fault to L1, we've handled it */
-+	vcpu->arch.trap = 0;
-+
-+	/*
-+	 * Since the L2 gprs have already been written back into L1 memory when
-+	 * we complete the mmio, store the L1 memory location of the L2 gpr
-+	 * being loaded into by the mmio so that the loaded value can be
-+	 * written there in kvmppc_complete_mmio_load()
-+	 */
-+	if (((vcpu->arch.io_gpr & KVM_MMIO_REG_EXT_MASK) == KVM_MMIO_REG_GPR)
-+	    && (vcpu->mmio_is_write == 0)) {
-+		vcpu->arch.nested_io_gpr = (gpa_t) regs_ptr +
-+					   offsetof(struct pt_regs,
-+						    gpr[vcpu->arch.io_gpr]);
-+		vcpu->arch.io_gpr = KVM_MMIO_REG_NESTED_GPR;
-+	}
-+}
-+
- long kvmhv_enter_nested_guest(struct kvm_vcpu *vcpu)
- {
- 	long int err, r;
-@@ -316,6 +336,11 @@ long kvmhv_enter_nested_guest(struct kvm_vcpu *vcpu)
- 	if (r == -EINTR)
- 		return H_INTERRUPT;
- 
-+	if (vcpu->mmio_needed) {
-+		kvmhv_nested_mmio_needed(vcpu, regs_ptr);
-+		return H_TOO_HARD;
-+	}
-+
- 	return vcpu->arch.trap;
- }
- 
-@@ -1100,7 +1125,8 @@ static inline int kvmppc_radix_shift_to_level(int shift)
- }
- 
- /* called with gp->tlb_lock held */
--static long int __kvmhv_nested_page_fault(struct kvm_vcpu *vcpu,
-+static long int __kvmhv_nested_page_fault(struct kvm_run *run,
-+					  struct kvm_vcpu *vcpu,
- 					  struct kvm_nested_guest *gp)
- {
- 	struct kvm *kvm = vcpu->kvm;
-@@ -1181,9 +1207,14 @@ static long int __kvmhv_nested_page_fault(struct kvm_vcpu *vcpu,
- 			kvmppc_core_queue_data_storage(vcpu, ea, dsisr);
- 			return RESUME_GUEST;
- 		}
--		/* passthrough of emulated MMIO case... */
--		pr_err("emulated MMIO passthrough?\n");
--		return -EINVAL;
-+
-+		/* passthrough of emulated MMIO case */
-+		if (kvmhv_on_pseries()) {
-+			pr_err("emulated MMIO passthrough?\n");
-+			return -EINVAL;
-+		}
-+
-+		return kvmppc_hv_emulate_mmio(run, vcpu, gpa, ea, writing);
- 	}
- 	if (memslot->flags & KVM_MEM_READONLY) {
- 		if (writing) {
-@@ -1265,13 +1296,13 @@ static long int __kvmhv_nested_page_fault(struct kvm_vcpu *vcpu,
- 	return RESUME_GUEST;
- }
- 
--long int kvmhv_nested_page_fault(struct kvm_vcpu *vcpu)
-+long int kvmhv_nested_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu)
- {
- 	struct kvm_nested_guest *gp = vcpu->arch.nested;
- 	long int ret;
- 
- 	mutex_lock(&gp->tlb_lock);
--	ret = __kvmhv_nested_page_fault(vcpu, gp);
-+	ret = __kvmhv_nested_page_fault(run, vcpu, gp);
- 	mutex_unlock(&gp->tlb_lock);
  	return ret;
  }
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index cb029fcab404..9636cce0353d 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -1210,6 +1210,10 @@ static void kvmppc_complete_mmio_load(struct kvm_vcpu *vcpu,
- 			kvmppc_set_vmx_byte(vcpu, gpr);
++EXPORT_SYMBOL_GPL(__kvmhv_copy_tofrom_guest_radix);
+ 
+ static long kvmhv_copy_tofrom_guest_radix(struct kvm_vcpu *vcpu, gva_t eaddr,
+ 					  void *to, void *from, unsigned long n)
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index e7233499e063..e2e15722584a 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -995,7 +995,11 @@ int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
+ 		if (nesting_enabled(vcpu->kvm))
+ 			ret = kvmhv_do_nested_tlbie(vcpu);
  		break;
- #endif
-+	case KVM_MMIO_REG_NESTED_GPR:
-+		kvm_vcpu_write_guest(vcpu, vcpu->arch.nested_io_gpr, &gpr,
-+				     sizeof(gpr));
+-
++	case H_COPY_TOFROM_GUEST:
++		ret = H_FUNCTION;
++		if (nesting_enabled(vcpu->kvm))
++			ret = kvmhv_copy_tofrom_guest_nested(vcpu);
 +		break;
  	default:
- 		BUG();
+ 		return RESUME_HOST;
  	}
+diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm/book3s_hv_nested.c
+index 991f40ce4eea..f54301fcfbe4 100644
+--- a/arch/powerpc/kvm/book3s_hv_nested.c
++++ b/arch/powerpc/kvm/book3s_hv_nested.c
+@@ -462,6 +462,81 @@ long kvmhv_set_partition_table(struct kvm_vcpu *vcpu)
+ }
+ 
+ /*
++ * Handle the H_COPY_TOFROM_GUEST hcall.
++ * r4 = L1 lpid of nested guest
++ * r5 = pid
++ * r6 = eaddr to access
++ * r7 = to buffer (L1 gpa)
++ * r8 = from buffer (L1 gpa)
++ * r9 = n bytes to copy
++ */
++long kvmhv_copy_tofrom_guest_nested(struct kvm_vcpu *vcpu)
++{
++	struct kvm_nested_guest *gp;
++	int l1_lpid = kvmppc_get_gpr(vcpu, 4);
++	int pid = kvmppc_get_gpr(vcpu, 5);
++	gva_t eaddr = kvmppc_get_gpr(vcpu, 6);
++	void *gp_to = (void *) kvmppc_get_gpr(vcpu, 7);
++	void *gp_from = (void *) kvmppc_get_gpr(vcpu, 8);
++	void *buf;
++	unsigned long n = kvmppc_get_gpr(vcpu, 9);
++	bool is_load = !!gp_to;
++	long rc;
++
++	if (gp_to && gp_from) /* One must be NULL to determine the direction */
++		return H_PARAMETER;
++
++	if (eaddr & (0xFFFUL << 52))
++		return H_PARAMETER;
++
++	buf = kzalloc(n, GFP_KERNEL);
++	if (!buf)
++		return H_NO_MEM;
++
++	gp = kvmhv_get_nested(vcpu->kvm, l1_lpid, false);
++	if (!gp) {
++		rc = H_PARAMETER;
++		goto out_free;
++	}
++
++	mutex_lock(&gp->tlb_lock);
++
++	if (is_load) {
++		/* Load from the nested guest into our buffer */
++		rc = __kvmhv_copy_tofrom_guest_radix(gp->shadow_lpid, pid,
++						     eaddr, buf, NULL, n);
++		if (rc)
++			goto not_found;
++
++		/* Write what was loaded into our buffer back to the L1 guest */
++		rc = kvmppc_st(vcpu, (ulong *) &gp_to, n, buf, true);
++		if (rc)
++			goto not_found;
++	} else {
++		/* Load the data to be stored from the L1 guest into our buf */
++		rc = kvmppc_ld(vcpu, (ulong *) &gp_from, n, buf, true);
++		if (rc)
++			goto not_found;
++
++		/* Store from our buffer into the nested guest */
++		rc = __kvmhv_copy_tofrom_guest_radix(gp->shadow_lpid, pid,
++						     eaddr, NULL, buf, n);
++		if (rc)
++			goto not_found;
++	}
++
++out_unlock:
++	mutex_unlock(&gp->tlb_lock);
++	kvmhv_put_nested(gp);
++out_free:
++	kfree(buf);
++	return rc;
++not_found:
++	rc = H_NOT_FOUND;
++	goto out_unlock;
++}
++
++/*
+  * Reload the partition table entry for a guest.
+  * Caller must hold gp->tlb_lock.
+  */
 -- 
 2.13.6
 
