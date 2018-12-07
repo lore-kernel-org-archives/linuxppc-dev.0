@@ -2,83 +2,85 @@ Return-Path: <SRS0=Xegb=OQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.7 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+X-Spam-Status: No, score=-8.7 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2841DC07E85
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 03:46:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BE6DAC07E85
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 03:49:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3CCE420837
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 03:46:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id ED43320837
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 03:49:13 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="fRv/mQfd"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3CCE420837
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hWGZw4Uy"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ED43320837
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 439z0x4kC8zDrVb
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 14:46:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 439z3q1cnVzDqKv
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 14:49:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="fRv/mQfd";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="hWGZw4Uy";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::641; helo=mail-pl1-x641.google.com;
+ (client-ip=2607:f8b0:4864:20::543; helo=mail-pg1-x543.google.com;
  envelope-from=sjitindarsingh@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="fRv/mQfd"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="hWGZw4Uy"; 
  dkim-atps=neutral
-Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
- [IPv6:2607:f8b0:4864:20::641])
+Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
+ [IPv6:2607:f8b0:4864:20::543])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 439yxQ6fS6zDrVM
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 14:43:38 +1100 (AEDT)
-Received: by mail-pl1-x641.google.com with SMTP id u18so1169057plq.7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Dec 2018 19:43:38 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 439yxV5knnzDrVM
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 14:43:42 +1100 (AEDT)
+Received: by mail-pg1-x543.google.com with SMTP id y4so1077033pgc.12
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Dec 2018 19:43:42 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id;
- bh=lwiWJZfhOyAHt1ODL6V/fEDofR0eXpF/13/v5GCC6x0=;
- b=fRv/mQfdhu6ZGHl/PMxVsva1fMjOgwqdJ2w40Lm2gyPK5u0yHB8Pgwl9/0fI7hylUd
- WsIrNhXhKBfrz7KQspVWR02vrDGzOh0e/2YwAO3cihdi+c0z7awRdlcCHNFeM0sv9E/r
- U00zWY1NltHa0Fz4Z1LNQuuLjSKJJwyZqIfIvbd/5VCktZVNUOuNchyASzXZgx+KW1mL
- N6ImnXVAj1YqTGlatZeZPOWfW/AqpUiIjUExJuQgsiUxD1LvZmGRpRwBmJFhv919U18v
- MLVkcm0lBHfFzUR0t/3rvhat3tAL4lKQ8evX/IorxiDCNb0yWn1QIVICfKNse7gqhCCJ
- T1dA==
+ h=from:to:cc:subject:date:message-id:in-reply-to:references;
+ bh=WR6xWqNImrfbGP3JXoxK2OHxDdNcXtai1sAf1pCiEFc=;
+ b=hWGZw4Uyuh5FMpqroPmzAH+0hVI4hdqqDjYh2bcx60p9p8cRMgag7q8G75Kc5J3Fym
+ 7oFW82QsyywiBLVgfrm66QcyW08TZu0C5bYNtkSjM9rlFvgRi78Acis7sifFSzVf9MGv
+ zXHhMBr6t5/OBAD3UHmeuhP9gjtdD6GySNBveNNdlicbwZ49A4rrAzcRfqiw2DhI+/6r
+ Bq9g1VBK5MFYFAmA3+f7pLz4PxfVvSJN7Up0/umNmOfn9yRxDyO+qzpvfLPU2NGOdmby
+ CCL3U2DTLoCd3AKUc3E8L3YQsnf8iHwQoii53r2DSLx2bNphTMtxeeL9KuTKsCzJTdBi
+ xkCA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id;
- bh=lwiWJZfhOyAHt1ODL6V/fEDofR0eXpF/13/v5GCC6x0=;
- b=eGN91qUalvHOeAi2NItVCOVRgK30nieSLyT08E4vEw9JW7p/l8ard0jjn3zlL4pEts
- bOvqW/DwLpPoQAo1kY+MVcVlwWNniSaWlKcy/0qxfW/E8ELnctigiSrnkoNcDQuETJP9
- fLAEiU2NC9En+p3fYU3DaNKxMnkdw9qQpoCaORJvwCerP+xOI2dF8Wk6QQxlK2slLPDB
- y+qVrTsAGMq4QXCSZR0n1y4yxJoVBt+ldVSDQvGs8AW7uaPlV6h1xfasU79tqxuEWKFo
- VQDjPVE9+aLBvNB4DvaUKQydkTlMI5oYdOdo+CG+VZ3BNuZR+w66T9dpV6vmtVQA0RhO
- Zn2Q==
-X-Gm-Message-State: AA+aEWaJ+J8qjZQcGGoBem/9iVaiLqEQbkjIoCh2so8vYlRYjNr9lHlQ
- EhQet+bmp57ItcZpr5ius5k=
-X-Google-Smtp-Source: AFSGD/U0ob+zvBZYYa3RITIdRk/T8/ZrjWzd1bu7Dky6znC385k2A3buxaX3NCzK4lrrXA+iOHlN0w==
-X-Received: by 2002:a17:902:a9c4:: with SMTP id
- b4mr648409plr.298.1544154217082; 
- Thu, 06 Dec 2018 19:43:37 -0800 (PST)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references;
+ bh=WR6xWqNImrfbGP3JXoxK2OHxDdNcXtai1sAf1pCiEFc=;
+ b=KS7Te1OKxIkf+x/eU3jmogbxURfgsm2mfVp/d9nwgZkUI0y6DJjHFzCfgwkjKhUzs9
+ ZBoOa1MWqRqpg+idfVYitWW44SsoQbyqRvbFm98u2auZTlF8P9ggJ1yhhX6F6r/5KeYM
+ V+H9dwX8INODAQ52zXX7aTnAWNuwBDUINruo5C6a8wP+f6DI2Bb8e1Fjrm64uUW1Q8mb
+ I+wH+sagqqeOO9qK+br478gICX5UW7qxZ1Ja+1yKhhD7mluZPluIpi2H9Ba8eYuofuue
+ vKUv4n6JQ2FYNUGnDXP3SSdIXpn5bZiYAjkbagimEjK4fl/MpgBxtP6uIsRFa0XmL1J9
+ Ch3g==
+X-Gm-Message-State: AA+aEWZCpiBO303z0pRmGN/LJDBIBb4i96hTQmi8JxuS4KLuNKqIfGM3
+ QFR9oLL9j9ZZp3jnnbDxlds=
+X-Google-Smtp-Source: AFSGD/Xx+jN99b/DLvSvYlSyOuR8j3s4O8hgfsq6p53Dr+g5Cy7JPfi3jHvzpPuZ2o+Mo4Wl7eYzDw==
+X-Received: by 2002:aa7:8549:: with SMTP id y9mr530331pfn.83.1544154220879;
+ Thu, 06 Dec 2018 19:43:40 -0800 (PST)
 Received: from localhost.localdomain ([1.129.152.198])
- by smtp.gmail.com with ESMTPSA id e23sm2262646pfh.68.2018.12.06.19.43.33
+ by smtp.gmail.com with ESMTPSA id e23sm2262646pfh.68.2018.12.06.19.43.37
  (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Thu, 06 Dec 2018 19:43:36 -0800 (PST)
+ Thu, 06 Dec 2018 19:43:40 -0800 (PST)
 From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 0/8] KVM: PPC: Implement passthrough of emulated devices for
- nested guests
-Date: Fri,  7 Dec 2018 14:43:17 +1100
-Message-Id: <20181207034326.3564-1-sjitindarsingh@gmail.com>
+Subject: [PATCH] KVM: PPC: Book3S PR: Set hflag to indicate that POWER9
+ supports 1T segments
+Date: Fri,  7 Dec 2018 14:43:18 +1100
+Message-Id: <20181207034326.3564-2-sjitindarsingh@gmail.com>
 X-Mailer: git-send-email 2.13.6
+In-Reply-To: <20181207034326.3564-1-sjitindarsingh@gmail.com>
+References: <20181207034326.3564-1-sjitindarsingh@gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,56 +98,35 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch series allows for emulated devices to be passed through to nested
-guests, irrespective of at which level the device is being emulated.
+When booting a kvm-pr guest on a POWER9 machine the following message is
+observed:
+"qemu-system-ppc64: KVM does not support 1TiB segments which guest expects"
 
-Note that the emulated device must be using dma, not virtio.
+This is because the guest is expecting to be able to use 1T segments
+however we don't indicate support for it. This is because we don't set
+the BOOK3S_HFLAG_MULTI_PGSIZE flag in the hflags in kvmppc_set_pvr_pr()
+on POWER9.
 
-For example, passing through an emulated e1000:
+POWER9 does indeed have support for 1T segments, so add a case for
+POWER9 to the switch statement to ensure it is set.
 
-1. Emulate the device at L(n) for L(n+1)
+Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+---
+ arch/powerpc/kvm/book3s_pr.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-qemu-system-ppc64 -netdev type=user,id=net0 -device e1000,netdev=net0
-
-2. Assign the VFIO-PCI driver at L(n+1)
-
-echo 0000:00:00.0 > /sys/bus/pci/drivers/e1000/unbind
-echo 0000:00:00.0 > /sys/bus/pci/drivers/vfio-pci/bind
-chmod 666 /dev/vfio/0
-
-3. Pass the device through from L(n+1) to L(n+2)
-
-qemu-system-ppc64 -device vfio-pci,host=0000:00:00.0
-
-4. L(n+2) can now access the device which will be emulated at L(n)
-
-Suraj Jitindar Singh (8):
-  KVM: PPC: Only report KVM_CAP_SPAPR_TCE_VFIO on powernv machines
-  KVM: PPC: Book3S HV: Add function kvmhv_vcpu_is_radix()
-  KVM: PPC: Book3S HV: Implement functions to access quadrants 1 & 2
-  KVM: PPC: Add load_from_eaddr and store_to_eaddr to the kvmppc_ops
-    struct
-  KVM: PPC: Update kvmppc_st and kvmppc_ld to use quadrants
-  KVM: PPC: Book3S HV: Allow passthrough of an emulated device to an L2
-    guest
-  KVM: PPC: Introduce new hcall H_COPY_TOFROM_GUEST to access quadrants
-    1 & 2
-  KVM: PPC: Book3S HV: Allow passthrough of an emulated device to an L3
-    guest
-
- arch/powerpc/include/asm/hvcall.h        |   1 +
- arch/powerpc/include/asm/kvm_book3s.h    |  10 ++-
- arch/powerpc/include/asm/kvm_book3s_64.h |  13 ++++
- arch/powerpc/include/asm/kvm_host.h      |   3 +
- arch/powerpc/include/asm/kvm_ppc.h       |   4 ++
- arch/powerpc/kernel/exceptions-64s.S     |   9 +++
- arch/powerpc/kvm/book3s_64_mmu_radix.c   |  97 ++++++++++++++++++++++++++
- arch/powerpc/kvm/book3s_hv.c             |  58 ++++++++++++++--
- arch/powerpc/kvm/book3s_hv_nested.c      | 114 +++++++++++++++++++++++++++++--
- arch/powerpc/kvm/powerpc.c               |  28 +++++++-
- arch/powerpc/mm/fault.c                  |   1 +
- 11 files changed, 323 insertions(+), 15 deletions(-)
-
+diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
+index 4efd65d9e828..82840160c606 100644
+--- a/arch/powerpc/kvm/book3s_pr.c
++++ b/arch/powerpc/kvm/book3s_pr.c
+@@ -587,6 +587,7 @@ void kvmppc_set_pvr_pr(struct kvm_vcpu *vcpu, u32 pvr)
+ 	case PVR_POWER8:
+ 	case PVR_POWER8E:
+ 	case PVR_POWER8NVL:
++	case PVR_POWER9:
+ 		vcpu->arch.hflags |= BOOK3S_HFLAG_MULTI_PGSIZE |
+ 			BOOK3S_HFLAG_NEW_TLBIE;
+ 		break;
 -- 
 2.13.6
 
