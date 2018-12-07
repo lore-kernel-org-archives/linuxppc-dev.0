@@ -2,64 +2,64 @@ Return-Path: <SRS0=Xegb=OQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1BB68C07E85
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 11:17:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CAD9BC07E85
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 11:45:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 92A0E20868
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 11:17:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 92A0E20868
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 1E3232083D
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 11:45:02 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="IhLMhj7P"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1E3232083D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43B91614wVzDrhl
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 22:17:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by lists.ozlabs.org (Postfix) with ESMTP id 43B9cq4CcjzDrN8
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 22:44:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="IhLMhj7P";
+	dkim-atps=neutral
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43B8yZ6Qk6zDrfX
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 22:15:18 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 43B8yV2KbGz9s47;
- Fri,  7 Dec 2018 22:15:14 +1100 (AEDT)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@c-s.fr>, Vineet Gupta
- <vgupta@synopsys.com>, Russell King <linux@armlinux.org.uk>, Catalin
- Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Richard Kuo
- <rkuo@codeaurora.org>, Michal Simek <monstr@monstr.eu>, Ralf Baechle
- <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>, James Hogan
- <jhogan@kernel.org>, Ley Foon Tan <lftan@altera.com>, Benjamin
- Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, Rich Felker <dalias@libc.org>, "David S. Miller"
- <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar
- <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, x86@kernel.org, Jason
- Wessel <jason.wessel@windriver.com>, Daniel Thompson
- <daniel.thompson@linaro.org>, "GitAuthor\: Christophe Leroy"
- <christophe.leroy@c-s.fr>, Douglas Anderson <dianders@chromium.org>, Randy
- Dunlap <rdunlap@infradead.org>, "Gustavo A. R. Silva"
- <gustavo@embeddedor.com>
-Subject: Re: [PATCH v2 2/2] kgdb/treewide: constify struct kgdb_arch
- arch_kgdb_ops
-In-Reply-To: <5e130b11680be09537913aae9649c84ede763ec8.1544083483.git.christophe.leroy@c-s.fr>
-References: <030d63848e4b0ef4d76ca24597ab8302a393d692.1544083483.git.christophe.leroy@c-s.fr>
- <5e130b11680be09537913aae9649c84ede763ec8.1544083483.git.christophe.leroy@c-s.fr>
-Date: Fri, 07 Dec 2018 22:15:14 +1100
-Message-ID: <87va45k2pp.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43B9Yg4WkNzDrP2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 22:42:15 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=ozlabs.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="IhLMhj7P"; 
+ dkim-atps=neutral
+Received: by ozlabs.org (Postfix, from userid 1003)
+ id 43B9Yg39Rgz9s47; Fri,  7 Dec 2018 22:42:15 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
+ t=1544182935; bh=Z+EfcRvH1AiEq18p88/wm84Fb/tBgdLbx4o2ZabXZFE=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=IhLMhj7P4GEdWr8wYPbJaLqKFT/lbTF9GuttA85Zls1adK5vF+E24iFcXqh3v2NAE
+ bUNhfKVtBznIXRyPe3M4oUPgstXZx0Zza53EeMqsgEPP12x+0kvNGGyJwqhqjDcyTm
+ gL6xf9XoRJYoA/5sc8oPwZ5bH5tNOumjqg8MdktymvjQrCJGA2wzQuOyBJxUvSextL
+ pezM82VeHfR4w5fzVwG4z4llIfMB5gE6f+gScpLk15W19+LDk+uXSKNB5OsJrFiZI6
+ pO1XvO1o6s+JgP1x+keAoiED1W+evys7iTDoHLYvr5GiMMvvPIXKWa4GBJnMARlTA6
+ CtJj4nAVHJhXg==
+Date: Fri, 7 Dec 2018 22:42:12 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] KVM: PPC: Book3S PR: Set hflag to indicate that POWER9
+ supports 1T segments
+Message-ID: <20181207114212.GA23129@blackberry>
+References: <20181207034326.3564-1-sjitindarsingh@gmail.com>
+ <20181207034326.3564-2-sjitindarsingh@gmail.com>
+ <871s6tlhln.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <871s6tlhln.fsf@concordia.ellerman.id.au>
+User-Agent: Mutt/1.5.24 (2015-08-30)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,42 +71,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: uclinux-h8-devel@lists.sourceforge.jp, linux-sh@vger.kernel.org,
- linux-hexagon@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-mips@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
- sparclinux@vger.kernel.org, nios2-dev@lists.rocketboards.org,
- linux-snps-arc@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Cc: aik@ozlabs.ru, linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
+ Suraj Jitindar Singh <sjitindarsingh@gmail.com>, kvm@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy <christophe.leroy@c-s.fr> writes:
+On Fri, Dec 07, 2018 at 10:08:20PM +1100, Michael Ellerman wrote:
+> Suraj Jitindar Singh <sjitindarsingh@gmail.com> writes:
+> 
+> > When booting a kvm-pr guest on a POWER9 machine the following message is
+> > observed:
+> > "qemu-system-ppc64: KVM does not support 1TiB segments which guest expects"
+> >
+> > This is because the guest is expecting to be able to use 1T segments
+> > however we don't indicate support for it. This is because we don't set
+> > the BOOK3S_HFLAG_MULTI_PGSIZE flag in the hflags in kvmppc_set_pvr_pr()
+> > on POWER9.
+> >
+> > POWER9 does indeed have support for 1T segments, so add a case for
+> > POWER9 to the switch statement to ensure it is set.
+> 
+> If this just checked mmu_has_feature(MMU_FTR_1T_SEGMENT) it would have
+> been right in this case, and we'd also never have to update it in
+> future.
+> 
+> Any reason not to?
 
-> checkpatch.pl reports the following:
->
->   WARNING: struct kgdb_arch should normally be const
->   #28: FILE: arch/mips/kernel/kgdb.c:397:
->   +struct kgdb_arch arch_kgdb_ops = {
->
-> This report makes sense, as all other ops struct, this
-> one should also be const. This patch does the change.
-...
+PR KVM can emulate a different processor from the host.  Checking
+mmu_has_feature() will tell you about the host, not the CPU being
+emulated.
 
-> diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
-> index 59c578f865aa..bdb588b1d8fb 100644
-> --- a/arch/powerpc/kernel/kgdb.c
-> +++ b/arch/powerpc/kernel/kgdb.c
-> @@ -477,7 +477,7 @@ int kgdb_arch_remove_breakpoint(struct kgdb_bkpt *bpt)
->  /*
->   * Global data
->   */
-> -struct kgdb_arch arch_kgdb_ops;
-> +const struct kgdb_arch arch_kgdb_ops;
->  
->  static int kgdb_not_implemented(struct pt_regs *regs)
->  {
-
-Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
-
-cheers
+Paul.
