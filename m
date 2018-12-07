@@ -6,40 +6,40 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B8B04C07E85
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 13:15:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E8B14C07E85
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 13:17:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6CD3C20700
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 13:15:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6CD3C20700
+	by mail.kernel.org (Postfix) with ESMTPS id 9591320700
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 13:17:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9591320700
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43BCdZ1wTszDrQG
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Dec 2018 00:15:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43BCh34WWvzDrJq
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Dec 2018 00:17:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43BCRN4wj5zDrh8
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Dec 2018 00:06:56 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43BCRP5qgVzDrh6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Dec 2018 00:06:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 43BCRN2W12z9s3q; Sat,  8 Dec 2018 00:06:56 +1100 (AEDT)
+ id 43BCRP2m7Sz9s47; Sat,  8 Dec 2018 00:06:57 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: a43ccc4bc499cb592e2cb3b4ada8d396a37e1c8e
+X-powerpc-patch-commit: 7c91efce1608325634494b25ff6491320208e457
 X-Patchwork-Hint: ignore
-In-Reply-To: <92106c1e558d4ecbdea315669cb4a4407f5dce5e.1543499861.git.christophe.leroy@c-s.fr>
+In-Reply-To: <c8395ae44e636a36443283f438c9572dc8c26a09.1543858630.git.christophe.leroy@c-s.fr>
 To: Christophe Leroy <christophe.leroy@c-s.fr>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [v9,01/20] powerpc/book3s32: Remove CONFIG_BOOKE dependent code
-Message-Id: <43BCRN2W12z9s3q@ozlabs.org>
-Date: Sat,  8 Dec 2018 00:06:56 +1100 (AEDT)
+Subject: Re: [v4] powerpc/mm: dump block address translation on book3s/32
+Message-Id: <43BCRP2m7Sz9s47@ozlabs.org>
+Date: Sat,  8 Dec 2018 00:06:57 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,13 +56,34 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2018-11-29 at 14:06:47 UTC, Christophe Leroy wrote:
-> BOOK3S/32 cannot be BOOKE, so remove useless code
+On Mon, 2018-12-03 at 17:40:25 UTC, Christophe Leroy wrote:
+> This patch adds a debugfs file to dump block address translation:
+> 
+> ~# cat /sys/kernel/debug/powerpc/block_address_translation
+> ---[ Instruction Block Address Translations ]---
+> 0:         -
+> 1:         -
+> 2: 0xc0000000-0xcfffffff 0x00000000 Kernel EXEC coherent
+> 3: 0xd0000000-0xdfffffff 0x10000000 Kernel EXEC coherent
+> 4:         -
+> 5:         -
+> 6:         -
+> 7:         -
+> 
+> ---[ Data Block Address Translations ]---
+> 0:         -
+> 1:         -
+> 2: 0xc0000000-0xcfffffff 0x00000000 Kernel RW coherent
+> 3: 0xd0000000-0xdfffffff 0x10000000 Kernel RW coherent
+> 4:         -
+> 5:         -
+> 6:         -
+> 7:         -
 > 
 > Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/a43ccc4bc499cb592e2cb3b4ada8d3
+https://git.kernel.org/powerpc/c/7c91efce1608325634494b25ff6491
 
 cheers
