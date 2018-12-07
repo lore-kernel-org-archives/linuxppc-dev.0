@@ -2,86 +2,53 @@ Return-Path: <SRS0=Xegb=OQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C6766C04EB8
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 01:43:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 10A14C04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 02:09:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A4D7D208E7
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 01:43:30 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=joelfernandes.org header.i=@joelfernandes.org header.b="dD/A+y/O"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A4D7D208E7
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=joelfernandes.org
+	by mail.kernel.org (Postfix) with ESMTPS id 3363520882
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 02:09:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3363520882
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 439wGm2kgRzDqdj
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 12:43:28 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=joelfernandes.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=joelfernandes.org header.i=@joelfernandes.org header.b="dD/A+y/O";
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=joelfernandes.org
- (client-ip=2607:f8b0:4864:20::432; helo=mail-pf1-x432.google.com;
- envelope-from=joel@joelfernandes.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=joelfernandes.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=joelfernandes.org header.i=@joelfernandes.org
- header.b="dD/A+y/O"; dkim-atps=neutral
-Received: from mail-pf1-x432.google.com (mail-pf1-x432.google.com
- [IPv6:2607:f8b0:4864:20::432])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 439wrH696ZzDr3j
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 13:09:03 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 439wD1138nzDrT8
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 12:41:01 +1100 (AEDT)
-Received: by mail-pf1-x432.google.com with SMTP id c73so1071511pfe.13
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Dec 2018 17:41:01 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=joelfernandes.org; s=google;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=rdQMAag42WIh6sWwSVc114NUpg7aB2gq0mS9tdQMK5M=;
- b=dD/A+y/OaWqgJYJoRW8nOyV6X4wOp9QU8xZVE6zrZKhtHmxgfO02gM/zkhJRLTtxjc
- 8fdpr1hTRhdTyee9lRr+I3x3tDDUcxWM33/6gkUytGDjHj7L7J3VueV6LHH+bCeMB/CH
- hU0tpx5INr0qKH8YupsfKx1K041YdxaXoa0OE=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=rdQMAag42WIh6sWwSVc114NUpg7aB2gq0mS9tdQMK5M=;
- b=bG+8bS4bWQU82TgKiRg86elcJJ0LPGGaYnBlE5JbuUHr49F9lM25pK7ba4XiqSj1aD
- JSSy/9MCqQGRYqgjKFDQ5M9+HcCIQZiBKgNDK0LqIuRZWlZb99tKKHYJNZgxavkmfO6u
- HIWkpIJgRIo2L5E/QphYN+F6gSMWmdDd0169KbU+bl/whSilXEvy/HGxrywMQqqfznpy
- fn729p8dfc4F3+w87tESHSJ0oysogMoNdeILfsN55QtCAhklsz9bI+wNVXQt2KQ/388p
- ZEaeFhcVDseDvulSGRzlPmnt3hWy5NVlYMX6BLn8U4Mmlx94cW5Xulc6u3iD6uo9aN9a
- 30Mg==
-X-Gm-Message-State: AA+aEWZDYdd9rGrB4B8GIdE718Dg8j+JCdsVuO+q7ePXMdmFc6EHCCyb
- 9qb7mZagRdJaxellvwGtG2B3NQ==
-X-Google-Smtp-Source: AFSGD/U2dL8RZDcQsBinURn3VPAoo/B4dU/fXSeO2fsL+wbHy6pOaFMkRxB5VW5FnGwwvPLRfJIkYg==
-X-Received: by 2002:a62:1709:: with SMTP id 9mr272611pfx.249.1544146858813;
- Thu, 06 Dec 2018 17:40:58 -0800 (PST)
-Received: from localhost ([2620:0:1000:1601:3aef:314f:b9ea:889f])
- by smtp.gmail.com with ESMTPSA id x7sm1777232pga.68.2018.12.06.17.40.57
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Thu, 06 Dec 2018 17:40:57 -0800 (PST)
-Date: Thu, 6 Dec 2018 17:40:57 -0800
-From: Joel Fernandes <joel@joelfernandes.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: manual merge of the akpm-current tree with the
- powerpc tree
-Message-ID: <20181207014057.GA214249@google.com>
-References: <20181206174417.45fe3e7a@canb.auug.org.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 439wnz6bt4zDqyq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 13:07:03 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPSA id 439wnz14pNz9s3q;
+ Fri,  7 Dec 2018 13:07:03 +1100 (AEDT)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christophe LEROY <christophe.leroy@c-s.fr>,
+ Dan Carpenter <dan.carpenter@oracle.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Kim Phillips <kim.phillips@freescale.com>
+Subject: Re: [PATCH] powerpc/ipic: Fix a bounds check in ipic_set_priority()
+In-Reply-To: <f570563c-1cc7-fecf-2ed2-58164047ec9d@c-s.fr>
+References: <20181203144834.ocxntjflfz2idxrb@kili.mountain>
+ <87sgzchcw8.fsf@concordia.ellerman.id.au>
+ <f570563c-1cc7-fecf-2ed2-58164047ec9d@c-s.fr>
+Date: Fri, 07 Dec 2018 13:07:00 +1100
+Message-ID: <878t12ks3f.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20181206174417.45fe3e7a@canb.auug.org.au>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,45 +60,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Linux Next Mailing List <linux-next@vger.kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- PowerPC <linuxppc-dev@lists.ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org, kernel-janitors@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Dec 06, 2018 at 05:44:17PM +1100, Stephen Rothwell wrote:
-> Hi Andrew,
-> 
-> Today's linux-next merge of the akpm-current tree got conflicts in:
-> 
->   arch/powerpc/include/asm/book3s/32/pgalloc.h
->   arch/powerpc/include/asm/nohash/32/pgalloc.h
->   arch/powerpc/mm/pgtable-book3s64.c
-> 
-> between commits:
-> 
->   a95d133c8643 ("powerpc/mm: Move pte_fragment_alloc() to a common location")
->   32ea4c149990 ("powerpc/mm: Extend pte_fragment functionality to PPC32")
-> 
-> from the powerpc tree and commit:
-> 
->   913c2d755b39 ("mm: treewide: remove unused address argument from pte_alloc functions")
-> 
-> from the akpm-current tree.
-> 
-> I fixed it up (see below, plus the extra merge fix patch) and can
-> carry the fix as necessary. This is now fixed as far as linux-next is
-> concerned, but any non trivial conflicts should be mentioned to your
-> upstream maintainer when your tree is submitted for merging.  You may
-> also want to consider cooperating with the maintainer of the conflicting
-> tree to minimise any particularly complex conflicts.
+Christophe LEROY <christophe.leroy@c-s.fr> writes:
+> Le 05/12/2018 =C3=A0 04:26, Michael Ellerman a =C3=A9crit=C2=A0:
+>> Hi Dan,
+>>=20
+>> Thanks for the patch.
+>>=20
+>> Dan Carpenter <dan.carpenter@oracle.com> writes:
+>>> The ipic_info[] array only has 95 elements so I have made the bounds
+>>> check smaller to prevent a read overflow.  It was Smatch that found
+>>> this issue:
+>>>
+>>>      arch/powerpc/sysdev/ipic.c:784 ipic_set_priority()
+>>>      error: buffer overflow 'ipic_info' 95 <=3D 127
+>>>
+>>> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+>>> ---
+>>> I wasn't able to find any callers of this code.  Maybe we removed the
+>>> last one in commit b9f0f1bb2bca ("[POWERPC] Adapt ipic driver to new
+>>> host_ops interface, add set_irq_type to set IRQ sense").  So perhaps we
+>>> should just remove it.  I'm not really comfortable doing that myself,
+>>> because I don't know the code well enough and can't build test
+>>> it properly.
+>>=20
+>> Hah wow, last usage removed in 2006!
+>>=20
+>> I don't see any mention of it since then, so I'll remove it. If it
+>> breaks something we can put it back.
+>>=20
+>> Can smatch help us find things like this that are defined non-static but
+>> never used?
+>>=20
+>
+> I think we have to do that carrefully. Some of those functions might be=20
+> used by out-of-tree boards.
 
-The conflict resolution looks good to me.
+We don't keep unused code around for out-of-tree boards.
 
-Reviewed-by: Joel Fernandes (Google) <joel@joelfernandes.org>
+Either the out-of-tree code should be merged upstream, or you can
+maintain whatever extra functions you need as part of your out-of-tree
+code base.
 
-thanks,
+> I'm thinking especially at ipic_get_mcp_status() and=20
+> ipic_set_mcp_status(). They are used in my 832x boards's machine check=20
+> handler to know when a machine check is a timeout from the 832x watchdog.
 
- - Joel
+Thanks for pointing them out, I'll send a patch to remove them :)
+
+But seriously, why is your machine check code not in-tree, is there some
+reason you can't merge it?
+
+cheers
