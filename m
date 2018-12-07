@@ -2,92 +2,85 @@ Return-Path: <SRS0=Xegb=OQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS,USER_AGENT_MUTT
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9610BC07E85
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 07:29:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A94A5C07E85
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 07:52:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C23FF20882
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 07:29:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C23FF20882
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 8585C20850
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 07:51:59 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="B6CLfLrA"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8585C20850
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43B3yM1hMZzDrgD
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 18:29:47 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 43B4Rx3GtLzDrgS
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 18:51:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=sathnaga@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="B6CLfLrA";
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (helo) smtp.helo=mo6-p01-ob.smtp.rzone.de
+ (client-ip=2a01:238:20a:202:5301::8; helo=mo6-p01-ob.smtp.rzone.de;
+ envelope-from=chzigotzky@xenosoft.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=xenosoft.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="B6CLfLrA"; 
+ dkim-atps=neutral
+Received: from mo6-p01-ob.smtp.rzone.de (mo6-p01-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5301::8])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43B3vz5tSTzDrX4
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 18:27:43 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wB77OM5i124141
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Dec 2018 02:27:40 -0500
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2p7jmucmw0-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Dec 2018 02:27:40 -0500
-Received: from localhost
- by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sathnaga@linux.vnet.ibm.com>;
- Fri, 7 Dec 2018 07:27:38 -0000
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
- by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 7 Dec 2018 07:27:32 -0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wB77RVPC61145330
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Fri, 7 Dec 2018 07:27:31 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id ACFF9A4060;
- Fri,  7 Dec 2018 07:27:31 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id F345FA4054;
- Fri,  7 Dec 2018 07:27:26 +0000 (GMT)
-Received: from sathnaga86 (unknown [9.102.2.169])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Fri,  7 Dec 2018 07:27:26 +0000 (GMT)
-Date: Fri, 7 Dec 2018 12:57:24 +0530
-From: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
-To: Firoz Khan <firoz.khan@linaro.org>
-Subject: Re: [PATCH v4 0/5] powerpc: system call table generation support
-References: <1544163100-15510-1-git-send-email-firoz.khan@linaro.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1544163100-15510-1-git-send-email-firoz.khan@linaro.org>
-User-Agent: Mutt/1.10.1 (2018-07-13)
-X-TM-AS-GCONF: 00
-x-cbid: 18120707-0028-0000-0000-0000032752D6
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18120707-0029-0000-0000-000023E36B2A
-Message-Id: <20181207072724.GA3750@sathnaga86>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-12-07_02:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1812070065
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43B4Nv0y9bzDrgC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 18:49:16 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1544168951;
+ s=strato-dkim-0002; d=xenosoft.de;
+ h=To:References:Message-Id:Cc:Date:In-Reply-To:From:Subject:
+ X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
+ bh=Gl/apHLUTNuZTF2PkweCwxqMX9UEFwiI13ErIHyTfqQ=;
+ b=B6CLfLrAKs1kcWVhVzENFIRhhHSrnKGqxDaR2TN/deycWaSUrgzkIn037Jp0Zx/Txa
+ XrTjgEGujynpxZX9Ey4I+IQ9m1xJh7ozo9ldz/hEIFlPjtki2f57UlWKL0hWVbupwDpN
+ sWT4YHlwo+6KnkwDHJg0mzebH+bym0MLqIbFJJZCuE6sHyBE8Ykwmv8J7EsFEfqdJ9yj
+ 8uIW08bfEZlFpYMUuUGA4sdlDMgsYpG2KRHaKOK9qePTkCnx2DX23J4a0DPNQhfQ7dT8
+ oBJDyYMv4bCCLbUulBVFxq4czKymWugpQXvCtUMOXmCK7xHoE/cklPUljWUMg1vi7CQk
+ m4/g==
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGN0rBVhd9dFr6KxrfO5Oh7R7b2dxjbphlye1zJi5qqW3t7PS2NPtwqpneosxQ2GK"
+X-RZG-CLASS-ID: mo00
+Received: from [IPv6:2a01:598:b006:4ca9:e4ab:3cb6:b68f:abb5]
+ by smtp.strato.de (RZmta 44.6 AUTH) with ESMTPSA id 404b20uB77mtqPQ
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
+ 521 ECDH bits, eq. 15360 bits RSA))
+ (Client did not present a certificate);
+ Fri, 7 Dec 2018 08:48:55 +0100 (CET)
+Content-Type: text/plain;
+	charset=utf-8
+Mime-Version: 1.0 (1.0)
+Subject: Re: use generic DMA mapping code in powerpc V4
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+X-Mailer: iPhone Mail (15G77)
+In-Reply-To: <20181206193605.GA31255@lst.de>
+Date: Fri, 7 Dec 2018 08:48:54 +0100
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <EC9C556C-B445-4E55-80DA-D5A04C701044@xenosoft.de>
+References: <8694431d-c669-b7b9-99fa-e99db5d45a7d@xenosoft.de>
+ <20181130131056.GA5211@lst.de>
+ <25999587-2d91-a63c-ed38-c3fb0075d9f1@xenosoft.de>
+ <c5202d29-863d-1377-0e2d-762203b317e2@xenosoft.de>
+ <58c61afb-290f-6196-c72c-ac7b61b84718@xenosoft.de>
+ <20181204142426.GA2743@lst.de>
+ <ef56d279-f75d-008e-71ba-7068c1b37c48@xenosoft.de>
+ <20181205140550.GA27549@lst.de>
+ <1948cf84-49ab-543c-472c-d18e27751903@xenosoft.de>
+ <9ECD27D6-B039-4253-9FB9-749B41DE4CC6@xenosoft.de>
+ <20181206193605.GA31255@lst.de>
+To: Christoph Hellwig <hch@lst.de>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,125 +92,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
-Cc: Kate Stewart <kstewart@linuxfoundation.org>, linux-arch@vger.kernel.org,
- arnd@arndb.de, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- y2038@lists.linaro.org, Boqun Feng <boqun.feng@gmail.com>,
- Philippe Ombredanne <pombredanne@nexb.com>, Ram Pai <linuxram@us.ibm.com>,
- linux-kernel@vger.kernel.org, marcin.juszkiewicz@linaro.org,
- Breno Leitao <leitao@debian.org>, Geert Uytterhoeven <geert@linux-m68k.org>,
- deepa.kernel@gmail.com, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+Cc: linux-arch@vger.kernel.org, Darren Stevens <darren@stevens-zone.net>,
+ linux-kernel@vger.kernel.org, Julian Margetson <runaway@candw.ms>,
+ linux-mm@kvack.org, iommu@lists.linux-foundation.org,
+ Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>,
  linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Dec 07, 2018 at 11:41:35AM +0530, Firoz Khan wrote:
-> The purpose of this patch series is, we can easily
-> add/modify/delete system call table support by cha-
-> nging entry in syscall.tbl file instead of manually
-> changing many files. The other goal is to unify the 
-> system call table generation support implementation 
-> across all the architectures. 
-> 
-> The system call tables are in different format in 
-> all architecture. It will be difficult to manually
-> add, modify or delete the system calls in the resp-
-> ective files manually. To make it easy by keeping a 
-> script and which'll generate uapi header file and 
-> syscall table file.
-> 
-> syscall.tbl contains the list of available system 
-> calls along with system call number and correspond-
-> ing entry point. Add a new system call in this arch-
-> itecture will be possible by adding new entry in 
-> the syscall.tbl file.
-> 
-> Adding a new table entry consisting of:
->         - System call number.
->         - ABI.
->         - System call name.
->         - Entry point name.
-> 	- Compat entry name, if required.
-> 	- spu entry name, if required.
-> 
-> ARM, s390 and x86 architecuture does exist the sim-
-> ilar support. I leverage their implementation to 
-> come up with a generic solution.
-> 
-> I have done the same support for work for alpha, 
-> ia64, m68k, microblaze, mips, parisc, sh, sparc, 
-> and xtensa. Below mentioned git repository contains
-> more details about the workflow.
-> 
-> https://github.com/frzkhn/system_call_table_generator/
-> 
-> Finally, this is the ground work to solve the Y2038
-> issue. We need to add two dozen of system calls to 
-> solve Y2038 issue. So this patch series will help to
-> add new system calls easily by adding new entry in the
-> syscall.tbl.
-> 
-> Changes since v3:
->  - split compat syscall table out from native table.
->  - modified the script to add new line in the generated
->    file.
-Hi Firoz,
+Good to know. Sorry because of the email.
 
-This version(v4) booted fine in IBM Power8 box.
-Compiled with 'ppc64le_defconfig' aginst https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git/commit/?h=merge&id=a26b21082959cee3075b3edb7ef23071c7e0b09a
+Sent from my iPhone
 
-Reference failure v3 version: https://lists.ozlabs.org/pipermail/linuxppc-dev/2018-November/182110.html
-
-Regards,
--Satheesh.
-> 
-> Changes since v2:
->  - modified/optimized the syscall.tbl to avoid duplicate
->    for the spu entries.
->  - updated the syscalltbl.sh to meet the above point.
-> 
-> Changes since v1:
->  - optimized/updated the syscall table generation 
->    scripts.
->  - fixed all mixed indentation issues in syscall.tbl.
->  - added "comments" in syscall_*.tbl.
->  - changed from generic-y to generated-y in Kbuild.
-> 
-> Firoz Khan (5):
->   powerpc: add __NR_syscalls along with NR_syscalls
->   powerpc: move macro definition from asm/systbl.h
->   powerpc: add system call table generation support
->   powerpc: split compat syscall table out from native table
->   powerpc: generate uapi header and system call table files
-> 
->  arch/powerpc/Makefile                       |   3 +
->  arch/powerpc/include/asm/Kbuild             |   4 +
->  arch/powerpc/include/asm/syscall.h          |   3 +-
->  arch/powerpc/include/asm/systbl.h           | 396 --------------------------
->  arch/powerpc/include/asm/unistd.h           |   3 +-
->  arch/powerpc/include/uapi/asm/Kbuild        |   2 +
->  arch/powerpc/include/uapi/asm/unistd.h      | 389 +------------------------
->  arch/powerpc/kernel/Makefile                |  10 -
->  arch/powerpc/kernel/entry_64.S              |   7 +-
->  arch/powerpc/kernel/syscalls/Makefile       |  63 ++++
->  arch/powerpc/kernel/syscalls/syscall.tbl    | 427 ++++++++++++++++++++++++++++
->  arch/powerpc/kernel/syscalls/syscallhdr.sh  |  37 +++
->  arch/powerpc/kernel/syscalls/syscalltbl.sh  |  36 +++
->  arch/powerpc/kernel/systbl.S                |  40 ++-
->  arch/powerpc/kernel/systbl_chk.c            |  60 ----
->  arch/powerpc/kernel/vdso.c                  |   7 +-
->  arch/powerpc/platforms/cell/spu_callbacks.c |  17 +-
->  17 files changed, 606 insertions(+), 898 deletions(-)
->  delete mode 100644 arch/powerpc/include/asm/systbl.h
->  create mode 100644 arch/powerpc/kernel/syscalls/Makefile
->  create mode 100644 arch/powerpc/kernel/syscalls/syscall.tbl
->  create mode 100644 arch/powerpc/kernel/syscalls/syscallhdr.sh
->  create mode 100644 arch/powerpc/kernel/syscalls/syscalltbl.sh
->  delete mode 100644 arch/powerpc/kernel/systbl_chk.c
-> 
-> -- 
-> 1.9.1
-> 
-
+> On 6. Dec 2018, at 20:36, Christoph Hellwig <hch@lst.de> wrote:
+>=20
+>> On Thu, Dec 06, 2018 at 06:10:54PM +0100, Christian Zigotzky wrote:
+>> Please don=E2=80=99t merge this code. We are still testing and trying to f=
+igure out where the problems are in the code.
+>=20
+> The ones I sent pings for were either tested successfully by you
+> (the zone change) or are trivial cleanups that don't affect your setup.
