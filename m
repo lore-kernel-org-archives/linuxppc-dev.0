@@ -2,53 +2,63 @@ Return-Path: <SRS0=Xegb=OQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS,USER_AGENT_MUTT
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A64E7C07E85
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 17:27:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E9EE2C64EB1
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 17:35:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F07432081C
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 17:27:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F07432081C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 69DA92083D
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 17:35:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 69DA92083D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43BKD21xnSzDrgt
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Dec 2018 04:27:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 43BKP02fk8zDvrG
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Dec 2018 04:35:16 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=arm.com
- (client-ip=217.140.101.70; helo=foss.arm.com;
- envelope-from=will.deacon@arm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 43BK9555pQzDrgZ
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Dec 2018 04:24:57 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id C717C15AB;
- Fri,  7 Dec 2018 09:24:55 -0800 (PST)
-Received: from edgewater-inn.cambridge.arm.com
- (usa-sjc-imap-foss1.foss.arm.com [10.72.51.249])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 95F9D3F5AF;
- Fri,  7 Dec 2018 09:24:55 -0800 (PST)
-Received: by edgewater-inn.cambridge.arm.com (Postfix, from userid 1000)
- id 15F621AE077B; Fri,  7 Dec 2018 17:25:17 +0000 (GMT)
-Date: Fri, 7 Dec 2018 17:25:17 +0000
-From: Will Deacon <will.deacon@arm.com>
-To: Andrew Murray <andrew.murray@arm.com>
-Subject: Re: [PATCH v3 00/12] perf/core: Generalise event exclusion checking
-Message-ID: <20181207172516.GB2044@edgewater-inn.cambridge.arm.com>
-References: <1544114849-47266-1-git-send-email-andrew.murray@arm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1544114849-47266-1-git-send-email-andrew.murray@arm.com>
-User-Agent: Mutt/1.11.1+30 (d10eec459b35) ()
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43BKLd4cHPzDrhl
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Dec 2018 04:33:13 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 43BKLX3RTtzB09bM;
+ Fri,  7 Dec 2018 18:33:08 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id 6aGgL4PlpPYa; Fri,  7 Dec 2018 18:33:08 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 43BKLX2jQ3zB09bL;
+ Fri,  7 Dec 2018 18:33:08 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 0B01A8B90D;
+ Fri,  7 Dec 2018 18:33:10 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id K0i5pyzanwUD; Fri,  7 Dec 2018 18:33:09 +0100 (CET)
+Received: from po14163vm.idsi0.si.c-s.fr (unknown [192.168.232.3])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id BF7238B8F6;
+ Fri,  7 Dec 2018 18:33:09 +0100 (CET)
+Received: by po14163vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 82A0E6D165; Fri,  7 Dec 2018 17:33:09 +0000 (UTC)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] crypto/testmgr: fix skcipher test with CONFIG_VMAP_STACK
+To: Herbert Xu <herbert@gondor.apana.org.au>,
+ "David S. Miller" <davem@davemloft.net>
+Message-Id: <20181207173309.82A0E6D165@po14163vm.idsi0.si.c-s.fr>
+Date: Fri,  7 Dec 2018 17:33:09 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,61 +70,86 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Peter Zijlstra <peterz@infradead.org>,
- Paul Mackerras <paulus@samba.org>, Shawn Guo <shawnguo@kernel.org>,
- x86@kernel.org, Russell King <linux@armlinux.org.uk>,
- Ingo Molnar <mingo@redhat.com>, Matt Turner <mattst88@gmail.com>,
- suzuki.poulose@arm.com, Sascha Hauer <s.hauer@pengutronix.de>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- Richard Henderson <rth@twiddle.net>, robin.murphy@arm.com,
- linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
- Borislav Petkov <bp@alien8.de>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Dec 06, 2018 at 04:47:17PM +0000, Andrew Murray wrote:
-> Many PMU drivers do not have the capability to exclude counting events
-> that occur in specific contexts such as idle, kernel, guest, etc. These
-> drivers indicate this by returning an error in their event_init upon
-> testing the events attribute flags.
-> 
-> However this approach requires that each time a new event modifier is
-> added to perf, all the perf drivers need to be modified to indicate that
-> they don't support the attribute. This results in additional boiler-plate
-> code common to many drivers that needs to be maintained. Furthermore the
-> drivers are not consistent with regards to the error value they return
-> when reporting unsupported attributes.
-> 
-> This patchset allow PMU drivers to advertise their inability to exclude
-> based on context via a new capability: PERF_PMU_CAP_NO_EXCLUDE. This
-> allows the perf core to reject requests for exclusion events where there
-> is no support in the PMU.
-> 
-> This is a functional change, in particular:
-> 
->  - Some drivers will now additionally (but correctly) report unsupported
->    exclusion flags. It's typical for existing userspace tools such as
->    perf to handle such errors by retrying the system call without the
->    unsupported flags.
-> 
->  - Drivers that do not support any exclusion that previously reported
->    -EPERM or -EOPNOTSUPP will now report -EINVAL - this is consistent
->    with the majority and results in userspace perf retrying without
->    exclusion.
-> 
-> All drivers touched by this patchset have been compile tested.
+[    2.364486] WARNING: CPU: 0 PID: 60 at ./arch/powerpc/include/asm/io.h:837 dma_nommu_map_page+0x44/0xd4
+[    2.373579] CPU: 0 PID: 60 Comm: cryptomgr_test Tainted: G        W         4.20.0-rc5-00560-g6bfb52e23a00-dirty #531
+[    2.384740] NIP:  c000c540 LR: c000c584 CTR: 00000000
+[    2.389743] REGS: c95abab0 TRAP: 0700   Tainted: G        W          (4.20.0-rc5-00560-g6bfb52e23a00-dirty)
+[    2.400042] MSR:  00029032 <EE,ME,IR,DR,RI>  CR: 24042204  XER: 00000000
+[    2.406669]
+[    2.406669] GPR00: c02f2244 c95abb60 c6262990 c95abd80 0000256a 00000001 00000001 00000001
+[    2.406669] GPR08: 00000000 00002000 00000010 00000010 24042202 00000000 00000100 c95abd88
+[    2.406669] GPR16: 00000000 c05569d4 00000001 00000010 c95abc88 c0615664 00000004 00000000
+[    2.406669] GPR24: 00000010 c95abc88 c95abc88 00000000 c61ae210 c7ff6d40 c61ae210 00003d68
+[    2.441559] NIP [c000c540] dma_nommu_map_page+0x44/0xd4
+[    2.446720] LR [c000c584] dma_nommu_map_page+0x88/0xd4
+[    2.451762] Call Trace:
+[    2.454195] [c95abb60] [82000808] 0x82000808 (unreliable)
+[    2.459572] [c95abb80] [c02f2244] talitos_edesc_alloc+0xbc/0x3c8
+[    2.465493] [c95abbb0] [c02f2600] ablkcipher_edesc_alloc+0x4c/0x5c
+[    2.471606] [c95abbd0] [c02f4ed0] ablkcipher_encrypt+0x20/0x64
+[    2.477389] [c95abbe0] [c02023b0] __test_skcipher+0x4bc/0xa08
+[    2.483049] [c95abe00] [c0204b60] test_skcipher+0x2c/0xcc
+[    2.488385] [c95abe20] [c0204c48] alg_test_skcipher+0x48/0xbc
+[    2.494064] [c95abe40] [c0205cec] alg_test+0x164/0x2e8
+[    2.499142] [c95abf00] [c0200dec] cryptomgr_test+0x48/0x50
+[    2.504558] [c95abf10] [c0039ff4] kthread+0xe4/0x110
+[    2.509471] [c95abf40] [c000e1d0] ret_from_kernel_thread+0x14/0x1c
+[    2.515532] Instruction dump:
+[    2.518468] 7c7e1b78 7c9d2378 7cbf2b78 41820054 3d20c076 8089c200 3d20c076 7c84e850
+[    2.526127] 8129c204 7c842e70 7f844840 419c0008 <0fe00000> 2f9e0000 54847022 7c84fa14
+[    2.533960] ---[ end trace bf78d94af73fe3b8 ]---
+[    2.539123] talitos ff020000.crypto: master data transfer error
+[    2.544775] talitos ff020000.crypto: TEA error: ISR 0x20000000_00000040
+[    2.551625] alg: skcipher: encryption failed on test 1 for ecb-aes-talitos: ret=22
 
-For the bits under arch/arm/ and drivers/perf:
+IV cannot be on stack when CONFIG_VMAP_STACK is selected because the stack
+cannot be DMA mapped anymore.
 
-Acked-by: Will Deacon <will.deacon@arm.com>
+This patch allocates it with kmalloc()
 
-Note that I've queued the TX2 uncore PMU for 4.21 [1], which could also
-benefit from your new flag.
+Fixes: da7f033ddc9f ("crypto: cryptomgr - Add test infrastructure")
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ crypto/testmgr.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-Will
+diff --git a/crypto/testmgr.c b/crypto/testmgr.c
+index b1f79c6bf409..eea498f9030d 100644
+--- a/crypto/testmgr.c
++++ b/crypto/testmgr.c
+@@ -1112,12 +1112,16 @@ static int __test_skcipher(struct crypto_skcipher *tfm, int enc,
+ 	struct crypto_wait wait;
+ 	const char *input, *result;
+ 	void *data;
+-	char iv[MAX_IVLEN];
++	char *iv;
+ 	char *xbuf[XBUFSIZE];
+ 	char *xoutbuf[XBUFSIZE];
+ 	int ret = -ENOMEM;
+ 	unsigned int ivsize = crypto_skcipher_ivsize(tfm);
+ 
++	iv = kmalloc(MAX_IVLEN, GFP_KERNEL | GFP_DMA);
++	if (!iv)
++		goto out_noiv;
++
+ 	if (testmgr_alloc_buf(xbuf))
+ 		goto out_nobuf;
+ 
+@@ -1339,6 +1343,8 @@ static int __test_skcipher(struct crypto_skcipher *tfm, int enc,
+ out_nooutbuf:
+ 	testmgr_free_buf(xbuf);
+ out_nobuf:
++	kfree(iv);
++out_noiv:
+ 	return ret;
+ }
+ 
+-- 
+2.13.3
 
-[1]
-https://git.kernel.org/pub/scm/linux/kernel/git/will/linux.git/commit/?h=for-next/perf&id=69c32972d59388c041268e8206e8eb1acff29b9a
