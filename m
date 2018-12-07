@@ -7,78 +7,76 @@ X-Spam-Status: No, score=-8.7 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F05AC07E85
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 03:51:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 92711C07E85
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 03:54:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 830DD20837
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 03:51:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id BA7B420882
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 03:54:16 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ffVzjUWY"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 830DD20837
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="mtymmJNw"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BA7B420882
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 439z6g13R5zDrPG
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 14:51:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 439z9f163NzDr1K
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 14:54:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="ffVzjUWY";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="mtymmJNw";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::644; helo=mail-pl1-x644.google.com;
+ (client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
  envelope-from=sjitindarsingh@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="ffVzjUWY"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="mtymmJNw"; 
  dkim-atps=neutral
-Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
- [IPv6:2607:f8b0:4864:20::644])
+Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
+ [IPv6:2607:f8b0:4864:20::541])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 439yxZ6XF4zDrVX
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 14:43:46 +1100 (AEDT)
-Received: by mail-pl1-x644.google.com with SMTP id u6so1164012plm.8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Dec 2018 19:43:46 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 439yxf2nYnzDrWY
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 14:43:50 +1100 (AEDT)
+Received: by mail-pg1-x541.google.com with SMTP id d72so1085820pga.9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Dec 2018 19:43:50 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=d9n2ndYxPLku3kpK66KCR216WXpYN1G+1wSQlGxFKcY=;
- b=ffVzjUWYba7ggG+9uO1KoWhlIgoeo/sdZOl+xfelQEmF7eupn3tL8PykbTGMlexHq7
- 2EWgznQjAj9JAmo3yx7HykpX+orBgkius2WhGe7qefBoInB+bHwvC98m7x/Vrlw/7Tp3
- Sj07g7L1rUqTjv1J1l2cSUOCJK+MU+iXYOlvBSpskvKWILS8JDbmkJ0dRF1Wgt4lqDLb
- uzw775qrf6WF7rcW3uUFBoDpIPDqFoXyTTiwkfFP4wRVZSuFNNKnxgv4gor9GHT5/yxR
- TW8n+yqDbR6HHQpeBHwMuc0BJVacOLi0BzA7WWp2QkPJen12DdPCeyudHJDMzegOZWF6
- i4ow==
+ bh=LvmJuwwziss2COckjTxUbK8p0ozKauVVNTpVJ1JHZwE=;
+ b=mtymmJNwbbbjjmrw5y5XPxcLb9y5V5HZwr77uihm9meS2LamyJeYHoN8jKdHL59aLm
+ bw2yiPIm9hU2rJrqywtvkV0/TSlsfGWFZhRo0wNfpzZBRWe7L5D1iv6XECXWMCX6O6nl
+ VppHk3S5fpphJYkbuyi6I8mGxOtOJBp653IrxX7pZ7k3hp3Jfh/aSgu578UX6ZIZmLob
+ Xrao2ouzjBqZos0y7JDG4Cf3jbfBziVhv077R0XtzQZOjkxFzGvwPcXlzb/pNS6CGHxw
+ GNdoO4ISJj9hYXUfmdeP5xvKMsI2L/NG0sq9wljSdH/WQIhw0aojV2a+Y8WW1PiPMv+C
+ JAUA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references;
- bh=d9n2ndYxPLku3kpK66KCR216WXpYN1G+1wSQlGxFKcY=;
- b=VJH1dEQKYM9ukPM5TUqZJF2fXZaGBm42gycmEWW9np7n+3X6Xqg/4CsW772jc4ohKF
- ztVNNVkxjd1UoT9T+T42DzBRSSHutcA7TUHglRNrPjlxHw72T3PvVRz8WlxJmrPuMTSy
- sOeh9IiIlH7yVuLMCgGt8EWB+5FYCjW5Y/5LD85Yi321vp44q2viLqKWh+wMKQZVINTc
- Vg9LhsCrRedNSpffE3DntOlmqFX3g5GN7HhpE2oMBlFmn8YSZ0Gu/hDDQvEEA3Q5GJ/F
- a3ZBfx8j+d/mX/xgekCpNEgiAZD7A/TDpwbknv13f2MtzJhAG4JgWAQRMhgGT1O8xbTk
- KQWQ==
-X-Gm-Message-State: AA+aEWYkA/G+6ItjllbjhL6swBWvxoHXdU8JL1G3E/MA0JFYKHp+q8XZ
- OZleDKui5mRDgQeve79NshE=
-X-Google-Smtp-Source: AFSGD/XqMdPtHdtVpAYWRJReFPRdS81OSQATfKJmZ5Q1WDvRm2lIUgAZqVvhbYmNxfLkaW5EpqifFQ==
-X-Received: by 2002:a17:902:830a:: with SMTP id
- bd10mr620942plb.321.1544154224845; 
- Thu, 06 Dec 2018 19:43:44 -0800 (PST)
+ bh=LvmJuwwziss2COckjTxUbK8p0ozKauVVNTpVJ1JHZwE=;
+ b=q89fp1V1dBTfvEiUKvW23l2wgQRq2mO4yjRmO9D24h+/6zaGU7L065nsAk5KVVseG6
+ 0OvRbWrkbk4TWY9BTsSDkOpe4B6PRefgQtT0sHyl2ES+/8++RN2J9+Xwu9f9SQxUqrt+
+ Dki+nR9d+gPUmuEeTZuUJxQD4xkOD2fAtVcSi3EIjqcZlZckWfNyk2ROEC0R3Z9DmXlx
+ +0aMQoFhaeXi5s3h9MvG6Df1ZottB8+FDk3AJsxyy0yB0AKt0D/c2UQVjg/xVxhFW5dV
+ LNcrpT31cSC03l2O6iu6V70IF539vru75kvy6M4ONT1Nx1OwE6gVP3zHVGfcgyoXCxUE
+ dVjQ==
+X-Gm-Message-State: AA+aEWY9WtjsPHlzmvfDtHT9V0FGIgeL0pNmA91e048kAsBkBhcamrBs
+ Sn+Ki4cp2zp2grKO7Uhhp3Y=
+X-Google-Smtp-Source: AFSGD/U+FpNBTlzvB41XHEU8Mx9wIl1GqMUXnSSssl6PBmxQKlaR36n8AZRfAE+KDhQx0wiwvJ/eYA==
+X-Received: by 2002:a63:bf0b:: with SMTP id v11mr591318pgf.302.1544154228517; 
+ Thu, 06 Dec 2018 19:43:48 -0800 (PST)
 Received: from localhost.localdomain ([1.129.152.198])
- by smtp.gmail.com with ESMTPSA id e23sm2262646pfh.68.2018.12.06.19.43.41
+ by smtp.gmail.com with ESMTPSA id e23sm2262646pfh.68.2018.12.06.19.43.45
  (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Thu, 06 Dec 2018 19:43:44 -0800 (PST)
+ Thu, 06 Dec 2018 19:43:47 -0800 (PST)
 From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 1/8] KVM: PPC: Only report KVM_CAP_SPAPR_TCE_VFIO on powernv
- machines
-Date: Fri,  7 Dec 2018 14:43:19 +1100
-Message-Id: <20181207034326.3564-3-sjitindarsingh@gmail.com>
+Subject: [PATCH 2/8] KVM: PPC: Book3S HV: Add function kvmhv_vcpu_is_radix()
+Date: Fri,  7 Dec 2018 14:43:20 +1100
+Message-Id: <20181207034326.3564-4-sjitindarsingh@gmail.com>
 X-Mailer: git-send-email 2.13.6
 In-Reply-To: <20181207034326.3564-1-sjitindarsingh@gmail.com>
 References: <20181207034326.3564-1-sjitindarsingh@gmail.com>
@@ -99,44 +97,64 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The kvm capability KVM_CAP_SPAPR_TCE_VFIO is used to indicate the
-availability of in kernel tce acceleration for vfio. However it is
-currently the case that this is only available on a powernv machine,
-not for a pseries machine.
+There exists a function kvm_is_radix() which is used to determine if a
+kvm instance is using the radix mmu. However this only applies to the
+first level (L1) guest. Add a function kvmhv_vcpu_is_radix() which can
+be used to determine if the current execution context of the vcpu is
+radix, accounting for if the vcpu is running a nested guest.
 
-Thus make this capability dependent on having the cpu feature
-CPU_FTR_HVMODE.
+Currently all nested guests must be radix but this may change in the
+future.
 
 Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
 ---
- arch/powerpc/kvm/powerpc.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/kvm_book3s_64.h | 13 +++++++++++++
+ arch/powerpc/kvm/book3s_hv_nested.c      |  1 +
+ 2 files changed, 14 insertions(+)
 
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 2869a299c4ed..95859c53a5cd 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -496,6 +496,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
- 	int r;
- 	/* Assume we're using HV mode when the HV module is loaded */
- 	int hv_enabled = kvmppc_hv_ops ? 1 : 0;
-+	int kvm_on_pseries = !cpu_has_feature(CPU_FTR_HVMODE);
+diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
+index 6d298145d564..7a9e472f2872 100644
+--- a/arch/powerpc/include/asm/kvm_book3s_64.h
++++ b/arch/powerpc/include/asm/kvm_book3s_64.h
+@@ -55,6 +55,7 @@ struct kvm_nested_guest {
+ 	cpumask_t need_tlb_flush;
+ 	cpumask_t cpu_in_guest;
+ 	short prev_cpu[NR_CPUS];
++	u8 radix;			/* is this nested guest radix */
+ };
  
- 	if (kvm) {
- 		/*
-@@ -543,8 +544,11 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
- #ifdef CONFIG_PPC_BOOK3S_64
- 	case KVM_CAP_SPAPR_TCE:
- 	case KVM_CAP_SPAPR_TCE_64:
--		/* fallthrough */
-+		r = 1;
-+		break;
- 	case KVM_CAP_SPAPR_TCE_VFIO:
-+		r = !kvm_on_pseries;
-+		break;
- 	case KVM_CAP_PPC_RTAS:
- 	case KVM_CAP_PPC_FIXUP_HCALL:
- 	case KVM_CAP_PPC_ENABLE_HCALL:
+ /*
+@@ -150,6 +151,18 @@ static inline bool kvm_is_radix(struct kvm *kvm)
+ 	return kvm->arch.radix;
+ }
+ 
++static inline bool kvmhv_vcpu_is_radix(struct kvm_vcpu *vcpu)
++{
++	bool radix;
++
++	if (vcpu->arch.nested)
++		radix = vcpu->arch.nested->radix;
++	else
++		radix = kvm_is_radix(vcpu->kvm);
++
++	return radix;
++}
++
+ #define KVM_DEFAULT_HPT_ORDER	24	/* 16MB HPT by default */
+ #endif
+ 
+diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm/book3s_hv_nested.c
+index 401d2ecbebc5..4fca462e54c4 100644
+--- a/arch/powerpc/kvm/book3s_hv_nested.c
++++ b/arch/powerpc/kvm/book3s_hv_nested.c
+@@ -480,6 +480,7 @@ struct kvm_nested_guest *kvmhv_alloc_nested(struct kvm *kvm, unsigned int lpid)
+ 	if (shadow_lpid < 0)
+ 		goto out_free2;
+ 	gp->shadow_lpid = shadow_lpid;
++	gp->radix = 1;
+ 
+ 	memset(gp->prev_cpu, -1, sizeof(gp->prev_cpu));
+ 
 -- 
 2.13.6
 
