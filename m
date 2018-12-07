@@ -2,51 +2,50 @@ Return-Path: <SRS0=Xegb=OQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.9 required=3.0 tests=FROM_EXCESS_BASE64,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D449C64EB1
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 13:57:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E0330C07E85
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 14:11:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1508B20837
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 13:57:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1508B20837
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
+	by mail.kernel.org (Postfix) with ESMTPS id 4A22120892
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 14:11:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4A22120892
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43BDYC6QXyzDr30
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Dec 2018 00:57:03 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.de
+	by lists.ozlabs.org (Postfix) with ESMTP id 43BDsp27lZzDrfW
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Dec 2018 01:11:26 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=suse.de
- (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=msuchanek@suse.de;
+ spf=none (mailfrom) smtp.mailfrom=lst.de
+ (client-ip=213.95.11.211; helo=newverein.lst.de; envelope-from=hch@lst.de;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=suse.de
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ dmarc=none (p=none dis=none) header.from=lst.de
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43BDMZ6cq3zDqfL
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Dec 2018 00:48:42 +1100 (AEDT)
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay1.suse.de (unknown [195.135.220.254])
- by mx1.suse.de (Postfix) with ESMTP id 78017AF92;
- Fri,  7 Dec 2018 13:48:39 +0000 (UTC)
-Date: Fri, 7 Dec 2018 14:48:38 +0100
-From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
-To: Breno Leitao <leitao@debian.org>
-Subject: Re: [PATCH 3/4] powerpc/tm: Unset MSR[TS] if not recheckpointing
-Message-ID: <20181207144838.4f0382c6@naga.suse.cz>
-In-Reply-To: <1543263121-9590-3-git-send-email-leitao@debian.org>
-References: <1543263121-9590-1-git-send-email-leitao@debian.org>
- <1543263121-9590-3-git-send-email-leitao@debian.org>
-X-Mailer: Claws Mail 3.17.1 (GTK+ 2.24.32; x86_64-suse-linux-gnu)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43BDqH6K6dzDrQW
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Dec 2018 01:09:14 +1100 (AEDT)
+Received: by newverein.lst.de (Postfix, from userid 2407)
+ id D3DD468AA6; Fri,  7 Dec 2018 15:09:10 +0100 (CET)
+Date: Fri, 7 Dec 2018 15:09:10 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH 01/34] powerpc: use mm zones more sensibly
+Message-ID: <20181207140910.GA23609@lst.de>
+References: <20181114082314.8965-1-hch@lst.de>
+ <20181114082314.8965-2-hch@lst.de> <20181206140948.GB29741@infradead.org>
+ <87sgz9jzsl.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87sgz9jzsl.fsf@concordia.ellerman.id.au>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,32 +57,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mikey@neuling.org, linuxppc-dev@lists.ozlabs.org,
- Stable <stable@vger.kernel.org>, gromero@linux.vnet.ibm.com
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Christoph Hellwig <hch@infradead.org>, linux-mm@kvack.org,
+ iommu@lists.linux-foundation.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 26 Nov 2018 18:12:00 -0200
-Breno Leitao <leitao@debian.org> wrote:
+On Fri, Dec 07, 2018 at 11:18:18PM +1100, Michael Ellerman wrote:
+> Christoph Hellwig <hch@infradead.org> writes:
+> 
+> > Ben / Michael,
+> >
+> > can we get this one queued up for 4.21 to prepare for the DMA work later
+> > on?
+> 
+> I was hoping the PASEMI / NXP regressions could be solved before
+> merging.
+> 
+> My p5020ds is booting fine with this series, so I'm not sure why it's
+> causing problems on Christian's machine.
+> 
+> The last time I turned on my PASEMI board it tripped some breakers, so I
+> need to investigate that before I can help test that.
+> 
+> I'll see how things look on Monday and either merge the commits you
+> identified or the whole series depending on if there's any more info
+> from Christian.
 
-> There is a TM Bad Thing bug that can be caused when you return from a
-> signal context in a suspended transaction but with ucontext MSR[TS] unset.
->=20
-> This forces regs->msr[TS] to be set at syscall entrance (since the CPU
-> state is transactional). It also calls treclaim() to flush the transaction
-> state, which is done based on the live (mfmsr) MSR state.
->=20
-> Since user context MSR[TS] is not set, then restore_tm_sigcontexts() is n=
-ot
-> called, thus, not executing recheckpoint, keeping the CPU state as not
-> transactional. When calling rfid, SRR1 will have MSR[TS] set, but the CPU
-> state is non transactional, causing the TM Bad Thing with the following
-> stack:
->=20
-
-Works for me on Linux 4.4 and 4.12
-
-Tested-by: Michal Such=C3=A1nek <msuchanek@suse.de>
-
-Thanks
+Christian just confirmed everything up to at least
+"powerpc/dma: stop overriding dma_get_required_mask" works for his
+setups.
