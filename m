@@ -2,101 +2,48 @@ Return-Path: <SRS0=Xegb=OQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B86DC07E85
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 12:06:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CD7ACC07E85
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 12:22:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AC7CA20868
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 12:06:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AC7CA20868
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 25AFA20892
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 12:22:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 25AFA20892
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43BB5l5FbHzDrhK
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 23:06:35 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
-Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=ego@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43BBRX6jjfzDrh4
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Dec 2018 23:22:00 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43BBMJ3ZhHzDrgp
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 23:18:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43BB2g1TSNzDrgX
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2018 23:03:54 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wB7AuFLX053835
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Dec 2018 07:03:52 -0500
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2p7py3cbss-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Dec 2018 07:03:52 -0500
-Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Fri, 7 Dec 2018 12:03:51 -0000
-Received: from b01cxnp22036.gho.pok.ibm.com (9.57.198.26)
- by e16.ny.us.ibm.com (146.89.104.203) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 7 Dec 2018 12:03:49 -0000
-Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
- [9.57.199.111])
- by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wB7C3mdw19333334
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Fri, 7 Dec 2018 12:03:49 GMT
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D7844AC05B;
- Fri,  7 Dec 2018 12:03:48 +0000 (GMT)
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8AC49AC05E;
- Fri,  7 Dec 2018 12:03:48 +0000 (GMT)
-Received: from sofia.ibm.com (unknown [9.124.35.115])
- by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
- Fri,  7 Dec 2018 12:03:48 +0000 (GMT)
-Received: by sofia.ibm.com (Postfix, from userid 1000)
- id B4C4F2E4D2B; Fri,  7 Dec 2018 17:33:46 +0530 (IST)
-Date: Fri, 7 Dec 2018 17:33:46 +0530
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-To: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH] pseries/hotplug: Add more delay in pseries_cpu_die while
- waiting for rtas-stop
-References: <1544095908-2414-1-git-send-email-ego@linux.vnet.ibm.com>
- <87a7li5zv2.fsf@morokweng.localdomain>
- <20181207104311.GA11431@in.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPSA id 43BBMG4JS2z9s3q;
+ Fri,  7 Dec 2018 23:18:18 +1100 (AEDT)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christoph Hellwig <hch@infradead.org>, Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH 01/34] powerpc: use mm zones more sensibly
+In-Reply-To: <20181206140948.GB29741@infradead.org>
+References: <20181114082314.8965-1-hch@lst.de>
+ <20181114082314.8965-2-hch@lst.de> <20181206140948.GB29741@infradead.org>
+Date: Fri, 07 Dec 2018 23:18:18 +1100
+Message-ID: <87sgz9jzsl.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20181207104311.GA11431@in.ibm.com>
-User-Agent: Mutt/1.5.23 (2014-03-12)
-X-TM-AS-GCONF: 00
-x-cbid: 18120712-0072-0000-0000-000003D5EA86
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010187; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000270; SDB=6.01128270; UDB=6.00582089; IPR=6.00908402; 
- MB=3.00024558; MTD=3.00000008; XFM=3.00000015; UTC=2018-12-07 12:03:51
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18120712-0073-0000-0000-00004A5D130C
-Message-Id: <20181207120346.GB11431@in.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-12-07_04:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1812070095
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,169 +55,288 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: ego@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
- Michael Bringmann <mwb@linux.vnet.ibm.com>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Thiago Jung Bauermann <bauerman@linux.ibm.com>
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, iommu@lists.linux-foundation.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Dec 07, 2018 at 04:13:11PM +0530, Gautham R Shenoy wrote:
-> Hi Thiago,
-> 
-> 
-> Sure. I will test the patch and report back.
+Christoph Hellwig <hch@infradead.org> writes:
 
-I added the following debug patch on top of your patch, and after an
-hour's run, the system crashed. Appending the log at the end.
+> Ben / Michael,
+>
+> can we get this one queued up for 4.21 to prepare for the DMA work later
+> on?
 
-I suppose we still need to increase the number of tries since we wait
-only for 2.5ms looping before giving up.
+I was hoping the PASEMI / NXP regressions could be solved before
+merging.
 
-----------------------------x8-----------------------------------------
-From 9e9e1e459cdc63540a73575af359a7bc0d43e455 Mon Sep 17 00:00:00 2001
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Date: Fri, 7 Dec 2018 16:47:25 +0530
-Subject: [PATCH] Add debug on top of Thiago's patch
+My p5020ds is booting fine with this series, so I'm not sure why it's
+causing problems on Christian's machine.
 
-Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/pseries/hotplug-cpu.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+The last time I turned on my PASEMI board it tripped some breakers, so I
+need to investigate that before I can help test that.
 
-diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-index fad3ceb..2545aab 100644
---- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-@@ -214,6 +214,9 @@ static void pseries_cpu_die(unsigned int cpu)
- 			msleep(1);
- 		}
- 	} else if (get_preferred_offline_state(cpu) == CPU_STATE_OFFLINE) {
-+		u64 tb_before = mftb();
-+		u64 tb_after;
-+
- 		/*
- 		 * If the current state is not offline yet, it means that the
- 		 * dying CPU (which is in pseries_mach_cpu_die) didn't have a
-@@ -230,6 +233,11 @@ static void pseries_cpu_die(unsigned int cpu)
- 				break;
- 			udelay(100);
- 		}
-+
-+		tb_after = mftb();
-+
-+		printk("[DEBUG] Waited for CPU %d to enter rtas: tries=%d, time=%llu\n", cpu, tries,
-+			div_u64(tb_after - tb_before, tb_ticks_per_usec));
- 	}
- 
- 	if (cpu_status != 0) {
--- 
-1.9.4
-----------------------------x8-----------------------------------------
+I'll see how things look on Monday and either merge the commits you
+identified or the whole series depending on if there's any more info
+from Christian.
 
-cpu 112 (hwid 112) Ready to die...
-[DEBUG] Waited for CPU 112 to enter rtas: tries=0, time=65
-cpu 113 (hwid 113) Ready to die...
-[DEBUG] Waited for CPU 113 to enter rtas: tries=0, time=1139
-cpu 114 (hwid 114) Ready to die...
-[DEBUG] Waited for CPU 114 to enter rtas: tries=0, time=1036
-cpu 115 (hwid 115) Ready to die...
-[DEBUG] Waited for CPU 115 to enter rtas: tries=0, time=133
-cpu 116 (hwid 116) Ready to die...
-[DEBUG] Waited for CPU 116 to enter rtas: tries=0, time=1231
-cpu 117 (hwid 117) Ready to die...
-[DEBUG] Waited for CPU 117 to enter rtas: tries=0, time=1231
-cpu 118 (hwid 118) Ready to die...
-[DEBUG] Waited for CPU 118 to enter rtas: tries=0, time=1231
-cpu 119 (hwid 119) Ready to die...
-[DEBUG] Waited for CPU 119 to enter rtas: tries=0, time=1131
-cpu 104 (hwid 104) Ready to die...
-[DEBUG] Waited for CPU 104 to enter rtas: tries=0, time=40  
+cheers
 
-******* RTAS CALL BUFFER CORRUPTION *******
-393: rtas32_call_buff_ptr=
-    0000 0060 0000 0060 0000 0060 0000 0060 [...`...`...`...`]
-    0000 0060 0000 0060 0000 0060 0000 0060 [...`...`...`...`]
-    0000 0060 0000 0060 0000 0060 0000 0060 [...`...`...`...`]
-    0000 0060 0800 E07F ACA7 0000 0000 00C0 [...`............]
-    2500 0000 0000 0000 0000 0000 0000 0000 [%...............]
-    0000 0000 0000 0000 0000 0000 306E 7572 [............0nur]
-    4800 0008 .... .... .... .... .... .... [H...........0nur]
-394: rtas64_map_buff_ptr=
-    0000 0000 5046 5743 0000 0000 4F44 4500 [....PFWC....ODE.]
-    0000 0000 6000 0000 0000 0000 0000 0069 [....`..........i]
-    0000 0000 0000 0000 0000 0000 0000 0000 [................]
-    0000 0000 0000 0005 0000 0000 0000 0001 [................]
-    0000 0000 1A00 0000 0000 0000 0000 0000 [................]
-    0000 0000 8018 6398 0000 0000 0300 00C0 [......c.........]
-    0000 0000 .... .... .... .... .... .... [......c.........]
-cpu 105 (hwid 105) Ready to die...
-Bad kernel stack pointer 1fafb6c0 at 0
-Oops: Bad kernel stack pointer, sig: 6 [#1]
-LE SMP NR_CPUS=2048 NUMA pSeries
-Modules linked in:
-CPU: 105 PID: 0 Comm: swapper/105 Not tainted 4.20.0-rc5-thiago+ #45
-NIP:  0000000000000000 LR: 0000000000000000 CTR: 00000000007829c8
-REGS: c00000001e63bd30 TRAP: 0700   Not tainted  (4.20.0-rc5-thiago+)
-MSR:  8000000000081000 <SF,ME>  CR: 28000004  XER: 00000010
-CFAR: 000000001ec153f0 IRQMASK: 8000000000009033
-GPR00: 0000000000000000 000000001fafb6c0 000000001ec236a0 0000000000000040
-GPR04: 00000000000000c0 0000000000000080 00046c4fb4842557 00000000000000cd
-GPR08: 000000000001f400 000000001ed035dc 0000000000000000 0000000000000000
-GPR12: 0000000000000000 c00000001eb5e480 c0000003a1b53f90 000000001eea3e20
-GPR16: 0000000000000000 c0000006fd845100 c00000000004c8b0 c0000000013d5300
-GPR20: c0000006fd845300 0000000000000008 c0000000019d2cf8 c0000000013d6888
-GPR24: 0000000000000069 c0000000013d688c 0000000000000002 c0000000013d688c
-GPR28: c0000000019cecf0 0000000000000348 0000000000000000 0000000000000000
-NIP [0000000000000000]           (null)
-LR [0000000000000000]           (null)
-Call Trace:
-Instruction dump:
-XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
-XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX 60000000 60000000 60000000 60000000
----[ end trace 1aa3b4936949457e ]---
-Bad kernel stack pointer 1fafb4b0 at 1ec15004
-rcu: INFO: rcu_sched detected stalls on CPUs/tasks: 
-rcu:    88-...!: (0 ticks this GP) idle=2ce/1/0x4000000000000000 softirq=28076/28076 fqs=78
-rcu:    (detected by 72, t=10866 jiffies, g=180529, q=2526)
-Sending NMI from CPU 72 to CPUs 88:
-CPU 88 didn't respond to backtrace IPI, inspecting paca.
-irq_soft_mask: 0x01 in_mce: 0 in_nmi: 0 current: 22978 (drmgr)
-Back trace of paca->saved_r1 (0xc0000006f94ab750) (possibly stale):
-Call Trace:
-[c0000006f94ab750] [c0000006f94ab790] 0xc0000006f94ab790 (unreliable)
-[c0000006f94ab930] [c0000000000373f8] va_rtas_call_unlocked+0xc8/0xe0
-[c0000006f94ab950] [c000000000037a98] rtas_call+0x98/0x200
-[c0000006f94ab9a0] [c0000000000d7d28] smp_query_cpu_stopped+0x58/0xe0
-[c0000006f94aba20] [c0000000000d9dbc] pseries_cpu_die+0x1ec/0x240
-[c0000006f94abad0] [c00000000004f284] __cpu_die+0x44/0x60
-[c0000006f94abaf0] [c0000000000d8e10] dlpar_cpu_remove+0x160/0x340
-[c0000006f94abbc0] [c0000000000d9184] dlpar_cpu_release+0x74/0x100
-[c0000006f94abc10] [c000000000025a74] arch_cpu_release+0x44/0x70
-[c0000006f94abc30] [c0000000009bd1bc] cpu_release_store+0x4c/0x80
-[c0000006f94abc60] [c0000000009ae000] dev_attr_store+0x40/0x70
-[c0000006f94abc80] [c000000000495810] sysfs_kf_write+0x70/0xb0
-[c0000006f94abca0] [c00000000049453c] kernfs_fop_write+0x17c/0x250
-[c0000006f94abcf0] [c0000000003ccb6c] __vfs_write+0x4c/0x1f0
-[c0000006f94abd80] [c0000000003ccf74] vfs_write+0xd4/0x240
-[c0000006f94abdd0] [c0000000003cd338] ksys_write+0x68/0x110
-[c0000006f94abe20] [c00000000000b288] system_call+0x5c/0x70
-rcu: rcu_sched kthread starved for 10709 jiffies! g180529 f0x0 RCU_GP_WAIT_FQS(5) ->state=0x402 ->cpu=72
-rcu: RCU grace-period kthread stack dump:
-rcu_sched       I    0    11      2 0x00000808
-Call Trace:
-[c0000000061ab840] [c0000003a4a84800] 0xc0000003a4a84800 (unreliable)
-[c0000000061aba20] [c00000000001e24c] __switch_to+0x2dc/0x430
-[c0000000061aba80] [c000000000e5fb94] __schedule+0x3d4/0xa20
-[c0000000061abb50] [c000000000e6022c] schedule+0x4c/0xc0
-[c0000000061abb80] [c000000000e64ffc] schedule_timeout+0x1dc/0x4e0
-[c0000000061abc80] [c0000000001af40c] rcu_gp_kthread+0xc3c/0x11f0
-[c0000000061abdb0] [c00000000013c7c8] kthread+0x168/0x1b0
-[c0000000061abe20] [c00000000000b658] ret_from_kernel_thread+0x5c/0x64
-
-
-
-
-
+> On Wed, Nov 14, 2018 at 09:22:41AM +0100, Christoph Hellwig wrote:
+>> Powerpc has somewhat odd usage where ZONE_DMA is used for all memory on
+>> common 64-bit configfs, and ZONE_DMA32 is used for 31-bit schemes.
+>> 
+>> Move to a scheme closer to what other architectures use (and I dare to
+>> say the intent of the system):
+>> 
+>>  - ZONE_DMA: optionally for memory < 31-bit (64-bit embedded only)
+>>  - ZONE_NORMAL: everything addressable by the kernel
+>>  - ZONE_HIGHMEM: memory > 32-bit for 32-bit kernels
+>> 
+>> Also provide information on how ZONE_DMA is used by defining
+>> ARCH_ZONE_DMA_BITS.
+>> 
+>> Contains various fixes from Benjamin Herrenschmidt.
+>> 
+>> Signed-off-by: Christoph Hellwig <hch@lst.de>
+>> ---
+>>  arch/powerpc/Kconfig                          |  8 +---
+>>  arch/powerpc/include/asm/page.h               |  2 +
+>>  arch/powerpc/include/asm/pgtable.h            |  1 -
+>>  arch/powerpc/kernel/dma-swiotlb.c             |  6 +--
+>>  arch/powerpc/kernel/dma.c                     |  7 +--
+>>  arch/powerpc/mm/mem.c                         | 47 +++++++------------
+>>  arch/powerpc/platforms/85xx/corenet_generic.c | 10 ----
+>>  arch/powerpc/platforms/85xx/qemu_e500.c       |  9 ----
+>>  include/linux/mmzone.h                        |  2 +-
+>>  9 files changed, 25 insertions(+), 67 deletions(-)
+>> 
+>> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+>> index 8be31261aec8..cffff3613bc1 100644
+>> --- a/arch/powerpc/Kconfig
+>> +++ b/arch/powerpc/Kconfig
+>> @@ -374,9 +374,9 @@ config PPC_ADV_DEBUG_DAC_RANGE
+>>  	depends on PPC_ADV_DEBUG_REGS && 44x
+>>  	default y
+>>  
+>> -config ZONE_DMA32
+>> +config ZONE_DMA
+>>  	bool
+>> -	default y if PPC64
+>> +	default y if PPC_BOOK3E_64
+>>  
+>>  config PGTABLE_LEVELS
+>>  	int
+>> @@ -869,10 +869,6 @@ config ISA
+>>  	  have an IBM RS/6000 or pSeries machine, say Y.  If you have an
+>>  	  embedded board, consult your board documentation.
+>>  
+>> -config ZONE_DMA
+>> -	bool
+>> -	default y
+>> -
+>>  config GENERIC_ISA_DMA
+>>  	bool
+>>  	depends on ISA_DMA_API
+>> diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
+>> index f6a1265face2..fc8c9ac0c6be 100644
+>> --- a/arch/powerpc/include/asm/page.h
+>> +++ b/arch/powerpc/include/asm/page.h
+>> @@ -354,4 +354,6 @@ typedef struct page *pgtable_t;
+>>  #endif /* __ASSEMBLY__ */
+>>  #include <asm/slice.h>
+>>  
+>> +#define ARCH_ZONE_DMA_BITS 31
+>> +
+>>  #endif /* _ASM_POWERPC_PAGE_H */
+>> diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
+>> index 9679b7519a35..8af32ce93c7f 100644
+>> --- a/arch/powerpc/include/asm/pgtable.h
+>> +++ b/arch/powerpc/include/asm/pgtable.h
+>> @@ -66,7 +66,6 @@ extern unsigned long empty_zero_page[];
+>>  
+>>  extern pgd_t swapper_pg_dir[];
+>>  
+>> -void limit_zone_pfn(enum zone_type zone, unsigned long max_pfn);
+>>  int dma_pfn_limit_to_zone(u64 pfn_limit);
+>>  extern void paging_init(void);
+>>  
+>> diff --git a/arch/powerpc/kernel/dma-swiotlb.c b/arch/powerpc/kernel/dma-swiotlb.c
+>> index 5fc335f4d9cd..678811abccfc 100644
+>> --- a/arch/powerpc/kernel/dma-swiotlb.c
+>> +++ b/arch/powerpc/kernel/dma-swiotlb.c
+>> @@ -108,12 +108,8 @@ int __init swiotlb_setup_bus_notifier(void)
+>>  
+>>  void __init swiotlb_detect_4g(void)
+>>  {
+>> -	if ((memblock_end_of_DRAM() - 1) > 0xffffffff) {
+>> +	if ((memblock_end_of_DRAM() - 1) > 0xffffffff)
+>>  		ppc_swiotlb_enable = 1;
+>> -#ifdef CONFIG_ZONE_DMA32
+>> -		limit_zone_pfn(ZONE_DMA32, (1ULL << 32) >> PAGE_SHIFT);
+>> -#endif
+>> -	}
+>>  }
+>>  
+>>  static int __init check_swiotlb_enabled(void)
+>> diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
+>> index dbfc7056d7df..6551685a4ed0 100644
+>> --- a/arch/powerpc/kernel/dma.c
+>> +++ b/arch/powerpc/kernel/dma.c
+>> @@ -50,7 +50,7 @@ static int dma_nommu_dma_supported(struct device *dev, u64 mask)
+>>  		return 1;
+>>  
+>>  #ifdef CONFIG_FSL_SOC
+>> -	/* Freescale gets another chance via ZONE_DMA/ZONE_DMA32, however
+>> +	/* Freescale gets another chance via ZONE_DMA, however
+>>  	 * that will have to be refined if/when they support iommus
+>>  	 */
+>>  	return 1;
+>> @@ -94,13 +94,10 @@ void *__dma_nommu_alloc_coherent(struct device *dev, size_t size,
+>>  	}
+>>  
+>>  	switch (zone) {
+>> +#ifdef CONFIG_ZONE_DMA
+>>  	case ZONE_DMA:
+>>  		flag |= GFP_DMA;
+>>  		break;
+>> -#ifdef CONFIG_ZONE_DMA32
+>> -	case ZONE_DMA32:
+>> -		flag |= GFP_DMA32;
+>> -		break;
+>>  #endif
+>>  	};
+>>  #endif /* CONFIG_FSL_SOC */
+>> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+>> index 0a64fffabee1..c0b676c3a5ba 100644
+>> --- a/arch/powerpc/mm/mem.c
+>> +++ b/arch/powerpc/mm/mem.c
+>> @@ -246,35 +246,19 @@ static int __init mark_nonram_nosave(void)
+>>  }
+>>  #endif
+>>  
+>> -static bool zone_limits_final;
+>> -
+>>  /*
+>> - * The memory zones past TOP_ZONE are managed by generic mm code.
+>> - * These should be set to zero since that's what every other
+>> - * architecture does.
+>> + * Zones usage:
+>> + *
+>> + * We setup ZONE_DMA to be 31-bits on all platforms and ZONE_NORMAL to be
+>> + * everything else. GFP_DMA32 page allocations automatically fall back to
+>> + * ZONE_DMA.
+>> + *
+>> + * By using 31-bit unconditionally, we can exploit ARCH_ZONE_DMA_BITS to
+>> + * inform the generic DMA mapping code.  32-bit only devices (if not handled
+>> + * by an IOMMU anyway) will take a first dip into ZONE_NORMAL and get
+>> + * otherwise served by ZONE_DMA.
+>>   */
+>> -static unsigned long max_zone_pfns[MAX_NR_ZONES] = {
+>> -	[0            ... TOP_ZONE        ] = ~0UL,
+>> -	[TOP_ZONE + 1 ... MAX_NR_ZONES - 1] = 0
+>> -};
+>> -
+>> -/*
+>> - * Restrict the specified zone and all more restrictive zones
+>> - * to be below the specified pfn.  May not be called after
+>> - * paging_init().
+>> - */
+>> -void __init limit_zone_pfn(enum zone_type zone, unsigned long pfn_limit)
+>> -{
+>> -	int i;
+>> -
+>> -	if (WARN_ON(zone_limits_final))
+>> -		return;
+>> -
+>> -	for (i = zone; i >= 0; i--) {
+>> -		if (max_zone_pfns[i] > pfn_limit)
+>> -			max_zone_pfns[i] = pfn_limit;
+>> -	}
+>> -}
+>> +static unsigned long max_zone_pfns[MAX_NR_ZONES];
+>>  
+>>  /*
+>>   * Find the least restrictive zone that is entirely below the
+>> @@ -324,11 +308,14 @@ void __init paging_init(void)
+>>  	printk(KERN_DEBUG "Memory hole size: %ldMB\n",
+>>  	       (long int)((top_of_ram - total_ram) >> 20));
+>>  
+>> +#ifdef CONFIG_ZONE_DMA
+>> +	max_zone_pfns[ZONE_DMA]	= min(max_low_pfn, 0x7fffffffUL >> PAGE_SHIFT);
+>> +#endif
+>> +	max_zone_pfns[ZONE_NORMAL] = max_low_pfn;
+>>  #ifdef CONFIG_HIGHMEM
+>> -	limit_zone_pfn(ZONE_NORMAL, lowmem_end_addr >> PAGE_SHIFT);
+>> +	max_zone_pfns[ZONE_HIGHMEM] = max_pfn;
+>>  #endif
+>> -	limit_zone_pfn(TOP_ZONE, top_of_ram >> PAGE_SHIFT);
+>> -	zone_limits_final = true;
+>> +
+>>  	free_area_init_nodes(max_zone_pfns);
+>>  
+>>  	mark_nonram_nosave();
+>> diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
+>> index ac191a7a1337..b0dac307bebf 100644
+>> --- a/arch/powerpc/platforms/85xx/corenet_generic.c
+>> +++ b/arch/powerpc/platforms/85xx/corenet_generic.c
+>> @@ -68,16 +68,6 @@ void __init corenet_gen_setup_arch(void)
+>>  
+>>  	swiotlb_detect_4g();
+>>  
+>> -#if defined(CONFIG_FSL_PCI) && defined(CONFIG_ZONE_DMA32)
+>> -	/*
+>> -	 * Inbound windows don't cover the full lower 4 GiB
+>> -	 * due to conflicts with PCICSRBAR and outbound windows,
+>> -	 * so limit the DMA32 zone to 2 GiB, to allow consistent
+>> -	 * allocations to succeed.
+>> -	 */
+>> -	limit_zone_pfn(ZONE_DMA32, 1UL << (31 - PAGE_SHIFT));
+>> -#endif
+>> -
+>>  	pr_info("%s board\n", ppc_md.name);
+>>  
+>>  	mpc85xx_qe_init();
+>> diff --git a/arch/powerpc/platforms/85xx/qemu_e500.c b/arch/powerpc/platforms/85xx/qemu_e500.c
+>> index b63a8548366f..27631c607f3d 100644
+>> --- a/arch/powerpc/platforms/85xx/qemu_e500.c
+>> +++ b/arch/powerpc/platforms/85xx/qemu_e500.c
+>> @@ -45,15 +45,6 @@ static void __init qemu_e500_setup_arch(void)
+>>  
+>>  	fsl_pci_assign_primary();
+>>  	swiotlb_detect_4g();
+>> -#if defined(CONFIG_FSL_PCI) && defined(CONFIG_ZONE_DMA32)
+>> -	/*
+>> -	 * Inbound windows don't cover the full lower 4 GiB
+>> -	 * due to conflicts with PCICSRBAR and outbound windows,
+>> -	 * so limit the DMA32 zone to 2 GiB, to allow consistent
+>> -	 * allocations to succeed.
+>> -	 */
+>> -	limit_zone_pfn(ZONE_DMA32, 1UL << (31 - PAGE_SHIFT));
+>> -#endif
+>>  	mpc85xx_smp_init();
+>>  }
+>>  
+>> diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+>> index 847705a6d0ec..e2d01ccd071d 100644
+>> --- a/include/linux/mmzone.h
+>> +++ b/include/linux/mmzone.h
+>> @@ -314,7 +314,7 @@ enum zone_type {
+>>  	 * Architecture		Limit
+>>  	 * ---------------------------
+>>  	 * parisc, ia64, sparc	<4G
+>> -	 * s390			<2G
+>> +	 * s390, powerpc	<2G
+>>  	 * arm			Various
+>>  	 * alpha		Unlimited or 0-16MB.
+>>  	 *
+>> -- 
+>> 2.19.1
+>> 
+>> _______________________________________________
+>> iommu mailing list
+>> iommu@lists.linux-foundation.org
+>> https://lists.linuxfoundation.org/mailman/listinfo/iommu
+> ---end quoted text---
