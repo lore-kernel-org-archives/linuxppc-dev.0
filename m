@@ -2,51 +2,82 @@ Return-Path: <SRS0=zuPs=OR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 93639C04EB8
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Dec 2018 17:19:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 716E5C04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Dec 2018 19:22:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 490B52083D
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Dec 2018 17:19:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 490B52083D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id DEAEF20837
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Dec 2018 19:22:37 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="VfzkZwKD"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DEAEF20837
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Bx0h1RLdzDqTx
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Dec 2018 04:19:48 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by lists.ozlabs.org (Postfix) with ESMTP id 43BzkM23DGzDqSy
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Dec 2018 06:22:35 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=lst.de
- (client-ip=213.95.11.211; helo=newverein.lst.de; envelope-from=hch@lst.de;
- receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nifty.com header.i=@nifty.com header.b="VfzkZwKD";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lst.de
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ spf=softfail (mailfrom) smtp.mailfrom=socionext.com
+ (client-ip=210.131.2.91; helo=conssluserg-06.nifty.com;
+ envelope-from=yamada.masahiro@socionext.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=socionext.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=nifty.com header.i=@nifty.com header.b="VfzkZwKD"; 
+ dkim-atps=neutral
+Received: from conssluserg-06.nifty.com (conssluserg-06.nifty.com
+ [210.131.2.91])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43BwyP5bSpzDrBx
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Dec 2018 04:17:49 +1100 (AEDT)
-Received: by newverein.lst.de (Postfix, from userid 2407)
- id 42CC268AA6; Sat,  8 Dec 2018 18:17:46 +0100 (CET)
-Date: Sat, 8 Dec 2018 18:17:46 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: use generic DMA mapping code in powerpc V4
-Message-ID: <20181208171746.GB15228@lst.de>
-References: <CALjTZvZzHSZ=s0W0Pd-MVd7OA0hYxu0LzsZ+GxYybXKoUQQR6Q@mail.gmail.com>
- <20181130103222.GA23393@lst.de>
- <CALjTZvZsk0qA+Yxu7S+8pfa5y6rpihnThrHiAKkZMWsdyC-tVg@mail.gmail.com>
- <42b1408cafe77ebac1b1ad909db237fe34e4d177.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43BzdL1tllzDrL3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Dec 2018 06:18:13 +1100 (AEDT)
+Received: from mail-vk1-f172.google.com (mail-vk1-f172.google.com
+ [209.85.221.172]) (authenticated)
+ by conssluserg-06.nifty.com with ESMTP id wB8JHtgN018492
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 9 Dec 2018 04:17:56 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conssluserg-06.nifty.com wB8JHtgN018492
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
+ s=dec2015msa; t=1544296676;
+ bh=hCPA0RPn5CtjCd+h5IZiCTDhNEqPtCmsBZgqeWznGo4=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=VfzkZwKD/q3wwr2duZUJg55E6dEEvCE67LsFedT0UO9lnSf5U+i9lxxQnOsy+qPcB
+ fX0olPMiC0zgItLwSVjtLZKzON1Zc5QKx2X8/afsekuWxjvZQgtK8lm4fCnj/EqKxP
+ YMofp2yoEbirdGNgmmQpbnBd2rlEVrGEZq3JKcJvF227D58+kcOSU4/hovtFa9RvwQ
+ yXUW0h8angnWIfjOtjpXmkELmT/j4cVTkaLl6W923DMiUPQLo/g+kw/RxEDXtzPePy
+ yikCRQaWDoH7fndAOGIyFYPFzo2XJ5dXspdF+9RndIyxgCZ4eE9h54UfLhOjQKE54q
+ 2eEh9l8LVcGmQ==
+X-Nifty-SrcIP: [209.85.221.172]
+Received: by mail-vk1-f172.google.com with SMTP id t127so1686760vke.8
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 08 Dec 2018 11:17:55 -0800 (PST)
+X-Gm-Message-State: AA+aEWbdzMNhmTJ2FtgJAwzOHHrNKrXA1qYXC9MfkdtQAjt8jzbyyApc
+ jDY9qbyok06txiZuWNNuXptgorBmIw1lUsqAIck=
+X-Google-Smtp-Source: AFSGD/Uf2k7L99EsX7VN92HWhN+pEIsKdU8v3UiKpW9ugsPMbA3olifTnODlubDe8gPYmC6ZowJiB+UiJ9zrt1X5aRI=
+X-Received: by 2002:a1f:4d47:: with SMTP id a68mr2780127vkb.34.1544296674940; 
+ Sat, 08 Dec 2018 11:17:54 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <42b1408cafe77ebac1b1ad909db237fe34e4d177.camel@kernel.crashing.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <1541990120-9643-1-git-send-email-yamada.masahiro@socionext.com>
+ <1541990120-9643-3-git-send-email-yamada.masahiro@socionext.com>
+ <87k1lia6bd.fsf@concordia.ellerman.id.au>
+ <CAK7LNARbzF9-ZYvX7U76HqC957Fj=U3rmQfCEYXKqZNV8SFmNg@mail.gmail.com>
+ <20181208113313.GD30399@zn.tnic>
+In-Reply-To: <20181208113313.GD30399@zn.tnic>
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+Date: Sun, 9 Dec 2018 04:17:19 +0900
+X-Gmail-Original-Message-ID: <CAK7LNASJKeozY9+65H6xx1uUhwqL=8TOFCQEU-9Lm+Q6dyyQ_Q@mail.gmail.com>
+Message-ID: <CAK7LNASJKeozY9+65H6xx1uUhwqL=8TOFCQEU-9Lm+Q6dyyQ_Q@mail.gmail.com>
+Subject: Re: [PATCH 2/2] x86,
+ powerpc: remove -funit-at-a-time compiler option entirely
+To: Borislav Petkov <bp@alien8.de>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,29 +89,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, hch@lst.de,
- linux-kernel@vger.kernel.org, Rui Salvaterra <rsalvaterra@gmail.com>
+Cc: X86 ML <x86@kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Richard Weinberger <richard@sigma-star.at>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, Dec 02, 2018 at 05:11:02PM +1100, Benjamin Herrenschmidt wrote:
-> Talking of which ... Christoph, not sure if we can do something about
-> this at the DMA API level or keep hacks but some adapters such as the
-> nVidia GPUs have a HW hack we can use to work around their limitations
-> in that case.
-> 
-> They have a register that can program a fixed value for the top bits
-> that they don't support.
-> 
-> This works fine for any linear mapping with an offset, provided they
-> can program the offset in that register and they have enough DMA range
-> to cover all memory from that offset.
-> 
-> I can probably get the info about this from them so we can exploit it
-> in nouveau.
+Hi Borislav,
 
-I think we can expose the direct mapping offset if people care enough,
-we just have to be very careful designing the API.  I'll happily leave
-that to those that actually want to use it, but I'll gladly help
-reviewing it.
+
+On Sat, Dec 8, 2018 at 8:34 PM Borislav Petkov <bp@alien8.de> wrote:
+>
+> On Sat, Dec 08, 2018 at 03:36:52PM +0900, Masahiro Yamada wrote:
+> > x86 maintainers,
+> >
+> > Ping.
+>
+> You got the required ACKs. If you want me to carry this one and the
+> UML one through the tip tree, lemme know. Or you can do what Richard
+> suggested. Your call.
+
+
+Thank you for your help.
+I expect both applied through the tip bot.
+
+Thanks.
+
+
+
+
+
+> Thx.
+>
+> --
+> Regards/Gruss,
+>     Boris.
+>
+> Good mailing practices for 400: avoid top-posting and trim the reply.
+
+
+
+-- 
+Best Regards
+Masahiro Yamada
