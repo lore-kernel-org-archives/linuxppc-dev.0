@@ -2,64 +2,68 @@ Return-Path: <SRS0=zuPs=OR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 69D2FC64EB1
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Dec 2018 08:56:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A49D0C04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Dec 2018 09:43:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AAA0A2083D
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Dec 2018 08:56:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AAA0A2083D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=nod.at
+	by mail.kernel.org (Postfix) with ESMTPS id A13A420837
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Dec 2018 09:43:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A13A420837
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43BjrF5d0HzF0Vk
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Dec 2018 19:56:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=nod.at
+	by lists.ozlabs.org (Postfix) with ESMTP id 43Bkt0091LzF0dc
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Dec 2018 20:43:20 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
- spf=permerror (mailfrom) smtp.mailfrom=nod.at
- (client-ip=195.201.40.130; helo=lithops.sigma-star.at;
- envelope-from=richard@nod.at; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=nod.at
-Received: from lithops.sigma-star.at (lithops.sigma-star.at [195.201.40.130])
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43Bjnx421FzF0QT
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Dec 2018 19:54:43 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Bkqp2Ft2zF0Ql
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Dec 2018 20:41:25 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 43Bkqg3xtmz9vGyC;
+ Sat,  8 Dec 2018 10:41:19 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id O9mKpkrYBSLy; Sat,  8 Dec 2018 10:41:19 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 43Bkqg3QRrz9vGyB;
+ Sat,  8 Dec 2018 10:41:19 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by lithops.sigma-star.at (Postfix) with ESMTP id 8CCD4608A3B9;
- Sat,  8 Dec 2018 09:54:40 +0100 (CET)
-Received: from lithops.sigma-star.at ([127.0.0.1])
- by localhost (lithops.sigma-star.at [127.0.0.1]) (amavisd-new, port 10032)
- with ESMTP id kfJK3t4E5t8S; Sat,  8 Dec 2018 09:54:40 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by lithops.sigma-star.at (Postfix) with ESMTP id 3604D608A3BA;
- Sat,  8 Dec 2018 09:54:40 +0100 (CET)
-Received: from lithops.sigma-star.at ([127.0.0.1])
- by localhost (lithops.sigma-star.at [127.0.0.1]) (amavisd-new, port 10026)
- with ESMTP id 6FiBBnNIeLkp; Sat,  8 Dec 2018 09:54:40 +0100 (CET)
-Received: from blindfold.localnet (213-47-184-186.cable.dynamic.surfer.at
- [213.47.184.186])
- by lithops.sigma-star.at (Postfix) with ESMTPSA id A1864608A3B9;
- Sat,  8 Dec 2018 09:54:39 +0100 (CET)
-From: Richard Weinberger <richard@nod.at>
-To: Masahiro Yamada <yamada.masahiro@socionext.com>
-Subject: Re: [PATCH 1/2] um: remove -fno-unit-at-a-time workaround for pre-4.0
- GCC
-Date: Sat, 08 Dec 2018 09:54:39 +0100
-Message-ID: <1855895.dlXT8REgUo@blindfold>
-In-Reply-To: <CAK7LNAQjyWgpnu=qv-55gTL2DWpE93muu3Ksey8wFnWtLOzpbA@mail.gmail.com>
-References: <1541990120-9643-1-git-send-email-yamada.masahiro@socionext.com>
- <2624257.jg98z2FPBI@blindfold>
- <CAK7LNAQjyWgpnu=qv-55gTL2DWpE93muu3Ksey8wFnWtLOzpbA@mail.gmail.com>
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 8E1308B78A;
+ Sat,  8 Dec 2018 10:41:20 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id rOQA5nMWI5wW; Sat,  8 Dec 2018 10:41:20 +0100 (CET)
+Received: from [192.168.232.3] (unknown [192.168.232.3])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 55FE88B74C;
+ Sat,  8 Dec 2018 10:41:20 +0100 (CET)
+Subject: =?UTF-8?Q?Re=3a_error=3a_no_previous_prototype_for_=e2=80=98pt=5fre?=
+ =?UTF-8?B?Z3NfY2hlY2vigJk=?=
+To: Mathieu Malaterre <malat@debian.org>, Michael Ellerman <mpe@ellerman.id.au>
+References: <CA+7wUsxwnYwr+0GrANN01VV_V9-0p5h==eBcCmNm-XEZYhwbOg@mail.gmail.com>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <45fce287-a302-2632-0499-a2f208cc352e@c-s.fr>
+Date: Sat, 8 Dec 2018 10:41:20 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.3.2
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <CA+7wUsxwnYwr+0GrANN01VV_V9-0p5h==eBcCmNm-XEZYhwbOg@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,62 +75,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: X86 ML <x86@kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
- "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Am Samstag, 8. Dezember 2018, 07:35:47 CET schrieb Masahiro Yamada:
-> x86 maintainers,
+Mathieu,
+
+Le 07/12/2018 à 21:07, Mathieu Malaterre a écrit :
+> Michael,
 > 
+> I have been wondering for a while now, but I failed to make sense of
+> this function: pt_regs_check (commit 002af9391bfbe). What is this
+> function meant for ?
+
+AFAICS this is a dummy function, its purpose is to break the build if 
+struct pt_regs and struct user_pt_regs don't match.
+
 > 
-> Ping.
+> Background, it breaks my W=1 build with:
+> 
+> ../arch/powerpc/kernel/ptrace.c:3339:13: error: no previous prototype
+> for ‘pt_regs_check’ [-Werror=missing-prototypes]
 
-I thought you carry this via your kbuild tree.
-That said, I can merge it also via the um tree.
-x86 is of course also fine. :-)
+What about adding a prototype for it on the line above ?
 
 > 
+> I failed to find a usage of it within the linux source tree... (git
+> grep pt_regs_check returns nothing).
+
+This function has no functionnal purpose, and will get eliminated at 
+link time or after init depending on CONFIG_LD_DEAD_CODE_DATA_ELIMINATION
+
+
+Christophe
 > 
-> On Tue, Nov 13, 2018 at 6:48 PM Richard Weinberger <richard@nod.at> wrote:
-> >
-> > Am Montag, 12. November 2018, 03:35:19 CET schrieb Masahiro Yamada:
-> > > Commit cafa0010cd51 ("Raise the minimum required gcc version to 4.6")
-> > > bumped the minimum GCC version to 4.6 for all architectures.
-> > >
-> > > '$(call cc-option,-fno-unit-at-a-time)' is now dead code since
-> > > '$(cc-version) -lt 0400' is always false.
-> > >
-> > > Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
-> > > ---
-> > >
-> > >  arch/x86/Makefile.um | 8 ++------
-> > >  1 file changed, 2 insertions(+), 6 deletions(-)
-> > >
-> > > diff --git a/arch/x86/Makefile.um b/arch/x86/Makefile.um
-> > > index 91085a0..577976b 100644
-> > > --- a/arch/x86/Makefile.um
-> > > +++ b/arch/x86/Makefile.um
-> > > @@ -26,12 +26,8 @@ cflags-y += $(call cc-option,-mpreferred-stack-boundary=2)
-> > >  # an unresolved reference.
-> > >  cflags-y += -ffreestanding
-> > >
-> > > -# Disable unit-at-a-time mode on pre-gcc-4.0 compilers, it makes gcc use
-> > > -# a lot more stack due to the lack of sharing of stacklots.  Also, gcc
-> > > -# 4.3.0 needs -funit-at-a-time for extern inline functions.
-> > > -KBUILD_CFLAGS += $(shell if [ $(cc-version) -lt 0400 ] ; then \
-> > > -                     echo $(call cc-option,-fno-unit-at-a-time); \
-> > > -                     else echo $(call cc-option,-funit-at-a-time); fi ;)
-> > > +# gcc 4.3.0 needs -funit-at-a-time for extern inline functions.
-> > > +KBUILD_CFLAGS += $(call cc-option,-funit-at-a-time)
-> >
-> > Acked-by: Richard Weinberger <richard@nod.at>
-
-Thanks,
-//richard
-
-
+> Thanks,
+> 
