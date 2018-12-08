@@ -2,70 +2,98 @@ Return-Path: <SRS0=zuPs=OR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 273C7C07E85
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Dec 2018 02:01:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 95242C07E85
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Dec 2018 02:43:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3472220868
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Dec 2018 02:01:52 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="hq+LB5HR"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3472220868
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id DF17920837
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Dec 2018 02:43:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DF17920837
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43BXdV0p89zF09T
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Dec 2018 13:01:50 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 43BYYC6V7mzDrdY
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Dec 2018 13:43:11 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="hq+LB5HR";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=bauerman@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=shawnguo@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="hq+LB5HR"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43BXZg6tr1zDvrJ
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Dec 2018 12:59:23 +1100 (AEDT)
-Received: from dragon (61-216-91-114.HINET-IP.hinet.net [61.216.91.114])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 24A4120868;
- Sat,  8 Dec 2018 01:59:18 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1544234361;
- bh=3ww473EUpiQ8Yk4SLFmXFffC7WSJZKms8gyXDBI3jkM=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=hq+LB5HRgreQXXjD3feH96P6iHCjOFajJi/mi+isJsKaf0mmF8lsogPERyTW4Pbof
- CRLQsbZY+m47bLTw3cdqwuPmKguNQH3w0Psz4H374kVnpOWADbMAU11UpCwMqpsLeb
- fw0L6qMZHFpZ0E1m87/ICl/4f90MiVA8Dx2PC7Jc=
-Date: Sat, 8 Dec 2018 09:58:37 +0800
-From: Shawn Guo <shawnguo@kernel.org>
-To: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v2 18/34] dt-bindings: arm: Convert FSL board/soc
- bindings to json-schema
-Message-ID: <20181208015835.GM3987@dragon>
-References: <20181203213223.16986-1-robh@kernel.org>
- <20181203213223.16986-19-robh@kernel.org>
- <20181206023140.GZ3987@dragon>
- <CAL_JsqK5nBdk-MiuTPMxr9oXqXnLqeMU3vtZi6AnT9V35_W55A@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43BYVw2gfKzF0QZ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Dec 2018 13:41:11 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wB82ZHc5090419
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Dec 2018 21:41:08 -0500
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2p85a304um-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Dec 2018 21:41:08 -0500
+Received: from localhost
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.ibm.com>;
+ Sat, 8 Dec 2018 02:41:07 -0000
+Received: from b03cxnp08026.gho.boulder.ibm.com (9.17.130.18)
+ by e36.co.us.ibm.com (192.168.1.136) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Sat, 8 Dec 2018 02:41:04 -0000
+Received: from b03ledav006.gho.boulder.ibm.com
+ (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wB82f39E21037206
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Sat, 8 Dec 2018 02:41:03 GMT
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id AA833C6057;
+ Sat,  8 Dec 2018 02:41:03 +0000 (GMT)
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2EE81C6055;
+ Sat,  8 Dec 2018 02:41:00 +0000 (GMT)
+Received: from morokweng.localdomain (unknown [9.85.230.156])
+ by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTPS;
+ Sat,  8 Dec 2018 02:40:59 +0000 (GMT)
+References: <1544095908-2414-1-git-send-email-ego@linux.vnet.ibm.com>
+ <87a7li5zv2.fsf@morokweng.localdomain> <20181207104311.GA11431@in.ibm.com>
+ <20181207120346.GB11431@in.ibm.com>
+User-agent: mu4e 1.0; emacs 26.1
+From: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+To: ego@linux.vnet.ibm.com
+Subject: Re: [PATCH] pseries/hotplug: Add more delay in pseries_cpu_die while
+ waiting for rtas-stop
+In-reply-to: <20181207120346.GB11431@in.ibm.com>
+Date: Sat, 08 Dec 2018 00:40:52 -0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAL_JsqK5nBdk-MiuTPMxr9oXqXnLqeMU3vtZi6AnT9V35_W55A@mail.gmail.com>
-User-Agent: Mutt/1.5.21 (2010-09-15)
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+x-cbid: 18120802-0020-0000-0000-00000E969BD1
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00010191; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000270; SDB=6.01128563; UDB=6.00586283; IPR=6.00908695; 
+ MB=3.00024596; MTD=3.00000008; XFM=3.00000015; UTC=2018-12-08 02:41:06
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18120802-0021-0000-0000-000063FA21A0
+Message-Id: <87va443fm3.fsf@morokweng.localdomain>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-12-07_08:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1812080022
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,46 +105,218 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org,
- Kumar Gala <kumar.gala@linaro.org>, ARM-SoC Maintainers <arm@kernel.org>,
- Sean Hudson <darknighte@darknighte.com>, Frank Rowand <frowand.list@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Grant Likely <grant.likely@arm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>
+Cc: linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
+ Michael Bringmann <mwb@linux.vnet.ibm.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Dec 06, 2018 at 05:33:13PM -0600, Rob Herring wrote:
-> On Wed, Dec 5, 2018 at 8:32 PM Shawn Guo <shawnguo@kernel.org> wrote:
-> >
-> > On Mon, Dec 03, 2018 at 03:32:07PM -0600, Rob Herring wrote:
-> > > Convert Freescale SoC bindings to DT schema format using json-schema.
-> > >
-> > > Cc: Shawn Guo <shawnguo@kernel.org>
-> > > Cc: Mark Rutland <mark.rutland@arm.com>
-> > > Cc: devicetree@vger.kernel.org
-> > > Signed-off-by: Rob Herring <robh@kernel.org>
-> > > ---
-> > >  .../devicetree/bindings/arm/armadeus.txt      |   6 -
-> > >  Documentation/devicetree/bindings/arm/bhf.txt |   6 -
-> > >  .../bindings/arm/compulab-boards.txt          |  25 --
-> > >  Documentation/devicetree/bindings/arm/fsl.txt | 229 ------------------
-> > >  .../devicetree/bindings/arm/fsl.yaml          | 214 ++++++++++++++++
-> >
-> > Rob,
-> >
-> > I do have any changes on bindings/arm/fsl.txt queued for 4.21 on my
-> > tree, so please send it via your tree.
-> 
-> What about:
-> 
-> c386f362957b dt-bindings: Add compatible string for LS1028A-QDS
-> 3671cd57de06 dt-bindings: ls1012a: Add FRWY-LS1012A device tree binding
 
-Ah, sorry, I only checked on imx/dt branch and forgot imx/dt64.  I will
-drop the changes on fsl.txt and update fsl.yaml after it hits mainline.
+Gautham R Shenoy <ego@linux.vnet.ibm.com> writes:
+> On Fri, Dec 07, 2018 at 04:13:11PM +0530, Gautham R Shenoy wrote:
+>> Sure. I will test the patch and report back.
+>
+> I added the following debug patch on top of your patch, and after an
+> hour's run, the system crashed. Appending the log at the end.
 
-Shawn
+Thank you very much for testing! Your debug patch was very helpful as
+well.
+
+> I suppose we still need to increase the number of tries since we wait
+> only for 2.5ms looping before giving up.
+
+Do you think it would have helped? In the debug output you posted I
+would have expected the following message to show up if the loop
+finished too early, and it didn't:
+
+"Querying DEAD? cpu %i (%i) shows %i\n"
+
+So I don't think increasing the loop length would have made a
+difference. In fact, the call to smp_query_cpu_stopped() always
+succeeded on the first iteration.
+
+I think there is something else going on which we don't fully understand
+yet. From your other email:
+
+> I agree that the Kernel has to respect RTAS's restriction. The PAPR
+> v2.8.1, Requirement R1-7.2.3-8 under section 7.2.3 says the following:
+>
+>     "The stop-self service needs to be serialized with calls to the
+>      stop-self, start-cpu, and set-power-level services. The OS must
+>      be able to call RTAS services on other processors while the
+>      processor is stopped or being stopped"
+>
+> Thus the onus is on the OS to ensure that there are no concurrent rtas
+> calls with "stop-self" token.
+
+As you say perhaps there's another call to stop-self, start-cpu or
+set-power-level being made concurrently. I don't currently see how more
+than one stop-self or start-cpu call could be in flight at the same time
+given that there are a number of locks being grabbed during CPU hotplug
+and unplug. OTOH the CPU that actually calls stop-self doesn't seem to
+grab any locks itself so it's a possibility.
+
+As for set-power-level, it's only used in the case of PCI hotplug from
+what I can see, and that isn't part of the picture in this case, right?
+
+We could address this problem directly by adding another lock separate
+from rtas.lock to serialize just these calls. The challenge is with
+stop-self, because the CPU calling it will never return to release the
+lock. Is it possible to grab a lock (or down a semaphore) in the CPU
+calling stop-self and then release the lock (or up the semaphore) in the
+CPU running pseries_cpu_die()?
+
+> > There's also a race between the CPU driving the unplug and the CPU
+> > being unplugged which I think is not easy for the CPU being
+> > unplugged to win, which makes the busy loop in pseries_cpu_die() a
+> > bit fragile. I describe the race in the patch description.
+> >
+> > My solution to make the race less tight is to make the CPU driving
+> > the unplug to only start the busy loop only after the CPU being
+> > unplugged is in the CPU_STATE_OFFLINE state. At that point, we know
+> > that it either is about to call RTAS or it already has.
+>
+> Ah, yes this is good optimization. Though, I think we ought to
+> unconditionally wait until the target CPU has woken up from CEDE and
+> changed its state to CPU_STATE_OFFLINE. After if PROD failed, then we
+> would have caught it in dlpar_offline_cpu() itself.
+
+I recently saw a QEMU-implemented hcall (H_LOGICAL_CI_LOAD) return
+success when it had been given an invalid memory address to load from,
+so my confidence in the error reporting of hcalls is a bit shaken. :-)
+
+In that case the CPU would wait forever for the CPU state to change. If
+you believe 100 ms is too short a timeout, we could make it 500 ms or
+even 1s. What do you think?
+
+> cpu 112 (hwid 112) Ready to die...
+> [DEBUG] Waited for CPU 112 to enter rtas: tries=0, time=65
+> cpu 113 (hwid 113) Ready to die...
+> [DEBUG] Waited for CPU 113 to enter rtas: tries=0, time=1139
+> cpu 114 (hwid 114) Ready to die...
+> [DEBUG] Waited for CPU 114 to enter rtas: tries=0, time=1036
+> cpu 115 (hwid 115) Ready to die...
+> [DEBUG] Waited for CPU 115 to enter rtas: tries=0, time=133
+> cpu 116 (hwid 116) Ready to die...
+> [DEBUG] Waited for CPU 116 to enter rtas: tries=0, time=1231
+> cpu 117 (hwid 117) Ready to die...
+> [DEBUG] Waited for CPU 117 to enter rtas: tries=0, time=1231
+> cpu 118 (hwid 118) Ready to die...
+> [DEBUG] Waited for CPU 118 to enter rtas: tries=0, time=1231
+> cpu 119 (hwid 119) Ready to die...
+> [DEBUG] Waited for CPU 119 to enter rtas: tries=0, time=1131
+> cpu 104 (hwid 104) Ready to die...
+> [DEBUG] Waited for CPU 104 to enter rtas: tries=0, time=40
+
+Interesting, so 1.2 ms can pass before the dying CPU actually gets close
+to making the stop-self call. And even in those cases the retry loop is
+succeeding on the first try! So this shows that changing the code to
+wait for the CPU_STATE_OFFLINE state is worth it.
+
+> ******* RTAS CALL BUFFER CORRUPTION *******
+> 393: rtas32_call_buff_ptr=
+>     0000 0060 0000 0060 0000 0060 0000 0060 [...`...`...`...`]
+>     0000 0060 0000 0060 0000 0060 0000 0060 [...`...`...`...`]
+>     0000 0060 0000 0060 0000 0060 0000 0060 [...`...`...`...`]
+>     0000 0060 0800 E07F ACA7 0000 0000 00C0 [...`............]
+>     2500 0000 0000 0000 0000 0000 0000 0000 [%...............]
+>     0000 0000 0000 0000 0000 0000 306E 7572 [............0nur]
+>     4800 0008 .... .... .... .... .... .... [H...........0nur]
+> 394: rtas64_map_buff_ptr=
+>     0000 0000 5046 5743 0000 0000 4F44 4500 [....PFWC....ODE.]
+>     0000 0000 6000 0000 0000 0000 0000 0069 [....`..........i]
+>     0000 0000 0000 0000 0000 0000 0000 0000 [................]
+>     0000 0000 0000 0005 0000 0000 0000 0001 [................]
+>     0000 0000 1A00 0000 0000 0000 0000 0000 [................]
+>     0000 0000 8018 6398 0000 0000 0300 00C0 [......c.........]
+>     0000 0000 .... .... .... .... .... .... [......c.........]
+
+Ah! I never saw this error message. So indeed the kernel is causing RTAS
+to blow up. Perhaps it would be useful to instrument more RTAS calls
+(especially start-cpu and set-power-level) to see if it's one of them
+that is being called at the time this corruption happens.
+
+> cpu 105 (hwid 105) Ready to die...
+> Bad kernel stack pointer 1fafb6c0 at 0
+> Oops: Bad kernel stack pointer, sig: 6 [#1]
+> LE SMP NR_CPUS=2048 NUMA pSeries
+> Modules linked in:
+> CPU: 105 PID: 0 Comm: swapper/105 Not tainted 4.20.0-rc5-thiago+ #45
+> NIP:  0000000000000000 LR: 0000000000000000 CTR: 00000000007829c8
+> REGS: c00000001e63bd30 TRAP: 0700   Not tainted  (4.20.0-rc5-thiago+)
+> MSR:  8000000000081000 <SF,ME>  CR: 28000004  XER: 00000010
+> CFAR: 000000001ec153f0 IRQMASK: 8000000000009033
+> GPR00: 0000000000000000 000000001fafb6c0 000000001ec236a0 0000000000000040
+> GPR04: 00000000000000c0 0000000000000080 00046c4fb4842557 00000000000000cd
+> GPR08: 000000000001f400 000000001ed035dc 0000000000000000 0000000000000000
+> GPR12: 0000000000000000 c00000001eb5e480 c0000003a1b53f90 000000001eea3e20
+> GPR16: 0000000000000000 c0000006fd845100 c00000000004c8b0 c0000000013d5300
+> GPR20: c0000006fd845300 0000000000000008 c0000000019d2cf8 c0000000013d6888
+> GPR24: 0000000000000069 c0000000013d688c 0000000000000002 c0000000013d688c
+> GPR28: c0000000019cecf0 0000000000000348 0000000000000000 0000000000000000
+> NIP [0000000000000000]           (null)
+> LR [0000000000000000]           (null)
+> Call Trace:
+> Instruction dump:
+> XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
+> XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX 60000000 60000000 60000000 60000000
+> ---[ end trace 1aa3b4936949457e ]---
+
+Ok, so at about the time CPU 105 makes the stop-self call there is this
+RTAS call buffer corruption and this bad kernel stack pointer in CPU 105.
+We need to understand better what is causing this.
+
+> Bad kernel stack pointer 1fafb4b0 at 1ec15004
+> rcu: INFO: rcu_sched detected stalls on CPUs/tasks:
+> rcu:    88-...!: (0 ticks this GP) idle=2ce/1/0x4000000000000000 softirq=28076/28076 fqs=78
+> rcu:    (detected by 72, t=10866 jiffies, g=180529, q=2526)
+> Sending NMI from CPU 72 to CPUs 88:
+> CPU 88 didn't respond to backtrace IPI, inspecting paca.
+> irq_soft_mask: 0x01 in_mce: 0 in_nmi: 0 current: 22978 (drmgr)
+> Back trace of paca->saved_r1 (0xc0000006f94ab750) (possibly stale):
+> Call Trace:
+> [c0000006f94ab750] [c0000006f94ab790] 0xc0000006f94ab790 (unreliable)
+> [c0000006f94ab930] [c0000000000373f8] va_rtas_call_unlocked+0xc8/0xe0
+> [c0000006f94ab950] [c000000000037a98] rtas_call+0x98/0x200
+> [c0000006f94ab9a0] [c0000000000d7d28] smp_query_cpu_stopped+0x58/0xe0
+> [c0000006f94aba20] [c0000000000d9dbc] pseries_cpu_die+0x1ec/0x240
+> [c0000006f94abad0] [c00000000004f284] __cpu_die+0x44/0x60
+> [c0000006f94abaf0] [c0000000000d8e10] dlpar_cpu_remove+0x160/0x340
+> [c0000006f94abbc0] [c0000000000d9184] dlpar_cpu_release+0x74/0x100
+> [c0000006f94abc10] [c000000000025a74] arch_cpu_release+0x44/0x70
+> [c0000006f94abc30] [c0000000009bd1bc] cpu_release_store+0x4c/0x80
+> [c0000006f94abc60] [c0000000009ae000] dev_attr_store+0x40/0x70
+> [c0000006f94abc80] [c000000000495810] sysfs_kf_write+0x70/0xb0
+> [c0000006f94abca0] [c00000000049453c] kernfs_fop_write+0x17c/0x250
+> [c0000006f94abcf0] [c0000000003ccb6c] __vfs_write+0x4c/0x1f0
+> [c0000006f94abd80] [c0000000003ccf74] vfs_write+0xd4/0x240
+> [c0000006f94abdd0] [c0000000003cd338] ksys_write+0x68/0x110
+> [c0000006f94abe20] [c00000000000b288] system_call+0x5c/0x70
+
+So CPU 88 is the one driving the hot unplug and waiting for CPU 105 to
+die. But it is stuck inside RTAS. Perhaps because of the call buffer
+corruption?
+
+> rcu: rcu_sched kthread starved for 10709 jiffies! g180529 f0x0 RCU_GP_WAIT_FQS(5) ->state=0x402 ->cpu=72
+> rcu: RCU grace-period kthread stack dump:
+> rcu_sched       I    0    11      2 0x00000808
+> Call Trace:
+> [c0000000061ab840] [c0000003a4a84800] 0xc0000003a4a84800 (unreliable)
+> [c0000000061aba20] [c00000000001e24c] __switch_to+0x2dc/0x430
+> [c0000000061aba80] [c000000000e5fb94] __schedule+0x3d4/0xa20
+> [c0000000061abb50] [c000000000e6022c] schedule+0x4c/0xc0
+> [c0000000061abb80] [c000000000e64ffc] schedule_timeout+0x1dc/0x4e0
+> [c0000000061abc80] [c0000000001af40c] rcu_gp_kthread+0xc3c/0x11f0
+> [c0000000061abdb0] [c00000000013c7c8] kthread+0x168/0x1b0
+> [c0000000061abe20] [c00000000000b658] ret_from_kernel_thread+0x5c/0x64
+
+I don't know what to make of CPU 72. :-)  Perhaps it's the one making
+the other "rogue" RTAS call interfering with stop-self in CPU 105?
+
+It must be some RTAS call made with rtas_call_unlocked, because CPU 88
+is holding the RTAS lock.
+
+-- Thiago Jung Bauermann
+IBM Linux Technology Center
+
