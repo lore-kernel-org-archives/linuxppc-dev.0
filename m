@@ -1,92 +1,88 @@
-Return-Path: <SRS0=zuPs=OR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=n4RZ=OS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-8.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 78A14C04EB8
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Dec 2018 23:50:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C427EC07E85
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Dec 2018 09:20:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AF9242064D
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Dec 2018 23:50:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AF9242064D
+	by mail.kernel.org (Postfix) with ESMTPS id A9CF32081F
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Dec 2018 09:20:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A9CF32081F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43C5gb0hrdzDrHq
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Dec 2018 10:50:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43CLKC3WVHzDr2m
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Dec 2018 20:20:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=tyreld@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=maddy@linux.vnet.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43C5dN4hW6zDqXt
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Dec 2018 10:48:37 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wB8NdGQ4001473
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 8 Dec 2018 18:48:34 -0500
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2p890a0mgc-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43CLGz2SvNzDqws
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Dec 2018 20:18:34 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wB99IVbD057702
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 9 Dec 2018 04:18:31 -0500
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2p8v0r6swy-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 08 Dec 2018 18:48:34 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 09 Dec 2018 04:18:31 -0500
 Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Sat, 8 Dec 2018 23:48:34 -0000
-Received: from b01cxnp23032.gho.pok.ibm.com (9.57.198.27)
- by e17.ny.us.ibm.com (146.89.104.204) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Sun, 9 Dec 2018 09:18:25 -0000
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Sat, 8 Dec 2018 23:48:32 -0000
-Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
- [9.57.199.106])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wB8NmVDd20906124
+ Sun, 9 Dec 2018 09:18:22 -0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wB99IM6361145268
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Sat, 8 Dec 2018 23:48:31 GMT
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 884E22805C;
- Sat,  8 Dec 2018 23:48:31 +0000 (GMT)
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0C46628059;
- Sat,  8 Dec 2018 23:48:31 +0000 (GMT)
-Received: from ltcalpine2-lp18.aus.stglabs.ibm.com (unknown [9.40.195.201])
- by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP;
- Sat,  8 Dec 2018 23:48:30 +0000 (GMT)
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+ Sun, 9 Dec 2018 09:18:22 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E096E11C05B;
+ Sun,  9 Dec 2018 09:18:21 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2A57911C04A;
+ Sun,  9 Dec 2018 09:18:21 +0000 (GMT)
+Received: from SrihariSrinidhi.in.ibm.com (unknown [9.126.27.138])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Sun,  9 Dec 2018 09:18:20 +0000 (GMT)
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au
-Subject: [PATCH] powerpc/pseries: export timebase register sample in lparcfg
-Date: Sat,  8 Dec 2018 17:48:27 -0600
+Subject: [PATCH] powerpc/perf: Fix thersholding counter data for unknown type
+Date: Sun,  9 Dec 2018 14:48:15 +0530
 X-Mailer: git-send-email 2.7.4
 X-TM-AS-GCONF: 00
-x-cbid: 18120823-0040-0000-0000-0000049FBD49
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010196; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000270; SDB=6.01128985; UDB=6.00577119; IPR=6.00909117; 
- MB=3.00024606; MTD=3.00000008; XFM=3.00000015; UTC=2018-12-08 23:48:34
+x-cbid: 18120909-0028-0000-0000-000003280FDA
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18120823-0041-0000-0000-000008A8DB5E
-Message-Id: <1544312907-17555-1-git-send-email-tyreld@linux.vnet.ibm.com>
+x-cbparentid: 18120909-0029-0000-0000-000023E42DFF
+Message-Id: <1544347095-19428-1-git-send-email-maddy@linux.vnet.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-12-08_08:, , signatures=0
+ definitions=2018-12-09_03:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=807 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1812080222
+ clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=743 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1812090090
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,39 +94,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: brking@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, puvichakravarthy@in.ibm.com
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The Processor Utilzation of Resource Registers (PURR) provide an estimate of
-resources used by a cpu thread. Section 7.6 in Book III of the ISA outlines
-how to calculate the percentage of shared resources for threads using the
-ratio of the PURR delta and Timebase Register delta for a sampled period.
+MMCRA[34:36] and MMCRA[38:44] expose the thresholding counter value.
+Thresholding counter can be used to count latency cycles such as
+load miss to reload. But threshold counter value is not relevant
+when the sampled instruction type is unknown or reserved. Patch to
+fix the thersholding counter value to zero when sampled instruction
+type is unknown or reserved.
 
-This calculation is currently done erroneously by the lparstat tool from the
-powerpc-utils package. This patch exports the current timebase value after
-we sample the PURRs and exposes it to userspace accounting tools via
-/proc/ppc64/lparcfg.
-
-Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Fixes: 170a315f41c6('powerpc/perf: Support to export MMCRA[TEC*] field to userspace')
+Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/pseries/lparcfg.c | 1 +
- 1 file changed, 1 insertion(+)
+ arch/powerpc/perf/isa207-common.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/pseries/lparcfg.c b/arch/powerpc/platforms/pseries/lparcfg.c
-index 7944873..1ea73ec 100644
---- a/arch/powerpc/platforms/pseries/lparcfg.c
-+++ b/arch/powerpc/platforms/pseries/lparcfg.c
-@@ -475,6 +475,7 @@ static int pseries_lparcfg_data(struct seq_file *m, void *v)
- 		splpar_dispatch_data(m);
+diff --git a/arch/powerpc/perf/isa207-common.c b/arch/powerpc/perf/isa207-common.c
+index 177de814286f..6a2f65d3d088 100644
+--- a/arch/powerpc/perf/isa207-common.c
++++ b/arch/powerpc/perf/isa207-common.c
+@@ -226,8 +226,13 @@ void isa207_get_mem_weight(u64 *weight)
+ 	u64 mmcra = mfspr(SPRN_MMCRA);
+ 	u64 exp = MMCRA_THR_CTR_EXP(mmcra);
+ 	u64 mantissa = MMCRA_THR_CTR_MANT(mmcra);
++	u64 sier = mfspr(SPRN_SIER);
++	u64 val = (sier & ISA207_SIER_TYPE_MASK) >> ISA207_SIER_TYPE_SHIFT;
  
- 		seq_printf(m, "purr=%ld\n", get_purr());
-+        seq_printf(m, "tbr=%ld\n", mftb());
- 	} else {		/* non SPLPAR case */
+-	*weight = mantissa << (2 * exp);
++	if (val == 0 || val == 7)
++		*weight = 0;
++	else
++		*weight = mantissa << (2 * exp);
+ }
  
- 		seq_printf(m, "system_active_processors=%d\n",
+ int isa207_get_constraint(u64 event, unsigned long *maskp, unsigned long *valp)
 -- 
 2.7.4
 
