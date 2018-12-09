@@ -2,68 +2,91 @@ Return-Path: <SRS0=n4RZ=OS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
+X-Spam-Status: No, score=-0.7 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E5B5C07E85
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Dec 2018 12:47:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A1FEEC07E85
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Dec 2018 14:23:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 37BAE20837
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Dec 2018 12:47:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 6A49220672
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Dec 2018 14:23:40 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Dc/a/Mt8"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 37BAE20837
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="ZMi/LBZS"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6A49220672
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43CQw86TRqzDr24
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Dec 2018 23:47:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 43CT2x5ktlzDqjV
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 01:23:37 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="Dc/a/Mt8";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="ZMi/LBZS";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=shawnguo@kernel.org; receiver=<UNKNOWN>)
+ spf=pass (helo) smtp.helo=mo6-p01-ob.smtp.rzone.de
+ (client-ip=2a01:238:20a:202:5301::9; helo=mo6-p01-ob.smtp.rzone.de;
+ envelope-from=chzigotzky@xenosoft.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="Dc/a/Mt8"; 
+ dmarc=none (p=none dis=none) header.from=xenosoft.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="ZMi/LBZS"; 
  dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Received: from mo6-p01-ob.smtp.rzone.de (mo6-p01-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5301::9])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43CQs155bYzDqg6
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Dec 2018 23:44:53 +1100 (AEDT)
-Received: from dragon (61-216-91-114.HINET-IP.hinet.net [61.216.91.114])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 9240820672;
- Sun,  9 Dec 2018 12:44:45 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1544359491;
- bh=rCWDA+ZDbSpzlhOykRuLW5bERIZWw4iTBbBtykQnc8M=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=Dc/a/Mt8bAxRjwnvrbWPvWwb8Tk687m3uBrjl6pGrw3BwzsdkZYkJv4WXNxT/X+8n
- kbn8M+oz3MSvUH3URmBiT3/cM96OOTrphZd1xeD985bkPe0GerncByVnG092Sl5ZWA
- kF18sDNX+cXRbnMxfXNYnKLNJbzxIsEsU+mqlxLs=
-Date: Sun, 9 Dec 2018 20:43:59 +0800
-From: Shawn Guo <shawnguo@kernel.org>
-To: Andrew Murray <andrew.murray@arm.com>
-Subject: Re: [PATCH v3 06/12] arm: perf/core: use PERF_PMU_CAP_NO_EXCLUDE for
- exclude incapable PMUs
-Message-ID: <20181209124358.GC22960@dragon>
-References: <1544114849-47266-1-git-send-email-andrew.murray@arm.com>
- <1544114849-47266-7-git-send-email-andrew.murray@arm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43CSzP4DWPzDr1D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Dec 2018 01:20:32 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1544365226;
+ s=strato-dkim-0002; d=xenosoft.de;
+ h=In-Reply-To:Date:Message-ID:References:Cc:To:From:Subject:
+ X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
+ bh=Izig/pPPQuLxK5jL7W0j4n45KanWviKmQ9g8KZJM8l8=;
+ b=ZMi/LBZSXrDgvM1eNfYgB1ZBfAfuxE4dZSqb/nORP3uTegOKVb9TMu5Iav+3xy5IQ1
+ iX4bDmyIuO+C1+FJ0SUOvjrcNUD1lb8RR/DxP2Z+go8QoV4SR0E/MH2YmelnWiJM8mWu
+ 56XBpZZlJq5Wihwhv0Ff1OmI5IiFYc+Z9avZEqm7QzElGRqtdxk4CBmzq8eR1Ha9LmYB
+ gkRN6dVPYvff1kLYB6C+hBDcQKQcv3YnZqZBMHA5r9i81LY28iWPCH9Trb9oAPt0+tVu
+ BO14k6H6no4WJdkjrNgDtRxVfhnVNkeI/u3a7Mgy7WxAzTtlav/7x0r9G3YBpnuAKngp
+ 1c6A==
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5G5MdirQj0WG7CkG2pChksbYmBVaDODYdGAm81+XDQ=="
+X-RZG-CLASS-ID: mo00
+Received: from [IPv6:2a02:8109:a400:162c:9dea:b083:ff3d:f1d9]
+ by smtp.strato.de (RZmta 44.6 AUTH) with ESMTPSA id 404b20uB9EK702x
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
+ 521 ECDH bits, eq. 15360 bits RSA))
+ (Client did not present a certificate);
+ Sun, 9 Dec 2018 15:20:07 +0100 (CET)
+Subject: Re: use generic DMA mapping code in powerpc V4
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+To: Christoph Hellwig <hch@lst.de>
+References: <20181129170351.GC27951@lst.de>
+ <d0e04a85-f17d-414e-6fea-971414417430@xenosoft.de>
+ <20181130105346.GB26765@lst.de>
+ <8694431d-c669-b7b9-99fa-e99db5d45a7d@xenosoft.de>
+ <20181130131056.GA5211@lst.de>
+ <25999587-2d91-a63c-ed38-c3fb0075d9f1@xenosoft.de>
+ <c5202d29-863d-1377-0e2d-762203b317e2@xenosoft.de>
+ <58c61afb-290f-6196-c72c-ac7b61b84718@xenosoft.de>
+ <20181204142426.GA2743@lst.de>
+ <ef56d279-f75d-008e-71ba-7068c1b37c48@xenosoft.de>
+ <20181205140550.GA27549@lst.de>
+ <1948cf84-49ab-543c-472c-d18e27751903@xenosoft.de>
+ <5a2ea855-b4b0-e48a-5c3e-c859a8451ca2@xenosoft.de>
+ <7B6DDB28-8BF6-4589-84ED-F1D4D13BFED6@xenosoft.de>
+ <8a2c4581-0c85-8065-f37e-984755eb31ab@xenosoft.de>
+ <424bb228-c9e5-6593-1ab7-5950d9b2bd4e@xenosoft.de>
+Message-ID: <c86d76b4-b199-557e-bc64-4235729c1e72@xenosoft.de>
+Date: Sun, 9 Dec 2018 15:20:06 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.3.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1544114849-47266-7-git-send-email-andrew.murray@arm.com>
-User-Agent: Mutt/1.5.21 (2010-09-15)
+In-Reply-To: <424bb228-c9e5-6593-1ab7-5950d9b2bd4e@xenosoft.de>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
+Content-Language: de-DE
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,31 +98,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Peter Zijlstra <peterz@infradead.org>,
- Will Deacon <will.deacon@arm.com>, Paul Mackerras <paulus@samba.org>,
- x86@kernel.org, Russell King <linux@armlinux.org.uk>,
- Ingo Molnar <mingo@redhat.com>, Matt Turner <mattst88@gmail.com>,
- suzuki.poulose@arm.com, Sascha Hauer <s.hauer@pengutronix.de>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- Richard Henderson <rth@twiddle.net>, robin.murphy@arm.com,
- linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
- Borislav Petkov <bp@alien8.de>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-arch@vger.kernel.org, Darren Stevens <darren@stevens-zone.net>,
+ linux-kernel@vger.kernel.org, Julian Margetson <runaway@candw.ms>,
+ linux-mm@kvack.org, iommu@lists.linux-foundation.org,
+ Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Dec 06, 2018 at 04:47:23PM +0000, Andrew Murray wrote:
-> For drivers that do not support context exclusion let's advertise the
-> PERF_PMU_CAP_NO_EXCLUDE capability. This ensures that perf will
-> prevent us from handling events where any exclusion flags are set.
-> Let's also remove the now unnecessary check for exclusion flags.
-> 
-> Signed-off-by: Andrew Murray <andrew.murray@arm.com>
-> ---
->  arch/arm/mach-imx/mmdc.c     | 9 ++-------
+Next step: 602307b034734ce77a05da4b99333a2eaf6b6482 (powerpc/fsl_pci: 
+simplify fsl_pci_dma_set_mask)
 
-For imx mmdc changes:
+git checkout 602307b034734ce77a05da4b99333a2eaf6b6482
 
-Acked-by: Shawn Guo <shawnguo@kernel.org>
+The PASEMI onboard ethernet works and the X5000 boots.
+
+-- Christian
+
+
+On 08 December 2018 at 2:47PM, Christian Zigotzky wrote:
+> Next step: e15cd8173ef85e9cc3e2a9c7cc2982f5c1355615 (powerpc/dma: fix 
+> an off-by-one in dma_capable)
+>
+> git checkout e15cd8173ef85e9cc3e2a9c7cc2982f5c1355615
+>
+> The PASEMI onboard ethernet also works with this commit and the X5000 
+> boots without any problems.
+>
+> -- Christian
+>
+>
+> On 08 December 2018 at 11:29AM, Christian Zigotzky wrote:
+>> Next step: 7ebc44c535f6bd726d553756d38b137acc718443 (powerpc/dma: 
+>> remove max_direct_dma_addr)
+>>
+>> git checkout 7ebc44c535f6bd726d553756d38b137acc718443
+>>
+>> OK, the PASEMI onboard ethernet works and the P5020 board boots.
+>>
+>> -- Christian
+>>
+>>
+>> On 07 December 2018 at 7:33PM, Christian Zigotzky wrote:
+>>> Next step: 13c1fdec5682b6e13257277fa16aa31f342d167d (powerpc/dma: 
+>>> move pci_dma_dev_setup_swiotlb to fsl_pci.c)
+>>>
+>>> git checkout 13c1fdec5682b6e13257277fa16aa31f342d167d
+>>>
+>>> Result: The PASEMI onboard ethernet works and the P5020 board boots.
+>>>
+>>> — Christian
+>>
+>>
+>>
+>
+>
+
