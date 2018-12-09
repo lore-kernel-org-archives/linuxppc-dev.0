@@ -2,91 +2,89 @@ Return-Path: <SRS0=n4RZ=OS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.7 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A1FEEC07E85
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Dec 2018 14:23:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 58F1AC07E85
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Dec 2018 15:03:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6A49220672
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Dec 2018 14:23:40 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="ZMi/LBZS"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6A49220672
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
+	by mail.kernel.org (Postfix) with ESMTPS id A8DC520661
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Dec 2018 15:03:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A8DC520661
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43CT2x5ktlzDqjV
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 01:23:37 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
+	by lists.ozlabs.org (Postfix) with ESMTP id 43CTwX4ZWwzDqZT
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 02:03:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="ZMi/LBZS";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=rppt@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (helo) smtp.helo=mo6-p01-ob.smtp.rzone.de
- (client-ip=2a01:238:20a:202:5301::9; helo=mo6-p01-ob.smtp.rzone.de;
- envelope-from=chzigotzky@xenosoft.de; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=xenosoft.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="ZMi/LBZS"; 
- dkim-atps=neutral
-Received: from mo6-p01-ob.smtp.rzone.de (mo6-p01-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5301::9])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43CSzP4DWPzDr1D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Dec 2018 01:20:32 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1544365226;
- s=strato-dkim-0002; d=xenosoft.de;
- h=In-Reply-To:Date:Message-ID:References:Cc:To:From:Subject:
- X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
- bh=Izig/pPPQuLxK5jL7W0j4n45KanWviKmQ9g8KZJM8l8=;
- b=ZMi/LBZSXrDgvM1eNfYgB1ZBfAfuxE4dZSqb/nORP3uTegOKVb9TMu5Iav+3xy5IQ1
- iX4bDmyIuO+C1+FJ0SUOvjrcNUD1lb8RR/DxP2Z+go8QoV4SR0E/MH2YmelnWiJM8mWu
- 56XBpZZlJq5Wihwhv0Ff1OmI5IiFYc+Z9avZEqm7QzElGRqtdxk4CBmzq8eR1Ha9LmYB
- gkRN6dVPYvff1kLYB6C+hBDcQKQcv3YnZqZBMHA5r9i81LY28iWPCH9Trb9oAPt0+tVu
- BO14k6H6no4WJdkjrNgDtRxVfhnVNkeI/u3a7Mgy7WxAzTtlav/7x0r9G3YBpnuAKngp
- 1c6A==
-X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5G5MdirQj0WG7CkG2pChksbYmBVaDODYdGAm81+XDQ=="
-X-RZG-CLASS-ID: mo00
-Received: from [IPv6:2a02:8109:a400:162c:9dea:b083:ff3d:f1d9]
- by smtp.strato.de (RZmta 44.6 AUTH) with ESMTPSA id 404b20uB9EK702x
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
- 521 ECDH bits, eq. 15360 bits RSA))
- (Client did not present a certificate);
- Sun, 9 Dec 2018 15:20:07 +0100 (CET)
-Subject: Re: use generic DMA mapping code in powerpc V4
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-To: Christoph Hellwig <hch@lst.de>
-References: <20181129170351.GC27951@lst.de>
- <d0e04a85-f17d-414e-6fea-971414417430@xenosoft.de>
- <20181130105346.GB26765@lst.de>
- <8694431d-c669-b7b9-99fa-e99db5d45a7d@xenosoft.de>
- <20181130131056.GA5211@lst.de>
- <25999587-2d91-a63c-ed38-c3fb0075d9f1@xenosoft.de>
- <c5202d29-863d-1377-0e2d-762203b317e2@xenosoft.de>
- <58c61afb-290f-6196-c72c-ac7b61b84718@xenosoft.de>
- <20181204142426.GA2743@lst.de>
- <ef56d279-f75d-008e-71ba-7068c1b37c48@xenosoft.de>
- <20181205140550.GA27549@lst.de>
- <1948cf84-49ab-543c-472c-d18e27751903@xenosoft.de>
- <5a2ea855-b4b0-e48a-5c3e-c859a8451ca2@xenosoft.de>
- <7B6DDB28-8BF6-4589-84ED-F1D4D13BFED6@xenosoft.de>
- <8a2c4581-0c85-8065-f37e-984755eb31ab@xenosoft.de>
- <424bb228-c9e5-6593-1ab7-5950d9b2bd4e@xenosoft.de>
-Message-ID: <c86d76b4-b199-557e-bc64-4235729c1e72@xenosoft.de>
-Date: Sun, 9 Dec 2018 15:20:06 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.3.3
-MIME-Version: 1.0
-In-Reply-To: <424bb228-c9e5-6593-1ab7-5950d9b2bd4e@xenosoft.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
-Content-Language: de-DE
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43CTsl2dRbzDqXs
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Dec 2018 02:00:43 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wB9ExIBM055509
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 9 Dec 2018 10:00:41 -0500
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2p8vg6e5jt-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 09 Dec 2018 10:00:40 -0500
+Received: from localhost
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.ibm.com>;
+ Sun, 9 Dec 2018 15:00:37 -0000
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Sun, 9 Dec 2018 15:00:30 -0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wB9F0TY951052574
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Sun, 9 Dec 2018 15:00:29 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 728B84C058;
+ Sun,  9 Dec 2018 15:00:29 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B06C44C044;
+ Sun,  9 Dec 2018 15:00:26 +0000 (GMT)
+Received: from rapoport-lnx (unknown [9.148.8.213])
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Sun,  9 Dec 2018 15:00:26 +0000 (GMT)
+Received: by rapoport-lnx (sSMTP sendmail emulation);
+ Sun, 09 Dec 2018 17:00:26 +0200
+From: Mike Rapoport <rppt@linux.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH v3 0/6] memblock: simplify several early memory allocation
+Date: Sun,  9 Dec 2018 17:00:18 +0200
+X-Mailer: git-send-email 2.7.4
+X-TM-AS-GCONF: 00
+x-cbid: 18120915-0012-0000-0000-000002D6AF46
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18120915-0013-0000-0000-0000210C1ECE
+Message-Id: <1544367624-15376-1-git-send-email-rppt@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-12-09_05:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=988 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1812090139
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,60 +96,99 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Darren Stevens <darren@stevens-zone.net>,
- linux-kernel@vger.kernel.org, Julian Margetson <runaway@candw.ms>,
- linux-mm@kvack.org, iommu@lists.linux-foundation.org,
- Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Michal Hocko <mhocko@suse.com>, linux-sh@vger.kernel.org,
+ linux-mm@kvack.org, Rich Felker <dalias@libc.org>,
+ Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
+ Vincent Chen <deanbo422@gmail.com>, Jonas Bonn <jonas@southpole.se>,
+ linux-c6x-dev@linux-c6x.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Russell King <linux@armlinux.org.uk>, Mike Rapoport <rppt@linux.ibm.com>,
+ Mark Salter <msalter@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ openrisc@lists.librecores.org, Greentime Hu <green.hu@gmail.com>,
+ Stafford Horne <shorne@gmail.com>, Guan Xuetao <gxt@pku.edu.cn>,
+ linux-arm-kernel@lists.infradead.org, Michal Simek <monstr@monstr.eu>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Next step: 602307b034734ce77a05da4b99333a2eaf6b6482 (powerpc/fsl_pci: 
-simplify fsl_pci_dma_set_mask)
+Hi,
 
-git checkout 602307b034734ce77a05da4b99333a2eaf6b6482
+These patches simplify some of the early memory allocations by replacing
+usage of older memblock APIs with newer and shinier ones.
 
-The PASEMI onboard ethernet works and the X5000 boots.
+Quite a few places in the arch/ code allocated memory using a memblock API
+that returns a physical address of the allocated area, then converted this
+physical address to a virtual one and then used memset(0) to clear the
+allocated range.
 
--- Christian
+More recent memblock APIs do all the three steps in one call and their
+usage simplifies the code.
+
+It's important to note that regardless of API used, the core allocation is
+nearly identical for any set of memblock allocators: first it tries to find
+a free memory with all the constraints specified by the caller and then
+falls back to the allocation with some or all constraints disabled.
+
+The first three patches perform the conversion of call sites that have
+exact requirements for the node and the possible memory range.
+
+The fourth patch is a bit one-off as it simplifies openrisc's
+implementation of pte_alloc_one_kernel(), and not only the memblock usage.
+
+The fifth patch takes care of simpler cases when the allocation can be
+satisfied with a simple call to memblock_alloc().
+
+The sixth patch removes one-liner wrappers for memblock_alloc on arm and
+unicore32, as suggested by Christoph.
+
+v3:
+* added Tested-by from Michal Simek for microblaze changes
+* updated powerpc changes as per Michael Ellerman comments:
+  - use allocations that clear memory in alloc_paca_data() and alloc_stack()
+  - ensure the replacement is equivalent to old API
+
+v2:
+* added Ack from Stafford Horne for openrisc changes
+* entirely drop early_alloc wrappers on arm and unicore32, as per Christoph
+Hellwig
 
 
-On 08 December 2018 at 2:47PM, Christian Zigotzky wrote:
-> Next step: e15cd8173ef85e9cc3e2a9c7cc2982f5c1355615 (powerpc/dma: fix 
-> an off-by-one in dma_capable)
->
-> git checkout e15cd8173ef85e9cc3e2a9c7cc2982f5c1355615
->
-> The PASEMI onboard ethernet also works with this commit and the X5000 
-> boots without any problems.
->
-> -- Christian
->
->
-> On 08 December 2018 at 11:29AM, Christian Zigotzky wrote:
->> Next step: 7ebc44c535f6bd726d553756d38b137acc718443 (powerpc/dma: 
->> remove max_direct_dma_addr)
->>
->> git checkout 7ebc44c535f6bd726d553756d38b137acc718443
->>
->> OK, the PASEMI onboard ethernet works and the P5020 board boots.
->>
->> -- Christian
->>
->>
->> On 07 December 2018 at 7:33PM, Christian Zigotzky wrote:
->>> Next step: 13c1fdec5682b6e13257277fa16aa31f342d167d (powerpc/dma: 
->>> move pci_dma_dev_setup_swiotlb to fsl_pci.c)
->>>
->>> git checkout 13c1fdec5682b6e13257277fa16aa31f342d167d
->>>
->>> Result: The PASEMI onboard ethernet works and the P5020 board boots.
->>>
->>> — Christian
->>
->>
->>
->
->
+
+Mike Rapoport (6):
+  powerpc: prefer memblock APIs returning virtual address
+  microblaze: prefer memblock API returning virtual address
+  sh: prefer memblock APIs returning virtual address
+  openrisc: simplify pte_alloc_one_kernel()
+  arch: simplify several early memory allocations
+  arm, unicore32: remove early_alloc*() wrappers
+
+ arch/arm/mm/mmu.c                      | 13 +++----------
+ arch/c6x/mm/dma-coherent.c             |  9 ++-------
+ arch/microblaze/mm/init.c              |  5 +++--
+ arch/nds32/mm/init.c                   | 12 ++++--------
+ arch/openrisc/mm/ioremap.c             | 11 ++++-------
+ arch/powerpc/kernel/paca.c             | 16 ++++++----------
+ arch/powerpc/kernel/setup-common.c     |  4 ++--
+ arch/powerpc/kernel/setup_64.c         | 24 ++++++++++--------------
+ arch/powerpc/mm/hash_utils_64.c        |  6 +++---
+ arch/powerpc/mm/pgtable-book3e.c       |  8 ++------
+ arch/powerpc/mm/pgtable-book3s64.c     |  5 +----
+ arch/powerpc/mm/pgtable-radix.c        | 25 +++++++------------------
+ arch/powerpc/mm/pgtable_32.c           |  4 +---
+ arch/powerpc/mm/ppc_mmu_32.c           |  3 +--
+ arch/powerpc/platforms/pasemi/iommu.c  |  5 +++--
+ arch/powerpc/platforms/powernv/opal.c  |  3 +--
+ arch/powerpc/platforms/pseries/setup.c | 18 ++++++++++++++----
+ arch/powerpc/sysdev/dart_iommu.c       |  7 +++++--
+ arch/sh/mm/init.c                      | 18 +++++-------------
+ arch/sh/mm/numa.c                      |  5 ++---
+ arch/sparc/kernel/prom_64.c            |  7 ++-----
+ arch/sparc/mm/init_64.c                |  9 +++------
+ arch/unicore32/mm/mmu.c                | 14 ++++----------
+ 23 files changed, 88 insertions(+), 143 deletions(-)
+
+-- 
+2.7.4
 
